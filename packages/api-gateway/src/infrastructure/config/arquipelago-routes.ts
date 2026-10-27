@@ -16,6 +16,21 @@ export function arquipelagoGateway(opts: {
   transforms: Route['transforms']
   resilience: Omit<Service, 'name' | 'upstreamGroups'>
 }): { service: Service; routes: Route[] } {
+  const leituraDaEquipe = {
+    service: 'arquipelago',
+    auth: { required: true, mode: 'any', strategies: ['jwt'] },
+    authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    transforms: opts.transforms,
+    rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+  } satisfies Partial<Route>
+  const escritaDaEquipe = {
+    ...leituraDaEquipe,
+    authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+    // Dois projetos do Estúdio (inicial e gabarito) e o resto do desafio.
+    maxBodyBytes: 4 * 1024 * 1024,
+    audit: {},
+    rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+  } satisfies Partial<Route>
   const jogador = {
     service: 'arquipelago',
     auth: { required: true, mode: 'any', strategies: ['jwt'] },
@@ -78,6 +93,65 @@ export function arquipelagoGateway(opts: {
         maxBodyBytes: 1024,
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
+      // Seção Jogo do Admin: leitura para a equipe, escrita só para a administração. Rotas
+      // explícitas (nenhum curinga transforma staff em quem publica). Analisar e publicar rodam o
+      // jogo no executor pelo Members: prazo longo, como o "Testar agora" das aulas.
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-desafios-ler',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/admin/desafios',
+      },
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-desafio-ler',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/admin/desafios/:id',
+      },
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-cobertura',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/admin/cobertura',
+      },
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-desafio-analisar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/admin/desafios/:id/analisar',
+        maxBodyBytes: 1024,
+        timeoutMs: 165_000,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...escritaDaEquipe,
+        id: 'arquipelago-admin-desafio-criar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/admin/desafios',
+        audit: { targetResponseField: 'resumo.id' },
+      },
+      {
+        ...escritaDaEquipe,
+        id: 'arquipelago-admin-desafio-gravar',
+        methods: ['PUT'],
+        pathPattern: '/arquipelago/admin/desafios/:id',
+      },
+      {
+        ...escritaDaEquipe,
+        id: 'arquipelago-admin-desafio-publicar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/admin/desafios/:id/publicar',
+        maxBodyBytes: 1024,
+        timeoutMs: 165_000,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
+      ...(['arquivar', 'reativar'] as const).map<Route>((acao) => ({
+        ...escritaDaEquipe,
+        id: `arquipelago-admin-desafio-${acao}`,
+        methods: ['POST'],
+        pathPattern: `/arquipelago/admin/desafios/:id/${acao}`,
+        maxBodyBytes: 1024,
+      })),
       // O cliente compilado (manifesto + arquivos com hash). Público como qualquer JS de página;
       // o member-shell o repassa na mesma origem do Kids.
       {

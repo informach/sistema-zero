@@ -8,7 +8,14 @@ parte, sem entrar em `PROD_REQUIRED_SECRETS` nem em `nonLoopbackProdUrls`). Rota
 `/salvamento` (GET/PUT, 96 KB), `/tempo` (POST, 1 KB), `/familia/limite` (GET/PUT) com JWT de
 conta ativa e `x-internal-token` (`ARQUIPELAGO_INTERNAL_TOKEN`), e `/arquipelago/cliente/:arquivo`
 pública (o cliente compilado). `kidsMayAccess`: o aluno alcança `/arquipelago/*` menos
-`/arquipelago/familia/*`; o responsável, só `/arquipelago/familia/limite`. Testes:
+`/arquipelago/familia/*` (e nenhum segmento `admin`, regra geral); o responsável, só
+`/arquipelago/familia/limite`. `GET /arquipelago/cartas` (cartões dos Lumis) segue a régua do
+jogador. **Seção Jogo do Admin (27/10/2026):** rotas explícitas `arquipelago-admin-*` (sem
+curinga): leitura (`GET /arquipelago/admin/desafios[/:id]`, `/cobertura`, `POST …/:id/analisar`)
+para superadmin/admin/staff; escrita (`POST /desafios`, `PUT /desafios/:id`, `POST
+…/:id/{publicar,arquivar,reativar}`) só superadmin/admin, com `audit: {}` e corpo de 4 MB (dois
+projetos do Estúdio). Analisar e publicar rodam o jogo no executor pelo Members: `timeoutMs:
+165_000`, 20/min. Testes:
 `tests/unit/arquipelago-config.test.ts` e o fim de `tests/unit/kids-access-policy.test.ts`.
 
 

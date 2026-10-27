@@ -8,6 +8,7 @@ import { JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
 import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
 import { MembrosIndisponiveisError } from '../../src/domain/membros.port'
 import { MembrosHttp } from '../../src/infrastructure/members/membros-http'
+import { membrosDeMentira } from '../fakes/membros'
 
 const jornada: JornadaDosMembros = {
   kids: { versao: 3, postos: [...JOURNEY_LEVEL_SLUGS] },
@@ -19,11 +20,7 @@ const jornada: JornadaDosMembros = {
 }
 const logger = () => ({ info: mock(), warn: mock() })
 /** Só a jornada importa aqui; as outras leituras não são chamadas. */
-const porta = (lerJornada: () => Promise<JornadaDosMembros>) => ({
-  lerJornada,
-  lerJogador: mock(),
-  lerCurriculo: mock(),
-})
+const porta = (lerJornada: () => Promise<JornadaDosMembros>) => membrosDeMentira({ lerJornada })
 
 describe('mapa ilha → posto contra o core', () => {
   test('os postos do contrato são os da Jornada do Criador, na mesma ordem', () => {

@@ -1,6 +1,7 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
+import { ServicoDaEquipe } from './application/servico-da-equipe'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import type { Env } from './infrastructure/config/env'
@@ -8,6 +9,7 @@ import { MembrosHttp } from './infrastructure/members/membros-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
+import { DrizzleRepositorioDeDesafios } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -32,11 +34,19 @@ export function createApplication(env: Env): Application {
       ? new MembrosHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_MEMBERS_TOKEN })
       : null
   const mapa = new ConferenciaDoMapa(membros, logger)
-  const cartas = new ServicoDasCartas(politica, new LeiturasDosMembros(membros))
+  const leituras = new LeiturasDosMembros(membros)
+  const cartas = new ServicoDasCartas(politica, leituras)
+  const equipe = new ServicoDaEquipe(
+    new DrizzleRepositorioDeDesafios(connection.db),
+    membros,
+    leituras,
+    mapa,
+  )
   const app = createServer({
     logger,
     servico,
     cartas,
+    equipe,
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

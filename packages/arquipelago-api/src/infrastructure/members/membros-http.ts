@@ -1,12 +1,17 @@
 import {
+  type AnaliseDosMembros,
+  AnaliseDosMembrosSchema,
   type CurriculoDeBlocos,
   CurriculoDeBlocosSchema,
   type JogadorDosMembros,
   JogadorDosMembrosSchema,
   type JornadaDosMembros,
   JornadaDosMembrosSchema,
+  type VerificacaoDosMembros,
+  VerificacaoDosMembrosSchema,
 } from '@sistemazero/arquipelago-contracts'
 import {
+  ConferenciaIndisponivelError,
   MembrosIndisponiveisError,
   type PerguntaDoJogador,
   type PortaDosMembros,
@@ -15,6 +20,8 @@ import {
 
 /** Uma leitura do Members nunca segura o jogo: passou disso, conta como indisponível. */
 export const TEMPO_DA_LEITURA_MS = 5_000
+/** Conferir roda o jogo no executor (o mesmo prazo das aulas, com folga). */
+export const TEMPO_DA_CONFERENCIA_MS = 160_000
 
 /** Adaptador HTTP das rotas internas `/members/internal/arquipelago/*` (nunca pelo gateway). */
 export class MembrosHttp implements PortaDosMembros {
@@ -52,16 +59,58 @@ export class MembrosHttp implements PortaDosMembros {
     )
   }
 
-  private async ler(caminho: string, signal?: AbortSignal): Promise<unknown> {
-    const tempo = AbortSignal.timeout(TEMPO_DA_LEITURA_MS)
+  async analisarObjetivos(
+    pedido: Parameters<PortaDosMembros['analisarObjetivos']>[0],
+  ): Promise<AnaliseDosMembros> {
+    return validar(
+      AnaliseDosMembrosSchema,
+      await this.ler('/members/internal/arquipelago/objetivos/analisar', undefined, {
+        corpo: pedido,
+        tempo: TEMPO_DA_CONFERENCIA_MS,
+      }),
+    )
+  }
+
+  async verificarObjetivos(
+    pedido: Parameters<PortaDosMembros['verificarObjetivos']>[0],
+  ): Promise<VerificacaoDosMembros> {
+    return validar(
+      VerificacaoDosMembrosSchema,
+      await this.ler('/members/internal/arquipelago/objetivos/verificar', undefined, {
+        corpo: pedido,
+        tempo: TEMPO_DA_CONFERENCIA_MS,
+        conferencia: true,
+      }),
+    )
+  }
+
+  private async ler(
+    caminho: string,
+    signal?: AbortSignal,
+    opcoes: { corpo?: unknown; tempo?: number; conferencia?: boolean } = {},
+  ): Promise<unknown> {
+    const tempo = AbortSignal.timeout(opcoes.tempo ?? TEMPO_DA_LEITURA_MS)
     let resposta: Response
     try {
       resposta = await (this.config.fetch ?? fetch)(new URL(caminho, this.config.url), {
-        headers: { 'x-arquipelago-token': this.config.token, accept: 'application/json' },
+        method: opcoes.corpo === undefined ? 'GET' : 'POST',
+        headers: {
+          'x-arquipelago-token': this.config.token,
+          accept: 'application/json',
+          ...(opcoes.corpo === undefined ? {} : { 'content-type': 'application/json' }),
+        },
+        ...(opcoes.corpo === undefined ? {} : { body: JSON.stringify(opcoes.corpo) }),
         signal: signal ? AbortSignal.any([signal, tempo]) : tempo,
       })
     } catch {
       throw new MembrosIndisponiveisError('rede')
+    }
+    if (opcoes.conferencia) {
+      if (resposta.status === 424) throw new ConferenciaIndisponivelError('indisponivel')
+      if (resposta.status === 429) throw new ConferenciaIndisponivelError('ocupado')
+      if (resposta.status === 409) throw new ConferenciaIndisponivelError('sincronizando')
+      if (resposta.status === 400 || resposta.status === 413)
+        throw new ConferenciaIndisponivelError('recusado')
     }
     if (!resposta.ok) throw new MembrosIndisponiveisError('status', resposta.status)
     try {

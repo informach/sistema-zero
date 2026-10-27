@@ -20,4 +20,11 @@ export interface Responsavel {
   somenteLeitura: boolean
 }
 
+/** Alguém da equipe na seção Jogo do Admin. */
+export interface Equipe {
+  id: string
+  /** Administração (superadmin/admin) fora de sessão de suporte; o resto da equipe só lê. */
+  podeEscrever: boolean
+}
+
 export const PAPEIS_DA_EQUIPE = new Set(['superadmin', 'admin', 'staff'])

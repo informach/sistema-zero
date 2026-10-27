@@ -88,6 +88,20 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(student, path, 'PUT', 'aluno')).toBe(false)
     }
   })
+  test('a seção Jogo do Admin nunca abre para aluno nem responsável', () => {
+    for (const path of [
+      '/arquipelago/admin/desafios',
+      '/arquipelago//admin/desafios',
+      '/arquipelago/ADMIN/desafios/x/publicar',
+      '/arquipelago/admin/cobertura',
+    ]) {
+      for (const method of ['GET', 'POST', 'PUT']) {
+        expect(kidsMayAccess(student, path, method, 'aluno-admin')).toBe(false)
+        expect(kidsMayAccess(parent, path, method, 'responsavel-admin')).toBe(false)
+      }
+    }
+    expect(kidsMayAccess(student, '/arquipelago/cartas', 'GET', 'aluno')).toBe(true)
+  })
   test('o responsável só muda o limite diário', () => {
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'GET', 'responsavel')).toBe(true)
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'PUT', 'responsavel')).toBe(true)

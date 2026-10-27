@@ -12,11 +12,15 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
+import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
+import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
 import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../../src/domain/membros.port'
 import { createServer } from '../../src/interfaces/http/server'
+import { DesafiosEmMemoria } from '../fakes/desafios'
+import { membrosDeMentira } from '../fakes/membros'
 import { RepositorioEmMemoria } from '../fakes/memoria'
 
 const TOKEN = 'token-interno-de-teste'
@@ -33,6 +37,7 @@ let repo: RepositorioEmMemoria
 let politica: PoliticaDeAcesso
 let app: ReturnType<typeof createServer>
 let membros: PortaDosMembros | null
+let desafios: DesafiosEmMemoria
 
 const CURSO = '55555555-5555-4555-8555-555555555555'
 const curriculo: CurriculoDeBlocos = {
@@ -49,19 +54,24 @@ const curriculo: CurriculoDeBlocos = {
   ],
   catalogo: [],
 }
-const membrosDeMentira = (blocos: string[]): PortaDosMembros => ({
-  lerJornada: async () => {
-    throw new Error('não usado')
-  },
-  lerJogador: async () => ({ posicao: 2, total: 8, blocos }),
-  lerCurriculo: async () => curriculo,
-})
+const membrosComBlocos = (blocos: string[]): PortaDosMembros =>
+  membrosDeMentira({
+    lerJogador: async () => ({ posicao: 2, total: 8, blocos }),
+    lerCurriculo: async () => curriculo,
+  })
 
 function montar(servirMapas = true) {
   app = createServer({
     logger: createLogger({ level: 'error' }),
     servico: new ServicoDoJogo(repo, politica, () => AGORA),
     cartas: new ServicoDasCartas(politica, new LeiturasDosMembros(membros)),
+    equipe: new ServicoDaEquipe(
+      desafios,
+      membros,
+      new LeiturasDosMembros(membros),
+      new ConferenciaDoMapa(membros, createLogger({ level: 'error' })),
+      () => AGORA,
+    ),
     cliente: { dir, servirMapas },
     tokenInterno: TOKEN,
     readiness: async () => {},
@@ -71,7 +81,8 @@ function montar(servirMapas = true) {
 beforeEach(() => {
   repo = new RepositorioEmMemoria()
   politica = { modo: 'aberto', publicos: new Set(['kids']), lista: new Set() }
-  membros = membrosDeMentira(['sz_js_if_else'])
+  membros = membrosComBlocos(['sz_js_if_else'])
+  desafios = new DesafiosEmMemoria()
   montar()
 })
 
@@ -445,7 +456,7 @@ describe('cartões dos Lumis', () => {
     expect(r.status).toBe(424)
     expect(r.json).toMatchObject({ error: { code: 'PLATAFORMA_INDISPONIVEL' } })
     membros = {
-      ...membrosDeMentira([]),
+      ...membrosComBlocos([]),
       lerJogador: async () => {
         throw new MembrosIndisponiveisError('rede')
       },

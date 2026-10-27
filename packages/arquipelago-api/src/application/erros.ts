@@ -31,3 +31,39 @@ export class PlataformaIndisponivelError extends Error {
     super('Os desafios e os cartões não estão disponíveis agora')
   }
 }
+
+export class DesafioNaoEncontradoError extends Error {
+  constructor() {
+    super('Desafio não encontrado')
+  }
+}
+
+/** Outra pessoa da equipe gravou antes: vai junto o que está guardado agora. */
+export class DesafioDesatualizadoError extends Error {
+  constructor(readonly atual: unknown) {
+    super('Outra pessoa salvou este desafio')
+  }
+}
+
+export class ConflitoDoCadastroError extends Error {
+  constructor(readonly motivo: 'slug-em-uso' | 'quadro-ocupado') {
+    super(
+      motivo === 'slug-em-uso'
+        ? 'Outro desafio já usa este identificador'
+        : 'Este quadro da ilha já tem um desafio',
+    )
+  }
+}
+
+/** A análise achou problemas: o desafio não pode ser publicado assim. */
+export class DesafioComProblemasError extends Error {
+  constructor(readonly problemas: { codigo: string; mensagem: string; objetivoId?: string }[]) {
+    super('O desafio tem problemas que impedem publicar')
+  }
+}
+
+export class SemPermissaoDeEscritaError extends Error {
+  constructor() {
+    super('Só a administração muda os desafios')
+  }
+}

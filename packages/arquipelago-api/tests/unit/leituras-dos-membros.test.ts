@@ -6,6 +6,7 @@ import {
   VALIDADE_DO_JOGADOR_MS,
 } from '../../src/application/leituras-dos-membros'
 import type { Jogador } from '../../src/domain/jogador'
+import { membrosDeMentira } from '../fakes/membros'
 
 const crianca: Jogador = {
   id: 'p1',
@@ -25,11 +26,10 @@ const adulto: Jogador = {
 function criar() {
   let agora = 0
   const porta = {
-    lerJornada: mock(),
     lerJogador: mock(async (_pergunta: unknown) => ({ posicao: 1, total: 8, blocos: ['b'] })),
     lerCurriculo: mock(async () => ({ versao: 1, cursos: [], catalogo: [] })),
   }
-  const l = new LeiturasDosMembros(porta, () => agora)
+  const l = new LeiturasDosMembros(membrosDeMentira(porta), () => agora)
   return { l, porta, andar: (ms: number) => (agora += ms) }
 }
 

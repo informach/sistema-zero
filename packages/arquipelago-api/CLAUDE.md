@@ -36,6 +36,31 @@ dois, o serviço sobe igual e as leituras ficam desligadas.
   do core, conferência e adaptador), `tests/unit/leituras-dos-membros.test.ts` e os cartões em
   `tests/integration/http.test.ts`.
 
+## Seção Jogo do Admin: cadastro dos desafios (27/10/2026)
+
+Tabelas da migration gerada `0002_desafios`: `desafios` (cadastro, `revisao` é a trava; índice
+único de `slug` e de quadro por público e ilha fora os arquivados, nos dois casos traduzidos em
+409 `SLUG_EM_USO`/`QUADRO_OCUPADO`), `desafio_publicacoes` (cópia imutável de cada publicação:
+conteúdo, blocos derivados e exigidos, a vista dos objetivos e a análise), `desafio_progresso` e
+`desafios_concluidos` (para a etapa de jogar).
+
+- `application/servico-da-equipe.ts` (`ServicoDaEquipe`): criar e gravar por revisão (velha → 409
+  `DESAFIO_DESATUALIZADO` com `atual`), analisar (o Members confere com o verificador das aulas e
+  o serviço soma blocos manuais e cobertura dos cursos), publicar (recusado com 422
+  `DESAFIO_COM_PROBLEMAS` enquanto a análise tiver problema; congela a revisão), arquivar e
+  reativar (volta a publicado se já teve publicação; quadro ocupado → 409) e a cobertura (mapa das
+  ilhas e de onde se aprende cada cartão dos Lumis).
+- Rotas em `interfaces/http/rotas-da-equipe.ts` (`/arquipelago/admin/*`), identidade em
+  `lerEquipe`: papel de equipe, conta própria (sem perfil nem contexto do Kids); escrever só
+  superadmin e admin fora de sessão de suporte (403 `SEM_PERMISSAO`). O gateway e a política do
+  Kids são as outras duas barreiras.
+- Corpo: o servidor aceita até `CORPO_DA_EQUIPE` (4 MB, dois projetos do Estúdio) só em
+  `/arquipelago/admin/*`; o resto do jogo segue no teto pequeno (413 `CORPO_GRANDE_DEMAIS`).
+- Testes: `tests/integration/equipe.test.ts` (barreiras, revisão, publicação, conflitos, corpo) e
+  `tests/db/desafios.test.ts` (corrida de revisão, índices únicos, publicação, CHECK do quadro).
+  ⚠️ Nos testes de banco, `try/catch` em vez de `expect(...).rejects` (a consulta do postgres.js é
+  preguiçosa e o `rejects` pode esperar para sempre).
+
 ## Rotas (`/arquipelago/*`, todas exigem o `x-internal-token` em deploy)
 
 | Rota | Quem | O quê |

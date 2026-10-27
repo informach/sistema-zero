@@ -62,5 +62,31 @@ describe('Arquipélago Vagalume no gateway', () => {
       auth: 'public',
     })
     expect(registry.resolve('DELETE', '/arquipelago/salvamento', 'v1')).toBeUndefined()
+    // Seção Jogo do Admin: rotas explícitas, leitura para a equipe e escrita para a administração.
+    const id = '11111111-1111-4111-8111-111111111111'
+    const ler = registry.resolve('GET', `/arquipelago/admin/desafios/${id}`, 'v1')?.route
+    expect(ler).toMatchObject({
+      id: 'arquipelago-admin-desafio-ler',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+    })
+    const publicar = registry.resolve('POST', `/arquipelago/admin/desafios/${id}/publicar`, 'v1')
+    expect(publicar?.route).toMatchObject({
+      id: 'arquipelago-admin-desafio-publicar',
+      authorize: { roles: ['superadmin', 'admin'] },
+      timeoutMs: 165_000,
+      audit: {},
+    })
+    expect(registry.resolve('POST', '/arquipelago/admin/desafios', 'v1')?.route).toMatchObject({
+      id: 'arquipelago-admin-desafio-criar',
+      maxBodyBytes: 4 * 1024 * 1024,
+      authorize: { roles: ['superadmin', 'admin'] },
+    })
+    expect(registry.resolve('PUT', `/arquipelago/admin/desafios/${id}`, 'v1')?.route.id).toBe(
+      'arquipelago-admin-desafio-gravar',
+    )
+    expect(
+      registry.resolve('POST', `/arquipelago/admin/desafios/${id}/analisar`, 'v1')?.route,
+    ).toMatchObject({ authorize: { roles: ['superadmin', 'admin', 'staff'] } })
+    expect(registry.resolve('DELETE', `/arquipelago/admin/desafios/${id}`, 'v1')).toBeUndefined()
   })
 })
