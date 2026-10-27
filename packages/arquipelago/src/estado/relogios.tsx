@@ -16,7 +16,11 @@ export function Relogios() {
     const t = setInterval(() => {
       const s = loja.getState()
       const ativo =
-        document.visibilityState === 'visible' && !s.menuAberto && !s.tempoAcabou && !s.tempoPausado
+        document.visibilityState === 'visible' &&
+        !s.menuAberto &&
+        !s.ferramentaAberta &&
+        !s.tempoAcabou &&
+        !s.tempoPausado
       if (!ativo) return
       segundos++
 

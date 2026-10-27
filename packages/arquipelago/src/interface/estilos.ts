@@ -31,6 +31,7 @@ export const ESTILOS = `
 .arq-tela .arq-zappy{width:46px;height:46px;margin:0 auto}
 .arq-sobre{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,22,56,.6);padding:20px}
 .arq-menu{padding:22px;max-width:420px;width:100%;display:grid;gap:10px;text-align:left}
+.arq-ferramentas{display:flex;flex-wrap:wrap;gap:8px}
 .arq-menu h2{margin:0 0 4px;font-size:22px}
 .arq-menu ul{margin:0;padding-left:18px;color:#4a5070}
 .arq-toque{position:absolute;inset:auto 0 0 0;height:0}

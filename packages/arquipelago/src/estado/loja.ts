@@ -20,6 +20,7 @@ export interface EstadoDoJogo {
   dentroDeCasa: boolean
   nadando: boolean
   menuAberto: boolean
+  ferramentaAberta: boolean
   tempoAcabou: boolean
   tempoPausado: boolean
   usadoHojeSegundos: number
@@ -29,6 +30,7 @@ export interface EstadoDoJogo {
   definirAlvo(alvo: { id: string; rotulo: string } | null): void
   definirLugar(lugar: { dentroDeCasa: boolean; nadando: boolean }): void
   abrirMenu(aberto: boolean): void
+  definirFerramentaAberta(aberta: boolean): void
   definirTempoPausado(pausado: boolean): void
   registrarTempo(usadoHojeSegundos: number, acabou: boolean): void
   adotar(guardado: SalvamentoGuardado): void
@@ -58,6 +60,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     dentroDeCasa: true,
     nadando: false,
     menuAberto: false,
+    ferramentaAberta: false,
     tempoAcabou: false,
     tempoPausado: false,
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
@@ -82,6 +85,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     abrirMenu(aberto) {
       set({ menuAberto: aberto })
+    },
+    definirFerramentaAberta(aberta) {
+      set({ ferramentaAberta: aberta })
     },
     definirTempoPausado(pausado) {
       set({ tempoPausado: pausado })

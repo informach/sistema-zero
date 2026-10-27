@@ -19,7 +19,7 @@ journal `arquipelago_migrations`. Bun + Elysia + Drizzle, no molde do `packages/
 | `GET /acesso` | jogador | liberado/motivo, limite do dia e quanto já usou |
 | `GET /salvamento` | jogador liberado | `{revisao, salvamento, atualizadoEm}` (revisão 0 = nada guardado) |
 | `PUT /salvamento` | jogador liberado | `{revisaoBase, salvamento}`; revisão velha → 409 `SALVAMENTO_DESATUALIZADO` com `atual` |
-| `POST /tempo` | jogador liberado | `{segundos}` (1 a 120) soma no dia de São Paulo; devolve `acabou` |
+| `POST /tempo` | jogador liberado | `{eventoId, dia, segundos}` (1 a 120); repetição não soma novamente, conflito retorna 409 e data futura é recusada; devolve o total de hoje e `acabou` |
 | `GET\|PUT /familia/limite` | responsável do Kids | limite diário da família (padrão 30, de 10 a 240, passo 5) |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 

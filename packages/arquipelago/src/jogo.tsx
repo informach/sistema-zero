@@ -253,6 +253,9 @@ export function Jogo({ plataforma }: { plataforma: Plataforma }) {
 
   useEffect(() => {
     iniciar()
+    return () => {
+      tentativa.current += 1
+    }
   }, [iniciar])
 
   const aoFalhar = useCallback(

@@ -2,6 +2,7 @@ import { PerformanceMonitor } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Suspense, useState } from 'react'
+import { useEstado } from '../estado/contexto'
 import { Camera } from '../personagem/camera'
 import { Personagem } from '../personagem/personagem'
 import { Zappy } from '../personagem/zappy'
@@ -22,8 +23,10 @@ carregarModelos()
 export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
   // Modo leve automático: se o aparelho não aguenta, a resolução cai; se sobra, sobe.
   const [dpr, setDpr] = useState(1.5)
+  const ferramentaAberta = useEstado((estado) => estado.ferramentaAberta)
   return (
     <Canvas
+      frameloop={ferramentaAberta ? 'never' : 'always'}
       className="arq-canvas"
       dpr={dpr}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
