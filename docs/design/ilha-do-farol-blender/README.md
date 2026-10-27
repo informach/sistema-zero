@@ -77,8 +77,11 @@ criança aponta para o sha antigo). `--remover-antigos` no publicador só antes 
 - As texturas (o céu e o degradê da luz) vão dentro do GLB. O Jogo 3D e a cena das experiências as
   leem pela img: o fetch(blob:) do GLTFLoader esbarra na CSP.
 
-## Decisão pendente
+## Luz (decidida em 27/10/2026)
 
-**Luz do curso**: com a luz de hoje (ambiente 0,65 do curso + 0,6 e sol 0,9 do motor), o three.js
-entrega ~60% da cor e as peças saem mais apagadas que no 2D. A prévia "luz ajustada" usa ambiente
-1,4 e um "Adicionar sol" de 0,7 a mais (blocos que já existem). Fica como está até a decisão.
+O curso usa a luz que o Jogo 3D cria sozinho, sem bloco de luz próprio. Antes, com a ambiente 0,65
+do curso somada à 0,6 e ao sol 0,9 do motor, as peças saíam mais apagadas que no 2D (o three.js
+divide a luz por pi). O motor passou a criar ambiente 2,1 e sol 1,7 (`LIGHT_AMBIENT` e `LIGHT_SUN`
+no runtime do Jogo 3D), e a cor da tela agora é a cor do modelo. A oficina do Molda e a cena das
+experiências (`scene-island-world.tsx`) usam os mesmos números; o teste `workshopLights` do Estúdio
+confere que o jogo e o Molda continuam iguais.

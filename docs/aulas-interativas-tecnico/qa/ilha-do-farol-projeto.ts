@@ -62,7 +62,6 @@ export function ilhaSource(parte: IlhaParte, escolhas: IlhaEscolhas = {}): strin
 const cena=SZGame3D.createFullscreenScene("#94d5f5");
 SZGame3D.setCameraPosition(cena,0,12,21);
 SZGame3D.setFOV(cena,48);
-SZGame3D.addAmbientLight(cena,"#ffffff",0.65);
 ${placed(escolhas, 'cenario', [0, 0, 0])}
 ${placed(escolhas, 'farol', [5.2, 0, 0.1])}
 ${placed(escolhas, 'barco', [8.5, -0.1, 4.5])}

@@ -85,7 +85,9 @@ const BUDGETS: readonly {
   // quando a CSP do documento recusa fetch(blob:) (o connect-src 'none' do preview), porque o
   // GLTFLoader do Chrome as lê assim e o modelo saía sem textura. Do Jogo 3D: peça de efeito (szSemCaixa) fora da área de toque, modelo até 200
   // (um cenário inteiro) sem o cubo cinza acima de 64, e o normalBias da sombra (acne).
-  { extension: gameThreeDExtension, maxChars: 227_300, maxGzipBytes: 62_800 },
+  // 27/10 (luz do motor igual à oficina do Molda): as constantes LIGHT_AMBIENT e
+  // LIGHT_SUN no lugar dos números soltos. Medido: 227_324.
+  { extension: gameThreeDExtension, maxChars: 227_400, maxGzipBytes: 62_800 },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
   // exemplos do catálogo recebem esta variante. O completo, acima, segue sendo o de quem usa o
@@ -99,7 +101,8 @@ const BUDGETS: readonly {
     // variante completa, acima, menos o do Kit). Medido: 185_682 caracteres, 51_568 bytes gzip.
     // Mesmos recursos nativos, sem o Kit Plataforma: 190_794 / 53_051.
     // 27/10: +2_370, o mesmo da variante completa (acima). Medido: 193_164 / 52_171.
-    maxChars: 193_200,
+    // 27/10, luz do motor: as duas constantes de luz. Medido: 193_242.
+    maxChars: 193_300,
     maxGzipBytes: 53_100,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.

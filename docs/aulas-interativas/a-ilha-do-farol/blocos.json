@@ -3,7 +3,6 @@
     "sz_frame_events",
     "sz_frame_loops",
     "sz_frame_start",
-    "sz_g3d_add_ambient_light",
     "sz_g3d_animate",
     "sz_g3d_animation_done",
     "sz_g3d_camera_look_at",

@@ -45,9 +45,10 @@ export function IslandWorld({
         'Cena 3D da ilha; a descrição e os valores estão ao lado dos controles.',
       )
       host.current.appendChild(renderer.domElement)
-      // A luz do jogo (Jogo 3D + a ambiente do curso): os modelos do Blender são os mesmos.
-      world.add(new T.AmbientLight('#ffffff', 1.25))
-      const sun = new T.DirectionalLight('#ffffff', 0.9)
+      // A mesma luz que o Jogo 3D cria em toda cena (LIGHT_AMBIENT e LIGHT_SUN do runtime):
+      // os modelos do Blender saem aqui com a cor que têm no jogo.
+      world.add(new T.AmbientLight('#ffffff', 2.1))
+      const sun = new T.DirectionalLight('#ffffff', 1.7)
       sun.position.set(3, 5, 4)
       world.add(sun)
       const resources = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>()

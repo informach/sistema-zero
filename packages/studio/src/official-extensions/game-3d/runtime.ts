@@ -38,6 +38,11 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   // o contexto WebGL (cena preta). Acima do teto, addMesh devolve null em SILÊNCIO
   // (nunca lança — setPosition/setRotation já ignoram null) e avisa UMA vez.
   var MAX_OBJECTS = 300;
+  // Luz do motor (27/10/2026; igual à oficina do Molda). O three.js divide a luz por pi:
+  // com 0,6 + 0,9 a frente saía com ~78% da cor. Assim sai a cor escolhida (frente 0,99,
+  // topo ~1,03, sombra 0,83). Os blocos de luz da criança SOMAM a esta.
+  var LIGHT_AMBIENT = 2.1;
+  var LIGHT_SUN = 1.7;
   var MAX_LIGHTS = 16;
   var MAX_ROWS = 60;
   var MAX_ROWS_PER_CALL = 30;
@@ -502,8 +507,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (!options.camera) camera.position.set(0, 0, 5);
     // Luz para o MeshStandardMaterial ser visível sem passo extra.
     if (!options.skipLights) {
-      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-      var dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      scene.add(new THREE.AmbientLight(0xffffff, LIGHT_AMBIENT));
+      var dir = new THREE.DirectionalLight(0xffffff, LIGHT_SUN);
       dir.position.set(3, 5, 4);
       dir.castShadow = true;
       if (dir.shadow && dir.shadow.camera) {
@@ -3190,6 +3195,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
 
   function setupCrossingLights(world) {
+    // Fica com a luz de antes de 27/10/2026: a paleta foi feita para ela (a grama virava limão).
     var amb = new THREE.AmbientLight(0xffffff, 0.6);
     world.scene.add(amb);
     var dir = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -3824,8 +3830,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     });
     var scene = world.scene;
     // Luzes y-up (a setupCrossingLights é z-up): ambiente + direcional como a referência.
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    var dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    scene.add(new THREE.AmbientLight(0xffffff, LIGHT_AMBIENT));
+    var dir = new THREE.DirectionalLight(0xffffff, LIGHT_SUN);
     dir.position.set(10, 20, 0);
     scene.add(dir);
     world._lightCount = Math.min(MAX_LIGHTS, (world._lightCount || 0) + 2);
