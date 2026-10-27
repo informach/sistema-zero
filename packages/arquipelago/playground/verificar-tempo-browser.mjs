@@ -64,8 +64,10 @@ try {
   if (await page.getByRole('dialog', { name: 'Menu do jogo' }).count())
     throw new Error('Escape abriu o menu por trás da pausa')
   await page.getByRole('button', { name: 'Abrir o menu' }).click()
-  await page.getByRole('button', { name: 'Pinta', exact: true }).click()
-  await page.getByText('Esta ferramenta não está disponível para abrir agora.').waitFor()
+  await page.getByRole('button', { name: 'Pinta Desenhar', exact: true }).click()
+  await page
+    .getByText('Não deu para abrir esta ferramenta agora. Tente de novo daqui a pouco.')
+    .waitFor()
   console.log(
     'PASS: falha de armazenamento pausa o jogo; diálogo acessível permite recuperação pelo teclado',
   )

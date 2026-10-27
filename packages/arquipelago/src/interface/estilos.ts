@@ -12,7 +12,8 @@ export const ESTILOS = `
 .arq-barra i{display:block;height:100%;border-radius:9px;transition:width .6s}
 .arq-topo-dir{position:absolute;right:14px;top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
 .arq-pilula{padding:7px 13px;font-weight:800;font-size:14px;border-radius:999px;background:rgba(255,255,255,.92);box-shadow:0 4px 18px rgba(0,0,0,.16);white-space:nowrap}
-.arq-botao{border:0;cursor:pointer;font:800 14px system-ui,sans-serif;border-radius:12px;padding:10px 16px;background:#ffc93c;color:#4a3200;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.arq-botao{border:0;cursor:pointer;font:800 14px system-ui,sans-serif;border-radius:12px;min-height:44px;padding:10px 16px;background:#ffc93c;color:#4a3200;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.arq-botao:disabled{opacity:.55;cursor:default}
 .arq-botao.leve{background:rgba(255,255,255,.92);color:#1d2340}
 .arq-botao:focus-visible{outline:3px solid #2f6df6;outline-offset:2px}
 .arq-baixo{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;max-width:calc(100% - 28px)}
@@ -31,7 +32,20 @@ export const ESTILOS = `
 .arq-tela .arq-zappy{width:46px;height:46px;margin:0 auto}
 .arq-sobre{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,22,56,.6);padding:20px}
 .arq-menu{padding:22px;max-width:420px;width:100%;display:grid;gap:10px;text-align:left}
-.arq-ferramentas{display:flex;flex-wrap:wrap;gap:8px}
+.arq-menu-titulo{margin:6px 0 0;font-size:15px}
+.arq-ferramentas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.arq-ferramenta{display:grid;justify-items:center;gap:2px;min-height:88px;padding:10px 6px;border:2px solid #e7e3d6;border-radius:14px;background:#fff;color:#1d2340;cursor:pointer;font:inherit;box-shadow:0 3px 0 #e7e3d6;transition:transform .12s,border-color .12s}
+.arq-ferramenta:hover:not(:disabled){border-color:#ffc93c;transform:translateY(-1px)}
+.arq-ferramenta:focus-visible{outline:3px solid #2f6df6;outline-offset:2px}
+.arq-ferramenta:disabled{opacity:.55;cursor:default}
+.arq-ferramenta-icone{font-size:26px;line-height:1.1}
+.arq-ferramenta b{font-size:15px}
+.arq-ferramenta small{font-size:12px;color:#5a6080;font-weight:600}
+.arq-aviso{margin:0;padding:10px 12px;border-radius:12px;font-weight:700;font-size:14px}
+.arq-aviso.ok{background:#e3f6ef;color:#0f5a46}
+.arq-aviso.atencao{background:#fff3d1;color:#6b4a00}
+.arq-menu-acoes{display:grid;gap:8px;margin-top:4px}
+@media (prefers-reduced-motion:reduce){.arq-ferramenta{transition:none}.arq-ferramenta:hover:not(:disabled){transform:none}}
 .arq-menu h2{margin:0 0 4px;font-size:22px}
 .arq-menu ul{margin:0;padding-left:18px;color:#4a5070}
 .arq-toque{position:absolute;inset:auto 0 0 0;height:0}

@@ -17,13 +17,19 @@ import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
+import {
+  AvisoDaFerramenta,
+  type EstadoDaPorta,
+  type FerramentaDaPorta,
+  PortaDoArquipelago,
+} from './arquipelago-porta'
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
 )
 
 class ToolLoadBoundary extends Component<
-  { children: ReactNode; onCancel: () => void },
+  { children: ReactNode; ferramenta: FerramentaDaPorta; onCancel: () => void },
   { failed: boolean }
 > {
   state = { failed: false }
@@ -33,21 +39,7 @@ class ToolLoadBoundary extends Component<
   render() {
     if (!this.state.failed) return this.props.children
     return (
-      <div
-        className="absolute inset-0 z-50 grid place-items-center bg-background p-6 text-center text-foreground"
-        role="alert"
-      >
-        <div>
-          <p>Não foi possível abrir a ferramenta agora.</p>
-          <button
-            type="button"
-            onClick={this.props.onCancel}
-            className="mt-4 rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground"
-          >
-            Voltar ao jogo
-          </button>
-        </div>
-      </div>
+      <AvisoDaFerramenta ferramenta={this.props.ferramenta} falhou onVoltar={this.props.onCancel} />
     )
   }
 }
@@ -57,7 +49,7 @@ const BASE = '/api/arquipelago'
 /** As únicas rotas do serviço que o jogo chama (o limite da família é da área dos pais). */
 const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo'])
 
-type Estado = 'carregando' | 'pronto' | 'indisponivel' | 'erro'
+type Estado = EstadoDaPorta | 'pronto'
 
 export function pertenceAoPerfil(corpo: unknown, viewerId: string): boolean {
   return (
@@ -317,6 +309,7 @@ export function ArquipelagoHost(props: {
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
       {creation ? (
         <ToolLoadBoundary
+          ferramenta={creation.ferramenta}
           onCancel={() => {
             setCreation(null)
             const resolve = pendente.current
@@ -325,14 +318,7 @@ export function ArquipelagoHost(props: {
           }}
         >
           <Suspense
-            fallback={
-              <div
-                className="absolute inset-0 grid place-items-center bg-background text-foreground"
-                role="status"
-              >
-                Abrindo a ferramenta…
-              </div>
-            }
+            fallback={<AvisoDaFerramenta ferramenta={creation.ferramenta} falhou={false} />}
           >
             <CreationDialog
               ferramenta={creation.ferramenta}
@@ -353,28 +339,7 @@ export function ArquipelagoHost(props: {
         </ToolLoadBoundary>
       ) : null}
       {estado === 'pronto' ? null : (
-        <div
-          className="grid place-items-center p-6 text-center text-white"
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          <div className="max-w-sm space-y-4" role="status" aria-live="polite">
-            <p className="font-bold text-xl">
-              {estado === 'carregando'
-                ? 'Abrindo o Arquipélago…'
-                : estado === 'indisponivel'
-                  ? 'O Arquipélago ainda não abriu por aqui.'
-                  : 'Não consegui abrir o Arquipélago agora.'}
-            </p>
-            {estado === 'carregando' ? null : (
-              <a
-                href={voltarPara}
-                className="inline-flex h-11 items-center rounded-full bg-white px-6 font-bold text-[#0e1430]"
-              >
-                Voltar
-              </a>
-            )}
-          </div>
-        </div>
+        <PortaDoArquipelago estado={estado} publico={publico} voltarPara={voltarPara} />
       )}
     </div>
   )

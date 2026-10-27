@@ -18,7 +18,7 @@ test('o painel das ferramentas entrega, cancela e trata falhas sem perder o cont
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b6 pass\b/)
+    expect(stdout + stderr).toMatch(/\b8 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

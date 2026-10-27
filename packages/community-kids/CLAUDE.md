@@ -5,8 +5,14 @@
 Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o jogo.
 
 - **`/arquipelago`** (`app/arquipelago/page.tsx`, fora do grupo `(app)`: o jogo ocupa a tela) monta
-  o `ArquipelagoHost` do member-shell com o perfil da sessão. Sem item de menu por enquanto; quem
-  vê o jogo é o serviço do jogo (sem ele, a página diz "O Arquipélago ainda não abriu por aqui.").
+  o `ArquipelagoHost` do member-shell com o perfil da sessão. Quem vê o jogo é o serviço do jogo
+  (sem ele, a página diz "O Arquipélago ainda não abriu por aqui").
+- **Menu:** item "Arquipélago" (aba "Jogo" no celular, ícone `TreePalm`: o `Castle` já é o ícone
+  de um posto) só quando o layout confirma `/arquipelago/acesso`. Com ele são seis abas: o rótulo
+  da aba corta (`truncate`, `tracking-tight`) em vez de encostar no vizinho.
+- **Área dos pais:** `_components/arquipelago-limit-card.tsx` ("Tempo livre no Arquipélago", na
+  Família): passos de 5 minutos entre 10 min e 4 h, o tempo escrito como a família fala
+  (`duracaoPorExtenso`) e "Salvar" só quando mudou. Sem resposta do serviço o cartão não aparece.
   Nenhuma variável de ambiente nova (a regra do Railway pede criar no painel antes).
 - Shims em `app/api/arquipelago/{acesso,salvamento,tempo,cliente/[arquivo]}` e
   `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`

@@ -195,11 +195,14 @@ export function MobileTabbar({
               >
                 <Icon className="size-5" />
               </span>
-              <span className="font-bold text-[0.68rem]">{item.mobileLabel ?? item.label}</span>
+              {/* Com o jogo liberado são seis abas: o rótulo corta em vez de encostar no vizinho. */}
+              <span className="max-w-full truncate font-bold text-[0.68rem] tracking-tight">
+                {item.mobileLabel ?? item.label}
+              </span>
             </>
           )
           const classe = cn(
-            'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 py-1.5 transition-colors',
+            'flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5 transition-colors',
             active ? 'text-(--pen-acao-clara)' : 'text-(--menu-texto)',
           )
           // Aba com destinos por dentro abre a GAVETA, como o accordion do desktop: a
