@@ -53,7 +53,6 @@ export function ScenePaintToolbox({
     ['paint.picker', picker],
     ['paint.closeup', closeupTool],
   ]
-  const scoped = paint.surfaceMode && !shape && !closeupTool && !rotate
   return (
     <RequiresTool family="paint.brush">
       <fieldset
@@ -171,10 +170,16 @@ export function ScenePaintToolbox({
           )}
         </fieldset>
       )}
-      <fieldset
-        disabled={paint.drawing || paint.busy}
-        className={steadyWhileDrawing(paint, 'min-w-0')}
-      >
+      {eraser && (!colorImage || paint.eraseMode !== 'cutout') && (
+        <p className="text-xs text-mld-muted">
+          {paint.data && paint.data.image.layers.length > 1
+            ? copy.eraseLayerHint(paint.data.layer.name)
+            : copy.eraseHint}
+        </p>
+      )}
+      {/* As AJUDAS valem para o próximo traço: ficam ligáveis a qualquer hora, também durante um
+          trabalho demorado (por isso este fieldset não tem `disabled`, ao contrário dos outros). */}
+      <fieldset className="min-w-0">
         <legend className="mld-kicker mb-2">{copy.helps}</legend>
         <div className={PAINT_TILES}>
           <SceneTile
@@ -186,7 +191,7 @@ export function ScenePaintToolbox({
             pressed={paint.mirror}
             onClick={() => paint.setMirror(!paint.mirror)}
           />
-          {scoped && (
+          {paint.surfaceMode && (
             <SceneTile
               data-toggle=""
               icon={Target}

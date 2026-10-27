@@ -11,24 +11,18 @@
  *
  * Os nomes acessíveis são os de sempre (`COPY.a11y.colorSwatch`, "Usadas agora: #…").
  */
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { hexToRgb, rgbToHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import type { MoldaPaletteFields } from '../../../core/model'
-import { RESERVED_INDEX } from '../../../core/palette'
-import { resolvePaletteColors } from '../../../core/sanitize'
+import { scenePaletteSwatches } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
+import type { ScenePaintRgba } from '../../../scene/imagePaint'
 import { RequiresTool } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Plus } from '../../ui/icons'
 import { SceneColorPicker } from './SceneColorPicker'
 import type { useScenePaint } from './useScenePaint'
-
-export function scenePaletteSwatches(palette: MoldaPaletteFields) {
-  return resolvePaletteColors(palette).flatMap((hex, index) =>
-    index === RESERVED_INDEX || !hex ? [] : [{ index, hex }],
-  )
-}
 
 const NAMES: Readonly<Record<string, string>> = {
   '#ffffff': 'Branco',
@@ -69,32 +63,47 @@ export function ScenePaintColorBar({
   const busy = paint.drawing || paint.busy
   const hex = rgbToHex(paint.ink[0], paint.ink[1], paint.ink[2])
   const base = scenePaletteSwatches(palette)
-  const favorites = paint.favorites
-    .map((entry, index) => ({
+  // Uma cor aparece UMA vez, entre a paleta e as favoritas (a paleta pode repetir um hex: a
+  // personalizada, a tirada de uma imagem). Repetida, a chave colidia e as duas ficavam marcadas.
+  const colors = [
+    ...base.map((entry) => ({ ...entry, favorite: false })),
+    ...paint.favorites.map((entry, index) => ({
       index: base.length + index + 1,
       hex: rgbToHex(entry[0], entry[1], entry[2]),
-    }))
-    .filter(
-      (entry, index, all) =>
-        !base.some((other) => other.hex === entry.hex) &&
-        all.findIndex((other) => other.hex === entry.hex) === index,
-    )
-  const favorite = [...base, ...favorites].some((entry) => entry.hex === hex)
+      favorite: true,
+    })),
+  ].filter((entry, index, all) => all.findIndex((other) => other.hex === entry.hex) === index)
+  const palettePart = colors.filter((entry) => !entry.favorite)
+  const favorites = colors.filter((entry) => entry.favorite)
+  const favorite = colors.some((entry) => entry.hex === hex)
   const more = useRef<HTMLDetailsElement>(null)
-  const swatch = ({ index, hex: value }: { index: number; hex: string }) => (
+  // O popover fecha com um toque fora dele: aberto, ele cobria o palco enquanto a criança pintava.
+  useEffect(() => {
+    const close = (event: PointerEvent) => {
+      const details = more.current
+      if (details?.open && !details.contains(event.target as Node)) details.open = false
+    }
+    document.addEventListener('pointerdown', close, true)
+    return () => document.removeEventListener('pointerdown', close, true)
+  }, [])
+  const swatch = (value: string, label: string, color: ScenePaintRgba) => (
     <button
       key={value}
       type="button"
-      aria-label={COPY.a11y.colorSwatch(index, value)}
+      aria-label={label}
       aria-pressed={hex === value}
       title={scenePaintColorName(value)}
       data-light={isLight(value) ? '' : undefined}
       disabled={busy}
-      onClick={() => paint.setColor([...hexToRgb(value), 255])}
+      onClick={() => paint.setColor(color)}
       className="mld-color-swatch"
       style={{ backgroundColor: value }}
     />
   )
+  const paletteSwatch = ({ index, hex: value }: { index: number; hex: string }) =>
+    swatch(value, COPY.a11y.colorSwatch(index, value), [...hexToRgb(value), 255])
+  const unsaved =
+    'As cores continuam disponíveis nesta sessão. Não foi possível guardar a paleta neste navegador.'
   return (
     <RequiresTool family="paint.brush">
       <section aria-label={copy.colors} className="mld-color-bar">
@@ -113,9 +122,9 @@ export function ScenePaintColorBar({
           </span>
         </div>
         <div className="mld-color-row">
-          {base.map(swatch)}
+          {palettePart.map(paletteSwatch)}
           {favorites.length > 0 && <span aria-hidden="true" className="mld-color-rule" />}
-          {favorites.map(swatch)}
+          {favorites.map(paletteSwatch)}
         </div>
         <details
           ref={more}
@@ -145,9 +154,8 @@ export function ScenePaintColorBar({
               <Plus aria-hidden="true" className="size-4" /> {copy.saveColor}
             </Button>
             {paint.favoritesUnavailable && (
-              <p role="status" className="text-xs text-mld-muted">
-                As cores continuam disponíveis nesta sessão. Não foi possível guardar a paleta neste
-                navegador.
+              <p aria-hidden="true" className="text-xs text-mld-muted">
+                {unsaved}
               </p>
             )}
             {paint.favoritesFull && (
@@ -159,26 +167,20 @@ export function ScenePaintColorBar({
                 <div className="flex flex-wrap gap-2">
                   {paint.recentColors.map((entry) => {
                     const value = rgbToHex(entry[0], entry[1], entry[2])
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-label={`${copy.recentColors}: ${value}`}
-                        aria-pressed={hex === value}
-                        title={scenePaintColorName(value)}
-                        data-light={isLight(value) ? '' : undefined}
-                        className="mld-color-swatch"
-                        style={{ background: value }}
-                        disabled={busy}
-                        onClick={() => paint.setColor(entry)}
-                      />
-                    )
+                    return swatch(value, `${copy.recentColors}: ${value}`, entry)
                   })}
                 </div>
               </div>
             )}
           </div>
         </details>
+        {/* O aviso de não guardar vive FORA do popover recolhido: a região viva anuncia mesmo
+            fechado, e o texto visível aparece junto do "Guardar cor favorita". */}
+        {paint.favoritesUnavailable && (
+          <p role="status" className="sr-only">
+            {unsaved}
+          </p>
+        )}
       </section>
     </RequiresTool>
   )

@@ -370,6 +370,27 @@
     border-radius: 50%;
     box-shadow: 0 0 0 1px #0006;
   }
+  /* A grade de cores da "Cor da peça" (ScenePieceFinish). A barra de cores tem a receita dela. */
+  [data-molda-theme] .mld-paint-swatches {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 5px;
+  }
+  [data-molda-theme] .mld-paint-swatches > .mld-paint-swatch {
+    width: 100%;
+    min-width: 0;
+    min-height: 30px;
+    height: 32px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-paint-swatches {
+      grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+    }
+    [data-molda-theme] .mld-paint-swatches > .mld-paint-swatch {
+      min-height: 44px;
+      height: auto;
+    }
+  }
   [data-molda-theme] .mld-tile[data-toggle] > .mld-tile-label {
     font-size: 11px;
     overflow-wrap: normal;
@@ -857,6 +878,9 @@
     z-index: 40;
     display: flex;
     width: min(18rem, calc(100vw - 2rem));
+    /* O palco recorta o que passa dele: numa janela baixa o popover rola por dentro. */
+    max-height: min(30rem, calc(100dvh - 13rem));
+    overflow-y: auto;
     flex-direction: column;
     gap: 10px;
     padding: 12px;

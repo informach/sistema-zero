@@ -12,6 +12,9 @@ export const SCENE_PAINT_COPY = {
   onlyThisPieceHint: 'Ligado, o pincel só pinta a peça escolhida. Desligado, pinta qualquer peça.',
   eraseHow: 'Como apagar',
   eraseModes: { paint: 'Apagar tinta', cutout: 'Deixar vazado' },
+  eraseHint: 'Apaga só o desenho. A cor de baixo aparece.',
+  eraseLayerHint: (layer: string) =>
+    `Apaga só o desenho da camada “${layer}”. A cor de baixo aparece.`,
   useImage: 'Usar imagem',
   pieceCard: 'Pintura da peça',
   choosePieceAll: 'Pinte direto no modelo. Toque numa peça para ver as opções dela.',

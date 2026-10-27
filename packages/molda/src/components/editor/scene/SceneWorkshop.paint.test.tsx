@@ -1275,3 +1275,61 @@ describe('as três zonas da aba Pintar (27/10/2026)', () => {
     editor.getState().dispose()
   })
 })
+
+describe('o review da barra de cores e da coluna (27/10/2026)', () => {
+  test('uma cor repetida na paleta aparece uma vez só na barra', async () => {
+    const { document } = twoBoxes()
+    const colors = [...resolvePaletteColors(document)]
+    colors[3] = colors[2]!
+    const repeated: MoldaSceneDocument = {
+      ...document,
+      paletteId: 'custom',
+      customPalette: { name: 'Repetida', colors },
+    }
+    const { editor, stage } = mount(repeated)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const bar = screen.getByRole('region', { name: SCENE_PAINT_COPY.colors })
+    const same = within(bar)
+      .getAllByRole('button')
+      .filter((button) => button.getAttribute('aria-label')?.endsWith(colors[2]!))
+    expect(same).toHaveLength(1)
+    editor.getState().dispose()
+  })
+
+  test('o "+" fecha com um toque fora dele', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const details = screen.getAllByText(SCENE_PAINT_COPY.customColor)[0]!.closest('details')!
+    act(() => {
+      details.open = true
+    })
+    fireEvent.pointerDown(details.querySelector('.mld-color-more-panel')!)
+    expect(details.open).toBe(true)
+    fireEvent.pointerDown(screen.getByRole('button', { name: COPY.scene.paintPencil }))
+    expect(details.open).toBe(false)
+    editor.getState().dispose()
+  })
+
+  test('a borracha explica o que apaga; "Só nesta peça" sem peça pede a peça', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintEraser }))
+    expect(screen.getByText(SCENE_PAINT_COPY.eraseHint)).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.eraseModes.cutout }))
+    expect(screen.queryByText(SCENE_PAINT_COPY.eraseHint)).toBeNull()
+    expect(screen.getByText(SCENE_PAINT_COPY.instructions.cutout)).toBeDefined()
+    const card = screen.getByRole('region', { name: SCENE_PAINT_COPY.pieceCard })
+    expect(within(card).getByText(SCENE_PAINT_COPY.choosePieceAll)).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece }))
+    expect(within(card).getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    // As ajudas não ficam num fieldset desligável: valem para o próximo traço a qualquer hora.
+    const helps = screen.getByRole('group', { name: SCENE_PAINT_COPY.helps })
+    expect(helps.hasAttribute('disabled')).toBe(false)
+    editor.getState().dispose()
+  })
+})
