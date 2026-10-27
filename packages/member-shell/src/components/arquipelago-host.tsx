@@ -84,7 +84,10 @@ export function criarPlataformaDoArquipelago(opcoes: {
     servico: {
       async buscar(caminho, pedido) {
         if (!CAMINHOS_DO_JOGO.has(caminho)) return { status: 404, corpo: { code: 'NOT_FOUND' } }
-        return json(`${BASE}${caminho}`, corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo))
+        return json(`${BASE}${caminho}`, {
+          ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
+          signal: pedido?.sinal,
+        })
       },
     },
     // As ferramentas de verdade (Pinta, Molda, Estúdio) abrem por cima do jogo numa fase

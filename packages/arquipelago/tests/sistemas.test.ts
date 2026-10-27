@@ -5,7 +5,7 @@ import { adicionar, ITENS, itensVisiveis, quantidade, remover } from '../src/sis
 import { comer, dormir, humor, passarTempo, ritmo } from '../src/sistemas/necessidades'
 import { cozinhar, RECEITAS, receitaPossivel } from '../src/sistemas/receitas'
 import { DURACAO_DO_DIA_MS, momentoDoDia, relogio } from '../src/sistemas/tempo-do-dia'
-import { contar, minutosRestantes } from '../src/sistemas/tempo-livre'
+import { minutosRestantes } from '../src/sistemas/tempo-livre'
 
 describe('tempo do dia', () => {
   const comeco = Date.parse('2026-10-27T12:00:00Z')
@@ -107,18 +107,6 @@ describe('necessidades', () => {
 })
 
 describe('tempo livre', () => {
-  test('avisa o serviço a cada minuto e ignora pulos grandes de relógio', () => {
-    let c = { acumulado: 0 }
-    let enviado = 0
-    for (let i = 0; i < 125; i++) {
-      const r = contar(c, 1)
-      c = r.contador
-      enviado += r.enviar
-    }
-    expect(enviado).toBe(120)
-    expect(contar({ acumulado: 0 }, 3600).enviar).toBe(0)
-  })
-
   test('minutos que faltam (adulto não tem limite)', () => {
     expect(minutosRestantes(30, 0)).toBe(30)
     expect(minutosRestantes(30, 29 * 60 + 1)).toBe(1)

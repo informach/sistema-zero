@@ -25,7 +25,13 @@ export interface RepositorioDoJogo {
     agora: Date
   }): Promise<ResultadoDaGravacao>
   /** Soma segundos ao dia (data de São Paulo, AAAA-MM-DD) e devolve o total do dia. */
-  somarTempo(jogadorId: string, dia: string, segundos: number, agora: Date): Promise<number>
+  somarTempo(
+    jogadorId: string,
+    dia: string,
+    segundos: number,
+    agora: Date,
+    eventoId?: string,
+  ): Promise<number>
   lerTempo(jogadorId: string, dia: string): Promise<number>
   lerLimite(contaId: string): Promise<number | null>
   gravarLimite(contaId: string, minutos: number, agora: Date): Promise<number>

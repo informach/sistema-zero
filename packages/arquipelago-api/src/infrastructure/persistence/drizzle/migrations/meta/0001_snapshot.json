@@ -1,0 +1,221 @@
+{
+  "id": "7fbc06b6-a3ea-47b9-8699-0de5a3145a4e",
+  "prevId": "5ef7de9f-070a-45c8-bedd-7d07d001803e",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "arquipelago.eventos_tempo": {
+      "name": "eventos_tempo",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evento_id": {
+          "name": "evento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "segundos": {
+          "name": "segundos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "eventos_tempo_jogador_id_evento_id_pk": {
+          "name": "eventos_tempo_jogador_id_evento_id_pk",
+          "columns": [
+            "jogador_id",
+            "evento_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "eventos_tempo_segundos_check": {
+          "name": "eventos_tempo_segundos_check",
+          "value": "\"arquipelago\".\"eventos_tempo\".\"segundos\" between 1 and 120"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.limites_da_familia": {
+      "name": "limites_da_familia",
+      "schema": "arquipelago",
+      "columns": {
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "minutos": {
+          "name": "minutos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "limites_da_familia_minutos_check": {
+          "name": "limites_da_familia_minutos_check",
+          "value": "\"arquipelago\".\"limites_da_familia\".\"minutos\" between 10 and 240"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.salvamentos": {
+      "name": "salvamentos",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "salvamentos_publico_check": {
+          "name": "salvamentos_publico_check",
+          "value": "\"arquipelago\".\"salvamentos\".\"publico\" in ('kids', 'adulto')"
+        },
+        "salvamentos_revisao_check": {
+          "name": "salvamentos_revisao_check",
+          "value": "\"arquipelago\".\"salvamentos\".\"revisao\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.tempo_diario": {
+      "name": "tempo_diario",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "segundos": {
+          "name": "segundos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "tempo_diario_jogador_id_dia_pk": {
+          "name": "tempo_diario_jogador_id_dia_pk",
+          "columns": [
+            "jogador_id",
+            "dia"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "tempo_diario_segundos_check": {
+          "name": "tempo_diario_segundos_check",
+          "value": "\"arquipelago\".\"tempo_diario\".\"segundos\" between 0 and 86400"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "arquipelago": "arquipelago"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

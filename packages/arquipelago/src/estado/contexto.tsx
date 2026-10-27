@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
+import type { criarFilaDeTempo } from '../sistemas/fila-tempo'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
 /** Posição do personagem, lida a cada quadro pela câmera e pelo Zappy (fora do React). */
@@ -29,6 +30,7 @@ export interface Pedidos {
 export interface ContextoDoJogo {
   loja: LojaDoJogo
   plataforma: Plataforma
+  filaTempo: Awaited<ReturnType<typeof criarFilaDeTempo>> | null
   controle: Controle
   interativos: RegistroDeInterativos
   rastro: Rastro

@@ -64,7 +64,30 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogo (Postgres real)', () => {
     await conexao?.close()
   })
   beforeEach(async () => {
-    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.limites_da_familia`
+    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.eventos_tempo, arquipelago.limites_da_familia`
+  })
+
+  test('repetição do mesmo evento de tempo não conta duas vezes', async () => {
+    const eventoId = '33333333-3333-4333-8333-333333333333'
+    const valores = await Promise.all([
+      repo.somarTempo(JOGADOR, '2026-10-27', 60, AGORA, eventoId),
+      repo.somarTempo(JOGADOR, '2026-10-27', 60, AGORA, eventoId),
+    ])
+    expect(valores).toEqual([60, 60])
+    expect(await repo.lerTempo(JOGADOR, '2026-10-27')).toBe(60)
+    for (const [dia, segundos] of [
+      ['2026-10-27', 61],
+      ['2026-10-26', 60],
+    ] as const) {
+      let conflito = false
+      try {
+        await repo.somarTempo(JOGADOR, dia, segundos, AGORA, eventoId)
+      } catch {
+        conflito = true
+      }
+      expect(conflito).toBe(true)
+    }
+    expect(await repo.lerTempo(JOGADOR, '2026-10-26')).toBe(0)
   })
 
   test('JSON intacto e revisão subindo de um em um', async () => {

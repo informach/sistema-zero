@@ -21,6 +21,7 @@ export interface EstadoDoJogo {
   nadando: boolean
   menuAberto: boolean
   tempoAcabou: boolean
+  tempoPausado: boolean
   usadoHojeSegundos: number
   /** Muda o salvamento (a fila de salvamento grava depois). */
   mudar(fn: (s: Salvamento) => Salvamento): void
@@ -28,6 +29,7 @@ export interface EstadoDoJogo {
   definirAlvo(alvo: { id: string; rotulo: string } | null): void
   definirLugar(lugar: { dentroDeCasa: boolean; nadando: boolean }): void
   abrirMenu(aberto: boolean): void
+  definirTempoPausado(pausado: boolean): void
   registrarTempo(usadoHojeSegundos: number, acabou: boolean): void
   adotar(guardado: SalvamentoGuardado): void
 }
@@ -57,6 +59,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     nadando: false,
     menuAberto: false,
     tempoAcabou: false,
+    tempoPausado: false,
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
     mudar(fn) {
       const novo = fn(get().salvamento)
@@ -79,6 +82,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     abrirMenu(aberto) {
       set({ menuAberto: aberto })
+    },
+    definirTempoPausado(pausado) {
+      set({ tempoPausado: pausado })
     },
     registrarTempo(usadoHojeSegundos, acabou) {
       set({ usadoHojeSegundos, tempoAcabou: acabou || get().tempoAcabou })

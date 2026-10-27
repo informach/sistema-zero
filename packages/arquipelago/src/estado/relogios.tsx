@@ -1,8 +1,6 @@
-import { TempoRegistradoSchema } from '@sistemazero/arquipelago-contracts'
 import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempo } from '../sistemas/necessidades'
-import { type ContadorDeTempo, contar } from '../sistemas/tempo-livre'
 import { useJogo } from './contexto'
 
 /**
@@ -10,16 +8,15 @@ import { useJogo } from './contexto'
  * posição guardada de vez em quando e a conta do tempo livre.
  */
 export function Relogios() {
-  const { loja, controle, plataforma, rastro, pedidos } = useJogo()
+  const { loja, controle, plataforma, rastro, pedidos, filaTempo } = useJogo()
 
   useEffect(() => {
-    let contador: ContadorDeTempo = { acumulado: 0 }
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
     let segundos = 0
-    let enviando = false
     const t = setInterval(() => {
       const s = loja.getState()
-      const ativo = document.visibilityState === 'visible' && !s.menuAberto && !s.tempoAcabou
+      const ativo =
+        document.visibilityState === 'visible' && !s.menuAberto && !s.tempoAcabou && !s.tempoPausado
       if (!ativo) return
       segundos++
 
@@ -44,25 +41,24 @@ export function Relogios() {
         s.mudar((sv) => ({ ...sv, posicao: { x: rastro.x, y: rastro.y + 0.3, z: rastro.z } }))
       }
 
-      const r = contar(contador, 1)
-      contador = r.contador
-      if (r.enviar > 0 && !enviando) {
-        enviando = true
-        plataforma.servico
-          .buscar('/tempo', { metodo: 'POST', corpo: { segundos: r.enviar } })
-          .then((resp) => {
-            if (resp.status !== 200) return
-            const t = TempoRegistradoSchema.parse(resp.corpo)
-            loja.getState().registrarTempo(t.usadoHojeSegundos, t.acabou)
-          })
-          .catch((e) => plataforma.relatarErro(e, 'tempo-livre'))
-          .finally(() => {
-            enviando = false
-          })
-      }
+      void filaTempo?.somarSegundo().catch((erro) => {
+        plataforma.relatarErro(erro, 'armazenamento-tempo')
+        loja.getState().definirTempoPausado(true)
+        loja
+          .getState()
+          .dizer('Não consegui guardar o tempo de jogo. Atualize a página e tente novamente.')
+      })
     }, 1000)
-    return () => clearInterval(t)
-  }, [loja, controle, plataforma, rastro, pedidos])
+    const aoEsconder = () => {
+      if (document.visibilityState === 'hidden') void filaTempo?.guardarEEnviar().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', aoEsconder)
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', aoEsconder)
+      void filaTempo?.encerrar().catch(() => {})
+    }
+  }, [loja, controle, plataforma, rastro, pedidos, filaTempo])
 
   return null
 }

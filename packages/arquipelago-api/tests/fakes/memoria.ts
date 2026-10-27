@@ -3,12 +3,14 @@ import type {
   ResultadoDaGravacao,
   SalvamentoNoBanco,
 } from '../../src/domain/repositorio.port'
+import { EventoTempoConflitanteError } from '../../src/domain/tempo-erros'
 
 /** Repositório em memória com a mesma semântica do Drizzle (revisão como trava, teto do dia). */
 export class RepositorioEmMemoria implements RepositorioDoJogo {
   readonly salvamentos = new Map<string, SalvamentoNoBanco>()
   readonly tempo = new Map<string, number>()
   readonly limites = new Map<string, number>()
+  readonly eventos = new Map<string, { segundos: number; dia: string }>()
 
   async lerSalvamento(jogadorId: string) {
     return this.salvamentos.get(jogadorId) ?? null
@@ -28,7 +30,21 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
     return { ok: true, guardado }
   }
 
-  async somarTempo(jogadorId: string, dia: string, segundos: number) {
+  async somarTempo(
+    jogadorId: string,
+    dia: string,
+    segundos: number,
+    _agora?: Date,
+    eventoId?: string,
+  ) {
+    const evento = `${jogadorId}|${eventoId}`
+    if (eventoId && this.eventos.has(evento)) {
+      const anterior = this.eventos.get(evento)
+      if (anterior?.segundos !== segundos || anterior.dia !== dia)
+        throw new EventoTempoConflitanteError()
+      return this.tempo.get(`${jogadorId}|${dia}`) ?? 0
+    }
+    if (eventoId) this.eventos.set(evento, { segundos, dia })
     const chave = `${jogadorId}|${dia}`
     const total = Math.min((this.tempo.get(chave) ?? 0) + segundos, 86_400)
     this.tempo.set(chave, total)

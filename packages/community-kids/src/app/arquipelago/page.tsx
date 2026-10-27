@@ -1,6 +1,7 @@
 import { ArquipelagoHost } from '@sistemazero/member-shell/components/arquipelago-host'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import { SessionBoundary } from '@/components/kids/session-boundary'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -15,5 +16,15 @@ export default async function ArquipelagoPage() {
   const session = await getSession()
   if (!session?.activeProfile) redirect('/perfis')
   const primeiroNome = (session.activeProfile.name ?? '').trim().split(/\s+/)[0] || 'Criador'
-  return <ArquipelagoHost publico="kids" perfil={{ id: session.id, primeiroNome }} voltarPara="/" />
+  return (
+    <>
+      {session.kids ? (
+        <>
+          <meta name="sz-session" content={session.kids.sessionId} />
+          <SessionBoundary kind="student" />
+        </>
+      ) : null}
+      <ArquipelagoHost publico="kids" perfil={{ id: session.id, primeiroNome }} voltarPara="/" />
+    </>
+  )
 }

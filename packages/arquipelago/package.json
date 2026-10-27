@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "test:tempo-browser": "node playground/verificar-tempo-browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10",
@@ -28,6 +29,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",
+    "fake-indexeddb": "6.2.5",
+    "playwright-core": "1.60.0",
     "typescript": "^5.7.0"
   }
 }

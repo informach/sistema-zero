@@ -148,6 +148,8 @@
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "@types/three": "^0.184.1",
+        "fake-indexeddb": "6.2.5",
+        "playwright-core": "1.60.0",
         "typescript": "^5.7.0",
       },
     },

@@ -47,9 +47,15 @@ export function rotasDoJogo(deps: { servico: ServicoDoJogo; tokenInterno?: strin
       }
       return conflito
     })
-    .post('/tempo', ({ headers, body }) =>
-      servico.registrarTempo(lerJogador(headers), validar(RegistrarTempoSchema, body).segundos),
-    )
+    .post('/tempo', ({ headers, body }) => {
+      const pedido = validar(RegistrarTempoSchema, body)
+      return servico.registrarTempo(
+        lerJogador(headers),
+        pedido.segundos,
+        pedido.eventoId,
+        pedido.dia,
+      )
+    })
     .get('/familia/limite', async ({ headers }) => ({
       limiteDiarioMinutos: await servico.lerLimiteDaFamilia(lerResponsavel(headers)),
     }))

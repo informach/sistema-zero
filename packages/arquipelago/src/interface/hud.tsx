@@ -157,7 +157,8 @@ export function Hud() {
   const { loja } = useJogo()
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (e.code === 'Escape') loja.getState().abrirMenu(!loja.getState().menuAberto)
+      if (e.code === 'Escape' && !loja.getState().tempoPausado)
+        loja.getState().abrirMenu(!loja.getState().menuAberto)
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)

@@ -7,9 +7,14 @@ afterEach(() => {
 })
 
 function servir(rotas: Record<string, { status: number; body: unknown }>) {
-  const pedidos: { url: string; method: string; body?: string }[] = []
+  const pedidos: { url: string; method: string; body?: string; signal?: AbortSignal | null }[] = []
   globalThis.fetch = (async (url: string, init?: RequestInit) => {
-    pedidos.push({ url, method: init?.method ?? 'GET', body: init?.body as string | undefined })
+    pedidos.push({
+      url,
+      method: init?.method ?? 'GET',
+      body: init?.body as string | undefined,
+      signal: init?.signal,
+    })
     const r = rotas[`${init?.method ?? 'GET'} ${url}`] ?? { status: 404, body: null }
     return Response.json(r.body, { status: r.status })
   }) as unknown as typeof fetch
@@ -78,12 +83,16 @@ describe('a porta da plataforma para o jogo', () => {
       'POST /api/arquipelago/tempo': { status: 200, body: { acabou: false } },
     })
     const p = plataforma()
-    expect(await p.servico.buscar('/tempo', { metodo: 'POST', corpo: { segundos: 60 } })).toEqual({
+    const sinal = new AbortController().signal
+    expect(
+      await p.servico.buscar('/tempo', { metodo: 'POST', corpo: { segundos: 60 }, sinal }),
+    ).toEqual({
       status: 200,
       corpo: { acabou: false },
     })
     expect((await p.servico.buscar('/familia/limite', { metodo: 'PUT' })).status).toBe(404)
     expect(pedidos.map((x) => x.url)).toEqual(['/api/arquipelago/tempo'])
+    expect(pedidos[0]?.signal).toBe(sinal)
     expect(await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'x' })).toMatchObject({
       situacao: 'indisponivel',
     })

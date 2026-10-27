@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -134,7 +135,13 @@ describe('acesso', () => {
       limiteDiarioMinutos: null,
     })
     expect(
-      (await chamar('POST', '/arquipelago/tempo', headers, { segundos: 60 })).json,
+      (
+        await chamar('POST', '/arquipelago/tempo', headers, {
+          segundos: 60,
+          eventoId: randomUUID(),
+          dia: '2026-10-27',
+        })
+      ).json,
     ).toMatchObject({
       limiteDiarioMinutos: null,
       acabou: false,
@@ -244,21 +251,73 @@ describe('salvamento', () => {
     })
     expect(r.status).toBe(403)
     expect(r.json).toMatchObject({ error: { code: 'SOMENTE_LEITURA' } })
-    const t = await chamar('POST', '/arquipelago/tempo', suporte, { segundos: 60 })
+    const t = await chamar('POST', '/arquipelago/tempo', suporte, {
+      segundos: 60,
+      eventoId: randomUUID(),
+      dia: '2026-10-27',
+    })
     expect(t.json).toMatchObject({ usadoHojeSegundos: 0 })
   })
 })
 
 describe('tempo livre e limite da família', () => {
+  test('repetir um evento é seguro, mas mudar seus segundos é recusado', async () => {
+    const eventoId = randomUUID()
+    const pedido = { eventoId, segundos: 60, dia: '2026-10-27' }
+    expect((await chamar('POST', '/arquipelago/tempo', crianca(), pedido)).json).toMatchObject({
+      usadoHojeSegundos: 60,
+    })
+    expect((await chamar('POST', '/arquipelago/tempo', crianca(), pedido)).json).toMatchObject({
+      usadoHojeSegundos: 60,
+    })
+    expect(
+      (await chamar('POST', '/arquipelago/tempo', crianca(), { ...pedido, segundos: 61 })).status,
+    ).toBe(409)
+  })
+
+  test('evento recuperado no dia seguinte conta no dia em que foi jogado', async () => {
+    const pedido = { eventoId: randomUUID(), segundos: 60, dia: '2026-10-26' }
+    const resposta = await chamar('POST', '/arquipelago/tempo', crianca(), pedido)
+    expect(resposta.json).toMatchObject({ usadoHojeSegundos: 0, acabou: false })
+    expect(await repo.lerTempo(PERFIL, '2026-10-26')).toBe(60)
+    expect(
+      (await chamar('POST', '/arquipelago/tempo', crianca(), { ...pedido, dia: '2026-10-27' }))
+        .status,
+    ).toBe(409)
+    expect(
+      (
+        await chamar('POST', '/arquipelago/tempo', crianca(), {
+          ...pedido,
+          eventoId: randomUUID(),
+          dia: '2026-10-28',
+        })
+      ).status,
+    ).toBe(400)
+  })
+
   test('soma no dia e avisa quando acabou', async () => {
     repo.limites.set(CONTA, 10)
     for (let i = 0; i < 9; i++)
-      await chamar('POST', '/arquipelago/tempo', crianca(), { segundos: 60 })
-    const r = await chamar('POST', '/arquipelago/tempo', crianca(), { segundos: 60 })
+      await chamar('POST', '/arquipelago/tempo', crianca(), {
+        segundos: 60,
+        eventoId: randomUUID(),
+        dia: '2026-10-27',
+      })
+    const r = await chamar('POST', '/arquipelago/tempo', crianca(), {
+      segundos: 60,
+      eventoId: randomUUID(),
+      dia: '2026-10-27',
+    })
     expect(r.json).toEqual({ usadoHojeSegundos: 600, limiteDiarioMinutos: 10, acabou: true })
-    expect((await chamar('POST', '/arquipelago/tempo', crianca(), { segundos: 500 })).status).toBe(
-      400,
-    )
+    expect(
+      (
+        await chamar('POST', '/arquipelago/tempo', crianca(), {
+          segundos: 500,
+          eventoId: randomUUID(),
+          dia: '2026-10-27',
+        })
+      ).status,
+    ).toBe(400)
   })
 
   test('responsável lê o padrão e muda (normalizado em passos de 5)', async () => {

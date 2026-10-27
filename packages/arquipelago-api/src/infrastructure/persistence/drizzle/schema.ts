@@ -49,6 +49,22 @@ export const tempoDiario = arquipelagoSchema.table(
   ],
 )
 
+/** Eventos aceitos, para que uma resposta perdida possa ser reenviada sem somar duas vezes. */
+export const eventosTempo = arquipelagoSchema.table(
+  'eventos_tempo',
+  {
+    jogadorId: uuid().notNull(),
+    eventoId: uuid().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    segundos: integer().notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.eventoId] }),
+    check('eventos_tempo_segundos_check', sql`${t.segundos} between 1 and 120`),
+  ],
+)
+
 /** O limite diário que o responsável escolheu para a família (sem linha = 30 minutos). */
 export const limitesDaFamilia = arquipelagoSchema.table(
   'limites_da_familia',
@@ -60,4 +76,4 @@ export const limitesDaFamilia = arquipelagoSchema.table(
   (t) => [check('limites_da_familia_minutos_check', sql`${t.minutos} between 10 and 240`)],
 )
 
-export const schema = { salvamentos, tempoDiario, limitesDaFamilia }
+export const schema = { salvamentos, tempoDiario, eventosTempo, limitesDaFamilia }

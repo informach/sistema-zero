@@ -61,6 +61,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
+  const eventos = new Map<string, { segundos: number; dia: string }>()
 
   if (o.comecarEm) {
     const inicial = criarSalvamentoInicial(
@@ -142,15 +143,25 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/tempo' && metodo === 'POST') {
           const corpo = RegistrarTempoSchema.safeParse(opcoes?.corpo)
           if (!corpo.success) return { status: 400, corpo: { code: 'VALIDATION_ERROR' } }
-          const dia = diaDeSaoPaulo(agora())
-          const total = (usado.get(dia) ?? 0) + corpo.data.segundos
+          if (corpo.data.dia > diaDeSaoPaulo(agora()))
+            return { status: 400, corpo: { code: 'VALIDATION_ERROR' } }
+          const anterior = eventos.get(corpo.data.eventoId)
+          if (
+            anterior !== undefined &&
+            (anterior.segundos !== corpo.data.segundos || anterior.dia !== corpo.data.dia)
+          )
+            return { status: 409, corpo: { code: 'TEMPO_CONFLITANTE' } }
+          const dia = corpo.data.dia
+          const total = (usado.get(dia) ?? 0) + (anterior === undefined ? corpo.data.segundos : 0)
+          eventos.set(corpo.data.eventoId, { segundos: corpo.data.segundos, dia })
           usado.set(dia, total)
+          const hoje = usado.get(diaDeSaoPaulo(agora())) ?? 0
           return {
             status: 200,
             corpo: {
-              usadoHojeSegundos: total,
+              usadoHojeSegundos: hoje,
               limiteDiarioMinutos: limite,
-              acabou: limite !== null && total >= limite * 60,
+              acabou: limite !== null && hoje >= limite * 60,
             },
           }
         }

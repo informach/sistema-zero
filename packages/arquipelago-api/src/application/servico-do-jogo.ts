@@ -12,6 +12,7 @@ import {
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { Jogador, Responsavel } from '../domain/jogador'
 import type { RepositorioDoJogo, SalvamentoNoBanco } from '../domain/repositorio.port'
+import { DataTempoInvalidaError } from '../domain/tempo-erros'
 import {
   AcessoBloqueadoError,
   SalvamentoGrandeDemaisError,
@@ -65,15 +66,22 @@ export class ServicoDoJogo {
     return { ok: false, atual: r.atual ? paraGuardado(r.atual) : NADA_GUARDADO }
   }
 
-  async registrarTempo(jogador: Jogador, segundos: number): Promise<TempoRegistrado> {
+  async registrarTempo(
+    jogador: Jogador,
+    segundos: number,
+    eventoId: string,
+    diaDoEvento: string,
+  ): Promise<TempoRegistrado> {
     this.exigirLiberado(jogador)
     const limite = await this.limiteDe(jogador)
     const agora = this.agora()
     const dia = diaDeSaoPaulo(agora)
+    if (diaDoEvento > dia) throw new DataTempoInvalidaError()
     // Suporte olhando não gasta o tempo da criança.
-    const usado = jogador.somenteLeitura
+    let usado = jogador.somenteLeitura
       ? await this.repo.lerTempo(jogador.id, dia)
-      : await this.repo.somarTempo(jogador.id, dia, segundos, agora)
+      : await this.repo.somarTempo(jogador.id, diaDoEvento, segundos, agora, eventoId)
+    if (diaDoEvento !== dia) usado = await this.repo.lerTempo(jogador.id, dia)
     return {
       usadoHojeSegundos: usado,
       limiteDiarioMinutos: limite,

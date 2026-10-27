@@ -9,6 +9,7 @@ import {
   SomenteLeituraError,
 } from '../../application/erros'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
+import { DataTempoInvalidaError, EventoTempoConflitanteError } from '../../domain/tempo-erros'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 
@@ -28,6 +29,14 @@ export interface DependenciasHttp {
 export function createServer(deps: DependenciasHttp) {
   return new Elysia({ serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 96 * 1024 } })
     .onError(({ error, set, code }) => {
+      if (error instanceof DataTempoInvalidaError) {
+        set.status = 400
+        return envelope('VALIDATION_ERROR', 'Data do registro de tempo inválida.')
+      }
+      if (error instanceof EventoTempoConflitanteError) {
+        set.status = 409
+        return envelope('TEMPO_CONFLITANTE', 'Este registro de tempo não corresponde ao anterior.')
+      }
       if (error instanceof AcessoBloqueadoError) {
         set.status = 403
         return { ...envelope('ACESSO_BLOQUEADO', error.message), motivo: error.motivo }
