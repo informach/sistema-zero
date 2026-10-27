@@ -71,9 +71,9 @@ até lá ficam na galeria de modelos do playground.
 
 | Ilha | Estado | Peças |
 |---|---|---|
-| Bosque dos Bichos | ⬜ | árvores grandes, casa na árvore, cabana, cipós, toras, flores, percurso nas copas |
-| Vila Doce | ⬜ | padaria, sorveteria, banca da feira (6 barracas), casinhas, fonte, telhados do percurso |
-| Recife Coral | ⬜ | corais, algas, caverna submarina, barco entre ilhas, casa da Maré, mapas |
+| Bosque dos Bichos | 🟡 | `arte/ilhas/bosque.py`: percurso nas copas (4 deques, pontes de corda, escada em espiral, escorregador), casa na árvore, cabana da Capi, cercadinho, lago, 3 cipós soltos, toras, flores |
+| Vila Doce | 🟡 | `arte/ilhas/vila_doce.py`: padaria, sorveteria com terraço, feira de 6 barracas, 3 casinhas de telhado plano (o percurso), fonte de chocolate |
+| Recife Coral | 🟡 | `arte/ilhas/recife.py`: corais de 4 tipos, 10 algas que balançam, caverna submarina, cais e `barco.glb` (balançar), casa da Maré, mapas |
 | Pico Gelado | ⬜ | montanha, iglu, pinheiros nevados, paredes de gelo, trenó, palco do Floco |
 | Vale dos Dinos | ⬜ | vulcão, fósseis, ninhos, samambaias gigantes, observatório da Jade |
 | Ilha das Nuvens | ⬜ | ilhas flutuantes, tear do arco-íris, balão, ninho da Iriê |
