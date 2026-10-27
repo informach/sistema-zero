@@ -110,7 +110,7 @@ test('a 16-unit cube has 16 by 16 texels per face and a 1 px 3D click paints exa
   expect(image.layers[0]!.pixels.filter((value) => value !== 0)).toHaveLength(1)
   const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await stageSettings.click()
-  await page.getByRole('button', { name: 'Quadradinhos', exact: true }).click()
+  await page.getByRole('button', { name: 'Mostrar quadradinhos', exact: true }).click()
   await stageSettings.click()
   await page.screenshot({ path: info.outputPath('cube-16-one-pixel.png') })
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()

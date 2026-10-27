@@ -289,7 +289,13 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await expect(
     page.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece, exact: true }),
   ).toHaveAttribute('aria-pressed', 'false')
-  await page.locator('summary').filter({ hasText: 'Criar outra cor' }).click()
+  // O "+" da barra de cores: o popover fecha com um toque fora, então o teste o reabre.
+  const moreColors = page.locator('summary').filter({ hasText: 'Criar outra cor' })
+  const openMoreColors = async () => {
+    if (!(await page.getByLabel('Cor hexadecimal', { exact: true }).isVisible()))
+      await moreColors.click()
+  }
+  await moreColors.click()
   await page.getByLabel('Cor hexadecimal', { exact: true }).fill('#f0352b')
   await page.getByLabel('Cor hexadecimal', { exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Guardar cor favorita', exact: true }).click()
@@ -310,7 +316,7 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await stageSettings.click()
-  await page.getByRole('button', { name: 'Quadradinhos', exact: true }).click()
+  await page.getByRole('button', { name: 'Mostrar quadradinhos', exact: true }).click()
   await stageSettings.click()
   await page.getByRole('button', { name: 'Espelho de pintura', exact: true }).click()
   const canvas = page.locator('canvas').first()
@@ -332,10 +338,12 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await page.mouse.down()
   await page.mouse.move(x + 35, y + 20, { steps: 6 })
   await page.mouse.up()
+  await openMoreColors()
   await expect(
     page.getByRole('button', { name: 'Usadas agora: #f0352b', exact: true }),
   ).toBeVisible()
-  const palette = page.locator('.mld-paint-swatches')
+  // A fila da barra de cores: amostras lado a lado, sem se encostar e dentro da faixa.
+  const palette = page.locator('.mld-color-row')
   const paletteBounds = (await palette.boundingBox())!
   const swatches = await palette.locator('button').all()
   let previous: { x: number; y: number; width: number; height: number } | null = null
@@ -369,6 +377,7 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
     ).toBeLessThanOrEqual(1)
+    await openMoreColors()
     await page.getByLabel('Cor hexadecimal', { exact: true }).scrollIntoViewIfNeeded()
     await expect(page.getByLabel('Cor hexadecimal', { exact: true })).toBeVisible()
     await page.screenshot({ path: info.outputPath(`pintar-${width}.png`) })
