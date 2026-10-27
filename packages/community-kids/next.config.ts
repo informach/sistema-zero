@@ -104,9 +104,9 @@ const strictCsp = buildCsp({ pro: false })
 const proCsp = buildCsp({ pro: true })
 // Arquipélago Vagalume: a física (Rapier) é WebAssembly. A página do jogo tem a SUA regra, que
 // garante o `'wasm-unsafe-eval'` mesmo se a política do resto do app um dia fechar o WASM.
-const arquipelagoCsp = strictCsp.includes("'wasm-unsafe-eval'")
-  ? strictCsp
-  : strictCsp.replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval'")
+// O Estúdio Pro pode abrir sobre o jogo: precisa da mesma CSP e do mesmo isolamento
+// da rota Pro, sem afrouxar as demais páginas da comunidade.
+const arquipelagoCsp = proCsp
 
 // Headers de segurança comuns a TODAS as rotas — SEM a CSP (aplicada por-rota em
 // `headers()`: estrita em tudo, relaxada só em `/estudio/pro`). COOP fica aqui (vale
@@ -228,7 +228,10 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/arquipelago',
-        headers: [{ key: 'Content-Security-Policy', value: arquipelagoCsp }],
+        headers: [
+          { key: 'Content-Security-Policy', value: arquipelagoCsp },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
       },
       // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP
       // credentialless — escopados AQUI para não vazar p/ as páginas com vídeo.

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import {
   criarPlataformaDoArquipelago,
   lerFerramentasMolda,
+  pertenceAoPerfil,
 } from '../src/components/arquipelago-host'
 
 const fetchOriginal = globalThis.fetch
@@ -32,6 +33,11 @@ const plataforma = () =>
   })
 
 describe('a porta da plataforma para o jogo', () => {
+  test('troca de perfil impede abrir ferramenta no armazenamento anterior', () => {
+    expect(pertenceAoPerfil({ viewerId: 'nova-crianca' }, 'crianca-anterior')).toBe(false)
+    expect(pertenceAoPerfil({ viewerId: 'crianca-anterior' }, 'crianca-anterior')).toBe(true)
+    expect(pertenceAoPerfil(null, 'crianca-anterior')).toBe(false)
+  })
   test('encaminha o pedido da ferramenta ao host e devolve somente o resultado dele', async () => {
     const pedido = { ferramenta: 'pinta' as const, proposito: 'criar personagem' }
     const recebidos: unknown[] = []

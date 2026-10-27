@@ -1,6 +1,7 @@
 'use client'
 
 import type { CreativeToolId } from '@sistemazero/core/journey'
+import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -217,16 +218,15 @@ export function MobileTabbar({
               </button>
             )
           return (
-            <Link
+            <ArquipelagoNavLink
               key={item.href}
               href={item.href}
               aria-label={item.label}
-              prefetch={false}
               aria-current={active ? 'page' : undefined}
               className={classe}
             >
               {conteudo}
-            </Link>
+            </ArquipelagoNavLink>
           )
         })}
       </nav>

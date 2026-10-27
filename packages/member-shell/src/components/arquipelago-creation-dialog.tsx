@@ -1,10 +1,19 @@
 'use client'
 
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import type { EmbeddedCreationControl } from '../lib/embedded-creation-control'
-import { MoldaClient } from './creator/molda-client'
-import { PintaClient } from './creator/pinta-client'
+
+const PintaClient = lazy(() =>
+  import('./creator/pinta-client').then((m) => ({ default: m.PintaClient })),
+)
+const MoldaClient = lazy(() =>
+  import('./creator/molda-client').then((m) => ({ default: m.MoldaClient })),
+)
+const StudioFullClient = lazy(() =>
+  import('./creator/studio-full-client').then((m) => ({ default: m.StudioFullClient })),
+)
 
 /** A criação só é entregue depois da gravação local e da confirmação na conta. */
 export function ArquipelagoCreationDialog({
@@ -14,14 +23,16 @@ export function ArquipelagoCreationDialog({
   studioAvailable,
   narrationEnabled,
   toolAccess,
+  studioConfig,
   onFinish,
 }: {
-  ferramenta: 'pinta' | 'molda'
+  ferramenta: 'pinta' | 'molda' | 'estudio'
   viewerId: string
   audience: 'kids' | 'adult'
   studioAvailable: boolean
   narrationEnabled: boolean
   toolAccess: MoldaToolAccess | null
+  studioConfig: ArquipelagoStudioConfig | null
   onFinish: (id: string | null) => void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -75,7 +86,7 @@ export function ArquipelagoCreationDialog({
       <div className="flex h-full min-h-0 flex-col">
         <header className="flex flex-wrap items-center gap-3 border-b border-border bg-card px-4 py-3">
           <h2 id="arquipelago-pinta-title" className="mr-auto text-lg font-bold">
-            {ferramenta === 'pinta' ? 'Pinta' : 'Molda'}
+            {ferramenta === 'pinta' ? 'Pinta' : ferramenta === 'molda' ? 'Molda' : 'Estúdio'}
           </h2>
           <button
             type="button"
@@ -120,24 +131,39 @@ export function ArquipelagoCreationDialog({
           </div>
         ) : null}
         <div className="min-h-0 flex-1" inert={saving} aria-busy={saving}>
-          {ferramenta === 'pinta' ? (
-            <PintaClient
-              viewerId={viewerId}
-              audience={audience}
-              studioAvailable={studioAvailable}
-              narrationEnabled={narrationEnabled}
-              onCompletionControlChange={registerControl}
-            />
-          ) : (
-            <MoldaClient
-              viewerId={viewerId}
-              audience={audience}
-              studioAvailable={studioAvailable}
-              narrationEnabled={narrationEnabled}
-              toolAccess={toolAccess}
-              onCompletionControlChange={registerControl}
-            />
-          )}
+          <Suspense
+            fallback={
+              <p role="status" className="p-4">
+                Carregando a ferramenta…
+              </p>
+            }
+          >
+            {ferramenta === 'pinta' ? (
+              <PintaClient
+                viewerId={viewerId}
+                audience={audience}
+                studioAvailable={studioAvailable}
+                narrationEnabled={narrationEnabled}
+                onCompletionControlChange={registerControl}
+              />
+            ) : ferramenta === 'molda' ? (
+              <MoldaClient
+                viewerId={viewerId}
+                audience={audience}
+                studioAvailable={studioAvailable}
+                narrationEnabled={narrationEnabled}
+                toolAccess={toolAccess}
+                onCompletionControlChange={registerControl}
+              />
+            ) : studioConfig ? (
+              <StudioFullClient
+                {...studioConfig}
+                audience={audience}
+                embeddedInArquipelago
+                onCompletionControlChange={registerControl}
+              />
+            ) : null}
+          </Suspense>
         </div>
       </div>
     </dialog>

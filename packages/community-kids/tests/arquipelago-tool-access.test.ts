@@ -10,6 +10,7 @@ mock.module('@/server/session', () => ({
     perfil
       ? {
           activeProfile: { id: 'crianca' },
+          id: 'crianca',
           kids: { kind: 'student' },
           ...(suporte ? { act: { sub: 'equipe', mode: 'write' } } : {}),
         }
@@ -20,6 +21,15 @@ mock.module('@/server/creator-journey', () => ({
 }))
 mock.module('@/lib/molda-tool-access', () => ({
   moldaToolAccessFor: () => ({ allow: ['basico'] }),
+}))
+mock.module('@/server/members', () => ({
+  getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: [] } }),
+}))
+mock.module('@/server/studio-gate', () => ({
+  studioGate: () => ({ kind: 'open', tier: { freeStudio: true } }),
+}))
+mock.module('@/server/studio-services', () => ({
+  prepareStudioServices: () => async () => ({ zappyEnabled: false }),
 }))
 const { GET } = await import('../src/app/api/arquipelago/ferramentas/[ferramenta]/route')
 const requisitar = (ferramenta: string) =>
@@ -36,19 +46,30 @@ test('respeita conquista, produto, paleta e indisponibilidade', async () => {
     { id: 'molda', state: 'career-locked' },
     { id: 'estudio-completo', state: 'available', studioCurriculum: 'empty' },
   ]
-  expect(await (await requisitar('pinta')).json()).toEqual({ situacao: 'disponivel' })
+  expect(await (await requisitar('pinta')).json()).toEqual({
+    situacao: 'disponivel',
+    viewerId: 'crianca',
+    studioAvailable: false,
+  })
   expect(await (await requisitar('molda')).json()).toEqual({ situacao: 'bloqueada' })
   tools[1]!.state = 'available'
   expect((await requisitar('molda')).status).toBe(503)
   journey = {}
   expect(await (await requisitar('molda')).json()).toEqual({
     situacao: 'disponivel',
+    viewerId: 'crianca',
     toolAccess: { allow: ['basico'] },
+    studioAvailable: false,
   })
   journey = null
   expect(await (await requisitar('estudio')).json()).toEqual({ situacao: 'bloqueada' })
   tools = [{ id: 'estudio-completo', state: 'available', studioCurriculum: 'ready' }]
-  expect(await (await requisitar('estudio')).json()).toEqual({ situacao: 'disponivel' })
+  journey = {}
+  expect(await (await requisitar('estudio')).json()).toMatchObject({
+    situacao: 'disponivel',
+    studioConfig: { viewerId: 'crianca', tier: { freeStudio: true } },
+  })
+  journey = null
   tools = [{ id: 'pinta', state: 'unavailable' }]
   expect((await requisitar('pinta')).status).toBe(503)
   suporte = true

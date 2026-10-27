@@ -1,5 +1,6 @@
 'use client'
 
+import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Ellipsis, Mail, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
 import Link from 'next/link'
@@ -126,15 +127,14 @@ function sidebarItemClass(active: boolean) {
 function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon
   return (
-    <Link
+    <ArquipelagoNavLink
       href={item.href}
-      prefetch={false}
       aria-current={active ? 'page' : undefined}
       className={sidebarItemClass(active)}
     >
       <Icon className="size-6 shrink-0" aria-hidden />
       {item.label}
-    </Link>
+    </ArquipelagoNavLink>
   )
 }
 
@@ -354,9 +354,8 @@ export function CommunityTabs({
               const active = isNavItemActive(link, pathname)
               return (
                 <li key={link.href}>
-                  <Link
+                  <ArquipelagoNavLink
                     href={link.href}
-                    prefetch={false}
                     aria-current={active ? 'page' : undefined}
                     // O link da página atual não troca a rota: fecha o painel no clique.
                     onClick={() => setOpen(false)}
@@ -365,7 +364,7 @@ export function CommunityTabs({
                     <Icon className="size-6 shrink-0" aria-hidden />
                     {link.label}
                     {link.href === '/recados' ? <UnreadBadge count={unread} /> : null}
-                  </Link>
+                  </ArquipelagoNavLink>
                 </li>
               )
             })}

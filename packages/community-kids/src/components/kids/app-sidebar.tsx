@@ -1,6 +1,7 @@
 'use client'
 
 import type { CreativeToolId } from '@sistemazero/core/journey'
+import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -35,9 +36,8 @@ const ITEM_BASE =
 function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon
   return (
-    <Link
+    <ArquipelagoNavLink
       href={item.href}
-      prefetch={false}
       aria-current={active ? 'page' : undefined}
       className={cn(ITEM_BASE, active ? 'kids-marca' : 'hover:bg-(--menu-vidro) hover:text-white')}
     >
@@ -47,7 +47,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
         aria-hidden
       />
       {item.label}
-    </Link>
+    </ArquipelagoNavLink>
   )
 }
 

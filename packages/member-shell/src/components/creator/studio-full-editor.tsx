@@ -4,6 +4,7 @@ import { useFreeStudioRuntime } from '@sistemazero/member-shell/components/studi
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import type {
   EditableStudioProject as Project,
+  StudioHandle,
   StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
@@ -12,7 +13,8 @@ import type {
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { useStudioRuntimeAuthority } from '@sistemazero/studio/runtime-authority'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
 import {
   assertPensaJavaScriptProject,
   PensaProjectLanguageRefused,
@@ -48,6 +50,8 @@ export function StudioFullEditor({
   pintaLibrary,
   moldaLibrary,
   teamLibrary,
+  onCompletionControlChange,
+  onOpenEmbeddedPro,
 }: {
   mod: StudioModule
   projectId: string
@@ -68,9 +72,43 @@ export function StudioFullEditor({
    * confirma a equipe e a arte entregue. O Estúdio não o latcha, então o botão aparece sozinho.
    */
   teamLibrary?: StudioTeamLibraryAdapter | undefined
+  onCompletionControlChange?: (
+    control: { flush(): Promise<{ id: string; snapshot: unknown }> } | null,
+  ) => void
+  onOpenEmbeddedPro?: (project: Project) => void
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+  const editorRef = useRef<StudioHandle>(null)
+  useEffect(() => {
+    if (!onCompletionControlChange || state.status !== 'ready' || state.project.kind === 'pro')
+      return
+    onCompletionControlChange({
+      async flush() {
+        const editor = editorRef.current
+        if (!editor) throw new Error('O editor ainda está abrindo')
+        await editor.save()
+        if (
+          editorRef.current !== editor ||
+          editor.isDirty() ||
+          editor.getProject()?.id !== projectId
+        )
+          throw new Error('O projeto mudou durante o salvamento')
+        const snapshot = await mod.loadProjectSnapshotForCloud(projectId, {
+          namespace: creatorStorageNamespace(viewerId, audience),
+        })
+        if (
+          !snapshot ||
+          editorRef.current !== editor ||
+          editor.isDirty() ||
+          editor.getProject()?.id !== projectId
+        )
+          throw new Error('O projeto salvo não pôde ser confirmado')
+        return { id: projectId, snapshot }
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [audience, mod, onCompletionControlChange, projectId, state, viewerId])
   const runtime = useFreeStudioRuntime({
     project: state.status === 'ready' ? state.project : null,
     viewerId,
@@ -125,10 +163,14 @@ export function StudioFullEditor({
 
   const handlePromoteToPro = useCallback(
     (project: Project) => {
+      if (onOpenEmbeddedPro) {
+        onOpenEmbeddedPro(project)
+        return
+      }
       const query = taskSession ? `?missao=${encodeURIComponent(taskSession.mission.id)}` : ''
       window.location.assign(`/estudio/pro/${encodeURIComponent(project.id)}${query}`)
     },
-    [taskSession],
+    [onOpenEmbeddedPro, taskSession],
   )
 
   useEffect(() => {
@@ -220,6 +262,7 @@ export function StudioFullEditor({
       <div className="min-h-0 flex-1" hidden={pythonUnavailable} inert={pythonUnavailable}>
         {mountEditor && (
           <mod.StudioEditor
+            ref={editorRef}
             initialProject={state.project}
             persistence={adapter}
             onProjectOpeningSettled={state.releaseOpening}

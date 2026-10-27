@@ -508,6 +508,7 @@ function application(
     initiallyEmpty?: boolean
     concurrentActive?: boolean
     pending?: boolean
+    history?: boolean
   } = {},
 ) {
   const old = '44444444-4444-4444-8444-444444444444'
@@ -559,7 +560,10 @@ function application(
         return Response.json({
           data: {
             deployments: {
-              edges: options.pending ? [{ node: { id: old, status: 'BUILDING' } }] : [],
+              edges:
+                options.pending || (options.history && !variables.input?.status)
+                  ? [{ node: { id: old, status: options.pending ? 'BUILDING' : 'FAILED' } }]
+                  : [],
               pageInfo: { hasNextPage: false },
             },
           },
@@ -601,6 +605,13 @@ describe('apps reuse the real canonical deployment ports, without an SSH backend
     const id = await fixture.ports.deploy('arquipelago-api')
     await fixture.ports.waitRetired('arquipelago-api', id)
     expect(fixture.mutations()).toBe(1)
+  })
+  test('previous failed game deployment blocks automatic first-deploy retry', async () => {
+    const fixture = application({ service: 'arquipelago-api', initiallyEmpty: true, history: true })
+    await expect(
+      fixture.ports.preflightApplications(['arquipelago-api'], Infinity, ['arquipelago-api']),
+    ).rejects.toThrow('histórico')
+    expect(fixture.mutations()).toBe(0)
   })
   test('first recorder deployment uses its exact identity, then proves unique healthy readiness', async () => {
     const fixture = application({ service: 'live-recorder', initiallyEmpty: true })

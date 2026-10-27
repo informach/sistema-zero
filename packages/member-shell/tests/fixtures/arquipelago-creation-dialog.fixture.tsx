@@ -9,6 +9,7 @@ let result: string | null = 'desenho-1'
 let shouldFail = false
 let saves = 0
 let moldaAccess: unknown
+let studioViewer: unknown
 mock.module('../../src/components/creator/pinta-client', () => ({
   PintaClient: ({
     onCompletionControlChange,
@@ -49,6 +50,27 @@ mock.module('../../src/components/creator/molda-client', () => ({
     return <div>Editor Molda</div>
   },
 }))
+mock.module('../../src/components/creator/studio-full-client', () => ({
+  StudioFullClient: ({
+    onCompletionControlChange,
+    viewerId,
+  }: {
+    onCompletionControlChange: (c: unknown) => void
+    viewerId: unknown
+  }) => {
+    studioViewer = viewerId
+    useEffect(() => {
+      onCompletionControlChange({
+        async concluir() {
+          saves++
+          return result
+        },
+      })
+      return () => onCompletionControlChange(null)
+    }, [onCompletionControlChange])
+    return <div>Editor Estúdio</div>
+  },
+}))
 const { ArquipelagoCreationDialog } = await import(
   '../../src/components/arquipelago-creation-dialog'
 )
@@ -61,7 +83,7 @@ afterEach(async () => {
   saves = 0
 })
 
-async function renderDialog(ferramenta: 'pinta' | 'molda' = 'pinta') {
+async function renderDialog(ferramenta: 'pinta' | 'molda' | 'estudio' = 'pinta') {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
@@ -75,6 +97,7 @@ async function renderDialog(ferramenta: 'pinta' | 'molda' = 'pinta') {
         studioAvailable={false}
         narrationEnabled={false}
         toolAccess={ferramenta === 'molda' ? { allow: ['basico'] } : null}
+        studioConfig={ferramenta === 'estudio' ? ({ viewerId: 'p1' } as never) : null}
         onFinish={(id) => finished.push(id)}
       />,
     ),
@@ -127,6 +150,14 @@ test('Molda recebe as ferramentas conquistadas e entrega a criação salva', asy
   const ui = await renderDialog('molda')
   expect(ui.container.textContent).toContain('Editor Molda')
   expect(moldaAccess).toEqual({ allow: ['basico'] })
+  await ui.click('Usar criação')
+  expect(saves).toBe(1)
+  expect(ui.finished).toEqual(['desenho-1'])
+})
+test('Estúdio recebe a identidade autorizada e entrega o projeto salvo', async () => {
+  const ui = await renderDialog('estudio')
+  expect(ui.container.textContent).toContain('Editor Estúdio')
+  expect(studioViewer).toBe('p1')
   await ui.click('Usar criação')
   expect(saves).toBe(1)
   expect(ui.finished).toEqual(['desenho-1'])

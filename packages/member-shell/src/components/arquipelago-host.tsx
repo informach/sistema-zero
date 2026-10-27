@@ -15,6 +15,7 @@ import {
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
 
 const CreationDialog = lazy(() =>
@@ -58,6 +59,12 @@ const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo'])
 
 type Estado = 'carregando' | 'pronto' | 'indisponivel' | 'erro'
 
+export function pertenceAoPerfil(corpo: unknown, viewerId: string): boolean {
+  return (
+    !!corpo && typeof corpo === 'object' && (corpo as { viewerId?: unknown }).viewerId === viewerId
+  )
+}
+
 /** `null` é liberação total explícita; ausência ou resposta malformada não abre a oficina. */
 export function lerFerramentasMolda(
   value: unknown,
@@ -80,6 +87,41 @@ export function lerFerramentasMolda(
   )
     return { ok: false }
   return { ok: true, access: candidate as MoldaToolAccess }
+}
+
+function lerStudioConfig(value: unknown, viewerId: string): ArquipelagoStudioConfig | null {
+  if (!value || typeof value !== 'object') return null
+  const c = value as Record<string, unknown>
+  const tier = c.tier && typeof c.tier === 'object' ? (c.tier as Record<string, unknown>) : null
+  const strings = (x: unknown) => Array.isArray(x) && x.every((item) => typeof item === 'string')
+  if (
+    c.viewerId !== viewerId ||
+    !tier ||
+    tier.freeStudio !== true ||
+    tier.hasPalette !== true ||
+    typeof tier.level !== 'string' ||
+    !strings(tier.allowedExtensions) ||
+    !strings(tier.initialExtensions) ||
+    !strings(tier.allowedModes) ||
+    (tier.allowBlocks !== undefined && !strings(tier.allowBlocks)) ||
+    typeof tier.pro !== 'boolean' ||
+    typeof tier.bridge !== 'boolean' ||
+    typeof tier.canCreateProProject !== 'boolean' ||
+    typeof tier.canPromoteToPro !== 'boolean' ||
+    tier.allowLevelReveal !== false ||
+    ![
+      'showExamples',
+      'showPythonCreation',
+      'pintaOwned',
+      'moldaOwned',
+      'zappyEnabled',
+      'narrationEnabled',
+      'voiceInputEnabled',
+    ].every((key) => typeof c[key] === 'boolean') ||
+    !(c.aiCredits === null || (c.aiCredits && typeof c.aiCredits === 'object'))
+  )
+    return null
+  return c as unknown as ArquipelagoStudioConfig
 }
 
 async function json(url: string, init?: RequestInit): Promise<{ status: number; corpo: unknown }> {
@@ -172,9 +214,10 @@ export function ArquipelagoHost(props: {
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
   const [creation, setCreation] = useState<{
-    ferramenta: 'pinta' | 'molda'
+    ferramenta: 'pinta' | 'molda' | 'estudio'
     studioAvailable: boolean
     toolAccess: MoldaToolAccess | null
+    studioConfig: ArquipelagoStudioConfig | null
   } | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
@@ -185,43 +228,41 @@ export function ArquipelagoHost(props: {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
     const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
-      if (
-        (pedido.ferramenta !== 'pinta' && pedido.ferramenta !== 'molda') ||
-        pedido.molde !== undefined
-      )
-        return { situacao: 'indisponivel', motivo: 'em-breve' }
+      if (pedido.molde !== undefined) return { situacao: 'indisponivel', motivo: 'em-breve' }
       if (abrindo.current || pendente.current)
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
-        const [acessoResult, estudioResult] = await Promise.allSettled([
-          json(`${BASE}/ferramentas/${pedido.ferramenta}`),
-          json(`${BASE}/ferramentas/estudio`),
-        ])
+        const acesso = await json(`${BASE}/ferramentas/${pedido.ferramenta}`)
         if (!vivo) return { situacao: 'cancelado' }
-        if (acessoResult.status !== 'fulfilled')
-          return { situacao: 'indisponivel', motivo: 'em-breve' }
-        const acesso = acessoResult.value
-        const estudio = estudioResult.status === 'fulfilled' ? estudioResult.value : null
         const situacao = (acesso.corpo as { situacao?: string } | null)?.situacao
         if (acesso.status !== 200 || situacao !== 'disponivel')
           return {
             situacao: 'indisponivel',
             motivo: situacao === 'bloqueada' ? 'acesso-necessario' : 'em-breve',
           }
+        if (!pertenceAoPerfil(acesso.corpo, id))
+          return { situacao: 'indisponivel', motivo: 'em-breve' }
         const tools =
           pedido.ferramenta === 'molda'
             ? lerFerramentasMolda((acesso.corpo as { toolAccess?: unknown } | null)?.toolAccess)
             : { ok: true as const, access: null }
         if (!tools.ok) return { situacao: 'indisponivel', motivo: 'em-breve' }
+        const studioConfig =
+          pedido.ferramenta === 'estudio'
+            ? lerStudioConfig((acesso.corpo as { studioConfig?: unknown } | null)?.studioConfig, id)
+            : null
+        if (pedido.ferramenta === 'estudio' && !studioConfig)
+          return { situacao: 'indisponivel', motivo: 'em-breve' }
         return await new Promise<ResultadoDeFerramenta>((resolve) => {
           pendente.current = resolve
           setCreation({
-            ferramenta: pedido.ferramenta as 'pinta' | 'molda',
+            ferramenta: pedido.ferramenta,
             toolAccess: tools.access,
+            studioConfig,
             studioAvailable:
-              estudio?.status === 200 &&
-              (estudio.corpo as { situacao?: string } | null)?.situacao === 'disponivel',
+              pedido.ferramenta === 'estudio' ||
+              (acesso.corpo as { studioAvailable?: unknown } | null)?.studioAvailable === true,
           })
         })
       } catch {
@@ -300,6 +341,7 @@ export function ArquipelagoHost(props: {
               studioAvailable={creation.studioAvailable}
               narrationEnabled={props.narrationEnabled ?? false}
               toolAccess={creation.toolAccess}
+              studioConfig={creation.studioConfig}
               onFinish={(criacaoId) => {
                 setCreation(null)
                 const resolve = pendente.current

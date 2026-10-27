@@ -7,6 +7,7 @@ import '@sistemazero/studio/styles.css'
 import type {
   EditableStudioProject as Project,
   StudioEditorProps,
+  StudioHandle,
   StudioMoldaLibraryAdapter,
   StudioPersistenceAdapter,
   StudioPintaLibraryAdapter,
@@ -17,7 +18,7 @@ import type {
 } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   assertPensaJavaScriptProject,
   PensaProjectLanguageRefused,
@@ -58,6 +59,9 @@ interface Props {
   proRuntime?: StudioEditorProps['proRuntime']
   /** Kids Complete Studio. Contextual lesson/live hosts supply their own authority. */
   freeRuntime?: boolean
+  onCompletionControlChange?: (
+    control: { flush(): Promise<{ id: string; snapshot: unknown }> } | null,
+  ) => void
 }
 
 type Loaded =
@@ -123,6 +127,7 @@ function StudioProEditorSession({
   runtimeEnvironment,
   proRuntime,
   freeRuntime = false,
+  onCompletionControlChange,
 }: Props) {
   const prepareDependencies = useMemo(
     () =>
@@ -133,6 +138,35 @@ function StudioProEditorSession({
   )
   const [mod, setMod] = useState<StudioProModule | null>(null)
   const [state, setState] = useState<Loaded>({ kind: 'loading' })
+  const editorRef = useRef<StudioHandle>(null)
+  useEffect(() => {
+    if (!onCompletionControlChange || !mod || state.kind !== 'ready') return
+    onCompletionControlChange({
+      async flush() {
+        const editor = editorRef.current
+        if (!editor) throw new Error('O editor ainda está abrindo')
+        await editor.save()
+        if (
+          editorRef.current !== editor ||
+          editor.isDirty() ||
+          editor.getProject()?.id !== projectId
+        )
+          throw new Error('O projeto mudou durante o salvamento')
+        const snapshot = await mod.loadProjectSnapshotForCloud(projectId, {
+          namespace: storageNamespace,
+        })
+        if (
+          !snapshot ||
+          editorRef.current !== editor ||
+          editor.isDirty() ||
+          editor.getProject()?.id !== projectId
+        )
+          throw new Error('O projeto salvo não pôde ser confirmado')
+        return { id: projectId, snapshot }
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [mod, onCompletionControlChange, projectId, state, storageNamespace])
   const [loadAttempt, setLoadAttempt] = useState(0)
   const free = useFreeStudioRuntime({
     project: state.kind === 'ready' ? state.project : null,
@@ -289,6 +323,7 @@ function StudioProEditorSession({
       )}
       <div className="min-h-0 flex-1" hidden={pythonUnavailable} inert={pythonUnavailable}>
         <StudioEditor
+          ref={editorRef}
           initialProject={state.project}
           persistence={state.opening.persistence}
           onProjectOpeningSettled={state.opening.release}
