@@ -47,4 +47,18 @@ describe('o painel ao lado do 3D', () => {
     // colunas espremidas. As bandejas medem o contêiner.
     expect(source('src/components/cosmetics/room/room-builder-trays.tsx')).not.toMatch(/\bsm:/)
   })
+
+  test('ao lado, o quarto ocupa a largura e a altura da janela, como o avatar', () => {
+    // 27/10/2026, pedido dela. Antes a coluna do quarto era 3:2 com teto pela altura da janela, e
+    // a página inteira rolava; hoje o editor tem a altura da janela (a partir do `md`) e a moldura
+    // troca o 3:2 pela altura que sobra. A câmera encaixa o quarto em qualquer formato.
+    const tela = source('src/components/cosmetics/room/room-builder-view.tsx')
+    expect(tela).toContain('md:@min-[45rem]/quarto:h-[max(30rem,calc(100dvh-2rem))]')
+    expect(tela).toContain('@min-[45rem]/quarto:grid-cols-[minmax(0,1fr)_')
+    expect(tela).toContain("'@min-[45rem]/quarto:aspect-auto @min-[45rem]/quarto:h-full'")
+    expect(tela).not.toContain('w-fit')
+    expect(source('src/components/cosmetics/room/use-responsive-zoom.ts')).toContain(
+      'Math.min(width / worldW, height / worldH)',
+    )
+  })
 })
