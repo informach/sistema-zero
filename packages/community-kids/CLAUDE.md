@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Peças do quarto feitas no Blender (27/10/2026)
+
+As 39 peças do quarto foram refeitas no Blender e entraram 27 novas (lista em
+`docs/gamificacao.md` §7). O desenho e as regras moram no member-shell (seção de mesmo nome).
+
+- **Os arquivos ficam em DUAS pastas** (`public/room3d/items` e `public/room3d/thumbs` daqui e da
+  comunidade adulta). `tests/room3d-catalog.test.ts` confere GLB e miniatura iguais nas duas, que
+  só as peças animadas têm animação e o lugar de cada peça parada no quarto (lido do GLB).
+- **`scripts/room-blender/`**: os scripts (`bpy` 5.2.3, sem tela), `build_all.py` e o README com o
+  contrato. **`bun run gen:room-thumbs`** gera as miniaturas com o three.js da instalação e grava
+  nas duas comunidades.
+- `tests/room-trophy-models.test.ts` agora confere a RESERVA (`FurniturePrimitive`): o modelo
+  principal é o GLB, conferido pelo teste acima.
+
 ## Peças novas do avatar (26/10/2026)
 
 32 peças modeladas no Blender (Canvas "Provador do avatar"), com a aba nova Enfeite; o contrato do

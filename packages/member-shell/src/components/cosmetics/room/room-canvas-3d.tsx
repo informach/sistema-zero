@@ -20,6 +20,7 @@ import {
 import { Floor } from './floor'
 import { FurniturePiece } from './furniture-piece'
 import { Pet3D } from './pet-3d'
+import { RoomMotionContext } from './room-glb-model'
 import { RoomLights } from './room-lights'
 import { useReducedMotion } from './use-reduced-motion'
 import { useResponsiveZoom } from './use-responsive-zoom'
@@ -345,8 +346,12 @@ export function RoomCanvas3D(props: Room3DProps) {
   const preset = lightingPreset(resolveRoomAppearance(props.state).lightingId)
   // `staticView`: o quarto de OUTRA criança (perfil público) não precisa animar o pet/festa dela
   // no aparelho de quem visita — renderiza 1 quadro sob demanda.
+  // Peça com animação no GLB (aquário, lâmpada de lava) também pede o relógio contínuo.
+  const hasAnimatedItem = props.state.placedItems.some((p) => ROOM_ITEM_INFO[p.itemId]?.animated)
   const animated =
-    !props.staticView && !reducedMotion && (Boolean(props.state.pet) || Boolean(preset.party))
+    !props.staticView &&
+    !reducedMotion &&
+    (Boolean(props.state.pet) || Boolean(preset.party) || hasAnimatedItem)
   return (
     <Canvas
       orthographic
@@ -360,7 +365,9 @@ export function RoomCanvas3D(props: Room3DProps) {
       }}
       className={props.className}
     >
-      <Scene {...props} reducedMotion={reducedMotion} />
+      <RoomMotionContext.Provider value={animated}>
+        <Scene {...props} reducedMotion={reducedMotion} />
+      </RoomMotionContext.Provider>
     </Canvas>
   )
 }

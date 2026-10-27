@@ -2,9 +2,11 @@
 
 import type { MatKey } from './materials'
 import { Ball, Box, Cone, Cyl } from './prims'
+import { RoomGlbModel } from './room-glb-model'
 
 /**
- * Móveis/decoração em low-poly (primitivas THREE em código — sem GLTF). Cada modelo é
+ * Desde 27/10/2026 cada peça é um GLB feito no Blender (`FurnitureModel`, via `RoomGlbModel`);
+ * as primitivas abaixo ficaram como RESERVA, quando o arquivo não baixa. Cada modelo é
  * CENTRADO na origem em X/Z, base em y=0, crescendo +Y; é construído para o footprint BASE
  * (w×h em células) e o `<FurniturePiece>` pai posiciona/gira o grupo. Itens de luz
  * (luminária/vela) brilham por material `emissive` (sem point light — barato). Id
@@ -476,6 +478,13 @@ function FallbackBox({ w, h }: FProps) {
 
 /** Modelo 3D de um item pelo id do catálogo (w×h = footprint base em células). */
 export function FurnitureModel({ itemId, w, h }: { itemId: string; w: number; h: number }) {
+  return (
+    <RoomGlbModel itemId={itemId} fallback={<FurniturePrimitive itemId={itemId} w={w} h={h} />} />
+  )
+}
+
+/** A reserva em primitivas (o quarto de antes de 27/10/2026); peça nova sem reserva vira a caixa. */
+export function FurniturePrimitive({ itemId, w, h }: { itemId: string; w: number; h: number }) {
   switch (itemId) {
     case 'cama':
       return <Cama w={w} h={h} />

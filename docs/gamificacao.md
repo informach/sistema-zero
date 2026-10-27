@@ -292,8 +292,9 @@ entra em `room_inventory` NA MESMA transação (`onConflictDoNothing`). Mapa atu
 `streak-30`→`trofeu-chama`, `quiz-perfect-10`→`trofeu-medalha-mil`,
 `pensa-first-launch`→`trofeu-foguete` (bônus de produto), `studio-master-3`→`trofeu-console`
 (bônus), `plays-100`→`trofeu-estrela-do-mural`. No kids: aba "🏆 Troféus" no room-builder
-(não-ganho = cadeado + dica `TROPHY_HINT`),
-modelos low-poly em `furniture-models.tsx`, e a celebração de aula avisa "troféu novo no quarto"
+(não-ganho = miniatura apagada com cadeado + dica `TROPHY_HINT`),
+modelos em GLB (`public/room3d/items/`, desde 27/10/2026; a reserva em primitivas segue em
+`furniture-models.tsx`), e a celebração de aula avisa "troféu novo no quarto"
 via `TROPHY_BADGE_SLUGS`. Conformance test cobre badge↔item↔apresentação.
 **Estante de Troféus (24/07):** o 1º troféu concede TAMBÉM o móvel `estante-trofeus`
 (`TROPHY_SHELF_ITEM_ID`, furniture 3×2 com 6 nichos, tier trophy SEM badge própria — mesma tx,
@@ -417,9 +418,21 @@ efeito de jogo.
 > `coords.ts` PURO/testado). `three`/`@react-three/fiber`/`drei` já vinham no kids (livro 3D do e-book).
 > O emoji segue só como miniatura na lojinha.
 
-> ⚠️ **Arcades de jogos no quarto foram DESCARTADOS deliberadamente** — não existem no código.
+> **🧱 Peças feitas no Blender (27/10/2026, Kids e adulto):** as 39 peças foram refeitas como GLB
+> (`public/room3d/items/<id>.glb` nas duas comunidades, scripts em
+> `community-kids/scripts/room-blender/`) e entraram 27 novas. `FurnitureModel` carrega o GLB
+> (`room-glb-model.tsx`, `useGLTF` com uma cópia por peça); as primitivas antigas ficaram como
+> reserva (`FurniturePrimitive`) para quando o arquivo não baixa. Bichinhos, aquário e lâmpada de
+> lava têm animação em laço no próprio arquivo: o item ganha `animated` no catálogo do member-shell
+> e o quarto roda o relógio contínuo (desligado com `prefers-reduced-motion` e no perfil público).
+> As bandejas mostram a **miniatura PNG** (`public/room3d/thumbs/<id>.png`, `bun run
+> gen:room-thumbs`), com o emoji (Kids) ou o ícone de linha (adulto) de reserva. Teste:
+> `community-kids/tests/room3d-catalog.test.ts`.
+
+> ⚠️ **Arcades JOGÁVEIS no quarto foram DESCARTADOS deliberadamente** — não existem no código.
 > Os jogos que a criança CRIA vivem no **Mural dos Criadores** (vitrine do Estúdio no hub),
-> jogáveis em `/jogar/<playId>`. O quarto é só decoração.
+> jogáveis em `/jogar/<playId>`. O quarto é só decoração: o `fliperama` de 27/10/2026 é um enfeite
+> (não abre nada), como a TV.
 
 ### Grade & teto
 
@@ -434,11 +447,11 @@ efeito de jogo.
 
 | Categoria | Itens (preço / w×h) |
 |---|---|
-| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2 (surface 2), sofa 80/3×2, estante 70/2×3 (surface 3), bau 90/2×2, mesa-estudo 70/2×1 (surface 1), tv 90/2×1, beliche 120/2×3, pufe 50/1×1 + **estante-trofeus 0/3×2 (surface 6, tier trophy — vem com o 1º troféu)** |
-| **Decoração de chão** (`decor`) | ursinho 70/1×1*, balao 50/1×2, bandeira 50/1×2, globo 50/1×1*, guitarra 80/1×2, bola 0/1×1* (* = `stackable`, vai em superfície; vela e os troféus de chão também) |
-| **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2 |
-| **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3 |
-| **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1 |
+| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2 (surface 2), sofa 80/3×2, estante 70/2×3 (surface 3), bau 90/2×2, mesa-estudo 70/2×1 (surface 1), tv 90/2×1, beliche 120/2×3, pufe 50/1×1 + **estante-trofeus 0/3×2 (surface 6, tier trophy — vem com o 1º troféu)**; 27/10/2026: guarda-roupa 110/2×1, criado-mudo 50/1×1 (surface 1), comoda 80/2×1 (surface 2), poltrona 70/2×2, cadeira-gamer 90/1×1, mesa-gamer 150/3×1, fliperama 140/1×1, teclado 120/2×1, caminha-pet 60/1×1, arranhador 60/1×1 |
+| **Decoração de chão** (`decor`) | ursinho 70/1×1*, balao 50/1×2, bandeira 50/1×2, globo 50/1×1*, guitarra 80/1×2, bola 0/1×1*; 27/10/2026: caixa-som 50*, cesto-brinquedos 50, skate 60/1×2, cafeteira 40*, livros 30*, porta-retrato 30*, aquario 120* (animado), vitrola 70* (todos 1×1 salvo indicação; * = `stackable`, vai em superfície; vela e os troféus de chão também) |
+| **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2; 27/10/2026: letreiro-neon 90/2×1, quadro-cortica 50/2×1, mapa-mundi 60/2×2 |
+| **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3; 27/10/2026: cacto 40/1×1*, vaso-flores 50/1×1*, planta-pendurada 60/1×2 (parede) |
+| **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1; 27/10/2026: luminaria-mesa 50/1×1*, lampada-lava 70/1×1* (animada), varal-luzes 70/2×1 (parede) |
 | **Pets** (`pet`, 1 por quarto) | pet-gato 300, pet-cachorro 300, pet-passaro 250 (todos 1×1) |
 
 Pets NÃO vão na grade — são o campo `pet` (string|null) do estado; UM por quarto. Itens
