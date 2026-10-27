@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isLearningManifest } from '../../../packages/core/src/learning'
 import {
+  LEARNING_IMPORT_BODY_MAX_BYTES,
+  learningImportBodyBytes,
+} from '../../../packages/core/src/learning/authoring-manifest-projection'
+import {
   isExecutionRule,
   isSectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
@@ -11,6 +15,7 @@ import { evaluateStudioSectionProject } from '../../../packages/studio/src/block
 import { isBlockTypeAllowed } from '../../../packages/studio/src/core/levels'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
 import { SZIRInputSchema } from '../../../packages/studio/src/ir/schema'
+import { ILHA_ASSETS, ILHA_MODELS } from './ilha-do-farol-assets'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
 
@@ -20,6 +25,14 @@ describe('A Ilha do Farol', () => {
     for (let i = 1; i <= 3; i++) {
       const m = JSON.parse(readFileSync(resolve(dir, `ilha-aula-${i}.manifesto.json`), 'utf8'))
       expect(isLearningManifest(m)).toBe(true)
+      expect(
+        learningImportBodyBytes(
+          m,
+          'preserve',
+          'a'.repeat(64),
+          '00000000-0000-4000-8000-000000000000',
+        ),
+      ).toBeLessThanOrEqual(LEARNING_IMPORT_BODY_MAX_BYTES)
       expect(m.blocks.some((b: any) => b.content?.kind === 'certificate')).toBe(false)
       expect(m.blocks.filter((b: any) => b.content?.kind === 'materials')).toHaveLength(
         i === 1 ? 1 : 0,
@@ -47,7 +60,9 @@ describe('A Ilha do Farol', () => {
       const p = montarProjetoIlha(part)
       const parsed = SZIRInputSchema.safeParse(p.ir)
       expect(parsed.success, `${part}: ${parsed.success ? '' : parsed.error.message}`).toBe(true)
-      expect(sanitizeProjectAssets(p.assets)).toHaveLength(12)
+      expect(sanitizeProjectAssets(p.assets)).toHaveLength(ILHA_ASSETS.length)
+      expect(p.files['script.js']).toContain(JSON.stringify(ILHA_MODELS.coqueiroFrente.asset.name))
+      expect(p.files['script.js']).toContain(JSON.stringify(ILHA_MODELS.coqueiroTras.asset.name))
       const source = JSON.stringify(p.blocksState)
       expect(source).not.toMatch(/sz_(html|css|canvas|js_raw)/)
       expect(p.ir!.html).toEqual([])

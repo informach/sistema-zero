@@ -63,8 +63,12 @@ async function load(name: string, file: string) {
   const size = Math.max(...max.map((v, i) => v - min[i]))
   const optimized = await io.readBinary(glb.bytes)
   await optimized.transform(
-    weld(),
+    weld({ overwrite: true }),
     dedup(),
+    quantize({ quantizePosition: 14, quantizeNormal: 10 }),
+    // Quantization can make formerly distinct vertices identical. Re-index and quantize
+    // again so the final GLB retains compact integer attributes instead of floats.
+    weld({ overwrite: true }),
     quantize({ quantizePosition: 14, quantizeNormal: 10 }),
     prune(),
   )
@@ -84,4 +88,27 @@ export const ILHA_MODELS = Object.fromEntries(
     Object.entries(ILHA_ART_SOURCES).map(async ([name, file]) => [name, await load(name, file)]),
   ),
 ) as Record<keyof typeof ILHA_ART_SOURCES, Awaited<ReturnType<typeof load>>>
-export const ILHA_ASSETS = Object.values(ILHA_MODELS).map((m) => m.asset)
+// The two authored palms are identical except for the root scale and identity. Share the
+// binary only while that remains true; keep each palm's own measured center and size.
+function samePalmGeometry(): boolean {
+  const canonical = (file: string) => {
+    const doc = JSON.parse(readFileSync(resolve(sourceDir, `${file}.molda.json`), 'utf8'))
+    delete doc.id
+    delete doc.name
+    delete doc.createdAt
+    delete doc.updatedAt
+    doc.nodes[0].name = 'Coqueiro'
+    doc.nodes[0].transform.scale = [1, 1, 1]
+    return JSON.stringify(doc).replaceAll(file, 'coqueiro')
+  }
+  return canonical('coqueiro-frente') === canonical('coqueiro-tras')
+}
+if (samePalmGeometry()) {
+  ILHA_MODELS.coqueiroFrente = {
+    ...ILHA_MODELS.coqueiroFrente,
+    asset: ILHA_MODELS.coqueiroTras.asset,
+  }
+}
+export const ILHA_ASSETS = [
+  ...new Map(Object.values(ILHA_MODELS).map((m) => [m.asset.id, m.asset])).values(),
+]
