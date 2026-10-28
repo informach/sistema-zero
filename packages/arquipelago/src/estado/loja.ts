@@ -2,11 +2,31 @@ import type {
   Acesso,
   AvatarDoJogo,
   QuartoDoJogo,
+  ResultadoDoPercurso,
   Salvamento,
   SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { minutosRestantes } from '../sistemas/tempo-livre'
+
+/** O fim de uma corrida, para a tela de resultado. */
+export interface ResultadoDaCorrida {
+  tempoMs: number
+  /** As estrelas DESTA corrida. */
+  estrelas: ResultadoDoPercurso['estrelas']
+  /** O melhor de todas as corridas, já com esta. */
+  melhor: ResultadoDoPercurso
+  /** Esta corrida bateu o melhor tempo de antes (a primeira não conta). */
+  recorde: boolean
+  vagalumes: number
+  totalDeVagalumes: number
+}
+
+/** A corrida em andamento, para o cronômetro (o tempo corre fora do React). */
+export interface CorridaNaTela {
+  vagalumes: number
+  totalDeVagalumes: number
+}
 
 /** O estado do jogo de UMA montagem (cada `montarArquipelago` cria a sua loja). */
 export interface EstadoDoJogo {
@@ -24,6 +44,12 @@ export interface EstadoDoJogo {
   tempoAcabou: boolean
   tempoPausado: boolean
   usadoHojeSegundos: number
+  /** O que o corpo está fazendo (as dicas e o botão de toque mudam com isto). */
+  modo: 'chao' | 'cipo' | 'escalada'
+  corrida: CorridaNaTela | null
+  resultado: ResultadoDaCorrida | null
+  /** Conta os cortes suaves (a tela escurece e clareia a cada número novo). */
+  corte: number
   /** Muda o salvamento (a fila de salvamento grava depois). */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
@@ -34,6 +60,10 @@ export interface EstadoDoJogo {
   definirTempoPausado(pausado: boolean): void
   registrarTempo(usadoHojeSegundos: number, acabou: boolean): void
   adotar(guardado: SalvamentoGuardado): void
+  definirModo(modo: EstadoDoJogo['modo']): void
+  definirCorrida(corrida: CorridaNaTela | null): void
+  mostrarResultado(resultado: ResultadoDaCorrida | null): void
+  cortar(): void
 }
 
 export interface DadosIniciais {
@@ -64,6 +94,10 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     tempoAcabou: false,
     tempoPausado: false,
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
+    modo: 'chao',
+    corrida: null,
+    resultado: null,
+    corte: 0,
     mudar(fn) {
       const novo = fn(get().salvamento)
       if (novo === get().salvamento) return
@@ -97,6 +131,27 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     adotar(guardado) {
       if (guardado.salvamento) set({ salvamento: guardado.salvamento })
+    },
+    definirModo(modo) {
+      if (get().modo !== modo) set({ modo })
+    },
+    definirCorrida(corrida) {
+      const atual = get().corrida
+      if (
+        atual === corrida ||
+        (atual &&
+          corrida &&
+          atual.vagalumes === corrida.vagalumes &&
+          atual.totalDeVagalumes === corrida.totalDeVagalumes)
+      )
+        return
+      set({ corrida })
+    },
+    mostrarResultado(resultado) {
+      set({ resultado })
+    },
+    cortar() {
+      set({ corte: get().corte + 1 })
     },
   }))
 }

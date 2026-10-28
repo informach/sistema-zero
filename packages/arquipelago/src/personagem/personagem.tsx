@@ -8,15 +8,37 @@ import {
 } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils } from 'three'
-import { useJogo } from '../estado/contexto'
+import { type CipoVivo, type ModoDoCorpo, type TroncoVivo, useJogo } from '../estado/contexto'
+import { dentroDaAgua } from '../mundo/bosque'
 import { maisPerto } from '../mundo/interativos'
 import { alturaDaIlha, dentroDaCasa, INICIO, NIVEL_DA_AGUA } from '../mundo/medidas'
+import {
+  bateuNoBalanco,
+  CIPO,
+  corpoNoBalanco,
+  distanciaDaCorda,
+  type Ponto,
+  passoDoBalanco,
+  pegarCipo,
+  velocidadeAoSoltar,
+} from '../sistemas/cipo'
+import { CORPO } from '../sistemas/corpo'
+import {
+  corpoNaEscalada,
+  criarAgarrado,
+  distanciaDaCasca,
+  ESCALADA,
+  grudar,
+  naAlturaDoTronco,
+  passoDaEscalada,
+  saltoDaEscalada,
+} from '../sistemas/escalada'
 import { ritmo } from '../sistemas/necessidades'
 import { AvatarDoJogo } from './avatar-do-jogo'
 
-const MEIA_ALTURA = 0.55
-const RAIO = 0.35
-const DO_CENTRO_AO_PE = MEIA_ALTURA + RAIO
+const MEIA_ALTURA = CORPO.meiaAltura
+const RAIO = CORPO.raio
+const DO_CENTRO_AO_PE = CORPO.doCentroAoPe
 const GRAVIDADE = -24
 const PULO = 8.5
 const ANDAR = 4.2
@@ -24,13 +46,40 @@ const CORRER = 7.2
 const NADAR = 2.6
 /** O avatar nada quando a cintura passa da linha da água. */
 const CINTURA = 0.55
+/** No ar, com o embalo de um cipó ou de um pulo do tronco, a direção pedida só corrige um pouco. */
+const CONTROLE_NO_AR = 0.45
+/** O balanço bateu em algo sólido quando o corpo fica mais longe que isto de onde devia ir. */
+const FOLGA_DO_BALANCO = 0.03
+/** Soltar do tronco sem pular (tecla de usar, ou descer até o chão): um passinho para fora. */
+const PASSO_PARA_FORA_DO_TRONCO = 1.5
+
+/** O que o personagem mexe a cada quadro: objetos fixos, nada de alocar no laço da física. */
+interface Vivo {
+  modo: ModoDoCorpo
+  cipo: CipoVivo | null
+  tronco: TroncoVivo | null
+  /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
+  noModo: number
+  /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
+  embalo: Ponto
+  alvo: Ponto
+  inicio: Ponto
+  maos: Ponto
+  prox: Ponto
+  desloc: Ponto
+  agarrado: ReturnType<typeof criarAgarrado>
+  contraOTronco: number
+  soltouDoTronco: number
+}
 
 /**
  * O personagem: corpo cinemático com o controlador de personagem do Rapier (sobe degrau,
- * escorrega em rampa, para na parede). A gravidade e o nado são feitos aqui.
+ * escorrega em rampa, para na parede). A gravidade e o nado são feitos aqui, e também o cipó
+ * (`sistemas/cipo.ts`) e a escalada do tronco (`sistemas/escalada.ts`), que as ilhas completas
+ * registram em `movimento`.
  */
 export function Personagem() {
-  const { controle, loja, rastro, interativos, pedidos } = useJogo()
+  const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
   const { world } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
@@ -38,8 +87,24 @@ export function Personagem() {
   const velY = useRef(0)
   const noChao = useRef(false)
   const usosAtendidos = useRef(controle.usar)
+  const pularAntes = useRef(false)
   const direcao = useRef(0)
   const passo = useRef(0)
+  const v = useRef<Vivo>({
+    modo: 'chao',
+    cipo: null,
+    tronco: null,
+    noModo: 0,
+    embalo: { x: 0, y: 0, z: 0 },
+    alvo: { x: 0, y: 0, z: 0 },
+    inicio: { x: 0, y: 0, z: 0 },
+    maos: { x: 0, y: 0, z: 0 },
+    prox: { x: 0, y: 0, z: 0 },
+    desloc: { x: 0, y: 0, z: 0 },
+    agarrado: criarAgarrado(),
+    contraOTronco: 0,
+    soltouDoTronco: Number.NEGATIVE_INFINITY,
+  }).current
 
   const inicial = useMemo(() => {
     const p = loja.getState().salvamento.posicao
@@ -58,6 +123,53 @@ export function Personagem() {
   }, [world])
   useEffect(() => () => world.removeCharacterController(kcc), [world, kcc])
 
+  // Trocas de modo (fora do quadro: criadas uma vez por montagem).
+  const acoes = useMemo(() => {
+    const mudarModo = (modo: ModoDoCorpo, agora: number) => {
+      if (v.cipo && modo !== 'cipo') {
+        v.cipo.seguro = false
+        v.cipo.soltoEm = agora
+        v.cipo = null
+      }
+      if (v.tronco && modo !== 'escalada') {
+        v.soltouDoTronco = agora
+        v.tronco = null
+      }
+      v.modo = modo
+      v.noModo = 0
+      movimento.modo = modo
+      loja.getState().definirModo(modo)
+    }
+    /** Pegar o cipó com o corpo em `de`, trazendo a velocidade (vx, vy, vz). */
+    const pegar = (c: CipoVivo, de: Ponto, vx: number, vy: number, vz: number, agora: number) => {
+      v.maos.x = de.x
+      v.maos.y = de.y + CIPO.maosAcimaDoCentro
+      v.maos.z = de.z
+      v.alvo.x = vx
+      v.alvo.y = vy
+      v.alvo.z = vz
+      pegarCipo(c.balanco, c.pivo, v.maos, v.alvo, direcao.current, c.pegada)
+      v.inicio.x = de.x
+      v.inicio.y = de.y
+      v.inicio.z = de.z
+      mudarModo('cipo', agora)
+      c.seguro = true
+      v.cipo = c
+      velY.current = 0
+    }
+    const agarrar = (t: TroncoVivo, de: Ponto, agora: number) => {
+      grudar(t.tronco, de, v.agarrado, DO_CENTRO_AO_PE, CIPO.maosAcimaDoCentro)
+      v.inicio.x = de.x
+      v.inicio.y = de.y
+      v.inicio.z = de.z
+      v.contraOTronco = 0
+      mudarModo('escalada', agora)
+      v.tronco = t
+      velY.current = 0
+    }
+    return { mudarModo, pegar, agarrar }
+  }, [v, movimento, loja])
+
   useFrame((_, dtBruto) => {
     // Em aparelho lento o quadro é longo: o controlador varre o movimento inteiro (não
     // atravessa parede), então só limitamos para um tranco não virar um salto enorme.
@@ -66,12 +178,27 @@ export function Personagem() {
     const col = colisor.current
     if (!b || !col) return
     const estado = loja.getState()
+    const agora = performance.now()
     const parado =
-      estado.menuAberto || estado.ferramentaAberta || estado.tempoAcabou || estado.tempoPausado
+      estado.menuAberto ||
+      estado.ferramentaAberta ||
+      estado.tempoAcabou ||
+      estado.tempoPausado ||
+      estado.resultado !== null
 
     if (pedidos.teleporte) {
+      if (v.modo !== 'chao') acoes.mudarModo('chao', agora)
       b.setNextKinematicTranslation(pedidos.teleporte)
       velY.current = 0
+      v.embalo.x = 0
+      v.embalo.z = 0
+      if (pedidos.olharPara !== null) {
+        direcao.current = pedidos.olharPara
+        // A câmera vai para as costas (ela olha para `-(sin g, cos g)`).
+        rastro.giro = pedidos.olharPara + Math.PI
+        if (visual.current) visual.current.rotation.y = pedidos.olharPara
+        pedidos.olharPara = null
+      }
       pedidos.teleporte = null
       return
     }
@@ -81,7 +208,7 @@ export function Personagem() {
     }
 
     const p = b.translation()
-    const nadando = p.y - DO_CENTRO_AO_PE + CINTURA < NIVEL_DA_AGUA && !noChao.current
+    v.noModo += dt
 
     // Direção pedida, relativa ao giro da câmera.
     let ix = parado ? 0 : controle.eixoX
@@ -96,58 +223,224 @@ export function Personagem() {
     const frenteZ = -Math.cos(g)
     const ladoX = Math.cos(g)
     const ladoZ = -Math.sin(g)
-    const velBase = nadando ? NADAR : controle.correr ? CORRER : ANDAR
-    const vel = velBase * ritmo(estado.salvamento.necessidades)
-    const vx = (frenteX * iz + ladoX * ix) * vel
-    const vz = (frenteZ * iz + ladoZ * ix) * vel
+    const pedidoX = frenteX * iz + ladoX * ix
+    const pedidoZ = frenteZ * iz + ladoZ * ix
+    const pulou = !parado && controle.pular && !pularAntes.current
+    pularAntes.current = controle.pular
+    let usou = controle.usar !== usosAtendidos.current
+    usosAtendidos.current = controle.usar
 
-    if (nadando) {
-      // Boia: puxa a cintura para a linha da água, devagar.
-      const alvo = NIVEL_DA_AGUA - CINTURA + DO_CENTRO_AO_PE
-      velY.current = MathUtils.lerp(velY.current, (alvo - p.y) * 3, 0.15)
-    } else {
-      velY.current += GRAVIDADE * dt
-      if (noChao.current && controle.pular && !parado) velY.current = PULO
+    // Pedido de um interativo ("Pegar o cipó", "Escalar o tronco").
+    const pedido = movimento.pedido
+    movimento.pedido = null
+    if (pedido && !parado && v.modo === 'chao') {
+      if (pedido.tipo === 'cipo') {
+        for (const c of movimento.cipos) {
+          if (c.id === pedido.id && !c.seguro) acoes.pegar(c, p, 0, 0, 0, agora)
+        }
+      } else {
+        for (const t of movimento.troncos) {
+          if (t.id === pedido.id) acoes.agarrar(t, p, agora)
+        }
+      }
     }
 
-    kcc.computeColliderMovement(col, { x: vx * dt, y: velY.current * dt, z: vz * dt })
-    const mov = kcc.computedMovement()
-    noChao.current = kcc.computedGrounded()
-    if (noChao.current && velY.current < 0) velY.current = 0
-    const prox = { x: p.x + mov.x, y: p.y + mov.y, z: p.z + mov.z }
-    b.setNextKinematicTranslation(prox)
+    let vx = 0
+    let vz = 0
+    let nadando = false
+    let afundar = 0
+    const prox = v.prox
+
+    if (v.modo === 'cipo' && v.cipo) {
+      const c = v.cipo
+      passoDoBalanco(c.balanco, pedidoX, pedidoZ, dt, true)
+      corpoNoBalanco(c.balanco, c.pivo, v.alvo)
+      // Logo depois de pegar, o corpo vai suave até o lugar do balanço (sobe ou escorrega).
+      const t = Math.min(1, v.noModo / CIPO.encaixe)
+      const k = t * t * (3 - 2 * t)
+      v.desloc.x = v.inicio.x + (v.alvo.x - v.inicio.x) * k - p.x
+      v.desloc.y = v.inicio.y + (v.alvo.y - v.inicio.y) * k - p.y
+      v.desloc.z = v.inicio.z + (v.alvo.z - v.inicio.z) * k - p.z
+      kcc.computeColliderMovement(col, v.desloc)
+      const mov = kcc.computedMovement()
+      prox.x = p.x + mov.x
+      prox.y = p.y + mov.y
+      prox.z = p.z + mov.z
+      if (
+        t >= 1 &&
+        Math.hypot(mov.x - v.desloc.x, mov.y - v.desloc.y, mov.z - v.desloc.z) > FOLGA_DO_BALANCO
+      ) {
+        v.maos.x = prox.x
+        v.maos.y = prox.y + CIPO.maosAcimaDoCentro
+        v.maos.z = prox.z
+        bateuNoBalanco(c.balanco, c.pivo, v.maos)
+      }
+      b.setNextKinematicTranslation(prox)
+      direcao.current = c.balanco.rumo
+      // A câmera olha um pouco abaixo do pivô: o balanço inteiro cabe sem ela correr atrás.
+      movimento.foco.x = c.pivo.x
+      movimento.foco.y = c.pivo.y - c.pegada * 0.62
+      movimento.foco.z = c.pivo.z
+      noChao.current = false
+      if (pulou || (usou && !parado)) {
+        velocidadeAoSoltar(c.balanco, v.embalo)
+        velY.current = v.embalo.y
+        acoes.mudarModo('chao', agora)
+        usou = false
+      }
+    } else if (v.modo === 'escalada' && v.tronco) {
+      const t = v.tronco.tronco
+      const lado = v.agarrado.lado
+      // Olhando para o tronco, a direita é `(cos lado, −sin lado)`: o lado pedido na tela vale.
+      const deLado = pedidoX * Math.cos(lado) - pedidoZ * Math.sin(lado)
+      const subir = parado ? 0 : controle.eixoZ
+      const fim = passoDaEscalada(
+        t,
+        v.agarrado,
+        subir,
+        deLado,
+        dt,
+        RAIO,
+        DO_CENTRO_AO_PE,
+        CIPO.maosAcimaDoCentro,
+      )
+      corpoNaEscalada(t, v.agarrado, RAIO, v.alvo)
+      const k = Math.min(1, v.noModo / CIPO.encaixe)
+      prox.x = v.inicio.x + (v.alvo.x - v.inicio.x) * k
+      prox.y = v.inicio.y + (v.alvo.y - v.inicio.y) * k
+      prox.z = v.inicio.z + (v.alvo.z - v.inicio.z) * k
+      b.setNextKinematicTranslation(prox)
+      direcao.current = v.agarrado.lado + Math.PI
+      noChao.current = false
+      if (pulou) {
+        saltoDaEscalada(v.agarrado, pedidoX, pedidoZ, v.embalo)
+        velY.current = v.embalo.y
+        direcao.current = Math.atan2(v.embalo.x, v.embalo.z)
+        acoes.mudarModo('chao', agora)
+      } else if (fim === 'desceu' || (usou && !parado)) {
+        velY.current = 0
+        v.embalo.x = Math.sin(v.agarrado.lado) * PASSO_PARA_FORA_DO_TRONCO
+        v.embalo.z = Math.cos(v.agarrado.lado) * PASSO_PARA_FORA_DO_TRONCO
+        acoes.mudarModo('chao', agora)
+        usou = false
+      }
+    } else {
+      if (v.modo !== 'chao') acoes.mudarModo('chao', agora)
+      // Nada no mar (a cintura passou da linha da água) e no lago raso das ilhas completas.
+      let lagoY = Number.NaN
+      for (const a of movimento.aguas) {
+        if (dentroDaAgua(a, p.x, p.z) && p.y - DO_CENTRO_AO_PE < a.y + 0.3) lagoY = a.y
+      }
+      const noLago = !Number.isNaN(lagoY) && noChao.current
+      nadando = (p.y - DO_CENTRO_AO_PE + CINTURA < NIVEL_DA_AGUA && !noChao.current) || noLago
+      // O lago não tem fundo no desenho: o corpo fica no chão e o avatar afunda até a cintura.
+      if (noLago) afundar = Math.max(0, p.y - (lagoY - CINTURA + DO_CENTRO_AO_PE) - 0.15)
+
+      const velBase = nadando ? NADAR : controle.correr ? CORRER : ANDAR
+      const vel = velBase * ritmo(estado.salvamento.necessidades)
+      const comEmbalo = !noChao.current && (v.embalo.x !== 0 || v.embalo.z !== 0)
+      const controleAqui = comEmbalo ? CONTROLE_NO_AR : 1
+      vx = pedidoX * vel * controleAqui + (comEmbalo ? v.embalo.x : 0)
+      vz = pedidoZ * vel * controleAqui + (comEmbalo ? v.embalo.z : 0)
+
+      if (nadando && !noLago) {
+        // Boia: puxa a cintura para a linha da água, devagar.
+        const alvo = NIVEL_DA_AGUA - CINTURA + DO_CENTRO_AO_PE
+        velY.current = MathUtils.lerp(velY.current, (alvo - p.y) * 3, 0.15)
+      } else {
+        velY.current += GRAVIDADE * dt
+        if (noChao.current && controle.pular && !parado && !nadando) velY.current = PULO
+      }
+
+      v.desloc.x = vx * dt
+      v.desloc.y = velY.current * dt
+      v.desloc.z = vz * dt
+      kcc.computeColliderMovement(col, v.desloc)
+      const mov = kcc.computedMovement()
+      noChao.current = kcc.computedGrounded()
+      if (noChao.current) {
+        if (velY.current < 0) velY.current = 0
+        v.embalo.x = 0
+        v.embalo.z = 0
+      }
+      prox.x = p.x + mov.x
+      prox.y = p.y + mov.y
+      prox.z = p.z + mov.z
+      b.setNextKinematicTranslation(prox)
+      if (Math.hypot(vx, vz) > 0.1) direcao.current = Math.atan2(vx, vz)
+
+      if (!parado && !nadando) {
+        // No ar, as mãos pegam o cipó que passar perto delas (de um cipó para o outro).
+        if (!noChao.current) {
+          v.maos.x = prox.x
+          v.maos.y = prox.y + CIPO.maosAcimaDoCentro
+          v.maos.z = prox.z
+          for (const c of movimento.cipos) {
+            if (c.seguro || agora - c.soltoEm < CIPO.esperaParaPegarDeNovo * 1000) continue
+            if (distanciaDaCorda(c.balanco, c.pivo, c.corda, v.maos) < CIPO.raioDaPegadaNoAr) {
+              acoes.pegar(c, prox, vx, velY.current, vz, agora)
+              break
+            }
+          }
+        }
+        // Andando contra o tronco de escalar, o corpo gruda; pulando nele, gruda na hora.
+        if (v.modo === 'chao' && agora - v.soltouDoTronco > ESCALADA.esperaDepoisDeSoltar * 1000) {
+          let contra: TroncoVivo | null = null
+          for (const t of movimento.troncos) {
+            const tr = t.tronco
+            if (!naAlturaDoTronco(tr, prox.y, DO_CENTRO_AO_PE)) continue
+            if (distanciaDaCasca(tr, prox, RAIO) > ESCALADA.distanciaParaGrudar) continue
+            const ax = (tr.base.x + tr.topo.x) / 2 - prox.x
+            const az = (tr.base.z + tr.topo.z) / 2 - prox.z
+            const d = Math.hypot(ax, az) || 1
+            if ((pedidoX * ax + pedidoZ * az) / d > 0.6) contra = t
+          }
+          v.contraOTronco = contra ? v.contraOTronco + dt : 0
+          if (contra && (!noChao.current || v.contraOTronco >= ESCALADA.esperaParaGrudar)) {
+            acoes.agarrar(contra, prox, agora)
+          }
+        }
+      }
+    }
+    movimento.noChao = v.modo === 'chao' && noChao.current
 
     // Para onde o avatar olha, e um balanço simples enquanto anda (as animações de andar
     // entram na próxima fase; por enquanto o avatar usa as poses que a plataforma já tem).
-    const movendo = Math.hypot(vx, vz) > 0.1
-    if (movendo) direcao.current = Math.atan2(vx, vz)
+    const movendo = v.modo === 'chao' && Math.hypot(vx, vz) > 0.1
     passo.current += movendo ? dt * (controle.correr ? 14 : 9) : 0
-    const v = visual.current
-    if (v) {
-      let delta = direcao.current - v.rotation.y
+    const vis = visual.current
+    if (vis) {
+      let delta = direcao.current - vis.rotation.y
       delta = Math.atan2(Math.sin(delta), Math.cos(delta))
-      v.rotation.y += delta * Math.min(1, dt * 12)
-      v.position.y =
-        -DO_CENTRO_AO_PE + (movendo && !nadando ? Math.abs(Math.sin(passo.current)) * 0.07 : 0)
-      v.rotation.x = MathUtils.lerp(
-        v.rotation.x,
-        nadando ? 1.1 : movendo && controle.correr ? 0.12 : 0,
-        0.15,
-      )
+      vis.rotation.y += delta * Math.min(1, dt * 12)
+      vis.position.y =
+        -DO_CENTRO_AO_PE -
+        afundar +
+        (movendo && !nadando && noChao.current ? Math.abs(Math.sin(passo.current)) * 0.07 : 0)
+      // No cipó o corpo pende junto com a corda (as mãos para o pivô).
+      const inclinar =
+        v.modo === 'cipo' && v.cipo
+          ? -v.cipo.balanco.angulo
+          : nadando
+            ? 1.1
+            : movendo && controle.correr
+              ? 0.12
+              : 0
+      vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     }
 
     rastro.x = prox.x
     rastro.y = prox.y
     rastro.z = prox.z
     rastro.direcao = direcao.current
-    rastro.velocidade = Math.hypot(vx, vz)
+    // O Zappy olha para onde ela vai: no cipó e no tronco ela está sempre "andando".
+    rastro.velocidade = v.modo === 'chao' ? Math.hypot(vx, vz) : 1
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
-    estado.definirAlvo(parado ? null : maisPerto(interativos, prox.x, prox.z))
+    estado.definirAlvo(parado || v.modo !== 'chao' ? null : maisPerto(interativos, prox.x, prox.z))
 
-    if (controle.usar !== usosAtendidos.current) {
-      usosAtendidos.current = controle.usar
+    if (usou && v.modo === 'chao' && !parado) {
       const alvo = estado.alvo
-      if (alvo && !parado) interativos.get(alvo.id)?.agir()
+      if (alvo) interativos.get(alvo.id)?.agir()
     }
   })
 
@@ -160,7 +453,14 @@ export function Personagem() {
       enabledRotations={[false, false, false]}
     >
       <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
-      <group ref={visual} position={[0, -DO_CENTRO_AO_PE, 0]}>
+      <group
+        ref={(g) => {
+          visual.current = g
+          // O giro primeiro e a inclinação no corpo: nadar e balançar inclinam para a frente dele.
+          if (g) g.rotation.order = 'YXZ'
+        }}
+        position={[0, -DO_CENTRO_AO_PE, 0]}
+      >
         <AvatarDoJogo pose="Idle" />
       </group>
     </RigidBody>

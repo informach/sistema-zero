@@ -10,7 +10,7 @@ import {
 import { Component, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { criarControle, ligarTeclado } from './controles/controle'
-import { Contexto, type ContextoDoJogo } from './estado/contexto'
+import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto'
 import { criarLoja } from './estado/loja'
 import { Relogios } from './estado/relogios'
 import { Hud } from './interface/hud'
@@ -111,7 +111,8 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       zappy: { x: 0, y: 0, z: 0 },
     },
     ambiente: { luz: 1, noite: false },
-    pedidos: { teleporte: null, chaoChegando: new Set() },
+    pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null },
+    movimento: criarMovimento(),
   }
   return { tipo: 'pronto', contexto, fila }
 }

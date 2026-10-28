@@ -17,6 +17,7 @@ import {
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
+import { BosqueVivo } from './bosque-vivo'
 import {
   aplicarOpacidade,
   giroDaIlha,
@@ -231,27 +232,33 @@ function IlhaDoAnel({
   // A leve fica sempre montada: é a reserva enquanto a completa baixa ou se ela falhar, e some
   // esmaecendo quando a completa entra. Só uma das duas colide por vez.
   return (
-    <group position={[centro.x, y, centro.z]}>
-      <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
-        <IlhaDoModelo ilha={ilha} cor={cor} troca={troca} />
-      </ComReserva>
-      {!completaColide(estado) && (
-        <RigidBody type="fixed" colliders={false}>
-          <CylinderCollider
-            args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
-            position={[0, ALTURA_DA_TERRA - 0.8, 0]}
+    <>
+      <group position={[centro.x, y, centro.z]}>
+        <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
+          <IlhaDoModelo ilha={ilha} cor={cor} troca={troca} />
+        </ComReserva>
+        {!completaColide(estado) && (
+          <RigidBody type="fixed" colliders={false}>
+            <CylinderCollider
+              args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
+              position={[0, ALTURA_DA_TERRA - 0.8, 0]}
+            />
+          </RigidBody>
+        )}
+        {preparada && completaNaCena(estado) && (
+          <IlhaCompleta
+            preparada={preparada}
+            cor={cor}
+            colide={completaColide(estado)}
+            troca={troca}
           />
-        </RigidBody>
+        )}
+      </group>
+      {/* Cipós, escalada, lago e o percurso nas copas: só com a completa ativa. */}
+      {preparada && completaColide(estado) && ilha.id === 'bosque' && (
+        <BosqueVivo ilha={ilha} centro={centro} preparada={preparada} />
       )}
-      {preparada && completaNaCena(estado) && (
-        <IlhaCompleta
-          preparada={preparada}
-          cor={cor}
-          colide={completaColide(estado)}
-          troca={troca}
-        />
-      )}
-    </group>
+    </>
   )
 }
 
