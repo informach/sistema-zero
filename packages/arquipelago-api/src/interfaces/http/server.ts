@@ -21,6 +21,10 @@ import {
   SomenteLeituraError,
 } from '../../application/erros'
 import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
+import {
+  PeriodoDaMedicaoInvalidoError,
+  type ServicoDaMedicao,
+} from '../../application/servico-da-medicao'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
@@ -30,11 +34,13 @@ import {
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
 import { rotasDaEquipe } from './rotas-da-equipe'
+import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
 
 export interface DependenciasHttp {
+  medicao?: ServicoDaMedicao
   logger: Logger
   servico: ServicoDoJogo
   cartas: ServicoDasCartas
@@ -180,7 +186,12 @@ export function createServer(deps: DependenciasHttp) {
         set.status = 403
         return envelope('FORBIDDEN', error.message)
       }
-      if (error instanceof CorpoInvalidoError || code === 'VALIDATION' || code === 'PARSE') {
+      if (
+        error instanceof CorpoInvalidoError ||
+        error instanceof PeriodoDaMedicaoInvalidoError ||
+        code === 'VALIDATION' ||
+        code === 'PARSE'
+      ) {
         // Envelope fixo: nunca ecoar o que chegou.
         set.status = 400
         return envelope('VALIDATION_ERROR', 'Requisição inválida')
@@ -198,6 +209,11 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.medicao
+        ? rotasDaMedicao({ medicao: deps.medicao, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .use(rotasDosDesafios({ desafios: deps.desafios, tokenInterno: deps.tokenInterno }))
     .get('/healthz', () => ({ status: 'ok' }))
     .get('/readyz', async ({ set }) => {

@@ -48,6 +48,13 @@ export function arquipelagoGateway(opts: {
     },
     routes: [
       {
+        ...leituraDaEquipe,
+        id: 'arquipelago-equipe-medicao',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/equipe/medicao',
+        rateLimit: { max: 12, windowMs: 60_000, by: 'principal' },
+      },
+      {
         ...jogador,
         id: 'arquipelago-acesso',
         methods: ['GET'],

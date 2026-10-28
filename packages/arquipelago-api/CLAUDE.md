@@ -1,5 +1,29 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Medição da equipe (geral-06, 28/10/2026)
+
+`GET /arquipelago/equipe/medicao?de=AAAA-MM-DD&ate=AAAA-MM-DD&publico=kids|adulto`
+usa `lerEquipe` e o token do gateway. `ServicoDaMedicao` limita o período inclusivo a 90 dias,
+recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São três consultas
+agregadas numa transação somente leitura com snapshot repetível. Nenhum ID de pessoa sai do banco.
+
+`domain/medicao.ts` protege grupos menores que cinco. Na volta, também protege a linha inteira
+quando o número de quem voltou ou de quem não voltou é positivo e menor que cinco. O primeiro
+dia é o primeiro registro positivo de tempo livre em todo o histórico. Dia seguinte é D+1;
+dia 7 é D+6. Só dias encerrados entram na comparação; os demais ficam `aguardando`.
+Não há histórico de tempo equivalente para adultos: não inferir jogo pela data do salvamento.
+
+As aparências são uma fotografia atual dos projetos azuis ganhos no período, agrupadas pela
+origem; não são compras nem eventos datados de criação. Aprovações são primeiras conclusões de
+desafios do Estúdio, sem presumir que todos sejam minijogos. Cursos exigem uma fonte interna
+agregável do Members; não chamar a linha do tempo pessoal do Admin em um laço por jogador.
+O cartão dos pais está em outra frente, e o resumo semanal dele não equivale ao retorno em 24 h.
+
+Testes: `tests/unit/medicao.test.ts`, `tests/db/medicao.test.ts` (rota real e Postgres).
+`ARQUIPELAGO_MEDICAO_TEST_DATABASE_URL` precisa apontar para localhost e um banco descartável
+com prefixo `arquipelago_test`. Variável própria para não disputar tabelas com os demais testes.
+Não usar banco remoto. Não há migração nem variável nova de produção para este relatório.
+
 Serviço do jogo **Arquipélago Vagalume**. Porta **3015**, schema Postgres **`arquipelago`**,
 journal `arquipelago_migrations`. Bun + Elysia + Drizzle, no molde do `packages/referrals`
 (env Zod fail-fast, borda Elysia, Sentry, `x-internal-token` do gateway).

@@ -2,6 +2,7 @@ import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
+import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
@@ -15,6 +16,7 @@ import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
 } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
+import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { createServer } from './interfaces/http/server'
 
@@ -67,6 +69,7 @@ export function createApplication(env: Env): Application {
     logger,
   })
   const app = createServer({
+    medicao: new ServicoDaMedicao(new DrizzleRepositorioDaMedicao(connection.db)),
     logger,
     servico,
     cartas,

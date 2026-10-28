@@ -16,6 +16,7 @@ export function kidsMayAccess(
 ): boolean {
   const pathname = normalizePolicyPath(rawPath)
   if (!pathname) return false
+  if (pathname.toLowerCase().startsWith('/arquipelago/equipe/')) return false
   // Rotas com nome histórico /internal que já são APIs JWT do aluno.
   // Os serviços continuam validando visibilidade, posse e direito de publicar.
   if (claim.kind === 'student') {

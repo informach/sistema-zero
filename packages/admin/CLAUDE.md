@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Jogo: Medição (geral-06, 28/10/2026)
+
+A aba `Medição` em `game-admin.tsx` monta `game-measurement.tsx`. Período inclusivo de até
+90 dias e comunidade explícita, seguindo a lente global Kids/Adultos. O componente cancela a
+consulta anterior e não exibe respostas de outra lente. Erro tem nova tentativa; falta de
+fonte não vira zero. Cartões e tabela usam os tokens do console e cabem em 320 px.
+
+O BFF permite apenas `GET medicao`, repassado para `/arquipelago/equipe/medicao`; filtros
+individuais são recusados. O gateway exige equipe ativa e bloqueia contextos Kids.
+`tests/game-measurement.test.ts` confere a lista explícita de rotas. O servidor de teste
+`tests/e2e/game-measurement-server.ts` monta o componente real e o serviço com Postgres local
+descartável; `game-measurement-browser.mjs` confere filtros, erro/recuperação e responsividade.
+Não é um login de produção. Capturas e limites em `docs/qa/2026-10-28-arquipelago-medicao.md`.
+
 ## Jogo · Arquipélago: manifesto de desafios (28/10/2026)
 
 `/admin/jogo` (`app/admin/jogo/game-admin.tsx`) ganhou o painel **Manifesto de desafios**

@@ -1,5 +1,12 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+## Medição agregada (28/10/2026)
+
+`medicao.ts`: filtro estrito por público e até 90 dias civis, relatório e números discriminados
+entre `disponivel`, `poucos-dados` e `aguardando`. Valores protegidos são `null`, sem campos
+auxiliares com contagens ou pessoas. O relatório enumera fontes ausentes explicitamente.
+Testes em `tests/medicao.test.ts`. É só leitura, sem alteração do formato do salvamento.
+
 Tipos e validação (zod) de tudo o que atravessa a fronteira do jogo **Arquipélago Vagalume**:
 plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 
