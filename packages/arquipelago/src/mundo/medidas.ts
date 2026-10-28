@@ -192,6 +192,36 @@ export const DISTANCIA_MINIMA_DA_CAMERA = 0.4
 export const VOLTA_DA_CAMERA = 3
 
 /**
+ * O que a pessoa controla na câmera (como no The Sims): arrastar gira em volta do avatar e sobe ou
+ * desce o ângulo; a roda, a pinça de dois dedos e as teclas + e - aproximam e afastam, com
+ * suavidade; dois cliques (ou dois toques) põem a câmera de volta nas costas do avatar.
+ */
+export const CONTROLE_DA_CAMERA = {
+  /** Radianos por pixel arrastado (de lado gira; para cima e para baixo muda o ângulo). */
+  giroPorPixel: 0.006,
+  inclinacaoPorPixel: 0.004,
+  /** Do quase rente ao chão (7°) até quase de cima (72°). */
+  inclinacaoMinima: 0.12,
+  inclinacaoMaxima: 1.25,
+  /** A inclinação de quando a câmera volta para as costas. */
+  inclinacaoDeVolta: 0.5,
+  distanciaMinima: 4,
+  distanciaMaxima: 18,
+  /** Metros por pixel de roda e por toque nas teclas + e -. */
+  rodaPorPixel: 0.01,
+  passoDaTecla: 1.5,
+  /** O zoom chega ao pedido com esta rapidez (por segundo): sem tranco. */
+  suavizarZoom: 10,
+  /** A volta para as costas, por segundo. */
+  voltaParaAsCostas: 6,
+  /** Dois toques/cliques valem como "voltar" se vierem neste tempo e quase no mesmo lugar. */
+  doisToquesMs: 320,
+  doisToquesPixels: 24,
+  /** A dica do Zappy sobre a câmera aparece depois deste tempo, uma vez, se ninguém mexeu nela. */
+  dicaDepoisDeMs: 9000,
+} as const
+
+/**
  * Quando o raio bate perto (menos de `tapada` da distância), a câmera gira para o lado livre e, sem
  * lado livre, sobe estes ângulos (por cima do ombro), ficando com o que der mais espaço se ganhar
  * pelo menos `ganhoMinimo`.

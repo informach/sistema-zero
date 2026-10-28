@@ -26,3 +26,29 @@ export function distanciaDaCamera(
 export function pesoNoAlto(alturaAcimaDoChao: number, limite: number): number {
   return Math.max(0, Math.min(1, (alturaAcimaDoChao - limite * 0.6) / (limite * 0.4)))
 }
+
+/** A distância pedida pela pinça: abrir os dedos aproxima, fechar afasta (na mesma proporção). */
+export function zoomDaPinca(
+  distanciaNoComeco: number,
+  separacaoNoComeco: number,
+  separacaoAgora: number,
+  minima: number,
+  maxima: number,
+): number {
+  if (separacaoAgora <= 0 || separacaoNoComeco <= 0) return distanciaNoComeco
+  const d = (distanciaNoComeco * separacaoNoComeco) / separacaoAgora
+  return Math.max(minima, Math.min(maxima, d))
+}
+
+/** O menor giro de `de` até `para` (radianos, entre −π e π). */
+export function giroMaisCurto(de: number, para: number): number {
+  const d = para - de
+  return Math.atan2(Math.sin(d), Math.cos(d))
+}
+
+/** A roda do mouse em pixels (algumas rodas contam linhas ou páginas). */
+export function rodaEmPixels(delta: number, modo: number): number {
+  if (modo === 1) return delta * 16
+  if (modo === 2) return delta * 400
+  return delta
+}

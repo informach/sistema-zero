@@ -4,10 +4,12 @@ import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef } from 'react'
 import { MathUtils, Vector3 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { useToque } from '../estado/preferencias'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
 import {
   ALTURA_DA_TERRA,
   alturaDaIlha,
+  CONTROLE_DA_CAMERA as C,
   CAMERA_NO_ALTO,
   DISTANCIA_MINIMA_DA_CAMERA,
   FOLGA_DA_CAMERA,
@@ -15,7 +17,13 @@ import {
   RAIO_DA_SONDA_DA_CAMERA,
   VOLTA_DA_CAMERA,
 } from '../mundo/medidas'
-import { distanciaDaCamera, pesoNoAlto } from '../sistemas/camera'
+import {
+  distanciaDaCamera,
+  giroMaisCurto,
+  pesoNoAlto,
+  rodaEmPixels,
+  zoomDaPinca,
+} from '../sistemas/camera'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
@@ -29,21 +37,46 @@ const FOCO_NO_CIPO = 0.55
 const FOCO_NO_CIPO_COM_MENOS_MOVIMENTO = 1
 /** O quanto a câmera fica mais lenta para seguir no cipó (6 por segundo no chão). */
 const SEGUIR_NO_CIPO = 2.5
+/** Guarda que a pessoa já mexeu na câmera (a dica do Zappy não volta). */
+const CHAVE_DA_DICA = 'arquipelago:camera-dica'
+
+function lerDica(): boolean {
+  try {
+    return localStorage.getItem(CHAVE_DA_DICA) === '1'
+  } catch {
+    return false
+  }
+}
+
+function gravarDica() {
+  try {
+    localStorage.setItem(CHAVE_DA_DICA, '1')
+  } catch {
+    // Sem armazenamento (aba anônima): a dica só pode voltar na próxima vez.
+  }
+}
 
 /**
- * Câmera em terceira pessoa. Arrastar (mouse ou dedo fora dos botões) gira em volta do
- * avatar; a roda aproxima. Dentro de casa ela sobe e chega mais perto, para ver o quarto todo.
+ * Câmera em terceira pessoa. Arrastar (mouse ou dedo fora dos botões) gira em volta do avatar e
+ * sobe ou desce o ângulo; a roda, a pinça e as teclas + e - aproximam (`CONTROLE_DA_CAMERA`); dois
+ * cliques ou dois toques põem a câmera nas costas dela. Dentro de casa ela sobe e chega mais perto, para ver o quarto todo.
  * Fora de casa, um raio do avatar até ela contra o que é sólido (troncos, paredes, chão) a traz
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
 export function Camera() {
-  const { rastro, movimento } = useJogo()
+  const { rastro, movimento, loja } = useJogo()
+  const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
   const menosMovimento = useReducedMotion()
   const noCipo = useRef(0)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
   const distancia = useRef(9)
+  /** A distância pedida (roda, pinça, teclas); `distancia` chega nela aos poucos. */
+  const distanciaPedida = useRef(9)
+  /** Voltando para as costas do avatar (dois cliques): o giro e a inclinação de chegada. */
+  const volta = useRef<{ giro: number; inclinacao: number } | null>(null)
+  const mexeu = useRef(lerDica())
   const alvo = useRef(new Vector3())
   const desejada = useRef(new Vector3())
   const { world, rapier } = useRapier()
@@ -56,52 +89,141 @@ export function Camera() {
 
   useEffect(() => {
     const el = gl.domElement
-    let arrastando: number | null = null
-    let ultimoX = 0
-    let ultimoY = 0
+    const dedos = new Map<number, { x: number; y: number }>()
+    let pinca: { separacao: number; distancia: number } | null = null
+    let ultimoToque = { em: 0, x: 0, y: 0 }
+    const separacao = () => {
+      const [a, b] = [...dedos.values()]
+      return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0
+    }
+    const marcarQueMexeu = () => {
+      if (mexeu.current) return
+      mexeu.current = true
+      gravarDica()
+    }
     const desce = (e: PointerEvent) => {
-      arrastando = e.pointerId
-      arrastandoAgora.current = true
-      ultimoX = e.clientX
-      ultimoY = e.clientY
+      dedos.set(e.pointerId, { x: e.clientX, y: e.clientY })
       el.setPointerCapture(e.pointerId)
+      volta.current = null
+      if (dedos.size === 2) {
+        // Dois dedos: pinça (aproximar e afastar), sem girar.
+        pinca = { separacao: separacao(), distancia: distanciaPedida.current }
+        arrastandoAgora.current = false
+        return
+      }
+      arrastandoAgora.current = true
+      // Dois toques (ou cliques) rápidos no mesmo lugar: a câmera volta para as costas.
+      const agora = performance.now()
+      const perto =
+        Math.hypot(e.clientX - ultimoToque.x, e.clientY - ultimoToque.y) < C.doisToquesPixels
+      if (agora - ultimoToque.em < C.doisToquesMs && perto) {
+        volta.current = { giro: rastro.direcao + Math.PI, inclinacao: C.inclinacaoDeVolta }
+        ultimoToque = { em: 0, x: 0, y: 0 }
+      } else ultimoToque = { em: agora, x: e.clientX, y: e.clientY }
     }
     const move = (e: PointerEvent) => {
-      if (arrastando !== e.pointerId) return
-      rastro.giro -= (e.clientX - ultimoX) * 0.006
+      const antes = dedos.get(e.pointerId)
+      if (!antes) return
+      dedos.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (pinca && dedos.size >= 2) {
+        distanciaPedida.current = zoomDaPinca(
+          pinca.distancia,
+          pinca.separacao,
+          separacao(),
+          C.distanciaMinima,
+          C.distanciaMaxima,
+        )
+        marcarQueMexeu()
+        return
+      }
+      const dx = e.clientX - antes.x
+      const dy = e.clientY - antes.y
+      if (dx === 0 && dy === 0) return
+      rastro.giro -= dx * C.giroPorPixel
       rastro.inclinacao = MathUtils.clamp(
-        rastro.inclinacao + (e.clientY - ultimoY) * 0.004,
-        0.12,
-        1.25,
+        rastro.inclinacao + dy * C.inclinacaoPorPixel,
+        C.inclinacaoMinima,
+        C.inclinacaoMaxima,
       )
-      ultimoX = e.clientX
-      ultimoY = e.clientY
+      if (Math.abs(dx) + Math.abs(dy) > 2) marcarQueMexeu()
     }
     const sobe = (e: PointerEvent) => {
-      if (arrastando === e.pointerId) {
-        arrastando = null
-        arrastandoAgora.current = false
-      }
+      dedos.delete(e.pointerId)
+      if (dedos.size < 2) pinca = null
+      // Soltou um dos dois dedos: o outro volta a girar a partir de onde está.
+      arrastandoAgora.current = dedos.size === 1
     }
     const roda = (e: WheelEvent) => {
       e.preventDefault()
-      distancia.current = MathUtils.clamp(distancia.current + e.deltaY * 0.01, 4, 18)
+      volta.current = null
+      distanciaPedida.current = MathUtils.clamp(
+        distanciaPedida.current + rodaEmPixels(e.deltaY, e.deltaMode) * C.rodaPorPixel,
+        C.distanciaMinima,
+        C.distanciaMaxima,
+      )
+      marcarQueMexeu()
+    }
+    const tecla = (e: KeyboardEvent) => {
+      const alvo = e.target as HTMLElement | null
+      if (alvo?.closest?.('input, textarea, select, [contenteditable=true]')) return
+      const mais = e.code === 'Equal' || e.code === 'NumpadAdd'
+      const menos = e.code === 'Minus' || e.code === 'NumpadSubtract'
+      if (!mais && !menos) return
+      distanciaPedida.current = MathUtils.clamp(
+        distanciaPedida.current + (mais ? -C.passoDaTecla : C.passoDaTecla),
+        C.distanciaMinima,
+        C.distanciaMaxima,
+      )
+      marcarQueMexeu()
     }
     el.addEventListener('pointerdown', desce)
     el.addEventListener('pointermove', move)
     el.addEventListener('pointerup', sobe)
     el.addEventListener('pointercancel', sobe)
     el.addEventListener('wheel', roda, { passive: false })
+    window.addEventListener('keydown', tecla)
     return () => {
       el.removeEventListener('pointerdown', desce)
       el.removeEventListener('pointermove', move)
       el.removeEventListener('pointerup', sobe)
       el.removeEventListener('pointercancel', sobe)
       el.removeEventListener('wheel', roda)
+      window.removeEventListener('keydown', tecla)
     }
   }, [gl, rastro])
 
+  // Uma vez, se a pessoa ainda não mexeu na câmera: o Zappy conta como.
+  useEffect(() => {
+    if (mexeu.current) return
+    const t = setTimeout(() => {
+      if (mexeu.current) return
+      loja
+        .getState()
+        .dizer(
+          toque
+            ? 'Arraste a tela com um dedo para girar a câmera. Com dois dedos, chegue mais perto ou mais longe.'
+            : 'Arraste a tela com o mouse para girar a câmera. A rodinha chega mais perto ou mais longe.',
+        )
+      mexeu.current = true
+      gravarDica()
+    }, C.dicaDepoisDeMs)
+    return () => clearTimeout(t)
+  }, [loja, toque])
+
   useFrame((_, dt) => {
+    // Zoom suave até o pedido.
+    distancia.current +=
+      (distanciaPedida.current - distancia.current) * (1 - Math.exp(-dt * C.suavizarZoom))
+    // Voltando para as costas (dois cliques): giro e ângulo andam juntos até chegar.
+    const v = volta.current
+    if (v) {
+      const kv = 1 - Math.exp(-dt * C.voltaParaAsCostas)
+      const falta = giroMaisCurto(rastro.giro, v.giro)
+      rastro.giro += falta * kv
+      rastro.inclinacao += (v.inclinacao - rastro.inclinacao) * kv
+      if (Math.abs(falta) < 0.01 && Math.abs(v.inclinacao - rastro.inclinacao) < 0.01)
+        volta.current = null
+    }
     // No cipó, o alvo vai aos poucos para perto do meio do cipó e a câmera segue mais devagar.
     const foco =
       movimento.modo === 'cipo'

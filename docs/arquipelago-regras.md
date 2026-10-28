@@ -512,6 +512,17 @@ Arquivos: `sistemas/camera.ts`, `personagem/camera.tsx` e `mundo/medidas.ts`.
   cipó (`FOCO_NO_CIPO_COM_MENOS_MOVIMENTO = 1`) e fica quase parada; os vagalumes param de
   flutuar.
 
+**O que a pessoa controla** (`CONTROLE_DA_CAMERA`, em `arquipelago/src/mundo/medidas.ts`; como no
+The Sims):
+
+- arrastar com o mouse ou com um dedo gira a câmera em volta do avatar (de lado) e sobe ou desce o
+  ângulo (para cima e para baixo), de 7° (quase rente ao chão) até 72° (quase de cima);
+- a rodinha do mouse, a pinça de dois dedos e as teclas + e - chegam mais perto ou mais longe, de
+  4 a 18 m, com suavidade;
+- dois cliques (ou dois toques) rápidos no mesmo lugar põem a câmera de volta nas costas do avatar;
+- uma vez, se a pessoa não mexer na câmera nos primeiros 9 s, o Zappy conta como girar e
+  aproximar (guardado no aparelho, não volta).
+
 ### 6.9 Ilhas completas
 
 Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medidas.ts`.
@@ -1072,6 +1083,7 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Ciclos de andar e correr | 0,43 s e 0,62 m; 0,37 s e 1,3 m | `arquipelago/arte/avatar/locomocao.py` (`ANDAR`, `CORRER`) e `src/sistemas/locomocao.ts` (`CICLO_DE_ANDAR`, `CICLO_DE_CORRER`), sempre os dois juntos |
 | Transições das animações | 0,18, 0,12 e 0,3 s | `arquipelago/src/sistemas/locomocao.ts`, `TRANSICAO` |
 | Posição do Zappy | 0,75, 0,35 e 1,3 | `arquipelago/src/sistemas/zappy.ts`, `LADO_DO_ZAPPY`, `ATRAS_DO_ZAPPY`, `ALTURA_DO_ZAPPY` |
+| Controle da câmera | 7° a 72°, 4 a 18 m, dois toques em 0,32 s | `arquipelago/src/mundo/medidas.ts`, `CONTROLE_DA_CAMERA` |
 | Câmera | seção 6.8 | `arquipelago/src/mundo/medidas.ts`, `GRUA_DA_CAMERA`, `CAMERA_NO_ALTO` e vizinhos |
 | Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |
 | Percursos guardados | `bosque-copas` | `arquipelago-contracts/src/salvamento.ts`, `PERCURSOS` |
