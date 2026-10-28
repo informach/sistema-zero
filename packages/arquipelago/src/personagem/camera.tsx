@@ -150,7 +150,10 @@ export function Camera() {
           sonda.current,
           0,
           dist + FOLGA_DA_CAMERA,
-          true,
+          // Começar encostado num tronco (escalando, ou de pé junto dele) e se afastar não é
+          // bater: só conta o que entra mais no sólido. Com `true`, a bolinha que já sai
+          // encostando parava na hora para qualquer lado e a câmera ia para dentro da cabeça.
+          false,
           rapier.QueryFilterFlags.EXCLUDE_KINEMATIC | rapier.QueryFilterFlags.EXCLUDE_SENSORS,
           GRUPOS_DO_RAIO_DA_CAMERA,
         )

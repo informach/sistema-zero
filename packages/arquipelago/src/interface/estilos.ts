@@ -73,5 +73,5 @@ export const ESTILOS = `
 .arq-corte{position:absolute;inset:0;background:#0e1638;pointer-events:none;opacity:0;animation:arq-corte linear both}
 @keyframes arq-corte{0%{opacity:0}43%{opacity:1}57%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.arq-estrelas li.ganhou > span[aria-hidden]{animation:none}}
-@media (max-width:640px){.arq-necessidades{min-width:130px;padding:8px}.arq-nec{font-size:0}.arq-dica{bottom:200px}.arq-cronometro{top:auto;bottom:250px}.arq-acao{flex-wrap:wrap;justify-content:center;border-radius:18px}}
+@media (max-width:640px){.arq-necessidades{min-width:130px;padding:8px}.arq-nec{font-size:0}.arq-dica{bottom:200px}.arq-cronometro{top:112px}.arq-acao{flex-wrap:wrap;justify-content:center;border-radius:18px}}
 `

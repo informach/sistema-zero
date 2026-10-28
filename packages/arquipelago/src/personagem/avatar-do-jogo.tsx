@@ -1,3 +1,4 @@
+import { useFrame } from '@react-three/fiber'
 import { AvatarRig } from '@sistemazero/avatar-quarto/avatar/avatar-rig'
 import { DEFAULT_AVATAR_SLOTS } from '@sistemazero/avatar-quarto/avatar/catalog'
 import { Suspense, useMemo, useRef, useState } from 'react'
@@ -9,7 +10,23 @@ import { useEstado } from '../estado/contexto'
  * corpo em coordenadas de MUNDO e subtraindo da posição LOCAL (feito para o pódio na origem).
  * Aqui o avatar anda pelo mundo, então refazemos a conta no espaço do pai quando ele fica em pé.
  */
-export function AvatarDoJogo({ pose }: { pose: string }) {
+/**
+ * Roda a cada quadro DEPOIS da pose: monta logo depois do `AvatarRig`, dentro do mesmo `Suspense`,
+ * então o `useFrame` dele entra depois do mixer da pose (os braços no cipó mexem por cima dela).
+ */
+function DepoisDaPose({ fazer }: { fazer: () => void }) {
+  useFrame(fazer)
+  return null
+}
+
+export function AvatarDoJogo({
+  pose,
+  depoisDaPose,
+}: {
+  pose: string
+  /** Mexe nos ossos depois da pose de cada quadro (os braços para cima no cipó e no tronco). */
+  depoisDaPose?: () => void
+}) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const slots = useMemo(() => ({ ...DEFAULT_AVATAR_SLOTS, ...slotsDoJogo }), [slotsDoJogo])
   const personagem = useRef<Group>(null)
@@ -31,6 +48,7 @@ export function AvatarDoJogo({ pose }: { pose: string }) {
     <group visible={emPe}>
       <Suspense fallback={null}>
         <AvatarRig slots={slots} pose={pose} charRef={personagem} onStood={aoFicarEmPe} />
+        {depoisDaPose ? <DepoisDaPose fazer={depoisDaPose} /> : null}
       </Suspense>
     </group>
   )

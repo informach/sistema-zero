@@ -10,10 +10,15 @@ export interface Controle {
   pular: boolean
   /** Conta os pedidos de "usar" (o personagem compara com o último que atendeu). */
   usar: number
+  /**
+   * Conta os toques de pular: soltar o cipó e pular do tronco atendem cada toque, até o que desce
+   * e sobe dentro do mesmo quadro (`pular` sozinho perderia esse).
+   */
+  pulos: number
 }
 
 export function criarControle(): Controle {
-  return { eixoX: 0, eixoZ: 0, correr: false, pular: false, usar: 0 }
+  return { eixoX: 0, eixoZ: 0, correr: false, pular: false, usar: 0, pulos: 0 }
 }
 
 const FRENTE = new Set(['KeyW', 'ArrowUp'])
@@ -43,6 +48,7 @@ export function ligarTeclado(c: Controle, alvo: Window = window): () => void {
   const desce = (e: KeyboardEvent) => {
     if (digitando(e.target)) return
     if (e.code === 'KeyE' && !e.repeat) c.usar++
+    if (e.code === 'Space' && !e.repeat) c.pulos++
     if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault()
     apertadas.add(e.code)
     recalcular()

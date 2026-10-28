@@ -199,7 +199,7 @@ function Resultado() {
     { ganhou: r.estrelas.chegada, texto: 'Chegou ao fim' },
     {
       ganhou: r.estrelas.tempo,
-      texto: `Em menos de ${formatarTempo(PERCURSO_DAS_COPAS.tempoAlvoMs)}`,
+      texto: `Em até ${Math.round(PERCURSO_DAS_COPAS.tempoAlvoMs / 1000)} segundos`,
     },
     { ganhou: r.estrelas.vagalumes, texto: `Os ${r.totalDeVagalumes} vagalumes` },
   ]
@@ -212,7 +212,11 @@ function Resultado() {
         aria-modal="true"
         aria-labelledby="arq-resultado-titulo"
         onKeyDown={(e) => {
-          if (e.key === 'Escape') fechar()
+          // Fechar o resultado não abre o menu (o Esc do menu escuta a janela).
+          if (e.key === 'Escape') {
+            e.stopPropagation()
+            fechar()
+          }
         }}
       >
         <h2 id="arq-resultado-titulo">Percurso nas copas</h2>

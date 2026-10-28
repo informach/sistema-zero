@@ -62,6 +62,7 @@ export function ControlesDeToque() {
           className="arq-botao"
           onPointerDown={() => {
             controle.pular = true
+            controle.pulos++
           }}
           onPointerUp={() => {
             controle.pular = false

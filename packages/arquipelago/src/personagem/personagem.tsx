@@ -35,6 +35,7 @@ import {
 } from '../sistemas/escalada'
 import { ritmo } from '../sistemas/necessidades'
 import { AvatarDoJogo } from './avatar-do-jogo'
+import { acharBracos, type BracosDoAvatar, levantarBracos } from './bracos'
 
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
@@ -87,7 +88,7 @@ export function Personagem() {
   const velY = useRef(0)
   const noChao = useRef(false)
   const usosAtendidos = useRef(controle.usar)
-  const pularAntes = useRef(false)
+  const pulosAtendidos = useRef(controle.pulos)
   const direcao = useRef(0)
   const passo = useRef(0)
   const v = useRef<Vivo>({
@@ -122,6 +123,27 @@ export function Personagem() {
     return c
   }, [world])
   useEffect(() => () => world.removeCharacterController(kcc), [world, kcc])
+  // No cipó, sem subir degrau nem grudar no chão: o balanço passa a `folgaDosPes` do chão, e o
+  // grudar puxaria o corpo para baixo (o jogo acharia que bateu e frearia o balanço).
+  const kccNoCipo = useMemo(() => {
+    const c = world.createCharacterController(0.06)
+    c.setApplyImpulsesToDynamicBodies(false)
+    return c
+  }, [world])
+  useEffect(() => () => world.removeCharacterController(kccNoCipo), [world, kccNoCipo])
+
+  // No cipó e no tronco os braços vão para cima, por cima da pose (os ossos aparecem quando o
+  // avatar termina de carregar).
+  const bracos = useRef<BracosDoAvatar | null>(null)
+  const depoisDaPose = useMemo(
+    () => () => {
+      const corpoVisivel = visual.current
+      if (v.modo === 'chao' || !corpoVisivel) return
+      bracos.current ??= acharBracos(corpoVisivel)
+      if (bracos.current) levantarBracos(bracos.current, corpoVisivel, v.modo)
+    },
+    [v],
+  )
 
   // Trocas de modo (fora do quadro: criadas uma vez por montagem).
   const acoes = useMemo(() => {
@@ -225,8 +247,8 @@ export function Personagem() {
     const ladoZ = -Math.sin(g)
     const pedidoX = frenteX * iz + ladoX * ix
     const pedidoZ = frenteZ * iz + ladoZ * ix
-    const pulou = !parado && controle.pular && !pularAntes.current
-    pularAntes.current = controle.pular
+    const pulou = !parado && controle.pulos !== pulosAtendidos.current
+    pulosAtendidos.current = controle.pulos
     let usou = controle.usar !== usosAtendidos.current
     usosAtendidos.current = controle.usar
 
@@ -261,8 +283,8 @@ export function Personagem() {
       v.desloc.x = v.inicio.x + (v.alvo.x - v.inicio.x) * k - p.x
       v.desloc.y = v.inicio.y + (v.alvo.y - v.inicio.y) * k - p.y
       v.desloc.z = v.inicio.z + (v.alvo.z - v.inicio.z) * k - p.z
-      kcc.computeColliderMovement(col, v.desloc)
-      const mov = kcc.computedMovement()
+      kccNoCipo.computeColliderMovement(col, v.desloc)
+      const mov = kccNoCipo.computedMovement()
       prox.x = p.x + mov.x
       prox.y = p.y + mov.y
       prox.z = p.z + mov.z
@@ -291,9 +313,12 @@ export function Personagem() {
     } else if (v.modo === 'escalada' && v.tronco) {
       const t = v.tronco.tronco
       const lado = v.agarrado.lado
-      // Olhando para o tronco, a direita é `(cos lado, −sin lado)`: o lado pedido na tela vale.
-      const deLado = pedidoX * Math.cos(lado) - pedidoZ * Math.sin(lado)
-      const subir = parado ? 0 : controle.eixoZ
+      // Frente e trás só sobem e descem (a câmera não importa). Os lados seguem a tela: olhando
+      // para o tronco, a direita dele é `(cos lado, −sin lado)`; se a câmera está do outro lado,
+      // a direita da tela é a esquerda dele.
+      const subir = iz
+      const mesmaMao = ladoX * Math.cos(lado) - ladoZ * Math.sin(lado) >= 0 ? 1 : -1
+      const deLado = ix * mesmaMao
       const fim = passoDaEscalada(
         t,
         v.agarrado,
@@ -461,7 +486,7 @@ export function Personagem() {
         }}
         position={[0, -DO_CENTRO_AO_PE, 0]}
       >
-        <AvatarDoJogo pose="Idle" />
+        <AvatarDoJogo pose="Idle" depoisDaPose={depoisDaPose} />
       </group>
     </RigidBody>
   )

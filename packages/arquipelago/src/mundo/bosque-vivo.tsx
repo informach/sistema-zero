@@ -3,11 +3,13 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   AdditiveBlending,
+  Box3,
   CanvasTexture,
   CatmullRomCurve3,
   type Group,
   type Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   type Object3D,
   Quaternion,
   SphereGeometry,
@@ -44,6 +46,7 @@ import {
   TRONCO_DOS_CIPOS,
   troncoNoMundo,
 } from './bosque'
+import type { Copa } from './copas'
 import { giroDaIlha, type IlhaPreparada } from './ilha-completa'
 import { useInterativo } from './interativos'
 
@@ -383,7 +386,7 @@ export function BosqueVivo({
         <InterativoDoCipo key={c.vivo.id} cipo={c.vivo} noChao={noChao} />
       ))}
       <Placa x={placa.x} y={placa.y} z={placa.z} giro={giro} />
-      <Trepadeira tronco={tronco} />
+      <Trepadeira tronco={tronco} preparada={preparada} />
       {pontos?.vagalumes.map((p, i) => (
         <group
           // biome-ignore lint/suspicious/noArrayIndexKey: os vagalumes são fixos e na ordem
@@ -517,7 +520,7 @@ function Placa({ x, y, z, giro }: { x: number; y: number; z: number; giro: numbe
  * A trepadeira em espiral no tronco de escalar: mostra que aquele tronco dá para subir (a marca
  * fica no código até o Blender ganhar o nó `escalada-*`).
  */
-function Trepadeira({ tronco }: { tronco: TroncoVivo }) {
+function Trepadeira({ tronco, preparada }: { tronco: TroncoVivo; preparada: IlhaPreparada }) {
   const geometria = useMemo(() => {
     const t = tronco.tronco
     const pontos: Vector3[] = []
@@ -541,10 +544,35 @@ function Trepadeira({ tronco }: { tronco: TroncoVivo }) {
     }
     return new TubeGeometry(new CatmullRomCurve3(pontos), 160, 0.05, 6, false)
   }, [tronco])
-  useEffect(() => () => geometria.dispose(), [geometria])
-  return (
-    <mesh geometry={geometria}>
-      <meshStandardMaterial color="#4f8a3a" roughness={0.8} />
-    </mesh>
+  const material = useMemo(() => new MeshStandardMaterial({ color: '#4f8a3a', roughness: 0.8 }), [])
+  useEffect(
+    () => () => {
+      geometria.dispose()
+      material.dispose()
+    },
+    [geometria, material],
   )
+  // O tronco da árvore (nó `tronco-*`) esmaece quando tapa a câmera: a trepadeira vai junto.
+  const doTronco = useRef<Copa | null | undefined>(undefined)
+  useFrame(() => {
+    if (doTronco.current === undefined) {
+      const t = tronco.tronco
+      const meio = new Vector3(t.base.x, (t.base.y + t.topo.y) / 2, t.base.z)
+      doTronco.current =
+        preparada.copas.find(
+          (c) =>
+            c.no.name.startsWith('tronco-') && new Box3().setFromObject(c.no).containsPoint(meio),
+        ) ?? null
+    }
+    const visivel = doTronco.current?.visivel ?? 1
+    if (material.opacity === visivel) return
+    const transparente = visivel < 1
+    if (material.transparent !== transparente) {
+      material.transparent = transparente
+      material.depthWrite = !transparente
+      material.needsUpdate = true
+    }
+    material.opacity = visivel
+  })
+  return <mesh geometry={geometria} material={material} />
 }
