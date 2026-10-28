@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import type { ResultadoDoPercurso } from '@sistemazero/arquipelago-contracts'
+import {
+  MELHOR_TEMPO_MAXIMO_MS,
+  type ResultadoDoPercurso,
+} from '@sistemazero/arquipelago-contracts'
 import { dentroDaAgua, paraOMundo } from '../src/mundo/bosque'
 import {
   type Balanco,
@@ -38,8 +41,6 @@ import {
   type PontosDoPercurso,
   passoDaCorrida,
   quantasEstrelas,
-  recomecarCorrida,
-  tempoDaCorrida,
 } from '../src/sistemas/percurso'
 
 const PIVO = { x: 0, y: 6, z: 0 }
@@ -282,41 +283,43 @@ describe('percurso nas copas', () => {
   })
 
   test('deques na ordem, vagalumes, e a chegada só depois do último deque', () => {
-    const c = criarCorrida(1000, 2)
-    expect(passoDaCorrida(c, no(12, 1, 0), pontos, 1500)).toBeNull()
-    expect(passoDaCorrida(c, no(0, 2.1, 2), pontos, 2000)).toEqual({ tipo: 'vagalume', indice: 0 })
-    expect(passoDaCorrida(c, no(0.5, 5, 5), pontos, 3000)).toEqual({ tipo: 'deque', indice: 0 })
-    expect(passoDaCorrida(c, no(5, 5, 5), pontos, 4000)).toEqual({ tipo: 'deque', indice: 1 })
-    expect(passoDaCorrida(c, no(10, 5, 5), pontos, 5000)).toEqual({ tipo: 'deque', indice: 2 })
-    expect(passoDaCorrida(c, no(12, 1, 0.5, true), pontos, 21_000)).toEqual({ tipo: 'chegou' })
+    // Cada passo traz o tempo de jogo daquele quadro.
+    const c = criarCorrida(2)
+    expect(passoDaCorrida(c, no(12, 1, 0), pontos, 500)).toBeNull()
+    expect(passoDaCorrida(c, no(0, 2.1, 2), pontos, 500)).toEqual({ tipo: 'vagalume', indice: 0 })
+    expect(passoDaCorrida(c, no(0.5, 5, 5), pontos, 1000)).toEqual({ tipo: 'deque', indice: 0 })
+    expect(passoDaCorrida(c, no(5, 5, 5), pontos, 1000)).toEqual({ tipo: 'deque', indice: 1 })
+    expect(passoDaCorrida(c, no(10, 5, 5), pontos, 1000)).toEqual({ tipo: 'deque', indice: 2 })
+    expect(passoDaCorrida(c, no(12, 1, 0.5, true), pontos, 16_000)).toEqual({ tipo: 'chegou' })
     expect(c.tempoMs).toBe(20_000)
-    expect(passoDaCorrida(c, no(12, 1, 0.5, true), pontos, 22_000)).toBeNull()
+    expect(passoDaCorrida(c, no(12, 1, 0.5, true), pontos, 1000)).toBeNull()
+    expect(c.tempoMs).toBe(20_000)
   })
 
   test('cair depois do primeiro deque volta ao último deque alcançado; antes, não conta', () => {
-    const c = criarCorrida(0, 2)
+    const c = criarCorrida(2)
     // Caiu da escada (antes do primeiro deque): segue a corrida, sem voltar.
     expect(passoDaCorrida(c, no(1, 1, 1, true), pontos, 100)).toBeNull()
-    passoDaCorrida(c, no(0, 5, 5), pontos, 200)
-    passoDaCorrida(c, no(5, 5, 5), pontos, 300)
-    expect(passoDaCorrida(c, no(7, 1, 2, true), pontos, 400)).toEqual({ tipo: 'caiu', deque: 1 })
+    passoDaCorrida(c, no(0, 5, 5), pontos, 100)
+    passoDaCorrida(c, no(5, 5, 5), pontos, 100)
+    expect(passoDaCorrida(c, no(7, 1, 2, true), pontos, 100)).toEqual({ tipo: 'caiu', deque: 1 })
     // Continua correndo: a volta é com corte suave, nunca para a largada.
     expect(c.situacao).toBe('correndo')
     expect(c.deque).toBe(1)
   })
 
   test('sair da ilha ou se afastar da largada antes de subir desiste, sem castigo', () => {
-    const longe = criarCorrida(0, 2)
+    const longe = criarCorrida(2)
     expect(passoDaCorrida(longe, no(0, 1, 9, true), pontos, 100)).toEqual({ tipo: 'desistiu' })
-    const fora = criarCorrida(0, 2)
+    const fora = criarCorrida(2)
     passoDaCorrida(fora, no(0, 5, 5), pontos, 100)
-    expect(passoDaCorrida(fora, no(15, 5, 0), pontos, 200)).toEqual({ tipo: 'desistiu' })
+    expect(passoDaCorrida(fora, no(15, 5, 0), pontos, 100)).toEqual({ tipo: 'desistiu' })
     expect(estrelasDaCorrida(fora)).toEqual({ chegada: false, tempo: false, vagalumes: false })
     expect(juntarResultado(undefined, fora)).toBeUndefined()
   })
 
   test('as três estrelas: chegar, abaixo do tempo-alvo e todos os vagalumes', () => {
-    const c = criarCorrida(0, 2)
+    const c = criarCorrida(2)
     c.situacao = 'chegou'
     c.tempoMs = PERCURSO_DAS_COPAS.tempoAlvoMs
     c.pegos.fill(true)
@@ -332,7 +335,7 @@ describe('percurso nas copas', () => {
       estrelas: { chegada: true, tempo: false, vagalumes: true },
       melhorTempoMs: 25_000,
     }
-    const c = criarCorrida(0, 2)
+    const c = criarCorrida(2)
     c.situacao = 'chegou'
     c.tempoMs = 19_000
     expect(juntarResultado(antes, c)).toEqual({
@@ -347,14 +350,20 @@ describe('percurso nas copas', () => {
     })
   })
 
-  test('recomeçar zera a mesma corrida (sem alocar) e o cronômetro corre', () => {
-    const c = criarCorrida(0, 2)
-    passoDaCorrida(c, no(0, 2.1, 2), pontos, 10)
-    const pegos = c.pegos
-    recomecarCorrida(c, 5000)
-    expect(c.pegos).toBe(pegos)
-    expect(c.pegos).toEqual([false, false])
-    expect(tempoDaCorrida(c, 7500)).toBe(2500)
+  test('o tempo é só o de jogo: o que não passa pelo passo (menu, ferramenta) não conta', () => {
+    const c = criarCorrida(2)
+    // Dez quadros de 1/60 s: o relógio de parede pode ter andado minutos entre eles.
+    for (let i = 0; i < 10; i++) passoDaCorrida(c, no(0, 1, 0), pontos, 1000 / 60)
+    expect(c.tempoMs).toBeCloseTo(166.67, 1)
+    expect(passoDaCorrida(c, no(0, 1, 0), pontos, -50)).toBeNull()
+    expect(c.tempoMs).toBeCloseTo(166.67, 1)
+  })
+
+  test('passar de uma hora desiste (o salvamento não guarda tempo maior)', () => {
+    const c = criarCorrida(2)
+    expect(passoDaCorrida(c, no(0, 1, 0), pontos, MELHOR_TEMPO_MAXIMO_MS)).toBeNull()
+    expect(passoDaCorrida(c, no(0, 1, 0), pontos, 1)).toEqual({ tipo: 'desistiu' })
+    expect(juntarResultado(undefined, c)).toBeUndefined()
   })
 
   test('o tempo aparece com minutos, segundos e décimos', () => {

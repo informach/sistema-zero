@@ -1,9 +1,9 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRapier } from '@react-three/rapier'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef } from 'react'
 import { MathUtils, Vector3 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
-import { useMenosMovimento } from '../estado/preferencias'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
 import {
   ALTURA_DA_TERRA,
@@ -39,7 +39,7 @@ const SEGUIR_NO_CIPO = 2.5
 export function Camera() {
   const { rastro, movimento } = useJogo()
   const dentro = useEstado((s) => s.dentroDeCasa)
-  const menosMovimento = useMenosMovimento()
+  const menosMovimento = useReducedMotion()
   const noCipo = useRef(0)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)

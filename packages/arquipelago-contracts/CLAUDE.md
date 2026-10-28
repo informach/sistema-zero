@@ -13,7 +13,7 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   São Paulo.
 - `salvamento.ts`: `SalvamentoV2` estrito (a V1 mais `percursos`: as três estrelas e o melhor tempo
   de cada percurso, 27/10/2026), teto de 64 KB, salvamento inicial e migração da V1 (`migrarDaV1`;
-  `SalvamentoSchema` aceita a V1 e já devolve migrada).
+  `SalvamentoSchema` aceita a V1 e já devolve migrada; uma aba antiga não lê a resposta V2).
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,

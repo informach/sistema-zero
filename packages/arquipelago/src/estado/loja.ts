@@ -8,6 +8,7 @@ import type {
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { minutosRestantes } from '../sistemas/tempo-livre'
+import type { ModoDoCorpo } from './contexto'
 
 /** O fim de uma corrida, para a tela de resultado. */
 export interface ResultadoDaCorrida {
@@ -45,7 +46,7 @@ export interface EstadoDoJogo {
   tempoPausado: boolean
   usadoHojeSegundos: number
   /** O que o corpo está fazendo (as dicas e o botão de toque mudam com isto). */
-  modo: 'chao' | 'cipo' | 'escalada'
+  modo: ModoDoCorpo
   corrida: CorridaNaTela | null
   resultado: ResultadoDaCorrida | null
   /** Conta os cortes suaves (a tela escurece e clareia a cada número novo). */

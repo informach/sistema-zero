@@ -1,5 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   AdditiveBlending,
@@ -19,7 +20,6 @@ import {
   Vector3,
 } from 'three'
 import { type AguaRasa, type CipoVivo, type TroncoVivo, useJogo } from '../estado/contexto'
-import { useMenosMovimento } from '../estado/preferencias'
 import { CIPO, comprimentoDaPegada, criarBalanco, passoDoBalanco } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
 import {
@@ -47,7 +47,7 @@ import {
   troncoNoMundo,
 } from './bosque'
 import type { Copa } from './copas'
-import { giroDaIlha, type IlhaPreparada } from './ilha-completa'
+import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
 
 /** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
@@ -81,13 +81,16 @@ export function BosqueVivo({
   ilha,
   centro,
   preparada,
+  troca,
 }: {
   ilha: Ilha
   centro: { x: number; z: number }
   preparada: IlhaPreparada
+  /** A troca da leve pela completa: as peças daqui aparecem quando a completa terminou de entrar. */
+  troca: Troca
 }) {
   const { loja, movimento, pedidos, rastro } = useJogo()
-  const menosMovimento = useMenosMovimento()
+  const menosMovimento = useReducedMotion()
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ x: centro.x, y: 0, z: centro.z }), [centro.x, centro.z])
 
@@ -240,7 +243,7 @@ export function BosqueVivo({
   }
   const comecar = () => {
     if (!pontos) return
-    movimento.corrida = criarCorrida(performance.now(), pontos.vagalumes.length)
+    movimento.corrida = criarCorrida(pontos.vagalumes.length)
     const s = loja.getState()
     s.mostrarResultado(null)
     s.definirCorrida({ vagalumes: 0, totalDeVagalumes: pontos.vagalumes.length })
@@ -286,10 +289,13 @@ export function BosqueVivo({
 
   const vagalumes = useRef<(Group | null)[]>([])
   const tempo = useRef(0)
+  const pecas = useRef<Group>(null)
 
   useFrame((_, dtBruto) => {
     const dt = Math.min(dtBruto, 0.1)
     tempo.current += dt
+    // Placa, trepadeira e vagalumes só com a completa inteira (não pulam na frente da troca).
+    if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
     // Os cipós soltos voltam a parar sozinhos; todos desenham a pose do balanço.
     for (const c of cipos) {
       const b = c.vivo.balanco
@@ -353,17 +359,15 @@ export function BosqueVivo({
     }
     if (c?.situacao !== 'correndo' || !pontos) return
     const s = loja.getState()
-    // Menu, ferramenta ou corte na tela: o cronômetro espera.
-    if (s.menuAberto || s.ferramentaAberta || s.tempoPausado || corte.fase !== 'nada') {
-      c.inicioMs += dt * 1000
-      return
-    }
+    // Menu, tempo pausado ou corte na tela: o cronômetro espera (com uma ferramenta aberta ou a aba
+    // escondida a cena nem desenha, então também não soma).
+    if (s.menuAberto || s.ferramentaAberta || s.tempoPausado || corte.fase !== 'nada') return
     q.corpo.x = rastro.x
     q.corpo.y = rastro.y
     q.corpo.z = rastro.z
     q.corpo.pes = rastro.y - CORPO.doCentroAoPe
     q.corpo.noChaoDaIlha = movimento.noChao && q.corpo.pes < meio.y + TOPO_DO_BOSQUE + CHAO_DA_ILHA
-    const ev = passoDaCorrida(c, q.corpo, pontos, performance.now())
+    const ev = passoDaCorrida(c, q.corpo, pontos, dt * 1000)
     if (!ev) return
     if (ev.tipo === 'vagalume') {
       s.definirCorrida({ vagalumes: vagalumesPegos(c), totalDeVagalumes: c.pegos.length })
@@ -381,7 +385,7 @@ export function BosqueVivo({
   })
 
   return (
-    <>
+    <group ref={pecas} visible={false}>
       {cipos.map((c) => (
         <InterativoDoCipo key={c.vivo.id} cipo={c.vivo} noChao={noChao} />
       ))}
@@ -400,7 +404,7 @@ export function BosqueVivo({
           <Vagalume />
         </group>
       ))}
-    </>
+    </group>
   )
 }
 

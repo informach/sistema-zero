@@ -53,6 +53,11 @@ const CONTROLE_NO_AR = 0.45
 const FOLGA_DO_BALANCO = 0.03
 /** Soltar do tronco sem pular (tecla de usar, ou descer até o chão): um passinho para fora. */
 const PASSO_PARA_FORA_DO_TRONCO = 1.5
+/**
+ * No cipó a câmera olha para um ponto abaixo do pivô, a esta fração da pegada: o balanço inteiro
+ * cabe sem ela correr atrás.
+ */
+const FOCO_ABAIXO_DO_PIVO = 0.62
 
 /** O que o personagem mexe a cada quadro: objetos fixos, nada de alocar no laço da física. */
 interface Vivo {
@@ -135,11 +140,16 @@ export function Personagem() {
   // No cipó e no tronco os braços vão para cima, por cima da pose (os ossos aparecem quando o
   // avatar termina de carregar).
   const bracos = useRef<BracosDoAvatar | null>(null)
+  /** Já procurou os ossos nesta ida ao cipó ou ao tronco (não procura de novo a cada quadro). */
+  const procurouBracos = useRef(false)
   const depoisDaPose = useMemo(
     () => () => {
       const corpoVisivel = visual.current
       if (v.modo === 'chao' || !corpoVisivel) return
-      bracos.current ??= acharBracos(corpoVisivel)
+      if (!bracos.current && !procurouBracos.current) {
+        procurouBracos.current = true
+        bracos.current = acharBracos(corpoVisivel)
+      }
       if (bracos.current) levantarBracos(bracos.current, corpoVisivel, v.modo)
     },
     [v],
@@ -159,6 +169,7 @@ export function Personagem() {
       }
       v.modo = modo
       v.noModo = 0
+      procurouBracos.current = false
       movimento.modo = modo
       loja.getState().definirModo(modo)
     }
@@ -171,6 +182,9 @@ export function Personagem() {
       v.alvo.y = vy
       v.alvo.z = vz
       pegarCipo(c.balanco, c.pivo, v.maos, v.alvo, direcao.current, c.pegada)
+      movimento.foco.x = c.pivo.x
+      movimento.foco.y = c.pivo.y - c.pegada * FOCO_ABAIXO_DO_PIVO
+      movimento.foco.z = c.pivo.z
       v.inicio.x = de.x
       v.inicio.y = de.y
       v.inicio.z = de.z
@@ -273,7 +287,7 @@ export function Personagem() {
     let afundar = 0
     const prox = v.prox
 
-    if (v.modo === 'cipo' && v.cipo) {
+    if (v.modo === 'cipo' && v.cipo && movimento.cipos.includes(v.cipo)) {
       const c = v.cipo
       passoDoBalanco(c.balanco, pedidoX, pedidoZ, dt, true)
       corpoNoBalanco(c.balanco, c.pivo, v.alvo)
@@ -299,10 +313,6 @@ export function Personagem() {
       }
       b.setNextKinematicTranslation(prox)
       direcao.current = c.balanco.rumo
-      // A câmera olha um pouco abaixo do pivô: o balanço inteiro cabe sem ela correr atrás.
-      movimento.foco.x = c.pivo.x
-      movimento.foco.y = c.pivo.y - c.pegada * 0.62
-      movimento.foco.z = c.pivo.z
       noChao.current = false
       if (pulou || (usou && !parado)) {
         velocidadeAoSoltar(c.balanco, v.embalo)
@@ -310,7 +320,7 @@ export function Personagem() {
         acoes.mudarModo('chao', agora)
         usou = false
       }
-    } else if (v.modo === 'escalada' && v.tronco) {
+    } else if (v.modo === 'escalada' && v.tronco && movimento.troncos.includes(v.tronco)) {
       const t = v.tronco.tronco
       const lado = v.agarrado.lado
       // Frente e trás só sobem e descem (a câmera não importa). Os lados seguem a tela: olhando
@@ -369,6 +379,9 @@ export function Personagem() {
       vz = pedidoZ * vel * controleAqui + (comEmbalo ? v.embalo.z : 0)
 
       if (nadando && !noLago) {
+        // A água freia o embalo de um cipó ou do tronco (nadando não se pisa para zerar).
+        v.embalo.x = 0
+        v.embalo.z = 0
         // Boia: puxa a cintura para a linha da água, devagar.
         const alvo = NIVEL_DA_AGUA - CINTURA + DO_CENTRO_AO_PE
         velY.current = MathUtils.lerp(velY.current, (alvo - p.y) * 3, 0.15)
@@ -413,11 +426,13 @@ export function Personagem() {
           let contra: TroncoVivo | null = null
           for (const t of movimento.troncos) {
             const tr = t.tronco
-            if (!naAlturaDoTronco(tr, prox.y, DO_CENTRO_AO_PE)) continue
+            if (!naAlturaDoTronco(tr, prox.y, DO_CENTRO_AO_PE, CIPO.maosAcimaDoCentro)) continue
             if (distanciaDaCasca(tr, prox, RAIO) > ESCALADA.distanciaParaGrudar) continue
             const ax = (tr.base.x + tr.topo.x) / 2 - prox.x
             const az = (tr.base.z + tr.topo.z) / 2 - prox.z
-            const d = Math.hypot(ax, az) || 1
+            const pedido = Math.hypot(pedidoX, pedidoZ)
+            if (pedido < 0.2) continue
+            const d = (Math.hypot(ax, az) || 1) * pedido
             if ((pedidoX * ax + pedidoZ * az) / d > 0.6) contra = t
           }
           v.contraOTronco = contra ? v.contraOTronco + dt : 0

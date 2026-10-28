@@ -239,8 +239,12 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
   `migrarSalvamento`. Assim ninguém perde o progresso.
 - **A V1 continua valendo:** um salvamento V1 guardado é lido já migrado (`migrarDaV1`: tudo igual
-  e nenhum percurso corrido). Uma aba aberta antes da atualização, que ainda grava V1, também é
-  aceita, e o serviço guarda já migrado.
+  e nenhum percurso corrido).
+- **Aba aberta antes da atualização:** ela ainda grava V1. O serviço aceita e guarda já migrado,
+  mas responde em V2, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
+  falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
+  mudança de formato; resolver de vez pede que a plataforma recarregue o jogo quando o manifesto
+  muda.
 
 ### O salvamento inicial
 
@@ -392,7 +396,8 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 A velocidade final é multiplicada pelo ritmo do humor (6.2).
 
 - **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
-  até pisar, e a direção pedida só corrige 45% do normal (`CONTROLE_NO_AR = 0.45`).
+  até pisar ou cair no mar (a água freia), e a direção pedida só corrige 45% do normal
+  (`CONTROLE_NO_AR = 0.45`).
 - **Pular** conta cada toque (`controle.pulos`): o toque rápido que desce e sobe no mesmo quadro
   também solta o cipó e pula do tronco.
 - **Braços:** no cipó e no tronco o avatar segura com os braços para cima
@@ -563,9 +568,12 @@ Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts` e
 - **Corte suave:** a tela escurece em 0,26 s, o corpo é levado e ela clareia em 0,34 s
   (`corteSaiMs`, `corteVoltaMs`).
 - **Desistir sem castigo:** sair da ilha (1 além da borda), se afastar mais de 7 da largada antes
-  de subir (`distanciaParaDesistir`) ou tocar "Parar" no cronômetro. Nada se perde.
+  de subir (`distanciaParaDesistir`), tocar "Parar" no cronômetro ou passar de 1 hora. Nada se
+  perde.
 - **Cronômetro:** discreto no alto da tela, só durante a corrida, com os vagalumes pegos e o botão
-  "Parar". Menu, ferramenta, tempo pausado e o corte param o cronômetro.
+  "Parar". Conta o tempo de jogo, quadro a quadro, como a física: menu, ferramenta aberta, aba
+  escondida, tempo pausado e o corte não contam. Passar de 1 hora desiste sozinho
+  (`MELHOR_TEMPO_MAXIMO_MS`, no contrato), porque o salvamento não guarda tempo maior.
 - **Chegada:** a 1,4 do fim do escorregador (`raioDaChegada`), depois do último deque.
 - **Vagalumes:** 5 (`vagalumes`), só aparecem durante a corrida e são pegos a 0,8 do centro do
   corpo (`raioDoVagalume`). Ficam em `VAGALUMES_DAS_COPAS`:
@@ -1003,6 +1011,7 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Placa da largada | ao lado do pé da escada | `arquipelago/src/mundo/bosque.ts`, `PLACA_DA_LARGADA` |
 | Vagalumes do percurso | 5, pegos a 0,8 | `bosque.ts`, `VAGALUMES_DAS_COPAS`; `arquipelago/src/sistemas/percurso.ts`, `PERCURSO_DAS_COPAS.vagalumes`, `.raioDoVagalume` |
 | Tempo-alvo (segunda estrela) | 20 s | `percurso.ts`, `PERCURSO_DAS_COPAS.tempoAlvoMs` |
+| Corrida mais longa (e melhor tempo guardado) | 1 hora | `arquipelago-contracts/src/salvamento.ts`, `MELHOR_TEMPO_MAXIMO_MS` |
 | Pontos de volta | 4 deques; 0,7 para dentro da borda | `bosque.ts`, `RAIOS_DOS_DEQUES`, `VOLTA_PARA_DENTRO_DO_DEQUE` |
 | Chegada e desistência | 1,4 do fim do escorregador; 7 da largada | `percurso.ts`, `PERCURSO_DAS_COPAS.raioDaChegada`, `.distanciaParaDesistir` |
 | Corte suave | 0,26 s e 0,34 s | `percurso.ts`, `PERCURSO_DAS_COPAS.corteSaiMs`, `.corteVoltaMs` |

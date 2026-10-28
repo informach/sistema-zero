@@ -83,8 +83,13 @@ export function distanciaDaCasca(t: Tronco, corpo: Ponto, raioDoCorpo: number): 
 }
 
 /** O tronco está na altura do corpo (dá para grudar dali)? */
-export function naAlturaDoTronco(t: Tronco, y: number, doCentroAoPe: number): boolean {
-  return y >= t.base.y && y <= alturaMaxima(t, 1) + doCentroAoPe
+export function naAlturaDoTronco(
+  t: Tronco,
+  y: number,
+  doCentroAoPe: number,
+  maosAcimaDoCentro: number,
+): boolean {
+  return y >= t.base.y && y <= alturaMaxima(t, maosAcimaDoCentro) + doCentroAoPe
 }
 
 /** Grudar: o corpo fica do lado em que chegou, na altura em que estava (dentro da faixa). */

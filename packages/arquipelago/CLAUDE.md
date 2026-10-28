@@ -129,7 +129,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   começa (E / Usar); cada deque alcançado vira ponto de volta; cair no chão da ilha depois do
   primeiro deque escurece, leva à `volta` do último deque e clareia (`corteSaiMs`, `corteVoltaMs`),
   nunca para a largada; sair da ilha, se afastar da largada antes de subir ou "Parar" desiste sem
-  castigo. Menu, ferramenta e corte param o cronômetro. Chegar ao fim do escorregador mostra o
+  castigo. O tempo é o de jogo, somado quadro a quadro: menu, ferramenta aberta, aba escondida e
+  o corte não contam, e passar de 1 hora desiste (o salvamento não guarda mais que isso). Chegar ao fim do escorregador mostra o
   resultado (estrelas, tempo, melhor tempo, "Correr de novo") e grava o melhor em
   `salvamento.percursos['bosque-copas']` (`juntarResultado`: cada estrela fica para sempre, o tempo
   é o menor). Os vagalumes só aparecem durante a corrida.
@@ -145,7 +146,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 ## Salvamento e tempo
 
 - `SalvamentoV2` (contrato) com versão; a V1 migra sozinha (`migrarDaV1`: nenhum percurso
-  corrido) e gravar ainda aceita a V1 de uma aba antiga. Gravação por revisão (CAS). Revisão velha recebe 409
+  corrido). Gravar aceita a V1 de uma aba aberta antes da atualização e guarda migrada, mas essa
+  aba não lê a resposta V2: só a primeira gravação dela fica, as seguintes falham até recarregar.
+  Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.
 - Tempo livre do Kids: cada segundo ativo fica em IndexedDB por perfil; lotes de até 10 s são
   enviados com UUID e dia de São Paulo. O serviço trata repetições de forma idempotente; uma

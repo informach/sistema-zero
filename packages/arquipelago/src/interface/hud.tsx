@@ -5,7 +5,7 @@ import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { comer } from '../sistemas/necessidades'
-import { formatarTempo, PERCURSO_DAS_COPAS, tempoDaCorrida } from '../sistemas/percurso'
+import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { ControlesDeToque } from './toque'
 
@@ -157,7 +157,7 @@ function Cronometro() {
     const mostrar = () => {
       const c = movimento.corrida
       if (c && texto.current) {
-        texto.current.textContent = formatarTempo(tempoDaCorrida(c, performance.now()))
+        texto.current.textContent = formatarTempo(c.tempoMs)
       }
       quadro = requestAnimationFrame(mostrar)
     }
@@ -395,8 +395,10 @@ export function Hud() {
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       const s = loja.getState()
-      if (e.code === 'Escape' && !s.tempoPausado && !s.ferramentaAberta && !s.resultado)
-        s.abrirMenu(!s.menuAberto)
+      if (e.code !== 'Escape') return
+      // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
+      if (s.resultado) s.mostrarResultado(null)
+      else if (!s.tempoPausado && !s.ferramentaAberta) s.abrirMenu(!s.menuAberto)
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)

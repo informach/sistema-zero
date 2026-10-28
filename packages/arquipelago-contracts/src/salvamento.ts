@@ -41,8 +41,8 @@ export type SalvamentoV1 = z.infer<typeof SalvamentoV1Schema>
 export const PERCURSOS = ['bosque-copas'] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
-/** Uma hora: nenhuma corrida dura tanto (o jogo cancela quem sai do percurso). */
-const MELHOR_TEMPO_MAXIMO_MS = 60 * 60 * 1000
+/** Uma hora: o jogo desiste da corrida que passa disto (nada acima vai para o salvamento). */
+export const MELHOR_TEMPO_MAXIMO_MS = 60 * 60 * 1000
 
 /**
  * O melhor de um percurso. Cada estrela vale sozinha e fica para sempre: a de chegar, a do
@@ -68,8 +68,10 @@ export function migrarDaV1(v1: SalvamentoV1): SalvamentoV2 {
 }
 
 /**
- * O formato atual. Aceita também a V1 e já devolve migrada: um salvamento guardado antes e uma
- * aba aberta antes da atualização (que ainda grava V1) continuam valendo, sem perder nada.
+ * O formato atual. Aceita também a V1 e já devolve migrada: um salvamento guardado antes continua
+ * valendo, e a gravação V1 de uma aba aberta antes da atualização é guardada já migrada. Essa aba
+ * antiga, porém, não lê a resposta (V2): a primeira gravação dela fica, e as seguintes falham até
+ * a página recarregar.
  */
 export const SalvamentoSchema = z.union([
   SalvamentoV2Schema,

@@ -3,7 +3,10 @@
  * Largada na placa ao pé da escada, um ponto de volta em cada deque, vagalumes pelo caminho e a
  * chegada no fim do escorregador. Nada aqui aloca por quadro.
  */
-import type { ResultadoDoPercurso } from '@sistemazero/arquipelago-contracts'
+import {
+  MELHOR_TEMPO_MAXIMO_MS,
+  type ResultadoDoPercurso,
+} from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
 
 export const PERCURSO_DAS_COPAS = {
@@ -52,32 +55,26 @@ export interface PontosDoPercurso {
 
 export type SituacaoDaCorrida = 'correndo' | 'chegou' | 'desistiu'
 
+/**
+ * Uma corrida. O tempo é o do jogo, somado quadro a quadro enquanto ela anda (como a física): menu,
+ * ferramenta aberta (a cena para), aba escondida e o corte de volta ao deque não contam.
+ */
 export interface Corrida {
   situacao: SituacaoDaCorrida
-  inicioMs: number
+  /** O tempo corrido até agora (e, depois de chegar, o tempo final). */
+  tempoMs: number
   /** O último deque alcançado (−1 = nenhum ainda). */
   deque: number
   pegos: boolean[]
-  tempoMs: number
 }
 
-export function criarCorrida(agoraMs: number, vagalumes: number): Corrida {
+export function criarCorrida(vagalumes: number): Corrida {
   return {
     situacao: 'correndo',
-    inicioMs: agoraMs,
+    tempoMs: 0,
     deque: -1,
     pegos: Array.from({ length: vagalumes }, () => false),
-    tempoMs: 0,
   }
-}
-
-/** Recomeçar a mesma corrida sem alocar (o "Correr de novo"). */
-export function recomecarCorrida(c: Corrida, agoraMs: number): void {
-  c.situacao = 'correndo'
-  c.inicioMs = agoraMs
-  c.deque = -1
-  c.pegos.fill(false)
-  c.tempoMs = 0
 }
 
 export function vagalumesPegos(c: Corrida): number {
@@ -107,16 +104,22 @@ export interface CorpoNaCorrida {
 }
 
 /**
- * Um quadro da corrida: no máximo um evento por quadro, na ordem chegada, deque, vagalume,
- * queda, desistência (chegar ao fim do escorregador nunca conta como queda).
+ * Um quadro da corrida, com `dtMs` de jogo: no máximo um evento por quadro, na ordem chegada,
+ * deque, vagalume, queda, desistência (chegar ao fim do escorregador nunca conta como queda).
+ * Passar de uma hora desiste: o salvamento não guarda tempo acima disso.
  */
 export function passoDaCorrida(
   c: Corrida,
   corpo: CorpoNaCorrida,
   pontos: PontosDoPercurso,
-  agoraMs: number,
+  dtMs: number,
 ): EventoDaCorrida {
   if (c.situacao !== 'correndo') return null
+  c.tempoMs += Math.max(0, dtMs)
+  if (c.tempoMs > MELHOR_TEMPO_MAXIMO_MS) {
+    c.situacao = 'desistiu'
+    return { tipo: 'desistiu' }
+  }
   const ultimo = pontos.deques.length - 1
   const chegada = pontos.chegada
   if (
@@ -125,7 +128,7 @@ export function passoDaCorrida(
     corpo.pes < chegada.y + 0.6
   ) {
     c.situacao = 'chegou'
-    c.tempoMs = Math.max(0, Math.round(agoraMs - c.inicioMs))
+    c.tempoMs = Math.round(c.tempoMs)
     return { tipo: 'chegou' }
   }
   for (let i = pontos.deques.length - 1; i > c.deque; i--) {
@@ -162,11 +165,6 @@ export function passoDaCorrida(
     return { tipo: 'desistiu' }
   }
   return null
-}
-
-/** O tempo correndo agora (para o cronômetro). */
-export function tempoDaCorrida(c: Corrida, agoraMs: number): number {
-  return c.situacao === 'correndo' ? Math.max(0, agoraMs - c.inicioMs) : c.tempoMs
 }
 
 /** As estrelas de UMA corrida que chegou. */

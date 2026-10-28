@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 /**
- * O que o aparelho diz da pessoa: toque (tablet e celular) e o pedido de menos movimento do
- * sistema (`prefers-reduced-motion`). Os dois seguem a mudança sem recarregar.
+ * O que o aparelho diz da pessoa: toque (tablet e celular), seguindo a mudança sem recarregar. O
+ * pedido de menos movimento é o `useReducedMotion` do `avatar-quarto` (o mesmo do quarto).
  */
 function useConsulta(consulta: string): boolean {
   const [vale, setVale] = useState(false)
@@ -19,8 +19,4 @@ function useConsulta(consulta: string): boolean {
 
 export function useToque(): boolean {
   return useConsulta('(pointer: coarse)')
-}
-
-export function useMenosMovimento(): boolean {
-  return useConsulta('(prefers-reduced-motion: reduce)')
 }

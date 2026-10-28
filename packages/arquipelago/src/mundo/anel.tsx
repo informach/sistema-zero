@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, CylinderCollider, RigidBody } from '@react-three/rapier'
-import { type Ilha, ilhaAberta } from '@sistemazero/arquipelago-contracts'
+import { type Ilha, type IlhaId, ilhaAberta } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   type BufferGeometry,
@@ -212,6 +212,9 @@ function Enfeites({ id, cor }: { id: Ilha['id']; cor: number }) {
 
 const ALTURA_DAS_NUVENS = 7
 
+/** O que mexe em cada ilha completa (montado com ela ativa, em coordenadas do mundo). */
+const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = { bosque: BosqueVivo }
+
 function IlhaDoAnel({
   ilha,
   centro,
@@ -228,6 +231,7 @@ function IlhaDoAnel({
   troca: Troca
 }) {
   const flutua = ilha.id === 'nuvens'
+  const Viva = ILHAS_VIVAS[ilha.id]
   const y = flutua ? ALTURA_DAS_NUVENS : 0
   // A leve fica sempre montada: é a reserva enquanto a completa baixa ou se ela falhar, e some
   // esmaecendo quando a completa entra. Só uma das duas colide por vez.
@@ -254,10 +258,10 @@ function IlhaDoAnel({
           />
         )}
       </group>
-      {/* Cipós, escalada, lago e o percurso nas copas: só com a completa ativa. */}
-      {preparada && completaColide(estado) && ilha.id === 'bosque' && (
-        <BosqueVivo ilha={ilha} centro={centro} preparada={preparada} />
-      )}
+      {/* O que mexe na ilha (no Bosque: cipós, escalada, lago, percurso): só com a completa ativa. */}
+      {preparada && completaColide(estado) && Viva ? (
+        <Viva ilha={ilha} centro={centro} preparada={preparada} troca={troca} />
+      ) : null}
     </>
   )
 }
