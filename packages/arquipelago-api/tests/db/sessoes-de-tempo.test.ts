@@ -2,11 +2,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:tes
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { SequenciaDeTempoInvalidaError } from '../../src/domain/tempo-erros'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
-import { SequenciaDeTempoInvalidaError } from '../../src/domain/tempo-erros'
 import { RepositorioDeSessoesDeTempo } from '../../src/infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 
 const url = process.env.TEST_DATABASE_URL
