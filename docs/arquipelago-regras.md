@@ -1916,10 +1916,11 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 
 - Nico fica na areia da ilha central em `(0, 25)`, olhando para o interior da ilha. Respira
   parado e acena quando a criança chega a menos de quatro metros. Não repete enquanto ela
-  permanece perto e espera pelo menos oito segundos entre acenos. Ainda não entrega cartas
+  permanece perto e espera pelo menos oito segundos entre acenos. A até seis metros ele vira
+  para a criança e, longe, volta a olhar para o interior da ilha. Ainda não entrega cartas
   nem abre conversa.
-- Estrelinha, comum, fica em `(2, 25)`; Búzio, raro, em `(3, 26)`. Usam escala 0,3 e a animação
-  de descanso, em fases diferentes. São presenças visuais: não geram conchas nem recompensas
+- Estrelinha, comum, fica em `(2, 25)`; Búzio, raro, em `(3, 26)`. Usam escala 0,5 (uns 37 cm, para
+  aparecerem na areia vistos da câmera) e a animação de descanso, em fases diferentes. São presenças visuais: não geram conchas nem recompensas
   e não são adicionados à coleção da pessoa. Captura e rotinas continuam para a etapa dos Lumis.
 - Os três têm um cilindro arredondado menor que o desenho. A câmera atravessa esse colisor.
   Os Lumis mantêm colisores pequenos, que o personagem pode transpor como um pequeno degrau.
@@ -1946,6 +1947,8 @@ Decisões: `docs/plans/2026-10-28-arquipelago-praia-nico-e-lumis.md`.
   faz um corte para a vista óptica e um zoom curto até 45 graus. A inclinação é 0,32 rad e a
   distância mínima é 36 m, aumentada para caber uma margem de 17 m de cada lado da ilha.
   Em tela estreita, o enquadramento se afasta. Esc e Voltar restauram a vista anterior.
+- A vista aparece numa lente redonda com aro de latão (`.arq-luneta`): o círculo encosta no
+  lado menor da tela e o resto fica escuro, com o nome da ilha, o Voltar e a fala do Zappy por cima.
 - O tubo gira para o alvo em dois eixos, descontando os 18 graus da inclinação de origem
   do modelo. Nenhum GLB foi regenerado. A luneta só monta o interativo e o colisor quando
   seu modelo carrega; falha de arquivo fica contida na reserva desse componente.
