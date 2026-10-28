@@ -50,6 +50,16 @@
         "y": 5.2,
         "z": 6.6
       },
+      "equilibrio-1-a": {
+        "x": 3.3,
+        "y": 1.36,
+        "z": 1.3
+      },
+      "equilibrio-1-b": {
+        "x": 3.7,
+        "y": 1.36,
+        "z": 4.0
+      },
       "escada": {
         "x": -0.49,
         "y": 1.0,
@@ -129,7 +139,7 @@
       "col-cil-poste": 2,
       "col-cil-toca": 2,
       "col-cil-toco": 3,
-      "col-cil-tora": 3,
+      "col-cil-tora": 4,
       "col-cil-tronco": 26,
       "col-cocho": 1,
       "col-degrau": 12,
@@ -142,7 +152,7 @@
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1000.3,
+    "kb": 1004.2,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
@@ -167,9 +177,9 @@
       "tronco-3": 96,
       "tronco-4": 96,
       "tronco-5": 96,
-      "vegetacao": 9360
+      "vegetacao": 9468
     },
-    "triangulos": 27762
+    "triangulos": 27870
   },
   "bosque-props": {
     "ancoras": {},

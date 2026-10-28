@@ -47,6 +47,10 @@ def no_galho(x):
 
 CIPOS = [no_galho(x) for x in CIPOS_X]
 CABANA = (6.6, -6.4)
+# O tronco caído do equilíbrio (controlador universal, parte 6): estreito e baixo (sobe-se pela
+# ponta andando), ao lado da trilha do lago. As pontas (x, z do jogo) e o raio; o jogo lê o eixo das
+# âncoras `equilibrio-1-a` e `equilibrio-1-b`, no tampo, no meio do tronco.
+TRONCO_CAIDO = ((3.3, 1.3), (3.7, 4.0), 0.19)
 ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da escada da T1
 CERCADO = (2.4, -9.2)
 
@@ -499,6 +503,20 @@ def frente_da_cabana(d):
     return CABANA[0] + dx / n * d, CABANA[1] + dz / n * d
 
 
+def tronco_caido(col):
+    """O tronco caído do equilíbrio: uma tora fina deitada ao longo das pontas de `TRONCO_CAIDO`."""
+    (x0, z0), (x1, z1), r = TRONCO_CAIDO
+    comp = math.hypot(x1 - x0, z1 - z0)
+    # A tora deita ao longo de (−sen rot, cos rot) no chão do Blender (y = −z do jogo).
+    rot = math.atan2(-(x1 - x0), -(z1 - z0))
+    return tora((x0 + x1) / 2, (z0 + z1) / 2, comp, rot, r=r, col=col)
+
+
+def tampo_do_tronco_caido():
+    """A altura do tampo do tronco caído (a tora fica com o meio a 0,9 do raio acima do chão)."""
+    return TOPO + TRONCO_CAIDO[2] * 1.9
+
+
 def ancoras(fim_escorregador):
     lado = R(200)
     bx, by = T1[0] + math.cos(lado) * 1.85, -T1[1] + math.sin(lado) * 1.85
@@ -513,6 +531,9 @@ def ancoras(fim_escorregador):
          ancora('escorregador-fim', fim_escorregador.x, -fim_escorregador.y)]
     for i, t in enumerate(PERCURSO):
         a.append(ancora(f'copas-{i + 1}', t[0] + 0.0, t[1], TOPO + t[4]))
+    (x0, z0), (x1, z1), _ = TRONCO_CAIDO
+    a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))
+    a.append(ancora('equilibrio-1-b', x1, z1, tampo_do_tronco_caido()))
     for i, (x, z, giro) in enumerate(ESCONDERIJOS):
         e = ancora(f'esconderijo-{i + 1}', x, z)
         e.rotation_euler = (0.0, 0.0, giro)
@@ -554,6 +575,7 @@ def construir():
     col += colocar(col_cercado, CERCADO[0], CERCADO[1], frente)
     copas, troncos = [], []
     veg = vegetacao(col, copas, troncos) + enfeite_lago + galho_dos_cipos(col, copas, troncos)
+    veg += tronco_caido(col)
     conferir_corredor(obras + veg + telhado + [o for c in copas + troncos for o in c], 'bosque')
     cipos = {}
     for i in range(len(CIPOS)):

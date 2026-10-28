@@ -1,4 +1,10 @@
-import type { AguaRasa, CipoVivo, ModoDoCorpo, TroncoVivo } from '../../estado/contexto'
+import type {
+  AguaRasa,
+  CipoVivo,
+  EixoDeEquilibrio,
+  ModoDoCorpo,
+  TroncoVivo,
+} from '../../estado/contexto'
 import type { Ponto } from '../cipo'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
 import { criarPulo, type EstadoDoPulo } from '../movimento'
@@ -17,6 +23,13 @@ export interface EstadoDoCorpo {
   modo: ModoDoCorpo
   cipo: CipoVivo | null
   tronco: TroncoVivo | null
+  /** O tronco caído em que o corpo se equilibra, onde está nele (metros desde `a`) e a velocidade. */
+  eixo: EixoDeEquilibrio | null
+  noEixo: number
+  velNoEixo: number
+  /** A inclinação de lado no equilíbrio (radianos; volta sozinha) e há quanto tempo se pede o lado. */
+  balanco: number
+  deLado: number
   /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
   noModo: number
   /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
@@ -56,6 +69,11 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     modo: 'chao',
     cipo: null,
     tronco: null,
+    eixo: null,
+    noEixo: 0,
+    velNoEixo: 0,
+    balanco: 0,
+    deLado: 0,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },
     vel: { x: 0, z: 0 },
@@ -113,6 +131,7 @@ export interface MundoDoMovimento {
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
+  equilibrios: EixoDeEquilibrio[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

@@ -110,6 +110,14 @@ descer pelo escorregador. Faltam quatro peças.
 - **Números de partida:** 1,6 m/s ao longo do eixo, correção lateral em 0,3 s.
 - **Animação nova no Blender:** Equilibrar (braços abertos, passo curto), no mesmo esqueleto.
 - **Testes:** atravessar de ponta a ponta sem sair; pedir de lado não derruba; pular sai.
+- **Feito em 28/10/2026** (`sistemas/modos/equilibrio.ts`, `EQUILIBRIO`): entra pisando no tampo
+  andando ao longo do tronco (o passo a menos de 45° do eixo; de través passa por cima como chão),
+  a mais de 0,15 m das pontas. O lado inclina até 0,25 rad e volta sozinho. Além de pular e das
+  pontas, pedir o lado com força por 0,8 s desce para aquele lado com um passinho: um erro pequeno
+  nunca derruba, mas quem subiu sem querer não fica preso. No Bosque, o tronco fica ao lado da
+  trilha do lago (`TRONCO_CAIDO` no `bosque.py`, raio 0,19, tampo a 0,36 m: sobe-se pela ponta);
+  na sala de testes, a estação "Tronco caído". Conferido no navegador: 5,5 m em 3,1 s, o lado por
+  0,4 s não tira do tronco e na ponta sai andando.
 
 ### Subir a escada ou o cipó vertical (`escada`)
 

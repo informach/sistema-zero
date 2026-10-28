@@ -81,7 +81,17 @@ export interface TroncoVivo {
   tronco: Tronco
 }
 
-export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada'
+/**
+ * O eixo de um tronco caído estreito (`equilibrio-*` do GLB): as duas pontas no tampo, no meio do
+ * tronco, no mundo. Andando ao longo dele, o corpo entra no modo de equilíbrio.
+ */
+export interface EixoDeEquilibrio {
+  id: string
+  a: Ponto
+  b: Ponto
+}
+
+export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada' | 'equilibrio'
 
 /**
  * Cipós, troncos de escalar e águas rasas das ilhas completas, e o que o personagem faz com eles
@@ -92,6 +102,7 @@ export interface Movimento {
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
+  equilibrios: EixoDeEquilibrio[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
   /** Escritos pelo personagem. */
@@ -116,6 +127,7 @@ export function criarMovimento(): Movimento {
     cipos: [],
     troncos: [],
     aguas: [],
+    equilibrios: [],
     pedido: null,
     modo: 'chao',
     noChao: false,

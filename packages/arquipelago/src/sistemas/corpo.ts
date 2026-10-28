@@ -28,6 +28,12 @@ export const CORPO = {
   sobeAte: 52,
   /** Acima desta inclinação ele escorrega (graus); entre `sobeAte` e esta, não sobe nem escorrega. */
   escorregaAcimaDe: 60,
+  /**
+   * O controlador do Rapier mantém esta folga entre a cápsula e o chão. O desenho desce o mesmo
+   * tanto para o pé encostar (sem ela o avatar anda flutuando), e os modos que põem o corpo direto
+   * num lugar (o tronco caído) deixam a mesma folga.
+   */
+  folga: 0.06,
 } as const
 
 /** Até onde chega um pulo no plano, saindo a `velocidade` (m/s): o tempo no ar vezes ela. */

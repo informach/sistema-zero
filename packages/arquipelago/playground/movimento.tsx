@@ -18,7 +18,15 @@ import { Camera } from '../src/personagem/camera'
 import { Personagem } from '../src/personagem/personagem'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
 import { alturaDoPulo, beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
-import { BLOCOS, type Bloco, ESTACOES, LAGUINHO, naSala, ROTULOS } from './sala-de-movimento'
+import {
+  BLOCOS,
+  type Bloco,
+  EIXO_DO_TRONCO_CAIDO,
+  ESTACOES,
+  LAGUINHO,
+  naSala,
+  ROTULOS,
+} from './sala-de-movimento'
 
 /**
  * A sala de testes do movimento (`/movimento` no playground; controlador universal, parte 4): o
@@ -97,6 +105,7 @@ const NOME_DO_MODO: Record<string, string> = {
   nado: 'nado',
   cipo: 'cipó',
   escalada: 'escalada',
+  equilibrio: 'equilíbrio',
 }
 /** No celular o painel começa fechado (cobriria metade da tela). */
 const ABRE_O_PAINEL = typeof window !== 'undefined' && window.innerWidth > 600
@@ -122,8 +131,13 @@ function Sala() {
       y: meio.y,
     }
     movimento.aguas.push(agua)
+    // O tronco caído, no mundo (o eixo no meio do tampo).
+    const e = EIXO_DO_TRONCO_CAIDO
+    const eixo = { id: e.id, a: naSala(e.a.x, e.a.y, e.a.z), b: naSala(e.b.x, e.b.y, e.b.z) }
+    movimento.equilibrios.push(eixo)
     return () => {
       movimento.aguas.splice(movimento.aguas.indexOf(agua), 1)
+      movimento.equilibrios.splice(movimento.equilibrios.indexOf(eixo), 1)
     }
   }, [movimento])
   const agua = naSala(

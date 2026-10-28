@@ -2,11 +2,13 @@ import type { ModoDoCorpo, Movimento } from '../../estado/contexto'
 import type { Ponto } from '../cipo'
 import { MODO_CHAO } from './chao'
 import { MODO_CIPO, pegarCipo } from './cipo'
+import { MODO_EQUILIBRIO } from './equilibrio'
 import { agarrarTronco, MODO_ESCALADA } from './escalada'
 import type { AvisoDeModo, EstadoDoCorpo, ModoDeMovimento, MundoDoMovimento } from './tipos'
 
 export { MODO_CHAO } from './chao'
 export { MODO_CIPO } from './cipo'
+export { MODO_EQUILIBRIO } from './equilibrio'
 export { MODO_ESCALADA } from './escalada'
 export * from './tipos'
 export { mudarModo } from './trocas'
@@ -16,6 +18,7 @@ export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   chao: MODO_CHAO,
   cipo: MODO_CIPO,
   escalada: MODO_ESCALADA,
+  equilibrio: MODO_EQUILIBRIO,
 }
 
 /**

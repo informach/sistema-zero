@@ -133,6 +133,17 @@ export const VAOS = [
 ] as const
 export const ALTURA_DAS_PLATAFORMAS = 1.5
 
+/**
+ * O tronco caído (modo de equilíbrio): estreito (o tampo bem menor que 0,5 m) e baixo, para subir
+ * pela ponta andando. O eixo vai de `a` a `b` no meio do tampo.
+ */
+export const TRONCO_CAIDO = { x: 6.5, z0: -3, z1: 2.5, altura: 0.36, largura: 0.3 } as const
+export const EIXO_DO_TRONCO_CAIDO = {
+  id: 'tronco-caido-da-sala',
+  a: { x: TRONCO_CAIDO.x, y: TRONCO_CAIDO.altura, z: TRONCO_CAIDO.z0 },
+  b: { x: TRONCO_CAIDO.x, y: TRONCO_CAIDO.altura, z: TRONCO_CAIDO.z1 },
+} as const
+
 /** O laguinho: buraco no chão com a água a 15 cm da borda e uma rampa de entrada a oeste. */
 export const LAGUINHO = { x0: 9, x1: 21, z0: 6, z1: 16, fundo: 1.2, agua: -0.15 } as const
 
@@ -235,7 +246,12 @@ function montar() {
     z += fundo
   }
 
-  // 6. Câmera: parede solta, árvore e corredor estreito.
+  // 6. O tronco caído, para o equilíbrio.
+  const T = TRONCO_CAIDO
+  blocos.push(caixa(T.x - T.largura / 2, T.x + T.largura / 2, 0, T.altura, T.z0, T.z1, '#a07a52'))
+  rotulos.push({ texto: 'Tronco caído', x: T.x, y: T.altura + 0.6, z: T.z0 })
+
+  // 7. Câmera: parede solta, árvore e corredor estreito.
   blocos.push(caixa(8, 16, 0, 4, -12.2, -11.8, PAREDE))
   blocos.push(caixa(11.6, 12.4, 0, 5, -4.4, -3.6, '#8a6a4a'))
   blocos.push(caixa(9.6, 14.4, 4.2, 7.4, -6.4, -1.6, '#6fae5a', { semColisao: true }))
@@ -257,6 +273,7 @@ export const ESTACOES: readonly Estacao[] = [
   { nome: 'Rampas', x: -8, z: -11, y: 0, giro: Math.PI },
   { nome: 'Beiradas', x: -10, z: 4, y: 0, giro: Math.PI },
   { nome: 'Plataformas', x: 1.5, z: -22, y: 0, giro: Math.PI },
+  { nome: 'Tronco caído', x: 6.5, z: -4.6, y: 0, giro: Math.PI },
   { nome: 'Câmera', x: 12, z: -16, y: 0, giro: Math.PI },
   { nome: 'Laguinho', x: 5, z: 11, y: 0, giro: -Math.PI / 2 },
 ]

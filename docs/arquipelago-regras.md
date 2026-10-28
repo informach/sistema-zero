@@ -462,6 +462,11 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
   4,5 m correndo. Para desenhar vãos e beiradas: abaixo do alcance sem ajuda passa sempre; acima do
   máximo, nunca. O degrau no ar é uma ajuda escondida que fica por enquanto (o percurso nas copas
   foi medido com ela); o modo "agarrar a borda" vai trocá-la por uma ajuda à vista.
+- **Equilíbrio no tronco caído** (`sistemas/modos/equilibrio.ts`): andando ao longo do tampo de um
+  tronco estreito, o corpo fica preso ao eixo e anda a 1,6 m/s; pedir o lado inclina o corpo (até
+  0,25) e a inclinação volta sozinha em 0,3 s. Sai nas pontas (seguindo o passo), pulando, ou
+  pedindo o lado com força por 0,8 s (desce para aquele lado). Ninguém cai por erro pequeno. Os
+  braços abrem (animação Equilibrar). No Bosque, o tronco caído fica ao lado da trilha do lago.
 - **Sala de testes** (`bun run dev`, `/movimento`; `playground/sala-de-movimento.ts`): pista com
   faixas a cada 2 m, degraus de 0,2, 0,35, 0,4 e 0,5, rampas de 25°, 42° e 55°, beiradas de 1,2,
   1,9 e 2,4 m, plataformas com vãos de 1,2, 2,9 e 5 m, parede, árvore e corredor para a câmera e um

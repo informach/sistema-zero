@@ -35,6 +35,7 @@ import {
   MODOS,
   mudarModo,
 } from '../sistemas/modos'
+import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { ritmo } from '../sistemas/necessidades'
 import { jogoPausado } from '../sistemas/pausa'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
@@ -50,11 +51,8 @@ import {
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
 const DO_CENTRO_AO_PE = CORPO.doCentroAoPe
-/**
- * O controlador do Rapier mantém esta folga entre a cápsula e o chão. O desenho desce o mesmo tanto
- * para o pé encostar no chão (sem ela o avatar anda flutuando).
- */
-const FOLGA_DO_CONTROLADOR = 0.06
+/** A folga que o controlador do Rapier deixa embaixo da cápsula (`CORPO.folga`). */
+const FOLGA_DO_CONTROLADOR = CORPO.folga
 /** Onde a corda passa no corpo, já girado (conta do desenho no cipó, sem alocar no quadro). */
 const noCorpo = new Vector3()
 /** Onde o corpo está no desenho deste quadro (suavizado entre dois passos da física). */
@@ -115,7 +113,7 @@ export function Personagem() {
     noChao: true,
     velY: 0,
     nadando: false,
-    pendurado: null,
+    especial: null,
   })
   /** O corpo como os modos o veem (`sistemas/modos`): um objeto só, mexido a cada passo. */
   const v = useRef(criarEstadoDoCorpo()).current
@@ -317,18 +315,19 @@ export function Personagem() {
     // O que as animações leem. Os passos, o balanço do corpo e a inclinação de quem corre vêm das
     // animações (`avatar-do-jogo`).
     const m = animacao.current
-    // No chão, a velocidade no chão; na escalada, pela casca (subindo, descendo ou de lado).
+    // No chão, a velocidade no chão; no cipó o laço não anda pela distância; nos outros modos, a
+    // do corpo (pela casca, pelo tronco caído), que toca os ciclos deles.
     const real =
       v.modo === 'chao'
         ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt
-        : v.modo === 'escalada'
-          ? Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
-          : 0
+        : v.modo === 'cipo'
+          ? 0
+          : Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
     m.velocidade += (real - m.velocidade) * Math.min(1, dt * 14)
     m.noChao = v.modo !== 'chao' || v.noChao
     m.velY = v.velY
     m.nadando = nadando
-    m.pendurado = v.modo === 'chao' ? null : v.modo
+    m.especial = v.modo === 'chao' ? null : v.modo
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
     estado.definirAlvo(parado || v.modo !== 'chao' ? null : maisPerto(interativos, prox.x, prox.z))
@@ -367,7 +366,9 @@ export function Personagem() {
             INCLINACAO_MAXIMA,
           )
         : 0
-    vis.rotation.z = MathUtils.lerp(vis.rotation.z, curva, Math.min(1, dt * 8))
+    // No tronco caído, o corpo pende para o lado pedido (e volta sozinho, `sistemas/modos`).
+    const deLado = v.modo === 'equilibrio' ? inclinacaoNoDesenho(v) : curva
+    vis.rotation.z = MathUtils.lerp(vis.rotation.z, deLado, Math.min(1, dt * 8))
     // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto da corda no
     // corpo (ao lado do rosto) fica em cima das mãos, com o giro e a inclinação do balanço.
     v.noCipo += ((v.modo === 'cipo' ? 1 : 0) - v.noCipo) * Math.min(1, dt * 10)

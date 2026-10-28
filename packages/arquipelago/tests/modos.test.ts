@@ -75,7 +75,14 @@ const troncoEm = (x: number, z: number): TroncoVivo => ({
 })
 
 function mundo(extra: Partial<MundoDoMovimento> = {}): MundoDoMovimento {
-  return { cipos: [], troncos: [], aguas: [], foco: { x: 0, y: 0, z: 0 }, ...extra }
+  return {
+    cipos: [],
+    troncos: [],
+    aguas: [],
+    equilibrios: [],
+    foco: { x: 0, y: 0, z: 0 },
+    ...extra,
+  }
 }
 
 /** Um passo inteiro, como o personagem faz, com o controlador movendo livre (sem paredes). */
@@ -86,6 +93,8 @@ function passo(
   pisou: boolean,
   avisos: ModoDoCorpo[] = [],
 ) {
+  // Como no personagem: o tempo no modo anda antes do passo.
+  c.noModo += e.dt
   const modo = MODOS[c.modo]
   const controlador = modo.passo(c, e, m)
   const mov = controlador === 'direto' ? null : { ...c.desloc }
@@ -208,5 +217,75 @@ describe('os modos de movimento', () => {
     expect(gastou).toBe(false)
     expect(c.modo).toBe('chao')
     expect(c.velY).toBeGreaterThan(0)
+  })
+})
+
+describe('o equilíbrio no tronco caído', () => {
+  const eixo = { id: 'tronco-caido', a: { x: 0, y: 0.36, z: 0 }, b: { x: 0, y: 0.36, z: 4 } }
+  const centroNoTampo = 0.36 + CORPO.doCentroAoPe + CORPO.folga
+
+  function noTronco() {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ equilibrios: [eixo] })
+    // Andando ao longo do tronco, já pisando no tampo: entra.
+    c.noChao = true
+    const p = { x: 0, y: centroNoTampo, z: 1 }
+    passo(c, entrada(p, { pedidoZ: 1, iz: 1 }), m, true)
+    return { c, m }
+  }
+
+  test('andando ao longo do tampo entra; de través não', () => {
+    const { c } = noTronco()
+    expect(c.modo).toBe('equilibrio')
+    const de = criarEstadoDoCorpo()
+    de.noChao = true
+    passo(
+      de,
+      entrada({ x: 0, y: centroNoTampo, z: 1 }, { pedidoX: 1, ix: 1 }),
+      mundo({ equilibrios: [eixo] }),
+      true,
+    )
+    expect(de.modo).toBe('chao')
+  })
+
+  test('preso ao eixo: pedir de lado inclina e não tira do tronco', () => {
+    const { c, m } = noTronco()
+    let agora = 0
+    for (let i = 0; i < 20; i++) {
+      agora += 16
+      passo(c, entrada(c.prox, { pedidoX: 0.7, pedidoZ: 0.7, agora }), m, true)
+    }
+    expect(c.modo).toBe('equilibrio')
+    expect(c.prox.x).toBeCloseTo(0, 6)
+    expect(Math.abs(c.balanco)).toBeGreaterThan(0.1)
+    // Sem pedir o lado, a inclinação volta sozinha.
+    for (let i = 0; i < 40; i++) passo(c, entrada(c.prox, { agora: 400 + i * 16 }), m, true)
+    expect(Math.abs(c.balanco)).toBeLessThan(0.01)
+  })
+
+  test('vai de ponta a ponta na velocidade do equilíbrio e sai andando na ponta', () => {
+    const { c, m } = noTronco()
+    for (let i = 0; i < 600 && c.modo === 'equilibrio'; i++) {
+      passo(c, entrada(c.prox, { pedidoZ: 1, iz: 1, agora: i * 16 }), m, true)
+    }
+    expect(c.modo).toBe('chao')
+    expect(c.prox.z).toBeCloseTo(4, 1)
+    // Saiu andando (a velocidade do tronco virou a do chão).
+    expect(c.vel.z).toBeGreaterThan(1)
+  })
+
+  test('pular sai para a frente; pedir o lado com força por um tempo desce para aquele lado', () => {
+    const pulando = noTronco()
+    passo(pulando.c, entrada(pulando.c.prox, { pulou: true }), pulando.m, true)
+    expect(pulando.c.modo).toBe('chao')
+    expect(pulando.c.velY).toBe(CORPO.pulo)
+
+    const { c, m } = noTronco()
+    for (let i = 0; i < 70 && c.modo === 'equilibrio'; i++) {
+      passo(c, entrada(c.prox, { pedidoX: 1, ix: 1, agora: i * 16 }), m, true)
+    }
+    expect(c.modo).toBe('chao')
+    // Desceu para +x (o lado pedido) com um passinho.
+    expect(c.embalo.x).toBeGreaterThan(0)
   })
 })

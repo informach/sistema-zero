@@ -3,6 +3,7 @@ import { CORPO } from '../corpo'
 import { ESCALADA } from '../escalada'
 import { aproximarVelocidade, PERFIS, passoDoPulo } from '../movimento'
 import { cipoAoAlcance, pegarCipo } from './cipo'
+import { eixoSobOsPes, entrarNoEquilibrio } from './equilibrio'
 import { agarrarTronco, troncoContra } from './escalada'
 import type { ModoDeMovimento } from './tipos'
 
@@ -47,7 +48,7 @@ export function decidirNado(nadando: boolean, noChao: boolean, naAgua: number): 
  * Chão, ar e água (o nado é parte deste modo, `nadando`): anda e corre com peso relativo à câmera,
  * pula com tolerância, cai com a gravidade, boia na linha da água. No ar com embalo (depois do cipó
  * ou do tronco) a direção pedida só corrige. Depois do controlador: pegar um cipó no ar, grudar no
- * tronco empurrando (ou pulando nele).
+ * tronco empurrando (ou pulando nele), equilibrar no tronco caído andando ao longo dele.
  */
 export const MODO_CHAO: ModoDeMovimento = {
   id: 'chao',
@@ -126,6 +127,11 @@ export const MODO_CHAO: ModoDeMovimento = {
         if (contra && (!c.noChao || c.contraOTronco >= ESCALADA.esperaParaGrudar)) {
           agarrarTronco(c, contra, c.prox, e.agora, aviso)
         }
+      }
+      // Pisando no tampo de um tronco caído estreito, andando ao longo dele: equilíbrio.
+      if (c.modo === 'chao') {
+        const sob = eixoSobOsPes(c, mundo)
+        if (sob) entrarNoEquilibrio(c, sob.eixo, sob.s, e.agora, aviso)
       }
     }
     return false

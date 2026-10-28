@@ -18,7 +18,13 @@ import {
   TubeGeometry,
   Vector3,
 } from 'three'
-import { type AguaRasa, type CipoVivo, type TroncoVivo, useJogo } from '../estado/contexto'
+import {
+  type AguaRasa,
+  type CipoVivo,
+  type EixoDeEquilibrio,
+  type TroncoVivo,
+  useJogo,
+} from '../estado/contexto'
 import { CIPO, comprimentoDaPegada, criarBalanco } from '../sistemas/cipo'
 import { CORDAS, criarPontos, passoDasCordas } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
@@ -177,6 +183,22 @@ export function BosqueVivo({
     }
   }, [preparada, meio, giro, ilha.id])
 
+  // Os troncos caídos do equilíbrio (âncoras `equilibrio-N-a` e `-b`, no tampo, no meio do tronco).
+  const equilibrios = useMemo<EixoDeEquilibrio[]>(() => {
+    const lista: EixoDeEquilibrio[] = []
+    for (let i = 1; ; i++) {
+      const a = preparada.modelo.getObjectByName(`equilibrio-${i}-a`)
+      const b = preparada.modelo.getObjectByName(`equilibrio-${i}-b`)
+      if (!a || !b) break
+      lista.push({
+        id: `${ilha.id}:equilibrio-${i}`,
+        a: paraOMundo(a.position, meio, giro, { x: 0, y: 0, z: 0 }),
+        b: paraOMundo(b.position, meio, giro, { x: 0, y: 0, z: 0 }),
+      })
+    }
+    return lista
+  }, [preparada, meio, giro, ilha.id])
+
   const pontos = useMemo<PontosDoPercurso | null>(() => {
     const ancoras: Partial<AncorasDoPercurso> = {}
     for (const nome of NOMES_DAS_ANCORAS_DO_PERCURSO) {
@@ -195,6 +217,7 @@ export function BosqueVivo({
     for (const c of cipos) c.desenho = prepararCipoDesenhado(c.no, c.vivo.corda, CORDAS.elos)
     movimento.troncos.push(tronco)
     if (agua) movimento.aguas.push(agua)
+    movimento.equilibrios.push(...equilibrios)
     return () => {
       const tirar = <T,>(lista: T[], item: T) => {
         const i = lista.indexOf(item)
@@ -203,6 +226,7 @@ export function BosqueVivo({
       for (const c of meus) tirar(movimento.cipos, c)
       tirar(movimento.troncos, tronco)
       if (agua) tirar(movimento.aguas, agua)
+      for (const e of equilibrios) tirar(movimento.equilibrios, e)
       for (const c of cipos) {
         if (c.desenho) desmontarCipoDesenhado(c.desenho)
         c.desenho = null
@@ -213,7 +237,7 @@ export function BosqueVivo({
         loja.getState().definirCorrida(null)
       }
     }
-  }, [cipos, tronco, agua, movimento, loja])
+  }, [cipos, tronco, agua, equilibrios, movimento, loja])
 
   /** No chão da ilha (não num deque, no cipó nem no tronco). */
   const noChao = () =>
