@@ -1,4 +1,4 @@
-import type { PisoDaCasa } from '@sistemazero/arquipelago-contracts'
+import type { PisoDaCasa, PisoDoQuintal } from '@sistemazero/arquipelago-contracts'
 import {
   CAMERA_DE_OBRA,
   type Ferramenta,
@@ -21,10 +21,28 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
   { id: 'janela', nome: 'Janela', emoji: '🪟', dica: 'Toque numa parede para pôr a janela.' },
   { id: 'piso', nome: 'Piso', emoji: '🟫', dica: 'Toque num cômodo para trocar o piso dele.' },
   {
+    id: 'cerca',
+    nome: 'Cerca',
+    emoji: '🪵',
+    dica: 'Arraste no quintal para esticar a cerca, como a parede.',
+  },
+  {
+    id: 'caminho',
+    nome: 'Caminho',
+    emoji: '🪨',
+    dica: 'Arraste no quintal para fazer o caminho, célula por célula.',
+  },
+  {
+    id: 'canteiro',
+    nome: 'Canteiro',
+    emoji: '🌱',
+    dica: 'Toque no quintal para pôr um canteiro. Ele planta e rega como a horta.',
+  },
+  {
     id: 'apagar',
     nome: 'Apagar',
     emoji: '🧽',
-    dica: 'Arraste por cima das paredes para apagar. Um toque tira a porta ou a janela.',
+    dica: 'Arraste por cima de paredes e cercas para apagar. Um toque tira a porta, a janela, o caminho ou o canteiro vazio.',
   },
   {
     id: 'olhar',
@@ -38,6 +56,11 @@ const JANELAS: ReadonlyArray<{ id: TipoDeJanela; nome: string }> = [
   { id: 'janela-grande', nome: 'Grande' },
   { id: 'janela-arco', nome: 'Em arco' },
   { id: 'janela-redonda', nome: 'Redonda' },
+]
+
+const CAMINHOS: ReadonlyArray<{ id: PisoDoQuintal; nome: string }> = [
+  { id: 'pedra', nome: 'Pedra' },
+  { id: 'grama', nome: 'Grama' },
 ]
 
 const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
@@ -90,6 +113,7 @@ export function BarraDeConstruir() {
   const atual = useConstrucao(construcao, (s) => s.ferramenta)
   const janela = useConstrucao(construcao, (s) => s.janela)
   const piso = useConstrucao(construcao, (s) => s.piso)
+  const caminho = useConstrucao(construcao, (s) => s.caminho)
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
   if (!aberto) return null
   const s = () => construcao.getState()
@@ -127,6 +151,22 @@ export function BarraDeConstruir() {
               onClick={() => s().escolherPiso(p.id)}
             >
               {p.nome}
+            </button>
+          ))}
+        </fieldset>
+      ) : null}
+      {atual === 'caminho' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Tipo de caminho</legend>
+          {CAMINHOS.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className="arq-botao leve"
+              aria-pressed={caminho === c.id}
+              onClick={() => s().escolherCaminho(c.id)}
+            >
+              {c.nome}
             </button>
           ))}
         </fieldset>

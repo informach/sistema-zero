@@ -1,9 +1,16 @@
-import type { Obra, PisoDaCasa, TipoDeAbertura } from '@sistemazero/arquipelago-contracts'
+import {
+  type Obra,
+  ObraSchema,
+  type PisoDaCasa,
+  type PisoDoQuintal,
+} from '@sistemazero/arquipelago-contracts'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { falaDaRecusa } from '../sistemas/construcao/falas'
+import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
+import { hortaComOQuintal } from '../sistemas/construcao/quintal'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
@@ -27,8 +34,7 @@ export function podeConstruir(s: EstadoDoJogo): boolean {
   )
 }
 
-export type Ferramenta = 'olhar' | 'parede' | 'porta' | 'janela' | 'piso' | 'apagar'
-export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
+export type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 
 /** Quantas obras para trás o "Desfazer" lembra (só enquanto o Construir está aberto). */
 export const LEMBRA_PARA_TRAS = 30
@@ -58,6 +64,7 @@ export interface EstadoDaConstrucao {
   ferramenta: Ferramenta
   janela: TipoDeJanela
   piso: PisoDaCasa
+  caminho: PisoDoQuintal
   camera: CameraDeObra
   /** As obras de antes (para desfazer), da mais antiga para a mais nova. */
   antes: Obra[]
@@ -67,6 +74,7 @@ export interface EstadoDaConstrucao {
   escolher(f: Ferramenta): void
   escolherJanela(j: TipoDeJanela): void
   escolherPiso(p: PisoDaCasa): void
+  escolherCaminho(c: PisoDoQuintal): void
   moverCamera(c: Partial<CameraDeObra>): void
   /** Grava o resultado de uma mudança na obra da casa (ou faz o Zappy explicar a recusa). */
   aplicar(r: Resultado): boolean
@@ -91,8 +99,13 @@ export function lojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
   return nova
 }
 
+/** Grava a obra da casa; a horta segue os canteiros do quintal (`hortaComOQuintal`). */
 function mudarObra(loja: LojaDoJogo, obra: Obra) {
-  loja.getState().mudar((s) => ({ ...s, construcao: { ...s.construcao, casa: obra } }))
+  loja.getState().mudar((s) => ({
+    ...s,
+    construcao: { ...s.construcao, casa: obra },
+    horta: hortaComOQuintal(s.horta, obra),
+  }))
 }
 
 export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
@@ -101,6 +114,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     ferramenta: 'parede',
     janela: 'janela-grande',
     piso: 'tabua',
+    caminho: 'pedra',
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
     dentroDaObra: false,
@@ -110,6 +124,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     escolher: (ferramenta) => set({ ferramenta }),
     escolherJanela: (janela) => set({ janela, ferramenta: 'janela' }),
     escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),
+    escolherCaminho: (caminho) => set({ caminho, ferramenta: 'caminho' }),
     moverCamera: (c) => set({ camera: { ...get().camera, ...c } }),
     aplicar(r) {
       const jogo = loja.getState()
@@ -117,6 +132,14 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       if (!r.ok) {
         const fala = falaDaRecusa(r)
         if (fala) loja.getState().dizer(fala)
+        return false
+      }
+      // Os limites de células/arestas do lote não são os limites de trechos serializados.
+      // Validar na confirmação (não a cada movimento da prévia) evita gravar algo que o
+      // serviço recusaria, inclusive quando novas ferramentas forem acrescentadas.
+      if (!ObraSchema.safeParse(r.obra).success) {
+        const fala = falaDaRecusa({ motivo: 'limite' })
+        if (fala) jogo.dizer(fala)
         return false
       }
       const atual = loja.getState().salvamento.construcao.casa

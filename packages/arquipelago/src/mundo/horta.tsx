@@ -2,9 +2,15 @@ import type { Canteiro as DadosDoCanteiro, Semente } from '@sistemazero/arquipel
 import { useEffect, useMemo, useState } from 'react'
 import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
 import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
 import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
-import { colisoresDaHorta, posicaoDoCanteiro } from './colisao-da-ilha-central'
+import {
+  ALTURA_QUE_SEGURA,
+  colisoresDaHorta,
+  posicaoDoCanteiro,
+  type Solido,
+} from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA } from './medidas'
@@ -21,6 +27,16 @@ function sementeQueDaParaPlantar(inv: Record<string, number>): Semente | null {
   return ORDEM.find((s) => quantidade(inv, `semente-${s}`) > 0) ?? null
 }
 
+/** O canteiro do quintal cabe numa célula da grade (o da horta de antes tem 1,35). */
+export const ESCALA_DO_CANTEIRO_DO_QUINTAL = 0.66
+
+/** Onde fica o canteiro: o da horta de antes pela fila; o do quintal, no meio da célula dele. */
+function lugarDoCanteiro(id: string, indice: number): { x: number; z: number; escala: number } {
+  const celula = celulaDoCanteiro(id)
+  if (celula) return { x: celula.x + 0.5, z: celula.z + 0.5, escala: ESCALA_DO_CANTEIRO_DO_QUINTAL }
+  return { ...posicaoDoCanteiro(indice), escala: 1 }
+}
+
 function Canteiro({
   indice,
   canteiro,
@@ -31,7 +47,7 @@ function Canteiro({
   agora: number
 }) {
   const { loja } = useJogo()
-  const { x, z } = posicaoDoCanteiro(indice)
+  const { x, z, escala } = lugarDoCanteiro(canteiro.id, indice)
   const fase = estagio(canteiro, agora)
   const p = progresso(canteiro, agora)
 
@@ -90,7 +106,7 @@ function Canteiro({
   )
 
   return (
-    <group position={[x, ALTURA_DA_TERRA, z]}>
+    <group position={[x, ALTURA_DA_TERRA, z]} scale={escala}>
       <ComReserva reserva={<CanteiroDeAntes canteiro={canteiro} fase={fase} p={p} />}>
         <CanteiroDoModelo
           semente={canteiro.semente ?? null}
@@ -232,8 +248,32 @@ function useInterativo_(
 /** A borda de cada canteiro segura o corpo: ele cuida da horta de fora, sem pisar nas plantas. */
 const COLISORES_DA_HORTA = colisoresDaHorta()
 
+/** Os canteiros do quintal (modo construção) colidem como os da horta, no tamanho deles. */
+function colisoresDoQuintal(horta: readonly DadosDoCanteiro[]): Solido[] {
+  const meia = ALTURA_QUE_SEGURA / 2
+  const lado = 0.66 * ESCALA_DO_CANTEIRO_DO_QUINTAL
+  return horta.flatMap((c) => {
+    const celula = celulaDoCanteiro(c.id)
+    if (!celula) return []
+    return [
+      {
+        forma: 'caixa' as const,
+        nome: `col-canteiro-${c.id}`,
+        posicao: [celula.x + 0.5, ALTURA_DA_TERRA + meia, celula.z + 0.5] as [
+          number,
+          number,
+          number,
+        ],
+        meio: [lado, meia, lado] as [number, number, number],
+        rotacao: [0, 0, 0, 1] as [number, number, number, number],
+      },
+    ]
+  })
+}
+
 export function Horta() {
   const horta = useEstado((s) => s.salvamento.horta)
+  const doQuintal = useMemo(() => colisoresDoQuintal(horta), [horta])
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 2000)
@@ -245,6 +285,7 @@ export function Horta() {
         <Canteiro key={c.id} indice={i} canteiro={c} agora={agora} />
       ))}
       <Colisores lista={COLISORES_DA_HORTA} />
+      <Colisores lista={doQuintal} />
     </>
   )
 }

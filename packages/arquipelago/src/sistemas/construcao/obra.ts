@@ -3,6 +3,7 @@ import { ocupadasDentro, type Planta, planta } from './comodos'
 import {
   type Aresta,
   aberturaNaAresta,
+  arestaDaChave,
   arestasDaAbertura,
   arestasDoArrasto,
   chaveDaAresta,
@@ -31,6 +32,10 @@ export type Recusa =
   | { motivo: 'fora-de-comodo' }
   | { motivo: 'no-quarto' }
   | { motivo: 'limite' }
+  | { motivo: 'dentro-de-casa' }
+  | { motivo: 'tem-parede' }
+  | { motivo: 'tem-caminho' }
+  | { motivo: 'canteiro-com-planta' }
   | { motivo: 'nada' }
 
 export type Resultado = { ok: true; obra: Obra } | ({ ok: false } & Recusa)
@@ -53,7 +58,10 @@ export function arestaLivre(lote: Lote, a: Aresta): Recusa | null {
 }
 
 function conferirFechamento(obra: Obra, lote: Lote): Recusa | null {
-  const nomes = ocupadasDentro(planta(obra, lote), lote)
+  const p = planta(obra, lote)
+  const nomes = ocupadasDentro(p, lote)
+  if (obra.canteiros.some((c) => p.dentro.has(chaveDaCelula(c))))
+    return { motivo: 'fecha-ocupado', nome: 'o canteiro' }
   return nomes[0] ? { motivo: 'fecha-ocupado', nome: nomes[0] } : null
 }
 
@@ -63,12 +71,15 @@ export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resul
   if (arestas.length === 0) return recusa({ motivo: 'nada' })
   const fixas = chavesDosTrechos(lote.paredesFixas)
   const chaves = chavesDosTrechos(obra.paredes)
+  const canteiros = new Set(obra.canteiros.map(chaveDaCelula))
   const antes = chaves.size
   for (const aresta of arestas) {
     const k = chaveDaAresta(aresta)
     if (chaves.has(k) || fixas.has(k)) continue
     const r = arestaLivre(lote, aresta)
     if (r) return recusa(r)
+    if (ladosDaAresta(aresta).some((c) => canteiros.has(chaveDaCelula(c))))
+      return recusa({ motivo: 'ocupado', nome: 'o canteiro' })
     chaves.add(k)
   }
   if (chaves.size === antes) return recusa({ motivo: 'nada' })
@@ -176,7 +187,8 @@ export function trocarPiso(obra: Obra, lote: Lote, c: Celula, tipo: PisoDaCasa):
 
 /**
  * Deixa a obra arrumada depois de mexer nas paredes: um piso por cômodo (os de cômodo que deixou de
- * existir saem) e as portas e janelas só onde ainda há parede.
+ * existir saem), as portas e janelas só onde ainda há parede, e o quintal fora de casa (caminho que
+ * ficou dentro de um cômodo sai; cerca debaixo de parede ou dentro de casa também).
  */
 export function arrumar(obra: Obra, lote: Lote, p: Planta = planta(obra, lote)): Obra {
   const vistos = new Set<number>()
@@ -189,5 +201,17 @@ export function arrumar(obra: Obra, lote: Lote, p: Planta = planta(obra, lote)):
   const aberturas = obra.aberturas.filter((ab) =>
     arestasDaAbertura(ab).every((a) => p.paredes.has(chaveDaAresta(a))),
   )
-  return { ...obra, pisos, aberturas }
+  const caminhos = obra.caminhos.filter((c) => !p.dentro.has(chaveDaCelula(c)))
+  const cercasAntes = chavesDosTrechos(obra.cercas)
+  const cercas = [...cercasAntes].filter((k) => {
+    if (p.paredes.has(k)) return false
+    return !ladosDaAresta(arestaDaChave(k)).every((c) => p.dentro.has(chaveDaCelula(c)))
+  })
+  return {
+    ...obra,
+    pisos,
+    aberturas,
+    caminhos: caminhos.length === obra.caminhos.length ? obra.caminhos : caminhos,
+    cercas: cercas.length === cercasAntes.size ? obra.cercas : trechosDasChaves(cercas),
+  }
 }

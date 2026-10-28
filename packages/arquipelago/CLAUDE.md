@@ -226,7 +226,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   janela, piso, com o motivo de cada recusa), `pecas.ts` (as peças do kit com posição e giro,
   quinas, corte e colisores; a parede cortada colide como `col-obra-cortada-*`, só para o corpo) e
   `telhado.ts` (o corte no Viver e o telhado de duas águas dos cômodos retangulares; o giro do
-  Blender em volta de z é o mesmo em volta do y do jogo). Testes: `tests/construcao.test.ts` (inclusive o lote contra
+  Blender em volta de z é o mesmo em volta do y do jogo), `quintal.ts` (cerca, caminho, canteiro;
+  o canteiro do quintal é um canteiro da horta com id `q<x>_<z>`, e a horta segue a obra em
+  `hortaComOQuintal`) e `ferramentas.ts` (o que cada ferramenta faz no arrasto e no toque, com a
+  prévia). Testes: `tests/quintal.test.ts`. Testes: `tests/construcao.test.ts` (inclusive o lote contra
   `alturaDaIlha` e contra todos os colisores que caem nele).
 - `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.

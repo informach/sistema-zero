@@ -35,6 +35,25 @@ function montar() {
 }
 
 describe('o modo Construir', () => {
+  test('operações não colocam no salvamento uma obra que o contrato recusaria', () => {
+    const { loja, construcao, gravados } = montar()
+    construcao.getState().abrir()
+    const antes = loja.getState().salvamento
+    const quantidadeAntes = gravados.length
+    const paredes = Array.from({ length: 201 }, (_, i) => ({
+      eixo: 'x' as const,
+      x: (i % 20) * 2 - 20,
+      z: Math.floor(i / 20),
+      n: 1,
+    }))
+    expect(
+      construcao.getState().aplicar({ ok: true, obra: { ...LOTE_DA_CASA.obraInicial, paredes } }),
+    ).toBe(false)
+    expect(loja.getState().salvamento).toBe(antes)
+    expect(gravados.length).toBe(quantidadeAntes)
+    expect(construcao.getState().antes).toEqual([])
+  })
+
   test('somente leitura não abre obra nem registra uma aplicação que não foi salva', () => {
     const { loja, construcao, gravados } = montar()
     loja.setState({ acesso: { ...loja.getState().acesso, somenteLeitura: true } })

@@ -1074,6 +1074,21 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   cumeeira com as pontas, testeiras e oitões nas duas pontas, a partir de 4 de altura e subindo
   0,5 por célula (`TELHADO`). Cômodo que não é retângulo fica sem telhado. O telhado sai no
   Construir e com a pessoa dentro da obra; o do quarto (do `casa.glb`) sai junto.
+- **Quintal** (`sistemas/construcao/quintal.ts`): tudo fora de casa, no mesmo lote.
+  - **Cerca:** nas arestas da grade, esticada arrastando como a parede; não vai em cima de parede,
+    dentro de casa, do que está ocupado nem encostada num canteiro. Não fecha cômodo. Teto: 200
+    arestas. Segura o corpo; a câmera passa (`col-cerca-*`). Madeira de 0,9 de altura (formas do
+    código: o kit ainda não tem cerca, anotado no README de `arte/casa`).
+  - **Caminho:** de pedra ou de grama, pintado arrastando pelas células (reto, pelo eixo em que o
+    dedo andou mais); pintar por cima com o outro tipo troca. Não vai dentro de casa nem em cima
+    de canteiro. Teto: 240 células. Caminho que ficar dentro de um cômodo novo sai.
+  - **Canteiro:** um toque numa célula livre do quintal (sem caminho, sem cerca nem parede em
+    volta). Vira um canteiro da horta no salvamento (`q` e a célula, `idDoCanteiro`), que planta,
+    rega e colhe como os seis da horta; a horta tem lugar para 24 (6 de antes e 18 do quintal).
+    Parede não encosta nem fecha canteiro dentro de casa. Apagar só tira canteiro vazio.
+  - **Apagar:** arrastar tira paredes e cercas do caminho; um toque perto de uma aresta (até 0,3)
+    tira a porta, a janela, a parede ou a cerca dali; longe dela, o canteiro vazio ou o caminho
+    da célula. O que cada ferramenta faz com o dedo é regra pura: `sistemas/construcao/ferramentas.ts`.
 
 ### 6.17 O diário e as pegadas
 

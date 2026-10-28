@@ -10,6 +10,7 @@ import telhadoGlb from '../assets/casa/casa-telhado.glb'
 import { lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
 import { type Planta, planta } from '../sistemas/construcao/comodos'
+import { arestaDaChave, chavesDosTrechos } from '../sistemas/construcao/grade'
 import { chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
 import {
   type ArquivoDoKit,
@@ -21,6 +22,7 @@ import {
   pecasDaObra,
   TUDO_CORTADO,
 } from '../sistemas/construcao/pecas'
+import { CERCA, colisoresDaCerca, postesDaCerca } from '../sistemas/construcao/quintal'
 import { paredesCortadasNoViver, telhadosDaObra } from '../sistemas/construcao/telhado'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
@@ -91,7 +93,7 @@ function LuzDasJanelas() {
 }
 
 function colisoresNoMundo(obra: DadosDaObra, p: Planta, cortada: Corte, y: number): Solido[] {
-  return colisoresDaObra(obra, p, cortada).map((c) => ({
+  return [...colisoresDaObra(obra, p, cortada), ...colisoresDaCerca(obra)].map((c) => ({
     forma: 'caixa',
     nome: c.nome,
     posicao: [c.posicao[0], c.posicao[1] + y, c.posicao[2]],
@@ -171,10 +173,12 @@ export function ObraNoMundo({
     [obra, p, cortada, base],
   )
   const comTelhado = !construindo && !dentro
+  const caminhos = useMemo(() => caminhosDaObra(obra), [obra])
   const todas: PecaDoKit[] = [
     ...pecas.paredes,
     ...pecas.quinas,
     ...pecas.pisos,
+    ...caminhos,
     ...(comTelhado ? telhados : []),
   ]
   return (
@@ -189,11 +193,66 @@ export function ObraNoMundo({
           ))}
           <LuzDasJanelas />
         </ComReserva>
+        <Cerca obra={obra} />
       </group>
       <group position={[base[0], 0, base[2]]}>
         <Colisores lista={colisores} />
       </group>
     </>
+  )
+}
+
+/**
+ * O caminho do quintal com o piso de pedra ou de grama do kit. O topo dele é o do chão da ilha
+ * (README do kit); sobe 1 cm para não piscar contra o terreno.
+ */
+const ACIMA_DO_TERRENO = 0.01
+
+function caminhosDaObra(obra: DadosDaObra): PecaDoKit[] {
+  return obra.caminhos.map((c) => ({
+    chave: `caminho@${c.x},${c.z},${c.tipo}`,
+    arquivo: 'pisos',
+    no: `piso-${c.tipo}`,
+    x: c.x + 0.5,
+    z: c.z + 0.5,
+    giro: 0,
+    y: ACIMA_DO_TERRENO,
+  }))
+}
+
+const MADEIRA_DA_CERCA = '#b07a4a'
+
+/** A cerca de madeira (formas do código: o kit ainda não tem a peça). */
+function Cerca({ obra }: { obra: DadosDaObra }) {
+  const postes = useMemo(() => postesDaCerca(obra), [obra])
+  const travessas = useMemo(() => [...chavesDosTrechos(obra.cercas)].map(arestaDaChave), [obra])
+  if (postes.length === 0) return null
+  return (
+    <group position={[0, -0.02, 0]}>
+      {postes.map((p) => (
+        <mesh key={`${p.x},${p.z}`} position={[p.x, CERCA.altura / 2, p.z]}>
+          <boxGeometry args={[CERCA.poste, CERCA.altura, CERCA.poste]} />
+          <meshStandardMaterial color={MADEIRA_DA_CERCA} />
+        </mesh>
+      ))}
+      {travessas.flatMap((a) =>
+        CERCA.travessas.map((y) => (
+          <mesh
+            key={`${a.eixo}${a.x},${a.z},${y}`}
+            position={a.eixo === 'x' ? [a.x + 0.5, y, a.z] : [a.x, y, a.z + 0.5]}
+          >
+            <boxGeometry
+              args={
+                a.eixo === 'x'
+                  ? [1, CERCA.alturaDaTravessa, CERCA.espessura]
+                  : [CERCA.espessura, CERCA.alturaDaTravessa, 1]
+              }
+            />
+            <meshStandardMaterial color={MADEIRA_DA_CERCA} />
+          </mesh>
+        )),
+      )}
+    </group>
   )
 }
 
