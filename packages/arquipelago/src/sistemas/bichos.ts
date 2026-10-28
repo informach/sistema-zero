@@ -38,6 +38,14 @@ export const TRUQUE: Readonly<Record<BichoDoBosque, string>> = {
   porquinho: 'girar',
 }
 
+/** O desenho de cada bicho nos botões (o modelo 3D aparece no mundo). */
+export const EMOJI_DO_BICHO: Readonly<Record<BichoDoBosque, string>> = {
+  cachorro: '🐶',
+  gato: '🐱',
+  coelho: '🐰',
+  porquinho: '🐹',
+}
+
 export const NOME_DO_BICHO: Readonly<Record<BichoDoBosque, string>> = {
   cachorro: 'cachorro caramelo',
   gato: 'gato frajola',
@@ -52,6 +60,16 @@ export function nomeValido(nome: string): string | null {
   const limpo = nome.trim().replace(/\s+/g, ' ')
   if (limpo.length < 1 || limpo.length > 16) return null
   return /^[\p{L}][\p{L} -]*$/u.test(limpo) ? limpo : null
+}
+
+/** Por que o nome não serve, numa frase para a criança (`null` = serve). */
+export function motivoDoNome(nome: string): string | null {
+  const limpo = nome.trim().replace(/\s+/g, ' ')
+  if (limpo.length === 0) return 'Escreva um nome.'
+  if (limpo.length > 16) return 'Esse nome é comprido demais. Use até 16 letras.'
+  if (!/^[\p{L}]/u.test(limpo)) return 'Comece o nome com uma letra.'
+  if (!/^[\p{L} -]*$/u.test(limpo)) return 'Use só letras, espaço e hífen.'
+  return null
 }
 
 /** Adotar um bicho achado, com o nome. Só um bicho adotado nesta fase. */

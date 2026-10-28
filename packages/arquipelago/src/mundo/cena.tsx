@@ -9,6 +9,7 @@ import { Zappy } from '../personagem/zappy'
 import { Agua } from './agua'
 import { Anel } from './anel'
 import { Bancada } from './bancada'
+import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
 import { Ceu } from './ceu'
 import { Farol } from './farol'
@@ -57,6 +58,7 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Farol />
           <Anel />
           <Personagem />
+          <BichoAdotado />
           <Camera />
         </Physics>
         <Zappy />

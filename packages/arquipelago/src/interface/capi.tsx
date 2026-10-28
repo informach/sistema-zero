@@ -1,11 +1,15 @@
-import { type CSSProperties, useEffect, useRef } from 'react'
+import type { BichoDoBosque } from '@sistemazero/arquipelago-contracts'
+import { type CSSProperties, type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaConversa, PAINEL_DA_CAPI, useConversa } from '../estado/moradores'
+import { EMOJI_DO_BICHO, NOME_DO_BICHO } from '../sistemas/bichos'
 import {
+  adotarPelaCapi,
   entregar,
   FALA_DA_ENTREGA,
   oQueFaltaNoPedido,
   pedidoDeHoje,
+  podeAdotar,
   presentear,
 } from '../sistemas/conversa-da-capi'
 import { itensVisiveis } from '../sistemas/itens'
@@ -127,6 +131,15 @@ export function PainelDaCapi() {
                 Entregar o pedido
               </button>
             ) : null}
+            {podeAdotar(salvamento) ? (
+              <button
+                type="button"
+                className="arq-botao leve"
+                onClick={() => conversa.getState().escolherAdotar()}
+              >
+                Adotar um bicho
+              </button>
+            ) : null}
             <button
               ref={pedido && !falta ? undefined : principal}
               type="button"
@@ -143,6 +156,7 @@ export function PainelDaCapi() {
       ) : null}
 
       {tela === 'presente' ? <Presentes aoEscolher={aoPresentear} principal={principal} /> : null}
+      {tela === 'adotar' ? <Adotar principal={principal} /> : null}
     </div>
   )
 }
@@ -183,5 +197,88 @@ function Presentes({
         </button>
       </div>
     </>
+  )
+}
+
+/**
+ * Adotar um bicho do cercadinho: escolher quem e dar um nome (de 1 a 16 letras, só letras, espaço
+ * e hífen). O nome fica só no salvamento da criança.
+ */
+function Adotar({ principal }: { principal: React.RefObject<HTMLButtonElement | null> }) {
+  const { loja } = useJogo()
+  const conversa = lojaDaConversa(loja)
+  const achados = useEstado((s) => s.salvamento.bichos.achados)
+  const [bicho, setBicho] = useState<BichoDoBosque | null>(
+    achados.length === 1 ? (achados[0] ?? null) : null,
+  )
+  const [nome, setNome] = useState('')
+  const [motivo, setMotivo] = useState<string | null>(null)
+  const idNome = useId()
+  const idMotivo = useId()
+
+  function aoAdotar(e: FormEvent) {
+    e.preventDefault()
+    if (!bicho) return
+    const s = loja.getState()
+    const r = adotarPelaCapi(s.salvamento, bicho, nome)
+    if ('motivo' in r) {
+      setMotivo(r.motivo)
+      return
+    }
+    s.mudar(() => r.salvamento)
+    conversa.getState().responder(r.fala, true)
+  }
+
+  return (
+    <form className="arq-capi-adotar" onSubmit={aoAdotar}>
+      <p className="arq-capi-fala">Escolha quem vai com você e dê um nome.</p>
+      <fieldset className="arq-capi-itens arq-capi-escolha">
+        <legend className="arq-sr">Bichos do cercadinho</legend>
+        {achados.map((b) => (
+          <button
+            key={b}
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={bicho === b}
+            onClick={() => setBicho(b)}
+          >
+            <span aria-hidden="true">{EMOJI_DO_BICHO[b]}</span> {NOME_DO_BICHO[b]}
+          </button>
+        ))}
+      </fieldset>
+      <label className="arq-capi-nome" htmlFor={idNome}>
+        Nome
+        <input
+          id={idNome}
+          value={nome}
+          maxLength={16}
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={motivo ? true : undefined}
+          aria-describedby={motivo ? idMotivo : undefined}
+          onChange={(e) => {
+            setNome(e.target.value)
+            setMotivo(null)
+          }}
+        />
+      </label>
+      {motivo ? (
+        <p id={idMotivo} role="alert" className="arq-capi-falta">
+          {motivo}
+        </p>
+      ) : null}
+      <div className="arq-menu-acoes">
+        <button ref={principal} type="submit" className="arq-botao" disabled={!bicho}>
+          Adotar
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve"
+          onClick={() => conversa.getState().voltarAsEscolhas()}
+        >
+          Voltar
+        </button>
+      </div>
+    </form>
   )
 }

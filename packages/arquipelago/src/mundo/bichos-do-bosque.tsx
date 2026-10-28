@@ -88,6 +88,8 @@ export function BichosDoBosque({
 }) {
   const { loja, rastro } = useJogo()
   const achados = useEstado((s) => s.salvamento.bichos.achados)
+  // O adotado anda com a criança (`bicho-adotado.tsx`): o lugar dele no cercadinho fica vazio.
+  const adotado = useEstado((s) => s.salvamento.bichos.adotado?.id ?? null)
 
   // Onde cada um se esconde (a âncora do Blender, se houver; senão a medida do código) e os
   // lugares do cercadinho, já no mundo.
@@ -167,7 +169,7 @@ export function BichosDoBosque({
 
   return (
     <>
-      {BICHOS_DO_BOSQUE.map((b) => {
+      {BICHOS_DO_BOSQUE.filter((b) => b !== adotado).map((b) => {
         const vez = achados.indexOf(b)
         return (
           <ComReserva key={b} reserva={null}>

@@ -148,7 +148,7 @@ interface Vivo {
  */
 export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
-  const { world } = useRapier()
+  const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
   const visual = useRef<Group>(null)
@@ -382,7 +382,7 @@ export function Personagem() {
       v.desloc.x = v.inicio.x + (v.alvo.x - v.inicio.x) * k - p.x
       v.desloc.y = v.inicio.y + (v.alvo.y - v.inicio.y) * k - p.y
       v.desloc.z = v.inicio.z + (v.alvo.z - v.inicio.z) * k - p.z
-      kccNoCipo.computeColliderMovement(col, v.desloc)
+      kccNoCipo.computeColliderMovement(col, v.desloc, rapier.QueryFilterFlags.EXCLUDE_KINEMATIC)
       const mov = kccNoCipo.computedMovement()
       prox.x = p.x + mov.x
       prox.y = p.y + mov.y
@@ -478,7 +478,9 @@ export function Personagem() {
       v.desloc.x = vx * dt
       v.desloc.y = velY.current * dt
       v.desloc.z = vz * dt
-      kcc.computeColliderMovement(col, v.desloc)
+      // Bate só no mundo fixo: passa pelo bicho adotado (também cinemático), que nunca prende a
+      // criança nem a empurra.
+      kcc.computeColliderMovement(col, v.desloc, rapier.QueryFilterFlags.EXCLUDE_KINEMATIC)
       const mov = kcc.computedMovement()
       noChao.current = kcc.computedGrounded()
       if (noChao.current) {

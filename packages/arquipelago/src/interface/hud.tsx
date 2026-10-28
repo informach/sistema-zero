@@ -7,6 +7,7 @@ import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { comer } from '../sistemas/necessidades'
 import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { PainelDoBicho } from './bicho'
 import { PainelDaCapi } from './capi'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
@@ -432,6 +433,7 @@ export function Hud() {
       <ControlesDeToque />
       <PainelDoQuadro />
       <PainelDaCapi />
+      <PainelDoBicho />
       <Menu />
       <Resultado />
       <Corte />

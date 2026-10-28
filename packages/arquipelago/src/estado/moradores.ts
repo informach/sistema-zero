@@ -15,7 +15,7 @@ export interface EstadoDaConversa {
   /** A fala na tela; passou da última, o painel mostra as escolhas. */
   indice: number
   /** O que está aberto embaixo das falas. */
-  tela: 'falas' | 'escolhas' | 'presente'
+  tela: 'falas' | 'escolhas' | 'presente' | 'adotar'
   /** Conta as comemorações (presente de que ela gostou, pedido entregue). */
   alegria: number
   abrir(falas: string[]): void
@@ -23,6 +23,7 @@ export interface EstadoDaConversa {
   responder(fala: string, comemorar: boolean): void
   avancar(): void
   escolherPresente(): void
+  escolherAdotar(): void
   voltarAsEscolhas(): void
 }
 
@@ -55,6 +56,9 @@ export function lojaDaConversa(loja: LojaDoJogo): LojaDaConversa {
       },
       escolherPresente() {
         set({ tela: 'presente' })
+      },
+      escolherAdotar() {
+        set({ tela: 'adotar' })
       },
       voltarAsEscolhas() {
         set({ tela: 'escolhas' })

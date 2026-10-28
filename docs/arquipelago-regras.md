@@ -768,8 +768,8 @@ Arquivos: `arquipelago/src/sistemas/moradores.ts` (a Capi), `falas-da-capi.ts` (
 `conversa-da-capi.ts` (a conversa sobre o salvamento), `esconde.ts` (o esconde-esconde) e
 `bichos.ts` (o bicho adotado); no mundo, `mundo/capi.tsx` e o painel `interface/capi.tsx`. Testes:
 `tests/moradores.test.ts`, `tests/bichos.test.ts`, `tests/caminho.test.ts` e
-`tests/esconde-no-bosque.test.ts`. A Capi e o esconde-esconde já estão no Bosque; o bicho adotado
-ainda não aparece no jogo. O plano da parte que falta:
+`tests/esconde-no-bosque.test.ts` e `tests/cuidar.test.ts`. A Capi, o esconde-esconde e o bicho
+adotado já estão no jogo. O plano da parte que falta:
 `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
 
 - **Onde ela fica:** na âncora `morador` do `bosque.glb`, na frente da cabana, de costas para a
@@ -823,18 +823,32 @@ ainda não aparece no jogo. O plano da parte que falta:
   sempre do escondido mais perto (`maisPertoEscondido`): morno (até 15 m), quentinho (até 7 m) ou
   pertinho (até 2,1 m), só quando muda para mais quente e no máximo uma vez a cada 12 s
   (`deveFalarDoCalor`, `INTERVALO_DO_CALOR`). Esfriar não diz nada.
-- **Adotar** (`adotar`, `nomeValido`): só um bicho já achado, um por vez nesta fase. O nome tem de
-  1 a 16 caracteres, só letras, espaço e hífen, começando por letra. Fica só no salvamento da
-  criança e ninguém mais vê. O bicho chega com 80 em cada medida.
-- **Cuidar** (`QUEDA_DO_BICHO_POR_MINUTO`, `CUIDADO`): fome cai 1,5, limpeza 0,8 e carinho 1 por
-  minuto JOGADO (quem ficou longe não volta para um bicho triste). A comida repõe o dobro do que
-  repõe na criança; o banho repõe 60 e o carinho 25. Abaixo de 30 em qualquer medida ele fica
-  tristinho e não faz o truque (`tristinho`). Ele nunca morre nem foge.
+- **Adotar** (`adotar`, `nomeValido`, `motivoDoNome`, `adotarPelaCapi`): depois do primeiro bicho
+  achado, a conversa com a Capi ganha "Adotar um bicho". A criança escolhe um dos achados e dá um
+  nome de 1 a 16 caracteres, só letras, espaço e hífen, começando por letra; nome que não serve
+  mostra o motivo embaixo do campo. Um bicho por vez nesta fase. O nome fica só no salvamento da
+  criança e ninguém mais vê. O bicho chega com 80 em cada medida e sai do cercadinho para andar
+  com ela. As falas usam o nome e nenhum pronome: é a criança quem decide quem o bicho é.
+- **Seguir** (`sistemas/seguir.ts`, `mundo/bicho-adotado.tsx`): o bicho anda atrás da criança pela
+  ilha central e pelo Bosque com um controlador de personagem do Rapier próprio (sobe degrau de
+  0,3, para na parede). Começa a andar quando ela passa de 2,6 m, para a 1,6 m (dois passos),
+  corre acima de 5 m e senta depois de 6 s parado. No cipó, no tronco, nadando ou com o jogo
+  parado, ele espera. Mais longe que 14 m (a criança atravessou a ponte correndo, voltou para casa
+  no cochilo), ele reaparece dois passos atrás dela. A criança passa por ele: o bicho nunca
+  prende nem empurra (os dois corpos são cinemáticos e se ignoram).
+- **Cuidar** (`sistemas/cuidar.ts`, painel `interface/bicho.tsx`): perto dele aparece "Cuidar de"
+  e o nome. O painel mostra barriga, limpeza e carinho, a última fala e os cuidados: comida da
+  mochila (repõe o dobro do que repõe na criança), banho (só perto do lago do Bosque ou dentro de
+  casa; repõe 60), carinho (repõe 25), a aula do truque e, depois de aprendido, pedir o truque.
+  Fome cai 1,5, limpeza 0,8 e carinho 1 por minuto JOGADO (`QUEDA_DO_BICHO_POR_MINUTO`, nos
+  relógios do jogo, junto com as necessidades da criança). Abaixo de 30 em qualquer medida ele fica
+  triste e não faz o truque (`tristinho`). Ele nunca morre nem foge.
 - **Crescer** (`contarDiaCuidado`, `crescer`): um dia conta como bem cuidado quando as três medidas
-  passam de 60 em algum momento dele. Com 7 dias assim, o filhote vira adulto.
-- **Truque** (`ensinar`, `fazTruque`, `TRUQUE`): uma sessão por dia, com as três medidas acima de
-  50. Na quinta sessão ele aprende e passa a fazer o truque quando pedem (dar a pata, rolar, dar um
-  pulinho ou girar).
+  passam de 60 em algum momento dele (conferido depois de cada cuidado). No sétimo dia assim o
+  filhote vira adulto na hora, com festa, e o modelo troca pelo adulto.
+- **Truque** (`ensinar`, `fazTruque`, `TRUQUE`, `TRUQUE_FEITO`): uma aula por dia, com as três
+  medidas acima de 50. Na quinta aula ele aprende e passa a fazer o truque quando pedem (dar a
+  pata, rolar no chão, dar um pulinho ou girar em volta de si), tocando o clipe "truque".
 - **Moedas:** nada disto paga moedas.
 
 ## 7. Desafios

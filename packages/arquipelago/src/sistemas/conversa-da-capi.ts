@@ -1,4 +1,9 @@
-import { BICHOS_DO_BOSQUE, type Salvamento } from '@sistemazero/arquipelago-contracts'
+import {
+  BICHOS_DO_BOSQUE,
+  type BichoDoBosque,
+  type Salvamento,
+} from '@sistemazero/arquipelago-contracts'
+import { adotar, motivoDoNome } from './bichos'
 import { escondidos } from './esconde'
 import { falasDaCapi } from './falas-da-capi'
 import { ITENS, quantidade } from './itens'
@@ -113,4 +118,28 @@ export function oQueFaltaNoPedido(s: Salvamento): string | null {
       ([id, qtd]) => `${ITENS[id]?.nome ?? id}: você tem ${quantidade(s.inventario, id)} de ${qtd}`,
     )
     .join('. ')
+}
+
+/** A Capi oferece adotar depois do primeiro bicho achado, enquanto nenhum foi adotado. */
+export function podeAdotar(s: Salvamento): boolean {
+  return s.bichos.achados.length > 0 && s.bichos.adotado === null
+}
+
+/**
+ * Adotar pela conversa: o bicho achado ganha o nome e vai com a criança. Com nome que não serve,
+ * nada muda e volta o motivo (a frase para mostrar embaixo do campo).
+ */
+export function adotarPelaCapi(
+  s: Salvamento,
+  bicho: BichoDoBosque,
+  nome: string,
+): { salvamento: Salvamento; fala: string } | { motivo: string } {
+  const motivo = motivoDoNome(nome)
+  if (motivo) return { motivo }
+  const bichos = adotar(s.bichos, bicho, nome)
+  if (!bichos?.adotado) return { motivo: 'Esse bicho não está no cercadinho.' }
+  return {
+    salvamento: { ...s, bichos },
+    fala: `${bichos.adotado.nome} já gostou de você e vai junto para casa. Cuide com carinho.`,
+  }
 }

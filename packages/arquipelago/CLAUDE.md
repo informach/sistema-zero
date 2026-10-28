@@ -33,8 +33,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy, ilhas
   completas, cipó, escalada, percurso, as medidas do corpo, a Capi (`moradores.ts`,
   `falas-da-capi.ts`, `conversa-da-capi.ts`), o esconde-esconde (`esconde.ts`), o caminho pelo
-  chão (`caminho.ts`) e, ainda fora da tela, o bicho adotado (`bichos.ts`)). Sem React. Os números
-  de cada regra, em linguagem da dona: `docs/arquipelago-regras.md`.
+  chão (`caminho.ts`) e o bicho adotado (`bichos.ts`, `cuidar.ts`, `seguir.ts`)). Sem React. Os
+  números de cada regra, em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).
 - `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar, cipó,
@@ -264,6 +264,14 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   animado com esqueleto vem de `mundo/animado.ts` (`useCopiaAnimada`, `trocarClipe`,
   `olhosNoInstante`), o mesmo da Capi. Testes contra o `bosque.glb`:
   `tests/esconde-no-bosque.test.ts`.
+- Bicho adotado: adotar pela conversa com a Capi (tela "adotar" da loja da conversa,
+  `adotarPelaCapi`); `mundo/bicho-adotado.tsx` (montado na `Cena`, fora das ilhas) é um corpo
+  cinemático com controlador próprio que segue a criança (`sistemas/seguir.ts`) e troca de modelo
+  ao crescer (filhote `*-filhote.glb`, adulto `*.glb`). ⚠️ O controlador da criança e o do bicho
+  usam `EXCLUDE_KINEMATIC`: um passa pelo outro (nenhum outro corpo do jogo é cinemático). Painel
+  de cuidar em `interface/bicho.tsx` (`PAINEL_DO_BICHO`, loja `estado/bicho.ts` com as falas e a
+  reação que o modelo toca); regras em `sistemas/cuidar.ts`; a queda das medidas roda nos
+  `Relogios`, junto com as necessidades. Testes: `tests/cuidar.test.ts`.
 
 ## Salvamento e tempo
 
