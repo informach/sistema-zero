@@ -55,7 +55,7 @@ describe('caminho pelo chão', () => {
   })
 
   test('sem saída, devolve nulo', () => {
-    const fechado = (x: number, z: number) => !(Math.abs(x - 5) < 0.5)
+    const fechado = (x: number, _z: number) => !(Math.abs(x - 5) < 0.5)
     const g = criarGrade({ x: 0, z: 0 }, { x: 10, z: 10 }, 1, fechado)
     expect(acharCaminho(g, { x: 1, z: 5 }, { x: 9, z: 5 })).toBeNull()
   })

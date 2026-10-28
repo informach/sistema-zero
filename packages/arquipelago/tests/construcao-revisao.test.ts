@@ -12,8 +12,11 @@ import { esticarCerca, pintarCaminho, porCanteiro } from '../src/sistemas/constr
  * de objeto são as dele.
  */
 const L = LOTE_DA_CASA
-/** Um lote grande e vazio, com os mesmos tetos: cabe parede solta de sobra para chegar ao teto. */
-const GRANDE = { ...LOTE_DA_CASA, area: { x0: -40, z0: -40, x1: 40, z1: 40 }, ocupadas: [] }
+/**
+ * Um lote grande e vazio, com os mesmos tetos: cabem 420 paredes soltas, mais que o teto de 200. Não
+ * maior que isso: cada esticada percorre a área toda (num lote de 80 × 80 o teste passava de 5 s).
+ */
+const GRANDE = { ...LOTE_DA_CASA, area: { x0: -20, z0: -10, x1: 20, z1: 10 }, ocupadas: [] }
 const inicial = (): Obra => structuredClone(L.obraInicial)
 const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null }
 const PROJETOS = { geladeira: GANHO, casinha: GANHO, aquario: GANHO }
@@ -36,8 +39,8 @@ describe('o salvamento nunca recebe obra fora do contrato', () => {
     let o = inicial()
     let parou: Resultado | null = null
     // Tocos de 1 aresta, um vão entre eles: cada um é um trecho.
-    for (let z = -40; z <= 40 && !parou; z++)
-      for (let x = -40; x < 40 && !parou; x += 2) {
+    for (let z = -10; z <= 10 && !parou; z++)
+      for (let x = -20; x < 20 && !parou; x += 2) {
         const r = esticarParede(o, GRANDE, { x, z }, { x: x + 1, z })
         if (r.ok) o = r.obra
         else if (r.motivo === 'limite') parou = r
@@ -50,8 +53,8 @@ describe('o salvamento nunca recebe obra fora do contrato', () => {
   test('cercas soltas: o mesmo teto de trechos', () => {
     let o = inicial()
     let parou = false
-    for (let z = -40; z <= 40 && !parou; z++)
-      for (let x = -40; x < 40 && !parou; x += 2) {
+    for (let z = -10; z <= 10 && !parou; z++)
+      for (let x = -20; x < 20 && !parou; x += 2) {
         const r = esticarCerca(o, GRANDE, { x, z }, { x: x + 1, z })
         if (r.ok) o = r.obra
         else if (r.motivo === 'limite') parou = true
