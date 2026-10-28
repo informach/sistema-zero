@@ -481,8 +481,8 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     )
       throw new Error('Primeira implantação do Arquipélago exige revisão do histórico')
   }
-  const single = async (service) => {
-    const rows = await active(service)
+  const single = async (service, deadline) => {
+    const rows = await active(service, deadline)
     if (
       rows.length !== 1 ||
       rows[0].status !== 'SUCCESS' ||
@@ -491,7 +491,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     )
       throw new Error(`Deployment ${service} ativo não é único/saudável/versionado`)
     if (targetName === 'production') {
-      const current = await deployment(rows[0].id)
+      const current = await deployment(rows[0].id, deadline)
       if (
         !matchesContext(current, service, rows[0].id) ||
         current.status !== 'SUCCESS' ||
@@ -655,7 +655,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           log({ stage: 'initial-application-preflight', service })
           continue
         }
-        const current = await single(service)
+        const current = await single(service, deadline)
         checkTime(deadline)
         await requireNoPending(service, deadline)
         before.set(service, [current.id])
@@ -672,7 +672,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         for (const service of ['members', 'auth']) {
           checkTime(deadline)
           step = `${service}-inventory`
-          const current = await single(service)
+          const current = await single(service, deadline)
           checkTime(deadline)
           before.set(service, [current.id])
           step = `${service}-probe`
@@ -870,7 +870,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     },
     async remote(action, id, input = {}, deadline = Number.POSITIVE_INFINITY) {
       checkTime(deadline)
-      const current = await single('members')
+      const current = await single('members', deadline)
       checkTime(deadline)
       if (id !== 'active' && (current.id !== id || current.meta.commitHash !== sha))
         throw new Error('Members mudou durante bootstrap')
