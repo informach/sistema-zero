@@ -27,7 +27,7 @@ function manifesto(name: string): LearningManifest {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-${name}.manifesto.json`,
+        `../../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-${name}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -356,7 +356,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
   test('inventário de blocos corresponde ao jogo completo', () => {
     const { blocks } = JSON.parse(
       readFileSync(
-        resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
+        resolve(import.meta.dir, '../../aulas-interativas/faisca/cade-todo-mundo/blocos.json'),
         'utf8',
       ),
     ) as { blocks: string[] }
@@ -385,7 +385,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
   test('o Estúdio das duas aulas mostra somente os blocos do curso', () => {
     const { blocks } = JSON.parse(
       readFileSync(
-        resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
+        resolve(import.meta.dir, '../../aulas-interativas/faisca/cade-todo-mundo/blocos.json'),
         'utf8',
       ),
     ) as { blocks: string[] }

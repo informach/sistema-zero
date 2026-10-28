@@ -1,6 +1,6 @@
 # Linguagem comum para adultos e público infantojuvenil
 
-Desde 21/10/2026, não existe uma tradução adulta separada. A fonte é `docs/aulas-interativas/<curso>/`, com uma professora e uma gravação integral. As [diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md) e o [contrato de voz](DIRETRIZES-VOZ-ELEVENLABS.md) são comuns.
+Desde 21/10/2026, não existe uma tradução adulta separada. A fonte é `docs/aulas-interativas/<posto>/<curso>/`, com uma professora e uma gravação integral. As [diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md) e o [contrato de voz](DIRETRIZES-VOZ-ELEVENLABS.md) são comuns.
 
 Escrever para alguém que começa: explicações claras para uma criança, tratamento respeitoso para adolescentes e adultos. Falar com você, usar jogar, curso, aula, parte e Passo a passo do projeto. Humor cabe; voz de bebê, diminutivos de rotina, elogios exagerados e dependência de experiência profissional não cabem.
 

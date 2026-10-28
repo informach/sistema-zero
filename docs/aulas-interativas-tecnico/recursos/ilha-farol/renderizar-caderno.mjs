@@ -77,7 +77,10 @@ try {
     }),
   )
   if (overflow.length) throw Error('Conteúdo fora da página: ' + overflow.join(', '))
-  const pdf = resolve(root, 'docs/aulas-interativas/a-ilha-do-farol/passo-a-passo-do-projeto.pdf')
+  const pdf = resolve(
+    root,
+    'docs/aulas-interativas/faisca/a-ilha-do-farol/passo-a-passo-do-projeto.pdf',
+  )
   await page.pdf({ path: pdf, format: 'A4', printBackground: true, preferCSSPageSize: true })
   console.log('PDF conferido e gerado: ' + pdf)
 } finally {

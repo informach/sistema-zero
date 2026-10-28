@@ -31,7 +31,7 @@ function manifesto(name: string): LearningManifest {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/desafio-primeiro-jogo/desafio-${name}.manifesto.json`,
+        `../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-${name}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -110,7 +110,10 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
   test('as três montagens oferecem somente Programação e Jogo 2D', () => {
     const { blocks } = JSON.parse(
       readFileSync(
-        resolve(import.meta.dir, '../../aulas-interativas/desafio-primeiro-jogo/blocos.json'),
+        resolve(
+          import.meta.dir,
+          '../../aulas-interativas/faisca/desafio-primeiro-jogo/blocos.json',
+        ),
         'utf8',
       ),
     ) as { blocks: string[] }
@@ -537,7 +540,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       const script = readFileSync(
         resolve(
           import.meta.dir,
-          `../../aulas-interativas/desafio-primeiro-jogo/desafio-${name}.roteiro.md`,
+          `../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-${name}.roteiro.md`,
         ),
         'utf8',
       )

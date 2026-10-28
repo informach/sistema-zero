@@ -16,6 +16,9 @@ export interface ManifestQuiz {
       | 'island-position'
       | 'island-height'
       | 'island-retest'
+      | 'jardim-memory'
+      | 'jardim-view'
+      | 'jardim-height'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -27,16 +30,15 @@ const record = (v: unknown): v is Record<string, unknown> =>
 const text = (v: unknown, max: number): v is string =>
   typeof v === 'string' && v.trim().length > 0 && v.length <= max
 
-/** A demonstração é um modo do quiz inteiro, com uma previsão por pergunta. */
+/** Quiz formativo com escolha única; cada pergunta pode ter sua própria demonstração. */
 export function validatePredictionQuiz(
   questions: readonly { predictionScene?: string; correctChoiceIds?: readonly string[] }[],
 ): string | null {
   if (!questions.some((q) => q.predictionScene !== undefined)) return null
-  if (questions.some((q) => !q.predictionScene))
-    return 'Escolha uma cena para todas as perguntas da revisão com demonstração.'
   if (
     questions.some(
       (q) =>
+        q.predictionScene !== undefined &&
         ![
           'garden-touch',
           'garden-count',
@@ -49,6 +51,9 @@ export function validatePredictionQuiz(
           'island-position',
           'island-height',
           'island-retest',
+          'jardim-memory',
+          'jardim-view',
+          'jardim-height',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -90,6 +95,9 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'island-position',
           'island-height',
           'island-retest',
+          'jardim-memory',
+          'jardim-view',
+          'jardim-height',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

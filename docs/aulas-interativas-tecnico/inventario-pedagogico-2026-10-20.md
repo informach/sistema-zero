@@ -15,43 +15,43 @@ Base consultada: `2ebc1c1b2555cccc4bd01dd1af945bcf832c1293`; correção textual 
 
 | Aula e roteiro | R/M | Estrutura / execução | Partes com objetivos | Admin/staging desta versão |
 | --- | --- | --- | --- | --- |
-| [cade-todo-mundo-aula-1](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md) | existem | 1 / 0 | `primeiro-achado` | pendente |
-| [cade-todo-mundo-aula-2](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | existem | 2 / 0 | `contar-achados` | pendente |
-| [cade-todo-mundo-certificado](../aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.roteiro.md) | existem | 0 / 0 | sem objetivos de projeto | pendente |
-| [corre-dino-aula-01](../aulas-interativas/corre-dino/corre-dino-aula-01.roteiro.md) | existem | 10 / 0 | `area-e-tela`, `borda`, `criar-dino`, `entrega` | pendente |
-| [corre-dino-aula-02](../aulas-interativas/corre-dino/corre-dino-aula-02.roteiro.md) | existem | 17 / 0 | `motor-e-dino`, `limpeza`, `ordem-certa`, `retirar-borda`, `descrever-jogo`, `entrega` | pendente |
-| [corre-dino-aula-03](../aulas-interativas/corre-dino/corre-dino-aula-03.roteiro.md) | existem | 9 / 0 | `aplicar-gravidade`, `comando-de-pulo`, `entrega` | pendente |
-| [corre-dino-aula-04](../aulas-interativas/corre-dino/corre-dino-aula-04.roteiro.md) | existem | 8 / 0 | `som-no-pulo`, `entrega` | pendente |
-| [corre-dino-aula-05](../aulas-interativas/corre-dino/corre-dino-aula-05.roteiro.md) | existem | 16 / 0 | `grupo-e-relogio`, `criar-cactos`, `mover-e-desenhar`, `entrega` | pendente |
-| [corre-dino-aula-06](../aulas-interativas/corre-dino/corre-dino-aula-06.roteiro.md) | existem | 6 / 0 | `faxina`, `entrega` | pendente |
-| [corre-dino-aula-07](../aulas-interativas/corre-dino/corre-dino-aula-07.roteiro.md) | existem | 29 / 0 | `estado-inicio`, `embrulhar`, `relogio`, `entrega` | pendente |
-| [corre-dino-aula-08](../aulas-interativas/corre-dino/corre-dino-aula-08.roteiro.md) | existem | 9 / 0 | `menu`, `entrada-ampla`, `entrega` | pendente |
-| [corre-dino-aula-09](../aulas-interativas/corre-dino/corre-dino-aula-09.roteiro.md) | existem | 16 / 0 | `batida-acaba-partida`, `mapa-do-jogo`, `batida-sentida`, `caminho-de-volta`, `entrega` | pendente |
-| [corre-dino-aula-10](../aulas-interativas/corre-dino/corre-dino-aula-10.roteiro.md) | existem | 10 / 0 | `ligar-raio-x`, `ajustar-area`, `retirar-contorno`, `entrega` | pendente |
-| [corre-dino-aula-11](../aulas-interativas/corre-dino/corre-dino-aula-11.roteiro.md) | existem | 10 / 0 | `caixinha-dos-pontos`, `numero-na-tela`, `relogio-dos-pontos`, `frase-da-tela-de-fim`, `entrega` | pendente |
-| [corre-dino-aula-12](../aulas-interativas/corre-dino/corre-dino-aula-12.roteiro.md) | existem | 10 / 0 | `lugar-diferente`, `velocidade-propria`, `entrega` | pendente |
-| [corre-dino-aula-13](../aulas-interativas/corre-dino/corre-dino-aula-13.roteiro.md) | existem | 18 / 0 | `numero-que-manda`, `relogio-da-dificuldade`, `acelerador-e-freio`, `descricao-completa`, `entrega` | pendente |
-| [desafio-certificado](../aulas-interativas/desafio-primeiro-jogo/desafio-certificado.roteiro.md) | existem | 0 / 0 | sem objetivos de projeto | pendente |
-| [desafio-dia-1](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | existem | 5 / 4 | `andar`, `borda` | pendente |
-| [desafio-dia-2](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) | existem | 19 / 0 | `recolher`, `guardar`, `programar-chave` | pendente |
-| [desafio-dia-3](../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | existem | 25 / 0 | `sem-chave`, `decisao`, `personalizar` | pendente |
-| [nave-contra-asteroides-chuva-de-asteroides](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | existem | 16 / 0 | `relogio`, `asteroide`, `entrega` | pendente |
-| [nave-contra-asteroides-comecar-partida](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md) | existem | 19 / 0 | `embrulhar`, `relogio-e-tiro`, `enter` | pendente |
-| [nave-contra-asteroides-dia-1](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md) | existem | 15 / 0 | `setas`, `limpeza`, `borda`, `fundo-estrelado`, `entrega` | pendente |
-| [nave-contra-asteroides-dia-2](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md) | existem | 16 / 0 | `criar-tiro`, `tiros-voam`, `faxina` | pendente |
-| [nave-contra-asteroides-dia-3](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-3.roteiro.md) | existem | 19 / 0 | `colisao`, `entrega` | pendente |
-| [nave-contra-asteroides-dia-4](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) | existem | 18 / 0 | `vidas`, `batida`, `entrega` | pendente |
-| [nave-contra-asteroides-dia-5](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md) | existem | 28 / 0 | `finais`, `telas`, `enter`, `entrega` | pendente |
-| [nave-contra-asteroides-pontos](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md) | existem | 4 / 0 | `placar` | pendente |
-| [nave-contra-asteroides-primeira-nave](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md) | existem | 9 / 0 | `montar-areas-e-tela`, `criar-nave`, `motor-e-nave` | pendente |
-| [meu-jeito-aula-01](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-01.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-02](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-02.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-03](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-03.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-04](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-04.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-05](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-05.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-06](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-06.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-07](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-07.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
-| [meu-jeito-aula-08](../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-aula-08.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [cade-todo-mundo-aula-1](../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md) | existem | 1 / 0 | `primeiro-achado` | pendente |
+| [cade-todo-mundo-aula-2](../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md) | existem | 2 / 0 | `contar-achados` | pendente |
+| [cade-todo-mundo-certificado](../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-certificado.roteiro.md) | existem | 0 / 0 | sem objetivos de projeto | pendente |
+| [corre-dino-aula-01](../aulas-interativas/inventor/corre-dino/corre-dino-aula-01.roteiro.md) | existem | 10 / 0 | `area-e-tela`, `borda`, `criar-dino`, `entrega` | pendente |
+| [corre-dino-aula-02](../aulas-interativas/inventor/corre-dino/corre-dino-aula-02.roteiro.md) | existem | 17 / 0 | `motor-e-dino`, `limpeza`, `ordem-certa`, `retirar-borda`, `descrever-jogo`, `entrega` | pendente |
+| [corre-dino-aula-03](../aulas-interativas/inventor/corre-dino/corre-dino-aula-03.roteiro.md) | existem | 9 / 0 | `aplicar-gravidade`, `comando-de-pulo`, `entrega` | pendente |
+| [corre-dino-aula-04](../aulas-interativas/inventor/corre-dino/corre-dino-aula-04.roteiro.md) | existem | 8 / 0 | `som-no-pulo`, `entrega` | pendente |
+| [corre-dino-aula-05](../aulas-interativas/inventor/corre-dino/corre-dino-aula-05.roteiro.md) | existem | 16 / 0 | `grupo-e-relogio`, `criar-cactos`, `mover-e-desenhar`, `entrega` | pendente |
+| [corre-dino-aula-06](../aulas-interativas/inventor/corre-dino/corre-dino-aula-06.roteiro.md) | existem | 6 / 0 | `faxina`, `entrega` | pendente |
+| [corre-dino-aula-07](../aulas-interativas/inventor/corre-dino/corre-dino-aula-07.roteiro.md) | existem | 29 / 0 | `estado-inicio`, `embrulhar`, `relogio`, `entrega` | pendente |
+| [corre-dino-aula-08](../aulas-interativas/inventor/corre-dino/corre-dino-aula-08.roteiro.md) | existem | 9 / 0 | `menu`, `entrada-ampla`, `entrega` | pendente |
+| [corre-dino-aula-09](../aulas-interativas/inventor/corre-dino/corre-dino-aula-09.roteiro.md) | existem | 16 / 0 | `batida-acaba-partida`, `mapa-do-jogo`, `batida-sentida`, `caminho-de-volta`, `entrega` | pendente |
+| [corre-dino-aula-10](../aulas-interativas/inventor/corre-dino/corre-dino-aula-10.roteiro.md) | existem | 10 / 0 | `ligar-raio-x`, `ajustar-area`, `retirar-contorno`, `entrega` | pendente |
+| [corre-dino-aula-11](../aulas-interativas/inventor/corre-dino/corre-dino-aula-11.roteiro.md) | existem | 10 / 0 | `caixinha-dos-pontos`, `numero-na-tela`, `relogio-dos-pontos`, `frase-da-tela-de-fim`, `entrega` | pendente |
+| [corre-dino-aula-12](../aulas-interativas/inventor/corre-dino/corre-dino-aula-12.roteiro.md) | existem | 10 / 0 | `lugar-diferente`, `velocidade-propria`, `entrega` | pendente |
+| [corre-dino-aula-13](../aulas-interativas/inventor/corre-dino/corre-dino-aula-13.roteiro.md) | existem | 18 / 0 | `numero-que-manda`, `relogio-da-dificuldade`, `acelerador-e-freio`, `descricao-completa`, `entrega` | pendente |
+| [desafio-certificado](../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-certificado.roteiro.md) | existem | 0 / 0 | sem objetivos de projeto | pendente |
+| [desafio-dia-1](../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) | existem | 5 / 4 | `andar`, `borda` | pendente |
+| [desafio-dia-2](../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) | existem | 19 / 0 | `recolher`, `guardar`, `programar-chave` | pendente |
+| [desafio-dia-3](../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) | existem | 25 / 0 | `sem-chave`, `decisao`, `personalizar` | pendente |
+| [nave-contra-asteroides-chuva-de-asteroides](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | existem | 16 / 0 | `relogio`, `asteroide`, `entrega` | pendente |
+| [nave-contra-asteroides-comecar-partida](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-comecar-partida.roteiro.md) | existem | 19 / 0 | `embrulhar`, `relogio-e-tiro`, `enter` | pendente |
+| [nave-contra-asteroides-dia-1](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-1.roteiro.md) | existem | 15 / 0 | `setas`, `limpeza`, `borda`, `fundo-estrelado`, `entrega` | pendente |
+| [nave-contra-asteroides-dia-2](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-2.roteiro.md) | existem | 16 / 0 | `criar-tiro`, `tiros-voam`, `faxina` | pendente |
+| [nave-contra-asteroides-dia-3](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-3.roteiro.md) | existem | 19 / 0 | `colisao`, `entrega` | pendente |
+| [nave-contra-asteroides-dia-4](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) | existem | 18 / 0 | `vidas`, `batida`, `entrega` | pendente |
+| [nave-contra-asteroides-dia-5](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5.roteiro.md) | existem | 28 / 0 | `finais`, `telas`, `enter`, `entrega` | pendente |
+| [nave-contra-asteroides-pontos](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-pontos.roteiro.md) | existem | 4 / 0 | `placar` | pendente |
+| [nave-contra-asteroides-primeira-nave](../aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.roteiro.md) | existem | 9 / 0 | `montar-areas-e-tela`, `criar-nave`, `motor-e-nave` | pendente |
+| [meu-jeito-aula-01](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-01.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-02](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-02.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-03](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-03.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-04](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-04.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-05](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-05.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-06](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-06.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-07](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-07.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
+| [meu-jeito-aula-08](../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-aula-08.roteiro.md) | existem | 0 / 0 | entrega externa/galeria | pendente |
 
 ## Próximos trechos a conferir, preservando as aulas
 

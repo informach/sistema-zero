@@ -465,6 +465,9 @@ export interface QuizQuestion {
     | 'island-position'
     | 'island-height'
     | 'island-retest'
+    | 'jardim-memory'
+    | 'jardim-view'
+    | 'jardim-height'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

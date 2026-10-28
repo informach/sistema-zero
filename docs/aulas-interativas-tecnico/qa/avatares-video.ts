@@ -37,7 +37,7 @@ export function avatarDaAula(index: number): 'Debinha' | 'Dedé' {
 }
 
 export function orientacaoAvatares(index: number): string {
-  return `**Produção:** a professora grava toda a fala principal. Na montagem kids, ${avatarDaAula(index)} substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).`
+  return `**Produção:** a professora grava toda a fala principal. Na montagem kids, ${avatarDaAula(index)} substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).`
 }
 
 function dividirFala(section: SecaoComAvatar, speech: string[]) {

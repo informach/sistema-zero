@@ -1,6 +1,6 @@
 # A Ilha do Farol — mapa de implementação
 
-Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Autoria](../aulas-interativas/a-ilha-do-farol/README.md) e [decisões](../aulas-interativas/a-ilha-do-farol/proposta.md).
+Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Autoria](../aulas-interativas/faisca/a-ilha-do-farol/README.md) e [decisões](../aulas-interativas/faisca/a-ilha-do-farol/proposta.md).
 
 ## Fontes
 

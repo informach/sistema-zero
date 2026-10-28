@@ -102,6 +102,9 @@ export interface MemberQuizContent {
       | 'island-position'
       | 'island-height'
       | 'island-retest'
+      | 'jardim-memory'
+      | 'jardim-view'
+      | 'jardim-height'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

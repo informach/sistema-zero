@@ -114,7 +114,7 @@ describe('buildLessonManifest', () => {
       readFileSync(
         join(
           import.meta.dir,
-          '../../../docs/aulas-interativas/corre-dino/corre-dino-aula-01.manifesto.json',
+          '../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-01.manifesto.json',
         ),
         'utf8',
       ),

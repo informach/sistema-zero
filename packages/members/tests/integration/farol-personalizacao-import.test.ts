@@ -13,7 +13,7 @@ test('o Dia 3 importa todas as escolhas de farol e a experiência da posição n
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json',
+      '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.manifesto.json',
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Manifesto inválido')

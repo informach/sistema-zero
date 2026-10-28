@@ -34,7 +34,9 @@ function clipesDoManifesto(valor: unknown): string[] {
   return valor.sections.flatMap((s) => {
     if (!s || typeof s !== 'object' || !('blockKeys' in s) || !Array.isArray(s.blockKeys))
       throw new Error('Parte inválida')
-    return s.blockKeys.filter((key): key is string => typeof key === 'string' && videos.has(key))
+    return s.blockKeys.filter(
+      (key: unknown): key is string => typeof key === 'string' && videos.has(key),
+    )
   })
 }
 

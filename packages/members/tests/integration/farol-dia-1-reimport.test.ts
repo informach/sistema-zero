@@ -20,7 +20,7 @@ import { buildApp, seedSampleCourse } from '../helpers'
  */
 const DIA_1 = resolve(
   import.meta.dir,
-  '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json',
+  '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json',
 )
 const RETIRADOS = [
   'video-d1-tanto',

@@ -298,7 +298,7 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar `docs/aulas-interativas/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf`, que a criança conhece como Passo a passo do projeto, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.',
+        'Anexar `docs/aulas-interativas/construtor/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf`, que a criança conhece como Passo a passo do projeto, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.',
         '',
       )
     if (s.questions)
@@ -327,7 +327,7 @@ if (import.meta.main) {
     const manifest = gerarManifestoMeuJeito(lesson)
     const path = resolve(
       import.meta.dir,
-      `../../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}`,
+      `../../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}`,
     )
     gravarArquivo(`${path}.manifesto.json`, `${JSON.stringify(manifest, null, 2)}\n`)
     manifestos.push(`${path}.manifesto.json`)

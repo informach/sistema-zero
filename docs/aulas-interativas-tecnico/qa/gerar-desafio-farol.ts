@@ -18,7 +18,7 @@ import { gravarArquivo } from './gravar-arquivo'
 import { farol } from './quizzes-cursos-curtos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/desafio-primeiro-jogo')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/faisca/desafio-primeiro-jogo')
 const CURSO = 'desafio-primeiro-jogo'
 const EXEMPLOS = {
   inicio: 'fa000001-0000-4000-8000-000000000001',

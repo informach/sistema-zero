@@ -23,7 +23,12 @@ const pilots = [
 function readPilot(course: string, lesson: string) {
   const raw: unknown = JSON.parse(
     readFileSync(
-      resolve(import.meta.dir, '../../aulas-interativas', course, `${lesson}.manifesto.json`),
+      resolve(
+        import.meta.dir,
+        '../../aulas-interativas/faisca',
+        course,
+        `${lesson}.manifesto.json`,
+      ),
       'utf8',
     ),
   )

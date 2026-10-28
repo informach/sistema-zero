@@ -237,6 +237,9 @@ export function QuizBuilder({
                     <option value="island-position">Ilha: posição</option>
                     <option value="island-height">Ilha: altura</option>
                     <option value="island-retest">Ilha: novo teste</option>
+                  <option value="jardim-memory">Jardim: memória da coleta</option>
+                  <option value="jardim-view">Jardim: ponto de vista</option>
+                  <option value="jardim-height">Jardim: altura e contato</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

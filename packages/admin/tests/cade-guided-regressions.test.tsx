@@ -7,9 +7,9 @@ import {
   type SectionExecutionRule,
 } from '@sistemazero/core/learning'
 import type { QuizBlock } from '@sistemazero/member-shell/lib/types'
-import aula1 from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
-import aula2 from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
-import certificado from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
+import aula1 from '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import aula2 from '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
+import certificado from '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
 import type { QuizBlock as AuthoredQuiz } from '../../members/src/domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../members/src/domain/course/quiz'
 import { parseQuizImport } from '../src/lib/lesson-block-import'

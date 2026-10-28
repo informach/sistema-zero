@@ -11,7 +11,7 @@ import { gravarArquivo } from './gravar-arquivo'
 import { cadeTodoMundo } from './quizzes-cursos-curtos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/faisca/cade-todo-mundo')
 const CURSO = 'cade-todo-mundo'
 /** Alvos seguem os sprites do projeto, inclusive após personalização. */
 const tocar = (n: number) => ({
@@ -143,7 +143,7 @@ const comEnvioEmDia = <S extends { completion: object }>(s: S) => ({
 })
 const { blocks: allowed } = JSON.parse(
   readFileSync(
-    resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo/blocos.json'),
+    resolve(import.meta.dir, '../../aulas-interativas/faisca/cade-todo-mundo/blocos.json'),
     'utf8',
   ),
 ) as { blocks: string[] }

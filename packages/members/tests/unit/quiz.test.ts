@@ -174,6 +174,9 @@ test.each([
   'island-position',
   'island-height',
   'island-retest',
+  'jardim-memory',
+  'jardim-view',
+  'jardim-height',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

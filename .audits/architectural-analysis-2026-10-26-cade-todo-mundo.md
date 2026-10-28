@@ -1,6 +1,6 @@
 # Full review — Cadê Todo Mundo
 
-**Atualização:** os achados abaixo são o registro histórico da revisão. As correções e sua verificação estão em [Correções do review — 26/10/2026](../docs/aulas-interativas/cade-todo-mundo/CORRECOES-REVIEW-2026-10-26.md).
+**Atualização:** os achados abaixo são o registro histórico da revisão. As correções e sua verificação estão em [Correções do review — 26/10/2026](../docs/aulas-interativas/faisca/cade-todo-mundo/CORRECOES-REVIEW-2026-10-26.md).
 
 Data: 26/10/2026. Base local: `staging`, `e3a88a4c2`, com alterações ainda não commitadas.
 
@@ -124,7 +124,7 @@ O novo componente mantém respostas, seleção e índice apenas em memória. O q
 
 ### R8 — P2 — A fala de encerramento ainda apresenta publicação como parte obrigatória do caminho
 
-**Local:** [cade-todo-mundo-aula-2.roteiro.md](../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md), linhas 152, 166 e 177.
+**Local:** [cade-todo-mundo-aula-2.roteiro.md](../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md), linhas 152, 166 e 177.
 
 O texto da página e o PDF atualizado permitem concluir sem publicar. A fala preservada anuncia que chegou a hora de publicar e orienta a conclusão somente depois de copiar o link, sem apresentar a alternativa de concluir diretamente.
 

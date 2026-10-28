@@ -10,7 +10,7 @@ Direção comum de 21/10/2026: simplicidade para uma criança compreender, trata
 ## Antes de escrever
 
 - Leia `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md` inteiro, `DIRETRIZES-VOZ-ELEVENLABS.md` e `ESPEC-ROTEIRO.md`, além de `DESCOBERTA-GUIADA.md`. Instruções do usuário prevalecem.
-- Leia proposta, manifesto e roteiro em `docs/aulas-interativas/<curso>/`. Confira o gerador em `docs/aulas-interativas-tecnico/qa/`; Nave, Dino e Meu Jeito têm fonte `.conteudo.json`, Cadê e Farol têm a fala no roteiro de produção.
+- Leia proposta, manifesto e roteiro em `docs/aulas-interativas/<posto>/<curso>/`. Confira o gerador em `docs/aulas-interativas-tecnico/qa/`; Nave, Dino e Meu Jeito têm fonte `.conteudo.json`, Cadê e Farol têm a fala no roteiro de produção.
 - Confira nomes de controles e comportamento no código. Não existe tradução adulta separada nem pasta editorial kids/adulto.
 
 ## Como escrever
@@ -46,3 +46,8 @@ Registre separadamente texto, derivados, PDF, voz gerada, voz escutada, edição
 - Reinício da tentativa conserva regra e descobertas; reinício da experiência limpa o percurso. Editar uma regra não muda retroativamente o que aconteceu. Explicar o motivo de ações fisicamente indisponíveis.
 - Preservar vídeo conceitual, montagem completa e Passo a passo coerente. Usar pergunta/resposta quando o quiz pede diagnóstico ou escolha de teste, e manter a demonstração quando ela esclarece o conceito.
 - Validar ordens alternativas, repetição, extremos, edição após o acontecimento, desfazer, retomada e continuação depois da conclusão, além de erros plausíveis no jogo real. Os controles, falas, manifestos, derivados e cadernos precisam contar a mesma história. Referência completa: DESCOBERTA-GUIADA.md.
+
+
+## Missões de posto, direção de 28/10/2026
+
+Nas missões, a montagem integral fica na ajuda opcional, disponível desde o início. O vídeo principal apresenta o resultado e relembra conceitos, sem resolver a tarefa. Exigir só o repertório investigado e os blocos montados nos cursos-base; infraestrutura pronta não conta como conhecimento demonstrado. Conservar um projeto por dimensão, critérios por etapa e testes antes/depois da coleta. Quiz pode combinar previsão com cena e escolha de teste sem cena. Referência implementada: O Jardim Secreto, em `docs/aulas-interativas/faisca/o-jardim-secreto/`. Diretrizes completas em DESCOBERTA-GUIADA.md.

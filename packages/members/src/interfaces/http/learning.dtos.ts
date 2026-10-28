@@ -844,6 +844,8 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
         }),
       ),
     }),
+    t.Object({type:t.Literal('collectionMemory'),dimension:t.Union([t.Literal('2d'),t.Literal('3d')]),actor:t.String({maxLength:100}),item:t.String({maxLength:100}),destination:t.String({maxLength:100})}),
+    t.Object({type:t.Literal('changedGamePosition'),dimension:t.Union([t.Literal('2d'),t.Literal('3d')]),object:t.String({maxLength:100}),initial:t.Tuple([t.Number(),t.Number()])}),
     ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
       t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
     ),

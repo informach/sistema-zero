@@ -14,9 +14,9 @@ import { SceneActivityView } from '@sistemazero/member-shell/components/scene-ac
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import i1 from '../../../aulas-interativas/a-ilha-do-farol/ilha-aula-1.manifesto.json'
-import i2 from '../../../aulas-interativas/a-ilha-do-farol/ilha-aula-2.manifesto.json'
-import i3 from '../../../aulas-interativas/a-ilha-do-farol/ilha-aula-3.manifesto.json'
+import i1 from '../../../aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.manifesto.json'
+import i2 from '../../../aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.manifesto.json'
+import i3 from '../../../aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json'
 
 const blocks = (
   [i1, i2, i3].flatMap((m) => m.blocks) as unknown as Array<{

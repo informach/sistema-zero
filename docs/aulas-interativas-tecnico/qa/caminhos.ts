@@ -1,14 +1,15 @@
 import { readdirSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 
-export const PASTA_CURSOS = resolve(import.meta.dir, '../../aulas-interativas')
+export const PASTA_CURSOS = resolve(import.meta.dirname, '../../aulas-interativas')
 export const CURSOS_POR_PREFIXO = {
-  'cade-todo-mundo': 'cade-todo-mundo',
-  desafio: 'desafio-primeiro-jogo',
-  ilha: 'a-ilha-do-farol',
-  'nave-contra-asteroides': 'nave-contra-asteroides',
-  'corre-dino': 'corre-dino',
-  'meu-jeito': 'o-jogo-do-meu-jeito',
+  aula: 'faisca/o-jardim-secreto',
+  'cade-todo-mundo': 'faisca/cade-todo-mundo',
+  desafio: 'faisca/desafio-primeiro-jogo',
+  ilha: 'faisca/a-ilha-do-farol',
+  'nave-contra-asteroides': 'construtor/nave-contra-asteroides',
+  'corre-dino': 'inventor/corre-dino',
+  'meu-jeito': 'construtor/o-jogo-do-meu-jeito',
 } as const
 
 /** Resolve os nomes editoriais preservados para a pasta do respectivo curso. */
