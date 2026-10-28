@@ -54,7 +54,7 @@ chegada (`conferir_corredor`).
 
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4` | não tem | 27.782 | 959 KB |
+| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4` | não tem | 27.762 | 958 KB |
 | `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 925 KB |
 | `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 547 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
@@ -125,6 +125,9 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
   - `casa-na-arvore`: a porta, em cima do deque;
   - `copas-1`…`copas-4`: o centro de cada deque, na altura dele (pontos de controle do percurso);
   - `escorregador-fim`, `cabana` (a porta), `cercado`, `lago`.
+  - `esconderijo-1`…`esconderijo-4`: onde se escondem o cachorro, o gato, o coelho e o porquinho,
+    no chão (y = 1); o giro em Z do empty é para onde o bicho olha (no jogo, o giro em Y com o mesmo
+    sinal, lido do quatérnio por `rumoDoNo`).
 - **Vila Doce:**
   - `fonte`, `padaria` (a porta), `sorveteria` (o balcão);
   - `barraca-1`…`barraca-6`: a frente de cada barraca;
@@ -140,8 +143,8 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
 
 ### Falta passar para o Blender (cipó, escalada e percurso, 27/10/2026)
 
-Esta sessão não tinha o Blender sem tela, então o jogo marca no código o que ainda não está no
-`bosque.glb`. Quando o Blender rodar de novo:
+O jogo marca no código o que ainda não está no `bosque.glb`. O Blender sem tela roda pelo `bpy`
+do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
 
 - **Tronco de escalar:** um nó `escalada-cil-tronco-dos-cipos` no tronco da árvore do galho dos
   cipós (T6), na convenção dos colisores: cilindro unitário sem material, em pé, do chão (y = 1) até
@@ -156,14 +159,11 @@ Esta sessão não tinha o Blender sem tela, então o jogo marca no código o que
 - **Placa de largada e vagalumes:** desenhados no código (`PLACA_DA_LARGADA` e
   `VAGALUMES_DAS_COPAS`). Uma placa modelada ao lado do pé da escada (x 0,6, z 1,3), na madeira da
   casa na árvore, combinaria com o resto.
-- **Esconderijos dos bichos (28/10/2026):** quatro âncoras `esconderijo-1`…`esconderijo-4` no chão
-  (y = 1), com o giro para onde o bicho olha: cachorro atrás da moita da beira norte (x −6,2,
-  z 10,2), gato entre os cogumelos e as pedras do lago (x 1,2, z 5,4), coelho na boca da toca do
-  oeste (x −8,0, z −7,4) e porquinho atrás da cabana, entre a parede e a moita (x 7,3, z −8,9).
-  Hoje esses números estão em `ESCONDERIJOS_NO_MODELO` (`src/mundo/bosque.ts`); o jogo já lê a
-  âncora quando ela existir (`mundo/bichos-do-bosque.tsx`), e o teste
-  `tests/esconde-no-bosque.test.ts` avisa quando elas chegarem. Uma moita um pouco maior atrás do
-  cachorro e uma toca com a boca mais funda para o coelho deixariam o esconderijo mais claro.
+- **Esconderijos dos bichos (28/10/2026):** as quatro âncoras `esconderijo-*` já estão no
+  `bosque.glb` (`ESCONDERIJOS` em `bosque.py`, as mesmas medidas de `ESCONDERIJOS_NO_MODELO` em
+  `src/mundo/bosque.ts`; `tests/esconde-no-bosque.test.ts` confere que batem). Falta só o desenho:
+  uma moita um pouco maior atrás do cachorro e uma toca com a boca mais funda para o coelho
+  deixariam o esconderijo mais claro.
 
 ### Nós que mexem
 

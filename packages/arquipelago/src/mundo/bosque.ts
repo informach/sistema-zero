@@ -59,9 +59,9 @@ export const VAGALUMES_DAS_COPAS: readonly Ponto[] = [
  *   só as orelhas aparecem (embaixo do deque da casa na árvore a câmera não enxerga a criança);
  * - coelho: na boca da toca do oeste (`col-cil-toca-1`), meio para dentro dela;
  * - porquinho: atrás da cabana, entre a parede e a moita (`col-cabana-1`, `col-cil-moita-4`).
- * Quando o Blender ganhar as âncoras `esconderijo-1`…`esconderijo-4` (`ESCONDERIJOS` em
- * `sistemas/esconde.ts`, README de `arte/ilhas`), a posição sai de lá e estes números ficam só
- * como reserva.
+ * O `bosque.glb` tem as âncoras `esconderijo-1`…`esconderijo-4` (`ESCONDERIJOS` em
+ * `sistemas/esconde.ts`) com estas mesmas medidas (`arte/ilhas/bosque.py`): o jogo lê a posição e o
+ * giro de lá, e estes números ficam como reserva (o teste confere que os dois batem).
  */
 export const ESCONDERIJOS_NO_MODELO: Readonly<
   Record<BichoDoBosque, { x: number; z: number; giro: number }>
@@ -159,6 +159,15 @@ export function paraOMundo(p: Ponto, centro: Ponto, giro: number, saida: Ponto):
   saida.y = centro.y + p.y
   saida.z = centro.z - x * s + z * c
   return saida
+}
+
+/**
+ * Para onde um nó do modelo olha (o rumo `(sin r, cos r)` da frente +Z dele no chão), lido do
+ * quatérnio. O `rotation.y` do three não serve: um giro de mais de 90° em Y vira `x = z = π` com
+ * outro `y` (o glTF guarda quatérnio, e o three decompõe em XYZ).
+ */
+export function rumoDoNo(q: { x: number; y: number; z: number; w: number }): number {
+  return Math.atan2(2 * (q.x * q.z + q.w * q.y), 1 - 2 * (q.x * q.x + q.y * q.y))
 }
 
 /** Um rumo (`(sin r, cos r)`) do modelo levado para o mundo. */

@@ -810,9 +810,10 @@ adotado já estão no jogo. O plano da parte que falta:
 - **Esconde-esconde** (`ESCONDERIJOS`, `mundo/bichos-do-bosque.tsx`): cada bicho fica sempre no
   mesmo lugar (uma criança pode contar para outra): o cachorro atrás da moita da beira norte, o
   gato entre os cogumelos e as pedras do lago, o coelho na boca da toca do oeste e o porquinho
-  atrás da cabana. As posições estão em `ESCONDERIJOS_NO_MODELO` (`mundo/bosque.ts`) até o Blender
-  ganhar as âncoras `esconderijo-1` a `esconderijo-4`. De longe o bicho não aparece; a uns 5,6 m ele
-  surge aos poucos, e a 4 m (`RAIO_DA_PISTA`) ele balança de contente e o Zappy fala da pista
+  atrás da cabana. As posições vêm das âncoras `esconderijo-1` a `esconderijo-4` do
+  `bosque.glb` (para mudar, mexa em `ESCONDERIJOS` no `arte/ilhas/bosque.py` e em
+  `ESCONDERIJOS_NO_MODELO` no `mundo/bosque.ts`, que precisam bater). De longe o bicho não
+  aparece; a uns 5,6 m ele surge aos poucos, e a 4 m (`RAIO_DA_PISTA`) ele balança de contente e o Zappy fala da pista
   (rabinho, orelhas, farfalhar ou focinho, `FALA_DA_PISTA`). A 1,4 m (`RAIO_DE_ACHAR`) aparece
   "Achar o gato frajola": o achado fica guardado para sempre, o bicho comemora e corre pelo chão
   até o cercadinho da Capi, entrando pela porteira (`sistemas/caminho.ts`: busca numa grade de

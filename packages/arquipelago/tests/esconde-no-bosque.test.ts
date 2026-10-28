@@ -4,7 +4,12 @@ import { join } from 'node:path'
 import { BICHOS_DO_BOSQUE } from '@sistemazero/arquipelago-contracts'
 import type { Object3D } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { ESCONDERIJOS_NO_MODELO, LUGARES_NO_CERCADO, TOPO_DO_BOSQUE } from '../src/mundo/bosque'
+import {
+  ESCONDERIJOS_NO_MODELO,
+  LUGARES_NO_CERCADO,
+  rumoDoNo,
+  TOPO_DO_BOSQUE,
+} from '../src/mundo/bosque'
 import {
   CORPO_DO_BICHO,
   chaoLivre,
@@ -14,7 +19,7 @@ import {
 import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
 import { acharCaminho, type Grade } from '../src/sistemas/caminho'
 import { CORPO } from '../src/sistemas/corpo'
-import { RAIO_DA_PISTA, RAIO_DE_ACHAR } from '../src/sistemas/esconde'
+import { ESCONDERIJOS, RAIO_DA_PISTA, RAIO_DE_ACHAR } from '../src/sistemas/esconde'
 
 const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'bosque.glb')
 
@@ -40,8 +45,21 @@ beforeAll(async () => {
 })
 
 describe('esconde-esconde no Bosque', () => {
-  test('o Blender ainda não tem as âncoras: valem as medidas do código', () => {
-    for (let i = 1; i <= 4; i++) expect(raiz.getObjectByName(`esconderijo-${i}`)).toBeUndefined()
+  test('as âncoras do Blender batem com as medidas do código (posição e para onde olha)', () => {
+    for (const b of BICHOS_DO_BOSQUE) {
+      const no = raiz.getObjectByName(ESCONDERIJOS[b].ancora)
+      expect(no, ESCONDERIJOS[b].ancora).toBeDefined()
+      if (!no) continue
+      const e = ESCONDERIJOS_NO_MODELO[b]
+      expect(no.parent).toBe(raiz)
+      expect(no.position.x).toBeCloseTo(e.x, 3)
+      expect(no.position.z).toBeCloseTo(e.z, 3)
+      expect(no.position.y).toBeCloseTo(TOPO_DO_BOSQUE, 3)
+      // A diferença dos ângulos dá a volta: compara o seno e o cosseno.
+      const r = rumoDoNo(no.quaternion)
+      expect(Math.sin(r)).toBeCloseTo(Math.sin(e.giro), 3)
+      expect(Math.cos(r)).toBeCloseTo(Math.cos(e.giro), 3)
+    }
   })
 
   test('cada esconderijo fica perto de algo que o esconde, longe dos outros', () => {

@@ -33,6 +33,7 @@ import {
   ESCONDERIJOS_NO_MODELO,
   LUGARES_NO_CERCADO,
   paraOMundo,
+  rumoDoNo,
   rumoNoMundo,
   TOPO_DO_BOSQUE,
 } from './bosque'
@@ -102,7 +103,10 @@ export function BichosDoBosque({
         ? { x: no.position.x, y: TOPO_DO_BOSQUE, z: no.position.z }
         : { x: reserva.x, y: TOPO_DO_BOSQUE, z: reserva.z }
       const p = paraOMundo(local, meio, giro, { x: 0, y: 0, z: 0 })
-      esconderijos[b] = { ...p, giro: rumoNoMundo(no ? no.rotation.y : reserva.giro, giro) }
+      esconderijos[b] = {
+        ...p,
+        giro: rumoNoMundo(no ? rumoDoNo(no.quaternion) : reserva.giro, giro),
+      }
     }
     const cercado = LUGARES_NO_CERCADO.map((l) => {
       const p = paraOMundo({ x: l.x, y: TOPO_DO_BOSQUE, z: l.z }, meio, giro, { x: 0, y: 0, z: 0 })

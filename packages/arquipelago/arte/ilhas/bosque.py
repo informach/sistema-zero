@@ -421,6 +421,13 @@ def terreno(col):
 
 ALVO_CABANA = (2.0, -1.0)
 
+# Onde cada bicho se esconde (x, z do jogo, giro): cachorro atrás da moita-6, gato entre os cogumelos e
+# as pedras do lago, coelho na toca-1, porquinho atrás da cabana. O giro é para onde o bicho olha,
+# (sen g, cos g) no chão do jogo; vai no giro em Z do empty, que o glTF leva para o giro em Y do jogo
+# com o mesmo sinal. As medidas são as de `ESCONDERIJOS_NO_MODELO` (src/mundo/bosque.ts), e
+# tests/esconde-no-bosque.test.ts confere que as duas batem.
+ESCONDERIJOS = [(-6.2, 10.2, -2.21), (1.2, 5.4, -2.65), (-8.0, -7.4, 0.0), (7.3, -8.9, 1.34)]
+
 
 def frente_da_cabana(d):
     dx, dz = ALVO_CABANA[0] - CABANA[0], ALVO_CABANA[1] - CABANA[1]
@@ -442,6 +449,10 @@ def ancoras(fim_escorregador):
          ancora('escorregador-fim', fim_escorregador.x, -fim_escorregador.y)]
     for i, t in enumerate(PERCURSO):
         a.append(ancora(f'copas-{i + 1}', t[0] + 0.0, t[1], TOPO + t[4]))
+    for i, (x, z, giro) in enumerate(ESCONDERIJOS):
+        e = ancora(f'esconderijo-{i + 1}', x, z)
+        e.rotation_euler = (0.0, 0.0, giro)
+        a.append(e)
     return a
 
 

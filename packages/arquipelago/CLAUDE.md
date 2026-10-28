@@ -257,8 +257,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   duas (`LADO_NA_CONVERSA`, `DISTANCIA_NA_CONVERSA`, `INCLINACAO_NA_CONVERSA`, `ABAIXO_NA_CONVERSA`).
 - No Bosque não aparece mais o "Olhar em volta" da ilha (`ILHAS_VIVAS` em `anel.tsx`).
 - Esconde-esconde (`mundo/bichos-do-bosque.tsx`, também no `BosqueVivo`): os quatro filhotes
-  (`assets/bichos/*-filhote.glb`, `ESCALA_DOS_BICHOS`) nos esconderijos (`ESCONDERIJOS_NO_MODELO`
-  em `bosque.ts` até chegarem as âncoras `esconderijo-*`), a pista e o "Achar", e a corrida até
+  (`assets/bichos/*-filhote.glb`, `ESCALA_DOS_BICHOS`) nos esconderijos (âncoras `esconderijo-*`
+  do `bosque.glb`, giro lido do quatérnio por `rumoDoNo`; `ESCONDERIJOS_NO_MODELO` fica de reserva),
+  a pista e o "Achar", e a corrida até
   o cercadinho pelo caminho da grade (`sistemas/caminho.ts`, A* com encurtamento;
   `mundo/chao-livre.ts` monta a grade sobre os colisores da ilha no primeiro achado). O modelo
   animado com esqueleto vem de `mundo/animado.ts` (`useCopiaAnimada`, `trocarClipe`,
