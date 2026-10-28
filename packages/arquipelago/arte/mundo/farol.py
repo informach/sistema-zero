@@ -9,6 +9,9 @@ Nós (contrato com `src/mundo/farol.tsx`):
 - `lampada`: a lâmpada (material `lampadaFarol`, o jogo acende a emissão);
 - `vidro`: o vidro da lanterna (material `vidroFarol`, brilha quando acende);
 - `facho`: dois fachos opostos com o pivô no centro da lâmpada; o jogo gira em y.
+
+Colisão: a torre é o cilindro do código (raio 1,6). As pedras do pé e os degraus da porta trazem os
+nós `col-cil-pedra-farol-*` e `col-degrau-farol-*` (sem material), que o jogo lê do arquivo.
 """
 from lib_mundo import *
 
@@ -32,7 +35,7 @@ def no_lado(ang, r, z):
     return (math.cos(ang) * r, math.sin(ang) * r, z)
 
 
-def corpo():
+def corpo(col):
     p = []
     # Pedras do pé: um monte de pedras chapadas, mais alto atrás.
     for i, (a, d, s, h) in enumerate([(0.75, 1.45, 2.0, 1.25), (1.6, 1.55, 1.8, 1.05), (2.6, 1.45, 2.2, 1.45),
@@ -41,11 +44,16 @@ def corpo():
         aa = ANG_PORTA + a
         p.append(rock((math.cos(aa) * d, math.sin(aa) * d, -0.15), (s, s * 0.9, h), 'farolPedra', seed=20 + i,
                       subdiv=1, rough=0.16, flat_top=0.25, top_m='musgo' if i % 2 else 'farolPedraClara'))
+        # Cilindro do tamanho do raio menor da pedra (0,45 da escala), até perto do topo achatado.
+        alto = -0.15 + 0.85 * h
+        col.append(col_cilindro('pedra-farol', 0.47 * s, alto + 0.3,
+                                (math.cos(aa) * d, math.sin(aa) * d, (alto - 0.3) / 2)))
     # Degraus de pedra até a porta.
     for k in range(3):
         c = no_lado(ANG_PORTA, R0 + 0.95 - k * 0.32, 0.12 + k * 0.28)
         o = box((0.62, 1.2, 0.26), c, 'farolPedraClara', bevel=0.05, segs=1, rot=(0, 0, ANG_PORTA))
         p.append(o)
+        col.append(col_caixa('degrau-farol', (0.62, 1.2, 0.26), c, (0, 0, ANG_PORTA)))
     # Alicerce redondo de pedra com friso.
     p.append(cyl(R0 + 0.22, 0.6, (0, 0, Y0 - 0.25), 'farolPedraClara', verts=28, bevel=0.05))
     p.append(cyl(R0 + 0.26, 0.1, (0, 0, Y0 + 0.02), 'farolBranco', verts=28, bevel=0.03))
@@ -137,12 +145,13 @@ def facho():
 
 def main():
     lib_q.reset()
+    col = []
     exportar('farol', {
-        'farol': corpo(),
+        'farol': corpo(col),
         'vidro': vidro(),
         'lampada': lampada(),
         'facho': (facho(), (0, 0, YL)),
-    })
+    }, colisores=col)
 
 
 if __name__ == '__main__':

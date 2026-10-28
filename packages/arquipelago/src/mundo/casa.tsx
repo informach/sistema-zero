@@ -12,6 +12,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { dormir } from '../sistemas/necessidades'
+import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -144,21 +146,10 @@ function Porta() {
       loja.getState().dizer('A porta nova abriu. Agora a ilha toda é sua para explorar.')
     },
   })
-  const y = PORTA.altura / 2
   return (
-    <>
-      <ComReserva reserva={<PortaDeAntes aberta={aberta} />}>
-        <PortaDoModelo aberta={aberta} />
-      </ComReserva>
-      {aberta ? null : (
-        <RigidBody type="fixed" colliders={false}>
-          <CuboidCollider
-            args={[PORTA.largura / 2, PORTA.altura / 2, 0.1]}
-            position={[PORTA.x, y, MEIO_Z]}
-          />
-        </RigidBody>
-      )}
-    </>
+    <ComReserva reserva={<PortaDeAntes aberta={aberta} />}>
+      <PortaDoModelo aberta={aberta} />
+    </ComReserva>
   )
 }
 
@@ -187,9 +178,6 @@ function PortaDeAntes({ aberta }: { aberta: boolean }) {
   )
 }
 
-/** Quanto a porta nova gira para fora quando abre (em volta da dobradiça). */
-const GIRO_DA_PORTA_ABERTA = -1.75
-
 /** A porta nova do Blender: o nó `porta` tem o pivô na dobradiça e gira para fora ao abrir. */
 function PortaDoModelo({ aberta }: { aberta: boolean }) {
   const { ambiente } = useJogo()
@@ -213,49 +201,24 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
   return <primitive object={porta} />
 }
 
-/** Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. */
+/**
+ * Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. A casca
+ * inteira colide (paredes, quinas, alicerce, floreiras, vasinhos, colunas e a porta nova, fechada
+ * no vão ou aberta para fora): `colisoresDaCasa`.
+ */
 function Casca() {
   const dentro = useEstado((s) => s.dentroDeCasa)
-  const esquerdaDaPorta = PORTA.x - PORTA.largura / 2
-  const direitaDaPorta = PORTA.x + PORTA.largura / 2
-  const larguraEsq = esquerdaDaPorta + MEIO_X
-  const larguraDir = MEIO_X - direitaDaPorta
+  const aberta = useEstado((s) => s.salvamento.casa.portaNova)
+  const colisores = useMemo(() => colisoresDaCasa(aberta), [aberta])
   return (
     <>
       <ComReserva reserva={<CascaDeAntes dentro={dentro} />}>
         <CascaDoModelo dentro={dentro} />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider
-          args={[larguraEsq / 2, QUARTO.altura / 2, 0.15]}
-          position={[-MEIO_X + larguraEsq / 2, QUARTO.altura / 2, MEIO_Z]}
-        />
-        <CuboidCollider
-          args={[larguraDir / 2, QUARTO.altura / 2, 0.15]}
-          position={[MEIO_X - larguraDir / 2, QUARTO.altura / 2, MEIO_Z]}
-        />
-        <CuboidCollider
-          args={[0.15, QUARTO.altura / 2, MEIO_Z]}
-          position={[MEIO_X, QUARTO.altura / 2, 0]}
-        />
-        <CuboidCollider
-          args={[0.15, QUARTO.altura / 2, MEIO_Z]}
-          position={[-MEIO_X, QUARTO.altura / 2, 0]}
-        />
-        <CuboidCollider
-          args={[MEIO_X, QUARTO.altura / 2, 0.15]}
-          position={[0, QUARTO.altura / 2, -MEIO_Z]}
-        />
-      </RigidBody>
+      <Colisores lista={colisores} />
     </>
   )
 }
-
-/** As colunas da varanda do modelo (x em volta da porta, z na frente do deque). */
-const COLUNAS_DA_VARANDA: [number, number][] = [
-  [PORTA.x - 1.95, MEIO_Z + 1.6],
-  [PORTA.x + 1.95, MEIO_Z + 1.6],
-]
 
 /**
  * A casca do Blender (`casa.glb`): paredes com lambri, janelas com floreira, telhado de duas
@@ -302,11 +265,6 @@ function CascaDoModelo({ dentro }: { dentro: boolean }) {
       <primitive object={partes.janelas} />
       <primitive object={partes.telhado} />
       <primitive object={partes.varanda} />
-      <RigidBody type="fixed" colliders={false}>
-        {COLUNAS_DA_VARANDA.map(([x, z]) => (
-          <CuboidCollider key={x} args={[0.12, 1.7, 0.12]} position={[x, 1.7, z]} />
-        ))}
-      </RigidBody>
     </>
   )
 }

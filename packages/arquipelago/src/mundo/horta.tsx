@@ -4,8 +4,10 @@ import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
 import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
+import { colisoresDaHorta, posicaoDoCanteiro } from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
-import { ALTURA_DA_TERRA, HORTA } from './medidas'
+import { ALTURA_DA_TERRA } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 
 const ORDEM: Semente[] = ['alface', 'tomate', 'milho']
@@ -13,15 +15,6 @@ const COR_DA_PLANTA: Record<Semente, string> = {
   alface: '#7fd06a',
   tomate: '#e0584f',
   milho: '#f2c94c',
-}
-
-function posicaoDoCanteiro(i: number) {
-  const col = i % HORTA.colunas
-  const lin = Math.floor(i / HORTA.colunas)
-  return {
-    x: HORTA.x + (col - (HORTA.colunas - 1) / 2) * HORTA.passo,
-    z: HORTA.z + (lin - (HORTA.linhas - 1) / 2) * HORTA.passo,
-  }
 }
 
 function sementeQueDaParaPlantar(inv: Record<string, number>): Semente | null {
@@ -236,6 +229,9 @@ function useInterativo_(
   useInterativo(id, { x, z, raio: 1.8, rotulo, agir })
 }
 
+/** A borda de cada canteiro segura o corpo: ele cuida da horta de fora, sem pisar nas plantas. */
+const COLISORES_DA_HORTA = colisoresDaHorta()
+
 export function Horta() {
   const horta = useEstado((s) => s.salvamento.horta)
   const [agora, setAgora] = useState(() => Date.now())
@@ -248,6 +244,7 @@ export function Horta() {
       {horta.map((c, i) => (
         <Canteiro key={c.id} indice={i} canteiro={c} agora={agora} />
       ))}
+      <Colisores lista={COLISORES_DA_HORTA} />
     </>
   )
 }

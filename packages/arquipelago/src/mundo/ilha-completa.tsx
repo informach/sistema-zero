@@ -298,6 +298,7 @@ function ColisoresDaIlha({ colisores, troca }: { colisores: ColisorDaIlha[]; tro
           return (
             <RoundCylinderCollider
               key={c.nome}
+              collisionGroups={soParaOCorpo(c.nome) ? GRUPO_SO_DO_CORPO : undefined}
               args={[c.meiaAltura - b, c.raio - b, b]}
               position={c.posicao}
               quaternion={c.rotacao}

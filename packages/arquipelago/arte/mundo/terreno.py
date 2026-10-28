@@ -10,6 +10,10 @@ As cores variam de leve por vértice (manchas de grama, areia secando).
 
 Nós: `chao` (o terreno), `enfeites` (capim, flores, moitas, pedras, pedras do caminho, estrelas
 do mar) e `espuma` (o anel branco na linha d'água; o jogo pode balançar).
+
+Colisão: cada moita e cada pedra ganha um nó `col-cil-moita-*` ou `col-cil-pedra-*` (cilindro em
+pé, sem material) do lado do desenho; o jogo lê com `lerColisores`. Capim, flores, pedras do
+caminho e estrelas do mar não colidem: o personagem passa por cima.
 """
 from lib_mundo import *
 
@@ -247,7 +251,19 @@ def estrela_do_mar(x, z, rot, m):
     return o
 
 
-def enfeites():
+# Colisão das moitas: um pouco menor que a folhagem (o corpo encosta nas folhas, mas não entra) e
+# no mínimo 0,7 de alto (o personagem sobe sozinho até uns 0,58: degrau mais a curva do pé).
+MOITA_RAIO = 0.68
+MOITA_ALTO = 0.7
+MOITA_ALTO_MINIMO = 0.7
+# Colisão das pedras: entre os dois raios da pedra (1,3 e 1,1 por escala) e um pouco abaixo do
+# topo (a pedra é arredondada). As pequenas ficam abaixo do que ele sobe: ele sobe nelas.
+PEDRA_RAIO = 0.58
+PEDRA_ALTO = 0.62
+
+
+def enfeites(col):
+    """Os enfeites do chão. Moitas e pedras põem a colisão delas em `col`."""
     rnd = random.Random(7)
     p = []
     # Capim: espalhado pelo gramado, mais junto da borda e das árvores.
@@ -279,6 +295,7 @@ def enfeites():
                                    (3.8, -10.7, 0.85), (-20, 3, 1.2), (19, 3, 1.1), (-6, 20, 1.0),
                                    (8, -18, 1.1), (21, -8, 0.9)]):
         p += moita(x, z, s, i)
+        col.append(col_no_chao('moita', x, z, MOITA_RAIO * s, max(MOITA_ALTO * s, MOITA_ALTO_MINIMO)))
     # Pedras: grupinhos no gramado e na praia.
     for i, (x, z, s) in enumerate([(-15, 12, 1.0), (-14.2, 12.8, 0.55), (13, -17, 0.9), (13.8, -16.2, 0.5),
                                    (20.5, 8, 0.8), (-21, -2, 0.9), (-20.4, -2.9, 0.5),
@@ -289,6 +306,7 @@ def enfeites():
         bx, by, bz = no_chao(x, z, -0.08 * s)
         p.append(rock((bx, by, bz), (1.3 * s, 1.1 * s, 0.8 * s), 'pedra', seed=i, subdiv=1, rough=0.2,
                       top_m='musgo' if raio_efetivo(x, z) < BORDA_DO_GRAMADO else 'pedraClara'))
+        col.append(col_no_chao('pedra', x, z, PEDRA_RAIO * s, PEDRA_ALTO * s))
     # Caminho de pedras: da porta até o píer, e da porta até a horta e a bancada.
     p += caminho([(2.5, 1.6), (1.5, 6), (-1.5, 12), (-4, 18), (-5, 24.5)], seed=1)
     p += caminho([(4.5, 1.4), (7.4, 1.2)], seed=2)
@@ -302,8 +320,9 @@ def enfeites():
 
 def main():
     lib_q.reset()
-    nos = {'chao': chao(), 'enfeites': enfeites(), 'espuma': espuma()}
-    exportar('terreno', nos)
+    col = []
+    nos = {'chao': chao(), 'enfeites': enfeites(col), 'espuma': espuma()}
+    exportar('terreno', nos, colisores=col)
 
 
 if __name__ == '__main__':

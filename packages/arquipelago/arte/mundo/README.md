@@ -47,7 +47,13 @@ Ele também acrescenta:
   - os que acendem à noite (`vidroJanela`, `lampiao`, `lanterna`, `vidroFarol`, `lampadaFarol`)
     saem com força de emissão 1, e o código regula o brilho;
   - os materiais com transparência (`holograma`, `fachoFarol`, `espuma`) saem em BLEND.
-- Os colisores continuam no código, todos do mesmo tamanho de antes. O modelo só desenha.
+- Colisão: o que tem medida do jogo (casa, horta, bancada, torre do farol, tampo do píer, troncos)
+  fica no código (`src/mundo/colisao-da-ilha-central.ts`). O que o script espalha ou posiciona sai
+  em nós `col-*` no mesmo GLB, com a convenção das ilhas completas (README de `arte/ilhas`):
+  `col-cil-*` é cilindro em pé, outro `col-*` é caixa, malha unitária sem material e o tamanho no
+  TRS do nó. Ajudantes no `lib_mundo.py`: `col_caixa`, `col_cilindro` e `col_no_chao` (cilindro
+  pousado no chão da ilha central); `exportar(pid, nos, colisores=col)` grava e conta no relatório.
+  Capim, flores, pedras do caminho, estrelas-do-mar, corda e boia não colidem.
 
 ## Sem pisca-pisca (28/10/2026)
 
@@ -74,23 +80,24 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 
 | Arquivo | Script | Referencial | Nós (contrato com o código) | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `terreno.glb` | `terreno.py` | mundo (ilha central na origem) | `chao`, `enfeites`, `espuma` | 14.040 | 446 KB |
+| `terreno.glb` | `terreno.py` | mundo (ilha central na origem) | `chao`, `enfeites`, `espuma` e os `col-cil-moita-*`, `col-cil-pedra-*` | 14.040 | 452 KB |
 | `arvores.glb` | `vegetacao.py` | pé da árvore, escala 1 | `arvore-redonda`, `arvore-frutas`, `arvore-pinheiro`, `coqueiro` | 3.852 | 86 KB |
 | `casa.glb` | `casa.py` | grupo `Casa` (centro do quarto, piso em y = 0) | `paredes`, `revestimento`, `janelas`, `telhado`, `varanda`, `porta` | 6.874 | 353 KB |
 | `horta.glb` | `horta.py` | centro de um canteiro | `canteiro`, `semente`, `alface-broto`/`-crescendo`/`-maduro`, `tomate-…`, `milho-…` | 3.010 | 111 KB |
 | `bancada.glb` | `bancada.py` | grupo `Bancada` | `projetor`, `holograma` | 2.342 | 89 KB |
-| `farol.glb` | `farol.py` | grupo `Farol` | `farol`, `vidro`, `lampada`, `facho` | 5.852 | 200 KB |
-| `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier` | 3.604 | 144 KB |
+| `farol.glb` | `farol.py` | grupo `Farol` | `farol`, `vidro`, `lampada`, `facho` e os `col-cil-pedra-farol-*`, `col-degrau-farol-*` | 5.852 | 206 KB |
+| `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier` e os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1` | 3.604 | 149 KB |
 | `ponte.glb` | `ponte.py` | uma peça na origem (instanciada) | `tabua`, `poste`, `corda` | 192 | 9 KB |
 | `ilhas-do-anel.glb` | `ilhas_anel.py` | centro de cada ilha, y = 0 no mar | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` | 19.336 | 527 KB |
-| **total** | | | | **59.102** | **1,92 MB** |
+| **total** | | | | **59.102** | **1,94 MB** |
 
 ### O que o código liga, desliga e mexe
 
 - **Chão**: a colisão continua sendo o trimesh de `alturaDaIlha`. A `espuma` balança devagar e é
   desenhada depois do mar.
-- **Árvores**: as mesmas 12 posições, escalas e colisores de antes. As que ficam mais perto da
-  praia viram `coqueiro`, e cada árvore tem um giro próprio.
+- **Árvores**: as mesmas 12 posições e escalas, com o tronco que colide (e, no pinheiro, a saia de
+  galhos de baixo). As que ficam mais perto da praia viram `coqueiro`, e cada árvore tem um giro
+  próprio.
 - **Casa**:
   - `paredes` e `janelas` ficam translúcidas quando você entra, e o `telhado` (com o toldo da
     varanda) some;

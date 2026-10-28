@@ -33,10 +33,28 @@ export type ColisorDaIlha =
   | { forma: 'malha'; nome: string; vertices: Float32Array; indices: Uint32Array }
 
 /**
- * Colisores que seguram o corpo mas não aparecem (o guarda-corpo dos deques e as paredes sob os
- * corrimãos de corda): a câmera passa por eles, senão ela pularia para perto por nada que se vê.
+ * Colisores que só seguram o corpo: a câmera passa por eles, senão ela pularia para perto por nada
+ * que se vê (o guarda-corpo dos deques e as paredes sob os corrimãos de corda), por folhagem macia
+ * (moitas, a saia do pinheiro, cogumelos) ou por peça fina e baixa (postes, estacas, colunas,
+ * floreiras, vasos, canteiros, o barquinho e as pernas do escorregador). Paredes, troncos, pedras,
+ * torre e cabana continuam tapando a câmera.
  */
-const SO_PARA_O_CORPO = ['col-guarda-', 'col-ponte-lado-']
+const SO_PARA_O_CORPO = [
+  'col-guarda-',
+  'col-ponte-lado-',
+  'col-cil-moita-',
+  'col-cil-copa-',
+  'col-cil-cogumelo-',
+  'col-cil-poste-',
+  'col-cil-estaca-',
+  'col-cil-perna-',
+  'col-cil-vaso-',
+  'col-coluna-',
+  'col-floreira-',
+  'col-canteiro-',
+  'col-barco-',
+  'col-quadro-',
+]
 
 export function soParaOCorpo(nome: string): boolean {
   return SO_PARA_O_CORPO.some((p) => nome.startsWith(p))

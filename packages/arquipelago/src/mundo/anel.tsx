@@ -19,6 +19,14 @@ import { useEstado, useJogo } from '../estado/contexto'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
 import { BosqueVivo } from './bosque-vivo'
 import {
+  ALTURA_DA_CORDA,
+  corrimaosDaPonte,
+  postesDaPonte,
+  type Tabua,
+  tabuasDaPonte,
+} from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
+import {
   aplicarOpacidade,
   giroDaIlha,
   IlhaCompleta,
@@ -349,27 +357,9 @@ function Ponte({
   tabuasVisiveis: number
 }) {
   const pontos = useMemo(() => trajetoDaPonte(ilha, 36), [ilha])
-  const tabuas = useMemo(() => {
-    const lista: Tabua[] = []
-    for (let i = 0; i < pontos.length - 1; i++) {
-      const a = pontos[i]
-      const b = pontos[i + 1]
-      if (!a || !b) continue
-      const giro = Math.atan2(b.x - a.x, b.z - a.z)
-      const incl = -Math.atan2(b.y - a.y, Math.hypot(b.x - a.x, b.z - a.z))
-      for (let k = 0; k < 2; k++) {
-        const t = k / 2 + 0.25
-        lista.push({
-          x: a.x + (b.x - a.x) * t,
-          y: a.y + (b.y - a.y) * t,
-          z: a.z + (b.z - a.z) * t,
-          giro,
-          incl,
-        })
-      }
-    }
-    return lista
-  }, [pontos])
+  const tabuas = useMemo(() => tabuasDaPonte(pontos), [pontos])
+  // A corda da ponte inteira segura o corpo (uma parede baixa sob cada corda, só para o corpo).
+  const corrimaos = useMemo(() => corrimaosDaPonte(ilha.id, postesDaPonte(tabuas)), [ilha, tabuas])
   const limite = Math.floor(tabuas.length * (inteira ? tabuasVisiveis : TRECHO_QUEBRADO))
 
   const trechos = useMemo(() => {
@@ -407,16 +397,9 @@ function Ponte({
           ))}
         </RigidBody>
       )}
+      {inteira && tabuasVisiveis >= 1 && <Colisores lista={corrimaos} />}
     </>
   )
-}
-
-interface Tabua {
-  x: number
-  y: number
-  z: number
-  giro: number
-  incl: number
 }
 
 /** Põe cada tábua no lugar; as que ainda não chegaram ficam escondidas lá embaixo. */
@@ -457,10 +440,6 @@ function TabuasDeAntes({
   )
 }
 
-/** De quantas em quantas tábuas vai um par de postes (com a corda entre eles). */
-const TABUAS_POR_POSTE = 6
-const LADO_DO_POSTE = 1.2
-const ALTURA_DA_CORDA = 0.8
 const CINZA_DA_PONTE = new Color('#9aa0aa')
 const FRENTE = new Vector3(0, 0, 1)
 const tmpA = new Vector3()
@@ -507,23 +486,15 @@ function PonteDoModelo({
   }, [inteira, pecas])
 
   // Postes: dos dois lados, de tantas em tantas tábuas, com a base no tampo da tábua.
-  const postes = useMemo(() => {
-    const lista: { tabua: number; pos: Vector3; q: Quaternion }[] = []
-    for (let i = 0; i < tabuas.length; i += TABUAS_POR_POSTE) {
-      const t = tabuas[i]
-      if (!t) continue
-      for (const lado of [-1, 1]) {
-        const dx = Math.cos(t.giro) * LADO_DO_POSTE * lado
-        const dz = -Math.sin(t.giro) * LADO_DO_POSTE * lado
-        lista.push({
-          tabua: i,
-          pos: new Vector3(t.x + dx, t.y + 0.02, t.z + dz),
-          q: new Quaternion().setFromEuler(new Euler(0, t.giro, 0)),
-        })
-      }
-    }
-    return lista
-  }, [tabuas])
+  const postes = useMemo(
+    () =>
+      postesDaPonte(tabuas).map((p) => ({
+        tabua: p.tabua,
+        pos: new Vector3(...p.pos),
+        q: new Quaternion().setFromEuler(new Euler(0, p.giro, 0)),
+      })),
+    [tabuas],
+  )
   const [malhaTabuas, setMalhaTabuas] = useState<InstancedMesh | null>(null)
   const [malhaPostes, setMalhaPostes] = useState<InstancedMesh | null>(null)
   const [malhaCorda, setMalhaCorda] = useState<InstancedMesh | null>(null)

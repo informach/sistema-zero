@@ -1,5 +1,4 @@
 import { useFrame } from '@react-three/fiber'
-import { CylinderCollider, RigidBody } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   AdditiveBlending,
@@ -12,6 +11,9 @@ import {
   type PointLight,
 } from 'three'
 import { useEstado } from '../estado/contexto'
+import { COLISORES_DO_FAROL } from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
+import { lerColisores } from './colisores-da-ilha'
 import { ALTURA_DA_TERRA, FAROL } from './medidas'
 import {
   ComReserva,
@@ -36,9 +38,7 @@ export function Farol() {
       <ComReserva reserva={<FarolDeAntes aceso={aceso} />}>
         <FarolDoModelo aceso={aceso} />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CylinderCollider args={[5, 1.6]} position={[0, 4, 0]} />
-      </RigidBody>
+      <Colisores lista={COLISORES_DO_FAROL} />
     </group>
   )
 }
@@ -87,6 +87,8 @@ function FarolDoModelo({ aceso }: { aceso: boolean }) {
       vidro,
       lampada,
       facho,
+      // As pedras do pé e os degraus da porta (nós `col-*` do arquivo); a torre é do código.
+      colisores: lerColisores(raiz),
       cores: [...coresOriginais(corpo), ...coresOriginais(lampada)],
       janelas: materiaisDe(corpo, 'vidroJanela'),
       vidros: materiaisDe(vidro),
@@ -118,6 +120,7 @@ function FarolDoModelo({ aceso }: { aceso: boolean }) {
       <primitive object={partes.vidro} />
       <primitive object={partes.lampada} />
       <primitive object={partes.facho} />
+      <Colisores lista={partes.colisores} />
       {aceso ? (
         <pointLight
           ref={luz}

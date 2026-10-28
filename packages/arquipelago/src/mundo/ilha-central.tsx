@@ -1,8 +1,17 @@
 import { useFrame } from '@react-three/fiber'
-import { CuboidCollider, CylinderCollider, RigidBody, TrimeshCollider } from '@react-three/rapier'
+import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { useMemo } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useJogo } from '../estado/contexto'
+import {
+  ALTURA_DO_PIER,
+  ARVORES,
+  COLISORES_DO_PIER,
+  colisoresDasArvores,
+  variedadeDaArvore,
+} from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
+import { lerColisores } from './colisores-da-ilha'
 import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 
@@ -64,14 +73,24 @@ function Terreno() {
   )
 }
 
+/**
+ * O chão do Blender com os enfeites. Moitas e pedras colidem pelos nós `col-*` do arquivo (lidos
+ * junto com o desenho, então só existem quando ele aparece); capim, flores, pedras do caminho e
+ * estrelas do mar não colidem.
+ */
 function ChaoDoModelo() {
   const raiz = useModelo(MODELOS.terreno)
-  const { chao, enfeites, espuma } = useMemo(() => {
+  const { chao, enfeites, espuma, colisores } = useMemo(() => {
     const espuma = copiarNo(raiz, 'espuma', true)
     // A espuma é desenhada depois do mar (os dois são translúcidos).
     espuma.renderOrder = 2
     for (const m of materiaisDe(espuma)) m.depthWrite = false
-    return { chao: copiarNo(raiz, 'chao'), enfeites: copiarNo(raiz, 'enfeites'), espuma }
+    return {
+      chao: copiarNo(raiz, 'chao'),
+      enfeites: copiarNo(raiz, 'enfeites'),
+      espuma,
+      colisores: lerColisores(raiz),
+    }
   }, [raiz])
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
@@ -83,30 +102,12 @@ function ChaoDoModelo() {
       <primitive object={chao} />
       <primitive object={enfeites} />
       <primitive object={espuma} />
+      <Colisores lista={colisores} />
     </>
   )
 }
 
-const ARVORES: [number, number, number][] = [
-  [-9, 4, 1.2],
-  [-14, -3, 1],
-  [-16, 6, 1.3],
-  [-6, 12, 1.1],
-  [6, 14, 1.2],
-  [15, 10, 1],
-  [17, -10, 1.3],
-  [4, -16, 1.1],
-  [-4, -17, 1],
-  [-19, -6, 1.2],
-  [12, 16, 0.9],
-  [-12, 15, 1],
-]
 const VERDES = ['#3f9a4f', '#58b05a', '#2f8a5f', '#6cc46a']
-/** Qual árvore do Blender vai em cada lugar (os coqueiros ficam nas mais perto da praia). */
-const VARIEDADES = ['arvore-redonda', 'arvore-frutas', 'arvore-pinheiro'] as const
-function variedade(x: number, z: number, i: number): string {
-  return Math.hypot(x, z) > 19.5 ? 'coqueiro' : (VARIEDADES[i % 3] ?? 'arvore-redonda')
-}
 
 /** A árvore de antes (formas do código): aparece enquanto o modelo baixa. */
 function ArvoreDeAntes({ i }: { i: number }) {
@@ -134,6 +135,8 @@ function ArvoreDoModelo({ nome, giro }: { nome: string; giro: number }) {
   return <primitive object={arvore} rotation-y={giro} />
 }
 
+const COLISORES_DAS_ARVORES = colisoresDasArvores()
+
 function Arvores() {
   return (
     <>
@@ -142,14 +145,13 @@ function Arvores() {
         return (
           <group key={`${x},${z}`} position={[x, y, z]} scale={s}>
             <ComReserva reserva={<ArvoreDeAntes i={i} />}>
-              <ArvoreDoModelo nome={variedade(x, z, i)} giro={i * 1.7} />
+              <ArvoreDoModelo nome={variedadeDaArvore(x, z, i)} giro={i * 1.7} />
             </ComReserva>
-            <RigidBody type="fixed" colliders={false}>
-              <CylinderCollider args={[0.9, 0.3]} position={[0, 0.9, 0]} />
-            </RigidBody>
           </group>
         )
       })}
+      {/* Fora do grupo com escala: as medidas já vêm no mundo. */}
+      <Colisores lista={COLISORES_DAS_ARVORES} />
     </>
   )
 }
@@ -178,21 +180,31 @@ function PierDeAntes() {
   )
 }
 
-/** O píer do Blender, com o barquinho; o lampião da ponta acende à noite. */
+/**
+ * O píer do Blender, com o barquinho; o lampião da ponta acende à noite. Estacas, poste e lanterna
+ * do lampião e o casco do barquinho colidem pelos nós `col-*` do arquivo.
+ */
 function PierDoModelo() {
   const { ambiente } = useJogo()
   const raiz = useModelo(MODELOS.pier)
-  const { pier, lanternas } = useMemo(() => {
+  const { pier, lanternas, colisores } = useMemo(() => {
     const copia = copiarNo(raiz, 'pier', true)
-    return { pier: copia, lanternas: materiaisDe(copia, 'lanterna') }
+    return {
+      pier: copia,
+      lanternas: materiaisDe(copia, 'lanterna'),
+      colisores: lerColisores(raiz),
+    }
   }, [raiz])
   useFrame(() => {
     for (const m of lanternas) m.emissiveIntensity = ambiente.noite ? 2.2 : 0
   })
-  return <primitive object={pier} />
+  return (
+    <>
+      <primitive object={pier} />
+      <Colisores lista={colisores} />
+    </>
+  )
 }
-
-const ALTURA_DO_PIER = 0.55
 
 function Pier() {
   return (
@@ -200,12 +212,7 @@ function Pier() {
       <ComReserva reserva={<PierDeAntes />}>
         <PierDoModelo />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider
-          args={[1, 0.06, PIER.comprimento / 2]}
-          position={[0, ALTURA_DO_PIER, PIER.comprimento / 2 - 0.25]}
-        />
-      </RigidBody>
+      <Colisores lista={COLISORES_DO_PIER} />
     </group>
   )
 }
