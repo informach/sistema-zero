@@ -68,9 +68,17 @@ Plano: `docs/plans/2026-10-28-arquipelago-desafio-do-dia-e-manifestos.md`. Um fo
 o `slug` é a identidade, e um desafio fora do arquivo nunca é mexido.
 
 - Regras puras em `domain/manifestos.ts`: `decidir` (`criar`, `atualizar`, `igual` ou `conflito`
-  para cada desafio do arquivo; quadro ocupado só por desafio de fora do arquivo; arquivado é
-  conflito), `impressaoDigital` (o arquivo e a revisão e situação de cada desafio que ele toca) e
+  para cada desafio do arquivo; arquivado é conflito), `ordemDeGravacao`, `impressaoDigital` (o arquivo e a revisão e situação de cada desafio que ele toca) e
   `canonico` (JSON com as chaves em ordem: o `jsonb` reordena, e o reenvio tem de dar `igual`).
+- ⚠️ **Quem segura um quadro** é a posição PUBLICADA (`metadadosPublicados`, o índice
+  `desafios_quadro_unico`), ou a do rascunho antes da primeira publicação. Mudar o quadro no
+  rascunho só solta o antigo ao publicar de novo. Um desafio do arquivo só libera o quadro se trocar
+  de posição ao aplicar (`trocaDeQuadro`: nunca publicado e grava, ou pede `publicar` e há o que
+  publicar). Quem vai para um quadro que outro do arquivo ainda segura grava DEPOIS dele
+  (`ordemDeGravacao`); se quem segura não sai, é conflito `QUADRO_OCUPADO` já na conferência, e
+  troca em roda (o 1 vai para o 2 e o 2 para o 1) é `TROCA_DE_QUADRO`. Conflito do índice na
+  publicação deixa o desafio gravado em rascunho, com o motivo na linha (nunca um 500 no meio). O
+  repositório em memória dos testes segue a mesma regra.
 - Orquestração no `ServicoDaEquipe`: `conferirManifesto` (prévia, roda a análise do Members só nos
   que vão ser gravados ou publicados), `aplicarManifesto` (impressão diferente → 409
   `MANIFESTO_DESATUALIZADO` sem gravar; cada desafio segue sozinho: conflito não grava, problema
@@ -79,8 +87,11 @@ o `slug` é a identidade, e um desafio fora do arquivo nunca é mexido.
 - Rotas: `POST /arquipelago/admin/manifestos/conferir` (equipe), `POST .../aplicar` (só a
   administração), `GET .../exportar?publico&ilha&tipo` e `GET /arquipelago/admin/desafios/:id/manifesto`.
   Sem tabela nova.
-- Testes: `tests/integration/manifestos.test.ts` e `tests/db/manifestos.test.ts` (o reenvio dá
-  `igual` depois da volta pelo `jsonb`, sem revisão nova).
+- Testes: `tests/integration/manifestos.test.ts` (inclui a fila de quadros, a roda e o quadro
+  publicado que segura o lugar) e `tests/db/manifestos.test.ts` (o reenvio dá `igual` depois da
+  volta pelo `jsonb`, sem revisão nova, e a fila de quadros contra o índice de verdade).
+- No Admin, o arquivo grande vai em lotes (`packages/admin/src/lib/challenge-manifest.ts`): os do
+  Quadro das Cores de uma ilha sempre no mesmo lote, por causa da regra acima.
 
 ## Jogar os desafios (27/10/2026)
 

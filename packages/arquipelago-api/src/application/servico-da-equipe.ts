@@ -33,6 +33,7 @@ import {
   itemDoCadastro,
   metadadosDoItem,
   novoManifesto,
+  ordemDeGravacao,
 } from '../domain/manifestos'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
 import {
@@ -239,12 +240,17 @@ export class ServicoDaEquipe {
     if (impressaoDigital(manifesto, cadastro) !== pedido.impressao)
       throw new ManifestoDesatualizadoError()
     const decisoes = decidir(manifesto, cadastro)
-    const itens: AplicacaoDoManifesto['itens'] = []
-    for (const [i, item] of manifesto.desafios.entries()) {
+    // Grava na ordem que libera cada quadro antes de ocupá-lo; responde na ordem do arquivo.
+    const porIndice: AplicacaoDoManifesto['itens'][number][] = []
+    for (const i of ordemDeGravacao(manifesto, decisoes)) {
+      const item = manifesto.desafios[i]
       const d = decisoes[i]
-      if (!d) continue
+      if (!item || !d) continue
+      const responder = (r: AplicacaoDoManifesto['itens'][number]) => {
+        porIndice[i] = r
+      }
       if (d.acao === 'conflito') {
-        itens.push({
+        responder({
           slug: item.slug,
           id: d.existente?.id ?? null,
           acao: 'conflito',
@@ -268,7 +274,7 @@ export class ServicoDaEquipe {
           })
       } catch (erro) {
         if (!(erro instanceof ConflitoDoCadastroError)) throw erro
-        itens.push({
+        responder({
           slug: item.slug,
           id: d.existente?.id ?? null,
           acao: 'conflito',
@@ -291,13 +297,16 @@ export class ServicoDaEquipe {
           atual = await this.publicar(equipe, atual.resumo.id, atual.resumo.revisao)
           publicado = true
         } catch (erro) {
-          if (!(erro instanceof DesafioComProblemasError)) throw erro
-          problemas = erro.problemas
+          // Gravou, mas não publicou: fica em rascunho e a linha diz por quê.
+          if (erro instanceof DesafioComProblemasError) problemas = erro.problemas
+          else if (erro instanceof ConflitoDoCadastroError)
+            problemas = [{ codigo: 'QUADRO_OCUPADO', mensagem: erro.message }]
+          else throw erro
         }
       }
-      itens.push({ slug: item.slug, id: atual.resumo.id, acao: d.acao, publicado, problemas })
+      responder({ slug: item.slug, id: atual.resumo.id, acao: d.acao, publicado, problemas })
     }
-    return { itens }
+    return { itens: porIndice.filter((r) => r !== undefined) }
   }
 
   /** Um desafio, a ilha filtrada ou o jogo inteiro como manifesto (fora os arquivados). */

@@ -150,4 +150,42 @@ describe.skipIf(!url)('manifesto de desafios (Postgres real)', () => {
     const [linha] = await conexao.sql`select revisao, situacao from arquipelago.desafios`
     expect(linha).toMatchObject({ revisao: 1, situacao: 'publicado' })
   })
+
+  test('o quadro muda de dono em fila contra o índice único de verdade', async () => {
+    const [base] = manifesto.desafios
+    if (!base) throw new Error('sem desafio')
+    const com = (desafios: { slug: string; quadro: number }[]) =>
+      ManifestoDeDesafiosSchema.parse({
+        ...manifesto,
+        desafios: desafios.map((d) => ({ ...base, ...d })),
+      })
+    const subir = async (m: typeof manifesto) => {
+      const c = await servico.conferirManifesto(equipe, m)
+      return servico.aplicarManifesto(equipe, { manifesto: m, impressao: c.impressao })
+    }
+    await subir(
+      com([
+        { slug: 'a', quadro: 1 },
+        { slug: 'b', quadro: 2 },
+      ]),
+    )
+    // "a" vem primeiro no arquivo e vai para o 2, que só fica livre depois que "b" grava.
+    const a = await subir(
+      com([
+        { slug: 'a', quadro: 2 },
+        { slug: 'b', quadro: 3 },
+      ]),
+    )
+    expect(a.itens.map((i) => [i.slug, i.acao])).toEqual([
+      ['a', 'atualizar'],
+      ['b', 'atualizar'],
+    ])
+    const linhas = await conexao.sql`
+      select slug, coalesce((metadados_publicados->>'quadro')::int, quadro) as quadro
+      from arquipelago.desafios order by 1`
+    expect(linhas.map((l) => [l.slug, l.quadro])).toEqual([
+      ['a', 2],
+      ['b', 3],
+    ])
+  })
 })

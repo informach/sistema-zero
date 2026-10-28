@@ -241,6 +241,65 @@ describe('manifesto de desafios', () => {
     expect(conferencia.contagem.conflito).toBe(0)
   })
 
+  test('em fila, quem libera o quadro grava antes, mesmo vindo depois no arquivo', async () => {
+    await subir(manifesto([item('a'), item('b', { quadro: 2 })]))
+    // "a" vai para o 2, que ainda é do "b"; o "b" vai para o 3, livre.
+    const { conferencia, aplicacao } = await subir(
+      manifesto([item('a', { quadro: 2 }), item('b', { quadro: 3 })]),
+    )
+    expect(conferencia.contagem.conflito).toBe(0)
+    expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual([
+      ['a', 'atualizar', true],
+      ['b', 'atualizar', true],
+    ])
+    const quadros = Object.fromEntries(
+      [...desafios.linhas.values()].map((d) => [d.metadados.slug, d.metadados.quadro]),
+    )
+    expect(quadros).toEqual({ a: 2, b: 3 })
+  })
+
+  test('troca em roda e quadro de quem não sai são conflito já na conferência', async () => {
+    await subir(manifesto([item('a'), item('b', { quadro: 2 }), item('c', { quadro: 3 })]))
+    const roda = await conferir(manifesto([item('a', { quadro: 2 }), item('b', { quadro: 1 })]))
+    expect(roda.itens.map((i) => [i.slug, i.conflito?.codigo])).toEqual([
+      ['a', 'TROCA_DE_QUADRO'],
+      ['b', 'TROCA_DE_QUADRO'],
+    ])
+    // "b" quer o 3, que é do "c" (fora do arquivo): conflito. Então o 2 do "b" não fica livre
+    // para o "a", que também vira conflito em vez de quebrar no meio do aplicar.
+    const preso = await subir(manifesto([item('a', { quadro: 2 }), item('b', { quadro: 3 })]))
+    expect(preso.conferencia.itens.map((i) => [i.slug, i.conflito?.codigo])).toEqual([
+      ['a', 'QUADRO_OCUPADO'],
+      ['b', 'QUADRO_OCUPADO'],
+    ])
+    expect(preso.conferencia.itens[0]?.conflito?.mensagem).toContain('"b"')
+    expect(preso.aplicacao.itens.every((i) => i.acao === 'conflito')).toBe(true)
+  })
+
+  test('o quadro publicado segura o lugar até publicar de novo', async () => {
+    await subir(manifesto([item('a'), item('b', { quadro: 2 })]))
+    // "b" muda o rascunho para o 3 mas não publica: o 2 publicado continua dele.
+    const semPublicar = await conferir(
+      manifesto([item('a', { quadro: 2 }), item('b', { quadro: 3, publicar: false })]),
+    )
+    expect(semPublicar.itens.map((i) => [i.slug, i.acao, i.conflito?.codigo ?? null])).toEqual([
+      ['a', 'conflito', 'QUADRO_OCUPADO'],
+      ['b', 'atualizar', null],
+    ])
+    // Fora do arquivo vale o mesmo: o rascunho de "b" no 3, publicado no 2.
+    await subir(manifesto([item('b', { quadro: 3, publicar: false })]))
+    const novo = await subir(manifesto([item('c', { quadro: 2 })]))
+    expect(novo.conferencia.itens[0]?.conflito?.codigo).toBe('QUADRO_OCUPADO')
+    expect(novo.aplicacao.itens[0]?.acao).toBe('conflito')
+    // Publicando o "b" pelo arquivo, o 2 fica livre para o "c" no mesmo arquivo.
+    const junto = await subir(manifesto([item('c', { quadro: 2 }), item('b', { quadro: 3 })]))
+    expect(junto.aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual([
+      ['c', 'criar', true],
+      // O rascunho já estava no 3: nada a gravar, só publicar (é a publicação que solta o 2).
+      ['b', 'igual', true],
+    ])
+  })
+
   test('mudou entre a prévia e o aplicar: 409 MANIFESTO_DESATUALIZADO e nada é gravado', async () => {
     await subir(manifesto([item('corrida')]))
     const m = manifesto([
