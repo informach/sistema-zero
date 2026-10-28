@@ -5,8 +5,9 @@ Não altera física, salvamento, banco de dados, modelos nem arquivos reservados
 
 ## Conferências locais
 
-- `bun test`: 515 passaram, zero falhas, uma integração Postgres ignorada por não haver banco de
-  teste configurado. Nenhum banco de staging ou produção foi acessado.
+- `bun test`: 515 passaram na primeira revisão; 529 na composição com cabana, luneta e miniaturas.
+  Zero falhas, uma integração Postgres ignorada por não haver banco de teste configurado.
+  Nenhum banco de staging ou produção foi acessado.
 - `bun run typecheck` e `bun run check`: passaram.
 - `tests/qualidade.test.ts`: detecção, preferências antigas, imposição por URL, tempos mínimos,
   faixa neutra, recuperação, descarte de pausas e alcance da névoa. Rapier real e o controlador
@@ -23,6 +24,11 @@ Não altera física, salvamento, banco de dados, modelos nem arquivos reservados
 - Toque emulado: `pointer: coarse` verdadeiro, nível inicial médio e meta 30.
 
 ## Achados corrigidos durante a revisão
+
+Na conciliação, o remoto passou a usar `arq-escolha` também nos cartões de miniatura do
+Construir, estreitando os fieldsets existentes de Conforto para 92 px. Os cartões agora usam
+`arq-obra-escolha`, com estilos próprios. O navegador confere que o grupo de qualidade mantém
+sua largura de formulário.
 
 O primeiro controlador alterava DPR por `setDpr`, mas o Canvas reaplicava sua prop ao fechar o
 menu. Teste reproduziu 1 no lugar de 0,75. A resolução passou a ter uma única autoridade na

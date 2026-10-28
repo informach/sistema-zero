@@ -104,7 +104,12 @@ function Escolha({
   aoEscolher: () => void
 }) {
   return (
-    <button type="button" className="arq-escolha" aria-pressed={escolhida} onClick={aoEscolher}>
+    <button
+      type="button"
+      className="arq-obra-escolha"
+      aria-pressed={escolhida}
+      onClick={aoEscolher}
+    >
       <img src={imagem} alt="" width={160} height={160} draggable={false} />
       <b>{nome}</b>
       {nota ? <small>{nota}</small> : null}

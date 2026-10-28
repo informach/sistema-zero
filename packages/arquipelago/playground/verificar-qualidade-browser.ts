@@ -57,6 +57,10 @@ async function esperar(p: Page, nivel: string | null, bosqueAtivo = true) {
 async function escolher(p: Page, nome: string, nivel: string) {
   await p.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
   const escolha = p.getByRole('group', { name: 'Qualidade', exact: true })
+  assert.ok(
+    await escolha.evaluate((el) => el.getBoundingClientRect().width > 200),
+    'O grupo de Conforto não herda a largura de uma miniatura do Construir',
+  )
   await escolha.getByRole('button', { name: nome, exact: true }).click()
   assert.equal(
     await escolha.getByRole('button', { name: nome, exact: true }).getAttribute('aria-pressed'),
