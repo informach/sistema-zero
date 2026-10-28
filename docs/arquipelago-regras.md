@@ -462,6 +462,12 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
   aproxima) e controle físico (analógico esquerdo anda e, todo empurrado, corre; direito gira a
   câmera a 2,6 rad/s e inclina a 1,4 rad/s; botão de baixo pula; o da direita usa; gatilho direito
   corre; clique no analógico direito recentraliza; Start faz o que o Esc faz; zona morta 0,15).
+- **Conforto da câmera** (no menu, `sistemas/conforto.ts`, guardado no aparelho, o mesmo para Kids
+  e Adultos): rapidez ao girar (devagar 0,6, normal 1, rápida 1,5 vezes), distância de partida
+  (perto 6, normal 9, longe 13 m; a roda e a pinça seguem valendo), inverter para cima e para
+  baixo, a câmera voltar sozinha para as costas (desligada por padrão: começa depois de 2,5 s
+  andando sem mexer nela) e menos movimento da câmera (soma com o pedido do aparelho). O jogo não
+  tem tremor de câmera.
 - **Pular** conta cada toque (`controle.pulos`): o toque rápido que desce e sobe no mesmo quadro
   também solta o cipó e pula do tronco, e no chão cada toque é um pulo (`passoDoPulo`).
 - **Braços:** no cipó e no tronco o avatar segura com os braços para cima

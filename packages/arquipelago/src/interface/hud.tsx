@@ -9,6 +9,7 @@ import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PainelDoBicho } from './bicho'
 import { PainelDaCapi } from './capi'
+import { PreferenciasDeConforto } from './conforto'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
 
@@ -341,12 +342,14 @@ function Menu() {
       <div className="arq-menu arq-cartao" role="dialog" aria-label="Menu do jogo">
         <h2>Arquipélago Vagalume</h2>
         <ul>
-          <li>Andar: W A S D ou as setas (no tablet, o círculo da esquerda)</li>
+          <li>Andar: W A S D ou as setas (no tablet, toque e arraste na esquerda de baixo)</li>
           <li>Correr: Shift · Pular: espaço</li>
           <li>Usar o que está perto: E</li>
           <li>Cipó: Espaço solta · Tronco: W e S sobem e descem, Espaço pula</li>
-          <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse</li>
+          <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse · Câmera nas costas: C</li>
+          <li>Com controle de videogame: analógicos andam e giram, botão de baixo pula</li>
         </ul>
+        <PreferenciasDeConforto />
         <h3 className="arq-menu-titulo">Criar com as ferramentas</h3>
         <div className="arq-ferramentas">
           {FERRAMENTAS.map((f) => (

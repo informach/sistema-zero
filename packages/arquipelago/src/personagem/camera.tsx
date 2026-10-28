@@ -3,6 +3,7 @@ import { useRapier } from '@react-three/rapier'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef } from 'react'
 import { MathUtils, Vector3 } from 'three'
+import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useToque } from '../estado/preferencias'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
@@ -24,6 +25,11 @@ import {
   rodaEmPixels,
   zoomDaPinca,
 } from '../sistemas/camera'
+import {
+  giroComVoltaSozinha,
+  METROS_DA_DISTANCIA,
+  MULTIPLICADOR_DA_RAPIDEZ,
+} from '../sistemas/conforto'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
@@ -80,16 +86,23 @@ export function Camera() {
   const { rastro, movimento, loja, pedidos, controle } = useJogo()
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
-  const menosMovimento = useReducedMotion()
+  const conforto = lojaDoConforto(loja)
+  // Menos movimento: o pedido do aparelho ou a preferência do jogo (`sistemas/conforto.ts`).
+  const aparelhoPedeMenos = useReducedMotion()
+  const jogoPedeMenos = useConforto(conforto, (s) => s.conforto.menosMovimento)
+  const menosMovimento = aparelhoPedeMenos || jogoPedeMenos
   const noCipo = useRef(0)
   const naConversa = useRef(0)
   /** O lado da conversa: 1 à esquerda de quem olha a criança por trás, −1 à direita. */
   const ladoDaConversa = useRef<1 | -1 | null>(null)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
-  const distancia = useRef(9)
+  const distanciaDePartida = METROS_DA_DISTANCIA[conforto.getState().conforto.distancia]
+  const distancia = useRef(distanciaDePartida)
   /** A distância pedida (roda, pinça, teclas); `distancia` chega nela aos poucos. */
-  const distanciaPedida = useRef(9)
+  const distanciaPedida = useRef(distanciaDePartida)
+  /** Segundos sem a pessoa mexer na câmera (para a volta sozinha, se ligada). */
+  const semMexer = useRef(0)
   /** Voltando para as costas do avatar (dois cliques): o giro e a inclinação de chegada. */
   const volta = useRef<{ giro: number; inclinacao: number } | null>(null)
   const mexeu = useRef(lerDica())
@@ -157,9 +170,12 @@ export function Camera() {
       const dx = e.clientX - antes.x
       const dy = e.clientY - antes.y
       if (dx === 0 && dy === 0) return
-      rastro.giro -= dx * C.giroPorPixel
+      const { rapidez, inverterVertical } = conforto.getState().conforto
+      const k = MULTIPLICADOR_DA_RAPIDEZ[rapidez]
+      semMexer.current = 0
+      rastro.giro -= dx * C.giroPorPixel * k
       rastro.inclinacao = MathUtils.clamp(
-        rastro.inclinacao + dy * C.inclinacaoPorPixel,
+        rastro.inclinacao + dy * C.inclinacaoPorPixel * k * (inverterVertical ? -1 : 1),
         C.inclinacaoMinima,
         C.inclinacaoMaxima,
       )
@@ -174,6 +190,7 @@ export function Camera() {
     const roda = (e: WheelEvent) => {
       e.preventDefault()
       volta.current = null
+      semMexer.current = 0
       distanciaPedida.current = MathUtils.clamp(
         distanciaPedida.current + rodaEmPixels(e.deltaY, e.deltaMode) * C.rodaPorPixel,
         C.distanciaMinima,
@@ -208,7 +225,17 @@ export function Camera() {
       el.removeEventListener('wheel', roda)
       window.removeEventListener('keydown', tecla)
     }
-  }, [gl, rastro])
+  }, [gl, rastro, conforto])
+
+  // Mudou a distância nas preferências: a câmera vai até ela (a roda e a pinça seguem valendo).
+  useEffect(
+    () =>
+      conforto.subscribe((s, antes) => {
+        if (s.conforto.distancia !== antes.conforto.distancia)
+          distanciaPedida.current = METROS_DA_DISTANCIA[s.conforto.distancia]
+      }),
+    [conforto],
+  )
 
   // Uma vez, se a pessoa ainda não mexeu na câmera: o Zappy conta como.
   useEffect(() => {
@@ -230,11 +257,16 @@ export function Camera() {
 
   useFrame((_, dt) => {
     // O analógico direito do controle físico gira e inclina, como arrastar.
+    const prefs = conforto.getState().conforto
+    semMexer.current += dt
     if (controle.cameraX !== 0 || controle.cameraY !== 0) {
+      const k = MULTIPLICADOR_DA_RAPIDEZ[prefs.rapidez]
       volta.current = null
-      rastro.giro -= controle.cameraX * C.giroDoAnalogico * dt
+      semMexer.current = 0
+      rastro.giro -= controle.cameraX * C.giroDoAnalogico * k * dt
       rastro.inclinacao = MathUtils.clamp(
-        rastro.inclinacao + controle.cameraY * C.inclinacaoDoAnalogico * dt,
+        rastro.inclinacao +
+          controle.cameraY * C.inclinacaoDoAnalogico * k * (prefs.inverterVertical ? -1 : 1) * dt,
         C.inclinacaoMinima,
         C.inclinacaoMaxima,
       )
@@ -247,6 +279,17 @@ export function Camera() {
     if (controle.recentrar !== recentrarVisto.current) {
       recentrarVisto.current = controle.recentrar
       volta.current = { giro: rastro.direcao + Math.PI, inclinacao: C.inclinacaoDeVolta }
+    }
+    // Com a preferência ligada, andando sem mexer na câmera, ela volta sozinha para as costas.
+    if (!volta.current && movimento.modo === 'chao' && !arrastandoAgora.current) {
+      rastro.giro = giroComVoltaSozinha(
+        rastro.giro,
+        rastro.direcao,
+        prefs,
+        rastro.velocidade,
+        semMexer.current,
+        dt,
+      )
     }
     // Zoom suave até o pedido.
     distancia.current +=

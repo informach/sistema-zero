@@ -263,6 +263,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   morta 0,15; escreve no mesmo `Controle` (a ação não sabe de onde veio). A tecla C também
   recentraliza (`controle.recentrar`). No toque o joystick é flutuante: nasce onde o polegar pousa
   na metade esquerda de baixo (`arq-zona-joystick`). Testes: `tests/gamepad.test.ts`.
+  Conforto da câmera no menu (`interface/conforto.tsx`, regras em `sistemas/conforto.ts`, loja
+  `estado/conforto.ts` guardada em `localStorage['arquipelago:conforto']`): rapidez, distância,
+  inverter, volta sozinha (desligada) e menos movimento. Testes: `tests/conforto.test.ts`.
 - Prints do playground: `localStorage['arquipelago:medir'] = '1'`, `?novo=1&posicao=2&em=x,z` e
   `__arquipelagoLevar(x, y, z, giro)`. O Bosque fica com o centro em (77,05; 28,05), girado 2,79.
 

@@ -30,8 +30,8 @@ export const ESTILOS = `
 .arq-tela h1{font-size:30px;margin:14px 0 8px}
 .arq-tela p{max-width:440px;margin:0 auto 18px;color:#c9cdf0;font-size:16px}
 .arq-tela .arq-zappy{width:46px;height:46px;margin:0 auto}
-.arq-sobre{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,22,56,.6);padding:20px}
-.arq-menu{padding:22px;max-width:420px;width:100%;display:grid;gap:10px;text-align:left}
+.arq-sobre{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,22,56,.6);padding:20px;overflow:hidden}
+.arq-menu{padding:22px;max-width:420px;width:100%;max-height:calc(100dvh - 40px);overflow:auto;overscroll-behavior:contain;display:grid;gap:10px;text-align:left}
 .arq-menu-titulo{margin:6px 0 0;font-size:15px}
 .arq-ferramentas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .arq-ferramenta{display:grid;justify-items:center;gap:2px;min-height:88px;padding:10px 6px;border:2px solid #e7e3d6;border-radius:14px;background:#fff;color:#1d2340;cursor:pointer;font:inherit;box-shadow:0 3px 0 #e7e3d6;transition:transform .12s,border-color .12s}
@@ -49,6 +49,7 @@ export const ESTILOS = `
 .arq-menu h2{margin:0 0 4px;font-size:22px}
 .arq-menu ul{margin:0;padding-left:18px;color:#4a5070}
 .arq-toque{position:absolute;inset:auto 0 0 0;height:0}
+.arq-conforto{display:grid;gap:8px;margin-top:6px}.arq-escolha{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:0;margin:0;padding:0;min-width:0}.arq-escolha legend{float:left;width:100%;margin-bottom:4px;font-size:13px;font-weight:800;color:#4a5070}.arq-escolha .arq-botao{min-height:44px;padding:8px 14px}.arq-escolha .arq-botao[aria-pressed=true]{background:#ffe7a3;outline:3px solid #ffc93c}.arq-marcar{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;font-weight:700;color:#1d2340}.arq-marcar input{width:22px;height:22px;accent-color:#2f6df6}
 .arq-zona-joystick{position:absolute;left:0;bottom:0;width:50%;height:55%;touch-action:none}
 .arq-joystick{position:absolute;left:82px;top:calc(100% - 170px);width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);pointer-events:none;opacity:.7}.arq-joystick[data-ativo]{opacity:1}
 .arq-joystick i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:50%;background:rgba(255,255,255,.75)}
