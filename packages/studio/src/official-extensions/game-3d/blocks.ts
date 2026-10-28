@@ -27,7 +27,7 @@ const gameThreeDBlockDefinitions = [
   {
     type: 'sz_g3d_top_down',
     placement: 'loop-command',
-    message0: 'Andar com %1 usando WASD/setas, velocidade %2',
+    message0: 'Fazer %1 andar com as setas (ou WASD), velocidade %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -53,12 +53,12 @@ const gameThreeDBlockDefinitions = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Delimita uma parte do chão. Use mais de uma área para formar caminhos ligados. O personagem fica nas áreas permitidas ao usar Andar com WASD/setas.',
+      'Delimita uma parte do chão. Use mais de uma área para formar caminhos ligados. O personagem fica nas áreas permitidas ao usar "Fazer … andar com as setas".',
   },
   {
     type: 'sz_g3d_frame_scene',
     placement: 'command',
-    message0: 'Enquadrar a cena %1: largura %2 altura %3 profundidade %4',
+    message0: 'Mostrar a cena %1 inteira: largura %2 altura %3 profundidade %4',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -69,12 +69,12 @@ const gameThreeDBlockDefinitions = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Mostra a área de jogo centrada em x e z zero, a partir do chão. Ajusta a câmera também quando a prévia muda de tamanho.',
+      'Mostra toda a área de jogo (centro em x e z zero, a partir do chão), mesmo se a prévia mudar de tamanho. Quem joga aproxima com a rodinha ou dois dedos, gira arrastando e volta com duplo clique.',
   },
   {
     type: 'sz_g3d_walk_animations',
     placement: 'start-only-command',
-    message0: 'Animações de %1: parado %2, andando %3',
+    message0: 'Animar %1: parado toca %2, andando toca %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' },
       { type: 'field_model_clip_picker', name: 'IDLE', text: 'parado' },
@@ -84,7 +84,7 @@ const gameThreeDBlockDefinitions = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Escolhe as animações usadas por Andar com WASD/setas. Um personagem parado usa a primeira; enquanto anda usa a segunda.',
+      'Escolhe as animações usadas pelo "Fazer … andar com as setas". Um personagem parado toca a primeira; enquanto anda toca a segunda.',
   },
   {
     type: 'sz_g3d_on_touch',
@@ -202,12 +202,12 @@ const gameThreeDBlockDefinitions = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Uma caixa de medidas livres, boa para chão e paredes. Depois use "Posição do objeto" para colocá-la no lugar.',
+      'Uma caixa de medidas livres, boa para chão e paredes. Depois use "Colocar o objeto … em x y z" para colocá-la no lugar.',
   },
   {
     type: 'sz_g3d_set_position',
     placement: 'command',
-    message0: 'Posição do objeto %1 em x %2 y %3 z %4',
+    message0: 'Colocar o objeto %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1178,7 +1178,7 @@ const gameThreeDBlockDefinitions = [
   {
     type: 'sz_g3d_move_towards',
     placement: 'loop-command',
-    message0: 'Aproximar %1 de x %2 y %3 z %4 (rapidez %5)',
+    message0: 'Levar %1 até x %2 y %3 z %4 aos poucos (rapidez %5)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },

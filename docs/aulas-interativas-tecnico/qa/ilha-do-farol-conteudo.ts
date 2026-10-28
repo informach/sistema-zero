@@ -44,16 +44,16 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Faça o personagem andar',
         kind: 'build',
         screen:
-          'Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena. Encaixar Andar com personagem antes do aviso. As áreas permitidas e as animações já vêm configuradas em Ao iniciar.',
+          'Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena. Encaixar Fazer personagem andar com as setas antes do aviso. As áreas permitidas e as animações já vêm configuradas em Ao iniciar.',
         steps: [
           'Abra Enquanto estiver rodando e deixe à vista A cada quadro da cena cena.',
-          'Antes de Escrever no canto da tela, encaixe Jogo 3D → Movimento → Andar com o teclado → Andar com personagem usando WASD/setas, velocidade 3.',
+          'Antes de Escrever na tela, encaixe Jogo 3D → Movimento → Andar com o teclado → Fazer personagem andar com as setas (ou WASD), velocidade 3.',
           'Escolha personagem e troque a velocidade de 3 por 4.',
           'Execute o jogo. Pressione e solte cada seta: ande nas quatro direções e pare ao soltar. Confira a ponte e a beirada.',
           'Verifique o projeto, corrija se necessário e espere Salvo.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Na experiência, mudar a vista não moveu a chave. Agora vamos mover o personagem. Clique no seu jogo e pressione uma seta. Ele ainda fica parado, porque falta o comando de movimento. [confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Escrever no canto da tela. O novo bloco vai antes desse aviso. As áreas por onde o personagem pode andar já estão preparadas em Ao iniciar. [confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Andar com personagem usando WASD ou setas, velocidade 3. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. No nome, escolha personagem. No número que vem em 3, coloque 4. [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? A cada quadro, esse comando confere as teclas pressionadas e move o personagem no chão. O número é a velocidade por segundo. [upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Ele também mexe as pernas e os braços enquanto anda, e respira quando para: essas animações já vieram prontas no seu projeto. Experimente também chegar à ponte e à beirada. ' +
+          '[engaging, energetic, conversational voice] Na experiência, mudar a vista não moveu a chave. Agora vamos mover o personagem. Clique no seu jogo e pressione uma seta. Ele ainda fica parado, porque falta o comando de movimento. [confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Escrever na tela. O novo bloco vai antes desse aviso. As áreas por onde o personagem pode andar já estão preparadas em Ao iniciar. [confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Fazer personagem andar com as setas, ou WASD, velocidade 3. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. No nome, escolha personagem. No número que vem em 3, coloque 4. [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? A cada quadro, esse comando confere as teclas pressionadas e move o personagem no chão. O número é a velocidade por segundo. [upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Ele também mexe as pernas e os braços enquanto anda, e respira quando para: essas animações já vieram prontas no seu projeto. Experimente também chegar à ponte e à beirada. ' +
           verificar,
       },
       {
@@ -99,12 +99,12 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Ao iniciar, posição da chave; editar um eixo por vez, com teste intermediário. Solução canônica x −3, y 1, z −2, diferente da entrada.',
         steps: [
-          'Em Ao iniciar, encontre Posição do objeto chave em x −2 y 1 z −3.',
+          'Em Ao iniciar, encontre Colocar o objeto chave em x −2 y 1 z −3.',
           'Mude x para −3 e teste. Depois mude z para −2 e teste. Mantenha y em 1.',
           'Confira a chave na ilha e leve o personagem até perto dela.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Agora que você comparou as três direções, vamos mudar o lugar da chave no seu jogo. [confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e encontre Posição do objeto chave em x menos 2, y 1 e z menos 3. Se precisar, arraste um espaço vazio entre os blocos até deixar essa linha à vista. Primeiro mude só x: coloque menos 3. Execute o jogo e observe para onde a chave foi. [confident, clear, unhurried voice] Volte à mesma linha e coloque menos 2 em z. Deixe y em 1. Execute outra vez e leve o personagem até perto da chave. [interested, animated voice] Ela mudou de lugar no chão, mas continuou na mesma altura. Por enquanto, encostar não a retira: vamos montar essa reação depois de investigar o contato em 3D. ' +
+          '[engaging, energetic, conversational voice] Agora que você comparou as três direções, vamos mudar o lugar da chave no seu jogo. [confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e encontre Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se precisar, arraste um espaço vazio entre os blocos até deixar essa linha à vista. Primeiro mude só x: coloque menos 3. Execute o jogo e observe para onde a chave foi. [confident, clear, unhurried voice] Volte à mesma linha e coloque menos 2 em z. Deixe y em 1. Execute outra vez e leve o personagem até perto da chave. [interested, animated voice] Ela mudou de lugar no chão, mas continuou na mesma altura. Por enquanto, encostar não a retira: vamos montar essa reação depois de investigar o contato em 3D. ' +
           verificar,
       },
       {
@@ -236,14 +236,14 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Projeto aparencia, com a combinação escolhida na parte anterior. Personalizar posição da chave e mensagens. Valor inicial exemplo −3,1,−2. Testar acesso pelo chão e ambos os ramos; envio atualizado.',
         steps: [
-          'Em Ao iniciar → Posição do objeto chave, escolha x e z dentro da ilha. Mantenha uma altura que o personagem alcance.',
+          'Em Ao iniciar → Colocar o objeto chave, escolha x e z dentro da ilha. Mantenha uma altura que o personagem alcance.',
           'Se quiser, escreva seus próprios avisos nas linhas de atribuição, conservando a função de cada mensagem.',
           'Reinicie. Vá ao farol sem chave. Depois alcance a chave escolhida e volte ao farol.',
           'Reinicie após vencer: o farol apaga, a chave retorna e você pode jogar novamente.',
           'Verifique, aguarde Salvo, envie o projeto e confirme o envio.',
         ],
         text:
-          '[upbeat, encouraging voice] Agora escolha outro lugar para a chave. Nos blocos, abra Ao iniciar e encontre Posição do objeto chave. Mude x e z para escolher o lugar no chão. Você também pode ajustar y, mas o personagem precisa conseguir encostar na chave. [thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água. [engaging, energetic, conversational voice] Por isso, execute o jogo e vá até o lugar que escolheu. Confira se a coleta acontece e se dá para voltar ao farol. Se não conseguir, volte à posição da chave, ajuste um valor por vez e teste novamente. Se quiser, escreva seus próprios avisos nas linhas que mudam aviso, conservando a mensagem de começo, coleta, falta da chave e vitória. [upbeat, encouraging voice] Faça também uma partida sem pegar a chave: o farol deve ficar apagado e pedir que você procure. Depois recolha a chave e acenda o farol. Pressione R e confira se tudo volta ao começo. ' +
+          '[upbeat, encouraging voice] Agora escolha outro lugar para a chave. Nos blocos, abra Ao iniciar e encontre Colocar o objeto chave. Mude x e z para escolher o lugar no chão. Você também pode ajustar y, mas o personagem precisa conseguir encostar na chave. [thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água. [engaging, energetic, conversational voice] Por isso, execute o jogo e vá até o lugar que escolheu. Confira se a coleta acontece e se dá para voltar ao farol. Se não conseguir, volte à posição da chave, ajuste um valor por vez e teste novamente. Se quiser, escreva seus próprios avisos nas linhas que mudam aviso, conservando a mensagem de começo, coleta, falta da chave e vitória. [upbeat, encouraging voice] Faça também uma partida sem pegar a chave: o farol deve ficar apagado e pedir que você procure. Depois recolha a chave e acenda o farol. Pressione R e confira se tudo volta ao começo. ' +
           enviar,
       },
       {

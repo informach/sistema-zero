@@ -213,7 +213,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
           },
           "extraFiles": [],
           "assets": [
@@ -528,7 +528,7 @@
                   "objVar": "barco",
                   "x": {
                     "type": "num",
-                    "value": 8.5
+                    "value": 13
                   },
                   "y": {
                     "type": "num",
@@ -1007,7 +1007,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 8.5
+                                                            "NUM": 13
                                                           }
                                                         }
                                                       },
@@ -1656,7 +1656,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -1971,7 +1971,7 @@
                       "objVar": "barco",
                       "x": {
                         "type": "num",
-                        "value": 8.5
+                        "value": 13
                       },
                       "y": {
                         "type": "num",
@@ -2450,7 +2450,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 8.5
+                                                                "NUM": 13
                                                               }
                                                             }
                                                           },
@@ -3096,7 +3096,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -3411,7 +3411,7 @@
                       "objVar": "barco",
                       "x": {
                         "type": "num",
-                        "value": 8.5
+                        "value": 13
                       },
                       "y": {
                         "type": "num",
@@ -3915,7 +3915,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 8.5
+                                                                "NUM": 13
                                                               }
                                                             }
                                                           },
@@ -4608,7 +4608,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -4923,7 +4923,7 @@
                       "objVar": "barco",
                       "x": {
                         "type": "num",
-                        "value": 8.5
+                        "value": 13
                       },
                       "y": {
                         "type": "num",
@@ -5451,7 +5451,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 8.5
+                                                                "NUM": 13
                                                               }
                                                             }
                                                           },
@@ -6190,7 +6190,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"noite-na-ilha\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-de-pedra\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"barco-pirata\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"pirata\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-de-estrela\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"noite-na-ilha\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-de-pedra\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"barco-pirata\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"pirata\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-de-estrela\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -6505,7 +6505,7 @@
                       "objVar": "barco",
                       "x": {
                         "type": "num",
-                        "value": 8.5
+                        "value": 13
                       },
                       "y": {
                         "type": "num",
@@ -7033,7 +7033,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 8.5
+                                                                "NUM": 13
                                                               }
                                                             }
                                                           },
@@ -7772,7 +7772,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"noite-na-ilha\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-de-pedra\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"barco-pirata\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"pirata\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-de-estrela\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"noite-na-ilha\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-de-pedra\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"barco-pirata\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"pirata\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-de-estrela\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -8087,7 +8087,7 @@
                       "objVar": "barco",
                       "x": {
                         "type": "num",
-                        "value": 8.5
+                        "value": 13
                       },
                       "y": {
                         "type": "num",
@@ -8615,7 +8615,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 8.5
+                                                                "NUM": 13
                                                               }
                                                             }
                                                           },
@@ -9611,13 +9611,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -9725,13 +9725,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -9861,13 +9861,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -9878,7 +9878,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -10164,13 +10164,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10349,13 +10349,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10366,7 +10366,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -10487,13 +10487,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10513,13 +10513,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10598,7 +10598,7 @@
                       "path": "barco.position.x"
                     },
                     "compare": "lessThan",
-                    "value": 8
+                    "value": 12.5
                   }
                 },
                 {
@@ -10897,13 +10897,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11082,13 +11082,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11099,7 +11099,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -11220,13 +11220,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11246,13 +11246,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11331,7 +11331,7 @@
                       "path": "barco.position.x"
                     },
                     "compare": "lessThan",
-                    "value": 8
+                    "value": 12.5
                   }
                 },
                 {
@@ -11616,13 +11616,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11801,13 +11801,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11818,7 +11818,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -11939,13 +11939,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11965,13 +11965,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -12050,7 +12050,7 @@
                       "path": "barco.position.x"
                     },
                     "compare": "lessThan",
-                    "value": 8
+                    "value": 12.5
                   }
                 },
                 {

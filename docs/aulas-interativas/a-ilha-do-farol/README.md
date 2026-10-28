@@ -42,3 +42,42 @@ conversão do código para blocos, sem exceções de `allowBlocks`.
 Esta versão usa Jogo 3D 0.32.0. Atualizar o aplicativo no staging antes de importar os manifestos
 regenerados: eles usam os novos comandos. O arquivo final é portátil quanto às artes; os comandos
 continuam dependendo da versão correspondente da extensão.
+
+## Câmera do jogador e chegada do barco — 28/10/2026
+
+O `frameScene` passou a dar a vista ao jogador, sem bloco novo: começa mais perto (sem se afastar
+só porque a prévia é estreita) e mirando o chão; a rodinha do mouse ou dois dedos aproximam e
+afastam; arrastar gira em volta; duplo clique volta ao começo. A vista acompanha de leve o
+personagem (um terço do caminho; de perto, inteira), e as setas andam em relação à câmera, então
+"para cima" continua sendo "para longe" depois de girar. Na aula 1, girar mostra a chave
+aparecendo ou sumindo atrás das pedras.
+
+O barco sai de x 13, na beira da vista, e vem até o farol (antes saía de 8,5: andava 1,9 e quase
+não se via). O critério da vitória confere que ele saiu do lugar (x < 12,5) meio segundo depois.
+
+
+## Nomes dos blocos e o robô da regra sem chave — 28/10/2026
+
+Os nomes dos blocos do Jogo 3D usados no curso passaram a dizer o que fazem, na ordem em que a
+criança pensa (só o texto mudou; campos e projetos salvos continuam iguais):
+
+| Antes | Agora |
+|---|---|
+| Enquadrar a cena … | Mostrar a cena … inteira: largura … altura … profundidade … |
+| Andar com … usando WASD/setas, velocidade … | Fazer … andar com as setas (ou WASD), velocidade … |
+| Animações de …: parado …, andando … | Animar …: parado toca …, andando toca … |
+| Aproximar … de x y z (rapidez …) | Levar … até x y z aos poucos (rapidez …) |
+| Posição do objeto … em x y z | Colocar o objeto … em x y z |
+| Escrever no canto … da tela | Escrever na tela … (a opção do meio é "⊕ no centro") |
+| Recomeçar o jogo | Reiniciar o jogo (o mesmo nome do Jogo 2D) |
+
+"Mostrar a cena inteira" não começa com "Câmera" de propósito: o "Câmera da cena …: modo" é outro
+bloco (seis modos presos a um objeto) e os dois se confundiriam.
+
+No jogo a chave não tem prazo: `temChave` guarda a coleta e o farol só confere a variável quando o
+personagem encosta nele. O prazo é do robô do "Verificar projeto", que aperta as setas no lugar da
+criança. Medido no Chromium sem placa de vídeo, cada toque custava ~300 ms de leitura e durava no
+máximo 200 ms: o trecho mais longo do curso (começo → farol, 11 unidades, regra `sem-chave-em-jogo`)
+estourava os 7 s com o jogo certo. Agora o toque vai até 600 ms quando o alvo está longe (ainda
+limitado à metade da distância que falta), a regra sem chave leva o prazo máximo (7,5 s) e os
+retângulos do robô são os mesmos `walkArea` do jogo.

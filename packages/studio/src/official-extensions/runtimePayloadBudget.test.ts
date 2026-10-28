@@ -95,11 +95,15 @@ const BUDGETS: readonly {
   // contato entre objetos e enquadramento responsivo. +2_755 caracteres no runtime.
   // Medido: 230_336 caracteres; gzip Bun 1.3.11 Linux 62_225 / Windows 64_626.
   // Os tetos gzip mantêm a catraca própria para cada compressor.
+  // 28/10: a vista do jogador no frameScene (rodinha/dois dedos dão zoom, arrastar gira, duplo
+  // clique volta, a vista acompanha quem anda e as setas andam em relação à câmera): +3_865
+  // caracteres e +1_226 bytes gzip. Medido: 234_201; gzip 63_849 no Bun 1.4.4 Linux e, somado
+  // às medidas acima do Bun 1.3.11, ~63_450 no Linux e ~65_850 no Windows.
   {
     extension: gameThreeDExtension,
-    maxChars: 230_500,
-    maxGzipBytes: 62_800,
-    maxGzipBytesWindows: 64_700,
+    maxChars: 234_300,
+    maxGzipBytes: 63_900,
+    maxGzipBytesWindows: 66_000,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -118,9 +122,11 @@ const BUDGETS: readonly {
     // 27/10, +257 do carregador comum (o que não faz sombra). Medido: 193_499.
     // Mesmo percurso iniciante: 196_254 caracteres; gzip Bun 1.3.11 Linux 52_811 /
     // Windows 54_908. O teto cobre ambos, sem incluir o Kit Plataforma.
-    maxChars: 196_400,
-    maxGzipBytes: 53_100,
-    maxGzipBytesWindows: 55_000,
+    // 28/10, a vista do jogador no frameScene (ver acima): +3_865 / +1_215. Medido: 200_119;
+    // gzip 54_371 no Bun 1.4.4 Linux; ~54_030 no Linux e ~56_120 no Windows do Bun 1.3.11.
+    maxChars: 200_200,
+    maxGzipBytes: 54_500,
+    maxGzipBytesWindows: 56_300,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO
