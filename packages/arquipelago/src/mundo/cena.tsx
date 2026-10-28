@@ -14,6 +14,7 @@ import { Ceu } from './ceu'
 import { Farol } from './farol'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
+import { LONGE_DA_CAMERA, PERTO_DA_CAMERA } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
 
@@ -31,7 +32,7 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
       className="arq-canvas"
       dpr={dpr}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
-      camera={{ fov: 55, near: 0.1, far: 900, position: [0, 8, 10] }}
+      camera={{ fov: 55, near: PERTO_DA_CAMERA, far: LONGE_DA_CAMERA, position: [0, 8, 10] }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', (e) => {
           e.preventDefault()

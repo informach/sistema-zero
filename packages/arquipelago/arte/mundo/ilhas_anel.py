@@ -129,7 +129,8 @@ def casinha_doce(x, z, parede, cupula, rot=0.0):
         p.append(uvball(0.27, (bx + math.cos(a) * 1.3, by + math.sin(a) * 1.3, TOPO + 1.8), 'doceBranco', seg=5, ring=3))
     p.append(uvball(0.28, (bx, by, TOPO + 3.05), 'doceVermelho', seg=6, ring=4))
     da, db = math.cos(rot - math.pi / 2), math.sin(rot - math.pi / 2)
-    p.append(box((0.7, 0.1, 1.1), (bx + da * 1.12, by + db * 1.12, TOPO + 0.55), 'doceBranco', bevel=0.04, segs=1,
+    # A porta afunda 2 cm no chão: a base dela não fica no plano da base da casinha.
+    p.append(box((0.7, 0.1, 1.12), (bx + da * 1.12, by + db * 1.12, TOPO + 0.54), 'doceBranco', bevel=0.04, segs=1,
                  rot=(0, 0, rot)))
     return p
 
