@@ -22,7 +22,13 @@ import {
 
 const L = LOTE_DA_CASA
 const inicial = (): Obra => structuredClone(L.obraInicial)
-const ESCOLHAS: Escolhas = { janela: 'janela-grande', piso: 'tabua', caminho: 'pedra' }
+const ESCOLHAS: Escolhas = {
+  janela: 'janela-grande',
+  piso: 'tabua',
+  caminho: 'pedra',
+  objeto: null,
+  giro: 0,
+}
 
 function ok(r: Resultado | null): Obra {
   if (!r?.ok) throw new Error(`recusado: ${JSON.stringify(r)}`)

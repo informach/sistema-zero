@@ -76,6 +76,18 @@ lê as duas na hora de exportar). Ele também acrescenta:
 - **Clipes:** gravados como faixas do NLA, um clipe do glTF por nome. `abrir` toca uma vez
   (`LoopOnce` com `clampWhenFinished`); `nadar` e `crepitar` são laços.
 
+## O que o jogo usa e o que falta (modo construção, 28/10/2026)
+
+- O jogo lê o catálogo com o molde de cada objeto no contrato (`arquipelago-contracts/src/objetos.ts`,
+  `CATALOGO_DE_OBJETOS`), com a área e a caixa desta página.
+- **Holograma:** só a geladeira tem (`geladeira-holograma.glb`). Os outros aparecem em projeto azul
+  com os materiais trocados por um azul translúcido no código (`mundo/objetos-da-casa.tsx`). Falta,
+  se a dona quiser o mesmo acabamento, um `<id>-holograma.glb` de cada um, com `projetor` e as
+  faces em `projetoAzul` e `projetoAzulLinha`.
+- **Faces do Pinta:** só a geladeira tem as faces planas (`pinta*`) e o fliperama a `tela`. Sem
+  elas o molde do objeto vai sem faces e o jogo deixa o "Pintar no Pinta" desligado. Falta, nos
+  outros, a planificação da caixa com `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir` e `pintaTopo`.
+
 ## Contrato de cada arquivo
 
 ### `geladeira.glb` (footprint 1 × 1)

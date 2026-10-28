@@ -7,16 +7,18 @@ import {
   diaDeSaoPaulo,
   GravarSalvamentoSchema,
   LIMITE_DIARIO_PADRAO_MINUTOS,
+  MoldeDeObjetoSchema,
   migrarSalvamento,
   type Plataforma,
   type PublicoJogo,
   type QuartoDoJogo,
   RegistrarTempoSchema,
+  type ResultadoDeFerramenta,
   type SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos } from './desafios-falsos'
-import { obraDeExemplo } from './obra-de-exemplo'
+import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 
 /**
  * Uma plataforma de mentira para rodar o jogo sozinho (playground e testes). Cumpre o mesmo
@@ -127,6 +129,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ...atual,
         casa: { portaNova: true },
         construcao: { ...atual.construcao, casa: obraDeExemplo() },
+        projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
       atualizadoEm: agora().toISOString(),
     }
@@ -305,7 +308,16 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       },
     },
     abrirFerramenta: async (pedido) =>
-      (await desafios.abrir(pedido)) ?? { situacao: 'indisponivel', motivo: 'playground' },
+      (await desafios.abrir(pedido)) ??
+      // O molde de um objeto (modo construção): a ferramenta de mentira "salva" na hora.
+      (MoldeDeObjetoSchema.safeParse(pedido.molde).success
+        ? await new Promise<ResultadoDeFerramenta>((r) =>
+            setTimeout(
+              () => r({ situacao: 'pronto', criacaoId: `${pedido.ferramenta}-de-mentira` }),
+              400,
+            ),
+          )
+        : { situacao: 'indisponivel', motivo: 'playground' }),
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,

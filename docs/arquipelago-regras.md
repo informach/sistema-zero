@@ -1080,6 +1080,34 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   - **Cabana:** a do Bosque ainda não existe no jogo: o `bosque.glb` não tem terreno livre para o
     lote (pedido no README de `arte/casa`). O salvamento já guarda a obra dela
     (`construcao.cabanas.bosque`). No quintal da casa dá para fazer uma cabana solta.
+- **Projeto azul** (`sistemas/construcao/projeto-azul.ts`, catálogo e moldes no contrato,
+  `objetos.ts`): o objeto chega com a função pronta e funciona em holograma; com aparência fica
+  completo.
+  - **De onde vem** (`ganharProjetos`, conferido a cada mudança do salvamento): a geladeira, do
+    primeiro pedido entregue (hoje o da Capi, o único pedido do jogo); a casinha, de adotar um bicho
+    no Bosque. O Zappy avisa: "Chegou o projeto azul: geladeira. Ponha em casa no modo Construir.".
+    Os outros objetos (forno, aquário, lareira, banda, fliperama, museu) estão no catálogo com o
+    molde; a função e a origem deles entram com as ilhas de cada um.
+  - **Onde vai** (`LUGAR_DO_OBJETO`, ferramenta Objetos do Construir): a geladeira e os outros
+    dentro de um cômodo novo (todas as células no mesmo cômodo; no quarto não); a casinha no
+    quintal (fora de casa, sem caminho nem canteiro). Cada objeto uma vez só: pôr de novo muda de
+    lugar; "Girar" vira um quarto de volta. Parede não corta objeto ao meio. Apagar tira o objeto,
+    que volta a ficar guardado com a função e o que tem dentro; se o cômodo dele deixa de existir,
+    ele também volta.
+  - **No mundo** (`mundo/objetos-da-casa.tsx`): a geladeira usa o holograma do Blender
+    (`geladeira-holograma.glb`, `projetoAzul` somando luz); os outros, o modelo com os materiais
+    trocados por um azul translúcido. Com aparência, o modelo de verdade. Perto do objeto, "Abrir a
+    geladeira" (ou "Ver ...") abre o painel. Colide só para o corpo (`col-objeto-*`).
+  - **A geladeira** (`GELADEIRA_GUARDA`): guarda 4 alimentos no holograma e 12 com aparência, um
+    por vez, da mochila para dentro e de volta. Só alimento (item que se come). "Conserva" fica para
+    quando a comida estragar (hoje nada estraga).
+  - **A aparência** (painel do objeto, `interface/projeto-azul.tsx`): "Pintar no Pinta" (a frente,
+    os lados e o topo da caixa; só com as faces no modelo, hoje só a geladeira) e "Modelar no
+    Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
+    `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
+    a origem e o id da criação). A galeria e "usar uma criação minha" entram com os cartões deles. A
+    página da plataforma ainda responde indisponível para esse molde (cartão do Pinta no molde); a
+    plataforma de mentira responde pronto em 0,4 s.
 
 ### 6.17 O diário e as pegadas
 

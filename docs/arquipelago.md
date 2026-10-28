@@ -99,9 +99,10 @@ Pendente:
    pendente cobrado de novo e o que bateu no teto semanal de 150 cobrado na semana seguinte).
    Outras recompensas do jogo (colheita, pedidos) ainda não pagam moedas: cada uma precisa ser
    autorizada no servidor antes de ligar.
-3. O Estúdio de desafio já abre por cima do jogo com o molde do desafio (Quadro das Cores). O molde
-   do objeto (o projeto azul do modo construção) ainda responde indisponível: entra com o modo
-   construção. A paleta de blocos do desafio ainda é a completa das aulas.
+3. O Estúdio de desafio já abre por cima do jogo com o molde do desafio (Quadro das Cores). O jogo
+   já pede o Pinta e o Molda com o molde do objeto (o projeto azul do modo construção, 28/10/2026,
+   `MoldeDeObjetoSchema`), mas a página ainda responde indisponível para ele: entra com o cartão do
+   Pinta no molde. A paleta de blocos do desafio ainda é a completa das aulas.
 4. A Capi e os bichos do Bosque (conversa, amizade, esconde-esconde, adotar, cuidar e seguir): plano
    em `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
 5. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o

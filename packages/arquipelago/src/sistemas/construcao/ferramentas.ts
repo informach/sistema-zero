@@ -1,8 +1,10 @@
 import type {
   Canteiro,
+  ObjetoDaCasa,
   Obra,
   PisoDaCasa,
   PisoDoQuintal,
+  Salvamento,
   TipoDeAbertura,
 } from '@sistemazero/arquipelago-contracts'
 import { planta } from './comodos'
@@ -27,6 +29,7 @@ import {
   tirarAbertura,
   trocarPiso,
 } from './obra'
+import { cantoNoToque, celulasDoObjeto, objetoEm, porObjeto, tirarObjeto } from './projeto-azul'
 import {
   apagarCerca,
   apagarNaCelula,
@@ -50,6 +53,7 @@ export type Ferramenta =
   | 'cerca'
   | 'caminho'
   | 'canteiro'
+  | 'objeto'
   | 'apagar'
 
 export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
@@ -58,6 +62,9 @@ export interface Escolhas {
   janela: TipoDeJanela
   piso: PisoDaCasa
   caminho: PisoDoQuintal
+  /** O objeto escolhido na ferramenta Objeto (um dos ganhos) e o giro dele. */
+  objeto: ObjetoDaCasa | null
+  giro: number
 }
 
 export interface NoChao {
@@ -119,6 +126,7 @@ export function toque(
   onde: NoChao,
   escolhas: Escolhas,
   horta: readonly Canteiro[],
+  projetos: Salvamento['projetos'] = {},
 ): { resultado: Resultado | null; previa: Previa } {
   const celula = celulaEm(onde.x, onde.z)
   if (f === 'piso') {
@@ -139,6 +147,14 @@ export function toque(
     const r = porCanteiro(obra, lote, celula)
     return { resultado: r, previa: { tipo: 'celulas', celulas: [celula], ok: r.ok } }
   }
+  if (f === 'objeto') {
+    if (!escolhas.objeto)
+      return { resultado: null, previa: { tipo: 'celulas', celulas: [celula], ok: false } }
+    const canto = cantoNoToque(escolhas.objeto, escolhas.giro, celula)
+    const r = porObjeto(obra, lote, projetos, escolhas.objeto, canto, escolhas.giro)
+    const celulas = celulasDoObjeto({ id: escolhas.objeto, ...canto, giro: escolhas.giro })
+    return { resultado: r, previa: { tipo: 'celulas', celulas, ok: r.ok } }
+  }
   const aresta = arestaMaisPerto(onde.x, onde.z)
   if (f === 'porta' || f === 'janela') {
     const tipo = f === 'porta' ? 'porta' : escolhas.janela
@@ -153,6 +169,14 @@ export function toque(
     }
   }
   if (f === 'apagar') {
+    // Um objeto na célula sai primeiro (volta a ficar guardado).
+    const io = objetoEm(obra, celula)
+    const obj = obra.objetos[io]
+    if (obj)
+      return {
+        resultado: tirarObjeto(obra, celula),
+        previa: { tipo: 'celulas', celulas: celulasDoObjeto(obj), ok: true },
+      }
     // Perto de uma aresta com algo (porta, janela, parede, cerca): tira isso. Senão, a célula.
     const i = aberturaEm(obra, aresta)
     const ab = obra.aberturas[i]

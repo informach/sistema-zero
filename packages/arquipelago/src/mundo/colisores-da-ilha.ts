@@ -60,6 +60,8 @@ const SO_PARA_O_CORPO = [
   'col-obra-cortada-',
   // A cerca do quintal: fina e baixa.
   'col-cerca-',
+  // Os objetos da casa (geladeira, casinha): a câmera vê por cima deles.
+  'col-objeto-',
 ]
 
 export function soParaOCorpo(nome: string): boolean {

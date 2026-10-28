@@ -229,7 +229,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   Blender em volta de z é o mesmo em volta do y do jogo), `quintal.ts` (cerca, caminho, canteiro;
   o canteiro do quintal é um canteiro da horta com id `q<x>_<z>`, e a horta segue a obra em
   `hortaComOQuintal`) e `ferramentas.ts` (o que cada ferramenta faz no arrasto e no toque, com a
-  prévia). Testes: `tests/quintal.test.ts`. Testes: `tests/construcao.test.ts` (inclusive o lote contra
+  prévia) e `projeto-azul.ts` (ganhar a geladeira e a casinha, pôr e tirar objeto, a geladeira
+  guardando alimentos, o Molda no posto Explorador). Testes: `tests/quintal.test.ts` e
+  `tests/projeto-azul.test.ts`.
+- `mundo/objetos-da-casa.tsx`: os objetos postos (holograma do Blender ou azul no código; com
+  aparência, o modelo), o "Abrir" e `GanharProjetos` (montado pela `Casa`). Painel:
+  `interface/projeto-azul.tsx` (`painelAberto` = `objeto:<id>`). Testes: `tests/construcao.test.ts` (inclusive o lote contra
   `alturaDaIlha` e contra todos os colisores que caem nele).
 - `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.

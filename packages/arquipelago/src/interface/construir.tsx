@@ -1,4 +1,9 @@
-import type { PisoDaCasa, PisoDoQuintal } from '@sistemazero/arquipelago-contracts'
+import {
+  CATALOGO_DE_OBJETOS,
+  OBJETOS_DA_CASA,
+  type PisoDaCasa,
+  type PisoDoQuintal,
+} from '@sistemazero/arquipelago-contracts'
 import {
   CAMERA_DE_OBRA,
   type Ferramenta,
@@ -30,6 +35,12 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     nome: 'Caminho',
     emoji: '🪨',
     dica: 'Arraste no quintal para fazer o caminho, célula por célula.',
+  },
+  {
+    id: 'objeto',
+    nome: 'Objetos',
+    emoji: '📦',
+    dica: 'Escolha um objeto e toque onde ele vai. A geladeira fica num cômodo; a casinha, no quintal.',
   },
   {
     id: 'canteiro',
@@ -116,6 +127,10 @@ export function BarraDeConstruir() {
   const janela = useConstrucao(construcao, (s) => s.janela)
   const piso = useConstrucao(construcao, (s) => s.piso)
   const caminho = useConstrucao(construcao, (s) => s.caminho)
+  const objeto = useConstrucao(construcao, (s) => s.objeto)
+  const projetos = useEstado((s) => s.salvamento.projetos)
+  const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? [])
+  const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
   if (!aberto) return null
   const s = () => construcao.getState()
@@ -155,6 +170,33 @@ export function BarraDeConstruir() {
               {p.nome}
             </button>
           ))}
+        </fieldset>
+      ) : null}
+      {atual === 'objeto' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Objeto</legend>
+          {ganhos.length === 0 ? (
+            <p className="arq-obra-dica">
+              Os objetos chegam pelos pedidos e pelos desafios. Ainda não chegou nenhum.
+            </p>
+          ) : (
+            ganhos.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className="arq-botao leve"
+                aria-pressed={objeto === id}
+                onClick={() => s().escolherObjeto(id)}
+              >
+                {`${CATALOGO_DE_OBJETOS[id].molde.nome}${postos.some((o) => o.id === id) ? ' (já posta)' : ''}`}
+              </button>
+            ))
+          )}
+          {ganhos.length > 0 ? (
+            <button type="button" className="arq-botao leve" onClick={() => s().girarObjeto()}>
+              ⟳ Girar
+            </button>
+          ) : null}
         </fieldset>
       ) : null}
       {atual === 'caminho' ? (
