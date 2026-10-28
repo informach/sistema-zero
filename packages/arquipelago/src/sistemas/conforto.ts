@@ -5,10 +5,13 @@
  * com a pessoa: a câmera voltar sozinha para as costas nasce desligada.
  */
 
+import { PREFERENCIAS_DE_QUALIDADE, type PreferenciaDeQualidade } from './qualidade'
+
 export const RAPIDEZES = ['devagar', 'normal', 'rapida'] as const
 export const DISTANCIAS = ['perto', 'normal', 'longe'] as const
 
 export interface Conforto {
+  qualidade: PreferenciaDeQualidade
   /** Quão rápido a câmera gira ao arrastar ou com o analógico. */
   rapidez: (typeof RAPIDEZES)[number]
   /** A distância de partida da câmera (a roda e a pinça continuam valendo). */
@@ -22,6 +25,7 @@ export interface Conforto {
 }
 
 export const CONFORTO_PADRAO: Conforto = {
+  qualidade: 'automatica',
   rapidez: 'normal',
   distancia: 'normal',
   inverterVertical: false,
@@ -65,6 +69,7 @@ export function lerConforto(texto: string | null): Conforto {
     lista.includes(v as T) ? (v as T) : padrao
   const sim = (v: unknown, padrao: boolean) => (typeof v === 'boolean' ? v : padrao)
   return {
+    qualidade: umDe(PREFERENCIAS_DE_QUALIDADE, lido.qualidade, CONFORTO_PADRAO.qualidade),
     rapidez: umDe(RAPIDEZES, lido.rapidez, CONFORTO_PADRAO.rapidez),
     distancia: umDe(DISTANCIAS, lido.distancia, CONFORTO_PADRAO.distancia),
     inverterVertical: sim(lido.inverterVertical, CONFORTO_PADRAO.inverterVertical),
