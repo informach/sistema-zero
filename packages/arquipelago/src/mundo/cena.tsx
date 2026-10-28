@@ -14,6 +14,7 @@ import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
 import { Ceu } from './ceu'
 import { Farol } from './farol'
+import { HabitantesDaPraia } from './habitantes-da-praia'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
@@ -63,6 +64,7 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
         >
           <Agua />
           <IlhaCentral />
+          <HabitantesDaPraia />
           <Casa />
           <Horta />
           <Bancada />

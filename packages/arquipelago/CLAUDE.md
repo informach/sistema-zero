@@ -507,3 +507,20 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 `mundo-reativo.ts` guarda um conjunto fixo de 16 ondas. `ondinhas.tsx` lê a entrada e o deslocamento da criança e do tronco, desenha em uma malha instanciada e recorta no limite do lago. Não há simulação de fluido nem partículas criadas por quadro. Movimento reduzido baixa a opacidade. Estados transitórios pertencem à ilha ativa. Estações Peças soltas e Galho seco em `/movimento` usam as mesmas peças.
 
 ⚠️ Até 28/10/2026 os colisores da ilha completa e das pontes vivas iam com `collisionGroups={cond ? GRUPO : undefined}`. O `@react-three/rapier` aplica `undefined` como o grupo 0, então nenhum corpo dinâmico tocava a ilha: o caixote, as peças soltas, o galho, a folha e a pena atravessavam o chão e voltavam ao lugar. Só o personagem, cujo controlador não olha grupos, pisava. Use `gruposDoColisor` (`mundo/grupos.ts`); `tests/grupos-de-colisao.test.ts` recusa o padrão. O plano da física viva registra medições, notas do cartão e a conferência que falta em celular físico.
+
+### Nico e Lumis da praia (28/10/2026)
+
+`mundo/habitantes-da-praia.tsx` liga os GLBs existentes de Nico, Estrelinha e Búzio à ilha
+central. Usa `useCopiaAnimada`, `trocarClipe` e uma `ComReserva` por modelo. As posições,
+escalas e o aceno ficam em `sistemas/habitantes-da-praia.ts`. Nico acena ao entrar no alcance
+de quatro metros, com intervalo mínimo de oito segundos. Os Lumis descansam com fases
+diferentes. A pausa do jogo congela as ações; movimento reduzido usa a velocidade do helper.
+
+`habitantes-da-praia-colisao.ts` cria um cilindro arredondado por corpo, em metros e fora da
+escala do desenho, com prefixo `col-morador-` para deixar a câmera passar. Os Lumis não têm
+colisor aumentado para bloquear degraus. O colisor só monta quando seu modelo carrega.
+Os testes carregam os GLBs reais e verificam clipes, dimensões, praia seca e regras do aceno.
+
+Esta entrega é visual. Captura, rotinas, coleta de conchas e cartas não foram implementadas.
+Não havia outro componente de Lumi no mundo para reaproveitar. Decisão e conferência em
+`docs/plans/2026-10-28-arquipelago-praia-nico-e-lumis.md`. Nenhuma arte foi regenerada.

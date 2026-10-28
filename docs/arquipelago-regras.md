@@ -1840,3 +1840,21 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 `mundo-reativo.ts` guarda um conjunto fixo de 16 ondas. `ondinhas.tsx` lê a entrada e o deslocamento da criança e do tronco, desenha em uma malha instanciada e recorta no limite do lago. Não há simulação de fluido nem partículas criadas por quadro. Movimento reduzido baixa a opacidade. Estados transitórios pertencem à ilha ativa. Estações Peças soltas e Galho seco em `/movimento` usam as mesmas peças.
 
 ⚠️ Até 28/10/2026 os colisores da ilha completa e das pontes vivas iam com `collisionGroups={cond ? GRUPO : undefined}`. O `@react-three/rapier` aplica `undefined` como o grupo 0, então nenhum corpo dinâmico tocava a ilha: o caixote, as peças soltas, o galho, a folha e a pena atravessavam o chão e voltavam ao lugar. Só o personagem, cujo controlador não olha grupos, pisava. Use `gruposDoColisor` (`mundo/grupos.ts`); `tests/grupos-de-colisao.test.ts` recusa o padrão. O plano da física viva registra medições, notas do cartão e a conferência que falta em celular físico.
+
+### Nico, Estrelinha e Búzio na praia (28/10/2026)
+
+- Nico fica na areia da ilha central em `(0, 25)`, olhando para o interior da ilha. Respira
+  parado e acena quando a criança chega a menos de quatro metros. Não repete enquanto ela
+  permanece perto e espera pelo menos oito segundos entre acenos. Ainda não entrega cartas
+  nem abre conversa.
+- Estrelinha, comum, fica em `(2, 25)`; Búzio, raro, em `(3, 26)`. Usam escala 0,3 e a animação
+  de descanso, em fases diferentes. São presenças visuais: não geram conchas nem recompensas
+  e não são adicionados à coleção da pessoa. Captura e rotinas continuam para a etapa dos Lumis.
+- Os três têm um cilindro arredondado menor que o desenho. A câmera atravessa esse colisor.
+  Os Lumis mantêm colisores pequenos, que o personagem pode transpor como um pequeno degrau.
+- As animações param com a pausa do jogo e ficam mais lentas com movimento reduzido.
+  Um modelo que falha ao carregar não bloqueia a cena nem deixa um obstáculo invisível.
+
+Arquivos: `sistemas/habitantes-da-praia.ts`, `mundo/habitantes-da-praia.tsx`,
+`mundo/habitantes-da-praia-colisao.ts` e `tests/habitantes-da-praia.test.ts`.
+Decisões: `docs/plans/2026-10-28-arquipelago-praia-nico-e-lumis.md`.
