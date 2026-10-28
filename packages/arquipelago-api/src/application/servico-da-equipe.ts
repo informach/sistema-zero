@@ -1,15 +1,21 @@
 import { randomUUID } from 'node:crypto'
 import {
   type AnaliseDoDesafio,
+  type AplicacaoDoManifesto,
+  type AplicarManifesto,
   blocosExigidos,
   CARTAS_LUMI,
+  type ConferenciaDoManifesto,
   type ConteudoDoDesafio,
   type CriarDesafio,
   coberturaDosBlocos,
   type DesafioDaEquipe,
   type GravarDesafio,
+  type ItemDaConferencia,
   ilha as ilhaDoContrato,
   LIMITES_DO_DESAFIO,
+  type ManifestoDeDesafios,
+  type MetadadosDoDesafio,
   migrarConteudoDoDesafio,
   type ProblemaDoDesafio,
   type ResumoDoDesafio,
@@ -21,12 +27,21 @@ import type {
   ResultadoDaEscrita,
 } from '../domain/desafios.port'
 import type { Equipe } from '../domain/jogador'
+import {
+  decidir,
+  impressaoDigital,
+  itemDoCadastro,
+  metadadosDoItem,
+  novoManifesto,
+  ordemDeGravacao,
+} from '../domain/manifestos'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
 import {
   ConflitoDoCadastroError,
   DesafioComProblemasError,
   DesafioDesatualizadoError,
   DesafioNaoEncontradoError,
+  ManifestoDesatualizadoError,
   PlataformaIndisponivelError,
   SemPermissaoDeEscritaError,
 } from './erros'
@@ -158,6 +173,170 @@ export class ServicoDaEquipe {
     }
   }
 
+  // ── Manifesto de desafios (28/10/2026) ───────────────────────────────────────────────────
+
+  /**
+   * A prévia do manifesto: o que cada desafio do arquivo vai virar, com a análise do Members dos
+   * que vão ser gravados ou publicados. Não grava nada.
+   */
+  async conferirManifesto(
+    _equipe: Equipe,
+    manifesto: ManifestoDeDesafios,
+  ): Promise<ConferenciaDoManifesto> {
+    const cadastro = await this.repo.listar({})
+    const decisoes = decidir(manifesto, cadastro)
+    const itens: ItemDaConferencia[] = []
+    for (const [i, item] of manifesto.desafios.entries()) {
+      const d = decisoes[i]
+      if (!d) continue
+      const analisa =
+        d.acao === 'criar' || d.acao === 'atualizar' || (item.publicar && d.temOQuePublicar)
+      const analise =
+        d.acao !== 'conflito' && analisa
+          ? (await this.analiseDe(metadadosDoItem(item), item.conteudo)).analise
+          : null
+      itens.push({
+        slug: item.slug,
+        titulo: item.conteudo.titulo,
+        publico: item.publico,
+        ilha: item.ilha,
+        tipo: item.tipo,
+        quadro: item.quadro,
+        acao: d.acao,
+        id: d.existente?.id ?? null,
+        conflito: d.conflito,
+        analise,
+        publica:
+          Boolean(item.publicar) &&
+          d.temOQuePublicar &&
+          analise !== null &&
+          analise.problemas.length === 0,
+      })
+    }
+    const conta = (acao: ItemDaConferencia['acao']) => itens.filter((i) => i.acao === acao).length
+    return {
+      impressao: impressaoDigital(manifesto, cadastro),
+      itens,
+      contagem: {
+        criar: conta('criar'),
+        atualizar: conta('atualizar'),
+        igual: conta('igual'),
+        conflito: conta('conflito'),
+        comProblema: itens.filter((i) => (i.analise?.problemas.length ?? 0) > 0).length,
+        publica: itens.filter((i) => i.publica).length,
+      },
+    }
+  }
+
+  /**
+   * Grava o que a prévia mostrou. A impressão precisa ser a da prévia (alguém mexeu num desafio do
+   * arquivo no meio → 409 `MANIFESTO_DESATUALIZADO`, sem gravar nada). Cada desafio segue sozinho:
+   * conflito não grava, problema na análise deixa em rascunho, e os outros continuam.
+   */
+  async aplicarManifesto(equipe: Equipe, pedido: AplicarManifesto): Promise<AplicacaoDoManifesto> {
+    this.exigirEscrita(equipe)
+    const { manifesto } = pedido
+    const cadastro = await this.repo.listar({})
+    if (impressaoDigital(manifesto, cadastro) !== pedido.impressao)
+      throw new ManifestoDesatualizadoError()
+    const decisoes = decidir(manifesto, cadastro)
+    // Grava na ordem que libera cada quadro antes de ocupá-lo; responde na ordem do arquivo.
+    const porIndice: AplicacaoDoManifesto['itens'][number][] = []
+    for (const i of ordemDeGravacao(manifesto, decisoes)) {
+      const item = manifesto.desafios[i]
+      const d = decisoes[i]
+      if (!item || !d) continue
+      const responder = (r: AplicacaoDoManifesto['itens'][number]) => {
+        porIndice[i] = r
+      }
+      if (d.acao === 'conflito') {
+        responder({
+          slug: item.slug,
+          id: d.existente?.id ?? null,
+          acao: 'conflito',
+          publicado: false,
+          problemas: d.conflito ? [d.conflito] : [],
+        })
+        continue
+      }
+      let atual: DesafioDaEquipe | null = d.existente ? paraEquipe(d.existente) : null
+      try {
+        if (d.acao === 'criar')
+          atual = await this.criar(equipe, {
+            metadados: metadadosDoItem(item),
+            conteudo: item.conteudo,
+          })
+        else if (d.acao === 'atualizar' && d.existente)
+          atual = await this.gravar(equipe, d.existente.id, {
+            revisaoBase: d.existente.revisao,
+            metadados: metadadosDoItem(item),
+            conteudo: item.conteudo,
+          })
+      } catch (erro) {
+        if (!(erro instanceof ConflitoDoCadastroError)) throw erro
+        responder({
+          slug: item.slug,
+          id: d.existente?.id ?? null,
+          acao: 'conflito',
+          publicado: false,
+          problemas: [
+            {
+              codigo: erro.motivo === 'slug-em-uso' ? 'SLUG_EM_USO' : 'QUADRO_OCUPADO',
+              mensagem: erro.message,
+            },
+          ],
+        })
+        continue
+      }
+      if (!atual) continue
+      let publicado =
+        atual.resumo.situacao === 'publicado' && !atual.resumo.alteradoDepoisDePublicar
+      let problemas: ProblemaDoDesafio[] = []
+      if (item.publicar && d.temOQuePublicar) {
+        try {
+          atual = await this.publicar(equipe, atual.resumo.id, atual.resumo.revisao)
+          publicado = true
+        } catch (erro) {
+          // Gravou, mas não publicou: fica em rascunho e a linha diz por quê.
+          if (erro instanceof DesafioComProblemasError) problemas = erro.problemas
+          else if (erro instanceof ConflitoDoCadastroError)
+            problemas = [{ codigo: 'QUADRO_OCUPADO', mensagem: erro.message }]
+          else throw erro
+        }
+      }
+      responder({ slug: item.slug, id: atual.resumo.id, acao: d.acao, publicado, problemas })
+    }
+    return { itens: porIndice.filter((r) => r !== undefined) }
+  }
+
+  /** Um desafio, a ilha filtrada ou o jogo inteiro como manifesto (fora os arquivados). */
+  async exportarManifesto(
+    _equipe: Equipe,
+    filtro: FiltroDosDesafios,
+  ): Promise<ManifestoDeDesafios | null> {
+    const desafios = (await this.repo.listar(filtro)).filter((d) => d.situacao !== 'arquivado')
+    if (desafios.length === 0) return null
+    const umaIlha =
+      filtro.ilha !== undefined &&
+      filtro.publico !== undefined &&
+      desafios.every(
+        (d) => d.metadados.ilha === filtro.ilha && d.metadados.publico === filtro.publico,
+      )
+    return novoManifesto(
+      desafios.map((d) => itemDoCadastro(d, conteudoDe(d))),
+      umaIlha
+        ? 'ilha'
+        : filtro.ilha === undefined && filtro.tipo === undefined
+          ? 'jogo'
+          : undefined,
+    )
+  }
+
+  async exportarDesafio(_equipe: Equipe, id: string): Promise<ManifestoDeDesafios> {
+    const d = await this.exigir(id)
+    return novoManifesto([itemDoCadastro(d, conteudoDe(d))], 'desafio')
+  }
+
   private async mudarSituacao(
     equipe: Equipe,
     id: string,
@@ -179,9 +358,13 @@ export class ServicoDaEquipe {
   }
 
   private async analise(desafio: DesafioNoBanco) {
-    const conteudo = conteudoDe(desafio)
+    return this.analiseDe(desafio.metadados, conteudoDe(desafio))
+  }
+
+  /** A análise de um conteúdo ainda não gravado (a prévia do manifesto). */
+  private async analiseDe(metadados: MetadadosDoDesafio, conteudo: ConteudoDoDesafio) {
     if (!this.membros) throw new PlataformaIndisponivelError()
-    const audience = desafio.metadados.publico === 'kids' ? ('kids' as const) : ('adult' as const)
+    const audience = metadados.publico === 'kids' ? ('kids' as const) : ('adult' as const)
     let membros: Awaited<ReturnType<PortaDosMembros['analisarObjetivos']>>
     let curriculo: Awaited<ReturnType<LeiturasDosMembros['curriculo']>>
     try {
@@ -200,11 +383,7 @@ export class ServicoDaEquipe {
       throw erro
     }
     const exigidos = blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais)
-    const cobertura = coberturaDosBlocos(
-      exigidos,
-      curriculo,
-      ilhaDoContrato(desafio.metadados.ilha).posto,
-    )
+    const cobertura = coberturaDosBlocos(exigidos, curriculo, ilhaDoContrato(metadados.ilha).posto)
     const problemas: ProblemaDoDesafio[] = [...membros.problemas, ...problemasLocais(conteudo)]
     return {
       conteudo,

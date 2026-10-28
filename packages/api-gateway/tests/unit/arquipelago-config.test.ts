@@ -117,6 +117,23 @@ describe('Arquipélago Vagalume no gateway', () => {
     expect(
       registry.resolve('POST', `/arquipelago/admin/desafios/${id}/analisar`, 'v1')?.route,
     ).toMatchObject({ authorize: { roles: ['superadmin', 'admin', 'staff'] } })
+    // Manifesto: staff confere e exporta; aplicar é só da administração.
+    expect(
+      registry.resolve('POST', '/arquipelago/admin/manifestos/conferir', 'v1')?.route,
+    ).toMatchObject({ authorize: { roles: ['superadmin', 'admin', 'staff'] } })
+    expect(
+      registry.resolve('POST', '/arquipelago/admin/manifestos/aplicar', 'v1')?.route,
+    ).toMatchObject({
+      id: 'arquipelago-admin-manifestos-aplicar',
+      authorize: { roles: ['superadmin', 'admin'] },
+      maxBodyBytes: 4 * 1024 * 1024,
+    })
+    expect(
+      registry.resolve('GET', `/arquipelago/admin/desafios/${id}/manifesto`, 'v1')?.route.id,
+    ).toBe('arquipelago-admin-desafio-manifesto')
+    expect(registry.resolve('GET', '/arquipelago/admin/manifestos/exportar', 'v1')?.route.id).toBe(
+      'arquipelago-admin-manifestos-exportar',
+    )
     expect(registry.resolve('DELETE', `/arquipelago/admin/desafios/${id}`, 'v1')).toBeUndefined()
   })
 })

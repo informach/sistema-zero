@@ -107,24 +107,30 @@ export function migrarConteudoDoDesafio(guardado: unknown): ConteudoDoDesafio | 
   return lido.success ? lido.data : null
 }
 
+/** Os campos dos metadados (sem a regra do quadro), para o manifesto repetir sem aninhar. */
+const CAMPOS_DOS_METADADOS = {
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .max(80),
+  publico: z.enum(PUBLICOS_DO_DESAFIO),
+  ilha: z.enum(ILHA_IDS),
+  tipo: z.enum(TIPOS_DE_DESAFIO),
+  /** Só no Quadro das Cores: qual dos seis quadros. */
+  quadro: z.number().int().min(1).max(QUADROS_POR_ILHA).nullable(),
+  ordem: z.number().int().min(0).max(10_000),
+}
+const quadroSoNoQuadroDasCores = (m: { tipo: TipoDeDesafio; quadro: number | null }) =>
+  (m.tipo === 'quadro-das-cores') === (m.quadro !== null)
+const REGRA_DO_QUADRO = {
+  message: 'Só o Quadro das Cores tem número de quadro, e ele sempre tem',
+  path: ['quadro'],
+}
+
 /** Os dados do cadastro que não são conteúdo (onde o desafio mora e em que ordem). */
 export const MetadadosDoDesafioSchema = z
-  .strictObject({
-    slug: z
-      .string()
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-      .max(80),
-    publico: z.enum(PUBLICOS_DO_DESAFIO),
-    ilha: z.enum(ILHA_IDS),
-    tipo: z.enum(TIPOS_DE_DESAFIO),
-    /** Só no Quadro das Cores: qual dos seis quadros. */
-    quadro: z.number().int().min(1).max(QUADROS_POR_ILHA).nullable(),
-    ordem: z.number().int().min(0).max(10_000),
-  })
-  .refine((m) => (m.tipo === 'quadro-das-cores') === (m.quadro !== null), {
-    message: 'Só o Quadro das Cores tem número de quadro, e ele sempre tem',
-    path: ['quadro'],
-  })
+  .strictObject(CAMPOS_DOS_METADADOS)
+  .refine(quadroSoNoQuadroDasCores, REGRA_DO_QUADRO)
 export type MetadadosDoDesafio = z.infer<typeof MetadadosDoDesafioSchema>
 
 /** `POST /arquipelago/admin/desafios`: cria o rascunho. */
@@ -229,6 +235,140 @@ export const CoberturaDosCartoesSchema = z.object({
   ),
 })
 export type CoberturaDosCartoes = z.infer<typeof CoberturaDosCartoesSchema>
+
+// ── Manifesto de desafios (28/10/2026) ───────────────────────────────────────────────────────
+
+/**
+ * O arquivo que a equipe sobe com os desafios já configurados, como o manifesto das aulas. Um
+ * formato só serve para um desafio, para o pacote de uma ilha e para o do jogo inteiro: o `slug` é
+ * a identidade, então subir de novo atualiza o que existe e acrescenta o que é novo. Um desafio que
+ * não está no arquivo nunca é mexido. Plano: `docs/plans/2026-10-28-arquipelago-desafio-do-dia-e-manifestos.md`.
+ */
+export const FORMATO_DO_MANIFESTO = 'arquipelago-desafios'
+export const VERSAO_DO_MANIFESTO = 1
+export const ESCOPOS_DO_MANIFESTO = ['desafio', 'ilha', 'jogo'] as const
+export type EscopoDoManifesto = (typeof ESCOPOS_DO_MANIFESTO)[number]
+export const LIMITES_DO_MANIFESTO = { desafios: 200 } as const
+
+/** Um desafio do arquivo: os metadados soltos, se publica ao aplicar e o conteúdo do Admin. */
+export const DesafioDoManifestoSchema = z
+  .strictObject({
+    ...CAMPOS_DOS_METADADOS,
+    /** Publica ao aplicar, se a análise não tiver problema (com problema, fica em rascunho). */
+    publicar: z.boolean().optional(),
+    conteudo: ConteudoDoDesafioV1Schema,
+  })
+  .refine(quadroSoNoQuadroDasCores, REGRA_DO_QUADRO)
+export type DesafioDoManifesto = z.infer<typeof DesafioDoManifestoSchema>
+
+export const ManifestoDeDesafiosSchema = z
+  .strictObject({
+    formato: z.literal(FORMATO_DO_MANIFESTO),
+    versao: z.literal(VERSAO_DO_MANIFESTO),
+    /** Só confere: `desafio` (um só), `ilha` (todos da mesma ilha e público) ou `jogo`. */
+    escopo: z.enum(ESCOPOS_DO_MANIFESTO).optional(),
+    desafios: z.array(DesafioDoManifestoSchema).min(1).max(LIMITES_DO_MANIFESTO.desafios),
+  })
+  .superRefine((m, ctx) => {
+    if (m.escopo === 'desafio' && m.desafios.length !== 1)
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Com escopo "desafio", o arquivo tem um desafio só.',
+        path: ['desafios'],
+      })
+    if (m.escopo === 'ilha') {
+      const [primeiro] = m.desafios
+      if (m.desafios.some((d) => d.ilha !== primeiro?.ilha || d.publico !== primeiro?.publico))
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Com escopo "ilha", todos os desafios são da mesma ilha e do mesmo público.',
+          path: ['desafios'],
+        })
+    }
+    const slugs = new Set<string>()
+    const quadros = new Set<string>()
+    m.desafios.forEach((d, i) => {
+      if (slugs.has(d.slug))
+        ctx.addIssue({
+          code: 'custom',
+          message: `O slug "${d.slug}" aparece duas vezes no arquivo.`,
+          path: ['desafios', i, 'slug'],
+        })
+      slugs.add(d.slug)
+      if (d.quadro === null) return
+      const chave = `${d.publico}:${d.ilha}:${d.quadro}`
+      if (quadros.has(chave))
+        ctx.addIssue({
+          code: 'custom',
+          message: `O quadro ${d.quadro} da ilha ${d.ilha} (${d.publico}) aparece duas vezes no arquivo.`,
+          path: ['desafios', i, 'quadro'],
+        })
+      quadros.add(chave)
+    })
+  })
+export type ManifestoDeDesafios = z.infer<typeof ManifestoDeDesafiosSchema>
+
+/**
+ * O que acontece com cada desafio do arquivo: `criar` (slug novo), `atualizar` (metadados ou
+ * conteúdo mudaram), `igual` (nada mudou) ou `conflito` (não dá para gravar: o motivo vem junto).
+ */
+export const ACOES_DO_MANIFESTO = ['criar', 'atualizar', 'igual', 'conflito'] as const
+export type AcaoDoManifesto = (typeof ACOES_DO_MANIFESTO)[number]
+
+export const ItemDaConferenciaSchema = z.strictObject({
+  slug: z.string(),
+  titulo: z.string(),
+  publico: z.enum(PUBLICOS_DO_DESAFIO),
+  ilha: z.enum(ILHA_IDS),
+  tipo: z.enum(TIPOS_DE_DESAFIO),
+  quadro: z.number().int().nullable(),
+  acao: z.enum(ACOES_DO_MANIFESTO),
+  /** O desafio que já existe com este slug (null quando é novo). */
+  id: z.uuid().nullable(),
+  conflito: ProblemaDoDesafioSchema.nullable(),
+  /** A análise do Members, como a do botão Analisar (null em `igual` sem publicar e em conflito). */
+  analise: AnaliseDoDesafioSchema.nullable(),
+  /** Vai sair publicado: pediu `publicar`, a análise não tem problema e há o que publicar. */
+  publica: z.boolean(),
+})
+export type ItemDaConferencia = z.infer<typeof ItemDaConferenciaSchema>
+
+/** `POST /arquipelago/admin/manifestos/conferir`: a prévia, sem gravar nada. */
+export const ConferenciaDoManifestoSchema = z.strictObject({
+  /** A impressão digital do estado conferido; o aplicar exige a mesma. */
+  impressao: z.string().min(1).max(128),
+  itens: z.array(ItemDaConferenciaSchema),
+  contagem: z.strictObject({
+    criar: z.number().int(),
+    atualizar: z.number().int(),
+    igual: z.number().int(),
+    conflito: z.number().int(),
+    comProblema: z.number().int(),
+    publica: z.number().int(),
+  }),
+})
+export type ConferenciaDoManifesto = z.infer<typeof ConferenciaDoManifestoSchema>
+
+export const ConferirManifestoSchema = z.strictObject({ manifesto: ManifestoDeDesafiosSchema })
+export const AplicarManifestoSchema = z.strictObject({
+  manifesto: ManifestoDeDesafiosSchema,
+  impressao: z.string().min(1).max(128),
+})
+export type AplicarManifesto = z.infer<typeof AplicarManifestoSchema>
+
+/** `POST /arquipelago/admin/manifestos/aplicar`: o que foi gravado, desafio por desafio. */
+export const AplicacaoDoManifestoSchema = z.strictObject({
+  itens: z.array(
+    z.strictObject({
+      slug: z.string(),
+      id: z.uuid().nullable(),
+      acao: z.enum(ACOES_DO_MANIFESTO),
+      publicado: z.boolean(),
+      problemas: z.array(ProblemaDoDesafioSchema),
+    }),
+  ),
+})
+export type AplicacaoDoManifesto = z.infer<typeof AplicacaoDoManifestoSchema>
 
 // ── O que a pessoa recebe (sem gabarito, sem regras) ─────────────────────────────────────────
 

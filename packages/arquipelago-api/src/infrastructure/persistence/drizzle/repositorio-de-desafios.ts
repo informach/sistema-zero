@@ -258,6 +258,7 @@ function paraDominio(l: Linha, blocosPublicados: string[] | null): DesafioNoBanc
     situacao: l.situacao as SituacaoDoCadastro,
     revisao: l.revisao,
     revisaoPublicada: l.revisaoPublicada,
+    metadadosPublicados: l.metadadosPublicados ?? null,
     alteradoDepoisDePublicar: false,
     conteudo: l.conteudo,
     atualizadoEm: l.atualizadoEm,

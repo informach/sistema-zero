@@ -13,6 +13,11 @@ export interface DesafioNoBanco {
   situacao: SituacaoDoCadastro
   revisao: number
   revisaoPublicada: number | null
+  /**
+   * A posição da última publicação (null antes de publicar). É ela que segura o quadro no índice
+   * único: mudar o quadro no rascunho só libera o antigo ao publicar de novo.
+   */
+  metadadosPublicados: MetadadosDoDesafio | null
   /** Conteúdo ou posição diferem da cópia publicada; mudanças de situação não contam. */
   alteradoDepoisDePublicar: boolean
   conteudo: unknown
