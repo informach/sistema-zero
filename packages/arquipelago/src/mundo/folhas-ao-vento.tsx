@@ -9,6 +9,11 @@ import { type CampoDeVento, ventoEm } from '../sistemas/vento'
 import { GRUPO_SO_DO_CORPO } from './grupos'
 import { PASSO_DA_FISICA } from './medidas'
 
+/** Onde estão a folha e a pena (para o medidor). */
+export const folhasAgora = {
+  pecas: Array.from({ length: 2 }, () => ({ x: 0, y: 0, z: 0, dormindo: false })),
+}
+
 /** Duas peças soltas tocáveis. A folhagem presa na árvore continua toda no shader. */
 export function FolhasAoVento({
   vento,
@@ -23,8 +28,8 @@ export function FolhasAoVento({
 }) {
   return (
     <>
-      <Folha vento={vento} x={x} y={y} z={z} pena={false} />
-      <Folha vento={vento} x={x + 0.6} y={y + 0.7} z={z} pena />
+      <Folha vento={vento} x={x} y={y} z={z} pena={false} indice={0} />
+      <Folha vento={vento} x={x + 0.6} y={y + 0.7} z={z} pena indice={1} />
     </>
   )
 }
@@ -34,20 +39,30 @@ function Folha({
   y,
   z,
   pena,
+  indice,
 }: {
   vento: CampoDeVento
   x: number
   y: number
   z: number
   pena: boolean
+  indice: number
 }) {
   const corpo = useRef<RapierRigidBody>(null)
   const brisa = useMemo(() => ({ x: 0, z: 0 }), [])
   const impulso = useMemo(() => ({ x: 0, y: 0, z: 0 }), [])
   useBeforePhysicsStep(() => {
     const b = corpo.current
-    if (!b || b.isSleeping()) return
+    if (!b) return
     const p = b.translation()
+    const medida = folhasAgora.pecas[indice]
+    if (medida) {
+      medida.x = p.x
+      medida.y = p.y
+      medida.z = p.z
+      medida.dormindo = b.isSleeping()
+    }
+    if (medida?.dormindo) return
     // No chão para de receber vento, para poder dormir. Sem reciclagem infinita.
     if (p.y < 1.12) return
     ventoEm(p.x, p.z, vento, brisa)

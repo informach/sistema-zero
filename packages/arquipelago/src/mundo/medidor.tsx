@@ -6,6 +6,7 @@ import { type Movimento, useJogo } from '../estado/contexto'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
+import { folhasAgora } from './folhas-ao-vento'
 import { mecanismosAgora } from './mecanismos'
 import { reativosAgora } from './objetos-reativos'
 import { ondasAgora } from './ondinhas'
@@ -51,6 +52,8 @@ export interface MedidaDoDesenho {
   noChao: boolean
   ondas: typeof ondasAgora
   reativos: typeof reativosAgora
+  /** A folha e a pena soltas do Bosque. */
+  folhas: typeof folhasAgora
   fogo: typeof fogoAgora
   vento: typeof ventoAgora
   mecanismos: typeof mecanismosAgora
@@ -117,6 +120,7 @@ export function Medidor() {
     const medida: MedidaDoDesenho = {
       ondas: { ...ondasAgora },
       reativos: { ...reativosAgora, pecas: reativosAgora.pecas.map((p) => ({ ...p })) },
+      folhas: { pecas: folhasAgora.pecas.map((p) => ({ ...p })) },
       fogo: { ...fogoAgora },
       vento: { ...ventoAgora },
       mecanismos: { ...mecanismosAgora },

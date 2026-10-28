@@ -263,6 +263,7 @@ Nota a sincronizar com `if_version`: "Pedrinhas e cogumelos soltos já podem ser
 - Etapa 5 integrada em 28/10/2026: `bosque.glb` regerado e conferido na casa (veja a seção da etapa 5).
 - Cartão `fase1-22` sincronizado em 28/10/2026 (com `if_version`), marcado como feito, com as notas das oito etapas.
 - Depois do conserto dos grupos de colisão (os colisores do Bosque não seguravam corpos dinâmicos), as peças soltas foram conferidas de novo no Bosque: pedrinhas e cogumelos param no chão e dormem, a criança empurra a pedra, o galho quebra ao pisar e o tronco boia com metade na água.
+- As outras etapas também foram conferidas de novo no Bosque ativo, depois do conserto: o escorregador senta e leva até 0,37 m do fim da pista; a ponte cede 0,10 m com a criança em cima; o vento liga 78 materiais; a folha e a pena caem, param no chão (antes atravessavam) e dormem; a fogueira acende 3 peças e deixa a molhada, e o balde apaga tudo (4 molhadas). O medidor passou a mostrar a folha e a pena (`folhas`).
 - Falta ensaio em celular físico modesto. As medições foram feitas no Chrome do computador, inclusive a tela de 390 × 844. As rodadas de FPS que oscilaram foram mantidas neste registro.
 
 Verificação final da etapa 8: 420 testes passaram, um teste de banco local pulado, typecheck sem erros e lint do pacote sem erros. O review incluiu regras puras, colisores, montagem e desmontagem, textos de interação, limites de simulação, posições no GLB e conferência visual no navegador. As alterações concorrentes do modo construção foram preservadas fora deste commit.
