@@ -21,7 +21,7 @@ import {
 import { ilhaQuiz } from './ilha-do-farol-quiz'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
-const dir = resolve(import.meta.dirname, '../../aulas-interativas/a-ilha-do-farol')
+const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
 mkdirSync(dir, { recursive: true })
 const write = (name: string, v: string | object) =>
   gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : JSON.stringify(v, null, 2) + '\n')

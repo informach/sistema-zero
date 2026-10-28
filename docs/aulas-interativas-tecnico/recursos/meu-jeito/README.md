@@ -8,4 +8,4 @@ python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 
 O gerador usa as fontes editoriais e de projeto em `../../qa/`. Requer Bun, Python/Playwright e Chrome ou Edge. Não há versão adulta separada nem argumento `--adulto`.
 
-Saída: [passo-a-passo-do-projeto.pdf](../../../aulas-interativas/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf). Intermediários e relatórios ficam em `tmp/pdfs/meu-jeito/`. O pipeline confere fontes, imagens, cores reais dos blocos e limites. Renderizar e revisar visualmente após mudar texto ou esquemas; testes não substituem a inspeção.
+Saída: [passo-a-passo-do-projeto.pdf](../../../aulas-interativas/construtor/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf). Intermediários e relatórios ficam em `tmp/pdfs/meu-jeito/`. O pipeline confere fontes, imagens, cores reais dos blocos e limites. Renderizar e revisar visualmente após mudar texto ou esquemas; testes não substituem a inspeção.

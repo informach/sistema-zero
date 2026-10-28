@@ -44,6 +44,10 @@ import { ScriptRuleEditor } from './script-rule-editor'
 
 function newRule(type: string, isPro: boolean, isKit: boolean): SectionObjectiveRule {
   switch (type) {
+    case 'collectionMemory':
+      return { type, dimension: '2d', actor: 'personagem', item: 'regador', destination: 'flor' }
+    case 'changedGamePosition':
+      return { type, dimension: '2d', object: 'regador', initial: [0, 0] }
     case 'behavior':
     case 'functionReturns':
     case 'script':
@@ -451,11 +455,15 @@ export function SectionCompletionEditor({
                 <p className="text-xs text-muted-foreground">
                   {isExecutionRule(check.rule)
                     ? describeExecutionRule(check.rule)
-                    : check.rule.type === 'usesBlock'
-                      ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
-                      : check.rule.type === 'usesLoop'
-                        ? 'Usar repetição'
-                        : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
+                    : check.rule.type === 'changedGamePosition'
+                      ? `Mudar a posição de ${check.rule.object} no chão ${check.rule.dimension}`
+                      : check.rule.type === 'collectionMemory'
+                        ? `Guardar a coleta de ${check.rule.item} e consultar na decisão de ${check.rule.destination}`
+                        : check.rule.type === 'usesBlock'
+                          ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
+                          : check.rule.type === 'usesLoop'
+                            ? 'Usar repetição'
+                            : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
                 </p>
               </div>
               <Button
@@ -536,6 +544,12 @@ export function SectionCompletionEditor({
                   Usar um bloco
                 </option>
                 <option value="usesLoop">Usar repetição</option>
+                <option value="collectionMemory" disabled={isPro}>
+                  Ligar coleta, memória e decisão
+                </option>
+                <option value="changedGamePosition" disabled={isPro}>
+                  Editar posição no chão
+                </option>
                 <option value="declaresVariable">Criar variável</option>
                 <option value="definesFunction">Definir função</option>
                 <option value="callsFunction">Chamar função</option>
@@ -551,6 +565,82 @@ export function SectionCompletionEditor({
                   isKit={isKit}
                   onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
                 />
+              )}
+              {check.rule.type === 'collectionMemory' && (
+                <div className="grid gap-2">
+                  <Select
+                    aria-label="Dimensão da coleta"
+                    value={check.rule.dimension}
+                    onChange={(e) =>
+                      patchCheck(check.id, (c) => ({
+                        ...c,
+                        rule: { ...check.rule, dimension: e.target.value as '2d' | '3d' },
+                      }))
+                    }
+                  >
+                    <option value="2d">2D</option>
+                    <option value="3d">3D</option>
+                  </Select>
+                  {(['actor', 'item', 'destination'] as const).map((field, i) => (
+                    <label key={field} className="text-sm">
+                      {['Personagem', 'Item de coleta', 'Destino da decisão'][i]}
+                      <Input
+                        value={check.rule.type === 'collectionMemory' ? check.rule[field] : ''}
+                        onChange={(e) =>
+                          patchCheck(check.id, (c) => ({
+                            ...c,
+                            rule: { ...check.rule, [field]: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              )}
+              {check.rule.type === 'changedGamePosition' && (
+                <div className="grid gap-2">
+                  <Select
+                    aria-label="Dimensão da posição"
+                    value={check.rule.dimension}
+                    onChange={(e) =>
+                      patchCheck(check.id, (c) =>
+                        c.rule.type === 'changedGamePosition'
+                          ? { ...c, rule: { ...c.rule, dimension: e.target.value as '2d' | '3d' } }
+                          : c,
+                      )
+                    }
+                  >
+                    <option value="2d">2D</option>
+                    <option value="3d">3D</option>
+                  </Select>
+                  <Input
+                    aria-label="Objeto da posição"
+                    value={check.rule.object}
+                    onChange={(e) =>
+                      patchCheck(check.id, (c) =>
+                        c.rule.type === 'changedGamePosition'
+                          ? { ...c, rule: { ...c.rule, object: e.target.value } }
+                          : c,
+                      )
+                    }
+                  />
+                  {([0, 1] as const).map((i) => (
+                    <Input
+                      key={i}
+                      type="number"
+                      aria-label={`Coordenada inicial ${i + 1}`}
+                      value={check.rule.type === 'changedGamePosition' ? check.rule.initial[i] : 0}
+                      onChange={(e) =>
+                        patchCheck(check.id, (c) => {
+                          if (c.rule.type !== 'changedGamePosition') return c
+                          const initial: [number, number] = [...c.rule.initial]
+                          initial[i] = Number(e.target.value)
+                          return { ...c, rule: { ...c.rule, initial } }
+                        })
+                      }
+                    />
+                  ))}
+                </div>
               )}
               {isExecutionRule(check.rule) && check.rule.type !== 'script' && (
                 <ExecutionRuleEditor

@@ -7,8 +7,8 @@ import {
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { createRoot } from 'react-dom/client'
-import cade from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
-import nave from '../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json'
+import nave from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json'
+import cade from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
 import { KidsLessonBlocks } from '../../src/components/kids/kids-lesson-blocks'
 
 /**

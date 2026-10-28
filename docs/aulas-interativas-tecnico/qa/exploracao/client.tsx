@@ -14,12 +14,12 @@ import { SceneActivityView } from '@sistemazero/member-shell/components/scene-ac
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import c1 from '../../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
-import c2 from '../../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
-import fc from '../../../aulas-interativas/desafio-primeiro-jogo/desafio-certificado.manifesto.json'
-import f1 from '../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
-import f2 from '../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
-import f3 from '../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
+import c1 from '../../../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import c2 from '../../../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
+import fc from '../../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-certificado.manifesto.json'
+import f1 from '../../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
+import f2 from '../../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
+import f3 from '../../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
 
 const blocks = (
   [c1, c2, f1, f2, f3, fc].flatMap((m) => m.blocks) as unknown as Array<{

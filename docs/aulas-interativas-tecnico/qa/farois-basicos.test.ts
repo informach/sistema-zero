@@ -62,7 +62,7 @@ describe('Faróis no Faísca', () => {
     const raw = JSON.parse(
       readFileSync(
         new URL(
-          '../../aulas-interativas/a-ilha-do-farol/ilha-do-farol.szproject.json',
+          '../../aulas-interativas/faisca/a-ilha-do-farol/ilha-do-farol.szproject.json',
           import.meta.url,
         ),
         'utf8',

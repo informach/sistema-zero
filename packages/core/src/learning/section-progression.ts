@@ -1,4 +1,5 @@
 import { compareContentFingerprints } from '../creations/content-fingerprint'
+import type { ChangedGamePositionRule, CollectionMemoryRule } from './collection-memory'
 import { isInteractiveBlock, type LessonSection } from './index'
 import { isPlatformAction, type PlatformAction } from './platform-action'
 import {
@@ -61,6 +62,8 @@ export interface ProjectBlockPattern {
 }
 
 export type SectionStructureRule =
+  | CollectionMemoryRule
+  | ChangedGamePositionRule
   | { type: 'usesLoop' }
   | { type: 'declaresVariable'; name: string }
   | { type: 'definesFunction'; name: string }
@@ -492,6 +495,22 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
       )
         return false
       switch (c.rule.type) {
+        case 'changedGamePosition':
+          return (
+            ['2d', '3d'].includes(String(c.rule.dimension)) &&
+            typeof c.rule.object === 'string' &&
+            /^[A-Za-z_$][A-Za-z0-9_$]{0,99}$/.test(c.rule.object) &&
+            Array.isArray(c.rule.initial) &&
+            c.rule.initial.length === 2 &&
+            c.rule.initial.every((v) => typeof v === 'number' && Number.isFinite(v))
+          )
+        case 'collectionMemory':
+          return (
+            ['2d', '3d'].includes(String(c.rule.dimension)) &&
+            [c.rule.actor, c.rule.item, c.rule.destination].every(
+              (v) => typeof v === 'string' && /^[A-Za-z_$][A-Za-z0-9_$]{0,99}$/.test(v),
+            )
+          )
         case 'usesLoop':
           return true
         case 'usesBlock':
@@ -672,7 +691,9 @@ export function sectionCompletionIssues(
             ? false
             : check.rule.type === 'usesBlock'
               ? hasBlankBlockType(check.rule)
-              : check.rule.type === 'usesLoop' ||
+              : check.rule.type === 'collectionMemory' ||
+                  check.rule.type === 'changedGamePosition' ||
+                  check.rule.type === 'usesLoop' ||
                   check.rule.type === 'behavior' ||
                   check.rule.type === 'script'
                 ? false

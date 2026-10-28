@@ -268,8 +268,8 @@ jobs:
         working-directory: packages/community-kids
         run: bun run test:reachability
 
-      # Valida os 37 manifestos comuns, versionados junto dos roteiros em
-      # docs/aulas-interativas/<curso>.
+      # Valida os 42 manifestos comuns, versionados junto dos roteiros em
+      # docs/aulas-interativas/<posto>/<curso>.
       - name: Manifestos das aulas interativas
         run: |
           bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts

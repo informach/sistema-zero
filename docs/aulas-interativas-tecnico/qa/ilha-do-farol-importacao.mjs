@@ -13,7 +13,10 @@ const studioURL = process.env.SZ_STUDIO_URL ?? 'http://127.0.0.1:5173/'
 import { readFileSync } from 'node:fs'
 
 const source = JSON.parse(
-  readFileSync('docs/aulas-interativas/a-ilha-do-farol/ilha-do-farol.szproject.json', 'utf8'),
+  readFileSync(
+    'docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-do-farol.szproject.json',
+    'utf8',
+  ),
 )
 const browser = await chromium.launch({
   executablePath:

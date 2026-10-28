@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / 'aulas-interativas'
-CURSOS = ('cade-todo-mundo', 'desafio-primeiro-jogo', 'nave-contra-asteroides', 'corre-dino', 'o-jogo-do-meu-jeito', 'a-ilha-do-farol')
 LEGADO = re.compile(r'Concluir fase|Próxima (?:fase|seção|etapa)|Mapa da Aventura|Caderno do Aluno|Enviar para o professor', re.I)
 CLIP = re.compile(r'^\*\*Clipe:\*\* `([^`]+)`\s*$', re.M)
 FALA = re.compile(r'\*\*Fala para ElevenLabs:\*\*\s*\n```text\r?\n([\s\S]*?)\r?\n```')
@@ -73,8 +72,8 @@ def audit(path):
 
 if __name__ == '__main__':
     prefix = sys.argv[1] if len(sys.argv) > 1 else ''
-    paths = sorted(p for course in CURSOS for p in (ROOT / course).glob('*.manifesto.json') if not prefix or p.name.startswith(prefix))
-    if not paths or (not prefix and len(paths) != 40):
+    paths = sorted(p for p in ROOT.glob('*/*/*.manifesto.json') if not prefix or p.name.startswith(prefix))
+    if not paths or (not prefix and len(paths) != 42):
         raise SystemExit(f'ERRO: quantidade de manifestos inesperada: {len(paths)}')
     all_errors = []
     total = 0

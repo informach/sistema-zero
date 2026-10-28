@@ -1,0 +1,215 @@
+# A Chave do Farol · Dia 3 · A luz do farol
+
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais combinam estrutura e observação em execução. Movimento, memória após afastamento e os dois caminhos da porta são testados no jogo por entradas reais, preservando as escolhas de arte e posição; os testes jogados do roteiro continuam parte da construção. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+
+
+## Resumo
+
+- Estado de entrada: projeto enviado no Dia 2, com movimento, borda e coleta.
+- Vitória do dia: a porta confere a chave; sem ela, mostra o motivo; com ela, acende a luz e aciona a chegada do barco. A criança troca as imagens (com o par do farol), escreve os avisos, decide onde fica a chave e aprende a publicar seu jogo.
+- Seções: 8.
+- Clipes: 8.
+
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado; neste dia, "então" não é usado como palavra de ligação, porque é o nome de um espaço do Se. Em vez de "a variável ganhou já veio preparada" e "o encontro com a chave já está pronto", a fala diz o que cada um faz no momento em que a criança o usa. Seções, blocos e critérios não mudaram.
+
+**Vocabulário do curso, 06/10/2026:** as retomadas dizem "Lembra da experiência da parte anterior?" e "Lembra da experiência da primeira parte desta aula?"; na publicação, "Na aula, ele pode aparecer só como um ícone" virou "Aqui, ele pode aparecer…"; as falas citam **Próxima parte**, **Verificar projeto**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir aula**. Como "parte" passou a ser o nome da parte para a criança, os ramos do bloco Se deixaram de ser "a parte então" e "a parte senão": a fala diz "o espaço do então" e "o espaço do senão" ("O espaço do então fica vazio por enquanto", "Deixe à vista o espaço do então", "Complete o espaço do então"), do mesmo jeito que o Cadê fala do espaço vazio ao lado de fazer, e "na parte de baixo do bloco Se" virou "na linha de baixo do bloco Se".
+
+**Full review de 06/10/2026:** a regra do "então" passou a valer para o curso inteiro, não só para este dia. A experiência da porta define a condição uma vez só ("Antes de abrir, a porta confere se temChave é verdadeiro. Uma pergunta assim se chama condição."). Onde "aventura" queria dizer o jogo, ficou "jogo" ("testar o jogo inteiro", "teste o jogo"), porque aventura passou a ser o nome do curso para a criança. Na troca de personagem, o porquê diz que todos os personagens deste jogo foram desenhados do mesmo tamanho. Na publicação, o **Compartilhar** que aparece só como ícone é descrito como "uma setinha para cima", a ponte pede ajuda a um adulto se precisar e o link de ajuda usa o título real do tutorial, **Como publicar seu jogo no Mural**. A ponte da experiência termina em "Quando terminar, clique em Próxima parte.". Seções, blocos e critérios não mudaram.
+
+**Personalização ampliada, 06/10/2026:** a parte `personalizar` passa a escolher personagem, cenário, barco e chave. Foram acrescentadas `farol-mensagens`, `posicao` e `posicionar-chave` antes de `fecho`. Os identificadores antigos e o projeto da criança são mantidos. Desde 11/10/2026, a entrega passa de `decisao` para `posicionar-chave`. As escolhas de aparência e texto são livres; a experiência de posição exige testar os dois eixos antes de aplicá-los.
+
+**Uma ideia por seção na personalização, 06/10/2026 (decisão da dona):** o par do farol saiu de `farol-mensagens` e foi para `personalizar`, que passou a ser a única parte de troca de imagens (personagem, barco, chave, farol e cenário). `farol-mensagens` ficou só com os quatro avisos, numa parte curta (90 a 120 s), e mudou de título para **Escreva seus avisos**; a chave da parte e as dos blocos continuam as mesmas, para preservar os identificadores no Admin. Em `personalizar`, a verificação confere só que a imagem dentro de então é um farol aceso (qualquer um dos quatro modelos, ou o antigo `farol-aceso`), para o jogo publicado continuar acendendo; nenhuma escolha de modelo vira critério. Os vídeos ficaram enxutos, com a conferência uma vez só, depois do teste. Na revisão de 06/10, o tempo dos vídeos de personalização caiu de cerca de 9 a 12,5 minutos para cerca de 7,5 a 10,5 minutos, e o do dia inteiro, de 18 a 24 minutos para 16,5 a 22,5 minutos.
+
+**Envio único, 11/10/2026:** a parte 3 (**Acenda o farol com a chave**) verifica os quatorze critérios sem enviar. As imagens, os avisos e a posição continuam no mesmo projeto, salvo automaticamente. A parte 7 (**Escolha onde fica a chave**) reúne vídeo, envio do projeto e envio em dia (`submissionUpToDate`), antes de publicar. Mesmo quem mantém as escolhas envia o jogo. Se editar depois de enviar, atualiza a mesma entrega; se já enviou pela versão anterior e o jogo continua igual, o envio existente atende ao critério. O botão de envio fica disponível quando a parte 7 é liberada. IDs, projeto, cadeia e mídia vinculada devem ser preservados.
+
+**Revisão antes da gravação, 13/10/2026 (partes 1 a 4):** a experiência da porta mostra antes de definir: o primeiro teste vem antes da palavra condição, e a fala diz o que são o então e o senão ("a resposta é não, e por isso a porta escolhe o senão"). Os testes levam o personagem até a porta do farol, na base da torre, onde fica o contato do farol (`farol-assets.ts`); encostar só na torre não faz nada acontecer. O senão é aberto pelo segundo sinal de mais, antes da palavra senão, no fim da linha (o rodapé do Se é "+ senão se + senão", conferido em `ifElseMutator.ts`). As falas apresentam o bloco Se, nomeiam o que chega no bloco e precisa ser trocado (o x do valor da variável, o heroi nos dois nomes do Trocar imagem, jogador e inimigo no encontro), dizem onde fica a lixeira (no canto de baixo, à direita, do espaço dos blocos) e falam "o então" e "o senão", com artigo. Na parte 4, a resposta à Debinha deixa claro que o pirata é um exemplo e que a criança troca o que quiser; depois da primeira troca vem o "Olha só" com o porquê do mesmo tamanho; barco, chave, farol e cenário usam "clique no nome da imagem, como …"; o farol vira condição ("se você trocar o farol, troque o par"); a lista de imagens do Estúdio mostra a miniatura de cada uma (conferido no seletor de imagem); e a conferência usa a fórmula completa. As duas versões da revelação são gravadas em dois perfis de teste, porque o Estúdio da aula guarda um projeto por perfil. As pontes das partes 2 e 4 terminam na saída. Durações: 80 a 95 s, 5,5 a 6,5 min, 4,5 a 5,5 min e 4,5 a 5,5 min. **O dia inteiro passa a cerca de 22,5 a 28 minutos.** A soma de 06/10 (16,5 a 22,5 minutos) ficou para trás por causa das entradas dos avatares (10/10) e das correções de clareza de 13/10, sem acelerar nada. A soma junta as partes 1 a 4 (cerca de 15,8 a 19,1 minutos) com as partes 5 a 8, revistas no mesmo dia em outra frente (120 a 150 s, 85 a 105 s, 2 a 3 min e 75 a 95 s, cerca de 6,7 a 8,8 minutos). Seções, blocos, critérios e identificadores não mudaram.
+
+## Vozes e produção · 10/10/2026
+
+**Debinha** participa em 14 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-3.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+
+A montagem da resposta com chave tem três entradas: no problema inicial, depois de configurar a luz e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
+
+| Entrada | Fala de Debinha |
+| --- | --- |
+| F3P1-D01 | “E se eu trouxer a chave agora?” |
+| F3P2-D01 | “E onde eu escrevo que falta a chave?” |
+| F3P3-D01 | “Mas eu trouxe a chave!” |
+| F3P3-D02 | “Acendeu! E se eu quiser jogar de novo?” |
+| F3P4-D01 | “Quero fazer um curso de pirata!” |
+| F3P6-D01 | “E para subir ou descer?” |
+| F3P7-D01 | “Eu tenho que escolher um desses três lugares?” |
+| F3P8-D01 | “Quero mandar o jogo para os meus amigos!” |
+
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
+## Triagem dos conceitos
+
+| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
+| --- | --- | --- | --- | --- | --- |
+| Condição | Sim | Na experiência da porta | Testar sem chave e com chave | Explicação e experiência juntas, antes da montagem | Comparar duas respostas para a mesma pergunta |
+| Se, então e senão | Sim | Na experiência e no projeto | Mostrar a pergunta e o ramo escolhido; construir senão antes de então | Duas etapas após a experiência | Conectar a relação observada aos blocos com um teste entre as montagens |
+| Persistência da coleta | Sim | No percurso até o farol | Pegar a chave, afastar-se do lugar e chegar ao farol | Teste final | A informação continua guardada depois que a chave sai do chão |
+| Ativar consequência preparada | Não exige cena | No barco chegando | Alterar ganhou para verdadeiro | Dentro de então | Reconhecer o que foi preparado e o que a criança programa |
+| Troca de imagem e avisos | Não | No jogo | Conferir luz, mensagem e barco nos dois caminhos | Depois da montagem | Ver se cada resposta ficou no ramo certo |
+| Posição x/y | Sim | Na experiência `lighthouse-position` | Mudar um eixo por vez e observar a chave | Antes de escolher o lugar no próprio jogo | Separar posição de imagem e tamanho |
+| Personalização | Não | No mesmo projeto | Catálogos ilustrados com o farol em dois estados; depois os avisos e o novo caminho da chave, cada um na sua parte | Antes do envio e da publicação | Fazer escolhas que permanecem no jogo |
+| Publicar | Interface ligada a uma entrega | No Mural | Fluxo mínimo até confirmação | Após enviar ao professor | Disponibilizar a criação sem refazer o projeto |
+
+## Diagnóstico do desenho atual
+
+O review reproduziu aprovação de uma decisão sem aviso em então ou sem ramo senão. Os critérios agora vinculam a condição ao encontro personagem/farol e verificam as ações no ramo correspondente. As mensagens são exigidas como texto, sem cobrar cópia literal da frase.
+
+O encaixe do texto de vitória estava implícito na narração. Agora são nomeados ramo então, campo de aviso e substituição do número inicial. Os testes finais incluem os dois avisos e a permanência de temChave depois de se afastar da coleta.
+
+A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O destaque só aparece depois de Testar a porta; trocar a chave limpa o destaque anterior. A construção passa a duas seções no mesmo projeto. Os critérios finais conservam movimento, início falso e memória da coleta, além da decisão.
+
+## Proposta final
+
+### Seção 1. O que a porta precisa?
+
+- **Intenção:** exploração (`exploration`).
+- **Conclui quando:** vídeo e 2 descobertas observadas, sem ordem obrigatória.
+- **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
+- **Metas da experiência:** `locked-without-key`, `opened-with-key`.
+
+Preparar com ou sem chave em qualquer ordem. Dar/tirar a chave prepara a situação e limpa o destaque anterior; somente Testar a porta escolhe um ramo. Exibir a pergunta, os dois caminhos e o caminho executado. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
+
+**Convite da experiência:** Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.
+
+### Seção 2. Avise quando faltar a chave
+
+- **Intenção:** aplicação (`application`).
+- **Por que existe:** montar e conferir a primeira resposta antes de ampliar a condição.
+- **Conclui quando:** vídeo e 12 critérios cumulativos aprovados; não pede envio.
+- **Blocos:** novo `video-d3-sem-chave`, `ponte-d3-sem-chave`, Estúdio pela `workspaceKey: projeto`.
+
+**Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+Criar evento separado personagem/farol (o bloco chega com jogador e inimigo) e Se consultando temChave, encaixado no espaço vazio ao lado da palavra fazer. A pergunta `x > 0` que nasce no Se é um bloco de verdade: vai para a lixeira (no canto de baixo, à direita, do espaço dos blocos) antes de pôr `valor da variável temChave` no lugar vazio, senão sobra um bloco solto ou nasce `temChave > 0`, que o critério `condicao` reprova. O valor da variável chega com x, trocado por temChave; a fala avisa que a palavra verdadeiro não aparece e nem precisa. Na linha de baixo do Se, usar o segundo **+**, antes da palavra **senão**, no fim da linha (não o primeiro, antes de senão se), encaixar aviso com texto nesse ramo; o então fica vazio. Atualizar, ir até a porta do farol, na base da torre, sem chave e conferir luz apagada e mensagem. Verificar, corrigir, seguir em Próxima parte. A checagem aceita então vazio.
+
+### Seção 3. Acenda o farol com a chave
+
+- **Intenção:** aplicação (`application`), com verificação intermediária.
+- **Por que existe:** programar a relação observada no jogo da criança.
+- **Conclui quando:** vídeo e 17 critérios cumulativos aprovados; não pede envio.
+- **Blocos:** `video-d3-decisao`, `ponte-d3-decisao`; Estúdio pela `workspaceKey: projeto`.
+
+**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+Retomar o mesmo Se, preservando o aviso em senão. Dizer de saída que a resposta com a chave tem três blocos e completar o então: ganhou verdadeiro, imagem farol-listrado-aceso (o Trocar imagem chega com heroi nos dois nomes) e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto. A verificação não exige a frase do exemplo nem a ordem entre registrar a vitória e trocar a imagem dentro do mesmo então; a montagem mantém a ordem gravada.
+
+Testar o percurso contínuo: Atualizar, visitar a porta do farol sem chave, afastar, buscar a chave e voltar até a porta do farol na mesma partida. Ver o barco entrar (ele chega em cerca de 1 segundo). Atualizar depois da vitória, conferir a chave de volta e ir até a porta do farol sem recolhê-la. Conferir as mensagens e a luz nos três momentos. Terminar em **Verificar projeto → Objetivo cumprido! → Próxima parte**. O Estúdio salva automaticamente; o envio fica no fim da parte 7.
+
+### Seção 4. Deixe o jogo com a sua cara
+
+- **Intenção:** aplicação (`application`), personalização do mesmo projeto antes do envio.
+- **Por que existe:** uma ideia só, trocar cada imagem por outra do mesmo tipo: personagem, barco, chave, o par do farol e cenário, com desenhos e nomes reconhecíveis.
+- **Conclui quando:** vídeo e a verificação `acender` (a imagem dentro de então é um farol aceso, de qualquer modelo). As escolhas não viram critério.
+- **Blocos:** `video-d3-personalizar`, `ponte-d3-personalizar` e o mesmo `projeto` pela workspaceKey.
+
+**Ponte do Zappy na página (não gravar):** A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Se trocar o farol, use o mesmo modelo apagado e aceso. Teste a combinação e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+É a revelação da surpresa plantada na abertura do Dia 1 e lembrada no fim do Dia 2 (decisão do responsável, 07/10/2026). A fala começa com "Sua missão deu certo! E a surpresa chegou: olha quantas versões o seu jogo pode ter…", mostra duas versões completas do jogo rodando (dois trechos curtos gravados em dois perfis de teste, porque o Estúdio da aula guarda um projeto por perfil) e só então as galerias do Passo a passo do projeto (páginas **A surpresa do final**), dizendo que a lista de imagens do Estúdio também mostra um desenho pequeno de cada uma; depois do teste, liga as escolhas à publicação ("é com essa cara que ele vai para o Mural"). Cada troca é escolha da criança: a resposta à Debinha diz que o pirata é só o exemplo e que o que ela gostou pode ficar como está.
+
+Em **Ao iniciar**, selecionar a imagem no fim do **Criar sprite** correspondente, clicando no nome da imagem (como aventureiro, veleiro ou chave dourada; se não achar, rolar a lista). O sprite continua personagem, barco, chave ou farol; os nomes dos desenhos mudam. A chave nova aparece no jogo na hora; o barco novo só aparece no teste, porque só chega quando o farol acende. O farol é escolhido em par: o modelo apagado em **Ao iniciar → Criar sprite farol** e o mesmo modelo aceso em **então → Trocar imagem do sprite farol para**. O cenário é escolhido no **Desenhar o cenário** dentro de **A cada quadro do jogo**, em **Enquanto estiver rodando**. Cada categoria mantém dimensões e contato, e os faróis mantêm a porta no mesmo lugar: mudar só imagem, sem compensar posição ou tamanho. Testar o farol sem a chave e com a chave na mesma partida, indo até a porta do farol, ver o barco chegar, conferir uma vez só e terminar em **Verificar projeto → Objetivo cumprido! → Próxima parte**, com a fórmula completa ("Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.").
+
+| Tipo | Nomes na lista e no Passo a passo do projeto |
+| --- | --- |
+| Personagem | aventureiro, menina-de-laco, marinheira, menino-de-bone, exploradora-de-chapeu, pirata, mergulhador, robo |
+| Cenário | praia-tropical, costa-rochosa, ilha-nevada, noite-na-ilha |
+| Barco | veleiro, barco-de-pesca, lancha, barco-pirata |
+| Chave | chave-dourada, chave-prateada, chave-de-estrela |
+| Farol (par) | farol-listrado, farol-de-pedra, farol-de-madeira e farol-colorido, cada um com o fim **-apagado** e **-aceso** |
+
+### Seção 5. Escreva seus avisos
+
+- **Intenção:** fechamento (`closing`) com avisos livres no projeto já verificado, antes do envio.
+- **Por que existe:** uma ideia só, escrever a voz do jogo. A chave `farol-mensagens` ficou a mesma quando o farol saiu daqui (06/10/2026).
+- **Conclui quando:** vídeo; nenhum texto literal obrigatório.
+- **Blocos:** `video-d3-farol-mensagens`, `ponte-d3-farol-mensagens`; mesmo `projeto`.
+
+**Ponte do Zappy na página (não gravar):** Agora escreva os avisos do seu jeito! Mude o texto dos quatro avisos, teste o jogo e clique em Próxima parte.
+
+Editar os quatro textos de aviso: inicial em Ao iniciar, coleta no encontro com a chave, falta da chave no senão e vitória no então. O vídeo narra as quatro edições, cada uma com o lugar e um exemplo, e diz que o que a criança escrever fica no jogo (revisão de 13/10/2026). Manter nomes de variáveis e frases curtas. Testar os quatro na mesma partida, indo até a porta do farol, e conferir, uma vez só, que as frases aparecem, cabem e mudaram.
+
+### Seção 6. Como escolher um lugar para a chave
+
+- **Intenção:** exploração (`exploration`).
+- **Conclui quando:** vídeo e 4 descobertas observadas, sem ordem obrigatória.
+- **Blocos:** `video-d3-posicao`, `ponte-d3-posicao`, `experiencia-posicao`.
+- **Metas da experiência:** `x-minus`, `x-plus`, `y-minus`, `y-plus`.
+
+Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 20 em 20, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
+
+**Convite da experiência:** Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.
+
+### Seção 7. Escolha onde fica a chave
+
+- **Intenção:** entrega (`delivery`) depois da aplicação livre.
+- **Por que existe:** a escolha altera o caminho de quem vai jogar.
+- **Conclui quando:** vídeo, envio do projeto e envio em dia (`submissionUpToDate`). Sem critério numérico de posição; uma edição após o envio exige atualizar a mesma entrega.
+- **Blocos:** `video-d3-posicionar-chave`, `ponte-d3-posicionar-chave`, `projeto`. O bloco passa a pertencer a esta parte, com a mesma chave.
+
+**Ponte do Zappy na página (não gravar):** Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste o caminho até a chave e até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar somente x/y, com o número do lugar escolhido dado como exemplo ("como 160"), não como ordem. O Passo a passo do projeto mostra os três pontos de `FAROL_POSICOES_CHAVE`: perto da trilha (211, 53), na parte de baixo (160, 250) e perto da ponte (280, 160). A chave deve aparecer inteira: atrás do farol ou da faixa do aviso ela some (é desenhada antes deles), e em cima do personagem ele já começa com ela; nesses casos, escolher um dos lugares sugeridos. Testar: **Atualizar**, buscar a chave no lugar escolhido, levar até a porta do farol, esperar o barco e **Atualizar** de novo para conferir que a chave volta ao lugar escolhido. Desde 13/10/2026 o teste não repete a ida ao farol sem a chave: a posição não muda a resposta do senão, já testada nas partes 2 a 5. Clicar em **Enviar meu projeto**, confirmar em **Enviar** e, depois de **Projeto enviado!**, seguir em **Próxima parte**; se mudar depois de enviar, **Enviar de novo** e **Reenviar**.
+
+### Seção 8. Publique seu jogo
+
+- **Intenção:** encerramento com publicação (`closing`).
+- **Por que existe:** mostrar o jogo a outras pessoas.
+- **Conclui quando:** vídeo; a publicação é a tarefa ensinada, sem requisito técnico novo de publicação.
+- **Blocos:** `video-d3-fecho`, `ponte-d3-publicar`, `ajuda-publicar` e o mesmo `projeto` pela workspaceKey.
+
+**Ponte do Zappy na página (não gravar):** Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.
+
+**Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → comemorar: Seu jogo está no Mural! → Copiar link de jogar e mandar para a família e os amigos → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Trocar a capa e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula. Na gravação: depois de publicar, o Compartilhar trava neste navegador ("Você já compartilhou este jogo no Mural. 🎉"); para repetir a tomada, usar outro perfil de ensaio com o projeto enviado e acesso ao Mural. A resposta à Debinha manda o link "para os seus amigos e a sua família" (13/10/2026: antes, "para eles", sem antecedente para quem assiste).
+
+## Experiências e demonstrações desta aula
+
+- **Cena:** `lighthouse-key`, O que a porta precisa?
+- **Situação:** cena existente, ampliada com informação, pergunta e respostas visíveis.
+- **Elenco/cenário:** farol, personagem e chave, com `cenario: farol`.
+- **Metas:** `locked-without-key` e `opened-with-key`.
+- **Instrução:** "Sem levar a chave, clique em Testar a porta. Depois clique em Levar a chave e em Testar a porta de novo. Compare temChave e a resposta escolhida nas duas vezes." (13/10/2026: o botão se chama só **Testar a porta**, e a marca da tela é **✓ escolhido**).
+- **Observação:** trocar o estado da chave sozinho não conclui. Sem palpite obrigatório ou pergunta final redundante; semPerguntaFinal fica no bloco interativo.
+
+## Vídeos
+
+| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
+| --- | --- | --- | --- | --- |
+| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 80 a 95 s | Regravar |
+| `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 5,5 a 6,5 min | Gravar |
+| `video-d3-decisao` | Completar então, testar o jogo e verificar | Roteiro revisado | 4,5 a 5,5 min, sem acelerar os percursos | Regravar |
+| `video-d3-personalizar` | Revelar a surpresa do final; trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto em construção | 4,5 a 5,5 min | Regravar |
+| `video-d3-farol-mensagens` | Escrever os quatro avisos e testar | Mesmo projeto em construção | 120 a 150 s | Gravar |
+| `video-d3-posicao` | Mudar x e y separadamente na experiência | Cena nova | 85 a 105 s | Gravar |
+| `video-d3-posicionar-chave` | Escolher um lugar, testar o percurso e enviar o jogo | Mesmo projeto em construção | 2 a 3 min | Gravar |
+| `video-d3-fecho` | Publicar, comemorar e copiar o link de jogar para a família | Mesmo projeto enviado | 75 a 95 s, incluindo espera | Regravar |
+
+## Continuidade
+
+Preservar `condicao`, `sem-chave`, `decisao`, `personalizar`, `fecho`, chave `projeto` e cadeia. Inserir `farol-mensagens` (os avisos), `posicao` e `posicionar-chave` entre personalizar e fecho. O envio fica somente em posicionar-chave; a publicação continua no mesmo Estúdio. Só o Estúdio do Dia 3 tem showcase habilitado, com título e resumo do Farol. Não criar uma cópia para publicar.
+
+Valores: temChave é consultado, ganhou vira verdadeiro apenas na resposta com chave, farol recebe a imagem acesa do modelo escolhido e aviso muda conforme o ramo. O barco preparado não é atribuído à autoria da criança.
+
+A oferta vigente já inclui Mural completo durante os 30 dias e modo visitante depois; o review não altera direitos ou prazos. A publicação não bloqueia o certificado por expiração do Mural. Conferir conta elegível na gravação e reconciliar mídia/progresso antes de aplicar no admin.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 14 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| F3P2-R01 | “Clique em jogador e escolha personagem. Depois clique em inimigo e escolha farol.” | Debinha: “Agora o jogo vai perceber quando eu chegar ao farol!” | “Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio ao lado da palavra fazer, dentro do encontro com o farol.” |
+| F3P2-R02 | “Vá até a porta do farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta do senão funcionando!” | Debinha: “Não adiantou correr direto para o farol. Preciso da chave!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro do senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.” |
+| F3P3-R01 | “Repare que esse bloco chega com heroi nos dois nomes. Clique no primeiro heroi e escolha farol. Depois clique no segundo e escolha a imagem farol listrado aceso. Se não achar, role a lista.” | Debinha: “E quem está jogando vai saber que deu certo?” | “Vai, sim! É para isso que serve o último bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do então. Deixe esse lugar à vista.” |
+| F3P4-R01 | “Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem, como farol listrado aceso, e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.” | Debinha: “Se eu misturar os modelos, o farol muda de tipo quando acende!” | “Isso mesmo! Agora falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique no nome do cenário, como praia tropical, no bloco Desenhar o cenário. Eu vou usar noite na ilha. Olha só: a ponte e o mar continuam no mesmo lugar, e o caminho até o farol não muda.” |
+| F3P4-R02 | “Agora teste a sua combinação! Clique em Atualizar e vá até a porta do farol sem a chave: ele continua apagado. Depois busque a chave e volte até a porta na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!” | Debinha: “Uhu! Minha aventura de pirata está funcionando!” | “Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural.” |
+| F3P7-R01 | “Agora teste o novo caminho. Clique em Atualizar, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar.” | Debinha: “Mudei o caminho, mas a missão continua a mesma!” | “Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Agora o jogo está do seu jeito! Clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.” |

@@ -50,7 +50,7 @@ export interface AulaNave {
   legacyKeys: string[]
   previousRetireKeys: string[]
 }
-const DIR = resolve(import.meta.dir, '../../aulas-interativas/nave-contra-asteroides')
+const DIR = resolve(import.meta.dir, '../../aulas-interativas/construtor/nave-contra-asteroides')
 export const aulasNave = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'nave-contra-asteroides.conteudo.json'), 'utf8'),
 ) as AulaNave[]
@@ -299,7 +299,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar somente `docs/aulas-interativas/nave-contra-asteroides/passo-a-passo-do-projeto.pdf` ao bloco caderno, que aparece na tela como Passo a passo do projeto: Nave Contra Asteroides. Ler aqui mesmo ou clicar em Baixar para guardar são convites e não entram na conclusão. A fala não diz que não precisa baixar ou imprimir: soa como uma ordem para não fazer.',
+        'Anexar somente `docs/aulas-interativas/construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf` ao bloco caderno, que aparece na tela como Passo a passo do projeto: Nave Contra Asteroides. Ler aqui mesmo ou clicar em Baixar para guardar são convites e não entram na conclusão. A fala não diz que não precisa baixar ou imprimir: soa como uma ordem para não fazer.',
         '',
       )
     if (s.checks?.length)

@@ -14,9 +14,9 @@ import { SceneActivityView } from '@sistemazero/member-shell/components/scene-ac
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import aula1 from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
-import aula2 from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
-import certificado from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
+import aula1 from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import aula2 from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
+import certificado from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
 import { KidsQuiz } from '../../src/components/kids/kids-quiz'
 import { KidsMascot } from '../../src/components/kids/mascot'
 

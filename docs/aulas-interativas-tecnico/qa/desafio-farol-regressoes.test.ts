@@ -14,7 +14,7 @@ function evaluate(day: DiaDoFarol, ir: SZIRV2, sectionKey?: string) {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/desafio-primeiro-jogo/desafio-${day}.manifesto.json`,
+        `../../aulas-interativas/faisca/desafio-primeiro-jogo/desafio-${day}.manifesto.json`,
       ),
       'utf8',
     ),

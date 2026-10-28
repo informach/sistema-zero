@@ -11,9 +11,10 @@ import {
 const root = resolve(import.meta.dir, '../../../..')
 const read = (path: string) => JSON.parse(readFileSync(resolve(root, path), 'utf8'))
 const started = performance.now()
-const cadePath = 'docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
-const dinoPath = 'docs/aulas-interativas/corre-dino/corre-dino-aula-10.manifesto.json'
-const nextDinoPath = 'docs/aulas-interativas/corre-dino/corre-dino-aula-11.manifesto.json'
+const cadePath =
+  'docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
+const dinoPath = 'docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-10.manifesto.json'
+const nextDinoPath = 'docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-11.manifesto.json'
 const cade = read(cadePath)
 const countSection = cade.sections.find((section: any) => section.key === 'contar-achados')
 assert.ok(countSection)

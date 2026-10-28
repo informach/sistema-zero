@@ -64,7 +64,7 @@ nativeTest(
           await readFile(
             resolve(
               import.meta.dirname,
-              `../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-${item.lesson}.manifesto.json`,
+              `../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-${item.lesson}.manifesto.json`,
             ),
             'utf8',
           ),

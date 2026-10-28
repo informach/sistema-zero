@@ -11,7 +11,10 @@ import {
  * mesmo vocabulário dos objetivos (laço, variável, função, chamada) é procurado na árvore
  * sintática do código. Server-safe: só o parser do Babel, sem DOM.
  */
-export type CodeIdeaRule = Exclude<SectionStructureRule, { type: 'usesBlock' }>
+export type CodeIdeaRule = Exclude<
+  SectionStructureRule,
+  { type: 'usesBlock' | 'collectionMemory' | 'changedGamePosition' }
+>
 
 /** Quantas vezes cada ideia aparece. Contar (e não só saber se tem) é o que deixa comparar com o
  * projeto inicial: no Pro o modelo já traz laços e dezenas de funções, e só vale o que a criança

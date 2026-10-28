@@ -12,7 +12,7 @@ import type {
 } from '@sistemazero/member-shell/lib/types'
 import { createEmptyProject } from '@sistemazero/studio'
 import { createRoot } from 'react-dom/client'
-import manifesto from '../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
+import manifesto from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
 
 // Standalone authoring preview: real components and CSS, no learner identity or remote services.
 const studio: StudioBlock = {

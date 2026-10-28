@@ -136,6 +136,9 @@ export interface QuizQuestion {
     | 'island-position'
     | 'island-height'
     | 'island-retest'
+      | 'jardim-memory'
+      | 'jardim-view'
+      | 'jardim-height'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]
