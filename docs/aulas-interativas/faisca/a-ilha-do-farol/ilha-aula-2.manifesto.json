@@ -29,11 +29,7 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": [
-              "axis-x",
-              "axis-y",
-              "axis-z"
-            ],
+            "goals": ["axis-x", "axis-y", "axis-z"],
             "freeExploration": true
           }
         }
@@ -76,10 +72,7 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": [
-              "contact-apart",
-              "contact-touch"
-            ],
+            "goals": ["contact-apart", "contact-touch"],
             "freeExploration": true
           }
         }
@@ -140,9 +133,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -8410,20 +8401,13 @@
       "title": "Duas direções no chão e uma na altura",
       "intent": "exploration",
       "objective": "Duas direções no chão e uma na altura.",
-      "blockKeys": [
-        "video-posicao-3d",
-        "ponte-posicao-3d",
-        "experiencia-posicao-3d"
-      ],
+      "blockKeys": ["video-posicao-3d", "ponte-posicao-3d", "experiencia-posicao-3d"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-posicao-3d",
-          "experiencia-posicao-3d"
-        ]
+        "blockIds": ["video-posicao-3d", "experiencia-posicao-3d"]
       }
     },
     {
@@ -8431,18 +8415,13 @@
       "title": "Coloque a chave na ilha",
       "intent": "application",
       "objective": "Coloque a chave na ilha.",
-      "blockKeys": [
-        "video-posicao",
-        "ponte-posicao"
-      ],
+      "blockKeys": ["video-posicao", "ponte-posicao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-posicao"
-        ],
+        "blockIds": ["video-posicao"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -8665,20 +8644,13 @@
       "title": "Parece junto, mas está encostando?",
       "intent": "exploration",
       "objective": "Parece junto, mas está encostando?.",
-      "blockKeys": [
-        "video-contato-3d",
-        "ponte-contato-3d",
-        "experiencia-contato-3d"
-      ],
+      "blockKeys": ["video-contato-3d", "ponte-contato-3d", "experiencia-contato-3d"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-contato-3d",
-          "experiencia-contato-3d"
-        ]
+        "blockIds": ["video-contato-3d", "experiencia-contato-3d"]
       }
     },
     {
@@ -8686,18 +8658,13 @@
       "title": "Recolha a chave",
       "intent": "application",
       "objective": "Recolha a chave.",
-      "blockKeys": [
-        "video-recolher",
-        "ponte-recolher"
-      ],
+      "blockKeys": ["video-recolher", "ponte-recolher"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-recolher"
-        ],
+        "blockIds": ["video-recolher"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -8972,18 +8939,13 @@
       "title": "Guarde que você pegou a chave",
       "intent": "application",
       "objective": "Guarde que você pegou a chave.",
-      "blockKeys": [
-        "video-memoria",
-        "ponte-memoria"
-      ],
+      "blockKeys": ["video-memoria", "ponte-memoria"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-memoria"
-        ],
+        "blockIds": ["video-memoria"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9371,20 +9333,13 @@
       "title": "Conte que a chave foi recolhida",
       "intent": "delivery",
       "objective": "Conte que a chave foi recolhida.",
-      "blockKeys": [
-        "video-aviso",
-        "ponte-aviso",
-        "projeto"
-      ],
+      "blockKeys": ["video-aviso", "ponte-aviso", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-aviso",
-          "projeto"
-        ],
+        "blockIds": ["video-aviso", "projeto"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9811,22 +9766,15 @@
       "title": "A chave já pode ser encontrada",
       "intent": "closing",
       "objective": "A chave já pode ser encontrada.",
-      "blockKeys": [
-        "video-fecho",
-        "ponte-fecho"
-      ],
+      "blockKeys": ["video-fecho", "ponte-fecho"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho"
-        ]
+        "blockIds": ["video-fecho"]
       }
     }
   ],
-  "retireBlockKeys": [
-    "materiais"
-  ]
+  "retireBlockKeys": ["materiais"]
 }

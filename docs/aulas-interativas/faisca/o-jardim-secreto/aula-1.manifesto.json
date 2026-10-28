@@ -1044,9 +1044,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-missao-2d",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -6463,20 +6461,13 @@
       "title": "Conheça sua missão",
       "intent": "explanation",
       "objective": "Conheça sua missão.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -6484,19 +6475,13 @@
       "title": "Ajuda quando você precisar",
       "intent": "material",
       "objective": "Ajuda quando você precisar.",
-      "blockKeys": [
-        "video-material",
-        "ponte-material",
-        "materiais"
-      ],
+      "blockKeys": ["video-material", "ponte-material", "materiais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-material"
-        ]
+        "blockIds": ["video-material"]
       }
     },
     {
@@ -6504,18 +6489,13 @@
       "title": "Faça o personagem andar",
       "intent": "application",
       "objective": "Faça o personagem andar.",
-      "blockKeys": [
-        "video-movimento",
-        "ponte-movimento"
-      ],
+      "blockKeys": ["video-movimento", "ponte-movimento"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-movimento"
-        ],
+        "blockIds": ["video-movimento"],
         "projectChecks": [
           {
             "id": "andar",
@@ -6635,18 +6615,13 @@
       "title": "Fique dentro do jardim",
       "intent": "application",
       "objective": "Fique dentro do jardim.",
-      "blockKeys": [
-        "video-limite",
-        "ponte-limite"
-      ],
+      "blockKeys": ["video-limite", "ponte-limite"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-limite"
-        ],
+        "blockIds": ["video-limite"],
         "projectChecks": [
           {
             "id": "andar",
@@ -6890,18 +6865,13 @@
       "title": "Recolha e guarde a informação",
       "intent": "application",
       "objective": "Recolha e guarde a informação.",
-      "blockKeys": [
-        "video-coleta",
-        "ponte-coleta"
-      ],
+      "blockKeys": ["video-coleta", "ponte-coleta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-coleta"
-        ],
+        "blockIds": ["video-coleta"],
         "projectChecks": [
           {
             "id": "andar",
@@ -7195,18 +7165,13 @@
       "title": "Uma flor, duas respostas",
       "intent": "application",
       "objective": "Uma flor, duas respostas.",
-      "blockKeys": [
-        "video-decisao",
-        "ponte-decisao"
-      ],
+      "blockKeys": ["video-decisao", "ponte-decisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-decisao"
-        ],
+        "blockIds": ["video-decisao"],
         "projectChecks": [
           {
             "id": "andar",
@@ -7514,9 +7479,7 @@
                   "actorPath": "personagem",
                   "targetPath": "flor",
                   "timeoutMs": 5500,
-                  "avoidPaths": [
-                    "regador"
-                  ]
+                  "avoidPaths": ["regador"]
                 },
                 {
                   "action": "wait",
@@ -7666,18 +7629,13 @@
       "title": "Escolha outro lugar",
       "intent": "application",
       "objective": "Escolha outro lugar.",
-      "blockKeys": [
-        "video-posicao",
-        "ponte-posicao"
-      ],
+      "blockKeys": ["video-posicao", "ponte-posicao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-posicao"
-        ],
+        "blockIds": ["video-posicao"],
         "projectChecks": [
           {
             "id": "andar",
@@ -7985,9 +7943,7 @@
                   "actorPath": "personagem",
                   "targetPath": "flor",
                   "timeoutMs": 5500,
-                  "avoidPaths": [
-                    "regador"
-                  ]
+                  "avoidPaths": ["regador"]
                 },
                 {
                   "action": "wait",
@@ -8136,10 +8092,7 @@
               "type": "changedGamePosition",
               "dimension": "2d",
               "object": "regador",
-              "initial": [
-                300,
-                190
-              ]
+              "initial": [300, 190]
             }
           }
         ]
@@ -8150,20 +8103,13 @@
       "title": "Envie seu jardim 2D",
       "intent": "delivery",
       "objective": "Envie seu jardim 2D.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "andar",
@@ -8471,9 +8417,7 @@
                   "actorPath": "personagem",
                   "targetPath": "flor",
                   "timeoutMs": 5500,
-                  "avoidPaths": [
-                    "regador"
-                  ]
+                  "avoidPaths": ["regador"]
                 },
                 {
                   "action": "wait",
@@ -8622,10 +8566,7 @@
               "type": "changedGamePosition",
               "dimension": "2d",
               "object": "regador",
-              "initial": [
-                300,
-                190
-              ]
+              "initial": [300, 190]
             }
           }
         ],

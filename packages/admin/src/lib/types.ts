@@ -597,9 +597,9 @@ export interface QuizQuestion {
     | 'island-position'
     | 'island-height'
     | 'island-retest'
-      | 'jardim-memory'
-      | 'jardim-view'
-      | 'jardim-height'
+    | 'jardim-memory'
+    | 'jardim-view'
+    | 'jardim-height'
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]

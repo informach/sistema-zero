@@ -2,46 +2,28 @@
   "jardim-acolhedor": {
     "sha": "29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
     "bytes": 780360,
-    "center": [
-      0,
-      2.3477,
-      0
-    ],
+    "center": [0, 2.3477, 0],
     "size": 25.1816,
     "clips": []
   },
   "regador-azul": {
     "sha": "08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
     "bytes": 100812,
-    "center": [
-      0.182,
-      0.528,
-      0.0107
-    ],
+    "center": [0.182, 0.528, 0.0107],
     "size": 1.9494,
     "clips": []
   },
   "flor-do-jardim": {
     "sha": "b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
     "bytes": 75748,
-    "center": [
-      0.024,
-      0.8306,
-      0.0332
-    ],
+    "center": [0.024, 0.8306, 0.0332],
     "size": 1.7573,
-    "clips": [
-      "florescer"
-    ]
+    "clips": ["florescer"]
   },
   "pedra-do-jardim": {
     "sha": "79fffe1f370a10cad0e514eefa28db740429003d74e6b1595a8f32d4a932e53d",
     "bytes": 18112,
-    "center": [
-      0.1278,
-      0.692,
-      0.1389
-    ],
+    "center": [0.1278, 0.692, 0.1389],
     "size": 2.9949,
     "clips": []
   }

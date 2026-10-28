@@ -15,7 +15,8 @@ import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { jardimQuiz } from '../jardim-quiz'
-const blocks = [{key:'quiz',content:jardimQuiz}]
+
+const blocks = [{ key: 'quiz', content: jardimQuiz }]
 function App() {
   const [index, setIndex] = useState(0),
     [completed, setCompleted] = useState(false)

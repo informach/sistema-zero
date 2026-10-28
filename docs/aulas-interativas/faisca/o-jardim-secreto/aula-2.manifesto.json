@@ -1063,9 +1063,7 @@
                 "label": "O regador aparece de novo no chão."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Tirar o regador da cena não muda a informação guardada. Ela ainda está em Não, por isso a flor continua fechada e o aviso pede o regador. Essa regra não manda o regador voltar. Na coleta, também precisamos guardar que ele foi pego."
           },
           {
@@ -1085,9 +1083,7 @@
                 "label": "Trocar a cor do personagem e pegar o regador outra vez."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Uma nova partida começa sem a coleta. Indo direto à flor, você pode conferir se ela fica fechada e avisa o que falta. Encostar de novo depois do sucesso não testa a situação sem o regador."
           },
           {
@@ -1108,9 +1104,7 @@
                 "label": "O lugar de onde olhamos."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "Mudou o lugar de onde olhamos: a câmera. O regador e a pedra ficaram nas mesmas posições. Um objeto pode estar escondido na imagem e continuar ali no jardim."
           },
           {
@@ -1131,9 +1125,7 @@
                 "label": "Olhar de cima impede todos os encontros."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "De lado, vemos um espaço entre os dois: o regador está alto demais. Em 3D, o encontro depende também da altura. A cor e o ponto de vista não desligam a coleta."
           }
         ]
@@ -1158,9 +1150,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-missao-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -6066,20 +6056,13 @@
       "title": "O mesmo desafio, com profundidade",
       "intent": "explanation",
       "objective": "O mesmo desafio, com profundidade.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -6087,18 +6070,13 @@
       "title": "Caminhe pelo jardim 3D",
       "intent": "application",
       "objective": "Caminhe pelo jardim 3D.",
-      "blockKeys": [
-        "video-movimento",
-        "ponte-movimento"
-      ],
+      "blockKeys": ["video-movimento", "ponte-movimento"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-movimento"
-        ],
+        "blockIds": ["video-movimento"],
         "projectChecks": [
           {
             "id": "andar",
@@ -6218,18 +6196,13 @@
       "title": "Recolha o regador em 3D",
       "intent": "application",
       "objective": "Recolha o regador em 3D.",
-      "blockKeys": [
-        "video-coleta",
-        "ponte-coleta"
-      ],
+      "blockKeys": ["video-coleta", "ponte-coleta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-coleta"
-        ],
+        "blockIds": ["video-coleta"],
         "projectChecks": [
           {
             "id": "andar",
@@ -6407,18 +6380,13 @@
       "title": "Faça a flor responder",
       "intent": "application",
       "objective": "Faça a flor responder.",
-      "blockKeys": [
-        "video-decisao",
-        "ponte-decisao"
-      ],
+      "blockKeys": ["video-decisao", "ponte-decisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-decisao"
-        ],
+        "blockIds": ["video-decisao"],
         "projectChecks": [
           {
             "id": "andar",
@@ -6618,9 +6586,7 @@
                       "maxZ": 4
                     }
                   ],
-                  "avoidPaths": [
-                    "regador"
-                  ]
+                  "avoidPaths": ["regador"]
                 },
                 {
                   "action": "wait",
@@ -6808,18 +6774,13 @@
       "title": "Encontre um novo lugar no chão",
       "intent": "application",
       "objective": "Encontre um novo lugar no chão.",
-      "blockKeys": [
-        "video-posicao",
-        "ponte-posicao"
-      ],
+      "blockKeys": ["video-posicao", "ponte-posicao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-posicao"
-        ],
+        "blockIds": ["video-posicao"],
         "projectChecks": [
           {
             "id": "andar",
@@ -7019,9 +6980,7 @@
                       "maxZ": 4
                     }
                   ],
-                  "avoidPaths": [
-                    "regador"
-                  ]
+                  "avoidPaths": ["regador"]
                 },
                 {
                   "action": "wait",
@@ -7208,10 +7167,7 @@
               "type": "changedGamePosition",
               "dimension": "3d",
               "object": "regador",
-              "initial": [
-                -4,
-                -2
-              ]
+              "initial": [-4, -2]
             }
           }
         ]
@@ -7222,18 +7178,13 @@
       "title": "Pense nos seus testes",
       "intent": "explanation",
       "objective": "Pense nos seus testes.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -7241,20 +7192,13 @@
       "title": "Entregue sua missão",
       "intent": "delivery",
       "objective": "Entregue sua missão.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "andar",
@@ -7454,9 +7398,7 @@
                       "maxZ": 4
                     }
                   ],
-                  "avoidPaths": [
-                    "regador"
-                  ]
+                  "avoidPaths": ["regador"]
                 },
                 {
                   "action": "wait",
@@ -7643,10 +7585,7 @@
               "type": "changedGamePosition",
               "dimension": "3d",
               "object": "regador",
-              "initial": [
-                -4,
-                -2
-              ]
+              "initial": [-4, -2]
             }
           }
         ],

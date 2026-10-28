@@ -512,9 +512,7 @@ export function projectCheckAuthoring(workspace: unknown) {
     if (rule.type === 'collectionMemory' || rule.type === 'changedGamePosition')
       return project.kind !== 'pro' && blocksEnabled && extensions.has(`game-${rule.dimension}`)
         ? []
-        : [
-            'Este objetivo precisa de um projeto com blocos e a extensão da dimensão escolhida.',
-          ]
+        : ['Este objetivo precisa de um projeto com blocos e a extensão da dimensão escolhida.']
     // Etapa 2 (18/10/2026): as ideias de programação também são lidas no CÓDIGO. No Pro elas
     // sempre valem (e "usar um bloco" nunca: não há blocos); com a Ponte a criança pode digitá-las.
     if (project.kind === 'pro')

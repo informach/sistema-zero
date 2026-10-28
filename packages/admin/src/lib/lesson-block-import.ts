@@ -40,9 +40,9 @@ const QuizQuestionImportSchema = z
         'island-position',
         'island-height',
         'island-retest',
-          'jardim-memory',
-          'jardim-view',
-          'jardim-height',
+        'jardim-memory',
+        'jardim-view',
+        'jardim-height',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),
