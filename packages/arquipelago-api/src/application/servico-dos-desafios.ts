@@ -131,8 +131,11 @@ export class ServicoDosDesafios {
     const feito = await this.feito(jogador, id)
     if (!feito) await this.exigirDisponivel(jogador, desafio.metadados.ilha, desafio.publicacao)
     const progresso = await this.deps.repo.progresso(jogador.id, id)
+    const regua = await this.regua(jogador)
     return {
       id,
+      jogadorId: jogador.id,
+      blocosPermitidos: regua.blocos === 'todos' ? null : [...regua.blocos],
       revisao: desafio.publicacao.revisao,
       titulo: conteudo.titulo,
       enunciado: conteudo.enunciado,

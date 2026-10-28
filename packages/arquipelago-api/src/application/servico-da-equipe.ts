@@ -292,7 +292,7 @@ function resumo(d: DesafioNoBanco): ResumoDoDesafio {
     situacao: d.situacao,
     revisao: d.revisao,
     revisaoPublicada: d.revisaoPublicada,
-    alteradoDepoisDePublicar: d.revisaoPublicada !== null && d.revisao > d.revisaoPublicada,
+    alteradoDepoisDePublicar: d.alteradoDepoisDePublicar,
     atualizadoEm: d.atualizadoEm.toISOString(),
   }
 }

@@ -29,6 +29,27 @@
       "when": 1793172413996,
       "tag": "0003_desafios",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793175384615,
+      "tag": "0004_publication_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793175385692,
+      "tag": "0005_backfill_publication_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793175386857,
+      "tag": "0006_require_publication_metadata",
+      "breakpoints": true
     }
   ]
 }

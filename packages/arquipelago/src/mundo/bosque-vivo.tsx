@@ -22,6 +22,7 @@ import {
 import { type AguaRasa, type CipoVivo, type TroncoVivo, useJogo } from '../estado/contexto'
 import { CIPO, comprimentoDaPegada, criarBalanco, passoDoBalanco } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
+import { jogoPausado } from '../sistemas/pausa'
 import {
   type Corrida,
   criarCorrida,
@@ -361,7 +362,7 @@ export function BosqueVivo({
     const s = loja.getState()
     // Menu, tempo pausado ou corte na tela: o cronômetro espera (com uma ferramenta aberta ou a aba
     // escondida a cena nem desenha, então também não soma).
-    if (s.menuAberto || s.ferramentaAberta || s.tempoPausado || corte.fase !== 'nada') return
+    if (jogoPausado(s) || corte.fase !== 'nada') return
     q.corpo.x = rastro.x
     q.corpo.y = rastro.y
     q.corpo.z = rastro.z

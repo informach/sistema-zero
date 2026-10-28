@@ -39,16 +39,23 @@ export async function protectWindows(kind: 'directory' | 'pipe', target: string)
     ],
     { env: processEnvironment(), stdout: 'pipe', stderr: 'pipe', windowsHide: true },
   )
-  const timer = setTimeout(() => child.kill(), 10000)
+  let timedOut = false
+  const timer = setTimeout(() => {
+    timedOut = true
+    child.kill()
+  }, 10000)
   try {
     const [output, errors, code] = await Promise.all([
       new Response(child.stdout).text(),
       new Response(child.stderr).text(),
       child.exited,
     ])
-    if (code !== 0) throw new Error(`Cannot establish private ${kind} ACL: ${errors.slice(-2000)}`)
+    if (timedOut || code !== 0)
+      throw new Error(
+        `Cannot establish private ${kind} ACL (${timedOut ? 'deadline 10000ms' : `exit ${code}`}): ${errors.slice(-2000) || 'helper did not report a phase'}`,
+      )
     return z
-      .object({ protected: z.literal(true), kind: z.enum(['directory', 'pipe']) })
+      .object({ protected: z.literal(true), kind: z.literal(kind), principals: z.literal(1) })
       .parse(JSON.parse(output))
   } finally {
     clearTimeout(timer)

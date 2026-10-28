@@ -1,4 +1,5 @@
 import type { MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
+import { canonicalJson } from '@sistemazero/core/creations'
 import { createLogger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
 import { ServicoDosDesafios } from '../../src/application/servico-dos-desafios'
@@ -18,6 +19,7 @@ import type {
 export class DesafiosEmMemoria implements RepositorioDeDesafios {
   readonly linhas = new Map<string, DesafioNoBanco>()
   readonly publicacoes = new Map<string, { revisao: number; blocosExigidos: string[] }[]>()
+  readonly snapshots = new Map<string, { conteudo: unknown; metadados: MetadadosDoDesafio }>()
 
   async listar(filtro: Parameters<RepositorioDeDesafios['listar']>[0]) {
     return [...this.linhas.values()]
@@ -46,6 +48,7 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
       situacao: 'rascunho',
       revisao: 1,
       revisaoPublicada: null,
+      alteradoDepoisDePublicar: false,
       conteudo: structuredClone(e.conteudo),
       atualizadoEm: e.agora,
       atualizadoPor: e.por,
@@ -68,6 +71,11 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
       atualizadoEm: e.agora,
       atualizadoPor: e.por,
     })
+    const snapshot = this.snapshots.get(e.id)
+    d.alteradoDepoisDePublicar =
+      !!snapshot &&
+      (canonicalJson(d.conteudo) !== canonicalJson(snapshot.conteudo) ||
+        canonicalJson(d.metadados) !== canonicalJson(snapshot.metadados))
     return { ok: true, desafio: structuredClone(d) }
   }
 
@@ -79,9 +87,14 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
     if (!lista.some((p) => p.revisao === e.revisaoBase))
       lista.push({ revisao: e.revisaoBase, blocosExigidos: [...e.publicacao.blocosExigidos] })
     this.publicacoes.set(e.id, lista)
+    this.snapshots.set(
+      e.id,
+      structuredClone({ conteudo: e.publicacao.conteudo, metadados: d.metadados }),
+    )
     Object.assign(d, {
       situacao: 'publicado',
       revisaoPublicada: e.revisaoBase,
+      alteradoDepoisDePublicar: false,
       blocosPublicados: [...e.publicacao.blocosExigidos],
       atualizadoEm: e.agora,
       atualizadoPor: e.por,
@@ -103,7 +116,12 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
           : 'publicado'
     const conflito = this.conflito(e.id, d.metadados, nova)
     if (conflito) return { ok: false, motivo: conflito }
-    Object.assign(d, { situacao: nova, atualizadoEm: e.agora, atualizadoPor: e.por })
+    Object.assign(d, {
+      situacao: nova,
+      revisao: d.revisao + 1,
+      atualizadoEm: e.agora,
+      atualizadoPor: e.por,
+    })
     return { ok: true, desafio: structuredClone(d) }
   }
 
@@ -174,10 +192,7 @@ export class JogadorNosDesafiosEmMemoria implements RepositorioDoJogadorNosDesaf
   async conclusoes(jogadorId: string, publico: MetadadosDoDesafio['publico']) {
     return [...this.concluidos.values()]
       .filter((c) => c.jogadorId === jogadorId && c.publico === publico)
-      .map(({ jogadorId: _j, publico: _p, ...c }) => {
-        const m = this.desafios.get(c.desafioId)?.metadados
-        return { ...c, ilha: m?.ilha ?? c.ilha, tipo: m?.tipo ?? c.tipo, quadro: m?.quadro ?? null }
-      })
+      .map(({ jogadorId: _j, publico: _p, ...c }) => c)
   }
 
   async progresso(jogadorId: string, desafioId: string) {

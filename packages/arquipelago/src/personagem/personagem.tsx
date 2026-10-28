@@ -44,6 +44,7 @@ import {
 } from '../sistemas/escalada'
 import type { EntradaDaLocomocao } from '../sistemas/locomocao'
 import { ritmo } from '../sistemas/necessidades'
+import { jogoPausado } from '../sistemas/pausa'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { AvatarDoJogo } from './avatar-do-jogo'
 import { acharBracos, type BracosDoAvatar, levantarBracos } from './bracos'
@@ -275,14 +276,7 @@ export function Personagem() {
     if (!b || !col) return
     const estado = loja.getState()
     const agora = performance.now()
-    const parado =
-      estado.menuAberto ||
-      estado.painelAberto !== null ||
-      estado.ferramentaAberta ||
-      estado.tempoAcabou ||
-      estado.tempoPausado ||
-      estado.tempoSincronizando ||
-      estado.resultado !== null
+    const parado = jogoPausado(estado)
 
     if (pedidos.teleporte) {
       if (v.modo !== 'chao') acoes.mudarModo('chao', agora)

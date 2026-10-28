@@ -66,6 +66,8 @@ describe('o que a pessoa recebe', () => {
   test('gabarito e regra não passam nas visões da pessoa', () => {
     const aberto = {
       id: '00000000-0000-4000-8000-000000000001',
+      jogadorId: '00000000-0000-4000-8000-000000000002',
+      blocosPermitidos: [],
       revisao: 1,
       titulo: 't',
       enunciado: 'e',

@@ -150,7 +150,7 @@ describe.skipIf(!url)('DrizzleRepositorioDeDesafios (Postgres real)', () => {
     expect(
       await repo.mudarSituacao({
         id: ID1,
-        revisaoBase: 1,
+        revisaoBase: 2,
         situacao: 'ativo',
         por: ADMIN,
         agora: AGORA,
@@ -177,6 +177,14 @@ describe.skipIf(!url)('DrizzleRepositorioDeDesafios (Postgres real)', () => {
     })
     const lido = await repo.ler(ID1)
     expect(lido?.blocosPublicados).toEqual(['a', 'b'])
+    const repetida = await repo.publicar({
+      id: ID1,
+      revisaoBase: 1,
+      publicacao: { ...publicacao, blocosExigidos: ['outra-analise'] },
+      por: ADMIN,
+      agora: AGORA,
+    })
+    expect(repetida.ok && repetida.desafio.blocosPublicados).toEqual(['a', 'b'])
     const [linha] =
       await conexao.sql`select count(*)::int as n from arquipelago.desafio_publicacoes`
     expect(linha?.n).toBe(1)
@@ -190,12 +198,13 @@ describe.skipIf(!url)('DrizzleRepositorioDeDesafios (Postgres real)', () => {
     })
     const re = await repo.mudarSituacao({
       id: ID1,
-      revisaoBase: 1,
+      revisaoBase: 2,
       situacao: 'ativo',
       por: ADMIN,
       agora: AGORA,
     })
     expect(re.ok && re.desafio.situacao).toBe('publicado')
+    expect(re.ok && re.desafio.alteradoDepoisDePublicar).toBe(false)
     expect(
       (await repo.listar({ publico: 'kids', situacao: 'publicado' })).map((d) => d.id),
     ).toEqual([ID1])
@@ -212,6 +221,27 @@ describe.skipIf(!url)('DrizzleRepositorioDeDesafios (Postgres real)', () => {
       codigo = (erro as { code?: string }).code
     }
     expect(codigo).toBe('23514')
+  })
+
+  test('arquivar invalida uma publicação cuja análise usou a revisão anterior', async () => {
+    await criar(ID1)
+    await repo.publicar({ id: ID1, revisaoBase: 1, publicacao, por: ADMIN, agora: AGORA })
+    await repo.mudarSituacao({
+      id: ID1,
+      revisaoBase: 1,
+      situacao: 'arquivado',
+      por: ADMIN,
+      agora: AGORA,
+    })
+    const antiga = await repo.publicar({
+      id: ID1,
+      revisaoBase: 1,
+      publicacao,
+      por: ADMIN,
+      agora: AGORA,
+    })
+    expect(antiga.ok).toBe(false)
+    expect((await repo.ler(ID1))?.situacao).toBe('arquivado')
   })
 })
 
@@ -255,6 +285,45 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogadorNosDesafios (Postgres real)', 
       moedasExtra: 10,
       agora: AGORA,
     })
+
+  test('rascunho não muda público nem ilha publicados e republicação preserva a conquista original', async () => {
+    await publicado(ID1)
+    await concluir()
+    await equipe.gravar({
+      id: ID1,
+      revisaoBase: 1,
+      metadados: meta({ publico: 'adulto', ilha: 'recife', quadro: 3 }),
+      conteudo,
+      por: ADMIN,
+      agora: AGORA,
+    })
+    expect((await repo.listarPublicados('kids')).map((d) => d.id)).toEqual([ID1])
+    expect(await repo.listarPublicados('adulto')).toEqual([])
+    expect((await repo.lerPublicado(ID1))?.metadados).toEqual(meta())
+    await equipe.publicar({ id: ID1, revisaoBase: 2, publicacao, por: ADMIN, agora: AGORA })
+    expect((await repo.lerPublicacao(ID1, 1))?.desafio.metadados).toEqual(meta())
+    expect((await repo.conclusoes(JOGADOR, 'kids'))[0]).toMatchObject({ ilha: 'bosque', quadro: 1 })
+  })
+
+  test('mudar o quadro no rascunho não libera a posição ainda publicada', async () => {
+    await publicado(ID1)
+    await equipe.gravar({
+      id: ID1,
+      revisaoBase: 1,
+      metadados: meta({ quadro: 2 }),
+      conteudo,
+      por: ADMIN,
+      agora: AGORA,
+    })
+    const outra = await equipe.criar({
+      id: ID2,
+      metadados: meta({ slug: 'outra' }),
+      conteudo,
+      por: ADMIN,
+      agora: AGORA,
+    })
+    expect(outra).toEqual({ ok: false, motivo: 'quadro-ocupado' })
+  })
 
   test('só publicados do público, com a última publicação; rascunho e arquivado ficam fora', async () => {
     await publicado(ID1)

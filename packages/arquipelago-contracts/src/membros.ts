@@ -64,11 +64,23 @@ export const CurriculoDeBlocosSchema = z.strictObject({
 })
 export type CurriculoDeBlocos = z.infer<typeof CurriculoDeBlocosSchema>
 
-export type ProblemaDoMapa =
-  | { publico: 'kids'; tipo: 'politica-nao-publicada' }
-  | { publico: 'kids'; tipo: 'postos-diferentes'; esperado: string[]; recebido: string[] }
-  | { publico: 'adulto'; tipo: 'jornada-nao-configurada' }
-  | { publico: 'adulto'; tipo: 'etapas-a-mais-ou-a-menos'; esperado: number; recebido: number }
+export const ProblemaDoMapaSchema = z.discriminatedUnion('tipo', [
+  z.strictObject({ publico: z.literal('kids'), tipo: z.literal('politica-nao-publicada') }),
+  z.strictObject({
+    publico: z.literal('kids'),
+    tipo: z.literal('postos-diferentes'),
+    esperado: z.array(z.string()),
+    recebido: z.array(z.string()),
+  }),
+  z.strictObject({ publico: z.literal('adulto'), tipo: z.literal('jornada-nao-configurada') }),
+  z.strictObject({
+    publico: z.literal('adulto'),
+    tipo: z.literal('etapas-a-mais-ou-a-menos'),
+    esperado: z.number(),
+    recebido: z.number(),
+  }),
+])
+export type ProblemaDoMapa = z.infer<typeof ProblemaDoMapaSchema>
 
 /**
  * Confere o mapa ilha → posto do contrato contra a jornada publicada. Kids: os postos do Members

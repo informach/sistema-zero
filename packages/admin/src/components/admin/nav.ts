@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Contact,
   CreditCard,
+  Gamepad2,
   Gift,
   Headset,
   Inbox,
@@ -117,6 +118,7 @@ export const NAV_GROUPS: NavGroup[] = [
         },
       },
       { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
+      { label: 'Jogo', href: '/admin/jogo', icon: Gamepad2 },
       { label: 'Como fazer', href: '/admin/como-fazer', icon: LifeBuoy },
       {
         label: 'Clube e Comunidade',

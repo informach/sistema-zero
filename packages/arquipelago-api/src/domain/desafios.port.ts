@@ -13,6 +13,8 @@ export interface DesafioNoBanco {
   situacao: SituacaoDoCadastro
   revisao: number
   revisaoPublicada: number | null
+  /** Conteúdo ou posição diferem da cópia publicada; mudanças de situação não contam. */
+  alteradoDepoisDePublicar: boolean
   conteudo: unknown
   atualizadoEm: Date
   atualizadoPor: string
@@ -108,7 +110,7 @@ export type SituacaoDasMoedas = 'nenhuma' | 'pendente' | 'creditado' | 'teto'
 
 export interface ConclusaoGuardada {
   desafioId: string
-  /** Onde o desafio mora hoje (para a cor da ilha: quadros feitos ÷ 6). */
+  /** Posição da publicação concluída, preservada mesmo após mover o cadastro. */
   ilha: MetadadosDoDesafio['ilha']
   tipo: MetadadosDoDesafio['tipo']
   quadro: number | null

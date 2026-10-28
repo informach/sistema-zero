@@ -13,6 +13,8 @@ interface Pedido {
   cena?: Object3D
   /** Soltaram antes de o arquivo chegar: ele é solto assim que chegar. */
   solto: boolean
+  usos: number
+  limparExtras?: () => void
 }
 
 const pedidos = new Map<string, Pedido>()
@@ -35,7 +37,7 @@ export function buscarIlha(
       carregador ??= new GLTFLoader()
       return carregador.loadAsync(u).then((g) => g.scene)
     })
-  const pedido = { solto: false } as Pedido
+  const pedido = { solto: false, usos: 0 } as Pedido
   pedido.promessa = leitura(url).then(
     (cena) => {
       if (pedido.solto) {
@@ -65,7 +67,33 @@ export function soltarIlha(url: string) {
   if (!pedido) return
   pedidos.delete(url)
   pedido.solto = true
-  if (pedido.cena) liberarObjeto(pedido.cena)
+  liberarPedido(pedido)
+}
+
+function liberarPedido(pedido: Pedido) {
+  if (!pedido.solto || pedido.usos !== 0 || !pedido.cena) return
+  pedido.limparExtras?.()
+  liberarObjeto(pedido.cena)
+  pedido.cena = undefined
+  pedido.limparExtras = undefined
+}
+
+/** Mantém a cena viva durante compileAsync, mesmo se ela sair do cache nesse intervalo. */
+export function reterIlha(url: string, cena: Object3D, limparExtras: () => void) {
+  const pedido = pedidos.get(url)
+  if (!pedido || pedido.solto || pedido.cena !== cena) return null
+  pedido.usos++
+  pedido.limparExtras = limparExtras
+  let liberada = false
+  return {
+    ativa: () => !pedido.solto,
+    liberar() {
+      if (liberada) return
+      liberada = true
+      pedido.usos--
+      liberarPedido(pedido)
+    },
+  }
 }
 
 /** Solta da placa de vídeo tudo o que o objeto usa (geometria, material e textura). */

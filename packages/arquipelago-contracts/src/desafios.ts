@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ILHA_IDS } from './ilhas'
+import { ProblemaDoMapaSchema } from './membros'
 
 /**
  * Os desafios do jogo (decisão de 27/10/2026, plano em `docs/plans/2026-10-27-arquipelago-desafios.md`):
@@ -209,6 +210,26 @@ export const DesafioDaEquipeSchema = z.strictObject({
 })
 export type DesafioDaEquipe = z.infer<typeof DesafioDaEquipeSchema>
 
+export const DesafiosDaEquipeSchema = z.strictObject({ desafios: z.array(ResumoDoDesafioSchema) })
+export const ConflitoDeRevisaoSchema = z.object({ atual: DesafioDaEquipeSchema })
+export const ProblemasDePublicacaoSchema = z.object({ problemas: z.array(ProblemaDoDesafioSchema) })
+export const CoberturaDosCartoesSchema = z.object({
+  mapa: z.object({
+    situacao: z.enum(['desligada', 'pendente', 'ok', 'com-problemas', 'indisponivel']),
+    problemas: z.array(ProblemaDoMapaSchema).optional(),
+  }),
+  cartas: z.array(
+    z.object({
+      id: z.string(),
+      nome: z.string(),
+      bloco: z.string().nullable(),
+      cursos: CoberturaDoBlocoSchema.shape.cursos,
+      avisos: CoberturaDoBlocoSchema.shape.avisos,
+    }),
+  ),
+})
+export type CoberturaDosCartoes = z.infer<typeof CoberturaDosCartoesSchema>
+
 // ── O que a pessoa recebe (sem gabarito, sem regras) ─────────────────────────────────────────
 
 export const SITUACOES_PARA_A_PESSOA = [
@@ -274,6 +295,9 @@ export type DesafiosDoJogador = z.infer<typeof DesafiosDoJogadorSchema>
 /** `GET /arquipelago/desafios/:id`: o que o Estúdio de desafio precisa para abrir. */
 export const DesafioAbertoSchema = z.strictObject({
   id: z.uuid(),
+  jogadorId: z.uuid(),
+  /** Teto da paleta por conquista; null só para equipe. Não concede Estúdio Completo. */
+  blocosPermitidos: z.array(Bloco).nullable(),
   revisao: z.number().int(),
   titulo: z.string(),
   enunciado: z.string(),

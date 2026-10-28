@@ -226,7 +226,13 @@ describe('análise e publicação', () => {
       metadados: d.metadados,
       conteudo: d.conteudo,
     })
-    expect(DesafioDaEquipeSchema.parse(g.json).resumo.alteradoDepoisDePublicar).toBe(true)
+    expect(DesafioDaEquipeSchema.parse(g.json).resumo.alteradoDepoisDePublicar).toBe(false)
+    const edited = await chamar('PUT', `/desafios/${d.resumo.id}`, equipe(), {
+      revisaoBase: 2,
+      metadados: d.metadados,
+      conteudo: { ...d.conteudo, titulo: 'Título revisado' },
+    })
+    expect(DesafioDaEquipeSchema.parse(edited.json).resumo.alteradoDepoisDePublicar).toBe(true)
   })
 
   test('com problema na análise, publicar é 422 com a lista e nada muda', async () => {
@@ -277,13 +283,13 @@ describe('análise e publicação', () => {
       metadados: { ...d.metadados, slug: 'outro' },
     })
     const re = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
-      revisaoBase: 1,
+      revisaoBase: 2,
     })
     expect(re.status).toBe(409)
     expect(re.json).toMatchObject({ error: { code: 'QUADRO_OCUPADO' } })
     desafios.linhas.delete('outro')
     const ok = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
-      revisaoBase: 1,
+      revisaoBase: 2,
     })
     expect(DesafioDaEquipeSchema.parse(ok.json).resumo.situacao).toBe('publicado')
   })

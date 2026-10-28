@@ -23,7 +23,7 @@ import {
   opacidadeAlvo,
   proximoEstadoDaIlha,
 } from '../sistemas/ilhas-completas'
-import { buscarIlha, soltarIlha } from './carregar-ilha'
+import { buscarIlha, reterIlha, soltarIlha } from './carregar-ilha'
 import {
   bordaQueCabe,
   type ColisorDaIlha,
@@ -76,6 +76,8 @@ export interface IlhaPreparada {
   colisores: ColisorDaIlha[]
   /** Os materiais opacos de tudo (as peças que esmaecem têm, além deles, cópias transparentes). */
   materiais: Material[]
+  /** Materiais do arquivo que deixaram de estar na cena ao separar suas copas. */
+  materiaisSubstituidos: Material[]
   copas: Copa[]
   cores: CorOriginal[]
 }
@@ -85,11 +87,12 @@ export interface IlhaPreparada {
  * (a cena volta aos materiais opacos, que o `soltarIlha` solta junto com o resto).
  */
 export function soltarExtras(preparada: IlhaPreparada) {
-  esmaecidasAgora.clear()
   for (const copa of preparada.copas) {
+    esmaecidasAgora.delete(copa.no.name)
     usarSuave(copa, false)
     for (const s of copa.suaves) s.dispose()
   }
+  for (const material of preparada.materiaisSubstituidos) material.dispose()
 }
 
 /** Uma cena se prepara uma vez só (os nós `col-*` saem dela na primeira leitura). */
@@ -102,11 +105,14 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
   const colisores = lerColisores(cena)
   tirarNosDeColisao(cena)
   // O arquivo é só desta ilha (não vem de um cache dividido): tinge e esmaece os materiais dele.
+  const originais = materiaisDe(cena)
   const copas = separarCopas(cena)
+  const materiais = materiaisDe(cena)
   const preparada = {
     modelo: cena,
     colisores,
-    materiais: materiaisDe(cena),
+    materiais,
+    materiaisSubstituidos: originais.filter((material) => !materiais.includes(material)),
     copas,
     cores: coresOriginais(cena),
   }
@@ -158,17 +164,20 @@ async function aquecer(
   cena: Scene,
   preparada: IlhaPreparada,
   leve: Object3D | undefined,
+  ativa: () => boolean,
 ) {
   try {
     for (const opacidade of [QUASE_INTEIRA, 1]) {
+      if (!ativa()) return
       aplicarOpacidade(preparada.materiais, opacidade)
       await gl.compileAsync(preparada.modelo, camera, cena)
     }
+    if (!ativa()) return
     // E as cópias transparentes das peças que esmaecem na frente da câmera.
     for (const copa of preparada.copas) usarSuave(copa, true)
     await gl.compileAsync(preparada.modelo, camera, cena)
     for (const copa of preparada.copas) usarSuave(copa, false)
-    if (leve) {
+    if (leve && ativa()) {
       const materiais = materiaisDe(leve)
       aplicarOpacidade(materiais, QUASE_INTEIRA)
       await gl.compileAsync(leve, camera, cena)
@@ -176,6 +185,10 @@ async function aquecer(
     }
   } catch {
     // Compilar antes é só para não soluçar; se falhar, compila na primeira vez que desenhar.
+  } finally {
+    for (const copa of preparada.copas) usarSuave(copa, false)
+    aplicarOpacidade(preparada.materiais, 1)
+    if (leve) aplicarOpacidade(materiaisDe(leve), 1)
   }
 }
 
@@ -245,11 +258,21 @@ export function useIlhaCompleta(
     buscarIlha(info.url)
       .then(async (cena) => {
         if (carga !== v.carga) return
-        const p = prepararIlha(cena, ilha)
-        await aquecer(gl, camera, scene, p, troca.leve)
-        if (carga !== v.carga) return
-        v.preparada = p
-        setPreparada(p)
+        let p: IlhaPreparada | null = null
+        const retencao = reterIlha(info.url, cena, () => {
+          if (p) soltarExtras(p)
+        })
+        if (!retencao) return
+        try {
+          p = prepararIlha(cena, ilha)
+          const ativa = () => carga === v.carga && retencao.ativa()
+          await aquecer(gl, camera, scene, p, troca.leve, ativa)
+          if (!ativa()) return
+          v.preparada = p
+          setPreparada(p)
+        } finally {
+          retencao.liberar()
+        }
       })
       .catch(() => {
         if (carga === v.carga) v.falhou = true
@@ -262,13 +285,14 @@ export function useIlhaCompleta(
     if (estado !== 'longe' || !info) return
     const v = vivo.current
     v.carga++
-    if (v.preparada) soltarExtras(v.preparada)
     v.preparada = null
     setPreparada(null)
     soltarIlha(info.url)
   }, [estado, info])
   useEffect(
     () => () => {
+      vivo.current.carga++
+      vivo.current.preparada = null
       pedidos.chaoChegando.delete(ilha.id)
       if (info) soltarIlha(info.url)
     },

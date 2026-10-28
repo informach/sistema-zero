@@ -1,3 +1,4 @@
+import type { MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
 import { sql } from 'drizzle-orm'
 import {
   check,
@@ -126,6 +127,8 @@ export const desafios = arquipelagoSchema.table(
     situacao: varchar({ length: 12 }).notNull(),
     revisao: integer().notNull(),
     revisaoPublicada: integer(),
+    /** Projeção da posição publicada para impor unicidade, atualizada na transação de publicação. */
+    metadadosPublicados: jsonb().$type<MetadadosDoDesafio>(),
     conteudo: jsonb().notNull(),
     criadoEm: timestamp({ withTimezone: true }).notNull(),
     atualizadoEm: timestamp({ withTimezone: true }).notNull(),
@@ -134,8 +137,14 @@ export const desafios = arquipelagoSchema.table(
   (t) => [
     uniqueIndex('desafios_slug_unico').on(t.slug),
     uniqueIndex('desafios_quadro_unico')
-      .on(t.publico, t.ilha, t.quadro)
-      .where(sql`${t.tipo} = 'quadro-das-cores' and ${t.situacao} <> 'arquivado'`),
+      .on(
+        sql`coalesce(${t.metadadosPublicados}->>'publico', ${t.publico})`,
+        sql`coalesce(${t.metadadosPublicados}->>'ilha', ${t.ilha})`,
+        sql`(case when ${t.metadadosPublicados} is null then ${t.quadro} else (${t.metadadosPublicados}->>'quadro')::int end)`,
+      )
+      .where(
+        sql`coalesce(${t.metadadosPublicados}->>'tipo', ${t.tipo}) = 'quadro-das-cores' and ${t.situacao} <> 'arquivado'`,
+      ),
     index('desafios_lista').on(t.publico, t.ilha, t.ordem),
     check('desafios_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
     check(
@@ -159,6 +168,7 @@ export const desafioPublicacoes = arquipelagoSchema.table(
       .notNull()
       .references(() => desafios.id, { onDelete: 'cascade' }),
     revisao: integer().notNull(),
+    metadados: jsonb().$type<MetadadosDoDesafio>().notNull(),
     conteudo: jsonb().notNull(),
     blocosDerivados: text().array().notNull(),
     blocosExigidos: text().array().notNull(),

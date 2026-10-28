@@ -3,6 +3,7 @@ import type {
   SituacaoDoCadastro,
   VistaDoObjetivo,
 } from '@sistemazero/arquipelago-contracts'
+import { canonicalJson } from '@sistemazero/core/creations'
 import { and, asc, eq, isNull, type SQL, sql } from 'drizzle-orm'
 import type {
   ConclusaoGuardada,
@@ -116,6 +117,7 @@ export class DrizzleRepositorioDeDesafios implements RepositorioDeDesafios {
             .set({
               situacao: 'publicado',
               revisaoPublicada: e.revisaoBase,
+              metadadosPublicados: sql`jsonb_build_object('slug', ${desafios.slug}, 'publico', ${desafios.publico}, 'ilha', ${desafios.ilha}, 'tipo', ${desafios.tipo}, 'quadro', ${desafios.quadro}, 'ordem', ${desafios.ordem})`,
               atualizadoEm: e.agora,
               atualizadoPor: e.por,
             })
@@ -127,6 +129,7 @@ export class DrizzleRepositorioDeDesafios implements RepositorioDeDesafios {
             .values({
               desafioId: e.id,
               revisao: e.revisaoBase,
+              metadados: paraDominio(linha, null).metadados,
               conteudo: e.publicacao.conteudo,
               blocosDerivados: e.publicacao.blocosDerivados,
               blocosExigidos: e.publicacao.blocosExigidos,
@@ -135,11 +138,21 @@ export class DrizzleRepositorioDeDesafios implements RepositorioDeDesafios {
               publicadoEm: e.agora,
               publicadoPor: e.por,
             })
-            // Republicar a mesma revisão (ex.: depois de reativar) mantém a primeira cópia.
+            // Repetir a publicação da mesma revisão mantém a primeira cópia.
             .onConflictDoNothing({
               target: [desafioPublicacoes.desafioId, desafioPublicacoes.revisao],
             })
-          return { ok: true as const, desafio: paraDominio(linha, e.publicacao.blocosExigidos) }
+          const [publicada] = await tx
+            .select({ blocos: desafioPublicacoes.blocosExigidos })
+            .from(desafioPublicacoes)
+            .where(
+              and(
+                eq(desafioPublicacoes.desafioId, e.id),
+                eq(desafioPublicacoes.revisao, e.revisaoBase),
+              ),
+            )
+          if (!publicada) throw new Error('Publicação não encontrada após gravação')
+          return { ok: true as const, desafio: paraDominio(linha, publicada.blocos) }
         })
         .then(async (r) => (r.ok ? r : this.perdeu(e.id)))
     } catch (erro) {
@@ -161,6 +174,7 @@ export class DrizzleRepositorioDeDesafios implements RepositorioDeDesafios {
         .update(desafios)
         .set({
           situacao: nova as unknown as SituacaoDoCadastro,
+          revisao: sql`${desafios.revisao} + 1`,
           atualizadoEm: e.agora,
           atualizadoPor: e.por,
         })
@@ -188,21 +202,34 @@ export class DrizzleRepositorioDeDesafios implements RepositorioDeDesafios {
   /** Junta os blocos congelados da última publicação de cada desafio (uma consulta). */
   private async comPublicados(linhas: Linha[]): Promise<DesafioNoBanco[]> {
     const publicadas = linhas.filter((l) => l.revisaoPublicada !== null)
-    const blocos = new Map<string, string[]>()
+    const publicados = new Map<
+      string,
+      { blocos: string[]; conteudo: unknown; metadados: MetadadosDoDesafio }
+    >()
     if (publicadas.length > 0) {
       const pares = publicadas.map((l) => sql`(${l.id}::uuid, ${l.revisaoPublicada}::int)`)
       const achadas = await this.db
         .select({
           desafioId: desafioPublicacoes.desafioId,
           blocos: desafioPublicacoes.blocosExigidos,
+          conteudo: desafioPublicacoes.conteudo,
+          metadados: desafioPublicacoes.metadados,
         })
         .from(desafioPublicacoes)
         .where(
           sql`(${desafioPublicacoes.desafioId}, ${desafioPublicacoes.revisao}) in (${sql.join(pares, sql`, `)})`,
         )
-      for (const a of achadas) blocos.set(a.desafioId, a.blocos)
+      for (const a of achadas) publicados.set(a.desafioId, a)
     }
-    return linhas.map((l) => paraDominio(l, blocos.get(l.id) ?? null))
+    return linhas.map((l) => {
+      const publicado = publicados.get(l.id)
+      const d = paraDominio(l, publicado?.blocos ?? null)
+      d.alteradoDepoisDePublicar =
+        !!publicado &&
+        (canonicalJson(d.conteudo) !== canonicalJson(publicado.conteudo) ||
+          canonicalJson(d.metadados) !== canonicalJson(publicado.metadados))
+      return d
+    })
   }
 }
 
@@ -231,6 +258,7 @@ function paraDominio(l: Linha, blocosPublicados: string[] | null): DesafioNoBanc
     situacao: l.situacao as SituacaoDoCadastro,
     revisao: l.revisao,
     revisaoPublicada: l.revisaoPublicada,
+    alteradoDepoisDePublicar: false,
     conteudo: l.conteudo,
     atualizadoEm: l.atualizadoEm,
     atualizadoPor: l.atualizadoPor,
@@ -243,7 +271,12 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
   constructor(private readonly db: Database) {}
 
   async listarPublicados(publico: MetadadosDoDesafio['publico']): Promise<DesafioPublicado[]> {
-    return this.publicados(and(eq(desafios.publico, publico), eq(desafios.situacao, 'publicado')))
+    return this.publicados(
+      and(
+        sql`${desafioPublicacoes.metadados}->>'publico' = ${publico}`,
+        eq(desafios.situacao, 'publicado'),
+      ),
+    )
   }
 
   async lerPublicado(desafioId: string): Promise<DesafioPublicado | null> {
@@ -265,9 +298,13 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
         ),
       )
       .where(filtro)
-      .orderBy(asc(desafios.ilha), asc(desafios.ordem), asc(desafios.slug))
+      .orderBy(
+        sql`${desafioPublicacoes.metadados}->>'ilha'`,
+        sql`(${desafioPublicacoes.metadados}->>'ordem')::int`,
+        sql`${desafioPublicacoes.metadados}->>'slug'`,
+      )
     return linhas.map((l) => ({
-      ...semPublicacao(l.desafio),
+      ...semPublicacao(l.desafio, l.publicacao.metadados),
       publicacao: publicacaoDe(l.publicacao),
     }))
   }
@@ -280,7 +317,12 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
       .where(
         and(eq(desafioPublicacoes.desafioId, desafioId), eq(desafioPublicacoes.revisao, revisao)),
       )
-    return l ? { publicacao: publicacaoDe(l.publicacao), desafio: semPublicacao(l.desafio) } : null
+    return l
+      ? {
+          publicacao: publicacaoDe(l.publicacao),
+          desafio: semPublicacao(l.desafio, l.publicacao.metadados),
+        }
+      : null
   }
 
   async conclusoes(
@@ -290,20 +332,24 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
     const linhas = await this.db
       .select({
         c: desafiosConcluidos,
-        ilha: desafios.ilha,
-        tipo: desafios.tipo,
-        quadro: desafios.quadro,
+        metadados: desafioPublicacoes.metadados,
       })
       .from(desafiosConcluidos)
-      .innerJoin(desafios, eq(desafios.id, desafiosConcluidos.desafioId))
+      .innerJoin(
+        desafioPublicacoes,
+        and(
+          eq(desafioPublicacoes.desafioId, desafiosConcluidos.desafioId),
+          eq(desafioPublicacoes.revisao, desafiosConcluidos.revisao),
+        ),
+      )
       .where(
         and(eq(desafiosConcluidos.jogadorId, jogadorId), eq(desafiosConcluidos.publico, publico)),
       )
-    return linhas.map(({ c, ilha, tipo, quadro }) => ({
+    return linhas.map(({ c, metadados }) => ({
       desafioId: c.desafioId,
-      ilha: ilha as MetadadosDoDesafio['ilha'],
-      tipo: tipo as MetadadosDoDesafio['tipo'],
-      quadro,
+      ilha: metadados.ilha,
+      tipo: metadados.tipo,
+      quadro: metadados.quadro,
       revisao: c.revisao,
       concluidoEm: c.concluidoEm,
       extraConcluidoEm: c.extraConcluidoEm,
@@ -422,9 +468,11 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
   }
 }
 
-function semPublicacao(l: Linha): Omit<DesafioPublicado, 'publicacao'> {
-  const d = paraDominio(l, null)
-  return { id: d.id, metadados: d.metadados, situacao: d.situacao }
+function semPublicacao(
+  l: Linha,
+  metadados: MetadadosDoDesafio,
+): Omit<DesafioPublicado, 'publicacao'> {
+  return { id: l.id, metadados, situacao: l.situacao as SituacaoDoCadastro }
 }
 
 function publicacaoDe(p: typeof desafioPublicacoes.$inferSelect): PublicacaoGuardada {

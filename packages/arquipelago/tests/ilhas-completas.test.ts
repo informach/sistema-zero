@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import { ilha } from '@sistemazero/arquipelago-contracts'
-import { Group, Mesh, MeshStandardMaterial } from 'three'
-import { buscarIlha, ilhasNaMemoria, soltarIlha } from '../src/mundo/carregar-ilha'
-import { aplicarOpacidade } from '../src/mundo/ilha-completa'
+import { BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture } from 'three'
+import { buscarIlha, ilhasNaMemoria, reterIlha, soltarIlha } from '../src/mundo/carregar-ilha'
+import { usarSuave } from '../src/mundo/copas'
+import { aplicarOpacidade, prepararIlha, soltarExtras } from '../src/mundo/ilha-completa'
 import {
   centroNoAnel,
   DISTANCIA_DA_TROCA,
@@ -154,9 +155,57 @@ describe('memória das ilhas completas', () => {
     ).rejects.toThrow('rede')
     expect(ilhasNaMemoria()).toBe(0)
   })
+
+  test('cancelar durante a compilação espera o usuário da cena e libera extras antes da malha', async () => {
+    const a = cenaFalsa()
+    await buscarIlha('compilando.glb', async () => a.g)
+    let extras = 0
+    const retencao = reterIlha('compilando.glb', a.g, () => {
+      expect(a.soltas()).toBe(0)
+      extras++
+    })
+    expect(retencao).not.toBeNull()
+    soltarIlha('compilando.glb')
+    expect(retencao?.ativa()).toBe(false)
+    expect(a.soltas()).toBe(0)
+    const nova = cenaFalsa()
+    await buscarIlha('compilando.glb', async () => nova.g)
+    retencao?.liberar()
+    retencao?.liberar()
+    expect(extras).toBe(1)
+    expect(a.soltas()).toBe(2)
+    expect(nova.soltas()).toBe(0)
+    soltarIlha('compilando.glb')
+    expect(nova.soltas()).toBe(2)
+  })
 })
 
 describe('o esmaecer dos materiais', () => {
+  test('cancelar a compilação libera original substituído, opaco, transparente, textura e geometria uma vez', async () => {
+    const texture = new Texture()
+    const original = new MeshStandardMaterial({ map: texture })
+    const geometry = new BoxGeometry()
+    const mesh = new Mesh(geometry, original)
+    mesh.name = 'copa-teste'
+    const scene = new Group().add(mesh)
+    await buscarIlha('copas-canceladas.glb', async () => scene)
+    const p = prepararIlha(scene, ilha('bosque'))
+    const copa = p.copas[0]
+    if (!copa?.materiais[0] || !copa.suaves[0]) throw new Error('Copa não preparada')
+    const disposals = { original: 0, opaque: 0, transparent: 0, geometry: 0, texture: 0 }
+    original.addEventListener('dispose', () => disposals.original++)
+    copa.materiais[0].addEventListener('dispose', () => disposals.opaque++)
+    copa.suaves[0].addEventListener('dispose', () => disposals.transparent++)
+    geometry.addEventListener('dispose', () => disposals.geometry++)
+    texture.addEventListener('dispose', () => disposals.texture++)
+    const lease = reterIlha('copas-canceladas.glb', scene, () => soltarExtras(p))
+    usarSuave(copa, true)
+    soltarIlha('copas-canceladas.glb')
+    expect(Object.values(disposals)).toEqual([0, 0, 0, 0, 0])
+    lease?.liberar()
+    lease?.liberar()
+    expect(disposals).toEqual({ original: 1, opaque: 1, transparent: 1, geometry: 1, texture: 1 })
+  })
   test('pontilha só no meio da troca e respeita a água transparente', () => {
     const chao = new MeshStandardMaterial()
     const agua = new MeshStandardMaterial({ transparent: true, opacity: 0.25 })

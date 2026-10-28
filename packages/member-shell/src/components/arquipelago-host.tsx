@@ -1,8 +1,10 @@
 'use client'
 
 import {
+  type DesafioAberto,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
+  MoldeDeDesafioSchema,
   type MontagemDoArquipelago,
   type PedidoDeFerramenta,
   type Plataforma,
@@ -15,6 +17,7 @@ import {
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
 import {
@@ -26,6 +29,9 @@ import {
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
+)
+const ChallengeDialog = lazy(() =>
+  import('./arquipelago-challenge-dialog').then((m) => ({ default: m.ArquipelagoChallengeDialog })),
 )
 
 class ToolLoadBoundary extends Component<
@@ -228,6 +234,7 @@ export function ArquipelagoHost(props: {
 }) {
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
+  const [challenge, setChallenge] = useState<DesafioAberto | null>(null)
   const [creation, setCreation] = useState<{
     ferramenta: 'pinta' | 'molda' | 'estudio'
     studioAvailable: boolean
@@ -243,11 +250,24 @@ export function ArquipelagoHost(props: {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
     const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
-      if (pedido.molde !== undefined) return { situacao: 'indisponivel', motivo: 'em-breve' }
       if (abrindo.current || pendente.current)
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.molde !== undefined) {
+          const molde = MoldeDeDesafioSchema.safeParse(pedido.molde)
+          if (!molde.success || pedido.ferramenta !== 'estudio' || pedido.proposito !== 'desafio')
+            return { situacao: 'indisponivel', motivo: 'em-breve' }
+          const resposta = await json(`${BASE}/desafios/${molde.data.desafioId}`)
+          if (!vivo) return { situacao: 'cancelado' }
+          if (resposta.status !== 200)
+            return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+          const desafio = challengeForViewer(resposta.corpo, id, molde.data)
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setChallenge(desafio)
+          })
+        }
         const acesso = await json(`${BASE}/ferramentas/${pedido.ferramenta}`)
         if (!vivo) return { situacao: 'cancelado' }
         const situacao = (acesso.corpo as { situacao?: string } | null)?.situacao
@@ -320,6 +340,8 @@ export function ArquipelagoHost(props: {
     })
     return () => {
       vivo = false
+      setChallenge(null)
+      setCreation(null)
       pendente.current?.({ situacao: 'cancelado' })
       pendente.current = null
       montagem?.desmontar()
@@ -330,6 +352,41 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {challenge ? (
+        <ToolLoadBoundary
+          key={`${id}-${challenge.id}-${challenge.revisao}`}
+          ferramenta="estudio"
+          onCancel={() => {
+            setChallenge(null)
+            const resolve = pendente.current
+            pendente.current = null
+            resolve?.({ situacao: 'cancelado' })
+          }}
+        >
+          <Suspense fallback={<AvisoDaFerramenta ferramenta="estudio" falhou={false} />}>
+            <ChallengeDialog
+              desafio={challenge}
+              audience={publico === 'kids' ? 'kids' : 'adult'}
+              onFinish={(completed) => {
+                setChallenge(null)
+                const resolve = pendente.current
+                pendente.current = null
+                const draft = challengeDraftScope(
+                  publico === 'kids' ? 'kids' : 'adult',
+                  id,
+                  challenge.id,
+                  challenge.revisao,
+                )
+                resolve?.(
+                  completed
+                    ? { situacao: 'pronto', criacaoId: draft.projectId }
+                    : { situacao: 'cancelado' },
+                )
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
       {creation ? (
         <ToolLoadBoundary
           ferramenta={creation.ferramenta}

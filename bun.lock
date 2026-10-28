@@ -26,6 +26,7 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@napi-rs/canvas": "^1.0.0",
         "@rive-app/react-canvas": "^4.34.2",
+        "@sistemazero/arquipelago-contracts": "workspace:*",
         "@sistemazero/core": "workspace:*",
         "@sistemazero/helpdesk-contracts": "workspace:*",
         "@sistemazero/member-shell": "workspace:*",
