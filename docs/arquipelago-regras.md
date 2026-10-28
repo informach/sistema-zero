@@ -434,15 +434,30 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 | Correr | 4,6 por segundo | `CORPO.correr` |
 | Nadar | 2,6 por segundo | `NADAR` |
 | Pulo | 8,5 | `PULO` |
-| Gravidade | -24 | `GRAVIDADE` |
+| Gravidade | 24 para baixo | `GRAVIDADE` (`mundo/medidas.ts`) |
+| Aceleração no chão / freio | 18 / 24 por segundo² | `PERFIS.chao` (`sistemas/movimento.ts`) |
+| Aceleração no ar / freio | 7 / 3 por segundo² | `PERFIS.ar` |
+| Aceleração na água / freio | 6 / 4 por segundo² | `PERFIS.agua` |
+| Coyote time (pular depois de sair da beirada) | 0,12 s | `TOLERANCIA_DO_PULO.coyote` |
+| Jump buffer (o toque antes de pousar vale) | 0,12 s | `TOLERANCIA_DO_PULO.buffer` |
 
 A velocidade final é multiplicada pelo ritmo do humor (6.2).
+
+- **Com peso** (controlador universal, 28/10/2026): a velocidade vai até a pedida em vez de pular
+  para ela. Andar chega em 0,12 s, correr em 0,26 s; parar da corrida leva 0,19 s; pedir para trás
+  freia antes de ir. Os números iniciais dos levantamentos da dona (andar 4,2, correr 6,5,
+  gravidade 20) não foram adotados: as ilhas, as pontes e o percurso nas copas foram medidos com
+  as velocidades acima, e mudar exigiria medir tudo de novo.
+- **Um toque, um pulo**: segurar o pulo não fica pulando a cada aterrissagem; o toque até 0,12 s
+  antes de pousar vale ao pousar, e logo depois de sair da beirada ainda dá para pular.
+- **Física em passos fixos** de 1/60 s (`PASSO_DA_FISICA`), com o desenho suavizado entre passos: o
+  mesmo movimento a 30, 60 ou 144 quadros por segundo.
 
 - **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
   até pisar ou cair no mar (a água freia), e a direção pedida só corrige 45% do normal
   (`CONTROLE_NO_AR = 0.45`).
 - **Pular** conta cada toque (`controle.pulos`): o toque rápido que desce e sobe no mesmo quadro
-  também solta o cipó e pula do tronco.
+  também solta o cipó e pula do tronco, e no chão cada toque é um pulo (`passoDoPulo`).
 - **Braços:** no cipó e no tronco o avatar segura com os braços para cima
   (`personagem/bracos.ts`, `RUMOS`). As poses da plataforma não têm essa; o jogo aponta os ossos
   depois da pose.

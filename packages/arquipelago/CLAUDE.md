@@ -60,6 +60,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `useFrame`. O `rastro` sai da posição suavizada (o pai do grupo do avatar), então a câmera e o
   Zappy não tremem entre passos. ⚠️ Nunca mover corpo no `useFrame` partindo de `translation()`:
   num quadro sem passo o movimento se perde (a 144 Hz, mais da metade dos quadros).
+- Movimento com peso e tolerância (controlador universal, parte 1, `sistemas/movimento.ts`):
+  `aproximarVelocidade` com `PERFIS` por modo (chão, ar, água; ilhas novas acrescentam o delas) e
+  `passoDoPulo` (coyote time e jump buffer, um toque um pulo). Testes:
+  `tests/movimento-com-peso.test.ts`. Plano: `docs/plans/2026-10-28-arquipelago-controlador-universal.md`.
 
 ## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
 

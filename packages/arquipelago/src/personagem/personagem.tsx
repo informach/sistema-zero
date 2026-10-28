@@ -47,6 +47,13 @@ import {
   saltoDaEscalada,
 } from '../sistemas/escalada'
 import type { EntradaDaLocomocao } from '../sistemas/locomocao'
+import {
+  aproximarVelocidade,
+  criarPulo,
+  type EstadoDoPulo,
+  PERFIS,
+  passoDoPulo,
+} from '../sistemas/movimento'
 import { ritmo } from '../sistemas/necessidades'
 import { jogoPausado } from '../sistemas/pausa'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
@@ -141,6 +148,10 @@ interface Vivo {
   noModo: number
   /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
   embalo: Ponto
+  /** A velocidade no chão agora (vai até a pedida com peso, `aproximarVelocidade`). */
+  vel: { x: number; z: number }
+  /** O pulo com coyote time e jump buffer (`passoDoPulo`). */
+  pulo: EstadoDoPulo
   alvo: Ponto
   inicio: Ponto
   maos: Ponto
@@ -187,6 +198,8 @@ export function Personagem() {
     tronco: null,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },
+    vel: { x: 0, z: 0 },
+    pulo: criarPulo(),
     alvo: { x: 0, y: 0, z: 0 },
     inicio: { x: 0, y: 0, z: 0 },
     maos: { x: 0, y: 0, z: 0 },
@@ -268,6 +281,9 @@ export function Personagem() {
   // Trocas de modo (fora do quadro: criadas uma vez por montagem).
   const acoes = useMemo(() => {
     const mudarModo = (modo: ModoDoCorpo, agora: number) => {
+      // No cipó e no tronco o corpo vai pelo balanço e pela casca; de volta ao chão, parte do embalo.
+      v.vel.x = 0
+      v.vel.z = 0
       if (v.cipo && modo !== 'cipo') {
         v.cipo.seguro = false
         soltarCorda(v.cipo)
@@ -334,6 +350,8 @@ export function Personagem() {
       velY.current = 0
       v.embalo.x = 0
       v.embalo.z = 0
+      v.vel.x = 0
+      v.vel.z = 0
       if (pedidos.olharPara !== null) {
         direcao.current = pedidos.olharPara
         // A câmera vai para as costas (ela olha para `-(sin g, cos g)`).
@@ -480,9 +498,19 @@ export function Personagem() {
       const velBase = nadando ? NADAR : controle.correr ? CORRER : ANDAR
       const vel = velBase * ritmo(estado.salvamento.necessidades)
       const comEmbalo = !noChao.current && (v.embalo.x !== 0 || v.embalo.z !== 0)
-      const controleAqui = comEmbalo ? CONTROLE_NO_AR : 1
-      vx = pedidoX * vel * controleAqui + (comEmbalo ? v.embalo.x : 0)
-      vz = pedidoZ * vel * controleAqui + (comEmbalo ? v.embalo.z : 0)
+      if (comEmbalo) {
+        // Com o embalo de um cipó ou do tronco, a direção pedida só corrige um pouco.
+        vx = pedidoX * vel * CONTROLE_NO_AR + v.embalo.x
+        vz = pedidoZ * vel * CONTROLE_NO_AR + v.embalo.z
+        v.vel.x = vx
+        v.vel.z = vz
+      } else {
+        // Com peso: a velocidade vai até a pedida pelo perfil do modo (`sistemas/movimento.ts`).
+        const perfil = nadando ? PERFIS.agua : noChao.current ? PERFIS.chao : PERFIS.ar
+        aproximarVelocidade(v.vel, pedidoX * vel, pedidoZ * vel, perfil, dt)
+        vx = v.vel.x
+        vz = v.vel.z
+      }
 
       if (nadando) {
         // A água freia o embalo de um cipó ou do tronco (nadando não se pisa para zerar).
@@ -493,7 +521,9 @@ export function Personagem() {
         velY.current = MathUtils.lerp(velY.current, (alvo - p.y) * 3, 0.15)
       } else {
         velY.current -= GRAVIDADE * dt
-        if (noChao.current && controle.pular && !parado && !nadando) velY.current = PULO
+        // Um toque, um pulo, com tolerância: logo depois de sair da beirada (coyote) ou logo antes
+        // de pousar (buffer) ainda vale.
+        if (passoDoPulo(v.pulo, noChao.current, pulou, dt)) velY.current = PULO
       }
 
       v.desloc.x = vx * dt
