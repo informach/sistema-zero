@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import {
   createGuidedBackgroundAsset,
   findInitialCanvasAsset,
+  fitZoomFor,
   GUIDE_INDEX,
   GUIDED_LAYER_NAMES,
   guideBitmap,
@@ -70,5 +71,14 @@ describe('tela com molde', () => {
     expect(isValidInitialCanvas({ ...canvas, guide: [{ x: 5, y: 0, width: 4, height: 6 }] })).toBe(
       false,
     )
+  })
+
+  it('abre com a planificação inteira à vista: o maior degrau que cabe', () => {
+    const niveis = [2, 4, 6, 8, 12, 16, 24, 32]
+    expect(fitZoomFor(165, 192, niveis)).toBe(2)
+    expect(fitZoomFor(60, 80, niveis)).toBe(6)
+    expect(fitZoomFor(16, 8, niveis)).toBe(24)
+    // Nada cabe: o menor degrau, para não abrir gigante.
+    expect(fitZoomFor(512, 300, niveis)).toBe(2)
   })
 })

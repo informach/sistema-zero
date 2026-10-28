@@ -23,6 +23,7 @@ import type {
   SceneViewportFactory,
   SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
+import { useMoldeDaOficina } from './moldeContext'
 
 /** Espera o desenho assentar antes da foto; o mesmo ritmo do editor antigo. */
 const SCENE_THUMB_DELAY_MS = 700
@@ -125,6 +126,11 @@ export function useSceneViewport({
   useEffect(() => {
     viewport?.refreshGuideInput?.(guideInput ?? null)
   }, [viewport, guideInput])
+  // O molde do host: a caixa e a frente rosa entram no palco como o chão quadriculado.
+  const molde = useMoldeDaOficina()
+  useEffect(() => {
+    viewport?.setMoldeGuide?.(molde ? { min: molde.min, max: molde.max } : null)
+  }, [viewport, molde])
   const [error, setError] = useState<string | null>(null)
   const [selectionError, setSelectionError] = useState<string | null>(null)
   const [lost, setLost] = useState(false)

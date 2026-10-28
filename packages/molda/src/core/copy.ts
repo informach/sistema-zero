@@ -12,6 +12,19 @@ export const COPY = {
   appName: 'Molda',
   scene: {
     title: 'Minha oficina 3D',
+    /** O cartão do molde do host (28/10/2026, o Arquipélago). */
+    molde: {
+      titulo: (nome: string) => `Molde: ${nome}`,
+      cabe: 'Cabe no molde',
+      naoCabe: 'Passou do molde. Traga para dentro da caixa.',
+      vazio: 'Comece a modelar dentro da caixa.',
+      frente: 'A frente está na marca rosa',
+      semFrente: 'Encoste a frente na marca rosa.',
+      leve: (n: number, max: number) =>
+        `Leve para a ilha: ${n.toLocaleString('pt-BR')} de ${max.toLocaleString('pt-BR')} triângulos`,
+      pesado: (n: number, max: number) =>
+        `Pesado para a ilha: ${n.toLocaleString('pt-BR')} de ${max.toLocaleString('pt-BR')} triângulos. Simplifique alguma peça.`,
+    },
     skinWeights: {
       title: 'Força dos ossos nestes pontos',
       choosePoints: 'Escolha pontos, linhas ou faces da peça para ajustar seus pesos.',

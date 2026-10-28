@@ -256,16 +256,27 @@ export interface MoldaStarterBox {
   name?: string
 }
 
+/** O passo do lado de uma forma primitiva (o mesmo do `normalizeBox(…, 0.5)` do sanitize). */
+const PRIMITIVE_SIDE_STEP = 0.5
+
+/** Os cantos da caixa do molde na grade (os mesmos da peça de começo). */
+export function moldeBounds(box: MoldaStarterBox): { min: Vec3; max: Vec3 } {
+  const part = moldeStarterPart(box)
+  return { min: part.from, max: part.to }
+}
+
 export function moldeStarterPart(box: MoldaStarterBox): MoldaPart {
-  const step = MOLDA_LIMITS.positionPrecision
+  // O lado de uma forma primitiva anda em meio bloco (o sanitize arredonda para 0,5 e manteria o
+  // canto de baixo, tirando a caixa do centro): o molde já nasce assim, centrado. A metade de um
+  // lado múltiplo de 0,5 cai em 1/4, dentro da precisão das posições (1/16).
+  const step = PRIMITIVE_SIDE_STEP
   const fit = (value: number, max: number) =>
     Math.min(max, Math.max(step, Math.round((Number.isFinite(value) ? value : 0) / step) * step))
-  const half = (value: number) => Math.round(value / 2 / step) * step
   const width = fit(box.width, MOLDA_LIMITS.gridHalf * 2)
   const height = fit(box.height, MOLDA_LIMITS.gridHeight)
   const depth = fit(box.depth, MOLDA_LIMITS.gridHalf * 2)
-  const x = half(width)
-  const z = half(depth)
+  const x = width / 2
+  const z = depth / 2
   return createPart({
     name: normalizePartName(box.name, 'molde'),
     from: [-x, 0, -z],

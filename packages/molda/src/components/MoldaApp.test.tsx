@@ -711,7 +711,11 @@ test('controle do host recusa criação quando salvamento do editor falha', asyn
 })
 
 describe('MoldaApp: molde do host (Arquipélago)', () => {
-  const molde = { name: 'molde-geladeira', box: { width: 13.12, height: 28, depth: 13.28 } }
+  const molde = {
+    name: 'molde-geladeira',
+    box: { width: 13.12, height: 28, depth: 13.28, name: 'Geladeira' },
+    maxTriangles: 5000,
+  }
 
   test('cria o modelo com a caixa do molde e abre a oficina; da segunda vez reabre o mesmo', async () => {
     const db = await nativeDatabase()
@@ -733,8 +737,13 @@ describe('MoldaApp: molde do host (Arquipélago)', () => {
       if (criado?.kind !== 'model') throw new Error('modelo esperado')
       expect(persistence.snapshot()).toHaveLength(1)
       expect(criado.parts.map((p) => [p.name, p.from, p.to])).toEqual([
-        ['molde', [-6.5625, 0, -6.625], [6.5625, 28, 6.625]],
+        ['Geladeira', [-6.5, 0, -6.75], [6.5, 28, 6.75]],
       ])
+      // As conferências do molde no painel da oficina.
+      const cartao = await screen.findByRole('region', { name: 'Molde: Geladeira' })
+      expect(within(cartao).getByText('Cabe no molde')).toBeDefined()
+      expect(within(cartao).getByText('A frente está na marca rosa')).toBeDefined()
+      expect(within(cartao).getByText('Leve para a ilha: 12 de 5.000 triângulos')).toBeDefined()
       view.unmount()
 
       view = render(<MoldaApp persistence={persistence} adapter={{ initialModel: molde }} />)

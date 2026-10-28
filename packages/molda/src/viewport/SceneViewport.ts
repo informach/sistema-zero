@@ -75,6 +75,7 @@ import { SceneBrushCursor } from './SceneBrushCursor'
 import { SceneComponentOverlay } from './SceneComponentOverlay'
 import { SceneGround } from './SceneGround'
 import { SceneGuideAnnotation } from './SceneGuideAnnotation'
+import { SceneMoldeGuide, type SceneMoldeGuideState } from './SceneMoldeGuide'
 import { ScenePaintInput } from './ScenePaintInput'
 import { ScenePreviewGuide, type ScenePreviewGuideState } from './ScenePreviewGuide'
 import { SceneSelectionOutline } from './SceneSelectionOutline'
@@ -127,6 +128,7 @@ export class SceneViewport implements SceneViewportPort {
   private readonly supports = new SceneSupportOverlay()
   private readonly poseGuide = new SceneSupportOverlay(4)
   private readonly previewGuide = new ScenePreviewGuide()
+  private readonly moldeGuide = new SceneMoldeGuide()
   private guideAnnotation: SceneGuideAnnotation | null = null
   private readonly weightPoints = new SceneSkinWeightOverlay()
   private readonly brushCursor = new SceneBrushCursor()
@@ -220,6 +222,7 @@ export class SceneViewport implements SceneViewportPort {
         this.weightPoints.root,
         this.brushCursor.root,
         this.ground.root,
+        this.moldeGuide.root,
         this.outline.root,
         this.pivot,
         ...this.lights,
@@ -1153,6 +1156,7 @@ export class SceneViewport implements SceneViewportPort {
       bounds,
       [
         this.ground.root,
+        this.moldeGuide.root,
         this.outline.root,
         this.pivot,
         this.faces.root,
@@ -1263,6 +1267,13 @@ export class SceneViewport implements SceneViewportPort {
     camera.zoom = Math.max(0.1, Math.min(30, camera.zoom * factor))
     camera.updateProjectionMatrix()
     this.orbit?.update()
+    this.request()
+  }
+
+  /** O molde do host (a caixa e a frente rosa): ajudante de tela, fora do toque e da foto. */
+  setMoldeGuide(guide: SceneMoldeGuideState | null): void {
+    if (this.disposed) return
+    this.moldeGuide.update(guide)
     this.request()
   }
 
@@ -1871,6 +1882,7 @@ export class SceneViewport implements SceneViewportPort {
     this.supports.dispose()
     this.poseGuide.dispose()
     this.previewGuide.dispose()
+    this.moldeGuide.dispose()
     this.pivotHandles?.dispose()
     this.weightPoints.dispose()
     this.brushCursor.dispose()

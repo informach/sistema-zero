@@ -91,6 +91,19 @@ export function createGuidedBackgroundAsset(
   }
 }
 
+/** O maior lado da tela com molde ao abrir, em pixels da TELA (cabe no palco de um notebook). */
+export const GUIDED_FIT_SIDE = 480
+
+/**
+ * O zoom com que a tela com molde abre: o maior degrau em que ela cabe inteira em
+ * `GUIDED_FIT_SIDE` (a planificação toda à vista); nenhum degrau cabe, o menor.
+ */
+export function fitZoomFor(width: number, height: number, levels: readonly number[]): number {
+  const side = Math.max(width, height)
+  const fits = levels.filter((level) => side * level <= GUIDED_FIT_SIDE)
+  return fits.length > 0 ? Math.max(...fits) : Math.min(...levels)
+}
+
 /** O desenho desta tela que já existe na galeria (mesmo nome, cenário de pixel do mesmo tamanho). */
 export function findInitialCanvasAsset(
   assets: readonly PintaAsset[],

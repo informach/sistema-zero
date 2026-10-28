@@ -27,8 +27,9 @@ describe('a ponte do molde de objeto (projeto azul)', () => {
   })
 
   test('Molda: a caixa na proporção do molde, 16 por célula quando cabe', () => {
-    const { name, box } = caixaDoMolda(geladeira)
+    const { name, box, maxTriangles } = caixaDoMolda(geladeira)
     expect(name).toBe('molde-geladeira')
+    expect(maxTriangles).toBe(5000)
     expect(box.name).toBe('Geladeira')
     expect(box.width).toBeCloseTo(0.82 * UNIDADES_DO_MOLDA_POR_CELULA)
     expect(box.height).toBeCloseTo(1.75 * UNIDADES_DO_MOLDA_POR_CELULA)

@@ -10,8 +10,28 @@ em unidades da grade): 1x no mount, depois que a galeria carrega e a nuvem assen
 de 1/16 e dentro da grade, nunca abaixo de 1/16. Recado de falha: `COPY.gallery.moldeError`. O
 Molda não conhece o jogo: quem traduz o molde é o host (`member-shell/src/lib/
 arquipelago-objeto.ts`). Playground: `?caixa=<JSON>`. Testes: `core/moldeStarterPart.test.ts` e o
-bloco "molde do host" do `MoldaApp.test.tsx`. Ainda não há marca da frente nem conferência de
-"cabe no molde".
+bloco "molde do host" do `MoldaApp.test.tsx`.
+
+- ⚠️ **O lado da caixa anda em meio bloco** (`PRIMITIVE_SIDE_STEP`, o mesmo `normalizeBox(…, 0.5)`
+  do sanitize) e nasce centrado. Com 1/16 o sanitize arredondava o lado e mantinha o canto de
+  baixo: a caixa saía do centro ao abrir e as conferências acusavam "passou do molde" logo de cara
+  (pego no teste da oficina). O teste de round-trip pelo sanitize trava isso.
+- **Guia da frente** (`viewport/SceneMoldeGuide.ts`): a caixa do molde em contorno (por trás das
+  peças, `depthTest: false`) e a face +z com véu e contorno rosa (`MOLDE_FRONT_COLOR`). Entra no
+  palco como o chão quadriculado: fora do toque (o picking só olha `resource.root`), fora da foto
+  da galeria (`photograph` o exclui) e fora do GLB. `SceneViewport.setMoldeGuide` +
+  `SceneViewportPort.setMoldeGuide?`; o `useSceneViewport` lê o molde do contexto.
+- **Contexto do molde** (`components/editor/scene/moldeContext.ts`, `MoldeDaOficina`): o
+  `MoldaApp` guarda o id da criação aberta pelo `InitialModelOpener` e só oferece o molde
+  (`moldeBounds` do `core/model.ts`, o nome e o teto) à oficina DESSA criação. Abrir outra criação
+  pela galeria não mostra guia nem cartão.
+- **Conferências** (`components/editor/scene/moldeChecks.ts`, pura, e `SceneMoldeChecks.tsx`, o
+  cartão no topo do painel de peças): cabe (todas as peças visíveis dentro da caixa, folga de
+  1/32), frente (o modelo encosta na face +z) e "leve para a ilha" (`index.triangleCount` ≤
+  `MoldaInitialModel.maxTriangles`, que o host manda; ausente = o teto do Molda). Criação vazia
+  diz "Comece a modelar dentro da caixa.". O cartão avisa, não trava nada. Copy em
+  `COPY.scene.molde`; estilo `.mld-molde-checks` no `molda.css`. Testes:
+  `moldeChecks.test.ts`, `viewport/SceneMoldeGuide.test.ts` e o cartão no `MoldaApp.test.tsx`.
 
 ## Pintar em três zonas — 27/10/2026
 

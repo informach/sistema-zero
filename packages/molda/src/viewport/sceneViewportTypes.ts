@@ -74,6 +74,8 @@ export interface SceneViewportPort {
   setIsolation(ids: readonly string[] | null): void
   setView(view: CameraView): void
   setGridVisible?(visible: boolean): void
+  /** O molde do host (28/10/2026): a caixa e a frente rosa, só na tela. */
+  setMoldeGuide?(guide: { min: Vec3; max: Vec3 } | null): void
   /** Raio-X: peças semitransparentes só na oficina; o material guardado não muda. */
   setXray?(on: boolean): void
   setMovementStep?(step: number | null): void

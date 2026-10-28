@@ -35,7 +35,10 @@ import { TaskBriefPanel } from './TaskBriefPanel'
 import { erroParaCrianca, withSaveBeforeTaskActions } from './taskSessionSave'
 import { ToastProvider, useToast } from './ui/Toast'
 
-type PintaView = { screen: 'gallery' } | { screen: 'editor'; assetId: string }
+type PintaView =
+  | { screen: 'gallery' }
+  /** `fit`: a tela com molde abre com o zoom em que cabe inteira (`fitZoomFor`). */
+  | { screen: 'editor'; assetId: string; fit?: boolean }
 
 const EMPTY_ADAPTER: PintaHostAdapter = {}
 
@@ -83,8 +86,14 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
  * nome e tamanho ou cria um novo. Espera a galeria carregar e a nuvem assentar (o desenho pode ter
  * sido feito noutro aparelho); tela fora dos limites cai na galeria com o recado de erro.
  */
-function InitialCanvasOpener({ canvas }: { canvas: PintaInitialCanvas | null }): null {
-  const { gallery, openAsset } = usePintaApp()
+function InitialCanvasOpener({
+  canvas,
+  onOpen,
+}: {
+  canvas: PintaInitialCanvas | null
+  onOpen: (id: string) => void
+}): null {
+  const { gallery } = usePintaApp()
   const { showToast } = useToast()
   const loaded = usePintaGallery((state) => state.loaded)
   const syncing = usePintaGallery((state) => state.syncing)
@@ -98,17 +107,17 @@ function InitialCanvasOpener({ canvas }: { canvas: PintaInitialCanvas | null }):
     }
     const existing = findInitialCanvasAsset(gallery.getState().assets, canvas)
     if (existing) {
-      openAsset(existing.id)
+      onOpen(existing.id)
       return
     }
     void gallery
       .getState()
       .createPrepared(createGuidedBackgroundAsset(canvas))
       .then((asset) => {
-        if (asset) openAsset(asset.id)
+        if (asset) onOpen(asset.id)
         else showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
       })
-  }, [canvas, loaded, syncing, gallery, openAsset, showToast])
+  }, [canvas, loaded, syncing, gallery, onOpen, showToast])
   return null
 }
 
@@ -210,6 +219,10 @@ export function PintaApp({
   // re-renderiza. Vale para todo host que troque o adapter por qualquer motivo.
   const openAsset = useCallback((id: string) => setView({ screen: 'editor', assetId: id }), [])
   const closeEditor = useCallback(() => setView({ screen: 'gallery' }), [])
+  const openFitted = useCallback(
+    (id: string) => setView({ screen: 'editor', assetId: id, fit: true }),
+    [],
+  )
   const context = useMemo<PintaAppContextValue>(
     () => ({
       adapter: resolvedAdapter,
@@ -312,7 +325,7 @@ export function PintaApp({
     >
       <PintaAppProvider value={context}>
         <ToastProvider>
-          <InitialCanvasOpener canvas={initialCanvas} />
+          <InitialCanvasOpener canvas={initialCanvas} onOpen={openFitted} />
           <InitialAssetOpener
             onMissing={(id) => {
               if (resolvedAdapter.taskSession?.progress.deliveries[0]?.creation.creationId === id) {
@@ -340,7 +353,7 @@ export function PintaApp({
               <GalleryScreen />
             ) : (
               // key por asset: trocar de desenho recria o editor (stores novas).
-              <EditorScreen key={view.assetId} assetId={view.assetId} />
+              <EditorScreen key={view.assetId} assetId={view.assetId} fit={view.fit === true} />
             )}
           </PensaMissionLayout>
         </ToastProvider>

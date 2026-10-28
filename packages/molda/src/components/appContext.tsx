@@ -65,6 +65,8 @@ export interface MoldaHostAdapter {
 export interface MoldaInitialModel {
   name: string
   box: MoldaStarterBox
+  /** O teto de triângulos do molde ("Leve para a ilha"); ausente = o do Molda. */
+  maxTriangles?: number
 }
 
 export interface MoldaAppContextValue {

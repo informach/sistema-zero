@@ -30,7 +30,8 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   'molda', proposito: 'objeto', molde})` (o projeto azul do modo construção). `lerPedidoDeObjeto`
   (`lib/arquipelago-objeto.ts`, puro) lê o `MoldeDeObjetoSchema` e devolve a tela do Pinta
   (`telaDoPinta`: a `planificacaoDoMolde` do contrato com a frente marcada) ou a caixa do Molda
-  (`caixaDoMolda`: 16 unidades da grade por célula, encolhida para caber), ou a recusa
+  (`caixaDoMolda`: 16 unidades da grade por célula, encolhida para caber, com o teto de
+  triângulos do molde em `maxTriangles` para o "Leve para a ilha" da oficina), ou a recusa
   (`sem-faces`, `molde-invalido`, `em-breve` para o Estúdio). Depois segue o MESMO caminho de criar
   no jogo (acesso em `/ferramentas/:ferramenta`, posse do perfil); o diálogo passa `initialCanvas`
   ao `PintaClient` e `initialModel` ao `MoldaClient`, e o subtítulo vira "Molde: <nome>". O id

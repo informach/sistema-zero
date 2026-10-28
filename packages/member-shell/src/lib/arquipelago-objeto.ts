@@ -59,6 +59,8 @@ export function caixaDoMolda(molde: MoldeDeObjeto): MoldaInitialModel {
       depth: fundo * escala,
       name: molde.nome,
     },
+    // "Leve para a ilha": o teto do objeto, menor que o do Molda.
+    maxTriangles: molde.triangulosMaximos,
   }
 }
 

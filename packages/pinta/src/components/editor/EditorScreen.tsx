@@ -19,6 +19,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
+import { fitZoomFor } from '../../core/guidedCanvas'
 import { assetRole, assetStyle, type PintaAsset, type PintaAssetRole } from '../../core/project'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
@@ -39,6 +40,7 @@ import {
   type PintaSessionStore,
   TILEMAP_ZOOM_LEVELS,
   VECTOR_ZOOM_LEVELS,
+  ZOOM_LEVELS,
 } from '../../state/sessionStore'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
@@ -642,7 +644,12 @@ function shortcutToolsFor(
  * (o palco desenha em px de documento) e começa num zoom confortável para o
  * tamanho; o mapa usa níveis onde o fator É a escala real da célula.
  */
-function sessionDefaultsFor(asset: PintaAsset): Partial<PintaSessionState> {
+function sessionDefaultsFor(asset: PintaAsset, fit = false): Partial<PintaSessionState> {
+  // A tela com molde (o host) abre com a planificação inteira à vista.
+  if (fit && asset.kind === 'pixel-background') {
+    const cel = asset.cels[0]
+    if (cel) return { zoom: fitZoomFor(cel.width, cel.height, ZOOM_LEVELS) }
+  }
   if (asset.kind === 'tilemap') return { zoom: 2, zoomLevels: TILEMAP_ZOOM_LEVELS }
   if (assetStyle(asset.kind) !== 'vector') return {}
   const docSize =
@@ -682,7 +689,14 @@ function AssetChangeReporter({ onChange }: { onChange: (asset: PintaAsset) => vo
   return null
 }
 
-export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | null {
+export function EditorScreen({
+  assetId,
+  fit = false,
+}: {
+  assetId: string
+  /** Abre com o zoom em que o desenho cabe inteiro (a tela com molde do host). */
+  fit?: boolean
+}): JSX.Element | null {
   const { adapter, gallery, persistence, closeEditor, onEditorReady } = usePintaApp()
   const { showToast } = useToast()
   const [stores] = useState<{ editor: PintaEditorStore; session: PintaSessionStore } | null>(() => {
@@ -698,7 +712,7 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
           isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
         onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),
       }),
-      session: createSessionStore(sessionDefaultsFor(asset)),
+      session: createSessionStore(sessionDefaultsFor(asset, fit)),
     }
   })
   const [closing, setClosing] = useState(false)

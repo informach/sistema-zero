@@ -1145,13 +1145,24 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
       topo em cima dela, cada face na proporção certa e a tela com o lado maior de 192 pontos
       (`LADO_DA_PLANIFICACAO`; a geladeira fica com 165 × 192). O contorno de cada face mora numa
       camada de baixo, "Molde", trancada; a frente vem em rosa. A criança pinta na camada de cima,
-      "Pintura". O fliperama abre só com a tela (192 × 144). Objeto sem faces: "Este objeto ainda
-      não tem as faces para pintar."
+      "Pintura". O editor abre com a planificação inteira à vista (o maior zoom em que ela cabe em
+      480 pontos de tela: a geladeira abre em 2×). O fliperama abre só com a tela (192 × 144).
+      Objeto sem faces: "Este objeto ainda não tem as faces para pintar."
     - **Molda:** abre (ou reabre pelo mesmo nome) um modelo com a **caixa do molde** como peça de
       começo, com o nome do objeto. A escala é 16 unidades da grade por célula do jogo, encolhida
       quando o objeto não cabe (o maior lado chega a 30 na grade, que tem 32): a banda, de
-      2,85 de largura, sai com 30. A frente marcada e as conferências do Molda ("cabe no molde",
-      triângulos) ainda não existem.
+      2,85 de largura, sai com 30. O lado da caixa anda em meio bloco, centrado (a geladeira fica
+      com 13 × 28 × 13,5).
+    - **Guia da frente no Molda:** na oficina, a caixa do molde aparece em contorno e a frente
+      (a face +z, onde o avatar usa o objeto) ganha um véu e um contorno rosa. É ajudante de tela,
+      como o chão quadriculado: não é tocado, não sai na foto da galeria nem no arquivo exportado.
+    - **Conferências no Molda:** um cartão "Molde: Geladeira" no topo do painel de peças diz
+      "Cabe no molde" (ou "Passou do molde. Traga para dentro da caixa."), "A frente está na marca
+      rosa" (ou "Encoste a frente na marca rosa.") e "Leve para a ilha: 12 de 5.000 triângulos"
+      (ou "Pesado para a ilha: …. Simplifique alguma peça."). Cabe = todas as peças visíveis dentro
+      da caixa; frente = o modelo encosta na face +z; o teto é o `triangulosMaximos` do molde
+      (5.000). Folga de meio passo da grade (1/32). Criação vazia: "Comece a modelar dentro da
+      caixa." O cartão avisa, não impede: "Usar no jogo" continua valendo.
     - **A volta:** "Usar no jogo" guarda a criação na conta e devolve o id dela, que vira a
       `aparencia` do projeto azul. Sem acesso à ferramenta, o jogo diz "O Pinta ainda não está
       liberado para você." (ou "O Molda"); qualquer outro motivo, "O molde não abriu agora. Tente
