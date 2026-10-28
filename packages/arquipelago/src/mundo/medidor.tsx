@@ -3,6 +3,7 @@ import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-thr
 import { useEffect, useMemo, useRef } from 'react'
 import type { Mesh, Object3D } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
+import type { NivelDeQualidade } from '../sistemas/qualidade'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
@@ -11,8 +12,9 @@ import { mecanismosAgora } from './mecanismos'
 import { reativosAgora } from './objetos-reativos'
 import { ondasAgora } from './ondinhas'
 import { pontesAgora } from './pontes-vivas'
+import { useQualidade } from './qualidade-da-cena'
 import { troncoAgora } from './tronco-no-lago'
-import { ventoAgora } from './vegetacao-ao-vento'
+import { qualidadeDaVegetacao, ventoAgora } from './vegetacao-ao-vento'
 
 /**
  * Só para medir o desenho (playground e conferência de desempenho): com
@@ -25,6 +27,10 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  qualidade: NivelDeQualidade
+  metaDeQuadros: 30 | 60
+  dpr: number
+  amplitudeDoVento: number
   chamadas: number
   triangulos: number
   geometrias: number
@@ -79,6 +85,7 @@ function contarGeometrias(raiz: Object3D): number {
 }
 
 export function Medidor() {
+  const qualidade = useQualidade()
   const ligado = useMemo(medirLigado, [])
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
@@ -118,6 +125,10 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      qualidade: qualidade.nivel,
+      metaDeQuadros: qualidade.meta,
+      dpr: gl.getPixelRatio(),
+      amplitudeDoVento: (qualidadeDaVegetacao.get(cena) ?? 1) * ventoAgora.escalaVisual,
       ondas: { ...ondasAgora },
       reativos: { ...reativosAgora, pecas: reativosAgora.pecas.map((p) => ({ ...p })) },
       folhas: { pecas: folhasAgora.pecas.map((p) => ({ ...p })) },

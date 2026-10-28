@@ -101,6 +101,29 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   (`passoDosPesos`, `misturarPerfis`); a câmera aplica o "lá no alto" e a colisão por cima. Perfil
   novo (Construir) entra em `PERFIS_DE_CAMERA`.
 
+## Qualidade automática (geral-05, 28/10/2026)
+
+- `sistemas/qualidade.ts` contém detecção e transição puras. Metas: desktop 60, toque/coarse,
+  CrOS ou até quatro núcleos 30; até dois núcleos começa leve, demais conservadores médios.
+  Níveis completo/médio/leve: teto DPR 1,75/1,25/0,75, vento 1/0,5/0, ondas sim/sim/não,
+  névoa 70 até 210/190/170 m. Nenhum parâmetro físico muda.
+- Médias em janelas de 2 s: duas acima de 120% do orçamento reduzem, espera mínima 8 s;
+  cinco até 105% aumentam, espera 20 s. Pausa, aba oculta e lacuna acima de 1 s zeram a amostra.
+  Não há limitador artificial de FPS; a física continua em `PASSO_DA_FISICA` mesmo a 30 quadros.
+- `mundo/qualidade-da-cena.tsx` adapta por montagem, sem estado global de decisão. A vegetação
+  usa um uniform separado por cena via WeakMap, no desenho do material, sem alterar o vento
+  das cordas nem `bosque-vivo.tsx`. Leve desmonta `OndinhasLigadas`, incluindo seus callbacks.
+- `sistemas/conforto.ts` e `estado/conforto.ts` guardam `qualidade` na preferência local existente.
+  O menu oferece Automática (padrão), Leve e Completa. URL `?qualidade=leve|completa` sobrepõe
+  só durante a montagem, sem persistir. A escolha manual não altera a meta detectada.
+- `__arquipelagoDesenho`: `qualidade`, `metaDeQuadros`, `dpr`, `amplitudeDoVento`,
+  `vento.qualidadeAplicada` (escrito pelo material desenhado) e `ondas.ligadas`.
+- `tests/qualidade.test.ts` usa o controlador e Rapier reais para comparar todos os 240 passos
+  de caminhada/pulo em 4 s a 30/60 quadros, nos três níveis. `bun run test:qualidade-browser`
+  confere Bosque, menu, preferência reaberta, caminhada/pulo e toque emulado no playground.
+  Aceita `ARQUIPELAGO_CHROMIUM`; usa o Chromium Linux solicitado se existir, senão canal Chrome.
+  Emulação/SwiftShader prova funcionamento, não a meta de FPS em aparelho físico.
+
 ## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
 
 - Regra: o que se vê de pé e tem tamanho de objeto colide, sempre com forma simples (caixa ou

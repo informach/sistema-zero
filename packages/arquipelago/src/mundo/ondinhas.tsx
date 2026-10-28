@@ -18,12 +18,26 @@ import {
   TOTAL_DE_ONDAS,
   VIDA_DA_ONDA,
 } from '../sistemas/mundo-reativo'
+import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { dentroDaAgua } from './bosque'
 import { PASSO_DA_FISICA } from './medidas'
+import { useQualidade } from './qualidade-da-cena'
 import { troncoAgora } from './tronco-no-lago'
 
-export const ondasAgora = { ativas: 0, emitidas: 0, x: 0, y: 0, z: 0 }
+export const ondasAgora = { ativas: 0, emitidas: 0, x: 0, y: 0, z: 0, ligadas: false }
 export function Ondinhas({ agua }: { agua: AguaRasa }) {
+  const { nivel } = useQualidade()
+  const ligadas = PERFIS_DE_QUALIDADE[nivel].ondinhas
+  useEffect(() => {
+    ondasAgora.ligadas = ligadas
+    return () => {
+      ondasAgora.ligadas = false
+    }
+  }, [ligadas])
+  return ligadas ? <OndinhasLigadas agua={agua} /> : null
+}
+
+function OndinhasLigadas({ agua }: { agua: AguaRasa }) {
   const { rastro } = useJogo()
   const menosMovimento = useReducedMotion()
   const ondas = useMemo(criarOndas, [])

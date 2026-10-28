@@ -1191,6 +1191,46 @@ Arquivos: `sistemas/diario.ts`, `sistemas/pegadas.ts`, `interface/diario.tsx`,
   sai quando o navegador está à toa depois de a ilha ficar ativa, e some quando o bicho é achado.
 - **Moedas:** nada disto paga moedas.
 
+### 6.18 Qualidade automática em aparelho fraco
+
+O jogo procura manter **60 quadros por segundo no computador** e **30 no celular, tablet,
+Chromebook ou computador de até quatro núcleos**. São metas, não garantia de que qualquer aparelho
+consiga alcançá-las. A detecção usa o ponteiro de toque (`pointer: coarse`), a identificação
+`CrOS` do navegador e o número de núcleos informado pelo aparelho. Se essa última informação
+faltar, ela não é tratada como zero. Até dois núcleos começa leve; os demais aparelhos da meta
+de 30 começam médios; o computador da meta de 60 começa completo.
+
+| Desenho | Completo | Médio | Leve |
+| --- | --- | --- | --- |
+| Resolução máxima (DPR) | 1,75 | 1,25 | 0,75 |
+| Amplitude visual das plantas | 100% | 50% | Zero |
+| Ondinhas do lago | Ligadas | Ligadas | Desligadas |
+| Névoa começa / termina | 70 / 210 m | 70 / 190 m | 70 / 170 m |
+
+A resolução também respeita a densidade da tela. Menos movimento do aparelho continua reduzindo
+o vento por cima desses valores. A névoa preserva a ilha central e só aproxima seu fim; não
+remove terreno, objetos nem colisores. Não se conta a névoa sozinha como economia de geometria.
+No leve, as ondinhas deixam de montar e atualizar sua malha. O lago, o tronco, o nado e o vento
+que movimenta as cordas continuam com a mesma física.
+
+O jogo observa a **média do tempo dos quadros a cada dois segundos**. Duas janelas seguidas
+mais de 20% acima do orçamento reduzem um nível, com pelo menos oito segundos entre mudanças.
+Isso corresponde a menos de 50 quadros na meta de 60 e menos de 25 na meta de 30. Para aumentar,
+precisa de cinco janelas seguidas até 5% acima do orçamento e de vinte segundos desde a última
+mudança. A faixa intermediária mantém o nível. Um intervalo acima de um segundo, uma pausa ou
+uma troca de visibilidade da aba limpa a amostra, sem aproveitar medidas antigas.
+
+No menu **Conforto**, **Qualidade: Automática / Leve / Completa** muda na hora e fica guardada
+no aparelho. Automática é o padrão, inclusive para preferências antigas. A escolha manual não
+é trocada pelo medidor. `?qualidade=leve` e `?qualidade=completa` forçam o desenho para conferência
+sem gravar a preferência. A meta não é um limitador de quadros: esta versão deixa o navegador
+desenhar mais quando consegue. O passo físico permanece **1/60 s** em todos os níveis.
+
+Regra: `sistemas/qualidade.ts`. O medidor `__arquipelagoDesenho` inclui nível, meta, DPR e
+amplitude do vento; as medidas das plantas e das ondas mostram o efeito aplicado. Testes:
+`tests/qualidade.test.ts` e `bun run test:qualidade-browser`. Ainda é necessária conferência
+prolongada em celular, tablet e Chromebook reais, incluindo aquecimento e bateria.
+
 ## 7. Desafios
 
 Arquivos principais:

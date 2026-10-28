@@ -13,6 +13,7 @@ import { criarPlataformaFalsa } from '../src/plataforma/falsa'
  * `?cartas=todas` (ou `desligadas`, `fora-do-ar`) muda os cartões dos Lumis do caderno.
  * `?dia=feito` (ou `nenhum`; padrão `pronto`) muda o desafio do dia do Quadro das Cores.
  * `?objetos=sem-acesso` faz o Pinta e o Molda no molde de um objeto responderem sem acesso.
+ * `?qualidade=leve` ou `?qualidade=completa` força só o desenho, sem gravar a preferência.
  * `?perder-pulso=1` simula uma resposta perdida após registrar tempo, para testar recuperação.
  */
 const q = new URLSearchParams(location.search)

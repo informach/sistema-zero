@@ -1,12 +1,12 @@
-import { PerformanceMonitor } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { Suspense, useState } from 'react'
+import { Suspense } from 'react'
 import { useEstado } from '../estado/contexto'
 import { Camera } from '../personagem/camera'
 import { Personagem } from '../personagem/personagem'
 import { Zappy } from '../personagem/zappy'
 import { jogoPausado } from '../sistemas/pausa'
+import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { Agua } from './agua'
 import { Anel } from './anel'
 import { Bancada } from './bancada'
@@ -20,21 +20,29 @@ import { IlhaCentral } from './ilha-central'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
+import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
 carregarModelos()
 
 /** A cena 3D inteira. A física (Rapier) roda dentro dela. */
 export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
-  // Modo leve automático: se o aparelho não aguenta, a resolução cai; se sobra, sobe.
-  const [dpr, setDpr] = useState(1.5)
+  return (
+    <QualidadeDaCena>
+      <CenaComQualidade aoFalhar={aoFalhar} />
+    </QualidadeDaCena>
+  )
+}
+
+function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
+  const { nivel } = useQualidade()
   const ferramentaAberta = useEstado((estado) => estado.ferramentaAberta)
   const pausado = useEstado(jogoPausado)
   return (
     <Canvas
       frameloop={ferramentaAberta ? 'never' : 'always'}
       className="arq-canvas"
-      dpr={dpr}
+      dpr={[0, PERFIS_DE_QUALIDADE[nivel].dpr]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       camera={{ fov: 55, near: PERTO_DA_CAMERA, far: LONGE_DA_CAMERA, position: [0, 8, 10] }}
       onCreated={({ gl }) => {
@@ -44,12 +52,7 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
         })
       }}
     >
-      <PerformanceMonitor
-        onDecline={() => setDpr((d) => Math.max(0.6, d - 0.4))}
-        onIncline={() => setDpr((d) => Math.min(1.75, d + 0.25))}
-        flipflops={4}
-        onFallback={() => setDpr(0.75)}
-      />
+      <MonitorDeQualidade />
       <Ceu />
       <Suspense fallback={null}>
         {/* Passo fixo com o desenho suavizado entre passos; os passos rodam antes dos outros

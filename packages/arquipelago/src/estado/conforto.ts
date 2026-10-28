@@ -24,7 +24,7 @@ function lerGuardado(): string | null {
 }
 
 /**
- * As preferências de conforto da câmera (`sistemas/conforto.ts`), uma loja por montagem como as
+ * As preferências de câmera e qualidade (`sistemas/conforto.ts`), uma loja por montagem como as
  * outras, lidas do aparelho ao abrir e guardadas a cada mudança. Sem armazenamento (aba anônima,
  * bloqueado), valem só enquanto o jogo está aberto.
  */

@@ -12,6 +12,11 @@ const DISTANCIA: readonly { valor: Conforto['distancia']; rotulo: string }[] = [
   { valor: 'normal', rotulo: 'Normal' },
   { valor: 'longe', rotulo: 'Longe' },
 ]
+const QUALIDADE: readonly { valor: Conforto['qualidade']; rotulo: string }[] = [
+  { valor: 'automatica', rotulo: 'Automática' },
+  { valor: 'leve', rotulo: 'Leve' },
+  { valor: 'completa', rotulo: 'Completa' },
+]
 
 /**
  * O conforto da câmera, no menu (`sistemas/conforto.ts`): rapidez, distância, inverter para cima e
@@ -25,8 +30,22 @@ export function PreferenciasDeConforto() {
   const mudar = conforto.getState().mudar
 
   return (
-    <section className="arq-conforto" aria-label="Conforto da câmera">
-      <h3 className="arq-menu-titulo">Conforto da câmera</h3>
+    <section className="arq-conforto" aria-label="Conforto">
+      <h3 className="arq-menu-titulo">Conforto</h3>
+      <fieldset className="arq-escolha">
+        <legend>Qualidade</legend>
+        {QUALIDADE.map((o) => (
+          <button
+            key={o.valor}
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={atual.qualidade === o.valor}
+            onClick={() => mudar({ qualidade: o.valor })}
+          >
+            {o.rotulo}
+          </button>
+        ))}
+      </fieldset>
       <fieldset className="arq-escolha">
         <legend>Rapidez ao girar</legend>
         {RAPIDEZ.map((o) => (

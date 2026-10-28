@@ -12,6 +12,7 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "test:tempo-browser": "node playground/verificar-tempo-browser.mjs",
+    "test:qualidade-browser": "bun build playground/verificar-qualidade-browser.ts --target=node --external playwright-core --outfile .cache/verificar-qualidade-browser.mjs && node .cache/verificar-qualidade-browser.mjs",
     "test:capi-browser": "bun build playground/verificar-presente-capi-browser.ts --target=node --external playwright-core --outfile .cache/verificar-presente-capi-browser.mjs && node .cache/verificar-presente-capi-browser.mjs",
     "test:salvamento-browser": "bun build playground/verificar-salvamento-browser.ts --target=node --external playwright-core --outfile .cache/verificar-salvamento-browser.mjs && node .cache/verificar-salvamento-browser.mjs"
   },

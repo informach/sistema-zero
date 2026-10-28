@@ -10,8 +10,10 @@ import {
   type PointsMaterial,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
 import { NEVOA, RAIO_DAS_ESTRELAS } from './medidas'
+import { useQualidade } from './qualidade-da-cena'
 
 const CEU_DIA = new Color('#bfe6f5')
 const CEU_TARDE = new Color('#f6c99a')
@@ -19,6 +21,7 @@ const CEU_NOITE = new Color('#0e1638')
 
 /** Céu, sol, lua e estrelas, pelo relógio do jogo. */
 export function Ceu() {
+  const { nivel } = useQualidade()
   const { ambiente } = useJogo()
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   const scene = useThree((s) => s.scene)
@@ -52,6 +55,8 @@ export function Ceu() {
       .lerp(CEU_TARDE, tarde * 0.6)
     scene.background = cor
     nevoa.color.copy(cor)
+    nevoa.near = PERFIS_DE_QUALIDADE[nivel].nevoaInicio
+    nevoa.far = PERFIS_DE_QUALIDADE[nivel].nevoaFim
     scene.fog = nevoa
     const angulo = m.fracao * Math.PI * 2
     if (sol.current) {
