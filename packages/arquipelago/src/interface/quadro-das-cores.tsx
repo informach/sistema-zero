@@ -1,8 +1,14 @@
-import { ILHA_IDS, type IlhaId, ilha as ilhaDoContrato } from '@sistemazero/arquipelago-contracts'
+import {
+  type DesafioNaLista,
+  type DesafiosDoJogador,
+  ILHA_IDS,
+  type IlhaId,
+  ilha as ilhaDoContrato,
+} from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
-import { oQueFalta, type Quadro, quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import { desafioDeHoje, oQueFalta, type Quadro, quadrosDaIlha } from '../sistemas/quadro-das-cores'
 
 /** Quanto tempo a festa da cor fica na tela antes de o serviço guardar que foi vista. */
 const FESTA_MS = 4000
@@ -13,8 +19,8 @@ function ilhaDoPainel(painel: string | null): IlhaId | null {
   return (ILHA_IDS as readonly string[]).includes(id) ? (id as IlhaId) : null
 }
 
-function Premio({ q }: { q: Quadro }) {
-  const r = q.desafio?.recompensa
+function Premio({ d }: { d: DesafioNaLista | null }) {
+  const r = d?.recompensa
   if (!r) return null
   const partes = [
     r.cor ? 'pinta um pedaço da ilha' : null,
@@ -52,7 +58,7 @@ function CartaoDoQuadro({
           <span className="arq-quadro-estado">A equipe ainda vai pendurar este desafio</span>
         ) : null}
         {q.estado === 'trancado' && d ? <Falta d={d} /> : null}
-        {q.estado === 'disponivel' || q.estado === 'feito' ? <Premio q={q} /> : null}
+        {q.estado === 'disponivel' || q.estado === 'feito' ? <Premio d={d} /> : null}
       </div>
       {q.estado === 'disponivel' || q.estado === 'feito' ? (
         <button
@@ -65,6 +71,60 @@ function CartaoDoQuadro({
         </button>
       ) : null}
     </li>
+  )
+}
+
+/**
+ * O cartão "Desafio de hoje", em cima dos seis quadros: o desafio que o serviço guardou para a
+ * pessoa hoje (de qualquer ilha já aberta), feito ou por fazer.
+ */
+function CartaoDeHoje({
+  dados,
+  ocupado,
+  aoJogar,
+}: {
+  dados: DesafiosDoJogador
+  ocupado: boolean
+  aoJogar: (d: DesafioNaLista) => void
+}) {
+  const { estado, desafio } = desafioDeHoje(dados)
+  return (
+    <section className={`arq-quadro-cartao arq-quadro-hoje ${estado}`} aria-label="Desafio de hoje">
+      <span className="arq-quadro-numero" aria-hidden="true">
+        {estado === 'feito' ? '✓' : '★'}
+      </span>
+      <div className="arq-quadro-corpo">
+        <span className="arq-quadro-hoje-selo">Desafio de hoje</span>
+        {desafio ? <b>{desafio.titulo}</b> : null}
+        {estado === 'pronto' && desafio ? (
+          <span className="arq-quadro-estado">{ilhaDoContrato(desafio.ilha).nome}</span>
+        ) : null}
+        {estado === 'feito' ? (
+          <span className="arq-quadro-estado">Feito hoje. Amanhã tem outro.</span>
+        ) : null}
+        {estado === 'nenhum' ? (
+          <span className="arq-quadro-estado">Ainda não há desafio de hoje.</span>
+        ) : null}
+        {/* Banco recomeçado (já feito antes): refazer não paga de novo. */}
+        {estado === 'pronto' && desafio?.situacao === 'concluido' ? (
+          <p className="arq-quadro-premio">
+            Você já fez este. Desta vez é para treinar, sem moedas.
+          </p>
+        ) : estado === 'pronto' ? (
+          <Premio d={desafio} />
+        ) : null}
+      </div>
+      {estado === 'pronto' && desafio ? (
+        <button
+          type="button"
+          className="arq-botao"
+          disabled={ocupado}
+          onClick={() => aoJogar(desafio)}
+        >
+          Fazer o desafio
+        </button>
+      ) : null}
+    </section>
   )
 }
 
@@ -120,10 +180,10 @@ export function PainelDoQuadro() {
   const quadros = dados ? quadrosDaIlha(dados.desafios, ilhaId) : null
   const feitos = quadros?.filter((q) => q.estado === 'feito').length ?? 0
 
-  async function jogar(q: Quadro) {
-    if (!q.desafio) return
+  async function jogar(d: DesafioNaLista | null) {
+    if (!d) return
     setAviso(null)
-    const r = await desafios.getState().jogar(q.desafio.id, q.desafio.revisao)
+    const r = await desafios.getState().jogar(d.id, d.revisao)
     if (r === 'nao-abriu')
       setAviso('Não deu para abrir o desafio agora. Tente de novo daqui a pouco.')
     // Cor nova: o painel sai da frente para a pessoa ver a mancha colorir no quadro.
@@ -144,6 +204,13 @@ export function PainelDoQuadro() {
             ? `${nome}: ${feitos} de ${quadros.length} cores de volta.`
             : `Cada desafio feito devolve um pedaço da cor do ${nome}.`}
         </p>
+        {dados && quadros ? (
+          <CartaoDeHoje
+            dados={dados}
+            ocupado={ferramentaAberta || carregando}
+            aoJogar={(d) => void jogar(d)}
+          />
+        ) : null}
         {quadros ? (
           <ol className="arq-quadro-lista">
             {quadros.map((q) => (
@@ -151,7 +218,7 @@ export function PainelDoQuadro() {
                 key={q.numero}
                 q={q}
                 ocupado={ferramentaAberta || carregando}
-                aoJogar={(x) => void jogar(x)}
+                aoJogar={(x) => void jogar(x.desafio)}
               />
             ))}
           </ol>

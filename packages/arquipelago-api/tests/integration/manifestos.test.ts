@@ -206,7 +206,15 @@ describe('manifesto de desafios', () => {
     const m = manifesto(
       [
         item('corrida'),
-        item('corrida-pedras', { tipo: 'desafio-do-dia', quadro: null, ordem: 10 }),
+        item('corrida-pedras', {
+          tipo: 'desafio-do-dia',
+          quadro: null,
+          ordem: 10,
+          conteudo: {
+            ...item('x').conteudo,
+            recompensa: { cor: false, moedas: 10, moedasExtra: 5 },
+          },
+        }),
       ],
       'ilha',
     )

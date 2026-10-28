@@ -615,3 +615,85 @@ describe('recompensa vista', () => {
     expect(r.status).toBe(401)
   })
 })
+
+describe('desafio do dia', () => {
+  const RIO = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+  const doDia = async (headers = crianca(), filtro = '') =>
+    DesafiosDoJogadorSchema.parse((await chamar('GET', filtro, headers)).corpo).doDia
+  // AGORA = 27/10/2026 ao meio-dia em São Paulo: dia par (a ilha mais nova).
+  const amanha = () => {
+    agora = new Date(AGORA.getTime() + 86_400_000)
+    montar()
+  }
+
+  test('sem desafio do dia ao alcance (faltam blocos): null, e nada fica guardado', async () => {
+    expect(await doDia()).toBeNull()
+    expect(repo.doDia.size).toBe(0)
+  })
+
+  test('escolhe na primeira leitura e fica fixo no dia, mesmo com outro publicado', async () => {
+    blocos = ['sz_js_repeat', 'sz_js_while']
+    montar()
+    expect(await doDia()).toEqual({ id: PONTE, dia: '2026-10-27', feito: false })
+    publicar(
+      RIO,
+      metadados({ slug: 'rio', tipo: 'desafio-do-dia', quadro: null, ordem: 0 }),
+      conteudo('O rio', { recompensa: { cor: false, moedas: 10, moedasExtra: 5 } }),
+      [],
+    )
+    expect((await doDia())?.id).toBe(PONTE)
+    amanha()
+    expect((await doDia())?.id).toBe(RIO)
+  })
+
+  test('feito hoje: "Amanhã tem outro"; vem junto no filtro de outra ilha', async () => {
+    blocos = ['sz_js_repeat', 'sz_js_while']
+    montar()
+    await doDia()
+    expect((await conferir(PONTE)).corpo.concluidoAgora).toBe(true)
+    expect(await doDia()).toEqual({ id: PONTE, dia: '2026-10-27', feito: true })
+    const farol = DesafiosDoJogadorSchema.parse(
+      (await chamar('GET', '?ilha=farol', crianca())).corpo,
+    )
+    expect(farol.desafios.map((d) => d.id).sort()).toEqual([FAROL, PONTE].sort())
+    expect(farol.doDia?.feito).toBe(true)
+  })
+
+  test('todos feitos: o banco recomeça e refazer não paga de novo', async () => {
+    blocos = ['sz_js_repeat', 'sz_js_while']
+    montar()
+    await doDia()
+    await conferir(PONTE)
+    expect(creditar).toHaveBeenCalledTimes(1)
+    amanha()
+    expect(await doDia()).toEqual({ id: PONTE, dia: '2026-10-28', feito: false })
+    expect((await conferir(PONTE)).corpo.concluidoAgora).toBe(false)
+    expect(await doDia()).toEqual({ id: PONTE, dia: '2026-10-28', feito: true })
+    expect(creditar).toHaveBeenCalledTimes(1)
+  })
+
+  test('passar num desafio que não é o do dia não marca o dia', async () => {
+    blocos = ['sz_js_repeat', 'sz_js_while']
+    montar()
+    await doDia()
+    await conferir(BORBOLETA)
+    expect((await doDia())?.feito).toBe(false)
+  })
+
+  test('arquivado no meio do dia: some até amanhã', async () => {
+    blocos = ['sz_js_repeat', 'sz_js_while']
+    montar()
+    await doDia()
+    const ponte = repo.desafios.get(PONTE)
+    if (ponte) repo.desafios.set(PONTE, { ...ponte, situacao: 'arquivado' })
+    expect(await doDia()).toBeNull()
+  })
+
+  test('suporte vê a escolha sem guardar nada', async () => {
+    blocos = ['sz_js_repeat', 'sz_js_while']
+    montar()
+    const suporte = crianca({ 'x-auth-impersonator-id': EQUIPE })
+    expect(await doDia(suporte)).toEqual({ id: PONTE, dia: '2026-10-27', feito: false })
+    expect(repo.doDia.size).toBe(0)
+  })
+})

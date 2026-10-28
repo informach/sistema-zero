@@ -50,6 +50,13 @@
       "when": 1793175386857,
       "tag": "0006_require_publication_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793217009376,
+      "tag": "0007_desafio_do_dia",
+      "breakpoints": true
     }
   ]
 }

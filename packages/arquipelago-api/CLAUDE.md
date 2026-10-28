@@ -127,6 +127,16 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 - Repositório: `DrizzleRepositorioDoJogadorNosDesafios`. Testes:
   `tests/integration/desafios-do-jogador.test.ts`, `tests/unit/desafios.test.ts` e o bloco do
   jogador em `tests/db/desafios.test.ts` (corrida da conclusão e do extra, semana do teto).
+- Desafio do dia (28/10/2026, regras em `docs/arquipelago-regras.md` §7.12): regra pura
+  `domain/desafio-do-dia.ts` (`escolherDesafioDoDia`, `diaPar` pelos dias desde 1970); a lista
+  devolve `doDia` (`ServicoDosDesafios.doDia`): o guardado hoje ou, na primeira leitura do dia
+  de São Paulo, a escolha entre os `desafio-do-dia` disponíveis (feitos entram depois), gravada em
+  `desafio_do_dia` (PK jogador+dia, `INSERT ... ON CONFLICT DO NOTHING` e relê; migração gerada
+  `0007_desafio_do_dia`). Suporte não grava. Guardado que saiu de publicado vira `null` no dia.
+  `?ilha=` inclui o desafio do dia de outra ilha. `verificar` marca `feito_em` quando o principal
+  passa no desafio do dia de hoje (refazer marca, não paga de novo). Testes:
+  `tests/unit/desafio-do-dia.test.ts`, bloco "desafio do dia" do teste de integração e de
+  `tests/db/desafios.test.ts` (corrida da primeira escolha).
 
 ## Rotas (`/arquipelago/*`, todas exigem o `x-internal-token` em deploy)
 

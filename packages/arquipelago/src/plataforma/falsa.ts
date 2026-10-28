@@ -17,7 +17,7 @@ import {
   type SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
-import { criarDesafiosFalsos } from './desafios-falsos'
+import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 
 /**
@@ -38,6 +38,8 @@ export interface OpcoesDaPlataformaFalsa {
   adiantarMinutos?: number
   /** Desafios do Quadro das Cores: ligados (padrão, com exemplos no Bosque) ou desligados. */
   desafios?: 'ligados' | 'desligados'
+  /** O desafio do dia: `pronto` (padrão), `feito` ("Amanhã tem outro") ou `nenhum`. */
+  dia?: DiaDoPlayground
   /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
   obra?: 'exemplo'
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
@@ -71,7 +73,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const agora = o.agora ?? (() => new Date())
   const publico = o.publico ?? 'kids'
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
-  const desafios = criarDesafiosFalsos(o.posicao ?? 2)
+  const desafios = criarDesafiosFalsos(o.posicao ?? 2, { dia: o.dia, agora })
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()

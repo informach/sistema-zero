@@ -108,9 +108,14 @@ Pendente:
 5. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o
    token de leitura `ARQUIPELAGO_MEMBERS_TOKEN` (members e arquipelago-api) precisa ser criado no
    painel do Railway antes de entrar no `.railway/variables.ts`.
+6. Desafio do dia (28/10/2026, parte 2 de
+   `docs/plans/2026-10-28-arquipelago-desafio-do-dia-e-manifestos.md`): pronto no serviço, no
+   Admin e no jogo (regras em `docs/arquipelago-regras.md` §7.12). A tabela `desafio_do_dia` vem
+   na migração `0007_desafio_do_dia`, que roda no próximo deploy do serviço. O cartão só tem o que
+   mostrar depois que a equipe publicar desafios do tipo desafio do dia.
 
 ## Rodar sozinho
 
 `bun run --filter @sistemazero/arquipelago dev` abre o playground em `http://127.0.0.1:4520`
 (plataforma de mentira; parâmetros `posicao`, `publico`, `limite`, `liberado`, `novo`, `persistir`,
-`em=x,z`, `adiantar`). O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).
+`em=x,z`, `adiantar`, `cartas` e `dia=pronto|feito|nenhum` para o desafio do dia). O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).

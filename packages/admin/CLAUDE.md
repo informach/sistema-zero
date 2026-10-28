@@ -1984,3 +1984,12 @@ A fila agora oferece a ação separada de conferir período PAID na operadora, e
 admin/superadmin (staff vê o botão desabilitado). A escrita usa versão e requestId,
 sem datas/ator escolhidos pelo cliente. Resposta perdida gera consulta, sem repetir
 POST automaticamente. Auditoria permanente e CAS pertencem ao Payments, não ao BFF.
+
+## Jogo: desafios do Arquipélago (28/10/2026)
+
+Editor em `src/app/admin/jogo/game-admin.tsx` e regras do rascunho em
+`src/lib/game-challenge-authoring.ts`. Desafio do dia: `challengeType` troca o tipo (quadro só no
+Quadro das Cores, prêmio padrão do tipo por `MOEDAS_PADRAO_POR_TIPO`, cor desligada); a caixa da
+cor fica desligada no desafio do dia e `challengePayload` nunca manda a cor ligada (o contrato
+recusa, `corPermitida`). Regras: `docs/arquipelago-regras.md` §7.12. Testes:
+`tests/game-challenge-authoring.test.ts`.

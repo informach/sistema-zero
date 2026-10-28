@@ -2,12 +2,18 @@ import { describe, expect, test } from 'bun:test'
 import {
   blocosExigidos,
   ConteudoDoDesafioV1Schema,
+  CriarDesafioSchema,
   type CurriculoDeBlocos,
   coberturaDosBlocos,
+  corPermitida,
   DesafioAbertoSchema,
+  DesafioDoManifestoSchema,
   DesafioNaListaSchema,
+  DesafiosDoJogadorSchema,
+  GravarDesafioSchema,
   MetadadosDoDesafioSchema,
   MOEDAS_PADRAO,
+  MOEDAS_PADRAO_POR_TIPO,
   migrarConteudoDoDesafio,
 } from '../src'
 
@@ -58,6 +64,59 @@ describe('cadastro do desafio', () => {
     ).toBe(false)
     expect(
       MetadadosDoDesafioSchema.safeParse({ ...base, tipo: 'quadro-das-cores', quadro: 7 }).success,
+    ).toBe(false)
+  })
+})
+
+describe('desafio do dia', () => {
+  const doDia = {
+    slug: 'pedras',
+    publico: 'kids',
+    ilha: 'bosque',
+    tipo: 'desafio-do-dia',
+    quadro: null,
+    ordem: 1,
+  } as const
+  const comCor = (cor: boolean) => ({ ...conteudo, recompensa: { ...conteudo.recompensa, cor } })
+
+  test('nunca pinta a ilha: Admin (criar e gravar) e manifesto recusam a cor ligada', () => {
+    expect(corPermitida('desafio-do-dia', true)).toBe(false)
+    expect(corPermitida('quadro-das-cores', true)).toBe(true)
+    expect(
+      CriarDesafioSchema.safeParse({ metadados: doDia, conteudo: comCor(false) }).success,
+    ).toBe(true)
+    const criar = CriarDesafioSchema.safeParse({ metadados: doDia, conteudo: comCor(true) })
+    expect(criar.success).toBe(false)
+    expect(criar.error?.issues[0]?.path).toEqual(['conteudo', 'recompensa', 'cor'])
+    expect(
+      GravarDesafioSchema.safeParse({ revisaoBase: 1, metadados: doDia, conteudo: comCor(true) })
+        .success,
+    ).toBe(false)
+    expect(DesafioDoManifestoSchema.safeParse({ ...doDia, conteudo: comCor(true) }).success).toBe(
+      false,
+    )
+    expect(DesafioDoManifestoSchema.safeParse({ ...doDia, conteudo: comCor(false) }).success).toBe(
+      true,
+    )
+  })
+
+  test('prêmio padrão: 10 moedas e mais 5 no extra', () => {
+    expect(MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']).toEqual({ principal: 10, extra: 5 })
+    expect(MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']).toEqual(MOEDAS_PADRAO)
+  })
+
+  test('a lista traz doDia opcional: ausente, null ou { id, dia, feito }', () => {
+    const lista = { versao: 1, ilhas: [], desafios: [] }
+    expect(DesafiosDoJogadorSchema.safeParse(lista).success).toBe(true)
+    expect(DesafiosDoJogadorSchema.safeParse({ ...lista, doDia: null }).success).toBe(true)
+    const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+    expect(
+      DesafiosDoJogadorSchema.safeParse({ ...lista, doDia: { id, dia: '2026-10-28', feito: true } })
+        .success,
+    ).toBe(true)
+    expect(
+      DesafiosDoJogadorSchema.safeParse({ ...lista, doDia: { id, dia: '28/10/2026', feito: true } })
+        .success,
     ).toBe(false)
   })
 })

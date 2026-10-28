@@ -6,6 +6,7 @@ import {
   type CoberturaDosCartoes,
   CoberturaDosCartoesSchema,
   CriarDesafioSchema,
+  corPermitida,
   type DesafioDaEquipe,
   DesafioDaEquipeSchema,
   DesafiosDaEquipeSchema,
@@ -30,6 +31,7 @@ import {
   type ChallengeDraft,
   challengeDraft,
   challengePayload,
+  challengeType,
   newChallenge,
 } from '@/lib/game-challenge-authoring'
 
@@ -501,7 +503,10 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
                   value={draft.metadados.tipo}
                   onChange={(e) => {
                     const type = TIPOS_DE_DESAFIO.find((t) => t === e.target.value)
-                    if (type) meta({ tipo: type, quadro: type === 'quadro-das-cores' ? 1 : null })
+                    if (!type) return
+                    setDraft((d) => (d ? challengeType(d, type) : d))
+                    setDirty(true)
+                    setAnalysis(null)
                   }}
                 >
                   {TIPOS_DE_DESAFIO.map((t) => (
@@ -650,12 +655,17 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  checked={draft.conteudo.recompensa.cor}
+                  checked={
+                    draft.conteudo.recompensa.cor && corPermitida(draft.metadados.tipo, true)
+                  }
+                  disabled={!corPermitida(draft.metadados.tipo, true)}
                   onChange={(e) =>
                     patch({ recompensa: { ...draft.conteudo.recompensa, cor: e.target.checked } })
                   }
                 />
-                Pintar a parte da ilha correspondente ao quadro
+                {corPermitida(draft.metadados.tipo, true)
+                  ? 'Pintar a parte da ilha correspondente ao quadro'
+                  : 'O desafio do dia nunca pinta a ilha. A cor fica desligada.'}
               </label>
               <div className="grid gap-3 md:grid-cols-3">
                 <label className="text-sm">

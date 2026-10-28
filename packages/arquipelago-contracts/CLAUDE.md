@@ -28,7 +28,10 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   jogador).
 - `desafios.ts` (27/10/2026): desafios do jogo (conteúdo com versão e migração, metadados, visões
   da equipe e da pessoa, molde do Estúdio de desafio, `LIMITES_DO_DESAFIO`, `MOEDAS_PADRAO`). As
-  visões da pessoa são estritas: gabarito e regra nunca saem.
+  visões da pessoa são estritas: gabarito e regra nunca saem. Desafio do dia (28/10/2026):
+  `MOEDAS_PADRAO_POR_TIPO` (10 e 5), `corPermitida` (a cor é sempre falsa, obrigada por `refine`
+  em `CriarDesafioSchema`, `GravarDesafioSchema` e `DesafioDoManifestoSchema`) e o campo opcional
+  `doDia: { id, dia, feito } | null` em `DesafiosDoJogadorSchema`.
 - `aprenda.ts`: "Aprenda isso em", blocos exigidos e a cobertura dos blocos pelos cursos.
 - `cartas-lumi.ts`: os 14 cartões da rotina dos Lumis e o bloco que libera cada cartão de controle.
 - As regras do jogo em linguagem da dona, com onde mudar cada número: `docs/arquipelago-regras.md`.

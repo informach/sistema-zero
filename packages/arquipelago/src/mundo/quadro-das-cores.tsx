@@ -5,7 +5,12 @@ import { type Color, type MeshStandardMaterial, Object3D } from 'three'
 import quadroGlb from '../assets/itens/quadro-das-cores.glb'
 import { useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
-import { manchasAcesas, quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import {
+  AVISO_DO_DIA,
+  diaParaAvisar,
+  manchasAcesas,
+  quadrosDaIlha,
+} from '../sistemas/quadro-das-cores'
 import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import type { IlhaPreparada } from './ilha-completa'
@@ -23,6 +28,25 @@ export const LUGAR_DO_QUADRO = { paraDentro: 3.2, paraOLado: 2.4 } as const
 export const ALCANCE_DO_QUADRO = 2.6
 /** Quanto tempo a mancha leva para sair do cinza na festa da cor. */
 export const DURACAO_DA_COR_S = 1.6
+
+/** Guarda o último dia em que o Zappy avisou do desafio do dia (por perfil, neste aparelho). */
+const chaveDoAviso = (perfil: string) => `arquipelago:aviso-do-dia:${perfil}`
+
+function lerAviso(perfil: string): string | null {
+  try {
+    return localStorage.getItem(chaveDoAviso(perfil))
+  } catch {
+    return null
+  }
+}
+
+function gravarAviso(perfil: string, dia: string) {
+  try {
+    localStorage.setItem(chaveDoAviso(perfil), dia)
+  } catch {
+    // Sem armazenamento (aba anônima): o aviso pode voltar na próxima ilha.
+  }
+}
 
 /** O nome do painel na loja (um por ilha). */
 export const painelDoQuadro = (ilha: Ilha) => `quadro:${ilha.id}`
@@ -116,6 +140,15 @@ export function QuadroDasCores({
   useEffect(() => {
     void desafios.getState().carregar()
   }, [desafios])
+
+  // Desafio do dia por fazer: o Zappy avisa uma vez por dia, ao chegar numa ilha completa.
+  useEffect(() => {
+    if (!dados) return
+    const dia = diaParaAvisar(dados, lerAviso(plataforma.perfil.id))
+    if (!dia) return
+    gravarAviso(plataforma.perfil.id, dia)
+    loja.getState().dizer(AVISO_DO_DIA)
+  }, [dados, loja, plataforma])
 
   useInterativo(`quadro-${ilha.id}`, {
     x: centro.x + lugar.x,

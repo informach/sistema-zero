@@ -7,6 +7,7 @@ import { canonicalJson } from '@sistemazero/core/creations'
 import { and, asc, eq, isNull, type SQL, sql } from 'drizzle-orm'
 import type {
   ConclusaoGuardada,
+  DesafioDoDiaGuardado,
   DesafioNoBanco,
   DesafioPublicado,
   FiltroDosDesafios,
@@ -17,7 +18,13 @@ import type {
   SituacaoDasMoedas,
 } from '../../../domain/desafios.port'
 import type { Database } from './db'
-import { desafioProgresso, desafioPublicacoes, desafios, desafiosConcluidos } from './schema'
+import {
+  desafioDoDia,
+  desafioProgresso,
+  desafioPublicacoes,
+  desafios,
+  desafiosConcluidos,
+} from './schema'
 
 type Linha = typeof desafios.$inferSelect
 
@@ -464,6 +471,43 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
           eq(desafiosConcluidos.jogadorId, jogadorId),
           eq(desafiosConcluidos.desafioId, desafioId),
           isNull(desafiosConcluidos.recompensaVistaEm),
+        ),
+      )
+  }
+
+  async desafioDoDia(jogadorId: string, dia: string): Promise<DesafioDoDiaGuardado | null> {
+    const [linha] = await this.db
+      .select({ desafioId: desafioDoDia.desafioId, feitoEm: desafioDoDia.feitoEm })
+      .from(desafioDoDia)
+      .where(and(eq(desafioDoDia.jogadorId, jogadorId), eq(desafioDoDia.dia, dia)))
+    return linha ?? null
+  }
+
+  async guardarDesafioDoDia(e: {
+    jogadorId: string
+    dia: string
+    desafioId: string
+    agora: Date
+  }): Promise<DesafioDoDiaGuardado> {
+    await this.db
+      .insert(desafioDoDia)
+      .values({ jogadorId: e.jogadorId, dia: e.dia, desafioId: e.desafioId, escolhidoEm: e.agora })
+      .onConflictDoNothing()
+    const guardado = await this.desafioDoDia(e.jogadorId, e.dia)
+    if (!guardado) throw new Error('desafio do dia sumiu depois de gravar')
+    return guardado
+  }
+
+  async marcarDesafioDoDiaFeito(jogadorId: string, dia: string, desafioId: string, agora: Date) {
+    await this.db
+      .update(desafioDoDia)
+      .set({ feitoEm: agora })
+      .where(
+        and(
+          eq(desafioDoDia.jogadorId, jogadorId),
+          eq(desafioDoDia.dia, dia),
+          eq(desafioDoDia.desafioId, desafioId),
+          isNull(desafioDoDia.feitoEm),
         ),
       )
   }

@@ -42,6 +42,33 @@ export const LIMITES_DO_DESAFIO = {
 /** Moedas padrão de um desafio novo (o Admin pode mudar dentro dos tetos). */
 export const MOEDAS_PADRAO = { principal: 20, extra: 10 } as const
 
+/**
+ * Moedas padrão por tipo: o desafio do dia vale menos que um quadro do Quadro das Cores (proposta:
+ * "médio"; plano de 28/10/2026).
+ */
+export const MOEDAS_PADRAO_POR_TIPO: Readonly<
+  Record<TipoDeDesafio, { principal: number; extra: number }>
+> = {
+  'quadro-das-cores': MOEDAS_PADRAO,
+  'desafio-do-dia': { principal: 10, extra: 5 },
+  'pedido-de-morador': MOEDAS_PADRAO,
+}
+
+/** O desafio do dia nunca pinta a ilha: só o Quadro das Cores devolve a cor. */
+export function corPermitida(tipo: TipoDeDesafio, cor: boolean): boolean {
+  return !(tipo === 'desafio-do-dia' && cor)
+}
+
+const REGRA_DA_COR = {
+  message: 'O desafio do dia nunca pinta a ilha: a cor fica desligada.',
+  path: ['conteudo', 'recompensa', 'cor'],
+}
+const corDoTipo = (d: {
+  metadados?: { tipo: TipoDeDesafio }
+  tipo?: TipoDeDesafio
+  conteudo: { recompensa: { cor: boolean } }
+}) => corPermitida((d.metadados?.tipo ?? d.tipo) as TipoDeDesafio, d.conteudo.recompensa.cor)
+
 const Texto = (max: number) => z.string().trim().min(1).max(max)
 const Bloco = z.string().min(1).max(160)
 
@@ -134,18 +161,22 @@ export const MetadadosDoDesafioSchema = z
 export type MetadadosDoDesafio = z.infer<typeof MetadadosDoDesafioSchema>
 
 /** `POST /arquipelago/admin/desafios`: cria o rascunho. */
-export const CriarDesafioSchema = z.strictObject({
-  metadados: MetadadosDoDesafioSchema,
-  conteudo: ConteudoDoDesafioV1Schema,
-})
+export const CriarDesafioSchema = z
+  .strictObject({
+    metadados: MetadadosDoDesafioSchema,
+    conteudo: ConteudoDoDesafioV1Schema,
+  })
+  .refine(corDoTipo, REGRA_DA_COR)
 export type CriarDesafio = z.infer<typeof CriarDesafioSchema>
 
 /** `PUT /arquipelago/admin/desafios/:id`: grava por revisão (a revisão velha recebe 409). */
-export const GravarDesafioSchema = z.strictObject({
-  revisaoBase: z.number().int().min(1),
-  metadados: MetadadosDoDesafioSchema,
-  conteudo: ConteudoDoDesafioV1Schema,
-})
+export const GravarDesafioSchema = z
+  .strictObject({
+    revisaoBase: z.number().int().min(1),
+    metadados: MetadadosDoDesafioSchema,
+    conteudo: ConteudoDoDesafioV1Schema,
+  })
+  .refine(corDoTipo, REGRA_DA_COR)
 export type GravarDesafio = z.infer<typeof GravarDesafioSchema>
 
 /** `POST /:id/publicar|arquivar|reativar` e `/:id/analisar` sem corpo além da revisão. */
@@ -259,6 +290,7 @@ export const DesafioDoManifestoSchema = z
     conteudo: ConteudoDoDesafioV1Schema,
   })
   .refine(quadroSoNoQuadroDasCores, REGRA_DO_QUADRO)
+  .refine(corDoTipo, REGRA_DA_COR)
 export type DesafioDoManifesto = z.infer<typeof DesafioDoManifestoSchema>
 
 export const ManifestoDeDesafiosSchema = z
@@ -429,6 +461,19 @@ export const DesafiosDoJogadorSchema = z.strictObject({
     }),
   ),
   desafios: z.array(DesafioNaListaSchema),
+  /**
+   * O desafio do dia da pessoa (28/10/2026): fixo no dia de São Paulo, escolhido na primeira leitura
+   * do dia. `feito` = ela já concluiu esse desafio hoje ("Amanhã tem outro"). `null` quando ainda
+   * não há desafio do dia ao alcance dela. Opcional: o jogo antigo continua lendo.
+   */
+  doDia: z
+    .strictObject({
+      id: z.uuid(),
+      dia: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      feito: z.boolean(),
+    })
+    .nullable()
+    .optional(),
 })
 export type DesafiosDoJogador = z.infer<typeof DesafiosDoJogadorSchema>
 

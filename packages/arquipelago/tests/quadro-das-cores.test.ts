@@ -4,6 +4,9 @@ import { criarLojaDosDesafios } from '../src/estado/desafios'
 import { criarLoja } from '../src/estado/loja'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
 import {
+  AVISO_DO_DIA,
+  desafioDeHoje,
+  diaParaAvisar,
   lerDesafios,
   manchasAcesas,
   motivoDoErro,
@@ -93,9 +96,44 @@ describe('quadrosDaIlha', () => {
   })
 })
 
+describe('desafio de hoje', () => {
+  const doDia = d({
+    id: '00000000-0000-4000-8000-0000000000d1',
+    tipo: 'desafio-do-dia',
+    quadro: null,
+  })
+  const lista = (feito: boolean | null) => ({
+    versao: 1 as const,
+    ilhas: [],
+    desafios: [d({}), doDia],
+    doDia: feito === null ? null : { id: doDia.id, dia: '2026-10-28', feito },
+  })
+
+  test('pronto, feito ou nenhum (sem doDia, ou o desafio fora da lista)', () => {
+    expect(desafioDeHoje(lista(false))).toEqual({ estado: 'pronto', desafio: doDia })
+    expect(desafioDeHoje(lista(true)).estado).toBe('feito')
+    expect(desafioDeHoje(lista(null))).toEqual({ estado: 'nenhum', desafio: null })
+    expect(desafioDeHoje({ ...lista(false), desafios: [d({})] }).estado).toBe('nenhum')
+    const { doDia: _, ...antigo } = lista(false)
+    expect(desafioDeHoje(antigo).estado).toBe('nenhum')
+  })
+
+  test('o Zappy avisa uma vez por dia, só com desafio por fazer', () => {
+    expect(AVISO_DO_DIA).toBe('Tem desafio novo hoje no Quadro das Cores.')
+    expect(diaParaAvisar(lista(false), null)).toBe('2026-10-28')
+    expect(diaParaAvisar(lista(false), '2026-10-27')).toBe('2026-10-28')
+    expect(diaParaAvisar(lista(false), '2026-10-28')).toBeNull()
+    expect(diaParaAvisar(lista(true), null)).toBeNull()
+    expect(diaParaAvisar(lista(null), null)).toBeNull()
+  })
+})
+
 describe('loja dos desafios com a plataforma de mentira', () => {
-  function montar(desafios: 'ligados' | 'desligados' = 'ligados') {
-    const plataforma = criarPlataformaFalsa({ desafios })
+  function montar(
+    desafios: 'ligados' | 'desligados' = 'ligados',
+    dia?: 'pronto' | 'feito' | 'nenhum',
+  ) {
+    const plataforma = criarPlataformaFalsa({ desafios, dia })
     const loja = criarLoja({
       salvamento: plataforma.guardado().salvamento ?? (undefined as never),
       jornada: 2,
@@ -174,5 +212,29 @@ describe('loja dos desafios com a plataforma de mentira', () => {
     await desligado.getState().carregar()
     expect(desligado.getState().fechado).toBe('desligado')
     expect(desligado.getState().dados).toBeNull()
+  })
+
+  test('banco de mentira: o desafio do dia nos três estados; fazer marca feito hoje', async () => {
+    const pronto = montar().desafios
+    await pronto.getState().carregar()
+    const dados = pronto.getState().dados
+    const hoje = dados ? desafioDeHoje(dados) : null
+    expect(hoje?.estado).toBe('pronto')
+    expect(hoje?.desafio?.recompensa).toEqual({ cor: false, moedas: 10, moedasExtra: 5 })
+    // O desafio do dia não conta no Quadro das Cores.
+    expect(dados?.ilhas.find((i) => i.id === 'bosque')?.quadro.feitos).toBe(1)
+    expect(await pronto.getState().jogar(hoje?.desafio?.id ?? '', 1)).toBe('feito')
+    const depois = pronto.getState().dados
+    expect(depois && desafioDeHoje(depois).estado).toBe('feito')
+    expect(pronto.getState().festa).toBeNull()
+    for (const [dia, estado] of [
+      ['feito', 'feito'],
+      ['nenhum', 'nenhum'],
+    ] as const) {
+      const outro = montar('ligados', dia).desafios
+      await outro.getState().carregar()
+      const lidos = outro.getState().dados
+      expect(lidos && desafioDeHoje(lidos).estado).toBe(estado)
+    }
   })
 })

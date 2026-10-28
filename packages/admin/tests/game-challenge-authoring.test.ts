@@ -1,7 +1,12 @@
 import { expect, test } from 'bun:test'
 import { CriarDesafioSchema } from '@sistemazero/arquipelago-contracts'
 import { gameAdminRequest } from '../src/lib/arquipelago-admin'
-import { challengeDraft, challengePayload, newChallenge } from '../src/lib/game-challenge-authoring'
+import {
+  challengeDraft,
+  challengePayload,
+  challengeType,
+  newChallenge,
+} from '../src/lib/game-challenge-authoring'
 
 const id = 'db9ca185-3ce4-4eba-a07d-8cdba7a145fd'
 function valid() {
@@ -56,6 +61,18 @@ test('loading a saved challenge validates semantic rules rather than replacing t
   expect(loaded.conteudo.objetivos).not.toBe(saved.conteudo.objetivos)
   saved.conteudo.objetivos[0]!.rule = { type: 'unknown' }
   expect(() => challengeDraft(saved)).toThrow('incompatíveis')
+})
+test('desafio do dia: trocar o tipo desliga a cor e traz 10 e 5 moedas; a cor nunca sai ligada', () => {
+  const draft = challengeType(valid(), 'desafio-do-dia')
+  expect(draft.metadados).toMatchObject({ tipo: 'desafio-do-dia', quadro: null })
+  expect(draft.conteudo.recompensa).toMatchObject({ cor: false, moedas: 10, moedasExtra: 5 })
+  expect(CriarDesafioSchema.safeParse(challengePayload(draft)).success).toBe(true)
+  // Um rascunho antigo com a cor ligada sai desligado.
+  draft.conteudo.recompensa.cor = true
+  expect(CriarDesafioSchema.parse(challengePayload(draft)).conteudo.recompensa.cor).toBe(false)
+  const quadro = challengeType(draft, 'quadro-das-cores')
+  expect(quadro.metadados.quadro).toBe(1)
+  expect(quadro.conteudo.recompensa).toMatchObject({ moedas: 20, moedasExtra: 10 })
 })
 test('Admin BFF allows only game authoring paths and requires audience in lists', () => {
   expect(

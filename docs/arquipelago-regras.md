@@ -1159,7 +1159,7 @@ Arquivos: `sistemas/diario.ts`, `sistemas/pegadas.ts`, `interface/diario.tsx`,
 Arquivos principais:
 
 - `arquipelago-contracts/src/desafios.ts` e `arquipelago-contracts/src/aprenda.ts`;
-- `arquipelago-api/src/domain/desafios.ts`;
+- `arquipelago-api/src/domain/desafios.ts` e `arquipelago-api/src/domain/desafio-do-dia.ts`;
 - `arquipelago-api/src/application/servico-dos-desafios.ts` (quem joga);
 - `arquipelago-api/src/application/servico-da-equipe.ts` (Admin).
 
@@ -1169,9 +1169,9 @@ abaixo são as do serviço.
 
 ### 7.1 Tipos e quadros
 
-- **Tipos** (`TIPOS_DE_DESAFIO`): `quadro-das-cores`, `desafio-do-dia`, `pedido-de-morador`. Hoje
-  só o Quadro das Cores tem regra própria: ele tem um número de quadro. Regra própria para os
-  outros dois tipos não encontrada no código.
+- **Tipos** (`TIPOS_DE_DESAFIO`): `quadro-das-cores`, `desafio-do-dia`, `pedido-de-morador`. O
+  Quadro das Cores tem um número de quadro. O desafio do dia tem a escolha de cada dia e nunca
+  pinta a ilha (7.12). Regra própria para o pedido de morador não encontrada no código.
 - **Seis quadros por ilha** (`QUADROS_POR_ILHA = 6`).
   - Só o Quadro das Cores tem número de quadro, de 1 a 6, e ele sempre tem
     (`MetadadosDoDesafioSchema`).
@@ -1409,7 +1409,59 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
   A mesma tinta vale para a versão leve, a completa e as copas que esmaecem.
 - **Plataforma de mentira** (`src/plataforma/desafios-falsos.ts`): no playground, o Bosque tem o
   quadro 1 pronto, o 2 esperando o curso Repetições e o 3 feito. "Fazer o desafio" conclui em
-  0,4 s. Com `desafios: 'desligados'`, responde 403.
+  0,4 s. Com `desafios: 'desligados'`, responde 403. O desafio do dia de mentira está em 7.12.
+
+### 7.12 O desafio do dia
+
+Arquivos: `arquipelago-api/src/domain/desafio-do-dia.ts` (regra pura, `escolherDesafioDoDia`),
+`arquipelago-api/src/application/servico-dos-desafios.ts` (o campo `doDia` da lista), a tabela
+`desafio_do_dia` (migração `0007_desafio_do_dia`) e o cartão em
+`arquipelago/src/interface/quadro-das-cores.tsx`.
+
+- **De onde vem:** dos desafios publicados de tipo `desafio-do-dia` do público da pessoa, de uma
+  ilha já aberta para ela e com todos os blocos exigidos que ela já tem. Os que ela já fez também
+  entram, mas vêm depois.
+- **A ordem:**
+  1. os ainda não feitos vêm primeiro;
+  2. feitos todos, o banco recomeça pelo feito há mais tempo (a data da conclusão);
+  3. **dia par puxa a ilha mais nova** (a de posição mais alta entre os desafios da etapa 1 ou 2)
+     e **dia ímpar, as anteriores**. Sem desafio no grupo do dia, vale qualquer ilha;
+  4. no mesmo grupo, a ordem da equipe e depois o id. A escolha nunca é sorteada.
+- **Par ou ímpar:** conta os dias desde 1º de janeiro de 1970 (`diaPar`). Assim os dias se
+  alternam sempre, sem repetir na virada do mês (do dia 31 para o dia 1). Exemplo: 28/10/2026 é
+  ímpar e 29/10/2026 é par.
+- **Fixo no dia de São Paulo** (`diaDeSaoPaulo`): a escolha é guardada na primeira leitura de
+  `GET /arquipelago/desafios` do dia (tabela `desafio_do_dia`: pessoa, dia, desafio, quando foi
+  escolhido e quando foi feito). Ela não muda até a meia-noite, mesmo se a equipe publicar outro.
+  Duas leituras ao mesmo tempo: vale a que gravou primeiro.
+- **Arquivado no meio do dia:** o desafio guardado some, e `doDia` volta `null` até o dia
+  seguinte.
+- **Suporte** vê a escolha do dia sem gravar nada.
+- **A resposta:** `doDia: { id, dia, feito }` ou `null` quando não há desafio do dia ao alcance da
+  pessoa. O campo é opcional, para o jogo antigo continuar lendo. Com `?ilha=`, o desafio do dia
+  vem na lista mesmo quando é de outra ilha.
+- **Feito:** quando a conferência passa no principal do desafio do dia de hoje, o dia fica feito
+  ("Amanhã tem outro" até a meia-noite de São Paulo). Refazer é permitido. Quem refaz um desafio
+  que já tinha concluído em outro dia marca o dia como feito, mas não ganha moedas de novo (a
+  conclusão é uma só, 7.8).
+- **O prêmio:** o padrão é 10 moedas e mais 5 no extra (`MOEDAS_PADRAO_POR_TIPO`). A cor é sempre
+  desligada: o contrato recusa a cor ligada (`corPermitida`, em `CriarDesafioSchema`,
+  `GravarDesafioSchema` e `DesafioDoManifestoSchema`, com a mensagem "O desafio do dia nunca pinta
+  a ilha: a cor fica desligada."). No Admin, a caixa da cor fica desligada e trocar o tipo traz o
+  prêmio padrão do novo tipo.
+- **Não conta no Quadro das Cores:** ele não tem número de quadro e não pinta a ilha.
+- **O cartão "Desafio de hoje"** fica em cima dos seis quadros do painel:
+  - por fazer: o título, a ilha, o prêmio e "Fazer o desafio". Quando o banco recomeçou (desafio
+    já feito antes), no lugar do prêmio aparece "Você já fez este. Desta vez é para treinar, sem
+    moedas.";
+  - feito: "Feito hoje. Amanhã tem outro.";
+  - sem desafio: "Ainda não há desafio de hoje.".
+- **O aviso do Zappy:** ao chegar numa ilha completa (onde fica o cavalete), com o desafio do dia
+  por fazer, o Zappy diz "Tem desafio novo hoje no Quadro das Cores." Ele avisa uma vez por dia,
+  por perfil e por aparelho (`localStorage` `arquipelago:aviso-do-dia:<perfil>`). Numa aba anônima
+  o aviso pode se repetir.
+- **Plataforma de mentira:** "A corrida das pedras" no Bosque, com `?dia=pronto` (padrão),
+  `?dia=feito` ou `?dia=nenhum` no playground. "Fazer o desafio" deixa o dia feito.
 
 ## 8. Cartões dos Lumis
 
@@ -1496,6 +1548,7 @@ Arquivos: `arquipelago/src/sistemas/caderno-dos-lumis.ts` (regra pura),
 |---|---|---|
 | Padrão do prêmio principal | 20 moedas | `arquipelago-contracts/src/desafios.ts`, `MOEDAS_PADRAO.principal` |
 | Padrão do extra | 10 moedas | `MOEDAS_PADRAO.extra` |
+| Padrão do desafio do dia | 10 moedas e mais 5 no extra | `MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']` |
 | Máximo do principal | 100 moedas | `LIMITES_DO_DESAFIO.moedas` |
 | Máximo do extra | 50 moedas | `LIMITES_DO_DESAFIO.moedasExtra` |
 
@@ -1678,7 +1731,7 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Pedaços da ilha | 30% ao abrir a ponte; 2,4 s de tinta; borda de 18% | `arquipelago/src/sistemas/cor-da-ilha.ts`, `COR_AO_ABRIR`, `DURACAO_DA_TINTA_S`, `BORDA_DOS_PEDACOS` |
 | Festa da cor | 1,6 s na mancha; 4 s até avisar o serviço | `quadro-das-cores.tsx`, `DURACAO_DA_COR_S`; `arquipelago/src/interface/quadro-das-cores.tsx`, `FESTA_MS` |
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
-| Moedas padrão | 20 e 10 | `desafios.ts`, `MOEDAS_PADRAO` |
+| Moedas padrão | 20 e 10; desafio do dia 10 e 5 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
 | Teto semanal de moedas do jogo | 150 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
 | Teto diário dos cursos | 100 | `members/src/domain/gamification/coins.ts`, `DAILY_COIN_CAP` |
