@@ -81,6 +81,18 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre).
 
+## Quadro das Cores (28/10/2026)
+
+- Regra pura em `src/sistemas/quadro-das-cores.ts` (`quadrosDaIlha`, `novosFeitos`, `oQueFalta`,
+  `motivoDoErro`); loja à parte em `src/estado/desafios.ts` (`lojaDosDesafios(loja, plataforma)`,
+  uma por montagem via WeakMap, sem mexer no contexto).
+- `src/mundo/quadro-das-cores.tsx`: o cavalete (`assets/itens/quadro-das-cores.glb`, nós `quadro`
+  e `cor-1`..`cor-6`) perto da `chegada` da ilha completa; cada mancha tem material próprio e vai
+  do `CINZA` à cor do arquivo. `src/interface/quadro-das-cores.tsx`: o painel (`painelAberto` na
+  loja congela o personagem).
+- A situação de cada desafio vem SEMPRE do serviço; o jogo só relê a lista depois do Estúdio.
+  Regras e textos: `docs/arquipelago-regras.md` §7.11. Testes: `tests/quadro-das-cores.test.ts`.
+
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 
 - `src/sistemas/zappy.ts` (puro, `tests/zappy.test.ts`): voa à direita e um pouco atrás de onde

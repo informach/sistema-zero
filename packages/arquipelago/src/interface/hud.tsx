@@ -5,6 +5,7 @@ import { restanteDeHoje } from '../estado/loja'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { comer } from '../sistemas/necessidades'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
 
 function Necessidades() {
@@ -227,8 +228,12 @@ export function Hud() {
   const { loja } = useJogo()
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (e.code === 'Escape' && !loja.getState().tempoPausado && !loja.getState().ferramentaAberta)
-        loja.getState().abrirMenu(!loja.getState().menuAberto)
+      if (e.code !== 'Escape') return
+      const s = loja.getState()
+      if (s.tempoPausado || s.ferramentaAberta) return
+      // Com um painel do mundo aberto (o Quadro das Cores), o Esc fecha o painel.
+      if (s.painelAberto !== null) s.abrirPainel(null)
+      else s.abrirMenu(!s.menuAberto)
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)
@@ -254,6 +259,7 @@ export function Hud() {
         <Inventario />
       </div>
       <ControlesDeToque />
+      <PainelDoQuadro />
       <Menu />
     </div>
   )

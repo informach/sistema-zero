@@ -37,6 +37,7 @@ import {
   tingir,
   useModelo,
 } from './modelos'
+import { QuadroDasCores } from './quadro-das-cores'
 
 const TRECHO_QUEBRADO = 0.25
 const DURACAO_DA_CHEGADA_MS = 4500
@@ -250,6 +251,11 @@ function IlhaDoAnel({
           colide={completaColide(estado)}
           troca={troca}
         />
+      )}
+      {preparada && completaColide(estado) && (
+        <ComReserva reserva={null}>
+          <QuadroDasCores ilha={ilha} centro={centro} preparada={preparada} />
+        </ComReserva>
       )}
     </group>
   )

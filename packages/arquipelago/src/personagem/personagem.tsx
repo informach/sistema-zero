@@ -67,7 +67,11 @@ export function Personagem() {
     if (!b || !col) return
     const estado = loja.getState()
     const parado =
-      estado.menuAberto || estado.ferramentaAberta || estado.tempoAcabou || estado.tempoPausado
+      estado.menuAberto ||
+      estado.painelAberto !== null ||
+      estado.ferramentaAberta ||
+      estado.tempoAcabou ||
+      estado.tempoPausado
 
     if (pedidos.teleporte) {
       b.setNextKinematicTranslation(pedidos.teleporte)

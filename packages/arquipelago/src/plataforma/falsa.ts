@@ -12,6 +12,7 @@ import {
   RegistrarTempoSchema,
   type SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
+import { criarDesafiosFalsos } from './desafios-falsos'
 
 /**
  * Uma plataforma de mentira para rodar o jogo sozinho (playground e testes). Cumpre o mesmo
@@ -29,6 +30,8 @@ export interface OpcoesDaPlataformaFalsa {
   comecarEm?: { x: number; z: number; y?: number }
   /** Volta o começo do jogo N minutos (para ver a noite: 13). */
   adiantarMinutos?: number
+  /** Desafios do Quadro das Cores: ligados (padrão, com exemplos no Bosque) ou desligados. */
+  desafios?: 'ligados' | 'desligados'
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -58,6 +61,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const agora = o.agora ?? (() => new Date())
   const publico = o.publico ?? 'kids'
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
+  const desafios = criarDesafiosFalsos(o.posicao ?? 2)
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
@@ -120,6 +124,12 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     servico: {
       async buscar(caminho, opcoes) {
         const metodo = opcoes?.metodo ?? 'GET'
+        if (caminho.startsWith('/desafios')) {
+          if (o.desafios === 'desligados')
+            return { status: 403, corpo: { error: { code: 'DESAFIOS_DESLIGADOS' } } }
+          const r = desafios.buscar(caminho, metodo)
+          if (r) return r
+        }
         if (caminho === '/acesso' && metodo === 'GET') return { status: 200, corpo: acesso() }
         if (caminho === '/salvamento' && metodo === 'GET') return { status: 200, corpo: guardado }
         if (caminho === '/salvamento' && metodo === 'PUT') {
@@ -168,7 +178,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         return { status: 404, corpo: { code: 'NOT_FOUND' } }
       },
     },
-    abrirFerramenta: async () => ({ situacao: 'indisponivel', motivo: 'playground' }),
+    abrirFerramenta: async (pedido) =>
+      (await desafios.abrir(pedido)) ?? { situacao: 'indisponivel', motivo: 'playground' },
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,

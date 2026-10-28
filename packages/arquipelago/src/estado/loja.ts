@@ -20,6 +20,8 @@ export interface EstadoDoJogo {
   dentroDeCasa: boolean
   nadando: boolean
   menuAberto: boolean
+  /** Um painel do mundo aberto por cima do jogo (o Quadro das Cores); o personagem para. */
+  painelAberto: string | null
   ferramentaAberta: boolean
   tempoAcabou: boolean
   tempoPausado: boolean
@@ -30,6 +32,7 @@ export interface EstadoDoJogo {
   definirAlvo(alvo: { id: string; rotulo: string } | null): void
   definirLugar(lugar: { dentroDeCasa: boolean; nadando: boolean }): void
   abrirMenu(aberto: boolean): void
+  abrirPainel(painel: string | null): void
   definirFerramentaAberta(aberta: boolean): void
   definirTempoPausado(pausado: boolean): void
   registrarTempo(usadoHojeSegundos: number, acabou: boolean): void
@@ -60,6 +63,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     dentroDeCasa: true,
     nadando: false,
     menuAberto: false,
+    painelAberto: null,
     ferramentaAberta: false,
     tempoAcabou: false,
     tempoPausado: false,
@@ -85,6 +89,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     abrirMenu(aberto) {
       set({ menuAberto: aberto })
+    },
+    abrirPainel(painel) {
+      set({ painelAberto: painel })
     },
     definirFerramentaAberta(aberta) {
       set({ ferramentaAberta: aberta })

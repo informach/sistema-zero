@@ -668,6 +668,41 @@ Mudar os blocos de um curso, a lista da pessoa ou o desafio não tira o que ela 
 - **Members não configurado** (`MEMBERS_URL` e `ARQUIPELAGO_MEMBERS_TOKEN`): os desafios
   respondem 424 `PLATAFORMA_INDISPONIVEL`, e o resto do jogo segue.
 
+### 7.11 O Quadro das Cores no jogo
+
+Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
+`src/estado/desafios.ts` (loja), `src/mundo/quadro-das-cores.tsx` (o cavalete no mundo) e
+`src/interface/quadro-das-cores.tsx` (o painel).
+
+- **Onde fica:** um cavalete perto da chegada da ponte de cada ilha completa (hoje só o Bosque),
+  3,2 m para dentro e 2,4 m para o lado (`LUGAR_DO_QUADRO`), de frente para quem chega. Ele
+  aparece junto com a versão completa da ilha.
+- **Abrir:** a até 2,6 m (`ALCANCE_DO_QUADRO`) aparece "Ver o Quadro das Cores" (tecla E ou
+  toque). O painel congela o personagem; Esc ou "Voltar ao jogo" fecha.
+- **Os seis quadros:** cada quadro mostra o desafio da equipe com o número dele. A situação vem
+  sempre do serviço (`GET /desafios`):
+  - `concluido`: "Cor de volta", com "Fazer de novo";
+  - `disponivel`: "Pronto para fazer", com "Fazer o desafio";
+  - ilha fechada: "Abre quando a ilha abrir";
+  - faltam blocos: "Aprenda primeiro em:" e o primeiro curso de cada bloco que falta;
+  - sem desafio publicado: "A equipe ainda vai pendurar este desafio".
+- **Jogar:** o botão pede `abrirFerramenta` com o molde do desafio. O Estúdio de desafio abre
+  por cima e o jogo fica pausado. Na volta, a lista é lida de novo, porque a situação e a cor
+  nunca são decididas pelo jogo.
+- **A festa da cor:** um quadro que passou a `concluido` entre duas leituras faz o painel fechar
+  sozinho. O Zappy diz "Mais uma cor voltou para o ...", e a mancha `cor-N` do cavalete sai do
+  cinza em 1,6 s (`DURACAO_DA_COR_S`). Depois de 4 s o jogo avisa o serviço
+  (`recompensa-vista`), para a festa não se repetir em outro aparelho. Na primeira leitura ao
+  chegar na ilha, o que já está feito aparece pintado, sem festa.
+- **Fechado:** com os desafios desligados ou sem acesso (403), o painel diz que os desafios
+  ainda não abriram. Com o serviço fora do ar, diz que não conseguiu ler e oferece "Tentar de
+  novo".
+- **Ainda falta:** a cor da ilha inteira continua seguindo a posição na jornada (as pontes). O
+  quadro só pinta as seis manchas do cavalete.
+- **Plataforma de mentira** (`src/plataforma/desafios-falsos.ts`): no playground, o Bosque tem o
+  quadro 1 pronto, o 2 esperando o curso Repetições e o 3 feito. "Fazer o desafio" conclui em
+  0,4 s. Com `desafios: 'desligados'`, responde 403.
+
 ## 8. Cartões dos Lumis
 
 Arquivo: `arquipelago-contracts/src/cartas-lumi.ts`, constante `CARTAS_LUMI`. O catálogo fica no
@@ -860,6 +895,8 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Câmera | seção 6.8 | `arquipelago/src/mundo/medidas.ts`, `GRUA_DA_CAMERA`, `CAMERA_NO_ALTO` e vizinhos |
 | Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |
 | Quadros por ilha | 6 | `arquipelago-contracts/src/desafios.ts`, `QUADROS_POR_ILHA` |
+| Lugar e alcance do Quadro das Cores | 3,2 e 2,4 m; 2,6 m | `arquipelago/src/mundo/quadro-das-cores.tsx`, `LUGAR_DO_QUADRO`, `ALCANCE_DO_QUADRO` |
+| Festa da cor | 1,6 s na mancha; 4 s até avisar o serviço | `quadro-das-cores.tsx`, `DURACAO_DA_COR_S`; `arquipelago/src/interface/quadro-das-cores.tsx`, `FESTA_MS` |
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
 | Moedas padrão | 20 e 10 | `desafios.ts`, `MOEDAS_PADRAO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
