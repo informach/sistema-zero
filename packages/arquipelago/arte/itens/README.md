@@ -132,10 +132,10 @@ Tamanho = largura × altura × fundo, em unidades do jogo.
 | `queijo.glb` | ingredientes | `queijo` | 0.29 × 0.08 × 0.29 | 1020 | 32 KB |
 | `isca-minhoca.glb` | iscas | `isca-minhoca` | 0.10 × 0.17 × 0.14 | 3736 | 88 KB |
 | `isca-pena.glb` | iscas | `isca-pena` | 0.16 × 0.05 × 0.10 | 1884 | 44 KB |
-| `concha-buzio.glb` | colecoes | `concha-buzio` | 0.08 × 0.05 × 0.06 | 3360 | 69 KB |
 | `concha-caracol.glb` | colecoes | `concha-caracol` | 0.10 × 0.12 × 0.09 | 1368 | 33 KB |
 | `concha-listrada.glb` | colecoes | `concha-listrada` | 0.09 × 0.06 × 0.08 | 3600 | 98 KB |
 | `concha-mexilhao.glb` | colecoes | `concha-mexilhao` | 0.07 × 0.02 × 0.05 | 1320 | 35 KB |
+| `concha-tigre.glb` | colecoes | `concha-tigre` | 0.08 × 0.05 × 0.06 | 3360 | 69 KB |
 | `concha-vieira.glb` | colecoes | `concha-vieira` | 0.11 × 0.02 × 0.10 | 1768 | 55 KB |
 | `cristal-azul.glb` | colecoes | `cristal-azul` | 0.12 × 0.15 × 0.07 | 152 | 14 KB |
 | `cristal-rosa.glb` | colecoes | `cristal-rosa` | 0.09 × 0.07 × 0.08 | 60 | 5 KB |
@@ -172,4 +172,4 @@ Os ícones somam 328 KB (128 cores com alfa, o maior tem 7,8 KB).
 | `cozinha.py` | fogão a lenha, panela, frigideira, colher de pau, tábua de corte |
 | `ingredientes.py` | fubá (saco de pano com a conchinha), leite (garrafinha), ovo (caixinha de meia dúzia), polvilho (saquinho de papel), queijo minas sem uma fatia, peixe cru na folha de bananeira, coco seco e a metade partida, limão e a metade cortada, cacau inteiro e aberto |
 | `iscas.py` | latinha de minhocas, isca colorida de penas (anzol de ponta redonda) |
-| `colecoes.py` | conchas da praia (caracol, vieira, búzio, mexilhão, conchinha listrada (uma valva com uma costela de cada cor), estrela-do-mar), peixes da praia (sardinha, robalo, garoupa, linguado, peixe-voador), notas do Pico Gelado (semínima, colcheia, duas colcheias, clave de sol), cristais do Pico (ponta de gelo azul, pedra lapidada rosa, ametista na pedra, geodo verde), estrelas da Ilha das Nuvens (cadente, sorriso, cintilante, trio) |
+| `colecoes.py` | conchas da praia (caracol, vieira, tigre (um cauri pintado), mexilhão, conchinha listrada (uma valva com uma costela de cada cor), estrela-do-mar), peixes da praia (sardinha, robalo, garoupa, linguado, peixe-voador), notas do Pico Gelado (semínima, colcheia, duas colcheias, clave de sol), cristais do Pico (ponta de gelo azul, pedra lapidada rosa, ametista na pedra, geodo verde), estrelas da Ilha das Nuvens (cadente, sorriso, cintilante, trio) |

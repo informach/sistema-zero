@@ -178,25 +178,6 @@
     "materiais": ["madeiraClara"],
     "tamanho": [0.335, 0.025, 0.07]
   },
-  "concha-buzio": {
-    "grupo": "colecoes",
-    "triangulos": 3360,
-    "kb": 68.8,
-    "nos": {
-      "concha-buzio": 3360
-    },
-    "vazios": [],
-    "clipes": [],
-    "materiais": [
-      "buzio",
-      "buzioBoca",
-      "buzioDorso",
-      "buzioFenda",
-      "buzioPinta",
-      "buzioPintaClara"
-    ],
-    "tamanho": [0.08, 0.051, 0.059]
-  },
   "concha-caracol": {
     "grupo": "colecoes",
     "triangulos": 1368,
@@ -232,6 +213,25 @@
     "clipes": [],
     "materiais": ["mexilhao", "mexilhaoClaro", "nacar"],
     "tamanho": [0.065, 0.018, 0.054]
+  },
+  "concha-tigre": {
+    "grupo": "colecoes",
+    "triangulos": 3360,
+    "kb": 68.8,
+    "nos": {
+      "concha-tigre": 3360
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "tigre",
+      "tigreBoca",
+      "tigreDorso",
+      "tigreFenda",
+      "tigrePinta",
+      "tigrePintaClara"
+    ],
+    "tamanho": [0.08, 0.051, 0.059]
   },
   "concha-vieira": {
     "grupo": "colecoes",

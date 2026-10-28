@@ -2,7 +2,7 @@
 
 Um nó por arquivo, com o nome do arquivo e a base na origem.
 
-- Conchas da praia (a sua ilha): concha-caracol · concha-vieira · concha-buzio · concha-mexilhao ·
+- Conchas da praia (a sua ilha): concha-caracol · concha-vieira · concha-tigre · concha-mexilhao ·
   concha-listrada · estrela-do-mar
 - Peixes da praia (a sua ilha, de pescar): peixe-sardinha · peixe-robalo · peixe-garoupa ·
   peixe-linguado · peixe-voador
@@ -28,12 +28,12 @@ lib_q.PALETTE.update({
     'conchaMiolo': ('#ffc9c0', 0.35, None, 0),
     'vieira': ('#ff9e8f', 0.5, None, 0),
     'vieiraClara': ('#ffd0c4', 0.5, None, 0),
-    'buzio': ('#f6e6c8', 0.1, None, 0),
-    'buzioDorso': ('#d99a52', 0.1, None, 0),
-    'buzioPinta': ('#5a3420', 0.1, None, 0),
-    'buzioPintaClara': ('#8a5530', 0.1, None, 0),
-    'buzioBoca': ('#fff6e6', 0.15, None, 0),
-    'buzioFenda': ('#b5875a', 0.3, None, 0),
+    'tigre': ('#f6e6c8', 0.1, None, 0),
+    'tigreDorso': ('#d99a52', 0.1, None, 0),
+    'tigrePinta': ('#5a3420', 0.1, None, 0),
+    'tigrePintaClara': ('#8a5530', 0.1, None, 0),
+    'tigreBoca': ('#fff6e6', 0.15, None, 0),
+    'tigreFenda': ('#b5875a', 0.3, None, 0),
     'conchaJunta': ('#b77a93', 0.6, None, 0),
     'conchaBico': ('#c9a3e8', 0.45, None, 0),
     'mexilhao': ('#33407e', 0.3, None, 0),
@@ -168,11 +168,12 @@ def concha_vieira():
     return p
 
 
-def concha_buzio():
-    """Búzio (cauri): ovo liso e brilhante, abaulado em cima e chato embaixo, creme-dourado com
-    pintas marrons. Inclinado para mostrar o dorso; a fenda de dentinhos aparece só na beirada."""
+def concha_tigre():
+    """Concha-tigre, o cauri que chamam de búzio-tigre (o nome evita confundir com o Lumi Búzio):
+    ovo liso e brilhante, abaulado em cima e chato embaixo, creme-dourado com pintas marrons.
+    Inclinado para mostrar o dorso; a fenda de dentinhos aparece só na beirada."""
     A, B, C = 0.042, 0.027, 0.031
-    o = esfera(1, (0, 0, 0), 'buzio', escala=(A, B, C), seg=22, aneis=12)
+    o = esfera(1, (0, 0, 0), 'tigre', escala=(A, B, C), seg=22, aneis=12)
 
     def forma(v):
         t = v.x / A
@@ -182,16 +183,16 @@ def concha_buzio():
     deformar(o, forma)
     # Embaixo claro (a base dos dentes) e uma faixa mais clara no meio do dorso.
     # A base clara: o fundo chato, onde fica a fenda.
-    # Dorso caramelo com a linha clara no meio, lados creme e o fundo branco (como o búzio-tigre).
+    # Dorso caramelo com a linha clara no meio, lados creme e o fundo branco (como o cauri de verdade).
     def cores(c, n):
         # Medido nos anéis e meridianos da esfera (antes de afinar as pontas): bordas lisas.
         k = 1 - 0.2 * (c.x / A) ** 2
         lat = c.z / (C * k)
         lon = math.degrees(math.atan2(c.y / (B * k), c.x / A))
         if lat < -0.2 * 0.5:
-            return 'buzioBoca' if lat < -0.5 * 0.5 else None
+            return 'tigreBoca' if lat < -0.5 * 0.5 else None
         if lat > 0.12:
-            return None if min(abs(lon), abs(abs(lon) - 180)) < 9 and lat > 0.6 else 'buzioDorso'
+            return None if min(abs(lon), abs(abs(lon) - 180)) < 9 and lat > 0.6 else 'tigreDorso'
         return None
     pintar_por(o, cores)
     p = [o]
@@ -209,7 +210,7 @@ def concha_buzio():
         if pt is None or any((pt - f).length < (r_ + fr) * 1.25 for f, fr in feitos):
             continue
         feitos.append((pt, r_))
-        q = pinta(o, origem, tuple(-d), r_, 'buzioPinta' if grande else 'buzioPintaClara', achatar=0.25, seg=7, aneis=4)
+        q = pinta(o, origem, tuple(-d), r_, 'tigrePinta' if grande else 'tigrePintaClara', achatar=0.25, seg=7, aneis=4)
         if q:
             p.append(q)
         if len(feitos) >= 46:
@@ -220,12 +221,12 @@ def concha_buzio():
         x = -0.034 + 0.068 * i / 12
         pt, _ = na_superficie(o, (x, 0, -0.2), (0, 0, 1))
         fenda.append((x, 0, pt.z - 0.0002))
-    p.append(tube(fenda, [0.0012] + [0.0019] * 11 + [0.0012], 'buzioFenda', seg=6))
+    p.append(tube(fenda, [0.0012] + [0.0019] * 11 + [0.0012], 'tigreFenda', seg=6))
     for i in range(11):
         x = -0.029 + 0.058 * i / 10
         for s_ in (-1, 1):
             pt, nr = na_superficie(o, (x, s_ * 0.0034, -0.2), (0, 0, 1))
-            d = esfera(0.0015, tuple(pt - nr * 0.0002), 'buzioBoca', escala=(0.6, 1.4, 0.5), seg=6, aneis=4)
+            d = esfera(0.0015, tuple(pt - nr * 0.0002), 'tigreBoca', escala=(0.6, 1.4, 0.5), seg=6, aneis=4)
             d.rotation_euler = Vector((0, 0, 1)).rotation_difference(nr).to_euler()
             p.append(d)
     # Inclinado de lado: o dorso pintado fica de frente e a fenda com os dentinhos espia na beirada de baixo.
@@ -853,7 +854,7 @@ def estrela_trio():
 
 
 FUNCOES = {
-    'concha-caracol': concha_caracol, 'concha-vieira': concha_vieira, 'concha-buzio': concha_buzio,
+    'concha-caracol': concha_caracol, 'concha-vieira': concha_vieira, 'concha-tigre': concha_tigre,
     'concha-mexilhao': concha_mexilhao, 'concha-listrada': concha_listrada, 'estrela-do-mar': estrela_do_mar,
     'peixe-sardinha': peixe_sardinha, 'peixe-robalo': peixe_robalo, 'peixe-garoupa': peixe_garoupa,
     'peixe-linguado': peixe_linguado, 'peixe-voador': peixe_voador,
