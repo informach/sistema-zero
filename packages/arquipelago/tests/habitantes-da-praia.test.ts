@@ -7,9 +7,11 @@ import { soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { colisoresDoHabitante } from '../src/mundo/habitantes-da-praia-colisao'
 import { alturaDaIlha, chaoEm, PIER } from '../src/mundo/medidas'
 import {
+  ACENO_DO_NICO,
   criarEstadoDoNico,
   HABITANTES_DA_PRAIA,
   type HabitanteDaPraia,
+  olharDoNico,
   passoDoNico,
 } from '../src/sistemas/habitantes-da-praia'
 
@@ -89,3 +91,13 @@ for (const nome of Object.keys(HABITANTES_DA_PRAIA) as HabitanteDaPraia[]) {
     expect(Math.hypot(lugar.x - PIER.x, lugar.z - PIER.z)).toBeGreaterThan(3)
   })
 }
+
+describe('o olhar do Nico', () => {
+  const { x, z, giro } = HABITANTES_DA_PRAIA.nico
+  test('vira para a criança perto e volta ao descanso longe', () => {
+    expect(olharDoNico({ x, z: z - 3 })).toBeCloseTo(Math.PI, 6)
+    expect(olharDoNico({ x: x + 3, z })).toBeCloseTo(Math.PI / 2, 6)
+    expect(olharDoNico({ x: x + ACENO_DO_NICO.olharDe + 1, z })).toBe(giro)
+    expect(olharDoNico({ x, z })).toBe(giro)
+  })
+})

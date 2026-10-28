@@ -539,8 +539,9 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 `mundo/habitantes-da-praia.tsx` liga os GLBs existentes de Nico, Estrelinha e Búzio à ilha
 central. Usa `useCopiaAnimada`, `trocarClipe` e uma `ComReserva` por modelo. As posições,
 escalas e o aceno ficam em `sistemas/habitantes-da-praia.ts`. Nico acena ao entrar no alcance
-de quatro metros, com intervalo mínimo de oito segundos. Os Lumis descansam com fases
-diferentes. A pausa do jogo congela as ações; movimento reduzido usa a velocidade do helper.
+de quatro metros, com intervalo mínimo de oito segundos, e vira para a criança a até seis
+metros (`olharDoNico`, girando como a Capi). Os Lumis, com uns 37 cm (escala 0,5), descansam com
+fases diferentes. A pausa do jogo congela as ações; movimento reduzido usa a velocidade do helper.
 
 `habitantes-da-praia-colisao.ts` cria um cilindro arredondado por corpo, em metros e fora da
 escala do desenho, com prefixo `col-morador-` para deixar a câmera passar. Os Lumis não têm
