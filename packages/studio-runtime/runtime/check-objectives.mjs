@@ -2,6 +2,7 @@
 // aberto num Chromium sem internet, UMA página nova por objetivo, os passos acontecem (esperar,
 // apertar tecla, clicar) e o que importa é OBSERVADO. Quem decide se passou é o Worker, com a régua
 // do core (`compareExecutionValue`): este script só relata o que viu.
+
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
@@ -17,6 +18,7 @@ import {
   stagePointToViewport,
 } from './check-click-target.mjs'
 import { createImageThreeModuleResolver } from './check-javascript-modules.mjs'
+import { waitForModels } from './check-models-ready.mjs'
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 
 const root = process.cwd()
@@ -81,12 +83,6 @@ const deadline = setTimeout(() => {
 
 const KIT_READY_MS = 10_000
 const SETTLE_MS = 250
-// Prazo para os modelos 3D chegarem e o primeiro quadro passar (sem placa de vídeo, segundos).
-const MODELS_READY_MS = 15_000
-// Quadros seguidos abaixo disto: o jogo voltou a rodar (sem placa de vídeo, ~110 ms cada).
-const STEADY_FRAME_GAP_MS = 400
-// A janela sem quadro longo que o jogo 3D precisa mostrar antes do primeiro passo.
-const STEADY_WINDOW_MS = 2_000
 const CASE_TIMEOUT_MS = 2_000
 const SCRIPT_TIMEOUT_MS = 3_000
 const MAX_CONSOLE_LINES = 200
@@ -304,43 +300,6 @@ async function startGame(page, probe) {
     .catch(() => undefined)
   await waitForModels(page, probe)
   await page.waitForTimeout(SETTLE_MS)
-}
-
-// Um jogo 3D começa antes de os modelos chegarem: eles são lidos e AQUECIDOS (a primeira
-// compilação do desenho) depois, e sem placa de vídeo isso trava os quadros por segundos.
-// Teclas apertadas nesse tempo não andam nada e o teste reprovaria um jogo certo. Como num
-// teste de jogo, os passos só começam com os modelos prontos e os quadros fluindo de novo.
-async function waitForModels(page, probe) {
-  const until = Date.now() + MODELS_READY_MS
-  let pending = await probe.main(() => Number(window.__szModelosPendentes) || 0).catch(() => 0)
-  while (pending > 0 && Date.now() < until) {
-    await page.waitForTimeout(100)
-    pending = await probe.main(() => Number(window.__szModelosPendentes) || 0).catch(() => 0)
-  }
-  if (!(await probe.main(() => typeof window.SZGame3D === 'object').catch(() => false))) return
-  // O primeiro desenho com tudo montado ainda trava (alguns segundos sem placa de vídeo): os
-  // passos esperam uma janela inteira de quadros sem nenhum intervalo longo.
-  while (Date.now() < until) {
-    const longest = await probe
-      .main(
-        (ms) =>
-          new Promise((resolve) => {
-            let last = null
-            let worst = 0
-            const end = performance.now() + ms
-            const tick = (t) => {
-              if (last !== null) worst = Math.max(worst, t - last)
-              last = t
-              if (t < end) requestAnimationFrame(tick)
-              else resolve(worst)
-            }
-            requestAnimationFrame(tick)
-          }),
-        STEADY_WINDOW_MS,
-      )
-      .catch(() => 0)
-    if (longest < STEADY_FRAME_GAP_MS) return
-  }
 }
 
 async function shoot(page, index) {
