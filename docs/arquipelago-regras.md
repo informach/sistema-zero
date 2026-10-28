@@ -1035,6 +1035,37 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
   nova saindo do quarto).
 
+### 6.17 O diário e as pegadas
+
+Arquivos: `sistemas/diario.ts`, `sistemas/pegadas.ts`, `interface/diario.tsx`,
+`interface/pegadas.tsx` e `mundo/rastro-de-pegadas.tsx`. Testes: `tests/diario.test.ts` e
+`tests/pegadas.test.ts`. Tudo sai do que o salvamento já guarda: o diário não tem campo próprio.
+
+- **Abrir:** "📖 Diário" no menu do jogo. O personagem fica parado, e Esc ou "Voltar ao jogo"
+  fecham (`PAINEL_DO_DIARIO`). Ele só mostra; nada ali muda o jogo.
+- **Páginas do diário da Íris** (`ILHAS_DO_DIARIO`): uma em cada ilha do anel e a última no alto
+  do Farol, 7 ao todo. Juntas, contam por que ela foi embora.
+  - A do Bosque fica com a Capi. Ela entrega quando a amizade chega a 2 corações
+    (`CORACOES_DA_PAGINA`, 200 pontos): na conversa, no presente ou na entrega do pedido que fizer
+    a amizade passar desse ponto, ela diz "Achei uma coisa na minha cabana e guardei para você:
+    uma página do diário da Íris." e "Ela vinha muito ao bosque desenhar. Guarde no seu diário, no
+    menu." (`FALA_DA_PAGINA`, `ganhouAPagina`). Quem já tinha os corações acha a página no diário.
+  - O texto é o da proposta do jogo: "Hoje desenhei uma ponte e apaguei três vezes. Ninguém viu o
+    desenho. Talvez seja melhor assim." (`TEXTO_DA_PAGINA`), assinado "Í.".
+  - Antes de chegar, o diário diz quantos corações faltam. As das outras ilhas dizem onde estão
+    ("Fica na Vila Doce, com quem mora lá."); chegam com os moradores de cada ilha.
+- **Bichos e pegadas do Bosque** (`colecaoDoBosque`): os quatro do esconde-esconde. Escondido
+  aparece como "Ainda escondido" com a dica de seguir as pegadas; achado mostra o bicho, onde ele
+  está (no cercadinho da Capi, ou com a criança, com o nome que ela deu) e a pegada, com o que
+  olhar nela (`PEGADA_DO_BICHO`): o cachorro deixa a marca das unhas e o gato não; a pata de trás
+  do coelho é comprida; o porquinho-da-índia tem quatro dedos na frente e três atrás.
+- **O rastro no chão** (`rastroNoCaminho`, `RASTRO`): cada bicho ainda escondido deixa pegadas no
+  caminho entre o cercadinho, de onde fugiu, e o esconderijo, pela mesma grade que contorna o que
+  é duro (`sistemas/caminho.ts`). Elas vão de 1,2 a 8 m do esconderijo, a cada 0,55 m, alternando
+  os lados, todas apontando para ele, com o desenho da pegada daquele bicho em 0,32 m. O rastro
+  sai quando o navegador está à toa depois de a ilha ficar ativa, e some quando o bicho é achado.
+- **Moedas:** nada disto paga moedas.
+
 ## 7. Desafios
 
 Arquivos principais:

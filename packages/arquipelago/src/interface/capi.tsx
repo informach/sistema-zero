@@ -6,7 +6,6 @@ import { EMOJI_DO_BICHO, NOME_DO_BICHO } from '../sistemas/bichos'
 import {
   adotarPelaCapi,
   entregar,
-  FALA_DA_ENTREGA,
   oQueFaltaNoPedido,
   pedidoDeHoje,
   podeAdotar,
@@ -76,14 +75,14 @@ export function PainelDaCapi() {
     const r = entregar(s.salvamento)
     if (!r.entregou) return
     s.mudar(() => r.salvamento)
-    conversa.getState().responder(FALA_DA_ENTREGA, true)
+    conversa.getState().responder(r.falas, true)
   }
 
   function aoPresentear(itemId: string) {
     const s = loja.getState()
     const r = presentear(s.salvamento, itemId, diaDe(new Date()))
     s.mudar(() => r.salvamento)
-    conversa.getState().responder(r.fala, r.reacao === 'adorou' || r.reacao === 'agradeceu')
+    conversa.getState().responder(r.falas, r.reacao === 'adorou' || r.reacao === 'agradeceu')
   }
 
   return (
@@ -226,7 +225,7 @@ function Adotar({ principal }: { principal: React.RefObject<HTMLButtonElement | 
       return
     }
     s.mudar(() => r.salvamento)
-    conversa.getState().responder(r.fala, true)
+    conversa.getState().responder([r.fala], true)
   }
 
   return (
