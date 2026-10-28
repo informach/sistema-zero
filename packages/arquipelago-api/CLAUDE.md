@@ -130,8 +130,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",
-  senão o jogo criaria um salvamento novo por cima). Formato novo = `SalvamentoV2` no contrato com
-  migração da V1.
+  senão o jogo criaria um salvamento novo por cima). Formato novo = a próxima versão no contrato
+  (hoje `SalvamentoV3`) com a migração da anterior.
 - **Tempo livre**: contado pelo jogo e somado aqui (teto de 24 h por dia); quem decide `acabou` é
   o serviço. É controle dos pais, não trava de segurança.
 

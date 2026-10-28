@@ -7,7 +7,7 @@ import { ILHA_IDS } from './ilhas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 2
+export const VERSAO_SALVAMENTO = 3
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -67,24 +67,91 @@ export function migrarDaV1(v1: SalvamentoV1): SalvamentoV2 {
   return { ...v1, versao: 2, percursos: {} }
 }
 
+/** Os bichos do Bosque que se esconderam no Cinza e que a criança pode adotar. */
+export const BICHOS_DO_BOSQUE = ['cachorro', 'gato', 'coelho', 'porquinho'] as const
+export type BichoDoBosque = (typeof BICHOS_DO_BOSQUE)[number]
+
+/** Um dia do calendário no horário do aparelho (`AAAA-MM-DD`): o "hoje" da Capi e dos bichos. */
+const dia = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+
+/** Até onde vai a amizade com um morador (5 corações de 100). */
+export const AMIZADE_MAXIMA = 500
+
+/** O que a criança construiu com a Capi (`sistemas/moradores.ts` tem as regras). */
+export const CapiSchema = z.strictObject({
+  amizade: z.number().int().min(0).max(AMIZADE_MAXIMA),
+  /** O último dia em que conversaram (a primeira conversa do dia é a que conta). */
+  conversaEm: dia.nullable(),
+  /** O último dia em que ela ganhou presente (só o primeiro do dia conta). */
+  presenteEm: dia.nullable(),
+  /** O pedido do dia, guardado para não mudar no meio do dia. */
+  pedido: z.strictObject({ dia, id: z.string().min(1).max(40), entregue: z.boolean() }).nullable(),
+})
+export type Capi = z.infer<typeof CapiSchema>
+
+/** O bicho adotado (`sistemas/bichos.ts` tem as regras de cuidar, ensinar e crescer). */
+export const BichoAdotadoSchema = z.strictObject({
+  id: z.enum(BICHOS_DO_BOSQUE),
+  nome: z.string().trim().min(1).max(16),
+  fase: z.enum(['filhote', 'adulto']),
+  fome: nivel,
+  limpeza: nivel,
+  carinho: nivel,
+  /** Dias em que foi bem cuidado (as três medidas passaram de 60 em algum momento). */
+  diasCuidados: z.number().int().min(0).max(999),
+  /** O último dia que já contou em `diasCuidados`. */
+  diaCuidadoEm: dia.nullable(),
+  truque: z.strictObject({
+    sessoes: z.number().int().min(0).max(99),
+    ultimaEm: dia.nullable(),
+    aprendido: z.boolean(),
+  }),
+})
+export type BichoAdotado = z.infer<typeof BichoAdotadoSchema>
+
+/** V3 (28/10/2026): a V2 mais a Capi e os bichos do Bosque (achados e o adotado). */
+export const SalvamentoV3Schema = SalvamentoV2Schema.extend({
+  versao: z.literal(3),
+  moradores: z.strictObject({ capi: CapiSchema }),
+  bichos: z.strictObject({
+    achados: z
+      .array(z.enum(BICHOS_DO_BOSQUE))
+      .max(BICHOS_DO_BOSQUE.length)
+      .refine((lista) => new Set(lista).size === lista.length, 'bicho achado repetido'),
+    adotado: BichoAdotadoSchema.nullable(),
+  }),
+})
+export type SalvamentoV3 = z.infer<typeof SalvamentoV3Schema>
+
+/** Da V2 para a V3: tudo igual, a Capi sem amizade ainda e nenhum bicho achado. */
+export function migrarDaV2(v2: SalvamentoV2): SalvamentoV3 {
+  return {
+    ...v2,
+    versao: 3,
+    moradores: { capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null } },
+    bichos: { achados: [], adotado: null },
+  }
+}
+
 /**
- * O formato atual. Aceita também a V1 e já devolve migrada: um salvamento guardado antes continua
- * valendo, e a gravação V1 de uma aba aberta antes da atualização é guardada já migrada. Essa aba
- * antiga, porém, não lê a resposta (V2): a primeira gravação dela fica, e as seguintes falham até
- * a página recarregar.
+ * O formato atual. Aceita também a V1 e a V2 e já devolve migradas: um salvamento guardado antes
+ * continua valendo, e a gravação antiga de uma aba aberta antes da atualização é guardada já
+ * migrada. Essa aba antiga, porém, não lê a resposta (V3): a primeira gravação dela fica, e as
+ * seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV2Schema,
-  SalvamentoV1Schema.transform(migrarDaV1),
+  SalvamentoV3Schema,
+  SalvamentoV2Schema.transform(migrarDaV2),
+  SalvamentoV1Schema.transform((v1) => migrarDaV2(migrarDaV1(v1))),
 ])
-export type Salvamento = SalvamentoV2
+export type Salvamento = SalvamentoV3
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 2,
+    versao: 3,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
     horta: Array.from({ length: 6 }, (_, i) => ({
@@ -98,6 +165,8 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     pontesVistas: [],
     casa: { portaNova: false },
     percursos: {},
+    moradores: { capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null } },
+    bichos: { achados: [], adotado: null },
   }
 }
 

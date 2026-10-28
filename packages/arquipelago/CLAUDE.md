@@ -241,9 +241,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Salvamento e tempo
 
-- `SalvamentoV2` (contrato) com versão; a V1 migra sozinha (`migrarDaV1`: nenhum percurso
-  corrido). Gravar aceita a V1 de uma aba aberta antes da atualização e guarda migrada, mas essa
-  aba não lê a resposta V2: só a primeira gravação dela fica, as seguintes falham até recarregar.
+- `SalvamentoV3` (contrato) com versão; a V1 e a V2 migram sozinhas (`migrarDaV1`: nenhum
+  percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho). Gravar aceita a versão de
+  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V3: só a
+  primeira gravação dela fica, as seguintes falham até recarregar.
   Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.
 - Tempo livre do Kids: cada segundo ativo fica em IndexedDB por perfil; lotes de até 10 s são

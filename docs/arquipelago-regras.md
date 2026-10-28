@@ -254,8 +254,9 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 2` (`SalvamentoV2Schema`, estrito: campo desconhecido é
-  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso.
+- **Versão:** `VERSAO_SALVAMENTO = 3` (`SalvamentoV3Schema`, estrito: campo desconhecido é
+  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
+  a V2 mais a Capi e os bichos do Bosque.
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -265,16 +266,24 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   - se a porta nova da casa foi aberta;
   - o melhor de cada percurso (`percursos`): as três estrelas, cada uma guardada à parte, e o
     melhor tempo em milissegundos (de 0 a 1 hora). Hoje o único percurso é `bosque-copas`
-    (`PERCURSOS`).
+    (`PERCURSOS`);
+  - a Capi (`moradores.capi`): a amizade (de 0 a 500, `AMIZADE_MAXIMA`), o último dia de conversa e
+    de presente e o pedido do dia (o dia, qual é e se já foi entregue). Os dias são `AAAA-MM-DD`
+    no horário do aparelho;
+  - os bichos do Bosque (`bichos`): os achados (cada um no máximo uma vez, de `BICHOS_DO_BOSQUE`:
+    cachorro, gato, coelho e porquinho) e o adotado, com nome (de 1 a 16 letras), fase (filhote
+    ou adulto), fome, limpeza e carinho (de 0 a 100), os dias bem cuidado e o truque (sessões, o
+    último dia de sessão e se já aprendeu).
 - **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
   `migrarSalvamento`. Assim ninguém perde o progresso.
-- **A V1 continua valendo:** um salvamento V1 guardado é lido já migrado (`migrarDaV1`: tudo igual
-  e nenhum percurso corrido).
-- **Aba aberta antes da atualização:** ela ainda grava V1. O serviço aceita e guarda já migrado,
-  mas responde em V2, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
+- **A V1 e a V2 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`: tudo
+  igual e nenhum percurso corrido; `migrarDaV2`: tudo igual, a Capi com amizade 0, nenhum bicho
+  achado e nenhum adotado).
+- **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
+  já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
   mudança de formato; resolver de vez pede que a plataforma recarregue o jogo quando o manifesto
   muda.
