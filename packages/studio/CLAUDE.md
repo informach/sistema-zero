@@ -46,6 +46,12 @@ Pedido dela na Ilha do Farol: câmera mais perto, zoom e girar. É do motor, sem
   `framed` com ângulo diferente de zero: em qualquer outro jogo o movimento continua igual.
 - O `orbitCamera` ("câmera em volta") já existia, mas é outro bloco: troca o modo da câmera e não
   enquadra a área. Testes: `game-3d/__tests__/beginner.test.ts` §"a vista do jogador".
+- **Nomes que a criança lê (28/10/2026, só o texto; campos iguais):** o bloco do `frameScene` é
+  "Mostrar a cena … inteira" (era "Enquadrar a cena"; não começa com "Câmera" para não parecer um
+  sétimo modo do "Câmera da cena …"). Mudaram junto: "Fazer … andar com as setas (ou WASD)"
+  (`topDown`), "Animar …: parado toca …, andando toca …", "Levar … até x y z aos poucos"
+  (`moveTowards`), "Colocar o objeto … em x y z" (`setPosition`), "Escrever na tela …" (o meio é
+  "⊕ no centro") e "Reiniciar o jogo" (o mesmo nome do Jogo 2D) nas regras de jogo dos três 3D.
 
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 

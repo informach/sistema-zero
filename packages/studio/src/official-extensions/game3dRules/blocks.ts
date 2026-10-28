@@ -31,7 +31,7 @@ export interface GameRulesBlockOptions {
   implicitHero?: boolean
   /** Só estes sufixos (a extensão não oferece os outros). Ausente = todos. */
   only?: readonly GameRulesBlockSuffix[]
-  /** Dica própria do "Recomeçar o jogo" (o que volta e o que fica muda por extensão). */
+  /** Dica própria do "Reiniciar o jogo" (o que volta e o que fica muda por extensão). */
   restartTooltip?: string
 }
 
@@ -135,7 +135,7 @@ export function gameRulesBlocks(prefix: GameRulesPrefix, options: GameRulesBlock
     {
       type: t('hud_text'),
       placement: 'command',
-      message0: 'Escrever no canto %1 da tela: %2',
+      message0: 'Escrever na tela %1: %2',
       args0: [
         { type: 'field_dropdown', name: 'CORNER', options: GAME_RULES_CORNERS },
         { type: 'input_value', name: 'TEXT', check: 'JSValue' },
@@ -143,7 +143,7 @@ export function gameRulesBlocks(prefix: GameRulesPrefix, options: GameRulesBlock
       inputsInline: true,
       ...stmt,
       tooltip:
-        'Mostra um texto num canto da tela, por cima do jogo. Use no "A cada quadro" para atualizar (ex.: o tempo). Texto vazio apaga.',
+        'Mostra um texto num canto ou no centro da tela, por cima do jogo. Use no "A cada quadro" para atualizar (ex.: o tempo). Texto vazio apaga.',
     },
     {
       type: t('add_score'),
@@ -239,7 +239,7 @@ export function gameRulesBlocks(prefix: GameRulesPrefix, options: GameRulesBlock
     {
       type: t('restart'),
       placement: 'runtime-command',
-      message0: 'Recomeçar o jogo',
+      message0: 'Reiniciar o jogo',
       args0: [],
       ...stmt,
       tooltip:

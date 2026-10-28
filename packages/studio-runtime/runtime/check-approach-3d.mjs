@@ -168,13 +168,17 @@ export async function approachObject3d(page, step, readMany) {
         // Estimate speed from the last actual pulse. Larger safe pulses reduce the
         // number of expensive browser round trips on software-rendered 3D, while
         // limiting each pulse to half the remaining distance at the measured speed.
+        // Each pulse costs ~300 ms of reads there, so a 200 ms ceiling spent more
+        // time observing than walking: a long straight leg (the Ilha's 11 units to the
+        // lighthouse) ran out of time on a correct game. Half the remaining distance
+        // still bounds the overshoot.
         const speed =
           previousPulse?.key === next
             ? Math.abs(coordinate - previousPulse.coordinate) / previousPulse.duration
             : 0
         const duration =
           speed > 0.0001
-            ? Math.max(16, Math.min(200, Math.floor((remaining * 0.5) / speed)))
+            ? Math.max(16, Math.min(600, Math.floor((remaining * 0.5) / speed)))
             : remaining > 0.6
               ? 80
               : 16

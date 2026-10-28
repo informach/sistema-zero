@@ -178,8 +178,10 @@ test.each([
     expect(x).toBeGreaterThan(9)
     expect(x).toBeLessThan(10)
     expect(held).toBeNull()
-    expect(durations.every((ms) => ms >= 16 && ms <= 200)).toBe(true)
+    expect(durations.every((ms) => ms >= 16 && ms <= 600)).toBe(true)
     expect(durations.some((ms) => ms > 80)).toBe(true)
+    // Longe do alvo o toque passa de 200 ms: menos idas e voltas de leitura por trecho.
+    expect(durations.some((ms) => ms > 200)).toBe(true)
   } finally {
     clock.mockRestore()
   }

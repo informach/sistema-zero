@@ -2357,7 +2357,7 @@ const world3DBlockDefinitions: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira tudo da mochila. Ela fica salva entre as partidas, e o "Recomeçar o jogo" não a esvazia: use este bloco para isso.',
+      'Tira tudo da mochila. Ela fica salva entre as partidas, e o "Reiniciar o jogo" não a esvazia: use este bloco para isso.',
   },
   // ---- 🧊 Molda no Mundo 3D (lote 10) ----
   {

@@ -9611,13 +9611,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -9725,13 +9725,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -9861,13 +9861,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -9878,7 +9878,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -10164,13 +10164,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10349,13 +10349,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10366,7 +10366,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -10487,13 +10487,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10513,13 +10513,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -10897,13 +10897,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11082,13 +11082,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11099,7 +11099,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -11220,13 +11220,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11246,13 +11246,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11616,13 +11616,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11801,13 +11801,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11818,7 +11818,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "timeoutMs": 7000,
+                  "timeoutMs": 7500,
                   "avoidPaths": ["chave"]
                 }
               ],
@@ -11939,13 +11939,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },
@@ -11965,13 +11965,13 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.6,
+                      "maxX": 0.7,
                       "minZ": -5,
                       "maxZ": 5
                     },
                     {
                       "minX": 0.6,
-                      "maxX": 4,
+                      "maxX": 4.1,
                       "minZ": 0.4,
                       "maxZ": 1.1
                     },

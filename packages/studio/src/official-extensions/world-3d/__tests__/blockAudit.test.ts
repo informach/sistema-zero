@@ -256,7 +256,7 @@ describe('Auditoria Mundo 3D — dropdowns comuns (cantos e teclas) e "onde o jo
     return code
   }
 
-  it('"Escrever no canto" é o das regras de jogo 3D (mesma lista de cantos, incluindo o meio)', () => {
+  it('"Escrever na tela" é o das regras de jogo 3D (mesma lista de cantos, incluindo o meio)', () => {
     const corner = world3DBlocks
       .find((block) => block.type === 'sz_w3d_hud_text')
       ?.args0?.find((arg) => (arg as { name?: string }).name === 'CORNER') as

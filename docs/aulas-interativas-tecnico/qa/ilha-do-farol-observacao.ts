@@ -1,19 +1,26 @@
-import type {
-  ExecutionExpectation,
-  ExecutionStep,
+import {
+  EXECUTION_LIMITS,
+  type ExecutionExpectation,
+  type ExecutionStep,
 } from '../../../packages/core/src/learning/project-execution'
 import type { SectionProjectCheck } from '../../../packages/core/src/learning/section-progression'
+/** Os mesmos retângulos dos `walkArea` do jogo (`ilha-do-farol-projeto.ts`). */
 export const ILHA_CAMINHOS = [
-  { minX: -11, maxX: 0.6, minZ: -5, maxZ: 5 },
-  { minX: 0.6, maxX: 4, minZ: 0.4, maxZ: 1.1 },
+  { minX: -11, maxX: 0.7, minZ: -5, maxZ: 5 },
+  { minX: 0.6, maxX: 4.1, minZ: 0.4, maxZ: 1.1 },
   { minX: 4, maxX: 6.1, minZ: -0.5, maxZ: 1.7 },
 ]
-const approach = (targetPath: string, avoidPaths?: string[]): ExecutionStep => ({
+/**
+ * O prazo é do ROBÔ que aperta as setas no lugar da criança, não do jogo: no jogo a chave fica
+ * guardada em `temChave` pelo tempo que for. Sem a chave, o caminho vai direto do começo ao
+ * farol (11 unidades, o trecho mais longo do curso), por isso ele leva o prazo máximo.
+ */
+const approach = (targetPath: string, avoidPaths?: string[], timeoutMs = 7000): ExecutionStep => ({
   action: 'approachObject3d',
   actorPath: 'personagem',
   targetPath,
   walkable: ILHA_CAMINHOS,
-  timeoutMs: 7000,
+  timeoutMs,
   ...(avoidPaths ? { avoidPaths } : {}),
 })
 const equals = (path: string, value: boolean): ExecutionExpectation => ({
@@ -69,7 +76,7 @@ export const ilhaMissing: SectionProjectCheck = {
   label: 'Em uma partida nova, o farol continua apagado e pede a chave.',
   rule: {
     type: 'behavior',
-    steps: [approach('farol', ['chave'])],
+    steps: [approach('farol', ['chave'], EXECUTION_LIMITS.maxApproachMs)],
     checkpoints: [
       { afterStep: 1, expect: equals('temChave', false) },
       { afterStep: 1, expect: lit(false) },

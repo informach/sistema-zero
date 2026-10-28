@@ -86,7 +86,7 @@ export const GAME_RULES_CORNERS = [
   ['↙ embaixo, à esquerda', 'bottom-left'],
   ['↓ embaixo, no meio', 'bottom-center'],
   ['↘ embaixo, à direita', 'bottom-right'],
-  ['⊕ no centro da tela', 'center'],
+  ['⊕ no centro', 'center'],
 ] as const satisfies readonly (readonly [string, string])[]
 
 export const GAME_RULES_SCREENS = [
