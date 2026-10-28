@@ -18,6 +18,7 @@ import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/j
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
+import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
 import {
@@ -240,6 +241,8 @@ export function ArquipelagoHost(props: {
     studioAvailable: boolean
     toolAccess: MoldaToolAccess | null
     studioConfig: ArquipelagoStudioConfig | null
+    /** Aparência de um objeto (projeto azul): o Pinta e o Molda abrem com o molde. */
+    objeto: PedidoDeObjeto | null
   } | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
@@ -254,7 +257,11 @@ export function ArquipelagoHost(props: {
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
-        if (pedido.molde !== undefined) {
+        // O molde de um objeto (o projeto azul do modo construção) abre o Pinta ou o Molda de
+        // verdade com a planificação ou a caixa; o resto do caminho é o de criar no jogo.
+        const objeto = lerPedidoDeObjeto(pedido)
+        if (objeto && 'recusa' in objeto) return { situacao: 'indisponivel', motivo: objeto.recusa }
+        if (!objeto && pedido.molde !== undefined) {
           const molde = MoldeDeDesafioSchema.safeParse(pedido.molde)
           if (!molde.success || pedido.ferramenta !== 'estudio' || pedido.proposito !== 'desafio')
             return { situacao: 'indisponivel', motivo: 'em-breve' }
@@ -295,6 +302,7 @@ export function ArquipelagoHost(props: {
             ferramenta: pedido.ferramenta,
             toolAccess: tools.access,
             studioConfig,
+            objeto,
             studioAvailable:
               pedido.ferramenta === 'estudio' ||
               (acesso.corpo as { studioAvailable?: unknown } | null)?.studioAvailable === true,
@@ -408,6 +416,7 @@ export function ArquipelagoHost(props: {
               narrationEnabled={props.narrationEnabled ?? false}
               toolAccess={creation.toolAccess}
               studioConfig={creation.studioConfig}
+              objeto={creation.objeto}
               onFinish={(criacaoId) => {
                 setCreation(null)
                 const resolve = pendente.current

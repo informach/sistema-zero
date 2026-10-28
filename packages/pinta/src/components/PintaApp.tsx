@@ -7,8 +7,13 @@ import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
+import {
+  createGuidedBackgroundAsset,
+  findInitialCanvasAsset,
+  isValidInitialCanvas,
+} from '../core/guidedCanvas'
 import type { PintaAsset } from '../core/project'
-import type { PintaHostAdapter } from '../core/types'
+import type { PintaHostAdapter, PintaInitialCanvas } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
 import { createGalleryStore } from '../state/galleryStore'
@@ -73,6 +78,40 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
   return null
 }
 
+/**
+ * Abre a tela com molde pedida pelo host (`adapter.initialCanvas`), 1x: reabre o desenho de mesmo
+ * nome e tamanho ou cria um novo. Espera a galeria carregar e a nuvem assentar (o desenho pode ter
+ * sido feito noutro aparelho); tela fora dos limites cai na galeria com o recado de erro.
+ */
+function InitialCanvasOpener({ canvas }: { canvas: PintaInitialCanvas | null }): null {
+  const { gallery, openAsset } = usePintaApp()
+  const { showToast } = useToast()
+  const loaded = usePintaGallery((state) => state.loaded)
+  const syncing = usePintaGallery((state) => state.syncing)
+  const done = useRef(false)
+  useEffect(() => {
+    if (!canvas || done.current || !loaded || syncing) return
+    done.current = true
+    if (!isValidInitialCanvas(canvas)) {
+      showToast(COPY.editor.saveError)
+      return
+    }
+    const existing = findInitialCanvasAsset(gallery.getState().assets, canvas)
+    if (existing) {
+      openAsset(existing.id)
+      return
+    }
+    void gallery
+      .getState()
+      .createPrepared(createGuidedBackgroundAsset(canvas))
+      .then((asset) => {
+        if (asset) openAsset(asset.id)
+        else showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
+      })
+  }, [canvas, loaded, syncing, gallery, openAsset, showToast])
+  return null
+}
+
 export interface PintaCompletionControl {
   /** Salva o desenho aberto; `null` indica que a galeria está aberta. */
   flush(): Promise<PintaAsset | null>
@@ -131,6 +170,8 @@ export function PintaApp({
   // "Abrir este desenho" (botão Editar do Estúdio): também 1x, e só depois que a
   // galeria carrega — ver o InitialAssetOpener.
   const initialAssetIdRef = useRef(resolvedAdapter.initialAssetId ?? null)
+  // A tela com molde do host: lida 1x (o adapter pode mudar de identidade a cada render).
+  const [initialCanvas] = useState(() => resolvedAdapter.initialCanvas ?? null)
   // A store do editor ABERTO (null na galeria). É o que deixa o "Voltar ao plano"
   // do painel gravar antes de sair, sem o painel conhecer o editor.
   // ⚠️ A identidade tem que ser estável: o `EditorScreen` tem `onEditorReady` nas
@@ -271,6 +312,7 @@ export function PintaApp({
     >
       <PintaAppProvider value={context}>
         <ToastProvider>
+          <InitialCanvasOpener canvas={initialCanvas} />
           <InitialAssetOpener
             onMissing={(id) => {
               if (resolvedAdapter.taskSession?.progress.deliveries[0]?.creation.creationId === id) {

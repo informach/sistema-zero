@@ -1,5 +1,18 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Modelo com MOLDE pedido pelo host (28/10/2026, o Arquipélago)
+
+`MoldaHostAdapter.initialModel?: MoldaInitialModel` (`{name, box: {width, height, depth, name?}}`
+em unidades da grade): 1x no mount, depois que a galeria carrega e a nuvem assenta, o
+`InitialModelOpener` (`components/MoldaApp.tsx`) reabre o modelo de mesmo nome ou cria um com
+`gallery.create({kind: 'model', name, starterBox})` e abre a oficina. `moldeStarterPart`
+(`core/model.ts`) troca a caixa de começo pela do molde: centrada no chão, cada medida na precisão
+de 1/16 e dentro da grade, nunca abaixo de 1/16. Recado de falha: `COPY.gallery.moldeError`. O
+Molda não conhece o jogo: quem traduz o molde é o host (`member-shell/src/lib/
+arquipelago-objeto.ts`). Playground: `?caixa=<JSON>`. Testes: `core/moldeStarterPart.test.ts` e o
+bloco "molde do host" do `MoldaApp.test.tsx`. Ainda não há marca da frente nem conferência de
+"cabe no molde".
+
 ## Pintar em três zonas — 27/10/2026
 
 Desenho: `docs/plans/2026-10-27-molda-pintar-ux-design.md`. A aba responde a três perguntas, cada

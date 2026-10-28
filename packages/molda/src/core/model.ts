@@ -16,6 +16,7 @@ import { boxMesh, cloneMesh, meshBox } from '../model/mesh'
 import { DEFAULT_SKY_PRESET, type SkyParams, type SkyPresetId, skyPreset } from '../sky/params'
 import { newId } from './id'
 import { MOLDA_LIMITS, type TexelsPerUnit, type TextureSize } from './limits'
+import { normalizePartName } from './names'
 import { DEFAULT_PALETTE_ID, type PaletteId } from './palette'
 
 export const MOLDA_ASSET_KINDS = ['model', 'texture', 'sky'] as const
@@ -216,6 +217,8 @@ export function createModelAsset(input: {
   paletteId?: PaletteId
   /** `false` = nasce sem peça nenhuma (modelos prontos montam as suas). */
   starter?: boolean
+  /** A caixa do MOLDE no lugar da caixa de começo (`moldeStarterPart`). */
+  starterBox?: MoldaStarterBox
   now?: number
 }): MoldaModelAsset {
   const now = input.now ?? Date.now()
@@ -234,8 +237,41 @@ export function createModelAsset(input: {
     parts:
       input.starter === false
         ? []
-        : [createPart({ name: 'caixa', from: [-1, 0, -1], to: [1, 2, 1], color: STARTER_COLOR })],
+        : input.starterBox
+          ? [moldeStarterPart(input.starterBox)]
+          : [createPart({ name: 'caixa', from: [-1, 0, -1], to: [1, 2, 1], color: STARTER_COLOR })],
   }
+}
+
+/**
+ * A caixa de um MOLDE pedido pelo host (28/10/2026, o Arquipélago abre o Molda com a caixa do
+ * objeto): largura × altura × fundo em unidades da grade, centrada no chão. Cada medida vai para a
+ * precisão das posições (1/16) e cabe na grade; nunca abaixo de 1/16.
+ */
+export interface MoldaStarterBox {
+  width: number
+  height: number
+  depth: number
+  /** O nome da peça (texto curto, como o de qualquer peça). */
+  name?: string
+}
+
+export function moldeStarterPart(box: MoldaStarterBox): MoldaPart {
+  const step = MOLDA_LIMITS.positionPrecision
+  const fit = (value: number, max: number) =>
+    Math.min(max, Math.max(step, Math.round((Number.isFinite(value) ? value : 0) / step) * step))
+  const half = (value: number) => Math.round(value / 2 / step) * step
+  const width = fit(box.width, MOLDA_LIMITS.gridHalf * 2)
+  const height = fit(box.height, MOLDA_LIMITS.gridHeight)
+  const depth = fit(box.depth, MOLDA_LIMITS.gridHalf * 2)
+  const x = half(width)
+  const z = half(depth)
+  return createPart({
+    name: normalizePartName(box.name, 'molde'),
+    from: [-x, 0, -z],
+    to: [width - x, height, depth - z],
+    color: STARTER_COLOR,
+  })
 }
 
 export function createTextureAsset(input: {
@@ -276,7 +312,7 @@ export function createSkyAsset(input: {
 
 /** O que o "Criar novo" entrega (o nome já vem normalizado pela galeria). */
 export type NewAssetInput =
-  | { kind: 'model'; name: string; texelsPerUnit?: TexelsPerUnit }
+  | { kind: 'model'; name: string; texelsPerUnit?: TexelsPerUnit; starterBox?: MoldaStarterBox }
   | { kind: 'texture'; name: string; size: TextureSize }
   | { kind: 'sky'; name: string; preset?: SkyPresetId }
 
@@ -286,6 +322,7 @@ export function createAsset(input: NewAssetInput, name: string): MoldaAsset {
       return createModelAsset({
         name,
         ...(input.texelsPerUnit ? { texelsPerUnit: input.texelsPerUnit } : {}),
+        ...(input.starterBox ? { starterBox: input.starterBox } : {}),
       })
     case 'texture':
       return createTextureAsset({ name, size: input.size })

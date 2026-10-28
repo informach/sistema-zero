@@ -15,6 +15,7 @@ import {
   guardarNaGeladeira,
   moldaAberto,
   oQueOPintaPinta,
+  recadoDaFerramentaFechada,
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
 import { ITENS } from '../sistemas/itens'
@@ -144,7 +145,7 @@ export function PainelDoObjeto() {
       } else if (r.situacao === 'indisponivel')
         setAviso({
           tom: 'atencao',
-          texto: 'O molde ainda não abre por aqui. Tente de novo daqui a pouco.',
+          texto: recadoDaFerramentaFechada(ferramenta === 'molda' ? 'molda' : 'pinta', r.motivo),
         })
     } catch (erro) {
       plataforma.relatarErro(erro, 'aparencia-do-objeto')

@@ -23,7 +23,10 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 - `objetos.ts` (28/10/2026): os objetos com função da casa (`OBJETOS_DA_CASA`), o molde que o Pinta
   e o Molda recebem (`MoldeDeObjetoSchema`: área na grade, caixa, faces que recebem imagem, a
   frente e a função) e o catálogo (`CATALOGO_DE_OBJETOS`, com a origem de cada um). Medidas do
-  README de `arquipelago/arte/objetos`.
+  README de `arquipelago/arte/objetos`. `planificacaoDoMolde` (28/10/2026, pura): as faces numa
+  tela só (lados ao lado da frente, topo em cima, lado maior com `LADO_DA_PLANIFICACAO` pontos), o
+  que o Pinta abre e onde cada face cai quando o jogo for desenhar a aparência. Acréscimo sem
+  mudar a `Plataforma`: a `VERSAO_CONTRATO_PLATAFORMA` continua 1.
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,

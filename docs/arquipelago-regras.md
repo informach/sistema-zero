@@ -1136,9 +1136,29 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
     os lados e o topo da caixa; só com as faces no modelo, hoje só a geladeira) e "Modelar no
     Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
     `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
-    a origem e o id da criação). A galeria e "usar uma criação minha" entram com os cartões deles. A
-    página da plataforma ainda responde indisponível para esse molde (cartão do Pinta no molde); a
-    plataforma de mentira responde pronto em 0,4 s.
+    a origem e o id da criação). A galeria e "usar uma criação minha" entram com os cartões deles.
+  - **O Pinta e o Molda de verdade no molde** (28/10/2026, ponte em
+    `member-shell/src/lib/arquipelago-objeto.ts`): a página abre a ferramenta da plataforma por cima
+    do jogo, com o mesmo acesso de criar no jogo, e o cabeçalho diz "Molde: Geladeira".
+    - **Pinta:** abre (ou reabre, pelo nome `molde-<objeto>`) um cenário de pixel com a
+      **planificação** da caixa (`planificacaoDoMolde` no contrato): os lados ao lado da frente, o
+      topo em cima dela, cada face na proporção certa e a tela com o lado maior de 192 pontos
+      (`LADO_DA_PLANIFICACAO`; a geladeira fica com 165 × 192). O contorno de cada face mora numa
+      camada de baixo, "Molde", trancada; a frente vem em rosa. A criança pinta na camada de cima,
+      "Pintura". O fliperama abre só com a tela (192 × 144). Objeto sem faces: "Este objeto ainda
+      não tem as faces para pintar."
+    - **Molda:** abre (ou reabre pelo mesmo nome) um modelo com a **caixa do molde** como peça de
+      começo, com o nome do objeto. A escala é 16 unidades da grade por célula do jogo, encolhida
+      quando o objeto não cabe (o maior lado chega a 30 na grade, que tem 32): a banda, de
+      2,85 de largura, sai com 30. A frente marcada e as conferências do Molda ("cabe no molde",
+      triângulos) ainda não existem.
+    - **A volta:** "Usar no jogo" guarda a criação na conta e devolve o id dela, que vira a
+      `aparencia` do projeto azul. Sem acesso à ferramenta, o jogo diz "O Pinta ainda não está
+      liberado para você." (ou "O Molda"); qualquer outro motivo, "O molde não abriu agora. Tente
+      de novo daqui a pouco." (`recadoDaFerramentaFechada`).
+    - **Plataforma de mentira:** responde pronto em 0,4 s com as mesmas recusas da página (sem
+      faces no Pinta, Estúdio não abre objeto); `?objetos=sem-acesso` no playground simula a
+      ferramenta não liberada.
 
 ### 6.17 O diário e as pegadas
 

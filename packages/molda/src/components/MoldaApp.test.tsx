@@ -709,3 +709,43 @@ test('controle do host recusa criação quando salvamento do editor falha', asyn
   })
   expect(failed).toBe(true)
 })
+
+describe('MoldaApp: molde do host (Arquipélago)', () => {
+  const molde = { name: 'molde-geladeira', box: { width: 13.12, height: 28, depth: 13.28 } }
+
+  test('cria o modelo com a caixa do molde e abre a oficina; da segunda vez reabre o mesmo', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    let view: ReturnType<typeof render> | undefined
+    try {
+      const persistence = createMemoryPersistence()
+      // A galeria e a oficina leem o mesmo armazenamento no host real.
+      const save = persistence.save
+      persistence.save = async (asset) => {
+        await save(asset)
+        await db.seed(`${DOCUMENT_KEY_PREFIX}${asset.id}`, { ...asset, formatVersion: 1 })
+      }
+      view = render(<MoldaApp persistence={persistence} adapter={{ initialModel: molde }} />)
+      await waitFor(() =>
+        expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('molde-geladeira'),
+      )
+      const criado = persistence.snapshot()[0]
+      if (criado?.kind !== 'model') throw new Error('modelo esperado')
+      expect(persistence.snapshot()).toHaveLength(1)
+      expect(criado.parts.map((p) => [p.name, p.from, p.to])).toEqual([
+        ['molde', [-6.5625, 0, -6.625], [6.5625, 28, 6.625]],
+      ])
+      view.unmount()
+
+      view = render(<MoldaApp persistence={persistence} adapter={{ initialModel: molde }} />)
+      await waitFor(() =>
+        expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('molde-geladeira'),
+      )
+      expect(persistence.snapshot().map((a) => a.id)).toEqual([criado.id])
+    } finally {
+      view?.unmount()
+      db.close()
+      setMoldaGenerationStoreFactory(null)
+    }
+  })
+})

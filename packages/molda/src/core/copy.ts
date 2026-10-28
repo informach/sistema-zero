@@ -1250,6 +1250,8 @@ export const COPY = {
     preview: (name: string) => `Prévia de ${name}`,
     previewUnavailable: 'Abra a criação para ver de perto.',
     creationGone: 'Essa criação não está mais aqui.',
+    /** O molde pedido pelo jogo não abriu (o modelo novo não foi guardado). */
+    moldeError: 'Não consegui abrir o molde agora. Tente de novo daqui a pouco.',
     rename: 'Renomear',
     duplicate: 'Duplicar',
     remove: 'Apagar',

@@ -66,6 +66,11 @@ export interface PintaGalleryState {
     name: string
     projectRef?: PintaProjectRef
   }): Promise<PintaAsset | null>
+  /**
+   * Guarda um desenho JÁ MONTADO por fora (a tela com molde do host), com a mesma cota do
+   * `create`; nome já usado entra com sufixo, como no import. Devolve o asset guardado ou null.
+   */
+  createPrepared(asset: PintaAsset): Promise<PintaAsset | null>
   rename(id: string, name: string): Promise<boolean>
   duplicate(id: string): Promise<PintaAsset | null>
   remove(id: string): Promise<boolean>
@@ -168,6 +173,26 @@ export function createGalleryStore(
           mutateError: null,
           lastStyle: assetStyle(asset.kind) ?? state.lastStyle,
         }))
+        return asset
+      } catch (error) {
+        set({ mutateError: persistenceErrorMessage(error) })
+        return null
+      }
+    },
+
+    async createPrepared(prepared) {
+      const { assets } = get()
+      const base = normalizeAssetName(prepared.name)
+      // Nome já usado por outro desenho: entra com sufixo (`molde-geladeira-2`), como o import.
+      const name = base ? uniqueName(base, new Set(assets.map((a) => a.name))) : null
+      if (!name) {
+        set({ mutateError: base ? COPY.newAsset.nameTaken : COPY.newAsset.nameInvalid })
+        return null
+      }
+      const asset = { ...prepared, name }
+      try {
+        await persistence.persistAsset(asset)
+        set((state) => ({ assets: upsertSorted(state.assets, asset), mutateError: null }))
         return asset
       } catch (error) {
         set({ mutateError: persistenceErrorMessage(error) })

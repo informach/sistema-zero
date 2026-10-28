@@ -26,6 +26,16 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   lista com `?ilha=`, o desafio por uuid e o prêmio visto; conferir NÃO, quem manda o projeto é
   o Estúdio de desafio da página). Ferramentas: Pinta, Molda e Estúdio abrem de
   verdade por cima do jogo (`arquipelago-creation-dialog.tsx`), com o jogo pausado.
+- **O molde de um objeto (28/10/2026):** o jogo pede `abrirFerramenta({ferramenta: 'pinta' |
+  'molda', proposito: 'objeto', molde})` (o projeto azul do modo construção). `lerPedidoDeObjeto`
+  (`lib/arquipelago-objeto.ts`, puro) lê o `MoldeDeObjetoSchema` e devolve a tela do Pinta
+  (`telaDoPinta`: a `planificacaoDoMolde` do contrato com a frente marcada) ou a caixa do Molda
+  (`caixaDoMolda`: 16 unidades da grade por célula, encolhida para caber), ou a recusa
+  (`sem-faces`, `molde-invalido`, `em-breve` para o Estúdio). Depois segue o MESMO caminho de criar
+  no jogo (acesso em `/ferramentas/:ferramenta`, posse do perfil); o diálogo passa `initialCanvas`
+  ao `PintaClient` e `initialModel` ao `MoldaClient`, e o subtítulo vira "Molde: <nome>". O id
+  devolvido é o da criação aberta (`concluir()`), que o jogo guarda em `aparencia`. O nome
+  `molde-<objeto>` reabre a mesma criação na segunda vez. Testes: `tests/arquipelago-objeto.test.ts`.
 - **`components/arquipelago-porta.tsx`** (27/10/2026, polimento da Fase 0): `PortaDoArquipelago`
   desenha os estados antes de o jogo montar (abrindo, ainda não abriu, erro) na noite do
   arquipélago (céu com estrelas, ilha com farol e casinha em SVG, sem arquivo para baixar), com o

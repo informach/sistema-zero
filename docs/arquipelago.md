@@ -86,8 +86,10 @@ salvamento por revisão e tempo livre: `packages/arquipelago-api/CLAUDE.md`.
 ## Ligado e pendente (27/10/2026)
 
 Ligado no código: serviço registrado em `.railway/`, rotas do gateway, menu nas duas comunidades,
-cartão do limite na área dos pais, ferramentas de verdade por cima do jogo e a porta interna de
-moedas no Members (`POST /members/internal/arquipelago/coins`). Código pronto não confirma a
+cartão do limite na área dos pais, ferramentas de verdade por cima do jogo (inclusive o Pinta e o
+Molda no molde de um objeto do modo construção, 28/10/2026: a planificação no Pinta e a caixa no
+Molda, regras em `docs/arquipelago-regras.md` §6.16) e a porta interna de moedas no Members
+(`POST /members/internal/arquipelago/coins`). Código pronto não confirma a
 implantação nem o funcionamento em produção: a ordem da primeira implantação e as validações estão
 em [arquipelago-first-deploy.md](operations/arquipelago-first-deploy.md).
 
@@ -99,10 +101,8 @@ Pendente:
    pendente cobrado de novo e o que bateu no teto semanal de 150 cobrado na semana seguinte).
    Outras recompensas do jogo (colheita, pedidos) ainda não pagam moedas: cada uma precisa ser
    autorizada no servidor antes de ligar.
-3. O Estúdio de desafio já abre por cima do jogo com o molde do desafio (Quadro das Cores). O jogo
-   já pede o Pinta e o Molda com o molde do objeto (o projeto azul do modo construção, 28/10/2026,
-   `MoldeDeObjetoSchema`), mas a página ainda responde indisponível para ele: entra com o cartão do
-   Pinta no molde. A paleta de blocos do desafio ainda é a completa das aulas.
+3. O Estúdio de desafio já abre por cima do jogo com o molde do desafio (Quadro das Cores). A
+   paleta de blocos do desafio ainda é a completa das aulas.
 4. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o
    token de leitura `ARQUIPELAGO_MEMBERS_TOKEN` (members e arquipelago-api) precisa ser criado no
    painel do Railway antes de entrar no `.railway/variables.ts`.
@@ -126,5 +126,6 @@ A implementação e os testes locais não indicam implantação em staging ou pr
 
 `bun run --filter @sistemazero/arquipelago dev` abre o playground em `http://127.0.0.1:4520`
 (plataforma de mentira; parâmetros `posicao`, `publico`, `limite`, `liberado`, `novo`, `persistir`,
-`em=x,z`, `adiantar`, `bichos=achados`, `cartas` e `dia=pronto|feito|nenhum` para o desafio do dia).
+`em=x,z`, `adiantar`, `bichos=achados`, `cartas`, `dia=pronto|feito|nenhum` para o desafio do dia e
+`objetos=sem-acesso` para o Pinta e o Molda no molde).
 O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).

@@ -4,6 +4,7 @@ import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, Box, Code2, Loader2, Palette, TriangleAlert } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import type { PedidoDeObjeto } from '../lib/arquipelago-objeto'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import type { EmbeddedCreationControl } from '../lib/embedded-creation-control'
 
@@ -43,6 +44,7 @@ export function ArquipelagoCreationDialog({
   narrationEnabled,
   toolAccess,
   studioConfig,
+  objeto = null,
   onFinish,
 }: {
   ferramenta: 'pinta' | 'molda' | 'estudio'
@@ -52,6 +54,8 @@ export function ArquipelagoCreationDialog({
   narrationEnabled: boolean
   toolAccess: MoldaToolAccess | null
   studioConfig: ArquipelagoStudioConfig | null
+  /** A aparência de um objeto do jogo: a ferramenta abre com o molde dele. */
+  objeto?: PedidoDeObjeto | null
   onFinish: (id: string | null) => void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -136,7 +140,9 @@ export function ArquipelagoCreationDialog({
               >
                 {nome}
               </h2>
-              <p className="truncate text-muted-foreground text-xs">Para usar no Arquipélago</p>
+              <p className="truncate text-muted-foreground text-xs">
+                {objeto ? `Molde: ${objeto.molde.nome}` : 'Para usar no Arquipélago'}
+              </p>
             </div>
           </div>
           <button
@@ -203,6 +209,7 @@ export function ArquipelagoCreationDialog({
                 studioAvailable={studioAvailable}
                 narrationEnabled={narrationEnabled}
                 onCompletionControlChange={registerControl}
+                {...(objeto?.ferramenta === 'pinta' ? { initialCanvas: objeto.tela } : {})}
               />
             ) : ferramenta === 'molda' ? (
               <MoldaClient
@@ -212,6 +219,7 @@ export function ArquipelagoCreationDialog({
                 narrationEnabled={narrationEnabled}
                 toolAccess={toolAccess}
                 onCompletionControlChange={registerControl}
+                {...(objeto?.ferramenta === 'molda' ? { initialModel: objeto.caixa } : {})}
               />
             ) : studioConfig ? (
               <StudioFullClient

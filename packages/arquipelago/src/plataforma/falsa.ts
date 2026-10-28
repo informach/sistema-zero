@@ -10,6 +10,7 @@ import {
   LIMITE_DIARIO_PADRAO_MINUTOS,
   MoldeDeObjetoSchema,
   migrarSalvamento,
+  type PedidoDeFerramenta,
   type Plataforma,
   type PublicoJogo,
   type QuartoDoJogo,
@@ -41,6 +42,11 @@ export interface OpcoesDaPlataformaFalsa {
   desafios?: 'ligados' | 'desligados'
   /** O desafio do dia: `pronto` (padrão), `feito` ("Amanhã tem outro") ou `nenhum`. */
   dia?: DiaDoPlayground
+  /**
+   * O Pinta e o Molda no molde de um objeto: `pronto` (padrão, a ferramenta de mentira guarda na
+   * hora) ou `sem-acesso` (a página responde que a ferramenta não está liberada).
+   */
+  objetos?: 'pronto' | 'sem-acesso'
   /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
   obra?: 'exemplo'
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
@@ -103,6 +109,23 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     sessao.estado = instante >= sessao.vencimento ? 'expirada' : pausar ? 'encerrada' : 'ativa'
     if (sessao.estado === 'ativa') sessao.vencimento = instante + 20_000
     else if (sessaoAtiva === sessao) sessaoAtiva = null
+  }
+
+  /**
+   * O molde de um objeto (modo construção), com as mesmas recusas da página
+   * (`member-shell/src/lib/arquipelago-objeto.ts`): o Estúdio não abre objeto, o Pinta pede faces;
+   * pronto, a ferramenta de mentira "salva" na hora.
+   */
+  async function abrirNoMolde(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> {
+    const molde = MoldeDeObjetoSchema.safeParse(pedido.molde)
+    if (pedido.proposito !== 'objeto' || !molde.success)
+      return { situacao: 'indisponivel', motivo: 'playground' }
+    if (pedido.ferramenta === 'estudio') return { situacao: 'indisponivel', motivo: 'em-breve' }
+    if (o.objetos === 'sem-acesso') return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+    if (pedido.ferramenta === 'pinta' && molde.data.faces.length === 0)
+      return { situacao: 'indisponivel', motivo: 'sem-faces' }
+    await new Promise((r) => setTimeout(r, 400))
+    return { situacao: 'pronto', criacaoId: `molde-${molde.data.objeto}-${pedido.ferramenta}` }
   }
 
   if (o.comecarEm) {
@@ -321,16 +344,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       },
     },
     abrirFerramenta: async (pedido) =>
-      (await desafios.abrir(pedido)) ??
-      // O molde de um objeto (modo construção): a ferramenta de mentira "salva" na hora.
-      (MoldeDeObjetoSchema.safeParse(pedido.molde).success
-        ? await new Promise<ResultadoDeFerramenta>((r) =>
-            setTimeout(
-              () => r({ situacao: 'pronto', criacaoId: `${pedido.ferramenta}-de-mentira` }),
-              400,
-            ),
-          )
-        : { situacao: 'indisponivel', motivo: 'playground' }),
+      (await desafios.abrir(pedido)) ?? (await abrirNoMolde(pedido)),
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,

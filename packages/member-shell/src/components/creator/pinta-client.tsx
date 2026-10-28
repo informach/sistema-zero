@@ -6,6 +6,7 @@
 import type {
   PintaCompletionControl,
   PintaHostAdapter,
+  PintaInitialCanvas,
   PintaInitialIntent,
 } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
@@ -56,12 +57,15 @@ export function PintaClient({
   studioAvailable,
   narrationEnabled = false,
   onCompletionControlChange,
+  initialCanvas,
 }: {
   viewerId: string | null
   audience?: 'adult' | 'kids'
   studioAvailable: boolean
   narrationEnabled?: boolean
   onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
+  /** O molde de um objeto do Arquipélago: o Pinta abre (ou reabre) a planificação dele. */
+  initialCanvas?: PintaInitialCanvas
 }) {
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [mod, setMod] = useState<PintaModule | null>(null)
@@ -295,6 +299,7 @@ export function PintaClient({
         : {}),
       // Missão de arte do Pensa: abre a criação pré-configurada (1x no mount).
       ...(initialIntent ? { initialIntent } : {}),
+      ...(initialCanvas ? { initialCanvas } : {}),
       ...(taskSession ? { taskSession } : {}),
       // Botão "Editar" do Estúdio: abre direto o desenho pedido (1x no mount).
       ...(handoff?.progress.deliveries[0]?.creation.creationId || initialAssetId
@@ -305,7 +310,15 @@ export function PintaClient({
         : {}),
     }
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
-  }, [studioAvailable, router, handoff, initialAssetId, missionSession, localNamespace])
+  }, [
+    studioAvailable,
+    router,
+    handoff,
+    initialAssetId,
+    missionSession,
+    localNamespace,
+    initialCanvas,
+  ])
 
   // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence
   // à alça do shell Kids; `hostChrome.menu` é null para não duplicar o botão.

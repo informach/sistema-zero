@@ -172,3 +172,46 @@ describe('a geladeira funcionando', () => {
     expect(CATALOGO_DE_OBJETOS.geladeira.molde.frente).toBe('frente')
   })
 })
+
+describe('o Pinta e o Molda no molde', () => {
+  test('o recado diz por que a ferramenta não abriu', async () => {
+    const { recadoDaFerramentaFechada } = await import('../src/sistemas/construcao/projeto-azul')
+    expect(recadoDaFerramentaFechada('molda', 'acesso-necessario')).toBe(
+      'O Molda ainda não está liberado para você.',
+    )
+    expect(recadoDaFerramentaFechada('pinta', 'acesso-necessario')).toBe(
+      'O Pinta ainda não está liberado para você.',
+    )
+    expect(recadoDaFerramentaFechada('pinta', 'sem-faces')).toBe(
+      'Este objeto ainda não tem as faces para pintar.',
+    )
+    expect(recadoDaFerramentaFechada('pinta', 'ocupado')).toBe(
+      'O molde não abriu agora. Tente de novo daqui a pouco.',
+    )
+  })
+
+  test('a plataforma de mentira responde como a página', async () => {
+    const { criarPlataformaFalsa } = await import('../src/plataforma/falsa')
+    const { CATALOGO_DE_OBJETOS } = await import('@sistemazero/arquipelago-contracts')
+    const geladeira = CATALOGO_DE_OBJETOS.geladeira.molde
+    const forno = CATALOGO_DE_OBJETOS.forno.molde
+    const p = criarPlataformaFalsa({ persistir: false })
+    expect(
+      await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'objeto', molde: geladeira }),
+    ).toEqual({ situacao: 'pronto', criacaoId: 'molde-geladeira-pinta' })
+    expect(
+      await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'objeto', molde: forno }),
+    ).toEqual({ situacao: 'indisponivel', motivo: 'sem-faces' })
+    expect(
+      await p.abrirFerramenta({ ferramenta: 'molda', proposito: 'objeto', molde: forno }),
+    ).toEqual({ situacao: 'pronto', criacaoId: 'molde-forno-molda' })
+    const semAcesso = criarPlataformaFalsa({ persistir: false, objetos: 'sem-acesso' })
+    expect(
+      await semAcesso.abrirFerramenta({
+        ferramenta: 'molda',
+        proposito: 'objeto',
+        molde: geladeira,
+      }),
+    ).toEqual({ situacao: 'indisponivel', motivo: 'acesso-necessario' })
+  })
+})

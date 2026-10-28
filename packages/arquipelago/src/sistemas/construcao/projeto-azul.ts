@@ -221,6 +221,18 @@ export function oQueOPintaPinta(faces: readonly { face: string }[]): string | nu
   return texto.charAt(0).toUpperCase() + texto.slice(1)
 }
 
+/**
+ * O recado quando a plataforma não abre a ferramenta no molde (28/10/2026, a página já abre o
+ * Pinta e o Molda de verdade): sem acesso à ferramenta, o modelo ainda sem faces para pintar, ou
+ * o resto (fora do ar, outra ferramenta aberta).
+ */
+export function recadoDaFerramentaFechada(ferramenta: 'pinta' | 'molda', motivo: string): string {
+  const nome = ferramenta === 'molda' ? 'O Molda' : 'O Pinta'
+  if (motivo === 'acesso-necessario') return `${nome} ainda não está liberado para você.`
+  if (motivo === 'sem-faces') return 'Este objeto ainda não tem as faces para pintar.'
+  return 'O molde não abriu agora. Tente de novo daqui a pouco.'
+}
+
 /** A posição da jornada em que o Molda abre no molde (o posto Explorador(a) de Mundos). */
 export const POSICAO_DO_MOLDA = POSTOS_DA_JORNADA.indexOf('explorer') + 1
 

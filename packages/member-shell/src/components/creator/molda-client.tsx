@@ -3,7 +3,11 @@
 // O CSS do Molda (tokens + @theme que GERA as utilitárias mld-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
-import type { MoldaCompletionControl, MoldaHostAdapter } from '@sistemazero/molda'
+import type {
+  MoldaCompletionControl,
+  MoldaHostAdapter,
+  MoldaInitialModel,
+} from '@sistemazero/molda'
 import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
@@ -56,10 +60,13 @@ export function MoldaClient({
   toolAccess = null,
   narrationEnabled = false,
   onCompletionControlChange,
+  initialModel,
 }: {
   viewerId: string | null
   audience?: 'adult' | 'kids'
   studioAvailable: boolean
+  /** O molde de um objeto do Arquipélago: o Molda abre (ou reabre) o modelo com a caixa dele. */
+  initialModel?: MoldaInitialModel
   /** As ferramentas do posto (`moldaToolAccessFor`); `null` = tudo liberado. */
   toolAccess?: MoldaToolAccess | null
   narrationEnabled?: boolean
@@ -273,6 +280,7 @@ export function MoldaClient({
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
       ...(initialAssetId ? { initialAssetId } : {}),
+      ...(initialModel ? { initialModel } : {}),
       // As ferramentas de profissional abrem por posto; trancar tira a autoria, nunca a leitura.
       ...(stableAccess ? { toolAccess: stableAccess } : {}),
       // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
@@ -316,7 +324,15 @@ export function MoldaClient({
     }),
     // ⚠️ `theme` saiu do dep array: ele virou constante quando o tema escuro deixou de existir
     // nesta plataforma (o hook que o calculava era código morto).
-    [studioAvailable, router, initialAssetId, stableAccess, localNamespace, paletteLibrary],
+    [
+      studioAvailable,
+      router,
+      initialAssetId,
+      initialModel,
+      stableAccess,
+      localNamespace,
+      paletteLibrary,
+    ],
   )
 
   // O selo "Guardado na sua conta", a seta da galeria e o sinal da conta ficam na

@@ -19,12 +19,14 @@ export type { PintaProjectRef } from './core/project'
 export { PINTA_TOOL_PRESETS, type PintaToolPreset } from './core/toolCuration'
 export type {
   PintaExportedAsset,
+  PintaGuideRect,
   PintaHostAdapter,
   PintaHostChrome,
   PintaHostChromeAccount,
   PintaHostChromeBack,
   PintaHostChromeMenu,
   PintaHostChromeStatus,
+  PintaInitialCanvas,
   PintaInitialIntent,
   PintaSendResult,
   PintaTaskSession,

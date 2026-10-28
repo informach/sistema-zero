@@ -57,6 +57,94 @@ export const MoldeDeObjetoSchema = z.strictObject({
 })
 export type MoldeDeObjeto = z.infer<typeof MoldeDeObjetoSchema>
 
+/** Uma face na planificação, em pontos da tela (inteiros, com a origem no canto de cima). */
+export interface FaceNaPlanificacao {
+  face: FaceDoMolde
+  x: number
+  y: number
+  largura: number
+  altura: number
+  /** A face marcada como frente (onde o avatar usa o objeto). */
+  frente: boolean
+}
+
+/** A planificação das faces do molde numa tela só: o que o Pinta abre e o jogo lê de volta. */
+export interface Planificacao {
+  largura: number
+  altura: number
+  faces: FaceNaPlanificacao[]
+}
+
+/** O lado maior da tela da planificação, em pontos (cabe folgado no Pinta e no envio). */
+export const LADO_DA_PLANIFICACAO = 192
+
+/**
+ * A planificação da caixa (28/10/2026, Pinta no molde): os lados ao lado da frente, o topo em cima
+ * dela, cada face na proporção certa, e a tela inteira com o lado maior em `lado` pontos. Sem
+ * frente (o fliperama só tem a tela), as faces vão em fila. Molde sem faces: `null`.
+ */
+export function planificacaoDoMolde(
+  molde: MoldeDeObjeto,
+  lado = LADO_DA_PLANIFICACAO,
+): Planificacao | null {
+  if (molde.faces.length === 0) return null
+  const da = (face: FaceDoMolde) => molde.faces.find((f) => f.face === face)
+  const frente = molde.frente ? da(molde.frente) : undefined
+  // Em unidades do jogo: [face, x, y, largura, altura].
+  const caixas: [FaceDoMolde, number, number, number, number][] = []
+  if (frente) {
+    const esq = frente.face === 'frente' ? da('lado-esq') : undefined
+    const dir = frente.face === 'frente' ? da('lado-dir') : undefined
+    const topo = frente.face === 'frente' ? da('topo') : undefined
+    const y = topo?.altura ?? 0
+    const xFrente = esq?.largura ?? 0
+    if (topo)
+      caixas.push([
+        'topo',
+        xFrente + (frente.largura - topo.largura) / 2,
+        0,
+        topo.largura,
+        topo.altura,
+      ])
+    if (esq) caixas.push(['lado-esq', 0, y, esq.largura, esq.altura])
+    caixas.push([frente.face, xFrente, y, frente.largura, frente.altura])
+    if (dir) caixas.push(['lado-dir', xFrente + frente.largura, y, dir.largura, dir.altura])
+    for (const f of molde.faces)
+      if (!caixas.some(([face]) => face === f.face)) {
+        const fim = Math.max(...caixas.map(([, x, , l]) => x + l))
+        caixas.push([f.face, fim, y, f.largura, f.altura])
+      }
+  } else {
+    let x = 0
+    for (const f of molde.faces) {
+      caixas.push([f.face, x, 0, f.largura, f.altura])
+      x += f.largura
+    }
+  }
+  const esquerda = Math.min(...caixas.map(([, x]) => x))
+  const largura = Math.max(...caixas.map(([, x, , l]) => x + l)) - esquerda
+  const altura = Math.max(...caixas.map(([, , y, , a]) => y + a))
+  const escala = lado / Math.max(largura, altura)
+  // As bordas arredondadas uma vez só: duas faces vizinhas dividem a mesma linha, sem fresta.
+  const ponto = (v: number) => Math.round(v * escala)
+  return {
+    largura: Math.max(1, ponto(largura)),
+    altura: Math.max(1, ponto(altura)),
+    faces: caixas.map(([face, x, y, l, a]) => {
+      const x0 = ponto(x - esquerda)
+      const y0 = ponto(y)
+      return {
+        face,
+        x: x0,
+        y: y0,
+        largura: Math.max(1, ponto(x - esquerda + l) - x0),
+        altura: Math.max(1, ponto(y + a) - y0),
+        frente: face === molde.frente,
+      }
+    }),
+  }
+}
+
 /** O objeto no catálogo: o molde e de onde ele vem. */
 export interface ObjetoDoCatalogo {
   molde: MoldeDeObjeto

@@ -18,7 +18,13 @@ import {
   getMoldaGenerationStore,
   type MoldaPersistence,
 } from '../state/persistence'
-import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
+import {
+  MoldaAppProvider,
+  type MoldaHostAdapter,
+  type MoldaInitialModel,
+  useGallery,
+  useMoldaApp,
+} from './appContext'
 import type { MoldaCompletionControl } from './completionControl'
 import { DeferredModule } from './editor/DeferredEditor'
 import { EditorScreen } from './editor/EditorScreen'
@@ -76,6 +82,47 @@ function InitialAssetOpener({
   return null
 }
 
+/**
+ * Abre o modelo com molde do host (`adapter.initialModel`), 1x: reabre o modelo de mesmo nome ou
+ * cria um com a caixa do molde. Espera a galeria e a nuvem assentarem, como o deep link.
+ */
+function InitialModelOpener({
+  model,
+  onOpen,
+}: {
+  model: MoldaInitialModel | undefined
+  onOpen: (id: string) => void
+}): null {
+  const ready = useGallery((state) => state.loaded && !state.syncing)
+  const { gallery } = useMoldaApp()
+  const { showToast } = useToast()
+  const done = useRef(false)
+  useEffect(() => {
+    if (!model || done.current || !ready) return
+    done.current = true
+    // O nome com sufixo também conta (`molde-geladeira-2`): quando o nome puro já era de outra
+    // criação, a galeria criou esta com sufixo, e da próxima vez ela tem que ser achada.
+    const doMolde = (name: string) =>
+      name === model.name ||
+      (name.startsWith(`${model.name}-`) && /^\d+$/.test(name.slice(model.name.length + 1)))
+    const existing = gallery
+      .getState()
+      .assets.find((asset) => asset.kind === 'model' && doMolde(asset.name))
+    if (existing) {
+      onOpen(existing.id)
+      return
+    }
+    void gallery
+      .getState()
+      .create({ kind: 'model', name: model.name, starterBox: model.box })
+      .then((result) => {
+        if (result.ok) onOpen(result.asset.id)
+        else showToast(COPY.gallery.moldeError)
+      })
+  }, [model, ready, gallery, onOpen, showToast])
+  return null
+}
+
 export function MoldaApp({
   adapter,
   persistence,
@@ -90,6 +137,8 @@ export function MoldaApp({
   const [scene] = useState(() => createGallerySceneSource(sceneStore))
   const [gallery] = useState(() => createGalleryStore(persist, { scene }))
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
+  // O molde do host: lido 1x (o adapter pode mudar de identidade a cada render).
+  const [initialModel] = useState(() => adapterValue.initialModel)
   const screenRef = useRef(screen)
   const editorControl = useRef<MoldaCompletionControl | null>(null)
   useLayoutEffect(() => {
@@ -194,6 +243,7 @@ export function MoldaApp({
               />
             )}
             <InitialAssetOpener id={adapterValue.initialAssetId} onOpen={open} />
+            <InitialModelOpener model={initialModel} onOpen={open} />
           </ToastProvider>
         </MoldaToolAccessProvider>
       </MoldaAppProvider>
