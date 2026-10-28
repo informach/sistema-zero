@@ -51,3 +51,21 @@ outras funcionalidades do Arquipélago nem do ambiente hospedado.
 Sem alteração no gerador/GLB do Bosque, mecanismos, bosque-vivo, contrato ou serviço dos
 desafios, documentos dos desafios, arquivos `.env` ou workflows. Bancos hospedados intocados.
 O acompanhamento externo será atualizado pela pessoa responsável com o resumo da entrega.
+
+## Conciliação com o desafio do dia
+
+O commit `918322190` contém a entrega da Capi revisada acima. Antes da integração em staging
+local, foi conciliado com `894f0ac77`, entregue pela outra sessão. Preservados os dois
+parâmetros do playground, `bichos` e `dia`, e as duas seções da documentação. Os arquivos
+protegidos da frente de desafios permanecem idênticos a `894f0ac77`.
+
+Verificação da composição: **735 testes, 0 falhas, 0 pulados, 33.135 asserções**, tipagem
+dos três pacotes, Biome e build aprovados (43 arquivos, 20,90 MB). A conversa real no Chrome
+foi conferida novamente para Kids e adultos, incluindo reabertura sem duplicação. A primeira
+tentativa integrada recusou iniciar porque a porta 4599 estava ocupada por outro processo;
+a execução usou a porta 4608, liberada ao terminar. O processo alheio foi preservado.
+O Postgres local descartável foi encerrado e removido após os testes.
+
+Logs dessa composição: `capi-integrated-tests.log`, `capi-integrated-types-*.log`,
+`capi-browser-integrated-r2.log` e `capi-build-integrated.log`, no diretório de evidências acima.
+Também foi conferida a igualdade integral dos schemas V1 a V4 e de `migrarDaV1/2/3` com a base.

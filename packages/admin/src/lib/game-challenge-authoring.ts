@@ -1,8 +1,11 @@
-import type {
-  ConteudoDoDesafio,
-  CriarDesafio,
-  DesafioDaEquipe,
-  PublicoDoDesafio,
+import {
+  type ConteudoDoDesafio,
+  type CriarDesafio,
+  corPermitida,
+  type DesafioDaEquipe,
+  MOEDAS_PADRAO_POR_TIPO,
+  type PublicoDoDesafio,
+  type TipoDeDesafio,
 } from '@sistemazero/arquipelago-contracts'
 import {
   isSectionCompletion,
@@ -54,11 +57,37 @@ export function challengeDraft(value: DesafioDaEquipe): ChallengeDraft {
   )
   return structuredClone({ metadados: value.metadados, conteudo: { ...value.conteudo, objetivos } })
 }
+/**
+ * Troca o tipo do desafio: o número de quadro só no Quadro das Cores, o prêmio padrão do novo tipo
+ * e a cor desligada no desafio do dia (ele nunca pinta a ilha).
+ */
+export function challengeType(draft: ChallengeDraft, tipo: TipoDeDesafio): ChallengeDraft {
+  const padrao = MOEDAS_PADRAO_POR_TIPO[tipo]
+  const { recompensa } = draft.conteudo
+  return {
+    metadados: { ...draft.metadados, tipo, quadro: tipo === 'quadro-das-cores' ? 1 : null },
+    conteudo: {
+      ...draft.conteudo,
+      recompensa: {
+        ...recompensa,
+        cor: corPermitida(tipo, recompensa.cor) && recompensa.cor,
+        moedas: padrao.principal,
+        moedasExtra: padrao.extra,
+      },
+    },
+  }
+}
 export function challengePayload(draft: ChallengeDraft): CriarDesafio {
+  const { recompensa } = draft.conteudo
   return {
     metadados: draft.metadados,
     conteudo: {
       ...draft.conteudo,
+      // Desafio do dia salvo antes da regra (28/10/2026) com a cor ligada: sai desligada.
+      recompensa: {
+        ...recompensa,
+        cor: corPermitida(draft.metadados.tipo, recompensa.cor) && recompensa.cor,
+      },
       objetivos: draft.conteudo.objetivos.map((c) => ({ ...c, rule: { ...c.rule } })),
       blocosManuais: {
         acrescentar: draft.conteudo.blocosManuais.acrescentar.map((v) => v.trim()).filter(Boolean),

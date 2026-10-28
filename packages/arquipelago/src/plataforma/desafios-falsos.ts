@@ -1,6 +1,7 @@
 import {
   type DesafioNaLista,
   type DesafiosDoJogador,
+  diaDeSaoPaulo,
   ILHAS,
   type IlhaId,
   MoldeDeDesafioSchema,
@@ -12,8 +13,13 @@ import {
 
 /**
  * Desafios de mentira para o playground: três quadros cadastrados no Bosque (um pronto para fazer,
- * um que pede um bloco de curso e um feito), o resto vazio. Abrir um desafio "resolve" na hora.
+ * um que pede um bloco de curso e um feito), o resto vazio, e o desafio do dia nos três estados
+ * (`DiaDoPlayground`). Abrir um desafio "resolve" na hora.
  */
+export type DiaDoPlayground = 'pronto' | 'feito' | 'nenhum'
+
+const DO_DIA = '00000000-0000-4000-8000-0000000000d1'
+
 const CURSO = {
   courseId: '00000000-0000-4000-8000-000000000001',
   titulo: 'Repetições',
@@ -45,7 +51,13 @@ function desafio(
   }
 }
 
-export function criarDesafiosFalsos(posicao: number) {
+export function criarDesafiosFalsos(
+  posicao: number,
+  o: { dia?: DiaDoPlayground; agora?: () => Date } = {},
+) {
+  const dia = o.dia ?? 'pronto'
+  const agora = o.agora ?? (() => new Date())
+  let feitoHoje = dia === 'feito'
   const lista: DesafioNaLista[] = [
     desafio('00000000-0000-4000-8000-0000000000a1', 1, 'A borboleta que voa', 'disponivel'),
     desafio(
@@ -56,8 +68,17 @@ export function criarDesafiosFalsos(posicao: number) {
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
   ]
+  if (dia !== 'nenhum')
+    lista.push({
+      ...desafio(DO_DIA, 0, 'A corrida das pedras', dia === 'feito' ? 'concluido' : 'disponivel'),
+      tipo: 'desafio-do-dia',
+      quadro: null,
+      recompensa: { cor: false, moedas: 10, moedasExtra: 5 },
+    })
   const feitos = (ilha: IlhaId) =>
-    lista.filter((d) => d.ilha === ilha && d.situacao === 'concluido').length
+    lista.filter(
+      (d) => d.ilha === ilha && d.tipo === 'quadro-das-cores' && d.situacao === 'concluido',
+    ).length
   const resposta = (): DesafiosDoJogador => ({
     versao: 1,
     ilhas: ILHAS.map((i) => ({
@@ -66,6 +87,7 @@ export function criarDesafiosFalsos(posicao: number) {
       quadro: { feitos: feitos(i.id), total: QUADROS_POR_ILHA },
     })),
     desafios: structuredClone(lista),
+    doDia: dia === 'nenhum' ? null : { id: DO_DIA, dia: diaDeSaoPaulo(agora()), feito: feitoHoje },
   })
   return {
     buscar(caminho: string, metodo: string): RespostaDoServico | null {
@@ -87,6 +109,7 @@ export function criarDesafiosFalsos(posicao: number) {
         return { situacao: 'indisponivel', motivo: 'bloqueado' }
       await new Promise((r) => setTimeout(r, 400))
       d.situacao = 'concluido'
+      if (d.id === DO_DIA) feitoHoje = true
       return { situacao: 'pronto', criacaoId: d.id }
     },
   }

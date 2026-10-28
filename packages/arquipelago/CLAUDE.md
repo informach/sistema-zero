@@ -192,6 +192,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   loja congela o personagem).
 - A situação de cada desafio vem SEMPRE do serviço; o jogo só relê a lista depois do Estúdio.
   Regras e textos: `docs/arquipelago-regras.md` §7.11. Testes: `tests/quadro-das-cores.test.ts`.
+- Desafio do dia (28/10/2026, §7.12): `desafioDeHoje` e `diaParaAvisar` em
+  `sistemas/quadro-das-cores.ts`; o cartão "Desafio de hoje" (`CartaoDeHoje`) em cima dos seis
+  quadros do painel; o aviso do Zappy (`AVISO_DO_DIA`) sai do cavalete
+  (`mundo/quadro-das-cores.tsx`) uma vez por dia, guardado em `localStorage` por perfil. O banco de
+  mentira (`plataforma/desafios-falsos.ts`) tem os três estados (`dia` na plataforma falsa,
+  `?dia=pronto|feito|nenhum` no playground).
 - A cor das ilhas do anel segue os quadros: seis pedaços em volta do centro (o 1 na chegada da
   ponte), regra em `sistemas/cor-da-ilha.ts` e tinta no shader em `mundo/pintura-da-ilha.ts`
   (`pinturaDaIlha(ilha)`: uniforms divididos por todos os materiais da ilha, leve, completa e as

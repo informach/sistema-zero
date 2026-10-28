@@ -414,4 +414,42 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogadorNosDesafios (Postgres real)', 
       ultimosResultados: [{ id: 'o1', passou: true }],
     })
   })
+
+  test('desafio do dia: a primeira escolha do dia fica, mesmo em corrida; feito marca uma vez', async () => {
+    await publicado(ID1)
+    await publicado(ID2, meta({ slug: 'outro', quadro: 2 }))
+    expect(await repo.desafioDoDia(JOGADOR, '2026-10-27')).toBeNull()
+    const escolhas = await Promise.all(
+      [ID1, ID2, ID1].map((desafioId) =>
+        repo.guardarDesafioDoDia({
+          jogadorId: JOGADOR,
+          dia: '2026-10-27',
+          desafioId,
+          agora: AGORA,
+        }),
+      ),
+    )
+    const fixo = escolhas[0]?.desafioId
+    expect(new Set(escolhas.map((e) => e.desafioId)).size).toBe(1)
+    expect(await repo.desafioDoDia(JOGADOR, '2026-10-27')).toEqual({
+      desafioId: fixo as string,
+      feitoEm: null,
+    })
+    // Outro desafio ou outro dia não marcam; o certo marca uma vez só.
+    const outro = fixo === ID1 ? ID2 : ID1
+    await repo.marcarDesafioDoDiaFeito(JOGADOR, '2026-10-27', outro, AGORA)
+    await repo.marcarDesafioDoDiaFeito(JOGADOR, '2026-10-28', fixo as string, AGORA)
+    expect((await repo.desafioDoDia(JOGADOR, '2026-10-27'))?.feitoEm).toBeNull()
+    await repo.marcarDesafioDoDiaFeito(JOGADOR, '2026-10-27', fixo as string, AGORA)
+    await repo.marcarDesafioDoDiaFeito(
+      JOGADOR,
+      '2026-10-27',
+      fixo as string,
+      new Date('2026-10-27T20:00:00Z'),
+    )
+    expect((await repo.desafioDoDia(JOGADOR, '2026-10-27'))?.feitoEm?.toISOString()).toBe(
+      AGORA.toISOString(),
+    )
+    expect(await repo.desafioDoDia(JOGADOR, '2026-10-28')).toBeNull()
+  })
 })

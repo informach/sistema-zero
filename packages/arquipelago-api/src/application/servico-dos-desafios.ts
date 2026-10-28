@@ -3,8 +3,10 @@ import {
   type ConteudoDoDesafio,
   type DesafioAberto,
   type DesafiosDoJogador,
+  diaDeSaoPaulo,
   ILHAS,
   type IlhaId,
+  ilha,
   ilhaAberta,
   migrarConteudoDoDesafio,
   POSICOES_DA_JORNADA,
@@ -14,6 +16,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import type { Logger } from '@sistemazero/core/logging'
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
+import { type CandidatoDoDia, escolherDesafioDoDia } from '../domain/desafio-do-dia'
 import {
   chaveDasMoedas,
   passouNosObrigatorios,
@@ -76,8 +79,10 @@ export class ServicoDosDesafios {
     ])
     const feitos = new Map(conclusoes.map((c) => [c.desafioId, c]))
     const rotulos = new Map(curriculo.catalogo.map((b) => [b.type, b.rotulo]))
+    const doDia = await this.doDia(jogador, publicados, feitos, regua)
+    // Com `?ilha=`, o desafio do dia de outra ilha vem junto (o cartão do dia precisa dele).
     const desafios = publicados
-      .filter((d) => !ilha || d.metadados.ilha === ilha)
+      .filter((d) => !ilha || d.metadados.ilha === ilha || d.id === doDia?.id)
       .flatMap((d) => {
         const conteudo = conteudoDe(d, this.deps.logger)
         if (!conteudo) return []
@@ -118,7 +123,60 @@ export class ServicoDosDesafios {
         quadro: { feitos: quadrosFeitos(conclusoes, i.id), total: QUADROS_POR_ILHA },
       })),
       desafios,
+      doDia,
     }
+  }
+
+  /**
+   * O desafio do dia da pessoa: o guardado hoje (fixo até a meia-noite de São Paulo) ou, na
+   * primeira leitura do dia, a escolha da regra (`escolherDesafioDoDia`) entre os publicados de
+   * tipo `desafio-do-dia` ao alcance dela. Suporte vê a escolha sem gravar. Um guardado que deixou
+   * de estar publicado (arquivado no meio do dia) some até amanhã.
+   */
+  private async doDia(
+    jogador: Jogador,
+    publicados: readonly DesafioPublicado[],
+    feitos: ReadonlyMap<string, ConclusaoGuardada>,
+    regua: { posicao: number; blocos: ReadonlySet<string> | 'todos' },
+  ): Promise<DesafiosDoJogador['doDia']> {
+    const dia = diaDeSaoPaulo(this.agora())
+    const guardado = await this.deps.repo.desafioDoDia(jogador.id, dia)
+    if (guardado) {
+      const aindaPublicado = publicados.some((d) => d.id === guardado.desafioId)
+      return aindaPublicado
+        ? { id: guardado.desafioId, dia, feito: guardado.feitoEm !== null }
+        : null
+    }
+    const candidatos: CandidatoDoDia[] = publicados.flatMap((d) => {
+      if (d.metadados.tipo !== 'desafio-do-dia') return []
+      const aberta = ilhaAberta(d.metadados.ilha, regua.posicao)
+      const { situacao } = situacaoDoDesafio({
+        concluido: false,
+        ilhaAberta: aberta,
+        blocosExigidos: d.publicacao.blocosExigidos,
+        blocos: regua.blocos,
+      })
+      if (situacao !== 'disponivel') return []
+      return [
+        {
+          id: d.id,
+          ilha: d.metadados.ilha,
+          posicaoDaIlha: ilha(d.metadados.ilha).posicao,
+          ordem: d.metadados.ordem,
+          feitoEm: feitos.get(d.id)?.concluidoEm ?? null,
+        },
+      ]
+    })
+    const escolhido = escolherDesafioDoDia(dia, candidatos)
+    if (!escolhido) return null
+    if (jogador.somenteLeitura) return { id: escolhido, dia, feito: false }
+    const fixo = await this.deps.repo.guardarDesafioDoDia({
+      jogadorId: jogador.id,
+      dia,
+      desafioId: escolhido,
+      agora: this.agora(),
+    })
+    return { id: fixo.desafioId, dia, feito: fixo.feitoEm !== null }
   }
 
   async abrir(jogador: Jogador, id: string): Promise<DesafioAberto> {
@@ -204,6 +262,9 @@ export class ServicoDosDesafios {
           agora,
         })
       : false
+    // O desafio do dia de hoje passou: "Amanhã tem outro" (vale também para quem refaz).
+    if (passou.principal)
+      await this.deps.repo.marcarDesafioDoDiaFeito(jogador.id, diaDeSaoPaulo(agora), id, agora)
     // O extra vale com o principal passando junto (e uma vez só).
     const extraAgora =
       passou.principal && passou.extra

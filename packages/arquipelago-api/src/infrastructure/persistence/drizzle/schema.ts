@@ -234,6 +234,25 @@ export const desafiosConcluidos = arquipelagoSchema.table(
   ],
 )
 
+/**
+ * O desafio do dia de cada pessoa (28/10/2026): escolhido na primeira leitura do dia de São Paulo e
+ * fixo até a meia-noite (`domain/desafio-do-dia.ts`). `feito_em`: a conferência passou nesse
+ * desafio naquele dia ("Amanhã tem outro"), mesmo quando ele já tinha sido feito antes.
+ */
+export const desafioDoDia = arquipelagoSchema.table(
+  'desafio_do_dia',
+  {
+    jogadorId: uuid().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    desafioId: uuid()
+      .notNull()
+      .references(() => desafios.id, { onDelete: 'cascade' }),
+    escolhidoEm: timestamp({ withTimezone: true }).notNull(),
+    feitoEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.jogadorId, t.dia] })],
+)
+
 export const schema = {
   salvamentos,
   tempoDiario,
@@ -245,4 +264,5 @@ export const schema = {
   desafioPublicacoes,
   desafioProgresso,
   desafiosConcluidos,
+  desafioDoDia,
 }

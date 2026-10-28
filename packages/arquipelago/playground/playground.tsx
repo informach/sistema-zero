@@ -1,6 +1,7 @@
 import type { PublicoJogo } from '@sistemazero/arquipelago-contracts'
 import { montarArquipelago } from '../src/entrada'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
+import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
 
 /**
@@ -10,6 +11,7 @@ import { criarPlataformaFalsa } from '../src/plataforma/falsa'
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?cartas=todas` (ou `desligadas`, `fora-do-ar`) muda os cartões dos Lumis do caderno.
+ * `?dia=feito` (ou `nenhum`; padrão `pronto`) muda o desafio do dia do Quadro das Cores.
  * `?perder-pulso=1` simula uma resposta perdida após registrar tempo, para testar recuperação.
  */
 const q = new URLSearchParams(location.search)
@@ -30,6 +32,7 @@ const plataforma = criarPlataformaFalsa({
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
+  dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
 })
 if (q.get('perder-pulso') === '1') {
   const buscar = plataforma.servico.buscar

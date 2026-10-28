@@ -182,4 +182,28 @@ export interface RepositorioDoJogadorNosDesafios {
     semana?: string,
   ): Promise<void>
   marcarRecompensaVista(jogadorId: string, desafioId: string, agora: Date): Promise<void>
+  /** O desafio do dia guardado para a pessoa naquele dia (dia de São Paulo, `AAAA-MM-DD`). */
+  desafioDoDia(jogadorId: string, dia: string): Promise<DesafioDoDiaGuardado | null>
+  /**
+   * Guarda a escolha do dia, se ainda não houver uma (duas leituras ao mesmo tempo: vale a que
+   * gravou primeiro). Devolve a que ficou guardada.
+   */
+  guardarDesafioDoDia(e: {
+    jogadorId: string
+    dia: string
+    desafioId: string
+    agora: Date
+  }): Promise<DesafioDoDiaGuardado>
+  /** A conferência passou no desafio do dia: marca feito naquele dia (uma vez só). */
+  marcarDesafioDoDiaFeito(
+    jogadorId: string,
+    dia: string,
+    desafioId: string,
+    agora: Date,
+  ): Promise<void>
+}
+
+export interface DesafioDoDiaGuardado {
+  desafioId: string
+  feitoEm: Date | null
 }

@@ -51,6 +51,32 @@ export function novosFeitos(antes: readonly Quadro[], depois: readonly Quadro[])
     .map((q) => q.numero)
 }
 
+/**
+ * O desafio do dia (28/10/2026): o serviço escolhe e guarda um por dia de São Paulo (`doDia`). Aqui
+ * só se acha o desafio na lista para o cartão "Desafio de hoje" em cima dos seis quadros.
+ */
+export type EstadoDoDia = 'pronto' | 'feito' | 'nenhum'
+
+export function desafioDeHoje(dados: DesafiosDoJogador): {
+  estado: EstadoDoDia
+  desafio: DesafioNaLista | null
+} {
+  const doDia = dados.doDia
+  const desafio = doDia ? (dados.desafios.find((d) => d.id === doDia.id) ?? null) : null
+  if (!doDia || !desafio) return { estado: 'nenhum', desafio: null }
+  return { estado: doDia.feito ? 'feito' : 'pronto', desafio }
+}
+
+/** A fala do Zappy quando há desafio do dia por fazer (uma vez por dia). */
+export const AVISO_DO_DIA = 'Tem desafio novo hoje no Quadro das Cores.'
+
+/** O dia a avisar (e guardar), ou null: já avisou hoje, já fez ou não há desafio de hoje. */
+export function diaParaAvisar(dados: DesafiosDoJogador, ultimoAviso: string | null): string | null {
+  const hoje = desafioDeHoje(dados)
+  if (hoje.estado !== 'pronto' || !dados.doDia) return null
+  return dados.doDia.dia === ultimoAviso ? null : dados.doDia.dia
+}
+
 /** A resposta do serviço conferida pelo contrato (formato estranho conta como indisponível). */
 export function lerDesafios(corpo: unknown): DesafiosDoJogador | null {
   const lido = DesafiosDoJogadorSchema.safeParse(corpo)

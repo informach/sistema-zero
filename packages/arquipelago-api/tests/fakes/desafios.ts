@@ -279,6 +279,25 @@ export class JogadorNosDesafiosEmMemoria implements RepositorioDoJogadorNosDesaf
     const c = this.concluidos.get(`${jogadorId}:${desafioId}`)
     if (c && !c.recompensaVistaEm) c.recompensaVistaEm = agora
   }
+
+  /** O desafio do dia guardado, por `jogador:dia`. */
+  readonly doDia = new Map<string, { desafioId: string; feitoEm: Date | null }>()
+
+  async desafioDoDia(jogadorId: string, dia: string) {
+    const d = this.doDia.get(`${jogadorId}:${dia}`)
+    return d ? { ...d } : null
+  }
+
+  async guardarDesafioDoDia(e: { jogadorId: string; dia: string; desafioId: string; agora: Date }) {
+    const k = `${e.jogadorId}:${e.dia}`
+    if (!this.doDia.has(k)) this.doDia.set(k, { desafioId: e.desafioId, feitoEm: null })
+    return { ...(this.doDia.get(k) as { desafioId: string; feitoEm: Date | null }) }
+  }
+
+  async marcarDesafioDoDiaFeito(jogadorId: string, dia: string, desafioId: string, agora: Date) {
+    const d = this.doDia.get(`${jogadorId}:${dia}`)
+    if (d && d.desafioId === desafioId && !d.feitoEm) d.feitoEm = agora
+  }
 }
 
 /** Os desafios de quem joga desligados (para os testes que não cuidam deles). */
