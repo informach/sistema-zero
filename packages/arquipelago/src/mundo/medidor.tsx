@@ -7,6 +7,8 @@ import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
 import { mecanismosAgora } from './mecanismos'
+import { reativosAgora } from './objetos-reativos'
+import { ondasAgora } from './ondinhas'
 import { pontesAgora } from './pontes-vivas'
 import { troncoAgora } from './tronco-no-lago'
 import { ventoAgora } from './vegetacao-ao-vento'
@@ -47,6 +49,8 @@ export interface MedidaDoDesenho {
   /** O modo do corpo (`sistemas/modos`) e se ele pisa em algo. */
   modo: Movimento['modo']
   noChao: boolean
+  ondas: typeof ondasAgora
+  reativos: typeof reativosAgora
   fogo: typeof fogoAgora
   vento: typeof ventoAgora
   mecanismos: typeof mecanismosAgora
@@ -111,6 +115,8 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      ondas: { ...ondasAgora },
+      reativos: { ...reativosAgora, pecas: reativosAgora.pecas.map((p) => ({ ...p })) },
       fogo: { ...fogoAgora },
       vento: { ...ventoAgora },
       mecanismos: { ...mecanismosAgora },

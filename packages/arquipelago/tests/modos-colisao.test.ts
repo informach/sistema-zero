@@ -12,6 +12,7 @@ import {
 } from '../src/sistemas/modos'
 import { BORDA } from '../src/sistemas/modos/borda'
 import { passoComColisao } from '../src/sistemas/modos/colisao'
+import { ESCADA } from '../src/sistemas/modos/escada'
 import { agarrarTronco } from '../src/sistemas/modos/escalada'
 
 // Usa exatamente a física instalada pelo renderer, sem outra versão de Rapier no teste.
@@ -23,6 +24,187 @@ const R: RapierContext['rapier'] = require(
 )
 beforeAll(async () => {
   await R.init()
+})
+
+test('escada chega ao deque, mas um teto real interrompe a subida', () => {
+  for (const teto of [false, true]) {
+    const world = new R.World({ x: 0, y: -24, z: 0 })
+    try {
+      world.createCollider(R.ColliderDesc.cuboid(2, 1.5, 2).setTranslation(0, 1.5, -2))
+      for (let y = 0.3; y <= 3; y += 0.3)
+        world.createCollider(R.ColliderDesc.cuboid(0.5, 0.04, 0.05).setTranslation(0, y, 0))
+      if (teto) world.createCollider(R.ColliderDesc.cuboid(1, 0.1, 1).setTranslation(0, 2.5, 0.5))
+      const corpo = world.createRigidBody(
+        R.RigidBodyDesc.kinematicPositionBased().setTranslation(
+          0,
+          CORPO.doCentroAoPe + CORPO.folga,
+          ESCADA.afastamento,
+        ),
+      )
+      const col = world.createCollider(R.ColliderDesc.capsule(CORPO.meiaAltura, CORPO.raio), corpo)
+      const k = world.createCharacterController(CORPO.folga)
+      const c = criarEstadoDoCorpo()
+      c.modo = 'escada'
+      c.escada = {
+        id: 'escada-real',
+        base: { x: 0, y: 0, z: 0 },
+        topo: { x: 0, y: 3, z: 0 },
+        saida: { x: 0, y: 3, z: -1 },
+        largura: 1,
+      }
+      c.noModo = 1
+      Object.assign(c.inicio, corpo.translation())
+      Object.assign(c.prox, corpo.translation())
+      const mundo: MundoDoMovimento = {
+        cipos: [],
+        troncos: [],
+        aguas: [],
+        equilibrios: [],
+        escadas: [c.escada],
+        escorregadores: [],
+        bordas: [],
+        rodasDeNado: [],
+        foco: { x: 0, y: 0, z: 0 },
+      }
+      world.step()
+      for (let i = 0; i < 180 && c.modo === 'escada'; i++) {
+        const e: EntradaDoPasso = {
+          dt: 1 / 60,
+          agora: (i * 1000) / 60,
+          parado: false,
+          p: corpo.translation(),
+          ix: 0,
+          iz: 1,
+          pedidoX: 0,
+          pedidoZ: -1,
+          ladoX: 1,
+          ladoZ: 0,
+          pulou: false,
+          usou: false,
+          correr: false,
+          ritmo: 1,
+          conversa: null,
+          gravidade: 24,
+          nivelDoMar: -10,
+        }
+        c.noModo += e.dt
+        passoComColisao(
+          MODOS[c.modo],
+          c,
+          e,
+          mundo,
+          col,
+          k,
+          k,
+          R.QueryFilterFlags.EXCLUDE_SENSORS,
+          () => true,
+          () => {},
+        )
+        corpo.setNextKinematicTranslation(c.prox)
+        world.step()
+      }
+      expect(c).toMatchObject({ modo: 'chao' })
+      if (teto) expect(c.prox.y + CORPO.doCentroAoPe).toBeLessThan(2.5)
+      else {
+        expect(c.prox.y - CORPO.doCentroAoPe).toBeGreaterThan(3)
+        expect(c.prox.z).toBeCloseTo(-1, 2)
+      }
+    } finally {
+      world.free()
+    }
+  }
+})
+
+test('escorregador segue uma rampa física e para antes de uma parede sobre ela', () => {
+  for (const parede of [false, true]) {
+    const world = new R.World({ x: 0, y: -24, z: 0 })
+    try {
+      const angulo = Math.atan(0.5)
+      world.createCollider(
+        R.ColliderDesc.cuboid(1, 0.02, Math.sqrt(20) / 2)
+          .setTranslation(0, 2, 2)
+          .setRotation({ x: Math.sin(angulo / 2), y: 0, z: 0, w: Math.cos(angulo / 2) }),
+      )
+      if (parede) world.createCollider(R.ColliderDesc.cuboid(1, 2, 0.05).setTranslation(0, 3, 2))
+      const corpo = world.createRigidBody(
+        R.RigidBodyDesc.kinematicPositionBased().setTranslation(
+          0,
+          3 + CORPO.doCentroAoPe + CORPO.folga,
+          0,
+        ),
+      )
+      const col = world.createCollider(R.ColliderDesc.capsule(CORPO.meiaAltura, CORPO.raio), corpo)
+      const k = world.createCharacterController(CORPO.folga)
+      const c = criarEstadoDoCorpo()
+      c.modo = 'escorregar'
+      c.escorregador = {
+        id: 'rampa-real',
+        pontos: [
+          { x: 0, y: 3, z: 0 },
+          { x: 0, y: 1, z: 4 },
+        ],
+        largura: 2,
+      }
+      c.noModo = 1
+      Object.assign(c.inicio, corpo.translation())
+      Object.assign(c.prox, corpo.translation())
+      const mundo: MundoDoMovimento = {
+        cipos: [],
+        troncos: [],
+        aguas: [],
+        equilibrios: [],
+        escadas: [],
+        escorregadores: [c.escorregador],
+        bordas: [],
+        rodasDeNado: [],
+        foco: { x: 0, y: 0, z: 0 },
+      }
+      world.step()
+      for (let i = 0; i < 300 && c.modo === 'escorregar'; i++) {
+        const e: EntradaDoPasso = {
+          dt: 1 / 60,
+          agora: (i * 1000) / 60,
+          parado: false,
+          p: corpo.translation(),
+          ix: 0,
+          iz: 0,
+          pedidoX: 0,
+          pedidoZ: 0,
+          ladoX: 1,
+          ladoZ: 0,
+          pulou: false,
+          usou: false,
+          correr: false,
+          ritmo: 1,
+          conversa: null,
+          gravidade: 24,
+          nivelDoMar: -10,
+        }
+        c.noModo += e.dt
+        passoComColisao(
+          MODOS[c.modo],
+          c,
+          e,
+          mundo,
+          col,
+          k,
+          k,
+          R.QueryFilterFlags.EXCLUDE_SENSORS,
+          () => true,
+          () => {},
+        )
+        corpo.setNextKinematicTranslation(c.prox)
+        world.step()
+      }
+      expect(c).toMatchObject({ modo: 'chao' })
+      if (parede) {
+        expect(c.prox.z).toBeGreaterThan(1)
+        expect(c.prox.z + CORPO.raio).toBeLessThan(2)
+      } else expect(c.prox.z).toBeCloseTo(4, 2)
+    } finally {
+      world.free()
+    }
+  }
 })
 
 test('a interpolação da câmera não corta um obstáculo entre dois destinos livres', () => {

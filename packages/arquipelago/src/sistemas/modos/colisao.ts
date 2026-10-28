@@ -22,6 +22,21 @@ export interface ControladorFisico<Colisor> {
   ): void
   computedMovement(): Ponto
   computedGrounded(): boolean
+  numComputedCollisions(): number
+  computedCollision(indice: number): { normal1: Ponto } | null
+}
+
+const NORMAL_DE_APOIO = Math.cos((CORPO.sobeAte * Math.PI) / 180)
+
+/** O apoio pode elevar/desviar a cápsula na quina sem interromper o percurso. */
+function somenteApoio<Colisor>(controlador: ControladorFisico<Colisor>): boolean {
+  const total = controlador.numComputedCollisions()
+  if (total === 0) return false
+  for (let i = 0; i < total; i++) {
+    const contato = controlador.computedCollision(i)
+    if (!contato || contato.normal1.y < NORMAL_DE_APOIO) return false
+  }
+  return true
 }
 
 export function passoComColisao<Colisor>(
@@ -57,7 +72,7 @@ export function passoComColisao<Colisor>(
   const pedido = Math.hypot(c.desloc.x, c.desloc.y, c.desloc.z)
   const avancou =
     pedido > 0 ? (mov.x * c.desloc.x + mov.y * c.desloc.y + mov.z * c.desloc.z) / pedido : 0
-  const bloqueado = guiado && pedido - avancou > CORPO.folga * 0.05
+  const bloqueado = guiado && pedido - avancou > CORPO.folga * 0.05 && !somenteApoio(k)
   const gastou = modo.depois(c, e, mundo, guiado ? null : mov, pisou, aviso)
   if (guiado) {
     c.prox.x = e.p.x + mov.x

@@ -52,7 +52,9 @@ import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
   FOGUEIRA_DO_BOSQUE,
+  GALHO_SECO_DO_BOSQUE,
   NOMES_DAS_ANCORAS_DO_PERCURSO,
+  PECAS_SOLTAS_DO_BOSQUE,
   PLACA_DA_LARGADA,
   paraOMundo,
   percursoNoModelo,
@@ -76,6 +78,8 @@ import { useInterativo } from './interativos'
 import { Mecanismos } from './mecanismos'
 import { giroDaIlha, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
+import { ObjetosReativos } from './objetos-reativos'
+import { Ondinhas } from './ondinhas'
 import { TroncoNoLago } from './tronco-no-lago'
 import { ventoAgora } from './vegetacao-ao-vento'
 
@@ -167,6 +171,18 @@ export function BosqueVivo({
     [meio, giro],
   )
 
+  const pecasSoltas = useMemo(
+    () =>
+      PECAS_SOLTAS_DO_BOSQUE.map((p) => ({
+        ...paraOMundo(p, meio, giro, { x: 0, y: 0, z: 0 }),
+        tipo: p.tipo,
+      })),
+    [meio, giro],
+  )
+  const galhoSeco = useMemo(
+    () => paraOMundo(GALHO_SECO_DO_BOSQUE, meio, giro, { x: 0, y: 0, z: 0 }),
+    [meio, giro],
+  )
   const mecanismos = useMemo(() => {
     const a = preparada.modelo.getObjectByName('mecanismos-casa')
     const b = preparada.modelo.getObjectByName('mecanismos-rumo')
@@ -527,6 +543,9 @@ export function BosqueVivo({
 
   return (
     <group ref={pecas} visible={false}>
+      <ComReserva reserva={null}>
+        <ObjetosReativos pecas={pecasSoltas} galho={galhoSeco} />
+      </ComReserva>
       <FogueiraViva {...fogueira} vento={vento} />
       <FolhasAoVento vento={vento} x={meio.x + 1} y={4} z={meio.z} />
       {mecanismos && <Mecanismos {...mecanismos} />}
@@ -540,6 +559,7 @@ export function BosqueVivo({
       {agua ? (
         <ComReserva reserva={null}>
           <TroncoNoLago agua={agua} vento={vento} />
+          <Ondinhas agua={agua} />
         </ComReserva>
       ) : null}
       <BichosDoBosque

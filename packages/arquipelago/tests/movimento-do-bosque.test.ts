@@ -7,7 +7,9 @@ import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
   FOGUEIRA_DO_BOSQUE,
+  GALHO_SECO_DO_BOSQUE,
   NOMES_DAS_ANCORAS_DO_PERCURSO,
+  PECAS_SOLTAS_DO_BOSQUE,
   PLACA_DA_LARGADA,
   percursoNoModelo,
   RAIOS_DOS_DEQUES,
@@ -462,4 +464,20 @@ test('a fogueira e o balde ficam numa clareira livre para caminhar ao redor', ()
       }
       expect(colisores.find((c) => bate(c, p))?.nome).toBeUndefined()
     }
+})
+
+test('peças soltas e galho seco nascem fora das peças fixas e do percurso obrigatório', () => {
+  for (const p of PECAS_SOLTAS_DO_BOSQUE) {
+    expect(
+      colisores.find((c) => bate(c, { ...p, y: p.y + CORPO.doCentroAoPe }))?.nome,
+    ).toBeUndefined()
+  }
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 12) {
+    const p = {
+      x: GALHO_SECO_DO_BOSQUE.x + Math.cos(a),
+      y: 1 + CORPO.doCentroAoPe,
+      z: GALHO_SECO_DO_BOSQUE.z + Math.sin(a),
+    }
+    expect(colisores.find((c) => bate(c, p))?.nome).toBeUndefined()
+  }
 })

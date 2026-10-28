@@ -14,6 +14,13 @@ import { RAIO_DA_ILHA_DO_ANEL } from './medidas'
 export const TOPO_DO_BOSQUE = 1
 /** Clareira livre junto à chegada, longe da casa, deques e árvores. */
 export const FOGUEIRA_DO_BOSQUE = { x: 8, y: TOPO_DO_BOSQUE, z: 0 } as const
+export const PECAS_SOLTAS_DO_BOSQUE = [
+  { tipo: 'pedra', x: 9, y: 1, z: 2.6 },
+  { tipo: 'pedra', x: 7.5, y: 1, z: 1.5 },
+  { tipo: 'cogumelo', x: 10, y: 1, z: 1.5 },
+  { tipo: 'cogumelo', x: 9, y: 1, z: -1 },
+] as const
+export const GALHO_SECO_DO_BOSQUE = { x: 10.2, y: 1, z: -0.7 } as const
 
 /** Os três cipós do galho por cima do lago (nós `cipo-1`…`cipo-3`, pivô no galho). */
 export const CIPOS_DO_BOSQUE = ['cipo-1', 'cipo-2', 'cipo-3'] as const
