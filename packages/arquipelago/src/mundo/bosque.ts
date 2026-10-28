@@ -4,11 +4,16 @@
  * ilha passa tudo para o mundo quando fica ativa. Os testes conferem estes números contra o
  * arquivo (`tests/movimento-do-bosque.test.ts`).
  */
-import type { BichoDoBosque } from '@sistemazero/arquipelago-contracts'
+import { type BichoDoBosque, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from '../sistemas/cipo'
 import type { Tronco } from '../sistemas/escalada'
 import type { DequeDoPercurso, PontosDoPercurso } from '../sistemas/percurso'
-import { RAIO_DA_ILHA_DO_ANEL } from './medidas'
+import { raioMaximoDaIlha } from './medidas'
+
+const ILHA_DO_BOSQUE = ilhasDoAnel().find((i) => i.id === 'bosque')
+if (!ILHA_DO_BOSQUE) throw new Error('Sem o Bosque no anel.')
+/** Até onde vai o chão do Bosque, a contar do centro (o meio da ponta de campo do lado de fora). */
+export const RAIO_DO_BOSQUE = raioMaximoDaIlha(ILHA_DO_BOSQUE)
 
 /** O tampo da ilha (o chão onde se pisa). */
 export const TOPO_DO_BOSQUE = 1
@@ -154,7 +159,7 @@ export function percursoNoModelo(a: AncorasDoPercurso): PontosDoPercurso {
     chegada: { x: fim.x, y: fim.y, z: fim.z },
     vagalumes: VAGALUMES_DAS_COPAS.map((v) => ({ ...v })),
     centro: { x: 0, y: TOPO_DO_BOSQUE, z: 0 },
-    raioDaIlha: RAIO_DA_ILHA_DO_ANEL,
+    raioDaIlha: RAIO_DO_BOSQUE,
   }
 }
 

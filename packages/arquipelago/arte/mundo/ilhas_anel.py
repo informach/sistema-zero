@@ -18,28 +18,50 @@ RAIO = RAIO_DA_ILHA_DO_ANEL
 TOPO = 1.0
 
 
-def contorno(raio, semente, n=36, amp=(0.05, 0.03)):
+def contorno(raio, semente, n=36, amp=(0.05, 0.03), lobo=None):
+    """O contorno de uma ilha: um círculo com ondinhas. `lobo` (`(angulo, quanto, meia_abertura)`, o
+    ângulo no chão do Blender) cresce a ilha para um lado, suave: em `angulo` o raio vai a
+    `1 + quanto` vezes, e some a `meia_abertura` dali. Com lobo, o contorno tem o dobro de pontos
+    (a curva do lobo fica lisa)."""
+    if lobo:
+        n *= 2
     pts = []
     for i in range(n):
         a = 2 * math.pi * i / n
-        k = 1 + amp[0] * math.sin(3 * a + semente) + amp[1] * math.sin(5 * a + semente * 2)
-        pts.append((math.cos(a) * raio * k, math.sin(a) * raio * k))
+        pts.append((math.cos(a) * raio * fator_do_contorno(a, semente, amp, lobo),
+                    math.sin(a) * raio * fator_do_contorno(a, semente, amp, lobo)))
     return pts
 
 
-def base(semente, topo='grama', praia='areia', fundo='terraIlha', borda_topo=None, flutua=False):
+def fator_do_contorno(a, semente, amp=(0.05, 0.03), lobo=None):
+    """Quanto o raio vale no ângulo `a` (o mesmo cálculo de `raioDoTampo` em `src/mundo/medidas.ts`)."""
+    k = 1 + amp[0] * math.sin(3 * a + semente) + amp[1] * math.sin(5 * a + semente * 2)
+    if lobo:
+        centro, quanto, meia = lobo
+        d = math.atan2(math.sin(a - centro), math.cos(a - centro))
+        if abs(d) < meia:
+            k *= 1 + quanto * math.cos(d / meia * math.pi / 2) ** 2
+    return k
+
+
+# O Bosque cresce para o lado de fora (o -x do modelo, longe da chegada da ponte): o lugar da
+# cabana que a criança constrói. Os mesmos números em `LOBO_DO_BOSQUE` (src/mundo/medidas.ts).
+LOBO_DO_BOSQUE = (math.pi, 0.55, math.radians(70))
+
+
+def base(semente, topo='grama', praia='areia', fundo='terraIlha', borda_topo=None, flutua=False, lobo=None):
     """Tampo plano, uma faixa de praia e o barranco até embaixo d'água (ou a rocha da ilha que
     flutua)."""
     p = []
-    p.append(slab(contorno(RAIO - 0.35, semente), TOPO - 0.35, TOPO, topo, bevel=0.22, segs=1, name='topo',
+    p.append(slab(contorno(RAIO - 0.35, semente, lobo=lobo), TOPO - 0.35, TOPO, topo, bevel=0.22, segs=1, name='topo',
                   fundo=False))
     if borda_topo:
-        p.append(slab(contorno(RAIO - 0.1, semente), TOPO - 0.5, TOPO - 0.2, borda_topo, bevel=0.1, segs=1,
+        p.append(slab(contorno(RAIO - 0.1, semente, lobo=lobo), TOPO - 0.5, TOPO - 0.2, borda_topo, bevel=0.1, segs=1,
                       name='borda', fundo=False))
     if not flutua:
-        p.append(slab(contorno(RAIO + 0.9, semente + 0.4, amp=(0.06, 0.03)), TOPO - 0.95, TOPO - 0.42, praia,
+        p.append(slab(contorno(RAIO + 0.9, semente + 0.4, amp=(0.06, 0.03), lobo=lobo), TOPO - 0.95, TOPO - 0.42, praia,
                       bevel=0.2, segs=1, name='praia', fundo=False))
-        p.append(slab(contorno(RAIO + 1.4, semente + 0.4, amp=(0.06, 0.03)), -1.0, TOPO - 0.95, fundo, bevel=0.0,
+        p.append(slab(contorno(RAIO + 1.4, semente + 0.4, amp=(0.06, 0.03), lobo=lobo), -1.0, TOPO - 0.95, fundo, bevel=0.0,
                       name='barranco', fundo=False))
     else:
         # Rocha de baixo: cone irregular em camadas, como uma raiz de pedra.
@@ -89,7 +111,7 @@ def pedra_leve(x, z, s, m='pedra', seed=0, y=TOPO):
 
 # ------------------------------------------------------------------ as ilhas
 def bosque():
-    p = base(1.0 * 1.7 * 2)
+    p = base(1.0 * 1.7 * 2, lobo=LOBO_DO_BOSQUE)
     for i, (x, z, s, c) in enumerate([(-6, 3, 1.1, 'copa'), (4, 6, 1.3, 'copaEscura'), (0, -7, 1.0, 'copaFunda'),
                                       (7, -3, 1.2, 'copa'), (-7, -4, 1.25, 'copaEscura'), (-2, 8, 0.95, 'copa'),
                                       (8.5, 3.5, 0.9, 'copaFunda'), (-9, 0.5, 0.85, 'copaFunda'), (3, -9.5, 0.9, 'copa')]):
@@ -116,6 +138,11 @@ def bosque():
         p.append(uvball(0.32, (bx, by, TOPO + 0.42), 'red', seg=8, ring=4, scale=(1, 1, 0.6)))
     for x, z in ((-10, -5), (10, -6), (6.5, 9.5)):
         p += moita_leve(x, z, 1.1)
+    # A ponta de campo do lado de fora (`LOBO_DO_BOSQUE`), com o lote da cabana livre no meio.
+    p += arvore_leve(-16.6, -6.8, 0.85, 'copaFunda', seed=20)
+    p += arvore_leve(-16.4, 6.9, 0.85, 'copa', seed=21)
+    for x, z in ((-13.8, -6.4), (-13.4, 6.6)):
+        p += moita_leve(x, z, 0.9)
     return p
 
 

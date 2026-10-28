@@ -70,16 +70,16 @@
     "triangulos": 3010
   },
   "ilhas-do-anel": {
-    "kb": 527.4,
+    "kb": 548.2,
     "nos": {
-      "bosque": 3118,
+      "bosque": 4062,
       "nuvens": 4012,
       "pico": 1688,
       "recife": 3064,
       "vale-dos-dinos": 3014,
       "vila-doce": 4440
     },
-    "triangulos": 19336
+    "triangulos": 20280
   },
   "pier": {
     "colisores": {

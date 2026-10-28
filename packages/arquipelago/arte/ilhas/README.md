@@ -136,6 +136,12 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
   - `esconderijo-1`…`esconderijo-4`: onde se escondem o cachorro, o gato, o coelho e o porquinho,
     no chão (y = 1); o giro em Z do empty é para onde o bicho olha (no jogo, o giro em Y com o mesmo
     sinal, lido do quatérnio por `rumoDoNo`).
+  - `lote-cabana-a` e `lote-cabana-b`: os cantos do lote da cabana que a criança constrói (células
+    de x −18 a −13 e de z −4 a 3, `LOTE_DA_CABANA` em `bosque.py`), na ponta de campo do lado de
+    fora. O Bosque é a única ilha que não é redonda: o contorno cresce para o −x do modelo
+    (`LOBO_DO_BOSQUE` em `arte/mundo/ilhas_anel.py`, a mesma conta em `src/mundo/medidas.ts`), na
+    versão completa e na leve. Não ponha nada que colida nem nada alto no lote (o telhado do kit
+    começa a 4 m); `tests/bosque-crescido.test.ts` confere.
 - **Vila Doce:**
   - `fonte`, `padaria` (a porta), `sorveteria` (o balcão);
   - `barraca-1`…`barraca-6`: a frente de cada barraca;

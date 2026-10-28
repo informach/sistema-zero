@@ -64,6 +64,10 @@ ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da es
 # se pendura), uma por lado.
 PEDRA_DE_AGARRAR = {'centro': (-8.25, 6.75), 'lado': 2.0, 'altura': 2.1, 'recuo': 0.3}
 CERCADO = (2.4, -9.2)
+# O lote da cabana que a criança constrói: a área do lobo de fora (`anel.LOBO_DO_BOSQUE`), plana e
+# sem nada que colida, de céu aberto (longe dos deques: o telhado do kit começa a 4 m). Células de
+# x0 a x1 - 1 e de z0 a z1 - 1, no chão do jogo; as âncoras `lote-cabana-a` e `-b` ficam nos cantos.
+LOTE_DA_CABANA = {'x0': -18, 'z0': -4, 'x1': -12, 'z1': 4}
 # A casa na árvore no deque da T1 (física viva, etapa 5). `lado` é o ângulo (chão do Blender) do
 # tronco para o meio da casa; `largura` vai na direção do tronco para fora, `fundo` em volta do
 # tronco. A porta fica na parede de +y local (a do lado da escada), com o meio em `porta_x`: a parede
@@ -513,11 +517,31 @@ def vegetacao(col, copas, troncos):
         p.append(cyl(0.34, 0.12, (x, -z - 0.56, TOPO + 0.22), 'black', verts=10, rot=(R(80), 0, 0)))
         # O montinho (0,38 de alto) vira um degrau baixo: o personagem sobe nele em vez de afundar.
         col_no_tampo(col, 'toca', x, z, 0.6, 0.3)
+    p += enfeites_do_lobo(col, copas)
+    return p
+
+
+def enfeites_do_lobo(col, copas):
+    """A ponta de campo do lado de fora, em volta do lote da cabana (que fica livre): duas árvores
+    médias nos cantos, moitas na beira, flores e tufos."""
+    p = []
+    for i, (x, z, s, c) in enumerate([(-16.6, -6.8, 0.8, 'copaFunda'), (-16.4, 6.9, 0.85, 'copa')]):
+        copa = []
+        copas.append(copa)
+        p += arvore_media(x, z, s, c, seed=120 + i, col=col, folhas=copa)
+    for i, (x, z, s) in enumerate(((-13.8, -6.4, 0.9), (-13.4, 6.6, 1.0), (-18.6, -4.9, 0.9), (-18.4, 5.0, 0.9))):
+        p += moita(x, z, s, seed=40 + i)
+        col_no_tampo(col, 'moita', x, z, MOITA_COL[0] * s, MOITA_COL[1] * s)
+    for i, (x, z, r, n) in enumerate(((-15.2, -5.4, 1.0, 6), (-14.6, 5.4, 1.1, 6), (-19.0, 0.4, 0.8, 4))):
+        p += flores(x, z, r, n, seed=140 + i)
+    for i, (x, z, r, n) in enumerate(((-12.6, -5.2, 1.0, 5), (-17.6, 5.6, 1.0, 5), (-18.9, -2.0, 0.8, 4),
+                                      (-18.9, 2.6, 0.8, 4))):
+        p += tufos(x, z, r, n, seed=240 + i)
     return p
 
 
 def terreno(col):
-    base = anel.base(SEMENTE)
+    base = anel.base(SEMENTE, lobo=anel.LOBO_DO_BOSQUE)
     # O chão que se pisa: tampo, praia e barranco (as trilhas e manchas, milímetros acima, só desenham).
     col.append(col_terreno(base))
     bacia(col[-1])
@@ -530,6 +554,7 @@ def terreno(col):
     p.append(trilha([(2.6, 0.0), (2.2, -3.0), (2.4, -6.0), (2.4, -7.6)], 0.6))     # cercadinho
     p.append(trilha([(2.4, 0.6), (2.6, 2.4), (2.4, 3.6)], 0.6))                    # lago
     p.append(trilha([(0.8, 0.8), (-1.6, 2.6), (-3.0, 3.6)], 0.55))                 # debaixo das copas
+    p.append(trilha([(-0.6, 0.3), (-3.2, -0.8), (-6.6, -1.0), (-9.6, -0.8), (-12.0, -0.2)], 0.6))  # cabana de fora
     return p
 
 
@@ -661,6 +686,9 @@ def ancoras(pista):
     # A linha do meio da pista do escorregador, na superfície (modo escorregar).
     for i, pt in enumerate(pista):
         a.append(ancora(f'escorregador-curva-{i + 1}', pt.x, -pt.y, pt.z + ESPESSURA_DA_PISTA / 2))
+    lote = LOTE_DA_CABANA
+    a.append(ancora('lote-cabana-a', lote['x0'], lote['z0']))
+    a.append(ancora('lote-cabana-b', lote['x1'], lote['z1']))
     for i, (x, z, giro) in enumerate(ESCONDERIJOS):
         e = ancora(f'esconderijo-{i + 1}', x, z)
         e.rotation_euler = (0.0, 0.0, giro)

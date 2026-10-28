@@ -50,9 +50,10 @@ describe('o que tapa a câmera esmaece', () => {
   test('copas, troncos e o telhado, cada um com materiais só dele e cópias transparentes', async () => {
     const cena = await bosque()
     const p = prepararIlha(cena, ilha('bosque'))
-    // 11 copas, os 5 troncos das árvores grandes e o telhado da casa na árvore.
-    expect(p.copas).toHaveLength(17)
-    expect(p.copas.filter((c) => c.ehCopa)).toHaveLength(11)
+    // 13 copas (2 delas na ponta de campo do lado de fora), os 5 troncos das árvores grandes e o
+    // telhado da casa na árvore.
+    expect(p.copas).toHaveLength(19)
+    expect(p.copas.filter((c) => c.ehCopa)).toHaveLength(13)
     const materiais = p.copas.flatMap((c) => c.materiais)
     expect(new Set(materiais).size).toBe(materiais.length)
     for (const c of p.copas) {

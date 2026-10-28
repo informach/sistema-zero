@@ -157,13 +157,10 @@ simples no código:
 - **Canteiro do quintal:** um canteiro de 1 × 1 célula com a terra em cima, como o da horta
   (`arte/mundo/horta.py`, nó `canteiro`, de 1,35) e com os mesmos nós de planta. Hoje o jogo usa o
   canteiro da horta reduzido a 0,66 (`ESCALA_DO_CANTEIRO_DO_QUINTAL` em `mundo/horta.tsx`).
-- **Lote da cabana no Bosque:** a proposta pede "cabana no bosque". O `bosque.glb` não tem um lugar
-  plano e livre que caiba uma cabana: medindo a grade de 1 × 1 no referencial do modelo (chão do
-  `col-terreno` na altura 1, sem colisor nem desenho alto por cima), a única área livre de bom
-  tamanho é a de x 3 a 11 e z -2 a 1, que é o corredor da chegada da ponte (e onde a fogueira do
-  Bosque fica). Falta reservar, em `arte/ilhas/bosque.py`, um terreno plano de pelo menos 8 × 6
-  células (o topo em 1, sem enfeites que colidem), com duas âncoras nos cantos (`lote-cabana-a` e
-  `lote-cabana-b`, no chão). O jogo monta o lote da cabana a partir delas.
+- **Lote da cabana no Bosque:** feito em 28/10/2026. O Bosque cresceu para o lado de fora (a ponta
+  de campo do −x do modelo), e o lote fica lá, de x −18 a −12 e de z −4 a 4 (6 × 8 células), plano,
+  sem nada que colida e de céu aberto, com as âncoras `lote-cabana-a` e `lote-cabana-b` nos cantos
+  (README de `arte/ilhas`).
 - **Grama e pedra do quintal:** o topo fica na altura do chão da ilha, como diz o contrato acima,
   e por isso o jogo sobe as duas 1 cm (`ACIMA_DO_TERRENO` em `mundo/obra.tsx`) para não piscar contra
   o terreno.

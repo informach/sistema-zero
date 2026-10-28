@@ -34,6 +34,105 @@ export const PIER = { x: -5, z: 27, comprimento: 10 } as const
 export const RAIO_DO_ANEL = 82
 export const RAIO_DA_ILHA_DO_ANEL = 13
 
+/**
+ * O Bosque cresce para o lado de fora (o -x do modelo, longe da chegada da ponte): a ponta de campo
+ * onde fica o lote da cabana. Os mesmos números de `LOBO_DO_BOSQUE` em `arte/mundo/ilhas_anel.py`:
+ * o ângulo é o do chão do Blender (x do modelo, -z do modelo), e lá o raio vai a `1 + quanto` vezes.
+ */
+export const LOBO_DO_BOSQUE = { angulo: Math.PI, quanto: 0.55, meiaAbertura: (70 * Math.PI) / 180 }
+/** A semente do contorno do Bosque (`SEMENTE` de `arte/ilhas/bosque.py`). */
+const SEMENTE_DO_BOSQUE = 1.0 * 1.7 * 2
+
+/** Quanto o raio do contorno vale no ângulo `a` (o `fator_do_contorno` de `ilhas_anel.py`). */
+export function fatorDoContorno(
+  a: number,
+  semente: number,
+  amp: readonly [number, number],
+  lobo: typeof LOBO_DO_BOSQUE | null,
+): number {
+  let k = 1 + amp[0] * Math.sin(3 * a + semente) + amp[1] * Math.sin(5 * a + semente * 2)
+  if (lobo) {
+    const d = Math.atan2(Math.sin(a - lobo.angulo), Math.cos(a - lobo.angulo))
+    if (Math.abs(d) < lobo.meiaAbertura)
+      k *= 1 + lobo.quanto * Math.cos(((d / lobo.meiaAbertura) * Math.PI) / 2) ** 2
+  }
+  return k
+}
+
+/**
+ * Até onde vai o chão de uma ilha do anel, a contar do centro, no rumo de (x, z) do modelo: o
+ * barranco (`ilhas_anel.base`, raio + 1,4), a última coisa que se pisa antes do mar.
+ */
+export function raioDoChaoDaIlha(ilha: Ilha, x: number, z: number): number {
+  if (ilha.id !== 'bosque') return RAIO_DA_ILHA_DO_ANEL + 1.4
+  const a = Math.atan2(-z, x)
+  return (
+    (RAIO_DA_ILHA_DO_ANEL + 1.4) *
+    fatorDoContorno(a, SEMENTE_DO_BOSQUE + 0.4, [0.06, 0.03], LOBO_DO_BOSQUE)
+  )
+}
+
+/**
+ * Um deslocamento do mundo (a partir do centro da ilha) levado para o referencial do modelo: o
+ * contrário do giro de `paraOMundo` (`mundo/bosque.ts`).
+ */
+export function noModelo(dx: number, dz: number, giro: number): { x: number; z: number } {
+  const c = Math.cos(giro)
+  const s = Math.sin(giro)
+  return { x: dx * c - dz * s, z: dx * s + dz * c }
+}
+
+const raiosMaximos = new Map<string, number>()
+
+/** O maior raio do chão de uma ilha do anel (o Bosque, no meio da ponta de campo). */
+export function raioMaximoDaIlha(ilha: Ilha): number {
+  const guardado = raiosMaximos.get(ilha.id)
+  if (guardado !== undefined) return guardado
+  let maior = 0
+  for (let i = 0; i < 360; i++) {
+    const a = (i * Math.PI) / 180
+    maior = Math.max(maior, raioDoChaoDaIlha(ilha, Math.cos(a), -Math.sin(a)))
+  }
+  raiosMaximos.set(ilha.id, maior)
+  return maior
+}
+
+/**
+ * O chão de antes da versão leve (enquanto a completa não chega): cilindros no referencial do
+ * modelo, com o topo no tampo. Todas as ilhas têm o do meio; o Bosque, mais um na ponta de campo,
+ * para quem abre o jogo lá não cair na água antes do chão de verdade.
+ */
+export function apoiosDaIlhaLeve(ilha: Ilha): readonly { x: number; z: number; raio: number }[] {
+  const meio = { x: 0, z: 0, raio: RAIO_DA_ILHA_DO_ANEL - 0.5 }
+  if (ilha.id !== 'bosque') return [meio]
+  return [meio, { x: Math.cos(LOBO_DO_BOSQUE.angulo) * 15.5, z: 0, raio: 5 }]
+}
+
+/**
+ * A roda de boias de uma ilha do anel, no referencial do modelo: o meio e o raio. Nas ilhas
+ * redondas, no centro com `BOIAS_DA_ILHA_DO_ANEL`; no Bosque o meio vai para o lado da ponta de
+ * campo, e o raio deixa a mesma folga de mar até as boias em volta da ilha inteira.
+ */
+export function rodaDaIlhaNoModelo(
+  ilha: Ilha,
+  boias: number,
+): { x: number; z: number; livre: number } {
+  if (ilha.id !== 'bosque') return { x: 0, z: 0, livre: boias }
+  const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
+  const lado = Math.cos(LOBO_DO_BOSQUE.angulo)
+  const recuo = (raioMaximoDaIlha(ilha) - (RAIO_DA_ILHA_DO_ANEL + 1.4)) / 2
+  const meio = { x: lado * recuo, z: 0 }
+  let livre = 0
+  for (let i = 0; i < 360; i++) {
+    const a = (i * Math.PI) / 180
+    const x = Math.cos(a)
+    const z = -Math.sin(a)
+    const r = raioDoChaoDaIlha(ilha, x, z)
+    livre = Math.max(livre, Math.hypot(x * r - meio.x, z * r - meio.z) + folga)
+  }
+  return { ...meio, livre }
+}
+
 /** A névoa começa e fecha nestas distâncias da câmera: depois do fim tudo tem a cor do céu. */
 export const NEVOA = { comeco: 70, fim: 210 } as const
 /** As estrelas ficam numa casca deste raio em volta do centro da ilha central. */

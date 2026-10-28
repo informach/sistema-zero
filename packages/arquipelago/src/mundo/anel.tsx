@@ -41,9 +41,11 @@ import {
 import { useInterativo } from './interativos'
 import {
   ALTURA_DA_TERRA,
+  apoiosDaIlhaLeve,
   giroDaIlha,
   ilhasEmVolta,
   RAIO_DA_ILHA_DO_ANEL,
+  rodaDaIlhaNoModelo,
   trajetoDaPonte,
 } from './medidas'
 import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -244,6 +246,15 @@ function IlhaDoAnel({
   const flutua = ilha.id === 'nuvens'
   const Viva = ILHAS_VIVAS[ilha.id]
   const y = flutua ? ALTURA_DAS_NUVENS : 0
+  // O chão de antes, girado como o modelo (o grupo fica sem giro; a cópia do modelo é que gira).
+  const apoios = useMemo(() => {
+    const g = giroDaIlha(ilha)
+    return apoiosDaIlhaLeve(ilha).map((a) => ({
+      x: a.x * Math.cos(g) + a.z * Math.sin(g),
+      z: -a.x * Math.sin(g) + a.z * Math.cos(g),
+      raio: a.raio,
+    }))
+  }, [ilha])
   // A leve fica sempre montada: é a reserva enquanto a completa baixa ou se ela falhar, e some
   // esmaecendo quando a completa entra. Só uma das duas colide por vez.
   return (
@@ -254,10 +265,13 @@ function IlhaDoAnel({
         </ComReserva>
         {!completaColide(estado) && (
           <RigidBody type="fixed" colliders={false}>
-            <CylinderCollider
-              args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
-              position={[0, ALTURA_DA_TERRA - 0.8, 0]}
-            />
+            {apoios.map((a) => (
+              <CylinderCollider
+                key={`${a.x},${a.z}`}
+                args={[0.8, a.raio]}
+                position={[a.x, ALTURA_DA_TERRA - 0.8, a.z]}
+              />
+            ))}
           </RigidBody>
         )}
         {preparada && completaNaCena(estado) && (
@@ -620,7 +634,16 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   const troca = useRef<Troca>({ opacidade: 0 }).current
   const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
   // A ilha aberta ganha a roda de boias dela: dá para nadar em volta (a das Nuvens fica no céu).
-  const roda = useMemo(() => ({ x: centro.x, z: centro.z, livre: BOIAS_DA_ILHA_DO_ANEL }), [centro])
+  // No Bosque o meio da roda vai para o lado da ponta de campo (`rodaDaIlhaNoModelo`).
+  const roda = useMemo(() => {
+    const r = rodaDaIlhaNoModelo(ilha, BOIAS_DA_ILHA_DO_ANEL)
+    const g = giroDaIlha(ilha)
+    return {
+      x: centro.x + r.x * Math.cos(g) + r.z * Math.sin(g),
+      z: centro.z - r.x * Math.sin(g) + r.z * Math.cos(g),
+      livre: r.livre,
+    }
+  }, [centro, ilha])
   const temRoda = aberta && ilha.id !== 'nuvens'
   useEffect(() => {
     if (!temRoda) return

@@ -138,6 +138,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   cross-fade da troca com `alphaHash` em `DURACAO_DA_TROCA`; a leve continua montada como reserva e
   só uma das duas colide. Jogo aberto em cima da ilha: o personagem espera no ar
   (`pedidos.chaoChegando`) até os colisores chegarem.
+- O Bosque não é redondo (28/10/2026, para a cabana): cresce para o lado de fora (a ponta de campo
+  do −x do modelo). A conta do contorno é a mesma da arte (`LOBO_DO_BOSQUE`, `raioDoChaoDaIlha` e
+  `raioMaximoDaIlha` em `mundo/medidas.ts`); dela saem a roda de boias (`rodaDaIlhaNoModelo`, com o
+  meio puxado para a ponta), a espera pelo chão ao abrir o jogo em cima da ilha, o "saiu da ilha" do
+  percurso (`RAIO_DO_BOSQUE`) e o chão de antes da versão leve (`apoiosDaIlhaLeve`). Testes:
+  `tests/bosque-crescido.test.ts`.
 - Colisão: os nós `col-*` do GLB (`src/mundo/colisores-da-ilha.ts`; convenção no README de
   `arte/ilhas`), cuboide/cilindro arredondados (`BORDA_DOS_COLISORES`) e malha só no `col-terreno`.
   A malha de desenho nunca vira colisão.

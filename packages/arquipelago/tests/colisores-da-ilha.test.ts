@@ -311,7 +311,7 @@ describe('os enfeites do Bosque que seguram o corpo', () => {
 
   test('moitas, pedras, cogumelos, tocas, floreiras e pernas do escorregador têm colisor', () => {
     const quantos: Record<string, number> = {
-      'col-cil-moita': 8,
+      'col-cil-moita': 12, // 4 na beira da ponta de campo do lado de fora
       'col-cil-pedra': 5,
       'col-cil-pedra-lago': 8, // 9 em volta do lago, menos a do pé do tronco de escalar
       'col-cil-cogumelo': 18,

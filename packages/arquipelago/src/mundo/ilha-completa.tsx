@@ -49,8 +49,9 @@ import {
   MARGEM_DA_ESPERA_PELO_CHAO,
   naPonteDa,
   nivelDeDetalhe,
+  noModelo,
   OPACIDADE_DA_COPA_NA_FRENTE,
-  RAIO_DA_ILHA_DO_ANEL,
+  raioDoChaoDaIlha,
 } from './medidas'
 import { materiaisDe } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
@@ -255,7 +256,10 @@ export function useIlhaCompleta(
       v.estado === 'carregando' ||
       v.estado === 'pronta' ||
       (v.estado === 'ativa' && !troca.colisoresNaCena)
-    if (chegando && distancia < RAIO_DA_ILHA_DO_ANEL + MARGEM_DA_ESPERA_PELO_CHAO) {
+    // Em cima do chão da ilha (no rumo em que a pessoa está: o Bosque cresce para um lado só).
+    const m = noModelo(rastro.x - centro.x, rastro.z - centro.z, giroDaIlha(ilha))
+    const emCima = distancia < raioDoChaoDaIlha(ilha, m.x, m.z) + MARGEM_DA_ESPERA_PELO_CHAO
+    if (chegando && emCima) {
       pedidos.chaoChegando.add(ilha.id)
     } else pedidos.chaoChegando.delete(ilha.id)
     if (proximo === v.estado) return
