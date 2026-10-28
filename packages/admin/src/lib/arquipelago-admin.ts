@@ -3,6 +3,7 @@ import {
   AplicarManifestoSchema,
   ConferirManifestoSchema,
   CriarDesafioSchema,
+  FiltroDaMedicaoSchema,
   GravarDesafioSchema,
   ILHA_IDS,
   PUBLICOS_DO_DESAFIO,
@@ -34,6 +35,13 @@ export function gameAdminRequest(
 ) {
   const [resource, id, action] = path
   if (method === 'GET') {
+    if (resource === 'medicao' && path.length === 1) {
+      return {
+        path: '/arquipelago/equipe/medicao',
+        query: FiltroDaMedicaoSchema.parse(Object.fromEntries(search)),
+        body: undefined,
+      }
+    }
     if (resource === 'cobertura' && path.length === 1) {
       return {
         path: '/arquipelago/admin/cobertura',

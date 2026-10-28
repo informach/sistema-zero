@@ -25,6 +25,7 @@ import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { setPlatform } from '@/components/admin/platform-store'
 import { GameObjectivesEditor } from '@/components/editor/game-objectives-editor'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { manifestFileName } from '@/lib/challenge-manifest'
@@ -37,6 +38,7 @@ import {
   newChallenge,
 } from '@/lib/game-challenge-authoring'
 import { ChallengeManifestPanel } from './challenge-manifest-panel'
+import { GameMeasurement } from './game-measurement'
 import { gameRequest as request } from './game-request'
 
 const types = {
@@ -55,7 +57,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
   const platform = usePlatform()
   const publico = platform === 'kids' ? 'kids' : 'adulto'
   const [island, setIsland] = useState('')
-  const [tab, setTab] = useState<'desafios' | 'ilhas' | 'cartoes'>('desafios')
+  const [tab, setTab] = useState<'desafios' | 'ilhas' | 'cartoes' | 'medicao'>('desafios')
   const [coverageLoading, setCoverageLoading] = useState(false)
   const [rows, setRows] = useState<ResumoDoDesafio[]>([])
   const [coverage, setCoverage] = useState<{ publico: string; value: Coverage } | null>(null)
@@ -112,7 +114,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
     return () => listRequest.current?.abort()
   }, [refreshList])
   useEffect(() => {
-    if (tab === 'desafios') return
+    if (tab === 'desafios' || tab === 'medicao') return
     const c = new AbortController()
     setCoverageLoading(true)
     void request(`cobertura?publico=${publico}`, 'GET', undefined, c.signal)
@@ -299,7 +301,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
         </Button>
       </header>
       <nav aria-label="Seções do jogo" className="flex flex-wrap gap-2">
-        {(['desafios', 'ilhas', 'cartoes'] as const).map((value) => (
+        {(['desafios', 'ilhas', 'cartoes', 'medicao'] as const).map((value) => (
           <Button
             key={value}
             variant={tab === value ? 'default' : 'outline'}
@@ -310,10 +312,18 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
               ? 'Desafios'
               : value === 'ilhas'
                 ? 'Ilhas e postos'
-                : 'Cartões dos Lumis'}
+                : value === 'cartoes'
+                  ? 'Cartões dos Lumis'
+                  : 'Medição'}
           </Button>
         ))}
       </nav>
+      {tab === 'medicao' && (
+        <GameMeasurement
+          publico={publico}
+          onPublicoChange={(p) => setPlatform(p === 'kids' ? 'kids' : 'adult')}
+        />
+      )}
       {error && (
         <div
           role="alert"

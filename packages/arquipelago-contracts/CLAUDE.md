@@ -1,5 +1,12 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+## Medição agregada (28/10/2026)
+
+`medicao.ts`: filtro estrito por público e até 90 dias civis, relatório e números discriminados
+entre `disponivel`, `poucos-dados` e `aguardando`. Valores protegidos são `null`, sem campos
+auxiliares com contagens ou pessoas. O relatório enumera fontes ausentes explicitamente.
+Testes em `tests/medicao.test.ts`. É só leitura, sem alteração do formato do salvamento.
+
 ## A família na área dos pais (fase1-18, 28/10/2026)
 
 `familia.ts`: `SemanaDaFamiliaSchema` (o que o serviço manda: janela de 7 dias, limite e, por

@@ -54,6 +54,22 @@ plataforma (o objeto que a página monta)
 
 ## Serviço do jogo
 
+### Medição no Admin (geral-06, 28/10/2026)
+
+A seção Jogo tem a aba Medição, com período e comunidade. A rota da equipe
+`GET /arquipelago/equipe/medicao` devolve só agregados. Grupos com menos de cinco pessoas
+mostram Poucos dados. A volta ao jogo usa o primeiro dia com tempo livre positivo no histórico
+do Kids, o dia seguinte e o sétimo dia (seis dias depois). Dias ainda não encerrados ficam
+Aguardando. O adulto ainda não registra histórico de dias equivalente.
+
+Os cartões mostram as origens das aparências atuais dos projetos azuis ganhos no período e
+as primeiras aprovações dos desafios do Estúdio. Galeria não significa compra; aprovação de
+desafio não significa necessariamente minijogo. Volta ao curso em 24 horas e conclusões
+antes/depois dependem da integração com fontes confiáveis do Members, em coordenação com o
+cartão dos pais. Nenhum desses números é inventado quando a fonte falta.
+
+Definições, fontes e evidências locais: [relatório da medição](qa/2026-10-28-arquipelago-medicao.md).
+
 Rotas, identidade (perfil do Kids × conta adulta × responsável), suporte somente leitura,
 salvamento por revisão e tempo livre: `packages/arquipelago-api/CLAUDE.md`.
 
