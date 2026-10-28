@@ -110,6 +110,7 @@ test('every Ubuntu job prepares signed sources before its first apt or Playwrigh
   }
   expect(prepared).toEqual([
     'ci',
+    'arquipelago',
     'community-kids-e2e',
     'studio-e2e-chromium',
     'studio-e2e-firefox',
