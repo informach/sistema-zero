@@ -1,6 +1,6 @@
 /** CSS do jogo, injetado pela entrada dentro do próprio elemento (prefixo `arq-`). */
 export const ESTILOS = `
-.arq-luneta{position:absolute;inset:0;box-shadow:inset 0 0 65px 18px #0e1638;border:8px solid #17213a;box-sizing:border-box}
+.arq-luneta{position:absolute;inset:0;box-sizing:border-box;background:radial-gradient(circle closest-side,transparent 82%,rgba(8,12,32,.4) 89.5%,#e2b552 90%,#b07f2a 92.5%,#6e4c14 94%,#0b1028 94.6%)}
 .arq-luneta-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}
 .arq-luneta-fala{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;width:min(520px,calc(100% - 48px));box-sizing:border-box;padding:16px;background:rgba(20,26,58,.94);color:#fff;border-radius:16px}
 .arq-luneta-fala p{margin:0}

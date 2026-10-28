@@ -6,12 +6,15 @@ import estrelinhaGlb from '../assets/lumis/estrelinha.glb'
 import nicoGlb from '../assets/personagens/nico.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import {
+  ACENO_DO_NICO,
   criarEstadoDoNico,
   HABITANTES_DA_PRAIA,
   type HabitanteDaPraia,
+  olharDoNico,
   passoDoNico,
 } from '../sistemas/habitantes-da-praia'
 import { jogoPausado } from '../sistemas/pausa'
+import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { Colisores } from './colisores'
 import { colisoresDoHabitante } from './habitantes-da-praia-colisao'
@@ -54,6 +57,7 @@ function Habitante({ nome }: { nome: HabitanteDaPraia }) {
   const estado = useRef(criarEstadoDoNico())
   const tocando = useRef<string>('parado')
   const piscarEm = useRef<number>(PISCAR.aCada)
+  const olhar = useRef<number>(lugar.giro)
 
   useEffect(() => {
     trocarClipe(actions, null, 'parado', 0)
@@ -79,6 +83,14 @@ function Habitante({ nome }: { nome: HabitanteDaPraia }) {
       trocarClipe(actions, tocando.current, quer)
       tocando.current = quer
     }
+    // Vira para a criança que chega perto, como a Capi.
+    olhar.current = suavizarAngulo(
+      olhar.current,
+      olharDoNico(rastro),
+      ACENO_DO_NICO.rapidezDoGiro,
+      dt,
+    )
+    if (raiz.current) raiz.current.rotation.y = olhar.current
     olhosNoInstante(olhos, estado.current.tempo, piscarEm, false)
   })
 
