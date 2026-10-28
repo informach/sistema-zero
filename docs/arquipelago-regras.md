@@ -221,20 +221,26 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 1` (`SalvamentoV1Schema`, estrito: campo desconhecido é
-  recusado).
+- **Versão:** `VERSAO_SALVAMENTO = 2` (`SalvamentoV2Schema`, estrito: campo desconhecido é
+  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso.
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
   - o inventário (item → quantidade, de 0 a 999; id do item com até 40 caracteres);
   - a posição do personagem;
   - as pontes já vistas;
-  - se a porta nova da casa foi aberta.
+  - se a porta nova da casa foi aberta;
+  - o melhor de cada percurso (`percursos`): as três estrelas, cada uma guardada à parte, e o
+    melhor tempo em milissegundos (de 0 a 1 hora). Hoje o único percurso é `bosque-copas`
+    (`PERCURSOS`).
 - **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
-- **Mudar o formato:** crie a V2 e escreva a migração da V1 em `migrarSalvamento`. Assim ninguém
-  perde o progresso.
+- **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
+  `migrarSalvamento`. Assim ninguém perde o progresso.
+- **A V1 continua valendo:** um salvamento V1 guardado é lido já migrado (`migrarDaV1`: tudo igual
+  e nenhum percurso corrido). Uma aba aberta antes da atualização, que ainda grava V1, também é
+  aceita, e o serviço guarda já migrado.
 
 ### O salvamento inicial
 
@@ -250,6 +256,7 @@ Função `criarSalvamentoInicial`:
 | Posição | nenhuma (começa no quarto) |
 | Pontes vistas | nenhuma |
 | Porta nova | fechada |
+| Percursos | nenhum corrido |
 
 ### Revisão e conflito
 
@@ -384,6 +391,16 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 
 A velocidade final é multiplicada pelo ritmo do humor (6.2).
 
+- **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
+  até pisar, e a direção pedida só corrige 45% do normal (`CONTROLE_NO_AR = 0.45`).
+- **Pular** conta cada toque (`controle.pulos`): o toque rápido que desce e sobe no mesmo quadro
+  também solta o cipó e pula do tronco.
+- **Braços:** no cipó e no tronco o avatar segura com os braços para cima
+  (`personagem/bracos.ts`, `RUMOS`). As poses da plataforma não têm essa; o jogo aponta os ossos
+  depois da pose.
+- **As medidas do corpo** (raio 0,35, do centro aos pés 0,9) moram em `sistemas/corpo.ts`
+  (`CORPO`), divididas com o cipó, a escalada e os testes.
+
 ### 6.7 O Zappy
 
 Arquivo: `sistemas/zappy.ts`. O Zappy voa ao lado do personagem.
@@ -437,6 +454,15 @@ Arquivos: `sistemas/camera.ts`, `personagem/camera.tsx` e `mundo/medidas.ts`.
   (`pesoNoAlto`).
 - **Copas, troncos e telhados** entre a câmera e o personagem ficam transparentes, até a opacidade
   0,25 (`OPACIDADE_DA_COPA_NA_FRENTE`), em 0,3 segundo (`DURACAO_DO_ESMAECER_DA_COPA`).
+- **Encostado num tronco:** a bolinha que começa encostando e se afasta não conta como batida
+  (`stopAtPenetration: false` em `personagem/camera.tsx`). Antes, perto de um tronco (escalando,
+  ou ao lado do primeiro cipó), a câmera ia para a distância mínima, dentro da cabeça do avatar.
+- **No cipó** (`personagem/camera.tsx`): a câmera olha para um ponto entre o corpo e o meio do
+  cipó, 55% do caminho (`FOCO_NO_CIPO = 0.55`), e segue mais devagar (6 por segundo vira 3,5:
+  `SEGUIR_NO_CIPO = 2.5`). O balanço passa pela tela sem ela correr atrás.
+- **Menos movimento** (`prefers-reduced-motion` do aparelho): no cipó ela olha só para o meio do
+  cipó (`FOCO_NO_CIPO_COM_MENOS_MOVIMENTO = 1`) e fica quase parada; os vagalumes param de
+  flutuar.
 
 ### 6.9 Ilhas completas
 
@@ -458,6 +484,107 @@ Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medi
   volta.
 - **Jogo aberto em cima de uma ilha completa:** o personagem espera no ar até o chão de verdade
   chegar (margem de 1 além da borda, `MARGEM_DA_ESPERA_PELO_CHAO`).
+
+### 6.10 Cipó
+
+Arquivos: `sistemas/cipo.ts` (`CIPO`), `personagem/personagem.tsx` e `mundo/bosque-vivo.tsx`.
+
+- **Onde:** os três cipós do galho por cima do lago do Bosque (nós `cipo-1` a `cipo-3` do
+  `bosque.glb`, pivô no galho, a 5,3 a 5,6 do chão). O primeiro fica na margem; os outros dois,
+  sobre a água. Só existem com a ilha completa ativa.
+- **Pegar no chão:** perto da corda (a até 1,3 no chão, `raioDaDica`) aparece "E Pegar o cipó" (no
+  toque, o botão Usar). Só no chão da ilha, não de cima de um deque.
+- **Pegar no ar:** pulando ou voando de outro cipó, as mãos pegam a corda que passar a até 0,65
+  delas (`raioDaPegadaNoAr`). O cipó que acabou de soltar só pega de novo depois de 0,45 s
+  (`esperaParaPegarDeNovo`).
+- **Onde as mãos seguram** (`comprimentoDaPegada`): o mais longe do galho que deixa os pés a 0,35 do
+  chão no ponto mais baixo (`folgaDosPes`), nunca menos de 1,6 (`comprimentoMinimo`). No Bosque dá
+  de 3,0 a 3,4. As mãos ficam 1 acima do centro do corpo (`maosAcimaDoCentro`). Logo depois de
+  pegar, o corpo vai suave até o lugar do balanço em 0,22 s (`encaixe`).
+- **O balanço** é um pêndulo com a gravidade do personagem (24, `GRAVIDADE_DO_CIPO`):
+  - bombear: pedir para o lado em que o balanço já vai empurra 9 m/s² ao longo do arco
+    (`bombear`); pedir para o outro lado não freia; parado, pedir dá o primeiro empurrão;
+  - pedir de lado vira o plano do balanço, até 1 radiano por segundo (`giroDoBalanco`);
+  - o maior ângulo é 1,1 radiano, uns 63° (`anguloMaximo`);
+  - segurando, o balanço perde 0,12 por segundo (`amortecimento`); solto, o cipó para sozinho,
+    perdendo 0,8 por segundo (`amortecimentoSolto`).
+- **Bater em algo** no balanço (o tronco da árvore, por exemplo): o corpo para ali e o balanço
+  devolve 30% para o outro lado.
+- **Soltar** (Espaço, o botão Soltar, ou E): sai com a velocidade do balanço vezes 1,15
+  (`impulsoAoSoltar`) mais 3,2 para cima (`subidaAoSoltar`). Do primeiro cipó dá para pegar o
+  segundo, do segundo o terceiro, e do terceiro se cai em terra do outro lado do lago.
+- **Cair no lago** não é castigo: o personagem nada (6.12).
+
+### 6.11 Escalada
+
+Arquivos: `sistemas/escalada.ts` (`ESCALADA`), `mundo/bosque.ts` (`TRONCO_DOS_CIPOS`) e
+`personagem/personagem.tsx`.
+
+- **Onde:** o tronco da árvore do galho dos cipós, no Bosque. Uma trepadeira em espiral (desenhada
+  no código) mostra que ele sobe. O tronco é um cone um pouco torto, do tamanho da casca
+  desenhada: de 0,86 de raio no chão a 0,5 lá em cima, até a altura 6,5. Ainda não há nó no GLB
+  para ele (veja o README de `arte/ilhas`).
+- **Grudar:** andar contra a casca, a menos de 0,3 dela (`distanciaParaGrudar`), por 0,2 s
+  (`esperaParaGrudar`). Pulando nele, gruda na hora. Perto do tronco, no chão, aparece
+  "E Escalar o tronco".
+- **Agarrado:** frente e trás sobem e descem a 1,7 por segundo (`subir`); os lados dão a volta no
+  tronco a 1,6 por segundo medido na casca (`deLado`), no sentido da tela. O corpo fica a 0,08 da
+  casca (`folga`).
+- **Alturas:** o centro do corpo fica de 0,95 acima do pé do tronco (`acimaDoChao`) até as mãos 1,4
+  abaixo do topo (`abaixoDoTopo`), abaixo do galho dos cipós.
+- **Soltar:** descer no pé do tronco solta no chão; E solta com um passinho para fora; pular solta
+  para fora a 4,5 e para cima a 6,5 (`saltoParaFora`, `saltoParaCima`), ou para onde a criança
+  pede, se for para longe do tronco. Lá do alto, o pulo para fora cai no primeiro cipó. Depois de
+  soltar, só gruda de novo após 0,5 s (`esperaDepoisDeSoltar`).
+
+### 6.12 Água rasa (o lago do Bosque)
+
+Arquivos: `mundo/bosque-vivo.tsx` e `personagem/personagem.tsx`.
+
+- O lago do Bosque (nó `agua`) não tem fundo no desenho: é uma mancha sobre o chão. O jogo usa a
+  elipse da caixa dele como água rasa.
+- Pisando nela, o personagem nada: velocidade de nado (2,6), sem pular, deitado como no mar, e o
+  avatar afunda até a cintura (o corpo continua no chão).
+
+### 6.13 Percurso nas copas
+
+Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts` e
+`mundo/bosque-vivo.tsx`.
+
+- **Largada:** a placa "Percurso nas copas" ao lado do pé da escada da casa na árvore
+  (`PLACA_DA_LARGADA`), com uma marca acesa no chão. Perto dela: "E Começar o percurso nas copas".
+  O Zappy diz: "Valendo. Suba a escada e siga pelas copas até o escorregador."
+- **Pontos de volta:** cada um dos 4 deques (`RAIOS_DOS_DEQUES`: 2,9, 2,0, 2,1 e 2,0). Um deque
+  conta quando o corpo está em cima dele (os pés até 0,3 abaixo do piso, `folgaDoDeque`).
+- **Queda:** depois do primeiro deque, pisar no chão da ilha (pés a menos de 0,25 do tampo) volta
+  ao último deque alcançado, na borda de dentro do lado em que o caminho segue, a 0,7 da borda
+  (`VOLTA_PARA_DENTRO_DO_DEQUE`), olhando para lá. Antes do primeiro deque, cair da escada não
+  conta. Nunca volta para a largada.
+- **Corte suave:** a tela escurece em 0,26 s, o corpo é levado e ela clareia em 0,34 s
+  (`corteSaiMs`, `corteVoltaMs`).
+- **Desistir sem castigo:** sair da ilha (1 além da borda), se afastar mais de 7 da largada antes
+  de subir (`distanciaParaDesistir`) ou tocar "Parar" no cronômetro. Nada se perde.
+- **Cronômetro:** discreto no alto da tela, só durante a corrida, com os vagalumes pegos e o botão
+  "Parar". Menu, ferramenta, tempo pausado e o corte param o cronômetro.
+- **Chegada:** a 1,4 do fim do escorregador (`raioDaChegada`), depois do último deque.
+- **Vagalumes:** 5 (`vagalumes`), só aparecem durante a corrida e são pegos a 0,8 do centro do
+  corpo (`raioDoVagalume`). Ficam em `VAGALUMES_DAS_COPAS`:
+  1. no meio da escada (pega subindo);
+  2. no alto, no meio da ponte comprida (pega pulando);
+  3. no deque da terceira árvore, do outro lado do tronco (pega dando a volta);
+  4. no meio da última ponte;
+  5. no meio do escorregador.
+- **As três estrelas:**
+  1. chegar;
+  2. chegar em até 20 segundos (`tempoAlvoMs = 20_000`). O caminho tem uns 40 m: correndo sem
+     errar dá uns 10 s, andando uns 15 s. Com uma queda, só correndo;
+  3. pegar os 5 vagalumes na mesma corrida.
+- **Resultado:** uma tela curta com as estrelas desta corrida, o tempo, o melhor tempo (com
+  "Recorde novo" quando bate o de antes), os vagalumes, "Correr de novo" (volta à largada com o
+  corte e já começa) e "Continuar". O Zappy comemora.
+- **O que fica guardado** (`juntarResultado`, no salvamento, seção 5): cada estrela ganha fica para
+  sempre, mesmo que venha de corridas diferentes, e o melhor tempo é o menor de todas as corridas
+  que chegaram. Corrida que desistiu não muda nada.
 
 ## 7. Desafios
 
@@ -859,6 +986,26 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Posição do Zappy | 0,75, 0,35 e 1,3 | `arquipelago/src/sistemas/zappy.ts`, `LADO_DO_ZAPPY`, `ATRAS_DO_ZAPPY`, `ALTURA_DO_ZAPPY` |
 | Câmera | seção 6.8 | `arquipelago/src/mundo/medidas.ts`, `GRUA_DA_CAMERA`, `CAMERA_NO_ALTO` e vizinhos |
 | Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |
+| Percursos guardados | `bosque-copas` | `arquipelago-contracts/src/salvamento.ts`, `PERCURSOS` |
+| Controle no ar com embalo | 45% | `arquipelago/src/personagem/personagem.tsx`, `CONTROLE_NO_AR` |
+| Braços no cipó e no tronco | para cima | `arquipelago/src/personagem/bracos.ts`, `RUMOS` |
+| Câmera no cipó | 55% para o meio do cipó; 100% com menos movimento | `arquipelago/src/personagem/camera.tsx`, `FOCO_NO_CIPO`, `FOCO_NO_CIPO_COM_MENOS_MOVIMENTO`, `SEGUIR_NO_CIPO` |
+| Pegar o cipó | 1,3 no chão, 0,65 no ar, 0,45 s para pegar de novo | `arquipelago/src/sistemas/cipo.ts`, `CIPO.raioDaDica`, `.raioDaPegadaNoAr`, `.esperaParaPegarDeNovo` |
+| Onde as mãos seguram o cipó | pés a 0,35 do chão; nunca menos de 1,6 | `cipo.ts`, `CIPO.folgaDosPes`, `.comprimentoMinimo` |
+| Balanço do cipó | bombear 9, virar 1 por s, até 1,1 rad | `cipo.ts`, `CIPO.bombear`, `.giroDoBalanco`, `.anguloMaximo` |
+| Perda do balanço | 0,12 segurando, 0,8 solto | `cipo.ts`, `CIPO.amortecimento`, `.amortecimentoSolto` |
+| Soltar o cipó | 1,15 vez o balanço, mais 3,2 para cima | `cipo.ts`, `CIPO.impulsoAoSoltar`, `.subidaAoSoltar` |
+| Tronco de escalar | árvore dos cipós, raio 0,86 a 0,5 | `arquipelago/src/mundo/bosque.ts`, `TRONCO_DOS_CIPOS` |
+| Grudar no tronco | a 0,3, depois de 0,2 s | `arquipelago/src/sistemas/escalada.ts`, `ESCALADA.distanciaParaGrudar`, `.esperaParaGrudar` |
+| Subir e dar a volta | 1,7 e 1,6 por segundo | `escalada.ts`, `ESCALADA.subir`, `.deLado` |
+| Alturas da escalada | 0,95 acima do pé; mãos 1,4 abaixo do topo | `escalada.ts`, `ESCALADA.acimaDoChao`, `.abaixoDoTopo` |
+| Pulo do tronco | 4,5 para fora, 6,5 para cima | `escalada.ts`, `ESCALADA.saltoParaFora`, `.saltoParaCima` |
+| Placa da largada | ao lado do pé da escada | `arquipelago/src/mundo/bosque.ts`, `PLACA_DA_LARGADA` |
+| Vagalumes do percurso | 5, pegos a 0,8 | `bosque.ts`, `VAGALUMES_DAS_COPAS`; `arquipelago/src/sistemas/percurso.ts`, `PERCURSO_DAS_COPAS.vagalumes`, `.raioDoVagalume` |
+| Tempo-alvo (segunda estrela) | 20 s | `percurso.ts`, `PERCURSO_DAS_COPAS.tempoAlvoMs` |
+| Pontos de volta | 4 deques; 0,7 para dentro da borda | `bosque.ts`, `RAIOS_DOS_DEQUES`, `VOLTA_PARA_DENTRO_DO_DEQUE` |
+| Chegada e desistência | 1,4 do fim do escorregador; 7 da largada | `percurso.ts`, `PERCURSO_DAS_COPAS.raioDaChegada`, `.distanciaParaDesistir` |
+| Corte suave | 0,26 s e 0,34 s | `percurso.ts`, `PERCURSO_DAS_COPAS.corteSaiMs`, `.corteVoltaMs` |
 | Quadros por ilha | 6 | `arquipelago-contracts/src/desafios.ts`, `QUADROS_POR_ILHA` |
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
 | Moedas padrão | 20 e 10 | `desafios.ts`, `MOEDAS_PADRAO` |
@@ -895,5 +1042,15 @@ dizia outra coisa. Todos foram corrigidos no mesmo dia, seguindo o código:
    seguinte.
 9. Comentário de `RegistrarTempoSchema.segundos`: lotes de até 10 s, e também ao esconder a aba ou
    fechar o jogo.
+
+Na mesma data, com o cipó, a escalada e o percurso nas copas:
+
+10. Este documento dizia "Versão: `VERSAO_SALVAMENTO = 1`". O salvamento passou para a V2 (com os
+    percursos) e a seção 5 foi atualizada, assim como `docs/arquipelago.md`, o `CLAUDE.md` do jogo
+    e o do contrato.
+11. A seção 6.6 tratava o avatar como sempre na mesma pose. No cipó e no tronco os braços sobem,
+    e o giro do corpo passou a ser aplicado antes da inclinação (`rotation.order = 'YXZ'`): nadar
+    agora inclina para a frente do avatar em qualquer direção (antes, inclinava em volta do eixo x
+    do mundo).
 
 Se aparecer outra diferença, vale o código: corrija o documento e anote aqui.

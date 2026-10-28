@@ -11,7 +11,9 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV1` estrito, teto de 64 KB, salvamento inicial e migração.
+- `salvamento.ts`: `SalvamentoV2` estrito (a V1 mais `percursos`: as três estrelas e o melhor tempo
+  de cada percurso, 27/10/2026), teto de 64 KB, salvamento inicial e migração da V1 (`migrarDaV1`;
+  `SalvamentoSchema` aceita a V1 e já devolve migrada).
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,
