@@ -103,14 +103,22 @@ Pendente:
    já pede o Pinta e o Molda com o molde do objeto (o projeto azul do modo construção, 28/10/2026,
    `MoldeDeObjetoSchema`), mas a página ainda responde indisponível para ele: entra com o cartão do
    Pinta no molde. A paleta de blocos do desafio ainda é a completa das aulas.
-4. A Capi e os bichos do Bosque (conversa, amizade, esconde-esconde, adotar, cuidar e seguir): plano
-   em `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
-5. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o
+4. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o
    token de leitura `ARQUIPELAGO_MEMBERS_TOKEN` (members e arquipelago-api) precisa ser criado no
    painel do Railway antes de entrar no `.railway/variables.ts`.
+
+## Capi e os bichos (28/10/2026)
+
+Conversa, amizade, esconde-esconde, adoção, cuidado e acompanhamento já estão implementados.
+Plano em `plans/2026-10-28-arquipelago-capi-e-bichos.md`; regras em `arquipelago-regras.md` §6.15.
+Conversar com a Capi após achar os quatro entrega uma Salada da horta uma única vez. O
+inventário e a marca `presenteDosBichosEntregue` são gravados juntos no salvamento V5, com
+migração das versões anteriores e teto de 64 KB. As falas do presente vêm por último.
+O playground `?bichos=achados` permite conferir a entrega; `?novo=1` reinicia a demonstração.
+A implementação e os testes locais não indicam implantação em staging ou produção.
 
 ## Rodar sozinho
 
 `bun run --filter @sistemazero/arquipelago dev` abre o playground em `http://127.0.0.1:4520`
 (plataforma de mentira; parâmetros `posicao`, `publico`, `limite`, `liberado`, `novo`, `persistir`,
-`em=x,z`, `adiantar`). O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).
+`em=x,z`, `adiantar`, `bichos=achados`). O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).

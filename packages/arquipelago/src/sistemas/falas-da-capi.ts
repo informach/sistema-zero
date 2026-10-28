@@ -22,6 +22,14 @@ export interface ContextoDaFala {
   pedido: string | null
 }
 
+export const FALA_DO_PRESENTE_DOS_BICHOS = [
+  'Você encontrou os quatro bichos do Bosque. Obrigada por cuidar de cada um.',
+  'Preparei uma salada da horta para agradecer. Ela já está na sua mochila.',
+] as const
+
+export const FALA_DO_PRESENTE_SEM_ESPACO =
+  'Guardei uma salada para agradecer por achar os quatro bichos. Libere espaço na mochila e venha conversar comigo para receber.'
+
 const PRIMEIRO_ENCONTRO = [
   'Oi. Eu sou a Capi, eu cuidava dos bichos deste bosque.',
   'Quando a cor foi embora, eles ficaram com medo e se esconderam no Cinza.',

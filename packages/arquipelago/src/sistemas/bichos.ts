@@ -1,6 +1,34 @@
-import type { BichoAdotado, BichoDoBosque } from '@sistemazero/arquipelago-contracts'
+import {
+  BICHOS_DO_BOSQUE,
+  type BichoAdotado,
+  type BichoDoBosque,
+  SALVAMENTO_MAX_BYTES,
+  type Salvamento,
+} from '@sistemazero/arquipelago-contracts'
 import type { Bichos } from './esconde'
-import { type Inventario, ITENS, remover } from './itens'
+import { adicionar, type Inventario, ITENS, quantidade, remover } from './itens'
+
+/** A salada já existe e alimenta tanto a pessoa quanto o bicho adotado. */
+export const PRESENTE_DOS_BICHOS = { item: 'salada', quantidade: 1 } as const
+
+/** Inventário e recibo mudam juntos. Mochila cheia mantém o presente para outra conversa. */
+export function receberPresenteDosBichos(s: Salvamento): {
+  salvamento: Salvamento
+  resultado: 'entregue' | 'sem-espaco' | 'nada'
+} {
+  if (s.presenteDosBichosEntregue || !BICHOS_DO_BOSQUE.every((b) => s.bichos.achados.includes(b)))
+    return { salvamento: s, resultado: 'nada' }
+  const { item, quantidade: qtd } = PRESENTE_DOS_BICHOS
+  if (quantidade(s.inventario, item) + qtd > 999) return { salvamento: s, resultado: 'sem-espaco' }
+  const salvamento: Salvamento = {
+    ...s,
+    inventario: adicionar(s.inventario, item, qtd),
+    presenteDosBichosEntregue: true,
+  }
+  if (new TextEncoder().encode(JSON.stringify(salvamento)).length > SALVAMENTO_MAX_BYTES)
+    return { salvamento: s, resultado: 'sem-espaco' }
+  return { salvamento, resultado: 'entregue' }
+}
 
 /**
  * O bicho adotado (regras puras). Fome, limpeza e carinho caem devagar com o tempo JOGADO (quem

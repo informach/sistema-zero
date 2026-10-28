@@ -8,7 +8,7 @@ import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 4
+export const VERSAO_SALVAMENTO = 5
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -266,26 +266,40 @@ export function migrarDaV3(v3: SalvamentoV3): SalvamentoV4 {
   return { ...v3, versao: 4, construcao: { casa: null, cabanas: {} }, projetos: {} }
 }
 
+/** V5: a entrega única da Capi por encontrar os quatro bichos do Bosque. */
+export const SalvamentoV5Schema = SalvamentoV4Schema.extend({
+  versao: z.literal(5),
+  presenteDosBichosEntregue: z.boolean(),
+})
+export type SalvamentoV5 = z.infer<typeof SalvamentoV5Schema>
+
+/** Quem já achou os bichos ainda pode receber na próxima conversa com a Capi. */
+export function migrarDaV4(v4: SalvamentoV4): SalvamentoV5 {
+  return { ...v4, versao: 5, presenteDosBichosEntregue: false }
+}
+
 /**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V4): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V5): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV4Schema,
-  SalvamentoV3Schema.transform(migrarDaV3),
-  SalvamentoV2Schema.transform((v2) => migrarDaV3(migrarDaV2(v2))),
-  SalvamentoV1Schema.transform((v1) => migrarDaV3(migrarDaV2(migrarDaV1(v1)))),
+  SalvamentoV5Schema,
+  SalvamentoV4Schema.transform(migrarDaV4),
+  SalvamentoV3Schema.transform((v3) => migrarDaV4(migrarDaV3(v3))),
+  SalvamentoV2Schema.transform((v2) => migrarDaV4(migrarDaV3(migrarDaV2(v2)))),
+  SalvamentoV1Schema.transform((v1) => migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))),
 ])
-export type Salvamento = SalvamentoV4
+export type Salvamento = SalvamentoV5
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 4,
+    versao: 5,
+    presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
     horta: Array.from({ length: 6 }, (_, i) => ({

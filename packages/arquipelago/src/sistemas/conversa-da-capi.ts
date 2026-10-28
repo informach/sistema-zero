@@ -4,10 +4,14 @@ import {
   type Capi,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
-import { adotar, motivoDoNome } from './bichos'
+import { adotar, motivoDoNome, receberPresenteDosBichos } from './bichos'
 import { FALA_DA_PAGINA, ganhouAPagina } from './diario'
 import { escondidos } from './esconde'
-import { falasDaCapi } from './falas-da-capi'
+import {
+  FALA_DO_PRESENTE_DOS_BICHOS,
+  FALA_DO_PRESENTE_SEM_ESPACO,
+  falasDaCapi,
+} from './falas-da-capi'
 import { ITENS, quantidade } from './itens'
 import {
   conversar,
@@ -77,7 +81,10 @@ export function comecarConversa(
       escolhaDoDia(dia),
     ),
   )
-  return { salvamento, falas }
+  const presente = receberPresenteDosBichos(salvamento)
+  if (presente.resultado === 'entregue') falas.push(...FALA_DO_PRESENTE_DOS_BICHOS)
+  else if (presente.resultado === 'sem-espaco') falas.push(FALA_DO_PRESENTE_SEM_ESPACO)
+  return { salvamento: presente.salvamento, falas }
 }
 
 export const FALA_DO_PRESENTE: Readonly<Record<ReacaoAoPresente, string>> = {

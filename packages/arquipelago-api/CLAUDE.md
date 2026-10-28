@@ -165,7 +165,11 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",
   senão o jogo criaria um salvamento novo por cima). Formato novo = a próxima versão no contrato
-  (hoje `SalvamentoV4`) com a migração da anterior.
+  (hoje `SalvamentoV5`) com a migração da anterior. V1 a V4 são lidas e recebidas já migradas
+  para V5. A marca `presenteDosBichosEntregue` e o inventário ficam no mesmo JSONB e na mesma
+  revisão CAS, sem nova coluna ou migração SQL. O teto continua 64 KB. A suíte
+  `tests/db/presente-capi.test.ts` usa somente Postgres local descartável para conferir V4,
+  V5, concorrência e limite, nos dois públicos; `tests/integration/http.test.ts` cobre a rota.
 - **Tempo livre**: contado por sessões no servidor (`repositorio-sessoes-tempo.ts`), com trava
   transacional por perfil, comandos idempotentes e concessão curta limitada pelo saldo diário.
   O cliente usa relógio monotônico apenas para recusar uma concessão vencida. O diário antigo

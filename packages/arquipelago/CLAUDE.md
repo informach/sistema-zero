@@ -362,6 +362,13 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Plano: `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`; regras e números:
   `docs/arquipelago-regras.md` §6.15. Tudo o que muda o salvamento passa pelas funções puras de
   `sistemas/conversa-da-capi.ts` (`comecarConversa`, `presentear`, `entregar`).
+- Presente dos quatro bichos: `receberPresenteDosBichos` em `sistemas/bichos.ts` entrega uma
+  `salada` já existente e marca `presenteDosBichosEntregue` no mesmo snapshot V5, uma vez só.
+  `comecarConversa` acrescenta o agradecimento por último, após eventual página do diário.
+  Inventário no teto de saladas ou documento sem espaço nos 64 KB adia a entrega, sem marcar.
+  Testes em `tests/capi-presente.test.ts` e `tests/salvamento-duravel.test.ts`.
+  Playground: `?bichos=achados` prepara os quatro, sem entregar nem apagar a marca persistida;
+  `?novo=1&bichos=achados` começa outro jogo para conferir a conversa no navegador.
 - `mundo/capi.tsx` (montado pelo `BosqueVivo`, dentro de `ComReserva`): o `capi.glb` copiado com
   `SkeletonUtils.clone` (tem esqueleto), na âncora `morador`, de costas para a `cabana`. Vira para
   a criança (`olharDaCapi`), acena, fala, comemora (`alegria` na loja da conversa) e pisca pelo
@@ -407,10 +414,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Salvamento e tempo
 
-- `SalvamentoV4` (contrato) com versão; a V1, a V2 e a V3 migram sozinhas (`migrarDaV1`: nenhum
+- `SalvamentoV5` (contrato) com versão; a V1, a V2, a V3 e a V4 migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
-  e nenhum projeto azul). Gravar aceita a versão de
-  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V4: só a
+  e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue). Gravar aceita a versão de
+  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V5: só a
   primeira gravação dela fica, as seguintes falham até recarregar.
   Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.

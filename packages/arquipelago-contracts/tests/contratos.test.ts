@@ -19,6 +19,7 @@ import {
   migrarDaV1,
   migrarDaV2,
   migrarDaV3,
+  migrarDaV4,
   migrarSalvamento,
   normalizarLimiteDiario,
   OBJETOS_DA_CASA,
@@ -35,7 +36,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV4Schema,
+  SalvamentoV5Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 
@@ -159,6 +160,7 @@ describe('salvamento V2 (percursos)', () => {
       bichos: _b,
       construcao: _c,
       projetos: _p,
+      presenteDosBichosEntregue: _presente,
       ...resto
     } = criarSalvamentoInicial(agora)
     return { ...resto, versao: 2 }
@@ -168,6 +170,7 @@ describe('salvamento V2 (percursos)', () => {
     return { ...resto, versao: 1 }
   }
   const semMoradores = {
+    presenteDosBichosEntregue: false,
     moradores: { capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null } },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
@@ -178,19 +181,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV4Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV5Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 4, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 5, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(4)
+    expect(r.salvamento.versao).toBe(5)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -310,10 +313,17 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
   }
 
   test('a V2 migra para a V3 com a Capi sem amizade e nenhum bicho', () => {
-    const { moradores: _m, bichos: _b, construcao: _c, projetos: _p, ...resto } = inicial()
+    const {
+      moradores: _m,
+      bichos: _b,
+      construcao: _c,
+      projetos: _p,
+      presenteDosBichosEntregue: _presente,
+      ...resto
+    } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(4)
+    expect(v3?.versao).toBe(5)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -321,7 +331,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       presenteEm: null,
       pedido: null,
     })
-    expect(migrarDaV3(migrarDaV2(v2))).toEqual(v3 as NonNullable<typeof v3>)
+    expect(migrarDaV4(migrarDaV3(migrarDaV2(v2)))).toEqual(v3 as NonNullable<typeof v3>)
   })
 
   test('guarda a amizade, o pedido do dia, os achados e o bicho adotado', () => {
@@ -390,14 +400,19 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
   })
 
   test('a V3 migra para a V4 com a casa de antes e nenhum projeto azul', () => {
-    const { construcao: _c, projetos: _p, ...resto } = inicial()
+    const {
+      construcao: _c,
+      projetos: _p,
+      presenteDosBichosEntregue: _presente,
+      ...resto
+    } = inicial()
     const v3: SalvamentoV3 = { ...resto, versao: 3, casa: { portaNova: true } }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(4)
+    expect(v4?.versao).toBe(5)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
-    expect(migrarDaV3(v3)).toEqual(v4 as NonNullable<typeof v4>)
+    expect(migrarDaV4(migrarDaV3(v3))).toEqual(v4 as NonNullable<typeof v4>)
   })
 
   test('guarda a obra da casa, a cabana do Bosque e a geladeira com o que está dentro', () => {

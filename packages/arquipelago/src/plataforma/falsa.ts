@@ -1,5 +1,6 @@
 import {
   type Acesso,
+  BICHOS_DO_BOSQUE,
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
   type ConflitoDeSalvamento,
@@ -40,6 +41,8 @@ export interface OpcoesDaPlataformaFalsa {
   desafios?: 'ligados' | 'desligados'
   /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
   obra?: 'exemplo'
+  /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
+  bichos?: 'achados'
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
   cartas?: CartasDoPlayground
 }
@@ -131,6 +134,14 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         construcao: { ...atual.construcao, casa: obraDeExemplo() },
         projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
+      atualizadoEm: agora().toISOString(),
+    }
+  }
+  if (o.bichos === 'achados') {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    guardado = {
+      revisao: guardado.revisao + 1,
+      salvamento: { ...atual, bichos: { ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] } },
       atualizadoEm: agora().toISOString(),
     }
   }

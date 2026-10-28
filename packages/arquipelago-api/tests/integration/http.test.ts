@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
+  BICHOS_DO_BOSQUE,
   CartasDoJogadorSchema,
   ConflitoDeSalvamentoSchema,
   type CurriculoDeBlocos,
@@ -213,6 +214,39 @@ describe('acesso', () => {
 
 describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
+
+  test('recebe V4 como V5, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
+    const { presenteDosBichosEntregue: _, ...anterior } = salvamento
+    const v4 = { ...anterior, versao: 4 }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v4,
+    })
+    expect(primeira.status).toBe(200)
+    const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(migrado.salvamento).toMatchObject({ versao: 5, presenteDosBichosEntregue: false })
+    if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
+    const entregue = {
+      ...migrado.salvamento,
+      bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null },
+      inventario: { salada: 1 },
+      presenteDosBichosEntregue: true,
+    }
+    const gravado = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 1,
+      salvamento: entregue,
+    })
+    expect(gravado.status).toBe(200)
+    expect(SalvamentoGuardadoSchema.parse(gravado.json).salvamento).toEqual(entregue)
+    const atrasado = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 1,
+      salvamento: v4,
+    })
+    expect(atrasado.status).toBe(409)
+    expect(ConflitoDeSalvamentoSchema.parse(atrasado.json).atual.salvamento).toEqual(entregue)
+    const relido = await chamar('GET', '/arquipelago/salvamento', crianca())
+    expect(SalvamentoGuardadoSchema.parse(relido.json).salvamento).toEqual(entregue)
+  })
 
   test('nada guardado, primeira gravação, revisão velha recebe o guardado', async () => {
     expect((await chamar('GET', '/arquipelago/salvamento', crianca())).json).toEqual({

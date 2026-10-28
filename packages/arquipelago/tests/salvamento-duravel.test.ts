@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto'
 import { expect, test } from 'bun:test'
 import {
+  BICHOS_DO_BOSQUE,
   criarSalvamentoInicial,
   type SalvamentoGuardado,
   type ServicoDoJogo,
@@ -10,6 +11,7 @@ import {
   type ArmazemDeSalvamento,
   criarArmazemDeSalvamento,
 } from '../src/sistemas/armazem-salvamento'
+import { comecarConversa } from '../src/sistemas/conversa-da-capi'
 import { criarFilaDeSalvamento, type SituacaoDoSalvamento } from '../src/sistemas/salvar'
 
 const vazio: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
@@ -76,10 +78,34 @@ function sinal() {
   return { promessa, liberar }
 }
 
-test('diário V3 pendente migra para V4 sem perder alteração nem identidade do envio', async () => {
+test('presente pendente sobrevive ao fechamento e chega inteiro ao serviço sem nova entrega', async () => {
+  const perfil = `kids:${crypto.randomUUID()}`
+  const p = criarPlataformaFalsa({ persistir: false })
+  const s = inicial()
+  s.bichos.achados = [...BICHOS_DO_BOSQUE]
+  const entregue = comecarConversa(s, '2026-10-28', perfil).salvamento
+  const primeira = await fila(await abrir(perfil), p.servico)
+  primeira.f.guardar(entregue)
+  await primeira.f.parar()
+  const segunda = await fila(await abrir(perfil), p.servico)
+  expect(segunda.adotados.at(-1)?.salvamento).toEqual(entregue)
+  await segunda.f.salvarAgora()
+  const lido = p.guardado().salvamento
+  expect(lido).toEqual(entregue)
+  if (!lido) throw new Error('Salvamento não chegou ao serviço')
+  expect(comecarConversa(lido, '2026-10-29', perfil).salvamento.inventario.salada).toBe(1)
+  await segunda.f.parar()
+})
+
+test('diário V3 pendente migra para V5 sem perder alteração nem identidade do envio', async () => {
   const perfil = `kids:${crypto.randomUUID()}`
   const armazem = await abrir(perfil)
-  const { construcao: _construcao, projetos: _projetos, ...v3 } = inicial()
+  const {
+    construcao: _construcao,
+    projetos: _projetos,
+    presenteDosBichosEntregue: _presente,
+    ...v3
+  } = inicial()
   const antigo = { ...v3, versao: 3, inventario: { milho: 4 } }
   const enviado = { ...antigo, inventario: { milho: 3 } }
   const local = { ...antigo, inventario: { milho: 2 } }
@@ -103,13 +129,13 @@ test('diário V3 pendente migra para V4 sem perder alteração nem identidade do
     })
     const lido = await armazem.ler()
     expect(lido?.base.salvamento).toMatchObject({
-      versao: 4,
+      versao: 5,
       inventario: { milho: 4 },
       projetos: {},
     })
-    expect(lido?.enviado).toMatchObject({ versao: 4, inventario: { milho: 3 } })
+    expect(lido?.enviado).toMatchObject({ versao: 5, inventario: { milho: 3 } })
     expect(lido?.local).toMatchObject({
-      versao: 4,
+      versao: 5,
       inventario: { milho: 2 },
       construcao: { casa: null, cabanas: {} },
     })

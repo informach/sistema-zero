@@ -257,10 +257,10 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoT
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 4` (`SalvamentoV4Schema`, estrito: campo desconhecido é
+- **Versão:** `VERSAO_SALVAMENTO = 5` (`SalvamentoV5Schema`, estrito: campo desconhecido é
   recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
   a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
-  projetos azuis.
+  projetos azuis. A V5 acrescenta `presenteDosBichosEntregue`, sem alterar os formatos anteriores.
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -296,10 +296,10 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
   `migrarSalvamento`. Assim ninguém perde o progresso.
-- **A V1, a V2 e a V3 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`:
+- **A V1, a V2, a V3 e a V4 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`:
   tudo igual e nenhum percurso corrido; `migrarDaV2`: tudo igual, a Capi com amizade 0, nenhum
   bicho achado e nenhum adotado; `migrarDaV3`: tudo igual, a casa de antes, nenhuma cabana e
-  nenhum projeto azul).
+  nenhum projeto azul; `migrarDaV4`: tudo igual e `presenteDosBichosEntregue: false`).
 - **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
   já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
@@ -968,6 +968,17 @@ adotado já estão no jogo. O plano da parte que falta:
   25 cm que contorna o que é duro e atravessa moitas e cogumelos). No cercadinho cada um tem o
   seu lugar, pela ordem em que foi achado (`LUGARES_NO_CERCADO`), fica parado ou sentado e olha
   para a criança que chega. Achar os quatro faz o Zappy pedir para contar para a Capi.
+- **Presente pelos quatro bichos:** conversar com a Capi depois de achar cachorro, gato, coelho e
+  porquinho entrega uma **Salada da horta** (`salada`, item já existente), uma única vez. A salada
+  combina com a horta da Capi e pode alimentar a pessoa ou o bicho adotado. A regra pura
+  `receberPresenteDosBichos` atualiza o inventário e `presenteDosBichosEntregue` no mesmo
+  salvamento V5. Não depende de amizade, adoção, pedido ou primeira conversa do dia. As falas de
+  agradecimento ficam no fim, depois da página do diário se ela também chegar nessa conversa.
+  Com 999 saladas ou sem espaço nos 64 KB, a entrega fica pendente e a Capi pede para liberar
+  espaço. Reabrir a conversa, recarregar ou mudar de dia não repete um presente entregue.
+  O playground aceita `?bichos=achados`; use `?novo=1&bichos=achados` para começar do zero.
+  Testes: `capi-presente.test.ts`, `salvamento-v5.test.ts`, `salvamento-duravel.test.ts` e os
+  testes HTTP e Postgres local do serviço.
 - **O Zappy no esconde-esconde:** depois de conhecer a Capi, ele avisa quando a criança esquenta,
   sempre do escondido mais perto (`maisPertoEscondido`): morno (até 15 m), quentinho (até 7 m) ou
   pertinho (até 2,1 m), só quando muda para mais quente e no máximo uma vez a cada 12 s
