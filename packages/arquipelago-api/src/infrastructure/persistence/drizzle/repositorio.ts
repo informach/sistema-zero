@@ -1,3 +1,4 @@
+import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
 import { and, eq, sql } from 'drizzle-orm'
 import type {
   RepositorioDoJogo,
@@ -70,6 +71,9 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
     eventoId?: string,
   ): Promise<number> {
     return this.db.transaction(async (tx) => {
+      // Uma fila antiga pode ter sido criada com o relógio do aparelho adiantado.
+      // A data original identifica o evento; uma data futura é contabilizada hoje.
+      const diaEfetivo = dia > diaDeSaoPaulo(agora) ? diaDeSaoPaulo(agora) : dia
       if (eventoId) {
         const [evento] = await tx
           .insert(eventosTempo)
@@ -83,16 +87,23 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
             .where(and(eq(eventosTempo.jogadorId, jogadorId), eq(eventosTempo.eventoId, eventoId)))
           if (!anterior || anterior.segundos !== segundos || anterior.dia !== dia)
             throw new EventoTempoConflitanteError()
+          const diaAnterior =
+            dia > diaDeSaoPaulo(anterior.criadoEm) ? diaDeSaoPaulo(anterior.criadoEm) : dia
           const [atual] = await tx
             .select({ segundos: tempoDiario.segundos })
             .from(tempoDiario)
-            .where(and(eq(tempoDiario.jogadorId, jogadorId), eq(tempoDiario.dia, dia)))
+            .where(and(eq(tempoDiario.jogadorId, jogadorId), eq(tempoDiario.dia, diaAnterior)))
           return atual?.segundos ?? 0
         }
       }
       const [linha] = await tx
         .insert(tempoDiario)
-        .values({ jogadorId, dia, segundos: Math.min(segundos, TETO_DO_DIA), atualizadoEm: agora })
+        .values({
+          jogadorId,
+          dia: diaEfetivo,
+          segundos: Math.min(segundos, TETO_DO_DIA),
+          atualizadoEm: agora,
+        })
         .onConflictDoUpdate({
           target: [tempoDiario.jogadorId, tempoDiario.dia],
           set: {

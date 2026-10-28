@@ -1,3 +1,4 @@
+import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
 import type {
   RepositorioDoJogo,
   ResultadoDaGravacao,
@@ -10,7 +11,7 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
   readonly salvamentos = new Map<string, SalvamentoNoBanco>()
   readonly tempo = new Map<string, number>()
   readonly limites = new Map<string, number>()
-  readonly eventos = new Map<string, { segundos: number; dia: string }>()
+  readonly eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
 
   async lerSalvamento(jogadorId: string) {
     return this.salvamentos.get(jogadorId) ?? null
@@ -34,7 +35,7 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
     jogadorId: string,
     dia: string,
     segundos: number,
-    _agora?: Date,
+    agora: Date,
     eventoId?: string,
   ) {
     const evento = `${jogadorId}|${eventoId}`
@@ -42,10 +43,11 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
       const anterior = this.eventos.get(evento)
       if (anterior?.segundos !== segundos || anterior.dia !== dia)
         throw new EventoTempoConflitanteError()
-      return this.tempo.get(`${jogadorId}|${dia}`) ?? 0
+      return this.tempo.get(`${jogadorId}|${anterior.diaEfetivo}`) ?? 0
     }
-    if (eventoId) this.eventos.set(evento, { segundos, dia })
-    const chave = `${jogadorId}|${dia}`
+    const diaEfetivo = dia > diaDeSaoPaulo(agora) ? diaDeSaoPaulo(agora) : dia
+    if (eventoId) this.eventos.set(evento, { segundos, dia, diaEfetivo })
+    const chave = `${jogadorId}|${diaEfetivo}`
     const total = Math.min((this.tempo.get(chave) ?? 0) + segundos, 86_400)
     this.tempo.set(chave, total)
     return total

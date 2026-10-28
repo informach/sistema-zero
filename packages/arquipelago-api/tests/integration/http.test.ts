@@ -96,7 +96,7 @@ describe('borda', () => {
 
 describe('acesso', () => {
   test('criança do Kids: 30 minutos por padrão e o que já usou hoje', async () => {
-    await repo.somarTempo(PERFIL, '2026-10-27', 90)
+    await repo.somarTempo(PERFIL, '2026-10-27', 90, AGORA)
     const r = await chamar('GET', '/arquipelago/acesso', crianca())
     expect(r.json).toEqual({
       liberado: true,
@@ -306,15 +306,13 @@ describe('tempo livre e limite da família', () => {
         })
       ).status,
     ).toBe(409)
-    expect(
-      (
-        await chamar('POST', '/arquipelago/tempo/recuperar', crianca(), {
-          ...pedido,
-          eventoId: randomUUID(),
-          dia: '2026-10-28',
-        })
-      ).status,
-    ).toBe(400)
+    const futuro = await chamar('POST', '/arquipelago/tempo/recuperar', crianca(), {
+      ...pedido,
+      eventoId: randomUUID(),
+      dia: '2026-10-28',
+    })
+    expect(futuro.status).toBe(200)
+    expect(futuro.json).toMatchObject({ usadoHojeSegundos: 60 })
   })
 
   test('soma no dia e avisa quando acabou', async () => {

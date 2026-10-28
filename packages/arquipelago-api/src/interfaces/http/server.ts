@@ -11,7 +11,6 @@ import {
 } from '../../application/erros'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import {
-  DataTempoInvalidaError,
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
@@ -41,10 +40,6 @@ export function createServer(deps: DependenciasHttp) {
       if (error instanceof SessaoTempoNaoPermitidaError) {
         set.status = 403
         return envelope('TEMPO_NAO_PERMITIDO', error.message)
-      }
-      if (error instanceof DataTempoInvalidaError) {
-        set.status = 400
-        return envelope('VALIDATION_ERROR', 'Data do registro de tempo inválida.')
       }
       if (error instanceof EventoTempoConflitanteError) {
         set.status = 409

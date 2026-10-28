@@ -15,7 +15,6 @@ import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { Jogador, Responsavel } from '../domain/jogador'
 import type { RepositorioDoJogo, SalvamentoNoBanco } from '../domain/repositorio.port'
 import type { RepositorioSessoesTempo } from '../domain/repositorio-sessoes-tempo.port'
-import { DataTempoInvalidaError } from '../domain/tempo-erros'
 import {
   AcessoBloqueadoError,
   SalvamentoGrandeDemaisError,
@@ -86,7 +85,6 @@ export class ServicoDoJogo {
     const limite = await this.limiteDe(jogador)
     const agora = this.agora()
     const dia = diaDeSaoPaulo(agora)
-    if (diaDoEvento > dia) throw new DataTempoInvalidaError()
     // Suporte olhando não gasta o tempo da criança.
     let usado = jogador.somenteLeitura
       ? await this.repo.lerTempo(jogador.id, dia)
