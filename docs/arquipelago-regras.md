@@ -674,10 +674,20 @@ Arquivos: `sistemas/escalada.ts` (`ESCALADA`), `mundo/bosque.ts` (`TRONCO_DOS_CI
 
 Arquivos: `mundo/bosque-vivo.tsx` e `personagem/personagem.tsx`.
 
-- O lago do Bosque (nó `agua`) não tem fundo no desenho: é uma mancha sobre o chão. O jogo usa a
-  elipse da caixa dele como água rasa.
-- Pisando nela, o personagem nada: velocidade de nado (2,6), sem pular, deitado como no mar, e o
-  avatar afunda até a cintura (o corpo continua no chão).
+- O lago do Bosque (nó `agua`, a elipse da caixa dele) tem fundo na colisão do chão: uma bacia de
+  0,85 m no meio, com rampa até debaixo da areia molhada da beira (até uns 43°; a criança sobe
+  52°). A água do desenho é opaca e cobre o fundo (`bacia` em `arte/ilhas/bosque.py`).
+- Nadar segue a mesma regra no mar e no lago: em pé no fundo, a criança começa a nadar quando a
+  água passa da cintura por 0,12 m (`ENTRAR_NO_NADO`) e só volta a andar quando pisa e a cintura sai
+  da água (`SAIR_DO_NADO`, 0,02). Nadando: velocidade 2,6, sem pular, deitada, e a cintura boia na
+  linha da água.
+- **O tronco que boia** (`mundo/tronco-no-lago.tsx`, física viva etapa 2): um tronco de madeira de
+  1,6 m e raio de 0,16 m (uns 64 kg) no meio do lago, com quatro pontos de flutuação
+  (`sistemas/empuxo.ts`). Em cada passo, cada ponto dentro da água recebe o empuxo pela
+  profundidade dele e o arrasto da água: o tronco cai, balança e assenta com metade de fora
+  (madeira tem metade da densidade da água, `sistemas/materiais-fisicos.ts`). A criança empurra
+  (peso de 30 kg, `MASSA_DA_CRIANCA`): na água ele desliza devagar; dá para tirar pela rampa e pôr
+  de volta. Se cair da ilha, volta para o meio do lago.
 
 ### 6.13 Percurso nas copas
 

@@ -17,6 +17,7 @@ import {
   alturaDaIlha,
   CENTRO_DA_CASA,
   dentroDaCasa,
+  GRAVIDADE,
   INICIO,
   NIVEL_DA_AGUA,
   PASSO_DA_FISICA,
@@ -61,7 +62,6 @@ import {
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
 const DO_CENTRO_AO_PE = CORPO.doCentroAoPe
-const GRAVIDADE = -24
 const PULO = 8.5
 const ANDAR = CORPO.andar
 const CORRER = CORPO.correr
@@ -93,8 +93,17 @@ function noMundo(saida: Ponto, altura: number, desenho: Matrix4, centro: Ponto):
 /** O quanto o avatar inclina para dentro da curva (radianos por radiano/segundo de giro). */
 const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
+/** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
+const MASSA_DA_CRIANCA = 30
 /** O avatar nada quando a cintura passa da linha da água. */
 const CINTURA = 0.55
+/**
+ * Em pé no fundo, começa a nadar quando a água passa da cintura por isto; nadando, só volta a andar
+ * quando pisa e a cintura sai da água por `SAIR_DO_NADO`. A folga entre as duas evita trocar de nado
+ * para andar a cada passo na beira.
+ */
+const ENTRAR_NO_NADO = 0.12
+const SAIR_DO_NADO = 0.02
 /** No ar, com o embalo de um cipó ou de um pulo do tronco, a direção pedida só corrige um pouco. */
 const CONTROLE_NO_AR = 0.45
 /** O balanço bateu em algo sólido quando o corpo fica mais longe que isto de onde devia ir. */
@@ -142,10 +151,8 @@ interface Vivo {
   soltouDoTronco: number
   /** 0 no chão, 1 pendurado no cipó (o desenho passa de um para o outro suave). */
   noCipo: number
-  /** Do último passo, para o desenho: nadando, quanto o avatar afunda no lago raso e a
-   * velocidade pedida no chão (o Zappy lê). */
+  /** Do último passo, para o desenho: nadando e a velocidade pedida no chão (o Zappy lê). */
   nadando: boolean
-  afundar: number
   velPedida: number
 }
 
@@ -190,7 +197,6 @@ export function Personagem() {
     soltouDoTronco: Number.NEGATIVE_INFINITY,
     noCipo: 0,
     nadando: false,
-    afundar: 0,
     velPedida: 0,
   }).current
 
@@ -224,7 +230,10 @@ export function Personagem() {
     c.enableSnapToGround(0.35)
     c.setMaxSlopeClimbAngle((52 * Math.PI) / 180)
     c.setMinSlopeSlideAngle((60 * Math.PI) / 180)
-    c.setApplyImpulsesToDynamicBodies(false)
+    // Empurra o que é dinâmico (o tronco do lago) com o peso de uma criança: andando contra, ele
+    // desliza; em pé numa ponta, ele afunda daquele lado.
+    c.setApplyImpulsesToDynamicBodies(true)
+    c.setCharacterMass(MASSA_DA_CRIANCA)
     return c
   }, [world])
   useEffect(() => () => world.removeCharacterController(kcc), [world, kcc])
@@ -381,7 +390,6 @@ export function Personagem() {
     let vx = 0
     let vz = 0
     let nadando = false
-    let afundar = 0
     const prox = v.prox
 
     if (v.modo === 'cipo' && v.cipo && movimento.cipos.includes(v.cipo)) {
@@ -458,15 +466,16 @@ export function Personagem() {
       }
     } else {
       if (v.modo !== 'chao') acoes.mudarModo('chao', agora)
-      // Nada no mar (a cintura passou da linha da água) e no lago raso das ilhas completas.
-      let lagoY = Number.NaN
+      // Nada no mar e nos lagos das ilhas completas (que têm fundo na colisão) quando a água passa
+      // da cintura: a mesma regra nos dois, com a superfície de quem estiver em volta.
+      let superficie = NIVEL_DA_AGUA
       for (const a of movimento.aguas) {
-        if (dentroDaAgua(a, p.x, p.z) && p.y - DO_CENTRO_AO_PE < a.y + 0.3) lagoY = a.y
+        if (dentroDaAgua(a, p.x, p.z)) superficie = Math.max(superficie, a.y)
       }
-      const noLago = !Number.isNaN(lagoY) && noChao.current
-      nadando = (p.y - DO_CENTRO_AO_PE + CINTURA < NIVEL_DA_AGUA && !noChao.current) || noLago
-      // O lago não tem fundo no desenho: o corpo fica no chão e o avatar afunda até a cintura.
-      if (noLago) afundar = Math.max(0, p.y - (lagoY - CINTURA + DO_CENTRO_AO_PE) - 0.15)
+      const naAgua = superficie - (p.y - DO_CENTRO_AO_PE + CINTURA)
+      nadando = v.nadando
+        ? !(noChao.current && naAgua < -SAIR_DO_NADO)
+        : naAgua > (noChao.current ? ENTRAR_NO_NADO : 0)
 
       const velBase = nadando ? NADAR : controle.correr ? CORRER : ANDAR
       const vel = velBase * ritmo(estado.salvamento.necessidades)
@@ -475,15 +484,15 @@ export function Personagem() {
       vx = pedidoX * vel * controleAqui + (comEmbalo ? v.embalo.x : 0)
       vz = pedidoZ * vel * controleAqui + (comEmbalo ? v.embalo.z : 0)
 
-      if (nadando && !noLago) {
+      if (nadando) {
         // A água freia o embalo de um cipó ou do tronco (nadando não se pisa para zerar).
         v.embalo.x = 0
         v.embalo.z = 0
         // Boia: puxa a cintura para a linha da água, devagar.
-        const alvo = NIVEL_DA_AGUA - CINTURA + DO_CENTRO_AO_PE
+        const alvo = superficie - CINTURA + DO_CENTRO_AO_PE
         velY.current = MathUtils.lerp(velY.current, (alvo - p.y) * 3, 0.15)
       } else {
-        velY.current += GRAVIDADE * dt
+        velY.current -= GRAVIDADE * dt
         if (noChao.current && controle.pular && !parado && !nadando) velY.current = PULO
       }
 
@@ -546,7 +555,6 @@ export function Personagem() {
     }
     movimento.noChao = v.modo === 'chao' && noChao.current
     v.nadando = nadando
-    v.afundar = afundar
     v.velPedida = v.modo === 'chao' ? Math.hypot(vx, vz) : 1
 
     // O que as animações leem. Os passos, o balanço do corpo e a inclinação de quem corre vêm das
@@ -610,7 +618,7 @@ export function Personagem() {
     const k = v.noCipo
     vis.position.set(
       -noCorpo.x * k,
-      (-DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR - v.afundar) * (1 - k) +
+      (-DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR) * (1 - k) +
         (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
       -noCorpo.z * k,
     )

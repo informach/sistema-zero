@@ -52,7 +52,7 @@ CONTRATO = {
         'clipes': ['balancar'],
     },
     'bosque-props': {'nos': ['arvore-grande-a', 'arvore-grande-b', 'arvore-grande-c', 'arvore-media', 'moita', 'tora',
-                             'toco', 'cogumelo'], 'ancoras': [], 'clipes': []},
+                             'toco', 'cogumelo', 'tora-que-boia'], 'ancoras': [], 'clipes': []},
     'vila-doce-props': {'nos': ['casinha-a', 'casinha-b', 'casinha-c', 'barraca', 'pirulito', 'jujuba', 'bengala',
                                 'lampiao'], 'ancoras': [], 'clipes': []},
     'recife-props': {'nos': ['coral-galho', 'coral-cerebro', 'coral-leque', 'coral-tubo', 'mapa-aberto', 'mapa-rolo',

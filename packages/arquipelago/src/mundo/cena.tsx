@@ -15,7 +15,7 @@ import { Ceu } from './ceu'
 import { Farol } from './farol'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
-import { LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
+import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
 
@@ -52,7 +52,12 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
         {/* Passo fixo com o desenho suavizado entre passos; os passos rodam antes dos outros
             quadros (prioridade negativa), então personagem, bicho e câmera leem a posição já
             suavizada deste quadro. */}
-        <Physics gravity={[0, -24, 0]} timeStep={PASSO_DA_FISICA} interpolate updatePriority={-1}>
+        <Physics
+          gravity={[0, -GRAVIDADE, 0]}
+          timeStep={PASSO_DA_FISICA}
+          interpolate
+          updatePriority={-1}
+        >
           <Agua />
           <IlhaCentral />
           <Casa />

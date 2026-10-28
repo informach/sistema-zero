@@ -225,8 +225,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   trepadeira em espiral (desenhada no código) mostra que aquele tronco sobe e esmaece com ele.
   Ainda não há nó `escalada-*` no GLB: o que falta passar para o Blender está no README de
   `arte/ilhas`.
-- **Lago**: o nó `agua` não tem fundo no desenho. Ele vira uma água rasa (a elipse da caixa do nó):
-  pisando nela o personagem nada (velocidade de nado, sem pular) e o avatar afunda até a cintura.
+- **Lago**: o nó `agua` (a elipse da caixa e a altura da superfície) com a bacia de 0,85 m no
+  `col-terreno`: nada como no mar (mesma regra, `ENTRAR_NO_NADO`/`SAIR_DO_NADO`). O tronco que boia
+  (`mundo/tronco-no-lago.tsx`) é um corpo dinâmico com quatro pontos de flutuação
+  (`sistemas/empuxo.ts`, materiais em `sistemas/materiais-fisicos.ts`); a criança empurra
+  (`setApplyImpulsesToDynamicBodies`, `MASSA_DA_CRIANCA`). O medidor mostra o tronco em
+  `__arquipelagoDesenho.tronco`.
 - **Mãos no cipó** (`personagem/bracos.ts`): IK de dois ossos fecha os punhos na corda depois da
   pose de cada quadro (`AvatarDoJogo` monta `DepoisDaPose` logo depois do `AvatarRig`, então roda
   depois do mixer). A corda passa ao lado esquerdo do rosto (`CORDA_NO_CORPO`) e o corpo pende

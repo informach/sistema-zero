@@ -4,6 +4,7 @@ import type { Mesh, Object3D } from 'three'
 import { useJogo } from '../estado/contexto'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
+import { troncoAgora } from './tronco-no-lago'
 
 /**
  * Só para medir o desenho (playground e conferência de desempenho): com
@@ -36,6 +37,8 @@ export interface MedidaDoDesenho {
   esmaecidas: string[]
   /** Quanto a última ilha completa solta liberou. */
   liberadas: { geometrias: number; materiais: number; texturas: number }
+  /** O tronco que boia no lago do Bosque (posição e parte na água). */
+  tronco: typeof troncoAgora
 }
 
 function medirLigado(): boolean {
@@ -93,6 +96,7 @@ export function Medidor() {
       liberadas: { ...ultimaLiberacao },
       esmaecidas: [...esmaecidasAgora],
       geometriasNaCena: contarGeometrias(cena),
+      tronco: { ...troncoAgora },
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida
     c.tempo = 0

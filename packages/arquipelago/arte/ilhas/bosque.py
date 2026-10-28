@@ -314,6 +314,69 @@ def lago(col):
     return borda_, agua, enfeite
 
 
+# O lago tem fundo (física viva, etapa 2): uma bacia na colisão do chão, para a água ter onde boiar
+# e a criança nadar. Só na colisão: a água do desenho é opaca e cobre o fundo. Funda no meio
+# (`FUNDO_DO_LAGO`, a cintura da criança passa da linha da água) e com rampa até debaixo da areia
+# molhada da beira (até uns 43°; o personagem sobe 52°). Raios em fração dos raios da água.
+FUNDO_DO_LAGO = 0.85
+# O tronco que boia nele: comprimento e raio (`tora-que-boia` em bosque-props.glb).
+TORA_QUE_BOIA = (1.6, 0.16)
+RAIOS_DO_LAGO = (2.2, 1.5)
+BACIA_PLANA, BACIA_FIM = 0.35, 1.25
+
+
+def fundo_da_bacia(t):
+    """Profundidade da bacia (abaixo do tampo) a `t` raios do meio do lago."""
+    if t <= BACIA_PLANA:
+        return FUNDO_DO_LAGO
+    if t >= BACIA_FIM:
+        return 0.0
+    s = (t - BACIA_PLANA) / (BACIA_FIM - BACIA_PLANA)
+    return FUNDO_DO_LAGO * (1 - s * s * (3 - 2 * s))
+
+
+def bacia(chao_col, voltas=36, aneis=12):
+    """Cava a bacia no `col-terreno`: boolean exato com um molde fechado (o fundo em anéis, a
+    parede e a tampa acima do tampo). O anel de fora fica um pouco acima do tampo, para o corte
+    nunca ficar rente à face de cima."""
+    x, z = LAGO
+    rx, rz = RAIOS_DO_LAGO
+    bm = bmesh.new()
+    meio = bm.verts.new(P(x, z, TOPO - FUNDO_DO_LAGO))
+    aneis_v = []
+    for i in range(1, aneis + 1):
+        t = BACIA_FIM * i / aneis
+        y = TOPO + 0.05 if i == aneis else TOPO - fundo_da_bacia(t)
+        aneis_v.append([bm.verts.new(P(x + math.cos(2 * math.pi * k / voltas) * rx * t,
+                                       z + math.sin(2 * math.pi * k / voltas) * rz * t, y))
+                        for k in range(voltas)])
+    tampa = [bm.verts.new((v.co.x, v.co.y, TOPO + 0.4)) for v in aneis_v[-1]]
+    for k in range(voltas):
+        k2 = (k + 1) % voltas
+        bm.faces.new((meio, aneis_v[0][k2], aneis_v[0][k]))
+        for a, b in zip(aneis_v, aneis_v[1:]):
+            bm.faces.new((a[k], a[k2], b[k2], b[k]))
+        bm.faces.new((aneis_v[-1][k], aneis_v[-1][k2], tampa[k2], tampa[k]))
+    bm.faces.new(tampa)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new('molde-bacia')
+    bm.to_mesh(me)
+    bm.free()
+    molde = bpy.data.objects.new('molde-bacia', me)
+    bpy.context.collection.objects.link(molde)
+    m = chao_col.modifiers.new('bacia', 'BOOLEAN')
+    m.operation = 'DIFFERENCE'
+    m.solver = 'EXACT'
+    m.use_hole_tolerant = True
+    m.object = molde
+    bpy.context.view_layer.objects.active = chao_col
+    bpy.ops.object.select_all(action='DESELECT')
+    chao_col.select_set(True)
+    bpy.ops.object.modifier_apply(modifier='bacia')
+    bpy.data.objects.remove(molde, do_unlink=True)
+    chao_col.data.materials.clear()
+
+
 def galho_dos_cipos(col, copas, troncos):
     """A árvore do galho comprido e o galho que passa por cima do lago (as folhas do galho entram na
     copa da mesma árvore)."""
@@ -407,6 +470,7 @@ def terreno(col):
     base = anel.base(SEMENTE)
     # O chão que se pisa: tampo, praia e barranco (as trilhas e manchas, milímetros acima, só desenham).
     col.append(col_terreno(base))
+    bacia(col[-1])
     p = list(base)
     # Clareira mais clara no meio e as trilhas de terra.
     p.append(mancha(0.6, 0.6, 3.6, 3.0, 'gramaClara', seed=5, z0=TOPO - 0.02, z1=TOPO + 0.012))
@@ -516,6 +580,10 @@ def props():
         'tora': tora(0, 0, 2.2, 0.0, y=0),
         'toco': toco(0, 0, y=0),
         'cogumelo': cogumelo(0, 0, 1.0, y=0),
+        # O tronco que boia no lago (física viva, etapa 2): fino e curto para a criança empurrar e
+        # subir nele. Fica com o MEIO na origem (é o centro do corpo da física) e deitado ao longo do
+        # z do jogo; as medidas são as de `TRONCO_QUE_BOIA` (src/mundo/tronco-no-lago.tsx).
+        'tora-que-boia': tora(0, 0, TORA_QUE_BOIA[0], 0.0, r=TORA_QUE_BOIA[1], y=-0.9 * TORA_QUE_BOIA[1]),
     }
     exportar('bosque-props', nos)
 

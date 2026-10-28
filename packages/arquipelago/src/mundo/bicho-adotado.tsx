@@ -28,7 +28,7 @@ import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { ESCALA_DOS_BICHOS, URL_DO_FILHOTE } from './bichos-do-bosque'
 import { useInterativo } from './interativos'
-import { PASSO_DA_FISICA } from './medidas'
+import { GRAVIDADE, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 
 const URL_DO_ADULTO: Readonly<Record<BichoDoBosque, string>> = {
@@ -43,7 +43,6 @@ const CORPO = { raio: 0.25, meiaAltura: 0.15 } as const
 const DO_CENTRO_AO_PE = CORPO.raio + CORPO.meiaAltura
 /** A folga do controlador do Rapier (a mesma ideia da do personagem). */
 const FOLGA = 0.02
-const GRAVIDADE = 24
 /** De que distância aparece "Cuidar de...". */
 const ALCANCE_DE_CUIDAR = 1.9
 const UMA_VEZ: readonly string[] = ['feliz', 'truque']

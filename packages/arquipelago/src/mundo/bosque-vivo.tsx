@@ -59,6 +59,7 @@ import type { Copa } from './copas'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
 import { ComReserva } from './modelos'
+import { TroncoNoLago } from './tronco-no-lago'
 
 /** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
 const CHAO_DA_ILHA = 0.25
@@ -147,7 +148,8 @@ export function BosqueVivo({
   )
   const troncos = useMemo(() => [tronco.tronco], [tronco])
 
-  // O lago (nó `agua`): a elipse do desenho, que não tem fundo; o personagem nada nela.
+  // O lago (nó `agua`): a elipse do desenho e a altura da superfície. O fundo está na colisão do
+  // chão (a bacia do `bosque.py`); o personagem nada nele e o tronco boia.
   const agua = useMemo<AguaRasa | null>(() => {
     const no = preparada.modelo.getObjectByName('agua') as Mesh | undefined
     if (!no?.isMesh) return null
@@ -398,6 +400,11 @@ export function BosqueVivo({
       <ComReserva reserva={null}>
         <Capi modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
+      {agua ? (
+        <ComReserva reserva={null}>
+          <TroncoNoLago agua={agua} />
+        </ComReserva>
+      ) : null}
       <BichosDoBosque
         modelo={preparada.modelo}
         colisores={preparada.colisores}

@@ -153,9 +153,10 @@ do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
   (`src/mundo/bosque.ts`), e o jogo desenha uma trepadeira em espiral por cima para mostrar que ele
   sobe. Ficaria melhor com a trepadeira modelada (ou degraus de madeira pregados) no próprio tronco.
   O jogo ainda não lê `escalada-*`: quando o nó chegar, troque a constante pela leitura dele.
-- **Lago:** o nó `agua` é uma mancha sobre o tampo, sem fundo. O jogo trata a elipse dele como água
-  rasa (o avatar nada e afunda até a cintura, com o corpo no chão). Um fundo de uns 0,6 abaixo do
-  tampo, com a margem em rampa no `col-terreno`, deixaria a água de verdade.
+- **Lago (28/10/2026):** a bacia de 0,85 m já está no `col-terreno` (`bacia` em `bosque.py`, só na
+  colisão; `tests/lago-do-bosque.test.ts` mede o fundo e a rampa). O desenho continua com a água
+  opaca por cima do tampo: um fundo desenhado e a água com transparência e ondinhas (física viva,
+  etapa 2) ficam para quando a água ganhar shader.
 - **Placa de largada e vagalumes:** desenhados no código (`PLACA_DA_LARGADA` e
   `VAGALUMES_DAS_COPAS`). Uma placa modelada ao lado do pé da escada (x 0,6, z 1,3), na madeira da
   casa na árvore, combinaria com o resto.

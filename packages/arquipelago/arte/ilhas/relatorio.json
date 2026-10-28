@@ -142,7 +142,7 @@
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 957.8,
+    "kb": 1000.3,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
@@ -174,7 +174,7 @@
   "bosque-props": {
     "ancoras": {},
     "clipes": "",
-    "kb": 84.0,
+    "kb": 87.8,
     "nos": {
       "arvore-grande-a": 1156,
       "arvore-grande-b": 928,
@@ -183,9 +183,10 @@
       "cogumelo": 180,
       "moita": 192,
       "toco": 72,
-      "tora": 108
+      "tora": 108,
+      "tora-que-boia": 108
     },
-    "triangulos": 3958
+    "triangulos": 4066
   },
   "recife": {
     "ancoras": {
