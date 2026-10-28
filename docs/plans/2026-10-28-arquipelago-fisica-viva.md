@@ -184,7 +184,7 @@ etapa 1 ganhando estado.
 
 - [x] Etapas 1 e 2 presentes na staging recebida, preservadas.
 - [x] Etapa 3 conferida. O modo já existia. Teste adicional compara a mesma descida em 30, 60 e 144 quadros, mantendo passos de 1/60 s. Navegador confirma entrada, descida e saída com embalo.
-- [ ] Etapa 4: cordas e pontes.
+- [x] Etapa 4: cordas e pontes.
 - [ ] Etapa 5: mecanismos.
 - [ ] Etapa 6: vento.
 - [ ] Etapa 7: materiais e fogo.
@@ -197,3 +197,11 @@ Protocolo: Chrome local, medidor ligado, 24 amostras de 250 ms após aquecimento
 O acesso ao acompanhamento remoto falhou pela ferramenta web e o navegador compartilhado está ocupado. Nenhuma escrita sem `if_version` foi feita. Nota da etapa 3 a sincronizar no cartão `fase1-22`, coleção `itens`: "Escorregador conferido: descida suave, velocidade preservada na saída e mesmo resultado em diferentes taxas de quadros." O cartão continua pendente até todas as etapas terminarem.
 
 Etapa 3 depois: mediana de 60 FPS nas três condições, sem erro de página. Suíte: 335 testes passaram, um teste de banco local pulado. A conferência global também encontrou arquivos do caderno dos Lumis em edição concorrente; eles não foram alterados nem incluídos neste commit.
+
+### Etapa 4
+
+Pontes com piso cinemático e cordas deformadas pela mesma mola limitada. A corrente Verlet dos cipós não foi alterada: a ponte pede duas pontas presas e uma deformação pequena e previsível. Review corrigiu a exclusão das plataformas cinemáticas no controlador e colocou o medidor dentro do contexto da física. Teste lê o GLB real e confere todos os trechos. Nenhum modelo foi regravado.
+
+Navegador: personagem apoiado na ponte comprida, 0,10 m de afundamento, caminhada mantendo o apoio, sem erro de página ou shader. Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS. Uma amostra com carga mostrou 0,28 ms por passo e 50 corpos ativos, incluindo as plataformas. Não é medida em celular físico. Evidências em `.cache/arq-final-4c.json` e imagens.
+
+Nota a sincronizar com `if_version`: "As pontes cedem e balançam com a passagem, mantendo o piso e os corrimãos seguros." O acesso ao cartão remoto continua indisponível nesta sessão.

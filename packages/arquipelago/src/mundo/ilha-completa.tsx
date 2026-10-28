@@ -53,6 +53,7 @@ import {
 } from './medidas'
 import { materiaisDe } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
+import { type PontesPreparadas, PontesVivas, prepararPontes } from './pontes-vivas'
 
 /**
  * As ilhas completas do Blender (`arte/ilhas/`). Cada uma ocupa o mesmo lugar da versão leve
@@ -80,6 +81,7 @@ export interface IlhaPreparada {
   /** Materiais do arquivo que deixaram de estar na cena ao separar suas copas. */
   materiaisSubstituidos: Material[]
   copas: Copa[]
+  pontes: PontesPreparadas | null
 }
 
 /**
@@ -110,7 +112,12 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
   const materiais = materiaisDe(cena)
   // A tinta compartilha os uniforms também com as cópias transparentes das copas.
   pintarMateriais([...materiais, ...copas.flatMap((c) => c.suaves)], pinturaDaIlha(ilha))
+  const pontes =
+    ilha.id === 'bosque'
+      ? prepararPontes(cena, colisores, [...materiais, ...copas.flatMap((c) => c.suaves)])
+      : null
   const preparada = {
+    pontes,
     modelo: cena,
     colisores,
     materiais,
@@ -401,7 +408,21 @@ export function IlhaCompleta({
   return (
     <>
       <primitive object={preparada.modelo} />
-      {colide && <ColisoresDaIlha colisores={preparada.colisores} troca={troca} />}
+      {colide && preparada.pontes && (
+        <PontesVivas pontes={preparada.pontes} modelo={preparada.modelo} />
+      )}
+      {colide && (
+        <ColisoresDaIlha
+          colisores={
+            preparada.pontes
+              ? preparada.colisores.filter(
+                  (c) => !preparada.pontes?.trechos.some((t) => t.colisor === c),
+                )
+              : preparada.colisores
+          }
+          troca={troca}
+        />
+      )}
     </>
   )
 }

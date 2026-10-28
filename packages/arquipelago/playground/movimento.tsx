@@ -427,10 +427,10 @@ function SalaDeMovimento() {
             <Sala />
             <Personagem />
             <Camera />
+            <Medidor />
           </Physics>
         </Suspense>
         <Medidas aoMedir={setMedidas} />
-        <Medidor />
       </Canvas>
       <ControlesDeToque />
       <Painel medidas={medidas} contexto={contexto} />

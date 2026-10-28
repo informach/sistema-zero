@@ -1,9 +1,11 @@
 import { useFrame, useThree } from '@react-three/fiber'
+import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Mesh, Object3D } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
+import { pontesAgora } from './pontes-vivas'
 import { troncoAgora } from './tronco-no-lago'
 
 /**
@@ -42,6 +44,8 @@ export interface MedidaDoDesenho {
   /** O modo do corpo (`sistemas/modos`) e se ele pisa em algo. */
   modo: Movimento['modo']
   noChao: boolean
+  pontes: typeof pontesAgora
+  fisica: { corposAtivos: number; passoMs: number }
 }
 
 function medirLigado(): boolean {
@@ -68,6 +72,17 @@ export function Medidor() {
   const cena = useThree((s) => s.scene)
   const { rastro, pedidos, movimento } = useJogo()
   const conta = useRef({ tempo: 0, quadros: 0 })
+  const { world } = useRapier()
+  const fisica = useRef({ inicio: 0, ms: 0, passos: 0 })
+  useBeforePhysicsStep(() => {
+    if (ligado) fisica.current.inicio = performance.now()
+  })
+  useAfterPhysicsStep(() => {
+    if (ligado) {
+      fisica.current.ms += performance.now() - fisica.current.inicio
+      fisica.current.passos++
+    }
+  })
   useEffect(() => {
     if (!ligado) return
     const g = globalThis as { __arquipelagoLevar?: (...a: number[]) => void }
@@ -85,7 +100,13 @@ export function Medidor() {
     c.tempo += dt
     c.quadros++
     if (c.tempo < INTERVALO_DE_MEDIDA) return
+    let corposAtivos = 0
+    world.bodies.forEach((b) => {
+      if (!b.isFixed() && !b.isSleeping()) corposAtivos++
+    })
     const medida: MedidaDoDesenho = {
+      pontes: { ...pontesAgora },
+      fisica: { corposAtivos, passoMs: fisica.current.ms / Math.max(1, fisica.current.passos) },
       chamadas: gl.info.render.calls,
       triangulos: gl.info.render.triangles,
       geometrias: gl.info.memory.geometries,
@@ -104,6 +125,8 @@ export function Medidor() {
       noChao: movimento.noChao,
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida
+    fisica.current.ms = 0
+    fisica.current.passos = 0
     c.tempo = 0
     c.quadros = 0
   })

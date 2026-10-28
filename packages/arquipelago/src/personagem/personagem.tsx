@@ -101,7 +101,7 @@ function lugarSeguro(
  */
 export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
-  const { world, rapier } = useRapier()
+  const { world } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
   const visual = useRef<Group>(null)
@@ -142,6 +142,17 @@ export function Personagem() {
     [loja, rastro, pedidos],
   )
 
+  // Plataformas cinemáticas carregam o corpo. O bicho continua fora do caminho.
+  const aceitaColisorDoMundo = useMemo(
+    () => (colisor: RapierCollider) => {
+      const corpo = colisor.parent()
+      return (
+        !corpo?.isKinematic() ||
+        (corpo.userData as { plataformaDoMundo?: boolean } | undefined)?.plataformaDoMundo === true
+      )
+    },
+    [],
+  )
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
     c.enableAutostep(CORPO.degrau, 0.25, true)
@@ -296,8 +307,9 @@ export function Personagem() {
     let mov: Ponto | null = null
     let pisou = false
     if (controlador !== 'direto') {
-      // No cipó, o controlador que não gruda no chão. Os dois batem só no mundo fixo: passam pelo
+      // No cipó, o controlador que não gruda no chão. Os dois batem no mundo fixo, dinâmico e nas plataformas marcadas. Passam pelo
       // bicho adotado (também cinemático), que nunca prende a criança nem a empurra.
+      // Plataformas marcadas no mundo são a exceção e acompanham o piso das pontes.
       const k = controlador === 'cipo' ? kccNoCipo : kcc
       // O degrau automático só vale pisando: no ar, quem chega perto de uma quina a agarra (modo
       // borda) em vez de ser empurrado para cima dela sem ver.
@@ -305,7 +317,7 @@ export function Personagem() {
         if (v.noChao) kcc.enableAutostep(CORPO.degrau, 0.25, true)
         else kcc.disableAutostep()
       }
-      k.computeColliderMovement(col, v.desloc, rapier.QueryFilterFlags.EXCLUDE_KINEMATIC)
+      k.computeColliderMovement(col, v.desloc, undefined, undefined, aceitaColisorDoMundo)
       mov = k.computedMovement()
       pisou = controlador === 'chao' && k.computedGrounded()
     }

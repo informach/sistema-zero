@@ -68,10 +68,10 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Personagem />
           <BichoAdotado />
           <Camera />
+          <Medidor />
         </Physics>
         <Zappy />
       </Suspense>
-      <Medidor />
     </Canvas>
   )
 }
