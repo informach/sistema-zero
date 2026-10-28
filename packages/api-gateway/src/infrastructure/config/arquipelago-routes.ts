@@ -193,6 +193,38 @@ export function arquipelagoGateway(opts: {
         pathPattern: `/arquipelago/admin/desafios/:id/${acao}`,
         maxBodyBytes: 1024,
       })),
+      // Manifesto de desafios (28/10/2026): conferir é leitura (prévia, roda a análise), aplicar é
+      // escrita. O Admin manda o pacote grande em lotes que cabem no corpo e no prazo.
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-desafio-manifesto',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/admin/desafios/:id/manifesto',
+      },
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-manifestos-exportar',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/admin/manifestos/exportar',
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...leituraDaEquipe,
+        id: 'arquipelago-admin-manifestos-conferir',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/admin/manifestos/conferir',
+        maxBodyBytes: 4 * 1024 * 1024,
+        timeoutMs: 165_000,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...escritaDaEquipe,
+        id: 'arquipelago-admin-manifestos-aplicar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/admin/manifestos/aplicar',
+        timeoutMs: 165_000,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
       // O cliente compilado (manifesto + arquivos com hash). Público como qualquer JS de página;
       // o member-shell o repassa na mesma origem do Kids.
       {

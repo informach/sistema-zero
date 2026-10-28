@@ -61,6 +61,13 @@ export class ConflitoDoCadastroError extends Error {
   }
 }
 
+/** Alguém gravou um desafio do manifesto entre a prévia e o aplicar: conferir de novo. */
+export class ManifestoDesatualizadoError extends Error {
+  constructor() {
+    super('Algum desafio do arquivo mudou depois da conferência. Confira de novo antes de aplicar.')
+  }
+}
+
 /** A análise achou problemas: o desafio não pode ser publicado assim. */
 export class DesafioComProblemasError extends Error {
   constructor(readonly problemas: { codigo: string; mensagem: string; objetivoId?: string }[]) {
