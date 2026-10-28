@@ -103,7 +103,9 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `GET /acesso` | jogador | liberado/motivo, limite do dia e quanto já usou |
 | `GET /salvamento` | jogador liberado | `{revisao, salvamento, atualizadoEm}` (revisão 0 = nada guardado) |
 | `PUT /salvamento` | jogador liberado | `{revisaoBase, salvamento}`; revisão velha → 409 `SALVAMENTO_DESATUALIZADO` com `atual` |
-| `POST /tempo` | jogador liberado | `{eventoId, dia, segundos}` (1 a 120); repetição não soma novamente, conflito retorna 409 e data futura é recusada; devolve o total de hoje e `acabou` |
+| `POST /tempo` | cliente antigo | 410 `ATUALIZACAO_NECESSARIA`; não registra novos lotes |
+| `POST /tempo/recuperar` | jogador liberado | entrega idempotente dos lotes legados já persistidos; suporte não soma |
+| `POST /tempo/sessao` | perfil Kids liberado, sem suporte | `{sessaoId, sequencia, acao}`; início/pulso/pausa com concessão de até 20 s, contagem e virada de dia pelo servidor |
 | `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis: os do jogo sempre, os de controle pelos blocos conquistados (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
 | `GET /desafios`, `GET /desafios/:id`, `POST /desafios/:id/verificar`, `POST /desafios/:id/recompensa-vista` | jogador liberado (com `ARQUIPELAGO_DESAFIOS`) | ver "Jogar os desafios" |
 | `GET /familia/limite?perfis=` | responsável do Kids | o limite diário da família e `algumaCriancaVe` (algum dos perfis da conta, mandados pelo BFF dos pais, vê o jogo pela política de acesso); perfis fora do formato → 400 |
@@ -132,8 +134,10 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",
   senão o jogo criaria um salvamento novo por cima). Formato novo = a próxima versão no contrato
   (hoje `SalvamentoV4`) com a migração da anterior.
-- **Tempo livre**: contado pelo jogo e somado aqui (teto de 24 h por dia); quem decide `acabou` é
-  o serviço. É controle dos pais, não trava de segurança.
+- **Tempo livre**: contado por sessões no servidor (`repositorio-sessoes-tempo.ts`), com trava
+  transacional por perfil, comandos idempotentes e concessão curta limitada pelo saldo diário.
+  O cliente usa relógio monotônico apenas para recusar uma concessão vencida. O diário antigo
+  só entrega lotes já existentes em `/tempo/recuperar`; não é a fonte do contador atual.
 
 ## Comandos
 

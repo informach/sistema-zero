@@ -1,4 +1,4 @@
-import type { Controle } from './controle'
+import { atualizarEntrada, type Controle, soltarEntrada } from './controle'
 
 /**
  * O controle físico (Gamepad API do navegador), no mesmo `Controle` do teclado e do toque: a ação
@@ -69,8 +69,7 @@ export function lerPedido(p: LeituraDoGamepad): PedidoDoGamepad {
 
 /**
  * Aplica o pedido ao controle, comparando com o anterior: toques contam uma vez (pular, usar,
- * recentrar, menu), e o andar só é escrito enquanto o controle mexe ou quando acabou de soltar,
- * para não brigar com o teclado e o toque.
+ * recentrar, menu). O canal do gamepad não apaga teclas nem toques ainda pressionados.
  */
 export function aplicarPedido(
   c: Controle,
@@ -78,16 +77,14 @@ export function aplicarPedido(
   antes: PedidoDoGamepad | null,
   abrirMenu: () => void,
 ): void {
-  const andando = agora.andarX !== 0 || agora.andarZ !== 0
-  const andava = antes !== null && (antes.andarX !== 0 || antes.andarZ !== 0)
-  if (andando || andava) {
-    c.eixoX = agora.andarX
-    c.eixoZ = agora.andarZ
-  }
-  if (agora.correr || antes?.correr) c.correr = agora.correr
+  atualizarEntrada(c, 'gamepad', {
+    eixoX: agora.andarX,
+    eixoZ: agora.andarZ,
+    correr: agora.correr,
+    pular: agora.pular,
+  })
   c.cameraX = agora.cameraX
   c.cameraY = agora.cameraY
-  if (agora.pular !== Boolean(antes?.pular)) c.pular = agora.pular
   if (agora.pular && !antes?.pular) c.pulos++
   if (agora.usar && !antes?.usar) c.usar++
   if (agora.recentrar && !antes?.recentrar) c.recentrar++
@@ -104,8 +101,23 @@ export function ligarGamepad(c: Controle, abrirMenu: () => void): () => void {
   }
   let antes: PedidoDoGamepad | null = null
   let quadro = 0
+  let focado = true
+  const soltar = () => {
+    soltarEntrada(c, 'gamepad')
+    c.cameraX = 0
+    c.cameraY = 0
+    antes = null
+  }
+  const perderFoco = () => {
+    focado = false
+    soltar()
+  }
+  const ganharFoco = () => {
+    focado = true
+  }
   const ler = () => {
     quadro = requestAnimationFrame(ler)
+    if (!focado) return
     const pad = [...navigator.getGamepads()].find((g) => g?.connected)
     if (!pad) {
       if (antes) {
@@ -120,5 +132,12 @@ export function ligarGamepad(c: Controle, abrirMenu: () => void): () => void {
     antes = agora
   }
   quadro = requestAnimationFrame(ler)
-  return () => cancelAnimationFrame(quadro)
+  window.addEventListener('blur', perderFoco)
+  window.addEventListener('focus', ganharFoco)
+  return () => {
+    cancelAnimationFrame(quadro)
+    window.removeEventListener('blur', perderFoco)
+    window.removeEventListener('focus', ganharFoco)
+    soltar()
+  }
 }

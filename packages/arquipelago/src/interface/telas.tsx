@@ -58,13 +58,21 @@ export function TelaDescanso({ aoVoltar }: { aoVoltar: () => void }) {
   )
 }
 
-export function TelaErro({ aoTentar, aoVoltar }: { aoTentar: () => void; aoVoltar: () => void }) {
+export function TelaErro({
+  aoTentar,
+  aoVoltar,
+  mensagem,
+}: {
+  aoTentar: () => void
+  aoVoltar: () => void
+  mensagem?: string
+}) {
   return (
     <div className="arq-tela" role="alert">
       <div>
         <div className="arq-zappy" />
         <h1>O Arquipélago não abriu agora</h1>
-        <p>Não conseguimos carregar o jogo. Tente de novo daqui a pouco.</p>
+        <p>{mensagem ?? 'Não conseguimos carregar o jogo. Tente de novo daqui a pouco.'}</p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button type="button" className="arq-botao" onClick={aoTentar}>
             Tentar de novo

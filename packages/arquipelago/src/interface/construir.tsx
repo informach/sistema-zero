@@ -4,6 +4,7 @@ import {
   type Ferramenta,
   lojaDaConstrucao,
   PAINEL_DE_CONSTRUIR,
+  podeConstruir,
   type TipoDeJanela,
   useConstrucao,
 } from '../estado/construcao'
@@ -52,12 +53,9 @@ const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
 export function ModosDoJogo() {
   const { loja } = useJogo()
   const construcao = lojaDaConstrucao(loja)
-  const portaNova = useEstado((s) => s.salvamento.casa.portaNova)
+  const permitido = useEstado(podeConstruir)
   const painel = useEstado((s) => s.painelAberto)
-  const menu = useEstado((s) => s.menuAberto)
-  const ferramenta = useEstado((s) => s.ferramentaAberta)
-  if (!portaNova || menu || ferramenta || (painel !== null && painel !== PAINEL_DE_CONSTRUIR))
-    return null
+  if (!permitido) return null
   const construindo = painel === PAINEL_DE_CONSTRUIR
   return (
     <fieldset className="arq-modos">

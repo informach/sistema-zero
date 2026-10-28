@@ -7,6 +7,8 @@ import type {
   SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import { salvamentoPausado } from '../sistemas/pausa'
+import type { SituacaoDoSalvamento } from '../sistemas/salvar'
 import { minutosRestantes } from '../sistemas/tempo-livre'
 import type { ModoDoCorpo } from './contexto'
 
@@ -47,6 +49,8 @@ export interface EstadoDoJogo {
   tempoAcabou: boolean
   tempoPausado: boolean
   tempoSincronizando: boolean
+  salvamentoSituacao: SituacaoDoSalvamento
+  definirSituacaoSalvamento(situacao: SituacaoDoSalvamento): void
   usadoHojeSegundos: number
   /** O que o corpo está fazendo (as dicas e o botão de toque mudam com isto). */
   modo: ModoDoCorpo
@@ -101,12 +105,20 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     tempoAcabou: false,
     tempoPausado: false,
     tempoSincronizando: false,
+    salvamentoSituacao: 'ok',
+    definirSituacaoSalvamento(salvamentoSituacao) {
+      set({
+        salvamentoSituacao,
+        ...(salvamentoPausado(salvamentoSituacao) ? { painelAberto: null } : {}),
+      })
+    },
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
     modo: 'chao',
     corrida: null,
     resultado: null,
     corte: 0,
     mudar(fn) {
+      if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
       const novo = fn(get().salvamento)
       if (novo === get().salvamento) return
       set({ salvamento: novo })

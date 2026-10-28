@@ -33,14 +33,19 @@ import {
 import { Colisores } from './colisores'
 import {
   aplicarOpacidade,
-  giroDaIlha,
   IlhaCompleta,
   type IlhaPreparada,
   type Troca,
   useIlhaCompleta,
 } from './ilha-completa'
 import { useInterativo } from './interativos'
-import { ALTURA_DA_TERRA, ilhasEmVolta, RAIO_DA_ILHA_DO_ANEL, trajetoDaPonte } from './medidas'
+import {
+  ALTURA_DA_TERRA,
+  giroDaIlha,
+  ilhasEmVolta,
+  RAIO_DA_ILHA_DO_ANEL,
+  trajetoDaPonte,
+} from './medidas'
 import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { QuadroDasCores } from './quadro-das-cores'
@@ -660,7 +665,9 @@ export function Anel() {
   // A lista dos desafios pinta os pedaços de todas as ilhas: lida uma vez ao abrir o jogo.
   const { loja, plataforma } = useJogo()
   useEffect(() => {
-    void lojaDosDesafios(loja, plataforma).getState().carregar()
+    const desafios = lojaDosDesafios(loja, plataforma)
+    void desafios.getState().carregar()
+    return () => desafios.getState().cancelar()
   }, [loja, plataforma])
   return (
     <>

@@ -50,6 +50,7 @@ export class ServicoDoJogo {
       limiteDiarioMinutos: limite,
       usadoHojeSegundos: usado,
       contabilizaTempo: jogador.publico === 'kids' && !jogador.somenteLeitura,
+      somenteLeitura: jogador.somenteLeitura,
     }
   }
 

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempoDoBicho } from '../sistemas/bichos'
 import { passarTempo } from '../sistemas/necessidades'
+import { salvamentoPausado } from '../sistemas/pausa'
 import { useJogo } from './contexto'
 
 /**
@@ -22,6 +23,7 @@ export function Relogios() {
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
         !s.tempoPausado &&
+        !salvamentoPausado(s.salvamentoSituacao) &&
         !s.tempoSincronizando
       if (!ativo) return
       if (gerenteTempo && !gerenteTempo.verificar()) return
@@ -66,7 +68,8 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
-        !s.tempoPausado
+        !s.tempoPausado &&
+        !salvamentoPausado(s.salvamentoSituacao)
       )
     }
     let anterior = false

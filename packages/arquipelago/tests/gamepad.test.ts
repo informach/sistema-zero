@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { criarControle } from '../src/controles/controle'
+import { atualizarEntrada, criarControle } from '../src/controles/controle'
 import {
   aplicarPedido,
   BOTOES,
@@ -59,7 +59,7 @@ describe('o controle físico', () => {
 
   test('parado, não briga com o teclado; ao soltar, para', () => {
     const c = criarControle()
-    c.eixoZ = 1 // o teclado pediu frente
+    atualizarEntrada(c, 'teclado', { eixoZ: 1 })
     const solto = lerPedido(pad([0, 0, 0, 0]))
     aplicarPedido(c, solto, solto, () => {})
     expect(c.eixoZ).toBe(1)
@@ -68,6 +68,7 @@ describe('o controle físico', () => {
     expect(c.eixoX).toBeCloseTo(1)
     aplicarPedido(c, solto, andando, () => {})
     expect(c.eixoX).toBe(0)
+    expect(c.eixoZ).toBe(1)
   })
 
   test('o analógico direito vai para a câmera', () => {

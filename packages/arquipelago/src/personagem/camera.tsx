@@ -4,6 +4,7 @@ import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef } from 'react'
 import { MathUtils, Vector3 } from 'three'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
+import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useToque } from '../estado/preferencias'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
@@ -21,6 +22,7 @@ import {
 import {
   distanciaDaCamera,
   giroMaisCurto,
+  limitarPosicaoDaCamera,
   pesoNoAlto,
   rodaEmPixels,
   zoomDaPinca,
@@ -100,6 +102,7 @@ export function Camera() {
   const { rastro, movimento, loja, pedidos, controle } = useJogo()
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
+  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const conforto = lojaDoConforto(loja)
   // Menos movimento: o pedido do aparelho ou a preferência do jogo (`sistemas/conforto.ts`).
   const aparelhoPedeMenos = useReducedMotion()
@@ -137,6 +140,7 @@ export function Camera() {
   const recentrarVisto = useRef(controle.recentrar)
 
   useEffect(() => {
+    if (construindo) return
     const el = gl.domElement
     const dedos = new Map<number, { x: number; y: number }>()
     let pinca: { separacao: number; distancia: number } | null = null
@@ -243,7 +247,7 @@ export function Camera() {
       el.removeEventListener('wheel', roda)
       window.removeEventListener('keydown', tecla)
     }
-  }, [gl, rastro, conforto])
+  }, [gl, rastro, conforto, construindo])
 
   // Mudou a distância nas preferências: a câmera vai até ela (a roda e a pinça seguem valendo).
   useEffect(
@@ -274,6 +278,8 @@ export function Camera() {
   }, [loja, toque])
 
   useFrame((_, dt) => {
+    // Uma única dona da câmera por quadro. O Construir cuida do alvo, controles e suavização.
+    if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
     // O analógico direito do controle físico gira e inclina, como arrastar.
     const prefs = conforto.getState().conforto
     semMexer.current += dt
@@ -392,14 +398,14 @@ export function Camera() {
     // Uma bolinha lançada até a câmera (não um raio fino): o que é sólido no caminho a puxa para
     // perto, sem raspar a quina de um tronco nem deixar o corpo do avatar escondido atrás dele.
     // Dentro de casa o telhado sai e a vista de cima é a de sempre.
-    const lancar = (incl: number, giro = rastro.giro) => {
+    const lancar = (incl: number, giro = rastro.giro, comprimento = dist) => {
       const direcao = {
         x: Math.sin(giro) * Math.cos(incl),
         y: Math.sin(incl),
         z: Math.cos(giro) * Math.cos(incl),
       }
       // Da cabeça e do peito: um tronco que esconde só o corpo também conta.
-      let livre = dist
+      let livre = comprimento
       for (const abaixo of [0, ALTURA_DO_PEITO]) {
         const de = { x: alvo.current.x, y: alvo.current.y - abaixo, z: alvo.current.z }
         const bateu = world.castShape(
@@ -408,7 +414,7 @@ export function Camera() {
           direcao,
           sonda.current,
           0,
-          dist + FOLGA_DA_CAMERA,
+          comprimento + FOLGA_DA_CAMERA,
           // Começar encostado num tronco (escalando, ou de pé junto dele) e se afastar não é
           // bater: só conta o que entra mais no sólido. Com `true`, a bolinha que já sai
           // encostando parava na hora para qualquer lado e a câmera ia para dentro da cabeça.
@@ -504,6 +510,18 @@ export function Camera() {
     // Encostando numa parede, vai direto (seguir devagar passaria por dentro dela).
     if (atual.current < antes - 0.01) camera.position.copy(desejada.current)
     else camera.position.lerp(desejada.current, k)
+    // Dois destinos livres podem ter uma parede no meio da interpolação. A elevação
+    // pelo chão também muda a direção: conferir a posição final, depois de ambos.
+    if (!dentro) {
+      const cx = camera.position.x - alvo.current.x
+      const cy = camera.position.y - alvo.current.y
+      const cz = camera.position.z - alvo.current.z
+      const comprimento = Math.hypot(cx, cy, cz)
+      if (comprimento > 0) {
+        const seguro = lancar(Math.atan2(cy, Math.hypot(cx, cz)), Math.atan2(cx, cz), comprimento)
+        limitarPosicaoDaCamera(alvo.current, camera.position, seguro)
+      }
+    }
     // Na conversa ela olha um pouco abaixo das cabeças (a sonda continua saindo delas).
     camera.lookAt(
       alvo.current.x + adiante.current.x,

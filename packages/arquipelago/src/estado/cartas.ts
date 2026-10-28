@@ -21,6 +21,7 @@ export interface EstadoDasCartas {
   carregando: boolean
   fechado: MotivoDoCadernoFechado | null
   carregar(): Promise<void>
+  cancelar(): void
 }
 
 export type LojaDasCartas = StoreApi<EstadoDasCartas>
@@ -38,24 +39,43 @@ export function lojaDasCartas(loja: LojaDoJogo, plataforma: Plataforma): LojaDas
 
 export function criarLojaDasCartas(plataforma: Plataforma): LojaDasCartas {
   let pedido = 0
+  let requisicao: AbortController | null = null
   return createStore<EstadoDasCartas>((set) => ({
     dados: null,
     carregando: false,
     fechado: null,
+    cancelar() {
+      pedido++
+      requisicao?.abort()
+      requisicao = null
+      set({ carregando: false })
+    },
     async carregar() {
       const meu = ++pedido
+      requisicao?.abort()
+      const controller = new AbortController()
+      requisicao = controller
+      const prazo = setTimeout(() => controller.abort(), 15_000)
       set({ carregando: true })
       try {
-        const r = await plataforma.servico.buscar('/cartas')
+        const r = await plataforma.servico.buscar('/cartas', { sinal: controller.signal })
         if (meu !== pedido) return
         const dados = r.status === 200 ? lerCartas(r.corpo) : null
-        // Uma leitura que falha não apaga a coleção já mostrada: o caderno avisa por cima dela.
-        if (!dados) set({ carregando: false, fechado: motivoDoCadernoFechado(r.status) })
+        // Rede indisponível preserva a coleção; acesso revogado retira os dados antigos.
+        if (!dados)
+          set({
+            carregando: false,
+            fechado: motivoDoCadernoFechado(r.status),
+            ...(r.status === 403 ? { dados: null } : {}),
+          })
         else set({ dados, carregando: false, fechado: null })
       } catch (erro) {
         if (meu !== pedido) return
         plataforma.relatarErro(erro, 'cartas')
         set({ carregando: false, fechado: 'fora-do-ar' })
+      } finally {
+        clearTimeout(prazo)
+        if (requisicao === controller) requisicao = null
       }
     },
   }))

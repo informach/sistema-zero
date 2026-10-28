@@ -23,4 +23,8 @@ test('percurso e personagem respeitam todas as interrupções de controle', () =
   }
   expect(jogoPausado({ ...livre, painelAberto: 'quadro:bosque' })).toBe(true)
   expect(jogoPausado({ ...livre, resultado: {} })).toBe(true)
+  expect(jogoPausado({ ...livre, salvamentoSituacao: 'conflito' })).toBe(true)
+  expect(jogoPausado({ ...livre, salvamentoSituacao: 'erro-local' })).toBe(true)
+  expect(jogoPausado({ ...livre, salvamentoSituacao: 'recusado' })).toBe(true)
+  expect(jogoPausado({ ...livre, salvamentoSituacao: 'offline' })).toBe(false)
 })

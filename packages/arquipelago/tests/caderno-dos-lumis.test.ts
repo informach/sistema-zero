@@ -28,6 +28,50 @@ const carta = (over: Partial<CartaDoCaderno>): CartaDoCaderno => ({
 })
 
 describe('o caderno arrumado', () => {
+  test('revogar acesso retira a coleção antiga, sem apresentá-la como disponível', async () => {
+    const falsa = criarPlataformaFalsa({ persistir: false })
+    let revogado = false
+    const loja = criarLojaDasCartas({
+      ...falsa,
+      servico: {
+        buscar: (caminho, opcoes) =>
+          revogado
+            ? Promise.resolve({ status: 403, corpo: {} })
+            : falsa.servico.buscar(caminho, opcoes),
+      },
+    })
+    await loja.getState().carregar()
+    expect(loja.getState().dados).not.toBeNull()
+    revogado = true
+    await loja.getState().carregar()
+    expect(loja.getState()).toMatchObject({ dados: null, fechado: 'sem-acesso' })
+  })
+
+  test('nova leitura cancela a requisição antiga e resposta tardia não substitui a nova', async () => {
+    const falsa = criarPlataformaFalsa({ persistir: false })
+    const sinais: Array<AbortSignal | undefined> = []
+    const entregar: Array<() => void> = []
+    const loja = criarLojaDasCartas({
+      ...falsa,
+      servico: {
+        buscar: async (_caminho, opcoes) => {
+          sinais.push(opcoes?.sinal)
+          await new Promise<void>((resolve) => entregar.push(resolve))
+          return { status: 403, corpo: {} }
+        },
+      },
+    })
+    const a = loja.getState().carregar()
+    const b = loja.getState().carregar()
+    const cancelou = sinais[0]?.aborted
+    entregar[1]?.()
+    await b
+    entregar[0]?.()
+    await a
+    expect(cancelou).toBe(true)
+    expect(loja.getState().carregando).toBe(false)
+  })
+
   test('seções na ordem quando, ação e controle, com quantas estão prontas; seção vazia sai', () => {
     const s = secoesDoCaderno([
       carta({ id: 'repetir', tipo: 'controle', conquistada: false, aprendaEm: [CURSO] }),

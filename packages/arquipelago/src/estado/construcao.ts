@@ -4,10 +4,28 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { falaDaRecusa } from '../sistemas/construcao/falas'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
-import type { LojaDoJogo } from './loja'
+import { salvamentoPausado } from '../sistemas/pausa'
+import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
 /** O valor de `painelAberto` do modo Construir (o personagem para; Esc volta ao Viver). */
 export const PAINEL_DE_CONSTRUIR = 'construir'
+
+/** A barra e as operações obedecem aos mesmos bloqueios, inclusive durante a conciliação. */
+export function podeConstruir(s: EstadoDoJogo): boolean {
+  return (
+    s.acesso.liberado &&
+    !s.acesso.somenteLeitura &&
+    s.salvamento.casa.portaNova &&
+    !s.menuAberto &&
+    !s.ferramentaAberta &&
+    !s.tempoAcabou &&
+    !s.tempoPausado &&
+    !s.tempoSincronizando &&
+    !salvamentoPausado(s.salvamentoSituacao) &&
+    s.resultado === null &&
+    (s.painelAberto === null || s.painelAberto === PAINEL_DE_CONSTRUIR)
+  )
+}
 
 export type Ferramenta = 'olhar' | 'parede' | 'porta' | 'janela' | 'piso' | 'apagar'
 export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
@@ -78,6 +96,7 @@ function mudarObra(loja: LojaDoJogo, obra: Obra) {
 }
 
 export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
+  let ultimaObra: Obra | null = null
   return createStore<EstadoDaConstrucao>((set, get) => ({
     ferramenta: 'parede',
     janela: 'janela-grande',
@@ -93,26 +112,40 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),
     moverCamera: (c) => set({ camera: { ...get().camera, ...c } }),
     aplicar(r) {
+      const jogo = loja.getState()
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return false
       if (!r.ok) {
         const fala = falaDaRecusa(r)
         if (fala) loja.getState().dizer(fala)
         return false
       }
       const atual = loja.getState().salvamento.construcao.casa
-      if (atual) set({ antes: [...get().antes, atual].slice(-LEMBRA_PARA_TRAS) })
+      const historico = atual === ultimaObra ? get().antes : []
+      if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
       mudarObra(loja, r.obra)
+      ultimaObra = r.obra
       return true
     },
     desfazer() {
+      const jogo = loja.getState()
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return
+      if (jogo.salvamento.construcao.casa !== ultimaObra) {
+        set({ antes: [] })
+        ultimaObra = jogo.salvamento.construcao.casa
+        return
+      }
       const antes = get().antes
       const anterior = antes.at(-1)
       if (!anterior) return
       set({ antes: antes.slice(0, -1) })
       mudarObra(loja, anterior)
+      ultimaObra = anterior
     },
     abrir() {
       const s = loja.getState()
+      if (!podeConstruir(s)) return
       if (!s.salvamento.construcao.casa) mudarObra(loja, structuredClone(LOTE_DA_CASA.obraInicial))
+      ultimaObra = loja.getState().salvamento.construcao.casa
       set({
         antes: [],
         camera: { ...get().camera, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
@@ -122,6 +155,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     },
     fechar() {
       set({ antes: [] })
+      ultimaObra = null
       if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) loja.getState().abrirPainel(null)
     },
   }))

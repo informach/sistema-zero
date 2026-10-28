@@ -103,6 +103,11 @@ export function chaoEm(x: number, z: number): TipoDeChao {
   return alturaDaIlha(x, z) < 0.05 ? 'areia-molhada' : 'areia'
 }
 
+/** O giro que vira a chegada da ponte (+x do modelo) para a ilha central. */
+export function giroDaIlha(ilha: Ilha): number {
+  return Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
+}
+
 /** Centro de uma ilha do anel no mundo. */
 export function centroNoAnel(ilha: Ilha): { x: number; z: number } {
   const a = ((ilha.angulo ?? 0) * Math.PI) / 180

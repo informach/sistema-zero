@@ -17,7 +17,7 @@ import { criarPulo, type EstadoDoPulo } from '../movimento'
  * O contrato dos modos de movimento (controlador universal, parte 6;
  * `docs/specs/2026-10-28-arquipelago-modos-de-movimento.md`). Cada modo é uma regra pura: lê o
  * corpo e o que a pessoa pede, diz o deslocamento e quem leva o corpo (o controlador do Rapier do
- * chão, o do cipó ou direto para um lugar) e, depois que o Rapier respondeu, troca de modo quando
+ * chão, o do cipó ou um alvo guiado que também passa pelo controlador livre) e, depois que o Rapier respondeu, troca de modo quando
  * for a hora. O `personagem.tsx` só liga o modo ativo ao Rapier e ao desenho. Nada de React nem de
  * three aqui; o corpo é o mesmo em todos os modos, e roupa e cabelo nunca entram.
  */

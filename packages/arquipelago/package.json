@@ -11,7 +11,8 @@
     "test": "bun test",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "test:tempo-browser": "node playground/verificar-tempo-browser.mjs"
+    "test:tempo-browser": "node playground/verificar-tempo-browser.mjs",
+    "test:salvamento-browser": "bun build playground/verificar-salvamento-browser.ts --target=node --external playwright-core --outfile .cache/verificar-salvamento-browser.mjs && node .cache/verificar-salvamento-browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10",

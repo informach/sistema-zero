@@ -6,6 +6,7 @@ import { useEstado } from '../estado/contexto'
 import { Camera } from '../personagem/camera'
 import { Personagem } from '../personagem/personagem'
 import { Zappy } from '../personagem/zappy'
+import { jogoPausado } from '../sistemas/pausa'
 import { Agua } from './agua'
 import { Anel } from './anel'
 import { Bancada } from './bancada'
@@ -27,6 +28,7 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
   // Modo leve automático: se o aparelho não aguenta, a resolução cai; se sobra, sobe.
   const [dpr, setDpr] = useState(1.5)
   const ferramentaAberta = useEstado((estado) => estado.ferramentaAberta)
+  const pausado = useEstado(jogoPausado)
   return (
     <Canvas
       frameloop={ferramentaAberta ? 'never' : 'always'}
@@ -53,6 +55,7 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
             quadros (prioridade negativa), então personagem, bicho e câmera leem a posição já
             suavizada deste quadro. */}
         <Physics
+          paused={pausado}
           gravity={[0, -GRAVIDADE, 0]}
           timeStep={PASSO_DA_FISICA}
           interpolate

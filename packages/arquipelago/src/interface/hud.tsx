@@ -7,6 +7,7 @@ import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { comer } from '../sistemas/necessidades'
+import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PainelDoBicho } from './bicho'
@@ -430,6 +431,7 @@ export function Hud() {
     const tecla = (e: KeyboardEvent) => {
       const s = loja.getState()
       if (e.code !== 'Escape') return
+      if (salvamentoPausado(s.salvamentoSituacao)) return
       // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
       if (s.resultado) s.mostrarResultado(null)
       else if (s.tempoPausado || s.ferramentaAberta) return

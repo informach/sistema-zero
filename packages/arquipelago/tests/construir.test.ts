@@ -35,6 +35,53 @@ function montar() {
 }
 
 describe('o modo Construir', () => {
+  test('somente leitura não abre obra nem registra uma aplicação que não foi salva', () => {
+    const { loja, construcao, gravados } = montar()
+    loja.setState({ acesso: { ...loja.getState().acesso, somenteLeitura: true } })
+    construcao.getState().abrir()
+    expect(loja.getState().painelAberto).toBeNull()
+    expect(construcao.getState().aplicar({ ok: true, obra: LOTE_DA_CASA.obraInicial })).toBe(false)
+    expect(construcao.getState().antes).toEqual([])
+    expect(gravados).toEqual([])
+  })
+
+  test('salvamento em conflito impede reabrir a obra por baixo da decisão', () => {
+    const { loja, construcao } = montar()
+    construcao.getState().abrir()
+    loja.getState().definirSituacaoSalvamento('conflito')
+    construcao.getState().abrir()
+    expect(loja.getState().painelAberto).toBeNull()
+  })
+
+  test('desfazer não substitui uma obra adotada de outra versão do salvamento', () => {
+    const { loja, construcao } = montar()
+    construcao.getState().abrir()
+    construcao.getState().aplicar({
+      ok: true,
+      obra: { ...LOTE_DA_CASA.obraInicial, caminhos: [{ x: -12, z: 6, tipo: 'pedra' }] },
+    })
+    const remoto = {
+      ...loja.getState().salvamento,
+      construcao: {
+        ...loja.getState().salvamento.construcao,
+        casa: { ...LOTE_DA_CASA.obraInicial, caminhos: [{ x: -11, z: 6, tipo: 'pedra' as const }] },
+      },
+    }
+    loja.getState().adotar({ revisao: 2, salvamento: remoto, atualizadoEm: remoto.criadoEm })
+    construcao.getState().desfazer()
+    expect(loja.getState().salvamento).toBe(remoto)
+    expect(construcao.getState().antes).toEqual([])
+  })
+
+  test('limite de tempo impede abrir e aplicar construção', () => {
+    const { loja, construcao, gravados } = montar()
+    loja.getState().registrarTempo(3600, true)
+    construcao.getState().abrir()
+    expect(loja.getState().painelAberto).toBeNull()
+    expect(construcao.getState().aplicar({ ok: true, obra: LOTE_DA_CASA.obraInicial })).toBe(false)
+    expect(gravados).toEqual([])
+  })
+
   test('abrir na primeira vez troca a casa de antes pela obra inicial e para o personagem', () => {
     const { loja, construcao } = montar()
     expect(loja.getState().salvamento.construcao.casa).toBeNull()

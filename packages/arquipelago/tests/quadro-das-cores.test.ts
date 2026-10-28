@@ -109,8 +109,37 @@ describe('loja dos desafios com a plataforma de mentira', () => {
       } as never,
       aoMudar: () => {},
     })
-    return { loja, desafios: criarLojaDosDesafios(loja, plataforma as Plataforma) }
+    return { loja, plataforma, desafios: criarLojaDosDesafios(loja, plataforma as Plataforma) }
   }
+
+  test('revogação retira os dados e a festa da leitura anterior', async () => {
+    const { desafios, plataforma } = montar()
+    await desafios.getState().carregar()
+    desafios.setState({ festa: { ilha: 'bosque', quadros: [1] } })
+    plataforma.servico.buscar = async () => ({ status: 403, corpo: {} })
+    await desafios.getState().carregar()
+    expect(desafios.getState()).toMatchObject({ dados: null, festa: null, carregando: false })
+  })
+
+  test('desmontagem aborta leitura e uma resposta tardia não repõe os desafios', async () => {
+    const { desafios, plataforma } = montar()
+    const buscar = plataforma.servico.buscar
+    let sinal: AbortSignal | undefined
+    let responder!: () => void
+    plataforma.servico.buscar = async (caminho, opcoes) => {
+      sinal = opcoes?.sinal
+      await new Promise<void>((r) => {
+        responder = r
+      })
+      return buscar(caminho, opcoes)
+    }
+    const leitura = desafios.getState().carregar()
+    desafios.getState().cancelar()
+    expect(sinal?.aborted).toBe(true)
+    responder()
+    await leitura
+    expect(desafios.getState()).toMatchObject({ dados: null, carregando: false })
+  })
 
   test('carrega, joga o desafio disponível, a lista volta com o quadro feito e a festa', async () => {
     const { loja, desafios } = montar()

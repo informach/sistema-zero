@@ -30,6 +30,8 @@ export const ESTILOS = `
 .arq-tela h1{font-size:30px;margin:14px 0 8px}
 .arq-tela p{max-width:440px;margin:0 auto 18px;color:#c9cdf0;font-size:16px}
 .arq-tela .arq-zappy{width:46px;height:46px;margin:0 auto}
+.arq-modal-salvamento{position:fixed;width:min(620px,calc(100vw - 24px));height:fit-content;max-width:none;max-height:calc(100dvh - 24px);margin:auto;border:1px solid #6675ae;border-radius:20px;box-sizing:border-box;overflow:auto;overscroll-behavior:contain}
+.arq-modal-salvamento::backdrop{background:rgba(14,22,56,.75)}
 .arq-sobre{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,22,56,.6);padding:20px;overflow:hidden}
 .arq-menu{padding:22px;max-width:420px;width:100%;max-height:calc(100dvh - 40px);overflow:auto;overscroll-behavior:contain;display:grid;gap:10px;text-align:left}
 .arq-menu-titulo{margin:6px 0 0;font-size:15px}

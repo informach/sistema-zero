@@ -55,6 +55,7 @@ function chaveDaPrevia(p: Previa): string {
 export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; base: number }) {
   const { loja } = useJogo()
   const construcao = lojaDaConstrucao(loja)
+  const ferramenta = useConstrucao(construcao, (s) => s.ferramenta)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
   const [previa, setPrevia] = useState<Previa>(null)
@@ -72,9 +73,8 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
   // ------------------------------------------------------------ câmera de obra
   const teclas = useRef(new Set<string>())
   const desejada = useMemo(() => new Vector3(), [])
-  // A posição da câmera de obra, suavizada aqui: a câmera do jogo escreve a dela a cada quadro antes
-  // desta, então suavizar a partir de `camera.position` faria as duas brigarem. Começa de onde a
-  // câmera do jogo estava (a troca é suave) e, ao fechar, a do jogo volta suave daqui.
+  // O Construir assume a câmera enquanto aberto; a de exploração suspende seus controles.
+  // Começa da posição anterior e, ao fechar, a exploração volta suave daqui.
   const atual = useMemo(() => camera.position.clone(), [camera])
   useFrame((_, dt) => {
     const c = construcao.getState().camera
@@ -151,6 +151,15 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
         }
       | { tipo: 'toque'; id: number; onde: { x: number; z: number } }
     let gesto: Gesto | null = null
+    const cancelar = () => {
+      const anterior = gesto
+      gesto = null
+      if (anterior && el.hasPointerCapture?.(anterior.id)) el.releasePointerCapture(anterior.id)
+      mostrar(null)
+    }
+    const cancelarPonteiro = (e: PointerEvent) => {
+      if (gesto?.id === e.pointerId) cancelar()
+    }
 
     const previaDaLinha = (inicio: Ponto, fim: Ponto, apagar: boolean): Previa => {
       const arestas = arestasDoArrasto(inicio, fim)
@@ -163,7 +172,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
     const previaDoToque = (onde: { x: number; z: number }): Previa => {
       const s = construcao.getState()
       const o = obraAtual.current
-      if (s.ferramenta === 'piso') {
+      if (ferramenta === 'piso') {
         const p = planta(o, lote)
         const i = p.comodoDe.get(chaveDaCelula(celulaEm(onde.x, onde.z)))
         const comodo = i === undefined ? undefined : p.comodos[i]
@@ -171,8 +180,8 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
         return { tipo: 'celulas', celulas: comodo.celulas, cor: comodo.quarto ? VERMELHO : VERDE }
       }
       const aresta = arestaMaisPerto(onde.x, onde.z)
-      if (s.ferramenta === 'porta' || s.ferramenta === 'janela') {
-        const tipo = s.ferramenta === 'porta' ? 'porta' : s.janela
+      if (ferramenta === 'porta' || ferramenta === 'janela') {
+        const tipo = ferramenta === 'porta' ? 'porta' : s.janela
         const r = porAbertura(o, lote, tipo, aresta)
         return {
           tipo: 'arestas',
@@ -180,7 +189,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
           cor: r.ok ? AZUL : VERMELHO,
         }
       }
-      if (s.ferramenta === 'apagar') {
+      if (ferramenta === 'apagar') {
         const i = aberturaEm(o, aresta)
         const ab = o.aberturas[i]
         return { tipo: 'arestas', arestas: ab ? arestasDaAbertura(ab) : [aresta], cor: VERMELHO }
@@ -191,14 +200,13 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
     const desce = (e: PointerEvent) => {
       e.stopPropagation()
       if (gesto) return
-      const s = construcao.getState()
       const girar = e.button === 2
-      if (girar || s.ferramenta === 'olhar') {
+      if (girar || ferramenta === 'olhar') {
         gesto = { tipo: 'olhar', id: e.pointerId, antes: { x: e.clientX, y: e.clientY }, girar }
       } else {
         const onde = noChao(e)
         if (!onde) return
-        if (s.ferramenta === 'parede' || s.ferramenta === 'apagar') {
+        if (ferramenta === 'parede' || ferramenta === 'apagar') {
           const p = pontoMaisPerto(onde.x, onde.z)
           gesto = { tipo: 'linha', id: e.pointerId, inicio: p, fim: p, andou: false, toque: onde }
         } else gesto = { tipo: 'toque', id: e.pointerId, onde }
@@ -237,12 +245,12 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       if (gesto?.tipo === 'linha' && gesto.id === e.pointerId) {
         gesto.fim = pontoMaisPerto(onde.x, onde.z)
         if (gesto.fim.x !== gesto.inicio.x || gesto.fim.z !== gesto.inicio.z) gesto.andou = true
-        mostrar(previaDaLinha(gesto.inicio, gesto.fim, s.ferramenta === 'apagar'))
+        mostrar(previaDaLinha(gesto.inicio, gesto.fim, ferramenta === 'apagar'))
         return
       }
-      if (!gesto && s.ferramenta !== 'olhar') {
+      if (!gesto && ferramenta !== 'olhar') {
         mostrar(
-          s.ferramenta === 'parede'
+          ferramenta === 'parede'
             ? { tipo: 'ponto', ponto: pontoMaisPerto(onde.x, onde.z) }
             : previaDoToque(onde),
         )
@@ -257,7 +265,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       const s = construcao.getState()
       const o = obraAtual.current
       if (g.tipo === 'linha') {
-        if (s.ferramenta === 'parede') {
+        if (ferramenta === 'parede') {
           if (g.andou) s.aplicar(esticarParede(o, lote, g.inicio, g.fim))
         } else if (g.andou) s.aplicar(apagarParede(o, lote, arestasDoArrasto(g.inicio, g.fim)))
         else {
@@ -271,14 +279,14 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
         return
       }
       if (g.tipo === 'toque') {
-        if (s.ferramenta === 'piso')
+        if (ferramenta === 'piso')
           s.aplicar(trocarPiso(o, lote, celulaEm(g.onde.x, g.onde.z), s.piso))
-        else if (s.ferramenta === 'porta' || s.ferramenta === 'janela')
+        else if (ferramenta === 'porta' || ferramenta === 'janela')
           s.aplicar(
             porAbertura(
               o,
               lote,
-              s.ferramenta === 'porta' ? 'porta' : s.janela,
+              ferramenta === 'porta' ? 'porta' : s.janela,
               arestaMaisPerto(g.onde.x, g.onde.z),
             ),
           )
@@ -302,7 +310,9 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
     el.addEventListener('pointerdown', desce, opcoes)
     el.addEventListener('pointermove', move, opcoes)
     el.addEventListener('pointerup', sobe, opcoes)
-    el.addEventListener('pointercancel', sobe, opcoes)
+    el.addEventListener('pointercancel', cancelarPonteiro, opcoes)
+    el.addEventListener('lostpointercapture', cancelarPonteiro, opcoes)
+    window.addEventListener('blur', cancelar)
     el.addEventListener('pointerleave', sai)
     el.addEventListener('wheel', roda, { capture: true, passive: false })
     el.addEventListener('contextmenu', semMenu, opcoes)
@@ -310,15 +320,18 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       el.removeEventListener('pointerdown', desce, opcoes)
       el.removeEventListener('pointermove', move, opcoes)
       el.removeEventListener('pointerup', sobe, opcoes)
-      el.removeEventListener('pointercancel', sobe, opcoes)
+      el.removeEventListener('pointercancel', cancelarPonteiro, opcoes)
+      el.removeEventListener('lostpointercapture', cancelarPonteiro, opcoes)
+      window.removeEventListener('blur', cancelar)
       el.removeEventListener('pointerleave', sai)
       el.removeEventListener('wheel', roda, opcoes)
       el.removeEventListener('contextmenu', semMenu, opcoes)
+      cancelar()
     }
-  }, [gl, camera, base, lote, construcao, mostrar])
+    // Trocar a ferramenta também cancela o arrasto: ele nunca vira uma operação de outro tipo.
+  }, [gl, camera, base, lote, construcao, mostrar, ferramenta])
 
   // A prévia some quando a ferramenta muda.
-  const ferramenta = useConstrucao(construcao, (s) => s.ferramenta)
   // biome-ignore lint/correctness/useExhaustiveDependencies: limpar a prévia a cada troca de ferramenta.
   useEffect(() => {
     ultimaPrevia.current = ''

@@ -26,6 +26,7 @@ export interface EstadoDosDesafios {
   /** Os quadros que acabaram de ficar feitos (a festa da cor), por ilha. */
   festa: { ilha: IlhaId; quadros: number[] } | null
   carregar(): Promise<void>
+  cancelar(): void
   jogar(desafioId: string, revisao: number): Promise<'feito' | 'voltou' | 'nao-abriu'>
   festaVista(): void
 }
@@ -45,20 +46,35 @@ export function lojaDosDesafios(loja: LojaDoJogo, plataforma: Plataforma): LojaD
 
 export function criarLojaDosDesafios(loja: LojaDoJogo, plataforma: Plataforma): LojaDosDesafios {
   let pedido = 0
+  let requisicao: AbortController | null = null
   return createStore<EstadoDosDesafios>((set, get) => ({
     dados: null,
     carregando: false,
     fechado: null,
     festa: null,
+    cancelar() {
+      pedido++
+      requisicao?.abort()
+      requisicao = null
+      set({ carregando: false })
+    },
     async carregar() {
       const meu = ++pedido
+      requisicao?.abort()
+      const controller = new AbortController()
+      requisicao = controller
+      const prazo = setTimeout(() => controller.abort(), 15_000)
       set({ carregando: true })
       try {
-        const r = await plataforma.servico.buscar('/desafios')
+        const r = await plataforma.servico.buscar('/desafios', { sinal: controller.signal })
         if (meu !== pedido) return
         const dados = r.status === 200 ? lerDesafios(r.corpo) : null
         if (!dados) {
-          set({ carregando: false, fechado: motivoDoErro(r.status, r.corpo) })
+          set({
+            carregando: false,
+            fechado: motivoDoErro(r.status, r.corpo),
+            ...(r.status === 403 ? { dados: null, festa: null } : {}),
+          })
           return
         }
         const antes = get().dados
@@ -78,6 +94,9 @@ export function criarLojaDosDesafios(loja: LojaDoJogo, plataforma: Plataforma): 
         if (meu !== pedido) return
         plataforma.relatarErro(erro, 'desafios')
         set({ carregando: false, fechado: 'fora-do-ar' })
+      } finally {
+        clearTimeout(prazo)
+        if (requisicao === controller) requisicao = null
       }
     },
     async jogar(desafioId, revisao) {

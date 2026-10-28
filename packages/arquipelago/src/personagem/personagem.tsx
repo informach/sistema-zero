@@ -36,6 +36,7 @@ import {
   MODOS,
   mudarModo,
 } from '../sistemas/modos'
+import { passoComColisao } from '../sistemas/modos/colisao'
 import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { ritmo } from '../sistemas/necessidades'
 import { jogoPausado } from '../sistemas/pausa'
@@ -102,7 +103,7 @@ function lugarSeguro(
  */
 export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
-  const { world } = useRapier()
+  const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
   const visual = useRef<Group>(null)
@@ -306,25 +307,20 @@ export function Personagem() {
       mudarModo(v, 'chao', agora, aviso)
       modo = MODOS.chao
     }
-    const controlador = modo.passo(v, e, movimento)
-    let mov: Ponto | null = null
-    let pisou = false
-    if (controlador !== 'direto') {
-      // No cipó, o controlador que não gruda no chão. Os dois batem no mundo fixo, dinâmico e nas plataformas marcadas. Passam pelo
-      // bicho adotado (também cinemático), que nunca prende a criança nem a empurra.
-      // Plataformas marcadas no mundo são a exceção e acompanham o piso das pontes.
-      const k = controlador === 'cipo' ? kccNoCipo : kcc
-      // O degrau automático só vale pisando: no ar, quem chega perto de uma quina a agarra (modo
-      // borda) em vez de ser empurrado para cima dela sem ver.
-      if (controlador === 'chao') {
-        if (v.noChao) kcc.enableAutostep(CORPO.degrau, 0.25, true)
-        else kcc.disableAutostep()
-      }
-      k.computeColliderMovement(col, v.desloc, undefined, undefined, aceitaColisorDoMundo)
-      mov = k.computedMovement()
-      pisou = controlador === 'chao' && k.computedGrounded()
-    }
-    const gastouUsar = modo.depois(v, e, movimento, mov, pisou, aviso)
+    // Todo percurso consulta o mundo, inclusive escada, borda e escalada. Os guiados
+    // usam o controlador sem snap/degrau; sensores e o bicho não bloqueiam o caminho.
+    const gastouUsar = passoComColisao(
+      modo,
+      v,
+      e,
+      movimento,
+      col,
+      kcc,
+      kccNoCipo,
+      rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+      aceitaColisorDoMundo,
+      aviso,
+    )
     b.setNextKinematicTranslation(v.prox)
     // Pegou um cipó ou grudou no tronco neste passo: no ar e na casca ela está sempre "andando".
     if (v.modo !== 'chao') v.velPedida = 1
@@ -374,6 +370,14 @@ export function Personagem() {
     if (!vis || !corpoDoRapier) return
     corpoDoRapier.getWorldPosition(centroDesenhado)
     const centro = centroDesenhado
+    if (jogoPausado(loja.getState())) {
+      // A física fica suspensa; gestos feitos dentro dos painéis não viram pulo/uso na retomada.
+      pulosAtendidos.current = controle.pulos
+      usosAtendidos.current = controle.usar
+      if (pedidos.conversa) {
+        v.direcao = Math.atan2(pedidos.conversa.x - centro.x, pedidos.conversa.z - centro.z)
+      }
+    }
     const nadando = v.nadando
     const m = animacao.current
     let delta = v.direcao - vis.rotation.y

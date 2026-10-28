@@ -1,7 +1,7 @@
 import { useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { Obra as DadosDaObra } from '@sistemazero/arquipelago-contracts'
-import { memo, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import type { Object3D } from 'three'
 import paredesGlb from '../assets/casa/casa-paredes.glb'
 import pisosGlb from '../assets/casa/casa-pisos.glb'
@@ -111,6 +111,7 @@ const CONFERIR_O_CORTE = 0.12
 function useCorte(p: Planta, base: [number, number, number], construindo: boolean): Corte {
   const { loja, rastro } = useJogo()
   const construcao = lojaDaConstrucao(loja)
+  useEffect(() => () => construcao.getState().definirDentroDaObra(false), [construcao])
   const camera = useThree((s) => s.camera)
   const [cortadas, setCortadas] = useState<{ chave: string; set: Set<string> }>({
     chave: '',

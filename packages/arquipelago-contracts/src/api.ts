@@ -16,6 +16,8 @@ export const AcessoSchema = z.strictObject({
   usadoHojeSegundos: z.number().int().min(0),
   /** Suporte apenas visualiza; não começa nem consome uma sessão de tempo. */
   contabilizaTempo: z.boolean().optional(),
+  /** Uma sessão de suporte não altera nem cria rascunhos locais do perfil observado. */
+  somenteLeitura: z.boolean().optional(),
 })
 export type Acesso = z.infer<typeof AcessoSchema>
 

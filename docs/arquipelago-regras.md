@@ -214,29 +214,31 @@ tempo:
 
 ### Como o tempo chega ao serviço
 
-1. **Cada segundo fica guardado no aparelho.** Ele vai para o IndexedDB, por perfil
-   (`arquipelago/src/sistemas/armazem-tempo.ts`). Um lote fecha com 10 segundos
-   (`TAMANHO_LOTE = 10`) ou quando o dia de São Paulo muda.
-2. **O envio:** a cada 10 segundos guardados, quando a aba some e quando o jogo fecha
-   (`arquipelago/src/sistemas/fila-tempo.ts`). Cada lote vai com um id único (UUID) e o dia, com
-   prazo de 15 segundos por envio.
-3. **Lotes de aba fechada sem aviso** são recuperados e enviados na próxima abertura.
-4. **Se guardar ou enviar falhar,** o jogo pausa e mostra uma tela para tentar de novo.
+1. **O serviço conta o tempo de uma sessão do perfil.** O jogo pede uma concessão curta em
+   `POST /tempo/sessao`: `iniciar`, `pulsar` e `pausar` carregam um id de sessão e sequência.
+2. **A concessão dura até 20 segundos**, limitada também pelo saldo diário. O cliente pulsa a
+   cada 10 segundos e pede pausa quando a aba some, o menu abre ou uma ferramenta cobre o jogo.
+   Se a página desaparecer sem avisar, a contagem para no vencimento, sem depender do unload.
+3. **Quem mede o intervalo e o dia é o servidor.** No navegador, `performance.now()` verifica
+   apenas a validade da concessão, descontando a latência; alterar a hora do aparelho não a estende.
+4. **Resposta perdida não gera outra cobrança.** A tentativa repete o mesmo comando. O jogo pausa
+   quando não consegue confirmar a sessão e oferece tentar novamente.
+5. **Transição das versões antigas:** somente lotes já presentes no IndexedDB são entregues por
+   `fila-tempo.ts` a `/tempo/recuperar`. O cliente atual não cria lotes novos; `/tempo` retorna 410.
 
 ### O que o serviço faz com o tempo
 
-Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`) e
-`arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts` (`somarTempo`).
+Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoTempo`),
+`domain/sessao-de-tempo.ts` e `infrastructure/persistence/drizzle/repositorio-sessoes-tempo.ts`.
 
-- **Cada envio aceita de 1 a 120 segundos** (`RegistrarTempoSchema`, em
-  `arquipelago-contracts/src/api.ts`).
-- **Dia no futuro é recusado,** com 400.
-- **O mesmo lote enviado de novo não soma duas vezes.** Um lote repetido com dados diferentes
-  recebe 409 `TEMPO_CONFLITANTE`.
-- **O total de um dia nunca passa de 24 horas** (`TETO_DO_DIA = 86_400` segundos).
-- **Lote de um dia anterior** soma naquele dia. A resposta traz o total de hoje.
-- **Quem decide que acabou é o serviço:** `acabou` quando o usado de hoje for maior ou igual ao
-  limite vezes 60.
+- **Concorrência:** bloqueia o perfil e grava sessão e parcelas na mesma transação. Uma nova
+  sessão substitui a anterior; pulsos simultâneos e comandos repetidos não duplicam intervalos.
+- **Virada do dia:** divide o intervalo pelo dia de São Paulo; não aceita um dia escolhido pelo cliente.
+- **Limite atualizado:** cada pulso considera o limite atual da família; o vencimento nunca
+  concede tempo além do saldo diário. Esgotado o saldo, a resposta tem situação `limite`.
+- **Recuperação legada:** lotes de 1 a 120 segundos mantêm idempotência e respeitam o teto de
+  24 horas por dia. Uma data futura de aparelho adiantado é contabilizada no dia do recebimento;
+  a data original continua identificando o lote. Essa rota não é o contador da sessão atual.
 
 ### No jogo
 
@@ -246,8 +248,8 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`
   plataforma.
 - **O que falta:** a pílula "Hoje: N min" mostra os minutos restantes, arredondados para cima
   (`arquipelago/src/sistemas/tempo-livre.ts`, `minutosRestantes`).
-- O tempo livre é um controle dos pais, não uma trava de segurança. O dia do lote vem do relógio
-  do aparelho.
+- O tempo livre é um controle dos pais, aplicado pela concessão do serviço. A comunidade adulta
+  e as consultas de suporte não gastam tempo de criança.
 
 ## 5. Salvamento
 
@@ -325,16 +327,26 @@ Função `criarSalvamentoInicial`:
 Arquivos: `arquipelago/src/sistemas/salvar.ts` (`criarFilaDeSalvamento`),
 `arquipelago-api/src/application/servico-do-jogo.ts` (`gravarSalvamento`) e o repositório.
 
-- **Quando o jogo grava:** junta as mudanças e grava a cada 20 segundos (`intervaloMs`, padrão
-  `20_000`). Também grava na hora quando a aba some e quando o jogo fecha.
+- **Quando o jogo grava:** cada alteração agenda uma transação no IndexedDB por público e perfil.
+  O envio ao servidor junta alterações a cada 20 segundos (`intervaloMs`) e também é tentado quando
+  a aba some. Fechar a página não depende de uma última requisição: o diário confirmado no aparelho
+  é recuperado na próxima abertura. Uma interrupção antes do commit local ainda pode perder essa
+  última transação; o navegador também permite apagar seus dados locais.
 - **A trava da revisão:** cada gravação manda a revisão que o jogo conhece (`revisaoBase`). A
   revisão 0 quer dizer que nada foi guardado ainda. O banco grava numa instrução só. Se outro
   aparelho gravou antes, a revisão não bate e o serviço responde 409 `SALVAMENTO_DESATUALIZADO`
   com o que está guardado.
-- **No conflito, vale o que está guardado.** O jogo adota a versão do serviço e o Zappy avisa:
-  "O seu jogo foi atualizado com o que você fez em outro aparelho." O que mudou neste aparelho
-  depois do envio se perde.
-- **Erro de rede não perde nada.** A mudança volta para a fila e vai na próxima volta.
+- **Conflito não apaga mudanças silenciosamente.** A fila compara a base, a cópia local mais nova
+  e a remota. Progresso cumulativo pode ser conciliado; horta, inventário, necessidades, Capi e
+  bicho são tratados juntos para não duplicar consumo/recompensas. Divergência nesse grupo pausa
+  o jogo e pede escolher a cópia local ou online, com opção de baixar a cópia local antes da escolha.
+- **Resposta perdida:** o diário preserva o snapshot enviado. Antes de substituir um envio incerto,
+  a fila consulta o servidor; alterações feitas durante a requisição continuam pendentes.
+- **Duas abas do mesmo perfil:** uma trava do navegador permite apenas uma montagem gravadora.
+  Fechar a aba libera a trava. Outro aparelho continua protegido pela revisão do servidor.
+- **Falha de armazenamento local:** pausa as mutações e oferece tentar novamente. Uma falha de
+  rede conserva o diário confirmado localmente e tenta o envio posteriormente.
+- **Suporte:** não abre diário gravador nem altera o salvamento da pessoa consultada.
 - **Jogo novo:** com a revisão 0, o salvamento inicial entra na fila logo na abertura.
 - **Salvamento guardado que não passa no formato atual:** o serviço responde 409
   `SALVAMENTO_ILEGIVEL` e nunca devolve "vazio". Isso impede o jogo de criar um salvamento novo

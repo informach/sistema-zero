@@ -150,6 +150,7 @@ describe('acesso', () => {
       limiteDiarioMinutos: 30,
       usadoHojeSegundos: 90,
       contabilizaTempo: true,
+      somenteLeitura: false,
     })
   })
 
@@ -166,6 +167,7 @@ describe('acesso', () => {
       limiteDiarioMinutos: null,
       usadoHojeSegundos: 0,
       contabilizaTempo: false,
+      somenteLeitura: false,
     })
   })
 
@@ -295,6 +297,7 @@ describe('salvamento', () => {
     const suporte = { ...crianca(), 'x-auth-impersonator-id': ADULTO }
     expect((await chamar('GET', '/arquipelago/acesso', suporte)).json).toMatchObject({
       contabilizaTempo: false,
+      somenteLeitura: true,
     })
     const r = await chamar('PUT', '/arquipelago/salvamento', suporte, {
       revisaoBase: 0,

@@ -58,7 +58,7 @@ export default defineConfig({
     env: { E2E_PORT: String(e2ePort) },
     url: baseURL,
     reuseExistingServer,
-    stdout: 'ignore',
+    stdout: 'pipe',
     stderr: 'pipe',
     timeout: 120_000,
   },

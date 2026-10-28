@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { atualizarEntrada, soltarEntrada } from '../controles/controle'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useToque } from '../estado/preferencias'
 
@@ -17,13 +18,40 @@ export function ControlesDeToque() {
   const anel = useRef<HTMLDivElement>(null)
   const bolinha = useRef<HTMLElement>(null)
   /** Onde o polegar pousou (o meio do joystick enquanto ele segura), na tela. */
-  const centro = useRef<{ x: number; y: number } | null>(null)
+  const centro = useRef<{ x: number; y: number; pointerId: number } | null>(null)
+  const pulo = useRef<number | null>(null)
+  const soltar = useCallback(() => {
+    centro.current = null
+    atualizarEntrada(controle, 'toque', { eixoX: 0, eixoZ: 0, correr: false })
+    if (bolinha.current) bolinha.current.style.transform = ''
+    if (anel.current) {
+      anel.current.style.left = ''
+      anel.current.style.top = ''
+      anel.current.removeAttribute('data-ativo')
+    }
+  }, [controle])
+  useEffect(() => {
+    const limpar = () => {
+      soltar()
+      pulo.current = null
+      soltarEntrada(controle, 'toque')
+    }
+    if (!toque) {
+      limpar()
+      return
+    }
+    window.addEventListener('blur', limpar)
+    return () => {
+      window.removeEventListener('blur', limpar)
+      limpar()
+    }
+  }, [controle, soltar, toque])
 
   if (!toque) return null
 
   const mover = (e: React.PointerEvent) => {
     const c = centro.current
-    if (!c) return
+    if (!c || c.pointerId !== e.pointerId) return
     let dx = (e.clientX - c.x) / RAIO_DO_JOYSTICK
     let dy = (e.clientY - c.y) / RAIO_DO_JOYSTICK
     const t = Math.hypot(dx, dy)
@@ -31,23 +59,16 @@ export function ControlesDeToque() {
       dx /= t
       dy /= t
     }
-    controle.eixoX = dx
-    controle.eixoZ = -dy
-    controle.correr = t > 0.95
+    atualizarEntrada(controle, 'toque', { eixoX: dx, eixoZ: -dy, correr: t > 0.95 })
     if (bolinha.current) bolinha.current.style.transform = `translate(${dx * 34}px, ${dy * 34}px)`
   }
-  const soltar = () => {
-    centro.current = null
-    controle.eixoX = 0
-    controle.eixoZ = 0
-    controle.correr = false
-    if (bolinha.current) bolinha.current.style.transform = ''
-    // O anel volta para o lugar de descanso (o canto, onde a pessoa espera encontrar).
-    if (anel.current) {
-      anel.current.style.left = ''
-      anel.current.style.top = ''
-      anel.current.removeAttribute('data-ativo')
-    }
+  const soltarPonteiro = (e: React.PointerEvent) => {
+    if (centro.current?.pointerId === e.pointerId) soltar()
+  }
+  const soltarPulo = (e: React.PointerEvent) => {
+    if (pulo.current !== e.pointerId) return
+    pulo.current = null
+    atualizarEntrada(controle, 'toque', { pular: false })
   }
 
   return (
@@ -58,8 +79,9 @@ export function ControlesDeToque() {
         ref={zona}
         className="arq-zona-joystick"
         onPointerDown={(e) => {
+          if (centro.current !== null) return
           e.currentTarget.setPointerCapture(e.pointerId)
-          centro.current = { x: e.clientX, y: e.clientY }
+          centro.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId }
           const r = zona.current?.getBoundingClientRect()
           if (anel.current && r) {
             anel.current.style.left = `${e.clientX - r.left}px`
@@ -71,8 +93,9 @@ export function ControlesDeToque() {
         onPointerMove={(e) => {
           if (e.buttons || e.pointerType === 'touch') mover(e)
         }}
-        onPointerUp={soltar}
-        onPointerCancel={soltar}
+        onPointerUp={soltarPonteiro}
+        onPointerCancel={soltarPonteiro}
+        onLostPointerCapture={soltarPonteiro}
         aria-hidden="true"
       >
         <div ref={anel} className="arq-joystick">
@@ -83,16 +106,16 @@ export function ControlesDeToque() {
         <button
           type="button"
           className="arq-botao"
-          onPointerDown={() => {
-            controle.pular = true
+          onPointerDown={(e) => {
+            if (pulo.current !== null) return
+            pulo.current = e.pointerId
+            e.currentTarget.setPointerCapture(e.pointerId)
+            atualizarEntrada(controle, 'toque', { pular: true })
             controle.pulos++
           }}
-          onPointerUp={() => {
-            controle.pular = false
-          }}
-          onPointerLeave={() => {
-            controle.pular = false
-          }}
+          onPointerUp={soltarPulo}
+          onPointerCancel={soltarPulo}
+          onLostPointerCapture={soltarPulo}
         >
           {modo === 'cipo' ? 'Soltar' : 'Pular'}
         </button>

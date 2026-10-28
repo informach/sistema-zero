@@ -46,6 +46,7 @@ export function CadernoDosLumis() {
     if (!aberto) return
     fechar.current?.focus()
     void cartas.getState().carregar()
+    return () => cartas.getState().cancelar()
   }, [aberto, cartas])
 
   if (!aberto) return null

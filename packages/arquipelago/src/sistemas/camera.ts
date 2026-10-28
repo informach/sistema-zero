@@ -7,7 +7,7 @@
  * A distância da câmera neste quadro. `livre` é até onde o raio vai sem bater (ou a distância
  * desejada, se não bateu). Encostar é na hora (nunca atravessa a parede, nem por um quadro); voltar
  * para longe é aos poucos, `volta` por segundo, para não dar tranco quando a parede sai da frente.
- * `minima` só segura a câmera fora da cabeça do avatar: ela nunca vence a parede.
+ * `minima` limita a distância desejada por conforto; a distância livre sempre tem prioridade.
  */
 export function distanciaDaCamera(
   atual: number,
@@ -17,9 +17,26 @@ export function distanciaDaCamera(
   volta: number,
   minima: number,
 ): number {
-  const alvo = Math.min(desejada, Math.max(livre, minima))
+  const alvo = Math.min(Math.max(desejada, minima), Math.max(0, livre))
   if (alvo <= atual) return alvo
   return atual + (alvo - atual) * (1 - Math.exp(-dt * volta))
+}
+
+/** Aplica à posição já interpolada o espaço livre medido a partir do alvo. */
+export function limitarPosicaoDaCamera(
+  alvo: { x: number; y: number; z: number },
+  posicao: { x: number; y: number; z: number },
+  livre: number,
+): void {
+  const dx = posicao.x - alvo.x
+  const dy = posicao.y - alvo.y
+  const dz = posicao.z - alvo.z
+  const distancia = Math.hypot(dx, dy, dz)
+  if (distancia === 0 || livre >= distancia) return
+  const proporcao = Math.max(0, livre) / distancia
+  posicao.x = alvo.x + dx * proporcao
+  posicao.y = alvo.y + dy * proporcao
+  posicao.z = alvo.z + dz * proporcao
 }
 
 /** Quanto o personagem está "lá no alto" (0 no chão, 1 a um andar acima), para a câmera descer. */

@@ -45,6 +45,7 @@ import {
   DISTANCIA_DA_TROCA,
   DURACAO_DA_TROCA,
   DURACAO_DO_ESMAECER_DA_COPA,
+  giroDaIlha,
   MARGEM_DA_ESPERA_PELO_CHAO,
   naPonteDa,
   nivelDeDetalhe,
@@ -66,11 +67,6 @@ export interface IlhaCompletaInfo {
 
 export const ILHAS_COMPLETAS: Partial<Record<IlhaId, IlhaCompletaInfo>> = {
   bosque: { url: new URL(bosqueGlb, import.meta.url).href },
-}
-
-/** O giro que vira a chegada da ponte (+x do modelo) para a sua ilha, igual ao da versão leve. */
-export function giroDaIlha(ilha: Ilha): number {
-  return Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
 }
 
 /** O que fica pronto antes de a ilha aparecer: o desenho já girado (e com a tinta) e os colisores. */

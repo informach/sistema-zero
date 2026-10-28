@@ -2,8 +2,7 @@ import type { Ilha, IlhaId } from '@sistemazero/arquipelago-contracts'
 import { QUADROS_POR_ILHA } from '@sistemazero/arquipelago-contracts'
 import { type Color, type Material, Vector2 } from 'three'
 import { BORDA_DOS_PEDACOS, COR_AO_ABRIR } from '../sistemas/cor-da-ilha'
-import { giroDaIlha } from './ilha-completa'
-import { centroNoAnel } from './medidas'
+import { centroNoAnel, giroDaIlha } from './medidas'
 import { CINZA } from './modelos'
 
 /**

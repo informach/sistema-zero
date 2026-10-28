@@ -13,6 +13,7 @@ import {
   type EntradaDaLocomocao,
   passoDaLocomocao,
 } from '../sistemas/locomocao'
+import { jogoPausado } from '../sistemas/pausa'
 
 const LOCOMOCAO_URL = new URL(locomocaoGlb, import.meta.url).href
 /** Clipes tocados uma vez só (o tempo é o da regra; não voltam ao começo sozinhos). */
@@ -36,6 +37,7 @@ export function AvatarDoJogo({
   depoisDaPose?: () => void
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
+  const pausado = useEstado(jogoPausado)
   const slots = useMemo(() => ({ ...DEFAULT_AVATAR_SLOTS, ...slotsDoJogo }), [slotsDoJogo])
   const personagem = useRef<Group>(null)
   const [emPe, setEmPe] = useState(false)
@@ -70,6 +72,7 @@ export function AvatarDoJogo({
   }, [])
 
   useFrame((_, dtBruto) => {
+    if (pausado) return
     const dt = Math.min(dtBruto, 0.1)
     const l = passoDaLocomocao(locomocao.current, movimento.current, dt)
     const idle = acoes.current.Idle

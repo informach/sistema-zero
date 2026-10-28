@@ -24,8 +24,10 @@ describe('a câmera não atravessa parede', () => {
     expect(depois).toBeGreaterThan(3)
     expect(depois).toBeLessThan(3.5)
     expect(distanciaDaCamera(8.99, 9, 20, 10, 3, 1.2)).toBeCloseTo(9, 3)
-    // Colado na parede, fica na distância mínima (não entra na cabeça do avatar).
-    expect(distanciaDaCamera(5, 9, 0.2, 1 / 60, 3, 0.4)).toBe(0.4)
+    // A parede tem prioridade mesmo quando está mais perto que a distância de conforto.
+    expect(distanciaDaCamera(5, 9, 0.2, 1 / 60, 3, 0.4)).toBe(0.2)
+    // A folga descontada da sonda pode produzir um valor negativo: nunca atravessa o alvo.
+    expect(distanciaDaCamera(5, 9, -0.1, 1 / 60, 3, 0.4)).toBe(0)
   })
 
   test('no chão vale 0, num deque vale 1', () => {
