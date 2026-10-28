@@ -767,8 +767,9 @@ a câmera ignora).
 Arquivos: `arquipelago/src/sistemas/moradores.ts` (a Capi), `falas-da-capi.ts` (os textos dela),
 `conversa-da-capi.ts` (a conversa sobre o salvamento), `esconde.ts` (o esconde-esconde) e
 `bichos.ts` (o bicho adotado); no mundo, `mundo/capi.tsx` e o painel `interface/capi.tsx`. Testes:
-`tests/moradores.test.ts` e `tests/bichos.test.ts`. A Capi já está no Bosque; os esconderijos e o
-bicho adotado ainda não aparecem no jogo. O plano da parte que falta:
+`tests/moradores.test.ts`, `tests/bichos.test.ts`, `tests/caminho.test.ts` e
+`tests/esconde-no-bosque.test.ts`. A Capi e o esconde-esconde já estão no Bosque; o bicho adotado
+ainda não aparece no jogo. O plano da parte que falta:
 `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
 
 - **Onde ela fica:** na âncora `morador` do `bosque.glb`, na frente da cabana, de costas para a
@@ -806,12 +807,22 @@ bicho adotado ainda não aparecem no jogo. O plano da parte que falta:
   trocando pelo dia), quantos bichos já foram achados, o bicho adotado e o pedido. As outras
   conversas do mesmo dia são só uma despedida. Os textos seguem as regras do jogo: sem travessão,
   sem exclamação e sem começar com pergunta (o teste confere).
-- **Esconde-esconde** (`ESCONDERIJOS`): cada bicho fica sempre no mesmo lugar, nas âncoras
-  `esconderijo-1` a `esconderijo-4` do `bosque.glb` (ainda não existem no modelo). A pista
-  (rabinho, orelhas, farfalhar, focinho) aparece a 4 m (`RAIO_DA_PISTA`) e dá para achar a 1,4 m
-  (`RAIO_DE_ACHAR`). O Zappy diz pertinho (até 2,1 m), quentinho (até 7 m), morno (até 15 m) ou
-  frio (`calor`, `FALA_DO_CALOR`), sempre do escondido mais perto (`maisPertoEscondido`). Achar fica
-  guardado para sempre.
+- **Esconde-esconde** (`ESCONDERIJOS`, `mundo/bichos-do-bosque.tsx`): cada bicho fica sempre no
+  mesmo lugar (uma criança pode contar para outra): o cachorro atrás da moita da beira norte, o
+  gato entre os cogumelos e as pedras do lago, o coelho na boca da toca do oeste e o porquinho
+  atrás da cabana. As posições estão em `ESCONDERIJOS_NO_MODELO` (`mundo/bosque.ts`) até o Blender
+  ganhar as âncoras `esconderijo-1` a `esconderijo-4`. De longe o bicho não aparece; a uns 5,6 m ele
+  surge aos poucos, e a 4 m (`RAIO_DA_PISTA`) ele balança de contente e o Zappy fala da pista
+  (rabinho, orelhas, farfalhar ou focinho, `FALA_DA_PISTA`). A 1,4 m (`RAIO_DE_ACHAR`) aparece
+  "Achar o gato frajola": o achado fica guardado para sempre, o bicho comemora e corre pelo chão
+  até o cercadinho da Capi, entrando pela porteira (`sistemas/caminho.ts`: busca numa grade de
+  25 cm que contorna o que é duro e atravessa moitas e cogumelos). No cercadinho cada um tem o
+  seu lugar, pela ordem em que foi achado (`LUGARES_NO_CERCADO`), fica parado ou sentado e olha
+  para a criança que chega. Achar os quatro faz o Zappy pedir para contar para a Capi.
+- **O Zappy no esconde-esconde:** depois de conhecer a Capi, ele avisa quando a criança esquenta,
+  sempre do escondido mais perto (`maisPertoEscondido`): morno (até 15 m), quentinho (até 7 m) ou
+  pertinho (até 2,1 m), só quando muda para mais quente e no máximo uma vez a cada 12 s
+  (`deveFalarDoCalor`, `INTERVALO_DO_CALOR`). Esfriar não diz nada.
 - **Adotar** (`adotar`, `nomeValido`): só um bicho já achado, um por vez nesta fase. O nome tem de
   1 a 16 caracteres, só letras, espaço e hífen, começando por letra. Fica só no salvamento da
   criança e ninguém mais vê. O bicho chega com 80 em cada medida.

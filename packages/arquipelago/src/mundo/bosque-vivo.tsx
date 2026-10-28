@@ -35,6 +35,7 @@ import {
   quantasEstrelas,
   vagalumesPegos,
 } from '../sistemas/percurso'
+import { BichosDoBosque } from './bichos-do-bosque'
 import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
@@ -397,6 +398,12 @@ export function BosqueVivo({
       <ComReserva reserva={null}>
         <Capi modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
+      <BichosDoBosque
+        modelo={preparada.modelo}
+        colisores={preparada.colisores}
+        meio={meio}
+        giro={giro}
+      />
       <Trepadeira tronco={tronco} preparada={preparada} />
       {pontos?.vagalumes.map((p, i) => (
         <group

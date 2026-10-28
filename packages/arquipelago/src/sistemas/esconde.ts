@@ -4,7 +4,8 @@ import { BICHOS_DO_BOSQUE } from '@sistemazero/arquipelago-contracts'
 /**
  * O esconde-esconde dos bichos do Bosque (regras puras). Cada bicho fica sempre no mesmo
  * esconderijo (uma criança pode contar para outra onde achou). Perto dele aparece uma pista; bem
- * perto, "E Achar". O Zappy, se pedirem ajuda, diz o quanto a criança está perto do mais próximo.
+ * perto, "E Achar". Depois de conhecer a Capi, o Zappy avisa quando a criança esquenta (chega mais
+ * perto do escondido mais próximo) e quando a pista aparece.
  */
 
 export type Bichos = SalvamentoV3['bichos']
@@ -38,6 +39,34 @@ export const FALA_DO_CALOR: Readonly<Record<Calor, string>> = {
   quentinho: 'Está quentinho. Tem um bicho por aqui.',
   morno: 'Está morno. Ande mais um pouco.',
   frio: 'Está frio. Tente outro lado do bosque.',
+}
+
+/** O que o Zappy diz quando a pista aparece (a criança chegou a `RAIO_DA_PISTA`). */
+export const FALA_DA_PISTA: Readonly<
+  Record<(typeof ESCONDERIJOS)[BichoDoBosque]['pista'], string>
+> = {
+  rabinho: 'Tem um rabinho balançando atrás daquela moita.',
+  orelhas: 'Duas orelhinhas apareceram entre os cogumelos.',
+  farfalhar: 'Alguma coisa se mexeu dentro da toca.',
+  focinho: 'Um focinho espiou atrás da cabana.',
+}
+
+const ORDEM_DO_CALOR: readonly Calor[] = ['frio', 'morno', 'quentinho', 'pertinho']
+
+/** Entre dois falares do calor, o Zappy espera isto (s): ele ajuda sem falar o tempo todo. */
+export const INTERVALO_DO_CALOR = 12
+
+/**
+ * O Zappy fala do calor só quando esquenta (de frio para morno, de morno para quentinho...), e
+ * não antes de `INTERVALO_DO_CALOR` desde a última vez. Esfriar não diz nada.
+ */
+export function deveFalarDoCalor(
+  antes: Calor | null,
+  agora: Calor,
+  segundosDesdeAUltima: number,
+): boolean {
+  if (antes === null || segundosDesdeAUltima < INTERVALO_DO_CALOR) return false
+  return ORDEM_DO_CALOR.indexOf(agora) > ORDEM_DO_CALOR.indexOf(antes)
 }
 
 export function escondidos(bichos: Bichos): BichoDoBosque[] {

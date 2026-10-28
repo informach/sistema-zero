@@ -156,6 +156,14 @@ Esta sessão não tinha o Blender sem tela, então o jogo marca no código o que
 - **Placa de largada e vagalumes:** desenhados no código (`PLACA_DA_LARGADA` e
   `VAGALUMES_DAS_COPAS`). Uma placa modelada ao lado do pé da escada (x 0,6, z 1,3), na madeira da
   casa na árvore, combinaria com o resto.
+- **Esconderijos dos bichos (28/10/2026):** quatro âncoras `esconderijo-1`…`esconderijo-4` no chão
+  (y = 1), com o giro para onde o bicho olha: cachorro atrás da moita da beira norte (x −6,2,
+  z 10,2), gato entre os cogumelos e as pedras do lago (x 1,2, z 5,4), coelho na boca da toca do
+  oeste (x −8,0, z −7,4) e porquinho atrás da cabana, entre a parede e a moita (x 7,3, z −8,9).
+  Hoje esses números estão em `ESCONDERIJOS_NO_MODELO` (`src/mundo/bosque.ts`); o jogo já lê a
+  âncora quando ela existir (`mundo/bichos-do-bosque.tsx`), e o teste
+  `tests/esconde-no-bosque.test.ts` avisa quando elas chegarem. Uma moita um pouco maior atrás do
+  cachorro e uma toca com a boca mais funda para o coelho deixariam o esconderijo mais claro.
 
 ### Nós que mexem
 

@@ -22,9 +22,12 @@ import {
   achar,
   type Bichos,
   calor,
+  deveFalarDoCalor,
   ESCONDERIJOS,
   escondidos,
+  FALA_DA_PISTA,
   FALA_DO_CALOR,
+  INTERVALO_DO_CALOR,
   maisPertoEscondido,
   RAIO_DE_ACHAR,
 } from '../src/sistemas/esconde'
@@ -78,8 +81,17 @@ describe('esconde-esconde', () => {
     expect(escondidos(a)).toEqual(['cachorro', 'gato', 'porquinho'])
   })
 
+  test('o Zappy fala do calor só quando esquenta, e não toda hora', () => {
+    expect(deveFalarDoCalor(null, 'morno', 99)).toBe(false)
+    expect(deveFalarDoCalor('frio', 'morno', INTERVALO_DO_CALOR)).toBe(true)
+    expect(deveFalarDoCalor('morno', 'quentinho', INTERVALO_DO_CALOR - 1)).toBe(false)
+    expect(deveFalarDoCalor('quentinho', 'morno', 99)).toBe(false)
+    expect(deveFalarDoCalor('morno', 'morno', 99)).toBe(false)
+  })
+
   test('as falas do Zappy seguem as regras de texto', () => {
-    for (const f of Object.values(FALA_DO_CALOR)) expect(f).not.toMatch(/[—!?]/)
+    for (const f of [...Object.values(FALA_DO_CALOR), ...Object.values(FALA_DA_PISTA)])
+      expect(f).not.toMatch(/[—!?]/)
   })
 })
 

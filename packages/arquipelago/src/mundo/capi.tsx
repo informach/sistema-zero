@@ -1,15 +1,13 @@
-import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
-import { useEffect, useMemo, useRef } from 'react'
-import { type AnimationAction, type Group, LoopOnce, type Mesh, type Object3D } from 'three'
-import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import { useMemo, useRef } from 'react'
+import type { Group, Object3D } from 'three'
 import capiGlb from '../assets/personagens/capi.glb'
 import { useJogo } from '../estado/contexto'
 import { lojaDaConversa, PAINEL_DA_CAPI } from '../estado/moradores'
 import { comecarConversa } from '../sistemas/conversa-da-capi'
 import { CAPI_NO_BOSQUE, diaDe, olharDaCapi } from '../sistemas/moradores'
 import { suavizarAngulo } from '../sistemas/zappy'
+import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { paraOMundo } from './bosque'
 import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
@@ -24,9 +22,6 @@ const UMA_VEZ: readonly Clipe[] = ['acenar', 'feliz']
 
 /** Da âncora (os pés) até o meio da cabeça. */
 const ALTURA_DA_CABECA = 1.25
-
-/** Piscar: fecha por um instante a cada tanto, com um pouco de acaso para não ficar mecânico. */
-const PISCAR = { aCada: 3.4, acaso: 2.2, dura: 0.14 } as const
 
 const COLISOR_DA_CAPI: ColisorDaIlha[] = [
   {
@@ -119,18 +114,8 @@ export function Capi({
 function ModeloDaCapi({ lugar }: { lugar: { x: number; z: number } }) {
   const { loja, rastro } = useJogo()
   const conversa = lojaDaConversa(loja)
-  const gltf = useGLTF(URL_DA_CAPI, false, false)
   const raiz = useRef<Group>(null)
-  const reduzido = useReducedMotion()
-  const { cena, olhos } = useMemo(() => {
-    const cena = clone(gltf.scene)
-    let olhos: Mesh | null = null
-    cena.traverse((o) => {
-      if (o.name === 'capi-olhos' && (o as Mesh).isMesh) olhos = o as Mesh
-    })
-    return { cena, olhos: olhos as Mesh | null }
-  }, [gltf.scene])
-  const { actions, mixer } = useAnimations(gltf.animations, raiz)
+  const { cena, actions, mixer, olhos } = useCopiaAnimada(URL_DA_CAPI, raiz, UMA_VEZ)
 
   const tocando = useRef<Clipe | null>(null)
   const umaVezAte = useRef(0)
@@ -139,19 +124,6 @@ function ModeloDaCapi({ lugar }: { lugar: { x: number; z: number } }) {
   const alegria = useRef(conversa.getState().alegria)
   const piscarEm = useRef<number>(PISCAR.aCada)
   const relogio = useRef(0)
-
-  useEffect(() => {
-    for (const nome of UMA_VEZ) {
-      const a = actions[nome]
-      if (a) {
-        a.setLoop(LoopOnce, 1)
-        a.clampWhenFinished = true
-      }
-    }
-  }, [actions])
-  useEffect(() => {
-    mixer.timeScale = reduzido ? 0.5 : 1
-  }, [mixer, reduzido])
 
   useFrame((_, dt) => {
     relogio.current += dt
@@ -179,30 +151,17 @@ function ModeloDaCapi({ lugar }: { lugar: { x: number; z: number } }) {
     let quer: Clipe
     if (pedido) {
       quer = pedido
-      const a = actions[pedido]
-      umaVezAte.current = agora + (a ? a.getClip().duration / Math.max(0.01, mixer.timeScale) : 0)
+      umaVezAte.current = agora + duracaoDoClipe(actions, mixer, pedido)
     } else if (tocando.current && UMA_VEZ.includes(tocando.current) && agora < umaVezAte.current) {
       quer = tocando.current
     } else {
       quer = conversando && c.tela === 'falas' ? 'falar' : 'parado'
     }
-    if (quer !== tocando.current || pedido) trocar(actions, tocando.current, quer)
+    if (quer !== tocando.current || pedido) trocarClipe(actions, tocando.current, quer)
     tocando.current = quer
 
     // Os olhos: piscar de vez em quando; feliz (fechadinhos) enquanto comemora.
-    const morfos = olhos?.morphTargetInfluences
-    const dic = olhos?.morphTargetDictionary
-    if (morfos && dic) {
-      if (agora > piscarEm.current + PISCAR.dura) {
-        piscarEm.current = agora + PISCAR.aCada + Math.random() * PISCAR.acaso
-      }
-      const piscando = agora >= piscarEm.current && agora < piscarEm.current + PISCAR.dura
-      const feliz = quer === 'feliz'
-      const iPiscar = dic.piscar
-      const iFeliz = dic.feliz
-      if (iPiscar !== undefined) morfos[iPiscar] = piscando && !feliz ? 1 : 0
-      if (iFeliz !== undefined) morfos[iFeliz] = feliz ? 1 : 0
-    }
+    olhosNoInstante(olhos, agora, piscarEm, quer === 'feliz')
   })
 
   return (
@@ -210,16 +169,4 @@ function ModeloDaCapi({ lugar }: { lugar: { x: number; z: number } }) {
       <primitive object={cena} />
     </group>
   )
-}
-
-/** Troca de clipe com uma mistura curta (o de agora some enquanto o novo entra). */
-function trocar(
-  actions: Record<string, AnimationAction | null>,
-  de: Clipe | null,
-  para: Clipe,
-): void {
-  const novo = actions[para]
-  const velho = de && de !== para ? actions[de] : null
-  novo?.reset().fadeIn(0.25).play()
-  velho?.fadeOut(0.25)
 }

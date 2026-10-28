@@ -32,9 +32,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `sistemas/`: regras puras e testadas (dia e noite, itens, necessidades, horta, receitas,
   fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy, ilhas
   completas, cipó, escalada, percurso, as medidas do corpo, a Capi (`moradores.ts`,
-  `falas-da-capi.ts`, `conversa-da-capi.ts`) e, ainda fora da tela, o esconde-esconde (`esconde.ts`)
-  e o bicho adotado (`bichos.ts`)). Sem React. Os números de cada regra,
-  em linguagem da dona: `docs/arquipelago-regras.md`.
+  `falas-da-capi.ts`, `conversa-da-capi.ts`), o esconde-esconde (`esconde.ts`), o caminho pelo
+  chão (`caminho.ts`) e, ainda fora da tela, o bicho adotado (`bichos.ts`)). Sem React. Os números
+  de cada regra, em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).
 - `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar, cipó,
@@ -256,6 +256,14 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `miolo` da ilha) e limpa quando o painel fecha; o personagem vira para lá e a câmera enquadra as
   duas (`LADO_NA_CONVERSA`, `DISTANCIA_NA_CONVERSA`, `INCLINACAO_NA_CONVERSA`, `ABAIXO_NA_CONVERSA`).
 - No Bosque não aparece mais o "Olhar em volta" da ilha (`ILHAS_VIVAS` em `anel.tsx`).
+- Esconde-esconde (`mundo/bichos-do-bosque.tsx`, também no `BosqueVivo`): os quatro filhotes
+  (`assets/bichos/*-filhote.glb`, `ESCALA_DOS_BICHOS`) nos esconderijos (`ESCONDERIJOS_NO_MODELO`
+  em `bosque.ts` até chegarem as âncoras `esconderijo-*`), a pista e o "Achar", e a corrida até
+  o cercadinho pelo caminho da grade (`sistemas/caminho.ts`, A* com encurtamento;
+  `mundo/chao-livre.ts` monta a grade sobre os colisores da ilha no primeiro achado). O modelo
+  animado com esqueleto vem de `mundo/animado.ts` (`useCopiaAnimada`, `trocarClipe`,
+  `olhosNoInstante`), o mesmo da Capi. Testes contra o `bosque.glb`:
+  `tests/esconde-no-bosque.test.ts`.
 
 ## Salvamento e tempo
 

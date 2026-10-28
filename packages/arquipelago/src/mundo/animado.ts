@@ -1,0 +1,103 @@
+import { useAnimations, useGLTF } from '@react-three/drei'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
+import { type RefObject, useEffect, useMemo } from 'react'
+import {
+  type AnimationAction,
+  type AnimationMixer,
+  type Group,
+  LoopOnce,
+  type Mesh,
+  type Object3D,
+} from 'three'
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
+
+/**
+ * Uma cópia animada de um personagem ou bicho do Blender (com esqueleto: `SkeletonUtils.clone`,
+ * senão as cópias dividiriam os ossos). Os clipes de `umaVez` tocam uma vez e param no último
+ * quadro; com menos movimento pedido no sistema, tudo anda na metade da velocidade.
+ */
+export function useCopiaAnimada(
+  url: string,
+  raiz: RefObject<Group | null>,
+  umaVez: readonly string[],
+): {
+  cena: Object3D
+  actions: Record<string, AnimationAction | null>
+  mixer: AnimationMixer
+  /** A malha dos olhos (com os morfos `piscar` e `feliz`), se houver. */
+  olhos: Mesh | null
+} {
+  const gltf = useGLTF(url, false, false)
+  const reduzido = useReducedMotion()
+  const { cena, olhos } = useMemo(() => {
+    const cena = clone(gltf.scene)
+    let olhos: Mesh | null = null
+    cena.traverse((o) => {
+      const m = o as Mesh
+      if (m.isMesh && o.name.endsWith('-olhos') && m.morphTargetDictionary) olhos = m
+    })
+    return { cena, olhos: olhos as Mesh | null }
+  }, [gltf.scene])
+  const { actions, mixer } = useAnimations(gltf.animations, raiz)
+  useEffect(() => {
+    for (const nome of umaVez) {
+      const a = actions[nome]
+      if (!a) continue
+      a.setLoop(LoopOnce, 1)
+      a.clampWhenFinished = true
+    }
+  }, [actions, umaVez])
+  useEffect(() => {
+    mixer.timeScale = reduzido ? 0.5 : 1
+  }, [mixer, reduzido])
+  return { cena, actions, mixer, olhos }
+}
+
+/** Troca de clipe com uma mistura curta (o de agora some enquanto o novo entra do começo). */
+export function trocarClipe(
+  actions: Record<string, AnimationAction | null>,
+  de: string | null,
+  para: string,
+  mistura = 0.25,
+): void {
+  const novo = actions[para]
+  const velho = de && de !== para ? actions[de] : null
+  novo?.reset().fadeIn(mistura).play()
+  velho?.fadeOut(mistura)
+}
+
+/** Quanto tempo um clipe leva na velocidade do mixer (0 se não existir). */
+export function duracaoDoClipe(
+  actions: Record<string, AnimationAction | null>,
+  mixer: AnimationMixer,
+  nome: string,
+): number {
+  const a = actions[nome]
+  return a ? a.getClip().duration / Math.max(0.01, mixer.timeScale) : 0
+}
+
+/** Piscar: fecha por um instante a cada tanto, com um pouco de acaso para não ficar mecânico. */
+export const PISCAR = { aCada: 3.4, acaso: 2.2, dura: 0.14 } as const
+
+/**
+ * Os olhos num instante: piscando de vez em quando, ou fechadinhos de feliz. `proxima` guarda
+ * quando começa a próxima piscada (o chamador mantém o valor entre os quadros).
+ */
+export function olhosNoInstante(
+  olhos: Mesh | null,
+  agora: number,
+  proxima: { current: number },
+  feliz: boolean,
+): void {
+  const morfos = olhos?.morphTargetInfluences
+  const dic = olhos?.morphTargetDictionary
+  if (!morfos || !dic) return
+  if (agora > proxima.current + PISCAR.dura) {
+    proxima.current = agora + PISCAR.aCada + Math.random() * PISCAR.acaso
+  }
+  const piscando = agora >= proxima.current && agora < proxima.current + PISCAR.dura
+  const iPiscar = dic.piscar
+  const iFeliz = dic.feliz
+  if (iPiscar !== undefined) morfos[iPiscar] = piscando && !feliz ? 1 : 0
+  if (iFeliz !== undefined) morfos[iFeliz] = feliz ? 1 : 0
+}
