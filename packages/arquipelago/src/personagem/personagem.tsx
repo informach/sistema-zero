@@ -6,12 +6,22 @@ import {
   RigidBody,
   useRapier,
 } from '@react-three/rapier'
+import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils } from 'three'
 import { useJogo } from '../estado/contexto'
 import { maisPerto } from '../mundo/interativos'
-import { alturaDaIlha, dentroDaCasa, INICIO, NIVEL_DA_AGUA } from '../mundo/medidas'
+import {
+  alturaDaIlha,
+  CENTRO_DA_CASA,
+  dentroDaCasa,
+  INICIO,
+  NIVEL_DA_AGUA,
+  PORTA,
+  QUARTO,
+} from '../mundo/medidas'
 import { ritmo } from '../sistemas/necessidades'
+import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { AvatarDoJogo } from './avatar-do-jogo'
 
 const MEIA_ALTURA = 0.55
@@ -24,6 +34,22 @@ const CORRER = 7.2
 const NADAR = 2.6
 /** O avatar nada quando a cintura passa da linha da água. */
 const CINTURA = 0.55
+
+/**
+ * Para onde ir quando o ponto pedido, dentro de casa, cai em cima de um móvel: o lugar livre mais
+ * perto dele (ou a porta, com o quarto todo tomado). `null` quando o ponto já está livre.
+ */
+function lugarSeguro(
+  quarto: QuartoDoJogo,
+  pedido: { x: number; z: number },
+): { x: number; y: number; z: number } | null {
+  const noQuarto = { x: pedido.x - CENTRO_DA_CASA.x, z: pedido.z - CENTRO_DA_CASA.z }
+  const livre = lugarLivreNoQuarto(quarto, noQuarto, QUARTO)
+  if (livre === noQuarto) return null
+  const x = livre ? CENTRO_DA_CASA.x + livre.x : CENTRO_DA_CASA.x + PORTA.x
+  const z = livre ? CENTRO_DA_CASA.z + livre.z : CENTRO_DA_CASA.z + QUARTO.fundo / 2 + 1.2
+  return { x, y: alturaDaIlha(x, z) + DO_CENTRO_AO_PE + 0.2, z }
+}
 
 /**
  * O personagem: corpo cinemático com o controlador de personagem do Rapier (sobe degrau,
@@ -42,10 +68,28 @@ export function Personagem() {
   const passo = useRef(0)
 
   const inicial = useMemo(() => {
-    const p = loja.getState().salvamento.posicao
-    if (p) return p
-    return { x: INICIO.x, y: alturaDaIlha(INICIO.x, INICIO.z) + DO_CENTRO_AO_PE + 0.2, z: INICIO.z }
+    const { salvamento, quarto } = loja.getState()
+    const p = salvamento.posicao
+    if (p && !dentroDaCasa(p.x, p.z)) return p
+    // Dentro de casa (o começo de sempre ou uma posição salva): os móveis podem ter mudado.
+    const pedido = p ?? {
+      x: INICIO.x,
+      y: alturaDaIlha(INICIO.x, INICIO.z) + DO_CENTRO_AO_PE + 0.2,
+      z: INICIO.z,
+    }
+    return lugarSeguro(quarto, pedido) ?? pedido
   }, [loja])
+
+  // A criança mudou o quarto com o jogo aberto: se um móvel caiu em cima dela, ela sai para o lado.
+  useEffect(
+    () =>
+      loja.subscribe((s, antes) => {
+        if (s.quarto === antes.quarto || !dentroDaCasa(rastro.x, rastro.z)) return
+        const seguro = lugarSeguro(s.quarto, rastro)
+        if (seguro) pedidos.teleporte = seguro
+      }),
+    [loja, rastro, pedidos],
+  )
 
   const kcc = useMemo(() => {
     const c = world.createCharacterController(0.06)

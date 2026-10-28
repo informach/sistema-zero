@@ -384,6 +384,18 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 
 A velocidade final é multiplicada pelo ritmo do humor (6.2).
 
+**Onde o personagem aparece** (`arquipelago/src/sistemas/ponto-de-partida.ts`). Cada criança
+arruma o quarto de um jeito, então o ponto de começo pode cair em cima de um móvel:
+
+- jogo novo: o ponto de sempre (`INICIO`, na frente do quarto);
+- posição salva dentro de casa: o lugar onde ela parou;
+- se esse ponto estiver ocupado, o jogo procura o lugar livre mais perto, de 25 em 25 cm
+  (`PASSO_DA_PROCURA`), com 50 cm de folga dos móveis e das paredes (`FOLGA_DO_CORPO`);
+- só contam os móveis de chão: peças de parede e peças em cima de outra não ocupam o chão;
+- quarto todo tomado: o personagem aparece do lado de fora da porta;
+- se a criança mudar o quarto com o jogo aberto e um móvel cair em cima dela, o personagem vai
+  para o lugar livre mais perto.
+
 ### 6.7 O Zappy
 
 Arquivo: `sistemas/zappy.ts`. O Zappy voa ao lado do personagem.
