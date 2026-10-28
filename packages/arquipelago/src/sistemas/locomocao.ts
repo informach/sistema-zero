@@ -9,12 +9,26 @@
  * percorrida dividida pela passada, então o pé não patina no chão.
  */
 
-export const CLIPES = ['Idle', 'Andar', 'Correr', 'Pulo', 'Queda', 'Aterrissagem', 'Nado'] as const
+export const CLIPES = [
+  'Idle',
+  'Andar',
+  'Correr',
+  'Pulo',
+  'Queda',
+  'Aterrissagem',
+  'Nado',
+  'Pendurado',
+  'Escalar',
+] as const
 export type Clipe = (typeof CLIPES)[number]
 
 /** Medidas dos ciclos, iguais às do script do Blender (`ANDAR` e `CORRER` lá). */
 export const CICLO_DE_ANDAR = { passada: 0.62, duracao: 13 / 30 } as const
 export const CICLO_DE_CORRER = { passada: 1.3, duracao: 11 / 30 } as const
+/** Subir no tronco: o corpo sobe `passada` por ciclo (`ESCALAR` no script do Blender). */
+export const CICLO_DE_ESCALAR = { passada: 0.5, duracao: 24 / 30 } as const
+/** O laço pendurado no cipó dura isto. */
+export const DURACAO_DO_PENDURADO = 48 / 30
 export const VELOCIDADE_DO_ANDAR = CICLO_DE_ANDAR.passada / CICLO_DE_ANDAR.duracao
 export const VELOCIDADE_DO_CORRER = CICLO_DE_CORRER.passada / CICLO_DE_CORRER.duracao
 
@@ -44,8 +58,11 @@ export interface EntradaDaLocomocao {
   /** Velocidade vertical (positiva subindo). */
   velY: number
   nadando: boolean
-  /** Pendurada num cipó ou agarrada num tronco (o corpo é levado por outra regra). */
-  pendurado: boolean
+  /**
+   * Pendurada num cipó ou agarrada num tronco (o corpo é levado por outra regra). Na escalada, a
+   * `velocidade` é a do corpo pela casca (subindo, descendo ou dando a volta).
+   */
+  pendurado: 'cipo' | 'escalada' | null
 }
 
 export interface Locomocao {
@@ -105,12 +122,20 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
   let transicao: number = TRANSICAO.chao
 
   if (e.pendurado) {
-    // No cipó e no tronco: a pose parada, com os braços levantados por cima (`personagem/bracos.ts`).
+    // No cipó, pendurada com as pernas soltas; no tronco, o ciclo de subir, que anda pela distância
+    // percorrida na casca (parada, fica no apoio em que está).
     l.noAr = 0
     l.pulou = false
     l.aterrissando = 0
-    alvo.Idle = 1
     transicao = TRANSICAO.ar
+    if (e.pendurado === 'cipo') {
+      alvo.Pendurado = 1
+      l.tempos.Pendurado = (l.tempos.Pendurado + dt / DURACAO_DO_PENDURADO) % 1
+    } else {
+      alvo.Escalar = 1
+      const ciclos = Math.min(e.velocidade / CICLO_DE_ESCALAR.passada, CICLOS_POR_SEGUNDO_MAXIMO)
+      l.tempos.Escalar = (l.tempos.Escalar + ciclos * dt) % 1
+    }
   } else if (e.nadando) {
     l.noAr = 0
     l.pulou = false

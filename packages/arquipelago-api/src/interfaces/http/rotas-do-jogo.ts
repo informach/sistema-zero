@@ -4,6 +4,7 @@ import {
   type ConflitoDeSalvamento,
   GravarSalvamentoSchema,
   LimiteDaFamiliaSchema,
+  PerfisDaFamiliaSchema,
   RegistrarTempoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { Elysia } from 'elysia'
@@ -70,9 +71,12 @@ export function rotasDoJogo(deps: {
     .post('/tempo/sessao', ({ headers, body }) =>
       servico.comandarSessaoTempo(lerJogador(headers), validar(ComandoSessaoTempoSchema, body)),
     )
-    .get('/familia/limite', async ({ headers }) => ({
-      limiteDiarioMinutos: await servico.lerLimiteDaFamilia(lerResponsavel(headers)),
-    }))
+    .get('/familia/limite', ({ headers, query }) =>
+      servico.lerLimiteDaFamilia(
+        lerResponsavel(headers),
+        validar(PerfisDaFamiliaSchema, query.perfis),
+      ),
+    )
     .put('/familia/limite', async ({ headers, body }) => ({
       limiteDiarioMinutos: await servico.gravarLimiteDaFamilia(
         lerResponsavel(headers),

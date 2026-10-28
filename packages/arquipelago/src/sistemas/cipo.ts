@@ -12,7 +12,7 @@ export const GRAVIDADE_DO_CIPO = 24
 
 export const CIPO = {
   /** Do centro do corpo até as mãos, com os braços para cima. */
-  maosAcimaDoCentro: 1,
+  maosAcimaDoCentro: 0.3,
   /** No ponto mais baixo do balanço, os pés passam a esta altura do chão. */
   folgaDosPes: 0.35,
   /** O cipó nunca fica mais curto que isto (um pêndulo curto demais balança nervoso). */

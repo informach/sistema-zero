@@ -36,7 +36,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).
 - `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar, cipó,
-  escalada), avatar com os braços para cima no cipó e no tronco, câmera e o Zappy.
+  escalada), avatar com as mãos na corda no cipó, câmera e o Zappy.
 - `controles/` e `interface/`: teclado, toque, HUD (com o cronômetro do percurso) e telas (com o
   resultado do percurso).
 - `assets/`: arquivos importados como arquivo (o Bun copia com hash para `dist/cliente/`). Resolva
@@ -109,7 +109,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Animações do avatar (28/10/2026)
 
-- Clipes em `src/assets/avatar/locomocao.glb` (Andar, Correr, Pulo, Queda, Aterrissagem, Nado),
+- Clipes em `src/assets/avatar/locomocao.glb` (Andar, Correr, Pulo, Queda, Aterrissagem, Nado,
+  Pendurado, Escalar),
   gerados por `arte/avatar/locomocao.py` no esqueleto Mixamo da plataforma: IK de dois ossos nas
   pernas, pé que gira sobre calcanhar e bola, bacia, peito, braços e cabeça. O "Idle" é o da
   plataforma (`Poses.glb`). O script enxuga o GLB: só giros e a posição da bacia.
@@ -119,7 +120,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   no apoio acompanha o chão).
 - `personagem/avatar-do-jogo.tsx` aplica a regra às ações (`AvatarRig` com `extraClips` e
   `onAnimations`: o rig deixa de tocar a pose sozinho). O personagem escreve `movimento` (velocidade
-  de verdade, chão, subida, nado); o desenho desce `FOLGA_DO_CONTROLADOR` para o pé encostar.
+  de verdade, chão, subida, nado, `pendurado`: `cipo` ou `escalada`); o desenho desce
+  `FOLGA_DO_CONTROLADOR` para o pé encostar. Na escalada a velocidade é a 3D (subir conta), e o
+  Escalar anda por `velocidade / CICLO_DE_ESCALAR.passada`. No cipó, `depoisDaPose` fecha as
+  mãos na corda por cima do Pendurado.
 - Conferir sem o jogo: `/animacoes` no playground (`playground/animacoes.tsx`), com o chão
   quadriculado correndo na velocidade do passo.
 
@@ -134,6 +138,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   loja congela o personagem).
 - A situação de cada desafio vem SEMPRE do serviço; o jogo só relê a lista depois do Estúdio.
   Regras e textos: `docs/arquipelago-regras.md` §7.11. Testes: `tests/quadro-das-cores.test.ts`.
+- A cor das ilhas do anel segue os quadros: seis pedaços em volta do centro (o 1 na chegada da
+  ponte), regra em `sistemas/cor-da-ilha.ts` e tinta no shader em `mundo/pintura-da-ilha.ts`
+  (`pinturaDaIlha(ilha)`: uniforms divididos por todos os materiais da ilha, leve, completa e as
+  cópias das copas; `pintarMateriais` liga o `onBeforeCompile` uma vez por material). O `Anel` lê
+  a lista dos desafios ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Testes:
+  `tests/cor-da-ilha.test.ts`.
 
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 
@@ -174,15 +184,27 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - O que o personagem pega e escala mora em `contexto.movimento` (listas simples, sem alocar no laço
   da física): `cipos`, `troncos`, `aguas`, o `pedido` dos interativos, o `modo` (`chao`, `cipo`,
   `escalada`), `noChao`, o `foco` da câmera no balanço e a `corrida` em andamento.
-- **Cipó** (`sistemas/cipo.ts`): pêndulo num plano em pé (`rumo`). Os nós `cipo-1`…`cipo-3` do GLB
-  giram em volta do pivô no galho (o `movimento/cipo.glb` solto não é usado aqui). As mãos seguram
+- **Cipó** (`sistemas/cipo.ts`): o balanço de quem segura é um pêndulo num plano em pé (`rumo`),
+  que a criança controla (o `movimento/cipo.glb` solto não é usado aqui). As mãos seguram
   onde os pés passam a `folgaDosPes` do chão (`comprimentoDaPegada`): segurar na alça do fim
   enterraria as pernas. Pega no chão (E / Usar, `raioDaDica`) ou no ar (a corda passa a
   `raioDaPegadaNoAr` das mãos), com a velocidade que o corpo traz. Bombeia como no parquinho: pedir
   para o lado em que já vai empurra, o contrário não freia, de través vira o plano. Pular (ou usar)
   solta com a velocidade do balanço (`impulsoAoSoltar`) mais um pulinho; no ar, o embalo fica até
   pisar e a direção pedida só corrige (`CONTROLE_NO_AR`). No cipó o corpo usa um controlador do
-  Rapier SEM grudar no chão (o grudar freava o balanço).
+  Rapier SEM grudar no chão (o grudar freava o balanço). `maosAcimaDoCentro` é 0,3 (as mãos do
+  avatar chibi não passam do queixo); a escalada tem o dela (`ESCALADA.maosAcimaDoCentro`, 1).
+- **Corda física** (`sistemas/cordas.ts`, puro, `tests/cordas.test.ts`): cada cipó é uma corrente
+  Verlet de `CORDAS.elos` elos presa no pivô; encosta no corpo DESENHADO (`movimento.corpoDesenhado`,
+  que o personagem escreve a cada quadro a partir do grupo do avatar e de `CORPO.desenho`: cápsula
+  do tronco e bola da cabeça), no tronco, nos outros cipós e no chão. Seguro, a corda do pivô até
+  a pegada fica na linha até as mãos (esticada) e o resto cai solto e encosta no corpo. Solto, o
+  balanço (`balanco`) é lido da corrente (o pegar no ar usa ele). Soltar marca
+  `esperandoOCorpoSair`. `BosqueVivo` roda `passoDasCordas` e desenha.
+- **Desenho da corda** (`mundo/cipo-desenhado.ts`): esconde a corda reta do nó `cipo-*` e põe um
+  tubo refeito a cada quadro sobre a corrente (Catmull-Rom, lados levados de anel em anel), a alça
+  na ponta e as folhas dobradas pela altura de repouso delas. Monta no efeito da ilha ativa e
+  desmonta ao sair (a corda do arquivo volta).
 - **Escalada** (`sistemas/escalada.ts`): o tronco da árvore dos cipós (`TRONCO_DOS_CIPOS`, um cone
   um pouco torto do tamanho da casca desenhada). Andar contra ele por `esperaParaGrudar` (ou pular
   nele) gruda; frente e trás sobem e descem, os lados seguem a tela, descer no pé solta, pular solta
@@ -192,9 +214,13 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `arte/ilhas`.
 - **Lago**: o nó `agua` não tem fundo no desenho. Ele vira uma água rasa (a elipse da caixa do nó):
   pisando nela o personagem nada (velocidade de nado, sem pular) e o avatar afunda até a cintura.
-- **Braços** (`personagem/bracos.ts`): as poses da plataforma não têm uma de segurar no alto; no
-  cipó e no tronco o braço e o antebraço apontam para cima depois da pose de cada quadro
-  (`AvatarDoJogo` monta `DepoisDaPose` logo depois do `AvatarRig`, então roda depois do mixer).
+- **Mãos no cipó** (`personagem/bracos.ts`): IK de dois ossos fecha os punhos na corda depois da
+  pose de cada quadro (`AvatarDoJogo` monta `DepoisDaPose` logo depois do `AvatarRig`, então roda
+  depois do mixer). A corda passa ao lado esquerdo do rosto (`CORDA_NO_CORPO`) e o corpo pende
+  `INCLINACAO_NO_CIPO` para trás; `personagem.tsx` põe o grupo do avatar de modo que esse ponto caia
+  nas mãos (com o giro e a inclinação do balanço). No tronco o clipe Escalar já põe as mãos.
+  Medidas do avatar (ombro, braço, cabeça) estão no comentário de `bracos.ts`: o rig recentra o
+  avatar ao ficar de pé, então nada pode inclinar o grupo antes disso.
 - **Percurso nas copas** (`sistemas/percurso.ts`, `PERCURSO_DAS_COPAS`): a placa ao pé da escada
   começa (E / Usar); cada deque alcançado vira ponto de volta; cair no chão da ilha depois do
   primeiro deque escurece, leva à `volta` do último deque e clareia (`corteSaiMs`, `corteVoltaMs`),

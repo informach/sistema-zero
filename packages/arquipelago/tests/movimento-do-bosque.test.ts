@@ -30,6 +30,7 @@ import {
   alturaMaxima,
   alturaMinima,
   corpoNaEscalada,
+  ESCALADA,
   meioNaAltura,
   raioNaAltura,
   saltoDaEscalada,
@@ -238,7 +239,7 @@ describe('cipós do Bosque', () => {
 
 describe('tronco de escalar (a árvore do galho dos cipós)', () => {
   const t = TRONCO_DOS_CIPOS
-  const mao = CIPO.maosAcimaDoCentro
+  const mao = ESCALADA.maosAcimaDoCentro
   const troncoDaArvore = () =>
     (doGrupo('col-cil-tronco') as Cilindro[]).filter(
       (c) => Math.hypot(c.posicao[0] - t.base.x, c.posicao[2] - t.base.z) < 1,

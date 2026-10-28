@@ -5,17 +5,33 @@ mock.module('server-only', () => ({}))
 
 const { createArquipelagoRoutes } = await import('../src/routes/arquipelago')
 
-type Chamada = { caminho: string; metodo?: string; corpo?: unknown }
+type Chamada = { caminho: string; metodo?: string; corpo?: unknown; query?: unknown }
+type Resposta = { status: number; body: unknown; retryAfter?: string }
 
-function montar(resposta: { status: number; body: unknown; retryAfter?: string }) {
+const PERFIL = '11111111-1111-4111-8111-111111111111'
+const IRMAO = '33333333-3333-4333-8333-333333333333'
+
+function montar(
+  resposta: Resposta,
+  perfis: Resposta = { status: 200, body: { profiles: [{ id: PERFIL }, { id: IRMAO }] } },
+) {
   const chamadas: Chamada[] = []
   const routes = createArquipelagoRoutes({
     gateway: {
-      gatewayFetch: async (caminho: string, opts: { method?: string; body?: unknown }) => {
-        chamadas.push({ caminho, metodo: opts.method, corpo: opts.body })
+      gatewayFetch: async (
+        caminho: string,
+        opts: { method?: string; body?: unknown; query?: unknown },
+      ) => {
+        chamadas.push({
+          caminho,
+          metodo: opts.method,
+          corpo: opts.body,
+          ...(opts.query ? { query: opts.query } : {}),
+        })
         return resposta
       },
     } as never,
+    profiles: { list: async () => perfis } as never,
   })
   return { routes, chamadas }
 }
@@ -80,6 +96,54 @@ describe('repasse do Arquipélago', () => {
     expect(chamadas[0]?.caminho).toBe('/arquipelago/familia/limite')
   })
 
+  test('a leitura do limite leva os perfis da conta para o serviço decidir quem vê o jogo', async () => {
+    const lido = { limiteDiarioMinutos: 30, algumaCriancaVe: true }
+    const { routes, chamadas } = montar({ status: 200, body: lido })
+    const r = await routes.arquipelagoLimiteDaFamilia.GET()
+    expect(await r.json()).toEqual(lido)
+    expect(chamadas).toEqual([
+      {
+        caminho: '/arquipelago/familia/limite',
+        metodo: 'GET',
+        corpo: undefined,
+        query: { perfis: `${PERFIL},${IRMAO}` },
+      },
+    ])
+  })
+
+  test('conta sem perfis vai sem nenhum; sem a lista de perfis, nada segue', async () => {
+    const vazia = montar({ status: 200, body: {} }, { status: 200, body: { profiles: [] } })
+    await vazia.routes.arquipelagoLimiteDaFamilia.GET()
+    expect(vazia.chamadas[0]?.query).toEqual({ perfis: '' })
+    const recusada = montar(
+      { status: 200, body: {} },
+      { status: 403, body: { error: { code: 'FORBIDDEN' } } },
+    )
+    const r = await recusada.routes.arquipelagoLimiteDaFamilia.GET()
+    expect(r.status).toBe(403)
+    expect(recusada.chamadas).toEqual([])
+    for (const corpo of [null, {}, { profiles: 'x' }]) {
+      const estranha = montar({ status: 200, body: {} }, { status: 200, body: corpo })
+      expect((await estranha.routes.arquipelagoLimiteDaFamilia.GET()).status).toBe(502)
+      expect(estranha.chamadas).toEqual([])
+    }
+  })
+
+  test('o perfil que ainda entra na jornada não conta (a criança não abre esse perfil)', async () => {
+    const perfis = {
+      status: 200,
+      body: {
+        profiles: [
+          { id: PERFIL, admissionState: 'pending' },
+          { id: IRMAO, admissionState: 'ready' },
+        ],
+      },
+    }
+    const { routes, chamadas } = montar({ status: 200, body: {} }, perfis)
+    await routes.arquipelagoLimiteDaFamilia.GET()
+    expect(chamadas[0]?.query).toEqual({ perfis: IRMAO })
+  })
+
   test('cliente: só nomes do build, com os cabeçalhos de cache do serviço', async () => {
     const pedidos: string[] = []
     globalThis.fetch = (async (url: URL) => {
@@ -118,6 +182,7 @@ describe('repasse do Arquipélago', () => {
           return { status: 200, body: { ok: true } }
         },
       } as never,
+      profiles: { list: async () => ({ status: 200, body: { profiles: [] } }) } as never,
     })
     const id = '22222222-2222-4222-8222-222222222222'
     const ctx = (valor: string) => ({ params: Promise.resolve({ id: valor }) })

@@ -31,7 +31,8 @@ describe('quem está chamando', () => {
   test('responsável não joga; só ele mexe no limite', () => {
     const pai = { ...ativo, 'x-auth-user-id': CONTA, 'x-auth-kids-context': 'parent' }
     expect(() => lerJogador(pai)).toThrow(ForbiddenError)
-    expect(lerResponsavel(pai)).toEqual({ contaId: CONTA, somenteLeitura: false })
+    expect(lerResponsavel(pai)).toEqual({ contaId: CONTA, equipe: false, somenteLeitura: false })
+    expect(lerResponsavel({ ...pai, 'x-auth-user-role': 'staff' }).equipe).toBe(true)
     expect(() =>
       lerResponsavel({ ...ativo, 'x-auth-user-id': PERFIL, 'x-auth-account-id': CONTA }),
     ).toThrow(ForbiddenError)

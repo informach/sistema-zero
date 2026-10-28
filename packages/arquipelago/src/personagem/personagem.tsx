@@ -8,7 +8,7 @@ import {
 } from '@react-three/rapier'
 import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
-import { type Group, MathUtils } from 'three'
+import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type CipoVivo, type ModoDoCorpo, type TroncoVivo, useJogo } from '../estado/contexto'
 import { dentroDaAgua } from '../mundo/bosque'
 import { maisPerto } from '../mundo/interativos'
@@ -31,6 +31,7 @@ import {
   pegarCipo,
   velocidadeAoSoltar,
 } from '../sistemas/cipo'
+import { type CorpoQueEmpurra, soltarCorda } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import {
   corpoNaEscalada,
@@ -47,7 +48,13 @@ import { ritmo } from '../sistemas/necessidades'
 import { jogoPausado } from '../sistemas/pausa'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { AvatarDoJogo } from './avatar-do-jogo'
-import { acharBracos, type BracosDoAvatar, levantarBracos } from './bracos'
+import {
+  acharBracos,
+  type BracosDoAvatar,
+  CORDA_NO_CORPO,
+  INCLINACAO_NO_CIPO,
+  segurarACorda,
+} from './bracos'
 
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
@@ -62,6 +69,23 @@ const NADAR = 2.6
  * para o pé encostar no chão (sem ela o avatar anda flutuando).
  */
 const FOLGA_DO_CONTROLADOR = 0.06
+/** Onde a corda passa no corpo, já girado (conta do desenho no cipó, sem alocar no quadro). */
+const noCorpo = new Vector3()
+/** O corpo desenhado que as cordas enxergam (reescrito a cada quadro). */
+const corpoDesenhado: CorpoQueEmpurra = {
+  de: { x: 0, y: 0, z: 0 },
+  ate: { x: 0, y: 0, z: 0 },
+  raio: CORPO.desenho.raio,
+  cabeca: { x: 0, y: 0, z: 0 },
+  raioDaCabeca: CORPO.desenho.raioDaCabeca,
+}
+/** O ponto no meio do corpo a `altura` dos pés, no mundo (o desenho é filho do corpo em `centro`). */
+function noMundo(saida: Ponto, altura: number, desenho: Matrix4, centro: Ponto): void {
+  noCorpo.set(0, altura, 0).applyMatrix4(desenho)
+  saida.x = centro.x + noCorpo.x
+  saida.y = centro.y + noCorpo.y
+  saida.z = centro.z + noCorpo.z
+}
 /** O quanto o avatar inclina para dentro da curva (radianos por radiano/segundo de giro). */
 const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
@@ -112,6 +136,8 @@ interface Vivo {
   agarrado: ReturnType<typeof criarAgarrado>
   contraOTronco: number
   soltouDoTronco: number
+  /** 0 no chão, 1 pendurado no cipó (o desenho passa de um para o outro suave). */
+  noCipo: number
 }
 
 /**
@@ -137,7 +163,7 @@ export function Personagem() {
     noChao: true,
     velY: 0,
     nadando: false,
-    pendurado: false,
+    pendurado: null,
   })
   const v = useRef<Vivo>({
     modo: 'chao',
@@ -153,6 +179,7 @@ export function Personagem() {
     agarrado: criarAgarrado(),
     contraOTronco: 0,
     soltouDoTronco: Number.NEGATIVE_INFINITY,
+    noCipo: 0,
   }).current
 
   const inicial = useMemo(() => {
@@ -206,12 +233,13 @@ export function Personagem() {
   const depoisDaPose = useMemo(
     () => () => {
       const corpoVisivel = visual.current
-      if (v.modo === 'chao' || !corpoVisivel) return
+      // No cipó as mãos miram a corda; no tronco o clipe "Escalar" já alterna as mãos na casca.
+      if (v.modo !== 'cipo' || !corpoVisivel) return
       if (!bracos.current && !procurouBracos.current) {
         procurouBracos.current = true
         bracos.current = acharBracos(corpoVisivel)
       }
-      if (bracos.current) levantarBracos(bracos.current, corpoVisivel, v.modo)
+      if (bracos.current) segurarACorda(bracos.current, corpoVisivel)
     },
     [v],
   )
@@ -221,6 +249,7 @@ export function Personagem() {
     const mudarModo = (modo: ModoDoCorpo, agora: number) => {
       if (v.cipo && modo !== 'cipo') {
         v.cipo.seguro = false
+        soltarCorda(v.cipo)
         v.cipo.soltoEm = agora
         v.cipo = null
       }
@@ -255,7 +284,7 @@ export function Personagem() {
       velY.current = 0
     }
     const agarrar = (t: TroncoVivo, de: Ponto, agora: number) => {
-      grudar(t.tronco, de, v.agarrado, DO_CENTRO_AO_PE, CIPO.maosAcimaDoCentro)
+      grudar(t.tronco, de, v.agarrado, DO_CENTRO_AO_PE, ESCALADA.maosAcimaDoCentro)
       v.inicio.x = de.x
       v.inicio.y = de.y
       v.inicio.z = de.z
@@ -393,7 +422,7 @@ export function Personagem() {
         dt,
         RAIO,
         DO_CENTRO_AO_PE,
-        CIPO.maosAcimaDoCentro,
+        ESCALADA.maosAcimaDoCentro,
       )
       corpoNaEscalada(t, v.agarrado, RAIO, v.alvo)
       const k = Math.min(1, v.noModo / CIPO.encaixe)
@@ -482,7 +511,7 @@ export function Personagem() {
           let contra: TroncoVivo | null = null
           for (const t of movimento.troncos) {
             const tr = t.tronco
-            if (!naAlturaDoTronco(tr, prox.y, DO_CENTRO_AO_PE, CIPO.maosAcimaDoCentro)) continue
+            if (!naAlturaDoTronco(tr, prox.y, DO_CENTRO_AO_PE, ESCALADA.maosAcimaDoCentro)) continue
             if (distanciaDaCasca(tr, prox, RAIO) > ESCALADA.distanciaParaGrudar) continue
             const ax = (tr.base.x + tr.topo.x) / 2 - prox.x
             const az = (tr.base.z + tr.topo.z) / 2 - prox.z
@@ -503,21 +532,31 @@ export function Personagem() {
     // Para onde o avatar olha (vira suave), a inclinação na curva e o que as animações leem. Os
     // passos, o balanço do corpo e a inclinação de quem corre vêm das animações (`avatar-do-jogo`).
     const m = animacao.current
-    const real = v.modo === 'chao' ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt : 0
+    // No chão, a velocidade no chão; na escalada, pela casca (subindo, descendo ou de lado).
+    const real =
+      v.modo === 'chao'
+        ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt
+        : v.modo === 'escalada'
+          ? Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
+          : 0
     m.velocidade += (real - m.velocidade) * Math.min(1, dt * 14)
     m.noChao = v.modo !== 'chao' || noChao.current
     m.velY = velY.current
     m.nadando = nadando
-    m.pendurado = v.modo !== 'chao'
+    m.pendurado = v.modo === 'chao' ? null : v.modo
     const vis = visual.current
     if (vis) {
       let delta = direcao.current - vis.rotation.y
       delta = Math.atan2(Math.sin(delta), Math.cos(delta))
       const giro = delta * Math.min(1, dt * 12)
       vis.rotation.y += giro
-      vis.position.y = -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR - afundar
       // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita.
-      const inclinar = v.modo === 'cipo' && v.cipo ? -v.cipo.balanco.angulo : nadando ? 1.1 : 0
+      const inclinar =
+        v.modo === 'cipo' && v.cipo
+          ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
+          : nadando
+            ? 1.1
+            : 0
       vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
       const curva =
         v.modo === 'chao' && !nadando
@@ -528,6 +567,24 @@ export function Personagem() {
             )
           : 0
       vis.rotation.z = MathUtils.lerp(vis.rotation.z, curva, Math.min(1, dt * 8))
+      // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto da corda no
+      // corpo (ao lado do rosto) fica em cima das mãos, com o giro e a inclinação do balanço.
+      v.noCipo += ((v.modo === 'cipo' ? 1 : 0) - v.noCipo) * Math.min(1, dt * 10)
+      noCorpo.copy(CORDA_NO_CORPO).applyEuler(vis.rotation)
+      const k = v.noCipo
+      vis.position.set(
+        -noCorpo.x * k,
+        (-DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR - afundar) * (1 - k) +
+          (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
+        -noCorpo.z * k,
+      )
+      // O corpo desenhado, no mundo, para as cordas encostarem nele (o corpo do Rapier já está em
+      // `prox`; o desenho é filho dele).
+      vis.updateMatrix()
+      noMundo(corpoDesenhado.de, CORPO.desenho.de, vis.matrix, prox)
+      noMundo(corpoDesenhado.ate, CORPO.desenho.ate, vis.matrix, prox)
+      noMundo(corpoDesenhado.cabeca, CORPO.desenho.cabeca, vis.matrix, prox)
+      movimento.corpoDesenhado = corpoDesenhado
     }
 
     rastro.x = prox.x
