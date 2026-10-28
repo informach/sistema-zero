@@ -761,6 +761,53 @@ a câmera ignora).
   pedra do Bosque foram afastadas), porque quem dá a volta no tronco lá embaixo passaria por dentro
   delas (`LONGE_DO_TRONCO_DE_ESCALAR`, em `arte/ilhas/bosque.py`).
 
+### 6.15 A Capi e os bichos do Bosque (regras prontas, ainda fora da tela)
+
+Arquivos: `arquipelago/src/sistemas/moradores.ts` (a Capi), `falas-da-capi.ts` (os textos dela),
+`esconde.ts` (o esconde-esconde) e `bichos.ts` (o bicho adotado). As regras estão testadas
+(`tests/moradores.test.ts`, `tests/bichos.test.ts`), mas a Capi, os esconderijos e o bicho ainda
+não aparecem no jogo. O plano da parte que falta: `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
+
+- **O dia:** tudo o que é "uma vez por dia" conta pelo dia do calendário no horário do aparelho
+  (`diaDe`), não pelo dia e noite do jogo.
+- **Amizade com a Capi** (`AMIZADE`): de 0 a 500 (`AMIZADE_MAXIMA`, no contrato), 5 corações de 100
+  (`coracoes`). A primeira conversa do dia dá 10, entregar o pedido do dia dá 30, um presente de que
+  ela gosta dá 20 e um comum dá 8. Só a primeira conversa e o primeiro presente do dia contam. A
+  amizade nunca desce.
+- **Presentes** (`darPresente`, `GOSTOS_DA_CAPI`): milho e salada são os preferidos; pipoca,
+  alface e tomate são comuns. O que não é comida ela devolve e o item fica com a criança. Depois
+  do primeiro presente do dia ela pede para guardar para amanhã, e o item também fica.
+- **Aniversário** (`ANIVERSARIO_DA_CAPI`): 12 de março. O presente vale o dobro e ela fala dele.
+- **Pedido do dia** (`PEDIDOS_DA_CAPI`, `pedidoDoDia`): duas alfaces, dois tomates, um milho, uma
+  salada ou duas pipocas e, enquanto houver bicho escondido, achar mais um bicho. O sorteio usa o
+  dia e o perfil, então o pedido é o mesmo o dia inteiro em qualquer aparelho, e fica guardado no
+  salvamento. Entregar tira os itens do inventário (`entregarPedido`). O de achar só se cumpre com
+  um bicho achado depois do pedido.
+- **Conversa** (`falasDaCapi`): no primeiro encontro ela conta a história dos bichos escondidos. Na
+  primeira conversa do dia: o aniversário (se for), uma fala do nível de amizade (duas por nível,
+  trocando pelo dia), quantos bichos já foram achados, o bicho adotado e o pedido. As outras
+  conversas do mesmo dia são só uma despedida. Os textos seguem as regras do jogo: sem travessão,
+  sem exclamação e sem começar com pergunta (o teste confere).
+- **Esconde-esconde** (`ESCONDERIJOS`): cada bicho fica sempre no mesmo lugar, nas âncoras
+  `esconderijo-1` a `esconderijo-4` do `bosque.glb` (ainda não existem no modelo). A pista
+  (rabinho, orelhas, farfalhar, focinho) aparece a 4 m (`RAIO_DA_PISTA`) e dá para achar a 1,4 m
+  (`RAIO_DE_ACHAR`). O Zappy diz pertinho (até 2,1 m), quentinho (até 7 m), morno (até 15 m) ou
+  frio (`calor`, `FALA_DO_CALOR`), sempre do escondido mais perto (`maisPertoEscondido`). Achar fica
+  guardado para sempre.
+- **Adotar** (`adotar`, `nomeValido`): só um bicho já achado, um por vez nesta fase. O nome tem de
+  1 a 16 caracteres, só letras, espaço e hífen, começando por letra. Fica só no salvamento da
+  criança e ninguém mais vê. O bicho chega com 80 em cada medida.
+- **Cuidar** (`QUEDA_DO_BICHO_POR_MINUTO`, `CUIDADO`): fome cai 1,5, limpeza 0,8 e carinho 1 por
+  minuto JOGADO (quem ficou longe não volta para um bicho triste). A comida repõe o dobro do que
+  repõe na criança; o banho repõe 60 e o carinho 25. Abaixo de 30 em qualquer medida ele fica
+  tristinho e não faz o truque (`tristinho`). Ele nunca morre nem foge.
+- **Crescer** (`contarDiaCuidado`, `crescer`): um dia conta como bem cuidado quando as três medidas
+  passam de 60 em algum momento dele. Com 7 dias assim, o filhote vira adulto.
+- **Truque** (`ensinar`, `fazTruque`, `TRUQUE`): uma sessão por dia, com as três medidas acima de
+  50. Na quinta sessão ele aprende e passa a fazer o truque quando pedem (dar a pata, rolar, dar um
+  pulinho ou girar).
+- **Moedas:** nada disto paga moedas.
+
 ## 7. Desafios
 
 Arquivos principais:

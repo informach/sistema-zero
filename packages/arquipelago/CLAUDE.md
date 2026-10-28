@@ -31,7 +31,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `estado/`: loja zustand (uma por montagem), contexto, relógios (necessidades, posição, tempo).
 - `sistemas/`: regras puras e testadas (dia e noite, itens, necessidades, horta, receitas,
   fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy, ilhas
-  completas, cipó, escalada, percurso e as medidas do corpo). Sem React. Os números de cada regra,
+  completas, cipó, escalada, percurso, as medidas do corpo e, ainda fora da tela, a Capi
+  (`moradores.ts`, `falas-da-capi.ts`), o esconde-esconde (`esconde.ts`) e o bicho adotado
+  (`bichos.ts`)). Sem React. Os números de cada regra,
   em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).

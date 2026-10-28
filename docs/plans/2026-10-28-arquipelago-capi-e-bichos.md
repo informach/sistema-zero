@@ -53,8 +53,9 @@ a casa dela, segue pela ilha, come, toma banho, aprende truques e cresce de filh
 ### Bichos (`sistemas/bichos.ts`)
 
 - **Adotar:** depois de achar o primeiro, a Capi oferece adotar um dos que estão no cercadinho. A
-  criança escolhe e dá um nome (até 16 letras, com o filtro de nomes que a plataforma já usa). Só um
-  bicho adotado nesta fase.
+  criança escolhe e dá um nome (de 1 a 16 caracteres, só letras, espaço e hífen). O nome fica só no
+  salvamento dela e ninguém mais vê, por isso não passa por moderação. Só um bicho adotado nesta
+  fase.
 - **Cuidar:** três medidas de 0 a 100, que caem devagar com o tempo jogado (não com o tempo de
   relógio, para não punir quem ficou longe): fome (alimentar com ração do armazém ou comida da horta),
   limpeza (banho no lago ou na bacia de casa) e carinho (fazer carinho, brincar).
