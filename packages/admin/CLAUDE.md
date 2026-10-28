@@ -1,5 +1,39 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Jogo · Arquipélago: manifesto de desafios (28/10/2026)
+
+`/admin/jogo` (`app/admin/jogo/game-admin.tsx`) ganhou o painel **Manifesto de desafios**
+(`challenge-manifest-panel.tsx`), com o guia da dona em `docs/arquipelago-manifesto-de-desafios.md`.
+O painel serve para subir o arquivo, conferir, aplicar, arquivar o que ficou de fora (opcional) e
+baixar um desafio, a ilha ou o jogo da lente.
+
+- **Regras puras:** ficam em `lib/challenge-manifest.ts`, com testes em
+  `tests/challenge-manifest.test.ts`. São elas:
+  - `parseChallengeManifest`: o erro diz o desafio e o campo em português.
+  - `splitManifest`: lotes de até 4 desafios e 3,5 MB.
+  - `mergeConferences`, `missingFromManifest` e `manifestFileName`.
+- ⚠️ **Os do Quadro das Cores de uma mesma ilha e público vão SEMPRE no mesmo lote.** O serviço
+  só vê a troca de quadro entre desafios do mesmo pedido. Num lote separado, o quadro apareceria
+  ocupado.
+- **Impressão por lote:** cada lote tem a própria impressão. O aplicar manda o lote com a
+  impressão da conferência dele, pula o lote sem nada a fazer e para no primeiro erro. Num 409
+  `MANIFESTO_DESATUALIZADO`, pede para conferir de novo; o que já foi aplicado volta como igual.
+  Arquivar os ausentes só roda depois de todos os lotes aplicados e usa a `revisao` lida na
+  conferência.
+- **Chamadas ao BFF:** `app/admin/jogo/game-request.ts` (`gameRequest`, `GameRequestError` com
+  status e código). Tolera corpo que não é JSON, como o 413 da borda. `editHint: false` tira o
+  recado do editor no 409.
+- **BFF:** `lib/arquipelago-admin.ts` aceita:
+  - GET `desafios/:id/manifesto`
+  - GET `manifestos/exportar` (público opcional)
+  - POST `manifestos/conferir` e POST `manifestos/aplicar`
+
+  A rota libera a equipe (staff) para `conferir`, como já fazia com `analisar`. Aplicar é só da
+  administração. Testes em `tests/game-challenge-authoring.test.ts` e
+  `tests/fixtures/game-admin-route.fixture.ts`.
+- **Desafio aberto no editor:** se o manifesto mudou o desafio que está aberto, o editor relê
+  sozinho. Com edição não salva, ele avisa em vez de descartar.
+
 ## Negócio por comunidade (26/10/2026)
 
 A lente Kids/Adultos filtra catálogo, campanhas, vendas/assinaturas e resultados de

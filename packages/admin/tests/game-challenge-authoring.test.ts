@@ -103,3 +103,36 @@ test('Admin BFF allows only game authoring paths and requires audience in lists'
     }).body,
   ).toEqual({ revisaoBase: 3 })
 })
+test('Admin BFF: manifesto de um desafio, exportar com filtro opcional e só conferir e aplicar', () => {
+  expect(
+    gameAdminRequest('GET', ['desafios', id, 'manifesto'], new URLSearchParams(), undefined),
+  ).toEqual({
+    path: `/arquipelago/admin/desafios/${id}/manifesto`,
+    body: undefined,
+  })
+  expect(
+    gameAdminRequest('GET', ['manifestos', 'exportar'], new URLSearchParams(), undefined).query,
+  ).toEqual({})
+  expect(
+    gameAdminRequest(
+      'GET',
+      ['manifestos', 'exportar'],
+      new URLSearchParams('publico=kids&ilha=bosque'),
+      undefined,
+    ).query,
+  ).toEqual({ publico: 'kids', ilha: 'bosque' })
+  for (const [method, path, search] of [
+    ['GET', ['manifestos', 'exportar'], 'ilha=atlantida'],
+    ['GET', ['manifestos', 'exportar'], 'outro=1'],
+    ['GET', ['desafios', id, 'manifesto'], 'x=1'],
+    ['GET', ['desafios', 'nao-e-id', 'manifesto'], ''],
+    ['POST', ['manifestos', 'apagar'], ''],
+    ['POST', ['manifestos', 'conferir'], 'x=1'],
+  ] as const)
+    expect(() =>
+      gameAdminRequest(method, [...path], new URLSearchParams(search), { manifesto: {} }),
+    ).toThrow()
+  expect(() =>
+    gameAdminRequest('POST', ['manifestos', 'conferir'], new URLSearchParams(), { manifesto: {} }),
+  ).toThrow()
+})

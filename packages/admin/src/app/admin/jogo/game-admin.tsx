@@ -11,8 +11,9 @@ import {
   DesafioDaEquipeSchema,
   DesafiosDaEquipeSchema,
   ILHA_IDS,
+  type IlhaId,
   ilha,
-  ProblemasDePublicacaoSchema,
+  ManifestoDeDesafiosSchema,
   type ResumoDoDesafio,
   TIPOS_DE_DESAFIO,
 } from '@sistemazero/arquipelago-contracts'
@@ -23,10 +24,11 @@ import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { z } from 'zod'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { GameObjectivesEditor } from '@/components/editor/game-objectives-editor'
 import { StudioEmbed } from '@/components/studio/studio-embed'
+import { manifestFileName } from '@/lib/challenge-manifest'
+import { downloadJson } from '@/lib/download-json'
 import {
   type ChallengeDraft,
   challengeDraft,
@@ -34,6 +36,8 @@ import {
   challengeType,
   newChallenge,
 } from '@/lib/game-challenge-authoring'
+import { ChallengeManifestPanel } from './challenge-manifest-panel'
+import { gameRequest as request } from './game-request'
 
 const types = {
   'quadro-das-cores': 'Quadro das Cores',
@@ -41,35 +45,10 @@ const types = {
   'pedido-de-morador': 'Pedido de morador',
 }
 const listSchema = DesafiosDaEquipeSchema
+const islandIds = new Set<string>(ILHA_IDS)
+const isIsland = (v: string): v is IlhaId => islandIds.has(v)
 const coverageSchema = CoberturaDosCartoesSchema
 type Coverage = CoberturaDosCartoes
-const apiError = z.object({ error: z.object({ message: z.string() }) })
-
-async function request(
-  path: string,
-  method: 'GET' | 'POST' | 'PUT',
-  body?: unknown,
-  signal?: AbortSignal,
-): Promise<unknown> {
-  const res = await fetch(`/api/arquipelago/${path}`, {
-    method,
-    cache: 'no-store',
-    headers: { 'content-type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    signal,
-  })
-  const raw: unknown = await res.json()
-  signal?.throwIfAborted()
-  if (!res.ok) {
-    const parsed = apiError.safeParse(raw)
-    const issues = ProblemasDePublicacaoSchema.safeParse(raw)
-    const details = issues.success ? issues.data.problemas.map((p) => p.mensagem).join(' ') : ''
-    throw new Error(
-      `${parsed.success ? parsed.data.error.message : 'Não foi possível concluir esta operação.'}${details ? ` ${details}` : ''}${res.status === 409 ? ' Sua edição permanece aqui. Reabra a versão atual antes de tentar salvar novamente.' : ''}`,
-    )
-  }
-  return raw
-}
 const card = 'space-y-4 rounded-xl border border-border bg-card p-5'
 
 export function GameAdmin({ canWrite }: { canWrite: boolean }) {
@@ -250,6 +229,27 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
       }
     })
   }
+  function exportOne(id: string) {
+    void run(async (signal) => {
+      const manifest = ManifestoDeDesafiosSchema.parse(
+        await request(`desafios/${id}/manifesto`, 'GET', undefined, signal),
+      )
+      downloadJson(manifestFileName(manifest), manifest)
+    })
+  }
+  function manifestApplied(slugs: string[]) {
+    refreshList()
+    // O desafio aberto no editor pode ter mudado pelo arquivo: relê, ou avisa se há edição.
+    if (!saved || !slugs.includes(saved.resumo.slug)) return
+    if (dirty)
+      setError(
+        `O manifesto mudou "${saved.resumo.titulo}", que está aberto com edições não salvas. Copie o que precisar e reabra o desafio antes de salvar.`,
+      )
+    else
+      void run(async (signal) =>
+        replace(await request(`desafios/${saved.resumo.id}`, 'GET', undefined, signal)),
+      )
+  }
   function editProject(role: 'projetoInicial' | 'gabarito') {
     if (!draft || !canWrite) return
     void run(async () => {
@@ -362,14 +362,33 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
                     {r.alteradoDepoisDePublicar ? ' · alterações não publicadas' : ''}
                   </p>
                 </div>
-                <Button variant="outline" disabled={busy || !!editor} onClick={() => open(r.id)}>
-                  Abrir desafio
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" disabled={busy || !!editor} onClick={() => open(r.id)}>
+                    Abrir desafio
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={busy}
+                    aria-label={`Baixar manifesto: ${r.titulo}`}
+                    onClick={() => exportOne(r.id)}
+                  >
+                    Baixar manifesto
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+      {tab === 'desafios' && (
+        <ChallengeManifestPanel
+          publico={publico}
+          island={isIsland(island) ? island : ''}
+          canWrite={canWrite}
+          disabled={busy || !!editor}
+          onApplied={manifestApplied}
+        />
+      )}
       {tab === 'cartoes' && coverage?.publico === publico && (
         <section className={card}>
           <h2 className="text-lg font-semibold">Cartões dos Lumis e cursos</h2>

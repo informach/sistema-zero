@@ -20,7 +20,10 @@ type Context = { params: Promise<{ path: string[] }> }
 
 async function handle(request: Request, context: Context) {
   const session = await requireLocalAdminSession('Sem permissão para alterar desafios.', {
-    allowStaff: request.method === 'GET' || (await context.params).path.at(-1) === 'analisar',
+    // Ler, analisar e conferir um manifesto são da equipe toda; gravar é da administração.
+    allowStaff:
+      request.method === 'GET' ||
+      ['analisar', 'conferir'].includes((await context.params).path.at(-1) ?? ''),
     signal: request.signal,
   })
   if (session instanceof NextResponse) return session

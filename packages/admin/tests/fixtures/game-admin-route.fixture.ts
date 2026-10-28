@@ -85,3 +85,64 @@ test('admin encaminha revisão, deadline e cancelamento; rota desconhecida é re
   expect((await invoke('apagar-tudo')).status).toBe(400)
   expect(calls).toHaveLength(1)
 })
+const projeto = { files: { 'index.html': '', 'style.css': '', 'script.js': '' } }
+const manifesto = {
+  formato: 'arquipelago-desafios',
+  versao: 1,
+  escopo: 'desafio',
+  desafios: [
+    {
+      slug: 'corrida',
+      publico: 'kids',
+      ilha: 'bosque',
+      tipo: 'quadro-das-cores',
+      quadro: 1,
+      ordem: 0,
+      publicar: true,
+      conteudo: {
+        versao: 1,
+        titulo: 'Corrida',
+        enunciado: 'Os bichos apostam corrida.',
+        dicas: [],
+        projetoInicial: projeto,
+        gabarito: projeto,
+        objetivos: [{ id: 'o1', label: 'Chega', rule: { type: 'usesBlock', block: 'x' } }],
+        recompensa: { cor: true, moedas: 20, moedasExtra: 0 },
+        blocosManuais: { acrescentar: [], retirar: [] },
+      },
+    },
+  ],
+}
+const manifestoPost = (action: 'conferir' | 'aplicar', body: unknown) =>
+  route.POST(
+    new Request(`https://admin.test/api/arquipelago/manifestos/${action}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+    { params: Promise.resolve({ path: ['manifestos', action] }) },
+  )
+test('manifesto: a equipe confere, só a administração aplica; exportar leva o filtro', async () => {
+  user.role = 'staff'
+  expect((await manifestoPost('conferir', { manifesto })).status).toBe(200)
+  expect(calls[0]).toMatchObject({
+    path: '/arquipelago/admin/manifestos/conferir',
+    options: { method: 'POST', body: { manifesto } },
+  })
+  expect((await manifestoPost('aplicar', { manifesto, impressao: 'x' })).status).toBe(403)
+  expect(calls).toHaveLength(1)
+  user.role = 'admin'
+  expect((await manifestoPost('aplicar', { manifesto, impressao: 'x' })).status).toBe(200)
+  expect((await manifestoPost('aplicar', { manifesto })).status).toBe(400)
+  expect(calls).toHaveLength(2)
+  user.role = 'staff'
+  const exportar = await route.GET(
+    new Request('https://admin.test/api/arquipelago/manifestos/exportar?publico=kids&ilha=bosque'),
+    { params: Promise.resolve({ path: ['manifestos', 'exportar'] }) },
+  )
+  expect(exportar.status).toBe(200)
+  expect(calls[2]).toMatchObject({
+    path: '/arquipelago/admin/manifestos/exportar',
+    options: { method: 'GET', query: { publico: 'kids', ilha: 'bosque' } },
+  })
+})
