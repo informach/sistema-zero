@@ -21,6 +21,7 @@ import {
   SomenteLeituraError,
 } from '../../application/erros'
 import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
+import type { ServicoDaFamilia } from '../../application/servico-da-familia'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
@@ -30,6 +31,7 @@ import {
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
 import { rotasDaEquipe } from './rotas-da-equipe'
+import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
@@ -40,6 +42,8 @@ export interface DependenciasHttp {
   cartas: ServicoDasCartas
   equipe: ServicoDaEquipe
   desafios: ServicoDosDesafios
+  /** A área dos pais (semana e permissões); ausente, as rotas da família não existem. */
+  familia?: ServicoDaFamilia
   cliente: { dir: string; servirMapas: boolean }
   tokenInterno?: string
   maxRequestBodyBytes?: number
@@ -198,6 +202,11 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.familia
+        ? rotasDaFamilia({ familia: deps.familia, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .use(rotasDosDesafios({ desafios: deps.desafios, tokenInterno: deps.tokenInterno }))
     .get('/healthz', () => ({ status: 'ok' }))
     .get('/readyz', async ({ set }) => {

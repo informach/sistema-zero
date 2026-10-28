@@ -84,8 +84,14 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(student, path as string, method as string, 'aluno')).toBe(true)
       expect(kidsMayAccess(parent, path as string, method as string, 'responsavel')).toBe(false)
     }
-    for (const path of ['/arquipelago/familia/limite', '/arquipelago//familia/limite']) {
+    for (const path of [
+      '/arquipelago/familia/limite',
+      '/arquipelago//familia/limite',
+      '/arquipelago/familia/permissoes',
+      '/arquipelago/familia/semana',
+    ]) {
       expect(kidsMayAccess(student, path, 'PUT', 'aluno')).toBe(false)
+      expect(kidsMayAccess(student, path, 'GET', 'aluno')).toBe(false)
     }
   })
   test('a seção Jogo do Admin nunca abre para aluno nem responsável', () => {
@@ -113,8 +119,17 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(parent, path, method, 'responsavel')).toBe(false)
     }
   })
-  test('o responsável só muda o limite diário', () => {
+  test('o responsável cuida só da família: limite, permissões e a leitura da semana', () => {
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'GET', 'responsavel')).toBe(true)
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'PUT', 'responsavel')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/permissoes', 'GET', 'responsavel')).toBe(
+      true,
+    )
+    expect(kidsMayAccess(parent, '/arquipelago/familia/permissoes', 'PUT', 'responsavel')).toBe(
+      true,
+    )
+    expect(kidsMayAccess(parent, '/arquipelago/familia/semana', 'GET', 'responsavel')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/semana', 'PUT', 'responsavel')).toBe(false)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/outra', 'GET', 'responsavel')).toBe(false)
   })
 })

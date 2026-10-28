@@ -152,6 +152,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `GET /desafios`, `GET /desafios/:id`, `POST /desafios/:id/verificar`, `POST /desafios/:id/recompensa-vista` | jogador liberado (com `ARQUIPELAGO_DESAFIOS`) | ver "Jogar os desafios" |
 | `GET /familia/limite?perfis=` | responsável do Kids | o limite diário da família e `algumaCriancaVe` (algum dos perfis da conta, mandados pelo BFF dos pais, vê o jogo pela política de acesso); perfis fora do formato → 400 |
 | `PUT /familia/limite` | responsável do Kids | muda o limite diário da família (padrão 30, de 10 a 240, passo 5) |
+| `GET /familia/semana?perfis=` | responsável do Kids | a semana de cada criança que vê o jogo e que guardou o jogo nesta conta (desafios aprovados, objetos com aparência do Pinta e do Molda, tempo livre na janela); as outras em `aindaSemJogo` |
+| `GET` e `PUT /familia/permissoes` | responsável do Kids | as permissões de visita da família (sem nada gravado, `PERMISSOES_PADRAO`); suporte não grava |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 
 - **Quem é quem** (`interfaces/http/identidade.ts`, mesmas regras de sessão do Members): sessão de
@@ -171,6 +173,17 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   (`PERFIS_DA_FAMILIA_MAXIMO`); sem perfis, falso. Não há rota nova no Members, e o serviço não
   confere que os ids são da conta (forjar só muda o próprio cartão; o jogo segue pela sessão da
   criança). Serviço e app do Kids sobem juntos: com só um novo, o cartão some. Detalhe em `docs/arquipelago-regras.md`, seção 3.
+- **Semana e permissões da família** (fase1-18, 28/10/2026): `ServicoDaFamilia`
+  (`application/servico-da-familia.ts`, regra pura em `domain/semana-da-familia.ts`, repositório
+  `DrizzleRepositorioDaFamilia`, rotas em `interfaces/http/rotas-da-familia.ts`, montadas só com a
+  dependência `familia`). ⚠️ A semana NÃO acredita nos ids do BFF: só lê as crianças ligadas à
+  conta em `perfis_da_conta` (migração 0008), gravada pela PRIMEIRA gravação aceita do salvamento
+  com a conta do login da própria criança (`gravarSalvamento` recebe `contaId`, só do Kids).
+  Desafios: `null` com `ARQUIPELAGO_DESAFIOS` desligado (ou `equipe` fora da equipe); "de ilhas
+  anteriores" `null` sem a jornada do Members. Objetos: total desde o começo (o salvamento não
+  data a aparência). Permissões em `permissoes_da_familia`, por conta. Testes:
+  `tests/unit/semana-da-familia.test.ts`, `tests/integration/familia.test.ts` e
+  `tests/db/familia.test.ts` (Postgres local `arquipelago_test`).
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",

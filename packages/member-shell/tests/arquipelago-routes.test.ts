@@ -129,6 +129,73 @@ describe('repasse do Arquipélago', () => {
     }
   })
 
+  test('a semana leva os mesmos perfis e volta com o nome de cada criança, da grade do Auth', async () => {
+    const semana = {
+      algumaCriancaVe: true,
+      inicio: '2026-10-22',
+      fim: '2026-10-28',
+      limiteDiarioMinutos: 30,
+      criancas: [
+        {
+          perfilId: PERFIL,
+          desafios: { aprovados: 2, deIlhasAnteriores: null },
+          objetos: { pinta: 1, molda: 0 },
+          tempoLivre: { segundos: 600, dias: 1 },
+        },
+      ],
+      aindaSemJogo: [IRMAO],
+    }
+    const perfis = {
+      status: 200,
+      body: {
+        profiles: [
+          { id: PERFIL, name: ' Lia ' },
+          { id: IRMAO, name: 'Tom' },
+        ],
+      },
+    }
+    const { routes, chamadas } = montar({ status: 200, body: semana }, perfis)
+    const r = await routes.arquipelagoSemanaDaFamilia.GET()
+    expect(await r.json()).toEqual({
+      ...semana,
+      criancas: [{ ...semana.criancas[0], nome: 'Lia' }],
+      aindaSemJogo: [{ perfilId: IRMAO, nome: 'Tom' }],
+    })
+    expect(chamadas).toEqual([
+      {
+        caminho: '/arquipelago/familia/semana',
+        metodo: 'GET',
+        corpo: undefined,
+        query: { perfis: `${PERFIL},${IRMAO}` },
+      },
+    ])
+  })
+
+  test('semana fora do contrato vira 502; erro do serviço passa como veio', async () => {
+    const estranha = montar({ status: 200, body: { algumaCriancaVe: true } })
+    expect((await estranha.routes.arquipelagoSemanaDaFamilia.GET()).status).toBe(502)
+    const fechada = montar({ status: 403, body: { error: { code: 'FORBIDDEN' } } })
+    expect((await fechada.routes.arquipelagoSemanaDaFamilia.GET()).status).toBe(403)
+    const semPerfis = montar(
+      { status: 200, body: {} },
+      { status: 503, body: { error: { code: 'X' } } },
+    )
+    expect((await semPerfis.routes.arquipelagoSemanaDaFamilia.GET()).status).toBe(503)
+    expect(semPerfis.chamadas).toEqual([])
+  })
+
+  test('as permissões vão e voltam pelo serviço, com corpo pequeno', async () => {
+    const escolha = { visitasDeIrmaos: true, visitasDeOutrasCriancas: false, fotosNoClube: true }
+    const { routes, chamadas } = montar({ status: 200, body: escolha })
+    expect(await (await routes.arquipelagoPermissoesDaFamilia.GET()).json()).toEqual(escolha)
+    await routes.arquipelagoPermissoesDaFamilia.PUT(pedido(JSON.stringify(escolha)))
+    expect(chamadas).toEqual([
+      { caminho: '/arquipelago/familia/permissoes', metodo: 'GET', corpo: undefined },
+      { caminho: '/arquipelago/familia/permissoes', metodo: 'PUT', corpo: escolha },
+    ])
+    expect((await routes.arquipelagoPermissoesDaFamilia.PUT(pedido('{x'))).status).toBe(400)
+  })
+
   test('o perfil que ainda entra na jornada não conta (a criança não abre esse perfil)', async () => {
     const perfis = {
       status: 200,

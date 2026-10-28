@@ -46,8 +46,11 @@ export function kidsMayAccess(
       pathname.startsWith('/members/parents/') ||
       pathname.startsWith('/helpdesk/portal/') ||
       pathname === '/referrals/me/ambassador' ||
-      // Arquipélago Vagalume: o responsável só muda o tempo livre da família.
+      // Arquipélago Vagalume: o responsável muda o tempo livre e as permissões de visita da
+      // família e lê a semana das crianças (o cartão da área dos pais).
       pathname === '/arquipelago/familia/limite' ||
+      pathname === '/arquipelago/familia/permissoes' ||
+      (method === 'GET' && pathname === '/arquipelago/familia/semana') ||
       (method === 'GET' &&
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,

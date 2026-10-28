@@ -1,6 +1,7 @@
 import type { MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
 import { sql } from 'drizzle-orm'
 import {
+  boolean,
   check,
   date,
   index,
@@ -108,6 +109,33 @@ export const limitesDaFamilia = arquipelagoSchema.table(
   },
   (t) => [check('limites_da_familia_minutos_check', sql`${t.minutos} between 10 and 240`)],
 )
+
+/**
+ * De que conta é cada criança (28/10/2026, fase1-18): gravado quando ela guarda o jogo, com a conta
+ * que vem do login dela (`x-auth-account-id`). É o que deixa a área dos pais ler a semana só das
+ * crianças da própria conta, sem confiar na lista que chega pelo repasse.
+ */
+export const perfisDaConta = arquipelagoSchema.table(
+  'perfis_da_conta',
+  {
+    jogadorId: uuid().primaryKey(),
+    contaId: uuid().notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [index('perfis_da_conta_conta_idx').on(t.contaId)],
+)
+
+/**
+ * As permissões de visita da família (ECA Digital, art. 21; sem linha = o padrão restrito do
+ * contrato, `PERMISSOES_PADRAO`). As visitas são da Fase 3: hoje só se grava e se lê.
+ */
+export const permissoesDaFamilia = arquipelagoSchema.table('permissoes_da_familia', {
+  contaId: uuid().primaryKey(),
+  visitasDeIrmaos: boolean().notNull(),
+  visitasDeOutrasCriancas: boolean().notNull(),
+  fotosNoClube: boolean().notNull(),
+  atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+})
 
 /**
  * Os desafios cadastrados pela equipe (seção Jogo do Admin). `revisao` é a trava da edição; a
@@ -260,6 +288,8 @@ export const schema = {
   controleDeTempo,
   sessoesDeTempo,
   limitesDaFamilia,
+  perfisDaConta,
+  permissoesDaFamilia,
   desafios,
   desafioPublicacoes,
   desafioProgresso,

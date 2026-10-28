@@ -7,7 +7,7 @@ import type {
 } from '../../../domain/repositorio.port'
 import { EventoTempoConflitanteError } from '../../../domain/tempo-erros'
 import type { Database } from './db'
-import { eventosTempo, limitesDaFamilia, salvamentos, tempoDiario } from './schema'
+import { eventosTempo, limitesDaFamilia, perfisDaConta, salvamentos, tempoDiario } from './schema'
 
 const TETO_DO_DIA = 86_400
 
@@ -59,6 +59,13 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
             )
             .returning(colunas)
     const [guardado] = gravadas
+    if (guardado && e.contaId) {
+      // Uma criança nunca muda de conta: a primeira gravação vale.
+      await this.db
+        .insert(perfisDaConta)
+        .values({ jogadorId: e.jogadorId, contaId: e.contaId, criadoEm: e.agora })
+        .onConflictDoNothing({ target: perfisDaConta.jogadorId })
+    }
     if (guardado) return { ok: true, guardado } satisfies ResultadoDaGravacao
     return { ok: false, atual: await this.lerSalvamento(e.jogadorId) } satisfies ResultadoDaGravacao
   }

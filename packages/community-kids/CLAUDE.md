@@ -14,6 +14,15 @@ Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o
   Família): passos de 5 minutos entre 10 min e 4 h, o tempo escrito como a família fala
   (`duracaoPorExtenso`) e "Salvar" só quando mudou. O cartão só aparece quando a leitura diz
   `algumaCriancaVe` (28/10/2026); sem resposta do serviço ou com resposta estranha, ele não aparece.
+  **Fase1-18 (28/10/2026):** o cartão virou "Arquipélago Vagalume", com três partes: "A semana no
+  jogo" (`_components/arquipelago-familia.tsx`, `SemanaDasCriancas`: desafios aprovados, objetos
+  do Pinta e do Molda desde o começo e o tempo livre ao lado do limite, cada linha só com o número
+  que o serviço tem), "Tempo livre no Arquipélago" (o formulário de antes) e "Com quem pode
+  interagir" (`PermissoesDeVisita`: três interruptores no padrão do resumo semanal, gravam ao
+  tocar e voltam se não gravar). A semana e as permissões só são pedidas depois que o limite diz
+  `algumaCriancaVe`, e cada uma some sozinha se a leitura falhar. Shims
+  `app/api/parents/arquipelago/{semana,permissoes}` (`requireParentGateAccountOnly`). Testes:
+  `tests/arquipelago-familia.test.tsx` e `tests/arquipelago-limit-card.test.tsx`.
   Nenhuma variável de ambiente nova (a regra do Railway pede criar no painel antes).
 - Shims em `app/api/arquipelago/{acesso,salvamento,tempo,cliente/[arquivo]}` e
   `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`

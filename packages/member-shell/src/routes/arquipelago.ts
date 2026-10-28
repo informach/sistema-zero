@@ -1,6 +1,8 @@
 import 'server-only'
 import {
   PERFIS_DA_FAMILIA_MAXIMO,
+  type SemanaDaFamiliaParaOsPais,
+  SemanaDaFamiliaSchema,
   tipoDoArquivoDoCliente,
 } from '@sistemazero/arquipelago-contracts'
 import { NextResponse } from 'next/server'
@@ -48,6 +50,12 @@ async function corpoJson(
   }
 }
 
+/** O nome da criança na grade de perfis (o card mostra; o serviço do jogo nunca sabe nomes). */
+function nomeDoPerfil(perfil: { name?: unknown }): string {
+  const nome = typeof perfil.name === 'string' ? perfil.name.trim().slice(0, 80) : ''
+  return nome || 'Criança'
+}
+
 const invalido = () =>
   NextResponse.json(
     { error: { code: 'VALIDATION_ERROR', message: 'Requisição inválida' } },
@@ -81,6 +89,26 @@ export function createArquipelagoRoutes(deps: {
   const idDe = async (ctx: { params: Promise<{ id: string }> }) => {
     const { id } = await ctx.params
     return UUID.test(id) ? id : null
+  }
+
+  /**
+   * Os perfis prontos da conta (a grade do Auth; o pendente ainda não abre o perfil). Sem a lista,
+   * nada segue: a área dos pais esconde os cartões do jogo.
+   */
+  const perfisProntos = async (): Promise<
+    { ok: true; perfis: { id: string; name?: unknown }[] } | { ok: false; resposta: NextResponse }
+  > => {
+    const lista = await deps.profiles.list()
+    if (lista.status !== 200 || !Array.isArray(lista.body?.profiles)) {
+      return {
+        ok: false,
+        resposta: repasse({ ...lista, body: lista.status === 200 ? null : lista.body }),
+      }
+    }
+    const perfis = lista.body.profiles
+      .filter((p) => p.admissionState !== 'pending')
+      .slice(0, PERFIS_DA_FAMILIA_MAXIMO)
+    return { ok: true, perfis }
   }
 
   const comCorpo =
@@ -142,17 +170,49 @@ export function createArquipelagoRoutes(deps: {
      */
     arquipelagoLimiteDaFamilia: {
       GET: async () => {
-        const lista = await deps.profiles.list()
-        if (lista.status !== 200 || !Array.isArray(lista.body?.profiles)) {
-          return repasse({ ...lista, body: lista.status === 200 ? null : lista.body })
-        }
-        const perfis = lista.body.profiles
-          .filter((p) => p.admissionState !== 'pending')
-          .slice(0, PERFIS_DA_FAMILIA_MAXIMO)
-          .map((p) => p.id)
-        return chamar('/familia/limite', 'GET', undefined, { query: { perfis: perfis.join(',') } })
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        return chamar('/familia/limite', 'GET', undefined, {
+          query: { perfis: lista.perfis.map((p) => p.id).join(',') },
+        })
       },
       PUT: comCorpo('/familia/limite', 'PUT', CORPO_PEQUENO),
+    },
+    /**
+     * A semana das crianças no jogo (28/10/2026, fase1-18), para o cartão da área dos pais: os
+     * mesmos perfis prontos do limite, e o nome de cada criança vem daqui (da grade do Auth),
+     * nunca do serviço do jogo. Resposta fora do contrato vira 502: o cartão fica escondido.
+     */
+    arquipelagoSemanaDaFamilia: {
+      GET: async () => {
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        const r = await gateway.gatewayFetch('/arquipelago/familia/semana', {
+          method: 'GET',
+          query: { perfis: lista.perfis.map((p) => p.id).join(',') },
+        })
+        if (r.status !== 200) return repasse(r)
+        const lido = SemanaDaFamiliaSchema.safeParse(r.body)
+        if (!lido.success) return repasse({ ...r, body: null })
+        const nomes = new Map(lista.perfis.map((p) => [p.id.toLowerCase(), nomeDoPerfil(p)]))
+        const paraOsPais: SemanaDaFamiliaParaOsPais = {
+          ...lido.data,
+          criancas: lido.data.criancas.flatMap((c) => {
+            const nome = nomes.get(c.perfilId)
+            return nome ? [{ ...c, nome }] : []
+          }),
+          aindaSemJogo: lido.data.aindaSemJogo.flatMap((perfilId) => {
+            const nome = nomes.get(perfilId)
+            return nome ? [{ perfilId, nome }] : []
+          }),
+        }
+        return NextResponse.json(paraOsPais)
+      },
+    },
+    /** As permissões de visita da família (só gravar e ler por enquanto: Fase 3 do jogo). */
+    arquipelagoPermissoesDaFamilia: {
+      GET: () => chamar('/familia/permissoes', 'GET'),
+      PUT: comCorpo('/familia/permissoes', 'PUT', CORPO_PEQUENO),
     },
     arquipelagoCliente: {
       async GET(_req: Request, ctx: { params: Promise<{ arquivo: string }> }) {

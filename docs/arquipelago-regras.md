@@ -96,7 +96,7 @@ Arquivo: `arquipelago-api/src/interfaces/http/identidade.ts`.
 |---|---|---|
 | Criança do Kids | sessão de perfil (`x-auth-account-id`), contexto `student` ou sem contexto | joga; o salvamento e o tempo usado são do perfil; o limite é da conta da família |
 | Membro adulto | sem perfil e sem contexto do Kids | joga, sem limite de tempo |
-| Responsável do Kids | contexto `parent`, na própria conta | não joga; só lê e muda o limite diário da família, e só vê o cartão do tempo livre se alguma criança da conta vê o jogo |
+| Responsável do Kids | contexto `parent`, na própria conta | não joga; lê e muda o limite diário e as permissões de visita da família, lê a semana das crianças, e só vê o cartão do jogo se alguma criança da conta vê o jogo |
 | Equipe | papel `superadmin`, `admin` ou `staff` (`PAPEIS_DA_EQUIPE`) | entra sempre que o jogo está ligado; vê todas as ilhas abertas e todos os blocos |
 | Suporte | sessão com `x-auth-impersonator-id` | só olha; nada é gravado |
 
@@ -126,10 +126,11 @@ Arquivo: `arquipelago-api/src/domain/acesso.ts`, função `decidirAcesso`. A ord
 
 Bloqueado recebe 403 `ACESSO_BLOQUEADO` com o motivo. O jogo mostra a tela de bloqueio.
 
-### O cartão do tempo livre na área dos pais
+### O cartão do Arquipélago na área dos pais
 
-O cartão "Tempo livre no Arquipélago" só aparece para a família em que pelo menos uma criança vê
-o jogo (28/10/2026).
+O cartão "Arquipélago Vagalume" da Família (a semana das crianças, o tempo livre por dia e as
+permissões de visita) só aparece para a família em que pelo menos uma criança vê o jogo
+(28/10/2026). A semana e as permissões estão na seção seguinte.
 
 - **Quem decide:** o serviço, com a mesma `decidirAcesso` de quando a criança abre o jogo
   (`algumaCriancaVe`, em `arquipelago-api/src/domain/acesso.ts`). Cada perfil da conta passa pela
@@ -158,6 +159,61 @@ o jogo (28/10/2026).
   não ganha acesso ao jogo, que continua decidido pela sessão da criança.
 - **Atualização:** o serviço e o app do Kids precisam subir juntos. Com só um deles novo, o cartão
   some para todos até o outro subir (o formato da leitura mudou dos dois lados).
+
+### A semana das crianças e as permissões de visita (fase1-18, 28/10/2026)
+
+O mesmo cartão mostra, para cada criança que vê o jogo, o que ela fez nos últimos dias, e guarda
+com quem as crianças da conta podem interagir. Contrato em `arquipelago-contracts/src/familia.ts`;
+serviço em `arquipelago-api/src/application/servico-da-familia.ts` e regra pura em
+`domain/semana-da-familia.ts`.
+
+**A semana** (`GET /arquipelago/familia/semana?perfis=`, só o responsável, só leitura):
+
+- **A janela:** hoje e os 6 dias anteriores, pelo dia de São Paulo (o mesmo dia do tempo livre).
+  O cartão escreve "Dos últimos 7 dias, de 22/10 a 28/10."
+- **Quem aparece:** os perfis que o BFF manda (os mesmos do limite) e que veem o jogo pela
+  `decidirAcesso`. Desses, só são lidos os que o serviço já viu guardar o jogo NESTA conta.
+- **A posse da criança:** a tabela `perfis_da_conta` (migração 0008) liga o perfil à conta que vem
+  do login da própria criança (`x-auth-account-id`), gravada uma vez na primeira gravação aceita do
+  salvamento. Pedir a semana com o id de uma criança de outra conta devolve essa criança em
+  `aindaSemJogo`, sem nenhum número. Quem jogou antes desta versão entra na próxima gravação; até
+  lá o cartão diz "Ainda sem números do jogo. Eles aparecem quando a criança jogar."
+- **Desafios do Estúdio aprovados:** as primeiras conclusões (o principal passou) com a data na
+  janela. "De ilhas anteriores" são as de ilhas antes da ilha mais nova aberta para a criança
+  (pela posição dela na jornada, lida do Members). Sem a jornada, esse número fica `null` e o
+  cartão não o escreve. Com os desafios desligados (`ARQUIPELAGO_DESAFIOS`, ou `equipe` numa
+  família de fora), a linha inteira some (`desafios: null`).
+- **Objetos criados:** os projetos azuis do salvamento com a aparência vinda do Pinta e do Molda
+  (`projetos[id].aparencia.origem`). O salvamento não guarda quando a aparência foi feita, então é
+  o total DESDE O COMEÇO, e o cartão diz isso. Salvamento que não abre: `objetos: null`, sem linha.
+- **Tempo livre:** os segundos de `tempo_diario` da criança na janela e em quantos dias, escritos
+  ao lado do limite diário que vale agora ("2 h 13 min em 4 dias (limite de 45 min por dia).").
+- **Nomes:** o serviço do jogo nunca sabe nomes. O BFF põe o nome da grade de perfis do Auth e
+  descarta qualquer id que não esteja na grade.
+- **Voltou ao curso depois de jogar:** fica FORA. O Members só expõe contagens da semana por
+  perfil, sem a hora de cada aula, e o jogo guarda o tempo por dia, sem a hora de cada sessão.
+  Para a linha existir: uma rota interna do Members com as horas da atividade de curso por perfil
+  nos últimos 8 dias e as sessões do jogo com começo e fim.
+
+**As permissões de visita** (`GET` e `PUT /arquipelago/familia/permissoes`, só o responsável),
+ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são os pais.
+
+| Permissão | Padrão | Campo |
+|---|---|---|
+| Visitas de irmãos | ligada | `visitasDeIrmaos` |
+| Visitas de outras crianças | desligada | `visitasDeOutrasCriancas` |
+| Fotos no Clube | desligada | `fotosNoClube` |
+
+- São da conta (`permissoes_da_familia`), valem para todas as crianças dela. Sem linha gravada,
+  vale `PERMISSOES_PADRAO`.
+- O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
+  leitura recebe 403 `SOMENTE_LEITURA`.
+- Hoje só se grava, lê e mostra. Quem vai obedecer a elas são as visitas e as fotos da Fase 3.
+
+**No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
+família esconde o cartão inteiro (e a semana e as permissões nem são pedidas); semana ou
+permissões que falham somem sozinhas, e o resto fica. Um interruptor que não grava volta ao que
+estava e avisa ("Não consegui salvar agora.").
 
 ### Suporte somente leitura
 

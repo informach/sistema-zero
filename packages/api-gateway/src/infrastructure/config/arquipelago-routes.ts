@@ -8,8 +8,8 @@ type Service = GatewayConfigInput['services'][string]
  * passar por nenhum serviço da plataforma. Só entra na config quando `ARQUIPELAGO_URL` existe
  * (rollout de infraestrutura à parte), então o gateway de quem ainda não tem o serviço segue
  * idêntico. Quem é a pessoa vem do JWT (x-auth-* injetados); o serviço exige o token interno.
- * O escopo do Kids (`kidsMayAccess`) libera `/arquipelago/*` ao aluno e só o limite da família
- * ao responsável.
+ * O escopo do Kids (`kidsMayAccess`) libera `/arquipelago/*` ao aluno e só a família (limite,
+ * permissões e a leitura da semana) ao responsável.
  */
 export function arquipelagoGateway(opts: {
   url: string
@@ -131,6 +131,22 @@ export function arquipelagoGateway(opts: {
         id: 'arquipelago-familia-limite',
         methods: ['GET', 'PUT'],
         pathPattern: '/arquipelago/familia/limite',
+        maxBodyBytes: 1024,
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      // A área dos pais (28/10/2026): a semana das crianças e as permissões de visita.
+      {
+        ...jogador,
+        id: 'arquipelago-familia-semana',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/familia/semana',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-familia-permissoes',
+        methods: ['GET', 'PUT'],
+        pathPattern: '/arquipelago/familia/permissoes',
         maxBodyBytes: 1024,
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },

@@ -70,16 +70,18 @@ salvamento por revisão e tempo livre: `packages/arquipelago-api/CLAUDE.md`.
   ferramenta abre ou falha) e o diálogo da ferramenta (`arquipelago-creation-dialog.tsx`), que
   vestem a pele de cada comunidade pelos tokens e pela `sz-btn-gradient`.
 - **community-kids:** página `/arquipelago` (fora do grupo com menu), item "Arquipélago" no menu
-  (aba "Jogo" no celular, ícone de palmeira) só quando o serviço libera o perfil, cartão "Tempo
-  livre no Arquipélago" na Família da área dos pais (escondido quando o serviço não responde),
-  shims em `app/api/arquipelago/*` e `app/api/parents/arquipelago/limite` (portão dos
+  (aba "Jogo" no celular, ícone de palmeira) só quando o serviço libera o perfil, cartão
+  "Arquipélago Vagalume" na Família da área dos pais (a semana de cada criança, o tempo livre por
+  dia e as permissões de visita; escondido quando o serviço não responde), shims em
+  `app/api/arquipelago/*` e `app/api/parents/arquipelago/{limite,semana,permissoes}` (portão dos
   pais), `/arquipelago` nos prefixos protegidos, `api/arquipelago/cliente` fora do matcher do proxy,
   CSP própria da página com `'wasm-unsafe-eval'` garantido.
 - **community (adulto):** página `/arquipelago`, item no menu lateral e em "Mais" no celular, pela
   mesma liberação do serviço; sem limite de tempo.
 - **api-gateway:** `src/infrastructure/config/arquipelago-routes.ts`, que só entra na config com
   `ARQUIPELAGO_URL` (sem a variável, o gateway fica idêntico). O escopo do Kids libera
-  `/arquipelago/*` ao aluno (menos o limite da família) e só o limite ao responsável.
+  `/arquipelago/*` ao aluno (menos a família) e ao responsável só a família: o limite, as
+  permissões de visita e a leitura da semana.
 - **CI:** os quatro pacotes entram sozinhos no typecheck e nos testes; o `ci.yml` ganhou os testes
   de banco do serviço e o build do cliente; o deploy de staging mapeia `avatar-quarto` e o contrato.
 

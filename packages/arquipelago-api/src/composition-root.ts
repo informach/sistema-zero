@@ -2,6 +2,7 @@ import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
+import { ServicoDaFamilia } from './application/servico-da-familia'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
@@ -11,6 +12,7 @@ import { MoedasHttp } from './infrastructure/members/moedas-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
+import { DrizzleRepositorioDaFamilia } from './infrastructure/persistence/drizzle/repositorio-da-familia'
 import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
@@ -66,12 +68,22 @@ export function createApplication(env: Env): Application {
     moedas,
     logger,
   })
+  const familia = new ServicoDaFamilia({
+    familia: new DrizzleRepositorioDaFamilia(connection.db),
+    jogo: new DrizzleRepositorioDoJogo(connection.db),
+    desafios: new DrizzleRepositorioDoJogadorNosDesafios(connection.db),
+    politica,
+    modoDosDesafios: env.ARQUIPELAGO_DESAFIOS,
+    leituras,
+    logger,
+  })
   const app = createServer({
     logger,
     servico,
     cartas,
     equipe,
     desafios,
+    familia,
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

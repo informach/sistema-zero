@@ -72,6 +72,7 @@ export class ServicoDoJogo {
       revisaoBase: pedido.revisaoBase,
       salvamento: pedido.salvamento,
       agora: this.agora(),
+      contaId: jogador.publico === 'kids' ? jogador.contaId : null,
     })
     if (r.ok) return { ok: true, guardado: paraGuardado(r.guardado) }
     return { ok: false, atual: r.atual ? paraGuardado(r.atual) : NADA_GUARDADO }

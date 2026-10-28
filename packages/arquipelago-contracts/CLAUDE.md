@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+## A família na área dos pais (fase1-18, 28/10/2026)
+
+`familia.ts`: `SemanaDaFamiliaSchema` (o que o serviço manda: janela de 7 dias, limite e, por
+criança, `desafios`, `objetos` e `tempoLivre`; `desafios`, `objetos` e `deIlhasAnteriores` são
+`null` quando o serviço não tem o número), `SemanaDaFamiliaParaOsPaisSchema` (o mesmo com o
+`nome` que o BFF põe) e `PermissoesDaFamiliaSchema` com `PERMISSOES_PADRAO` (irmãos ligada,
+outras crianças e fotos no Clube desligadas: ECA Digital, art. 21). Objetos estritos. Testes em
+`tests/familia.test.ts`. Regras em `docs/arquipelago-regras.md`, seção 3.
+
 Tipos e validação (zod) de tudo o que atravessa a fronteira do jogo **Arquipélago Vagalume**:
 plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 
