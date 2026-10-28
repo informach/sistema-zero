@@ -14,6 +14,7 @@ import {
   trechosDasChaves,
 } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
+import { celulasDoObjeto, LUGAR_DO_OBJETO, objetoEm } from './projeto-azul'
 
 /**
  * As mudanças que a criança faz na obra no modo Construir. Cada uma devolve a obra nova ou o
@@ -36,6 +37,8 @@ export type Recusa =
   | { motivo: 'tem-parede' }
   | { motivo: 'tem-caminho' }
   | { motivo: 'canteiro-com-planta' }
+  | { motivo: 'sem-projeto' }
+  | { motivo: 'tem-objeto' }
   | { motivo: 'nada' }
 
 export type Resultado = { ok: true; obra: Obra } | ({ ok: false } & Recusa)
@@ -80,6 +83,10 @@ export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resul
     if (r) return recusa(r)
     if (ladosDaAresta(aresta).some((c) => canteiros.has(chaveDaCelula(c))))
       return recusa({ motivo: 'ocupado', nome: 'o canteiro' })
+    // A parede não corta um objeto ao meio (encostar nele pode: a geladeira fica na parede).
+    const [l1, l2] = ladosDaAresta(aresta)
+    const o1 = objetoEm(obra, l1)
+    if (o1 >= 0 && o1 === objetoEm(obra, l2)) return recusa({ motivo: 'tem-objeto' })
     chaves.add(k)
   }
   if (chaves.size === antes) return recusa({ motivo: 'nada' })
@@ -202,6 +209,13 @@ export function arrumar(obra: Obra, lote: Lote, p: Planta = planta(obra, lote)):
     arestasDaAbertura(ab).every((a) => p.paredes.has(chaveDaAresta(a))),
   )
   const caminhos = obra.caminhos.filter((c) => !p.dentro.has(chaveDaCelula(c)))
+  // O objeto que perdeu o lugar dele (o cômodo abriu, ou a casa chegou no quintal) volta a ficar
+  // guardado: sai da obra, com a função e o que tem dentro.
+  const objetos = obra.objetos.filter((o) => {
+    const comodos = new Set(celulasDoObjeto(o).map((c) => p.comodoDe.get(chaveDaCelula(c))))
+    if (LUGAR_DO_OBJETO[o.id] === 'dentro') return comodos.size === 1 && !comodos.has(undefined)
+    return comodos.size === 1 && comodos.has(undefined)
+  })
   const cercasAntes = chavesDosTrechos(obra.cercas)
   const cercas = [...cercasAntes].filter((k) => {
     if (p.paredes.has(k)) return false
@@ -212,6 +226,7 @@ export function arrumar(obra: Obra, lote: Lote, p: Planta = planta(obra, lote)):
     pisos,
     aberturas,
     caminhos: caminhos.length === obra.caminhos.length ? obra.caminhos : caminhos,
+    objetos: objetos.length === obra.objetos.length ? obra.objetos : objetos,
     cercas: cercas.length === cercasAntes.size ? obra.cercas : trechosDasChaves(cercas),
   }
 }

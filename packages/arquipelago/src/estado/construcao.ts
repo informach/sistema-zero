@@ -1,4 +1,5 @@
 import {
+  type ObjetoDaCasa,
   type Obra,
   ObraSchema,
   type PisoDaCasa,
@@ -65,6 +66,9 @@ export interface EstadoDaConstrucao {
   janela: TipoDeJanela
   piso: PisoDaCasa
   caminho: PisoDoQuintal
+  /** O objeto escolhido na ferramenta Objeto e o giro dele (quartos de volta). */
+  objeto: ObjetoDaCasa | null
+  giro: number
   camera: CameraDeObra
   /** As obras de antes (para desfazer), da mais antiga para a mais nova. */
   antes: Obra[]
@@ -75,6 +79,8 @@ export interface EstadoDaConstrucao {
   escolherJanela(j: TipoDeJanela): void
   escolherPiso(p: PisoDaCasa): void
   escolherCaminho(c: PisoDoQuintal): void
+  escolherObjeto(o: ObjetoDaCasa): void
+  girarObjeto(): void
   moverCamera(c: Partial<CameraDeObra>): void
   /** Grava o resultado de uma mudança na obra da casa (ou faz o Zappy explicar a recusa). */
   aplicar(r: Resultado): boolean
@@ -115,6 +121,8 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     janela: 'janela-grande',
     piso: 'tabua',
     caminho: 'pedra',
+    objeto: null,
+    giro: 0,
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
     dentroDaObra: false,
@@ -125,6 +133,8 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     escolherJanela: (janela) => set({ janela, ferramenta: 'janela' }),
     escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),
     escolherCaminho: (caminho) => set({ caminho, ferramenta: 'caminho' }),
+    escolherObjeto: (objeto) => set({ objeto, ferramenta: 'objeto' }),
+    girarObjeto: () => set({ giro: (get().giro + 1) % 4 }),
     moverCamera: (c) => set({ camera: { ...get().camera, ...c } }),
     aplicar(r) {
       const jogo = loja.getState()

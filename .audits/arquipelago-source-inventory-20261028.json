@@ -1,5 +1,5 @@
 {
-  "head": "3a859172a2ecffe5fb236177e3d5addc172dd85d",
+  "head": "c12a249e7f35615bc1bf62e87f57eca3f2b9c1ca",
   "limitations": "Static imports only; type-only edges excluded. No semantic coverage or dead-code conclusion inferred.",
   "cycles": [],
   "files": [
@@ -1769,13 +1769,13 @@
     },
     {
       "path": "packages/arquipelago/src/estado/construcao.ts",
-      "lines": 167,
+      "lines": 200,
       "status": "semantic-review-not-certified",
       "imports": [
         {
           "spec": "@sistemazero/arquipelago-contracts",
           "target": "packages/arquipelago-contracts/src/index.ts",
-          "typeOnly": true
+          "typeOnly": false
         },
         {
           "spec": "zustand",
@@ -1793,6 +1793,11 @@
           "typeOnly": false
         },
         {
+          "spec": "../sistemas/construcao/ferramentas",
+          "target": "packages/arquipelago/src/sistemas/construcao/ferramentas.ts",
+          "typeOnly": true
+        },
+        {
           "spec": "../sistemas/construcao/lote",
           "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
           "typeOnly": false
@@ -1803,6 +1808,11 @@
           "typeOnly": true
         },
         {
+          "spec": "../sistemas/construcao/quintal",
+          "target": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
+          "typeOnly": false
+        },
+        {
           "spec": "../sistemas/pausa",
           "target": "packages/arquipelago/src/sistemas/pausa.ts",
           "typeOnly": false
@@ -1811,13 +1821,16 @@
           "spec": "./loja",
           "target": "packages/arquipelago/src/estado/loja.ts",
           "typeOnly": true
+        },
+        {
+          "spec": "../sistemas/construcao/ferramentas",
+          "target": "packages/arquipelago/src/sistemas/construcao/ferramentas.ts",
+          "typeOnly": true
         }
       ],
       "exports": [
         "PAINEL_DE_CONSTRUIR",
         "podeConstruir",
-        "Ferramenta",
-        "TipoDeJanela",
         "LEMBRA_PARA_TRAS",
         "CameraDeObra",
         "CAMERA_DE_OBRA",
@@ -2240,13 +2253,13 @@
     },
     {
       "path": "packages/arquipelago/src/interface/construir.tsx",
-      "lines": 207,
+      "lines": 289,
       "status": "semantic-review-not-certified",
       "imports": [
         {
           "spec": "@sistemazero/arquipelago-contracts",
           "target": "packages/arquipelago-contracts/src/index.ts",
-          "typeOnly": true
+          "typeOnly": false
         },
         {
           "spec": "../estado/construcao",
@@ -2302,7 +2315,7 @@
     },
     {
       "path": "packages/arquipelago/src/interface/estilos.ts",
-      "lines": 88,
+      "lines": 89,
       "status": "semantic-review-not-certified",
       "imports": [],
       "exports": [
@@ -2311,7 +2324,7 @@
     },
     {
       "path": "packages/arquipelago/src/interface/hud.tsx",
-      "lines": 486,
+      "lines": 488,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -2405,6 +2418,11 @@
           "typeOnly": false
         },
         {
+          "spec": "./projeto-azul",
+          "target": "packages/arquipelago/src/interface/projeto-azul.tsx",
+          "typeOnly": false
+        },
+        {
           "spec": "./quadro-das-cores",
           "target": "packages/arquipelago/src/interface/quadro-das-cores.tsx",
           "typeOnly": false
@@ -2437,6 +2455,41 @@
       ],
       "exports": [
         "Pegada"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/interface/projeto-azul.tsx",
+      "lines": 229,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@sistemazero/arquipelago-contracts",
+          "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "react",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../estado/contexto",
+          "target": "packages/arquipelago/src/estado/contexto.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/construcao/projeto-azul",
+          "target": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/itens",
+          "target": "packages/arquipelago/src/sistemas/itens.ts",
+          "typeOnly": false
+        }
+      ],
+      "exports": [
+        "PainelDoObjeto"
       ]
     },
     {
@@ -3155,7 +3208,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/bosque-vivo.tsx",
-      "lines": 741,
+      "lines": 761,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -3289,6 +3342,16 @@
           "typeOnly": false
         },
         {
+          "spec": "./objetos-reativos",
+          "target": "packages/arquipelago/src/mundo/objetos-reativos.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "./ondinhas",
+          "target": "packages/arquipelago/src/mundo/ondinhas.tsx",
+          "typeOnly": false
+        },
+        {
           "spec": "./tronco-no-lago",
           "target": "packages/arquipelago/src/mundo/tronco-no-lago.tsx",
           "typeOnly": false
@@ -3305,7 +3368,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/bosque.ts",
-      "lines": 215,
+      "lines": 222,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -3342,6 +3405,8 @@
       "exports": [
         "TOPO_DO_BOSQUE",
         "FOGUEIRA_DO_BOSQUE",
+        "PECAS_SOLTAS_DO_BOSQUE",
+        "GALHO_SECO_DO_BOSQUE",
         "CIPOS_DO_BOSQUE",
         "RAIOS_DOS_DEQUES",
         "TRONCO_DOS_CIPOS",
@@ -3469,7 +3534,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/casa.tsx",
-      "lines": 388,
+      "lines": 391,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -3580,6 +3645,11 @@
         {
           "spec": "./modelos",
           "target": "packages/arquipelago/src/mundo/modelos.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "./objetos-da-casa",
+          "target": "packages/arquipelago/src/mundo/objetos-da-casa.tsx",
           "typeOnly": false
         },
         {
@@ -3848,7 +3918,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/colisores-da-ilha.ts",
-      "lines": 168,
+      "lines": 172,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -3899,7 +3969,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/construir.tsx",
-      "lines": 426,
+      "lines": 383,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -3933,23 +4003,18 @@
           "typeOnly": false
         },
         {
-          "spec": "../sistemas/construcao/comodos",
-          "target": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+          "spec": "../sistemas/construcao/ferramentas",
+          "target": "packages/arquipelago/src/sistemas/construcao/ferramentas.ts",
           "typeOnly": false
         },
         {
           "spec": "../sistemas/construcao/grade",
           "target": "packages/arquipelago/src/sistemas/construcao/grade.ts",
-          "typeOnly": false
+          "typeOnly": true
         },
         {
           "spec": "../sistemas/construcao/lote",
           "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
-          "typeOnly": false
-        },
-        {
-          "spec": "../sistemas/construcao/obra",
-          "target": "packages/arquipelago/src/sistemas/construcao/obra.ts",
           "typeOnly": false
         }
       ],
@@ -4147,7 +4212,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/horta.tsx",
-      "lines": 251,
+      "lines": 292,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -4168,6 +4233,11 @@
         {
           "spec": "../estado/contexto",
           "target": "packages/arquipelago/src/estado/contexto.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/construcao/quintal",
+          "target": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
           "typeOnly": false
         },
         {
@@ -4207,6 +4277,7 @@
         }
       ],
       "exports": [
+        "ESCALA_DO_CANTEIRO_DO_QUINTAL",
         "Horta"
       ]
     },
@@ -4497,7 +4568,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/medidor.tsx",
-      "lines": 144,
+      "lines": 150,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -4543,6 +4614,16 @@
         {
           "spec": "./mecanismos",
           "target": "packages/arquipelago/src/mundo/mecanismos.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "./objetos-reativos",
+          "target": "packages/arquipelago/src/mundo/objetos-reativos.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "./ondinhas",
+          "target": "packages/arquipelago/src/mundo/ondinhas.tsx",
           "typeOnly": false
         },
         {
@@ -4653,8 +4734,188 @@
       ]
     },
     {
+      "path": "packages/arquipelago/src/mundo/objetos-da-casa.tsx",
+      "lines": 228,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@react-three/drei",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "@react-three/fiber",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "@sistemazero/arquipelago-contracts",
+          "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "react",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "three",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/aquario.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/banda.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/casinha.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/fliperama.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/forno.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/geladeira.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/geladeira-holograma.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/lareira.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/objetos/museu.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../estado/contexto",
+          "target": "packages/arquipelago/src/estado/contexto.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/construcao/projeto-azul",
+          "target": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./colisao-da-ilha-central",
+          "target": "packages/arquipelago/src/mundo/colisao-da-ilha-central.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./colisores",
+          "target": "packages/arquipelago/src/mundo/colisores.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "./interativos",
+          "target": "packages/arquipelago/src/mundo/interativos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./modelos",
+          "target": "packages/arquipelago/src/mundo/modelos.tsx",
+          "typeOnly": false
+        }
+      ],
+      "exports": [
+        "carregarObjetos",
+        "painelDoObjeto",
+        "ObjetosDaObra",
+        "GanharProjetos"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/objetos-reativos.tsx",
+      "lines": 238,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@react-three/rapier",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "react",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "three",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../assets/ilhas/bosque-props.glb",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../estado/contexto",
+          "target": "packages/arquipelago/src/estado/contexto.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/corpo",
+          "target": "packages/arquipelago/src/sistemas/corpo.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/materiais-fisicos",
+          "target": "packages/arquipelago/src/sistemas/materiais-fisicos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/mundo-reativo",
+          "target": "packages/arquipelago/src/sistemas/mundo-reativo.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./grupos",
+          "target": "packages/arquipelago/src/mundo/grupos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./medidas",
+          "target": "packages/arquipelago/src/mundo/medidas.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./modelos",
+          "target": "packages/arquipelago/src/mundo/modelos.tsx",
+          "typeOnly": false
+        }
+      ],
+      "exports": [
+        "PecaSolta",
+        "reativosAgora",
+        "ObjetosReativos"
+      ]
+    },
+    {
       "path": "packages/arquipelago/src/mundo/obra.tsx",
-      "lines": 241,
+      "lines": 300,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -4718,6 +4979,11 @@
           "typeOnly": false
         },
         {
+          "spec": "../sistemas/construcao/grade",
+          "target": "packages/arquipelago/src/sistemas/construcao/grade.ts",
+          "typeOnly": false
+        },
+        {
           "spec": "../sistemas/construcao/lote",
           "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
           "typeOnly": false
@@ -4725,6 +4991,11 @@
         {
           "spec": "../sistemas/construcao/pecas",
           "target": "packages/arquipelago/src/sistemas/construcao/pecas.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/construcao/quintal",
+          "target": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
           "typeOnly": false
         },
         {
@@ -4754,6 +5025,67 @@
         "GIRO_DA_FOLHA_ABERTA",
         "PERTO_DA_PORTA",
         "ObraNoMundo"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/ondinhas.tsx",
+      "lines": 113,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@react-three/fiber",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "@react-three/rapier",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "@sistemazero/avatar-quarto/use-reduced-motion",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "react",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "three",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "../estado/contexto",
+          "target": "packages/arquipelago/src/estado/contexto.tsx",
+          "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/mundo-reativo",
+          "target": "packages/arquipelago/src/sistemas/mundo-reativo.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./bosque",
+          "target": "packages/arquipelago/src/mundo/bosque.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./medidas",
+          "target": "packages/arquipelago/src/mundo/medidas.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./tronco-no-lago",
+          "target": "packages/arquipelago/src/mundo/tronco-no-lago.tsx",
+          "typeOnly": false
+        }
+      ],
+      "exports": [
+        "ondasAgora",
+        "Ondinhas"
       ]
     },
     {
@@ -4983,7 +5315,7 @@
     },
     {
       "path": "packages/arquipelago/src/mundo/tronco-no-lago.tsx",
-      "lines": 158,
+      "lines": 165,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -5431,7 +5763,7 @@
     },
     {
       "path": "packages/arquipelago/src/plataforma/falsa.ts",
-      "lines": 314,
+      "lines": 326,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -5463,7 +5795,7 @@
     },
     {
       "path": "packages/arquipelago/src/plataforma/obra-de-exemplo.ts",
-      "lines": 40,
+      "lines": 49,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -5480,10 +5812,16 @@
           "spec": "../sistemas/construcao/obra",
           "target": "packages/arquipelago/src/sistemas/construcao/obra.ts",
           "typeOnly": false
+        },
+        {
+          "spec": "../sistemas/construcao/projeto-azul",
+          "target": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+          "typeOnly": false
         }
       ],
       "exports": [
-        "obraDeExemplo"
+        "obraDeExemplo",
+        "PROJETOS_DE_EXEMPLO"
       ]
     },
     {
@@ -5708,7 +6046,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/falas.ts",
-      "lines": 34,
+      "lines": 46,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -5719,6 +6057,60 @@
       ],
       "exports": [
         "falaDaRecusa"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/ferramentas.ts",
+      "lines": 207,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@sistemazero/arquipelago-contracts",
+          "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": true
+        },
+        {
+          "spec": "./comodos",
+          "target": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./grade",
+          "target": "packages/arquipelago/src/sistemas/construcao/grade.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./lote",
+          "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./obra",
+          "target": "packages/arquipelago/src/sistemas/construcao/obra.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./projeto-azul",
+          "target": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./quintal",
+          "target": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
+          "typeOnly": false
+        }
+      ],
+      "exports": [
+        "Ferramenta",
+        "TipoDeJanela",
+        "Escolhas",
+        "NoChao",
+        "arrasta",
+        "PERTO_DA_ARESTA",
+        "Previa",
+        "arrasto",
+        "apagarNaLinha",
+        "toque"
       ]
     },
     {
@@ -5783,7 +6175,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/obra.ts",
-      "lines": 194,
+      "lines": 233,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -5804,6 +6196,11 @@
         {
           "spec": "./lote",
           "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./projeto-azul",
+          "target": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
           "typeOnly": false
         }
       ],
@@ -5857,6 +6254,102 @@
         "MEDIDAS_DO_KIT",
         "COLISOR_DA_PAREDE_CORTADA",
         "colisoresDaObra"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+      "lines": 196,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@sistemazero/arquipelago-contracts",
+          "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "../itens",
+          "target": "packages/arquipelago/src/sistemas/itens.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./comodos",
+          "target": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./lote",
+          "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./obra",
+          "target": "packages/arquipelago/src/sistemas/construcao/obra.ts",
+          "typeOnly": true
+        }
+      ],
+      "exports": [
+        "LUGAR_DO_OBJETO",
+        "areaComGiro",
+        "celulasDoObjeto",
+        "objetoEm",
+        "cantoNoToque",
+        "porObjeto",
+        "tirarObjeto",
+        "ganharProjetos",
+        "falaDoGanho",
+        "capacidade",
+        "guardados",
+        "ehAlimento",
+        "guardarNaGeladeira",
+        "tirarDaGeladeira",
+        "POSICAO_DO_MOLDA",
+        "moldaAberto"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
+      "lines": 229,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "@sistemazero/arquipelago-contracts",
+          "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": true
+        },
+        {
+          "spec": "./comodos",
+          "target": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./grade",
+          "target": "packages/arquipelago/src/sistemas/construcao/grade.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./lote",
+          "target": "packages/arquipelago/src/sistemas/construcao/lote.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./obra",
+          "target": "packages/arquipelago/src/sistemas/construcao/obra.ts",
+          "typeOnly": false
+        }
+      ],
+      "exports": [
+        "celulasDoArrasto",
+        "idDoCanteiro",
+        "celulaDoCanteiro",
+        "esticarCerca",
+        "pintarCaminho",
+        "porCanteiro",
+        "apagarCerca",
+        "apagarNaCelula",
+        "hortaComOQuintal",
+        "CERCA",
+        "postesDaCerca",
+        "colisoresDaCerca"
       ]
     },
     {
@@ -6526,7 +7019,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/modos/colisao.ts",
-      "lines": 78,
+      "lines": 93,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6947,6 +7440,25 @@
         "EstadoDoPulo",
         "criarPulo",
         "passoDoPulo"
+      ]
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/mundo-reativo.ts",
+      "lines": 82,
+      "status": "semantic-review-not-certified",
+      "imports": [],
+      "exports": [
+        "VIDA_DA_ONDA",
+        "TOTAL_DE_ONDAS",
+        "Onda",
+        "Ondas",
+        "RastroNaAgua",
+        "criarOndas",
+        "criarRastroNaAgua",
+        "passoDasOndas",
+        "rastroNaAgua",
+        "Galho",
+        "passoDoGalho"
       ]
     },
     {

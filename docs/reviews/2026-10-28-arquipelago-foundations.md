@@ -3,9 +3,10 @@
 ## Estado e escopo
 
 Em execução. Base inicial: `f443054af468e8fc3fc06b26b5a89eadb87146ff` de `origin/staging`.
-Composição revisada atual: `3a859172a` + correções deste lote. Inclui remoto `78118738c` e staging
-local até `d3add46ae`: salvamento V4, casa em kit, modo Construir, materiais/fogueira, diário,
-pegadas, corte de paredes e telhados. Os resultados históricos abaixo não substituem a
+Composição revisada atual: `c12a249e7` + integração de `ac751aacc` e correções deste lote.
+Inclui remoto `78118738c` e staging local até `ac751aacc`: salvamento V4, casa em kit, modo
+Construir, materiais/fogueira, diário, pegadas, telhados, quintal, mundo reativo e projetos azuis.
+Os resultados históricos abaixo não substituem a
 validação desta composição. Novos commits locais e remotos também entram no escopo; edições
 não commitadas de outras sessões ficam preservadas nos respectivos worktrees.
 Branch isolada: `fix/arquipelago-audit-foundations-20261028`.
@@ -42,7 +43,7 @@ Resultados anteriores a esta base não são homologação desta composição.
 | SAVE-02 | Correção local com regressões causais | Conciliação em três vias, domínio econômico atômico e escolha explícita. Envio incerto é preservado e consultado antes de substituir; alterações feitas durante o PUT continuam pendentes. |
 | CAM-01 | Correção local, prova gráfica pendente | A distância mínima vencia uma parede mais próxima. Regressão reproduziu 0,4 m quando havia só 0,2 m livres. Agora o espaço livre limita a distância, inclusive quando a folga da sonda produz valor negativo. |
 | INPUT-01 | Correção local, testes verdes | Canais por dispositivo: liberar gamepad/toque não zera teclado ainda pressionado. Blur e desmontagem liberam o próprio canal. |
-| MOVE-01 | Corrigido com Rapier real em teste | Alvos guiados passam pelo controlador livre; colisão limita o deslocamento e interrompe o trilho bloqueado. Equilíbrio, tronco, teto, borda e sensor cobertos. Navegação visual completa ainda pendente. |
+| MOVE-01 | Corrigido com Rapier real em teste | Alvos guiados passam pelo controlador livre; colisão limita o deslocamento e interrompe o trilho bloqueado. Contatos de apoio, pela normal e pelo limite de inclinação do corpo, não são tratados como paredes. Equilíbrio, tronco, teto, borda, sensor, escada e rampa cobertos. Navegação visual completa ainda pendente. |
 | PAUSE-01 | Correção local, RED/GREEN no Chrome real | Menu parava o cronômetro mas a cápsula continuava caindo (31,76 → 1,96 m). `Physics.paused` usa a mesma política do percurso; animação e cordas também aguardam. Após correção: cinco amostras em 38,46 m, retomada da queda ao fechar. |
 | CI-01 | Perfil regenerado pelo comando canônico | Run `40714518976`: alteração do conferidor 3D não atualizou fingerprint; a verificação bloqueou corretamente a imagem. Novo perfil precisa acompanhar a nova distribuição. |
 | CI-02 | Sintoma confirmado; causa ainda pendente | WebKit esperou o servidor E2E por 120 s. Build e preview dividem o prazo, mas stdout era descartado. Agora há fases/duração e stdout visível; timeout preservado até obter diagnóstico da execução macOS. |
@@ -53,9 +54,33 @@ Resultados anteriores a esta base não são homologação desta composição.
 | REQUEST-01 | Corrigido, testes causais | Caderno e desafios abortam leituras substituídas/desmontadas. Resposta tardia não reaplica dados; 403 remove coleção e festa anteriores. Falha de rede preserva cache sem declará-lo atualizado. |
 | BUILD-01 | Corrigido, testes causais | Construir respeita somente leitura, limite diário e conflito. Desfazer não reaplica obra antiga depois de adotar outro salvamento. |
 | BUILD-02 | Corrigido, prova gráfica de cancelamento/confirmar/desfazer | Cancelamento, perda de captura, blur e troca de ferramenta descartam o gesto; somente pointerup confirma. Câmera de exploração suspende escrita/controles enquanto Construir é responsável pela câmera. |
-| ARCH-01 | Corrigido, inventário estático | `giroDaIlha` saiu do componente de ilha para medidas, eliminando o ciclo com pintura. Grafo dos 189 arquivos TS/TSX de fonte não encontrou ciclos de imports de valor. Não certifica imports dinâmicos nem revisão semântica integral. |
+| ARCH-01 | Corrigido, inventário estático | `giroDaIlha` saiu do componente de ilha para medidas, eliminando o ciclo com pintura. Grafo atualizado dos 197 arquivos TS/TSX de fonte não encontrou ciclos de imports de valor. Não certifica imports dinâmicos nem revisão semântica integral. |
+| BUILD-03 | Corrigido, regressão causal | Confirmação da obra confere `ObraSchema`, além dos limites geométricos do lote. Impede gravar fragmentação de paredes que o servidor recusaria. |
+| ITEM-01 | Corrigido, regressão causal | Retirar da geladeira com 999 unidades na mochila perdia um alimento. A transferência agora é recusada sem mudar nenhum dos dois inventários; o botão informa o limite. |
+| GPU-01 | Corrigido por revisão do ciclo de recursos | Hologramas clonam os materiais que alteram e liberam somente os materiais próprios ao desmontar/trocar. Geometrias, texturas e materiais compartilhados do GLTF permanecem no cache. Não equivale a medição de GPU. |
 
 ### Evidência mais recente
+
+- Composição com `ac751aacc` e correções: **678 pass, 0 skip, 0 fail**, 32.842 asserções
+  em 78 arquivos, incluindo Postgres descartável (`integrated-complete-tests-r4.log`).
+- Tipagem do cliente: exit 0 (`integrated-types-client-r6.log`). Build: exit 0,
+  **43 arquivos / 20,87 MB** (`integrated-build-r4.log`). O aumento inclui os modelos dos objetos.
+- Escada/rampa reais: RED 6 pass / 2 fail; contato no último degrau e na rampa era confundido
+  com bloqueio. Após distinguir as normais de apoio: 8 pass / 0 fail; com testes puros dos modos,
+  35 pass / 0 fail / 135 asserções. Paredes e tetos ainda bloqueiam; todo deslocamento aplicado
+  continua vindo do Rapier, inclusive ao corrigir contato de apoio.
+- Geladeira: RED 7 pass / 1 fail, GREEN 8 pass / 0 fail / 37 asserções. Preserva alimento
+  no limite da mochila e permite completar de 998 para 999.
+- Chrome `integrated-browser-r6.log` e `integrated-time-browser-r1.log`: salvamento/abas,
+  conflito, pausa/retomada, construção e recuperação do limite diário passaram na composição
+  com `7a027a4d2`, antes de integrar os projetos azuis. Não transferir esse resultado à nova UI.
+- Chrome `integrated-browser-r7.log`, após integrar `ac751aacc` e as correções: IndexedDB real,
+  conflito acessível, viewport estreito, duas abas/liberação da trava, pausa/retomada da física e
+  arrasto cancelado/confirmado/desfeito passaram, exit 0. Não exercita ainda aparência autoral.
+- Biome: **96 arquivos**, zero erros; diff sem erros de whitespace. Inventário atualizado:
+  197 arquivos de fonte, zero ciclos estáticos de imports de valor.
+
+### Evidência histórica (Construir e telhados)
 
 - Composição `3a859172a` + correções: **653 pass, 0 fail**, 32.603 asserções em 75 arquivos,
   incluindo banco descartável (ambas as variáveis de testes de Postgres configuradas).
@@ -82,6 +107,15 @@ e integra o commit. Conferir migração de saves antigos, reconhecimento dos qua
 persistência após reabrir, resposta perdida e conflito entre aparelhos. Marcador de recebimento
 e recompensa devem permanecer no mesmo domínio transacional; não somar recompensas de snapshots.
 Nenhum campo concorrente foi inventado nesta frente.
+
+### Limites da integração de projetos azuis
+
+O commit `ac751aacc` guarda o identificador da aparência devolvido pela ferramenta, mas o
+renderer nesta composição escolhe o GLB padrão pelo estado `completo`; não carrega ainda o
+desenho/modelo autoral desse identificador. A prova com a plataforma falsa não demonstra essa
+integração real. O carregamento da aparência autoral e a validação hospedada Pinta/Molda seguem
+pendentes; não declarar essa personalização concluída. O lote atual preserva a implementação
+recebida e corrige transferência de itens e propriedade dos materiais.
 
 ### Verificações desta composição
 
@@ -150,6 +184,8 @@ Entrega pendente da máquina de arte: regenerar e commitar
 o artefato, conferir as âncoras, a geometria de colisão, o acionamento dos mecanismos e a
 pausa/retomada no navegador. A revisão do código e os demais testes continuam independentes
 dessa geração; a validação visual dos mecanismos permanece explicitamente aberta.
+O commit local `8a8608bb3` também registra a falta de um lote adequado para a cabana do Bosque:
+as âncoras `lote-cabana-a` e `lote-cabana-b` e o terreno correspondente pertencem à entrega de arte.
 
 ### Conciliação da grade e do vento
 

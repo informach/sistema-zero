@@ -33,6 +33,10 @@ export function falaDaRecusa(r: Recusa): string | null {
       return 'Ali já tem parede ou cerca. Escolha outro lugar.'
     case 'tem-caminho':
       return 'Ali já tem caminho. Apague o caminho primeiro.'
+    case 'sem-projeto':
+      return 'Esse objeto ainda não chegou. Ele vem dos pedidos e dos desafios.'
+    case 'tem-objeto':
+      return 'Ali já tem um objeto. Escolha outro lugar ou tire ele primeiro.'
     case 'canteiro-com-planta':
       return 'Esse canteiro tem planta. Colha primeiro e depois apague.'
     case 'nada':

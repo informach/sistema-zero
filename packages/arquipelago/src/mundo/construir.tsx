@@ -159,9 +159,10 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
     }
     const escolhas = () => {
       const s = construcao.getState()
-      return { janela: s.janela, piso: s.piso, caminho: s.caminho }
+      return { janela: s.janela, piso: s.piso, caminho: s.caminho, objeto: s.objeto, giro: s.giro }
     }
     const horta = () => loja.getState().salvamento.horta
+    const projetos = () => loja.getState().salvamento.projetos
 
     const desce = (e: PointerEvent) => {
       e.stopPropagation()
@@ -222,7 +223,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
         const previa =
           arrasta(f) && f !== 'apagar'
             ? arrasto(f, o, lote, onde, onde, escolhas()).previa
-            : toque(f, o, lote, onde, escolhas(), horta()).previa
+            : toque(f, o, lote, onde, escolhas(), horta(), projetos()).previa
         mostrar(comCor(f, previa))
       }
     }
@@ -241,11 +242,11 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
           g.andou || f === 'caminho'
             ? arrasto(f, o, lote, g.inicio, g.fim, escolhas()).resultado
             : f === 'apagar'
-              ? toque(f, o, lote, g.inicio, escolhas(), horta()).resultado
+              ? toque(f, o, lote, g.inicio, escolhas(), horta(), projetos()).resultado
               : null
         if (r) s.aplicar(r)
       } else if (g.tipo === 'toque') {
-        const r = toque(ferramenta, o, lote, g.onde, escolhas(), horta()).resultado
+        const r = toque(ferramenta, o, lote, g.onde, escolhas(), horta(), projetos()).resultado
         if (r) s.aplicar(r)
       }
       mostrar(null)

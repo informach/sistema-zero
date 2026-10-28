@@ -16,6 +16,7 @@ import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
 
@@ -476,6 +477,7 @@ export function Hud() {
       <PainelDaCapi />
       <PainelDoBicho />
       <CadernoDosLumis />
+      <PainelDoObjeto />
       <Diario />
       <Menu />
       <Resultado />
