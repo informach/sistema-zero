@@ -355,6 +355,21 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   reação que o modelo toca); regras em `sistemas/cuidar.ts`; a queda das medidas roda nos
   `Relogios`, junto com as necessidades. Testes: `tests/cuidar.test.ts`.
 
+## Diário e pegadas (28/10/2026, Fase 1)
+
+- Regras puras em `sistemas/diario.ts` (páginas da Íris e a coleção do Bosque, derivadas do
+  salvamento, sem campo novo) e `sistemas/pegadas.ts` (`FORMA_DA_PEGADA`, as elipses de cada
+  pegada no quadro de 64, e `rastroNoCaminho`). Regras e números: `docs/arquipelago-regras.md`
+  §6.16. Testes: `tests/diario.test.ts` e `tests/pegadas.test.ts`.
+- Painel em `interface/diario.tsx` (`PAINEL_DO_DIARIO` em `painelAberto`), aberto pelo menu. O
+  desenho da pegada no diário (`interface/pegadas.tsx`, SVG) e no chão
+  (`mundo/rastro-de-pegadas.tsx`, uma malha instanciada por bicho) saem das mesmas elipses.
+- A página do Bosque chega pela Capi: `comecarConversa`, `presentear` e `entregar` põem
+  `FALA_DA_PAGINA` no fim das falas quando a amizade passa de `CORACOES_DA_PAGINA`; por isso
+  `presentear` e `entregar` devolvem `falas` (lista) e `responder` da loja da conversa recebe a lista.
+- O rastro sai no `BichosDoBosque`, à toa (`requestIdleCallback`), pelo mesmo
+  `caminhoAteOCercado` da corrida até o cercadinho (que monta a grade se ainda não houver).
+
 ## Salvamento e tempo
 
 - `SalvamentoV3` (contrato) com versão; a V1 e a V2 migram sozinhas (`migrarDaV1`: nenhum

@@ -1,9 +1,11 @@
 import {
   BICHOS_DO_BOSQUE,
   type BichoDoBosque,
+  type Capi,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { adotar, motivoDoNome } from './bichos'
+import { FALA_DA_PAGINA, ganhouAPagina } from './diario'
 import { escondidos } from './esconde'
 import { falasDaCapi } from './falas-da-capi'
 import { ITENS, quantidade } from './itens'
@@ -23,6 +25,14 @@ import {
  * A conversa com a Capi sobre o salvamento inteiro (o que o painel chama). Junta as regras de
  * `moradores.ts` com os achados e o bicho adotado, e devolve o salvamento novo e o que ela diz.
  */
+
+/**
+ * As falas com a entrega da página do diário da Íris no fim, se a amizade acabou de chegar aos
+ * corações da página (`sistemas/diario.ts`).
+ */
+function comAPagina(antes: Capi, depois: Capi, falas: readonly string[]): string[] {
+  return ganhouAPagina(antes, depois) ? [...falas, ...FALA_DA_PAGINA] : [...falas]
+}
 
 /** Um número do dia para escolher a fala dentro do nível (muda todo dia, igual o dia inteiro). */
 export function escolhaDoDia(dia: string): number {
@@ -50,18 +60,22 @@ export function comecarConversa(
   const comPedido = pedidoDoDia(antes, dia, perfilId, achados, escondidos(s.bichos).length)
   const { capi, primeiraDoDia } = conversar(comPedido, dia)
   const salvamento: Salvamento = { ...s, moradores: { ...s.moradores, capi } }
-  const falas = falasDaCapi(
-    {
-      coracoes: coracoes(capi.amizade),
-      primeiroEncontro: antes.conversaEm === null,
-      primeiraDoDia,
-      aniversario: ehAniversario(dia),
-      achados,
-      total: BICHOS_DO_BOSQUE.length,
-      adotado: s.bichos.adotado?.nome ?? null,
-      pedido: pedidoDeHoje(salvamento, dia),
-    },
-    escolhaDoDia(dia),
+  const falas = comAPagina(
+    antes,
+    capi,
+    falasDaCapi(
+      {
+        coracoes: coracoes(capi.amizade),
+        primeiroEncontro: antes.conversaEm === null,
+        primeiraDoDia,
+        aniversario: ehAniversario(dia),
+        achados,
+        total: BICHOS_DO_BOSQUE.length,
+        adotado: s.bichos.adotado?.nome ?? null,
+        pedido: pedidoDeHoje(salvamento, dia),
+      },
+      escolhaDoDia(dia),
+    ),
   )
   return { salvamento, falas }
 }
@@ -79,30 +93,35 @@ export function presentear(
   s: Salvamento,
   itemId: string,
   dia: string,
-): { salvamento: Salvamento; reacao: ReacaoAoPresente; fala: string } {
+): { salvamento: Salvamento; reacao: ReacaoAoPresente; falas: string[] } {
   const r = darPresente(s.moradores.capi, s.inventario, itemId, dia)
   const ganhou = r.reacao === 'adorou' || r.reacao === 'agradeceu'
   const fala =
     ganhou && ehAniversario(dia)
       ? `${FALA_DO_PRESENTE[r.reacao]} E no meu aniversário, ainda por cima.`
       : FALA_DO_PRESENTE[r.reacao]
-  if (!ganhou) return { salvamento: s, reacao: r.reacao, fala }
+  if (!ganhou) return { salvamento: s, reacao: r.reacao, falas: [fala] }
   return {
     salvamento: { ...s, inventario: r.inv, moradores: { ...s.moradores, capi: r.capi } },
     reacao: r.reacao,
-    fala,
+    falas: comAPagina(s.moradores.capi, r.capi, [fala]),
   }
 }
 
 export const FALA_DA_ENTREGA = 'Era isso mesmo que eu precisava. Obrigada, você ajudou muito.'
 
 /** Entregar o pedido de hoje pelo painel. */
-export function entregar(s: Salvamento): { salvamento: Salvamento; entregou: boolean } {
+export function entregar(s: Salvamento): {
+  salvamento: Salvamento
+  entregou: boolean
+  falas: string[]
+} {
   const r = entregarPedido(s.moradores.capi, s.inventario, s.bichos.achados.length)
-  if (!r.entregou) return { salvamento: s, entregou: false }
+  if (!r.entregou) return { salvamento: s, entregou: false, falas: [] }
   return {
     salvamento: { ...s, inventario: r.inv, moradores: { ...s.moradores, capi: r.capi } },
     entregou: true,
+    falas: comAPagina(s.moradores.capi, r.capi, [FALA_DA_ENTREGA]),
   }
 }
 

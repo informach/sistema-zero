@@ -276,12 +276,12 @@ describe('a conversa com a Capi no salvamento', () => {
     const s = { ...inicial(), inventario: { milho: 1, 'semente-milho': 2 } }
     const a = presentear(s, 'milho', HOJE)
     expect(a.reacao).toBe('adorou')
-    expect(a.fala).toBe(FALA_DO_PRESENTE.adorou)
+    expect(a.falas).toEqual([FALA_DO_PRESENTE.adorou])
     expect(a.salvamento.inventario).toEqual({ 'semente-milho': 2 })
     const b = presentear(a.salvamento, 'semente-milho', HOJE)
     expect(b.reacao).toBe('devolveu')
     expect(b.salvamento).toBe(a.salvamento)
-    expect(presentear(s, 'milho', '2027-03-12').fala).toContain('aniversário')
+    expect(presentear(s, 'milho', '2027-03-12').falas[0]).toContain('aniversário')
   })
 
   test('entregar o pedido e o que falta para ele', () => {

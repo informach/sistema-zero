@@ -20,7 +20,7 @@ export interface EstadoDaConversa {
   alegria: number
   abrir(falas: string[]): void
   /** Uma resposta dela no meio da conversa (o presente, a entrega). */
-  responder(fala: string, comemorar: boolean): void
+  responder(falas: readonly string[], comemorar: boolean): void
   avancar(): void
   escolherPresente(): void
   escolherAdotar(): void
@@ -42,9 +42,9 @@ export function lojaDaConversa(loja: LojaDoJogo): LojaDaConversa {
       abrir(falas) {
         set({ falas, indice: 0, tela: falas.length > 0 ? 'falas' : 'escolhas' })
       },
-      responder(fala, comemorar) {
+      responder(falas, comemorar) {
         set({
-          falas: [fala],
+          falas: [...falas],
           indice: 0,
           tela: 'falas',
           alegria: comemorar ? get().alegria + 1 : get().alegria,
