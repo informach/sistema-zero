@@ -18,7 +18,9 @@ import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interfa
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
 import { criarFilaDeTempo } from './sistemas/fila-tempo'
+import { criarGerenteTempo } from './sistemas/gerente-tempo'
 import { criarFilaDeSalvamento, type FilaDeSalvamento } from './sistemas/salvar'
+import { criarSessaoTempo } from './sistemas/sessao-tempo'
 
 type Situacao =
   | { tipo: 'carregando' }
@@ -35,6 +37,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
   const acesso = AcessoSchema.parse(acessoResp.corpo)
   if (!acesso.liberado) return { tipo: 'bloqueado', motivo: acesso.motivo ?? 'desligado' }
   if (
+    acesso.contabilizaTempo !== false &&
     acesso.limiteDiarioMinutos !== null &&
     acesso.usadoHojeSegundos >= acesso.limiteDiarioMinutos * 60
   ) {
@@ -76,27 +79,57 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     },
     aoErro: (e) => plataforma.relatarErro(e, 'salvamento'),
   })
-  const filaTempo =
-    plataforma.publico === 'kids'
-      ? await criarFilaDeTempo({
-          perfil: plataforma.perfil.id,
-          servico: plataforma.servico,
-          aoConfirmar: (tempo) =>
-            loja.getState().registrarTempo(tempo.usadoHojeSegundos, tempo.acabou),
-          aoErro: (erro) => {
-            plataforma.relatarErro(erro, 'tempo-livre')
-            loja.getState().definirTempoPausado(true)
-          },
-        }).catch((erro) => {
-          fila?.parar()
-          throw erro
-        })
-      : null
+  let gerenteTempo: ReturnType<typeof criarGerenteTempo> | null = null
+  if (plataforma.publico === 'kids' && acesso.contabilizaTempo !== false) {
+    try {
+      // Antes de começar o novo protocolo, entrega o que uma versão anterior já guardou.
+      const filaAntiga = await criarFilaDeTempo({
+        perfil: plataforma.perfil.id,
+        servico: plataforma.servico,
+        aoConfirmar: (tempo) =>
+          loja.getState().registrarTempo(tempo.usadoHojeSegundos, tempo.acabou),
+        aoErro: (erro) => {
+          plataforma.relatarErro(erro, 'tempo-livre')
+          loja.getState().definirTempoPausado(true)
+        },
+      })
+      await filaAntiga.encerrar()
+      if (loja.getState().tempoAcabou) {
+        fila.parar()
+        return { tipo: 'descanso' }
+      }
+      const sessao = criarSessaoTempo({
+        servico: plataforma.servico,
+        aoConfirmar: (tempo) =>
+          loja
+            .getState()
+            .registrarTempo(
+              tempo.usadoHojeSegundos,
+              tempo.situacao === 'limite',
+              tempo.limiteDiarioMinutos,
+            ),
+      })
+      // A sessão só começa quando a tela do jogo estiver montada e visível.
+      loja.getState().definirTempoSincronizando(true)
+      gerenteTempo = criarGerenteTempo({
+        sessao,
+        inicialmenteAtivo: false,
+        sincronizando: (valor) => loja.getState().definirTempoSincronizando(valor),
+        aoErro: (erro) => {
+          plataforma.relatarErro(erro, 'tempo-livre')
+          loja.getState().definirTempoPausado(true)
+        },
+      })
+    } catch (erro) {
+      fila.parar()
+      throw erro
+    }
+  }
   // Um jogo novo só entra na fila depois que a recuperação do tempo termina.
   if (guardado.revisao === 0) fila.guardar(salvamento)
   const contexto: ContextoDoJogo = {
     loja,
-    filaTempo,
+    gerenteTempo,
     plataforma,
     controle: criarControle(),
     interativos: criarRegistro(),
@@ -158,8 +191,8 @@ function TelaTempoPausado({ contexto }: { contexto: ContextoDoJogo }) {
           disabled={tentando}
           onClick={() => {
             setTentando(true)
-            void contexto.filaTempo
-              ?.guardarEEnviar()
+            void contexto.gerenteTempo
+              ?.recuperar()
               .then(() => {
                 contexto.loja.getState().definirTempoPausado(false)
               })
@@ -192,6 +225,7 @@ function JogoPronto({
 }) {
   const tempoAcabou = useStore(contexto.loja, (s) => s.tempoAcabou)
   const tempoPausado = useStore(contexto.loja, (s) => s.tempoPausado)
+  const tempoSincronizando = useStore(contexto.loja, (s) => s.tempoSincronizando)
   useEffect(() => ligarTeclado(contexto.controle), [contexto])
   useEffect(() => {
     const aoEsconder = () => {
@@ -220,6 +254,11 @@ function JogoPronto({
       </Barreira>
       <Relogios />
       <Hud />
+      {tempoSincronizando && !tempoPausado && !tempoAcabou ? (
+        <div className="arq-dica" role="status" aria-live="polite">
+          Preparando o jogo…
+        </div>
+      ) : null}
       {tempoPausado && !tempoAcabou ? <TelaTempoPausado contexto={contexto} /> : null}
       {tempoAcabou ? (
         <div style={{ position: 'absolute', inset: 0 }}>
@@ -241,7 +280,7 @@ export function Jogo({ plataforma }: { plataforma: Plataforma }) {
       .then((s) => {
         if (minha === tentativa.current) setSituacao(s)
         else if (s.tipo === 'pronto') {
-          void s.contexto.filaTempo?.encerrar().catch(() => {})
+          void s.contexto.gerenteTempo?.encerrar().catch(() => {})
           s.fila.parar()
         }
       })

@@ -1,10 +1,12 @@
 import {
   type Acesso,
+  type ComandoSessaoTempo,
   diaDeSaoPaulo,
   type GravarSalvamento,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   migrarSalvamento,
   normalizarLimiteDiario,
+  type RespostaSessaoTempo,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoGuardado,
   type TempoRegistrado,
@@ -12,11 +14,13 @@ import {
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { Jogador, Responsavel } from '../domain/jogador'
 import type { RepositorioDoJogo, SalvamentoNoBanco } from '../domain/repositorio.port'
+import type { RepositorioSessoesTempo } from '../domain/repositorio-sessoes-tempo.port'
 import { DataTempoInvalidaError } from '../domain/tempo-erros'
 import {
   AcessoBloqueadoError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
+  SessaoTempoNaoPermitidaError,
   SomenteLeituraError,
 } from './erros'
 
@@ -32,6 +36,7 @@ export class ServicoDoJogo {
     private readonly repo: RepositorioDoJogo,
     private readonly politica: PoliticaDeAcesso,
     private readonly agora: () => Date = () => new Date(),
+    private readonly sessoesTempo?: RepositorioSessoesTempo,
   ) {}
 
   async acesso(jogador: Jogador): Promise<Acesso> {
@@ -40,7 +45,12 @@ export class ServicoDoJogo {
       this.limiteDe(jogador),
       this.repo.lerTempo(jogador.id, diaDeSaoPaulo(this.agora())),
     ])
-    return { ...decisao, limiteDiarioMinutos: limite, usadoHojeSegundos: usado }
+    return {
+      ...decisao,
+      limiteDiarioMinutos: limite,
+      usadoHojeSegundos: usado,
+      contabilizaTempo: jogador.publico === 'kids' && !jogador.somenteLeitura,
+    }
   }
 
   async lerSalvamento(jogador: Jogador): Promise<SalvamentoGuardado> {
@@ -86,6 +96,28 @@ export class ServicoDoJogo {
       usadoHojeSegundos: usado,
       limiteDiarioMinutos: limite,
       acabou: limite !== null && usado >= limite * 60,
+    }
+  }
+
+  async comandarSessaoTempo(
+    jogador: Jogador,
+    comando: ComandoSessaoTempo,
+  ): Promise<RespostaSessaoTempo> {
+    this.exigirLiberado(jogador)
+    if (jogador.somenteLeitura) throw new SomenteLeituraError()
+    if (jogador.publico !== 'kids' || !jogador.contaId) throw new SessaoTempoNaoPermitidaError()
+    if (!this.sessoesTempo) throw new Error('Repositório de sessões não configurado')
+    const agora = this.agora()
+    const resultado = await this.sessoesTempo.executar({
+      ...comando,
+      jogadorId: jogador.id,
+      contaId: jogador.contaId,
+      agora,
+    })
+    return {
+      ...resultado,
+      servidorEm: agora.toISOString(),
+      vencimento: resultado.vencimento?.toISOString() ?? null,
     }
   }
 

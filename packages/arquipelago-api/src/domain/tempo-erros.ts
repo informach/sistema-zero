@@ -9,3 +9,9 @@ export class DataTempoInvalidaError extends Error {
     super('Data de tempo futura')
   }
 }
+
+export class SequenciaDeTempoInvalidaError extends Error {
+  constructor() {
+    super('A sequência da sessão de tempo é inválida')
+  }
+}

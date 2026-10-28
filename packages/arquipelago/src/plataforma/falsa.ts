@@ -1,6 +1,7 @@
 import {
   type Acesso,
   CODIGO_SALVAMENTO_DESATUALIZADO,
+  ComandoSessaoTempoSchema,
   type ConflitoDeSalvamento,
   criarSalvamentoInicial,
   diaDeSaoPaulo,
@@ -62,6 +63,29 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
   const eventos = new Map<string, { segundos: number; dia: string }>()
+  type Sessao = {
+    id: string
+    cursor: number
+    vencimento: number
+    sequencia: number
+    acao: 'iniciar' | 'pulsar' | 'pausar'
+    estado: 'ativa' | 'encerrada' | 'expirada'
+  }
+  const sessoes = new Map<string, Sessao>()
+  let sessaoAtiva: Sessao | null = null
+
+  function acertar(sessao: Sessao, instante: number, pausar: boolean) {
+    const fim = Math.max(sessao.cursor, Math.min(instante, sessao.vencimento))
+    const segundos = Math.floor((fim - sessao.cursor) / 1000)
+    for (let i = 0; i < segundos; i++) {
+      const dia = diaDeSaoPaulo(new Date(sessao.cursor + i * 1000))
+      usado.set(dia, Math.min(86_400, (usado.get(dia) ?? 0) + 1))
+    }
+    sessao.cursor += segundos * 1000
+    sessao.estado = instante >= sessao.vencimento ? 'expirada' : pausar ? 'encerrada' : 'ativa'
+    if (sessao.estado === 'ativa') sessao.vencimento = instante + 20_000
+    else if (sessaoAtiva === sessao) sessaoAtiva = null
+  }
 
   if (o.comecarEm) {
     const inicial = criarSalvamentoInicial(
@@ -94,6 +118,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     motivo: (o.liberado ?? true) ? null : 'fora-da-lista',
     limiteDiarioMinutos: limite,
     usadoHojeSegundos: usado.get(diaDeSaoPaulo(agora())) ?? 0,
+    contabilizaTempo: publico === 'kids',
   })
 
   return {
@@ -140,7 +165,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
           persistir()
           return { status: 200, corpo: guardado }
         }
-        if (caminho === '/tempo' && metodo === 'POST') {
+        if (caminho === '/tempo/recuperar' && metodo === 'POST') {
           const corpo = RegistrarTempoSchema.safeParse(opcoes?.corpo)
           if (!corpo.success) return { status: 400, corpo: { code: 'VALIDATION_ERROR' } }
           if (corpo.data.dia > diaDeSaoPaulo(agora()))
@@ -164,6 +189,80 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
               acabou: limite !== null && hoje >= limite * 60,
             },
           }
+        }
+        if (caminho === '/tempo/sessao' && metodo === 'POST') {
+          if (publico !== 'kids' || limite === null)
+            return { status: 403, corpo: { code: 'FORBIDDEN' } }
+          const pedido = ComandoSessaoTempoSchema.safeParse(opcoes?.corpo)
+          if (!pedido.success) return { status: 400, corpo: { code: 'VALIDATION_ERROR' } }
+          const comando = pedido.data
+          const data = agora()
+          const instante = data.getTime()
+          const responder = (
+            situacao: 'ativa' | 'encerrada' | 'expirada' | 'substituida' | 'limite',
+            sessao?: Sessao,
+          ) => ({
+            status: 200,
+            corpo: {
+              situacao,
+              usadoHojeSegundos: usado.get(diaDeSaoPaulo(data)) ?? 0,
+              limiteDiarioMinutos: limite,
+              servidorEm: data.toISOString(),
+              vencimento:
+                situacao === 'ativa' && sessao ? new Date(sessao.vencimento).toISOString() : null,
+            },
+          })
+          const existente = sessoes.get(comando.sessaoId)
+          if (comando.acao === 'iniciar') {
+            if (existente) {
+              if (existente !== sessaoAtiva || existente.estado !== 'ativa')
+                return responder('substituida')
+              if (instante >= existente.vencimento) {
+                acertar(existente, instante, true)
+                return responder('expirada')
+              }
+              return responder('ativa', existente)
+            }
+            if (sessaoAtiva) acertar(sessaoAtiva, instante, true)
+            if ((usado.get(diaDeSaoPaulo(data)) ?? 0) >= limite * 60) return responder('limite')
+            const nova: Sessao = {
+              id: comando.sessaoId,
+              cursor: instante,
+              vencimento: instante + 20_000,
+              sequencia: 0,
+              acao: 'iniciar',
+              estado: 'ativa',
+            }
+            sessoes.set(nova.id, nova)
+            sessaoAtiva = nova
+            return responder('ativa', nova)
+          }
+          if (
+            existente &&
+            existente.estado !== 'ativa' &&
+            comando.sequencia === existente.sequencia &&
+            comando.acao === existente.acao
+          )
+            return responder(
+              (usado.get(diaDeSaoPaulo(data)) ?? 0) >= limite * 60 ? 'limite' : existente.estado,
+            )
+          if (!existente || existente !== sessaoAtiva || existente.estado !== 'ativa')
+            return responder('substituida')
+          if (comando.sequencia === existente.sequencia && comando.acao !== existente.acao)
+            return { status: 409, corpo: { code: 'TEMPO_SEQUENCIA_INVALIDA' } }
+          const repetida = comando.sequencia === existente.sequencia
+          if (!repetida && comando.sequencia !== existente.sequencia + 1)
+            return { status: 409, corpo: { code: 'TEMPO_SEQUENCIA_INVALIDA' } }
+          if (repetida && instante < existente.vencimento) return responder('ativa', existente)
+          acertar(existente, instante, comando.acao === 'pausar')
+          existente.sequencia = comando.sequencia
+          existente.acao = comando.acao
+          if ((usado.get(diaDeSaoPaulo(data)) ?? 0) >= limite * 60) {
+            existente.estado = 'encerrada'
+            sessaoAtiva = null
+            return responder('limite')
+          }
+          return responder(existente.estado, existente)
         }
         return { status: 404, corpo: { code: 'NOT_FOUND' } }
       },

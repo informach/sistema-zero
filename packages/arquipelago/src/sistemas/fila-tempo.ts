@@ -23,7 +23,7 @@ export async function criarFilaDeTempo(opcoes: {
     if (envio) return envio
     envio = (async () => {
       for (const evento of await armazem.listar()) {
-        const resposta = await opcoes.servico.buscar('/tempo', {
+        const resposta = await opcoes.servico.buscar('/tempo/recuperar', {
           metodo: 'POST',
           corpo: { eventoId: evento.id, segundos: evento.segundos, dia: evento.dia },
           sinal: AbortSignal.timeout(15_000),
