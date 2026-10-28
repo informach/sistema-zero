@@ -1238,6 +1238,13 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     else if (keys.KeyD || keys.ArrowRight) s.vx = sp;
     if (keys.KeyW || keys.ArrowUp) s.vz = -sp;
     else if (keys.KeyS || keys.ArrowDown) s.vz = sp;
+    // Na vista que o jogador gira (frameScene), "para cima" é para longe da câmera.
+    var world = worldOf(obj), view = world && world._cameraMode === 'framed' && world._framedView;
+    if (view && view.az && (s.vx || s.vz)) {
+      var ca = Math.cos(view.az), sa = Math.sin(view.az), ix = s.vx, iz = s.vz;
+      s.vx = ix * ca + iz * sa;
+      s.vz = iz * ca - ix * sa;
+    }
   }
 
   // Percurso iniciante: uma ação de movimento, sem listas nem leitura de propriedades.
@@ -1263,6 +1270,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
   function topDown(obj, speed) {
     if (!obj || !obj.position) return;
+    var framedWorld = worldOf(obj);
+    if (framedWorld && framedWorld._framedView) framedWorld._framedView.focus = obj;
     controlWithKeys(obj, clamp(speed, 0, 100, 3));
     var s = szData(obj), scale = frameScale(obj), startX = obj.position.x, startZ = obj.position.z;
     var dx = s.vx * scale, dz = s.vz * scale;
@@ -1286,25 +1295,117 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (worldOf(a) !== worldOf(b)) return;
     rules.onTouchGroup(a, [b], fn);
   }
-  // Enquadramento de uma área conhecida, independente do tamanho do painel da prévia.
+  // Enquadramento de uma área conhecida, independente do tamanho do painel da prévia. O jogador
+  // ajusta a vista: rodinha do mouse (ou dois dedos) aproxima e afasta, arrastar gira em volta,
+  // duplo clique volta ao começo. De perto, a câmera acompanha quem anda pelo topDown, e as
+  // setas andam em relação à câmera (controlWithKeys).
+  var FRAMED_START = 0.75, FRAMED_ZOOM_MIN = 0.35, FRAMED_ZOOM_MAX = 1.6, FRAMED_FOLLOW = 0.35;
+  var FRAMED_EL_START = Math.PI / 6, FRAMED_EL_MIN = 0.2, FRAMED_EL_MAX = 1.25;
   function frameScene(world, width, height, depth) {
     if (!world || !world.camera) return;
     var w = clamp(width, 1, 500, 24), h = clamp(height, 1, 500, 8), d = clamp(depth, 1, 500, 16);
     usePerspectiveCamera(world, true);
     activateCameraMode(world, 'framed');
     attachCameraToScene(world);
+    var view = world._framedView ||
+      (world._framedView = { az: 0, el: FRAMED_EL_START, zoom: 1, fit: 10, h: h, focus: null });
+    view.h = h;
     world._resizeCamera = function (cam, nw, nh) {
       cam.aspect = nw / nh;
       var tan = Math.tan(cam.fov * Math.PI / 360), up = Math.sqrt(3) / 2;
       var projectedHeight = h / 2 * up + d / 4;
       var projectedDepth = h / 4 + d / 2 * up;
-      var distance = 1.12 * Math.max(w / 2 / (tan * cam.aspect), projectedHeight / tan) + projectedDepth;
-      cam.far = Math.max(1000, distance + projectedDepth + 10);
-      cam.position.set(0, h / 2 + distance / 2, distance * up);
-      cam.lookAt(0, h / 2, 0);
+      // Começa perto (80% da área) e não se afasta só porque o painel é estreito: a proporção
+      // conta no máximo como 1,2. Para ver tudo, o jogador afasta com a rodinha.
+      view.fit = FRAMED_START * Math.max(w / 2 / (tan * Math.max(cam.aspect, 1.2)), projectedHeight / tan) +
+        projectedDepth;
+      cam.far = Math.max(1000, view.fit * FRAMED_ZOOM_MAX + projectedDepth + 10);
+      placeFramedCamera(world);
       cam.updateProjectionMatrix();
     };
+    wireFramedControls(world);
     world._resize();
+  }
+  function placeFramedCamera(world) {
+    var v = world._framedView, cam = world.camera;
+    if (!v || !cam || !cam.position || world._cameraMode !== 'framed') return;
+    // A vista acompanha de leve quem anda (um terço do caminho), como nos jogos: a área fica
+    // centrada e ninguém some na beira. Mais perto, acompanha até o fim; mais longe, solta.
+    var t = v.zoom <= 1
+      ? FRAMED_FOLLOW + (1 - FRAMED_FOLLOW) * (1 - v.zoom) / (1 - FRAMED_ZOOM_MIN)
+      : FRAMED_FOLLOW * (FRAMED_ZOOM_MAX - v.zoom) / (FRAMED_ZOOM_MAX - 1);
+    t = Math.max(0, Math.min(1, t));
+    var f = v.focus && v.focus.position && worldOf(v.focus) === world ? v.focus.position : null;
+    // Mira baixa (um quarto da altura): o chão onde se joga fica no meio da tela.
+    var tx = f ? f.x * t : 0, tz = f ? f.z * t : 0, ty = v.h / 4;
+    var dist = v.fit * v.zoom, ce = Math.cos(v.el);
+    cam.position.set(tx + dist * ce * Math.sin(v.az), ty + dist * Math.sin(v.el), tz + dist * ce * Math.cos(v.az));
+    if (cam.lookAt) cam.lookAt(tx, ty, tz);
+  }
+  function wireFramedControls(world) {
+    var canvas = world._canvas;
+    if (world._framedWired || !canvas || !canvas.addEventListener) return;
+    world._framedWired = true;
+    // Sem isto o navegador usa os dois dedos para dar zoom na página, não no jogo.
+    if (canvas.style) canvas.style.touchAction = 'none';
+    var pointers = {}, drag = null, pinch = null;
+    function active() { return world._cameraMode === 'framed' && world._framedView; }
+    function count() { var n = 0; for (var k in pointers) n++; return n; }
+    function spread() {
+      var p = [];
+      for (var k in pointers) p.push(pointers[k]);
+      return p.length < 2 ? 0 : Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+    }
+    function setZoom(z) {
+      world._framedView.zoom = Math.max(FRAMED_ZOOM_MIN, Math.min(FRAMED_ZOOM_MAX, z));
+      placeFramedCamera(world);
+    }
+    listen(world, canvas, 'wheel', function (e) {
+      if (!active()) return;
+      // A página de fora não rola enquanto a criança dá zoom no jogo.
+      if (e.preventDefault) e.preventDefault();
+      setZoom(world._framedView.zoom * Math.pow(1.0015, finite(e.deltaY, 0)));
+    }, { passive: false });
+    listen(world, canvas, 'pointerdown', function (e) {
+      if (!active()) return;
+      pointers[e.pointerId] = { x: e.clientX || 0, y: e.clientY || 0 };
+      if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) {} }
+      var n = count();
+      if (n === 1) drag = { x: e.clientX || 0, y: e.clientY || 0, moved: false };
+      else if (n === 2) { drag = null; pinch = { spread: spread(), zoom: world._framedView.zoom }; }
+    });
+    listen(world, canvas, 'pointermove', function (e) {
+      if (!active() || !pointers[e.pointerId]) return;
+      pointers[e.pointerId] = { x: e.clientX || 0, y: e.clientY || 0 };
+      var v = world._framedView;
+      if (pinch && count() >= 2) {
+        var now = spread();
+        if (pinch.spread > 0 && now > 0) setZoom(pinch.zoom * pinch.spread / now);
+        return;
+      }
+      if (!drag) return;
+      var dx = (e.clientX || 0) - drag.x, dy = (e.clientY || 0) - drag.y;
+      // Um toque parado continua sendo clique; só gira depois de arrastar um pouco.
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+      drag.moved = true;
+      drag.x = e.clientX || 0; drag.y = e.clientY || 0;
+      v.az -= dx * 0.008;
+      v.el = Math.max(FRAMED_EL_MIN, Math.min(FRAMED_EL_MAX, v.el + dy * 0.006));
+      placeFramedCamera(world);
+    });
+    function release(e) {
+      delete pointers[e.pointerId];
+      if (count() < 2) pinch = null;
+      if (count() === 0) drag = null;
+    }
+    listen(world, canvas, 'pointerup', release);
+    listen(world, canvas, 'pointercancel', release);
+    listen(world, canvas, 'dblclick', function () {
+      if (!active()) return;
+      var v = world._framedView;
+      v.az = 0; v.el = FRAMED_EL_START; v.zoom = 1;
+      placeFramedCamera(world);
+    });
   }
 
   // Câmera "segue de longe": guarda o enquadramento (offset) da hora em que ligou —
@@ -2746,6 +2847,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function _updateCameras(world) {
     if (world._cameraMode === 'follow') updateFollow(world);
     else if (world._cameraMode === 'orbit') updateOrbit(world);
+    else if (world._cameraMode === 'framed') placeFramedCamera(world);
     else if (world._cameraMode === 'third-person') updateThirdPerson(world);
     else if ((world._cameraMode === 'isometric' || world._cameraMode === 'top') && world._orthoFollow) {
       updateOrthoFollow(world);

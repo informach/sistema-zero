@@ -100,7 +100,9 @@ export const ilhaWin: SectionProjectCheck = {
         expect: {
           target: { kind: 'value', path: 'barco.position.x' },
           compare: 'lessThan',
-          value: 8,
+          // O barco sai de x 13, na beira da vista, e vem até 6,6: meio segundo depois do
+          // farol acender ele já saiu do lugar.
+          value: 12.5,
         },
       },
       { afterStep: 5, expect: equals('temChave', false) },

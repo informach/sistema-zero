@@ -42,3 +42,16 @@ conversão do código para blocos, sem exceções de `allowBlocks`.
 Esta versão usa Jogo 3D 0.32.0. Atualizar o aplicativo no staging antes de importar os manifestos
 regenerados: eles usam os novos comandos. O arquivo final é portátil quanto às artes; os comandos
 continuam dependendo da versão correspondente da extensão.
+
+## Câmera do jogador e chegada do barco — 28/10/2026
+
+O `frameScene` passou a dar a vista ao jogador, sem bloco novo: começa mais perto (sem se afastar
+só porque a prévia é estreita) e mirando o chão; a rodinha do mouse ou dois dedos aproximam e
+afastam; arrastar gira em volta; duplo clique volta ao começo. A vista acompanha de leve o
+personagem (um terço do caminho; de perto, inteira), e as setas andam em relação à câmera, então
+"para cima" continua sendo "para longe" depois de girar. Na aula 1, girar mostra a chave
+aparecendo ou sumindo atrás das pedras.
+
+O barco sai de x 13, na beira da vista, e vem até o farol (antes saía de 8,5: andava 1,9 e quase
+não se via). O critério da vitória confere que ele saiu do lugar (x < 12,5) meio segundo depois.
+

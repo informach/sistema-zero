@@ -69,7 +69,7 @@ const gameThreeDBlockDefinitions = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Mostra a área de jogo centrada em x e z zero, a partir do chão. Ajusta a câmera também quando a prévia muda de tamanho.',
+      'Mostra a área de jogo centrada em x e z zero, a partir do chão, e ajusta a câmera quando a prévia muda de tamanho. Quem joga pode aproximar e afastar com a rodinha do mouse (ou dois dedos), girar arrastando e voltar com um duplo clique.',
   },
   {
     type: 'sz_g3d_walk_animations',

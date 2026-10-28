@@ -32,6 +32,21 @@ Os blocos de luz da criança SOMAM a esta luz e não mudaram.
   ACES e Neutral mudam o matiz); igualar a cor lá é um projeto do pipeline inteiro, com revisão
   dos 34 exemplos.
 
+## A vista do jogador no `frameScene` (28/10/2026)
+
+Pedido dela na Ilha do Farol: câmera mais perto, zoom e girar. É do motor, sem bloco novo
+(`game-3d/runtime.ts`, `placeFramedCamera`/`wireFramedControls`), e só vale no modo `framed`:
+- Começa a 75% do enquadramento antigo e a proporção do painel conta no máximo como 1,2 (painel
+  estreito não afasta mais a câmera). Mira em um quarto da altura, não na metade.
+- Rodinha (`wheel` com `passive: false` e `preventDefault`, senão a página da aula rola) e dois
+  dedos dão zoom de 0,35 a 1,6; arrastar gira (só depois de 4 px, para o clique continuar clique),
+  elevação entre 0,2 e 1,25 rad; duplo clique volta. `touch-action: none` no canvas.
+- A vista acompanha quem anda pelo `topDown` (`_framedView.focus`): 35% na vista inicial, 100% no
+  zoom mínimo, nada no máximo. ⚠️ `controlWithKeys` gira as setas pelo ângulo da câmera SÓ no modo
+  `framed` com ângulo diferente de zero: em qualquer outro jogo o movimento continua igual.
+- O `orbitCamera` ("câmera em volta") já existia, mas é outro bloco: troca o modo da câmera e não
+  enquadra a área. Testes: `game-3d/__tests__/beginner.test.ts` §"a vista do jogador".
+
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e

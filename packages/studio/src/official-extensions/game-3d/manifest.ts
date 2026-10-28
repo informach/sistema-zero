@@ -28,7 +28,7 @@ A paleta tem dez famílias, na ordem em que um jogo é montado: 🎬 Cena, céu 
 - **Permitir … andar em x … e z …** (\`walkArea\`), em **Ao iniciar**, define uma área permitida. Várias áreas formam um caminho unido. O personagem não salta intervalos entre áreas. Sem áreas, o movimento é livre.
 - **Animações de …: parado …, andando …** (\`walkAnimations\`) prepara os clipes que esse movimento usa, em **Ao iniciar**.
 - **Quando … encostar em …** (\`onTouch\`) escolhe diretamente dois elementos da cena. Dispara uma vez por entrada no contato, sem grupo ou nome de item.
-- **Enquadrar a cena** (\`frameScene\`) mantém uma área centrada em x/z zero, acima do chão, visível ao redimensionar a prévia. Largura, altura e profundidade descrevem a área de jogo, sem incluir o céu.
+- **Enquadrar a cena** (\`frameScene\`) mantém uma área centrada em x/z zero, acima do chão, visível ao redimensionar a prévia. Largura, altura e profundidade descrevem a área de jogo, sem incluir o céu. Quem joga ajusta a vista: rodinha do mouse ou dois dedos aproximam e afastam, arrastar gira em volta e um duplo clique volta ao começo. A vista acompanha de leve quem anda com \`topDown\` (de perto, acompanha inteira), e as setas passam a andar em relação à câmera.
 
 **Mover … com o teclado** (\`controlWithKeys\`) conserva o comportamento anterior: define velocidade para física/grupos aplicarem depois. Os comandos novos não alteram projetos existentes. Objetos da categoria visual são os elementos 3D; estruturas de dados de Programação continuam nos níveis posteriores.
 

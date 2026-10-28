@@ -10,7 +10,7 @@ encostou. Vários blocos “A cada quadro” da mesma cena rodam em ordem.
 FAÍSCA: use topDown(personagem, velocidade) no quadro: ele já anda, sem grupo.
 walkArea(personagem,minX,maxX,minZ,maxZ) define caminhos em Ao iniciar; walkAnimations
 escolhe parado/andando. onTouch(personagem,chave,()=>{...}) registra o encontro direto.
-frameScene(cena,largura,altura,profundidade) enquadra o jogo também em painéis estreitos.
+frameScene(cena,largura,altura,profundidade) enquadra o jogo também em painéis estreitos; quem joga dá zoom (rodinha), gira (arrastar) e volta (duplo clique), e as setas andam em relação à câmera.
 Não usar listas, objetos literais, propriedades genéricas ou blocos intermediários no Faísca.
 controlWithKeys mantém o contrato antigo de somente definir velocidade.
 
