@@ -455,13 +455,21 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
 - **Física em passos fixos** de 1/60 s (`PASSO_DA_FISICA`), com o desenho suavizado entre passos: o
   mesmo movimento a 30, 60 ou 144 quadros por segundo.
 - **Até onde o pulo chega** (`alcanceDoPulo`, `alcanceMaximoDoPulo`, `beiradaMaximaDoPulo` em
-  `sistemas/corpo.ts`): sem ajuda, 1,5 m de altura e 1,56 m de vão andando ou 3,26 m correndo. Com
-  as ajudas do corpo, mais: o degrau automático também vale no ar (no alto do pulo o pé ainda sobe
-  0,45, então a beirada mais alta fica em uns 1,95 m) e o pé redondo pega a borda antes do meio do
-  corpo chegar (um raio de cada lado). Com o humor ótimo, o vão mais largo fica em 2,5 m andando e
-  4,5 m correndo. Para desenhar vãos e beiradas: abaixo do alcance sem ajuda passa sempre; acima do
-  máximo, nunca. O degrau no ar é uma ajuda escondida que fica por enquanto (o percurso nas copas
-  foi medido com ela); o modo "agarrar a borda" vai trocá-la por uma ajuda à vista.
+  `sistemas/corpo.ts`): sem ajuda, 1,5 m de altura e 1,56 m de vão andando ou 3,26 m correndo. O pé
+  redondo pega a borda antes do meio do corpo chegar (um raio de cada lado): com o humor ótimo, o
+  vão mais largo fica em 2,4 m andando e 4,3 m correndo. O degrau automático só vale pisando (até
+  28/10/2026 ele também valia no ar, uma ajuda escondida que levava a beirada a uns 1,95 m): no ar,
+  quem chega perto de uma quina marcada a agarra (abaixo), e a beirada mais alta passa a uns 3,65 m
+  (`beiradaMaximaAgarrando`). Para desenhar vãos e beiradas: abaixo do alcance sem ajuda passa
+  sempre; acima do máximo, nunca; beirada entre 1,5 e 3,65 m só com a quina marcada para agarrar.
+- **Agarrar a borda** (`sistemas/modos/borda.ts`): no ar, caindo (ou quase no alto do pulo), com as
+  mãos (0,9 m acima do meio do corpo) a até 0,35 m acima ou abaixo de uma quina marcada e até 0,6 m
+  dela do lado de fora (0,35 mais 0,25 de assistência), longe 0,2 m das pontas, o corpo pendura
+  rente à parede. Frente (para a parede) sobe: do pendurado até de pé em cima, 0,6 m para dentro da
+  quina, em 0,5 s. Os lados andam pela quina a 0,8 m/s; trás ou usar soltam (e a mesma quina só pega
+  de novo depois de 0,5 s); pular sai para longe da parede. No Bosque, a pedra de agarrar (2 × 2 m,
+  2,1 m de altura) fica entre os deques da T3 e da T4; os deques não têm quina de agarrar (o
+  guarda-corpo segura quem sobe).
 - **Equilíbrio no tronco caído** (`sistemas/modos/equilibrio.ts`): andando ao longo do tampo de um
   tronco estreito, o corpo fica preso ao eixo e anda a 1,6 m/s; pedir o lado inclina o corpo (até
   0,25) e a inclinação volta sozinha em 0,3 s. Sai nas pontas (seguindo o passo), pulando, ou
@@ -477,13 +485,14 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
   atrás, olhando à frente (perfil `escorregar`).
 - **Sala de testes** (`bun run dev`, `/movimento`; `playground/sala-de-movimento.ts`): pista com
   faixas a cada 2 m, degraus de 0,2, 0,35, 0,4 e 0,5, rampas de 25°, 42° e 55°, beiradas de 1,2,
-  1,9 e 2,4 m, plataformas com vãos de 1,2, 2,9 e 5 m, parede, árvore e corredor para a câmera e um
+  2,6 e 4,1 m (a quina da frente marcada para agarrar), plataformas com vãos de 1,2, 2,8 e 4,8 m, parede, árvore e corredor para a câmera e um
   laguinho com rampa de entrada. Cada estação tem um que passa e um que não passa, medidos pelos
   números do corpo (`tests/sala-de-movimento.test.ts`), e o painel mostra a velocidade, o modo, o
   último pulo, o tranco da câmera e os quadros por segundo. Conferido no navegador em 28/10/2026:
   2,44 m/s andando e 5,10 correndo (com o humor ótimo), degraus e rampas como acima, beirada de
-  1,9 m alcançada e de 2,4 não, vão de 1,2 andando, 2,9 só correndo e 5 m nunca, nado no meio do
-  laguinho e saída andando pela rampa.
+  1,9 m alcançada e de 2,4 não (com o degrau no ar, antes da borda), vão de 1,2 andando, 2,9 só
+  correndo e 5 m nunca, nado no meio do laguinho e saída andando pela rampa. Com a borda: a beirada
+  de 1,2 no pulo, a de 2,6 pulando, agarrando e subindo, a de 4,1 nunca.
 
 - **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
   até pisar ou cair no mar (a água freia), e a direção pedida só corrige 45% do normal

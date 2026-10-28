@@ -99,7 +99,7 @@ caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os mo
   câmera para perfis; o percurso abre (pelo menos 11 m e ângulo 0,6) e olha 0,4 s à frente. O "lá
   no alto" continua por cima, então no deque o percurso só antecipa. Construir entra quando vier.
 
-### 6. Modos de movimento separados
+### 6. Modos de movimento separados ✅
 
 - Chão, nado, cipó e escalada saem do `personagem.tsx` para modos com `podeEntrar`, `entrar`,
   `passo` e `sair` (regras puras em `sistemas/`), sem mudar o comportamento (os testes e a
@@ -110,6 +110,10 @@ caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os mo
   sem mudança: a sala de testes (velocidades, degraus, rampas, vãos, laguinho) e, no Bosque, o
   mesmo script no arquivo antigo e no novo (escalar até 4,1 m e pular; pegar o cipó, balançar e
   soltar) com o mesmo resultado.
+- Os quatro modos novos do Bosque, feitos em 28/10/2026, cada um com a animação dele no
+  `locomocao.glb`, a estação dele na sala de testes e o lugar dele no Bosque (detalhes na
+  especificação): equilíbrio no tronco caído, escada reta, escorregador e agarrar a borda. Com a
+  borda, o degrau automático deixou de valer no ar.
 
 ## Regras
 

@@ -299,6 +299,12 @@ export function Personagem() {
       // No cipó, o controlador que não gruda no chão. Os dois batem só no mundo fixo: passam pelo
       // bicho adotado (também cinemático), que nunca prende a criança nem a empurra.
       const k = controlador === 'cipo' ? kccNoCipo : kcc
+      // O degrau automático só vale pisando: no ar, quem chega perto de uma quina a agarra (modo
+      // borda) em vez de ser empurrado para cima dela sem ver.
+      if (controlador === 'chao') {
+        if (v.noChao) kcc.enableAutostep(CORPO.degrau, 0.25, true)
+        else kcc.disableAutostep()
+      }
       k.computeColliderMovement(col, v.desloc, rapier.QueryFilterFlags.EXCLUDE_KINEMATIC)
       mov = k.computedMovement()
       pisou = controlador === 'chao' && k.computedGrounded()
@@ -328,6 +334,7 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     m.especial = v.modo === 'chao' ? null : v.modo
+    m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
     estado.definirAlvo(parado || v.modo !== 'chao' ? null : maisPerto(interativos, prox.x, prox.z))

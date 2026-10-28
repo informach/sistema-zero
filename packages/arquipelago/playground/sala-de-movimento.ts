@@ -6,6 +6,7 @@ import {
   beiradaMaximaDoPulo,
   CORPO,
 } from '../src/sistemas/corpo'
+import { beiradaMaximaAgarrando } from '../src/sistemas/modos/borda'
 import { RITMO } from '../src/sistemas/necessidades'
 
 /**
@@ -106,16 +107,26 @@ export const DEGRAUS = [
 /** Rampas: uma suave, uma perto do limite e uma acima dele (não sobe nem escorrega). */
 export const RAMPAS = [25, CORPO.sobeAte - 10, CORPO.sobeAte + 3] as const
 /**
- * Beiradas: uma que o pulo alcança sozinho, uma que só alcança porque o degrau automático também
- * vale no ar (medido aqui: 2,0 m sobe, 2,2 m não) e uma alta demais. Esse empurrão no ar é uma
- * ajuda escondida; o modo "agarrar a borda" vai trocá-lo por uma ajuda à vista
- * (`docs/specs/2026-10-28-arquipelago-modos-de-movimento.md`).
+ * Beiradas, com a quina da frente marcada para agarrar (modo borda): uma que o pulo alcança
+ * sozinho, uma que só se alcança pulando e agarrando a quina (o degrau automático não vale mais no
+ * ar; medido antes desta mudança: com ele, o pulo subia beirada de 2,0 m) e uma alta demais até
+ * agarrando.
  */
 export const BEIRADAS = [
   arredondar(alturaDoPulo(GRAVIDADE) * 0.8),
-  arredondar(beiradaMaximaDoPulo(GRAVIDADE) - 0.05),
-  arredondar(beiradaMaximaDoPulo(GRAVIDADE) + 0.4),
+  arredondar((beiradaMaximaDoPulo(GRAVIDADE) + beiradaMaximaAgarrando(GRAVIDADE)) / 2),
+  arredondar(beiradaMaximaAgarrando(GRAVIDADE) + 0.4),
 ] as const
+/** A quina da frente de cada beirada (`fora` do lado de quem chega, −z). */
+export const BORDAS_DAS_BEIRADAS = BEIRADAS.map((h, i) => {
+  const x = -12 + i * 5
+  return {
+    id: `borda-da-beirada-${i + 1}`,
+    a: { x: x - 1.3, y: h, z: 8 },
+    b: { x: x + 1.3, y: h, z: 8 },
+    fora: { x, y: h, z: 7 },
+  }
+})
 /** A velocidade mais rápida de cada jeito (com o humor ótimo, `RITMO`). */
 const ANDANDO = CORPO.andar * RITMO.otimo
 const CORRENDO = CORPO.correr * RITMO.otimo

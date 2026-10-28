@@ -31,6 +31,11 @@ export function mudarModo(
   }
   c.contraAEscada = 0
   if (c.escorregador && modo !== 'escorregar') c.escorregador = null
+  if (c.borda && modo !== 'borda') {
+    c.borda = null
+    c.subindoNaBorda = 0
+    c.soltouDaBorda = agora
+  }
   if (c.eixo && modo !== 'equilibrio') {
     c.eixo = null
     c.balanco = 0

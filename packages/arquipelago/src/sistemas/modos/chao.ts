@@ -2,6 +2,7 @@ import { dentroDaAgua } from '../agua'
 import { CORPO } from '../corpo'
 import { ESCALADA } from '../escalada'
 import { aproximarVelocidade, PERFIS, passoDoPulo } from '../movimento'
+import { agarrarBorda, bordaAoAlcance } from './borda'
 import { cipoAoAlcance, pegarCipo } from './cipo'
 import { eixoSobOsPes, entrarNoEquilibrio } from './equilibrio'
 import { escadaParaPegar, pegarEscada } from './escada'
@@ -121,6 +122,11 @@ export const MODO_CHAO: ModoDeMovimento = {
       if (!c.noChao) {
         const cipo = cipoAoAlcance(c, mundo, e.agora)
         if (cipo) pegarCipo(c, cipo, c.prox, vx, c.velY, vz, e.agora, mundo, aviso)
+      }
+      // No ar, caindo perto de uma quina marcada, as mãos agarram a borda.
+      if (!c.noChao && c.modo === 'chao') {
+        const borda = bordaAoAlcance(c, e, mundo)
+        if (borda) agarrarBorda(c, borda.borda, borda.s, e.agora, aviso)
       }
       // Andando contra o tronco de escalar, o corpo gruda; pulando nele, gruda na hora.
       if (c.modo === 'chao' && e.agora - c.soltouDoTronco > ESCALADA.esperaDepoisDeSoltar * 1000) {

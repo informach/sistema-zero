@@ -47,18 +47,20 @@ export function alturaDoPulo(gravidade: number): number {
 }
 
 /**
- * O vão mais largo que um pulo atravessa saindo a `velocidade`, com as duas ajudas do corpo: o
- * degrau automático também vale no ar (o pé ainda sobe na outra borda até `degrau` abaixo dela) e
- * o pé redondo pega a borda antes do meio do corpo chegar (um raio de cada lado). Para desenhar
- * vãos: abaixo de `alcanceDoPulo` passa sempre; acima deste, nunca.
+ * O vão mais largo que um pulo atravessa saindo a `velocidade`, com a ajuda do corpo: o pé redondo
+ * pega a borda antes do meio do corpo chegar (um raio de cada lado). O degrau automático não vale
+ * no ar (o controlador só sobe degrau pisando; quem chega perto de uma quina marcada a agarra,
+ * `modos/borda.ts`). Para desenhar vãos: abaixo de `alcanceDoPulo` passa sempre; acima deste, nunca
+ * (sem borda marcada para agarrar).
  */
 export function alcanceMaximoDoPulo(velocidade: number, gravidade: number): number {
-  const v = CORPO.pulo
-  const noAr = (v + Math.sqrt(v * v + 2 * gravidade * CORPO.degrau)) / gravidade
-  return velocidade * noAr + 2 * CORPO.raio
+  return velocidade * ((2 * CORPO.pulo) / gravidade) + 2 * CORPO.raio
 }
 
-/** A beirada mais alta que um pulo alcança (o degrau automático vale no alto do pulo). */
+/**
+ * A beirada mais alta que um pulo alcança sem agarrar: a altura do pulo (o degrau automático não
+ * vale no ar). Agarrando a quina, vai mais alto (`beiradaMaximaAgarrando` em `modos/borda.ts`).
+ */
 export function beiradaMaximaDoPulo(gravidade: number): number {
-  return alturaDoPulo(gravidade) + CORPO.degrau
+  return alturaDoPulo(gravidade)
 }

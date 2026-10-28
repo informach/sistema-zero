@@ -20,6 +20,7 @@ import {
 } from 'three'
 import {
   type AguaRasa,
+  type BordaViva,
   type CipoVivo,
   type EixoDeEquilibrio,
   type EscadaViva,
@@ -227,6 +228,26 @@ export function BosqueVivo({
     return lista
   }, [preparada, meio, giro, ilha.id])
 
+  // As quinas de agarrar (âncoras `borda-N-a`, `-b` e `-fora`).
+  const bordas = useMemo<BordaViva[]>(() => {
+    const lista: BordaViva[] = []
+    const noMundo = (p: { x: number; y: number; z: number }) =>
+      paraOMundo(p, meio, giro, { x: 0, y: 0, z: 0 })
+    for (let i = 1; ; i++) {
+      const a = preparada.modelo.getObjectByName(`borda-${i}-a`)
+      const b = preparada.modelo.getObjectByName(`borda-${i}-b`)
+      const fora = preparada.modelo.getObjectByName(`borda-${i}-fora`)
+      if (!a || !b || !fora) break
+      lista.push({
+        id: `${ilha.id}:borda-${i}`,
+        a: noMundo(a.position),
+        b: noMundo(b.position),
+        fora: noMundo(fora.position),
+      })
+    }
+    return lista
+  }, [preparada, meio, giro, ilha.id])
+
   // O escorregador (âncoras `escorregador-curva-N`, do alto ao fim, na superfície da pista).
   const escorregador = useMemo<Escorregador | null>(() => {
     const pontosDaPista = []
@@ -259,6 +280,7 @@ export function BosqueVivo({
     if (agua) movimento.aguas.push(agua)
     movimento.equilibrios.push(...equilibrios)
     movimento.escadas.push(...escadas)
+    movimento.bordas.push(...bordas)
     if (escorregador) movimento.escorregadores.push(escorregador)
     return () => {
       const tirar = <T,>(lista: T[], item: T) => {
@@ -270,6 +292,7 @@ export function BosqueVivo({
       if (agua) tirar(movimento.aguas, agua)
       for (const e of equilibrios) tirar(movimento.equilibrios, e)
       for (const e of escadas) tirar(movimento.escadas, e)
+      for (const b of bordas) tirar(movimento.bordas, b)
       if (escorregador) tirar(movimento.escorregadores, escorregador)
       for (const c of cipos) {
         if (c.desenho) desmontarCipoDesenhado(c.desenho)
@@ -281,7 +304,7 @@ export function BosqueVivo({
         loja.getState().definirCorrida(null)
       }
     }
-  }, [cipos, tronco, agua, equilibrios, escadas, escorregador, movimento, loja])
+  }, [cipos, tronco, agua, equilibrios, escadas, bordas, escorregador, movimento, loja])
 
   /** No chão da ilha (não num deque, no cipó nem no tronco). */
   const noChao = () =>

@@ -10,6 +10,66 @@
   },
   "bosque": {
     "ancoras": {
+      "borda-1-a": {
+        "x": -7.25,
+        "y": 3.1,
+        "z": 6.05
+      },
+      "borda-1-b": {
+        "x": -7.25,
+        "y": 3.1,
+        "z": 7.45
+      },
+      "borda-1-fora": {
+        "x": -6.25,
+        "y": 3.1,
+        "z": 6.75
+      },
+      "borda-2-a": {
+        "x": -7.55,
+        "y": 3.1,
+        "z": 7.75
+      },
+      "borda-2-b": {
+        "x": -8.95,
+        "y": 3.1,
+        "z": 7.75
+      },
+      "borda-2-fora": {
+        "x": -8.25,
+        "y": 3.1,
+        "z": 8.75
+      },
+      "borda-3-a": {
+        "x": -9.25,
+        "y": 3.1,
+        "z": 7.45
+      },
+      "borda-3-b": {
+        "x": -9.25,
+        "y": 3.1,
+        "z": 6.05
+      },
+      "borda-3-fora": {
+        "x": -10.25,
+        "y": 3.1,
+        "z": 6.75
+      },
+      "borda-4-a": {
+        "x": -8.95,
+        "y": 3.1,
+        "z": 5.75
+      },
+      "borda-4-b": {
+        "x": -7.55,
+        "y": 3.1,
+        "z": 5.75
+      },
+      "borda-4-fora": {
+        "x": -8.25,
+        "y": 3.1,
+        "z": 4.75
+      },
       "cabana": {
         "x": 5.11,
         "y": 1.0,
@@ -228,18 +288,19 @@
       "col-escorregador-lado": 24,
       "col-floreira": 2,
       "col-guarda": 63,
+      "col-pedra-de-agarrar": 1,
       "col-ponte": 16,
       "col-ponte-lado": 32,
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1023.4,
+    "kb": 1033.6,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
       "cipo-2": 268,
       "cipo-3": 268,
-      "construcoes": 10744,
+      "construcoes": 10896,
       "copa-1": 900,
       "copa-10": 210,
       "copa-11": 1156,
@@ -260,7 +321,7 @@
       "tronco-5": 96,
       "vegetacao": 9468
     },
-    "triangulos": 28254
+    "triangulos": 28406
   },
   "bosque-props": {
     "ancoras": {},

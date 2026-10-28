@@ -18,6 +18,7 @@ import {
   beiradaMaximaDoPulo,
   CORPO,
 } from '../src/sistemas/corpo'
+import { beiradaMaximaAgarrando } from '../src/sistemas/modos/borda'
 import { RITMO } from '../src/sistemas/necessidades'
 
 describe('o alcance do pulo', () => {
@@ -27,11 +28,13 @@ describe('o alcance do pulo', () => {
     expect(alcanceDoPulo(CORPO.correr, GRAVIDADE)).toBeCloseTo(4.6 * (17 / 24), 6)
   })
 
-  test('com as ajudas do corpo, alcança mais longe e mais alto', () => {
-    expect(alcanceMaximoDoPulo(CORPO.correr, GRAVIDADE)).toBeGreaterThan(
+  test('o pé redondo alcança um raio de cada lado; o degrau não vale no ar; agarrando, mais alto', () => {
+    expect(alcanceMaximoDoPulo(CORPO.correr, GRAVIDADE)).toBeCloseTo(
       alcanceDoPulo(CORPO.correr, GRAVIDADE) + 2 * CORPO.raio,
+      9,
     )
-    expect(beiradaMaximaDoPulo(GRAVIDADE)).toBeCloseTo(alturaDoPulo(GRAVIDADE) + CORPO.degrau, 6)
+    expect(beiradaMaximaDoPulo(GRAVIDADE)).toBeCloseTo(alturaDoPulo(GRAVIDADE), 9)
+    expect(beiradaMaximaAgarrando(GRAVIDADE)).toBeGreaterThan(alturaDoPulo(GRAVIDADE) + 1.5)
   })
 })
 
@@ -47,12 +50,12 @@ describe('a sala de testes do movimento: cada estação tem um que passa e um qu
     expect(RAMPAS[2]).toBeLessThan(CORPO.escorregaAcimaDe)
   })
 
-  test('beiradas: o pulo sozinho, o pulo com o degrau no ar e alta demais', () => {
+  test('beiradas: o pulo sozinho, só agarrando a quina e alta demais até agarrando', () => {
     const pulo = alturaDoPulo(GRAVIDADE)
     expect(BEIRADAS[0]).toBeLessThan(pulo)
-    expect(BEIRADAS[1]).toBeGreaterThan(pulo)
-    expect(BEIRADAS[1]).toBeLessThan(beiradaMaximaDoPulo(GRAVIDADE))
-    expect(BEIRADAS[2]).toBeGreaterThan(beiradaMaximaDoPulo(GRAVIDADE))
+    expect(BEIRADAS[1]).toBeGreaterThan(beiradaMaximaDoPulo(GRAVIDADE))
+    expect(BEIRADAS[1]).toBeLessThan(beiradaMaximaAgarrando(GRAVIDADE))
+    expect(BEIRADAS[2]).toBeGreaterThan(beiradaMaximaAgarrando(GRAVIDADE))
   })
 
   test('vãos: andando, só correndo e nem correndo (com o humor mais rápido)', () => {

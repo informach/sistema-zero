@@ -1,5 +1,6 @@
 import type {
   AguaRasa,
+  BordaViva,
   CipoVivo,
   EixoDeEquilibrio,
   EscadaViva,
@@ -43,6 +44,12 @@ export interface EstadoDoCorpo {
   naPista: number
   velNaPista: number
   ladoNaPista: number
+  /** A borda em que o corpo está pendurado, onde nela (metros desde `a`) e subindo (0 a 1). */
+  borda: BordaViva | null
+  naBorda: number
+  subindoNaBorda: number
+  /** `performance.now()` de quando soltou uma borda (não pega a mesma na hora). */
+  soltouDaBorda: number
   /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
   noModo: number
   /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
@@ -95,6 +102,10 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     naPista: 0,
     velNaPista: 0,
     ladoNaPista: 0,
+    borda: null,
+    naBorda: 0,
+    subindoNaBorda: 0,
+    soltouDaBorda: Number.NEGATIVE_INFINITY,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },
     vel: { x: 0, z: 0 },
@@ -155,6 +166,7 @@ export interface MundoDoMovimento {
   equilibrios: EixoDeEquilibrio[]
   escadas: EscadaViva[]
   escorregadores: Escorregador[]
+  bordas: BordaViva[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

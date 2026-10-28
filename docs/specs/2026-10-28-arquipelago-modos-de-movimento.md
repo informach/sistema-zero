@@ -152,6 +152,21 @@ descer pelo escorregador. Faltam quatro peças.
   degrau pisando) e quem alcança a beirada passa a fazer isso pendurando e subindo, à vista. Antes
   de tirar, medir de novo os pulos do percurso nas copas.
 - **Testes:** agarra quando chega perto; não agarra sem espaço; subir termina em pé e livre.
+- **Feito em 28/10/2026** (`sistemas/modos/borda.ts`, `BORDA`): agarra no ar, caindo (até 0,5 m/s
+  subindo), com as mãos 0,9 m acima do meio do corpo, a até 0,35 m acima ou abaixo da quina e até
+  0,6 m dela do lado de fora, longe 0,2 m das pontas. Pendura rente à parede (raio mais 0,05);
+  frente sobe em 0,5 s (primeiro sobe, depois o joelho passa a quina) e termina de pé 0,6 m para
+  dentro; os lados andam pela quina a 0,8 m/s; trás ou usar soltam (a quina só pega de novo depois
+  de 0,5 s); pular sai 2,5 m/s para fora e 5 para cima. O degrau automático só vale pisando (o
+  `personagem.tsx` o desliga no ar), então a beirada mais alta sem agarrar volta a 1,5 m e
+  agarrando vai a uns 3,65 m (`beiradaMaximaAgarrando`). Em vez da consulta de forma no Rapier, as
+  quinas só são marcadas onde há espaço, e o teste confere isso no GLB (embaixo, pendurado e em cima
+  livres). Os deques ficaram sem quina (o guarda-corpo seguraria quem sobe); no Bosque, a pedra de
+  agarrar (`PEDRA_DE_AGARRAR` no `bosque.py`, 2 × 2 m e 2,1 m de altura, entre os deques da T3 e da
+  T4, âncoras `borda-1..4-a`/`-b`/`-fora`). O percurso nas copas não tem pulo para cima (só escada,
+  pontes e escorregador) e foi refeito no navegador sem o degrau no ar. Na sala de testes, as
+  beiradas viraram 1,2, 2,6 e 4,1 m com a quina da frente marcada. Conferido no navegador nos dois:
+  pula, agarra, anda de lado, solta e sobe.
 
 ### Escorregar (`escorregar`)
 

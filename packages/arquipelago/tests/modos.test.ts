@@ -13,6 +13,7 @@ import {
   MODOS,
   type MundoDoMovimento,
 } from '../src/sistemas/modos'
+import { BORDA } from '../src/sistemas/modos/borda'
 import {
   decidirNado,
   ENTRAR_NO_NADO,
@@ -82,6 +83,7 @@ function mundo(extra: Partial<MundoDoMovimento> = {}): MundoDoMovimento {
     equilibrios: [],
     escadas: [],
     escorregadores: [],
+    bordas: [],
     foco: { x: 0, y: 0, z: 0 },
     ...extra,
   }
@@ -397,5 +399,107 @@ describe('o escorregador', () => {
     const { maisDeLado } = descer(1)
     expect(maisDeLado).toBeGreaterThan(0.1)
     expect(maisDeLado).toBeLessThan(pista.largura / 2)
+  })
+})
+
+describe('agarrar a borda', () => {
+  // Quina a 2,6 m de x −1,3 a 1,3 em z = 0; o alto fica para +z e quem pendura fica em −z.
+  const borda = {
+    id: 'borda',
+    a: { x: -1.3, y: 2.6, z: 0 },
+    b: { x: 1.3, y: 2.6, z: 0 },
+    fora: { x: 0, y: 2.6, z: -1 },
+  }
+  const embaixoDaQuina = { x: 0, y: 2.6 - BORDA.maosAcimaDoCentro, z: -0.3 }
+
+  function pendurado() {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ bordas: [borda] })
+    c.noChao = false
+    c.velY = -1
+    passo(c, entrada(embaixoDaQuina), m, false)
+    for (let i = 0; i < 30 && c.modo === 'borda'; i++) {
+      passo(c, entrada(c.prox, { agora: 10_100 + i * 16 }), m, false)
+    }
+    return { c, m }
+  }
+
+  test('caindo com as mãos na quina agarra e fica pendurado rente à parede', () => {
+    const { c } = pendurado()
+    expect(c.modo).toBe('borda')
+    expect(c.prox.z).toBeCloseTo(-BORDA.daParede, 6)
+    expect(c.prox.y).toBeCloseTo(2.6 - BORDA.maosAcimaDoCentro, 6)
+    expect(c.velY).toBe(0)
+  })
+
+  test('subindo no pulo passa direto, e longe da quina não agarra', () => {
+    const m = mundo({ bordas: [borda] })
+    const subindo = criarEstadoDoCorpo()
+    subindo.velY = 5
+    passo(subindo, entrada(embaixoDaQuina), m, false)
+    expect(subindo.modo).toBe('chao')
+    const longe = criarEstadoDoCorpo()
+    longe.velY = -1
+    passo(longe, entrada({ ...embaixoDaQuina, y: 1 }), m, false)
+    expect(longe.modo).toBe('chao')
+    const naPonta = criarEstadoDoCorpo()
+    naPonta.velY = -1
+    passo(naPonta, entrada({ ...embaixoDaQuina, x: 1.25 }), m, false)
+    expect(naPonta.modo).toBe('chao')
+  })
+
+  test('pedindo para a parede sobe e fica de pé em cima, para dentro da quina', () => {
+    const { c, m } = pendurado()
+    let passos = 0
+    for (; passos < 200 && c.modo === 'borda'; passos++) {
+      passo(c, entrada(c.prox, { pedidoZ: 1, iz: 1, agora: 11_000 + passos * 16 }), m, false)
+    }
+    expect(c.modo).toBe('chao')
+    expect(c.noChao).toBe(true)
+    // Meio segundo de subida (mais um passo para pedir).
+    expect(passos / 60).toBeLessThan(BORDA.subida + 0.1)
+    expect(c.prox.z).toBeCloseTo(BORDA.paraDentro, 6)
+    expect(c.prox.y - CORPO.doCentroAoPe - CORPO.folga).toBeCloseTo(2.6, 6)
+  })
+
+  test('pedindo para longe da parede solta e não pega de novo na hora', () => {
+    const { c, m } = pendurado()
+    passo(c, entrada(c.prox, { pedidoZ: -1, iz: -1, agora: 11_000 }), m, false)
+    expect(c.modo).toBe('chao')
+    expect(c.soltouDaBorda).toBe(11_000)
+    c.velY = -1
+    passo(c, entrada(embaixoDaQuina, { agora: 11_200 }), m, false)
+    expect(c.modo).toBe('chao')
+    c.velY = -1
+    passo(
+      c,
+      entrada(embaixoDaQuina, { agora: 11_000 + BORDA.esperaParaPegarDeNovo * 1000 + 50 }),
+      m,
+      false,
+    )
+    expect(c.modo).toBe('borda')
+  })
+
+  test('pular sai para longe da parede e para cima', () => {
+    const { c, m } = pendurado()
+    passo(c, entrada(c.prox, { pulou: true, agora: 11_000 }), m, false)
+    expect(c.modo).toBe('chao')
+    expect(c.embalo.z).toBeCloseTo(-BORDA.pulo.paraFora, 6)
+    expect(c.velY).toBe(BORDA.pulo.paraCima)
+  })
+
+  test('os lados andam pela quina, sem passar das pontas', () => {
+    const { c, m } = pendurado()
+    const antes = c.naBorda
+    for (let i = 0; i < 60; i++) {
+      passo(c, entrada(c.prox, { pedidoX: 1, ix: 1, agora: 11_000 + i * 16 }), m, false)
+    }
+    expect(c.modo).toBe('borda')
+    expect(c.naBorda - antes).toBeCloseTo(BORDA.deLado, 1)
+    for (let i = 0; i < 600; i++) {
+      passo(c, entrada(c.prox, { pedidoX: 1, ix: 1, agora: 12_000 + i * 16 }), m, false)
+    }
+    expect(c.naBorda).toBeCloseTo(2.6 - BORDA.longeDaPonta, 6)
+    expect(c.prox.x).toBeCloseTo(1.3 - BORDA.longeDaPonta, 6)
   })
 })

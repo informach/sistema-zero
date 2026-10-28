@@ -66,7 +66,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/movimento-com-peso.test.ts`. Plano: `docs/plans/2026-10-28-arquipelago-controlador-universal.md`.
 - Os números do corpo (velocidades, pulo, degrau, rampas) moram em `CORPO` (`sistemas/corpo.ts`),
   com `alcanceDoPulo`, `alcanceMaximoDoPulo` e `beiradaMaximaDoPulo` para desenhar vãos e beiradas
-  (o degrau automático também vale no ar: o pulo de 1,5 m alcança beirada de uns 1,95 m).
+  (o degrau automático só vale pisando: o `personagem.tsx` o desliga no ar; agarrando a quina, a
+  beirada vai a uns 3,65 m, `beiradaMaximaAgarrando` em `modos/borda.ts`).
 - Sala de testes: `/movimento` no playground (`playground/movimento.tsx`, medidas em
   `playground/sala-de-movimento.ts`, `?estacao=Laguinho`), com o personagem e a câmera de verdade,
   uma estação por teste (cada uma com um obstáculo que passa e um que não) e o painel de medidas;
@@ -84,7 +85,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   deque); os degraus colidem só para o corpo (`col-escada-reta`). Escorregador
   (`modos/escorregar.ts`): os pontos da pista vêm das âncoras `escorregador-curva-N`
   (`movimento.escorregadores`); pisar nela senta (`pistaSobOsPes`); a câmera tem o perfil
-  `escorregar`.
+  `escorregar`. Agarrar a borda (`modos/borda.ts`): as quinas vêm das âncoras `borda-N-a`, `-b` e
+  `-fora` (`movimento.bordas`; no Bosque, a pedra de agarrar entre a T3 e a T4); o chão pega no ar
+  pelo `bordaAoAlcance`; marque quina só onde há espaço embaixo, pendurado e em cima (o teste da
+  pedra em `tests/movimento-do-bosque.test.ts` confere).
   Clipes novos no `locomocao.glb` (Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
   Escorregar), com o campo `especial` da `EntradaDaLocomocao` (antes `pendurado`); para ver:
   `/animacoes?equilibrar=1`, `?escada=1`, `?borda=1&subir=1`, `?escorregar=1`.

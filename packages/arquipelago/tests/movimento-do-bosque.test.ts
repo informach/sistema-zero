@@ -14,6 +14,7 @@ import {
   TRONCO_DOS_CIPOS,
 } from '../src/mundo/bosque'
 import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
+import { GRAVIDADE } from '../src/mundo/medidas'
 import {
   type Balanco,
   CIPO,
@@ -25,7 +26,7 @@ import {
   passoDoBalanco,
   velocidadeAoSoltar,
 } from '../src/sistemas/cipo'
-import { CORPO } from '../src/sistemas/corpo'
+import { beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
 import {
   alturaMaxima,
   alturaMinima,
@@ -35,6 +36,7 @@ import {
   raioNaAltura,
   saltoDaEscalada,
 } from '../src/sistemas/escalada'
+import { BORDA, beiradaMaximaAgarrando } from '../src/sistemas/modos/borda'
 import { PERCURSO_DAS_COPAS, type PontosDoPercurso } from '../src/sistemas/percurso'
 
 const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'bosque.glb')
@@ -390,5 +392,60 @@ describe('percurso nas copas', () => {
     expect(PERCURSO_DAS_COPAS.tempoAlvoMs).toBeLessThan(andando * 2.5)
     // Correndo sobra tempo para uma queda (o corte e a volta ao último deque).
     expect(PERCURSO_DAS_COPAS.tempoAlvoMs).toBeGreaterThan((metros / CORRER) * 1000 * 2)
+  })
+})
+
+describe('a pedra de agarrar (modo borda)', () => {
+  function bordas() {
+    const lista = []
+    for (let i = 1; ; i++) {
+      const [a, b, fora] = ['a', 'b', 'fora'].map((p) => raiz.getObjectByName(`borda-${i}-${p}`))
+      if (!a || !b || !fora) break
+      const meio = a.position.clone().add(b.position).multiplyScalar(0.5)
+      const n = new Vector3(fora.position.x - meio.x, 0, fora.position.z - meio.z).normalize()
+      lista.push({ a: a.position, b: b.position, meio, n })
+    }
+    return lista
+  }
+
+  test('quatro quinas no tampo, altas demais para o pulo e ao alcance agarrando', () => {
+    const lista = bordas()
+    expect(lista.length).toBe(4)
+    const pedra = doGrupo('col-pedra-de-agarrar')[0]
+    if (!pedra) throw new Error('sem col-pedra-de-agarrar')
+    for (const { a, b, meio, n } of lista) {
+      expect(a.y).toBeCloseTo(b.y, 6)
+      const altura = meio.y - TOPO_DO_BOSQUE
+      expect(altura).toBeGreaterThan(beiradaMaximaDoPulo(GRAVIDADE) + 0.3)
+      expect(altura).toBeLessThan(beiradaMaximaAgarrando(GRAVIDADE) - 0.3)
+      // A quina é a beira do tampo: um pouco para dentro tem pedra, um pouco para fora não.
+      expect(topoEm(pedra, meio.x - n.x * 0.2, meio.z - n.z * 0.2)).toBeCloseTo(meio.y, 2)
+      expect(topoEm(pedra, meio.x + n.x * 0.05, meio.z + n.z * 0.05)).toBeUndefined()
+    }
+  })
+
+  test('de cada lado dá para pular embaixo da quina, pendurar e subir sem bater em nada', () => {
+    for (const { meio, n } of bordas()) {
+      // Embaixo, de pé encostado na pedra.
+      const chao = TOPO_DO_BOSQUE + CORPO.doCentroAoPe + 0.05
+      const embaixo = {
+        x: meio.x + n.x * (CORPO.raio + 0.1),
+        y: chao,
+        z: meio.z + n.z * (CORPO.raio + 0.1),
+      }
+      expect(quemBate(embaixo)).toBeUndefined()
+      const pendurado = {
+        x: meio.x + n.x * BORDA.daParede,
+        y: meio.y - BORDA.maosAcimaDoCentro,
+        z: meio.z + n.z * BORDA.daParede,
+      }
+      expect(quemBate(pendurado)).toBeUndefined()
+      const emCima = {
+        x: meio.x - n.x * BORDA.paraDentro,
+        y: meio.y + CORPO.doCentroAoPe + CORPO.folga,
+        z: meio.z - n.z * BORDA.paraDentro,
+      }
+      expect(quemBate(emCima)).toBeUndefined()
+    }
   })
 })

@@ -115,7 +115,25 @@ export interface Escorregador {
   largura: number
 }
 
-export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada' | 'equilibrio' | 'escada' | 'escorregar'
+/**
+ * Uma borda que se agarra (`borda-N-a`, `-b` e `-fora` do GLB), no mundo: a quina de `a` a `b`, na
+ * altura do tampo, e um ponto do lado de fora (onde o corpo fica pendurado).
+ */
+export interface BordaViva {
+  id: string
+  a: Ponto
+  b: Ponto
+  fora: Ponto
+}
+
+export type ModoDoCorpo =
+  | 'chao'
+  | 'cipo'
+  | 'escalada'
+  | 'equilibrio'
+  | 'escada'
+  | 'escorregar'
+  | 'borda'
 
 /**
  * Cipós, troncos de escalar e águas rasas das ilhas completas, e o que o personagem faz com eles
@@ -129,6 +147,7 @@ export interface Movimento {
   equilibrios: EixoDeEquilibrio[]
   escadas: EscadaViva[]
   escorregadores: Escorregador[]
+  bordas: BordaViva[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
   /** Escritos pelo personagem. */
@@ -156,6 +175,7 @@ export function criarMovimento(): Movimento {
     equilibrios: [],
     escadas: [],
     escorregadores: [],
+    bordas: [],
     pedido: null,
     modo: 'chao',
     noChao: false,

@@ -56,6 +56,13 @@ TRONCO_CAIDO = ((3.3, 1.3), (3.7, 4.0), 0.19)
 # frente dos degraus) e `-saida` (no deque).
 ESCADA_RETA = {'angulo': R(60), 'largura': 0.6, 'degrau': 0.3}
 ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da escada da T1
+# A pedra de agarrar (modo borda): um bloco de tampo reto alto demais para o pulo sozinho (1,5 m)
+# e baixo o bastante para pular, agarrar a quina e subir (até uns 3,65 m). Fica (x, z do jogo) entre os
+# deques da T3 e da T4, no único canto do chão plano com o bloco e 0,6 m de folga em volta livres de
+# tudo até 5 m de altura (deques, pontes, moitas, trilhas) e longe das âncoras. O jogo lê as quinas
+# de cima das âncoras `borda-N-a`, `-b` (as pontas, recuadas dos cantos) e `-fora` (do lado de onde
+# se pendura), uma por lado.
+PEDRA_DE_AGARRAR = {'centro': (-8.25, 6.75), 'lado': 2.0, 'altura': 2.1, 'recuo': 0.3}
 CERCADO = (2.4, -9.2)
 
 
@@ -536,6 +543,34 @@ def escada_reta(col):
     return p
 
 
+def pedra_de_agarrar(col):
+    """A pedra de agarrar: um bloco de pedra com musgo no tampo. Colide do tamanho do desenho (é dura)."""
+    e = PEDRA_DE_AGARRAR
+    (x, z), lado, h = e['centro'], e['lado'], e['altura']
+    enterrado = 0.1
+    p = [box((lado, lado, h + enterrado), P(x, z, TOPO + (h - enterrado) / 2), 'pedra', bevel=0.1, segs=2)]
+    # O musgo afunda um pouco no tampo (nenhuma face no mesmo plano da pedra).
+    p.append(box((lado - 0.4, lado - 0.5, 0.05), P(x + 0.08, z - 0.05, TOPO + h + 0.01), 'musgo', bevel=0.02, segs=1))
+    col.append(col_caixa('pedra-de-agarrar', (lado, lado, h + enterrado), P(x, z, TOPO + (h - enterrado) / 2)))
+    return p
+
+
+def ancoras_da_pedra_de_agarrar():
+    """As quatro quinas de cima da pedra de agarrar: pontas recuadas dos cantos e o lado de fora."""
+    e = PEDRA_DE_AGARRAR
+    (x, z), m, y = e['centro'], e['lado'] / 2, TOPO + e['altura']
+    ponta = m - e['recuo']
+    a = []
+    for i, (nx, nz) in enumerate([(1, 0), (0, 1), (-1, 0), (0, -1)]):
+        # De lado, ao longo da quina (perpendicular ao lado de fora).
+        tx, tz = -nz, nx
+        qx, qz = x + nx * m, z + nz * m
+        a.append(ancora(f'borda-{i + 1}-a', qx - tx * ponta, qz - tz * ponta, y))
+        a.append(ancora(f'borda-{i + 1}-b', qx + tx * ponta, qz + tz * ponta, y))
+        a.append(ancora(f'borda-{i + 1}-fora', qx + nx, qz + nz, y))
+    return a
+
+
 def ancoras_da_escada_reta():
     t, e = T4, ESCADA_RETA
     a, r, h = e['angulo'], t[5] + 0.06, t[4]
@@ -574,6 +609,7 @@ def ancoras(pista):
     a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))
     a.append(ancora('equilibrio-1-b', x1, z1, tampo_do_tronco_caido()))
     a += ancoras_da_escada_reta()
+    a += ancoras_da_pedra_de_agarrar()
     # A linha do meio da pista do escorregador, na superfície (modo escorregar).
     for i, pt in enumerate(pista):
         a.append(ancora(f'escorregador-curva-{i + 1}', pt.x, -pt.y, pt.z + ESPESSURA_DA_PISTA / 2))
@@ -621,6 +657,7 @@ def construir():
     copas, troncos = [], []
     veg = vegetacao(col, copas, troncos) + enfeite_lago + galho_dos_cipos(col, copas, troncos)
     veg += tronco_caido(col)
+    obras += pedra_de_agarrar(col)
     conferir_corredor(obras + veg + telhado + [o for c in copas + troncos for o in c], 'bosque')
     cipos = {}
     for i in range(len(CIPOS)):

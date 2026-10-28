@@ -17,10 +17,12 @@ import { Medidor } from '../src/mundo/medidor'
 import { Camera } from '../src/personagem/camera'
 import { Personagem } from '../src/personagem/personagem'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
-import { alturaDoPulo, beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
+import { alturaDoPulo, CORPO } from '../src/sistemas/corpo'
+import { beiradaMaximaAgarrando } from '../src/sistemas/modos/borda'
 import {
   BLOCOS,
   type Bloco,
+  BORDAS_DAS_BEIRADAS,
   EIXO_DO_TRONCO_CAIDO,
   ESCADA_DA_TORRE,
   ESTACOES,
@@ -110,6 +112,7 @@ const NOME_DO_MODO: Record<string, string> = {
   equilibrio: 'equilíbrio',
   escada: 'escada',
   escorregar: 'escorregando',
+  borda: 'na borda',
 }
 /** No celular o painel começa fechado (cobriria metade da tela). */
 const ABRE_O_PAINEL = typeof window !== 'undefined' && window.innerWidth > 600
@@ -154,7 +157,15 @@ function Sala() {
       pontos: PISTA_DA_TORRE.pontos.map((p) => naSala(p.x, p.y, p.z)),
     }
     movimento.escorregadores.push(pista)
+    const bordas = BORDAS_DAS_BEIRADAS.map((b) => ({
+      id: b.id,
+      a: naSala(b.a.x, b.a.y, b.a.z),
+      b: naSala(b.b.x, b.b.y, b.b.z),
+      fora: naSala(b.fora.x, b.fora.y, b.fora.z),
+    }))
+    movimento.bordas.push(...bordas)
     return () => {
+      for (const b of bordas) movimento.bordas.splice(movimento.bordas.indexOf(b), 1)
       movimento.escorregadores.splice(movimento.escorregadores.indexOf(pista), 1)
       movimento.escadas.splice(movimento.escadas.indexOf(escada), 1)
       movimento.aguas.splice(movimento.aguas.indexOf(agua), 1)
@@ -343,7 +354,7 @@ function Painel({
         ))}
       </div>
       <small>
-        {`Andar ${fmt(CORPO.andar)} · correr ${fmt(CORPO.correr)} m/s · pulo ${fmt(alturaDoPulo(GRAVIDADE))} m (beirada até ${fmt(beiradaMaximaDoPulo(GRAVIDADE))} m com o degrau no ar) · degrau ${fmt(CORPO.degrau)} m · rampa até ${CORPO.sobeAte}°`}
+        {`Andar ${fmt(CORPO.andar)} · correr ${fmt(CORPO.correr)} m/s · pulo ${fmt(alturaDoPulo(GRAVIDADE))} m (beirada até ${fmt(beiradaMaximaAgarrando(GRAVIDADE))} m agarrando a quina) · degrau ${fmt(CORPO.degrau)} m · rampa até ${CORPO.sobeAte}°`}
       </small>
     </details>
   )

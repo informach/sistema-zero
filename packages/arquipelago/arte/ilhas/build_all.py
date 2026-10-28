@@ -30,6 +30,7 @@ CONTRATO = {
                              'copas-1', 'copas-2', 'copas-3', 'copas-4']
         + [f'esconderijo-{i}' for i in range(1, 5)] + ['equilibrio-1-a', 'equilibrio-1-b']
         + ['escada-1-base', 'escada-1-topo', 'escada-1-saida']
+        + [f'borda-{i}-{p}' for i in range(1, 5) for p in ('a', 'b', 'fora')]
         + [f'escorregador-curva-{i}' for i in range(1, 14)],
         'clipes': [],
         # Grupos de nós de colisão (o nome sem o número do fim): o percurso nas copas inteiro, a casa na
@@ -39,7 +40,8 @@ CONTRATO = {
                       'col-casa-na-arvore', 'col-escorregador', 'col-escorregador-lado', 'col-cabana', 'col-varanda',
                       'col-cerca', 'col-cil-tronco', 'col-cil-tora', 'col-cil-toco', 'col-cil-moita',
                       'col-cil-pedra', 'col-cil-pedra-lago', 'col-cil-cogumelo', 'col-cil-toca', 'col-floreira',
-                      'col-cil-perna-escorregador', 'col-escada-reta'],
+                      'col-cil-perna-escorregador', 'col-escada-reta',
+                      'col-pedra-de-agarrar'],
     },
     'vila-doce': {
         'nos': ['terreno', 'fonte', 'construcoes', 'telhados', 'feira', 'enfeites'],
