@@ -78,7 +78,7 @@ function drawings(three: boolean): Record<string, string> {
   const move = three
     ? block(
         'sz_g3d_top_down',
-        `Andar com ${field('personagem')} usando WASD/setas, velocidade ${num('4')}`,
+        `Fazer ${field('personagem')} andar com as setas (ou WASD), velocidade ${num('4')}`,
       )
     : block(
         'sz_g2d_top_down',
@@ -149,7 +149,7 @@ function drawings(three: boolean): Record<string, string> {
         (three
           ? block(
               'sz_g3d_set_position',
-              `Posição do objeto ${field('regador')} em x ${num('-2')} y ${num('0.54')} z ${num('-2')}`,
+              `Colocar o objeto ${field('regador')} em x ${num('-2')} y ${num('0.54')} z ${num('-2')}`,
             )
           : block(
               'sz_g2d_create_image_sprite',

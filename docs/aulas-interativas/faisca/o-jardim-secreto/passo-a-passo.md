@@ -98,7 +98,7 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 **Relembre:** O teclado fornece a direção. O comando dentro do quadro transforma essa direção em movimento.
 
 1. Abra Enquanto estiver rodando. Deixe à vista A cada quadro da cena cena e o aviso dentro dele.
-2. Abra Jogo 3D → Movimento → Andar com o teclado. Arraste Andar com personagem usando WASD/setas, velocidade 3 para dentro do quadro, antes de Escrever no canto da tela.
+2. Abra Jogo 3D → Movimento → Andar com o teclado. Arraste Fazer personagem andar com as setas (ou WASD), velocidade 3 para dentro do quadro, antes de Escrever na tela.
 3. Escolha personagem no nome e coloque 4 na velocidade. A câmera, a caminhada permitida e as animações já estão em Ao iniciar; conserve esses blocos.
 
 **Teste:** Clique no jogo. Pressione e solte cada seta do teclado. O personagem deve andar nas quatro direções e parar quando você soltar.
@@ -161,7 +161,7 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 **Relembre:** X e Z mudam o lugar no chão. Y muda a altura, que já está preparada para o encontro.
 
-1. Em Ao iniciar, encontre Posição do objeto regador. Escolha outro valor de x ou z; deixe y em 0.54, como está. Um exemplo é x −2, com o mesmo z.
+1. Em Ao iniciar, encontre Colocar o objeto regador. Escolha outro valor de x ou z; deixe y em 0.54, como está. Um exemplo é x −2, com o mesmo z.
 2. Observe onde ele apareceu. Pode experimentar vários lugares e escolher outro diferente do exemplo. Deixe-o dentro do jardim, visível, separado do personagem no começo e alcançável.
 3. Preserve um caminho até a flor sem passar pelo regador. Comece uma partida com a mudança. Se a prévia já reiniciou ao editar, ela já serve para esse teste; senão clique no jogo e pressione R.
 
