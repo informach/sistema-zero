@@ -77,7 +77,7 @@ function gravarDica() {
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
 export function Camera() {
-  const { rastro, movimento, loja, pedidos } = useJogo()
+  const { rastro, movimento, loja, pedidos, controle } = useJogo()
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
   const menosMovimento = useReducedMotion()
@@ -102,6 +102,8 @@ export function Camera() {
   const subida = useRef(0)
   const lado = useRef(1)
   const arrastandoAgora = useRef(false)
+  /** O último pedido de recentralizar já atendido (tecla C, analógico direito). */
+  const recentrarVisto = useRef(controle.recentrar)
 
   useEffect(() => {
     const el = gl.domElement
@@ -227,6 +229,25 @@ export function Camera() {
   }, [loja, toque])
 
   useFrame((_, dt) => {
+    // O analógico direito do controle físico gira e inclina, como arrastar.
+    if (controle.cameraX !== 0 || controle.cameraY !== 0) {
+      volta.current = null
+      rastro.giro -= controle.cameraX * C.giroDoAnalogico * dt
+      rastro.inclinacao = MathUtils.clamp(
+        rastro.inclinacao + controle.cameraY * C.inclinacaoDoAnalogico * dt,
+        C.inclinacaoMinima,
+        C.inclinacaoMaxima,
+      )
+      if (!mexeu.current) {
+        mexeu.current = true
+        gravarDica()
+      }
+    }
+    // Tecla C ou clique no analógico direito: de volta para as costas (como os dois cliques).
+    if (controle.recentrar !== recentrarVisto.current) {
+      recentrarVisto.current = controle.recentrar
+      volta.current = { giro: rastro.direcao + Math.PI, inclinacao: C.inclinacaoDeVolta }
+    }
     // Zoom suave até o pedido.
     distancia.current +=
       (distanciaPedida.current - distancia.current) * (1 - Math.exp(-dt * C.suavizarZoom))

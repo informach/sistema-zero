@@ -257,6 +257,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - **Controles**: `controle.pulos` conta os toques de pular (o toque curto que desce e sobe no mesmo
   quadro solta o cipó). A dica mostra a tecla no teclado e o nome do botão no toque
   (`estado/preferencias.ts`: `useToque`, `useMenosMovimento`); no cipó o botão Pular vira Soltar.
+  Controle físico (`controles/gamepad.ts`, Gamepad API, mapeamento padrão): analógico esquerdo
+  anda (até o fim corre), direito gira a câmera, botão de baixo pula, o da direita usa, gatilho ou
+  ombro direito corre, clique no analógico direito recentraliza, Start faz o que o Esc faz; zona
+  morta 0,15; escreve no mesmo `Controle` (a ação não sabe de onde veio). A tecla C também
+  recentraliza (`controle.recentrar`). No toque o joystick é flutuante: nasce onde o polegar pousa
+  na metade esquerda de baixo (`arq-zona-joystick`). Testes: `tests/gamepad.test.ts`.
 - Prints do playground: `localStorage['arquipelago:medir'] = '1'`, `?novo=1&posicao=2&em=x,z` e
   `__arquipelagoLevar(x, y, z, giro)`. O Bosque fica com o centro em (77,05; 28,05), girado 2,79.
 

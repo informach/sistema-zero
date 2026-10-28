@@ -456,6 +456,12 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
 - **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
   até pisar ou cair no mar (a água freia), e a direção pedida só corrige 45% do normal
   (`CONTROLE_NO_AR = 0.45`).
+- **Controles** (os mesmos em todo o jogo, `controles/`): teclado (WASD ou setas, Shift corre,
+  espaço pula, E usa, C põe a câmera nas costas, + e - aproximam), toque (joystick que nasce onde o
+  polegar pousa na metade esquerda de baixo, botões Pular e Usar, arrastar gira a câmera, pinça
+  aproxima) e controle físico (analógico esquerdo anda e, todo empurrado, corre; direito gira a
+  câmera a 2,6 rad/s e inclina a 1,4 rad/s; botão de baixo pula; o da direita usa; gatilho direito
+  corre; clique no analógico direito recentraliza; Start faz o que o Esc faz; zona morta 0,15).
 - **Pular** conta cada toque (`controle.pulos`): o toque rápido que desce e sobe no mesmo quadro
   também solta o cipó e pula do tronco, e no chão cada toque é um pulo (`passoDoPulo`).
 - **Braços:** no cipó e no tronco o avatar segura com os braços para cima

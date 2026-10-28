@@ -10,6 +10,7 @@ import {
 import { Component, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { criarControle, ligarTeclado } from './controles/controle'
+import { ligarGamepad } from './controles/gamepad'
 import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto'
 import { criarLoja } from './estado/loja'
 import { Relogios } from './estado/relogios'
@@ -237,6 +238,17 @@ function JogoPronto({
   const tempoPausado = useStore(contexto.loja, (s) => s.tempoPausado)
   const tempoSincronizando = useStore(contexto.loja, (s) => s.tempoSincronizando)
   useEffect(() => ligarTeclado(contexto.controle), [contexto])
+  // O Start do controle faz o que o Esc faz: fecha o painel aberto, senão abre ou fecha o menu.
+  useEffect(
+    () =>
+      ligarGamepad(contexto.controle, () => {
+        const s = contexto.loja.getState()
+        if (s.tempoPausado || s.ferramentaAberta) return
+        if (s.painelAberto !== null) s.abrirPainel(null)
+        else s.abrirMenu(!s.menuAberto)
+      }),
+    [contexto],
+  )
   useEffect(() => {
     const aoEsconder = () => {
       if (document.visibilityState === 'hidden') void fila.salvarAgora()

@@ -49,7 +49,8 @@ export const ESTILOS = `
 .arq-menu h2{margin:0 0 4px;font-size:22px}
 .arq-menu ul{margin:0;padding-left:18px;color:#4a5070}
 .arq-toque{position:absolute;inset:auto 0 0 0;height:0}
-.arq-joystick{position:absolute;left:22px;bottom:110px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);touch-action:none}
+.arq-zona-joystick{position:absolute;left:0;bottom:0;width:50%;height:55%;touch-action:none}
+.arq-joystick{position:absolute;left:82px;top:calc(100% - 170px);width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);pointer-events:none;opacity:.7}.arq-joystick[data-ativo]{opacity:1}
 .arq-joystick i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:50%;background:rgba(255,255,255,.75)}
 .arq-botoes-toque{position:absolute;right:22px;bottom:120px;display:flex;flex-direction:column;gap:12px}
 .arq-botoes-toque button{width:74px;height:74px;border-radius:50%;font-size:14px}

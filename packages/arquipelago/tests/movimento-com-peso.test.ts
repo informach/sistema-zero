@@ -4,8 +4,8 @@ import { CORPO } from '../src/sistemas/corpo'
 import {
   aproximarVelocidade,
   criarPulo,
-  type PerfilDeMovimento,
   PERFIS,
+  type PerfilDeMovimento,
   passoDoPulo,
   TOLERANCIA_DO_PULO,
 } from '../src/sistemas/movimento'
