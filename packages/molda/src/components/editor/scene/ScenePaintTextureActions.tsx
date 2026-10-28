@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { PAINT_TEXTURE_DENSITIES, type PaintTextureDensity } from '../../../core/limits'
+import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { sceneRasterPreview } from '../../../scene/imageImport'
 import { ensureScenePaintSurface, type ScenePaintSurfaceRequest } from '../../../scene/paintSurface'
 import { SceneValidationError } from '../../../scene/validation'
@@ -8,9 +9,10 @@ import { Dialog } from '../../ui/Dialog'
 import { Plus, Upload } from '../../ui/icons'
 import { SceneImagePreview } from './SceneImagePreview'
 import { SceneRasterFileInput } from './SceneRasterFileInput'
-import { SceneTile } from './SceneTile'
 import { useSceneRasterFile } from './useSceneRasterFile'
 import type { useSceneWorkshop } from './useSceneWorkshop'
+
+const USE_IMAGE = SCENE_PAINT_COPY.useImage
 
 /** A texture belongs to the selected piece; the model's default density remains a fallback. */
 export function ScenePaintTextureActions({
@@ -85,33 +87,40 @@ export function ScenePaintTextureActions({
     })
   }
 
+  // Sem peça escolhida não há onde pôr a textura: as ações nem aparecem (desligadas em cinza
+  // pareciam quebradas). O cartão da peça diz o que fazer.
+  if (node?.kind !== 'mesh') return null
   return (
-    <section aria-label="Texturas da peça" className="space-y-2 border-t border-mld-border pt-3">
-      <p className="px-1 text-xs text-mld-muted">
-        {currentName
-          ? `Textura ativa: ${currentName}`
-          : 'Escolha uma peça para criar ou importar uma textura.'}
-      </p>
-      <SceneTile
-        ref={createTrigger}
-        icon={Plus}
-        label="Criar textura"
-        aria-haspopup="dialog"
-        disabled={!available}
-        onClick={() => open('create')}
-      />
-      <SceneTile
-        ref={importTrigger}
-        icon={Upload}
-        label="Importar textura"
-        aria-haspopup="dialog"
-        disabled={!available}
-        onClick={() => open('import')}
-      />
+    <section aria-label="Texturas da peça" className="space-y-2">
+      {currentName && (
+        <p className="px-1 text-xs text-mld-muted">{`Textura ativa: ${currentName}`}</p>
+      )}
+      <div className="grid gap-2">
+        <Button
+          ref={createTrigger}
+          variant="outline"
+          className="text-sm"
+          aria-haspopup="dialog"
+          disabled={!available}
+          onClick={() => open('create')}
+        >
+          <Plus aria-hidden="true" className="size-4" /> Criar textura
+        </Button>
+        <Button
+          ref={importTrigger}
+          variant="outline"
+          className="text-sm"
+          aria-haspopup="dialog"
+          disabled={!available}
+          onClick={() => open('import')}
+        >
+          <Upload aria-hidden="true" className="size-4" /> {USE_IMAGE}
+        </Button>
+      </div>
       <Dialog
         open={mode !== null}
         onClose={close}
-        title={mode === 'import' ? 'Importar textura' : 'Criar textura'}
+        title={mode === 'import' ? USE_IMAGE : 'Criar textura'}
         returnFocusTo={mode === 'import' ? importTrigger : createTrigger}
       >
         <div className="space-y-3">

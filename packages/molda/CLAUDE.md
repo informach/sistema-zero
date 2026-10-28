@@ -1,5 +1,25 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Pintar em três zonas — 27/10/2026
+
+Desenho: `docs/plans/2026-10-27-molda-pintar-ux-design.md`. A aba responde a três perguntas, cada
+uma num lugar:
+
+- **Esquerda, o que a mão faz** (`ScenePaintToolbox`): Ferramentas; o **Jeito** da ferramenta
+  (tamanho em bolinhas na cor da tinta, "Como apagar", "O que encher"); as **Ajudas** (Espelhar e
+  "Só nesta peça", que substituiu o "Pintar em" flutuante no palco). Pincel e Balde levam o pingo
+  da tinta atual (`SceneTile dot`).
+- **Pé da área central, a tinta** (`ScenePaintColorBar`, `.mld-color-bar`): irmã DEPOIS do
+  `mld-stage-workbench`, então atravessa a Folha de pintura e o 3D. Potinho, paleta, favoritas e o
+  "+" (`<details>` que abre para cima com "Criar outra cor" e "Usadas agora"; o popover fica FORA
+  da fila rolável, que o recortaria). A troca de paleta NÃO mora na barra.
+- **Direita, onde e com quê** (`ScenePaintPalette` = cartão da peça, região "Pintura da peça"):
+  estado, ajuda, texturas da peça (`ScenePaintPieceTextures`, só com peça escolhida), preparação,
+  paleta do modelo recolhida, opções da peça. O cartão vem ANTES dos ajustes avançados no
+  `SceneInspectorSections`. Sem "Ferramentas que vêm por aí" no Pintar.
+- O aviso (`Toast`, `.mld-toast-dock`) sobe acima da barra e da pílula de dica por
+  `:has(.mld-color-bar)`. Abaixo de 899px o palco do Pintar tem 492px (420 + a barra).
+
 ## Separar linha — 24/10/2026
 
 - Em **Linhas**, escolha uma linha interna entre duas faces coplanares ou um loop fechado e plano.
@@ -131,7 +151,8 @@ achados de código corrigidos). A pele segue as telas-modelo (`--sz-tool-*`) e o
   das alças: `tintGizmoAxes` recolore o TransformControls), `.mld-piece` (linha baixa da árvore),
   `.mld-kind-chip`, `.mld-chip-btn`, `.mld-step`, `.mld-disclosure` (todo `<details>` do painel),
   `.mld-rail-more`, `.mld-width-seg`, `.mld-scrubber`, `.mld-transport-btn`. Ladrilho em repouso
-  é TRANSPARENTE; `tint` pinta as formas; `keyHint` só para atalho que existe (paint P/G/E/I).
+  é TRANSPARENTE; `tint` pinta as formas. A tecla do atalho NÃO é desenhada no ladrilho (desde
+  27/10/2026, Pintar e Modelar): ela mora no `title` ("Pincel (B)") e no `aria-keyshortcuts`.
 - **Palco = uma superfície**: `--mld-stage-bg` no `.mld-workshop-stage`; o 3D e a imagem de apoio
   levam `.mld-stage-surface` (fundo transparente, regra SEM camada para vencer o `bg-*`).
 - **Dica na pílula escura**: o `hintCard` no lugar `context` vai dentro de um

@@ -44,7 +44,7 @@ export const SCENE_FIRST_STEPS_COPY = {
         },
         {
           title: 'Escolha a cor',
-          text: `Escolha uma cor no painel direito. À esquerda ficam “${scene.paintPencil}”, “${scene.paintFill}”, “${scene.paintEraser}” e “${scene.paintPicker}”.`,
+          text: `Escolha uma cor na barra embaixo do modelo. À esquerda ficam “${scene.paintPencil}”, “${scene.paintFill}”, “${scene.paintEraser}” e “${scene.paintPicker}”.`,
         },
         {
           title: 'Faça o primeiro traço',

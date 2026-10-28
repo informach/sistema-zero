@@ -70,7 +70,7 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
+      <div className="mld-toast-dock pointer-events-none fixed inset-x-0 z-50 flex justify-center">
         <div
           className={
             toast

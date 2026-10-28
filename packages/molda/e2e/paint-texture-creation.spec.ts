@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { COPY } from '../src/core/copy'
+import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import { encodePng } from '../src/export/png'
 import { openPainting, savedProject } from './paint-project'
 
@@ -16,8 +17,8 @@ test('criar e importar textura na aba Pintar mantém densidade e pixels', async 
   expect(first.images.at(-1)?.texelsPerUnit).toBe(32)
   await expect(page.getByText(/Textura ativa:/)).toBeVisible()
 
-  await page.getByRole('button', { name: 'Importar textura' }).click()
-  const imported = page.getByRole('dialog', { name: 'Importar textura' })
+  await page.getByRole('button', { name: SCENE_PAINT_COPY.useImage }).click()
+  const imported = page.getByRole('dialog', { name: SCENE_PAINT_COPY.useImage })
   const small = new Uint8Array(16 * 16 * 4).fill(255)
   await imported.locator('input[type="file"]').setInputFiles({
     name: 'pequena.png',

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { Vector3 } from 'three'
 import { COPY } from '../src/core/copy'
+import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import { sceneBounds } from '../src/scene/bounds'
 import { indexSceneDocument } from '../src/scene/documentIndex'
 import { sceneToJson } from '../src/scene/documentJson'
@@ -285,11 +286,16 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await page.getByRole('button', { name: 'Modelo Pintura real', exact: true }).click()
   await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Todas as peças', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
-  await page.locator('summary').filter({ hasText: 'Criar outra cor' }).click()
+  await expect(
+    page.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'false')
+  // O "+" da barra de cores: o popover fecha com um toque fora, então o teste o reabre.
+  const moreColors = page.locator('summary').filter({ hasText: 'Criar outra cor' })
+  const openMoreColors = async () => {
+    if (!(await page.getByLabel('Cor hexadecimal', { exact: true }).isVisible()))
+      await moreColors.click()
+  }
+  await moreColors.click()
   await page.getByLabel('Cor hexadecimal', { exact: true }).fill('#f0352b')
   await page.getByLabel('Cor hexadecimal', { exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Guardar cor favorita', exact: true }).click()
@@ -310,7 +316,7 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await stageSettings.click()
-  await page.getByRole('button', { name: 'Quadradinhos', exact: true }).click()
+  await page.getByRole('button', { name: 'Mostrar quadradinhos', exact: true }).click()
   await stageSettings.click()
   await page.getByRole('button', { name: 'Espelho de pintura', exact: true }).click()
   const canvas = page.locator('canvas').first()
@@ -332,10 +338,12 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await page.mouse.down()
   await page.mouse.move(x + 35, y + 20, { steps: 6 })
   await page.mouse.up()
+  await openMoreColors()
   await expect(
     page.getByRole('button', { name: 'Usadas agora: #f0352b', exact: true }),
   ).toBeVisible()
-  const palette = page.locator('.mld-paint-swatches')
+  // A fila da barra de cores: amostras lado a lado, sem se encostar e dentro da faixa.
+  const palette = page.locator('.mld-color-row')
   const paletteBounds = (await palette.boundingBox())!
   const swatches = await palette.locator('button').all()
   let previous: { x: number; y: number; width: number; height: number } | null = null
@@ -354,7 +362,9 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   for (const width of [1024, 768, 390]) {
     await page.setViewportSize({ width, height: 900 })
-    await expect(page.getByRole('button', { name: 'Todas as peças', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece, exact: true }),
+    ).toBeVisible()
     const stage = (await page.locator('.mld-workshop-stage').boundingBox())!
     for (const control of await page.locator('.mld-stage-toolbar button:visible').all()) {
       const bounds = (await control.boundingBox())!
@@ -367,6 +377,7 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
     ).toBeLessThanOrEqual(1)
+    await openMoreColors()
     await page.getByLabel('Cor hexadecimal', { exact: true }).scrollIntoViewIfNeeded()
     await expect(page.getByLabel('Cor hexadecimal', { exact: true })).toBeVisible()
     await page.screenshot({ path: info.outputPath(`pintar-${width}.png`) })

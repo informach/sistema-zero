@@ -134,6 +134,15 @@ export function resolvePaletteColors(fields: MoldaPaletteFields): readonly strin
     : base
 }
 
+/** As cores escolhíveis da paleta, com o índice de cada uma (sem o 0 reservado nem vagas vazias). */
+export function scenePaletteSwatches(
+  fields: MoldaPaletteFields,
+): Array<{ index: number; hex: string }> {
+  return resolvePaletteColors(fields).flatMap((hex, index) =>
+    index === RESERVED_INDEX || !hex ? [] : [{ index, hex }],
+  )
+}
+
 /** Primeiro índice das cores extras; documentos antigos continuam começando em 16. */
 export function paletteBaseSize(fields: MoldaPaletteFields): number {
   return fields.paletteId === 'custom' && fields.customPalette

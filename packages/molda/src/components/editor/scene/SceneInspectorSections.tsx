@@ -47,18 +47,21 @@ export function SceneInspectorSections({
           ? undefined
           : mode === 'animation'
             ? 'Movimentos e atalhos'
-            : 'Cores e ajustes de pintura'
+            : 'Peça e ajustes de pintura'
       }
       aria-labelledby={compact ? `${id}-tab-overview` : undefined}
       hidden={compact && tab !== 'overview'}
       className={`mld-inspector-overview min-h-0 border-b border-mld-border px-1.5 pb-2 ${mode === 'paint' ? 'flex flex-col overflow-hidden' : 'mld-scroll-y overflow-y-auto'}`}
     >
       {mode === 'paint' ? (
+        // O cartão da peça vem primeiro (onde estou pintando e com quê); os ajustes avançados
+        // (fundo transparente, gradiente, mais jeitos) rolam embaixo dele. As cores do pincel
+        // moram na barra do pé do palco.
         <>
-          <div className="mld-scroll-y max-h-[55%] shrink-0 space-y-2 overflow-y-auto pt-2">
+          <div className="mld-scroll-y max-h-[60%] shrink-0 overflow-y-auto">{overview}</div>
+          <div className="mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto pt-2">
             {children}
           </div>
-          <div className="mld-scroll-y min-h-0 flex-1 overflow-y-auto">{overview}</div>
         </>
       ) : (
         overview
