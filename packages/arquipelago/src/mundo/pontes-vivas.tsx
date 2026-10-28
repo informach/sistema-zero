@@ -12,7 +12,7 @@ import { CORPO } from '../sistemas/corpo'
 import { criarPonte, type EstadoDaPonte, passoDaPonte, pesoNaPonte } from '../sistemas/pontes-vivas'
 import { RAIOS_DOS_DEQUES } from './bosque'
 import { bordaQueCabe, type ColisorDaIlha } from './colisores-da-ilha'
-import { GRUPO_SO_DO_CORPO } from './grupos'
+import { gruposDoColisor } from './grupos'
 import { PASSO_DA_FISICA } from './medidas'
 
 export const pontesAgora = { montadas: 0, maiorAfundamento: 0, sobCarga: 0 }
@@ -222,7 +222,7 @@ export function PontesVivas({ pontes, modelo }: { pontes: PontesPreparadas; mode
           >
             <RoundCuboidCollider
               args={[c.meio[0] - b, c.meio[1] - b, c.meio[2] - b, b]}
-              collisionGroups={c.nome.startsWith('col-ponte-lado-') ? GRUPO_SO_DO_CORPO : undefined}
+              {...gruposDoColisor(c.nome.startsWith('col-ponte-lado-'))}
             />
           </RigidBody>
         )

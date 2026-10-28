@@ -126,7 +126,11 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
 
 - **Bosque:**
   - `escada`: o pé da escada em espiral;
-  - `casa-na-arvore`: a porta, em cima do deque;
+  - `casa-na-arvore`: na frente da porta, do lado de fora, em cima do deque;
+  - `mecanismos-casa` (a dobradiça da porta, no batente do lado do tronco) e `mecanismos-rumo` (para
+    dentro da casa): o jogo monta a folha e o batente nelas (`mundo/mecanismos.tsx`);
+  - `mecanismos-placa`, `mecanismos-caixote` e `mecanismos-alcapao`: no anel do deque, onde o jogo
+    põe a placa, o caixote (onde ele começa) e o meio do alçapão;
   - `copas-1`…`copas-4`: o centro de cada deque, na altura dele (pontos de controle do percurso);
   - `escorregador-fim`, `cabana` (a porta), `cercado`, `lago`.
   - `esconderijo-1`…`esconderijo-4`: onde se escondem o cachorro, o gato, o coelho e o porquinho,

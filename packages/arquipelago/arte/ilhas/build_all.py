@@ -30,6 +30,7 @@ CONTRATO = {
                              'copas-1', 'copas-2', 'copas-3', 'copas-4']
         + [f'esconderijo-{i}' for i in range(1, 5)] + ['equilibrio-1-a', 'equilibrio-1-b']
         + ['escada-1-base', 'escada-1-topo', 'escada-1-saida']
+        + [f'mecanismos-{n}' for n in ('casa', 'rumo', 'placa', 'caixote', 'alcapao')]
         + [f'borda-{i}-{p}' for i in range(1, 5) for p in ('a', 'b', 'fora')]
         + [f'escorregador-curva-{i}' for i in range(1, 14)],
         'clipes': [],

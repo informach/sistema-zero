@@ -40,7 +40,7 @@ import {
   tapa,
   usarSuave,
 } from './copas'
-import { GRUPO_SO_DO_CORPO } from './grupos'
+import { gruposDoColisor } from './grupos'
 import {
   DISTANCIA_DA_TROCA,
   DURACAO_DA_TROCA,
@@ -330,7 +330,7 @@ function ColisoresDaIlha({ colisores, troca }: { colisores: ColisorDaIlha[]; tro
           return (
             <RoundCylinderCollider
               key={c.nome}
-              collisionGroups={soParaOCorpo(c.nome) ? GRUPO_SO_DO_CORPO : undefined}
+              {...gruposDoColisor(soParaOCorpo(c.nome))}
               args={[c.meiaAltura - b, c.raio - b, b]}
               position={c.posicao}
               quaternion={c.rotacao}
@@ -342,7 +342,7 @@ function ColisoresDaIlha({ colisores, troca }: { colisores: ColisorDaIlha[]; tro
         return (
           <RoundCuboidCollider
             key={c.nome}
-            collisionGroups={soParaOCorpo(c.nome) ? GRUPO_SO_DO_CORPO : undefined}
+            {...gruposDoColisor(soParaOCorpo(c.nome))}
             args={[x - b, y - b, z - b, b]}
             position={c.posicao}
             quaternion={c.rotacao}

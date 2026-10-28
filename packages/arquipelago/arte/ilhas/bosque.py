@@ -64,6 +64,31 @@ ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da es
 # se pendura), uma por lado.
 PEDRA_DE_AGARRAR = {'centro': (-8.25, 6.75), 'lado': 2.0, 'altura': 2.1, 'recuo': 0.3}
 CERCADO = (2.4, -9.2)
+# A casa na árvore no deque da T1 (física viva, etapa 5). `lado` é o ângulo (chão do Blender) do
+# tronco para o meio da casa; `largura` vai na direção do tronco para fora, `fundo` em volta do
+# tronco. A porta fica na parede de +y local (a do lado da escada), com o meio em `porta_x`: a parede
+# virada para o tronco não serve, porque entre ela e o tronco não passa ninguém. A porta de 1,1 m e
+# o batente vêm do jogo (`mundo/mecanismos.tsx`), montados nas âncoras `mecanismos-casa` (a
+# dobradiça) e `mecanismos-rumo` (para dentro da casa). O vão é 10 cm mais largo que a folha e a
+# folha fica fora da espessura da parede: a folha colide com a casa e, encostada, abria sozinha. A verga fica a `altura` − 0,1 do piso: a
+# cápsula do corpo vai a 1,8 m dos pés, mais a folga do controlador.
+CASA_NA_ARVORE = {'lado': R(200), 'raio': 1.9, 'largura': 1.7, 'fundo': 1.8, 'altura': 2.2,
+                  'porta_x': -0.2, 'porta_largura': 1.2, 'folha': 1.1}
+# A placa, o caixote e o alçapão ficam no anel do deque do outro lado do tronco, perto da guarda
+# (x, z do jogo, a partir do meio da T1): a criança empurra o caixote em linha reta até a placa, e o
+# lado do tronco fica livre, porque é por ali que o percurso passa da escada para a ponte da T2.
+# Dentro da casa não cabe: o corpo precisa de 0,7 m atrás do caixote para empurrar.
+# O alçapão abre girando na borda dele: fica onde a guarda não o segura no meio do caminho.
+MECANISMOS_NO_DEQUE = {'placa': (2.1, -0.9), 'caixote': (2.1, 0.3), 'alcapao': (1.1, -1.6)}
+
+
+def na_casa(lx, ly):
+    """(x, y) do Blender de um ponto no referencial da casa na árvore (x para fora do tronco)."""
+    c = CASA_NA_ARVORE
+    cx = T1[0] + math.cos(c['lado']) * c['raio']
+    cy = -T1[1] + math.sin(c['lado']) * c['raio']
+    a = c['lado']
+    return (cx + math.cos(a) * lx - math.sin(a) * ly, cy + math.sin(a) * lx + math.cos(a) * ly)
 
 
 # ------------------------------------------------------------------ colisão dos enfeites
@@ -110,43 +135,49 @@ def casa_na_arvore(col, telhado):
     zt = TOPO + h
     p = []
     # A casinha fica de um lado do deque (o tronco passa ao lado, não por dentro).
-    lado = R(200)
-    cx, cy = bx + math.cos(lado) * 1.85, by + math.sin(lado) * 1.85
+    c = CASA_NA_ARVORE
+    lado = c['lado']
+    cx, cy = na_casa(0, 0)
     giro_casa = lado
-    # Física viva: casca aberta na frente. Porta móvel vem do código, na âncora abaixo.
+    W, L, H = c['largura'], c['fundo'], c['altura']
+    e = 0.12
+    # O vão da porta na parede de +y: do batente da dobradiça ao outro (o batente fica no código).
+    v0 = c['porta_x'] - c['porta_largura'] / 2
+    v1 = c['porta_x'] + c['porta_largura'] / 2
+    yp = L / 2 - e / 2
     # O piso do deque continua inteiro, inclusive sob o alçapão, para ninguém cair.
-    paredes = [((0.12, 2.4, 2.0), (0.89, 0, 1.0)),
-               ((1.9, 0.12, 2.0), (0, -1.14, 1.0)),
-               ((1.9, 0.12, 2.0), (0, 1.14, 1.0)),
-               ((0.12, 0.65, 2.0), (-0.89, -0.875, 1.0)),
-               ((0.12, 0.65, 2.0), (-0.89, 0.875, 1.0)),
-               ((0.12, 1.1, 0.1), (-0.89, 0, 1.95))]
+    paredes = [((e, L, H), (W / 2 - e / 2, 0, H / 2)),
+               ((e, L, H), (-(W / 2 - e / 2), 0, H / 2)),
+               ((W, e, H), (0, -yp, H / 2)),
+               ((v0 + W / 2, e, H), ((-W / 2 + v0) / 2, yp, H / 2)),
+               ((W / 2 - v1, e, H), ((v1 + W / 2) / 2, yp, H / 2)),
+               ((v1 - v0, e, 0.1), ((v0 + v1) / 2, yp, H - 0.05))]
     for dimensoes, (lx, ly, lz) in paredes:
-        pos = (cx + math.cos(lado) * lx - math.sin(lado) * ly,
-               cy + math.sin(lado) * lx + math.cos(lado) * ly, zt + lz)
+        px, py = na_casa(lx, ly)
+        pos = (px, py, zt + lz)
         p.append(box(dimensoes, pos, 'casaArvore', bevel=0.025, segs=1, rot=(0, 0, lado)))
         col.append(col_caixa('casa-na-arvore', dimensoes, pos, (0, 0, lado)))
-    telhado.append(cone(1.95, 1.2, (cx, cy, zt + 2.6), 'telhadoArvore', verts=4, rot=(0, 0, giro_casa + R(45))))
-    telhado.append(uvball(0.14, (cx, cy, zt + 3.25), 'casaArvore', seg=8, ring=5))
-    # Porta virada para o tronco (o deque) e janela redonda para fora.
-    dentro = giro_casa + math.pi
-    # A porta com dobradiça será montada pelo jogo, sem outra folha fixa por trás.
-    fx, fy = cx + math.cos(giro_casa) * 0.98, cy + math.sin(giro_casa) * 0.98
+    meia_diagonal = math.hypot(W / 2, L / 2)
+    telhado.append(cone(meia_diagonal * 1.28, 1.2, (cx, cy, zt + H + 0.6), 'telhadoArvore', verts=4,
+                        rot=(0, 0, giro_casa + math.atan2(L, W))))
+    telhado.append(uvball(0.14, (cx, cy, zt + H + 1.25), 'casaArvore', seg=8, ring=5))
+    # Janela redonda para fora (a parede da beira do deque) e uma quadrada na parede sem porta.
+    fx, fy = na_casa(W / 2 + 0.03, 0)
     p.append(torus(0.32, 0.07, (fx, fy, zt + 1.25), 'troncoClaro', seg=12, rseg=4, rot=(R(90), 0, giro_casa + R(90))))
     p.append(cyl(0.3, 0.05, (fx, fy, zt + 1.25), 'vidroJanela', verts=12, rot=(R(90), 0, giro_casa + R(90))))
-    for lado2 in (-1, 1):
-        a2 = giro_casa + lado2 * math.pi / 2
-        p += janela(cx + math.cos(a2) * 1.22, cy + math.sin(a2) * 1.22, zt + 1.15, 0.5, 0.5, a2,
-                    m_moldura='troncoClaro')
+    jx, jy = na_casa(0, -(L / 2 + 0.02))
+    p += janela(jx, jy, zt + 1.15, 0.5, 0.5, giro_casa - math.pi / 2, m_moldura='troncoClaro')
     # Bandeirinha no telhado e balde na roldana até o chão.
-    telhado.append(cyl(0.03, 0.9, (cx, cy, zt + 3.65), 'poste', verts=5))
-    telhado.append(prism([(0, 0), (0.55, -0.15), (0, -0.3)], 0.02, (cx + 0.02, cy, zt + 4.05), 'telhadoArvore'))
+    telhado.append(cyl(0.03, 0.9, (cx, cy, zt + CASA_NA_ARVORE['altura'] + 1.65), 'poste', verts=5))
+    telhado.append(prism([(0, 0), (0.55, -0.15), (0, -0.3)], 0.02,
+                         (cx + 0.02, cy, zt + CASA_NA_ARVORE['altura'] + 2.05), 'telhadoArvore'))
     braco = R(250)  # entre a casa e o pé da escada
     rx, ry = bx + math.cos(braco) * (r + 0.4), by + math.sin(braco) * (r + 0.4)
-    p.append(tube([(bx + math.cos(braco) * 0.9, by + math.sin(braco) * 0.9, zt + 1.6), (rx, ry, zt + 1.6)],
+    # O braço passa acima da cabeça de quem anda no deque até a porta (o desenho não colide).
+    p.append(tube([(bx + math.cos(braco) * 0.9, by + math.sin(braco) * 0.9, zt + 2.2), (rx, ry, zt + 2.2)],
                   [0.07, 0.06], 'poste', seg=5))
-    p.append(torus(0.12, 0.03, (rx, ry, zt + 1.5), 'metalEscuro', seg=10, rseg=4, rot=(R(90), 0, braco)))
-    p.append(tube([(rx, ry, zt + 1.45), (rx, ry, TOPO + 1.0)], [0.015, 0.015], 'corda', seg=4, cap=False))
+    p.append(torus(0.12, 0.03, (rx, ry, zt + 2.1), 'metalEscuro', seg=10, rseg=4, rot=(R(90), 0, braco)))
+    p.append(tube([(rx, ry, zt + 2.05), (rx, ry, TOPO + 1.0)], [0.015, 0.015], 'corda', seg=4, cap=False))
     p.append(cyl(0.22, 0.32, (rx, ry, TOPO + 0.85), 'metalEscuro', verts=10, r2=0.17))
     # Escada em espiral do chão até a borda do deque, do lado da trilha.
     # A escada sobe pelo lado de fora da clareira e chega no deque longe da casa e da ponte (a 38° da
@@ -596,9 +627,9 @@ ESPESSURA_DA_PISTA = 0.08  # a tábua da pista tem o meio nos pontos: a superfí
 
 def ancoras(pista):
     fim_escorregador = pista[-1]
-    lado = R(200)
-    bx, by = T1[0] + math.cos(lado) * 1.85, -T1[1] + math.sin(lado) * 1.85
-    porta_casa = (bx + math.cos(lado + math.pi) * 1.3, by + math.sin(lado + math.pi) * 1.3)
+    casa = CASA_NA_ARVORE
+    # Na frente da porta, do lado de fora (onde a criança fica para entrar).
+    porta_casa = na_casa(casa['porta_x'], casa['fundo'] / 2 + 0.6)
     a = [ancora('chegada', 11.6, 0.0), ancora('morador', *frente_da_cabana(3.4)),
          ancora('lumi-1', -0.6, 3.8), ancora('lumi-2', 3.4, -2.2), ancora('lumi-3', -6.4, 4.4),
          ancora('lumi-4', 6.6, 8.6),
@@ -609,15 +640,18 @@ def ancoras(pista):
          ancora('escorregador-fim', fim_escorregador.x, -fim_escorregador.y)]
     for i, t in enumerate(PERCURSO):
         a.append(ancora(f'copas-{i + 1}', t[0] + 0.0, t[1], TOPO + t[4]))
-    # Porta de 1,1 m: pivô no batente esquerdo e direção para dentro da casa.
-    dentro = lado + math.pi
-    dx, dz = math.cos(dentro), -math.sin(dentro)
-    giro = math.atan2(-dx, -dz)
-    centro_porta = (bx + math.cos(dentro) * 0.97, -(by + math.sin(dentro) * 0.97))
-    hx = centro_porta[0] - math.cos(giro) * 0.55
-    hz = centro_porta[1] + math.sin(giro) * 0.55
-    a.append(ancora('mecanismos-casa', hx, hz, TOPO + T1[4]))
-    a.append(ancora('mecanismos-rumo', hx + math.sin(giro), hz + math.cos(giro), TOPO + T1[4]))
+    # Porta de 1,1 m na parede de +y da casa: a dobradiça a 5 cm do lado do vão que dá para o tronco,
+    # no plano da folha (6 cm para fora da face da parede, a folha tem 9 cm), e o rumo para dentro
+    # da casa (−y local).
+    deque = TOPO + T1[4]
+    yp = casa['fundo'] / 2 + 0.06
+    hx, hy = na_casa(casa['porta_x'] - casa['porta_largura'] / 2 + 0.05, yp)
+    dentro = casa['lado'] - math.pi / 2
+    a.append(ancora('mecanismos-casa', hx, -hy, deque))
+    a.append(ancora('mecanismos-rumo', hx + math.cos(dentro), -(hy + math.sin(dentro)), deque))
+    # A placa, o caixote e o alçapão no anel livre do deque (o jogo os monta nessas posições).
+    for nome, (dx, dz) in MECANISMOS_NO_DEQUE.items():
+        a.append(ancora(f'mecanismos-{nome}', T1[0] + dx, T1[1] + dz, deque))
 
     (x0, z0), (x1, z1), _ = TRONCO_CAIDO
     a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))

@@ -75,7 +75,7 @@ import { FogueiraViva } from './fogueira-viva'
 import { FolhasAoVento } from './folhas-ao-vento'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
-import { Mecanismos } from './mecanismos'
+import { Mecanismos, type PontoDoArranjo } from './mecanismos'
 import { giroDaIlha, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 import { ObjetosReativos } from './objetos-reativos'
@@ -184,12 +184,29 @@ export function BosqueVivo({
     [meio, giro],
   )
   const mecanismos = useMemo(() => {
-    const a = preparada.modelo.getObjectByName('mecanismos-casa')
-    const b = preparada.modelo.getObjectByName('mecanismos-rumo')
+    const no = (nome: string) => preparada.modelo.getObjectByName(`mecanismos-${nome}`)
+    const a = no('casa')
+    const b = no('rumo')
     if (!a || !b) return null
     const origem = paraOMundo(a.position, meio, giro, { x: 0, y: 0, z: 0 })
     const rumo = paraOMundo(b.position, meio, giro, { x: 0, y: 0, z: 0 })
-    return { ...origem, giro: Math.atan2(rumo.x - origem.x, rumo.z - origem.z) }
+    const giroDaPorta = Math.atan2(rumo.x - origem.x, rumo.z - origem.z)
+    // A placa, o caixote e o alçapão no referencial da porta (sem as âncoras, o arranjo da sala).
+    const naPorta = (nome: string): PontoDoArranjo | null => {
+      const o = no(nome)
+      if (!o) return null
+      const p = paraOMundo(o.position, meio, giro, { x: 0, y: 0, z: 0 })
+      const dx = p.x - origem.x
+      const dz = p.z - origem.z
+      const co = Math.cos(giroDaPorta)
+      const si = Math.sin(giroDaPorta)
+      return { x: dx * co - dz * si, z: dx * si + dz * co }
+    }
+    const placa = naPorta('placa')
+    const caixote = naPorta('caixote')
+    const alcapao = naPorta('alcapao')
+    const arranjo = placa && caixote && alcapao ? { placa, caixote, alcapao } : undefined
+    return { ...origem, giro: giroDaPorta, arranjo }
   }, [preparada, meio, giro])
 
   const vivos = useMemo(() => cipos.map((c) => c.vivo), [cipos])

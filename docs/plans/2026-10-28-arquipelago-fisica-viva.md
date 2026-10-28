@@ -185,7 +185,7 @@ etapa 1 ganhando estado.
 - [x] Etapas 1 e 2 presentes na staging recebida, preservadas.
 - [x] Etapa 3 conferida. O modo já existia. Teste adicional compara a mesma descida em 30, 60 e 144 quadros, mantendo passos de 1/60 s. Navegador confirma entrada, descida e saída com embalo.
 - [x] Etapa 4: cordas e pontes.
-- [ ] Etapa 5: código dos mecanismos pronto e conferido na sala. Aguardando a sessão da arte regerar e commitar o GLB, seguida de conferência na casa.
+- [x] Etapa 5: `bosque.glb` regerado e conferido na casa (28/10/2026): a porta virou para o lado da escada (a da frente dava no tronco), a placa, o caixote e o alçapão foram para o anel do deque, e os colisores da ilha passaram a colidir com corpos dinâmicos (o grupo 0, veja a seção da etapa 5).
 - [x] Etapa 6: vento.
 - [x] Etapa 7: materiais e fogo.
 - [x] Etapa 8: mundo que reage.
@@ -212,7 +212,14 @@ Porta e alçapão usam dobradiças Rapier. A porta recebe o empurrão normal do 
 
 Review corrigiu a estação sobreposta a uma plataforma, o caixote baixo que virava degrau e o contato indevido da porta com a placa. Navegador: placa ligada, alçapão em 1,23 rad; porta empurrada em -1,08 rad e retorno a 0,03 rad após sair. Um caixote tombado sob o alçapão pode segurá-lo aberto, como qualquer contato físico. Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS, sem erro de página. Evidência: `.cache/arq-final-5g.json`.
 
-Pendente de arte: regerar o Bosque com `arte/ilhas/bosque.py` e conferir a entrada da casa. Nenhum GLB ou relatório foi regravado. Nota a sincronizar com `if_version`: "Porta com dobradiça e caixote que abre o alçapão prontos e testados na sala. A casa aguarda a nova arte."
+Conferência na casa (28/10/2026), com o `bosque.glb` regerado. Os problemas e as correções:
+- **A porta dava no tronco** (12 cm entre eles, ninguém passava). Ela foi para a parede virada para a escada, e a casa ficou com 1,7 × 1,8 m.
+- **A verga a 1,9 m batia na cabeça** da cápsula. A casa ficou com 2,2 m de altura.
+- **O vão tinha a largura exata da folha**: ela encostava e abria sozinha. O vão ficou 10 cm mais largo.
+- **O caixote não cabia dentro da casa** para ser empurrado. A placa, o caixote e o alçapão foram para o anel do deque, longe da guarda e com o lado do tronco livre para o percurso.
+- **Nenhum corpo dinâmico tocava a ilha**: os colisores iam com `collisionGroups={undefined}`, que vira o grupo 0. Corrigido com `gruposDoColisor`, valendo também para as peças soltas, o galho, a folha e a pena.
+
+Resultado no navegador (`playground/verificar-mecanismos-browser.ts`): porta a 1,06 rad com a criança 1,33 m dentro da casa e volta a 0,01 rad; caixote na placa; alçapão em 1,24 rad. Nota a sincronizar com `if_version`: "Porta com dobradiça e caixote que abre o alçapão prontos e testados na sala. A casa aguarda a nova arte."
 
 ### Etapa 6
 

@@ -18,30 +18,56 @@ export const mecanismosAgora = {
   caixaY: 0,
   caixaZ: 0,
 }
+/** Um ponto no chão, no referencial da porta (x ao longo da folha, z para dentro). */
+export interface PontoDoArranjo {
+  x: number
+  z: number
+}
+/** Onde ficam a placa, o caixote (onde ele começa) e o meio do alçapão. */
+export interface ArranjoDosMecanismos {
+  placa: PontoDoArranjo
+  caixote: PontoDoArranjo
+  alcapao: PontoDoArranjo
+}
+/** O da estação Mecanismos: tudo logo atrás da porta. */
+export const ARRANJO_DA_SALA: ArranjoDosMecanismos = {
+  placa: { x: 0.65, z: 0.4 },
+  caixote: { x: 0.65, z: 1.3 },
+  alcapao: { x: -0.2, z: 1.2 },
+}
+/** Quanto o caixote pode estar abaixo do chão antes de voltar ao lugar do começo. */
+const ABAIXO_DO_CHAO = 0.5
+/** A dobradiça do alçapão fica na borda dele, a meia largura do meio. */
+const MEIA_LARGURA_DO_ALCAPAO = 0.35
+
 /** Dobradiças reais. O chão sob o alçapão continua seguro, sem buraco no percurso. */
 export function Mecanismos({
   x,
   y,
   z,
   giro = 0,
+  arranjo = ARRANJO_DA_SALA,
 }: {
   x: number
   y: number
   z: number
   giro?: number
+  /** Fixo depois de montar: as juntas guardam as posições do primeiro quadro. */
+  arranjo?: ArranjoDosMecanismos
 }) {
   const quadro = useRef<RapierRigidBody>(null!),
     porta = useRef<RapierRigidBody>(null!),
     alcapao = useRef<RapierRigidBody>(null!),
     caixa = useRef<RapierRigidBody>(null!)
   const luz = useRef<MeshStandardMaterial>(null)
+  const { placa, caixote, alcapao: meioDoAlcapao } = arranjo
   const origem = useMemo(
     () => ({
-      x: x + Math.cos(giro) * 0.65 + Math.sin(giro) * 1.3,
+      x: x + Math.cos(giro) * caixote.x + Math.sin(giro) * caixote.z,
       y: y + 0.39,
-      z: z - Math.sin(giro) * 0.65 + Math.cos(giro) * 1.3,
+      z: z - Math.sin(giro) * caixote.x + Math.cos(giro) * caixote.z,
     }),
-    [x, y, z, giro],
+    [x, y, z, giro, caixote.x, caixote.z],
   )
   const zero = useMemo(() => ({ x: 0, y: 0, z: 0 }), [])
   const jp = useRevoluteJoint(quadro, porta, [
@@ -51,8 +77,8 @@ export function Mecanismos({
     [-1.4, 1.4],
   ])
   const ja = useRevoluteJoint(quadro, alcapao, [
-    [-0.55, 0.12, 1.2],
-    [-0.35, 0, 0],
+    [meioDoAlcapao.x - MEIA_LARGURA_DO_ALCAPAO, 0.12, meioDoAlcapao.z],
+    [-MEIA_LARGURA_DO_ALCAPAO, 0, 0],
     [0, 0, 1],
     [0, 1.3],
   ])
@@ -73,7 +99,14 @@ export function Mecanismos({
       dz = p.z - z,
       co = Math.cos(giro),
       si = Math.sin(giro)
-    const ligado = caixaNaPlaca(dx * co - dz * si, p.y - y, dx * si + dz * co, 0.65, 0.06, 0.4)
+    const ligado = caixaNaPlaca(
+      dx * co - dz * si,
+      p.y - y,
+      dx * si + dz * co,
+      placa.x,
+      0.06,
+      placa.z,
+    )
     ja.current?.configureMotorPosition(alvoDoAlcapao(ligado), 30, 8)
     if (ligado !== mecanismosAgora.placa) alcapao.current?.wakeUp()
     mecanismosAgora.placa = ligado
@@ -91,7 +124,9 @@ export function Mecanismos({
           Math.cos(giro / 2) * ra.w + Math.sin(giro / 2) * ra.y,
         )
     if (luz.current) luz.current.color.set(ligado ? '#4b9ee8' : '#d6b56b')
-    if (p.y < y - 3) {
+    // Abaixo do chão dos mecanismos, volta ao começo: na troca da ilha o chão pode chegar depois do
+    // caixote, e ele cairia do deque.
+    if (p.y < y - ABAIXO_DO_CHAO) {
       c.setTranslation(origem, true)
       c.setLinvel(zero, true)
       c.setAngvel(zero, true)
@@ -140,7 +175,7 @@ export function Mecanismos({
       <RigidBody
         ref={alcapao}
         colliders={false}
-        position={[-0.2, 0.12, 1.2]}
+        position={[meioDoAlcapao.x, 0.12, meioDoAlcapao.z]}
         gravityScale={0}
         angularDamping={3}
         canSleep
@@ -154,7 +189,7 @@ export function Mecanismos({
       <RigidBody
         ref={caixa}
         colliders={false}
-        position={[0.65, 0.39, 1.3]}
+        position={[caixote.x, 0.39, caixote.z]}
         linearDamping={1}
         angularDamping={2}
         canSleep
@@ -170,7 +205,7 @@ export function Mecanismos({
           <meshStandardMaterial color="#bc8b52" />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" colliders={false} position={[0.65, 0.03, 0.4]}>
+      <RigidBody type="fixed" colliders={false} position={[placa.x, 0.03, placa.z]}>
         <CuboidCollider collisionGroups={GRUPO_SO_DO_CORPO} args={[0.4, 0.03, 0.4]} />
         <mesh>
           <boxGeometry args={[0.8, 0.06, 0.8]} />

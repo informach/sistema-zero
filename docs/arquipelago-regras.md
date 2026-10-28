@@ -1804,7 +1804,13 @@ A ponte usa uma mola limitada com duas pontas fixas, em vez de adaptar a corda d
 
 `mundo/mecanismos.tsx` usa duas dobradiças Rapier, com limites e mola. A porta abre pelo empurrão normal do controlador. A placa lê o caixote apoiado, não a proximidade do personagem. O chão sob o alçapão fica inteiro. Colisores simples e fora do grupo da câmera. A porta tem folga acima da placa para não prender a dobradiça.
 
-A estação Mecanismos em `/movimento` funciona com a arte atual. No Bosque, só montar quando existirem `mecanismos-casa` e `mecanismos-rumo`. O script `arte/ilhas/bosque.py` cria as âncoras e paredes com vão. Falta regerar o GLB e conferir a casa após a outra sessão terminar a arte. Não montar a porta sobre a casa fechada antiga.
+A estação Mecanismos em `/movimento` usa o arranjo da sala (`ARRANJO_DA_SALA`: tudo logo atrás da porta). No Bosque (`bosque.glb` regerado em 28/10/2026), a porta fica na parede da casa na árvore virada para a escada (âncoras `mecanismos-casa`, a dobradiça, e `mecanismos-rumo`, para dentro). A parede virada para o tronco não serve: entre ela e o tronco não passa ninguém. A placa, o caixote e o alçapão ficam no anel do deque do outro lado do tronco (âncoras `mecanismos-placa`, `-caixote` e `-alcapao`, lidas por `BosqueVivo` como `arranjo`), perto da guarda. O lado do tronco fica livre para o percurso, e o alçapão fica onde a guarda não o segura ao abrir. As medidas estão em `CASA_NA_ARVORE` e `MECANISMOS_NO_DEQUE` (`arte/ilhas/bosque.py`):
+- a casa tem 1,7 × 1,8 m e 2,2 m de altura;
+- a verga fica a 2,1 m: a cápsula do corpo vai a 1,8 m dos pés, mais a folga do controlador;
+- o vão é 10 cm mais largo que a folha;
+- a folha fica fora da espessura da parede, porque a folha colide com a casa e, encostada, abria sozinha.
+
+O caixote que cai abaixo do chão (meio metro) volta ao começo: na troca da ilha o chão pode chegar depois dele. Testes contra o GLB: `tests/casa-na-arvore.test.ts` (a passagem pela porta, a cabeça sob a verga, o caminho do caixote, onde empurrar, o anel livre e o giro inteiro do alçapão). No navegador: `bun playground/verificar-mecanismos-browser.ts` (a criança atravessa a porta, empurra o caixote até a placa e o alçapão abre, 1,24 rad).
 
 
 ### Física viva: vento (28/10/2026)
@@ -1827,4 +1833,4 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 
 `mundo-reativo.ts` guarda um conjunto fixo de 16 ondas. `ondinhas.tsx` lê a entrada e o deslocamento da criança e do tronco, desenha em uma malha instanciada e recorta no limite do lago. Não há simulação de fluido nem partículas criadas por quadro. Movimento reduzido baixa a opacidade. Estados transitórios pertencem à ilha ativa. Estações Peças soltas e Galho seco em `/movimento` usam as mesmas peças.
 
-A casa da etapa 5 segue pendente de regeneração do `bosque.glb` pela sessão da arte. Código pronto não equivale a mecanismo já visível no modelo antigo. O plano da física viva registra medições, notas do cartão e a conferência que falta em celular físico.
+⚠️ Até 28/10/2026 os colisores da ilha completa e das pontes vivas iam com `collisionGroups={cond ? GRUPO : undefined}`. O `@react-three/rapier` aplica `undefined` como o grupo 0, então nenhum corpo dinâmico tocava a ilha: o caixote, as peças soltas, o galho, a folha e a pena atravessavam o chão e voltavam ao lugar. Só o personagem, cujo controlador não olha grupos, pisava. Use `gruposDoColisor` (`mundo/grupos.ts`); `tests/grupos-de-colisao.test.ts` recusa o padrão. O plano da física viva registra medições, notas do cartão e a conferência que falta em celular físico.
