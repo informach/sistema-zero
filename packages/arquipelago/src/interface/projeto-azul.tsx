@@ -4,6 +4,7 @@ import {
   GELADEIRA_GUARDA,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
+  ProjetoAzulSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -13,6 +14,7 @@ import {
   guardados,
   guardarNaGeladeira,
   moldaAberto,
+  oQueOPintaPinta,
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
 import { ITENS } from '../sistemas/itens'
@@ -127,17 +129,17 @@ export function PainelDoObjeto() {
       const r = await plataforma.abrirFerramenta({ ferramenta, proposito: 'objeto', molde })
       if (r.situacao === 'pronto') {
         const origemDaAparencia = ferramenta === 'molda' ? 'molda' : 'pinta'
-        loja.getState().mudar((s) => {
-          const p = s.projetos[id]
-          if (!p) return s
-          return {
-            ...s,
-            projetos: {
-              ...s.projetos,
-              [id]: { ...p, aparencia: { origem: origemDaAparencia, id: r.criacaoId } },
-            },
-          }
-        })
+        const atual = loja.getState().salvamento.projetos[id]
+        const novo = atual && {
+          ...atual,
+          aparencia: { origem: origemDaAparencia, id: r.criacaoId },
+        }
+        // Um id fora do contrato faria o serviço recusar o salvamento: ele não entra.
+        if (!novo || !ProjetoAzulSchema.safeParse(novo).success) {
+          setAviso({ tom: 'atencao', texto: 'Não deu para guardar a aparência. Tente de novo.' })
+          return
+        }
+        loja.getState().mudar((s) => ({ ...s, projetos: { ...s.projetos, [id]: novo } }))
         setAviso({ tom: 'ok', texto: 'A aparência ficou guardada na sua conta.' })
       } else if (r.situacao === 'indisponivel')
         setAviso({
@@ -152,7 +154,8 @@ export function PainelDoObjeto() {
     }
   }
 
-  const temFaces = molde.faces.length > 0
+  const pinta = oQueOPintaPinta(molde.faces)
+  const temFaces = pinta !== null
   const molda = moldaAberto(jornada)
   return (
     <div className="arq-sobre">
@@ -184,11 +187,7 @@ export function PainelDoObjeto() {
               🎨
             </span>
             <b>Pintar no Pinta</b>
-            <small>
-              {temFaces
-                ? 'A frente, os lados e o topo da caixa'
-                : 'O molde do Pinta chega com o modelo'}
-            </small>
+            <small>{pinta ?? 'O molde do Pinta chega com o modelo'}</small>
           </button>
           <button
             type="button"

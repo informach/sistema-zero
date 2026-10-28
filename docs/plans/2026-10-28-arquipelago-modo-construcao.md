@@ -26,7 +26,7 @@ aconchego dos cômodos são os cartões seguintes (fase1-13 a fase1-15) e ficam 
 
 | Pergunta | Decisão | Por quê |
 |---|---|---|
-| Onde se constrói | Num **lote** com grade de 1 célula em volta da casa, de x -14 a 16 e de z -12 a 8 (coordenadas do mundo, inteiras, alinhadas ao quarto) | É onde o chão da ilha é plano (medido com `alturaDaIlha`); o resto da ilha ondula e o piso da casa ficaria enterrado ou solto |
+| Onde se constrói | Num **lote** com grade de 1 célula em volta da casa, de x -13 a 14 e de z -12 a 8 (coordenadas do mundo, inteiras, alinhadas ao quarto) | É onde o chão da ilha é plano (medido com `alturaDaIlha`); o resto da ilha ondula e o piso da casa ficaria enterrado ou solto |
 | O que já ocupa o lote | Varanda, horta, bancada, a árvore de (-9, 4) e o pé do farol ficam como **células ocupadas** (não se constrói em cima). Um teste confere que todo colisor do lote cai numa célula ocupada | Nada fica dentro de parede, e nada some |
 | A casa de hoje (`casa.glb`) | Continua igual até a criança fazer a primeira obra. Na primeira obra, as paredes da frente e do lado direito do quarto viram paredes do kit (com a porta nova e as duas janelas no mesmo lugar), e dali em diante a casa é desenhada pelo kit. O quarto da plataforma, o revestimento de fora das paredes do quarto, o telhado do quarto e a varanda continuam vindo do `casa.glb` | O `casa.glb` tem as paredes num nó só: não dá para abrir uma porta nova nelas. As paredes da esquerda e do fundo são da plataforma (o papel de parede do Meu quarto) |
 | Paredes do quarto | As da esquerda e do fundo são fixas (sem porta, sem janela). As da frente e da direita aceitam porta e janela, mas não se apagam | O quarto é o da plataforma e precisa continuar fechado |

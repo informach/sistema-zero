@@ -9,6 +9,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { ITENS } from '../itens'
 import { planta } from './comodos'
+import { chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
 import type { Resultado } from './obra'
 
@@ -81,25 +82,40 @@ export function porObjeto(
   const p = planta(obra, lote)
   const outros = obra.objetos.filter((o) => o.id !== id)
   const usadas = new Set(outros.flatMap(celulasDoObjeto).map(chaveDaCelula))
-  const doQuintal = new Set([...obra.caminhos, ...obra.canteiros].map((c) => chaveDaCelula(c)))
+  const caminhos = new Set(obra.caminhos.map((c) => chaveDaCelula(c)))
+  const canteiros = new Set(obra.canteiros.map((c) => chaveDaCelula(c)))
   const comodos = new Set<number>()
   for (const c of celulas) {
     if (!naArea(lote.area, c)) return { ok: false, motivo: 'fora-do-lote' }
     const nome = ocupante(lote, c)
     if (nome) return { ok: false, motivo: 'ocupado', nome }
-    if (noFixo(lote, c)) return { ok: false, motivo: 'no-quarto' }
+    if (noFixo(lote, c)) return { ok: false, motivo: 'objeto-no-quarto' }
     const k = chaveDaCelula(c)
     if (usadas.has(k)) return { ok: false, motivo: 'tem-objeto' }
     const i = p.comodoDe.get(k)
     if (LUGAR_DO_OBJETO[id] === 'dentro') {
-      if (i === undefined) return { ok: false, motivo: 'fora-de-comodo' }
+      if (i === undefined) return { ok: false, motivo: 'objeto-fora-de-comodo' }
       comodos.add(i)
     } else {
       if (i !== undefined) return { ok: false, motivo: 'dentro-de-casa' }
-      if (doQuintal.has(k)) return { ok: false, motivo: 'tem-caminho' }
+      if (caminhos.has(k)) return { ok: false, motivo: 'tem-caminho' }
+      if (canteiros.has(k)) return { ok: false, motivo: 'ocupado', nome: 'o canteiro' }
     }
   }
-  if (comodos.size > 1) return { ok: false, motivo: 'fora-de-comodo' }
+  if (comodos.size > 1) return { ok: false, motivo: 'objeto-fora-de-comodo' }
+  // Nenhuma parede (nem cerca) passa entre duas células do objeto: um toco de parede dentro do
+  // cômodo não deixa o objeto em cima dele.
+  const cercas = chavesDosTrechos(obra.cercas)
+  const dele = new Set(celulas.map(chaveDaCelula))
+  for (const c of celulas) {
+    const vizinhas: [Celula, string][] = [
+      [{ x: c.x + 1, z: c.z }, chaveDaAresta({ eixo: 'z', x: c.x + 1, z: c.z })],
+      [{ x: c.x, z: c.z + 1 }, chaveDaAresta({ eixo: 'x', x: c.x, z: c.z + 1 })],
+    ]
+    for (const [v, aresta] of vizinhas)
+      if (dele.has(chaveDaCelula(v)) && (p.paredes.has(aresta) || cercas.has(aresta)))
+        return { ok: false, motivo: 'tem-parede' }
+  }
   const igual = obra.objetos.find((o) => o.id === id)
   if (igual && igual.x === novo.x && igual.z === novo.z && igual.giro === novo.giro)
     return { ok: false, motivo: 'nada' }
@@ -134,7 +150,8 @@ export function ganharProjetos(
 /** O que o Zappy diz quando um projeto azul chega. */
 export function falaDoGanho(id: ObjetoDaCasa): string {
   const nome = CATALOGO_DE_OBJETOS[id].molde.nome.toLowerCase()
-  return `Chegou o projeto azul: ${nome}. Ponha em casa no modo Construir.`
+  const onde = LUGAR_DO_OBJETO[id] === 'fora' ? 'no quintal' : 'em casa'
+  return `Chegou o projeto azul: ${nome}. Ponha ${onde} no modo Construir.`
 }
 
 // ------------------------------------------------------------------ a geladeira
@@ -186,6 +203,23 @@ export function tirarDaGeladeira(
 }
 
 // ------------------------------------------------------------------ a aparência
+
+const NOME_DA_FACE: Readonly<Record<string, string>> = {
+  frente: 'a frente',
+  'lado-esq': 'os lados',
+  'lado-dir': 'os lados',
+  topo: 'o topo',
+  tela: 'a tela',
+}
+
+/** O que o Pinta pinta neste objeto, pelas faces do molde ("A frente, os lados e o topo"). */
+export function oQueOPintaPinta(faces: readonly { face: string }[]): string | null {
+  const partes = [...new Set(faces.map((f) => NOME_DA_FACE[f.face] ?? f.face))]
+  const ultima = partes.at(-1)
+  if (!ultima) return null
+  const texto = partes.length === 1 ? ultima : `${partes.slice(0, -1).join(', ')} e ${ultima}`
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
 
 /** A posição da jornada em que o Molda abre no molde (o posto Explorador(a) de Mundos). */
 export const POSICAO_DO_MOLDA = POSTOS_DA_JORNADA.indexOf('explorer') + 1

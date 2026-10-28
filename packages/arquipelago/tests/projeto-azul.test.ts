@@ -91,10 +91,10 @@ describe('pôr o objeto na obra', () => {
     const posta = ok(porObjeto(o, L, PROJETOS, 'geladeira', { x: -5, z: 2 }, 0))
     expect(posta.objetos).toEqual([{ id: 'geladeira', x: -5, z: 2, giro: 0 }])
     expect(porObjeto(o, L, PROJETOS, 'geladeira', { x: -12, z: 6 }, 0)).toMatchObject({
-      motivo: 'fora-de-comodo',
+      motivo: 'objeto-fora-de-comodo',
     })
     expect(porObjeto(o, L, PROJETOS, 'geladeira', { x: 0, z: -4 }, 0)).toMatchObject({
-      motivo: 'no-quarto',
+      motivo: 'objeto-no-quarto',
     })
     expect(porObjeto(o, L, {}, 'geladeira', { x: -5, z: 2 }, 0)).toMatchObject({
       motivo: 'sem-projeto',

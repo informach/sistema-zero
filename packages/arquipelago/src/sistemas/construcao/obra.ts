@@ -1,5 +1,5 @@
 import type { Obra, PisoDaCasa, TipoDeAbertura } from '@sistemazero/arquipelago-contracts'
-import { ocupadasDentro, type Planta, planta } from './comodos'
+import { ocupadasDentro, PISO_PADRAO, type Planta, planta } from './comodos'
 import {
   type Aresta,
   aberturaNaAresta,
@@ -39,6 +39,8 @@ export type Recusa =
   | { motivo: 'canteiro-com-planta' }
   | { motivo: 'sem-projeto' }
   | { motivo: 'tem-objeto' }
+  | { motivo: 'objeto-fora-de-comodo' }
+  | { motivo: 'objeto-no-quarto' }
   | { motivo: 'nada' }
 
 export type Resultado = { ok: true; obra: Obra } | ({ ok: false } & Recusa)
@@ -91,7 +93,9 @@ export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resul
   }
   if (chaves.size === antes) return recusa({ motivo: 'nada' })
   if (chaves.size > lote.limites.arestasDeParede) return recusa({ motivo: 'limite' })
-  const nova: Obra = { ...obra, paredes: trechosDasChaves(chaves) }
+  const paredes = trechosDasChaves(chaves)
+  if (paredes.length > lote.limites.trechosDeParede) return recusa({ motivo: 'limite' })
+  const nova: Obra = { ...obra, paredes }
   const r = conferirFechamento(nova, lote)
   return r ? recusa(r) : { ok: true, obra: arrumar(nova, lote) }
 }
@@ -189,6 +193,9 @@ export function trocarPiso(obra: Obra, lote: Lote, c: Celula, tipo: PisoDaCasa):
   if (comodo.quarto) return recusa({ motivo: 'no-quarto' })
   if (comodo.piso === tipo) return recusa({ motivo: 'nada' })
   const outros = obra.pisos.filter((x) => p.comodoDe.get(chaveDaCelula(x)) !== i)
+  // A tábua é o piso de quem não tem registro: voltar para ela tira o registro.
+  if (tipo === PISO_PADRAO) return { ok: true, obra: { ...obra, pisos: outros } }
+  if (outros.length >= lote.limites.pisos) return recusa({ motivo: 'limite' })
   return { ok: true, obra: { ...obra, pisos: [...outros, { x: c.x, z: c.z, tipo }] } }
 }
 

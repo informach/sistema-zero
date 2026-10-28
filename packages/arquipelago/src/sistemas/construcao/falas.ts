@@ -37,6 +37,10 @@ export function falaDaRecusa(r: Recusa): string | null {
       return 'Esse objeto ainda não chegou. Ele vem dos pedidos e dos desafios.'
     case 'tem-objeto':
       return 'Ali já tem um objeto. Escolha outro lugar ou tire ele primeiro.'
+    case 'objeto-fora-de-comodo':
+      return 'Esse objeto vai dentro de um cômodo novo, inteiro no mesmo cômodo.'
+    case 'objeto-no-quarto':
+      return 'O quarto é o da plataforma. Ponha o objeto num cômodo novo.'
     case 'canteiro-com-planta':
       return 'Esse canteiro tem planta. Colha primeiro e depois apague.'
     case 'nada':

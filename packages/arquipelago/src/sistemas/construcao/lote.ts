@@ -36,8 +36,12 @@ export interface Lote {
   /** Tetos de quantidade do jogo (abaixo dos do contrato, para a obra caber no salvamento). */
   limites: {
     arestasDeParede: number
+    /** Trechos guardados no salvamento (o contrato aceita até 200 de parede e 120 de cerca). */
+    trechosDeParede: number
     aberturas: number
+    pisos: number
     arestasDeCerca: number
+    trechosDeCerca: number
     caminhos: number
     canteiros: number
   }
@@ -108,8 +112,11 @@ export const LOTE_DA_CASA: Lote = {
   },
   limites: {
     arestasDeParede: 320,
+    trechosDeParede: 200,
     aberturas: 48,
+    pisos: 30,
     arestasDeCerca: 200,
+    trechosDeCerca: 120,
     caminhos: 240,
     canteiros: 18,
   },

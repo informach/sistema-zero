@@ -69,6 +69,9 @@ const JANELAS: ReadonlyArray<{ id: TipoDeJanela; nome: string }> = [
   { id: 'janela-redonda', nome: 'Redonda' },
 ]
 
+/** Uma lista vazia só (o seletor da loja não pode criar uma nova a cada leitura). */
+const NENHUM_OBJETO: readonly { id: string }[] = []
+
 const CAMINHOS: ReadonlyArray<{ id: PisoDoQuintal; nome: string }> = [
   { id: 'pedra', nome: 'Pedra' },
   { id: 'grama', nome: 'Grama' },
@@ -127,7 +130,7 @@ export function BarraDeConstruir() {
   const caminho = useConstrucao(construcao, (s) => s.caminho)
   const objeto = useConstrucao(construcao, (s) => s.objeto)
   const projetos = useEstado((s) => s.salvamento.projetos)
-  const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? [])
+  const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
   if (!aberto) return null

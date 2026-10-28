@@ -10,6 +10,7 @@ import {
 } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
 import { arestaLivre, type Recusa, type Resultado } from './obra'
+import { objetoEm } from './projeto-azul'
 
 /**
  * O quintal (modo construção, fase1-11): cercas nas arestas da grade, caminho de pedra ou de grama
@@ -70,11 +71,16 @@ export function esticarCerca(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Result
       return recusa({ motivo: 'dentro-de-casa' })
     if (lados.some((c) => canteiros.has(chaveDaCelula(c))))
       return recusa({ motivo: 'ocupado', nome: 'o canteiro' })
+    // A cerca não atravessa um objeto (a casinha).
+    const o1 = objetoEm(obra, lados[0])
+    if (o1 >= 0 && o1 === objetoEm(obra, lados[1])) return recusa({ motivo: 'tem-objeto' })
     cercas.add(k)
   }
   if (cercas.size === antes) return recusa({ motivo: 'nada' })
   if (cercas.size > lote.limites.arestasDeCerca) return recusa({ motivo: 'limite' })
-  return { ok: true, obra: { ...obra, cercas: trechosDasChaves(cercas) } }
+  const trechos = trechosDasChaves(cercas)
+  if (trechos.length > lote.limites.trechosDeCerca) return recusa({ motivo: 'limite' })
+  return { ok: true, obra: { ...obra, cercas: trechos } }
 }
 
 function ladosDe(a: Aresta): [Celula, Celula] {
@@ -104,6 +110,7 @@ export function pintarCaminho(
     const r = celulaLivre(lote, c, p.dentro)
     if (r) return recusa(r)
     if (canteiros.has(chaveDaCelula(c))) return recusa({ motivo: 'ocupado', nome: 'o canteiro' })
+    if (objetoEm(obra, c) >= 0) return recusa({ motivo: 'tem-objeto' })
     const atual = porCelula.get(chaveDaCelula(c))
     if (atual?.tipo === tipo) continue
     porCelula.set(chaveDaCelula(c), { x: c.x, z: c.z, tipo })
@@ -122,6 +129,7 @@ export function porCanteiro(obra: Obra, lote: Lote, c: Celula): Resultado {
   const k = chaveDaCelula(c)
   if (obra.canteiros.some((x) => chaveDaCelula(x) === k)) return recusa({ motivo: 'nada' })
   if (obra.caminhos.some((x) => chaveDaCelula(x) === k)) return recusa({ motivo: 'tem-caminho' })
+  if (objetoEm(obra, c) >= 0) return recusa({ motivo: 'tem-objeto' })
   const cercas = chavesDosTrechos(obra.cercas)
   const bordas: Aresta[] = [
     { eixo: 'x', x: c.x, z: c.z },

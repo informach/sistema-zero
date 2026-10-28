@@ -1021,12 +1021,14 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   as duas janelas no lugar das do `casa.glb`.
 - **Parede:** fica nas linhas da grade. Arrastar estica a parede reto, pelo eixo em que o dedo
   andou mais. Não dá em cima do que está ocupado, dentro do quarto nem fora do lote, e não dá para
-  fechar algo ocupado dentro de casa. Teto do jogo: 320 arestas de parede por lote.
+  fechar algo ocupado dentro de casa. Tetos do jogo: 320 arestas e 200 trechos de parede por lote
+  (o salvamento guarda trechos: tocos soltos gastam um trecho cada). A loja ainda confere a obra
+  inteira contra o contrato antes de gravar.
 - **Apagar** tira as paredes do caminho (as do quarto ficam) e as portas e janelas delas.
 - **Cômodo:** as células que as paredes fecham (o que não se alcança da borda do lote sem passar
   por parede; porta e janela não abrem a parede para isso). Cômodo novo nasce com piso de tábua;
-  a ferramenta Piso troca o piso do cômodo inteiro (tábua, ladrilho ou azulejo). O quarto tem o
-  piso da plataforma.
+  a ferramenta Piso troca o piso do cômodo inteiro (tábua, ladrilho ou azulejo). Voltar para a
+  tábua tira o registro; no máximo 30 cômodos com piso trocado. O quarto tem o piso da plataforma.
 - **Lambri ou lisa** (o jogo decide): parede com cômodo dos dois lados é lisa; com cômodo de um
   lado só, lambri, com a fachada para fora.
 - **Porta e janela** (`LARGURA_DA_ABERTURA`): porta e janela grande ocupam 3 células, a janela em
