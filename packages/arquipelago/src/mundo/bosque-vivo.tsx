@@ -51,6 +51,7 @@ import { BichosDoBosque } from './bichos-do-bosque'
 import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
+  FOGUEIRA_DO_BOSQUE,
   NOMES_DAS_ANCORAS_DO_PERCURSO,
   PLACA_DA_LARGADA,
   paraOMundo,
@@ -68,6 +69,7 @@ import {
   prepararCipoDesenhado,
 } from './cipo-desenhado'
 import type { Copa } from './copas'
+import { FogueiraViva } from './fogueira-viva'
 import { FolhasAoVento } from './folhas-ao-vento'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
@@ -159,6 +161,11 @@ export function BosqueVivo({
     }
     return lista
   }, [preparada, meio, giro, ilha.id])
+
+  const fogueira = useMemo(
+    () => paraOMundo(FOGUEIRA_DO_BOSQUE, meio, giro, { x: 0, y: 0, z: 0 }),
+    [meio, giro],
+  )
 
   const mecanismos = useMemo(() => {
     const a = preparada.modelo.getObjectByName('mecanismos-casa')
@@ -520,6 +527,7 @@ export function BosqueVivo({
 
   return (
     <group ref={pecas} visible={false}>
+      <FogueiraViva {...fogueira} vento={vento} />
       <FolhasAoVento vento={vento} x={meio.x + 1} y={4} z={meio.z} />
       {mecanismos && <Mecanismos {...mecanismos} />}
       {cipos.map((c) => (

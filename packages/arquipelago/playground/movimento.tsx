@@ -7,10 +7,17 @@ import { createRoot } from 'react-dom/client'
 import { CanvasTexture, NearestFilter, RepeatWrapping, SRGBColorSpace } from 'three'
 import { criarControle, ligarTeclado } from '../src/controles/controle'
 import { ligarGamepad } from '../src/controles/gamepad'
-import { Contexto, type ContextoDoJogo, criarMovimento, useJogo } from '../src/estado/contexto'
+import {
+  Contexto,
+  type ContextoDoJogo,
+  criarMovimento,
+  useEstado,
+  useJogo,
+} from '../src/estado/contexto'
 import { criarLoja } from '../src/estado/loja'
 import { ESTILOS } from '../src/interface/estilos'
 import { ControlesDeToque } from '../src/interface/toque'
+import { FogueiraViva } from '../src/mundo/fogueira-viva'
 import { criarRegistro } from '../src/mundo/interativos'
 import { Mecanismos } from '../src/mundo/mecanismos'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from '../src/mundo/medidas'
@@ -307,6 +314,7 @@ function Painel({
   medidas: MedidasDaSala | null
   contexto: ContextoDoJogo
 }) {
+  const alvo = useEstado((s) => s.alvo)
   const levar = (nome: string) => {
     const e = ESTACOES.find((s) => s.nome === nome)
     if (!e) return
@@ -340,6 +348,7 @@ function Painel({
         <dt>Quadros</dt>
         <dd>{medidas ? `${medidas.quadrosPorSegundo} por segundo` : '…'}</dd>
       </dl>
+      {alvo && <p>E: {alvo.rotulo}</p>}
       <div className="sala-estacoes">
         {ESTACOES.map((e) => (
           <button
@@ -426,6 +435,7 @@ function SalaDeMovimento() {
             updatePriority={-1}
           >
             <Sala />
+            <FogueiraViva x={69} y={2} z={18} />
             <Mecanismos x={64} y={2} z={18} />
             <Personagem />
             <Camera />
