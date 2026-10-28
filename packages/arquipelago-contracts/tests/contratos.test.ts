@@ -12,14 +12,20 @@ import {
   LIMITE_DIARIO_MINIMO_MINUTOS,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   ManifestoDoClienteSchema,
+  migrarDaV1,
   migrarSalvamento,
   normalizarLimiteDiario,
+  PERCURSOS,
   POSICOES_DA_JORNADA,
   posicaoDoPostoKids,
   type QuartoDoJogo,
   QuartoSchema,
   SALVAMENTO_MAX_BYTES,
   SalvamentoSchema,
+  type SalvamentoV1,
+  type SalvamentoV2,
+  SalvamentoV2Schema,
+  VERSAO_SALVAMENTO,
 } from '../src'
 
 describe('ilhas', () => {
@@ -105,6 +111,85 @@ describe('salvamento', () => {
     expect(GravarSalvamentoSchema.safeParse({ revisaoBase: 0, salvamento: ruim }).success).toBe(
       false,
     )
+  })
+})
+
+describe('salvamento V2 (percursos)', () => {
+  const agora = new Date('2026-10-27T15:00:00Z')
+  const v1 = (): SalvamentoV1 => {
+    const { percursos: _, ...resto } = criarSalvamentoInicial(agora)
+    return { ...resto, versao: 1 }
+  }
+
+  test('o inicial já é V2, sem nenhum percurso corrido', () => {
+    const s = criarSalvamentoInicial(agora)
+    expect(s.versao).toBe(VERSAO_SALVAMENTO)
+    expect(s.percursos).toEqual({})
+    expect(SalvamentoV2Schema.parse(s)).toEqual(s)
+  })
+
+  test('a V1 migra para a V2 sem perder nada', () => {
+    const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
+    const migrada = migrarSalvamento(antiga)
+    expect(migrada).toEqual({ ...antiga, versao: 2, percursos: {} })
+    expect(migrarDaV1(antiga)).toEqual(migrada as SalvamentoV2)
+  })
+
+  test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
+    const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
+    expect(r.salvamento.versao).toBe(2)
+    expect(r.salvamento.percursos).toEqual({})
+  })
+
+  test('guarda as três estrelas e o melhor tempo de cada percurso', () => {
+    const s = {
+      ...criarSalvamentoInicial(agora),
+      percursos: {
+        'bosque-copas': {
+          estrelas: { chegada: true, tempo: false, vagalumes: true },
+          melhorTempoMs: 41_250,
+        },
+      },
+    }
+    expect(migrarSalvamento(s)).toEqual(s)
+  })
+
+  test('percurso desconhecido, estrela a mais ou tempo inválido são recusados', () => {
+    const base = criarSalvamentoInicial(agora)
+    const resultado = {
+      estrelas: { chegada: true, tempo: true, vagalumes: true },
+      melhorTempoMs: 30_000,
+    }
+    expect(migrarSalvamento({ ...base, percursos: { 'pico-trilha': resultado } })).toBeNull()
+    expect(
+      migrarSalvamento({
+        ...base,
+        percursos: {
+          'bosque-copas': { ...resultado, estrelas: { ...resultado.estrelas, quarta: true } },
+        },
+      }),
+    ).toBeNull()
+    for (const melhorTempoMs of [-1, 1.5, 60 * 60 * 1000 + 1]) {
+      expect(
+        migrarSalvamento({
+          ...base,
+          percursos: { 'bosque-copas': { ...resultado, melhorTempoMs } },
+        }),
+      ).toBeNull()
+    }
+  })
+
+  test('uma V2 com percursos cabe com folga no teto', () => {
+    const s = {
+      ...criarSalvamentoInicial(agora),
+      percursos: Object.fromEntries(
+        PERCURSOS.map((p) => [
+          p,
+          { estrelas: { chegada: true, tempo: true, vagalumes: true }, melhorTempoMs: 3_599_999 },
+        ]),
+      ),
+    }
+    expect(new TextEncoder().encode(JSON.stringify(s)).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
   })
 })
 

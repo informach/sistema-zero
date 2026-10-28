@@ -4,9 +4,10 @@ import { ILHA_IDS } from './ilhas'
 /**
  * O salvamento do jogo de UM perfil. Tem versão: o serviço aceita a versão atual e as
  * anteriores (migradas por `migrarSalvamento`), então um jogo novo nunca perde o progresso de
- * quem salvou antes. Mudou o formato? Crie a v2, escreva a migração da v1 e mantenha os testes.
+ * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
+ * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 1
+export const VERSAO_SALVAMENTO = 2
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -36,16 +37,52 @@ export const SalvamentoV1Schema = z.strictObject({
 })
 export type SalvamentoV1 = z.infer<typeof SalvamentoV1Schema>
 
-/** O formato atual. */
-export const SalvamentoSchema = SalvamentoV1Schema
-export type Salvamento = SalvamentoV1
+/** Os percursos com tempo e estrelas (27/10/2026: só o das copas do Bosque). */
+export const PERCURSOS = ['bosque-copas'] as const
+export type PercursoId = (typeof PERCURSOS)[number]
+
+/** Uma hora: nenhuma corrida dura tanto (o jogo cancela quem sai do percurso). */
+const MELHOR_TEMPO_MAXIMO_MS = 60 * 60 * 1000
+
+/**
+ * O melhor de um percurso. Cada estrela vale sozinha e fica para sempre: a de chegar, a do
+ * tempo-alvo e a dos vagalumes podem vir de corridas diferentes. O melhor tempo é o menor de
+ * todas as corridas que chegaram.
+ */
+export const ResultadoDoPercursoSchema = z.strictObject({
+  estrelas: z.strictObject({ chegada: z.boolean(), tempo: z.boolean(), vagalumes: z.boolean() }),
+  melhorTempoMs: z.number().int().min(0).max(MELHOR_TEMPO_MAXIMO_MS),
+})
+export type ResultadoDoPercurso = z.infer<typeof ResultadoDoPercursoSchema>
+
+/** V2 (27/10/2026): a V1 mais o melhor resultado de cada percurso. */
+export const SalvamentoV2Schema = SalvamentoV1Schema.extend({
+  versao: z.literal(2),
+  percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+})
+export type SalvamentoV2 = z.infer<typeof SalvamentoV2Schema>
+
+/** Da V1 para a V2: tudo igual, e nenhum percurso corrido ainda. */
+export function migrarDaV1(v1: SalvamentoV1): SalvamentoV2 {
+  return { ...v1, versao: 2, percursos: {} }
+}
+
+/**
+ * O formato atual. Aceita também a V1 e já devolve migrada: um salvamento guardado antes e uma
+ * aba aberta antes da atualização (que ainda grava V1) continuam valendo, sem perder nada.
+ */
+export const SalvamentoSchema = z.union([
+  SalvamentoV2Schema,
+  SalvamentoV1Schema.transform(migrarDaV1),
+])
+export type Salvamento = SalvamentoV2
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 1,
+    versao: 2,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
     horta: Array.from({ length: 6 }, (_, i) => ({
@@ -58,6 +95,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     posicao: null,
     pontesVistas: [],
     casa: { portaNova: false },
+    percursos: {},
   }
 }
 
@@ -66,6 +104,6 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
  * `null`: quem chama decide (o jogo começa do zero só se não houver nada guardado).
  */
 export function migrarSalvamento(entrada: unknown): Salvamento | null {
-  const v1 = SalvamentoV1Schema.safeParse(entrada)
-  return v1.success ? v1.data : null
+  const lido = SalvamentoSchema.safeParse(entrada)
+  return lido.success ? lido.data : null
 }
