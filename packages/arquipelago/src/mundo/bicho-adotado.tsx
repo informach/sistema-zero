@@ -4,6 +4,7 @@ import {
   type RapierCollider,
   type RapierRigidBody,
   RigidBody,
+  useBeforePhysicsStep,
   useRapier,
 } from '@react-three/rapier'
 import type { BichoDoBosque } from '@sistemazero/arquipelago-contracts'
@@ -16,11 +17,18 @@ import porquinhoGlb from '../assets/bichos/porquinho.glb'
 import { lojaDoBicho, PAINEL_DO_BICHO } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
 import { jogoPausado } from '../sistemas/pausa'
-import { atrasDela, criarSeguir, ficouPreso, passoDoSeguir } from '../sistemas/seguir'
+import {
+  atrasDela,
+  type ClipeDoBicho,
+  criarSeguir,
+  ficouPreso,
+  passoDoSeguir,
+} from '../sistemas/seguir'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { ESCALA_DOS_BICHOS, URL_DO_FILHOTE } from './bichos-do-bosque'
 import { useInterativo } from './interativos'
+import { PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 
 const URL_DO_ADULTO: Readonly<Record<BichoDoBosque, string>> = {
@@ -104,6 +112,8 @@ function CorpoDoBicho({
   const olhar = useRef(rastro.direcao)
   const desloc = useRef({ x: 0, y: 0, z: 0 })
   const tocando = useRef<string | null>(null)
+  /** O clipe que o último passo do seguir pediu (o desenho toca). */
+  const clipeDoPasso = useRef<ClipeDoBicho>('parado')
   const reacaoAte = useRef(0)
   const piscarEm = useRef<number>(PISCAR.aCada)
   const relogio = useRef(0)
@@ -135,10 +145,9 @@ function CorpoDoBicho({
     },
   })
 
-  useFrame((_, dtBruto) => {
-    const dt = Math.min(dtBruto, 0.1)
-    relogio.current += dt
-    const agora = relogio.current
+  // O movimento, a cada passo da física (como o do personagem).
+  useBeforePhysicsStep(() => {
+    const dt = PASSO_DA_FISICA
     const b = corpo.current
     const col = colisor.current
     const s = loja.getState()
@@ -154,6 +163,7 @@ function CorpoDoBicho({
     // Para onde ir: atrás da criança; parado se o jogo está parado (menu, painel, ferramenta).
     const espera = movimento.modo !== 'chao' || s.nadando || jogoPausado(s)
     const passo = passoDoSeguir(seguir.current, pos.current, rastro, espera || cuidando, dt)
+    clipeDoPasso.current = passo.clipe
     if (passo.reaparecer) {
       const p = atrasDela(rastro)
       pos.current = { x: p.x, y: rastro.y, z: p.z }
@@ -180,6 +190,14 @@ function CorpoDoBicho({
       // Preso contra uma parede (a casa, um canteiro), o próximo passo traz ele para trás dela.
       ficouPreso(seguir.current, Math.hypot(mov.x, mov.z), dt)
     }
+  })
+
+  // O desenho, a cada quadro (o corpo já vem suavizado entre passos pelo Rapier).
+  useFrame((_, dtBruto) => {
+    const dt = Math.min(dtBruto, 0.1)
+    relogio.current += dt
+    const agora = relogio.current
+    const cuidando = loja.getState().painelAberto === PAINEL_DO_BICHO
 
     // Para onde olhar: para onde anda; parado, para a criança (cuidando, sempre para ela).
     const andando = Math.hypot(seguir.current.vx, seguir.current.vz) > 0.15
@@ -192,7 +210,7 @@ function CorpoDoBicho({
 
     // O clipe: a reação do cuidado (feliz, truque) passa na frente do andar.
     const r = bicho.getState().reacao
-    let quer: string = passo.clipe
+    let quer: string = clipeDoPasso.current
     if (r.n !== reacaoVista.current) {
       reacaoVista.current = r.n
       reacaoAte.current = agora + duracaoDoClipe(actions, mixer, r.tipo)

@@ -5,6 +5,12 @@ import { type Ilha, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
  * forma de terreno sai daqui: o desenho, a colisão e os testes usam as mesmas funções.
  */
 export const NIVEL_DA_AGUA = 0
+/**
+ * A física anda em passos fixos deste tamanho (s), com o desenho suavizado entre um passo e outro
+ * (`<Physics timeStep interpolate>`): o mesmo comportamento a 30, 60 ou 144 quadros por segundo.
+ * O movimento do personagem e do bicho é calculado em cada passo (`useBeforePhysicsStep`).
+ */
+export const PASSO_DA_FISICA = 1 / 60
 export const ALTURA_DA_TERRA = 1
 export const FUNDO_DO_MAR = -3.5
 

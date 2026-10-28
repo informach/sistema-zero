@@ -50,6 +50,17 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   no README de lá). `mundo/modelos.tsx` carrega; cada peça mostra a forma simples do código até o
   modelo chegar. Colisão: veja "Colisão das peças" abaixo.
 
+## Passo da física (28/10/2026, física viva etapa 1)
+
+- `<Physics timeStep={PASSO_DA_FISICA} interpolate updatePriority={-1}>` (`mundo/cena.tsx`,
+  `PASSO_DA_FISICA` = 1/60 s em `mundo/medidas.ts`): passos fixos, com o desenho dos corpos
+  suavizado entre passos, e os passos rodam antes dos outros `useFrame`.
+- Quem move corpo do Rapier calcula o movimento em `useBeforePhysicsStep` com o `dt` fixo
+  (`personagem/personagem.tsx`, `mundo/bicho-adotado.tsx`); o desenho (pose, giro, clipes) fica no
+  `useFrame`. O `rastro` sai da posição suavizada (o pai do grupo do avatar), então a câmera e o
+  Zappy não tremem entre passos. ⚠️ Nunca mover corpo no `useFrame` partindo de `translation()`:
+  num quadro sem passo o movimento se perde (a 144 Hz, mais da metade dos quadros).
+
 ## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
 
 - Regra: o que se vê de pé e tem tamanho de objeto colide, sempre com forma simples (caixa ou

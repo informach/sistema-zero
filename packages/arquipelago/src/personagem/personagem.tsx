@@ -4,6 +4,7 @@ import {
   type RapierCollider,
   type RapierRigidBody,
   RigidBody,
+  useBeforePhysicsStep,
   useRapier,
 } from '@react-three/rapier'
 import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
@@ -18,6 +19,7 @@ import {
   dentroDaCasa,
   INICIO,
   NIVEL_DA_AGUA,
+  PASSO_DA_FISICA,
   PORTA,
   QUARTO,
 } from '../mundo/medidas'
@@ -71,6 +73,8 @@ const NADAR = 2.6
 const FOLGA_DO_CONTROLADOR = 0.06
 /** Onde a corda passa no corpo, já girado (conta do desenho no cipó, sem alocar no quadro). */
 const noCorpo = new Vector3()
+/** Onde o corpo está no desenho deste quadro (suavizado entre dois passos da física). */
+const centroDesenhado = new Vector3()
 /** O corpo desenhado que as cordas enxergam (reescrito a cada quadro). */
 const corpoDesenhado: CorpoQueEmpurra = {
   de: { x: 0, y: 0, z: 0 },
@@ -138,6 +142,11 @@ interface Vivo {
   soltouDoTronco: number
   /** 0 no chão, 1 pendurado no cipó (o desenho passa de um para o outro suave). */
   noCipo: number
+  /** Do último passo, para o desenho: nadando, quanto o avatar afunda no lago raso e a
+   * velocidade pedida no chão (o Zappy lê). */
+  nadando: boolean
+  afundar: number
+  velPedida: number
 }
 
 /**
@@ -180,6 +189,9 @@ export function Personagem() {
     contraOTronco: 0,
     soltouDoTronco: Number.NEGATIVE_INFINITY,
     noCipo: 0,
+    nadando: false,
+    afundar: 0,
+    velPedida: 0,
   }).current
 
   const inicial = useMemo(() => {
@@ -296,10 +308,10 @@ export function Personagem() {
     return { mudarModo, pegar, agarrar }
   }, [v, movimento, loja])
 
-  useFrame((_, dtBruto) => {
-    // Em aparelho lento o quadro é longo: o controlador varre o movimento inteiro (não
-    // atravessa parede), então só limitamos para um tranco não virar um salto enorme.
-    const dt = Math.min(dtBruto, 0.1)
+  // O movimento, a cada passo da física (sempre `PASSO_DA_FISICA`): controle, cipó, escalada, chão
+  // e nado. Num quadro longo o Rapier dá vários passos; num curto, nenhum.
+  useBeforePhysicsStep(() => {
+    const dt = PASSO_DA_FISICA
     const b = corpo.current
     const col = colisor.current
     if (!b || !col) return
@@ -533,9 +545,12 @@ export function Personagem() {
       }
     }
     movimento.noChao = v.modo === 'chao' && noChao.current
+    v.nadando = nadando
+    v.afundar = afundar
+    v.velPedida = v.modo === 'chao' ? Math.hypot(vx, vz) : 1
 
-    // Para onde o avatar olha (vira suave), a inclinação na curva e o que as animações leem. Os
-    // passos, o balanço do corpo e a inclinação de quem corre vêm das animações (`avatar-do-jogo`).
+    // O que as animações leem. Os passos, o balanço do corpo e a inclinação de quem corre vêm das
+    // animações (`avatar-do-jogo`).
     const m = animacao.current
     // No chão, a velocidade no chão; na escalada, pela casca (subindo, descendo ou de lado).
     const real =
@@ -549,55 +564,7 @@ export function Personagem() {
     m.velY = velY.current
     m.nadando = nadando
     m.pendurado = v.modo === 'chao' ? null : v.modo
-    const vis = visual.current
-    if (vis) {
-      let delta = direcao.current - vis.rotation.y
-      delta = Math.atan2(Math.sin(delta), Math.cos(delta))
-      const giro = delta * Math.min(1, dt * 12)
-      vis.rotation.y += giro
-      // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita.
-      const inclinar =
-        v.modo === 'cipo' && v.cipo
-          ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
-          : nadando
-            ? 1.1
-            : 0
-      vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
-      const curva =
-        v.modo === 'chao' && !nadando
-          ? MathUtils.clamp(
-              (-giro / Math.max(dt, 1e-3)) * INCLINACAO_NA_CURVA * Math.min(1, m.velocidade / 3),
-              -INCLINACAO_MAXIMA,
-              INCLINACAO_MAXIMA,
-            )
-          : 0
-      vis.rotation.z = MathUtils.lerp(vis.rotation.z, curva, Math.min(1, dt * 8))
-      // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto da corda no
-      // corpo (ao lado do rosto) fica em cima das mãos, com o giro e a inclinação do balanço.
-      v.noCipo += ((v.modo === 'cipo' ? 1 : 0) - v.noCipo) * Math.min(1, dt * 10)
-      noCorpo.copy(CORDA_NO_CORPO).applyEuler(vis.rotation)
-      const k = v.noCipo
-      vis.position.set(
-        -noCorpo.x * k,
-        (-DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR - afundar) * (1 - k) +
-          (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
-        -noCorpo.z * k,
-      )
-      // O corpo desenhado, no mundo, para as cordas encostarem nele (o corpo do Rapier já está em
-      // `prox`; o desenho é filho dele).
-      vis.updateMatrix()
-      noMundo(corpoDesenhado.de, CORPO.desenho.de, vis.matrix, prox)
-      noMundo(corpoDesenhado.ate, CORPO.desenho.ate, vis.matrix, prox)
-      noMundo(corpoDesenhado.cabeca, CORPO.desenho.cabeca, vis.matrix, prox)
-      movimento.corpoDesenhado = corpoDesenhado
-    }
 
-    rastro.x = prox.x
-    rastro.y = prox.y
-    rastro.z = prox.z
-    rastro.direcao = direcao.current
-    // O Zappy olha para onde ela vai: no cipó e no tronco ela está sempre "andando".
-    rastro.velocidade = v.modo === 'chao' ? Math.hypot(vx, vz) : 1
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
     estado.definirAlvo(parado || v.modo !== 'chao' ? null : maisPerto(interativos, prox.x, prox.z))
 
@@ -605,6 +572,62 @@ export function Personagem() {
       const alvo = estado.alvo
       if (alvo) interativos.get(alvo.id)?.agir()
     }
+  })
+
+  // O desenho, a cada quadro: para onde o avatar olha (vira suave), a inclinação na curva, no cipó
+  // e no nado, onde os pés encostam, o corpo que as cordas enxergam e o `rastro` (a câmera e o
+  // Zappy seguem a posição suavizada, sem tremer entre passos).
+  useFrame((_, dtBruto) => {
+    const dt = Math.min(dtBruto, 0.1)
+    const vis = visual.current
+    const corpoDoRapier = vis?.parent
+    if (!vis || !corpoDoRapier) return
+    corpoDoRapier.getWorldPosition(centroDesenhado)
+    const centro = centroDesenhado
+    const nadando = v.nadando
+    const m = animacao.current
+    let delta = direcao.current - vis.rotation.y
+    delta = Math.atan2(Math.sin(delta), Math.cos(delta))
+    const giro = delta * Math.min(1, dt * 12)
+    vis.rotation.y += giro
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita.
+    const inclinar =
+      v.modo === 'cipo' && v.cipo ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO : nadando ? 1.1 : 0
+    vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
+    const curva =
+      v.modo === 'chao' && !nadando
+        ? MathUtils.clamp(
+            (-giro / Math.max(dt, 1e-3)) * INCLINACAO_NA_CURVA * Math.min(1, m.velocidade / 3),
+            -INCLINACAO_MAXIMA,
+            INCLINACAO_MAXIMA,
+          )
+        : 0
+    vis.rotation.z = MathUtils.lerp(vis.rotation.z, curva, Math.min(1, dt * 8))
+    // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto da corda no
+    // corpo (ao lado do rosto) fica em cima das mãos, com o giro e a inclinação do balanço.
+    v.noCipo += ((v.modo === 'cipo' ? 1 : 0) - v.noCipo) * Math.min(1, dt * 10)
+    noCorpo.copy(CORDA_NO_CORPO).applyEuler(vis.rotation)
+    const k = v.noCipo
+    vis.position.set(
+      -noCorpo.x * k,
+      (-DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR - v.afundar) * (1 - k) +
+        (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
+      -noCorpo.z * k,
+    )
+    // O corpo desenhado, no mundo, para as cordas encostarem nele (o desenho é filho do corpo
+    // do Rapier, que está em `centro`).
+    vis.updateMatrix()
+    noMundo(corpoDesenhado.de, CORPO.desenho.de, vis.matrix, centro)
+    noMundo(corpoDesenhado.ate, CORPO.desenho.ate, vis.matrix, centro)
+    noMundo(corpoDesenhado.cabeca, CORPO.desenho.cabeca, vis.matrix, centro)
+    movimento.corpoDesenhado = corpoDesenhado
+
+    rastro.x = centro.x
+    rastro.y = centro.y
+    rastro.z = centro.z
+    rastro.direcao = direcao.current
+    // O Zappy olha para onde ela vai: no cipó e no tronco ela está sempre "andando".
+    rastro.velocidade = v.velPedida
   })
 
   return (
