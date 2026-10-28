@@ -89,7 +89,8 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 | `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier` e os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1` | 3.604 | 149 KB |
 | `ponte.glb` | `ponte.py` | uma peça na origem (instanciada) | `tabua`, `poste`, `corda` | 192 | 9 KB |
 | `ilhas-do-anel.glb` | `ilhas_anel.py` | centro de cada ilha, y = 0 no mar | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` | 19.336 | 527 KB |
-| **total** | | | | **59.102** | **1,94 MB** |
+| `boias.glb` | `boias.py` | uma peça na linha d'água (instanciada) | `boia`, `corda`, `flutuador` | 1.208 | 28 KB |
+| **total** | | | | **60.310** | **1,96 MB** |
 
 ### O que o código liga, desliga e mexe
 
@@ -123,3 +124,8 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
     ficar virado para a ilha central;
   - cada material vai do cinza `#b3b8c1` para a cor de verdade conforme a ponte abre, e a lava do
     Vale acende junto.
+- **Boias** (`src/mundo/boias.tsx`): a linha que marca até onde se nada, em volta da sua ilha
+  (42 m do centro, depois da parte rasa) e de cada ilha do anel aberta (19 m do centro dela, menos a
+  Ilha das Nuvens, que fica no alto). `boia`, `corda` e `flutuador` são malhas instanciadas; a corda
+  liga uma boia na outra, com 4 flutuadores por trecho, e as boias balançam devagar. Passando delas,
+  a correnteza mansa (`src/sistemas/correnteza.ts`) leva de volta para a praia.

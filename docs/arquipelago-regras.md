@@ -773,6 +773,32 @@ Arquivos: `mundo/bosque-vivo.tsx` e `personagem/personagem.tsx`.
   (peso de 30 kg, `MASSA_DA_CRIANCA`): na água ele desliza devagar; dá para tirar pela rampa e pôr
   de volta. Se cair da ilha, volta para o meio do lago.
 
+#### O limite do mar: a correnteza mansa
+
+Arquivos: `sistemas/correnteza.ts`, `sistemas/modos/chao.ts`, `mundo/boias.tsx` e `mundo/anel.tsx`.
+
+O caminho para as outras ilhas é a ponte. Nadar até lá não é castigado: não há tubarão, a energia
+não cai e ninguém é levado de volta para casa. O mar só não deixa passar.
+
+- **Boias:** uma linha de boias vermelhas e brancas, ligadas por uma corda com flutuadores, em volta
+  da sua ilha a 42 m do centro (`BOIAS_DA_ILHA_CENTRAL`), depois da parte rasa (36 m). Cada ilha do
+  anel aberta ganha a sua, a 19 m do centro dela (`BOIAS_DA_ILHA_DO_ANEL`); a Ilha das Nuvens fica
+  no alto e não tem. Uma boia a cada uns 6 m (`ESPACO_ENTRE_BOIAS`). Os 19 m passam por fora do
+  Bosque completo; o Recife completo (cais a 21,6 m, navio e labirinto no mar) vai pedir uma roda
+  maior quando for ligado.
+- **Correnteza:** dentro de qualquer linha de boias, o mar é livre. Fora de todas, a água leva para
+  o centro da ilha de que se está mais perto. Ela começa de leve na boia e chega na força toda 6 m
+  depois (`CORRENTEZA.faixa`), a 3,6 por segundo (`CORRENTEZA.forca`), mais que o nado mais rápido
+  (2,6, até uns 2,9 com o humor ótimo). Ninguém passa de uns 4 a 5 m além das boias. Parando de
+  nadar, a água leva de volta para dentro.
+- **Mar aberto:** entre as ilhas, o mar continua fechado. Quem cai de uma ponte é levado para a
+  beira mais perto, seja a da ilha de onde veio, seja a da ilha para onde ia.
+- **Aviso:** quando a correnteza chega a um quarto da força (`CORRENTEZA.aviso`), o Zappy diz uma
+  vez por abertura do jogo: "A correnteza aqui é forte e leva a gente de volta para a praia. Para ir
+  às outras ilhas, o caminho é pela ponte."
+- Só vale nadando na superfície do mar. No lago do Bosque e andando no raso não há correnteza. Ela
+  soma ao deslocamento, não à velocidade do nado, então o clipe de nadar continua o mesmo.
+
 ### 6.13 Percurso nas copas
 
 Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts` e

@@ -16,7 +16,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAIDA = os.environ.get('ILHAS_OUT', os.path.join(HERE, '..', '..', 'src', 'assets', 'ilhas'))
-ILHAS = ['bosque', 'vila_doce', 'recife']
+ILHAS = ['bosque', 'vila_doce', 'recife', 'recife_navio', 'recife_labirinto']
 
 COMUNS = ['chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4']
 CONTRATO = {
@@ -62,9 +62,26 @@ CONTRATO = {
     'recife-props': {'nos': ['coral-galho', 'coral-cerebro', 'coral-leque', 'coral-tubo', 'mapa-aberto', 'mapa-rolo',
                              'alga'], 'ancoras': [], 'clipes': ['balancar']},
     'barco': {'nos': ['barco'], 'ancoras': [], 'clipes': ['balancar']},
+    # Lugares de exploração do Recife (mergulho), cada um no seu referencial (README).
+    'recife-navio': {
+        'nos': ['navio', 'vela', 'carga', 'fundo', 'corais'] + [f'alga-{i}' for i in range(1, 7)],
+        'ancoras': ['entrada', 'bau', 'pagina-diario', 'escotilha', 'mastro'],
+        'clipes': ['balancar'],
+        'colisores': ['col-casco', 'col-conves', 'col-cil-mastro', 'col-cil-timao', 'col-areia-porao', 'col-cil-barril',
+                      'col-barril-deitado', 'col-caixote', 'col-cil-areia', 'col-cil-pedra', 'col-cil-mastro-caido',
+                      'col-cil-verga', 'col-cesto', 'col-ancora', 'col-cil-coral'],
+    },
+    'recife-labirinto': {
+        'nos': ['paredes', 'corais', 'chao', 'portais', 'gruta'] + [f'alga-{i}' for i in range(1, 7)],
+        'ancoras': ['entrada', 'saida', 'tesouro'],
+        'clipes': ['balancar'],
+        'colisores': ['col-parede', 'col-cil-pilar', 'col-bloco', 'col-arco', 'col-teto', 'col-cil-mexilhao'],
+    },
 }
 TETO_ILHA = (40_000, 1536)   # triângulos, KB
 TETO_PROPS = (12_000, 320)
+TETO_LUGAR = (30_000, 768)   # os lugares de exploração (navio e labirinto)
+LUGARES = ('recife-navio', 'recife-labirinto')
 
 
 def ler_glb(caminho):
@@ -125,7 +142,7 @@ def main():
         if clipes != sorted(c['clipes']):
             erros.append(f'{pid}: clipes {clipes}, esperado {c["clipes"]}')
         tris, kb = dados[pid]['triangulos'], os.path.getsize(caminho) / 1024
-        teto = TETO_PROPS if pid.endswith('props') or pid == 'barco' else TETO_ILHA
+        teto = TETO_PROPS if pid.endswith('props') or pid == 'barco' else TETO_LUGAR if pid in LUGARES else TETO_ILHA
         if tris > teto[0] or kb > teto[1]:
             erros.append(f'{pid}: {tris} triângulos / {kb:.0f} KB passa do teto {teto}')
     tris = sum(d['triangulos'] for d in dados.values())

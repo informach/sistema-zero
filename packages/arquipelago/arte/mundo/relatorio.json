@@ -17,6 +17,15 @@
     },
     "triangulos": 2342
   },
+  "boias": {
+    "kb": 27.8,
+    "nos": {
+      "boia": 1108,
+      "corda": 20,
+      "flutuador": 80
+    },
+    "triangulos": 1208
+  },
   "casa": {
     "kb": 352.5,
     "nos": {

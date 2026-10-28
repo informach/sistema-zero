@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ARQUIVOS = ['borrao.py', 'bosque.py', 'vila_doce.py', 'recife.py', 'pico.py', 'dinos.py', 'nuvens.py']
+ARQUIVOS = ['borrao.py', 'bosque.py', 'vila_doce.py', 'recife.py', 'pico.py', 'dinos.py', 'nuvens.py', 'praia.py']
 
 
 def main():

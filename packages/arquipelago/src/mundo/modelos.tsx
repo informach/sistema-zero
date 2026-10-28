@@ -3,6 +3,7 @@ import { Component, type ReactNode, Suspense } from 'react'
 import { Color, type Material, type Mesh, MeshStandardMaterial, type Object3D } from 'three'
 import arvoresGlb from '../assets/mundo/arvores.glb'
 import bancadaGlb from '../assets/mundo/bancada.glb'
+import boiasGlb from '../assets/mundo/boias.glb'
 import casaGlb from '../assets/mundo/casa.glb'
 import farolGlb from '../assets/mundo/farol.glb'
 import hortaGlb from '../assets/mundo/horta.glb'
@@ -19,6 +20,7 @@ import terrenoGlb from '../assets/mundo/terreno.glb'
 export const MODELOS = {
   arvores: new URL(arvoresGlb, import.meta.url).href,
   bancada: new URL(bancadaGlb, import.meta.url).href,
+  boias: new URL(boiasGlb, import.meta.url).href,
   casa: new URL(casaGlb, import.meta.url).href,
   farol: new URL(farolGlb, import.meta.url).href,
   horta: new URL(hortaGlb, import.meta.url).href,

@@ -71,6 +71,26 @@
       "pupila"
     ]
   },
+  "buzio": {
+    "familia": "praia",
+    "raridade": "raro",
+    "triangulos": 2970,
+    "kb": 122.6,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
   "cristal": {
     "familia": "pico",
     "raridade": "raro",
@@ -83,6 +103,24 @@
       "corpo",
       "corpo2",
       "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "estrelinha": {
+    "familia": "praia",
+    "raridade": "comum",
+    "triangulos": 2780,
+    "kb": 96.7,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
       "lingua",
       "luz",
       "olho",

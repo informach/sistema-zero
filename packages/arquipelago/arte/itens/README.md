@@ -1,10 +1,11 @@
 # Itens do Arquipélago no Blender
 
-Lote 5 do `arte/INVENTARIO.md`: colheita, sementes, comidas, ferramentas, coleção, peças de lugar
-e a cozinha da casa. Cada item tem uma função num script por grupo, que monta o modelo no Blender
-sem tela (o mesmo `bpy` do mundo, dos personagens e dos Lumis) e grava um GLB em
-`src/assets/itens/<id>.glb`. Para o HUD, cada item também tem um ícone de 256 px com fundo
-transparente em `src/assets/icones/<id>.png`. Os itens ainda não estão ligados ao jogo.
+Lote 5 do `arte/INVENTARIO.md`: colheita, sementes, comidas, ferramentas, coleção, peças de lugar,
+a cozinha da casa, os ingredientes das receitas, as iscas de pesca e as coleções de cada ilha. Cada
+item tem uma função num script por grupo, que monta o modelo no Blender sem tela (o mesmo `bpy` do
+mundo, dos personagens e dos Lumis) e grava um GLB em `src/assets/itens/<id>.glb`. Para o HUD,
+cada item também tem um ícone de 256 px com fundo transparente em `src/assets/icones/<id>.png`. Os
+itens ainda não estão ligados ao jogo.
 
 ## Rodar
 
@@ -12,7 +13,7 @@ transparente em `src/assets/icones/<id>.png`. Os itens ainda não estão ligados
 # todos os itens, a conferência do contrato e o relatorio.json (triângulos, tamanho, nós, clipes)
 /tmp/claude-0/blender-venv/bin/python -B arte/itens/build_all.py
 
-# o mesmo, refazendo os ícones (Cycles na CPU, cerca de 1 min para os 44)
+# o mesmo, refazendo os ícones (Cycles na CPU, cerca de 3 min para os 79 em 4 núcleos)
 ICONES=1 /tmp/claude-0/blender-venv/bin/python -B arte/itens/build_all.py
 
 # um grupo, ou só alguns itens dele
@@ -40,6 +41,12 @@ lib_q.py`) e as da Ilha do Farol (`docs/design/ilha-do-farol-blender/lib_ilha.py
   Os clipes são gravados como faixas do NLA, do jeito da Ilha do Farol;
 - `rodar(itens)`: uma cena limpa por item.
 
+`lib_extra.py` (usado pelos ingredientes, pelas iscas e pelas coleções) acrescenta `setor_torneado`
+(peça de torno sem uma fatia, com o corte fechado), `almofada` (placa fofa a partir de um contorno:
+estrelas), `leque` (concha em leque), `tubo_plano` (traço das notas, que não torce), `olho_fofo`,
+`pinta` (bolinha colada na superfície, achada por raio) e `girar` (gira um conjunto de peças como
+um bloco só).
+
 ## Convenções
 
 - **Origem e eixos:** no Blender o z aponta para cima e a frente olha para −Y; o glTF converte
@@ -51,7 +58,9 @@ lib_q.py`) e as da Ilha do Farol (`docs/design/ilha-do-farol-blender/lib_ilha.py
     1, e o jogo regula o brilho, como no lampião da casa;
   - no Quadro das Cores, cada espaço tem o material `cor-1` a `cor-6` com a cor de verdade. O jogo
     deixa cinza e acende um por um, como as ilhas do anel;
-  - nas placas, a face lisa do nó `texto` usa o material `placaFace`.
+  - nas placas, a face lisa do nó `texto` usa o material `placaFace`;
+  - as notas musicais e as estrelas caídas têm a frente e as costas de `luz` e o contorno de outra
+    cor (uma por peça); os cristais brilham fraco na própria cor (emissão 0,25).
 - **Ferramentas:** ficam de pé, com o cabo para cima. O nó vazio `mao` marca a pegada, e o jogo
   prende esse ponto na mão do avatar.
 - **Clipes:**
@@ -86,6 +95,7 @@ Tamanho = largura × altura × fundo, em unidades do jogo.
 | `acai.glb` | comidas | `acai` | 0.22 × 0.18 × 0.22 | 1082 | 45 KB |
 | `bolo-de-fuba.glb` | comidas | `bolo-de-fuba` | 0.34 × 0.12 × 0.34 | 1312 | 31 KB |
 | `brigadeiro.glb` | comidas | `brigadeiro` | 0.30 × 0.09 × 0.30 | 1352 | 55 KB |
+| `chocolate-quente.glb` | comidas | `chocolate-quente` | 0.19 × 0.24 × 0.19 | 3604 | 94 KB |
 | `moqueca.glb` | comidas | `moqueca` | 0.35 × 0.09 × 0.27 | 3468 | 71 KB |
 | `pao-de-queijo.glb` | comidas | `pao-de-queijo` | 0.32 × 0.09 × 0.32 | 1736 | 37 KB |
 | `peixe-com-coco.glb` | comidas | `peixe-com-coco` | 0.36 × 0.09 × 0.36 | 1308 | 36 KB |
@@ -111,9 +121,43 @@ Tamanho = largura × altura × fundo, em unidades do jogo.
 | `frigideira.glb` | cozinha | `frigideira` | 0.50 × 0.10 × 0.28 | 320 | 10 KB |
 | `panela.glb` | cozinha | `panela` | 0.24 × 0.20 × 0.22 | 796 | 20 KB |
 | `tabua-de-corte.glb` | cozinha | `tabua-de-corte` | 0.48 × 0.03 × 0.22 | 552 | 14 KB |
-| **total (44)** | | | | **46.546** | **1,40 MB** |
+| `cacau.glb` | ingredientes | `cacau` | 0.28 × 0.11 × 0.22 | 3282 | 64 KB |
+| `coco.glb` | ingredientes | `coco` | 0.19 × 0.12 × 0.23 | 1332 | 34 KB |
+| `fuba.glb` | ingredientes | `fuba` | 0.16 × 0.21 × 0.16 | 2288 | 52 KB |
+| `leite.glb` | ingredientes | `leite` | 0.10 × 0.20 × 0.10 | 1112 | 36 KB |
+| `limao.glb` | ingredientes | `limao` | 0.17 × 0.08 × 0.18 | 1232 | 32 KB |
+| `ovo.glb` | ingredientes | `ovo` | 0.20 × 0.15 × 0.18 | 3164 | 62 KB |
+| `peixe.glb` | ingredientes | `peixe` | 0.39 × 0.07 × 0.20 | 1280 | 42 KB |
+| `polvilho.glb` | ingredientes | `polvilho` | 0.12 × 0.14 × 0.15 | 1464 | 47 KB |
+| `queijo.glb` | ingredientes | `queijo` | 0.29 × 0.08 × 0.29 | 1020 | 32 KB |
+| `isca-minhoca.glb` | iscas | `isca-minhoca` | 0.10 × 0.17 × 0.14 | 3736 | 88 KB |
+| `isca-pena.glb` | iscas | `isca-pena` | 0.16 × 0.05 × 0.10 | 1884 | 44 KB |
+| `concha-buzio.glb` | colecoes | `concha-buzio` | 0.08 × 0.05 × 0.06 | 3360 | 69 KB |
+| `concha-caracol.glb` | colecoes | `concha-caracol` | 0.10 × 0.12 × 0.09 | 1368 | 33 KB |
+| `concha-listrada.glb` | colecoes | `concha-listrada` | 0.09 × 0.06 × 0.08 | 3600 | 98 KB |
+| `concha-mexilhao.glb` | colecoes | `concha-mexilhao` | 0.07 × 0.02 × 0.05 | 1320 | 35 KB |
+| `concha-vieira.glb` | colecoes | `concha-vieira` | 0.11 × 0.02 × 0.10 | 1768 | 55 KB |
+| `cristal-azul.glb` | colecoes | `cristal-azul` | 0.12 × 0.15 × 0.07 | 152 | 14 KB |
+| `cristal-rosa.glb` | colecoes | `cristal-rosa` | 0.09 × 0.07 × 0.08 | 60 | 5 KB |
+| `cristal-roxo.glb` | colecoes | `cristal-roxo` | 0.12 × 0.13 × 0.10 | 224 | 17 KB |
+| `cristal-verde.glb` | colecoes | `cristal-verde` | 0.13 × 0.09 × 0.14 | 808 | 49 KB |
+| `estrela-cadente.glb` | colecoes | `estrela-cadente`; material `luz` | 0.18 × 0.14 × 0.04 | 1400 | 30 KB |
+| `estrela-cintilante.glb` | colecoes | `estrela-cintilante`; material `luz` | 0.15 × 0.13 × 0.04 | 1024 | 26 KB |
+| `estrela-do-mar.glb` | colecoes | `estrela-do-mar` | 0.10 × 0.02 × 0.10 | 2144 | 40 KB |
+| `estrela-sorriso.glb` | colecoes | `estrela-sorriso`; material `luz` | 0.11 × 0.10 × 0.06 | 1262 | 30 KB |
+| `estrela-trio.glb` | colecoes | `estrela-trio`; material `luz` | 0.16 × 0.12 × 0.03 | 2456 | 54 KB |
+| `nota-clave-de-sol.glb` | colecoes | `nota-clave-de-sol`; material `luz` | 0.07 × 0.23 × 0.02 | 2756 | 62 KB |
+| `nota-colcheia.glb` | colecoes | `nota-colcheia`; material `luz` | 0.11 × 0.16 × 0.04 | 1180 | 28 KB |
+| `nota-dupla.glb` | colecoes | `nota-dupla`; material `luz` | 0.15 × 0.17 × 0.03 | 1644 | 38 KB |
+| `nota-seminima.glb` | colecoes | `nota-seminima`; material `luz` | 0.07 × 0.16 × 0.04 | 608 | 15 KB |
+| `peixe-garoupa.glb` | colecoes | `peixe-garoupa` | 0.28 × 0.14 × 0.07 | 3186 | 77 KB |
+| `peixe-linguado.glb` | colecoes | `peixe-linguado` | 0.22 × 0.04 × 0.14 | 2130 | 49 KB |
+| `peixe-robalo.glb` | colecoes | `peixe-robalo` | 0.27 × 0.09 × 0.05 | 2062 | 61 KB |
+| `peixe-sardinha.glb` | colecoes | `peixe-sardinha` | 0.17 × 0.06 × 0.04 | 2350 | 60 KB |
+| `peixe-voador.glb` | colecoes | `peixe-voador` | 0.23 × 0.07 × 0.23 | 1826 | 54 KB |
+| **total (79)** | | | | **110.632** | **2,98 MB** |
 
-Os ícones somam 177 KB (128 cores com alfa, o maior tem 6,8 KB).
+Os ícones somam 328 KB (128 cores com alfa, o maior tem 7,8 KB).
 
 ## Scripts
 
@@ -121,8 +165,11 @@ Os ícones somam 177 KB (128 cores com alfa, o maior tem 6,8 KB).
 |---|---|
 | `colheita.py` | alface, tomate, milho, morango (Vila Doce), alga (Recife), batata-doce (Pico), abóbora (Vale dos Dinos), flor de algodão (Nuvens). As funções `forma_*` também desenham as miniaturas dos pacotinhos |
 | `sementes.py` | um pacotinho por planta da colheita, com a planta em miniatura na etiqueta |
-| `comidas.py` | salada, pipoca, pão de queijo, bolo de fubá, brigadeiro, açaí, moqueca, peixe com coco |
+| `comidas.py` | salada, pipoca, pão de queijo, bolo de fubá, brigadeiro, açaí, moqueca, peixe com coco, chocolate quente (caneca no pires com chantili, marshmallows e fumacinha) |
 | `ferramentas.py` | lanterna, regador, pá, rede, vara de pescar |
 | `colecao.py` | chave, carta, página do diário, baú, moeda |
 | `lugares.py` | luneta do píer, Quadro das Cores, três placas |
 | `cozinha.py` | fogão a lenha, panela, frigideira, colher de pau, tábua de corte |
+| `ingredientes.py` | fubá (saco de pano com a conchinha), leite (garrafinha), ovo (caixinha de meia dúzia), polvilho (saquinho de papel), queijo minas sem uma fatia, peixe cru na folha de bananeira, coco seco e a metade partida, limão e a metade cortada, cacau inteiro e aberto |
+| `iscas.py` | latinha de minhocas, isca colorida de penas (anzol de ponta redonda) |
+| `colecoes.py` | conchas da praia (caracol, vieira, búzio, mexilhão, conchinha listrada (uma valva com uma costela de cada cor), estrela-do-mar), peixes da praia (sardinha, robalo, garoupa, linguado, peixe-voador), notas do Pico Gelado (semínima, colcheia, duas colcheias, clave de sol), cristais do Pico (ponta de gelo azul, pedra lapidada rosa, ametista na pedra, geodo verde), estrelas da Ilha das Nuvens (cadente, sorriso, cintilante, trio) |

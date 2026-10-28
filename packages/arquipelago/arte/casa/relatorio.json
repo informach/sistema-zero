@@ -1,0 +1,936 @@
+{
+  "casa-banheiro": {
+    "grupo": "comodos",
+    "triangulos": 9538,
+    "kb": 272.4,
+    "nos": {
+      "banheira": 3432,
+      "pia-banheiro": 1660,
+      "espelho": 484,
+      "vaso-sanitario": 1096,
+      "box-chuveiro": 2218,
+      "tapetinho": 232,
+      "toalheiro": 416
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "aguaBanho",
+      "almofadaRosa",
+      "banheiraFora",
+      "bico",
+      "blue",
+      "cortina",
+      "cortinaBarra",
+      "escova",
+      "espelho",
+      "espumaBanho",
+      "frasco",
+      "frascoB",
+      "loucaBranca",
+      "macaneta",
+      "metal",
+      "metalEscuro",
+      "molduraEspelho",
+      "olho",
+      "patinho",
+      "poteAzul",
+      "red",
+      "sabonete",
+      "tampaVaso",
+      "tapeteBanho",
+      "tapeteBanhoBorda",
+      "toalha",
+      "toalhaFaixa",
+      "white"
+    ],
+    "tamanho": [1.7, 2.539, 0.895],
+    "pecas": {
+      "banheira": {
+        "triangulos": 3432,
+        "tamanho": [1.7, 0.849, 0.8],
+        "caixa": [[-0.85, -0.45, 0.0], [0.85, 0.35, 0.849]],
+        "materiais": [
+          "aguaBanho",
+          "banheiraFora",
+          "bico",
+          "blue",
+          "espumaBanho",
+          "loucaBranca",
+          "macaneta",
+          "olho",
+          "patinho",
+          "red"
+        ],
+        "nota": "2 × 1"
+      },
+      "pia-banheiro": {
+        "triangulos": 1660,
+        "tamanho": [0.62, 1.06, 0.48],
+        "caixa": [[-0.31, -0.13, 0.0], [0.31, 0.35, 1.06]],
+        "materiais": [
+          "almofadaRosa",
+          "blue",
+          "escova",
+          "loucaBranca",
+          "macaneta",
+          "metal",
+          "poteAzul",
+          "red",
+          "sabonete",
+          "white"
+        ],
+        "nota": "1 × 1"
+      },
+      "espelho": {
+        "triangulos": 484,
+        "tamanho": [0.64, 0.908, 0.12],
+        "caixa": [[-0.32, -0.02, -0.454], [0.32, 0.1, 0.454]],
+        "materiais": ["espelho", "molduraEspelho", "white"],
+        "nota": "parede, 0,64 de largura"
+      },
+      "vaso-sanitario": {
+        "triangulos": 1096,
+        "tamanho": [0.43, 0.865, 0.695],
+        "caixa": [[-0.215, -0.35, 0.0], [0.215, 0.345, 0.865]],
+        "materiais": ["loucaBranca", "macaneta", "tampaVaso"],
+        "nota": "1 × 1"
+      },
+      "box-chuveiro": {
+        "triangulos": 2218,
+        "tamanho": [0.89, 2.085, 0.895],
+        "caixa": [[-0.49, -0.495, 0.0], [0.4, 0.4, 2.085]],
+        "materiais": [
+          "blue",
+          "cortina",
+          "cortinaBarra",
+          "frasco",
+          "frascoB",
+          "loucaBranca",
+          "metal",
+          "metalEscuro",
+          "white"
+        ],
+        "nota": "1 × 1"
+      },
+      "tapetinho": {
+        "triangulos": 232,
+        "tamanho": [0.8, 0.024, 0.52],
+        "caixa": [[-0.4, -0.26, 0.0], [0.4, 0.26, 0.024]],
+        "materiais": ["tapeteBanho", "tapeteBanhoBorda"],
+        "nota": "1 × 1"
+      },
+      "toalheiro": {
+        "triangulos": 416,
+        "tamanho": [0.698, 0.507, 0.148],
+        "caixa": [[-0.349, -0.048, -0.254], [0.349, 0.1, 0.254]],
+        "materiais": ["macaneta", "toalha", "toalhaFaixa"],
+        "nota": "parede, 0,66 de largura"
+      }
+    }
+  },
+  "casa-cozinha": {
+    "grupo": "comodos",
+    "triangulos": 13170,
+    "kb": 400.5,
+    "nos": {
+      "balcao-pia": 2442,
+      "balcao": 1058,
+      "armario-alto": 2754,
+      "mesa-cozinha": 892,
+      "cadeira-cozinha": 1568,
+      "prateleira-potes": 4456
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "almofadaAmarela",
+      "armario",
+      "armarioPorta",
+      "armarioSombra",
+      "azulejoCozinha",
+      "barro",
+      "blue",
+      "cadeira",
+      "copaClara",
+      "loucaAzul",
+      "loucaBranca",
+      "loucaVerde",
+      "macaneta",
+      "madeira",
+      "madeiraClara",
+      "madeiraEscura",
+      "manjericao",
+      "metal",
+      "metalEscuro",
+      "papel",
+      "poteAmarelo",
+      "poteAzul",
+      "poteVerde",
+      "poteVermelho",
+      "red",
+      "tampaPote",
+      "tampo",
+      "vidroArmario"
+    ],
+    "tamanho": [2.0, 2.712, 0.9],
+    "pecas": {
+      "balcao-pia": {
+        "triangulos": 2442,
+        "tamanho": [2.0, 1.32, 0.778],
+        "caixa": [[-1.0, -0.423, 0.0], [1.0, 0.355, 1.32]],
+        "materiais": [
+          "armario",
+          "armarioPorta",
+          "armarioSombra",
+          "azulejoCozinha",
+          "blue",
+          "macaneta",
+          "metal",
+          "metalEscuro",
+          "red",
+          "tampo"
+        ],
+        "nota": "2 × 1"
+      },
+      "balcao": {
+        "triangulos": 1058,
+        "tamanho": [1.0, 1.221, 0.778],
+        "caixa": [[-0.5, -0.423, 0.0], [0.5, 0.355, 1.221]],
+        "materiais": [
+          "armario",
+          "armarioPorta",
+          "armarioSombra",
+          "azulejoCozinha",
+          "macaneta",
+          "madeiraClara",
+          "poteAzul",
+          "tampo"
+        ],
+        "nota": "1 × 1"
+      },
+      "armario-alto": {
+        "triangulos": 2754,
+        "tamanho": [1.0, 2.36, 0.723],
+        "caixa": [[-0.5, -0.373, 0.0], [0.5, 0.35, 2.36]],
+        "materiais": [
+          "armario",
+          "armarioPorta",
+          "armarioSombra",
+          "loucaAzul",
+          "loucaBranca",
+          "loucaVerde",
+          "macaneta",
+          "vidroArmario"
+        ],
+        "nota": "1 × 1"
+      },
+      "mesa-cozinha": {
+        "triangulos": 892,
+        "tamanho": [1.7, 0.81, 0.9],
+        "caixa": [[-0.85, -0.45, 0.0], [0.85, 0.45, 0.81]],
+        "materiais": ["madeira", "madeiraEscura"],
+        "nota": "2 × 1"
+      },
+      "cadeira-cozinha": {
+        "triangulos": 1568,
+        "tamanho": [0.5, 1.13, 0.46],
+        "caixa": [[-0.25, -0.23, 0.0], [0.25, 0.23, 1.13]],
+        "materiais": ["almofadaAmarela", "cadeira"],
+        "nota": "1 × 1"
+      },
+      "prateleira-potes": {
+        "triangulos": 4456,
+        "tamanho": [1.4, 0.704, 0.3],
+        "caixa": [[-0.7, -0.2, -0.352], [0.7, 0.1, 0.352]],
+        "materiais": [
+          "barro",
+          "copaClara",
+          "loucaAzul",
+          "madeira",
+          "madeiraClara",
+          "manjericao",
+          "metal",
+          "papel",
+          "poteAmarelo",
+          "poteAzul",
+          "poteVerde",
+          "poteVermelho",
+          "tampaPote"
+        ],
+        "nota": "parede, 1,4 de largura"
+      }
+    }
+  },
+  "casa-paredes": {
+    "grupo": "kit",
+    "triangulos": 7756,
+    "kb": 338.7,
+    "nos": {
+      "parede-lambri": 116,
+      "parede-lambri-baixa": 38,
+      "parede-porta-lambri": 454,
+      "parede-porta-lambri-baixa": 214,
+      "parede-janela-grande-lambri": 3070,
+      "parede-janela-arco-lambri": 630,
+      "parede-janela-redonda-lambri": 694,
+      "quina-lambri": 150,
+      "quina-lambri-baixa": 150,
+      "parede-lisa": 64,
+      "parede-lisa-baixa": 24,
+      "parede-porta-lisa": 242,
+      "parede-porta-lisa-baixa": 134,
+      "parede-janela-grande-lisa": 384,
+      "parede-janela-arco-lisa": 548,
+      "parede-janela-redonda-lisa": 632,
+      "quina-lisa": 106,
+      "quina-lisa-baixa": 106
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "acabamento",
+      "alicerce",
+      "batente",
+      "copa",
+      "copaClara",
+      "floreira",
+      "miolo",
+      "parede",
+      "paredeDentro",
+      "paredeSombra",
+      "paredeTopo",
+      "paredeVerso",
+      "petalaAmarela",
+      "petalaBranca",
+      "petalaLilas",
+      "petalaRosa",
+      "ripa",
+      "rodape",
+      "terra",
+      "vidroJanela"
+    ],
+    "tamanho": [3.0, 4.34, 0.72],
+    "pecas": {
+      "parede-lambri": {
+        "triangulos": 116,
+        "tamanho": [1.0, 4.3, 0.33],
+        "caixa": [[-0.5, -0.19, -0.3], [0.5, 0.14, 4.0]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape"
+        ],
+        "nota": "1 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-lambri-baixa": {
+        "triangulos": 38,
+        "tamanho": [1.0, 1.3, 0.33],
+        "caixa": [[-0.5, -0.19, -0.3], [0.5, 0.14, 1.0]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape"
+        ],
+        "nota": "1 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-porta-lambri": {
+        "triangulos": 454,
+        "tamanho": [3.0, 4.3, 0.67],
+        "caixa": [[-1.5, -0.5, -0.3], [1.5, 0.17, 4.0]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "batente",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-porta-lambri-baixa": {
+        "triangulos": 214,
+        "tamanho": [3.0, 1.32, 0.67],
+        "caixa": [[-1.5, -0.5, -0.3], [1.5, 0.17, 1.02]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "batente",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-janela-grande-lambri": {
+        "triangulos": 3070,
+        "tamanho": [3.0, 4.3, 0.7],
+        "caixa": [[-1.5, -0.48, -0.3], [1.5, 0.22, 4.0]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "copa",
+          "copaClara",
+          "floreira",
+          "miolo",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "petalaAmarela",
+          "petalaBranca",
+          "petalaLilas",
+          "petalaRosa",
+          "ripa",
+          "rodape",
+          "terra",
+          "vidroJanela"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-janela-arco-lambri": {
+        "triangulos": 630,
+        "tamanho": [2.0, 4.3, 0.49],
+        "caixa": [[-1.0, -0.27, -0.3], [1.0, 0.22, 4.0]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape",
+          "vidroJanela"
+        ],
+        "nota": "2 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-janela-redonda-lambri": {
+        "triangulos": 694,
+        "tamanho": [1.0, 4.3, 0.33],
+        "caixa": [[-0.5, -0.19, -0.3], [0.5, 0.14, 4.0]],
+        "materiais": [
+          "acabamento",
+          "alicerce",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape",
+          "vidroJanela"
+        ],
+        "nota": "1 célula(s); origem no meio da base, na linha da grade"
+      },
+      "quina-lambri": {
+        "triangulos": 150,
+        "tamanho": [0.44, 4.34, 0.44],
+        "caixa": [[-0.22, -0.22, -0.3], [0.22, 0.22, 4.04]],
+        "materiais": ["acabamento", "alicerce"],
+        "nota": "origem no ponto da grade"
+      },
+      "quina-lambri-baixa": {
+        "triangulos": 150,
+        "tamanho": [0.44, 1.34, 0.44],
+        "caixa": [[-0.22, -0.22, -0.3], [0.22, 0.22, 1.04]],
+        "materiais": ["acabamento", "alicerce"],
+        "nota": "origem no ponto da grade"
+      },
+      "parede-lisa": {
+        "triangulos": 64,
+        "tamanho": [1.0, 4.1, 0.28],
+        "caixa": [[-0.5, -0.14, -0.1], [0.5, 0.14, 4.0]],
+        "materiais": ["paredeDentro", "paredeTopo", "paredeVerso", "rodape"],
+        "nota": "1 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-lisa-baixa": {
+        "triangulos": 24,
+        "tamanho": [1.0, 1.1, 0.28],
+        "caixa": [[-0.5, -0.14, -0.1], [0.5, 0.14, 1.0]],
+        "materiais": ["paredeDentro", "paredeTopo", "paredeVerso", "rodape"],
+        "nota": "1 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-porta-lisa": {
+        "triangulos": 242,
+        "tamanho": [3.0, 4.1, 0.34],
+        "caixa": [[-1.5, -0.17, -0.1], [1.5, 0.17, 4.0]],
+        "materiais": [
+          "acabamento",
+          "batente",
+          "paredeDentro",
+          "paredeTopo",
+          "paredeVerso",
+          "rodape"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-porta-lisa-baixa": {
+        "triangulos": 134,
+        "tamanho": [3.0, 1.12, 0.34],
+        "caixa": [[-1.5, -0.17, -0.1], [1.5, 0.17, 1.02]],
+        "materiais": [
+          "acabamento",
+          "batente",
+          "paredeDentro",
+          "paredeTopo",
+          "paredeVerso",
+          "rodape"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-janela-grande-lisa": {
+        "triangulos": 384,
+        "tamanho": [3.0, 4.1, 0.49],
+        "caixa": [[-1.5, -0.27, -0.1], [1.5, 0.22, 4.0]],
+        "materiais": [
+          "acabamento",
+          "paredeDentro",
+          "paredeTopo",
+          "paredeVerso",
+          "rodape",
+          "vidroJanela"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-janela-arco-lisa": {
+        "triangulos": 548,
+        "tamanho": [2.0, 4.1, 0.49],
+        "caixa": [[-1.0, -0.27, -0.1], [1.0, 0.22, 4.0]],
+        "materiais": [
+          "acabamento",
+          "paredeDentro",
+          "paredeTopo",
+          "paredeVerso",
+          "rodape",
+          "vidroJanela"
+        ],
+        "nota": "2 célula(s); origem no meio da base, na linha da grade"
+      },
+      "parede-janela-redonda-lisa": {
+        "triangulos": 632,
+        "tamanho": [1.0, 4.1, 0.3],
+        "caixa": [[-0.5, -0.16, -0.1], [0.5, 0.14, 4.0]],
+        "materiais": [
+          "acabamento",
+          "paredeDentro",
+          "paredeTopo",
+          "paredeVerso",
+          "rodape",
+          "vidroJanela"
+        ],
+        "nota": "1 célula(s); origem no meio da base, na linha da grade"
+      },
+      "quina-lisa": {
+        "triangulos": 106,
+        "tamanho": [0.3, 4.13, 0.3],
+        "caixa": [[-0.15, -0.15, -0.1], [0.15, 0.15, 4.03]],
+        "materiais": ["acabamento"],
+        "nota": "origem no ponto da grade"
+      },
+      "quina-lisa-baixa": {
+        "triangulos": 106,
+        "tamanho": [0.3, 1.13, 0.3],
+        "caixa": [[-0.15, -0.15, -0.1], [0.15, 0.15, 1.03]],
+        "materiais": ["acabamento"],
+        "nota": "origem no ponto da grade"
+      }
+    }
+  },
+  "casa-pisos": {
+    "grupo": "kit",
+    "triangulos": 1016,
+    "kb": 49.9,
+    "nos": {
+      "piso-tabua": 144,
+      "piso-ladrilho": 72,
+      "piso-azulejo": 154,
+      "piso-grama": 330,
+      "piso-pedra": 316
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "azulejo",
+      "azulejoCor",
+      "grama",
+      "ladrilhoClaro",
+      "ladrilhoCor",
+      "miolo",
+      "pedraCaminho",
+      "petalaBranca",
+      "tabua",
+      "tabuaClara",
+      "tabuaEscura",
+      "tufo",
+      "tufoClaro"
+    ],
+    "tamanho": [1.0, 0.221, 1.0],
+    "pecas": {
+      "piso-tabua": {
+        "triangulos": 144,
+        "tamanho": [1.0, 0.1, 1.0],
+        "caixa": [[-0.5, -0.5, -0.1], [0.5, 0.5, 0.0]],
+        "materiais": ["tabua", "tabuaClara", "tabuaEscura"]
+      },
+      "piso-ladrilho": {
+        "triangulos": 72,
+        "tamanho": [1.0, 0.1, 1.0],
+        "caixa": [[-0.5, -0.5, -0.1], [0.5, 0.5, 0.0]],
+        "materiais": ["ladrilhoClaro", "ladrilhoCor"]
+      },
+      "piso-azulejo": {
+        "triangulos": 154,
+        "tamanho": [1.0, 0.1, 1.0],
+        "caixa": [[-0.5, -0.5, -0.1], [0.5, 0.5, 0.0]],
+        "materiais": ["azulejo", "azulejoCor"]
+      },
+      "piso-grama": {
+        "triangulos": 330,
+        "tamanho": [1.0, 0.155, 1.0],
+        "caixa": [[-0.5, -0.5, -0.035], [0.5, 0.5, 0.121]],
+        "materiais": ["grama", "miolo", "petalaBranca", "tufo", "tufoClaro"]
+      },
+      "piso-pedra": {
+        "triangulos": 316,
+        "tamanho": [1.0, 0.174, 1.0],
+        "caixa": [[-0.5, -0.5, -0.06], [0.5, 0.5, 0.114]],
+        "materiais": ["grama", "pedraCaminho", "tufo", "tufoClaro"]
+      }
+    }
+  },
+  "casa-portas": {
+    "grupo": "kit",
+    "triangulos": 3424,
+    "kb": 154.1,
+    "nos": {
+      "porta": 1992,
+      "porta-interna": 1432
+    },
+    "vazios": [],
+    "clipes": ["abrir", "abrir-interna"],
+    "materiais": [
+      "batente",
+      "macaneta",
+      "metalEscuro",
+      "portaMadeira",
+      "portaMadeiraClara",
+      "portaPintada",
+      "portaPintadaClara",
+      "vidroJanela"
+    ],
+    "tamanho": [2.04, 2.87, 0.43],
+    "pecas": {
+      "porta": {
+        "triangulos": 1992,
+        "tamanho": [2.04, 2.87, 0.43],
+        "caixa": [[-1.02, -0.215, 0.05], [1.02, 0.215, 2.92]],
+        "materiais": [
+          "batente",
+          "macaneta",
+          "metalEscuro",
+          "portaMadeira",
+          "portaMadeiraClara",
+          "vidroJanela"
+        ]
+      },
+      "porta-interna": {
+        "triangulos": 1432,
+        "tamanho": [2.04, 2.87, 0.43],
+        "caixa": [[-1.02, -0.215, 0.05], [1.02, 0.215, 2.92]],
+        "materiais": ["macaneta", "metalEscuro", "portaPintada", "portaPintadaClara"]
+      }
+    }
+  },
+  "casa-sala": {
+    "grupo": "comodos",
+    "triangulos": 16350,
+    "kb": 488.0,
+    "nos": {
+      "sofa": 5280,
+      "poltrona": 2712,
+      "mesinha-centro": 880,
+      "tapete": 418,
+      "estante-baixa": 4046,
+      "luminaria-pe": 1320,
+      "planta": 1338,
+      "quadro": 356
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "almofadaAmarela",
+      "almofadaAzul",
+      "almofadaRosa",
+      "blue",
+      "cesto",
+      "cupula",
+      "farolPintado",
+      "folha",
+      "folhaEscura",
+      "green",
+      "luz",
+      "macaneta",
+      "madeira",
+      "madeiraClara",
+      "madeiraEscura",
+      "mar",
+      "metalEscuro",
+      "morro",
+      "nuvem",
+      "orange",
+      "papel",
+      "pink",
+      "poltrona",
+      "poltronaSombra",
+      "purple",
+      "red",
+      "sofa",
+      "sofaSombra",
+      "sol",
+      "tapete",
+      "tapeteBorda",
+      "tapeteFaixa",
+      "teal",
+      "tela",
+      "terra",
+      "terracotta",
+      "white",
+      "yellow"
+    ],
+    "tamanho": [2.8, 2.275, 1.85],
+    "pecas": {
+      "sofa": {
+        "triangulos": 5280,
+        "tamanho": [2.8, 1.13, 0.85],
+        "caixa": [[-1.4, -0.5, 0.0], [1.4, 0.35, 1.13]],
+        "materiais": ["almofadaAzul", "almofadaRosa", "madeiraEscura", "sofa", "sofaSombra"],
+        "nota": "3 × 1"
+      },
+      "poltrona": {
+        "triangulos": 2712,
+        "tamanho": [0.96, 1.049, 0.85],
+        "caixa": [[-0.48, -0.5, 0.0], [0.48, 0.35, 1.049]],
+        "materiais": ["almofadaAmarela", "madeiraEscura", "poltrona", "poltronaSombra"],
+        "nota": "1 × 1"
+      },
+      "mesinha-centro": {
+        "triangulos": 880,
+        "tamanho": [1.3, 0.44, 0.7],
+        "caixa": [[-0.65, -0.35, 0.0], [0.65, 0.35, 0.44]],
+        "materiais": ["blue", "madeira", "madeiraClara", "madeiraEscura", "papel", "red"],
+        "nota": "2 × 1"
+      },
+      "tapete": {
+        "triangulos": 418,
+        "tamanho": [2.8, 0.022, 1.85],
+        "caixa": [[-1.4, -0.925, 0.0], [1.4, 0.925, 0.022]],
+        "materiais": ["tapete", "tapeteBorda", "tapeteFaixa"],
+        "nota": "3 × 2"
+      },
+      "estante-baixa": {
+        "triangulos": 4046,
+        "tamanho": [1.8, 1.199, 0.43],
+        "caixa": [[-0.9, -0.21, 0.0], [0.9, 0.22, 1.199]],
+        "materiais": [
+          "blue",
+          "cesto",
+          "folha",
+          "folhaEscura",
+          "green",
+          "madeira",
+          "madeiraClara",
+          "orange",
+          "pink",
+          "purple",
+          "red",
+          "teal",
+          "tela",
+          "terracotta",
+          "white",
+          "yellow"
+        ],
+        "nota": "2 × 1"
+      },
+      "luminaria-pe": {
+        "triangulos": 1320,
+        "tamanho": [0.614, 1.89, 0.614],
+        "caixa": [[-0.307, -0.307, 0.0], [0.307, 0.307, 1.89]],
+        "materiais": ["cupula", "luz", "macaneta", "metalEscuro", "tapeteBorda"],
+        "nota": "1 × 1"
+      },
+      "planta": {
+        "triangulos": 1338,
+        "tamanho": [0.942, 1.338, 0.894],
+        "caixa": [[-0.483, -0.455, 0.0], [0.46, 0.439, 1.338]],
+        "materiais": ["folha", "folhaEscura", "tapeteBorda", "terra", "terracotta"],
+        "nota": "1 × 1"
+      },
+      "quadro": {
+        "triangulos": 356,
+        "tamanho": [1.03, 0.77, 0.08],
+        "caixa": [[-0.515, 0.02, -0.385], [0.515, 0.1, 0.385]],
+        "materiais": ["farolPintado", "madeira", "mar", "morro", "nuvem", "sol", "tela"],
+        "nota": "parede, 1,0 de largura"
+      }
+    }
+  },
+  "casa-telhado": {
+    "grupo": "kit",
+    "triangulos": 834,
+    "kb": 66.7,
+    "nos": {
+      "agua": 14,
+      "agua-meia": 10,
+      "beiral": 56,
+      "cumeeira": 38,
+      "cumeeira-ponta": 38,
+      "testeira-esq": 26,
+      "testeira-dir": 26,
+      "testeira-meia-esq": 22,
+      "testeira-meia-dir": 22,
+      "testeira-beiral-esq": 86,
+      "testeira-beiral-dir": 86,
+      "oitao-esq": 10,
+      "oitao-dir": 10,
+      "oitao-meia-esq": 8,
+      "oitao-meia-dir": 8,
+      "oitao-faixa": 12,
+      "oitao-faixa-meia": 6,
+      "vigia": 356
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "acabamento",
+      "calha",
+      "parede",
+      "paredeDentro",
+      "telhado",
+      "telhadoBorda",
+      "telhadoForro",
+      "telhadoSombra",
+      "vidroJanela"
+    ],
+    "tamanho": [1.7, 1.082, 1.745],
+    "pecas": {
+      "agua": {
+        "triangulos": 14,
+        "tamanho": [1.0, 0.62, 1.0],
+        "caixa": [[-0.5, 0.0, 0.0], [0.5, 1.0, 0.62]],
+        "materiais": ["telhado", "telhadoBorda", "telhadoForro", "telhadoSombra"]
+      },
+      "agua-meia": {
+        "triangulos": 10,
+        "tamanho": [1.0, 0.37, 0.5],
+        "caixa": [[-0.5, 0.0, 0.0], [0.5, 0.5, 0.37]],
+        "materiais": ["telhado", "telhadoBorda", "telhadoForro"]
+      },
+      "beiral": {
+        "triangulos": 56,
+        "tamanho": [1.0, 0.48, 0.74],
+        "caixa": [[-0.5, -0.74, -0.36], [0.5, 0.0, 0.12]],
+        "materiais": ["acabamento", "calha", "telhadoBorda", "telhadoForro", "telhadoSombra"]
+      },
+      "cumeeira": {
+        "triangulos": 38,
+        "tamanho": [1.0, 0.228, 0.32],
+        "caixa": [[-0.5, -0.16, 0.042], [0.5, 0.16, 0.27]],
+        "materiais": ["telhado"]
+      },
+      "cumeeira-ponta": {
+        "triangulos": 38,
+        "tamanho": [0.36, 0.228, 0.32],
+        "caixa": [[-0.86, -0.16, 0.042], [-0.5, 0.16, 0.27]],
+        "materiais": ["telhado"]
+      },
+      "testeira-esq": {
+        "triangulos": 26,
+        "tamanho": [0.34, 0.795, 1.01],
+        "caixa": [[-0.84, -0.005, -0.083], [-0.5, 1.005, 0.712]],
+        "materiais": ["acabamento", "telhado", "telhadoBorda", "telhadoForro", "telhadoSombra"]
+      },
+      "testeira-dir": {
+        "triangulos": 26,
+        "tamanho": [0.34, 0.795, 1.01],
+        "caixa": [[0.5, -0.005, -0.083], [0.84, 1.005, 0.712]],
+        "materiais": ["acabamento", "telhado", "telhadoBorda", "telhadoForro", "telhadoSombra"]
+      },
+      "testeira-meia-esq": {
+        "triangulos": 22,
+        "tamanho": [0.34, 0.545, 0.51],
+        "caixa": [[-0.84, -0.005, -0.083], [-0.5, 0.505, 0.463]],
+        "materiais": ["acabamento", "telhado", "telhadoBorda", "telhadoForro"]
+      },
+      "testeira-meia-dir": {
+        "triangulos": 22,
+        "tamanho": [0.34, 0.545, 0.51],
+        "caixa": [[0.5, -0.005, -0.083], [0.84, 0.505, 0.463]],
+        "materiais": ["acabamento", "telhado", "telhadoBorda", "telhadoForro"]
+      },
+      "testeira-beiral-esq": {
+        "triangulos": 86,
+        "tamanho": [0.34, 0.583, 0.745],
+        "caixa": [[-0.84, -0.74, -0.37], [-0.5, 0.005, 0.213]],
+        "materiais": ["acabamento", "calha", "telhadoBorda", "telhadoForro", "telhadoSombra"]
+      },
+      "testeira-beiral-dir": {
+        "triangulos": 86,
+        "tamanho": [0.34, 0.583, 0.745],
+        "caixa": [[0.5, -0.74, -0.37], [0.84, 0.005, 0.213]],
+        "materiais": ["acabamento", "calha", "telhadoBorda", "telhadoForro", "telhadoSombra"]
+      },
+      "oitao-esq": {
+        "triangulos": 10,
+        "tamanho": [1.0, 0.53, 0.21],
+        "caixa": [[-0.5, -0.13, 0.0], [0.5, 0.08, 0.53]],
+        "materiais": ["parede", "paredeDentro"]
+      },
+      "oitao-dir": {
+        "triangulos": 10,
+        "tamanho": [1.0, 0.53, 0.21],
+        "caixa": [[-0.5, -0.13, 0.0], [0.5, 0.08, 0.53]],
+        "materiais": ["parede", "paredeDentro"]
+      },
+      "oitao-meia-esq": {
+        "triangulos": 8,
+        "tamanho": [0.5, 0.28, 0.21],
+        "caixa": [[-0.25, -0.13, 0.0], [0.25, 0.08, 0.28]],
+        "materiais": ["parede", "paredeDentro"]
+      },
+      "oitao-meia-dir": {
+        "triangulos": 8,
+        "tamanho": [0.5, 0.28, 0.21],
+        "caixa": [[-0.25, -0.13, 0.0], [0.25, 0.08, 0.28]],
+        "materiais": ["parede", "paredeDentro"]
+      },
+      "oitao-faixa": {
+        "triangulos": 12,
+        "tamanho": [1.0, 0.5, 0.21],
+        "caixa": [[-0.5, -0.13, 0.0], [0.5, 0.08, 0.5]],
+        "materiais": ["parede", "paredeDentro"]
+      },
+      "oitao-faixa-meia": {
+        "triangulos": 6,
+        "tamanho": [0.5, 0.25, 0.21],
+        "caixa": [[-0.25, -0.13, 0.0], [0.25, 0.08, 0.25]],
+        "materiais": ["parede", "paredeDentro"]
+      },
+      "vigia": {
+        "triangulos": 356,
+        "tamanho": [0.622, 0.622, 0.12],
+        "caixa": [[-0.311, -0.2, -0.311], [0.311, -0.08, 0.311]],
+        "materiais": ["acabamento", "vidroJanela"]
+      }
+    }
+  }
+}

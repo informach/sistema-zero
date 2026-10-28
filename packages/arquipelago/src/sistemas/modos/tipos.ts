@@ -9,6 +9,7 @@ import type {
   TroncoVivo,
 } from '../../estado/contexto'
 import type { Ponto } from '../cipo'
+import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
 import { criarPulo, type EstadoDoPulo } from '../movimento'
 
@@ -50,6 +51,8 @@ export interface EstadoDoCorpo {
   subindoNaBorda: number
   /** `performance.now()` de quando soltou uma borda (não pega a mesma na hora). */
   soltouDaBorda: number
+  /** A força da correnteza no último passo (0 a 1), nadando no mar fora das boias. */
+  correnteza: number
   /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
   noModo: number
   /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
@@ -106,6 +109,7 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     naBorda: 0,
     subindoNaBorda: 0,
     soltouDaBorda: Number.NEGATIVE_INFINITY,
+    correnteza: 0,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },
     vel: { x: 0, z: 0 },
@@ -167,6 +171,7 @@ export interface MundoDoMovimento {
   escadas: EscadaViva[]
   escorregadores: Escorregador[]
   bordas: BordaViva[]
+  rodasDeNado: RodaDeNado[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

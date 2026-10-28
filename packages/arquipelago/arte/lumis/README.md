@@ -2,7 +2,8 @@
 
 Lote 3 do `arte/INVENTARIO.md`. Os Lumis são criaturinhas de luz que nascem do Cinza. À noite os
 borrões de névoa saem e desbotam o que está fora; a lanterna prende um borrão e ele vira um Lumi
-colorido da família da ilha. Cada ilha do anel tem uma família com duas espécies: a comum e a rara.
+colorido da família da ilha. Cada ilha do anel tem uma família com duas espécies, a comum e a rara, e
+a sua ilha (a praia) também.
 
 Tudo é gerado por script no Blender sem tela (o mesmo `bpy` do Zappy e das peças do quarto):
 
@@ -30,6 +31,11 @@ ao jogo: o sistema de Lumis vem depois e, até lá, eles ficam só como arquivo.
 | Vale dos Dinos | **Brotinho** (`brotinho`) | raro | Fortão: carrega as cargas mais pesadas no lombo. |
 | Ilha das Nuvens | **Algodão** (`algodao`) | comum | Levinho: flutua por cima de buracos e poças. |
 | Ilha das Nuvens | **Pluma** (`pluma`) | rara | Voa rápido: leva recados de ilha em ilha. |
+| Sua ilha (praia) | **Estrelinha** (`estrelinha`) | comum | Fuçadora: acha conchas escondidas na areia. |
+| Sua ilha (praia) | **Búzio** (`buzio`) | raro | Escuta o mar: acha os achados mais raros da maré. |
+
+Os nomes da família da praia (Estrelinha e Búzio) e o jeito de ser dos dois são provisórios até a
+dona confirmar.
 
 Como eles são:
 
@@ -47,6 +53,10 @@ Como eles são:
   cabeça.
 - **Algodão**: nuvem fofa com uma gotinha de chuva no alto.
 - **Pluma**: passarinho redondo com penacho e rabo de arco-íris.
+- **Estrelinha**: estrela-do-mar fofa cor de laranja, com bolinhas claras em fila em cada ponta (na
+  frente e nas costas) e a pontinha de cada ponta acesa. Os braços são as pontas dos lados.
+- **Búzio**: bolinha cor de água com a conchinha de búzio em espiral nas costas (cor de areia, com a
+  listra coral no sulco e a ponta acesa) e duas anteninhas de caracol com gotinhas de luz.
 
 ## O que todo Lumi tem
 
@@ -62,7 +72,7 @@ Como eles são:
 |---|---|
 | `corpo` | a cor principal |
 | `corpo2` | a segunda cor (pés, base, casca, forminha, neve, barriga) |
-| `detalhe`, `detalhe2`, `detalhe3` | folhas, chapéus, granulado, tentáculos, espinhos |
+| `detalhe`, `detalhe2`, `detalhe3` | folhas, chapéus, granulado, tentáculos, espinhos, a concha e a listra do Búzio |
 | `pena1`, `pena2`, `pena3` | as penas de arco-íris da Pluma |
 | `barriga` | a barriguinha clara do Ipê |
 | `luz` | tudo o que brilha (emissivo): o jogo pulsa o `emissiveIntensity` e acende mais à noite |
@@ -123,6 +133,8 @@ de altura, mais ou menos a cabeça do Zappy. A frente olha para +Z no three.js.
 | `brotinho.glb` | 2.962 | 120 KB |
 | `algodao.glb` | 2.092 | 77 KB |
 | `pluma.glb` | 2.626 | 114 KB |
+| `estrelinha.glb` | 2.780 | 97 KB |
+| `buzio.glb` | 2.970 | 123 KB |
 | `borrao.glb` | 2.962 | 157 KB |
 
 Os números de cada geração ficam em `relatorio.json`.
@@ -131,7 +143,10 @@ Os números de cada geração ficam em `relatorio.json`.
 
 - `lib_lumis.py`: materiais, formas (bola, torno, tubo, folha, faísca), pintura colada no corpo
   (olhos, bochechas, coração), montagem das partes e as cinco animações.
-- `bosque.py`, `vila_doce.py`, `recife.py`, `pico.py`, `dinos.py`, `nuvens.py`: uma família cada.
+- `bosque.py`, `vila_doce.py`, `recife.py`, `pico.py`, `dinos.py`, `nuvens.py`, `praia.py`: uma família
+  cada. `praia.py` afasta um pouco mais as camadas do rosto (boca, pupila, brilhos e língua) e grava o
+  arquivo com as faixas de animação desligadas, para a pose parada do GLB ser a de descanso; assim
+  `scripts/faces-coplanares.ts` não acusa nada nos dois.
 - `borrao.py`: o borrão do Cinza e as quatro animações dele.
 - `build_all.py`: gera tudo.
 - `previa.py`: renderiza uma cena de conferência (Cycles) a partir dos GLB; não faz parte do jogo.

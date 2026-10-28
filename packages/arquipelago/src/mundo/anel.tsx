@@ -18,8 +18,10 @@ import {
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { andarPedacos, corMedia, pedacosPintados } from '../sistemas/cor-da-ilha'
+import { BOIAS_DA_ILHA_DO_ANEL, RODA_DA_ILHA_CENTRAL } from '../sistemas/correnteza'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
 import { quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import { Boias } from './boias'
 import { BosqueVivo } from './bosque-vivo'
 import {
   ALTURA_DA_CORDA,
@@ -605,13 +607,24 @@ function useChegada(ilha: Ilha, aberta: boolean): number {
 }
 
 function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: number } }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const jornada = useEstado((s) => s.jornada)
   const aberta = ilhaAberta(ilha.id, jornada)
   const chegada = useChegada(ilha, aberta)
   const cor = usePinturaDaIlha(ilha, aberta ? chegada : 0)
   const troca = useRef<Troca>({ opacidade: 0 }).current
   const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
+  // A ilha aberta ganha a roda de boias dela: dá para nadar em volta (a das Nuvens fica no céu).
+  const roda = useMemo(() => ({ x: centro.x, z: centro.z, livre: BOIAS_DA_ILHA_DO_ANEL }), [centro])
+  const temRoda = aberta && ilha.id !== 'nuvens'
+  useEffect(() => {
+    if (!temRoda) return
+    movimento.rodasDeNado.push(roda)
+    return () => {
+      const i = movimento.rodasDeNado.indexOf(roda)
+      if (i >= 0) movimento.rodasDeNado.splice(i, 1)
+    }
+  }, [temRoda, roda, movimento])
   // Na ilha aberta que ainda não tem nada vivo (só a silhueta), o Zappy explica o que vem. No
   // Bosque já moram a Capi e os bichos: lá o "E" é dela, dos cipós e da placa.
   useInterativo(`ilha-${ilha.id}`, {
@@ -637,6 +650,7 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
         troca={troca}
       />
       <Ponte ilha={ilha} inteira={aberta} tabuasVisiveis={chegada} />
+      {temRoda && <Boias roda={roda} />}
     </>
   )
 }
@@ -650,6 +664,7 @@ export function Anel() {
   }, [loja, plataforma])
   return (
     <>
+      <Boias roda={RODA_DA_ILHA_CENTRAL} />
       {ilhas.map(({ ilha, centro }) => (
         <IlhaComPonte key={ilha.id} ilha={ilha} centro={centro} />
       ))}

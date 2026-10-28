@@ -1,5 +1,6 @@
 import { dentroDaAgua } from '../agua'
 import { CORPO } from '../corpo'
+import { correnteza } from '../correnteza'
 import { ESCALADA } from '../escalada'
 import { aproximarVelocidade, PERFIS, passoDoPulo } from '../movimento'
 import { agarrarBorda, bordaAoAlcance } from './borda'
@@ -53,6 +54,9 @@ export function decidirNado(nadando: boolean, noChao: boolean, naAgua: number): 
  * ou do tronco) a direção pedida só corrige. Depois do controlador: pegar um cipó no ar, grudar no
  * tronco empurrando (ou pulando nele), equilibrar no tronco caído andando ao longo dele.
  */
+/** A velocidade da correnteza do passo (sem alocar no laço da física). */
+const agua = { x: 0, z: 0 }
+
 export const MODO_CHAO: ModoDeMovimento = {
   id: 'chao',
   valendo: () => true,
@@ -95,9 +99,17 @@ export const MODO_CHAO: ModoDeMovimento = {
     c.nadando = nadando
     c.velDoPasso.x = vx
     c.velDoPasso.z = vz
-    c.desloc.x = vx * e.dt
+    // No mar (não num lago), fora das boias, a correnteza mansa leva de volta para a ilha. Ela entra
+    // só no deslocamento: o corpo continua nadando para onde a criança pede.
+    c.correnteza =
+      nadando && superficie === e.nivelDoMar ? correnteza(mundo.rodasDeNado, e.p.x, e.p.z, agua) : 0
+    if (c.correnteza === 0) {
+      agua.x = 0
+      agua.z = 0
+    }
+    c.desloc.x = (vx + agua.x) * e.dt
     c.desloc.y = c.velY * e.dt
-    c.desloc.z = vz * e.dt
+    c.desloc.z = (vz + agua.z) * e.dt
     return 'chao'
   },
   depois(c, e, mundo, mov, pisou, aviso) {

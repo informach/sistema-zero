@@ -440,6 +440,111 @@
     },
     "triangulos": 17484
   },
+  "recife-labirinto": {
+    "ancoras": {
+      "entrada": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -8.4
+      },
+      "saida": {
+        "x": 3.6,
+        "y": 0.0,
+        "z": 8.4
+      },
+      "tesouro": {
+        "x": -7.2,
+        "y": -3.48,
+        "z": 2.25
+      }
+    },
+    "clipes": "balancar",
+    "colisores": {
+      "col-arco": 2,
+      "col-bloco": 1,
+      "col-cil-mexilhao": 1,
+      "col-cil-pilar": 30,
+      "col-parede": 29,
+      "col-teto": 1
+    },
+    "kb": 627.1,
+    "nos": {
+      "alga-1": 168,
+      "alga-2": 168,
+      "alga-3": 168,
+      "alga-4": 168,
+      "alga-5": 168,
+      "alga-6": 168,
+      "chao": 3310,
+      "corais": 7950,
+      "gruta": 1284,
+      "paredes": 12200,
+      "portais": 1720
+    },
+    "triangulos": 27472
+  },
+  "recife-navio": {
+    "ancoras": {
+      "bau": {
+        "x": -2.99,
+        "y": -3.35,
+        "z": -0.14
+      },
+      "entrada": {
+        "x": -0.08,
+        "y": -1.79,
+        "z": 2.78
+      },
+      "escotilha": {
+        "x": -1.61,
+        "y": -0.89,
+        "z": -0.06
+      },
+      "mastro": {
+        "x": 0.48,
+        "y": 0.0,
+        "z": -0.71
+      },
+      "pagina-diario": {
+        "x": 2.81,
+        "y": -3.25,
+        "z": -6.24
+      }
+    },
+    "clipes": "balancar",
+    "colisores": {
+      "col-ancora": 1,
+      "col-areia-porao": 1,
+      "col-barril-deitado": 1,
+      "col-caixote": 2,
+      "col-casco": 39,
+      "col-cesto": 1,
+      "col-cil-areia": 1,
+      "col-cil-barril": 2,
+      "col-cil-coral": 2,
+      "col-cil-mastro": 2,
+      "col-cil-mastro-caido": 1,
+      "col-cil-pedra": 5,
+      "col-cil-timao": 1,
+      "col-cil-verga": 1,
+      "col-conves": 11
+    },
+    "kb": 446.8,
+    "nos": {
+      "alga-1": 240,
+      "alga-2": 240,
+      "alga-3": 240,
+      "alga-4": 240,
+      "alga-5": 240,
+      "alga-6": 240,
+      "carga": 1938,
+      "corais": 3364,
+      "fundo": 2085,
+      "navio": 4652,
+      "vela": 452
+    },
+    "triangulos": 13931
+  },
   "recife-props": {
     "ancoras": {},
     "clipes": "balancar",

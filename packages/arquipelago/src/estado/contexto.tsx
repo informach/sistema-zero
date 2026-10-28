@@ -5,6 +5,7 @@ import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
 import type { Ponto } from '../sistemas/cipo'
 import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
+import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
 import type { Corrida } from '../sistemas/percurso'
@@ -148,6 +149,11 @@ export interface Movimento {
   escadas: EscadaViva[]
   escorregadores: Escorregador[]
   bordas: BordaViva[]
+  /**
+   * As rodas de boias onde se nada (`sistemas/correnteza.ts`): a da sua ilha sempre, e a de cada ilha
+   * do anel aberta, registrada pelo `Anel`. Fora delas, a correnteza leva de volta.
+   */
+  rodasDeNado: RodaDeNado[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
   /** Escritos pelo personagem. */
@@ -176,6 +182,7 @@ export function criarMovimento(): Movimento {
     escadas: [],
     escorregadores: [],
     bordas: [],
+    rodasDeNado: [RODA_DA_ILHA_CENTRAL],
     pedido: null,
     modo: 'chao',
     noChao: false,

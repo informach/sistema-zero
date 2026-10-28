@@ -5,12 +5,14 @@ sem tela (o mesmo `bpy` do mundo) e grava os GLBs em `src/assets/ilhas/`. O jogo
 leve (`ilhas-do-anel.glb`, de `arte/mundo/ilhas_anel.py`) e troca pela completa quando a pessoa
 atravessa a ponte. Por enquanto só o Bosque está ligado (`src/mundo/ilha-completa.tsx`).
 
-Por enquanto existem três ilhas: Bosque dos Bichos, Vila Doce e Recife Coral.
+Por enquanto existem três ilhas: Bosque dos Bichos, Vila Doce e Recife Coral. O Recife tem também dois
+lugares de exploração de mergulho, cada um num GLB próprio: o navio afundado e o labirinto de corais
+(veja "Lugares de exploração do Recife").
 
 ## Rodar
 
 ```sh
-# as três ilhas, as peças soltas e o barco, com a conferência no fim
+# as três ilhas, as peças soltas, o barco e os lugares do Recife, com a conferência no fim
 /tmp/claude-0/blender-venv/bin/python -B arte/ilhas/build_all.py
 
 # uma ilha só
@@ -61,6 +63,8 @@ chegada (`conferir_corredor`).
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
 | `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 1.416 | 49 KB |
 | `barco.glb` | `barco` (pivô na linha d'água, proa em +x) | | `balancar` (3 s: rola, arfa e sobe e desce) | 2.456 | 70 KB |
+| `recife-navio.glb` | `navio`, `vela`, `carga`, `fundo`, `corais`, `alga-1`…`alga-6` e 71 `col-*` | `entrada`, `bau`, `pagina-diario`, `escotilha`, `mastro` | `balancar` (as algas) | 13.931 | 447 KB |
+| `recife-labirinto.glb` | `paredes`, `corais`, `chao`, `portais`, `gruta`, `alga-1`…`alga-6` e 64 `col-*` | `entrada`, `saida`, `tesouro` | `balancar` (as algas) | 27.472 | 627 KB |
 
 As peças soltas ficam cada uma na origem, com o pé em y = 0, para o jogo repetir (e o modo de
 construir usar depois). Nas ilhas, as mesmas peças já vêm posicionadas dentro dos nós.
@@ -176,6 +180,91 @@ do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
 - **Recife:** `agua`/`lagoa` e a fonte de chocolate são nós à parte, para o jogo trocar o material
   (água que mexe, chocolate brilhante).
 
+## Lugares de exploração do Recife
+
+Dois GLBs de mergulho, cada um no seu referencial (não são nós do `recife.glb`): o jogo põe o arquivo
+inteiro no lugar proposto abaixo, no mesmo grupo e com o mesmo giro da ilha. Os dois têm a mesma
+convenção das ilhas (malha de desenho, nós `col-*` simples e âncoras vazias) e o teto deles no
+`build_all.py` é de 30 mil triângulos e 768 KB.
+
+- **Referencial:** o centro do lugar na linha d'água (y = 0 no mar) e a areia em y = −3,5, o
+  `FUNDO_DO_MAR` do jogo. Debaixo d'água tudo foi medido para a cápsula do avatar em pé (raio 0,35 e
+  1,9 de altura): os vãos por onde se nada têm pelo menos 2,1 m de altura livre.
+- **Brilho:** `lanterna` e `perolaLuz` saem com força de emissão 1 e `moedaOuro` com um brilho
+  baixo (0,2); o jogo regula.
+- **Prévias:** `render.py` com uma montagem que põe o fundo de areia, a superfície vista de baixo e
+  a cor da água (as montagens ficam fora do repositório; sem elas a água do `AGUA=1` cobre tudo).
+
+### Navio afundado (`recife_navio.py` → `recife-navio.glb`)
+
+- Veleiro de 11 m inteiro, deitado para bombordo (18°), a popa um pouco mais enterrada e montes de
+  areia cobrindo o bombordo e a proa. O casco é uma casca de tábuas (faixa vermelha na borda, fundo
+  escuro, vigias de bronze, cracas e corais crescendo no costado), com o rombo do lado de boreste
+  embaixo da amurada (2,35 m de largo, da areia do porão até o convés) e as tábuas da beira
+  quebradas e entortadas para fora. Por ele se nada para dentro.
+- O convés tem a escotilha aberta (1,4 x 1,5 m), um pedaço desabado perto da proa (1,2 x 2,2 m, com
+  as tábuas penduradas para dentro do porão), o timão e a lanterna da popa: são mais duas entradas.
+  O mastro grande é um toco quebrado que sai 1,2 m da água (de longe se vê onde está o navio); o do
+  traquete é um toco curto.
+- Porão: areia plana a −3,35, barris, caixotes, rolo de corda, moedas e pérolas espalhadas, o
+  lampião pendurado logo acima do baú e uma poça de luz quente na areia em volta dele (`luzBau`). O
+  vão livre entre a areia e o convés vai de 1,8 m (encostado no bombordo) a 2,7 m (perto do boreste).
+- O pedaço de cima do mastro quebrou e caiu para bombordo: uma ponta ficou apoiada na amurada, ao
+  lado do toco, e a outra na areia. A verga ficou atravessada nele e a vela listrada caiu por cima,
+  como uma tenda encostada no casco. Embaixo dela fica o cesto da gávea tombado, onde se esconde a
+  página do diário.
+- A âncora de ferro meio enterrada na frente da proa, com a corrente até o escovém. Corais, cracas,
+  estrelas-do-mar e seis algas que balançam.
+- **Âncoras:**
+  - `entrada`: na frente do rombo, a meia água;
+  - `bau`: na areia do porão, perto da popa; o giro em Z olha para o rombo. O jogo põe ali o
+    `bau.glb` dos itens (o arquivo do navio não desenha o baú);
+  - `pagina-diario`: dentro do cesto da gávea, embaixo da vela (o lugar escondido);
+  - `escotilha`: em cima da escotilha aberta;
+  - `mastro`: a ponta do mastro quebrado, na linha d'água.
+- **Colisão:** `col-casco` (uma caixa fina por pedaço do casco, dentro da tábua, sem as do rombo),
+  `col-conves` (o convés inteiro menos a escotilha), `col-cil-mastro`, `col-cil-timao`,
+  `col-areia-porao`, `col-cil-barril`, `col-barril-deitado`, `col-caixote`, `col-cil-areia` (o
+  leito), `col-cil-pedra`, `col-cil-mastro-caido`, `col-cil-verga`, `col-cesto`, `col-ancora` e
+  `col-cil-coral`. A vela, as cordas, as tábuas soltas, as algas e o miúdo do chão não colidem.
+- **Materiais pelo nome:** `madeiraNavio`, `madeiraNavioEscura`, `madeiraNavioClara`, `navioFaixa`,
+  `navioFundo`, `velaNavio`, `velaListra`, `ferroNavio`, `ferrugem`, `vidroNavio`, `moedaOuro`,
+  `luzBau` (brilho baixo, 0,35), mais
+  os do Recife (`lanterna`, `perolaLuz`, corais, algas, rochas e areia).
+- **Onde fica no Recife (proposta):** o centro em x 7,5, z −25,5, sem giro (proa para +x e o rombo
+  virado para o cais). O rombo fica em x 7,4, z −22,8, a uns 7 m do `mergulho` (a ponta do cais); o
+  leito de areia vai de x −3,7 a 17,1 e de z −34,8 a −20, longe da praia (raio 14,4), do barco
+  atracado e da chegada da ponte.
+
+### Labirinto de corais (`recife_labirinto.py` → `recife-labirinto.glb`)
+
+- Grade de 5 x 4 quadras de 3,6 m (20 x 16 m). Cada trecho de parede é feito de cabeças de coral
+  redondas e lisas, de cores diferentes, em cima de um miolo escuro que aparece nas frestas: duas
+  embaixo, uma no meio (às vezes com o sulco do coral-cérebro) e a coroa de coral-cérebro, que sai uns
+  0,7 m da água (de longe se vê o desenho do labirinto). Cada canto é uma cabeça alta. Nos lados que
+  dão para corredor crescem cérebros, esponjas em tubo e em barril, corais-pilar, chifres-de-veado
+  de pontas redondas, leques finos, anêmonas e bolhas; no chão de areia há conchas, estrelas,
+  pedrinhas lisas e tufos de alga. Uma quadra é um bloco maciço.
+- Corredores com 2,6 m entre os colisores (os corais dos lados ocupam uma parte desse vão) e a água
+  de 3,5 m: dá para nadar na superfície ou mergulhar. Entrada no −z (arco azul de conchas e a boia
+  vermelha e branca) e saída no +z (arco amarelo com a estrela e a boia verde).
+- Três bifurcações: logo depois da entrada (três caminhos), no meio do lado direito e perto da
+  saída; três becos. Dois arcos de coral na altura da água só deixam passar mergulhando por baixo
+  (2,3 m livres até a areia).
+- O beco do tesouro, no canto de trás à esquerda: uma gruta com teto de coral (entra-se por baixo),
+  o mexilhão gigante aberto com três pérolas que brilham e moedas na areia.
+- **Âncoras:** `entrada` e `saida` na linha d'água, do lado de fora de cada arco; `tesouro` na
+  areia, na boca do mexilhão.
+- **Colisão:** `col-parede` (uma caixa de 1 m de grossura por trecho de parede), `col-cil-pilar`
+  (um por canto), `col-bloco`, `col-arco` (os dois arcos baixos), `col-teto` (a gruta) e
+  `col-cil-mexilhao`. Os corais dos lados, as algas, as boias e o miúdo do chão não colidem.
+- **Materiais pelo nome:** `coralina`, `coralinaClara`, `coralPessego`, `coralAreia`, `coralMenta`,
+  `boiaVerde`, `boiaBranca`, `boiaAmarela`, `moedaOuro`, mais os do Recife (corais, `perolaLuz`,
+  `boia`, algas, rochas e areia).
+- **Onde fica no Recife (proposta):** o centro em x −1, z 27, sem giro (a entrada olha para a
+  ilha). A entrada fica em x −1, z 18,6 e a saída em x 2,6, z 35,4; a areia do labirinto começa em
+  z 17,2, fora da praia (raio 14,4), e de lá se vê a casa da Maré.
+
 ## O que tem em cada ilha
 
 - **Bosque dos Bichos:**
@@ -208,6 +297,7 @@ do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
 
 - `lib_ilhas.py`: os ajudantes, que reaproveitam o `lib_mundo` e as ilhas leves;
 - `bosque.py`, `vila_doce.py`, `recife.py`: um script por ilha;
+- `recife_navio.py` e `recife_labirinto.py`: os lugares de exploração do Recife;
 - `build_all.py`, com a conferência;
 - `render.py`, que chama o `arte/mundo/render.py`;
 - `relatorio.json`: triângulos, tamanho, nós, âncoras e clipes de cada arquivo.

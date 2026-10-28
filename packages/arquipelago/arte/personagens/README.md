@@ -1,6 +1,6 @@
 # Personagens do Arquipélago (Lote 2)
 
-Scripts de Blender sem tela que geram Íris e os seis moradores em
+Scripts de Blender sem tela que geram Íris e os sete moradores em
 `src/assets/personagens/<id>.glb`. Ainda não estão ligados ao jogo (ver `arte/INVENTARIO.md`).
 
 | id | Quem | Acessórios |
@@ -12,6 +12,7 @@ Scripts de Blender sem tela que geram Íris e os seis moradores em
 | `floco` | Floco, pinguim músico do Pico Gelado | cachecol de tricô, cavaquinho |
 | `jade` | Jade, coruja dos fósseis e ninhos do Vale dos Dinos | chapéu de safári, lupa |
 | `irie` | Iriê, arara que tece o arco-íris da Ilha das Nuvens | tear de mão com o arco-íris |
+| `nico` | Nico, caranguejo carteiro da praia (recebe a criança na sua ilha, com o Zappy) | quepe de carteiro, bolsa de cartas a tiracolo com envelopes, carta na pinça |
 
 ## Rodar
 
@@ -50,6 +51,15 @@ Esqueleto próprio e simples (`raiz`, `quadril`, `tronco`, `cabeca`, `braco_esq`
 um osso só, o que combina com as formas arredondadas e separadas. O acessório de mão vai na mão
 esquerda, para a direita ficar livre no `acenar`. Teto de ~6 mil triângulos: se passar, `lib_personagens`
 afina só as peças grandes e lisas do corpo (a cabeça e os detalhes ficam inteiros).
+
+### Nico
+
+O caranguejo usa o mesmo esqueleto dos moradores com outro sentido: o casco é o `tronco` (com o
+rosto, o quepe e a bolsa, que ficam firmes), a `cabeca` leva só as antenas e os olhos (balançam
+quando ele fala), as pinças são `braco_esq` e `braco_dir` e as três perninhas de cada lado vão em
+`perna_esq` e `perna_dir`. Os clipes são dele (`clipes` em `nico.py`), com os mesmos nomes e
+durações: no `andar` as perninhas de cada lado sapateiam alternadas, duas vezes por segundo. A
+alça da bolsa dá a volta no casco num plano inclinado (`faixa`), encostada na superfície.
 
 ### Íris
 

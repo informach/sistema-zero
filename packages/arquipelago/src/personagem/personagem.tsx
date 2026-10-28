@@ -26,6 +26,7 @@ import {
 import { CIPO, type Ponto } from '../sistemas/cipo'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
+import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import type { EntradaDaLocomocao } from '../sistemas/locomocao'
 import {
   type AvisoDeModo,
@@ -117,6 +118,8 @@ export function Personagem() {
   })
   /** O corpo como os modos o veem (`sistemas/modos`): um objeto só, mexido a cada passo. */
   const v = useRef(criarEstadoDoCorpo()).current
+  /** O Zappy já avisou da correnteza desde que o jogo abriu. */
+  const avisouDaCorrenteza = useRef(false)
 
   const inicial = useMemo(() => {
     const { salvamento, quarto } = loja.getState()
@@ -349,6 +352,10 @@ export function Personagem() {
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
+    if (v.correnteza >= CORRENTEZA.aviso && !avisouDaCorrenteza.current) {
+      avisouDaCorrenteza.current = true
+      estado.dizer(AVISO_DA_CORRENTEZA)
+    }
     estado.definirAlvo(parado || v.modo !== 'chao' ? null : maisPerto(interativos, prox.x, prox.z))
 
     if (usou && v.modo === 'chao' && !parado) {

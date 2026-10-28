@@ -15,7 +15,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'assets', 'personagens'))
-TODOS = ['iris', 'capi', 'bento', 'mare', 'floco', 'jade', 'irie']
+TODOS = ['iris', 'capi', 'bento', 'mare', 'floco', 'jade', 'irie', 'nico']
 CLIPES = {'parado', 'andar', 'falar', 'acenar', 'feliz'}
 LIMITE_KB = 600
 LIMITE_TRIANGULOS_MORADOR = 6500

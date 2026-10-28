@@ -60,6 +60,7 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'mundo/pier.glb', juntos: TODOS_JUNTOS },
   { caminho: 'mundo/ponte.glb', juntos: TODOS_JUNTOS },
   { caminho: 'mundo/ilhas-do-anel.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'mundo/boias.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'itens/quadro-das-cores.glb', juntos: TODOS_JUNTOS },
 ]
 

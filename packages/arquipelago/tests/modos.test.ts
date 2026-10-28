@@ -4,6 +4,7 @@ import type { Ponto } from '../src/sistemas/cipo'
 import { criarBalanco } from '../src/sistemas/cipo'
 import { criarPontos } from '../src/sistemas/cordas'
 import { CORPO } from '../src/sistemas/corpo'
+import { CORRENTEZA, RODA_DA_ILHA_CENTRAL } from '../src/sistemas/correnteza'
 import { ESCALADA } from '../src/sistemas/escalada'
 import {
   atenderPedido,
@@ -84,6 +85,7 @@ function mundo(extra: Partial<MundoDoMovimento> = {}): MundoDoMovimento {
     escadas: [],
     escorregadores: [],
     bordas: [],
+    rodasDeNado: [],
     foco: { x: 0, y: 0, z: 0 },
     ...extra,
   }
@@ -516,5 +518,35 @@ describe('agarrar a borda', () => {
     }
     expect(c.naBorda).toBeCloseTo(2.6 - BORDA.longeDaPonta, 6)
     expect(c.prox.x).toBeCloseTo(1.3 - BORDA.longeDaPonta, 6)
+  })
+})
+
+describe('nadando no mar fora das boias', () => {
+  test('a correnteza leva de volta só no deslocamento: o corpo continua nadando para onde se pede', () => {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ rodasDeNado: [RODA_DA_ILHA_CENTRAL] })
+    const longe = RODA_DA_ILHA_CENTRAL.livre + CORRENTEZA.faixa
+    passo(c, entrada({ x: longe, y: 0, z: 0 }, { pedidoX: 1, ix: 1 }), m, false)
+    expect(c.nadando).toBe(true)
+    expect(c.correnteza).toBeCloseTo(1, 9)
+    // Pede para fora e nada para fora, mas o passo leva para dentro.
+    expect(c.velDoPasso.x).toBeGreaterThan(0)
+    expect(c.desloc.x).toBeLessThan(0)
+  })
+
+  test('dentro das boias, e num lago, não há correnteza', () => {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ rodasDeNado: [RODA_DA_ILHA_CENTRAL] })
+    passo(c, entrada({ x: 20, y: 0, z: 0 }, { pedidoX: 1, ix: 1 }), m, false)
+    expect(c.correnteza).toBe(0)
+    const lago = criarEstadoDoCorpo()
+    const longe = RODA_DA_ILHA_CENTRAL.livre + 20
+    const comLago = mundo({
+      rodasDeNado: [RODA_DA_ILHA_CENTRAL],
+      aguas: [{ id: 'lago', x: longe, z: 0, raioX: 5, raioZ: 5, giro: 0, y: 0.5 }],
+    })
+    passo(lago, entrada({ x: longe, y: 0.5, z: 0 }), comLago, false)
+    expect(lago.nadando).toBe(true)
+    expect(lago.correnteza).toBe(0)
   })
 })

@@ -96,6 +96,18 @@
     "materiais": ["brigadeiro", "forminha", "granulado", "loucaBranca"],
     "tamanho": [0.3, 0.086, 0.3]
   },
+  "cacau": {
+    "grupo": "ingredientes",
+    "triangulos": 3282,
+    "kb": 64.5,
+    "nos": {
+      "cacau": 3282
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["amendoa", "amendoaClara", "cacau", "cacauMiolo", "cacauPolpa", "casulo"],
+    "tamanho": [0.284, 0.106, 0.224]
+  },
   "carta": {
     "grupo": "colecao",
     "triangulos": 384,
@@ -120,6 +132,40 @@
     "materiais": ["ouro", "tesouro"],
     "tamanho": [0.224, 0.032, 0.103]
   },
+  "chocolate-quente": {
+    "grupo": "comidas",
+    "triangulos": 3604,
+    "kb": 93.6,
+    "nos": {
+      "chocolate-quente": 3604
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "caneca",
+      "canecaListra",
+      "chantili",
+      "chocolate",
+      "espumaChocolate",
+      "fumaca",
+      "loucaBranca",
+      "marshmallow",
+      "marshmallowBranco"
+    ],
+    "tamanho": [0.19, 0.242, 0.19]
+  },
+  "coco": {
+    "grupo": "ingredientes",
+    "triangulos": 1332,
+    "kb": 33.5,
+    "nos": {
+      "coco": 1332
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["coco", "cocoBranco", "cocoFibra", "cocoOlho"],
+    "tamanho": [0.186, 0.123, 0.234]
+  },
   "colher-de-pau": {
     "grupo": "cozinha",
     "triangulos": 240,
@@ -131,6 +177,188 @@
     "clipes": [],
     "materiais": ["madeiraClara"],
     "tamanho": [0.335, 0.025, 0.07]
+  },
+  "concha-buzio": {
+    "grupo": "colecoes",
+    "triangulos": 3360,
+    "kb": 68.8,
+    "nos": {
+      "concha-buzio": 3360
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "buzio",
+      "buzioBoca",
+      "buzioDorso",
+      "buzioFenda",
+      "buzioPinta",
+      "buzioPintaClara"
+    ],
+    "tamanho": [0.08, 0.051, 0.059]
+  },
+  "concha-caracol": {
+    "grupo": "colecoes",
+    "triangulos": 1368,
+    "kb": 32.8,
+    "nos": {
+      "concha-caracol": 1368
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["conchaCreme", "conchaLaranja", "conchaMarrom", "conchaMiolo"],
+    "tamanho": [0.1, 0.116, 0.089]
+  },
+  "concha-listrada": {
+    "grupo": "colecoes",
+    "triangulos": 3600,
+    "kb": 97.5,
+    "nos": {
+      "concha-listrada": 3600
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["conchaBico", "listraBranca", "listraLilas", "listraRosa", "nacar"],
+    "tamanho": [0.088, 0.058, 0.076]
+  },
+  "concha-mexilhao": {
+    "grupo": "colecoes",
+    "triangulos": 1320,
+    "kb": 35.2,
+    "nos": {
+      "concha-mexilhao": 1320
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["mexilhao", "mexilhaoClaro", "nacar"],
+    "tamanho": [0.065, 0.018, 0.054]
+  },
+  "concha-vieira": {
+    "grupo": "colecoes",
+    "triangulos": 1768,
+    "kb": 54.8,
+    "nos": {
+      "concha-vieira": 1768
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["vieira", "vieiraClara"],
+    "tamanho": [0.11, 0.021, 0.095]
+  },
+  "cristal-azul": {
+    "grupo": "colecoes",
+    "triangulos": 152,
+    "kb": 13.5,
+    "nos": {
+      "cristal-azul": 152
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cristalAzul", "cristalAzulClaro", "neve", "neveSombra"],
+    "tamanho": [0.12, 0.146, 0.075]
+  },
+  "cristal-rosa": {
+    "grupo": "colecoes",
+    "triangulos": 60,
+    "kb": 5.1,
+    "nos": {
+      "cristal-rosa": 60
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cristalRosa", "cristalRosaClaro"],
+    "tamanho": [0.092, 0.074, 0.081]
+  },
+  "cristal-roxo": {
+    "grupo": "colecoes",
+    "triangulos": 224,
+    "kb": 17.4,
+    "nos": {
+      "cristal-roxo": 224
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cristalRoxo", "cristalRoxoClaro", "pedraCinza", "pedraCinzaClara"],
+    "tamanho": [0.123, 0.133, 0.1]
+  },
+  "cristal-verde": {
+    "grupo": "colecoes",
+    "triangulos": 808,
+    "kb": 49.1,
+    "nos": {
+      "cristal-verde": 808
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "geodoBorda",
+      "geodoCasca",
+      "geodoCascaEscura",
+      "geodoCristal",
+      "geodoCristalClaro",
+      "geodoDentro"
+    ],
+    "tamanho": [0.13, 0.091, 0.136]
+  },
+  "estrela-cadente": {
+    "grupo": "colecoes",
+    "triangulos": 1400,
+    "kb": 30.5,
+    "nos": {
+      "estrela-cadente": 1400
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["estrelaBorda", "luz", "rastroAmarelo", "rastroAzul", "rastroRosa"],
+    "tamanho": [0.184, 0.135, 0.045]
+  },
+  "estrela-cintilante": {
+    "grupo": "colecoes",
+    "triangulos": 1024,
+    "kb": 26.5,
+    "nos": {
+      "estrela-cintilante": 1024
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["estrelaBordaAzul", "luz"],
+    "tamanho": [0.147, 0.134, 0.04]
+  },
+  "estrela-do-mar": {
+    "grupo": "colecoes",
+    "triangulos": 2144,
+    "kb": 40.3,
+    "nos": {
+      "estrela-do-mar": 2144
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["estrelaMar", "estrelaMarPinta"],
+    "tamanho": [0.104, 0.024, 0.099]
+  },
+  "estrela-sorriso": {
+    "grupo": "colecoes",
+    "triangulos": 1262,
+    "kb": 29.7,
+    "nos": {
+      "estrela-sorriso": 1262
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["bochechaRosa", "estrelaBordaRosa", "luz", "olhoBrilho", "olhoPreto"],
+    "tamanho": [0.109, 0.104, 0.055]
+  },
+  "estrela-trio": {
+    "grupo": "colecoes",
+    "triangulos": 2456,
+    "kb": 54.3,
+    "nos": {
+      "estrela-trio": 2456
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["estrelaBorda", "estrelaBordaLilas", "estrelaBordaRosa", "luz"],
+    "tamanho": [0.158, 0.124, 0.026]
   },
   "flor-de-algodao": {
     "grupo": "colheita",
@@ -181,6 +409,76 @@
     "materiais": ["cabo", "ferro", "metalEscuro"],
     "tamanho": [0.497, 0.096, 0.28]
   },
+  "fuba": {
+    "grupo": "ingredientes",
+    "triangulos": 2288,
+    "kb": 51.7,
+    "nos": {
+      "fuba": 2288
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "cabinho",
+      "corda",
+      "fuba",
+      "fubaClaro",
+      "madeiraClara",
+      "papel",
+      "sacoPano",
+      "sacoPanoEscuro"
+    ],
+    "tamanho": [0.156, 0.211, 0.16]
+  },
+  "isca-minhoca": {
+    "grupo": "iscas",
+    "triangulos": 3736,
+    "kb": 87.8,
+    "nos": {
+      "isca-minhoca": 3736
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "bochechaRosa",
+      "lata",
+      "lataEscura",
+      "minhoca",
+      "minhocaAnel",
+      "olhoBrilho",
+      "olhoPreto",
+      "rotuloLata",
+      "rotuloLataClaro",
+      "terra",
+      "terraClara"
+    ],
+    "tamanho": [0.104, 0.165, 0.142]
+  },
+  "isca-pena": {
+    "grupo": "iscas",
+    "triangulos": 1884,
+    "kb": 43.8,
+    "nos": {
+      "isca-pena": 1884
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "iscaCabeca",
+      "iscaCorpo",
+      "linha",
+      "metal",
+      "olhoAmarelo",
+      "olhoBrilho",
+      "olhoPreto",
+      "penaAzul",
+      "penaLaranja",
+      "penaRosa",
+      "penaRoxa",
+      "penaVerde"
+    ],
+    "tamanho": [0.161, 0.053, 0.096]
+  },
   "lanterna": {
     "grupo": "ferramentas",
     "triangulos": 994,
@@ -192,6 +490,30 @@
     "clipes": [],
     "materiais": ["aro", "ferro", "luz"],
     "tamanho": [0.14, 0.327, 0.14]
+  },
+  "leite": {
+    "grupo": "ingredientes",
+    "triangulos": 1112,
+    "kb": 36.4,
+    "nos": {
+      "leite": 1112
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["leite", "rotuloLeite", "tampaAzul", "vidroLeite"],
+    "tamanho": [0.101, 0.197, 0.103]
+  },
+  "limao": {
+    "grupo": "ingredientes",
+    "triangulos": 1232,
+    "kb": 32.5,
+    "nos": {
+      "limao": 1232
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabinho", "folha", "limao", "limaoBranco", "limaoEscuro", "limaoPolpa"],
+    "tamanho": [0.167, 0.084, 0.18]
   },
   "luneta": {
     "grupo": "lugares",
@@ -263,6 +585,66 @@
     "materiais": ["cabinho", "morango", "pintinha"],
     "tamanho": [0.101, 0.132, 0.099]
   },
+  "nota-clave-de-sol": {
+    "grupo": "colecoes",
+    "triangulos": 2756,
+    "kb": 62.3,
+    "nos": {
+      "nota-clave-de-sol": 2756
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["luz", "notaLilas"],
+    "tamanho": [0.07, 0.232, 0.018]
+  },
+  "nota-colcheia": {
+    "grupo": "colecoes",
+    "triangulos": 1180,
+    "kb": 28.0,
+    "nos": {
+      "nota-colcheia": 1180
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["luz", "notaRosa"],
+    "tamanho": [0.11, 0.16, 0.035]
+  },
+  "nota-dupla": {
+    "grupo": "colecoes",
+    "triangulos": 1644,
+    "kb": 38.3,
+    "nos": {
+      "nota-dupla": 1644
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["luz", "notaVerde"],
+    "tamanho": [0.148, 0.169, 0.031]
+  },
+  "nota-seminima": {
+    "grupo": "colecoes",
+    "triangulos": 608,
+    "kb": 15.0,
+    "nos": {
+      "nota-seminima": 608
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["luz", "notaAzul"],
+    "tamanho": [0.069, 0.163, 0.035]
+  },
+  "ovo": {
+    "grupo": "ingredientes",
+    "triangulos": 3164,
+    "kb": 61.5,
+    "nos": {
+      "ovo": 3164
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["caixaOvo", "caixaOvoEscura", "guardanapo", "ovoBranco", "ovoCaipira"],
+    "tamanho": [0.2, 0.154, 0.185]
+  },
   "pa": {
     "grupo": "ferramentas",
     "triangulos": 508,
@@ -311,6 +693,28 @@
     "materiais": ["loucaBranca", "paoDeQueijo", "paoDeQueijoTopo"],
     "tamanho": [0.32, 0.089, 0.32]
   },
+  "peixe": {
+    "grupo": "ingredientes",
+    "triangulos": 1280,
+    "kb": 41.8,
+    "nos": {
+      "peixe": 1280
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "barbatanaCru",
+      "folhaBananeira",
+      "folhaBananeiraClara",
+      "olhoBranco",
+      "olhoBrilho",
+      "olhoPreto",
+      "peixeCru",
+      "peixeCruBarriga",
+      "peixeCruEscuro"
+    ],
+    "tamanho": [0.39, 0.073, 0.198]
+  },
   "peixe-com-coco": {
     "grupo": "comidas",
     "triangulos": 1308,
@@ -332,6 +736,121 @@
       "peixeAssadoEscuro"
     ],
     "tamanho": [0.36, 0.092, 0.36]
+  },
+  "peixe-garoupa": {
+    "grupo": "colecoes",
+    "triangulos": 3186,
+    "kb": 77.2,
+    "nos": {
+      "peixe-garoupa": 3186
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "barbatanaGaroupa",
+      "boca",
+      "bochechaRosa",
+      "garoupa",
+      "garoupaBarriga",
+      "garoupaCostas",
+      "garoupaPinta",
+      "olhoBranco",
+      "olhoBrilho",
+      "olhoPreto"
+    ],
+    "tamanho": [0.285, 0.135, 0.075]
+  },
+  "peixe-linguado": {
+    "grupo": "colecoes",
+    "triangulos": 2130,
+    "kb": 49.1,
+    "nos": {
+      "peixe-linguado": 2130
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "boca",
+      "bochechaRosa",
+      "linguado",
+      "linguadoBorda",
+      "linguadoClaro",
+      "linguadoPinta",
+      "linguadoRaio",
+      "olhoBranco",
+      "olhoBrilho",
+      "olhoPreto"
+    ],
+    "tamanho": [0.223, 0.037, 0.14]
+  },
+  "peixe-robalo": {
+    "grupo": "colecoes",
+    "triangulos": 2062,
+    "kb": 60.6,
+    "nos": {
+      "peixe-robalo": 2062
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "barbatanaRobalo",
+      "boca",
+      "bochechaRosa",
+      "olhoBranco",
+      "olhoBrilho",
+      "olhoPreto",
+      "prata",
+      "robalo",
+      "robaloCostas",
+      "robaloLinha"
+    ],
+    "tamanho": [0.269, 0.094, 0.051]
+  },
+  "peixe-sardinha": {
+    "grupo": "colecoes",
+    "triangulos": 2350,
+    "kb": 59.9,
+    "nos": {
+      "peixe-sardinha": 2350
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "barbatanaSardinha",
+      "boca",
+      "bochechaRosa",
+      "olhoBranco",
+      "olhoBrilho",
+      "olhoPreto",
+      "prata",
+      "sardinha",
+      "sardinhaCostas",
+      "sardinhaPinta"
+    ],
+    "tamanho": [0.167, 0.06, 0.043]
+  },
+  "peixe-voador": {
+    "grupo": "colecoes",
+    "triangulos": 1826,
+    "kb": 53.6,
+    "nos": {
+      "peixe-voador": 1826
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "asaVoador",
+      "asaVoadorRaio",
+      "boca",
+      "bochechaRosa",
+      "olhoBranco",
+      "olhoBrilho",
+      "olhoPreto",
+      "prata",
+      "voador",
+      "voadorCostas"
+    ],
+    "tamanho": [0.235, 0.068, 0.233]
   },
   "pipoca": {
     "grupo": "comidas",
@@ -384,6 +903,25 @@
     "materiais": ["corda", "madeiraEscura", "placa", "placaFace"],
     "tamanho": [0.622, 1.35, 0.085]
   },
+  "polvilho": {
+    "grupo": "ingredientes",
+    "triangulos": 1464,
+    "kb": 47.4,
+    "nos": {
+      "polvilho": 1464
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "cabinho",
+      "mandioca",
+      "papelKraft",
+      "papelKraftEscuro",
+      "polvilho",
+      "rotuloAzul"
+    ],
+    "tamanho": [0.125, 0.143, 0.153]
+  },
   "quadro-das-cores": {
     "grupo": "lugares",
     "triangulos": 2172,
@@ -412,6 +950,18 @@
       "quadro"
     ],
     "tamanho": [1.3, 1.528, 0.465]
+  },
+  "queijo": {
+    "grupo": "ingredientes",
+    "triangulos": 1020,
+    "kb": 32.0,
+    "nos": {
+      "queijo": 1020
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["queijo", "queijoCasca", "queijoMiolo", "tabua"],
+    "tamanho": [0.29, 0.082, 0.29]
   },
   "rede": {
     "grupo": "ferramentas",

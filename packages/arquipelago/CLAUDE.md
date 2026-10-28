@@ -77,7 +77,11 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   controlador do chão, o do cipó ou direto) e `depois` (com o que o Rapier devolveu, troca de
   modo); entrar é `pegarCipo`/`agarrarTronco`, sair é `mudarModo`. O `personagem.tsx` só liga o
   modo ativo (`MODOS`) ao Rapier e ao desenho. Modo novo: um arquivo em `modos/`, uma entrada em
-  `MODOS` e em `ModoDoCorpo`. Testes: `tests/modos.test.ts`. Equilíbrio no tronco caído
+  `MODOS` e em `ModoDoCorpo`. Testes: `tests/modos.test.ts`. O limite do mar é a correnteza mansa
+  (`sistemas/correnteza.ts`, regra 6.12 em `docs/arquipelago-regras.md`): cada ilha onde se nada põe
+  a sua `RodaDeNado` em `movimento.rodasDeNado` (a central vale sempre, as do anel entram quando a
+  ilha abre, em `mundo/anel.tsx`); o modo chão soma a correnteza ao `desloc` de quem nada no mar e
+  `mundo/boias.tsx` desenha as boias de cada roda. Testes: `tests/correnteza.test.ts`. Equilíbrio no tronco caído
   (`modos/equilibrio.ts`): o eixo vem das âncoras `equilibrio-N-a`/`-b` do GLB
   (`movimento.equilibrios`, registradas pelo `BosqueVivo`); o chão entra nele pelo `eixoSobOsPes`.
   Escada reta (`modos/escada.ts`): âncoras `escada-N-base`, `-topo` e `-saida`
