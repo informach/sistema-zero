@@ -57,14 +57,15 @@ const limitar = (v: number) => Math.max(0, Math.min(100, v))
 
 /** O nome que a criança dá: de 1 a 16 caracteres, só letras, espaço e hífen. */
 export function nomeValido(nome: string): string | null {
-  const limpo = nome.trim().replace(/\s+/g, ' ')
+  // NFC: um acento digitado separado da letra (alguns teclados) vira a letra acentuada.
+  const limpo = nome.normalize('NFC').trim().replace(/\s+/g, ' ')
   if (limpo.length < 1 || limpo.length > 16) return null
   return /^[\p{L}][\p{L} -]*$/u.test(limpo) ? limpo : null
 }
 
 /** Por que o nome não serve, numa frase para a criança (`null` = serve). */
 export function motivoDoNome(nome: string): string | null {
-  const limpo = nome.trim().replace(/\s+/g, ' ')
+  const limpo = nome.normalize('NFC').trim().replace(/\s+/g, ' ')
   if (limpo.length === 0) return 'Escreva um nome.'
   if (limpo.length > 16) return 'Esse nome é comprido demais. Use até 16 letras.'
   if (!/^[\p{L}]/u.test(limpo)) return 'Comece o nome com uma letra.'

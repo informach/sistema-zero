@@ -2,7 +2,7 @@
  * O bicho adotado seguindo a criança (regras puras). Ele anda pelo chão até ficar a uns dois passos
  * dela, corre quando ela se afasta, espera parado quando ela está no cipó, no tronco ou nadando, e
  * senta depois de um tempo sem nada acontecer. Longe demais (ela atravessou a ponte correndo, voltou
- * para casa pelo cochilo), ele reaparece atrás dela. O corpo dele é um controlador de personagem do
+ * para casa pelo cochilo), caído da ilha ou preso contra uma parede, ele reaparece atrás dela. O corpo dele é um controlador de personagem do
  * Rapier: esta regra só diz para onde e com que pressa ir.
  */
 
@@ -22,6 +22,12 @@ export const SEGUIR = {
   reaparecerDe: 14,
   /** Parado por tanto tempo (s), senta. */
   sentaDepois: 6,
+  /** Abaixo disto (o mar fica em 0 e as ilhas em 1), ele caiu da ilha: reaparece atrás dela. */
+  abaixoDoMar: -0.5,
+  /** Querendo andar e quase sem sair do lugar por tanto tempo (s), ele ficou preso: reaparece. */
+  presoPor: 2.5,
+  /** Andou menos que esta parte do que queria: conta como preso. */
+  andouPouco: 0.25,
 } as const
 
 export type ClipeDoBicho = 'parado' | 'andar' | 'correr' | 'sentar'
@@ -34,10 +40,23 @@ export interface EstadoDoSeguir {
   andando: boolean
   /** Segundos parado. */
   parado: number
+  /** Segundos querendo andar sem sair do lugar (contra uma parede, um canteiro, a casa). */
+  preso: number
 }
 
 export function criarSeguir(): EstadoDoSeguir {
-  return { vx: 0, vz: 0, andando: false, parado: 0 }
+  return { vx: 0, vz: 0, andando: false, parado: 0, preso: 0 }
+}
+
+/**
+ * Conta o tempo preso: ele queria andar `vx, vz` por `dt` e andou só `andou` (o controlador parou
+ * o corpo numa parede). Devolve `true` quando passou de `presoPor` (hora de reaparecer).
+ */
+export function ficouPreso(e: EstadoDoSeguir, andou: number, dt: number): boolean {
+  const queria = Math.hypot(e.vx, e.vz) * dt
+  if (e.andando && queria > 1e-4 && andou < queria * SEGUIR.andouPouco) e.preso += dt
+  else e.preso = 0
+  return e.preso > SEGUIR.presoPor
 }
 
 /** Onde ele reaparece: dois passos atrás de para onde ela olha. */
@@ -57,7 +76,7 @@ export function atrasDela(crianca: { x: number; z: number; direcao: number }): {
  */
 export function passoDoSeguir(
   e: EstadoDoSeguir,
-  bicho: { x: number; z: number },
+  bicho: { x: number; y: number; z: number },
   crianca: { x: number; z: number },
   espera: boolean,
   dt: number,
@@ -65,11 +84,13 @@ export function passoDoSeguir(
   const dx = crianca.x - bicho.x
   const dz = crianca.z - bicho.z
   const d = Math.hypot(dx, dz)
-  if (d > SEGUIR.reaparecerDe && !espera) {
+  const caiu = bicho.y < SEGUIR.abaixoDoMar
+  if ((d > SEGUIR.reaparecerDe || caiu || e.preso > SEGUIR.presoPor) && !espera) {
     e.vx = 0
     e.vz = 0
     e.andando = false
     e.parado = 0
+    e.preso = 0
     return { clipe: 'parado', reaparecer: true }
   }
   if (!e.andando && d > SEGUIR.comecaAAndar && !espera) e.andando = true

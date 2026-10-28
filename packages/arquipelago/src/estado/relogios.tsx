@@ -36,7 +36,9 @@ export function Relogios() {
             ? { ...sv.bichos, adotado: passarTempoDoBicho(sv.bichos.adotado, 2) }
             : sv.bichos,
         }))
-        if (loja.getState().salvamento.necessidades.energia <= 0) {
+        // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
+        const agora = loja.getState()
+        if (agora.salvamento.necessidades.energia <= 0 && agora.painelAberto === null) {
           pedidos.teleporte = {
             x: CENTRO_DA_CASA.x,
             y: ALTURA_DA_TERRA + 1.2,

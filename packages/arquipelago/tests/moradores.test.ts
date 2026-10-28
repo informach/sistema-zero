@@ -193,6 +193,11 @@ describe('as falas da Capi', () => {
     expect(f.join(' ')).toContain('cercadinho')
   })
 
+  test('quantos faltam, no singular e no plural', () => {
+    expect(falasDaCapi({ ...base, achados: 3 }, 0).join(' ')).toContain('Falta só um')
+    expect(falasDaCapi({ ...base, achados: 1 }, 0).join(' ')).toContain('Faltam 3')
+  })
+
   test('as outras conversas do dia só se despedem', () => {
     expect(falasDaCapi({ ...base, primeiraDoDia: false }, 3)).toHaveLength(1)
   })

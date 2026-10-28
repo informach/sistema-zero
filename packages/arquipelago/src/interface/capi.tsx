@@ -234,9 +234,11 @@ function Adotar({ principal }: { principal: React.RefObject<HTMLButtonElement | 
       <p className="arq-capi-fala">Escolha quem vai com você e dê um nome.</p>
       <fieldset className="arq-capi-itens arq-capi-escolha">
         <legend className="arq-sr">Bichos do cercadinho</legend>
-        {achados.map((b) => (
+        {achados.map((b, i) => (
           <button
             key={b}
+            // Sem bicho escolhido o Adotar começa desligado: o foco vai para o primeiro da escolha.
+            ref={i === 0 && !bicho ? principal : undefined}
             type="button"
             className="arq-botao leve"
             aria-pressed={bicho === b}
@@ -268,7 +270,12 @@ function Adotar({ principal }: { principal: React.RefObject<HTMLButtonElement | 
         </p>
       ) : null}
       <div className="arq-menu-acoes">
-        <button ref={principal} type="submit" className="arq-botao" disabled={!bicho}>
+        <button
+          ref={bicho ? principal : undefined}
+          type="submit"
+          className="arq-botao"
+          disabled={!bicho}
+        >
           Adotar
         </button>
         <button

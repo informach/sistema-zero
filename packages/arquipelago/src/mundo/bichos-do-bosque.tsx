@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { BICHOS_DO_BOSQUE, type BichoDoBosque } from '@sistemazero/arquipelago-contracts'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { Group, Object3D } from 'three'
 import cachorroGlb from '../assets/bichos/cachorro-filhote.glb'
 import coelhoGlb from '../assets/bichos/coelho-filhote.glb'
@@ -116,9 +116,24 @@ export function BichosDoBosque({
     return { esconderijos, cercado }
   }, [modelo, meio, giro])
 
-  // A grade do chão para o caminho até o cercadinho: montada só no primeiro achado (custa uns
-  // 50 ms) e guardada enquanto a ilha estiver ativa. No referencial do modelo.
+  // A grade do chão para o caminho até o cercadinho (custa de 50 a 90 ms no computador, mais no
+  // celular), guardada enquanto a ilha estiver ativa. No referencial do modelo. Com bicho ainda
+  // escondido, ela é montada quando o navegador está à toa logo depois de a ilha ficar ativa, para
+  // o primeiro "Achar" não engasgar; se o achado vier antes, monta na hora.
   const grade = useRef<Grade | null>(null)
+  const faltaAchar = achados.length < BICHOS_DO_BOSQUE.length
+  useEffect(() => {
+    if (!faltaAchar || grade.current) return
+    const montar = () => {
+      if (!grade.current) grade.current = gradeDoBicho(colisores, TOPO_DO_BOSQUE)
+    }
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(montar, { timeout: 4000 })
+      return () => cancelIdleCallback(id)
+    }
+    const id = setTimeout(montar, 1500)
+    return () => clearTimeout(id)
+  }, [faltaAchar, colisores])
   const caminhoAteOCercado = (de: Lugar, ate: Lugar): PontoNoChao[] => {
     if (!grade.current) grade.current = gradeDoBicho(colisores, TOPO_DO_BOSQUE)
     // Do mundo para o modelo e de volta (o giro da ilha ao contrário).
@@ -235,7 +250,7 @@ function BichoDoEsconde({
       s.dizer(
         todos
           ? `Você achou o ${nome}. Os quatro bichos voltaram para o cercadinho. Conte para a Capi.`
-          : `Você achou o ${nome}. Ele correu para o cercadinho da Capi.`,
+          : `Você achou o ${nome}. O bicho correu para o cercadinho da Capi.`,
       )
     },
   })

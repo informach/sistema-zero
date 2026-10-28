@@ -99,6 +99,8 @@ describe('adotar', () => {
   test('o nome tem de 1 a 16 caracteres, só letras, espaço e hífen', () => {
     expect(nomeValido('  Pé   de-Moleque ')).toBe('Pé de-Moleque')
     expect(nomeValido('Ana')).toBe('Ana')
+    // O acento digitado separado da letra vira a letra acentuada (NFC).
+    expect(nomeValido('Jose\u0301')).toBe('José')
     expect(nomeValido('')).toBeNull()
     expect(nomeValido('   ')).toBeNull()
     expect(nomeValido('a'.repeat(17))).toBeNull()

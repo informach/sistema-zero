@@ -135,15 +135,19 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       set({ ferramentaAberta: aberta })
     },
     definirTempoPausado(pausado) {
-      set({ tempoPausado: pausado })
+      // A tela do tempo cobre o jogo: um painel aberto por baixo (a conversa, o cuidar, o Quadro)
+      // fecha, para nada ser escolhido nem gravado por trás dela.
+      set(pausado ? { tempoPausado: true, painelAberto: null } : { tempoPausado: false })
     },
     definirTempoSincronizando(sincronizando) {
       set({ tempoSincronizando: sincronizando })
     },
     registrarTempo(usadoHojeSegundos, acabou, limiteDiarioMinutos) {
+      const tempoAcabou = acabou || get().tempoAcabou
       set({
         usadoHojeSegundos,
-        tempoAcabou: acabou || get().tempoAcabou,
+        tempoAcabou,
+        ...(tempoAcabou ? { painelAberto: null } : {}),
         ...(limiteDiarioMinutos === undefined
           ? {}
           : { acesso: { ...get().acesso, limiteDiarioMinutos } }),

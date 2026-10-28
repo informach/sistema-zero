@@ -34,7 +34,7 @@ export const TRUQUE_FEITO: Readonly<Record<BichoAdotado['id'], string>> = {
   cachorro: 'deu a pata',
   gato: 'rolou no chão',
   coelho: 'deu um pulinho',
-  porquinho: 'girou em volta de si',
+  porquinho: 'girou no lugar',
 }
 
 export function cuidar(

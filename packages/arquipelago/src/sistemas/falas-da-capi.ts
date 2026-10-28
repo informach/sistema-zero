@@ -80,8 +80,11 @@ export function falasDaCapi(c: ContextoDaFala, escolha: number): string[] {
   if (c.achados === 0)
     falas.push('Os bichos estão escondidos pelo bosque. Procure perto das moitas e das tocas.')
   else if (c.achados < c.total) {
+    const faltam = c.total - c.achados
     falas.push(
-      `Você já achou ${c.achados} de ${c.total} bichos. Faltam ${c.total - c.achados}, eles estão por perto.`,
+      faltam === 1
+        ? `Você já achou ${c.achados} de ${c.total} bichos. Falta só um, e está por perto.`
+        : `Você já achou ${c.achados} de ${c.total} bichos. Faltam ${faltam}, e estão por perto.`,
     )
   } else falas.push('Todos os bichos voltaram para casa. Obrigada por procurar cada um.')
   if (c.adotado)

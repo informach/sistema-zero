@@ -835,10 +835,13 @@ adotado já estão no jogo. O plano da parte que falta:
   0,3, para na parede). Começa a andar quando ela passa de 2,6 m, para a 1,6 m (dois passos),
   corre acima de 5 m e senta depois de 6 s parado. No cipó, no tronco, nadando ou com o jogo
   parado, ele espera. Mais longe que 14 m (a criança atravessou a ponte correndo, voltou para casa
-  no cochilo), ele reaparece dois passos atrás dela. A criança passa por ele: o bicho nunca
-  prende nem empurra (os dois corpos são cinemáticos e se ignoram).
+  no cochilo), caído da ilha (abaixo de 0,5 m sob o mar, `abaixoDoMar`) ou preso contra uma
+  parede por 2,5 s querendo andar (`presoPor`), ele reaparece dois passos atrás dela. A criança
+  passa por ele: o bicho nunca prende nem empurra (os dois corpos são cinemáticos e se ignoram).
 - **Cuidar** (`sistemas/cuidar.ts`, painel `interface/bicho.tsx`): perto dele aparece "Cuidar de"
-  e o nome. O painel mostra barriga, limpeza e carinho, a última fala e os cuidados: comida da
+  e o nome, só quando nenhum outro botão está ao alcance (a Capi, o "Achar", a porta e o Quadro
+  vêm antes: o bicho anda sempre perto e não pode tomar o E deles; `deFundo` em
+  `mundo/interativos.ts`). O painel mostra barriga, limpeza e carinho, a última fala e os cuidados: comida da
   mochila (repõe o dobro do que repõe na criança), banho (só perto do lago do Bosque ou dentro de
   casa; repõe 60), carinho (repõe 25), a aula do truque e, depois de aprendido, pedir o truque.
   Fome cai 1,5, limpeza 0,8 e carinho 1 por minuto JOGADO (`QUEDA_DO_BICHO_POR_MINUTO`, nos
@@ -849,7 +852,7 @@ adotado já estão no jogo. O plano da parte que falta:
   filhote vira adulto na hora, com festa, e o modelo troca pelo adulto.
 - **Truque** (`ensinar`, `fazTruque`, `TRUQUE`, `TRUQUE_FEITO`): uma aula por dia, com as três
   medidas acima de 50. Na quinta aula ele aprende e passa a fazer o truque quando pedem (dar a
-  pata, rolar no chão, dar um pulinho ou girar em volta de si), tocando o clipe "truque".
+  pata, rolar no chão, dar um pulinho ou girar no lugar), tocando o clipe "truque".
 - **Moedas:** nada disto paga moedas.
 
 ## 7. Desafios

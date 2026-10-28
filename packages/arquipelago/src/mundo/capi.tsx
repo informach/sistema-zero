@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { Group, Object3D } from 'three'
 import capiGlb from '../assets/personagens/capi.glb'
 import { useJogo } from '../estado/contexto'
@@ -89,13 +89,25 @@ export function Capi({
     },
   })
 
+  // A câmera da conversa só vale com a conversa aberta: fechou o painel (Esc, outro painel, o fim
+  // do tempo), solta. E se a Capi sai de cena (a ilha descarregou), a conversa fecha junto.
+  useEffect(() => {
+    const soltar = loja.subscribe((s) => {
+      if (s.painelAberto !== PAINEL_DA_CAPI && pedidos.conversa === cabeca) pedidos.conversa = null
+    })
+    return () => {
+      soltar()
+      if (pedidos.conversa === cabeca) pedidos.conversa = null
+      if (loja.getState().painelAberto === PAINEL_DA_CAPI) loja.getState().abrirPainel(null)
+    }
+  }, [loja, pedidos, cabeca])
+
   const corpo = useRef<Group>(null)
   const olhar = useRef(lugar.descanso)
   useFrame((_, dt) => {
     const g = corpo.current
     if (!g) return
     const conversando = loja.getState().painelAberto === PAINEL_DA_CAPI
-    if (!conversando && pedidos.conversa === cabeca) pedidos.conversa = null
     const alvo = olharDaCapi(lugar, rastro, lugar.descanso, conversando)
     olhar.current = suavizarAngulo(olhar.current, alvo, CAPI_NO_BOSQUE.rapidezDoGiro, dt)
     g.rotation.y = olhar.current

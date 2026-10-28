@@ -6,8 +6,8 @@ import {
   RigidBody,
   useRapier,
 } from '@react-three/rapier'
-import type { BichoAdotado as Adotado, BichoDoBosque } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import type { BichoDoBosque } from '@sistemazero/arquipelago-contracts'
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Group } from 'three'
 import cachorroGlb from '../assets/bichos/cachorro.glb'
 import coelhoGlb from '../assets/bichos/coelho.glb'
@@ -16,7 +16,7 @@ import porquinhoGlb from '../assets/bichos/porquinho.glb'
 import { lojaDoBicho, PAINEL_DO_BICHO } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
 import { jogoPausado } from '../sistemas/pausa'
-import { atrasDela, criarSeguir, passoDoSeguir } from '../sistemas/seguir'
+import { atrasDela, criarSeguir, ficouPreso, passoDoSeguir } from '../sistemas/seguir'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { ESCALA_DOS_BICHOS, URL_DO_FILHOTE } from './bichos-do-bosque'
@@ -47,28 +47,53 @@ const UMA_VEZ: readonly string[] = ['feliz', 'truque']
  * painel (`interface/bicho.tsx`). Troca de modelo quando cresce.
  */
 export function BichoAdotado() {
-  const adotado = useEstado((s) => s.salvamento.bichos.adotado)
-  if (!adotado) return null
+  const { loja } = useJogo()
+  // Só o que muda o desenho (as medidas caem a cada 2 s e não precisam renderizar de novo).
+  const id = useEstado((s) => s.salvamento.bichos.adotado?.id ?? null)
+  const fase = useEstado((s) => s.salvamento.bichos.adotado?.fase ?? null)
+  const nome = useEstado((s) => s.salvamento.bichos.adotado?.nome ?? null)
+  // A última reação já tocada fica aqui, fora do corpo: crescer troca o corpo (outro modelo), e o
+  // corpo novo ainda toca a festinha do cuidado que o fez crescer.
+  const reacaoVista = useRef(lojaDoBicho(loja).getState().reacao.n)
+  if (!id || !fase || !nome) return null
   return (
     <ComReserva reserva={null}>
-      <CorpoDoBicho key={`${adotado.id}-${adotado.fase}`} adotado={adotado} />
+      <CorpoDoBicho
+        key={`${id}-${fase}`}
+        id={id}
+        fase={fase}
+        nome={nome}
+        reacaoVista={reacaoVista}
+      />
     </ComReserva>
   )
 }
 
-function CorpoDoBicho({ adotado }: { adotado: Adotado }) {
-  const { loja, rastro, movimento } = useJogo()
+function CorpoDoBicho({
+  id,
+  fase,
+  nome,
+  reacaoVista,
+}: {
+  id: BichoDoBosque
+  fase: 'filhote' | 'adulto'
+  nome: string
+  reacaoVista: RefObject<number>
+}) {
+  const { loja, rastro, movimento, pedidos } = useJogo()
   const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
   const visual = useRef<Group>(null)
   const raiz = useRef<Group>(null)
-  const url = adotado.fase === 'adulto' ? URL_DO_ADULTO[adotado.id] : URL_DO_FILHOTE[adotado.id]
+  const url = fase === 'adulto' ? URL_DO_ADULTO[id] : URL_DO_FILHOTE[id]
   const { cena, actions, mixer, olhos } = useCopiaAnimada(url, raiz, UMA_VEZ)
   const bicho = lojaDoBicho(loja)
-  const nome = adotado.nome
 
-  // Onde ele nasce: dois passos atrás da criança (depois disso quem anda é a física).
+  // Onde ele nasce: dois passos atrás da criança. O corpo pode montar antes do primeiro quadro do
+  // personagem (o modelo já estava baixado), quando o `rastro` ainda não tem a posição dela: por
+  // isso o primeiro quadro põe ele de novo atrás dela (`nasceu`).
+  const nasceu = useRef(false)
   const [inicial] = useState(() => {
     const p = atrasDela(rastro)
     return { x: p.x, y: rastro.y, z: p.z }
@@ -80,7 +105,6 @@ function CorpoDoBicho({ adotado }: { adotado: Adotado }) {
   const desloc = useRef({ x: 0, y: 0, z: 0 })
   const tocando = useRef<string | null>(null)
   const reacaoAte = useRef(0)
-  const reacaoVista = useRef(bicho.getState().reacao.n)
   const piscarEm = useRef<number>(PISCAR.aCada)
   const relogio = useRef(0)
 
@@ -103,6 +127,7 @@ function CorpoDoBicho({ adotado }: { adotado: Adotado }) {
       return pos.current.z
     },
     raio: ALCANCE_DE_CUIDAR,
+    deFundo: true,
     rotulo: () => `Cuidar de ${nome}`,
     agir: () => {
       bicho.getState().abrir()
@@ -119,6 +144,12 @@ function CorpoDoBicho({ adotado }: { adotado: Adotado }) {
     const s = loja.getState()
     if (!b || !col) return
     const cuidando = s.painelAberto === PAINEL_DO_BICHO
+    if (!nasceu.current) {
+      nasceu.current = true
+      const p = atrasDela(rastro)
+      pos.current = { x: p.x, y: rastro.y, z: p.z }
+      b.setTranslation(pos.current, true)
+    }
 
     // Para onde ir: atrás da criança; parado se o jogo está parado (menu, painel, ferramenta).
     const espera = movimento.modo !== 'chao' || s.nadando || jogoPausado(s)
@@ -128,7 +159,8 @@ function CorpoDoBicho({ adotado }: { adotado: Adotado }) {
       pos.current = { x: p.x, y: rastro.y, z: p.z }
       velY.current = 0
       b.setTranslation(pos.current, true)
-    } else if (!jogoPausado(s)) {
+    } else if (!jogoPausado(s) && pedidos.chaoChegando.size === 0) {
+      // Com a ilha completa ainda chegando, ninguém cai (o chão dela ainda não colide).
       velY.current = Math.max(-20, velY.current - GRAVIDADE * dt)
       desloc.current.x = seguir.current.vx * dt
       desloc.current.y = velY.current * dt
@@ -145,6 +177,8 @@ function CorpoDoBicho({ adotado }: { adotado: Adotado }) {
       pos.current.y = p.y + mov.y
       pos.current.z = p.z + mov.z
       b.setNextKinematicTranslation(pos.current)
+      // Preso contra uma parede (a casa, um canteiro), o próximo passo traz ele para trás dela.
+      ficouPreso(seguir.current, Math.hypot(mov.x, mov.z), dt)
     }
 
     // Para onde olhar: para onde anda; parado, para a criança (cuidando, sempre para ela).
