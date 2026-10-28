@@ -135,14 +135,21 @@ export function createArquipelagoRoutes(deps: {
       },
     },
     /**
-     * Área dos pais: o app embrulha com o portão do responsável. A leitura leva os perfis da conta
-     * (a grade do Auth) para o serviço dizer se alguma criança vê o jogo; sem a lista, nada segue.
+     * Área dos pais: o app embrulha com o portão do responsável. A leitura leva os perfis prontos
+     * da conta (a grade do Auth; o pendente ainda não abre o perfil) para o serviço dizer se alguma
+     * criança vê o jogo. Sem a lista, nada segue. O teto só pesa para a equipe, que cria perfis sem
+     * limite e entra com qualquer um deles.
      */
     arquipelagoLimiteDaFamilia: {
       GET: async () => {
         const lista = await deps.profiles.list()
-        if (lista.status !== 200 || !lista.body) return repasse(lista)
-        const perfis = lista.body.profiles.slice(0, PERFIS_DA_FAMILIA_MAXIMO).map((p) => p.id)
+        if (lista.status !== 200 || !Array.isArray(lista.body?.profiles)) {
+          return repasse({ ...lista, body: lista.status === 200 ? null : lista.body })
+        }
+        const perfis = lista.body.profiles
+          .filter((p) => p.admissionState !== 'pending')
+          .slice(0, PERFIS_DA_FAMILIA_MAXIMO)
+          .map((p) => p.id)
         return chamar('/familia/limite', 'GET', undefined, { query: { perfis: perfis.join(',') } })
       },
       PUT: comCorpo('/familia/limite', 'PUT', CORPO_PEQUENO),

@@ -122,9 +122,26 @@ describe('repasse do Arquipélago', () => {
     const r = await recusada.routes.arquipelagoLimiteDaFamilia.GET()
     expect(r.status).toBe(403)
     expect(recusada.chamadas).toEqual([])
-    const fora = montar({ status: 200, body: {} }, { status: 200, body: null })
-    expect((await fora.routes.arquipelagoLimiteDaFamilia.GET()).status).toBe(502)
-    expect(fora.chamadas).toEqual([])
+    for (const corpo of [null, {}, { profiles: 'x' }]) {
+      const estranha = montar({ status: 200, body: {} }, { status: 200, body: corpo })
+      expect((await estranha.routes.arquipelagoLimiteDaFamilia.GET()).status).toBe(502)
+      expect(estranha.chamadas).toEqual([])
+    }
+  })
+
+  test('o perfil que ainda entra na jornada não conta (a criança não abre esse perfil)', async () => {
+    const perfis = {
+      status: 200,
+      body: {
+        profiles: [
+          { id: PERFIL, admissionState: 'pending' },
+          { id: IRMAO, admissionState: 'ready' },
+        ],
+      },
+    }
+    const { routes, chamadas } = montar({ status: 200, body: {} }, perfis)
+    await routes.arquipelagoLimiteDaFamilia.GET()
+    expect(chamadas[0]?.query).toEqual({ perfis: IRMAO })
   })
 
   test('cliente: só nomes do build, com os cabeçalhos de cache do serviço', async () => {

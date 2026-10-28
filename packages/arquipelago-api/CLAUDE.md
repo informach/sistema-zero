@@ -123,8 +123,10 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 - **Cartão dos pais** (28/10/2026): a área dos pais só mostra o cartão do tempo livre quando
   `algumaCriancaVe` (`domain/acesso.ts`): cada perfil da conta passa por `decidirAcesso` como
   criança do Kids, com o papel da conta (a família da equipe conta como equipe). Os ids vêm do BFF
-  dos pais (a grade do Auth) em `?perfis=`, até 20 (`PERFIS_DA_FAMILIA_MAXIMO`); sem perfis, falso.
-  Não há rota nova no Members. Detalhe em `docs/arquipelago-regras.md`, seção 3.
+  dos pais (a grade do Auth, só os perfis prontos) em `?perfis=`, até 20
+  (`PERFIS_DA_FAMILIA_MAXIMO`); sem perfis, falso. Não há rota nova no Members, e o serviço não
+  confere que os ids são da conta (forjar só muda o próprio cartão; o jogo segue pela sessão da
+  criança). Serviço e app do Kids sobem juntos: com só um novo, o cartão some. Detalhe em `docs/arquipelago-regras.md`, seção 3.
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",
