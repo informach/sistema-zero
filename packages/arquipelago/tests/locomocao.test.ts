@@ -7,10 +7,12 @@ import {
   AR_PARA_ATERRISSAR,
   CICLO_DE_ANDAR,
   CICLO_DE_CORRER,
+  CICLO_DE_ESCALAR,
   CICLOS_POR_SEGUNDO_MAXIMO,
   CLIPES,
   ciclosPorSegundo,
   criarLocomocao,
+  DURACAO_DO_PENDURADO,
   type EntradaDaLocomocao,
   passoDaLocomocao,
   pesosNoChao,
@@ -24,7 +26,7 @@ const chao = (velocidade: number): EntradaDaLocomocao => ({
   noChao: true,
   velY: 0,
   nadando: false,
-  pendurado: false,
+  pendurado: null,
 })
 
 function rodar(l = criarLocomocao(), e: EntradaDaLocomocao, segundos: number) {
@@ -62,13 +64,13 @@ describe('máquina de estados', () => {
     const l = rodar(undefined, chao(0), 0.3)
     passoDaLocomocao(
       l,
-      { velocidade: 0, noChao: false, velY: 8, nadando: false, pendurado: false },
+      { velocidade: 0, noChao: false, velY: 8, nadando: false, pendurado: null },
       1 / 60,
     )
     expect(l.pulou).toBe(true)
-    rodar(l, { velocidade: 0, noChao: false, velY: 4, nadando: false, pendurado: false }, 0.2)
+    rodar(l, { velocidade: 0, noChao: false, velY: 4, nadando: false, pendurado: null }, 0.2)
     expect(l.pesos.Pulo).toBeGreaterThan(0.9)
-    rodar(l, { velocidade: 0, noChao: false, velY: -6, nadando: false, pendurado: false }, 0.3)
+    rodar(l, { velocidade: 0, noChao: false, velY: -6, nadando: false, pendurado: null }, 0.3)
     expect(l.pesos.Queda).toBeGreaterThan(0.9)
     passoDaLocomocao(l, chao(0), 1 / 60)
     expect(l.pesos.Aterrissagem).toBeGreaterThan(0.8)
@@ -79,7 +81,7 @@ describe('máquina de estados', () => {
 
   test('descer um degrau (pouco tempo no ar) não troca a animação nem aterrissa', () => {
     const l = rodar(undefined, chao(2.2), 0.5)
-    rodar(l, { velocidade: 2.2, noChao: false, velY: -2, nadando: false, pendurado: false }, 0.1)
+    rodar(l, { velocidade: 2.2, noChao: false, velY: -2, nadando: false, pendurado: null }, 0.1)
     expect(l.pesos.Queda).toBe(0)
     passoDaLocomocao(l, chao(2.2), 1 / 60)
     expect(l.noAr).toBe(0)
@@ -87,23 +89,40 @@ describe('máquina de estados', () => {
     expect(AR_PARA_ATERRISSAR).toBeGreaterThan(0.1)
   })
 
-  test('pendurada no cipó ou no tronco: a pose parada, e soltar cai e aterrissa', () => {
+  test('pendurada no cipó: pernas soltas, e soltar cai e aterrissa', () => {
     const l = rodar(
       undefined,
-      { velocidade: 0, noChao: true, velY: 0, nadando: false, pendurado: true },
+      { velocidade: 0, noChao: true, velY: 0, nadando: false, pendurado: 'cipo' },
       0.5,
     )
-    expect(l.pesos.Idle).toBeCloseTo(1)
-    rodar(l, { velocidade: 3, noChao: false, velY: -5, nadando: false, pendurado: false }, 0.5)
+    expect(l.pesos.Pendurado).toBeCloseTo(1)
+    rodar(l, { velocidade: 3, noChao: false, velY: -5, nadando: false, pendurado: null }, 0.5)
     expect(l.pesos.Queda).toBeGreaterThan(0.9)
     passoDaLocomocao(l, chao(0), 1 / 60)
     expect(l.pesos.Aterrissagem).toBeGreaterThan(0)
   })
 
+  test('no tronco: o ciclo de subir anda pela distância na casca e para quando ela para', () => {
+    const subindo = {
+      velocidade: 1.7,
+      noChao: true,
+      velY: 0,
+      nadando: false,
+      pendurado: 'escalada' as const,
+    }
+    const l = rodar(undefined, subindo, 0.5)
+    expect(l.pesos.Escalar).toBeCloseTo(1)
+    const antes = l.tempos.Escalar
+    rodar(l, { ...subindo, velocidade: 0 }, 0.5)
+    expect(l.tempos.Escalar).toBeCloseTo(antes)
+    rodar(l, subindo, CICLO_DE_ESCALAR.passada / 1.7 / 2)
+    expect((l.tempos.Escalar - antes + 1) % 1).toBeCloseTo(0.5, 1)
+  })
+
   test('na água, só o nado', () => {
     const l = rodar(
       undefined,
-      { velocidade: 2.6, noChao: false, velY: 0, nadando: true, pendurado: false },
+      { velocidade: 2.6, noChao: false, velY: 0, nadando: true, pendurado: null },
       1,
     )
     expect(l.pesos.Nado).toBeCloseTo(1)
@@ -138,6 +157,8 @@ describe('locomocao.glb', async () => {
     const dur = (n: string) => loco.animations.find((a) => a.name === n)?.duration ?? 0
     expect(dur('Andar')).toBeCloseTo(CICLO_DE_ANDAR.duracao, 3)
     expect(dur('Correr')).toBeCloseTo(CICLO_DE_CORRER.duracao, 3)
+    expect(dur('Escalar')).toBeCloseTo(CICLO_DE_ESCALAR.duracao, 3)
+    expect(dur('Pendurado')).toBeCloseTo(DURACAO_DO_PENDURADO, 3)
   })
 
   test('só giros dos ossos do avatar e a posição da bacia (nada de escala ou ossos a mais)', () => {

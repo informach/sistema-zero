@@ -1,4 +1,5 @@
-"""As animações de movimento do avatar no jogo: andar, correr, pular, cair, aterrissar e nadar.
+"""As animações de movimento do avatar no jogo: andar, correr, pular, cair, aterrissar, nadar,
+ficar pendurado no cipó e escalar o tronco.
 
 O avatar é o mesmo da plataforma (esqueleto Mixamo em `community-kids/public/avatar3d/base/`), que
 só traz a pose "Idle" com movimento. Este script abre esse esqueleto no Blender sem tela, monta
@@ -453,6 +454,59 @@ def pose_nado(t):
                   giro_pe=R(45))
 
 
+def pose_pendurado(t):
+    """Laço pendurado no cipó: braços no alto (o jogo ainda mira as mãos na corda), pernas soltas,
+    um pouco dobradas, balançando devagar uma contra a outra."""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    bacia(sobe=0.0, inclinar=R(-4) + R(2) * math.sin(w))
+    tronco(inclinar=R(-6), rolar=R(1.5) * math.sin(w))
+    for lado, atraso in (('Left', 0.0), ('Right', 0.5)):
+        braco(lado, R(165) + R(3) * math.sin(w + atraso), R(10), R(8))
+    firmar_cabeca(0.35)
+    # Cada perna vai e volta (frente) e dobra o joelho na ida, meia volta depois da outra.
+    alvos = []
+    for fase, x in ((w, 0.03), (w + math.pi, -0.03)):
+        alvos.append((0.05 + 0.12 * math.sin(fase), 0.36 - 0.05 * max(0.0, math.sin(fase)), x))
+    pernas_soltas(0, alvos[0], alvos[1], giro_pe=R(28))
+
+
+ESCALAR = dict(
+    duracao=0.8,  # um ciclo (dois passos de pé e duas mãos)
+    passada=0.5,  # o corpo sobe isto por ciclo
+)
+
+
+def pose_escalar(t):
+    """Ciclo de subir no tronco (o avatar de frente para ele): o pé apoiado na casca desce em
+    relação ao corpo enquanto o corpo sobe; o outro sai da casca e sobe para o próximo apoio. A mão
+    do lado oposto alcança junto, como numa escada."""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    bacia(lado=0.035 * math.sin(w), giro=R(6) * math.sin(w), inclinar=R(10))
+    tronco(inclinar=R(4), giro=R(-8) * math.sin(w), rolar=R(4) * math.sin(w))
+    # Mão esquerda alcança no alto quando o pé direito sobe (meia volta depois do esquerdo); a
+    # outra fica na altura do peito, agarrada, com o cotovelo dobrado.
+    for lado, atraso in (('Left', 0.0), ('Right', math.pi)):
+        alto = 0.5 + 0.5 * math.cos(w + atraso)  # 1 = esticada no alto
+        braco(lado, R(90) + R(85) * alto, R(80) - R(70) * alto, R(16))
+    firmar_cabeca(0.4)
+    d = 0.5
+    S = ESCALAR['passada'] * d
+    alvos = {}
+    for lado, fase in (('Left', t), ('Right', (t + 0.5) % 1)):
+        if fase < d:
+            u = fase / d
+            abaixo = 0.16 + S * u  # apoiado: desce em relação ao corpo
+            frente = 0.22
+        else:
+            u = (fase - d) / (1 - d)
+            abaixo = 0.16 + S - S * suave(u)  # solto: sobe para o próximo apoio
+            frente = 0.22 - 0.14 * math.sin(math.pi * u)  # sai da casca e volta
+        alvos[lado] = (frente, abaixo, 0.06 if lado == 'Left' else -0.06)
+    pernas_soltas(0, alvos['Left'], alvos['Right'], giro_pe=R(-10))
+
+
 # ── Gravar ───────────────────────────────────────────────────────────────────────────────────────
 def gravar(nome, quadros, pose, laco=True):
     """Cria a ação `nome` com `quadros` + 1 chaves (no laço, a última repete a primeira)."""
@@ -497,6 +551,9 @@ gravar('Pulo', round(0.36 * FPS), pose_pulo, laco=False)
 gravar('Queda', round(1.2 * FPS), pose_queda)
 gravar('Aterrissagem', round(0.34 * FPS), pose_aterrissagem, laco=False)
 gravar('Nado', round(1.1 * FPS), pose_nado)
+gravar('Pendurado', round(1.6 * FPS), pose_pendurado)
+gravar('Escalar', round(ESCALAR['duracao'] * FPS), pose_escalar)
+resumo['Escalar'] = {'duracao': round(ESCALAR['duracao'] * FPS) / FPS, 'passada': ESCALAR['passada']}
 
 os.makedirs(os.path.dirname(SAIDA), exist_ok=True)
 bpy.ops.object.select_all(action='DESELECT')

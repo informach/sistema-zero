@@ -3,7 +3,8 @@ import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
-import type { Balanco, Ponto } from '../sistemas/cipo'
+import type { Ponto } from '../sistemas/cipo'
+import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
 import type { Corrida } from '../sistemas/percurso'
@@ -44,18 +45,14 @@ export interface Pedidos {
   olharPara: number | null
 }
 
-/** Um cipó que dá para pegar (a ilha completa registra os dela enquanto está ativa). */
-export interface CipoVivo {
+/**
+ * Um cipó que dá para pegar (a ilha completa registra os dela enquanto está ativa). Solto, ele é da
+ * física das cordas (`sistemas/cordas.ts`); seguro, do balanço que o personagem controla.
+ */
+export interface CipoVivo extends Corda {
   id: string
-  /** Onde ele se prende no galho, no mundo. */
-  pivo: Ponto
-  /** Do pivô até o fim da corda desenhada. */
-  corda: number
   /** Do pivô até onde as mãos seguram (os pés passam livres do chão). */
   pegada: number
-  /** A pose do balanço: o personagem mexe enquanto segura; solto, a ilha deixa ele parar. */
-  balanco: Balanco
-  seguro: boolean
   /** `performance.now()` da última vez que alguém soltou (para não pegar de novo na hora). */
   soltoEm: number
 }
@@ -97,6 +94,11 @@ export interface Movimento {
   noChao: boolean
   /** Para onde a câmera olha no balanço (perto do meio do cipó). */
   foco: Ponto
+  /**
+   * O corpo como está desenhado (inclinado no cipó, atrás da corda), no mundo: é nele que as cordas
+   * encostam. `null` até o personagem desenhar o primeiro quadro.
+   */
+  corpoDesenhado: CorpoQueEmpurra | null
   /** A corrida do percurso em andamento (o cronômetro lê o tempo daqui). */
   corrida: Corrida | null
   /** Pedido da tela para o percurso: correr de novo ou parar. */
@@ -112,6 +114,7 @@ export function criarMovimento(): Movimento {
     modo: 'chao',
     noChao: false,
     foco: { x: 0, y: 0, z: 0 },
+    corpoDesenhado: null,
     corrida: null,
     pedidoDoPercurso: null,
   }

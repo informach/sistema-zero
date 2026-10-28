@@ -423,6 +423,8 @@ patinaria. Correndo, ele vai um pouco mais rápido que o "andar" antigo; o pulo 
 | Queda | descendo, ou mais de 0,16 s no ar sem ter pulado | `AR_SEM_QUEDA` |
 | Aterrissagem | ao tocar o chão depois de mais de 0,3 s no ar; dura 0,33 s, mais leve correndo | `AR_PARA_ATERRISSAR` |
 | Nado | na água (o corpo deita para a frente) | `TRANSICAO.agua` |
+| Pendurado | segurando o cipó: as pernas soltas vão e voltam, uma contra a outra, num laço de 1,6 s; os braços são mirados na corda por cima do clipe | `DURACAO_DO_PENDURADO` |
+| Escalar | agarrado no tronco: o pé apoiado desce em relação ao corpo, o outro sai da casca e sobe, e a mão do lado oposto alcança no alto; ciclo de 0,8 s para 0,5 m de subida, tocado pela velocidade de verdade (parado no tronco, o clipe para) | `CICLO_DE_ESCALAR` |
 
 - Entre parado, andar e correr, as animações se misturam pela velocidade de verdade (a
   distância andada, não a tecla). Andar e correr são tocados na mesma fase, e a fase anda pela
@@ -435,7 +437,8 @@ patinaria. Correndo, ele vai um pouco mais rápido que o "andar" antigo; o pulo 
 - Nas curvas o avatar inclina para dentro, no máximo 0,14 rad (`INCLINACAO_NA_CURVA`,
   `INCLINACAO_MAXIMA`, em `personagem.tsx`).
 - Para conferir os clipes fora do jogo: `bun run dev` e abra `/animacoes?v=2.2` (há também
-  `?varrer=1`, `?pulo=1` e `?nado=1`). O chão quadriculado corre na velocidade pedida.
+  `?varrer=1`, `?pulo=1`, `?nado=1`, `?cipo=1` e `?escalar=1`). O chão quadriculado corre na
+  velocidade pedida.
 
 **Onde o personagem aparece** (`arquipelago/src/sistemas/ponto-de-partida.ts`). Cada criança
 arruma o quarto de um jeito, então o ponto de começo pode cair em cima de um móvel:
@@ -558,8 +561,10 @@ Arquivos: `sistemas/cipo.ts` (`CIPO`), `personagem/personagem.tsx` e `mundo/bosq
   (`esperaParaPegarDeNovo`).
 - **Onde as mãos seguram** (`comprimentoDaPegada`): o mais longe do galho que deixa os pés a 0,35 do
   chão no ponto mais baixo (`folgaDosPes`), nunca menos de 1,6 (`comprimentoMinimo`). No Bosque dá
-  de 3,0 a 3,4. As mãos ficam 1 acima do centro do corpo (`maosAcimaDoCentro`). Logo depois de
-  pegar, o corpo vai suave até o lugar do balanço em 0,22 s (`encaixe`).
+  de 3,7 a 4,1. As mãos ficam 0,3 acima do centro do corpo, 1,2 acima dos pés
+  (`maosAcimaDoCentro`): o avatar é chibi (ombro a 1,01 do pé, 0,36 do ombro ao punho), e as mãos
+  dele não passam da altura do queixo. Logo depois de pegar, o corpo vai suave até o lugar do
+  balanço em 0,22 s (`encaixe`).
 - **O balanço** é um pêndulo com a gravidade do personagem (24, `GRAVIDADE_DO_CIPO`):
   - bombear: pedir para o lado em que o balanço já vai empurra 9 m/s² ao longo do arco
     (`bombear`); pedir para o outro lado não freia; parado, pedir dá o primeiro empurrão;
@@ -573,6 +578,29 @@ Arquivos: `sistemas/cipo.ts` (`CIPO`), `personagem/personagem.tsx` e `mundo/bosq
   (`impulsoAoSoltar`) mais 3,2 para cima (`subidaAoSoltar`). Do primeiro cipó dá para pegar o
   segundo, do segundo o terceiro, e do terceiro se cai em terra do outro lado do lago.
 - **Cair no lago** não é castigo: o personagem nada (6.12).
+- **A corda é física** (`sistemas/cordas.ts`, `CORDAS`): cada cipó é uma corrente de 18 elos de
+  uns 25 cm presa no galho, com a gravidade do personagem, como os jogos fazem com corda (Verlet
+  com restrições). Ela encosta e não atravessa:
+  - no corpo desenhado do personagem (o tronco como cápsula e a cabeça grande como bola,
+    `CORPO.desenho`; o Rapier segue com a cápsula dele). Andar contra um cipó solto empurra a
+    corda, que balança;
+  - no tronco da árvore dos cipós: ela bate na casca e volta;
+  - nos outros cipós: um cipó que bate em outro faz o outro balançar;
+  - no chão.
+  Segurando, o ponto da pegada fica preso nas mãos e a corda de cima fica esticada até o galho (o
+  peso da criança); a de baixo cai solta e encosta no corpo, então a barriga e as pernas empurram a
+  ponta para a frente. O cipó seguro empurra os soltos. Quem acabou de soltar não empurra a corda
+  até sair de perto dela (`esperandoOCorpoSair`). O cipó solto para sozinho, perdendo 0,8 por
+  segundo.
+- **O desenho da corda** (`mundo/cipo-desenhado.ts`): a corda reta do `bosque.glb` é trocada, com a
+  ilha completa ativa, por um tubo refeito a cada quadro em cima da corrente (2 anéis por elo, 6
+  lados, o mesmo material e a mesma tinta da ilha). A alça vai na ponta e as folhas acompanham a
+  curva.
+- **O desenho do corpo:** no cipó toca a animação Pendurado (6.6). A corda passa ao lado do rosto,
+  do lado esquerdo e à frente (`CORDA_NO_CORPO`, em `personagem/bracos.ts`), como quem pendura
+  numa corda de verdade. As duas mãos fecham nela por IK de dois ossos, a esquerda acima da direita.
+  O corpo pende 0,3 rad para trás em volta das mãos (`INCLINACAO_NO_CIPO`), mais o ângulo do
+  balanço.
 
 ### 6.11 Escalada
 
@@ -590,11 +618,14 @@ Arquivos: `sistemas/escalada.ts` (`ESCALADA`), `mundo/bosque.ts` (`TRONCO_DOS_CI
   tronco a 1,6 por segundo medido na casca (`deLado`), no sentido da tela. O corpo fica a 0,08 da
   casca (`folga`).
 - **Alturas:** o centro do corpo fica de 0,95 acima do pé do tronco (`acimaDoChao`) até as mãos 1,4
-  abaixo do topo (`abaixoDoTopo`), abaixo do galho dos cipós.
+  abaixo do topo (`abaixoDoTopo`), abaixo do galho dos cipós. Aqui as mãos esticadas no alto ficam
+  1 acima do centro (`ESCALADA.maosAcimaDoCentro`; o clipe Escalar alcança acima da cabeça).
 - **Soltar:** descer no pé do tronco solta no chão; E solta com um passinho para fora; pular solta
   para fora a 4,5 e para cima a 6,5 (`saltoParaFora`, `saltoParaCima`), ou para onde a criança
   pede, se for para longe do tronco. Lá do alto, o pulo para fora cai no primeiro cipó. Depois de
   soltar, só gruda de novo após 0,5 s (`esperaDepoisDeSoltar`).
+- **O desenho:** agarrado, toca a animação Escalar (6.6) no ritmo da velocidade de verdade
+  (subindo, descendo ou dando a volta). Parado no tronco, o clipe para no quadro em que está.
 
 ### 6.12 Água rasa (o lago do Bosque)
 
@@ -1141,12 +1172,14 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |
 | Percursos guardados | `bosque-copas` | `arquipelago-contracts/src/salvamento.ts`, `PERCURSOS` |
 | Controle no ar com embalo | 45% | `arquipelago/src/personagem/personagem.tsx`, `CONTROLE_NO_AR` |
-| Braços no cipó e no tronco | para cima | `arquipelago/src/personagem/bracos.ts`, `RUMOS` |
+| Mãos no cipó | corda ao lado esquerdo do rosto, 0,24 para o lado e 0,4 à frente, a 1,2 do pé; corpo 0,3 rad para trás | `arquipelago/src/personagem/bracos.ts`, `CORDA_NO_CORPO`, `INCLINACAO_NO_CIPO` |
+| Física dos cipós | 18 elos, raio 0,06, 12 voltas por passo | `arquipelago/src/sistemas/cordas.ts`, `CORDAS` |
+| Corpo que as cordas enxergam | tronco de 0,45 a 1,05 do pé, raio 0,37; cabeça a 1,7, raio 0,45 | `arquipelago/src/sistemas/corpo.ts`, `CORPO.desenho` |
 | Câmera no cipó | 55% para o meio do cipó; 100% com menos movimento | `arquipelago/src/personagem/camera.tsx`, `FOCO_NO_CIPO`, `FOCO_NO_CIPO_COM_MENOS_MOVIMENTO`, `SEGUIR_NO_CIPO` |
 | Pegar o cipó | 1,3 no chão, 0,65 no ar, 0,45 s para pegar de novo | `arquipelago/src/sistemas/cipo.ts`, `CIPO.raioDaDica`, `.raioDaPegadaNoAr`, `.esperaParaPegarDeNovo` |
-| Onde as mãos seguram o cipó | pés a 0,35 do chão; nunca menos de 1,6 | `cipo.ts`, `CIPO.folgaDosPes`, `.comprimentoMinimo` |
+| Onde as mãos seguram o cipó | pés a 0,35 do chão; nunca menos de 1,6; mãos 0,3 acima do centro | `cipo.ts`, `CIPO.folgaDosPes`, `.comprimentoMinimo`, `.maosAcimaDoCentro` |
 | Balanço do cipó | bombear 9, virar 1 por s, até 1,1 rad | `cipo.ts`, `CIPO.bombear`, `.giroDoBalanco`, `.anguloMaximo` |
-| Perda do balanço | 0,12 segurando, 0,8 solto | `cipo.ts`, `CIPO.amortecimento`, `.amortecimentoSolto` |
+| Perda do balanço | 0,12 segurando, 0,8 solto (na corda solta) | `cipo.ts`, `CIPO.amortecimento`, `.amortecimentoSolto` |
 | Soltar o cipó | 1,15 vez o balanço, mais 3,2 para cima | `cipo.ts`, `CIPO.impulsoAoSoltar`, `.subidaAoSoltar` |
 | Tronco de escalar | árvore dos cipós, raio 0,86 a 0,5 | `arquipelago/src/mundo/bosque.ts`, `TRONCO_DOS_CIPOS` |
 | Grudar no tronco | a 0,3, depois de 0,2 s | `arquipelago/src/sistemas/escalada.ts`, `ESCALADA.distanciaParaGrudar`, `.esperaParaGrudar` |

@@ -28,6 +28,11 @@ export const ESCALADA = {
   esperaParaGrudar: 0.2,
   /** O centro do corpo fica pelo menos isto acima do chão do tronco (os pés quase no chão). */
   acimaDoChao: 0.95,
+  /**
+   * Do centro do corpo até as mãos esticadas no alto, na casca (o clipe "Escalar" alcança acima da
+   * cabeça). Com `abaixoDoTopo`, decide até onde o corpo sobe.
+   */
+  maosAcimaDoCentro: 1,
   /** As mãos param isto abaixo do topo (o galho e a copa ficam lá em cima). */
   abaixoDoTopo: 1.4,
   /** O pulo para fora do tronco: para longe e para cima, em m/s. */

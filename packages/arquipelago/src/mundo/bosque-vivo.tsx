@@ -12,7 +12,6 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   type Object3D,
-  Quaternion,
   SphereGeometry,
   type Sprite,
   SpriteMaterial,
@@ -20,7 +19,8 @@ import {
   Vector3,
 } from 'three'
 import { type AguaRasa, type CipoVivo, type TroncoVivo, useJogo } from '../estado/contexto'
-import { CIPO, comprimentoDaPegada, criarBalanco, passoDoBalanco } from '../sistemas/cipo'
+import { CIPO, comprimentoDaPegada, criarBalanco } from '../sistemas/cipo'
+import { CORDAS, criarPontos, passoDasCordas } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import {
   type Corrida,
@@ -46,6 +46,12 @@ import {
   TRONCO_DOS_CIPOS,
   troncoNoMundo,
 } from './bosque'
+import {
+  type CipoDesenhado,
+  desenharCipo,
+  desmontarCipoDesenhado,
+  prepararCipoDesenhado,
+} from './cipo-desenhado'
 import type { Copa } from './copas'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
@@ -53,12 +59,8 @@ import { useInterativo } from './interativos'
 /** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
 const CHAO_DA_ILHA = 0.25
 
-const PARA_BAIXO = new Vector3(0, -1, 0)
-
 /** O que muda a cada quadro, sem alocar. */
 interface Quadro {
-  direcao: Vector3
-  giro: Quaternion
   corpo: {
     x: number
     y: number
@@ -96,7 +98,7 @@ export function BosqueVivo({
 
   // Os nós dos cipós (o pivô é a posição do nó: ele fica direto na raiz do modelo).
   const cipos = useMemo(() => {
-    const lista: { vivo: CipoVivo; no: Object3D; base: Quaternion }[] = []
+    const lista: { vivo: CipoVivo; no: Object3D; desenho: CipoDesenhado | null }[] = []
     for (const nome of CIPOS_DO_BOSQUE) {
       const no = preparada.modelo.getObjectByName(nome)
       if (!no) continue
@@ -120,12 +122,17 @@ export function BosqueVivo({
         balanco: criarBalanco(),
         seguro: false,
         soltoEm: Number.NEGATIVE_INFINITY,
+        ...criarPontos(pivo, corda),
+        chao,
+        esperandoOCorpoSair: false,
       }
       vivo.balanco.comprimento = vivo.pegada
-      lista.push({ vivo, no, base: no.quaternion.clone() })
+      lista.push({ vivo, no, desenho: null })
     }
     return lista
   }, [preparada, meio, giro, ilha.id])
+
+  const vivos = useMemo(() => cipos.map((c) => c.vivo), [cipos])
 
   const tronco = useMemo<TroncoVivo>(
     () => ({
@@ -134,6 +141,7 @@ export function BosqueVivo({
     }),
     [meio, giro, ilha.id],
   )
+  const troncos = useMemo(() => [tronco.tronco], [tronco])
 
   // O lago (nó `agua`): a elipse do desenho, que não tem fundo; o personagem nada nela.
   const agua = useMemo<AguaRasa | null>(() => {
@@ -177,6 +185,8 @@ export function BosqueVivo({
   useEffect(() => {
     const meus = cipos.map((c) => c.vivo)
     movimento.cipos.push(...meus)
+    // A corda que dobra troca a reta do arquivo enquanto a ilha completa está ativa.
+    for (const c of cipos) c.desenho = prepararCipoDesenhado(c.no, c.vivo.corda, CORDAS.elos)
     movimento.troncos.push(tronco)
     if (agua) movimento.aguas.push(agua)
     return () => {
@@ -187,7 +197,10 @@ export function BosqueVivo({
       for (const c of meus) tirar(movimento.cipos, c)
       tirar(movimento.troncos, tronco)
       if (agua) tirar(movimento.aguas, agua)
-      for (const c of cipos) c.no.quaternion.copy(c.base)
+      for (const c of cipos) {
+        if (c.desenho) desmontarCipoDesenhado(c.desenho)
+        c.desenho = null
+      }
       // Uma corrida não continua numa ilha que não está mais ali.
       if (movimento.corrida) {
         movimento.corrida = null
@@ -218,8 +231,6 @@ export function BosqueVivo({
     [meio, giro],
   )
   const q = useRef<Quadro>({
-    direcao: new Vector3(),
-    giro: new Quaternion(),
     corpo: { x: 0, y: 0, z: 0, pes: 0, noChaoDaIlha: false },
     corte: { fase: 'nada', ms: 0, comecar: false },
     destino: { x: 0, y: 0, z: 0 },
@@ -296,20 +307,10 @@ export function BosqueVivo({
     tempo.current += dt
     // Placa, trepadeira e vagalumes só com a completa inteira (não pulam na frente da troca).
     if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
-    // Os cipós soltos voltam a parar sozinhos; todos desenham a pose do balanço.
-    for (const c of cipos) {
-      const b = c.vivo.balanco
-      if (!c.vivo.seguro) {
-        if (Math.abs(b.angulo) + Math.abs(b.velocidade) < 1e-4) continue
-        passoDoBalanco(b, 0, 0, dt, false)
-      }
-      // A direção da corda no referencial do modelo (o rumo é no mundo).
-      const rumo = b.rumo - giro
-      const s = Math.sin(b.angulo)
-      q.direcao.set(Math.sin(rumo) * s, -Math.cos(b.angulo), Math.cos(rumo) * s)
-      q.giro.setFromUnitVectors(PARA_BAIXO, q.direcao)
-      c.no.quaternion.copy(q.giro).multiply(c.base)
-    }
+    // Os cipós são cordas de verdade (`sistemas/cordas.ts`): o corpo desenhado, o tronco e os
+    // outros cipós empurram; seguro, a corda fica presa nas mãos e o resto cai junto ao corpo.
+    passoDasCordas(vivos, movimento.corpoDesenhado, troncos, dt)
+    for (const c of cipos) if (c.desenho) desenharCipo(c.desenho, c.vivo.pontos)
 
     // O corte suave: escurece, leva o corpo, clareia.
     const corte = q.corte

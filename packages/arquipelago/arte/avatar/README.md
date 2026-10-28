@@ -25,3 +25,8 @@
 `ANDAR` e `CORRER` daqui têm de bater com `CICLO_DE_ANDAR` e `CICLO_DE_CORRER` de
 `src/sistemas/locomocao.ts` (duração em quadros de 30 por segundo e passada). Depois de gerar,
 rode `bun test tests/locomocao.test.ts` e confira no playground em `/animacoes?v=2.2`.
+
+Do mesmo jeito, `ESCALAR` (duração e quanto o corpo sobe por ciclo) bate com `CICLO_DE_ESCALAR`, e
+os 48 quadros do Pendurado com `DURACAO_DO_PENDURADO`. Os dois se conferem em `/animacoes?escalar=1`
+(com `&lado=frente` as mãos alternando aparecem melhor) e `/animacoes?cipo=1`; no jogo, no tronco
+e nos cipós do Bosque.
