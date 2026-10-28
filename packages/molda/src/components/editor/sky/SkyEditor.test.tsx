@@ -29,6 +29,10 @@ async function openSky(): Promise<ReturnType<typeof createMemoryPersistence>> {
   const persistence = createMemoryPersistence([makeSky()])
   render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'sky-1' }} />)
   await screen.findByRole('button', { name: COPY.editor.sky.download.hdr })
+  // O editor monta fora do `act` e os controles aparecem antes dos efeitos passivos. Sem a
+  // inscrição no store, que roda nesses efeitos, o slider controlado volta ao valor antigo.
+  // A prévia nasce no mesmo lote de efeitos, então ela prova que o editor já escuta o store.
+  await waitFor(() => expect(fake.instances.length).toBeGreaterThan(0))
   return persistence
 }
 

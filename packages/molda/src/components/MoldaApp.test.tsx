@@ -32,6 +32,18 @@ function presetOf(asset: MoldaAsset | undefined): string | null {
   return asset?.kind === 'sky' ? asset.params.preset : null
 }
 
+/**
+ * O editor aberto pelo deep link monta fora do `act`, e os botões aparecem antes dos efeitos
+ * passivos: a inscrição no store e o registro do controle do host. O preset marcado só se
+ * redesenha depois deles (o efeito do pai nunca roda depois do efeito do filho), então ele
+ * prova que o controle já está registrado.
+ */
+async function waitForEditorEffects(preset: string): Promise<void> {
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: preset }).getAttribute('aria-pressed')).toBe('true'),
+  )
+}
+
 /** O nome acessível do cartão que abre a grade: título + dica. */
 const NEW_CARD_NAME = `${GALLERY_SHELL_COPY.newCardTitle} ${GALLERY_SHELL_COPY.newCardHint}`
 
@@ -209,7 +221,10 @@ describe('MoldaApp', () => {
     const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
     expect(undo.disabled).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
-    expect(undo.disabled).toBe(false)
+    // O documento chega fora do `act` (o `waitFor` desliga esse ambiente): o título pode
+    // aparecer antes dos efeitos passivos da montagem. O clique já entra no histórico, mas a
+    // barra só se inscreve no store nesses efeitos e redesenha logo depois deles.
+    await waitFor(() => expect(undo.disabled).toBe(false))
     await waitFor(() => expect(presetOf(persistence.snapshot()[0])).toBe('nublado'))
     fireEvent.click(undo)
     expect(
@@ -653,6 +668,7 @@ test('controle do host grava o céu aberto antes de entregar o snapshot', async 
   )
   await screen.findByRole('button', { name: COPY.skyPresets.nublado })
   fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+  await waitForEditorEffects(COPY.skyPresets.nublado)
   const results: Awaited<ReturnType<MoldaCompletionControl['flush']>>[] = []
   await act(async () => {
     results.push(await control!.flush())
@@ -682,6 +698,7 @@ test('controle do host recusa criação quando salvamento do editor falha', asyn
   )
   await screen.findByRole('button', { name: COPY.skyPresets.nublado })
   fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+  await waitForEditorEffects(COPY.skyPresets.nublado)
   let failed = false
   await act(async () => {
     try {
