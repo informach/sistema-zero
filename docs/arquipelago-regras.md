@@ -1102,9 +1102,15 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   - **Apagar:** arrastar tira paredes e cercas do caminho; um toque perto de uma aresta (até 0,3)
     tira a porta, a janela, a parede ou a cerca dali; longe dela, o canteiro vazio ou o caminho
     da célula. O que cada ferramenta faz com o dedo é regra pura: `sistemas/construcao/ferramentas.ts`.
-  - **Cabana:** a do Bosque ainda não existe no jogo: o `bosque.glb` não tem terreno livre para o
-    lote (pedido no README de `arte/casa`). O salvamento já guarda a obra dela
-    (`construcao.cabanas.bosque`). No quintal da casa dá para fazer uma cabana solta.
+  - **Cabana no Bosque** (28/10/2026): o lote fica na ponta de campo do Bosque, de x −18 a −12 e
+    de z −4 a 4 no modelo (6 × 8 células, chão plano a 1 m, céu aberto para o telhado), lido das
+    âncoras `lote-cabana-a` e `-b` (`loteDaCabana`). Começa vazio e não tem quarto fixo. O
+    Construir abre a cabana quando a criança está no lote ou a até 3 m dele (`PERTO_DO_LOTE`,
+    conferido a cada 0,25 s); longe dele abre a casa, como antes. Valem as mesmas regras e
+    ferramentas, menos Canteiro e Objetos (a horta e o projeto azul são da casa). Tetos da cabana:
+    80 arestas de parede, 12 aberturas, 6 pisos, 60 arestas de cerca, 48 células de caminho. A
+    obra fica em `construcao.cabanas.bosque`; o Desfazer vale para a obra aberta. Sair da ilha com
+    o Construir da cabana aberto fecha o Construir.
 - **Projeto azul** (`sistemas/construcao/projeto-azul.ts`, catálogo e moldes no contrato,
   `objetos.ts`): o objeto chega com a função pronta e funciona em holograma; com aparência fica
   completo.

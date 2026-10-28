@@ -4,7 +4,7 @@ import type { Recusa } from './obra'
 export function falaDaRecusa(r: Recusa): string | null {
   switch (r.motivo) {
     case 'fora-do-lote':
-      return 'Ali já é fora do terreno da casa.'
+      return 'Ali já é fora do terreno.'
     case 'ocupado':
       return `Ali já tem ${r.nome}. Escolha outro lugar.`
     case 'dentro-do-quarto':

@@ -133,6 +133,11 @@ export function BarraDeConstruir() {
   const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
+  // Na cabana não vão canteiro nem objeto: a horta e os projetos azuis são da casa.
+  const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
+  const ferramentas = naCabana
+    ? FERRAMENTAS.filter((f) => f.id !== 'canteiro' && f.id !== 'objeto')
+    : FERRAMENTAS
   if (!aberto) return null
   const s = () => construcao.getState()
   const dica = FERRAMENTAS.find((f) => f.id === atual)?.dica
@@ -218,7 +223,7 @@ export function BarraDeConstruir() {
       ) : null}
       <fieldset className="arq-obra-ferramentas">
         <legend className="arq-sr">Ferramenta</legend>
-        {FERRAMENTAS.map((f) => (
+        {ferramentas.map((f) => (
           <button
             key={f.id}
             type="button"

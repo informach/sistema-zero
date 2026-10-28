@@ -359,10 +359,13 @@ function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boo
 const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
 
 export function Casa() {
+  const { loja } = useJogo()
   const quarto = useEstado((s) => s.quarto)
   // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
   const obra = useEstado((s) => s.salvamento.construcao.casa)
-  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
+  // O Construir aberto mexe na casa ou na cabana da ilha (`onde`).
+  const aqui = useConstrucao(lojaDaConstrucao(loja), (s) => s.onde === 'casa')
+  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR) && aqui
   return (
     <>
       <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>

@@ -13,6 +13,7 @@ import {
 } from '../sistemas/construcao/ferramentas'
 import type { Aresta, Ponto } from '../sistemas/construcao/grade'
 import { type Celula, chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
+import { noModelo } from './medidas'
 
 const VERDE = '#3ccf7a'
 const VERMELHO = '#e2475f'
@@ -44,13 +45,32 @@ function chaveDaPrevia(p: Previa): string {
   return `${p.tipo}${p.cor}${itens.join(';')}`
 }
 
+/** Onde fica a grade no mundo: o ponto (0, 0) e o giro em volta do y (a de uma cabana gira com a ilha). */
+export interface ReferencialDaObra {
+  x: number
+  z: number
+  giro: number
+}
+
+const NO_MUNDO: ReferencialDaObra = { x: 0, z: 0, giro: 0 }
+
 /**
  * O modo Construir dentro da cena (montado pela `Casa` só com o Construir aberto): a câmera de obra
  * por cima da câmera do jogo, a grade do lote, o toque e o arrasto das ferramentas e a prévia do que
  * vai acontecer (verde dá, vermelho não dá). O toque e a roda são pegos antes de chegarem à câmera
  * do jogo, que fica parada enquanto isso.
  */
-export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; base: number }) {
+export function ModoConstruir({
+  lote,
+  obra,
+  base,
+  referencial = NO_MUNDO,
+}: {
+  lote: Lote
+  obra: Obra
+  base: number
+  referencial?: ReferencialDaObra
+}) {
   const { loja } = useJogo()
   const construcao = lojaDaConstrucao(loja)
   const ferramenta = useConstrucao(construcao, (s) => s.ferramenta)
@@ -95,15 +115,21 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
         giro: c.giro + giro * dt * 1.6,
       })
     }
+    // A órbita é calculada na grade e levada para o mundo pelo referencial.
     const h = Math.cos(c.inclinacao) * c.distancia
+    const { x: rx, z: rz, giro: g } = referencial
+    const cg = Math.cos(g)
+    const sg = Math.sin(g)
+    const lx = c.alvo.x + Math.sin(c.giro) * h
+    const lz = c.alvo.z + Math.cos(c.giro) * h
     desejada.set(
-      c.alvo.x + Math.sin(c.giro) * h,
+      rx + lx * cg + lz * sg,
       base + Math.sin(c.inclinacao) * c.distancia,
-      c.alvo.z + Math.cos(c.giro) * h,
+      rz - lx * sg + lz * cg,
     )
     atual.lerp(desejada, 1 - Math.exp(-dt * 8))
     camera.position.copy(atual)
-    camera.lookAt(c.alvo.x, base, c.alvo.z)
+    camera.lookAt(rx + c.alvo.x * cg + c.alvo.z * sg, base, rz - c.alvo.x * sg + c.alvo.z * cg)
   })
 
   useEffect(() => {
@@ -135,7 +161,8 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       const r = gl.domElement.getBoundingClientRect()
       ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
       raio.setFromCamera(ndc, camera)
-      return raio.ray.intersectPlane(chao, ponto) ? { x: ponto.x, z: ponto.z } : null
+      if (!raio.ray.intersectPlane(chao, ponto)) return null
+      return noModelo(ponto.x - referencial.x, ponto.z - referencial.z, referencial.giro)
     }
     type Gesto =
       | { tipo: 'olhar'; id: number; antes: { x: number; y: number }; girar: boolean }
@@ -286,7 +313,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       el.removeEventListener('contextmenu', semMenu, opcoes)
       cancelar()
     }
-  }, [gl, camera, base, lote, construcao, mostrar, loja, ferramenta])
+  }, [gl, camera, base, lote, construcao, mostrar, loja, ferramenta, referencial])
 
   // A prévia some quando a ferramenta muda.
   // biome-ignore lint/correctness/useExhaustiveDependencies: limpar a prévia a cada troca de ferramenta.
@@ -296,7 +323,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
   }, [ferramenta])
 
   return (
-    <group position={[0, base, 0]}>
+    <group position={[referencial.x, base, referencial.z]} rotation-y={referencial.giro}>
       <Grade lote={lote} />
       <Previa previa={previa} />
     </group>

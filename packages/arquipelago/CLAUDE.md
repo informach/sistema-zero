@@ -259,6 +259,13 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   ANTES da de obra: a de obra guarda a própria posição suavizada e só copia (suavizar a partir de
   `camera.position` faz as duas brigarem e a vista anda sozinha). O toque e a roda são pegos na
   captura do elemento pai do canvas, antes de chegarem à câmera do jogo.
+- Cabana no Bosque (fase1-11): `mundo/cabana-do-bosque.tsx` (montado pelo `BosqueVivo`) lê o lote
+  das âncoras `lote-cabana-a`/`-b` (`loteDaCabana` em `lote.ts`), registra-o na loja do Construir
+  (`registrarCabana`) e diz se a pessoa está perto (`definirPertoDaCabana`). `abrir()` escolhe
+  `onde` (`'casa'` ou o id do lote) e tudo o que grava passa por `obraDe`/`mudarObra` com esse
+  `onde`. A ilha é girada no mundo: `ObraNoMundo` recebe `giro` e o `ModoConstruir` um
+  `referencial` (`{x, z, giro}`); a câmera de obra, o toque e o corte trabalham no referencial do
+  modelo e convertem com `noModelo`. Testes: `tests/cabana.test.ts`.
 - Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`). Conferir no navegador: a
   câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 

@@ -63,6 +63,7 @@ import {
   TRONCO_DOS_CIPOS,
   troncoNoMundo,
 } from './bosque'
+import { CabanaDoBosque } from './cabana-do-bosque'
 import { Capi } from './capi'
 import {
   type CipoDesenhado,
@@ -564,6 +565,9 @@ export function BosqueVivo({
         <ObjetosReativos pecas={pecasSoltas} galho={galhoSeco} />
       </ComReserva>
       <FogueiraViva {...fogueira} vento={vento} />
+      <ComReserva reserva={null}>
+        <CabanaDoBosque modelo={preparada.modelo} meio={meio} giro={giro} />
+      </ComReserva>
       <FolhasAoVento vento={vento} x={meio.x + 1} y={4} z={meio.z} />
       {mecanismos && <Mecanismos {...mecanismos} />}
       {cipos.map((c) => (

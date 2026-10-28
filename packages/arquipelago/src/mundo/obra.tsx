@@ -26,6 +26,7 @@ import { CERCA, colisoresDaCerca, postesDaCerca } from '../sistemas/construcao/q
 import { paredesCortadasNoViver, telhadosDaObra } from '../sistemas/construcao/telhado'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { noModelo } from './medidas'
 import { ComReserva, copiarNo, materiaisDe, useModelo } from './modelos'
 
 /** O kit da casa (`arte/casa`): paredes, portas, pisos e telhado, um nó por peça. */
@@ -56,17 +57,18 @@ const Peca = memo(function Peca({ peca }: { peca: PecaDoKit }) {
 const Folha = memo(function Folha({
   folha,
   base,
+  giro,
 }: {
   folha: FolhaDaPorta
   base: [number, number]
+  giro: number
 }) {
   const { rastro } = useJogo()
   const raiz = useModelo(KIT_DA_CASA.portas)
   const no = useMemo(() => copiarNo(raiz, folha.no), [raiz, folha.no])
   useFrame((_, dt) => {
-    const perto =
-      Math.hypot(rastro.x - (base[0] + folha.meio.x), rastro.z - (base[1] + folha.meio.z)) <
-      PERTO_DA_PORTA
+    const pessoa = noModelo(rastro.x - base[0], rastro.z - base[1], giro)
+    const perto = Math.hypot(pessoa.x - folha.meio.x, pessoa.z - folha.meio.z) < PERTO_DA_PORTA
     const alvo = perto ? GIRO_DA_FOLHA_ABERTA : 0
     no.rotation.y += (alvo - no.rotation.y) * (1 - Math.exp(-dt * 6))
   })
@@ -110,7 +112,12 @@ const CONFERIR_O_CORTE = 0.12
  * entre a câmera e ela (`paredesCortadasNoViver`). Também diz à loja se ela está dentro da obra
  * (o telhado sai).
  */
-function useCorte(p: Planta, base: [number, number, number], construindo: boolean): Corte {
+function useCorte(
+  p: Planta,
+  base: [number, number, number],
+  giro: number,
+  construindo: boolean,
+): Corte {
   const { loja, rastro } = useJogo()
   const construcao = lojaDaConstrucao(loja)
   useEffect(() => () => construcao.getState().definirDentroDaObra(false), [construcao])
@@ -124,17 +131,18 @@ function useCorte(p: Planta, base: [number, number, number], construindo: boolea
     espera.current -= dt
     if (espera.current > 0) return
     espera.current = CONFERIR_O_CORTE
-    const pessoa = { x: rastro.x - base[0], z: rastro.z - base[2] }
+    const pessoa = noModelo(rastro.x - base[0], rastro.z - base[2], giro)
     construcao
       .getState()
       .definirDentroDaObra(
         p.dentro.has(chaveDaCelula({ x: Math.floor(pessoa.x), z: Math.floor(pessoa.z) })),
       )
     if (construindo) return
-    const set = paredesCortadasNoViver(p, pessoa, {
-      x: camera.position.x - base[0],
-      z: camera.position.z - base[2],
-    })
+    const set = paredesCortadasNoViver(
+      p,
+      pessoa,
+      noModelo(camera.position.x - base[0], camera.position.z - base[2], giro),
+    )
     const chave = [...set].sort().join(';')
     if (chave !== cortadas.chave) setCortadas({ chave, set })
   })
@@ -147,24 +155,27 @@ function useCorte(p: Planta, base: [number, number, number], construindo: boolea
 
 /**
  * Uma obra no mundo: as paredes, quinas, portas, janelas, pisos e telhados do kit, e a colisão.
- * `base` é onde fica o ponto (0, 0) da grade (y: o topo do piso). O telhado sai no Construir e com
+ * `base` é onde fica o ponto (0, 0) da grade (y: o topo do piso) e `giro` o giro da grade em volta
+ * do y (a da casa é a do mundo; a de uma cabana gira com a ilha). O telhado sai no Construir e com
  * a pessoa dentro da obra.
  */
 export function ObraNoMundo({
   obra,
   lote,
   base,
+  giro = 0,
   construindo,
 }: {
   obra: DadosDaObra
   lote: Lote
   base: [number, number, number]
+  giro?: number
   construindo: boolean
 }) {
   const { loja } = useJogo()
   const construcao = lojaDaConstrucao(loja)
   const p = useMemo(() => planta(obra, lote), [obra, lote])
-  const cortada = useCorte(p, base, construindo)
+  const cortada = useCorte(p, base, giro, construindo)
   const dentro = useConstrucao(construcao, (x) => x.dentroDaObra)
   const pecas = useMemo(() => pecasDaObra(obra, p, cortada), [obra, p, cortada])
   const telhados = useMemo(() => telhadosDaObra(p), [p])
@@ -183,19 +194,19 @@ export function ObraNoMundo({
   ]
   return (
     <>
-      <group position={base}>
+      <group position={base} rotation-y={giro}>
         <ComReserva reserva={<ObraDeAntes pecas={todas} />}>
           {todas.map((x) => (
             <Peca key={x.chave} peca={x} />
           ))}
           {pecas.folhas.map((f) => (
-            <Folha key={f.chave} folha={f} base={[base[0], base[2]]} />
+            <Folha key={f.chave} folha={f} base={[base[0], base[2]]} giro={giro} />
           ))}
           <LuzDasJanelas />
         </ComReserva>
         <Cerca obra={obra} />
       </group>
-      <group position={[base[0], 0, base[2]]}>
+      <group position={[base[0], 0, base[2]]} rotation-y={giro}>
         <Colisores lista={colisores} />
       </group>
     </>

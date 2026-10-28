@@ -122,6 +122,35 @@ export const LOTE_DA_CASA: Lote = {
   },
 }
 
+/**
+ * O lote de uma cabana: um terreno livre na ilha, sem quarto e sem nada que ocupe (a arte deixa o
+ * lote limpo, `tests/bosque-crescido.test.ts`), começando vazio. As coordenadas são as do modelo da
+ * ilha (as âncoras `lote-cabana-a` e `-b`); o jogo gira a obra junto com a ilha. Os tetos são
+ * menores que os da casa: o salvamento guarda a casa e as cabanas juntos.
+ */
+export function loteDaCabana(id: Exclude<Lote['id'], 'casa'>, area: Retangulo): Lote {
+  return {
+    id,
+    area,
+    ocupadas: [],
+    fixo: null,
+    paredesFixas: [],
+    paredesTravadas: [],
+    obraInicial: OBRA_VAZIA,
+    limites: {
+      arestasDeParede: 80,
+      trechosDeParede: 48,
+      aberturas: 12,
+      pisos: 6,
+      arestasDeCerca: 60,
+      trechosDeCerca: 30,
+      caminhos: 48,
+      // Canteiro e objeto ficam no quintal e na casa (a horta é uma só).
+      canteiros: 0,
+    },
+  }
+}
+
 export function chaveDaCelula(c: Celula): string {
   return `${c.x},${c.z}`
 }

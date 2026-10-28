@@ -75,7 +75,10 @@ aconchego dos cômodos são os cartões seguintes (fase1-13 a fase1-15) e ficam 
    Bosque para o lado de fora (a ponta de campo do −x do modelo, longe da chegada da ponte): o lote
    fica lá, de x −18 a −12 e de z −4 a 4 (6 × 8 células), com as âncoras `lote-cabana-a` e `-b`. O
    Construir na cabana trabalha no referencial da ilha (girada no mundo) e grava em
-   `construcao.cabanas.bosque`.
+   `construcao.cabanas.bosque`. **Feito em 28/10/2026:** `mundo/cabana-do-bosque.tsx` (montado pelo
+   `BosqueVivo`), `loteDaCabana` em `lote.ts`, `onde` na loja do Construir, `ObraNoMundo` e
+   `ModoConstruir` com o giro da ilha; sem Canteiro e Objetos na cabana. Testes:
+   `tests/cabana.test.ts`.
 8. **Projeto azul.** Ganhar a geladeira e a casinha, pôr o objeto no Construir, o holograma
    funcionando (a geladeira guarda 4), o painel do objeto com a função, o molde e o pedido ao Pinta
    e ao Molda.
