@@ -91,7 +91,21 @@ export interface EixoDeEquilibrio {
   b: Ponto
 }
 
-export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada' | 'equilibrio'
+/**
+ * Uma escada reta (`escada-N-base`, `-topo` e `-saida` do GLB), no mundo: o eixo do pé ao alto, na
+ * frente dos degraus, e o ponto do deque onde quem chega em cima sai. Quem sobe fica do lado oposto
+ * ao da saída, de frente para a escada.
+ */
+export interface EscadaViva {
+  id: string
+  base: Ponto
+  topo: Ponto
+  saida: Ponto
+  /** A largura dos degraus (para pegar de lado). */
+  largura: number
+}
+
+export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada' | 'equilibrio' | 'escada'
 
 /**
  * Cipós, troncos de escalar e águas rasas das ilhas completas, e o que o personagem faz com eles
@@ -103,6 +117,7 @@ export interface Movimento {
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
   equilibrios: EixoDeEquilibrio[]
+  escadas: EscadaViva[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
   /** Escritos pelo personagem. */
@@ -128,6 +143,7 @@ export function criarMovimento(): Movimento {
     troncos: [],
     aguas: [],
     equilibrios: [],
+    escadas: [],
     pedido: null,
     modo: 'chao',
     noChao: false,

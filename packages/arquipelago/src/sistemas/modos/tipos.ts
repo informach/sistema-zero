@@ -2,6 +2,7 @@ import type {
   AguaRasa,
   CipoVivo,
   EixoDeEquilibrio,
+  EscadaViva,
   ModoDoCorpo,
   TroncoVivo,
 } from '../../estado/contexto'
@@ -30,6 +31,12 @@ export interface EstadoDoCorpo {
   /** A inclinação de lado no equilíbrio (radianos; volta sozinha) e há quanto tempo se pede o lado. */
   balanco: number
   deLado: number
+  /** A escada reta, a altura do pé nela (desde a base), saindo em cima (0 a 1) e há quanto tempo
+   *  se anda contra ela embaixo. */
+  escada: EscadaViva | null
+  naEscada: number
+  saindoDaEscada: number
+  contraAEscada: number
   /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
   noModo: number
   /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
@@ -74,6 +81,10 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     velNoEixo: 0,
     balanco: 0,
     deLado: 0,
+    escada: null,
+    naEscada: 0,
+    saindoDaEscada: 0,
+    contraAEscada: 0,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },
     vel: { x: 0, z: 0 },
@@ -132,6 +143,7 @@ export interface MundoDoMovimento {
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
   equilibrios: EixoDeEquilibrio[]
+  escadas: EscadaViva[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

@@ -65,6 +65,21 @@
         "y": 1.0,
         "z": 0.1
       },
+      "escada-1-base": {
+        "x": -2.97,
+        "y": 1.0,
+        "z": 4.82
+      },
+      "escada-1-saida": {
+        "x": -3.35,
+        "y": 5.2,
+        "z": 5.47
+      },
+      "escada-1-topo": {
+        "x": -2.97,
+        "y": 5.2,
+        "z": 4.82
+      },
       "esconderijo-1": {
         "x": -6.2,
         "y": 1.0,
@@ -143,22 +158,23 @@
       "col-cil-tronco": 26,
       "col-cocho": 1,
       "col-degrau": 12,
+      "col-escada-reta": 1,
       "col-escorregador": 12,
       "col-escorregador-lado": 24,
       "col-floreira": 2,
-      "col-guarda": 67,
+      "col-guarda": 63,
       "col-ponte": 16,
       "col-ponte-lado": 32,
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1004.2,
+    "kb": 1022.0,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
       "cipo-2": 268,
       "cipo-3": 268,
-      "construcoes": 10360,
+      "construcoes": 10744,
       "copa-1": 900,
       "copa-10": 210,
       "copa-11": 1156,
@@ -179,7 +195,7 @@
       "tronco-5": 96,
       "vegetacao": 9468
     },
-    "triangulos": 27870
+    "triangulos": 28254
   },
   "bosque-props": {
     "ancoras": {},

@@ -80,6 +80,7 @@ function mundo(extra: Partial<MundoDoMovimento> = {}): MundoDoMovimento {
     troncos: [],
     aguas: [],
     equilibrios: [],
+    escadas: [],
     foco: { x: 0, y: 0, z: 0 },
     ...extra,
   }
@@ -287,5 +288,65 @@ describe('o equilíbrio no tronco caído', () => {
     expect(c.modo).toBe('chao')
     // Desceu para +x (o lado pedido) com um passinho.
     expect(c.embalo.x).toBeGreaterThan(0)
+  })
+})
+
+describe('a escada reta', () => {
+  // Escada de 3 m: o deque fica para −z (a saída) e quem sobe fica em +z, de frente para −z.
+  const escada = {
+    id: 'escada',
+    base: { x: 0, y: 0, z: 0 },
+    topo: { x: 0, y: 3, z: 0 },
+    saida: { x: 0, y: 3, z: -1 },
+    largura: 0.7,
+  }
+  const centroNoChao = CORPO.doCentroAoPe
+
+  test('andando contra ela embaixo pega, sobe e sai em cima no deque', () => {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ escadas: [escada] })
+    c.noChao = true
+    const p = { x: 0, y: centroNoChao, z: 0.5 }
+    for (let i = 0; i < 20 && c.modo === 'chao'; i++) {
+      passo(c, entrada(p, { pedidoZ: -1, iz: 1, agora: i * 16 }), m, true)
+      c.prox.x = p.x
+      c.prox.z = p.z
+    }
+    expect(c.modo).toBe('escada')
+    for (let i = 0; i < 400 && c.modo === 'escada'; i++) {
+      passo(c, entrada(c.prox, { iz: 1, agora: 1000 + i * 16 }), m, false)
+    }
+    expect(c.modo).toBe('chao')
+    // Saiu em cima, no ponto de saída do deque.
+    expect(c.prox.z).toBeCloseTo(-1, 2)
+    expect(c.prox.y - CORPO.doCentroAoPe - CORPO.folga).toBeCloseTo(3, 2)
+  })
+
+  test('do deque, andando para fora no alto, desce por ela e solta embaixo', () => {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ escadas: [escada] })
+    c.noChao = true
+    const p = { x: 0, y: 3 + centroNoChao, z: -0.5 }
+    passo(c, entrada(p, { pedidoZ: 1, iz: -1, agora: 0 }), m, true)
+    expect(c.modo).toBe('escada')
+    expect(c.naEscada).toBeCloseTo(3, 6)
+    for (let i = 0; i < 400 && c.modo === 'escada'; i++) {
+      passo(c, entrada(c.prox, { iz: -1, agora: 1000 + i * 16 }), m, false)
+    }
+    expect(c.modo).toBe('chao')
+    expect(c.prox.y - CORPO.doCentroAoPe - CORPO.folga).toBeCloseTo(0, 2)
+  })
+
+  test('pular solta para trás, longe da escada', () => {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ escadas: [escada] })
+    c.noChao = false
+    // No ar encostado nela: pega na hora.
+    passo(c, entrada({ x: 0, y: 1.5, z: 0.5 }, { pedidoZ: -1, iz: 1 }), m, false)
+    expect(c.modo).toBe('escada')
+    passo(c, entrada(c.prox, { pulou: true, agora: 500 }), m, false)
+    expect(c.modo).toBe('chao')
+    expect(c.embalo.z).toBeGreaterThan(0)
+    expect(c.velY).toBeGreaterThan(0)
   })
 })

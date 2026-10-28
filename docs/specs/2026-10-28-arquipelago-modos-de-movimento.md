@@ -128,6 +128,14 @@ descer pelo escorregador. Faltam quatro peças.
 - **Números de partida:** 1,5 m/s; o encaixe no eixo em 0,2 s (o mesmo do cipó).
 - **Animação nova:** Subir Escada, andando pela distância (como o Escalar).
 - **Testes:** subir e sair no topo sem prender; descer e sair embaixo; pular solta.
+- **Feito em 28/10/2026** (`sistemas/modos/escada.ts`, `ESCADA`): embaixo, andar contra os degraus
+  por 0,15 s pega (no ar, na hora); em cima, no deque, andar para a escada a menos de 0,9 m do alto
+  pega para descer. Frente e trás sobem e descem a 1,5 m/s; no alto, pedindo para subir, o corpo
+  sobe e avança até a saída em 0,4 s; embaixo solta com um passinho para trás; usar solta onde está.
+  No Bosque, uma escada de mão de 4,2 m até o deque da T4 (onde começa o escorregador: dá para subir
+  e escorregar de novo), a 60° da borda, com o guarda-corpo aberto ali (`ESCADA_RETA` no
+  `bosque.py`); os degraus colidem como tábua fina, só para o corpo. Na sala de testes, a estação
+  "Escada" (torre de 3 m). Conferido no navegador nos dois.
 
 ### Agarrar a borda e subir (`borda`)
 

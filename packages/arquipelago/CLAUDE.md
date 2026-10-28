@@ -79,6 +79,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `MODOS` e em `ModoDoCorpo`. Testes: `tests/modos.test.ts`. Equilíbrio no tronco caído
   (`modos/equilibrio.ts`): o eixo vem das âncoras `equilibrio-N-a`/`-b` do GLB
   (`movimento.equilibrios`, registradas pelo `BosqueVivo`); o chão entra nele pelo `eixoSobOsPes`.
+  Escada reta (`modos/escada.ts`): âncoras `escada-N-base`, `-topo` e `-saida`
+  (`movimento.escadas`); o chão pega pelo `escadaParaPegar` (embaixo, andando contra; em cima, do
+  deque); os degraus colidem só para o corpo (`col-escada-reta`).
   Clipes novos no `locomocao.glb` (Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
   Escorregar), com o campo `especial` da `EntradaDaLocomocao` (antes `pendurado`); para ver:
   `/animacoes?equilibrar=1`, `?escada=1`, `?borda=1&subir=1`, `?escorregar=1`.

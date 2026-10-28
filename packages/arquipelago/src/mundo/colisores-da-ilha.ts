@@ -55,6 +55,7 @@ const SO_PARA_O_CORPO = [
   'col-barco-',
   'col-quadro-',
   'col-morador-',
+  'col-escada-reta-',
 ]
 
 export function soParaOCorpo(nome: string): boolean {

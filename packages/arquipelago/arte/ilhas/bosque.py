@@ -51,6 +51,10 @@ CABANA = (6.6, -6.4)
 # ponta andando), ao lado da trilha do lago. As pontas (x, z do jogo) e o raio; o jogo lê o eixo das
 # âncoras `equilibrio-1-a` e `equilibrio-1-b`, no tampo, no meio do tronco.
 TRONCO_CAIDO = ((3.3, 1.3), (3.7, 4.0), 0.19)
+# A escada reta (modo escada) do chão até o deque da T4, onde começa o escorregador: no ângulo
+# (chão do Blender) longe da ponte e do escorregador. O jogo lê `escada-1-base`, `-topo` (o eixo na
+# frente dos degraus) e `-saida` (no deque).
+ESCADA_RETA = {'angulo': R(60), 'largura': 0.6, 'degrau': 0.3}
 ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da escada da T1
 CERCADO = (2.4, -9.2)
 
@@ -512,6 +516,37 @@ def tronco_caido(col):
     return tora((x0 + x1) / 2, (z0 + z1) / 2, comp, rot, r=r, col=col)
 
 
+def escada_reta(col):
+    """Escada de mão encostada na borda do deque da T4: dois montantes e degraus, com a parte de
+    cima passando do deque (para segurar ao sair). Colide como uma tábua fina (só segura o corpo)."""
+    t, e = T4, ESCADA_RETA
+    a, r, h = e['angulo'], t[5] + 0.06, t[4]
+    rx, ry = math.cos(a), math.sin(a)          # para fora do deque (chão do Blender)
+    tx, ty = -math.sin(a), math.cos(a)         # de lado, ao longo dos degraus
+    bx, by = t[0] + rx * r, -t[1] + ry * r
+    alto = h + 0.9
+    p = []
+    for lado in (-1, 1):
+        x, y = bx + tx * lado * e['largura'] / 2, by + ty * lado * e['largura'] / 2
+        p.append(box((0.07, 0.07, alto), (x, y, TOPO + alto / 2), 'poste', bevel=0.01, rot=(0, 0, a)))
+    n = int(h / e['degrau'])
+    for k in range(1, n + 1):
+        p.append(cyl(0.03, e['largura'], (bx, by, TOPO + k * e['degrau']), 'tabua', verts=6, rot=(R(90), 0, a)))
+    col.append(col_caixa('escada-reta', (0.1, e['largura'] + 0.1, h), (bx, by, TOPO + h / 2), (0, 0, a)))
+    return p
+
+
+def ancoras_da_escada_reta():
+    t, e = T4, ESCADA_RETA
+    a, r, h = e['angulo'], t[5] + 0.06, t[4]
+    # Do Blender para o jogo: x igual, z = −y.
+    base = (t[0] + math.cos(a) * r, t[1] - math.sin(a) * r)
+    dentro = t[5] - 0.7
+    saida = (t[0] + math.cos(a) * dentro, t[1] - math.sin(a) * dentro)
+    return [ancora('escada-1-base', base[0], base[1], TOPO), ancora('escada-1-topo', base[0], base[1], TOPO + h),
+            ancora('escada-1-saida', saida[0], saida[1], TOPO + h)]
+
+
 def tampo_do_tronco_caido():
     """A altura do tampo do tronco caído (a tora fica com o meio a 0,9 do raio acima do chão)."""
     return TOPO + TRONCO_CAIDO[2] * 1.9
@@ -534,6 +569,7 @@ def ancoras(fim_escorregador):
     (x0, z0), (x1, z1), _ = TRONCO_CAIDO
     a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))
     a.append(ancora('equilibrio-1-b', x1, z1, tampo_do_tronco_caido()))
+    a += ancoras_da_escada_reta()
     for i, (x, z, giro) in enumerate(ESCONDERIJOS):
         e = ancora(f'esconderijo-{i + 1}', x, z)
         e.rotation_euler = (0.0, 0.0, giro)
@@ -558,6 +594,7 @@ def construir():
             aberturas.append(angulo(t, PERCURSO[i + 1]))
         if i == len(PERCURSO) - 1:
             aberturas.append(R(-28))
+            aberturas.append(ESCADA_RETA['angulo'])  # a escada reta chega no deque da T4
         if i == 0:
             aberturas.append(chegada_escada)  # a escada chega na borda do deque da T1
         obras += plataforma(t[0], t[1], t[4], r=t[5], aberturas=aberturas, col=col)
@@ -565,6 +602,7 @@ def construir():
         obras += ponte_corda(borda(a_, angulo(a_, b_)), borda(b_, angulo(b_, a_)), col=col)
     esc, fim = escorregador(col)
     obras += esc
+    obras += escada_reta(col)
     frente = olhar_para(CABANA[0], CABANA[1], *ALVO_CABANA)
     col_cabana = []
     obras += colocar(cabana(col_cabana), CABANA[0], CABANA[1], frente)

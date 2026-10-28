@@ -4,6 +4,7 @@ import { ESCALADA } from '../escalada'
 import { aproximarVelocidade, PERFIS, passoDoPulo } from '../movimento'
 import { cipoAoAlcance, pegarCipo } from './cipo'
 import { eixoSobOsPes, entrarNoEquilibrio } from './equilibrio'
+import { escadaParaPegar, pegarEscada } from './escada'
 import { agarrarTronco, troncoContra } from './escalada'
 import type { ModoDeMovimento } from './tipos'
 
@@ -132,6 +133,11 @@ export const MODO_CHAO: ModoDeMovimento = {
       if (c.modo === 'chao') {
         const sob = eixoSobOsPes(c, mundo)
         if (sob) entrarNoEquilibrio(c, sob.eixo, sob.s, e.agora, aviso)
+      }
+      // Andando contra a escada embaixo (ou para ela, do deque, em cima): pega nela.
+      if (c.modo === 'chao') {
+        const esc = escadaParaPegar(c, e, mundo)
+        if (esc) pegarEscada(c, esc.escada, esc.altura, e.agora, aviso)
       }
     }
     return false

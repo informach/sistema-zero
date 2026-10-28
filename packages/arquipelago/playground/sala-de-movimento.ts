@@ -144,6 +144,20 @@ export const EIXO_DO_TRONCO_CAIDO = {
   b: { x: TRONCO_CAIDO.x, y: TRONCO_CAIDO.altura, z: TRONCO_CAIDO.z1 },
 } as const
 
+/**
+ * A torre com a escada reta (modo escada): a escada na face da frente, a saída no alto da torre. Num
+ * canto aberto: com algo alto atrás da estação, a câmera gira para o lado livre e o "para a frente"
+ * gira junto.
+ */
+export const TORRE = { x0: -16, x1: -13, z0: 15, z1: 18, altura: 3 } as const
+export const ESCADA_DA_TORRE = {
+  id: 'escada-da-sala',
+  base: { x: -14.5, y: 0, z: 14.95 },
+  topo: { x: -14.5, y: TORRE.altura, z: 14.95 },
+  saida: { x: -14.5, y: TORRE.altura, z: 15.9 },
+  largura: 0.7,
+} as const
+
 /** O laguinho: buraco no chão com a água a 15 cm da borda e uma rampa de entrada a oeste. */
 export const LAGUINHO = { x0: 9, x1: 21, z0: 6, z1: 16, fundo: 1.2, agua: -0.15 } as const
 
@@ -251,7 +265,42 @@ function montar() {
   blocos.push(caixa(T.x - T.largura / 2, T.x + T.largura / 2, 0, T.altura, T.z0, T.z1, '#a07a52'))
   rotulos.push({ texto: 'Tronco caído', x: T.x, y: T.altura + 0.6, z: T.z0 })
 
-  // 7. Câmera: parede solta, árvore e corredor estreito.
+  // 7. A torre com a escada (os degraus só desenham: a torre atrás segura o corpo).
+  const TR = TORRE
+  blocos.push(caixa(TR.x0, TR.x1, 0, TR.altura, TR.z0, TR.z1, '#c9b38f'))
+  const E = ESCADA_DA_TORRE
+  for (const lado of [-1, 1]) {
+    const x = E.base.x + lado * (E.largura / 2)
+    blocos.push(
+      caixa(x - 0.03, x + 0.03, 0, TR.altura + 0.9, E.base.z - 0.06, E.base.z, '#7a5a3a', {
+        semColisao: true,
+      }),
+    )
+  }
+  for (let y = 0.3; y <= TR.altura + 0.01; y += 0.3) {
+    blocos.push(
+      caixa(
+        E.base.x - E.largura / 2,
+        E.base.x + E.largura / 2,
+        y - 0.025,
+        y + 0.025,
+        E.base.z - 0.05,
+        E.base.z - 0.01,
+        '#8a6a4a',
+        {
+          semColisao: true,
+        },
+      ),
+    )
+  }
+  rotulos.push({
+    texto: `Escada: ${fmt(TR.altura)} m`,
+    x: E.base.x,
+    y: TR.altura + 1.2,
+    z: E.base.z,
+  })
+
+  // 8. Câmera: parede solta, árvore e corredor estreito.
   blocos.push(caixa(8, 16, 0, 4, -12.2, -11.8, PAREDE))
   blocos.push(caixa(11.6, 12.4, 0, 5, -4.4, -3.6, '#8a6a4a'))
   blocos.push(caixa(9.6, 14.4, 4.2, 7.4, -6.4, -1.6, '#6fae5a', { semColisao: true }))
@@ -274,6 +323,7 @@ export const ESTACOES: readonly Estacao[] = [
   { nome: 'Beiradas', x: -10, z: 4, y: 0, giro: Math.PI },
   { nome: 'Plataformas', x: 1.5, z: -22, y: 0, giro: Math.PI },
   { nome: 'Tronco caído', x: 6.5, z: -4.6, y: 0, giro: Math.PI },
+  { nome: 'Escada', x: -14.5, z: 12.5, y: 0, giro: Math.PI },
   { nome: 'Câmera', x: 12, z: -16, y: 0, giro: Math.PI },
   { nome: 'Laguinho', x: 5, z: 11, y: 0, giro: -Math.PI / 2 },
 ]

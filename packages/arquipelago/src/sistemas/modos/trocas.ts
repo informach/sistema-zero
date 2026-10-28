@@ -25,6 +25,11 @@ export function mudarModo(
     c.soltouDoTronco = agora
     c.tronco = null
   }
+  if (c.escada && modo !== 'escada') {
+    c.escada = null
+    c.saindoDaEscada = 0
+  }
+  c.contraAEscada = 0
   if (c.eixo && modo !== 'equilibrio') {
     c.eixo = null
     c.balanco = 0

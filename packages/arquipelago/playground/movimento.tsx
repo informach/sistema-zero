@@ -22,6 +22,7 @@ import {
   BLOCOS,
   type Bloco,
   EIXO_DO_TRONCO_CAIDO,
+  ESCADA_DA_TORRE,
   ESTACOES,
   LAGUINHO,
   naSala,
@@ -106,6 +107,7 @@ const NOME_DO_MODO: Record<string, string> = {
   cipo: 'cipó',
   escalada: 'escalada',
   equilibrio: 'equilíbrio',
+  escada: 'escada',
 }
 /** No celular o painel começa fechado (cobriria metade da tela). */
 const ABRE_O_PAINEL = typeof window !== 'undefined' && window.innerWidth > 600
@@ -135,7 +137,17 @@ function Sala() {
     const e = EIXO_DO_TRONCO_CAIDO
     const eixo = { id: e.id, a: naSala(e.a.x, e.a.y, e.a.z), b: naSala(e.b.x, e.b.y, e.b.z) }
     movimento.equilibrios.push(eixo)
+    const t = ESCADA_DA_TORRE
+    const escada = {
+      id: t.id,
+      base: naSala(t.base.x, t.base.y, t.base.z),
+      topo: naSala(t.topo.x, t.topo.y, t.topo.z),
+      saida: naSala(t.saida.x, t.saida.y, t.saida.z),
+      largura: t.largura,
+    }
+    movimento.escadas.push(escada)
     return () => {
+      movimento.escadas.splice(movimento.escadas.indexOf(escada), 1)
       movimento.aguas.splice(movimento.aguas.indexOf(agua), 1)
       movimento.equilibrios.splice(movimento.equilibrios.indexOf(eixo), 1)
     }

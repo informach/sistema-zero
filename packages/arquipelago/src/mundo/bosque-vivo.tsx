@@ -22,6 +22,7 @@ import {
   type AguaRasa,
   type CipoVivo,
   type EixoDeEquilibrio,
+  type EscadaViva,
   type TroncoVivo,
   useJogo,
 } from '../estado/contexto'
@@ -90,6 +91,9 @@ interface Quadro {
  * o percurso nas copas tem placa de largada, cronômetro, vagalumes e estrelas
  * (`sistemas/percurso.ts`). Tudo fica em coordenadas do mundo, fora do grupo da ilha.
  */
+/** A largura dos degraus da escada reta (`ESCADA_RETA` no `bosque.py`). */
+const LARGURA_DA_ESCADA = 0.6
+
 export function BosqueVivo({
   ilha,
   centro,
@@ -199,6 +203,27 @@ export function BosqueVivo({
     return lista
   }, [preparada, meio, giro, ilha.id])
 
+  // As escadas retas (âncoras `escada-N-base`, `-topo` e `-saida`).
+  const escadas = useMemo<EscadaViva[]>(() => {
+    const lista: EscadaViva[] = []
+    const noMundo = (p: { x: number; y: number; z: number }) =>
+      paraOMundo(p, meio, giro, { x: 0, y: 0, z: 0 })
+    for (let i = 1; ; i++) {
+      const base = preparada.modelo.getObjectByName(`escada-${i}-base`)
+      const topo = preparada.modelo.getObjectByName(`escada-${i}-topo`)
+      const saida = preparada.modelo.getObjectByName(`escada-${i}-saida`)
+      if (!base || !topo || !saida) break
+      lista.push({
+        id: `${ilha.id}:escada-${i}`,
+        base: noMundo(base.position),
+        topo: noMundo(topo.position),
+        saida: noMundo(saida.position),
+        largura: LARGURA_DA_ESCADA,
+      })
+    }
+    return lista
+  }, [preparada, meio, giro, ilha.id])
+
   const pontos = useMemo<PontosDoPercurso | null>(() => {
     const ancoras: Partial<AncorasDoPercurso> = {}
     for (const nome of NOMES_DAS_ANCORAS_DO_PERCURSO) {
@@ -218,6 +243,7 @@ export function BosqueVivo({
     movimento.troncos.push(tronco)
     if (agua) movimento.aguas.push(agua)
     movimento.equilibrios.push(...equilibrios)
+    movimento.escadas.push(...escadas)
     return () => {
       const tirar = <T,>(lista: T[], item: T) => {
         const i = lista.indexOf(item)
@@ -227,6 +253,7 @@ export function BosqueVivo({
       tirar(movimento.troncos, tronco)
       if (agua) tirar(movimento.aguas, agua)
       for (const e of equilibrios) tirar(movimento.equilibrios, e)
+      for (const e of escadas) tirar(movimento.escadas, e)
       for (const c of cipos) {
         if (c.desenho) desmontarCipoDesenhado(c.desenho)
         c.desenho = null
@@ -237,7 +264,7 @@ export function BosqueVivo({
         loja.getState().definirCorrida(null)
       }
     }
-  }, [cipos, tronco, agua, equilibrios, movimento, loja])
+  }, [cipos, tronco, agua, equilibrios, escadas, movimento, loja])
 
   /** No chão da ilha (não num deque, no cipó nem no tronco). */
   const noChao = () =>
