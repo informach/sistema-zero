@@ -1051,6 +1051,17 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   verde o que dá (em azul para porta e janela) e em vermelho o que não dá; o Zappy explica a
   recusa (`sistemas/construcao/falas.ts`). "Desfazer" volta até 30 mudanças
   (`LEMBRA_PARA_TRAS`), só enquanto o Construir está aberto.
+- **Corte das paredes** (`sistemas/construcao/telhado.ts`, `paredesCortadasNoViver`): no
+  Construir, todas as paredes do kit ficam cortadas. No Viver, com a pessoa numa célula de dentro
+  de casa (o quarto ou um cômodo novo), fica cortada toda parede cuja linha separa a câmera da
+  pessoa; fora de casa, nenhuma. O jogo confere a cada 0,12 s. As paredes fixas da plataforma
+  nunca são cortadas. A parede cortada continua segurando o corpo, mas a câmera passa por ela
+  (`col-obra-cortada-*`, como o guarda-corpo dos deques).
+- **Telhado** (`telhadoDoComodo`): cada cômodo novo retangular ganha o telhado de duas águas do kit,
+  com a cumeeira correndo em x, beirais, águas (meia água no meio quando o fundo é ímpar),
+  cumeeira com as pontas, testeiras e oitões nas duas pontas, a partir de 4 de altura e subindo
+  0,5 por célula (`TELHADO`). Cômodo que não é retângulo fica sem telhado. O telhado sai no
+  Construir e com a pessoa dentro da obra; o do quarto (do `casa.glb`) sai junto.
 
 ### 6.17 O diário e as pegadas
 

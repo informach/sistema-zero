@@ -10,10 +10,9 @@ import { RoomMotionContext } from '@sistemazero/avatar-quarto/quarto/room-glb-mo
 import { Walls } from '@sistemazero/avatar-quarto/quarto/walls'
 import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
-import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
+import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
-import { NADA_CORTADO, TUDO_CORTADO } from '../sistemas/construcao/pecas'
 import { dormir } from '../sistemas/necessidades'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
@@ -213,8 +212,11 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
  * kit (`ObraNoMundo`) e daqui ficam o revestimento, o telhado e a varanda.
  */
 function Casca({ construida }: { construida: boolean }) {
-  // No Construir o telhado sai, como quando a pessoa entra em casa.
-  const dentro = useEstado((s) => s.dentroDeCasa || s.painelAberto === PAINEL_DE_CONSTRUIR)
+  // No Construir e com a pessoa num cômodo da obra o telhado do quarto sai, como no quarto.
+  const { loja } = useJogo()
+  const naObra = useConstrucao(lojaDaConstrucao(loja), (s) => s.dentroDaObra)
+  const dentro =
+    useEstado((s) => s.dentroDeCasa || s.painelAberto === PAINEL_DE_CONSTRUIR) || naObra
   const aberta = useEstado((s) => s.salvamento.casa.portaNova)
   const colisores = useMemo(() => colisoresDaCasa(aberta, construida), [aberta, construida])
   return (
@@ -376,7 +378,7 @@ export function Casa() {
           obra={obra}
           lote={LOTE_DA_CASA}
           base={BASE_DA_OBRA}
-          cortada={construindo ? TUDO_CORTADO : NADA_CORTADO}
+          construindo={construindo}
         />
       ) : null}
       {obra && construindo ? <ModoConstruir lote={LOTE_DA_CASA} obra={obra} base={BASE} /> : null}

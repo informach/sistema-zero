@@ -13,7 +13,7 @@ import {
   deslocar,
   GRUPOS,
 } from '../src/mundo/colisao-da-ilha-central'
-import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
+import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { ALTURA_DA_TERRA, alturaDaIlha, CENTRO_DA_CASA, PORTA, QUARTO } from '../src/mundo/medidas'
 import { ladoDaParede, planta } from '../src/sistemas/construcao/comodos'
 import {
@@ -40,11 +40,18 @@ import {
   trocarPiso,
 } from '../src/sistemas/construcao/obra'
 import {
+  COLISOR_DA_PAREDE_CORTADA,
   colisoresDaObra,
   NADA_CORTADO,
   pecasDaObra,
   TUDO_CORTADO,
 } from '../src/sistemas/construcao/pecas'
+import {
+  paredesCortadasNoViver,
+  retanguloDoComodo,
+  telhadoDoComodo,
+  telhadosDaObra,
+} from '../src/sistemas/construcao/telhado'
 
 const L = LOTE_DA_CASA
 const inicial = (): Obra => structuredClone(L.obraInicial)
@@ -368,5 +375,66 @@ describe('a casa construída', () => {
     for (const n of ['col-parede-esquerda', 'col-parede-fundo', 'col-quina-1', 'col-coluna-1'])
       expect(nomes).toContain(n)
     expect(colisoresDaCasa(true).map((c) => c.nome)).toContain('col-parede-frente-1')
+  })
+})
+
+describe('o corte no Viver e o telhado', () => {
+  test('dentro de casa, corta a parede entre a câmera e a pessoa; fora, nenhuma', () => {
+    const p = planta(inicial(), L)
+    const dentro = paredesCortadasNoViver(p, { x: 0.5, z: -3.5 }, { x: 0.5, z: 9 })
+    expect(dentro.has(chaveDaAresta({ eixo: 'x', x: 0, z: 0 }))).toBe(true)
+    // A parede da direita não separa os dois: fica em pé.
+    expect(dentro.has(chaveDaAresta({ eixo: 'z', x: 6, z: -4 }))).toBe(false)
+    // As fixas (da plataforma) nunca.
+    expect([...dentro].some((k) => p.fixas.has(k))).toBe(false)
+    expect(paredesCortadasNoViver(p, { x: 0.5, z: 5.5 }, { x: 0.5, z: 12 }).size).toBe(0)
+  })
+
+  test('a parede cortada só segura o corpo: a câmera passa por ela', () => {
+    const o = inicial()
+    const corte = (k: string) => k === chaveDaAresta({ eixo: 'x', x: -6, z: 0 })
+    const caixas = colisoresDaObra(o, planta(o, L), corte)
+    const cortadas = caixas.filter((c) => c.nome.startsWith(COLISOR_DA_PAREDE_CORTADA))
+    expect(cortadas).toHaveLength(1)
+    expect(soParaOCorpo(cortadas[0]?.nome ?? '')).toBe(true)
+    expect(caixas.filter((c) => !soParaOCorpo(c.nome)).length).toBeGreaterThan(5)
+  })
+
+  test('telhado de duas águas num cômodo de 2 por 4: beirais, águas, cumeeira, testeiras e oitões', () => {
+    const t = telhadoDoComodo({ x0: 6, z0: -6, x1: 8, z1: -2 })
+    const conta = (no: string) => t.filter((x) => x.no === no).length
+    expect(conta('beiral')).toBe(4)
+    expect(conta('agua')).toBe(8)
+    expect(conta('cumeeira')).toBe(2)
+    expect(conta('cumeeira-ponta')).toBe(2)
+    expect(conta('testeira-beiral-esq') + conta('testeira-beiral-dir')).toBe(4)
+    expect(conta('testeira-esq') + conta('testeira-dir')).toBe(8)
+    expect(conta('oitao-faixa')).toBe(4)
+    expect(conta('oitao-esq') + conta('oitao-dir')).toBe(8)
+    // A cumeeira no meio, na altura 4 + 0,25 × fundo; o lado de z maior sobe sem giro.
+    expect(t.find((x) => x.no === 'cumeeira')).toMatchObject({ z: -4, y: 5 })
+    expect(t.find((x) => x.no === 'beiral' && x.z === -2)?.giro).toBe(0)
+    expect(t.find((x) => x.no === 'beiral' && x.z === -6)?.giro).toBeCloseTo(Math.PI)
+  })
+
+  test('com fundo ímpar, a água, a testeira e o oitão do meio são as meias', () => {
+    const t = telhadoDoComodo({ x0: 0, z0: 0, x1: 1, z1: 3 })
+    expect(t.filter((x) => x.no === 'agua-meia')).toHaveLength(2)
+    expect(t.filter((x) => x.no.startsWith('oitao-meia-'))).toHaveLength(4)
+    expect(t.filter((x) => x.no === 'oitao-faixa-meia')).toHaveLength(4)
+  })
+
+  test('só cômodo retangular ganha telhado', () => {
+    let o = inicial()
+    o = ok(esticarParede(o, L, { x: -6, z: 0 }, { x: -6, z: 3 }))
+    o = ok(esticarParede(o, L, { x: -6, z: 3 }, { x: -1, z: 3 }))
+    o = ok(esticarParede(o, L, { x: -1, z: 3 }, { x: -1, z: 0 }))
+    const p = planta(o, L)
+    const novo = p.comodos.find((c) => !c.quarto)
+    expect(novo && retanguloDoComodo(novo)).toEqual({ x0: -6, z0: 0, x1: -1, z1: 3 })
+    expect(telhadosDaObra(p).length).toBeGreaterThan(0)
+    // Em L: sem telhado.
+    const emL = { ...novo, celulas: novo?.celulas.slice(1) ?? [] }
+    expect(retanguloDoComodo(emL as never)).toBeNull()
   })
 })

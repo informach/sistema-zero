@@ -1,31 +1,37 @@
 import { useGLTF } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import type { Obra as DadosDaObra } from '@sistemazero/arquipelago-contracts'
-import { memo, useMemo, useRef } from 'react'
+import { memo, useMemo, useRef, useState } from 'react'
 import type { Object3D } from 'three'
 import paredesGlb from '../assets/casa/casa-paredes.glb'
 import pisosGlb from '../assets/casa/casa-pisos.glb'
 import portasGlb from '../assets/casa/casa-portas.glb'
+import telhadoGlb from '../assets/casa/casa-telhado.glb'
+import { lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
-import { planta } from '../sistemas/construcao/comodos'
-import type { Lote } from '../sistemas/construcao/lote'
+import { type Planta, planta } from '../sistemas/construcao/comodos'
+import { chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
 import {
   type ArquivoDoKit,
   type Corte,
   colisoresDaObra,
   type FolhaDaPorta,
+  NADA_CORTADO,
   type PecaDoKit,
   pecasDaObra,
+  TUDO_CORTADO,
 } from '../sistemas/construcao/pecas'
+import { paredesCortadasNoViver, telhadosDaObra } from '../sistemas/construcao/telhado'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ComReserva, copiarNo, materiaisDe, useModelo } from './modelos'
 
-/** O kit da casa (`arte/casa`): paredes, portas e pisos, um nó por peça. */
+/** O kit da casa (`arte/casa`): paredes, portas, pisos e telhado, um nó por peça. */
 export const KIT_DA_CASA: Readonly<Record<ArquivoDoKit, string>> = {
   paredes: new URL(paredesGlb, import.meta.url).href,
   portas: new URL(portasGlb, import.meta.url).href,
   pisos: new URL(pisosGlb, import.meta.url).href,
+  telhado: new URL(telhadoGlb, import.meta.url).href,
 }
 
 export function carregarKitDaCasa() {
@@ -41,7 +47,7 @@ export const PERTO_DA_PORTA = 2.2
 const Peca = memo(function Peca({ peca }: { peca: PecaDoKit }) {
   const raiz = useModelo(KIT_DA_CASA[peca.arquivo])
   const no = useMemo(() => copiarNo(raiz, peca.no), [raiz, peca.no])
-  return <primitive object={no} position={[peca.x, 0, peca.z]} rotation-y={peca.giro} />
+  return <primitive object={no} position={[peca.x, peca.y ?? 0, peca.z]} rotation-y={peca.giro} />
 })
 
 /** A folha da porta: abre sozinha quando a pessoa chega perto, para o lado de fora. */
@@ -84,8 +90,8 @@ function LuzDasJanelas() {
   return null
 }
 
-function colisoresNoMundo(obra: DadosDaObra, lote: Lote, y: number): Solido[] {
-  return colisoresDaObra(obra, planta(obra, lote)).map((c) => ({
+function colisoresNoMundo(obra: DadosDaObra, p: Planta, cortada: Corte, y: number): Solido[] {
+  return colisoresDaObra(obra, p, cortada).map((c) => ({
     forma: 'caixa',
     nome: c.nome,
     posicao: [c.posicao[0], c.posicao[1] + y, c.posicao[2]],
@@ -94,25 +100,82 @@ function colisoresNoMundo(obra: DadosDaObra, lote: Lote, y: number): Solido[] {
   }))
 }
 
+/** De quanto em quanto tempo (s) o corte do Viver é conferido. */
+const CONFERIR_O_CORTE = 0.12
+
 /**
- * Uma obra no mundo: as paredes, quinas, portas, janelas e pisos do kit, e a colisão. `base` é onde
- * fica o ponto (0, 0) da grade (y: o topo do piso).
+ * O corte das paredes: no Construir, todas; no Viver, com a pessoa dentro de casa, as que ficam
+ * entre a câmera e ela (`paredesCortadasNoViver`). Também diz à loja se ela está dentro da obra
+ * (o telhado sai).
+ */
+function useCorte(p: Planta, base: [number, number, number], construindo: boolean): Corte {
+  const { loja, rastro } = useJogo()
+  const construcao = lojaDaConstrucao(loja)
+  const camera = useThree((s) => s.camera)
+  const [cortadas, setCortadas] = useState<{ chave: string; set: Set<string> }>({
+    chave: '',
+    set: new Set(),
+  })
+  const espera = useRef(0)
+  useFrame((_, dt) => {
+    espera.current -= dt
+    if (espera.current > 0) return
+    espera.current = CONFERIR_O_CORTE
+    const pessoa = { x: rastro.x - base[0], z: rastro.z - base[2] }
+    construcao
+      .getState()
+      .definirDentroDaObra(
+        p.dentro.has(chaveDaCelula({ x: Math.floor(pessoa.x), z: Math.floor(pessoa.z) })),
+      )
+    if (construindo) return
+    const set = paredesCortadasNoViver(p, pessoa, {
+      x: camera.position.x - base[0],
+      z: camera.position.z - base[2],
+    })
+    const chave = [...set].sort().join(';')
+    if (chave !== cortadas.chave) setCortadas({ chave, set })
+  })
+  return useMemo<Corte>(() => {
+    if (construindo) return TUDO_CORTADO
+    if (cortadas.set.size === 0) return NADA_CORTADO
+    return (k) => cortadas.set.has(k)
+  }, [construindo, cortadas])
+}
+
+/**
+ * Uma obra no mundo: as paredes, quinas, portas, janelas, pisos e telhados do kit, e a colisão.
+ * `base` é onde fica o ponto (0, 0) da grade (y: o topo do piso). O telhado sai no Construir e com
+ * a pessoa dentro da obra.
  */
 export function ObraNoMundo({
   obra,
   lote,
   base,
-  cortada,
+  construindo,
 }: {
   obra: DadosDaObra
   lote: Lote
   base: [number, number, number]
-  cortada: Corte
+  construindo: boolean
 }) {
+  const { loja } = useJogo()
+  const construcao = lojaDaConstrucao(loja)
   const p = useMemo(() => planta(obra, lote), [obra, lote])
+  const cortada = useCorte(p, base, construindo)
+  const dentro = useConstrucao(construcao, (x) => x.dentroDaObra)
   const pecas = useMemo(() => pecasDaObra(obra, p, cortada), [obra, p, cortada])
-  const colisores = useMemo(() => colisoresNoMundo(obra, lote, base[1]), [obra, lote, base])
-  const todas: PecaDoKit[] = [...pecas.paredes, ...pecas.quinas, ...pecas.pisos]
+  const telhados = useMemo(() => telhadosDaObra(p), [p])
+  const colisores = useMemo(
+    () => colisoresNoMundo(obra, p, cortada, base[1]),
+    [obra, p, cortada, base],
+  )
+  const comTelhado = !construindo && !dentro
+  const todas: PecaDoKit[] = [
+    ...pecas.paredes,
+    ...pecas.quinas,
+    ...pecas.pisos,
+    ...(comTelhado ? telhados : []),
+  ]
   return (
     <>
       <group position={base}>
