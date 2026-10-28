@@ -1,6 +1,6 @@
 # Arquipélago: controlador universal, câmera e controles
 
-Plano escrito em 28/10/2026 a partir de três mensagens da dona no mesmo dia (resumo em
+Plano escrito em 28/10/2026 a partir de quatro mensagens da dona no mesmo dia (resumo em
 `docs/pesquisa/2026-10-28-animacao-camera-controles.md`):
 
 1. "Como os jogos profissionais fazem animações e física": animação e física são sistemas
@@ -14,6 +14,10 @@ Plano escrito em 28/10/2026 a partir de três mensagens da dona no mesmo dia (re
    exploração, assistência discreta, perfis por atividade), braço com colisão e transparência,
    ações separadas dos dispositivos (teclado, mouse, controle, toque), contextos de entrada,
    joystick flutuante no celular, preferências de conforto como requisito.
+4. "Como jogos profissionais criam as mecânicas físicas de exploração": movimento livre, guiado e
+   especializado; modos de movimento com entrar, atualizar e sair (Psychonauts 2); o Bosque como a
+   primeira grande demonstração (tronco caído, escalar, cipó, plataforma, casa na árvore, bicho
+   escondido, escorregador).
 
 ## O que o jogo já tem
 
@@ -37,6 +41,12 @@ Conferido no código em 28/10/2026. A base que ela escolheu é a que o jogo já 
 | Menos movimento | Sim (`prefers-reduced-motion` no cipó) | `estado/preferencias.ts` |
 
 ## O que falta (a sequência)
+
+Depois da quarta mensagem (mecânicas de exploração), a arquitetura de modos ganhou uma
+especificação própria: `docs/specs/2026-10-28-arquipelago-modos-de-movimento.md` (o contrato
+comum, os modos que existem com os números do código e os próximos do Bosque: equilíbrio no tronco
+caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os modos de hoje do
+`personagem.tsx` nesse contrato.
 
 ### 1. Movimento com peso e tolerância (`sistemas/movimento.ts`, puro)
 
@@ -80,6 +90,13 @@ Conferido no código em 28/10/2026. A base que ela escolheu é a que o jogo já 
 - Um gerenciador de perfis sobre a câmera que já existe: exploração, conversa (já existe), dentro
   de casa (já existe), percurso (mais aberta, antecipando o movimento), construção (alta,
   inclinada) quando o modo Construir chegar. Transição suave de perfil em 0,5 s.
+
+### 6. Modos de movimento separados
+
+- Chão, nado, cipó e escalada saem do `personagem.tsx` para modos com `podeEntrar`, `entrar`,
+  `passo` e `sair` (regras puras em `sistemas/`), sem mudar o comportamento (os testes e a
+  conferência no navegador de hoje passando iguais). Depois, os quatro modos novos do Bosque, um por
+  vez, cada um com a animação dele no Blender.
 
 ## Regras
 

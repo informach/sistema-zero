@@ -1,6 +1,6 @@
 # Levantamentos da dona: animação, física, câmera e controles (28/10/2026)
 
-Resumo de três mensagens que a dona enviou no mesmo dia, guardado para consulta. Os números são
+Resumo de quatro mensagens que a dona enviou no mesmo dia, guardado para consulta. Os números são
 hipóteses de partida dela ("valores sugeridos para experimentos", "não são valores oficiais dos
 jogos analisados"); o que o jogo adota e por quê fica em `docs/arquipelago-regras.md`. O plano que
 saiu daqui: `docs/plans/2026-10-28-arquipelago-controlador-universal.md`.
@@ -92,3 +92,58 @@ saiu daqui: `docs/plans/2026-10-28-arquipelago-controlador-universal.md`.
 - Fontes citadas por ela: documentação do Cinemachine, Spring Arm da Unreal, câmera do Roblox,
   consultas físicas do Rapier, diretrizes de conforto visual do Xbox, Apple (controles de toque em
   jogos), MDN (Pointer Events, `touch-action`, Gamepad API).
+
+## 4. Mecânicas físicas de exploração (quarta mensagem do dia)
+
+- Os estúdios combinam movimento físico, movimento controlado e animações preparadas; física livre
+  nas animações deu resultado ruim em Uncharted 4 até ficar previsível (GDC, Naughty Dog).
+- Três tipos de movimento: livre com colisões (andar, correr, pular, rampas, pontes); guiado por
+  superfícies ou trajetórias (escadas, troncos, bordas, escorregadores, tirolesas); com física
+  especializada (nadar, cipó, gelo, trenó, planar, barco, montaria).
+- Referência principal de arquitetura: os modos de movimento de Psychonauts 2 (Double Fine, "On
+  The Move"): uns 30 modos em classes separadas, com entrar, atualizar e sair, e trajetórias
+  (splines) para bordas, corrimãos, escadas, postes, cordas e trilhos. Contrato sugerido:
+  `MovementMode { id, canEnter, enter, update(contexto, passoFixo), exit }`, com o controlador
+  cuidando das transições e de converter a velocidade de um modo para o outro.
+- Bosque dos Bichos como primeira grande demonstração: chegar, andar sobre um tronco caído,
+  escalar uma árvore, agarrar um cipó, balançar até uma plataforma, subir à casa da árvore, achar
+  um bichinho escondido e descer pelo escorregador.
+  - Tronco caído: largo, chão normal; estreito, modo de equilíbrio preso ao eixo, com correção
+    suave (sem cair por erro mínimo no Kids).
+  - Escalar: um meio-termo entre escalada livre (Zelda) e por apoios (Uncharted): troncos marcados,
+    subir e andar de lado na região permitida, transição suave para galhos e plataformas.
+  - Agarrar borda: detectar borda, conferir espaço, pendurar, subir até um alvo (o princípio do
+    Motion Warping da Unreal), com assistência de alcance (Psychonauts 2).
+  - Cipó: opção A, pêndulo controlado (comprimento fixo, aceleração, amortecimento, alcance,
+    velocidade tangencial ao soltar), a escolha dela; opção B, `useRopeJoint` do Rapier, que exige
+    corpo dinâmico (o avatar cinemático não obedece à corda). Referência: o balanço de Spider-Man.
+  - Escada ou cipó vertical: modo de subir guiado por um eixo, com entrada e saída.
+  - Escorregador: movimento guiado por uma curva central, aceleração pela inclinação, algum
+    controle lateral, volta ao chão no fim (Psychonauts 2 precisou de trajetórias definidas por
+    quem desenha, porque só a inclinação da colisão oscilava).
+- Recife: volume de água por sensor; superfície, mergulho e emergir; correntes como velocidade
+  somada; cavernas com entradas largas; barco assistido (o de travessia) e flutuação física para
+  boias e caixas (os pontoons da Unreal).
+- Vila Doce e Pico Gelado: patins e gelo como inércia nas regras do controlador (o atrito do
+  colisor não faz o cinemático deslizar); salto em fases (saída rápida, controle no ar, queda
+  precisa; "Designing Raz's Jump"), com coyote time e buffer; trenó controlado antes do dinâmico;
+  planador com descida lenta, deslocamento horizontal e correntes ascendentes.
+- Vale dos Dinos e Nuvens: montaria como vínculo lógico e visual (assento no esqueleto), não
+  articulação física; balão calmo (subir, descer, vento); plataformas móveis cinemáticas que
+  carregam o personagem; pontes com estrutura sólida e balanço só no desenho.
+- Complementares: empurrar (corpos dinâmicos), pegar e carregar, cogumelo-trampolim, tirolesa
+  (mesma infraestrutura de trajetórias), balanços e gangorras com juntas, portas com dobradiça,
+  elevadores, pesca, colher e plantar, mover objetos da casa com prévia e validação.
+- Blender: cada objeto interativo com modelo, colisores simples, área de interação, pontos de
+  entrada e saída, trajetória, tipo de movimento e ajustes, em propriedades `extras` do glTF;
+  trajetórias como pontos amostrados.
+- Física real onde soma (caixas, objetos que caem, brinquedos articulados); avatar com movimento
+  assistido e controlado.
+- Como avaliar uma mecânica: resposta, previsibilidade, continuidade (soltar o cipó conserva o
+  impulso, sair do escorregador continua correndo) e recuperação; assistência de alcance opcional e
+  pontos de recuperação perto.
+- O próximo documento que ela sugere: uma especificação de cada modo (entradas e saídas, controles
+  de teclado e toque, parâmetros, animações do Blender, câmera e testes de aceitação).
+- Referências: Double Fine ("On The Move", "Designing Raz's Jump"), Naughty Dog ("Climbing
+  Evolution"), Game Developer (o balanço de Spider-Man), Rapier (controlador de personagem),
+  React Three Rapier.
