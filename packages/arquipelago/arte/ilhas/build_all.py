@@ -29,7 +29,8 @@ CONTRATO = {
         'ancoras': COMUNS + ['escada', 'casa-na-arvore', 'cabana', 'cercado', 'lago', 'escorregador-fim',
                              'copas-1', 'copas-2', 'copas-3', 'copas-4']
         + [f'esconderijo-{i}' for i in range(1, 5)] + ['equilibrio-1-a', 'equilibrio-1-b']
-        + ['escada-1-base', 'escada-1-topo', 'escada-1-saida'],
+        + ['escada-1-base', 'escada-1-topo', 'escada-1-saida']
+        + [f'escorregador-curva-{i}' for i in range(1, 14)],
         'clipes': [],
         # Grupos de nós de colisão (o nome sem o número do fim): o percurso nas copas inteiro, a casa na
         # árvore, o escorregador, a cabana, o cercadinho, os troncos, o chão e os enfeites que seguram o

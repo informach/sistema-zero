@@ -30,6 +30,7 @@ export function mudarModo(
     c.saindoDaEscada = 0
   }
   c.contraAEscada = 0
+  if (c.escorregador && modo !== 'escorregar') c.escorregador = null
   if (c.eixo && modo !== 'equilibrio') {
     c.eixo = null
     c.balanco = 0

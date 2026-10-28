@@ -100,6 +100,71 @@
         "y": 1.0,
         "z": -8.9
       },
+      "escorregador-curva-1": {
+        "x": -2.32,
+        "y": 5.24,
+        "z": 7.49
+      },
+      "escorregador-curva-10": {
+        "x": 1.39,
+        "y": 1.7,
+        "z": 9.46
+      },
+      "escorregador-curva-11": {
+        "x": 1.8,
+        "y": 1.35,
+        "z": 9.68
+      },
+      "escorregador-curva-12": {
+        "x": 2.21,
+        "y": 1.12,
+        "z": 9.9
+      },
+      "escorregador-curva-13": {
+        "x": 2.62,
+        "y": 1.24,
+        "z": 10.12
+      },
+      "escorregador-curva-2": {
+        "x": -1.91,
+        "y": 5.16,
+        "z": 7.71
+      },
+      "escorregador-curva-3": {
+        "x": -1.5,
+        "y": 4.93,
+        "z": 7.93
+      },
+      "escorregador-curva-4": {
+        "x": -1.09,
+        "y": 4.58,
+        "z": 8.15
+      },
+      "escorregador-curva-5": {
+        "x": -0.67,
+        "y": 4.15,
+        "z": 8.37
+      },
+      "escorregador-curva-6": {
+        "x": -0.26,
+        "y": 3.66,
+        "z": 8.59
+      },
+      "escorregador-curva-7": {
+        "x": 0.15,
+        "y": 3.14,
+        "z": 8.81
+      },
+      "escorregador-curva-8": {
+        "x": 0.56,
+        "y": 2.62,
+        "z": 9.03
+      },
+      "escorregador-curva-9": {
+        "x": 0.97,
+        "y": 2.13,
+        "z": 9.24
+      },
       "escorregador-fim": {
         "x": 2.62,
         "y": 1.0,
@@ -168,7 +233,7 @@
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1022.0,
+    "kb": 1023.4,
     "nos": {
       "agua": 82,
       "cipo-1": 268,

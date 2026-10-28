@@ -165,6 +165,15 @@ descer pelo escorregador. Faltam quatro peças.
 - **Animação nova:** Escorregar (sentado, braços para trás). **Câmera:** atrás, olhando à frente.
 - **Testes:** a descida é sempre igual (mesmo tempo, mesma saída); o percurso nas copas continua
   dentro do tempo-alvo; sai correndo sem tropeçar.
+- **Feito em 28/10/2026** (`sistemas/modos/escorregar.ts`, `ESCORREGAR`): pisar na pista (na
+  largura e na altura dela, longe do fim) senta. A gravidade do jogo com o atrito do plástico
+  (`MATERIAIS.plastico`, 0,3), teto de 5,5 m/s e nunca menos de 0,8 m/s (não para no meio); pedir o
+  lado mexe 1,2 m/s dentro da pista. No fim, a velocidade vira passo no chão e o peso do chão freia
+  sozinho; pular sai. A câmera usa o perfil `escorregar` (pelo menos 7 m, olhando à frente) e vira
+  para as costas de quem desce (menos com menos movimento). O Blender exporta a linha da pista em 13
+  pontos (`escorregador-curva-1..13`, na superfície). Na sala de testes, o escorregador sai do alto
+  da torre da escada. Conferido no navegador: na sala, 5,5 m em 1,7 s; no Bosque, do deque da T4 ao
+  chão, sentado e com a câmera atrás.
 
 ## Modos das outras ilhas (decididos só em linhas gerais)
 

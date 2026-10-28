@@ -81,6 +81,7 @@ function mundo(extra: Partial<MundoDoMovimento> = {}): MundoDoMovimento {
     aguas: [],
     equilibrios: [],
     escadas: [],
+    escorregadores: [],
     foco: { x: 0, y: 0, z: 0 },
     ...extra,
   }
@@ -348,5 +349,53 @@ describe('a escada reta', () => {
     expect(c.modo).toBe('chao')
     expect(c.embalo.z).toBeGreaterThan(0)
     expect(c.velY).toBeGreaterThan(0)
+  })
+})
+
+describe('o escorregador', () => {
+  // A pista do Bosque, reta: 5,6 m de chão descendo 4 m em curva suave (12 trechos).
+  const pontos = Array.from({ length: 13 }, (_, i) => {
+    const t = i / 12
+    return { x: 5.6 * t, y: 0.2 + 4 * (1 - (3 * t * t - 2 * t * t * t)), z: 0 }
+  })
+  const pista = { id: 'escorregador', pontos, largura: 1 }
+
+  function descer(pedidoZ = 0) {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ escorregadores: [pista] })
+    c.noChao = true
+    // Pisando no alto da pista, andando para ela.
+    passo(
+      c,
+      entrada({ x: 0.2, y: (pontos[0]?.y ?? 0) + CORPO.doCentroAoPe, z: 0 }, { pedidoX: 1, ix: 1 }),
+      m,
+      true,
+    )
+    let passos = 0
+    let maisDeLado = 0
+    while (c.modo === 'escorregar' && passos < 1200) {
+      passo(c, entrada(c.prox, { pedidoZ, agora: passos * 16 }), m, false)
+      maisDeLado = Math.max(maisDeLado, Math.abs(c.prox.z))
+      passos++
+    }
+    return { c, segundos: passos / 60, maisDeLado }
+  }
+
+  test('pisando no alto senta e desce até o fim, sempre no mesmo tempo, e sai correndo', () => {
+    const a = descer()
+    const b = descer()
+    expect(a.segundos).toBeGreaterThan(1)
+    expect(a.segundos).toBeLessThan(3)
+    expect(b.segundos).toBe(a.segundos)
+    expect(a.c.modo).toBe('chao')
+    expect(a.c.prox.x).toBeCloseTo(5.6, 0)
+    // No fim a velocidade virou passo no chão.
+    expect(a.c.vel.x).toBeGreaterThan(2)
+  })
+
+  test('pedir o lado mexe dentro da pista, sem passar da borda', () => {
+    const { maisDeLado } = descer(1)
+    expect(maisDeLado).toBeGreaterThan(0.1)
+    expect(maisDeLado).toBeLessThan(pista.largura / 2)
   })
 })

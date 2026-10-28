@@ -3,6 +3,7 @@ import type {
   CipoVivo,
   EixoDeEquilibrio,
   EscadaViva,
+  Escorregador,
   ModoDoCorpo,
   TroncoVivo,
 } from '../../estado/contexto'
@@ -37,6 +38,11 @@ export interface EstadoDoCorpo {
   naEscada: number
   saindoDaEscada: number
   contraAEscada: number
+  /** O escorregador, onde o corpo está na pista (metros desde o alto), a velocidade e o lado. */
+  escorregador: Escorregador | null
+  naPista: number
+  velNaPista: number
+  ladoNaPista: number
   /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
   noModo: number
   /** A velocidade que vem do cipó ou do pulo do tronco, até pisar de novo. */
@@ -85,6 +91,10 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     naEscada: 0,
     saindoDaEscada: 0,
     contraAEscada: 0,
+    escorregador: null,
+    naPista: 0,
+    velNaPista: 0,
+    ladoNaPista: 0,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },
     vel: { x: 0, z: 0 },
@@ -144,6 +154,7 @@ export interface MundoDoMovimento {
   aguas: AguaRasa[]
   equilibrios: EixoDeEquilibrio[]
   escadas: EscadaViva[]
+  escorregadores: Escorregador[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

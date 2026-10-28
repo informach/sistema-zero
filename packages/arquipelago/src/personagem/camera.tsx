@@ -66,6 +66,8 @@ const INCLINACAO_NA_CONVERSA = PERFIS_DE_CAMERA.conversa.inclinacao?.fixa ?? 0.2
 const RAPIDEZ_NA_CONVERSA = 2.5
 /** O ponto que ela olha fica abaixo das cabeças: as duas sobem na tela, acima da caixa de conversa. */
 const ABAIXO_NA_CONVERSA = 0.7
+/** A rapidez (por segundo) com que a câmera vai para as costas de quem escorrega. */
+const CAMERA_NO_ESCORREGADOR = 2.5
 /** A rapidez com que o olhar vai à frente e volta (por segundo): devagar, sem balançar nas curvas. */
 const SEGUIR_A_ANTECIPACAO = 2
 /** Guarda que a pessoa já mexeu na câmera (a dica do Zappy não volta). */
@@ -296,6 +298,13 @@ export function Camera() {
       recentrarVisto.current = controle.recentrar
       volta.current = { giro: rastro.direcao + Math.PI, inclinacao: C.inclinacaoDeVolta }
     }
+    // No escorregador a câmera vai para as costas (quem desce vê a pista à frente), a não ser que a
+    // pessoa esteja girando ou tenha pedido menos movimento.
+    if (movimento.modo === 'escorregar' && !arrastandoAgora.current && !menosMovimento) {
+      rastro.giro +=
+        giroMaisCurto(rastro.giro, rastro.direcao + Math.PI) *
+        (1 - Math.exp(-dt * CAMERA_NO_ESCORREGADOR))
+    }
     // Com a preferência ligada, andando sem mexer na câmera, ela volta sozinha para as costas.
     if (!volta.current && movimento.modo === 'chao' && !arrastandoAgora.current) {
       rastro.giro = giroComVoltaSozinha(
@@ -341,6 +350,7 @@ export function Camera() {
         conversa: fala !== null,
         dentroDeCasa: dentro,
         correndoPercurso: movimento.corrida !== null,
+        escorregando: movimento.modo === 'escorregar',
       }),
       dt,
     )

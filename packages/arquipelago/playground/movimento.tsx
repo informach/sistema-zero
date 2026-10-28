@@ -26,6 +26,7 @@ import {
   ESTACOES,
   LAGUINHO,
   naSala,
+  PISTA_DA_TORRE,
   ROTULOS,
 } from './sala-de-movimento'
 
@@ -108,6 +109,7 @@ const NOME_DO_MODO: Record<string, string> = {
   escalada: 'escalada',
   equilibrio: 'equilíbrio',
   escada: 'escada',
+  escorregar: 'escorregando',
 }
 /** No celular o painel começa fechado (cobriria metade da tela). */
 const ABRE_O_PAINEL = typeof window !== 'undefined' && window.innerWidth > 600
@@ -146,7 +148,14 @@ function Sala() {
       largura: t.largura,
     }
     movimento.escadas.push(escada)
+    const pista = {
+      id: PISTA_DA_TORRE.id,
+      largura: PISTA_DA_TORRE.largura,
+      pontos: PISTA_DA_TORRE.pontos.map((p) => naSala(p.x, p.y, p.z)),
+    }
+    movimento.escorregadores.push(pista)
     return () => {
+      movimento.escorregadores.splice(movimento.escorregadores.indexOf(pista), 1)
       movimento.escadas.splice(movimento.escadas.indexOf(escada), 1)
       movimento.aguas.splice(movimento.aguas.indexOf(agua), 1)
       movimento.equilibrios.splice(movimento.equilibrios.indexOf(eixo), 1)

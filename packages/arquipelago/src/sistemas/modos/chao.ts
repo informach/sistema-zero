@@ -6,6 +6,7 @@ import { cipoAoAlcance, pegarCipo } from './cipo'
 import { eixoSobOsPes, entrarNoEquilibrio } from './equilibrio'
 import { escadaParaPegar, pegarEscada } from './escada'
 import { agarrarTronco, troncoContra } from './escalada'
+import { entrarNoEscorregador, pistaSobOsPes } from './escorregar'
 import type { ModoDeMovimento } from './tipos'
 
 /** O avatar nada quando a cintura (esta altura acima dos pés) passa da linha da água. */
@@ -133,6 +134,13 @@ export const MODO_CHAO: ModoDeMovimento = {
       if (c.modo === 'chao') {
         const sob = eixoSobOsPes(c, mundo)
         if (sob) entrarNoEquilibrio(c, sob.eixo, sob.s, e.agora, aviso)
+      }
+      // Pisando na pista do escorregador: senta e escorrega.
+      if (c.modo === 'chao') {
+        const pista = pistaSobOsPes(c, mundo)
+        if (pista) {
+          entrarNoEscorregador(c, pista.escorregador, pista.s, pista.lado, e.agora, aviso)
+        }
       }
       // Andando contra a escada embaixo (ou para ela, do deque, em cima): pega nela.
       if (c.modo === 'chao') {

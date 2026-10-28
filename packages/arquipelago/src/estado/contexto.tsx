@@ -105,7 +105,17 @@ export interface EscadaViva {
   largura: number
 }
 
-export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada' | 'equilibrio' | 'escada'
+/**
+ * Um escorregador (`escorregador-curva-N` do GLB): a linha do meio da pista, em pontos amostrados do
+ * alto ao fim, no mundo e na superfície.
+ */
+export interface Escorregador {
+  id: string
+  pontos: Ponto[]
+  largura: number
+}
+
+export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada' | 'equilibrio' | 'escada' | 'escorregar'
 
 /**
  * Cipós, troncos de escalar e águas rasas das ilhas completas, e o que o personagem faz com eles
@@ -118,6 +128,7 @@ export interface Movimento {
   aguas: AguaRasa[]
   equilibrios: EixoDeEquilibrio[]
   escadas: EscadaViva[]
+  escorregadores: Escorregador[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
   /** Escritos pelo personagem. */
@@ -144,6 +155,7 @@ export function criarMovimento(): Movimento {
     aguas: [],
     equilibrios: [],
     escadas: [],
+    escorregadores: [],
     pedido: null,
     modo: 'chao',
     noChao: false,

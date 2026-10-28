@@ -158,6 +158,20 @@ export const ESCADA_DA_TORRE = {
   largura: 0.7,
 } as const
 
+/**
+ * O escorregador (modo escorregar): do alto da torre, para −x, até o chão, no mesmo perfil do Bosque
+ * (curva suave). Os pontos são a linha do meio da pista, na superfície.
+ */
+export const PISTA_DA_TORRE = {
+  id: 'escorregador-da-sala',
+  largura: 1,
+  pontos: Array.from({ length: 13 }, (_, i) => {
+    const t = i / 12
+    const desce = 3 * t * t - 2 * t * t * t
+    return { x: -16 - 5.5 * t, y: 0.15 + (TORRE.altura - 0.15) * (1 - desce), z: 16.5 }
+  }),
+}
+
 /** O laguinho: buraco no chão com a água a 15 cm da borda e uma rampa de entrada a oeste. */
 export const LAGUINHO = { x0: 9, x1: 21, z0: 6, z1: 16, fundo: 1.2, agua: -0.15 } as const
 
@@ -299,6 +313,37 @@ function montar() {
     y: TR.altura + 1.2,
     z: E.base.z,
   })
+  // O escorregador saindo do alto da torre: um trecho por par de pontos (a superfície nos pontos).
+  const P = PISTA_DA_TORRE
+  for (let i = 1; i < P.pontos.length; i++) {
+    const a = P.pontos[i - 1]
+    const b = P.pontos[i]
+    if (!a || !b) continue
+    const dx = a.x - b.x
+    const dy = a.y - b.y
+    const comp = Math.hypot(dx, dy)
+    const th = Math.atan2(dy, dx)
+    const meio = {
+      x: (a.x + b.x) / 2 + Math.sin(th) * 0.04,
+      y: (a.y + b.y) / 2 - Math.cos(th) * 0.04,
+    }
+    blocos.push({
+      centro: [meio.x, meio.y, a.z],
+      meio: [comp / 2 + 0.02, 0.04, P.largura / 2],
+      giro: [0, 0, th],
+      cor: '#4f8fd6',
+    })
+    for (const lado of [-1, 1]) {
+      blocos.push({
+        centro: [meio.x, meio.y + 0.2, a.z + lado * (P.largura / 2 + 0.04)],
+        meio: [comp / 2 + 0.02, 0.2, 0.04],
+        giro: [0, 0, th],
+        cor: '#f2c94c',
+        semColisao: true,
+      })
+    }
+  }
+  rotulos.push({ texto: 'Escorregador', x: -18.5, y: 2.6, z: 16.5 })
 
   // 8. Câmera: parede solta, árvore e corredor estreito.
   blocos.push(caixa(8, 16, 0, 4, -12.2, -11.8, PAREDE))
@@ -324,6 +369,8 @@ export const ESTACOES: readonly Estacao[] = [
   { nome: 'Plataformas', x: 1.5, z: -22, y: 0, giro: Math.PI },
   { nome: 'Tronco caído', x: 6.5, z: -4.6, y: 0, giro: Math.PI },
   { nome: 'Escada', x: -14.5, z: 12.5, y: 0, giro: Math.PI },
+  // No alto da torre, de frente para o escorregador (−x).
+  { nome: 'Escorregador', x: -14.5, z: 16.5, y: TORRE.altura, giro: Math.PI / 2 },
   { nome: 'Câmera', x: 12, z: -16, y: 0, giro: Math.PI },
   { nome: 'Laguinho', x: 5, z: 11, y: 0, giro: -Math.PI / 2 },
 ]

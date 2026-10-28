@@ -81,7 +81,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   (`movimento.equilibrios`, registradas pelo `BosqueVivo`); o chão entra nele pelo `eixoSobOsPes`.
   Escada reta (`modos/escada.ts`): âncoras `escada-N-base`, `-topo` e `-saida`
   (`movimento.escadas`); o chão pega pelo `escadaParaPegar` (embaixo, andando contra; em cima, do
-  deque); os degraus colidem só para o corpo (`col-escada-reta`).
+  deque); os degraus colidem só para o corpo (`col-escada-reta`). Escorregador
+  (`modos/escorregar.ts`): os pontos da pista vêm das âncoras `escorregador-curva-N`
+  (`movimento.escorregadores`); pisar nela senta (`pistaSobOsPes`); a câmera tem o perfil
+  `escorregar`.
   Clipes novos no `locomocao.glb` (Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
   Escorregar), com o campo `especial` da `EntradaDaLocomocao` (antes `pendurado`); para ver:
   `/animacoes?equilibrar=1`, `?escada=1`, `?borda=1&subir=1`, `?escorregar=1`.

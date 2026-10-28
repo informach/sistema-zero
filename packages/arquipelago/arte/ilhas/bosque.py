@@ -180,7 +180,7 @@ def escorregador(col):
                 hp = meio.z - TOPO
                 p.append(cyl(0.07, hp, (meio.x + ox, meio.y + oy, TOPO + hp / 2), 'poste', verts=6))
                 col.append(col_cilindro('perna-escorregador', 0.08, hp, (meio.x + ox, meio.y + oy, TOPO + hp / 2)))
-    return p, pts[-1]
+    return p, pts
 
 
 # ------------------------------------------------------------------ cabana da Capi
@@ -552,7 +552,11 @@ def tampo_do_tronco_caido():
     return TOPO + TRONCO_CAIDO[2] * 1.9
 
 
-def ancoras(fim_escorregador):
+ESPESSURA_DA_PISTA = 0.08  # a tábua da pista tem o meio nos pontos: a superfície fica meia espessura acima
+
+
+def ancoras(pista):
+    fim_escorregador = pista[-1]
     lado = R(200)
     bx, by = T1[0] + math.cos(lado) * 1.85, -T1[1] + math.sin(lado) * 1.85
     porta_casa = (bx + math.cos(lado + math.pi) * 1.3, by + math.sin(lado + math.pi) * 1.3)
@@ -570,6 +574,9 @@ def ancoras(fim_escorregador):
     a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))
     a.append(ancora('equilibrio-1-b', x1, z1, tampo_do_tronco_caido()))
     a += ancoras_da_escada_reta()
+    # A linha do meio da pista do escorregador, na superfície (modo escorregar).
+    for i, pt in enumerate(pista):
+        a.append(ancora(f'escorregador-curva-{i + 1}', pt.x, -pt.y, pt.z + ESPESSURA_DA_PISTA / 2))
     for i, (x, z, giro) in enumerate(ESCONDERIJOS):
         e = ancora(f'esconderijo-{i + 1}', x, z)
         e.rotation_euler = (0.0, 0.0, giro)
@@ -600,7 +607,7 @@ def construir():
         obras += plataforma(t[0], t[1], t[4], r=t[5], aberturas=aberturas, col=col)
     for a_, b_ in zip(PERCURSO, PERCURSO[1:]):
         obras += ponte_corda(borda(a_, angulo(a_, b_)), borda(b_, angulo(b_, a_)), col=col)
-    esc, fim = escorregador(col)
+    esc, pista = escorregador(col)
     obras += esc
     obras += escada_reta(col)
     frente = olhar_para(CABANA[0], CABANA[1], *ALVO_CABANA)
@@ -619,7 +626,7 @@ def construir():
     for i in range(len(CIPOS)):
         objs, pivo = cipo(i)
         cipos[f'cipo-{i + 1}'] = (objs, pivo)
-    anc = ancoras(fim)
+    anc = ancoras(pista)
     nos_copa = {f'copa-{i + 1}': c for i, c in enumerate(copas)}
     nos_copa.update({f'tronco-{i + 1}': t for i, t in enumerate(troncos)})
     nos = {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos, **nos_copa,

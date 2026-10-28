@@ -9,7 +9,13 @@
  * O modo Construir, quando chegar, ganha o perfil dele aqui (alto e inclinado).
  */
 
-export const NOMES_DOS_PERFIS = ['exploracao', 'casa', 'conversa', 'percurso'] as const
+export const NOMES_DOS_PERFIS = [
+  'exploracao',
+  'casa',
+  'conversa',
+  'percurso',
+  'escorregar',
+] as const
 export type NomeDoPerfil = (typeof NOMES_DOS_PERFIS)[number]
 
 export interface PerfilDeCamera {
@@ -40,6 +46,8 @@ export const PERFIS_DE_CAMERA: Readonly<Record<NomeDoPerfil, PerfilDeCamera>> = 
   conversa: { inclinacao: { fixa: 0.2 }, distancia: { maxima: 5 } },
   // Mais aberta e um pouco mais alta, olhando para onde a criança vai.
   percurso: { inclinacao: { minima: 0.6 }, distancia: { minima: 11 }, antecipar: 0.4 },
+  // Atrás de quem escorrega (a câmera vira para as costas, `personagem/camera.tsx`), olhando à frente.
+  escorregar: { inclinacao: { minima: 0.45 }, distancia: { minima: 7 }, antecipar: 0.35 },
 }
 
 /** Segundos para a troca de perfil chegar a 95% do caminho. */
@@ -52,12 +60,18 @@ export interface SituacaoDaCamera {
   dentroDeCasa: boolean
   /** Uma corrida do percurso em andamento. */
   correndoPercurso: boolean
+  /** Descendo o escorregador. */
+  escorregando?: boolean
 }
 
-/** O perfil que vale agora: conversa antes de tudo, depois a casa, o percurso e a exploração. */
+/**
+ * O perfil que vale agora: conversa antes de tudo, depois a casa, o escorregador, o percurso e a
+ * exploração.
+ */
 export function perfilDaVez(s: SituacaoDaCamera): NomeDoPerfil {
   if (s.conversa) return 'conversa'
   if (s.dentroDeCasa) return 'casa'
+  if (s.escorregando) return 'escorregar'
   if (s.correndoPercurso) return 'percurso'
   return 'exploracao'
 }
@@ -65,7 +79,7 @@ export function perfilDaVez(s: SituacaoDaCamera): NomeDoPerfil {
 export type PesosDosPerfis = Record<NomeDoPerfil, number>
 
 export function criarPesos(inicial: NomeDoPerfil = 'exploracao'): PesosDosPerfis {
-  return { exploracao: 0, casa: 0, conversa: 0, percurso: 0, [inicial]: 1 }
+  return { exploracao: 0, casa: 0, conversa: 0, percurso: 0, escorregar: 0, [inicial]: 1 }
 }
 
 /**

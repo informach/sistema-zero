@@ -23,6 +23,8 @@ export const MATERIAIS = {
   pedra: { densidade: 2500, atrito: 0.8, quique: 0.05 },
   /** Fardo de palha: leve, boia alto. */
   palha: { densidade: 150, atrito: 0.9, quique: 0.05 },
+  /** A pista do escorregador: lisa (quem escorrega desce sozinho) e boia. */
+  plastico: { densidade: 950, atrito: 0.3, quique: 0.2 },
 } as const satisfies Record<string, MaterialFisico>
 
 export type NomeDoMaterial = keyof typeof MATERIAIS

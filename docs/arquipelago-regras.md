@@ -471,6 +471,10 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
   escada, do deque, em cima, o corpo pega nela; frente e trás sobem e descem a 1,5 m/s. No alto sai
   sozinho para o deque; embaixo solta; pular solta para trás. No Bosque, a escada vai do chão ao
   deque do escorregador.
+- **Escorregador** (`sistemas/modos/escorregar.ts`): pisar na pista senta; a velocidade cresce com a
+  inclinação (a gravidade do jogo e o atrito 0,3 do plástico), até 5,5 m/s, e nunca para no meio;
+  pedir o lado mexe um pouco dentro da pista. No fim, continua correndo um pouco. A câmera fica
+  atrás, olhando à frente (perfil `escorregar`).
 - **Sala de testes** (`bun run dev`, `/movimento`; `playground/sala-de-movimento.ts`): pista com
   faixas a cada 2 m, degraus de 0,2, 0,35, 0,4 e 0,5, rampas de 25°, 42° e 55°, beiradas de 1,2,
   1,9 e 2,4 m, plataformas com vãos de 1,2, 2,9 e 5 m, parede, árvore e corredor para a câmera e um
@@ -591,6 +595,7 @@ Arquivos: `sistemas/camera.ts`, `personagem/camera.tsx` e `mundo/medidas.ts`.
   |---|---|---|
   | Conversa | painel de conversa aberto (a Capi) | ângulo 0,2 e no máximo 5 m (mais abaixo) |
   | Casa | dentro de casa | ângulo de pelo menos 0,95 e no máximo 8 m |
+  | Escorregador | descendo o escorregador | ângulo de pelo menos 0,45, pelo menos 7 m, o olhar 0,35 s à frente, e a câmera vira para as costas |
   | Percurso | corrida do percurso em andamento | ângulo de pelo menos 0,6, pelo menos 11 m, e o olhar 0,4 s à frente de quem corre (até 2 m) |
   | Exploração | o resto | nada: vale o que a pessoa escolheu |
 

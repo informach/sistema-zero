@@ -22,6 +22,8 @@ describe('os perfis da câmera', () => {
     expect(perfilDaVez({ conversa: true, dentroDeCasa: true, correndoPercurso: true })).toBe(
       'conversa',
     )
+    // No escorregador do fim do percurso, vale o do escorregador.
+    expect(perfilDaVez({ ...nada, correndoPercurso: true, escorregando: true })).toBe('escorregar')
   })
 
   test('a exploração não mexe no que a pessoa escolheu', () => {
