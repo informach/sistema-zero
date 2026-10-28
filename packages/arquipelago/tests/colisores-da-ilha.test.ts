@@ -11,6 +11,7 @@ import {
   type Object3D,
   Quaternion,
   Ray,
+  Raycaster,
   Vector3,
 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -19,6 +20,7 @@ import {
   type ColisorDaIlha,
   ehNoDeColisao,
   lerColisores,
+  soParaOCorpo,
   tirarNosDeColisao,
 } from '../src/mundo/colisores-da-ilha'
 import { prepararIlha } from '../src/mundo/ilha-completa'
@@ -300,6 +302,107 @@ describe('os nós col-* do Bosque', () => {
       const corpo = new Vector3(x, 1 + CENTRO_DO_CORPO, 0)
       const bloqueio = colisores.find((c) => c.forma !== 'malha' && bate(c, corpo))
       expect(bloqueio?.nome).toBeUndefined()
+    }
+  })
+})
+
+describe('os enfeites do Bosque que seguram o corpo', () => {
+  const TAMPO = 1
+
+  test('moitas, pedras, cogumelos, tocas, floreiras e pernas do escorregador têm colisor', () => {
+    const quantos: Record<string, number> = {
+      'col-cil-moita': 8,
+      'col-cil-pedra': 5,
+      'col-cil-pedra-lago': 9,
+      'col-cil-cogumelo': 18,
+      'col-cil-toca': 2,
+      'col-floreira': 2,
+    }
+    for (const [g, n] of Object.entries(quantos)) expect(doGrupo(g)).toHaveLength(n)
+    expect(doGrupo('col-cil-perna-escorregador').length).toBeGreaterThan(0)
+  })
+
+  test('cada colisor fica debaixo do desenho e não passa do topo dele', () => {
+    const vegetacao = raiz.getObjectByName('vegetacao')
+    if (!vegetacao) throw new Error('sem vegetacao')
+    const raio = new Raycaster()
+    for (const g of [
+      'col-cil-moita',
+      'col-cil-pedra',
+      'col-cil-pedra-lago',
+      'col-cil-cogumelo',
+      'col-cil-toca',
+    ]) {
+      for (const c of doGrupo(g) as Cilindro[]) {
+        let alto = -Infinity
+        for (let k = 0; k <= 8; k++) {
+          const a = (k * Math.PI) / 4
+          const d = k === 0 ? 0 : c.raio * 0.4
+          raio.set(
+            new Vector3(c.posicao[0] + Math.cos(a) * d, 20, c.posicao[2] + Math.sin(a) * d),
+            new Vector3(0, -1, 0),
+          )
+          const [acerto] = raio.intersectObject(vegetacao)
+          if (acerto) alto = Math.max(alto, acerto.point.y)
+        }
+        expect(alto).toBeGreaterThan(TAMPO + 0.15)
+        // A moita pode passar um pouco do topo (invisível, dentro das folhas ou logo acima).
+        const folga = g === 'col-cil-moita' ? 0.2 : 0.05
+        expect(c.posicao[1] + c.meiaAltura).toBeLessThanOrEqual(alto + folga)
+      }
+    }
+  })
+
+  test('a moita não se sobe; as pedras do lago sim (os cipós ficam ao alcance)', () => {
+    // Com a curva do pé o personagem sobe até uns 0,58 (o degrau automático é de 0,45).
+    for (const c of doGrupo('col-cil-moita') as Cilindro[]) {
+      expect(c.posicao[1] + c.meiaAltura - TAMPO).toBeGreaterThan(0.65)
+    }
+    for (const c of doGrupo('col-cil-pedra-lago') as Cilindro[]) {
+      expect(c.posicao[1] + c.meiaAltura - TAMPO).toBeLessThan(DEGRAU)
+    }
+  })
+
+  test('folhagem e peça fina seguram só o corpo; pedra e toca tapam a câmera', () => {
+    for (const g of [
+      'col-cil-moita',
+      'col-cil-cogumelo',
+      'col-floreira',
+      'col-cil-perna-escorregador',
+    ]) {
+      for (const c of doGrupo(g)) expect(soParaOCorpo(c.nome)).toBe(true)
+    }
+    for (const g of ['col-cil-pedra', 'col-cil-pedra-lago', 'col-cil-toca']) {
+      for (const c of doGrupo(g)) expect(soParaOCorpo(c.nome)).toBe(false)
+    }
+  })
+
+  test('nenhum enfeite novo ocupa onde ficam a Capi, os Lumis, as portas e as chegadas', () => {
+    const novos = [
+      'col-cil-moita',
+      'col-cil-pedra',
+      'col-cil-pedra-lago',
+      'col-cil-cogumelo',
+      'col-cil-toca',
+      'col-floreira',
+      'col-cil-perna-escorregador',
+    ].flatMap(doGrupo)
+    for (const nome of [
+      'chegada',
+      'morador',
+      'lumi-1',
+      'lumi-2',
+      'lumi-3',
+      'lumi-4',
+      'escada',
+      'cabana',
+      'cercado',
+      'lago',
+      'escorregador-fim',
+    ]) {
+      const a = ancora(nome)
+      const corpo = new Vector3(a.x, a.y + CENTRO_DO_CORPO, a.z)
+      expect(novos.find((c) => bate(c, corpo))?.nome).toBeUndefined()
     }
   })
 })

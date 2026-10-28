@@ -459,6 +459,43 @@ Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medi
 - **Jogo aberto em cima de uma ilha completa:** o personagem espera no ar até o chão de verdade
   chegar (margem de 1 além da borda, `MARGEM_DA_ESPERA_PELO_CHAO`).
 
+### 6.10 Colisão
+
+Arquivos: `mundo/colisao-da-ilha-central.ts` (o que tem medida do jogo), os nós `col-*` dos
+modelos do Blender (o que o Blender espalha) e `mundo/colisores-da-ilha.ts` (lê os nós e diz quem
+a câmera ignora).
+
+- **A regra:** tudo o que se vê de pé e tem o tamanho de um objeto segura o corpo. A colisão é
+  sempre uma forma simples (caixa ou cilindro, com a borda arredondada em 3 cm), nunca o desenho.
+  Só o chão usa a malha.
+- **O que é sólido na ilha central:** a casa (paredes, quinas, alicerce, floreiras das janelas,
+  vasinhos e colunas da varanda, a porta nova fechada no vão ou aberta para fora), os troncos das
+  árvores e a saia de galhos dos pinheiros, as moitas, as pedras, os canteiros da horta, a
+  bancada, o farol com as pedras do pé e os degraus, o píer com as estacas, o poste e a lanterna
+  do lampião, o barquinho e a corda das pontes inteiras.
+- **O que é sólido no Bosque:** além do percurso nas copas, da cabana e do cercadinho, as moitas,
+  as pedras, os cogumelos, as tocas, as floreiras da cabana, as pernas do escorregador e o
+  cavalete do Quadro das Cores.
+- **O que se atravessa:** capim, flores, pedras do caminho, estrelas-do-mar, vitórias-régias,
+  taboas, raízes e as copas acima da cabeça. São baixos ou macios demais para parar alguém.
+- **Tamanho:** o que é macio (moita, folhagem, cogumelo) fica um pouco menor que o desenho, para o
+  corpo encostar nas folhas sem entrar. O que é duro (parede, tronco, pedra) fica do tamanho do
+  desenho.
+- **O degrau:** o degrau automático é de 0,45, e com a curva do pé o personagem ainda escorrega por
+  cima de uma quina até uns 0,58. Pedras pequenas, cogumelos pequenos, as pedras da beira do lago
+  do Bosque e as tocas ficam abaixo disso (ele sobe nelas). Moitas e canteiros têm pelo menos 0,7
+  (`ALTURA_QUE_SEGURA`): ele para na borda. A parte de cima que passa do desenho não aparece.
+- **A câmera:** moitas, folhagem, cogumelos e peças finas (postes, estacas, colunas, floreiras,
+  vasos, canteiros, barquinho, cavalete, corda das pontes e guarda-corpos) seguram só o corpo e a
+  câmera passa por eles. Paredes, troncos, pedras, torre e cabana tapam a câmera, que encosta
+  antes deles.
+- **Onde mudar:** moitas e pedras da ilha central em `arte/mundo/terreno.py` (`MOITA_RAIO`,
+  `MOITA_ALTO`, `PEDRA_RAIO`, `PEDRA_ALTO`); pedras do farol em `arte/mundo/farol.py`; estacas,
+  lampião e barquinho em `arte/mundo/pier.py`; enfeites do Bosque em `arte/ilhas/bosque.py`
+  (`MOITA_COL`, `PEDRA_COL`, `COGUMELO_COL`, `PEDRA_DO_LAGO_ALTA`). Depois de mudar um script,
+  gere o GLB de novo (README de `arte/mundo` ou de `arte/ilhas`). O resto está em
+  `colisao-da-ilha-central.ts`. Quem a câmera ignora: `SO_PARA_O_CORPO` em `colisores-da-ilha.ts`.
+
 ## 7. Desafios
 
 Arquivos principais:
@@ -894,6 +931,7 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Posição do Zappy | 0,75, 0,35 e 1,3 | `arquipelago/src/sistemas/zappy.ts`, `LADO_DO_ZAPPY`, `ATRAS_DO_ZAPPY`, `ALTURA_DO_ZAPPY` |
 | Câmera | seção 6.8 | `arquipelago/src/mundo/medidas.ts`, `GRUA_DA_CAMERA`, `CAMERA_NO_ALTO` e vizinhos |
 | Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |
+| Colisão das peças | seção 6.10 | `arquipelago/src/mundo/colisao-da-ilha-central.ts`, os scripts de `arquipelago/arte` e `colisores-da-ilha.ts`, `SO_PARA_O_CORPO` |
 | Quadros por ilha | 6 | `arquipelago-contracts/src/desafios.ts`, `QUADROS_POR_ILHA` |
 | Lugar e alcance do Quadro das Cores | 3,2 e 2,4 m; 2,6 m | `arquipelago/src/mundo/quadro-das-cores.tsx`, `LUGAR_DO_QUADRO`, `ALCANCE_DO_QUADRO` |
 | Festa da cor | 1,6 s na mancha; 4 s até avisar o serviço | `quadro-das-cores.tsx`, `DURACAO_DA_COR_S`; `arquipelago/src/interface/quadro-das-cores.tsx`, `FESTA_MS` |

@@ -44,7 +44,31 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `assets/mundo/`: o mundo feito no Blender (chão, árvores, casa, horta, bancada, farol, píer,
   pontes e ilhas do anel), um script por peça em `arte/mundo/` (`build_all.py`, nós e materiais
   no README de lá). `mundo/modelos.tsx` carrega; cada peça mostra a forma simples do código até o
-  modelo chegar, e os colisores continuam no código.
+  modelo chegar. Colisão: veja "Colisão das peças" abaixo.
+
+## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
+
+- Regra: o que se vê de pé e tem tamanho de objeto colide, sempre com forma simples (caixa ou
+  cilindro arredondado, `Colisores` em `mundo/colisores.tsx`), nunca a malha de desenho (só o chão).
+  Macio (moita, folhagem, cogumelo) fica um pouco menor que o desenho; duro fica do tamanho dele.
+  Miúdo do chão (capim, flores, pedras do caminho, estrelas-do-mar, vitórias-régias, taboas,
+  raízes) não colide. O personagem sobe sozinho até uns 0,58 (degrau de 0,45 mais a curva do pé
+  numa quina): pedrinhas, tocas e pedras do lago ficam abaixo; o que deve parar o corpo (moitas,
+  canteiros) tem pelo menos `ALTURA_QUE_SEGURA` (0,7).
+- O que tem medida do jogo fica no código, em `mundo/colisao-da-ilha-central.ts` (casca da casa e
+  a porta aberta ou fechada, troncos e a saia do pinheiro, canteiros, bancada, torre do farol,
+  tampo do píer, corrimão das pontes inteiras). O que o Blender espalha vem dos nós `col-*` do
+  GLB, lidos com `lerColisores` junto com o desenho: `terreno.glb` (moitas e pedras), `farol.glb`
+  (pedras do pé e degraus), `pier.glb` (estacas, lampião e barquinho) e, no Bosque, `bosque.glb`
+  (moitas, pedras, cogumelos, tocas, floreiras, pernas do escorregador). Ajudantes `col_caixa`,
+  `col_cilindro`, `col_no_chao` no `arte/mundo/lib_mundo.py`; `exportar(..., colisores=col)`.
+- Câmera: `SO_PARA_O_CORPO` (`colisores-da-ilha.ts`, pelo prefixo do nome) diz o que só segura o
+  corpo: folhagem, cogumelos e peças finas (postes, estacas, colunas, floreiras, vasos, canteiros,
+  barco, cavalete, corrimãos). Paredes, troncos, pedras e torre tapam a câmera.
+- Testes: `tests/colisao-da-ilha-central.test.ts` (nós sem material, colisor debaixo do desenho,
+  quem a câmera ignora, trilhas de pedra livres, porta, e uma busca em grade de 25 cm que chega da
+  porta a cada canteiro, à bancada, ao farol, ao píer e à cabeça de cada ponte) e o bloco "os
+  enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`.
 
 ## Ilhas completas (o Bosque, 27/10/2026)
 
@@ -79,7 +103,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Testes: `tests/ilhas-completas.test.ts` (ciclo, memória, esmaecer), `tests/camera-e-copas.test.ts`
   (distância da câmera, peças que esmaecem e a troca de materiais) e
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
-  ponta a ponta, escada, escorregador, corredor da chegada livre).
+  ponta a ponta, escada, escorregador, corredor da chegada livre, enfeites que seguram o corpo).
 
 ## Quadro das Cores (28/10/2026)
 

@@ -13,8 +13,10 @@ repetir).
 
 A colisão é feita à mão, em formas simples ao lado de cada peça que se pisa ou que segura (deques,
 guarda-corpos, pontes, degraus, casa na árvore, escorregador, cabana, cercadinho, troncos, toras e
-tocos), e o chão é uma cópia do tampo, da praia e do barranco. Enfeites miúdos, copas, moitas,
-pedrinhas e flores não colidem: o personagem passa por eles sem tropeçar.
+tocos), e o chão é uma cópia do tampo, da praia e do barranco. Moitas, pedras, cogumelos, tocas,
+as floreiras da cabana e as pernas do escorregador também seguram o corpo (um cilindro ou caixa um
+pouco menor que o desenho). Copas, raízes, flores, capim, taboas e vitórias-régias não colidem: o
+personagem passa por eles sem tropeçar.
 """
 from lib_ilhas import *
 
@@ -47,6 +49,27 @@ CIPOS = [no_galho(x) for x in CIPOS_X]
 CABANA = (6.6, -6.4)
 ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da escada da T1
 CERCADO = (2.4, -9.2)
+
+
+# ------------------------------------------------------------------ colisão dos enfeites
+# Medidas por escala, um pouco menores que o desenho: o corpo encosta e não atravessa.
+MOITA_COL = (0.65, 0.75)     # raio e altura da moita (a folhagem vai a ~0,9 de raio)
+PEDRA_COL = (0.58, 0.85)     # raio e altura da pedra (antes de tirar o pé enterrado)
+COGUMELO_COL = (0.25, 0.55)  # raio e altura do cogumelo (chapéu de 0,3 a ~0,55)
+# O personagem sobe sozinho até uns 0,58 (degrau de 0,45 mais a curva do pé): a moita passa disto
+# e o corpo para nela. As pedras da beira do lago ficam abaixo: ele sobe nelas e chega aos cipós
+# por qualquer lado.
+PEDRA_DO_LAGO_ALTA = 0.4
+
+
+def col_no_tampo(col, base, x, z, r, alto, fundo=0.1):
+    """Cilindro em pé no tampo em (x, z) do jogo: de `fundo` abaixo dele até `alto` acima."""
+    col.append(col_cilindro(base, r, alto + fundo, (x, -z, TOPO + (alto - fundo) / 2)))
+
+
+def col_pedra(col, base, x, z, s, teto=None):
+    alto = PEDRA_COL[1] * s - 0.2  # a pedra afunda 0,12 e o topo é arredondado
+    col_no_tampo(col, base, x, z, PEDRA_COL[0] * s, alto if teto is None else min(teto, alto))
 
 
 def tronco_r(t):
@@ -148,6 +171,7 @@ def escorregador(col):
                 ox, oy = -math.sin(ang) * 0.4 * lado, math.cos(ang) * 0.4 * lado
                 hp = meio.z - TOPO
                 p.append(cyl(0.07, hp, (meio.x + ox, meio.y + oy, TOPO + hp / 2), 'poste', verts=6))
+                col.append(col_cilindro('perna-escorregador', 0.08, hp, (meio.x + ox, meio.y + oy, TOPO + hp / 2)))
     return p, pts[-1]
 
 
@@ -201,6 +225,7 @@ def cabana(col):
     for sx in (-1, 1):
         p += janela(sx * (W / 2 + 0.18), 0, TOPO + 1.4, 0.75, 0.65, 0 if sx > 0 else math.pi, m_moldura='placaBranca')
         p.append(box((0.3, 0.9, 0.22), (sx * (W / 2 + 0.38), 0, TOPO + 0.95), 'floreira', bevel=0.03, segs=1))
+        col.append(col_caixa('floreira', (0.3, 0.9, 0.22), (sx * (W / 2 + 0.38), 0, TOPO + 0.95)))
         for k in range(3):
             p += flor((sx * (W / 2 + 0.38), -0.3 + k * 0.3, TOPO + 1.02), ['petalaRosa', 'petalaAmarela', 'petalaLilas'][k],
                       seed=k + (5 if sx > 0 else 0), r=0.13, haste=0.12)
@@ -252,7 +277,7 @@ def cercadinho(col):
 
 
 # ------------------------------------------------------------------ lago e cipós
-def lago():
+def lago(col):
     x, z = LAGO
     agua = [mancha(x, z, 2.2, 1.5, 'lagoBosque', seed=7, z0=TOPO - 0.03, z1=TOPO + 0.04, n=28, wob=0.07)]
     borda_ = [mancha(x, z, 2.55, 1.85, 'areiaMolhada', seed=7, z0=TOPO - 0.03, z1=TOPO + 0.02, n=28, wob=0.07)]
@@ -260,8 +285,10 @@ def lago():
     enfeite = []
     for k in range(9):
         a = 2 * math.pi * k / 9 + rnd.uniform(-0.2, 0.2)
-        enfeite += pedra(x + math.cos(a) * 2.5, z + math.sin(a) * 1.85, 0.45 + rnd.uniform(0, 0.25), 'pedraClara',
+        s = 0.45 + rnd.uniform(0, 0.25)
+        enfeite += pedra(x + math.cos(a) * 2.5, z + math.sin(a) * 1.85, s, 'pedraClara',
                          seed=40 + k, top_m='musgo' if k % 3 == 0 else None)
+        col_pedra(col, 'pedra-lago', x + math.cos(a) * 2.5, z + math.sin(a) * 1.85, s, teto=PEDRA_DO_LAGO_ALTA)
     for k, (dx, dz) in enumerate(((-0.8, -0.3), (0.6, 0.4), (1.2, -0.5), (-0.2, 0.7))):
         bx, by = x + dx, -z - dz
         o = cyl(0.36, 0.03, (bx, by, TOPO + 0.06), 'vitoriaRegia', verts=12)
@@ -332,7 +359,9 @@ def vegetacao(col, copas, troncos):
         p += arvore_media(x, z, s, c, seed=90 + i, col=col, folhas=copa)
     for i, (x, z) in enumerate(((4.2, -10.8), (-4.0, -8.8), (-11.0, 1.4), (8.6, -8.6), (3.6, 9.6), (-7.0, 9.6),
                                 (0.6, -6.2), (-5.4, 0.4))):
-        p += moita(x, z, 0.9 + (i % 3) * 0.15, seed=i)
+        s = 0.9 + (i % 3) * 0.15
+        p += moita(x, z, s, seed=i)
+        col_no_tampo(col, 'moita', x, z, MOITA_COL[0] * s, MOITA_COL[1] * s)
     p += tora(1.6, -5.6, 2.4, R(25), col=col)
     p += tora(-1.6, 10.3, 2.0, R(75), r=0.28, col=col)
     p += tora(-10.4, -2.0, 1.8, R(10), r=0.26, col=col)
@@ -340,7 +369,9 @@ def vegetacao(col, copas, troncos):
         p += toco(x, z, col=col)
     for i, (x, z) in enumerate(((-3.2, 2.2), (-6.0, -8.4), (0.4, 4.4), (-9.6, 4.0), (6.8, 2.8 + 0.6), (-2.4, -6.6))):
         for k in range(3):
-            p += cogumelo(x + k * 0.35, z + (k % 2) * 0.3, 0.8 + 0.2 * k)
+            cx, cz, s = x + k * 0.35, z + (k % 2) * 0.3, 0.8 + 0.2 * k
+            p += cogumelo(cx, cz, s)
+            col_no_tampo(col, 'cogumelo', cx, cz, COGUMELO_COL[0] * s, COGUMELO_COL[1] * s)
     for i, (x, z, r, n) in enumerate(((0.0, 1.8, 2.2, 14), (-5.6, 3.2, 1.6, 8), (4.6, -2.8 - 0.4, 1.0, 6),
                                       (-1.0, -7.6, 1.6, 8), (7.8, 9.0 - 1.2, 1.2, 6), (-8.6, -8.2, 1.2, 6),
                                       (9.8, -6.4, 1.0, 5))):
@@ -351,10 +382,13 @@ def vegetacao(col, copas, troncos):
     for i, (x, z, s) in enumerate(((10.2, 4.4, 0.7), (-11.2, -3.2, 0.8), (6.0, 9.4, 0.6), (-3.6, 11.0, 0.7),
                                    (10.4, -6.4, 0.75))):
         p += pedra(x, z, s, 'pedra', seed=300 + i, top_m='musgo')
+        col_pedra(col, 'pedra', x, z, s)
     # Tocas dos bichos (montinho de terra com a entrada escura).
     for x, z in ((-8.0, -10.0 + 2.0), (8.4, -2.8 - 0.6)):
         p.append(uvball(0.8, (x, -z, TOPO - 0.2), 'terraIlha', seg=10, ring=5, scale=(1, 1, 0.72)))
         p.append(cyl(0.34, 0.12, (x, -z - 0.56, TOPO + 0.22), 'black', verts=10, rot=(R(80), 0, 0)))
+        # O montinho (0,38 de alto) vira um degrau baixo: o personagem sobe nele em vez de afundar.
+        col_no_tampo(col, 'toca', x, z, 0.6, 0.3)
     return p
 
 
@@ -404,7 +438,7 @@ def construir():
     lib_q.reset()
     col = []
     chao = terreno(col)
-    borda_lago, agua, enfeite_lago = lago()
+    borda_lago, agua, enfeite_lago = lago(col)
     chao += borda_lago
     telhado = []
     obras, chegada_escada = casa_na_arvore(col, telhado)

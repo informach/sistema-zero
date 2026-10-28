@@ -1,10 +1,11 @@
 import { useFrame } from '@react-three/fiber'
-import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useMemo, useRef } from 'react'
 import { AdditiveBlending, BoxGeometry, EdgesGeometry, type Group } from 'three'
 import { useJogo } from '../estado/contexto'
 import { ITENS } from '../sistemas/itens'
 import { cozinhar, RECEITAS, receitaPossivel } from '../sistemas/receitas'
+import { COLISORES_DA_BANCADA } from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, BANCADA } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -48,9 +49,7 @@ export function Bancada() {
       <ComReserva reserva={<ProjetoDeAntes />}>
         <ProjetoDoModelo />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[1.1, 0.5, 0.5]} position={[0, 0.5, 0]} />
-      </RigidBody>
+      <Colisores lista={COLISORES_DA_BANCADA} />
     </group>
   )
 }

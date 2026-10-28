@@ -30,7 +30,11 @@
     "triangulos": 6642
   },
   "farol": {
-    "kb": 200.3,
+    "colisores": {
+      "col-cil-pedra-farol": 8,
+      "col-degrau-farol": 3
+    },
+    "kb": 206.1,
     "nos": {
       "facho": 80,
       "farol": 5148,
@@ -69,7 +73,13 @@
     "triangulos": 19336
   },
   "pier": {
-    "kb": 144.1,
+    "colisores": {
+      "col-barco": 1,
+      "col-cil-estaca": 8,
+      "col-cil-poste-lampiao": 1,
+      "col-cil-poste-lanterna": 1
+    },
+    "kb": 149.3,
     "nos": {
       "pier": 3604
     },
@@ -85,7 +95,11 @@
     "triangulos": 192
   },
   "terreno": {
-    "kb": 446.3,
+    "colisores": {
+      "col-cil-moita": 10,
+      "col-cil-pedra": 12
+    },
+    "kb": 452.1,
     "nos": {
       "chao": 7680,
       "enfeites": 5640,

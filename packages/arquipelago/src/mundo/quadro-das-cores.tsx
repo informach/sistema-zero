@@ -6,6 +6,8 @@ import quadroGlb from '../assets/itens/quadro-das-cores.glb'
 import { useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { manchasAcesas, quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import { Colisores } from './colisores'
+import type { ColisorDaIlha } from './colisores-da-ilha'
 import type { IlhaPreparada } from './ilha-completa'
 import { useInterativo } from './interativos'
 import { CINZA, copiarNo, materiaisDe, useModelo } from './modelos'
@@ -127,10 +129,23 @@ export function QuadroDasCores({
   })
 
   return (
-    <primitive
-      object={modelo}
-      position={[lugar.x, lugar.y, lugar.z]}
-      rotation={[0, lugar.giro, 0]}
-    />
+    <group position={[lugar.x, lugar.y, lugar.z]} rotation={[0, lugar.giro, 0]}>
+      <primitive object={modelo} />
+      <Colisores lista={COLISORES_DO_QUADRO} />
+    </group>
   )
 }
+
+/**
+ * O cavalete segura o corpo (1,3 de largura e 1,5 de altura, das pernas da frente à de trás); a
+ * câmera passa por ele.
+ */
+const COLISORES_DO_QUADRO: ColisorDaIlha[] = [
+  {
+    forma: 'caixa',
+    nome: 'col-quadro-das-cores',
+    posicao: [0, 0.75, -0.14],
+    rotacao: [0, 0, 0, 1],
+    meio: [0.6, 0.75, 0.2],
+  },
+]

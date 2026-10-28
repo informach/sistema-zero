@@ -54,7 +54,7 @@ chegada (`conferir_corredor`).
 
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 215 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4` | não tem | 27.782 | 950 KB |
+| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4` | não tem | 27.782 | 959 KB |
 | `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 925 KB |
 | `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 547 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
@@ -87,8 +87,16 @@ desenho; o `exportar(..., colisores=col)` grava tudo.
   corrimão, os degraus, a casa na árvore, o escorregador e as laterais dele, a cabana (caixa até o
   beiral), a varanda, os postes, o barril, o caixote, a cerca, a casinha, o cocho e o feno do
   cercadinho, os troncos (um cilindro por trecho, 85% da grossura do desenho), as toras e os tocos.
-- **O que não colide:** copas, raízes, moitas, flores, cogumelos, pedrinhas, tufos, tocas e os
-  enfeites miúdos das construções. O personagem passa por eles sem tropeçar.
+  Também os enfeites que se veem de pé (28/10/2026), com um cilindro um pouco menor que o desenho
+  (`col_no_tampo` e as medidas `MOITA_COL`, `PEDRA_COL`, `COGUMELO_COL` no `bosque.py`): moitas,
+  pedras, cogumelos, tocas (um degrau baixo, o personagem sobe), as pedras da beira do lago (abaixo
+  do degrau, `PEDRA_DO_LAGO_ALTA`, para os cipós ficarem ao alcance), as floreiras da cabana e as
+  pernas do escorregador.
+- **O que não colide:** copas, raízes, flores, tufos, taboas, vitórias-régias, o balde da roldana e
+  os enfeites miúdos das construções. O personagem passa por eles sem tropeçar.
+- **Câmera:** o jogo diz pelo prefixo do nome o que só segura o corpo (`SO_PARA_O_CORPO` em
+  `src/mundo/colisores-da-ilha.ts`): guarda-corpo, corrimão, moitas, cogumelos, postes, floreiras
+  e pernas do escorregador. O resto também tapa a câmera.
 - O jogo arredonda as bordas (3 cm) para o personagem não enganchar em quina de degrau ou deque.
 
 ### Nós que esmaecem (`copa-*`, `tronco-*`, `telhado-*`)

@@ -30,10 +30,13 @@ CONTRATO = {
                              'copas-1', 'copas-2', 'copas-3', 'copas-4'],
         'clipes': [],
         # Grupos de nós de colisão (o nome sem o número do fim): o percurso nas copas inteiro, a casa na
-        # árvore, o escorregador, a cabana, o cercadinho, os troncos e o chão.
+        # árvore, o escorregador, a cabana, o cercadinho, os troncos, o chão e os enfeites que seguram o
+        # corpo (moitas, pedras, cogumelos, tocas, floreiras e as pernas do escorregador).
         'colisores': ['col-terreno', 'col-cil-deque', 'col-guarda', 'col-ponte', 'col-ponte-lado', 'col-degrau',
                       'col-casa-na-arvore', 'col-escorregador', 'col-escorregador-lado', 'col-cabana', 'col-varanda',
-                      'col-cerca', 'col-cil-tronco', 'col-cil-tora', 'col-cil-toco'],
+                      'col-cerca', 'col-cil-tronco', 'col-cil-tora', 'col-cil-toco', 'col-cil-moita',
+                      'col-cil-pedra', 'col-cil-pedra-lago', 'col-cil-cogumelo', 'col-cil-toca', 'col-floreira',
+                      'col-cil-perna-escorregador'],
     },
     'vila-doce': {
         'nos': ['terreno', 'fonte', 'construcoes', 'telhados', 'feira', 'enfeites'],
