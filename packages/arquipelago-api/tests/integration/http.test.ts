@@ -522,3 +522,101 @@ describe('cartões dos Lumis', () => {
     expect((await chamar('GET', '/arquipelago/cartas', crianca())).status).toBe(403)
   })
 })
+
+describe('cartões dos Lumis na comunidade adulta', () => {
+  const CURSO_ADULTO = '66666666-6666-4666-8666-666666666666'
+  const CURSO_KIDS = '77777777-7777-4777-8777-777777777777'
+  const curso = (courseId: string, titulo: string, blocos: string[]) => ({
+    courseId,
+    titulo,
+    slug: titulo.toLowerCase().replaceAll(' ', '-'),
+    posto: 'coder',
+    papel: 'base2d',
+    blocos,
+  })
+  // Cada público tem o próprio currículo; `sz_js_while` só existe num curso Kids.
+  const curriculos = {
+    kids: {
+      versao: 1,
+      cursos: [curso(CURSO_KIDS, 'Laços Kids', ['sz_js_repeat', 'sz_js_while'])],
+      catalogo: [],
+    },
+    adult: {
+      versao: 1,
+      cursos: [curso(CURSO_ADULTO, 'Laços adultos', ['sz_js_repeat'])],
+      catalogo: [],
+    },
+  } satisfies Record<string, CurriculoDeBlocos>
+  const adulto = {
+    'x-internal-token': TOKEN,
+    'x-auth-user-id': ADULTO,
+    'x-auth-user-role': 'member',
+    'x-auth-user-status': 'active',
+  }
+  let perguntas: unknown[]
+
+  function comBlocosDoAdulto(blocos: string[]) {
+    perguntas = []
+    politica = { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() }
+    membros = membrosDeMentira({
+      // O Members só devolve blocos do público pedido (a régua mora lá, por `courses.audience`).
+      lerJogador: async (pergunta) => {
+        perguntas.push(pergunta)
+        return {
+          posicao: 2,
+          total: 8,
+          blocos: pergunta.audience === 'adult' ? blocos : ['sz_js_while'],
+        }
+      },
+      lerCurriculo: async (publico) => {
+        perguntas.push(publico)
+        return curriculos[publico]
+      },
+    })
+    montar()
+  }
+
+  async function cartasDoAdulto() {
+    const r = await chamar('GET', '/arquipelago/cartas', adulto)
+    expect(r.status).toBe(200)
+    const { cartas } = CartasDoJogadorSchema.parse(r.json)
+    return (id: string) => cartas.find((c) => c.id === id)
+  }
+
+  test('o adulto pergunta ao Members como adulto: a própria conta e o currículo adulto', async () => {
+    comBlocosDoAdulto([])
+    await cartasDoAdulto()
+    expect(perguntas).toContainEqual({ userId: ADULTO, accountId: ADULTO, audience: 'adult' })
+    expect(perguntas).toContain('adult')
+    expect(perguntas).not.toContain('kids')
+  })
+
+  test('com o bloco de um curso adulto, o cartão está na mão', async () => {
+    comBlocosDoAdulto(['sz_js_repeat'])
+    const por = await cartasDoAdulto()
+    expect(por('repetir')).toMatchObject({ conquistada: true, aprendaEm: [] })
+    expect(por('regar')).toMatchObject({ conquistada: true, aprendaEm: [] })
+  })
+
+  test('sem o bloco, trancado com o curso adulto que ensina', async () => {
+    comBlocosDoAdulto([])
+    const por = await cartasDoAdulto()
+    expect(por('repetir')).toMatchObject({
+      conquistada: false,
+      aprendaEm: [
+        { courseId: CURSO_ADULTO, titulo: 'Laços adultos', slug: 'laços-adultos', posto: 'coder' },
+      ],
+    })
+  })
+
+  test('um bloco que só existe em curso Kids não conta nem é sugerido ao adulto', async () => {
+    comBlocosDoAdulto([])
+    const por = await cartasDoAdulto()
+    // A criança da mentira tem `sz_js_while`; o adulto não, e nenhum curso adulto ensina.
+    expect(por('enquanto')).toMatchObject({ conquistada: false, aprendaEm: [] })
+    const kids = CartasDoJogadorSchema.parse(
+      (await chamar('GET', '/arquipelago/cartas', crianca())).json,
+    )
+    expect(kids.cartas.find((c) => c.id === 'enquanto')).toMatchObject({ conquistada: true })
+  })
+})

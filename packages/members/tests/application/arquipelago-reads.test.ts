@@ -118,3 +118,49 @@ describe('currículo de blocos', () => {
     expect(lugarNoCurriculo(curriculo, D)).toBeNull()
   })
 })
+
+describe('comunidade adulta (cartões dos Lumis e desafios com os cursos adultos)', () => {
+  test('o jogador adulto lê os blocos do público adulto, sem passar pela jornada Kids', async () => {
+    const read = mock(async () => ({ blocks: ['sz_js_repeat'] }))
+    const kidsGet = mock(async () => ({ earned: { level: 'hacker' } }))
+    const s = servico({
+      unlocks: { read },
+      kidsJourney: { get: kidsGet, publishedCurriculum: mock() },
+    })
+    const r = await s.jogador({ userId: A, accountId: A, audience: 'adult' })
+    expect(read).toHaveBeenCalledWith(A, 'adult')
+    expect(kidsGet).not.toHaveBeenCalled()
+    expect(r.blocos).toEqual(['sz_js_repeat'])
+  })
+
+  test('o currículo adulto: só cursos adultos, com o posto do currículo adulto', async () => {
+    const listPublishedCourses = mock(async () => [curso(A), curso(B)])
+    const publishedCurriculum = mock(async () => ({ version: 5, curriculum: curriculo }))
+    const s = servico({
+      courses: { listPublishedCourses },
+      kidsJourney: { get: mock(), publishedCurriculum },
+      adultJourney: {
+        get: mock(),
+        policy: mock(async () => ({
+          version: 3,
+          policy: {
+            stages: [],
+            curriculum: {
+              stages: [{ ...vazio, level: 'explorer', base2dCourseId: B }],
+              masteries: [],
+            },
+          },
+        })),
+      },
+    })
+    const r = await s.curriculoDeBlocos('adult')
+    expect(listPublishedCourses).toHaveBeenCalledWith('adult')
+    expect(publishedCurriculum).not.toHaveBeenCalled()
+    expect(r.versao).toBe(3)
+    // O curso B tem posto no currículo adulto; o A, que só está no currículo Kids, fica sem.
+    expect(r.cursos.map((c) => [c.courseId, c.posto])).toEqual([
+      [A, null],
+      [B, 'explorer'],
+    ])
+  })
+})

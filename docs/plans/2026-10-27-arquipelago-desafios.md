@@ -27,8 +27,11 @@ Lumis e o Admin do jogo").
    colher, guardar) são do mundo do jogo e valem para todos; os de CONTROLE (repetir, para cada,
    enquanto, se, escolha, esperar, guardar na memória, contar) são os mesmos conceitos dos blocos
    do Estúdio, um cartão por bloco, e só ficam na mão de quem conquistou o bloco (mesma fonte e
-   mesma régua dos desafios). A tela do caderno no jogo entra com os Lumis (Fase 2 do projeto do
-   jogo); a leitura já existe (`GET /arquipelago/cartas`).
+   mesma régua dos desafios). O caderno dos Lumis no jogo (28/10/2026) lê `GET /arquipelago/cartas`
+   pela porta da plataforma e mostra a coleção por tipo, com "Aprenda isso em" nos que faltam
+   (`docs/arquipelago-regras.md` §8.1). Montar a rotina e o Lumi executar entram com os Lumis
+   (Fase 2 do projeto do jogo). Na comunidade adulta vale a mesma regra com os blocos e os cursos
+   adultos, conferida de ponta a ponta em 28/10/2026 (§8).
 
 ## Decisões tomadas no plano (reversíveis, anotadas para a dona)
 

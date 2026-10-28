@@ -13,6 +13,7 @@ import {
   RegistrarTempoSchema,
   type SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
+import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos } from './desafios-falsos'
 
 /**
@@ -33,6 +34,8 @@ export interface OpcoesDaPlataformaFalsa {
   adiantarMinutos?: number
   /** Desafios do Quadro das Cores: ligados (padrão, com exemplos no Bosque) ou desligados. */
   desafios?: 'ligados' | 'desligados'
+  /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
+  cartas?: CartasDoPlayground
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -155,6 +158,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
           const r = desafios.buscar(caminho, metodo)
           if (r) return r
         }
+        if (caminho === '/cartas' && metodo === 'GET')
+          return respostaDasCartas(o.cartas ?? 'algumas', publico)
         if (caminho === '/acesso' && metodo === 'GET') return { status: 200, corpo: acesso() }
         if (caminho === '/salvamento' && metodo === 'GET') return { status: 200, corpo: guardado }
         if (caminho === '/salvamento' && metodo === 'PUT') {

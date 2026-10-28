@@ -1,5 +1,6 @@
 import type { FerramentaDaPlataforma } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
+import { PAINEL_DO_CADERNO } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
@@ -8,6 +9,7 @@ import { comer } from '../sistemas/necessidades'
 import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PainelDoBicho } from './bicho'
+import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
 import { PainelDoQuadro } from './quadro-das-cores'
@@ -350,6 +352,17 @@ function Menu() {
           <li>Com controle de videogame: analógicos andam e giram, botão de baixo pula</li>
         </ul>
         <PreferenciasDeConforto />
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={ferramentaAberta}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DO_CADERNO)
+          }}
+        >
+          📒 Caderno dos Lumis
+        </button>
         <h3 className="arq-menu-titulo">Criar com as ferramentas</h3>
         <div className="arq-ferramentas">
           {FERRAMENTAS.map((f) => (
@@ -405,7 +418,7 @@ export function Hud() {
       // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
       if (s.resultado) s.mostrarResultado(null)
       else if (s.tempoPausado || s.ferramentaAberta) return
-      // Com um painel do mundo aberto (o Quadro das Cores, a conversa com a Capi), o Esc fecha.
+      // Com um painel aberto (o Quadro das Cores, a conversa com a Capi, o caderno), o Esc fecha.
       else if (s.painelAberto !== null) s.abrirPainel(null)
       else s.abrirMenu(!s.menuAberto)
     }
@@ -437,6 +450,7 @@ export function Hud() {
       <PainelDoQuadro />
       <PainelDaCapi />
       <PainelDoBicho />
+      <CadernoDosLumis />
       <Menu />
       <Resultado />
       <Corte />

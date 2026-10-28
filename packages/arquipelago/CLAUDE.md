@@ -195,6 +195,22 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   a lista dos desafios ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Testes:
   `tests/cor-da-ilha.test.ts`.
 
+## Caderno dos Lumis (28/10/2026)
+
+- Regra pura em `src/sistemas/caderno-dos-lumis.ts` (`secoesDoCaderno`, `ondeAprender`,
+  `lerCartas`, `motivoDoCadernoFechado`); loja à parte em `src/estado/cartas.ts`
+  (`lojaDasCartas(loja, plataforma)`, uma por montagem via WeakMap, como a dos desafios) e o painel
+  em `src/interface/caderno-dos-lumis.tsx` (`PAINEL_DO_CADERNO` em `painelAberto`, que congela o
+  personagem). Abre pelo menu do jogo; cada abertura relê `GET /cartas`.
+- Quem tem cada cartão vem SEMPRE do serviço (os de QUANDO e AÇÃO para todos, os de CONTROLE pelos
+  blocos conquistados nos cursos do público da pessoa, equipe com todos). Montar a rotina é da
+  Fase 2. Regras e textos: `docs/arquipelago-regras.md` §8.1. Testes:
+  `tests/caderno-dos-lumis.test.ts`.
+- ⚠️ `.arq-menu` é `content-box` com `width:100%`: no celular o menu e o Quadro passam 2 px de cada
+  lado da tela. O caderno usa `box-sizing:border-box` (`.arq-caderno`).
+- Playground: `?cartas=todas`, `?cartas=desligadas` (403) ou `?cartas=fora-do-ar` (424);
+  `src/plataforma/cartas-falsas.ts` usa a régua do contrato com um currículo de mentira.
+
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 
 - `src/sistemas/zappy.ts` (puro, `tests/zappy.test.ts`): voa à direita e um pouco atrás de onde
@@ -352,7 +368,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 ## Rodar
 
 - `bun run dev`: playground em `http://127.0.0.1:4520` (parâmetros na URL: `posicao`, `publico`,
-  `limite`, `liberado`, `novo`, `persistir`, `em=x,z[,y]`, `adiantar`). Serve `/avatar3d` e `/room3d`
+  `limite`, `liberado`, `novo`, `persistir`, `em=x,z[,y]`, `adiantar`, `cartas`). Serve `/avatar3d` e `/room3d`
   do `public/` do community-kids.
 - `bun run build`: `dist/cliente/` com chunks com hash e `manifesto.json` validado pelo contrato.
 - `bun test`, `bun run typecheck`, `bun run test:tempo-browser` (Chrome instalado).

@@ -960,8 +960,8 @@ Arquivos principais:
 - `arquipelago-api/src/application/servico-da-equipe.ts` (Admin).
 
 No navegador, o Quadro das Cores (7.11) chama `/desafios` e `/desafios/:id/recompensa-vista` e
-abre o Estúdio de desafio pela plataforma. O jogo ainda não chama `/cartas`. As regras abaixo são
-as do serviço.
+abre o Estúdio de desafio pela plataforma; o caderno dos Lumis (8.1) chama `/cartas`. As regras
+abaixo são as do serviço.
 
 ### 7.1 Tipos e quadros
 
@@ -1240,7 +1240,49 @@ código, não no Admin, porque o que cada cartão faz na rotina é código do jo
 - **No Admin,** a cobertura mostra de onde se aprende cada cartão. Para cartão, o aviso
   `curso-depois-da-ilha` usa a Lenda (`god`) como limite.
 - **Members fora ou não configurado:** 424.
-- **O caderno dos Lumis no jogo:** não encontrado no código do cliente.
+- **Comunidade adulta** (conferido de ponta a ponta em 28/10/2026): a mesma régua, com os blocos
+  e os cursos adultos. O jogador sem perfil e sem contexto do Kids é adulto
+  (`arquipelago-api/src/interfaces/http/identidade.ts`); o serviço pergunta ao Members com
+  `audience: 'adult'` e a própria conta (`leituras-dos-membros.ts`). No Members, os blocos
+  conquistados (`GetStudioUnlocksService.read`) só contam cursos do mesmo público
+  (`courses.audience` e `xp_events.audience` em `studio-unlock-eligibility.ts`, e as concessões
+  congeladas por público), e o "Aprenda isso em" usa os cursos adultos publicados com o posto do
+  currículo adulto (`arquipelago-reads.service.ts`). Um bloco que só existe em curso Kids não
+  conta nem é sugerido ao adulto. Testes: `arquipelago-api/tests/integration/http.test.ts`
+  ("cartões dos Lumis na comunidade adulta"), `members/tests/application/arquipelago-reads.test.ts`
+  e `members/tests/db/studio-unlock-eligibility.test.ts` (SQL real, Postgres local). Não houve
+  conserto a fazer no código.
+
+### 8.1 O caderno dos Lumis no jogo
+
+Arquivos: `arquipelago/src/sistemas/caderno-dos-lumis.ts` (regra pura),
+`src/estado/cartas.ts` (loja, uma por montagem) e `src/interface/caderno-dos-lumis.tsx` (o painel).
+
+- **Abrir:** no menu do jogo, "📒 Caderno dos Lumis". O menu fecha e o caderno abre por cima; o
+  personagem fica parado (`painelAberto`). Esc ou "Voltar ao jogo" fecha.
+- **Cada abertura lê `GET /cartas` de novo**, porque um curso concluído no meio do jogo libera
+  cartões novos. Quem tem cada cartão vem sempre do serviço; o jogo só arruma para a tela.
+- **Três seções, nesta ordem:** Quando ("A hora em que a rotina começa."), Ação ("O que o Lumi faz
+  na ilha.") e Controle ("Os mesmos blocos do Estúdio. Cada um chega quando você aprende o bloco
+  num curso."). Cada seção mostra quantos cartões estão prontos ("Controle: 2 de 8"), e o topo
+  diz "Você tem 8 de 14 cartões. Com eles você vai montar as rotinas dos Lumis.".
+- **Cada cartão:** nome, o que faz e a situação:
+  - na mão: "Pronto para usar";
+  - faltando, com curso: "Aprenda isso em:" e o primeiro curso da lista do serviço (o do posto
+    mais cedo);
+  - faltando, sem curso publicado que ensine o bloco: "Nenhum curso ensina este cartão por
+    enquanto.".
+- **Fechado:** 403 (jogo bloqueado para a pessoa) diz "O caderno ainda não abriu para você.".
+  Serviço ou Members fora (424, rede, resposta estranha) diz que não conseguiu ler e oferece
+  "Tentar de novo". Uma leitura que falha não apaga a coleção que já estava na tela.
+- **Comunidade adulta:** o mesmo painel e os mesmos textos (o jogo não tem pele adulta); os cursos
+  do "Aprenda isso em" são os adultos, porque vêm do serviço.
+- **Fica para a Fase 2:** montar a rotina com os cartões e o Lumi executar. O caderno só mostra a
+  coleção.
+- **Plataforma de mentira** (`src/plataforma/cartas-falsas.ts`, mesma régua do contrato): no
+  playground a pessoa tem Repetir e Se; Esperar não tem curso; no adulto os cursos levam
+  "(adulto)" no nome. `?cartas=todas` dá a visão da equipe, `?cartas=desligadas` responde 403 e
+  `?cartas=fora-do-ar` 424.
 
 ## 9. Moedas e prêmios
 
