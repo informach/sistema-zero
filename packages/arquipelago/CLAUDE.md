@@ -223,8 +223,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Regras puras em `src/sistemas/construcao/`: `lote.ts` (o lote da casa, células ocupadas, o quarto
   fixo e a obra inicial), `grade.ts` (arestas, trechos, arrasto, porta e janelas), `comodos.ts`
   (planta: o que as paredes fecham, cômodos, lambri ou lisa), `obra.ts` (esticar, apagar, porta,
-  janela, piso, com o motivo de cada recusa) e `pecas.ts` (as peças do kit com posição e giro,
-  quinas, corte e colisores). Testes: `tests/construcao.test.ts` (inclusive o lote contra
+  janela, piso, com o motivo de cada recusa), `pecas.ts` (as peças do kit com posição e giro,
+  quinas, corte e colisores; a parede cortada colide como `col-obra-cortada-*`, só para o corpo) e
+  `telhado.ts` (o corte no Viver e o telhado de duas águas dos cômodos retangulares; o giro do
+  Blender em volta de z é o mesmo em volta do y do jogo). Testes: `tests/construcao.test.ts` (inclusive o lote contra
   `alturaDaIlha` e contra todos os colisores que caem nele).
 - `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.
@@ -385,7 +387,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Regras puras em `sistemas/diario.ts` (páginas da Íris e a coleção do Bosque, derivadas do
   salvamento, sem campo novo) e `sistemas/pegadas.ts` (`FORMA_DA_PEGADA`, as elipses de cada
   pegada no quadro de 64, e `rastroNoCaminho`). Regras e números: `docs/arquipelago-regras.md`
-  §6.16. Testes: `tests/diario.test.ts` e `tests/pegadas.test.ts`.
+  §6.17. Testes: `tests/diario.test.ts` e `tests/pegadas.test.ts`.
 - Painel em `interface/diario.tsx` (`PAINEL_DO_DIARIO` em `painelAberto`), aberto pelo menu. O
   desenho da pegada no diário (`interface/pegadas.tsx`, SVG) e no chão
   (`mundo/rastro-de-pegadas.tsx`, uma malha instanciada por bicho) saem das mesmas elipses.

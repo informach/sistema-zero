@@ -43,6 +43,9 @@ export interface EstadoDaConstrucao {
   camera: CameraDeObra
   /** As obras de antes (para desfazer), da mais antiga para a mais nova. */
   antes: Obra[]
+  /** A pessoa está num cômodo da obra (o telhado sai e as paredes da frente são cortadas). */
+  dentroDaObra: boolean
+  definirDentroDaObra(dentro: boolean): void
   escolher(f: Ferramenta): void
   escolherJanela(j: TipoDeJanela): void
   escolherPiso(p: PisoDaCasa): void
@@ -81,6 +84,10 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     piso: 'tabua',
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
+    dentroDaObra: false,
+    definirDentroDaObra: (dentro) => {
+      if (get().dentroDaObra !== dentro) set({ dentroDaObra: dentro })
+    },
     escolher: (ferramenta) => set({ ferramenta }),
     escolherJanela: (janela) => set({ janela, ferramenta: 'janela' }),
     escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),

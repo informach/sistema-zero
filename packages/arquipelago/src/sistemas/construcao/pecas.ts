@@ -19,7 +19,7 @@ import {
  * parede de eixo x com o dentro em -z gira 0 e com o dentro em +z gira meia volta; de eixo z, com o
  * dentro em -x gira +90° e com o dentro em +x, -90°.
  */
-export type ArquivoDoKit = 'paredes' | 'portas' | 'pisos'
+export type ArquivoDoKit = 'paredes' | 'portas' | 'pisos' | 'telhado'
 
 export interface PecaDoKit {
   /** Identidade estável da peça (a mesma peça no mesmo lugar não é recriada). */
@@ -29,6 +29,8 @@ export interface PecaDoKit {
   x: number
   z: number
   giro: number
+  /** A altura da origem (o telhado); sem ela, 0 (o topo do piso). */
+  y?: number
 }
 
 export interface FolhaDaPorta extends PecaDoKit {
@@ -195,11 +197,20 @@ export const MEDIDAS_DO_KIT = {
 } as const
 
 /**
- * Os colisores da obra: as paredes em pé (sempre altas: o corte é só desenho), com o vão de cada
- * porta livre, e as quinas. Arestas vizinhas na mesma linha viram uma caixa só. As paredes fixas
- * colidem pela casa de antes.
+ * Os colisores da obra: as paredes em pé (sempre altas para o corpo: o corte é desenho), com o vão
+ * de cada porta livre, e as quinas. Arestas vizinhas na mesma linha (e no mesmo corte) viram uma
+ * caixa só. As paredes fixas colidem pela casa de antes. A parede cortada ganha o nome
+ * `col-obra-cortada-*`: só segura o corpo, e a câmera passa por ela para ver dentro de casa.
  */
-export function colisoresDaObra(obra: Obra, p: Planta): CaixaDaObra[] {
+export const COLISOR_DA_PAREDE_CORTADA = 'col-obra-cortada-'
+
+export function colisoresDaObra(
+  obra: Obra,
+  p: Planta,
+  cortada: Corte = NADA_CORTADO,
+): CaixaDaObra[] {
+  const nomeDe = (k: string, resto: string) =>
+    cortada(k) ? `${COLISOR_DA_PAREDE_CORTADA}${resto}` : `col-obra-${resto}`
   const H = MEDIDAS_DO_KIT.alturaDaParede
   const e = MEDIDAS_DO_KIT.meiaEspessura
   const caixas: CaixaDaObra[] = []
@@ -213,7 +224,7 @@ export function colisoresDaObra(obra: Obra, p: Planta): CaixaDaObra[] {
     const { largura: vao, altura: alturaDoVao } = MEDIDAS_DO_KIT.vaoDaPorta
     const lado = (largura - vao) / 2
     const ini = arestas[0] as Aresta
-    const nome = `col-obra-porta-${ini.eixo}${ini.x},${ini.z}`
+    const nome = nomeDe(chaveDaAresta(ini), `porta-${ini.eixo}${ini.x},${ini.z}`)
     const naLinha = (t: number, y: number): CaixaDaObra['posicao'] =>
       ini.eixo === 'x' ? [ini.x + t, y, ini.z] : [ini.x, y, ini.z + t]
     const meio = (mt: number, my: number): CaixaDaObra['meio'] =>
@@ -251,11 +262,12 @@ export function colisoresDaObra(obra: Obra, p: Planta): CaixaDaObra[] {
     while (i + n < solidas.length) {
       const b = solidas[i + n] as Aresta
       if (chaveDaAresta(b) !== chaveDaAresta(adiante(a, n))) break
+      if (cortada(chaveDaAresta(b)) !== cortada(chaveDaAresta(a))) break
       n++
     }
     const m = meioDoTrecho(a, n)
     caixas.push({
-      nome: `col-obra-parede-${a.eixo}${a.x},${a.z}`,
+      nome: nomeDe(chaveDaAresta(a), `parede-${a.eixo}${a.x},${a.z}`),
       posicao: [m.x, H / 2, m.z],
       meio: a.eixo === 'x' ? [n / 2, H / 2, e] : [e, H / 2, n / 2],
     })

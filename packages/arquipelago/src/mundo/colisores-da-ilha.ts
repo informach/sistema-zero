@@ -56,6 +56,8 @@ const SO_PARA_O_CORPO = [
   'col-quadro-',
   'col-morador-',
   'col-escada-reta-',
+  // A parede da obra cortada (modo construção): baixa na tela, a câmera vê dentro de casa.
+  'col-obra-cortada-',
 ]
 
 export function soParaOCorpo(nome: string): boolean {
