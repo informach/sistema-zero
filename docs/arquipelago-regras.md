@@ -574,7 +574,22 @@ Arquivos: `sistemas/camera.ts`, `personagem/camera.tsx` e `mundo/medidas.ts`.
   - a inclinação fica entre 0,12 e 1,25;
   - a roda do mouse aproxima ou afasta, de 4 a 18;
   - a distância inicial é 9.
-- **Dentro de casa:** a câmera fica a no máximo 8 e olha mais de cima (inclinação mínima 0,95).
+- **Perfis** (controlador universal, parte 5, `sistemas/perfis-de-camera.ts`): cada atividade
+  ajusta o ângulo e a distância que a pessoa deixou, e a câmera passa de um perfil para o outro em
+  0,5 s (`TROCA_DE_PERFIL`), nunca de um quadro para o outro. Vale um de cada vez, nesta ordem:
+
+  | Perfil | Quando | O que muda |
+  |---|---|---|
+  | Conversa | painel de conversa aberto (a Capi) | ângulo 0,2 e no máximo 5 m (mais abaixo) |
+  | Casa | dentro de casa | ângulo de pelo menos 0,95 e no máximo 8 m |
+  | Percurso | corrida do percurso em andamento | ângulo de pelo menos 0,6, pelo menos 11 m, e o olhar 0,4 s à frente de quem corre (até 2 m) |
+  | Exploração | o resto | nada: vale o que a pessoa escolheu |
+
+  O "lá no alto" e a colisão continuam valendo por cima de todos (no deque, a câmera do percurso
+  também desce e chega perto, por baixo das copas). No percurso só o olhar vai à frente: a câmera
+  e a bolinha que testa as paredes continuam saindo do corpo. Com menos movimento, não antecipa.
+  Conferido no navegador em 28/10/2026: ao sair de casa o ângulo vai de 1,03 a 0,60 em uns 0,8 s;
+  ao começar o percurso a distância vai de 9,5 a 11,5 m.
 - **Parede ou tronco atrás do personagem:**
   - a câmera encosta na hora e nunca atravessa (`distanciaDaCamera`);
   - para antes da parede, com folga de 0,35 (`FOLGA_DA_CAMERA`);

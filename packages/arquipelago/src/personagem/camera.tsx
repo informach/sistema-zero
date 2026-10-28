@@ -30,6 +30,15 @@ import {
   METROS_DA_DISTANCIA,
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
+import {
+  criarPesos,
+  type Enquadramento,
+  metrosDeAntecipacao,
+  misturarPerfis,
+  PERFIS_DE_CAMERA,
+  passoDosPesos,
+  perfilDaVez,
+} from '../sistemas/perfis-de-camera'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
@@ -46,16 +55,19 @@ const SEGUIR_NO_CIPO = 2.5
 /**
  * Na conversa (`pedidos.conversa` com um painel aberto), a câmera olha para o meio das duas
  * cabeças e vai para trás e para o lado da criança (`LADO_NA_CONVERSA` do caminho dela até quem
- * fala, do lado de fora da ilha), mais perto e mais baixa: as duas aparecem, como nos jogos de
- * conversa. Com menos movimento pedido no sistema, ela só muda o ponto que olha e não gira.
+ * fala, do lado de fora da ilha), mais perto e mais baixa (o perfil `conversa`,
+ * `sistemas/perfis-de-camera.ts`): as duas aparecem, como nos jogos de conversa. Com menos
+ * movimento pedido no sistema, ela só muda o ponto que olha e não gira.
  */
 const LADO_NA_CONVERSA = 1.1
-const DISTANCIA_NA_CONVERSA = 5
+const DISTANCIA_NA_CONVERSA = PERFIS_DE_CAMERA.conversa.distancia?.maxima ?? 5
 /** O ângulo da câmera na conversa: baixo, quase na altura dos olhos. */
-const INCLINACAO_NA_CONVERSA = 0.2
+const INCLINACAO_NA_CONVERSA = PERFIS_DE_CAMERA.conversa.inclinacao?.fixa ?? 0.2
 const RAPIDEZ_NA_CONVERSA = 2.5
 /** O ponto que ela olha fica abaixo das cabeças: as duas sobem na tela, acima da caixa de conversa. */
 const ABAIXO_NA_CONVERSA = 0.7
+/** A rapidez com que o olhar vai à frente e volta (por segundo): devagar, sem balançar nas curvas. */
+const SEGUIR_A_ANTECIPACAO = 2
 /** Guarda que a pessoa já mexeu na câmera (a dica do Zappy não volta). */
 const CHAVE_DA_DICA = 'arquipelago:camera-dica'
 
@@ -92,7 +104,11 @@ export function Camera() {
   const jogoPedeMenos = useConforto(conforto, (s) => s.conforto.menosMovimento)
   const menosMovimento = aparelhoPedeMenos || jogoPedeMenos
   const noCipo = useRef(0)
-  const naConversa = useRef(0)
+  /** O peso de cada perfil (exploração, casa, conversa, percurso), trocando aos poucos. */
+  const pesos = useRef(criarPesos(dentro ? 'casa' : 'exploracao')).current
+  const enquadramento = useRef<Enquadramento>({ inclinacao: 0, distancia: 0, antecipar: 0 }).current
+  /** Para onde o olhar vai à frente do corpo (percurso), suavizado. */
+  const adiante = useRef({ x: 0, z: 0 })
   /** O lado da conversa: 1 à esquerda de quem olha a criança por trás, −1 à direita. */
   const ladoDaConversa = useRef<1 | -1 | null>(null)
   const camera = useThree((s) => s.camera)
@@ -317,10 +333,29 @@ export function Camera() {
     let ax = rastro.x + (movimento.foco.x - rastro.x) * f
     let ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
     let az = rastro.z + (movimento.foco.z - rastro.z) * f
-    // Na conversa: o ponto vai para o meio das duas cabeças e a câmera para o lado da criança.
+    // O perfil da vez (`sistemas/perfis-de-camera.ts`) e a troca aos poucos.
     const fala = loja.getState().painelAberto !== null ? pedidos.conversa : null
-    naConversa.current += ((fala ? 1 : 0) - naConversa.current) * (1 - Math.exp(-dt * 3))
-    const w = naConversa.current
+    passoDosPesos(
+      pesos,
+      perfilDaVez({
+        conversa: fala !== null,
+        dentroDeCasa: dentro,
+        correndoPercurso: movimento.corrida !== null,
+      }),
+      dt,
+    )
+    misturarPerfis(pesos, rastro.inclinacao, distancia.current, enquadramento)
+    // Antecipando (percurso): a câmera olha um pouco à frente de quem anda, para onde ela vai. Só
+    // o olhar vai à frente; a câmera e a sonda continuam saindo do corpo.
+    const frente =
+      !menosMovimento && movimento.modo === 'chao'
+        ? metrosDeAntecipacao(enquadramento.antecipar, rastro.velocidade)
+        : 0
+    const ka = 1 - Math.exp(-dt * SEGUIR_A_ANTECIPACAO)
+    adiante.current.x += (Math.sin(rastro.direcao) * frente - adiante.current.x) * ka
+    adiante.current.z += (Math.cos(rastro.direcao) * frente - adiante.current.z) * ka
+    // Na conversa: o ponto vai para o meio das duas cabeças e a câmera para o lado da criança.
+    const w = pesos.conversa
     if (fala) {
       ax += ((fala.x + rastro.x) / 2 - ax) * w
       ay += ((fala.y + rastro.y + 0.9) / 2 - ay) * w
@@ -333,16 +368,17 @@ export function Camera() {
     const alto = pesoNoAlto(rastro.y - 0.9 - ALTURA_DA_TERRA, CAMERA_NO_ALTO.acimaDoChao)
     noAlto.current += (alto - noAlto.current) * k
     const n = dentro ? 0 : noAlto.current
-    let inclinacao = dentro ? Math.max(rastro.inclinacao, 0.95) : rastro.inclinacao
-    if (!dentro) inclinacao = MathUtils.lerp(inclinacao, INCLINACAO_NA_CONVERSA, naConversa.current)
-    inclinacao = MathUtils.lerp(
-      inclinacao,
-      Math.min(inclinacao, CAMERA_NO_ALTO.inclinacaoMaxima),
+    // O ângulo e a distância do perfil; lá no alto, por cima, o ângulo desce e a câmera chega perto.
+    let inclinacao = MathUtils.lerp(
+      enquadramento.inclinacao,
+      Math.min(enquadramento.inclinacao, CAMERA_NO_ALTO.inclinacaoMaxima),
       n,
     )
-    let dist = dentro ? Math.min(distancia.current, 8) : distancia.current
-    dist = MathUtils.lerp(dist, Math.min(dist, DISTANCIA_NA_CONVERSA), naConversa.current)
-    dist = MathUtils.lerp(dist, Math.min(dist, CAMERA_NO_ALTO.distanciaMaxima), n)
+    const dist = MathUtils.lerp(
+      enquadramento.distancia,
+      Math.min(enquadramento.distancia, CAMERA_NO_ALTO.distanciaMaxima),
+      n,
+    )
     // Uma bolinha lançada até a câmera (não um raio fino): o que é sólido no caminho a puxa para
     // perto, sem raspar a quina de um tronco nem deixar o corpo do avatar escondido atrás dele.
     // Dentro de casa o telhado sai e a vista de cima é a de sempre.
@@ -460,9 +496,9 @@ export function Camera() {
     else camera.position.lerp(desejada.current, k)
     // Na conversa ela olha um pouco abaixo das cabeças (a sonda continua saindo delas).
     camera.lookAt(
-      alvo.current.x,
-      alvo.current.y - ABAIXO_NA_CONVERSA * naConversa.current,
-      alvo.current.z,
+      alvo.current.x + adiante.current.x,
+      alvo.current.y - ABAIXO_NA_CONVERSA * pesos.conversa,
+      alvo.current.z + adiante.current.z,
     )
   })
   return null

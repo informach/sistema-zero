@@ -90,11 +90,14 @@ caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os mo
   números em `sistemas/corpo.ts` (`alcanceMaximoDoPulo`, `beiradaMaximaDoPulo`) e a ajuda no ar foi
   para a especificação do modo "agarrar a borda" (parte 6).
 
-### 5. Perfis de câmera
+### 5. Perfis de câmera ✅
 
 - Um gerenciador de perfis sobre a câmera que já existe: exploração, conversa (já existe), dentro
   de casa (já existe), percurso (mais aberta, antecipando o movimento), construção (alta,
   inclinada) quando o modo Construir chegar. Transição suave de perfil em 0,5 s.
+- Feita em 28/10/2026 (`sistemas/perfis-de-camera.ts`): a casa e a conversa saíram do meio da
+  câmera para perfis; o percurso abre (pelo menos 11 m e ângulo 0,6) e olha 0,4 s à frente. O "lá
+  no alto" continua por cima, então no deque o percurso só antecipa. Construir entra quando vier.
 
 ### 6. Modos de movimento separados
 

@@ -71,6 +71,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `playground/sala-de-movimento.ts`, `?estacao=Laguinho`), com o personagem e a câmera de verdade,
   uma estação por teste (cada uma com um obstáculo que passa e um que não) e o painel de medidas;
   `__peNaSala` dá o pé a cada quadro para scripts. Testes: `tests/sala-de-movimento.test.ts`.
+- Perfis de câmera (`sistemas/perfis-de-camera.ts`, `tests/perfis-de-camera.test.ts`): exploração,
+  casa, conversa e percurso, um por vez (`perfilDaVez`), misturados por pesos que trocam em 0,5 s
+  (`passoDosPesos`, `misturarPerfis`); a câmera aplica o "lá no alto" e a colisão por cima. Perfil
+  novo (Construir) entra em `PERFIS_DE_CAMERA`.
 
 ## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
 
