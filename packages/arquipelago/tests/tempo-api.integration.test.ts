@@ -13,6 +13,7 @@ import {
 import { DrizzleRepositorioDoJogo } from '../../arquipelago-api/src/infrastructure/persistence/drizzle/repositorio'
 import { DrizzleRepositorioDeDesafios } from '../../arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-de-desafios'
 import { createServer } from '../../arquipelago-api/src/interfaces/http/server'
+import { migrarBancoDeTeste } from '../../arquipelago-api/tests/fakes/banco-migrado'
 import { desafiosDesligados } from '../../arquipelago-api/tests/fakes/desafios'
 import { createLogger } from '../../core/src/logging'
 import { criarFilaDeTempo } from '../src/sistemas/fila-tempo'
@@ -27,8 +28,11 @@ if (url) {
     throw new Error('Use somente banco local descartável arquipelago_test')
 }
 let db: DbConnection
-beforeAll(() => {
-  if (url) db = createDbConnection(url)
+beforeAll(async () => {
+  if (url) {
+    db = createDbConnection(url)
+    await migrarBancoDeTeste(db)
+  }
 })
 afterAll(async () => {
   await db?.close()

@@ -11,6 +11,8 @@ import {
   DesafioMudouError,
   DesafioNaoEncontradoError,
   DesafiosDesligadosError,
+  ManifestoDesatualizadoError,
+  ManifestoExcedeLimiteError,
   PlataformaIndisponivelError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
@@ -132,6 +134,14 @@ export function createServer(deps: DependenciasHttp) {
       if (error instanceof DesafioDesatualizadoError) {
         set.status = 409
         return { ...envelope('DESAFIO_DESATUALIZADO', error.message), atual: error.atual }
+      }
+      if (error instanceof ManifestoDesatualizadoError) {
+        set.status = 409
+        return envelope('MANIFESTO_DESATUALIZADO', error.message)
+      }
+      if (error instanceof ManifestoExcedeLimiteError) {
+        set.status = 422
+        return envelope('MANIFESTO_EXCEDE_LIMITE', error.message)
       }
       if (error instanceof ConflitoDoCadastroError) {
         set.status = 409

@@ -1,11 +1,11 @@
 {
-  "head": "c12a249e7f35615bc1bf62e87f57eca3f2b9c1ca",
+  "head": "f282756c8756254e842e8a4843365097e7ee84b9",
   "limitations": "Static imports only; type-only edges excluded. No semantic coverage or dead-code conclusion inferred.",
   "cycles": [],
   "files": [
     {
       "path": "packages/arquipelago-api/src/application/erros.ts",
-      "lines": 97,
+      "lines": 113,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -24,6 +24,8 @@
         "DesafioNaoEncontradoError",
         "DesafioDesatualizadoError",
         "ConflitoDoCadastroError",
+        "ManifestoDesatualizadoError",
+        "ManifestoExcedeLimiteError",
         "DesafioComProblemasError",
         "SemPermissaoDeEscritaError",
         "DesafiosDesligadosError",
@@ -92,7 +94,7 @@
     },
     {
       "path": "packages/arquipelago-api/src/application/servico-da-equipe.ts",
-      "lines": 308,
+      "lines": 502,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -114,6 +116,11 @@
           "spec": "../domain/jogador",
           "target": "packages/arquipelago-api/src/domain/jogador.ts",
           "typeOnly": true
+        },
+        {
+          "spec": "../domain/manifestos",
+          "target": "packages/arquipelago-api/src/domain/manifestos.ts",
+          "typeOnly": false
         },
         {
           "spec": "../domain/membros.port",
@@ -395,7 +402,7 @@
     },
     {
       "path": "packages/arquipelago-api/src/domain/desafios.port.ts",
-      "lines": 181,
+      "lines": 186,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -473,6 +480,38 @@
         "Responsavel",
         "Equipe",
         "PAPEIS_DA_EQUIPE"
+      ]
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/manifestos.ts",
+      "lines": 279,
+      "status": "semantic-review-not-certified",
+      "imports": [
+        {
+          "spec": "node:crypto",
+          "target": null,
+          "typeOnly": false
+        },
+        {
+          "spec": "@sistemazero/arquipelago-contracts",
+          "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./desafios.port",
+          "target": "packages/arquipelago-api/src/domain/desafios.port.ts",
+          "typeOnly": true
+        }
+      ],
+      "exports": [
+        "canonico",
+        "metadadosDoItem",
+        "DecisaoDoItem",
+        "decidir",
+        "ordemDeGravacao",
+        "impressaoDigital",
+        "itemDoCadastro",
+        "novoManifesto"
       ]
     },
     {
@@ -719,7 +758,7 @@
     },
     {
       "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-de-desafios.ts",
-      "lines": 487,
+      "lines": 488,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -915,12 +954,17 @@
     },
     {
       "path": "packages/arquipelago-api/src/interfaces/http/rotas-da-equipe.ts",
-      "lines": 90,
+      "lines": 119,
       "status": "semantic-review-not-certified",
       "imports": [
         {
           "spec": "@sistemazero/arquipelago-contracts",
           "target": "packages/arquipelago-contracts/src/index.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "@sistemazero/core/http",
+          "target": null,
           "typeOnly": false
         },
         {
@@ -1076,7 +1120,7 @@
     },
     {
       "path": "packages/arquipelago-api/src/interfaces/http/server.ts",
-      "lines": 203,
+      "lines": 213,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -1246,7 +1290,7 @@
     },
     {
       "path": "packages/arquipelago-contracts/src/desafios.ts",
-      "lines": 335,
+      "lines": 475,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -1305,6 +1349,26 @@
         "ProblemasDePublicacaoSchema",
         "CoberturaDosCartoesSchema",
         "CoberturaDosCartoes",
+        "FORMATO_DO_MANIFESTO",
+        "VERSAO_DO_MANIFESTO",
+        "ESCOPOS_DO_MANIFESTO",
+        "EscopoDoManifesto",
+        "LIMITES_DO_MANIFESTO",
+        "DesafioDoManifestoSchema",
+        "DesafioDoManifesto",
+        "ManifestoDeDesafiosSchema",
+        "ManifestoDeDesafios",
+        "ACOES_DO_MANIFESTO",
+        "AcaoDoManifesto",
+        "ItemDaConferenciaSchema",
+        "ItemDaConferencia",
+        "ConferenciaDoManifestoSchema",
+        "ConferenciaDoManifesto",
+        "ConferirManifestoSchema",
+        "AplicarManifestoSchema",
+        "AplicarManifesto",
+        "AplicacaoDoManifestoSchema",
+        "AplicacaoDoManifesto",
         "SITUACOES_PARA_A_PESSOA",
         "SituacaoParaAPessoa",
         "VistaDoObjetivoSchema",
@@ -2253,7 +2317,7 @@
     },
     {
       "path": "packages/arquipelago/src/interface/construir.tsx",
-      "lines": 289,
+      "lines": 292,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -2459,7 +2523,7 @@
     },
     {
       "path": "packages/arquipelago/src/interface/projeto-azul.tsx",
-      "lines": 229,
+      "lines": 228,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6046,7 +6110,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/falas.ts",
-      "lines": 46,
+      "lines": 50,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6151,7 +6215,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/lote.ts",
-      "lines": 136,
+      "lines": 143,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6175,7 +6239,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/obra.ts",
-      "lines": 233,
+      "lines": 240,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6258,7 +6322,7 @@
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
-      "lines": 196,
+      "lines": 230,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6274,6 +6338,11 @@
         {
           "spec": "./comodos",
           "target": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./grade",
+          "target": "packages/arquipelago/src/sistemas/construcao/grade.ts",
           "typeOnly": false
         },
         {
@@ -6302,13 +6371,14 @@
         "ehAlimento",
         "guardarNaGeladeira",
         "tirarDaGeladeira",
+        "oQueOPintaPinta",
         "POSICAO_DO_MOLDA",
         "moldaAberto"
       ]
     },
     {
       "path": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
-      "lines": 229,
+      "lines": 237,
       "status": "semantic-review-not-certified",
       "imports": [
         {
@@ -6334,6 +6404,11 @@
         {
           "spec": "./obra",
           "target": "packages/arquipelago/src/sistemas/construcao/obra.ts",
+          "typeOnly": false
+        },
+        {
+          "spec": "./projeto-azul",
+          "target": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
           "typeOnly": false
         }
       ],

@@ -3,9 +3,12 @@
 ## Estado e escopo
 
 Em execução. Base inicial: `f443054af468e8fc3fc06b26b5a89eadb87146ff` de `origin/staging`.
-Composição revisada atual: `c12a249e7` + integração de `ac751aacc` e correções deste lote.
-Inclui remoto `78118738c` e staging local até `ac751aacc`: salvamento V4, casa em kit, modo
-Construir, materiais/fogueira, diário, pegadas, telhados, quintal, mundo reativo e projetos azuis.
+Composição revisada atual: `f282756c8` + integração de `origin/staging` em `3d2096e02`
+e correções de concorrência/exportação dos manifestos e preparação independente do banco de teste.
+Inclui staging local até `80bd0e0b7`: salvamento V4, casa em kit, modo
+Construir, materiais/fogueira, diário, pegadas, telhados, quintal, mundo reativo, projetos azuis
+e os contratos/API de manifestos de desafios. O merge local `611238678` contém os mesmos dois pais
+(`80bd0e0b7` e `3d2096e02`) e será preservado na integração.
 Os resultados históricos abaixo não substituem a
 validação desta composição. Novos commits locais e remotos também entram no escopo; edições
 não commitadas de outras sessões ficam preservadas nos respectivos worktrees.
@@ -59,7 +62,38 @@ Resultados anteriores a esta base não são homologação desta composição.
 | ITEM-01 | Corrigido, regressão causal | Retirar da geladeira com 999 unidades na mochila perdia um alimento. A transferência agora é recusada sem mudar nenhum dos dois inventários; o botão informa o limite. |
 | GPU-01 | Corrigido por revisão do ciclo de recursos | Hologramas clonam os materiais que alteram e liberam somente os materiais próprios ao desmontar/trocar. Geometrias, texturas e materiais compartilhados do GLTF permanecem no cache. Não equivale a medição de GPU. |
 
-### Evidência mais recente
+### Evidência mais recente — construção, CI e manifestos
+
+- `80bd0e0b7`: revisão dos limites de paredes/cercas/pisos, sobreposição de casa/objetos,
+  validação do projeto azul e seletor Zustand estável; **63 pass / 0 fail / 245 asserções** focadas.
+- CI `40750854948`: o job Arquipélago falhou nos tipos de `net.Server`/`ChildProcess.once`;
+  a validação de workflows também detectou a ausência da preparação Ubuntu assinada nesse job.
+  `f282756c8` declara `@types/node@24.19.0`, seleciona os tipos Bun/Node no pacote, fixa Node 24
+  no job e usa a preparação Ubuntu canônica antes do Playwright. Nenhuma verificação removida.
+  A prova local identificou tipos globais fora do repositório mascarando a resolução, mas não
+  reproduziu o erro com Node 25.9.1 isolado; não atribuir o erro a essa versão como causa provada.
+  A resolução agora usa os tipos declarados pelo próprio pacote. Lockfile com mudança restrita,
+  instalação frozen sem scripts passou. Nova execução Linux do CI ainda precisa confirmar.
+- Manifestos: dois testes causais reproduziram resposta global 409 após gravações parciais,
+  por edição concorrente durante atualização/publicação. Agora o conflito é informado por item,
+  a edição concorrente não é publicada e os demais resultados são preservados. Outra regressão
+  reproduziu exportação de 201 itens incompatível com o importador; a API recusa explicitamente
+  acima do limite, sem truncar. Exportação paginada e UI em lotes continuam futuras.
+- Teste de recuperação de tempo: falhava isoladamente em banco novo porque dependia das
+  migrations de outro arquivo. Helper de teste da API aplica as migrations canônicas antes do
+  caso; **RED 0/1, GREEN 1/0** no mesmo banco descartável inicialmente vazio.
+- Composição integrada: **696 pass, 0 skip, 0 fail, 32.946 asserções / 81 arquivos**,
+  com Postgres real descartável (`integrated-complete-tests-r7.log`). Tentativa anterior com
+  nome de banco alternativo foi recusada por três guardas de segurança: configuração do ensaio
+  corrigida, guardas mantidas. Não era falha de produto e não foi contada como validação positiva.
+- Tipos cliente/API/contratos passaram em execuções seriais. Build independente passou:
+  **43 arquivos / 20,88 MB**. Infra de CI/release: **358 pass / 0 fail / 1.315 asserções**.
+  Inventário atualizado: **198 fontes TS/TSX, nenhum ciclo de importação de valor identificado**.
+- Este lote não repetiu provas gráficas: o delta produtivo adicional é a API de manifestos;
+  a evidência de navegador anterior permanece delimitada à composição identificada abaixo.
+  A revisão integral e a qualificação hospedada continuam abertas; nenhum deploy novo é alegado.
+
+### Evidência anterior — composição com projetos azuis
 
 - Composição com `ac751aacc` e correções: **678 pass, 0 skip, 0 fail**, 32.842 asserções
   em 78 arquivos, incluindo Postgres descartável (`integrated-complete-tests-r4.log`).

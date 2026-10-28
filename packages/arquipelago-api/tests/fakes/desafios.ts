@@ -40,7 +40,7 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
   }
 
   async criar(e: Parameters<RepositorioDeDesafios['criar']>[0]): Promise<ResultadoDaEscrita> {
-    const conflito = this.conflito(e.id, e.metadados, 'rascunho')
+    const conflito = this.conflito(e.id, e.metadados, e.metadados, 'rascunho')
     if (conflito) return { ok: false, motivo: conflito }
     const d: DesafioNoBanco = {
       id: e.id,
@@ -48,6 +48,7 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
       situacao: 'rascunho',
       revisao: 1,
       revisaoPublicada: null,
+      metadadosPublicados: null,
       alteradoDepoisDePublicar: false,
       conteudo: structuredClone(e.conteudo),
       atualizadoEm: e.agora,
@@ -62,7 +63,12 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
     const d = this.linhas.get(e.id)
     if (!d || d.revisao !== e.revisaoBase)
       return { ok: false, motivo: 'revisao', atual: await this.ler(e.id) }
-    const conflito = this.conflito(e.id, e.metadados, d.situacao)
+    const conflito = this.conflito(
+      e.id,
+      e.metadados,
+      d.metadadosPublicados ?? e.metadados,
+      d.situacao,
+    )
     if (conflito) return { ok: false, motivo: conflito }
     Object.assign(d, {
       metadados: structuredClone(e.metadados),
@@ -83,6 +89,9 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
     const d = this.linhas.get(e.id)
     if (!d || d.revisao !== e.revisaoBase)
       return { ok: false, motivo: 'revisao', atual: await this.ler(e.id) }
+    // Publicar move a posição que segura o quadro para a do rascunho (o índice único do Drizzle).
+    const conflito = this.conflito(e.id, d.metadados, d.metadados, d.situacao)
+    if (conflito) return { ok: false, motivo: conflito }
     const lista = this.publicacoes.get(e.id) ?? []
     if (!lista.some((p) => p.revisao === e.revisaoBase))
       lista.push({ revisao: e.revisaoBase, blocosExigidos: [...e.publicacao.blocosExigidos] })
@@ -94,6 +103,7 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
     Object.assign(d, {
       situacao: 'publicado',
       revisaoPublicada: e.revisaoBase,
+      metadadosPublicados: structuredClone(d.metadados),
       alteradoDepoisDePublicar: false,
       blocosPublicados: [...e.publicacao.blocosExigidos],
       atualizadoEm: e.agora,
@@ -114,7 +124,7 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
         : d.revisaoPublicada === null
           ? 'rascunho'
           : 'publicado'
-    const conflito = this.conflito(e.id, d.metadados, nova)
+    const conflito = this.conflito(e.id, d.metadados, d.metadadosPublicados ?? d.metadados, nova)
     if (conflito) return { ok: false, motivo: conflito }
     Object.assign(d, {
       situacao: nova,
@@ -125,22 +135,28 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
     return { ok: true, desafio: structuredClone(d) }
   }
 
+  /**
+   * Como os índices do Drizzle: o slug é o do rascunho; o quadro é o da última publicação (ou o do
+   * rascunho, antes de publicar), fora os arquivados.
+   */
   private conflito(
     id: string,
-    m: DesafioNoBanco['metadados'],
+    rascunho: DesafioNoBanco['metadados'],
+    quadro: DesafioNoBanco['metadados'],
     situacao: DesafioNoBanco['situacao'],
   ): 'slug-em-uso' | 'quadro-ocupado' | null {
     for (const outro of this.linhas.values()) {
       if (outro.id === id) continue
-      if (outro.metadados.slug === m.slug) return 'slug-em-uso'
+      if (outro.metadados.slug === rascunho.slug) return 'slug-em-uso'
+      const dele = outro.metadadosPublicados ?? outro.metadados
       if (
-        m.tipo === 'quadro-das-cores' &&
+        quadro.tipo === 'quadro-das-cores' &&
         situacao !== 'arquivado' &&
-        outro.metadados.tipo === 'quadro-das-cores' &&
+        dele.tipo === 'quadro-das-cores' &&
         outro.situacao !== 'arquivado' &&
-        outro.metadados.publico === m.publico &&
-        outro.metadados.ilha === m.ilha &&
-        outro.metadados.quadro === m.quadro
+        dele.publico === quadro.publico &&
+        dele.ilha === quadro.ilha &&
+        dele.quadro === quadro.quadro
       )
         return 'quadro-ocupado'
     }
