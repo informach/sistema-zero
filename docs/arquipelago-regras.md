@@ -919,6 +919,45 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
 - **Jogar:** o botão pede `abrirFerramenta` com o molde do desafio. O Estúdio de desafio abre
   por cima e o jogo fica pausado. Na volta, a lista é lida de novo, porque a situação e a cor
   nunca são decididas pelo jogo.
+- **O Estúdio de desafio** (28/10/2026, `member-shell/src/components/arquipelago-desafio-dialog.tsx`,
+  igual no Kids e no adulto):
+  - **Quem abre:** a página. Ela só aceita `estudio` com o propósito `desafio` e o molde do
+    contrato (`MoldeDeDesafioSchema`). Outro pedido com molde, ou molde inválido, responde
+    `indisponivel`.
+  - **Antes de cobrir o jogo**, a página lê o desafio no serviço (`GET /desafios/:id`). Sem
+    acesso, desafio trocado ou serviço fora, nada abre e o jogo recebe `indisponivel`. Abre a
+    revisão publicada agora, que é a que o serviço confere (se a equipe publicou de novo depois
+    da lista, a criança já pega a nova).
+  - **A tela:** o título, "O desafio" (enunciado, dicas e o desafio extra, recolhível), o editor
+    das aulas com o projeto inicial (sem projetos, terminal, IA, extensões nem exportar) e a
+    faixa dos objetivos com "Conferir". Ocupa a tela inteira, também no celular.
+  - **O rascunho** fica neste navegador, por desafio, revisão e perfil
+    (`idDoRascunhoDoDesafio`). Fechar guarda; abrir de novo traz o que estava. Se a equipe
+    publicou de novo, o rascunho de uma das 10 revisões anteriores vem junto, desde que ainda
+    combine com o projeto inicial novo (mesma linguagem e mesmo tipo de editor). Se ler o
+    rascunho falhar, a tela oferece "Tentar de novo" e nunca abre o inicial por cima dele.
+  - **Guardar ao sair** tem prazo de 5 segundos. Se falhar ou demorar, a criança fica na tela
+    com o aviso e pode tentar de novo ou "Sair sem guardar".
+  - **Conferir** guarda o projeto e manda a revisão e o projeto para `POST /desafios/:id/verificar`.
+    O serviço confere, guarda o resultado e dá o prêmio. A tela mostra o que passou, a dica do
+    que faltou e avisa quando o projeto mudou depois de conferir (também sobre o resultado
+    guardado de antes). Um projeto acima do teto do contrato (`projetoCaracteres`) nem sai da
+    tela. Recusas do serviço viram uma frase do que fazer: desafio mudou, projeto grande demais,
+    muita gente conferindo, desafio fechou por agora (403, como o tempo do dia acabando), outra
+    pessoa entrou no aparelho, ou tente de novo.
+  - **Voltar:** com a conferência passando nesta tela, aparece "Concluir", e fechar devolve
+    `{situacao: 'pronto', criacaoId}` (o `criacaoId` é o id do desafio: o projeto não vira uma
+    criação da conta). Fechar sem passar ("Voltar ao jogo" ou Esc) devolve `cancelado`.
+  - **Por cima do jogo:** é uma camada comum (`role="dialog"`), não o `<dialog>` modal do
+    navegador, porque os menus dos blocos (campos de número, texto e listas) e os do Estúdio
+    vivem no `body` e ficariam por baixo de um modal. O jogo fica inerte enquanto isso.
+  - **Teclado e foco:** o apertar das teclas digitadas no editor não chega ao jogo pausado atrás;
+    o soltar chega, para o jogo não ficar com uma tecla presa. Esc fecha como "Voltar ao jogo".
+    Ao fechar, o foco volta para onde estava; se esse lugar sumiu, vai para o jogo.
+  - **Se o Estúdio quebrar** na tela, o jogo recebe `cancelado` e relê a lista (a conferência
+    pode ter passado antes).
+  - **Ainda falta:** a paleta é a do editor das aulas sem curadoria, porque o desafio não traz
+    nível nem blocos liberados. Curar pela lista de blocos da pessoa fica para depois.
 - **A festa da cor:** um quadro que passou a `concluido` entre duas leituras faz o painel fechar
   sozinho. O Zappy diz "Mais uma cor voltou para o ...", e a mancha `cor-N` do cavalete sai do
   cinza em 1,6 s (`DURACAO_DA_COR_S`). Depois de 4 s o jogo avisa o serviço

@@ -3,6 +3,8 @@ import {
   caminhoDoJogo,
   criarPlataformaDoArquipelago,
   lerFerramentasMolda,
+  lerPedidoDeDesafio,
+  motivoDoDesafioFechado,
   pertenceAoPerfil,
 } from '../src/components/arquipelago-host'
 
@@ -178,5 +180,42 @@ describe('a porta da plataforma para o jogo', () => {
       (await adulto.servico.buscar('/tempo/sessao', { metodo: 'POST', corpo: comando })).status,
     ).toBe(404)
     expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/tempo/sessao'])
+  })
+})
+
+describe('o pedido do Estúdio de desafio', () => {
+  const molde = {
+    tipo: 'desafio' as const,
+    desafioId: '22222222-2222-4222-8222-222222222222',
+    revisao: 2,
+  }
+
+  test('só o Estúdio com o propósito desafio e o molde do contrato', () => {
+    expect(lerPedidoDeDesafio({ ferramenta: 'estudio', proposito: 'desafio', molde })).toEqual(
+      molde,
+    )
+    expect(lerPedidoDeDesafio({ ferramenta: 'pinta', proposito: 'desafio', molde })).toBeNull()
+    expect(lerPedidoDeDesafio({ ferramenta: 'estudio', proposito: 'objeto', molde })).toBeNull()
+  })
+
+  test('molde inválido não abre nada', () => {
+    const pedido = (m: unknown) => ({
+      ferramenta: 'estudio' as const,
+      proposito: 'desafio',
+      molde: m,
+    })
+    expect(lerPedidoDeDesafio(pedido({ ...molde, desafioId: 'nao-e-id' }))).toBeNull()
+    expect(lerPedidoDeDesafio(pedido({ ...molde, revisao: 0 }))).toBeNull()
+    expect(lerPedidoDeDesafio(pedido({ ...molde, gabarito: {} }))).toBeNull()
+    expect(lerPedidoDeDesafio(pedido(undefined))).toBeNull()
+  })
+
+  test('o motivo de não abrir vem da resposta do serviço', () => {
+    expect(motivoDoDesafioFechado(403)).toBe('acesso-necessario')
+    expect(motivoDoDesafioFechado(404)).toBe('desafio-mudou')
+    // O 409 deste caminho é a sessão trocada no gateway, não o desafio.
+    expect(motivoDoDesafioFechado(409)).toBe('fora-do-ar')
+    expect(motivoDoDesafioFechado(424)).toBe('fora-do-ar')
+    expect(motivoDoDesafioFechado(200)).toBe('fora-do-ar')
   })
 })

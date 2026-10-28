@@ -1,8 +1,11 @@
 'use client'
 
 import {
+  type DesafioAberto,
+  DesafioAbertoSchema,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
+  MoldeDeDesafioSchema,
   type MontagemDoArquipelago,
   type PedidoDeFerramenta,
   type Plataforma,
@@ -26,6 +29,9 @@ import {
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
+)
+const DesafioDialog = lazy(() =>
+  import('./arquipelago-desafio-dialog').then((m) => ({ default: m.ArquipelagoDesafioDialog })),
 )
 
 class ToolLoadBoundary extends Component<
@@ -68,6 +74,34 @@ export function caminhoDoJogo(caminho: string): boolean {
 }
 
 type Estado = EstadoDaPorta | 'pronto'
+
+/** O que está aberto por cima do jogo: uma ferramenta de criação ou o Estúdio de desafio. */
+type PorCima =
+  | {
+      tipo: 'criacao'
+      ferramenta: 'pinta' | 'molda' | 'estudio'
+      studioAvailable: boolean
+      toolAccess: MoldaToolAccess | null
+      studioConfig: ArquipelagoStudioConfig | null
+    }
+  | { tipo: 'desafio'; desafio: DesafioAberto }
+
+/**
+ * O pedido do Estúdio de desafio: `estudio` com o propósito `desafio` e o molde do contrato.
+ * Qualquer outro pedido com molde é desconhecido (`null`).
+ */
+export function lerPedidoDeDesafio(pedido: PedidoDeFerramenta) {
+  if (pedido.ferramenta !== 'estudio' || pedido.proposito !== 'desafio') return null
+  const molde = MoldeDeDesafioSchema.safeParse(pedido.molde)
+  return molde.success ? molde.data : null
+}
+
+/** Por que o desafio não abriu, pela resposta do serviço (o jogo só mostra que não abriu). */
+export function motivoDoDesafioFechado(status: number): string {
+  if (status === 403) return 'acesso-necessario'
+  if (status === 404) return 'desafio-mudou'
+  return 'fora-do-ar'
+}
 
 export function pertenceAoPerfil(corpo: unknown, viewerId: string): boolean {
   return (
@@ -228,13 +262,9 @@ export function ArquipelagoHost(props: {
 }) {
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
-  const [creation, setCreation] = useState<{
-    ferramenta: 'pinta' | 'molda' | 'estudio'
-    studioAvailable: boolean
-    toolAccess: MoldaToolAccess | null
-    studioConfig: ArquipelagoStudioConfig | null
-  } | null>(null)
+  const [creation, setCreation] = useState<PorCima | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
+  const fechou = useRef(false)
   const abrindo = useRef(false)
   const { publico, voltarPara } = props
   const { id, primeiroNome } = props.perfil
@@ -242,10 +272,38 @@ export function ArquipelagoHost(props: {
   useEffect(() => {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
+    /**
+     * O Estúdio de desafio: lê o desafio no serviço ANTES de cobrir o jogo (sem acesso, desafio
+     * trocado ou serviço fora, nada abre). Abre a revisão publicada agora, que é a que o serviço
+     * confere; o jogo relê a lista na volta.
+     */
+    const abrirDesafio = async (desafioId: string): Promise<ResultadoDeFerramenta> => {
+      const lido = await json(`${BASE}/desafios/${desafioId}`)
+      if (!vivo) return { situacao: 'cancelado' }
+      const desafio = lido.status === 200 ? DesafioAbertoSchema.safeParse(lido.corpo) : null
+      if (!desafio?.success || desafio.data.id !== desafioId)
+        return { situacao: 'indisponivel', motivo: motivoDoDesafioFechado(lido.status) }
+      return new Promise<ResultadoDeFerramenta>((resolve) => {
+        pendente.current = resolve
+        setCreation({ tipo: 'desafio', desafio: desafio.data })
+      })
+    }
     const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
-      if (pedido.molde !== undefined) return { situacao: 'indisponivel', motivo: 'em-breve' }
+      const desafio = pedido.molde === undefined ? null : lerPedidoDeDesafio(pedido)
+      if (pedido.molde !== undefined && !desafio)
+        return { situacao: 'indisponivel', motivo: 'em-breve' }
       if (abrindo.current || pendente.current)
         return { situacao: 'indisponivel', motivo: 'ocupado' }
+      if (desafio) {
+        abrindo.current = true
+        try {
+          return await abrirDesafio(desafio.desafioId)
+        } catch {
+          return { situacao: 'indisponivel', motivo: 'fora-do-ar' }
+        } finally {
+          abrindo.current = false
+        }
+      }
       abrindo.current = true
       try {
         const acesso = await json(`${BASE}/ferramentas/${pedido.ferramenta}`)
@@ -272,6 +330,7 @@ export function ArquipelagoHost(props: {
         return await new Promise<ResultadoDeFerramenta>((resolve) => {
           pendente.current = resolve
           setCreation({
+            tipo: 'criacao',
             ferramenta: pedido.ferramenta,
             toolAccess: tools.access,
             studioConfig,
@@ -326,38 +385,77 @@ export function ArquipelagoHost(props: {
     }
   }, [publico, id, primeiroNome, voltarPara])
 
+  /** Fecha o que está por cima e devolve o resultado ao jogo. */
+  function fechar(resultado: ResultadoDeFerramenta) {
+    fechou.current = true
+    setCreation(null)
+    const resolve = pendente.current
+    pendente.current = null
+    resolve?.(resultado)
+  }
+
+  // Depois de fechar (já sem a camada e sem o jogo inerte): o foco volta para onde estava, e se
+  // esse lugar sumiu vai para o jogo, que escuta o teclado.
+  useEffect(() => {
+    if (creation || !fechou.current) return
+    fechou.current = false
+    const ativo = document.activeElement
+    if (!ativo || ativo === document.body) elemento.current?.focus({ preventScroll: true })
+  }, [creation])
+
+  const ferramentaPorCima: FerramentaDaPorta =
+    creation?.tipo === 'criacao' ? creation.ferramenta : 'estudio'
+
   return (
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
-      <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      <div
+        ref={elemento}
+        tabIndex={-1}
+        // Com algo por cima, o jogo pausado não recebe foco nem clique.
+        inert={creation !== null}
+        style={{ position: 'absolute', inset: 0, outline: 'none' }}
+      />
       {creation ? (
         <ToolLoadBoundary
-          ferramenta={creation.ferramenta}
-          onCancel={() => {
-            setCreation(null)
-            const resolve = pendente.current
-            pendente.current = null
-            resolve?.({ situacao: 'indisponivel', motivo: 'em-breve' })
-          }}
+          ferramenta={ferramentaPorCima}
+          // O Estúdio de desafio que quebra volta como "cancelado": a conferência pode ter
+          // passado antes, e o jogo só relê a lista (e mostra a cor) quando a ferramenta abriu.
+          onCancel={() =>
+            fechar(
+              creation.tipo === 'desafio'
+                ? { situacao: 'cancelado' }
+                : { situacao: 'indisponivel', motivo: 'em-breve' },
+            )
+          }
         >
-          <Suspense
-            fallback={<AvisoDaFerramenta ferramenta={creation.ferramenta} falhou={false} />}
-          >
-            <CreationDialog
-              ferramenta={creation.ferramenta}
-              viewerId={id}
-              audience={publico === 'kids' ? 'kids' : 'adult'}
-              studioAvailable={creation.studioAvailable}
-              narrationEnabled={props.narrationEnabled ?? false}
-              toolAccess={creation.toolAccess}
-              studioConfig={creation.studioConfig}
-              onFinish={(criacaoId) => {
-                setCreation(null)
-                const resolve = pendente.current
-                pendente.current = null
-                resolve?.(criacaoId ? { situacao: 'pronto', criacaoId } : { situacao: 'cancelado' })
-              }}
-            />
+          <Suspense fallback={<AvisoDaFerramenta ferramenta={ferramentaPorCima} falhou={false} />}>
+            {creation.tipo === 'desafio' ? (
+              <DesafioDialog
+                desafio={creation.desafio}
+                viewerId={id}
+                onFinish={(cumprido) =>
+                  fechar(
+                    cumprido
+                      ? { situacao: 'pronto', criacaoId: creation.desafio.id }
+                      : { situacao: 'cancelado' },
+                  )
+                }
+              />
+            ) : (
+              <CreationDialog
+                ferramenta={creation.ferramenta}
+                viewerId={id}
+                audience={publico === 'kids' ? 'kids' : 'adult'}
+                studioAvailable={creation.studioAvailable}
+                narrationEnabled={props.narrationEnabled ?? false}
+                toolAccess={creation.toolAccess}
+                studioConfig={creation.studioConfig}
+                onFinish={(criacaoId) =>
+                  fechar(criacaoId ? { situacao: 'pronto', criacaoId } : { situacao: 'cancelado' })
+                }
+              />
+            )}
           </Suspense>
         </ToolLoadBoundary>
       ) : null}

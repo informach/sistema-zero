@@ -22,6 +22,20 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   lista com `?ilha=`, o desafio por uuid e o prêmio visto; conferir NÃO, quem manda o projeto é
   o Estúdio de desafio da página). Ferramentas: Pinta, Molda e Estúdio abrem de
   verdade por cima do jogo (`arquipelago-creation-dialog.tsx`), com o jogo pausado.
+  Estúdio de desafio (28/10/2026): `abrirFerramenta` com `estudio`, propósito `desafio` e o
+  `MoldeDeDesafioSchema` (`lerPedidoDeDesafio`) lê `GET /desafios/:id` antes de cobrir o jogo
+  (falhou: `indisponivel`, `motivoDoDesafioFechado`) e abre `arquipelago-desafio-dialog.tsx`: o
+  `StudioLesson` com o projeto inicial e o rascunho local por desafio, revisão e perfil (o de uma
+  revisão anterior compatível vem junto; ler que falha oferece "Tentar de novo"), a faixa de
+  objetivos (`studio/objective-list.tsx`, extraída do cartão das aulas) e "Conferir" em
+  `/desafios/:id/verificar`. Passou nesta tela: `pronto` com o id do desafio; fechou ou quebrou:
+  `cancelado`. ⚠️ É uma camada comum com `aria-modal`, NÃO `<dialog>.showModal()`: o DropDownDiv
+  e o WidgetDiv do Blockly e os menus do Estúdio vivem no `body` e ficariam por baixo do top
+  layer, inertes (o `arquipelago-creation-dialog.tsx`, com o Estúdio livre, ainda usa o modal).
+  O jogo fica `inert` enquanto há algo por cima; o keydown do diálogo não chega à janela (o
+  keyup chega) e o foco volta ao jogo depois do commit. Guardar ao sair tem prazo de 5 s.
+  Texto em `TEXTOS_DO_DESAFIO` (sem "!", travessão nem reticências). Teste:
+  `tests/arquipelago-desafio-dialog.test.ts` (roda a fixture com o Estúdio de mentira).
 - **`components/arquipelago-porta.tsx`** (27/10/2026, polimento da Fase 0): `PortaDoArquipelago`
   desenha os estados antes de o jogo montar (abrindo, ainda não abriu, erro) na noite do
   arquipélago (céu com estrelas, ilha com farol e casinha em SVG, sem arquivo para baixar), com o
