@@ -26,6 +26,10 @@ Base das correções: `742e9f66e`. Primeiro lote: `20322b1e4`. Remoto conciliado
 | Admin no Chrome, Estúdio real + HTTP em memória | conflito sem perda, salvar/analisar/publicar, separação de públicos, Blockly pronto e fechamento com gravação, largura de 390 px |
 | Jogo no Chrome/WebGL local | perda de resposta pausa; recuperação pelo teclado; Escape não remove a proteção |
 | Build do cliente do jogo | passou, 19 arquivos / 15,79 MB |
+| Tipagem da composição integrada | Admin, member-shell, jogo e API passaram; agent-runtime também passou no lote de correção Windows |
+| Seleção final dos deltas | 24 passaram, 126 asserções; migração preenchida, autoria/autorização e regressões de ilha/pausa/cor |
+
+Uma tentativa de tipagem Admin foi encerrada por esta sessão para reduzir concorrência de memória; não conta como aprovação. A execução seguinte, sozinha depois do member-shell, terminou com código zero. Servidor visual e Postgres descartável foram encerrados; nenhum aplicativo do usuário foi fechado.
 
 Comandos dos ensaios de navegador estão no plano e em `packages/arquipelago/playground/verificar-tempo-browser.mjs`. Logs e capturas descartáveis ficam na `.cache/` e nos `review-*.log` ignorados; os scripts e testes reproduzíveis ficam no Git. O ensaio Admin não usa dados nem contas reais. O ensaio do jogo não mede FPS, uso de GPU ou todas as interações do Bosque.
 

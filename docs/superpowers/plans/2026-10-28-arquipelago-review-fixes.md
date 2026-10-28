@@ -12,7 +12,8 @@ Spec: `docs/plans/2026-10-27-arquipelago-desafios.md`. Achados: `docs/reviews/20
 - [x] CI Windows: retirar compilação dinâmica por operação e diagnosticar prazo/fase do helper sem enfraquecer ACL, autenticação ou aceites negativos. Falha intermitente do runner original não reproduzida localmente; ver limites abaixo.
 - [x] Host: aceitar molde de desafio, buscar revisão publicada, abrir Estúdio de desafio, preservar rascunho por pessoa/desafio/revisão, verificar no servidor, fechar/retomar com recompensa confirmada. Não expor gabarito.
 - [x] Admin: rotas BFF autenticadas e item Jogo por público; lista/cadastro, inicial/gabarito, objetivos, dicas/extra, prêmios/blocos, análise, publicação, arquivar/reativar e cobertura. Erros de revisão não apagam edição local.
-- [ ] Verificação integrada: testes focados, tipos e UI; revisão final; commits específicos e integração sem alterações não commitadas de outras frentes. Configuração/deploy somente com versão verificada e registro de evidências.
+- [x] Verificação local integrada: testes focados, tipos e UI; revisão final; commits e conciliação sem alterações não commitadas de outras frentes. Evidência em `docs/reviews/2026-10-28-arquipelago-integration.md`.
+- [ ] Após o push: acompanhar CI hospedado, configuração/ativação e fluxo autenticado em staging. Deploy não é certificado pelos testes locais.
 
 Execução em worktree isolado `sistema-zero-review-remoto-20261028`, branch `fix/arquipelago-review-20261028`, base `742e9f66e`. O remoto e a árvore principal podem avançar; reconciliar antes da integração. Cada item só será marcado concluído com evidência fresca. Não reutilizar autoridade de testes antigos.
 
@@ -22,4 +23,4 @@ Implementados R1–R4, Admin Jogo, Estúdio de desafio e correção do helper Wi
 
 Ensaio visual reproduzível: iniciar `bun --cwd packages/admin tests/visual/serve-game-authoring-preview.ts`; em outro terminal na raiz executar `node packages/admin/tests/visual/verify-game-authoring.mjs <URL-local-impressa>`. Reiniciar o servidor entre tentativas. Usa HTTP em memória e o Estúdio real: conflito 409 preserva edição, salva/analisa/publica, separa públicos, abre/fecha Estúdio com Blockly carregado e não transborda a 390 px. Passou; não substitui autenticação, executor ou implantação reais. Capturas ficam na `.cache/` da raiz.
 
-Os checkboxes de fechamento permanecem abertos até conciliar `origin/staging` e repetir verificações afetadas. Migrações 0004–0006 foram aplicadas apenas no Postgres descartável. O backfill preserva o último metadado disponível de publicações antigas; metadados históricos nunca armazenados não podem ser reconstruídos.
+Conciliação concluída com `origin/staging` em `0bfe3c51b`, registrada no merge `5e3ece7ea`. Verificações afetadas repetidas; tipagem integrada de Admin, member-shell, jogo e API passou. Migrações 0004–0006 foram aplicadas apenas no Postgres descartável. O backfill preserva o último metadado disponível de publicações antigas; metadados históricos nunca armazenados não podem ser reconstruídos.
