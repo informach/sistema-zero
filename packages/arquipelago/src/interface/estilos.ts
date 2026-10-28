@@ -18,7 +18,7 @@ export const ESTILOS = `
 .arq-botao:focus-visible{outline:3px solid #2f6df6;outline-offset:2px}
 .arq-baixo{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;max-width:calc(100% - 28px)}
 .arq-acao{padding:8px 16px;font-weight:800;border-radius:999px;background:#141a3a;color:#fff;display:flex;gap:10px;align-items:center}
-.arq-tecla{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:6px;background:#ffc93c;color:#4a3200;font-size:13px}
+.arq-tecla{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:6px;background:#ffc93c;color:#4a3200;font-size:13px;white-space:nowrap}
 .arq-inventario{display:flex;gap:6px;padding:6px;background:rgba(20,26,58,.82);border-radius:14px;flex-wrap:wrap;justify-content:center}
 .arq-item{position:relative;width:46px;height:46px;border-radius:10px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);font-size:22px;display:grid;place-items:center;color:#fff;cursor:default}
 .arq-item.comida{cursor:pointer;border-color:#ffc93c}
@@ -53,6 +53,26 @@ export const ESTILOS = `
 .arq-joystick i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:50%;background:rgba(255,255,255,.75)}
 .arq-botoes-toque{position:absolute;right:22px;bottom:120px;display:flex;flex-direction:column;gap:12px}
 .arq-botoes-toque button{width:74px;height:74px;border-radius:50%;font-size:14px}
-@media (max-width:640px){.arq-necessidades{min-width:130px;padding:8px}.arq-nec{font-size:0}.arq-dica{bottom:200px}}
 .arq-quadro{max-width:560px;max-height:calc(100dvh - 40px);overflow:auto}.arq-quadro-sub{margin:0;color:#4a5070;font-weight:600}.arq-quadro-lista{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:8px}.arq-quadro-cartao{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border:2px solid #e7e3d6;border-radius:14px;background:#fff}.arq-quadro-cartao.feito{border-color:#9ad9c2;background:#f1fbf6}.arq-quadro-cartao.disponivel{border-color:#ffc93c}.arq-quadro-cartao.trancado,.arq-quadro-cartao.vazio{background:#f6f5f1;color:#5a6080}.arq-quadro-numero{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#e7e3d6;color:#1d2340;font-weight:900}.arq-quadro-cartao.feito .arq-quadro-numero{background:#2fb39a;color:#fff}.arq-quadro-cartao.disponivel .arq-quadro-numero{background:#ffc93c;color:#4a3200}.arq-quadro-corpo{display:grid;gap:2px;min-width:0}.arq-quadro-corpo b{font-size:15px;color:#1d2340}.arq-quadro-estado{font-size:13px;font-weight:700;color:#5a6080}.arq-quadro-premio{margin:2px 0 0;font-size:12px;color:#5a6080}.arq-quadro-erro{display:grid;gap:8px}@media (max-width:480px){.arq-quadro-cartao{grid-template-columns:36px 1fr}.arq-quadro-cartao .arq-botao{grid-column:1/-1}}
+.arq-cronometro{position:absolute;left:50%;top:14px;transform:translateX(-50%);display:flex;gap:6px;align-items:center}
+.arq-cronometro .arq-botao{min-height:36px;padding:6px 12px;border-radius:999px}
+.arq-cronometro .arq-pilula{font-variant-numeric:tabular-nums}
+.arq-resultado{padding:22px;max-width:380px;width:100%;display:grid;gap:12px;text-align:center}
+.arq-resultado h2{margin:0;font-size:22px}
+.arq-estrelas{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.arq-estrelas li{display:grid;justify-items:center;gap:4px;color:#9aa0b8}
+.arq-estrelas li > span[aria-hidden]{font-size:40px;line-height:1}
+.arq-estrelas li small{font-size:12px;font-weight:700}
+.arq-estrelas li.ganhou{color:#1d2340}
+.arq-estrelas li.ganhou > span[aria-hidden]{color:#ffb800;text-shadow:0 2px 0 #d99500;animation:arq-estrela .5s ease both}
+@keyframes arq-estrela{0%{transform:scale(.2);opacity:0}70%{transform:scale(1.2);opacity:1}100%{transform:scale(1)}}
+.arq-tempos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0}
+.arq-tempos div{background:#f5f2e8;border-radius:12px;padding:8px 4px}
+.arq-tempos dt{font-size:12px;color:#5a6080;font-weight:700}
+.arq-tempos dd{margin:0;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;display:grid;justify-items:center}
+.arq-recorde{font-size:11px;color:#0f5a46;background:#e3f6ef;border-radius:999px;padding:1px 8px;margin-top:2px}
+.arq-corte{position:absolute;inset:0;background:#0e1638;pointer-events:none;opacity:0;animation:arq-corte linear both}
+@keyframes arq-corte{0%{opacity:0}43%{opacity:1}57%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.arq-estrelas li.ganhou > span[aria-hidden]{animation:none}}
+@media (max-width:640px){.arq-necessidades{min-width:130px;padding:8px}.arq-nec{font-size:0}.arq-dica{bottom:200px}.arq-cronometro{top:112px}.arq-acao{flex-wrap:wrap;justify-content:center;border-radius:18px}}
 `

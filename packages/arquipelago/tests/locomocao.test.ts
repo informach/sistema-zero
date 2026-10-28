@@ -24,6 +24,7 @@ const chao = (velocidade: number): EntradaDaLocomocao => ({
   noChao: true,
   velY: 0,
   nadando: false,
+  pendurado: false,
 })
 
 function rodar(l = criarLocomocao(), e: EntradaDaLocomocao, segundos: number) {
@@ -59,11 +60,15 @@ describe('máquina de estados', () => {
 
   test('pulo: sai do chão subindo, vira queda ao descer e aterrissa', () => {
     const l = rodar(undefined, chao(0), 0.3)
-    passoDaLocomocao(l, { velocidade: 0, noChao: false, velY: 8, nadando: false }, 1 / 60)
+    passoDaLocomocao(
+      l,
+      { velocidade: 0, noChao: false, velY: 8, nadando: false, pendurado: false },
+      1 / 60,
+    )
     expect(l.pulou).toBe(true)
-    rodar(l, { velocidade: 0, noChao: false, velY: 4, nadando: false }, 0.2)
+    rodar(l, { velocidade: 0, noChao: false, velY: 4, nadando: false, pendurado: false }, 0.2)
     expect(l.pesos.Pulo).toBeGreaterThan(0.9)
-    rodar(l, { velocidade: 0, noChao: false, velY: -6, nadando: false }, 0.3)
+    rodar(l, { velocidade: 0, noChao: false, velY: -6, nadando: false, pendurado: false }, 0.3)
     expect(l.pesos.Queda).toBeGreaterThan(0.9)
     passoDaLocomocao(l, chao(0), 1 / 60)
     expect(l.pesos.Aterrissagem).toBeGreaterThan(0.8)
@@ -74,7 +79,7 @@ describe('máquina de estados', () => {
 
   test('descer um degrau (pouco tempo no ar) não troca a animação nem aterrissa', () => {
     const l = rodar(undefined, chao(2.2), 0.5)
-    rodar(l, { velocidade: 2.2, noChao: false, velY: -2, nadando: false }, 0.1)
+    rodar(l, { velocidade: 2.2, noChao: false, velY: -2, nadando: false, pendurado: false }, 0.1)
     expect(l.pesos.Queda).toBe(0)
     passoDaLocomocao(l, chao(2.2), 1 / 60)
     expect(l.noAr).toBe(0)
@@ -82,8 +87,25 @@ describe('máquina de estados', () => {
     expect(AR_PARA_ATERRISSAR).toBeGreaterThan(0.1)
   })
 
+  test('pendurada no cipó ou no tronco: a pose parada, e soltar cai e aterrissa', () => {
+    const l = rodar(
+      undefined,
+      { velocidade: 0, noChao: true, velY: 0, nadando: false, pendurado: true },
+      0.5,
+    )
+    expect(l.pesos.Idle).toBeCloseTo(1)
+    rodar(l, { velocidade: 3, noChao: false, velY: -5, nadando: false, pendurado: false }, 0.5)
+    expect(l.pesos.Queda).toBeGreaterThan(0.9)
+    passoDaLocomocao(l, chao(0), 1 / 60)
+    expect(l.pesos.Aterrissagem).toBeGreaterThan(0)
+  })
+
   test('na água, só o nado', () => {
-    const l = rodar(undefined, { velocidade: 2.6, noChao: false, velY: 0, nadando: true }, 1)
+    const l = rodar(
+      undefined,
+      { velocidade: 2.6, noChao: false, velY: 0, nadando: true, pendurado: false },
+      1,
+    )
     expect(l.pesos.Nado).toBeCloseTo(1)
     expect(soma(l.pesos)).toBeCloseTo(1)
   })

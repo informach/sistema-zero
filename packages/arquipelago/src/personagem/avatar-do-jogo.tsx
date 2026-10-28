@@ -27,7 +27,14 @@ const UMA_VEZ: readonly Clipe[] = ['Pulo', 'Aterrissagem']
  * As animações: `sistemas/locomocao.ts` decide o peso e o tempo de cada clipe a cada quadro e aqui
  * isso é aplicado às ações do mixer (o tempo de cada ação é posto à mão: o mixer não avança).
  */
-export function AvatarDoJogo({ movimento }: { movimento: RefObject<EntradaDaLocomocao> }) {
+export function AvatarDoJogo({
+  movimento,
+  depoisDaPose,
+}: {
+  movimento: RefObject<EntradaDaLocomocao>
+  /** Mexe nos ossos depois da pose de cada quadro (os braços para cima no cipó e no tronco). */
+  depoisDaPose?: () => void
+}) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const slots = useMemo(() => ({ ...DEFAULT_AVATAR_SLOTS, ...slotsDoJogo }), [slotsDoJogo])
   const personagem = useRef<Group>(null)
@@ -85,9 +92,19 @@ export function AvatarDoJogo({ movimento }: { movimento: RefObject<EntradaDaLoco
           onStood={aoFicarEmPe}
           onAnimations={aoAnimar}
         />
+        {depoisDaPose ? <DepoisDaPose fazer={depoisDaPose} /> : null}
       </Suspense>
     </group>
   )
+}
+
+/**
+ * Roda a cada quadro DEPOIS da pose: monta logo depois do avatar, dentro do mesmo `Suspense`, então
+ * o `useFrame` dele entra depois do mixer (os braços no cipó mexem por cima das animações).
+ */
+function DepoisDaPose({ fazer }: { fazer: () => void }) {
+  useFrame(fazer)
+  return null
 }
 
 /** Lê o arquivo dos clipes dentro do Suspense (o jogo segue enquanto ele chega). */

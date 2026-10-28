@@ -130,10 +130,30 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
     `caverna-tesouro`: o mexilhão com as pérolas;
   - `mergulho`: na frente da ponta do cais.
 
+### Falta passar para o Blender (cipó, escalada e percurso, 27/10/2026)
+
+Esta sessão não tinha o Blender sem tela, então o jogo marca no código o que ainda não está no
+`bosque.glb`. Quando o Blender rodar de novo:
+
+- **Tronco de escalar:** um nó `escalada-cil-tronco-dos-cipos` no tronco da árvore do galho dos
+  cipós (T6), na convenção dos colisores: cilindro unitário sem material, em pé, do chão (y = 1) até
+  6,5, com o raio da casca desenhada (0,86 embaixo, 0,5 em cima; o meio vai de x 8,6, z 5,21 a
+  x 8,84, z 5,07 no referencial do jogo). Hoje esses números estão em `TRONCO_DOS_CIPOS`
+  (`src/mundo/bosque.ts`), e o jogo desenha uma trepadeira em espiral por cima para mostrar que ele
+  sobe. Ficaria melhor com a trepadeira modelada (ou degraus de madeira pregados) no próprio tronco.
+  O jogo ainda não lê `escalada-*`: quando o nó chegar, troque a constante pela leitura dele.
+- **Lago:** o nó `agua` é uma mancha sobre o tampo, sem fundo. O jogo trata a elipse dele como água
+  rasa (o avatar nada e afunda até a cintura, com o corpo no chão). Um fundo de uns 0,6 abaixo do
+  tampo, com a margem em rampa no `col-terreno`, deixaria a água de verdade.
+- **Placa de largada e vagalumes:** desenhados no código (`PLACA_DA_LARGADA` e
+  `VAGALUMES_DAS_COPAS`). Uma placa modelada ao lado do pé da escada (x 0,6, z 1,3), na madeira da
+  casa na árvore, combinaria com o resto.
+
 ### Nós que mexem
 
 - **`cipo-1`…`cipo-3` (Bosque):** o pivô fica no galho. O jogo balança cada cipó girando o nó; o
-  cipó tem 4,2 de comprimento e uma alça no fim.
+  cipó tem 4,2 de comprimento e uma alça no fim. As mãos seguram acima da alça, onde os pés passam
+  livres do chão (`comprimentoDaPegada` em `src/sistemas/cipo.ts`).
 - **Algas e barco:** o `balancar` toca em laço. O do barco também mexe na posição do nó: ponha o
   barco dentro de um grupo na âncora `barco`.
 - **Recife:** `agua`/`lagoa` e a fonte de chocolate são nós à parte, para o jogo trocar o material

@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, CylinderCollider, RigidBody } from '@react-three/rapier'
-import { type Ilha, ilhaAberta } from '@sistemazero/arquipelago-contracts'
+import { type Ilha, type IlhaId, ilhaAberta } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   type BufferGeometry,
@@ -17,6 +17,7 @@ import {
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
+import { BosqueVivo } from './bosque-vivo'
 import {
   aplicarOpacidade,
   giroDaIlha,
@@ -212,6 +213,9 @@ function Enfeites({ id, cor }: { id: Ilha['id']; cor: number }) {
 
 const ALTURA_DAS_NUVENS = 7
 
+/** O que mexe em cada ilha completa (montado com ela ativa, em coordenadas do mundo). */
+const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = { bosque: BosqueVivo }
+
 function IlhaDoAnel({
   ilha,
   centro,
@@ -228,36 +232,43 @@ function IlhaDoAnel({
   troca: Troca
 }) {
   const flutua = ilha.id === 'nuvens'
+  const Viva = ILHAS_VIVAS[ilha.id]
   const y = flutua ? ALTURA_DAS_NUVENS : 0
   // A leve fica sempre montada: é a reserva enquanto a completa baixa ou se ela falhar, e some
   // esmaecendo quando a completa entra. Só uma das duas colide por vez.
   return (
-    <group position={[centro.x, y, centro.z]}>
-      <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
-        <IlhaDoModelo ilha={ilha} cor={cor} troca={troca} />
-      </ComReserva>
-      {!completaColide(estado) && (
-        <RigidBody type="fixed" colliders={false}>
-          <CylinderCollider
-            args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
-            position={[0, ALTURA_DA_TERRA - 0.8, 0]}
-          />
-        </RigidBody>
-      )}
-      {preparada && completaNaCena(estado) && (
-        <IlhaCompleta
-          preparada={preparada}
-          cor={cor}
-          colide={completaColide(estado)}
-          troca={troca}
-        />
-      )}
-      {preparada && completaColide(estado) && (
-        <ComReserva reserva={null}>
-          <QuadroDasCores ilha={ilha} centro={centro} preparada={preparada} />
+    <>
+      <group position={[centro.x, y, centro.z]}>
+        <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
+          <IlhaDoModelo ilha={ilha} cor={cor} troca={troca} />
         </ComReserva>
-      )}
-    </group>
+        {!completaColide(estado) && (
+          <RigidBody type="fixed" colliders={false}>
+            <CylinderCollider
+              args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
+              position={[0, ALTURA_DA_TERRA - 0.8, 0]}
+            />
+          </RigidBody>
+        )}
+        {preparada && completaNaCena(estado) && (
+          <IlhaCompleta
+            preparada={preparada}
+            cor={cor}
+            colide={completaColide(estado)}
+            troca={troca}
+          />
+        )}
+        {preparada && completaColide(estado) && (
+          <ComReserva reserva={null}>
+            <QuadroDasCores ilha={ilha} centro={centro} preparada={preparada} />
+          </ComReserva>
+        )}
+      </group>
+      {/* O que mexe na ilha (no Bosque: cipós, escalada, lago, percurso): só com a completa ativa. */}
+      {preparada && completaColide(estado) && Viva ? (
+        <Viva ilha={ilha} centro={centro} preparada={preparada} troca={troca} />
+      ) : null}
+    </>
   )
 }
 

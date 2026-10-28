@@ -25,7 +25,7 @@ código depois da Fase 0 (27/10/2026).
 | Pacote | O que é |
 |---|---|
 | `packages/avatar-quarto` | Avatar 3D e quarto 3D (saíram do member-shell sem mudar comportamento; os caminhos antigos repassam) |
-| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV1`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
+| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV2`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
 | `packages/arquipelago` | O jogo no navegador (R3F, drei, Rapier, zustand), com playground e plataforma de mentira |
 | `packages/arquipelago-api` | O serviço do jogo (Bun, Elysia, Drizzle, schema `arquipelago`, porta 3015) |
 

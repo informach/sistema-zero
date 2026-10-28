@@ -44,6 +44,8 @@ export interface EntradaDaLocomocao {
   /** Velocidade vertical (positiva subindo). */
   velY: number
   nadando: boolean
+  /** Pendurada num cipó ou agarrada num tronco (o corpo é levado por outra regra). */
+  pendurado: boolean
 }
 
 export interface Locomocao {
@@ -102,7 +104,14 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
   const alvo = zeros()
   let transicao: number = TRANSICAO.chao
 
-  if (e.nadando) {
+  if (e.pendurado) {
+    // No cipó e no tronco: a pose parada, com os braços levantados por cima (`personagem/bracos.ts`).
+    l.noAr = 0
+    l.pulou = false
+    l.aterrissando = 0
+    alvo.Idle = 1
+    transicao = TRANSICAO.ar
+  } else if (e.nadando) {
     l.noAr = 0
     l.pulou = false
     l.aterrissando = 0
@@ -153,7 +162,7 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     }
   }
 
-  if (!e.nadando) {
+  if (!e.nadando && !e.pendurado) {
     l.fase = (l.fase + ciclosPorSegundo(e.velocidade) * dt) % 1
     l.tempos.Andar = l.fase
     l.tempos.Correr = l.fase

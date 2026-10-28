@@ -1,9 +1,11 @@
 import type { FerramentaDaPlataforma } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
+import { useToque } from '../estado/preferencias'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { comer } from '../sistemas/necessidades'
+import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
@@ -111,14 +113,178 @@ function Inventario() {
   )
 }
 
+/** A tecla (ou, no toque, o botão) da ação perto, e o que fazer no cipó e no tronco. */
 function Acao() {
   const alvo = useEstado((s) => s.alvo)
+  const modo = useEstado((s) => s.modo)
+  const toque = useToque()
+  if (modo === 'cipo') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? 'Soltar' : 'Espaço'}</span>
+        Soltar do cipó
+        <span className="arq-tecla">{toque ? '◎' : 'W S'}</span>
+        Balançar
+      </div>
+    )
+  }
+  if (modo === 'escalada') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? '◎' : 'W S'}</span>
+        Subir e descer
+        <span className="arq-tecla">{toque ? 'Pular' : 'Espaço'}</span>
+        Pular do tronco
+      </div>
+    )
+  }
   if (!alvo) return null
   return (
     <div className="arq-acao">
-      <span className="arq-tecla">E</span>
+      <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
       {alvo.rotulo}
     </div>
+  )
+}
+
+/** O cronômetro discreto do percurso, só durante a corrida (o tempo anda fora do React). */
+function Cronometro() {
+  const { movimento } = useJogo()
+  const corrida = useEstado((s) => s.corrida)
+  const texto = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    if (!corrida) return
+    let quadro = 0
+    const mostrar = () => {
+      const c = movimento.corrida
+      if (c && texto.current) {
+        texto.current.textContent = formatarTempo(c.tempoMs)
+      }
+      quadro = requestAnimationFrame(mostrar)
+    }
+    mostrar()
+    return () => cancelAnimationFrame(quadro)
+  }, [corrida, movimento])
+  if (!corrida) return null
+  return (
+    <div className="arq-cronometro" role="timer" aria-label="Percurso nas copas">
+      <span className="arq-pilula">
+        ⏱ <span ref={texto}>0:00,0</span>
+      </span>
+      <span className="arq-pilula" title="Vagalumes pegos">
+        ✨ {corrida.vagalumes}/{corrida.totalDeVagalumes}
+      </span>
+      <button
+        type="button"
+        className="arq-botao leve"
+        onClick={() => {
+          movimento.pedidoDoPercurso = 'parar'
+        }}
+      >
+        Parar
+      </button>
+    </div>
+  )
+}
+
+/** A tela curta do fim do percurso: estrelas, tempo, melhor tempo e correr de novo. */
+function Resultado() {
+  const { loja, movimento } = useJogo()
+  const r = useEstado((s) => s.resultado)
+  const continuar = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (r) continuar.current?.focus()
+  }, [r])
+  if (!r) return null
+  const estrelas = [
+    { ganhou: r.estrelas.chegada, texto: 'Chegou ao fim' },
+    {
+      ganhou: r.estrelas.tempo,
+      texto: `Em até ${Math.round(PERCURSO_DAS_COPAS.tempoAlvoMs / 1000)} segundos`,
+    },
+    { ganhou: r.estrelas.vagalumes, texto: `Os ${r.totalDeVagalumes} vagalumes` },
+  ]
+  const fechar = () => loja.getState().mostrarResultado(null)
+  return (
+    <div className="arq-sobre">
+      <div
+        className="arq-resultado arq-cartao"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="arq-resultado-titulo"
+        onKeyDown={(e) => {
+          // Fechar o resultado não abre o menu (o Esc do menu escuta a janela).
+          if (e.key === 'Escape') {
+            e.stopPropagation()
+            fechar()
+          }
+        }}
+      >
+        <h2 id="arq-resultado-titulo">Percurso nas copas</h2>
+        <ul className="arq-estrelas">
+          {estrelas.map((e, i) => (
+            <li
+              key={e.texto}
+              className={e.ganhou ? 'ganhou' : ''}
+              style={{ animationDelay: `${i * 0.18}s` }}
+            >
+              <span aria-hidden="true">{e.ganhou ? '★' : '☆'}</span>
+              <small>{e.texto}</small>
+              <span className="arq-sr">{e.ganhou ? 'estrela ganha' : 'estrela que falta'}</span>
+            </li>
+          ))}
+        </ul>
+        <dl className="arq-tempos">
+          <div>
+            <dt>Tempo</dt>
+            <dd>{formatarTempo(r.tempoMs)}</dd>
+          </div>
+          <div>
+            <dt>Melhor tempo</dt>
+            <dd>
+              {formatarTempo(r.melhor.melhorTempoMs)}
+              {r.recorde ? <b className="arq-recorde">Recorde novo</b> : null}
+            </dd>
+          </div>
+          <div>
+            <dt>Vagalumes</dt>
+            <dd>
+              {r.vagalumes} de {r.totalDeVagalumes}
+            </dd>
+          </div>
+        </dl>
+        <div className="arq-menu-acoes">
+          <button
+            type="button"
+            className="arq-botao"
+            onClick={() => {
+              movimento.pedidoDoPercurso = 'recomecar'
+            }}
+          >
+            Correr de novo
+          </button>
+          <button ref={continuar} type="button" className="arq-botao leve" onClick={fechar}>
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** O corte suave da volta ao deque: escurece e clareia a cada número novo de `corte`. */
+function Corte() {
+  const corte = useEstado((s) => s.corte)
+  if (corte === 0) return null
+  return (
+    <div
+      key={corte}
+      className="arq-corte"
+      aria-hidden="true"
+      style={{
+        animationDuration: `${PERCURSO_DAS_COPAS.corteSaiMs + PERCURSO_DAS_COPAS.corteVoltaMs}ms`,
+      }}
+    />
   )
 }
 
@@ -176,6 +342,7 @@ function Menu() {
           <li>Andar: W A S D ou as setas (no tablet, o círculo da esquerda)</li>
           <li>Correr: Shift · Pular: espaço</li>
           <li>Usar o que está perto: E</li>
+          <li>Cipó: Espaço solta · Tronco: W e S sobem e descem, Espaço pula</li>
           <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse</li>
         </ul>
         <h3 className="arq-menu-titulo">Criar com as ferramentas</h3>
@@ -228,11 +395,13 @@ export function Hud() {
   const { loja } = useJogo()
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (e.code !== 'Escape') return
       const s = loja.getState()
-      if (s.tempoPausado || s.ferramentaAberta) return
+      if (e.code !== 'Escape') return
+      // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
+      if (s.resultado) s.mostrarResultado(null)
+      else if (s.tempoPausado || s.ferramentaAberta) return
       // Com um painel do mundo aberto (o Quadro das Cores), o Esc fecha o painel.
-      if (s.painelAberto !== null) s.abrirPainel(null)
+      else if (s.painelAberto !== null) s.abrirPainel(null)
       else s.abrirMenu(!s.menuAberto)
     }
     window.addEventListener('keydown', tecla)
@@ -253,6 +422,7 @@ export function Hud() {
           ☰ Menu
         </button>
       </div>
+      <Cronometro />
       <Dica />
       <div className="arq-baixo">
         <Acao />
@@ -261,6 +431,8 @@ export function Hud() {
       <ControlesDeToque />
       <PainelDoQuadro />
       <Menu />
+      <Resultado />
+      <Corte />
     </div>
   )
 }

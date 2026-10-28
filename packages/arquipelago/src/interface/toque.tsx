@@ -1,20 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
-import { useJogo } from '../estado/contexto'
+import { useRef } from 'react'
+import { useEstado, useJogo } from '../estado/contexto'
+import { useToque } from '../estado/preferencias'
 
-/** Controles de toque (tablet e celular): o joystick anda; os botões pulam e usam. */
+/**
+ * Controles de toque (tablet e celular): o joystick anda; os botões pulam e usam. No cipó o
+ * botão de pular vira "Soltar".
+ */
 export function ControlesDeToque() {
   const { controle } = useJogo()
-  const [toque, setToque] = useState(false)
+  const toque = useToque()
+  const modo = useEstado((s) => s.modo)
   const base = useRef<HTMLDivElement>(null)
   const bolinha = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(pointer: coarse)')
-    setToque(mq.matches)
-    const muda = () => setToque(mq.matches)
-    mq.addEventListener('change', muda)
-    return () => mq.removeEventListener('change', muda)
-  }, [])
 
   if (!toque) return null
 
@@ -65,6 +62,7 @@ export function ControlesDeToque() {
           className="arq-botao"
           onPointerDown={() => {
             controle.pular = true
+            controle.pulos++
           }}
           onPointerUp={() => {
             controle.pular = false
@@ -73,7 +71,7 @@ export function ControlesDeToque() {
             controle.pular = false
           }}
         >
-          Pular
+          {modo === 'cipo' ? 'Soltar' : 'Pular'}
         </button>
         <button type="button" className="arq-botao leve" onClick={() => controle.usar++}>
           Usar

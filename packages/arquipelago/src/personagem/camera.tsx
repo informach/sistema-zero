@@ -1,5 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRapier } from '@react-three/rapier'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef } from 'react'
 import { MathUtils, Vector3 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -19,6 +20,15 @@ import { distanciaDaCamera, pesoNoAlto } from '../sistemas/camera'
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
 const ALTURA_DO_PEITO = 0.7
+/**
+ * No cipó a câmera olha para um ponto entre o corpo e o meio do cipó (`movimento.foco`), e segue
+ * mais devagar: o balanço passa pela tela sem a câmera correr atrás dele. Com menos movimento
+ * pedido no sistema, ela olha só para o meio do cipó e fica quase parada.
+ */
+const FOCO_NO_CIPO = 0.55
+const FOCO_NO_CIPO_COM_MENOS_MOVIMENTO = 1
+/** O quanto a câmera fica mais lenta para seguir no cipó (6 por segundo no chão). */
+const SEGUIR_NO_CIPO = 2.5
 
 /**
  * Câmera em terceira pessoa. Arrastar (mouse ou dedo fora dos botões) gira em volta do
@@ -27,8 +37,10 @@ const ALTURA_DO_PEITO = 0.7
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
 export function Camera() {
-  const { rastro } = useJogo()
+  const { rastro, movimento } = useJogo()
   const dentro = useEstado((s) => s.dentroDeCasa)
+  const menosMovimento = useReducedMotion()
+  const noCipo = useRef(0)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
   const distancia = useRef(9)
@@ -90,8 +102,22 @@ export function Camera() {
   }, [gl, rastro])
 
   useFrame((_, dt) => {
-    const k = 1 - Math.exp(-dt * 6)
-    alvo.current.lerp({ x: rastro.x, y: rastro.y + 0.9, z: rastro.z } as Vector3, k)
+    // No cipó, o alvo vai aos poucos para perto do meio do cipó e a câmera segue mais devagar.
+    const foco =
+      movimento.modo === 'cipo'
+        ? menosMovimento
+          ? FOCO_NO_CIPO_COM_MENOS_MOVIMENTO
+          : FOCO_NO_CIPO
+        : 0
+    noCipo.current += (foco - noCipo.current) * (1 - Math.exp(-dt * 4))
+    const f = noCipo.current
+    const k = 1 - Math.exp(-dt * (6 - SEGUIR_NO_CIPO * Math.min(1, f / FOCO_NO_CIPO)))
+    const ax = rastro.x + (movimento.foco.x - rastro.x) * f
+    const ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
+    const az = rastro.z + (movimento.foco.z - rastro.z) * f
+    alvo.current.x += (ax - alvo.current.x) * k
+    alvo.current.y += (ay - alvo.current.y) * k
+    alvo.current.z += (az - alvo.current.z) * k
     // Lá no alto, o ângulo desce e a câmera chega perto (passa por baixo das copas).
     const alto = pesoNoAlto(rastro.y - 0.9 - ALTURA_DA_TERRA, CAMERA_NO_ALTO.acimaDoChao)
     noAlto.current += (alto - noAlto.current) * k
@@ -124,7 +150,10 @@ export function Camera() {
           sonda.current,
           0,
           dist + FOLGA_DA_CAMERA,
-          true,
+          // Começar encostado num tronco (escalando, ou de pé junto dele) e se afastar não é
+          // bater: só conta o que entra mais no sólido. Com `true`, a bolinha que já sai
+          // encostando parava na hora para qualquer lado e a câmera ia para dentro da cabeça.
+          false,
           rapier.QueryFilterFlags.EXCLUDE_KINEMATIC | rapier.QueryFilterFlags.EXCLUDE_SENSORS,
           GRUPOS_DO_RAIO_DA_CAMERA,
         )

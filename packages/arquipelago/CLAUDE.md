@@ -30,13 +30,15 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 - `estado/`: loja zustand (uma por montagem), contexto, relógios (necessidades, posição, tempo).
 - `sistemas/`: regras puras e testadas (dia e noite, itens, necessidades, horta, receitas,
-  fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy e ilhas
-  completas). Sem React. Os números de cada regra, em linguagem da dona: `docs/arquipelago-regras.md`.
+  fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy, ilhas
+  completas, cipó, escalada, percurso e as medidas do corpo). Sem React. Os números de cada regra,
+  em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
-  farol, anel de ilhas com pontes.
-- `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar),
-  avatar, câmera e o Zappy.
-- `controles/` e `interface/`: teclado, toque, HUD e telas.
+  farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).
+- `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar, cipó,
+  escalada), avatar com os braços para cima no cipó e no tronco, câmera e o Zappy.
+- `controles/` e `interface/`: teclado, toque, HUD (com o cronômetro do percurso) e telas (com o
+  resultado do percurso).
 - `assets/`: arquivos importados como arquivo (o Bun copia com hash para `dist/cliente/`). Resolva
   sempre com `new URL(caminho, import.meta.url)`: o caminho é relativo à pasta do cliente, não à
   página. O Zappy (`assets/zappy.glb`, animações `voar` e `parado`, material `luz` na bunda) sai
@@ -139,9 +141,60 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   (`RAIO_DAS_ESTRELAS`) e passar da `NEVOA`. Sem `logarithmicDepthBuffer` (caro no celular). Não há
   sombras no jogo (nenhum `castShadow`), então não há acne de sombra a ajustar.
 
+## Cipó, escalada e percurso nas copas (27/10/2026, Fase 1)
+
+- Tudo do Bosque que mexe vem de `mundo/bosque-vivo.tsx` (`BosqueVivo`), montado pelo `anel.tsx`
+  só com a ilha completa ATIVA, em coordenadas do mundo, fora do grupo da ilha. Os números no
+  referencial do modelo ficam em `mundo/bosque.ts` (placa, vagalumes, tronco de escalar, raios dos
+  deques) e são conferidos contra o `bosque.glb` em `tests/movimento-do-bosque.test.ts`.
+- O que o personagem pega e escala mora em `contexto.movimento` (listas simples, sem alocar no laço
+  da física): `cipos`, `troncos`, `aguas`, o `pedido` dos interativos, o `modo` (`chao`, `cipo`,
+  `escalada`), `noChao`, o `foco` da câmera no balanço e a `corrida` em andamento.
+- **Cipó** (`sistemas/cipo.ts`): pêndulo num plano em pé (`rumo`). Os nós `cipo-1`…`cipo-3` do GLB
+  giram em volta do pivô no galho (o `movimento/cipo.glb` solto não é usado aqui). As mãos seguram
+  onde os pés passam a `folgaDosPes` do chão (`comprimentoDaPegada`): segurar na alça do fim
+  enterraria as pernas. Pega no chão (E / Usar, `raioDaDica`) ou no ar (a corda passa a
+  `raioDaPegadaNoAr` das mãos), com a velocidade que o corpo traz. Bombeia como no parquinho: pedir
+  para o lado em que já vai empurra, o contrário não freia, de través vira o plano. Pular (ou usar)
+  solta com a velocidade do balanço (`impulsoAoSoltar`) mais um pulinho; no ar, o embalo fica até
+  pisar e a direção pedida só corrige (`CONTROLE_NO_AR`). No cipó o corpo usa um controlador do
+  Rapier SEM grudar no chão (o grudar freava o balanço).
+- **Escalada** (`sistemas/escalada.ts`): o tronco da árvore dos cipós (`TRONCO_DOS_CIPOS`, um cone
+  um pouco torto do tamanho da casca desenhada). Andar contra ele por `esperaParaGrudar` (ou pular
+  nele) gruda; frente e trás sobem e descem, os lados seguem a tela, descer no pé solta, pular solta
+  para fora (ou para onde se pede, se for para longe). Lá de cima, o pulo cai no `cipo-1`. A
+  trepadeira em espiral (desenhada no código) mostra que aquele tronco sobe e esmaece com ele.
+  Ainda não há nó `escalada-*` no GLB: o que falta passar para o Blender está no README de
+  `arte/ilhas`.
+- **Lago**: o nó `agua` não tem fundo no desenho. Ele vira uma água rasa (a elipse da caixa do nó):
+  pisando nela o personagem nada (velocidade de nado, sem pular) e o avatar afunda até a cintura.
+- **Braços** (`personagem/bracos.ts`): as poses da plataforma não têm uma de segurar no alto; no
+  cipó e no tronco o braço e o antebraço apontam para cima depois da pose de cada quadro
+  (`AvatarDoJogo` monta `DepoisDaPose` logo depois do `AvatarRig`, então roda depois do mixer).
+- **Percurso nas copas** (`sistemas/percurso.ts`, `PERCURSO_DAS_COPAS`): a placa ao pé da escada
+  começa (E / Usar); cada deque alcançado vira ponto de volta; cair no chão da ilha depois do
+  primeiro deque escurece, leva à `volta` do último deque e clareia (`corteSaiMs`, `corteVoltaMs`),
+  nunca para a largada; sair da ilha, se afastar da largada antes de subir ou "Parar" desiste sem
+  castigo. O tempo é o de jogo, somado quadro a quadro: menu, ferramenta aberta, aba escondida e
+  o corte não contam, e passar de 1 hora desiste (o salvamento não guarda mais que isso). Chegar ao fim do escorregador mostra o
+  resultado (estrelas, tempo, melhor tempo, "Correr de novo") e grava o melhor em
+  `salvamento.percursos['bosque-copas']` (`juntarResultado`: cada estrela fica para sempre, o tempo
+  é o menor). Os vagalumes só aparecem durante a corrida.
+- **Câmera**: no cipó o alvo vai para perto do meio do cipó e a câmera segue mais devagar; com
+  `prefers-reduced-motion` ela olha só para o meio do cipó (quase parada). A bolinha da câmera que
+  começa encostada num tronco e se afasta não conta como batida (`stopAtPenetration: false`).
+- **Controles**: `controle.pulos` conta os toques de pular (o toque curto que desce e sobe no mesmo
+  quadro solta o cipó). A dica mostra a tecla no teclado e o nome do botão no toque
+  (`estado/preferencias.ts`: `useToque`, `useMenosMovimento`); no cipó o botão Pular vira Soltar.
+- Prints do playground: `localStorage['arquipelago:medir'] = '1'`, `?novo=1&posicao=2&em=x,z` e
+  `__arquipelagoLevar(x, y, z, giro)`. O Bosque fica com o centro em (77,05; 28,05), girado 2,79.
+
 ## Salvamento e tempo
 
-- `SalvamentoV1` (contrato) com versão; gravação por revisão (CAS). Revisão velha recebe 409
+- `SalvamentoV2` (contrato) com versão; a V1 migra sozinha (`migrarDaV1`: nenhum percurso
+  corrido). Gravar aceita a V1 de uma aba aberta antes da atualização e guarda migrada, mas essa
+  aba não lê a resposta V2: só a primeira gravação dela fica, as seguintes falham até recarregar.
+  Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.
 - Tempo livre do Kids: cada segundo ativo fica em IndexedDB por perfil; lotes de até 10 s são
   enviados com UUID e dia de São Paulo. O serviço trata repetições de forma idempotente; uma

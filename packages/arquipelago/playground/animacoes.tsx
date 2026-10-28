@@ -121,6 +121,7 @@ function Visualizador() {
     noChao: true,
     velY: 0,
     nadando: false,
+    pendurado: false,
   })
   const contexto = useMemo(() => {
     const loja = criarLoja({
