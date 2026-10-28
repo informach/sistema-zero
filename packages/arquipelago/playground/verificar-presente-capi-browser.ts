@@ -51,7 +51,9 @@ try {
     await new Promise((r) => setTimeout(r, 200))
   }
   browser = await chromium.launch({
-    channel: process.env.ARQUIPELAGO_BROWSER_CHANNEL ?? 'chrome',
+    ...(process.env.ARQUIPELAGO_CHROMIUM
+      ? { executablePath: process.env.ARQUIPELAGO_CHROMIUM }
+      : { channel: process.env.ARQUIPELAGO_BROWSER_CHANNEL ?? 'chrome' }),
     headless: true,
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
