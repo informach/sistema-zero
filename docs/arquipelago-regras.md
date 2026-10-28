@@ -255,9 +255,10 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 3` (`SalvamentoV3Schema`, estrito: campo desconhecido é
+- **Versão:** `VERSAO_SALVAMENTO = 4` (`SalvamentoV4Schema`, estrito: campo desconhecido é
   recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
-  a V2 mais a Capi e os bichos do Bosque.
+  a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
+  projetos azuis.
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -274,15 +275,29 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   - os bichos do Bosque (`bichos`): os achados (cada um no máximo uma vez, de `BICHOS_DO_BOSQUE`:
     cachorro, gato, coelho e porquinho) e o adotado, com nome (de 1 a 16 letras), fase (filhote
     ou adulto), fome, limpeza e carinho (de 0 a 100), os dias bem cuidado e o truque (sessões, o
-    último dia de sessão e se já aprendeu).
+    último dia de sessão e se já aprendeu);
+  - a construção (`construcao`): a obra da casa (`casa`, `null` enquanto a casa é a de antes, do
+    `casa.glb`) e as cabanas (`cabanas`, hoje só a do Bosque, `ILHAS_COM_CABANA`). Cada obra
+    (`ObraSchema`) guarda as paredes e as cercas em trechos retos na linha da grade (o ponto de
+    saída, o eixo e quantas células), as portas e janelas (`TIPOS_DE_ABERTURA`, pelo ponto em que
+    começam), o piso de cada cômodo (por uma célula de dentro dele: tábua, ladrilho ou azulejo), os
+    objetos com função (a célula e o giro, cada objeto uma vez só), o caminho do quintal (pedra ou
+    grama, por célula) e os canteiros do quintal. Coordenadas inteiras de -60 a 60. Tetos por
+    obra: 200 trechos de parede, 60 aberturas, 30 pisos, 120 trechos de cerca, 240 células de
+    caminho e 18 canteiros (com a casa e a cabana cheias, o salvamento ainda cabe em 64 KB, há
+    teste);
+  - os projetos azuis ganhos (`projetos`, por objeto de `OBJETOS_DA_CASA`): quando foi ganho, a
+    aparência (de onde veio e o id, ou `null` enquanto é holograma) e, na geladeira, o que está
+    guardado (alimento → quantidade, no máximo 12 no total, `GELADEIRA_GUARDA`).
 - **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
   `migrarSalvamento`. Assim ninguém perde o progresso.
-- **A V1 e a V2 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`: tudo
-  igual e nenhum percurso corrido; `migrarDaV2`: tudo igual, a Capi com amizade 0, nenhum bicho
-  achado e nenhum adotado).
+- **A V1, a V2 e a V3 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`:
+  tudo igual e nenhum percurso corrido; `migrarDaV2`: tudo igual, a Capi com amizade 0, nenhum
+  bicho achado e nenhum adotado; `migrarDaV3`: tudo igual, a casa de antes, nenhuma cabana e
+  nenhum projeto azul).
 - **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
   já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer

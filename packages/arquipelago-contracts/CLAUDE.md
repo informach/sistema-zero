@@ -11,10 +11,16 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV3` estrito (a V2 mais `moradores.capi` e `bichos`, 28/10/2026; a V2
-  é a V1 mais `percursos`, 27/10/2026), teto de 64 KB, salvamento inicial e migrações
-  (`migrarDaV1`, `migrarDaV2`; `SalvamentoSchema` aceita a V1 e a V2 e já devolve migradas; uma aba
-  antiga não lê a resposta V3).
+- `salvamento.ts`: `SalvamentoV4` estrito (a V3 mais `construcao` e `projetos`, 28/10/2026, o
+  modo construção; a V3 é a V2 mais `moradores.capi` e `bichos`; a V2 é a V1 mais `percursos`),
+  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1`, `migrarDaV2`, `migrarDaV3`;
+  `SalvamentoSchema` aceita as anteriores e já devolve migradas; uma aba antiga não lê a resposta
+  V4). A obra (`ObraSchema`) guarda paredes e cercas em trechos, aberturas, piso por cômodo,
+  objetos, caminhos e canteiros, com tetos que cabem em 64 KB no pior caso (teste).
+- `objetos.ts` (28/10/2026): os objetos com função da casa (`OBJETOS_DA_CASA`), o molde que o Pinta
+  e o Molda recebem (`MoldeDeObjetoSchema`: área na grade, caixa, faces que recebem imagem, a
+  frente e a função) e o catálogo (`CATALOGO_DE_OBJETOS`, com a origem de cada um). Medidas do
+  README de `arquipelago/arte/objetos`.
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,

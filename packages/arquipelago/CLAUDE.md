@@ -357,9 +357,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Salvamento e tempo
 
-- `SalvamentoV3` (contrato) com versão; a V1 e a V2 migram sozinhas (`migrarDaV1`: nenhum
-  percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho). Gravar aceita a versão de
-  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V3: só a
+- `SalvamentoV4` (contrato) com versão; a V1, a V2 e a V3 migram sozinhas (`migrarDaV1`: nenhum
+  percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
+  e nenhum projeto azul). Gravar aceita a versão de
+  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V4: só a
   primeira gravação dela fica, as seguintes falham até recarregar.
   Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.

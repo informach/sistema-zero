@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ILHA_IDS } from './ilhas'
+import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 
 /**
  * O salvamento do jogo de UM perfil. Tem versão: o serviço aceita a versão atual e as
@@ -7,7 +8,7 @@ import { ILHA_IDS } from './ilhas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 3
+export const VERSAO_SALVAMENTO = 4
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -133,25 +134,158 @@ export function migrarDaV2(v2: SalvamentoV2): SalvamentoV3 {
   }
 }
 
+// ------------------------------------------------------------------ V4: o modo construção
+
+/** Um ponto ou uma célula da grade de uma obra (1 célula = 1 unidade, coordenadas inteiras). */
+const coordenada = z.number().int().min(-60).max(60)
+
+export const EIXOS_DA_OBRA = ['x', 'z'] as const
+export type EixoDaObra = (typeof EIXOS_DA_OBRA)[number]
+
 /**
- * O formato atual. Aceita também a V1 e a V2 e já devolve migradas: um salvamento guardado antes
- * continua valendo, e a gravação antiga de uma aba aberta antes da atualização é guardada já
- * migrada. Essa aba antiga, porém, não lê a resposta (V3): a primeira gravação dela fica, e as
- * seguintes falham até a página recarregar.
+ * Um trecho reto de parede (ou de cerca) na linha da grade: sai do ponto (x, z) e anda `n`
+ * células no eixo (`x`: até (x + n, z); `z`: até (x, z + n)).
+ */
+export const TrechoSchema = z.strictObject({
+  x: coordenada,
+  z: coordenada,
+  eixo: z.enum(EIXOS_DA_OBRA),
+  n: z.number().int().min(1).max(60),
+})
+export type Trecho = z.infer<typeof TrechoSchema>
+
+/** Porta e janelas do kit: a largura de cada uma, em células, mora no jogo (`aberturas.ts`). */
+export const TIPOS_DE_ABERTURA = [
+  'porta',
+  'janela-grande',
+  'janela-arco',
+  'janela-redonda',
+] as const
+export type TipoDeAbertura = (typeof TIPOS_DE_ABERTURA)[number]
+
+/** Uma porta ou janela numa parede: começa no ponto (x, z) e ocupa a largura dela no eixo. */
+export const AberturaSchema = z.strictObject({
+  tipo: z.enum(TIPOS_DE_ABERTURA),
+  x: coordenada,
+  z: coordenada,
+  eixo: z.enum(EIXOS_DA_OBRA),
+})
+export type Abertura = z.infer<typeof AberturaSchema>
+
+export const PISOS_DA_CASA = ['tabua', 'ladrilho', 'azulejo'] as const
+export type PisoDaCasa = (typeof PISOS_DA_CASA)[number]
+export const PISOS_DO_QUINTAL = ['pedra', 'grama'] as const
+export type PisoDoQuintal = (typeof PISOS_DO_QUINTAL)[number]
+
+const celula = { x: coordenada, z: coordenada }
+
+/** O piso de um cômodo inteiro, guardado por uma célula de dentro dele. */
+export const PisoDoComodoSchema = z.strictObject({ ...celula, tipo: z.enum(PISOS_DA_CASA) })
+
+/** Um objeto com função posto na obra: a célula do canto e o giro (em quartos de volta). */
+export const ObjetoNaObraSchema = z.strictObject({
+  ...celula,
+  id: z.enum(OBJETOS_DA_CASA),
+  giro: z.number().int().min(0).max(3),
+})
+
+/** Nenhuma chave repetida na lista. */
+function semRepetir(chaves: readonly string[]): boolean {
+  return new Set(chaves).size === chaves.length
+}
+const naCelula = (c: { x: number; z: number }) => `${c.x},${c.z}`
+
+/**
+ * Uma obra: a casa (o lote da sua ilha) ou uma cabana. Paredes e cercas vão em trechos, o piso vai
+ * por cômodo e o caminho por célula. Os tetos seguram o salvamento abaixo de 64 KB no pior caso;
+ * o jogo tem tetos menores por lote.
+ */
+export const ObraSchema = z.strictObject({
+  paredes: z.array(TrechoSchema).max(200),
+  aberturas: z.array(AberturaSchema).max(60),
+  pisos: z.array(PisoDoComodoSchema).max(30),
+  objetos: z
+    .array(ObjetoNaObraSchema)
+    .max(OBJETOS_DA_CASA.length)
+    .refine((lista) => semRepetir(lista.map((o) => o.id)), 'objeto repetido'),
+  cercas: z.array(TrechoSchema).max(120),
+  caminhos: z
+    .array(z.strictObject({ ...celula, tipo: z.enum(PISOS_DO_QUINTAL) }))
+    .max(240)
+    .refine((lista) => semRepetir(lista.map(naCelula)), 'caminho repetido'),
+  canteiros: z
+    .array(z.strictObject(celula))
+    .max(18)
+    .refine((lista) => semRepetir(lista.map(naCelula)), 'canteiro repetido'),
+})
+export type Obra = z.infer<typeof ObraSchema>
+
+/** As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). */
+export const ILHAS_COM_CABANA = ['bosque'] as const
+export type IlhaComCabana = (typeof ILHAS_COM_CABANA)[number]
+
+/**
+ * O projeto azul de um objeto: a função já vale desde que ele foi ganho. A aparência (da galeria,
+ * do Pinta, do Molda ou de uma criação guardada) chega depois; `guardado` é o que está na
+ * geladeira (alimento → quantidade).
+ */
+export const ProjetoAzulSchema = z.strictObject({
+  ganhoEm: iso,
+  aparencia: z
+    .strictObject({
+      origem: z.enum(['galeria', 'pinta', 'molda', 'criacao']),
+      id: z.string().min(1).max(80),
+    })
+    .nullable(),
+  guardado: z
+    .record(z.string().min(1).max(40), z.number().int().min(1).max(GELADEIRA_GUARDA.completa))
+    .refine(
+      (g) => Object.values(g).reduce((a, b) => a + b, 0) <= GELADEIRA_GUARDA.completa,
+      'mais do que cabe',
+    )
+    .optional(),
+})
+export type ProjetoAzul = z.infer<typeof ProjetoAzulSchema>
+
+/**
+ * V4 (28/10/2026): a V3 mais a construção (`casa` é `null` até a primeira obra: até lá a casa é a
+ * de antes, do `casa.glb`) e os projetos azuis ganhos.
+ */
+export const SalvamentoV4Schema = SalvamentoV3Schema.extend({
+  versao: z.literal(4),
+  construcao: z.strictObject({
+    casa: ObraSchema.nullable(),
+    cabanas: z.partialRecord(z.enum(ILHAS_COM_CABANA), ObraSchema),
+  }),
+  projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulSchema),
+})
+export type SalvamentoV4 = z.infer<typeof SalvamentoV4Schema>
+
+/** Da V3 para a V4: tudo igual, a casa de antes, nenhuma cabana e nenhum projeto azul. */
+export function migrarDaV3(v3: SalvamentoV3): SalvamentoV4 {
+  return { ...v3, versao: 4, construcao: { casa: null, cabanas: {} }, projetos: {} }
+}
+
+/**
+ * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
+ * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V4): a primeira gravação dela
+ * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV3Schema,
-  SalvamentoV2Schema.transform(migrarDaV2),
-  SalvamentoV1Schema.transform((v1) => migrarDaV2(migrarDaV1(v1))),
+  SalvamentoV4Schema,
+  SalvamentoV3Schema.transform(migrarDaV3),
+  SalvamentoV2Schema.transform((v2) => migrarDaV3(migrarDaV2(v2))),
+  SalvamentoV1Schema.transform((v1) => migrarDaV3(migrarDaV2(migrarDaV1(v1)))),
 ])
-export type Salvamento = SalvamentoV3
+export type Salvamento = SalvamentoV4
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 3,
+    versao: 4,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
     horta: Array.from({ length: 6 }, (_, i) => ({
@@ -167,6 +301,8 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     percursos: {},
     moradores: { capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null } },
     bichos: { achados: [], adotado: null },
+    construcao: { casa: null, cabanas: {} },
+    projetos: {},
   }
 }
 
