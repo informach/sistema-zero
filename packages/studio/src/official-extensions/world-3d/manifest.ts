@@ -289,7 +289,7 @@ só que a vida é sempre **do jogador**.
   sem se machucar de novo. **a vida do jogador** diz quanto falta.
 - **Fim de jogo: você perdeu/ganhou**. Para o jogador e mostra a tela de fim ou
   de vitória; o mundo continua aparecendo atrás.
-- **Recomeçar o jogo**. Recomeço LEVE: o jogador volta ao começo; moedas,
+- **Reiniciar o jogo**. Recomeço LEVE: o jogador volta ao começo; moedas,
   coletáveis, amigos, ícones, empurráveis, pontos, áreas, pinos, caixas
   explosivas, missões e a corrida voltam como eram no começo, inclusive o que foi
   tirado com **Tirar … do mundo** (o que nasceu durante a partida sai); pontos,
@@ -304,7 +304,7 @@ só que a vida é sempre **do jogador**.
 **Na tela**
 - **Na tela de início/fim/vitória: título, texto, botão**. Com a tela de
   início, o mundo espera o botão para começar.
-- **Escrever no canto … da tela: …**. Um texto num canto (placar,
+- **Escrever na tela …: …**. Um texto num canto (placar,
   velocímetro, dica): ↖ ↑ ↗ em cima, ↙ ↓ ↘ embaixo. Ele divide o canto com os
   painéis automáticos (moedas, missão, conquista, corrida, minimapa) e fica
   SEMPRE visível, em primeiro lugar. Texto vazio apaga.

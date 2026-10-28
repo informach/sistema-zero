@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
+import { passarTempoDoBicho } from '../sistemas/bichos'
 import { passarTempo } from '../sistemas/necessidades'
 import { useJogo } from './contexto'
 
 /**
- * O que corre com o tempo, fora da cena: necessidades, o cochilo quando a energia acaba, a
- * posição guardada de vez em quando e a conta do tempo livre.
+ * O que corre com o tempo, fora da cena: necessidades (e as do bicho adotado), o cochilo quando a
+ * energia acaba, a posição guardada de vez em quando e a conta do tempo livre.
  */
 export function Relogios() {
   const { loja, controle, plataforma, rastro, pedidos, gerenteTempo } = useJogo()
@@ -27,8 +28,17 @@ export function Relogios() {
       segundos++
 
       if (segundos % 2 === 0) {
-        s.mudar((sv) => ({ ...sv, necessidades: passarTempo(sv.necessidades, 2, controle.correr) }))
-        if (loja.getState().salvamento.necessidades.energia <= 0) {
+        // O bicho adotado também sente o tempo jogado (fome, limpeza e carinho caem devagar).
+        s.mudar((sv) => ({
+          ...sv,
+          necessidades: passarTempo(sv.necessidades, 2, controle.correr),
+          bichos: sv.bichos.adotado
+            ? { ...sv.bichos, adotado: passarTempoDoBicho(sv.bichos.adotado, 2) }
+            : sv.bichos,
+        }))
+        // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
+        const agora = loja.getState()
+        if (agora.salvamento.necessidades.energia <= 0 && agora.painelAberto === null) {
           pedidos.teleporte = {
             x: CENTRO_DA_CASA.x,
             y: ALTURA_DA_TERRA + 1.2,

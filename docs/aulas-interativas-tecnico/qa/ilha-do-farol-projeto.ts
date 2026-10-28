@@ -63,7 +63,7 @@ const cena=SZGame3D.createFullscreenScene("#94d5f5");
 SZGame3D.frameScene(cena,24,7,14);
 ${placed(escolhas, 'cenario', [0, 0, 0])}
 ${placed(escolhas, 'farol', [5.2, 0, 0.1])}
-${placed(escolhas, 'barco', [8.5, -0.1, 4.5])}
+${placed(escolhas, 'barco', [13, -0.1, 4.5])}
 ${placed(escolhas, 'pedra', [-2, 0, -1])}
 ${placed(escolhas, 'personagem', [-6.5, 0.8, 0.75], true)}
 ${placed(escolhas, 'chave', n >= 2 ? [-3, 1, -2] : [-2, 1, -3], true)}

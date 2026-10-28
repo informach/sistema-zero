@@ -68,7 +68,7 @@
 
 [long pause]
 
-[upbeat, encouraging voice] Agora escolha outro lugar para a chave. Nos blocos, abra Ao iniciar e encontre Posição do objeto chave. Mude x e z para escolher o lugar no chão. Você também pode ajustar y, mas o personagem precisa conseguir encostar na chave.
+[upbeat, encouraging voice] Agora escolha outro lugar para a chave. Nos blocos, abra Ao iniciar e encontre Colocar o objeto chave. Mude x e z para escolher o lugar no chão. Você também pode ajustar y, mas o personagem precisa conseguir encostar na chave.
 
 [thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água.
 

@@ -19,6 +19,11 @@ export const CLIPES = [
   'Nado',
   'Pendurado',
   'Escalar',
+  'Equilibrar',
+  'SubirEscada',
+  'PendurarBorda',
+  'SubirBorda',
+  'Escorregar',
 ] as const
 export type Clipe = (typeof CLIPES)[number]
 
@@ -29,6 +34,13 @@ export const CICLO_DE_CORRER = { passada: 1.3, duracao: 11 / 30 } as const
 export const CICLO_DE_ESCALAR = { passada: 0.5, duracao: 24 / 30 } as const
 /** O laço pendurado no cipó dura isto. */
 export const DURACAO_DO_PENDURADO = 48 / 30
+/** No tronco caído: passo curto, um pé na frente do outro (`EQUILIBRAR` no script do Blender). */
+export const CICLO_DE_EQUILIBRAR = { passada: 0.5, duracao: 15 / 30 } as const
+/** Subir escada: o corpo sobe `passada` por ciclo (`ESCADA` no script do Blender). */
+export const CICLO_DA_ESCADA = { passada: 0.5, duracao: 21 / 30 } as const
+/** Os laços pendurado na borda e escorregando, e o subir a borda (uma vez, levado pelo modo). */
+export const DURACAO_DA_BORDA = 42 / 30
+export const DURACAO_DO_ESCORREGAR = 30 / 30
 export const VELOCIDADE_DO_ANDAR = CICLO_DE_ANDAR.passada / CICLO_DE_ANDAR.duracao
 export const VELOCIDADE_DO_CORRER = CICLO_DE_CORRER.passada / CICLO_DE_CORRER.duracao
 
@@ -59,11 +71,17 @@ export interface EntradaDaLocomocao {
   velY: number
   nadando: boolean
   /**
-   * Pendurada num cipó ou agarrada num tronco (o corpo é levado por outra regra). Na escalada, a
-   * `velocidade` é a do corpo pela casca (subindo, descendo ou dando a volta).
+   * Num modo especial (`sistemas/modos`), em que o corpo é levado por outra regra: pendurada no
+   * cipó ou na borda, agarrada no tronco ou na escada, no tronco caído ou no escorregador. Na
+   * escalada, na escada e no tronco caído, a `velocidade` é a do corpo (pela casca, pelos degraus
+   * ou pelo eixo do tronco). `null` no chão e na água.
    */
-  pendurado: 'cipo' | 'escalada' | null
+  especial: ModoEspecial | null
+  /** Subindo a borda: de 0 (pendurada) a 1 (de pé em cima). Fora disso, 0. */
+  subindo?: number
 }
+
+export type ModoEspecial = 'cipo' | 'escalada' | 'equilibrio' | 'escada' | 'borda' | 'escorregar'
 
 export interface Locomocao {
   pesos: Record<Clipe, number>
@@ -121,20 +139,36 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
   const alvo = zeros()
   let transicao: number = TRANSICAO.chao
 
-  if (e.pendurado) {
-    // No cipó, pendurada com as pernas soltas; no tronco, o ciclo de subir, que anda pela distância
-    // percorrida na casca (parada, fica no apoio em que está).
+  if (e.especial) {
+    // O corpo é levado por outra regra: um clipe por modo. Os ciclos de subir (tronco, escada) e
+    // o de equilibrar andam pela distância percorrida (parada, fica no apoio em que está).
     l.noAr = 0
     l.pulou = false
     l.aterrissando = 0
     transicao = TRANSICAO.ar
-    if (e.pendurado === 'cipo') {
-      alvo.Pendurado = 1
-      l.tempos.Pendurado = (l.tempos.Pendurado + dt / DURACAO_DO_PENDURADO) % 1
+    const pelaDistancia = (c: Clipe, passada: number) => {
+      alvo[c] = 1
+      const ciclos = Math.min(e.velocidade / passada, CICLOS_POR_SEGUNDO_MAXIMO)
+      l.tempos[c] = (l.tempos[c] + ciclos * dt) % 1
+    }
+    const laco = (c: Clipe, duracao: number) => {
+      alvo[c] = 1
+      l.tempos[c] = (l.tempos[c] + dt / duracao) % 1
+    }
+    if (e.especial === 'cipo') laco('Pendurado', DURACAO_DO_PENDURADO)
+    else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR.passada)
+    else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA.passada)
+    else if (e.especial === 'escorregar') laco('Escorregar', DURACAO_DO_ESCORREGAR)
+    else if (e.especial === 'equilibrio') {
+      // Parada no tronco, os braços continuam abertos (o ciclo fica no passo em que está).
+      pelaDistancia('Equilibrar', CICLO_DE_EQUILIBRAR.passada)
     } else {
-      alvo.Escalar = 1
-      const ciclos = Math.min(e.velocidade / CICLO_DE_ESCALAR.passada, CICLOS_POR_SEGUNDO_MAXIMO)
-      l.tempos.Escalar = (l.tempos.Escalar + ciclos * dt) % 1
+      // Na borda: pendurada, ou subindo (o tempo do clipe é o progresso que o modo dá).
+      const subindo = e.subindo ?? 0
+      if (subindo > 0) {
+        alvo.SubirBorda = 1
+        l.tempos.SubirBorda = subindo
+      } else laco('PendurarBorda', DURACAO_DA_BORDA)
     }
   } else if (e.nadando) {
     l.noAr = 0
@@ -187,7 +221,7 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     }
   }
 
-  if (!e.nadando && !e.pendurado) {
+  if (!e.nadando && !e.especial) {
     l.fase = (l.fase + ciclosPorSegundo(e.velocidade) * dt) % 1
     l.tempos.Andar = l.fase
     l.tempos.Correr = l.fase

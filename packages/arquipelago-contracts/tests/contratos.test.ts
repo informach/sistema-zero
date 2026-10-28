@@ -14,6 +14,7 @@ import {
   LIMITE_DIARIO_PADRAO_MINUTOS,
   ManifestoDoClienteSchema,
   migrarDaV1,
+  migrarDaV2,
   migrarSalvamento,
   normalizarLimiteDiario,
   PERCURSOS,
@@ -27,7 +28,7 @@ import {
   SalvamentoSchema,
   type SalvamentoV1,
   type SalvamentoV2,
-  SalvamentoV2Schema,
+  SalvamentoV3Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 
@@ -145,29 +146,38 @@ describe('salvamento', () => {
 
 describe('salvamento V2 (percursos)', () => {
   const agora = new Date('2026-10-27T15:00:00Z')
+  const v2 = (): SalvamentoV2 => {
+    const { moradores: _m, bichos: _b, ...resto } = criarSalvamentoInicial(agora)
+    return { ...resto, versao: 2 }
+  }
   const v1 = (): SalvamentoV1 => {
-    const { percursos: _, ...resto } = criarSalvamentoInicial(agora)
+    const { percursos: _, ...resto } = v2()
     return { ...resto, versao: 1 }
   }
+  const semMoradores = {
+    moradores: { capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null } },
+    bichos: { achados: [], adotado: null },
+  }
 
-  test('o inicial já é V2, sem nenhum percurso corrido', () => {
+  test('o inicial já é da versão atual, sem nenhum percurso corrido', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV2Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV3Schema.parse(s)).toEqual(s)
   })
 
-  test('a V1 migra para a V2 sem perder nada', () => {
+  test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 2, percursos: {} })
-    expect(migrarDaV1(antiga)).toEqual(migrada as SalvamentoV2)
+    expect(migrada).toEqual({ ...antiga, versao: 3, percursos: {}, ...semMoradores })
+    expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(2)
+    expect(r.salvamento.versao).toBe(3)
     expect(r.salvamento.percursos).toEqual({})
+    expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
 
   test('guarda as três estrelas e o melhor tempo de cada percurso', () => {
@@ -266,5 +276,87 @@ describe('porta da plataforma', () => {
         usadoHojeSegundos: 0,
       }),
     ).toBeTruthy()
+  })
+})
+
+describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
+  const agora = new Date('2026-10-28T12:00:00Z')
+  const inicial = () => criarSalvamentoInicial(agora)
+  const adotado = {
+    id: 'gato' as const,
+    nome: 'Frajola',
+    fase: 'filhote' as const,
+    fome: 80,
+    limpeza: 70,
+    carinho: 90,
+    diasCuidados: 2,
+    diaCuidadoEm: '2026-10-27',
+    truque: { sessoes: 1, ultimaEm: '2026-10-27', aprendido: false },
+  }
+
+  test('a V2 migra para a V3 com a Capi sem amizade e nenhum bicho', () => {
+    const { moradores: _m, bichos: _b, ...resto } = inicial()
+    const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
+    const v3 = migrarSalvamento(v2)
+    expect(v3?.versao).toBe(3)
+    expect(v3?.inventario).toEqual({ milho: 3 })
+    expect(v3?.moradores.capi).toEqual({
+      amizade: 0,
+      conversaEm: null,
+      presenteEm: null,
+      pedido: null,
+    })
+    expect(migrarDaV2(v2)).toEqual(v3 as NonNullable<typeof v3>)
+  })
+
+  test('guarda a amizade, o pedido do dia, os achados e o bicho adotado', () => {
+    const s = {
+      ...inicial(),
+      moradores: {
+        capi: {
+          amizade: 130,
+          conversaEm: '2026-10-28',
+          presenteEm: null,
+          pedido: { dia: '2026-10-28', id: 'alface-2', entregue: false },
+        },
+      },
+      bichos: { achados: ['gato' as const, 'coelho' as const], adotado },
+    }
+    expect(migrarSalvamento(s)).toEqual(s)
+  })
+
+  test('recusa amizade fora da escala, dia malformado, bicho repetido ou desconhecido', () => {
+    const base = inicial()
+    const capi = base.moradores.capi
+    expect(migrarSalvamento({ ...base, moradores: { capi: { ...capi, amizade: 501 } } })).toBeNull()
+    expect(
+      migrarSalvamento({ ...base, moradores: { capi: { ...capi, conversaEm: '28/10/2026' } } }),
+    ).toBeNull()
+    expect(
+      migrarSalvamento({ ...base, bichos: { achados: ['gato', 'gato'], adotado: null } }),
+    ).toBeNull()
+    expect(migrarSalvamento({ ...base, bichos: { achados: ['dragao'], adotado: null } })).toBeNull()
+  })
+
+  test('o nome do bicho tem de 1 a 16 letras e as medidas ficam de 0 a 100', () => {
+    const base = inicial()
+    const com = (a: object) =>
+      migrarSalvamento({ ...base, bichos: { achados: ['gato'], adotado: a } })
+    expect(com({ ...adotado, nome: '' })).toBeNull()
+    expect(com({ ...adotado, nome: 'Um nome comprido demais' })).toBeNull()
+    expect(com({ ...adotado, fome: 101 })).toBeNull()
+    expect(com({ ...adotado, fase: 'velhinho' })).toBeNull()
+    expect(com(adotado)?.bichos.adotado?.nome).toBe('Frajola')
+  })
+
+  test('o salvamento cheio ainda cabe no teto', () => {
+    const s = {
+      ...inicial(),
+      bichos: {
+        achados: ['cachorro' as const, 'gato' as const, 'coelho' as const, 'porquinho' as const],
+        adotado,
+      },
+    }
+    expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
   })
 })

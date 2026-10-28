@@ -129,4 +129,113 @@ describe('percurso básico do Jogo 3D', () => {
     world._resizeCamera(cam, 100, 1200)
     expect(cam.far).toBeGreaterThan(Math.hypot(cam.position.y - 50, cam.position.z))
   })
+
+  describe('a vista do jogador no frameScene', () => {
+    function framed() {
+      const { api, fire } = loadRuntime(),
+        world = call(api, 'createScene', 'tela')
+      const cam = world.camera
+      Object.assign(cam, {
+        fov: 60,
+        aspect: 1,
+        isPerspectiveCamera: true,
+        updateProjectionMatrix() {},
+      })
+      world._perspectiveCamera = cam
+      const handlers: Record<string, ((e: unknown) => void)[]> = {}
+      const options: Record<string, unknown> = {}
+      world._canvas = {
+        width: 1600,
+        height: 900,
+        style: {} as Record<string, string>,
+        addEventListener(name: string, fn: (e: unknown) => void, opt: unknown) {
+          handlers[name] ??= []
+          handlers[name].push(fn)
+          options[name] = opt
+        },
+        setPointerCapture() {},
+      }
+      call(api, 'frameScene', world, 24, 7, 14)
+      const send = (name: string, e: Record<string, unknown> = {}) => {
+        for (const fn of handlers[name] ?? []) fn(e)
+      }
+      const distance = () => Math.hypot(cam.position.x, cam.position.y - 1.75, cam.position.z)
+      return { api, fire, world, cam, send, options, distance }
+    }
+
+    test('começa mais perto que o enquadramento antigo, também em painel estreito', () => {
+      const { world, cam, distance } = framed()
+      // O antigo: 1,12 × o maior lado + a profundidade projetada (20,9 na tela larga, 31,1 no quadrado).
+      world._resizeCamera(cam, 1600, 900)
+      expect(distance()).toBeLessThan(18)
+      world._resizeCamera(cam, 900, 900)
+      expect(distance()).toBeLessThan(23)
+      world._resizeCamera(cam, 400, 900)
+      expect(distance()).toBeLessThan(23)
+    })
+
+    test('a rodinha aproxima e afasta, com limites, sem rolar a página de fora', () => {
+      const { world, send, options, distance } = framed()
+      expect((world._canvas.style as Record<string, string>).touchAction).toBe('none')
+      expect(options.wheel).toEqual({ passive: false })
+      const start = distance()
+      let prevented = 0
+      send('wheel', { deltaY: -200, preventDefault: () => prevented++ })
+      expect(prevented).toBe(1)
+      expect(distance()).toBeLessThan(start)
+      for (let i = 0; i < 50; i++) send('wheel', { deltaY: -500, preventDefault() {} })
+      expect(world._framedView.zoom).toBeCloseTo(0.35, 8)
+      for (let i = 0; i < 50; i++) send('wheel', { deltaY: 500, preventDefault() {} })
+      expect(world._framedView.zoom).toBeCloseTo(1.6, 8)
+    })
+
+    test('arrastar gira em volta; um toque parado não gira; duplo clique volta ao começo', () => {
+      const { world, cam, send } = framed()
+      send('pointerdown', { pointerId: 1, clientX: 100, clientY: 100 })
+      send('pointermove', { pointerId: 1, clientX: 102, clientY: 101 })
+      expect(world._framedView.az).toBe(0)
+      send('pointermove', { pointerId: 1, clientX: 300, clientY: 100 })
+      send('pointerup', { pointerId: 1 })
+      expect(world._framedView.az).toBeLessThan(-1)
+      expect(cam.position.x).toBeLessThan(0)
+      send('pointerdown', { pointerId: 1, clientX: 0, clientY: 0 })
+      send('pointermove', { pointerId: 1, clientX: 0, clientY: 2000 })
+      send('pointerup', { pointerId: 1 })
+      expect(world._framedView.el).toBeCloseTo(1.25, 8)
+      send('dblclick')
+      expect(world._framedView).toMatchObject({ az: 0, el: Math.PI / 6, zoom: 1 })
+      expect(cam.position.x).toBeCloseTo(0, 8)
+    })
+
+    test('dois dedos dão zoom', () => {
+      const { world, send } = framed()
+      send('pointerdown', { pointerId: 1, clientX: 100, clientY: 100 })
+      send('pointerdown', { pointerId: 2, clientX: 200, clientY: 100 })
+      send('pointermove', { pointerId: 2, clientX: 300, clientY: 100 })
+      expect(world._framedView.zoom).toBeCloseTo(0.5, 8)
+      expect(world._framedView.az).toBe(0)
+    })
+
+    test('as setas andam em relação à câmera, e a câmera acompanha quem anda (de perto, inteira)', () => {
+      const { api, fire, world, cam } = framed()
+      const player = call(api, 'createBox', world, { size: 1 })
+      world._dt = 1 / 60
+      world._framedView.az = Math.PI / 2 // câmera do lado +x, olhando para -x
+      fire('keydown', { code: 'ArrowUp', preventDefault() {} })
+      for (let i = 0; i < 60; i++) call(api, 'topDown', player, 4)
+      fire('keyup', { code: 'ArrowUp' })
+      expect(player.position.x).toBeCloseTo(-4, 6)
+      expect(player.position.z).toBeCloseTo(0, 6)
+      world._framedView.az = 0
+      world._framedView.zoom = 0.35
+      world._resizeCamera(cam, 1600, 900)
+      expect(cam.position.x).toBeCloseTo(player.position.x, 6)
+      world._framedView.zoom = 1
+      world._resizeCamera(cam, 1600, 900)
+      expect(cam.position.x).toBeCloseTo(player.position.x * 0.35, 6)
+      world._framedView.zoom = 1.6
+      world._resizeCamera(cam, 1600, 900)
+      expect(cam.position.x).toBeCloseTo(0, 6)
+    })
+  })
 })

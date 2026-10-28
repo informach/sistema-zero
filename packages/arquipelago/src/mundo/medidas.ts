@@ -5,6 +5,14 @@ import { type Ilha, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
  * forma de terreno sai daqui: o desenho, a colisão e os testes usam as mesmas funções.
  */
 export const NIVEL_DA_AGUA = 0
+/**
+ * A física anda em passos fixos deste tamanho (s), com o desenho suavizado entre um passo e outro
+ * (`<Physics timeStep interpolate>`): o mesmo comportamento a 30, 60 ou 144 quadros por segundo.
+ * O movimento do personagem e do bicho é calculado em cada passo (`useBeforePhysicsStep`).
+ */
+export const PASSO_DA_FISICA = 1 / 60
+/** A gravidade do jogo (m/s², para baixo): mais forte que a de verdade, para o pulo ser ágil. */
+export const GRAVIDADE = 24
 export const ALTURA_DA_TERRA = 1
 export const FUNDO_DO_MAR = -3.5
 
@@ -194,12 +202,16 @@ export const VOLTA_DA_CAMERA = 3
 /**
  * O que a pessoa controla na câmera (como no The Sims): arrastar gira em volta do avatar e sobe ou
  * desce o ângulo; a roda, a pinça de dois dedos e as teclas + e - aproximam e afastam, com
- * suavidade; dois cliques (ou dois toques) põem a câmera de volta nas costas do avatar.
+ * suavidade; dois cliques (ou dois toques), a tecla C ou o clique no analógico direito põem a câmera
+ * de volta nas costas do avatar; o analógico direito do controle físico gira e inclina.
  */
 export const CONTROLE_DA_CAMERA = {
   /** Radianos por pixel arrastado (de lado gira; para cima e para baixo muda o ângulo). */
   giroPorPixel: 0.006,
   inclinacaoPorPixel: 0.004,
+  /** Radianos por segundo com o analógico direito do controle físico todo empurrado. */
+  giroDoAnalogico: 2.6,
+  inclinacaoDoAnalogico: 1.4,
   /** Do quase rente ao chão (7°) até quase de cima (72°). */
   inclinacaoMinima: 0.12,
   inclinacaoMaxima: 1.25,

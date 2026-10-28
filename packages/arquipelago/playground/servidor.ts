@@ -27,6 +27,8 @@ const pagina = (titulo: string, js: string) =>
 const HTML = pagina('Arquipélago Vagalume · playground', '/jogo.js')
 /** O visualizador das animações do avatar (`/animacoes?v=1.4`, veja `animacoes.tsx`). */
 const HTML_DAS_ANIMACOES = pagina('Arquipélago Vagalume · animações', '/animacoes.js')
+/** A sala de testes do movimento (`/movimento?estacao=Laguinho`, veja `movimento.tsx`). */
+const HTML_DO_MOVIMENTO = pagina('Arquipélago Vagalume · sala de movimento', '/movimento.js')
 
 Bun.serve({
   hostname: '127.0.0.1',
@@ -37,6 +39,11 @@ Bun.serve({
     if (pathname === '/animacoes.js') return compilar('animacoes.tsx')
     if (pathname === '/animacoes')
       return new Response(HTML_DAS_ANIMACOES, {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    if (pathname === '/movimento.js') return compilar('movimento.tsx')
+    if (pathname === '/movimento')
+      return new Response(HTML_DO_MOVIMENTO, {
         headers: { 'content-type': 'text/html; charset=utf-8' },
       })
     const doJogo = arquivosDoJogo.get(pathname.slice(1))

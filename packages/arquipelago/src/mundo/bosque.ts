@@ -4,6 +4,7 @@
  * ilha passa tudo para o mundo quando fica ativa. Os testes conferem estes números contra o
  * arquivo (`tests/movimento-do-bosque.test.ts`).
  */
+import type { BichoDoBosque } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from '../sistemas/cipo'
 import type { Tronco } from '../sistemas/escalada'
 import type { DequeDoPercurso, PontosDoPercurso } from '../sistemas/percurso'
@@ -48,6 +49,38 @@ export const VAGALUMES_DAS_COPAS: readonly Ponto[] = [
   { x: -10.04, y: 6.8, z: 2.03 },
   { x: -6.27, y: 6.3, z: 4.14 },
   { x: 0.36, y: 3.8, z: 8.92 },
+]
+
+/**
+ * Onde cada bicho se esconde, no chão (`giro`: para onde ele olha, `(sin g, cos g)`). Medidos
+ * contra os colisores do `bosque.glb` (bicho e criança cabem, `tests/movimento-do-bosque.test.ts`):
+ * - cachorro: atrás da moita da beira norte (`col-cil-moita-6`), de frente para ela, rabo para fora;
+ * - gato: entre os cogumelos e as pedras do lago (`col-cil-cogumelo-8`, `col-cil-pedra-lago-5`),
+ *   só as orelhas aparecem (embaixo do deque da casa na árvore a câmera não enxerga a criança);
+ * - coelho: na boca da toca do oeste (`col-cil-toca-1`), meio para dentro dela;
+ * - porquinho: atrás da cabana, entre a parede e a moita (`col-cabana-1`, `col-cil-moita-4`).
+ * O `bosque.glb` tem as âncoras `esconderijo-1`…`esconderijo-4` (`ESCONDERIJOS` em
+ * `sistemas/esconde.ts`) com estas mesmas medidas (`arte/ilhas/bosque.py`): o jogo lê a posição e o
+ * giro de lá, e estes números ficam como reserva (o teste confere que os dois batem).
+ */
+export const ESCONDERIJOS_NO_MODELO: Readonly<
+  Record<BichoDoBosque, { x: number; z: number; giro: number }>
+> = {
+  cachorro: { x: -6.2, z: 10.2, giro: -2.21 },
+  gato: { x: 1.2, z: 5.4, giro: -2.65 },
+  coelho: { x: -8.0, z: -7.4, giro: 0 },
+  porquinho: { x: 7.3, z: -8.9, giro: 1.34 },
+}
+
+/**
+ * Os lugares dos bichos achados dentro do cercadinho (âncora `cercado`), na ordem em que foram
+ * achados: na palha, longe da casinha, do cocho, do feno e da cerca.
+ */
+export const LUGARES_NO_CERCADO: readonly { x: number; z: number }[] = [
+  { x: 2.3, z: -9.9 },
+  { x: 3.4, z: -9.9 },
+  { x: 2.5, z: -9.15 },
+  { x: 3.4, z: -9.2 },
 ]
 
 /** Da placa até onde a corrida começa (no caminho da escada). */
@@ -128,6 +161,15 @@ export function paraOMundo(p: Ponto, centro: Ponto, giro: number, saida: Ponto):
   return saida
 }
 
+/**
+ * Para onde um nó do modelo olha (o rumo `(sin r, cos r)` da frente +Z dele no chão), lido do
+ * quatérnio. O `rotation.y` do three não serve: um giro de mais de 90° em Y vira `x = z = π` com
+ * outro `y` (o glTF guarda quatérnio, e o three decompõe em XYZ).
+ */
+export function rumoDoNo(q: { x: number; y: number; z: number; w: number }): number {
+  return Math.atan2(2 * (q.x * q.z + q.w * q.y), 1 - 2 * (q.x * q.x + q.y * q.y))
+}
+
 /** Um rumo (`(sin r, cos r)`) do modelo levado para o mundo. */
 export function rumoNoMundo(rumo: number, giro: number): number {
   return rumo + giro
@@ -166,18 +208,5 @@ export function troncoNoMundo(t: Tronco, centro: Ponto, giro: number): Tronco {
   }
 }
 
-/** A elipse de uma água rasa contém (x, z)? (`giro` é o da elipse no mundo.) */
-export function dentroDaAgua(
-  a: { x: number; z: number; raioX: number; raioZ: number; giro: number },
-  x: number,
-  z: number,
-): boolean {
-  const dx = x - a.x
-  const dz = z - a.z
-  const c = Math.cos(a.giro)
-  const s = Math.sin(a.giro)
-  // De volta ao referencial da elipse (o inverso do giro de `paraOMundo`).
-  const lx = dx * c - dz * s
-  const lz = dx * s + dz * c
-  return (lx / a.raioX) ** 2 + (lz / a.raioZ) ** 2 < 1
-}
+/** A elipse de uma água rasa (agora em `sistemas/agua.ts`, junto das regras do nado). */
+export { dentroDaAgua } from '../sistemas/agua'

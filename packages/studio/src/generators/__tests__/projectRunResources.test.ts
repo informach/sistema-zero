@@ -726,7 +726,7 @@ describe('recursos genéricos da execução do projeto', () => {
     runRestartScenario('game-3d-advanced', 'setStatePlaying')
   })
 
-  it('descarta listener e RAF anteriores ao reiniciar Jogo 3D (o "Recomeçar o jogo")', () => {
+  it('descarta listener e RAF anteriores ao reiniciar Jogo 3D (o "Reiniciar o jogo")', () => {
     runRestartScenario('game-3d', 'restart')
   })
 

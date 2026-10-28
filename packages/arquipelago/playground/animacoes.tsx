@@ -21,7 +21,8 @@ import type { EntradaDaLocomocao } from '../src/sistemas/locomocao'
  * certo, o pé que está no chão anda junto com o quadriculado (não patina).
  *
  * Parâmetros: `?v=1.4` (velocidade fixa), `?varrer=1` (vai de parado a 7,2 m/s e volta),
- * `?pulo=1` (pula a cada 2 s), `?nado=1`, `?cipo=1` (pendurado, com as mãos na corda como no
+ * `?pulo=1` (pula a cada 2 s), `?nado=1`, `?equilibrar=1`, `?escada=1`, `?borda=1` (com `&subir=1`
+ * sobe a borda a cada 2 s), `?escorregar=1`, `?cipo=1` (pendurado, com as mãos na corda como no
  * jogo), `?escalar=1` (subindo no tronco), `?lado=frente` (câmera de frente), `?zoom=1.5`,
  * `?alvo=0.95` e `?altura=1.2` (para onde e de que altura a câmera olha). Com `?quadros=1` o tempo
  * só anda por `__quadros(n)` (n quadros de 1/30 s), para gravar um GIF com o tempo certo.
@@ -91,11 +92,26 @@ function Motor({
     t.current += dt
     const m = movimento.current
     if (q.get('cipo') === '1') {
-      m.pendurado = 'cipo'
+      m.especial = 'cipo'
       m.velocidade = 0
     } else if (q.get('escalar') === '1') {
-      m.pendurado = 'escalada'
+      m.especial = 'escalada'
       m.velocidade = Number(q.get('v') ?? 1.7)
+    } else if (q.get('equilibrar') === '1') {
+      m.especial = 'equilibrio'
+      m.velocidade = Number(q.get('v') ?? 1.6)
+    } else if (q.get('escada') === '1') {
+      m.especial = 'escada'
+      m.velocidade = Number(q.get('v') ?? 1.5)
+    } else if (q.get('borda') === '1') {
+      m.especial = 'borda'
+      m.velocidade = 0
+      // `?subir=1`: sobe a borda a cada 2 s (0,5 s subindo, o resto pendurada).
+      const ciclo = t.current % 2
+      m.subindo = q.get('subir') === '1' && ciclo < 0.5 ? Math.max(0.001, ciclo / 0.5) : 0
+    } else if (q.get('escorregar') === '1') {
+      m.especial = 'escorregar'
+      m.velocidade = 0
     } else if (q.get('nado') === '1') {
       m.nadando = true
       m.velocidade = 2.6
@@ -178,7 +194,7 @@ function Visualizador() {
     noChao: true,
     velY: 0,
     nadando: false,
-    pendurado: null,
+    especial: null,
   })
   const contexto = useMemo(() => {
     const loja = criarLoja({

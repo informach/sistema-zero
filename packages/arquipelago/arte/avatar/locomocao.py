@@ -1,5 +1,6 @@
 """As animações de movimento do avatar no jogo: andar, correr, pular, cair, aterrissar, nadar,
-ficar pendurado no cipó e escalar o tronco.
+ficar pendurado no cipó, escalar o tronco e os modos novos do Bosque (equilibrar no tronco caído,
+subir escada, pendurar na borda e subir, escorregar).
 
 O avatar é o mesmo da plataforma (esqueleto Mixamo em `community-kids/public/avatar3d/base/`), que
 só traz a pose "Idle" com movimento. Este script abre esse esqueleto no Blender sem tela, monta
@@ -507,6 +508,118 @@ def pose_escalar(t):
     pernas_soltas(0, alvos['Left'], alvos['Right'], giro_pe=R(-10))
 
 
+# ── Modos novos do Bosque (controlador universal, parte 6) ───────────────────────────────────────
+EQUILIBRAR = dict(
+    ANDAR,
+    duracao=0.5,
+    passada=0.5,  # passo curto: o corpo anda isto por ciclo (o jogo toca pela distância)
+    largura=0.035,  # um pé na frente do outro, em cima do eixo do tronco
+    altura_do_pe=0.05,
+    balanco_lateral=0.024,
+    giro_bacia=R(5),
+    rolar_bacia=R(5),
+    giro_peito=R(-5),
+    braco=R(5),
+    cotovelo=R(18),
+    cotovelo_balanco=R(5),
+    abrir_braco=R(72),  # braços abertos para o equilíbrio
+    firmar_cabeca=0.85,
+)
+
+ESCADA = dict(
+    duracao=0.7,  # um ciclo (dois degraus de cada pé e duas mãos)
+    passada=0.5,  # o corpo sobe isto por ciclo
+)
+
+
+def pose_escada(t):
+    """Ciclo de subir escada reta (de frente para ela): como o Escalar, mas de corpo em pé, mãos na
+    largura dos ombros nos degraus e pés perto da escada."""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    bacia(lado=0.02 * math.sin(w), giro=R(4) * math.sin(w), inclinar=R(4))
+    tronco(inclinar=R(2), giro=R(-5) * math.sin(w), rolar=R(3) * math.sin(w))
+    for lado, atraso in (('Left', 0.0), ('Right', math.pi)):
+        alto = 0.5 + 0.5 * math.cos(w + atraso)
+        braco(lado, R(100) + R(70) * alto, R(70) - R(55) * alto, R(9))
+    firmar_cabeca(0.5)
+    d = 0.5
+    S = ESCADA['passada'] * d
+    alvos = {}
+    for lado, fase in (('Left', t), ('Right', (t + 0.5) % 1)):
+        if fase < d:
+            u = fase / d
+            abaixo = 0.18 + S * u
+            frente = 0.16
+        else:
+            u = (fase - d) / (1 - d)
+            abaixo = 0.18 + S - S * suave(u)
+            frente = 0.16 - 0.08 * math.sin(math.pi * u)
+        alvos[lado] = (frente, abaixo, 0.09 if lado == 'Left' else -0.09)
+    pernas_soltas(0, alvos['Left'], alvos['Right'], giro_pe=R(-6))
+
+
+def pose_pendurar_borda(t):
+    """Laço pendurado na borda: as mãos no alto, à frente (na quina), o corpo perto da parede e as
+    pernas soltas balançando de leve."""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    bacia(sobe=0.0, inclinar=R(-3) + R(1.5) * math.sin(w))
+    tronco(inclinar=R(-5), rolar=R(1) * math.sin(w))
+    for lado in ('Left', 'Right'):
+        braco(lado, R(158), R(16), R(17))
+    firmar_cabeca(0.3)
+    girar(b('Head'), q(X, R(-10)), cabeca(b('Head')))  # olha a quina, um pouco para cima
+    pernas_soltas(0, (0.08 + 0.03 * math.sin(w), 0.40, 0.04), (0.08 + 0.03 * math.sin(w + math.pi), 0.40, -0.04),
+                  giro_pe=R(25))
+
+
+def alvo_pendurado(lado, frente, abaixo, x):
+    h = cabeca(b(lado + 'UpLeg'))
+    return Vector((h.x + x, h.y - frente, h.z - abaixo))
+
+
+def pose_subir_borda(t):
+    """0 → 1 (uma vez): de pendurado na borda até de pé em cima dela. Os braços puxam e depois
+    empurram para baixo, o corpo se curva por cima da quina, um joelho sobe e o corpo levanta. O
+    jogo leva o corpo do pendurado até em cima no mesmo tempo."""
+    voltar_a_base()
+    bacia(inclinar=curva([(0, R(-3)), (0.5, R(24)), (0.85, R(6)), (1, 0)], t))
+    tronco(inclinar=curva([(0, R(-5)), (0.5, R(20)), (0.85, R(4)), (1, 0)], t))
+    for lado in ('Left', 'Right'):
+        braco(lado, curva([(0, R(158)), (0.45, R(85)), (0.75, R(25)), (1, R(4))], t),
+              curva([(0, R(16)), (0.45, R(95)), (0.75, R(35)), (1, R(14))], t),
+              curva([(0, R(17)), (0.6, R(14)), (1, R(4))], t))
+    firmar_cabeca(0.5)
+    # Pernas: soltas no começo; a esquerda sobe o joelho para a quina; no fim as duas em pé.
+    em_pe = suave((t - 0.75) / 0.25)
+    joelho = curva([(0, 0.0), (0.45, 0.0), (0.65, 1.0), (0.85, 1.0), (1, 0.0)], t)
+    for lado in ('Left', 'Right'):
+        x = 0.04 if lado == 'Left' else -0.04
+        solto = alvo_pendurado(lado, 0.08, 0.40, x)
+        if lado == 'Left':
+            solto = solto.lerp(alvo_pendurado(lado, 0.30, 0.16, x), joelho)
+        de_pe = tornozelo(0.17 if lado == 'Left' else -0.17, 0.0, 0.0, 0.0)
+        alvo = solto.lerp(de_pe, em_pe)
+        giro = mistura(R(25), 0.0, em_pe)
+        perna(lado, alvo, giro, giro * 0.6, abertura=0.25)
+
+
+def pose_escorregar(t):
+    """Laço do escorregador: sentado, pernas esticadas para a frente, corpo um pouco para trás e
+    braços para trás, com uma tremidinha da descida."""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    senta = BACIA_BASE.z - 0.18  # a bacia fica a uns 18 cm da pista
+    bacia(sobe=-senta, lado=0.004 * math.sin(4 * w), inclinar=R(-18))
+    tronco(inclinar=R(-12), rolar=R(1.5) * math.sin(2 * w))
+    for lado in ('Left', 'Right'):
+        braco(lado, R(-32) + R(3) * math.sin(w), R(12), R(22))
+    firmar_cabeca(0.6)
+    girar(b('Head'), q(X, R(10)), cabeca(b('Head')))  # olha para a frente da pista
+    pernas_soltas(0, (0.42, 0.05, 0.07), (0.42, 0.05, -0.07), giro_pe=R(-18))
+
+
 # ── Gravar ───────────────────────────────────────────────────────────────────────────────────────
 def gravar(nome, quadros, pose, laco=True):
     """Cria a ação `nome` com `quadros` + 1 chaves (no laço, a última repete a primeira)."""
@@ -554,6 +667,13 @@ gravar('Nado', round(1.1 * FPS), pose_nado)
 gravar('Pendurado', round(1.6 * FPS), pose_pendurado)
 gravar('Escalar', round(ESCALAR['duracao'] * FPS), pose_escalar)
 resumo['Escalar'] = {'duracao': round(ESCALAR['duracao'] * FPS) / FPS, 'passada': ESCALAR['passada']}
+gravar('Equilibrar', round(EQUILIBRAR['duracao'] * FPS), ciclo(EQUILIBRAR))
+resumo['Equilibrar'] = {'duracao': round(EQUILIBRAR['duracao'] * FPS) / FPS, 'passada': EQUILIBRAR['passada']}
+gravar('SubirEscada', round(ESCADA['duracao'] * FPS), pose_escada)
+resumo['SubirEscada'] = {'duracao': round(ESCADA['duracao'] * FPS) / FPS, 'passada': ESCADA['passada']}
+gravar('PendurarBorda', round(1.4 * FPS), pose_pendurar_borda)
+gravar('SubirBorda', round(0.5 * FPS), pose_subir_borda, laco=False)
+gravar('Escorregar', round(1.0 * FPS), pose_escorregar)
 
 os.makedirs(os.path.dirname(SAIDA), exist_ok=True)
 bpy.ops.object.select_all(action='DESELECT')

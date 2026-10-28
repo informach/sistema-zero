@@ -3,6 +3,7 @@ import { useRapier } from '@react-three/rapier'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef } from 'react'
 import { MathUtils, Vector3 } from 'three'
+import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useToque } from '../estado/preferencias'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
@@ -24,6 +25,20 @@ import {
   rodaEmPixels,
   zoomDaPinca,
 } from '../sistemas/camera'
+import {
+  giroComVoltaSozinha,
+  METROS_DA_DISTANCIA,
+  MULTIPLICADOR_DA_RAPIDEZ,
+} from '../sistemas/conforto'
+import {
+  criarPesos,
+  type Enquadramento,
+  metrosDeAntecipacao,
+  misturarPerfis,
+  PERFIS_DE_CAMERA,
+  passoDosPesos,
+  perfilDaVez,
+} from '../sistemas/perfis-de-camera'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
@@ -37,6 +52,24 @@ const FOCO_NO_CIPO = 0.55
 const FOCO_NO_CIPO_COM_MENOS_MOVIMENTO = 1
 /** O quanto a câmera fica mais lenta para seguir no cipó (6 por segundo no chão). */
 const SEGUIR_NO_CIPO = 2.5
+/**
+ * Na conversa (`pedidos.conversa` com um painel aberto), a câmera olha para o meio das duas
+ * cabeças e vai para trás e para o lado da criança (`LADO_NA_CONVERSA` do caminho dela até quem
+ * fala, do lado de fora da ilha), mais perto e mais baixa (o perfil `conversa`,
+ * `sistemas/perfis-de-camera.ts`): as duas aparecem, como nos jogos de conversa. Com menos
+ * movimento pedido no sistema, ela só muda o ponto que olha e não gira.
+ */
+const LADO_NA_CONVERSA = 1.1
+const DISTANCIA_NA_CONVERSA = PERFIS_DE_CAMERA.conversa.distancia?.maxima ?? 5
+/** O ângulo da câmera na conversa: baixo, quase na altura dos olhos. */
+const INCLINACAO_NA_CONVERSA = PERFIS_DE_CAMERA.conversa.inclinacao?.fixa ?? 0.2
+const RAPIDEZ_NA_CONVERSA = 2.5
+/** O ponto que ela olha fica abaixo das cabeças: as duas sobem na tela, acima da caixa de conversa. */
+const ABAIXO_NA_CONVERSA = 0.7
+/** A rapidez (por segundo) com que a câmera vai para as costas de quem escorrega. */
+const CAMERA_NO_ESCORREGADOR = 2.5
+/** A rapidez com que o olhar vai à frente e volta (por segundo): devagar, sem balançar nas curvas. */
+const SEGUIR_A_ANTECIPACAO = 2
 /** Guarda que a pessoa já mexeu na câmera (a dica do Zappy não volta). */
 const CHAVE_DA_DICA = 'arquipelago:camera-dica'
 
@@ -64,16 +97,30 @@ function gravarDica() {
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
 export function Camera() {
-  const { rastro, movimento, loja } = useJogo()
+  const { rastro, movimento, loja, pedidos, controle } = useJogo()
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
-  const menosMovimento = useReducedMotion()
+  const conforto = lojaDoConforto(loja)
+  // Menos movimento: o pedido do aparelho ou a preferência do jogo (`sistemas/conforto.ts`).
+  const aparelhoPedeMenos = useReducedMotion()
+  const jogoPedeMenos = useConforto(conforto, (s) => s.conforto.menosMovimento)
+  const menosMovimento = aparelhoPedeMenos || jogoPedeMenos
   const noCipo = useRef(0)
+  /** O peso de cada perfil (exploração, casa, conversa, percurso), trocando aos poucos. */
+  const pesos = useRef(criarPesos(dentro ? 'casa' : 'exploracao')).current
+  const enquadramento = useRef<Enquadramento>({ inclinacao: 0, distancia: 0, antecipar: 0 }).current
+  /** Para onde o olhar vai à frente do corpo (percurso), suavizado. */
+  const adiante = useRef({ x: 0, z: 0 })
+  /** O lado da conversa: 1 à esquerda de quem olha a criança por trás, −1 à direita. */
+  const ladoDaConversa = useRef<1 | -1 | null>(null)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
-  const distancia = useRef(9)
+  const distanciaDePartida = METROS_DA_DISTANCIA[conforto.getState().conforto.distancia]
+  const distancia = useRef(distanciaDePartida)
   /** A distância pedida (roda, pinça, teclas); `distancia` chega nela aos poucos. */
-  const distanciaPedida = useRef(9)
+  const distanciaPedida = useRef(distanciaDePartida)
+  /** Segundos sem a pessoa mexer na câmera (para a volta sozinha, se ligada). */
+  const semMexer = useRef(0)
   /** Voltando para as costas do avatar (dois cliques): o giro e a inclinação de chegada. */
   const volta = useRef<{ giro: number; inclinacao: number } | null>(null)
   const mexeu = useRef(lerDica())
@@ -86,6 +133,8 @@ export function Camera() {
   const subida = useRef(0)
   const lado = useRef(1)
   const arrastandoAgora = useRef(false)
+  /** O último pedido de recentralizar já atendido (tecla C, analógico direito). */
+  const recentrarVisto = useRef(controle.recentrar)
 
   useEffect(() => {
     const el = gl.domElement
@@ -139,9 +188,12 @@ export function Camera() {
       const dx = e.clientX - antes.x
       const dy = e.clientY - antes.y
       if (dx === 0 && dy === 0) return
-      rastro.giro -= dx * C.giroPorPixel
+      const { rapidez, inverterVertical } = conforto.getState().conforto
+      const k = MULTIPLICADOR_DA_RAPIDEZ[rapidez]
+      semMexer.current = 0
+      rastro.giro -= dx * C.giroPorPixel * k
       rastro.inclinacao = MathUtils.clamp(
-        rastro.inclinacao + dy * C.inclinacaoPorPixel,
+        rastro.inclinacao + dy * C.inclinacaoPorPixel * k * (inverterVertical ? -1 : 1),
         C.inclinacaoMinima,
         C.inclinacaoMaxima,
       )
@@ -156,6 +208,7 @@ export function Camera() {
     const roda = (e: WheelEvent) => {
       e.preventDefault()
       volta.current = null
+      semMexer.current = 0
       distanciaPedida.current = MathUtils.clamp(
         distanciaPedida.current + rodaEmPixels(e.deltaY, e.deltaMode) * C.rodaPorPixel,
         C.distanciaMinima,
@@ -190,7 +243,17 @@ export function Camera() {
       el.removeEventListener('wheel', roda)
       window.removeEventListener('keydown', tecla)
     }
-  }, [gl, rastro])
+  }, [gl, rastro, conforto])
+
+  // Mudou a distância nas preferências: a câmera vai até ela (a roda e a pinça seguem valendo).
+  useEffect(
+    () =>
+      conforto.subscribe((s, antes) => {
+        if (s.conforto.distancia !== antes.conforto.distancia)
+          distanciaPedida.current = METROS_DA_DISTANCIA[s.conforto.distancia]
+      }),
+    [conforto],
+  )
 
   // Uma vez, se a pessoa ainda não mexeu na câmera: o Zappy conta como.
   useEffect(() => {
@@ -211,6 +274,48 @@ export function Camera() {
   }, [loja, toque])
 
   useFrame((_, dt) => {
+    // O analógico direito do controle físico gira e inclina, como arrastar.
+    const prefs = conforto.getState().conforto
+    semMexer.current += dt
+    if (controle.cameraX !== 0 || controle.cameraY !== 0) {
+      const k = MULTIPLICADOR_DA_RAPIDEZ[prefs.rapidez]
+      volta.current = null
+      semMexer.current = 0
+      rastro.giro -= controle.cameraX * C.giroDoAnalogico * k * dt
+      rastro.inclinacao = MathUtils.clamp(
+        rastro.inclinacao +
+          controle.cameraY * C.inclinacaoDoAnalogico * k * (prefs.inverterVertical ? -1 : 1) * dt,
+        C.inclinacaoMinima,
+        C.inclinacaoMaxima,
+      )
+      if (!mexeu.current) {
+        mexeu.current = true
+        gravarDica()
+      }
+    }
+    // Tecla C ou clique no analógico direito: de volta para as costas (como os dois cliques).
+    if (controle.recentrar !== recentrarVisto.current) {
+      recentrarVisto.current = controle.recentrar
+      volta.current = { giro: rastro.direcao + Math.PI, inclinacao: C.inclinacaoDeVolta }
+    }
+    // No escorregador a câmera vai para as costas (quem desce vê a pista à frente), a não ser que a
+    // pessoa esteja girando ou tenha pedido menos movimento.
+    if (movimento.modo === 'escorregar' && !arrastandoAgora.current && !menosMovimento) {
+      rastro.giro +=
+        giroMaisCurto(rastro.giro, rastro.direcao + Math.PI) *
+        (1 - Math.exp(-dt * CAMERA_NO_ESCORREGADOR))
+    }
+    // Com a preferência ligada, andando sem mexer na câmera, ela volta sozinha para as costas.
+    if (!volta.current && movimento.modo === 'chao' && !arrastandoAgora.current) {
+      rastro.giro = giroComVoltaSozinha(
+        rastro.giro,
+        rastro.direcao,
+        prefs,
+        rastro.velocidade,
+        semMexer.current,
+        dt,
+      )
+    }
     // Zoom suave até o pedido.
     distancia.current +=
       (distanciaPedida.current - distancia.current) * (1 - Math.exp(-dt * C.suavizarZoom))
@@ -234,9 +339,38 @@ export function Camera() {
     noCipo.current += (foco - noCipo.current) * (1 - Math.exp(-dt * 4))
     const f = noCipo.current
     const k = 1 - Math.exp(-dt * (6 - SEGUIR_NO_CIPO * Math.min(1, f / FOCO_NO_CIPO)))
-    const ax = rastro.x + (movimento.foco.x - rastro.x) * f
-    const ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
-    const az = rastro.z + (movimento.foco.z - rastro.z) * f
+    let ax = rastro.x + (movimento.foco.x - rastro.x) * f
+    let ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
+    let az = rastro.z + (movimento.foco.z - rastro.z) * f
+    // O perfil da vez (`sistemas/perfis-de-camera.ts`) e a troca aos poucos.
+    const fala = loja.getState().painelAberto !== null ? pedidos.conversa : null
+    passoDosPesos(
+      pesos,
+      perfilDaVez({
+        conversa: fala !== null,
+        dentroDeCasa: dentro,
+        correndoPercurso: movimento.corrida !== null,
+        escorregando: movimento.modo === 'escorregar',
+      }),
+      dt,
+    )
+    misturarPerfis(pesos, rastro.inclinacao, distancia.current, enquadramento)
+    // Antecipando (percurso): a câmera olha um pouco à frente de quem anda, para onde ela vai. Só
+    // o olhar vai à frente; a câmera e a sonda continuam saindo do corpo.
+    const frente =
+      !menosMovimento && movimento.modo === 'chao'
+        ? metrosDeAntecipacao(enquadramento.antecipar, rastro.velocidade)
+        : 0
+    const ka = 1 - Math.exp(-dt * SEGUIR_A_ANTECIPACAO)
+    adiante.current.x += (Math.sin(rastro.direcao) * frente - adiante.current.x) * ka
+    adiante.current.z += (Math.cos(rastro.direcao) * frente - adiante.current.z) * ka
+    // Na conversa: o ponto vai para o meio das duas cabeças e a câmera para o lado da criança.
+    const w = pesos.conversa
+    if (fala) {
+      ax += ((fala.x + rastro.x) / 2 - ax) * w
+      ay += ((fala.y + rastro.y + 0.9) / 2 - ay) * w
+      az += ((fala.z + rastro.z) / 2 - az) * w
+    }
     alvo.current.x += (ax - alvo.current.x) * k
     alvo.current.y += (ay - alvo.current.y) * k
     alvo.current.z += (az - alvo.current.z) * k
@@ -244,14 +378,17 @@ export function Camera() {
     const alto = pesoNoAlto(rastro.y - 0.9 - ALTURA_DA_TERRA, CAMERA_NO_ALTO.acimaDoChao)
     noAlto.current += (alto - noAlto.current) * k
     const n = dentro ? 0 : noAlto.current
-    let inclinacao = dentro ? Math.max(rastro.inclinacao, 0.95) : rastro.inclinacao
-    inclinacao = MathUtils.lerp(
-      inclinacao,
-      Math.min(inclinacao, CAMERA_NO_ALTO.inclinacaoMaxima),
+    // O ângulo e a distância do perfil; lá no alto, por cima, o ângulo desce e a câmera chega perto.
+    let inclinacao = MathUtils.lerp(
+      enquadramento.inclinacao,
+      Math.min(enquadramento.inclinacao, CAMERA_NO_ALTO.inclinacaoMaxima),
       n,
     )
-    let dist = dentro ? Math.min(distancia.current, 8) : distancia.current
-    dist = MathUtils.lerp(dist, Math.min(dist, CAMERA_NO_ALTO.distanciaMaxima), n)
+    const dist = MathUtils.lerp(
+      enquadramento.distancia,
+      Math.min(enquadramento.distancia, CAMERA_NO_ALTO.distanciaMaxima),
+      n,
+    )
     // Uma bolinha lançada até a câmera (não um raio fino): o que é sólido no caminho a puxa para
     // perto, sem raspar a quina de um tronco nem deixar o corpo do avatar escondido atrás dele.
     // Dentro de casa o telhado sai e a vista de cima é a de sempre.
@@ -282,6 +419,30 @@ export function Camera() {
         if (bateu) livre = Math.min(livre, bateu.time_of_impact - FOLGA_DA_CAMERA)
       }
       return livre
+    }
+    // Na conversa a câmera vai para um lado da criança (escolhido uma vez por conversa); o giro
+    // anda aos poucos até lá.
+    if (!fala) ladoDaConversa.current = null
+    else if (!menosMovimento) {
+      const atras = Math.atan2(fala.x - rastro.x, fala.z - rastro.z) + Math.PI
+      if (ladoDaConversa.current === null) {
+        // O lado de fora da ilha (longe do miolo), a não ser que a sonda o ache tapado e o
+        // outro não.
+        const longe = (sentido: 1 | -1) => {
+          const g = atras + sentido * LADO_NA_CONVERSA
+          const x = rastro.x + Math.sin(g) * DISTANCIA_NA_CONVERSA - fala.miolo.x
+          const z = rastro.z + Math.cos(g) * DISTANCIA_NA_CONVERSA - fala.miolo.z
+          return x * x + z * z
+        }
+        const fora = longe(1) >= longe(-1) ? 1 : -1
+        const outro = fora === 1 ? -1 : 1
+        const livre = (sentido: 1 | -1) =>
+          dentro ? dist : lancar(INCLINACAO_NA_CONVERSA, atras + sentido * LADO_NA_CONVERSA)
+        const tapado = DISTANCIA_NA_CONVERSA * GRUA_DA_CAMERA.tapada
+        ladoDaConversa.current = livre(fora) < tapado && livre(outro) >= tapado ? outro : fora
+      }
+      const lado = atras + ladoDaConversa.current * LADO_NA_CONVERSA
+      rastro.giro += giroMaisCurto(rastro.giro, lado) * (1 - Math.exp(-dt * RAPIDEZ_NA_CONVERSA))
     }
     // Tapada de perto (o tronco atrás, no deque): primeiro a câmera gira para o lado livre, como
     // nos jogos de terceira pessoa (o controle gira junto, a frente continua sendo a da tela);
@@ -343,7 +504,12 @@ export function Camera() {
     // Encostando numa parede, vai direto (seguir devagar passaria por dentro dela).
     if (atual.current < antes - 0.01) camera.position.copy(desejada.current)
     else camera.position.lerp(desejada.current, k)
-    camera.lookAt(alvo.current)
+    // Na conversa ela olha um pouco abaixo das cabeças (a sonda continua saindo delas).
+    camera.lookAt(
+      alvo.current.x + adiante.current.x,
+      alvo.current.y - ABAIXO_NA_CONVERSA * pesos.conversa,
+      alvo.current.z + adiante.current.z,
+    )
   })
   return null
 }

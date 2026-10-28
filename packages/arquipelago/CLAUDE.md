@@ -31,8 +31,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `estado/`: loja zustand (uma por montagem), contexto, relógios (necessidades, posição, tempo).
 - `sistemas/`: regras puras e testadas (dia e noite, itens, necessidades, horta, receitas,
   fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy, ilhas
-  completas, cipó, escalada, percurso e as medidas do corpo). Sem React. Os números de cada regra,
-  em linguagem da dona: `docs/arquipelago-regras.md`.
+  completas, cipó, escalada, percurso, as medidas do corpo, a Capi (`moradores.ts`,
+  `falas-da-capi.ts`, `conversa-da-capi.ts`), o esconde-esconde (`esconde.ts`), o caminho pelo
+  chão (`caminho.ts`) e o bicho adotado (`bichos.ts`, `cuidar.ts`, `seguir.ts`)). Sem React. Os
+  números de cada regra, em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).
 - `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar, cipó,
@@ -47,6 +49,53 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   pontes e ilhas do anel), um script por peça em `arte/mundo/` (`build_all.py`, nós e materiais
   no README de lá). `mundo/modelos.tsx` carrega; cada peça mostra a forma simples do código até o
   modelo chegar. Colisão: veja "Colisão das peças" abaixo.
+
+## Passo da física (28/10/2026, física viva etapa 1)
+
+- `<Physics timeStep={PASSO_DA_FISICA} interpolate updatePriority={-1}>` (`mundo/cena.tsx`,
+  `PASSO_DA_FISICA` = 1/60 s em `mundo/medidas.ts`): passos fixos, com o desenho dos corpos
+  suavizado entre passos, e os passos rodam antes dos outros `useFrame`.
+- Quem move corpo do Rapier calcula o movimento em `useBeforePhysicsStep` com o `dt` fixo
+  (`personagem/personagem.tsx`, `mundo/bicho-adotado.tsx`); o desenho (pose, giro, clipes) fica no
+  `useFrame`. O `rastro` sai da posição suavizada (o pai do grupo do avatar), então a câmera e o
+  Zappy não tremem entre passos. ⚠️ Nunca mover corpo no `useFrame` partindo de `translation()`:
+  num quadro sem passo o movimento se perde (a 144 Hz, mais da metade dos quadros).
+- Movimento com peso e tolerância (controlador universal, parte 1, `sistemas/movimento.ts`):
+  `aproximarVelocidade` com `PERFIS` por modo (chão, ar, água; ilhas novas acrescentam o delas) e
+  `passoDoPulo` (coyote time e jump buffer, um toque um pulo). Testes:
+  `tests/movimento-com-peso.test.ts`. Plano: `docs/plans/2026-10-28-arquipelago-controlador-universal.md`.
+- Os números do corpo (velocidades, pulo, degrau, rampas) moram em `CORPO` (`sistemas/corpo.ts`),
+  com `alcanceDoPulo`, `alcanceMaximoDoPulo` e `beiradaMaximaDoPulo` para desenhar vãos e beiradas
+  (o degrau automático só vale pisando: o `personagem.tsx` o desliga no ar; agarrando a quina, a
+  beirada vai a uns 3,65 m, `beiradaMaximaAgarrando` em `modos/borda.ts`).
+- Sala de testes: `/movimento` no playground (`playground/movimento.tsx`, medidas em
+  `playground/sala-de-movimento.ts`, `?estacao=Laguinho`), com o personagem e a câmera de verdade,
+  uma estação por teste (cada uma com um obstáculo que passa e um que não) e o painel de medidas;
+  `__peNaSala` dá o pé a cada quadro para scripts. Testes: `tests/sala-de-movimento.test.ts`.
+- Modos de movimento (`sistemas/modos/`, contrato em `tipos.ts`): chão (com o nado), cipó e
+  escalada são regras puras com `valendo`, `passo` (diz o deslocamento e quem leva o corpo: o
+  controlador do chão, o do cipó ou direto) e `depois` (com o que o Rapier devolveu, troca de
+  modo); entrar é `pegarCipo`/`agarrarTronco`, sair é `mudarModo`. O `personagem.tsx` só liga o
+  modo ativo (`MODOS`) ao Rapier e ao desenho. Modo novo: um arquivo em `modos/`, uma entrada em
+  `MODOS` e em `ModoDoCorpo`. Testes: `tests/modos.test.ts`. Equilíbrio no tronco caído
+  (`modos/equilibrio.ts`): o eixo vem das âncoras `equilibrio-N-a`/`-b` do GLB
+  (`movimento.equilibrios`, registradas pelo `BosqueVivo`); o chão entra nele pelo `eixoSobOsPes`.
+  Escada reta (`modos/escada.ts`): âncoras `escada-N-base`, `-topo` e `-saida`
+  (`movimento.escadas`); o chão pega pelo `escadaParaPegar` (embaixo, andando contra; em cima, do
+  deque); os degraus colidem só para o corpo (`col-escada-reta`). Escorregador
+  (`modos/escorregar.ts`): os pontos da pista vêm das âncoras `escorregador-curva-N`
+  (`movimento.escorregadores`); pisar nela senta (`pistaSobOsPes`); a câmera tem o perfil
+  `escorregar`. Agarrar a borda (`modos/borda.ts`): as quinas vêm das âncoras `borda-N-a`, `-b` e
+  `-fora` (`movimento.bordas`; no Bosque, a pedra de agarrar entre a T3 e a T4); o chão pega no ar
+  pelo `bordaAoAlcance`; marque quina só onde há espaço embaixo, pendurado e em cima (o teste da
+  pedra em `tests/movimento-do-bosque.test.ts` confere).
+  Clipes novos no `locomocao.glb` (Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
+  Escorregar), com o campo `especial` da `EntradaDaLocomocao` (antes `pendurado`); para ver:
+  `/animacoes?equilibrar=1`, `?escada=1`, `?borda=1&subir=1`, `?escorregar=1`.
+- Perfis de câmera (`sistemas/perfis-de-camera.ts`, `tests/perfis-de-camera.test.ts`): exploração,
+  casa, conversa e percurso, um por vez (`perfilDaVez`), misturados por pesos que trocam em 0,5 s
+  (`passoDosPesos`, `misturarPerfis`); a câmera aplica o "lá no alto" e a colisão por cima. Perfil
+  novo (Construir) entra em `PERFIS_DE_CAMERA`.
 
 ## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
 
@@ -110,7 +159,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 ## Animações do avatar (28/10/2026)
 
 - Clipes em `src/assets/avatar/locomocao.glb` (Andar, Correr, Pulo, Queda, Aterrissagem, Nado,
-  Pendurado, Escalar),
+  Pendurado, Escalar, e os dos modos novos: Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
+  Escorregar),
   gerados por `arte/avatar/locomocao.py` no esqueleto Mixamo da plataforma: IK de dois ossos nas
   pernas, pé que gira sobre calcanhar e bola, bacia, peito, braços e cabeça. O "Idle" é o da
   plataforma (`Poses.glb`). O script enxuga o GLB: só giros e a posição da bacia.
@@ -212,8 +262,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   trepadeira em espiral (desenhada no código) mostra que aquele tronco sobe e esmaece com ele.
   Ainda não há nó `escalada-*` no GLB: o que falta passar para o Blender está no README de
   `arte/ilhas`.
-- **Lago**: o nó `agua` não tem fundo no desenho. Ele vira uma água rasa (a elipse da caixa do nó):
-  pisando nela o personagem nada (velocidade de nado, sem pular) e o avatar afunda até a cintura.
+- **Lago**: o nó `agua` (a elipse da caixa e a altura da superfície) com a bacia de 0,85 m no
+  `col-terreno`: nada como no mar (mesma regra, `ENTRAR_NO_NADO`/`SAIR_DO_NADO`). O tronco que boia
+  (`mundo/tronco-no-lago.tsx`) é um corpo dinâmico com quatro pontos de flutuação
+  (`sistemas/empuxo.ts`, materiais em `sistemas/materiais-fisicos.ts`); a criança empurra
+  (`setApplyImpulsesToDynamicBodies`, `MASSA_DA_CRIANCA`). O medidor mostra o tronco em
+  `__arquipelagoDesenho.tronco`.
 - **Mãos no cipó** (`personagem/bracos.ts`): IK de dois ossos fecha os punhos na corda depois da
   pose de cada quadro (`AvatarDoJogo` monta `DepoisDaPose` logo depois do `AvatarRig`, então roda
   depois do mixer). A corda passa ao lado esquerdo do rosto (`CORDA_NO_CORPO`) e o corpo pende
@@ -236,14 +290,57 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - **Controles**: `controle.pulos` conta os toques de pular (o toque curto que desce e sobe no mesmo
   quadro solta o cipó). A dica mostra a tecla no teclado e o nome do botão no toque
   (`estado/preferencias.ts`: `useToque`, `useMenosMovimento`); no cipó o botão Pular vira Soltar.
+  Controle físico (`controles/gamepad.ts`, Gamepad API, mapeamento padrão): analógico esquerdo
+  anda (até o fim corre), direito gira a câmera, botão de baixo pula, o da direita usa, gatilho ou
+  ombro direito corre, clique no analógico direito recentraliza, Start faz o que o Esc faz; zona
+  morta 0,15; escreve no mesmo `Controle` (a ação não sabe de onde veio). A tecla C também
+  recentraliza (`controle.recentrar`). No toque o joystick é flutuante: nasce onde o polegar pousa
+  na metade esquerda de baixo (`arq-zona-joystick`). Testes: `tests/gamepad.test.ts`.
+  Conforto da câmera no menu (`interface/conforto.tsx`, regras em `sistemas/conforto.ts`, loja
+  `estado/conforto.ts` guardada em `localStorage['arquipelago:conforto']`): rapidez, distância,
+  inverter, volta sozinha (desligada) e menos movimento. Testes: `tests/conforto.test.ts`.
 - Prints do playground: `localStorage['arquipelago:medir'] = '1'`, `?novo=1&posicao=2&em=x,z` e
   `__arquipelagoLevar(x, y, z, giro)`. O Bosque fica com o centro em (77,05; 28,05), girado 2,79.
 
+## A Capi no Bosque (28/10/2026, Fase 1)
+
+- Plano: `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`; regras e números:
+  `docs/arquipelago-regras.md` §6.15. Tudo o que muda o salvamento passa pelas funções puras de
+  `sistemas/conversa-da-capi.ts` (`comecarConversa`, `presentear`, `entregar`).
+- `mundo/capi.tsx` (montado pelo `BosqueVivo`, dentro de `ComReserva`): o `capi.glb` copiado com
+  `SkeletonUtils.clone` (tem esqueleto), na âncora `morador`, de costas para a `cabana`. Vira para
+  a criança (`olharDaCapi`), acena, fala, comemora (`alegria` na loja da conversa) e pisca pelo
+  morfo `piscar` dos olhos. O colisor `col-morador-capi` só segura o corpo.
+- `estado/moradores.ts`: a loja da conversa (uma por montagem, como a dos desafios): falas, passo e
+  tela. O painel é `interface/capi.tsx` (`PAINEL_DA_CAPI` em `painelAberto`).
+- Câmera da conversa: quem abre a conversa põe a cabeça de quem fala em `pedidos.conversa` (com o
+  `miolo` da ilha) e limpa quando o painel fecha; o personagem vira para lá e a câmera enquadra as
+  duas (`LADO_NA_CONVERSA`, `DISTANCIA_NA_CONVERSA`, `INCLINACAO_NA_CONVERSA`, `ABAIXO_NA_CONVERSA`).
+- No Bosque não aparece mais o "Olhar em volta" da ilha (`ILHAS_VIVAS` em `anel.tsx`).
+- Esconde-esconde (`mundo/bichos-do-bosque.tsx`, também no `BosqueVivo`): os quatro filhotes
+  (`assets/bichos/*-filhote.glb`, `ESCALA_DOS_BICHOS`) nos esconderijos (âncoras `esconderijo-*`
+  do `bosque.glb`, giro lido do quatérnio por `rumoDoNo`; `ESCONDERIJOS_NO_MODELO` fica de reserva),
+  a pista e o "Achar", e a corrida até
+  o cercadinho pelo caminho da grade (`sistemas/caminho.ts`, A* com encurtamento;
+  `mundo/chao-livre.ts` monta a grade sobre os colisores da ilha no primeiro achado). O modelo
+  animado com esqueleto vem de `mundo/animado.ts` (`useCopiaAnimada`, `trocarClipe`,
+  `olhosNoInstante`), o mesmo da Capi. Testes contra o `bosque.glb`:
+  `tests/esconde-no-bosque.test.ts`.
+- Bicho adotado: adotar pela conversa com a Capi (tela "adotar" da loja da conversa,
+  `adotarPelaCapi`); `mundo/bicho-adotado.tsx` (montado na `Cena`, fora das ilhas) é um corpo
+  cinemático com controlador próprio que segue a criança (`sistemas/seguir.ts`) e troca de modelo
+  ao crescer (filhote `*-filhote.glb`, adulto `*.glb`). ⚠️ O controlador da criança e o do bicho
+  usam `EXCLUDE_KINEMATIC`: um passa pelo outro (nenhum outro corpo do jogo é cinemático). Painel
+  de cuidar em `interface/bicho.tsx` (`PAINEL_DO_BICHO`, loja `estado/bicho.ts` com as falas e a
+  reação que o modelo toca); regras em `sistemas/cuidar.ts`; a queda das medidas roda nos
+  `Relogios`, junto com as necessidades. Testes: `tests/cuidar.test.ts`.
+
 ## Salvamento e tempo
 
-- `SalvamentoV2` (contrato) com versão; a V1 migra sozinha (`migrarDaV1`: nenhum percurso
-  corrido). Gravar aceita a V1 de uma aba aberta antes da atualização e guarda migrada, mas essa
-  aba não lê a resposta V2: só a primeira gravação dela fica, as seguintes falham até recarregar.
+- `SalvamentoV3` (contrato) com versão; a V1 e a V2 migram sozinhas (`migrarDaV1`: nenhum
+  percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho). Gravar aceita a versão de
+  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V3: só a
+  primeira gravação dela fica, as seguintes falham até recarregar.
   Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.
 - Tempo livre do Kids: cada segundo ativo fica em IndexedDB por perfil; lotes de até 10 s são

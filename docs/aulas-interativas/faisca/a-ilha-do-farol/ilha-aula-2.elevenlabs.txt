@@ -8,7 +8,7 @@
 
 [engaging, energetic, conversational voice] Agora que você comparou as três direções, vamos mudar o lugar da chave no seu jogo.
 
-[confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e encontre Posição do objeto chave em x menos 2, y 1 e z menos 3. Se precisar, arraste um espaço vazio entre os blocos até deixar essa linha à vista. Primeiro mude só x: coloque menos 3. Execute o jogo e observe para onde a chave foi.
+[confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e encontre Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se precisar, arraste um espaço vazio entre os blocos até deixar essa linha à vista. Primeiro mude só x: coloque menos 3. Execute o jogo e observe para onde a chave foi.
 
 [confident, clear, unhurried voice] Volte à mesma linha e coloque menos 2 em z. Deixe y em 1. Execute outra vez e leve o personagem até perto da chave.
 

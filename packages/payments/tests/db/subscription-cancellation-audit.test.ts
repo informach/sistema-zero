@@ -75,6 +75,12 @@ describe.skipIf(!databaseUrl)('Auditoria de cancelamento — PostgreSQL real', (
     if (!item) throw new Error('Missing QA subscription')
     return item
   }
+  // O worker reivindica pedidos de qualquer assinatura do banco; em CI o banco é
+  // compartilhado entre arquivos, então a prova olha só a assinatura deste teste.
+  async function claimsThisSubscription() {
+    const claimed = await subscriptions.claimCancellationRequests(1_000, 90_000)
+    return claimed.some((item) => item.id === id)
+  }
   async function recoveryCase() {
     const item = await load()
     const payment = buildCyclePayment({
@@ -225,13 +231,13 @@ describe.skipIf(!databaseUrl)('Auditoria de cancelamento — PostgreSQL real', (
   test('pedido explícito substitui automático pendente e não pode ser retirado pela recuperação', async () => {
     const caseId = await recoveryCase()
     const automatic = await load()
-    expect(await subscriptions.claimCancellationRequests(10, 90_000)).toHaveLength(0)
+    expect(await claimsThisSubscription()).toBe(false)
     automatic.requestCancellation(
       { origin: 'NONPAYMENT', actorId: 'system:subscription-recovery', recoveryCaseId: caseId },
       now,
     )
     await subscriptions.save(automatic)
-    expect(await subscriptions.claimCancellationRequests(10, 90_000)).toHaveLength(0)
+    expect(await claimsThisSubscription()).toBe(false)
     const manual = await load()
     manual.requestCancellation(
       { origin: 'ADMIN', actorId: 'qa-admin' },

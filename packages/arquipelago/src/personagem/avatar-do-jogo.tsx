@@ -16,7 +16,7 @@ import {
 
 const LOCOMOCAO_URL = new URL(locomocaoGlb, import.meta.url).href
 /** Clipes tocados uma vez só (o tempo é o da regra; não voltam ao começo sozinhos). */
-const UMA_VEZ: readonly Clipe[] = ['Pulo', 'Aterrissagem']
+const UMA_VEZ: readonly Clipe[] = ['Pulo', 'Aterrissagem', 'SubirBorda']
 
 /**
  * O avatar da plataforma, o mesmo `AvatarRig` do Meu avatar, com as animações de movimento do

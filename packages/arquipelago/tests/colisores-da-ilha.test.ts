@@ -386,6 +386,7 @@ describe('os enfeites do Bosque que seguram o corpo', () => {
       'col-cil-toca',
       'col-floreira',
       'col-cil-perna-escorregador',
+      'col-pedra-de-agarrar',
     ].flatMap(doGrupo)
     for (const nome of [
       'chegada',

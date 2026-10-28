@@ -7,7 +7,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 ### Faça o personagem andar
 
 1. Abra Enquanto estiver rodando e deixe à vista A cada quadro da cena cena.
-2. Antes de Escrever no canto da tela, encaixe Jogo 3D → Movimento → Andar com o teclado → Andar com personagem usando WASD/setas, velocidade 3.
+2. Antes de Escrever na tela, encaixe Jogo 3D → Movimento → Andar com o teclado → Fazer personagem andar com as setas (ou WASD), velocidade 3.
 3. Escolha personagem e troque a velocidade de 3 por 4.
 4. Execute o jogo. Pressione e solte cada seta: ande nas quatro direções e pare ao soltar. Confira a ponte e a beirada.
 5. Verifique o projeto, corrija se necessário e espere Salvo.
@@ -22,7 +22,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 
 ### Coloque a chave na ilha
 
-1. Em Ao iniciar, encontre Posição do objeto chave em x −2 y 1 z −3.
+1. Em Ao iniciar, encontre Colocar o objeto chave em x −2 y 1 z −3.
 2. Mude x para −3 e teste. Depois mude z para −2 e teste. Mantenha y em 1.
 3. Confira a chave na ilha e leve o personagem até perto dela.
 
@@ -77,7 +77,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 
 ### Escolha seu esconderijo e teste de verdade
 
-1. Em Ao iniciar → Posição do objeto chave, escolha x e z dentro da ilha. Mantenha uma altura que o personagem alcance.
+1. Em Ao iniciar → Colocar o objeto chave, escolha x e z dentro da ilha. Mantenha uma altura que o personagem alcance.
 2. Se quiser, escreva seus próprios avisos nas linhas de atribuição, conservando a função de cada mensagem.
 3. Reinicie. Vá ao farol sem chave. Depois alcance a chave escolhida e volte ao farol.
 4. Reinicie após vencer: o farol apaga, a chave retorna e você pode jogar novamente.

@@ -12,6 +12,11 @@ export interface Interativo {
   /** O texto do botão agora (`null` = nada a fazer aqui por enquanto). */
   rotulo(): string | null
   agir(): void
+  /**
+   * Só vale quando nenhum outro está ao alcance: o bicho adotado anda sempre perto da criança e
+   * não pode tomar o E da Capi, do "Achar" ou da porta.
+   */
+  deFundo?: boolean
 }
 
 export type RegistroDeInterativos = Map<string, Interativo>
@@ -27,14 +32,18 @@ export function maisPerto(
   z: number,
 ): { id: string; rotulo: string } | null {
   let melhor: { id: string; rotulo: string; d: number } | null = null
+  let fundo: { id: string; rotulo: string; d: number } | null = null
   for (const [id, it] of r) {
     const d = (it.x - x) ** 2 + (it.z - z) ** 2
     if (d > it.raio ** 2) continue
     const rotulo = it.rotulo()
     if (!rotulo) continue
-    if (!melhor || d < melhor.d) melhor = { id, rotulo, d }
+    if (it.deFundo) {
+      if (!fundo || d < fundo.d) fundo = { id, rotulo, d }
+    } else if (!melhor || d < melhor.d) melhor = { id, rotulo, d }
   }
-  return melhor ? { id: melhor.id, rotulo: melhor.rotulo } : null
+  const escolhido = melhor ?? fundo
+  return escolhido ? { id: escolhido.id, rotulo: escolhido.rotulo } : null
 }
 
 export function useInterativo(id: string, it: Interativo): void {
@@ -51,6 +60,9 @@ export function useInterativo(id: string, it: Interativo): void {
       },
       get raio() {
         return ultimo.current.raio
+      },
+      get deFundo() {
+        return ultimo.current.deFundo
       },
       rotulo: () => ultimo.current.rotulo(),
       agir: () => ultimo.current.agir(),

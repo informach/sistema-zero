@@ -15,7 +15,7 @@
  * painéis ali seguem em cartão).
  */
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
@@ -715,8 +715,11 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     return () => markPintaAssetClosed(assetId)
   }, [assetId])
 
-  // O host (o bloco de aula) alcança o desenho vivo por aqui — ver `PintaHandle`.
-  useEffect(() => {
+  // O host (o bloco de aula) alcança o desenho vivo por aqui — ver `PintaHandle`. De layout, não
+  // de efeito (28/10/2026, teste intermitente no CI): ao voltar para a galeria, o desregistro
+  // precisa acontecer no mesmo commit que desmonta o editor. Com `useEffect` ele vinha depois da
+  // galeria já na tela, e um `flush()` do host nessa janela recebia o desenho já fechado.
+  useLayoutEffect(() => {
     if (!stores || !onEditorReady) return
     onEditorReady(stores.editor)
     return () => onEditorReady(null)

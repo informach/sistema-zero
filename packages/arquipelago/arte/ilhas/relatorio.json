@@ -10,6 +10,66 @@
   },
   "bosque": {
     "ancoras": {
+      "borda-1-a": {
+        "x": -7.25,
+        "y": 3.1,
+        "z": 6.05
+      },
+      "borda-1-b": {
+        "x": -7.25,
+        "y": 3.1,
+        "z": 7.45
+      },
+      "borda-1-fora": {
+        "x": -6.25,
+        "y": 3.1,
+        "z": 6.75
+      },
+      "borda-2-a": {
+        "x": -7.55,
+        "y": 3.1,
+        "z": 7.75
+      },
+      "borda-2-b": {
+        "x": -8.95,
+        "y": 3.1,
+        "z": 7.75
+      },
+      "borda-2-fora": {
+        "x": -8.25,
+        "y": 3.1,
+        "z": 8.75
+      },
+      "borda-3-a": {
+        "x": -9.25,
+        "y": 3.1,
+        "z": 7.45
+      },
+      "borda-3-b": {
+        "x": -9.25,
+        "y": 3.1,
+        "z": 6.05
+      },
+      "borda-3-fora": {
+        "x": -10.25,
+        "y": 3.1,
+        "z": 6.75
+      },
+      "borda-4-a": {
+        "x": -8.95,
+        "y": 3.1,
+        "z": 5.75
+      },
+      "borda-4-b": {
+        "x": -7.55,
+        "y": 3.1,
+        "z": 5.75
+      },
+      "borda-4-fora": {
+        "x": -8.25,
+        "y": 3.1,
+        "z": 4.75
+      },
       "cabana": {
         "x": 5.11,
         "y": 1.0,
@@ -50,10 +110,120 @@
         "y": 5.2,
         "z": 6.6
       },
+      "equilibrio-1-a": {
+        "x": 3.3,
+        "y": 1.36,
+        "z": 1.3
+      },
+      "equilibrio-1-b": {
+        "x": 3.7,
+        "y": 1.36,
+        "z": 4.0
+      },
       "escada": {
         "x": -0.49,
         "y": 1.0,
         "z": 0.1
+      },
+      "escada-1-base": {
+        "x": -2.97,
+        "y": 1.0,
+        "z": 4.82
+      },
+      "escada-1-saida": {
+        "x": -3.35,
+        "y": 5.2,
+        "z": 5.47
+      },
+      "escada-1-topo": {
+        "x": -2.97,
+        "y": 5.2,
+        "z": 4.82
+      },
+      "esconderijo-1": {
+        "x": -6.2,
+        "y": 1.0,
+        "z": 10.2
+      },
+      "esconderijo-2": {
+        "x": 1.2,
+        "y": 1.0,
+        "z": 5.4
+      },
+      "esconderijo-3": {
+        "x": -8.0,
+        "y": 1.0,
+        "z": -7.4
+      },
+      "esconderijo-4": {
+        "x": 7.3,
+        "y": 1.0,
+        "z": -8.9
+      },
+      "escorregador-curva-1": {
+        "x": -2.32,
+        "y": 5.24,
+        "z": 7.49
+      },
+      "escorregador-curva-10": {
+        "x": 1.39,
+        "y": 1.7,
+        "z": 9.46
+      },
+      "escorregador-curva-11": {
+        "x": 1.8,
+        "y": 1.35,
+        "z": 9.68
+      },
+      "escorregador-curva-12": {
+        "x": 2.21,
+        "y": 1.12,
+        "z": 9.9
+      },
+      "escorregador-curva-13": {
+        "x": 2.62,
+        "y": 1.24,
+        "z": 10.12
+      },
+      "escorregador-curva-2": {
+        "x": -1.91,
+        "y": 5.16,
+        "z": 7.71
+      },
+      "escorregador-curva-3": {
+        "x": -1.5,
+        "y": 4.93,
+        "z": 7.93
+      },
+      "escorregador-curva-4": {
+        "x": -1.09,
+        "y": 4.58,
+        "z": 8.15
+      },
+      "escorregador-curva-5": {
+        "x": -0.67,
+        "y": 4.15,
+        "z": 8.37
+      },
+      "escorregador-curva-6": {
+        "x": -0.26,
+        "y": 3.66,
+        "z": 8.59
+      },
+      "escorregador-curva-7": {
+        "x": 0.15,
+        "y": 3.14,
+        "z": 8.81
+      },
+      "escorregador-curva-8": {
+        "x": 0.56,
+        "y": 2.62,
+        "z": 9.03
+      },
+      "escorregador-curva-9": {
+        "x": 0.97,
+        "y": 2.13,
+        "z": 9.24
       },
       "escorregador-fim": {
         "x": 2.62,
@@ -109,26 +279,28 @@
       "col-cil-poste": 2,
       "col-cil-toca": 2,
       "col-cil-toco": 3,
-      "col-cil-tora": 3,
+      "col-cil-tora": 4,
       "col-cil-tronco": 26,
       "col-cocho": 1,
       "col-degrau": 12,
+      "col-escada-reta": 1,
       "col-escorregador": 12,
       "col-escorregador-lado": 24,
       "col-floreira": 2,
-      "col-guarda": 67,
+      "col-guarda": 63,
+      "col-pedra-de-agarrar": 1,
       "col-ponte": 16,
       "col-ponte-lado": 32,
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 957.3,
+    "kb": 1033.6,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
       "cipo-2": 268,
       "cipo-3": 268,
-      "construcoes": 10360,
+      "construcoes": 10896,
       "copa-1": 900,
       "copa-10": 210,
       "copa-11": 1156,
@@ -147,14 +319,14 @@
       "tronco-3": 96,
       "tronco-4": 96,
       "tronco-5": 96,
-      "vegetacao": 9360
+      "vegetacao": 9468
     },
-    "triangulos": 27762
+    "triangulos": 28406
   },
   "bosque-props": {
     "ancoras": {},
     "clipes": "",
-    "kb": 84.0,
+    "kb": 87.8,
     "nos": {
       "arvore-grande-a": 1156,
       "arvore-grande-b": 928,
@@ -163,9 +335,10 @@
       "cogumelo": 180,
       "moita": 192,
       "toco": 72,
-      "tora": 108
+      "tora": 108,
+      "tora-que-boia": 108
     },
-    "triangulos": 3958
+    "triangulos": 4066
   },
   "recife": {
     "ancoras": {

@@ -78,7 +78,8 @@ Arquivo: `arquipelago/src/mundo/medidas.ts`.
   para o ... ficou pronta". Essa chegada aparece uma vez só. A ilha entra em
   `pontesVistas` no salvamento.
 - **Ilha aberta hoje:** chegar perto mostra a ação "Olhar em volta". O Zappy explica que os
-  moradores e os bichos chegam numa próxima fase.
+  moradores e os bichos chegam numa próxima fase. No Bosque, que já tem a Capi (seção 6.15), essa
+  ação não aparece (`ILHAS_VIVAS` em `arquipelago/src/mundo/anel.tsx`).
 - **O Farol** fica na sua ilha, ao lado da casa (`FAROL = { x: -12, z: -13 }`). Ele acende quando a
   posição é 8 ou mais (`arquipelago/src/mundo/farol.tsx`, `aceso = jornada >= 8`).
 - **Primeira entrada:** a pessoa aparece no quarto (`INICIO`). Enquanto a porta nova não foi
@@ -254,8 +255,9 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 2` (`SalvamentoV2Schema`, estrito: campo desconhecido é
-  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso.
+- **Versão:** `VERSAO_SALVAMENTO = 3` (`SalvamentoV3Schema`, estrito: campo desconhecido é
+  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
+  a V2 mais a Capi e os bichos do Bosque.
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -265,16 +267,24 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   - se a porta nova da casa foi aberta;
   - o melhor de cada percurso (`percursos`): as três estrelas, cada uma guardada à parte, e o
     melhor tempo em milissegundos (de 0 a 1 hora). Hoje o único percurso é `bosque-copas`
-    (`PERCURSOS`).
+    (`PERCURSOS`);
+  - a Capi (`moradores.capi`): a amizade (de 0 a 500, `AMIZADE_MAXIMA`), o último dia de conversa e
+    de presente e o pedido do dia (o dia, qual é e se já foi entregue). Os dias são `AAAA-MM-DD`
+    no horário do aparelho;
+  - os bichos do Bosque (`bichos`): os achados (cada um no máximo uma vez, de `BICHOS_DO_BOSQUE`:
+    cachorro, gato, coelho e porquinho) e o adotado, com nome (de 1 a 16 letras), fase (filhote
+    ou adulto), fome, limpeza e carinho (de 0 a 100), os dias bem cuidado e o truque (sessões, o
+    último dia de sessão e se já aprendeu).
 - **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
   `migrarSalvamento`. Assim ninguém perde o progresso.
-- **A V1 continua valendo:** um salvamento V1 guardado é lido já migrado (`migrarDaV1`: tudo igual
-  e nenhum percurso corrido).
-- **Aba aberta antes da atualização:** ela ainda grava V1. O serviço aceita e guarda já migrado,
-  mas responde em V2, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
+- **A V1 e a V2 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`: tudo
+  igual e nenhum percurso corrido; `migrarDaV2`: tudo igual, a Capi com amizade 0, nenhum bicho
+  achado e nenhum adotado).
+- **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
+  já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
   mudança de formato; resolver de vez pede que a plataforma recarregue o jogo quando o manifesto
   muda.
@@ -422,17 +432,85 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 |---|---|---|
 | Andar | 2,2 por segundo | `CORPO.andar` (`sistemas/corpo.ts`) |
 | Correr | 4,6 por segundo | `CORPO.correr` |
-| Nadar | 2,6 por segundo | `NADAR` |
-| Pulo | 8,5 | `PULO` |
-| Gravidade | -24 | `GRAVIDADE` |
+| Nadar | 2,6 por segundo | `CORPO.nadar` |
+| Pulo | 8,5 para cima (sobe 1,5 m) | `CORPO.pulo` |
+| Degrau que sobe andando | 0,45 (de frente, numa parede reta, uns 0,43) | `CORPO.degrau` |
+| Rampa que sobe / escorrega | até 52° / acima de 60° | `CORPO.sobeAte`, `CORPO.escorregaAcimaDe` |
+| Gravidade | 24 para baixo | `GRAVIDADE` (`mundo/medidas.ts`) |
+| Aceleração no chão / freio | 18 / 24 por segundo² | `PERFIS.chao` (`sistemas/movimento.ts`) |
+| Aceleração no ar / freio | 7 / 3 por segundo² | `PERFIS.ar` |
+| Aceleração na água / freio | 6 / 4 por segundo² | `PERFIS.agua` |
+| Coyote time (pular depois de sair da beirada) | 0,12 s | `TOLERANCIA_DO_PULO.coyote` |
+| Jump buffer (o toque antes de pousar vale) | 0,12 s | `TOLERANCIA_DO_PULO.buffer` |
 
 A velocidade final é multiplicada pelo ritmo do humor (6.2).
+
+- **Com peso** (controlador universal, 28/10/2026): a velocidade vai até a pedida em vez de pular
+  para ela. Andar chega em 0,12 s, correr em 0,26 s; parar da corrida leva 0,19 s; pedir para trás
+  freia antes de ir. Os números iniciais dos levantamentos da dona (andar 4,2, correr 6,5,
+  gravidade 20) não foram adotados: as ilhas, as pontes e o percurso nas copas foram medidos com
+  as velocidades acima, e mudar exigiria medir tudo de novo.
+- **Um toque, um pulo**: segurar o pulo não fica pulando a cada aterrissagem; o toque até 0,12 s
+  antes de pousar vale ao pousar, e logo depois de sair da beirada ainda dá para pular.
+- **Física em passos fixos** de 1/60 s (`PASSO_DA_FISICA`), com o desenho suavizado entre passos: o
+  mesmo movimento a 30, 60 ou 144 quadros por segundo.
+- **Até onde o pulo chega** (`alcanceDoPulo`, `alcanceMaximoDoPulo`, `beiradaMaximaDoPulo` em
+  `sistemas/corpo.ts`): sem ajuda, 1,5 m de altura e 1,56 m de vão andando ou 3,26 m correndo. O pé
+  redondo pega a borda antes do meio do corpo chegar (um raio de cada lado): com o humor ótimo, o
+  vão mais largo fica em 2,4 m andando e 4,3 m correndo. O degrau automático só vale pisando (até
+  28/10/2026 ele também valia no ar, uma ajuda escondida que levava a beirada a uns 1,95 m): no ar,
+  quem chega perto de uma quina marcada a agarra (abaixo), e a beirada mais alta passa a uns 3,65 m
+  (`beiradaMaximaAgarrando`). Para desenhar vãos e beiradas: abaixo do alcance sem ajuda passa
+  sempre; acima do máximo, nunca; beirada entre 1,5 e 3,65 m só com a quina marcada para agarrar.
+- **Agarrar a borda** (`sistemas/modos/borda.ts`): no ar, caindo (ou quase no alto do pulo), com as
+  mãos (0,9 m acima do meio do corpo) a até 0,35 m acima ou abaixo de uma quina marcada e até 0,6 m
+  dela do lado de fora (0,35 mais 0,25 de assistência), longe 0,2 m das pontas, o corpo pendura
+  rente à parede. Frente (para a parede) sobe: do pendurado até de pé em cima, 0,6 m para dentro da
+  quina, em 0,5 s. Os lados andam pela quina a 0,8 m/s; trás ou usar soltam (e a mesma quina só pega
+  de novo depois de 0,5 s); pular sai para longe da parede. No Bosque, a pedra de agarrar (2 × 2 m,
+  2,1 m de altura) fica entre os deques da T3 e da T4; os deques não têm quina de agarrar (o
+  guarda-corpo segura quem sobe).
+- **Equilíbrio no tronco caído** (`sistemas/modos/equilibrio.ts`): andando ao longo do tampo de um
+  tronco estreito, o corpo fica preso ao eixo e anda a 1,6 m/s; pedir o lado inclina o corpo (até
+  0,25) e a inclinação volta sozinha em 0,3 s. Sai nas pontas (seguindo o passo), pulando, ou
+  pedindo o lado com força por 0,8 s (desce para aquele lado). Ninguém cai por erro pequeno. Os
+  braços abrem (animação Equilibrar). No Bosque, o tronco caído fica ao lado da trilha do lago.
+- **Escada reta** (`sistemas/modos/escada.ts`): andando contra os degraus embaixo (0,15 s) ou para a
+  escada, do deque, em cima, o corpo pega nela; frente e trás sobem e descem a 1,5 m/s. No alto sai
+  sozinho para o deque; embaixo solta; pular solta para trás. No Bosque, a escada vai do chão ao
+  deque do escorregador.
+- **Escorregador** (`sistemas/modos/escorregar.ts`): pisar na pista senta; a velocidade cresce com a
+  inclinação (a gravidade do jogo e o atrito 0,3 do plástico), até 5,5 m/s, e nunca para no meio;
+  pedir o lado mexe um pouco dentro da pista. No fim, continua correndo um pouco. A câmera fica
+  atrás, olhando à frente (perfil `escorregar`).
+- **Sala de testes** (`bun run dev`, `/movimento`; `playground/sala-de-movimento.ts`): pista com
+  faixas a cada 2 m, degraus de 0,2, 0,35, 0,4 e 0,5, rampas de 25°, 42° e 55°, beiradas de 1,2,
+  2,6 e 4,1 m (a quina da frente marcada para agarrar), plataformas com vãos de 1,2, 2,8 e 4,8 m, parede, árvore e corredor para a câmera e um
+  laguinho com rampa de entrada. Cada estação tem um que passa e um que não passa, medidos pelos
+  números do corpo (`tests/sala-de-movimento.test.ts`), e o painel mostra a velocidade, o modo, o
+  último pulo, o tranco da câmera e os quadros por segundo. Conferido no navegador em 28/10/2026:
+  2,44 m/s andando e 5,10 correndo (com o humor ótimo), degraus e rampas como acima, beirada de
+  1,9 m alcançada e de 2,4 não (com o degrau no ar, antes da borda), vão de 1,2 andando, 2,9 só
+  correndo e 5 m nunca, nado no meio do laguinho e saída andando pela rampa. Com a borda: a beirada
+  de 1,2 no pulo, a de 2,6 pulando, agarrando e subindo, a de 4,1 nunca.
 
 - **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
   até pisar ou cair no mar (a água freia), e a direção pedida só corrige 45% do normal
   (`CONTROLE_NO_AR = 0.45`).
+- **Controles** (os mesmos em todo o jogo, `controles/`): teclado (WASD ou setas, Shift corre,
+  espaço pula, E usa, C põe a câmera nas costas, + e - aproximam), toque (joystick que nasce onde o
+  polegar pousa na metade esquerda de baixo, botões Pular e Usar, arrastar gira a câmera, pinça
+  aproxima) e controle físico (analógico esquerdo anda e, todo empurrado, corre; direito gira a
+  câmera a 2,6 rad/s e inclina a 1,4 rad/s; botão de baixo pula; o da direita usa; gatilho direito
+  corre; clique no analógico direito recentraliza; Start faz o que o Esc faz; zona morta 0,15).
+- **Conforto da câmera** (no menu, `sistemas/conforto.ts`, guardado no aparelho, o mesmo para Kids
+  e Adultos): rapidez ao girar (devagar 0,6, normal 1, rápida 1,5 vezes), distância de partida
+  (perto 6, normal 9, longe 13 m; a roda e a pinça seguem valendo), inverter para cima e para
+  baixo, a câmera voltar sozinha para as costas (desligada por padrão: começa depois de 2,5 s
+  andando sem mexer nela) e menos movimento da câmera (soma com o pedido do aparelho). O jogo não
+  tem tremor de câmera.
 - **Pular** conta cada toque (`controle.pulos`): o toque rápido que desce e sobe no mesmo quadro
-  também solta o cipó e pula do tronco.
+  também solta o cipó e pula do tronco, e no chão cada toque é um pulo (`passoDoPulo`).
 - **Braços:** no cipó e no tronco o avatar segura com os braços para cima
   (`personagem/bracos.ts`, `RUMOS`). As poses da plataforma não têm essa; o jogo aponta os ossos
   depois da pose.
@@ -442,7 +520,7 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
 As velocidades foram casadas com o corpo do avatar em 28/10/2026: ele é chibi (perna de 0,5 m
 num corpo de 2,2 m), e com os antigos 4,2 e 7,2 as pernas teriam de girar rápido demais ou o pé
 patinaria. Correndo, ele vai um pouco mais rápido que o "andar" antigo; o pulo correndo alcança
-3,3 m (o pulo andando antigo alcançava 3,0 m).
+3,3 m sem ajuda (o pulo andando antigo alcançava 3,0 m).
 
 **As animações** (`arquipelago/src/sistemas/locomocao.ts`, clipes em
 `src/assets/avatar/locomocao.glb`, gerados por `arte/avatar/locomocao.py`):
@@ -518,7 +596,23 @@ Arquivos: `sistemas/camera.ts`, `personagem/camera.tsx` e `mundo/medidas.ts`.
   - a inclinação fica entre 0,12 e 1,25;
   - a roda do mouse aproxima ou afasta, de 4 a 18;
   - a distância inicial é 9.
-- **Dentro de casa:** a câmera fica a no máximo 8 e olha mais de cima (inclinação mínima 0,95).
+- **Perfis** (controlador universal, parte 5, `sistemas/perfis-de-camera.ts`): cada atividade
+  ajusta o ângulo e a distância que a pessoa deixou, e a câmera passa de um perfil para o outro em
+  0,5 s (`TROCA_DE_PERFIL`), nunca de um quadro para o outro. Vale um de cada vez, nesta ordem:
+
+  | Perfil | Quando | O que muda |
+  |---|---|---|
+  | Conversa | painel de conversa aberto (a Capi) | ângulo 0,2 e no máximo 5 m (mais abaixo) |
+  | Casa | dentro de casa | ângulo de pelo menos 0,95 e no máximo 8 m |
+  | Escorregador | descendo o escorregador | ângulo de pelo menos 0,45, pelo menos 7 m, o olhar 0,35 s à frente, e a câmera vira para as costas |
+  | Percurso | corrida do percurso em andamento | ângulo de pelo menos 0,6, pelo menos 11 m, e o olhar 0,4 s à frente de quem corre (até 2 m) |
+  | Exploração | o resto | nada: vale o que a pessoa escolheu |
+
+  O "lá no alto" e a colisão continuam valendo por cima de todos (no deque, a câmera do percurso
+  também desce e chega perto, por baixo das copas). No percurso só o olhar vai à frente: a câmera
+  e a bolinha que testa as paredes continuam saindo do corpo. Com menos movimento, não antecipa.
+  Conferido no navegador em 28/10/2026: ao sair de casa o ângulo vai de 1,03 a 0,60 em uns 0,8 s;
+  ao começar o percurso a distância vai de 9,5 a 11,5 m.
 - **Parede ou tronco atrás do personagem:**
   - a câmera encosta na hora e nunca atravessa (`distanciaDaCamera`);
   - para antes da parede, com folga de 0,35 (`FOLGA_DA_CAMERA`);
@@ -664,10 +758,20 @@ Arquivos: `sistemas/escalada.ts` (`ESCALADA`), `mundo/bosque.ts` (`TRONCO_DOS_CI
 
 Arquivos: `mundo/bosque-vivo.tsx` e `personagem/personagem.tsx`.
 
-- O lago do Bosque (nó `agua`) não tem fundo no desenho: é uma mancha sobre o chão. O jogo usa a
-  elipse da caixa dele como água rasa.
-- Pisando nela, o personagem nada: velocidade de nado (2,6), sem pular, deitado como no mar, e o
-  avatar afunda até a cintura (o corpo continua no chão).
+- O lago do Bosque (nó `agua`, a elipse da caixa dele) tem fundo na colisão do chão: uma bacia de
+  0,85 m no meio, com rampa até debaixo da areia molhada da beira (até uns 43°; a criança sobe
+  52°). A água do desenho é opaca e cobre o fundo (`bacia` em `arte/ilhas/bosque.py`).
+- Nadar segue a mesma regra no mar e no lago: em pé no fundo, a criança começa a nadar quando a
+  água passa da cintura por 0,12 m (`ENTRAR_NO_NADO`) e só volta a andar quando pisa e a cintura sai
+  da água (`SAIR_DO_NADO`, 0,02). Nadando: velocidade 2,6, sem pular, deitada, e a cintura boia na
+  linha da água.
+- **O tronco que boia** (`mundo/tronco-no-lago.tsx`, física viva etapa 2): um tronco de madeira de
+  1,6 m e raio de 0,16 m (uns 64 kg) no meio do lago, com quatro pontos de flutuação
+  (`sistemas/empuxo.ts`). Em cada passo, cada ponto dentro da água recebe o empuxo pela
+  profundidade dele e o arrasto da água: o tronco cai, balança e assenta com metade de fora
+  (madeira tem metade da densidade da água, `sistemas/materiais-fisicos.ts`). A criança empurra
+  (peso de 30 kg, `MASSA_DA_CRIANCA`): na água ele desliza devagar; dá para tirar pela rampa e pôr
+  de volta. Se cair da ilha, volta para o meio do lago.
 
 ### 6.13 Percurso nas copas
 
@@ -734,8 +838,9 @@ a câmera ignora).
 - **Tamanho:** o que é macio (moita, folhagem, cogumelo) fica um pouco menor que o desenho, para o
   corpo encostar nas folhas sem entrar. O que é duro (parede, tronco, pedra) fica do tamanho do
   desenho.
-- **O degrau:** o degrau automático é de 0,45, e com a curva do pé o personagem ainda escorrega por
-  cima de uma quina até uns 0,58. Pedras pequenas, cogumelos pequenos, as pedras da beira do lago
+- **O degrau:** o degrau automático é de 0,45 (de frente, numa parede reta, ele sobe uns 0,43;
+  medido na sala de testes), e com a curva do pé o personagem ainda escorrega por cima de uma quina
+  até uns 0,58. Pedras pequenas, cogumelos pequenos, as pedras da beira do lago
   do Bosque e as tocas ficam abaixo disso (ele sobe nelas). Moitas e canteiros têm pelo menos 0,7
   (`ALTURA_QUE_SEGURA`): ele para na borda. A parte de cima que passa do desenho não aparece.
 - **A câmera:** moitas, folhagem, cogumelos e peças finas (postes, estacas, colunas, floreiras,
@@ -751,6 +856,99 @@ a câmera ignora).
 - **O pé do tronco de escalar fica livre:** nenhuma pedra perto dele (as do lago e a primeira
   pedra do Bosque foram afastadas), porque quem dá a volta no tronco lá embaixo passaria por dentro
   delas (`LONGE_DO_TRONCO_DE_ESCALAR`, em `arte/ilhas/bosque.py`).
+
+### 6.15 A Capi e os bichos do Bosque
+
+Arquivos: `arquipelago/src/sistemas/moradores.ts` (a Capi), `falas-da-capi.ts` (os textos dela),
+`conversa-da-capi.ts` (a conversa sobre o salvamento), `esconde.ts` (o esconde-esconde) e
+`bichos.ts` (o bicho adotado); no mundo, `mundo/capi.tsx` e o painel `interface/capi.tsx`. Testes:
+`tests/moradores.test.ts`, `tests/bichos.test.ts`, `tests/caminho.test.ts` e
+`tests/esconde-no-bosque.test.ts` e `tests/cuidar.test.ts`. A Capi, o esconde-esconde e o bicho
+adotado já estão no jogo. O plano da parte que falta:
+`docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
+
+- **Onde ela fica:** na âncora `morador` do `bosque.glb`, na frente da cabana, de costas para a
+  porta. A até 7 m (`CAPI_NO_BOSQUE.olharDe`) ela se vira para a criança e acena quando ela chega
+  (no máximo uma vez a cada 45 s). Ela segura o corpo (um cilindro de 0,45 de raio), mas a câmera
+  passa por ela. Pisca de vez em quando, fala enquanto a conversa está aberta e comemora presente
+  e pedido entregue.
+- **Conversar** (E perto dela, a até 2,2 m): uma caixa embaixo da tela com o nome, os corações (o
+  que está enchendo aparece pela metade), uma fala por vez ("Continuar") e depois as escolhas:
+  entregar o pedido do dia (aparece só com tudo na mochila; senão a caixa mostra o que falta),
+  dar um presente (a lista da mochila) e "Tchau, Capi". O jogo fica parado enquanto ela está
+  aberta, e o Esc fecha.
+- **A câmera da conversa** (`personagem/camera.tsx`): a criança vira para a Capi e a câmera vai
+  para trás e para o lado dela, do lado de fora da ilha (o miolo tem árvores e escadas), a não ser
+  que a sonda ache esse lado tapado e o outro livre. Fica a 5 m, baixa, e olha um pouco abaixo das
+  cabeças para as duas aparecerem acima da caixa. Com menos movimento pedido no sistema, ela não
+  gira, só muda o ponto que olha.
+- **O dia:** tudo o que é "uma vez por dia" conta pelo dia do calendário no horário do aparelho
+  (`diaDe`), não pelo dia e noite do jogo.
+- **Amizade com a Capi** (`AMIZADE`): de 0 a 500 (`AMIZADE_MAXIMA`, no contrato), 5 corações de 100
+  (`coracoes`). A primeira conversa do dia dá 10, entregar o pedido do dia dá 30, um presente de que
+  ela gosta dá 20 e um comum dá 8. Só a primeira conversa e o primeiro presente do dia contam. A
+  amizade nunca desce.
+- **Presentes** (`darPresente`, `GOSTOS_DA_CAPI`): milho e salada são os preferidos; pipoca,
+  alface e tomate são comuns. O que não é comida ela devolve e o item fica com a criança. Depois
+  do primeiro presente do dia ela pede para guardar para amanhã, e o item também fica.
+- **Aniversário** (`ANIVERSARIO_DA_CAPI`): 12 de março. O presente vale o dobro e ela fala dele.
+- **Pedido do dia** (`PEDIDOS_DA_CAPI`, `pedidoDoDia`): duas alfaces, dois tomates, um milho, uma
+  salada ou duas pipocas e, enquanto houver bicho escondido, achar mais um bicho. O sorteio usa o
+  dia e o perfil, então o pedido é o mesmo o dia inteiro em qualquer aparelho, e fica guardado no
+  salvamento. Entregar tira os itens do inventário (`entregarPedido`). O de achar só se cumpre com
+  um bicho achado depois do pedido.
+- **Conversa** (`falasDaCapi`): no primeiro encontro ela conta a história dos bichos escondidos. Na
+  primeira conversa do dia: o aniversário (se for), uma fala do nível de amizade (duas por nível,
+  trocando pelo dia), quantos bichos já foram achados, o bicho adotado e o pedido. As outras
+  conversas do mesmo dia são só uma despedida. Os textos seguem as regras do jogo: sem travessão,
+  sem exclamação e sem começar com pergunta (o teste confere).
+- **Esconde-esconde** (`ESCONDERIJOS`, `mundo/bichos-do-bosque.tsx`): cada bicho fica sempre no
+  mesmo lugar (uma criança pode contar para outra): o cachorro atrás da moita da beira norte, o
+  gato entre os cogumelos e as pedras do lago, o coelho na boca da toca do oeste e o porquinho
+  atrás da cabana. As posições vêm das âncoras `esconderijo-1` a `esconderijo-4` do
+  `bosque.glb` (para mudar, mexa em `ESCONDERIJOS` no `arte/ilhas/bosque.py` e em
+  `ESCONDERIJOS_NO_MODELO` no `mundo/bosque.ts`, que precisam bater). De longe o bicho não
+  aparece; a uns 5,6 m ele surge aos poucos, e a 4 m (`RAIO_DA_PISTA`) ele balança de contente e o Zappy fala da pista
+  (rabinho, orelhas, farfalhar ou focinho, `FALA_DA_PISTA`). A 1,4 m (`RAIO_DE_ACHAR`) aparece
+  "Achar o gato frajola": o achado fica guardado para sempre, o bicho comemora e corre pelo chão
+  até o cercadinho da Capi, entrando pela porteira (`sistemas/caminho.ts`: busca numa grade de
+  25 cm que contorna o que é duro e atravessa moitas e cogumelos). No cercadinho cada um tem o
+  seu lugar, pela ordem em que foi achado (`LUGARES_NO_CERCADO`), fica parado ou sentado e olha
+  para a criança que chega. Achar os quatro faz o Zappy pedir para contar para a Capi.
+- **O Zappy no esconde-esconde:** depois de conhecer a Capi, ele avisa quando a criança esquenta,
+  sempre do escondido mais perto (`maisPertoEscondido`): morno (até 15 m), quentinho (até 7 m) ou
+  pertinho (até 2,1 m), só quando muda para mais quente e no máximo uma vez a cada 12 s
+  (`deveFalarDoCalor`, `INTERVALO_DO_CALOR`). Esfriar não diz nada.
+- **Adotar** (`adotar`, `nomeValido`, `motivoDoNome`, `adotarPelaCapi`): depois do primeiro bicho
+  achado, a conversa com a Capi ganha "Adotar um bicho". A criança escolhe um dos achados e dá um
+  nome de 1 a 16 caracteres, só letras, espaço e hífen, começando por letra; nome que não serve
+  mostra o motivo embaixo do campo. Um bicho por vez nesta fase. O nome fica só no salvamento da
+  criança e ninguém mais vê. O bicho chega com 80 em cada medida e sai do cercadinho para andar
+  com ela. As falas usam o nome e nenhum pronome: é a criança quem decide quem o bicho é.
+- **Seguir** (`sistemas/seguir.ts`, `mundo/bicho-adotado.tsx`): o bicho anda atrás da criança pela
+  ilha central e pelo Bosque com um controlador de personagem do Rapier próprio (sobe degrau de
+  0,3, para na parede). Começa a andar quando ela passa de 2,6 m, para a 1,6 m (dois passos),
+  corre acima de 5 m e senta depois de 6 s parado. No cipó, no tronco, nadando ou com o jogo
+  parado, ele espera. Mais longe que 14 m (a criança atravessou a ponte correndo, voltou para casa
+  no cochilo), caído da ilha (abaixo de 0,5 m sob o mar, `abaixoDoMar`) ou preso contra uma
+  parede por 2,5 s querendo andar (`presoPor`), ele reaparece dois passos atrás dela. A criança
+  passa por ele: o bicho nunca prende nem empurra (os dois corpos são cinemáticos e se ignoram).
+- **Cuidar** (`sistemas/cuidar.ts`, painel `interface/bicho.tsx`): perto dele aparece "Cuidar de"
+  e o nome, só quando nenhum outro botão está ao alcance (a Capi, o "Achar", a porta e o Quadro
+  vêm antes: o bicho anda sempre perto e não pode tomar o E deles; `deFundo` em
+  `mundo/interativos.ts`). O painel mostra barriga, limpeza e carinho, a última fala e os cuidados: comida da
+  mochila (repõe o dobro do que repõe na criança), banho (só perto do lago do Bosque ou dentro de
+  casa; repõe 60), carinho (repõe 25), a aula do truque e, depois de aprendido, pedir o truque.
+  Fome cai 1,5, limpeza 0,8 e carinho 1 por minuto JOGADO (`QUEDA_DO_BICHO_POR_MINUTO`, nos
+  relógios do jogo, junto com as necessidades da criança). Abaixo de 30 em qualquer medida ele fica
+  triste e não faz o truque (`tristinho`). Ele nunca morre nem foge.
+- **Crescer** (`contarDiaCuidado`, `crescer`): um dia conta como bem cuidado quando as três medidas
+  passam de 60 em algum momento dele (conferido depois de cada cuidado). No sétimo dia assim o
+  filhote vira adulto na hora, com festa, e o modelo troca pelo adulto.
+- **Truque** (`ensinar`, `fazTruque`, `TRUQUE`, `TRUQUE_FEITO`): uma aula por dia, com as três
+  medidas acima de 50. Na quinta aula ele aprende e passa a fazer o truque quando pedem (dar a
+  pata, rolar no chão, dar um pulinho ou girar no lugar), tocando o clipe "truque".
+- **Moedas:** nada disto paga moedas.
 
 ## 7. Desafios
 

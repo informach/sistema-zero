@@ -35,9 +35,9 @@ export type ColisorDaIlha =
 /**
  * Colisores que só seguram o corpo: a câmera passa por eles, senão ela pularia para perto por nada
  * que se vê (o guarda-corpo dos deques e as paredes sob os corrimãos de corda), por folhagem macia
- * (moitas, a saia do pinheiro, cogumelos) ou por peça fina e baixa (postes, estacas, colunas,
- * floreiras, vasos, canteiros, o barquinho e as pernas do escorregador). Paredes, troncos, pedras,
- * torre e cabana continuam tapando a câmera.
+ * (moitas, a saia do pinheiro, cogumelos), por peça fina e baixa (postes, estacas, colunas,
+ * floreiras, vasos, canteiros, o barquinho e as pernas do escorregador) ou por quem mora na ilha
+ * (a Capi). Paredes, troncos, pedras, torre e cabana continuam tapando a câmera.
  */
 const SO_PARA_O_CORPO = [
   'col-guarda-',
@@ -54,6 +54,8 @@ const SO_PARA_O_CORPO = [
   'col-canteiro-',
   'col-barco-',
   'col-quadro-',
+  'col-morador-',
+  'col-escada-reta-',
 ]
 
 export function soParaOCorpo(nome: string): boolean {

@@ -1,9 +1,10 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Mesh, Object3D } from 'three'
-import { useJogo } from '../estado/contexto'
+import { type Movimento, useJogo } from '../estado/contexto'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
+import { troncoAgora } from './tronco-no-lago'
 
 /**
  * Só para medir o desenho (playground e conferência de desempenho): com
@@ -36,6 +37,11 @@ export interface MedidaDoDesenho {
   esmaecidas: string[]
   /** Quanto a última ilha completa solta liberou. */
   liberadas: { geometrias: number; materiais: number; texturas: number }
+  /** O tronco que boia no lago do Bosque (posição e parte na água). */
+  tronco: typeof troncoAgora
+  /** O modo do corpo (`sistemas/modos`) e se ele pisa em algo. */
+  modo: Movimento['modo']
+  noChao: boolean
 }
 
 function medirLigado(): boolean {
@@ -60,7 +66,7 @@ export function Medidor() {
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const cena = useThree((s) => s.scene)
-  const { rastro, pedidos } = useJogo()
+  const { rastro, pedidos, movimento } = useJogo()
   const conta = useRef({ tempo: 0, quadros: 0 })
   useEffect(() => {
     if (!ligado) return
@@ -93,6 +99,9 @@ export function Medidor() {
       liberadas: { ...ultimaLiberacao },
       esmaecidas: [...esmaecidasAgora],
       geometriasNaCena: contarGeometrias(cena),
+      tronco: { ...troncoAgora },
+      modo: movimento.modo,
+      noChao: movimento.noChao,
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida
     c.tempo = 0

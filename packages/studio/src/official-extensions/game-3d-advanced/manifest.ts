@@ -229,7 +229,7 @@ da vida com que ele nasceu, e "Mostrar a barra de vida do molde" pendura uma
 barrinha sobre a cabeça de cada um. Quer uma morte com queda antes de sumir?
 Guarde a vida nos dados do objeto e use um estado "morrendo".
 
-**Placar e falas**. "Escrever no canto … da tela" (a mesma lista de cantos das
+**Placar e falas**. "Escrever na tela …" (a mesma lista de cantos das
 outras extensões 3D; texto vazio apaga) e "Somar … aos pontos" (os pontos
 aparecem sozinhos em cima, à direita). "… diz … por … s" põe um balão de fala
 que acompanha o objeto e some sozinho.

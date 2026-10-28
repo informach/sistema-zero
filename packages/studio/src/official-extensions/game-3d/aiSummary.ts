@@ -10,7 +10,7 @@ encostou. Vários blocos “A cada quadro” da mesma cena rodam em ordem.
 FAÍSCA: use topDown(personagem, velocidade) no quadro: ele já anda, sem grupo.
 walkArea(personagem,minX,maxX,minZ,maxZ) define caminhos em Ao iniciar; walkAnimations
 escolhe parado/andando. onTouch(personagem,chave,()=>{...}) registra o encontro direto.
-frameScene(cena,largura,altura,profundidade) enquadra o jogo também em painéis estreitos.
+frameScene(cena,largura,altura,profundidade) enquadra o jogo também em painéis estreitos; quem joga dá zoom (rodinha), gira (arrastar) e volta (duplo clique), e as setas andam em relação à câmera.
 Não usar listas, objetos literais, propriedades genéricas ou blocos intermediários no Faísca.
 controlWithKeys mantém o contrato antigo de somente definir velocidade.
 
@@ -47,9 +47,9 @@ RECURSOS: o Kit Plataforma monta mapas de texto, temas, checkpoint, placar, even
 inimigos e câmera lateral; use-o como no exemplo Reino Cogumelo. Travessia e Corrida
 congelam depois da derrota até o comando de recomeçar.
 
-REGRAS DE JOGO: “Escrever no canto … da tela”, pontos, vida com corações (“Dar/Machucar/
+REGRAS DE JOGO: “Escrever na tela …”, pontos, vida com corações (“Dar/Machucar/
 Curar”, “Quando a vida de … acabar”), contagem, “Depois de N segundos”, sorteio, telas de
-início/fim/vitória, “Fim de jogo: você perdeu/ganhou” e “Recomeçar o jogo” (os dois só
+início/fim/vitória, “Fim de jogo: você perdeu/ganhou” e “Reiniciar o jogo” (os dois só
 durante um laço, evento ou função), tremer a câmera e piscar. “Quando apertar a tecla”,
 “Quando clicar ou tocar em” e “Quando … encostar em algum do grupo” são eventos. O núcleo é iniciante-3d e o resto aparece no
 intermediário-3d. Não use JS cru quando houver um bloco equivalente.`

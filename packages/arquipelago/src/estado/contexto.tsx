@@ -43,6 +43,12 @@ export interface Pedidos {
   chaoChegando: Set<string>
   /** Para onde olhar depois do teleporte (o giro do avatar); `null` mantém. */
   olharPara: number | null
+  /**
+   * Com quem a criança está conversando (a cabeça de quem fala). Com o painel da conversa aberto,
+   * ela vira para lá e a câmera vai para o lado e enquadra as duas, de preferência o lado longe de
+   * `miolo` (o meio da ilha, onde ficam árvores e escadas). Quem abriu a conversa limpa.
+   */
+  conversa: { x: number; y: number; z: number; miolo: { x: number; z: number } } | null
 }
 
 /**
@@ -75,7 +81,59 @@ export interface TroncoVivo {
   tronco: Tronco
 }
 
-export type ModoDoCorpo = 'chao' | 'cipo' | 'escalada'
+/**
+ * O eixo de um tronco caído estreito (`equilibrio-*` do GLB): as duas pontas no tampo, no meio do
+ * tronco, no mundo. Andando ao longo dele, o corpo entra no modo de equilíbrio.
+ */
+export interface EixoDeEquilibrio {
+  id: string
+  a: Ponto
+  b: Ponto
+}
+
+/**
+ * Uma escada reta (`escada-N-base`, `-topo` e `-saida` do GLB), no mundo: o eixo do pé ao alto, na
+ * frente dos degraus, e o ponto do deque onde quem chega em cima sai. Quem sobe fica do lado oposto
+ * ao da saída, de frente para a escada.
+ */
+export interface EscadaViva {
+  id: string
+  base: Ponto
+  topo: Ponto
+  saida: Ponto
+  /** A largura dos degraus (para pegar de lado). */
+  largura: number
+}
+
+/**
+ * Um escorregador (`escorregador-curva-N` do GLB): a linha do meio da pista, em pontos amostrados do
+ * alto ao fim, no mundo e na superfície.
+ */
+export interface Escorregador {
+  id: string
+  pontos: Ponto[]
+  largura: number
+}
+
+/**
+ * Uma borda que se agarra (`borda-N-a`, `-b` e `-fora` do GLB), no mundo: a quina de `a` a `b`, na
+ * altura do tampo, e um ponto do lado de fora (onde o corpo fica pendurado).
+ */
+export interface BordaViva {
+  id: string
+  a: Ponto
+  b: Ponto
+  fora: Ponto
+}
+
+export type ModoDoCorpo =
+  | 'chao'
+  | 'cipo'
+  | 'escalada'
+  | 'equilibrio'
+  | 'escada'
+  | 'escorregar'
+  | 'borda'
 
 /**
  * Cipós, troncos de escalar e águas rasas das ilhas completas, e o que o personagem faz com eles
@@ -86,6 +144,10 @@ export interface Movimento {
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
+  equilibrios: EixoDeEquilibrio[]
+  escadas: EscadaViva[]
+  escorregadores: Escorregador[]
+  bordas: BordaViva[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
   /** Escritos pelo personagem. */
@@ -110,6 +172,10 @@ export function criarMovimento(): Movimento {
     cipos: [],
     troncos: [],
     aguas: [],
+    equilibrios: [],
+    escadas: [],
+    escorregadores: [],
+    bordas: [],
     pedido: null,
     modo: 'chao',
     noChao: false,

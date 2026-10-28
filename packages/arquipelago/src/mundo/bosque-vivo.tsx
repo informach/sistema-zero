@@ -18,7 +18,16 @@ import {
   TubeGeometry,
   Vector3,
 } from 'three'
-import { type AguaRasa, type CipoVivo, type TroncoVivo, useJogo } from '../estado/contexto'
+import {
+  type AguaRasa,
+  type BordaViva,
+  type CipoVivo,
+  type EixoDeEquilibrio,
+  type EscadaViva,
+  type Escorregador,
+  type TroncoVivo,
+  useJogo,
+} from '../estado/contexto'
 import { CIPO, comprimentoDaPegada, criarBalanco } from '../sistemas/cipo'
 import { CORDAS, criarPontos, passoDasCordas } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
@@ -35,6 +44,7 @@ import {
   quantasEstrelas,
   vagalumesPegos,
 } from '../sistemas/percurso'
+import { BichosDoBosque } from './bichos-do-bosque'
 import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
@@ -47,6 +57,7 @@ import {
   TRONCO_DOS_CIPOS,
   troncoNoMundo,
 } from './bosque'
+import { Capi } from './capi'
 import {
   type CipoDesenhado,
   desenharCipo,
@@ -56,6 +67,8 @@ import {
 import type { Copa } from './copas'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
+import { ComReserva } from './modelos'
+import { TroncoNoLago } from './tronco-no-lago'
 
 /** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
 const CHAO_DA_ILHA = 0.25
@@ -80,6 +93,11 @@ interface Quadro {
  * o percurso nas copas tem placa de largada, cronômetro, vagalumes e estrelas
  * (`sistemas/percurso.ts`). Tudo fica em coordenadas do mundo, fora do grupo da ilha.
  */
+/** A largura dos degraus da escada reta (`ESCADA_RETA` no `bosque.py`). */
+const LARGURA_DA_ESCADA = 0.6
+/** A largura da pista do escorregador (a tábua de 1 m entre as laterais, no `bosque.py`). */
+const LARGURA_DA_PISTA = 1
+
 export function BosqueVivo({
   ilha,
   centro,
@@ -144,7 +162,8 @@ export function BosqueVivo({
   )
   const troncos = useMemo(() => [tronco.tronco], [tronco])
 
-  // O lago (nó `agua`): a elipse do desenho, que não tem fundo; o personagem nada nela.
+  // O lago (nó `agua`): a elipse do desenho e a altura da superfície. O fundo está na colisão do
+  // chão (a bacia do `bosque.py`); o personagem nada nele e o tronco boia.
   const agua = useMemo<AguaRasa | null>(() => {
     const no = preparada.modelo.getObjectByName('agua') as Mesh | undefined
     if (!no?.isMesh) return null
@@ -172,6 +191,75 @@ export function BosqueVivo({
     }
   }, [preparada, meio, giro, ilha.id])
 
+  // Os troncos caídos do equilíbrio (âncoras `equilibrio-N-a` e `-b`, no tampo, no meio do tronco).
+  const equilibrios = useMemo<EixoDeEquilibrio[]>(() => {
+    const lista: EixoDeEquilibrio[] = []
+    for (let i = 1; ; i++) {
+      const a = preparada.modelo.getObjectByName(`equilibrio-${i}-a`)
+      const b = preparada.modelo.getObjectByName(`equilibrio-${i}-b`)
+      if (!a || !b) break
+      lista.push({
+        id: `${ilha.id}:equilibrio-${i}`,
+        a: paraOMundo(a.position, meio, giro, { x: 0, y: 0, z: 0 }),
+        b: paraOMundo(b.position, meio, giro, { x: 0, y: 0, z: 0 }),
+      })
+    }
+    return lista
+  }, [preparada, meio, giro, ilha.id])
+
+  // As escadas retas (âncoras `escada-N-base`, `-topo` e `-saida`).
+  const escadas = useMemo<EscadaViva[]>(() => {
+    const lista: EscadaViva[] = []
+    const noMundo = (p: { x: number; y: number; z: number }) =>
+      paraOMundo(p, meio, giro, { x: 0, y: 0, z: 0 })
+    for (let i = 1; ; i++) {
+      const base = preparada.modelo.getObjectByName(`escada-${i}-base`)
+      const topo = preparada.modelo.getObjectByName(`escada-${i}-topo`)
+      const saida = preparada.modelo.getObjectByName(`escada-${i}-saida`)
+      if (!base || !topo || !saida) break
+      lista.push({
+        id: `${ilha.id}:escada-${i}`,
+        base: noMundo(base.position),
+        topo: noMundo(topo.position),
+        saida: noMundo(saida.position),
+        largura: LARGURA_DA_ESCADA,
+      })
+    }
+    return lista
+  }, [preparada, meio, giro, ilha.id])
+
+  // As quinas de agarrar (âncoras `borda-N-a`, `-b` e `-fora`).
+  const bordas = useMemo<BordaViva[]>(() => {
+    const lista: BordaViva[] = []
+    const noMundo = (p: { x: number; y: number; z: number }) =>
+      paraOMundo(p, meio, giro, { x: 0, y: 0, z: 0 })
+    for (let i = 1; ; i++) {
+      const a = preparada.modelo.getObjectByName(`borda-${i}-a`)
+      const b = preparada.modelo.getObjectByName(`borda-${i}-b`)
+      const fora = preparada.modelo.getObjectByName(`borda-${i}-fora`)
+      if (!a || !b || !fora) break
+      lista.push({
+        id: `${ilha.id}:borda-${i}`,
+        a: noMundo(a.position),
+        b: noMundo(b.position),
+        fora: noMundo(fora.position),
+      })
+    }
+    return lista
+  }, [preparada, meio, giro, ilha.id])
+
+  // O escorregador (âncoras `escorregador-curva-N`, do alto ao fim, na superfície da pista).
+  const escorregador = useMemo<Escorregador | null>(() => {
+    const pontosDaPista = []
+    for (let i = 1; ; i++) {
+      const no = preparada.modelo.getObjectByName(`escorregador-curva-${i}`)
+      if (!no) break
+      pontosDaPista.push(paraOMundo(no.position, meio, giro, { x: 0, y: 0, z: 0 }))
+    }
+    if (pontosDaPista.length < 2) return null
+    return { id: `${ilha.id}:escorregador`, pontos: pontosDaPista, largura: LARGURA_DA_PISTA }
+  }, [preparada, meio, giro, ilha.id])
+
   const pontos = useMemo<PontosDoPercurso | null>(() => {
     const ancoras: Partial<AncorasDoPercurso> = {}
     for (const nome of NOMES_DAS_ANCORAS_DO_PERCURSO) {
@@ -190,6 +278,10 @@ export function BosqueVivo({
     for (const c of cipos) c.desenho = prepararCipoDesenhado(c.no, c.vivo.corda, CORDAS.elos)
     movimento.troncos.push(tronco)
     if (agua) movimento.aguas.push(agua)
+    movimento.equilibrios.push(...equilibrios)
+    movimento.escadas.push(...escadas)
+    movimento.bordas.push(...bordas)
+    if (escorregador) movimento.escorregadores.push(escorregador)
     return () => {
       const tirar = <T,>(lista: T[], item: T) => {
         const i = lista.indexOf(item)
@@ -198,6 +290,10 @@ export function BosqueVivo({
       for (const c of meus) tirar(movimento.cipos, c)
       tirar(movimento.troncos, tronco)
       if (agua) tirar(movimento.aguas, agua)
+      for (const e of equilibrios) tirar(movimento.equilibrios, e)
+      for (const e of escadas) tirar(movimento.escadas, e)
+      for (const b of bordas) tirar(movimento.bordas, b)
+      if (escorregador) tirar(movimento.escorregadores, escorregador)
       for (const c of cipos) {
         if (c.desenho) desmontarCipoDesenhado(c.desenho)
         c.desenho = null
@@ -208,7 +304,7 @@ export function BosqueVivo({
         loja.getState().definirCorrida(null)
       }
     }
-  }, [cipos, tronco, agua, movimento, loja])
+  }, [cipos, tronco, agua, equilibrios, escadas, bordas, escorregador, movimento, loja])
 
   /** No chão da ilha (não num deque, no cipó nem no tronco). */
   const noChao = () =>
@@ -392,6 +488,20 @@ export function BosqueVivo({
         <InterativoDoCipo key={c.vivo.id} cipo={c.vivo} noChao={noChao} />
       ))}
       <Placa x={placa.x} y={placa.y} z={placa.z} giro={giro} />
+      <ComReserva reserva={null}>
+        <Capi modelo={preparada.modelo} meio={meio} giro={giro} />
+      </ComReserva>
+      {agua ? (
+        <ComReserva reserva={null}>
+          <TroncoNoLago agua={agua} />
+        </ComReserva>
+      ) : null}
+      <BichosDoBosque
+        modelo={preparada.modelo}
+        colisores={preparada.colisores}
+        meio={meio}
+        giro={giro}
+      />
       <Trepadeira tronco={tronco} preparada={preparada} />
       {pontos?.vagalumes.map((p, i) => (
         <group

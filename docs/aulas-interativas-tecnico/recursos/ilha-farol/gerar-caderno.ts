@@ -85,7 +85,7 @@ const drawings: Record<string, string> = {
       `A cada quadro da cena ${field('cena')}`,
       block(
         'sz_g3d_top_down',
-        `Andar com ${field('personagem')} usando WASD/setas, velocidade ${num('4')}`,
+        `Fazer ${field('personagem')} andar com as setas (ou WASD), velocidade ${num('4')}`,
       ) + prepared('Aviso e chegada do barco'),
     ),
   ),
@@ -95,7 +95,7 @@ const drawings: Record<string, string> = {
     prepared('Outros objetos da ilha') +
       block(
         'sz_g3d_set_position',
-        `Posição do objeto ${field('chave')} em x ${num('−3')} y ${num('1')} z ${num('−2')}`,
+        `Colocar o objeto ${field('chave')} em x ${num('−3')} y ${num('1')} z ${num('−2')}`,
       ),
   ),
   recolher: encounter('chave', visible('chave')),
@@ -117,9 +117,9 @@ const drawings: Record<string, string> = {
     'Ao iniciar',
     prepared('Criar a cena, a câmera e a luz') +
       model('cenario', 'noite-na-ilha', '140') +
-      prepared('Posição do objeto cenario') +
+      prepared('Colocar o objeto cenario') +
       model('farol', 'farol-de-pedra', '5.3') +
-      prepared('Posição do objeto farol') +
+      prepared('Colocar o objeto farol') +
       model('barco', 'barco-pirata', '3.1') +
       prepared('Pedras e posições') +
       model('personagem', 'pirata', '1.66') +
