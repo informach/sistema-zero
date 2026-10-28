@@ -27,6 +27,14 @@ export function falaDaRecusa(r: Recusa): string | null {
       return 'O piso do quarto é o da plataforma. Ele muda no Meu quarto.'
     case 'limite':
       return 'A obra chegou no tamanho máximo.'
+    case 'dentro-de-casa':
+      return 'Isso é do quintal. Faça do lado de fora da casa.'
+    case 'tem-parede':
+      return 'Ali já tem parede ou cerca. Escolha outro lugar.'
+    case 'tem-caminho':
+      return 'Ali já tem caminho. Apague o caminho primeiro.'
+    case 'canteiro-com-planta':
+      return 'Esse canteiro tem planta. Colha primeiro e depois apague.'
     case 'nada':
       return null
   }

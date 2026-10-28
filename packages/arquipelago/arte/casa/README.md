@@ -144,6 +144,23 @@ Conferir: `bun scripts/faces-coplanares.ts --separados src/assets/casa/<arquivo>
 cozinha, o fogão a lenha de `arte/itens` acusa pares só dele (lenha, fogo e chapa); as peças daqui
 não acusam nada.
 
+## O que o jogo ainda desenha no código (falta no kit)
+
+O modo construção (28/10/2026, `arquipelago/src/sistemas/construcao/` e `src/mundo/obra.tsx`) usa
+este kit e precisa de duas peças que ele ainda não tem. Até elas chegarem, o jogo desenha formas
+simples no código:
+
+- **Cerca do quintal:** uma peça de 1 célula na linha da grade, como a parede (origem no meio da
+  base, sobre a linha), com 0,9 de altura, e o poste da ponta (`cerca-poste`, centrado no ponto da
+  grade). Hoje: um poste de 0,12 em cada ponto e duas travessas (a 0,35 e 0,72) por aresta
+  (`CERCA` em `sistemas/construcao/quintal.ts`). O jogo põe um poste em todo ponto com cerca.
+- **Canteiro do quintal:** um canteiro de 1 × 1 célula com a terra em cima, como o da horta
+  (`arte/mundo/horta.py`, nó `canteiro`, de 1,35) e com os mesmos nós de planta. Hoje o jogo usa o
+  canteiro da horta reduzido a 0,66 (`ESCALA_DO_CANTEIRO_DO_QUINTAL` em `mundo/horta.tsx`).
+- **Grama e pedra do quintal:** o topo fica na altura do chão da ilha, como diz o contrato acima,
+  e por isso o jogo sobe as duas 1 cm (`ACIMA_DO_TERRENO` em `mundo/obra.tsx`) para não piscar contra
+  o terreno.
+
 ## Peças
 
 Tamanho = largura × altura × fundo, em unidades do jogo. Triângulos por nó; o tamanho em KB é do

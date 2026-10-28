@@ -4,26 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BufferGeometry, Float32BufferAttribute, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import { CAMERA_DE_OBRA, lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
-import { planta } from '../sistemas/construcao/comodos'
 import {
-  type Aresta,
-  aberturaNaAresta,
-  arestaMaisPerto,
-  arestasDaAbertura,
-  arestasDoArrasto,
-  celulaEm,
-  type Ponto,
-  pontoMaisPerto,
-} from '../sistemas/construcao/grade'
+  arrasta,
+  arrasto,
+  type Ferramenta,
+  type Previa as PreviaDaRegra,
+  toque,
+} from '../sistemas/construcao/ferramentas'
+import type { Aresta, Ponto } from '../sistemas/construcao/grade'
 import { type Celula, chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
-import {
-  aberturaEm,
-  apagarParede,
-  esticarParede,
-  porAbertura,
-  tirarAbertura,
-  trocarPiso,
-} from '../sistemas/construcao/obra'
 
 const VERDE = '#3ccf7a'
 const VERMELHO = '#e2475f'
@@ -35,6 +24,15 @@ type Previa =
   | { tipo: 'celulas'; celulas: Celula[]; cor: string }
   | { tipo: 'ponto'; ponto: Ponto }
   | null
+
+/** A cor da prévia: vermelho no apagar e no que não dá; azul na porta e na janela; verde no resto. */
+function comCor(f: Ferramenta, p: PreviaDaRegra): Previa {
+  if (p.tipo === 'ponto') return p
+  const cor = f === 'apagar' || !p.ok ? VERMELHO : f === 'porta' || f === 'janela' ? AZUL : VERDE
+  return p.tipo === 'arestas'
+    ? { tipo: 'arestas', arestas: p.arestas, cor }
+    : { tipo: 'celulas', celulas: p.celulas, cor }
+}
 
 function chaveDaPrevia(p: Previa): string {
   if (!p) return ''
@@ -142,51 +140,19 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
     type Gesto =
       | { tipo: 'olhar'; id: number; antes: { x: number; y: number }; girar: boolean }
       | {
-          tipo: 'linha'
+          tipo: 'arrasto'
           id: number
-          inicio: Ponto
-          fim: Ponto
+          inicio: { x: number; z: number }
+          fim: { x: number; z: number }
           andou: boolean
-          toque: { x: number; z: number }
         }
       | { tipo: 'toque'; id: number; onde: { x: number; z: number } }
     let gesto: Gesto | null = null
-
-    const previaDaLinha = (inicio: Ponto, fim: Ponto, apagar: boolean): Previa => {
-      const arestas = arestasDoArrasto(inicio, fim)
-      if (arestas.length === 0) return { tipo: 'ponto', ponto: inicio }
-      const o = obraAtual.current
-      const r = apagar ? apagarParede(o, lote, arestas) : esticarParede(o, lote, inicio, fim)
-      return { tipo: 'arestas', arestas, cor: apagar ? VERMELHO : r.ok ? VERDE : VERMELHO }
-    }
-
-    const previaDoToque = (onde: { x: number; z: number }): Previa => {
+    const escolhas = () => {
       const s = construcao.getState()
-      const o = obraAtual.current
-      if (s.ferramenta === 'piso') {
-        const p = planta(o, lote)
-        const i = p.comodoDe.get(chaveDaCelula(celulaEm(onde.x, onde.z)))
-        const comodo = i === undefined ? undefined : p.comodos[i]
-        if (!comodo) return { tipo: 'celulas', celulas: [celulaEm(onde.x, onde.z)], cor: VERMELHO }
-        return { tipo: 'celulas', celulas: comodo.celulas, cor: comodo.quarto ? VERMELHO : VERDE }
-      }
-      const aresta = arestaMaisPerto(onde.x, onde.z)
-      if (s.ferramenta === 'porta' || s.ferramenta === 'janela') {
-        const tipo = s.ferramenta === 'porta' ? 'porta' : s.janela
-        const r = porAbertura(o, lote, tipo, aresta)
-        return {
-          tipo: 'arestas',
-          arestas: arestasDaAbertura(aberturaNaAresta(tipo, aresta)),
-          cor: r.ok ? AZUL : VERMELHO,
-        }
-      }
-      if (s.ferramenta === 'apagar') {
-        const i = aberturaEm(o, aresta)
-        const ab = o.aberturas[i]
-        return { tipo: 'arestas', arestas: ab ? arestasDaAbertura(ab) : [aresta], cor: VERMELHO }
-      }
-      return { tipo: 'ponto', ponto: pontoMaisPerto(onde.x, onde.z) }
+      return { janela: s.janela, piso: s.piso, caminho: s.caminho }
     }
+    const horta = () => loja.getState().salvamento.horta
 
     const desce = (e: PointerEvent) => {
       e.stopPropagation()
@@ -198,10 +164,9 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       } else {
         const onde = noChao(e)
         if (!onde) return
-        if (s.ferramenta === 'parede' || s.ferramenta === 'apagar') {
-          const p = pontoMaisPerto(onde.x, onde.z)
-          gesto = { tipo: 'linha', id: e.pointerId, inicio: p, fim: p, andou: false, toque: onde }
-        } else gesto = { tipo: 'toque', id: e.pointerId, onde }
+        gesto = arrasta(s.ferramenta)
+          ? { tipo: 'arrasto', id: e.pointerId, inicio: onde, fim: onde, andou: false }
+          : { tipo: 'toque', id: e.pointerId, onde }
       }
       el.setPointerCapture?.(e.pointerId)
     }
@@ -234,18 +199,26 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       }
       const onde = noChao(e)
       if (!onde) return
-      if (gesto?.tipo === 'linha' && gesto.id === e.pointerId) {
-        gesto.fim = pontoMaisPerto(onde.x, onde.z)
-        if (gesto.fim.x !== gesto.inicio.x || gesto.fim.z !== gesto.inicio.z) gesto.andou = true
-        mostrar(previaDaLinha(gesto.inicio, gesto.fim, s.ferramenta === 'apagar'))
+      const o = obraAtual.current
+      if (gesto?.tipo === 'arrasto' && gesto.id === e.pointerId) {
+        gesto.fim = onde
+        if (Math.hypot(onde.x - gesto.inicio.x, onde.z - gesto.inicio.z) > 0.35) gesto.andou = true
+        mostrar(
+          comCor(
+            s.ferramenta,
+            arrasto(s.ferramenta, o, lote, gesto.inicio, onde, escolhas()).previa,
+          ),
+        )
         return
       }
       if (!gesto && s.ferramenta !== 'olhar') {
-        mostrar(
-          s.ferramenta === 'parede'
-            ? { tipo: 'ponto', ponto: pontoMaisPerto(onde.x, onde.z) }
-            : previaDoToque(onde),
-        )
+        // Antes de arrastar, a prévia é a do toque (no apagar, o que um toque tiraria).
+        const f = s.ferramenta
+        const previa =
+          arrasta(f) && f !== 'apagar'
+            ? arrasto(f, o, lote, onde, onde, escolhas()).previa
+            : toque(f, o, lote, onde, escolhas(), horta()).previa
+        mostrar(comCor(f, previa))
       }
     }
     const sobe = (e: PointerEvent) => {
@@ -256,34 +229,21 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       el.releasePointerCapture?.(e.pointerId)
       const s = construcao.getState()
       const o = obraAtual.current
-      if (g.tipo === 'linha') {
-        if (s.ferramenta === 'parede') {
-          if (g.andou) s.aplicar(esticarParede(o, lote, g.inicio, g.fim))
-        } else if (g.andou) s.aplicar(apagarParede(o, lote, arestasDoArrasto(g.inicio, g.fim)))
-        else {
-          // Um toque só no apagar: tira a porta ou janela dali; sem ela, a parede.
-          const aresta = arestaMaisPerto(g.toque.x, g.toque.z)
-          s.aplicar(
-            aberturaEm(o, aresta) >= 0 ? tirarAbertura(o, aresta) : apagarParede(o, lote, [aresta]),
-          )
-        }
-        mostrar(null)
-        return
+      if (g.tipo === 'arrasto') {
+        const f = s.ferramenta
+        // Sem arrastar: o apagar tira o que está ali; o caminho pinta uma célula.
+        const r =
+          g.andou || f === 'caminho'
+            ? arrasto(f, o, lote, g.inicio, g.fim, escolhas()).resultado
+            : f === 'apagar'
+              ? toque(f, o, lote, g.inicio, escolhas(), horta()).resultado
+              : null
+        if (r) s.aplicar(r)
+      } else if (g.tipo === 'toque') {
+        const r = toque(s.ferramenta, o, lote, g.onde, escolhas(), horta()).resultado
+        if (r) s.aplicar(r)
       }
-      if (g.tipo === 'toque') {
-        if (s.ferramenta === 'piso')
-          s.aplicar(trocarPiso(o, lote, celulaEm(g.onde.x, g.onde.z), s.piso))
-        else if (s.ferramenta === 'porta' || s.ferramenta === 'janela')
-          s.aplicar(
-            porAbertura(
-              o,
-              lote,
-              s.ferramenta === 'porta' ? 'porta' : s.janela,
-              arestaMaisPerto(g.onde.x, g.onde.z),
-            ),
-          )
-        mostrar(null)
-      }
+      mostrar(null)
     }
     const roda = (e: WheelEvent) => {
       e.preventDefault()
@@ -315,7 +275,7 @@ export function ModoConstruir({ lote, obra, base }: { lote: Lote; obra: Obra; ba
       el.removeEventListener('wheel', roda, opcoes)
       el.removeEventListener('contextmenu', semMenu, opcoes)
     }
-  }, [gl, camera, base, lote, construcao, mostrar])
+  }, [gl, camera, base, lote, construcao, mostrar, loja])
 
   // A prévia some quando a ferramenta muda.
   const ferramenta = useConstrucao(construcao, (s) => s.ferramenta)
