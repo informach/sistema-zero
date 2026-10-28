@@ -101,8 +101,11 @@ def corpo():
 
 
 def vidro():
+    """O vidro desce 2 cm para dentro do aro de baixo e para 1 cm antes do aro de cima: as tampas
+    dele não ficam no plano das pontas dos caixilhos."""
     yl0, yl1 = Y1 + 0.2, YL + 0.75
-    return [cyl(0.76, yl1 - yl0 - 0.3, (0, 0, (yl0 + 0.3 + yl1) / 2), 'vidroFarol', verts=28)]
+    v0, v1 = yl0 + 0.28, yl1 - 0.01
+    return [cyl(0.76, v1 - v0, (0, 0, (v0 + v1) / 2), 'vidroFarol', verts=28)]
 
 
 def lampada():

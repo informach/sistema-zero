@@ -11,6 +11,7 @@ import {
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
+import { NEVOA, RAIO_DAS_ESTRELAS } from './medidas'
 
 const CEU_DIA = new Color('#bfe6f5')
 const CEU_TARDE = new Color('#f6c99a')
@@ -25,14 +26,14 @@ export function Ceu() {
   const hemi = useRef<HemisphereLight>(null)
   const estrelas = useRef<PointsMaterial>(null)
   const cor = useMemo(() => new Color(), [])
-  const nevoa = useMemo(() => new Fog('#bfe6f5', 70, 210), [])
+  const nevoa = useMemo(() => new Fog('#bfe6f5', NEVOA.comeco, NEVOA.fim), [])
   const pontos = useMemo(() => {
     const g = new BufferGeometry()
     const v: number[] = []
     for (let i = 0; i < 700; i++) {
       const a = Math.random() * Math.PI * 2
       const b = Math.random() * Math.PI * 0.45 + 0.08
-      const r = 320
+      const r = RAIO_DAS_ESTRELAS
       v.push(Math.cos(a) * Math.cos(b) * r, Math.sin(b) * r, Math.sin(a) * Math.cos(b) * r)
     }
     g.setAttribute('position', new Float32BufferAttribute(v, 3))

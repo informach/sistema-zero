@@ -121,6 +121,24 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `rastro.direcao` e `rastro.velocidade` são escritos pelo personagem; `rastro.zappy` (onde ele
   está) pelo Zappy, e é dele que as copas do Bosque leem para esmaecer na frente dele.
 
+## Sem pisca-pisca: faces coplanares, emendas e a câmera (28/10/2026)
+
+- Pedido dela: a janela de fora da casa piscava. Causa: a veneziana e os frisos do lambri tinham a
+  frente no MESMO plano (listras do friso piscando através dela) e a parede em volta da janela era
+  feita de quatro caixas encostadas (junção em T: linha tracejada acima e abaixo do vão). Regras e
+  conserto no README de `arte/mundo` (seção "Sem pisca-pisca").
+- **Regra:** nenhum modelo tem faces coplanares de materiais diferentes se sobrepondo nem emenda em
+  T. `scripts/faces-coplanares.ts` acha as duas coisas num GLB (por plano: normal e distância em
+  grade; sobreposição por recorte de triângulos; emenda em T por vértice no meio de aresta vizinha);
+  `tests/faces-coplanares.test.ts` roda em todos os GLBs do mundo, no Quadro das Cores e nas peças
+  no lugar do jogo em cima do chão. O Bosque tem uma lista `PENDENTES_DO_BOSQUE` (pares que já
+  existiam); par novo reprova.
+- **Câmera:** `PERTO_DA_CAMERA` 0,25 e `LONGE_DA_CAMERA` 450 (`mundo/medidas.ts`, explicação lá).
+  O `near` é quem dá precisão de profundidade (2,5 vezes a de 0,1) e o canto do plano de corte fica
+  dentro da bolinha da sonda da câmera; o `far` só precisa alcançar as estrelas
+  (`RAIO_DAS_ESTRELAS`) e passar da `NEVOA`. Sem `logarithmicDepthBuffer` (caro no celular). Não há
+  sombras no jogo (nenhum `castShadow`), então não há acne de sombra a ajustar.
+
 ## Salvamento e tempo
 
 - `SalvamentoV1` (contrato) com versão; gravação por revisão (CAS). Revisão velha recebe 409

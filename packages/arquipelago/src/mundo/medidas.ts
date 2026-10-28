@@ -26,6 +26,25 @@ export const PIER = { x: -5, z: 27, comprimento: 10 } as const
 export const RAIO_DO_ANEL = 82
 export const RAIO_DA_ILHA_DO_ANEL = 13
 
+/** A névoa começa e fecha nestas distâncias da câmera: depois do fim tudo tem a cor do céu. */
+export const NEVOA = { comeco: 70, fim: 210 } as const
+/** As estrelas ficam numa casca deste raio em volta do centro da ilha central. */
+export const RAIO_DAS_ESTRELAS = 320
+
+/**
+ * Os planos de corte da câmera. A precisão do teste de profundidade vem quase toda do `near`: com
+ * 24 bits, duas faces a uma distância z só ficam separadas se estiverem a mais de ~z² / (near ·
+ * 2²⁴) uma da outra. Subir de 0,1 para 0,25 dá 2,5 vezes mais folga contra o pisca-pisca de faces
+ * quase coplanares (a 60 m, de ~2 mm para ~0,9 mm). O canto do plano de corte fica a ~0,4 da
+ * câmera, dentro da bolinha de `RAIO_DA_SONDA_DA_CAMERA` que já a mantém longe do que é sólido,
+ * então ela não corta parede nem tronco. O `far` quase não mexe na precisão; ele só precisa
+ * alcançar as estrelas vistas da ilha mais longe (e a câmera a até ~20 do personagem). Além do fim
+ * da névoa o mar já tem a cor do céu, então cortar ali não muda nada na tela.
+ * `logarithmicDepthBuffer` ficou de fora: custa caro no celular e não precisamos dele.
+ */
+export const PERTO_DA_CAMERA = 0.25
+export const LONGE_DA_CAMERA = 450
+
 /** Onde a pessoa aparece quando entra no jogo pela primeira vez: no quarto. */
 export const INICIO = { x: 0, z: -2.2 } as const
 
