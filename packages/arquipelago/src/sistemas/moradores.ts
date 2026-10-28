@@ -170,3 +170,33 @@ export function entregarPedido(
     entregou: true,
   }
 }
+
+// ── A Capi no Bosque ────────────────────────────────────────────────────────────────────────────
+
+export const CAPI_NO_BOSQUE = {
+  /** A esta distância (no chão) ela se vira para a criança; mais longe, volta a olhar a trilha. */
+  olharDe: 7,
+  /** De que distância aparece "Conversar com a Capi". */
+  alcance: 2.2,
+  /** Ela acena quando a criança chega perto, no máximo uma vez a cada tanto (s). */
+  acenoACada: 45,
+  /** Quão rápido ela se vira (maior, mais rápido). */
+  rapidezDoGiro: 3,
+  /** O corpo que segura a criança (raio e altura do cilindro). */
+  raio: 0.45,
+  altura: 1.3,
+} as const
+
+/** Para onde ela olha: para a criança, se perto (ou conversando); senão para o `descanso`. */
+export function olharDaCapi(
+  capi: { x: number; z: number },
+  crianca: { x: number; z: number },
+  descanso: number,
+  conversando: boolean,
+): number {
+  const dx = crianca.x - capi.x
+  const dz = crianca.z - capi.z
+  if (!conversando && dx * dx + dz * dz > CAPI_NO_BOSQUE.olharDe ** 2) return descanso
+  if (dx === 0 && dz === 0) return descanso
+  return Math.atan2(dx, dz)
+}

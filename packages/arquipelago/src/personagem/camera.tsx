@@ -37,6 +37,19 @@ const FOCO_NO_CIPO = 0.55
 const FOCO_NO_CIPO_COM_MENOS_MOVIMENTO = 1
 /** O quanto a câmera fica mais lenta para seguir no cipó (6 por segundo no chão). */
 const SEGUIR_NO_CIPO = 2.5
+/**
+ * Na conversa (`pedidos.conversa` com um painel aberto), a câmera olha para o meio das duas
+ * cabeças e vai para trás e para o lado da criança (`LADO_NA_CONVERSA` do caminho dela até quem
+ * fala, do lado de fora da ilha), mais perto e mais baixa: as duas aparecem, como nos jogos de
+ * conversa. Com menos movimento pedido no sistema, ela só muda o ponto que olha e não gira.
+ */
+const LADO_NA_CONVERSA = 1.1
+const DISTANCIA_NA_CONVERSA = 5
+/** O ângulo da câmera na conversa: baixo, quase na altura dos olhos. */
+const INCLINACAO_NA_CONVERSA = 0.2
+const RAPIDEZ_NA_CONVERSA = 2.5
+/** O ponto que ela olha fica abaixo das cabeças: as duas sobem na tela, acima da caixa de conversa. */
+const ABAIXO_NA_CONVERSA = 0.7
 /** Guarda que a pessoa já mexeu na câmera (a dica do Zappy não volta). */
 const CHAVE_DA_DICA = 'arquipelago:camera-dica'
 
@@ -64,11 +77,14 @@ function gravarDica() {
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
 export function Camera() {
-  const { rastro, movimento, loja } = useJogo()
+  const { rastro, movimento, loja, pedidos } = useJogo()
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
   const menosMovimento = useReducedMotion()
   const noCipo = useRef(0)
+  const naConversa = useRef(0)
+  /** O lado da conversa: 1 à esquerda de quem olha a criança por trás, −1 à direita. */
+  const ladoDaConversa = useRef<1 | -1 | null>(null)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
   const distancia = useRef(9)
@@ -234,9 +250,18 @@ export function Camera() {
     noCipo.current += (foco - noCipo.current) * (1 - Math.exp(-dt * 4))
     const f = noCipo.current
     const k = 1 - Math.exp(-dt * (6 - SEGUIR_NO_CIPO * Math.min(1, f / FOCO_NO_CIPO)))
-    const ax = rastro.x + (movimento.foco.x - rastro.x) * f
-    const ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
-    const az = rastro.z + (movimento.foco.z - rastro.z) * f
+    let ax = rastro.x + (movimento.foco.x - rastro.x) * f
+    let ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
+    let az = rastro.z + (movimento.foco.z - rastro.z) * f
+    // Na conversa: o ponto vai para o meio das duas cabeças e a câmera para o lado da criança.
+    const fala = loja.getState().painelAberto !== null ? pedidos.conversa : null
+    naConversa.current += ((fala ? 1 : 0) - naConversa.current) * (1 - Math.exp(-dt * 3))
+    const w = naConversa.current
+    if (fala) {
+      ax += ((fala.x + rastro.x) / 2 - ax) * w
+      ay += ((fala.y + rastro.y + 0.9) / 2 - ay) * w
+      az += ((fala.z + rastro.z) / 2 - az) * w
+    }
     alvo.current.x += (ax - alvo.current.x) * k
     alvo.current.y += (ay - alvo.current.y) * k
     alvo.current.z += (az - alvo.current.z) * k
@@ -245,12 +270,14 @@ export function Camera() {
     noAlto.current += (alto - noAlto.current) * k
     const n = dentro ? 0 : noAlto.current
     let inclinacao = dentro ? Math.max(rastro.inclinacao, 0.95) : rastro.inclinacao
+    if (!dentro) inclinacao = MathUtils.lerp(inclinacao, INCLINACAO_NA_CONVERSA, naConversa.current)
     inclinacao = MathUtils.lerp(
       inclinacao,
       Math.min(inclinacao, CAMERA_NO_ALTO.inclinacaoMaxima),
       n,
     )
     let dist = dentro ? Math.min(distancia.current, 8) : distancia.current
+    dist = MathUtils.lerp(dist, Math.min(dist, DISTANCIA_NA_CONVERSA), naConversa.current)
     dist = MathUtils.lerp(dist, Math.min(dist, CAMERA_NO_ALTO.distanciaMaxima), n)
     // Uma bolinha lançada até a câmera (não um raio fino): o que é sólido no caminho a puxa para
     // perto, sem raspar a quina de um tronco nem deixar o corpo do avatar escondido atrás dele.
@@ -282,6 +309,30 @@ export function Camera() {
         if (bateu) livre = Math.min(livre, bateu.time_of_impact - FOLGA_DA_CAMERA)
       }
       return livre
+    }
+    // Na conversa a câmera vai para um lado da criança (escolhido uma vez por conversa); o giro
+    // anda aos poucos até lá.
+    if (!fala) ladoDaConversa.current = null
+    else if (!menosMovimento) {
+      const atras = Math.atan2(fala.x - rastro.x, fala.z - rastro.z) + Math.PI
+      if (ladoDaConversa.current === null) {
+        // O lado de fora da ilha (longe do miolo), a não ser que a sonda o ache tapado e o
+        // outro não.
+        const longe = (sentido: 1 | -1) => {
+          const g = atras + sentido * LADO_NA_CONVERSA
+          const x = rastro.x + Math.sin(g) * DISTANCIA_NA_CONVERSA - fala.miolo.x
+          const z = rastro.z + Math.cos(g) * DISTANCIA_NA_CONVERSA - fala.miolo.z
+          return x * x + z * z
+        }
+        const fora = longe(1) >= longe(-1) ? 1 : -1
+        const outro = fora === 1 ? -1 : 1
+        const livre = (sentido: 1 | -1) =>
+          dentro ? dist : lancar(INCLINACAO_NA_CONVERSA, atras + sentido * LADO_NA_CONVERSA)
+        const tapado = DISTANCIA_NA_CONVERSA * GRUA_DA_CAMERA.tapada
+        ladoDaConversa.current = livre(fora) < tapado && livre(outro) >= tapado ? outro : fora
+      }
+      const lado = atras + ladoDaConversa.current * LADO_NA_CONVERSA
+      rastro.giro += giroMaisCurto(rastro.giro, lado) * (1 - Math.exp(-dt * RAPIDEZ_NA_CONVERSA))
     }
     // Tapada de perto (o tronco atrás, no deque): primeiro a câmera gira para o lado livre, como
     // nos jogos de terceira pessoa (o controle gira junto, a frente continua sendo a da tela);
@@ -343,7 +394,12 @@ export function Camera() {
     // Encostando numa parede, vai direto (seguir devagar passaria por dentro dela).
     if (atual.current < antes - 0.01) camera.position.copy(desejada.current)
     else camera.position.lerp(desejada.current, k)
-    camera.lookAt(alvo.current)
+    // Na conversa ela olha um pouco abaixo das cabeças (a sonda continua saindo delas).
+    camera.lookAt(
+      alvo.current.x,
+      alvo.current.y - ABAIXO_NA_CONVERSA * naConversa.current,
+      alvo.current.z,
+    )
   })
   return null
 }

@@ -31,9 +31,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `estado/`: loja zustand (uma por montagem), contexto, relógios (necessidades, posição, tempo).
 - `sistemas/`: regras puras e testadas (dia e noite, itens, necessidades, horta, receitas,
   fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy, ilhas
-  completas, cipó, escalada, percurso, as medidas do corpo e, ainda fora da tela, a Capi
-  (`moradores.ts`, `falas-da-capi.ts`), o esconde-esconde (`esconde.ts`) e o bicho adotado
-  (`bichos.ts`)). Sem React. Os números de cada regra,
+  completas, cipó, escalada, percurso, as medidas do corpo, a Capi (`moradores.ts`,
+  `falas-da-capi.ts`, `conversa-da-capi.ts`) e, ainda fora da tela, o esconde-esconde (`esconde.ts`)
+  e o bicho adotado (`bichos.ts`)). Sem React. Os números de cada regra,
   em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes, e o Bosque vivo (`bosque.ts`, `bosque-vivo.tsx`).
@@ -240,6 +240,22 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   (`estado/preferencias.ts`: `useToque`, `useMenosMovimento`); no cipó o botão Pular vira Soltar.
 - Prints do playground: `localStorage['arquipelago:medir'] = '1'`, `?novo=1&posicao=2&em=x,z` e
   `__arquipelagoLevar(x, y, z, giro)`. O Bosque fica com o centro em (77,05; 28,05), girado 2,79.
+
+## A Capi no Bosque (28/10/2026, Fase 1)
+
+- Plano: `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`; regras e números:
+  `docs/arquipelago-regras.md` §6.15. Tudo o que muda o salvamento passa pelas funções puras de
+  `sistemas/conversa-da-capi.ts` (`comecarConversa`, `presentear`, `entregar`).
+- `mundo/capi.tsx` (montado pelo `BosqueVivo`, dentro de `ComReserva`): o `capi.glb` copiado com
+  `SkeletonUtils.clone` (tem esqueleto), na âncora `morador`, de costas para a `cabana`. Vira para
+  a criança (`olharDaCapi`), acena, fala, comemora (`alegria` na loja da conversa) e pisca pelo
+  morfo `piscar` dos olhos. O colisor `col-morador-capi` só segura o corpo.
+- `estado/moradores.ts`: a loja da conversa (uma por montagem, como a dos desafios): falas, passo e
+  tela. O painel é `interface/capi.tsx` (`PAINEL_DA_CAPI` em `painelAberto`).
+- Câmera da conversa: quem abre a conversa põe a cabeça de quem fala em `pedidos.conversa` (com o
+  `miolo` da ilha) e limpa quando o painel fecha; o personagem vira para lá e a câmera enquadra as
+  duas (`LADO_NA_CONVERSA`, `DISTANCIA_NA_CONVERSA`, `INCLINACAO_NA_CONVERSA`, `ABAIXO_NA_CONVERSA`).
+- No Bosque não aparece mais o "Olhar em volta" da ilha (`ILHAS_VIVAS` em `anel.tsx`).
 
 ## Salvamento e tempo
 

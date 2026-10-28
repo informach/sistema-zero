@@ -612,11 +612,12 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   const cor = usePinturaDaIlha(ilha, aberta ? chegada : 0)
   const troca = useRef<Troca>({ opacidade: 0 }).current
   const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
-  // Na ilha aberta (nesta fase só a silhueta), o Zappy explica o que vem.
+  // Na ilha aberta que ainda não tem nada vivo (só a silhueta), o Zappy explica o que vem. No
+  // Bosque já moram a Capi e os bichos: lá o "E" é dela, dos cipós e da placa.
   useInterativo(`ilha-${ilha.id}`, {
     x: centro.x,
     z: centro.z,
-    raio: aberta ? RAIO_DA_ILHA_DO_ANEL : 0,
+    raio: aberta && !ILHAS_VIVAS[ilha.id] ? RAIO_DA_ILHA_DO_ANEL : 0,
     rotulo: () => 'Olhar em volta',
     agir: () =>
       loja

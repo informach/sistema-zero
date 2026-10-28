@@ -7,6 +7,7 @@ import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { comer } from '../sistemas/necessidades'
 import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { PainelDaCapi } from './capi'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
 
@@ -400,7 +401,7 @@ export function Hud() {
       // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
       if (s.resultado) s.mostrarResultado(null)
       else if (s.tempoPausado || s.ferramentaAberta) return
-      // Com um painel do mundo aberto (o Quadro das Cores), o Esc fecha o painel.
+      // Com um painel do mundo aberto (o Quadro das Cores, a conversa com a Capi), o Esc fecha.
       else if (s.painelAberto !== null) s.abrirPainel(null)
       else s.abrirMenu(!s.menuAberto)
     }
@@ -430,6 +431,7 @@ export function Hud() {
       </div>
       <ControlesDeToque />
       <PainelDoQuadro />
+      <PainelDaCapi />
       <Menu />
       <Resultado />
       <Corte />

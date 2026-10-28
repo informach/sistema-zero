@@ -1,14 +1,29 @@
 import { describe, expect, test } from 'bun:test'
-import { AMIZADE_MAXIMA, type Capi } from '@sistemazero/arquipelago-contracts'
+import {
+  AMIZADE_MAXIMA,
+  type Capi,
+  criarSalvamentoInicial,
+} from '@sistemazero/arquipelago-contracts'
+import {
+  comecarConversa,
+  entregar,
+  FALA_DA_ENTREGA,
+  FALA_DO_PRESENTE,
+  oQueFaltaNoPedido,
+  pedidoDeHoje,
+  presentear,
+} from '../src/sistemas/conversa-da-capi'
 import { type ContextoDaFala, falasDaCapi } from '../src/sistemas/falas-da-capi'
 import {
   AMIZADE,
+  CAPI_NO_BOSQUE,
   conversar,
   coracoes,
   darPresente,
   diaDe,
   ehAniversario,
   entregarPedido,
+  olharDaCapi,
   PEDIDOS_DA_CAPI,
   pedidoDoDia,
   pedidoPeloId,
@@ -226,5 +241,103 @@ describe('as falas da Capi', () => {
       expect(f).not.toMatch(/[—!]/)
       expect(f.split(/(?<=[.?])\s/)[0]?.endsWith('?')).toBe(false)
     }
+  })
+})
+
+describe('a conversa com a Capi no salvamento', () => {
+  const inicial = () => criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z'))
+
+  test('o primeiro encontro conta a história, guarda o pedido e a conversa do dia', () => {
+    const { salvamento, falas } = comecarConversa(inicial(), HOJE, 'perfil-1')
+    expect(falas.join(' ')).toContain('Eu sou a Capi')
+    expect(salvamento.moradores.capi.conversaEm).toBe(HOJE)
+    expect(salvamento.moradores.capi.amizade).toBe(AMIZADE.conversa)
+    expect(salvamento.moradores.capi.pedido?.dia).toBe(HOJE)
+    expect(pedidoDeHoje(salvamento, HOJE)).toBeTruthy()
+    expect(pedidoDeHoje(salvamento, AMANHA)).toBeNull()
+  })
+
+  test('a segunda conversa do dia só se despede e não soma', () => {
+    const a = comecarConversa(inicial(), HOJE, 'perfil-1').salvamento
+    const b = comecarConversa(a, HOJE, 'perfil-1')
+    expect(b.falas).toHaveLength(1)
+    expect(b.salvamento.moradores.capi.amizade).toBe(AMIZADE.conversa)
+    const c = comecarConversa(b.salvamento, AMANHA, 'perfil-1')
+    expect(c.falas.length).toBeGreaterThan(1)
+    expect(c.salvamento.moradores.capi.amizade).toBe(AMIZADE.conversa * 2)
+  })
+
+  test('o presente sai do inventário e a fala segue a reação', () => {
+    const s = { ...inicial(), inventario: { milho: 1, 'semente-milho': 2 } }
+    const a = presentear(s, 'milho', HOJE)
+    expect(a.reacao).toBe('adorou')
+    expect(a.fala).toBe(FALA_DO_PRESENTE.adorou)
+    expect(a.salvamento.inventario).toEqual({ 'semente-milho': 2 })
+    const b = presentear(a.salvamento, 'semente-milho', HOJE)
+    expect(b.reacao).toBe('devolveu')
+    expect(b.salvamento).toBe(a.salvamento)
+    expect(presentear(s, 'milho', '2027-03-12').fala).toContain('aniversário')
+  })
+
+  test('entregar o pedido e o que falta para ele', () => {
+    const base = inicial()
+    const s = {
+      ...base,
+      inventario: { alface: 1 },
+      moradores: {
+        capi: { ...base.moradores.capi, pedido: { dia: HOJE, id: 'alface-2', entregue: false } },
+      },
+    }
+    expect(oQueFaltaNoPedido(s)).toBe('Alface: você tem 1 de 2')
+    expect(entregar(s).entregou).toBe(false)
+    const pronto = { ...s, inventario: { alface: 2 } }
+    expect(oQueFaltaNoPedido(pronto)).toBeNull()
+    const r = entregar(pronto)
+    expect(r.entregou).toBe(true)
+    expect(r.salvamento.inventario).toEqual({})
+    expect(r.salvamento.moradores.capi.amizade).toBe(AMIZADE.pedido)
+    expect(oQueFaltaNoPedido(r.salvamento)).toBeNull()
+    expect(FALA_DA_ENTREGA).not.toMatch(/[—!]/)
+  })
+
+  test('o pedido de achar diz o que fazer até um bicho novo aparecer', () => {
+    const base = inicial()
+    const s = {
+      ...base,
+      moradores: {
+        capi: {
+          ...base.moradores.capi,
+          pedido: { dia: HOJE, id: 'achar-bicho-0', entregue: false },
+        },
+      },
+    }
+    expect(oQueFaltaNoPedido(s)).toContain('Ache mais um bicho')
+    expect(oQueFaltaNoPedido({ ...s, bichos: { achados: ['gato'], adotado: null } })).toBeNull()
+  })
+
+  test('as falas das reações seguem as regras de texto', () => {
+    for (const f of Object.values(FALA_DO_PRESENTE)) {
+      expect(f).not.toMatch(/[—!]/)
+      expect(f.split(/(?<=[.?])\s/)[0]?.endsWith('?')).toBe(false)
+    }
+  })
+})
+
+describe('a Capi no Bosque', () => {
+  const capi = { x: 0, z: 0 }
+
+  test('longe, ela olha para o descanso; perto, para a criança', () => {
+    expect(olharDaCapi(capi, { x: 0, z: 20 }, 1, false)).toBe(1)
+    expect(olharDaCapi(capi, { x: 0, z: 3 }, 1, false)).toBeCloseTo(0)
+    expect(olharDaCapi(capi, { x: 3, z: 0 }, 1, false)).toBeCloseTo(Math.PI / 2)
+  })
+
+  test('conversando, olha para a criança mesmo de longe', () => {
+    expect(olharDaCapi(capi, { x: -20, z: 0 }, 1, true)).toBeCloseTo(-Math.PI / 2)
+  })
+
+  test('a conversa abre de perto, dentro do raio em que ela olha', () => {
+    expect(CAPI_NO_BOSQUE.alcance).toBeLessThan(CAPI_NO_BOSQUE.olharDe)
+    expect(CAPI_NO_BOSQUE.alcance).toBeGreaterThan(CAPI_NO_BOSQUE.raio)
   })
 })

@@ -43,6 +43,12 @@ export interface Pedidos {
   chaoChegando: Set<string>
   /** Para onde olhar depois do teleporte (o giro do avatar); `null` mantém. */
   olharPara: number | null
+  /**
+   * Com quem a criança está conversando (a cabeça de quem fala). Com o painel da conversa aberto,
+   * ela vira para lá e a câmera vai para o lado e enquadra as duas, de preferência o lado longe de
+   * `miolo` (o meio da ilha, onde ficam árvores e escadas). Quem abriu a conversa limpa.
+   */
+  conversa: { x: number; y: number; z: number; miolo: { x: number; z: number } } | null
 }
 
 /**

@@ -491,6 +491,9 @@ export function Personagem() {
       prox.z = p.z + mov.z
       b.setNextKinematicTranslation(prox)
       if (Math.hypot(vx, vz) > 0.1) direcao.current = Math.atan2(vx, vz)
+      // Conversando (jogo parado com a conversa aberta), vira para quem fala com ela.
+      const fala = pedidos.conversa
+      if (fala && parado) direcao.current = Math.atan2(fala.x - p.x, fala.z - p.z)
 
       if (!parado && !nadando) {
         // No ar, as mãos pegam o cipó que passar perto delas (de um cipó para o outro).

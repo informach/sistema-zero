@@ -47,6 +47,7 @@ import {
   TRONCO_DOS_CIPOS,
   troncoNoMundo,
 } from './bosque'
+import { Capi } from './capi'
 import {
   type CipoDesenhado,
   desenharCipo,
@@ -56,6 +57,7 @@ import {
 import type { Copa } from './copas'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
+import { ComReserva } from './modelos'
 
 /** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
 const CHAO_DA_ILHA = 0.25
@@ -392,6 +394,9 @@ export function BosqueVivo({
         <InterativoDoCipo key={c.vivo.id} cipo={c.vivo} noChao={noChao} />
       ))}
       <Placa x={placa.x} y={placa.y} z={placa.z} giro={giro} />
+      <ComReserva reserva={null}>
+        <Capi modelo={preparada.modelo} meio={meio} giro={giro} />
+      </ComReserva>
       <Trepadeira tronco={tronco} preparada={preparada} />
       {pontos?.vagalumes.map((p, i) => (
         <group

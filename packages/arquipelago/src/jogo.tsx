@@ -144,7 +144,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       zappy: { x: 0, y: 0, z: 0 },
     },
     ambiente: { luz: 1, noite: false },
-    pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null },
+    pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null, conversa: null },
     movimento: criarMovimento(),
   }
   return { tipo: 'pronto', contexto, fila }

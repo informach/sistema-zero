@@ -78,7 +78,8 @@ Arquivo: `arquipelago/src/mundo/medidas.ts`.
   para o ... ficou pronta". Essa chegada aparece uma vez só. A ilha entra em
   `pontesVistas` no salvamento.
 - **Ilha aberta hoje:** chegar perto mostra a ação "Olhar em volta". O Zappy explica que os
-  moradores e os bichos chegam numa próxima fase.
+  moradores e os bichos chegam numa próxima fase. No Bosque, que já tem a Capi (seção 6.15), essa
+  ação não aparece (`ILHAS_VIVAS` em `arquipelago/src/mundo/anel.tsx`).
 - **O Farol** fica na sua ilha, ao lado da casa (`FAROL = { x: -12, z: -13 }`). Ele acende quando a
   posição é 8 ou mais (`arquipelago/src/mundo/farol.tsx`, `aceso = jornada >= 8`).
 - **Primeira entrada:** a pessoa aparece no quarto (`INICIO`). Enquanto a porta nova não foi
@@ -761,13 +762,30 @@ a câmera ignora).
   pedra do Bosque foram afastadas), porque quem dá a volta no tronco lá embaixo passaria por dentro
   delas (`LONGE_DO_TRONCO_DE_ESCALAR`, em `arte/ilhas/bosque.py`).
 
-### 6.15 A Capi e os bichos do Bosque (regras prontas, ainda fora da tela)
+### 6.15 A Capi e os bichos do Bosque
 
 Arquivos: `arquipelago/src/sistemas/moradores.ts` (a Capi), `falas-da-capi.ts` (os textos dela),
-`esconde.ts` (o esconde-esconde) e `bichos.ts` (o bicho adotado). As regras estão testadas
-(`tests/moradores.test.ts`, `tests/bichos.test.ts`), mas a Capi, os esconderijos e o bicho ainda
-não aparecem no jogo. O plano da parte que falta: `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
+`conversa-da-capi.ts` (a conversa sobre o salvamento), `esconde.ts` (o esconde-esconde) e
+`bichos.ts` (o bicho adotado); no mundo, `mundo/capi.tsx` e o painel `interface/capi.tsx`. Testes:
+`tests/moradores.test.ts` e `tests/bichos.test.ts`. A Capi já está no Bosque; os esconderijos e o
+bicho adotado ainda não aparecem no jogo. O plano da parte que falta:
+`docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
 
+- **Onde ela fica:** na âncora `morador` do `bosque.glb`, na frente da cabana, de costas para a
+  porta. A até 7 m (`CAPI_NO_BOSQUE.olharDe`) ela se vira para a criança e acena quando ela chega
+  (no máximo uma vez a cada 45 s). Ela segura o corpo (um cilindro de 0,45 de raio), mas a câmera
+  passa por ela. Pisca de vez em quando, fala enquanto a conversa está aberta e comemora presente
+  e pedido entregue.
+- **Conversar** (E perto dela, a até 2,2 m): uma caixa embaixo da tela com o nome, os corações (o
+  que está enchendo aparece pela metade), uma fala por vez ("Continuar") e depois as escolhas:
+  entregar o pedido do dia (aparece só com tudo na mochila; senão a caixa mostra o que falta),
+  dar um presente (a lista da mochila) e "Tchau, Capi". O jogo fica parado enquanto ela está
+  aberta, e o Esc fecha.
+- **A câmera da conversa** (`personagem/camera.tsx`): a criança vira para a Capi e a câmera vai
+  para trás e para o lado dela, do lado de fora da ilha (o miolo tem árvores e escadas), a não ser
+  que a sonda ache esse lado tapado e o outro livre. Fica a 5 m, baixa, e olha um pouco abaixo das
+  cabeças para as duas aparecerem acima da caixa. Com menos movimento pedido no sistema, ela não
+  gira, só muda o ponto que olha.
 - **O dia:** tudo o que é "uma vez por dia" conta pelo dia do calendário no horário do aparelho
   (`diaDe`), não pelo dia e noite do jogo.
 - **Amizade com a Capi** (`AMIZADE`): de 0 a 500 (`AMIZADE_MAXIMA`, no contrato), 5 corações de 100
