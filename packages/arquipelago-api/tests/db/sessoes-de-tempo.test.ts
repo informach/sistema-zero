@@ -66,6 +66,17 @@ describe.skipIf(!url)('sessões de tempo no Postgres', () => {
     })
   })
 
+  test('a concessão termina quando o tempo restante acaba, sem conceder os vinte segundos completos', async () => {
+    await conexao.sql`insert into arquipelago.tempo_diario (jogador_id, dia, segundos, atualizado_em)
+      values (${jogadorId}, '2026-10-27', 1799, ${inicio.toISOString()})`
+    const aberta = await repo.executar(pedido('iniciar', 0, 0))
+    expect(aberta.vencimento?.getTime()).toBe(inicio.getTime() + 1000)
+    expect(await repo.executar(pedido('pulsar', 1, 1000))).toMatchObject({
+      situacao: 'limite',
+      usadoHojeSegundos: 1800,
+    })
+  })
+
   test('a segunda aba substitui a primeira sem duplicar o intervalo', async () => {
     await repo.executar(pedido('iniciar', 0, 0))
     const nova = { ...pedido('iniciar', 0, 10_000), sessaoId: randomUUID() }

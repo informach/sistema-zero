@@ -41,7 +41,23 @@ export function criarGerenteTempo(opcoes: {
     verificar(): boolean {
       if (!desejado || fechado) return false
       if (opcoes.sessao.valida()) return true
-      falhar(new Error('A concessão de tempo terminou'))
+      // A concessão pode terminar exatamente no limite diário. Bloqueia a entrada
+      // e pergunta ao servidor se o tempo acabou antes de apresentar um erro.
+      opcoes.sincronizando(true)
+      const minhaRevisao = ++revisao
+      void opcoes.sessao
+        .pulsar()
+        .then(async (resultado) => {
+          if (fechado || !desejado || minhaRevisao !== revisao) return
+          // Uma concessão pode vencer na virada do dia sem esgotar o novo limite.
+          if (resultado.situacao === 'expirada') {
+            lidar(await opcoes.sessao.iniciar(), true)
+          } else lidar(resultado, true)
+        })
+        .catch(falhar)
+        .finally(() => {
+          if (!fechado && minhaRevisao === revisao) opcoes.sincronizando(false)
+        })
       return false
     },
     pulsar(): void {

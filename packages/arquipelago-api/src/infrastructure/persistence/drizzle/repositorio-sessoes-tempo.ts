@@ -170,6 +170,12 @@ export class RepositorioDeSessoesDeTempo implements RepositorioSessoesTempo {
         const atual = await resposta('limite')
         if (atual.usadoHojeSegundos >= limite * 60) return atual
         const nova = iniciarSessaoDeTempo(pedido.sessaoId, pedido.agora)
+        nova.vencimento = new Date(
+          Math.min(
+            nova.vencimento.getTime(),
+            nova.cursor.getTime() + (limite * 60 - atual.usadoHojeSegundos) * 1000,
+          ),
+        )
         await tx.insert(sessoesDeTempo).values({
           jogadorId: pedido.jogadorId,
           sessaoId: nova.id,
@@ -211,6 +217,14 @@ export class RepositorioDeSessoesDeTempo implements RepositorioSessoesTempo {
       const valor = await resposta(acerto.situacao)
       const atingiuLimite = valor.usadoHojeSegundos >= limite * 60
       const continua = acerto.situacao === 'ativa' && !atingiuLimite
+      if (continua && acerto.situacao === 'ativa') {
+        acerto.sessao.vencimento = new Date(
+          Math.min(
+            acerto.sessao.vencimento.getTime(),
+            acerto.sessao.cursor.getTime() + (limite * 60 - valor.usadoHojeSegundos) * 1000,
+          ),
+        )
+      }
       await tx
         .update(sessoesDeTempo)
         .set({
