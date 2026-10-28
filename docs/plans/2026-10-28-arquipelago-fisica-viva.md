@@ -185,7 +185,7 @@ etapa 1 ganhando estado.
 - [x] Etapas 1 e 2 presentes na staging recebida, preservadas.
 - [x] Etapa 3 conferida. O modo já existia. Teste adicional compara a mesma descida em 30, 60 e 144 quadros, mantendo passos de 1/60 s. Navegador confirma entrada, descida e saída com embalo.
 - [x] Etapa 4: cordas e pontes.
-- [ ] Etapa 5: mecanismos.
+- [x] Etapa 5: mecanismos implementados e conferidos na sala. Ativação na casa depende de regerar o GLB.
 - [ ] Etapa 6: vento.
 - [ ] Etapa 7: materiais e fogo.
 - [ ] Etapa 8: mundo que reage.
@@ -205,3 +205,11 @@ Pontes com piso cinemático e cordas deformadas pela mesma mola limitada. A corr
 Navegador: personagem apoiado na ponte comprida, 0,10 m de afundamento, caminhada mantendo o apoio, sem erro de página ou shader. Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS. Uma amostra com carga mostrou 0,28 ms por passo e 50 corpos ativos, incluindo as plataformas. Não é medida em celular físico. Evidências em `.cache/arq-final-4c.json` e imagens.
 
 Nota a sincronizar com `if_version`: "As pontes cedem e balançam com a passagem, mantendo o piso e os corrimãos seguros." O acesso ao cartão remoto continua indisponível nesta sessão.
+
+### Etapa 5
+
+Porta e alçapão usam dobradiças Rapier. A porta recebe o empurrão normal do personagem e uma mola a traz de volta. Caixote sobre a placa abre o alçapão; o piso permanece inteiro embaixo. A estação Mecanismos permite conferir sem alterar arte. O script do Bosque abre as paredes da casa e exporta duas âncoras para montar o mecanismo. O GLB antigo fechado não recebe uma porta por cima.
+
+Review corrigiu a estação sobreposta a uma plataforma, o caixote baixo que virava degrau e o contato indevido da porta com a placa. Navegador: placa ligada, alçapão em 1,23 rad; porta empurrada em -1,08 rad e retorno a 0,03 rad após sair. Um caixote tombado sob o alçapão pode segurá-lo aberto, como qualquer contato físico. Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS, sem erro de página. Evidência: `.cache/arq-final-5g.json`.
+
+Pendente de arte: regerar o Bosque com `arte/ilhas/bosque.py` e conferir a entrada da casa. Nenhum GLB ou relatório foi regravado. Nota a sincronizar com `if_version`: "Porta com dobradiça e caixote que abre o alçapão prontos e testados na sala. A casa aguarda a nova arte."

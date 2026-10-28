@@ -1571,3 +1571,10 @@ O modo existente foi preservado. `tests/modos.test.ts` compara a descida, a posi
 As três pontes do Bosque cedem até 0,10 m e balançam até 0,025 m. A mola usa rigidez 32 e amortecimento 9, com velocidade vertical limitada a 0,3 m/s. As pontas têm deslocamento zero. As caixas contínuas do piso e dos corrimãos são plataformas cinemáticas marcadas por `plataformaDoMundo`, aceitas pelo controlador sem fazer o bicho adotado bloquear o caminho. Desenho e colisão usam a mesma deformação. Arquivos: `sistemas/pontes-vivas.ts` e `mundo/pontes-vivas.tsx`.
 
 A ponte usa uma mola limitada com duas pontas fixas, em vez de adaptar a corda dos cipós, que tem uma ponta presa e outra livre. Isso mantém o percurso previsível. O GLB atual já fornece âncoras e caixas suficientes. Nada precisa ser regerado nesta etapa. O medidor, dentro de `Physics`, passa a informar `fisica.corposAtivos`, `fisica.passoMs` e `pontes`.
+
+
+### Física viva: mecanismos (28/10/2026)
+
+`mundo/mecanismos.tsx` usa duas dobradiças Rapier, com limites e mola. A porta abre pelo empurrão normal do controlador. A placa lê o caixote apoiado, não a proximidade do personagem. O chão sob o alçapão fica inteiro. Colisores simples e fora do grupo da câmera. A porta tem folga acima da placa para não prender a dobradiça.
+
+A estação Mecanismos em `/movimento` funciona com a arte atual. No Bosque, só montar quando existirem `mecanismos-casa` e `mecanismos-rumo`. O script `arte/ilhas/bosque.py` cria as âncoras e paredes com vão. Falta regerar o GLB e conferir a casa após a outra sessão terminar a arte. Não montar a porta sobre a casa fechada antiga.

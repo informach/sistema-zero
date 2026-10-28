@@ -12,6 +12,7 @@ import { criarLoja } from '../src/estado/loja'
 import { ESTILOS } from '../src/interface/estilos'
 import { ControlesDeToque } from '../src/interface/toque'
 import { criarRegistro } from '../src/mundo/interativos'
+import { Mecanismos } from '../src/mundo/mecanismos'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from '../src/mundo/medidas'
 import { Medidor } from '../src/mundo/medidor'
 import { Camera } from '../src/personagem/camera'
@@ -425,6 +426,7 @@ function SalaDeMovimento() {
             updatePriority={-1}
           >
             <Sala />
+            <Mecanismos x={64} y={2} z={18} />
             <Personagem />
             <Camera />
             <Medidor />

@@ -113,20 +113,24 @@ def casa_na_arvore(col, telhado):
     lado = R(200)
     cx, cy = bx + math.cos(lado) * 1.85, by + math.sin(lado) * 1.85
     giro_casa = lado
-    caixa = box((1.9, 2.4, 2.0), (cx, cy, zt + 1.0), 'casaArvore', bevel=0.08, segs=1, rot=(0, 0, giro_casa))
-    p.append(caixa)
-    # A porta dá para o tronco (enfeite): a casa colide como uma caixa fechada.
-    col.append(col_caixa('casa-na-arvore', (1.9, 2.4, 2.0), (cx, cy, zt + 1.0), (0, 0, giro_casa)))
-    # Tábuas na parede (frisos horizontais).
-    for k in range(4):
-        p.append(box((1.96, 2.46, 0.05), (cx, cy, zt + 0.35 + k * 0.45), 'troncoClaro', bevel=0.0,
-                     rot=(0, 0, giro_casa)))
+    # Física viva: casca aberta na frente. Porta móvel vem do código, na âncora abaixo.
+    # O piso do deque continua inteiro, inclusive sob o alçapão, para ninguém cair.
+    paredes = [((0.12, 2.4, 2.0), (0.89, 0, 1.0)),
+               ((1.9, 0.12, 2.0), (0, -1.14, 1.0)),
+               ((1.9, 0.12, 2.0), (0, 1.14, 1.0)),
+               ((0.12, 0.65, 2.0), (-0.89, -0.875, 1.0)),
+               ((0.12, 0.65, 2.0), (-0.89, 0.875, 1.0)),
+               ((0.12, 1.1, 0.1), (-0.89, 0, 1.95))]
+    for dimensoes, (lx, ly, lz) in paredes:
+        pos = (cx + math.cos(lado) * lx - math.sin(lado) * ly,
+               cy + math.sin(lado) * lx + math.cos(lado) * ly, zt + lz)
+        p.append(box(dimensoes, pos, 'casaArvore', bevel=0.025, segs=1, rot=(0, 0, lado)))
+        col.append(col_caixa('casa-na-arvore', dimensoes, pos, (0, 0, lado)))
     telhado.append(cone(1.95, 1.2, (cx, cy, zt + 2.6), 'telhadoArvore', verts=4, rot=(0, 0, giro_casa + R(45))))
     telhado.append(uvball(0.14, (cx, cy, zt + 3.25), 'casaArvore', seg=8, ring=5))
     # Porta virada para o tronco (o deque) e janela redonda para fora.
     dentro = giro_casa + math.pi
-    px, py = cx + math.cos(dentro) * 0.97, cy + math.sin(dentro) * 0.97
-    p += porta(px, py, zt, 0.9, 1.6, dentro, m='tronco', m_batente='troncoClaro')
+    # A porta com dobradiça será montada pelo jogo, sem outra folha fixa por trás.
     fx, fy = cx + math.cos(giro_casa) * 0.98, cy + math.sin(giro_casa) * 0.98
     p.append(torus(0.32, 0.07, (fx, fy, zt + 1.25), 'troncoClaro', seg=12, rseg=4, rot=(R(90), 0, giro_casa + R(90))))
     p.append(cyl(0.3, 0.05, (fx, fy, zt + 1.25), 'vidroJanela', verts=12, rot=(R(90), 0, giro_casa + R(90))))
@@ -605,6 +609,16 @@ def ancoras(pista):
          ancora('escorregador-fim', fim_escorregador.x, -fim_escorregador.y)]
     for i, t in enumerate(PERCURSO):
         a.append(ancora(f'copas-{i + 1}', t[0] + 0.0, t[1], TOPO + t[4]))
+    # Porta de 1,1 m: pivô no batente esquerdo e direção para dentro da casa.
+    dentro = lado + math.pi
+    dx, dz = math.cos(dentro), -math.sin(dentro)
+    giro = math.atan2(-dx, -dz)
+    centro_porta = (bx + math.cos(dentro) * 0.97, -(by + math.sin(dentro) * 0.97))
+    hx = centro_porta[0] - math.cos(giro) * 0.55
+    hz = centro_porta[1] + math.sin(giro) * 0.55
+    a.append(ancora('mecanismos-casa', hx, hz, TOPO + T1[4]))
+    a.append(ancora('mecanismos-rumo', hx + math.sin(giro), hz + math.cos(giro), TOPO + T1[4]))
+
     (x0, z0), (x1, z1), _ = TRONCO_CAIDO
     a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))
     a.append(ancora('equilibrio-1-b', x1, z1, tampo_do_tronco_caido()))

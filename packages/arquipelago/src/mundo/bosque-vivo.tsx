@@ -67,6 +67,7 @@ import {
 import type { Copa } from './copas'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
+import { Mecanismos } from './mecanismos'
 import { ComReserva } from './modelos'
 import { TroncoNoLago } from './tronco-no-lago'
 
@@ -150,6 +151,15 @@ export function BosqueVivo({
     }
     return lista
   }, [preparada, meio, giro, ilha.id])
+
+  const mecanismos = useMemo(() => {
+    const a = preparada.modelo.getObjectByName('mecanismos-casa')
+    const b = preparada.modelo.getObjectByName('mecanismos-rumo')
+    if (!a || !b) return null
+    const origem = paraOMundo(a.position, meio, giro, { x: 0, y: 0, z: 0 })
+    const rumo = paraOMundo(b.position, meio, giro, { x: 0, y: 0, z: 0 })
+    return { ...origem, giro: Math.atan2(rumo.x - origem.x, rumo.z - origem.z) }
+  }, [preparada, meio, giro])
 
   const vivos = useMemo(() => cipos.map((c) => c.vivo), [cipos])
 
@@ -484,6 +494,7 @@ export function BosqueVivo({
 
   return (
     <group ref={pecas} visible={false}>
+      {mecanismos && <Mecanismos {...mecanismos} />}
       {cipos.map((c) => (
         <InterativoDoCipo key={c.vivo.id} cipo={c.vivo} noChao={noChao} />
       ))}

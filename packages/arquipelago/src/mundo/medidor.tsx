@@ -5,6 +5,7 @@ import type { Mesh, Object3D } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { esmaecidasAgora } from './copas'
+import { mecanismosAgora } from './mecanismos'
 import { pontesAgora } from './pontes-vivas'
 import { troncoAgora } from './tronco-no-lago'
 
@@ -44,6 +45,7 @@ export interface MedidaDoDesenho {
   /** O modo do corpo (`sistemas/modos`) e se ele pisa em algo. */
   modo: Movimento['modo']
   noChao: boolean
+  mecanismos: typeof mecanismosAgora
   pontes: typeof pontesAgora
   fisica: { corposAtivos: number; passoMs: number }
 }
@@ -105,6 +107,7 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      mecanismos: { ...mecanismosAgora },
       pontes: { ...pontesAgora },
       fisica: { corposAtivos, passoMs: fisica.current.ms / Math.max(1, fisica.current.passos) },
       chamadas: gl.info.render.calls,

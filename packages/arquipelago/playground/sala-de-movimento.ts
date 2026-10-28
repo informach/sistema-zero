@@ -373,6 +373,7 @@ export const ROTULOS: readonly Rotulo[] = SALA.rotulos
 export const FIM_DAS_PLATAFORMAS = SALA.fimDasPlataformas
 
 export const ESTACOES: readonly Estacao[] = [
+  { nome: 'Mecanismos', x: 4.65, z: 20.3, y: 0, giro: 0 },
   { nome: 'Pista', x: -20, z: -20, y: 0, giro: Math.PI },
   { nome: 'Degraus', x: -8, z: -19, y: 0, giro: Math.PI },
   { nome: 'Rampas', x: -8, z: -11, y: 0, giro: Math.PI },
