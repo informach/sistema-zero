@@ -1478,3 +1478,7 @@ Na mesma data, com o cipó, a escalada e o percurso nas copas:
     do mundo).
 
 Se aparecer outra diferença, vale o código: corrija o documento e anote aqui.
+
+## Conferência do escorregador, física viva etapa 3
+
+O modo existente foi preservado. `tests/modos.test.ts` compara a descida, a posição final e o embalo em 30, 60 e 144 quadros por segundo, sempre com passos físicos de 1/60 s. A sala `/movimento?estacao=Escorregador` permite conferir a entrada e a saída no controlador real.

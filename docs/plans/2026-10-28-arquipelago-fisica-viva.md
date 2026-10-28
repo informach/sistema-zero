@@ -179,3 +179,21 @@ etapa 1 ganhando estado.
 - Corpo parado dorme; só a ilha ativa simula; teste em celular modesto antes de cada commit.
 - O que muda o jogo (física controlada) fica em `sistemas/`, puro e testado; o que só se vê fica
   em `mundo/`.
+
+## Execução desta continuação
+
+- [x] Etapas 1 e 2 presentes na staging recebida, preservadas.
+- [x] Etapa 3 conferida. O modo já existia. Teste adicional compara a mesma descida em 30, 60 e 144 quadros, mantendo passos de 1/60 s. Navegador confirma entrada, descida e saída com embalo.
+- [ ] Etapa 4: cordas e pontes.
+- [ ] Etapa 5: mecanismos.
+- [ ] Etapa 6: vento.
+- [ ] Etapa 7: materiais e fogo.
+- [ ] Etapa 8: mundo que reage.
+
+### Medição e acompanhamento
+
+Protocolo: Chrome local, medidor ligado, 24 amostras de 250 ms após aquecimento, sala e Bosque no mesmo lugar. Tela estreita é 390 × 844 no computador, não um ensaio em celular físico. Etapa 3 antes: mediana de 60 FPS na sala, no Bosque e na tela estreita. Evidências locais em `.cache/arq-antes-3.json` e imagens de mesmo prefixo.
+
+O acesso ao acompanhamento remoto falhou pela ferramenta web e o navegador compartilhado está ocupado. Nenhuma escrita sem `if_version` foi feita. Nota da etapa 3 a sincronizar no cartão `fase1-22`, coleção `itens`: "Escorregador conferido: descida suave, velocidade preservada na saída e mesmo resultado em diferentes taxas de quadros." O cartão continua pendente até todas as etapas terminarem.
+
+Etapa 3 depois: mediana de 60 FPS nas três condições, sem erro de página. Suíte: 335 testes passaram, um teste de banco local pulado. A conferência global também encontrou arquivos do caderno dos Lumis em edição concorrente; eles não foram alterados nem incluídos neste commit.

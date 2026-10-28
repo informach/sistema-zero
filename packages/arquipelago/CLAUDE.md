@@ -359,3 +359,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - `tests/tempo-api.integration.test.ts` requer `ARQUIPELAGO_TEMPO_TEST_DATABASE_URL` apontando
   para banco Postgres local descartável cujo nome começa com `arquipelago_test`; aplicar as
   migrações do serviço antes do teste. Sem essa variável o teste é pulado.
+
+## Conferência do escorregador, física viva etapa 3
+
+O modo existente foi preservado. `tests/modos.test.ts` compara a descida, a posição final e o embalo em 30, 60 e 144 quadros por segundo, sempre com passos físicos de 1/60 s. A sala `/movimento?estacao=Escorregador` permite conferir a entrada e a saída no controlador real.

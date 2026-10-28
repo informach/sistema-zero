@@ -362,7 +362,7 @@ describe('o escorregador', () => {
   })
   const pista = { id: 'escorregador', pontos, largura: 1 }
 
-  function descer(pedidoZ = 0) {
+  function descer(pedidoZ = 0, quadros = 60) {
     const c = criarEstadoDoCorpo()
     const m = mundo({ escorregadores: [pista] })
     c.noChao = true
@@ -375,10 +375,15 @@ describe('o escorregador', () => {
     )
     let passos = 0
     let maisDeLado = 0
+    let acumulado = 0
     while (c.modo === 'escorregar' && passos < 1200) {
-      passo(c, entrada(c.prox, { pedidoZ, agora: passos * 16 }), m, false)
-      maisDeLado = Math.max(maisDeLado, Math.abs(c.prox.z))
-      passos++
+      acumulado += 1 / quadros
+      while (acumulado + 1e-9 >= dt && c.modo === 'escorregar') {
+        passo(c, entrada(c.prox, { pedidoZ, agora: passos * dt * 1000 }), m, false)
+        maisDeLado = Math.max(maisDeLado, Math.abs(c.prox.z))
+        passos++
+        acumulado -= dt
+      }
     }
     return { c, segundos: passos / 60, maisDeLado }
   }
@@ -393,6 +398,16 @@ describe('o escorregador', () => {
     expect(a.c.prox.x).toBeCloseTo(5.6, 0)
     // No fim a velocidade virou passo no chão.
     expect(a.c.vel.x).toBeGreaterThan(2)
+  })
+
+  test('30, 60 e 144 quadros preservam tempo, saída e embalo no passo fixo', () => {
+    const referencia = descer()
+    for (const fps of [30, 144]) {
+      const obtido = descer(0, fps)
+      expect(obtido.segundos).toBe(referencia.segundos)
+      expect(obtido.c.prox).toEqual(referencia.c.prox)
+      expect(obtido.c.vel).toEqual(referencia.c.vel)
+    }
   })
 
   test('pedir o lado mexe dentro da pista, sem passar da borda', () => {
