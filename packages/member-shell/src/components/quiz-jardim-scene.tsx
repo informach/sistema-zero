@@ -199,13 +199,11 @@ function JardimQuizWorld({
       if (!can || disposed) return
       if (scene === 'jardim-view') {
         can.position.set(0, 0, -1)
-        const rock = new T.Mesh(
-          new T.IcosahedronGeometry(1, 1),
-          new T.MeshStandardMaterial({ color: '#8b9ca0', roughness: 1 }),
-        )
-        rock.scale.set(1.3, 0.95, 0.8)
-        rock.position.set(0, 0.65, 0.7)
-        world.add(rock)
+        // A pedra do jardim (feita no Blender, a mesma família das outras artes), na frente do
+        // regador, um pouco à esquerda: de frente só a ponta do bico aparece; de lado os dois.
+        const rock = await load('pedra-do-jardim')
+        if (!rock || disposed) return
+        rock.position.set(-0.45, 0, 0.7)
       } else {
         can.position.set(0, 3, 0)
         const hero = await load('aventureiro')

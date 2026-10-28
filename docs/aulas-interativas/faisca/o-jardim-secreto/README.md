@@ -18,7 +18,7 @@ As montagens estão distribuídas em oito partes na aula 2D e sete na 3D, com ob
 - [Aula 2: jardim 3D](aula-2.md) · [manifesto](aula-2.manifesto.json) · [roteiro](aula-2.roteiro.md).
 - [Passo a passo em PDF](passo-a-passo-do-projeto.pdf) · [versão textual](passo-a-passo.md).
 - Projetos portáteis: [entrada 2D](jardim-2d-inicio.szproject.json), [referência 2D](jardim-2d.szproject.json), [entrada 3D](jardim-3d-inicio.szproject.json), [referência 3D](jardim-3d.szproject.json).
-- [Fontes das artes](../../../design/jardim-secreto/gerar-artes.ts) e [revisão da implementação](revisao-implementacao.md).
+- [Fontes das artes 2D e publicação](../../../design/jardim-secreto/gerar-artes.ts), [modelos 3D no Blender](../../../design/jardim-secreto-blender/README.md) e [revisão da implementação](revisao-implementacao.md).
 
 O vídeo principal apresenta a tarefa e relembra a ideia; a ajuda opcional explica toda a montagem. Não há experiências repetidas dos cursos-base. Os projetos de entrada deixam para o aluno os comandos ensinados; os modelos 3D portáteis contêm as malhas reais, inclusive o clipe `florescer`.
 
@@ -35,6 +35,7 @@ Os vídeos estão como `plannedVideo`: grave e anexe a mídia real antes da publ
 Na raiz do repositório:
 
 ```powershell
+JARDIM_OUT=docs/design/jardim-secreto-blender/out /tmp/blender-venv/bin/python docs/design/jardim-secreto-blender/build_all.py
 bun docs/design/jardim-secreto/gerar-artes.ts
 bun docs/aulas-interativas-tecnico/qa/gerar-jardim-quiz-artes.ts
 bun docs/aulas-interativas-tecnico/qa/gerar-jardim-secreto.ts

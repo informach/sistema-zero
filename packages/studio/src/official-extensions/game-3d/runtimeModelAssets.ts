@@ -45,6 +45,12 @@ const gameThreeDModelAssetsRuntimeTemplate = `
     warnOnce: warnOnce,
     assets: MODELS3D,
     fallbackNote: '; o objeto fica com a forma de reserva',
+    // Quantos modelos ainda estão chegando (lidos e aquecidos): o executor dos objetivos só
+    // aperta a primeira tecla com zero, senão o teste corre enquanto o quadro está parado.
+    trackPending: function (promise) {
+      window.__szModelosPendentes = (window.__szModelosPendentes || 0) + 1;
+      promise.then(function () { window.__szModelosPendentes -= 1; });
+    },
     // Aquecer o shader na cena ATUAL: o primeiro quadro do modelo não engasga.
     getRenderer: function () { var w = _currentWorld(); return w ? w.renderer : null; },
     getScene: function () { var w = _currentWorld(); return w ? w.scene : null; },

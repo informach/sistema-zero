@@ -53,8 +53,17 @@ export const JARDIM_ASSETS_2D: ProjectAsset[] = [
   })),
   ...ASSETS_FAROL.filter((a) => ['aventureiro', 'menina-de-laco'].includes(a.name)),
 ]
-export const JARDIM_ASSETS_3D: ProjectAsset[] = [
-  ...Object.entries(JARDIM_MODELOS).map(([name, m]) => ({
+/** Os modelos que o jogo usa (a `pedra-do-jardim` é só da pergunta do ponto de vista do quiz). */
+export const JARDIM_MODELOS_DO_JOGO = [
+  'jardim-acolhedor',
+  'regador-azul',
+  'flor-do-jardim',
+] as const
+/** O asset de biblioteca de um modelo do Jardim (a referência; o Estúdio carrega o arquivo). */
+export function jardimModeloAsset(name: string): ProjectAsset {
+  const m = JARDIM_MODELOS[name]
+  if (!m) throw Error(`Modelo do Jardim ausente: ${name}`)
+  return {
     id: `jardim-modelo-${name}`,
     name,
     kind: 'model3d' as const,
@@ -62,7 +71,10 @@ export const JARDIM_ASSETS_3D: ProjectAsset[] = [
     libId: COURSE_MODEL_LIB_PREFIX + m.sha,
     dataUrl: courseModelStub(m.sha, m.clips),
     originalFileName: `${name}.glb`,
-  })),
+  }
+}
+export const JARDIM_ASSETS_3D: ProjectAsset[] = [
+  ...JARDIM_MODELOS_DO_JOGO.map(jardimModeloAsset),
   ilhaModelo('aventureiro').asset,
   ilhaModelo('menina-de-laco').asset,
 ]

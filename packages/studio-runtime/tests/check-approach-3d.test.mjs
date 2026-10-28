@@ -126,10 +126,12 @@ test.each([
     held = null
   const clock = spyOn(Date, 'now').mockImplementation(() => now)
   const durations = []
+  let downs = 0
   const page = {
     keyboard: {
       down: async (key) => {
         held = key
+        downs++
       },
       up: async () => {
         held = null
@@ -179,9 +181,82 @@ test.each([
     expect(x).toBeLessThan(10)
     expect(held).toBeNull()
     expect(durations.every((ms) => ms >= 16 && ms <= 600)).toBe(true)
-    expect(durations.some((ms) => ms > 80)).toBe(true)
-    // Longe do alvo o toque passa de 200 ms: menos idas e voltas de leitura por trecho.
-    expect(durations.some((ms) => ms > 200)).toBe(true)
+    // Longe do alvo a seta fica apertada enquanto o teste acompanha a posição: poucas
+    // apertadas no trecho inteiro (cada uma custa idas e voltas ao navegador).
+    expect(downs).toBeLessThanOrEqual(6)
+  } finally {
+    clock.mockRestore()
+  }
+})
+
+test('com a seta apertada e a leitura lenta (um quadro por leitura), chega sem passar do ponto', async () => {
+  let now = 0,
+    x = 0,
+    held = null,
+    maxX = 0,
+    downs = 0
+  const clock = spyOn(Date, 'now').mockImplementation(() => now)
+  // O personagem anda enquanto o tempo passa com a seta apertada, inclusive durante a leitura.
+  const advance = (ms) => {
+    if (held) x += ((held === 'ArrowRight' ? 1 : -1) * 3 * ms) / 1000
+    maxX = Math.max(maxX, x)
+    now += ms
+  }
+  const page = {
+    keyboard: {
+      down: async (key) => {
+        advance(170)
+        held = key
+        downs++
+      },
+      up: async () => {
+        advance(170)
+        held = null
+      },
+    },
+    waitForTimeout: async (ms) => advance(ms),
+  }
+  const values = {
+    'personagem.position.y': 0,
+    'personagem.position.z': 0,
+    'personagem.userData.sz.hw': 0.5,
+    'personagem.userData.sz.hh': 0.5,
+    'personagem.userData.sz.hd': 0.5,
+    'alvo.position.x': 10,
+    'alvo.position.y': 0,
+    'alvo.position.z': 0,
+    'alvo.userData.sz.hw': 0.5,
+    'alvo.userData.sz.hh': 0.5,
+    'alvo.userData.sz.hd': 0.5,
+  }
+  const read = async (paths) => {
+    const out = paths.map((path) => ({
+      found: true,
+      value: {
+        format: 'sz-observed-v1',
+        value: [0, path === 'personagem.position.x' ? x : values[path]],
+      },
+    }))
+    advance(170)
+    return out
+  }
+  try {
+    await approachObject3d(
+      page,
+      {
+        actorPath: 'personagem',
+        targetPath: 'alvo',
+        walkable: [{ minX: -1, maxX: 11, minZ: -1, maxZ: 1 }],
+        timeoutMs: 8000,
+      },
+      read,
+    )
+    expect(x).toBeGreaterThan(9)
+    expect(maxX).toBeLessThan(10)
+    expect(held).toBeNull()
+    expect(downs).toBeLessThanOrEqual(5)
+    // Dez unidades a 3 por segundo: bem dentro do prazo mesmo pagando um quadro por comando.
+    expect(now).toBeLessThan(7000)
   } finally {
     clock.mockRestore()
   }

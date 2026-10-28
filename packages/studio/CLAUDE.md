@@ -53,6 +53,16 @@ Pedido dela na Ilha do Farol: câmera mais perto, zoom e girar. É do motor, sem
   (`moveTowards`), "Colocar o objeto … em x y z" (`setPosition`), "Escrever na tela …" (o meio é
   "⊕ no centro") e "Reiniciar o jogo" (o mesmo nome do Jogo 2D) nas regras de jogo dos três 3D.
 
+## O executor espera os modelos do Jogo 3D (28/10/2026)
+
+O Jogo 3D publica `window.__szModelosPendentes` (quantos modelos ainda estão sendo lidos e
+aquecidos, pelo `trackPending` do carregador comum em `game-3d/runtimeModelAssets.ts`). O
+executor dos objetivos (`studio-runtime/runtime/check-objectives.mjs`, `waitForModels`) só
+aperta a primeira tecla com zero e depois de uma janela de 2 s sem quadro acima de 400 ms: sem
+placa de vídeo, o primeiro desenho com os modelos trava os quadros por 4 a 6 s, e teclas
+apertadas ali não andavam nada. O robô de navegação 3D segura a seta nos trechos longos
+(`check-approach-3d.mjs`). Declarado no `HOST_CONTRACT` do `runtimeTypecheck` do Jogo 3D.
+
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e

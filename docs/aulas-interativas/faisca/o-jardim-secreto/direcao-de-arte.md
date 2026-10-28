@@ -1,6 +1,6 @@
 # O Jardim Secreto: direção de arte
 
-28/10/2026 · Briefing da [proposta da missão](proposta.md). Define o que produzir e como revisar; as artes finais desta missão ainda não foram criadas.
+28/10/2026 · Briefing da [proposta da missão](proposta.md). Define o que produzir e como revisar. As artes 3D foram feitas no Blender com o acabamento da Ilha (jardim, regador, flor com o clipe `florescer` e a pedra do quiz): ver [as fontes e as medidas](../../../design/jardim-secreto-blender/README.md).
 
 ## Referências e resultado esperado
 

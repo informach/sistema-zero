@@ -99,9 +99,11 @@ const BUDGETS: readonly {
   // clique volta, a vista acompanha quem anda e as setas andam em relação à câmera): +3_865
   // caracteres e +1_226 bytes gzip. Medido: 234_201; gzip 63_849 no Bun 1.4.4 Linux e, somado
   // às medidas acima do Bun 1.3.11, ~63_450 no Linux e ~65_850 no Windows.
+  // 28/10: o Jogo 3D publica quantos modelos ainda estão chegando (`__szModelosPendentes`), e o
+  // executor dos objetivos só aperta a primeira tecla com zero. Medido: 234_374 (+173).
   {
     extension: gameThreeDExtension,
-    maxChars: 234_300,
+    maxChars: 234_450,
     maxGzipBytes: 63_900,
     maxGzipBytesWindows: 66_000,
   },
@@ -124,7 +126,8 @@ const BUDGETS: readonly {
     // Windows 54_908. O teto cobre ambos, sem incluir o Kit Plataforma.
     // 28/10, a vista do jogador no frameScene (ver acima): +3_865 / +1_215. Medido: 200_119;
     // gzip 54_371 no Bun 1.4.4 Linux; ~54_030 no Linux e ~56_120 no Windows do Bun 1.3.11.
-    maxChars: 200_200,
+    // 28/10, os modelos pendentes (ver acima): +173. Medido: 200_292.
+    maxChars: 200_350,
     maxGzipBytes: 54_500,
     maxGzipBytesWindows: 56_300,
   },

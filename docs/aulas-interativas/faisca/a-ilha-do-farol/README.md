@@ -78,6 +78,8 @@ No jogo a chave não tem prazo: `temChave` guarda a coleta e o farol só confere
 personagem encosta nele. O prazo é do robô do "Verificar projeto", que aperta as setas no lugar da
 criança. Medido no Chromium sem placa de vídeo, cada toque custava ~300 ms de leitura e durava no
 máximo 200 ms: o trecho mais longo do curso (começo → farol, 11 unidades, regra `sem-chave-em-jogo`)
-estourava os 7 s com o jogo certo. Agora o toque vai até 600 ms quando o alvo está longe (ainda
-limitado à metade da distância que falta), a regra sem chave leva o prazo máximo (7,5 s) e os
-retângulos do robô são os mesmos `walkArea` do jogo.
+estourava os 7 s com o jogo certo. Agora o robô segura a seta nos trechos longos e acompanha a
+posição, soltando antes do ponto (o fim do trecho vai em toques curtos), espera os modelos
+chegarem e os quadros voltarem a fluir antes do primeiro passo, a regra sem chave leva o prazo
+máximo (7,5 s) e os retângulos do robô são os mesmos `walkArea` do jogo
+(`docs/qa/2026-10-27-navegacao-3d-hospedada.md`).

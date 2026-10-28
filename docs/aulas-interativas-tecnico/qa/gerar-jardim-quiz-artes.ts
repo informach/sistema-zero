@@ -1,11 +1,13 @@
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
-import { JARDIM_ASSETS_2D, JARDIM_ASSETS_3D } from './jardim-projeto'
+import { JARDIM_ASSETS_2D, JARDIM_ASSETS_3D, jardimModeloAsset } from './jardim-projeto'
 
-const models = await resolveCourseModels(
-  JARDIM_ASSETS_3D.filter((a) => ['regador-azul', 'aventureiro'].includes(a.name)),
-)
+const models = await resolveCourseModels([
+  ...JARDIM_ASSETS_3D.filter((a) => ['regador-azul', 'aventureiro'].includes(a.name)),
+  // A pedra que esconde parte do regador na pergunta do ponto de vista.
+  jardimModeloAsset('pedra-do-jardim'),
+])
 writeFileSync(
   resolve(import.meta.dirname, '../../../packages/studio/src/arte/jardim-quiz.generated.ts'),
   `// Gerado por gerar-jardim-quiz-artes.ts. Mesmas artes dos projetos.\nexport const JARDIM_QUIZ_ART = ${JSON.stringify(

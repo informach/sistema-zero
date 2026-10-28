@@ -2,6 +2,10 @@
 // Walkable rectangles describe the authored floor, never a learner's key position.
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 export class NavigationBlocked extends Error {}
+// A leg longer than this is walked holding the arrow; the last stretch goes in pulses.
+const CRUISE_MIN = 1.2
+// Pause between position reads while the arrow is held (the read itself waits for a frame).
+const CRUISE_POLL_MS = 20
 export function planApproach3d(actor, target, walkable, avoid = []) {
   const unit = 0.25,
     margin = 0.12
@@ -130,6 +134,37 @@ export async function approachObject3d(page, step, readMany) {
       await page.keyboard.up(k)
     }
   }
+  const cruise = async (key, alongX, target, start) => {
+    const sign = Math.sign(target - start)
+    await release()
+    held = key
+    await page.keyboard.down(key)
+    let prev = start,
+      prevAt = Date.now(),
+      speed = 0,
+      latency = 0,
+      still = 0
+    while (Date.now() < deadline) {
+      await page.waitForTimeout(CRUISE_POLL_MS)
+      const asked = Date.now()
+      const [x, z] = await numbers([`${step.actorPath}.position.x`, `${step.actorPath}.position.z`])
+      const at = Date.now()
+      latency = Math.max(latency * 0.6, at - asked)
+      const c = alongX ? x : z
+      if (x !== actor.x || z !== actor.z) observedMovement = true
+      if (at > prevAt) speed = Math.max(speed * 0.5, Math.abs(c - prev) / (at - prevAt))
+      still = Math.abs(c - prev) < 0.002 ? still + 1 : 0
+      prev = c
+      prevAt = at
+      const left = (target - c) * sign
+      // Stop distance: what the character still walks while this read ages and the key-up
+      // travels (two latencies and a poll), plus a margin that stays inside the planner's
+      // clearance from the objects to avoid.
+      if (left <= 0.25 + speed * (2 * latency + CRUISE_POLL_MS) || still >= 4) break
+    }
+    await release()
+    previousPulse = null
+  }
   try {
     for (const goal of route.slice(1)) {
       let reached = false,
@@ -163,8 +198,16 @@ export async function approachObject3d(page, step, readMany) {
             : dz > 0
               ? 'ArrowDown'
               : 'ArrowUp'
-        const coordinate = Math.abs(dx) > 0.22 ? x : z
-        const remaining = Math.abs(dx) > 0.22 ? Math.abs(dx) : Math.abs(dz)
+        const alongX = Math.abs(dx) > 0.22
+        const coordinate = alongX ? x : z
+        const remaining = alongX ? Math.abs(dx) : Math.abs(dz)
+        if (remaining > CRUISE_MIN) {
+          // Long leg: hold the arrow and follow the position (a test driver, not a series of
+          // taps). Each read waits for a frame (~170 ms without a GPU), so the release comes
+          // early by the measured speed and the read latency; pulses below finish the leg.
+          await cruise(next, alongX, alongX ? goal.x : goal.z, coordinate)
+          continue
+        }
         // Estimate speed from the last actual pulse. Larger safe pulses reduce the
         // number of expensive browser round trips on software-rendered 3D, while
         // limiting each pulse to half the remaining distance at the measured speed.

@@ -1,12 +1,14 @@
 // Gerado por scripts/course-models.ts. Não edite.
 // Um import() literal por modelo: cada um vira um pedaço próprio, baixado só por quem usa.
 export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ default: string }>>> = {
+  '08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1': () =>
+    import('./m-08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1.generated'),
   '0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9': () =>
     import('./m-0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9.generated'),
-  '18aea8b2702d07f6e15b777d7b1e3e204fa2da83f9c18cb34b6493eb66e60e11': () =>
-    import('./m-18aea8b2702d07f6e15b777d7b1e3e204fa2da83f9c18cb34b6493eb66e60e11.generated'),
   '2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485': () =>
     import('./m-2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485.generated'),
+  '29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72': () =>
+    import('./m-29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72.generated'),
   '3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51': () =>
     import('./m-3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51.generated'),
   '42d175e834fa3587f6c76a3be64643d05a348e4f005f3cb9bab6f1b4752c53fa': () =>
@@ -21,6 +23,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f.generated'),
   '79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345': () =>
     import('./m-79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345.generated'),
+  '79fffe1f370a10cad0e514eefa28db740429003d74e6b1595a8f32d4a932e53d': () =>
+    import('./m-79fffe1f370a10cad0e514eefa28db740429003d74e6b1595a8f32d4a932e53d.generated'),
   '85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7': () =>
     import('./m-85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7.generated'),
   '90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04': () =>
@@ -33,8 +37,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d.generated'),
   a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03: () =>
     import('./m-a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03.generated'),
-  ae704d0270435b22700842c78804208af787a9a62774fb0eaa03d38631f3c30f: () =>
-    import('./m-ae704d0270435b22700842c78804208af787a9a62774fb0eaa03d38631f3c30f.generated'),
+  b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706: () =>
+    import('./m-b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706.generated'),
   bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb: () =>
     import('./m-bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb.generated'),
   bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0: () =>
@@ -45,8 +49,6 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38.generated'),
   dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92: () =>
     import('./m-dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92.generated'),
-  e4132f03b444445d92bb38cfa92f86eab00c09c3b110d20c94f8cfc21f394ab7: () =>
-    import('./m-e4132f03b444445d92bb38cfa92f86eab00c09c3b110d20c94f8cfc21f394ab7.generated'),
   eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9: () =>
     import('./m-eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9.generated'),
   f02bdf32b7cb8d3d6c85baa0e0d1dc6d6678039128c81335b0642330f5255ad9: () =>
