@@ -50,6 +50,7 @@ import {
 } from './medidas'
 import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
+import { PlacaDaPonte } from './placa-da-ponte'
 import { QuadroDasCores } from './quadro-das-cores'
 
 const TRECHO_QUEBRADO = 0.25
@@ -409,6 +410,7 @@ function Ponte({
         </RigidBody>
       )}
       {inteira && tabuasVisiveis >= 1 && <Colisores lista={corrimaos} />}
+      {!inteira && tabuas[limite - 1] && <PlacaDaPonte ilha={ilha} tabua={tabuas[limite - 1]!} />}
     </>
   )
 }

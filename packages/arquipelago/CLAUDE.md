@@ -550,3 +550,27 @@ Os testes carregam os GLBs reais e verificam clipes, dimensões, praia seca e re
 Esta entrega é visual. Captura, rotinas, coleta de conchas e cartas não foram implementadas.
 Não havia outro componente de Lumi no mundo para reaproveitar. Decisão e conferência em
 `docs/plans/2026-10-28-arquipelago-praia-nico-e-lumis.md`. Nenhuma arte foi regenerada.
+
+## Luneta do píer (geral-04, 28/10/2026)
+
+- Regras puras: `sistemas/luneta.ts` escolhe a próxima ilha fechada do contrato e escreve a fala
+  do Zappy e o recado da Íris. Depois das Nuvens, mostra o Farol. Os nomes de apresentação dos
+  postos kids ficam locais, sem importar a plataforma. A abertura continua vindo de `ILHAS`.
+- `mundo/luneta.tsx`, montada por `IlhaCentral`, usa o GLB pronto e gira o nó `tubo` em dois
+  eixos. Colisor simples `col-cil-estaca-luneta`, só para o corpo. Interação E / Usar abre
+  `painelAberto: 'luneta'`, aproveitando a pausa existente. Nada entra no salvamento.
+- `personagem/camera.tsx` continua a única dona da câmera. O perfil `luneta` tem 45 graus de
+  campo de visão e enquadramento adaptado ao aspecto da tela (`mundo/luneta-medidas.ts`).
+  Guarda e restaura a pose anterior, suspende giro/zoom manual durante a observação e não
+  altera o rastro. Movimento reduzido elimina a animação do zoom e dos sinais de vida.
+- `interface/luneta.tsx` substitui o HUD durante a observação, com fala persistente, botão
+  Voltar focado e Esc do HUD. Vulto e brilho só montam nessa vista. Não chamar o carregador
+  de ilhas completas a partir da câmera da luneta.
+- `mundo/placa-da-ponte.tsx` recebe a última tábua visível de cada ponte fechada. Usa a face
+  `texto` do GLB, UV projetado e CanvasTexture próprios. Desmontar libera apenas os recursos
+  criados, preservando a arte compartilhada. O interativo lê o mesmo recado da face.
+- Números e comportamento em `docs/arquipelago-regras.md`, seção Luneta. Testes:
+  `tests/luneta.test.ts` e `playground/verificar-luneta-browser.ts` (modelo dos mecanismos).
+  Este último aceita `ARQUIPELAGO_CHROMIUM`; tenta o Chromium Linux fornecido se existir,
+  senão usa Chrome. No Windows, também pode compilar com `bun build` para Node e executar
+  com `node`, como registrado no plano. A conferência usa somente a plataforma falsa.

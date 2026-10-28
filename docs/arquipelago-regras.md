@@ -1918,3 +1918,42 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 Arquivos: `sistemas/habitantes-da-praia.ts`, `mundo/habitantes-da-praia.tsx`,
 `mundo/habitantes-da-praia-colisao.ts` e `tests/habitantes-da-praia.test.ts`.
 Decisões: `docs/plans/2026-10-28-arquipelago-praia-nico-e-lumis.md`.
+
+## Luneta do píer e placas das pontes (geral-04, 28/10/2026)
+
+- A luneta fica na ponta do píer: x = -5, y = 0,61 e z = 35,8. O alcance de E / Usar é
+  1,8 m. A criança precisa estar fora da água e na altura do píer. Um cilindro arredondado
+  de raio 0,32 m e altura 1,06 m segura só o corpo, como as estacas.
+- A próxima ilha fechada é a primeira do anel com posto acima do atual, segundo `ILHAS` do
+  contrato. A partir do posto que abre as Nuvens, a luneta mostra o Farol na ilha central.
+  A luneta não concede posto, cor, moeda nem progresso.
+- O Zappy informa o nome da ilha e o nome do posto, sem número nem cobrança. Exemplo:
+  "Lá é a Vila Doce. A ponte abre quando você chegar a Inventor(a)." Com o anel todo aberto:
+  "Lá está o Farol, ao lado da sua casa." Os rótulos kids foram conferidos em
+  `community-kids/src/lib/level-info.ts`, sem importar a plataforma dentro do jogo.
+- O painel `luneta` pausa o personagem. A câmera guarda posição, orientação e campo de visão;
+  faz um corte para a vista óptica e um zoom curto até 45 graus. A inclinação é 0,32 rad e a
+  distância mínima é 36 m, aumentada para caber uma margem de 17 m de cada lado da ilha.
+  Em tela estreita, o enquadramento se afasta. Esc e Voltar restauram a vista anterior.
+- O tubo gira para o alvo em dois eixos, descontando os 18 graus da inclinação de origem
+  do modelo. Nenhum GLB foi regenerado. A luneta só monta o interativo e o colisor quando
+  seu modelo carrega; falha de arquivo fica contida na reserva desse componente.
+- A observação usa a ilha leve já existente. Na ilha vista há um vulto de bicho e um brilho
+  dourado, feitos com quatro malhas simples, sem corpos físicos. O ciclo dura 6 s, o vulto
+  percorre até 2,6 m para cada lado e a escala do brilho varia de 0,65 a 1. Esses sinais só
+  existem enquanto a luneta está aberta. O rastro da criança fica no píer, portanto a vista
+  não pede a ilha completa ao carregador.
+- Com `prefers-reduced-motion` ou Menos movimento do jogo, não há zoom animado, deslocamento
+  do vulto nem pulsação do brilho. A mudança de vista continua disponível.
+- Cada ponte fechada recebe a placa existente `placa-quadro.glb`, no fim das tábuas visíveis,
+  0,5 m antes da borda e 0,6 m para o lado. Ela fica voltada para quem vem da praia.
+  O texto ocupa a face `texto` do modelo, sem sobrepor outra face. A caixa simples da placa
+  mede 0,96 × 1 × 0,18 m e só segura o corpo. O recado também pode ser lido com E / Usar
+  a até 2,3 m: "Tem mais para descobrir. A ponte abre em [nome do posto]. Íris."
+  Ao abrir a ponte, a placa sai com seu interativo, material e textura próprios.
+
+Arquivos: `sistemas/luneta.ts`, `mundo/luneta-medidas.ts`, `mundo/luneta.tsx`,
+`mundo/placa-da-ponte.tsx`, `interface/luneta.tsx`, `sistemas/perfis-de-camera.ts` e
+`personagem/camera.tsx`. Integrações pequenas em `ilha-central.tsx`, `anel.tsx` e `hud.tsx`.
+Testes puros e dos GLBs: `tests/luneta.test.ts`. Visita real no playground:
+`playground/verificar-luneta-browser.ts`. Celular físico ainda precisa de conferência.

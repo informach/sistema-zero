@@ -1,5 +1,9 @@
 /** CSS do jogo, injetado pela entrada dentro do próprio elemento (prefixo `arq-`). */
 export const ESTILOS = `
+.arq-luneta{position:absolute;inset:0;box-shadow:inset 0 0 65px 18px #0e1638;border:8px solid #17213a;box-sizing:border-box}
+.arq-luneta-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}
+.arq-luneta-fala{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;width:min(520px,calc(100% - 48px));box-sizing:border-box;padding:16px;background:rgba(20,26,58,.94);color:#fff;border-radius:16px}
+.arq-luneta-fala p{margin:0}
 .arq-raiz{position:relative;width:100%;height:100%;overflow:hidden;background:#0e1638;color:#1d2340;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none;touch-action:none}
 .arq-canvas{position:absolute!important;inset:0}
 .arq-hud{position:absolute;inset:0;pointer-events:none}

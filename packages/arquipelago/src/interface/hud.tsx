@@ -6,6 +6,7 @@ import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
+import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { comer } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
@@ -16,6 +17,7 @@ import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { VisorDaLuneta } from './luneta'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
@@ -427,6 +429,7 @@ function Menu() {
 
 export function Hud() {
   const { loja } = useJogo()
+  const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
@@ -444,6 +447,12 @@ export function Hud() {
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)
   }, [loja])
+  if (naLuneta)
+    return (
+      <div className="arq-hud">
+        <VisorDaLuneta />
+      </div>
+    )
   return (
     <div className="arq-hud">
       <Necessidades />

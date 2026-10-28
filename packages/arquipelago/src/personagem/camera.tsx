@@ -1,13 +1,14 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRapier } from '@react-three/rapier'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
-import { useEffect, useRef } from 'react'
-import { MathUtils, Vector3 } from 'three'
+import { useEffect, useMemo, useRef } from 'react'
+import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useToque } from '../estado/preferencias'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
+import { vistaDaLuneta } from '../mundo/luneta-medidas'
 import {
   ALTURA_DA_TERRA,
   alturaDaIlha,
@@ -32,6 +33,7 @@ import {
   METROS_DA_DISTANCIA,
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
+import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import {
   criarPesos,
   type Enquadramento,
@@ -103,6 +105,19 @@ export function Camera() {
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
+  const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
+  const jornada = useEstado((s) => s.jornada)
+  const tamanho = useThree((s) => s.size)
+  const vista = useMemo(
+    () => vistaDaLuneta(ilhaDaLuneta(jornada), tamanho.width / tamanho.height),
+    [jornada, tamanho.width, tamanho.height],
+  )
+  const antesDaLuneta = useRef({
+    ativa: false,
+    posicao: new Vector3(),
+    giro: new Quaternion(),
+    campo: 55,
+  })
   const conforto = lojaDoConforto(loja)
   // Menos movimento: o pedido do aparelho ou a preferência do jogo (`sistemas/conforto.ts`).
   const aparelhoPedeMenos = useReducedMotion()
@@ -140,7 +155,7 @@ export function Camera() {
   const recentrarVisto = useRef(controle.recentrar)
 
   useEffect(() => {
-    if (construindo) return
+    if (construindo || naLuneta) return
     const el = gl.domElement
     const dedos = new Map<number, { x: number; y: number }>()
     let pinca: { separacao: number; distancia: number } | null = null
@@ -247,7 +262,7 @@ export function Camera() {
       el.removeEventListener('wheel', roda)
       window.removeEventListener('keydown', tecla)
     }
-  }, [gl, rastro, conforto, construindo])
+  }, [gl, rastro, conforto, construindo, naLuneta])
 
   // Mudou a distância nas preferências: a câmera vai até ela (a roda e a pinça seguem valendo).
   useEffect(
@@ -280,6 +295,36 @@ export function Camera() {
   useFrame((_, dt) => {
     // Uma única dona da câmera por quadro. O Construir cuida do alvo, controles e suavização.
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
+    const perfilAtual = perfilDaVez({
+      luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA,
+      conversa: loja.getState().painelAberto !== null && pedidos.conversa !== null,
+      dentroDeCasa: dentro,
+      correndoPercurso: movimento.corrida !== null,
+      escorregando: movimento.modo === 'escorregar',
+    })
+    const antesL = antesDaLuneta.current
+    if (perfilAtual === 'luneta' && camera instanceof PerspectiveCamera) {
+      if (!antesL.ativa) {
+        antesL.ativa = true
+        antesL.posicao.copy(camera.position)
+        antesL.giro.copy(camera.quaternion)
+        antesL.campo = camera.fov
+      }
+      // Corte para a vista óptica, sem viajar através do mundo ou mexer no rastro do corpo.
+      camera.position.set(vista.posicao.x, vista.posicao.y, vista.posicao.z)
+      camera.lookAt(vista.alvo.x, vista.alvo.y, vista.alvo.z)
+      camera.fov += (vista.campo - camera.fov) * (menosMovimento ? 1 : 1 - Math.exp(-dt * 10))
+      camera.updateProjectionMatrix()
+      return
+    }
+    if (antesL.ativa && camera instanceof PerspectiveCamera) {
+      antesL.ativa = false
+      camera.position.copy(antesL.posicao)
+      camera.quaternion.copy(antesL.giro)
+      camera.fov = antesL.campo
+      camera.updateProjectionMatrix()
+      return
+    }
     // O analógico direito do controle físico gira e inclina, como arrastar.
     const prefs = conforto.getState().conforto
     semMexer.current += dt
@@ -350,16 +395,7 @@ export function Camera() {
     let az = rastro.z + (movimento.foco.z - rastro.z) * f
     // O perfil da vez (`sistemas/perfis-de-camera.ts`) e a troca aos poucos.
     const fala = loja.getState().painelAberto !== null ? pedidos.conversa : null
-    passoDosPesos(
-      pesos,
-      perfilDaVez({
-        conversa: fala !== null,
-        dentroDeCasa: dentro,
-        correndoPercurso: movimento.corrida !== null,
-        escorregando: movimento.modo === 'escorregar',
-      }),
-      dt,
-    )
+    passoDosPesos(pesos, perfilAtual, dt)
     misturarPerfis(pesos, rastro.inclinacao, distancia.current, enquadramento)
     // Antecipando (percurso): a câmera olha um pouco à frente de quem anda, para onde ela vai. Só
     // o olhar vai à frente; a câmera e a sonda continuam saindo do corpo.

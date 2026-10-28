@@ -15,10 +15,13 @@ export const NOMES_DOS_PERFIS = [
   'conversa',
   'percurso',
   'escorregar',
+  'luneta',
 ] as const
 export type NomeDoPerfil = (typeof NOMES_DOS_PERFIS)[number]
 
 export interface PerfilDeCamera {
+  /** Campo de visão da observação fixa, em graus. */
+  campoDeVisao?: number
   inclinacao?: {
     /** O ângulo fica neste, seja qual for o que a pessoa deixou. */
     fixa?: number
@@ -40,6 +43,7 @@ export interface PerfilDeCamera {
 
 export const PERFIS_DE_CAMERA: Readonly<Record<NomeDoPerfil, PerfilDeCamera>> = {
   exploracao: {},
+  luneta: { inclinacao: { fixa: 0.32 }, distancia: { minima: 36, maxima: 36 }, campoDeVisao: 45 },
   // De cima, para ver o quarto todo (o telhado sai).
   casa: { inclinacao: { minima: 0.95 }, distancia: { maxima: 8 } },
   // Baixa, quase na altura dos olhos, e perto: as duas cabeças na tela.
@@ -55,6 +59,7 @@ export const TROCA_DE_PERFIL = 0.5
 export const ANTECIPACAO_MAXIMA = 2
 
 export interface SituacaoDaCamera {
+  luneta?: boolean
   /** Uma conversa aberta (o painel e quem fala). */
   conversa: boolean
   dentroDeCasa: boolean
@@ -65,10 +70,10 @@ export interface SituacaoDaCamera {
 }
 
 /**
- * O perfil que vale agora: conversa antes de tudo, depois a casa, o escorregador, o percurso e a
- * exploração.
+ * A luneta tem vista fixa própria. Fora dela: conversa, casa, escorregador, percurso e exploração.
  */
 export function perfilDaVez(s: SituacaoDaCamera): NomeDoPerfil {
+  if (s.luneta) return 'luneta'
   if (s.conversa) return 'conversa'
   if (s.dentroDeCasa) return 'casa'
   if (s.escorregando) return 'escorregar'
@@ -79,7 +84,15 @@ export function perfilDaVez(s: SituacaoDaCamera): NomeDoPerfil {
 export type PesosDosPerfis = Record<NomeDoPerfil, number>
 
 export function criarPesos(inicial: NomeDoPerfil = 'exploracao'): PesosDosPerfis {
-  return { exploracao: 0, casa: 0, conversa: 0, percurso: 0, escorregar: 0, [inicial]: 1 }
+  return {
+    exploracao: 0,
+    casa: 0,
+    conversa: 0,
+    percurso: 0,
+    escorregar: 0,
+    luneta: 0,
+    [inicial]: 1,
+  }
 }
 
 /**

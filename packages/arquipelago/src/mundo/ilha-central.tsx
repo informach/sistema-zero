@@ -12,6 +12,7 @@ import {
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { lerColisores } from './colisores-da-ilha'
+import { LunetaDoPier } from './luneta'
 import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 
@@ -223,6 +224,7 @@ export function IlhaCentral() {
       <Terreno />
       <Arvores />
       <Pier />
+      <LunetaDoPier />
     </>
   )
 }
