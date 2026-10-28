@@ -99,9 +99,11 @@ Pendente:
    pendente cobrado de novo e o que bateu no teto semanal de 150 cobrado na semana seguinte).
    Outras recompensas do jogo (colheita, pedidos) ainda não pagam moedas: cada uma precisa ser
    autorizada no servidor antes de ligar.
-3. O cartão dos pais aparece para toda família quando o serviço responde, mesmo fora da lista:
-   o serviço não diz ao responsável se alguma criança da família vê o jogo.
-4. `abrirFerramenta` com um molde (o objeto de partida da ferramenta) ainda responde indisponível.
+3. O Estúdio de desafio já abre por cima do jogo com o molde do desafio (Quadro das Cores). O molde
+   do objeto (o projeto azul do modo construção) ainda responde indisponível: entra com o modo
+   construção. A paleta de blocos do desafio ainda é a completa das aulas.
+4. A Capi e os bichos do Bosque (conversa, amizade, esconde-esconde, adotar, cuidar e seguir): plano
+   em `docs/plans/2026-10-28-arquipelago-capi-e-bichos.md`.
 5. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o
    token de leitura `ARQUIPELAGO_MEMBERS_TOKEN` (members e arquipelago-api) precisa ser criado no
    painel do Railway antes de entrar no `.railway/variables.ts`.
