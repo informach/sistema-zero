@@ -172,7 +172,7 @@ export function jardimAjuda(d: JardimDimensao): {
       steps: three
         ? [
             'Abra Enquanto estiver rodando. Deixe à vista A cada quadro da cena cena e o aviso dentro dele.',
-            'Abra Jogo 3D → Movimento → Andar com o teclado. Arraste Andar com personagem usando WASD/setas, velocidade 3 para dentro do quadro, antes de Escrever no canto da tela.',
+            'Abra Jogo 3D → Movimento → Andar com o teclado. Arraste Fazer personagem andar com as setas (ou WASD), velocidade 3 para dentro do quadro, antes de Escrever na tela.',
             'Escolha personagem no nome e coloque 4 na velocidade. A câmera, a caminhada permitida e as animações já estão em Ao iniciar; conserve esses blocos.',
           ]
         : [
@@ -268,7 +268,7 @@ export function jardimAjuda(d: JardimDimensao): {
         : 'X e Y mudam o lugar do regador na tela. Mudar um valor por vez ajuda a perceber o efeito.',
       steps: [
         three
-          ? 'Em Ao iniciar, encontre Posição do objeto regador. Escolha outro valor de x ou z; deixe y em 0.54, como está. Um exemplo é x −2, com o mesmo z.'
+          ? 'Em Ao iniciar, encontre Colocar o objeto regador. Escolha outro valor de x ou z; deixe y em 0.54, como está. Um exemplo é x −2, com o mesmo z.'
           : 'Em Ao iniciar, encontre a criação do sprite regador. Ele começa em x 300 e y 190. Escolha outro x ou y. Um exemplo é x 390, mantendo y 190.',
         'Observe onde ele apareceu. Pode experimentar vários lugares e escolher outro diferente do exemplo. Deixe-o dentro do jardim, visível, separado do personagem no começo e alcançável.',
         'Preserve um caminho até a flor sem passar pelo regador. Comece uma partida com a mudança. Se a prévia já reiniciou ao editar, ela já serve para esse teste; senão clique no jogo e pressione R.',

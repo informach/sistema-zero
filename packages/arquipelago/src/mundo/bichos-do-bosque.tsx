@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { BICHOS_DO_BOSQUE, type BichoDoBosque } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Group, Object3D } from 'three'
 import cachorroGlb from '../assets/bichos/cachorro-filhote.glb'
 import coelhoGlb from '../assets/bichos/coelho-filhote.glb'
@@ -27,6 +27,7 @@ import {
   RAIO_DA_PISTA,
   RAIO_DE_ACHAR,
 } from '../sistemas/esconde'
+import { type PegadaNoChao, rastroNoCaminho } from '../sistemas/pegadas'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import {
@@ -41,6 +42,7 @@ import { gradeDoBicho } from './chao-livre'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import { useInterativo } from './interativos'
 import { ComReserva } from './modelos'
+import { RastroDePegadas } from './rastro-de-pegadas'
 
 export const URL_DO_FILHOTE: Readonly<Record<BichoDoBosque, string>> = {
   cachorro: new URL(cachorroGlb, import.meta.url).href,
@@ -72,9 +74,10 @@ interface Lugar {
 
 /**
  * Os quatro bichos do esconde-esconde (`sistemas/esconde.ts`): escondidos nos esconderijos até
- * serem achados, e depois no cercadinho da Capi. Perto do escondido a pista aparece e o Zappy
- * fala dela; "Achar" (E) guarda o achado, o bicho comemora e corre pelo caminho até o cercadinho.
- * Depois de conhecer a Capi, o Zappy avisa quando a criança esquenta.
+ * serem achados, com o rastro de pegadas que leva até cada um, e depois no cercadinho da Capi.
+ * Perto do escondido a pista aparece e o Zappy fala dela; "Achar" (E) guarda o achado, o bicho
+ * comemora e corre pelo caminho até o cercadinho. Depois de conhecer a Capi, o Zappy avisa quando
+ * a criança esquenta.
  */
 export function BichosDoBosque({
   modelo,
@@ -122,10 +125,42 @@ export function BichosDoBosque({
   // o primeiro "Achar" não engasgar; se o achado vier antes, monta na hora.
   const grade = useRef<Grade | null>(null)
   const faltaAchar = achados.length < BICHOS_DO_BOSQUE.length
-  useEffect(() => {
-    if (!faltaAchar || grade.current) return
-    const montar = () => {
+  const caminhoAteOCercado = useCallback(
+    (de: Lugar, ate: Lugar): PontoNoChao[] => {
       if (!grade.current) grade.current = gradeDoBicho(colisores, TOPO_DO_BOSQUE)
+      // Do mundo para o modelo e de volta (o giro da ilha ao contrário).
+      const paraOModelo = (p: PontoNoChao) => {
+        const dx = p.x - meio.x
+        const dz = p.z - meio.z
+        const c = Math.cos(giro)
+        const s = Math.sin(giro)
+        return { x: dx * c - dz * s, z: dx * s + dz * c }
+      }
+      const noModelo = acharCaminho(grade.current, paraOModelo(de), paraOModelo(ate))
+      if (!noModelo) return [de, ate]
+      return noModelo.map((p) => {
+        const w = paraOMundo({ x: p.x, y: 0, z: p.z }, meio, giro, { x: 0, y: 0, z: 0 })
+        return { x: w.x, z: w.z }
+      })
+    },
+    [colisores, meio, giro],
+  )
+  // O rastro de pegadas de cada bicho (o diário mostra de quem é cada uma): no caminho de volta do
+  // esconderijo até o cercadinho, de onde eles fugiram. Sai junto com a grade, à toa.
+  const [rastros, setRastros] = useState<Partial<Record<BichoDoBosque, PegadaNoChao[]>>>({})
+  useEffect(() => {
+    if (!faltaAchar) return
+    const montar = () => {
+      const porta = lugares.cercado[0]
+      if (!porta) return
+      setRastros(
+        Object.fromEntries(
+          BICHOS_DO_BOSQUE.map((b) => [
+            b,
+            rastroNoCaminho(caminhoAteOCercado(lugares.esconderijos[b], porta)),
+          ]),
+        ),
+      )
     }
     if (typeof requestIdleCallback === 'function') {
       const id = requestIdleCallback(montar, { timeout: 4000 })
@@ -133,24 +168,7 @@ export function BichosDoBosque({
     }
     const id = setTimeout(montar, 1500)
     return () => clearTimeout(id)
-  }, [faltaAchar, colisores])
-  const caminhoAteOCercado = (de: Lugar, ate: Lugar): PontoNoChao[] => {
-    if (!grade.current) grade.current = gradeDoBicho(colisores, TOPO_DO_BOSQUE)
-    // Do mundo para o modelo e de volta (o giro da ilha ao contrário).
-    const paraOModelo = (p: PontoNoChao) => {
-      const dx = p.x - meio.x
-      const dz = p.z - meio.z
-      const c = Math.cos(giro)
-      const s = Math.sin(giro)
-      return { x: dx * c - dz * s, z: dx * s + dz * c }
-    }
-    const noModelo = acharCaminho(grade.current, paraOModelo(de), paraOModelo(ate))
-    if (!noModelo) return [de, ate]
-    return noModelo.map((p) => {
-      const w = paraOMundo({ x: p.x, y: 0, z: p.z }, meio, giro, { x: 0, y: 0, z: 0 })
-      return { x: w.x, z: w.z }
-    })
-  }
+  }, [faltaAchar, lugares, caminhoAteOCercado])
 
   // As falas do Zappy: a pista ao chegar perto de um escondido, e o calor quando esquenta.
   const calorAntes = useRef<Calor | null>(null)
@@ -188,6 +206,17 @@ export function BichosDoBosque({
 
   return (
     <>
+      {BICHOS_DO_BOSQUE.filter((b) => !achados.includes(b)).map((b) => {
+        const pegadas = rastros[b]
+        return pegadas?.length ? (
+          <RastroDePegadas
+            key={`rastro-${b}`}
+            bicho={b}
+            pegadas={pegadas}
+            y={lugares.esconderijos[b].y}
+          />
+        ) : null
+      })}
       {BICHOS_DO_BOSQUE.filter((b) => b !== adotado).map((b) => {
         const vez = achados.indexOf(b)
         return (
