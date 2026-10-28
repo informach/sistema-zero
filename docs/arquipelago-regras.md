@@ -927,8 +927,20 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
 - **Fechado:** com os desafios desligados ou sem acesso (403), o painel diz que os desafios
   ainda não abriram. Com o serviço fora do ar, diz que não conseguiu ler e oferece "Tentar de
   novo".
-- **Ainda falta:** a cor da ilha inteira continua seguindo a posição na jornada (as pontes). O
-  quadro só pinta as seis manchas do cavalete.
+- **A cor da ilha** (`arquipelago/src/sistemas/cor-da-ilha.ts`, tinta em
+  `src/mundo/pintura-da-ilha.ts`): cada ilha do anel é dividida em seis pedaços, como fatias em
+  volta do centro. O pedaço 1 fica do lado da chegada da ponte e os outros seguem em volta.
+  - ponte fechada: a ilha toda cinza;
+  - ponte aberta: um pouco de cor na ilha inteira, 30% (`COR_AO_ABRIR`). O Zappy diz "A ponte para
+    o ... ficou pronta. A cor começou a voltar para lá.";
+  - quadro feito: o pedaço dele ganha a cor inteira. Na festa, a cor escorre em 2,4 s
+    (`DURACAO_DA_TINTA_S`);
+  - quadro sem desafio publicado: o pedaço já vem colorido, para a criança nunca ficar presa num
+    cinza sem ter o que fazer. Ilha sem nenhum desafio fica toda colorida;
+  - desafios desligados ou serviço fora do ar: a ilha toda colorida (como antes dos desafios);
+  - entre dois pedaços a cor se mistura numa faixa (`BORDA_DOS_PEDACOS`), e bem no meio da ilha
+    vale a média dos seis.
+  A mesma tinta vale para a versão leve, a completa e as copas que esmaecem.
 - **Plataforma de mentira** (`src/plataforma/desafios-falsos.ts`): no playground, o Bosque tem o
   quadro 1 pronto, o 2 esperando o curso Repetições e o 3 feito. "Fazer o desafio" conclui em
   0,4 s. Com `desafios: 'desligados'`, responde 403.
@@ -1152,6 +1164,7 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Colisão das peças | seção 6.14 | `arquipelago/src/mundo/colisao-da-ilha-central.ts`, os scripts de `arquipelago/arte` e `colisores-da-ilha.ts`, `SO_PARA_O_CORPO` |
 | Quadros por ilha | 6 | `arquipelago-contracts/src/desafios.ts`, `QUADROS_POR_ILHA` |
 | Lugar e alcance do Quadro das Cores | 3,2 e 2,4 m; 2,6 m | `arquipelago/src/mundo/quadro-das-cores.tsx`, `LUGAR_DO_QUADRO`, `ALCANCE_DO_QUADRO` |
+| Pedaços da ilha | 30% ao abrir a ponte; 2,4 s de tinta; borda de 18% | `arquipelago/src/sistemas/cor-da-ilha.ts`, `COR_AO_ABRIR`, `DURACAO_DA_TINTA_S`, `BORDA_DOS_PEDACOS` |
 | Festa da cor | 1,6 s na mancha; 4 s até avisar o serviço | `quadro-das-cores.tsx`, `DURACAO_DA_COR_S`; `arquipelago/src/interface/quadro-das-cores.tsx`, `FESTA_MS` |
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
 | Moedas padrão | 20 e 10 | `desafios.ts`, `MOEDAS_PADRAO` |

@@ -51,7 +51,8 @@ import {
   OPACIDADE_DA_COPA_NA_FRENTE,
   RAIO_DA_ILHA_DO_ANEL,
 } from './medidas'
-import { type CorOriginal, coresOriginais, materiaisDe, tingir } from './modelos'
+import { materiaisDe } from './modelos'
+import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 
 /**
  * As ilhas completas do Blender (`arte/ilhas/`). Cada uma ocupa o mesmo lugar da versão leve
@@ -70,14 +71,13 @@ export function giroDaIlha(ilha: Ilha): number {
   return Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
 }
 
-/** O que fica pronto antes de a ilha aparecer: o desenho já girado, os colisores e as cores. */
+/** O que fica pronto antes de a ilha aparecer: o desenho já girado (e com a tinta) e os colisores. */
 export interface IlhaPreparada {
   modelo: Object3D
   colisores: ColisorDaIlha[]
   /** Os materiais opacos de tudo (as peças que esmaecem têm, além deles, cópias transparentes). */
   materiais: Material[]
   copas: Copa[]
-  cores: CorOriginal[]
 }
 
 /**
@@ -103,13 +103,10 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
   tirarNosDeColisao(cena)
   // O arquivo é só desta ilha (não vem de um cache dividido): tinge e esmaece os materiais dele.
   const copas = separarCopas(cena)
-  const preparada = {
-    modelo: cena,
-    colisores,
-    materiais: materiaisDe(cena),
-    copas,
-    cores: coresOriginais(cena),
-  }
+  const materiais = materiaisDe(cena)
+  // A tinta dos pedaços (Quadro das Cores) nos opacos e nas cópias transparentes das copas.
+  pintarMateriais([...materiais, ...copas.flatMap((c) => c.suaves)], pinturaDaIlha(ilha))
+  const preparada = { modelo: cena, colisores, materiais, copas }
   preparadas.set(cena, preparada)
   return preparada
 }
@@ -322,23 +319,18 @@ function ColisoresDaIlha({ colisores, troca }: { colisores: ColisorDaIlha[]; tro
 }
 
 /**
- * A ilha completa na cena: entra e sai esmaecendo (`troca.opacidade`), com as cores saindo do
- * cinza como as da leve. Só colide quando está ativa.
+ * A ilha completa na cena: entra e sai esmaecendo (`troca.opacidade`), com os pedaços saindo do
+ * cinza como os da leve (a mesma tinta, `pintura-da-ilha.ts`). Só colide quando está ativa.
  */
 export function IlhaCompleta({
   preparada,
-  cor,
   colide,
   troca,
 }: {
   preparada: IlhaPreparada
-  cor: number
   colide: boolean
   troca: Troca
 }) {
-  useEffect(() => {
-    tingir(preparada.cores, cor)
-  }, [preparada, cor])
   const { rastro } = useJogo()
   const camera = useThree((s) => s.camera)
   const aplicada = useRef(-1)

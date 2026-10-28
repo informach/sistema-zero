@@ -134,6 +134,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   loja congela o personagem).
 - A situação de cada desafio vem SEMPRE do serviço; o jogo só relê a lista depois do Estúdio.
   Regras e textos: `docs/arquipelago-regras.md` §7.11. Testes: `tests/quadro-das-cores.test.ts`.
+- A cor das ilhas do anel segue os quadros: seis pedaços em volta do centro (o 1 na chegada da
+  ponte), regra em `sistemas/cor-da-ilha.ts` e tinta no shader em `mundo/pintura-da-ilha.ts`
+  (`pinturaDaIlha(ilha)`: uniforms divididos por todos os materiais da ilha, leve, completa e as
+  cópias das copas; `pintarMateriais` liga o `onBeforeCompile` uma vez por material). O `Anel` lê
+  a lista dos desafios ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Testes:
+  `tests/cor-da-ilha.test.ts`.
 
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 

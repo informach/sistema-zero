@@ -16,7 +16,10 @@ import {
   Vector3,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosDesafios, useDesafios } from '../estado/desafios'
+import { andarPedacos, corMedia, pedacosPintados } from '../sistemas/cor-da-ilha'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
+import { quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { BosqueVivo } from './bosque-vivo'
 import {
   ALTURA_DA_CORDA,
@@ -36,16 +39,8 @@ import {
 } from './ilha-completa'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, ilhasEmVolta, RAIO_DA_ILHA_DO_ANEL, trajetoDaPonte } from './medidas'
-import {
-  CINZA,
-  ComReserva,
-  copiarNo,
-  coresOriginais,
-  MODELOS,
-  materiaisDe,
-  tingir,
-  useModelo,
-} from './modelos'
+import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { QuadroDasCores } from './quadro-das-cores'
 
 const TRECHO_QUEBRADO = 0.25
@@ -248,7 +243,7 @@ function IlhaDoAnel({
     <>
       <group position={[centro.x, y, centro.z]}>
         <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
-          <IlhaDoModelo ilha={ilha} cor={cor} troca={troca} />
+          <IlhaDoModelo ilha={ilha} troca={troca} />
         </ComReserva>
         {!completaColide(estado) && (
           <RigidBody type="fixed" colliders={false}>
@@ -259,12 +254,7 @@ function IlhaDoAnel({
           </RigidBody>
         )}
         {preparada && completaNaCena(estado) && (
-          <IlhaCompleta
-            preparada={preparada}
-            cor={cor}
-            colide={completaColide(estado)}
-            troca={troca}
-          />
+          <IlhaCompleta preparada={preparada} colide={completaColide(estado)} troca={troca} />
         )}
         {preparada && completaColide(estado) && (
           <ComReserva reserva={null}>
@@ -282,18 +272,18 @@ function IlhaDoAnel({
 
 /**
  * A ilha do Blender (`ilhas-do-anel.glb`, um nó por ilha). O lado da chegada da ponte (+x do
- * modelo) é virado para a sua ilha; as cores saem do cinza conforme `cor` (a lava acende junto).
+ * modelo) é virado para a sua ilha; os pedaços saem do cinza pela tinta da ilha (a lava acende junto).
  */
-function IlhaDoModelo({ ilha, cor, troca }: { ilha: Ilha; cor: number; troca: Troca }) {
+function IlhaDoModelo({ ilha, troca }: { ilha: Ilha; troca: Troca }) {
   const raiz = useModelo(MODELOS.ilhas)
-  const { modelo, cores, materiais } = useMemo(() => {
+  const { modelo, materiais } = useMemo(() => {
     const copia = copiarNo(raiz, ilha.id, true)
     copia.rotation.y = giroDaIlha(ilha)
-    return { modelo: copia, cores: coresOriginais(copia), materiais: materiaisDe(copia) }
+    const materiais = materiaisDe(copia)
+    // Os pedaços saem do cinza no shader (`pintura-da-ilha.ts`), os mesmos da completa.
+    pintarMateriais(materiais, pinturaDaIlha(ilha))
+    return { modelo: copia, materiais }
   }, [raiz, ilha])
-  useEffect(() => {
-    tingir(cores, cor)
-  }, [cores, cor])
   useEffect(() => {
     troca.leve = modelo
     return () => {
@@ -553,6 +543,36 @@ function PonteDoModelo({
   )
 }
 
+/**
+ * A tinta da ilha a cada quadro: a chegada da ponte e os seis pedaços do Quadro das Cores (o feito
+ * escorre; a primeira leitura vai na hora). Devolve a cor média, para as formas simples.
+ */
+function usePinturaDaIlha(ilha: Ilha, chegada: number): number {
+  const { loja, plataforma } = useJogo()
+  const desafios = lojaDosDesafios(loja, plataforma)
+  const dados = useDesafios(desafios, (s) => s.dados)
+  const fechado = useDesafios(desafios, (s) => s.fechado)
+  const pintura = pinturaDaIlha(ilha)
+  // Sem lista ainda (carregando): espera, sem mexer; fechada (desligada ou fora): toda colorida.
+  const alvo = useMemo(
+    () =>
+      dados
+        ? pedacosPintados(quadrosDaIlha(dados.desafios, ilha.id))
+        : fechado
+          ? pedacosPintados(null)
+          : null,
+    [dados, fechado, ilha.id],
+  )
+  const primeira = useRef(true)
+  useFrame((_, dt) => {
+    pintura.uniforms.uArqChegada.value = chegada
+    if (!alvo) return
+    andarPedacos(pintura.uniforms.uArqPedacos.value, alvo, Math.min(dt, 0.1), primeira.current)
+    primeira.current = false
+  })
+  return corMedia(chegada, alvo ?? pedacosPintados(null))
+}
+
 /** Quando a ponte acabou de abrir: a cor escorre pela ilha e as tábuas aparecem uma a uma. */
 function useChegada(ilha: Ilha, aberta: boolean): number {
   const { loja } = useJogo()
@@ -561,7 +581,9 @@ function useChegada(ilha: Ilha, aberta: boolean): number {
   const inicio = useRef<number | null>(null)
   useEffect(() => {
     if (aberta && !jaViu && progresso === 0) {
-      loja.getState().dizer(`A ponte para o ${ilha.nome} ficou pronta. A cor voltou para lá.`)
+      loja
+        .getState()
+        .dizer(`A ponte para o ${ilha.nome} ficou pronta. A cor começou a voltar para lá.`)
     }
   }, [aberta, jaViu, progresso, ilha.nome, loja])
   useFrame(() => {
@@ -587,6 +609,7 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   const jornada = useEstado((s) => s.jornada)
   const aberta = ilhaAberta(ilha.id, jornada)
   const chegada = useChegada(ilha, aberta)
+  const cor = usePinturaDaIlha(ilha, aberta ? chegada : 0)
   const troca = useRef<Troca>({ opacidade: 0 }).current
   const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
   // Na ilha aberta (nesta fase só a silhueta), o Zappy explica o que vem.
@@ -607,7 +630,7 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
       <IlhaDoAnel
         ilha={ilha}
         centro={centro}
-        cor={aberta ? chegada : 0}
+        cor={cor}
         estado={estado}
         preparada={preparada}
         troca={troca}
@@ -619,6 +642,11 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
 
 export function Anel() {
   const ilhas = useMemo(() => ilhasEmVolta(), [])
+  // A lista dos desafios pinta os pedaços de todas as ilhas: lida uma vez ao abrir o jogo.
+  const { loja, plataforma } = useJogo()
+  useEffect(() => {
+    void lojaDosDesafios(loja, plataforma).getState().carregar()
+  }, [loja, plataforma])
   return (
     <>
       {ilhas.map(({ ilha, centro }) => (
