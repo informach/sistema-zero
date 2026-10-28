@@ -106,7 +106,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `POST /tempo` | jogador liberado | `{eventoId, dia, segundos}` (1 a 120); repetição não soma novamente, conflito retorna 409 e data futura é recusada; devolve o total de hoje e `acabou` |
 | `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis: os do jogo sempre, os de controle pelos blocos conquistados (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
 | `GET /desafios`, `GET /desafios/:id`, `POST /desafios/:id/verificar`, `POST /desafios/:id/recompensa-vista` | jogador liberado (com `ARQUIPELAGO_DESAFIOS`) | ver "Jogar os desafios" |
-| `GET\|PUT /familia/limite` | responsável do Kids | limite diário da família (padrão 30, de 10 a 240, passo 5) |
+| `GET /familia/limite?perfis=` | responsável do Kids | o limite diário da família e `algumaCriancaVe` (algum dos perfis da conta, mandados pelo BFF dos pais, vê o jogo pela política de acesso); perfis fora do formato → 400 |
+| `PUT /familia/limite` | responsável do Kids | muda o limite diário da família (padrão 30, de 10 a 240, passo 5) |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 
 - **Quem é quem** (`interfaces/http/identidade.ts`, mesmas regras de sessão do Members): sessão de
@@ -119,6 +120,11 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   inclusive a equipe), lista (equipe + ids de perfil ou conta em `ARQUIPELAGO_LISTA`) ou aberto;
   `ARQUIPELAGO_PUBLICOS` (`kids`, `adulto`). Sem `ARQUIPELAGO_MODO`: aberto em dev e DESLIGADO em
   deploy (lançar é decisão explícita). Bloqueado → 403 `ACESSO_BLOQUEADO` com `motivo`.
+- **Cartão dos pais** (28/10/2026): a área dos pais só mostra o cartão do tempo livre quando
+  `algumaCriancaVe` (`domain/acesso.ts`): cada perfil da conta passa por `decidirAcesso` como
+  criança do Kids, com o papel da conta (a família da equipe conta como equipe). Os ids vêm do BFF
+  dos pais (a grade do Auth) em `?perfis=`, até 20 (`PERFIS_DA_FAMILIA_MAXIMO`); sem perfis, falso.
+  Não há rota nova no Members. Detalhe em `docs/arquipelago-regras.md`, seção 3.
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",

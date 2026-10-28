@@ -1,7 +1,11 @@
 import 'server-only'
-import { tipoDoArquivoDoCliente } from '@sistemazero/arquipelago-contracts'
+import {
+  PERFIS_DA_FAMILIA_MAXIMO,
+  tipoDoArquivoDoCliente,
+} from '@sistemazero/arquipelago-contracts'
 import { NextResponse } from 'next/server'
 import { getEnv } from '../lib/env'
+import type { ProfilesClient } from '../server/clients'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from '../server/gateway'
 import { readJsonBodyWithLimit } from '../server/read-json-body'
 
@@ -56,7 +60,10 @@ const invalido = () =>
  * decide acesso, salvamento, tempo e suporte somente leitura é o `@sistemazero/arquipelago-api`.
  * O cliente compilado do jogo também passa por aqui, na mesma origem da página.
  */
-export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
+export function createArquipelagoRoutes(deps: {
+  gateway: GatewayModule
+  profiles: Pick<ProfilesClient, 'list'>
+}) {
   const { gateway } = deps
   const chamar = (
     caminho: string,
@@ -127,9 +134,17 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
         return id ? chamar(`/desafios/${id}/recompensa-vista`, 'POST', {}) : invalido()
       },
     },
-    /** Área dos pais: o app embrulha com o portão do responsável. */
+    /**
+     * Área dos pais: o app embrulha com o portão do responsável. A leitura leva os perfis da conta
+     * (a grade do Auth) para o serviço dizer se alguma criança vê o jogo; sem a lista, nada segue.
+     */
     arquipelagoLimiteDaFamilia: {
-      GET: () => chamar('/familia/limite', 'GET'),
+      GET: async () => {
+        const lista = await deps.profiles.list()
+        if (lista.status !== 200 || !lista.body) return repasse(lista)
+        const perfis = lista.body.profiles.slice(0, PERFIS_DA_FAMILIA_MAXIMO).map((p) => p.id)
+        return chamar('/familia/limite', 'GET', undefined, { query: { perfis: perfis.join(',') } })
+      },
       PUT: comCorpo('/familia/limite', 'PUT', CORPO_PEQUENO),
     },
     arquipelagoCliente: {

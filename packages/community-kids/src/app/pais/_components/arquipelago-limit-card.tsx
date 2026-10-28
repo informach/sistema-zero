@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  LeituraDoLimiteDaFamiliaSchema,
   LIMITE_DIARIO_MAXIMO_MINUTOS,
   LIMITE_DIARIO_MINIMO_MINUTOS,
   LIMITE_DIARIO_PASSO_MINUTOS,
@@ -29,8 +30,9 @@ function ajustar(minutos: number): number {
 
 /**
  * Tempo livre de cada criança no Arquipélago Vagalume, por dia. O cartão só aparece quando o
- * serviço do jogo responde: sem ele (jogo ainda fechado, serviço fora) não há o que ajustar, e
- * um erro aqui só confundiria a família.
+ * serviço do jogo responde que alguma criança da conta vê o jogo (a mesma política de acesso do
+ * jogo). Jogo fechado para a família, serviço fora ou resposta estranha: o cartão fica escondido,
+ * porque um cartão de um jogo que a criança não vê, ou um erro aqui, só confundiria a família.
  */
 export function ArquipelagoLimitCard() {
   const titulo = useId()
@@ -46,8 +48,9 @@ export function ArquipelagoLimitCard() {
     void (async () => {
       try {
         const response = await sessionFetch(ROTA, { signal: controller.signal })
-        const data = LimiteDaFamiliaSchema.safeParse(await response.json())
+        const data = LeituraDoLimiteDaFamiliaSchema.safeParse(await response.json())
         if (!response.ok || !data.success || controller.signal.aborted) return
+        if (!data.data.algumaCriancaVe) return
         setLimite(data.data.limiteDiarioMinutos)
         setValor(data.data.limiteDiarioMinutos)
       } catch {

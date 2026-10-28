@@ -91,7 +91,7 @@ export function createShell(cfg: ShellConfig) {
     }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
-    ...createArquipelagoRoutes({ gateway }),
+    ...createArquipelagoRoutes({ gateway, profiles }),
     ...createStudioRoutes({ hub, members, media, audience: cfg.audience }),
     ...createStudioPythonLanguageRoutes(media, { members, audience: cfg.audience }),
     ...createStudioZappyRoutes({ members, session, audience: cfg.audience }),

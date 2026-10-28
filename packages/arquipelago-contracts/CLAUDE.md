@@ -17,7 +17,8 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,
-  tempo, limite da família, cartões do jogador).
+  tempo, limite da família e a leitura dos pais com `algumaCriancaVe` e `?perfis=`, cartões do
+  jogador).
 - `desafios.ts` (27/10/2026): desafios do jogo (conteúdo com versão e migração, metadados, visões
   da equipe e da pessoa, molde do Estúdio de desafio, `LIMITES_DO_DESAFIO`, `MOEDAS_PADRAO`). As
   visões da pessoa são estritas: gabarito e regra nunca saem.

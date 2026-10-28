@@ -387,9 +387,9 @@ describe('tempo livre e limite da família', () => {
   })
 
   test('responsável lê o padrão e muda (normalizado em passos de 5)', async () => {
-    expect((await chamar('GET', '/arquipelago/familia/limite', responsavel)).json).toEqual({
-      limiteDiarioMinutos: 30,
-    })
+    expect(
+      (await chamar('GET', `/arquipelago/familia/limite?perfis=${PERFIL}`, responsavel)).json,
+    ).toEqual({ limiteDiarioMinutos: 30, algumaCriancaVe: true })
     const r = await chamar('PUT', '/arquipelago/familia/limite', responsavel, {
       limiteDiarioMinutos: 47,
     })
@@ -401,6 +401,36 @@ describe('tempo livre e limite da família', () => {
       limiteDiarioMinutos: 999,
     })
     expect(alto.json).toEqual({ limiteDiarioMinutos: 240 })
+  })
+
+  test('a leitura dos pais diz se alguma criança da conta vê o jogo', async () => {
+    const ler = async (query: string) =>
+      (await chamar('GET', `/arquipelago/familia/limite${query}`, responsavel)).json
+    politica = { modo: 'lista', publicos: new Set(['kids']), lista: new Set([IRMAO]) }
+    montar()
+    expect(await ler(`?perfis=${PERFIL}`)).toEqual({
+      limiteDiarioMinutos: 30,
+      algumaCriancaVe: false,
+    })
+    expect(await ler(`?perfis=${PERFIL},${IRMAO.toUpperCase()}`)).toMatchObject({
+      algumaCriancaVe: true,
+    })
+    // Sem perfis na conta, nenhuma criança vê.
+    expect(await ler('')).toMatchObject({ algumaCriancaVe: false })
+    expect(await ler('?perfis=')).toMatchObject({ algumaCriancaVe: false })
+    politica = { modo: 'desligado', publicos: new Set(['kids']), lista: new Set([PERFIL]) }
+    montar()
+    expect(await ler(`?perfis=${PERFIL}`)).toMatchObject({ algumaCriancaVe: false })
+    politica = { modo: 'aberto', publicos: new Set(['kids']), lista: new Set() }
+    montar()
+    expect(await ler(`?perfis=${PERFIL}`)).toMatchObject({ algumaCriancaVe: true })
+  })
+
+  test('perfis fora do formato são recusados, e a criança não lê a família', async () => {
+    const r = await chamar('GET', '/arquipelago/familia/limite?perfis=lixo', responsavel)
+    expect(r.status).toBe(400)
+    const crianca1 = await chamar('GET', `/arquipelago/familia/limite?perfis=${PERFIL}`, crianca())
+    expect(crianca1.status).toBe(403)
   })
 
   test('a criança não muda o próprio limite', async () => {

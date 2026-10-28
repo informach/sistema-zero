@@ -31,7 +31,11 @@ test('fala de tempo como a família fala', () => {
 
 test('carrega, ajusta de 5 em 5 e salva o limite confirmado pelo servidor', async () => {
   const calls = servidor((init) =>
-    Response.json({ limiteDiarioMinutos: init?.method === 'PUT' ? 40 : 30 }),
+    Response.json(
+      init?.method === 'PUT'
+        ? { limiteDiarioMinutos: 40 }
+        : { limiteDiarioMinutos: 30, algumaCriancaVe: true },
+    ),
   )
   render(<ArquipelagoLimitCard />)
   await screen.findByText('Tempo livre no Arquipélago')
@@ -47,7 +51,7 @@ test('carrega, ajusta de 5 em 5 e salva o limite confirmado pelo servidor', asyn
 })
 
 test('não passa dos limites do serviço', async () => {
-  servidor(() => Response.json({ limiteDiarioMinutos: 10 }))
+  servidor(() => Response.json({ limiteDiarioMinutos: 10, algumaCriancaVe: true }))
   render(<ArquipelagoLimitCard />)
   const menos = (await screen.findByRole('button', {
     name: 'Diminuir 5 minutos',
@@ -63,11 +67,41 @@ test('sem o serviço do jogo o cartão não aparece (nada de erro para a famíli
   expect(screen.queryByRole('alert')).toBeNull()
 })
 
+test('nenhuma criança da conta vê o jogo: o cartão não aparece', async () => {
+  const calls = servidor(() => Response.json({ limiteDiarioMinutos: 30, algumaCriancaVe: false }))
+  const { container } = render(<ArquipelagoLimitCard />)
+  await waitFor(() => expect(calls.length).toBe(1))
+  // Dá tempo de a resposta chegar ao componente antes de olhar.
+  await new Promise((r) => setTimeout(r, 20))
+  expect(container.textContent).toBe('')
+})
+
+test('leitura sem a resposta de quem vê o jogo (serviço antigo): o cartão não aparece', async () => {
+  const calls = servidor(() => Response.json({ limiteDiarioMinutos: 30 }))
+  const { container } = render(<ArquipelagoLimitCard />)
+  await waitFor(() => expect(calls.length).toBe(1))
+  await new Promise((r) => setTimeout(r, 20))
+  expect(container.textContent).toBe('')
+})
+
+test('a leitura falha na rede: o cartão não aparece', async () => {
+  globalThis.fetch = Object.assign(
+    mock(async () => {
+      throw new TypeError('rede')
+    }),
+    { preconnect: originalFetch.preconnect },
+  )
+  const { container } = render(<ArquipelagoLimitCard />)
+  await new Promise((r) => setTimeout(r, 20))
+  expect(container.textContent).toBe('')
+  expect(screen.queryByRole('alert')).toBeNull()
+})
+
 test('falha ao salvar avisa e mantém o valor escolhido', async () => {
   servidor((init) =>
     init?.method === 'PUT'
       ? Response.json({}, { status: 503 })
-      : Response.json({ limiteDiarioMinutos: 30 }),
+      : Response.json({ limiteDiarioMinutos: 30, algumaCriancaVe: true }),
   )
   render(<ArquipelagoLimitCard />)
   fireEvent.click(await screen.findByRole('button', { name: 'Aumentar 5 minutos' }))
