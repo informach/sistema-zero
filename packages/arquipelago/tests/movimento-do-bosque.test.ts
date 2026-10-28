@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
+  FOGUEIRA_DO_BOSQUE,
   NOMES_DAS_ANCORAS_DO_PERCURSO,
   PLACA_DA_LARGADA,
   percursoNoModelo,
@@ -448,4 +449,17 @@ describe('a pedra de agarrar (modo borda)', () => {
       expect(quemBate(emCima)).toBeUndefined()
     }
   })
+})
+
+test('a fogueira e o balde ficam numa clareira livre para caminhar ao redor', () => {
+  for (let x = -2.2; x <= 2.2; x += 0.2)
+    for (let z = -2.2; z <= 2.2; z += 0.2) {
+      if (Math.hypot(x, z) > 2.2) continue
+      const p = {
+        x: FOGUEIRA_DO_BOSQUE.x + x,
+        y: 1 + CORPO.doCentroAoPe,
+        z: FOGUEIRA_DO_BOSQUE.z + z,
+      }
+      expect(colisores.find((c) => bate(c, p))?.nome).toBeUndefined()
+    }
 })

@@ -13,16 +13,28 @@ export interface MaterialFisico {
   atrito: number
   /** Quanto quica (o `restitution` do colisor do Rapier, de 0 a 1). */
   quique: number
+  /** Só materiais combustíveis. Números do jogo, em segundos e unidades de calor. */
+  fogo?: { ignicao: number; calor: number; duracao: number; secagem: number }
 }
 
 export const MATERIAIS = {
   agua: { densidade: 1000, atrito: 0, quique: 0 },
   /** Tronco, tora, tábua: boia com metade de fora. */
-  madeira: { densidade: 500, atrito: 0.7, quique: 0.1 },
+  madeira: {
+    densidade: 500,
+    atrito: 0.7,
+    quique: 0.1,
+    fogo: { ignicao: 5, calor: 4, duracao: 45, secagem: 30 },
+  },
   /** Pedra: afunda. */
   pedra: { densidade: 2500, atrito: 0.8, quique: 0.05 },
   /** Fardo de palha: leve, boia alto. */
-  palha: { densidade: 150, atrito: 0.9, quique: 0.05 },
+  palha: {
+    densidade: 150,
+    atrito: 0.9,
+    quique: 0.05,
+    fogo: { ignicao: 1, calor: 6, duracao: 18, secagem: 12 },
+  },
   /** A pista do escorregador: lisa (quem escorrega desce sozinho) e boia. */
   plastico: { densidade: 950, atrito: 0.3, quique: 0.2 },
 } as const satisfies Record<string, MaterialFisico>

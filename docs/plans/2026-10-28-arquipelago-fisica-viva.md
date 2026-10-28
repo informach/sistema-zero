@@ -185,9 +185,9 @@ etapa 1 ganhando estado.
 - [x] Etapas 1 e 2 presentes na staging recebida, preservadas.
 - [x] Etapa 3 conferida. O modo já existia. Teste adicional compara a mesma descida em 30, 60 e 144 quadros, mantendo passos de 1/60 s. Navegador confirma entrada, descida e saída com embalo.
 - [x] Etapa 4: cordas e pontes.
-- [x] Etapa 5: mecanismos implementados e conferidos na sala. Ativação na casa depende de regerar o GLB.
+- [ ] Etapa 5: código dos mecanismos pronto e conferido na sala. Aguardando a sessão da arte regerar e commitar o GLB, seguida de conferência na casa.
 - [x] Etapa 6: vento.
-- [ ] Etapa 7: materiais e fogo.
+- [x] Etapa 7: materiais e fogo.
 - [ ] Etapa 8: mundo que reage.
 
 ### Medição e acompanhamento
@@ -223,3 +223,18 @@ Navegador: Bosque sem erro de shader, 78 materiais e cópias ligados ao campo, p
 Nota a sincronizar com `if_version`: "Vento nas copas, moitas, capim, cipós e tronco do lago. Plantas se dobram com a passagem e o movimento reduzido é respeitado."
 
 Verificação da etapa 6: 359 testes passaram, um teste local de banco pulado; typecheck sem erros. O comando de lint do pacote encontrou cinco erros de formatação/importação apenas nos arquivos novos de `sistemas/construcao`, em edição por outra sessão. O lint dos nove arquivos de código desta etapa passou. Esses arquivos externos não foram alterados nem incluídos no commit.
+
+### Etapa 7
+
+Catálogo com ignição, calor, duração e secagem de palha e madeira. Grade esparsa de quatro peças por fogueira, calor calculado em dois passos para não depender da ordem, propagação pela distância e pelo vento somente dentro do mesmo recinto. Estados seco, molhado, queimando, queimado e apagado. Água apaga sempre; pedra não acende. Casa, bichos e vegetação não entram nessa grade. A fogueira só ilumina, sem cozinha, dano, prêmio ou alteração de inventário.
+
+A estação Fogueira usa as mesmas regras do Bosque. Acender a palha e usar o balde são ações pelo botão normal do jogo. Após o combustível acabar, a criança pode colocar lenha nova. Os estados são locais à ilha ativa, como os demais objetos físicos soltos.
+
+Review visual mudou a fogueira para a clareira junto à chegada. Teste contra os colisores do GLB confere espaço para caminhar ao redor e chegar ao balde. Navegador: três peças secas acesas, uma molhada apagada; depois do balde, zero chamas e quatro peças molhadas. Nova tentativa não reacende a lenha molhada. Nenhum erro de página ou shader.
+
+
+Etapa 7, medição final: sala 60/60, Bosque 60/60 e tela estreita 60/60 FPS antes/depois. Perto da fogueira acesa: 60 FPS. Evidência: `.cache/arq-final-7e.json`. Houve rodadas intermediárias com queda (Bosque 43, 38 e 37 FPS), preservadas nos arquivos `final-7b`, `final-7c` e `final-7d`. A comparação na mesma página, alternando a fogueira, deu 60/60 em duas rodadas (`.cache/arq-comparacao-7.json`). O perfil não apontou as regras de calor como custo relevante. A máquina e o código estão sendo usados por outras sessões; estas medições não substituem ensaio em celular físico.
+
+A luz agora fica invisível quando não há chama, em vez de permanecer no renderizador com intensidade zero. A contribuição visual apagada continua zero; ordem, estados, combustível, calor e secagem não mudam. Instrumentação temporária de comparação foi retirada. Verificação: 390 testes passaram, um teste de banco local pulado, typecheck sem erros.
+
+Nota a sincronizar com `if_version`: "Fogueira pronta: material seco acende, material molhado precisa secar e o balde sempre apaga. O fogo fica só dentro das pedras."

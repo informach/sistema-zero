@@ -230,7 +230,15 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.
   A `Casa` troca a casa de antes pela construída quando há obra (`colisoresDaCasa(aberta, true)`
   tira a frente e a direita do quarto, que passam a ser do kit).
-- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`).
+- Modo Construir: botões Viver e Construir e a barra de ferramentas em `interface/construir.tsx`;
+  loja `estado/construcao.ts` (ferramenta, câmera de obra, Desfazer, `aplicar` com a fala da
+  recusa); `mundo/construir.tsx` (montado pela `Casa` com o Construir aberto): câmera de obra, grade,
+  prévia e o toque. ⚠️ A câmera do jogo (`personagem/camera.tsx`) escreve a posição a cada quadro
+  ANTES da de obra: a de obra guarda a própria posição suavizada e só copia (suavizar a partir de
+  `camera.position` faz as duas brigarem e a vista anda sozinha). O toque e a roda são pegos na
+  captura do elemento pai do canvas, antes de chegarem à câmera do jogo.
+- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`). Conferir no navegador: a
+  câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 
@@ -436,3 +444,10 @@ A estação Mecanismos em `/movimento` funciona com a arte atual. No Bosque, só
 O campo puro `sistemas/vento.ts` e sua versão GLSL usam a mesma conta. A hora vem do relógio do jogo; rajadas variam no espaço. `vegetacao-ao-vento.ts` encadeia os shaders existentes de pintura e pontes, incluindo cópias transparentes. Só deforma materiais de plantas e galhos altos, com raiz parada. Movimento reduzido usa 20% da amplitude visual, sem mudar a física.
 
 Cipós livres recebem vento no passo fixo. O tronco do lago recebe força proporcional à parte exposta. Duas peças soltas tocáveis (folha e pena) têm arrasto e dormem ao cair. Folhas presas nas árvores e capim não têm corpos. Tudo monta apenas com o Bosque ativo, sem novos GLBs.
+
+
+### Física viva: materiais e fogo (28/10/2026)
+
+`sistemas/estados-dos-materiais.ts` guarda umidade, calor e combustível. A grade usa acumulador criado antes da simulação e lê todos os estados antes de propagar. Só passa calor entre peças do mesmo recinto. `MATERIAIS` concentra ignição, duração, calor e secagem. Pedra não acende; água zera o calor e apaga imediatamente.
+
+A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um balde acessível. Só ilumina. Não causa dano nem consome inventário. Casas e plantas não são cadastradas no fogo. Posição no Bosque: `FOGUEIRA_DO_BOSQUE`, com teste de passagem contra o GLB. Estados transitórios reiniciam ao remontar a ilha. Modelos de arte não foram modificados nesta etapa.

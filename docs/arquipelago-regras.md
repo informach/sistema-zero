@@ -1034,6 +1034,23 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
 - **Playground:** `?obra=exemplo` começa a casa com a obra de exemplo
   (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
   nova saindo do quarto).
+- **Viver e Construir** (`interface/construir.tsx`, loja `estado/construcao.ts`): os dois botões no
+  alto da tela aparecem depois que a porta nova abriu, quando nada mais está por cima do jogo.
+  Construir para o personagem (`PAINEL_DE_CONSTRUIR` em `painelAberto`); "Pronto", "Viver" ou Esc
+  voltam. Na primeira vez, a casa de antes vira a obra inicial do lote (na hora de abrir, para a
+  criança já ver as paredes do quarto como peças do kit).
+- **No Construir** (`mundo/construir.tsx`): todas as paredes ficam cortadas, o telhado do quarto
+  sai e a grade do lote aparece no chão, com o que está ocupado tingido de vermelho. A câmera de
+  obra (`CAMERA_DE_OBRA`) abre sempre de frente para a casa, a 24 de distância e 0,95 de
+  inclinação, olhando para (0, -3); os botões giram um oitavo de volta e aproximam ou afastam 4
+  (de 8 a 40); a roda aproxima; setas e W A S D andam; Q e E giram; arrastar com o botão direito
+  gira e inclina. Ela toma o lugar da câmera do jogo só enquanto o Construir está aberto.
+- **Ferramentas:** Parede (arrastar estica), Porta, Janela (grande, em arco ou redonda), Piso (do
+  cômodo inteiro: tábua, ladrilho ou azulejo), Apagar (arrastar apaga paredes; um toque tira a
+  porta ou a janela, e sem ela a parede) e Olhar (arrastar anda pela obra). A prévia mostra em
+  verde o que dá (em azul para porta e janela) e em vermelho o que não dá; o Zappy explica a
+  recusa (`sistemas/construcao/falas.ts`). "Desfazer" volta até 30 mudanças
+  (`LEMBRA_PARA_TRAS`), só enquanto o Construir está aberto.
 
 ### 6.17 O diário e as pegadas
 
@@ -1660,3 +1677,10 @@ A estação Mecanismos em `/movimento` funciona com a arte atual. No Bosque, só
 O campo puro `sistemas/vento.ts` e sua versão GLSL usam a mesma conta. A hora vem do relógio do jogo; rajadas variam no espaço. `vegetacao-ao-vento.ts` encadeia os shaders existentes de pintura e pontes, incluindo cópias transparentes. Só deforma materiais de plantas e galhos altos, com raiz parada. Movimento reduzido usa 20% da amplitude visual, sem mudar a física.
 
 Cipós livres recebem vento no passo fixo. O tronco do lago recebe força proporcional à parte exposta. Duas peças soltas tocáveis (folha e pena) têm arrasto e dormem ao cair. Folhas presas nas árvores e capim não têm corpos. Tudo monta apenas com o Bosque ativo, sem novos GLBs.
+
+
+### Física viva: materiais e fogo (28/10/2026)
+
+`sistemas/estados-dos-materiais.ts` guarda umidade, calor e combustível. A grade usa acumulador criado antes da simulação e lê todos os estados antes de propagar. Só passa calor entre peças do mesmo recinto. `MATERIAIS` concentra ignição, duração, calor e secagem. Pedra não acende; água zera o calor e apaga imediatamente.
+
+A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um balde acessível. Só ilumina. Não causa dano nem consome inventário. Casas e plantas não são cadastradas no fogo. Posição no Bosque: `FOGUEIRA_DO_BOSQUE`, com teste de passagem contra o GLB. Estados transitórios reiniciam ao remontar a ilha. Modelos de arte não foram modificados nesta etapa.
