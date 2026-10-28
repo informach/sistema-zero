@@ -260,8 +260,9 @@ Nota a sincronizar com `if_version`: "Pedrinhas e cogumelos soltos já podem ser
 
 ### Pendências de integração e conferência externa
 
-- A etapa 5 continua aguardando a sessão da arte. Regerar `bosque.glb` a partir de `arte/ilhas/bosque.py`, conferir `mecanismos-casa` e `mecanismos-rumo`, o vão sem a antiga parede sólida, a passagem da criança e a abertura da porta e do alçapão na casa. A sessão da arte fará a geração e o commit do modelo. Esta sessão não gerou GLBs nem alterou relatórios de arte ou `src/assets/`.
-- O cartão `fase1-22` da coleção `itens` não foi atualizado: não há acesso de escrita versionada ao artefato nesta sessão. As notas de cada etapa estão acima. Sincronizar usando a versão atual em `if_version`; manter em andamento até a integração da casa terminar.
+- Etapa 5 integrada em 28/10/2026: `bosque.glb` regerado e conferido na casa (veja a seção da etapa 5).
+- Cartão `fase1-22` sincronizado em 28/10/2026 (com `if_version`), marcado como feito, com as notas das oito etapas.
+- Depois do conserto dos grupos de colisão (os colisores do Bosque não seguravam corpos dinâmicos), as peças soltas foram conferidas de novo no Bosque: pedrinhas e cogumelos param no chão e dormem, a criança empurra a pedra, o galho quebra ao pisar e o tronco boia com metade na água.
 - Falta ensaio em celular físico modesto. As medições foram feitas no Chrome do computador, inclusive a tela de 390 × 844. As rodadas de FPS que oscilaram foram mantidas neste registro.
 
 Verificação final da etapa 8: 420 testes passaram, um teste de banco local pulado, typecheck sem erros e lint do pacote sem erros. O review incluiu regras puras, colisores, montagem e desmontagem, textos de interação, limites de simulação, posições no GLB e conferência visual no navegador. As alterações concorrentes do modo construção foram preservadas fora deste commit.

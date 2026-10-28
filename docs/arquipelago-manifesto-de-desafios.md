@@ -1,9 +1,8 @@
 # Manifesto de desafios do Arquipélago
 
-**Estado em `3d2096e02`:** contratos, serviço e rotas do manifesto estão implementados. A seção
-do Admin, os botões e a divisão automática em lotes descritos abaixo são o fluxo planejado;
-ainda não constam dessa entrega. O arquivo do Bosque e a conferência hospedada também ficam
-para as próximas etapas. Não usar este guia como comprovante de disponibilidade dessas telas.
+**Estado em 28/10/2026:** contratos, serviço, rotas e a seção do Admin descritos abaixo estão
+implementados, com a divisão automática em lotes. O primeiro arquivo pronto é o do Bosque
+(`docs/desafios-do-jogo/bosque/bosque.manifesto.json`, com o guia ao lado).
 
 O manifesto é um arquivo que já traz os desafios configurados, como o manifesto das aulas. Você
 sobe o arquivo no Admin e os desafios ficam cadastrados. Um formato só serve para três tamanhos:
@@ -119,7 +118,7 @@ Cores de uma mesma ilha vão sempre na mesma parte.
   nem gerar um arquivo inválido. Reduza o filtro por público, ilha ou tipo; a exportação
   individual permanece disponível. Exportação paginada/arquivo multipartes ainda não foi implementada.
 - A análise e a publicação são sequenciais. O teto de 200 itens não é uma garantia de duração:
-  o gateway limita a requisição a 165 segundos. A divisão automática em lotes do futuro Admin
-  e a qualificação de volume ainda estão pendentes. Após interrupção, confira novamente antes de aplicar.
+  o gateway limita a requisição a 165 segundos, por isso o Admin manda o arquivo em lotes
+  (veja "Pacotes grandes"). Após interrupção, confira novamente antes de aplicar.
 
 Regras técnicas: `packages/arquipelago-api/CLAUDE.md`, seção "Manifesto de desafios".
