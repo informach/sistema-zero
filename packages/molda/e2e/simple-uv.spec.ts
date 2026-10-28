@@ -2,7 +2,6 @@ import { readFile } from 'node:fs/promises'
 import { expect, type Page, test } from '@playwright/test'
 import { COPY } from '../src/core/copy'
 import { resolvePaletteColors } from '../src/core/sanitize'
-import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import { createSceneColorImage } from '../src/scene/appearanceCommands'
 import { addScenePrimitive, convertSceneNodesToMesh, editSceneMesh } from '../src/scene/commands'
 import { compositeSceneImage, sceneBaseColor, scenePalette } from '../src/scene/composite'
@@ -155,7 +154,12 @@ for (const dark of [false, true])
     await page.getByRole('button', { name: 'Modelo UV simples', exact: true }).click()
     await page.getByRole('button', { name: 'Escolher carroceria', exact: true }).click()
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-    await page.getByRole('button', { name: SCENE_PAINT_COPY.simpleUv, exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
+    await page.getByRole('button', { name: 'Organizar mapa…' }).click()
+    await page
+      .getByRole('dialog', { name: 'Organizar mapa' })
+      .getByRole('button', { name: 'Organizar mapa' })
+      .click()
     await expect(page.getByRole('alert')).toHaveCount(0)
     const mapped = await saved(page)
     const mappedNode = mapped.nodes.find((entry) => entry.id === nodeId)!
@@ -177,8 +181,7 @@ for (const dark of [false, true])
         shared.set(vertexId, pixel)
       }
     const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
-    await stageSettings.click()
-    await expect(page.getByRole('button', { name: 'Quadradinhos', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Mostrar quadradinhos' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )

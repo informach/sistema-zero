@@ -14,6 +14,8 @@ export const AcessoSchema = z.strictObject({
   /** Minutos de tempo livre por dia (Kids). `null` = sem limite (adulto). */
   limiteDiarioMinutos: z.number().int().positive().nullable(),
   usadoHojeSegundos: z.number().int().min(0),
+  /** Suporte apenas visualiza; não começa nem consome uma sessão de tempo. */
+  contabilizaTempo: z.boolean().optional(),
 })
 export type Acesso = z.infer<typeof AcessoSchema>
 
@@ -57,6 +59,25 @@ export const TempoRegistradoSchema = z.strictObject({
   acabou: z.boolean(),
 })
 export type TempoRegistrado = z.infer<typeof TempoRegistradoSchema>
+
+/** O horário e os segundos são calculados pelo serviço, não enviados pelo navegador. */
+export const ComandoSessaoTempoSchema = z
+  .strictObject({
+    sessaoId: z.uuid(),
+    sequencia: z.number().int().min(0).max(2_147_483_647),
+    acao: z.enum(['iniciar', 'pulsar', 'pausar']),
+  })
+  .refine((v) => (v.acao === 'iniciar' ? v.sequencia === 0 : v.sequencia > 0))
+export type ComandoSessaoTempo = z.infer<typeof ComandoSessaoTempoSchema>
+
+export const RespostaSessaoTempoSchema = z.strictObject({
+  situacao: z.enum(['ativa', 'encerrada', 'expirada', 'substituida', 'limite']),
+  usadoHojeSegundos: z.number().int().min(0),
+  limiteDiarioMinutos: z.number().int().positive(),
+  servidorEm: z.iso.datetime({ offset: true }),
+  vencimento: z.iso.datetime({ offset: true }).nullable(),
+})
+export type RespostaSessaoTempo = z.infer<typeof RespostaSessaoTempoSchema>
 
 export const LimiteDaFamiliaSchema = z.strictObject({
   limiteDiarioMinutos: z.number().int().positive(),

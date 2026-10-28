@@ -26,9 +26,6 @@ export type SceneToolCheck = (family: MoldaToolFamilyId) => boolean
  */
 export const SCENE_PAINT_ADVANCED_FAMILIES = [
   'paint.shapes',
-  'paint.sheet',
-  'paint.flipbook',
-  'paint.layers',
 ] as const satisfies readonly MoldaToolFamilyId[]
 
 export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandFamily>> = {

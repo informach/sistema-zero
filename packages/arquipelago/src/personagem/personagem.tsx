@@ -281,6 +281,7 @@ export function Personagem() {
       estado.ferramentaAberta ||
       estado.tempoAcabou ||
       estado.tempoPausado ||
+      estado.tempoSincronizando ||
       estado.resultado !== null
 
     if (pedidos.teleporte) {

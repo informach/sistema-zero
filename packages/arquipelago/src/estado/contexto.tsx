@@ -5,7 +5,7 @@ import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
 import type { Balanco, Ponto } from '../sistemas/cipo'
 import type { Tronco } from '../sistemas/escalada'
-import type { criarFilaDeTempo } from '../sistemas/fila-tempo'
+import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
 import type { Corrida } from '../sistemas/percurso'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
@@ -120,7 +120,7 @@ export function criarMovimento(): Movimento {
 export interface ContextoDoJogo {
   loja: LojaDoJogo
   plataforma: Plataforma
-  filaTempo: Awaited<ReturnType<typeof criarFilaDeTempo>> | null
+  gerenteTempo: ReturnType<typeof criarGerenteTempo> | null
   controle: Controle
   interativos: RegistroDeInterativos
   rastro: Rastro

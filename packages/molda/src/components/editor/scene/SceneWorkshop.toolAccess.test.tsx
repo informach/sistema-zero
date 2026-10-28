@@ -295,11 +295,11 @@ describe('a oficina no nível de entrada', () => {
     confere('Animar')
   })
 
-  test('uma linha "Ferramentas que vêm por aí" por aba, com o posto de cada grupo', async () => {
+  test('uma linha "Ferramentas que vêm por aí" no Modelar e no Animar; o Pintar fica sem ela', async () => {
     const { view } = mount(withPiece())
     choosePiece(view.container)
-    // Uma linha por tamanho de tela: em Pintar ela tem duas cópias, a da coluna (computador,
-    // `hidden md:block`) e a da gaveta (celular, `md:hidden`), e só uma aparece em cada um.
+    // Uma linha por tamanho de tela: quando ela tem duas cópias, a da coluna (computador,
+    // `hidden md:block`) e a da gaveta (celular, `md:hidden`), só uma aparece em cada um.
     const todas = () => screen.queryAllByText(SCENE_TOOL_ACCESS_COPY.upcoming)
     const linhas = () => {
       const computador = todas().filter((el) => !el.closest('.md\\:hidden'))
@@ -310,9 +310,10 @@ describe('a oficina no nível de entrada', () => {
     expect(linhas()).toHaveLength(1)
     expect(view.container.textContent).toContain('Abrem no nível Arquiteto(a) de Mundos')
     expect(view.container.textContent).toContain('Editar a malha: pontos, linhas e faces')
+    // No Pintar a atenção vai para o modelo e a barra de cores: a promessa das próximas
+    // ferramentas era ruído ali (direção de arte de 27/10/2026).
     await openTab(SCENE_PAINT_COPY.tab)
-    expect(linhas()).toHaveLength(1)
-    expect(view.container.textContent).toContain('Camadas de pintura')
+    expect(todas()).toHaveLength(0)
     await openTab(copy.animationMode)
     await screen.findByRole('button', { name: copy.animationCreate })
     expect(linhas()).toHaveLength(1)
@@ -333,8 +334,8 @@ describe('a oficina no nível de entrada', () => {
     try {
       choosePiece(view.container)
       await openTab(SCENE_PAINT_COPY.tab)
-      const texture = await screen.findByText(copy.appearanceTitle)
-      fireEvent.click(texture)
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+      fireEvent.click(await screen.findByRole('button', { name: copy.appearanceTitle }))
       expect(await screen.findByText('Pintura do modelo')).toBeTruthy()
     } finally {
       view.unmount()

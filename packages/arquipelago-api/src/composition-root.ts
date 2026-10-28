@@ -15,6 +15,7 @@ import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
 } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
+import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -33,7 +34,12 @@ export function createApplication(env: Env): Application {
     publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
     lista: new Set(env.ARQUIPELAGO_LISTA),
   }
-  const servico = new ServicoDoJogo(new DrizzleRepositorioDoJogo(connection.db), politica)
+  const servico = new ServicoDoJogo(
+    new DrizzleRepositorioDoJogo(connection.db),
+    politica,
+    undefined,
+    new RepositorioDeSessoesDeTempo(connection.db),
+  )
   const membros =
     env.MEMBERS_URL && env.ARQUIPELAGO_MEMBERS_TOKEN
       ? new MembrosHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_MEMBERS_TOKEN })

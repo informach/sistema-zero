@@ -89,6 +89,8 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
       PUT: comCorpo('/salvamento', 'PUT', CORPO_DO_SALVAMENTO),
     },
     arquipelagoTempo: { POST: comCorpo('/tempo', 'POST', CORPO_PEQUENO) },
+    arquipelagoRecuperarTempo: { POST: comCorpo('/tempo/recuperar', 'POST', CORPO_PEQUENO) },
+    arquipelagoSessaoTempo: { POST: comCorpo('/tempo/sessao', 'POST', CORPO_PEQUENO) },
     /** Cartões da rotina dos Lumis (os de controle pelos blocos conquistados nos cursos). */
     arquipelagoCartas: { GET: () => chamar('/cartas', 'GET') },
     /** Desafios da ilha (`?ilha=`): situação, o que falta e de onde se aprende. */

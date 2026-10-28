@@ -586,10 +586,9 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
   expect(colorImageOf(await nativeProject(page), box)).toBeUndefined()
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   // Undo removes the paint transaction; the explicit all-pieces scope remains active.
-  await expect(page.getByRole('button', { name: 'Todas as peças', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  await expect(
+    page.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'false')
   await expect(page.getByText(SCENE_PAINT_COPY.modelHint)).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
   expect(errors).toEqual([])

@@ -24,7 +24,7 @@ import type {
 import { CAMERA_VIEWS, type CameraView } from '../../../viewport/types'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { isMoldaDialogOpen } from '../../ui/Dialog'
+import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import {
   ArrowBigUpDash,
   Camera,
@@ -82,7 +82,6 @@ export interface SceneCanvasSlots {
   toggles?: HTMLElement | null
   /** "Vista" e "Enquadrar seleção". */
   view?: HTMLElement | null
-  paintScope?: HTMLElement | null
   context?: HTMLElement | null
 }
 
@@ -122,7 +121,8 @@ interface Props {
   paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
   paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
   onPaintGridChange?(visible: boolean): void
-  onPaintScopeChange?(mode: 'all' | 'selected'): void
+  onOrganizePaintMap?(): void
+  canOrganizePaintMap?: boolean
   paint?: ScenePaintActions
   flipbook: SceneFlipbookPlayer
   animation?: SceneAnimationPlayer
@@ -202,7 +202,8 @@ function SceneCanvasAttempt({
   paintScope = null,
   paintGuides = null,
   onPaintGridChange,
-  onPaintScopeChange,
+  onOrganizePaintMap,
+  canOrganizePaintMap = false,
   paintMirror = false,
   detailPanel = null,
   onEndPaint,
@@ -233,6 +234,7 @@ function SceneCanvasAttempt({
   // Raio-X, como no Blender: ver através das peças também alcança o que está atrás.
   const [xray, setXray] = useState(false)
   const [localLook, setLocalLook] = useState(false)
+  const [organizePaintOpen, setOrganizePaintOpen] = useState(false)
   const look = looking ?? localLook
   const setLook = onLookingChange ?? setLocalLook
   const [supportGuideOverride, setSupportGuideOverride] = useState<boolean | null>(null)
@@ -495,20 +497,23 @@ function SceneCanvasAttempt({
     setBrushMode('off')
     setTool(name)
   }
-  const toolTile = (name: SceneCanvasTool) => (
-    <SceneTile
-      key={name}
-      icon={TOOL_ICONS[name]}
-      label={toolLabel(name)}
-      keyHint={sceneCommand(`tool.${name}`).shortcut?.display}
-      aria-keyshortcuts={sceneCommand(`tool.${name}`).shortcut?.display}
-      pressed={
-        !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
-      }
-      disabled={toolDisabled(name)}
-      onClick={() => chooseTool(name)}
-    />
-  )
+  const toolTile = (name: SceneCanvasTool) => {
+    const key = sceneCommand(`tool.${name}`).shortcut?.display
+    return (
+      <SceneTile
+        key={name}
+        icon={TOOL_ICONS[name]}
+        label={toolLabel(name)}
+        title={key ? `${toolLabel(name)} (${key})` : undefined}
+        aria-keyshortcuts={key}
+        pressed={
+          !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
+        }
+        disabled={toolDisabled(name)}
+        onClick={() => chooseTool(name)}
+      />
+    )
+  }
   const toolButton = (name: SceneCanvasTool) => (
     <Button
       key={name}
@@ -712,6 +717,19 @@ function SceneCanvasAttempt({
       <SceneStageDropdown
         className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}
       >
+        {mode === 'paint' && (
+          <Button
+            variant="ghost"
+            className="justify-start px-3 text-sm"
+            aria-pressed={look}
+            onClick={() => {
+              cancelPaint()
+              setLook(true)
+            }}
+          >
+            Girar modelo
+          </Button>
+        )}
         <Button variant="ghost" className="text-sm" onClick={() => view.viewport?.frame(true)}>
           Enquadrar só a escolhida
         </Button>
@@ -746,14 +764,26 @@ function SceneCanvasAttempt({
       </summary>
       <SceneStageDropdown className={dropClass('settings')}>
         {mode === 'paint' && onPaintGridChange && (
-          <Button
-            variant="ghost"
-            className="justify-start px-3 text-sm"
-            aria-pressed={paintGuides?.grid ?? false}
-            onClick={() => onPaintGridChange(!paintGuides?.grid)}
-          >
-            Quadradinhos
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              className="justify-start px-3 text-sm"
+              aria-pressed={paintGuides?.grid ?? false}
+              onClick={() => onPaintGridChange(!paintGuides?.grid)}
+            >
+              Mostrar quadradinhos
+            </Button>
+            {onOrganizePaintMap && (
+              <Button
+                variant="ghost"
+                className="justify-start px-3 text-sm"
+                disabled={!canOrganizePaintMap}
+                onClick={() => setOrganizePaintOpen(true)}
+              >
+                Organizar mapa…
+              </Button>
+            )}
+          </>
         )}
         {hints.hidden && (
           <>
@@ -994,30 +1024,6 @@ function SceneCanvasAttempt({
     </>
   )
 
-  const paintScopeControl = (
-    <fieldset
-      className="mld-paint-scope flex items-center gap-1 text-xs font-bold"
-      aria-label="Pintar em"
-    >
-      <span className="px-2 text-mld-muted">Pintar em:</span>
-      <Button
-        variant="ghost"
-        className="px-3 text-xs"
-        aria-pressed={paintScope?.mode === 'all'}
-        onClick={() => onPaintScopeChange?.('all')}
-      >
-        Todas as peças
-      </Button>
-      <Button
-        variant="ghost"
-        className="px-3 text-xs"
-        aria-pressed={paintScope?.mode === 'selected'}
-        onClick={() => onPaintScopeChange?.('selected')}
-      >
-        Só a escolhida
-      </Button>
-    </fieldset>
-  )
   const poseCard = !shell && mode === 'animation' && animationPose && (
     <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
   )
@@ -1051,13 +1057,6 @@ function SceneCanvasAttempt({
         event.preventDefault()
       }}
     >
-      {mode === 'paint' &&
-        onPaintScopeChange &&
-        place(slots?.paintScope, paintScopeControl, () => (
-          <div className="mld-float absolute top-3 right-3 z-20 max-w-[calc(100%-1.5rem)]">
-            {paintScopeControl}
-          </div>
-        ))}
       {/* Sem o lugar pedido, o `inline` não desenha nada: o grupo sai no palco, mais abaixo. */}
       {showTools && place(slots?.tools, mainTools.map(toolTile), () => null)}
       {showTools &&
@@ -1075,7 +1074,7 @@ function SceneCanvasAttempt({
       {place(
         slots?.view,
         <>
-          {lookButton}
+          {mode !== 'paint' && lookButton}
           {cameraMenu}
           {slots?.view !== undefined && gridButton}
           {slots?.view !== undefined && xrayButton}
@@ -1280,6 +1279,26 @@ function SceneCanvasAttempt({
           )}
         </ReferenceImageGuide>
       </div>
+      <Dialog
+        open={organizePaintOpen}
+        title="Organizar mapa"
+        onClose={() => setOrganizePaintOpen(false)}
+      >
+        <p className="text-sm text-mld-muted">{SCENE_PAINT_COPY.simpleUvHint}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            onClick={() => {
+              setOrganizePaintOpen(false)
+              onOrganizePaintMap?.()
+            }}
+          >
+            Organizar mapa
+          </Button>
+          <Button variant="ghost" onClick={() => setOrganizePaintOpen(false)}>
+            Cancelar
+          </Button>
+        </div>
+      </Dialog>
     </section>
   )
 }

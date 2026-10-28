@@ -4,8 +4,8 @@ export class EventoTempoConflitanteError extends Error {
   }
 }
 
-export class DataTempoInvalidaError extends Error {
+export class SequenciaDeTempoInvalidaError extends Error {
   constructor() {
-    super('Data de tempo futura')
+    super('A sequência da sessão de tempo é inválida')
   }
 }

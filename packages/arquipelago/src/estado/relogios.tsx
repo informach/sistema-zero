@@ -8,7 +8,7 @@ import { useJogo } from './contexto'
  * posição guardada de vez em quando e a conta do tempo livre.
  */
 export function Relogios() {
-  const { loja, controle, plataforma, rastro, pedidos, filaTempo } = useJogo()
+  const { loja, controle, plataforma, rastro, pedidos, gerenteTempo } = useJogo()
 
   useEffect(() => {
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
@@ -20,8 +20,10 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
-        !s.tempoPausado
+        !s.tempoPausado &&
+        !s.tempoSincronizando
       if (!ativo) return
+      if (gerenteTempo && !gerenteTempo.verificar()) return
       segundos++
 
       if (segundos % 2 === 0) {
@@ -45,24 +47,35 @@ export function Relogios() {
         s.mudar((sv) => ({ ...sv, posicao: { x: rastro.x, y: rastro.y + 0.3, z: rastro.z } }))
       }
 
-      void filaTempo?.somarSegundo().catch((erro) => {
-        plataforma.relatarErro(erro, 'armazenamento-tempo')
-        loja.getState().definirTempoPausado(true)
-        loja
-          .getState()
-          .dizer('Não consegui guardar o tempo de jogo. Atualize a página e tente novamente.')
-      })
+      if (segundos % 10 === 0) gerenteTempo?.pulsar()
     }, 1000)
-    const aoEsconder = () => {
-      if (document.visibilityState === 'hidden') void filaTempo?.guardarEEnviar().catch(() => {})
+    const ativoParaSessao = () => {
+      const s = loja.getState()
+      return (
+        document.visibilityState === 'visible' &&
+        !s.menuAberto &&
+        !s.ferramentaAberta &&
+        !s.tempoAcabou &&
+        !s.tempoPausado
+      )
     }
-    document.addEventListener('visibilitychange', aoEsconder)
+    let anterior = false
+    const atualizar = () => {
+      const ativo = ativoParaSessao()
+      if (ativo === anterior) return
+      anterior = ativo
+      gerenteTempo?.atualizar(ativo)
+    }
+    const desinscrever = loja.subscribe(atualizar)
+    document.addEventListener('visibilitychange', atualizar)
+    atualizar()
     return () => {
       clearInterval(t)
-      document.removeEventListener('visibilitychange', aoEsconder)
-      void filaTempo?.encerrar().catch(() => {})
+      desinscrever()
+      document.removeEventListener('visibilitychange', atualizar)
+      void gerenteTempo?.encerrar().catch((erro) => plataforma.relatarErro(erro, 'encerrar-tempo'))
     }
-  }, [loja, controle, plataforma, rastro, pedidos, filaTempo])
+  }, [loja, controle, plataforma, rastro, pedidos, gerenteTempo])
 
   return null
 }

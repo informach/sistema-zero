@@ -79,7 +79,7 @@ describe('Arquipélago Vagalume', () => {
     for (const [method, path] of [
       ['GET', '/arquipelago/acesso'],
       ['PUT', '/arquipelago/salvamento'],
-      ['POST', '/arquipelago/tempo'],
+      ['POST', '/arquipelago/tempo/recuperar'],
     ]) {
       expect(kidsMayAccess(student, path as string, method as string, 'aluno')).toBe(true)
       expect(kidsMayAccess(parent, path as string, method as string, 'responsavel')).toBe(false)

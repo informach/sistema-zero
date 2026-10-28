@@ -14,7 +14,6 @@ import {
 import { requireScene } from '../../../scene/validation'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { SceneFlipbookTools } from './SceneFlipbookTools'
 import { SceneHelpButton } from './SceneHelpButton'
 import { SceneImageAtlasTools } from './SceneImageAtlasTools'
 import { SceneImageImport } from './SceneImageImport'
@@ -26,8 +25,10 @@ import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function SceneAppearancePanel({
   workshop,
+  onPainted,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
+  onPainted?(): void
 }) {
   const { document, primary } = workshop
   const { paletteId, customPalette, extraColors } = document
@@ -85,7 +86,7 @@ export function SceneAppearancePanel({
       SCENE_MATERIAL_IMAGE_FIELDS[imageKind]
     ]
     const layerId = next.images.find((entry) => entry.id === imageId)?.layers.at(-1)?.id
-    if (imageId && layerId)
+    if (imageId && layerId) {
       workshop.openPaint({
         nodeId: primary!.id,
         materialId: material!.id,
@@ -93,6 +94,8 @@ export function SceneAppearancePanel({
         layerId,
         imageKind,
       })
+      onPainted?.()
+    }
   }
   return (
     <div className="space-y-4">
@@ -218,19 +221,6 @@ export function SceneAppearancePanel({
         apply={apply}
         onImported={imageKind === 'color' ? paintNewImage : undefined}
       />
-      {image && can('paint.flipbook') && (
-        <SceneFlipbookTools
-          key={`flipbook:${image.id}:${imageKind}`}
-          image={image}
-          palette={palette}
-          base={sceneMaterialImageBase(material, palette, imageKind)}
-          player={workshop.flipbook}
-          locked={lockedImage}
-          busy={imageTask.busy}
-          apply={apply}
-          beforeChange={workshop.cancelGesture}
-        />
-      )}
       {image && (
         <SceneImageLayers
           key={`${image.id}:${imageKind}`}
@@ -243,7 +233,7 @@ export function SceneAppearancePanel({
           onConvert={() => {
             void imageTask.run(document, image.id, { kind: 'rgba' })
           }}
-          onPaint={(layerId) =>
+          onPaint={(layerId) => {
             workshop.openPaint({
               nodeId: primary.id,
               materialId: material.id,
@@ -251,7 +241,8 @@ export function SceneAppearancePanel({
               layerId,
               imageKind,
             })
-          }
+            onPainted?.()
+          }}
         />
       )}
     </div>

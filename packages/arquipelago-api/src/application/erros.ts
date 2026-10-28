@@ -12,6 +12,12 @@ export class SomenteLeituraError extends Error {
   }
 }
 
+export class SessaoTempoNaoPermitidaError extends Error {
+  constructor() {
+    super('A sessão de tempo pertence apenas a perfis Kids')
+  }
+}
+
 export class SalvamentoGrandeDemaisError extends Error {
   constructor() {
     super('Salvamento maior que o permitido')

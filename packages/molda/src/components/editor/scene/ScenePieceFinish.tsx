@@ -10,7 +10,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { COPY } from '../../../core/copy'
-import { resolvePaletteColors } from '../../../core/sanitize'
+import { resolvePaletteColors, scenePaletteSwatches } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import {
@@ -21,7 +21,6 @@ import {
 } from '../../../scene/pieceAppearance'
 import { RequiresTool } from '../../toolAccess'
 import { swatchClass } from '../../ui/interaction'
-import { scenePaletteSwatches } from './ScenePaintPalette'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 /** A amostra de cada acabamento, na cor da peça: fosco é chapado, brilhante tem o reflexo, metal

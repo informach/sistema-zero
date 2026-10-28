@@ -15,6 +15,7 @@ import {
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
   SemPermissaoDeEscritaError,
+  SessaoTempoNaoPermitidaError,
   SomenteLeituraError,
 } from '../../application/erros'
 import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
@@ -22,7 +23,10 @@ import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
 import { ConferenciaIndisponivelError } from '../../domain/membros.port'
-import { DataTempoInvalidaError, EventoTempoConflitanteError } from '../../domain/tempo-erros'
+import {
+  EventoTempoConflitanteError,
+  SequenciaDeTempoInvalidaError,
+} from '../../domain/tempo-erros'
 import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
@@ -76,9 +80,13 @@ export function createServer(deps: DependenciasHttp) {
       }
     })
     .onError(({ error, set, code }) => {
-      if (error instanceof DataTempoInvalidaError) {
-        set.status = 400
-        return envelope('VALIDATION_ERROR', 'Data do registro de tempo inválida.')
+      if (error instanceof SequenciaDeTempoInvalidaError) {
+        set.status = 409
+        return envelope('TEMPO_SEQUENCIA_INVALIDA', 'A sessão de tempo precisa ser retomada.')
+      }
+      if (error instanceof SessaoTempoNaoPermitidaError) {
+        set.status = 403
+        return envelope('TEMPO_NAO_PERMITIDO', error.message)
       }
       if (error instanceof EventoTempoConflitanteError) {
         set.status = 409

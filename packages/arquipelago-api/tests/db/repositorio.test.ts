@@ -90,6 +90,15 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogo (Postgres real)', () => {
     expect(await repo.lerTempo(JOGADOR, '2026-10-26')).toBe(0)
   })
 
+  test('recupera data futura do aparelho no dia do servidor sem duplicar após a virada', async () => {
+    const eventoId = '44444444-4444-4444-8444-444444444444'
+    expect(await repo.somarTempo(JOGADOR, '2099-01-01', 12, AGORA, eventoId)).toBe(12)
+    expect(await repo.lerTempo(JOGADOR, '2026-10-27')).toBe(12)
+    const depois = new Date(AGORA.getTime() + 24 * 60 * 60 * 1000)
+    expect(await repo.somarTempo(JOGADOR, '2099-01-01', 12, depois, eventoId)).toBe(12)
+    expect(await repo.lerTempo(JOGADOR, '2026-10-28')).toBe(0)
+  })
+
   test('JSON intacto e revisão subindo de um em um', async () => {
     const s = criarSalvamentoInicial(AGORA)
     const a = await repo.gravarSalvamento({

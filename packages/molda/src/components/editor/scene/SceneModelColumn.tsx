@@ -41,9 +41,8 @@ export function SceneModelColumn({
               <SceneTile
                 icon={Crosshair}
                 label="Pivô"
-                keyHint="P"
                 aria-keyshortcuts="P"
-                title="Onde gira"
+                title="Onde gira (P)"
                 pressed={workshop.tool === 'pivot'}
                 onClick={() => workshop.setTool('pivot')}
               />
@@ -53,8 +52,8 @@ export function SceneModelColumn({
             <SceneTile
               icon={Slice}
               label="Cortar"
-              keyHint="K"
               aria-keyshortcuts="K"
+              title="Cortar (K)"
               pressed={workshop.tool === 'knife'}
               onClick={() => workshop.setTool('knife')}
             />
