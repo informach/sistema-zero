@@ -81,6 +81,22 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre).
 
+## Animações do avatar (28/10/2026)
+
+- Clipes em `src/assets/avatar/locomocao.glb` (Andar, Correr, Pulo, Queda, Aterrissagem, Nado),
+  gerados por `arte/avatar/locomocao.py` no esqueleto Mixamo da plataforma: IK de dois ossos nas
+  pernas, pé que gira sobre calcanhar e bola, bacia, peito, braços e cabeça. O "Idle" é o da
+  plataforma (`Poses.glb`). O script enxuga o GLB: só giros e a posição da bacia.
+- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe. Andar
+  e correr na MESMA fase, que anda pela distância dividida pela passada (o pé não patina). As
+  medidas dos ciclos ficam nos dois arquivos e precisam bater (o teste confere a duração e que o pé
+  no apoio acompanha o chão).
+- `personagem/avatar-do-jogo.tsx` aplica a regra às ações (`AvatarRig` com `extraClips` e
+  `onAnimations`: o rig deixa de tocar a pose sozinho). O personagem escreve `movimento` (velocidade
+  de verdade, chão, subida, nado); o desenho desce `FOLGA_DO_CONTROLADOR` para o pé encostar.
+- Conferir sem o jogo: `/animacoes` no playground (`playground/animacoes.tsx`), com o chão
+  quadriculado correndo na velocidade do passo.
+
 ## Quadro das Cores (28/10/2026)
 
 - Regra pura em `src/sistemas/quadro-das-cores.ts` (`quadrosDaIlha`, `novosFeitos`, `oQueFalta`,

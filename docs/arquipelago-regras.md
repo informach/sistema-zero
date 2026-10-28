@@ -376,13 +376,44 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 
 | Regra | Valor | Nome |
 |---|---|---|
-| Andar | 4,2 por segundo | `ANDAR` |
-| Correr | 7,2 por segundo | `CORRER` |
+| Andar | 2,2 por segundo | `ANDAR` |
+| Correr | 4,6 por segundo | `CORRER` |
 | Nadar | 2,6 por segundo | `NADAR` |
 | Pulo | 8,5 | `PULO` |
 | Gravidade | -24 | `GRAVIDADE` |
 
 A velocidade final é multiplicada pelo ritmo do humor (6.2).
+
+As velocidades foram casadas com o corpo do avatar em 28/10/2026: ele é chibi (perna de 0,5 m
+num corpo de 2,2 m), e com os antigos 4,2 e 7,2 as pernas teriam de girar rápido demais ou o pé
+patinaria. Correndo, ele vai um pouco mais rápido que o "andar" antigo; o pulo correndo alcança
+3,3 m (o pulo andando antigo alcançava 3,0 m).
+
+**As animações** (`arquipelago/src/sistemas/locomocao.ts`, clipes em
+`src/assets/avatar/locomocao.glb`, gerados por `arte/avatar/locomocao.py`):
+
+| Animação | Quando | Medida |
+|---|---|---|
+| Parado | abaixo de 0,15 m/s (sai do parado até 0,9 m/s) | a pose "Idle" da plataforma |
+| Andar | ciclo de 0,43 s, passada de 0,62 m (1,43 m/s no ritmo do clipe) | `CICLO_DE_ANDAR` |
+| Correr | ciclo de 0,37 s, passada de 1,3 m (3,55 m/s no ritmo do clipe) | `CICLO_DE_CORRER` |
+| Pulo | sai do chão subindo; começa no empurrão e fica encolhido até descer | `PULO_COMECA_EM` |
+| Queda | descendo, ou mais de 0,16 s no ar sem ter pulado | `AR_SEM_QUEDA` |
+| Aterrissagem | ao tocar o chão depois de mais de 0,3 s no ar; dura 0,33 s, mais leve correndo | `AR_PARA_ATERRISSAR` |
+| Nado | na água (o corpo deita para a frente) | `TRANSICAO.agua` |
+
+- Entre parado, andar e correr, as animações se misturam pela velocidade de verdade (a
+  distância andada, não a tecla). Andar e correr são tocados na mesma fase, e a fase anda pela
+  distância dividida pela passada, por isso o pé no chão não patina.
+- Acima de 3,4 ciclos por segundo (`CICLOS_POR_SEGUNDO_MAXIMO`), as pernas não aceleram mais;
+  a passada estica.
+- Transições: 0,18 s no chão, 0,12 s no ar e 0,3 s na água.
+- O desenho desce 6 cm (`FOLGA_DO_CONTROLADOR`), a folga que o controlador do Rapier deixa entre
+  a cápsula e o chão. Sem isso, o avatar anda flutuando.
+- Nas curvas o avatar inclina para dentro, no máximo 0,14 rad (`INCLINACAO_NA_CURVA`,
+  `INCLINACAO_MAXIMA`, em `personagem.tsx`).
+- Para conferir os clipes fora do jogo: `bun run dev` e abra `/animacoes?v=2.2` (há também
+  `?varrer=1`, `?pulo=1` e `?nado=1`). O chão quadriculado corre na velocidade pedida.
 
 **Onde o personagem aparece** (`arquipelago/src/sistemas/ponto-de-partida.ts`). Cada criança
 arruma o quarto de um jeito, então o ponto de começo pode cair em cima de um móvel:
@@ -902,7 +933,9 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Colheita | 2, 3 e 2 | `horta.ts`, `COLHEITA` |
 | Comida dos itens | tabela da seção 6.4 | `arquipelago/src/sistemas/itens.ts`, `ITENS` |
 | Receitas | tabela da seção 6.5 | `arquipelago/src/sistemas/receitas.ts`, `RECEITAS` |
-| Velocidades do personagem | 4,2, 7,2 e 2,6 | `arquipelago/src/personagem/personagem.tsx`, `ANDAR`, `CORRER`, `NADAR` |
+| Velocidades do personagem | 2,2, 4,6 e 2,6 | `arquipelago/src/personagem/personagem.tsx`, `ANDAR`, `CORRER`, `NADAR` |
+| Ciclos de andar e correr | 0,43 s e 0,62 m; 0,37 s e 1,3 m | `arquipelago/arte/avatar/locomocao.py` (`ANDAR`, `CORRER`) e `src/sistemas/locomocao.ts` (`CICLO_DE_ANDAR`, `CICLO_DE_CORRER`), sempre os dois juntos |
+| Transições das animações | 0,18, 0,12 e 0,3 s | `arquipelago/src/sistemas/locomocao.ts`, `TRANSICAO` |
 | Posição do Zappy | 0,75, 0,35 e 1,3 | `arquipelago/src/sistemas/zappy.ts`, `LADO_DO_ZAPPY`, `ATRAS_DO_ZAPPY`, `ALTURA_DO_ZAPPY` |
 | Câmera | seção 6.8 | `arquipelago/src/mundo/medidas.ts`, `GRUA_DA_CAMERA`, `CAMERA_NO_ALTO` e vizinhos |
 | Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |

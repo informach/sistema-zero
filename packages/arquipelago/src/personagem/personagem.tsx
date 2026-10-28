@@ -20,6 +20,7 @@ import {
   PORTA,
   QUARTO,
 } from '../mundo/medidas'
+import type { EntradaDaLocomocao } from '../sistemas/locomocao'
 import { ritmo } from '../sistemas/necessidades'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { AvatarDoJogo } from './avatar-do-jogo'
@@ -27,10 +28,22 @@ import { AvatarDoJogo } from './avatar-do-jogo'
 const MEIA_ALTURA = 0.55
 const RAIO = 0.35
 const DO_CENTRO_AO_PE = MEIA_ALTURA + RAIO
+/**
+ * O controlador do Rapier mantém esta folga entre a cápsula e o chão. O desenho desce o mesmo tanto
+ * para o pé encostar no chão (sem ela o avatar anda flutuando).
+ */
+const FOLGA_DO_CONTROLADOR = 0.06
+/** O quanto o avatar inclina para dentro da curva (radianos por radiano/segundo de giro). */
+const INCLINACAO_NA_CURVA = 0.035
+const INCLINACAO_MAXIMA = 0.14
 const GRAVIDADE = -24
 const PULO = 8.5
-const ANDAR = 4.2
-const CORRER = 7.2
+/**
+ * Velocidades casadas com as pernas do avatar (curtas, de 0,5 m): andando o passo é o do clipe
+ * "Andar" misturado com o "Correr"; correndo, o "Correr" no ritmo certo, sem o pé patinar.
+ */
+const ANDAR = 2.2
+const CORRER = 4.6
 const NADAR = 2.6
 /** O avatar nada quando a cintura passa da linha da água. */
 const CINTURA = 0.55
@@ -65,7 +78,13 @@ export function Personagem() {
   const noChao = useRef(false)
   const usosAtendidos = useRef(controle.usar)
   const direcao = useRef(0)
-  const passo = useRef(0)
+  /** O que as animações leem (velocidade de verdade, chão, subida e nado), escrito a cada quadro. */
+  const movimento = useRef<EntradaDaLocomocao>({
+    velocidade: 0,
+    noChao: true,
+    velY: 0,
+    nadando: false,
+  })
 
   const inicial = useMemo(() => {
     const { salvamento, quarto } = loja.getState()
@@ -92,7 +111,7 @@ export function Personagem() {
   )
 
   const kcc = useMemo(() => {
-    const c = world.createCharacterController(0.06)
+    const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
     c.enableAutostep(0.45, 0.25, true)
     c.enableSnapToGround(0.35)
     c.setMaxSlopeClimbAngle((52 * Math.PI) / 180)
@@ -101,6 +120,10 @@ export function Personagem() {
     return c
   }, [world])
   useEffect(() => () => world.removeCharacterController(kcc), [world, kcc])
+  // Giro no mundo primeiro; o deitar do nado e a inclinação da curva ficam no corpo dela.
+  useEffect(() => {
+    if (visual.current) visual.current.rotation.order = 'YXZ'
+  }, [])
 
   useFrame((_, dtBruto) => {
     // Em aparelho lento o quadro é longo: o controlador varre o movimento inteiro (não
@@ -165,23 +188,29 @@ export function Personagem() {
     const prox = { x: p.x + mov.x, y: p.y + mov.y, z: p.z + mov.z }
     b.setNextKinematicTranslation(prox)
 
-    // Para onde o avatar olha, e um balanço simples enquanto anda (as animações de andar
-    // entram na próxima fase; por enquanto o avatar usa as poses que a plataforma já tem).
+    // Para onde o avatar olha (vira suave) e a inclinação para dentro da curva. Os passos, o
+    // balanço do corpo e a inclinação de quem corre vêm das animações (`avatar-do-jogo.tsx`).
     const movendo = Math.hypot(vx, vz) > 0.1
     if (movendo) direcao.current = Math.atan2(vx, vz)
-    passo.current += movendo ? dt * (controle.correr ? 14 : 9) : 0
+    const real = Math.hypot(mov.x, mov.z) / dt
+    const m = movimento.current
+    m.velocidade += (real - m.velocidade) * Math.min(1, dt * 14)
+    m.noChao = noChao.current
+    m.velY = velY.current
+    m.nadando = nadando
     const v = visual.current
     if (v) {
       let delta = direcao.current - v.rotation.y
       delta = Math.atan2(Math.sin(delta), Math.cos(delta))
-      v.rotation.y += delta * Math.min(1, dt * 12)
-      v.position.y =
-        -DO_CENTRO_AO_PE + (movendo && !nadando ? Math.abs(Math.sin(passo.current)) * 0.07 : 0)
-      v.rotation.x = MathUtils.lerp(
-        v.rotation.x,
-        nadando ? 1.1 : movendo && controle.correr ? 0.12 : 0,
-        0.15,
+      const giro = delta * Math.min(1, dt * 12)
+      v.rotation.y += giro
+      const curva = MathUtils.clamp(
+        (-giro / Math.max(dt, 1e-3)) * INCLINACAO_NA_CURVA * Math.min(1, m.velocidade / 3),
+        -INCLINACAO_MAXIMA,
+        INCLINACAO_MAXIMA,
       )
+      v.rotation.z = MathUtils.lerp(v.rotation.z, nadando ? 0 : curva, Math.min(1, dt * 8))
+      v.rotation.x = MathUtils.lerp(v.rotation.x, nadando ? 1.1 : 0, Math.min(1, dt * 6))
     }
 
     rastro.x = prox.x
@@ -208,8 +237,8 @@ export function Personagem() {
       enabledRotations={[false, false, false]}
     >
       <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
-      <group ref={visual} position={[0, -DO_CENTRO_AO_PE, 0]}>
-        <AvatarDoJogo pose="Idle" />
+      <group ref={visual} position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}>
+        <AvatarDoJogo movimento={movimento} />
       </group>
     </RigidBody>
   )
