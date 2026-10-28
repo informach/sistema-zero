@@ -85,13 +85,19 @@ test('does not invent sources when runner configuration is absent', () => {
   }
 })
 
+test('the CI pins a supported Ubuntu runner rather than silently moving to an incompatible release', () => {
+  const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
+  expect(workflow).not.toMatch(/^\s*runs-on: ubuntu-latest\s*$/m)
+  expect(workflow).toMatch(/^\s*runs-on: ubuntu-24\.04\s*$/m)
+})
+
 test('every Ubuntu job prepares signed sources before its first apt or Playwright dependency install', () => {
   const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
   const command = 'sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs'
   const jobs = workflow.split(/(?=^ {2}[a-z][a-z0-9-]*:\r?$)/m)
   const prepared: string[] = []
   for (const job of jobs) {
-    if (!/^ {4}runs-on: ubuntu-latest\r?$/m.test(job)) continue
+    if (!/^ {4}runs-on: ubuntu-(?:latest|\d+\.\d+)\r?$/m.test(job)) continue
     const install = job.search(/apt-get|playwright install --with-deps/)
     if (install === -1) continue
     const name = /^ {2}([a-z][a-z0-9-]*):/.exec(job)?.[1]

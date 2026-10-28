@@ -105,11 +105,11 @@ describe('plataforma de mentira', () => {
     expect((await p.lerQuarto()).placedItems.length).toBeGreaterThan(0)
     expect(Object.keys((await p.lerAvatar()).slots).length).toBeGreaterThan(0)
     for (let i = 0; i < 5; i++)
-      await p.servico.buscar('/tempo', {
+      await p.servico.buscar('/tempo/recuperar', {
         metodo: 'POST',
         corpo: { segundos: 120, eventoId: crypto.randomUUID(), dia: '2026-10-27' },
       })
-    const r = await p.servico.buscar('/tempo', {
+    const r = await p.servico.buscar('/tempo/recuperar', {
       metodo: 'POST',
       corpo: { segundos: 60, eventoId: crypto.randomUUID(), dia: '2026-10-27' },
     })

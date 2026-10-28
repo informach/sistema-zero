@@ -842,7 +842,7 @@ export const COPY = {
     paintTransparentBase: 'Deixar base da peça transparente',
     paintTransparentBaseHelp: 'Como revelar o fundo da cena',
     paintTransparentBaseHint:
-      'Remove a cor de base desta peça para o gradiente revelar a cena. Uma peça sem tinta fica invisível até você pintar. A tinta que já está nas camadas continua. Desfazer restaura a base anterior. Em peças fechadas, outras faces pintadas ainda podem aparecer através da frente.',
+      'Remove a cor de base desta peça. Onde não houver tinta, você verá através dela. Uma peça sem tinta fica invisível até você pintar. A tinta que já está nas camadas continua. Desfazer restaura a base anterior. Em peças fechadas, outras faces pintadas ainda podem aparecer através da frente.',
     paintStampMissing: 'Escolha uma imagem ou copie a área selecionada antes de carimbar.',
     paintStampHint:
       'Posicione pelo contorno e solte para carimbar uma vez. No teclado, espaço começa, setas movem e espaço confirma. O carimbo mistura sua transparência com a camada e respeita a área selecionada. Fora da imagem não pinta.',

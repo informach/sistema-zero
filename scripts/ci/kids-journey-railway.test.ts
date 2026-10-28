@@ -144,6 +144,22 @@ function transport(
 }
 
 describe('actual Railway boundary without remote I/O', () => {
+  test('preflight retries a rate-limited inventory read within its deadline', async () => {
+    let limited = false
+    const f = transport({
+      reply(query) {
+        if (query.includes('activeDeployments') && !limited) {
+          limited = true
+          return new Response('rate limit', { status: 429, headers: { 'retry-after': '2' } })
+        }
+      },
+    })
+    await f.ports.preflight(60_000)
+    expect(limited).toBe(true)
+    expect(f.elapsed()).toBeGreaterThanOrEqual(2_000)
+    expect(f.queries.filter((q) => q.includes('activeDeployments')).length).toBeGreaterThan(2)
+  })
+
   test('rate-limited retirement observes Retry-After without repeating the acknowledged mutation', async () => {
     let limited = false
     const f = transport({

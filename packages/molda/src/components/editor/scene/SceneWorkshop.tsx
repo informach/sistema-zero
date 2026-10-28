@@ -53,7 +53,8 @@ import { SceneDivisionChoices, SceneModelGuideBar } from './SceneModelGuideContr
 import { SceneModeTabs } from './SceneModeTabs'
 import { SceneNodeProperties } from './SceneNodeProperties'
 import { ScenePaintCloseUp } from './ScenePaintCloseUp'
-import { ScenePaintColumn } from './ScenePaintKid'
+import { ScenePaintColorBar } from './ScenePaintColorBar'
+import { ScenePaintColumn, ScenePaintPieceTextures } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
 import { ScenePaletteLibrary } from './ScenePaletteLibrary'
 import { SceneRigPanel } from './SceneRigPanel'
@@ -144,7 +145,6 @@ export function SceneWorkshop({
   const [toolsSlot, setToolsSlot] = useState<HTMLDivElement | null>(null)
   const [areaToolsSlot, setAreaToolsSlot] = useState<HTMLDivElement | null>(null)
   const [togglesSlot, setTogglesSlot] = useState<HTMLDivElement | null>(null)
-  const [paintScopeSlot, setPaintScopeSlot] = useState<HTMLDivElement | null>(null)
   const [viewSlot, setViewSlot] = useState<HTMLDivElement | null>(null)
   const [contextSlot, setContextSlot] = useState<HTMLDivElement | null>(null)
   function hasPendingPose() {
@@ -365,6 +365,12 @@ export function SceneWorkshop({
       workshop.index.geometries.get(node.geometryId)?.kind !== 'mesh',
   )
   const geometries = workshop.index.geometries
+  const paintGeometry =
+    workshop.primary?.kind === 'mesh' ? geometries.get(workshop.primary.geometryId) : undefined
+  const paintPlane =
+    paintGeometry?.kind === 'mesh' &&
+    Object.keys(paintGeometry.faces).length === 1 &&
+    !!paintGeometry.faces.plane
   const shapeOf = (node: ModelSceneNode): SceneHierarchyShape => {
     if (node.kind !== 'mesh') return node.kind
     const kind = geometries.get(node.geometryId)?.kind
@@ -411,7 +417,6 @@ export function SceneWorkshop({
     ...(mode === 'paint' ? {} : { tools: toolsSlot, areaTools: areaToolsSlot }),
     toggles: togglesSlot,
     view: viewSlot,
-    paintScope: paintScopeSlot,
     context: contextSlot,
   }
   // "Isolar seleção" é um jeito de OLHAR: mora na lista das vistas, nas três abas.
@@ -773,9 +778,8 @@ export function SceneWorkshop({
               <SceneTile
                 icon={Crosshair}
                 label="Pivô"
-                keyHint="P"
                 aria-keyshortcuts="P"
-                title="Onde gira"
+                title="Onde gira (P)"
                 pressed={workshop.tool === 'pivot' && !workshop.looking}
                 onClick={() =>
                   workshop.requestTransition(() => {
@@ -793,7 +797,7 @@ export function SceneWorkshop({
          */}
         <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden max-[899px]:flex-col max-[899px]:overflow-y-auto">
           <div
-            className={`mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden max-[899px]:flex-none ${mode === 'animation' ? 'max-[899px]:h-[500px] max-[899px]:min-h-[500px]' : 'max-[899px]:h-[420px] max-[899px]:min-h-[420px]'}`}
+            className={`mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden max-[899px]:flex-none ${mode === 'animation' ? 'max-[899px]:h-[500px] max-[899px]:min-h-[500px]' : mode === 'paint' ? 'max-[899px]:h-[492px] max-[899px]:min-h-[492px]' : 'max-[899px]:h-[420px] max-[899px]:min-h-[420px]'}`}
           >
             <SceneWorkspaceAreas workshop={workshop} />
             <div
@@ -833,7 +837,6 @@ export function SceneWorkshop({
                       <span aria-hidden="true" className="mld-auto-switch" />
                     </label>
                   )}
-                  {mode === 'paint' && <div ref={setPaintScopeSlot} className="mld-float" />}
                   {workshop.isolation !== null && (
                     <button
                       type="button"
@@ -1010,11 +1013,6 @@ export function SceneWorkshop({
                       ? { mode: workshop.paint.pieceScope, nodeId: workshop.primary?.id ?? null }
                       : null
                   }
-                  onPaintScopeChange={
-                    can('paint.brush') && workshop.paint.surfaceMode
-                      ? workshop.paint.setPieceScope
-                      : undefined
-                  }
                   paintMirror={workshop.paint.mirror}
                   paintGuides={{
                     grid: workshop.paint.grid,
@@ -1028,6 +1026,13 @@ export function SceneWorkshop({
                       !workshop.paint.closeupTool,
                   }}
                   onPaintGridChange={workshop.paint.setGrid}
+                  onOrganizePaintMap={mode === 'paint' ? workshop.mapPaintUv : undefined}
+                  canOrganizePaintMap={
+                    workshop.primary?.kind === 'mesh' &&
+                    workshop.components.canEdit &&
+                    !workshop.paint.drawing &&
+                    !workshop.paint.busy
+                  }
                   detailPanel={
                     mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
                       <ScenePaintCloseUp
@@ -1077,6 +1082,8 @@ export function SceneWorkshop({
                 <SceneWorkspacePanel workshop={workshop} sheetView={sheetView} />
               )}
             </div>
+            {/* A tinta mora no pé da área central: debaixo do 3D e da Folha de pintura. */}
+            {mode === 'paint' && <ScenePaintColorBar paint={workshop.paint} palette={document} />}
             {mode === 'animation' && (
               <DeferredModule
                 load={loadTimeline}
@@ -1129,16 +1136,16 @@ export function SceneWorkshop({
                         workshop.primary?.kind === 'mesh' ? workshop.primary.name : undefined
                       }
                       palette={document}
+                      textures={<ScenePaintPieceTextures workshop={workshop} />}
                       applyPalette={(next) =>
                         workshop.run((source) => setScenePalette(source, next))
                       }
-                      mapping={
-                        !sheetOpen && workshop.primary?.kind === 'mesh'
-                          ? {
-                              apply: workshop.mapPaintUv,
-                              disabled: !workshop.components.canEdit,
-                            }
-                          : null
+                      prepared={workshop.paintPreparationPending()}
+                      plane={paintPlane}
+                      openSheet={
+                        can('paint.sheet') && !sheetOpen
+                          ? () => workshop.openArea('sheet')
+                          : undefined
                       }
                       interior={
                         paintInteriorAvailable
@@ -1189,7 +1196,6 @@ export function SceneWorkshop({
                         backLabel={copy.glbExport.close}
                       />
                     )}
-                    <SceneUpcomingTools tabs={['paint']} />
                   </>
                 ) : workshop.area === 'skin' ? (
                   <SceneRigPanel

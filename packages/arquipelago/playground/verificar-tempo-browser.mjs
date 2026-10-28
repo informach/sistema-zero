@@ -32,18 +32,10 @@ try {
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
-  await page.addInitScript(() => {
-    const original = IDBObjectStore.prototype.put
-    let falhar = true
-    IDBObjectStore.prototype.put = function (...args) {
-      if (this.name === 'eventos' && falhar) {
-        falhar = false
-        throw new DOMException('Falha de teste', 'QuotaExceededError')
-      }
-      return original.apply(this, args)
-    }
+  await page.goto(`${base}/?novo=1&perder-pulso=1`, {
+    waitUntil: 'domcontentloaded',
+    timeout: 45_000,
   })
-  await page.goto(`${base}/?novo=1`, { waitUntil: 'domcontentloaded', timeout: 45_000 })
   await page.waitForSelector('dialog[open]', { timeout: 45_000 })
   const estado = await page.evaluate(() => ({
     titulo: document.querySelector('dialog h1')?.textContent,
@@ -67,7 +59,7 @@ try {
   await page.getByRole('button', { name: 'Pinta', exact: true }).click()
   await page.getByText('Esta ferramenta não está disponível para abrir agora.').waitFor()
   console.log(
-    'PASS: falha de armazenamento pausa o jogo; diálogo acessível permite recuperação pelo teclado',
+    'PASS: resposta de tempo perdida pausa o jogo; diálogo acessível permite recuperação pelo teclado',
   )
 } finally {
   await browser?.close()

@@ -87,14 +87,15 @@ test('Organizar quadradinhos respects inherited group locks as well as unlocked 
   try {
     fireEvent.click(await screen.findByRole('button', { name: COPY.scene.select('porta') }))
     fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    fireEvent.click(screen.getByText('Mais ajustes do palco'))
     const organize = screen.getByRole<HTMLButtonElement>('button', {
-      name: SCENE_PAINT_COPY.simpleUv,
+      name: 'Organizar mapa…',
     })
     expect(organize.disabled).toBe(true)
     expect(editor.getState().saveSnapshot()).toBe(source)
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('parede') }))
     expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: SCENE_PAINT_COPY.simpleUv }).disabled,
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Organizar mapa…' }).disabled,
     ).toBe(false)
   } finally {
     view.unmount()
@@ -147,7 +148,8 @@ test('the sheet divider applies the release position even without an intermediat
 function customColorInput() {
   act(() => {
     const details = screen
-      .getByText(SCENE_PAINT_COPY.customColor, { selector: 'summary' })
+      // O "+" da barra de cores: o resumo e o título do popover moram no mesmo <details>.
+      .getAllByText(SCENE_PAINT_COPY.customColor)[0]!
       .closest('details')!
     details.open = true
     fireEvent(details, new Event('toggle'))
@@ -234,12 +236,8 @@ test('nível intermediário cria uma textura e continua pintando no modelo', asy
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     tap(door)
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-    const summary = await screen.findByText(COPY.scene.appearanceTitle, { selector: 'summary' })
-    const details = summary.closest('details')!
-    act(() => {
-      details.open = true
-      fireEvent(details, new Event('toggle'))
-    })
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.scene.appearanceTitle }))
     fireEvent.click(await screen.findByRole('button', { name: COPY.scene.imageCreate }))
     const dialog = screen.getByRole('dialog', { name: COPY.scene.imageCreate })
     fireEvent.click(within(dialog).getByRole('button', { name: COPY.scene.imageCreateApply }))
@@ -247,6 +245,7 @@ test('nível intermediário cria uma textura e continua pintando no modelo', asy
       expect(stage.target?.imageId).toBe(editor.getState().asset.images.at(-1)?.id),
     )
     expect(screen.queryByRole('dialog', { name: COPY.scene.imageCreate })).toBeNull()
+    expect(screen.getByRole('region', { name: 'Área Folha de pintura' })).toBeTruthy()
     expect(
       editor.getState().asset.materials.find((entry) => entry.id === stage.target?.materialId)
         ?.colorImageId,
@@ -329,10 +328,14 @@ describe('a aba Pintar', () => {
       expect(rail?.textContent).not.toContain('Quadradinhos')
       expect(rail?.textContent).not.toContain(SCENE_PAINT_COPY.rotate)
       expect(rail?.textContent).not.toContain('Mais pincéis')
+      const options = screen
+        .getByText('Mais opções da peça', { selector: 'summary' })
+        .closest('details')!
+      fireEvent.click(options.querySelector('summary')!)
       const rotate = screen.getByRole('button', { name: SCENE_PAINT_COPY.rotate })
       expect(rotate.closest('.mld-workshop-rail')).toBeNull()
       fireEvent.click(screen.getByText('Mais ajustes do palco'))
-      const grid = screen.getByRole('button', { name: 'Quadradinhos' })
+      const grid = screen.getByRole('button', { name: 'Mostrar quadradinhos' })
       expect(grid.getAttribute('aria-pressed')).toBe('false')
       fireEvent.click(grid)
       expect(grid.getAttribute('aria-pressed')).toBe('true')
@@ -355,6 +358,7 @@ describe('a aba Pintar', () => {
       await waitFor(() => expect(stage.callbacks).not.toBeNull())
       tap(door, 'px')
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      fireEvent.click(screen.getByText('Mais opções da peça', { selector: 'summary' }))
       fireEvent.click(screen.getByRole('button', { name: 'Criar lado interno pintável' }))
       const current = editor.getState().asset
       const node = current.nodes.find((entry) => entry.id === door)!
@@ -406,7 +410,7 @@ describe('a aba Pintar', () => {
           frame: 0,
         })
       })
-      const colors = screen.getByRole('region', { name: SCENE_PAINT_COPY.colors })
+      const colors = screen.getByRole('region', { name: SCENE_PAINT_COPY.pieceCard })
       const prepare = within(colors).getByRole('button', { name: SCENE_PAINT_COPY.split })
       expect(screen.queryByRole('alert')).toBeNull()
       expect(editor.getState().asset).toBe(document)
@@ -434,7 +438,7 @@ describe('a aba Pintar', () => {
       await waitFor(() => expect(stage.callbacks).not.toBeNull())
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
       fireEvent.click(screen.getByRole('button', { name: 'Balde' }))
-      fireEvent.click(screen.getByRole('radio', { name: 'Cor de fundo da peça' }))
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.fillScopes.base }))
       fireEvent.click(swatch(document, 2))
       const geometry = document.geometries.find((entry) => entry.kind === 'mesh')!
       const buffers = buildSceneGeometry(geometry)
@@ -566,8 +570,10 @@ describe('a aba Pintar', () => {
     await waitFor(() => expect(stage.target).toBeNull())
     expect(screen.queryByRole('alert')).toBeNull()
     expect(
-      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
-    ).toBe('true')
+      screen
+        .getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece })
+        .getAttribute('aria-pressed'),
+    ).toBe('false')
     editor.getState().dispose()
   })
 
@@ -607,8 +613,10 @@ describe('a aba Pintar', () => {
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     expect(stage.target).toBeNull()
     expect(
-      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
-    ).toBe('true')
+      screen
+        .getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece })
+        .getAttribute('aria-pressed'),
+    ).toBe('false')
     tap(door)
     expect(stage.target?.nodeId).toBe(door)
     fireEvent.click(swatch(editor.getState().asset, 5))
@@ -649,8 +657,10 @@ describe('a aba Pintar', () => {
     await waitFor(() => expect(stage.target).toBeNull())
     expect(stage.mode).toBe('paint')
     expect(
-      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
-    ).toBe('true')
+      screen
+        .getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece })
+        .getAttribute('aria-pressed'),
+    ).toBe('false')
     // Soltar a peça sem pintar devolve a criação como estava, sem passo de desfazer.
     expect(editor.getState().asset).toBe(document)
     expect(editor.getState().canUndo).toBe(false)
@@ -1165,6 +1175,161 @@ describe('o review da aba Pintar', () => {
     expect(stage.target).toBeNull()
     expect(screen.getByRole('alert').textContent).toBe(SCENE_PAINT_COPY.lockedMaps)
     expect(editor.getState().asset).toBe(withMap)
+    editor.getState().dispose()
+  })
+})
+
+describe('as três zonas da aba Pintar (27/10/2026)', () => {
+  test('a barra de cores fica no pé do palco: potinho com o nome, a paleta e o "+"', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const bar = screen.getByRole('region', { name: SCENE_PAINT_COPY.colors })
+    expect(bar.className).toContain('mld-color-bar')
+    // A barra é irmã do palco, fora do painel direito.
+    expect(bar.closest('.mld-workshop-stage')).not.toBeNull()
+    expect(bar.closest('.mld-workshop-inspector')).toBeNull()
+    const red = resolvePaletteColors(document)[2]!
+    fireEvent.click(within(bar).getByRole('button', { name: COPY.a11y.colorSwatch(2, red) }))
+    expect(within(bar).getByText('Vermelho')).toBeDefined()
+    expect(
+      within(bar).getAllByText(SCENE_PAINT_COPY.customColor)[0]!.closest('details'),
+    ).not.toBeNull()
+    // Escolher a cor é sessão: o projeto não muda antes do primeiro traço.
+    expect(editor.getState().asset).toBe(document)
+    // Fora do Pintar a barra some.
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.modelMode }))
+    expect(screen.queryByRole('region', { name: SCENE_PAINT_COPY.colors })).toBeNull()
+    editor.getState().dispose()
+  })
+
+  test('"Só nesta peça" mora na coluna e alterna o alcance do pincel; o palco fica sem "Pintar em"', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    expect(screen.queryByRole('group', { name: 'Pintar em' })).toBeNull()
+    const only = screen.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece })
+    expect(only.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(only)
+    expect(only.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(only)
+    expect(only.getAttribute('aria-pressed')).toBe('false')
+    editor.getState().dispose()
+  })
+
+  test('o bloco "Jeito" segue a ferramenta: tamanho, como apagar e o que o balde enche', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    // Pincel: as três bolinhas, sem a legenda "1 px" escrita.
+    expect(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[1] })).toBeDefined()
+    expect(screen.queryByText(SCENE_PAINT_COPY.width[1])).toBeNull()
+    expect(screen.queryByRole('button', { name: SCENE_PAINT_COPY.eraseModes.cutout })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintEraser }))
+    expect(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[1] })).toBeDefined()
+    const cutout = screen.getByRole('button', { name: SCENE_PAINT_COPY.eraseModes.cutout })
+    fireEvent.click(cutout)
+    expect(cutout.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintFill }))
+    expect(screen.queryByRole('button', { name: SCENE_PAINT_COPY.width[1] })).toBeNull()
+    expect(
+      screen
+        .getByRole('button', { name: SCENE_PAINT_COPY.fillScopes.area })
+        .getAttribute('aria-pressed'),
+    ).toBe('true')
+    // Os ajustes saíram do painel direito: nada de "Ajustes da ferramenta" lá.
+    expect(screen.queryByText('Ajustes da ferramenta')).toBeNull()
+    editor.getState().dispose()
+  })
+
+  test('as texturas só aparecem com uma peça escolhida, no cartão da peça', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    expect(screen.queryByRole('button', { name: 'Criar textura' })).toBeNull()
+    expect(screen.getByText(SCENE_PAINT_COPY.choosePieceAll)).toBeDefined()
+    tap(door)
+    const card = screen.getByRole('region', { name: SCENE_PAINT_COPY.pieceCard })
+    expect(within(card).getByRole('button', { name: 'Criar textura' })).toBeDefined()
+    expect(within(card).getByRole('button', { name: SCENE_PAINT_COPY.useImage })).toBeDefined()
+    editor.getState().dispose()
+  })
+
+  test('os ladrilhos não desenham a tecla; o atalho fica no title e no aria-keyshortcuts', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage, view } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const pencil = screen.getByRole('button', { name: COPY.scene.paintPencil })
+    expect(pencil.textContent).toBe(COPY.scene.paintPencil)
+    expect(pencil.getAttribute('aria-keyshortcuts')).toBeTruthy()
+    expect(pencil.title).toContain(`(${pencil.getAttribute('aria-keyshortcuts')})`)
+    // O pingo de tinta no canto do Pincel e do Balde.
+    expect(pencil.querySelector('.mld-tile-dot')).not.toBeNull()
+    expect(view.container.querySelector('.mld-tile-key')).toBeNull()
+    editor.getState().dispose()
+  })
+})
+
+describe('o review da barra de cores e da coluna (27/10/2026)', () => {
+  test('uma cor repetida na paleta aparece uma vez só na barra', async () => {
+    const { document } = twoBoxes()
+    const colors = [...resolvePaletteColors(document)]
+    colors[3] = colors[2]!
+    const repeated: MoldaSceneDocument = {
+      ...document,
+      paletteId: 'custom',
+      customPalette: { name: 'Repetida', colors },
+    }
+    const { editor, stage } = mount(repeated)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const bar = screen.getByRole('region', { name: SCENE_PAINT_COPY.colors })
+    const same = within(bar)
+      .getAllByRole('button')
+      .filter((button) => button.getAttribute('aria-label')?.endsWith(colors[2]!))
+    expect(same).toHaveLength(1)
+    editor.getState().dispose()
+  })
+
+  test('o "+" fecha com um toque fora dele', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const details = screen.getAllByText(SCENE_PAINT_COPY.customColor)[0]!.closest('details')!
+    act(() => {
+      details.open = true
+    })
+    fireEvent.pointerDown(details.querySelector('.mld-color-more-panel')!)
+    expect(details.open).toBe(true)
+    fireEvent.pointerDown(screen.getByRole('button', { name: COPY.scene.paintPencil }))
+    expect(details.open).toBe(false)
+    editor.getState().dispose()
+  })
+
+  test('a borracha explica o que apaga; "Só nesta peça" sem peça pede a peça', async () => {
+    const { document } = twoBoxes()
+    const { editor, stage } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintEraser }))
+    expect(screen.getByText(SCENE_PAINT_COPY.eraseHint)).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.eraseModes.cutout }))
+    expect(screen.queryByText(SCENE_PAINT_COPY.eraseHint)).toBeNull()
+    expect(screen.getByText(SCENE_PAINT_COPY.instructions.cutout)).toBeDefined()
+    const card = screen.getByRole('region', { name: SCENE_PAINT_COPY.pieceCard })
+    expect(within(card).getByText(SCENE_PAINT_COPY.choosePieceAll)).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece }))
+    expect(within(card).getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    // As ajudas não ficam num fieldset desligável: valem para o próximo traço a qualquer hora.
+    const helps = screen.getByRole('group', { name: SCENE_PAINT_COPY.helps })
+    expect(helps.hasAttribute('disabled')).toBe(false)
     editor.getState().dispose()
   })
 })

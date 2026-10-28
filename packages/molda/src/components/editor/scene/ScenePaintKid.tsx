@@ -1,7 +1,9 @@
 /**
- * A coluna da aba Pintar, no lugar das ferramentas de modelar: a caixa de ferramentas, o aviso
- * de trabalho em andamento e o erro da pintura. As cores e a preparação das faces ficam no
- * painel direito (`ScenePaintPalette`).
+ * A aba Pintar em duas partes. `ScenePaintColumn` é a coluna da esquerda, no lugar das
+ * ferramentas de modelar: a caixa de ferramentas, o aviso de espelho, o trabalho em andamento e
+ * o erro da pintura. `ScenePaintPieceTextures` mora no cartão da peça do painel direito: criar,
+ * usar imagem, vestir com textura pronta e a prévia da pintura animada. As cores ficam na barra
+ * do pé do palco (`ScenePaintColorBar`).
  */
 import { useMemo, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
@@ -16,13 +18,50 @@ import { ApplyTextureDialog } from '../model/ApplyTextureDialog'
 import { SceneFlipbookPreview } from './SceneFlipbookPreview'
 import { ScenePaintTextureActions } from './ScenePaintTextureActions'
 import { ScenePaintToolbox } from './ScenePaintToolbox'
-import { SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
   const { paint } = workshop
   const copy = COPY.scene
+  return (
+    <>
+      <ScenePaintToolbox
+        paint={paint}
+        onChooseTool={() => {
+          if (workshop.area === 'uv') workshop.openArea('sheet')
+        }}
+      />
+      {paint.mirror && (
+        <p className="text-xs text-mld-muted">
+          {paint.closeUp ? SCENE_PAINT_COPY.mirrorCloseUp : SCENE_PAINT_COPY.mirrorOn}
+        </p>
+      )}
+      {paint.busy && (
+        <div role="status" className="flex flex-wrap items-center gap-2">
+          <p className="text-sm">
+            {paint.stampFile.busy ? copy.imageImportBusy : copy.imageTaskBusy}
+          </p>
+          <Button className="text-sm" onClick={() => paint.cancel()}>
+            {copy.imageTaskCancel}
+          </Button>
+        </div>
+      )}
+      {paint.error && (
+        <p role="alert" className="text-sm text-mld-danger">
+          {paint.error}
+        </p>
+      )}
+    </>
+  )
+}
+
+export function ScenePaintPieceTextures({
+  workshop,
+}: {
+  workshop: ReturnType<typeof useSceneWorkshop>
+}) {
+  const { paint } = workshop
   // As texturas prontas moram na galeria do app; a pintura direta funciona sem ela.
   const app = useOptionalMoldaApp()
   const [choosingTexture, setChoosingTexture] = useState(false)
@@ -52,30 +91,28 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
     return material && image ? { material, image, imageKind: 'color' as const } : null
   }, [paint.data, workshop.primary, workshop.index])
   const flipbook = !can('paint.flipbook') && shown?.image.flipbook ? shown : null
+  const DressIcon = sceneCommand('paint.dress').icon
   return (
     <>
-      <ScenePaintToolbox
-        paint={paint}
-        onChooseTool={() => {
-          if (workshop.area === 'uv') workshop.openArea('sheet')
-        }}
-      />
       <ScenePaintTextureActions
         key={workshop.primary?.id ?? 'no-piece'}
         workshop={workshop}
         currentName={shown?.image.name}
       />
       {canUseTexture && (
-        <section aria-label="Texturas prontas" className="border-t border-mld-border pt-3">
-          <SceneTile
-            icon={sceneCommand('paint.dress').icon}
-            label={sceneCommand('paint.dress').label}
+        <section aria-label="Texturas prontas">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sm"
             aria-haspopup="dialog"
             onClick={() => {
               paint.cancel()
               setChoosingTexture(true)
             }}
-          />
+          >
+            <DressIcon aria-hidden="true" className="size-4" />
+            {sceneCommand('paint.dress').label}
+          </Button>
         </section>
       )}
       {app && (
@@ -100,26 +137,6 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
           disabled={paint.drawing || paint.busy}
           beforeChange={paint.cancel}
         />
-      )}
-      {paint.mirror && (
-        <p className="text-xs text-mld-muted">
-          {paint.closeUp ? SCENE_PAINT_COPY.mirrorCloseUp : SCENE_PAINT_COPY.mirrorOn}
-        </p>
-      )}
-      {paint.busy && (
-        <div role="status" className="flex flex-wrap items-center gap-2">
-          <p className="text-sm">
-            {paint.stampFile.busy ? copy.imageImportBusy : copy.imageTaskBusy}
-          </p>
-          <Button className="text-sm" onClick={() => paint.cancel()}>
-            {copy.imageTaskCancel}
-          </Button>
-        </div>
-      )}
-      {paint.error && (
-        <p role="alert" className="text-sm text-mld-danger">
-          {paint.error}
-        </p>
       )}
     </>
   )

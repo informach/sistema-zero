@@ -100,6 +100,7 @@ export {
   SquaresIntersect,
   Star,
   Sun,
+  Target,
   Torus,
   Trash2,
   TrendingUp,

@@ -38,7 +38,7 @@ jobs:
     name: ci
     # Baseline CI 40129239034: 41m14s; as provas novas Python/3D acrescentam ~4m19s.
     # Dê margem ao job completo sem ampliar os deadlines individuais ou do produto.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     services:
       marketing-postgres:
@@ -444,7 +444,7 @@ jobs:
 
   studio-python-extensions:
     name: studio-python-extensions
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
@@ -530,7 +530,7 @@ jobs:
 
   community-kids-e2e:
     name: community-kids-e2e
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
@@ -584,7 +584,7 @@ jobs:
 
   studio-e2e-chromium:
     name: studio-e2e-chromium-${{ matrix.shard }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -628,7 +628,7 @@ jobs:
 
   studio-e2e-firefox:
     name: studio-e2e-firefox
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
@@ -694,7 +694,7 @@ jobs:
 
   members-image:
     name: members-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
@@ -715,7 +715,7 @@ jobs:
     needs: [ci, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       actions: read

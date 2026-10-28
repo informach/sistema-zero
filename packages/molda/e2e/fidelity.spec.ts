@@ -123,7 +123,7 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await page.getByLabel('Cor hexadecimal', { exact: true }).press('Enter')
     const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
     await stageSettings.click()
-    await page.getByRole('button', { name: 'Quadradinhos', exact: true }).click()
+    await page.getByRole('button', { name: 'Mostrar quadradinhos', exact: true }).click()
     await stageSettings.click()
     await page.getByRole('button', { name: 'Espelho de pintura', exact: true }).click()
     const center = project([0, local.max[1], 0])
@@ -131,9 +131,10 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await page.mouse.down()
     await page.mouse.move(center.x + 24, center.y, { steps: 8 })
     await page.mouse.up()
+    // "Usadas agora" mora no popover do "+", que o traço no palco fecha: a cor entrou na lista.
     await expect(
-      page.getByRole('button', { name: 'Usadas agora: #f0352b', exact: true }),
-    ).toBeVisible()
+      page.getByRole('button', { name: 'Usadas agora: #f0352b', exact: true, includeHidden: true }),
+    ).toHaveCount(1)
     const legend = page.locator('.mld-axis-legend')
     await expect(legend).toBeVisible()
     await expect(legend.locator('.mld-axis')).toHaveText(['X', 'Y', 'Z'])

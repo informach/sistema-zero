@@ -23,6 +23,7 @@ export interface EstadoDoJogo {
   ferramentaAberta: boolean
   tempoAcabou: boolean
   tempoPausado: boolean
+  tempoSincronizando: boolean
   usadoHojeSegundos: number
   /** Muda o salvamento (a fila de salvamento grava depois). */
   mudar(fn: (s: Salvamento) => Salvamento): void
@@ -32,7 +33,8 @@ export interface EstadoDoJogo {
   abrirMenu(aberto: boolean): void
   definirFerramentaAberta(aberta: boolean): void
   definirTempoPausado(pausado: boolean): void
-  registrarTempo(usadoHojeSegundos: number, acabou: boolean): void
+  definirTempoSincronizando(sincronizando: boolean): void
+  registrarTempo(usadoHojeSegundos: number, acabou: boolean, limiteDiarioMinutos?: number): void
   adotar(guardado: SalvamentoGuardado): void
 }
 
@@ -63,6 +65,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     ferramentaAberta: false,
     tempoAcabou: false,
     tempoPausado: false,
+    tempoSincronizando: false,
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
     mudar(fn) {
       const novo = fn(get().salvamento)
@@ -92,8 +95,17 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     definirTempoPausado(pausado) {
       set({ tempoPausado: pausado })
     },
-    registrarTempo(usadoHojeSegundos, acabou) {
-      set({ usadoHojeSegundos, tempoAcabou: acabou || get().tempoAcabou })
+    definirTempoSincronizando(sincronizando) {
+      set({ tempoSincronizando: sincronizando })
+    },
+    registrarTempo(usadoHojeSegundos, acabou, limiteDiarioMinutos) {
+      set({
+        usadoHojeSegundos,
+        tempoAcabou: acabou || get().tempoAcabou,
+        ...(limiteDiarioMinutos === undefined
+          ? {}
+          : { acesso: { ...get().acesso, limiteDiarioMinutos } }),
+      })
     },
     adotar(guardado) {
       if (guardado.salvamento) set({ salvamento: guardado.salvamento })

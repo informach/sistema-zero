@@ -6,10 +6,14 @@ import {
   AcessoBloqueadoError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
+  SessaoTempoNaoPermitidaError,
   SomenteLeituraError,
 } from '../../application/erros'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
-import { DataTempoInvalidaError, EventoTempoConflitanteError } from '../../domain/tempo-erros'
+import {
+  EventoTempoConflitanteError,
+  SequenciaDeTempoInvalidaError,
+} from '../../domain/tempo-erros'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 
@@ -29,9 +33,13 @@ export interface DependenciasHttp {
 export function createServer(deps: DependenciasHttp) {
   return new Elysia({ serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 96 * 1024 } })
     .onError(({ error, set, code }) => {
-      if (error instanceof DataTempoInvalidaError) {
-        set.status = 400
-        return envelope('VALIDATION_ERROR', 'Data do registro de tempo inválida.')
+      if (error instanceof SequenciaDeTempoInvalidaError) {
+        set.status = 409
+        return envelope('TEMPO_SEQUENCIA_INVALIDA', 'A sessão de tempo precisa ser retomada.')
+      }
+      if (error instanceof SessaoTempoNaoPermitidaError) {
+        set.status = 403
+        return envelope('TEMPO_NAO_PERMITIDO', error.message)
       }
       if (error instanceof EventoTempoConflitanteError) {
         set.status = 409

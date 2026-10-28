@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { COPY } from '../../../core/copy'
 import { scenePalette } from '../../../scene/composite'
 import { SCENE_MATERIAL_IMAGE_FIELDS, sceneMaterialImageBase } from '../../../scene/materialImages'
 import { meshUvBounds } from '../../../scene/meshUv'
@@ -8,10 +9,10 @@ import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button, ToolButton } from '../../ui/Button'
 import { Grid3x3, Maximize2, Minimize2, X } from '../../ui/icons'
+import { SceneAppearancePanel } from './SceneAppearancePanel'
 import { ScenePaintCanvas } from './ScenePaintCanvas'
 import { SceneTextureGrid } from './SceneTextureGrid'
 import { SceneTextureViewport } from './SceneTextureViewport'
-import { SceneToolbarMenu } from './SceneToolbarMenu'
 import { SceneUvCanvas } from './SceneUvCanvas'
 import { SceneUvEditor } from './SceneUvEditor'
 import { SceneUvOutlines } from './SceneUvOutlines'
@@ -29,6 +30,12 @@ export function ScenePaintSheet({
   const { primary, paint, components } = workshop
   const adjusting = workshop.area === 'uv'
   const [cancelKey, setCancelKey] = useState(0)
+  const [textureOpen, setTextureOpen] = useState(false)
+  const textureTrigger = useRef<HTMLButtonElement>(null)
+  function closeTexture() {
+    setTextureOpen(false)
+    textureTrigger.current?.focus()
+  }
   const palette = useMemo(() => scenePalette(workshop.document), [workshop.document])
   const geometry =
     primary?.kind === 'mesh' ? workshop.index.geometries.get(primary.geometryId) : undefined
@@ -148,7 +155,10 @@ export function ScenePaintSheet({
                 variant="ghost"
                 aria-pressed={adjusting}
                 className="px-2 text-xs"
-                onClick={() => workshop.openArea('uv')}
+                onClick={() => {
+                  setTextureOpen(false)
+                  workshop.openArea('uv')
+                }}
               >
                 Ajustar mapa
               </Button>
@@ -177,23 +187,26 @@ export function ScenePaintSheet({
             onClick={() => workshop.openArea(null)}
           />
         </div>
+        {!adjusting && can('paint.layers') && (
+          <div className="mld-sheet-paint-actions">
+            <span className="text-xs text-mld-muted">Pinte aqui ou no modelo</span>
+            <Button
+              ref={textureTrigger}
+              size="compact"
+              variant="ghost"
+              className="text-xs"
+              aria-expanded={textureOpen}
+              onClick={() => setTextureOpen((open) => !open)}
+            >
+              {COPY.scene.appearanceTitle}
+            </Button>
+          </div>
+        )}
         <div className="mld-sheet-body">
           {adjusting && uv ? (
             <SceneUvEditor
               {...uv}
               compact
-              extraActions={
-                <Button
-                  size="compact"
-                  variant="ghost"
-                  className="mld-uv-organize"
-                  disabled={!components.canEdit}
-                  onClick={workshop.mapPaintUv}
-                >
-                  <Grid3x3 className="size-4" aria-hidden="true" />
-                  Organizar mapa
-                </Button>
-              }
               renderCanvas={(props) =>
                 viewport((scale) => (
                   <SceneUvCanvas
@@ -207,66 +220,51 @@ export function ScenePaintSheet({
               }
             />
           ) : !adjusting && paint.data && texture ? (
-            <>
-              <div className="mld-sheet-paint-actions">
-                <span className="text-xs text-mld-muted">Pinte aqui ou no modelo</span>
-                <SceneToolbarMenu label="Opções da folha" iconOnly>
-                  <Button
-                    size="compact"
-                    variant="ghost"
-                    data-close-menu
-                    disabled={!components.canEdit || paint.drawing || paint.busy}
-                    onClick={workshop.mapPaintUv}
-                  >
-                    <Grid3x3 className="size-4" aria-hidden="true" />
-                    Organizar mapa
-                  </Button>
-                </SceneToolbarMenu>
-              </div>
-              {viewport((scale) => (
-                <ScenePaintCanvas
-                  image={texture.image}
-                  palette={palette}
-                  base={texture.base}
-                  drawing={paint.drawing}
-                  actions={paint.actions}
-                  twoPoint={paint.shape !== null}
-                  draft={paint.draft}
-                  scope={paint.scope}
-                  sheet
-                  viewScale={scale}
-                  overlay={
-                    mesh ? (
-                      <>
-                        <svg
-                          aria-hidden="true"
-                          viewBox={`0 0 ${image.width} ${image.height}`}
-                          className="mld-uv-sheet-outlines"
-                        >
-                          {paintLayout && (
-                            <SceneUvOutlines
-                              faces={paintLayout.faces}
-                              ids={paintIds}
-                              width={image.width}
-                              height={image.height}
-                              scale={scale}
-                            />
-                          )}
-                        </svg>
-                        {paint.grid && <SceneTextureGrid image={image} scale={scale} />}
-                      </>
-                    ) : undefined
-                  }
-                />
-              ))}
-            </>
+            viewport((scale) => (
+              <ScenePaintCanvas
+                image={texture.image}
+                palette={palette}
+                base={texture.base}
+                drawing={paint.drawing}
+                actions={paint.actions}
+                twoPoint={paint.shape !== null}
+                draft={paint.draft}
+                scope={paint.scope}
+                sheet
+                viewScale={scale}
+                overlay={
+                  mesh ? (
+                    <>
+                      <svg
+                        aria-hidden="true"
+                        viewBox={`0 0 ${image.width} ${image.height}`}
+                        className="mld-uv-sheet-outlines"
+                      >
+                        {paintLayout && (
+                          <SceneUvOutlines
+                            faces={paintLayout.faces}
+                            ids={paintIds}
+                            width={image.width}
+                            height={image.height}
+                            scale={scale}
+                          />
+                        )}
+                      </svg>
+                      {paint.grid && <SceneTextureGrid image={image} scale={scale} />}
+                    </>
+                  ) : undefined
+                }
+              />
+            ))
           ) : (
             <div className="mld-sheet-empty">
               <Grid3x3 className="size-8 text-mld-muted" aria-hidden="true" />
               <p>
                 {adjusting && primary && !components.canEdit
                   ? 'Esta peça está travada. Destrave para ajustar o mapa.'
-                  : 'Escolha uma peça no modelo para abrir sua folha.'}
+                  : primary?.kind === 'mesh'
+                    ? 'Esta peça ainda não tem textura. Crie ou importe uma em Textura e camadas.'
+                    : 'Escolha uma peça no modelo para abrir sua folha.'}
               </p>
             </div>
           )}
@@ -277,6 +275,20 @@ export function ScenePaintSheet({
             </p>
           )}
         </div>
+        {textureOpen && !adjusting && primary?.kind === 'mesh' && (
+          <aside
+            className="mld-sheet-texture-panel mld-scroll-y"
+            aria-label={COPY.scene.appearanceTitle}
+          >
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold">{COPY.scene.appearanceTitle}</h3>
+              <Button size="compact" variant="ghost" onClick={closeTexture}>
+                Fechar
+              </Button>
+            </div>
+            <SceneAppearancePanel workshop={workshop} onPainted={closeTexture} />
+          </aside>
+        )}
       </section>
       <hr
         className="mld-sheet-divider"

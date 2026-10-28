@@ -65,6 +65,34 @@ export const eventosTempo = arquipelagoSchema.table(
   ],
 )
 
+/** Uma única concessão ativa por perfil, independentemente do número de abas. */
+export const controleDeTempo = arquipelagoSchema.table('controle_de_tempo', {
+  jogadorId: uuid().primaryKey(),
+  sessaoAtual: uuid(),
+})
+
+/** Histórico mínimo para reconhecer repetições e impedir que uma sessão antiga seja reaberta. */
+export const sessoesDeTempo = arquipelagoSchema.table(
+  'sessoes_de_tempo',
+  {
+    jogadorId: uuid().notNull(),
+    sessaoId: uuid().notNull(),
+    cursor: timestamp({ withTimezone: true }).notNull(),
+    vencimento: timestamp({ withTimezone: true }).notNull(),
+    estado: varchar({ length: 12 }).notNull(),
+    ultimaSequencia: integer().notNull(),
+    ultimaAcao: varchar({ length: 12 }).notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.sessaoId] }),
+    check('sessoes_de_tempo_estado_check', sql`${t.estado} in ('ativa', 'encerrada', 'expirada')`),
+    check('sessoes_de_tempo_sequencia_check', sql`${t.ultimaSequencia} >= 0`),
+    check('sessoes_de_tempo_acao_check', sql`${t.ultimaAcao} in ('iniciar', 'pulsar', 'pausar')`),
+  ],
+)
+
 /** O limite diário que o responsável escolheu para a família (sem linha = 30 minutos). */
 export const limitesDaFamilia = arquipelagoSchema.table(
   'limites_da_familia',
@@ -76,4 +104,11 @@ export const limitesDaFamilia = arquipelagoSchema.table(
   (t) => [check('limites_da_familia_minutos_check', sql`${t.minutos} between 10 and 240`)],
 )
 
-export const schema = { salvamentos, tempoDiario, eventosTempo, limitesDaFamilia }
+export const schema = {
+  salvamentos,
+  tempoDiario,
+  eventosTempo,
+  controleDeTempo,
+  sessoesDeTempo,
+  limitesDaFamilia,
+}
