@@ -37,6 +37,7 @@ export function RoomCanvas({
   paintColor = null,
   staticView = false,
   emptyHint = 'Toque numa peça na lojinha para montar seu quarto! 🛋️',
+  className,
 }: {
   state: RoomStateView
   mode: 'edit' | 'view'
@@ -54,6 +55,9 @@ export function RoomCanvas({
   staticView?: boolean
   /** Convite do editor vazio (a pele adulta passa o dela; o padrão é o do Kids). */
   emptyHint?: string
+  /** Classes a mais na moldura. O editor do Kids troca o 3:2 pela altura do espaço que sobra
+   * (a câmera encaixa o quarto em qualquer formato: `use-responsive-zoom.ts`). */
+  className?: string
 }) {
   const dark = Boolean(lightingPreset(resolveRoomAppearance(state).lightingId).dark)
   // Alternativa textual da cena 3D p/ leitores de tela (no modo `view`, ex.: perfil público de um
@@ -64,7 +68,10 @@ export function RoomCanvas({
     (state.pet ? ' e um bichinho de estimação' : '')
   return (
     <div
-      className="relative aspect-[3/2] w-full select-none overflow-hidden rounded-2xl border-2 border-border bg-muted"
+      className={cn(
+        'relative aspect-[3/2] w-full select-none overflow-hidden rounded-2xl border-2 border-border bg-muted',
+        className,
+      )}
       {...(mode === 'view' ? { role: 'img', 'aria-label': roomLabel } : {})}
     >
       <Room3D
@@ -79,7 +86,7 @@ export function RoomCanvas({
         className="absolute inset-0 size-full"
       />
       {avatarPhotoUrl !== undefined ? (
-        <div className="pointer-events-none absolute bottom-2 left-2 w-[16%] min-w-12">
+        <div className="pointer-events-none absolute bottom-2 left-2 w-[16%] min-w-12 max-w-36">
           <KidsAvatar photoUrl={avatarPhotoUrl} size="lg" className="size-full drop-shadow-md" />
         </div>
       ) : null}

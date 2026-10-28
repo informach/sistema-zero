@@ -280,9 +280,9 @@ describe('o rodapé tem uma ação principal', () => {
     // O que mudou foi o peso visual. Os nomes são o contrato de quem navega por leitor de tela
     // (e dos outros testes desta pasta): trocá-los quebraria os dois.
     // ⚠️ Mudou de propósito (lote 2 do Raio-X): "Ligar som" saiu da lista porque `layers` não faz
-    // som, e o principal do rodapé é "Conferir" (era "Já descobri").
+    // som; as descobertas são reconhecidas automaticamente.
     render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
-    for (const nome of ['Desfazer', 'Recomeçar', 'Uma pista', 'Conferir'])
+    for (const nome of ['Desfazer', 'Recomeçar', 'Uma pista'])
       expect(await screen.findByRole('button', { name: nome })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Já descobri/ })).toBeNull()
   })

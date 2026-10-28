@@ -62,6 +62,15 @@ const pythonCsp = withStudioPythonCsp(
 )
 // Next client navigation keeps the original document policy for every Pro consumer.
 const csp = withStudioPublishedProCsp(pythonCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev)
+const proCsp = csp
+  .replace(
+    /script-src[^;]+/,
+    "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:",
+  )
+  .replace(
+    "frame-src 'self' blob:",
+    "frame-src 'self' blob: https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com",
+  )
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -102,6 +111,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     '@sistemazero/ui',
     '@sistemazero/member-shell',
+    '@sistemazero/avatar-quarto',
     '@sistemazero/studio',
     // ⚠️ O bloco de Pinta é KIDS na prática, mas o renderizador de blocos é COMPARTILHADO: o
     // `lesson-blocks` do member-shell referencia o `PintaBlockView`, então o bundler do adulto
@@ -121,19 +131,18 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Content-Security-Policy', value: csp }],
       },
       {
+        source: '/arquipelago',
+        headers: [
+          { key: 'Content-Security-Policy', value: proCsp },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
+      },
+      {
         source: '/estudio/pro/:path*',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: csp
-              .replace(
-                /script-src[^;]+/,
-                "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:",
-              )
-              .replace(
-                "frame-src 'self' blob:",
-                "frame-src 'self' blob: https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com",
-              ),
+            value: proCsp,
           },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
         ],

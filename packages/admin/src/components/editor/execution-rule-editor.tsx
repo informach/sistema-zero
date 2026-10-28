@@ -15,7 +15,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import {
   COMPARE_LABELS,
   formatArgs,
@@ -31,6 +31,62 @@ type FunctionReturns = Extract<SectionExecutionRule, { type: 'functionReturns' }
 export type PythonExecutionEditorEnvironment = {
   language: 'python'
   graphics: import('@sistemazero/core/learning').PythonProjectCheckGraphics
+}
+
+/** Preserve an incomplete signed decimal while typing, without saving it as zero. */
+function floorCoordinate(text: string): number | null {
+  if (!/^-?(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(text)) return null
+  const value = Number(text.replace(',', '.'))
+  return Number.isFinite(value) && value >= -100 && value <= 100 ? value : null
+}
+
+function FloorCoordinateInput({
+  label,
+  value,
+  onValueChange,
+}: {
+  label: string
+  value: number
+  onValueChange(value: number): void
+}) {
+  const [draft, setDraft] = useState(String(value))
+  const [reverted, setReverted] = useState(false)
+  const messageId = useId()
+  const focused = useRef(false)
+  useEffect(() => {
+    if (!focused.current) setDraft(String(value))
+  }, [value])
+  return (
+    <div>
+      <Input
+        type="text"
+        inputMode="decimal"
+        aria-label={label}
+        aria-describedby={reverted ? messageId : undefined}
+        value={draft}
+        onFocus={() => {
+          focused.current = true
+          setReverted(false)
+        }}
+        onBlur={() => {
+          focused.current = false
+          setReverted(floorCoordinate(draft) === null)
+          setDraft(String(value))
+        }}
+        onChange={(event) => {
+          const text = event.target.value
+          setDraft(text)
+          const next = floorCoordinate(text)
+          if (next !== null) onValueChange(next)
+        }}
+      />
+      {reverted && (
+        <p id={messageId} role="status" className="text-xs text-muted-foreground">
+          Valor inválido. O valor anterior foi mantido; use um número entre -100 e 100.
+        </p>
+      )}
+    </div>
+  )
 }
 
 /**
@@ -125,13 +181,22 @@ export function StepsEditor({
               if (
                 (!graphics && action !== 'wait') ||
                 (python &&
-                  ['sprite', 'outsideGroup', 'lastPoint', 'approachSprite'].includes(action))
+                  [
+                    'sprite',
+                    'outsideGroup',
+                    'lastPoint',
+                    'approachSprite',
+                    'approachObject3d',
+                  ].includes(action))
               )
                 return
               if (singlePress && action !== 'press' && action !== 'hold') return
-              if (action === 'approachSprite') {
+              if (action === 'approachSprite' || action === 'approachObject3d') {
                 patch(at, {
-                  action: 'approachSprite',
+                  action,
+                  ...(action === 'approachObject3d'
+                    ? { walkable: [{ minX: -10, maxX: 10, minZ: -10, maxZ: 10 }] }
+                    : {}),
                   actorPath: '',
                   targetPath: '',
                   timeoutMs: 4500,
@@ -183,9 +248,14 @@ export function StepsEditor({
               Clicar na tela
             </option>
             {!python && (
-              <option value="approachSprite" disabled={singlePress}>
-                Levar um personagem até outro com as teclas
-              </option>
+              <>
+                <option value="approachObject3d" disabled={singlePress}>
+                  Levar um objeto 3D até outro no chão
+                </option>
+                <option value="approachSprite" disabled={singlePress}>
+                  Levar um personagem até outro com as teclas
+                </option>
+              </>
             )}
             {!python && (
               <option value="sprite" disabled={singlePress}>
@@ -203,7 +273,59 @@ export function StepsEditor({
               </option>
             )}
           </Select>
-          {step.action === 'approachSprite' && (
+          {step.action === 'approachObject3d' && (
+            <fieldset className="space-y-3 rounded-md border p-3">
+              <legend>Retângulos do chão (x/z)</legend>
+              {step.walkable?.map((r, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: retângulos não têm ID e os campos são controlados pela regra
+                <div key={i} className="grid grid-cols-2 gap-2">
+                  {(['minX', 'maxX', 'minZ', 'maxZ'] as const).map((k) => (
+                    <FloorCoordinateInput
+                      key={k}
+                      label={`${k} do retângulo ${i + 1}`}
+                      value={r[k]}
+                      onValueChange={(next) =>
+                        patch(at, {
+                          ...step,
+                          walkable: step.walkable!.map((v, j) =>
+                            j === i ? { ...v, [k]: next } : v,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    onClick={() =>
+                      patch(at, { ...step, walkable: step.walkable!.filter((_, j) => j !== i) })
+                    }
+                  >
+                    Retirar retângulo
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                disabled={(step.walkable?.length ?? 0) >= 8}
+                onClick={() =>
+                  patch(at, {
+                    ...step,
+                    walkable: [
+                      ...(step.walkable ?? []),
+                      { minX: -10, maxX: 10, minZ: -10, maxZ: 10 },
+                    ],
+                  })
+                }
+              >
+                Adicionar retângulo
+              </Button>
+            </fieldset>
+          )}
+          {(step.action === 'approachSprite' || step.action === 'approachObject3d') && (
             <>
               <Input
                 aria-label={`Personagem que anda no passo ${at + 1}`}

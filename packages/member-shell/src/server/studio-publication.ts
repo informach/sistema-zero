@@ -18,6 +18,7 @@ import type {
 } from '@sistemazero/core/studio/runtime-authorization'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import type { EditableStudioProject, Project, PythonProjectDocument } from '@sistemazero/studio'
+import { isCourseModelLibId } from '@sistemazero/studio/course-models'
 import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
 import { withoutProjectPublication } from '@sistemazero/studio/project-publication'
 import { preparePythonExecutionSnapshot } from '@sistemazero/studio/python-snapshot'
@@ -50,8 +51,10 @@ export function studioPublicProject(project: EditableStudioProject): EditableStu
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject {
   const assets = project.assets?.map(
     // The published image is detached from the author's private Pinta recipe/provenance.
-    ({ libId: _libId, libOrigin: _origin, libRevision: _revision, pintaImage: _pinta, ...asset }) =>
-      asset,
+    // A course model keeps its library reference: it is public course art, and without it
+    // the published game would only carry the empty placeholder model.
+    ({ libId, libOrigin: _origin, libRevision: _revision, pintaImage: _pinta, ...asset }) =>
+      isCourseModelLibId(libId) ? { ...asset, libId } : asset,
   )
   if (project.programmingLanguage === 'python') {
     if (project.kind === 'classic') return { ...withoutProjectPublication(project), assets }

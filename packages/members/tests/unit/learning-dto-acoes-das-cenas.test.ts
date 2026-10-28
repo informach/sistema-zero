@@ -57,6 +57,13 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   }
   // Os controles são ações reais e precisam atravessar a mesma borda tipada.
   const acoesDosControles: SceneAction[] = [
+    { type: 'island-view', view: 'top' },
+    { type: 'island-axis', axis: 'y', value: 1.5 },
+    { type: 'island-hero', axis: 'x', value: -2.5 },
+    { type: 'island-answer', answer: 'camera' },
+    { type: 'island-test' },
+    { type: 'island-restart' },
+    { type: 'island-bounds', visible: true },
     { type: 'value-source', source: 'read' },
     { type: 'place-in-area', card: 'panel', area: 'start' },
     { type: 'command-target', subject: 'shot', target: 'group' },
@@ -105,6 +112,16 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
 
 describe('toda ação de cena conhecida atravessa a borda do members', () => {
   const porCena = acoesConhecidas()
+
+  test.each([
+    { type: 'island-view', view: 'invalid' },
+    { type: 'island-axis', axis: 'x', value: 4.1 },
+    { type: 'island-axis', axis: 'x', value: '1' },
+    { type: 'island-hero', axis: 'y', value: 1 },
+    { type: 'island-bounds', visible: 'true' },
+  ])('recusa ação 3D fora do contrato: %j', (action) => {
+    expect(validador.Check(blocoCom('island-3d', [action as unknown as SceneAction]))).toBe(false)
+  })
 
   test.each([-1, 2, 0.5, '1', null])('recusa esconderijo fora do contrato: %j', async (id) => {
     const bloco = blocoCom('touch-response', [

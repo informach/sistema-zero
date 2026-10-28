@@ -1,4 +1,10 @@
-import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
+import {
+  creatorCurrentStage,
+  creatorEntryCard,
+  creatorJourneyHint,
+  creatorStageChecklist,
+  creatorStageTodo,
+} from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import {
   isKidsStaffPreview,
   kidsJourneyAccess,
@@ -10,6 +16,7 @@ import { canonicalJourneyProgress } from '@/lib/journey-presentation'
 import { journeyEarnedRewardInfo } from '@/lib/journey-rewards'
 import type { GamificationMeView, MyCourseView } from '@/lib/types'
 import { AvatarWithAura } from './avatar-with-aura'
+import { ChecklistPills, checklistItems } from './creator-journey/parts'
 import { LevelBadge } from './level-badge'
 
 /** A pílula dos números à direita (fogo, XP): a mesma fileira do rodapé do menu. */
@@ -78,11 +85,31 @@ export function CreatorJourneyCard({
     )
   }
 
-  if (journey.curriculum)
-    return <CreatorJourneySummary view={journey.curriculum} skin="kids" courses={courses} />
   const { streak, xp, ranking } = gamification
   const reward = journeyEarnedRewardInfo(journey)
-  const hint = canonicalJourneyProgress(journey).hint
+  // No currículo, a frase e as pílulas vêm do posto atual: "Para virar X: termine a missão…".
+  const curriculum = journey.curriculum ?? null
+  const stage = curriculum ? creatorCurrentStage(curriculum) : null
+  const nextTitle =
+    curriculum && stage
+      ? (curriculum.stages[curriculum.stages.indexOf(stage) + 1]?.title ?? 'Lenda')
+      : null
+  const todo = stage ? creatorStageTodo(stage, 'kids') : null
+  const hint = curriculum
+    ? curriculum.paused
+      ? creatorJourneyHint(curriculum)
+      : !stage
+        ? 'Você chegou ao topo da jornada! Agora é hora das Maestrias.'
+        : todo
+          ? `Para virar ${nextTitle}: ${todo}.`
+          : creatorJourneyHint(curriculum)
+    : canonicalJourneyProgress(journey).hint
+  const pills = stage
+    ? checklistItems(
+        creatorStageChecklist(stage),
+        creatorEntryCard(stage.mission, [], courses).lessons,
+      )
+    : null
   const days = streak.current === 1 ? 'dia' : 'dias'
   const streakMessage = streak.activeToday
     ? 'Fogo de hoje garantido. Continue assim!'
@@ -123,7 +150,11 @@ export function CreatorJourneyCard({
         <p className="mt-2.5 font-extrabold text-[0.9375rem] leading-snug">
           {hint ?? 'Seu posto e suas conquistas continuam com você.'}
         </p>
-        {reward.title ? (
+        {pills ? (
+          <div className="mt-2.5">
+            <ChecklistPills items={pills} />
+          </div>
+        ) : reward.title ? (
           <p className="mt-1.5 text-[0.8125rem]">
             <span className="font-extrabold text-primary">Conquistas guardadas:</span>{' '}
             <span className="text-muted-foreground">{reward.title}</span>

@@ -12,6 +12,10 @@ export interface ManifestQuiz {
       | 'lighthouse-memory'
       | 'lighthouse-door'
       | 'lighthouse-retest'
+      | 'island-view'
+      | 'island-position'
+      | 'island-height'
+      | 'island-retest'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -41,6 +45,10 @@ export function validatePredictionQuiz(
           'lighthouse-memory',
           'lighthouse-door',
           'lighthouse-retest',
+          'island-view',
+          'island-position',
+          'island-height',
+          'island-retest',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -78,6 +86,10 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'lighthouse-memory',
           'lighthouse-door',
           'lighthouse-retest',
+          'island-view',
+          'island-position',
+          'island-height',
+          'island-retest',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

@@ -1,12 +1,102 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Arquipélago Vagalume: a página do jogo (27/10/2026)
+
+Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o jogo.
+
+- **`/arquipelago`** (`app/arquipelago/page.tsx`, fora do grupo `(app)`: o jogo ocupa a tela) monta
+  o `ArquipelagoHost` do member-shell com o perfil da sessão. Sem item de menu por enquanto; quem
+  vê o jogo é o serviço do jogo (sem ele, a página diz "O Arquipélago ainda não abriu por aqui.").
+  Nenhuma variável de ambiente nova (a regra do Railway pede criar no painel antes).
+- Shims em `app/api/arquipelago/{acesso,salvamento,tempo,cliente/[arquivo]}` e
+  `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`
+  fica FORA do matcher do proxy (o navegador importa o módulo sem `x-sz-session`).
+- `/arquipelago` nos `protectedPrefixes`; `next.config.ts`: `@sistemazero/arquipelago-contracts`
+  no `transpilePackages` e uma CSP própria da página que garante `'wasm-unsafe-eval'` (Rapier)
+  mesmo se a CSP estrita um dia fechar o WASM.
+
+
+## Peças do quarto feitas no Blender (27/10/2026)
+
+As 39 peças do quarto foram refeitas no Blender e entraram 27 novas (lista em
+`docs/gamificacao.md` §7). O desenho e as regras moram no member-shell (seção de mesmo nome).
+
+- **Os arquivos ficam em DUAS pastas** (`public/room3d/items` e `public/room3d/thumbs` daqui e da
+  comunidade adulta). `tests/room3d-catalog.test.ts` confere GLB e miniatura iguais nas duas, que
+  só as peças animadas têm animação e o lugar de cada peça parada no quarto (lido do GLB).
+- **`scripts/room-blender/`**: os scripts (`bpy` 5.2.3, sem tela), `build_all.py` e o README com o
+  contrato. **`bun run gen:room-thumbs`** gera as miniaturas com o three.js da instalação e grava
+  nas duas comunidades.
+- `tests/room-trophy-models.test.ts` agora confere a RESERVA (`FurniturePrimitive`): o modelo
+  principal é o GLB, conferido pelo teste acima.
+
+## Peças novas do avatar (26/10/2026)
+
+32 peças modeladas no Blender (Canvas "Provador do avatar"), com a aba nova Enfeite; o contrato do
+catálogo está no CLAUDE.md do member-shell e a lista em `docs/gamificacao.md` §6.
+
+- **Os arquivos ficam em DUAS pastas** (`public/avatar3d` daqui e da comunidade adulta).
+  `tests/avatar3d-catalog.test.ts` confere que toda peça tem GLB e miniatura nas duas e que as
+  cópias são iguais, que as juntas de cada GLB seguem a ordem do `Armature.glb` (o Blender exporta
+  em outra ordem e a peça ficaria parada no ar nas poses) e que `AVATAR_FIXED_COLOR_PARTS` bate
+  com os materiais de verdade.
+- **`scripts/avatar-blender/`**: os scripts que geram as peças (`bpy` 5.2.3 do PyPI, sem tela) e
+  o `reordenar.py` das juntas. README com o passo a passo.
+- **`gen:avatar-thumbs` usa o three.js da própria instalação** (servido em `/vendor/three/`,
+  com import map), não mais o esm.sh: funciona sem internet e desenha com a versão do app.
+
 ## Meu avatar e Meu quarto com o painel ao lado (26/10/2026)
 
 As duas telas trocaram o painel de baixo pelo painel ao lado do 3D quando a área do editor tem
 45rem ou mais (proposta do Canvas "Kids · avatar e quarto com painel ao lado"). O desenho e as
-regras moram no member-shell (seção de mesmo nome lá). Aqui nada mudou na página: o avatar segue
-app embarcado (menu recolhido, `MainContainer` com a altura da janela) e o quarto segue nas duas
-`KidsBand` com `kids-band-foco`. No celular o quarto gruda abaixo da barra do topo (h-14).
+regras moram no member-shell (seção de mesmo nome lá). O avatar segue app embarcado (menu
+recolhido, `MainContainer` com a altura da janela). No celular o quarto gruda abaixo da barra do
+topo (h-14).
+
+⭐ **O quarto ocupa a tela como o avatar (27/10/2026, pedido dela).** O cabeçalho grande (faixa
+própria com seta, selo, título e subtítulo: 291px, e a página rolava) virou UMA linha no alto do
+editor: o `QuartoHeader` (a seta `overlay`, o mesmo botão do avatar, e o título) entra pela prop
+`header` do `RoomBuilder`, ao lado das moedas e do "Salvar quarto". A página tem UMA `KidsBand`
+com a `QUARTO_FAIXA` (`max-w-none`, 16px de respiro), a mesma do esqueleto. A partir do `md`, com o
+editor em 45rem ou mais, ele tem a altura da janela e o quarto enche o espaço à esquerda do painel
+(a moldura troca o 3:2 pela altura; a câmera encaixa em qualquer formato), encolhendo só quando o
+menu abre. A classe `kids-band-foco` e a regra dela no `globals.css` saíram (só o quarto usava). O
+quarto continua no regime de faixas, não no dos apps embarcados: no celular a página rola até os
+itens. Medido no staging: 726×484 → 972×808 em 1440×900, sem rolagem. Testes:
+`tests/quarto-foco.test.tsx`, `tests/room-builder-view.test.tsx` e, no member-shell,
+`tests/kids-cosmetics-layout.test.tsx`.
+
+## As telas da Jornada do Criador no visual Kids (26/10/2026)
+
+Pedido dela: o currículo novo tinha trocado as telas aprovadas por componentes genéricos. Elas
+voltaram, nas peças da casa, em `components/kids/creator-journey/` (`parts`, `trail`, `map`,
+`mastery`, `course-context`, `studio-modes`). Nome único: **Cursos da trilha** (2D e 3D).
+
+- **`/cursos`** (`KidsCreatorCatalog`): cabeçalho centrado, o mapa em fita
+  (`CreatorJourneyMapKids`, com `JourneyRibbon`/`ProgressDots` do `journey-map.tsx`, agora
+  exportados), "Sua trilha agora" (missão, Poderes e os cursos da trilha), o convite para uma
+  Maestria que já abriu e "Todos os cursos e seus acessos".
+- ⚠️ **A trava do mapa voltou (pedido dela, 26/10/2026):** posto não alcançado fica em preto e
+  branco, com o cadeado, e NÃO é link; `/cursos/trilha/<nível>` dele mostra "Esta parte do mapa
+  ainda está bloqueada" (`KidsCreatorPost`). A régua é `creatorStageOpen` do member-shell: o
+  posto atual, os concluídos ou conquistados e o posto em que o servidor já abriu um curso (compra
+  avulsa, presente, acesso preservado). A Lenda segue a mesma régua e, alcançada, leva às
+  Maestrias. A equipe não passa por aqui: a prévia dela (`isKidsStaffPreview`) segue com tudo
+  aberto.
+- **`/cursos/trilha/[level]`** (`KidsCreatorTrail`): medalhão, a faixa "Para virar X", cursos da
+  trilha, missão, Poderes (6 e "Ver todos"), extras e o cartão do próximo nível com as ferramentas
+  reais (`curriculumTrailCapabilities` em `lib/journey-rewards.ts`, de `advances[i].capabilities`).
+  Trilha ainda não alcançada: o recado "Esta parte do mapa ainda está bloqueada" (ver a trava
+  abaixo); a que abriu só por um curso avulso mostra o desenho com "A trilha inteira abre quando
+  você chegar a X".
+- **Maestrias**: `KidsMasteryHub` ("Escolha no que quer ficar craque") e `KidsMasteryArea`. Cada
+  nível é um `HeadingDisclosure` do `@sistemazero/ui` (o `<h2>` com o botão de abrir dentro): no
+  `<summary>` o título sumia da lista de títulos do leitor de tela. O nível atual nasce aberto.
+- **Início, perfil, pais, curso, Criar e celebração**: `creator-journey-card` com as pílulas,
+  `journey-timeline` (escada de postos), `child-progress` (pílulas), `KidsCourseJourneyContext`
+  ("Como funciona a missão" com os quadros verdadeiros), `StudioModes` em Criar e a celebração de
+  nível com "A Trilha X abriu".
+- Testes: `tests/creator-journey-screens.test.tsx` (componentes reais) e os guardas de texto.
 
 ## Currículo comum da Jornada do Criador (25/10/2026)
 
@@ -14,8 +104,9 @@ Se `KidsJourneyView.curriculum` existir, os postos e Maestrias seguem essa proje
 Notas históricas abaixo sobre 49 posições, curso de entrada único, extra por matrícula e Mural
 obrigatório aplicam-se somente a políticas sem `curriculum`. Não calcular novos acessos no cliente.
 
-- `/cursos` e `/cursos/trilha/[level]` usam `creator-curriculum-page.tsx` e os componentes comuns
-  do member-shell, preservando KidsBand, Baloo/Nunito, medalhões e as cores fixas dos postos.
+- `/cursos` e `/cursos/trilha/[level]` usam `creator-curriculum-page.tsx` e as peças de
+  `components/kids/creator-journey/` (seção de 26/10/2026 acima), com KidsBand, Baloo/Nunito,
+  medalhões e as cores fixas dos postos.
 - Ordem: base 2D, base 3D; o par abre missão, poderes e extras. Avançar pede as duas bases,
   missão em 2D/3D e 1 poder aplicado na Faísca, 2 nos demais. Extras e Mural são opcionais.
   Cada curso completo libera seus blocos. `course-badge`, retorno do curso, home, perfil,
@@ -29,7 +120,8 @@ obrigatório aplicam-se somente a políticas sem `curriculum`. Não calcular nov
   Faísca ou progresso vazio. Preview de equipe não simula aluno.
   Cursos de Maestria bloqueados usam o vínculo do DTO para indicar o nível e abrir sua área;
   catálogo, curso e aula não substituem esse requisito por um curso-base de posto.
-- QA: `member-shell/tests/creator-journey-ui.test.tsx`, regressões `journey-canonical-*` e
+- QA: `tests/creator-journey-screens.test.tsx`, `member-shell/tests/creator-journey-ui.test.tsx`,
+  regressões `journey-canonical-*` e
   `community/playwright.creator-journey.config.ts`. A prévia local comum usa componentes/CSS reais
   e dados do seed em memória, sem serviços ou dados de alunos.
 

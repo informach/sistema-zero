@@ -53,12 +53,15 @@ const TABS: { id: RoomBuilderTab; label: string; icon: typeof Sofa }[] = [
   { id: 'tema', label: 'Tema', icon: Palette },
 ]
 
+/** Ao lado do painel, a moldura do quarto (e os seus substitutos) enche a altura em vez do 3:2. */
+const QUARTO_ENCHE = '@min-[45rem]/quarto:aspect-auto @min-[45rem]/quarto:h-full'
+
 /**
  * Superfície visual do editor (a do Kids); regras de colocação, compra e persistência ficam no
  * orquestrador. A tela adulta é `room-builder-view-adult.tsx` e chega pelo `room-builder-adult.tsx`.
  */
 export function RoomBuilderView(props: RoomBuilderViewProps) {
-  const { scene, selection, wallet, catalog } = props
+  const { scene, selection, wallet, catalog, header } = props
   const { avatarPhotoUrl, data, loadState, draft, paintColor } = scene
   const { selected, stackPicker, surfaces } = selection
   const { coinsUnlimited, balance, saving } = wallet
@@ -71,13 +74,24 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
     // escolher um item e ver o quarto mudar acontecem na mesma tela, e só os itens rolam. Abaixo
     // disso, tudo empilha como antes. A régua mede o CONTÊINER (o menu do Kids pode ser recolhido).
     <div className="@container/quarto">
-      {/* Ao lado, o bloco tem a largura do que está dentro (`w-fit`): a coluna do quarto vai até
-          o teto dela e a barra de cima (moedas e Salvar) acompanha a borda do painel. */}
-      <div className="flex flex-col gap-4 @min-[45rem]/quarto:w-fit @min-[45rem]/quarto:max-w-full">
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
-            <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
-          </span>
+      {/* Ao lado, como o AVATAR (27/10/2026, pedido dela): o editor ocupa a largura toda e a altura
+          da janela (os 2rem são o respiro da `QUARTO_FAIXA` da página, em cima e embaixo), o quarto
+          enche o espaço que sobra à esquerda e só o painel dos itens tem largura fixa. Encolhe
+          quando o menu da esquerda abre. A altura vale só a partir do `md`, onde não há a barra do
+          topo nem a de abas; o piso de 30rem faz a página rolar numa janela baixa demais, em vez
+          de espremer o quarto. */}
+      <div className="flex flex-col gap-4 md:@min-[45rem]/quarto:h-[max(30rem,calc(100dvh-2rem))]">
+        {/* A barra de cima é UMA linha, como a do avatar (27/10/2026, pedido dela): a seta e o
+            título que a página manda (`header`), as moedas e o Salvar. Antes o cabeçalho da página
+            tinha faixa própria (seta, selo, título grande e subtítulo, 291px) e o quarto ficava
+            com o que sobrava, com rolagem. */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            {header}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1.5 [font-family:var(--font-display)] font-bold text-sm shadow-md">
+              <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
+            </span>
+          </div>
           <button
             type="button"
             onClick={wallet.onSave}
@@ -91,14 +105,16 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 @min-[45rem]/quarto:grid @min-[45rem]/quarto:grid-cols-[minmax(0,max(24rem,calc((100dvh-26rem)*1.5)))_21.25rem] @min-[62.5rem]/quarto:grid-cols-[minmax(0,max(24rem,calc((100dvh-26rem)*1.5)))_26.25rem]">
+        <div className="flex flex-col gap-4 @min-[45rem]/quarto:grid @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:grid-cols-[minmax(0,1fr)_21.25rem] @min-[45rem]/quarto:grid-rows-[minmax(0,1fr)] @min-[62.5rem]/quarto:grid-cols-[minmax(0,1fr)_26.25rem]">
           {/* Empilhado (celular), esta coluna some da árvore de caixas (`contents`): o quarto vira
             filho do bloco inteiro e pode grudar no alto enquanto a criança desce até os itens. */}
-          <div className="contents @min-[45rem]/quarto:flex @min-[45rem]/quarto:min-w-0 @min-[45rem]/quarto:flex-col @min-[45rem]/quarto:gap-4">
+          <div className="contents @min-[45rem]/quarto:flex @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:min-w-0 @min-[45rem]/quarto:flex-col @min-[45rem]/quarto:gap-4">
             {/* O quarto: no celular gruda abaixo da barra do topo (h-14; a partir do `md` não há
               barra), para a criança ver onde o item foi parar sem subir a tela. Ao lado do painel,
-              quem limita a largura é a coluna da grade (abaixo). */}
-            <div className="sticky top-16 z-20 w-full rounded-2xl shadow-md md:top-3 @min-[45rem]/quarto:relative @min-[45rem]/quarto:top-auto @min-[45rem]/quarto:shadow-none">
+              ele cresce até o que sobra da coluna (`flex-1`), com piso de 16rem, e a moldura troca
+              o 3:2 pela altura dele (`QUARTO_ENCHE`): a câmera encaixa o quarto em qualquer
+              formato. */}
+            <div className="sticky top-16 z-20 w-full rounded-2xl shadow-md md:top-3 @min-[45rem]/quarto:relative @min-[45rem]/quarto:top-auto @min-[45rem]/quarto:min-h-[16rem] @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:shadow-none">
               {data ? (
                 <RoomCanvas
                   state={draft}
@@ -109,9 +125,15 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
                   onMove={scene.onMoveItem}
                   onPaintWall={scene.onPaintWall}
                   paintColor={paintColor}
+                  className={QUARTO_ENCHE}
                 />
               ) : loadState === 'error' ? (
-                <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted p-6 text-center">
+                <div
+                  className={cn(
+                    'grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted p-6 text-center',
+                    QUARTO_ENCHE,
+                  )}
+                >
                   <div className="flex max-w-sm flex-col items-center gap-3">
                     <KidsMascot expression="thinking" className="size-20" />
                     <p className="font-semibold">Não consegui carregar seu quarto.</p>
@@ -125,7 +147,12 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
                   </div>
                 </div>
               ) : (
-                <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">
+                <div
+                  className={cn(
+                    'grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted',
+                    QUARTO_ENCHE,
+                  )}
+                >
                   <KidsMascot expression="thinking" className="size-20" />
                 </div>
               )}
@@ -146,7 +173,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
               <div
                 role="group"
                 aria-label="Colocar em cima de qual superfície?"
-                className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+                className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5 @min-[45rem]/quarto:shrink-0"
               >
                 <p className="font-semibold text-sm">Colocar em cima de:</p>
                 {surfaces.map((option) => {
@@ -180,7 +207,9 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
               <div
                 role="group"
                 aria-label="Peças no quarto. Escolha uma e mova com as setas do teclado (R gira, Delete tira)"
-                className="flex flex-wrap gap-1.5"
+                // Ao lado do painel, duas linhas no máximo e o resto rola: com muitas peças a tira
+                // tomaria a altura do quarto.
+                className="flex flex-wrap gap-1.5 @min-[45rem]/quarto:max-h-[6.5rem] @min-[45rem]/quarto:shrink-0 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-0.5"
               >
                 {draft.placedItems.map((item, index) => {
                   const info = ROOM_ITEM_INFO[item.itemId]

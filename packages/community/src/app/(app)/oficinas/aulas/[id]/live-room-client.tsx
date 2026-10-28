@@ -24,6 +24,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { lessonZappy } from '@/components/community/lesson-zappy'
 import { type ApiError, apiSend } from '@/lib/api'
 import type { LessonDetailView } from '@/lib/types'
 
@@ -124,6 +125,7 @@ function AdultLiveLessonPlayer({
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
       lessonId: lesson.id,
+      dialogueMascot: lessonZappy,
       courseSlug: slot.lesson.courseSlug,
       viewerWatermark,
       viewerId,

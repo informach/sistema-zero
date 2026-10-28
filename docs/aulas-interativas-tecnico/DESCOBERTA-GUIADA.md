@@ -91,3 +91,23 @@ O vídeo explica a ideia, preserva as analogias claras e convida a observar. Nã
 Na revisão final, nem toda pergunta é uma previsão. Diagnosticar uma regra ou escolher um teste pode ser mais adequado. Usar nomes que correspondam à tarefa; manter Ver o que acontece quando a demonstração esclarece o raciocínio. Explicações curtas devem ligar a resposta ao efeito observado, sem repetir o vídeo inteiro.
 
 Antes de aprovar, testar uma ordem alternativa, várias repetições, extremos, edição após o acontecimento, reinício, desfazer, retomada e continuação depois de concluir. Conferir teclado, celular, tema e voz. Verificar também exemplos incorretos plausíveis no projeto em execução, usando os sprites e a geometria atuais. Cores, imagens, textos e uma posição exata do exemplo não são o gabarito. O jogo deve permitir os caminhos necessários para testar sua regra, como chegar ao farol sem recolher a chave primeiro.
+## Continuidade entre 2D e 3D — 26/10/2026
+
+Ao levar um jogo conhecido para outra dimensão, retomar brevemente os conceitos já estudados e manter a montagem completa. Reservar experiências novas para o que de fato mudou: ponto de vista, convenção dos eixos, altura e contato no espaço. Na Ilha do Farol, x/z formam o chão e y indica altura; o y do jogo 2D não conserva o mesmo papel. Explicar isso antes da primeira edição de posição.
+
+Alternativas de resposta usam o mesmo estilo antes da escolha. O destaque de ação não pode denunciar um gabarito. Depois de um teste, conservar seu resultado ao trocar a vista ou mostrar áreas; editar posição invalida o resultado anterior e pede outro teste. A cena deve enquadrar os elementos que importam também em telas estreitas. Carregamento ou falha de WebGL não pode registrar descobertas por cliques em uma cena que não foi exibida.
+
+Avaliar a posição escolhida pelo aluno, sem fixar a posição da solução. Um objeto visível pode estar alto demais ou fora do caminho: testar alcance e contato reais. Manter geometria editável separada das regras permite substituir artes sem reescrever a aprendizagem; depois da substituição, conferir enquadramento, dimensões, áreas de contato e percurso novamente.
+
+Reutilizar também a estrutura editorial dos cursos anteriores: material de consulta opcional na parte 2 da primeira aula, retomadas por referência nas seguintes e passo a passo completo de montagem. O PDF mantém tipografia, capa, cabeçalhos, cartões, numeração e cores dos blocos do modelo existente. Renderizar e conferir todas as páginas, além de validar os nomes e encaixes. Uma mudança de dimensão não é motivo para inventar outro padrão visual ou emitir outro certificado.
+
+O teste do curso inclui a imagem real do executor, além do navegador local. Conferir uma solução completa, personalização válida e erros plausíveis. Falha de infraestrutura não é evidência de erro da criança. As rotas automatizadas precisam tolerar a latência das entradas, sem modificar o programa nem confundir o destino do exemplo com o objetivo pedagógico.
+
+## Conclusão sem conferência extra — 27/10/2026
+
+Todas as experiências reconhecem as descobertas durante a interação. Não mostrar nem orientar
+um clique em **Conferir**: esse botão foi removido por ser redundante e sugerir uma confirmação
+obrigatória. A criança recebe orientação do Zappy, da lista de descobertas e de **Uma pista**.
+Conservar as ações que executam o experimento, como **Testar o encontro**, e a resposta às perguntas.
+Quando houver uma pergunta após a descoberta, **Continuar** pode levar o foco até ela; isso não
+substitui nem altera a avaliação automática ou a correção da resposta no servidor.

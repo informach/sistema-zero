@@ -1,5 +1,14 @@
 # Como fazer: a biblioteca de ajuda do Kids
 
+## Atualização de 26/10/2026: 83 tutoriais
+
+Depois da auditoria de 26/10 (82 tutoriais, publicados nos dois bancos), o staging trouxe a Jornada do
+Criador nova, a aba **Enfeite** do avatar e as texturas e o **Cone** do Molda. Os passos da jornada
+(`plataforma-ver-a-minha-jornada`, `plataforma-abrir-uma-aula`, `plataforma-voltar-para-a-aula`)
+agora falam de **Sua trilha agora**, **Abrir a trilha**, da missão e dos Poderes; o passo "Próximos
+cursos" saiu. Entrou `molda-textura-da-peca`. Hoje são Plataforma 34, Estúdio 12, Pinta 13, Pensa 11
+e Molda 13.
+
 ## Revisão de 20/10/2026: 78 tutoriais, conferidos no código de staging
 
 O lote foi refeito a partir do código de `origin/staging` de 20/10/2026, depois do Pensa v2, do Molda

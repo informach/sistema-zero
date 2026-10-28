@@ -320,7 +320,7 @@ export const AvatarConfigBody = t.Object({
   // Record categoria→{asset, color?}; o serviço valida semanticamente (categoria/peça
   // desconhecida → 400; peça paga não possuída → 403; cor fora da paleta → 400). HEX_COLOR
   // valida só o FORMATO na borda; a PALETA curada é checada no domínio.
-  // `maxProperties` limita o nº de categorias (o catálogo 3D tem 12) — paridade com o teto
+  // `maxProperties` limita o nº de categorias (o catálogo 3D tem 15) — paridade com o teto
   // de `QuizAttemptBody.answers`; o serviço já rejeita categoria desconhecida, mas a borda
   // não deve aceitar um Record gigante (defesa anti-DoS, mesmo bem abaixo do teto de corpo).
   slots: t.Record(
@@ -1013,6 +1013,10 @@ const QuizBlockSchema = t.Object({
           t.Literal('lighthouse-memory'),
           t.Literal('lighthouse-door'),
           t.Literal('lighthouse-retest'),
+          t.Literal('island-view'),
+          t.Literal('island-position'),
+          t.Literal('island-height'),
+          t.Literal('island-retest'),
         ]),
       ),
       prompt: t.String({ minLength: 1, maxLength: 5000 }),

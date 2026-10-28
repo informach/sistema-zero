@@ -143,6 +143,55 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
+## A Jornada do Criador no Estúdio à noite (26/10/2026)
+
+As telas do currículo voltaram ao visual da casa (o desenho aprovado da etapa, agora com o palco
+escuro). Peças em `components/community/journey/`: `creator.tsx` (as telas), `stepper.tsx`
+(`JourneyStepper` e `StageMedal`, que saíram do `progress-client`) e `unlock.tsx` (`UNLOCK_TILES`,
+que saiu da página da etapa). Nomes: **Cursos da trilha**, Missão, Poderes, Extras.
+
+- **`/cursos/etapa/[id]`** = `AdultCreatorTrail`: faixa `sz-band` com a borda da cor da etapa,
+  "Etapa N de 8 · gênero", o cartão "Para concluir a etapa" (cursos da trilha, missão e
+  `minimumPowers` Poderes, nunca "3"), "Nesta etapa você ganha" com as capacidades REAIS da etapa
+  (`normalizeJourney(journey).stages[].capabilities`, chave = `level`; capacidade sem cartão é
+  ignorada) e a próxima etapa ou a Lenda; a fita; os cursos da trilha em linhas; a missão (chips
+  2D, 3D, "Sem nota"); os Poderes em grade (6 e "Ver todos"); os extras; "Publicar no Mural é
+  opcional". `god`/`lenda` vão para `/maestrias`; posto desconhecido é 404.
+- **`/cursos`**: no palco, `AdultCreatorStepper` (a régua com a Lenda levando às Maestrias) e
+  `AdultCreatorNextStep`. **`/progresso`**: o mesmo no bloco `sz-palco`. **Início e Criar**:
+  `AdultCreatorNextStep` (as páginas leem o catálogo também, para o curso que ainda não está em
+  Meus cursos).
+- **`/maestrias`**: `AdultMasteryHub` (um `sz-card` por área, `sz-num` por nível, o botão do que
+  fazer ou o cadeado com a trilha que abre a área). **`/maestrias/[areaId]`**:
+  `AdultMasteryHowItWorks` + `AdultMasteryArea` (níveis em `<details>`, o atual aberto).
+- **Aula 423**: os dois recados (trava sequencial e Jornada) são `sz-card` com o `sz-btn`, sem as
+  classes do Kids. Os objetivos do projeto (`sz-lesson-objectives*`) ganharam regras sob
+  `.sz-aula-adulto` no `globals.css`.
+- ⚠️ Frase em `sz-chip` (o motivo do cadeado) leva `h-auto whitespace-normal`: o chip não quebra
+  linha e "Abre depois dos cursos da trilha Explorador(a) de Mundos" passava da tela a 390 px. A
+  régua das etapas tem `relative` e `contain: inline-size` (rola por dentro sem empurrar a página).
+- ⚠️ **A trava das etapas (pedido dela, 26/10/2026, a mesma do mapa do Kids):** na régua
+  (`AdultCreatorStepper`, `JourneyStepper` com o estado `bloqueada`), a etapa que a pessoa ainda
+  não alcançou fica cinza, com o cadeado e "Ainda bloqueada" para o leitor, e NÃO é link; a Lenda
+  só leva às Maestrias quando alcançada. `/cursos/etapa/<nível>` passa por `AdultCreatorPost`: a
+  etapa trancada mostra "Esta etapa ainda está bloqueada", com "O caminho até lá" (o próximo passo
+  da etapa atual) embaixo. A régua é `creatorStageOpen` do member-shell (a etapa atual, as
+  concluídas ou conquistadas e a etapa em que o servidor já abriu um curso: compra avulsa,
+  presente, acesso preservado; nessa, a frase diz que a etapa inteira abre depois). A EQUIPE
+  (`isPrivilegedRole(session.role)`, nas páginas `/cursos`, `/progresso` e da etapa) abre tudo;
+  numa sessão de suporte o papel é o da pessoa, então a trava vale. Com a Lenda trancada,
+  `AdultMasteriesOpen` ("Você já pode começar uma Maestria") é o caminho até `/maestrias` quando
+  uma área já abriu. A jornada histórica (sem currículo) não usa o estado novo.
+- **Níveis das Maestrias**: `HeadingDisclosure` do `@sistemazero/ui` (título `<h2>` com o botão
+  dentro), no lugar de `<details>`/`<summary>`, que escondia o título do leitor de tela.
+- **Poder com 2D e 3D**: cada versão ganha o seu botão ("2D: Abrir de novo", "3D: Começar"; o
+  cadeado diz o motivo por versão). As versões contam uma vez para a etapa, mas a pessoa pode
+  fazer as duas. "Abrir de novo" só na versão que ela concluiu.
+- **Etapa conquistada sem concluir tudo** (posto herdado, `earned` sem a lista completa): o
+  cartão vira "O que você fez aqui", sem a barra, e a frase de cima é a do resumo
+  (`creatorStageSummary`), nunca "Faça os cursos…" para quem já passou da etapa.
+- Testes: `tests/creator-journey-screens.test.tsx`; o e2e roda com a prévia (ver abaixo).
+
 ## Jornada do Criador com currículo (25/10/2026)
 
 Quando `AdultJourneyView.curriculum` existe, ele é a única autoridade dos postos e das
@@ -155,9 +204,9 @@ aplicam-se apenas a políticas históricas sem `curriculum`. Não reconstruir pr
 - `/maestrias` e `/maestrias/[areaId]` leem os seis caminhos do Members. Cada nível tem núcleo
   ou crédito validado, 2 oficinas distintas e projeto aprovado. Níveis em acordeões; o atual
   abre por padrão. Projetos são enviados por `evidenceId` de uma versão imutável já salva.
-- `@sistemazero/member-shell/components/creator-journey` compartilha apenas apresentação.
-  O adulto mantém PageBand/PageBody, palco escuro, bancada clara, fontes e mínimos de leitura
-  do Estúdio à noite. Não trocar os tokens do app por estilos do protótipo.
+- As telas são deste app (seção de 26/10/2026 acima); do member-shell vem só a régua
+  (`lib/creator-journey-presentation`). O adulto mantém PageBand/PageBody, palco escuro, bancada
+  clara, fontes e mínimos de leitura do Estúdio à noite.
 - Catálogo, curso e aula usam `careerLock` do servidor. `curriculum` no curso informa vínculo;
   `accessReason` explica compra direta, presente e acesso preservado. Acesso avulso não muda posto.
   Recados de bloqueio das Maestrias apontam ao nível e à área definidos no DTO, inclusive no
@@ -267,7 +316,14 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   `sz-chip-novo` são o amarelo ("você está aqui" = a cor do botão que leva lá).
   `.sz-progress` NÃO mudou: o member-shell usa no player da aula.
 - **Moldura:** `CommunityFrame` monta `CommunitySidebar` + `CommunityTopBar` + `CommunityTabs`
-  (`community-nav.tsx`); o `<main>` reserva a altura das abas abaixo do `lg`. A aula continua sem
+  (`community-nav.tsx`); o `<main>` reserva a altura das abas abaixo do `lg`.
+  ⭐ **Menu recolhível (27/10/2026, como o Kids):** nas telas de foco (`isFocusOnlyPath` do
+  member-shell, hoje só `/quarto`) o menu nasce recolhido a cada entrada e o `CommunityFrame`
+  monta a alça `EdgePanelHandle` (escura, `hidden lg:flex`, `openOffset` =
+  `COMMUNITY_SIDEBAR_WIDTH`). A escolha vale só para a rota. A coluna encolhe até zero enquanto o
+  conteúdo desliza para fora (`inert` fechado); ⚠️ sem `overflow-hidden` na coluna, porque o menu
+  do perfil abre mais largo que ela. Nas outras páginas o menu fica aberto e sem alça.
+  Teste: `tests/menu-recolhivel.test.tsx`. A aula continua sem
   moldura e a sala ao vivo usa `CommunityTopBar compact` em toda largura. ⚠️ Duas logos escuras na
   mesma página: a do menu lateral passa `instancia="menu"` ao `BrandLogo` (ids dos degradês; sem isso
   o ZERO some quando a da barra está escondida). Os `sticky` de página usam `lg:top-6` (não há mais
@@ -382,7 +438,16 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   novo, então o "Tentar de novo" de um erro de servidor ficava preso no mesmo erro.
 - **Meu avatar 3D e Meu espaço 3D** usam a pele adulta do member-shell: `/meu-avatar` passa
   `skin="adult"` e `/quarto` usa a entrada `AdultRoomBuilder` (`room-builder-adult`) com as dicas
-  de `src/lib/adult-trophy-hints.ts`. O desenho mora em `src/app/cosmetics-adult.css` (importado
+  de `src/lib/adult-trophy-hints.ts`.
+  ⭐ **27/10/2026, pedido dela (o mesmo do Kids):** o Meu espaço 3D saiu da `PageBand`. O voltar e o
+  título vão no `header` do construtor, na linha das moedas e do Salvar (`.sz-cos-room-head`), e a
+  página é só `.sz-cos-room-page` (respiro curto, sem a largura de leitura). O editor mede o
+  próprio contêiner (`container: sz-cos-room`): painel ao lado a partir de 45rem de contêiner e,
+  do `lg` para cima, a altura da janela, com o espaço enchendo a esquerda e só a lista de itens
+  (`.sz-cos-room-tray`) rolando. A moldura 3D troca o 3:2 por uma regra FORA de camada
+  (`.sz-cos-room-canvas`), porque o `aspect-[3/2]` do Tailwind vence a camada `components`.
+  ⚠️ A lista tem `position: relative`: sem isso os `sr-only` dos cartões escapavam da rolagem
+  interna e a página voltava a rolar (medido no staging). Menu recolhível: ver §Estúdio à noite. O desenho mora em `src/app/cosmetics-adult.css` (importado
   pelo `globals.css`) e lê os tokens daqui: renomear um token quebra o teste
   `tests/adult-cosmetics.test.ts`, não a cor calada.
 - **Formulários de entrada (review de 19/10/2026)**: o e-mail é conferido pela mesma régua do BFF
@@ -399,7 +464,7 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   (`FEATURED_SLUGS`, do lote `docs/como-fazer-adulto`); sem tutorial, só a busca. O tutorial aberto
   de uma aula (`?voltar=`, régua `resolveHelpReturn` do member-shell) mostra "Você veio da aula …"
   com "Voltar para a aula", e os "Veja também" levam a volta junto.
-- **Como fazer adulto**: o conteúdo (8 coleções, 64 tutoriais) está em `docs/como-fazer-adulto/`
+- **Como fazer adulto**: o conteúdo (8 coleções, 67 tutoriais) está em `docs/como-fazer-adulto/`
   (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
   Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
 

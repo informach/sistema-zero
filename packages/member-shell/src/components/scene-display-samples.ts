@@ -16,6 +16,15 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
   SceneId,
   { readouts: readonly SceneReading[]; situations: readonly string[] }
 > = {
+  'island-3d': {
+    readouts: [
+      { label: 'Ponto de vista', value: 'Frente', tone: 'a' },
+      { label: 'Posição da chave', value: 'x -4 · y 4 · z -4', tone: 'b' },
+    ],
+    situations: [
+      'Compare o lugar dos objetos e o ponto de vista. Todos os controles estão livres.',
+    ],
+  },
   coordinates: {
     readouts: [
       {

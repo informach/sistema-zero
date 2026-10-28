@@ -1,11 +1,12 @@
 import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
+import { AcessoSchema } from '@sistemazero/member-shell/lib/arquipelago-contracts'
 import {
   isKidsStaffPreview,
   kidsJourneyAccess,
 } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { redirect } from 'next/navigation'
-import { Suspense } from 'react'
+import { cache, Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
 import { CelebrationWatcher } from '@/components/kids/celebration-watcher'
 import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
@@ -27,6 +28,7 @@ import {
   getGamificationReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,10 +78,24 @@ async function menuTools(): Promise<CreativeToolId[]> {
     .map((tool) => tool.id)
 }
 
+// A mesma consulta é compartilhada entre sidebar e barra móvel apenas nesta requisição.
+const jogoLiberado = cache(async (): Promise<boolean> => {
+  try {
+    const resposta = await shell.gateway.gatewayFetchReadonly<unknown>('/arquipelago/acesso', {
+      signal: AbortSignal.timeout(1500),
+    })
+    const acesso = AcessoSchema.safeParse(resposta.status === 200 ? resposta.body : null)
+    return acesso.success && acesso.data.liberado
+  } catch {
+    return false
+  }
+})
+
 async function SidebarChrome({ session }: { session: Session }) {
-  const [{ user, gamification, avatarPhotoUrl }, tools] = await Promise.all([
+  const [{ user, gamification, avatarPhotoUrl }, tools, arquipelagoLiberado] = await Promise.all([
     loadChrome(session),
     menuTools(),
+    jogoLiberado(),
   ])
   return (
     <AppSidebar
@@ -87,12 +103,14 @@ async function SidebarChrome({ session }: { session: Session }) {
       gamification={gamification}
       avatarPhotoUrl={avatarPhotoUrl}
       tools={tools}
+      arquipelagoLiberado={arquipelagoLiberado}
     />
   )
 }
 
 async function TabbarChrome() {
-  return <MobileTabbar tools={await menuTools()} />
+  const [tools, arquipelagoLiberado] = await Promise.all([menuTools(), jogoLiberado()])
+  return <MobileTabbar tools={tools} arquipelagoLiberado={arquipelagoLiberado} />
 }
 
 async function TopbarChrome({ session }: { session: Session }) {

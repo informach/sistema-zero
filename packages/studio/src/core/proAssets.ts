@@ -3,6 +3,7 @@ import {
   digestAssetBytes as digest,
   projectAssetFileExtension,
 } from './assetBinary'
+import { courseModelDataUrl, preloadCourseModels } from './courseModels'
 import { PRO_ASSET_DIRECTORY, PRO_ASSET_MANIFEST, validProAssetPath } from './proAssetPaths'
 import {
   asset3DManifest,
@@ -55,9 +56,11 @@ function materialize(asset: ProjectAsset) {
   const cached = cache.get(asset)
   if (cached) return cached
   const promise = (async () => {
-    if (!isValidAssetDataUrl(asset.dataUrl, asset.kind, asset.originalFileName))
+    // Modelo da biblioteca dos cursos: o arquivo de verdade (carregado antes pelo bundle).
+    const dataUrl = courseModelDataUrl(asset) ?? asset.dataUrl
+    if (!isValidAssetDataUrl(dataUrl, asset.kind, asset.originalFileName))
       throw new Error(`O material ${asset.name} não é válido.`)
-    const { mime, bytes } = decodeProAsset(asset.dataUrl)
+    const { mime, bytes } = decodeProAsset(dataUrl)
     const identity = await digest(new TextEncoder().encode(asset.id))
     const extension = projectAssetFileExtension(mime, asset.kind)
     const path = asset.proPath ?? `${PRO_ASSET_DIRECTORY}/${identity}.${extension}`
@@ -121,6 +124,7 @@ export async function buildProAssetBundle(
       PROJECT_ASSET_LIMITS.maxAssetsTotalChars
   )
     throw new Error('Os materiais ultrapassaram o limite do projeto.')
+  await preloadCourseModels(assets)
   const files = new Map<string, Uint8Array>()
   const entries: ProAssetManifestEntry[] = []
   const ids = new Set<string>()

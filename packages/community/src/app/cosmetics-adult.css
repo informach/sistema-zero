@@ -492,11 +492,57 @@
   }
 
   /* ── Meu espaço 3D (página) ───────────────────────────────────────────────────────── */
+  /* Como o avatar (27/10/2026): respiro curto em volta, sem a faixa do topo nem a largura de
+     leitura das outras páginas. O editor mede o PRÓPRIO contêiner, porque o menu da esquerda
+     recolhe e devolve largura. */
+  .sz-cos-room-page {
+    padding: 0.8rem 0.8rem 1.4rem;
+  }
+  .sz-cos-room-wrap {
+    container: sz-cos-room / inline-size;
+  }
   .sz-cos-room {
     display: grid;
     align-items: start;
-    gap: 1.4rem;
+    gap: 1rem 1.4rem;
     font-size: var(--cos-text);
+  }
+  /* Uma linha só: o voltar e o título (da página), as moedas e o Salvar. */
+  .sz-cos-room-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+    min-width: 0;
+  }
+  .sz-cos-room-start {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    min-width: 0;
+  }
+  .sz-cos-room-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+  .sz-cos-room-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin-left: auto;
+  }
+  /* `relative`: a lista é a referência dos textos só para o leitor de tela (`sr-only`, posição
+     absoluta) dos cartões. Sem isso, com a lista rolando por dentro, eles escapavam dela e
+     faziam a página rolar. */
+  .sz-cos-room-tray {
+    position: relative;
+    min-width: 0;
   }
   .sz-cos-room-main,
   .sz-cos-room-shop {
@@ -593,20 +639,6 @@
     margin: 0;
     color: var(--muted-foreground);
     font-size: var(--cos-small);
-  }
-  .sz-cos-room-savebar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.8rem;
-    background: var(--card);
-  }
-  .sz-cos-room-savebar .sz-cos-btn {
-    margin-left: auto;
   }
   .sz-cos-room-shop {
     gap: 0.9rem;
@@ -705,6 +737,13 @@
     width: 1.3rem;
     height: 1.3rem;
   }
+  /* Miniatura da peça do espaço (o PNG gerado do modelo 3D), no lugar do ícone. */
+  .sz-cos-tile-thumb {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+  }
   .sz-cos-tile-name {
     overflow-wrap: anywhere;
   }
@@ -788,6 +827,15 @@
   .sz-cos-trophy-icon svg {
     width: 1.2rem;
     height: 1.2rem;
+  }
+  .sz-cos-trophy-icon:has(.sz-cos-trophy-thumb) {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+  .sz-cos-trophy-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .sz-cos-trophy-text {
     display: flex;
@@ -880,10 +928,75 @@
       border-left: 1px solid var(--border);
     }
   }
-  /* O espaço e as peças à esquerda, os itens à direita (media query em rem mede 16 px). */
-  @media (min-width: 70rem) {
+  @media (min-width: 640px) {
+    .sz-cos-room-page {
+      padding: 1rem;
+    }
+  }
+  /* O espaço e as peças à esquerda, os itens à direita, a partir de 45rem de CONTÊINER (a
+     container query mede a raiz de 18 px: 810 px). Só o painel tem largura limitada. */
+  @container sz-cos-room (min-width: 45rem) {
     .sz-cos-room {
-      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) clamp(21rem, 36cqi, 30rem);
+    }
+    .sz-cos-room-head {
+      grid-column: 1 / -1;
+    }
+  }
+  /* No computador (sem a barra do topo nem as abas de baixo), o editor tem a altura da janela
+     (os 2rem são o respiro da página, em cima e embaixo): o espaço enche o que sobra à esquerda,
+     a fila das peças rola depois de duas linhas e, no painel, só a lista de itens rola. A página
+     não rola. A moldura 3D troca o 3:2 pela altura (regra fora de camada, no fim do arquivo). */
+  @media (min-width: 1024px) {
+    @container sz-cos-room (min-width: 45rem) {
+      .sz-cos-room {
+        grid-template-rows: auto minmax(0, 1fr);
+        align-items: stretch;
+        height: max(30rem, calc(100dvh - 2rem));
+      }
+      .sz-cos-room-main {
+        min-height: 0;
+      }
+      .sz-cos-room-stage {
+        display: flex;
+        flex: 1 1 0%;
+        min-height: 16rem;
+      }
+      .sz-cos-room-placeholder {
+        aspect-ratio: auto;
+      }
+      .sz-cos-room-stack,
+      .sz-cos-room-keys {
+        flex: none;
+      }
+      .sz-cos-room-main > .sz-cos-chips {
+        flex: none;
+        max-height: 6.5rem;
+        padding: 0.15rem;
+        overflow-y: auto;
+      }
+      .sz-cos-room-shop {
+        min-height: 0;
+      }
+      .sz-cos-room-tray {
+        flex: 1 1 0%;
+        min-height: 0;
+        overflow-y: auto;
+      }
+      .sz-cos-room .sz-cos-buybar {
+        position: static;
+      }
+    }
+  }
+}
+
+/* ⚠️ FORA de camada de propósito: a moldura do `RoomCanvas` traz o `aspect-[3/2]` do Tailwind, e
+   a camada `utilities` vence a `components`. Com o editor na altura da janela, a moldura estica
+   na altura do palco (a câmera encaixa o espaço em qualquer formato). */
+@media (min-width: 1024px) {
+  @container sz-cos-room (min-width: 45rem) {
+    .sz-cos-room-canvas {
+      aspect-ratio: auto;
     }
   }
 }

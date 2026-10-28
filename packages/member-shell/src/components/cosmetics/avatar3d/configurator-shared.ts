@@ -17,7 +17,7 @@ export const POSES = [
 ] as const
 
 /**
- * As 14 categorias do avatar do Kids em três grupos (proposta do Canvas "Kids · avatar e quarto
+ * As 15 categorias do avatar do Kids em três grupos (proposta do Canvas "Kids · avatar e quarto
  * com painel ao lado", 26/10/2026): no painel ao lado do 3D os grupos aparecem todos de uma vez;
  * no celular, os três nomes viram a escolha de cima e só as categorias do grupo aparecem embaixo.
  * ⚠️ Toda categoria de `AVATAR_CATEGORIES` entra em UM grupo (travado por teste): categoria nova
@@ -37,7 +37,7 @@ const ROSTO: KidsAvatarCategoryGroup = {
 
 export const KIDS_AVATAR_CATEGORY_GROUPS: readonly KidsAvatarCategoryGroup[] = [
   ROSTO,
-  { id: 'cabeca', label: 'Cabeça', categories: ['hair', 'hat', 'glasses'] },
+  { id: 'cabeca', label: 'Cabeça', categories: ['hair', 'hairAccessory', 'hat', 'glasses'] },
   { id: 'roupa', label: 'Roupa', categories: ['top', 'bottom', 'outfit', 'shoes', 'accessory'] },
 ]
 

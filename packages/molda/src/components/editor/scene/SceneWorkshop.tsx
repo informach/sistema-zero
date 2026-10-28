@@ -377,6 +377,7 @@ export function SceneWorkshop({
     return kind === 'box' ||
       kind === 'wedge' ||
       kind === 'cylinder' ||
+      kind === 'cone' ||
       kind === 'sphere' ||
       kind === 'torus' ||
       kind === 'path'

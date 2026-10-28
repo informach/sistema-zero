@@ -1,0 +1,52 @@
+// Gerado por scripts/course-models.ts. Não edite.
+// Um import() literal por modelo: cada um vira um pedaço próprio, baixado só por quem usa.
+export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ default: string }>>> = {
+  '0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9': () =>
+    import('./m-0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9.generated'),
+  '2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485': () =>
+    import('./m-2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485.generated'),
+  '3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51': () =>
+    import('./m-3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51.generated'),
+  '42d175e834fa3587f6c76a3be64643d05a348e4f005f3cb9bab6f1b4752c53fa': () =>
+    import('./m-42d175e834fa3587f6c76a3be64643d05a348e4f005f3cb9bab6f1b4752c53fa.generated'),
+  '48e7ae10862e3529d57a77dac7849601995534a83939a0060782892581334a50': () =>
+    import('./m-48e7ae10862e3529d57a77dac7849601995534a83939a0060782892581334a50.generated'),
+  '5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a': () =>
+    import('./m-5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a.generated'),
+  '7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96': () =>
+    import('./m-7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96.generated'),
+  '748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f': () =>
+    import('./m-748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f.generated'),
+  '79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345': () =>
+    import('./m-79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345.generated'),
+  '85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7': () =>
+    import('./m-85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7.generated'),
+  '90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04': () =>
+    import('./m-90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04.generated'),
+  '9a9cd8727a2361f6e8e996baa1cfa1f4dc29632f3c4d823ecff8fd4ae2c5a27e': () =>
+    import('./m-9a9cd8727a2361f6e8e996baa1cfa1f4dc29632f3c4d823ecff8fd4ae2c5a27e.generated'),
+  '9db58123e677bc92524c5c8529a51651d5915b51b03e52979262f8ca82d529cf': () =>
+    import('./m-9db58123e677bc92524c5c8529a51651d5915b51b03e52979262f8ca82d529cf.generated'),
+  a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d: () =>
+    import('./m-a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d.generated'),
+  a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03: () =>
+    import('./m-a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03.generated'),
+  bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb: () =>
+    import('./m-bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb.generated'),
+  bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0: () =>
+    import('./m-bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0.generated'),
+  c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e: () =>
+    import('./m-c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e.generated'),
+  d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38: () =>
+    import('./m-d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38.generated'),
+  dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92: () =>
+    import('./m-dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92.generated'),
+  eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9: () =>
+    import('./m-eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9.generated'),
+  f02bdf32b7cb8d3d6c85baa0e0d1dc6d6678039128c81335b0642330f5255ad9: () =>
+    import('./m-f02bdf32b7cb8d3d6c85baa0e0d1dc6d6678039128c81335b0642330f5255ad9.generated'),
+  f2cec94fcd9acea42c87cc9c079896fcb0440faf0dfa08e713f0329b71f88f43: () =>
+    import('./m-f2cec94fcd9acea42c87cc9c079896fcb0440faf0dfa08e713f0329b71f88f43.generated'),
+  fe0453251cf4587f7e7441b3d8abf4eab5da96305a47f0993743edb6c011eb3d: () =>
+    import('./m-fe0453251cf4587f7e7441b3d8abf4eab5da96305a47f0993743edb6c011eb3d.generated'),
+}

@@ -5,6 +5,7 @@ export const PASTA_CURSOS = resolve(import.meta.dir, '../../aulas-interativas')
 export const CURSOS_POR_PREFIXO = {
   'cade-todo-mundo': 'cade-todo-mundo',
   desafio: 'desafio-primeiro-jogo',
+  ilha: 'a-ilha-do-farol',
   'nave-contra-asteroides': 'nave-contra-asteroides',
   'corre-dino': 'corre-dino',
   'meu-jeito': 'o-jogo-do-meu-jeito',

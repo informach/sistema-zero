@@ -27,7 +27,6 @@ import {
   sceneEmitsSound,
   sceneGestureRunsClock,
   sceneGoals,
-  sceneHint,
   sceneHintDone,
   sceneHintStep,
   sceneSetupGoals,
@@ -97,6 +96,7 @@ import { ProposedGarden } from './scene-discovery-garden'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LearningRecap } from './scene-garden-learning'
+import { IslandDiscovery } from './scene-island-discovery'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
 import {
@@ -210,7 +210,7 @@ export function SceneActivityView({
    *
    * ⚠️⚠️ A caixa era recalculada a cada gesto: a frase da situação na frente mudava, e o degrau de trás
    * continuava mandando fazer o que a criança tinha acabado de fazer ("Tela de 800 por 480, com a borda à
-   * vista. … Aperte o botão da borda."). Congelada como o "Conferir", ela só muda no clique; quando o
+   * vista. … Aperte o botão da borda."). A pista só muda ao pedir outra; quando o
    * degrau fica cumprido, vira "✓ Feito! Se precisar, peça outra pista.". Num F5 (o degrau volta do
    * servidor) não há clique: a caixa segue calculada com a cena de agora.
    */
@@ -218,15 +218,6 @@ export function SceneActivityView({
     nivel: number
     passo: SceneHintStep
   } | null>(null)
-  /**
-   * O que o "Conferir" respondeu, CONGELADO no clique.
-   *
-   * ⚠️⚠️ Era calculado a cada render a partir das metas vivas, dentro de uma região `aria-live`. No
-   * gesto que concluía, a região mudava por um quadro para "Ainda não." + a REGRA da cena, e quem usa
-   * leitor de tela ouvia a resposta da pergunta (e um "Ainda não" que contradizia a conclusão) antes
-   * de "Você descobriu!" (review do lote 2). Congelado, ele só muda no clique; e sai no gesto seguinte.
-   */
-  const [conferiu, setConferiu] = useState('')
   /**
    * ⭐ O TERCEIRO tempo do ciclo: mexer, prever e ENUNCIAR a regra.
    *
@@ -339,7 +330,7 @@ export function SceneActivityView({
   // player mostraria as três descobertas do modelo numa missão que só pede uma.
   const targets = sceneTargets(activity)
   // ⚠️ Com a `pilha` (full review de experiência, A1): na `layers` do Meu Jeito os pedidos falam do
-  // painel Camadas do Pinta, e o "Conferir" repete o pedido.
+  // painel Camadas do Pinta, e a pista orienta o pedido.
   const result = evaluateExperimentation(
     activity.scene,
     state,
@@ -403,10 +394,10 @@ export function SceneActivityView({
   const guided = free ? discoveryGuidance(activity, visto) : gardenStep(m, visto)
   const instruction = guided?.text ?? content.instructions
   /**
-   * Cada etapa recebe seu próprio balão e sua própria fila de voz. O app Kids acrescenta o
-   * mascote; fora dele o mesmo diálogo continua legível e falável sem duplicar a semântica.
+   * Cada etapa recebe seu próprio balão e sua própria fila de voz. Quando a parte adulta já
+   * apresenta um diálogo, a instrução preserva texto e áudio sem repetir o personagem.
    */
-  const renderDialogue = (text: string, speech: DialogueSpeech) => {
+  const renderDialogue = (text: string, speech: DialogueSpeech, semMascote = false) => {
     /**
      * A fala só recebe MP3 se continua sendo exatamente a fala estática gerada na autoria. Uma
      * legenda de parte, pista ou convite montado durante a cena pode mudar com o estado e nunca
@@ -419,7 +410,13 @@ export function SceneActivityView({
         : undefined
     const fala = { ...speech, vozes: activity.vozes, roteiros: roteiro ? [roteiro] : undefined }
     if (player?.renderInstruction) return player.renderInstruction(text, 'speaking', fala)
-    return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} />
+    return (
+      <DialogueBlockView
+        content={{ kind: 'dialogue', text }}
+        speech={fala}
+        mascot={secao?.temDialogo || semMascote ? undefined : player?.dialogueMascot?.('speaking')}
+      />
+    )
   }
   /**
    * O degrau `nivel` da escada, com a cena de AGORA: o texto e as metas a que ele serve (M1). A pista do
@@ -584,7 +581,6 @@ export function SceneActivityView({
       gesto.current = true
       setAvisoDescoberta('')
       setPalpiteNaHora('')
-      setConferiu('')
       setAviso('')
     }
     // O que o gesto faz com o ▶ é régua do core
@@ -617,8 +613,6 @@ export function SceneActivityView({
     // fecha a cena fica com o anúncio da conclusão, que diz mais.
     if (feitas <= antes || !gesto.current || result.passed) return
     const texto = `Descoberta ${feitas} de ${goals.length}`
-    // A resposta do "Conferir" era sobre a meta que ACABOU de cair: ela sai, e o aviso entra.
-    setConferiu('')
     setAvisoDescoberta(texto)
     // ⚠️ Com o relógio andando a frase da situação não é região viva (ela mudaria a cada fatia), e o
     // anúncio dizia "Descoberta 2 de 4." sem dizer o quê (full review de experiência, B7): ele leva a frase.
@@ -1021,22 +1015,6 @@ export function SceneActivityView({
     },
   })
 
-  /** "Conferir": responde com o que FAZER, nunca com a conclusão da meta. */
-  const respostaDoConferir = () => {
-    const falta = goals.find((g) => !g.complete)
-    // ⚠️⚠️ Metas feitas e cena SEM concluir (consertos do review da onda A do lote 5): na `layers` e na
-    // `jump-sound` a montagem precisa ficar no arranjo do jogo, e o "Conferir" não dizia nada. O avaliador
-    // já sabe o gesto (`pedidoDoArranjo`), e é ele que responde, nunca a regra.
-    if (!falta && !result.passed && result.feedback)
-      return `Ainda não. Tente: ${minusculaInicial(result.feedback, activity.cast)}`
-    // ⚠️ Sem meta faltando não há o que conferir (e a REGRA da cena nunca sai por aqui).
-    if (!falta) return ''
-    // ⚠️⚠️ O `pedido` (o gesto), e NUNCA o `label` (a conclusão): "Ainda falta: Dino existe sem
-    // aparecer" entregava a descoberta a quem apertava o botão maior da tela. Meta sem pedido cai
-    // na primeira pista, que diz onde ela está e o que tentar.
-    if (falta.pedido) return `Ainda não. Tente: ${minusculaInicial(falta.pedido, activity.cast)}`
-    return `Ainda não. ${sceneHint(m, state, 1, activity.cast, activity.pilha)}`
-  }
   const podeContinuar = Boolean(conclusao) && !revisita && temPergunta && !registered
   const rodape = !scope
     ? 'Prévia: nada é guardado.'
@@ -1062,7 +1040,7 @@ export function SceneActivityView({
   /**
    * ⭐⭐ Console v2 (30/09/2026): as ferramentas deixaram a barra solta embaixo do console e cada
    * uma foi morar perto do que ela mexe. Desfazer e Recomeçar ficam no PÉ DO MUNDO (mexem no
-   * mundo); "Uma pista" e "Conferir"/"Continuar" ficam na lista de descobertas (falam da
+   * mundo); "Uma pista" e "Continuar" ficam na lista de descobertas (falam da
    * descoberta). ⚠️ Os NOMES acessíveis são o contrato dos testes e de quem navega por leitor de
    * tela; abaixo de 480px a maioria fica só com o ícone.
    *
@@ -1129,8 +1107,6 @@ export function SceneActivityView({
       onClick={() => {
         const level = Math.min(hints.length, hint + 1)
         setHint(level)
-        // ⚠️ Uma caixa de ajuda por vez: a pista toma o lugar da resposta do Conferir.
-        setConferiu('')
         // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas o editor aceita dez
         // pistas: a tela mostra todas, e a evidência satura em três.
         dispatch({
@@ -1148,40 +1124,18 @@ export function SceneActivityView({
       <span className="max-[30rem]:sr-only">Uma pista</span>
     </SceneButton>
   ) : null
-  const conferirOuContinuar =
-    !revisita &&
-    (conclusao ? (
-      // ⚠️ Só com a pergunta FORA da janela (review do lote 2): com ela logo abaixo, o
-      // único azul da tela focava de novo o mesmo lugar e nada se via.
-      podeContinuar &&
-      !perguntaVisivel && (
-        <SceneButton
-          tom="gesto"
-          // ⚠️ `ml-auto`: numa linha que quebra, o caminho para a frente continua no canto DIREITO.
-          className="ml-auto"
-          disabled={bloqueado}
-          onClick={() => {
-            setFocar('pergunta')
-          }}
-        >
-          Continuar
-          <ArrowDown size={16} aria-hidden />
-        </SceneButton>
-      )
-    ) : (
-      /* ⚠️⚠️ "Conferir", e não "Já descobri": a cena se avalia sozinha e fecha no gesto, então
-         o botão nunca concluía nada. Contorno, porque enquanto a cena espera um gesto o azul
-         cheio é o do gesto. Antes do palpite fica fechado, com o motivo do véu. */
+  const continuarParaPergunta =
+    !revisita && conclusao && podeContinuar && !perguntaVisivel ? (
       <SceneButton
-        tom="ferramenta"
+        tom="gesto"
         className="ml-auto"
         disabled={bloqueado}
-        onClick={() => setConferiu(respostaDoConferir())}
+        onClick={() => setFocar('pergunta')}
       >
-        <Check size={16} aria-hidden />
-        Conferir
+        Continuar
+        <ArrowDown size={16} aria-hidden />
       </SceneButton>
-    ))
+    ) : null
 
   /**
    * A fala do Zappy com a instrução.
@@ -1342,7 +1296,10 @@ export function SceneActivityView({
             </ConsoleVisual>
             <ConsoleActions>
               <ConsoleFala>
-                <PalpitePergunta prediction={palpite} renderDialogue={renderDialogue} />
+                <PalpitePergunta
+                  prediction={palpite}
+                  renderDialogue={(text, speech) => renderDialogue(text, speech, true)}
+                />
               </ConsoleFala>
               <div>
                 <PalpiteOpcoes
@@ -1370,8 +1327,8 @@ export function SceneActivityView({
                     mundo com o que ele diz de si — a faixa (momento, medidor, ladrilhos), o palco
                     na moldura escura de tela de jogo, e o pé do mundo (Desfazer, Recomeçar e a
                     frase do que está acontecendo). À DIREITA, a conversa e a ação — o Zappy, a
-                    pista, "Sua vez" com a bancada, a lista do que ela já descobriu com Uma pista e
-                    Conferir, e o retorno (palpite, "Agora explique", comparação). A ordem do DOM
+                    pista, "Sua vez" com a bancada, a lista do que ela já descobriu com Uma pista,
+                    e o retorno (palpite, "Agora explique", comparação). A ordem do DOM
                     é a mesma no celular e na leitura assistiva. Anatomia e porquês no CLAUDE.md. */}
                 {free ? (
                   <DiscoveryContext.Provider
@@ -1391,14 +1348,15 @@ export function SceneActivityView({
                         <>
                           {desfazer}
                           {umaPista}
-                          {conferirOuContinuar}
+                          {continuarParaPergunta}
                           {hintText && <p>{hintText}</p>}
-                          {conferiu && <p role="status">{conferiu}</p>}
                         </>
                       ),
                     }}
                   >
-                    {m === 'touch-response' || m === 'found-counter' ? (
+                    {m === 'island-3d' ? (
+                      <IslandDiscovery />
+                    ) : m === 'touch-response' || m === 'found-counter' ? (
                       <ProposedGarden part={m === 'touch-response' ? 'touch' : 'count'} />
                     ) : m === 'lighthouse-walk' ? (
                       <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
@@ -1517,12 +1475,9 @@ export function SceneActivityView({
                         (m === 'touch-response' || m === 'found-counter') && (
                           <LearningRecap kind={m} />
                         )}
-                      {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
-                        Conferir mora aqui, ao lado do botão que a pediu (era um parágrafo solto
-                        embaixo do console). */}
+                      {/* Descobertas e ajuda opcional; a conclusão acompanha os gestos. */}
                       <SceneDescobertas
                         goals={goals}
-                        resposta={conferiu && !conclusao ? conferiu : ''}
                         explicacao={
                           revisita ? (
                             <SceneExplicacao
@@ -1535,7 +1490,7 @@ export function SceneActivityView({
                         }
                       >
                         {umaPista}
-                        {conferirOuContinuar}
+                        {continuarParaPergunta}
                       </SceneDescobertas>
                       {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
                       ele retoma o que a criança pensou sem separar a instrução dos controles. */}
@@ -1556,7 +1511,6 @@ export function SceneActivityView({
                               setPrediction('')
                               setHint(0)
                               setPistaCongelada(null)
-                              setConferiu('')
                               setPalpiteNaHora('')
                               setAvisoDescoberta('')
                               setAviso('')

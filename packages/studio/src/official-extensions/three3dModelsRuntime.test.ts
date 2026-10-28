@@ -221,9 +221,59 @@ describe('withThreeModelsRuntime', () => {
     for (const runtime of [gameThreeDRuntime, world3DRuntime, gameKit3DRuntime]) {
       expect(runtime).not.toContain('__SZ_THREE_MODELS_RUNTIME__')
       expect(runtime.match(/function createSzModels\(/g)).toHaveLength(1)
-      expect(runtime.match(/GLTFLoader\(\)\.parse/g)).toHaveLength(1)
+      expect(runtime.match(/new mod\.GLTFLoader\(\)/g)).toHaveLength(1)
+      expect(runtime.match(/newGltfLoader\(mod\)\.parse/g)).toHaveLength(1)
       expect(runtime.match(/HDRLoader\(\)\.parse/g)).toHaveLength(1)
       expect(runtime.match(/function dataUrlToBuffer\(/g)).toHaveLength(1)
+    }
+  })
+
+  it('com a CSP do preview, as texturas de dentro do .glb vêm pela img (o fetch(blob:) é recusado)', () => {
+    const newGltfLoader = new Function(
+      'THREE',
+      'setTimeout',
+      'clearTimeout',
+      `${threeModelsRuntimeSource}\nreturn newGltfLoader;`,
+    )(RealTHREE, setTimeout, clearTimeout) as (mod: unknown) => {
+      plugins: ((parser: unknown) => { name: string })[]
+    }
+    class GLTFLoader {
+      plugins: ((parser: unknown) => { name: string })[] = []
+      register(plugin: (parser: unknown) => { name: string }) {
+        this.plugins.push(plugin)
+      }
+    }
+    const csp = (content: string) => {
+      const meta = document.createElement('meta')
+      meta.setAttribute('http-equiv', 'Content-Security-Policy')
+      meta.setAttribute('content', content)
+      document.head.appendChild(meta)
+      return meta
+    }
+    // Sem CSP (o site exportado, os testes): o carregador padrão.
+    expect(newGltfLoader({ GLTFLoader }).plugins).toHaveLength(0)
+    const liberada = csp("default-src 'none'; connect-src blob:")
+    expect(newGltfLoader({ GLTFLoader }).plugins).toHaveLength(0)
+    liberada.remove()
+    const preview = csp("default-src 'none'; img-src data: blob:; connect-src 'none'")
+    try {
+      const manager = new RealTHREE.LoadingManager()
+      const parser = {
+        textureLoader: new RealTHREE.ImageBitmapLoader(manager) as unknown,
+        options: { manager, crossOrigin: 'anonymous' },
+      }
+      const loader = newGltfLoader({ GLTFLoader })
+      expect(loader.plugins).toHaveLength(1)
+      expect(loader.plugins[0]!(parser).name).toBe('sz_textures_by_img')
+      expect(parser.textureLoader).toBeInstanceOf(RealTHREE.TextureLoader)
+      expect((parser.textureLoader as RealTHREE.TextureLoader).crossOrigin).toBe('anonymous')
+      // Onde o GLTFLoader já usa a img (Safari), nada muda.
+      const safari = { textureLoader: new RealTHREE.TextureLoader(), options: parser.options }
+      const antes = safari.textureLoader
+      newGltfLoader({ GLTFLoader }).plugins[0]!(safari)
+      expect(safari.textureLoader).toBe(antes)
+    } finally {
+      preview.remove()
     }
   })
 
@@ -494,6 +544,58 @@ describe('createSzModels — cópias com ossos', () => {
     anim.update(1.5)
     expectPose(first, (skinFixture.clips[0] as (typeof skinFixture.clips)[number]).end)
     expectPose(second, skinFixture.rest)
+  })
+
+  it('a parte translúcida (água, feixe) e o chão marcado szSemSombra recebem sombra mas não fazem', async () => {
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])
+    const gltf = {
+      asset: { version: '2.0' },
+      scene: 0,
+      scenes: [{ nodes: [0, 1, 2] }],
+      nodes: [
+        { name: 'pedra', mesh: 0 },
+        { name: 'agua', mesh: 1 },
+        { name: 'chao', mesh: 2 },
+      ],
+      materials: [
+        { name: 'pedra' },
+        {
+          name: 'mar',
+          alphaMode: 'BLEND',
+          pbrMetallicRoughness: { baseColorFactor: [0.4, 0.6, 1, 0.6] },
+        },
+        { name: 'terreno', extras: { szSemSombra: true } },
+      ],
+      meshes: [
+        { primitives: [{ attributes: { POSITION: 0 }, material: 0 }] },
+        { primitives: [{ attributes: { POSITION: 0 }, material: 1 }] },
+        { primitives: [{ attributes: { POSITION: 0 }, material: 2 }] },
+      ],
+      bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }],
+      accessors: [
+        {
+          bufferView: 0,
+          componentType: 5126,
+          count: 3,
+          type: 'VEC3',
+          min: [0, 0, 0],
+          max: [1, 1, 0],
+        },
+      ],
+    }
+    const b = bench({
+      ilha: { kind: 'model3d', dataUrl: encodeGlb(gltf, new Uint8Array(positions.buffer)) },
+    })
+    const copy = b.models.instantiate(await loaded(b, 'ilha'), { shadows: true })
+    const meshes = new Map<string, RealTHREE.Mesh>()
+    copy.traverse((node) => {
+      if ((node as RealTHREE.Mesh).isMesh) meshes.set(node.name, node as RealTHREE.Mesh)
+    })
+    expect(meshes.get('pedra')?.castShadow).toBe(true)
+    for (const name of ['agua', 'chao']) {
+      expect(meshes.get(name)?.castShadow).toBe(false)
+      expect(meshes.get(name)?.receiveShadow).toBe(true)
+    }
   })
 
   it('sem o SkeletonUtils carregado, uma skin NUNCA cai no clone comum', async () => {

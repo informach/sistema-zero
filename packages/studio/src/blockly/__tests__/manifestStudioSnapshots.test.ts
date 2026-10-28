@@ -7,8 +7,9 @@ import {
 } from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { sanitizeProjectForHost } from '../../state/projectValidation'
 
-test('every Studio project declared by the lessons opens with its initial blocks and Jogo 2D extension', () => {
+test('lesson Studio projects retain their initial blocks and the extension taught by the course', () => {
   let checked = 0
+  let checked3d = 0
   for (const file of listarArquivosAulas().filter((name) => name.endsWith('.manifesto.json'))) {
     const source: unknown = JSON.parse(readFileSync(caminhoAula(file), 'utf8'))
     if (!isLearningManifest(source)) throw new Error(`Manifesto inválido: ${file}`)
@@ -19,13 +20,16 @@ test('every Studio project declared by the lessons opens with its initial blocks
         throw new Error(`Projeto sem blocos: ${file}`)
       const project = sanitizeProjectForHost(initial)
       expect(project, file).not.toBeNull()
+      const extensionId = source.courseSlug === 'jornada-faisca-base-3d' ? 'game-3d' : 'game-2d'
       expect(
-        project?.installedExtensions.some((extension) => extension.id === 'game-2d'),
+        project?.installedExtensions.some((extension) => extension.id === extensionId),
         file,
       ).toBe(true)
       expect(project?.blocksState, file).toEqual(initial.blocksState)
       checked += 1
+      if (extensionId === 'game-3d') checked3d += 1
     }
   }
   expect(checked).toBeGreaterThan(20)
+  expect(checked3d).toBe(3)
 })

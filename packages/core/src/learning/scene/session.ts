@@ -330,9 +330,11 @@ export function readExperimentSession(scene: SceneId, parts: unknown): Experimen
   if (!isRecord(raw) || raw.scene !== scene) return null
   const state = hydrateSceneStateForScene(scene, raw.state)
   if (!isSceneState(state)) return null
+  if (scene === 'island-3d' && !state.island3d) return null
   if (!Array.isArray(raw.past) || raw.past.length > SESSION_LIMITS.past) return null
   const past = raw.past.map((snapshot: unknown) => hydrateSceneStateForScene(scene, snapshot))
   if (!past.every(isSceneState)) return null
+  if (scene === 'island-3d' && past.some((s) => !s.island3d)) return null
   if (!Array.isArray(raw.trials) || raw.trials.length > SESSION_LIMITS.trials) return null
   if (!raw.trials.every(isSceneTrial)) return null
   return { state, past, trials: raw.trials }

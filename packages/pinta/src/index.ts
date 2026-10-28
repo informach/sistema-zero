@@ -10,7 +10,7 @@
 // Chrome do HOST na barra (07/09/2026): o kids embrulha o `<PintaApp>` neste Provider com
 // o botão do menu lateral + o selo "Guardado na sua conta"; o Pinta desenha no idioma dele.
 export { PintaHostChromeProvider, usePintaHostChrome } from './components/hostChrome'
-export { PintaApp } from './components/PintaApp'
+export { PintaApp, type PintaCompletionControl } from './components/PintaApp'
 export type { PintaProjectRef } from './core/project'
 /**
  * Os presets moram AQUI, e não no admin, para a autoria e a tela da criança não drifarem: quem

@@ -3,6 +3,7 @@ import {
   ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE,
   ZAPPY_SOURCE_REQUEST_MAX_BYTES,
 } from '@sistemazero/core/zappy'
+import { arquipelagoGateway } from './src/infrastructure/config/arquipelago-routes'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
 import { subscriptionRecoveryRoutes } from './src/infrastructure/config/subscription-recovery-routes'
 
@@ -251,6 +252,38 @@ const sharedResilience = {
 // pagamento): AFINA o teto global de 2 MB (necessário só p/ os lotes da SendGrid)
 // — 64 KB já é generoso p/ esses payloads e corta abuso barato em rota sem auth.
 const SMALL_JSON_BODY_BYTES = 64 * 1024
+// Arquipélago Vagalume (@sistemazero/arquipelago-api). SEM default de propósito: sem
+// ARQUIPELAGO_URL o serviço e as rotas não existem (o jogo é um rollout à parte). O token
+// interno DEVE bater com o INTERNAL_API_TOKEN do serviço.
+const ARQUIPELAGO_INTERNAL_TOKEN = process.env.ARQUIPELAGO_INTERNAL_TOKEN ?? ''
+// Uma variável do JOGO nunca derruba a plataforma: URL inválida ou sem o token interno = o jogo
+// fica fora do gateway, com aviso no boot (o serviço recusaria tudo sem o token).
+const ARQUIPELAGO_URL = (() => {
+  const url = process.env.ARQUIPELAGO_URL?.trim() ?? ''
+  if (!url) return ''
+  try {
+    new URL(url)
+  } catch {
+    console.warn('[gateway] ARQUIPELAGO_URL inválida: as rotas /arquipelago/* ficam desligadas')
+    return ''
+  }
+  if (!ARQUIPELAGO_INTERNAL_TOKEN && process.env.NODE_ENV === 'production') {
+    console.warn(
+      '[gateway] ARQUIPELAGO_INTERNAL_TOKEN ausente: as rotas /arquipelago/* ficam desligadas',
+    )
+    return ''
+  }
+  return url
+})()
+const arquipelagoInternalTransforms = ARQUIPELAGO_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': ARQUIPELAGO_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
+
 // Tutoriais do "Como fazer": passos em markdown + import em lote. É ESTE teto que vale (o do
 // members é maior); o lote inicial tem ~35 KB. Subir aqui quando a biblioteca crescer.
 const HELP_JSON_BODY_BYTES = 512 * 1024
@@ -4995,4 +5028,14 @@ config.routes.push(
         .replace('/members/admin/help/', '/members/admin/adult/help/'),
     })),
 )
+if (ARQUIPELAGO_URL) {
+  const arquipelago = arquipelagoGateway({
+    url: ARQUIPELAGO_URL,
+    transforms: arquipelagoInternalTransforms,
+    resilience: sharedResilience,
+  })
+  config.services.arquipelago = arquipelago.service
+  config.routes.push(...arquipelago.routes)
+}
+
 export default config

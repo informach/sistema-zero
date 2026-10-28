@@ -8,6 +8,10 @@ const SHA = /^[a-f0-9]{40}$/
 const HASH = /^[a-f0-9]{64}$/
 const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i
 const EPOCH = '.github/staging-deploy-epoch-v1.json'
+// Criado após a fotografia histórica; o primeiro deploy é provado em etapa própria da onda.
+const postBootstrapServices = Object.freeze({
+  'arquipelago-api': 'ee19a264-7708-471a-adf9-c9db1cfdb9a2',
+})
 // An exhausted bound is a refusal, never permission to truncate the baseline history.
 const MAX_PAGES = 20
 const failureCodes = new Set([
@@ -101,7 +105,13 @@ function bootstrapRecord(value, configured) {
     (coverage.extraServices.length && !HASH.test(coverage.extraReceiptSha256))
   )
     fail('bootstrap reconciliation receipts required')
-  const required = Object.keys(configured).sort()
+  for (const [name, id] of Object.entries(postBootstrapServices)) {
+    if (configured[name] !== undefined && configured[name] !== id)
+      fail('post-bootstrap service identity diverged')
+  }
+  const required = Object.keys(configured)
+    .filter((name) => !Object.hasOwn(postBootstrapServices, name))
+    .sort()
   const covered = [...coverage.ciServices, ...coverage.extraServices]
   if (
     !required.length ||

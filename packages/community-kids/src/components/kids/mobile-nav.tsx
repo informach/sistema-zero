@@ -1,6 +1,7 @@
 'use client'
 
 import type { CreativeToolId } from '@sistemazero/core/journey'
+import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -16,6 +17,7 @@ import {
   type NavItem,
   navMatch,
   visibleChildren,
+  visibleNavItems,
 } from './nav'
 import { RecadosBell } from './recados-bell'
 import { StreakWidget } from './streak-widget'
@@ -132,7 +134,13 @@ function NavDrawer({
  * do ícone, com o rótulo na ação clara (a de sobre o escuro: a cor de ação crua dava
  * 3,2:1 no navy).
  */
-export function MobileTabbar({ tools = null }: { tools?: CreativeToolId[] | null }) {
+export function MobileTabbar({
+  tools = null,
+  arquipelagoLiberado = false,
+}: {
+  tools?: CreativeToolId[] | null
+  arquipelagoLiberado?: boolean
+}) {
   const pathname = usePathname()
   // A gaveta aberta (a aba com destinos por dentro). Fecha ao navegar: no celular a
   // página nova já é a resposta do toque.
@@ -152,7 +160,8 @@ export function MobileTabbar({ tools = null }: { tools?: CreativeToolId[] | null
     mq.addEventListener('change', fechar)
     return () => mq.removeEventListener('change', fechar)
   }, [])
-  const aberta = MOBILE_NAV_ITEMS.find((item) => item.href === gaveta) ?? null
+  const itens = visibleNavItems(MOBILE_NAV_ITEMS, arquipelagoLiberado)
+  const aberta = itens.find((item) => item.href === gaveta) ?? null
   const filhosAbertos = aberta ? visibleChildren(aberta, tools) : []
 
   return (
@@ -171,7 +180,7 @@ export function MobileTabbar({ tools = null }: { tools?: CreativeToolId[] | null
       >
         {/* `prefetch={false}`: mesmo motivo da sidebar — rotas `force-dynamic` + gateway numa réplica
           única não aguentam o prefetch de todos os itens a cada página (tempestade de 502/ERR_HTTP2). */}
-        {MOBILE_NAV_ITEMS.map((item) => {
+        {itens.map((item) => {
           const filhos = visibleChildren(item, tools)
           const active = isNavActive(pathname, item.href, navMatch(item))
           const Icon = item.icon
@@ -186,7 +195,7 @@ export function MobileTabbar({ tools = null }: { tools?: CreativeToolId[] | null
               >
                 <Icon className="size-5" />
               </span>
-              <span className="font-bold text-[0.68rem]">{item.label}</span>
+              <span className="font-bold text-[0.68rem]">{item.mobileLabel ?? item.label}</span>
             </>
           )
           const classe = cn(
@@ -209,15 +218,15 @@ export function MobileTabbar({ tools = null }: { tools?: CreativeToolId[] | null
               </button>
             )
           return (
-            <Link
+            <ArquipelagoNavLink
               key={item.href}
               href={item.href}
-              prefetch={false}
+              aria-label={item.label}
               aria-current={active ? 'page' : undefined}
               className={classe}
             >
               {conteudo}
-            </Link>
+            </ArquipelagoNavLink>
           )
         })}
       </nav>

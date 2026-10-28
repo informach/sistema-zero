@@ -28,7 +28,12 @@ export function isPythonProjectExecutionRule(raw: unknown): raw is PythonProject
   return (
     ['value', 'console', 'spritePosition'].includes(raw.expect.target.kind) &&
     Object.keys(raw.expect).every((key) => ['target', 'compare', 'value'].includes(key)) &&
-    raw.steps.every((step) => step.action !== 'clickTarget' && step.action !== 'approachSprite')
+    raw.steps.every(
+      (step) =>
+        step.action !== 'clickTarget' &&
+        step.action !== 'approachSprite' &&
+        step.action !== 'approachObject3d',
+    )
   )
 }
 

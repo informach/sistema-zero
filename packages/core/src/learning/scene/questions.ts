@@ -92,6 +92,10 @@ interface SceneQuestionDefinition extends Omit<SceneQuestions, 'prediction'> {
  * criança verá na prévia, sem responder à previsão antes de ela apostar.
  */
 export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContext> = {
+  'island-3d': {
+    label: 'A ilha em 3D',
+    explanation: 'Você pode olhar os mesmos objetos de frente, de lado e de cima.',
+  },
   'once-vs-always': {
     label: 'As áreas do projeto',
     explanation:
@@ -412,6 +416,30 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
  * Rode aquele teste: ele diz em que trecho quebrou.
  */
 const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
+  'island-3d': {
+    prediction: {
+      prompt: 'A chave está atrás da pedra. O que pode acontecer ao olhar de lado?',
+      choices: [
+        { id: 'aparece', label: 'A chave pode aparecer sem sair do lugar' },
+        {
+          id: 'anda',
+          label: 'A chave precisa andar para aparecer',
+          shows: 'A chave apareceu em outra vista, no mesmo lugar.',
+        },
+      ],
+      correctChoiceId: 'aparece',
+      revealOn: 'other-view',
+    },
+    explain: {
+      prompt: 'Ao mudar o ponto de vista, o que mudou no mundo?',
+      choices: [
+        { id: 'objeto', label: 'A chave mudou de lugar' },
+        { id: 'vista', label: 'Mudou o lugar de onde olhamos' },
+      ],
+      correctChoiceId: 'vista',
+      explanation: 'A câmera mudou. A chave e a pedra continuaram no mesmo lugar.',
+    },
+  },
   /* ── A tela e quem a lê ──────────────────────────────────────────────────────────────────── */
   'fixed-vs-read': {
     prediction: {

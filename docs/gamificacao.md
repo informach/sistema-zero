@@ -292,8 +292,9 @@ entra em `room_inventory` NA MESMA transação (`onConflictDoNothing`). Mapa atu
 `streak-30`→`trofeu-chama`, `quiz-perfect-10`→`trofeu-medalha-mil`,
 `pensa-first-launch`→`trofeu-foguete` (bônus de produto), `studio-master-3`→`trofeu-console`
 (bônus), `plays-100`→`trofeu-estrela-do-mural`. No kids: aba "🏆 Troféus" no room-builder
-(não-ganho = cadeado + dica `TROPHY_HINT`),
-modelos low-poly em `furniture-models.tsx`, e a celebração de aula avisa "troféu novo no quarto"
+(não-ganho = miniatura apagada com cadeado + dica `TROPHY_HINT`),
+modelos em GLB (`public/room3d/items/`, desde 27/10/2026; a reserva em primitivas segue em
+`furniture-models.tsx`), e a celebração de aula avisa "troféu novo no quarto"
 via `TROPHY_BADGE_SLUGS`. Conformance test cobre badge↔item↔apresentação.
 **Estante de Troféus (24/07):** o 1º troféu concede TAMBÉM o móvel `estante-trofeus`
 (`TROPHY_SHELF_ITEM_ID`, furniture 3×2 com 6 nichos, tier trophy SEM badge própria — mesma tx,
@@ -335,24 +336,42 @@ pelo MESMO `id` (travada por `members/tests/unit/catalog-conformance.test.ts`). 
 no kids (`components/kids/avatar3d/*`, rota `/meu-avatar`) — **personagem GLB real (Quaternius CC0,
 via pack do WawaSensei):** 1 esqueleto compartilhado (`Armature.glb`) + 1 GLB skinned por peça
 (`avatar-rig.tsx`/`asset-part.tsx`; material `Color_*` tintável, `Skin_*` pele compartilhada). GLB
-SIMPLES (sem Draco/KTX2/WASM, CSP-safe), assets em `community-kids/public/avatar3d/`.
+SIMPLES (sem Draco/KTX2/WASM, CSP-safe), assets em `community-kids/public/avatar3d/` e, iguais,
+em `community/public/avatar3d/` (a comunidade adulta usa o MESMO catálogo e os mesmos arquivos;
+`community-kids/tests/avatar3d-catalog.test.ts` confere que as duas cópias batem).
+
+**Peças próprias (26/10/2026, Canvas "Provador do avatar"):** 32 peças modeladas no Blender sobre
+o mesmo esqueleto e no estilo do pacote: 7 cabelos (`hair-12`…`hair-18`), o rosto delicado
+(`head-05`/`head-06`, que são o Rosto 1 com sorriso pequeno e fechado; `eyes-13`/`eyes-14` com
+cílios; `eyebrow-11`; `nose-05`; `face-10` bochecha rosada), `face-09` sardas, óculos
+`glasses-05`/`06`, roupas `top-04`…`06`, `bottom-04`/`05`, `outfit-06`, calçados `shoes-04`/`05`,
+acessórios `acc-09` colar e `acc-10` cachecol, e a aba nova **Enfeite** (`enfeite-01`…`05`).
+⚠️ O exportador de glTF do Blender grava as juntas em outra ordem: toda peça nova passa pelo
+reordenador antes de entrar (o teste acima trava a ordem do `Armature.glb`). Os nomes das peças
+novas dizem o que elas são ("Rabo de cavalo alto"); as antigas seguem numeradas.
 
 ### Categorias (`AVATAR_CATEGORIES`) + config
 
-14 categorias: `head, hair, eyes, eyebrows, nose, faceDecor, facialHair, glasses, hat, top, bottom,
-outfit, shoes, accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
+15 categorias: `head, hair, eyes, eyebrows, nose, faceDecor, facialHair, glasses, hat,
+hairAccessory, top, bottom, outfit, shoes, accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
 slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (com peça `*-none` grátis
-= "tirar"): `hair, faceDecor, facialHair, glasses, hat, outfit, accessory`. `AVATAR_HIDE_GROUPS = {hat:['hair']}` (chapéu
-real esconde o cabelo — só render, o servidor NÃO gateia). Default grátis em `DEFAULT_AVATAR_SLOTS`.
+= "tirar"): `hair, faceDecor, facialHair, glasses, hat, hairAccessory, outfit, accessory`.
+`AVATAR_HIDE_GROUPS = {hat:['hair','hairAccessory'], outfit:['top','bottom']}` (chapéu real
+esconde o cabelo e o enfeite — só render, o servidor NÃO gateia). Default grátis em `DEFAULT_AVATAR_SLOTS`.
 
 ### Peças (`AVATAR3D_PARTS`) + cores — livre vs pago
 
-~96 peças; identidade (head/eyes/eyebrows/nose) **100% grátis**. Pagas 50–150 Zappy na maioria
-das categorias (cabelo, barba, faceDecor, óculos, chapéu, top, bottom, outfit, shoes, acessório). `tier`
+~130 peças; identidade (head/eyes/eyebrows/nose) **100% grátis**, e o rosto delicado inteiro
+também (incluindo a bochecha rosada, `face-10`). Pagas 40–150 Zappy na maioria das categorias
+(cabelo, barba, faceDecor, óculos, chapéu, enfeite, top, bottom, outfit, shoes, acessório). Cabelos
+grátis: `hair-01`, `hair-08` e `hair-12` (longo solto). `tier`
 derivado (`free()`/`paid()`); peça grátis é **implicitamente possuída** (não vai ao inventário).
 **COR é GRÁTIS** e irrestrita dentro da paleta da categoria (`AVATAR_CATEGORY_PALETTES`; pintar
-não custa — a economia está nas PEÇAS). `nose`/`glasses` sem paleta (nariz segue a pele; óculos
-têm cor embutida por variante).
+não custa — a economia está nas PEÇAS). Sem paleta: `eyes`, `nose` (segue a pele), `faceDecor` e
+`hat` (cor embutida). Desde 26/10/2026 `hairAccessory` e `accessory` usam a paleta das roupas;
+no acessório só as peças com `Color_` mudam de cor (`acc-05`, `acc-06`, `acc-09`, `acc-10`). As
+peças de cor embutida numa categoria com paleta (brincos de metal, óculos 2, fantasias) estão em
+`AVATAR_FIXED_COLOR_PARTS` (member-shell): com uma delas vestida, a fileira de cores some.
 
 ### Equipar / comprar / foto
 
@@ -399,9 +418,21 @@ efeito de jogo.
 > `coords.ts` PURO/testado). `three`/`@react-three/fiber`/`drei` já vinham no kids (livro 3D do e-book).
 > O emoji segue só como miniatura na lojinha.
 
-> ⚠️ **Arcades de jogos no quarto foram DESCARTADOS deliberadamente** — não existem no código.
+> **🧱 Peças feitas no Blender (27/10/2026, Kids e adulto):** as 39 peças foram refeitas como GLB
+> (`public/room3d/items/<id>.glb` nas duas comunidades, scripts em
+> `community-kids/scripts/room-blender/`) e entraram 27 novas. `FurnitureModel` carrega o GLB
+> (`room-glb-model.tsx`, `useGLTF` com uma cópia por peça); as primitivas antigas ficaram como
+> reserva (`FurniturePrimitive`) para quando o arquivo não baixa. Bichinhos, aquário e lâmpada de
+> lava têm animação em laço no próprio arquivo: o item ganha `animated` no catálogo do member-shell
+> e o quarto roda o relógio contínuo (desligado com `prefers-reduced-motion` e no perfil público).
+> As bandejas mostram a **miniatura PNG** (`public/room3d/thumbs/<id>.png`, `bun run
+> gen:room-thumbs`), com o emoji (Kids) ou o ícone de linha (adulto) de reserva. Teste:
+> `community-kids/tests/room3d-catalog.test.ts`.
+
+> ⚠️ **Arcades JOGÁVEIS no quarto foram DESCARTADOS deliberadamente** — não existem no código.
 > Os jogos que a criança CRIA vivem no **Mural dos Criadores** (vitrine do Estúdio no hub),
-> jogáveis em `/jogar/<playId>`. O quarto é só decoração.
+> jogáveis em `/jogar/<playId>`. O quarto é só decoração: o `fliperama` de 27/10/2026 é um enfeite
+> (não abre nada), como a TV.
 
 ### Grade & teto
 
@@ -416,11 +447,11 @@ efeito de jogo.
 
 | Categoria | Itens (preço / w×h) |
 |---|---|
-| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2 (surface 2), sofa 80/3×2, estante 70/2×3 (surface 3), bau 90/2×2, mesa-estudo 70/2×1 (surface 1), tv 90/2×1, beliche 120/2×3, pufe 50/1×1 + **estante-trofeus 0/3×2 (surface 6, tier trophy — vem com o 1º troféu)** |
-| **Decoração de chão** (`decor`) | ursinho 70/1×1*, balao 50/1×2, bandeira 50/1×2, globo 50/1×1*, guitarra 80/1×2, bola 0/1×1* (* = `stackable`, vai em superfície; vela e os troféus de chão também) |
-| **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2 |
-| **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3 |
-| **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1 |
+| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2 (surface 2), sofa 80/3×2, estante 70/2×3 (surface 3), bau 90/2×2, mesa-estudo 70/2×1 (surface 1), tv 90/2×1, beliche 120/2×3, pufe 50/1×1 + **estante-trofeus 0/3×2 (surface 6, tier trophy — vem com o 1º troféu)**; 27/10/2026: guarda-roupa 110/2×1, criado-mudo 50/1×1 (surface 1), comoda 80/2×1 (surface 2), poltrona 70/2×2, cadeira-gamer 90/1×1, mesa-gamer 150/3×1, fliperama 140/1×1, teclado 120/2×1, caminha-pet 60/1×1, arranhador 60/1×1 |
+| **Decoração de chão** (`decor`) | ursinho 70/1×1*, balao 50/1×2, bandeira 50/1×2, globo 50/1×1*, guitarra 80/1×2, bola 0/1×1*; 27/10/2026: caixa-som 50*, cesto-brinquedos 50, skate 60/1×2, cafeteira 40*, livros 30*, porta-retrato 30*, aquario 120* (animado), vitrola 70* (todos 1×1 salvo indicação; * = `stackable`, vai em superfície; vela e os troféus de chão também) |
+| **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2; 27/10/2026: letreiro-neon 90/2×1, quadro-cortica 50/2×1, mapa-mundi 60/2×2 |
+| **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3; 27/10/2026: cacto 40/1×1*, vaso-flores 50/1×1*, planta-pendurada 60/1×2 (parede) |
+| **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1; 27/10/2026: luminaria-mesa 50/1×1*, lampada-lava 70/1×1* (animada), varal-luzes 70/2×1 (parede) |
 | **Pets** (`pet`, 1 por quarto) | pet-gato 300, pet-cachorro 300, pet-passaro 250 (todos 1×1) |
 
 Pets NÃO vão na grade — são o campo `pet` (string|null) do estado; UM por quarto. Itens
@@ -926,7 +957,7 @@ no código (06/2026).
 | `MAX_STREAK_FREEZES` | 5 | `ports/gamification-repository.port.ts` | Teto de protetores acumuláveis |
 | `BADGE_SLUGS` | 30 slugs | `gamification/badges.ts` | Catálogo de conquistas |
 | `AVATAR3D_PARTS` (preços) | ver §6 | `avatar/avatar3d-catalog.ts` | Catálogo + preços das peças |
-| `AVATAR_CATEGORIES` | 14 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
+| `AVATAR_CATEGORIES` | 15 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
 | `DEFAULT_AVATAR_SLOTS` | conjunto grátis | `avatar/avatar3d-catalog.ts` | Avatar inicial (peça+cor) |
 | `AVATAR_CATEGORY_PALETTES` | paletas de cor | `avatar/avatar3d-catalog.ts` | Cores grátis por categoria |
 | `ROOM_GRID` | {cols:12,rows:8} | `room/room-catalog.ts` (+ espelho no kids) | Tamanho da grade |

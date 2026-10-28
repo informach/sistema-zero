@@ -10,7 +10,6 @@ import {
   applyExperimentSegment,
   type ExperimentSession,
   initialScene,
-  openScene,
   packExperiment,
   readSceneSegment,
   SCENE_IDS,
@@ -20,7 +19,6 @@ import {
   type SceneCheckpoint,
   type SceneId,
   sceneEmitsSound,
-  sceneGoals,
   sceneStart,
   stepScene,
 } from '@sistemazero/core/learning/scene'
@@ -762,30 +760,15 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
   })
 })
 
-describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => {
-  test('⚠️⚠️ "Conferir" responde com o PEDIDO da meta que falta, nunca com o rótulo', async () => {
-    // "Ainda falta: Dino existe sem aparecer" entregava a descoberta a quem apertava o botão maior
-    // da tela. A varredura é nas 45: é a MOLDURA que escolhe o texto, então vale para todas.
-    const falhas: string[] = []
+describe('⭐⭐ a moldura: descoberta automática, pergunta e revisita', () => {
+  test('nenhuma experiência exige o botão Conferir', async () => {
     for (const scene of SCENE_IDS) {
       render(<InteractiveLessonBlock block={block(scene)} previewContent={content(scene)} />)
-      fireEvent.click(await screen.findByRole('button', { name: 'Conferir' }))
-      const falta = sceneGoals(scene, openScene({ scene })).find((g) => !g.complete)
-      const resposta =
-        [...document.querySelectorAll('p[aria-live]')]
-          .map((p) => p.textContent ?? '')
-          .find((t) => t.startsWith('Ainda não')) ?? ''
-      if (!resposta) falhas.push(`${scene}: "Conferir" não respondeu`)
-      else if (falta && falta.label !== falta.pedido && resposta.includes(falta.label))
-        falhas.push(`${scene}: "Conferir" entregou o rótulo "${falta.label}"`)
-      else if (falta?.pedido && !resposta.toLowerCase().includes(falta.pedido.toLowerCase()))
-        falhas.push(`${scene}: "Conferir" não disse o pedido "${falta.pedido}"`)
+      await screen.findByRole('button', { name: 'Uma pista' })
+      expect(screen.queryByRole('button', { name: /^Conferir$/ })).toBeNull()
+      expect(document.querySelector('.sz-scene-conferir-resposta')).toBeNull()
       cleanup()
     }
-    expect(falhas).toEqual([])
-    // ⚠️ Prazo PRÓPRIO: esta varredura monta as 45 cenas inteiras (palco, faixa e bancada) e já
-    // rodava colada nos 5 s de fábrica do bun — sozinha passava, junto da suíte caía nas últimas
-    // quatro, e o estouro deixava o DOM sujo para os testes seguintes. É tempo, não regra.
   }, 30_000)
 
   test('⚠️⚠️ concluir leva o FOCO à pergunta, e a regra da cena só aparece DEPOIS de responder', async () => {
@@ -1309,7 +1292,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
 })
 
 describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', () => {
-  test('⚠️⚠️ "Conferir" e depois o gesto que conclui: a REGRA nunca passa por uma região viva', async () => {
+  test('⚠️⚠️ o gesto que conclui não revela a REGRA numa região viva', async () => {
     // O leitor de tela ouvia "Ainda não." + a frase de sucesso da cena no instante da conclusão,
     // antes de "Você descobriu!": a resposta da pergunta, e um "Ainda não" que contradizia tudo.
     const bloco = content('world')
@@ -1317,7 +1300,6 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
     aluno(bloco)
     await palpitar('world')
     fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Conferir' }))
     // ⚠️ O texto errado vivia UM render e sumia no seguinte, dentro do mesmo `act`: ler a região na
     // hora do aviso já a encontraria vazia. Os registros guardam o valor ANTIGO e os nós que saíram.
     const falado: string[] = []
@@ -1494,13 +1476,11 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
     servidorQueCorrige(bloco)
     aluno(bloco)
     await palpitar('world')
-    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
-    expect(await screen.findByText(/^Ainda não\. Tente:/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
     const caixa = (await screen.findByText('Pista 1 de 3.')).closest('div') as HTMLElement
     expect(caixa.getAttribute('role')).toBeNull()
     await waitFor(() => expect(anunciado()).toContain('Pista 1 de 3.'))
-    // ⚠️ Uma caixa de ajuda por vez: a pista toma o lugar da resposta do Conferir.
+    // A ajuda permanece disponível sem uma etapa extra de conferência.
     expect(screen.queryByText(/^Ainda não\. Tente:/) === null).toBe(true)
   })
 
@@ -1590,22 +1570,16 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
    * Relatório: `tmp/storyboard/implementacao/consertos-lote5-ondaA.md`. Os palcos e as bancadas estão em
    * `member-shell/tests/consertos-onda-a.test.tsx`; aqui fica o que só o PLAYER faz.
    */
-  test('⚠️⚠️ layers (ALTO): com as duas descobertas e o Dino escondido de novo, "Conferir" diz o que falta', async () => {
+  test('layers só conclui ao restaurar o arranjo após as duas primeiras descobertas', async () => {
     render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
-    // Frente (1ª troca) e escondido de novo (2ª): as duas metas, e a montagem fora do arranjo do jogo.
     await trocarOrdem(1)
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1'))
     fireEvent.click(await screen.findByRole('button', { name: /^Subir / }))
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
-    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
-    await waitFor(() => {
-      const resposta = [...document.querySelectorAll('p[aria-live]')]
-        .map((p) => p.textContent ?? '')
-        .find((t) => t.startsWith('Ainda não'))
-      // ⚠️ Mudou de propósito (full review de experiência, M4): a volta é a terceira META, e o
-      // "Conferir" diz o pedido dela.
-      expect(resposta).toContain('leve o Dino de novo para o fim da ordem de desenhar')
-    })
+    expect(screen.queryByText('Você descobriu!')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
+    fireEvent.click(await screen.findByRole('button', { name: /^Descer / }))
+    expect((await screen.findAllByText('Você descobriu!')).length).toBeGreaterThan(0)
   })
 
   test('⚠️ layers (MÉDIO): antes do palpite só a prévia mostra os desenhos separados', async () => {

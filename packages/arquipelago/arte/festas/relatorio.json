@@ -1,0 +1,276 @@
+{
+  "barco": {
+    "pasta": "movimento",
+    "grupo": "veiculos",
+    "triangulos": 2304,
+    "kb": 86.5,
+    "nos": {
+      "barco": 2304
+    },
+    "vazios": ["assento"],
+    "clipes": ["balancar"],
+    "materiais": [
+      "bandeira",
+      "boiaLaranja",
+      "cascoAmarelo",
+      "cascoAzul",
+      "cascoBranco",
+      "cascoVermelho",
+      "convesMadeira",
+      "luz",
+      "madeiraEscura",
+      "metal",
+      "vidroCabine"
+    ],
+    "tamanho": [1.8, 1.76, 4.0]
+  },
+  "barquinho": {
+    "pasta": "movimento",
+    "grupo": "veiculos",
+    "triangulos": 1770,
+    "kb": 66.4,
+    "nos": {
+      "barquinho": 1586,
+      "remo-esq": 92,
+      "remo-dir": 92
+    },
+    "vazios": ["assento"],
+    "clipes": ["remar"],
+    "materiais": [
+      "bandeira",
+      "cascoAmarelo",
+      "cascoAzul",
+      "cascoBranco",
+      "cascoVermelho",
+      "convesMadeira",
+      "corda",
+      "ferro",
+      "luz",
+      "madeiraClara",
+      "madeiraEscura",
+      "ouro"
+    ],
+    "tamanho": [2.548, 0.93, 2.287]
+  },
+  "carnaval": {
+    "pasta": "festas",
+    "grupo": "festas",
+    "triangulos": 9670,
+    "kb": 295.2,
+    "nos": {
+      "confetes": 1208,
+      "serpentinas": 1936,
+      "mascaras": 3204,
+      "carro-alegorico": 2612,
+      "faixas": 614,
+      "sol-do-carro": 96
+    },
+    "vazios": [],
+    "clipes": ["girar"],
+    "materiais": [
+      "abobora",
+      "barbante",
+      "brilho",
+      "carroBase",
+      "carroRoda",
+      "confeteAmarelo",
+      "confeteAzul",
+      "confeteLilas",
+      "confeteRosa",
+      "confeteVerde",
+      "ferro",
+      "madeira",
+      "ouro",
+      "parede",
+      "pena"
+    ],
+    "tamanho": [4.029, 2.32, 4.541]
+  },
+  "cipo": {
+    "pasta": "movimento",
+    "grupo": "movimento",
+    "triangulos": 1192,
+    "kb": 31.6,
+    "nos": {
+      "cipo": 1192
+    },
+    "vazios": ["pegada", "topo"],
+    "clipes": ["balancar"],
+    "materiais": ["cipo", "cipoEscuro", "folhaCipo", "pegadaCipo"],
+    "tamanho": [0.44, 2.27, 0.377]
+  },
+  "fim-de-ano": {
+    "pasta": "festas",
+    "grupo": "festas",
+    "triangulos": 8574,
+    "kb": 251.0,
+    "nos": {
+      "palmeira-enfeitada": 3652,
+      "fogos": 312,
+      "mesa-da-ceia": 3424,
+      "foguete": 78,
+      "estouro": 1108
+    },
+    "vazios": [],
+    "clipes": ["estourar"],
+    "materiais": [
+      "abacaxi",
+      "coco",
+      "confeteAmarelo",
+      "enfeiteAzul",
+      "enfeiteVermelho",
+      "estrela",
+      "ferro",
+      "fio",
+      "fogoArtificio1",
+      "fogoArtificio2",
+      "fogoArtificio3",
+      "foguete",
+      "loucaAzul",
+      "loucaBranca",
+      "luz",
+      "madeira",
+      "madeiraEscura",
+      "ouro",
+      "palmeira",
+      "palmeiraClara",
+      "panetone",
+      "papel",
+      "suco",
+      "toalha",
+      "toalhaBarra",
+      "tronco",
+      "troncoAnel",
+      "uva",
+      "vidroCabine"
+    ],
+    "tamanho": [3.908, 3.032, 4.035]
+  },
+  "junina": {
+    "pasta": "festas",
+    "grupo": "festas",
+    "triangulos": 7216,
+    "kb": 321.2,
+    "nos": {
+      "bandeirinhas": 310,
+      "fogueira": 388,
+      "barraca-pescaria": 1736,
+      "barraca-milho": 1904,
+      "barraca-suco": 1878,
+      "balao": 336,
+      "fogo": 664
+    },
+    "vazios": ["ponta-dir", "ponta-esq"],
+    "clipes": ["crepitar"],
+    "materiais": [
+      "aguaPescaria",
+      "bandeiraAmarela",
+      "bandeiraAzul",
+      "bandeiraRosa",
+      "bandeiraVerde",
+      "bandeiraVermelha",
+      "barbante",
+      "brasa",
+      "chita",
+      "chitaFlor",
+      "fogo",
+      "lenha",
+      "linha",
+      "loucaBranca",
+      "luz",
+      "madeira",
+      "madeiraClara",
+      "madeiraEscura",
+      "metalEscuro",
+      "milho",
+      "milhoClaro",
+      "palha",
+      "panela",
+      "peixinho",
+      "placaFace",
+      "suco",
+      "toldoListra",
+      "vara",
+      "vidroCabine"
+    ],
+    "tamanho": [4.504, 2.22, 5.323]
+  },
+  "lanternas": {
+    "pasta": "festas",
+    "grupo": "festas",
+    "triangulos": 5284,
+    "kb": 120.0,
+    "nos": {
+      "lanterna-vermelha": 1108,
+      "lanterna-amarela": 1108,
+      "lanterna-azul": 1108,
+      "lanterna-flutuante": 548,
+      "varal-de-luzes": 1412
+    },
+    "vazios": ["gancho-amarela", "gancho-azul", "gancho-vermelha", "ponta-dir", "ponta-esq"],
+    "clipes": ["flutuar"],
+    "materiais": [
+      "fio",
+      "folhaLotus",
+      "lanternaAmarela",
+      "lanternaAzul",
+      "lanternaRosa",
+      "lanternaVermelha",
+      "luz",
+      "madeiraEscura",
+      "ouro",
+      "papel"
+    ],
+    "tamanho": [2.76, 0.673, 2.252]
+  },
+  "mergulho": {
+    "pasta": "movimento",
+    "grupo": "movimento",
+    "triangulos": 1556,
+    "kb": 40.9,
+    "nos": {
+      "mascara": 948,
+      "pe-de-pato-esq": 304,
+      "pe-de-pato-dir": 304
+    },
+    "vazios": ["cabeca", "pe-dir", "pe-esq"],
+    "clipes": [],
+    "materiais": ["mascaraBorracha", "mascaraVidro", "pePato", "pePatoEscuro", "snorkel"],
+    "tamanho": [0.805, 1.755, 0.892]
+  },
+  "patins": {
+    "pasta": "movimento",
+    "grupo": "movimento",
+    "triangulos": 3352,
+    "kb": 101.6,
+    "nos": {
+      "patim-esq": 1676,
+      "patim-dir": 1676
+    },
+    "vazios": ["pe-dir", "pe-esq"],
+    "clipes": [],
+    "materiais": ["cadarco", "cascoVermelho", "metalEscuro", "patim", "patimClaro", "roda"],
+    "tamanho": [0.573, 0.373, 0.389]
+  },
+  "planador": {
+    "pasta": "movimento",
+    "grupo": "movimento",
+    "triangulos": 562,
+    "kb": 27.5,
+    "nos": {
+      "planador": 250,
+      "asa-esq": 156,
+      "asa-dir": 156
+    },
+    "vazios": ["pegada"],
+    "clipes": ["planar"],
+    "materiais": [
+      "mascaraBorracha",
+      "tuboPlanador",
+      "velaPlanador",
+      "velaPlanador2",
+      "velaPlanador3"
+    ],
+    "tamanho": [2.624, 0.907, 1.69]
+  }
+}

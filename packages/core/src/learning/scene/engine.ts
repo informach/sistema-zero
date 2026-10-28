@@ -23,6 +23,7 @@ import {
   TAMANHO_PARECIDO,
 } from './atelie'
 import { decimal, numero, quantos } from './cast'
+import { type IslandAction, stepIsland } from './island-3d'
 import {
   AIM_ORIGIN,
   AIM_SHOT,
@@ -418,6 +419,8 @@ export function stepScene(
    */
   if (action.type !== 'hint' && action.type !== 'advance') s.caption = ''
   const scene = start.scene
+  if (scene === 'island-3d' && action.type.startsWith('island-'))
+    return stepIsland(s, action as IslandAction)
 
   switch (action.type) {
     case 'key-position': {

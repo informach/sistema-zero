@@ -1,6 +1,5 @@
 import { Button } from '@sistemazero/ui/button'
 import {
-  Check,
   CheckCircle2,
   ChevronDown,
   Circle,
@@ -151,8 +150,7 @@ function Experiment({
   })
   const [value, setValue] = useState(initial),
     [past, setPast] = useState<ReturnType<typeof initial>[]>([]),
-    [hint, setHint] = useState(false),
-    [checked, setChecked] = useState(false)
+    [hint, setHint] = useState(false)
   const goals = [
     ...sceneGoals(kind, value.state),
     {
@@ -169,7 +167,6 @@ function Experiment({
   const change = (next: typeof value) => {
     setPast((p) => [...p.slice(-18), value])
     setValue(next)
-    setChecked(false)
   }
   const dispatch = (action: any) => {
     const old = value.state.match.points ?? 0
@@ -249,7 +246,6 @@ function Experiment({
   const reset = () => {
     setValue(initial())
     setPast([])
-    setChecked(false)
     setHint(false)
   }
   const discovered = value.state.evidence.discoveries
@@ -372,7 +368,6 @@ function Experiment({
                       if (previous) {
                         setValue(previous)
                         setPast((p) => p.slice(0, -1))
-                        setChecked(false)
                       }
                     }}
                   >
@@ -473,46 +468,18 @@ function Experiment({
                   )}
                 </div>
               </ConsolePrancha>
-              <SceneDescobertas
-                goals={goals as any}
-                resposta={
-                  checked
-                    ? complete
-                      ? 'Você fez todos os testes. Pode seguir para a próxima parte.'
-                      : 'Ainda falta: ' +
-                        goals
-                          .filter((g) => !g.complete)
-                          .map((g) =>
-                            g.id === 'second-target'
-                              ? 'testar outro esconderijo'
-                              : g.id === 'repeat'
-                                ? 'tocar de novo no mesmo lugar'
-                                : g.pedido || 'testar a cena',
-                          )
-                          .join(' ')
-                    : ''
-                }
-              >
+              <SceneDescobertas goals={goals as any}>
                 {!complete && (
                   <SceneButton onClick={() => setHint((v) => !v)}>
                     <Lightbulb size={16} />
                     Uma pista
                   </SceneButton>
                 )}
-                <SceneButton
-                  tom={complete ? 'gesto' : 'ferramenta'}
-                  className="ml-auto"
-                  onClick={() => (complete ? onComplete() : setChecked(true))}
-                >
-                  {complete ? (
-                    'Continuar'
-                  ) : (
-                    <>
-                      <Check size={16} />
-                      Conferir
-                    </>
-                  )}
-                </SceneButton>
+                {complete && (
+                  <SceneButton tom="gesto" className="ml-auto" onClick={onComplete}>
+                    Continuar
+                  </SceneButton>
+                )}
               </SceneDescobertas>
             </ConsoleActions>
           </SceneConsole>

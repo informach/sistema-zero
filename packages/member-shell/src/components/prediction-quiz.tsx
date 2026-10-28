@@ -16,6 +16,7 @@ import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { GardenQuizScene } from './quiz-garden-scene'
+import { IslandQuizScene } from './quiz-island-scene'
 import { LighthouseQuizScene } from './quiz-lighthouse-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */
@@ -308,7 +309,14 @@ function PredictionQuizSession({
             {checked ? <CheckCircle2 size={16} aria-hidden /> : <Hand size={16} aria-hidden />}
             {checked ? 'Resultado da experiência' : 'Antes do teste'}
           </span>
-          {question.predictionScene?.startsWith('lighthouse-') ? (
+          {question.predictionScene?.startsWith('island-') ? (
+            <IslandQuizScene
+              key={question.id}
+              scene={question.predictionScene}
+              result={checked}
+              onAnimating={setScenePlaying}
+            />
+          ) : question.predictionScene?.startsWith('lighthouse-') ? (
             <LighthouseQuizScene
               key={question.id}
               scene={question.predictionScene}
@@ -428,7 +436,7 @@ function PredictionQuizSession({
           {!checked ? (
             <SceneButton
               tom="gesto"
-              disabled={selected === null || busy}
+              disabled={selected === null || busy || scenePlaying}
               onClick={() => void reveal()}
             >
               <Play size={16} aria-hidden />

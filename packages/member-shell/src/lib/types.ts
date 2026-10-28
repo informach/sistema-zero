@@ -456,6 +456,10 @@ export interface QuizQuestion {
     | 'lighthouse-memory'
     | 'lighthouse-door'
     | 'lighthouse-retest'
+    | 'island-view'
+    | 'island-position'
+    | 'island-height'
+    | 'island-retest'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

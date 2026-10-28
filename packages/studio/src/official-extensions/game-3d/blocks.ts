@@ -25,6 +25,85 @@ const AUDIO_ACTION_PLACEMENT = {
 
 const gameThreeDBlockDefinitions = [
   {
+    type: 'sz_g3d_top_down',
+    placement: 'loop-command',
+    message0: 'Andar com %1 usando WASD/setas, velocidade %2',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Move no chão a cada quadro, vira para onde anda e respeita as áreas permitidas. A velocidade é por segundo; não precisa de grupo nem de outro comando para aplicar a velocidade.',
+  },
+  {
+    type: 'sz_g3d_walk_area',
+    placement: 'start-only-command',
+    message0: 'Permitir %1 andar em x de %2 até %3 e z de %4 até %5',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' },
+      { type: 'input_value', name: 'MINX', check: 'JSValue' },
+      { type: 'input_value', name: 'MAXX', check: 'JSValue' },
+      { type: 'input_value', name: 'MINZ', check: 'JSValue' },
+      { type: 'input_value', name: 'MAXZ', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Delimita uma parte do chão. Use mais de uma área para formar caminhos ligados. O personagem fica nas áreas permitidas ao usar Andar com WASD/setas.',
+  },
+  {
+    type: 'sz_g3d_frame_scene',
+    placement: 'command',
+    message0: 'Enquadrar a cena %1: largura %2 altura %3 profundidade %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Mostra a área de jogo centrada em x e z zero, a partir do chão. Ajusta a câmera também quando a prévia muda de tamanho.',
+  },
+  {
+    type: 'sz_g3d_walk_animations',
+    placement: 'start-only-command',
+    message0: 'Animações de %1: parado %2, andando %3',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' },
+      { type: 'field_model_clip_picker', name: 'IDLE', text: 'parado' },
+      { type: 'field_model_clip_picker', name: 'WALK', text: 'andando' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Escolhe as animações usadas por Andar com WASD/setas. Um personagem parado usa a primeira; enquanto anda usa a segunda.',
+  },
+  {
+    type: 'sz_g3d_on_touch',
+    placement: 'event',
+    bodyContext: 'game-event-body',
+    message0: 'Quando %1 encostar em %2',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' },
+      { type: 'field_name_picker', name: 'OTHER', text: 'chave', kind: 'g3d-object' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Executa ao começar o encontro entre os dois. Só repete depois de se afastarem e encostarem de novo.',
+  },
+
+  {
     type: 'sz_g3d_create_scene',
     placement: 'start-only-command',
     message0: 'Criar cena 3D no canvas %1 e guardar em %2',
@@ -2106,6 +2185,14 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
  * valor padrão preenchido ao arrastar da paleta. Cresce a cada campo convertido.
  */
 const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  sz_g3d_top_down: { SPEED: numShadow(3) },
+  sz_g3d_walk_area: {
+    MINX: numShadow(-10),
+    MAXX: numShadow(10),
+    MINZ: numShadow(-5),
+    MAXZ: numShadow(5),
+  },
+  sz_g3d_frame_scene: { W: numShadow(24), H: numShadow(8), D: numShadow(16) },
   sz_g3d_set_camera: { X: numShadow(4), Y: numShadow(3), Z: numShadow(6) },
   sz_g3d_create_box: { SIZE: numShadow(1) },
   sz_g3d_create_model_file: { SIZE: numShadow(1) },

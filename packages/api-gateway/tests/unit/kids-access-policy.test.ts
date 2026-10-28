@@ -73,3 +73,23 @@ describe('áreas separadas no servidor', () => {
     expect(kidsMayAccess(parent, '/payments/my', 'GET', 'pai')).toBe(true)
   })
 })
+
+describe('Arquipélago Vagalume', () => {
+  test('a criança joga, mas não muda o tempo da família', () => {
+    for (const [method, path] of [
+      ['GET', '/arquipelago/acesso'],
+      ['PUT', '/arquipelago/salvamento'],
+      ['POST', '/arquipelago/tempo'],
+    ]) {
+      expect(kidsMayAccess(student, path as string, method as string, 'aluno')).toBe(true)
+      expect(kidsMayAccess(parent, path as string, method as string, 'responsavel')).toBe(false)
+    }
+    for (const path of ['/arquipelago/familia/limite', '/arquipelago//familia/limite']) {
+      expect(kidsMayAccess(student, path, 'PUT', 'aluno')).toBe(false)
+    }
+  })
+  test('o responsável só muda o limite diário', () => {
+    expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'GET', 'responsavel')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'PUT', 'responsavel')).toBe(true)
+  })
+})

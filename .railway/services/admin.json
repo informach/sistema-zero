@@ -6,6 +6,7 @@
       "/packages/admin/**",
       "/packages/core/**",
       "/packages/member-shell/**",
+      "/packages/avatar-quarto/**",
       "/packages/helpdesk-contracts/**",
       "/packages/pinta/**",
       "/packages/studio/**",

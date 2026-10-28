@@ -1,5 +1,5 @@
-import { Card } from '@sistemazero/ui/card'
-import { Lock } from 'lucide-react'
+import { creatorCourseLockFromBody } from '@sistemazero/member-shell/lib/creator-journey-presentation'
+import { ArrowRight, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getEnv } from '@/lib/env'
@@ -10,26 +10,43 @@ import { LessonPlayer } from './lesson-player-client'
 
 export const dynamic = 'force-dynamic'
 
-/** Recado gentil quando o aluno tenta abrir uma aula travada (423 do members). */
-function LessonLockedNotice({ courseSlug }: { courseSlug: string }) {
+/**
+ * O recado de aula fechada (423 do members) no Estúdio à noite: o cadeado num ladrilho, o porquê e
+ * o caminho de volta no botão amarelo. Serve à trava sequencial e à da Jornada do Criador.
+ */
+function LockedNotice({
+  kicker,
+  title,
+  message,
+  href,
+  cta,
+}: {
+  kicker: string
+  title: string
+  message: string
+  href: string
+  cta: string
+}) {
   return (
-    <Card className="mx-auto flex max-w-md flex-col items-center gap-4 p-8 text-center">
-      <span className="flex size-14 items-center justify-center rounded-full bg-muted">
-        <Lock className="size-7 text-muted-foreground" />
-      </span>
-      <div className="flex flex-col gap-1">
-        <h1 className="sz-display text-xl">Aula bloqueada</h1>
-        <p className="text-sm text-muted-foreground">
-          Conclua a aula anterior para liberar esta. Você avança uma de cada vez, na ordem.
-        </p>
-      </div>
-      <Link
-        href={`/cursos/${encodeURIComponent(courseSlug)}`}
-        className="sz-btn-gradient mt-1 self-center"
+    <section
+      role="status"
+      className="sz-card mx-auto my-10 flex w-full max-w-xl flex-col items-start gap-4 p-7 md:p-9"
+    >
+      <span
+        aria-hidden="true"
+        className="inline-flex size-14 items-center justify-center rounded-2xl bg-(--carta-2) text-(--cta)"
       >
-        Voltar para o curso
+        <Lock className="size-7" />
+      </span>
+      <div className="flex flex-col gap-1.5">
+        <span className="sz-kicker">{kicker}</span>
+        <h1 className="sz-h3">{title}</h1>
+        <p className="m-0 text-muted-foreground">{message}</p>
+      </div>
+      <Link href={href} prefetch={false} className="sz-btn">
+        {cta} <ArrowRight aria-hidden />
       </Link>
-    </Card>
+    </section>
   )
 }
 
@@ -51,20 +68,29 @@ export default async function LessonPage({
   if (courseRes.status === 423) {
     const lock = creatorCourseLockFromBody(courseRes.body, 'adult')
     return (
-      <Card className="mx-auto flex max-w-lg flex-col gap-4 p-8">
-        <h1 className="sz-display text-xl">{lock.title}</h1>
-        <p>{lock.message}</p>
-        <Link href={lock.href} className="sz-btn-gradient self-start">
-          {lock.cta}
-        </Link>
-      </Card>
+      <LockedNotice
+        kicker="Jornada do Criador"
+        title={lock.title}
+        message={lock.message}
+        href={lock.href}
+        cta={lock.cta}
+      />
     )
   }
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
   const course = courseRes.body
 
   // Aula travada pela trava sequencial (members → 423): recado gentil, não erro.
-  if (lessonRes.status === 423) return <LessonLockedNotice courseSlug={course.slug} />
+  if (lessonRes.status === 423)
+    return (
+      <LockedNotice
+        kicker={course.title}
+        title="Aula bloqueada"
+        message="Conclua a aula anterior para liberar esta. Você avança uma de cada vez, na ordem."
+        href={`/cursos/${encodeURIComponent(course.slug)}`}
+        cta="Voltar para o curso"
+      />
+    )
   if (lessonRes.status === 404) notFound()
   if (lessonRes.status !== 200 || !lessonRes.body) throw new Error('Falha ao carregar a aula')
 
@@ -103,5 +129,3 @@ export default async function LessonPage({
     />
   )
 }
-
-import { creatorCourseLockFromBody } from '@sistemazero/member-shell/lib/creator-journey-presentation'

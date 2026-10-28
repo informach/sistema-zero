@@ -38,6 +38,11 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   // o contexto WebGL (cena preta). Acima do teto, addMesh devolve null em SILÊNCIO
   // (nunca lança — setPosition/setRotation já ignoram null) e avisa UMA vez.
   var MAX_OBJECTS = 300;
+  // Luz do motor (27/10/2026; igual à oficina do Molda). O three.js divide a luz por pi:
+  // com 0,6 + 0,9 a frente saía com ~78% da cor. Assim sai a cor escolhida (frente 0,99,
+  // topo ~1,03, sombra 0,83). Os blocos de luz da criança SOMAM a esta.
+  var LIGHT_AMBIENT = 2.1;
+  var LIGHT_SUN = 1.7;
   var MAX_LIGHTS = 16;
   var MAX_ROWS = 60;
   var MAX_ROWS_PER_CALL = 30;
@@ -502,8 +507,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (!options.camera) camera.position.set(0, 0, 5);
     // Luz para o MeshStandardMaterial ser visível sem passo extra.
     if (!options.skipLights) {
-      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-      var dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      scene.add(new THREE.AmbientLight(0xffffff, LIGHT_AMBIENT));
+      var dir = new THREE.DirectionalLight(0xffffff, LIGHT_SUN);
       dir.position.set(3, 5, 4);
       dir.castShadow = true;
       if (dir.shadow && dir.shadow.camera) {
@@ -513,6 +518,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
         dir.shadow.camera.right = 20;
         dir.shadow.camera.top = 20;
         dir.shadow.camera.bottom = -20;
+        // Sem isto a superfície faz sombra nela mesma em listras (acne), mais visível nas
+        // faces quase de lado para o sol, como as paredes curvas de um modelo.
+        dir.shadow.normalBias = 0.05;
       }
       scene.add(dir);
     }
@@ -1232,6 +1240,73 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     else if (keys.KeyS || keys.ArrowDown) s.vz = sp;
   }
 
+  // Percurso iniciante: uma ação de movimento, sem listas nem leitura de propriedades.
+  function walkArea(obj, minX, maxX, minZ, maxZ) {
+    if (!obj || !obj.position) return;
+    var a = finite(minX, -10), b = finite(maxX, 10), c = finite(minZ, -5), d = finite(maxZ, 5);
+    var areas = szData(obj).walkAreas || (szData(obj).walkAreas = []);
+    if (areas.length >= 128) return;
+    areas.push({ minX: Math.min(a, b), maxX: Math.max(a, b), minZ: Math.min(c, d), maxZ: Math.max(c, d) });
+  }
+  function walkAnimations(obj, idle, walking) {
+    if (!obj || !obj.position) return;
+    szData(obj).walkClips = { idle: String(idle || ''), walking: String(walking || '') };
+    if (idle) playAnimation(obj, idle, 'repetir');
+  }
+  function walkAllowed(areas, x, z) {
+    if (!areas || !areas.length) return true;
+    for (var i = 0; i < areas.length; i++) {
+      var a = areas[i];
+      if (x >= a.minX && x <= a.maxX && z >= a.minZ && z <= a.maxZ) return true;
+    }
+    return false;
+  }
+  function topDown(obj, speed) {
+    if (!obj || !obj.position) return;
+    controlWithKeys(obj, clamp(speed, 0, 100, 3));
+    var s = szData(obj), scale = frameScale(obj), startX = obj.position.x, startZ = obj.position.z;
+    var dx = s.vx * scale, dz = s.vz * scale;
+    // Verifica o caminho também, para não saltar por cima de um intervalo sem chão.
+    var steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.05));
+    for (var i = 0; i < steps; i++) {
+      var x = obj.position.x + dx / steps, z = obj.position.z + dz / steps;
+      if (!walkAllowed(s.walkAreas, x, z)) break;
+      obj.position.x = x; obj.position.z = z;
+    }
+    var moving = obj.position.x !== startX || obj.position.z !== startZ;
+    if (moving) faceVelocity(obj);
+    else { s.vx = 0; s.vz = 0; }
+    if (s.walkClips) {
+      var clip = moving ? s.walkClips.walking : s.walkClips.idle;
+      if (clip) playAnimation(obj, clip, 'repetir');
+    }
+  }
+  function onTouch(a, b, fn) {
+    if (!a || !b || a === b || typeof fn !== 'function') return;
+    if (worldOf(a) !== worldOf(b)) return;
+    rules.onTouchGroup(a, [b], fn);
+  }
+  // Enquadramento de uma área conhecida, independente do tamanho do painel da prévia.
+  function frameScene(world, width, height, depth) {
+    if (!world || !world.camera) return;
+    var w = clamp(width, 1, 500, 24), h = clamp(height, 1, 500, 8), d = clamp(depth, 1, 500, 16);
+    usePerspectiveCamera(world, true);
+    activateCameraMode(world, 'framed');
+    attachCameraToScene(world);
+    world._resizeCamera = function (cam, nw, nh) {
+      cam.aspect = nw / nh;
+      var tan = Math.tan(cam.fov * Math.PI / 360), up = Math.sqrt(3) / 2;
+      var projectedHeight = h / 2 * up + d / 4;
+      var projectedDepth = h / 4 + d / 2 * up;
+      var distance = 1.12 * Math.max(w / 2 / (tan * cam.aspect), projectedHeight / tan) + projectedDepth;
+      cam.far = Math.max(1000, distance + projectedDepth + 10);
+      cam.position.set(0, h / 2 + distance / 2, distance * up);
+      cam.lookAt(0, h / 2, 0);
+      cam.updateProjectionMatrix();
+    };
+    world._resize();
+  }
+
   // Câmera "segue de longe": guarda o enquadramento (offset) da hora em que ligou —
   // ou o da "distância da câmera", se a criança escolheu — e o _updateCameras
   // recompõe a posição a cada quadro.
@@ -1485,6 +1560,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       d.shadow.camera.near = 0.5; d.shadow.camera.far = 60;
       d.shadow.camera.left = -20; d.shadow.camera.right = 20;
       d.shadow.camera.top = 20; d.shadow.camera.bottom = -20;
+      d.shadow.normalBias = 0.05;
     }
     var tracked = _trackLight(world, d);
     if (tracked && d.castShadow) {
@@ -2473,6 +2549,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function activateCameraMode(world, mode) {
     if (!world) return;
     var previous = world._cameraMode;
+    if (previous === 'framed' && mode !== 'framed') world._resizeCamera = null;
     world._cameraMode = mode;
     if (mode !== 'follow') {
       world._camFollow = null;
@@ -3066,7 +3143,43 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
   }
   // Caixa real do objeto no mundo; reaproveita a caixa "target" quando vem uma.
-  function boxOf(obj, target) { return (target || new THREE.Box3()).setFromObject(obj); }
+  // Peça de EFEITO de um modelo (nó com szSemCaixa nos extras do .glb, como o feixe de luz
+  // de um farol) não entra: girando, ela faria a área de toque crescer e encolher, e o
+  // encontro com o objeto começaria e acabaria sozinho. Sem peça marcada, é o setFromObject.
+  // Por modelo montado (WeakMap: o userData é copiado por JSON nas cópias de grupo).
+  var _partBox = null;
+  var _noBoxByRoot = new WeakMap();
+  function hasNoBoxParts(obj) {
+    var s = obj && obj.userData && obj.userData.sz;
+    var root = s && s.modelRoot;
+    if (!root) return false;
+    var known = _noBoxByRoot.get(root);
+    if (known === undefined) {
+      known = false;
+      root.traverse(function (n) { if (n.userData && n.userData.szSemCaixa) known = true; });
+      _noBoxByRoot.set(root, known);
+    }
+    return known;
+  }
+  function expandWithoutEffects(box, o) {
+    if (o.userData && o.userData.szSemCaixa) return;
+    o.updateWorldMatrix(false, false);
+    var g = o.geometry;
+    if (g) {
+      if (g.boundingBox === null) g.computeBoundingBox();
+      if (!_partBox) _partBox = new THREE.Box3();
+      _partBox.copy(g.boundingBox).applyMatrix4(o.matrixWorld);
+      box.union(_partBox);
+    }
+    for (var i = 0; i < o.children.length; i++) expandWithoutEffects(box, o.children[i]);
+  }
+  function boxOf(obj, target) {
+    var box = target || new THREE.Box3();
+    if (!hasNoBoxParts(obj)) return box.setFromObject(obj);
+    box.makeEmpty();
+    expandWithoutEffects(box, obj);
+    return box;
+  }
 
   // ---- Modelos compostos do Kit Travessia (escala 1 tile = 1 unidade) ----
   function lambert(color, flat) {
@@ -3150,6 +3263,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
 
   function setupCrossingLights(world) {
+    // Fica com a luz de antes de 27/10/2026: a paleta foi feita para ela (a grama virava limão).
     var amb = new THREE.AmbientLight(0xffffff, 0.6);
     world.scene.add(amb);
     var dir = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -3160,6 +3274,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       dir.shadow.camera.left = -20; dir.shadow.camera.right = 20;
       dir.shadow.camera.top = 20; dir.shadow.camera.bottom = -20;
       dir.shadow.camera.near = 1; dir.shadow.camera.far = 80;
+      dir.shadow.normalBias = 0.05;
     }
     world.scene.add(dir);
     world._shadowSun = dir;
@@ -3783,8 +3898,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     });
     var scene = world.scene;
     // Luzes y-up (a setupCrossingLights é z-up): ambiente + direcional como a referência.
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    var dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    scene.add(new THREE.AmbientLight(0xffffff, LIGHT_AMBIENT));
+    var dir = new THREE.DirectionalLight(0xffffff, LIGHT_SUN);
     dir.position.set(10, 20, 0);
     scene.add(dir);
     world._lightCount = Math.min(MAX_LIGHTS, (world._lightCount || 0) + 2);
@@ -4046,6 +4161,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     setVelocity: setVelocity,
     applyGravity: applyGravity,
     jump: jump,
+    topDown: topDown, walkArea: walkArea, walkAnimations: walkAnimations, onTouch: onTouch, frameScene: frameScene,
     controlWithKeys: controlWithKeys,
     keyDown: keyDown,
     keyPressed: keyPressed,

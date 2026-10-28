@@ -31,9 +31,11 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import {
   CurriculumLoadNotice,
+  creatorRoleLabel,
   useCreatorCurriculum,
 } from '@/components/admin/course-curriculum-placement'
-import { EmptyState } from '@/components/admin/empty-state'
+import { CreatorJourneyGrid } from '@/components/admin/creator-journey-grid'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
@@ -81,6 +83,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [loading, setLoading] = useState(true)
   const [journeyItems, setJourneyItems] = useState<CourseView[]>([])
   const [journeyLoading, setJourneyLoading] = useState(true)
+  const [journeyError, setJourneyError] = useState(false)
+  // A lista inteira de cursos gravados só serve à Jornada: no Kids (painel histórico ou grade do
+  // currículo) e no Adultos só com o currículo novo.
+  const journeyWanted = platform === 'kids' || Boolean(curriculumState.curriculum)
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CourseView | null>(null)
@@ -128,12 +134,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }, [offset, q, status, modality, platform, loadAuthority])
 
   const loadJourney = useCallback(async () => {
-    // O painel da Jornada só existe no modo Kids — no Adultos nem busca (a
-    // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
-    // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
-    if (platform !== 'kids') {
+    // A grade da Jornada precisa de TODOS os cursos gravados da plataforma (a varredura pagina a
+    // lista inteira). Os call-sites pós-save chamam sem condição e viram no-op quando a lente não
+    // usa a lista. A lista anterior sai na hora: a grade nunca confere uma plataforma com os
+    // cursos da outra (nem quando a leitura nova falha).
+    setJourneyItems([])
+    setJourneyError(false)
+    if (!journeyWanted) {
       journeyAuthority.invalidate()
-      setJourneyItems([])
       setJourneyLoading(false)
       return
     }
@@ -145,20 +153,16 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         // servidor e é repetido aqui (members antigo ignora o parâmetro).
         loadAllPages((pageOffset, limit) =>
           apiGet<Paginated<CourseView>>(
-            `/api/members/courses?audience=kids&modality=recorded&limit=${limit}&offset=${pageOffset}`,
+            `/api/members/courses?audience=${platform}&modality=recorded&limit=${limit}&offset=${pageOffset}`,
           ),
         ),
       {
         onSuccess: (courses) => setJourneyItems(courses.filter((course) => !isLiveCourse(course))),
-        onError: (error) => {
-          toast.error(
-            (error as ApiError).message ?? 'Não conseguimos conferir a Jornada do Criador.',
-          )
-        },
+        onError: () => setJourneyError(true),
         onSettled: () => setJourneyLoading(false),
       },
     )
-  }, [platform, journeyAuthority])
+  }, [platform, journeyWanted, journeyAuthority])
 
   useEffect(() => {
     const timer = setTimeout(() => void load(), 250)
@@ -243,21 +247,19 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
 
       {curriculumState.status !== 'ready' ? (
         <CurriculumLoadNotice state={curriculumState} />
+      ) : curriculumState.curriculum && journeyError ? (
+        <LoadError what="os cursos da Jornada do Criador" onRetry={() => void loadJourney()} />
       ) : curriculumState.curriculum ? (
-        <section className="space-y-3 rounded-xl border bg-card p-5">
-          <h2 className="font-semibold">Currículo da Jornada do Criador</h2>
-          <p className="text-sm text-muted-foreground">
-            {curriculumState.curriculum.stages.length} postos com duas bases, missão e poderes.{' '}
-            {curriculumState.curriculum.masteries.length} áreas de maestria. Os vínculos de cursos e
-            as regras são publicados no editor da jornada.
-          </p>
-          <Link
-            href={`/admin/professor/jornada-${platform === 'adult' ? 'adulta' : 'kids'}`}
-            className="inline-flex min-h-10 items-center font-medium text-primary underline"
-          >
-            Abrir postos, poderes e maestrias
-          </Link>
-        </section>
+        <CreatorJourneyGrid
+          curriculum={curriculumState.curriculum}
+          courses={journeyItems}
+          loading={journeyLoading}
+          audience={platform}
+          canWrite={canWrite}
+          onEditCourse={openEdit}
+        />
+      ) : curriculumState.loaded && platform === 'kids' && journeyError ? (
+        <LoadError what="os cursos da Jornada do Criador" onRetry={() => void loadJourney()} />
       ) : curriculumState.loaded && platform === 'kids' ? (
         <JourneyReadiness
           courses={journeyItems}
@@ -390,16 +392,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                       <div className="mt-1 text-xs text-muted-foreground">
                         {creatorJourneyCoursePlacements(curriculumState.curriculum, c.id)
                           .map((placement) => {
-                            const role = {
-                              base2d: 'Base 2D',
-                              base3d: 'Base 3D',
-                              mission: 'Missão',
-                              power: 'Poder',
-                              extra: 'Extra',
-                              'mastery-nucleus': 'Núcleo',
-                              'mastery-workshop': 'Oficina',
-                              'mastery-project': 'Projeto',
-                            }[placement.role]
+                            const role = creatorRoleLabel(placement.role)
                             return `${role} · ${placement.level ? curriculumState.curriculum!.stages.find((stage) => stage.level === placement.level)?.title : `${curriculumState.curriculum!.masteries.find((area) => area.id === placement.masteryId)?.title} · nível ${placement.masteryLevel}`}`
                           })
                           .join(' / ') ||

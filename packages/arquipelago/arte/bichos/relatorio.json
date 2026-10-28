@@ -1,0 +1,280 @@
+{
+  "baiacu": {
+    "grupo": "recife",
+    "triangulos": 1542,
+    "kb": 70.6,
+    "clipes": ["nadar", "parado"],
+    "materiais": [
+      "barbatana",
+      "barriga",
+      "boca",
+      "bochecha",
+      "brilho",
+      "corpo",
+      "espinho",
+      "olho",
+      "pinta"
+    ]
+  },
+  "bem-te-vi": {
+    "grupo": "bosque",
+    "triangulos": 2350,
+    "kb": 98.3,
+    "clipes": ["pousado", "voar"],
+    "materiais": [
+      "asa",
+      "barriga",
+      "bico",
+      "bochecha",
+      "brilho",
+      "faixa",
+      "mascara",
+      "olho",
+      "pe",
+      "penas"
+    ]
+  },
+  "borboleta": {
+    "grupo": "bosque",
+    "triangulos": 1024,
+    "kb": 55.9,
+    "clipes": ["pousado", "voar"],
+    "materiais": ["antena", "asa", "borda", "brilho", "corpo", "olho", "ponto"]
+  },
+  "cachorro": {
+    "grupo": "adotar",
+    "triangulos": 3588,
+    "kb": 145.5,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "brilho",
+      "claro",
+      "coleira",
+      "medalha",
+      "nariz",
+      "olho",
+      "orelha",
+      "pelo"
+    ]
+  },
+  "cachorro-filhote": {
+    "grupo": "adotar",
+    "triangulos": 3588,
+    "kb": 145.6,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "brilho",
+      "claro",
+      "coleira",
+      "medalha",
+      "nariz",
+      "olho",
+      "orelha",
+      "pelo"
+    ]
+  },
+  "coelho": {
+    "grupo": "adotar",
+    "triangulos": 3252,
+    "kb": 137.1,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": ["boca", "bochecha", "brilho", "claro", "dente", "nariz", "olho", "orelha", "pelo"]
+  },
+  "coelho-filhote": {
+    "grupo": "adotar",
+    "triangulos": 3252,
+    "kb": 137.2,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": ["boca", "bochecha", "brilho", "claro", "dente", "nariz", "olho", "orelha", "pelo"]
+  },
+  "dino-montaria": {
+    "grupo": "montaria",
+    "triangulos": 5994,
+    "kb": 215.9,
+    "clipes": ["andar", "correr", "parado", "pular"],
+    "materiais": [
+      "barriga",
+      "bico",
+      "boca",
+      "bochecha",
+      "brilho",
+      "couro",
+      "couro_escuro",
+      "crista",
+      "manta",
+      "manta_borda",
+      "metal",
+      "olho",
+      "pele",
+      "pinta",
+      "unha"
+    ]
+  },
+  "gato": {
+    "grupo": "adotar",
+    "triangulos": 3812,
+    "kb": 167.3,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": [
+      "bigode",
+      "boca",
+      "bochecha",
+      "brilho",
+      "claro",
+      "coleira",
+      "iris",
+      "medalha",
+      "nariz",
+      "olho",
+      "orelha",
+      "pelo"
+    ]
+  },
+  "gato-filhote": {
+    "grupo": "adotar",
+    "triangulos": 3812,
+    "kb": 168.1,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": [
+      "bigode",
+      "boca",
+      "bochecha",
+      "brilho",
+      "claro",
+      "coleira",
+      "iris",
+      "medalha",
+      "nariz",
+      "olho",
+      "orelha",
+      "pelo"
+    ]
+  },
+  "passaro-das-nuvens": {
+    "grupo": "nuvens",
+    "triangulos": 2198,
+    "kb": 88.6,
+    "clipes": ["pousado", "voar"],
+    "materiais": ["asa", "barriga", "bico", "bochecha", "brilho", "crista", "olho", "pe", "penas"]
+  },
+  "peixe-cirurgiao": {
+    "grupo": "recife",
+    "triangulos": 1298,
+    "kb": 68.7,
+    "clipes": ["nadar", "parado"],
+    "materiais": ["amarelo", "barbatana", "boca", "brilho", "corpo", "escuro", "olho"]
+  },
+  "peixe-palhaco": {
+    "grupo": "recife",
+    "triangulos": 2182,
+    "kb": 98.4,
+    "clipes": ["nadar", "parado"],
+    "materiais": ["barbatana", "boca", "bochecha", "borda", "brilho", "corpo", "faixa", "olho"]
+  },
+  "pinguim": {
+    "grupo": "pico",
+    "triangulos": 2198,
+    "kb": 89.8,
+    "clipes": ["andar", "deslizar", "parado"],
+    "materiais": ["barriga", "bico", "bochecha", "brilho", "olho", "pe", "penas"]
+  },
+  "pinguim-filhote": {
+    "grupo": "pico",
+    "triangulos": 2198,
+    "kb": 89.9,
+    "clipes": ["andar", "deslizar", "parado"],
+    "materiais": ["barriga", "bico", "bochecha", "brilho", "olho", "pe", "penas"]
+  },
+  "porquinho": {
+    "grupo": "adotar",
+    "triangulos": 2996,
+    "kb": 135.6,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "brilho",
+      "escuro",
+      "mancha",
+      "nariz",
+      "olho",
+      "orelha",
+      "pe",
+      "pelo"
+    ]
+  },
+  "porquinho-filhote": {
+    "grupo": "adotar",
+    "triangulos": 2996,
+    "kb": 136.0,
+    "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "brilho",
+      "escuro",
+      "mancha",
+      "nariz",
+      "olho",
+      "orelha",
+      "pe",
+      "pelo"
+    ]
+  },
+  "rex-filhote": {
+    "grupo": "vale",
+    "triangulos": 3238,
+    "kb": 122.8,
+    "clipes": ["andar", "parado", "pular"],
+    "materiais": [
+      "barriga",
+      "boca",
+      "bochecha",
+      "brilho",
+      "espinho",
+      "olho",
+      "pele",
+      "pinta",
+      "unha"
+    ]
+  },
+  "tartaruguinha": {
+    "grupo": "recife",
+    "triangulos": 1908,
+    "kb": 81.9,
+    "clipes": ["nadar", "parado"],
+    "materiais": [
+      "barriga",
+      "boca",
+      "bochecha",
+      "borda",
+      "brilho",
+      "casco",
+      "olho",
+      "pele",
+      "placa"
+    ]
+  },
+  "triceratops-filhote": {
+    "grupo": "vale",
+    "triangulos": 3664,
+    "kb": 139.5,
+    "clipes": ["andar", "parado", "pular"],
+    "materiais": [
+      "babado",
+      "barriga",
+      "boca",
+      "bochecha",
+      "brilho",
+      "chifre",
+      "olho",
+      "pele",
+      "pinta",
+      "unha"
+    ]
+  }
+}

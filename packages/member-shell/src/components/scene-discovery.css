@@ -199,6 +199,15 @@
     top: 10px;
   }
 }
+/* AMPLIADA (27/10/2026, print dela): o painel da cena estica até o fim, como nas outras
+ * experiências, e o palco encaixa na altura que sobra. Preso no alto, ele encolhia para 395px
+ * numa janela de 960, ganhava uma barra própria e a cena ficava MENOR do que na aula. O
+ * `relative` é o do painel fora daqui (contém os `sr-only`). */
+.sz-scene-workspace--expanded .sz-discovery-proposed .sz-scene-console-visual {
+  align-self: stretch;
+  position: relative;
+  top: auto;
+}
 @media (max-width: 1000px) {
   .sz-discovery-trio .sz-discovery-note {
     padding: 8px;
@@ -896,4 +905,84 @@
   font-size: 22px;
   font-variant-numeric: tabular-nums;
   color: var(--color-primary);
+}
+.sz-island-world {
+  position: relative;
+  width: 100%;
+  min-height: 22rem;
+  aspect-ratio: 1.1;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #94d5f5;
+}
+.sz-island-canvas {
+  position: absolute;
+  inset: 0;
+}
+.sz-island-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sz-island-world > p {
+  position: absolute;
+  inset: 40% 1rem auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: var(--color-card);
+  text-align: center;
+}
+.sz-island-view {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  background: #fff;
+  color: #183246;
+  font-weight: 800;
+}
+.sz-island-axis {
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+  min-width: 0;
+}
+.sz-island-axis legend {
+  font-weight: 800;
+  padding: 0 0.3rem;
+}
+.sz-island-axis input[type="range"] {
+  min-width: 2rem;
+  width: 100%;
+  flex: 1;
+  accent-color: var(--color-primary);
+}
+.sz-island-axis input[type="number"] {
+  width: 3.8rem;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.4rem;
+  background: var(--color-card);
+  color: inherit;
+}
+
+.sz-island-inputs {
+  display: grid;
+  gap: 14px;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.sz-island-inputs legend {
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.sz-island-inputs:disabled {
+  opacity: 0.55;
 }

@@ -6,6 +6,7 @@ export {
   studioProBuildRequestByteLength,
 } from '@sistemazero/core/studio/pro-build'
 export * from './behaviorAreas'
+export * from './courseModels'
 export * from './example'
 export * from './i18n'
 export * from './levels'

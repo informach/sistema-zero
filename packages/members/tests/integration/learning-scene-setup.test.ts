@@ -147,6 +147,43 @@ describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o playe
 })
 
 test.each([
+  {
+    arquivo: 'ilha-aula-1.manifesto.json',
+    chave: 'experiencia-ponto-de-vista',
+    commands: [
+      { type: 'island-view', view: 'side' },
+      { type: 'island-answer', answer: 'camera' },
+    ],
+  },
+  {
+    arquivo: 'ilha-aula-2.manifesto.json',
+    chave: 'experiencia-posicao-3d',
+    commands: [
+      { type: 'island-axis', axis: 'x', value: 4 },
+      { type: 'island-axis', axis: 'x', value: -4 },
+      { type: 'island-axis', axis: 'y', value: 4 },
+      { type: 'island-axis', axis: 'y', value: 0 },
+      { type: 'island-axis', axis: 'z', value: 4 },
+      { type: 'island-axis', axis: 'z', value: -4 },
+    ],
+  },
+  {
+    arquivo: 'ilha-aula-2.manifesto.json',
+    chave: 'experiencia-contato-3d',
+    commands: [
+      { type: 'island-test' },
+      { type: 'island-axis', axis: 'y', value: 1 },
+      { type: 'island-test' },
+    ],
+  },
+])('Ilha 3D: o servidor reproduz e confere $chave', async ({ arquivo, chave, commands }) => {
+  const { gravar, tentar } = preparar(blocoDoManifesto(arquivo, chave))
+  const respostas = await gravar([...commands])
+  expect(readExperimentSession('island-3d', respostas.sceneCheckpoint)).not.toBeNull()
+  expect((await tentar(respostas)).passed).toBe(true)
+})
+
+test.each([
   'complete',
   'undo',
   'reset',
