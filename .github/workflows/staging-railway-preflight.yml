@@ -13,7 +13,8 @@ jobs:
     name: railway-staging-readonly-preflight
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Railway pode pedir espera de mais de 17 minutos em leituras limitadas.
+    timeout-minutes: 30
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: 415d5a1c-5f75-432c-8445-b395d0977ce3
