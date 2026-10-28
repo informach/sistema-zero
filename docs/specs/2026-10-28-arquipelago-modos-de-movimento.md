@@ -9,25 +9,35 @@ partida e mudam na sala de testes. Plano geral:
 
 ## O contrato comum
 
-Cada modo é um objeto com quatro partes, como nos modos de movimento de Psychonauts 2:
+Cada modo é um objeto com entrar, atualizar e sair, como nos modos de movimento de Psychonauts 2.
+No código (`src/sistemas/modos/`, desde 28/10/2026), a atualização tem duas metades, porque o
+Rapier fica entre elas (os modos são puros e não chamam o Rapier):
 
 ```ts
 interface ModoDeMovimento {
   id: ModoDoCorpo
-  /** Pode entrar agora? (o corpo, o que está perto, o que a pessoa pede) */
-  podeEntrar(contexto: ContextoDoMovimento): boolean
-  entrar(contexto: ContextoDoMovimento): void
-  /** Um passo da física (sempre `PASSO_DA_FISICA`): devolve o deslocamento pedido ao Rapier. */
-  passo(contexto: ContextoDoMovimento, dt: number): void
-  /** Sai deixando a velocidade para o próximo (soltar o cipó vira pulo; o fim do escorregador
-   *  continua correndo). */
-  sair(contexto: ContextoDoMovimento): void
+  /** O modo ainda tem onde se segurar? (o cipó e o tronco somem com a ilha) */
+  valendo(c: EstadoDoCorpo, mundo: MundoDoMovimento): boolean
+  /** Um passo da física: escreve o deslocamento pedido (ou o lugar) e diz quem leva o corpo:
+   *  o controlador do chão, o do cipó (sem grudar no chão) ou direto. */
+  passo(c: EstadoDoCorpo, e: EntradaDoPasso, mundo: MundoDoMovimento): 'chao' | 'cipo' | 'direto'
+  /** Depois do controlador (o deslocamento de verdade e se pisou): acerta o lugar e troca de
+   *  modo quando for a hora. Devolve se gastou o "usar". */
+  depois(c, e, mundo, mov, pisou, aviso): boolean
 }
 ```
 
-- O `ContextoDoMovimento` tem o controle (as ações, nunca o dispositivo), o corpo (posição,
-  velocidade, no chão ou não), o que a ilha registrou por perto (`movimento.cipos`, `troncos`,
-  `aguas` e os novos) e a hora do jogo. Nada de React nem de three: os modos são regras puras em
+- **Entrar** é uma função do modo que recebe o corpo e o objeto (`pegarCipo`, `agarrarTronco`), e
+  o **pode entrar** é a pergunta que o modo do chão faz depois de cada passo (`cipoAoAlcance`,
+  `troncoContra`). **Sair** é `mudarModo` com a velocidade deixada no `embalo` e no `velY`
+  (soltar o cipó solta a corda; soltar o tronco marca a hora).
+- `MODOS` (`sistemas/modos/index.ts`) liga cada `ModoDoCorpo` ao seu modo; o `personagem.tsx`
+  chama o ativo, roda o controlador que ele pediu e desenha. Testes: `tests/modos.test.ts`.
+
+- A `EntradaDoPasso` tem o controle (as ações, nunca o dispositivo, já na direção da tela), o
+  corpo antes do passo e a hora; o `EstadoDoCorpo`, a posição, as velocidades, no chão ou não; o
+  `MundoDoMovimento`, o que a ilha registrou por perto (`movimento.cipos`, `troncos`, `aguas` e
+  os novos). Nada de React nem de three: os modos são regras puras em
   `sistemas/`, testadas sozinhas, e o `personagem.tsx` só liga o modo ativo ao Rapier e ao desenho.
 - Transições guardam a continuidade: a velocidade de saída de um modo é a de entrada do outro
   (`embalo`), e nenhuma troca pode deixar o corpo preso dentro de um colisor (teste em cada modo).

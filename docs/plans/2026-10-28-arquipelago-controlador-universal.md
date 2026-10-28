@@ -105,6 +105,11 @@ caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os mo
   `passo` e `sair` (regras puras em `sistemas/`), sem mudar o comportamento (os testes e a
   conferência no navegador de hoje passando iguais). Depois, os quatro modos novos do Bosque, um por
   vez, cada um com a animação dele no Blender.
+- Primeira metade feita em 28/10/2026: `sistemas/modos/` (contrato em `tipos.ts`, `chao.ts` com o
+  nado, `cipo.ts`, `escalada.ts`, `trocas.ts`), o `personagem.tsx` 366 linhas menor. Conferido
+  sem mudança: a sala de testes (velocidades, degraus, rampas, vãos, laguinho) e, no Bosque, o
+  mesmo script no arquivo antigo e no novo (escalar até 4,1 m e pular; pegar o cipó, balançar e
+  soltar) com o mesmo resultado.
 
 ## Regras
 
