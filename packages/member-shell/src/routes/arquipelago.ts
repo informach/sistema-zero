@@ -72,6 +72,7 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
       PUT: comCorpo('/salvamento', 'PUT', CORPO_DO_SALVAMENTO),
     },
     arquipelagoTempo: { POST: comCorpo('/tempo', 'POST', CORPO_PEQUENO) },
+    arquipelagoRecuperarTempo: { POST: comCorpo('/tempo/recuperar', 'POST', CORPO_PEQUENO) },
     arquipelagoSessaoTempo: { POST: comCorpo('/tempo/sessao', 'POST', CORPO_PEQUENO) },
     /** Área dos pais: o app embrulha com o portão do responsável. */
     arquipelagoLimiteDaFamilia: {

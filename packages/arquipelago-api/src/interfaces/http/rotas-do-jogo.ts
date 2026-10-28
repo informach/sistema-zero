@@ -48,7 +48,11 @@ export function rotasDoJogo(deps: { servico: ServicoDoJogo; tokenInterno?: strin
       }
       return conflito
     })
-    .post('/tempo', ({ headers, body }) => {
+    .post('/tempo', ({ set }) => {
+      set.status = 410
+      return { code: 'ATUALIZACAO_NECESSARIA', message: 'Atualize o jogo para continuar.' }
+    })
+    .post('/tempo/recuperar', ({ headers, body }) => {
       const pedido = validar(RegistrarTempoSchema, body)
       return servico.registrarTempo(
         lerJogador(headers),

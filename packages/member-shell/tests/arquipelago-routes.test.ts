@@ -29,6 +29,13 @@ afterEach(() => {
 })
 
 describe('repasse do Arquipélago', () => {
+  test('recupera os eventos antigos pela rota própria do gateway', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { usadoHojeSegundos: 10 } })
+    const corpo = { eventoId: 'id', dia: '2026-10-27', segundos: 10 }
+    const resposta = await routes.arquipelagoRecuperarTempo.POST(pedido(JSON.stringify(corpo)))
+    expect(resposta.status).toBe(200)
+    expect(chamadas).toEqual([{ caminho: '/arquipelago/tempo/recuperar', metodo: 'POST', corpo }])
+  })
   test('a sessão de tempo é repassada ao gateway com corpo limitado', async () => {
     const { routes, chamadas } = montar({ status: 200, body: { situacao: 'ativa' } })
     const corpo = { sessaoId: 'id', sequencia: 0, acao: 'iniciar' }

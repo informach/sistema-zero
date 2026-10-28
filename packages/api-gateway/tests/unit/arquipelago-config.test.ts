@@ -48,7 +48,9 @@ describe('Arquipélago Vagalume no gateway', () => {
     expect(registry.resolve('GET', '/arquipelago/acesso', 'v1')?.route.id).toBe(
       'arquipelago-acesso',
     )
-    expect(registry.resolve('POST', '/arquipelago/tempo', 'v1')?.route.id).toBe('arquipelago-tempo')
+    expect(registry.resolve('POST', '/arquipelago/tempo/recuperar', 'v1')?.route.id).toBe(
+      'arquipelago-tempo',
+    )
     expect(registry.resolve('POST', '/arquipelago/tempo/sessao', 'v1')?.route).toMatchObject({
       id: 'arquipelago-tempo-sessao',
       auth: { strategies: ['jwt'] },

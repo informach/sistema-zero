@@ -115,18 +115,22 @@ describe('a porta da plataforma para o jogo', () => {
 
   test('o serviço só alcança as rotas do jogo', async () => {
     const pedidos = servir({
-      'POST /api/arquipelago/tempo': { status: 200, body: { acabou: false } },
+      'POST /api/arquipelago/tempo/recuperar': { status: 200, body: { acabou: false } },
     })
     const p = plataforma()
     const sinal = new AbortController().signal
     expect(
-      await p.servico.buscar('/tempo', { metodo: 'POST', corpo: { segundos: 60 }, sinal }),
+      await p.servico.buscar('/tempo/recuperar', {
+        metodo: 'POST',
+        corpo: { segundos: 60 },
+        sinal,
+      }),
     ).toEqual({
       status: 200,
       corpo: { acabou: false },
     })
     expect((await p.servico.buscar('/familia/limite', { metodo: 'PUT' })).status).toBe(404)
-    expect(pedidos.map((x) => x.url)).toEqual(['/api/arquipelago/tempo'])
+    expect(pedidos.map((x) => x.url)).toEqual(['/api/arquipelago/tempo/recuperar'])
     expect(pedidos[0]?.signal).toBe(sinal)
     expect(await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'x' })).toMatchObject({
       situacao: 'indisponivel',

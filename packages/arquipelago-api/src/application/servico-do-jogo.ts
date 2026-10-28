@@ -45,7 +45,12 @@ export class ServicoDoJogo {
       this.limiteDe(jogador),
       this.repo.lerTempo(jogador.id, diaDeSaoPaulo(this.agora())),
     ])
-    return { ...decisao, limiteDiarioMinutos: limite, usadoHojeSegundos: usado }
+    return {
+      ...decisao,
+      limiteDiarioMinutos: limite,
+      usadoHojeSegundos: usado,
+      contabilizaTempo: jogador.publico === 'kids' && !jogador.somenteLeitura,
+    }
   }
 
   async lerSalvamento(jogador: Jogador): Promise<SalvamentoGuardado> {

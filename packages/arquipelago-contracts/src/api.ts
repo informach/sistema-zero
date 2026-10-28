@@ -14,6 +14,8 @@ export const AcessoSchema = z.strictObject({
   /** Minutos de tempo livre por dia (Kids). `null` = sem limite (adulto). */
   limiteDiarioMinutos: z.number().int().positive().nullable(),
   usadoHojeSegundos: z.number().int().min(0),
+  /** Suporte apenas visualiza; não começa nem consome uma sessão de tempo. */
+  contabilizaTempo: z.boolean().optional(),
 })
 export type Acesso = z.infer<typeof AcessoSchema>
 

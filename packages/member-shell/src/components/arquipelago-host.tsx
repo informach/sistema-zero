@@ -55,7 +55,7 @@ class ToolLoadBoundary extends Component<
 /** O repasse do BFF (`routes/arquipelago.ts`). */
 const BASE = '/api/arquipelago'
 /** As únicas rotas do serviço que o jogo chama (o limite da família é da área dos pais). */
-const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo', '/tempo/sessao'])
+const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo/recuperar', '/tempo/sessao'])
 
 type Estado = 'carregando' | 'pronto' | 'indisponivel' | 'erro'
 
@@ -189,7 +189,8 @@ export function criarPlataformaDoArquipelago(opcoes: {
       async buscar(caminho, pedido) {
         if (
           !CAMINHOS_DO_JOGO.has(caminho) ||
-          (caminho === '/tempo/sessao' && opcoes.publico !== 'kids')
+          ((caminho === '/tempo/sessao' || caminho === '/tempo/recuperar') &&
+            opcoes.publico !== 'kids')
         )
           return { status: 404, corpo: { code: 'NOT_FOUND' } }
         return json(`${BASE}${caminho}`, {

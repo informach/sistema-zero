@@ -59,7 +59,7 @@ export function arquipelagoGateway(opts: {
         ...jogador,
         id: 'arquipelago-tempo',
         methods: ['POST'],
-        pathPattern: '/arquipelago/tempo',
+        pathPattern: '/arquipelago/tempo/recuperar',
         maxBodyBytes: 1024,
         rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       },
