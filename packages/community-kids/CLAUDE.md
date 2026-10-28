@@ -12,7 +12,8 @@ Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o
   da aba corta (`truncate`, `tracking-tight`) em vez de encostar no vizinho.
 - **Área dos pais:** `_components/arquipelago-limit-card.tsx` ("Tempo livre no Arquipélago", na
   Família): passos de 5 minutos entre 10 min e 4 h, o tempo escrito como a família fala
-  (`duracaoPorExtenso`) e "Salvar" só quando mudou. Sem resposta do serviço o cartão não aparece.
+  (`duracaoPorExtenso`) e "Salvar" só quando mudou. O cartão só aparece quando a leitura diz
+  `algumaCriancaVe` (28/10/2026); sem resposta do serviço ou com resposta estranha, ele não aparece.
   Nenhuma variável de ambiente nova (a regra do Railway pede criar no painel antes).
 - Shims em `app/api/arquipelago/{acesso,salvamento,tempo,cliente/[arquivo]}` e
   `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`

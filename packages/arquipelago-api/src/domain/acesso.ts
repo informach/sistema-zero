@@ -32,3 +32,24 @@ export function decidirAcesso(politica: PoliticaDeAcesso, jogador: Jogador): Dec
   }
   return { liberado: true, motivo: null }
 }
+
+/**
+ * Se alguma criança da conta vê o jogo: a mesma decisão de cada perfil, como se a criança abrisse
+ * o jogo agora. A criança entra com o papel da conta, então a família da equipe conta como equipe.
+ * Sem perfis, nenhuma criança vê (a área dos pais esconde o cartão do tempo livre).
+ */
+export function algumaCriancaVe(
+  politica: PoliticaDeAcesso,
+  familia: { contaId: string; equipe: boolean; perfis: readonly string[] },
+): boolean {
+  return familia.perfis.some(
+    (id) =>
+      decidirAcesso(politica, {
+        id,
+        publico: 'kids',
+        contaId: familia.contaId,
+        equipe: familia.equipe,
+        somenteLeitura: false,
+      }).liberado,
+  )
+}

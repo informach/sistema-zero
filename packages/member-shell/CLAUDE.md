@@ -4,12 +4,16 @@
 
 O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta da plataforma.
 
-- **`routes/arquipelago.ts`** (`createArquipelagoRoutes({ gateway })`, espalhado no `createShell`):
+- **`routes/arquipelago.ts`** (`createArquipelagoRoutes({ gateway, profiles })`, espalhado no
+  `createShell`):
   `arquipelagoAcesso` (GET), `arquipelagoSalvamento` (GET/PUT), `arquipelagoTempo` (POST) e
   `arquipelagoLimiteDaFamilia` (GET/PUT, o app embrulha com o portão dos pais) e `arquipelagoCartas`
   (GET, os cartões da rotina dos Lumis, 27/10/2026) repassam ao gateway
   `/arquipelago/*` com a sessão; corpo JSON de até 96 KB, sem regra de jogo (quem decide acesso,
-  revisão, tempo e suporte somente leitura é o `arquipelago-api`). `arquipelagoCliente` (GET
+  revisão, tempo e suporte somente leitura é o `arquipelago-api`). A exceção é o GET do limite
+  (28/10/2026): ele lê antes a grade de perfis da conta no Auth e manda os ids dos perfis prontos em
+  `?perfis=` (até `PERFIS_DA_FAMILIA_MAXIMO`), para o serviço dizer `algumaCriancaVe`; sem a grade,
+  nada segue e o cartão some. `arquipelagoCliente` (GET
   `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
   build (`.js`, `.js.map`, `.glb`, `.json`), com o IP de quem pediu e só os cabeçalhos de cache.
   Desafios (27/10/2026): `arquipelagoDesafios` (GET, `?ilha=` conferida), `arquipelagoDesafio`

@@ -79,10 +79,47 @@ export const RespostaSessaoTempoSchema = z.strictObject({
 })
 export type RespostaSessaoTempo = z.infer<typeof RespostaSessaoTempoSchema>
 
+/** `PUT /arquipelago/familia/limite`: o corpo e a resposta. */
 export const LimiteDaFamiliaSchema = z.strictObject({
   limiteDiarioMinutos: z.number().int().positive(),
 })
 export type LimiteDaFamilia = z.infer<typeof LimiteDaFamiliaSchema>
+
+/**
+ * `GET /arquipelago/familia/limite`: o limite e se alguma criança da conta vê o jogo pela política
+ * de acesso. A área dos pais só mostra o cartão do tempo livre quando `algumaCriancaVe`.
+ */
+export const LeituraDoLimiteDaFamiliaSchema = z.strictObject({
+  limiteDiarioMinutos: z.number().int().positive(),
+  algumaCriancaVe: z.boolean(),
+})
+export type LeituraDoLimiteDaFamilia = z.infer<typeof LeituraDoLimiteDaFamiliaSchema>
+
+/** Uma família tem poucos perfis; o teto só barra pedido abusivo. */
+export const PERFIS_DA_FAMILIA_MAXIMO = 20
+/** O formato dos ids de identidade da plataforma (o serviço compara em minúsculas). */
+const ID_DE_PERFIL = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * `?perfis=` do `GET /arquipelago/familia/limite`: os ids dos perfis das crianças da conta,
+ * separados por vírgula. Quem manda é o BFF dos pais, que lê a lista no Auth. Ausente ou vazio
+ * quer dizer nenhuma criança.
+ */
+export const PerfisDaFamiliaSchema = z
+  .string()
+  .max(PERFIS_DA_FAMILIA_MAXIMO * 37)
+  .optional()
+  .transform((v) => (v ? v.split(',') : []))
+  .pipe(
+    z
+      .array(
+        z
+          .string()
+          .regex(ID_DE_PERFIL)
+          .transform((id) => id.toLowerCase()),
+      )
+      .max(PERFIS_DA_FAMILIA_MAXIMO),
+  )
 
 /** `GET /arquipelago/cartas`: os cartões da rotina dos Lumis e onde aprender os que faltam. */
 export const CartasDoJogadorSchema = z.strictObject({

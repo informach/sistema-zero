@@ -3,6 +3,7 @@ import {
   type ComandoSessaoTempo,
   diaDeSaoPaulo,
   type GravarSalvamento,
+  type LeituraDoLimiteDaFamilia,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   migrarSalvamento,
   normalizarLimiteDiario,
@@ -11,7 +12,7 @@ import {
   type SalvamentoGuardado,
   type TempoRegistrado,
 } from '@sistemazero/arquipelago-contracts'
-import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
+import { algumaCriancaVe, decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { Jogador, Responsavel } from '../domain/jogador'
 import type { RepositorioDoJogo, SalvamentoNoBanco } from '../domain/repositorio.port'
 import type { RepositorioSessoesTempo } from '../domain/repositorio-sessoes-tempo.port'
@@ -119,8 +120,23 @@ export class ServicoDoJogo {
     }
   }
 
-  async lerLimiteDaFamilia(responsavel: Responsavel): Promise<number> {
-    return (await this.repo.lerLimite(responsavel.contaId)) ?? LIMITE_DIARIO_PADRAO_MINUTOS
+  /**
+   * O limite da família e se alguma das crianças vê o jogo. `perfis` são os perfis da conta, que o
+   * BFF dos pais leu no Auth; a decisão é a mesma de quando cada criança abre o jogo.
+   */
+  async lerLimiteDaFamilia(
+    responsavel: Responsavel,
+    perfis: readonly string[],
+  ): Promise<LeituraDoLimiteDaFamilia> {
+    const limite = (await this.repo.lerLimite(responsavel.contaId)) ?? LIMITE_DIARIO_PADRAO_MINUTOS
+    return {
+      limiteDiarioMinutos: limite,
+      algumaCriancaVe: algumaCriancaVe(this.politica, {
+        contaId: responsavel.contaId,
+        equipe: responsavel.equipe,
+        perfis,
+      }),
+    }
   }
 
   async gravarLimiteDaFamilia(responsavel: Responsavel, minutos: number): Promise<number> {

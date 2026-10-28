@@ -61,11 +61,11 @@ export function lerJogador(h: Cabecalhos): Jogador {
 
 /** O responsável do Kids, na própria conta (sem perfil). */
 export function lerResponsavel(h: Cabecalhos): Responsavel {
-  const { id, somenteLeitura } = base(h)
+  const { id, papel, somenteLeitura } = base(h)
   if (h['x-auth-account-id'] !== undefined || h['x-auth-kids-context'] !== 'parent') {
     throw new ForbiddenError('Só o responsável muda o tempo do jogo')
   }
-  return { contaId: id, somenteLeitura }
+  return { contaId: id, equipe: PAPEIS_DA_EQUIPE.has(papel), somenteLeitura }
 }
 
 /** Quem pode o quê na seção Jogo do Admin: ler (equipe) e escrever (só administração). */

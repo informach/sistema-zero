@@ -95,7 +95,7 @@ Arquivo: `arquipelago-api/src/interfaces/http/identidade.ts`.
 |---|---|---|
 | Criança do Kids | sessão de perfil (`x-auth-account-id`), contexto `student` ou sem contexto | joga; o salvamento e o tempo usado são do perfil; o limite é da conta da família |
 | Membro adulto | sem perfil e sem contexto do Kids | joga, sem limite de tempo |
-| Responsável do Kids | contexto `parent`, na própria conta | não joga; só lê e muda o limite diário da família |
+| Responsável do Kids | contexto `parent`, na própria conta | não joga; só lê e muda o limite diário da família, e só vê o cartão do tempo livre se alguma criança da conta vê o jogo |
 | Equipe | papel `superadmin`, `admin` ou `staff` (`PAPEIS_DA_EQUIPE`) | entra sempre que o jogo está ligado; vê todas as ilhas abertas e todos os blocos |
 | Suporte | sessão com `x-auth-impersonator-id` | só olha; nada é gravado |
 
@@ -124,6 +124,39 @@ Arquivo: `arquipelago-api/src/domain/acesso.ts`, função `decidirAcesso`. A ord
 5. **Os demais:** entram.
 
 Bloqueado recebe 403 `ACESSO_BLOQUEADO` com o motivo. O jogo mostra a tela de bloqueio.
+
+### O cartão do tempo livre na área dos pais
+
+O cartão "Tempo livre no Arquipélago" só aparece para a família em que pelo menos uma criança vê
+o jogo (28/10/2026).
+
+- **Quem decide:** o serviço, com a mesma `decidirAcesso` de quando a criança abre o jogo
+  (`algumaCriancaVe`, em `arquipelago-api/src/domain/acesso.ts`). Cada perfil da conta passa pela
+  ordem acima como criança do Kids, com o id do perfil e o id da conta.
+- **De onde vêm os perfis:** o BFF dos pais (`member-shell/src/routes/arquipelago.ts`) lê a grade de
+  perfis da conta no Auth e manda os ids dos perfis prontos em
+  `GET /arquipelago/familia/limite?perfis=`. A resposta
+  traz `algumaCriancaVe` junto com o limite (`LeituraDoLimiteDaFamiliaSchema`, no contrato). Até 20
+  perfis por pedido (`PERFIS_DA_FAMILIA_MAXIMO`).
+- **Na prática:**
+  - Modo `desligado`: o cartão some para todos.
+  - Modo `lista`: aparece só se `kids` está em `ARQUIPELAGO_PUBLICOS` e um dos perfis, ou a
+    conta, está em `ARQUIPELAGO_LISTA`.
+  - Modo `aberto`: aparece para toda família com pelo menos um perfil, se `kids` está em
+    `ARQUIPELAGO_PUBLICOS`.
+  - Conta sem perfil: o cartão não aparece.
+  - Conta da equipe: os perfis entram com o papel da conta, então o cartão aparece sempre que o
+    jogo está ligado, como o jogo para essas crianças.
+- **Na dúvida, some:** se a leitura falha (serviço fora, grade de perfis indisponível, resposta sem
+  `algumaCriancaVe`), o cartão fica escondido. Ele nunca aparece por engano.
+- **Perfil recém-criado:** enquanto entra na jornada (`admissionState` pendente) ele não conta,
+  porque a criança ainda não abre esse perfil. Conta assim que fica pronto.
+- **O serviço não confere de quem são os ids:** não há leitura da grade de perfis no serviço do
+  jogo (nem rota no Members para isso), então ele acredita nos ids que o BFF manda. Quem chamar o
+  gateway direto com outros ids só muda o próprio cartão e descobre se aquele id está na lista;
+  não ganha acesso ao jogo, que continua decidido pela sessão da criança.
+- **Atualização:** o serviço e o app do Kids precisam subir juntos. Com só um deles novo, o cartão
+  some para todos até o outro subir (o formato da leitura mudou dos dois lados).
 
 ### Suporte somente leitura
 
@@ -1147,6 +1180,7 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Tempo livre mínimo | 10 min | `limites.ts`, `LIMITE_DIARIO_MINIMO_MINUTOS` |
 | Tempo livre máximo | 240 min | `limites.ts`, `LIMITE_DIARIO_MAXIMO_MINUTOS` |
 | Passo do tempo livre | 5 min | `limites.ts`, `LIMITE_DIARIO_PASSO_MINUTOS` |
+| Perfis por leitura do cartão dos pais | 20 | `arquipelago-contracts/src/api.ts`, `PERFIS_DA_FAMILIA_MAXIMO` |
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |

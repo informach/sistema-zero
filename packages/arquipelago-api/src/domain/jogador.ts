@@ -17,6 +17,8 @@ export interface Jogador {
 
 export interface Responsavel {
   contaId: string
+  /** Papel de equipe na conta: os perfis das crianças entram com o mesmo papel. */
+  equipe: boolean
   somenteLeitura: boolean
 }
 

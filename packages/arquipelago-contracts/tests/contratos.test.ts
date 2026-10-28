@@ -8,6 +8,7 @@ import {
   ILHAS,
   ilhaAberta,
   ilhasDoAnel,
+  LeituraDoLimiteDaFamiliaSchema,
   LIMITE_DIARIO_MAXIMO_MINUTOS,
   LIMITE_DIARIO_MINIMO_MINUTOS,
   LIMITE_DIARIO_PADRAO_MINUTOS,
@@ -16,6 +17,8 @@ import {
   migrarSalvamento,
   normalizarLimiteDiario,
   PERCURSOS,
+  PERFIS_DA_FAMILIA_MAXIMO,
+  PerfisDaFamiliaSchema,
   POSICOES_DA_JORNADA,
   posicaoDoPostoKids,
   type QuartoDoJogo,
@@ -81,6 +84,32 @@ describe('limite diário', () => {
   test('o dia é o de São Paulo', () => {
     expect(diaDeSaoPaulo(new Date('2026-10-28T02:30:00Z'))).toBe('2026-10-27')
     expect(diaDeSaoPaulo(new Date('2026-10-28T03:30:00Z'))).toBe('2026-10-28')
+  })
+
+  test('a leitura dos pais traz o limite e se alguma criança vê o jogo', () => {
+    const lido = { limiteDiarioMinutos: 30, algumaCriancaVe: true }
+    expect(LeituraDoLimiteDaFamiliaSchema.parse(lido)).toEqual(lido)
+    // Sem a resposta, a área dos pais não sabe se mostra o cartão: leitura inválida.
+    expect(LeituraDoLimiteDaFamiliaSchema.safeParse({ limiteDiarioMinutos: 30 }).success).toBe(
+      false,
+    )
+    expect(
+      LeituraDoLimiteDaFamiliaSchema.safeParse({ ...lido, algumaCriancaVe: 'sim' }).success,
+    ).toBe(false)
+    expect(LeituraDoLimiteDaFamiliaSchema.safeParse({ ...lido, outra: 1 }).success).toBe(false)
+  })
+
+  test('os perfis da família vão separados por vírgula, em minúsculas', () => {
+    const a = '0190A2B3-C4D5-7E6F-8A9B-0C1D2E3F4A5B'
+    const b = '0190a2b3-c4d5-7e6f-8a9b-0c1d2e3f4a5c'
+    expect(PerfisDaFamiliaSchema.parse(`${a},${b}`)).toEqual([a.toLowerCase(), b])
+    expect(PerfisDaFamiliaSchema.parse(undefined)).toEqual([])
+    expect(PerfisDaFamiliaSchema.parse('')).toEqual([])
+    expect(PerfisDaFamiliaSchema.safeParse('nao-e-id').success).toBe(false)
+    expect(PerfisDaFamiliaSchema.safeParse(`${a},`).success).toBe(false)
+    const muitos = Array.from({ length: PERFIS_DA_FAMILIA_MAXIMO }, () => b)
+    expect(PerfisDaFamiliaSchema.parse(muitos.join(','))).toHaveLength(PERFIS_DA_FAMILIA_MAXIMO)
+    expect(PerfisDaFamiliaSchema.safeParse([...muitos, b].join(',')).success).toBe(false)
   })
 })
 

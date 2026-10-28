@@ -77,6 +77,11 @@ export interface SessionUser {
 /** Perfil (estilo Netflix) — a grade do responsável (view do `/auth/profiles`). */
 export interface ProfileView {
   id: string
+  /**
+   * `pending` enquanto o perfil novo entra na jornada: a criança ainda não abre o perfil. OPCIONAL
+   * para tolerar o auth antigo (ausente conta como pronto).
+   */
+  admissionState?: 'pending' | 'ready'
   name: string
   avatarUrl: string | null
   whatsapp: string | null
