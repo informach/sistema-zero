@@ -113,8 +113,12 @@ const DOBRADICA = { x: PORTA.x - PORTA.largura / 2, z: MZ + 0.03 }
  * A casca da casa no referencial do grupo `Casa` (centro do quarto, y = 0 no piso). Os móveis do
  * quarto ficam em `casa.tsx` (dependem do quarto salvo). Medidas da casca do `casa.py`: paredes,
  * revestimento de fora, quinas, alicerce, floreiras das janelas, vasinhos e colunas da varanda.
+ *
+ * `construida`: a casa já tem obra (modo construção). A frente e a direita do quarto, com a porta,
+ * as janelas, as quinas e o alicerce delas, passam a ser do kit (`sistemas/construcao/pecas.ts`);
+ * aqui ficam a esquerda, o fundo, a quina entre os dois e a varanda.
  */
-export function colisoresDaCasa(portaAberta: boolean): Solido[] {
+export function colisoresDaCasa(portaAberta: boolean, construida = false): Solido[] {
   const esq = PORTA.x - PORTA.largura / 2
   const dir = PORTA.x + PORTA.largura / 2
   const larguraEsq = esq + MX
@@ -136,6 +140,8 @@ export function colisoresDaCasa(portaAberta: boolean): Solido[] {
     [MX + 0.17, MZ + 0.17],
   ]
   quinas.forEach(([x, z], i) => {
+    // Na casa construída só a quina do fundo à esquerda é da casa de antes.
+    if (construida && i > 0) return
     const meio = (H + 0.05) / 2
     lista.push(caixa(`col-quina-${i + 1}`, [x, meio, z], [0.17, meio, 0.17]))
   })
@@ -150,6 +156,20 @@ export function colisoresDaCasa(portaAberta: boolean): Solido[] {
   // Floreiras das janelas: saem 0,35 da parede, na altura do peito.
   lista.push(caixa('col-floreira-frente', [-3, 1.3, MZ + 0.33], [0.9, 0.22, 0.17]))
   lista.push(caixa('col-floreira-lado', [MX + 0.33, 1.4, -1], [0.17, 0.22, 0.95]))
+  if (construida) {
+    const daObra = new Set([
+      'col-parede-frente-1',
+      'col-parede-frente-2',
+      'col-parede-direita',
+      'col-alicerce-frente-1',
+      'col-alicerce-frente-2',
+      'col-alicerce-direita',
+      'col-floreira-frente',
+      'col-floreira-lado',
+    ])
+    for (let i = lista.length - 1; i >= 0; i--)
+      if (daObra.has(lista[i]?.nome ?? '')) lista.splice(i, 1)
+  }
   // Varanda: vasinhos nos cantos do deque e as duas colunas do toldo.
   const x0 = PORTA.x - 2.1
   const x1 = PORTA.x + 2.1
@@ -158,6 +178,8 @@ export function colisoresDaCasa(portaAberta: boolean): Solido[] {
   lista.push(caixa('col-coluna-1', [x0 + 0.15, 1.7, MZ + 1.6], [0.12, 1.7, 0.12]))
   lista.push(caixa('col-coluna-2', [x1 - 0.15, 1.7, MZ + 1.6], [0.12, 1.7, 0.12]))
   const meiaPorta: Tripla = [PORTA.largura / 2, PORTA.altura / 2, 0.1]
+  // Na casa construída a porta nova é a porta do kit (abre sozinha, o vão fica livre).
+  if (construida) return lista
   if (!portaAberta) {
     lista.push(caixa('col-porta', [PORTA.x, PORTA.altura / 2, MZ], meiaPorta))
   } else {

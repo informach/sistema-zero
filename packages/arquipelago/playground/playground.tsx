@@ -7,6 +7,7 @@ import { criarPlataformaFalsa } from '../src/plataforma/falsa'
  * O jogo sozinho, com a plataforma de mentira. Parâmetros na URL:
  * `?posicao=2` (posto/etapa), `?publico=adulto`, `?limite=30`, `?liberado=0`, `?novo=1` e
  * `?em=x,z` ou `?em=x,z,y` (começa fora de casa, nesse ponto; o `y` põe em cima de um deque) e `?adiantar=13` (a noite chega aos 12 min).
+ * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
  * `?cartas=todas` (ou `desligadas`, `fora-do-ar`) muda os cartões dos Lumis do caderno.
  * `?perder-pulso=1` simula uma resposta perdida após registrar tempo, para testar recuperação.
  */
@@ -26,6 +27,7 @@ const plataforma = criarPlataformaFalsa({
   comecarEm: q.has('em') ? lerPonto(q.get('em') ?? '') : undefined,
   adiantarMinutos: Number(q.get('adiantar') ?? 0),
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
+  obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
 })
 if (q.get('perder-pulso') === '1') {
   const buscar = plataforma.servico.buscar

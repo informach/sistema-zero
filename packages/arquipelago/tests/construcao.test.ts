@@ -7,6 +7,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   COLISORES_DA_BANCADA,
   COLISORES_DO_FAROL,
+  colisoresDaCasa,
   colisoresDaHorta,
   colisoresDasArvores,
   deslocar,
@@ -351,5 +352,21 @@ describe('as peças do kit', () => {
     expect(dentro(6, 1, -7)).toBe(true)
     // A parede fixa do quarto colide pela casa de antes.
     expect(dentro(-6, 1, -4)).toBe(false)
+  })
+})
+
+describe('a casa construída', () => {
+  test('a frente e a direita do quarto colidem pelo kit; a esquerda, o fundo e a varanda ficam', () => {
+    const nomes = colisoresDaCasa(true, true).map((c) => c.nome)
+    for (const n of [
+      'col-parede-frente-1',
+      'col-parede-direita',
+      'col-porta-aberta',
+      'col-floreira-lado',
+    ])
+      expect(nomes).not.toContain(n)
+    for (const n of ['col-parede-esquerda', 'col-parede-fundo', 'col-quina-1', 'col-coluna-1'])
+      expect(nomes).toContain(n)
+    expect(colisoresDaCasa(true).map((c) => c.nome)).toContain('col-parede-frente-1')
   })
 })

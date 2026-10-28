@@ -11,12 +11,15 @@ import { Walls } from '@sistemazero/avatar-quarto/quarto/walls'
 import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
+import { NADA_CORTADO } from '../sistemas/construcao/pecas'
 import { dormir } from '../sistemas/necessidades'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { ObraNoMundo } from './obra'
 
 const NADA = () => {}
 const BASE = ALTURA_DA_TERRA + 0.02
@@ -204,16 +207,17 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
 /**
  * Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. A casca
  * inteira colide (paredes, quinas, alicerce, floreiras, vasinhos, colunas e a porta nova, fechada
- * no vão ou aberta para fora): `colisoresDaCasa`.
+ * no vão ou aberta para fora): `colisoresDaCasa`. Na casa construída, a frente e a direita são do
+ * kit (`ObraNoMundo`) e daqui ficam o revestimento, o telhado e a varanda.
  */
-function Casca() {
+function Casca({ construida }: { construida: boolean }) {
   const dentro = useEstado((s) => s.dentroDeCasa)
   const aberta = useEstado((s) => s.salvamento.casa.portaNova)
-  const colisores = useMemo(() => colisoresDaCasa(aberta), [aberta])
+  const colisores = useMemo(() => colisoresDaCasa(aberta, construida), [aberta, construida])
   return (
     <>
-      <ComReserva reserva={<CascaDeAntes dentro={dentro} />}>
-        <CascaDoModelo dentro={dentro} />
+      <ComReserva reserva={<CascaDeAntes dentro={dentro} construida={construida} />}>
+        <CascaDoModelo dentro={dentro} construida={construida} />
       </ComReserva>
       <Colisores lista={colisores} />
     </>
@@ -225,7 +229,7 @@ function Casca() {
  * águas, varanda com toldo e lampião. Dentro de casa as paredes da frente e do lado ficam
  * translúcidas e o telhado some; à noite as janelas e o lampião acendem.
  */
-function CascaDoModelo({ dentro }: { dentro: boolean }) {
+function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: boolean }) {
   const { ambiente } = useJogo()
   const raiz = useModelo(MODELOS.casa)
   const partes = useMemo(() => {
@@ -261,8 +265,8 @@ function CascaDoModelo({ dentro }: { dentro: boolean }) {
   return (
     <>
       <primitive object={partes.revestimento} />
-      <primitive object={partes.paredes} />
-      <primitive object={partes.janelas} />
+      {construida ? null : <primitive object={partes.paredes} />}
+      {construida ? null : <primitive object={partes.janelas} />}
       <primitive object={partes.telhado} />
       <primitive object={partes.varanda} />
     </>
@@ -270,7 +274,7 @@ function CascaDoModelo({ dentro }: { dentro: boolean }) {
 }
 
 /** A casca de antes (formas do código). */
-function CascaDeAntes({ dentro }: { dentro: boolean }) {
+function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boolean }) {
   const { ambiente } = useJogo()
   const janela = useRef<MeshStandardMaterial>(null)
   useFrame(() => {
@@ -289,6 +293,7 @@ function CascaDeAntes({ dentro }: { dentro: boolean }) {
       depthWrite={!dentro}
     />
   )
+  if (construida) return null
   return (
     <>
       {/* frente, em volta da porta */}
@@ -344,17 +349,27 @@ function CascaDeAntes({ dentro }: { dentro: boolean }) {
   )
 }
 
+/** Onde fica o ponto (0, 0) da grade da casa: o mundo, na altura do topo do piso. */
+const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
+
 export function Casa() {
   const quarto = useEstado((s) => s.quarto)
+  // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
+  const obra = useEstado((s) => s.salvamento.construcao.casa)
   return (
-    <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
-      <Quarto quarto={quarto} />
-      <Casca />
-      <Porta />
-      <Cama quarto={quarto} />
-      <RigidBody type="fixed" colliders={false}>
-        <ColisaoDosMoveis quarto={quarto} />
-      </RigidBody>
-    </group>
+    <>
+      <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
+        <Quarto quarto={quarto} />
+        <Casca construida={obra !== null} />
+        {obra ? null : <Porta />}
+        <Cama quarto={quarto} />
+        <RigidBody type="fixed" colliders={false}>
+          <ColisaoDosMoveis quarto={quarto} />
+        </RigidBody>
+      </group>
+      {obra ? (
+        <ObraNoMundo obra={obra} lote={LOTE_DA_CASA} base={BASE_DA_OBRA} cortada={NADA_CORTADO} />
+      ) : null}
+    </>
   )
 }

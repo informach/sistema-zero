@@ -7,6 +7,7 @@ import {
   diaDeSaoPaulo,
   GravarSalvamentoSchema,
   LIMITE_DIARIO_PADRAO_MINUTOS,
+  migrarSalvamento,
   type Plataforma,
   type PublicoJogo,
   type QuartoDoJogo,
@@ -15,6 +16,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos } from './desafios-falsos'
+import { obraDeExemplo } from './obra-de-exemplo'
 
 /**
  * Uma plataforma de mentira para rodar o jogo sozinho (playground e testes). Cumpre o mesmo
@@ -34,6 +36,8 @@ export interface OpcoesDaPlataformaFalsa {
   adiantarMinutos?: number
   /** Desafios do Quadro das Cores: ligados (padrão, com exemplos no Bosque) ou desligados. */
   desafios?: 'ligados' | 'desligados'
+  /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
+  obra?: 'exemplo'
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
   cartas?: CartasDoPlayground
 }
@@ -112,6 +116,20 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       const bruto = localStorage.getItem(CHAVE)
       if (bruto) guardado = JSON.parse(bruto) as SalvamentoGuardado
     } catch {}
+  }
+  if (o.obra === 'exemplo') {
+    const atual =
+      migrarSalvamento(guardado.salvamento) ??
+      criarSalvamentoInicial(new Date(agora().getTime() - (o.adiantarMinutos ?? 0) * 60_000))
+    guardado = {
+      revisao: guardado.revisao + 1,
+      salvamento: {
+        ...atual,
+        casa: { portaNova: true },
+        construcao: { ...atual.construcao, casa: obraDeExemplo() },
+      },
+      atualizadoEm: agora().toISOString(),
+    }
   }
   const persistir = () => {
     if (!o.persistir || typeof localStorage === 'undefined') return

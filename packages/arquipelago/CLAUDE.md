@@ -215,6 +215,23 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Playground: `?cartas=todas`, `?cartas=desligadas` (403) ou `?cartas=fora-do-ar` (424);
   `src/plataforma/cartas-falsas.ts` usa a régua do contrato com um currículo de mentira.
 
+## Modo construção (28/10/2026, fase1-10 a fase1-12)
+
+- Plano e decisões: `docs/plans/2026-10-28-arquipelago-modo-construcao.md`; regras e números:
+  `docs/arquipelago-regras.md` §6.16. O que a criança constrói fica em
+  `salvamento.construcao` (contrato `SalvamentoV4`, `ObraSchema`).
+- Regras puras em `src/sistemas/construcao/`: `lote.ts` (o lote da casa, células ocupadas, o quarto
+  fixo e a obra inicial), `grade.ts` (arestas, trechos, arrasto, porta e janelas), `comodos.ts`
+  (planta: o que as paredes fecham, cômodos, lambri ou lisa), `obra.ts` (esticar, apagar, porta,
+  janela, piso, com o motivo de cada recusa) e `pecas.ts` (as peças do kit com posição e giro,
+  quinas, corte e colisores). Testes: `tests/construcao.test.ts` (inclusive o lote contra
+  `alturaDaIlha` e contra todos os colisores que caem nele).
+- `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
+  README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.
+  A `Casa` troca a casa de antes pela construída quando há obra (`colisoresDaCasa(aberta, true)`
+  tira a frente e a direita do quarto, que passam a ser do kit).
+- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`).
+
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 
 - `src/sistemas/zappy.ts` (puro, `tests/zappy.test.ts`): voa à direita e um pouco atrás de onde

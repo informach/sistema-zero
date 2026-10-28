@@ -1024,6 +1024,16 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   uma cortada na mesma linha; nada no T, no cruzamento e na emenda reta.
 - **Colisão:** as paredes em pé (sempre altas, o corte é só desenho), com o vão de 2,2 por 3 de
   cada porta livre, e as quinas. As paredes fixas colidem pela casa de antes.
+- **A casa construída** (`mundo/obra.tsx`, montada pela `Casa`): enquanto
+  `salvamento.construcao.casa` é `null`, a casa é a de antes (`casa.glb`). Com obra, o kit desenha as
+  paredes, as quinas, as portas, as janelas e os pisos dos cômodos novos, e do `casa.glb` ficam o
+  revestimento de fora das paredes da plataforma, o telhado do quarto e a varanda (a porta nova
+  vira a porta do kit, no mesmo lugar). As janelas do kit acendem à noite.
+- **Porta do kit:** abre sozinha quando a pessoa chega a 2,2 do meio do vão (`PERTO_DA_PORTA`) e
+  fecha quando ela se afasta; a de fora (lambri) abre para fora. O vão nunca colide.
+- **Playground:** `?obra=exemplo` começa a casa com a obra de exemplo
+  (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
+  nova saindo do quarto).
 
 ## 7. Desafios
 
