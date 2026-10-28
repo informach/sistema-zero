@@ -5,7 +5,7 @@ import {
   TrimeshCollider,
 } from '@react-three/rapier'
 import { bordaQueCabe, type ColisorDaIlha, soParaOCorpo } from './colisores-da-ilha'
-import { GRUPO_SO_DO_CORPO } from './grupos'
+import { gruposDoColisor } from './grupos'
 
 /**
  * Um corpo fixo com os colisores da lista (no referencial do grupo onde ele está), com as bordas
@@ -19,13 +19,13 @@ export function Colisores({ lista }: { lista: readonly ColisorDaIlha[] }) {
         if (c.forma === 'malha') {
           return <TrimeshCollider key={c.nome} args={[c.vertices, c.indices]} />
         }
-        const grupos = soParaOCorpo(c.nome) ? GRUPO_SO_DO_CORPO : undefined
+        const grupos = gruposDoColisor(soParaOCorpo(c.nome))
         if (c.forma === 'cilindro') {
           const b = bordaQueCabe(c.meiaAltura, c.raio)
           return (
             <RoundCylinderCollider
               key={c.nome}
-              collisionGroups={grupos}
+              {...grupos}
               args={[c.meiaAltura - b, c.raio - b, b]}
               position={c.posicao}
               quaternion={c.rotacao}
@@ -37,7 +37,7 @@ export function Colisores({ lista }: { lista: readonly ColisorDaIlha[] }) {
         return (
           <RoundCuboidCollider
             key={c.nome}
-            collisionGroups={grupos}
+            {...grupos}
             args={[x - b, y - b, z - b, b]}
             position={c.posicao}
             quaternion={c.rotacao}

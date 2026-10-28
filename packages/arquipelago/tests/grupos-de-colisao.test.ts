@@ -8,7 +8,7 @@ test('o colisor comum não leva a chave collisionGroups (undefined vira o grupo 
   expect(gruposDoColisor(true)).toEqual({ collisionGroups: GRUPO_SO_DO_CORPO })
 })
 
-test('nenhum colisor recebe um grupo que pode ser undefined', () => {
+test('nenhum colisor recebe um grupo que pode ser undefined (só as constantes de grupos.ts)', () => {
   const arquivos: string[] = []
   const andar = (dir: string) => {
     for (const nome of readdirSync(dir)) {
@@ -19,8 +19,13 @@ test('nenhum colisor recebe um grupo que pode ser undefined', () => {
   }
   andar(join(import.meta.dir, '..', 'src'))
   andar(join(import.meta.dir, '..', 'playground'))
-  const ruins = arquivos.filter((p) =>
-    /(collision|solver)Groups=\{[^}]*\bundefined\b/.test(readFileSync(p, 'utf8')),
+  // Uma variável ou uma condição pode chegar como undefined; o grupo condicional vai por
+  // `gruposDoColisor`, espalhado no colisor.
+  const ruins = arquivos.flatMap((p) =>
+    [...readFileSync(p, 'utf8').matchAll(/(?:collision|solver)Groups=\{([^}]*)\}/g)]
+      .map((m) => m[1]?.trim() ?? '')
+      .filter((v) => v !== 'GRUPO_SO_DO_CORPO' && v !== 'GRUPOS_DO_RAIO_DA_CAMERA')
+      .map((v) => `${p}: ${v}`),
   )
   expect(ruins).toEqual([])
 })
