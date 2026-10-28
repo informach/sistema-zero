@@ -20,6 +20,10 @@ GLB=sala /tmp/claude-0/blender-venv/bin/python -B arte/casa/comodos.py
 
 # prévias das cenas montadas (Cycles; RES, AMOSTRAS, DIR_PREVIAS; VISTA troca a câmera)
 DIR_PREVIAS=/tmp/casa RES=640 AMOSTRAS=24 /tmp/claude-0/blender-venv/bin/python -B arte/casa/cenas.py kit cozinha
+
+# miniaturas das escolhas do Construir (janelas, pisos, caminhos e objetos), depois a paleta
+/tmp/claude-0/blender-venv/bin/python -B arte/casa/miniaturas.py
+PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
 ```
 
 `CASA_OUT=/outra/pasta` grava os GLBs em outro lugar. As cenas e as prévias vão para `DIR_PREVIAS`
@@ -32,6 +36,7 @@ DIR_PREVIAS=/tmp/casa RES=640 AMOSTRAS=24 /tmp/claude-0/blender-venv/bin/python 
 | `lib_casa.py` | importa a `lib_itens` (formas, paleta, `exportar`) e aponta a saída para `src/assets/casa` e o relatório para `arte/casa/relatorio.json` antes de cada exportação; paleta da casa; `extrudar`, `parede_grade`, `varrer`, `loft_ret`, `bloco`, `exportar_casa` |
 | `kit.py` | `casa-paredes.glb`, `casa-portas.glb`, `casa-pisos.glb`, `casa-telhado.glb` |
 | `comodos.py` | `casa-cozinha.glb`, `casa-sala.glb`, `casa-banheiro.glb` |
+| `miniaturas.py` | `src/assets/casa/miniaturas/<id>.png` (160 px, fundo transparente): cada janela no meio de uma parede de lambri, cada piso e caminho numa grade, cada objeto de `src/assets/objetos`, com o enquadramento e a luz dos ícones dos itens (`arte/itens/render.py`). Refaça depois de mudar uma dessas peças; `tests/miniaturas.test.ts` confere que há uma por escolha |
 | `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis): GLB temporário e prévias |
 | `build_all.py` | roda tudo e confere |
 

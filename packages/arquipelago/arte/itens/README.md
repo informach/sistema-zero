@@ -22,6 +22,8 @@ ITEM=bau,moeda /tmp/claude-0/blender-venv/bin/python -B arte/itens/colecao.py
 # ícones de alguns itens e a redução de paleta (Pillow do Python do sistema)
 ITEM=bau /tmp/claude-0/blender-venv/bin/python -B arte/itens/render.py icones
 python3 -I arte/itens/icones_paleta.py [folha.png]
+# a mesma paleta em outra pasta (as miniaturas do Construir, `arte/casa/miniaturas.py`)
+PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
 
 # prévia grande de um item, fora do jogo
 /tmp/claude-0/blender-venv/bin/python -B arte/itens/render.py previa /tmp/fogao.png src/assets/itens/fogao.glb

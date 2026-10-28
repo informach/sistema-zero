@@ -14,6 +14,12 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import {
+  MINIATURA_DA_JANELA,
+  MINIATURA_DO_CAMINHO,
+  MINIATURA_DO_OBJETO,
+  MINIATURA_DO_PISO,
+} from './miniaturas'
 
 const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; dica: string }> = [
   {
@@ -83,6 +89,29 @@ const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
   { id: 'azulejo', nome: 'Azulejo' },
 ]
 
+/** Uma escolha da ferramenta (tipo de janela, piso, caminho ou objeto): o desenho e o nome embaixo. */
+function Escolha({
+  nome,
+  imagem,
+  escolhida,
+  nota,
+  aoEscolher,
+}: {
+  nome: string
+  imagem: string
+  escolhida: boolean
+  nota?: string
+  aoEscolher: () => void
+}) {
+  return (
+    <button type="button" className="arq-escolha" aria-pressed={escolhida} onClick={aoEscolher}>
+      <img src={imagem} alt="" width={160} height={160} draggable={false} />
+      <b>{nome}</b>
+      {nota ? <small>{nota}</small> : null}
+    </button>
+  )
+}
+
 /**
  * Os modos Viver e Construir (proposta: "Viver Construir Mapa"; o Mapa é de outra fase). Aparece
  * depois que a porta nova abriu, quando nada mais está por cima do jogo.
@@ -150,15 +179,13 @@ export function BarraDeConstruir() {
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Tipo de janela</legend>
           {JANELAS.map((j) => (
-            <button
+            <Escolha
               key={j.id}
-              type="button"
-              className="arq-botao leve"
-              aria-pressed={janela === j.id}
-              onClick={() => s().escolherJanela(j.id)}
-            >
-              {j.nome}
-            </button>
+              nome={j.nome}
+              imagem={MINIATURA_DA_JANELA[j.id]}
+              escolhida={janela === j.id}
+              aoEscolher={() => s().escolherJanela(j.id)}
+            />
           ))}
         </fieldset>
       ) : null}
@@ -166,15 +193,13 @@ export function BarraDeConstruir() {
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Tipo de piso</legend>
           {PISOS.map((p) => (
-            <button
+            <Escolha
               key={p.id}
-              type="button"
-              className="arq-botao leve"
-              aria-pressed={piso === p.id}
-              onClick={() => s().escolherPiso(p.id)}
-            >
-              {p.nome}
-            </button>
+              nome={p.nome}
+              imagem={MINIATURA_DO_PISO[p.id]}
+              escolhida={piso === p.id}
+              aoEscolher={() => s().escolherPiso(p.id)}
+            />
           ))}
         </fieldset>
       ) : null}
@@ -187,15 +212,14 @@ export function BarraDeConstruir() {
             </p>
           ) : (
             ganhos.map((id) => (
-              <button
+              <Escolha
                 key={id}
-                type="button"
-                className="arq-botao leve"
-                aria-pressed={objeto === id}
-                onClick={() => s().escolherObjeto(id)}
-              >
-                {`${CATALOGO_DE_OBJETOS[id].molde.nome}${postos.some((o) => o.id === id) ? ' (já posta)' : ''}`}
-              </button>
+                nome={CATALOGO_DE_OBJETOS[id].molde.nome}
+                imagem={MINIATURA_DO_OBJETO[id]}
+                escolhida={objeto === id}
+                nota={postos.some((o) => o.id === id) ? 'já posta' : undefined}
+                aoEscolher={() => s().escolherObjeto(id)}
+              />
             ))
           )}
           {ganhos.length > 0 ? (
@@ -209,15 +233,13 @@ export function BarraDeConstruir() {
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Tipo de caminho</legend>
           {CAMINHOS.map((c) => (
-            <button
+            <Escolha
               key={c.id}
-              type="button"
-              className="arq-botao leve"
-              aria-pressed={caminho === c.id}
-              onClick={() => s().escolherCaminho(c.id)}
-            >
-              {c.nome}
-            </button>
+              nome={c.nome}
+              imagem={MINIATURA_DO_CAMINHO[c.id]}
+              escolhida={caminho === c.id}
+              aoEscolher={() => s().escolherCaminho(c.id)}
+            />
           ))}
         </fieldset>
       ) : null}

@@ -28,17 +28,21 @@ def srgb(h):
     return tuple((int(h[i:i + 2], 16) / 255) ** 2.2 for i in (0, 2, 4))
 
 
-def cena(glb, fundo):
+def cena(glb, fundo, preparar=None, direcao=None):
+    """Monta a cena de um GLB com a câmera enquadrando tudo. `preparar()` roda depois de importar
+    (arruma, esconde ou copia peças) e pode devolver os pontos a enquadrar no lugar da caixa toda;
+    `direcao` (no Blender) é de onde a câmera olha, no lugar de DIR."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=glb)
     sc = bpy.context.scene
-    malhas = [o for o in bpy.data.objects if o.type == 'MESH']
+    caixa = preparar() if preparar else None
+    malhas = [o for o in bpy.data.objects if o.type == 'MESH' and not o.hide_render]
     bpy.context.view_layer.update()
-    pts = [o.matrix_world @ Vector(c) for o in malhas for c in o.bound_box]
+    pts = caixa or [o.matrix_world @ Vector(c) for o in malhas for c in o.bound_box]
     mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     centro = (mn + mx) / 2
-    d = Vector(tuple(float(t) for t in (env('DIR') or '0.75,-1.25,0.85').split(','))).normalized()
+    d = Vector(direcao or tuple(float(t) for t in (env('DIR') or '0.75,-1.25,0.85').split(','))).normalized()
     # Escala ortográfica: o maior lado da caixa projetada no plano da câmera, com folga.
     cam_d = bpy.data.cameras.new('cam')
     cam_d.type = 'ORTHO'
@@ -94,18 +98,19 @@ def gravar(sc, saida, res):
     bpy.ops.render.render(write_still=True)
 
 
-args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
-modo = args[0] if args else 'icones'
-if modo == 'icones':
-    os.makedirs(ICONES, exist_ok=True)
-    so = set((env('ITEM') or '').split(',')) - {''}
-    for nome in sorted(os.listdir(ITENS)):
-        if not nome.endswith('.glb') or (so and nome[:-4] not in so):
-            continue
-        sc = cena(os.path.join(ITENS, nome), None)
-        gravar(sc, os.path.join(ICONES, nome[:-4] + '.png'), int(env('RES') or 256))
-        print('ICONE', nome[:-4])
-else:
-    saida, glb = args[1], args[2]
-    sc = cena(glb, env('FUNDO') or '#eef4ff')
-    gravar(sc, saida, int(env('RES') or 640))
+if __name__ == '__main__':
+    args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
+    modo = args[0] if args else 'icones'
+    if modo == 'icones':
+        os.makedirs(ICONES, exist_ok=True)
+        so = set((env('ITEM') or '').split(',')) - {''}
+        for nome in sorted(os.listdir(ITENS)):
+            if not nome.endswith('.glb') or (so and nome[:-4] not in so):
+                continue
+            sc = cena(os.path.join(ITENS, nome), None)
+            gravar(sc, os.path.join(ICONES, nome[:-4] + '.png'), int(env('RES') or 256))
+            print('ICONE', nome[:-4])
+    else:
+        saida, glb = args[1], args[2]
+        sc = cena(glb, env('FUNDO') or '#eef4ff')
+        gravar(sc, saida, int(env('RES') or 640))

@@ -266,6 +266,11 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `onde`. A ilha é girada no mundo: `ObraNoMundo` recebe `giro` e o `ModoConstruir` um
   `referencial` (`{x, z, giro}`); a câmera de obra, o toque e o corte trabalham no referencial do
   modelo e convertem com `noModelo`. Testes: `tests/cabana.test.ts`.
+- Escolhas com desenho (pedido dela: "é importante ter o visual ali do desenho de cada item"): os tipos de
+  janela, piso, caminho e os objetos aparecem na barra como miniatura com o nome embaixo
+  (`Escolha` em `interface/construir.tsx`, mapas em `interface/miniaturas.ts`). As imagens saem
+  dos próprios modelos por `arte/casa/miniaturas.py` (`src/assets/casa/miniaturas/`); escolha
+  nova pede miniatura nova (`tests/miniaturas.test.ts`).
 - Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`). Conferir no navegador: a
   câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 
