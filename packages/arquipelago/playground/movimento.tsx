@@ -22,6 +22,8 @@ import { criarRegistro } from '../src/mundo/interativos'
 import { Mecanismos } from '../src/mundo/mecanismos'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from '../src/mundo/medidas'
 import { Medidor } from '../src/mundo/medidor'
+import { ComReserva } from '../src/mundo/modelos'
+import { ObjetosReativos, type PecaSolta } from '../src/mundo/objetos-reativos'
 import { Camera } from '../src/personagem/camera'
 import { Personagem } from '../src/personagem/personagem'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
@@ -370,6 +372,13 @@ function Painel({
   )
 }
 
+const PECAS_SOLTAS_DA_SALA: readonly PecaSolta[] = [
+  { tipo: 'pedra', x: 74, y: 2, z: 18 },
+  { tipo: 'pedra', x: 76, y: 2, z: 18 },
+  { tipo: 'cogumelo', x: 74, y: 2, z: 21 },
+  { tipo: 'cogumelo', x: 76, y: 2, z: 21 },
+]
+
 const ESTILOS_DA_SALA = `
 .sala-painel{position:absolute;top:10px;left:10px;z-index:5;max-width:min(320px,calc(100vw - 20px));padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.92);color:#1d2340;font:13px/1.35 system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.18);user-select:none}
 .sala-painel summary{font-weight:800;cursor:pointer}
@@ -435,6 +444,9 @@ function SalaDeMovimento() {
             updatePriority={-1}
           >
             <Sala />
+            <ComReserva reserva={null}>
+              <ObjetosReativos pecas={PECAS_SOLTAS_DA_SALA} galho={{ x: 70, y: 2, z: 21.2 }} />
+            </ComReserva>
             <FogueiraViva x={69} y={2} z={18} />
             <Mecanismos x={64} y={2} z={18} />
             <Personagem />

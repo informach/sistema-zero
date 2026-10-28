@@ -4,7 +4,7 @@ import {
   RigidBody,
   useBeforePhysicsStep,
 } from '@react-three/rapier'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import propsGlb from '../assets/ilhas/bosque-props.glb'
 import type { AguaRasa } from '../estado/contexto'
 import { EMPUXO, forcaDaAgua, pontosDoTronco, type Vetor } from '../sistemas/empuxo'
@@ -65,6 +65,13 @@ export function TroncoNoLago({ agua, vento }: { agua: AguaRasa; vento?: CampoDeV
   const pecas = useModelo(URL_DAS_PECAS)
   const desenho = useMemo(() => copiarNo(pecas, 'tora-que-boia'), [pecas])
 
+  useEffect(
+    () => () => {
+      troncoAgora.montado = false
+      troncoAgora.submersa = 0
+    },
+    [],
+  )
   useBeforePhysicsStep(() => {
     const b = corpo.current
     if (!b) return

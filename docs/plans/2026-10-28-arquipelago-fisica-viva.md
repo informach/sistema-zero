@@ -188,7 +188,7 @@ etapa 1 ganhando estado.
 - [ ] Etapa 5: código dos mecanismos pronto e conferido na sala. Aguardando a sessão da arte regerar e commitar o GLB, seguida de conferência na casa.
 - [x] Etapa 6: vento.
 - [x] Etapa 7: materiais e fogo.
-- [ ] Etapa 8: mundo que reage.
+- [x] Etapa 8: mundo que reage.
 
 ### Medição e acompanhamento
 
@@ -238,3 +238,23 @@ Etapa 7, medição final: sala 60/60, Bosque 60/60 e tela estreita 60/60 FPS ant
 A luz agora fica invisível quando não há chama, em vez de permanecer no renderizador com intensidade zero. A contribuição visual apagada continua zero; ordem, estados, combustível, calor e secagem não mudam. Instrumentação temporária de comparação foi retirada. Verificação: 390 testes passaram, um teste de banco local pulado, typecheck sem erros.
 
 Nota a sincronizar com `if_version`: "Fogueira pronta: material seco acende, material molhado precisa secar e o balde sempre apaga. O fogo fica só dentro das pedras."
+
+### Etapa 8
+
+Duas pedrinhas e dois cogumelos soltos recebem o empurrão normal do controlador e dormem quando param. As pedras usam massa calculada pelo catálogo; os cogumelos reaproveitam a peça do GLB existente. Nenhum modelo foi regravado. Peças que caem para fora da ilha voltam à origem. O galho baixo quebra ao pisar, desliga o corpo inteiro e liga duas partes preparadas antes. As partes que caem da ilha são desativadas. O percurso nas copas não depende desse galho.
+
+Ondinhas de entrada e deslocamento da criança e do tronco usam 16 posições reutilizadas, com uma única malha instanciada. Parado não emite sem parar, e o desenho é recortado na borda do lago. Movimento reduzido baixa a opacidade. Água continua sendo superfície e forças, sem fluido por partículas. Vento, tronco, água e cipós continuam no mesmo Bosque; a conferência também observou a entrada no modo cipó junto do tronco. Não foi criada uma nova área do mapa.
+
+Review corrigiu uma estação perto demais da parede da sala e afastou o galho da varanda do Bosque. Testes conferem as posições contra o GLB, a quebra única, o reaproveitamento e a duração das ondas. Navegador: pedra deslocada, cogumelo empurrado e tombado, galho quebrado na sala e no Bosque, seis ondas visíveis durante o movimento no lago. O script de navegador exige esses resultados e ausência de erros de página.
+
+Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS. Evidências: `.cache/arq-antes-8.json` e `.cache/arq-final-8b.json`. A comparação começou de novo após integrar os commits remotos do diário e do Jardim Secreto. Não é medida em celular físico.
+
+Nota a sincronizar com `if_version`: "Pedrinhas e cogumelos soltos já podem ser empurrados. O galho quebra ao pisar e a água faz ondinhas com a passagem da criança e do tronco."
+
+### Pendências de integração e conferência externa
+
+- A etapa 5 continua aguardando a sessão da arte. Regerar `bosque.glb` a partir de `arte/ilhas/bosque.py`, conferir `mecanismos-casa` e `mecanismos-rumo`, o vão sem a antiga parede sólida, a passagem da criança e a abertura da porta e do alçapão na casa. A sessão da arte fará a geração e o commit do modelo. Esta sessão não gerou GLBs nem alterou relatórios de arte ou `src/assets/`.
+- O cartão `fase1-22` da coleção `itens` não foi atualizado: não há acesso de escrita versionada ao artefato nesta sessão. As notas de cada etapa estão acima. Sincronizar usando a versão atual em `if_version`; manter em andamento até a integração da casa terminar.
+- Falta ensaio em celular físico modesto. As medições foram feitas no Chrome do computador, inclusive a tela de 390 × 844. As rodadas de FPS que oscilaram foram mantidas neste registro.
+
+Verificação final da etapa 8: 420 testes passaram, um teste de banco local pulado, typecheck sem erros e lint do pacote sem erros. O review incluiu regras puras, colisores, montagem e desmontagem, textos de interação, limites de simulação, posições no GLB e conferência visual no navegador. As alterações concorrentes do modo construção foram preservadas fora deste commit.
