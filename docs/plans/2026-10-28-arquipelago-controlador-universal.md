@@ -48,7 +48,7 @@ comum, os modos que existem com os números do código e os próximos do Bosque:
 caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os modos de hoje do
 `personagem.tsx` nesse contrato.
 
-### 1. Movimento com peso e tolerância (`sistemas/movimento.ts`, puro)
+### 1. Movimento com peso e tolerância (`sistemas/movimento.ts`, puro) ✅
 
 - **Aceleração e desaceleração**: hoje a velocidade pedida vale na hora. No chão, chega na
   velocidade em uns 0,15 s e para em uns 0,1 s; no ar, a direção só corrige (já existe o
@@ -62,7 +62,7 @@ caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os mo
 - Critério: testes do passo puro (aceleração, parada, coyote, buffer, sem pulo de coelho) e o
   percurso nas copas continuando dentro do tempo-alvo.
 
-### 2. Controles: controle físico e ações
+### 2. Controles: controle físico e ações ✅
 
 - **Gamepad API** (`controles/gamepad.ts`): analógico esquerdo anda, direito gira a câmera, botão
   de baixo pula, o da direita usa, gatilho corre, clique no analógico direito recentraliza. Zona
@@ -72,18 +72,23 @@ caído, escada, agarrar a borda e escorregar). A parte 6 abaixo é separar os mo
 - Contextos: o jogo já ignora teclas com o foco em campo ou botão e para com painel, menu ou
   ferramenta aberta (`jogoPausado`); o modo Construir, quando vier, ganha o contexto dele.
 
-### 3. Preferências de conforto (requisito, não melhoria)
+### 3. Preferências de conforto (requisito, não melhoria) ✅
 
 - No menu: sensibilidade da câmera, inverter o eixo vertical, distância preferida (perto, normal,
   longe), recentralizar sozinha (desligada por padrão) e menos movimento da câmera (além do
   pedido do aparelho). Guardadas no aparelho (como a dica da câmera). O jogo não tem tremor de
   câmera; se um dia tiver, nasce desligável.
 
-### 4. Sala de testes (`/movimento` no playground)
+### 4. Sala de testes (`/movimento` no playground) ✅
 
 - Rampa, degraus, plataformas a distâncias crescentes, uma parede, uma árvore, um laguinho, com o
   avatar real. Os cinco testes do levantamento: andar e correr com transição, degraus e rampas,
   pular entre plataformas e aterrissar, entrar e sair da água, câmera estável.
+- Feita em 28/10/2026 (`playground/movimento.tsx`, `playground/sala-de-movimento.ts`). Achou duas
+  coisas: de frente o degrau automático sobe uns 0,43, não 0,45; e ele também vale no ar, então o
+  pulo de 1,5 m alcança beirada de uns 1,95 m e vãos mais largos que o pulo puro. As duas viraram
+  números em `sistemas/corpo.ts` (`alcanceMaximoDoPulo`, `beiradaMaximaDoPulo`) e a ajuda no ar foi
+  para a especificação do modo "agarrar a borda" (parte 6).
 
 ### 5. Perfis de câmera
 

@@ -120,6 +120,11 @@ descer pelo escorregador. Faltam quatro peças.
   frente sobe (o corpo vai do pendurado ao ponto em cima da borda em 0,5 s, a animação ajustada ao
   alvo); trás solta; pular sai para longe da parede.
 - **Animações novas:** Pendurar na Borda, Subir a Borda.
+- **A ajuda escondida de hoje:** o degrau automático do Rapier também vale no ar, então no alto do
+  pulo o pé ainda sobe 0,45 e a beirada mais alta fica em uns 1,95 m em vez de 1,5 (medido na sala
+  de testes, `/movimento`, em 28/10/2026). Com este modo, o degrau no ar sai (o controlador só sobe
+  degrau pisando) e quem alcança a beirada passa a fazer isso pendurando e subindo, à vista. Antes
+  de tirar, medir de novo os pulos do percurso nas copas.
 - **Testes:** agarra quando chega perto; não agarra sem espaço; subir termina em pé e livre.
 
 ### Escorregar (`escorregar`)

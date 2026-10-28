@@ -64,6 +64,13 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `aproximarVelocidade` com `PERFIS` por modo (chão, ar, água; ilhas novas acrescentam o delas) e
   `passoDoPulo` (coyote time e jump buffer, um toque um pulo). Testes:
   `tests/movimento-com-peso.test.ts`. Plano: `docs/plans/2026-10-28-arquipelago-controlador-universal.md`.
+- Os números do corpo (velocidades, pulo, degrau, rampas) moram em `CORPO` (`sistemas/corpo.ts`),
+  com `alcanceDoPulo`, `alcanceMaximoDoPulo` e `beiradaMaximaDoPulo` para desenhar vãos e beiradas
+  (o degrau automático também vale no ar: o pulo de 1,5 m alcança beirada de uns 1,95 m).
+- Sala de testes: `/movimento` no playground (`playground/movimento.tsx`, medidas em
+  `playground/sala-de-movimento.ts`, `?estacao=Laguinho`), com o personagem e a câmera de verdade,
+  uma estação por teste (cada uma com um obstáculo que passa e um que não) e o painel de medidas;
+  `__peNaSala` dá o pé a cada quadro para scripts. Testes: `tests/sala-de-movimento.test.ts`.
 
 ## Colisão das peças (28/10/2026, pedido dela: "as moitas não têm colisão")
 

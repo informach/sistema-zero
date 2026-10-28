@@ -432,8 +432,10 @@ Arquivo: `arquipelago/src/personagem/personagem.tsx`.
 |---|---|---|
 | Andar | 2,2 por segundo | `CORPO.andar` (`sistemas/corpo.ts`) |
 | Correr | 4,6 por segundo | `CORPO.correr` |
-| Nadar | 2,6 por segundo | `NADAR` |
-| Pulo | 8,5 | `PULO` |
+| Nadar | 2,6 por segundo | `CORPO.nadar` |
+| Pulo | 8,5 para cima (sobe 1,5 m) | `CORPO.pulo` |
+| Degrau que sobe andando | 0,45 (de frente, numa parede reta, uns 0,43) | `CORPO.degrau` |
+| Rampa que sobe / escorrega | até 52° / acima de 60° | `CORPO.sobeAte`, `CORPO.escorregaAcimaDe` |
 | Gravidade | 24 para baixo | `GRAVIDADE` (`mundo/medidas.ts`) |
 | Aceleração no chão / freio | 18 / 24 por segundo² | `PERFIS.chao` (`sistemas/movimento.ts`) |
 | Aceleração no ar / freio | 7 / 3 por segundo² | `PERFIS.ar` |
@@ -452,6 +454,23 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
   antes de pousar vale ao pousar, e logo depois de sair da beirada ainda dá para pular.
 - **Física em passos fixos** de 1/60 s (`PASSO_DA_FISICA`), com o desenho suavizado entre passos: o
   mesmo movimento a 30, 60 ou 144 quadros por segundo.
+- **Até onde o pulo chega** (`alcanceDoPulo`, `alcanceMaximoDoPulo`, `beiradaMaximaDoPulo` em
+  `sistemas/corpo.ts`): sem ajuda, 1,5 m de altura e 1,56 m de vão andando ou 3,26 m correndo. Com
+  as ajudas do corpo, mais: o degrau automático também vale no ar (no alto do pulo o pé ainda sobe
+  0,45, então a beirada mais alta fica em uns 1,95 m) e o pé redondo pega a borda antes do meio do
+  corpo chegar (um raio de cada lado). Com o humor ótimo, o vão mais largo fica em 2,5 m andando e
+  4,5 m correndo. Para desenhar vãos e beiradas: abaixo do alcance sem ajuda passa sempre; acima do
+  máximo, nunca. O degrau no ar é uma ajuda escondida que fica por enquanto (o percurso nas copas
+  foi medido com ela); o modo "agarrar a borda" vai trocá-la por uma ajuda à vista.
+- **Sala de testes** (`bun run dev`, `/movimento`; `playground/sala-de-movimento.ts`): pista com
+  faixas a cada 2 m, degraus de 0,2, 0,35, 0,4 e 0,5, rampas de 25°, 42° e 55°, beiradas de 1,2,
+  1,9 e 2,4 m, plataformas com vãos de 1,2, 2,9 e 5 m, parede, árvore e corredor para a câmera e um
+  laguinho com rampa de entrada. Cada estação tem um que passa e um que não passa, medidos pelos
+  números do corpo (`tests/sala-de-movimento.test.ts`), e o painel mostra a velocidade, o modo, o
+  último pulo, o tranco da câmera e os quadros por segundo. Conferido no navegador em 28/10/2026:
+  2,44 m/s andando e 5,10 correndo (com o humor ótimo), degraus e rampas como acima, beirada de
+  1,9 m alcançada e de 2,4 não, vão de 1,2 andando, 2,9 só correndo e 5 m nunca, nado no meio do
+  laguinho e saída andando pela rampa.
 
 - **No ar com embalo** (depois de soltar um cipó ou pular do tronco): a velocidade do embalo fica
   até pisar ou cair no mar (a água freia), e a direção pedida só corrige 45% do normal
@@ -479,7 +498,7 @@ A velocidade final é multiplicada pelo ritmo do humor (6.2).
 As velocidades foram casadas com o corpo do avatar em 28/10/2026: ele é chibi (perna de 0,5 m
 num corpo de 2,2 m), e com os antigos 4,2 e 7,2 as pernas teriam de girar rápido demais ou o pé
 patinaria. Correndo, ele vai um pouco mais rápido que o "andar" antigo; o pulo correndo alcança
-3,3 m (o pulo andando antigo alcançava 3,0 m).
+3,3 m sem ajuda (o pulo andando antigo alcançava 3,0 m).
 
 **As animações** (`arquipelago/src/sistemas/locomocao.ts`, clipes em
 `src/assets/avatar/locomocao.glb`, gerados por `arte/avatar/locomocao.py`):
@@ -781,8 +800,9 @@ a câmera ignora).
 - **Tamanho:** o que é macio (moita, folhagem, cogumelo) fica um pouco menor que o desenho, para o
   corpo encostar nas folhas sem entrar. O que é duro (parede, tronco, pedra) fica do tamanho do
   desenho.
-- **O degrau:** o degrau automático é de 0,45, e com a curva do pé o personagem ainda escorrega por
-  cima de uma quina até uns 0,58. Pedras pequenas, cogumelos pequenos, as pedras da beira do lago
+- **O degrau:** o degrau automático é de 0,45 (de frente, numa parede reta, ele sobe uns 0,43;
+  medido na sala de testes), e com a curva do pé o personagem ainda escorrega por cima de uma quina
+  até uns 0,58. Pedras pequenas, cogumelos pequenos, as pedras da beira do lago
   do Bosque e as tocas ficam abaixo disso (ele sobe nelas). Moitas e canteiros têm pelo menos 0,7
   (`ALTURA_QUE_SEGURA`): ele para na borda. A parte de cima que passa do desenho não aparece.
 - **A câmera:** moitas, folhagem, cogumelos e peças finas (postes, estacas, colunas, floreiras,

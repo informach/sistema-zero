@@ -45,8 +45,9 @@ export function humor(n: Necessidades): Humor {
   return 'bem'
 }
 
-/** Multiplicador da velocidade pelo humor. */
+/** Multiplicador da velocidade pelo humor: o maior é o do humor ótimo. */
+export const RITMO = { otimo: 1.1, bem: 1, cansado: 0.8 } as const satisfies Record<Humor, number>
+
 export function ritmo(n: Necessidades): number {
-  const h = humor(n)
-  return h === 'otimo' ? 1.1 : h === 'cansado' ? 0.8 : 1
+  return RITMO[humor(n)]
 }

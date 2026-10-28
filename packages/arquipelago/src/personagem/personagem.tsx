@@ -69,10 +69,10 @@ import {
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
 const DO_CENTRO_AO_PE = CORPO.doCentroAoPe
-const PULO = 8.5
+const PULO = CORPO.pulo
 const ANDAR = CORPO.andar
 const CORRER = CORPO.correr
-const NADAR = 2.6
+const NADAR = CORPO.nadar
 /**
  * O controlador do Rapier mantém esta folga entre a cápsula e o chão. O desenho desce o mesmo tanto
  * para o pé encostar no chão (sem ela o avatar anda flutuando).
@@ -239,10 +239,10 @@ export function Personagem() {
 
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
-    c.enableAutostep(0.45, 0.25, true)
+    c.enableAutostep(CORPO.degrau, 0.25, true)
     c.enableSnapToGround(0.35)
-    c.setMaxSlopeClimbAngle((52 * Math.PI) / 180)
-    c.setMinSlopeSlideAngle((60 * Math.PI) / 180)
+    c.setMaxSlopeClimbAngle(MathUtils.degToRad(CORPO.sobeAte))
+    c.setMinSlopeSlideAngle(MathUtils.degToRad(CORPO.escorregaAcimaDe))
     // Empurra o que é dinâmico (o tronco do lago) com o peso de uma criança: andando contra, ele
     // desliza; em pé numa ponta, ele afunda daquele lado.
     c.setApplyImpulsesToDynamicBodies(true)
