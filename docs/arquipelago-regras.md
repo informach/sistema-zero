@@ -1034,6 +1034,23 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
 - **Playground:** `?obra=exemplo` começa a casa com a obra de exemplo
   (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
   nova saindo do quarto).
+- **Viver e Construir** (`interface/construir.tsx`, loja `estado/construcao.ts`): os dois botões no
+  alto da tela aparecem depois que a porta nova abriu, quando nada mais está por cima do jogo.
+  Construir para o personagem (`PAINEL_DE_CONSTRUIR` em `painelAberto`); "Pronto", "Viver" ou Esc
+  voltam. Na primeira vez, a casa de antes vira a obra inicial do lote (na hora de abrir, para a
+  criança já ver as paredes do quarto como peças do kit).
+- **No Construir** (`mundo/construir.tsx`): todas as paredes ficam cortadas, o telhado do quarto
+  sai e a grade do lote aparece no chão, com o que está ocupado tingido de vermelho. A câmera de
+  obra (`CAMERA_DE_OBRA`) abre sempre de frente para a casa, a 24 de distância e 0,95 de
+  inclinação, olhando para (0, -3); os botões giram um oitavo de volta e aproximam ou afastam 4
+  (de 8 a 40); a roda aproxima; setas e W A S D andam; Q e E giram; arrastar com o botão direito
+  gira e inclina. Ela toma o lugar da câmera do jogo só enquanto o Construir está aberto.
+- **Ferramentas:** Parede (arrastar estica), Porta, Janela (grande, em arco ou redonda), Piso (do
+  cômodo inteiro: tábua, ladrilho ou azulejo), Apagar (arrastar apaga paredes; um toque tira a
+  porta ou a janela, e sem ela a parede) e Olhar (arrastar anda pela obra). A prévia mostra em
+  verde o que dá (em azul para porta e janela) e em vermelho o que não dá; o Zappy explica a
+  recusa (`sistemas/construcao/falas.ts`). "Desfazer" volta até 30 mudanças
+  (`LEMBRA_PARA_TRAS`), só enquanto o Construir está aberto.
 
 ## 7. Desafios
 

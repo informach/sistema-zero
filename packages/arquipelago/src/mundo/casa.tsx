@@ -10,12 +10,14 @@ import { RoomMotionContext } from '@sistemazero/avatar-quarto/quarto/room-glb-mo
 import { Walls } from '@sistemazero/avatar-quarto/quarto/walls'
 import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
+import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
-import { NADA_CORTADO } from '../sistemas/construcao/pecas'
+import { NADA_CORTADO, TUDO_CORTADO } from '../sistemas/construcao/pecas'
 import { dormir } from '../sistemas/necessidades'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { ModoConstruir } from './construir'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -211,7 +213,8 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
  * kit (`ObraNoMundo`) e daqui ficam o revestimento, o telhado e a varanda.
  */
 function Casca({ construida }: { construida: boolean }) {
-  const dentro = useEstado((s) => s.dentroDeCasa)
+  // No Construir o telhado sai, como quando a pessoa entra em casa.
+  const dentro = useEstado((s) => s.dentroDeCasa || s.painelAberto === PAINEL_DE_CONSTRUIR)
   const aberta = useEstado((s) => s.salvamento.casa.portaNova)
   const colisores = useMemo(() => colisoresDaCasa(aberta, construida), [aberta, construida])
   return (
@@ -356,6 +359,7 @@ export function Casa() {
   const quarto = useEstado((s) => s.quarto)
   // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
   const obra = useEstado((s) => s.salvamento.construcao.casa)
+  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   return (
     <>
       <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
@@ -368,8 +372,14 @@ export function Casa() {
         </RigidBody>
       </group>
       {obra ? (
-        <ObraNoMundo obra={obra} lote={LOTE_DA_CASA} base={BASE_DA_OBRA} cortada={NADA_CORTADO} />
+        <ObraNoMundo
+          obra={obra}
+          lote={LOTE_DA_CASA}
+          base={BASE_DA_OBRA}
+          cortada={construindo ? TUDO_CORTADO : NADA_CORTADO}
+        />
       ) : null}
+      {obra && construindo ? <ModoConstruir lote={LOTE_DA_CASA} obra={obra} base={BASE} /> : null}
     </>
   )
 }

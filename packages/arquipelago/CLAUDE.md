@@ -230,7 +230,15 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.
   A `Casa` troca a casa de antes pela construída quando há obra (`colisoresDaCasa(aberta, true)`
   tira a frente e a direita do quarto, que passam a ser do kit).
-- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`).
+- Modo Construir: botões Viver e Construir e a barra de ferramentas em `interface/construir.tsx`;
+  loja `estado/construcao.ts` (ferramenta, câmera de obra, Desfazer, `aplicar` com a fala da
+  recusa); `mundo/construir.tsx` (montado pela `Casa` com o Construir aberto): câmera de obra, grade,
+  prévia e o toque. ⚠️ A câmera do jogo (`personagem/camera.tsx`) escreve a posição a cada quadro
+  ANTES da de obra: a de obra guarda a própria posição suavizada e só copia (suavizar a partir de
+  `camera.position` faz as duas brigarem e a vista anda sozinha). O toque e a roda são pegos na
+  captura do elemento pai do canvas, antes de chegarem à câmera do jogo.
+- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`). Conferir no navegador: a
+  câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 

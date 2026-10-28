@@ -1,6 +1,7 @@
 import type { FerramentaDaPlataforma } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { PAINEL_DO_CADERNO } from '../estado/cartas'
+import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
@@ -12,6 +13,7 @@ import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
+import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { ControlesDeToque } from './toque'
 
@@ -411,6 +413,7 @@ function Menu() {
 
 export function Hud() {
   const { loja } = useJogo()
+  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       const s = loja.getState()
@@ -442,11 +445,18 @@ export function Hud() {
       </div>
       <Cronometro />
       <Dica />
-      <div className="arq-baixo">
-        <Acao />
-        <Inventario />
-      </div>
-      <ControlesDeToque />
+      <ModosDoJogo />
+      {construindo ? (
+        <BarraDeConstruir />
+      ) : (
+        <>
+          <div className="arq-baixo">
+            <Acao />
+            <Inventario />
+          </div>
+          <ControlesDeToque />
+        </>
+      )}
       <PainelDoQuadro />
       <PainelDaCapi />
       <PainelDoBicho />
