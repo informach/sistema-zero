@@ -991,6 +991,40 @@ adotado já estão no jogo. O plano da parte que falta:
   pata, rolar no chão, dar um pulinho ou girar no lugar), tocando o clipe "truque".
 - **Moedas:** nada disto paga moedas.
 
+### 6.16 O modo construção (a grade e as paredes)
+
+Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodos.ts`, `obra.ts`,
+`pecas.ts`). Plano e decisões: `docs/plans/2026-10-28-arquipelago-modo-construcao.md`.
+
+- **O lote da casa** (`LOTE_DA_CASA`): a grade de 1 célula por unidade, nas coordenadas do mundo,
+  de x -13 a 14 e de z -12 a 8. É onde o chão da sua ilha é plano: em toda célula livre o chão
+  fica entre 0,15 abaixo e 0,02 acima do topo da terra (teste).
+- **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): a varanda, a horta,
+  a bancada, as duas árvores perto da casa, o pé do farol, as cinco moitas do terreno e o
+  morrinho na frente da varanda. Um teste confere que todo colisor do lote (horta, bancada,
+  farol, árvores, moitas) cai numa célula ocupada.
+- **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. As paredes da esquerda e do
+  fundo são da plataforma (fixas: sem porta nem janela). As da frente e da direita viram paredes
+  do kit na primeira obra (travadas: aceitam porta e janela, mas não se apagam), com a porta nova e
+  as duas janelas no lugar das do `casa.glb`.
+- **Parede:** fica nas linhas da grade. Arrastar estica a parede reto, pelo eixo em que o dedo
+  andou mais. Não dá em cima do que está ocupado, dentro do quarto nem fora do lote, e não dá para
+  fechar algo ocupado dentro de casa. Teto do jogo: 320 arestas de parede por lote.
+- **Apagar** tira as paredes do caminho (as do quarto ficam) e as portas e janelas delas.
+- **Cômodo:** as células que as paredes fecham (o que não se alcança da borda do lote sem passar
+  por parede; porta e janela não abrem a parede para isso). Cômodo novo nasce com piso de tábua;
+  a ferramenta Piso troca o piso do cômodo inteiro (tábua, ladrilho ou azulejo). O quarto tem o
+  piso da plataforma.
+- **Lambri ou lisa** (o jogo decide): parede com cômodo dos dois lados é lisa; com cômodo de um
+  lado só, lambri, com a fachada para fora.
+- **Porta e janela** (`LARGURA_DA_ABERTURA`): porta e janela grande ocupam 3 células, a janela em
+  arco 2 e a redonda 1. Entram com o meio na aresta tocada e precisam caber inteiras numa parede
+  do kit, sem outra abertura no caminho e sem parede chegando no meio delas. Teto: 48 por lote.
+- **Quinas:** em toda ponta solta de parede, em toda dobra em L e onde uma parede em pé encontra
+  uma cortada na mesma linha; nada no T, no cruzamento e na emenda reta.
+- **Colisão:** as paredes em pé (sempre altas, o corte é só desenho), com o vão de 2,2 por 3 de
+  cada porta livre, e as quinas. As paredes fixas colidem pela casa de antes.
+
 ## 7. Desafios
 
 Arquivos principais:
@@ -1578,3 +1612,10 @@ A ponte usa uma mola limitada com duas pontas fixas, em vez de adaptar a corda d
 `mundo/mecanismos.tsx` usa duas dobradiças Rapier, com limites e mola. A porta abre pelo empurrão normal do controlador. A placa lê o caixote apoiado, não a proximidade do personagem. O chão sob o alçapão fica inteiro. Colisores simples e fora do grupo da câmera. A porta tem folga acima da placa para não prender a dobradiça.
 
 A estação Mecanismos em `/movimento` funciona com a arte atual. No Bosque, só montar quando existirem `mecanismos-casa` e `mecanismos-rumo`. O script `arte/ilhas/bosque.py` cria as âncoras e paredes com vão. Falta regerar o GLB e conferir a casa após a outra sessão terminar a arte. Não montar a porta sobre a casa fechada antiga.
+
+
+### Física viva: vento (28/10/2026)
+
+O campo puro `sistemas/vento.ts` e sua versão GLSL usam a mesma conta. A hora vem do relógio do jogo; rajadas variam no espaço. `vegetacao-ao-vento.ts` encadeia os shaders existentes de pintura e pontes, incluindo cópias transparentes. Só deforma materiais de plantas e galhos altos, com raiz parada. Movimento reduzido usa 20% da amplitude visual, sem mudar a física.
+
+Cipós livres recebem vento no passo fixo. O tronco do lago recebe força proporcional à parte exposta. Duas peças soltas tocáveis (folha e pena) têm arrasto e dormem ao cair. Folhas presas nas árvores e capim não têm corpos. Tudo monta apenas com o Bosque ativo, sem novos GLBs.
