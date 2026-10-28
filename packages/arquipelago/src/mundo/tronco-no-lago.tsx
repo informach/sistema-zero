@@ -9,6 +9,7 @@ import propsGlb from '../assets/ilhas/bosque-props.glb'
 import type { AguaRasa } from '../estado/contexto'
 import { EMPUXO, forcaDaAgua, pontosDoTronco, type Vetor } from '../sistemas/empuxo'
 import { MATERIAIS, massaDe } from '../sistemas/materiais-fisicos'
+import { type CampoDeVento, ventoEm } from '../sistemas/vento'
 import { dentroDaAgua } from './bosque'
 import { GRAVIDADE, PASSO_DA_FISICA } from './medidas'
 import { copiarNo, useModelo } from './modelos'
@@ -56,7 +57,10 @@ function girar(q: { x: number; y: number; z: number; w: number }, v: Vetor, said
  * empurra corpos dinâmicos) e pode tirar o tronco da água pela rampa e pôr de volta. Nasce no meio
  * do lago, um pouco acima da água, toda vez que a ilha fica ativa, e volta para lá se cair da ilha.
  */
-export function TroncoNoLago({ agua }: { agua: AguaRasa }) {
+export function TroncoNoLago({ agua, vento }: { agua: AguaRasa; vento?: CampoDeVento }) {
+  const brisa = useMemo(() => ({ x: 0, z: 0 }), [])
+  const origem = useMemo(() => ({ x: agua.x, y: agua.y + 0.4, z: agua.z }), [agua])
+  const zero = useMemo(() => ({ x: 0, y: 0, z: 0 }), [])
   const corpo = useRef<RapierRigidBody>(null)
   const pecas = useModelo(URL_DAS_PECAS)
   const desenho = useMemo(() => copiarNo(pecas, 'tora-que-boia'), [pecas])
@@ -71,12 +75,21 @@ export function TroncoNoLago({ agua }: { agua: AguaRasa }) {
     troncoAgora.montado = true
     troncoAgora.dormindo = b.isSleeping()
     // Parado e dormindo, as forças já se equilibram: só acorda quando algo mexe nele.
-    if (troncoAgora.dormindo) return
+    if (vento) ventoEm(t.x, t.z, vento, brisa)
+    // Só acorda na água e com rajada suficiente. Na margem continua dormindo.
+    if (
+      troncoAgora.dormindo &&
+      vento &&
+      dentroDaAgua(agua, t.x, t.z) &&
+      Math.hypot(brisa.x, brisa.z) > 0.55
+    )
+      b.wakeUp()
+    if (b.isSleeping()) return
     // Empurrado para fora da ilha (caiu no mar), volta para o meio do lago.
     if (t.y < agua.y - CAIU_DA_ILHA) {
-      b.setTranslation({ x: agua.x, y: agua.y + 0.4, z: agua.z }, true)
-      b.setLinvel({ x: 0, y: 0, z: 0 }, true)
-      b.setAngvel({ x: 0, y: 0, z: 0 }, true)
+      b.setTranslation(origem, true)
+      b.setLinvel(zero, true)
+      b.setAngvel(zero, true)
       return
     }
     const q = b.rotation()
@@ -107,6 +120,13 @@ export function TroncoNoLago({ agua }: { agua: AguaRasa }) {
       impulso.y = forca.y * PASSO_DA_FISICA
       impulso.z = forca.z * PASSO_DA_FISICA
       b.applyImpulseAtPoint(impulso, ponto, true)
+    }
+    if (vento && submersa > 0) {
+      const exposto = 1 - submersa
+      impulso.x = brisa.x * MASSA * 0.12 * exposto * PASSO_DA_FISICA
+      impulso.y = 0
+      impulso.z = brisa.z * MASSA * 0.12 * exposto * PASSO_DA_FISICA
+      b.applyImpulse(impulso, true)
     }
     b.setAngularDamping(GIRO_NO_AR + EMPUXO.giroNaAgua * submersa)
     troncoAgora.submersa = submersa

@@ -186,7 +186,7 @@ etapa 1 ganhando estado.
 - [x] Etapa 3 conferida. O modo já existia. Teste adicional compara a mesma descida em 30, 60 e 144 quadros, mantendo passos de 1/60 s. Navegador confirma entrada, descida e saída com embalo.
 - [x] Etapa 4: cordas e pontes.
 - [x] Etapa 5: mecanismos implementados e conferidos na sala. Ativação na casa depende de regerar o GLB.
-- [ ] Etapa 6: vento.
+- [x] Etapa 6: vento.
 - [ ] Etapa 7: materiais e fogo.
 - [ ] Etapa 8: mundo que reage.
 
@@ -213,3 +213,13 @@ Porta e alçapão usam dobradiças Rapier. A porta recebe o empurrão normal do 
 Review corrigiu a estação sobreposta a uma plataforma, o caixote baixo que virava degrau e o contato indevido da porta com a placa. Navegador: placa ligada, alçapão em 1,23 rad; porta empurrada em -1,08 rad e retorno a 0,03 rad após sair. Um caixote tombado sob o alçapão pode segurá-lo aberto, como qualquer contato físico. Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS, sem erro de página. Evidência: `.cache/arq-final-5g.json`.
 
 Pendente de arte: regerar o Bosque com `arte/ilhas/bosque.py` e conferir a entrada da casa. Nenhum GLB ou relatório foi regravado. Nota a sincronizar com `if_version`: "Porta com dobradiça e caixote que abre o alçapão prontos e testados na sala. A casa aguarda a nova arte."
+
+### Etapa 6
+
+Campo único com direção lenta, força maior à tarde e rajada espacial. Shader nas copas, galhos altos, moitas e tufos; a proximidade da criança dobra a vegetação baixa. As raízes não se deslocam. A preferência de movimento reduzido baixa a deformação a 20%, sem mudar as regras físicas. Os cipós livres passaram para o passo fixo e recebem vento por elo. O tronco recebe força na fração exposta; duas peças soltas, folha e pena, caem com arrasto e dormem no chão. A folhagem decorativa não ganhou corpos.
+
+Navegador: Bosque sem erro de shader, 78 materiais e cópias ligados ao campo, preferência de movimento reduzido confirmada em 0,2. Medianas antes/depois: sala 60/60, Bosque 60/60, tela estreita 60/60 FPS. Evidência: `.cache/arq-final-6.json`. Não foi teste em celular físico. Nenhuma mudança de arte necessária nesta etapa.
+
+Nota a sincronizar com `if_version`: "Vento nas copas, moitas, capim, cipós e tronco do lago. Plantas se dobram com a passagem e o movimento reduzido é respeitado."
+
+Verificação da etapa 6: 359 testes passaram, um teste local de banco pulado; typecheck sem erros. O comando de lint do pacote encontrou cinco erros de formatação/importação apenas nos arquivos novos de `sistemas/construcao`, em edição por outra sessão. O lint dos nove arquivos de código desta etapa passou. Esses arquivos externos não foram alterados nem incluídos no commit.

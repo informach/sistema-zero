@@ -54,6 +54,7 @@ import {
 import { materiaisDe } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { type PontesPreparadas, PontesVivas, prepararPontes } from './pontes-vivas'
+import { prepararVegetacao } from './vegetacao-ao-vento'
 
 /**
  * As ilhas completas do Blender (`arte/ilhas/`). Cada uma ocupa o mesmo lugar da versão leve
@@ -82,6 +83,7 @@ export interface IlhaPreparada {
   materiaisSubstituidos: Material[]
   copas: Copa[]
   pontes: PontesPreparadas | null
+  vegetacao: ReturnType<typeof prepararVegetacao>
 }
 
 /**
@@ -116,7 +118,9 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
     ilha.id === 'bosque'
       ? prepararPontes(cena, colisores, [...materiais, ...copas.flatMap((c) => c.suaves)])
       : null
+  const vegetacao = prepararVegetacao([...materiais, ...copas.flatMap((c) => c.suaves)])
   const preparada = {
+    vegetacao,
     pontes,
     modelo: cena,
     colisores,

@@ -15,6 +15,7 @@
  */
 import { type Balanco, CIPO, GRAVIDADE_DO_CIPO, type Ponto } from './cipo'
 import type { Tronco } from './escalada'
+import { type CampoDeVento, ventoEm } from './vento'
 
 export const CORDAS = {
   /** A grossura do cipó (raio da corda desenhada). */
@@ -101,6 +102,7 @@ export function passoDasCordas(
   corpo: CorpoQueEmpurra | null,
   troncos: readonly Tronco[],
   dt: number,
+  vento?: CampoDeVento,
 ): void {
   let resta = dt
   let ultimo = PASSO_MAXIMO
@@ -109,7 +111,7 @@ export function passoDasCordas(
     resta -= h
     ultimo = h
     const perde = Math.max(0, 1 - CIPO.amortecimentoSolto * h)
-    for (const c of cordas) andar(c, h, perde)
+    for (const c of cordas) andar(c, h, perde, vento)
     for (let volta = 0; volta < CORDAS.voltas; volta++) {
       for (const c of cordas) prender(c)
       for (const c of cordas) restringirElos(c, volta % 2 === 1)
@@ -175,7 +177,8 @@ function maosDoBalanco(c: Corda): Ponto {
 // ── Os passos ───────────────────────────────────────────────────────────────────────────────────
 
 /** Cada ponto anda com a velocidade que trazia (um pouco amortecida) mais a gravidade. */
-function andar(c: Corda, h: number, perde: number): void {
+const brisa = { x: 0, z: 0 }
+function andar(c: Corda, h: number, perde: number, vento?: CampoDeVento): void {
   const g = GRAVIDADE_DO_CIPO * h * h
   for (let i = 1; i < c.pontos.length; i++) {
     const p = c.pontos[i]
@@ -187,9 +190,14 @@ function andar(c: Corda, h: number, perde: number): void {
     a.x = p.x
     a.y = p.y
     a.z = p.z
-    p.x += vx
+    if (vento && !c.seguro) ventoEm(p.x, p.z, vento, brisa)
+    else {
+      brisa.x = 0
+      brisa.z = 0
+    }
+    p.x += vx + brisa.x * h * h * 2
     p.y += vy - g
-    p.z += vz
+    p.z += vz + brisa.z * h * h * 2
   }
 }
 

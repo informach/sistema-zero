@@ -8,6 +8,7 @@ import { esmaecidasAgora } from './copas'
 import { mecanismosAgora } from './mecanismos'
 import { pontesAgora } from './pontes-vivas'
 import { troncoAgora } from './tronco-no-lago'
+import { ventoAgora } from './vegetacao-ao-vento'
 
 /**
  * Só para medir o desenho (playground e conferência de desempenho): com
@@ -45,6 +46,7 @@ export interface MedidaDoDesenho {
   /** O modo do corpo (`sistemas/modos`) e se ele pisa em algo. */
   modo: Movimento['modo']
   noChao: boolean
+  vento: typeof ventoAgora
   mecanismos: typeof mecanismosAgora
   pontes: typeof pontesAgora
   fisica: { corposAtivos: number; passoMs: number }
@@ -107,6 +109,7 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      vento: { ...ventoAgora },
       mecanismos: { ...mecanismosAgora },
       pontes: { ...pontesAgora },
       fisica: { corposAtivos, passoMs: fisica.current.ms / Math.max(1, fisica.current.passos) },

@@ -1,4 +1,5 @@
 import { useFrame } from '@react-three/fiber'
+import { useBeforePhysicsStep } from '@react-three/rapier'
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
@@ -44,6 +45,8 @@ import {
   quantasEstrelas,
   vagalumesPegos,
 } from '../sistemas/percurso'
+import { DURACAO_DO_DIA_MS, PARTE_CLARA } from '../sistemas/tempo-do-dia'
+import { forcaPorHora } from '../sistemas/vento'
 import { BichosDoBosque } from './bichos-do-bosque'
 import {
   type AncorasDoPercurso,
@@ -65,11 +68,14 @@ import {
   prepararCipoDesenhado,
 } from './cipo-desenhado'
 import type { Copa } from './copas'
+import { FolhasAoVento } from './folhas-ao-vento'
 import { giroDaIlha, type IlhaPreparada, type Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
 import { Mecanismos } from './mecanismos'
+import { PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 import { TroncoNoLago } from './tronco-no-lago'
+import { ventoAgora } from './vegetacao-ao-vento'
 
 /** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
 const CHAO_DA_ILHA = 0.25
@@ -113,6 +119,8 @@ export function BosqueVivo({
 }) {
   const { loja, movimento, pedidos, rastro } = useJogo()
   const menosMovimento = useReducedMotion()
+  const vento = useMemo(() => ({ tempo: 0, hora: 6 }), [])
+  const comeco = useMemo(() => Date.parse(loja.getState().salvamento.criadoEm), [loja])
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ x: centro.x, y: 0, z: centro.z }), [centro.x, centro.z])
 
@@ -409,14 +417,32 @@ export function BosqueVivo({
   const tempo = useRef(0)
   const pecas = useRef<Group>(null)
 
+  useBeforePhysicsStep(() => {
+    vento.tempo += PASSO_DA_FISICA
+    const fracao = (Math.max(0, Date.now() - comeco) % DURACAO_DO_DIA_MS) / DURACAO_DO_DIA_MS
+    vento.hora =
+      (fracao < PARTE_CLARA
+        ? 6 + (fracao / PARTE_CLARA) * 12
+        : 18 + ((fracao - PARTE_CLARA) / (1 - PARTE_CLARA)) * 12) % 24
+    passoDasCordas(vivos, movimento.corpoDesenhado, troncos, PASSO_DA_FISICA, vento)
+  })
   useFrame((_, dtBruto) => {
+    const u = preparada.vegetacao.uniforms
+    u.arqTempoVento.value = vento.tempo
+    u.arqForcaVento.value = forcaPorHora(vento.hora)
+    u.arqMenosMovimento.value = menosMovimento ? 0.2 : 1
+    ventoAgora.tempo = vento.tempo
+    ventoAgora.forca = u.arqForcaVento.value
+    ventoAgora.materiais = preparada.vegetacao.quantidade
+    ventoAgora.escalaVisual = u.arqMenosMovimento.value
+    u.arqPessoaVento.value.set(rastro.x, rastro.y, rastro.z)
+
     const dt = Math.min(dtBruto, 0.1)
     tempo.current += dt
     // Placa, trepadeira e vagalumes só com a completa inteira (não pulam na frente da troca).
     if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
     // Os cipós são cordas de verdade (`sistemas/cordas.ts`): o corpo desenhado, o tronco e os
     // outros cipós empurram; seguro, a corda fica presa nas mãos e o resto cai junto ao corpo.
-    passoDasCordas(vivos, movimento.corpoDesenhado, troncos, dt)
     for (const c of cipos) if (c.desenho) desenharCipo(c.desenho, c.vivo.pontos)
 
     // O corte suave: escurece, leva o corpo, clareia.
@@ -494,6 +520,7 @@ export function BosqueVivo({
 
   return (
     <group ref={pecas} visible={false}>
+      <FolhasAoVento vento={vento} x={meio.x + 1} y={4} z={meio.z} />
       {mecanismos && <Mecanismos {...mecanismos} />}
       {cipos.map((c) => (
         <InterativoDoCipo key={c.vivo.id} cipo={c.vivo} noChao={noChao} />
@@ -504,7 +531,7 @@ export function BosqueVivo({
       </ComReserva>
       {agua ? (
         <ComReserva reserva={null}>
-          <TroncoNoLago agua={agua} />
+          <TroncoNoLago agua={agua} vento={vento} />
         </ComReserva>
       ) : null}
       <BichosDoBosque
