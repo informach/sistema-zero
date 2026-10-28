@@ -71,7 +71,11 @@ aconchego dos cômodos são os cartões seguintes (fase1-13 a fase1-15) e ficam 
 5. **Corte das paredes e telhado.** O corte no Construir e no Viver; o telhado dos cômodos
    retangulares, escondido dentro de casa e no Construir.
 6. **Quintal.** Cerca, caminho de pedra, grama e canteiro que planta e rega como a horta.
-7. **Cabana no Bosque.** O lote do Bosque com o mesmo kit.
+7. **Cabana no Bosque.** O lote do Bosque com o mesmo kit. **Pendente da arte (28/10/2026):** o
+   `bosque.glb` não tem um terreno plano e livre do tamanho de uma cabana (o mapa da grade no
+   referencial do modelo mostra só o corredor da chegada livre, onde fica a fogueira). O pedido do
+   lote, com as âncoras `lote-cabana-a` e `-b`, está no README de `arte/casa`. Enquanto isso, uma
+   cabana solta dá para fazer no quintal da casa (paredes, porta e telhado num cômodo separado).
 8. **Projeto azul.** Ganhar a geladeira e a casinha, pôr o objeto no Construir, o holograma
    funcionando (a geladeira guarda 4), o painel do objeto com a função, o molde e o pedido ao Pinta
    e ao Molda.

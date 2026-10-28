@@ -1077,6 +1077,9 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   - **Apagar:** arrastar tira paredes e cercas do caminho; um toque perto de uma aresta (até 0,3)
     tira a porta, a janela, a parede ou a cerca dali; longe dela, o canteiro vazio ou o caminho
     da célula. O que cada ferramenta faz com o dedo é regra pura: `sistemas/construcao/ferramentas.ts`.
+  - **Cabana:** a do Bosque ainda não existe no jogo: o `bosque.glb` não tem terreno livre para o
+    lote (pedido no README de `arte/casa`). O salvamento já guarda a obra dela
+    (`construcao.cabanas.bosque`). No quintal da casa dá para fazer uma cabana solta.
 
 ### 6.17 O diário e as pegadas
 
