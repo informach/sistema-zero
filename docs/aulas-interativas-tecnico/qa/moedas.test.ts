@@ -136,3 +136,60 @@ describe('quiz das Moedas', () => {
     expect(moedasQuizState('moedas-igual', false).coins.at).toBeNull()
   })
 })
+
+describe('manifestos das Moedas', () => {
+  for (const [i, d] of (['2d', '3d'] as const).entries())
+    test(`${d}: aula reservada, projeto contínuo, experiência só no 2D e uma entrega`, async () => {
+      const { readFileSync } = await import('node:fs')
+      const { resolve } = await import('node:path')
+      const { isLearningManifest } = await import('../../../packages/core/src/learning')
+      const { readManifestStudioProjectExamples } = await import(
+        '../../../packages/core/src/learning/studio-project-examples'
+      )
+      const m = JSON.parse(
+        readFileSync(
+          resolve(
+            import.meta.dirname,
+            `../../aulas-interativas/faisca/poder-moedas-no-caminho/moedas-aula-${i + 1}.manifesto.json`,
+          ),
+          'utf8',
+        ),
+      )
+      expect(isLearningManifest(m)).toBe(true)
+      expect(m.courseSlug).toBe('jornada-faisca-poder-1')
+      expect(m.lessonSlug).toBe(`aula-${i + 1}`)
+      expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
+        d === '2d'
+          ? [
+              'abertura',
+              'material',
+              'experiencia',
+              'contador',
+              'coleta',
+              'placar',
+              'bau',
+              'revisao',
+              'entrega',
+            ]
+          : ['abertura', 'coleta', 'placar', 'bau', 'revisao', 'entrega'],
+      )
+      expect(m.sections.filter((s: any) => s.completion.submissionUpToDate)).toHaveLength(1)
+      const studio = m.blocks.filter((b: any) => b.content?.kind === 'studio')
+      expect(studio).toHaveLength(1)
+      expect(studio[0].content.chain).toBe(`jornada-faisca-poder-1-${d}`)
+      expect(readManifestStudioProjectExamples(studio[0].content.projectExamples).kind).toBe(
+        'valid',
+      )
+      const cenas = m.blocks.filter((b: any) => b.content?.activity?.type === 'experimentation')
+      expect(cenas.map((b: any) => b.content.activity.scene)).toEqual(
+        d === '2d' ? ['coin-counter'] : [],
+      )
+      expect(m.blocks.filter((b: any) => b.content?.kind === 'materials')).toHaveLength(
+        d === '2d' ? 1 : 0,
+      )
+      expect(m.blocks.filter((b: any) => b.content?.kind === 'certificate')).toHaveLength(0)
+      // A coleta não cobra o baú ainda não pedido.
+      const coleta = m.sections.find((s: any) => s.key === 'coleta')
+      expect(coleta.completion.projectChecks.map((c: any) => c.id)).not.toContain('meta')
+    })
+})

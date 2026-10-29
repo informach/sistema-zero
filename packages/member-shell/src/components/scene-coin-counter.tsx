@@ -120,14 +120,22 @@ export function CoinCounterStage({ state }: { state: SceneState }) {
       </g>
       <AvisoDoFarol texto={aviso} />
       <image href={farolSvgUrl('moeda')} x={10} y={42} width={22} height={22} />
-      <Texto x="38" y="53" tamanho={16} fill="#143d35" fontWeight="700" dominantBaseline="central">
+      <Texto
+        x="38"
+        y="53"
+        tamanho={20}
+        fill="#ffffff"
+        fontWeight="700"
+        dominantBaseline="central"
+        data-sem-halo=""
+      >
         {`Moedas: ${c.moedas}`}
       </Texto>
       {c.last && (
         <g data-soma="">
-          <rect x="128" y="42" width="112" height="22" rx="11" fill="#fff8e1" stroke="#d98c1a" />
+          <rect x="150" y="42" width="112" height="22" rx="11" fill="#fff8e1" stroke="#d98c1a" />
           <Texto
-            x="184"
+            x="206"
             y="53"
             tamanho={14}
             fill="#7a4a0a"

@@ -73,7 +73,7 @@ def audit(path):
 if __name__ == '__main__':
     prefix = sys.argv[1] if len(sys.argv) > 1 else ''
     paths = sorted(p for p in ROOT.glob('*/*/*.manifesto.json') if not prefix or p.name.startswith(prefix))
-    if not paths or (not prefix and len(paths) != 42):
+    if not paths or (not prefix and len(paths) != 44):
         raise SystemExit(f'ERRO: quantidade de manifestos inesperada: {len(paths)}')
     all_errors = []
     total = 0

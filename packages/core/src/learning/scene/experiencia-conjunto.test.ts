@@ -282,7 +282,7 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
     const manifestos = listarArquivosAulas()
       .filter((nome) => nome.endsWith('.manifesto.json'))
       .map((nome) => caminhoAula(nome))
-    expect(manifestos).toHaveLength(42)
+    expect(manifestos).toHaveLength(44)
     let cenasLidas = 0
     const premissasAntecipadas: string[] = []
     const visitar = (o: unknown) => {

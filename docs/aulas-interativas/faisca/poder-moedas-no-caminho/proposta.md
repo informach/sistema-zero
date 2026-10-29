@@ -1,7 +1,7 @@
 # Moedas no caminho: proposta do Poder do Faísca
 
-29/10/2026 · Proposta para aprovação. Define a autoria; não declara curso implementado, mídia
-produzida ou publicação realizada. Primeiro dos quatro Poderes do Faísca e referência de
+29/10/2026 · Proposta aprovada e aplicada na autoria local (ver o [README](README.md)). Mídia,
+voz e publicação continuam etapas de produção. Primeiro dos quatro Poderes do Faísca e referência de
 qualidade para os outros três (Duas peças para abrir, A porta fica aberta por um tempo e A
 sequência dos símbolos).
 

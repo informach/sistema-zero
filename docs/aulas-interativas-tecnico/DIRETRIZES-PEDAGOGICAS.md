@@ -331,3 +331,16 @@ O Jardim Secreto é a primeira referência dessa aplicação. A missão exige os
 - Quiz de previsão usa uma cena fiel e mostra o resultado depois da escolha. Pergunta de diagnóstico ou de escolha de teste pode ficar sem demonstração; o mesmo quiz pode reunir os dois formatos. Alternativas permanecem equivalentes antes da escolha e a correção pertence ao servidor.
 - Reiniciar a partida conserva regras e posições editadas. Restaurar o projeto inicial é outra ação e não deve ser pedido como teste.
 - Uma missão não concede certificado nem promove sozinha. A jornada conserva seus outros critérios. Artes, roteiro, manifesto, ajuda, PDF e fontes de voz devem acompanhar a mesma versão; gravação e publicação são etapas verificadas separadamente.
+
+## Poderes do posto: conceito novo nas duas dimensões, direção de 29/10/2026
+
+Moedas no caminho é a primeira referência. Um Poder acrescenta um conceito que os cursos-base não
+ensinaram, por isso a **primeira aula** segue o formato de curso: jogo pronto, Passo a passo do
+projeto, vídeo conceitual com a experiência do conceito, montagens guiadas por completo no vídeo
+(uma ideia por seção, destino antes da peça, retomada no próprio jogo), quiz e entrega. A **segunda
+aula** é a transferência para a outra dimensão, como a aula 3D da missão: o vídeo lembra a regra e
+convida a construir, e a montagem completa fica no Passo a passo do projeto, com objetivos por etapa.
+Não repetir a experiência na segunda aula; o quiz dela pode ter uma previsão com cena da outra
+dimensão. O Poder conta com as duas aulas concluídas. Quando o conceito pede um bloco que só uma das
+dimensões tinha, conferir o catálogo inteiro antes: descer um bloco existente para o iniciante vem
+antes de criar um novo (ver `faisca/README.md`).

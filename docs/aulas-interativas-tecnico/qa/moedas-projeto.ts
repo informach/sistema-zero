@@ -216,9 +216,9 @@ function ir2d(etapa: MoedasEtapa): SZIRV2 {
         label: 'Moedas:',
         value: { type: 'var', name: 'moedas' },
         x: 38,
-        y: 59,
-        color: '#143d35',
-        size: 16,
+        y: 60,
+        color: '#ffffff',
+        size: 20,
       })
   }
   return normalizeSZIR(ir) as SZIRV2
