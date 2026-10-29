@@ -14,6 +14,7 @@ import type { Jogador, Responsavel } from '../domain/jogador'
 import type { RepositorioDoJogo } from '../domain/repositorio.port'
 import {
   desafiosDaSemana,
+  diasDeVoltaAoCurso,
   type Janela,
   janelaDaSemana,
   objetosCriados,
@@ -46,7 +47,8 @@ export class ServicoDaFamilia {
   }
 
   async semana(responsavel: Responsavel, perfis: readonly string[]): Promise<SemanaDaFamilia> {
-    const janela = janelaDaSemana(this.agora())
+    const agora = this.agora()
+    const janela = janelaDaSemana(agora)
     const limite =
       (await this.deps.jogo.lerLimite(responsavel.contaId)) ?? LIMITE_DIARIO_PADRAO_MINUTOS
     // As crianças que veem o jogo: a mesma decisão de quando cada uma abre o jogo.
@@ -58,10 +60,13 @@ export class ServicoDaFamilia {
       return { ...base, algumaCriancaVe: false, criancas: [], aindaSemJogo: [] }
     const daConta = new Set(await this.deps.familia.perfisDaConta(responsavel.contaId, veem))
     const jogaram = veem.filter((id) => daConta.has(id))
-    const [tempos, salvamentos] = await Promise.all([
+    const [tempos, salvamentos, sessoes] = await Promise.all([
       this.deps.familia.tempoNaJanela(jogaram, janela.inicio, janela.fim),
       this.deps.familia.salvamentos(jogaram),
+      // Meia-noite UTC do primeiro dia vem antes da de São Paulo; o dia certo é filtrado depois.
+      this.deps.familia.sessoesNaJanela(jogaram, new Date(`${janela.inicio}T00:00:00Z`), agora),
     ])
+    const aulas = await this.aulasDepoisDeJogar(sessoes, agora)
     const criancas = await Promise.all(
       jogaram.map(
         async (id): Promise<SemanaDaCrianca> => ({
@@ -69,6 +74,9 @@ export class ServicoDaFamilia {
           desafios: await this.desafios(responsavel, id, janela),
           objetos: salvamentos.has(id) ? objetosCriados(salvamentos.get(id)) : null,
           tempoLivre: tempos.get(id) ?? { segundos: 0, dias: 0 },
+          voltaAoCurso: aulas
+            ? { dias: diasDeVoltaAoCurso(sessoes.get(id) ?? [], aulas.get(id) ?? [], janela) }
+            : null,
         }),
       ),
     )
@@ -107,6 +115,28 @@ export class ServicoDaFamilia {
     if (!abertos) return null
     const conclusoes = await this.deps.desafios.conclusoes(perfilId, 'kids')
     return desafiosDaSemana(conclusoes, janela, await this.posicao(responsavel, perfilId))
+  }
+
+  /**
+   * As aulas concluídas de quem jogou, do fim da primeira sessão até agora (uma ida ao Members
+   * para a família toda). `null` = sem a leitura dos cursos: a linha não aparece para os pais.
+   */
+  private async aulasDepoisDeJogar(
+    sessoes: Map<string, Date[]>,
+    agora: Date,
+  ): Promise<Map<string, Date[]> | null> {
+    if (!this.deps.leituras.ligadas()) return null
+    const fins = [...sessoes.values()].flat()
+    if (fins.length === 0) return new Map()
+    const de = new Date(Math.min(...fins.map((f) => f.getTime())))
+    try {
+      return await this.deps.leituras.aulasConcluidas([...sessoes.keys()], de, agora)
+    } catch (erro) {
+      this.deps.logger.warn('arquipelago.familia.cursos_indisponiveis', {
+        erro: erro instanceof Error ? erro.name : 'desconhecido',
+      })
+      return null
+    }
   }
 
   private async posicao(responsavel: Responsavel, perfilId: string): Promise<number | null> {

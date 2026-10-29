@@ -5,6 +5,8 @@ import type { RepositorioEmMemoria } from './memoria'
 /** A família em memória, lendo o mesmo repositório do jogo em memória (salvamento, tempo, conta). */
 export class FamiliaEmMemoria implements RepositorioDaFamilia {
   readonly permissoes = new Map<string, PermissoesDaFamilia>()
+  /** O fim de cada sessão com tempo contado, por perfil (os testes põem à mão). */
+  readonly sessoes = new Map<string, Date[]>()
 
   constructor(private readonly jogo: RepositorioEmMemoria) {}
 
@@ -21,6 +23,15 @@ export class FamiliaEmMemoria implements RepositorioDaFamilia {
       tempos.set(id, { segundos: atual.segundos + segundos, dias: atual.dias + 1 })
     }
     return tempos
+  }
+
+  async sessoesNaJanela(perfis: readonly string[], de: Date, ate: Date) {
+    const fins = new Map<string, Date[]>()
+    for (const id of perfis) {
+      const dentro = (this.sessoes.get(id) ?? []).filter((f) => f >= de && f <= ate)
+      if (dentro.length > 0) fins.set(id, dentro)
+    }
+    return fins
   }
 
   async salvamentos(perfis: readonly string[]) {

@@ -19,6 +19,11 @@ export interface RepositorioDaFamilia {
     inicio: string,
     fim: string,
   ): Promise<Map<string, TempoNaJanela>>
+  /**
+   * O fim de cada sessão no jogo com tempo contado (o `cursor`), entre `de` e `ate`, por perfil
+   * (quem não jogou fica de fora do mapa). É de onde sai a "volta ao curso" (29/10/2026).
+   */
+  sessoesNaJanela(perfis: readonly string[], de: Date, ate: Date): Promise<Map<string, Date[]>>
   /** O salvamento cru de cada perfil (quem não tem fica de fora do mapa). */
   salvamentos(perfis: readonly string[]): Promise<Map<string, unknown>>
   lerPermissoes(contaId: string): Promise<PermissoesDaFamilia | null>

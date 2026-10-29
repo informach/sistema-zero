@@ -21,6 +21,15 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   (Kids: `earned.level`; adulto: `adultJourneyPosition`) e os blocos conquistados pela leitura SÓ
   de leitura `GetStudioUnlocksService.read` (a mesma união do Estúdio livre, sem congelar nada).
   Jornada do Kids indisponível → 424 `JORNADA_INDISPONIVEL`.
+- `GET /aulas-concluidas?usuarios=a,b&de=ISO&ate=ISO` (29/10/2026,
+  `ArquipelagoCourseActivityService` + `ArquipelagoCourseActivityRepository`, dep `aulas`): a hora
+  de cada aula concluída (`lesson_completions.completed_at`) dessas pessoas (o id do PERFIL no
+  Kids) na janela, uma linha por pessoa pedida (mesmo sem aula), da mais antiga para a mais nova.
+  Até 20 pessoas, janela de até 9 dias, até 500 aulas por pessoa (espelhos dos tetos do contrato
+  `AulasConcluidasDosMembrosSchema`); fora disso, 400 `INVALID_QUERY`; sem a dep, 424. É a "volta
+  ao curso" do cartão dos pais: quem decide de quais crianças perguntar é o serviço do jogo (só as
+  ligadas à conta do responsável). Testes: `tests/unit/arquipelago-course-activity.service.test.ts`,
+  `tests/db/arquipelago-course-activity.test.ts` e as rotas em `tests/arquipelago-internal.routes.test.ts`.
 - `GET /curriculo-de-blocos?audience`: cursos GRAVADOS publicados com `studioUnlockBlocks`, com o
   posto mais cedo no currículo (`lugarNoCurriculo`; política sem currículo = posto nulo) e o
   catálogo do Estúdio (tipo, rótulo, categoria).

@@ -190,10 +190,23 @@ serviço em `arquipelago-api/src/application/servico-da-familia.ts` e regra pura
   ao lado do limite diário que vale agora ("2 h 13 min em 4 dias (limite de 45 min por dia).").
 - **Nomes:** o serviço do jogo nunca sabe nomes. O BFF põe o nome da grade de perfis do Auth e
   descarta qualquer id que não esteja na grade.
-- **Voltou ao curso depois de jogar:** fica FORA. O Members só expõe contagens da semana por
-  perfil, sem a hora de cada aula, e o jogo guarda o tempo por dia, sem a hora de cada sessão.
-  Para a linha existir: uma rota interna do Members com as horas da atividade de curso por perfil
-  nos últimos 8 dias e as sessões do jogo com começo e fim.
+- **Voltou ao curso depois de jogar (29/10/2026):** em quantos dias da janela ela concluiu uma
+  aula do curso até 24 horas depois de uma sessão no jogo terminar (`HORAS_DA_VOLTA_AO_CURSO`, no
+  contrato; regra pura `diasDeVoltaAoCurso`).
+  - **As sessões** vêm do próprio jogo: cada linha de `sessoes_de_tempo` guarda o começo
+    (`criado_em`) e até onde o tempo foi contado (`cursor`), que é o fim de cada vez que ela
+    jogou. Sessão que abriu e não contou tempo não conta. O dia é o do fim da sessão, em São Paulo.
+  - **As aulas** vêm do Members: `GET /members/internal/arquipelago/aulas-concluidas?usuarios=&de=&ate=`
+    (token de leitura do jogo, até 20 pessoas e 9 dias) devolve a hora de cada aula CONCLUÍDA
+    (`lesson_completions.completed_at`). Aula só aberta não conta: concluir é o sinal de verdade.
+    O serviço do jogo faz uma ida só para a família toda, do fim da primeira sessão até agora.
+  - A aula precisa vir DEPOIS do fim da sessão (durante a sessão não conta) e até 24 horas.
+  - O cartão diz o fato, nunca a causa: "Concluiu aula do curso até 24 h depois de jogar em 2 dos
+    4 dias em que jogou." (ou "nos 4 dias em que jogou", ou, num dia só, sem a conta). Sem nenhuma:
+    "Nenhuma aula do curso concluída até 24 h depois de jogar."
+  - **Na dúvida, some:** Members não ligado ou fora do ar dá `voltaAoCurso: null` e a linha não
+    aparece; sem tempo de jogo na janela também não. O campo é opcional no contrato para o serviço
+    e o app subirem em qualquer ordem.
 
 **As permissões de visita** (`GET` e `PUT /arquipelago/familia/permissoes`, só o responsável),
 ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são os pais.

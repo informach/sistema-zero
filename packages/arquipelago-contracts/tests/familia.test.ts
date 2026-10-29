@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  AulasConcluidasDosMembrosSchema,
   PERMISSOES_PADRAO,
   PermissoesDaFamiliaSchema,
   SemanaDaFamiliaParaOsPaisSchema,
@@ -81,5 +82,32 @@ describe('as permissões de visita', () => {
     expect(PermissoesDaFamiliaSchema.safeParse({ ...PERMISSOES_PADRAO, chat: true }).success).toBe(
       false,
     )
+  })
+})
+
+describe('a volta ao curso (29/10/2026)', () => {
+  test('vem com os dias, sem leitura (null) ou ausente (serviço antigo)', () => {
+    for (const voltaAoCurso of [{ dias: 2 }, null, undefined]) {
+      const c = { ...crianca, voltaAoCurso }
+      expect(SemanaDaFamiliaSchema.safeParse({ ...semana, criancas: [c] }).success).toBe(true)
+    }
+    for (const voltaAoCurso of [{ dias: 8 }, { dias: -1 }, { dias: 1, horas: 3 }]) {
+      const c = { ...crianca, voltaAoCurso }
+      expect(SemanaDaFamiliaSchema.safeParse({ ...semana, criancas: [c] }).success).toBe(false)
+    }
+  })
+
+  test('as aulas concluídas que o Members manda: horas em ISO, uma linha por pessoa', () => {
+    const ok = {
+      usuarios: [
+        { userId: A, concluidasEm: ['2026-10-27T14:00:00.000Z', '2026-10-28T09:30:00-03:00'] },
+        { userId: B, concluidasEm: [] },
+      ],
+    }
+    expect(AulasConcluidasDosMembrosSchema.parse(ok)).toEqual(ok)
+    const semHora = { usuarios: [{ userId: A, concluidasEm: ['2026-10-27'] }] }
+    expect(AulasConcluidasDosMembrosSchema.safeParse(semHora).success).toBe(false)
+    const aMais = { usuarios: [{ userId: A, concluidasEm: [], aulas: 1 }] }
+    expect(AulasConcluidasDosMembrosSchema.safeParse(aMais).success).toBe(false)
   })
 })

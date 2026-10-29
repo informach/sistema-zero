@@ -89,6 +89,30 @@ function servidor(rotas: Rotas) {
   return calls
 }
 
+test('a volta ao curso só aparece com a leitura dos cursos e com tempo de jogo', () => {
+  const ultima = (parte: Parameters<typeof crianca>[0]) => linhasDaSemana(crianca(parte), 30).at(-1)
+  // 3 dias jogados (crianca padrão).
+  expect(ultima({ voltaAoCurso: { dias: 2 } })).toBe(
+    'Concluiu aula do curso até 24 h depois de jogar em 2 dos 3 dias em que jogou.',
+  )
+  expect(ultima({ voltaAoCurso: { dias: 3 } })).toBe(
+    'Concluiu aula do curso até 24 h depois de jogar, nos 3 dias em que jogou.',
+  )
+  expect(ultima({ voltaAoCurso: { dias: 0 } })).toBe(
+    'Nenhuma aula do curso concluída até 24 h depois de jogar.',
+  )
+  expect(ultima({ voltaAoCurso: { dias: 1 }, tempoLivre: { segundos: 600, dias: 1 } })).toBe(
+    'Concluiu aula do curso até 24 h depois de jogar.',
+  )
+  // Sem a leitura (null ou serviço antigo) ou sem jogar: a linha não existe.
+  for (const parte of [
+    { voltaAoCurso: null },
+    {},
+    { voltaAoCurso: { dias: 0 }, tempoLivre: { segundos: 0, dias: 0 } },
+  ])
+    expect(linhasDaSemana(crianca(parte), 30).some((l) => l.includes('aula do curso'))).toBe(false)
+})
+
 test('o cartão mostra a semana de cada criança, o limite e as três permissões', async () => {
   servidor({
     '/limite': () => Response.json(LIMITE),

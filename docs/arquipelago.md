@@ -68,6 +68,11 @@ desafio não significa necessariamente minijogo. Volta ao curso em 24 horas e co
 antes/depois dependem da integração com fontes confiáveis do Members, em coordenação com o
 cartão dos pais. Nenhum desses números é inventado quando a fonte falta.
 
+O cartão dos pais já tem a volta ao curso por criança (29/10/2026): aula CONCLUÍDA até 24 horas
+depois do fim de uma sessão no jogo (`sessoes_de_tempo.cursor`), lida do Members pela rota interna
+`aulas-concluidas`. Se a Medição for somar o mesmo número, use a mesma régua
+(`diasDeVoltaAoCurso`, `docs/arquipelago-regras.md` seção 3) para os dois nunca discordarem.
+
 Definições, fontes e evidências locais: [relatório da medição](qa/2026-10-28-arquipelago-medicao.md).
 
 Rotas, identidade (perfil do Kids × conta adulta × responsável), suporte somente leitura,

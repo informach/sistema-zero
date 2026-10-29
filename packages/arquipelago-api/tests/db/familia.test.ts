@@ -70,7 +70,7 @@ describe.skipIf(!url)('DrizzleRepositorioDaFamilia (Postgres real)', () => {
     await conexao?.close()
   })
   beforeEach(async () => {
-    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.perfis_da_conta, arquipelago.permissoes_da_familia`
+    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.perfis_da_conta, arquipelago.permissoes_da_familia, arquipelago.sessoes_de_tempo`
   })
 
   const guardar = (jogadorId: string, contaId: string | null, revisaoBase = 0) =>
@@ -101,6 +101,25 @@ describe.skipIf(!url)('DrizzleRepositorioDaFamilia (Postgres real)', () => {
     await jogo.somarTempo(TOM, '2026-10-25', 60, AGORA)
     const tempos = await familia.tempoNaJanela([LIA], '2026-10-22', '2026-10-28')
     expect([...tempos]).toEqual([[LIA, { segundos: 900, dias: 2 }]])
+  })
+
+  test('sessões da janela: o fim (cursor) de quem jogou, sem as que não contaram tempo', async () => {
+    const sessao = async (jogador: string, inicio: string, fim: string) => {
+      await conexao.sql`
+        insert into arquipelago.sessoes_de_tempo
+          (jogador_id, sessao_id, cursor, vencimento, estado, ultima_sequencia, ultima_acao,
+           criado_em, atualizado_em)
+        values
+          (${jogador}, gen_random_uuid(), ${fim}::timestamptz, ${fim}::timestamptz, 'encerrada',
+           3, 'pausar', ${inicio}::timestamptz, ${fim}::timestamptz)`
+    }
+    await sessao(LIA, '2026-10-26T19:40:00Z', '2026-10-26T20:00:00Z')
+    await sessao(LIA, '2026-10-27T19:00:00Z', '2026-10-27T19:00:00Z') // abriu e não contou tempo
+    await sessao(LIA, '2026-10-20T19:00:00Z', '2026-10-20T19:30:00Z') // antes da janela
+    await sessao(TOM, '2026-10-25T10:00:00Z', '2026-10-25T10:20:00Z') // não foi pedido
+    const fins = await familia.sessoesNaJanela([LIA], new Date('2026-10-22T00:00:00Z'), AGORA)
+    expect([...fins]).toEqual([[LIA, [new Date('2026-10-26T20:00:00Z')]]])
+    expect(await familia.sessoesNaJanela([], new Date(0), AGORA)).toEqual(new Map())
   })
 
   test('salvamentos e permissões (uma linha por conta, a última escolha vale)', async () => {

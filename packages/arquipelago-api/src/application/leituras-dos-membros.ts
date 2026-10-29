@@ -55,6 +55,26 @@ export class LeiturasDosMembros {
     )
   }
 
+  /**
+   * A hora das aulas concluídas de cada pessoa (id em minúsculas) entre `de` e `ate`. Sem cache:
+   * só a área dos pais pergunta. Falha ou formato estranho: `PlataformaIndisponivelError`.
+   */
+  async aulasConcluidas(
+    usuarios: readonly string[],
+    de: Date,
+    ate: Date,
+  ): Promise<Map<string, Date[]>> {
+    const membros = this.exigir()
+    try {
+      const r = await membros.lerAulasConcluidas({ usuarios: [...usuarios], de, ate })
+      return new Map(
+        r.usuarios.map((u) => [u.userId.toLowerCase(), u.concluidasEm.map((h) => new Date(h))]),
+      )
+    } catch (erro) {
+      throw new PlataformaIndisponivelError(erro)
+    }
+  }
+
   private exigir(): PortaDosMembros {
     if (!this.membros) throw new PlataformaIndisponivelError()
     return this.membros

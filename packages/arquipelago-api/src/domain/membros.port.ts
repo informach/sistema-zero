@@ -1,5 +1,6 @@
 import type {
   AnaliseDosMembros,
+  AulasConcluidasDosMembros,
   CurriculoDeBlocos,
   JogadorDosMembros,
   JornadaDosMembros,
@@ -21,6 +22,11 @@ export interface PortaDosMembros {
   lerJornada(signal?: AbortSignal): Promise<JornadaDosMembros>
   lerJogador(pergunta: PerguntaDoJogador, signal?: AbortSignal): Promise<JogadorDosMembros>
   lerCurriculo(audience: PublicoDosMembros, signal?: AbortSignal): Promise<CurriculoDeBlocos>
+  /** A hora das aulas concluídas destas pessoas entre `de` e `ate` (a volta ao curso dos pais). */
+  lerAulasConcluidas(
+    pergunta: { usuarios: string[]; de: Date; ate: Date },
+    signal?: AbortSignal,
+  ): Promise<AulasConcluidasDosMembros>
   /** Confere um desafio com o verificador das aulas (pode rodar o jogo: demora). */
   analisarObjetivos(pedido: {
     audience: PublicoDosMembros

@@ -205,7 +205,10 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   com a conta do login da própria criança (`gravarSalvamento` recebe `contaId`, só do Kids).
   Desafios: `null` com `ARQUIPELAGO_DESAFIOS` desligado (ou `equipe` fora da equipe); "de ilhas
   anteriores" `null` sem a jornada do Members. Objetos: total desde o começo (o salvamento não
-  data a aparência). Permissões em `permissoes_da_familia`, por conta. Testes:
+  data a aparência). Volta ao curso (29/10/2026): o fim de cada sessão com tempo contado
+  (`sessoesNaJanela`, o `cursor` de `sessoes_de_tempo`) cruzado com a hora das aulas concluídas
+  (`LeiturasDosMembros.aulasConcluidas`, porta `lerAulasConcluidas`, uma ida por família, sem
+  cache); Members desligado ou fora = `voltaAoCurso: null`. Permissões em `permissoes_da_familia`, por conta. Testes:
   `tests/unit/semana-da-familia.test.ts`, `tests/integration/familia.test.ts` e
   `tests/db/familia.test.ts` (Postgres local `arquipelago_test`).
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update

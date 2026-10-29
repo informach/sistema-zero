@@ -10,6 +10,9 @@ import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 /** Quantos dias o resumo cobre: hoje e os 6 anteriores, no dia de São Paulo. */
 export const DIAS_DA_SEMANA_DA_FAMILIA = 7
 
+/** Até quantas horas depois de jogar uma aula concluída conta como "voltou ao curso". */
+export const HORAS_DA_VOLTA_AO_CURSO = 24
+
 const DIA = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const QUANTOS = z.number().int().min(0)
 
@@ -34,6 +37,15 @@ export const SemanaDaCriancaSchema = z.strictObject({
   objetos: z.strictObject({ pinta: QUANTOS, molda: QUANTOS }).nullable(),
   /** Tempo livre no jogo na janela, em segundos, e em quantos dias ela jogou. */
   tempoLivre: z.strictObject({ segundos: QUANTOS, dias: QUANTOS.max(DIAS_DA_SEMANA_DA_FAMILIA) }),
+  /**
+   * Em quantos dias da janela ela concluiu aula do curso até `HORAS_DA_VOLTA_AO_CURSO` depois de
+   * uma sessão no jogo terminar (29/10/2026). `null` = sem a leitura dos cursos (Members fora ou
+   * não ligado). Opcional para o serviço e o app subirem em qualquer ordem.
+   */
+  voltaAoCurso: z
+    .strictObject({ dias: QUANTOS.max(DIAS_DA_SEMANA_DA_FAMILIA) })
+    .nullable()
+    .optional(),
 })
 export type SemanaDaCrianca = z.infer<typeof SemanaDaCriancaSchema>
 

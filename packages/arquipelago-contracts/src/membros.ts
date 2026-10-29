@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 import { ILHAS, POSICOES_DA_JORNADA, POSTOS_DA_JORNADA } from './ilhas'
 
 /**
@@ -170,3 +171,26 @@ export const VerificacaoDosMembrosSchema = z.strictObject({
   resultados: z.array(ResultadoDeObjetivoSchema).max(20),
 })
 export type VerificacaoDosMembros = z.infer<typeof VerificacaoDosMembrosSchema>
+
+/** A maior janela que se pede ao Members de uma vez: os 7 dias do resumo e o dia seguinte, com folga. */
+export const JANELA_DAS_AULAS_CONCLUIDAS_MAXIMA_MS = 9 * 86_400_000
+/** Teto de aulas concluídas por pessoa numa resposta (ninguém conclui tanto em 9 dias). */
+export const AULAS_CONCLUIDAS_MAXIMO = 500
+
+/**
+ * `GET /members/internal/arquipelago/aulas-concluidas?usuarios=&de=&ate=` (29/10/2026): a hora
+ * de cada aula concluída por estas pessoas (o id do perfil no Kids) entre `de` e `ate`, para a
+ * linha "concluiu aula depois de jogar" da área dos pais. Uma linha por pessoa pedida, mesmo sem
+ * aula; as horas em ISO, da mais antiga para a mais nova.
+ */
+export const AulasConcluidasDosMembrosSchema = z.strictObject({
+  usuarios: z
+    .array(
+      z.strictObject({
+        userId: z.uuid(),
+        concluidasEm: z.array(z.iso.datetime({ offset: true })).max(AULAS_CONCLUIDAS_MAXIMO),
+      }),
+    )
+    .max(PERFIS_DA_FAMILIA_MAXIMO),
+})
+export type AulasConcluidasDosMembros = z.infer<typeof AulasConcluidasDosMembrosSchema>

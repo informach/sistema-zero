@@ -10,6 +10,7 @@ export function membrosDeMentira(parcial: Partial<PortaDosMembros> = {}): PortaD
     lerJornada: nunca('lerJornada'),
     lerJogador: nunca('lerJogador'),
     lerCurriculo: nunca('lerCurriculo'),
+    lerAulasConcluidas: nunca('lerAulasConcluidas'),
     analisarObjetivos: nunca('analisarObjetivos'),
     verificarObjetivos: nunca('verificarObjetivos'),
     ...parcial,

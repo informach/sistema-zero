@@ -1,4 +1,4 @@
-import { expect, mock, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 import { ValidationError } from '@sistemazero/core/errors'
 import { UnauthorizedError } from '@sistemazero/core/http'
 import { JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
@@ -26,6 +26,7 @@ function criar(over: {
   configurado?: string
   leituras?: unknown
   objetivos?: unknown
+  aulas?: unknown
 }) {
   const staffPreview = mock(over.staffPreview ?? (async () => ({ policyVersion: 4 })))
   const policy = mock(
@@ -50,6 +51,7 @@ function criar(over: {
         adultJourney: { policy } as never,
         leituras: (over.leituras ?? { jogador: mock(), curriculoDeBlocos: mock() }) as never,
         objetivos: (over.objetivos ?? { analisar: mock(), verificar: mock() }) as never,
+        aulas: over.aulas as never,
         token: 'configurado' in over ? over.configurado : token,
       }),
     )
@@ -249,4 +251,52 @@ test('verificar valida o corpo e repassa o pedido', async () => {
   const ok = await app.handle(postar('/objetivos/verificar', pedidoDeVerificacao))
   expect(await ok.json()).toEqual({ passou: true, resultados: [{ id: 'repetir', passou: true }] })
   expect(verificar).toHaveBeenCalledWith(pedidoDeVerificacao)
+})
+
+describe('aulas concluídas (a volta ao curso dos pais, 29/10/2026)', () => {
+  const lia = '11111111-1111-4111-8111-111111111111'
+  const tom = '22222222-2222-4222-8222-222222222222'
+  const pedir = (query: string, chave = token) =>
+    new Request(`http://local/members/internal/arquipelago/aulas-concluidas?${query}`, {
+      headers: { 'x-arquipelago-token': chave },
+    })
+  const janela = 'de=2026-10-22T03:00:00.000Z&ate=2026-10-29T03:00:00.000Z'
+
+  test('repassa pessoas e janela ao serviço e devolve o formato do contrato', async () => {
+    const resposta = { usuarios: [{ userId: lia, concluidasEm: ['2026-10-26T15:00:00.000Z'] }] }
+    const concluidas = mock(async () => resposta)
+    const { app } = criar({ aulas: { concluidas } })
+    const res = await app.handle(pedir(`usuarios=${lia},${tom}&${janela}`))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual(resposta)
+    expect(concluidas).toHaveBeenCalledWith({
+      usuarios: [lia, tom],
+      de: new Date('2026-10-22T03:00:00.000Z'),
+      ate: new Date('2026-10-29T03:00:00.000Z'),
+    })
+  })
+
+  test('exige o token de leitura; pedido malformado é 400; sem a leitura ligada, 424', async () => {
+    const concluidas = mock(async () => ({ usuarios: [] }))
+    const { app } = criar({ aulas: { concluidas } })
+    expect((await app.handle(pedir(`usuarios=${lia}&${janela}`, tokenDasMoedas))).status).toBe(401)
+    for (const q of [
+      janela,
+      `usuarios=nao-e-uuid&${janela}`,
+      `usuarios=${lia}&de=ontem&ate=hoje`,
+      `usuarios=${Array.from({ length: 21 }, () => lia).join(',')}&${janela}`,
+    ])
+      expect((await app.handle(pedir(q))).status).toBe(400)
+    expect(concluidas).toHaveBeenCalledTimes(0)
+    const desligada = criar({})
+    expect((await desligada.app.handle(pedir(`usuarios=${lia}&${janela}`))).status).toBe(424)
+  })
+
+  test('janela fora do limite do serviço vira 400', async () => {
+    const concluidas = mock(async () => {
+      throw new ValidationError('Janela fora do limite')
+    })
+    const { app } = criar({ aulas: { concluidas } })
+    expect((await app.handle(pedir(`usuarios=${lia}&${janela}`))).status).toBe(400)
+  })
 })

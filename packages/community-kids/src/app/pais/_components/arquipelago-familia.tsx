@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  HORAS_DA_VOLTA_AO_CURSO,
   type PermissoesDaFamilia,
   PermissoesDaFamiliaSchema,
   type SemanaDaFamiliaParaOsPais,
@@ -63,7 +64,25 @@ export function linhasDaSemana(c: Crianca, limiteDiarioMinutos: number): string[
       ? `Tempo livre no jogo: ${tempoPorExtenso(segundos)} em ${plural(dias, 'dia', 'dias')} (${limite}).`
       : `Não passeou pelo jogo nestes dias (${limite}).`,
   )
+  const volta = voltaAoCurso(c)
+  if (volta) linhas.push(volta)
   return linhas
+}
+
+/**
+ * Se ela concluiu aula do curso logo depois de jogar (29/10/2026). Só com a leitura dos cursos
+ * e com tempo de jogo na janela; diz o fato, nunca que o jogo foi a causa.
+ */
+function voltaAoCurso(c: Crianca): string | null {
+  const { segundos, dias } = c.tempoLivre
+  if (!c.voltaAoCurso || segundos <= 0 || dias <= 0) return null
+  const voltou = Math.min(c.voltaAoCurso.dias, dias)
+  const prazo = `até ${HORAS_DA_VOLTA_AO_CURSO} h depois de jogar`
+  if (voltou === 0) return `Nenhuma aula do curso concluída ${prazo}.`
+  const base = `Concluiu aula do curso ${prazo}`
+  if (dias === 1) return `${base}.`
+  if (voltou === dias) return `${base}, nos ${dias} dias em que jogou.`
+  return `${base} em ${voltou} dos ${dias} dias em que jogou.`
 }
 
 /** "22/10 a 28/10" (a janela do resumo). */

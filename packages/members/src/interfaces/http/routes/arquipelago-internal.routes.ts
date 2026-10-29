@@ -6,6 +6,10 @@ import { safeEqual } from '@sistemazero/core/security'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
 import type { AdultJourneyService } from '../../../application/adult-journey/adult-journey.service'
+import {
+  type ArquipelagoCourseActivityService,
+  AULAS_CONCLUIDAS_MAXIMO_DE_PESSOAS,
+} from '../../../application/arquipelago/arquipelago-course-activity.service'
 import type { ArquipelagoObjectivesService } from '../../../application/arquipelago/arquipelago-objectives.service'
 import type { ArquipelagoReadsService } from '../../../application/arquipelago/arquipelago-reads.service'
 import type { KidsJourneyQueryService } from '../../../application/kids-journey/kids-journey-query.service'
@@ -54,6 +58,15 @@ const PedidoDeAnalise = z.object({
   gabarito: Projeto,
   objetivos: z.array(Objetivo).max(100),
 })
+/** `?usuarios=a,b&de=ISO&ate=ISO`: os tetos de pessoas e da janela são do serviço. */
+const PerguntaDasAulas = z.object({
+  usuarios: z
+    .string()
+    .transform((csv) => csv.split(',').map((id) => id.trim()))
+    .pipe(z.array(z.uuid()).min(1).max(AULAS_CONCLUIDAS_MAXIMO_DE_PESSOAS)),
+  de: z.iso.datetime({ offset: true }).transform((v) => new Date(v)),
+  ate: z.iso.datetime({ offset: true }).transform((v) => new Date(v)),
+})
 const PedidoDeVerificacao = z.object({
   requester: z.uuid(),
   audience: Publico,
@@ -85,6 +98,8 @@ export function arquipelagoInternalRoutes(deps: {
   adultJourney: Pick<AdultJourneyService, 'policy'>
   leituras: Pick<ArquipelagoReadsService, 'jogador' | 'curriculoDeBlocos'>
   objetivos: Pick<ArquipelagoObjectivesService, 'analisar' | 'verificar'>
+  /** A hora das aulas concluídas (a "volta ao curso" da área dos pais); ausente, 424. */
+  aulas?: Pick<ArquipelagoCourseActivityService, 'concluidas'>
   token?: string
 }) {
   const jornadaIndisponivel = (error: unknown) =>
@@ -132,6 +147,28 @@ export function arquipelagoInternalRoutes(deps: {
           if (!jornadaIndisponivel(error)) throw error
           set.status = 424
           return { error: { code: 'JORNADA_INDISPONIVEL' } }
+        }
+      })
+      /**
+       * A hora das aulas concluídas destas pessoas entre `de` e `ate` (até 20 pessoas e 9 dias),
+       * no formato `AulasConcluidasDosMembrosSchema`. Pedido fora dos limites: 400.
+       */
+      .get('/aulas-concluidas', async ({ query, set }) => {
+        const pergunta = PerguntaDasAulas.safeParse(query)
+        if (!pergunta.success) {
+          set.status = 400
+          return { error: { code: 'INVALID_QUERY' } }
+        }
+        if (!deps.aulas) {
+          set.status = 424
+          return { error: { code: 'AULAS_INDISPONIVEIS' } }
+        }
+        try {
+          return await deps.aulas.concluidas(pergunta.data)
+        } catch (error) {
+          if (!(error instanceof ValidationError)) throw error
+          set.status = 400
+          return { error: { code: 'INVALID_QUERY' } }
         }
       })
       /** Cursos publicados (gravados) com os blocos que liberam e o posto de cada um. */

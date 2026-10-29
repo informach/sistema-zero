@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import {
   desafiosDaSemana,
+  diasDeVoltaAoCurso,
   janelaDaSemana,
   objetosCriados,
   posicaoDaIlhaMaisNova,
@@ -80,5 +81,25 @@ describe('os objetos criados por ela', () => {
 
   test('salvamento ilegível: sem número', () => {
     expect(objetosCriados({ versao: 99 })).toBeNull()
+  })
+})
+
+describe('dias de volta ao curso', () => {
+  const janela = { inicio: '2026-10-22', fim: '2026-10-28' }
+  const fim = new Date('2026-10-26T20:00:00Z')
+  const h = (horas: number) => new Date(fim.getTime() + horas * 3_600_000)
+
+  test('aula depois do fim e até 24 h conta; no fim exato ou depois do prazo, não', () => {
+    expect(diasDeVoltaAoCurso([fim], [h(1)], janela)).toBe(1)
+    expect(diasDeVoltaAoCurso([fim], [h(24)], janela)).toBe(1)
+    expect(diasDeVoltaAoCurso([fim], [new Date(h(24).getTime() + 1)], janela)).toBe(0)
+    expect(diasDeVoltaAoCurso([fim], [fim, h(-2)], janela)).toBe(0)
+  })
+
+  test('duas sessões no mesmo dia contam uma vez; o dia é o de São Paulo', () => {
+    expect(diasDeVoltaAoCurso([fim, h(1)], [h(2)], janela)).toBe(1)
+    // 23 h em São Paulo do dia 21: fora da janela, mesmo sendo dia 22 em UTC.
+    const vespera = new Date('2026-10-22T02:00:00Z')
+    expect(diasDeVoltaAoCurso([vespera], [new Date('2026-10-22T05:00:00Z')], janela)).toBe(0)
   })
 })

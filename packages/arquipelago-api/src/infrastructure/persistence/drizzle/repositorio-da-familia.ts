@@ -2,7 +2,13 @@ import type { PermissoesDaFamilia } from '@sistemazero/arquipelago-contracts'
 import { and, between, eq, gt, inArray } from 'drizzle-orm'
 import type { RepositorioDaFamilia, TempoNaJanela } from '../../../domain/familia.port'
 import type { Database } from './db'
-import { perfisDaConta, permissoesDaFamilia, salvamentos, tempoDiario } from './schema'
+import {
+  perfisDaConta,
+  permissoesDaFamilia,
+  salvamentos,
+  sessoesDeTempo,
+  tempoDiario,
+} from './schema'
 
 export class DrizzleRepositorioDaFamilia implements RepositorioDaFamilia {
   constructor(private readonly db: Database) {}
@@ -38,6 +44,28 @@ export class DrizzleRepositorioDaFamilia implements RepositorioDaFamilia {
       tempos.set(l.jogadorId, { segundos: atual.segundos + l.segundos, dias: atual.dias + 1 })
     }
     return tempos
+  }
+
+  async sessoesNaJanela(
+    perfis: readonly string[],
+    de: Date,
+    ate: Date,
+  ): Promise<Map<string, Date[]>> {
+    const fins = new Map<string, Date[]>()
+    if (perfis.length === 0) return fins
+    const linhas = await this.db
+      .select({ jogadorId: sessoesDeTempo.jogadorId, fim: sessoesDeTempo.cursor })
+      .from(sessoesDeTempo)
+      .where(
+        and(
+          inArray(sessoesDeTempo.jogadorId, [...perfis]),
+          between(sessoesDeTempo.cursor, de, ate),
+          // Sessão que só abriu e não contou tempo não é "jogar".
+          gt(sessoesDeTempo.cursor, sessoesDeTempo.criadoEm),
+        ),
+      )
+    for (const l of linhas) fins.set(l.jogadorId, [...(fins.get(l.jogadorId) ?? []), l.fim])
+    return fins
   }
 
   async salvamentos(perfis: readonly string[]): Promise<Map<string, unknown>> {

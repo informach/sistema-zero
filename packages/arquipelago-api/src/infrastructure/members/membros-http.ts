@@ -1,6 +1,8 @@
 import {
   type AnaliseDosMembros,
   AnaliseDosMembrosSchema,
+  type AulasConcluidasDosMembros,
+  AulasConcluidasDosMembrosSchema,
   type CurriculoDeBlocos,
   CurriculoDeBlocosSchema,
   type JogadorDosMembros,
@@ -56,6 +58,21 @@ export class MembrosHttp implements PortaDosMembros {
         `/members/internal/arquipelago/curriculo-de-blocos?audience=${audience}`,
         signal,
       ),
+    )
+  }
+
+  async lerAulasConcluidas(
+    pergunta: { usuarios: string[]; de: Date; ate: Date },
+    signal?: AbortSignal,
+  ): Promise<AulasConcluidasDosMembros> {
+    const q = new URLSearchParams({
+      usuarios: pergunta.usuarios.join(','),
+      de: pergunta.de.toISOString(),
+      ate: pergunta.ate.toISOString(),
+    })
+    return validar(
+      AulasConcluidasDosMembrosSchema,
+      await this.ler(`/members/internal/arquipelago/aulas-concluidas?${q}`, signal),
     )
   }
 

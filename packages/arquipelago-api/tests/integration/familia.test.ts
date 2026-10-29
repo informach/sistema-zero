@@ -154,6 +154,8 @@ describe('a semana da família', () => {
           desafios: { aprovados: 2, deIlhasAnteriores: 1 },
           objetos: { pinta: 0, molda: 0 },
           tempoLivre: { segundos: 1800, dias: 2 },
+          // Members ligado e nenhuma sessão: zero, não `null`.
+          voltaAoCurso: { dias: 0 },
         },
       ],
       aindaSemJogo: [TOM],
@@ -263,5 +265,59 @@ describe('as permissões de visita', () => {
       (await chamar('PUT', '/arquipelago/familia/permissoes', suporte, PERMISSOES_PADRAO)).status,
     ).toBe(403)
     expect(familia.permissoes.size).toBe(0)
+  })
+})
+
+describe('a volta ao curso depois de jogar (29/10/2026)', () => {
+  const sessoes = [
+    new Date('2026-10-24T12:00:00Z'),
+    new Date('2026-10-26T20:00:00Z'),
+    new Date('2026-10-27T20:00:00Z'),
+  ]
+
+  test('conta os dias com aula concluída até 24 h depois de uma sessão, numa ida ao Members', async () => {
+    await jogar(LIA)
+    familia.sessoes.set(LIA, sessoes)
+    const pedidos: unknown[] = []
+    membros = membrosDeMentira({
+      lerJogador: async () => ({ posicao: 3, total: 8, blocos: [] }),
+      lerAulasConcluidas: async (pergunta) => {
+        pedidos.push(pergunta)
+        return {
+          usuarios: [
+            {
+              userId: LIA,
+              concluidasEm: [
+                '2026-10-24T11:00:00.000Z', // antes da sessão daquele dia: não conta
+                '2026-10-27T10:00:00.000Z', // depois da sessão de 26/10
+                '2026-10-28T10:00:00.000Z', // depois da sessão de 27/10
+              ],
+            },
+          ],
+        }
+      },
+    })
+    montar()
+    const s = await semana(LIA)
+    expect(s.criancas[0]?.voltaAoCurso).toEqual({ dias: 2 })
+    expect(pedidos).toEqual([{ usuarios: [LIA], de: sessoes[0], ate: AGORA }])
+  })
+
+  test('Members fora ou desligado: a linha some (null) e o resto da semana fica', async () => {
+    await jogar(LIA)
+    familia.sessoes.set(LIA, sessoes)
+    membros = membrosDeMentira({
+      lerJogador: async () => ({ posicao: 3, total: 8, blocos: [] }),
+      lerAulasConcluidas: async () => {
+        throw new MembrosIndisponiveisError('rede')
+      },
+    })
+    montar()
+    const fora = (await semana(LIA)).criancas[0]
+    expect(fora?.voltaAoCurso).toBeNull()
+    expect(fora?.tempoLivre).toBeDefined()
+    membros = null
+    montar()
+    expect((await semana(LIA)).criancas[0]?.voltaAoCurso).toBeNull()
   })
 })

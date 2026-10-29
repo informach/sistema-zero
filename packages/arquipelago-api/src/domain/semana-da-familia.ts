@@ -1,6 +1,7 @@
 import {
   DIAS_DA_SEMANA_DA_FAMILIA,
   diaDeSaoPaulo,
+  HORAS_DA_VOLTA_AO_CURSO,
   ILHAS,
   type IlhaId,
   ilha,
@@ -55,6 +56,27 @@ export function desafiosDaSemana(
     aprovados: daSemana.length,
     deIlhasAnteriores: daSemana.filter((c) => ilha(c.ilha).posicao < maisNova).length,
   }
+}
+
+/**
+ * Em quantos dias da janela ela concluiu aula do curso até `HORAS_DA_VOLTA_AO_CURSO` depois de
+ * uma sessão no jogo terminar (29/10/2026). O dia é o do fim da sessão, em São Paulo; a aula
+ * precisa vir DEPOIS do fim (durante a sessão não conta).
+ */
+export function diasDeVoltaAoCurso(
+  fins: readonly Date[],
+  aulas: readonly Date[],
+  janela: Janela,
+): number {
+  const prazo = HORAS_DA_VOLTA_AO_CURSO * 3_600_000
+  const dias = new Set<string>()
+  for (const fim of fins) {
+    const dia = diaDeSaoPaulo(fim)
+    if (dias.has(dia) || !dentroDaJanela(dia, janela)) continue
+    const t = fim.getTime()
+    if (aulas.some((a) => a.getTime() > t && a.getTime() <= t + prazo)) dias.add(dia)
+  }
+  return dias.size
 }
 
 /** Projetos azuis com a aparência feita no Pinta e no Molda; `null` se o salvamento não abre. */

@@ -14,7 +14,9 @@ criança, `desafios`, `objetos` e `tempoLivre`; `desafios`, `objetos` e `deIlhas
 `null` quando o serviço não tem o número), `SemanaDaFamiliaParaOsPaisSchema` (o mesmo com o
 `nome` que o BFF põe) e `PermissoesDaFamiliaSchema` com `PERMISSOES_PADRAO` (irmãos ligada,
 outras crianças e fotos no Clube desligadas: ECA Digital, art. 21). Objetos estritos. Testes em
-`tests/familia.test.ts`. Regras em `docs/arquipelago-regras.md`, seção 3.
+`tests/familia.test.ts`. Volta ao curso (29/10/2026): `voltaAoCurso` opcional e anulável em cada
+criança (`{dias}`), `HORAS_DA_VOLTA_AO_CURSO = 24` e, em `membros.ts`,
+`AulasConcluidasDosMembrosSchema` (a resposta da rota interna do Members). Regras em `docs/arquipelago-regras.md`, seção 3.
 
 Tipos e validação (zod) de tudo o que atravessa a fronteira do jogo **Arquipélago Vagalume**:
 plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
