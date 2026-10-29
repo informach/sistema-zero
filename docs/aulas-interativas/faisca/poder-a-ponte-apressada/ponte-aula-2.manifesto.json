@@ -12024,7 +12024,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -12164,7 +12164,7 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
@@ -12195,7 +12195,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -12335,11 +12335,11 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
-                  "ms": 5800
+                  "ms": 4800
                 }
               ],
               "expect": {
@@ -12375,7 +12375,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -12515,21 +12515,21 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
-                  "ms": 5800
+                  "ms": 4800
                 },
                 {
                   "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 700
+                  "key": "ArrowDown",
+                  "holdMs": 1000
                 },
                 {
                   "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 800
+                  "key": "ArrowUp",
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
@@ -12621,7 +12621,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -12761,12 +12761,12 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "press",
                   "key": "ArrowLeft",
-                  "holdMs": 1200
+                  "holdMs": 1800
                 },
                 {
                   "action": "wait",
@@ -12793,7 +12793,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -12933,16 +12933,16 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
-                  "ms": 5800
+                  "ms": 4800
                 },
                 {
                   "action": "press",
                   "key": "ArrowLeft",
-                  "holdMs": 1200
+                  "holdMs": 1800
                 },
                 {
                   "action": "wait",
@@ -12982,7 +12982,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -13156,7 +13156,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -13296,7 +13296,7 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
@@ -13393,7 +13393,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -13533,12 +13533,12 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "press",
                   "key": "ArrowLeft",
-                  "holdMs": 1200
+                  "holdMs": 1800
                 },
                 {
                   "action": "wait",
@@ -13565,7 +13565,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -13705,16 +13705,16 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",
-                  "ms": 5800
+                  "ms": 4800
                 },
                 {
                   "action": "press",
                   "key": "ArrowLeft",
-                  "holdMs": 1200
+                  "holdMs": 1800
                 },
                 {
                   "action": "wait",
@@ -13754,7 +13754,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -13928,7 +13928,7 @@
                   "action": "approachObject3d",
                   "actorPath": "personagem",
                   "targetPath": "ponte",
-                  "timeoutMs": 4800,
+                  "timeoutMs": 6200,
                   "walkable": [
                     {
                       "minX": -11,
@@ -14068,7 +14068,7 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 800
+                  "holdMs": 1000
                 },
                 {
                   "action": "wait",

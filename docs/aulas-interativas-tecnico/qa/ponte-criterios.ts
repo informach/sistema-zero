@@ -44,8 +44,12 @@ const fim = (name: string) => PONTE_ASSETS_2D.find((a) => a.name === name)!.data
 const BAIXADA_2D = fim('ponte-baixada')
 const TOCANDO_2D = fim('pedra-do-sino-tocando')
 const ACESO_2D = fim('farol-listrado-aceso')
-/** Quanto esperar depois de puxar: ainda aberta (1,5 s) e já levantada (5,8 s). */
-export const PONTE_ESPERA = { aberta: 1500, subiu: 5800 } as const
+/**
+ * Quanto esperar depois de puxar: ainda aberta (1,5 s) e já levantada. O "depois de segundos" é
+ * um relógio de verdade (não anda com os quadros), então no 3D, onde as idas do robô comem o
+ * prazo da parte, 4,8 s bastam; no 2D sobra tempo e a espera fica em 5,8 s.
+ */
+export const PONTE_ESPERA = { aberta: 1500, subiu: { '2d': 5800, '3d': 4800 } } as const
 
 export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProjectCheck[] {
   const three = d === '3d'
@@ -71,9 +75,11 @@ export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProject
     three
       ? value('sino.userData.sz.animWant', sim ? 'contains' : 'notContains', 'tocar')
       : value('sino.image.url', sim ? 'contains' : 'notContains', TOCANDO_2D)
-  // Os prazos do robô: no 3D a ilha é maior e ele contorna o laguinho.
-  const t = three ? { alavanca: 5500, ponte: 4800 } : { alavanca: 3500, ponte: 3000 }
-  const seta = (key: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp', holdMs: number) =>
+  // Os prazos do robô: no 3D a ilha é maior e ele contorna o laguinho (do começo à ponte, até
+  // 4,9 s medidos num executor sem placa de vídeo).
+  const t = three ? { alavanca: 5500, ponte: 6200 } : { alavanca: 3500, ponte: 3000 }
+  const subiu = PONTE_ESPERA.subiu[d]
+  const seta = (key: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown', holdMs: number) =>
     ({ action: 'press', key, holdMs }) as const satisfies ExecutionStep
   /**
    * Puxar e atravessar. A travessia é sempre um passo de seta para a esquerda, a partir da
@@ -81,17 +87,24 @@ export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProject
    * no meio do caminho e o robô se perde. No 2D o robô vai direto à alavanca. No 3D, não: ele
    * termina a ida à alavanca em pulsos curtos (até alguns segundos depois de o jogo ver o
    * encontro, que comeriam o tempo da ponte), então vai primeiro à entrada da ponte (levantada) e
-   * dá um passo de seta para a direita até a alavanca. Do puxão à travessia passam menos de 2
+   * dá um passo de seta para a direita até a alavanca. Do puxão à travessia passam menos de 3
    * segundos, sempre.
+   *
+   * No 3D, cada passo de seta termina na BEIRA do chão (a alavanca fica no fim da faixa da direita,
+   * a ponte no começo, e a faixa acaba em z 5): sem placa de vídeo os quadros demoram e o
+   * personagem anda menos no mesmo aperto, então o aperto sobra e a beira o segura.
    */
   const chegarNaPonte = approach('ponte', t.ponte, ['alavanca'])
   const puxarSteps: ExecutionStep[] = three
-    ? [chegarNaPonte, seta('ArrowRight', 800)]
+    ? [chegarNaPonte, seta('ArrowRight', 1000)]
     : [approach('alavanca', t.alavanca, ['ponte', 'chave'])]
-  const atravessar: ExecutionStep[] = [seta('ArrowLeft', three ? 1200 : 600)]
-  /** Sair de cima da alavanca e encostar nela de novo (o encontro só conta quando começa). */
+  const atravessar: ExecutionStep[] = [seta('ArrowLeft', three ? 1800 : 600)]
+  /**
+   * Sair de cima da alavanca e encostar nela de novo (o encontro só conta quando começa). No 3D,
+   * para a frente até a beira e de volta: indo para a esquerda, o personagem chegaria à ponte.
+   */
   const puxarDeNovo: ExecutionStep[] = three
-    ? [seta('ArrowLeft', 700), seta('ArrowRight', 800)]
+    ? [seta('ArrowDown', 1000), seta('ArrowUp', 1000)]
     : [seta('ArrowUp', 500), approach('alavanca', 2000, ['ponte'])]
   /** O passo (contando de 1) em que a alavanca acabou de ser puxada. */
   const puxou = puxarSteps.length
@@ -124,14 +137,14 @@ export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProject
   const sobe = check(
     'sobe-sozinha',
     'Depois de alguns segundos, a ponte sobe sozinha e o aviso muda.',
-    [comecoPassou, ...puxarSteps, espera(PONTE_ESPERA.subiu)],
+    [comecoPassou, ...puxarSteps, espera(subiu)],
     baixada(false),
     [{ afterStep: puxou + 1, expect: baixada(true) }],
   )
   const deNovo = check(
     'de-novo',
     'Depois que a ponte sobe, puxar a alavanca de novo baixa a ponte outra vez.',
-    [...puxarSteps, espera(PONTE_ESPERA.subiu), ...puxarDeNovo, espera(300)],
+    [...puxarSteps, espera(subiu), ...puxarDeNovo, espera(300)],
     baixada(true),
     [{ afterStep: puxou + 1, expect: baixada(false) }],
   )
@@ -166,7 +179,7 @@ export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProject
   const atrasado = check(
     'atrasado',
     'Chegando depois que a ponte subiu, o personagem não atravessa.',
-    [...puxarSteps, espera(PONTE_ESPERA.subiu), ...atravessar, espera(300)],
+    [...puxarSteps, espera(subiu), ...atravessar, espera(300)],
     tocou(false),
     [{ afterStep: puxou + 1, expect: baixada(false) }],
   )
