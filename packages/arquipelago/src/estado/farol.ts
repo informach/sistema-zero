@@ -6,8 +6,6 @@ export type EtapaDoFarol = 'fora' | 'carregando' | 'sala' | 'pagina' | 'fachos' 
 export interface EstadoDoFarol {
   etapa: EtapaDoFarol
   pagina: number
-  leu: boolean
-  voltou: boolean
   tempo: number
   corte: number | null
   varanda: { x: number; y: number; z: number } | null
@@ -20,8 +18,6 @@ function criar() {
   return createStore<EstadoDoFarol>(() => ({
     etapa: 'fora',
     pagina: 0,
-    leu: false,
-    voltou: false,
     tempo: 0,
     corte: null,
     varanda: null,

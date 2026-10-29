@@ -24,7 +24,6 @@ import {
   juntarResultado,
   type PontosDoPercurso,
   passoDaCorrida,
-  percursoGravado,
   quantasEstrelas,
   vagalumesPegos,
 } from '../sistemas/percurso'
@@ -233,28 +232,24 @@ export function CorridaNaIlha({
 }
 
 /**
- * A chegada de uma corrida: junta ao melhor de antes (no salvamento, ou só na sessão para os
- * percursos que ainda não têm lugar nele), mostra o resultado e o Zappy fala. A corrida de balão
+ * A chegada de uma corrida: junta ao melhor de antes no salvamento, mostra o resultado e o Zappy fala. A corrida de balão
  * das Nuvens usa a mesma.
  */
 export function terminarCorrida(loja: LojaDoJogo, config: ConfigDoPercurso, c: Corrida): void {
   const s = loja.getState()
   const id = config.id
-  const gravado = percursoGravado(id)
-  const antes = gravado ? s.salvamento.percursos[id] : s.recordesDaSessao[id]
+  const antes = s.salvamento.percursos[id]
   const melhor = juntarResultado(antes, c, config)
   if (!melhor) return
   /** A fala do prêmio, se a chegada trouxe um (escrita dentro do `mudar`). */
   const premio = { fala: '' }
-  if (gravado) {
-    s.mudar((sv) => {
-      const comResultado = { ...sv, percursos: { ...sv.percursos, [id]: melhor } }
-      const p = config.premio?.(comResultado)
-      if (!p) return comResultado
-      premio.fala = p.fala
-      return p.salvamento
-    })
-  } else s.guardarRecordeDaSessao(id, melhor)
+  s.mudar((sv) => {
+    const comResultado = { ...sv, percursos: { ...sv.percursos, [id]: melhor } }
+    const p = config.premio?.(comResultado)
+    if (!p) return comResultado
+    premio.fala = p.fala
+    return p.salvamento
+  })
   const estrelas = estrelasDaCorrida(c, config)
   const recorde = antes !== undefined && c.tempoMs < antes.melhorTempoMs
   s.definirCorrida(null)

@@ -92,7 +92,7 @@ Ao relatar andamento, informar separadamente: código pronto, teste local, prova
 - [x] Proposta e código comparados, auditoria gravada.
 - [x] Remoto conferido: `a3cd791de`, igual ao local em 29/10/2026.
 - [x] Programa de entrega integral e critérios registrados.
-- [ ] L01 implementado e revisado.
+- [x] L01 implementado e revisado. Provas em `docs/qa/2026-10-29-continuidade/README.md`; implantação não incluída neste aceite local.
 - [ ] L02 a L14 implementados e revisados.
 - [ ] Revisão integrada final e aceites nos dois públicos.
 - [ ] Implantação final e conferência de versões/configuração.

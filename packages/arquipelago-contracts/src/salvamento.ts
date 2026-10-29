@@ -9,7 +9,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 15
+export const VERSAO_SALVAMENTO = 16
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -44,7 +44,8 @@ export type SalvamentoV1 = z.infer<typeof SalvamentoV1Schema>
  * fase2-05) e `pico-cume` (a subida ao cume do Pico Gelado, fase3-07) entraram em 29/10/2026 sem
  * versão nova: só alargam o que a V2 em diante aceitam.
  */
-export const PERCURSOS = ['bosque-copas', 'vila-telhados', 'pico-cume'] as const
+const PERCURSOS_ATE_V15 = ['bosque-copas', 'vila-telhados', 'pico-cume'] as const
+export const PERCURSOS = [...PERCURSOS_ATE_V15, 'nuvens-saltos', 'nuvens-balao'] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
 /** Uma hora: o jogo desiste da corrida que passa disto (nada acima vai para o salvamento). */
@@ -64,7 +65,7 @@ export type ResultadoDoPercurso = z.infer<typeof ResultadoDoPercursoSchema>
 /** V2 (27/10/2026): a V1 mais o melhor resultado de cada percurso. */
 export const SalvamentoV2Schema = SalvamentoV1Schema.extend({
   versao: z.literal(2),
-  percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+  percursos: z.partialRecord(z.enum(PERCURSOS_ATE_V15), ResultadoDoPercursoSchema),
 })
 export type SalvamentoV2 = z.infer<typeof SalvamentoV2Schema>
 
@@ -655,18 +656,66 @@ export function migrarDaV14(v14: SalvamentoV14): SalvamentoV15 {
     }
   return { ...v14, versao: 15, projetos, vale: { ...v14.vale, filhote: null } }
 }
+/**
+ * V16 preserva as referências de até 80 caracteres que V14 já aceitava. A migração atual não
+ * passa pelo filtro histórico da V15. Produtores novos continuam usando IDs canônicos (UUID
+ * ou catálogo); o limite global em bytes é conferido antes de qualquer gravação.
+ */
+export const ProjetoAzulAtualSchema = ProjetoAzulSchema
+export const CLIMAS_DO_JOGO = ['sol', 'nublado', 'chuva'] as const
+export const SalvamentoV16Schema = z
+  .strictObject({
+    ...SalvamentoV15Schema.shape,
+    versao: z.literal(16),
+    projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulAtualSchema),
+    percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+    nuvens: z.strictObject({ constelacoes: z.number().int().min(0).max(63) }),
+    farol: z
+      .strictObject({ pagina: z.boolean(), concluido: z.boolean() })
+      .refine((f) => !f.concluido || f.pagina, 'O final concluído tem a página lida.'),
+    clima: z.enum(CLIMAS_DO_JOGO),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV16 = z.infer<typeof SalvamentoV16Schema>
+
+export function migrarDaV15(v15: SalvamentoV15): SalvamentoV16 {
+  return {
+    ...v15,
+    versao: 16,
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false },
+    clima: 'sol',
+  }
+}
+
+/** Mesmo destino sem descartar referências aceitas nas versões até V14. */
+export function migrarDaV14ParaAtual(v14: SalvamentoV14): SalvamentoV16 {
+  return {
+    ...v14,
+    versao: 16,
+    vale: { ...v14.vale, filhote: null },
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false },
+    clima: 'sol',
+  }
+}
+
 export const SalvamentoSchema = z.union([
-  SalvamentoV15Schema,
-  SalvamentoAteV14Schema.transform(migrarDaV14),
+  SalvamentoV16Schema,
+  SalvamentoV15Schema.transform(migrarDaV15),
+  SalvamentoAteV14Schema.transform(migrarDaV14ParaAtual),
 ])
-export type Salvamento = SalvamentoV15
+export type Salvamento = SalvamentoV16
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 15,
+    versao: VERSAO_SALVAMENTO,
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false },
+    clima: 'sol',
     pico: { banda: 0 },
     vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },

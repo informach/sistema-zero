@@ -150,7 +150,7 @@ async function diaNasNuvens(context: BrowserContext, celular: boolean, tipo: str
   const dia = await abrir(
     context,
     celular,
-    `${baseURL}/?novo=1&persistir=0&posicao=7&em=${largada.x},${largada.z},${largada.y + 1.2}`,
+    `${baseURL}/?novo=1&posicao=7&em=${largada.x},${largada.z},${largada.y + 1.2}`,
   )
   const { page } = dia
   const degrau = mundo({ x: -14.1, y: 3.13, z: -2.9 })
@@ -174,6 +174,13 @@ async function diaNasNuvens(context: BrowserContext, celular: boolean, tipo: str
   // Uma queda no chão da ilha volta, pelo corte, para a plataforma 2 (onde ela estiver).
   const chao = mundo({ x: -12, y: 1, z: 4 })
   await levar(page, chao, 0)
+  // O medidor é periódico: logo após o pedido ele ainda pode mostrar a plataforma 2.
+  // Primeiro testemunha o transporte no corpo real, depois espera a volta da corrida.
+  await page.waitForFunction((p) => {
+    const g = globalThis as unknown as { __arquipelagoLerCorpo: () => P }
+    const corpo = g.__arquipelagoLerCorpo()
+    return Math.hypot(corpo.x - p.x, corpo.z - p.z) < 0.35
+  }, chao)
   await esperar(
     page,
     (m, a) => {
@@ -189,6 +196,42 @@ async function diaNasNuvens(context: BrowserContext, celular: boolean, tipo: str
     },
     { pe: PE },
   )
+  await page.waitForFunction(
+    ({ x, z }) => {
+      const g = globalThis as unknown as {
+        __arquipelagoLerCorpo: () => P & { noChao: boolean }
+      }
+      const corpo = g.__arquipelagoLerCorpo()
+      return corpo.noChao && Math.hypot(corpo.x - x, corpo.z - z) < 0.35
+    },
+    (await ler(page))!.plataformasDasNuvens.find((p) => p.numero === 2)!,
+  )
+  // Aguarda uma publicação posterior ao retorno físico, sem aceitar o retrato pré-queda.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        const g = globalThis as unknown as { __arquipelagoDesenho: Desenho }
+        const antes = g.__arquipelagoDesenho
+        const observar = () => {
+          if (g.__arquipelagoDesenho !== antes) resolve()
+          else requestAnimationFrame(observar)
+        }
+        requestAnimationFrame(observar)
+      }),
+  )
+  // O cronômetro só avança quando o corte terminou. Não pede outro transporte durante a volta.
+  const tempoDaVolta = await page.evaluate(() => {
+    const g = globalThis as unknown as {
+      __arquipelagoDesenho: { corrida: { tempoMs: number } }
+    }
+    return g.__arquipelagoDesenho.corrida.tempoMs
+  })
+  await page.waitForFunction((antes) => {
+    const g = globalThis as unknown as {
+      __arquipelagoDesenho: { corrida: { tempoMs: number } }
+    }
+    return g.__arquipelagoDesenho.corrida.tempoMs > antes
+  }, tempoDaVolta)
   console.log(`${tipo}: caiu e voltou para a plataforma 2`)
   await naPlataforma(3, 3)
   await page.screenshot({ scale: 'css', path: path.join(prints, `saltos-${tipo}-alto.png`) })
@@ -199,11 +242,33 @@ async function diaNasNuvens(context: BrowserContext, celular: boolean, tipo: str
   const resultado = page.getByRole('dialog', { name: 'Saltos entre nuvens' })
   await resultado.waitFor()
   await resultado.getByText('As 3 fitas do arco-íris').waitFor()
-  if ((await resultado.getByText('Recordes da família').count()) > 0)
-    throw new Error('Os saltos ainda não são gravados: sem recordes da família')
   await page.screenshot({ scale: 'css', path: path.join(prints, `saltos-${tipo}-resultado.png`) })
   await resultado.getByRole('button', { name: 'Continuar' }).click()
-  console.log(`${tipo}: saltos chegaram, resultado sem gravar`)
+  await page.waitForFunction(() => {
+    const raw = localStorage.getItem('arquipelago-playground')
+    return raw && JSON.parse(raw).salvamento?.percursos?.['nuvens-saltos']?.estrelas.chegada
+  })
+  await page.goto(`${baseURL}/?posicao=7`)
+  await esperar(page, (d) => d.ilhasCompletas > 0)
+  await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+  await page.getByRole('button', { name: '🏛️ Álbum de coleções', exact: true }).click()
+  const album = page.getByRole('dialog', { name: 'Álbum de coleções' })
+  const registro = album.locator('.arq-album-percurso').filter({ hasText: 'Saltos entre nuvens' })
+  await registro.getByText('Melhor tempo:', { exact: false }).waitFor()
+  await registro.locator('li.ganhou').filter({ hasText: 'Chegou ao fim' }).waitFor()
+  await registro.scrollIntoViewIfNeeded()
+  await page.screenshot({ scale: 'css', path: path.join(prints, `saltos-${tipo}-reaberto.png`) })
+  await page.keyboard.press('Escape')
+  console.log(`${tipo}: saltos chegaram e o recorde foi reaberto`)
+  if (process.env.ARQUIPELAGO_PARTE === 'salvamento') {
+    if (dia.erros.length) throw new Error(dia.erros.join('\n'))
+    writeFileSync(
+      path.join(prints, `salvamento-${tipo}.json`),
+      JSON.stringify({ tipo, recordeNoAlbumAposReabrir: true }),
+    )
+    await page.close()
+    return
+  }
 
   // De dia, a luneta do mirante diz que as estrelas só aparecem à noite.
   await dePe(page, luneta, rumo(luneta, mundo(local('luneta-tubo', mirante))))
@@ -392,13 +457,14 @@ try {
     const luneta = mundo(local('luneta', mirante))
     if (!soNoite) await diaNasNuvens(contextoDoDia, celular, tipo, luneta)
     await contextoDoDia.close()
+    if (process.env.ARQUIPELAGO_PARTE === 'salvamento') continue
     const context = await novoContexto(browser, celular)
 
     // ── 3. As constelações, de noite ──────────────────────────────────────────────────────────
     const noite = await abrir(
       context,
       celular,
-      `${baseURL}/?novo=1&persistir=0&posicao=7&adiantar=12&em=${luneta.x},${luneta.z},${luneta.y + 1.2}`,
+      `${baseURL}/?novo=1&posicao=7&adiantar=12&em=${luneta.x},${luneta.z},${luneta.y + 1.2}`,
     )
     const pn = noite.page
     await dePe(pn, luneta, rumo(luneta, mundo(local('luneta-tubo', mirante))))
@@ -494,6 +560,13 @@ try {
     await esperar(pn, (d) => d.mira === null)
     await pn.screenshot({ scale: 'css', path: path.join(prints, `estrelas-${tipo}-ceu.png`) })
     console.log(`${tipo}: achou a constelação da arara e voltou`)
+    await pn.waitForFunction(() => {
+      const raw = localStorage.getItem('arquipelago-playground')
+      return raw && JSON.parse(raw).salvamento?.nuvens?.constelacoes === 1
+    })
+    await pn.goto(`${baseURL}/?posicao=7`)
+    await esperar(pn, (d) => d.constelacoes === 1)
+    await pn.screenshot({ scale: 'css', path: path.join(prints, `estrelas-${tipo}-reaberto.png`) })
     if (celular && (await pn.evaluate(() => document.documentElement.scrollWidth > innerWidth)))
       throw new Error('A interface ultrapassa a largura do celular')
     if (noite.erros.length) throw new Error(noite.erros.join('\n'))
@@ -507,7 +580,7 @@ try {
     )
     await context.close()
   }
-  console.log('aventura das Nuvens aprovada')
+  console.log('provas solicitadas das Nuvens aprovadas')
 } catch (erro) {
   for (const c of browser?.contexts() ?? [])
     for (const p of c.pages()) {

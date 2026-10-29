@@ -25,7 +25,7 @@ const SETAS = [
  */
 export function VisorDasEstrelas() {
   const { loja, movimento } = useJogo()
-  const achadas = useEstado((s) => quantasAchadas(s.constelacoesAchadas))
+  const achadas = useEstado((s) => quantasAchadas(s.salvamento.nuvens.constelacoes))
   // Na vista só falam a luneta e as figuras (uma dica de outra coisa, como a da câmera, espera).
   const fala = useEstado((s) => {
     const texto = s.dica?.texto

@@ -20,10 +20,10 @@ Arquivos: `packages/arquipelago-contracts/src/salvamento.ts`, testes `salvamento
 
 Interface proposta da V16: `nuvens: { constelacoes: number }`, `farol: { pagina: boolean; concluido: boolean }`, `clima: 'sol' | 'nublado' | 'chuva'`. Recordes `nuvens-saltos` e `nuvens-balao` passam ao catálogo atual de percursos, sem ampliar o enum histórico usado pelas versões antigas. IDs de aparência legados até 80 preservados na nova versão; V15 continua com teto histórico 40.
 
-- [ ] Teste causal: migrar documento V14 com aparência de 80 caracteres mantém a ativa e a guardada; V15 mantém filhote.
-- [ ] Testar defaults, versão futura recusada, máscara 0..63, final concluído exige página e clima inválido recusado.
-- [ ] Implementar migração V15→V16 e caminho até V14→V16 sem passar pelo filtro V15. Não mudar `migrarDaV14` histórico.
-- [ ] Testar ida e volta JSON e orçamento no limite real dos produtores, casos Unicode e recusa acima de 64 KB sem apagar o original.
+- [x] Teste causal: migrar documento V14 com aparência de 80 caracteres mantém a ativa e a guardada; V15 mantém filhote.
+- [x] Testar defaults, versão futura recusada, máscara 0..63, final concluído exige página e clima inválido recusado.
+- [x] Implementar migração V15→V16 e caminho até V14→V16 sem passar pelo filtro V15. Não mudar `migrarDaV14` histórico.
+- [x] Testar ida e volta JSON e orçamento no limite real dos produtores, casos Unicode e recusa acima de 64 KB sem apagar o original.
 
 Exemplo do oráculo:
 
@@ -38,11 +38,11 @@ expect(migrated?.farol).toEqual({ pagina: false, concluido: false })
 
 Arquivos: `packages/arquipelago/src/estado/loja.ts`, `estado/farol.ts`, `sistemas/percurso.ts`, `sistemas/conciliar-salvamento.ts`, componentes consumidores das constelações/clima/resultado/diário/final e testes próprios.
 
-- [ ] Remover o caminho especial de recordes só da sessão, usando o salvamento dos percursos.
-- [ ] Escrever constelação e clima por `mudar`, que já protege leitura, visita e conflito; consumidores leem a mesma fonte.
-- [ ] Gravar página ao concluir a leitura e conclusão ao terminar a sequência; exibir Íris pela conquista durável. Não gravar a cada quadro.
-- [ ] Conciliar constelações por OR, página/conclusão por OR, estrelas por OR e melhor tempo por mínimo. Climas concorrentes distintos não recebem vitória arbitrária.
-- [ ] Testar criar loja, agir, serializar e criar nova loja; testar adotar salvamento remoto; visita e suporte somente leitura não alteram progresso.
+- [x] Remover o caminho especial de recordes só da sessão, usando o salvamento dos percursos.
+- [x] Escrever constelação e clima por `mudar`, que já protege leitura, visita e conflito; consumidores leem a mesma fonte.
+- [x] Gravar página ao concluir a leitura e conclusão ao terminar a sequência; exibir Íris pela conquista durável. Não gravar a cada quadro.
+- [x] Conciliar constelações por OR, página/conclusão por OR, estrelas por OR e melhor tempo por mínimo. Climas concorrentes distintos não recebem vitória arbitrária.
+- [x] Testar criar loja, agir, serializar e criar nova loja; testar adotar salvamento remoto; visita e suporte somente leitura não alteram progresso.
 
 Oráculo de concorrência:
 
@@ -55,10 +55,11 @@ expect(conciliarSalvamento(base, local, remote)?.nuvens.constelacoes).toBe(3)
 
 Arquivos: `packages/arquipelago-api/tests/integration/http.test.ts`, testes DB existentes, `docs/arquipelago-regras.md`, CLAUDE dos pacotes tocados, documentação de QA do lote.
 
-- [ ] HTTP grava e lê V16; V14 com referência longa migra sem perda; gravação acima do teto recusa sem modificar a linha anterior.
-- [ ] Revalidar contrato do editor Lumi com geladeira antiga e nova. Se o payload mudar incompatível, usar nova versão da ferramenta e adaptar os dois lados.
-- [ ] `bun test` nos três pacotes; testes DB apenas em banco descartável; typecheck com heap de 8 GB; Biome nos arquivos tocados.
-- [ ] Navegador: constelação, corrida e final, salvar/reabrir; pausar e sair antes do final não concede conclusão. Provar cada fluxo sem creditar conquista por hook de teste.
-- [ ] Revisar diff completo, registrar limites/evidências, commit pequeno e integração com staging antes do push da onda.
+- [x] HTTP grava e lê V16; V14 com referência longa migra sem perda; gravação acima do teto recusa sem modificar a linha anterior.
+- [x] Revalidar contrato do editor Lumi com geladeira antiga e nova. Se o payload mudar incompatível, usar nova versão da ferramenta e adaptar os dois lados.
+- [x] `bun test` nos três pacotes; testes DB apenas em banco descartável; typecheck com heap de 8 GB; Biome nos arquivos tocados.
+- [x] Navegador: constelação, corrida e final, salvar/reabrir; pausar e sair antes do final não concede conclusão. Provar cada fluxo sem creditar conquista por hook de teste.
+- [x] Revisar diff completo e registrar limites/evidências em `docs/qa/2026-10-29-continuidade/README.md`.
+- [ ] Commit e integração com staging antes do push da onda.
 
 Critério de fechamento: não basta a API aceitar os campos; o mundo deve escrevê-los e reconstruir a experiência ao abrir de novo. Pendência de browser não é conclusão completa do lote.

@@ -4,7 +4,7 @@ import {
   GELADEIRA_GUARDA,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
-  ProjetoAzulV15Schema,
+  ProjetoAzulAtualSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -148,7 +148,7 @@ export function PainelDoObjeto() {
         // A que ela fez vira a em uso e fica guardada (trocar de volta não cobra nada).
         const novo = atual && usarAparencia(atual, { origem: origemDaAparencia, id: r.criacaoId })
         // Um id fora do contrato faria o serviço recusar o salvamento: ele não entra.
-        if (!novo || !ProjetoAzulV15Schema.safeParse(novo).success) {
+        if (!novo || !ProjetoAzulAtualSchema.safeParse(novo).success) {
           setAviso({ tom: 'atencao', texto: 'Não deu para guardar a aparência. Tente de novo.' })
           return
         }

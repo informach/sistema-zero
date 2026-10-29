@@ -1217,24 +1217,21 @@ Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipel
 
 ## Final no alto do Farol (fase4-11, 29/10/2026)
 
-- `sistemas/final-do-farol.ts`: acesso na Lenda, pausas, quatro trechos da página, seis fachos e apresentação da Íris. `estado/farol.ts` isola o progresso por montagem com WeakMap, sem campo no salvamento. Não inferir conclusão apenas de jornada 8.
+- `sistemas/final-do-farol.ts`: acesso na Lenda, pausas, quatro trechos da página, seis fachos e apresentação da Íris. `estado/farol.ts` isola a animação por montagem com WeakMap; a página e a conclusão ficam em `salvamento.farol` (V16). Não inferir conclusão apenas de jornada 8.
 - `mundo/final-do-farol.tsx`, montado pelo Farol: carregamento privado com AbortController, descarte ao sair, sala a y 40, âncoras lidas no referencial local mesmo depois de montar a cena. `mundo/alto-do-farol.ts` concentra medidas, colisores simples temporários e alvos do anel. Substituir esses colisores pelos nós definitivos quando a sessão de arte os entregar. Não usar o carregador de ilhas completas para o interior.
 - A câmera existente continua a única dona da vista. O perfil `farol` usa 65 graus, com panorama adaptado ao aspecto. Ao sair, restaura a pose anterior. Na sequência, sala, avatar e Zappy 3D ficam ocultos; a fala do Zappy permanece no painel. O céu retira a névoa apenas nessa vista. Não carregar ilhas completas por causa da câmera. O facho de exploração fica oculto durante os seis fachos do final e respeita pausa e menos movimento fora dele.
 - `interface/farol.tsx` usa o estilo dos painéis de moradores. Não dar foco automático ao botão da sala: isso captura WASD. A leitura recebe foco. Esc e Descer usam a mesma saída. Os relógios não guardam a posição do interior nem iniciam cochilo nele, mas o limite de tempo da plataforma continua valendo.
-- `paginasDoDiario(s, leuOFinal)` recebe a informação da sessão, sem mudar `Salvamento`. A Íris só monta após a sequência e usa `MoradorDaIlha`, sem amizade. A porta fechada passa por `VozDoJogo`, inclusive para adultos.
+- `paginasDoDiario(s)` lê `salvamento.farol.pagina`, inclusive depois de reabrir. A Íris só monta após a sequência e usa `MoradorDaIlha`, sem amizade. A porta fechada passa por `VozDoJogo`, inclusive para adultos.
 - Testes em `tests/final-do-farol.test.ts`; conferência em `playground/verificar-final-farol-browser.ts`, com SwiftShader, computador e celular emulado. Plano com pedidos de arte e campo futuro em `docs/plans/2026-10-29-arquipelago-final-do-farol.md`. Prints em `docs/qa/2026-10-29-final-farol/`.
 
 O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas no executor e roundtrip Blockly. É só o pacote de desafios; esta entrega não importa nem publica no Admin e não altera o Vale vivo.
 
 ## Saltos, corrida de balão e constelações das Nuvens (fase4-07, 29/10/2026)
 
-- **Percursos da sessão.** `PERCURSOS_DA_SESSAO` (`nuvens-saltos`, `nuvens-balao`) ficam fora de
-  `PERCURSOS` do contrato (o pior caso do salvamento não tem folga). `IdDoPercurso` é a união;
-  `percursoGravado` decide: `terminarCorrida` (em `mundo/corrida-na-ilha.tsx`, usada também pela
-  corrida de balão) grava em `salvamento.percursos` ou em `recordesDaSessao` da loja. A tela de
-  resultado não mostra os recordes da família para os da sessão. `pedidoDoPercurso` agora diz o
-  percurso (as Nuvens têm dois) e cada `CorridaNaIlha` só avança a corrida dela
-  (`loja.corrida.percurso`). Coletável feminino: `todasAsColetaveis` e `coletaveisPegas`.
+- **Percursos duráveis (V16).** `nuvens-saltos` e `nuvens-balao` estão em `PERCURSOS`.
+  `terminarCorrida` grava os cinco percursos em `salvamento.percursos`; álbum e família leem o
+  mesmo catálogo. As versões até V15 continuam com os três IDs históricos. Cada corrida só
+  avança a própria instância (`loja.corrida.percurso`).
 - **Saltos:** `mundo/saltos-das-nuvens.ts` lê os tampos dos colisores (`col-cil-degrau-nuvem-3`,
   `col-cil-plataforma-N`). ⚠️ Os colisores da ilha preparada vêm girados com ela:
   `tamposDosSaltos(colisores, giro)` desfaz o giro antes do `percursoNoMundo`. A volta de queda
@@ -1260,7 +1257,7 @@ O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas 
 
 - Regra pura em `sistemas/clima.ts` (`CLIMA`, `pedeAgua`, `regarComSede`, `chuvaNaHorta`). O
   bônus mexe só no `regadoEm` (vai para trás): nenhum campo novo. `climaLiberado` = Nuvens abertas.
-- A escolha mora na loja (`clima`, `escolherClima`, sessão) e no menu (`interface/clima.tsx`). O
+- A escolha mora em `salvamento.clima` (V16), escrita por `escolherClima` e no menu (`interface/clima.tsx`). O
   relógio do HUD mostra o símbolo. A Iriê tem a terceira fala (o verificador da fase4-06 avança por
   ela).
 - `mundo/clima-da-ilha.tsx` (montado na cena): escreve `ambiente.luzDoClima` e
@@ -1281,3 +1278,16 @@ O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas 
   `studio-runtime/tests/nuvens-browser.test.ts` (executor real, com `SZ_CHECK_CHROMIUM`).
 - "A cada N segundos" (`g2d:everySeconds`) tem de ser bloco raiz do projeto, ao lado do laço; o
   executor recusa `checkpoints: []` (ausente ou com pontos) e espera de mais de 10 s num passo.
+
+## Continuidade do progresso (L01, V16, 29/10/2026)
+
+A loja deriva constelações, clima, recordes e final do salvamento. `mudar` protege visitas,
+suporte e conflitos. `nuvens.constelacoes` usa bits 0 a 5. `farol.pagina` só nasce ao concluir
+os trechos; `farol.concluido` só ao terminar os fachos e exige a página. A animação e a posição
+no interior não são persistidas. Na conciliação, descobertas usam união, estrelas usam união
+e o melhor tempo usa mínimo; escolhas simultâneas de clima diferentes pedem resolução.
+
+A V16 preserva referências de aparência de até 80 caracteres aceitas nas versões antigas,
+sem passar pelo filtro histórico V15. O teto global continua 65.536 bytes UTF-8. Documento
+acima do teto é recusado, sem truncar nem apagar a cópia local. O editor Lumi aceita essas
+referências na geladeira, mantendo o formato da ferramenta V1.

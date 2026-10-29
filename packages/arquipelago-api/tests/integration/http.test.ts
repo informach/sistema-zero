@@ -217,10 +217,11 @@ describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
   // O vale como era até a V14, antes do filhote.
   const { filhote: _filhote, ...valeSemFilhote } = salvamento.vale
-  const valeAteV14 = { ...salvamento, vale: valeSemFilhote }
+  const { nuvens: _nuvens, farol: _farol, clima: _clima, ...ateV15 } = salvamento
+  const valeAteV14 = { ...ateV15, percursos: {}, vale: valeSemFilhote }
 
   test('V10 migra na rota e a versão atual preserva as descobertas do Recife por revisão', async () => {
-    const { recife: _, vale: _vale, pico: _pico, ...base } = salvamento
+    const { recife: _, vale: _vale, pico: _pico, ...base } = ateV15
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
       salvamento: { ...base, versao: 10 },
@@ -253,7 +254,7 @@ describe('salvamento', () => {
   })
 
   test('V11 migra sem perder o Recife e a V12 guarda todas as descobertas do Vale', async () => {
-    const { vale: _, pico: _pico, ...base } = salvamento
+    const { vale: _, pico: _pico, ...base } = ateV15
     const v11 = { ...base, versao: 11, recife: { bau: true, pagina: true, tesouro: true } }
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
@@ -296,7 +297,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(15)
+    expect(lido.salvamento?.versao).toBe(16)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -324,7 +325,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(15)
+    expect(lido.salvamento?.versao).toBe(16)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -351,7 +352,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(15)
+    expect(lido.salvamento?.versao).toBe(16)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -388,7 +389,7 @@ describe('salvamento', () => {
       vale: _vale,
       pico: _pico,
       ...anterior
-    } = salvamento
+    } = ateV15
     const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
@@ -396,7 +397,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 15, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 16, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
@@ -481,15 +482,70 @@ describe('salvamento', () => {
     expect(r.status).toBe(400)
   })
 
-  test('salvamento acima de 64 KB é 413', async () => {
+  test('salvamento acima de 64 KB é 413 e não apaga a versão guardada', async () => {
+    expect(
+      (await chamar('PUT', '/arquipelago/salvamento', crianca(), { revisaoBase: 0, salvamento }))
+        .status,
+    ).toBe(200)
+    const antes = await chamar('GET', '/arquipelago/salvamento', crianca())
     const inventario = Object.fromEntries(
       Array.from({ length: 3000 }, (_, i) => [`item-com-nome-comprido-${i}`, 1]),
     )
     const r = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
-      revisaoBase: 0,
+      revisaoBase: 1,
       salvamento: { ...salvamento, inventario },
     })
     expect(r.status).toBe(413)
+    expect((await chamar('GET', '/arquipelago/salvamento', crianca())).json).toEqual(antes.json)
+  })
+
+  test('V14 preserva referências longas e V16 reabre as conquistas das Nuvens e Farol', async () => {
+    const aparencia = { origem: 'criacao' as const, id: 'á'.repeat(80) }
+    const antiga = {
+      ...valeAteV14,
+      versao: 14,
+      projetos: { geladeira: { ganhoEm: AGORA.toISOString(), aparencia, aparencias: [aparencia] } },
+    }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: antiga,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.projetos.geladeira).toEqual(antiga.projetos.geladeira)
+    if (!lido.salvamento) throw new Error('A migração não devolveu o salvamento')
+    const atual = {
+      ...lido.salvamento,
+      nuvens: { constelacoes: 63 },
+      farol: { pagina: true, concluido: true },
+      clima: 'chuva' as const,
+      percursos: {
+        'nuvens-saltos': {
+          estrelas: { chegada: true, tempo: true, vagalumes: true },
+          melhorTempoMs: 45000,
+        },
+      },
+    }
+    expect(
+      (
+        await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+          revisaoBase: 1,
+          salvamento: atual,
+        })
+      ).status,
+    ).toBe(200)
+    montar()
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    expect(relido.revisao).toBe(2)
+    const atrasado = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 1,
+      salvamento: antiga,
+    })
+    expect(atrasado.status).toBe(409)
+    expect(ConflitoDeSalvamentoSchema.parse(atrasado.json).atual.salvamento).toEqual(atual)
   })
 
   test('guardado ilegível nunca vira "vazio"', async () => {

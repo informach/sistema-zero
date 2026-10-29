@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   migrarDaV12,
   migrarDaV13,
-  migrarDaV14,
+  migrarDaV14ParaAtual,
   migrarSalvamento,
   PONTOS_DE_CORAL,
   SalvamentoV12Schema,
@@ -33,7 +33,7 @@ test('V12 migra para V13 sem tocar nas descobertas, com nenhum coral replantado'
     versao: 13,
     recife: { bau: true, pagina: false, tesouro: true, corais: 0 },
   })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV14(migrarDaV13(atual)))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV14ParaAtual(migrarDaV13(atual)))
   expect(antiga).toEqual(copia)
   // A V12 continua estrita: os corais só existem da V13 em diante.
   expect(SalvamentoV12Schema.safeParse({ ...antiga, recife: atual.recife }).success).toBe(false)
@@ -45,7 +45,9 @@ test('os corais são um número de 0 a 15 que atravessa o JSON, e nada fora diss
   expect(PONTOS_DE_CORAL).toBe(4)
   for (let corais = 0; corais < 2 ** PONTOS_DE_CORAL; corais++) {
     const com = { ...s, recife: { ...s.recife, corais } }
-    expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(migrarDaV14(migrarDaV13(com)))
+    expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(
+      migrarDaV14ParaAtual(migrarDaV13(com)),
+    )
   }
   for (const corais of [-1, 16, 1.5, '3', null, true])
     expect(SalvamentoV13Schema.safeParse({ ...s, recife: { ...s.recife, corais } }).success).toBe(

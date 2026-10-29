@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   INSTRUMENTOS_DA_BANDA,
   migrarDaV13,
-  migrarDaV14,
+  migrarDaV14ParaAtual,
   migrarSalvamento,
   SalvamentoV13Schema,
   SalvamentoV14Schema,
@@ -22,7 +22,7 @@ test('V13 migra para V14 sem tocar no resto, com nenhum instrumento de volta ao 
   const copia = structuredClone(antiga)
   const atual = migrarDaV13(antiga)
   expect(atual).toEqual({ ...antiga, versao: 14, pico: { banda: 0 } })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV14(atual))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV14ParaAtual(atual))
   expect(antiga).toEqual(copia)
   // A V13 continua estrita: a banda só existe da V14 em diante.
   expect(SalvamentoV13Schema.safeParse({ ...antiga, pico: atual.pico }).success).toBe(false)
@@ -34,7 +34,7 @@ test('a banda é um número de 0 a 7 que atravessa o JSON, e nada fora disso', (
   expect(INSTRUMENTOS_DA_BANDA).toBe(3)
   for (let banda = 0; banda < 2 ** INSTRUMENTOS_DA_BANDA; banda++) {
     const com = { ...s, pico: { banda } }
-    expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(migrarDaV14(com))
+    expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(migrarDaV14ParaAtual(com))
   }
   for (const banda of [-1, 8, 1.5, '3', null, true])
     expect(SalvamentoV14Schema.safeParse({ ...s, pico: { banda } }).success).toBe(false)

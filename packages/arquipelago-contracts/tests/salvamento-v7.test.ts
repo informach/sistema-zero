@@ -9,7 +9,7 @@ import {
   migrarDaV11,
   migrarDaV12,
   migrarDaV13,
-  migrarDaV14,
+  migrarDaV14ParaAtual,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV6,
@@ -60,7 +60,7 @@ test('a V6 migra para a V7 sem perder nada, com o Bento ainda sem conhecer a cri
     moradores: { ...antiga.moradores, bento: MORADOR_NOVO },
   })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV14(
+    migrarDaV14ParaAtual(
       migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(nova))))))),
     ),
   )
@@ -92,7 +92,7 @@ test('a V7 guarda a amizade e o pedido do Bento e recusa o que sai da régua', (
     },
   }
   expect(migrarSalvamento(amigo)).toEqual(
-    migrarDaV14(
+    migrarDaV14ParaAtual(
       migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(amigo))))))),
     ),
   )

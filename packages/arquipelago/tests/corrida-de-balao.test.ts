@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
+import { PERCURSOS } from '@sistemazero/arquipelago-contracts'
 import { type Object3D, Vector3 } from 'three'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
 import { BALAO, criarVoo, passoDoBalao, subirNoBalao, type Voo } from '../src/sistemas/balao'
@@ -12,7 +13,7 @@ import {
   passoDaCorridaDeBalao,
   passouPelaArgola,
 } from '../src/sistemas/corrida-de-balao'
-import { estrelasDaCorrida, PERCURSO_DO_BALAO, percursoGravado } from '../src/sistemas/percurso'
+import { estrelasDaCorrida, PERCURSO_DO_BALAO } from '../src/sistemas/percurso'
 import { arquivoDaIlha, bate, carregarGlb, type Forma, TAMPO } from './ajuda-colisores'
 
 /** No arquivo, o meio da ilha em (0, 0) e o tampo em y = 1 (no jogo a ilha sobe 7 m). */
@@ -74,7 +75,7 @@ describe('a corrida', () => {
     expect(e.corrida?.situacao).toBe('chegou')
     // O começo não conta tempo; cada passo depois dele, sim (seis passos de 1 s).
     expect(e.corrida?.tempoMs).toBe(6000)
-    expect(percursoGravado('nuvens-balao')).toBe(false)
+    expect(PERCURSOS).toContain('nuvens-balao')
   })
 
   test('as fitas pegam a 1,6 m do meio do balão', () => {

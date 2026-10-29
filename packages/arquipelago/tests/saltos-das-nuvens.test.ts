@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
+import { PERCURSOS } from '@sistemazero/arquipelago-contracts'
 import type { Mesh, Object3D } from 'three'
 import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
@@ -14,7 +15,6 @@ import {
   PERCURSO_DOS_SALTOS,
   type PontosDoPercurso,
   passoDaCorrida,
-  percursoGravado,
 } from '../src/sistemas/percurso'
 import {
   elevacaoDaPlataforma,
@@ -64,12 +64,12 @@ describe('o caminho dos saltos', () => {
     }
   })
 
-  test('o degrau mais alto, as quatro plataformas, e o percurso fica fora do salvamento', () => {
+  test('o degrau mais alto, as quatro plataformas e o percurso entram no salvamento', () => {
     expect(tampos.map((t) => t.plataforma)).toEqual([null, 0, 1, 2, 3])
     expect(pontos.deques).toHaveLength(4)
     expect(pontos.vagalumes).toHaveLength(PERCURSO_DOS_SALTOS.vagalumes)
-    expect(percursoGravado('nuvens-saltos')).toBe(false)
-    expect(percursoGravado('pico-cume')).toBe(true)
+    expect(PERCURSOS).toContain('nuvens-saltos')
+    expect(PERCURSOS).toContain('pico-cume')
   })
 
   test('a largada é chão livre que se alcança a pé da chegada da ponte', () => {

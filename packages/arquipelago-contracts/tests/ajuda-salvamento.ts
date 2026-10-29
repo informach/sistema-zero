@@ -5,6 +5,7 @@ import { criarSalvamentoInicial, type SalvamentoV14 } from '../src/salvamento'
  * versões antigas, que montam a versão delas a partir dele.
  */
 export function inicialV14(agora: Date): SalvamentoV14 {
-  const { filhote: _filhote, ...vale } = criarSalvamentoInicial(agora).vale
-  return { ...criarSalvamentoInicial(agora), versao: 14, vale }
+  const { nuvens: _nuvens, farol: _farol, clima: _clima, ...atual } = criarSalvamentoInicial(agora)
+  const { filhote: _filhote, ...vale } = atual.vale
+  return { ...atual, percursos: {}, versao: 14, vale }
 }

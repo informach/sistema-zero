@@ -76,6 +76,8 @@ export const ILHA_DO_PERCURSO: Readonly<Record<PercursoId, IlhaId>> = {
   'bosque-copas': 'bosque',
   'vila-telhados': 'vila-doce',
   'pico-cume': 'pico',
+  'nuvens-saltos': 'nuvens',
+  'nuvens-balao': 'nuvens',
 }
 
 export interface EstrelaDoPercurso {

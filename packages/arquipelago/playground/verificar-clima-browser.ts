@@ -120,7 +120,7 @@ try {
     })
     const inicio = juntoDo(0)
     await page.goto(
-      `${baseURL}/?novo=1&persistir=0&posicao=${nuvens.posicao}&em=${inicio.x},${inicio.z},${inicio.y + 1.2}`,
+      `${baseURL}/?novo=1&posicao=${nuvens.posicao}&em=${inicio.x},${inicio.z},${inicio.y + 1.2}`,
       { waitUntil: 'domcontentloaded' },
     )
     await esperar(page, (d) => Array.isArray(d.horta) && d.horta.length > 0, undefined, 180_000)
@@ -227,6 +227,20 @@ try {
     await page.getByText(FALA_DO_BONUS).first().waitFor()
     await esperar(page, (d, a) => (d.horta[0]?.progresso ?? 0) >= (a as number) + 0.14, antes)
     console.log(`${tipo}: a planta pediu água e regar adiantou`)
+
+    await escolher('Nublado')
+    await page.waitForFunction(() => {
+      const raw = localStorage.getItem('arquipelago-playground')
+      return raw && JSON.parse(raw).salvamento?.clima === 'nublado'
+    })
+    await page.goto(`${baseURL}/?posicao=${nuvens.posicao}`)
+    await esperar(page, (d) => d.clima.escolhido === 'nublado')
+    await page.getByRole('button', { name: 'Abrir o menu' }).click()
+    await page
+      .getByRole('region', { name: 'Clima da sua ilha' })
+      .getByRole('button', { name: 'Nublado', pressed: true })
+      .waitFor()
+    await page.screenshot({ scale: 'css', path: path.join(prints, `clima-${tipo}-reaberto.png`) })
 
     if (celular && (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)))
       throw new Error('A interface ultrapassa a largura do celular')

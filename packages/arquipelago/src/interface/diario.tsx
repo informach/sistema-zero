@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
-import { useFarol } from '../estado/farol'
 import { EMOJI_DO_BICHO } from '../sistemas/bichos'
 import {
   colecaoDeReceitas,
@@ -93,9 +92,8 @@ export function Diario() {
     if (aberto) fechar.current?.focus({ preventScroll: true })
   }, [aberto])
 
-  const leuOFinal = useFarol(loja, (s) => s.leu)
   if (!aberto) return null
-  const paginas = paginasDoDiario(salvamento, leuOFinal)
+  const paginas = paginasDoDiario(salvamento)
   const colecao = colecaoDoBosque(salvamento)
   const abertas = paginas.filter((p) => p.aberta).length
   const conhecidos = colecao.filter((b) => b.estado !== 'escondido').length
