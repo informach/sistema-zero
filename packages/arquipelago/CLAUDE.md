@@ -631,6 +631,14 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Regras e textos: `docs/arquipelago-regras.md` §8.2. Testes: `tests/rotina.test.ts`; navegador:
   `playground/verificar-rotina-browser.ts` (`?lumis=quindim:1&cartas=todas`, compilar para Node no
   Windows).
+- ⚠️ **Decidido em 29/10/2026 (fase2-14, com outra sessão): a montagem da rotina vai para um mini
+  estúdio de blocos.** Os cartões do painel viram blocos próprios dos Lumis, num editor da
+  plataforma aberto por cima do jogo pelo `plataforma.abrirFerramenta` (como o Pinta, o Molda e o
+  Estúdio de desafio), com a prévia passo a passo ao lado. Ele reaproveita peças do Estúdio, mas não
+  é o Estúdio. O formato guardado continua o `RotinaSchema` (V10, sem salvamento novo). Os blocos na
+  mão continuam vindo de `GET /cartas`, e o jogo continua rodando a rotina no mundo. Não copiar o
+  editor para dentro do jogo (`tests/fronteira.test.ts`). Até ele chegar, o painel de cartões segue
+  valendo.
 
 ## Diário e pegadas (28/10/2026, Fase 1)
 
