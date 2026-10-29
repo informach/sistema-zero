@@ -84,3 +84,9 @@ Nenhuma arte nova é necessária: o fliperama e sua face tela já existem.
 Conciliação final com staging 3e5916051: preservada a volta ao curso na Medição, além de
 minijogos. Os quatro arquivos conciliados passaram no Biome; serviço (188 testes),
 contratos (72 testes) e typecheck do serviço passaram novamente após essa conciliação.
+
+Merge remoto de 22ebdf103: planta de interior e brilho inicial dos Lumis preservados.
+Nova conferência: jogo 565 testes aprovados e 1 ignorado, serviço 188, contratos 72,
+typecheck do jogo, build (66 arquivos, 21,81 MB) e Biome do pacote passaram. A cena de QA
+usa os projetos de exemplo completos e coloca o fliperama em outra célula para não sobrepor
+a planta. A visita no navegador foi repetida nos dois tamanhos.

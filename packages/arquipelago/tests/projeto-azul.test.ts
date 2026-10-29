@@ -6,7 +6,7 @@ import {
   type Obra,
   type ProjetoAzul,
 } from '@sistemazero/arquipelago-contracts'
-import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
+import { LOTE_DA_CASA, OBRA_VAZIA } from '../src/sistemas/construcao/lote'
 import { apagarParede, esticarParede, type Resultado } from '../src/sistemas/construcao/obra'
 import {
   cantoNoToque,
@@ -15,6 +15,7 @@ import {
   falaDoGanho,
   ganharProjetos,
   guardarNaGeladeira,
+  LUGAR_DO_OBJETO,
   moldaAberto,
   POSICAO_DO_MOLDA,
   porObjeto,
@@ -81,6 +82,22 @@ describe('ganhar o projeto azul', () => {
     expect(ganharProjetos(adotou, agora).ganhos).toEqual(['casinha'])
     expect(falaDoGanho('geladeira')).toBe(
       'Chegou o projeto azul: geladeira. Ponha em casa no modo Construir.',
+    )
+  })
+  test('a planta de interior vem com a primeira obra, da casa ou da cabana', () => {
+    const s = criarSalvamentoInicial(agora)
+    const casa = { ...s, construcao: { ...s.construcao, casa: structuredClone(OBRA_VAZIA) } }
+    expect(ganharProjetos(casa, agora).ganhos).toEqual(['planta-interior'])
+    const cabana = {
+      ...s,
+      construcao: { ...s.construcao, cabanas: { bosque: structuredClone(OBRA_VAZIA) } },
+    }
+    expect(ganharProjetos(cabana, agora).ganhos).toEqual(['planta-interior'])
+    const r = ganharProjetos(casa, agora)
+    expect(ganharProjetos(r.salvamento, agora).ganhos).toEqual([])
+    expect(LUGAR_DO_OBJETO['planta-interior']).toBe('dentro')
+    expect(falaDoGanho('planta-interior')).toBe(
+      'Chegou o projeto azul: planta de interior. Ponha em casa no modo Construir.',
     )
   })
 })

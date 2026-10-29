@@ -26,7 +26,12 @@ export function useCopiaAnimada(
   const gltf = useGLTF(url, false, false)
   const reduzido = useReducedMotion()
   const { ambiente } = useJogo()
-  const copia = useMemo(() => copiarArteAnimada(gltf.scene), [gltf.scene])
+  const copia = useMemo(() => {
+    const c = copiarArteAnimada(gltf.scene)
+    // Já nasce com o brilho da hora: sem isso, o primeiro quadro mostrava a luz do GLB de dia.
+    iluminarArte(c.luzes, ambiente.noite)
+    return c
+  }, [gltf.scene, ambiente])
   const { cena } = copia
   const olhos = useMemo(() => {
     let olhos: Mesh | null = null

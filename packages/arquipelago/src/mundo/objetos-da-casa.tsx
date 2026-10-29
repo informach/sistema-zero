@@ -25,6 +25,7 @@ import geladeiraGlb from '../assets/objetos/geladeira.glb'
 import geladeiraHologramaGlb from '../assets/objetos/geladeira-holograma.glb'
 import lareiraGlb from '../assets/objetos/lareira.glb'
 import museuGlb from '../assets/objetos/museu.glb'
+import plantaInteriorGlb from '../assets/objetos/planta-interior.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
 import {
@@ -48,6 +49,7 @@ const MODELO_DO_OBJETO: Readonly<Record<ObjetoDaCasa, string>> = {
   fliperama: new URL(fliperamaGlb, import.meta.url).href,
   museu: new URL(museuGlb, import.meta.url).href,
   casinha: new URL(casinhaGlb, import.meta.url).href,
+  'planta-interior': new URL(plantaInteriorGlb, import.meta.url).href,
 }
 
 /** O holograma feito no Blender (só a geladeira tem; os outros viram holograma no código). */

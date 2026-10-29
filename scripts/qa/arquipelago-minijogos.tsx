@@ -4,7 +4,10 @@ import { useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { montarArquipelago } from '../../packages/arquipelago/src/entrada'
 import { criarPlataformaFalsa } from '../../packages/arquipelago/src/plataforma/falsa'
-import { obraDeExemplo } from '../../packages/arquipelago/src/plataforma/obra-de-exemplo'
+import {
+  obraDeExemplo,
+  PROJETOS_DE_EXEMPLO,
+} from '../../packages/arquipelago/src/plataforma/obra-de-exemplo'
 import { MinijogosDaCrianca } from '../../packages/community-kids/src/app/pais/_components/arquipelago-minijogos'
 import { ArquipelagoMinijogoPlayer } from '../../packages/member-shell/src/components/arquipelago-minijogo-player'
 
@@ -21,11 +24,8 @@ plataforma.servico.buscar = async (caminho, opcoes) => {
     s.casa.portaNova = true
     s.posicao = { x: 7, y: 2, z: -4 }
     s.construcao.casa = obraDeExemplo()
-    s.construcao.casa.objetos.push({ id: 'fliperama', x: 7, z: -3, giro: 0 })
-    s.projetos = {
-      geladeira: { ganhoEm: new Date().toISOString(), aparencia: null },
-      casinha: { ganhoEm: new Date().toISOString(), aparencia: null },
-    }
+    s.construcao.casa.objetos.push({ id: 'fliperama', x: 7, z: -5, giro: 0 })
+    s.projetos = structuredClone(PROJETOS_DE_EXEMPLO)
     return { status: 200, corpo: { revisao: 0, salvamento: s, atualizadoEm: null } }
   }
   return r

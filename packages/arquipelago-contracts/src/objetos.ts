@@ -15,6 +15,7 @@ export const OBJETOS_DA_CASA = [
   'fliperama',
   'museu',
   'casinha',
+  'planta-interior',
 ] as const
 export type ObjetoDaCasa = (typeof OBJETOS_DA_CASA)[number]
 
@@ -236,5 +237,16 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
   casinha: {
     molde: molde('casinha', 'Casinha de bicho', [2, 2], [1.79, 1.2, 1.7], [], null),
     origem: 'Vem do Bosque dos Bichos, quando você adota um bicho.',
+  },
+  'planta-interior': {
+    molde: molde(
+      'planta-interior',
+      'Planta de interior',
+      [1, 1],
+      [0.78, 1.28, 0.88],
+      [],
+      'Deixa o cômodo mais aconchegante.',
+    ),
+    origem: 'Vem com a primeira obra da casa ou da cabana.',
   },
 }

@@ -71,7 +71,8 @@ try {
     assert(quarto.includes('Muito aconchegante'))
     await p.getByLabel('Cômodo observado').selectOption('-6,0')
     await painel.getByText('Aconchego', { exact: true }).click()
-    assert((await painel.innerText()).includes('Objetos diferentes'))
+    // O exemplo já ganhou a planta de interior: a dica sugere pôr no cômodo que não tem.
+    assert((await painel.innerText()).includes('A planta de interior traz mais aconchego'))
     assert.equal(await painel.locator('dt').count(), 5)
     const caixa = await painel.boundingBox()
     assert(caixa && caixa.x >= 0 && caixa.x + caixa.width <= tela.width && caixa.y >= 60)

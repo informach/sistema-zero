@@ -335,5 +335,30 @@
       "vidro"
     ],
     "tamanho": [2.63, 1.274, 1.485]
+  },
+  "planta-interior": {
+    "grupo": "planta",
+    "triangulos": 4536,
+    "kb": 107.8,
+    "nos": {
+      "vaso": 840,
+      "terra": 336,
+      "folhas": 3360
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "folha",
+      "folhaEscura",
+      "folhaNova",
+      "nervuraFolha",
+      "pedrinhaVaso",
+      "talo",
+      "terraVaso",
+      "vasoCeramica",
+      "vasoFaixa",
+      "vasoPrato"
+    ],
+    "tamanho": [0.784, 1.279, 0.876]
   }
 }
