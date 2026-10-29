@@ -3,6 +3,7 @@ import { createServer } from 'node:net'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { chromium } from 'playwright-core'
 import { PerspectiveCamera, Vector3 } from 'three'
+import { type AmostraDaPausa, conferirPausaNoAr } from './pausa-observada'
 
 const port = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4598)
 const baseURL = `http://127.0.0.1:${port}`
@@ -126,10 +127,12 @@ try {
     g.__arquipelagoLevar?.(0, 40, 10)
   })
   await reaberto.waitForFunction(() => {
-    const y = (globalThis as { __arquipelagoDesenho?: { posicao: { y: number } } })
-      .__arquipelagoDesenho?.posicao.y
-    if (y === undefined || y <= 30 || y >= 39) return false
-    // Aciona o mesmo botão no quadro da queda; esperar sua estabilidade geométrica permitiria
+    const medida = (
+      globalThis as { __arquipelagoDesenho?: { posicao: { y: number }; noChao: boolean } }
+    ).__arquipelagoDesenho
+    const y = medida?.posicao.y
+    if (!medida || medida.noChao || y === undefined || y <= 30 || y >= 39) return false
+    // Aciona o mesmo botão durante a queda; esperar sua estabilidade geométrica permitiria
     // pousar antes de abrir o menu num renderer de software lento, invalidando a pré-condição.
     const botao = document.querySelector<HTMLButtonElement>('button[aria-label="Abrir o menu"]')
     if (!botao) return false
@@ -139,30 +142,24 @@ try {
   await reaberto.getByRole('dialog', { name: 'Menu do jogo' }).waitFor()
   const pausa = await reaberto.evaluate(async () => {
     const g = globalThis as {
-      __arquipelagoDesenho?: { posicao: { x: number; y: number; z: number } }
+      __arquipelagoDesenho?: { posicao: { x: number; y: number; z: number }; noChao: boolean }
     }
-    // Cada amostra vem de um quadro novo do medidor real, não do estado de teste.
-    const amostras: { x: number; y: number; z: number }[] = []
+    // Cada amostra vem de uma publicação nova do medidor real, não do estado de teste.
+    const amostras: AmostraDaPausa[] = []
     let anterior = g.__arquipelagoDesenho
     const limite = performance.now() + 10_000
     while (amostras.length < 5 && performance.now() < limite) {
       await new Promise(requestAnimationFrame)
       const atual = g.__arquipelagoDesenho
       if (atual && atual !== anterior) {
-        amostras.push(atual.posicao)
+        amostras.push({ ...atual.posicao, noChao: atual.noChao })
         anterior = atual
       }
     }
     return amostras
   })
-  if (pausa.length !== 5) throw new Error('Medidor não produziu os cinco quadros da pausa.')
   console.log('Amostras durante o menu:', JSON.stringify(pausa))
-  const primeiro = pausa[1],
-    ultimo = pausa[4]
-  if (!primeiro || !ultimo || primeiro.y <= 30)
-    throw new Error('Pausa não foi observada durante a queda.')
-  if (Math.hypot(ultimo.x - primeiro.x, ultimo.y - primeiro.y, ultimo.z - primeiro.z) > 0.02)
-    throw new Error(`Personagem continua movendo com menu aberto: ${JSON.stringify(pausa)}`)
+  const ultimo = conferirPausaNoAr(pausa)
   await reaberto.keyboard.press('Escape')
   await reaberto.waitForFunction((y) => {
     const p = (globalThis as { __arquipelagoDesenho?: { posicao: { y: number } } })

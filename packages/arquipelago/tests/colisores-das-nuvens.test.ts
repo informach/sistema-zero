@@ -86,7 +86,8 @@ describe('os nós col-* das Nuvens', () => {
       lampioes: 2,
     })
     expect(quantos('col-cil-plataforma')).toBe(4)
-    for (let i = 1; i <= 4; i++) expect(nos.some((n) => n.name === `col-cil-plataforma-${i}`)).toBe(true)
+    for (let i = 1; i <= 4; i++)
+      expect(nos.some((n) => n.name === `col-cil-plataforma-${i}`)).toBe(true)
     for (const n of nos) {
       if (n.mesh === undefined) continue
       for (const p of doc.meshes[n.mesh]?.primitives ?? []) expect(p.material).toBeUndefined()
