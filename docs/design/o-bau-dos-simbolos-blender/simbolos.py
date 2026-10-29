@@ -4,7 +4,7 @@ acabamento da Ilha do Farol. O baú é o `bau-do-tesouro` das Moedas (clipe `abr
 - Pedra do sol, da lua e da estrela (`pedra-sol.svg` … `pedra-estrela-acesa.svg` do 2D): pedra
   baixa e lapidada com um rosto redondo virado para a câmera e o símbolo gravado nele. Repouso =
   apagada (o símbolo escuro, de pedra); o clipe `acender` faz o símbolo dourado e o halo crescerem
-  e brilharem, e o `apagar` os recolhe.
+  e brilharem, e o `apagar` os esconde na hora.
 - Placa da ordem (`placa-da-ordem.svg`): a tabuleta de madeira em dois postes com o sol, a lua e a
   estrela em fila, da esquerda para a direita.
 
@@ -133,7 +133,10 @@ def pedra(simbolo, seed):
     aceso.location = centro
     chaves = {
         'acender': {aceso: {'scale': [(0, Vector((0, 0, 0))), (6, Vector((1.12, 1.12, 1.12))), (10, Vector((1, 1, 1)))]}},
-        'apagar': {aceso: {'scale': [(0, Vector((1, 1, 1))), (6, Vector((0, 0, 0)))]}},
+        # Apaga na hora, sem encolher: tocado numa pedra já apagada não pisca (o Jogo 3D começa
+        # o clipe do início a cada pedido, e o "senão" do jogo apaga as três de uma vez).
+        # (O 0,001 do começo é invisível; um clipe igual ao repouso some na exportação.)
+        'apagar': {aceso: {'scale': [(0, Vector((0.001, 0.001, 0.001))), (2, Vector((0, 0, 0)))]}},
     }
     clipes(chaves, fps=24)
     aceso.scale = Vector((0, 0, 0))

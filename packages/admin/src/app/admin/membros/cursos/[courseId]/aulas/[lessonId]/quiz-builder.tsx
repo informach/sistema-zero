@@ -249,6 +249,9 @@ export function QuizBuilder({
                     <option value="ponte-a-tempo">Ponte: a tempo</option>
                     <option value="ponte-atrasado">Ponte: atrasado</option>
                     <option value="ponte-de-novo">Ponte: puxar de novo na ilha</option>
+                    <option value="simbolos-ordem">Símbolos: a estrela na vez dela</option>
+                    <option value="simbolos-fora">Símbolos: a estrela fora da vez</option>
+                    <option value="simbolos-recomeca">Símbolos: recomeçar na ilha</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

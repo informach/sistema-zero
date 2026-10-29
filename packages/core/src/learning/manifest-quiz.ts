@@ -28,6 +28,9 @@ export interface ManifestQuiz {
       | 'ponte-a-tempo'
       | 'ponte-atrasado'
       | 'ponte-de-novo'
+      | 'simbolos-ordem'
+      | 'simbolos-fora'
+      | 'simbolos-recomeca'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -72,6 +75,9 @@ export function validatePredictionQuiz(
           'ponte-a-tempo',
           'ponte-atrasado',
           'ponte-de-novo',
+          'simbolos-ordem',
+          'simbolos-fora',
+          'simbolos-recomeca',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -125,6 +131,9 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'ponte-a-tempo',
           'ponte-atrasado',
           'ponte-de-novo',
+          'simbolos-ordem',
+          'simbolos-fora',
+          'simbolos-recomeca',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

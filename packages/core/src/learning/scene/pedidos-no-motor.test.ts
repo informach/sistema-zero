@@ -1383,6 +1383,71 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) => s.bridge.at === 'stone',
   },
+  'symbol-sequence': {
+    pedidos: {
+      'step-moves': {
+        texto: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a lua.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+        },
+      },
+      'right-order': {
+        texto:
+          'Com Na ordem escolhido, clique em Tocar o sol, Tocar a lua e Tocar a estrela, nessa ordem.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+        },
+      },
+      'out-of-turn': {
+        texto: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a estrela.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+        },
+      },
+      'middle-start': {
+        texto: 'Com Na ordem escolhido, recomece a partida e clique em Tocar a lua antes do sol.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'restart-symbols' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+        },
+      },
+      'restart-works': {
+        texto:
+          'Com Na ordem escolhido, erre a ordem e, sem recomeçar a partida, toque o sol, a lua e a estrela.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+        },
+      },
+      'count-vs-order': {
+        texto:
+          'Depois de abrir o baú na ordem certa, escolha Só contando e toque a estrela, a lua e o sol.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+          m.faz({ type: 'sequence-mode', mode: 'count' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+        },
+      },
+    },
+    mostra: (s) =>
+      s.sequence.passo === 0 && s.sequence.chest === 'closed' && s.sequence.lit.length === 0,
+  },
   'lighthouse-position': {
     pedidos: {
       'x-minus': {

@@ -1691,6 +1691,63 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Encoste na ponte sem puxar, puxe e atravesse antes dos 4 segundos, recomece e deixe a ponte subir, puxe de novo e, por fim, escolha No começo do jogo e espere bastante depois de puxar.',
     ],
   },
+  /**
+   * O Poder "O baú dos símbolos" (Faísca, 29/10/2026): o jogo que a criança monta, com as pedras do
+   * sol, da lua e da estrela, a placa da ordem e o baú. O passo fica à vista. ⚠️ Os rótulos da
+   * bancada ("Tocar o sol", "Tocar a lua", "Tocar a estrela", "Na ordem", "Só contando",
+   * "Recomeçar a partida") são citados pelos pedidos e pelas pistas letra por letra.
+   */
+  'symbol-sequence': {
+    id: 'symbol-sequence',
+    group: 'events',
+    title: 'A ordem dos símbolos',
+    instruction:
+      'Toque os símbolos e acompanhe passo: na ordem da placa, fora da vez e começando pelo meio. Depois compare com o baú que só conta.',
+    manipulates: 'As pedras do sol, da lua e da estrela, o baú e o jeito de o baú decidir',
+    success:
+      'O passo andou 1, 2 com a ordem certa e a estrela abriu o baú. Fora da vez, a tentativa recomeçou, e começar de novo pelo sol abriu. Só contando, a ordem errada também abriu: é por isso que o baú precisa do passo.',
+    extra: 'E se fossem quatro símbolos: até que número o passo precisaria contar?',
+    goals: [
+      {
+        id: 'step-moves',
+        label: 'O passo andou com a ordem certa',
+        pedido: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a lua.',
+      },
+      {
+        id: 'right-order',
+        label: 'A ordem certa abriu o baú',
+        pedido:
+          'Com Na ordem escolhido, clique em Tocar o sol, Tocar a lua e Tocar a estrela, nessa ordem.',
+      },
+      {
+        id: 'out-of-turn',
+        label: 'Fora da vez, a tentativa recomeçou',
+        pedido: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a estrela.',
+      },
+      {
+        id: 'middle-start',
+        label: 'Começando pelo meio, nada avançou',
+        pedido: 'Com Na ordem escolhido, recomece a partida e clique em Tocar a lua antes do sol.',
+      },
+      {
+        id: 'restart-works',
+        label: 'Depois de errar, a ordem certa abriu o baú',
+        pedido:
+          'Com Na ordem escolhido, erre a ordem e, sem recomeçar a partida, toque o sol, a lua e a estrela.',
+      },
+      {
+        id: 'count-vs-order',
+        label: 'Só contando, a ordem errada também abriu o baú',
+        pedido:
+          'Depois de abrir o baú na ordem certa, escolha Só contando e toque a estrela, a lua e o sol.',
+      },
+    ],
+    hints: [
+      'Olhe passo depois de cada toque: quanto ele vale depois do sol? E depois da lua?',
+      'Toque um símbolo fora da vez. O que acontece com passo e com os símbolos acesos?',
+      'Toque o sol, a lua e a estrela, toque o sol e a estrela, recomece pelo sol, e por fim escolha Só contando e toque a estrela, a lua e o sol.',
+    ],
+  },
   'lighthouse-position': {
     id: 'lighthouse-position',
     group: 'stage',
@@ -2928,6 +2985,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'coin-counter': PREVIA_INICIAL,
   'two-pieces': PREVIA_INICIAL,
   'timed-bridge': PREVIA_INICIAL,
+  'symbol-sequence': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

@@ -477,6 +477,9 @@ export interface QuizQuestion {
     | 'ponte-a-tempo'
     | 'ponte-atrasado'
     | 'ponte-de-novo'
+    | 'simbolos-ordem'
+    | 'simbolos-fora'
+    | 'simbolos-recomeca'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

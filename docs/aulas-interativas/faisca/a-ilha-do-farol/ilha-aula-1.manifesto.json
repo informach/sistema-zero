@@ -1678,10 +1678,7 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": [
-              "other-view",
-              "same-place"
-            ],
+            "goals": ["other-view", "same-place"],
             "freeExploration": true
           }
         }
@@ -1730,9 +1727,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -5842,20 +5837,13 @@
       "title": "Jogue na ilha",
       "intent": "explanation",
       "objective": "Jogue na ilha.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -5863,19 +5851,13 @@
       "title": "Seu passo a passo do projeto",
       "intent": "explanation",
       "objective": "Seu passo a passo do projeto.",
-      "blockKeys": [
-        "video-material",
-        "ponte-material",
-        "materiais"
-      ],
+      "blockKeys": ["video-material", "ponte-material", "materiais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-material"
-        ]
+        "blockIds": ["video-material"]
       }
     },
     {
@@ -5883,20 +5865,13 @@
       "title": "O que aparece quando você muda de lugar?",
       "intent": "exploration",
       "objective": "O que aparece quando você muda de lugar?.",
-      "blockKeys": [
-        "video-ponto-de-vista",
-        "ponte-ponto-de-vista",
-        "experiencia-ponto-de-vista"
-      ],
+      "blockKeys": ["video-ponto-de-vista", "ponte-ponto-de-vista", "experiencia-ponto-de-vista"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-ponto-de-vista",
-          "experiencia-ponto-de-vista"
-        ]
+        "blockIds": ["video-ponto-de-vista", "experiencia-ponto-de-vista"]
       }
     },
     {
@@ -5904,18 +5879,13 @@
       "title": "Faça o personagem andar",
       "intent": "application",
       "objective": "Faça o personagem andar.",
-      "blockKeys": [
-        "video-movimento",
-        "ponte-movimento"
-      ],
+      "blockKeys": ["video-movimento", "ponte-movimento"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-movimento"
-        ],
+        "blockIds": ["video-movimento"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -6094,20 +6064,13 @@
       "title": "Confira seu primeiro percurso",
       "intent": "delivery",
       "objective": "Confira seu primeiro percurso.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -6287,18 +6250,13 @@
       "title": "Seu personagem já explora a ilha",
       "intent": "closing",
       "objective": "Seu personagem já explora a ilha.",
-      "blockKeys": [
-        "video-fecho",
-        "ponte-fecho"
-      ],
+      "blockKeys": ["video-fecho", "ponte-fecho"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho"
-        ]
+        "blockIds": ["video-fecho"]
       }
     }
   ]

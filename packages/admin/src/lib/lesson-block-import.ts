@@ -52,6 +52,9 @@ const QuizQuestionImportSchema = z
         'ponte-a-tempo',
         'ponte-atrasado',
         'ponte-de-novo',
+        'simbolos-ordem',
+        'simbolos-fora',
+        'simbolos-recomeca',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),

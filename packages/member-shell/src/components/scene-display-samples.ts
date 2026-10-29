@@ -734,6 +734,21 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'O personagem está na pedra do sino: recomece a partida para puxar de novo.',
     ],
   },
+  'symbol-sequence': {
+    readouts: [
+      { label: 'contados', value: '2 de 3', tone: 'a' },
+      { label: 'acesos', value: 'sol, lua, estrela', tone: 'b' },
+      { label: 'baú', value: 'fechado', tone: 'plain' },
+    ],
+    situations: [
+      'O baú está fechado. Nenhum símbolo aceso.',
+      'Os três símbolos foram tocados, fora da ordem da placa, e o baú abriu mesmo assim!',
+      'Não era a vez da estrela: passo voltou a 0 e os símbolos apagaram.',
+      'Agora o baú só conta os símbolos tocados. A partida recomeçou.',
+      'A partida recomeçou: os símbolos apagaram, o baú fechou e passo é 0.',
+      'O baú já abriu: recomece a partida para tentar de novo.',
+    ],
+  },
   'lighthouse-key': {
     readouts: [
       { label: 'temChave', value: 'verdadeiro', tone: 'a' },

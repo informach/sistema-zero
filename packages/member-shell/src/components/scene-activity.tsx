@@ -1074,6 +1074,7 @@ export function SceneActivityView({
     m !== 'coin-counter' &&
     m !== 'two-pieces' &&
     m !== 'timed-bridge' &&
+    m !== 'symbol-sequence' &&
     m !== 'lighthouse-walk' &&
     m !== 'lighthouse-position' ? (
       <SceneButton

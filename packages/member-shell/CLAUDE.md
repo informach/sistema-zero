@@ -3618,6 +3618,22 @@ o aviso do jogo e o relógio do "depois de" com uma marquinha por segundo, até 
 - ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a cabana.
 - Teste: `tests/scene-timed-bridge.test.tsx`.
 
+### A ordem dos símbolos (`symbol-sequence`, Faísca Poder 4, 29/10/2026)
+
+A experiência do Poder "O baú dos símbolos" (`scene-symbol-sequence.tsx`), no mesmo princípio da
+ponte: o palco é o JOGO (praia, placa da ordem, as três pedras e o baú nos lugares de
+`PEDRAS_2D`/`PLACA_2D`/`BAU_2D` do `docs/aulas-interativas-tecnico/qa/simbolos-projeto.ts`, o aviso
+do jogo e o número que o baú consulta à vista: `passo`, ou a contagem no modo "só contando").
+
+- "Na ordem" / "Só contando" mudam o jeito de o baú decidir e recomeçam a partida; a regra da
+  bancada troca junto (os três encontros com os dois Se, ou o contador).
+- O personagem fica em cima da pedra em que encostou por último (`sequence.at`).
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a ponte.
+- O quiz usa o mesmo palco nas cenas 2D (`quiz-simbolos-scene.tsx`: `simbolos-ordem`,
+  `simbolos-fora`) e a ilha 3D com as pedras e o baú do Blender em `simbolos-recomeca`
+  (`@sistemazero/studio/simbolos-quiz-artes`).
+- Teste: `tests/scene-symbol-sequence.test.tsx`.
+
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 
 Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo

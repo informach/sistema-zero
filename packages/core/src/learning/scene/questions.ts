@@ -268,6 +268,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, você vai puxar a alavanca, contar os segundos e ver quando a ponte deixa atravessar.',
   },
+  'symbol-sequence': {
+    label: 'A ordem dos símbolos',
+    explanation:
+      'Nesta experiência, você vai tocar os símbolos, acompanhar o passo e ver quando o baú abre.',
+  },
   'lighthouse-position': {
     label: 'O lugar da chave no mapa',
     explanation: 'Nesta experiência, você muda um número por vez e acompanha a chave no mapa.',
@@ -1420,6 +1425,35 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       correctChoiceId: 'uma-vez',
       explanation:
         'O "depois de" começa a contar quando o bloco roda. Dentro da alavanca, ele roda a cada puxada; no começo do jogo, uma vez só.',
+    },
+  },
+  'symbol-sequence': {
+    prediction: {
+      prompt:
+        'Imagine que o personagem toca o sol e depois a estrela, pulando a lua. O que acontece?',
+      choices: [
+        { id: 'recomeca', label: 'A tentativa recomeça: passo volta a 0 e o sol apaga.' },
+        {
+          id: 'abre',
+          label: 'O baú abre, porque a estrela é o último símbolo.',
+          shows: 'O baú continuou fechado: passo voltou a 0 e o sol apagou.',
+        },
+      ],
+      correctChoiceId: 'recomeca',
+      revealOn: 'out-of-turn',
+    },
+    explain: {
+      prompt: 'Por que o baú que só conta abriu com a ordem errada?',
+      choices: [
+        { id: 'sorte', label: 'Porque a ordem errada às vezes funciona por sorte.' },
+        {
+          id: 'nao-lembra',
+          label: 'Porque contar não lembra a ordem: só o passo lembra até onde a sequência chegou.',
+        },
+      ],
+      correctChoiceId: 'nao-lembra',
+      explanation:
+        'O contador só sabe quantos símbolos foram tocados. O passo guarda até onde a sequência chegou, e cada símbolo confere se é a vez dele.',
     },
   },
   'lighthouse-position': {

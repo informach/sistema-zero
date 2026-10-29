@@ -63,6 +63,8 @@ export const SCENE_IDS = [
   'two-pieces',
   // Poder "A ponte apressada" (Faísca, 29/10/2026): a ponte que baixa e sobe sozinha depois de 4 s.
   'timed-bridge',
+  // Poder "O baú dos símbolos" (Faísca, 29/10/2026): sol, lua e estrela na ordem abrem o baú.
+  'symbol-sequence',
   'restart',
   'hitbox',
   'score',
@@ -179,6 +181,11 @@ export type SceneAction =
   /** `timed-bridge`: onde fica o "depois de 4 segundos": dentro da alavanca ou no começo do jogo. */
   | { type: 'timer-place'; place: BridgeTimerPlace }
   | { type: 'restart-bridge' }
+  /** `symbol-sequence`: o personagem encosta numa pedra de símbolo. */
+  | { type: 'touch-symbol'; symbol: SequenceSymbol }
+  /** `symbol-sequence`: como o baú decide: na ordem (com o passo) ou só contando os tocados. */
+  | { type: 'sequence-mode'; mode: SequenceMode }
+  | { type: 'restart-symbols' }
   /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
   | { type: 'hold-arrow'; held: boolean }
   | { type: 'movement-command'; enabled: boolean }
@@ -382,6 +389,12 @@ export const TIMED_BRIDGE = {
   countMax: 99,
 } as const
 
+/** O baú dos símbolos: os símbolos na ordem da placa e os dois jeitos de o baú decidir. */
+export const SEQUENCE_SYMBOLS = ['sol', 'lua', 'estrela'] as const
+export type SequenceSymbol = (typeof SEQUENCE_SYMBOLS)[number]
+export const SEQUENCE_MODES = ['order', 'count'] as const
+export type SequenceMode = (typeof SEQUENCE_MODES)[number]
+
 /** A tela 480 × 360 e a chave 32 × 32 do Farol. O player confere contra FAROL_LAYOUT. */
 export const LIGHTHOUSE_POSITION = {
   start: { x: 211, y: 53 },
@@ -445,6 +458,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'coin-counter': [],
   'two-pieces': [],
   'timed-bridge': [],
+  'symbol-sequence': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -815,6 +829,12 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'timed-bridge'
     case 'timer-place':
       return scene === 'timed-bridge' && BRIDGE_TIMER_PLACES.some((p) => p === value.place)
+    case 'touch-symbol':
+      return scene === 'symbol-sequence' && SEQUENCE_SYMBOLS.some((x) => x === value.symbol)
+    case 'sequence-mode':
+      return scene === 'symbol-sequence' && SEQUENCE_MODES.some((m) => m === value.mode)
+    case 'restart-symbols':
+      return scene === 'symbol-sequence'
     case 'movement-command':
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'walk-frames':

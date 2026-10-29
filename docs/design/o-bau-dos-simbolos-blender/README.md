@@ -13,7 +13,9 @@ formas da `../ilha-do-farol-blender/lib_ilha.py` e as cores do desenho 2D). O ba
 
 O aceso é uma peça só (o rosto claro, o símbolo dourado e o anel de luz em volta), com a origem no
 centro do rosto: em repouso tem escala zero, o `acender` (~0,4 s) a faz crescer e passar um pouco
-antes de assentar, e o `apagar` a recolhe. Tocados "uma vez", o Jogo 3D segura o último quadro de
+antes de assentar, e o `apagar` a esconde na hora. O `apagar` não encolhe de propósito: o Jogo 3D
+começa o clipe do início a cada pedido, e o "senão" do jogo apaga as três pedras de uma vez; com
+escala zero do começo ao fim, numa pedra que já estava apagada ele não pisca. Tocados "uma vez", o Jogo 3D segura o último quadro de
 cada clipe. O sol leva os raios soltos do disco de propósito: a estrela tem as pontas grudadas, e
 de longe os dois não podem se confundir.
 

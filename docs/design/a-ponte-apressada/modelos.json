@@ -2,52 +2,28 @@
   "ponte-levadica": {
     "sha": "b4ebb3a039df0cf4c728a06ba7aaab40de6784ec28445f28c16f11ad21923613",
     "bytes": 127576,
-    "center": [
-      -0.76,
-      1.0623,
-      0
-    ],
+    "center": [-0.76, 1.0623, 0],
     "size": 2.8,
-    "clips": [
-      "baixar",
-      "subir"
-    ]
+    "clips": ["baixar", "subir"]
   },
   "alavanca": {
     "sha": "e45c4403e837872060f2a2e1f7872d0e2ae39cb3897bcb6dd0b91ea5d8de784e",
     "bytes": 31008,
-    "center": [
-      -0.0745,
-      0.5036,
-      0.0025
-    ],
+    "center": [-0.0745, 0.5036, 0.0025],
     "size": 1.0071,
-    "clips": [
-      "puxar",
-      "soltar"
-    ]
+    "clips": ["puxar", "soltar"]
   },
   "pedra-do-sino": {
     "sha": "f680266c8ccc489d013a9d38a194e98489eb929a86f5f8c082270a4c1c97d2c0",
     "bytes": 45088,
-    "center": [
-      0.0345,
-      0.795,
-      -0.0092
-    ],
+    "center": [0.0345, 0.795, -0.0092],
     "size": 1.59,
-    "clips": [
-      "tocar"
-    ]
+    "clips": ["tocar"]
   },
   "laguinho": {
     "sha": "a1e9c04a1271d0d45566b12cdb2286500bbe1be256360d463fb281afb1c9e75c",
     "bytes": 31156,
-    "center": [
-      0.0149,
-      0.033,
-      -0.0101
-    ],
+    "center": [0.0149, 0.033, -0.0101],
     "size": 4.0328,
     "clips": []
   }

@@ -10,6 +10,7 @@ export const CURSOS_POR_PREFIXO = {
   moedas: 'faisca/poder-moedas-no-caminho',
   cabana: 'faisca/poder-o-segredo-da-cabana',
   ponte: 'faisca/poder-a-ponte-apressada',
+  simbolos: 'faisca/poder-o-bau-dos-simbolos',
   'nave-contra-asteroides': 'construtor/nave-contra-asteroides',
   'corre-dino': 'inventor/corre-dino',
   'meu-jeito': 'construtor/o-jogo-do-meu-jeito',

@@ -2645,9 +2645,7 @@
                 "label": "Ela baixa e nunca mais sobe."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Cada encontro com a alavanca roda o evento inteiro de novo: a ponte baixa, ponteAberta vira verdadeiro e um novo \"depois de 4 segundos\" começa a contar."
           },
           {
@@ -2667,9 +2665,7 @@
                 "label": "No \"senão\" do Se da ponte."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Dentro do \"depois de\", a subida espera os 4 segundos. Logo depois do baixar, a ponte subiria na mesma hora; no senão, só subiria quando alguém encostasse nela."
           }
         ]
@@ -2694,9 +2690,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-3-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -11994,20 +11988,13 @@
       "title": "A ponte chegou à ilha",
       "intent": "explanation",
       "objective": "A ponte chegou à ilha.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -12015,18 +12002,13 @@
       "title": "A alavanca e a ponte que sobe sozinha",
       "intent": "application",
       "objective": "A alavanca e a ponte que sobe sozinha.",
-      "blockKeys": [
-        "video-alavanca",
-        "ponte-alavanca"
-      ],
+      "blockKeys": ["video-alavanca", "ponte-alavanca"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-alavanca"
-        ],
+        "blockIds": ["video-alavanca"],
         "projectChecks": [
           {
             "id": "aberta-antes",
@@ -12177,9 +12159,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -12350,9 +12330,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -12532,9 +12510,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -12609,18 +12585,13 @@
       "title": "Atravesse até o sino",
       "intent": "application",
       "objective": "Atravesse até o sino.",
-      "blockKeys": [
-        "video-atravessar",
-        "ponte-atravessar"
-      ],
+      "blockKeys": ["video-atravessar", "ponte-atravessar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-atravessar"
-        ],
+        "blockIds": ["video-atravessar"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -12785,9 +12756,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -12959,9 +12928,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -13150,9 +13117,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "wait",
@@ -13326,9 +13291,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -13380,18 +13343,13 @@
       "title": "Pense na ponte da ilha",
       "intent": "explanation",
       "objective": "Pense na ponte da ilha.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -13399,20 +13357,13 @@
       "title": "Envie a sua ilha com a ponte",
       "intent": "delivery",
       "objective": "Envie a sua ilha com a ponte.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -13577,9 +13528,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -13751,9 +13700,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",
@@ -13942,9 +13889,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "wait",
@@ -14118,9 +14063,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "press",

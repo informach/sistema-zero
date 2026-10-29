@@ -12,6 +12,7 @@ export const COMMON_COURSE_SLUGS = [
   'jornada-faisca-poder-1',
   'jornada-faisca-poder-2',
   'jornada-faisca-poder-3',
+  'jornada-faisca-poder-4',
 ] as const
 
 export interface DestinoManifesto {

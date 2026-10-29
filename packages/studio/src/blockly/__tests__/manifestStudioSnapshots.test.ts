@@ -23,7 +23,7 @@ function extensaoEnsinada(courseSlug: string, lessonSlug: string): 'game-2d' | '
 
 test('lesson Studio projects retain their initial blocks and the extension taught by the course', () => {
   let checked = 0
-  let checked3d = 0
+  const checked3d: string[] = []
   for (const file of listarArquivosAulas().filter((name) => name.endsWith('.manifesto.json'))) {
     const source: unknown = JSON.parse(readFileSync(caminhoAula(file), 'utf8'))
     if (!isLearningManifest(source)) throw new Error(`Manifesto inválido: ${file}`)
@@ -41,9 +41,18 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
       ).toBe(true)
       expect(project?.blocksState, file).toEqual(initial.blocksState)
       checked += 1
-      if (extensionId === 'game-3d') checked3d += 1
+      if (extensionId === 'game-3d') checked3d.push(file)
     }
   }
   expect(checked).toBeGreaterThan(20)
-  expect(checked3d).toBe(6)
+  expect(checked3d.sort()).toEqual([
+    'aula-2.manifesto.json',
+    'cabana-aula-2.manifesto.json',
+    'ilha-aula-1.manifesto.json',
+    'ilha-aula-2.manifesto.json',
+    'ilha-aula-3.manifesto.json',
+    'moedas-aula-2.manifesto.json',
+    'ponte-aula-2.manifesto.json',
+    'simbolos-aula-2.manifesto.json',
+  ])
 })

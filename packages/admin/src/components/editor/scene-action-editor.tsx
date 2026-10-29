@@ -87,6 +87,13 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: '"Depois de" dentro da alavanca', value: { type: 'timer-place', place: 'lever' } },
   { label: '"Depois de" no começo do jogo', value: { type: 'timer-place', place: 'start' } },
   { label: 'Recomeçar a partida da ponte', value: { type: 'restart-bridge' } },
+  // O baú dos símbolos (29/10/2026): os nomes são os da bancada da criança.
+  { label: 'Tocar o sol', value: { type: 'touch-symbol', symbol: 'sol' } },
+  { label: 'Tocar a lua', value: { type: 'touch-symbol', symbol: 'lua' } },
+  { label: 'Tocar a estrela', value: { type: 'touch-symbol', symbol: 'estrela' } },
+  { label: 'Baú: na ordem', value: { type: 'sequence-mode', mode: 'order' } },
+  { label: 'Baú: só contando', value: { type: 'sequence-mode', mode: 'count' } },
+  { label: 'Recomeçar a partida dos símbolos', value: { type: 'restart-symbols' } },
   // O andar do Farol (05/10/2026), o Dia 1 do Desafio: os nomes são os da bancada da criança.
   { label: 'Segurar a seta para a direita', value: { type: 'hold-arrow', held: true } },
   { label: 'Soltar a seta para a direita', value: { type: 'hold-arrow', held: false } },
