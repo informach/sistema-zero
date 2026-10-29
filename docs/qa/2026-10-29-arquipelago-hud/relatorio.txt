@@ -1,5 +1,5 @@
 computador: abertura passou e pulou; o Zappy falou depois
-computador: no quarto, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho
+computador: no quarto, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-baixo, .arq-cantinho
 computador: menu, conforto, diário e rever a abertura
 computador: lá fora, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho
 computador: a tecla 1 usou "Calçar os patins"

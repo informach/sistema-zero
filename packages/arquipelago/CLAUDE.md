@@ -4,7 +4,7 @@
 
 - Proposta aprovada no canvas `https://claude.ai/artifact/Mz6AmdkuYdc9jb3mR6yuPd`; notas e prints em
   `docs/qa/2026-10-29-arquipelago-hud.md`.
-- `interface/hud.tsx`: as partes da HUD (`QuemJoga`, `IlhaAgora`, `Relogio`, `Agora`, `Dica`,
+- `interface/hud.tsx`: as partes da HUD (`QuemJoga` com o retrato do avatar, `IlhaAgora`, `Relogio`, `Agora`, `Dica`,
   `Mochila`, `BotaoDaFoto`, `AlturaDoBalao`, `Cronometro`). As contas puras moram em
   `sistemas/hud.ts` (ilha mais perto, Quadro das Cores, lembretes do "Agora", atalhos 1 a 5).
   `.arq-hud.em-atividade` (corrida ou balão) esconde o que não é da atividade; `.entrando` faz a HUD
@@ -30,6 +30,22 @@
   (`boasVindas`); fechada à força (tempo pausado ou acabado, salvamento parado) não marca. A abertura toma Espaço, Enter e a seta
   para a direita na captura da janela (o personagem não pula por baixo). O texto segue a história da
   proposta e NÃO conta o segredo do Farol.
+- **Cenas da abertura são o jogo de verdade** (pedido dela, 29/10/2026): `interface/abertura-cenas.tsx`
+  mostra as imagens de `src/assets/abertura/*.webp` (o arquipélago colorido e cinza de cima, a Íris na
+  sala do Farol e a sala vazia desbotada, o barco de noite na chuva, a chave e a carta no píer, a casa
+  de noite e o Zappy no quarto, olhando para a câmera), com o `arq-ab-fundo` deslizando e, por cima, só
+  a névoa, o clarão do raio e as palavras da carta. Para refazer: `playground/capturar-abertura.ts`
+  (as `TOMADAS`: URL do playground, palco e peças soltas; `ARQUIPELAGO_SO` escolhe), que usa o palco
+  do medidor (`mundo/palco-de-print.tsx`: `__arquipelagoPalco` com câmera parada, `olharPara`,
+  `alturaDoAlvo`, `virarParaCamera`, `esconder`, `semNevoa`; `__arquipelagoPorNaCena` com os GLB que
+  o servidor do playground serve em `/modelos/`). Depois, PNG para WebP (a sala vazia perde quase toda
+  a cor). `?quadros=feitos` deixa o Bosque inteiro colorido. ⚠️ Não editar `src` durante a captura:
+  o servidor recompila a cada página.
+- **Retrato na HUD**: `mundo/retrato-do-avatar.tsx` desenha só o avatar (camada 7, com a luz própria
+  do retrato, que o jogo não vê) numa imagem de 128 px, com o enquadramento da foto de rosto da
+  plataforma (`sistemas/retrato.ts`: 45% de cima, 80% do quadro, de frente); tira quando ela fica
+  parada e de novo quando as peças mudam (`estado/retrato.ts`). Sem retrato, a inicial. ⚠️ As peças
+  têm esqueleto: a caixa vem de `SkinnedMesh.computeBoundingBox` (a da geometria é minúscula).
 - Playground: a abertura só aparece com `?abertura=1`. Navegador:
   `playground/verificar-hud-browser.ts` (computador, notebook e celular; abertura, sobreposição das
   partes, tecla 1, menu, diário, noite e corrida). Testes: `tests/hud.test.ts`, `tests/abertura.test.ts`.

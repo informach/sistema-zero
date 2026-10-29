@@ -26,6 +26,7 @@ import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
+import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
@@ -89,6 +90,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Anel />
           <Barcos />
           <Personagem />
+          <RetratoDoAvatar />
           <BichoAdotado />
           <Camera />
           <Medidor />

@@ -115,7 +115,7 @@ export function Zappy() {
     if (luz.current) luz.current.intensity = 2 + noite * 14
   })
   return (
-    <group ref={grupo} visible={!noFinal}>
+    <group ref={grupo} name="zappy-3d" visible={!noFinal}>
       <Barreira reserva={<Bolinha />}>
         <Suspense fallback={<Bolinha />}>
           <ModeloDoZappy brilho={brilho} voando={voando} />

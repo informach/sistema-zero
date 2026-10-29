@@ -53,6 +53,8 @@ export interface OpcoesDaPlataformaFalsa {
   desafios?: 'ligados' | 'desligados'
   /** O desafio do dia: `pronto` (padrão), `feito` ("Amanhã tem outro") ou `nenhum`. */
   dia?: DiaDoPlayground
+  /** Os quadros do Bosque todos feitos (`?quadros=feitos`). */
+  quadrosFeitos?: boolean
   /**
    * O Pinta e o Molda no molde de um objeto: `pronto` (padrão, a ferramenta de mentira guarda na
    * hora) ou `sem-acesso` (a página responde que a ferramenta não está liberada).
@@ -111,7 +113,11 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const agora = o.agora ?? (() => new Date())
   const publico = o.publico ?? 'kids'
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
-  const desafios = criarDesafiosFalsos(o.posicao ?? 2, { dia: o.dia, agora })
+  const desafios = criarDesafiosFalsos(o.posicao ?? 2, {
+    dia: o.dia,
+    agora,
+    quadrosFeitos: o.quadrosFeitos,
+  })
   const galeria = criarGaleriaFalsa(
     o.galeria,
     o.persistir && typeof localStorage !== 'undefined'

@@ -3,3 +3,7 @@ declare module '*.png' {
   const caminho: string
   export default caminho
 }
+declare module '*.webp' {
+  const caminho: string
+  export default caminho
+}

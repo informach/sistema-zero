@@ -53,18 +53,25 @@ function desafio(
 
 export function criarDesafiosFalsos(
   posicao: number,
-  o: { dia?: DiaDoPlayground; agora?: () => Date } = {},
+  o: { dia?: DiaDoPlayground; agora?: () => Date; quadrosFeitos?: boolean } = {},
 ) {
   const dia = o.dia ?? 'pronto'
+  // Com `quadrosFeitos`, os três do Bosque já vêm feitos (a ilha inteira colorida, para prints).
+  const situacao = (s: DesafioNaLista['situacao']) => (o.quadrosFeitos ? 'concluido' : s)
   const agora = o.agora ?? (() => new Date())
   let feitoHoje = dia === 'feito'
   const lista: DesafioNaLista[] = [
-    desafio('00000000-0000-4000-8000-0000000000a1', 1, 'A borboleta que voa', 'disponivel'),
+    desafio(
+      '00000000-0000-4000-8000-0000000000a1',
+      1,
+      'A borboleta que voa',
+      situacao('disponivel'),
+    ),
     desafio(
       '00000000-0000-4000-8000-0000000000a2',
       2,
       'O coelho que pula o tronco',
-      'faltam-blocos',
+      situacao('faltam-blocos'),
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
   ]

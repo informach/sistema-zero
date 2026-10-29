@@ -9,7 +9,8 @@ Implementação da proposta aprovada no canvas "Arquipélago Vagalume: nova inte
   necessidades (fome coral, energia amarela, diversão lilás), títulos em Baloo 2 e texto em Nunito
   (as fontes que a página do Kids já carrega; no adulto ficam as dele), botões com degrau e ícones
   desenhados (`interface/icones.tsx`) no lugar dos emojis da HUD e do menu.
-- **HUD no computador**: quem joga (inicial no anel, marco da jornada, necessidades e moedas da
+- **HUD no computador**: quem joga (o retrato do avatar no anel, com o enquadramento da foto de rosto da
+  plataforma, tirado no jogo; a inicial só enquanto ele não sai), marco da jornada, necessidades e moedas da
   conta), a ilha onde está com o Quadro das Cores dela, relógio com clima, tempo livre e menu, o
   "Agora", o cartão do Zappy, a barra da mochila com as teclas 1 a 5, o botão do modo foto e
   Viver/Construir no canto.
@@ -21,7 +22,10 @@ Implementação da proposta aprovada no canvas "Arquipélago Vagalume: nova inte
 - **Menu de pausa**: lugares à esquerda (Início, Diário, Álbum, Caderno dos Lumis, Mapa, Família,
   Conforto e controles, Voltar), o começo no meio (Continuar, Modo foto, o diário, as coleções, as
   ferramentas e o clima) e o mapa à direita. No celular os lugares viram abas.
-- **Abertura "O Cinza"**: 8 cenas em papel recortado (73 s), legenda sempre ligada, Enter ou toque
+- **Abertura "O Cinza"**: 8 cenas tiradas do jogo de verdade (73 s; antes eram papel recortado,
+  trocadas a pedido dela em 29/10/2026 à noite: o arquipélago colorido e cinza de cima, a Íris na sala
+  do Farol e a sala vazia desbotada, o barco na chuva, a chave e a carta no píer, a casa de noite e o
+  Zappy no quarto, olhando para a câmera; `playground/capturar-abertura.ts` refaz as imagens), legenda sempre ligada, Enter ou toque
   passa a cena, segurar Espaço (ou o botão) pula, Esc fecha; no fim a tela entra pela janela acesa
   e a HUD aparece devagar. Aparece sozinha uma vez por perfil em cada aparelho e fica no Diário
   ("Rever a abertura: O Cinza"). Com menos movimento, nada desliza.

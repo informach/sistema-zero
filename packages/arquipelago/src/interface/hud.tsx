@@ -7,6 +7,7 @@ import { lojaDoFarol, useFarol } from '../estado/farol'
 import { lojaDaGaleria, useGaleria } from '../estado/galeria'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
+import { useRetrato } from '../estado/retrato'
 import { PAINEL_DA_ABERTURA } from '../sistemas/abertura'
 import { BALAO } from '../sistemas/balao'
 import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
@@ -112,16 +113,21 @@ function Moedas() {
   )
 }
 
-/** Quem joga: a inicial no anel, o marco da jornada, as necessidades e as moedas. */
+/**
+ * Quem joga: o retrato do avatar no anel (o mesmo enquadramento da foto da plataforma, tirado no
+ * jogo por `mundo/retrato-do-avatar.tsx`; a inicial até ele chegar), o marco da jornada, as
+ * necessidades e as moedas.
+ */
 function QuemJoga() {
-  const { plataforma } = useJogo()
+  const { loja, plataforma } = useJogo()
+  const retrato = useRetrato(loja, (s) => s.imagem)
   const voz = useVoz()
   const jornada = useEstado((s) => s.jornada)
   const inicial = plataforma.perfil.primeiroNome.trim().charAt(0).toUpperCase() || '?'
   return (
     <section className="arq-quem arq-vidro" aria-label="Você">
       <span className="arq-quem-retrato" aria-hidden="true">
-        {inicial}
+        {retrato ? <img src={retrato} alt="" /> : inicial}
       </span>
       <small className="arq-quem-marco" title={voz.marcoDaJornada(jornada)}>
         {voz.marcoDaJornada(jornada)}

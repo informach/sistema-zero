@@ -64,6 +64,13 @@ Bun.serve({
       return new Response(HTML_DO_MOVIMENTO, {
         headers: { 'content-type': 'text/html; charset=utf-8' },
       })
+    // Os modelos do jogo por caminho fixo, para as capturas porem peças soltas na cena.
+    if (pathname.startsWith('/modelos/') && !pathname.includes('..')) {
+      const f = Bun.file(
+        resolve(import.meta.dir, '../src/assets', pathname.slice('/modelos/'.length)),
+      )
+      return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
+    }
     const doJogo = arquivosDoJogo.get(pathname.slice(1))
     if (doJogo) return new Response(doJogo)
     if (pathname.startsWith('/avatar3d/') || pathname.startsWith('/room3d/')) {

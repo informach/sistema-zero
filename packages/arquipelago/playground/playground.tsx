@@ -110,6 +110,7 @@ const plataforma = criarPlataformaFalsa({
   energia: q.has('energia') ? Number(q.get('energia')) : undefined,
   lumis: q.has('lumis') ? lerLumis(q.get('lumis') ?? '') : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
+  quadrosFeitos: q.get('quadros') === 'feitos',
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,
   aparencias:
     q.get('aparencias') === 'falha'

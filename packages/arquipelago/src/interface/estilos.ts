@@ -115,6 +115,8 @@ export const ESTILOS = `
 .arq-icone{flex:none;display:block}
 .arq-quem{position:absolute;left:16px;top:16px;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"retrato nec" "marco moedas";column-gap:14px;row-gap:8px;align-items:center;padding:10px 16px 10px 10px;min-width:236px}
 .arq-quem-retrato{grid-area:retrato;justify-self:center;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#ffe7a3,#ffc93c 55%,#e0a91c);box-shadow:0 0 0 3px rgba(255,201,60,.32),0 0 20px rgba(255,201,60,.35);color:#4a3200;font:800 27px/1 var(--arq-titulo)}
+.arq-quem-retrato{overflow:hidden}
+.arq-quem-retrato img{width:100%;height:100%;object-fit:cover;display:block}
 .arq-quem-marco{grid-area:marco;justify-self:start;white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis;padding:2px 8px;border-radius:999px;background:#5fd3c4;color:#0d2a2a;font:800 11px/1.35 var(--arq-titulo)}
 .arq-quem .arq-necessidades{grid-area:nec;position:static;display:grid;gap:6px;min-width:0;padding:0;background:none;box-shadow:none}
 .arq-nec{display:grid;grid-template-columns:16px minmax(0,1fr);align-items:center;gap:8px}
@@ -297,6 +299,7 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-ab-vagalume{animation:arq-ab-voa 3.2s ease-in-out infinite}
 .arq-ab-pisca{animation:arq-ab-pisca 1.6s ease-in-out infinite}
 .arq-ab-letra{font-family:"Caveat","Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:700}
+.arq-ab-carta{fill:#fff8e7;stroke:rgba(30,24,16,.6);stroke-width:7px;paint-order:stroke;stroke-linejoin:round}
 @keyframes arq-ab-cena{from{opacity:0}}
 @keyframes arq-ab-zoom{from{transform:scale(1)}to{transform:scale(1.06)}}
 @keyframes arq-ab-fundo{from{transform:translateX(-14px)}to{transform:translateX(14px)}}

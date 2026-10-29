@@ -16,6 +16,7 @@ import { mecanismosAgora } from './mecanismos'
 import { materiaisDe } from './modelos'
 import { reativosAgora } from './objetos-reativos'
 import { ondasAgora } from './ondinhas'
+import { PalcoDePrint } from './palco-de-print'
 import { pontesAgora } from './pontes-vivas'
 import { useQualidade } from './qualidade-da-cena'
 import { troncoAgora } from './tronco-no-lago'
@@ -388,5 +389,5 @@ export function Medidor() {
     c.tempo = 0
     c.quadros = 0
   })
-  return null
+  return <PalcoDePrint ligado={ligado} />
 }
