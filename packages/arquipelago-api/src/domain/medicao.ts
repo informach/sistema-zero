@@ -100,8 +100,8 @@ export function montarMedicao(
       galeria: protegerContagem(dados.galeria),
     },
     desafiosAprovados: protegerContagem(dados.desafiosAprovados),
-    ...(dados.minijogos ? { minijogos: protegerContagem(dados.minijogos) } : {}),
     ...(volta ? { voltaAoCurso: protegerVoltaAoCurso(volta) } : {}),
+    ...(dados.minijogos ? { minijogos: protegerContagem(dados.minijogos) } : {}),
     semFonte: [
       ...(filtro.publico === 'adulto' ? ['volta-adulto' as const] : []),
       'compras',

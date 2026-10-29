@@ -50,7 +50,6 @@ export const RelatorioDaMedicaoSchema = z.strictObject({
     galeria: NumeroDaMedicaoSchema,
   }),
   desafiosAprovados: NumeroDaMedicaoSchema,
-  minijogos: NumeroDaMedicaoSchema.optional(),
   /**
    * A volta ao curso (29/10/2026), pela MESMA regra e a mesma rota do Members do cartão dos pais:
    * dias de jogo (pessoa e dia de São Paulo) e, deles, os que tiveram aula concluída até
@@ -64,6 +63,7 @@ export const RelatorioDaMedicaoSchema = z.strictObject({
       diasComAula: NumeroDaMedicaoSchema,
     })
     .optional(),
+  minijogos: NumeroDaMedicaoSchema.optional(),
   semFonte: z.array(
     z.enum(['volta-adulto', 'compras', 'minijogos', 'curso-24h', 'conclusoes-curso']),
   ),
