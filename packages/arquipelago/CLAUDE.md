@@ -188,7 +188,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   em `tests/colisores-do-recife.test.ts`; os ajudantes dos testes ficam em `tests/ajuda-colisores.ts`. O Pico
   (29/10/2026, ainda não ligado) tem os dele no `pico.glb`, com a trilha cavada na montanha até o platô do
   cume, em `tests/colisores-do-pico.test.ts` (busca em grade da chegada ao platô, encosta que não se sobe), e o
-  Vale dos Dinos no `vale-dos-dinos.glb`, em `tests/colisores-do-vale.test.ts`. A grade de andar dos dois é
+  Vale dos Dinos no `vale-dos-dinos.glb`, em `tests/colisores-do-vale.test.ts`, e a Ilha das Nuvens no `nuvens.glb`,
+  em `tests/colisores-das-nuvens.test.ts` (o tampo de cada plataforma é `col-cil-plataforma-N`: quem move o nó
+  `plataforma-N` move o colisor junto). A grade de andar dos dois é
   `gradeDeAndar` (`tests/ajuda-colisores.ts`).
 
 ## Ilhas completas (o Bosque, 27/10/2026)

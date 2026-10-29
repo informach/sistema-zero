@@ -39,7 +39,25 @@
       "topo-plataforma-4": [-9.0, 8.62, 12.6]
     },
     "clipes": [],
-    "kb": 470.5,
+    "colisores": {
+      "col-banquinho": 1,
+      "col-cil-copa": 4,
+      "col-cil-copa-ninho": 3,
+      "col-cil-degrau-nuvem": 3,
+      "col-cil-moita-nuvem": 8,
+      "col-cil-ninho-fundo": 1,
+      "col-cil-plataforma": 4,
+      "col-cil-poste-balao": 1,
+      "col-cil-poste-cataventos": 4,
+      "col-cil-poste-lampiao": 2,
+      "col-cil-tronco": 4,
+      "col-cil-tronco-ninho": 1,
+      "col-guarda-ninho": 10,
+      "col-pe-arco-iris": 2,
+      "col-tear": 1,
+      "col-terreno": 1
+    },
+    "kb": 517.1,
     "nos": {
       "cenario": 11378,
       "chao": 1314,
