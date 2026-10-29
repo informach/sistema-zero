@@ -58,7 +58,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         somenteLeitura: false,
       }
       const inicial = criarSalvamentoInicial(AGORA)
-      const { presenteDosBichosEntregue: _, ...anterior } = inicial
+      const { presenteDosBichosEntregue: _, turnos: _t, ...anterior } = inicial
       const v4 = {
         ...anterior,
         versao: 4,
@@ -74,7 +74,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         atualizadoEm: AGORA,
       })
       const lido = await servico.lerSalvamento(jogador)
-      expect(lido.salvamento).toMatchObject({ versao: 7, presenteDosBichosEntregue: false })
+      expect(lido.salvamento).toMatchObject({ versao: 8, presenteDosBichosEntregue: false })
       if (!lido.salvamento) throw new Error('O serviço não leu a V4 guardada')
       const entregue = {
         ...lido.salvamento,

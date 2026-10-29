@@ -336,12 +336,13 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoT
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 7` (`SalvamentoV7Schema`, estrito: campo desconhecido é
+- **Versão:** `VERSAO_SALVAMENTO = 8` (`SalvamentoV8Schema`, estrito: campo desconhecido é
   recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
   a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
   projetos azuis. A V5 acrescenta `presenteDosBichosEntregue`, sem alterar os formatos anteriores.
   A V6 (29/10/2026) guarda as `aparencias` de cada projeto azul (a galeria, §9.9). A V7
-  (29/10/2026) acrescenta o Bento em `moradores.bento`, no mesmo formato da Capi (§6.15.1).
+  (29/10/2026) acrescenta o Bento em `moradores.bento`, no mesmo formato da Capi (§6.15.1). A V8
+  (29/10/2026) acrescenta os turnos nos balcões da Vila Doce (`turnos`, §6.15.2).
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -356,6 +357,9 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
     de presente e o pedido do dia (o dia, qual é e se já foi entregue). Os dias são `AAAA-MM-DD`
     no horário do aparelho;
   - o Bento (`moradores.bento`, desde a V7): os mesmos campos da Capi (`MoradorSchema`);
+  - os turnos da Vila Doce (`turnos`, desde a V8), um por balcão de `POSTOS_DA_VILA` (padaria,
+    sorveteria, sucos): o último dia em que pagou, as melhores estrelas (de 1 a 3) e quantos
+    turnos ela já fez ali (até 9999);
   - os bichos do Bosque (`bichos`): os achados (cada um no máximo uma vez, de `BICHOS_DO_BOSQUE`:
     cachorro, gato, coelho e porquinho) e o adotado, com nome (de 1 a 16 letras), fase (filhote
     ou adulto), fome, limpeza e carinho (de 0 a 100), os dias bem cuidado e o truque (sessões, o
@@ -1161,7 +1165,8 @@ com a Vila Doce completa ativa) sobre o morador genérico `mundo/morador.tsx`, e
   amizade, nada novo no salvamento), sem a fala nem os ingredientes da primeira vez.
 - **A cesta da despensa** (`cestaDoBento`): cada pedido entregue traz os ingredientes de uma
   receita que ele já ensinou (sorteada pelo dia), menos no pedido que o fez lembrar uma agora.
-  Antes do primeiro coração não há cesta. A feira da Vila (fase2-03) vai vender os ingredientes.
+  Antes do primeiro coração não há cesta. Os turnos nos balcões (§6.15.2) também pagam em
+  ingredientes.
 - **O forno** chega como projeto azul com o primeiro coração (`ganharProjetos`).
 - **Conversa** (`falasDoBento`): no primeiro encontro ele se apresenta, conta das receitas
   esquecidas e já diz o pedido. Na primeira conversa do dia: o aniversário (se for), uma fala do
@@ -1169,6 +1174,38 @@ com a Vila Doce completa ativa) sobre o morador genérico `mundo/morador.tsx`, e
   são só uma despedida. Mesmas regras de texto (sem travessão, sem exclamação, sem começar com
   pergunta), conferidas no teste.
 - **Moedas:** nada disto paga moedas.
+
+### 6.15.2 Os turnos nos balcões da Vila Doce (fase2-03)
+
+Arquivos: `sistemas/turnos.ts` (as regras), `estado/turno.ts` (a loja do painel),
+`interface/turno.tsx` (o painel), `mundo/balcoes-da-vila.tsx` (onde se pede o turno). Profissão
+de mentirinha: ela atende o balcão, sem gastar nada do inventário.
+
+- **Os balcões** (`BALCOES`, `POSTOS_DA_VILA` no contrato): a padaria do Bento (pela conversa com
+  ele, "Ajudar no balcão"), a sorveteria (E / Usar a até `ALCANCE_DO_BALCAO`, 1,8 m, da âncora
+  `sorveteria`) e a barraca de sucos da feira (a âncora `barraca-5`). Cada balcão tem quatro
+  produtos: pão francês, pão de queijo, bolo de fubá e sonho; morango, chocolate, coco e milho;
+  laranja, uva, melancia e abacaxi.
+- **O turno:** seis fregueses (`TAMANHO_DOS_PEDIDOS`), moradores e Lumis (`FREGUESES`, todos
+  diferentes no mesmo turno), pedindo 1, 1, 2, 2, 3 e 3 coisas. Ela toca no que o freguês pediu
+  (vai para a bandeja, no máximo `MAXIMO_NA_BANDEJA`, 5; tocar na bandeja tira um) e entrega.
+  Certo, vem o próximo; errado, conta um engano, a bandeja esvazia e o freguês repete o pedido.
+  Bandeja vazia não entrega. Não há relógio: ninguém perde por demorar.
+- **Os pedidos** são sorteados pelo balcão, o dia e quantos turnos ela já fez ali
+  (`pedidosDoTurno`): o mesmo turno repete os pedidos, o seguinte traz outros.
+- **Estrelas** (`estrelasDoTurno`): nenhum engano, 3; até dois, 2; mais, 1. O salvamento guarda as
+  melhores de cada balcão.
+- **Pagamento:** só o primeiro turno do dia em cada balcão paga (`pagoEm`). Padaria: 1 fubá, 1
+  leite e 1 ovo; sorveteria: 1 cacau e 1 leite; sucos: 1 semente de tomate e 1 de milho. O turno
+  pago na padaria também vale `AMIZADE.turno` (10) com o Bento e, se passar um coração, traz a
+  receita nova e a página do diário (`ajudarOBento`). Os outros turnos do dia são só pela diversão
+  e pelas estrelas.
+- **Moedas:** os turnos ainda não pagam moedas. A proposta prevê moedas baixas nos turnos, dentro
+  do teto semanal, mas cada recompensa precisa ser autorizada no serviço antes de ligar (o
+  salvamento é escrito pelo aparelho).
+- **Textos:** as falas dos fregueses concordam em número e gênero (`itensPorExtenso`) e seguem as
+  regras de texto (sem travessão, sem exclamação, sem começar com pergunta), conferidas no teste.
+- Testes: `tests/turnos.test.ts`; navegador: `bun playground/verificar-turnos-browser.ts`.
 
 ### 6.16 O modo construção (a grade e as paredes)
 

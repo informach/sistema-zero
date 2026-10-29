@@ -1,4 +1,4 @@
-import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { AMIZADE_MAXIMA, type Salvamento } from '@sistemazero/arquipelago-contracts'
 import {
   ANIVERSARIO_DO_BENTO,
   falasDoBento,
@@ -10,6 +10,7 @@ import { escolhaDoDia } from './conversa-da-capi'
 import { FALA_DA_PAGINA_DO_BENTO, ganhouAPaginaDaVila } from './diario'
 import { adicionar, ITENS } from './itens'
 import {
+  AMIZADE,
   conversar,
   coracoes,
   darPresente,
@@ -191,6 +192,24 @@ export function entregarAoBento(
       `Leve da despensa ${ingredientesPorExtenso(cesta, nomeDoItem)}. Com isso dá para fazer ${cesta.nome.toLowerCase()}.`,
     ],
   }
+}
+
+export const FALA_DO_TURNO_NA_PADARIA =
+  'Obrigado pela ajuda no balcão. Com você lá, o forno não parou.'
+
+/**
+ * O primeiro turno do dia no balcão da padaria (`sistemas/turnos.ts` decide quando): a amizade
+ * do turno e, se ela passar um coração, a receita nova e a página do diário.
+ */
+export function ajudarOBento(
+  s: Salvamento,
+  dia: string,
+): { salvamento: Salvamento; falas: string[] } {
+  const antes = s.moradores.bento
+  if (s.turnos.padaria?.pagoEm !== dia) return { salvamento: s, falas: [] }
+  const bento = { ...antes, amizade: Math.min(AMIZADE_MAXIMA, antes.amizade + AMIZADE.turno) }
+  const receitas = comAsReceitasNovas(comBento(s, bento), antes.amizade)
+  return { salvamento: receitas.salvamento, falas: [FALA_DO_TURNO_NA_PADARIA, ...receitas.falas] }
 }
 
 /** Se o pedido de hoje está pronto para entregar (todos os itens na mochila). */

@@ -547,6 +547,14 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   (`CORACOES_DA_PAGINA_DA_VILA`, `FALA_DA_PAGINA_DO_BENTO`, `ganhouAPaginaDaVila` em
   `sistemas/diario.ts`) e o diário ganha a seção Receitas (`colecaoDeReceitas`). Testes em
   `tests/diario.test.ts`.
+- Turnos nos balcões (fase2-03, salvamento V8 `turnos`): regras puras em `sistemas/turnos.ts`
+  (`BALCOES`, `pedidosDoTurno`, `porNaBandeja`, `entregarBandeja`, `fecharTurno`), loja do painel
+  em `estado/turno.ts` (`PAINEL_DO_TURNO`, `lojaDoTurno`), painel `interface/turno.tsx`. A
+  sorveteria e a barraca de sucos abrem pelo E (`mundo/balcoes-da-vila.tsx`, âncoras `sorveteria`
+  e `barraca-5`); a padaria, pelo "Ajudar no balcão" do painel do Bento. Só o primeiro turno do dia
+  em cada balcão paga (ingredientes; na padaria, também `ajudarOBento`); moedas esperam o serviço.
+  Regras: `docs/arquipelago-regras.md` §6.15.2. Testes: `tests/turnos.test.ts`; navegador:
+  `bun playground/verificar-turnos-browser.ts`.
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em
@@ -569,10 +577,11 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 
 ## Salvamento e tempo
 
-- `SalvamentoV7` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
+- `SalvamentoV8` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
   e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue; `migrarDaV5`: a
-  aparência em uso guardada; `migrarDaV6`: o Bento novo). Gravar aceita a versão de
+  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito).
+  Gravar aceita a versão de
   uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta atual: só a
   primeira gravação dela fica, as seguintes falham até recarregar.
   Gravação por revisão (CAS). Revisão velha recebe 409

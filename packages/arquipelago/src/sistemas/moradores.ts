@@ -17,6 +17,8 @@ export const AMIZADE = {
   /** Presente de que ela gosta e presente comum (só o primeiro do dia conta). */
   presenteQueGosta: 20,
   presenteComum: 8,
+  /** O primeiro turno do dia no balcão da padaria do Bento (fase2-03). */
+  turno: 10,
   /** Cada coração. */
   porCoracao: 100,
 } as const

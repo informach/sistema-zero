@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
+import { BalcoesDaVila } from './balcoes-da-vila'
 import { Bento } from './bento'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { giroDaIlha } from './medidas'
@@ -9,7 +10,8 @@ import { ComReserva } from './modelos'
 
 /**
  * O que mexe na Vila Doce (montado pelo `anel.tsx` só com a ilha completa ATIVA, em coordenadas do
- * mundo): por enquanto o Bento na frente da padaria. As lojas e os Lumis da Vila entram aqui.
+ * mundo): o Bento na frente da padaria e os balcões dos turnos (fase2-03). Os Lumis da Vila entram
+ * aqui.
  */
 export function VilaViva({
   ilha,
@@ -34,6 +36,7 @@ export function VilaViva({
       <ComReserva reserva={null}>
         <Bento modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
+      <BalcoesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
     </group>
   )
 }

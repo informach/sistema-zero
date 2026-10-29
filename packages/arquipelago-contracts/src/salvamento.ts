@@ -8,7 +8,7 @@ import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 7
+export const VERSAO_SALVAMENTO = 8
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -353,33 +353,63 @@ export function migrarDaV6(v6: SalvamentoV6): SalvamentoV7 {
   return { ...v6, versao: 7, moradores: { ...v6.moradores, bento: { ...MORADOR_NOVO } } }
 }
 
+/** Os balcões da Vila Doce onde se faz turno (fase2-03): a padaria do Bento, a sorveteria e a barraca de sucos. */
+export const POSTOS_DA_VILA = ['padaria', 'sorveteria', 'sucos'] as const
+export type PostoDaVila = (typeof POSTOS_DA_VILA)[number]
+
+/** O que ela já fez num balcão (`sistemas/turnos.ts` tem as regras). */
+export const TurnoSchema = z.strictObject({
+  /** O último dia em que o turno pagou (só o primeiro turno do dia em cada balcão paga). */
+  pagoEm: dia.nullable(),
+  /** As melhores estrelas de um turno ali (de 1 a 3). */
+  melhor: z.number().int().min(1).max(3),
+  /** Quantos turnos ela já terminou ali. */
+  vezes: z.number().int().min(1).max(9999),
+})
+export type Turno = z.infer<typeof TurnoSchema>
+
+/** V8 (29/10/2026): os turnos nos balcões da Vila Doce (fase2-03). */
+export const SalvamentoV8Schema = SalvamentoV7Schema.extend({
+  versao: z.literal(8),
+  turnos: z.partialRecord(z.enum(POSTOS_DA_VILA), TurnoSchema),
+})
+export type SalvamentoV8 = z.infer<typeof SalvamentoV8Schema>
+
+/** Da V7 para a V8: tudo igual, e nenhum turno feito. */
+export function migrarDaV7(v7: SalvamentoV7): SalvamentoV8 {
+  return { ...v7, versao: 8, turnos: {} }
+}
+
 /**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V7): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V8): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV7Schema,
-  SalvamentoV6Schema.transform(migrarDaV6),
-  SalvamentoV5Schema.transform((v5) => migrarDaV6(migrarDaV5(v5))),
-  SalvamentoV4Schema.transform((v4) => migrarDaV6(migrarDaV5(migrarDaV4(v4)))),
-  SalvamentoV3Schema.transform((v3) => migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))),
+  SalvamentoV8Schema,
+  SalvamentoV7Schema.transform(migrarDaV7),
+  SalvamentoV6Schema.transform((v6) => migrarDaV7(migrarDaV6(v6))),
+  SalvamentoV5Schema.transform((v5) => migrarDaV7(migrarDaV6(migrarDaV5(v5)))),
+  SalvamentoV4Schema.transform((v4) => migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(v4))))),
+  SalvamentoV3Schema.transform((v3) =>
+    migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))),
+  ),
   SalvamentoV2Schema.transform((v2) =>
-    migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))),
+    migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2)))))),
   ),
   SalvamentoV1Schema.transform((v1) =>
-    migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1)))))),
+    migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))))),
   ),
 ])
-export type Salvamento = SalvamentoV7
+export type Salvamento = SalvamentoV8
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 7,
+    versao: 8,
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
@@ -398,6 +428,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
     projetos: {},
+    turnos: {},
   }
 }
 

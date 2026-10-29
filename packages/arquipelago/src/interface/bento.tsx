@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaConversa, PAINEL_DO_BENTO, useConversa } from '../estado/moradores'
+import { lojaDoTurno, PAINEL_DO_TURNO } from '../estado/turno'
 import {
   entregarAoBento,
   oQueFaltaAoBento,
@@ -12,8 +13,8 @@ import { Coracoes, Presentes } from './capi'
 
 /**
  * A conversa com o Bento, como a da Capi: o nome e os corações, uma fala por vez e depois as
- * escolhas (entregar o pedido do dia, dar um presente, tchau). O jogo fica parado enquanto ela
- * está aberta.
+ * escolhas (entregar o pedido do dia, dar um presente, ajudar no balcão da padaria, tchau). O
+ * jogo fica parado enquanto ela está aberta.
  */
 export function PainelDoBento() {
   const { loja } = useJogo()
@@ -45,6 +46,11 @@ export function PainelDoBento() {
     if (!r.entregou) return
     s.mudar(() => r.salvamento)
     conversa.getState().responder(r.falas, true)
+  }
+
+  function aoAjudar() {
+    lojaDoTurno(loja).getState().abrir('padaria')
+    loja.getState().abrirPainel(PAINEL_DO_TURNO)
   }
 
   function aoPresentear(itemId: string) {
@@ -106,6 +112,9 @@ export function PainelDoBento() {
               onClick={() => conversa.getState().escolherPresente()}
             >
               Dar um presente
+            </button>
+            <button type="button" className="arq-botao leve" onClick={aoAjudar}>
+              Ajudar no balcão
             </button>
             <button type="button" className="arq-botao leve" onClick={fechar}>
               Tchau, Bento

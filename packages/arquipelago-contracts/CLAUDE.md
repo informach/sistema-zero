@@ -39,16 +39,19 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV7` estrito (29/10/2026, fase2-02: a V6 mais `moradores.bento`, no
+- `salvamento.ts`: `SalvamentoV8` estrito (29/10/2026, fase2-03: a V7 mais `turnos`, um por balcão
+  de `POSTOS_DA_VILA` (padaria, sorveteria, sucos) no `TurnoSchema`: `pagoEm`, `melhor` de 1 a 3 e
+  `vezes`; `migrarDaV7` começa sem nenhum; testes em `tests/salvamento-v8.test.ts`). A V7 é a V6
+  mais `moradores.bento`, no
   `MoradorSchema` da Capi, que continua com o nome `CapiSchema`; `migrarDaV6` põe o Bento como
   `MORADOR_NOVO`; testes em `tests/salvamento-v7.test.ts`). Serviço e cliente sobem juntos: um
-  cliente V6 não lê a resposta V7. A V6 (29/10/2026) é a V5 mais `aparencias` em cada projeto
+  cliente antigo não lê a resposta da versão nova. A V6 (29/10/2026) é a V5 mais `aparencias` em cada projeto
   azul, as que ela já tem, até `APARENCIAS_GUARDADAS_MAXIMO`, com a em uso sempre entre elas;
   `migrarDaV5` guarda a em uso como a única; `ProjetoAzulV4Schema` é o da V4 e da V5. A V5 é a V4
   mais `presenteDosBichosEntregue`; a V4 é a V3
   mais `construcao` e `projetos`, 28/10/2026, o
   modo construção; a V3 é a V2 mais `moradores.capi` e `bichos`; a V2 é a V1 mais `percursos`;
-  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV6`;
+  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV7`;
   `SalvamentoSchema` aceita as anteriores e já devolve migradas; uma aba antiga não lê a resposta
   atual). A migração da V4 preserva o progresso e inicia a marca do presente como `false`.
   Os schemas V1 a V4 continuam imutáveis; os testes `salvamento-v5.test.ts` conferem a cadeia.

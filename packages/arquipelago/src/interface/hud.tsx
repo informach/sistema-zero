@@ -23,6 +23,7 @@ import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { PainelDaBancada } from './receitas'
 import { ControlesDeToque } from './toque'
+import { PainelDoTurno } from './turno'
 
 function Necessidades() {
   const n = useEstado((s) => s.salvamento.necessidades)
@@ -488,6 +489,7 @@ export function Hud() {
       <PainelDaCapi />
       <PainelDoBento />
       <PainelDaBancada />
+      <PainelDoTurno />
       <PainelDoBicho />
       <CadernoDosLumis />
       <PainelDoObjeto />
