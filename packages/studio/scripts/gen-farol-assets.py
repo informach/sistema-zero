@@ -29,6 +29,12 @@ FILES = {
     "moeda": "moeda.svg", "bau-fechado": "bau-fechado.svg", "bau-aberto": "bau-aberto.svg",
     # Poder "O segredo da cabana": o emblema e a cabana (mesma caixa fechada e aberta).
     "emblema": "emblema.svg", "cabana-fechada": "cabana-fechada.svg", "cabana-aberta": "cabana-aberta.svg",
+    # Poder "A ponte apressada": a alavanca, a ponte e a pedra do sino (mesma caixa nos dois estados)
+    # e o laguinho em volta da pedra.
+    "alavanca-cima": "alavanca-cima.svg", "alavanca-baixo": "alavanca-baixo.svg",
+    "ponte-levantada": "ponte-levantada.svg", "ponte-baixada": "ponte-baixada.svg",
+    "pedra-do-sino": "pedra-do-sino.svg", "pedra-do-sino-tocando": "pedra-do-sino-tocando.svg",
+    "laguinho": "laguinho.svg",
     **{f"farol-{modelo.replace(' ', '-')}-{estado}": f"farol-{modelo.replace(' ', '-')}-{estado}.svg"
        for modelo in ("listrado", "de pedra", "de madeira", "colorido")
        for estado in ("apagado", "aceso")},
@@ -49,6 +55,10 @@ CAIXAS = {**{nome: (64, 64) for nome in PERSONAGENS},
           **{nome: (32, 32) for nome in ("chave-dourada", "chave-prateada", "chave-de-estrela", "moeda", "emblema")},
           **{nome: (64, 64) for nome in ("bau-fechado", "bau-aberto")},
           **{nome: (96, 96) for nome in ("cabana-fechada", "cabana-aberta")},
+          **{nome: (32, 32) for nome in ("alavanca-cima", "alavanca-baixo")},
+          **{nome: (96, 48) for nome in ("ponte-levantada", "ponte-baixada")},
+          **{nome: (64, 64) for nome in ("pedra-do-sino", "pedra-do-sino-tocando")},
+          "laguinho": (128, 80),
           **{nome: (152, 152) for nome in FILES if nome.startswith("farol-") and nome not in ("farol-apagado", "farol-aceso")}}
 HEADER = "// Gerado por scripts/gen-farol-assets.py a partir de arte/assets/farol. Não editar.\n"
 

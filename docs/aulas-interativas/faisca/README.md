@@ -10,7 +10,7 @@ Promessa do posto: **Eu faço o jogo lembrar e decidir.** Gênero: aventura de c
 | Extra | [Cadê Todo Mundo?](cade-todo-mundo/README.md) | Aulas e materiais |
 | Poder (2D e 3D) | [Moedas no caminho](poder-moedas-no-caminho/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
 | Poder (2D e 3D) | [O segredo da cabana](poder-o-segredo-da-cabana/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
-| Poder (2D e 3D) | [A ponte apressada](poder-a-ponte-apressada/README.md) | Proposta em aprovação |
+| Poder (2D e 3D) | [A ponte apressada](poder-a-ponte-apressada/README.md) | Proposta aprovada; artes prontas, aulas em autoria |
 
 Depois dos dois cursos da trilha, missão, Poderes e extras abrem juntos. Promoção exige os dois cursos, a missão nas duas dimensões e um Poder distinto aplicado. O Jardim não exige um Poder nem o Cadê como pré-requisito. Existência de arquivos locais não comprova publicação.
 

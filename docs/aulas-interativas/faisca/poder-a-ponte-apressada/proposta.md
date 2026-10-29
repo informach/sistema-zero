@@ -1,11 +1,11 @@
 # A ponte apressada: proposta do Poder do Faísca
 
-29/10/2026 · **Proposta em aprovação.** Define a autoria; não declara curso implementado, mídia
+29/10/2026 · **Proposta aprovada.** Define a autoria; não declara curso implementado, mídia
 produzida ou publicação realizada. Terceiro dos quatro Poderes do Faísca, no mesmo formato de
 [Moedas no caminho](../poder-moedas-no-caminho/proposta.md) e
 [O segredo da cabana](../poder-o-segredo-da-cabana/proposta.md).
 
-O currículo chama o Poder de "A porta fica aberta por um tempo". O nome proposto para o curso é
+O currículo chamava o Poder de "A porta fica aberta por um tempo". O curso passou a se chamar
 **A ponte apressada** (a ponte não espera ninguém: baixa, conta os segundos e sobe sozinha). As
 aulas: **Aberta por um tempo** (2D) e **A ponte da ilha** (3D).
 
@@ -38,13 +38,15 @@ reaproveita o curso existente, a equipe troca o título no Admin antes de public
 
 ## 3. O jogo
 
-### 2D: a ponte da pedra do sino, no Farol
+### 2D: a ponte do laguinho, no Farol
 
 O Farol concluído continua inteiro (andar, limite, chave, aviso, farol que acende, barco). Entram:
 
-- **A pedra do sino**, uma pedrinha no mar com um sino de bronze, separada da praia por água.
-- **A ponte levadiça** de madeira, entre a praia e a pedra. Começa **levantada**.
-- **A alavanca**, na praia, longe da ponte, para dar uma corridinha até ela.
+- **O laguinho** no gramado de baixo, com **a pedra do sino** no meio da água (uma pedra com um
+  sino de bronze). O mar não serve: o barco do Farol para justo no canto de baixo do mar.
+- **A ponte levadiça** de madeira, da margem do lado do começo até a pedra. Começa **levantada**.
+- **A alavanca**, na areia, do outro lado do laguinho: depois de puxar, a criança corre em volta
+  da água até a ponte.
 - A tecla **R** para uma nova partida (como nos outros Poderes).
 
 A regra do jogo: puxar a alavanca baixa a ponte; **4 segundos depois** ela sobe sozinha. Encostar
@@ -54,14 +56,15 @@ direto, e fazem a criança sentir o tempo passando.
 
 ### 3D: a ponte na Ilha
 
-A Ilha concluída continua inteira. Entram a pedra do sino no mar, a ponte levadiça (modelo 3D com
-os clipes `baixar` e `subir`) e a alavanca (com o clipe `puxar`). Mesma regra, mesmos 4 segundos.
+A Ilha concluída continua inteira. Entram o laguinho no gramado da frente, a pedra do sino (com o
+clipe `tocar`), a ponte levadiça (clipes `baixar` e `subir`) e a alavanca (clipes `puxar` e
+`soltar`), no mesmo arranjo do 2D. Mesma regra, mesmos 4 segundos.
 
 ### O que vem preparado e o que a criança constrói
 
 | Preparado pela equipe (não é cobrado) | A criança constrói |
 |---|---|
-| Artes, posições, clipes, o reinício e a **água que não deixa passar** (2D: "Impedir o sprite de atravessar o sprite" com a água; 3D: "Permitir andar em" na ilha e na pedra). A travessia é sempre pela regra da ponte | A variável `ponteAberta` começando falsa · na alavanca: baixar a ponte, `ponteAberta` verdadeiro, avisar, e **depois de 4 segundos** subir a ponte, `ponteAberta` falso, avisar · na ponte: **se** `ponteAberta`, levar o personagem à pedra e tocar o sino; **senão**, avisar que a ponte subiu · testar: atravessar a tempo, chegar atrasado, puxar de novo |
+| Artes, posições, clipes e o reinício. No 3D, a área de andar ("Permitir andar em") contorna o laguinho e tem um pedaço só na pedra, como a da Ilha contorna o mar; no 2D, como no mar do Farol, nada segura o personagem na água, mas andar até a pedra não toca o sino. A travessia é sempre pela regra da ponte | A variável `ponteAberta` começando falsa · na alavanca: puxar a alavanca, baixar a ponte, `ponteAberta` verdadeiro, avisar, e **depois de 4 segundos** soltar a alavanca, subir a ponte, `ponteAberta` falso, avisar · na ponte: **se** `ponteAberta`, levar o personagem à pedra e tocar o sino; **senão**, avisar que a ponte subiu · testar: atravessar a tempo, chegar atrasado, puxar de novo |
 
 A decisão na ponte é a mesma ideia do Farol (Se e senão com uma variável verdadeiro ou falso), que
 é o pré-requisito. A ideia nova fica toda no "depois de 4 segundos": **onde** ele fica (dentro do
@@ -195,10 +198,10 @@ Mesma família visual do Farol 2D e da Ilha no Blender:
 
 - **2D (SVG, no estilo dos sprites do Farol):** a ponte levadiça baixada e levantada (mesma caixa e
   ponto de apoio nas duas imagens), a alavanca para cima e para baixo, a pedra do sino com o sino
-  parado e balançando, e a água entre a praia e a pedra.
+  parado e balançando, e o laguinho.
 - **3D (Blender, com o acabamento da Ilha):** a ponte com os clipes `baixar` e `subir`, a alavanca
-  com o clipe `puxar` e a pedra com o sino (clipe `tocar`), na caixa e na origem certas, com a área
-  de toque estável.
+  com `puxar` e `soltar`, a pedra com o sino (clipe `tocar`) e o laguinho, na caixa e na origem
+  certas, com a área de toque estável (a da ponte é só a entrada, em pé ou deitada).
 - Prévias lado a lado com o Farol e a Ilha, conferidas no jogo e no executor sem placa de vídeo.
 
 ## 11. Entregas depois da aprovação
@@ -215,8 +218,8 @@ ficam com a equipe.
 1. O nome do curso, **A ponte apressada**, e um curso com duas aulas (2D na `aula-1` reservada,
    3D numa `aula-2` criada no Admin).
 2. Nenhum bloco novo: o tempo usa o "depois de N segundos" de Programação, igual nos dois jogos (§4).
-3. O jogo: alavanca, ponte levadiça de 4 segundos e a pedra do sino, com o Farol intacto; a água
-   que não deixa passar vem pronta, e a travessia é a regra da ponte.
+3. O jogo: alavanca, ponte levadiça de 4 segundos e a pedra do sino num laguinho, com o Farol
+   intacto; a travessia é a regra da ponte.
 4. A comparação do vídeo (o botão do semáforo), a experiência com o relógio de um segundo por vez,
    o quiz e os objetivos.
 5. Os dois blocos "Depois de N segundos" dos jogos (2D de topo, 3D dentro de evento) continuam
