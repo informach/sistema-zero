@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
+import type { VistaDaLuneta } from '../mundo/vista-da-luneta'
 import type { Voo } from '../sistemas/balao'
 import type { Travessia } from '../sistemas/barco'
 import type { Ponto } from '../sistemas/cipo'
@@ -10,7 +11,7 @@ import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
-import type { Corrida } from '../sistemas/percurso'
+import type { Corrida, IdDoPercurso } from '../sistemas/percurso'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
 /** Posição do personagem, lida a cada quadro pela câmera e pelo Zappy (fora do React). */
@@ -224,8 +225,16 @@ export interface Movimento {
   corpoDesenhado: CorpoQueEmpurra | null
   /** A corrida do percurso em andamento (o cronômetro lê o tempo daqui). */
   corrida: Corrida | null
-  /** Pedido da tela para o percurso: correr de novo ou parar. */
-  pedidoDoPercurso: 'recomecar' | 'parar' | null
+  /**
+   * A vista pela luneta do mirante das Nuvens (fase4-07), escrita pelo mirante enquanto ela está
+   * aberta: a câmera usa no lugar da vista da luneta do píer. Os botões do visor escrevem o pedido.
+   */
+  mira: VistaDaLuneta | null
+  /**
+   * Pedido da tela para um percurso: correr de novo ou parar. Diz qual, porque as Nuvens têm dois
+   * na mesma ilha (os saltos e a corrida de balão, fase4-07).
+   */
+  pedidoDoPercurso: { acao: 'recomecar' | 'parar'; percurso: IdDoPercurso } | null
 }
 
 export function criarMovimento(): Movimento {
@@ -250,6 +259,7 @@ export function criarMovimento(): Movimento {
     foco: { x: 0, y: 0, z: 0 },
     corpoDesenhado: null,
     corrida: null,
+    mira: null,
     pedidoDoPercurso: null,
   }
 }

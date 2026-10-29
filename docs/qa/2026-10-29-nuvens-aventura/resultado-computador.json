@@ -1,0 +1,6 @@
+{
+  "tipo": "computador",
+  "saltos": true,
+  "corridaDeBalao": true,
+  "constelacoes": 1
+}

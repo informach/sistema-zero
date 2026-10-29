@@ -15,8 +15,11 @@ export const BALAO = {
   passoAlto: 0.95,
   /** Com o fogo aceso: a aceleração para cima e a velocidade máxima de subida. */
   subida: { aceleracao: 1.4, maxima: 1.8 },
-  /** Sem o fogo: desce devagar, até esta velocidade. */
-  descida: { aceleracao: 0.7, maxima: 0.7 },
+  /**
+   * Sem o fogo: o embalo para cima acaba com `freio` (uns 1,1 m depois de soltar a 1,8 m/s) e
+   * depois desce devagar, até `maxima`.
+   */
+  descida: { aceleracao: 0.7, maxima: 0.7, freio: 1.5 },
   /** O direcional: a aceleração de lado, a velocidade máxima e o ar que segura (por segundo). */
   lado: { aceleracao: 1.6, maxima: 3, arrasto: 0.85 },
   /** Pousado, o cesto para de deslizar depressa (por segundo). */
@@ -190,6 +193,7 @@ export function passoDoBalao(v: Voo, e: EntradaDoVoo): void {
     v.vel.y = Math.min(BALAO.subida.maxima, Math.max(0, v.vel.y) + BALAO.subida.aceleracao * dt)
     v.pousado = false
   } else if (v.pousado) v.vel.y = 0
+  else if (v.vel.y > 0) v.vel.y = Math.max(0, v.vel.y - BALAO.descida.freio * dt)
   else v.vel.y = aproximar(v.vel.y, -BALAO.descida.maxima, BALAO.descida.aceleracao * dt)
 
   if (v.pousado) {

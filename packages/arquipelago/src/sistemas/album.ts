@@ -19,7 +19,7 @@ import {
   type EstadoDoBicho,
 } from './diario'
 import { ESPECIES_DE_LUMI } from './lumis'
-import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
+import { formatarTempo, PERCURSOS_DO_JOGO, todasAsColetaveis } from './percurso'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
 
@@ -113,7 +113,7 @@ export function percursosDoAlbum(s: Salvamento): {
         },
         {
           ganhou: r?.estrelas.vagalumes ?? false,
-          texto: `Os ${config.vagalumes} ${config.coletavel.varios}`,
+          texto: todasAsColetaveis(config, config.vagalumes),
         },
       ],
       melhorTempo: r ? formatarTempo(r.melhorTempoMs) : null,

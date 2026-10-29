@@ -41,6 +41,16 @@ export interface MedidaDoDesenho {
     z: number
   }[]
   mergulho: { pronto: boolean; achados: { bau: boolean; pagina: boolean; tesouro: boolean } }
+  /** A corrida em andamento (fase4-07: as Nuvens têm duas) e as constelações achadas. */
+  corrida: {
+    percurso: string | null
+    deque: number
+    situacao: string
+    tempoMs: number
+    pegos: number
+  } | null
+  mira: { naMira: number; posicao: { x: number; y: number; z: number } } | null
+  constelacoes: number
   balao: {
     fase: string
     pousado: boolean
@@ -205,6 +215,8 @@ export function Medidor() {
         z: number
         giro: number
         noChao: boolean
+        /** O olho da vista pela luneta do mirante, quando aberta (fase4-07). */
+        olho: { x: number; y: number; z: number } | null
       }
     }
     // Leitura sob demanda para conferir pulos sem reduzir o intervalo do medidor pesado.
@@ -214,6 +226,7 @@ export function Medidor() {
       z: rastro.z,
       giro: rastro.giro,
       noChao: movimento.noChao,
+      olho: movimento.mira ? { ...movimento.mira.posicao } : null,
     })
     g.__arquipelagoLevar = (x = 0, y = 0, z = 0, giro?: number) => {
       pedidos.teleporte = { x, y, z }
@@ -265,6 +278,19 @@ export function Medidor() {
         pronto: movimento.mergulhos.some((v) => v.ativo),
         achados: { ...loja.getState().salvamento.recife },
       },
+      corrida: movimento.corrida
+        ? {
+            percurso: loja.getState().corrida?.percurso ?? null,
+            deque: movimento.corrida.deque,
+            situacao: movimento.corrida.situacao,
+            tempoMs: movimento.corrida.tempoMs,
+            pegos: movimento.corrida.pegos.filter(Boolean).length,
+          }
+        : null,
+      mira: movimento.mira
+        ? { naMira: movimento.mira.naMira, posicao: { ...movimento.mira.posicao } }
+        : null,
+      constelacoes: loja.getState().constelacoesAchadas,
       balao: movimento.balao
         ? {
             fase: movimento.balao.fase,

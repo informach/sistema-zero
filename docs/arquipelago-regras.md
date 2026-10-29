@@ -3242,3 +3242,36 @@ A última página tem quatro trechos, sem tempo para ler. Íris conta que escond
 A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9, no chão medido pela ilha. Usa o morador genérico, os cinco clipes existentes e os olhos com `piscar` e `feliz`. O corpo simples tem raio 0,49 m e altura 2,13 m, medidos na cabeça e na pele do GLB, sem chapéu e braços estendidos. O foco da conversa fica a 1,7035 m dos pés, no centro vertical da cabeça. Alcance de conversa 2,2 m, olhar a 7 m, aceno a cada 45 s e giro com rapidez 3, iguais aos demais moradores. A conversa é fixa e não cria amizade, pedido ou presente.
 
 A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o final novamente. Não há versão nova de salvamento. O plano pede um booleano futuro `finalDoFarol`, com custo de 21 bytes quando falso e 20 quando verdadeiro, para a migração conjunta. Os pedidos de arte e as provas ficam em `docs/plans/2026-10-29-arquipelago-final-do-farol.md` e `docs/qa/2026-10-29-final-farol/`.
+
+## Saltos entre nuvens, corrida de balão e constelações (fase4-07, 29/10/2026)
+
+- **Nada disto é gravado ainda.** O salvamento não tem folga: os recordes das duas corridas e as
+  constelações achadas valem só enquanto o jogo está aberto. O plano da fase4-07 pede os campos
+  (as duas corridas no formato de sempre dos percursos e as constelações num número de 0 a 63)
+  para a versão nova do salvamento.
+- **Saltos entre nuvens.** "Começar os saltos entre nuvens" no chão, antes dos degraus de nuvem.
+  As paradas são o terceiro degrau e as plataformas 1 a 3; a chegada, o tampo da plataforma 4, que
+  vale em qualquer altura do sobe e desce. Caindo no chão da ilha, o corte suave leva de volta à
+  última parada, no lugar onde a plataforma estiver. Três fitas do arco-íris, uma em cada vão entre
+  as plataformas, na altura do pulo correndo feito na hora certa (a de trás no alto, a da frente
+  embaixo). Estrela do tempo até 60 s: sem perder nenhuma janela das plataformas a volta leva até
+  uns 55 s, conforme a fase do ciclo na largada.
+- **Corrida de balão.** Seis argolas de pé em volta da ilha, a 15 m do meio, uma de cada cor dos
+  fios do tear (vermelha, laranja, amarela, verde, azul e roxa), com o meio de 5 a 11 m acima do
+  tampo. Raio de 4,2 m: o balão inteiro passa. Conta passar o meio do balão (3,3 m acima da base do
+  cesto) pelo plano da argola a menos de 1,8 m do meio dela, na ordem. A vermelha começa a corrida
+  (o cronômetro aparece) e a roxa chega. Três fitas do arco-íris entre as argolas, um pouco mais
+  altas, pegas a 1,6 m do meio do balão. Estrela do tempo até 45 s (quem pilota sem errar leva uns
+  29 s). Descer do balão no meio, ou "Parar", termina sem chegar; "Correr de novo" volta a esperar a
+  argola vermelha. A argola da vez brilha mais (o brilho pulsa, parado com menos movimento).
+- **Para pilotar melhor:** soltando o fogo, o embalo para cima acaba em pouco mais de 1 s (freia a
+  1,5 m/s²) e depois o balão desce devagar como antes.
+- **Constelações escondidas.** O mirante (deque com a luneta grande) fica entre o tear e a beira da
+  ilha. De dia, "Olhar pela luneta" faz o Zappy dizer que as estrelas só aparecem à noite. À noite
+  abre a vista: as setas (ou o direcional, ou os botões do visor) miram o céu. Pela luneta, as
+  figuras ainda escondidas aparecem bem fracas, sem as linhas; a olho nu, não aparecem. Segurar o
+  centro das estrelas de uma figura a menos de 7° do meio da vista por 1,2 s a acende: as estrelas
+  aparecem uma por uma em 1 s (todas juntas com menos movimento), as linhas entram por último e o
+  Zappy diz o nome (a arara, o balão, o vagalume, o peixe, o farol e a nota musical). Achada, ela
+  fica acesa nas noites seguintes enquanto o jogo está aberto. Amanhecendo com a vista aberta, ela
+  fecha.

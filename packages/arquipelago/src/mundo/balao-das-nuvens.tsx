@@ -37,8 +37,10 @@ const CHAMA = { piloto: 0.35, acesa: 2.2 }
 const pes = { x: 0, y: 0, z: 0 }
 
 export const FALA_DO_BALAO = {
-  teclado: 'Segure espaço para acender o fogo e subir. Solte e o balão desce devagar.',
-  toque: 'Segure Subir para acender o fogo e subir. Solte e o balão desce devagar.',
+  teclado:
+    'Segure espaço para acender o fogo e subir. Solte e o balão desce devagar. A argola vermelha começa a corrida.',
+  toque:
+    'Segure Subir para acender o fogo e subir. Solte e o balão desce devagar. A argola vermelha começa a corrida.',
 } as const
 
 interface ArteDoBalao {

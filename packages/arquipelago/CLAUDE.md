@@ -1217,3 +1217,33 @@ Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipel
 - Testes em `tests/final-do-farol.test.ts`; conferência em `playground/verificar-final-farol-browser.ts`, com SwiftShader, computador e celular emulado. Plano com pedidos de arte e campo futuro em `docs/plans/2026-10-29-arquipelago-final-do-farol.md`. Prints em `docs/qa/2026-10-29-final-farol/`.
 
 O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas no executor e roundtrip Blockly. É só o pacote de desafios; esta entrega não importa nem publica no Admin e não altera o Vale vivo.
+
+## Saltos, corrida de balão e constelações das Nuvens (fase4-07, 29/10/2026)
+
+- **Percursos da sessão.** `PERCURSOS_DA_SESSAO` (`nuvens-saltos`, `nuvens-balao`) ficam fora de
+  `PERCURSOS` do contrato (o pior caso do salvamento não tem folga). `IdDoPercurso` é a união;
+  `percursoGravado` decide: `terminarCorrida` (em `mundo/corrida-na-ilha.tsx`, usada também pela
+  corrida de balão) grava em `salvamento.percursos` ou em `recordesDaSessao` da loja. A tela de
+  resultado não mostra os recordes da família para os da sessão. `pedidoDoPercurso` agora diz o
+  percurso (as Nuvens têm dois) e cada `CorridaNaIlha` só avança a corrida dela
+  (`loja.corrida.percurso`). Coletável feminino: `todasAsColetaveis` e `coletaveisPegas`.
+- **Saltos:** `mundo/saltos-das-nuvens.ts` lê os tampos dos colisores (`col-cil-degrau-nuvem-3`,
+  `col-cil-plataforma-N`). ⚠️ Os colisores da ilha preparada vêm girados com ela:
+  `tamposDosSaltos(colisores, giro)` desfaz o giro antes do `percursoNoMundo`. A volta de queda
+  numa plataforma lê `PlataformaDasNuvens.elevacao`, escrita a cada passo da física.
+- **Corrida de balão:** regra pura em `sistemas/corrida-de-balao.ts` (`ARGOLAS`,
+  `LUGARES_DAS_ARGOLAS`, `passouPelaArgola`, `passoDaCorridaDeBalao`); desenho em
+  `mundo/corrida-de-balao.tsx` (toros no código, com as cores dos `fio1` a `fio6`). O tempo-alvo
+  vem do piloto do teste, que voa pelas regras de `sistemas/balao.ts`.
+- **Constelações:** regra pura em `sistemas/constelacoes.ts`; mirante em
+  `mundo/constelacoes-das-nuvens.tsx` (carga privada do `nuvens-constelacoes.glb`, colisores por
+  `ColisoresSoltos`, lugar na constante `MIRANTE_DAS_NUVENS` até a âncora pedida). A vista escreve
+  `movimento.mira` (`mundo/vista-da-luneta.ts`), que a câmera usa no perfil `luneta`; o visor é
+  `interface/estrelas.tsx` (classes `arq-mirante-*`; ⚠️ `arq-estrelas` é a lista da tela de
+  resultado). O painel aberto conta como pausa no `jogoPausado`: o acender das estrelas desconta
+  só o próprio painel. As estrelas não usam a neblina da cena (`fog = false`). A mira aponta para
+  o centro das estrelas da figura (`meioDasEstrelas`): o pivô do nó fica fora do desenho.
+- Testes: `saltos-das-nuvens.test.ts`, `corrida-de-balao.test.ts`, `constelacoes.test.ts`.
+  Verificador: `playground/verificar-nuvens-aventura-browser.ts` (`ARQUIPELAGO_PARTE=noite` roda
+  só as constelações; cada parte abre um contexto novo do navegador). O medidor expõe `corrida`,
+  `mira` e `constelacoes`, e `__arquipelagoLerCorpo` devolve o olho da vista.

@@ -392,6 +392,18 @@ export function ColisoresDaIlha({
   )
 }
 
+/**
+ * Os colisores de uma peça carregada à parte numa ilha (o mirante das Nuvens): um corpo fixo, sem
+ * marcar a troca da ilha (`colisoresNaCena` é da ilha).
+ */
+export function ColisoresSoltos({ colisores }: { colisores: ColisorDaIlha[] }) {
+  return (
+    <RigidBody type="fixed" colliders={false}>
+      {colisores.map(colisorDaIlha)}
+    </RigidBody>
+  )
+}
+
 function colisorDaIlha(c: ColisorDaIlha) {
   if (c.forma === 'malha') {
     return <TrimeshCollider key={c.nome} args={[c.vertices, c.indices]} />
