@@ -87,6 +87,8 @@ export function studioArtSlotsIssue(slots: unknown): string | null {
  * Um bloco do curso que mexe com vagas, como a conferência do CURSO o enxerga (etapa 2). A
  * `order` é a posição no curso, comparada da esquerda para a direita: módulo, aula, parte e
  * bloco. `imageNames` são as imagens do jogo do Estúdio (`initialProject.assets` de tipo imagem).
+ * `published` diz se a aula está publicada (ausente vale como publicada): a criança só recebe o
+ * desenho de um bloco de Pinta em aula publicada.
  */
 export type ArtSlotCourseBlock =
   | {
@@ -95,6 +97,7 @@ export type ArtSlotCourseBlock =
       lessonId: string
       lessonTitle: string
       order: readonly number[]
+      published?: boolean
       slot: PintaArtSlot
     }
   | {
@@ -103,6 +106,7 @@ export type ArtSlotCourseBlock =
       lessonId: string
       lessonTitle: string
       order: readonly number[]
+      published?: boolean
       slots: readonly StudioArtSlotImport[]
       imageNames: readonly string[]
     }
@@ -127,24 +131,42 @@ export function compareArtSlotOrder(a: readonly number[], b: readonly number[]):
 
 type PintaCourseBlock = Extract<ArtSlotCourseBlock, { kind: 'pinta' }>
 
-/** Os problemas das vagas de arte de um curso, na ordem em que os blocos aparecem. */
+/**
+ * Os problemas das vagas de arte de um curso, na ordem em que os blocos aparecem.
+ *
+ * ⚠️ As chaves NÃO dependem da ordem dos blocos (review de 29/10/2026): quem grava compara as
+ * chaves de antes e de depois, e uma reordenação que só troca qual de duas vagas repetidas vem
+ * primeiro não pode virar um problema "novo".
+ */
 export function artSlotCourseIssues(blocks: readonly ArtSlotCourseBlock[]): ArtSlotCourseIssue[] {
   const ordered = [...blocks].sort((a, b) => compareArtSlotOrder(a.order, b.order))
   const fillers = new Map<string, PintaCourseBlock>()
+  const repeated = new Map<string, PintaCourseBlock[]>()
+  const published = new Set<string>()
   const issues: ArtSlotCourseIssue[] = []
   for (const block of ordered) {
     if (block.kind !== 'pinta') continue
-    const first = fillers.get(block.slot.name)
-    if (!first) {
-      fillers.set(block.slot.name, block)
-      continue
+    if (block.published !== false) published.add(block.slot.name)
+    const all = repeated.get(block.slot.name) ?? []
+    all.push(block)
+    repeated.set(block.slot.name, all)
+    if (!fillers.has(block.slot.name)) fillers.set(block.slot.name, block)
+  }
+  // Uma chave por bloco repetido: reordenar não muda as chaves, tirar uma repetição só as diminui
+  // e acrescentar outra cria a dela.
+  for (const [name, all] of repeated) {
+    if (all.length < 2) continue
+    for (const block of all) {
+      const other = all.find((candidate) => candidate !== block) as PintaCourseBlock
+      const [first, second] =
+        compareArtSlotOrder(block.order, other.order) <= 0 ? [block, other] : [other, block]
+      issues.push({
+        key: `duplicate:${name}:${block.blockId}`,
+        message:
+          `As aulas "${first.lessonTitle}" e "${second.lessonTitle}" preenchem a mesma vaga de arte ` +
+          `"${name}". Cada vaga recebe um desenho só no curso: dê outro nome a uma delas.`,
+      })
     }
-    issues.push({
-      key: `duplicate:${block.slot.name}:${block.blockId}`,
-      message:
-        `As aulas "${first.lessonTitle}" e "${block.lessonTitle}" preenchem a mesma vaga de arte ` +
-        `"${block.slot.name}". Cada vaga recebe um desenho só no curso: dê outro nome a uma delas.`,
-    })
   }
   for (const block of ordered) {
     if (block.kind !== 'studio') continue
@@ -158,9 +180,16 @@ export function artSlotCourseIssues(blocks: readonly ArtSlotCourseBlock[]): ArtS
         })
         continue
       }
+      if (block.published !== false && !published.has(slot.name))
+        issues.push({
+          key: `unpublished:${block.blockId}:${slot.name}`,
+          message:
+            `${game} importa a vaga de arte "${slot.name}", mas o desenho que a preenche está na ` +
+            `aula "${filler.lessonTitle}", que não está publicada. Publique essa aula antes.`,
+        })
       if (compareArtSlotOrder(filler.order, block.order) > 0)
         issues.push({
-          key: `order:${block.blockId}:${slot.name}:${filler.blockId}`,
+          key: `order:${block.blockId}:${slot.name}`,
           message:
             `${game} importa a vaga de arte "${slot.name}", que só é preenchida depois, na aula ` +
             `"${filler.lessonTitle}". O desenho precisa vir antes do jogo que o usa.`,
@@ -178,7 +207,7 @@ export function artSlotCourseIssues(blocks: readonly ArtSlotCourseBlock[]): ArtS
       const replaces = filler.slot.replaces
       if (!replaces)
         issues.push({
-          key: `replace-missing:${block.blockId}:${slot.name}:${filler.blockId}`,
+          key: `replace-missing:${block.blockId}:${slot.name}`,
           message:
             `${game} troca uma imagem pelo desenho da vaga "${slot.name}", mas o desenho da aula ` +
             `"${filler.lessonTitle}" não diz qual imagem do jogo ele substitui.`,

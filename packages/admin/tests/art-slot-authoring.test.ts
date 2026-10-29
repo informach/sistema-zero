@@ -65,3 +65,55 @@ describe('autoria das vagas de arte', () => {
     ).toContain('no máximo 8')
   })
 })
+
+describe('a vaga no formulário do bloco de Pinta (review de 29/10/2026)', () => {
+  test('nome fora da régua avisa em vez de sumir do bloco salvo', async () => {
+    const { EMPTY_BLOCK, validateBlock } = await import('../src/lib/lesson-block-form')
+    const pinta = { ...EMPTY_BLOCK, kind: 'pinta' as const }
+    expect(validateBlock({ ...pinta, pintaArtSlotName: 'minha-chave' } as never)).toBeNull()
+    expect(validateBlock({ ...pinta, pintaArtSlotName: 'Minha Chave' } as never)).toContain(
+      'letras minúsculas',
+    )
+    expect(
+      validateBlock({
+        ...pinta,
+        pintaArtSlotName: 'minha-chave',
+        pintaArtSlotReplaces: 'Chave Dourada',
+      } as never),
+    ).toContain('nome de imagem')
+    expect(validateBlock({ ...pinta, pintaArtSlotReplaces: 'chave-dourada' } as never)).toContain(
+      'Dê um nome',
+    )
+  })
+
+  test('no modo exploração os campos somem e não prendem o salvar', async () => {
+    const { EMPTY_BLOCK, validateBlock } = await import('../src/lib/lesson-block-form')
+    expect(
+      validateBlock({
+        ...EMPTY_BLOCK,
+        kind: 'pinta',
+        toolPurpose: 'experiment',
+        pintaArtSlotReplaces: 'chave-dourada',
+      } as never),
+    ).toBeNull()
+  })
+
+  test('nome de imagem válido do Estúdio passa intacto pela régua do Admin', async () => {
+    // A vaga VIRA o nome da imagem e o `replaces` aponta uma imagem do jogo: a régua do Admin não
+    // pode mudar um nome que o Estúdio já aceita (o Estúdio normaliza do mesmo jeito ao carregar).
+    const { normalizeAssetName } = await import('../../studio/src/core/projectAssets')
+    for (const entrada of [
+      'chave-dourada',
+      'Minha Chave',
+      'Coração Ágil',
+      'farol_listrado aceso',
+      'a1-b2',
+      'x'.repeat(48),
+    ]) {
+      const doEstudio = normalizeAssetName(entrada)
+      if (doEstudio === null) continue
+      expect(normalizeArtSlotName(doEstudio), entrada).toBe(doEstudio)
+      expect(normalizeArtSlotName(entrada), entrada).toBe(doEstudio)
+    }
+  })
+})

@@ -627,6 +627,20 @@ function LessonStudioBlockView({
         )
         return result?.project ? { ...(result.project as Project), id: projectId } : null
       }
+      // Os desenhos das vagas de arte (o Pinta da aula) entram nos materiais a cada abertura,
+      // por cima da versão escolhida: redesenhar e reenviar chega aqui na próxima vez. Só para
+      // quem é aluno (`viewerId`): a prévia e o ensaio do Admin não têm desenho de criança. A
+      // leitura começa JÁ, junto com a escolha da versão (review de 29/10/2026), e fica de fora
+      // sem internet: o desenho da abertura anterior já está no projeto guardado.
+      const artSlotsNow = sementeRef.current.artSlots
+      const artPromise =
+        artSlotsNow && lessonId && player?.viewerId && !resumeOffline
+          ? loadLessonArt(() =>
+              apiGet<ArtSlotsView>(
+                `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/art-slots`,
+              ),
+            )
+          : null
       let enqueuePrepared: (() => void) | undefined
       // A versão da CONTA entra antes de o editor montar (uma vez por rascunho): depois disto a
       // ordem de sempre, com o local primeiro, já abre a versão mais nova.
@@ -695,18 +709,12 @@ function LessonStudioBlockView({
         initial: { ...(semente.initialProject as Project), id: projectId },
       })
       if (!active) return
-      // Os desenhos das vagas de arte (o Pinta da aula) entram nos materiais a cada abertura,
-      // por cima da versão escolhida: redesenhar e reenviar chega aqui na próxima vez. Só para
-      // quem é aluno (`viewerId`): a prévia e o ensaio do Admin não têm desenho de criança.
-      if (semente.artSlots && lessonId && player?.viewerId) {
-        const art = await loadLessonArt(() =>
-          apiGet<ArtSlotsView>(
-            `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/art-slots`,
-          ),
-        )
+      if (artPromise) {
+        const art = await artPromise
         if (!active) return
-        project = applyLessonArt(project, art.slots)
-        setArtNote(art.failed)
+        let tooBig = false
+        project = applyLessonArt(project, art.slots, { onTooBig: () => (tooBig = true) })
+        setArtNote(art.failed || tooBig)
       }
       if (admission && !resumeOffline)
         await confirmStudioLessonContext({

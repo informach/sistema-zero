@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
+import { artSlotFillers } from '../../../domain/course/art-slot-course'
 import type {
   Course,
   CourseAudience,
@@ -13,6 +14,7 @@ import type {
 } from '../../../domain/course/course'
 import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
+import { listArtSlotBlocks } from './art-slots.repository'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
 import { memberStudioContentProjection } from './member-studio-content-projection'
@@ -415,33 +417,9 @@ export class DrizzleCourseRepository implements CourseRepository {
     courseId: string,
     names: readonly string[],
   ): Promise<Map<string, { blockId: string; replaces: string | null }>> {
-    const fillers = new Map<string, { blockId: string; replaces: string | null }>()
-    if (!names.length) return fillers
-    const slot = sql`${lessonBlocks.content}->'artSlot'`
-    const rows = await this.db
-      .select({
-        blockId: lessonBlocks.id,
-        name: sql<string>`${slot}->>'name'`,
-        replaces: sql<string | null>`case when jsonb_typeof(${slot}->'replaces') = 'string'
-          then ${slot}->>'replaces' end`,
-      })
-      .from(lessonBlocks)
-      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
-      .innerJoin(modules, eq(lessons.moduleId, modules.id))
-      .where(
-        and(
-          eq(lessons.courseId, courseId),
-          eq(lessons.isPublished, true),
-          eq(lessonBlocks.kind, 'pinta'),
-          inArray(sql<string>`${slot}->>'name'`, [...names]),
-        ),
-      )
-      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
-    // A autoria recusa vaga repetida no curso; se uma sobrou de antes, vale a primeira.
-    for (const row of rows)
-      if (!fillers.has(row.name))
-        fillers.set(row.name, { blockId: row.blockId, replaces: row.replaces })
-    return fillers
+    if (!names.length) return new Map()
+    // A mesma leitura da conferência do curso: sem blocos arquivados e com a parte da aula.
+    return artSlotFillers(await listArtSlotBlocks(this.db, courseId), names)
   }
 
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {

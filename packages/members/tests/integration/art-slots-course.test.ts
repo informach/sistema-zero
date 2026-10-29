@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import { createAsset, createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import {
   changeDraft,
   draftRequest,
@@ -294,5 +294,36 @@ describe('vaga de arte no curso: o "Conferir" avisa antes de publicar', () => {
     expect(res.status).toBe(200)
     const issues: { message: string }[] = await readJson(res)
     expect(issues.some((i) => i.message.includes('nenhum desenho do curso preenche'))).toBe(true)
+  })
+})
+
+describe('vaga de arte: review de 29/10/2026', () => {
+  test('despublicar a aula do desenho que um jogo publicado importa → 409', async () => {
+    const { app } = buildApp()
+    const { aulas } = await curso(app)
+    await publicar(app, aulas[0].id, pinta({ name: 'minha-chave' }))
+    await publicar(app, aulas[1].id, estudio([{ name: 'minha-chave', mode: 'add' }]))
+
+    expect(await conflito(await publishDraft(app, aulas[0].id, false))).toContain(
+      'não está publicada',
+    )
+    // O jogo pode sair primeiro; depois o desenho também.
+    expect((await publishDraft(app, aulas[1].id, false)).status).toBe(200)
+    expect((await publishDraft(app, aulas[0].id, false)).status).toBe(200)
+  })
+
+  test('vaga de arte num desenho de mapa é recusada', async () => {
+    const { app } = buildApp()
+    const { aulas } = await curso(app)
+    const mapa = pintaAssetToWire(
+      createAsset({ kind: 'tilemap', name: 'mapa', tilesetId: 'pecas', cols: 4, rows: 4 }),
+    )
+    const res = await publicar(app, aulas[0].id, {
+      kind: 'pinta',
+      initialAsset: mapa,
+      artSlot: { name: 'meu-mapa' },
+    })
+    expect(res.status).not.toBe(200)
+    expect(JSON.stringify(await readJson(res))).toContain('Um mapa não vira imagem do jogo')
   })
 })

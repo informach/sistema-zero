@@ -23,6 +23,11 @@ Pinta de cada vaga, a cada abertura:
   envio, cadeia, inicial) e antes de montar o editor; só com `player.viewerId` (a prévia e o ensaio
   do Admin não têm desenho de criança). A impressão do conteúdo ignora `lesson-art`, então abrir
   com o desenho não marca o projeto como mudado.
+- **Full review (29/10/2026):** a montagem respeita os tetos de materiais do Estúdio
+  (`STUDIO_ASSETS_TOTAL_CHARS` 33 milhões e `STUDIO_ASSETS_MAX_COUNT` 128, amarrados ao
+  `PROJECT_ASSET_LIMITS` por teste): o desenho que estouraria fica de fora com o recado
+  (`onTooBig`), em vez de o saneamento do Estúdio sumir com imagens caladas. A leitura das vagas
+  começa junto com a escolha da versão (não depois) e não roda sem internet (`resumeOffline`).
 - Testes: `tests/lesson-art.test.ts`.
 
 ## Arquipélago Vagalume: a porta do jogo (27/10/2026)

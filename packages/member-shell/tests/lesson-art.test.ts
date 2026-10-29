@@ -165,3 +165,27 @@ describe('buscar e converter os desenhos', () => {
     }
   })
 })
+
+describe('o teto de materiais do Estúdio (review de 29/10/2026)', () => {
+  test('o desenho que estouraria o teto fica de fora e avisa, sem tirar imagem nenhuma', () => {
+    const avisos: string[] = []
+    const base = projeto([chaveDourada])
+    const out = applyLessonArt(base, [vaga()], {
+      maxAssetsTotalChars: chaveDourada.dataUrl.length + 3,
+      onTooBig: (nome) => avisos.push(nome),
+    })
+    expect(out).toBe(base)
+    expect(avisos).toEqual(['minha-chave'])
+    // Com folga, entra.
+    expect(applyLessonArt(base, [vaga()]).assets).toHaveLength(2)
+  })
+
+  test('os tetos são os do Estúdio', async () => {
+    const { PROJECT_ASSET_LIMITS } = await import('../../studio/src/core/projectAssets')
+    const { STUDIO_ASSETS_MAX_COUNT, STUDIO_ASSETS_TOTAL_CHARS } = await import(
+      '../src/lib/lesson-art-slots'
+    )
+    expect(STUDIO_ASSETS_TOTAL_CHARS).toBe(PROJECT_ASSET_LIMITS.maxAssetsTotalChars)
+    expect(STUDIO_ASSETS_MAX_COUNT).toBe(PROJECT_ASSET_LIMITS.maxAssetsCount)
+  })
+})

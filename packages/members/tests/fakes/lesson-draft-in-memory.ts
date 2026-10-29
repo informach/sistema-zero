@@ -18,6 +18,7 @@ import {
   assertBlockCoherent,
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
+  guardArtSlots,
   startArtSlotGuard,
 } from '../../src/application/content-admin/content-admin.service'
 import { draftArtSlotIssues, hasArtSlots } from '../../src/domain/course/art-slot-course'
@@ -403,12 +404,17 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
       })) === 0
     )
       throw new NoPublishedLessonError()
-    await this.courses.updateLesson(lessonId, {
-      title: existing.title,
-      slug: existing.slug,
-      estimatedMinutes: existing.estimatedMinutes,
-      isPublished: false,
-    })
+    // Espelha o Drizzle: despublicar passa pela conferência das vagas de arte do curso.
+    await this.courses.withStudioAuthoringLock(existing.courseId, (repository) =>
+      guardArtSlots(repository, existing.courseId, () =>
+        repository.updateLesson(lessonId, {
+          title: existing.title,
+          slug: existing.slug,
+          estimatedMinutes: existing.estimatedMinutes,
+          isPublished: false,
+        }),
+      ),
+    )
     const next = await this.replace(
       lessonId,
       authorId,

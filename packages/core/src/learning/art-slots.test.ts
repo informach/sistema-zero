@@ -111,12 +111,12 @@ describe('vagas de arte no curso', () => {
     ).toEqual([])
   })
 
-  it('recusa duas vagas com o mesmo nome, a partir da segunda em ordem de curso', () => {
+  it('recusa duas vagas com o mesmo nome, nomeando as aulas em ordem de curso', () => {
     const issues = artSlotCourseIssues([
       desenho('b', [0, 2], { name: 'minha-chave' }, 'Segunda'),
       desenho('a', [0, 1], { name: 'minha-chave' }, 'Primeira'),
     ])
-    expect(issues.map((i) => i.key)).toEqual(['duplicate:minha-chave:b'])
+    expect(issues.map((i) => i.key)).toEqual(['duplicate:minha-chave:a', 'duplicate:minha-chave:b'])
     expect(issues[0]?.message).toContain('"Primeira" e "Segunda"')
   })
 
@@ -132,7 +132,7 @@ describe('vagas de arte no curso', () => {
         desenho('p', [0, 0, 3, 0], { name: 'minha-chave' }),
         jogo('s', [0, 0, 2, 5], [{ name: 'minha-chave', mode: 'add' }]),
       ]),
-    ).toEqual(['order:s:minha-chave:p'])
+    ).toEqual(['order:s:minha-chave'])
   })
 
   it('no modo trocar, exige a imagem substituída e que ela exista no jogo', () => {
@@ -141,7 +141,7 @@ describe('vagas de arte no curso', () => {
         desenho('p', [0, 1], { name: 'minha-chave' }),
         jogo('s', [0, 2], [{ name: 'minha-chave', mode: 'replace' }]),
       ]),
-    ).toEqual(['replace-missing:s:minha-chave:p'])
+    ).toEqual(['replace-missing:s:minha-chave'])
     expect(
       chaves([
         desenho('p', [0, 1], { name: 'minha-chave', replaces: 'chave-de-ouro' }),
@@ -171,5 +171,48 @@ describe('vagas de arte no curso', () => {
     ])
     expect(newArtSlotCourseIssues(antes, depois).map((i) => i.key)).toEqual(['duplicate:x:c'])
     expect(newArtSlotCourseIssues(depois, antes)).toEqual([])
+  })
+
+  it('reordenar vagas repetidas que já existiam não cria problema novo', () => {
+    // Review de 29/10/2026: a chave levava o id do bloco que ficava em segundo, e trocar a
+    // ordem das aulas virava um 409 para quem estava justamente consertando a repetição.
+    const jogoDaVaga = jogo('s', [0, 3], [{ name: 'x', mode: 'replace' }])
+    const antes = artSlotCourseIssues([
+      desenho('a', [0, 1], { name: 'x' }),
+      desenho('b', [0, 2], { name: 'x', replaces: 'farol' }),
+      jogoDaVaga,
+    ])
+    const depois = artSlotCourseIssues([
+      desenho('a', [0, 2], { name: 'x' }),
+      desenho('b', [0, 1], { name: 'x', replaces: 'farol' }),
+      jogoDaVaga,
+    ])
+    expect(antes.length).toBeGreaterThan(0)
+    expect(newArtSlotCourseIssues(antes, depois)).toEqual([])
+  })
+
+  it('recusa o jogo publicado cuja vaga só é preenchida em aula não publicada', () => {
+    const naoPublicado = { ...desenho('p', [0, 1], { name: 'minha-chave' }), published: false }
+    const issues = artSlotCourseIssues([
+      naoPublicado,
+      jogo('s', [0, 2], [{ name: 'minha-chave', mode: 'add' }]),
+    ])
+    expect(issues.map((i) => i.key)).toEqual(['unpublished:s:minha-chave'])
+    expect(issues[0]?.message).toContain('não está publicada')
+    // O jogo ainda em rascunho não acusa: o curso está sendo montado.
+    expect(
+      chaves([
+        naoPublicado,
+        { ...jogo('s', [0, 2], [{ name: 'minha-chave', mode: 'add' }]), published: false },
+      ]),
+    ).toEqual([])
+    // Um desenho publicado da vaga basta.
+    expect(
+      chaves([
+        naoPublicado,
+        desenho('q', [0, 1, 1], { name: 'minha-chave' }),
+        jogo('s', [0, 2], [{ name: 'minha-chave', mode: 'add' }]),
+      ]),
+    ).toEqual(['duplicate:minha-chave:p', 'duplicate:minha-chave:q'])
   })
 })

@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import type { CertificateRecord } from '../../src/domain/certificate/certificate'
-import { lessonArtSlotBlocks } from '../../src/domain/course/art-slot-course'
+import { artSlotFillers, lessonArtSlotBlocks } from '../../src/domain/course/art-slot-course'
 import { blockRevisionFingerprint } from '../../src/domain/course/block-revision'
 import {
   type Course,
@@ -1105,28 +1105,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   lessonSections: (lessonId: string) => unknown = () => undefined
 
   async findArtSlotFillers(courseId: string, names: readonly string[]) {
-    // Espelha a consulta Drizzle: Pinta de aula PUBLICADA do curso, o primeiro em ordem de curso.
-    const fillers = new Map<string, { blockId: string; replaces: string | null }>()
-    const moduleOrder = (moduleId: string) =>
-      this.modules.find((m) => m.id === moduleId)?.sortOrder ?? 0
-    const lessons = this.lessons
-      .filter((lesson) => lesson.courseId === courseId && lesson.isPublished)
-      .sort(
-        (a, b) => moduleOrder(a.moduleId) - moduleOrder(b.moduleId) || a.sortOrder - b.sortOrder,
-      )
-    for (const lesson of lessons)
-      for (const block of this.blocks
-        .filter((b) => b.lessonId === lesson.id && b.content.kind === 'pinta')
-        .sort((a, b) => a.sortOrder - b.sortOrder)) {
-        const slot = (block.content as { artSlot?: { name?: unknown; replaces?: unknown } }).artSlot
-        if (typeof slot?.name !== 'string' || !names.includes(slot.name)) continue
-        if (!fillers.has(slot.name))
-          fillers.set(slot.name, {
-            blockId: block.id,
-            replaces: typeof slot.replaces === 'string' ? slot.replaces : null,
-          })
-      }
-    return fillers
+    // Espelha a consulta Drizzle: a leitura da conferência e a escolha do domínio.
+    return artSlotFillers(await this.listArtSlotBlocks(courseId), names)
   }
 
   async listArtSlotBlocks(courseId: string) {
@@ -1140,6 +1120,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
             lessonTitle: lesson.title,
             moduleOrder: this.modules.find((m) => m.id === lesson.moduleId)?.sortOrder ?? 0,
             lessonOrder: lesson.sortOrder,
+            published: lesson.isPublished,
           },
           this.blocks
             .filter((block) => block.lessonId === lesson.id)

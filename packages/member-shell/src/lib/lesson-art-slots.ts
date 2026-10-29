@@ -25,6 +25,16 @@ export interface LessonArtSlot {
 
 type Asset = NonNullable<EditableStudioProject['assets']>[number]
 
+/**
+ * O teto da soma das imagens de um projeto do Estúdio (`MAX_ASSETS_TOTAL_CHARS` em
+ * `packages/studio/src/core/projectAssets.ts`, interno ao pacote). Acima dele, o saneamento do
+ * Estúdio PULA as imagens seguintes em silêncio, então o desenho que estouraria fica de fora aqui,
+ * e a criança lê o recado de que o desenho não veio (review de 29/10/2026).
+ */
+export const STUDIO_ASSETS_TOTAL_CHARS = 33_000_000
+/** O teto de quantidade de materiais (`MAX_ASSETS_COUNT` do Estúdio), pelo mesmo motivo. */
+export const STUDIO_ASSETS_MAX_COUNT = 128
+
 function drawing(base: Pick<Asset, 'id' | 'name'>, image: LessonArtImage): Asset {
   return {
     id: base.id,
@@ -58,9 +68,12 @@ const same = (a: Asset, b: Asset) =>
 export function applyLessonArt<Project extends EditableStudioProject>(
   project: Project,
   slots: readonly LessonArtSlot[],
+  options: { maxAssetsTotalChars?: number; onTooBig?: (slot: string) => void } = {},
 ): Project {
   if (project.kind === 'pro' || project.programmingLanguage === 'python') return project
   const assets = [...(project.assets ?? [])]
+  const limit = options.maxAssetsTotalChars ?? STUDIO_ASSETS_TOTAL_CHARS
+  let total = assets.reduce((sum, asset) => sum + (asset.dataUrl?.length ?? 0), 0)
   let changed = false
   for (const slot of slots) {
     if (!slot.image) continue
@@ -71,9 +84,15 @@ export function applyLessonArt<Project extends EditableStudioProject>(
     if (slot.mode === 'add' && current && current.source !== 'lesson-art') continue
     const next = drawing(current ?? { id: `lesson-art-${slot.name}`, name: slot.name }, slot.image)
     if (current && same(current, next)) continue
+    const grows = next.dataUrl.length - (current?.dataUrl?.length ?? 0)
+    if (total + grows > limit || (!current && assets.length >= STUDIO_ASSETS_MAX_COUNT)) {
+      options.onTooBig?.(slot.name)
+      continue
+    }
     if (current) assets[index] = next
     else if (slot.mode === 'add') assets.push(next)
     else continue
+    total += grows
     changed = true
   }
   return changed ? { ...project, assets } : project

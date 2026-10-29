@@ -179,11 +179,49 @@ describe.skipIf(!testDatabaseUrl)('vagas de arte: a consulta SQL de verdade', ()
       'do-rascunho',
       'sem-desenho',
     ])
+    // A mesma leitura da conferência: bloco arquivado não preenche (review de 29/10/2026) e
+    // vaga ilegível (`replaces: 7`) vale como nenhuma.
     expect(Object.fromEntries(fillers)).toEqual({
       'minha-chave': { blockId: primeiro.id, replaces: 'chave' },
-      'meu-farol': { blockId: farol.id, replaces: null },
     })
+    expect(farol.id).toBeTruthy()
     expect((await courses.findArtSlotFillers(courseId, [])).size).toBe(0)
+  })
+
+  test('o desenho da criança segue a ordem da conferência: a parte da aula conta', async () => {
+    const courses = new DrizzleCourseRepository(conn.db)
+    // Duas vagas repetidas de antes, na MESMA aula: o bloco de número maior está na parte 1 e o de
+    // número menor na parte 2. A conferência põe a parte 1 primeiro, e a aula também.
+    const daParte2 = await inserir(aula1, desenho({ name: 'minha-chave', replaces: 'b' }), 1)
+    const daParte1 = await inserir(aula1, desenho({ name: 'minha-chave', replaces: 'a' }), 9)
+    await conn.sql.unsafe(
+      'insert into members.lesson_structures (lesson_id, sections) values ($1, $2)',
+      [
+        aula1,
+        JSON.stringify([
+          { id: 'p1', blockIds: [daParte1.id] },
+          { id: 'p2', blockIds: [daParte2.id] },
+        ]),
+      ],
+    )
+    const fillers = await courses.findArtSlotFillers(courseId, ['minha-chave'])
+    expect(fillers.get('minha-chave')).toEqual({ blockId: daParte1.id, replaces: 'a' })
+    // E o arquivado nunca, mesmo vindo primeiro.
+    await inserir(aula1, desenho({ name: 'meu-farol' }), 0, true)
+    const novo = await inserir(aula2, desenho({ name: 'meu-farol' }), 0)
+    expect((await courses.findArtSlotFillers(courseId, ['meu-farol'])).get('meu-farol')).toEqual({
+      blockId: novo.id,
+      replaces: null,
+    })
+  })
+
+  test('a leitura da conferência diz se a aula está publicada', async () => {
+    await conn.sql.unsafe('update members.lessons set is_published = false where id = $1', [aula1])
+    const p = await inserir(aula1, desenho({ name: 'minha-chave' }), 0)
+    const s = await inserir(aula2, jogo([]), 0)
+    const blocks = await content.listArtSlotBlocks(courseId)
+    expect(blocks.find((b) => b.blockId === p.id)?.published).toBe(false)
+    expect(blocks.find((b) => b.blockId === s.id)?.published).toBeUndefined()
   })
 
   test('duas criações concorrentes da mesma vaga: a trava do curso deixa passar uma só', async () => {

@@ -46,6 +46,19 @@ desenho publicado ou sem entrega volta com `asset: null`; vagas ilegíveis valem
 que não é Estúdio é 404. Testes: `tests/integration/art-slots-read.test.ts` e o SQL em
 `tests/db/art-slots-sql.test.ts`.
 
+**Full review das vagas (29/10/2026).** (1) A busca do desenho da criança (`findArtSlotFillers`)
+passou a usar a MESMA leitura da conferência (`listArtSlotBlocks`) com `artSlotFillers` do domínio:
+sem bloco arquivado (antes pegava o bloco de Pinta arquivado por uma publicação) e na ordem com a
+PARTE da aula; vaga ilegível vale como nenhuma. (2) `ArtSlotCourseBlock.published`: um Estúdio de
+aula publicada que importa uma vaga preenchida só em aula NÃO publicada é o problema
+`unpublished` ("Publique essa aula antes"); despublicar uma aula (rascunho `/unpublish` e
+`LessonAdminService.update`) passa pela conferência, e o "Conferir" trata o rascunho como
+publicado. (3) As chaves dos problemas não dependem da ordem dos blocos (`duplicate:<vaga>:<bloco>`
+por bloco repetido, `order:<jogo>:<vaga>`, `replace-missing:<jogo>:<vaga>`): reordenar vagas
+repetidas de antes não vira 409. (4) Vaga de arte em Pinta de MAPA é recusada (`tilemap` não vira
+imagem sozinho). Testes: `tests/integration/art-slots-course.test.ts` (§review),
+`tests/db/art-slots-sql.test.ts` e `core/src/learning/art-slots.test.ts`.
+
 **Texto dos materiais na publicação (29/10/2026).** O item `text` do bloco `materials` aceitava
 até 2000 caracteres no DTO de publicação (`MaterialsBlockSchema`), enquanto o core
 (`isLearningManifest`) aceita 50000: a importação dos cursos do Faísca passava e a PUBLICAÇÃO

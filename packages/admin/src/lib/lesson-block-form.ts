@@ -470,8 +470,15 @@ export function validateBlock(f: LessonFormSnapshot<BlockForm>): string | null {
       return studioArtSlotsFormIssue(f.studioArtSlots)
     }
     case 'pinta': {
+      // No modo exploração os campos da vaga somem e ela não vai ao payload: nada a conferir.
+      if (f.toolPurpose === 'experiment') return null
       if (f.pintaArtSlotReplaces && !f.pintaArtSlotName)
         return 'Dê um nome à vaga do desenho, ou tire a imagem do jogo que ele substitui.'
+      // Nome fora da régua não pode sumir calado do payload (review de 29/10/2026).
+      if (f.pintaArtSlotName && !isArtSlotName(f.pintaArtSlotName))
+        return 'O nome da vaga do desenho usa só letras minúsculas, números e hífen.'
+      if (f.pintaArtSlotReplaces && !isArtSlotName(f.pintaArtSlotReplaces))
+        return 'A imagem do jogo que o desenho substitui precisa ser um nome de imagem do jogo.'
       return null
     }
     case 'certificate': {

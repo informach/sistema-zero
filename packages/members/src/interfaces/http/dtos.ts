@@ -11,6 +11,7 @@ import {
 import {
   ART_SLOT_NAME_MAX_CHARS,
   ART_SLOT_NAME_PATTERN,
+  MATERIALS_TEXT_MAX_CHARS,
   MAX_STUDIO_ART_SLOTS,
 } from '@sistemazero/core/learning'
 import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
@@ -1272,8 +1273,9 @@ const ComingSoonBlockSchema = t.Object({
  * aluno, lendo o anexo. Declará-los aqui deixaria o admin gravar um tamanho que envelhece na
  * primeira troca de arquivo. O `normalize` do Elysia descarta o que não está declarado.
  */
-/** O teto do texto de um item de materiais, igual ao do manifesto no core. */
-export const MATERIALS_TEXT_MAX_CHARS = 50_000
+/** O teto do texto de um item de materiais: o MESMO do manifesto, vindo do core. */
+export { MATERIALS_TEXT_MAX_CHARS }
+
 const MaterialsBlockSchema = t.Object({
   kind: t.Literal('materials'),
   title: t.Optional(t.String({ maxLength: 120 })),

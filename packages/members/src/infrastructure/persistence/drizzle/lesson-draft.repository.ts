@@ -21,6 +21,7 @@ import {
   assertCurrentStudioAuthoring,
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
+  guardArtSlots,
   startArtSlotGuard,
 } from '../../../application/content-admin/content-admin.service'
 import { draftArtSlotIssues, hasArtSlots } from '../../../domain/course/art-slot-course'
@@ -363,12 +364,16 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           throw new NoPublishedLessonError(
             'Esta é a última aula publicada — despublique o curso antes de removê-la.',
           )
-        await content.updateLesson(lessonId, {
-          title: snapshot.lesson.title,
-          slug: snapshot.lesson.slug,
-          estimatedMinutes: snapshot.lesson.estimatedMinutes,
-          isPublished: false,
-        })
+        // Despublicar tira desta aula os desenhos das vagas de arte que ela preenche: a mesma
+        // conferência do curso (a trava do curso já é do write()).
+        await guardArtSlots(content, snapshot.lesson.courseId, () =>
+          content.updateLesson(lessonId, {
+            title: snapshot.lesson.title,
+            slug: snapshot.lesson.slug,
+            estimatedMinutes: snapshot.lesson.estimatedMinutes,
+            isPublished: false,
+          }),
+        )
         return draft.document
       },
     )

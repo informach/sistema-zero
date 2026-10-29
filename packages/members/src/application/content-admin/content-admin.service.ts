@@ -516,7 +516,14 @@ export class LessonAdminService {
       await this.assertNotLastPublished(existing.courseId, id)
     }
     if (fields.isPublished) await this.learning.assertPublishable(id)
-    const updated = await this.content.updateLesson(id, fields)
+    // Publicar ou despublicar muda de quem a criança recebe o desenho de cada vaga de arte (só de
+    // aula publicada): passa pela mesma conferência do curso, sob a trava dele.
+    const updated =
+      existing.isPublished === Boolean(fields.isPublished)
+        ? await this.content.updateLesson(id, fields)
+        : await this.content.withStudioAuthoringLock(existing.courseId, (repository) =>
+            guardArtSlots(repository, existing.courseId, () => repository.updateLesson(id, fields)),
+          )
     if (!updated) throw new LessonNotFoundError()
     return toLessonView(updated)
   }
@@ -639,6 +646,12 @@ export function assertBlockCoherent(
     if (content.gallery !== undefined || content.purpose === 'experiment')
       throw new InvalidContentCommandError(
         'A vaga de arte precisa do desenho feito e enviado neste bloco: sem entrega pela galeria e sem modo de exploração.',
+      )
+    // O mapa aponta para peças de outro desenho e não vira uma imagem do Estúdio sozinho: a
+    // conversão da aula recusaria sempre, e a criança leria "o desenho não veio" para sempre.
+    if (pintaAssetKindOf(content) === 'tilemap')
+      throw new InvalidContentCommandError(
+        'Um mapa não vira imagem do jogo sozinho. Use a vaga de arte num personagem, num cenário ou em peças.',
       )
   }
   if (content.kind === 'studio' && content.artSlots !== undefined) {

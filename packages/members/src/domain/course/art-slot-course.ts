@@ -2,6 +2,7 @@ import {
   type ArtSlotCourseBlock,
   type ArtSlotCourseIssue,
   artSlotCourseIssues,
+  compareArtSlotOrder,
   newArtSlotCourseIssues,
   type PintaArtSlot,
   pintaArtSlotIssue,
@@ -21,6 +22,8 @@ export interface ArtSlotLessonPosition {
   lessonTitle: string
   moduleOrder: number
   lessonOrder: number
+  /** A aula está publicada (ausente vale como publicada). */
+  published?: boolean
 }
 
 /** O bloco preenche ou importa alguma vaga? (decide se uma gravação precisa da conferência) */
@@ -74,10 +77,12 @@ export function toArtSlotCourseBlock(row: {
   kind: string
   lessonTitle: string
   order: readonly number[]
+  published?: boolean
   artSlot: unknown
   artSlots: unknown
   imageNames: readonly string[]
 }): ArtSlotCourseBlock | null {
+  const published = row.published === false ? { published: false } : {}
   // Vaga ILEGÍVEL fica de fora: a forma já é recusada ao gravar o bloco, e uma linha antiga
   // quebrada não pode prender quem está consertando outra parte do curso.
   if (row.kind === 'pinta' && row.artSlot != null && pintaArtSlotIssue(row.artSlot) === null)
@@ -87,6 +92,7 @@ export function toArtSlotCourseBlock(row: {
       lessonId: row.lessonId,
       lessonTitle: row.lessonTitle,
       order: row.order,
+      ...published,
       slot: row.artSlot as PintaArtSlot,
     }
   if (row.kind === 'studio' && row.artSlots != null && studioArtSlotsIssue(row.artSlots) === null)
@@ -96,6 +102,7 @@ export function toArtSlotCourseBlock(row: {
       lessonId: row.lessonId,
       lessonTitle: row.lessonTitle,
       order: row.order,
+      ...published,
       slots: row.artSlots as StudioArtSlotImport[],
       imageNames: row.imageNames,
     }
@@ -127,6 +134,7 @@ export function lessonArtSlotBlocks(
         artSlotSectionIndex(sections, block.id),
         blockOrder,
       ],
+      ...(lesson.published === false ? { published: false } : {}),
       artSlot: content.artSlot,
       artSlots: content.artSlots,
       imageNames: content.kind === 'studio' ? studioGameImageNames(content.initialProject) : [],
@@ -146,7 +154,8 @@ export function draftArtSlotIssues(
   blocks: readonly { id: string; content: unknown }[],
   sections: unknown,
 ): ArtSlotCourseIssue[] {
-  const draft = lessonArtSlotBlocks(lesson, blocks, sections)
+  // O rascunho é conferido como se fosse publicado: é o que o "Publicar" vai fazer.
+  const draft = lessonArtSlotBlocks({ ...lesson, published: true }, blocks, sections)
   if (!draft.length && !current.some((block) => block.lessonId === lesson.lessonId)) return []
   return newArtSlotCourseIssues(
     artSlotCourseIssues(current),
@@ -155,4 +164,29 @@ export function draftArtSlotIssues(
       ...draft,
     ]),
   )
+}
+
+/**
+ * O bloco de Pinta que preenche cada vaga para a CRIANÇA: o primeiro em ordem de curso (módulo,
+ * aula, parte, bloco) entre os de aula PUBLICADA. Lê os mesmos blocos da conferência
+ * (`listArtSlotBlocks`: sem arquivados, com a parte da aula), então a autoria e a aula escolhem o
+ * mesmo desenho (review de 29/10/2026: a busca antiga pegava bloco arquivado e ignorava a parte).
+ */
+export function artSlotFillers(
+  blocks: readonly ArtSlotCourseBlock[],
+  names: readonly string[],
+): Map<string, { blockId: string; replaces: string | null }> {
+  const fillers = new Map<string, { blockId: string; replaces: string | null }>()
+  const ordered = blocks
+    .filter((block) => block.kind === 'pinta' && block.published !== false)
+    .sort((a, b) => compareArtSlotOrder(a.order, b.order))
+  for (const block of ordered) {
+    if (block.kind !== 'pinta' || !names.includes(block.slot.name)) continue
+    if (!fillers.has(block.slot.name))
+      fillers.set(block.slot.name, {
+        blockId: block.blockId,
+        replaces: block.slot.replaces ?? null,
+      })
+  }
+  return fillers
 }
