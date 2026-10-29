@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { abrirAbertura } from '../estado/abertura'
 import { useEstado, useJogo } from '../estado/contexto'
 import { EMOJI_DO_BICHO } from '../sistemas/bichos'
 import {
@@ -116,6 +117,13 @@ export function Diario() {
           <p className="arq-caderno-explica">
             A Íris deixou uma página em cada ilha. Juntas, elas contam por que ela foi embora.
           </p>
+          <button
+            type="button"
+            className="arq-botao leve arq-diario-abertura"
+            onClick={() => abrirAbertura(loja, 'rever')}
+          >
+            Rever a abertura: O Cinza
+          </button>
           <ol className="arq-diario-paginas">
             {paginas.map((p) =>
               p.aberta ? (

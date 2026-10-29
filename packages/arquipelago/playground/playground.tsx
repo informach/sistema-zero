@@ -2,6 +2,7 @@ import { LUMIS, type LumiId, type PublicoJogo } from '@sistemazero/arquipelago-c
 import recifeGlb from '../src/assets/ilhas/recife.glb'
 import pierGlb from '../src/assets/mundo/pier.glb'
 import { montarArquipelago } from '../src/entrada'
+import { marcarAberturaVista } from '../src/estado/abertura'
 import { definirFestaDoPlayground } from '../src/estado/festas'
 import { medicaoDasAparencias } from '../src/mundo/carregar-aparencia'
 import { giroDaIlha, ilhasEmVolta, PIER } from '../src/mundo/medidas'
@@ -10,6 +11,7 @@ import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
 import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import { CHAVE_DA_GALERIA, criarPlataformaFalsa } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
+import { chaveDaAbertura } from '../src/sistemas/abertura'
 import { lerFesta } from '../src/sistemas/festas'
 import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
 
@@ -18,6 +20,7 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?barco=central` ou `?barco=recife` começa no embarque com o Recife aberto.
  * `?posicao=2` (posto/etapa), `?publico=adulto`, `?limite=30`, `?liberado=0`, `?novo=1` e
  * `?em=x,z` ou `?em=x,z,y` (começa fora de casa, nesse ponto; o `y` põe em cima de um deque) e `?adiantar=13` (a noite chega aos 12 min).
+ * `?abertura=1` mostra a abertura "O Cinza" (sem ele, ela fica marcada como vista).
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
@@ -143,5 +146,13 @@ plataforma.voltarParaPlataforma = () => {
   document.body.innerHTML =
     '<p style="font:16px system-ui;padding:24px">Aqui a plataforma voltaria para a página anterior.</p>'
 }
+// A abertura só aparece com `?abertura=1` (os verificadores abrem o jogo direto no mundo).
+if (q.get('abertura') === '1') {
+  try {
+    localStorage.removeItem(chaveDaAbertura(plataforma.publico, plataforma.perfil.id))
+  } catch {
+    // Sem armazenamento: o jogo mostra a abertura só num jogo novo.
+  }
+} else marcarAberturaVista(plataforma.publico, plataforma.perfil.id)
 const el = document.getElementById('jogo')
 if (el) montarArquipelago(el, plataforma)

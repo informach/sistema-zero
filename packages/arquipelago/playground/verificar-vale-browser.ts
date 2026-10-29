@@ -267,7 +267,7 @@ try {
     const acao = (nome: string) => page.locator('.arq-acao').filter({ hasText: nome })
     const abrirDiario = async () => {
       await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
-      await page.getByRole('button', { name: /Diário/ }).click()
+      await page.getByRole('button', { name: 'Diário', exact: true }).click()
       return page.getByRole('dialog', { name: 'Diário', exact: true })
     }
     const conferirDiario = async (quantos: number) => {

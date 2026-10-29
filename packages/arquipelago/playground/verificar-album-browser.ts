@@ -142,7 +142,10 @@ try {
 
     // ── O álbum ──────────────────────────────────────────────────────────────────────────────
     await pagina.getByRole('button', { name: 'Abrir o menu' }).click()
-    await pagina.getByRole('button', { name: '🏛️ Álbum de coleções' }).click()
+    await pagina
+      .getByRole('dialog', { name: 'Menu do jogo' })
+      .getByRole('button', { name: 'Álbum de coleções' })
+      .click()
     const album = pagina.getByRole('dialog', { name: 'Álbum de coleções' })
     await album.waitFor()
     const titulos = await album.locator('h3').allTextContents()
@@ -172,7 +175,10 @@ try {
     assert.equal(await pagina.locator('.arq-necessidades').count(), 1)
     if (caso.toque) {
       await pagina.getByRole('button', { name: 'Abrir o menu' }).click()
-      await pagina.getByRole('button', { name: '📷 Modo foto' }).click()
+      await pagina
+        .getByRole('dialog', { name: 'Menu do jogo' })
+        .getByRole('button', { name: 'Modo foto' })
+        .click()
     } else {
       await pagina.locator('canvas').click({ position: { x: 640, y: 300 } })
       await pagina.keyboard.press('f')

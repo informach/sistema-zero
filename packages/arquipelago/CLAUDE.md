@@ -1,5 +1,39 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## HUD nova, menu de pausa e abertura "O Cinza" (29/10/2026)
+
+- Proposta aprovada no canvas `https://claude.ai/artifact/Mz6AmdkuYdc9jb3mR6yuPd`; notas e prints em
+  `docs/qa/2026-10-29-arquipelago-hud.md`.
+- `interface/hud.tsx`: as partes da HUD (`QuemJoga`, `IlhaAgora`, `Relogio`, `Agora`, `Dica`,
+  `Mochila`, `BotaoDaFoto`, `AlturaDoBalao`, `Cronometro`). As contas puras moram em
+  `sistemas/hud.ts` (ilha mais perto, Quadro das Cores, lembretes do "Agora", atalhos 1 a 5).
+  `.arq-hud.em-atividade` (corrida ou balão) esconde o que não é da atividade; `.entrando` faz a HUD
+  aparecer depois da abertura. Classes que os verificadores usam continuam (`.arq-necessidades`,
+  `.arq-topo-dir`, `.arq-dica`, `.arq-acao`, `.arq-modos`, `.arq-inventario`), assim como os nomes
+  "Abrir o menu", "Menu do jogo", "Continuar jogando" e "Usar".
+- `interface/menu.tsx`: o menu de pausa (lugares, Início, Conforto e controles, mapa pequeno).
+  `interface/mapa.tsx` dá `useIlhaAqui` (a ilha onde a pessoa está) e `MapaPequeno`.
+- `interface/icones.tsx`: ícones de traço (24 px, `currentColor`, sempre `aria-hidden`). Item da
+  mochila continua com o emoji do item (é a arte dele).
+- CSS: o bloco novo fica no FIM de `ESTILOS` (sobrescreve o antigo de mesma força). Posição só de
+  computador vai em `@media (min-width:641px)`, para não atropelar as regras antigas de celular.
+  Tokens na `.arq-raiz`: `--arq-titulo` (Baloo 2 do Kids; o adulto troca pelo dele). A pele adulta
+  deixa o menu claro (bancada) e a HUD na noite dela.
+- Abertura: roteiro e tempos em `sistemas/abertura.ts` (`CENAS`, `momentoDaAbertura`,
+  `deveMostrarAbertura`), pinturas em `interface/abertura-cenas.tsx`, tela em
+  `interface/abertura.tsx` (painel `PAINEL_DA_ABERTURA`: o mundo para por baixo e a cena 3D deixa de
+  desenhar, `mundo/cena.tsx`, até a saída começar). Aparece sozinha uma vez por público e perfil no
+  aparelho (chave `arquipelago:abertura:<publico>:<perfil>`, `estado/abertura.ts`) ou num jogo novo
+  sem armazenamento; nunca no suporte. O `carregar()` do `jogo.tsx` já a abre antes do primeiro
+  quadro. Abra sempre por `abrirAbertura(loja, 'primeira' | 'rever')`: a `lojaDaAbertura` guarda a
+  origem e o `saindo`. Só a `primeira` marca como vista e termina com a primeira fala do Zappy
+  (`boasVindas`); fechada à força (tempo pausado ou acabado, salvamento parado) não marca. A abertura toma Espaço, Enter e a seta
+  para a direita na captura da janela (o personagem não pula por baixo). O texto segue a história da
+  proposta e NÃO conta o segredo do Farol.
+- Playground: a abertura só aparece com `?abertura=1`. Navegador:
+  `playground/verificar-hud-browser.ts` (computador, notebook e celular; abertura, sobreposição das
+  partes, tecla 1, menu, diário, noite e corrida). Testes: `tests/hud.test.ts`, `tests/abertura.test.ts`.
+
 ## Ajustes da arte aj-ligar-02 a 09 (29/10/2026)
 
 - `sistemas/ajustes-da-arte.ts`: fase FNV-1a por id e clipe, patins +0,089 m só no desenho (`ELEVACAO_DOS_PATINS`),

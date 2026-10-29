@@ -47,7 +47,7 @@ try {
     const erros: string[] = []
     p.on('pageerror', (e) => erros.push(e.message))
     await p.goto(`${base}/?novo=1&persistir=0&obra=exemplo`, { waitUntil: 'networkidle' })
-    await p.getByRole('button', { name: '🔨 Construir', exact: true }).click()
+    await p.getByRole('button', { name: 'Construir', exact: true }).click()
     await p.getByRole('button', { name: 'Olhar', exact: true }).click()
     await p.waitForTimeout(1800)
     // Projeta uma célula do quarto com a câmera real medida e o alvo inicial do Construir.

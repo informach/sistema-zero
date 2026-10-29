@@ -3312,3 +3312,22 @@ migrar. Se passar do teto, o serviço recusa a nova gravação e conserva a ante
 o rascunho local. Os testes distinguem o orçamento dos IDs canônicos dos produtores de uma
 combinação artificial de referências antigas longas. Não se promete que qualquer combinação
 máxima de todos os campos caiba no teto.
+
+## HUD, menu de pausa e abertura "O Cinza" (29/10/2026)
+
+- **A abertura** aparece sozinha uma vez por perfil em cada aparelho (a marca fica no aparelho; sem
+  armazenamento, só num jogo novo) e nunca no acesso de suporte. Ela tem 8 cenas e 73 segundos. Um
+  toque, Enter ou a seta passam a cena; segurar Espaço ou o botão por 1 segundo pula tudo; Esc fecha.
+  A primeira fala do Zappy vem quando ela fecha. Fechada pela tela do tempo ou pelo salvamento, ela
+  não conta como vista. Dá para rever no Diário ("Rever a abertura: O Cinza"), sem a fala nem a marca.
+  Enquanto ela cobre a tela, o mundo 3D não é desenhado; na saída (1,2 s) ele volta.
+- **O "Agora"** lembra no máximo 3 coisas (no celular, a primeira), nesta ordem: abrir a porta nova,
+  comer (fome abaixo de 25), descansar (energia abaixo de 25), regar o que foi plantado, colher o que
+  amadureceu e o desafio de hoje no Quadro das Cores. Não dá prêmio nem cria tarefa.
+- **A mochila**: os itens que fazem alguma coisa vêm primeiro e as teclas 1 a 5 usam os cinco
+  primeiros. As teclas não valem com o jogo parado nem na corrida ou no balão (lá a mochila some).
+- **Na corrida e no balão** a HUD mostra só quem joga (sem moedas), o relógio, o menu, a barra da
+  corrida e, no balão, a altura (de 0 ao teto de 18 m acima do tampo) com o fogo.
+- **A ilha no alto** é a mais perto da pessoa (na ponte, a ponta mais perto), conferida duas vezes por
+  segundo; o Quadro das Cores dela aparece quando a ilha tem algum desafio.
+- **As moedas** são o saldo da conta lido do serviço da galeria; sem leitura, não aparecem.

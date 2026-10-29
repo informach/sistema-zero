@@ -15,6 +15,7 @@ import {
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { PainelDeAconchego } from './aconchego'
+import { Icone } from './icones'
 import {
   MINIATURA_DA_JANELA,
   MINIATURA_DO_CAMINHO,
@@ -139,7 +140,8 @@ export function ModosDoJogo() {
         aria-pressed={!construindo}
         onClick={() => construcao.getState().fechar()}
       >
-        🏡 Viver
+        <Icone nome="casa" tamanho={18} />
+        Viver
       </button>
       <button
         type="button"
@@ -149,7 +151,8 @@ export function ModosDoJogo() {
           if (!construindo) construcao.getState().abrir()
         }}
       >
-        🔨 Construir
+        <Icone nome="martelo" tamanho={18} />
+        Construir
       </button>
     </fieldset>
   )

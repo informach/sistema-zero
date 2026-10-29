@@ -51,4 +51,5 @@ export const VOZ_ADULTA: VozDoJogo = {
     ilha.id === 'farol'
       ? 'Acende na última etapa da sua jornada.'
       : `Abre na etapa ${ilha.posicao} da sua jornada.`,
+  marcoDaJornada: (posicao) => `Etapa ${Math.min(8, Math.max(1, Math.floor(posicao) || 1))}`,
 }

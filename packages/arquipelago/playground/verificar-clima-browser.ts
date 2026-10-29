@@ -195,7 +195,7 @@ try {
       { celular, luz: CLIMA.luz.chuva },
       20_000,
     )
-    await page.getByText('🌧️', { exact: false }).first().waitFor()
+    await page.locator('.arq-relogio').filter({ hasText: 'Chuva' }).waitFor()
     // O print da chuva de um lugar aberto, a leste da horta, olhando para o mar.
     const aberto = posicaoDoCanteiro(2)
     await dePe({ x: aberto.x + 3, y: ALTURA_DA_TERRA, z: aberto.z })

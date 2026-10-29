@@ -118,7 +118,7 @@ try {
     assert.equal(await menu.getByRole('button', { name: /Visitar um irmão/ }).count(), 0)
     await menu.getByRole('button', { name: 'Voltar para a comunidade' }).waitFor()
     assert.equal(await pagina.getByText(/^Hoje: \d+ min$/).count(), 0, 'pílula do tempo livre')
-    const letra = await menorLetra(pagina, '.arq-menu')
+    const letra = await menorLetra(pagina, '.arq-pausa')
     assert(letra.menor >= 15, `letra de ${letra.menor}px no menu: ${letra.qual}`)
     assert(await semRolagemDeLado(pagina), 'rolagem para o lado')
     await pagina.screenshot({ path: path.join(prints, `${nome}-menu.png`) })
@@ -161,7 +161,7 @@ try {
       [...document.querySelectorAll('style')].some((s) => s.textContent?.includes('.arq-adulto')),
     )
     assert.equal(cssAdulto, false, 'o CSS adulto chegou ao Kids')
-    await menu.getByRole('button', { name: '🏡 Visitar um irmão' }).waitFor()
+    await menu.getByRole('button', { name: 'Visitar um irmão' }).waitFor()
     await menu.getByRole('button', { name: 'Voltar para a plataforma' }).waitFor()
     const fundo = await menu
       .getByRole('button', { name: 'Continuar jogando' })
