@@ -16,7 +16,7 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PACOTE = os.path.abspath(os.path.join(AQUI, '..', '..'))
-GRUPOS = ['geladeira', 'forno', 'aquario', 'lareira', 'banda', 'fliperama', 'museu', 'casinha']
+GRUPOS = ['geladeira', 'forno', 'aquario', 'lareira', 'banda', 'fliperama', 'museu', 'casinha', 'planta_interior']
 SAIDA = os.path.join(PACOTE, 'src', 'assets', 'objetos')
 TETO_TRIS, TETO_KB = 10000, 450
 # Arquivos em que cada nó é uma peça solta (a busca de faces compara só dentro do mesmo nó).
@@ -38,6 +38,7 @@ CONTRATO = {
     'fliperama': {'nos': ['fliperama', 'tela'], 'materiais': ['tela', 'luz'], 'uv': ['tela']},
     'museu': {'nos': ['redoma', 'vitrine', 'cranio', 'pegada', 'placa', 'texto'], 'materiais': ['placaFace']},
     'casinha': {'nos': ['casinha', 'placa', 'texto'], 'materiais': ['placaFace']},
+    'planta-interior': {'nos': ['vaso', 'terra', 'folhas']},
 }
 
 

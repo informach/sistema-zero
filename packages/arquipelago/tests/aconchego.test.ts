@@ -71,7 +71,9 @@ describe('aconchego por cômodo', () => {
     expect(frente.variedade).toBe(2)
     expect(frente.plantas).toBe(0)
     expect(frente.luz).toBe(4) // Arco de fora e janela grande compartilhada com o quarto.
-    expect(aconchegoNaCelula(cs, { x: 7, z: -4 })?.variedade).toBe(0)
+    // O cômodo da direita tem a planta de interior: variedade e plantas.
+    expect(aconchegoNaCelula(cs, { x: 7, z: -4 })?.variedade).toBe(2)
+    expect(aconchegoNaCelula(cs, { x: 7, z: -4 })?.plantas).toBe(2)
     expect(aconchegoNaCelula(cs, { x: -12, z: 6 })).toBeUndefined()
     expect(JSON.stringify(o)).toBe(antes)
   })
@@ -201,10 +203,11 @@ describe('aconchego por cômodo', () => {
     expect(c.nivel).toBe('Muito aconchegante')
     expect(ACONCHEGO_DA_FESTA).toBeGreaterThan(ACONCHEGO_QUE_CHAMA_VISITA)
   })
-  test('o nível acompanha o total e as dicas não cobram nem sugerem plantas onde não há', () => {
+  test('o nível acompanha o total e as dicas não cobram nem sugerem plantas que ela não tem', () => {
+    const { 'planta-interior': _, ...semPlanta } = PROJETOS_DE_EXEMPLO
     for (const c of [
       medir(sala()),
-      ...aconchegoDosComodos(obraDeExemplo(), LOTE_DA_CASA, PROJETOS_DE_EXEMPLO),
+      ...aconchegoDosComodos(obraDeExemplo(), LOTE_DA_CASA, semPlanta),
     ]) {
       expect(c.total).toBe(c.variedade + c.luz + c.plantas + c.capricho + c.feitoPorVoce)
       expect(c.nivel).toBe(NIVEIS_DE_ACONCHEGO.filter((n) => c.total >= n.minimo).at(-1)!.nome)
@@ -212,5 +215,21 @@ describe('aconchego por cômodo', () => {
       if (!c.comodo.quarto) expect(c.dica).not.toContain('planta')
     }
     expect(PONTOS_DE_ACONCHEGO.proprio.porTipo).toBeLessThan(PONTOS_DE_ACONCHEGO.variedade.porTipo)
+  })
+  test('a planta de interior pontua plantas num cômodo novo e some da dica', () => {
+    const o = sala()
+    const projetos = { 'planta-interior': ganho }
+    const sem = medir(o, projetos)
+    expect(sem.plantas).toBe(0)
+    expect(sem.dica).not.toContain('planta de interior')
+    o.aberturas = [
+      { tipo: 'porta', eixo: 'x', x: 0, z: 0 },
+      { tipo: 'janela-redonda', eixo: 'z', x: 4, z: 0 },
+    ]
+    expect(medir(o, projetos).dica).toBe('A planta de interior traz mais aconchego a este cômodo.')
+    o.objetos = [{ id: 'planta-interior', x: 1, z: 1, giro: 0 }]
+    const com = medir(o, projetos)
+    expect(com.plantas).toBe(PONTOS_DE_ACONCHEGO.plantas.porTipo)
+    expect(com.dica).not.toContain('planta de interior')
   })
 })

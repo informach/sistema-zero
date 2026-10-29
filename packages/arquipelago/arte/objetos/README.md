@@ -1,8 +1,8 @@
 # Objetos com função da casa no Blender
 
 Os objetos que a casa ganha pelos pedidos e desafios: geladeira (nas duas versões do projeto
-azul), forno, aquário, lareira, instrumentos da banda, fliperama, museu dos fósseis e casinha de
-bicho. Cada grupo tem um script que monta o modelo no Blender sem tela (o mesmo `bpy` dos itens,
+azul), forno, aquário, lareira, instrumentos da banda, fliperama, museu dos fósseis, casinha de
+bicho e a planta de interior em vaso (29/10/2026, para o aconchego dos cômodos novos). Cada grupo tem um script que monta o modelo no Blender sem tela (o mesmo `bpy` dos itens,
 do mundo e dos personagens) e grava um GLB em `src/assets/objetos/<id>.glb`. Os objetos ainda não
 estão ligados ao jogo.
 
@@ -228,3 +228,16 @@ triângulos. Do museu: redoma 1824, vitrine 2556, crânio 2608, pegada 934, plac
 | `casinha.py` | `casinha` |
 | `lib_objetos.py` | ajudantes (acima) |
 | `build_all.py` | gera tudo e confere: nós, clipes (duração no GLB), materiais, coordenadas de textura, tetos (10.000 triângulos e 450 KB por arquivo) e faces coplanares |
+
+### `planta-interior.glb` (footprint 1 × 1, 29/10/2026)
+
+- `vaso`: o vaso redondo de cerâmica creme (`vasoCeramica`) com a faixa e a borda terracota
+  (`vasoFaixa`) e o pratinho embaixo (`vasoPrato`).
+- `terra`: a terra abaulada na boca do vaso (`terraVaso`) com três pedrinhas (`pedrinhaVaso`).
+- `folhas`: doze talos curvos (`talo`) e doze folhas largas, cascas finas fechadas (espessura
+  0,008, para se ver dos dois lados), em `folha`, `folhaEscura` e `folhaNova` (as três de cima),
+  com a nervura clara no meio (`nervuraFolha`).
+- Medidas: 0,78 de largura × 1,28 de altura × 0,88 de fundo, a base em y = 0 e o meio do vaso na
+  origem. O script recusa (assert) passar de meia célula para cada lado (0,48) ou de 1,40 de
+  altura. 4,5 mil triângulos, 108 KB. Sem clipe, sem luz, sem faces do Pinta.
+- Script: `arte/objetos/planta_interior.py`; miniatura em `src/assets/casa/miniaturas/objeto-planta-interior.png`.

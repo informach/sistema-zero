@@ -1,5 +1,10 @@
 # Pedido consolidado de arte para o aconchego (fase1-15)
 
+> **Entregue em 29/10/2026:** `src/assets/objetos/planta-interior.glb` (nós `vaso`, `terra` e `folhas`;
+> 0,78 × 1,28 × 0,88; 4,5 mil triângulos), script `arte/objetos/planta_interior.py`, imagem em
+> `docs/qa/2026-10-29-planta-interior.png`. Ligada ao catálogo (`planta-interior`), chega com a
+> primeira obra e conta no aconchego. Contrato em `arte/objetos/README.md`.
+
 Texto pronto para repassar à sessão de Blender. A lista cobre as necessidades desta tarefa,
 conferidas contra o catálogo do quarto, o catálogo dos projetos azuis e o inventário de arte.
 

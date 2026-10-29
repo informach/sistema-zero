@@ -29,6 +29,7 @@ export const LUGAR_DO_OBJETO: Readonly<Record<ObjetoDaCasa, 'dentro' | 'fora'>> 
   fliperama: 'dentro',
   museu: 'dentro',
   casinha: 'fora',
+  'planta-interior': 'dentro',
 }
 
 /** A área na grade com o giro (em quartos de volta): de lado, largura e fundo trocam. */
@@ -131,8 +132,9 @@ export function tirarObjeto(obra: Obra, c: Celula): Resultado {
 
 /**
  * Os projetos que a pessoa ganhou e ainda não estavam guardados: a geladeira vem do primeiro
- * pedido entregue (o da Capi, o único pedido do jogo hoje) e a casinha de adotar um bicho no
- * Bosque. Devolve o mesmo salvamento quando nada mudou.
+ * pedido entregue (o da Capi, o único pedido do jogo hoje), a casinha de adotar um bicho no
+ * Bosque e a planta de interior da primeira obra (da casa ou de uma cabana). Devolve o mesmo
+ * salvamento quando nada mudou.
  */
 export function ganharProjetos(
   s: Salvamento,
@@ -141,6 +143,8 @@ export function ganharProjetos(
   const ganhos: ObjetoDaCasa[] = []
   if (!s.projetos.geladeira && s.moradores.capi.pedido?.entregue) ganhos.push('geladeira')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
+  const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0
+  if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')
   if (ganhos.length === 0) return { salvamento: s, ganhos }
   const projetos = { ...s.projetos }
   for (const id of ganhos) projetos[id] = { ganhoEm: agora.toISOString(), aparencia: null }

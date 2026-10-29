@@ -45,6 +45,9 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   tela só (lados ao lado da frente, topo em cima, lado maior com `LADO_DA_PLANIFICACAO` pontos), o
   que o Pinta abre e onde cada face cai quando o jogo for desenhar a aparência. Acréscimo sem
   mudar a `Plataforma`: a `VERSAO_CONTRATO_PLATAFORMA` continua 1.
+  `planta-interior` entrou em `OBJETOS_DA_CASA` em 29/10/2026 sem versão nova do salvamento: só
+  alarga o que a V4/V5 aceitam (todo salvamento antigo continua válido). Serviço e cliente sobem
+  juntos (um cliente antigo não leria uma obra com a planta).
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,

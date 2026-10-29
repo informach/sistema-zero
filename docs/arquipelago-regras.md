@@ -1273,10 +1273,12 @@ Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação 
 - Luzes reconhecidas: lareira na obra; luminária, vela, luminária de mesa, lâmpada de lava,
   varal de luzes e letreiro neon no quarto. A janela decorativa do quarto também conta como
   um tipo de janela. A conta independe da hora do dia e da animação do fogo.
-- Plantas do quarto: planta, árvore, cacto, vaso de flores e planta pendurada. Ainda não há
-  planta de interior no catálogo de projetos azuis. Nos cômodos novos e cabanas esta parte é 0,
-  com lista de tipos preparada. Canteiro do quintal não soma dentro de casa. Pedido de arte
-  consolidado em `docs/plans/2026-10-28-arquipelago-aconchego-arte.md`.
+- Plantas do quarto: planta, árvore, cacto, vaso de flores e planta pendurada. Nos cômodos novos
+  e nas cabanas, a **planta de interior** (29/10/2026): um projeto azul de 1 × 1 que chega com a
+  primeira obra (da casa ou de uma cabana) e vai dentro de um cômodo novo. Cada objeto vai uma
+  vez só, então por enquanto ela vale um tipo (2 pontos) na casa toda. Quando ela já foi ganha,
+  a dica de um cômodo novo sem planta sugere pôr. Canteiro do quintal não soma dentro de casa.
+  Pedido de arte em `docs/plans/2026-10-28-arquipelago-aconchego-arte.md`.
 - Comprado e holograma têm parcelas idênticas. Nenhuma origem gera desconto. Criação própria
   acrescenta somente o bônus, por tipo colocado. É possível atingir a faixa máxima com objetos
   comprados e sem plantas, conforme o teste.

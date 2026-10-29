@@ -12,6 +12,7 @@ import objetoForno from '../assets/casa/miniaturas/objeto-forno.png'
 import objetoGeladeira from '../assets/casa/miniaturas/objeto-geladeira.png'
 import objetoLareira from '../assets/casa/miniaturas/objeto-lareira.png'
 import objetoMuseu from '../assets/casa/miniaturas/objeto-museu.png'
+import objetoPlantaInterior from '../assets/casa/miniaturas/objeto-planta-interior.png'
 import pisoAzulejo from '../assets/casa/miniaturas/piso-azulejo.png'
 import pisoLadrilho from '../assets/casa/miniaturas/piso-ladrilho.png'
 import pisoTabua from '../assets/casa/miniaturas/piso-tabua.png'
@@ -49,4 +50,5 @@ export const MINIATURA_DO_OBJETO: Record<ObjetoDaCasa, string> = {
   fliperama: url(objetoFliperama),
   museu: url(objetoMuseu),
   casinha: url(objetoCasinha),
+  'planta-interior': url(objetoPlantaInterior),
 }

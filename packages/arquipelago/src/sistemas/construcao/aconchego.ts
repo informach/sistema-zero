@@ -52,8 +52,8 @@ export const LUZES_DO_QUARTO = [
   'varal-luzes',
   'letreiro-neon',
 ] as const
-/** Preparado para o futuro vaso de interior. Nenhum projeto azul atual é planta. */
-export const PLANTAS_DA_OBRA: readonly ObjetoDaCasa[] = []
+/** A planta de interior em vaso (`arte/objetos/planta_interior.py`), para os cômodos novos. */
+export const PLANTAS_DA_OBRA: readonly ObjetoDaCasa[] = ['planta-interior']
 export const LUZES_DA_OBRA: readonly ObjetoDaCasa[] = ['lareira']
 
 export interface AconchegoDoComodo {
@@ -152,14 +152,16 @@ export function aconchegoDosComodos(
           ? 'Móveis diferentes no Meu quarto somam variedade.'
           : comodo.quarto && !d.plantas.size
             ? 'Uma planta no Meu quarto traz mais aconchego.'
-            : !comodo.quarto && lote.id === 'casa' && d.tipos.size < r.variedade.tipos
-              ? 'Objetos diferentes somam variedade, mesmo em holograma.'
-              : d.proprios.size < r.proprio.tipos &&
-                  d.tipos.size > 0 &&
-                  !comodo.quarto &&
-                  lote.id === 'casa'
-                ? 'Pintar um objeto no Pinta dá um toque seu ao cômodo.'
-                : 'Este cantinho já tem o seu jeito. Você pode continuar experimentando.'
+            : !comodo.quarto && !d.plantas.size && projetos['planta-interior']
+              ? 'A planta de interior traz mais aconchego a este cômodo.'
+              : !comodo.quarto && lote.id === 'casa' && d.tipos.size < r.variedade.tipos
+                ? 'Objetos diferentes somam variedade, mesmo em holograma.'
+                : d.proprios.size < r.proprio.tipos &&
+                    d.tipos.size > 0 &&
+                    !comodo.quarto &&
+                    lote.id === 'casa'
+                  ? 'Pintar um objeto no Pinta dá um toque seu ao cômodo.'
+                  : 'Este cantinho já tem o seu jeito. Você pode continuar experimentando.'
     return {
       comodo,
       variedade,
