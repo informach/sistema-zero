@@ -65,3 +65,12 @@ node .cache/verificar-vale-browser.mjs
 ```
 
 ARQUIPELAGO_PRINTS pode escolher outra pasta de capturas.
+
+
+## Conferência isolada antes do envio
+
+Outra sessão iniciou a V13 enquanto esta entrega era finalizada. Para não alterar o trabalho
+em andamento, a última verificação usou uma cópia isolada dos commits desta fase: 907 testes
+do jogo e 122 dos contratos passaram, sem falhas; um teste de Postgres permaneceu ignorado.
+O typecheck passou. O teste de 64 KB inclui os três ninhos e a escavação no cenário carregado.
+A contagem de 916 acima inclui também os testes das Nuvens presentes na área compartilhada.

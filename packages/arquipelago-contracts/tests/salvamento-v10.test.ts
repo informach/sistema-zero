@@ -211,6 +211,8 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
   }
   const base = {
     ...criarSalvamentoInicial(AGORA),
+    // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
+    vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'] },
     construcao: { casa: cheia(), cabanas: { bosque: cheia() } },
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
