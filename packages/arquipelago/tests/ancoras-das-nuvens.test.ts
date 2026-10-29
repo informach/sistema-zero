@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { MIRANTE_DAS_NUVENS } from '../src/mundo/nuvens'
 import { arquivoDaIlha, jsonDoGlb, TAMPO } from './ajuda-colisores'
 
 /**
@@ -34,4 +35,10 @@ test('a âncora passageiro fica no piso do cesto, filha do nó animado do balão
   // No meio do cesto (meia largura 0,55) e no piso, 10 cm acima da base.
   expect(Math.hypot(x, z)).toBeLessThan(0.05)
   expect(y).toBeCloseTo(0.1, 3)
+})
+
+test('o mirante do jogo (MIRANTE_DAS_NUVENS) é o da âncora do nuvens.glb', () => {
+  const [mx, , mz] = no('nuvens.glb', 'mirante').n!.translation!
+  expect(mx).toBeCloseTo(MIRANTE_DAS_NUVENS.x, 2)
+  expect(mz).toBeCloseTo(MIRANTE_DAS_NUVENS.z, 2)
 })
