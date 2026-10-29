@@ -1270,8 +1270,13 @@ O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas 
   "Regar" da janela, a gota azul (`gota-da-sede`) e o bônus.
 - O medidor expõe `clima` e `horta` (semente, regado, progresso). Testes: `clima.test.ts`.
   Verificador: `playground/verificar-clima-browser.ts` (espera o relógio de verdade: a alface pede
-  aos 54 s). Pedido de arte (cata-vento perto da horta) no plano
-  `docs/plans/2026-10-29-arquipelago-clima-da-ilha.md`.
+  aos 54 s) e, no fim, usa o cata-vento.
+- O cata-vento da horta (`mundo/cata-vento.tsx`, `cata-vento.glb` de `arte/mundo/cata_vento.py`,
+  lugar em `CATA_VENTO` de `medidas.ts`): a hélice (nó `helice`) gira em volta do z do modelo com
+  `GIRO_DO_CATA_VENTO[clima]` (um quarto com menos movimento; parada na pausa; numa visita, o giro
+  do sol). Com as Nuvens abertas e fora de visita, "Mudar o clima" chama `proximoClima` e
+  `escolherClima` e diz a `FALA_DO_CLIMA`. O poste colide (`col-cil-poste-cata-vento-1`, conferido
+  em `colisao-da-ilha-central.test.ts`).
 
 ## Minijogo "Jardim que floresce" (fase4-10, 29/10/2026)
 

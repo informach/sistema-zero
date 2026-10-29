@@ -26,6 +26,7 @@ import { lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import {
   alturaDaIlha,
   BANCADA,
+  CATA_VENTO,
   CENTRO_DA_CASA,
   FAROL,
   INICIO,
@@ -109,6 +110,7 @@ let terreno: Object3D
 let doTerreno: Solido[]
 let doFarol: Solido[]
 let doPier: Solido[]
+let doCataVento: Solido[]
 let todos: Solido[]
 
 const solidos = (raiz: Object3D) =>
@@ -119,6 +121,7 @@ beforeAll(async () => {
   doTerreno = solidos(terreno)
   doFarol = solidos(await carregar('farol.glb'))
   doPier = solidos(await carregar('pier.glb'))
+  doCataVento = solidos(await carregar('cata-vento.glb'))
   todos = [
     ...doTerreno,
     ...colisoresDasArvores(),
@@ -127,8 +130,21 @@ beforeAll(async () => {
     ...deslocar(COLISORES_DA_BANCADA, GRUPOS.bancada),
     ...deslocar([...COLISORES_DO_FAROL, ...doFarol], GRUPOS.farol),
     ...deslocar([...COLISORES_DO_PIER, ...doPier], GRUPOS.pier),
+    ...noCataVento(doCataVento),
   ]
 })
+
+/** Os colisores do cata-vento no lugar dele (`CATA_VENTO`, girado e no chão da ilha). */
+function noCataVento(lista: Solido[]): Solido[] {
+  const { x, z, giro } = CATA_VENTO
+  const c = Math.cos(giro)
+  const s = Math.sin(giro)
+  const y = alturaDaIlha(x, z)
+  return lista.map((o) => {
+    const [px, py, pz] = o.posicao
+    return { ...o, posicao: [x + px * c + pz * s, y + py, z - px * s + pz * c] }
+  })
+}
 
 /** Algo que não dá para subir (mais alto que o degrau) segura o corpo em (x, z)? */
 function quemSegura(x: number, z: number, lista = todos): string | undefined {
@@ -338,6 +354,16 @@ describe('dá para andar da porta até tudo', () => {
     for (let i = 0; i < 6; i++) {
       const { x, z } = posicaoDoCanteiro(i)
       expect(chegaPerto(x, z, 1.6)).toBe(true)
+    }
+  })
+
+  test('o cata-vento ao lado da horta (dentro do alcance de "Mudar o clima", 1,8 m)', () => {
+    expect(chegaPerto(CATA_VENTO.x, CATA_VENTO.z, 1.6)).toBe(true)
+    // Ele segura o corpo, mas não tapa nenhum canteiro.
+    expect(quemSegura(CATA_VENTO.x, CATA_VENTO.z)).toBe('col-cil-poste-cata-vento-1')
+    for (let i = 0; i < 6; i++) {
+      const { x, z } = posicaoDoCanteiro(i)
+      expect(Math.hypot(x - CATA_VENTO.x, z - CATA_VENTO.z)).toBeGreaterThan(1.3)
     }
   })
 

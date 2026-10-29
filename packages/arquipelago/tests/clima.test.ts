@@ -8,7 +8,9 @@ import {
   FALA_DA_SEDE,
   FALA_DO_BONUS,
   FALA_DO_CLIMA,
+  GIRO_DO_CATA_VENTO,
   pedeAgua,
+  proximoClima,
   regarComSede,
 } from '../src/sistemas/clima'
 import { APRESENTACAO_DA_IRIE } from '../src/sistemas/irie'
@@ -120,4 +122,12 @@ describe('os números e as falas', () => {
       expect(f.split('.')[0]).not.toContain('?')
     }
   })
+})
+
+test('o cata-vento da horta passa de um clima para o próximo e volta ao sol', () => {
+  expect(proximoClima('sol')).toBe('nublado')
+  expect(proximoClima('nublado')).toBe('chuva')
+  expect(proximoClima('chuva')).toBe('sol')
+  expect(GIRO_DO_CATA_VENTO.chuva).toBeGreaterThan(GIRO_DO_CATA_VENTO.nublado)
+  expect(GIRO_DO_CATA_VENTO.nublado).toBeGreaterThan(GIRO_DO_CATA_VENTO.sol)
 })

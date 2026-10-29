@@ -90,7 +90,8 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 | `ponte.glb` | `ponte.py` | uma peça na origem (instanciada) | `tabua`, `poste`, `corda` | 192 | 9 KB |
 | `ilhas-do-anel.glb` | `ilhas_anel.py` | centro de cada ilha, y = 0 no mar | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` | 19.336 | 527 KB |
 | `boias.glb` | `boias.py` | uma peça na linha d'água (instanciada) | `boia`, `corda`, `flutuador` | 1.208 | 28 KB |
-| **total** | | | | **60.310** | **1,96 MB** |
+| `cata-vento.glb` | `cata_vento.py` | base do poste (`CATA_VENTO` em `medidas.ts`, ao lado da horta) | `poste`, `helice` (pivô no cubo, gira em volta do z do three) e o `col-cil-poste-cata-vento-1` | 662 | 42 KB |
+| **total** | | | | **61.916** | **2,02 MB** |
 
 ### O que o código liga, desliga e mexe
 

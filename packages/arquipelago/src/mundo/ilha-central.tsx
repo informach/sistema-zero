@@ -3,6 +3,7 @@ import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { useMemo, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useJogo } from '../estado/contexto'
+import { CataVento } from './cata-vento'
 import {
   ALTURA_DO_PIER,
   ARVORES,
@@ -232,6 +233,7 @@ export function IlhaCentral() {
       <Arvores />
       <Pier />
       <LunetaDoPier />
+      <CataVento />
     </>
   )
 }

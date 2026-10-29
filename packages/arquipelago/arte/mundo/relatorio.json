@@ -38,6 +38,17 @@
     },
     "triangulos": 6874
   },
+  "cata-vento": {
+    "colisores": {
+      "col-cil-poste-cata-vento": 1
+    },
+    "kb": 41.6,
+    "nos": {
+      "helice": 326,
+      "poste": 336
+    },
+    "triangulos": 662
+  },
   "farol": {
     "colisores": {
       "col-cil-pedra-farol": 8,

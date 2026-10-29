@@ -29,6 +29,11 @@ export const PORTA = { x: 2.5, largura: 2.2, altura: 3 } as const
 
 export const HORTA = { x: 10.5, z: 1, colunas: 3, linhas: 2, passo: 1.7 } as const
 export const BANCADA = { x: 10, z: -7 } as const
+/**
+ * O cata-vento ao lado da horta (pedido da fase4-08, `arte/mundo/cata_vento.py`): onde se escolhe
+ * o clima da sua ilha. A hélice olha para a horta (`giro`, o +z do modelo virado para −x).
+ */
+export const CATA_VENTO = { x: 13.9, z: 1, giro: -Math.PI / 2 } as const
 export const FAROL = { x: -12, z: -13 } as const
 export const PIER = { x: -5, z: 27, comprimento: 10 } as const
 
