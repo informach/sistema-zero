@@ -345,7 +345,10 @@ describe('loadGatewayConfig', () => {
       authorize: { statuses: ['active'] },
     })
     expect(route?.auth).not.toBe('public')
-    expect(route?.transforms?.length).toBeGreaterThan(0)
+    // O mesmo token interno das outras rotas da sessão de perfil (vazio só sem AUTH_INTERNAL_TOKEN).
+    const sair = realConfig.routes.find((item) => item.id === 'auth-profile-session-exit')
+    expect(route?.transforms).toBeDefined()
+    expect(route?.transforms).toEqual(sair?.transforms)
   })
 
   test('"Como fazer": a criança lê com qualquer conta ativa; a escrita é admin+ com auditoria', () => {

@@ -112,8 +112,6 @@ export function arquipelagoGateway(opts: {
         pathPattern: '/arquipelago/cartas',
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
-      // A galeria (29/10/2026): ler o que ela comprou e o saldo, e comprar uma aparência. Comprar
-      // gasta moedas pelo Members: corpo pequeno e um ritmo de quem toca num botão.
       // Recordes da família e visitas (fase3-12): só leitura, de quem joga. Fora de
       // `/arquipelago/familia/` (a área dos pais); o serviço confere a conta e a permissão.
       {
@@ -130,6 +128,8 @@ export function arquipelagoGateway(opts: {
         pathPattern: '/arquipelago/irmaos/:perfilId/casa',
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
+      // A galeria (29/10/2026): ler o que ela comprou e o saldo, e comprar uma aparência. Comprar
+      // gasta moedas pelo Members: corpo pequeno e um ritmo de quem toca num botão.
       {
         ...jogador,
         id: 'arquipelago-galeria',
