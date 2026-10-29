@@ -18,7 +18,6 @@ import {
   CABIN_PIECES,
   CABIN_RULES,
   CHEST_RULES,
-  COIN_COUNTER,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
   MAP_TILES,
@@ -93,7 +92,15 @@ const SceneActionSchema = t.Union([
   // O contador de moedas (Poder "Moedas no caminho", 29/10/2026).
   t.Object({
     type: t.Literal('touch-coin'),
-    coin: t.Integer({ minimum: 0, maximum: COIN_COUNTER.coins - 1 }),
+    // Os literais do `CoinIndex` do core (as seis moedas do contador): um inteiro não cabe no tipo.
+    coin: t.Union([
+      t.Literal(0),
+      t.Literal(1),
+      t.Literal(2),
+      t.Literal(3),
+      t.Literal(4),
+      t.Literal(5),
+    ]),
   }),
   t.Object({ type: t.Literal('leave-coin') }),
   t.Object({ type: t.Literal('try-chest') }),
