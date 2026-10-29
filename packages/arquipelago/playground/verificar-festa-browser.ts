@@ -63,6 +63,8 @@ try {
   browser = await chromium.launch({
     ...(executablePath ? { executablePath } : { channel: 'chrome' }),
     headless: true,
+    // Sem placa de vídeo (CI, contêiner), o WebGL vem do SwiftShader, como nos outros verificadores.
+    args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
   for (const largura of [1280, 390]) {
     const context = await browser.newContext({

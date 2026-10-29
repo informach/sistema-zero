@@ -11,6 +11,7 @@
  */
 import type { LumiId, Salvamento } from '@sistemazero/arquipelago-contracts'
 import { adicionar, type Inventario, quantidade } from './itens'
+import { ESPECIES_DE_LUMI } from './lumis'
 
 export const ID_DA_LANTERNA = 'lanterna'
 
@@ -19,11 +20,6 @@ export const FAMILIA_DA_VILA = { comum: 'quindim', raro: 'brigadeiro' } as const
   'comum' | 'raro',
   LumiId
 >
-
-export const NOMES_DOS_LUMIS: Readonly<Partial<Record<LumiId, string>>> = {
-  quindim: 'Quindim',
-  brigadeiro: 'Brigadeiro',
-}
 
 /** Quantos borrões saem em cada noite na Vila Doce. */
 export const BORROES_POR_NOITE = 2
@@ -82,8 +78,8 @@ export function borroesDaNoite(dia: number, lumis: Salvamento['lumis']): BorraoD
 }
 
 export function falaDoLumiNovo(lumi: LumiId, quantos: number): string {
-  const nome = NOMES_DOS_LUMIS[lumi] ?? 'Lumi'
-  if (lumi === FAMILIA_DA_VILA.raro)
+  const nome = ESPECIES_DE_LUMI[lumi].nome
+  if (ESPECIES_DE_LUMI[lumi].raro)
     return quantos === 1
       ? `Um ${nome}. É o raro da Vila: quando ele comemora, o granulado acende.`
       : `Mais um ${nome}. O granulado dele já está aceso.`

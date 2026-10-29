@@ -63,6 +63,6 @@ export function lerFesta(texto: string | null): Festa | null {
 
 export const PAINEL_DA_FOGUEIRA = 'fogueira-da-festa'
 export const avisoDaFesta = (festa: Festa) =>
-  `${NOMES_DAS_FESTAS[festa]} chegou à Vila Doce. A festa volta todo ano; nada se perde por faltar.`
+  `${NOMES_DAS_FESTAS[festa]} chegou à Vila Doce. Ela volta todo ano.`
 export const chaveDoAvisoDaFesta = (perfil: string, festa: Festa) =>
   `arquipelago:festa:${encodeURIComponent(perfil)}:${festa}`
