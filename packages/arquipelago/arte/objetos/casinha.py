@@ -46,6 +46,12 @@ def contorno_porta(n=12):
     return pts
 
 
+# As faces que o Pinta pinta (fase3-11): a frente (com a porta) e os dois lados, na cor da madeira sem
+# pintura. Os frisos das tábuas, as cantoneiras e o telhado ficam por cima, como na casinha de verdade.
+for _face in ('pintaFrente', 'pintaLadoEsq', 'pintaLadoDir'):
+    lib_q.PALETTE[_face] = lib_q.PALETTE['casinha']
+
+
 def paredes():
     c = box((L, F, H), (CX, CY, Z0 + H / 2), 'casinha', bevel=0.01, segs=1)
     miolo = box((L - 2 * EP, F - 2 * EP, H), (CX, CY, Z0 + H / 2 + 0.02), 'casinha', bevel=0.0)
@@ -62,6 +68,19 @@ def paredes():
             return 'portaCasinha'
         return None
     pintar_por(c, por_dentro)
+
+    def por_fora(ct, n):
+        if n.y < -0.999 and ct.y < Y_FRENTE + 0.002:
+            return 'pintaFrente'
+        if n.x < -0.999 and ct.x < CX - L / 2 + 0.002:
+            return 'pintaLadoEsq'
+        if n.x > 0.999 and ct.x > CX + L / 2 - 0.002:
+            return 'pintaLadoDir'
+        return None
+    pintar_por(c, por_fora)
+    uv_plano(c, {'pintaFrente'}, (1, 0, 0), (0, 0, 1))
+    uv_plano(c, {'pintaLadoEsq'}, (0, -1, 0), (0, 0, 1))
+    uv_plano(c, {'pintaLadoDir'}, (0, 1, 0), (0, 0, 1))
     p = [c]
     # Tábuas: frisos escuros na horizontal (na frente, contornando a porta).
     for z in (Z0 + 0.13, Z0 + 0.26, Z0 + 0.39, Z0 + 0.52):
@@ -208,7 +227,7 @@ def casinha():
     placa, texto = placa_e_texto()
     nos = {'casinha': paredes() + telhado() + miolo() + potes(),
            'placa': placa, 'texto': texto}
-    return {'nos': nos, 'grupo': 'casinha'}
+    return {'nos': nos, 'grupo': 'casinha', 'uv': True}
 
 
 ITENS = [('casinha', casinha)]

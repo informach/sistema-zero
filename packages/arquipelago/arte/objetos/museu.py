@@ -83,11 +83,23 @@ def dente(comp, r, m='dente'):
     return o
 
 
+# As faces que o Pinta pinta (fase3-11): a frente e os lados da base de madeira da vitrine, na cor da
+# madeira sem pintura. O vidro, os fósseis, a redoma e o crânio ficam como estão.
+for _face in ('pintaFrente', 'pintaLadoEsq', 'pintaLadoDir'):
+    lib_q.PALETTE[_face] = lib_q.PALETTE['madeira']
+
+
 def vitrine():
     p = []
     L, F, A = 0.86, 0.48, 0.58
     # Móvel de madeira com pés torneados.
-    p.append(caixa_redonda((L, F, 0.16), (0, 0, A - 0.08), 'madeira', raio=0.02, segs=2))
+    base = caixa_redonda((L, F, 0.16), (0, 0, A - 0.08), 'madeira', raio=0.02, segs=2)
+    pintar_por(base, lambda ct, n: 'pintaFrente' if n.y < -0.999 else 'pintaLadoEsq' if n.x < -0.999
+               else 'pintaLadoDir' if n.x > 0.999 else None)
+    uv_plano(base, {'pintaFrente'}, (1, 0, 0), (0, 0, 1))
+    uv_plano(base, {'pintaLadoEsq'}, (0, -1, 0), (0, 0, 1))
+    uv_plano(base, {'pintaLadoDir'}, (0, 1, 0), (0, 0, 1))
+    p.append(base)
     for sx in (-1, 1):
         for sy in (-1, 1):
             pe = torneado([(0, 0), (0.03, 0), (0.035, 0.03), (0.022, 0.08), (0.028, 0.25), (0.022, A - 0.15),
@@ -241,7 +253,7 @@ def museu():
     lib_ilha.place(placa + texto, loc=(x, y, 0), rot_z=giro)
     nos['placa'] = (placa, (x, y, 0))
     nos['texto'] = (texto, (x, y, 0))
-    return {'nos': nos, 'grupo': 'museu'}
+    return {'nos': nos, 'grupo': 'museu', 'uv': True}
 
 
 ITENS = [('museu', museu)]

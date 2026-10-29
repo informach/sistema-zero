@@ -22,6 +22,8 @@ lib_q.PALETTE.update({
     'folhaNova': ('#8fdc6a', 0.75, None, 0),
     'talo': ('#4f9a45', 0.8, None, 0),
 })
+# A face do Pinta na cor do vaso sem pintura.
+lib_q.PALETTE['pintaFrente'] = lib_q.PALETTE['vasoCeramica']
 
 # Vaso: o perfil de dentro para fora (raio, altura). A boca fica em Z_BOCA.
 Z_PRATO = 0.03
@@ -41,10 +43,39 @@ def vaso():
               (R_BOCA, 0.41), (0.214, 0.415), (0.218, Z_BOCA - 0.01), (0.212, Z_BOCA), (0.19, Z_BOCA),
               (0.186, Z_TERRA - 0.005), (0, Z_TERRA - 0.005)]
     corpo = torneado(perfil, 'vasoCeramica', seg=28)
-    # A faixa terracota no meio do corpo e a borda de cima na mesma cor.
-    pintar_por(corpo, lambda c, n: 'vasoFaixa' if 0.22 < c.z < 0.29 or c.z > 0.405 else None)
+    # A faixa terracota no meio do corpo e a borda de cima na mesma cor. O resto da volta do vaso é a
+    # face que o Pinta pinta (fase3-11): a imagem dá a volta nele como um rótulo, com a emenda atrás.
+    pintar_por(corpo, lambda c, n: 'vasoFaixa' if 0.22 < c.z < 0.29 or c.z > 0.405
+               else 'pintaFrente' if abs(n.z) < 0.6 and c.z > Z_PRATO + 0.008 else None)
+    uv_em_volta(corpo, 'pintaFrente')
     p.append(corpo)
     return p
+
+
+def uv_em_volta(o, material):
+    """Coordenadas de textura em volta do eixo z: u de 0 a 1 dando a volta (0,5 na frente, −Y; a
+    emenda fica atrás) e v de 0 a 1 de baixo para cima, como um rótulo colado no vaso."""
+    bpy.context.view_layer.update()
+    me = o.data
+    if not me.uv_layers:
+        me.uv_layers.new(name='UVMap')
+    uv = me.uv_layers[0].data
+    idx = {i for i, m in enumerate(me.materials) if m and m.name == material}
+    M = o.matrix_world
+    zs = [(M @ me.vertices[v].co).z for p in me.polygons if p.material_index in idx for v in p.vertices]
+    z0, z1 = min(zs), max(zs)
+    for p in me.polygons:
+        if p.material_index not in idx:
+            continue
+        pts = [M @ me.vertices[me.loops[li].vertex_index].co for li in p.loop_indices]
+        us = [0.5 + math.atan2(w.x, -w.y) / (2 * math.pi) for w in pts]
+        # Na emenda (atrás), a face não pode ir de 0,98 a 0,02: leva os de perto de 0 para perto de 1.
+        if max(us) - min(us) > 0.5:
+            us = [u + 1 if u < 0.5 else u for u in us]
+            us = [min(u, 1.0) for u in us]
+        for li, u, w in zip(p.loop_indices, us, pts):
+            uv[li].uv = (u, (w.z - z0) / (z1 - z0))
+    return o
 
 
 def terra():
@@ -177,7 +208,7 @@ def conferir(nos):
 def planta_interior():
     nos = {'vaso': vaso(), 'terra': terra(), 'folhas': folhas()}
     conferir(nos)
-    return {'nos': nos, 'grupo': 'planta'}
+    return {'nos': nos, 'grupo': 'planta', 'uv': True}
 
 
 ITENS = [('planta-interior', planta_interior)]
