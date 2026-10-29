@@ -273,28 +273,46 @@ try {
           }
           const fim = performance.now() + 12_000
           let saiu = false
+          let concluiu = false
+          let falha: Error | undefined
+          // Decide a cada leitura do controle, como no salto: com quadros lentos, um timer
+          // deixava a mesma direção valendo por vários passos e o corpo passava do alvo.
+          const passo = () => {
+            const d = g.__arquipelagoLerCorpo(),
+              dx = alvo.x - d.x,
+              dz = alvo.z - d.z,
+              dist = Math.hypot(dx, dz)
+            if (!d.noChao) saiu = true
+            if ((!saltar || saiu) && d.noChao && dist < 0.2) {
+              concluiu = true
+              g.qaPad.axes[0] = g.qaPad.axes[1] = 0
+              return
+            }
+            if (performance.now() > fim)
+              throw new Error(`Não chegou: ${JSON.stringify({ alvo, d, saiu })}`)
+            const intensidade =
+              dist < 0.18 ? 0 : correr && dist > 0.7 ? 1 : Math.min(0.8, 0.25 + dist * 0.5)
+            const x = (dx / Math.max(dist, 0.001)) * intensidade,
+              z = (dz / Math.max(dist, 0.001)) * intensidade
+            g.qaPad.axes[0] = x * Math.cos(d.giro) - z * Math.sin(d.giro)
+            g.qaPad.axes[1] = x * Math.sin(d.giro) + z * Math.cos(d.giro)
+            g.qaPad.buttons[7]!.pressed = correr
+            if (saiu) g.qaPad.buttons[0]!.pressed = false
+          }
           try {
             g.qaPad.buttons[0]!.pressed = saltar
-            while (true) {
-              const d = g.__arquipelagoLerCorpo(),
-                dx = alvo.x - d.x,
-                dz = alvo.z - d.z,
-                dist = Math.hypot(dx, dz)
-              if (!d.noChao) saiu = true
-              if ((!saltar || saiu) && d.noChao && dist < 0.2) break
-              if (performance.now() > fim)
-                throw new Error(`Não chegou: ${JSON.stringify({ alvo, d, saiu })}`)
-              const intensidade =
-                dist < 0.18 ? 0 : correr && dist > 0.7 ? 1 : Math.min(0.8, 0.25 + dist * 0.5)
-              const x = (dx / Math.max(dist, 0.001)) * intensidade,
-                z = (dz / Math.max(dist, 0.001)) * intensidade
-              g.qaPad.axes[0] = x * Math.cos(d.giro) - z * Math.sin(d.giro)
-              g.qaPad.axes[1] = x * Math.sin(d.giro) + z * Math.cos(d.giro)
-              g.qaPad.buttons[7]!.pressed = correr
-              if (saiu) g.qaPad.buttons[0]!.pressed = false
-              await new Promise((r) => setTimeout(r, 16))
+            g.qaStep = () => {
+              if (concluiu || falha) return
+              try {
+                passo()
+              } catch (e) {
+                falha = e instanceof Error ? e : new Error(String(e))
+              }
             }
+            while (!concluiu && !falha) await new Promise((r) => setTimeout(r, 16))
+            if (falha) throw falha
           } finally {
+            g.qaStep = undefined
             g.qaPad.axes[0] = g.qaPad.axes[1] = 0
             g.qaPad.buttons[0]!.pressed = g.qaPad.buttons[7]!.pressed = false
           }
