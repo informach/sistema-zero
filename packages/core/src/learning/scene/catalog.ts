@@ -1583,6 +1583,57 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Encoste em duas moedas, clique em Afastar, volte numa delas, tente o baú com quatro, pegue as seis e tente com Pelo menos 5 e com Igual a 5.',
     ],
   },
+  /**
+   * O Poder "O segredo da cabana" (Faísca, 29/10/2026): o mesmo jogo que a criança monta, com a
+   * chave, o emblema e a cabana do faroleiro. ⚠️ Os rótulos da bancada ("Pegar a chave", "Pegar o
+   * emblema", "Encostar na cabana", "e", "ou", "Recomeçar a partida") são citados pelos pedidos e
+   * pelas pistas letra por letra.
+   */
+  'two-pieces': {
+    id: 'two-pieces',
+    group: 'events',
+    title: 'A porta com duas peças',
+    instruction:
+      'Pegue as peças em ordens diferentes e tente a cabana: acompanhe temChave, temEmblema e a resposta da pergunta. Depois troque o "e" pelo "ou".',
+    manipulates: 'A chave, o emblema, a porta da cabana e o bloco que junta as duas perguntas',
+    success:
+      'Sem peça nenhuma e com uma só a cabana ficou fechada; com as duas ela abriu, em qualquer ordem. Com "ou", uma peça só já abria.',
+    extra: 'E se a cabana pedisse três peças: o que mudaria na pergunta?',
+    goals: [
+      {
+        id: 'none-closed',
+        label: 'Sem nenhuma peça, a cabana ficou fechada',
+        pedido: 'Com e escolhido, clique em Encostar na cabana antes de pegar qualquer peça.',
+      },
+      {
+        id: 'one-closed',
+        label: 'Com uma peça só, a cabana ficou fechada',
+        pedido:
+          'Com e escolhido, use Pegar a chave ou Pegar o emblema e clique em Encostar na cabana.',
+      },
+      {
+        id: 'both-open',
+        label: 'Com as duas peças, a cabana abriu',
+        pedido: 'Com e escolhido, pegue as duas peças e clique em Encostar na cabana.',
+      },
+      {
+        id: 'any-order',
+        label: 'A cabana abriu começando por qualquer peça',
+        pedido:
+          'Abra a cabana começando pela chave, clique em Recomeçar a partida e abra de novo começando pelo emblema.',
+      },
+      {
+        id: 'and-vs-or',
+        label: 'Com "ou", uma peça só já abriu',
+        pedido: 'Escolha ou, pegue uma peça só e clique em Encostar na cabana.',
+      },
+    ],
+    hints: [
+      'Olhe temChave e temEmblema antes de encostar na cabana: quantos estão verdadeiro?',
+      'Tente a cabana sem peça, com uma e com as duas. Depois recomece e pegue na outra ordem.',
+      'Encoste na cabana sem nada, pegue a chave e encoste, pegue o emblema e encoste, recomece começando pelo emblema e, por fim, escolha ou e tente com uma peça só.',
+    ],
+  },
   'lighthouse-position': {
     id: 'lighthouse-position',
     group: 'stage',
@@ -2818,6 +2869,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'lighthouse-walk': PREVIA_INICIAL,
   'lighthouse-position': PREVIA_INICIAL,
   'coin-counter': PREVIA_INICIAL,
+  'two-pieces': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

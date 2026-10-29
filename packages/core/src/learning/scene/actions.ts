@@ -59,6 +59,8 @@ export const SCENE_IDS = [
   'lighthouse-position',
   // Poder "Moedas no caminho" (Faísca, 29/10/2026): o contador, a moeda que some e a meta do baú.
   'coin-counter',
+  // Poder "O segredo da cabana" (Faísca, 29/10/2026): a porta que pede a chave e o emblema.
+  'two-pieces',
   'restart',
   'hitbox',
   'score',
@@ -161,6 +163,12 @@ export type SceneAction =
   /** `coin-counter`: a comparação da regra do baú, "pelo menos 5" ou "igual a 5". */
   | { type: 'chest-rule'; rule: ChestRule }
   | { type: 'restart-coins' }
+  /** `two-pieces`: o personagem pega uma das duas peças (ela sai do chão e guarda verdadeiro). */
+  | { type: 'take-piece'; piece: CabinPiece }
+  | { type: 'try-cabin' }
+  /** `two-pieces`: o bloco que junta as duas perguntas da cabana, "e" ou "ou". */
+  | { type: 'cabin-rule'; rule: CabinRule }
+  | { type: 'restart-cabin' }
   /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
   | { type: 'hold-arrow'; held: boolean }
   | { type: 'movement-command'; enabled: boolean }
@@ -342,6 +350,12 @@ export type CoinIndex = 0 | 1 | 2 | 3 | 4 | 5
 export const CHEST_RULES = ['at-least', 'equals'] as const
 export type ChestRule = (typeof CHEST_RULES)[number]
 
+/** A porta com duas peças: a chave e o emblema, e o bloco "e / ou" que junta as duas perguntas. */
+export const CABIN_PIECES = ['key', 'emblem'] as const
+export type CabinPiece = (typeof CABIN_PIECES)[number]
+export const CABIN_RULES = ['and', 'or'] as const
+export type CabinRule = (typeof CABIN_RULES)[number]
+
 /** A tela 480 × 360 e a chave 32 × 32 do Farol. O player confere contra FAROL_LAYOUT. */
 export const LIGHTHOUSE_POSITION = {
   start: { x: 211, y: 53 },
@@ -403,6 +417,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'lighthouse-walk': [],
   'lighthouse-position': [],
   'coin-counter': [],
+  'two-pieces': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -759,6 +774,13 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'coin-counter' && typeof value.enabled === 'boolean'
     case 'chest-rule':
       return scene === 'coin-counter' && CHEST_RULES.some((r) => r === value.rule)
+    case 'take-piece':
+      return scene === 'two-pieces' && CABIN_PIECES.some((p) => p === value.piece)
+    case 'try-cabin':
+    case 'restart-cabin':
+      return scene === 'two-pieces'
+    case 'cabin-rule':
+      return scene === 'two-pieces' && CABIN_RULES.some((r) => r === value.rule)
     case 'movement-command':
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'walk-frames':

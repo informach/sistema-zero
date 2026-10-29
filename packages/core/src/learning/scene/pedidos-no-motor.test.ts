@@ -1270,6 +1270,63 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) => s.caption.startsWith('Esta moeda já saiu do caminho'),
   },
+  'two-pieces': {
+    pedidos: {
+      'none-closed': {
+        texto: 'Com e escolhido, clique em Encostar na cabana antes de pegar qualquer peça.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'one-closed': {
+        texto:
+          'Com e escolhido, use Pegar a chave ou Pegar o emblema e clique em Encostar na cabana.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'both-open': {
+        texto: 'Com e escolhido, pegue as duas peças e clique em Encostar na cabana.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'any-order': {
+        texto:
+          'Abra a cabana começando pela chave, clique em Recomeçar a partida e abra de novo começando pelo emblema.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'try-cabin' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'and-vs-or': {
+        texto: 'Escolha ou, pegue uma peça só e clique em Encostar na cabana.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'or' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+    },
+    mostra: (s) => s.caption.startsWith('A cabana continua fechada'),
+  },
   'lighthouse-position': {
     pedidos: {
       'x-minus': {

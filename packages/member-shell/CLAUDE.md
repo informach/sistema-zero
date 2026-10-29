@@ -3577,6 +3577,20 @@ Farol: o palco é o JOGO (praia, as seis moedas e o baú nos lugares de `MOEDAS_
   as escolhas em silêncio. Sem `freeExploration` (faltam os componentes de descoberta).
 - Teste: `tests/scene-coin-counter.test.tsx`.
 
+### A porta com duas peças (`two-pieces`, Faísca Poder 2, 29/10/2026)
+
+A experiência do Poder "O segredo da cabana" (`scene-two-pieces.tsx`), no mesmo princípio do
+contador de moedas: o palco é o JOGO (praia, a chave do Farol, o emblema e a cabana nos lugares de
+`EMBLEMA_2D`/`CABANA_2D` do `docs/aulas-interativas-tecnico/qa/cabana-projeto.ts`, o aviso do jogo
+e as duas casinhas "Leva:" com as peças guardadas) e a bancada tem a `RegraDoJogo` da cabana.
+
+- A linha "A pergunta agora" mostra `temChave (…) e/ou temEmblema (…) → resposta`, e a regra marca
+  o ramo que a tentativa seguiu (só com o personagem na cabana).
+- "e" / "ou" trocam o bloco que junta as perguntas (como "Pelo menos 5" / "Igual a 5"); a escolha
+  fica ao recomeçar. Peça já guardada não se pega de novo (botão `fechado`).
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como as Moedas.
+- Teste: `tests/scene-two-pieces.test.tsx`.
+
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 
 Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo

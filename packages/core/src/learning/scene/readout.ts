@@ -648,6 +648,20 @@ function leituras(
           tone: 'b',
         },
       ]
+    case 'two-pieces':
+      return [
+        { label: 'temChave', value: state.pieces.temChave ? 'verdadeiro' : 'falso', tone: 'a' },
+        {
+          label: 'temEmblema',
+          value: state.pieces.temEmblema ? 'verdadeiro' : 'falso',
+          tone: 'b',
+        },
+        {
+          label: 'cabana',
+          value: state.pieces.door === 'open' ? 'aberta' : 'fechada',
+          tone: 'plain',
+        },
+      ]
     case 'lighthouse-position':
       return [
         { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
@@ -1264,6 +1278,14 @@ function situacao(scene: SceneId, state: SceneState): string {
       return (
         state.caption ||
         `${quantos(noCaminho, 'moeda está no caminho', 'moedas estão no caminho')}. moedas guarda ${c.moedas}.`
+      )
+    }
+    case 'two-pieces': {
+      const p = state.pieces
+      const pecas = Number(p.temChave) + Number(p.temEmblema)
+      return (
+        state.caption ||
+        `${quantos(2 - pecas, 'peça está no chão', 'peças estão no chão')}. A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}.`
       )
     }
     case 'lighthouse-position':

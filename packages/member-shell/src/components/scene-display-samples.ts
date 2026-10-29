@@ -705,6 +705,20 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'A partida recomeçou: moedas voltou a 0 e as seis moedas voltaram.',
     ],
   },
+  'two-pieces': {
+    readouts: [
+      { label: 'temChave', value: 'verdadeiro', tone: 'a' },
+      { label: 'temEmblema', value: 'verdadeiro', tone: 'b' },
+      { label: 'cabana', value: 'fechada', tone: 'plain' },
+    ],
+    situations: [
+      '2 peças estão no chão. A cabana está fechada.',
+      'Você pegou o emblema: temEmblema agora é verdadeiro.',
+      'A cabana continua fechada: ela pede a chave e o emblema.',
+      'A cabana pergunta: temChave ou temEmblema.',
+      'A partida recomeçou: as duas peças voltaram ao chão e a cabana fechou.',
+    ],
+  },
   'lighthouse-key': {
     readouts: [
       { label: 'temChave', value: 'verdadeiro', tone: 'a' },

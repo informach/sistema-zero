@@ -258,6 +258,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, você vai acompanhar o número que o jogo guarda a cada moeda e testar a regra do baú.',
   },
+  'two-pieces': {
+    label: 'A porta com duas peças',
+    explanation:
+      'Nesta experiência, você vai testar a cabana sem peça, com uma e com as duas, e comparar o "e" com o "ou".',
+  },
   'lighthouse-position': {
     label: 'O lugar da chave no mapa',
     explanation: 'Nesta experiência, você muda um número por vez e acompanha a chave no mapa.',
@@ -1355,6 +1360,32 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       correctChoiceId: 'igual',
       explanation:
         '"Igual a 5" só abre com exatamente 5. "Pelo menos 5" abre com 5, 6 ou mais: é a regra que o jogo precisa.',
+    },
+  },
+  'two-pieces': {
+    prediction: {
+      prompt:
+        'A pergunta da cabana é temChave e temEmblema. O personagem pega só a chave e encosta na cabana. O que acontece?',
+      choices: [
+        {
+          id: 'abre',
+          label: 'A cabana abre.',
+          shows: 'A cabana continuou fechada: falta o emblema.',
+        },
+        { id: 'fechada', label: 'A cabana continua fechada.' },
+      ],
+      correctChoiceId: 'fechada',
+      revealOn: 'one-closed',
+    },
+    explain: {
+      prompt: 'Por que, com "ou", a cabana abriu com uma peça só?',
+      choices: [
+        { id: 'basta', label: 'Porque com "ou" basta uma das duas ser verdadeira.' },
+        { id: 'chave', label: 'Porque a chave sozinha sempre abre portas.' },
+      ],
+      correctChoiceId: 'basta',
+      explanation:
+        'Com "ou", uma resposta verdadeira já basta. Com "e", as duas precisam ser verdadeiras: é a regra que a cabana precisa.',
     },
   },
   'lighthouse-position': {

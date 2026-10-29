@@ -1,4 +1,8 @@
 import {
+  CABIN_PIECES,
+  CABIN_RULES,
+  type CabinPiece,
+  type CabinRule,
   CHEST_RULES,
   type ChestRule,
   COIN_COUNTER,
@@ -123,6 +127,23 @@ export interface SceneCoinCounter {
   counted: boolean[]
   /** Gesto: o baú com mais de 5 moedas visto nas duas regras (fechado com "igual", aberto com "pelo menos"). */
   compared: { equals: boolean; atLeast: boolean }
+}
+
+/**
+ * A porta com duas peças (`two-pieces`, Poder "O segredo da cabana"): as duas informações que o
+ * jogo guarda, o bloco que junta as perguntas da cabana e onde o personagem está.
+ */
+export interface SceneTwoPieces {
+  temChave: boolean
+  temEmblema: boolean
+  rule: CabinRule
+  /** Numa das peças, na porta da cabana, ou no começo. */
+  at: CabinPiece | 'door' | null
+  door: 'closed' | 'open'
+  /** As peças pegas nesta partida, na ordem em que foram pegas. */
+  order: CabinPiece[]
+  /** Gesto: a cabana aberta com "e" começando por cada peça (a ordem não importa). */
+  opened: { keyFirst: boolean; emblemFirst: boolean }
 }
 
 /** A posição atual e a anterior permitem comparar um eixo por vez no mapa. */
@@ -1414,6 +1435,7 @@ export interface SceneState {
   lighthouse: SceneLighthouseKey
   collection: SceneCollectionMemory
   coins: SceneCoinCounter
+  pieces: SceneTwoPieces
   walk: SceneLighthouseWalk
   keyPosition: SceneLighthousePosition
   once: SceneOnce
@@ -1724,6 +1746,18 @@ export function cloneCoins(c: SceneCoinCounter): SceneCoinCounter {
     compared: { ...c.compared },
   }
 }
+const PIECES_PADRAO: SceneTwoPieces = {
+  temChave: false,
+  temEmblema: false,
+  rule: 'and',
+  at: null,
+  door: 'closed',
+  order: [],
+  opened: { keyFirst: false, emblemFirst: false },
+}
+export function clonePieces(p: SceneTwoPieces): SceneTwoPieces {
+  return { ...p, order: [...p.order], opened: { ...p.opened } }
+}
 const WALK_PADRAO: SceneLighthouseWalk = {
   frame: 0,
   x: LIGHTHOUSE_WALK.start,
@@ -1759,6 +1793,7 @@ function gruposComPadrao() {
     ['lighthouse', LIGHTHOUSE_PADRAO],
     ['collection', COLLECTION_PADRAO],
     ['coins', COINS_PADRAO],
+    ['pieces', PIECES_PADRAO],
     ['walk', WALK_PADRAO],
     ['keyPosition', KEY_POSITION_PADRAO],
     ['once', initialOnce(undefined)],
@@ -1918,6 +1953,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     lighthouse: { ...LIGHTHOUSE_PADRAO },
     collection: { ...COLLECTION_PADRAO },
     coins: cloneCoins(COINS_PADRAO),
+    pieces: clonePieces(PIECES_PADRAO),
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
     keyPosition: { ...KEY_POSITION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
@@ -2092,6 +2128,7 @@ export function cloneScene(state: SceneState): SceneState {
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
     coins: cloneCoins(state.coins),
+    pieces: clonePieces(state.pieces),
     walk: {
       ...state.walk,
       trail: [...state.walk.trail],
@@ -2347,6 +2384,27 @@ function isSceneCoinCounter(v: unknown): v is SceneCoinCounter {
     bool(v.compared.atLeast)
   )
 }
+function isSceneTwoPieces(v: unknown): v is SceneTwoPieces {
+  const piece = (x: unknown) => CABIN_PIECES.some((p) => p === x)
+  return (
+    isRecord(v) &&
+    bool(v.temChave) &&
+    bool(v.temEmblema) &&
+    CABIN_RULES.some((r) => r === v.rule) &&
+    (v.at === null || v.at === 'door' || piece(v.at)) &&
+    (v.door === 'closed' || v.door === 'open') &&
+    Array.isArray(v.order) &&
+    v.order.length <= CABIN_PIECES.length &&
+    v.order.every(piece) &&
+    new Set(v.order).size === v.order.length &&
+    // Uma peça na ordem é uma peça guardada (e só as guardadas entram).
+    v.order.includes('key') === v.temChave &&
+    v.order.includes('emblem') === v.temEmblema &&
+    isRecord(v.opened) &&
+    bool(v.opened.keyFirst) &&
+    bool(v.opened.emblemFirst)
+  )
+}
 const strings = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((s) => typeof s === 'string' && s.length <= 80)
 const numbers = (v: unknown, max: number): v is number[] =>
@@ -2385,6 +2443,7 @@ export function isSceneState(value: unknown): value is SceneState {
   )
     return false
   if (!isSceneCoinCounter(value.coins)) return false
+  if (!isSceneTwoPieces(value.pieces)) return false
   if (!isSceneLighthouseWalk(value.walk)) return false
   const position = value.keyPosition
   const validPosition = (point: unknown) =>

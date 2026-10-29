@@ -72,6 +72,7 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['locked-without-key', 'opened-with-key'],
   ],
   'coin-counter': [['each-adds'], ['no-double', 'kept'], ['below-goal', 'compare-rules']],
+  'two-pieces': [['none-closed'], ['one-closed', 'both-open'], ['any-order', 'and-vs-or']],
   'lighthouse-position': [
     ['mover-horizontal'],
     ['mover-vertical'],

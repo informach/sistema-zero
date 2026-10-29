@@ -15,6 +15,8 @@ import {
   TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import {
+  CABIN_PIECES,
+  CABIN_RULES,
   CHEST_RULES,
   COIN_COUNTER,
   LIGHTHOUSE_POSITION,
@@ -98,6 +100,14 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('coin-disappears'), enabled: t.Boolean() }),
   t.Object({ type: t.Literal('chest-rule'), rule: t.Union(CHEST_RULES.map((r) => t.Literal(r))) }),
   t.Object({ type: t.Literal('restart-coins') }),
+  // A porta com duas peças (Poder "O segredo da cabana", 29/10/2026).
+  t.Object({
+    type: t.Literal('take-piece'),
+    piece: t.Union(CABIN_PIECES.map((p) => t.Literal(p))),
+  }),
+  t.Object({ type: t.Literal('try-cabin') }),
+  t.Object({ type: t.Literal('cabin-rule'), rule: t.Union(CABIN_RULES.map((r) => t.Literal(r))) }),
+  t.Object({ type: t.Literal('restart-cabin') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
   t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),

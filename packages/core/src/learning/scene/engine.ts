@@ -185,6 +185,8 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
   aberto.coins.counted = Array(COIN_COUNTER.coins).fill(false)
   aberto.coins.compared = { equals: false, atLeast: false }
   aberto.coins.last = null
+  // As peças que o caso deixou guardadas são o mundo; as aberturas "começando por" são da criança.
+  aberto.pieces.opened = { keyFirst: false, emblemFirst: false }
   aberto.lighthouse.checkedKey = null
   aberto.keyPosition.before = null
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
@@ -393,7 +395,10 @@ export function stepScene(
     (action.type === 'leave-key' && previous.collection.position !== 'touching') ||
     // Continuar encostado na mesma moeda não é um encontro novo; afastar-se de lugar nenhum, nada.
     (action.type === 'touch-coin' && previous.coins.at === action.coin) ||
-    (action.type === 'leave-coin' && previous.coins.at === null)
+    (action.type === 'leave-coin' && previous.coins.at === null) ||
+    // Uma peça já guardada saiu do chão: não há o que pegar de novo.
+    (action.type === 'take-piece' &&
+      (action.piece === 'key' ? previous.pieces.temChave : previous.pieces.temEmblema))
   )
     return previous
   // A sequência da cena `world` é intencionalmente guiada: primeiro o personagem existe nos
@@ -584,6 +589,62 @@ export function stepScene(
         compared: { ...s.coins.compared },
       }
       s.caption = 'A partida recomeçou: moedas voltou a 0 e as seis moedas voltaram.'
+      break
+    case 'take-piece': {
+      const p = s.pieces
+      if (action.piece === 'key') p.temChave = true
+      else p.temEmblema = true
+      p.at = action.piece
+      p.order = [...p.order, action.piece]
+      s.caption =
+        action.piece === 'key'
+          ? 'Você pegou a chave: temChave agora é verdadeiro.'
+          : 'Você pegou o emblema: temEmblema agora é verdadeiro.'
+      break
+    }
+    case 'try-cabin': {
+      const p = s.pieces
+      const pecas = Number(p.temChave) + Number(p.temEmblema)
+      const abre = p.rule === 'and' ? pecas === 2 : pecas >= 1
+      p.at = 'door'
+      // Como o jogo: a imagem da cabana aberta fica até a nova partida.
+      if (abre) p.door = 'open'
+      s.caption = abre
+        ? 'A cabana abriu!'
+        : `A cabana continua fechada: ela pede a chave ${p.rule === 'and' ? 'e' : 'ou'} o emblema.`
+      if (p.rule === 'and') {
+        if (!abre && pecas === 0)
+          observe(s, 'none-closed', 'Sem nenhuma peça, a cabana ficou fechada')
+        if (!abre && pecas === 1)
+          observe(s, 'one-closed', 'Com uma peça só, a cabana ficou fechada')
+        if (abre) {
+          observe(s, 'both-open', 'Com as duas peças, a cabana abriu')
+          if (p.order[0] === 'key') p.opened.keyFirst = true
+          if (p.order[0] === 'emblem') p.opened.emblemFirst = true
+          if (p.opened.keyFirst && p.opened.emblemFirst)
+            observe(s, 'any-order', 'A cabana abriu começando por qualquer peça')
+        }
+      } else if (abre && pecas === 1) observe(s, 'and-vs-or', 'Com "ou", uma peça só já abriu')
+      break
+    }
+    case 'cabin-rule':
+      s.pieces.rule = action.rule
+      s.caption =
+        action.rule === 'and'
+          ? 'A cabana pergunta: temChave e temEmblema.'
+          : 'A cabana pergunta: temChave ou temEmblema.'
+      break
+    case 'restart-cabin':
+      s.pieces = {
+        ...s.pieces,
+        temChave: false,
+        temEmblema: false,
+        at: null,
+        door: 'closed',
+        order: [],
+        opened: { ...s.pieces.opened },
+      }
+      s.caption = 'A partida recomeçou: as duas peças voltaram ao chão e a cabana fechou.'
       break
     case 'movement-command':
       s.walk.movement = action.enabled
