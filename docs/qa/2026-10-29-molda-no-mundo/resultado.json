@@ -13,16 +13,7 @@
       "pinta": 1
     },
     "erros": [],
-    "casos": [
-      "colocar",
-      "Molda",
-      "Pinta",
-      "trocar",
-      "mesmo id",
-      "galeria",
-      "falha",
-      "sem método"
-    ]
+    "casos": ["colocar", "Molda", "Pinta", "trocar", "mesmo id", "galeria", "falha", "sem método"]
   },
   {
     "aparelho": "celular",
@@ -38,15 +29,6 @@
       "pinta": 1
     },
     "erros": [],
-    "casos": [
-      "colocar",
-      "Molda",
-      "Pinta",
-      "trocar",
-      "mesmo id",
-      "galeria",
-      "falha",
-      "sem método"
-    ]
+    "casos": ["colocar", "Molda", "Pinta", "trocar", "mesmo id", "galeria", "falha", "sem método"]
   }
 ]

@@ -96,8 +96,7 @@ const has3dNavigation = objectives.some(({ rule }) =>
 // apertam teclas também abriam três mundos juntos e nenhum ficava pronto (quadros acima de
 // 400 ms na espera dos modelos, num executor de 4 núcleos).
 const renders3d =
-  has3dNavigation ||
-  (mode === 'classic' && resources.get('/index.html').bytes.includes('SZGame3D'))
+  has3dNavigation || (mode === 'classic' && resources.get('/index.html').bytes.includes('SZGame3D'))
 
 let browser
 const observations = []
