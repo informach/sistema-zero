@@ -137,8 +137,10 @@ export function tirarObjeto(obra: Obra, c: Celula): Resultado {
 export function ganharProjetos(
   s: Salvamento,
   agora: Date,
+  temMinijogo = false,
 ): { salvamento: Salvamento; ganhos: ObjetoDaCasa[] } {
   const ganhos: ObjetoDaCasa[] = []
+  if (!s.projetos.fliperama && temMinijogo) ganhos.push('fliperama')
   if (!s.projetos.geladeira && s.moradores.capi.pedido?.entregue) ganhos.push('geladeira')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
   if (ganhos.length === 0) return { salvamento: s, ganhos }

@@ -47,6 +47,17 @@ const dados: AgregadosDaMedicao = {
   criacaoGuardada: contagem,
   desafiosAprovados: contagem,
 }
+test('minijogos deixam de ser sem fonte e grupos pequenos continuam protegidos', () => {
+  const r = montarMedicao(
+    { de: '2026-10-01', ate: '2026-10-28', publico: 'kids' },
+    { ...dados, minijogos: { quantidade: 20, pessoas: 4 } },
+    '2026-10-29',
+    new Date('2026-10-29T12:00:00Z'),
+  )
+  expect(r.minijogos).toEqual({ situacao: 'poucos-dados', valor: null })
+  expect(r.semFonte).not.toContain('minijogos')
+  expect(JSON.stringify(r)).not.toContain('jogadorId')
+})
 test('adulto não herda o histórico de tempo do Kids', () => {
   const r = montarMedicao(
     { de: '2026-10-01', ate: '2026-10-28', publico: 'adulto' },

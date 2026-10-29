@@ -10,6 +10,7 @@ import {
   ilhaAberta,
   migrarConteudoDoDesafio,
   POSICOES_DA_JORNADA,
+  ProjetoDoMinijogoSchema,
   QUADROS_POR_ILHA,
   type ResultadoDaVerificacao,
   type VerificarDesafio,
@@ -30,6 +31,7 @@ import type {
 } from '../domain/desafios.port'
 import type { Jogador } from '../domain/jogador'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
+import type { RepositorioDosMinijogos } from '../domain/minijogos.port'
 import type { PortaDasMoedas } from '../domain/moedas.port'
 import {
   AcessoBloqueadoError,
@@ -65,6 +67,7 @@ export class ServicoDosDesafios {
       membros: PortaDosMembros | null
       moedas: PortaDasMoedas | null
       logger: Logger
+      minijogos?: RepositorioDosMinijogos
       agora?: () => Date
     },
   ) {}
@@ -224,6 +227,9 @@ export class ServicoDosDesafios {
     const feito = await this.feito(jogador, id)
     if (!feito) await this.exigirDisponivel(jogador, lido.desafio.metadados.ilha, lido.publicacao)
     if (!this.deps.membros) throw new PlataformaIndisponivelError()
+    const copia = conteudo.recompensa.atracao
+      ? JSON.parse(JSON.stringify(ProjetoDoMinijogoSchema.parse(pedido.projeto)))
+      : null
 
     let conferencia: Awaited<ReturnType<PortaDosMembros['verificarObjetivos']>>
     try {
@@ -244,6 +250,14 @@ export class ServicoDosDesafios {
       return { passou: passou.principal, resultados, concluidoAgora: false, extraAgora: false }
 
     const agora = this.agora()
+    if (passou.principal && conteudo.recompensa.atracao && this.deps.minijogos)
+      await this.deps.minijogos.guardar({
+        jogador,
+        desafioId: id,
+        titulo: conteudo.titulo,
+        projeto: copia,
+        agora,
+      })
     await this.deps.repo.guardarTentativa({
       jogadorId: jogador.id,
       desafioId: id,

@@ -29,6 +29,7 @@ import {
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
+import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
 import { ConferenciaIndisponivelError } from '../../domain/membros.port'
 import {
   EventoTempoConflitanteError,
@@ -40,8 +41,10 @@ import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
+import { rotasDosMinijogos } from './rotas-dos-minijogos'
 
 export interface DependenciasHttp {
+  minijogos?: ServicoDosMinijogos
   medicao?: ServicoDaMedicao
   logger: Logger
   servico: ServicoDoJogo
@@ -224,6 +227,11 @@ export function createServer(deps: DependenciasHttp) {
         : new Elysia(),
     )
     .use(rotasDosDesafios({ desafios: deps.desafios, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.minijogos
+        ? rotasDosMinijogos({ minijogos: deps.minijogos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .get('/healthz', () => ({ status: 'ok' }))
     .get('/readyz', async ({ set }) => {
       try {

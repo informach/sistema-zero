@@ -7,6 +7,7 @@ import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
+import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import type { Env } from './infrastructure/config/env'
 import { MembrosHttp } from './infrastructure/members/membros-http'
 import { MoedasHttp } from './infrastructure/members/moedas-http'
@@ -19,6 +20,7 @@ import {
   DrizzleRepositorioDoJogadorNosDesafios,
 } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
 import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
+import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/drizzle/repositorio-minijogos'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { createServer } from './interfaces/http/server'
 
@@ -62,6 +64,7 @@ export function createApplication(env: Env): Application {
       ? new MoedasHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_COINS_TOKEN })
       : null
   const desafios = new ServicoDosDesafios({
+    minijogos: new DrizzleRepositorioDosMinijogos(connection.db),
     politica,
     modo: env.ARQUIPELAGO_DESAFIOS,
     repo: new DrizzleRepositorioDoJogadorNosDesafios(connection.db),
@@ -80,6 +83,7 @@ export function createApplication(env: Env): Application {
     logger,
   })
   const app = createServer({
+    minijogos: new ServicoDosMinijogos(new DrizzleRepositorioDosMinijogos(connection.db), politica),
     medicao: new ServicoDaMedicao(
       new DrizzleRepositorioDaMedicao(connection.db),
       undefined,

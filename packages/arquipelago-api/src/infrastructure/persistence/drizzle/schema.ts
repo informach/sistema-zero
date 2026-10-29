@@ -1,4 +1,4 @@
-import type { MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
+import { LIMITES_DO_DESAFIO, type MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -22,6 +22,29 @@ import {
  * jogo lê e grava aqui; a plataforma nunca toca estas tabelas (e o jogo nunca toca as dela).
  */
 export const arquipelagoSchema = pgSchema('arquipelago')
+
+/** Uma cópia aprovada por jogador e desafio; a primeira aprovação é preservada para medição. */
+export const minijogos = arquipelagoSchema.table(
+  'minijogos',
+  {
+    jogadorId: uuid().notNull(),
+    desafioId: uuid().notNull(),
+    publico: varchar({ length: 8 }).notNull(),
+    titulo: varchar({ length: 200 }).notNull(),
+    projeto: text().notNull(),
+    capa: text(),
+    aprovadoEm: timestamp({ withTimezone: true }).notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.desafioId] }),
+    check('minijogos_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'minijogos_tamanho_check',
+      sql`length(${t.projeto}) <= ${sql.raw(String(LIMITES_DO_DESAFIO.projetoCaracteres))}`,
+    ),
+  ],
+)
 
 /** Um salvamento por jogador (perfil no Kids, conta no adulto). `revisao` é a trava. */
 export const salvamentos = arquipelagoSchema.table(
@@ -282,6 +305,7 @@ export const desafioDoDia = arquipelagoSchema.table(
 )
 
 export const schema = {
+  minijogos,
   salvamentos,
   tempoDiario,
   eventosTempo,

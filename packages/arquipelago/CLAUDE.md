@@ -612,3 +612,9 @@ Não havia outro componente de Lumi no mundo para reaproveitar. Decisão e confe
   Este último aceita `ARQUIPELAGO_CHROMIUM`; tenta o Chromium Linux fornecido se existir,
   senão usa Chrome. No Windows, também pode compilar com `bun build` para Node e executar
   com `node`, como registrado no plano. A conferência usa somente a plataforma falsa.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Fliperama chega ao ler o primeiro minijogo aprovado, pela regra ganharProjetos. Loja transitória estado/minijogos.ts relê ao voltar de ferramenta. Lista no painel do objeto; player pertence à plataforma. Capa na face tela, recursos próprios descartados.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

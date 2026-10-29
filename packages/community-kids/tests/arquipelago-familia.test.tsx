@@ -211,7 +211,7 @@ test('semana ou permissões fora do ar: só aquela parte some, o limite fica', a
   })
   render(<ArquipelagoLimitCard />)
   await screen.findByRole('region', { name: 'Tempo livre no Arquipélago' })
-  await waitFor(() => expect(calls.length).toBe(3))
+  await waitFor(() => expect(calls.length).toBe(4)) // Minijogos é uma leitura independente da semana.
   await act(async () => await new Promise((r) => setTimeout(r, 0)))
   expect(screen.queryByRole('switch')).toBeNull()
   expect(screen.queryByRole('region', { name: 'A semana no jogo' })).toBeNull()

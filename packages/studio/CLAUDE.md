@@ -5143,3 +5143,9 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
 - `<ProjectList>` adapter-based (hoje acoplada ao IndexedDB local).
 - `baseUrl` da IA (OpenRouterProvider não suporta).
 - CSS pré-compilado como alternativa ao `@source` dos consumers.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Cópias aprovadas do Arquipélago: o leitor JavaScript preserva programmingLanguage explícito em documentos v2. Regressão com o projeto real do Bosque em member-shell/tests/arquipelago-minijogo-project.test.ts.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

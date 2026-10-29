@@ -6,7 +6,16 @@ import {
   type Obra,
 } from '@sistemazero/arquipelago-contracts'
 import { memo, useEffect, useMemo } from 'react'
-import { AdditiveBlending, Color, type Material, type Mesh, MeshStandardMaterial } from 'three'
+import {
+  AdditiveBlending,
+  Color,
+  type Material,
+  type Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  SRGBColorSpace,
+  TextureLoader,
+} from 'three'
 import aquarioGlb from '../assets/objetos/aquario.glb'
 import bandaGlb from '../assets/objetos/banda.glb'
 import casinhaGlb from '../assets/objetos/casinha.glb'
@@ -17,6 +26,7 @@ import geladeiraHologramaGlb from '../assets/objetos/geladeira-holograma.glb'
 import lareiraGlb from '../assets/objetos/lareira.glb'
 import museuGlb from '../assets/objetos/museu.glb'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
 import {
   areaComGiro,
   falaDoGanho,
@@ -65,6 +75,9 @@ const AZUL = new Color('#5fb8ff')
  * translúcido. Com aparência, o modelo de verdade.
  */
 function ModeloDoObjeto({ id, completo }: { id: ObjetoDaCasa; completo: boolean }) {
+  const { loja, plataforma } = useJogo()
+  const fonte = lojaDosMinijogos(loja, plataforma)
+  const capa = useMinijogos(fonte, (s) => s.lista[0]?.capa ?? null)
   const url = completo ? MODELO_DO_OBJETO[id] : (HOLOGRAMA_DO_OBJETO[id] ?? MODELO_DO_OBJETO[id])
   const raiz = useModelo(url)
   const { copia, materiaisProprios } = useMemo(() => {
@@ -108,6 +121,30 @@ function ModeloDoObjeto({ id, completo }: { id: ObjetoDaCasa; completo: boolean 
     })
     return { copia: c, materiaisProprios }
   }, [raiz, id, completo])
+  useEffect(() => {
+    if (id !== 'fliperama' || !capa) return
+    let vivo = true
+    const anteriores: { malha: Mesh; material: Material | Material[] }[] = []
+    const material = new MeshBasicMaterial({ toneMapped: false })
+    const textura = new TextureLoader().load(capa, (t) => {
+      if (!vivo) return
+      t.colorSpace = SRGBColorSpace
+      material.map = t
+      material.needsUpdate = true
+      copia.getObjectByName('tela')?.traverse((o) => {
+        const m = o as Mesh
+        if (!m.isMesh) return
+        anteriores.push({ malha: m, material: m.material })
+        m.material = material
+      })
+    })
+    return () => {
+      vivo = false
+      for (const a of anteriores) a.malha.material = a.material
+      textura.dispose()
+      material.dispose()
+    }
+  }, [copia, capa, id])
   useEffect(
     () => () => {
       for (const material of materiaisProprios) material.dispose()
@@ -208,7 +245,14 @@ export function ObjetosDaObra({ obra, base }: { obra: Obra; base: [number, numbe
  * primeiro pedido entregue, adotar um bicho) entra em `projetos`, e o Zappy avisa.
  */
 export function GanharProjetos() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
+  useEffect(() => {
+    const fonte = lojaDosMinijogos(loja, plataforma)
+    void fonte.carregar()
+    return loja.subscribe((s, antes) => {
+      if (antes.ferramentaAberta && !s.ferramentaAberta) void fonte.carregar()
+    })
+  }, [loja, plataforma])
   useEffect(() => {
     const conferir = () => {
       const s = loja.getState()

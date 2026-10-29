@@ -34,6 +34,9 @@ const CreationDialog = lazy(() =>
 const ChallengeDialog = lazy(() =>
   import('./arquipelago-challenge-dialog').then((m) => ({ default: m.ArquipelagoChallengeDialog })),
 )
+const MinijogoPlayer = lazy(() =>
+  import('./arquipelago-minijogo-player').then((m) => ({ default: m.ArquipelagoMinijogoPlayer })),
+)
 
 class ToolLoadBoundary extends Component<
   { children: ReactNode; ferramenta: FerramentaDaPorta; onCancel: () => void },
@@ -60,6 +63,7 @@ const CAMINHOS_DO_JOGO = new Set([
   '/tempo/recuperar',
   '/tempo/sessao',
   '/cartas',
+  '/minijogos',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 /**
@@ -236,6 +240,7 @@ export function ArquipelagoHost(props: {
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
   const [challenge, setChallenge] = useState<DesafioAberto | null>(null)
+  const [minijogo, setMinijogo] = useState<string | null>(null)
   const [creation, setCreation] = useState<{
     ferramenta: 'pinta' | 'molda' | 'estudio'
     studioAvailable: boolean
@@ -257,6 +262,15 @@ export function ArquipelagoHost(props: {
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.ferramenta === 'estudio' && pedido.proposito === 'minijogo') {
+          const idDoJogo = (pedido.molde as { desafioId?: unknown } | undefined)?.desafioId
+          if (typeof idDoJogo !== 'string' || !new RegExp(`^${UUID}$`).test(idDoJogo))
+            return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setMinijogo(idDoJogo)
+          })
+        }
         // O molde de um objeto (o projeto azul do modo construção) abre o Pinta ou o Molda de
         // verdade com a planificação ou a caixa; o resto do caminho é o de criar no jogo.
         const objeto = lerPedidoDeObjeto(pedido)
@@ -349,6 +363,7 @@ export function ArquipelagoHost(props: {
     return () => {
       vivo = false
       setChallenge(null)
+      setMinijogo(null)
       setCreation(null)
       pendente.current?.({ situacao: 'cancelado' })
       pendente.current = null
@@ -360,6 +375,27 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {minijogo && (
+        <ToolLoadBoundary
+          ferramenta="estudio"
+          onCancel={() => {
+            setMinijogo(null)
+            pendente.current?.({ situacao: 'cancelado' })
+            pendente.current = null
+          }}
+        >
+          <Suspense fallback={<AvisoDaFerramenta ferramenta="estudio" falhou={false} />}>
+            <MinijogoPlayer
+              url={`${BASE}/minijogos/${minijogo}`}
+              onClose={() => {
+                setMinijogo(null)
+                pendente.current?.({ situacao: 'cancelado' })
+                pendente.current = null
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      )}
       {challenge ? (
         <ToolLoadBoundary
           key={`${id}-${challenge.id}-${challenge.revisao}`}

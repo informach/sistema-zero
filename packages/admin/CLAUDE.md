@@ -2041,3 +2041,9 @@ Quadro das Cores, prêmio padrão do tipo por `MOEDAS_PADRAO_POR_TIPO`, cor desl
 cor fica desligada no desafio do dia e `challengePayload` nunca manda a cor ligada (o contrato
 recusa, `corPermitida`). Regras: `docs/arquipelago-regras.md` §7.12. Testes:
 `tests/game-challenge-authoring.test.ts`.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Medição do Arquipélago mostra minijogos aprovados quando o serviço traz a categoria, respeitando a proteção de grupos pequenos.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

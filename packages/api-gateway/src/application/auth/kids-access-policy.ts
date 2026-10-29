@@ -53,6 +53,8 @@ export function kidsMayAccess(
       pathname === '/arquipelago/familia/permissoes' ||
       (method === 'GET' && pathname === '/arquipelago/familia/semana') ||
       (method === 'GET' &&
+        /^\/arquipelago\/familia\/minijogos\/[0-9a-f-]+(?:\/[0-9a-f-]+)?$/i.test(pathname)) ||
+      (method === 'GET' &&
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,
         ))

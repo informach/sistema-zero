@@ -21,6 +21,7 @@ export interface AgregadosDaMedicao {
   criacaoGuardada: ContagemDaMedicao
   galeria: ContagemDaMedicao
   desafiosAprovados: ContagemDaMedicao
+  minijogos?: ContagemDaMedicao
 }
 /** A volta ao curso somada na equipe; `pessoas` são as que jogaram em algum dia contado. */
 export interface VoltaAoCursoDaMedicao {
@@ -99,11 +100,12 @@ export function montarMedicao(
       galeria: protegerContagem(dados.galeria),
     },
     desafiosAprovados: protegerContagem(dados.desafiosAprovados),
+    ...(dados.minijogos ? { minijogos: protegerContagem(dados.minijogos) } : {}),
     ...(volta ? { voltaAoCurso: protegerVoltaAoCurso(volta) } : {}),
     semFonte: [
       ...(filtro.publico === 'adulto' ? ['volta-adulto' as const] : []),
       'compras',
-      'minijogos',
+      ...(dados.minijogos ? [] : ['minijogos' as const]),
       ...(volta ? [] : ['curso-24h' as const]),
       'conclusoes-curso',
     ],

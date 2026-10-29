@@ -14,6 +14,20 @@ const student: KidsSessionClaim = {
   grantId: crypto.randomUUID(),
 }
 describe('áreas separadas no servidor', () => {
+  test('minijogos da família só abrem em leitura pelo responsável', () => {
+    const perfil = '11111111-1111-4111-8111-111111111111'
+    const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+    for (const rota of [
+      `/arquipelago/familia/minijogos/${perfil}`,
+      `/arquipelago/familia/minijogos/${perfil}/${id}`,
+    ]) {
+      expect(kidsMayAccess(parent, rota, 'GET', 'pai')).toBe(true)
+      expect(kidsMayAccess(parent, rota, 'POST', 'pai')).toBe(false)
+      expect(kidsMayAccess(student, rota, 'GET', 'crianca')).toBe(false)
+    }
+    expect(kidsMayAccess(parent, '/arquipelago/minijogos', 'GET', 'pai')).toBe(false)
+    expect(kidsMayAccess(student, '/arquipelago/minijogos', 'GET', 'crianca')).toBe(true)
+  })
   test('cartão de assinatura só é acessível ao responsável, sem exigir produto ativo', () => {
     for (const path of [
       '/payments/my/card-config',

@@ -16,6 +16,7 @@ import { Minus, Plus, TreePalm } from 'lucide-react'
 import { type FormEvent, useEffect, useId, useState } from 'react'
 import type { z } from 'zod'
 import { duracaoPorExtenso, PermissoesDeVisita, SemanaDasCriancas } from './arquipelago-familia'
+import { MinijogosDaFamilia } from './arquipelago-minijogos'
 import { PRIMARY_ACTION } from './parent-actions'
 
 export { duracaoPorExtenso } from './arquipelago-familia'
@@ -140,6 +141,7 @@ export function ArquipelagoLimitCard() {
         </div>
       </div>
       {semana ? <SemanaDasCriancas semana={semana} limiteDiarioMinutos={limite} /> : null}
+      <MinijogosDaFamilia />
       <section aria-labelledby={tituloDoLimite} className="flex flex-col gap-4">
         <div className="flex flex-col gap-0.5">
           <h3 id={tituloDoLimite} className="font-extrabold text-base">

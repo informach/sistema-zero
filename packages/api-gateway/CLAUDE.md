@@ -441,3 +441,9 @@ nem reutilização da política adulta. Members revalida a identidade própria a
 antes das mutações (sem perfil/contexto/impersonação) e persiste ator/motivo/versão no fluxo
 canônico de preparação/publicação. O teste de configuração/stage não substitui a prova
 integrada de JWT, forwarding e banco; rollout depende dos gates e seed persistida.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Minijogos: quatro rotas GET do Arquipélago. Kids pai acessa apenas familia/minijogos; aluno usa as próprias rotas e nunca as da família. Serviço confere novamente a conta.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

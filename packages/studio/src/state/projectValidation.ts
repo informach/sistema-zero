@@ -1051,6 +1051,11 @@ export function sanitizeJavaScriptProjectPayload(
 
   const project: Project = {
     ...base,
+    // Documentos JavaScript v2 podem trazer o idioma explícito. Preservá-lo evita uma
+    // falsa perda de conteúdo ao abrir cópias aprovadas e manifestos existentes.
+    ...(r.programmingLanguage === 'javascript'
+      ? { programmingLanguage: 'javascript' as const }
+      : {}),
     id,
     name,
     files,

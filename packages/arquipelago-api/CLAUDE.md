@@ -4,7 +4,7 @@
 
 `GET /arquipelago/equipe/medicao?de=AAAA-MM-DD&ate=AAAA-MM-DD&publico=kids|adulto`
 usa `lerEquipe` e o token do gateway. `ServicoDaMedicao` limita o período inclusivo a 90 dias,
-recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São três consultas
+recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São quatro consultas
 agregadas numa transação somente leitura com snapshot repetível. Nenhum ID de pessoa sai do banco.
 
 `domain/medicao.ts` protege grupos menores que cinco. Na volta, também protege a linha inteira
@@ -246,3 +246,9 @@ O serviço está registrado em `.railway/services/arquipelago-api.json` (variáv
 `ARQUIPELAGO_URL`). Provisionar no Railway e validar com contas reais é da sessão que cuida do
 deploy (`docs/operations/arquipelago-first-deploy.md`); pre-deploy `db:migrate`, build do cliente
 com `bun run --filter @sistemazero/arquipelago build`.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Cópias aprovadas em minijogos: migration 0009, serviço/repositório/rotas próprios. Principal com recompensa.atracao guarda JSON imutável até nova aprovação; família confere perfis_da_conta no serviço. Só banco local descartável nos testes.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

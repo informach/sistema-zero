@@ -3587,3 +3587,9 @@ ao aluno). O que vive AQUI:
 - Clients: `listHelpCollectionsReadonly`, `listHelpTutorialsReadonly`, `getHelpTutorialReadonly`
   (Server Components, sem refresh). Testes: `tests/help-tutorial-view.test.tsx`,
   `tests/materials-block.test.tsx` (link interno), `tests/studio-zappy.test.ts` (`helpReferences`).
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Minijogos aprovados: routes/arquipelago.ts repassa jogador e família, com perfis da grade e autorização adicional no serviço. ArquipelagoMinijogoPlayer usa o player real do Estúdio em dialog modal; sem editar a cópia.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

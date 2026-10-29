@@ -64,6 +64,13 @@
       "when": 1793227655983,
       "tag": "0008_familia_semana_permissoes",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793233864349,
+      "tag": "0009_vengeful_rhino",
+      "breakpoints": true
     }
   ]
 }

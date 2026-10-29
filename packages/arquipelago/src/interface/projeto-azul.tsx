@@ -19,6 +19,7 @@ import {
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
 import { ITENS } from '../sistemas/itens'
+import { MinijogosDoFliperama } from './minijogos'
 
 function objetoDoPainel(painel: string | null): ObjetoDaCasa | null {
   if (!painel?.startsWith('objeto:')) return null
@@ -173,6 +174,7 @@ export function PainelDoObjeto() {
         {molde.funcao ? <p className="arq-quadro-sub">{molde.funcao}</p> : null}
         {origem ? <p className="arq-caderno-explica">{origem}</p> : null}
         {id === 'geladeira' ? <Geladeira /> : null}
+        {id === 'fliperama' ? <MinijogosDoFliperama /> : null}
         <h3 className="arq-menu-titulo">Fazer a aparência</h3>
         <p className="arq-caderno-explica">
           {`O molde tem o tamanho dele: ${molde.area.largura} por ${molde.area.fundo} na grade, com a frente marcada.`}

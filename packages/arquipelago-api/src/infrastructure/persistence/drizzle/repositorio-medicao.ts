@@ -6,7 +6,7 @@ import type {
   RepositorioDaMedicao,
 } from '../../../domain/medicao'
 import type { Database } from './db'
-import { desafiosConcluidos, salvamentos, sessoesDeTempo, tempoDiario } from './schema'
+import { desafiosConcluidos, minijogos, salvamentos, sessoesDeTempo, tempoDiario } from './schema'
 
 /** Só agregados saem do banco. Uma fotografia consistente, sem ler tabelas da plataforma. */
 export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
@@ -66,7 +66,14 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
           const linha = origens.find((r) => r.origem === nome)
           return { quantidade: linha?.quantidade ?? 0, pessoas: linha?.pessoas ?? 0 }
         }
+        const jogos = await tx.execute<{ quantidade: number; pessoas: number }>(sql`
+          SELECT count(*)::int AS quantidade, count(DISTINCT ${minijogos.jogadorId})::int AS pessoas
+          FROM ${minijogos} WHERE ${minijogos.publico} = ${f.publico}
+          AND ${minijogos.aprovadoEm} >= (${f.de}::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+          AND ${minijogos.aprovadoEm} < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
+        `)
         return {
+          minijogos: jogos[0] ?? { quantidade: 0, pessoas: 0 },
           coortes: [...coortes],
           pintaMolda: origem('pinta-molda'),
           criacaoGuardada: origem('criacao'),

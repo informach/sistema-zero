@@ -1,5 +1,6 @@
 import 'server-only'
 import {
+  MinijogosSchema,
   PERFIS_DA_FAMILIA_MAXIMO,
   type SemanaDaFamiliaParaOsPais,
   SemanaDaFamiliaSchema,
@@ -85,7 +86,12 @@ export function createArquipelagoRoutes(deps: {
         ...(corpo === undefined ? {} : { body: corpo }),
         ...extra,
       })
-      .then(repasse)
+      .then((r) => {
+        const resposta = repasse(r)
+        if (caminho.startsWith('/minijogos') || caminho.startsWith('/familia/minijogos'))
+          resposta.headers.set('cache-control', 'private, no-store')
+        return resposta
+      })
   const idDe = async (ctx: { params: Promise<{ id: string }> }) => {
     const { id } = await ctx.params
     return UUID.test(id) ? id : null
@@ -118,6 +124,49 @@ export function createArquipelagoRoutes(deps: {
     }
 
   return {
+    arquipelagoTodosMinijogosDaFamilia: {
+      GET: async () => {
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        const criancas = await Promise.all(
+          lista.perfis.map(async (p) => {
+            try {
+              const r = await gateway.gatewayFetch(`/arquipelago/familia/minijogos/${p.id}`, {
+                method: 'GET',
+              })
+              const d = MinijogosSchema.safeParse(r.body)
+              return r.status === 200 && d.success && d.data.minijogos.length
+                ? { perfilId: p.id, nome: nomeDoPerfil(p), ...d.data }
+                : null
+            } catch {
+              return null
+            }
+          }),
+        )
+        return NextResponse.json(
+          { criancas: criancas.filter((c) => c !== null) },
+          { headers: { 'cache-control': 'private, no-store' } },
+        )
+      },
+    },
+    arquipelagoMinijogos: { GET: () => chamar('/minijogos', 'GET') },
+    arquipelagoMinijogo: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/minijogos/${id}`, 'GET') : invalido()
+      },
+    },
+    arquipelagoMinijogosDaFamilia: {
+      GET: async (req: Request, ctx: { params: Promise<{ perfil: string }> }) => {
+        const { perfil } = await ctx.params
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        if (!UUID.test(perfil) || !lista.perfis.some((p) => p.id === perfil)) return invalido()
+        const id = new URL(req.url).searchParams.get('id')
+        if (id !== null && !UUID.test(id)) return invalido()
+        return chamar(`/familia/minijogos/${perfil}${id ? `/${id}` : ''}`, 'GET')
+      },
+    },
     arquipelagoAcesso: { GET: () => chamar('/acesso', 'GET') },
     arquipelagoSalvamento: {
       GET: () => chamar('/salvamento', 'GET'),

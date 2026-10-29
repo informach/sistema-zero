@@ -47,6 +47,18 @@ export function arquipelagoGateway(opts: {
       retry: { maxRetries: 0, baseDelayMs: 50, maxDelayMs: 1_000 },
     },
     routes: [
+      ...[
+        '/arquipelago/minijogos',
+        '/arquipelago/minijogos/:id',
+        '/arquipelago/familia/minijogos/:perfil',
+        '/arquipelago/familia/minijogos/:perfil/:id',
+      ].map((pathPattern, i) => ({
+        ...jogador,
+        id: `arquipelago-minijogos-${i}`,
+        methods: ['GET'] as ['GET'],
+        pathPattern,
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' as const },
+      })),
       {
         ...leituraDaEquipe,
         id: 'arquipelago-equipe-medicao',

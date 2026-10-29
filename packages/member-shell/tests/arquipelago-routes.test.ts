@@ -40,6 +40,52 @@ const pedido = (corpo: string) =>
   new Request('http://local/api/arquipelago/salvamento', { method: 'PUT', body: corpo })
 
 const fetchOriginal = globalThis.fetch
+describe('minijogos aprovados no repasse', () => {
+  test('jogador lista e abre só pelo id validado', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { minijogos: [] } })
+    const lista = await routes.arquipelagoMinijogos.GET()
+    expect(lista.headers.get('cache-control')).toBe('private, no-store')
+    await routes.arquipelagoMinijogo.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: IRMAO }),
+    })
+    expect(chamadas.map((c) => c.caminho)).toEqual([
+      '/arquipelago/minijogos',
+      `/arquipelago/minijogos/${IRMAO}`,
+    ])
+    expect(
+      (
+        await routes.arquipelagoMinijogo.GET(new Request('http://local'), {
+          params: Promise.resolve({ id: '../outra-pessoa' }),
+        })
+      ).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(2)
+  })
+  test('pais só repassam perfis da grade da própria conta', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { minijogos: [] } })
+    const ctx = (perfil: string) => ({ params: Promise.resolve({ perfil }) })
+    expect(
+      (
+        await routes.arquipelagoMinijogosDaFamilia.GET(
+          new Request('http://local'),
+          ctx('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+        )
+      ).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(0)
+    await routes.arquipelagoMinijogosDaFamilia.GET(
+      new Request(`http://local?id=${IRMAO}`),
+      ctx(PERFIL),
+    )
+    expect(chamadas[0]?.caminho).toBe(`/arquipelago/familia/minijogos/${PERFIL}/${IRMAO}`)
+  })
+  test('lista agregada da família esconde falha sem inventar minijogos', async () => {
+    const { routes } = montar({ status: 503, body: null })
+    const r = await routes.arquipelagoTodosMinijogosDaFamilia.GET()
+    expect(await r.json()).toEqual({ criancas: [] })
+    expect(r.headers.get('cache-control')).toContain('no-store')
+  })
+})
 afterEach(() => {
   globalThis.fetch = fetchOriginal
 })

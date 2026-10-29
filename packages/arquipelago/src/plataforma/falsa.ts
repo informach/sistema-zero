@@ -208,6 +208,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     },
     servico: {
       async buscar(caminho, opcoes) {
+        if (caminho === '/minijogos') return { status: 200, corpo: { minijogos: [] } }
         const metodo = opcoes?.metodo ?? 'GET'
         if (caminho.startsWith('/desafios')) {
           if (o.desafios === 'desligados')

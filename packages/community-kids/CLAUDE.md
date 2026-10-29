@@ -3858,3 +3858,9 @@ atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
   consulta, e os dois não se confundem). Estilos em `globals.css` (`.sz-help-*`, em camada).
 - Autoria: admin em `/admin/como-fazer` (coleções, tutoriais, importar/exportar JSON, revisar e
   publicar). Lote inicial em `docs/como-fazer/`.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Minijogos no cartão dos pais: leitura independente da semana, some se vazia ou falhar. Todas as rotas de família são embrulhadas por requireParentGateAccountOnly. Jogar usa o player compartilhado e a cópia do serviço.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

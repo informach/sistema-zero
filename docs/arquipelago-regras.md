@@ -2096,3 +2096,30 @@ Arquivos: `sistemas/luneta.ts`, `mundo/luneta-medidas.ts`, `mundo/luneta.tsx`,
 `personagem/camera.tsx`. Integrações pequenas em `ilha-central.tsx`, `anel.tsx` e `hud.tsx`.
 Testes puros e dos GLBs: `tests/luneta.test.ts`. Visita real no playground:
 `playground/verificar-luneta-browser.ts`. Celular físico ainda precisa de conferência.
+
+## Minijogos aprovados viram brinquedos (desafios-16, 29/10/2026)
+
+- Passar nos objetivos principais de um desafio com recompensa.atracao guarda uma cópia do
+  projeto conferido. Há uma por jogador e desafio. Refazer e passar troca somente essa cópia;
+  reprovar não a muda. A primeira aprovação permanece datada para a medição.
+- Teto: LIMITES_DO_DESAFIO.projetoCaracteres, hoje 1.500.000 caracteres do JSON serializado.
+  Conferência e persistência verificam o teto. Sessão somente leitura não grava.
+- O primeiro minijogo entregue dá o projeto azul do fliperama, pela mesma regra dos outros
+  objetos. A lista é relida ao voltar do Estúdio e ao abrir o fliperama. Aparência não é
+  requisito para jogar. O objeto posto em casa abre a lista e cada Jogar abre o player do
+  Estúdio por cima do jogo. Voltar ou Esc retorna ao lugar em que a criança estava.
+- A tela do fliperama usa a capa escolhida do minijogo atualizado mais recentemente, quando
+  houver. Aceita imagens PNG, JPEG e WebP embutidas. Não inventa capa nem busca imagem externa.
+- Rotas próprias GET /arquipelago/minijogos e /arquipelago/minijogos/:id. A lista traz resumo
+  e capa; a rota de abertura traz o projeto. Nenhuma delas entrega o gabarito do desafio.
+- Pais: GET /arquipelago/familia/minijogos/:perfil e /:perfil/:id. O serviço exige a ligação
+  da criança à conta; a plataforma confere a grade do Auth e usa o portão dos pais no Kids.
+  O cartão Minijogos que [nome] fez lê independentemente da semana e some se vazio ou falhar.
+- A Medição conta uma primeira aprovação por jogador e desafio na categoria minijogos.
+  Refazer não duplica a contagem; aplicam-se os grupos mínimos e filtros já existentes.
+  Não sai dado pessoal.
+- Não é possível recuperar projetos de conclusões antigas, que nunca foram guardados. Uma
+  nova aprovação cria a cópia. Não há modelo novo nem mudança no formato do salvamento.
+
+Plano: docs/plans/2026-10-29-arquipelago-minijogos.md. Testes, implantação e prints:
+ docs/qa/2026-10-29-arquipelago-minijogos.md.

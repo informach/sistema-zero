@@ -170,6 +170,7 @@ export function GameMeasurement({
                 ['Criações guardadas', report.criacao.criacaoGuardada],
                 ['Aparências da galeria', report.criacao.galeria],
                 ['Desafios do Estúdio aprovados', report.desafiosAprovados],
+                ...(report.minijogos ? [['Minijogos aprovados', report.minijogos] as const] : []),
               ] as const
             ).map(([titulo, numero]) => (
               <article key={titulo} className="min-w-0 rounded-xl border border-border bg-card p-4">

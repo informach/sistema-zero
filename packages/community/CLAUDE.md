@@ -1040,3 +1040,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Minijogos aprovados do Arquipélago (29/10/2026)
+
+As rotas GET /api/arquipelago/minijogos e /:id usam o mesmo repasse do member-shell que o Kids. A conta adulta abre somente suas cópias aprovadas. Player e autorização continuam compartilhados.

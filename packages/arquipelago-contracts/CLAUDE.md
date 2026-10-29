@@ -64,3 +64,9 @@ Regras: mudar um formato salvo exige nova versão e migração (nunca alterar `V
 incompatível); mudar a `Plataforma` de forma incompatível exige subir `VERSAO_CONTRATO_PLATAFORMA`.
 Usado pelo jogo, pelo serviço e pela página da plataforma; é o único pacote do jogo que a
 plataforma pode importar.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Contrato minijogos.ts: lista, cópia aprovada e capa escolhida embutida PNG/JPEG/WebP. Mesmo teto de projeto dos desafios. Medição inclui minijogos com proteção de grupos.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
