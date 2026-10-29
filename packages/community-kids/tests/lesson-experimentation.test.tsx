@@ -913,7 +913,7 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
       const resetName =
         scene === 'found-counter'
           ? 'Recomeçar a busca'
-          : scene === 'collect-and-remember'
+          : scene === 'collect-and-remember' || scene === 'coin-counter' || scene === 'two-pieces'
             ? 'Recomeçar a partida'
             : scene === 'touch-response'
               ? 'Recomeçar com a reação desligada'
