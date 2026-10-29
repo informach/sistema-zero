@@ -39,10 +39,20 @@ no contrato de `tipos.ts`, desenho e interativo em `mundo/balao-das-nuvens.tsx`,
 - **Pausa e conforto:** a pausa congela o voo e o clipe. Com menos movimento (aparelho ou menu), o
   `flutuar` toca a 35% da velocidade.
 - **Salvamento:** nada. O balão sempre recomeça parado no lugar dele.
-- **Lugar do balão:** a âncora `balao` (5,6; −8,4). O poste com a corda está em (4,6; 7,6), do outro
-  lado: o gerador trocou o sinal do z da âncora (ver pedidos de arte). O jogo segue a âncora.
+- **Lugar do balão:** a âncora `balao` (5,6; 6,0), a 1,9 m do poste com a corda (4,6; 7,6). O jogo
+  segue a âncora. (Antes estava em (5,6; −8,4), do outro lado: o gerador trocava o sinal do z.)
 
-## Pedidos de arte
+## Pedidos de arte (feitos pela sessão do Blender em 29/10/2026)
+
+- Feito: a âncora `balao` foi para (5,6; 1; 6,0). Em (5,6; 8,4), junto da ponta da corda, a copa
+  `col-cil-copa-2` entrava no envelope e a saída não era chão livre; (5,6; 6,0) é o lugar livre mais
+  perto do poste que passa nos dois testes de `balao-das-nuvens.test.ts`. A corda solta agora corre
+  pelo chão do poste até perto do cesto.
+- Feito: a âncora `passageiro` no piso do cesto, filha do nó `balao`, a 0,1 m da base
+  (`tests/ancoras-das-nuvens.test.ts`). O código ainda usa a base (y 0); ler a âncora fica para a
+  próxima mexida no balão, para não brigar com a fase4-07 que ainda não chegou ao remoto.
+
+O pedido original:
 
 1. `nuvens.glb`: a âncora `balao` está em (5,6; 1; −8,4), mas o poste de amarrar
    (`col-cil-poste-balao-1`) e a corda solta estão em (4,6; 7,6), com a ponta da corda em (5,5; 7,7).

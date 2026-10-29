@@ -53,8 +53,8 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 | `pico-treno.glb` | `treno` (frente para −z do jogo) | | | 668 | 33 KB |
 | `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` e 61 `col-*` mais o `col-terreno` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 626 KB |
 | `vale-dos-dinos-props.glb` | `samambaia-gigante`, `cavalinha`, `ninho`, `ovo-dino`, `osso`, `cranio-fossil` | | | 4.278 | 100 KB |
-| `nuvens.glb` | `chao`, `cenario`, `fio-1` a `fio-6`, `plataforma-1` a `plataforma-4` e 49 `col-*` mais o `col-terreno` | `tear`, `ninho` (dentro do ninho, no alto da árvore), `pe-da-arvore`, `balao`, `arco-iris`, `topo-plataforma-1` a `-4` | | 19.560 | 471 KB |
-| `nuvens-balao.glb` | `balao` (base do cesto em y = 0) | | `flutuar` (3 s, laço) | 848 | 36 KB |
+| `nuvens.glb` | `chao`, `cenario`, `fio-1` a `fio-6`, `plataforma-1` a `plataforma-4` e 49 `col-*` mais o `col-terreno` | `tear`, `ninho` (dentro do ninho, no alto da árvore), `pe-da-arvore`, `balao` (a 1,9 m do poste da corda), `arco-iris`, `mirante` (no deque da luneta), `topo-plataforma-1` a `-4` | | 19.560 | 471 KB |
+| `nuvens-balao.glb` | `balao` (base do cesto em y = 0) | `passageiro` (piso do cesto, filha de `balao`) | `flutuar` (3 s, laço) | 848 | 36 KB |
 | `alto-do-farol.glb` | `sala`, `escada`, `mesa-da-iris`, `vidros`, `lente` (pivô no centro da lâmpada) | `entrada` (onde a escada chega), `lanterna`, `mesa`, `rascunhos`, `quadro`, `janela`, `varanda` | `girar` (4 s, uma volta, laço) | 14.436 | 479 KB |
 | `pico-caverna.glb` | `rocha`, `chao`, `cristais`, `cristais-luz`, `gelo`, `percurso`, `joia` e 49 `col-*` | `entrada`, `galeria`, `laguinho`, `degrau-1` a `-4`, `cristal-raro` | | 6.796 | 355 KB |
 | `nuvens-constelacoes.glb` | `mirante`, `luneta-tubo`, `constelacao-1` a `-6` (cada uma com as filhas `constelacao-N-estrela-M`, 57 estrelas) e 16 `col-*` | `luneta`, `quadro-das-estrelas` | | 4.646 | 240 KB |

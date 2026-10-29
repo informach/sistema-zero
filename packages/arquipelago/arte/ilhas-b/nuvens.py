@@ -232,7 +232,8 @@ def ilha():
     cen.append(cyl(0.12, 1.2, (bx, by, TOPO + 0.6), 'poste', verts=8))
     col.append(col_cilindro('poste-balao', 0.15, 1.2, (bx, by, TOPO + 0.6)))
     cen.append(torus(0.16, 0.04, (bx, by, TOPO + 1.0), 'corda', seg=10, rseg=3))
-    cen.append(tube([(bx, by, TOPO + 1.0), (bx + 0.5, by - 0.2, TOPO + 0.4), (bx + 0.9, by - 0.1, TOPO + 0.05)],
+    # A corda solta desce do poste e corre pelo chão até perto do cesto (âncora `balao`).
+    cen.append(tube([(bx, by, TOPO + 1.0), (bx + 0.4, by + 0.4, TOPO + 0.4), (bx + 0.8, by + 1.0, TOPO + 0.05)],
                     [0.03] * 3, 'corda', seg=4))
     for x, z in ((5.0, -2.8), (5.0, 2.8)):
         cen += poste_lampiao(x, z)
@@ -248,11 +249,16 @@ def ilha():
         # O tampo (o meio dele no y do tampo); a rocha de baixo é fora do alcance.
         # Base sem número: o contador dá col-cil-plataforma-1 a -4, o mesmo número do nó.
         col.append(col_cilindro('plataforma', r * 0.9, 0.35, (x, -z, TOPO + dy - 0.175)))
+    # O balão (âncora `balao`, z do jogo) fica a 1,9 m do poste, no chão livre mais perto da corda:
+    # o cesto e o envelope (2,35 m de raio) não encostam em copa nem lampião (o teste confere).
     ancoras = ancoras_padrao(
         lumis=[(5.4, 4.6), (-0.8, 4.0), (6.2, -3.8), (-0.6, -4.6)], morador=(-3.4, 3.2),
         extras=[('tear', TEAR['x'] + 1.1, TEAR['z'] + 2.6), ('ninho', NINHO['x'] + 0.1, NINHO['z'] + 0.05, TOPO + 4.1),
-                ('pe-da-arvore', NINHO['x'] + 1.2, NINHO['z'] - 1.4), ('balao', 5.6, -8.4),
-                ('arco-iris', TEAR['x'] + 2.5, TEAR['z'] - 2.8)]
+                ('pe-da-arvore', NINHO['x'] + 1.2, NINHO['z'] - 1.4), ('balao', 5.6, 6.0),
+                ('arco-iris', TEAR['x'] + 2.5, TEAR['z'] - 2.8),
+                # O meio do deque do mirante, em cima dele (o mesmo MIRANTE e DEQUE de
+                # nuvens_constelacoes.py: o deque e a luneta vêm no nuvens-constelacoes.glb).
+                ('mirante', -6.0, -8.0, TOPO + 0.35)]
         + [(f'topo-plataforma-{i}', x, z, TOPO + dy + 0.02) for i, (x, z, dy, r) in enumerate(PLATAFORMAS, 1)])
     nos = {'chao': chao, 'cenario': cen}
     for k, f in enumerate(fios, 1):
@@ -261,16 +267,34 @@ def ilha():
     exportar('nuvens', nos, ancoras, colisores=col)
 
 
+# Onde a criança fica no balão (fase4-09): no piso do cesto (a base dele tem 10 cm de fundo),
+# no meio. Filha do nó animado `balao`, então sobe e balança junto com o clipe `flutuar`.
+PASSAGEIRO = (0.0, 0.0, 0.1)
+
+
+def passageiro(balao_):
+    e = bpy.data.objects.new('passageiro', None)
+    e.empty_display_type = 'PLAIN_AXES'
+    bpy.context.collection.objects.link(e)
+    e.parent = balao_
+    e.matrix_parent_inverse.identity()
+    e.location = PASSAGEIRO
+    return e
+
+
 def so_balao():
     lib_q.reset()
+    # A âncora nasce com o nó `balao` já juntado (dentro do `clipes_`); `exportar` lê a lista depois.
+    filhas = []
 
     def clipes(juntos):
         b = juntos['balao']
+        filhas.append(passageiro(b))
         sobe = [(1, (0, 0, 0)), (37, (0, 0, 0.35)), (73, (0, 0, 0))]
         balanca = [(1, (0, 0, 0)), (19, (R(2.5), 0, 0)), (55, (R(-2.5), 0, 0)), (73, (0, 0, 0))]
         return {'flutuar': {b: {'location': sobe, 'rotation_euler': balanca}}}
 
-    exportar('nuvens-balao', {'balao': balao()}, clipes_=clipes)
+    exportar('nuvens-balao', {'balao': balao()}, filhas, clipes_=clipes)
 
 
 if __name__ == '__main__':

@@ -1203,8 +1203,8 @@ Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipel
   Construir some no balão. O medidor expõe `balao`.
 - Testes: `balao.test.ts` (regras e modo), `balao-das-nuvens.test.ts` (lugar livre, alcance a pé e
   saída contra os colisores). Verificador: `playground/verificar-balao-browser.ts`. Pedidos de arte
-  no plano `docs/plans/2026-10-29-arquipelago-balao.md` (a âncora `balao` está do lado oposto do
-  poste).
+  no plano `docs/plans/2026-10-29-arquipelago-balao.md` (feitos: a âncora `balao` foi para perto do
+  poste, em (5,6; 6,0), e o cesto ganhou a âncora `passageiro`, que o código ainda não lê).
 
 
 ## Final no alto do Farol (fase4-11, 29/10/2026)
