@@ -2,11 +2,11 @@ import { expect, test } from 'bun:test'
 import {
   criarSalvamentoInicial,
   migrarDaV11,
+  migrarDaV12,
   migrarSalvamento,
   NINHOS_DO_VALE,
   SalvamentoV11Schema,
   SalvamentoV12Schema,
-  VERSAO_SALVAMENTO,
 } from '../src/salvamento'
 
 test('V11 migra para V12 sem alterar suas conquistas, rotina ou documento original', () => {
@@ -20,13 +20,12 @@ test('V11 migra para V12 sem alterar suas conquistas, rotina ou documento origin
   })
   const copia = structuredClone(antiga)
   const atual = migrarDaV11(antiga)
-  expect(VERSAO_SALVAMENTO).toBe(12)
   expect(atual).toEqual({
     ...antiga,
     versao: 12,
     vale: { pegadas: false, escavacao: 0, ninhos: [] },
   })
-  expect(migrarSalvamento(antiga)).toEqual(atual)
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV12(atual))
   expect(antiga).toEqual(copia)
   expect(SalvamentoV11Schema.safeParse({ ...antiga, vale: atual.vale }).success).toBe(false)
 })
@@ -57,7 +56,7 @@ test('V12 conserva cada etapa pelo JSON e recusa progresso impossível, duplicad
     { ...base.vale, ninhos: ['ninho-4'] },
   ])
     expect(SalvamentoV12Schema.safeParse({ ...base, vale }).success).toBe(false)
-  expect(migrarSalvamento({ ...base, versao: 13 })).toBeNull()
+  expect(migrarSalvamento({ ...base, versao: 14 })).toBeNull()
   expect(
     migrarSalvamento({
       ...base,

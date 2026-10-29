@@ -82,7 +82,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         atualizadoEm: AGORA,
       })
       const lido = await servico.lerSalvamento(jogador)
-      expect(lido.salvamento).toMatchObject({ versao: 12, presenteDosBichosEntregue: false })
+      expect(lido.salvamento).toMatchObject({ versao: 13, presenteDosBichosEntregue: false })
       if (!lido.salvamento) throw new Error('O serviço não leu a V4 guardada')
       const entregue = {
         ...lido.salvamento,

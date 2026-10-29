@@ -7,6 +7,7 @@ import {
   migrarDaV9,
   migrarDaV10,
   migrarDaV11,
+  migrarDaV12,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV8,
@@ -38,7 +39,7 @@ test('a V8 migra para a V9 sem perder nada, sem nenhum Lumi preso', () => {
   const clone = structuredClone(antiga)
   const nova = migrarDaV8(antiga)
   expect(nova).toEqual({ ...antiga, versao: 9, lumis: {} })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV11(migrarDaV10(migrarDaV9(nova))))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(nova)))))
   expect(SalvamentoV9Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
 })
@@ -57,7 +58,7 @@ test('a V8 continua aceitando só o formato dela (sem os Lumis)', () => {
 
 test('a V9 guarda quantos Lumis de cada espécie ela prendeu, e recusa o que sai da régua', () => {
   const s = criarSalvamentoInicial(AGORA)
-  expect(s.versao).toBe(12)
+  expect(s.versao).toBe(13)
   expect(s.lumis).toEqual({})
   expect(LUMIS).toHaveLength(14)
   expect(new Set(LUMIS).size).toBe(14)
@@ -73,9 +74,9 @@ test('as versões antigas chegam até a V9', () => {
     return { ...v, versao: 7 as const }
   })()
   expect(migrarSalvamento(v7)).toEqual(
-    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))),
+    migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7)))))),
   )
-  expect(migrarSalvamento(v7)?.versao).toBe(12)
+  expect(migrarSalvamento(v7)?.versao).toBe(13)
 })
 
 test('os 14 Lumis no máximo cabem no teto do salvamento', () => {

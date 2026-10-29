@@ -208,8 +208,15 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
     origem: 'Vem com a primeira receita que o Bento lembra, na Vila Doce.',
   },
   aquario: {
-    molde: molde('aquario', 'Aquário', [2, 1], [1.53, 1.39, 0.68], [], null),
-    origem: 'Pedido do Recife Coral.',
+    molde: molde(
+      'aquario',
+      'Aquário',
+      [2, 1],
+      [1.53, 1.39, 0.68],
+      [],
+      'Ganha um peixe para cada coral replantado na lagoa do Recife.',
+    ),
+    origem: 'Vem do primeiro coral replantado no Recife Coral.',
   },
   lareira: {
     molde: molde('lareira', 'Lareira', [2, 1], [1.85, 1.47, 0.88], [], null),

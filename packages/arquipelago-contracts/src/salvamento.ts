@@ -9,7 +9,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 12
+export const VERSAO_SALVAMENTO = 13
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -515,20 +515,52 @@ export type SalvamentoV12 = z.infer<typeof SalvamentoV12Schema>
 export function migrarDaV11(v11: SalvamentoV11): SalvamentoV12 {
   return { ...v11, versao: 12, vale: { pegadas: false, escavacao: 0, ninhos: [] } }
 }
-export const SalvamentoSchema = z.union([
+const SalvamentoAteV12Schema = z.union([
   SalvamentoV12Schema,
   SalvamentoAteV11Schema.transform(migrarDaV11),
 ])
-export type Salvamento = SalvamentoV12
+
+/**
+ * Os pontos de replantio da lagoa do Recife (fase3-03), um bit por ponto: o ponto N está
+ * replantado quando o bit N - 1 está ligado. Um número de 0 a 15 cabe nos 64 KB (12 bytes no pior
+ * caso); uma lista de nomes não caberia.
+ */
+export const PONTOS_DE_CORAL = 4
+export const RecifeV13Schema = z.strictObject({
+  ...SalvamentoV11Schema.shape.recife.shape,
+  corais: z
+    .number()
+    .int()
+    .min(0)
+    .max(2 ** PONTOS_DE_CORAL - 1),
+})
+
+/** V13: os corais replantados no Recife, junto dos achados do mergulho. */
+export const SalvamentoV13Schema = z
+  .strictObject({
+    ...SalvamentoV12Schema.shape,
+    versao: z.literal(13),
+    recife: RecifeV13Schema,
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV13 = z.infer<typeof SalvamentoV13Schema>
+export function migrarDaV12(v12: SalvamentoV12): SalvamentoV13 {
+  return { ...v12, versao: 13, recife: { ...v12.recife, corais: 0 } }
+}
+export const SalvamentoSchema = z.union([
+  SalvamentoV13Schema,
+  SalvamentoAteV12Schema.transform(migrarDaV12),
+])
+export type Salvamento = SalvamentoV13
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 12,
+    versao: 13,
     vale: { pegadas: false, escavacao: 0, ninhos: [] },
-    recife: { bau: false, pagina: false, tesouro: false },
+    recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },

@@ -145,3 +145,14 @@ e lista sem repetição dos três ids de `NINHOS_DO_VALE`. `migrarDaV11` começa
 vazia. A união pública aceita V1 a V12 e devolve V12. Schemas históricos continuam estritos,
 e a validação das rotinas e o teto de 64 KB permanecem. Não guardar observação temporária,
 posição ou cronômetro nesta coleção. Testes de migração e rejeição em `salvamento-v12.test.ts`.
+
+## Salvamento V13: corais do Recife (fase3-03, 29/10/2026)
+
+`SalvamentoV13Schema` troca `recife` por `RecifeV13Schema`: os três achados da V11 mais `corais`,
+um inteiro de 0 a `2 ** PONTOS_DE_CORAL - 1` (15), um bit por ponto de replantio da lagoa (o
+ponto N é o bit N - 1). `migrarDaV12` começa em 0. A união pública aceita V1 a V13 e devolve V13;
+a V12 continua estrita (não aceita `corais`). O catálogo do `aquario` ganhou a função ("um peixe
+para cada coral replantado") e a origem (o primeiro coral). ⚠️ O pior caso de 64 KB em
+`tests/salvamento-v10.test.ts` passa a pôr também o Recife mais pesado (`false` ocupa um byte a
+mais que `true`, os corais com dois dígitos): sobram 48 bytes (medido em 29/10/2026). Campo novo
+precisa achar espaço antes. Testes: `salvamento-v13.test.ts`.

@@ -7,6 +7,7 @@ import {
   migrarDaV9,
   migrarDaV10,
   migrarDaV11,
+  migrarDaV12,
   migrarSalvamento,
   POSTOS_DA_VILA,
   SALVAMENTO_MAX_BYTES,
@@ -44,7 +45,9 @@ test('a V7 migra para a V8 sem perder nada, sem nenhum turno feito', () => {
   const clone = structuredClone(antiga)
   const nova = migrarDaV7(antiga)
   expect(nova).toEqual({ ...antiga, versao: 8, turnos: {} })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(nova)))))
+  expect(migrarSalvamento(antiga)).toEqual(
+    migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(nova))))),
+  )
   expect(SalvamentoV8Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
 })
@@ -65,7 +68,7 @@ test('a V7 continua aceitando só o formato dela (sem os turnos)', () => {
 
 test('a V8 guarda o turno de cada balcão e recusa o que sai da régua', () => {
   const s = criarSalvamentoInicial(AGORA)
-  expect(s.versao).toBe(12)
+  expect(s.versao).toBe(13)
   expect(s.turnos).toEqual({})
   expect(POSTOS_DA_VILA).toEqual(['padaria', 'sorveteria', 'sucos'])
   const turno = { pagoEm: '2026-10-29', melhor: 3, vezes: 2 }
@@ -88,9 +91,9 @@ test('as versões antigas chegam até a V8', () => {
     return { ...v, versao: 6 as const, moradores: { capi: moradores.capi } }
   })()
   expect(migrarSalvamento(v6)).toEqual(
-    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6)))))),
+    migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))))),
   )
-  expect(migrarSalvamento(v6)?.versao).toBe(12)
+  expect(migrarSalvamento(v6)?.versao).toBe(13)
 })
 
 test('os três turnos cabem no teto do salvamento', () => {

@@ -223,9 +223,17 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.recife).toEqual({ bau: false, pagina: false, tesouro: false })
+    expect(lido.salvamento?.recife).toEqual({
+      bau: false,
+      pagina: false,
+      tesouro: false,
+      corais: 0,
+    })
     if (!lido.salvamento) throw new Error('A gravação V10 não devolveu o salvamento')
-    const atual = { ...lido.salvamento, recife: { bau: true, pagina: true, tesouro: true } }
+    const atual = {
+      ...lido.salvamento,
+      recife: { bau: true, pagina: true, tesouro: true, corais: 0 },
+    }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: lido.revisao,
       salvamento: atual,
@@ -263,7 +271,38 @@ describe('salvamento', () => {
       (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
     )
     expect(relido.salvamento).toEqual(atual)
-    expect(relido.salvamento?.recife).toEqual(v11.recife)
+    expect(relido.salvamento?.recife).toEqual({ ...v11.recife, corais: 0 })
+  })
+
+  test('V12 migra na rota e a V13 guarda os corais replantados do Recife', async () => {
+    const v12 = {
+      ...salvamento,
+      versao: 12,
+      recife: { bau: true, pagina: false, tesouro: true },
+    }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v12,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.versao).toBe(13)
+    expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
+    const atual = { ...lido.salvamento, recife: { ...v12.recife, corais: 15 } }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    const fora = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: relido.revisao,
+      salvamento: { ...atual, recife: { ...atual.recife, corais: 16 } },
+    })
+    expect(fora.status).toBe(400)
   })
 
   test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
@@ -283,7 +322,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 12, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 13, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,

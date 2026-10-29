@@ -25,7 +25,7 @@ import {
   SalvamentoV9Schema,
   SalvamentoV10Schema,
 } from '../src'
-import { migrarDaV10, migrarDaV11 } from '../src/salvamento'
+import { migrarDaV10, migrarDaV11, migrarDaV12 } from '../src/salvamento'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 
@@ -58,10 +58,10 @@ test('a V9 migra para a V10 sem perder nada, sem nenhuma rotina', () => {
   const clone = structuredClone(antiga)
   const nova = migrarDaV9(antiga)
   expect(nova).toEqual({ ...antiga, versao: 10, rotinas: {} })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV11(migrarDaV10(nova)))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV12(migrarDaV11(migrarDaV10(nova))))
   expect(SalvamentoV10Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
-  expect(criarSalvamentoInicial(AGORA)).toMatchObject({ versao: 12, rotinas: {} })
+  expect(criarSalvamentoInicial(AGORA)).toMatchObject({ versao: 13, rotinas: {} })
 })
 
 test('a V9 continua aceitando só o formato dela, e as antigas chegam até a V10', () => {
@@ -73,9 +73,9 @@ test('a V9 continua aceitando só o formato dela, e as antigas chegam até a V10
     return { ...v, versao: 7 as const }
   })()
   expect(migrarSalvamento(v7)).toEqual(
-    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))),
+    migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7)))))),
   )
-  expect(migrarSalvamento({ ...criarSalvamentoInicial(AGORA), versao: 13 })).toBeNull()
+  expect(migrarSalvamento({ ...criarSalvamentoInicial(AGORA), versao: 14 })).toBeNull()
 })
 
 test('guarda a rotina de um Lumi preso, e só de Lumi preso', () => {
@@ -231,7 +231,9 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
   let maior = 0
   for (let quantas = 2; quantas <= LUMIS.length; quantas++) {
     const rotinas = porRotina(quantas)
-    const s = { ...base, rotinas }
+    // O Recife mais pesado: false ocupa um byte a mais que true, e os corais têm dois dígitos.
+    const recife = { bau: false, pagina: false, tesouro: false, corais: 15 }
+    const s = { ...base, rotinas, recife }
     expect(migrarSalvamento(s)).not.toBeNull()
     maior = Math.max(maior, new TextEncoder().encode(JSON.stringify(s)).byteLength)
   }
