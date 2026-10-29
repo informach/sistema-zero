@@ -54,7 +54,8 @@
     "./project-validation": "./src/state/projectValidation.ts",
     "./editable-project-validation": "./src/state/editableProjectValidation.ts",
     "./python-snapshot": "./src/runtime/python/snapshot.ts",
-    "./python-project-validation": "./src/state/pythonProjectValidation.ts"
+    "./python-project-validation": "./src/state/pythonProjectValidation.ts",
+    "./lumi-editor": "./src/lumi/RotinaLumiEditor.tsx"
   },
   "imports": {
     "#core": "./src/core/index.ts",
@@ -140,7 +141,8 @@
     "three": "0.184.0",
     "ulid": "^3.0.2",
     "zod": "^4.4.3",
-    "zustand": "^5.0.0"
+    "zustand": "^5.0.0",
+    "@sistemazero/arquipelago-contracts": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19",

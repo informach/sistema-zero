@@ -35,6 +35,14 @@ Bun.serve({
   port: PORTA,
   async fetch(req) {
     const { pathname } = new URL(req.url)
+    if (pathname === '/rotina-lumi.css') {
+      const css = await Bun.build({
+        entrypoints: [resolve(import.meta.dir, '../../studio/src/lumi/editor.css')],
+        target: 'browser',
+      })
+      if (!css.success) return new Response(css.logs.join('\n'), { status: 500 })
+      return new Response(css.outputs[0], { headers: { 'content-type': 'text/css' } })
+    }
     if (pathname === '/arte.js') return compilar('arte.tsx')
     if (pathname === '/arte')
       return new Response(pagina('Arquipélago · conferência da arte', '/arte.js'), {

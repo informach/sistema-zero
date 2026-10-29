@@ -16,6 +16,7 @@ import { lojaDasCartas, useCartas } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaRotina, PAINEL_DA_ROTINA, useRotina } from '../estado/rotina'
 import { ESPECIES_DE_LUMI } from '../sistemas/album'
+import { editarRotinaNaPlataforma } from '../sistemas/ferramenta-da-rotina'
 import {
   type Alvo,
   alvoExiste,
@@ -258,6 +259,18 @@ export function PainelDaRotina() {
   const lumi: LumiId | null = escolhido && lumis[escolhido] ? escolhido : (presos[0] ?? null)
   const [rascunho, setRascunho] = useState<CartaoDaRotina[]>([...ROTINA_VAZIA])
   const [alvo, setAlvo] = useState<Alvo>([])
+  const [editando, setEditando] = useState(false)
+  const abertura = useRef(0)
+  const editandoRef = useRef(false)
+  useEffect(() => {
+    abertura.current++
+    editandoRef.current = false
+    setEditando(false)
+    if (!aberto || !lumi) return
+    return () => {
+      abertura.current++
+    }
+  }, [aberto, lumi])
   const [aviso, setAviso] = useState<Aviso>(null)
   const fechar = useRef<HTMLButtonElement>(null)
   const naMao = useMemo(() => cartasNaMao(dados), [dados])
@@ -317,6 +330,34 @@ export function PainelDaRotina() {
     rotina.getState().pedir({ lumi, cartoes: limparRotina(rascunho), origem: 'testar' })
     loja.getState().abrirPainel(null)
   }
+  const abrirBlocos = async () => {
+    if (!lumi || editandoRef.current) return
+    const minha = abertura.current
+    editandoRef.current = true
+    setEditando(true)
+    try {
+      const r = await editarRotinaNaPlataforma({
+        plataforma,
+        lumi,
+        rascunho,
+        ler: () => loja.getState().salvamento,
+        ativo: () =>
+          abertura.current === minha && loja.getState().painelAberto === PAINEL_DA_ROTINA,
+        guardar: (s) => loja.getState().mudar(() => s),
+      })
+      if (minha !== abertura.current) return
+      if (r.rotina) {
+        setRascunho(r.rotina)
+        setAlvo([])
+        setAviso({ tom: 'ok', texto: 'Rotina guardada. Use Testar para ver o Lumi na ilha.' })
+      } else if (r.motivo) setAviso({ tom: 'atencao', texto: r.motivo })
+    } finally {
+      if (minha === abertura.current) {
+        editandoRef.current = false
+        setEditando(false)
+      }
+    }
+  }
   const guardar = () => {
     if (!lumi) return
     const r = guardarRotina(loja.getState().salvamento, lumi, rascunho, naMao)
@@ -340,13 +381,27 @@ export function PainelDaRotina() {
         aria-labelledby="arq-rotina-titulo"
       >
         <h2 id="arq-rotina-titulo">Rotina</h2>
+        {lumi ? (
+          <button
+            className="arq-botao"
+            type="button"
+            disabled={editando}
+            onClick={() => void abrirBlocos()}
+          >
+            {editando ? 'Abrindo os blocos…' : 'Montar com blocos'}
+          </button>
+        ) : null}
         {presos.length === 0 ? (
           <p className="arq-quadro-sub">
             Você ainda não tem um Lumi. À noite, na Vila Doce, a lanterna acesa prende um borrão de
             névoa, e ele vira um Lumi.
           </p>
         ) : (
-          <>
+          <fieldset
+            disabled={editando}
+            aria-label="Rotina em cartões"
+            style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+          >
             <p className="arq-quadro-sub">
               Os cartões são blocos com outra roupa. A rotina começa com um Quando, e o Lumi faz o
               resto na horta da sua ilha.
@@ -435,7 +490,7 @@ export function PainelDaRotina() {
                 </ol>
               </details>
             ) : null}
-          </>
+          </fieldset>
         )}
         <div className="arq-menu-acoes arq-rotina-acoes">
           {lumi ? (
@@ -443,7 +498,7 @@ export function PainelDaRotina() {
               <button
                 type="button"
                 className="arq-botao"
-                disabled={recusa !== null}
+                disabled={editando || recusa !== null}
                 onClick={testar}
               >
                 Testar
@@ -451,7 +506,7 @@ export function PainelDaRotina() {
               <button
                 type="button"
                 className="arq-botao"
-                disabled={recusa !== null}
+                disabled={editando || recusa !== null}
                 onClick={guardar}
               >
                 Guardar
@@ -460,6 +515,7 @@ export function PainelDaRotina() {
                 <button
                   type="button"
                   className="arq-botao leve"
+                  disabled={editando}
                   onClick={() => {
                     loja.getState().mudar((s) => apagarRotina(s, lumi))
                     setRascunho([...ROTINA_VAZIA])

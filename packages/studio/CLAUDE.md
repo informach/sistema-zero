@@ -5168,3 +5168,9 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
 Cópias aprovadas do Arquipélago: o leitor JavaScript preserva programmingLanguage explícito em documentos v2. Regressão com o projeto real do Bosque em member-shell/tests/arquipelago-minijogo-project.test.ts.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Mini estúdio dos Lumis (29/10/2026)
+
+Entrada pública `@sistemazero/studio/lumi-editor`, exclusiva para rotinas do jogo. Reusa Blockly e `szThemeFor`, sem registrar blocos Lumi na paleta de projetos ou alterar conquistas do Estúdio. Não é uma nova linguagem do Estúdio.
+
+Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.

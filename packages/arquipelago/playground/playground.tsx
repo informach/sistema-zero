@@ -70,6 +70,21 @@ function lerFamilia(texto: string | null): FamiliaDoPlayground | undefined {
 }
 if (q.get('novo') === '1') localStorage.removeItem('arquipelago-playground')
 const plataforma = criarPlataformaFalsa({
+  rotina:
+    q.get('rotina') === 'cancelado'
+      ? 'cancelado'
+      : q.get('rotina') === 'indisponivel'
+        ? 'indisponivel'
+        : 'editor',
+  editarRotina:
+    q.get('rotina') === 'editor'
+      ? async (molde) => {
+          const { abrirEditorLumiNoPlayground } = await import(
+            '../../member-shell/tests/fixtures/rotina-lumi-playground'
+          )
+          return abrirEditorLumiNoPlayground(molde, () => plataforma.servico.buscar('/cartas'))
+        }
+      : undefined,
   posicao: Number(q.get('posicao') ?? (partidaDoBarco ? 4 : 2)),
   publico: (q.get('publico') as PublicoJogo | null) ?? 'kids',
   limiteDiarioMinutos: q.has('limite') ? Number(q.get('limite')) : undefined,

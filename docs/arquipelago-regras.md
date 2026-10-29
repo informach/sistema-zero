@@ -2271,6 +2271,19 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
   ritmo. Os lugares são só a horta e a geladeira da ilha central.
 - **Moedas:** nada disto paga moedas.
 
+### Mini estúdio de blocos dos Lumis (fase2-14)
+
+- A plataforma abre a ferramenta `rotina-lumi` por cima do jogo. O botão “Montar com blocos” fica no painel Rotina. Cancelar ou falhar mantém os cartões e o rascunho; “Testar”, o Lumi no mundo, o HUD e “Da última vez” continuam no jogo.
+- Contrato transitório versão 1 em `arquipelago-contracts/src/rotina-ferramenta.ts`: espécie, id da abertura, rotina compacta, cartões das outras rotinas, cartões do serviço e mundo pequeno (horta, mochila, geladeira). O retorno contém só a rotina, espécie e abertura. Sem campo novo no salvamento V10.
+- `rotina-execucao.ts`, `rotina-validacao.ts`, `horta.ts` e `rotina-mundo.ts` no contrato são o núcleo puro compartilhado. O jogo adapta o salvamento; a prévia usa uma cópia. A horta e a geladeira normais também usam as operações extraídas. Não há import do jogo pela plataforma.
+- A ponte comum relê `GET /cartas` ao abrir e ao guardar. Os controles dependem dessa resposta, inclusive Contar mais um. O jogo confere novamente permissões, espécie, versão, abertura, alterações concorrentes e teto de 32 antes de guardar sobre o estado atual.
+- Editor Blockly em `studio/src/lumi`, carregado sob demanda pela plataforma, com conversão nos dois sentidos. Cada bloco corresponde a um cartão. Até 16 blocos, 3 níveis e 32 no conjunto. Peças soltas, controles vazios e cartões bloqueados impedem guardar.
+- No computador, blocos e prévia ficam lado a lado. No celular, “Blocos” e “Prévia” alternam a área. A miniatura esquemática mostra canteiros e geladeira, o Lumi no passo, o bloco destacado e o registro. “Prever”, “Pausar prévia”, “Próximo passo” e “Recomeçar” nunca mudam o jogo. Como o antigo teste completo, a prévia usa o instante da abertura, sem acelerar o crescimento da horta pelo Esperar.
+- Tema da comunidade Kids, com os tokens oficiais de cores, fontes Baloo 2/Nunito do host, botões com degrau e foco visível. A área do Blockly recebe as mesmas cores; seus menus ficam dentro do diálogo e voltam ao host ao fechar.
+- JavaScript/TypeScript somente, sem Python, seletor de linguagem ou código livre. A aparência futura da miniatura pode receber arte própria; nenhum GLB foi alterado.
+- Playground `?rotina=editor&lumis=quindim:1&cartas=todas` carrega um host de QA da plataforma, fora do bundle do jogo. `rotina=cancelado` e `rotina=indisponivel` exercitam as reservas. `cartas=fora-do-ar`/`desligadas` mantém as recusas do serviço.
+- Provas: `studio/src/lumi/blocks.test.ts`, `arquipelago/tests/mini-estudio-lumis.test.ts`, rotina existente e teto V10. Navegador: `arquipelago/playground/verificar-mini-estudio-browser.ts`.
+
 ## 9. Moedas e prêmios
 
 ### 9.1 Valores por desafio

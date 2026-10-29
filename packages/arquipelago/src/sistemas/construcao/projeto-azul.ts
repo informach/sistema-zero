@@ -1,6 +1,8 @@
 import {
   CATALOGO_DE_OBJETOS,
-  GELADEIRA_GUARDA,
+  capacidadeDaGeladeira,
+  guardadosNaGeladeira,
+  guardarAlimentoNaGeladeira,
   type ObjetoDaCasa,
   type Obra,
   POSTOS_DA_JORNADA,
@@ -168,11 +170,11 @@ export function falaDoGanho(id: ObjetoDaCasa): string {
 
 /** Quantos alimentos cabem: 4 no holograma, 12 com aparência. */
 export function capacidade(p: ProjetoAzul): number {
-  return p.aparencia ? GELADEIRA_GUARDA.completa : GELADEIRA_GUARDA.holograma
+  return capacidadeDaGeladeira(p)
 }
 
 export function guardados(p: ProjetoAzul): number {
-  return Object.values(p.guardado ?? {}).reduce((a, b) => a + b, 0)
+  return guardadosNaGeladeira(p)
 }
 
 /** É alimento (o que se come)? Só alimento vai na geladeira. */
@@ -186,13 +188,7 @@ export function guardarNaGeladeira(
   inventario: Record<string, number>,
   item: string,
 ): { projeto: ProjetoAzul; inventario: Record<string, number> } | null {
-  if (!ehAlimento(item) || (inventario[item] ?? 0) < 1 || guardados(p) >= capacidade(p)) return null
-  const guardado = { ...(p.guardado ?? {}), [item]: (p.guardado?.[item] ?? 0) + 1 }
-  const resto = (inventario[item] ?? 0) - 1
-  const inv = { ...inventario }
-  if (resto > 0) inv[item] = resto
-  else delete inv[item]
-  return { projeto: { ...p, guardado }, inventario: inv }
+  return ehAlimento(item) ? guardarAlimentoNaGeladeira(p, inventario, item) : null
 }
 
 /** Tirar um alimento da geladeira para a mochila. */

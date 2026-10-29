@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
 
 /**
  * A PORTA entre o jogo e a plataforma. A página da plataforma que hospeda o jogo monta este
@@ -71,7 +72,7 @@ export interface ServicoDoJogo {
 }
 
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */
-export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio'
+export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi'
 export interface PedidoDeFerramenta {
   ferramenta: FerramentaDaPlataforma
   /** Identifica o que o jogo quer de volta (o objeto, o desafio). */
@@ -81,6 +82,7 @@ export interface PedidoDeFerramenta {
 }
 export type ResultadoDeFerramenta =
   | { situacao: 'pronto'; criacaoId: string }
+  | { situacao: 'rotina-pronta'; resultado: ResultadoDaFerramentaRotina }
   | { situacao: 'cancelado' }
   | { situacao: 'indisponivel'; motivo: string }
 

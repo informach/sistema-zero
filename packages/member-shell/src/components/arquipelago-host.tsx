@@ -4,6 +4,7 @@ import {
   type DesafioAberto,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
+  type MoldeDaRotina,
   MoldeDeDesafioSchema,
   type MontagemDoArquipelago,
   type PedidoDeFerramenta,
@@ -11,6 +12,7 @@ import {
   type PublicoJogo,
   posicaoDoPostoKids,
   QuartoSchema,
+  type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
@@ -19,6 +21,7 @@ import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
 import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
+import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-rotina'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
 import {
@@ -27,6 +30,10 @@ import {
   type FerramentaDaPorta,
   PortaDoArquipelago,
 } from './arquipelago-porta'
+
+const RotinaDialog = lazy(() =>
+  import('./arquipelago-rotina-dialog').then((m) => ({ default: m.ArquipelagoRotinaDialog })),
+)
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
@@ -256,6 +263,8 @@ export function ArquipelagoHost(props: {
     /** Aparência de um objeto (projeto azul): o Pinta e o Molda abrem com o molde. */
     objeto: PedidoDeObjeto | null
   } | null>(null)
+  const [moldeRotina, setMoldeRotina] = useState<MoldeDaRotina | null>(null)
+  const fimRotina = useRef<((resultado: ResultadoDaFerramentaRotina | null) => void) | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
   const { publico, voltarPara } = props
@@ -269,6 +278,19 @@ export function ArquipelagoHost(props: {
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.ferramenta === 'rotina-lumi') {
+          return await abrirRotinaNaPlataforma(
+            pedido,
+            () => json(`${BASE}/cartas`),
+            async (molde) => {
+              if (!vivo) return null
+              return new Promise<ResultadoDaFerramentaRotina | null>((resolve) => {
+                fimRotina.current = resolve
+                setMoldeRotina(molde)
+              })
+            },
+          )
+        }
         if (pedido.ferramenta === 'estudio' && pedido.proposito === 'minijogo') {
           const idDoJogo = (pedido.molde as { desafioId?: unknown } | undefined)?.desafioId
           if (typeof idDoJogo !== 'string' || !new RegExp(`^${UUID}$`).test(idDoJogo))
@@ -317,10 +339,11 @@ export function ArquipelagoHost(props: {
             : null
         if (pedido.ferramenta === 'estudio' && !studioConfig)
           return { situacao: 'indisponivel', motivo: 'em-breve' }
+        const ferramenta = pedido.ferramenta
         return await new Promise<ResultadoDeFerramenta>((resolve) => {
           pendente.current = resolve
           setCreation({
-            ferramenta: pedido.ferramenta,
+            ferramenta,
             toolAccess: tools.access,
             studioConfig,
             objeto,
@@ -369,6 +392,9 @@ export function ArquipelagoHost(props: {
     })
     return () => {
       vivo = false
+      fimRotina.current?.(null)
+      fimRotina.current = null
+      setMoldeRotina(null)
       setChallenge(null)
       setMinijogo(null)
       setCreation(null)
@@ -433,6 +459,28 @@ export function ArquipelagoHost(props: {
                     ? { situacao: 'pronto', criacaoId: draft.projectId }
                     : { situacao: 'cancelado' },
                 )
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
+      {moldeRotina ? (
+        <ToolLoadBoundary
+          ferramenta="estudio"
+          onCancel={() => {
+            setMoldeRotina(null)
+            fimRotina.current?.(null)
+            fimRotina.current = null
+          }}
+        >
+          <Suspense fallback={<AvisoDaFerramenta ferramenta="estudio" falhou={false} />}>
+            <RotinaDialog
+              molde={moldeRotina}
+              lerCartas={() => cartasDaRotina(() => json(`${BASE}/cartas`))}
+              onFinish={(resultado) => {
+                setMoldeRotina(null)
+                fimRotina.current?.(resultado)
+                fimRotina.current = null
               }}
             />
           </Suspense>

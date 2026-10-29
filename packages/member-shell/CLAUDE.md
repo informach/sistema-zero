@@ -3629,3 +3629,9 @@ ao aluno). O que vive AQUI:
 Minijogos aprovados: routes/arquipelago.ts repassa jogador e família, com perfis da grade e autorização adicional no serviço. ArquipelagoMinijogoPlayer usa o player real do Estúdio em dialog modal; sem editar a cópia.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Mini estúdio dos Lumis (29/10/2026)
+
+`ArquipelagoHost` carrega `arquipelago-rotina-dialog` sob demanda, cancela no descarte ou troca de perfil e compartilha a ponte `arquipelago-rotina` com a plataforma falsa. A página Kids e a adulta usam o mesmo host e a mesma sessão de `/cartas`.
+
+Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.

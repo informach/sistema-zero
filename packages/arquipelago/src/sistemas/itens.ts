@@ -1,4 +1,4 @@
-import type { Semente } from '@sistemazero/arquipelago-contracts'
+import { adicionarAoInventario, type Semente } from '@sistemazero/arquipelago-contracts'
 
 /** Os itens do jogo. O inventário guarda `id → quantidade`; id desconhecido é ignorado. */
 export interface Item {
@@ -78,7 +78,7 @@ export function quantidade(inv: Inventario, id: string): number {
 }
 
 export function adicionar(inv: Inventario, id: string, qtd = 1): Inventario {
-  return { ...inv, [id]: Math.min(999, quantidade(inv, id) + qtd) }
+  return adicionarAoInventario(inv, id, qtd)
 }
 
 /** Tira do inventário; sem o suficiente, devolve `null` (nada muda). */

@@ -3864,3 +3864,9 @@ atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
 Minijogos no cartão dos pais: leitura independente da semana, some se vazia ou falhar. Todas as rotas de família são embrulhadas por requireParentGateAccountOnly. Jogar usa o player compartilhado e a cópia do serviço.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Mini estúdio dos Lumis (29/10/2026)
+
+A página `/arquipelago` continua usando o `ArquipelagoHost`. A ferramenta nova usa o shim existente `/api/arquipelago/cartas`, sem rota de escrita ou configuração nova.
+
+Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.

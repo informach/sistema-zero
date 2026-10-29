@@ -112,3 +112,9 @@ plataforma pode importar.
 Contrato minijogos.ts: lista, cópia aprovada e capa escolhida embutida PNG/JPEG/WebP. Mesmo teto de projeto dos desafios. A capa tem teto próprio, `CAPA_DO_MINIJOGO_CARACTERES` (400 mil caracteres do data URL): acima dele fica `null` (`capaDoMinijogo` ao guardar, `capaQueCabe` ao ler), porque a lista leva a capa de cada minijogo. Medição inclui minijogos com proteção de grupos.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Mini estúdio dos Lumis (29/10/2026)
+
+Núcleo puro sem React, three ou I/O. Não mudar os schemas de salvamento existentes ao evoluir o molde.
+
+Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.

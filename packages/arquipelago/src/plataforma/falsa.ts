@@ -1,6 +1,7 @@
 import {
   type Acesso,
   AMIZADE_MAXIMA,
+  abrirRotinaNaPlataforma,
   BICHOS_DO_BOSQUE,
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
@@ -10,6 +11,7 @@ import {
   GravarSalvamentoSchema,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   type LumiId,
+  type MoldeDaRotina,
   MoldeDeObjetoSchema,
   migrarSalvamento,
   type PedidoDeFerramenta,
@@ -17,6 +19,7 @@ import {
   type PublicoJogo,
   type QuartoDoJogo,
   RegistrarTempoSchema,
+  type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
   type SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
@@ -31,6 +34,9 @@ import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
  * contrato da de verdade, com o serviço do jogo em memória (e, se der, no localStorage).
  */
 export interface OpcoesDaPlataformaFalsa {
+  /** O playground hospeda o editor fora do jogo; a falsa mantém as mesmas recusas da ponte. */
+  editarRotina?: (molde: MoldeDaRotina) => Promise<ResultadoDaFerramentaRotina | null>
+  rotina?: 'editor' | 'cancelado' | 'indisponivel'
   publico?: PublicoJogo
   posicao?: number
   limiteDiarioMinutos?: number | null
@@ -417,8 +423,19 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         return { status: 404, corpo: { code: 'NOT_FOUND' } }
       },
     },
-    abrirFerramenta: async (pedido) =>
-      (await desafios.abrir(pedido)) ?? (await abrirNoMolde(pedido)),
+    abrirFerramenta: async (pedido) => {
+      if (pedido.ferramenta === 'rotina-lumi') {
+        if (o.rotina === 'indisponivel' || (!o.editarRotina && o.rotina !== 'cancelado'))
+          return { situacao: 'indisponivel', motivo: 'playground' }
+        return abrirRotinaNaPlataforma(
+          pedido,
+          async () => respostaDasCartas(o.cartas ?? 'algumas', publico),
+          async (molde) =>
+            o.rotina === 'cancelado' ? null : ((await o.editarRotina?.(molde)) ?? null),
+        )
+      }
+      return (await desafios.abrir(pedido)) ?? (await abrirNoMolde(pedido))
+    },
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,
