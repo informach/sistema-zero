@@ -7,7 +7,9 @@ import {
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { NOME_DO_BICHO } from './bichos'
+import { ITENS } from './itens'
 import { coracoes } from './moradores'
+import { RECEITAS } from './receitas'
 
 /**
  * O diário (regras puras): as páginas do diário da Íris, uma em cada ilha do anel e a última no
@@ -31,6 +33,8 @@ export type IlhaDoDiario = (typeof ILHAS_DO_DIARIO)[number]
 export const TEXTO_DA_PAGINA: Readonly<Partial<Record<IlhaDoDiario, string>>> = {
   bosque:
     'Hoje desenhei uma ponte e apaguei três vezes. Ninguém viu o desenho. Talvez seja melhor assim.',
+  'vila-doce':
+    'O Bento me pediu a receita do bolo de fubá. Eu disse que ainda não estava boa. Estava boa.',
 }
 
 /** Com quantos corações de amizade a Capi entrega a página do Bosque. */
@@ -40,6 +44,15 @@ export const CORACOES_DA_PAGINA = 2
 export const FALA_DA_PAGINA = [
   'Achei uma coisa na minha cabana e guardei para você: uma página do diário da Íris.',
   'Ela vinha muito ao bosque desenhar. Guarde no seu diário, no menu.',
+] as const
+
+/** Com quantos corações de amizade o Bento entrega a página da Vila Doce (fase2-12). */
+export const CORACOES_DA_PAGINA_DA_VILA = 2
+
+/** O que o Bento diz quando entrega a página. */
+export const FALA_DA_PAGINA_DO_BENTO = [
+  'Arrumando a despensa, achei isto: uma página do diário da Íris.',
+  'Ela escreveu sobre o meu bolo de fubá. Guarde no seu diário, no menu.',
 ] as const
 
 export type EstadoDaPagina =
@@ -67,6 +80,24 @@ export function ganhouAPagina(antes: Capi, depois: Capi): boolean {
   return !temAPaginaDoBosque(antes) && temAPaginaDoBosque(depois)
 }
 
+/** A página da Vila Doce já está com a criança. */
+export function temAPaginaDaVila(bento: Capi): boolean {
+  return coracoes(bento.amizade) >= CORACOES_DA_PAGINA_DA_VILA
+}
+
+/** A amizade com o Bento acabou de chegar aos corações da página (ele entrega agora). */
+export function ganhouAPaginaDaVila(amizadeAntes: number, amizadeAgora: number): boolean {
+  return (
+    coracoes(amizadeAntes) < CORACOES_DA_PAGINA_DA_VILA &&
+    coracoes(amizadeAgora) >= CORACOES_DA_PAGINA_DA_VILA
+  )
+}
+
+function dicaDoMorador(quem: string, guarda: number, coracoesAgora: number): string {
+  const faltam = guarda - coracoesAgora
+  return `${quem} guarda esta página e entrega quando a amizade de vocês chegar a ${guarda} corações (falta${faltam > 1 ? 'm' : ''} ${faltam}).`
+}
+
 /** As páginas do diário, abertas ou guardadas, com o texto ou a dica de onde está cada uma. */
 export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
   return ILHAS_DO_DIARIO.map((ilha): EstadoDaPagina => {
@@ -83,6 +114,19 @@ export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
         dica: `A Capi guarda esta página. Ela entrega quando a amizade de vocês chegar a ${CORACOES_DA_PAGINA} corações (falta${faltam > 1 ? 'm' : ''} ${faltam}).`,
       }
     }
+    if (ilha === 'vila-doce' && texto && temAPaginaDaVila(s.moradores.bento))
+      return { ilha, nome, aberta: true, texto }
+    if (ilha === 'vila-doce')
+      return {
+        ilha,
+        nome,
+        aberta: false,
+        dica: dicaDoMorador(
+          'O Bento, da padaria,',
+          CORACOES_DA_PAGINA_DA_VILA,
+          coracoes(s.moradores.bento.amizade),
+        ),
+      }
     if (ilha === 'farol')
       return { ilha, nome, aberta: false, dica: 'A última página fica no alto do Farol.' }
     return { ilha, nome, aberta: false, dica: `Fica ${NA_ILHA[ilha]} ${nome}, com quem mora lá.` }
@@ -116,5 +160,43 @@ export function colecaoDoBosque(s: Salvamento): EstadoDoBicho[] {
     if (s.bichos.achados.includes(bicho))
       return { bicho, estado: 'achado', nome: NOME_DO_BICHO[bicho], pegada: PEGADA_DO_BICHO[bicho] }
     return { bicho, estado: 'escondido' }
+  })
+}
+
+// ── A coleção de receitas (fase2-12) ────────────────────────────────────────────────────────────
+
+export type EstadoDaReceita =
+  | { id: string; nome: string; emoji: string; sabe: true; precisa: string; onde: string }
+  | { id: string; nome: string; emoji: string; sabe: false; dica: string }
+
+/**
+ * As receitas no diário: as que ela sabe, com o que precisam e onde se fazem, e as que o Bento
+ * ainda vai lembrar, com quantos corações faltam.
+ */
+export function colecaoDeReceitas(s: Salvamento): EstadoDaReceita[] {
+  const c = coracoes(s.moradores.bento.amizade)
+  return RECEITAS.map((r): EstadoDaReceita => {
+    const emoji = ITENS[r.faz.id]?.emoji ?? ''
+    if ((r.bento ?? 0) > c) {
+      const faltam = (r.bento ?? 0) - c
+      return {
+        id: r.id,
+        nome: r.nome,
+        emoji,
+        sabe: false,
+        dica: `O Bento lembra esta receita com ${r.bento} ${r.bento === 1 ? 'coração' : 'corações'} de amizade (falta${faltam > 1 ? 'm' : ''} ${faltam}).`,
+      }
+    }
+    const precisa = Object.entries(r.precisa)
+      .map(([id, q]) => `${q} ${ITENS[id]?.nome.toLowerCase() ?? id}`)
+      .join(', ')
+    return {
+      id: r.id,
+      nome: r.nome,
+      emoji,
+      sabe: true,
+      precisa,
+      onde: r.onde === 'forno' ? 'No forno da casa' : 'Na bancada da ilha',
+    }
   })
 }

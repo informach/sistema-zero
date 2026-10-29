@@ -1406,6 +1406,16 @@ Arquivos: `sistemas/diario.ts`, `sistemas/pegadas.ts`, `interface/diario.tsx`,
     menu." (`FALA_DA_PAGINA`, `ganhouAPagina`). Quem já tinha os corações acha a página no diário.
   - O texto é o da proposta do jogo: "Hoje desenhei uma ponte e apaguei três vezes. Ninguém viu o
     desenho. Talvez seja melhor assim." (`TEXTO_DA_PAGINA`), assinado "Í.".
+  - A da Vila Doce (fase2-12) fica com o Bento, com a mesma regra: ele entrega com 2 corações
+    (`CORACOES_DA_PAGINA_DA_VILA`), na conversa, no presente ou na entrega que fizer a amizade
+    passar desse ponto, dizendo "Arrumando a despensa, achei isto: uma página do diário da Íris." e
+    "Ela escreveu sobre o meu bolo de fubá. Guarde no seu diário, no menu."
+    (`FALA_DA_PAGINA_DO_BENTO`, `ganhouAPaginaDaVila`), depois da fala da receita do mesmo coração.
+    O texto, da proposta: "O Bento me pediu a receita do bolo de fubá. Eu disse que ainda não estava
+    boa. Estava boa."
+- **Receitas** (fase2-12, `colecaoDeReceitas`): todas as receitas do jogo (§6.5). As que ela sabe
+  mostram onde se fazem (a bancada da ilha ou o forno da casa) e o que precisam; as que o Bento
+  ainda vai lembrar mostram com quantos corações e quantos faltam.
   - Antes de chegar, o diário diz quantos corações faltam. As das outras ilhas dizem onde estão
     ("Fica na Vila Doce, com quem mora lá."); chegam com os moradores de cada ilha.
 - **Bichos e pegadas do Bosque** (`colecaoDoBosque`): os quatro do esconde-esconde. Escondido

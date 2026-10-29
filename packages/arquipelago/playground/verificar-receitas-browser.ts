@@ -2,7 +2,8 @@
  * Conferência no navegador das receitas do Bento (fase2-04): com a amizade a 10 pontos do terceiro
  * coração (`?bento=290`), a conversa do dia faz ele lembrar o brigadeiro e dar os ingredientes; o
  * forno chega como projeto azul; na bancada da ilha central o brigadeiro sai na hora (a única
- * receita possível) e, sem ingrediente, a bancada abre a lista com o que falta.
+ * receita possível) e, sem ingrediente, a bancada abre a lista com o que falta. O diário mostra a
+ * página da Vila Doce (fase2-12) e as receitas que ela sabe.
  *
  * `bun playground/verificar-receitas-browser.ts` (navegador: `ARQUIPELAGO_CHROMIUM` com o caminho
  * do executável, ou o canal `ARQUIPELAGO_BROWSER_CHANNEL`, padrão `chrome`). Os prints vão para
@@ -164,6 +165,16 @@ try {
   })
   console.log(`Forno nos projetos: ${forno}`)
   if (forno === false) throw new Error('O forno não chegou.')
+  // 5. O diário: a página da Vila Doce aberta (2 corações) e as receitas sabidas (5 de 6).
+  await page.getByRole('button', { name: 'Abrir o menu' }).click()
+  await page.getByRole('button', { name: /Diário/ }).click()
+  const diario = page.getByRole('dialog', { name: 'Diário' })
+  await diario.waitFor({ timeout: 10_000 })
+  await diario.getByText('O Bento me pediu a receita do bolo de fubá', { exact: false }).waitFor()
+  await diario.getByText('Receitas: 5 de 6').waitFor()
+  await diario.getByText('Receitas: 5 de 6').scrollIntoViewIfNeeded()
+  await page.screenshot({ path: path.join(prints, 'receitas-diario.png') })
+  console.log('Diário: página da Vila e 5 de 6 receitas')
   if (erros.length) throw new Error(erros.join('\n'))
   console.log('Receitas conferidas.')
 } finally {

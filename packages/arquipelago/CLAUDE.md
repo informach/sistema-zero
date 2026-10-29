@@ -543,6 +543,10 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `ganharProjetos` com o primeiro coração; o painel dele e o da bancada usam `ListaDeReceitas`
   (`interface/receitas.tsx`). Playground: `?bento=290` (amizade com o Bento). Testes:
   `tests/receitas-do-bento.test.ts`; navegador: `bun playground/verificar-receitas-browser.ts`.
+- Diário da Vila (fase2-12): a página da Vila Doce chega pelo Bento com 2 corações
+  (`CORACOES_DA_PAGINA_DA_VILA`, `FALA_DA_PAGINA_DO_BENTO`, `ganhouAPaginaDaVila` em
+  `sistemas/diario.ts`) e o diário ganha a seção Receitas (`colecaoDeReceitas`). Testes em
+  `tests/diario.test.ts`.
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em

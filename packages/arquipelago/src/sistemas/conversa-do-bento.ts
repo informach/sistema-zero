@@ -7,6 +7,7 @@ import {
   pedidoDoDiaDoBento,
 } from './bento'
 import { escolhaDoDia } from './conversa-da-capi'
+import { FALA_DA_PAGINA_DO_BENTO, ganhouAPaginaDaVila } from './diario'
 import { adicionar, ITENS } from './itens'
 import {
   conversar,
@@ -66,7 +67,7 @@ function comOsIngredientes(s: Salvamento, r: Receita): Salvamento {
 
 /**
  * Depois de qualquer coisa que dá amizade: cada receita que ele lembrou entra na conversa, com os
- * ingredientes para a primeira vez.
+ * ingredientes para a primeira vez, e a página do diário da Íris, quando a amizade chega a ela.
  */
 function comAsReceitasNovas(
   s: Salvamento,
@@ -79,6 +80,8 @@ function comAsReceitasNovas(
     salvamento = comOsIngredientes(salvamento, r)
     falas.push(FALA_DA_RECEITA[r.id] ?? `Lembrei a receita: ${r.nome.toLowerCase()}.`)
   }
+  if (ganhouAPaginaDaVila(amizadeAntes, s.moradores.bento.amizade))
+    falas.push(...FALA_DA_PAGINA_DO_BENTO)
   return { salvamento, falas, novas }
 }
 

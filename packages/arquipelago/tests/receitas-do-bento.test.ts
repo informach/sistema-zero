@@ -114,7 +114,8 @@ describe('o Bento ensina as receitas', () => {
   test('presente que passa o coração também ensina', () => {
     const s = { ...comAmizade(200 - AMIZADE.presenteQueGosta), inventario: { milho: 1 } }
     const r = presentearOBento(s, 'milho', HOJE)
-    expect(r.falas.at(-1)).toBe(FALA_DA_RECEITA['pao-de-queijo'])
+    // Com dois corações ele também entrega a página do diário (fase2-12), depois da receita.
+    expect(r.falas[1]).toBe(FALA_DA_RECEITA['pao-de-queijo'] ?? '-')
     expect(r.salvamento.inventario).toMatchObject({ polvilho: 1, queijo: 1 })
   })
 

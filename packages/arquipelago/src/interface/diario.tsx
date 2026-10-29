@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { EMOJI_DO_BICHO } from '../sistemas/bichos'
-import { colecaoDoBosque, type EstadoDoBicho, paginasDoDiario } from '../sistemas/diario'
+import {
+  colecaoDeReceitas,
+  colecaoDoBosque,
+  type EstadoDoBicho,
+  paginasDoDiario,
+} from '../sistemas/diario'
 import { Pegada } from './pegadas'
 
 /** O valor de `painelAberto` do diário. */
@@ -59,6 +64,8 @@ export function Diario() {
   const colecao = colecaoDoBosque(salvamento)
   const abertas = paginas.filter((p) => p.aberta).length
   const conhecidos = colecao.filter((b) => b.estado !== 'escondido').length
+  const receitas = colecaoDeReceitas(salvamento)
+  const sabidas = receitas.filter((r) => r.sabe).length
 
   return (
     <div className="arq-sobre">
@@ -107,6 +114,41 @@ export function Diario() {
             {colecao.map((b) => (
               <Bicho key={b.bicho} b={b} />
             ))}
+          </ul>
+        </section>
+        <section className="arq-caderno-secao" aria-labelledby="arq-diario-receitas">
+          <h3 id="arq-diario-receitas" className="arq-menu-titulo">
+            {`Receitas: ${sabidas} de ${receitas.length}`}
+          </h3>
+          <p className="arq-caderno-explica">
+            As receitas que você já sabe fazer. O Bento, da Vila Doce, lembra mais uma a cada
+            coração de amizade.
+          </p>
+          <ul className="arq-quadro-lista arq-diario-bichos">
+            {receitas.map((r) =>
+              r.sabe ? (
+                <li key={r.id} className="arq-diario-bicho">
+                  <span className="arq-caderno-icone" aria-hidden="true">
+                    {r.emoji}
+                  </span>
+                  <div className="arq-quadro-corpo">
+                    <b>{r.nome}</b>
+                    <span className="arq-quadro-estado">{r.onde}</span>
+                    <span className="arq-caderno-efeito">{`Precisa de ${r.precisa}.`}</span>
+                  </div>
+                </li>
+              ) : (
+                <li key={r.id} className="arq-diario-bicho escondido">
+                  <span className="arq-caderno-icone" aria-hidden="true">
+                    ❔
+                  </span>
+                  <div className="arq-quadro-corpo">
+                    <b>{r.nome}</b>
+                    <span className="arq-quadro-estado">{r.dica}</span>
+                  </div>
+                </li>
+              ),
+            )}
           </ul>
         </section>
         <div className="arq-menu-acoes">

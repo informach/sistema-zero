@@ -2,11 +2,16 @@ import { describe, expect, test } from 'bun:test'
 import { BICHOS_DO_BOSQUE, criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { adotar } from '../src/sistemas/bichos'
 import { comecarConversa, FALA_DO_PRESENTE, presentear } from '../src/sistemas/conversa-da-capi'
+import { comecarConversaComOBento } from '../src/sistemas/conversa-do-bento'
 import {
   CORACOES_DA_PAGINA,
+  CORACOES_DA_PAGINA_DA_VILA,
+  colecaoDeReceitas,
   colecaoDoBosque,
   FALA_DA_PAGINA,
+  FALA_DA_PAGINA_DO_BENTO,
   ganhouAPagina,
+  ganhouAPaginaDaVila,
   ILHAS_DO_DIARIO,
   paginasDoDiario,
   TEXTO_DA_PAGINA,
@@ -107,5 +112,55 @@ describe('a Capi entrega a página na conversa', () => {
     }
     const { falas } = comecarConversa(conversou, '2026-10-28', 'perfil-1')
     expect(falas.slice(-FALA_DA_PAGINA.length)).toEqual([...FALA_DA_PAGINA])
+  })
+})
+
+describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
+  const comBento = (amizade: number) => {
+    const s = inicial()
+    return { ...s, moradores: { ...s.moradores, bento: { ...s.moradores.bento, amizade } } }
+  }
+  const pontosDaVila = CORACOES_DA_PAGINA_DA_VILA * AMIZADE.porCoracao
+
+  test('a da Vila abre com os corações de amizade do Bento e diz quantos faltam antes', () => {
+    const vila = (amizade: number) =>
+      paginasDoDiario(comBento(amizade)).find((p) => p.ilha === 'vila-doce')
+    const antes = vila(pontosDaVila - 1)
+    expect(antes?.aberta).toBe(false)
+    expect(antes && !antes.aberta && antes.dica).toContain('Bento')
+    expect(antes && !antes.aberta && antes.dica).toContain('(falta 1)')
+    expect(vila(pontosDaVila)).toMatchObject({ aberta: true, texto: TEXTO_DA_PAGINA['vila-doce'] })
+    expect(ganhouAPaginaDaVila(pontosDaVila - 10, pontosDaVila)).toBe(true)
+    expect(ganhouAPaginaDaVila(pontosDaVila, pontosDaVila + 10)).toBe(false)
+  })
+
+  test('o Bento entrega a página na conversa em que a amizade chega a ela', () => {
+    const r = comecarConversaComOBento(
+      comBento(pontosDaVila - AMIZADE.conversa),
+      '2026-10-29',
+      'p1',
+    )
+    expect(r.falas.slice(-FALA_DA_PAGINA_DO_BENTO.length)).toEqual([...FALA_DA_PAGINA_DO_BENTO])
+    const outro = comecarConversaComOBento(r.salvamento, '2026-10-30', 'p1')
+    expect(outro.falas).not.toContain(FALA_DA_PAGINA_DO_BENTO[0])
+  })
+
+  test('a coleção mostra as receitas sabidas com o que precisam e as outras com os corações', () => {
+    const zero = colecaoDeReceitas(inicial())
+    expect(zero.filter((r) => r.sabe).map((r) => r.id)).toEqual(['salada', 'pipoca'])
+    const bolo = zero.find((r) => r.id === 'bolo-de-fuba')
+    expect(bolo && !bolo.sabe && bolo.dica).toContain('com 1 coração de amizade (falta 1)')
+    const tudo = colecaoDeReceitas(comBento(500))
+    expect(tudo.every((r) => r.sabe)).toBe(true)
+    expect(tudo.find((r) => r.id === 'bolo-de-fuba')).toMatchObject({
+      precisa: '1 fubá, 1 leite, 1 ovo',
+      onde: 'No forno da casa',
+    })
+    for (const r of [...zero, ...tudo]) {
+      const textos = r.sabe ? [r.nome, r.precisa, r.onde] : [r.nome, r.dica]
+      for (const t of textos) expect(t).not.toMatch(/[—!]/)
+    }
+    for (const t of [...FALA_DA_PAGINA_DO_BENTO, TEXTO_DA_PAGINA['vila-doce'] ?? ''])
+      expect(t).not.toMatch(/[—!]/)
   })
 })
