@@ -4,18 +4,13 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import {
-  AdditiveBlending,
   Box3,
   CanvasTexture,
   CatmullRomCurve3,
   type Group,
   type Mesh,
-  MeshBasicMaterial,
   MeshStandardMaterial,
   type Object3D,
-  SphereGeometry,
-  type Sprite,
-  SpriteMaterial,
   TubeGeometry,
   Vector3,
 } from 'three'
@@ -32,19 +27,7 @@ import {
 import { CIPO, comprimentoDaPegada, criarBalanco } from '../sistemas/cipo'
 import { CORDAS, criarPontos, passoDasCordas } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
-import { jogoPausado } from '../sistemas/pausa'
-import {
-  type Corrida,
-  criarCorrida,
-  estrelasDaCorrida,
-  formatarTempo,
-  juntarResultado,
-  PERCURSO_DAS_COPAS,
-  type PontosDoPercurso,
-  passoDaCorrida,
-  quantasEstrelas,
-  vagalumesPegos,
-} from '../sistemas/percurso'
+import { PERCURSO_DAS_COPAS, type PontosDoPercurso } from '../sistemas/percurso'
 import { DURACAO_DO_DIA_MS, PARTE_CLARA } from '../sistemas/tempo-do-dia'
 import { forcaPorHora } from '../sistemas/vento'
 import { BichosDoBosque } from './bichos-do-bosque'
@@ -72,6 +55,7 @@ import {
   prepararCipoDesenhado,
 } from './cipo-desenhado'
 import type { Copa } from './copas'
+import { CORES_DO_VAGALUME, CorridaNaIlha } from './corrida-na-ilha'
 import { FogueiraViva } from './fogueira-viva'
 import { FolhasAoVento } from './folhas-ao-vento'
 import type { IlhaPreparada, Troca } from './ilha-completa'
@@ -84,22 +68,13 @@ import { Ondinhas } from './ondinhas'
 import { TroncoNoLago } from './tronco-no-lago'
 import { ventoAgora } from './vegetacao-ao-vento'
 
-/** Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte). */
-const CHAO_DA_ILHA = 0.25
-
-/** O que muda a cada quadro, sem alocar. */
-interface Quadro {
-  corpo: {
-    x: number
-    y: number
-    z: number
-    pes: number
-    noChaoDaIlha: boolean
-  }
-  corte: { fase: 'nada' | 'saindo' | 'voltando'; ms: number; comecar: boolean }
-  destino: { x: number; y: number; z: number }
-  olhar: number
-}
+/**
+ * Os pés a menos disto do tampo, pisando, contam como o chão da ilha (não deque nem ponte): o que
+ * o corpo sobe sozinho do chão (pedras, tocas, uns 0,58 m) ainda é chão. Com 0,25 m, cair perto da
+ * placa (o terreno ali fica 0,31 m acima do tampo) não voltava ao deque. O fim do escorregador não
+ * conta como queda: a chegada vem antes.
+ */
+const CHAO_DA_ILHA = 0.6
 
 /**
  * O Bosque vivo enquanto a ilha completa está ativa: os três cipós balançam (o personagem pega e
@@ -124,7 +99,7 @@ export function BosqueVivo({
   /** A troca da leve pela completa: as peças daqui aparecem quando a completa terminou de entrar. */
   troca: Troca
 }) {
-  const { loja, movimento, pedidos, rastro } = useJogo()
+  const { loja, movimento, rastro } = useJogo()
   const menosMovimento = useReducedMotion()
   const vento = useMemo(() => ({ tempo: 0, hora: 6 }), [])
   const comeco = useMemo(() => Date.parse(loja.getState().salvamento.criadoEm), [loja])
@@ -357,13 +332,8 @@ export function BosqueVivo({
         if (c.desenho) desmontarCipoDesenhado(c.desenho)
         c.desenho = null
       }
-      // Uma corrida não continua numa ilha que não está mais ali.
-      if (movimento.corrida) {
-        movimento.corrida = null
-        loja.getState().definirCorrida(null)
-      }
     }
-  }, [cipos, tronco, agua, equilibrios, escadas, bordas, escorregador, movimento, loja])
+  }, [cipos, tronco, agua, equilibrios, escadas, bordas, escorregador, movimento])
 
   /** No chão da ilha (não num deque, no cipó nem no tronco). */
   const noChao = () =>
@@ -386,76 +356,6 @@ export function BosqueVivo({
       }),
     [meio, giro],
   )
-  const q = useRef<Quadro>({
-    corpo: { x: 0, y: 0, z: 0, pes: 0, noChaoDaIlha: false },
-    corte: { fase: 'nada', ms: 0, comecar: false },
-    destino: { x: 0, y: 0, z: 0 },
-    olhar: 0,
-  }).current
-
-  /** Escurece, leva o corpo e clareia (a volta ao deque e o "Correr de novo"). */
-  const cortarPara = (
-    destino: { x: number; y: number; z: number },
-    olhar: number,
-    comecar: boolean,
-  ) => {
-    q.destino.x = destino.x
-    q.destino.y = destino.y + CORPO.doCentroAoPe + 0.05
-    q.destino.z = destino.z
-    q.olhar = olhar
-    q.corte.fase = 'saindo'
-    q.corte.ms = 0
-    q.corte.comecar = comecar
-    loja.getState().cortar()
-  }
-  const comecar = () => {
-    if (!pontos) return
-    movimento.corrida = criarCorrida(pontos.vagalumes.length)
-    const s = loja.getState()
-    s.mostrarResultado(null)
-    s.definirCorrida({ vagalumes: 0, totalDeVagalumes: pontos.vagalumes.length })
-    s.dizer('Valendo. Suba a escada e siga pelas copas até o escorregador.')
-  }
-  useInterativo(`${ilha.id}:largada`, {
-    x: placa.x,
-    z: placa.z,
-    raio: pontos ? 1.8 : 0,
-    rotulo: () =>
-      movimento.corrida?.situacao === 'correndo' || movimento.modo !== 'chao'
-        ? null
-        : 'Começar o percurso nas copas',
-    agir: comecar,
-  })
-
-  const terminar = (c: Corrida) => {
-    const s = loja.getState()
-    const antes = s.salvamento.percursos[PERCURSO_DAS_COPAS.id]
-    const melhor = juntarResultado(antes, c)
-    if (!melhor) return
-    s.mudar((sv) => ({ ...sv, percursos: { ...sv.percursos, [PERCURSO_DAS_COPAS.id]: melhor } }))
-    const estrelas = estrelasDaCorrida(c)
-    const recorde = antes !== undefined && c.tempoMs < antes.melhorTempoMs
-    s.definirCorrida(null)
-    s.mostrarResultado({
-      tempoMs: c.tempoMs,
-      estrelas,
-      melhor,
-      recorde,
-      vagalumes: vagalumesPegos(c),
-      totalDeVagalumes: c.pegos.length,
-    })
-    const n = quantasEstrelas(estrelas)
-    s.dizer(
-      recorde
-        ? `Recorde novo no percurso: ${formatarTempo(c.tempoMs)}.`
-        : n === 3
-          ? 'Três estrelas. Você voou pelas copas.'
-          : `Você chegou ao fim do percurso em ${formatarTempo(c.tempoMs)}.`,
-    )
-  }
-
-  const vagalumes = useRef<(Group | null)[]>([])
-  const tempo = useRef(0)
   const pecas = useRef<Group>(null)
 
   useBeforePhysicsStep(() => {
@@ -478,85 +378,12 @@ export function BosqueVivo({
     ventoAgora.escalaVisual = u.arqMenosMovimento.value
     u.arqPessoaVento.value.set(rastro.x, rastro.y, rastro.z)
 
-    const dt = Math.min(dtBruto, 0.1)
-    tempo.current += dt
+    const _dt = Math.min(dtBruto, 0.1)
     // Placa, trepadeira e vagalumes só com a completa inteira (não pulam na frente da troca).
     if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
     // Os cipós são cordas de verdade (`sistemas/cordas.ts`): o corpo desenhado, o tronco e os
     // outros cipós empurram; seguro, a corda fica presa nas mãos e o resto cai junto ao corpo.
     for (const c of cipos) if (c.desenho) desenharCipo(c.desenho, c.vivo.pontos)
-
-    // O corte suave: escurece, leva o corpo, clareia.
-    const corte = q.corte
-    if (corte.fase === 'saindo') {
-      corte.ms += dt * 1000
-      if (corte.ms >= PERCURSO_DAS_COPAS.corteSaiMs) {
-        pedidos.teleporte = { x: q.destino.x, y: q.destino.y, z: q.destino.z }
-        pedidos.olharPara = q.olhar
-        corte.fase = 'voltando'
-        corte.ms = 0
-        if (corte.comecar) comecar()
-      }
-    } else if (corte.fase === 'voltando') {
-      corte.ms += dt * 1000
-      if (corte.ms >= PERCURSO_DAS_COPAS.corteVoltaMs) corte.fase = 'nada'
-    }
-
-    // Pedidos da tela: correr de novo ou parar.
-    const pedido = movimento.pedidoDoPercurso
-    movimento.pedidoDoPercurso = null
-    if (pedido === 'recomecar' && pontos && corte.fase === 'nada') {
-      loja.getState().mostrarResultado(null)
-      cortarPara(pontos.largada, pontos.rumoDaLargada, true)
-    } else if (pedido === 'parar' && movimento.corrida) {
-      movimento.corrida = null
-      loja.getState().definirCorrida(null)
-      loja
-        .getState()
-        .dizer('O percurso parou. A placa ao pé da escada começa de novo quando você quiser.')
-    }
-
-    const c = movimento.corrida
-    const mostrar = c?.situacao === 'correndo'
-    for (let i = 0; i < vagalumes.current.length; i++) {
-      const g = vagalumes.current[i]
-      const p = pontos?.vagalumes[i]
-      if (!g || !p) continue
-      g.visible = mostrar && !c?.pegos[i]
-      if (!g.visible) continue
-      const sobe = menosMovimento ? 0 : Math.sin(tempo.current * 2.2 + i * 1.7) * 0.12
-      g.position.set(p.x, p.y + sobe, p.z)
-      const brilho = g.children[1] as Sprite | undefined
-      if (brilho)
-        brilho.material.opacity = menosMovimento
-          ? 0.75
-          : 0.6 + Math.sin(tempo.current * 4 + i) * 0.2
-    }
-    if (c?.situacao !== 'correndo' || !pontos) return
-    const s = loja.getState()
-    // Menu, tempo pausado ou corte na tela: o cronômetro espera (com uma ferramenta aberta ou a aba
-    // escondida a cena nem desenha, então também não soma).
-    if (jogoPausado(s) || corte.fase !== 'nada') return
-    q.corpo.x = rastro.x
-    q.corpo.y = rastro.y
-    q.corpo.z = rastro.z
-    q.corpo.pes = rastro.y - CORPO.doCentroAoPe
-    q.corpo.noChaoDaIlha = movimento.noChao && q.corpo.pes < meio.y + TOPO_DO_BOSQUE + CHAO_DA_ILHA
-    const ev = passoDaCorrida(c, q.corpo, pontos, dt * 1000)
-    if (!ev) return
-    if (ev.tipo === 'vagalume') {
-      s.definirCorrida({ vagalumes: vagalumesPegos(c), totalDeVagalumes: c.pegos.length })
-    } else if (ev.tipo === 'caiu') {
-      const d = pontos.deques[ev.deque]
-      if (d) cortarPara(d.volta, d.rumoDaVolta, false)
-    } else if (ev.tipo === 'chegou') {
-      movimento.corrida = null
-      terminar(c)
-    } else if (ev.tipo === 'desistiu') {
-      movimento.corrida = null
-      s.definirCorrida(null)
-      s.dizer('O percurso parou. A placa ao pé da escada começa de novo quando você quiser.')
-    }
   })
 
   return (
@@ -590,19 +417,16 @@ export function BosqueVivo({
         giro={giro}
       />
       <Trepadeira tronco={tronco} preparada={preparada} />
-      {pontos?.vagalumes.map((p, i) => (
-        <group
-          // biome-ignore lint/suspicious/noArrayIndexKey: os vagalumes são fixos e na ordem
-          key={i}
-          ref={(g) => {
-            vagalumes.current[i] = g
-          }}
-          position={[p.x, p.y, p.z]}
-          visible={false}
-        >
-          <Vagalume />
-        </group>
-      ))}
+      {pontos ? (
+        <CorridaNaIlha
+          ilhaId={ilha.id}
+          config={PERCURSO_DAS_COPAS}
+          pontos={pontos}
+          largada={placa}
+          alturaDoChao={meio.y + TOPO_DO_BOSQUE + CHAO_DA_ILHA}
+          cores={CORES_DO_VAGALUME}
+        />
+      ) : null}
     </group>
   )
 }
@@ -623,52 +447,6 @@ function InterativoDoCipo({ cipo, noChao }: { cipo: CipoVivo; noChao: () => bool
 }
 
 // ------------------------------------------------------------------ peças desenhadas no código
-
-const NUCLEO = new SphereGeometry(0.09, 12, 8)
-const COR_DO_NUCLEO = new MeshBasicMaterial({ color: '#fff7a8', toneMapped: false })
-let brilhoDoVagalume: CanvasTexture | null = null
-
-/** A textura do brilho: um círculo que some para as bordas (feita uma vez). */
-function texturaDoBrilho(): CanvasTexture | null {
-  if (brilhoDoVagalume) return brilhoDoVagalume
-  if (typeof document === 'undefined') return null
-  const tela = document.createElement('canvas')
-  tela.width = 64
-  tela.height = 64
-  const ctx = tela.getContext('2d')
-  if (!ctx) return null
-  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32)
-  grad.addColorStop(0, 'rgba(255,248,170,1)')
-  grad.addColorStop(0.35, 'rgba(214,255,120,0.55)')
-  grad.addColorStop(1, 'rgba(160,255,120,0)')
-  ctx.fillStyle = grad
-  ctx.fillRect(0, 0, 64, 64)
-  brilhoDoVagalume = new CanvasTexture(tela)
-  return brilhoDoVagalume
-}
-
-/** Um vagalume: o pontinho aceso e o brilho em volta (sempre virado para a câmera). */
-function Vagalume() {
-  const material = useMemo(
-    () =>
-      new SpriteMaterial({
-        map: texturaDoBrilho(),
-        color: '#f4ff9a',
-        blending: AdditiveBlending,
-        depthWrite: false,
-        transparent: true,
-        opacity: 0.7,
-      }),
-    [],
-  )
-  useEffect(() => () => material.dispose(), [material])
-  return (
-    <>
-      <mesh geometry={NUCLEO} material={COR_DO_NUCLEO} />
-      <sprite material={material} scale={[0.95, 0.95, 0.95]} />
-    </>
-  )
-}
 
 /** A placa da largada: poste, tábua com o nome e a marca acesa no chão. */
 function Placa({ x, y, z, giro }: { x: number; y: number; z: number; giro: number }) {

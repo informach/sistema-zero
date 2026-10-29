@@ -1,6 +1,7 @@
 import type {
   Acesso,
   AvatarDoJogo,
+  PercursoId,
   QuartoDoJogo,
   ResultadoDoPercurso,
   Salvamento,
@@ -14,6 +15,7 @@ import type { ModoDoCorpo } from './contexto'
 
 /** O fim de uma corrida, para a tela de resultado. */
 export interface ResultadoDaCorrida {
+  percurso: PercursoId
   tempoMs: number
   /** As estrelas DESTA corrida. */
   estrelas: ResultadoDoPercurso['estrelas']
@@ -27,6 +29,7 @@ export interface ResultadoDaCorrida {
 
 /** A corrida em andamento, para o cronômetro (o tempo corre fora do React). */
 export interface CorridaNaTela {
+  percurso: PercursoId
   vagalumes: number
   totalDeVagalumes: number
 }
@@ -177,6 +180,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
         atual === corrida ||
         (atual &&
           corrida &&
+          atual.percurso === corrida.percurso &&
           atual.vagalumes === corrida.vagalumes &&
           atual.totalDeVagalumes === corrida.totalDeVagalumes)
       )

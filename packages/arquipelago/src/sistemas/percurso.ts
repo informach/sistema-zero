@@ -1,16 +1,54 @@
 /**
- * Um percurso com tempo e estrelas (regras puras, sem three nem física): o das copas do Bosque.
- * Largada na placa ao pé da escada, um ponto de volta em cada deque, vagalumes pelo caminho e a
- * chegada no fim do escorregador. Nada aqui aloca por quadro.
+ * Um percurso com tempo e estrelas (regras puras, sem three nem física): o das copas do Bosque e a
+ * entrega pelos telhados da Vila Doce. Largada perto do chão, um ponto de volta em cada parada
+ * (deque ou telhado), coisas para pegar pelo caminho (vagalumes ou confeitos) e a chegada. Nada
+ * aqui aloca por quadro.
  */
 import {
   MELHOR_TEMPO_MAXIMO_MS,
+  type PercursoId,
   type ResultadoDoPercurso,
 } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
 
+/** O que muda de um percurso para outro (as contas são as mesmas). */
+export interface ConfigDoPercurso {
+  id: PercursoId
+  /** O título da tela de resultado e o nome do cronômetro. */
+  nome: string
+  /** O texto do botão na largada. */
+  rotuloDaLargada: string
+  /** O que o Zappy diz ao começar e quando o percurso para sem chegar. */
+  falaDoComeco: string
+  falaDoFim: string
+  /** A fala das três estrelas. */
+  falaDasTresEstrelas: string
+  /** Abaixo disto ganha a estrela do tempo. */
+  tempoAlvoMs: number
+  /** Quantas coisas estão espalhadas (pegar todas é a terceira estrela). */
+  vagalumes: number
+  /** O nome delas (a estrela, o cronômetro e o resultado) e o símbolo do cronômetro. */
+  coletavel: { varios: string; Varios: string; simbolo: string }
+  /** A coisa é pega a esta distância do centro do corpo. */
+  raioDoVagalume: number
+  /** Chegou: a esta distância (no chão) da chegada. */
+  raioDaChegada: number
+  /** Uma parada conta quando o corpo está em cima dela (o pé até isto abaixo do piso). */
+  folgaDoDeque: number
+  /** Antes da primeira parada, andar mais que isto (no chão) para longe da largada desiste. */
+  distanciaParaDesistir: number
+  /** Milissegundos do corte suave de volta à parada (escurece, leva e clareia). */
+  corteSaiMs: number
+  corteVoltaMs: number
+}
+
 export const PERCURSO_DAS_COPAS = {
   id: 'bosque-copas',
+  nome: 'Percurso nas copas',
+  rotuloDaLargada: 'Começar o percurso nas copas',
+  falaDoComeco: 'Valendo. Suba a escada e siga pelas copas até o escorregador.',
+  falaDoFim: 'O percurso parou. A placa ao pé da escada começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você voou pelas copas.',
   /**
    * Abaixo disto ganha a estrela do tempo. O caminho tem uns 42 m (escada, três pontes, a volta
    * nos deques e o escorregador): correndo sem errar dá uns 9 s e andando uns 19 s (velocidades de
@@ -19,6 +57,7 @@ export const PERCURSO_DAS_COPAS = {
   tempoAlvoMs: 24_000,
   /** Quantos vagalumes estão espalhados (pegar todos é a terceira estrela). */
   vagalumes: 5,
+  coletavel: { varios: 'vagalumes', Varios: 'Vagalumes', simbolo: '✨' },
   /** O vagalume é pego a esta distância do centro do corpo. */
   raioDoVagalume: 0.8,
   /** Chegou: a esta distância (no chão) do fim do escorregador. */
@@ -30,7 +69,43 @@ export const PERCURSO_DAS_COPAS = {
   /** Segundos do corte suave de volta ao deque (escurece, leva e clareia). */
   corteSaiMs: 260,
   corteVoltaMs: 340,
-} as const
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A entrega pelos telhados da Vila Doce (fase2-05): o Bento manda um bolo para a sorveteria pelo
+ * caminho de cima. Dos caixotes às três casinhas de telhado plano e ao terraço da sorveteria
+ * (âncoras `telhados-*` do `vila-doce.glb`), com um confeito no ar em cada pulo.
+ */
+export const PERCURSO_DOS_TELHADOS = {
+  id: 'vila-telhados',
+  nome: 'Entrega pelos telhados',
+  rotuloDaLargada: 'Começar a entrega pelos telhados',
+  falaDoComeco:
+    'Valendo. Suba nos caixotes e leve o bolo pelos telhados até o terraço da sorveteria.',
+  falaDoFim: 'A entrega parou. Os caixotes começam de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. O bolo chegou voando e inteiro.',
+  /**
+   * O caminho tem uns 19 m no plano (da largada aos caixotes, às três casinhas e ao terraço), com
+   * quatro pulos de 0,8 a 1 m para cima: correndo (`CORPO.correr`) são uns 4 s mais os pulos, e
+   * andando uns 9 s. 15 s deixa a estrela para quem para para mirar os pulos, não para quem cai
+   * duas vezes.
+   */
+  tempoAlvoMs: 15_000,
+  vagalumes: 4,
+  coletavel: { varios: 'confeitos', Varios: 'Confeitos', simbolo: '🍬' },
+  raioDoVagalume: 0.8,
+  raioDaChegada: 1.2,
+  folgaDoDeque: 0.3,
+  distanciaParaDesistir: 6,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
+export const PERCURSOS_DO_JOGO: Readonly<Record<PercursoId, ConfigDoPercurso>> = {
+  'bosque-copas': PERCURSO_DAS_COPAS,
+  'vila-telhados': PERCURSO_DOS_TELHADOS,
+}
 
 export interface DequeDoPercurso extends Ponto {
   raio: number
@@ -105,7 +180,7 @@ export interface CorpoNaCorrida {
 
 /**
  * Um quadro da corrida, com `dtMs` de jogo: no máximo um evento por quadro, na ordem chegada,
- * deque, vagalume, queda, desistência (chegar ao fim do escorregador nunca conta como queda).
+ * parada, coisa pega, queda, desistência (chegar ao fim nunca conta como queda).
  * Passar de uma hora desiste: o salvamento não guarda tempo acima disso.
  */
 export function passoDaCorrida(
@@ -113,6 +188,7 @@ export function passoDaCorrida(
   corpo: CorpoNaCorrida,
   pontos: PontosDoPercurso,
   dtMs: number,
+  config: ConfigDoPercurso = PERCURSO_DAS_COPAS,
 ): EventoDaCorrida {
   if (c.situacao !== 'correndo') return null
   c.tempoMs += Math.max(0, dtMs)
@@ -124,7 +200,7 @@ export function passoDaCorrida(
   const chegada = pontos.chegada
   if (
     c.deque === ultimo &&
-    Math.hypot(corpo.x - chegada.x, corpo.z - chegada.z) < PERCURSO_DAS_COPAS.raioDaChegada &&
+    Math.hypot(corpo.x - chegada.x, corpo.z - chegada.z) < config.raioDaChegada &&
     corpo.pes < chegada.y + 0.6
   ) {
     c.situacao = 'chegou'
@@ -136,7 +212,7 @@ export function passoDaCorrida(
     if (!d) continue
     if (
       Math.hypot(corpo.x - d.x, corpo.z - d.z) < d.raio &&
-      corpo.pes > d.y - PERCURSO_DAS_COPAS.folgaDoDeque
+      corpo.pes > d.y - config.folgaDoDeque
     ) {
       c.deque = i
       return { tipo: 'deque', indice: i }
@@ -145,9 +221,7 @@ export function passoDaCorrida(
   for (let i = 0; i < pontos.vagalumes.length; i++) {
     const v = pontos.vagalumes[i]
     if (!v || c.pegos[i]) continue
-    if (
-      Math.hypot(corpo.x - v.x, corpo.y - v.y, corpo.z - v.z) < PERCURSO_DAS_COPAS.raioDoVagalume
-    ) {
+    if (Math.hypot(corpo.x - v.x, corpo.y - v.y, corpo.z - v.z) < config.raioDoVagalume) {
       c.pegos[i] = true
       return { tipo: 'vagalume', indice: i }
     }
@@ -159,7 +233,7 @@ export function passoDaCorrida(
     c.deque < 0 &&
     corpo.noChaoDaIlha &&
     Math.hypot(corpo.x - pontos.largada.x, corpo.z - pontos.largada.z) >
-      PERCURSO_DAS_COPAS.distanciaParaDesistir
+      config.distanciaParaDesistir
   if (foraDaIlha || longeDaLargada) {
     c.situacao = 'desistiu'
     return { tipo: 'desistiu' }
@@ -168,10 +242,13 @@ export function passoDaCorrida(
 }
 
 /** As estrelas de UMA corrida que chegou. */
-export function estrelasDaCorrida(c: Corrida): ResultadoDoPercurso['estrelas'] {
+export function estrelasDaCorrida(
+  c: Corrida,
+  config: ConfigDoPercurso = PERCURSO_DAS_COPAS,
+): ResultadoDoPercurso['estrelas'] {
   return {
     chegada: c.situacao === 'chegou',
-    tempo: c.situacao === 'chegou' && c.tempoMs <= PERCURSO_DAS_COPAS.tempoAlvoMs,
+    tempo: c.situacao === 'chegou' && c.tempoMs <= config.tempoAlvoMs,
     vagalumes: c.situacao === 'chegou' && vagalumesPegos(c) === c.pegos.length,
   }
 }
@@ -183,9 +260,10 @@ export function estrelasDaCorrida(c: Corrida): ResultadoDoPercurso['estrelas'] {
 export function juntarResultado(
   antes: ResultadoDoPercurso | undefined,
   c: Corrida,
+  config: ConfigDoPercurso = PERCURSO_DAS_COPAS,
 ): ResultadoDoPercurso | undefined {
   if (c.situacao !== 'chegou') return antes
-  const agora = estrelasDaCorrida(c)
+  const agora = estrelasDaCorrida(c, config)
   if (!antes) return { estrelas: agora, melhorTempoMs: c.tempoMs }
   return {
     estrelas: {

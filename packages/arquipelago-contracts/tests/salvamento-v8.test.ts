@@ -80,3 +80,13 @@ test('os três turnos cabem no teto do salvamento', () => {
   }
   expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
 })
+
+test('a entrega pelos telhados entra nos percursos sem versão nova', () => {
+  const resultado = {
+    estrelas: { chegada: true, tempo: false, vagalumes: true },
+    melhorTempoMs: 18_400,
+  }
+  const s = { ...criarSalvamentoInicial(AGORA), percursos: { 'vila-telhados': resultado } }
+  expect(migrarSalvamento(s)).toEqual(s)
+  expect(migrarSalvamento({ ...s, percursos: { 'vila-praca': resultado } })).toBeNull()
+})

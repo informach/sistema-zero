@@ -31,6 +31,8 @@ export function podeConstruir(s: EstadoDoJogo): boolean {
     !s.tempoSincronizando &&
     !salvamentoPausado(s.salvamentoSituacao) &&
     s.resultado === null &&
+    // Durante um percurso a barra Viver/Construir sairia em cima do cronômetro (os dois no topo).
+    s.corrida === null &&
     (s.painelAberto === null || s.painelAberto === PAINEL_DE_CONSTRUIR)
   )
 }

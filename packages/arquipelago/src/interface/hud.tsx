@@ -9,7 +9,7 @@ import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { comer } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
-import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
+import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
@@ -181,13 +181,14 @@ function Cronometro() {
     return () => cancelAnimationFrame(quadro)
   }, [corrida, movimento])
   if (!corrida) return null
+  const config = PERCURSOS_DO_JOGO[corrida.percurso]
   return (
-    <div className="arq-cronometro" role="timer" aria-label="Percurso nas copas">
+    <div className="arq-cronometro" role="timer" aria-label={config.nome}>
       <span className="arq-pilula">
         ⏱ <span ref={texto}>0:00,0</span>
       </span>
-      <span className="arq-pilula" title="Vagalumes pegos">
-        ✨ {corrida.vagalumes}/{corrida.totalDeVagalumes}
+      <span className="arq-pilula" title={`${config.coletavel.Varios} pegos`}>
+        {config.coletavel.simbolo} {corrida.vagalumes}/{corrida.totalDeVagalumes}
       </span>
       <button
         type="button"
@@ -211,13 +212,17 @@ function Resultado() {
     if (r) continuar.current?.focus()
   }, [r])
   if (!r) return null
+  const config = PERCURSOS_DO_JOGO[r.percurso]
   const estrelas = [
     { ganhou: r.estrelas.chegada, texto: 'Chegou ao fim' },
     {
       ganhou: r.estrelas.tempo,
-      texto: `Em até ${Math.round(PERCURSO_DAS_COPAS.tempoAlvoMs / 1000)} segundos`,
+      texto: `Em até ${Math.round(config.tempoAlvoMs / 1000)} segundos`,
     },
-    { ganhou: r.estrelas.vagalumes, texto: `Os ${r.totalDeVagalumes} vagalumes` },
+    {
+      ganhou: r.estrelas.vagalumes,
+      texto: `Os ${r.totalDeVagalumes} ${config.coletavel.varios}`,
+    },
   ]
   const fechar = () => loja.getState().mostrarResultado(null)
   return (
@@ -235,7 +240,7 @@ function Resultado() {
           }
         }}
       >
-        <h2 id="arq-resultado-titulo">Percurso nas copas</h2>
+        <h2 id="arq-resultado-titulo">{config.nome}</h2>
         <ul className="arq-estrelas">
           {estrelas.map((e, i) => (
             <li
@@ -262,7 +267,7 @@ function Resultado() {
             </dd>
           </div>
           <div>
-            <dt>Vagalumes</dt>
+            <dt>{config.coletavel.Varios}</dt>
             <dd>
               {r.vagalumes} de {r.totalDeVagalumes}
             </dd>

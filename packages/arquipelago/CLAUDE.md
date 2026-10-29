@@ -555,6 +555,15 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   em cada balcão paga (ingredientes; na padaria, também `ajudarOBento`); moedas esperam o serviço.
   Regras: `docs/arquipelago-regras.md` §6.15.2. Testes: `tests/turnos.test.ts`; navegador:
   `bun playground/verificar-turnos-browser.ts`.
+- Entrega pelos telhados (fase2-05, percurso `vila-telhados`): o percurso com tempo virou genérico
+  (`ConfigDoPercurso` e `PERCURSOS_DO_JOGO` em `sistemas/percurso.ts`; as funções recebem a
+  config, padrão o das copas) e o componente `mundo/corrida-na-ilha.tsx` (`CorridaNaIlha`: largada,
+  cronômetro, coletáveis, queda com o corte e resultado) serve o Bosque e a Vila. Os pontos da
+  Vila saem de `mundo/telhados.ts`. `CorridaNaTela` e `ResultadoDaCorrida` dizem o `percurso`, e o
+  HUD lê nome, coletável e tempo da config. `podeConstruir` some com a barra durante a corrida.
+  Testes: `tests/entrega-pelos-telhados.test.ts`; navegador: `bun playground/verificar-percursos-browser.ts`
+  (com o SwiftShader a cena anda a ~1 quadro por segundo: espere o corpo sair e voltar, nunca um
+  tempo fixo). Os patins ainda não existem.
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em

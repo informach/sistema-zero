@@ -939,15 +939,18 @@ não cai e ninguém é levado de volta para casa. O mar só não deixa passar.
 
 ### 6.13 Percurso nas copas
 
-Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts` e
-`mundo/bosque-vivo.tsx`.
+Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts`,
+`mundo/bosque-vivo.tsx` e `mundo/corrida-na-ilha.tsx` (o mesmo componente da entrega pelos
+telhados, §6.13.1).
 
 - **Largada:** a placa "Percurso nas copas" ao lado do pé da escada da casa na árvore
   (`PLACA_DA_LARGADA`), com uma marca acesa no chão. Perto dela: "E Começar o percurso nas copas".
   O Zappy diz: "Valendo. Suba a escada e siga pelas copas até o escorregador."
 - **Pontos de volta:** cada um dos 4 deques (`RAIOS_DOS_DEQUES`: 2,9, 2,0, 2,1 e 2,0). Um deque
   conta quando o corpo está em cima dele (os pés até 0,3 abaixo do piso, `folgaDoDeque`).
-- **Queda:** depois do primeiro deque, pisar no chão da ilha (pés a menos de 0,25 do tampo) volta
+- **Queda:** depois do primeiro deque, pisar no chão da ilha (pés a menos de 0,6 do tampo, o que o
+  corpo sobe sozinho do chão; até 29/10/2026 eram 0,25, e cair perto da placa, onde o terreno fica
+  0,31 acima do tampo, não contava) volta
   ao último deque alcançado, na borda de dentro do lado em que o caminho segue, a 0,7 da borda
   (`VOLTA_PARA_DENTRO_DO_DEQUE`), olhando para lá. Antes do primeiro deque, cair da escada não
   conta. Nunca volta para a largada.
@@ -957,7 +960,8 @@ Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts` e
   de subir (`distanciaParaDesistir`), tocar "Parar" no cronômetro ou passar de 1 hora. Nada se
   perde.
 - **Cronômetro:** discreto no alto da tela, só durante a corrida, com os vagalumes pegos e o botão
-  "Parar". Conta o tempo de jogo, quadro a quadro, como a física: menu, ferramenta aberta, aba
+  "Parar". Durante a corrida a barra Viver/Construir some (no computador as duas ficavam no mesmo
+  lugar e a barra cobria o cronômetro). Conta o tempo de jogo, quadro a quadro, como a física: menu, ferramenta aberta, aba
   escondida, tempo pausado e o corte não contam. Passar de 1 hora desiste sozinho
   (`MELHOR_TEMPO_MAXIMO_MS`, no contrato), porque o salvamento não guarda tempo maior.
 - **Chegada:** a 1,4 do fim do escorregador (`raioDaChegada`), depois do último deque.
@@ -979,6 +983,35 @@ Arquivos: `sistemas/percurso.ts` (`PERCURSO_DAS_COPAS`), `mundo/bosque.ts` e
 - **O que fica guardado** (`juntarResultado`, no salvamento, seção 5): cada estrela ganha fica para
   sempre, mesmo que venha de corridas diferentes, e o melhor tempo é o menor de todas as corridas
   que chegaram. Corrida que desistiu não muda nada.
+
+### 6.13.1 Entrega pelos telhados (Vila Doce, fase2-05)
+
+Arquivos: `sistemas/percurso.ts` (`PERCURSO_DOS_TELHADOS`), `mundo/telhados.ts` (os pontos, lidos
+das âncoras `telhados-*` e `fonte` do `vila-doce.glb`) e `mundo/vila-viva.tsx`. As contas são as
+do percurso nas copas (§6.13); muda só o que está aqui.
+
+- **Largada:** no chão da praça, 2 m na frente dos caixotes (`LARGADA_ANTES_DOS_CAIXOTES`). Perto:
+  "E Começar a entrega pelos telhados". O Zappy diz: "Valendo. Suba nos caixotes e leve o bolo
+  pelos telhados até o terraço da sorveteria."
+- **Paradas (pontos de volta):** o caixote alto (raio 0,6) e o topo plano das três casinhas (raio
+  1,5, `RAIOS_DAS_PARADAS`). A volta depois de uma queda é o meio do topo da última parada.
+- **Queda:** depois da primeira parada, pisar no chão da praça (pés a menos de 0,25 dele) volta à
+  última parada com o corte suave. Antes da primeira parada, sair andando mais de 6 m da largada
+  desiste (`distanciaParaDesistir`).
+- **Chegada:** a 1,2 do ponto do terraço da sorveteria (`raioDaChegada`), depois da última casinha.
+- **Confeitos:** 4, um no meio de cada pulo (do caixote para a primeira casinha, entre as casinhas e
+  da última para o terraço), 0,2 acima do centro do corpo em pé na parada mais alta do pulo
+  (`CONFEITO_ACIMA_DO_CORPO`): o pulo leva o centro a uns 1,5 m acima do de saída e os pulos daqui
+  sobem no máximo 1 m. Cor-de-rosa, só durante a corrida, pegos a 0,8 do centro do corpo. O
+  primeiro fica sobre a beirada da primeira casinha e também se pega andando perto dela.
+- **As três estrelas:** chegar; chegar em até 15 segundos (`tempoAlvoMs = 15_000`: o caminho tem
+  uns 19 m no plano e quatro pulos para cima); pegar os 4 confeitos na mesma corrida.
+- **O que fica guardado:** `percursos['vila-telhados']`, como o das copas (cada estrela para sempre,
+  o melhor tempo é o menor). O id entrou no contrato sem versão nova do salvamento.
+- **Ainda não tem:** os patins (a outra metade da fase2-05) e uma placa desenhada na largada (o
+  "Começar" aparece perto do lugar).
+- Testes: `tests/entrega-pelos-telhados.test.ts` (lê o `vila-doce.glb`); navegador:
+  `bun playground/verificar-percursos-browser.ts` (a entrega e o percurso nas copas).
 
 ### 6.14 Colisão
 
