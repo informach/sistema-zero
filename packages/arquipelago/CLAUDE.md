@@ -247,6 +247,11 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/caderno-dos-lumis.test.ts`.
 - ⚠️ `.arq-menu` é `content-box` com `width:100%`: no celular o menu e o Quadro passam 2 px de cada
   lado da tela. O caderno usa `box-sizing:border-box` (`.arq-caderno`).
+- ⚠️ **Barra do topo no celular (até 560px, 29/10/2026):** Viver/Construir (`.arq-modos`) fica à
+  esquerda em `top:106px`, abaixo das necessidades e da segunda linha da direita (no meio do topo
+  ela cobria as barras e o relógio, medido em 320 e 390). A dica do Zappy sobe para `bottom:236px`
+  e estreita (`calc(100% - 152px)`) para não cobrir o direcional nem Pular/Usar; no Construir ela
+  fica em `top:164px`, e o cronômetro em `162px`. Medir de novo ao pôr peça nova no topo.
 - Playground: `?cartas=todas`, `?cartas=desligadas` (403) ou `?cartas=fora-do-ar` (424);
   `src/plataforma/cartas-falsas.ts` usa a régua do contrato com um currículo de mentira.
 

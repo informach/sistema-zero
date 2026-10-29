@@ -163,7 +163,7 @@ export function GameMeasurement({
             Período: {dateLabel(report.periodo.de)} a {dateLabel(report.periodo.ate)} ·{' '}
             {publico === 'kids' ? 'Kids' : 'Adultos'}
           </p>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             {(
               [
                 ['Aparências do Pinta e Molda', report.criacao.pintaMolda],
@@ -174,7 +174,9 @@ export function GameMeasurement({
             ).map(([titulo, numero]) => (
               <article key={titulo} className="min-w-0 rounded-xl border border-border bg-card p-4">
                 <h3 className="text-sm text-muted-foreground">{titulo}</h3>
-                <p className="mt-2 break-words text-2xl font-semibold tabular-nums">
+                <p
+                  className={`mt-2 break-words font-semibold tabular-nums ${numero.situacao === 'disponivel' ? 'text-2xl' : 'text-lg text-muted-foreground'}`}
+                >
                   {measurementNumber(numero)}
                 </p>
               </article>

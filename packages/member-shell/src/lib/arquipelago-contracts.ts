@@ -13,4 +13,3 @@ export {
   type SemanaDaFamiliaParaOsPais,
   SemanaDaFamiliaParaOsPaisSchema,
 } from '@sistemazero/arquipelago-contracts'
-export { MinijogosSchema, type Minijogo } from '@sistemazero/arquipelago-contracts'

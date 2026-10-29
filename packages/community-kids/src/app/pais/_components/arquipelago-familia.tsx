@@ -7,11 +7,13 @@ import {
   type SemanaDaFamiliaParaOsPais,
 } from '@sistemazero/member-shell/lib/arquipelago-contracts'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
+import { BookOpenCheck, Clock, Palette, Trophy } from 'lucide-react'
 import { useId, useState } from 'react'
+import { StatTile } from './parent-ui'
 
 /**
  * As duas partes novas do cartão do Arquipélago na área dos pais (28/10/2026, fase1-18): a semana
- * de cada criança e as permissões de visita. Cada linha só aparece com o número que o serviço tem
+ * de cada criança e as permissões de visita. Cada número só aparece quando o serviço o tem
  * (nada de zero inventado quando o dado falta).
  */
 
@@ -33,57 +35,78 @@ export function tempoPorExtenso(segundos: number): string {
 
 const plural = (n: number, um: string, varios: string) => (n === 1 ? `1 ${um}` : `${n} ${varios}`)
 
+export type LadrilhoDaSemana = {
+  chave: 'desafios' | 'objetos' | 'tempo' | 'curso'
+  valor: string
+  rotulo: string
+  detalhe?: string
+}
+
 /**
- * As linhas da semana de uma criança, na língua dos pais. `limiteDiarioMinutos` é o limite que
- * vale agora (o do cartão), escrito ao lado do tempo livre.
+ * Os números da semana de uma criança, na língua dos pais. Desafios, objetos e a volta ao curso só
+ * aparecem quando o serviço tem o número; o tempo livre sempre, ao lado do limite que vale agora (o do cartão).
  */
-export function linhasDaSemana(c: Crianca, limiteDiarioMinutos: number): string[] {
-  const linhas: string[] = []
+export function ladrilhosDaSemana(c: Crianca, limiteDiarioMinutos: number): LadrilhoDaSemana[] {
+  const ladrilhos: LadrilhoDaSemana[] = []
   if (c.desafios) {
     const { aprovados, deIlhasAnteriores } = c.desafios
-    if (aprovados === 0) linhas.push('Nenhum desafio do Estúdio aprovado nestes dias.')
-    else {
-      const base = `${plural(aprovados, 'desafio do Estúdio aprovado', 'desafios do Estúdio aprovados')}`
-      linhas.push(
-        deIlhasAnteriores !== null && deIlhasAnteriores > 0
-          ? `${base}, ${deIlhasAnteriores === aprovados && aprovados > 1 ? 'todos' : deIlhasAnteriores === 1 ? '1 deles' : `${deIlhasAnteriores} deles`} de ilhas anteriores.`
-          : `${base}.`,
-      )
-    }
+    const anteriores =
+      deIlhasAnteriores === null || deIlhasAnteriores === 0
+        ? undefined
+        : deIlhasAnteriores === aprovados && aprovados > 1
+          ? 'todos de ilhas anteriores'
+          : `${deIlhasAnteriores} de ilhas anteriores`
+    ladrilhos.push({
+      chave: 'desafios',
+      valor: String(aprovados),
+      rotulo: aprovados === 1 ? 'desafio do Estúdio aprovado' : 'desafios do Estúdio aprovados',
+      detalhe: anteriores,
+    })
   }
   if (c.objetos) {
     const { pinta, molda } = c.objetos
-    linhas.push(
-      `Objetos com a aparência criada por ${c.nome}, desde o começo: ${pinta} no Pinta e ${molda} no Molda.`,
-    )
+    ladrilhos.push({
+      chave: 'objetos',
+      valor: String(pinta + molda),
+      rotulo: `${pinta + molda === 1 ? 'objeto' : 'objetos'} com a aparência criada por ${c.nome}`,
+      detalhe: `${pinta} no Pinta e ${molda} no Molda, desde o começo`,
+    })
   }
   const { segundos, dias } = c.tempoLivre
   const limite = `limite de ${duracaoPorExtenso(limiteDiarioMinutos)} por dia`
-  linhas.push(
-    segundos > 0
-      ? `Tempo livre no jogo: ${tempoPorExtenso(segundos)} em ${plural(dias, 'dia', 'dias')} (${limite}).`
-      : `Não passeou pelo jogo nestes dias (${limite}).`,
-  )
+  ladrilhos.push({
+    chave: 'tempo',
+    valor: tempoPorExtenso(segundos),
+    rotulo: 'de tempo livre no jogo',
+    detalhe: segundos > 0 ? `em ${plural(dias, 'dia', 'dias')}, ${limite}` : limite,
+  })
   const volta = voltaAoCurso(c)
-  if (volta) linhas.push(volta)
-  return linhas
+  if (volta) ladrilhos.push(volta)
+  return ladrilhos
 }
 
 /**
  * Se ela concluiu aula do curso logo depois de jogar (29/10/2026). Só com a leitura dos cursos
  * e com tempo de jogo na janela; diz o fato, nunca que o jogo foi a causa.
  */
-function voltaAoCurso(c: Crianca): string | null {
+function voltaAoCurso(c: Crianca): LadrilhoDaSemana | null {
   const { segundos, dias } = c.tempoLivre
   if (!c.voltaAoCurso || segundos <= 0 || dias <= 0) return null
   const voltou = Math.min(c.voltaAoCurso.dias, dias)
-  const prazo = `até ${HORAS_DA_VOLTA_AO_CURSO} h depois de jogar`
-  if (voltou === 0) return `Nenhuma aula do curso concluída ${prazo}.`
-  const base = `Concluiu aula do curso ${prazo}`
-  if (dias === 1) return `${base}.`
-  if (voltou === dias) return `${base}, nos ${dias} dias em que jogou.`
-  return `${base} em ${voltou} dos ${dias} dias em que jogou.`
+  return {
+    chave: 'curso',
+    valor: `${voltou} de ${dias}`,
+    rotulo: `${dias === 1 ? 'dia' : 'dias'} de jogo com aula concluída depois`,
+    detalhe: `aula do curso, até ${HORAS_DA_VOLTA_AO_CURSO} h depois de jogar`,
+  }
 }
+
+const ICONE_DO_LADRILHO = {
+  desafios: { icon: Trophy, color: 'var(--level-hacker)' },
+  objetos: { icon: Palette, color: 'var(--level-architect)' },
+  tempo: { icon: Clock, color: 'var(--primary)' },
+  curso: { icon: BookOpenCheck, color: 'var(--level-explorer)' },
+} as const
 
 /** "22/10 a 28/10" (a janela do resumo). */
 function janela(inicio: string, fim: string): string {
@@ -110,20 +133,25 @@ export function SemanaDasCriancas({
           Dos últimos 7 dias, de {janela(semana.inicio, semana.fim)}.
         </p>
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="flex flex-col gap-3">
         {semana.criancas.map((c) => (
           <li
             key={c.perfilId}
             className="min-w-0 rounded-2xl border border-border bg-card p-4 text-sm"
           >
             <p className="break-words font-extrabold">{c.nome}</p>
-            <ul className="mt-2 flex flex-col gap-1.5 text-muted-foreground">
-              {linhasDaSemana(c, limiteDiarioMinutos).map((linha) => (
-                <li key={linha} className="break-words">
-                  {linha}
-                </li>
+            <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-2">
+              {ladrilhosDaSemana(c, limiteDiarioMinutos).map((l) => (
+                <StatTile
+                  key={l.chave}
+                  icon={ICONE_DO_LADRILHO[l.chave].icon}
+                  color={ICONE_DO_LADRILHO[l.chave].color}
+                  value={l.valor}
+                  label={l.rotulo}
+                  hint={l.detalhe}
+                />
               ))}
-            </ul>
+            </div>
           </li>
         ))}
         {semana.aindaSemJogo.map((c) => (
