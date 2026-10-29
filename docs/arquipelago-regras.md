@@ -759,7 +759,10 @@ The Sims):
 Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medidas.ts`.
 
 - **Duas versões:** cada ilha do anel tem uma versão leve e pode ter uma versão completa, feita
-  no Blender. Hoje só o Bosque tem a completa (`ILHAS_COMPLETAS` em `mundo/ilha-completa.tsx`).
+  no Blender. O Bosque e, desde 29/10/2026, a Vila Doce têm a completa (`ILHAS_COMPLETAS` em
+  `mundo/ilha-completa.tsx`). Na Vila Doce o percurso dos telhados já se pisa (caixotes a 1 m,
+  casinhas a 2,0, 2,8 e 3,6 m, terraço da sorveteria a 4,4 m); o Bento, as lojas e as entregas vêm
+  nas próximas etapas.
 - **O ciclo** (`proximoEstadoDaIlha`): `longe` → `carregando` → `pronta` → `ativa` →
   `descarregando` → `longe`.
 - **Quando busca:** a ilha precisa estar aberta. A busca começa quando a pessoa entra na faixa da

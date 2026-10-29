@@ -183,6 +183,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Ilhas completas (o Bosque, 27/10/2026)
 
+- Vila Doce (fase2-01, 29/10/2026): `vila-doce.glb` em `ILHAS_COMPLETAS`, com os colisores do
+  Blender (`tests/colisores-da-vila-doce.test.ts`) e sem faces coplanares. Ainda sem `ILHAS_VIVAS`
+  (o Bento e as lojas vêm depois), então lá continua o "Olhar em volta". No navegador:
+  `bun playground/verificar-vila-doce-browser.ts` (chegada até a praça e de pé em cada parada do
+  percurso dos telhados).
+
 - `src/sistemas/ilhas-completas.ts`: o ciclo puro `longe → carregando → pronta → ativa →
   descarregando`. Busca na cabeça da ponte (`naPonteDa`, faixa `BUSCA_NA_PONTE`), troca no meio dela
   (`DISTANCIA_DA_TROCA`), solta na volta à ilha central. Falha fica na versão leve até a pessoa se

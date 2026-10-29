@@ -5,6 +5,7 @@ import { Box3, Matrix4, type Object3D, Quaternion, Ray, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
+import { posicaoDoQuadro } from '../src/mundo/quadro-das-cores'
 import { alturaDoPulo, CORPO } from '../src/sistemas/corpo'
 
 const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'vila-doce.glb')
@@ -220,6 +221,23 @@ describe('os nós col-* da Vila Doce', () => {
       const corpo = new Vector3(a.x, a.y + CENTRO_DO_CORPO, a.z)
       expect(formas.find((c) => bate(c, corpo))?.nome).toBeUndefined()
     }
+  })
+
+  test('o cavalete do Quadro das Cores cabe perto da chegada, com lugar para a criança na frente', () => {
+    const q = posicaoDoQuadro(raiz)
+    // Nada da ilha a menos de um corpo do cavalete (1,3 de largura, como `COLISORES_DO_QUADRO`).
+    const lado = { x: Math.cos(q.giro), z: -Math.sin(q.giro) }
+    for (const d of [-0.65, 0, 0.65]) {
+      const p = new Vector3(q.x + lado.x * d, TAMPO + CENTRO_DO_CORPO, q.z + lado.z * d)
+      expect(formas.find((c) => bate(c, p))?.nome).toBeUndefined()
+    }
+    // Quem pinta fica 1 m à frente do cavalete, virado para ele.
+    const frente = new Vector3(
+      q.x + Math.sin(q.giro),
+      TAMPO + CENTRO_DO_CORPO,
+      q.z + Math.cos(q.giro),
+    )
+    expect(formas.find((c) => bate(c, frente))?.nome).toBeUndefined()
   })
 
   test('folhagem e peça fina seguram só o corpo; casas, fonte e casquinha tapam a câmera', () => {
