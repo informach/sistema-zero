@@ -1,0 +1,17 @@
+computador: abertura passou e pulou; o Zappy falou depois
+computador: no quarto, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho
+computador: menu, conforto, diário e rever a abertura
+computador: lá fora, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho
+computador: a tecla 1 usou "Calçar os patins"
+computador: na corrida, só .arq-quem, .arq-topo-dir, .arq-dica, .arq-cronometro
+notebook: abertura passou e pulou; o Zappy falou depois
+notebook: no quarto, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho
+notebook: menu, conforto, diário e rever a abertura
+notebook: lá fora, sem sobreposição entre .arq-quem, .arq-ilha-agora, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho
+notebook: a tecla 1 usou "Calçar os patins"
+notebook: na corrida, só .arq-quem, .arq-topo-dir, .arq-dica, .arq-cronometro
+celular: abertura passou e pulou; o Zappy falou depois
+celular: no quarto, sem sobreposição entre .arq-quem, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho, .arq-botoes-toque
+celular: menu, conforto, diário e rever a abertura
+celular: lá fora, sem sobreposição entre .arq-quem, .arq-topo-dir, .arq-agora, .arq-dica, .arq-baixo, .arq-cantinho, .arq-botoes-toque
+celular: na corrida, só .arq-quem, .arq-topo-dir, .arq-dica, .arq-botoes-toque, .arq-cronometro

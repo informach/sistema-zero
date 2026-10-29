@@ -97,7 +97,7 @@ async function guardado(pagina: Page) {
 async function abrirPainel(pagina: Page) {
   await pagina.getByRole('button', { name: 'Abrir o menu' }).click()
 
-  await pagina.getByRole('button', { name: '📒 Caderno dos Lumis' }).click()
+  await pagina.getByRole('button', { name: 'Caderno dos Lumis' }).click()
 
   await pagina.getByRole('button', { name: 'Montar a rotina de um Lumi' }).click()
 

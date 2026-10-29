@@ -1,10 +1,12 @@
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Suspense } from 'react'
-import { useEstado } from '../estado/contexto'
+import { lojaDaAbertura, useAbertura } from '../estado/abertura'
+import { useEstado, useJogo } from '../estado/contexto'
 import { Camera } from '../personagem/camera'
 import { Personagem } from '../personagem/personagem'
 import { Zappy } from '../personagem/zappy'
+import { PAINEL_DA_ABERTURA } from '../sistemas/abertura'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { Agua } from './agua'
@@ -41,10 +43,16 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
 function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
   const { nivel } = useQualidade()
   const ferramentaAberta = useEstado((estado) => estado.ferramentaAberta)
+  // A abertura cobre a tela inteira: o mundo não precisa ser desenhado por baixo dela. Na saída
+  // ele volta a desenhar, para estar lá quando a tela clareia.
+  const { loja } = useJogo()
+  const aberturaSaindo = useAbertura(lojaDaAbertura(loja), (a) => a.saindo)
+  const naAbertura = useEstado((estado) => estado.painelAberto === PAINEL_DA_ABERTURA)
+  const aberturaCobre = naAbertura && !aberturaSaindo
   const pausado = useEstado(jogoPausado)
   return (
     <Canvas
-      frameloop={ferramentaAberta ? 'never' : 'always'}
+      frameloop={ferramentaAberta || aberturaCobre ? 'never' : 'always'}
       className="arq-canvas"
       dpr={[0, PERFIS_DE_QUALIDADE[nivel].dpr]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}

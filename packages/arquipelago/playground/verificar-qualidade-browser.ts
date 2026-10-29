@@ -56,6 +56,8 @@ async function esperar(p: Page, nivel: string | null, bosqueAtivo = true) {
 }
 async function escolher(p: Page, nome: string, nivel: string) {
   await p.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+  // A qualidade mora em "Conforto e controles" no menu de pausa.
+  await p.getByRole('button', { name: 'Conforto e controles', exact: true }).click()
   const escolha = p.getByRole('group', { name: 'Qualidade', exact: true })
   assert.ok(
     await escolha.evaluate((el) => el.getBoundingClientRect().width > 200),

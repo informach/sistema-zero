@@ -171,7 +171,7 @@ try {
     'PASS: IndexedDB real, conflito acessível, viewport estreito, isolamento entre abas e liberação da trava após fechar.',
   )
   console.log('PASS: menu pausa a física real e fechar o menu retoma a queda.')
-  await reaberto.getByRole('button', { name: '🔨 Construir', exact: true }).click()
+  await reaberto.getByRole('button', { name: 'Construir', exact: true }).click()
   const desfazer = reaberto.getByRole('button', { name: '↶ Desfazer', exact: true })
   await desfazer.waitFor()
   await reaberto.waitForFunction(() => {

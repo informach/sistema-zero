@@ -211,7 +211,7 @@ try {
     await page.screenshot({ path: path.join(prints, `iris-${tipo}.png`) })
     await page.keyboard.press('Escape')
     await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
-    await page.getByRole('button', { name: '📖 Diário', exact: true }).click()
+    await page.getByRole('button', { name: 'Diário', exact: true }).click()
     await page
       .locator('.arq-diario-pagina.aberta')
       .filter({ hasText: 'Essa faísca é o Zappy.' })

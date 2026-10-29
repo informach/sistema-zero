@@ -1,4 +1,8 @@
-import type { Ilha, MotivoDeBloqueio } from '@sistemazero/arquipelago-contracts'
+import {
+  type Ilha,
+  type MotivoDeBloqueio,
+  POSTOS_DA_JORNADA,
+} from '@sistemazero/arquipelago-contracts'
 import { createContext, useContext } from 'react'
 import { recadoDaCompra } from '../sistemas/construcao/galeria'
 import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta'
@@ -29,6 +33,8 @@ export interface VozDoJogo {
   compraSomenteLeitura: string
   /** O que abre uma ilha ainda fechada, no mapa do arquipélago (fase3-03). */
   ilhaFechadaNoMapa: (ilha: Ilha) => string
+  /** O marco da jornada no cartão de quem joga, no alto do HUD (a posição vai de 1 a 8). */
+  marcoDaJornada: (posicao: number) => string
 }
 
 export const VOZ_KIDS: VozDoJogo = {
@@ -65,6 +71,10 @@ export const VOZ_KIDS: VozDoJogo = {
     ilha.id === 'farol'
       ? `Acende na ${NOMES_DOS_POSTOS[ilha.posto]}.`
       : `Abre em ${NOMES_DOS_POSTOS[ilha.posto]}.`,
+  marcoDaJornada: (posicao) => {
+    const i = Math.min(POSTOS_DA_JORNADA.length, Math.max(1, Math.floor(posicao) || 1)) - 1
+    return NOMES_DOS_POSTOS[POSTOS_DA_JORNADA[i]!]
+  },
 }
 
 /** Sem provedor (testes e telas soltas), a voz é a do Kids. */

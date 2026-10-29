@@ -85,5 +85,27 @@ export const ESTILOS_ADULTOS = `
 .arq-adulto .arq-resultado .arq-tempos div{background:var(--arq-palco)}
 .arq-adulto .arq-resultado .arq-recorde{background:var(--arq-menta);color:var(--arq-noite);font-size:15px}
 .arq-adulto .arq-resultado .arq-botao.leve{background:transparent;color:var(--arq-claro);box-shadow:inset 0 0 0 2px var(--arq-claro-2)}
+.arq-adulto .arq-vidro,.arq-adulto .arq-cantinho .arq-modos{background:var(--arq-noite-2);border-color:var(--arq-linha);color:var(--arq-claro)}
+.arq-adulto .arq-quem-marco{background:var(--arq-menta)}
+.arq-adulto .arq-pausa{background:#fff;color:var(--arq-tinta);border-color:#d9dce6}
+.arq-adulto .arq-pausa-nav{background:#f4f5f9;border-color:#e3e6ef}
+.arq-adulto .arq-pausa-titulo{color:var(--arq-tinta)}
+.arq-adulto .arq-pausa-lugar{color:var(--arq-tinta)}
+.arq-adulto .arq-pausa-lugar .arq-icone,.arq-adulto .arq-pausa-sair{color:var(--arq-apagado)}
+.arq-adulto .arq-pausa-lugar:hover:not(:disabled):not([aria-current]){background:#e9ecf4}
+.arq-adulto .arq-cantinho .arq-modos .arq-botao.leve{background:transparent;color:var(--arq-claro);box-shadow:none}
+.arq-adulto .arq-cantinho .arq-modos .arq-botao.leve[aria-pressed=true]{background:var(--arq-cta);color:var(--arq-noite);outline:0}
+.arq-adulto .arq-pausa-lugar[aria-current=page],.arq-adulto .arq-pausa-lugar[aria-current=page] .arq-icone{background:var(--arq-cta);color:var(--arq-noite)}
+.arq-adulto .arq-pausa-heroi{background:var(--arq-noite-2);color:var(--arq-claro);border-color:var(--arq-linha)}
+.arq-adulto .arq-pausa .arq-pausa-heroi small{color:var(--arq-claro-2)}
+.arq-adulto .arq-pausa-cartao .arq-pausa-rotulo{color:var(--arq-apagado)}
+.arq-adulto .arq-pausa-diario .arq-pausa-rotulo{color:#7a5a12}
+.arq-adulto .arq-pausa-cartao,.arq-adulto .arq-pausa .arq-ferramenta{background:#fff;border-color:#d9dce6;color:var(--arq-tinta)}
+.arq-adulto .arq-pausa .arq-ferramenta{box-shadow:0 3px 0 #d9dce6}
+.arq-adulto .arq-pausa-diario{background:#fff8e7}
+.arq-adulto .arq-pausa :is(.arq-menu-titulo,.arq-pausa-controles,.arq-pausa-cartao dt,.arq-ferramenta small),.arq-adulto .arq-mapa-pequeno small{color:var(--arq-apagado)}
+.arq-adulto .arq-pausa .arq-marcar{color:var(--arq-tinta)}
+.arq-adulto .arq-pausa .arq-conforto{background:#f4f5f9;border-color:#e3e6ef}
+.arq-adulto .arq-pausa-mapa{background:#f8f9fc;border-color:#e3e6ef}
 ${pisoDaLetra(ESTILOS)}
 `
