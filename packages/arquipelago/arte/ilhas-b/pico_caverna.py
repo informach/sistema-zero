@@ -351,35 +351,6 @@ def enfeites_da_boca(col):
     return p
 
 
-# ------------------------------------------------------------------ exportação (com os col-*)
-def exportar_com_colisores(pid, nos, ancoras, colisores):
-    """O `exportar` do lib_ilhas_b, com os nós de colisão `col-*` (cada um com o seu TRS, sem juntar)
-    e os grupos deles no relatório."""
-    juntos = {nome: lib_mundo._juntar([o for o in objs if o is not None], nome) for nome, objs in nos.items()}
-    bpy.ops.object.select_all(action='DESELECT')
-    for o in list(juntos.values()) + list(ancoras) + list(colisores):
-        o.select_set(True)
-    path = os.path.join(SAIDA_ILHAS, f'{pid}.glb')
-    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True,
-                              export_texcoords=False, export_extras=False, export_animations=False)
-    por_no = {n: contar(o) for n, o in juntos.items()}
-    tris = sum(por_no.values())
-    kb = os.path.getsize(path) / 1024
-    anc = {e.name: [round(e.location.x, 2), round(e.location.z, 2), round(-e.location.y, 2)] for e in ancoras}
-    grupos = grupos_col(colisores)
-    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras, {len(colisores)} colisores')
-    try:
-        with open(RELATORIO_B) as f:
-            rel = json.load(f)
-    except (OSError, ValueError):
-        rel = {}
-    rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no, 'ancoras': anc, 'clipes': [], 'colisores': grupos}
-    with open(RELATORIO_B, 'w') as f:
-        json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
-        f.write('\n')
-    return path
-
-
 # ------------------------------------------------------------------ montagem
 def construir():
     lib_q.reset()
@@ -397,8 +368,8 @@ def construir():
            ancora('cristal-raro', rx, -ry, rz)]
     for k, (x, y, z) in enumerate(tops[:-1], 1):
         anc.append(ancora(f'degrau-{k}', x, -y, z))
-    exportar_com_colisores('pico-caverna', {'rocha': pedra, 'chao': piso, 'cristais': normais, 'cristais-luz': luz,
-                                            'gelo': gelo, 'percurso': trilho, 'joia': raro}, anc, col)
+    exportar('pico-caverna', {'rocha': pedra, 'chao': piso, 'cristais': normais, 'cristais-luz': luz,
+                              'gelo': gelo, 'percurso': trilho, 'joia': raro}, anc, colisores=col)
 
 
 if __name__ == '__main__':

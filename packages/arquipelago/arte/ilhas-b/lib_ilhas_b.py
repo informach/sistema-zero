@@ -240,9 +240,11 @@ def contar(o):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
-def exportar(pid, nos, ancoras=(), clipes_=None):
+def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
     """Grava `SAIDA_ILHAS/pid.glb`: um nó por chave de `nos` ({nome: objs} ou {nome: (objs, pivô)}),
-    as âncoras (nós vazios) e, com `clipes_`, as animações.
+    as âncoras (nós vazios), os nós de colisão `col-*` (cada um com o seu TRS, sem juntar; ajudantes
+    `col_caixa` e `col_cilindro` do `lib_mundo`, `col_terreno` e `col_entre` aqui) e, com `clipes_`,
+    as animações.
 
     `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}."""
     juntos = {}
@@ -265,7 +267,7 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
                 for st in t.strips:
                     st.extrapolation = 'NOTHING'
     bpy.ops.object.select_all(action='DESELECT')
-    for o in list(juntos.values()) + list(ancoras):
+    for o in list(juntos.values()) + list(ancoras) + list(colisores):
         o.select_set(True)
     path = os.path.join(SAIDA_ILHAS, f'{pid}.glb')
     kw = dict(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True,
@@ -283,7 +285,8 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
     kb = os.path.getsize(path) / 1024
     por_no = {n: contar(o) for n, o in juntos.items()}
     anc = {e.name: [round(e.location.x, 2), round(e.location.z, 2), round(-e.location.y, 2)] for e in ancoras}
-    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras')
+    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras, '
+          f'{len(colisores)} colisores')
     try:
         with open(RELATORIO_B) as f:
             rel = json.load(f)
@@ -291,6 +294,8 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
         rel = {}
     rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no, 'ancoras': anc,
                 'clipes': sorted(chaves)}
+    if colisores:
+        rel[pid]['colisores'] = grupos_col(colisores)
     with open(RELATORIO_B, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')
