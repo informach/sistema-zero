@@ -6,7 +6,7 @@ export const ESTILOS = `
 .arq-luneta{position:absolute;inset:0;box-sizing:border-box;background:radial-gradient(circle closest-side,transparent 82%,rgba(8,12,32,.4) 89.5%,#e2b552 90%,#b07f2a 92.5%,#6e4c14 94%,#0b1028 94.6%)}
 .arq-luneta-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}
 .arq-luneta-fala{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;width:min(520px,calc(100% - 48px));box-sizing:border-box;padding:16px;background:rgba(20,26,58,.94);color:#fff;border-radius:16px}
-.arq-luneta-fala p{margin:0}
+.arq-luneta-fala p{margin:0}.arq-mirante-mira{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;border:2px solid rgba(255,236,170,.85);border-radius:50%;box-shadow:0 0 0 1px rgba(11,16,40,.5);pointer-events:none}.arq-mirante-setas{position:absolute;right:16px;bottom:150px;display:grid;grid-template-areas:". cima ." "esq . dir" ". baixo .";grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:4px}.arq-mirante-setas .arq-botao{min-width:0;width:52px;height:52px;padding:0;font-size:20px;touch-action:none}.arq-mirante-cima{grid-area:cima}.arq-mirante-esq{grid-area:esq}.arq-mirante-dir{grid-area:dir}.arq-mirante-baixo{grid-area:baixo}
 .arq-raiz{position:relative;width:100%;height:100%;overflow:hidden;background:#0e1638;color:#1d2340;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none;touch-action:none}
 .arq-canvas{position:absolute!important;inset:0}
 .arq-hud{position:absolute;inset:0;pointer-events:none}

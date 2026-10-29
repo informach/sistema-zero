@@ -36,6 +36,7 @@ import {
   METROS_DA_DISTANCIA,
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
+import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
 import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { MERGULHO } from '../sistemas/mergulho'
@@ -359,11 +360,13 @@ export function Camera() {
       camera.updateProjectionMatrix()
       return
     }
+    // A luneta do mirante das Nuvens (fase4-07) escreve a vista dela enquanto está aberta.
+    const mira = loja.getState().painelAberto === PAINEL_DAS_ESTRELAS ? movimento.mira : null
     const perfilAtual = perfilDaVez({
       barco: movimento.modo === 'barco',
       balao: movimento.modo === 'balao',
       mergulho: movimento.modo === 'mergulho',
-      luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA,
+      luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA || mira !== null,
       conversa: loja.getState().painelAberto !== null && pedidos.conversa !== null,
       dentroDeCasa: dentro,
       correndoPercurso: movimento.corrida !== null,
@@ -378,9 +381,10 @@ export function Camera() {
         antesL.campo = camera.fov
       }
       // Corte para a vista óptica, sem viajar através do mundo ou mexer no rastro do corpo.
-      camera.position.set(vista.posicao.x, vista.posicao.y, vista.posicao.z)
-      camera.lookAt(vista.alvo.x, vista.alvo.y, vista.alvo.z)
-      camera.fov += (vista.campo - camera.fov) * (menosMovimento ? 1 : 1 - Math.exp(-dt * 10))
+      const v = mira ?? vista
+      camera.position.set(v.posicao.x, v.posicao.y, v.posicao.z)
+      camera.lookAt(v.alvo.x, v.alvo.y, v.alvo.z)
+      camera.fov += (v.campo - camera.fov) * (menosMovimento ? 1 : 1 - Math.exp(-dt * 10))
       camera.updateProjectionMatrix()
       return
     }

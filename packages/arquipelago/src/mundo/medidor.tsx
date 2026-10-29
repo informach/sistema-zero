@@ -1,5 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
+import { progresso } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
@@ -43,6 +44,20 @@ export interface MedidaDoDesenho {
     z: number
   }[]
   mergulho: { pronto: boolean; achados: { bau: boolean; pagina: boolean; tesouro: boolean } }
+  /** A corrida em andamento (fase4-07: as Nuvens têm duas) e as constelações achadas. */
+  corrida: {
+    percurso: string | null
+    deque: number
+    situacao: string
+    tempoMs: number
+    pegos: number
+  } | null
+  mira: { naMira: number; posicao: { x: number; y: number; z: number } } | null
+  constelacoes: number
+  /** O clima da sua ilha (fase4-08): o escolhido, a luz e o cinza que valem aqui e as gotas. */
+  clima: { escolhido: string; luz: number; cinza: number; gotas: boolean }
+  /** A horta: o que está plantado, se foi regado e quanto já cresceu (0 a 1). */
+  horta: { semente: string | null; regado: boolean; progresso: number }[]
   balao: {
     fase: string
     pousado: boolean
@@ -184,7 +199,7 @@ export function Medidor() {
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const cena = useThree((s) => s.scene)
-  const { rastro, pedidos, movimento, loja } = useJogo()
+  const { rastro, pedidos, movimento, loja, ambiente } = useJogo()
   const conta = useRef({ tempo: 0, quadros: 0 })
   const { world } = useRapier()
   const fisica = useRef({ inicio: 0, ms: 0, passos: 0 })
@@ -209,6 +224,8 @@ export function Medidor() {
         z: number
         giro: number
         noChao: boolean
+        /** O olho da vista pela luneta do mirante, quando aberta (fase4-07). */
+        olho: { x: number; y: number; z: number } | null
       }
     }
     // Leitura sob demanda para conferir pulos sem reduzir o intervalo do medidor pesado.
@@ -218,6 +235,7 @@ export function Medidor() {
       z: rastro.z,
       giro: rastro.giro,
       noChao: movimento.noChao,
+      olho: movimento.mira ? { ...movimento.mira.posicao } : null,
     })
     // O que a ilha ativa registrou para os modos (cipós, troncos, escadas, bordas...) e o pedido
     // de um interativo: para a conferência das animações levar o corpo a cada um.
@@ -278,6 +296,30 @@ export function Medidor() {
         pronto: movimento.mergulhos.some((v) => v.ativo),
         achados: { ...loja.getState().salvamento.recife },
       },
+      corrida: movimento.corrida
+        ? {
+            percurso: loja.getState().corrida?.percurso ?? null,
+            deque: movimento.corrida.deque,
+            situacao: movimento.corrida.situacao,
+            tempoMs: movimento.corrida.tempoMs,
+            pegos: movimento.corrida.pegos.filter(Boolean).length,
+          }
+        : null,
+      mira: movimento.mira
+        ? { naMira: movimento.mira.naMira, posicao: { ...movimento.mira.posicao } }
+        : null,
+      constelacoes: loja.getState().constelacoesAchadas,
+      clima: {
+        escolhido: loja.getState().clima,
+        luz: ambiente.luzDoClima ?? 1,
+        cinza: ambiente.cinzaDoClima ?? 0,
+        gotas: cena.getObjectByName('chuva-da-ilha')?.visible === true,
+      },
+      horta: loja.getState().salvamento.horta.map((c) => ({
+        semente: c.semente,
+        regado: c.regadoEm !== null,
+        progresso: progresso(c, Date.now()),
+      })),
       balao: movimento.balao
         ? {
             fase: movimento.balao.fase,

@@ -4,6 +4,7 @@ import {
   criarSalvamentoInicial,
   GravarSalvamentoSchema,
   SALVAMENTO_MAX_BYTES,
+  VERSAO_SALVAMENTO,
 } from '@sistemazero/arquipelago-contracts'
 import { SalvamentoGrandeDemaisError } from '../../src/application/erros'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
@@ -83,7 +84,10 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         atualizadoEm: AGORA,
       })
       const lido = await servico.lerSalvamento(jogador)
-      expect(lido.salvamento).toMatchObject({ versao: 14, presenteDosBichosEntregue: false })
+      expect(lido.salvamento).toMatchObject({
+        versao: VERSAO_SALVAMENTO,
+        presenteDosBichosEntregue: false,
+      })
       if (!lido.salvamento) throw new Error('O serviço não leu a V4 guardada')
       const entregue = {
         ...lido.salvamento,

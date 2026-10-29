@@ -1,14 +1,15 @@
 import type {
   Acesso,
   AvatarDoJogo,
-  PercursoId,
   QuartoDoJogo,
   ResultadoDoPercurso,
   Salvamento,
   SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type { Clima } from '../sistemas/clima'
 import { salvamentoPausado } from '../sistemas/pausa'
+import type { IdDoPercurso } from '../sistemas/percurso'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
 import { minutosRestantes } from '../sistemas/tempo-livre'
 import type { Visita } from '../sistemas/visitas'
@@ -16,7 +17,7 @@ import type { ModoDoCorpo } from './contexto'
 
 /** O fim de uma corrida, para a tela de resultado. */
 export interface ResultadoDaCorrida {
-  percurso: PercursoId
+  percurso: IdDoPercurso
   tempoMs: number
   /** As estrelas DESTA corrida. */
   estrelas: ResultadoDoPercurso['estrelas']
@@ -30,7 +31,7 @@ export interface ResultadoDaCorrida {
 
 /** A corrida em andamento, para o cronômetro (o tempo corre fora do React). */
 export interface CorridaNaTela {
-  percurso: PercursoId
+  percurso: IdDoPercurso
   vagalumes: number
   totalDeVagalumes: number
 }
@@ -60,6 +61,15 @@ export interface EstadoDoJogo {
   modo: ModoDoCorpo
   corrida: CorridaNaTela | null
   resultado: ResultadoDaCorrida | null
+  /**
+   * O melhor das corridas que o salvamento ainda não guarda (as das Nuvens, fase4-07): vale só
+   * nesta sessão (`percursoGravado`).
+   */
+  recordesDaSessao: Partial<Record<IdDoPercurso, ResultadoDoPercurso>>
+  /** As constelações das Nuvens achadas nesta sessão, um bit por figura (fase4-07; não é salvo). */
+  constelacoesAchadas: number
+  /** O clima da sua ilha (fase4-08), escolhido no menu: vale na sessão (não é salvo). */
+  clima: Clima
   /** Conta os cortes suaves (a tela escurece e clareia a cada número novo). */
   corte: number
   /** Os patins calçados (`sistemas/patins.ts`; valem só se ainda estão na mochila, não é salvo). */
@@ -88,6 +98,9 @@ export interface EstadoDoJogo {
   definirModo(modo: EstadoDoJogo['modo']): void
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
+  guardarRecordeDaSessao(percurso: IdDoPercurso, melhor: ResultadoDoPercurso): void
+  acharConstelacao(indice: number): void
+  escolherClima(clima: Clima): void
   cortar(): void
   calcarPatins(calcados: boolean): void
   acenderLanterna(acesa: boolean): void
@@ -136,6 +149,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     modo: 'chao',
     corrida: null,
     resultado: null,
+    recordesDaSessao: {},
+    constelacoesAchadas: 0,
+    clima: 'sol',
     corte: 0,
     patins: false,
     lanterna: false,
@@ -212,6 +228,16 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     mostrarResultado(resultado) {
       set({ resultado })
+    },
+    guardarRecordeDaSessao(percurso, melhor) {
+      set({ recordesDaSessao: { ...get().recordesDaSessao, [percurso]: melhor } })
+    },
+    escolherClima(clima) {
+      if (get().clima !== clima) set({ clima })
+    },
+    acharConstelacao(indice) {
+      const achadas = get().constelacoesAchadas | (1 << indice)
+      if (achadas !== get().constelacoesAchadas) set({ constelacoesAchadas: achadas })
     },
     cortar() {
       set({ corte: get().corte + 1 })

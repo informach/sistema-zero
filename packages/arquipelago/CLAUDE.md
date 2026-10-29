@@ -1225,3 +1225,59 @@ Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipel
 - Testes em `tests/final-do-farol.test.ts`; conferência em `playground/verificar-final-farol-browser.ts`, com SwiftShader, computador e celular emulado. Plano com pedidos de arte e campo futuro em `docs/plans/2026-10-29-arquipelago-final-do-farol.md`. Prints em `docs/qa/2026-10-29-final-farol/`.
 
 O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas no executor e roundtrip Blockly. É só o pacote de desafios; esta entrega não importa nem publica no Admin e não altera o Vale vivo.
+
+## Saltos, corrida de balão e constelações das Nuvens (fase4-07, 29/10/2026)
+
+- **Percursos da sessão.** `PERCURSOS_DA_SESSAO` (`nuvens-saltos`, `nuvens-balao`) ficam fora de
+  `PERCURSOS` do contrato (o pior caso do salvamento não tem folga). `IdDoPercurso` é a união;
+  `percursoGravado` decide: `terminarCorrida` (em `mundo/corrida-na-ilha.tsx`, usada também pela
+  corrida de balão) grava em `salvamento.percursos` ou em `recordesDaSessao` da loja. A tela de
+  resultado não mostra os recordes da família para os da sessão. `pedidoDoPercurso` agora diz o
+  percurso (as Nuvens têm dois) e cada `CorridaNaIlha` só avança a corrida dela
+  (`loja.corrida.percurso`). Coletável feminino: `todasAsColetaveis` e `coletaveisPegas`.
+- **Saltos:** `mundo/saltos-das-nuvens.ts` lê os tampos dos colisores (`col-cil-degrau-nuvem-3`,
+  `col-cil-plataforma-N`). ⚠️ Os colisores da ilha preparada vêm girados com ela:
+  `tamposDosSaltos(colisores, giro)` desfaz o giro antes do `percursoNoMundo`. A volta de queda
+  numa plataforma lê `PlataformaDasNuvens.elevacao`, escrita a cada passo da física.
+- **Corrida de balão:** regra pura em `sistemas/corrida-de-balao.ts` (`ARGOLAS`,
+  `LUGARES_DAS_ARGOLAS`, `passouPelaArgola`, `passoDaCorridaDeBalao`); desenho em
+  `mundo/corrida-de-balao.tsx` (toros no código, com as cores dos `fio1` a `fio6`). O tempo-alvo
+  vem do piloto do teste, que voa pelas regras de `sistemas/balao.ts`.
+- **Constelações:** regra pura em `sistemas/constelacoes.ts`; mirante em
+  `mundo/constelacoes-das-nuvens.tsx` (carga privada do `nuvens-constelacoes.glb`, colisores por
+  `ColisoresSoltos`, lugar na constante `MIRANTE_DAS_NUVENS` até a âncora pedida). A vista escreve
+  `movimento.mira` (`mundo/vista-da-luneta.ts`), que a câmera usa no perfil `luneta`; o visor é
+  `interface/estrelas.tsx` (classes `arq-mirante-*`; ⚠️ `arq-estrelas` é a lista da tela de
+  resultado). O painel aberto conta como pausa no `jogoPausado`: o acender das estrelas desconta
+  só o próprio painel. As estrelas não usam a neblina da cena (`fog = false`). A mira aponta para
+  o centro das estrelas da figura (`meioDasEstrelas`): o pivô do nó fica fora do desenho.
+- Testes: `saltos-das-nuvens.test.ts`, `corrida-de-balao.test.ts`, `constelacoes.test.ts`.
+  Verificador: `playground/verificar-nuvens-aventura-browser.ts` (`ARQUIPELAGO_PARTE=noite` roda
+  só as constelações; cada parte abre um contexto novo do navegador). O medidor expõe `corrida`,
+  `mira` e `constelacoes`, e `__arquipelagoLerCorpo` devolve o olho da vista.
+
+## Clima da sua ilha (fase4-08, 29/10/2026)
+
+- Regra pura em `sistemas/clima.ts` (`CLIMA`, `pedeAgua`, `regarComSede`, `chuvaNaHorta`). O
+  bônus mexe só no `regadoEm` (vai para trás): nenhum campo novo. `climaLiberado` = Nuvens abertas.
+- A escolha mora na loja (`clima`, `escolherClima`, sessão) e no menu (`interface/clima.tsx`). O
+  relógio do HUD mostra o símbolo. A Iriê tem a terceira fala (o verificador da fase4-06 avança por
+  ela).
+- `mundo/clima-da-ilha.tsx` (montado na cena): escreve `ambiente.luzDoClima` e
+  `ambiente.cinzaDoClima` (opcionais; o `Ceu` multiplica o sol e o preenchimento e puxa o céu para
+  `CEU_FECHADO`), desenha as gotas (`LineSegments` que seguem a criança, nome `chuva-da-ilha`) e a
+  cada 1 s de jogo chama `chuvaNaHorta`. A horta (`mundo/horta.tsx`) usa `climaDaHorta` para o
+  "Regar" da janela, a gota azul (`gota-da-sede`) e o bônus.
+- O medidor expõe `clima` e `horta` (semente, regado, progresso). Testes: `clima.test.ts`.
+  Verificador: `playground/verificar-clima-browser.ts` (espera o relógio de verdade: a alface pede
+  aos 54 s). Pedido de arte (cata-vento perto da horta) no plano
+  `docs/plans/2026-10-29-arquipelago-clima-da-ilha.md`.
+
+## Minijogo "Jardim que floresce" (fase4-10, 29/10/2026)
+
+- Fora do pacote do jogo: `docs/desafios-do-jogo/nuvens/` (fontes, manifesto, README, conferência
+  visual), com as provas em `arquipelago-contracts/tests/manifesto-das-nuvens.test.ts`,
+  `studio/src/blockly/__tests__/nuvensManifest.test.ts`, `arquipelago-api` (manifestos) e
+  `studio-runtime/tests/nuvens-browser.test.ts` (executor real, com `SZ_CHECK_CHROMIUM`).
+- "A cada N segundos" (`g2d:everySeconds`) tem de ser bloco raiz do projeto, ao lado do laço; o
+  executor recusa `checkpoints: []` (ausente ou com pontos) e espera de mais de 10 s num passo.

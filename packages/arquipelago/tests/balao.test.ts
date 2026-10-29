@@ -98,8 +98,8 @@ describe('voar', () => {
     expect(v.pousado).toBe(false)
     expect(v.vel.y).toBeCloseTo(BALAO.subida.maxima, 5)
     const alto = v.pe.y
-    // Soltando, ainda sobe um pouco no embalo e depois desce.
-    voar(v, 9)
+    // Soltando, o embalo acaba em pouco mais de 1 s e ele desce (ainda longe do chão).
+    voar(v, 4)
     expect(v.vel.y).toBeCloseTo(-BALAO.descida.maxima, 5)
     expect(v.pe.y).toBeLessThan(alto)
   })

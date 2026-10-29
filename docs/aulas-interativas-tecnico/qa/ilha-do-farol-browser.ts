@@ -90,9 +90,7 @@ writeFileSync(
 )
 const objectives = ilhaChecks(
   positionScenario ? 'posicao' : onceScenario ? 'uma-vez' : 'personalizar',
-).filter((c) =>
-  isExecutionRule(c.rule),
-)
+).filter((c) => isExecutionRule(c.rule))
 writeFileSync(
   resolve(dir, 'check-options.json'),
   JSON.stringify({ mode: 'classic', scope, objectives, deadlineMs: 90000, screenshots: true }),

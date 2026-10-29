@@ -201,7 +201,17 @@ try {
       )
       await page.waitForTimeout(300)
       await page.locator('.arq-acao').filter({ hasText: 'Subir no balão' }).waitFor()
-      await usar()
+      // Com a máquina lenta o E às vezes se perde entre dois quadros: aperta de novo, como uma
+      // criança faria (até três vezes).
+      for (let tentativa = 1; ; tentativa++) {
+        await usar()
+        try {
+          await esperar(page, (d) => d.modo === 'balao', undefined, 3000)
+          break
+        } catch (erro) {
+          if (tentativa === 3) throw erro
+        }
+      }
       await esperar(page, (d) => d.modo === 'balao' && d.balao?.fase === 'voo' && d.balao.pousado)
     }
 

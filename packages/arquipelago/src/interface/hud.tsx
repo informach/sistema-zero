@@ -7,6 +7,8 @@ import { lojaDoFarol, useFarol } from '../estado/farol'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
+import { climaLiberado, SIMBOLOS_DOS_CLIMAS } from '../sistemas/clima'
+import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
 import { PAINEL_DO_FINAL } from '../sistemas/final-do-farol'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
@@ -14,7 +16,14 @@ import { hudEscondido, PAINEL_DA_FOTO } from '../sistemas/modo-foto'
 import { comer } from '../sistemas/necessidades'
 import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { salvamentoPausado } from '../sistemas/pausa'
-import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
+import {
+  coletaveisPegas,
+  formatarTempo,
+  PERCURSO_DAS_COPAS,
+  PERCURSOS_DO_JOGO,
+  percursoGravado,
+  todasAsColetaveis,
+} from '../sistemas/percurso'
 import { COMO_USAR_O_PLANADOR, ID_DO_PLANADOR } from '../sistemas/planador'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PAINEL_DAS_VISITAS } from '../sistemas/visitas'
@@ -23,9 +32,11 @@ import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
+import { ClimaDaSuaIlha } from './clima'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { VisorDasEstrelas } from './estrelas'
 import { CorteDoFarol, PainelDaIris, PainelDoFarol } from './farol'
 import { PainelDoFilhote } from './filhote'
 import { FogueiraDaFesta } from './fogueira-da-festa'
@@ -68,6 +79,8 @@ function Necessidades() {
 
 function Relogio() {
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
+  // O clima da sua ilha aparece no relógio quando a Iriê já ensinou (fase4-08).
+  const clima = useEstado((s) => (climaLiberado(s.jornada) && !s.visita ? s.clima : null))
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 1000)
@@ -76,7 +89,12 @@ function Relogio() {
   const m = momentoDoDia(agora, criadoEm)
   return (
     <span className="arq-pilula">
-      {m.noite ? '🌙' : '☀️'} Dia {m.dia} · {relogio(m)}
+      {clima === 'chuva'
+        ? SIMBOLOS_DOS_CLIMAS.chuva
+        : m.noite
+          ? '🌙'
+          : SIMBOLOS_DOS_CLIMAS[clima ?? 'sol']}{' '}
+      Dia {m.dia} · {relogio(m)}
     </span>
   )
 }
@@ -331,14 +349,14 @@ function Cronometro() {
       <span className="arq-pilula">
         ⏱ <span ref={texto}>0:00,0</span>
       </span>
-      <span className="arq-pilula" title={`${config.coletavel.Varios} pegos`}>
+      <span className="arq-pilula" title={coletaveisPegas(config)}>
         {config.coletavel.simbolo} {corrida.vagalumes}/{corrida.totalDeVagalumes}
       </span>
       <button
         type="button"
         className="arq-botao leve"
         onClick={() => {
-          movimento.pedidoDoPercurso = 'parar'
+          movimento.pedidoDoPercurso = { acao: 'parar', percurso: corrida.percurso }
         }}
       >
         Parar
@@ -365,7 +383,7 @@ function Resultado() {
     },
     {
       ganhou: r.estrelas.vagalumes,
-      texto: `Os ${r.totalDeVagalumes} ${config.coletavel.varios}`,
+      texto: todasAsColetaveis(config, r.totalDeVagalumes),
     },
   ]
   const fechar = () => loja.getState().mostrarResultado(null)
@@ -418,13 +436,16 @@ function Resultado() {
           </div>
         </dl>
         {/* Família e irmãos são do Kids: a comunidade adulta não lê `/irmaos`. */}
-        {plataforma.publico === 'kids' ? <RecordesDaFamilia percurso={r.percurso} /> : null}
+        {/* As corridas das Nuvens ainda não são gravadas (o melhor vale só nesta sessão). */}
+        {plataforma.publico === 'kids' && percursoGravado(r.percurso) ? (
+          <RecordesDaFamilia percurso={r.percurso} />
+        ) : null}
         <div className="arq-menu-acoes">
           <button
             type="button"
             className="arq-botao"
             onClick={() => {
-              movimento.pedidoDoPercurso = 'recomecar'
+              movimento.pedidoDoPercurso = { acao: 'recomecar', percurso: r.percurso }
             }}
           >
             Correr de novo
@@ -517,6 +538,7 @@ function Menu() {
           <li>Com controle de videogame: analógicos andam e giram, botão de baixo pula</li>
         </ul>
         <PreferenciasDeConforto />
+        <ClimaDaSuaIlha />
         <button
           type="button"
           className="arq-botao leve"
@@ -625,6 +647,7 @@ export function Hud() {
   const { loja } = useJogo()
   const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' || s.corte !== null)
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
+  const nasEstrelas = useEstado((s) => s.painelAberto === PAINEL_DAS_ESTRELAS)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const naFoto = useEstado(hudEscondido)
   const visitando = useEstado((s) => s.visita !== null)
@@ -660,6 +683,12 @@ export function Hud() {
     return (
       <div className="arq-hud">
         <VisorDaLuneta />
+      </div>
+    )
+  if (nasEstrelas)
+    return (
+      <div className="arq-hud">
+        <VisorDasEstrelas />
       </div>
     )
   // Modo foto: o HUD, a fala do Zappy e as dicas somem; só ficam "Tirar foto" e "Voltar".
