@@ -206,7 +206,7 @@ export const SaldoDosMembrosSchema = z.strictObject({
 export type SaldoDosMembros = z.infer<typeof SaldoDosMembrosSchema>
 
 /**
- * `GET /members/internal/arquipelago/quarto?userId=&audience=` (30/10/2026): o quarto de UM perfil
+ * `GET /members/internal/arquipelago/quarto?userId=&audience=` (29/10/2026): o quarto de UM perfil
  * como o Meu quarto dele mostra (o estado conferido contra o que ele tem), para a visita de um
  * irmão. Quem pode ver é o serviço do jogo que decide antes de perguntar.
  */

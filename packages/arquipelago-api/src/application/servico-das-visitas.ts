@@ -20,7 +20,7 @@ import { AcessoBloqueadoError, IrmaoNaoEncontradoError, VisitasDesligadasError }
  * Os recordes da família e as visitas (fase3-12, 29/10/2026), só leitura, de quem joga. Irmão é
  * quem guardou o jogo logado na MESMA conta da criança (`perfis_da_conta`), não é ela e vê o jogo
  * pela mesma decisão de acesso. Tudo obedece à permissão `visitasDeIrmaos` da conta. O serviço
- * nunca sabe nomes: o BFF põe o nome de cada irmão. O quarto do irmão (30/10/2026) é o da
+ * nunca sabe nomes: o BFF põe o nome de cada irmão. O quarto do irmão (29/10/2026) é o da
  * plataforma: vem do Members, só depois de todas as conferências da casa. Plano:
  * `docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md`.
  */

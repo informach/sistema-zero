@@ -1763,7 +1763,7 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
 - **As rotas** (só leitura, de quem joga, fora de `/arquipelago/familia/`):
   - `GET /arquipelago/irmaos`: os irmãos com o melhor de cada percurso e se já construíram a casa;
   - `GET /arquipelago/irmaos/:perfilId/casa`: a obra da casa com o quintal, a horta, os objetos com
-    aparência e o quarto (30/10/2026, o da plataforma, que o serviço pede ao Members só depois de
+    aparência e o quarto (29/10/2026, o da plataforma, que o serviço pede ao Members só depois de
     todas as conferências), de um irmão. Quem não é irmão (outra conta, a própria criança, id torto) dá 404
     `IRMAO_NAO_ENCONTRADO`, sem dizer por quê.
 - **Os nomes:** o serviço do jogo nunca sabe nomes. O BFF pede ao Auth os irmãos da sessão de perfil
@@ -1792,7 +1792,7 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
     de uma corrida).
   - Sair da ilha central (passar da praia, `RAIO_DA_VISITA`, 29 m) termina a visita sozinho, e o
     Zappy diz "Você saiu da casa de Ana. O seu jogo volta a ser guardado.". Lá fora o jogo é dela.
-  - O quarto de dentro é o do irmão (30/10/2026), como o Meu quarto dele mostra: os móveis, o tema, o
+  - O quarto de dentro é o do irmão (29/10/2026), como o Meu quarto dele mostra: os móveis, o tema, o
     bichinho e os troféus. Se não chegar (o Members não respondeu), aparece vazio e o Zappy completa
     a fala da chegada com "O quarto de Ana não abriu agora.".
   - Volta: "Voltar para a minha casa" devolve a casa, a horta e os objetos dela, leva para a frente

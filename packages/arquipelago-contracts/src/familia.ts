@@ -141,7 +141,7 @@ export type IrmaoParaOJogo = IrmaosParaOJogo['irmaos'][number]
  * `GET /arquipelago/irmaos/:perfilId/casa`: o que a visita mostra de UM irmão, só para ver. A obra
  * da casa com o quintal (`null` = a casa de antes), a horta e os objetos com aparência (o jogo
  * desenha o modelo do objeto; a criação em si não vem). Nada mais do salvamento dele.
- * O `quarto` (30/10/2026) é o da plataforma, como o Meu quarto dele mostra; `null` quando o
+ * O `quarto` (29/10/2026) é o da plataforma, como o Meu quarto dele mostra; `null` quando o
  * Members não respondeu (o jogo avisa que o quarto não abriu, nunca mostra outro).
  */
 export const CasaDoIrmaoSchema = z.strictObject({

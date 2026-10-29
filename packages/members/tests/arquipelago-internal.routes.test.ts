@@ -332,7 +332,7 @@ describe('saldo (a galeria do Arquipélago, 29/10/2026)', () => {
   })
 })
 
-describe('quarto (a visita de um irmão no Arquipélago, 30/10/2026)', () => {
+describe('quarto (a visita de um irmão no Arquipélago, 29/10/2026)', () => {
   const tom = '22222222-2222-4222-8222-222222222222'
   const pedir = (query: string, chave = token) =>
     new Request(`http://local/members/internal/arquipelago/quarto?${query}`, {

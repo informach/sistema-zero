@@ -4,7 +4,7 @@ import { DEFAULT_ROOM_THEME, type RoomState } from '../../src/domain/room/room-c
 
 const TOM = '22222222-2222-4222-8222-222222222222'
 
-describe('o quarto de um perfil para a visita no Arquipélago (30/10/2026)', () => {
+describe('o quarto de um perfil para a visita no Arquipélago (29/10/2026)', () => {
   test('é o quarto dele conferido contra o que ele tem, como o Meu quarto mostra', async () => {
     const guardado: RoomState = {
       theme: DEFAULT_ROOM_THEME,

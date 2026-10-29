@@ -226,7 +226,7 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   (`application/servico-das-visitas.ts`, rotas em `interfaces/http/rotas-das-visitas.ts`, montadas
   só com a dependência `visitas`). Usa o `DrizzleRepositorioDaFamilia` (`outrosPerfisDaConta`, novo,
   e `perfisDaConta` para conferir a posse), a permissão `visitasDeIrmaos` da conta e
-  `decidirAcesso` para cada irmão. Nunca sabe nomes (o BFF põe). O quarto do irmão (30/10/2026) vem
+  `decidirAcesso` para cada irmão. Nunca sabe nomes (o BFF põe). O quarto do irmão (29/10/2026) vem
   do Members (`lerQuarto`, `GET /members/internal/arquipelago/quarto`) só depois das conferências da
   casa; `MembrosIndisponiveisError` vira `quarto: null` (log `arquipelago.visitas.quarto_indisponivel`)
   e qualquer outro erro sobe. Testes:

@@ -31,7 +31,7 @@ export interface Visita {
   obra: Obra | null
   horta: readonly Canteiro[]
   completos: readonly ObjetoDaCasa[]
-  /** O quarto da plataforma do irmão (30/10/2026); `null` quando não abriu. */
+  /** O quarto da plataforma do irmão (29/10/2026); `null` quando não abriu. */
   quarto: QuartoDoJogo | null
 }
 

@@ -6,7 +6,7 @@
  *    "Visitar um irmão" pelo menu, entra na casa da Ana (a obra de exemplo no lugar da casa de
  *    antes), confere a faixa, que o Construir sumiu e que NADA é gravado durante a visita (a
  *    revisão guardada no playground fica parada, e fora dela anda a cada poucos segundos), e volta.
- *    O quarto de dentro é o da Ana (30/10/2026): ao lado da cama dela, "Deitar na cama" não
+ *    O quarto de dentro é o da Ana (29/10/2026): ao lado da cama dela, "Deitar na cama" não
  *    aparece; no mesmo lugar, em casa, aparece. Na visita ao Tomás o Zappy avisa que o quarto dele
  *    não abriu, e sair da ilha central no meio da visita termina a visita.
  * 2. Celular (390 × 844, toque): a visita pelo menu, a faixa fora do direcional, e a volta.

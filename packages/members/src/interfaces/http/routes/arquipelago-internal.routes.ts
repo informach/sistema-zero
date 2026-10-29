@@ -195,7 +195,7 @@ export function arquipelagoInternalRoutes(deps: {
         return { saldo: await deps.saldo.getBalance(pergunta.data.userId, pergunta.data.audience) }
       })
       /**
-       * O quarto de um perfil (30/10/2026, a visita de um irmão no Arquipélago), no formato
+       * O quarto de um perfil (29/10/2026, a visita de um irmão no Arquipélago), no formato
        * `QuartoDosMembrosSchema`. Só leitura; quem pode ver é o serviço do jogo que decide.
        */
       .get('/quarto', async ({ query, set }) => {

@@ -666,7 +666,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `QUARTO_DA_VISITA`, `RAIO_DA_VISITA`/`saiuDaVisita`, `falaDaChegada`, `falaDaSaida` e os textos); loja à parte em `estado/familia.ts` (`lojaDaFamilia(loja, plataforma)`: `GET /irmaos` a
   cada resultado e a cada abertura do painel, e `abrirCasa`). Na loja principal, `visita` e
   `visitar(v | null)`: com a visita, ⚠️ o `mudar` não faz nada (nada é gravado).
-- No mundo, `mundo/casa.tsx` (a obra e o quarto do irmão, 30/10/2026; vazio se não chegou; a cama
+- No mundo, `mundo/casa.tsx` (a obra e o quarto do irmão, 29/10/2026; vazio se não chegou; a cama
   e a porta nova sem ação), `mundo/objetos-da-casa.tsx` (completo pelo irmão, nenhum "Abrir") e
   `mundo/horta.tsx` (a horta do irmão, nenhuma ação) leem pelas regras acima;
   `mundo/rotina-dos-lumis.tsx` não começa nem continua rotina na visita. ⚠️ O `personagem.tsx` não

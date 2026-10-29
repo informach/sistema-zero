@@ -20,7 +20,7 @@ continua na V10. Plano: `docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md
 - Jogo: "Recordes da família" no resultado de cada percurso; "🏡 Visitar um irmão" no menu, a
   casa do irmão só para olhar (nada é gravado) e "Voltar para a minha casa".
 - Plataforma falsa com as mesmas recusas: `?familia=irmaos|sozinha|desligada|fora-do-ar`.
-- **30/10/2026, o quarto do irmão** (aprovado pela dona, plano §6): a casa traz o quarto da
+- **29/10/2026, o quarto do irmão** (aprovado pela dona, plano §6): a casa traz o quarto da
   plataforma dele, pedido ao Members (`GET /members/internal/arquipelago/quarto`) só depois das
   conferências. Sem resposta do Members, `quarto: null`: o quarto aparece vazio e o Zappy avisa que
   não abriu. Na visita nada do mundo oferece ação (a cama do irmão, a porta nova, a bancada, a
@@ -28,7 +28,7 @@ continua na V10. Plano: `docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md
 
 ## Verificações
 
-Rodada de 30/10/2026 (o quarto do irmão), sem typecheck (pedido da dona: uma sessão só faz os
+Rodada de 29/10/2026 (o quarto do irmão), sem typecheck (pedido da dona: uma sessão só faz os
 typechecks): `arquipelago-contracts` 115, `arquipelago-api` 225 (unidade e integração), `members`
 2007 (2 pulados; unidade, integração e rotas), `arquipelago` 838 (1 pulado), todos sem falha; o
 navegador 5 de 5. Rodada de 29/10/2026:
@@ -58,7 +58,7 @@ em diante, os typechecks ficam com uma sessão só (pedido da dona, pouca memór
    confere os recordes (ela, a Ana com 25,9 s e o Tomás com "Ainda não correu"); abre a casa da
    Ana pelo menu, confere a faixa e que o Construir sumiu; espera os 20 s da fila do jogo e mais
    25 s sem a revisão do salvamento mudar; volta e confere que a gravação anda de novo.
-   Desde 30/10/2026: ao lado da cama da Ana (o beliche do quarto dela) não aparece "Deitar na
+   Desde 29/10/2026: ao lado da cama da Ana (o beliche do quarto dela) não aparece "Deitar na
    cama", e no mesmo lugar, em casa, aparece; numa segunda visita, ir para o mar termina a visita
    com "Você saiu da casa de Ana. O seu jogo volta a ser guardado."; na casa do Tomás o Zappy diz
    que o quarto dele não abriu.

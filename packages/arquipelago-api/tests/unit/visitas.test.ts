@@ -115,7 +115,7 @@ describe('ServicoDasVisitas', () => {
   })
 })
 
-describe('o quarto do irmão na visita (30/10/2026)', () => {
+describe('o quarto do irmão na visita (29/10/2026)', () => {
   const QUARTO = {
     theme: 'aconchego',
     placedItems: [{ itemId: 'cama', x: 0, y: 1 }],

@@ -79,7 +79,7 @@ Só que, na sessão da criança, o gateway não deixa ler a grade de perfis (`/a
   - Os painéis dos objetos não abrem.
   - O jogo dela continua guardado como estava.
 - **O quarto de dentro:** o quarto real é da plataforma (o Members). Primeira decisão (29/10):
-  vazio na visita. **Revista em 30/10/2026 (a dona aprovou):** o quarto é o do irmão; ver a seção 6.
+  vazio na visita. **Revista em 29/10/2026 (a dona aprovou):** o quarto é o do irmão; ver a seção 6.
 - **Volta:** "Voltar para a minha casa" (ou o mesmo item no menu) devolve a casa, a horta e os
   objetos dela, e o personagem volta para a frente da casa. Recarregar a página também volta, porque
   a visita não é guardada.
@@ -112,7 +112,7 @@ Só que, na sessão da criança, o gateway não deixa ler a grade de perfis (`/a
 
 Nenhum Blender nem GLB. Nenhum formato de salvamento novo.
 
-## 6. O quarto do irmão (30/10/2026, aprovado pela dona)
+## 6. O quarto do irmão (29/10/2026, aprovado pela dona)
 
 A proposta diz "Um quarto só: mudou na plataforma, muda no jogo" e "troféus e bichinhos aparecem
 nele como sempre". Um quarto vazio na casa do irmão parecia defeito. Agora a visita mostra o quarto

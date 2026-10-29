@@ -23,7 +23,7 @@ criança (`{dias}`), `HORAS_DA_VOLTA_AO_CURSO = 24` e, em `membros.ts`,
 Em `familia.ts`: `IrmaosDoJogadorSchema` (o serviço: `versao`, `situacao` `ok`|`desligado` e os
 irmãos com `percursos` e `temCasa`, sem nome), `IrmaosParaOJogoSchema` (o mesmo com o `nome` que o
 BFF põe) e `CasaDoIrmaoSchema` (a obra, a horta e os objetos `completos` de um irmão, nada mais do
-salvamento, e o `quarto` da plataforma dele, `null` quando o Members não respondeu, 30/10/2026).
+salvamento, e o `quarto` da plataforma dele, `null` quando o Members não respondeu, 29/10/2026).
 Em `membros.ts`, `QuartoDosMembrosSchema` (`{quarto}`, a rota interna do Members).
 `VERSAO_DAS_VISITAS = 1`. Sem mudança no salvamento. Testes em `tests/familia.test.ts`;
 regras em `docs/arquipelago-regras.md` §6.20.
