@@ -9,6 +9,9 @@ import { ServicoDasVisitas } from '../../src/application/servico-das-visitas'
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
 import type { RepositorioDaFamilia } from '../../src/domain/familia.port'
 import type { Jogador } from '../../src/domain/jogador'
+import { MembrosIndisponiveisError } from '../../src/domain/membros.port'
+import { MembrosHttp } from '../../src/infrastructure/members/membros-http'
+import { membrosDeMentira } from '../fakes/membros'
 
 /** O serviço das visitas (fase3-12) com a família em memória, sem HTTP. */
 
@@ -109,5 +112,85 @@ describe('ServicoDasVisitas', () => {
     expect((await servico.irmaos(lia({ equipe: true }))).irmaos.map((i) => i.perfilId)).toEqual([
       TOM,
     ])
+  })
+})
+
+describe('o quarto do irmão na visita (30/10/2026)', () => {
+  const QUARTO = {
+    theme: 'aconchego',
+    placedItems: [{ itemId: 'cama', x: 0, y: 1 }],
+    pet: 'pet-gato',
+  }
+  const daFamilia = () =>
+    familia({ [LIA]: criarSalvamentoInicial(AGORA), [TOM]: criarSalvamentoInicial(AGORA) })
+
+  test('vem do Members, do perfil do irmão, depois das conferências da casa', async () => {
+    const pedidos: unknown[] = []
+    const membros = membrosDeMentira({
+      lerQuarto: async (pergunta) => {
+        pedidos.push(pergunta)
+        return { quarto: QUARTO }
+      },
+    })
+    const servico = new ServicoDasVisitas({ familia: daFamilia(), politica: aberto, membros })
+    expect((await servico.casa(lia(), TOM)).quarto).toEqual(QUARTO)
+    expect(pedidos).toEqual([{ userId: TOM, audience: 'kids' }])
+    // Quem não é irmão nem chega a perguntar o quarto.
+    await expect(servico.casa(lia(), LIA)).rejects.toBeInstanceOf(IrmaoNaoEncontradoError)
+    expect(pedidos).toHaveLength(1)
+  })
+
+  test('com o Members fora, a casa abre e só o quarto vem null', async () => {
+    const membros = membrosDeMentira({
+      lerQuarto: async () => {
+        throw new MembrosIndisponiveisError('status', 500)
+      },
+    })
+    const casa = await new ServicoDasVisitas({
+      familia: daFamilia(),
+      politica: aberto,
+      membros,
+    }).casa(lia(), TOM)
+    expect(casa.quarto).toBeNull()
+    expect(casa.perfilId).toBe(TOM)
+    // Sem o Members configurado (dev), também null.
+    const semMembros = new ServicoDasVisitas({ familia: daFamilia(), politica: aberto })
+    expect((await semMembros.casa(lia(), TOM)).quarto).toBeNull()
+  })
+
+  test('erro que não é do Members não vira quarto vazio', async () => {
+    const membros = membrosDeMentira({
+      lerQuarto: async () => {
+        throw new Error('defeito')
+      },
+    })
+    await expect(
+      new ServicoDasVisitas({ familia: daFamilia(), politica: aberto, membros }).casa(lia(), TOM),
+    ).rejects.toThrow('defeito')
+  })
+
+  test('o cliente HTTP lê pela rota interna, com o perfil e o público', async () => {
+    const pedidos: Request[] = []
+    const membros = new MembrosHttp({
+      url: 'http://members',
+      token: 't',
+      fetch: (async (url: string | URL | Request, init?: RequestInit) => {
+        pedidos.push(new Request(url, init))
+        return Response.json({ quarto: QUARTO })
+      }) as typeof fetch,
+    })
+    expect(await membros.lerQuarto({ userId: TOM, audience: 'kids' })).toEqual({ quarto: QUARTO })
+    expect(pedidos[0]?.url).toBe(
+      `http://members/members/internal/arquipelago/quarto?userId=${TOM}&audience=kids`,
+    )
+    expect(pedidos[0]?.headers.get('x-arquipelago-token')).toBe('t')
+    const torto = new MembrosHttp({
+      url: 'http://m',
+      token: 't',
+      fetch: (async () => Response.json({ quarto: { theme: 1 } })) as unknown as typeof fetch,
+    })
+    await expect(torto.lerQuarto({ userId: TOM, audience: 'kids' })).rejects.toBeInstanceOf(
+      MembrosIndisponiveisError,
+    )
   })
 })

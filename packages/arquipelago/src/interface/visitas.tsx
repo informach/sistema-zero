@@ -7,6 +7,7 @@ import {
   CHEGADA_DA_VISITA,
   FALA_DA_VOLTA,
   faixaDaVisita,
+  falaDaChegada,
   PAINEL_DAS_VISITAS,
   recordesDaFamilia,
   TEXTOS_DAS_VISITAS as T,
@@ -146,10 +147,11 @@ export function PainelDasVisitas() {
                       return
                     }
                     const s = loja.getState()
-                    s.visitar(visitaDaCasa(i, r.casa))
+                    const visita = visitaDaCasa(i, r.casa)
+                    s.visitar(visita)
                     s.abrirPainel(null)
                     irParaAFrenteDaCasa(pedidos)
-                    s.dizer(faixaDaVisita(i.nome))
+                    s.dizer(falaDaChegada(visita))
                   }}
                 >
                   {abrindo === i.perfilId ? T.abrindo : T.verCasa}

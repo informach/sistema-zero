@@ -5,6 +5,7 @@ import type {
   JogadorDosMembros,
   JornadaDosMembros,
   ObjetivoDoDesafio,
+  QuartoDosMembros,
   SaldoDosMembros,
   VerificacaoDosMembros,
 } from '@sistemazero/arquipelago-contracts'
@@ -25,6 +26,11 @@ export interface PortaDosMembros {
   lerCurriculo(audience: PublicoDosMembros, signal?: AbortSignal): Promise<CurriculoDeBlocos>
   /** As moedas Zappy de quem joga (o cartão da galeria mostra antes de comprar). */
   lerSaldo(pergunta: PerguntaDoJogador, signal?: AbortSignal): Promise<SaldoDosMembros>
+  /** O quarto de UM perfil, como o Meu quarto dele mostra (a visita de um irmão, fase3-12). */
+  lerQuarto(
+    pergunta: { userId: string; audience: PublicoDosMembros },
+    signal?: AbortSignal,
+  ): Promise<QuartoDosMembros>
   /** A hora das aulas concluídas destas pessoas entre `de` e `ate` (a volta ao curso dos pais). */
   lerAulasConcluidas(
     pergunta: { usuarios: string[]; de: Date; ate: Date },

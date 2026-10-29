@@ -78,9 +78,8 @@ Só que, na sessão da criança, o gateway não deixa ler a grade de perfis (`/a
   - Os canteiros e os objetos não oferecem ação.
   - Os painéis dos objetos não abrem.
   - O jogo dela continua guardado como estava.
-- **O quarto de dentro:** o quarto real é da plataforma (o Members), e o serviço do jogo não o lê.
-  **Decisão:** na visita, o quarto aparece vazio, sem os móveis de ninguém. Mostrar o quarto do
-  irmão pede uma leitura nova no Members e fica para depois, se a dona quiser.
+- **O quarto de dentro:** o quarto real é da plataforma (o Members). Primeira decisão (29/10):
+  vazio na visita. **Revista em 30/10/2026 (a dona aprovou):** o quarto é o do irmão; ver a seção 6.
 - **Volta:** "Voltar para a minha casa" (ou o mesmo item no menu) devolve a casa, a horta e os
   objetos dela, e o personagem volta para a frente da casa. Recarregar a página também volta, porque
   a visita não é guardada.
@@ -112,3 +111,29 @@ Só que, na sessão da criança, o gateway não deixa ler a grade de perfis (`/a
 - **Docs:** `docs/arquipelago-regras.md` e os CLAUDE.md.
 
 Nenhum Blender nem GLB. Nenhum formato de salvamento novo.
+
+## 6. O quarto do irmão (30/10/2026, aprovado pela dona)
+
+A proposta diz "Um quarto só: mudou na plataforma, muda no jogo" e "troféus e bichinhos aparecem
+nele como sempre". Um quarto vazio na casa do irmão parecia defeito. Agora a visita mostra o quarto
+dele, como o Meu quarto dele mostra.
+
+- **De onde vem:** a casa do irmão (`GET /arquipelago/irmaos/:perfilId/casa`) passa a trazer
+  `quarto`. O serviço do jogo pergunta ao Members (`GET /members/internal/arquipelago/quarto`, rota
+  interna com o token de leitura do jogo) SÓ depois de todas as conferências da casa (mesma conta,
+  permissão dos pais, acesso ao jogo). A conferência fica num lugar só e a `Plataforma` não muda.
+  O Members devolve o quarto conferido contra o que o irmão tem (`canonicalizeRoomState`), sem
+  catálogo nem saldo.
+- **Quando o Members não responde:** a casa abre do mesmo jeito, com `quarto: null`. O quarto de
+  dentro aparece vazio e o Zappy completa a fala da chegada: "O quarto de Ana não abriu agora.".
+  Fechar a porta do quarto pediria peça nova (na casa construída o quarto não tem uma porta só),
+  então ficou o aviso. Nunca aparece o quarto dela no lugar.
+- **Só olhar, de verdade:** na visita, nada do mundo oferece ação (o personagem não escolhe alvo):
+  nem a cama do irmão, nem a porta nova, nem a bancada, nem a largada de uma corrida.
+- **Sair da ilha central termina a visita** (achado na revisão): sem isso, ela podia ir ao Bosque e
+  jogar sem nada ser gravado. Passou da praia (`RAIO_DA_VISITA` = `RAIO_DA_PRAIA`, 29 m), a visita
+  acaba sozinha e o Zappy diz "Você saiu da casa de Ana. O seu jogo volta a ser guardado.".
+- **Contrato:** `CasaDoIrmaoSchema` ganha `quarto` (obrigatório, anulável) e `QuartoDosMembrosSchema`
+  entra em `membros.ts`. `VERSAO_DAS_VISITAS` continua 1: a fase3-12 ainda não foi para produção, e o
+  serviço publica o cliente do jogo junto. Salvamento continua na V10.
+- **Ordem de subida:** qualquer uma. Sem a rota no Members (404) o serviço trata como "não abriu".

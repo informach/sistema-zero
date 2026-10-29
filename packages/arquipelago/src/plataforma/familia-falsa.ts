@@ -3,14 +3,16 @@ import {
   type CasaDoIrmao,
   criarSalvamentoInicial,
   type IrmaosParaOJogo,
+  type QuartoDoJogo,
   VERSAO_DAS_VISITAS,
 } from '@sistemazero/arquipelago-contracts'
 import { obraDeExemplo } from './obra-de-exemplo'
 
 /**
  * Os irmãos de mentira (fase3-12), com as mesmas respostas e recusas do serviço e do BFF:
- * - `irmaos`: a Ana (com a casa da obra de exemplo e recordes nos dois percursos) e o Tomás (a casa
- *   de antes, um recorde nas copas);
+ * - `irmaos`: a Ana (com a casa da obra de exemplo, um quarto do espaço com beliche e cachorro e
+ *   recordes nos dois percursos) e o Tomás (a casa de antes, um recorde nas copas e o quarto que não
+ *   abriu, como quando o Members não responde);
  * - `sozinha` (padrão): nenhum irmão;
  * - `desligada`: os responsáveis desligaram as visitas (a lista diz, a casa dá 403);
  * - `fora-do-ar`: o serviço ou o Auth não responderam (502).
@@ -22,6 +24,21 @@ export const ANA = 'aaaaaaaa-0000-4000-8000-00000000000a'
 export const TOMAS = 'bbbbbbbb-0000-4000-8000-00000000000b'
 
 const MUITO_ANTES = '2026-01-01T12:00:00.000Z'
+
+/** O quarto da Ana: bem diferente do quarto de exemplo, para a visita mostrar que é o dela. */
+const QUARTO_DA_ANA: QuartoDoJogo = {
+  theme: 'espaco',
+  placedItems: [
+    { itemId: 'beliche', x: 0, y: 1, rot: 0 },
+    { itemId: 'estante', x: 3, y: 0 },
+    { itemId: 'mesa-estudo', x: 8, y: 0 },
+    { itemId: 'pufe', x: 6, y: 4 },
+    { itemId: 'planta', x: 10, y: 0 },
+    { itemId: 'poster', x: 2, y: 1, wall: 'left' },
+    { itemId: 'mapa-mundi', x: 5, y: 1, wall: 'right' },
+  ],
+  pet: 'pet-cachorro',
+}
 
 function horta(
   plantas: Partial<Record<number, Pick<Canteiro, 'semente' | 'regadoEm'>>>,
@@ -73,6 +90,7 @@ function casaDe(perfilId: string): CasaDoIrmao | null {
         3: { semente: 'alface', regadoEm: null },
       }),
       completos: ['geladeira'],
+      quarto: QUARTO_DA_ANA,
     }
   if (perfilId === TOMAS)
     return {
@@ -81,6 +99,7 @@ function casaDe(perfilId: string): CasaDoIrmao | null {
       obra: null,
       horta: horta({ 2: { semente: 'alface', regadoEm: MUITO_ANTES } }),
       completos: [],
+      quarto: null,
     }
   return null
 }

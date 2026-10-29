@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 import { ILHAS, POSICOES_DA_JORNADA, POSTOS_DA_JORNADA } from './ilhas'
+import { QuartoSchema } from './plataforma'
 
 /**
  * Formatos da conversa entre o serviço do jogo e o Members (rotas internas
@@ -203,3 +204,11 @@ export const SaldoDosMembrosSchema = z.strictObject({
   saldo: z.number().int().min(0),
 })
 export type SaldoDosMembros = z.infer<typeof SaldoDosMembrosSchema>
+
+/**
+ * `GET /members/internal/arquipelago/quarto?userId=&audience=` (30/10/2026): o quarto de UM perfil
+ * como o Meu quarto dele mostra (o estado conferido contra o que ele tem), para a visita de um
+ * irmão. Quem pode ver é o serviço do jogo que decide antes de perguntar.
+ */
+export const QuartoDosMembrosSchema = z.strictObject({ quarto: QuartoSchema })
+export type QuartoDosMembros = z.infer<typeof QuartoDosMembrosSchema>

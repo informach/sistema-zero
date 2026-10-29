@@ -12,6 +12,7 @@ import {
 } from '../../../application/arquipelago/arquipelago-course-activity.service'
 import type { ArquipelagoObjectivesService } from '../../../application/arquipelago/arquipelago-objectives.service'
 import type { ArquipelagoReadsService } from '../../../application/arquipelago/arquipelago-reads.service'
+import type { ArquipelagoRoomService } from '../../../application/arquipelago/arquipelago-room.service'
 import type { KidsJourneyQueryService } from '../../../application/kids-journey/kids-journey-query.service'
 import {
   KidsJourneyInitializingError,
@@ -36,6 +37,8 @@ const PerguntaDoJogador = z.object({
   accountId: z.uuid(),
   audience: Publico,
 })
+/** O quarto de um perfil (a visita de um irmão): de quem e em que público. */
+const PerguntaDoQuarto = z.object({ userId: z.uuid(), audience: Publico })
 
 /**
  * Corpo de `/objetivos/*`: só a forma e os tamanhos. O sentido da regra, Python, Pro e os tetos
@@ -102,6 +105,8 @@ export function arquipelagoInternalRoutes(deps: {
   aulas?: Pick<ArquipelagoCourseActivityService, 'concluidas'>
   /** O saldo de moedas Zappy de quem joga (o cartão da galeria); ausente, 424. */
   saldo?: { getBalance(userId: string, audience: 'kids' | 'adult'): Promise<number> }
+  /** O quarto de um perfil (a visita de um irmão no jogo); ausente, 424. */
+  quartos?: Pick<ArquipelagoRoomService, 'quarto'>
   token?: string
 }) {
   const jornadaIndisponivel = (error: unknown) =>
@@ -188,6 +193,24 @@ export function arquipelagoInternalRoutes(deps: {
           return { error: { code: 'SALDO_INDISPONIVEL' } }
         }
         return { saldo: await deps.saldo.getBalance(pergunta.data.userId, pergunta.data.audience) }
+      })
+      /**
+       * O quarto de um perfil (30/10/2026, a visita de um irmão no Arquipélago), no formato
+       * `QuartoDosMembrosSchema`. Só leitura; quem pode ver é o serviço do jogo que decide.
+       */
+      .get('/quarto', async ({ query, set }) => {
+        const pergunta = PerguntaDoQuarto.safeParse(query)
+        if (!pergunta.success) {
+          set.status = 400
+          return { error: { code: 'INVALID_QUERY' } }
+        }
+        if (!deps.quartos) {
+          set.status = 424
+          return { error: { code: 'QUARTO_INDISPONIVEL' } }
+        }
+        return {
+          quarto: await deps.quartos.quarto(pergunta.data.userId, pergunta.data.audience),
+        }
       })
       /** Cursos publicados (gravados) com os blocos que liberam e o posto de cada um. */
       .get('/curriculo-de-blocos', async ({ query, set }) => {

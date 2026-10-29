@@ -9,6 +9,7 @@ import {
   OBJETOS_DA_CASA,
   PERMISSOES_PADRAO,
   PermissoesDaFamiliaSchema,
+  QuartoDosMembrosSchema,
   SemanaDaFamiliaParaOsPaisSchema,
   SemanaDaFamiliaSchema,
   VERSAO_DAS_VISITAS,
@@ -155,13 +156,14 @@ describe('recordes da família e visitas (fase3-12)', () => {
     ).toEqual([])
   })
 
-  test('a casa do irmão leva só a obra, a horta e os objetos com aparência', () => {
+  test('a casa do irmão leva só a obra, a horta, os objetos com aparência e o quarto', () => {
     const casa = {
       versao: VERSAO_DAS_VISITAS,
       perfilId: B,
       obra: null,
       horta: [{ id: 'c1', semente: 'alface', plantadoEm: '2026-10-29T12:00:00Z', regadoEm: null }],
       completos: ['geladeira'],
+      quarto: { theme: 'padrao', placedItems: [{ itemId: 'cama', x: 0, y: 1, rot: 0 }], pet: null },
     } satisfies CasaDoIrmao
     expect(CasaDoIrmaoSchema.parse(casa)).toEqual(casa)
     expect(CasaDoIrmaoSchema.safeParse({ ...casa, inventario: {} }).success).toBe(false)
@@ -169,5 +171,28 @@ describe('recordes da família e visitas (fase3-12)', () => {
     expect(
       CasaDoIrmaoSchema.parse({ ...casa, completos: [...OBJETOS_DA_CASA] }).completos,
     ).toHaveLength(OBJETOS_DA_CASA.length)
+  })
+
+  test('o quarto do irmão é o da plataforma ou null quando não abriu, nunca faltando', () => {
+    const casa = {
+      versao: VERSAO_DAS_VISITAS,
+      perfilId: B,
+      obra: null,
+      horta: [],
+      completos: [],
+      quarto: null,
+    } satisfies CasaDoIrmao
+    expect(CasaDoIrmaoSchema.parse(casa).quarto).toBeNull()
+    const { quarto: _, ...semQuarto } = casa
+    expect(CasaDoIrmaoSchema.safeParse(semQuarto).success).toBe(false)
+    const torto = { theme: 'padrao', placedItems: [{ itemId: '', x: 0, y: 0 }], pet: null }
+    expect(CasaDoIrmaoSchema.safeParse({ ...casa, quarto: torto }).success).toBe(false)
+  })
+
+  test('o Members manda o quarto de um perfil e mais nada', () => {
+    const quarto = { theme: 'espaco', placedItems: [], pet: 'pet-gato', floor: 'madeira' }
+    expect(QuartoDosMembrosSchema.parse({ quarto })).toEqual({ quarto })
+    expect(QuartoDosMembrosSchema.safeParse({ quarto, saldo: 3 }).success).toBe(false)
+    expect(QuartoDosMembrosSchema.safeParse({}).success).toBe(false)
   })
 })

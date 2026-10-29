@@ -662,17 +662,21 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 ## Recordes da família e visitas (fase3-12, 29/10/2026)
 
 - Regras puras em `sistemas/visitas.ts` (`leituraDosIrmaos`, `leituraDaCasa`, `recordesDaFamilia`,
-  `obraVisivel`, `hortaVisivel`, `objetoCompleto`, `CHEGADA_DA_VISITA`, `QUARTO_DA_VISITA` e os
-  textos); loja à parte em `estado/familia.ts` (`lojaDaFamilia(loja, plataforma)`: `GET /irmaos` a
+  `obraVisivel`, `hortaVisivel`, `objetoCompleto`, `quartoVisivel`, `CHEGADA_DA_VISITA`,
+  `QUARTO_DA_VISITA`, `RAIO_DA_VISITA`/`saiuDaVisita`, `falaDaChegada`, `falaDaSaida` e os textos); loja à parte em `estado/familia.ts` (`lojaDaFamilia(loja, plataforma)`: `GET /irmaos` a
   cada resultado e a cada abertura do painel, e `abrirCasa`). Na loja principal, `visita` e
   `visitar(v | null)`: com a visita, ⚠️ o `mudar` não faz nada (nada é gravado).
-- No mundo, `mundo/casa.tsx` (a obra e o quarto vazio), `mundo/objetos-da-casa.tsx` (completo pelo
-  irmão, nenhum "Abrir") e `mundo/horta.tsx` (a horta do irmão, nenhuma ação) leem pelas regras
-  acima; `mundo/rotina-dos-lumis.tsx` não começa nem continua rotina na visita.
+- No mundo, `mundo/casa.tsx` (a obra e o quarto do irmão, 30/10/2026; vazio se não chegou; a cama
+  e a porta nova sem ação), `mundo/objetos-da-casa.tsx` (completo pelo irmão, nenhum "Abrir") e
+  `mundo/horta.tsx` (a horta do irmão, nenhuma ação) leem pelas regras acima;
+  `mundo/rotina-dos-lumis.tsx` não começa nem continua rotina na visita. ⚠️ O `personagem.tsx` não
+  escolhe alvo na visita (nada do mundo age) e termina a visita quando ela passa da praia da ilha
+  central (`saiuDaVisita`, fora de um teleporte pendente): lá fora o jogo dela precisa gravar.
 - Interface em `interface/visitas.tsx`: `RecordesDaFamilia` (no `Resultado` do HUD),
   `PainelDasVisitas` (`PAINEL_DAS_VISITAS`, pelo menu) e `FaixaDaVisita` (no lugar de
   `ModosDoJogo`, `top:68px`; no celular `top:106px`, longe do direcional).
-- Plataforma de mentira: `plataforma/familia-falsa.ts` (`?familia=irmaos|sozinha|desligada|fora-do-ar`).
+- Plataforma de mentira: `plataforma/familia-falsa.ts` (`?familia=irmaos|sozinha|desligada|fora-do-ar`;
+  a Ana tem quarto, o Tomás tem `quarto: null`, o caso do Members fora).
   Regras e textos: `docs/arquipelago-regras.md` §6.20. Testes: `tests/visitas.test.ts`; navegador:
   `playground/verificar-visitas-browser.ts` (compilar para Node no Windows; o roteiro espera os 20 s
   da fila do jogo antes de conferir que a visita não grava).

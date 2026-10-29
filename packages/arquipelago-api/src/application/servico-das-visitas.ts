@@ -6,18 +6,22 @@ import {
   OBJETOS_DA_CASA,
   PERFIS_DA_FAMILIA_MAXIMO,
   PERMISSOES_PADRAO,
+  type QuartoDoJogo,
   VERSAO_DAS_VISITAS,
 } from '@sistemazero/arquipelago-contracts'
+import type { Logger } from '@sistemazero/core/logging'
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { RepositorioDaFamilia } from '../domain/familia.port'
 import type { Jogador } from '../domain/jogador'
+import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
 import { AcessoBloqueadoError, IrmaoNaoEncontradoError, VisitasDesligadasError } from './erros'
 
 /**
  * Os recordes da família e as visitas (fase3-12, 29/10/2026), só leitura, de quem joga. Irmão é
  * quem guardou o jogo logado na MESMA conta da criança (`perfis_da_conta`), não é ela e vê o jogo
  * pela mesma decisão de acesso. Tudo obedece à permissão `visitasDeIrmaos` da conta. O serviço
- * nunca sabe nomes: o BFF põe o nome de cada irmão. Plano:
+ * nunca sabe nomes: o BFF põe o nome de cada irmão. O quarto do irmão (30/10/2026) é o da
+ * plataforma: vem do Members, só depois de todas as conferências da casa. Plano:
  * `docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md`.
  */
 export class ServicoDasVisitas {
@@ -28,6 +32,9 @@ export class ServicoDasVisitas {
         'perfisDaConta' | 'outrosPerfisDaConta' | 'salvamentos' | 'lerPermissoes'
       >
       politica: PoliticaDeAcesso
+      /** O quarto do irmão; sem o Members (dev), a casa vem com `quarto: null`. */
+      membros?: Pick<PortaDosMembros, 'lerQuarto'> | null
+      logger?: Logger
     },
   ) {}
 
@@ -73,6 +80,22 @@ export class ServicoDasVisitas {
       obra: s.construcao.casa,
       horta: s.horta,
       completos: OBJETOS_DA_CASA.filter((o) => Boolean(s.projetos[o]?.aparencia)),
+      quarto: await this.quartoDe(perfilId),
+    }
+  }
+
+  /** O quarto da plataforma do irmão; o Members fora não fecha a casa, só o quarto (`null`). */
+  private async quartoDe(perfilId: string): Promise<QuartoDoJogo | null> {
+    if (!this.deps.membros) return null
+    try {
+      return (await this.deps.membros.lerQuarto({ userId: perfilId, audience: 'kids' })).quarto
+    } catch (erro) {
+      if (!(erro instanceof MembrosIndisponiveisError)) throw erro
+      this.deps.logger?.warn('arquipelago.visitas.quarto_indisponivel', {
+        motivo: erro.motivo,
+        status: erro.status,
+      })
+      return null
     }
   }
 

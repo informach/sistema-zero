@@ -6,6 +6,9 @@
  *    "Visitar um irmão" pelo menu, entra na casa da Ana (a obra de exemplo no lugar da casa de
  *    antes), confere a faixa, que o Construir sumiu e que NADA é gravado durante a visita (a
  *    revisão guardada no playground fica parada, e fora dela anda a cada poucos segundos), e volta.
+ *    O quarto de dentro é o da Ana (30/10/2026): ao lado da cama dela, "Deitar na cama" não
+ *    aparece; no mesmo lugar, em casa, aparece. Na visita ao Tomás o Zappy avisa que o quarto dele
+ *    não abriu, e sair da ilha central no meio da visita termina a visita.
  * 2. Celular (390 × 844, toque): a visita pelo menu, a faixa fora do direcional, e a volta.
  * 3. As recusas no painel: visitas desligadas e o serviço fora do ar (com "Tentar de novo").
  *
@@ -17,10 +20,18 @@ import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import { cellToWorld } from '@sistemazero/avatar-quarto/quarto/coords'
 import { chromium, type Page } from 'playwright-core'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { percursoNoMundo } from '../src/mundo/bosque'
-import { alturaDaIlha, giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
+import {
+  ALTURA_DA_TERRA,
+  alturaDaIlha,
+  CENTRO_DA_CASA,
+  giroDaIlha,
+  ilhasEmVolta,
+  RAIO_DA_PRAIA,
+} from '../src/mundo/medidas'
 import {
   type AncorasDosTelhados,
   NOMES_DAS_ANCORAS_DOS_TELHADOS,
@@ -108,6 +119,17 @@ async function visitarAna(pagina: Page) {
   await faixa.getByText('Você está na casa de Ana. Aqui você só olha.').waitFor()
   assert.equal(await pagina.locator('.arq-modos').count(), 0, 'o Construir continua na visita')
   return faixa
+}
+
+/**
+ * Ao lado da cama, dentro do quarto: a da Ana (beliche) e a do quarto de exemplo ficam na mesma
+ * célula (0, 1), 2 × 3, então o mesmo ponto serve para a visita e para casa.
+ */
+const camaNoMundo = cellToWorld(0, 1, 2, 3)
+const aoLadoDaCama = {
+  x: CENTRO_DA_CASA.x + camaNoMundo.x + 1.6,
+  y: ALTURA_DA_TERRA,
+  z: CENTRO_DA_CASA.z + camaNoMundo.z,
 }
 
 async function voltar(pagina: Page, faixa: ReturnType<Page['locator']>) {
@@ -203,9 +225,18 @@ try {
     await pagina.waitForTimeout(25_000)
     assert.equal(await revisao(pagina), naVisita, 'a visita gravou alguma coisa')
     await pagina.screenshot({ path: path.join(prints, 'computador-3-casa-da-ana.png') })
+    // O quarto da Ana: ao lado da cama dela, nada para fazer (só se olha).
+    await levar(pagina, aoLadoDaCama, Math.PI / 2)
+    await pagina.waitForTimeout(4000)
+    assert.equal(
+      await pagina.getByText('Deitar na cama').count(),
+      0,
+      'a cama da Ana oferece deitar',
+    )
+    await pagina.screenshot({ path: path.join(prints, 'computador-4-quarto-da-ana.png') })
     await voltar(pagina, faixa)
     await pagina.waitForTimeout(3000)
-    await pagina.screenshot({ path: path.join(prints, 'computador-4-de-volta.png') })
+    await pagina.screenshot({ path: path.join(prints, 'computador-5-de-volta.png') })
     // De volta, o jogo dela grava de novo.
     await pagina.waitForFunction(
       (r) => {
@@ -215,8 +246,30 @@ try {
       naVisita,
       { timeout: 60_000 },
     )
+    // Em casa, no mesmo lugar, a cama dela oferece deitar (o teste de cima não passa por acaso).
+    await levar(pagina, aoLadoDaCama, Math.PI / 2)
+    await pagina.getByText('Deitar na cama').first().waitFor({ timeout: 60_000 })
+    // Sair da ilha central no meio da visita termina a visita.
+    await levar(pagina, { x, y: alturaDaIlha(x, z), z }, Math.PI)
+    await pagina.waitForTimeout(3000)
+    const deNovo = await visitarAna(pagina)
+    await levar(pagina, { x: 0, y: 0.5, z: RAIO_DA_PRAIA + 4 }, 0)
+    await deNovo.waitFor({ state: 'detached', timeout: 60_000 })
+    await pagina.getByText('Você saiu da casa de Ana. O seu jogo volta a ser guardado.').waitFor()
+    await pagina.locator('.arq-modos').waitFor()
+    // O Tomás: o quarto dele não abriu, e o Zappy diz.
+    await levar(pagina, { x, y: alturaDaIlha(x, z), z }, Math.PI)
+    await pagina.waitForTimeout(3000)
+    const visitas = await abrirVisitas(pagina)
+    await visitas.getByRole('button', { name: 'Ver a casa de Tomás' }).click()
+    await visitas.waitFor({ state: 'hidden' })
+    await pagina.getByText('O quarto de Tomás não abriu agora.', { exact: false }).waitFor()
+    await pagina.screenshot({ path: path.join(prints, 'computador-6-casa-do-tomas.png') })
+    await voltar(pagina, pagina.locator('.arq-visita-faixa'))
     assert.deepEqual(erros, [])
-    console.log('PASS computador: recordes da família no resultado, visita sem gravar e volta')
+    console.log(
+      'PASS computador: recordes, visita sem gravar, o quarto da Ana, a saída da ilha e o Tomás',
+    )
     await contexto.close()
   }
 

@@ -9,6 +9,8 @@ import {
   JogadorDosMembrosSchema,
   type JornadaDosMembros,
   JornadaDosMembrosSchema,
+  type QuartoDosMembros,
+  QuartoDosMembrosSchema,
   type SaldoDosMembros,
   SaldoDosMembrosSchema,
   type VerificacaoDosMembros,
@@ -72,6 +74,17 @@ export class MembrosHttp implements PortaDosMembros {
     return validar(
       SaldoDosMembrosSchema,
       await this.ler(`/members/internal/arquipelago/saldo?${q}`, signal),
+    )
+  }
+
+  async lerQuarto(
+    pergunta: { userId: string; audience: PublicoDosMembros },
+    signal?: AbortSignal,
+  ): Promise<QuartoDosMembros> {
+    const q = new URLSearchParams({ userId: pergunta.userId, audience: pergunta.audience })
+    return validar(
+      QuartoDosMembrosSchema,
+      await this.ler(`/members/internal/arquipelago/quarto?${q}`, signal),
     )
   }
 

@@ -14,7 +14,7 @@ import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/
 import { useEstado, useJogo } from '../estado/contexto'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
-import { obraVisivel, QUARTO_DA_VISITA } from '../sistemas/visitas'
+import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
@@ -144,7 +144,8 @@ function Cama({ quarto }: { quarto: QuartoDoJogo }) {
     x: CENTRO_DA_CASA.x + c.x,
     z: CENTRO_DA_CASA.z + c.z,
     raio: cama ? 2.6 : 0,
-    rotulo: () => (cama ? 'Deitar na cama' : null),
+    // Na casa do irmão só se olha (fase3-12): a cama dele não é para deitar.
+    rotulo: () => (cama && !loja.getState().visita ? 'Deitar na cama' : null),
     agir: () => {
       movimento.pedido = { tipo: 'descanso', lugar }
       loja.getState().dizer(FALA_DE_DEITAR)
@@ -160,7 +161,7 @@ function Porta() {
     x: CENTRO_DA_CASA.x + PORTA.x,
     z: CENTRO_DA_CASA.z + MEIO_Z - 0.6,
     raio: 2.4,
-    rotulo: () => (aberta ? null : 'Abrir a porta nova'),
+    rotulo: () => (aberta || loja.getState().visita ? null : 'Abrir a porta nova'),
     agir: () => {
       loja.getState().mudar((s) => ({ ...s, casa: { ...s.casa, portaNova: true } }))
       loja.getState().dizer('A porta nova abriu. Agora a ilha toda é sua para explorar.')
@@ -375,8 +376,8 @@ const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
 
 export function Casa() {
   const { loja } = useJogo()
-  // Na visita (fase3-12), o quarto de dentro fica vazio e a obra é a do irmão.
-  const quarto = useEstado((s) => (s.visita ? QUARTO_DA_VISITA : s.quarto))
+  // Na visita (fase3-12), o quarto e a obra são os do irmão.
+  const quarto = useEstado(quartoVisivel)
   // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
   const obra = useEstado(obraVisivel)
   // O Construir aberto mexe na casa ou na cabana da ilha (`onde`).

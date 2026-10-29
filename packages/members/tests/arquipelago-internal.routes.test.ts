@@ -28,6 +28,7 @@ function criar(over: {
   objetivos?: unknown
   aulas?: unknown
   saldo?: unknown
+  quartos?: unknown
 }) {
   const staffPreview = mock(over.staffPreview ?? (async () => ({ policyVersion: 4 })))
   const policy = mock(
@@ -54,6 +55,7 @@ function criar(over: {
         objetivos: (over.objetivos ?? { analisar: mock(), verificar: mock() }) as never,
         aulas: over.aulas as never,
         saldo: over.saldo as never,
+        quartos: over.quartos as never,
         token: 'configurado' in over ? over.configurado : token,
       }),
     )
@@ -326,6 +328,35 @@ describe('saldo (a galeria do Arquipélago, 29/10/2026)', () => {
     expect((await app.handle(pedir(q, tokenDasMoedas))).status).toBe(401)
     expect((await app.handle(pedir(`userId=x&accountId=${lia}&audience=kids`))).status).toBe(400)
     expect(getBalance).toHaveBeenCalledTimes(0)
+    expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
+  })
+})
+
+describe('quarto (a visita de um irmão no Arquipélago, 30/10/2026)', () => {
+  const tom = '22222222-2222-4222-8222-222222222222'
+  const pedir = (query: string, chave = token) =>
+    new Request(`http://local/members/internal/arquipelago/quarto?${query}`, {
+      headers: { 'x-arquipelago-token': chave },
+    })
+
+  test('lê o quarto do perfil pedido no público dele', async () => {
+    const estado = { theme: 'padrao', placedItems: [{ itemId: 'cama', x: 0, y: 1 }], pet: null }
+    const quarto = mock(async () => estado)
+    const { app } = criar({ quartos: { quarto } })
+    const res = await app.handle(pedir(`userId=${tom}&audience=kids`))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ quarto: estado })
+    expect(quarto).toHaveBeenCalledWith(tom, 'kids')
+  })
+
+  test('token das moedas não lê; pergunta malformada é 400; sem a leitura, 424', async () => {
+    const quarto = mock(async () => ({ theme: 'padrao', placedItems: [], pet: null }))
+    const { app } = criar({ quartos: { quarto } })
+    const q = `userId=${tom}&audience=kids`
+    expect((await app.handle(pedir(q, tokenDasMoedas))).status).toBe(401)
+    expect((await app.handle(pedir('userId=tom&audience=kids'))).status).toBe(400)
+    expect((await app.handle(pedir(`userId=${tom}&audience=bebes`))).status).toBe(400)
+    expect(quarto).toHaveBeenCalledTimes(0)
     expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
   })
 })

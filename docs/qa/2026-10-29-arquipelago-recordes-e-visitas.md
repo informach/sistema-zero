@@ -20,8 +20,18 @@ continua na V10. Plano: `docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md
 - Jogo: "Recordes da família" no resultado de cada percurso; "🏡 Visitar um irmão" no menu, a
   casa do irmão só para olhar (nada é gravado) e "Voltar para a minha casa".
 - Plataforma falsa com as mesmas recusas: `?familia=irmaos|sozinha|desligada|fora-do-ar`.
+- **30/10/2026, o quarto do irmão** (aprovado pela dona, plano §6): a casa traz o quarto da
+  plataforma dele, pedido ao Members (`GET /members/internal/arquipelago/quarto`) só depois das
+  conferências. Sem resposta do Members, `quarto: null`: o quarto aparece vazio e o Zappy avisa que
+  não abriu. Na visita nada do mundo oferece ação (a cama do irmão, a porta nova, a bancada, a
+  largada), e sair da ilha central termina a visita (antes ela podia jogar lá fora sem gravar).
 
 ## Verificações
+
+Rodada de 30/10/2026 (o quarto do irmão), sem typecheck (pedido da dona: uma sessão só faz os
+typechecks): `arquipelago-contracts` 115, `arquipelago-api` 225 (unidade e integração), `members`
+2007 (2 pulados; unidade, integração e rotas), `arquipelago` 838 (1 pulado), todos sem falha; o
+navegador 5 de 5. Rodada de 29/10/2026:
 
 | Pacote | Comando | Resultado |
 | --- | --- | --- |
@@ -48,6 +58,10 @@ em diante, os typechecks ficam com uma sessão só (pedido da dona, pouca memór
    confere os recordes (ela, a Ana com 25,9 s e o Tomás com "Ainda não correu"); abre a casa da
    Ana pelo menu, confere a faixa e que o Construir sumiu; espera os 20 s da fila do jogo e mais
    25 s sem a revisão do salvamento mudar; volta e confere que a gravação anda de novo.
+   Desde 30/10/2026: ao lado da cama da Ana (o beliche do quarto dela) não aparece "Deitar na
+   cama", e no mesmo lugar, em casa, aparece; numa segunda visita, ir para o mar termina a visita
+   com "Você saiu da casa de Ana. O seu jogo volta a ser guardado."; na casa do Tomás o Zappy diz
+   que o quarto dele não abriu.
 2. Celular emulado (390 × 844, toque): visita pelo menu; a faixa não cobre o direcional, Pular,
    Usar, as necessidades nem o relógio; volta.
 3. Recusas: `desligada` (o recado dos responsáveis), `fora-do-ar` (o recado e "Tentar de novo") e
@@ -61,7 +75,9 @@ Prints em `docs/qa/assets/2026-10-29-arquipelago-visitas/`:
 ![Recordes da família no resultado](assets/2026-10-29-arquipelago-visitas/computador-1-recordes.png)
 ![Painel das visitas](assets/2026-10-29-arquipelago-visitas/computador-2-painel.png)
 ![Na casa da Ana](assets/2026-10-29-arquipelago-visitas/computador-3-casa-da-ana.png)
-![De volta](assets/2026-10-29-arquipelago-visitas/computador-4-de-volta.png)
+![O quarto da Ana na visita](assets/2026-10-29-arquipelago-visitas/computador-4-quarto-da-ana.png)
+![De volta](assets/2026-10-29-arquipelago-visitas/computador-5-de-volta.png)
+![Na casa do Tomás, o quarto que não abriu](assets/2026-10-29-arquipelago-visitas/computador-6-casa-do-tomas.png)
 ![Celular: painel](assets/2026-10-29-arquipelago-visitas/celular-1-painel.png)
 ![Celular: na casa da Ana](assets/2026-10-29-arquipelago-visitas/celular-2-casa-da-ana.png)
 ![Visitas desligadas](assets/2026-10-29-arquipelago-visitas/recusa-desligada.png)
@@ -70,8 +86,8 @@ Prints em `docs/qa/assets/2026-10-29-arquipelago-visitas/`:
 
 ## Fica para depois
 
-- O quarto de dentro aparece vazio na visita: o quarto real é da plataforma e o serviço do jogo não
-  o lê. Mostrar o quarto do irmão pede uma decisão da dona.
 - Abrir a visita no meio de uma corrida leva a criança para a casa do irmão e a corrida desiste sem
   castigo (como sair da ilha).
 - Celular físico não foi testado; a emulação prova o funcionamento, não o desempenho.
+- Na visita, o que é da interface e não do mundo (comer pela mochila, o caderno dos Lumis) não
+  grava nada e também não avisa. Um recado ali pede uma decisão de texto da dona.

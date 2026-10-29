@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 import { OBJETOS_DA_CASA } from './objetos'
+import { QuartoSchema } from './plataforma'
 import { CanteiroSchema, ObraSchema, PERCURSOS, ResultadoDoPercursoSchema } from './salvamento'
 
 /**
@@ -140,6 +141,8 @@ export type IrmaoParaOJogo = IrmaosParaOJogo['irmaos'][number]
  * `GET /arquipelago/irmaos/:perfilId/casa`: o que a visita mostra de UM irmão, só para ver. A obra
  * da casa com o quintal (`null` = a casa de antes), a horta e os objetos com aparência (o jogo
  * desenha o modelo do objeto; a criação em si não vem). Nada mais do salvamento dele.
+ * O `quarto` (30/10/2026) é o da plataforma, como o Meu quarto dele mostra; `null` quando o
+ * Members não respondeu (o jogo avisa que o quarto não abriu, nunca mostra outro).
  */
 export const CasaDoIrmaoSchema = z.strictObject({
   versao: z.literal(VERSAO_DAS_VISITAS),
@@ -147,5 +150,6 @@ export const CasaDoIrmaoSchema = z.strictObject({
   obra: ObraSchema.nullable(),
   horta: z.array(CanteiroSchema).max(24),
   completos: z.array(z.enum(OBJETOS_DA_CASA)).max(OBJETOS_DA_CASA.length),
+  quarto: QuartoSchema.nullable(),
 })
 export type CasaDoIrmao = z.infer<typeof CasaDoIrmaoSchema>

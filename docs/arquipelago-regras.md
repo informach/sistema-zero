@@ -1762,8 +1762,9 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
   permissões não mudam nada aqui. O jogo relê a lista a cada resultado e a cada abertura do painel.
 - **As rotas** (só leitura, de quem joga, fora de `/arquipelago/familia/`):
   - `GET /arquipelago/irmaos`: os irmãos com o melhor de cada percurso e se já construíram a casa;
-  - `GET /arquipelago/irmaos/:perfilId/casa`: a obra da casa com o quintal, a horta e os objetos com
-    aparência, de um irmão. Quem não é irmão (outra conta, a própria criança, id torto) dá 404
+  - `GET /arquipelago/irmaos/:perfilId/casa`: a obra da casa com o quintal, a horta, os objetos com
+    aparência e o quarto (30/10/2026, o da plataforma, que o serviço pede ao Members só depois de
+    todas as conferências), de um irmão. Quem não é irmão (outra conta, a própria criança, id torto) dá 404
     `IRMAO_NAO_ENCONTRADO`, sem dizer por quê.
 - **Os nomes:** o serviço do jogo nunca sabe nomes. O BFF pede ao Auth os irmãos da sessão de perfil
   (`GET /auth/profile-session/siblings`: só id e nome dos outros perfis ativos da conta; fora da
@@ -1787,15 +1788,22 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
     necessidades, nem a posição). Os canteiros e os objetos não oferecem ação, o Construir some e a
     rotina dos Lumis espera a volta (se estava andando, para; o colhido já está na mochila). O que
     ela mudou antes de entrar ainda pode ser gravado nos primeiros 20 segundos (a fila do jogo).
-  - O quarto de dentro aparece vazio (o quarto real é da plataforma, e o serviço do jogo não o lê).
+    Nada do mundo oferece ação (nem a cama do irmão, nem a porta nova, nem a bancada, nem a largada
+    de uma corrida).
+  - Sair da ilha central (passar da praia, `RAIO_DA_VISITA`, 29 m) termina a visita sozinho, e o
+    Zappy diz "Você saiu da casa de Ana. O seu jogo volta a ser guardado.". Lá fora o jogo é dela.
+  - O quarto de dentro é o do irmão (30/10/2026), como o Meu quarto dele mostra: os móveis, o tema, o
+    bichinho e os troféus. Se não chegar (o Members não respondeu), aparece vazio e o Zappy completa
+    a fala da chegada com "O quarto de Ana não abriu agora.".
   - Volta: "Voltar para a minha casa" devolve a casa, a horta e os objetos dela, leva para a frente
     da casa e o Zappy diz "De volta para a sua casa.". Recarregar a página também volta.
 - **Recados do painel:** "As visitas entre irmãos estão desligadas. Quem decide são os
   responsáveis.", "Ainda não há irmãos jogando o Arquipélago nesta conta.", "As visitas não
   carregaram agora. Tente de novo daqui a pouco." (com "Tentar de novo") e "Não deu para abrir esta
   casa agora.".
-- **Playground:** `?familia=irmaos` (a Ana, com a casa da obra de exemplo, e o Tomás, com a casa de
-  antes), `sozinha` (padrão), `desligada` e `fora-do-ar`.
+- **Playground:** `?familia=irmaos` (a Ana, com a casa da obra de exemplo e um quarto do espaço com
+  beliche e cachorro, e o Tomás, com a casa de antes e o quarto que não abriu), `sozinha` (padrão),
+  `desligada` e `fora-do-ar`.
 - **Moedas:** nada disto paga moedas. O salvamento não mudou (continua na V10).
 
 ## 7. Desafios

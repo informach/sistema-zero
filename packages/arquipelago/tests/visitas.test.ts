@@ -6,19 +6,25 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { criarLojaDaFamilia } from '../src/estado/familia'
 import { criarLoja } from '../src/estado/loja'
+import { RAIO_DA_PRAIA } from '../src/mundo/medidas'
 import { criarPlataformaFalsa, QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
 import { ANA, criarFamiliaFalsa, TOMAS } from '../src/plataforma/familia-falsa'
 import { obraDeExemplo } from '../src/plataforma/obra-de-exemplo'
 import {
   FALA_DA_VOLTA,
   faixaDaVisita,
+  falaDaChegada,
+  falaDaSaida,
   hortaVisivel,
   leituraDaCasa,
   leituraDosIrmaos,
   objetoCompleto,
   obraVisivel,
   QUARTO_DA_VISITA,
+  quartoVisivel,
+  RAIO_DA_VISITA,
   recordesDaFamilia,
+  saiuDaVisita,
   TEXTOS_DAS_VISITAS,
   type Visita,
   visitaDaCasa,
@@ -88,7 +94,7 @@ describe('as leituras do serviço', () => {
   })
 
   test('a casa: só a do irmão pedido; 403 das visitas desligadas diz que desligaram', () => {
-    const casa = { versao: 1, perfilId: ANA, obra: null, horta: [], completos: [] }
+    const casa = { versao: 1, perfilId: ANA, obra: null, horta: [], completos: [], quarto: null }
     expect(leituraDaCasa(200, casa, ANA)).toEqual({
       tipo: 'ok',
       casa: CasaDoIrmaoSchema.parse(casa),
@@ -110,9 +116,10 @@ describe('a visita', () => {
     obra: obraDeExemplo(),
     horta: [],
     completos: ['geladeira'],
+    quarto: { theme: 'espaco', placedItems: [{ itemId: 'beliche', x: 0, y: 1 }], pet: null },
   }
 
-  test('o mundo desenha a casa, a horta e os objetos do irmão; o quarto de dentro fica vazio', () => {
+  test('o mundo desenha a casa, a horta e os objetos do irmão', () => {
     const salvamento = criarSalvamentoInicial(AGORA)
     expect(obraVisivel({ visita: null, salvamento })).toBeNull()
     expect(obraVisivel({ visita, salvamento })).toBe(visita.obra)
@@ -120,8 +127,27 @@ describe('a visita', () => {
     expect(hortaVisivel({ visita: null, salvamento })).toBe(salvamento.horta)
     expect(objetoCompleto({ visita, salvamento }, 'geladeira')).toBe(true)
     expect(objetoCompleto({ visita, salvamento }, 'forno')).toBe(false)
+  })
+
+  test('o quarto de dentro é o do irmão; sem ele, vazio e o Zappy avisa', () => {
+    expect(quartoVisivel({ visita: null, quarto: QUARTO_DE_EXEMPLO })).toBe(QUARTO_DE_EXEMPLO)
+    expect(quartoVisivel({ visita, quarto: QUARTO_DE_EXEMPLO })).toBe(visita.quarto)
+    const semQuarto = { ...visita, quarto: null }
+    expect(quartoVisivel({ visita: semQuarto, quarto: QUARTO_DE_EXEMPLO })).toBe(QUARTO_DA_VISITA)
     expect(QUARTO_DA_VISITA.placedItems).toEqual([])
     expect(QUARTO_DA_VISITA.pet).toBeNull()
+    expect(falaDaChegada(visita)).toBe(faixaDaVisita('Ana'))
+    expect(falaDaChegada(semQuarto)).toBe(
+      'Você está na casa de Ana. Aqui você só olha. O quarto de Ana não abriu agora.',
+    )
+  })
+
+  test('a visita vale na ilha central; passou da praia, termina', () => {
+    expect(RAIO_DA_VISITA).toBe(RAIO_DA_PRAIA)
+    expect(saiuDaVisita(2.5, 11)).toBe(false)
+    expect(saiuDaVisita(0, RAIO_DA_PRAIA - 0.1)).toBe(false)
+    expect(saiuDaVisita(RAIO_DA_PRAIA, 1)).toBe(true)
+    expect(saiuDaVisita(77, 28)).toBe(true)
   })
 
   test('na visita nada é gravado; ao voltar, o jogo dela muda de novo', () => {
@@ -158,6 +184,7 @@ describe('a visita', () => {
       obra: null,
       horta: [],
       completos: ['forno'],
+      quarto: null,
     })
     expect(visitaDaCasa({ perfilId: ANA, nome: 'Ana' }, casa)).toEqual({
       perfilId: ANA,
@@ -165,6 +192,7 @@ describe('a visita', () => {
       obra: null,
       horta: [],
       completos: ['forno'],
+      quarto: null,
     })
   })
 })
@@ -176,7 +204,11 @@ describe('a plataforma de mentira tem as mesmas recusas', () => {
     const lido = leituraDosIrmaos(lista?.status ?? 0, lista?.corpo)
     expect(lido.tipo === 'ok' && lido.irmaos.map((i) => i.nome)).toEqual(['Ana', 'Tomás'])
     const ana = familia.buscar(`/irmaos/${ANA}/casa`, 'GET')
-    expect(leituraDaCasa(ana?.status ?? 0, ana?.corpo, ANA)).toMatchObject({ tipo: 'ok' })
+    const casaDaAna = leituraDaCasa(ana?.status ?? 0, ana?.corpo, ANA)
+    expect(casaDaAna.tipo === 'ok' && casaDaAna.casa.quarto?.theme).toBe('espaco')
+    const tomas = familia.buscar(`/irmaos/${TOMAS}/casa`, 'GET')
+    const casaDoTomas = leituraDaCasa(tomas?.status ?? 0, tomas?.corpo, TOMAS)
+    expect(casaDoTomas.tipo === 'ok' && casaDoTomas.casa.quarto).toBeNull()
     expect(familia.buscar('/irmaos/cccccccc-0000-4000-8000-00000000000c/casa', 'GET')?.status).toBe(
       404,
     )
@@ -215,7 +247,13 @@ describe('a plataforma de mentira tem as mesmas recusas', () => {
 })
 
 test('os textos não usam travessão nem exclamação nem começam com pergunta', () => {
-  for (const t of [...Object.values(TEXTOS_DAS_VISITAS), faixaDaVisita('Ana'), FALA_DA_VOLTA]) {
+  for (const t of [
+    ...Object.values(TEXTOS_DAS_VISITAS),
+    faixaDaVisita('Ana'),
+    falaDaChegada({ nome: 'Ana', quarto: null }),
+    falaDaSaida('Ana'),
+    FALA_DA_VOLTA,
+  ]) {
     expect(t).not.toContain('—')
     expect(t).not.toContain('!')
     expect(t.split('.')[0]).not.toContain('?')

@@ -34,6 +34,12 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   `getBalance`): as moedas Zappy de quem joga, para o cartão da galeria do Arquipélago
   (`SaldoDosMembrosSchema`). Só leitura: gastar é pela porta de moedas (`operation: 'debit'`, que já
   existia e usa a mesma carteira, trava e livro da loja do quarto). Sem a dep, 424.
+- `GET /quarto?userId&audience` (30/10/2026, dep `quartos` = `ArquipelagoRoomService`): o quarto de
+  UM perfil, como o Meu quarto dele mostra (`canonicalizeRoomState` contra o inventário dele, sem
+  catálogo nem saldo), no formato `QuartoDosMembrosSchema`. É a visita de um irmão no Arquipélago:
+  quem pode ver é o serviço do jogo, que confere conta, permissão dos pais e acesso antes. Sem a
+  dep, 424. Testes: `tests/unit/arquipelago-room.service.test.ts` e as rotas em
+  `tests/arquipelago-internal.routes.test.ts`.
 - `GET /curriculo-de-blocos?audience`: cursos GRAVADOS publicados com `studioUnlockBlocks`, com o
   posto mais cedo no currículo (`lugarNoCurriculo`; política sem currículo = posto nulo) e o
   catálogo do Estúdio (tipo, rótulo, categoria).

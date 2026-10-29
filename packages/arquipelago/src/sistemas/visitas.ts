@@ -31,11 +31,13 @@ export interface Visita {
   obra: Obra | null
   horta: readonly Canteiro[]
   completos: readonly ObjetoDaCasa[]
+  /** O quarto da plataforma do irmão (30/10/2026); `null` quando não abriu. */
+  quarto: QuartoDoJogo | null
 }
 
 /**
- * O quarto de dentro na visita: vazio. O quarto real é da plataforma (o Members) e o serviço do
- * jogo não o lê; mostrar o dela na casa do irmão confundiria (decisão no plano).
+ * O quarto de dentro quando o do irmão não chegou (o Members não respondeu): vazio, e o Zappy
+ * avisa na chegada (`falaDaChegada`). Mostrar o quarto dela na casa do irmão confundiria.
  */
 export const QUARTO_DA_VISITA: QuartoDoJogo = Object.freeze({
   theme: 'padrao',
@@ -45,6 +47,17 @@ export const QUARTO_DA_VISITA: QuartoDoJogo = Object.freeze({
 
 /** Onde a criança chega (e volta): em frente ao lote da casa, olhando para ela. */
 export const CHEGADA_DA_VISITA = { x: 2.5, z: 11, olhar: Math.PI } as const
+
+/**
+ * Até onde a visita vale: a praia da ilha central (o `RAIO_DA_PRAIA` de `mundo/medidas.ts`; o
+ * teste confere). Passou disso (a ponte, o mar), a visita termina sozinha: lá fora o jogo é dela
+ * e precisa voltar a gravar.
+ */
+export const RAIO_DA_VISITA = 29
+
+export function saiuDaVisita(x: number, z: number): boolean {
+  return x * x + z * z > RAIO_DA_VISITA * RAIO_DA_VISITA
+}
 
 export const TEXTOS_DAS_VISITAS = {
   titulo: 'Visitar um irmão',
@@ -70,6 +83,17 @@ export const TEXTOS_DAS_VISITAS = {
 /** A faixa no alto durante a visita. */
 export function faixaDaVisita(nome: string): string {
   return `Você está na casa de ${nome}. Aqui você só olha.`
+}
+
+/** O que o Zappy diz ao chegar: a faixa e, sem o quarto do irmão, que ele não abriu. */
+export function falaDaChegada(visita: Pick<Visita, 'nome' | 'quarto'>): string {
+  const faixa = faixaDaVisita(visita.nome)
+  return visita.quarto ? faixa : `${faixa} O quarto de ${visita.nome} não abriu agora.`
+}
+
+/** O que o Zappy diz quando ela sai da ilha central no meio da visita. */
+export function falaDaSaida(nome: string): string {
+  return `Você saiu da casa de ${nome}. O seu jogo volta a ser guardado.`
 }
 
 /** O que o Zappy diz ao voltar. */
@@ -124,6 +148,7 @@ export function visitaDaCasa(
     obra: casa.obra,
     horta: casa.horta,
     completos: casa.completos,
+    quarto: casa.quarto,
   }
 }
 
@@ -137,6 +162,11 @@ interface EstadoComVisita {
 /** A obra da casa que aparece: a do irmão na visita, a dela fora. */
 export function obraVisivel(s: EstadoComVisita): Obra | null {
   return s.visita ? s.visita.obra : s.salvamento.construcao.casa
+}
+
+/** O quarto de dentro que aparece: o do irmão na visita (vazio se não abriu), o dela fora. */
+export function quartoVisivel(s: { visita: Visita | null; quarto: QuartoDoJogo }): QuartoDoJogo {
+  return s.visita ? (s.visita.quarto ?? QUARTO_DA_VISITA) : s.quarto
 }
 
 /** A horta que aparece. */

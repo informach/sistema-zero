@@ -43,6 +43,7 @@ import { ritmo } from '../sistemas/necessidades'
 import { comPatins, RAPIDEZ_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado } from '../sistemas/pausa'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
+import { falaDaSaida, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
 import {
   acharBracos,
@@ -370,7 +371,16 @@ export function Personagem() {
       avisouDaCorrenteza.current = true
       estado.dizer(AVISO_DA_CORRENTEZA)
     }
-    estado.definirAlvo(parado || v.modo !== 'chao' ? null : maisPerto(interativos, prox.x, prox.z))
+    // Na casa de um irmão (fase3-12) só se olha: nada do mundo oferece ação, e sair da ilha
+    // central termina a visita (lá fora o jogo é dela e volta a gravar).
+    if (estado.visita && !pedidos.teleporte && saiuDaVisita(prox.x, prox.z)) {
+      const nome = estado.visita.nome
+      estado.visitar(null)
+      estado.dizer(falaDaSaida(nome))
+    }
+    estado.definirAlvo(
+      parado || v.modo !== 'chao' || estado.visita ? null : maisPerto(interativos, prox.x, prox.z),
+    )
 
     if (usou && v.modo === 'chao' && !parado) {
       const alvo = estado.alvo

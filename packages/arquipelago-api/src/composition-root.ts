@@ -110,7 +110,12 @@ export function createApplication(env: Env): Application {
     desafios,
     familia,
     galeria,
-    visitas: new ServicoDasVisitas({ familia: repositorioDaFamilia, politica }),
+    visitas: new ServicoDasVisitas({
+      familia: repositorioDaFamilia,
+      politica,
+      membros,
+      logger,
+    }),
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,
