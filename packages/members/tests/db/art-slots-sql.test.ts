@@ -5,6 +5,7 @@ import { BlockAdminService } from '../../src/application/content-admin/content-a
 import { lessonArtSlotBlocks } from '../../src/domain/course/art-slot-course'
 import { ArtSlotConflictError } from '../../src/domain/course/course.errors'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
+import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import {
   createDbConnection,
   type DbConnection,
@@ -152,6 +153,37 @@ describe.skipIf(!testDatabaseUrl)('vagas de arte: a consulta SQL de verdade', ()
   test('curso sem vaga nenhuma não lê estrutura e devolve vazio', async () => {
     await inserir(aula1, desenho(), 0)
     expect(await content.listArtSlotBlocks(courseId)).toEqual([])
+  })
+
+  test('o desenho de cada vaga: Pinta de aula publicada, o primeiro do curso', async () => {
+    const courses = new DrizzleCourseRepository(conn.db)
+    const primeiro = await inserir(aula1, desenho({ name: 'minha-chave', replaces: 'chave' }), 2)
+    await inserir(aula2, desenho({ name: 'minha-chave' }), 0)
+    await inserir(aula1, desenho({ name: 'arquivada' }), 3, true)
+    const farol = await inserir(aula2, desenho({ name: 'meu-farol', replaces: 7 }), 1)
+    await inserir(aula1, desenho({ name: 'nao-pedida' }), 4)
+    await inserir(aulaDeOutroCurso, desenho({ name: 'do-outro' }), 0)
+    const aula3 = randomUUID()
+    await conn.sql.unsafe(
+      `insert into members.lessons (id, module_id, course_id, slug, title, sort_order, is_published)
+       values ($1, $2, $3, 'rascunho', 'Rascunho', 9, false)`,
+      [aula3, moduleId, courseId],
+    )
+    await inserir(aula3, desenho({ name: 'do-rascunho' }), 0)
+
+    const fillers = await courses.findArtSlotFillers(courseId, [
+      'minha-chave',
+      'meu-farol',
+      'arquivada',
+      'do-outro',
+      'do-rascunho',
+      'sem-desenho',
+    ])
+    expect(Object.fromEntries(fillers)).toEqual({
+      'minha-chave': { blockId: primeiro.id, replaces: 'chave' },
+      'meu-farol': { blockId: farol.id, replaces: null },
+    })
+    expect((await courses.findArtSlotFillers(courseId, [])).size).toBe(0)
   })
 
   test('duas criações concorrentes da mesma vaga: a trava do curso deixa passar uma só', async () => {

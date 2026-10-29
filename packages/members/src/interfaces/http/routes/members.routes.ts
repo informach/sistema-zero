@@ -28,6 +28,7 @@ import type { GetRankingLeaderboardService } from '../../../application/gamifica
 import type { RecordStudioActivityDayService } from '../../../application/gamification/record-studio-activity-day.service'
 import type { RecordStudioRemixService } from '../../../application/gamification/record-studio-remix.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
+import type { GetArtSlotsService } from '../../../application/get-art-slots/get-art-slots.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { RecordMaterialDownloadService } from '../../../application/get-attachment-download/record-material-download.service'
 import type { GetCertificateService } from '../../../application/get-certificate/get-certificate.service'
@@ -148,6 +149,7 @@ export interface MembersRoutesDeps {
   submitQuiz: SubmitQuizAttemptService
   submitStudio: SubmitStudioProjectService
   getStudioCarryover: GetStudioCarryoverService
+  getArtSlots: GetArtSlotsService
   openLessonStudio?: OpenLessonStudioService
   authorizeLessonRuntime?: AuthorizeLessonRuntimeService
   authorizeFreeRuntime?: AuthorizeFreeRuntimeService
@@ -1196,6 +1198,21 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
           return { asset: project }
         },
+        { params: StudioCarryoverParams },
+      )
+      // Os desenhos que o bloco de Estúdio importa (vagas de arte): para cada vaga, a última
+      // entrega do PRÓPRIO perfil no bloco de Pinta que a preenche. Lazy como o carryover:
+      // o member-shell chama ao montar o projeto do bloco.
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/art-slots',
+        async ({ headers, params }) =>
+          deps.getArtSlots.execute(
+            resolveUserId(headers),
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+          ),
         { params: StudioCarryoverParams },
       )
       // Payload AUTORITATIVO da vitrine (Mural): o BFF chama no clique "Publicar no

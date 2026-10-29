@@ -128,8 +128,8 @@ antes do Admin, do member-shell e dos apps.
    passa a importação de manifesto), em reordenar e excluir aula e módulo e no `BlockAdminService`,
    sob a trava da linha do curso (`withStudioAuthoringLock`). Teste SQL da consulta em
    `tests/db/art-slots-sql.test.ts`.
-3. **Members, leitura da aula.** `GET /members/lessons/:lessonId/blocks/:blockId/art-slots` →
-   `{ slots: { name, asset: PintaAsset | null }[] }` (`GetArtSlotsService`, acesso pela conta,
+3. **Members, leitura da aula.** ✅ (29/10/2026) `GET /members/lessons/:lessonId/blocks/:blockId/art-slots` →
+   `{ slots: { name, mode, replaces, asset: PintaAsset | null }[] }` (`GetArtSlotsService`, acesso pela conta,
    entrega pelo perfil, só blocos publicados). Rota no gateway. Teste de integração.
 4. **Studio, a origem `lesson-art`.** Asset com `source: 'lesson-art'` fora da impressão do conteúdo
    e do teto do projeto contado como os da biblioteca; o seletor mostra o desenho com o nome da

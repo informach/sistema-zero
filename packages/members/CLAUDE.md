@@ -35,7 +35,16 @@ que a gravação CRIOU, **409 `ART_SLOT_CONFLICT`** com a frase da régua (nomei
 - ⚠️ O falso de `withStudioAuthoringLock` agora é REENTRANTE (`AsyncLocalStorage`, como o `FOR
   UPDATE` na mesma transação) e DESFAZ módulos, aulas e blocos no erro (a conferência recusa depois
   de escrever). Testes: `tests/integration/art-slots-course.test.ts` e o SQL acima.
-- Ainda NÃO existe: a rota que entrega o desenho ao Estúdio e o Admin (etapas 3 a 6 do plano).
+
+**Etapa 3, a leitura da criança (29/10/2026).** `GET /members/lessons/:lessonId/blocks/:blockId/art-slots`
+(`GetArtSlotsService`, rota de gateway `members-art-slots`) → `{slots: [{name, mode, replaces, asset}]}`
+na ordem das vagas do bloco de Estúdio. Régua do carryover: aula publicada e liberada, bloco numa
+parte aberta, acesso pela CONTA e entrega pelo PERFIL (`getOne(userId, …)`, nunca de outra
+criança). O desenho de cada vaga vem do bloco de Pinta em aula PUBLICADA do curso que a preenche
+(`CourseRepository.findArtSlotFillers`, o primeiro em ordem de curso; `replaces` sai dele). Vaga sem
+desenho publicado ou sem entrega volta com `asset: null`; vagas ilegíveis valem como nenhuma; bloco
+que não é Estúdio é 404. Testes: `tests/integration/art-slots-read.test.ts` e o SQL em
+`tests/db/art-slots-sql.test.ts`.
 
 ## Leituras internas do Arquipélago (27/10/2026)
 

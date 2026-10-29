@@ -1104,6 +1104,31 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
    */
   lessonSections: (lessonId: string) => unknown = () => undefined
 
+  async findArtSlotFillers(courseId: string, names: readonly string[]) {
+    // Espelha a consulta Drizzle: Pinta de aula PUBLICADA do curso, o primeiro em ordem de curso.
+    const fillers = new Map<string, { blockId: string; replaces: string | null }>()
+    const moduleOrder = (moduleId: string) =>
+      this.modules.find((m) => m.id === moduleId)?.sortOrder ?? 0
+    const lessons = this.lessons
+      .filter((lesson) => lesson.courseId === courseId && lesson.isPublished)
+      .sort(
+        (a, b) => moduleOrder(a.moduleId) - moduleOrder(b.moduleId) || a.sortOrder - b.sortOrder,
+      )
+    for (const lesson of lessons)
+      for (const block of this.blocks
+        .filter((b) => b.lessonId === lesson.id && b.content.kind === 'pinta')
+        .sort((a, b) => a.sortOrder - b.sortOrder)) {
+        const slot = (block.content as { artSlot?: { name?: unknown; replaces?: unknown } }).artSlot
+        if (typeof slot?.name !== 'string' || !names.includes(slot.name)) continue
+        if (!fillers.has(slot.name))
+          fillers.set(slot.name, {
+            blockId: block.id,
+            replaces: typeof slot.replaces === 'string' ? slot.replaces : null,
+          })
+      }
+    return fillers
+  }
+
   async listArtSlotBlocks(courseId: string) {
     // Espelha `listArtSlotBlocks` (Drizzle) pelas mesmas funções de domínio.
     return this.lessons

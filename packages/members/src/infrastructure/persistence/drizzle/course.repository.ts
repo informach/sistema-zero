@@ -411,6 +411,39 @@ export class DrizzleCourseRepository implements CourseRepository {
     return row ? { blockId: row.blockId, lessonId: row.lessonId } : null
   }
 
+  async findArtSlotFillers(
+    courseId: string,
+    names: readonly string[],
+  ): Promise<Map<string, { blockId: string; replaces: string | null }>> {
+    const fillers = new Map<string, { blockId: string; replaces: string | null }>()
+    if (!names.length) return fillers
+    const slot = sql`${lessonBlocks.content}->'artSlot'`
+    const rows = await this.db
+      .select({
+        blockId: lessonBlocks.id,
+        name: sql<string>`${slot}->>'name'`,
+        replaces: sql<string | null>`case when jsonb_typeof(${slot}->'replaces') = 'string'
+          then ${slot}->>'replaces' end`,
+      })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'pinta'),
+          inArray(sql<string>`${slot}->>'name'`, [...names]),
+        ),
+      )
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
+    // A autoria recusa vaga repetida no curso; se uma sobrou de antes, vale a primeira.
+    for (const row of rows)
+      if (!fillers.has(row.name))
+        fillers.set(row.name, { blockId: row.blockId, replaces: row.replaces })
+    return fillers
+  }
+
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
     if (courseIds.length === 0) return new Map()
     const rows = await this.db
