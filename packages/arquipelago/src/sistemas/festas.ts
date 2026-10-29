@@ -3,7 +3,11 @@ import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
 export type Festa = 'carnaval' | 'junina' | 'lanternas' | 'fim-de-ano'
 /** Só as janelas aprovadas ligam o mundo. Propostas não são datas em vigor. */
 export const CALENDARIO_DAS_FESTAS = {
-  carnaval: { diasAntesDaPascoa: 47, motivo: 'Terça de Carnaval, sem ampliar a janela aprovada.' },
+  carnaval: {
+    diasAntesDaPascoa: 47,
+    diasAntesDaTerca: 3,
+    motivo: 'De sábado à terça de Carnaval (a dona aprovou em 29/10/2026).',
+  },
   junina: { de: '06-01', ate: '06-30', motivo: 'Junho inteiro, como definido na proposta.' },
   'fim-de-ano': {
     proposta: { de: '12-20', ate: '01-06' },
@@ -47,12 +51,19 @@ export function carnavalDoAno(ano: number): string {
   return data.toISOString().slice(0, 10)
 }
 
+/** O sábado em que o Carnaval começa (três dias antes da terça). */
+export function sabadoDeCarnaval(ano: number): string {
+  const data = new Date(`${carnavalDoAno(ano)}T12:00:00Z`)
+  data.setUTCDate(data.getUTCDate() - CALENDARIO_DAS_FESTAS.carnaval.diasAntesDaTerca)
+  return data.toISOString().slice(0, 10)
+}
+
 export function festaDoDia(data: Date): Festa | null {
   if (!Number.isFinite(data.getTime())) return null
   const dia = diaDeSaoPaulo(data),
     ano = Number(dia.slice(0, 4)),
     mesDia = dia.slice(5)
-  if (ano >= 1583 && dia === carnavalDoAno(ano)) return 'carnaval'
+  if (ano >= 1583 && dia >= sabadoDeCarnaval(ano) && dia <= carnavalDoAno(ano)) return 'carnaval'
   const junina = CALENDARIO_DAS_FESTAS.junina
   return mesDia >= junina.de && mesDia <= junina.ate ? 'junina' : null
 }

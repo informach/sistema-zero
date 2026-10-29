@@ -751,8 +751,8 @@ Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
 
 ## Festas da estação na Vila (fase2-10, 29/10/2026)
 
-`sistemas/festas.ts` concentra o calendário puro pelo dia de São Paulo. Carnaval é Páscoa
-menos 47 dias; Junina ocupa junho. Fim de ano tem proposta desativada de 20/12 a 06/01;
+`sistemas/festas.ts` concentra o calendário puro pelo dia de São Paulo. Carnaval vai do sábado à
+terça (Páscoa menos 47 dias, aprovado em 29/10/2026); Junina ocupa junho. Fim de ano tem proposta desativada de 20/12 a 06/01;
 Lanternas não tem data. As duas decisões pertencem à dona. Não ativar por inferência.
 `estado/festas.ts` relê a data a cada 30 segundos e ao voltar à aba. O override de QA
 fica em WeakMap da plataforma falsa, registrado só pelo playground, nunca pela URL de produção.

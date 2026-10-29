@@ -20,6 +20,7 @@ import {
   festaDoDia,
   lerFesta,
   pascoaDoAno,
+  sabadoDeCarnaval,
 } from '../src/sistemas/festas'
 import { ITENS } from '../src/sistemas/itens'
 import { comer } from '../src/sistemas/necessidades'
@@ -51,6 +52,16 @@ describe('calendário civil de São Paulo', () => {
       expect(pascoaDoAno(ano)).toBe(`${ano}-${pascoa}`)
       expect(carnavalDoAno(ano)).toBe(`${ano}-${carnaval}`)
       expect(festaDoDia(new Date(`${ano}-${carnaval}T12:00:00Z`))).toBe('carnaval')
+      // De sábado à terça: o sábado já é Carnaval, a sexta e a quarta de Cinzas não.
+      const dia = (d: number) => {
+        const t = new Date(`${ano}-${carnaval}T12:00:00Z`)
+        t.setUTCDate(t.getUTCDate() + d)
+        return t
+      }
+      expect(sabadoDeCarnaval(ano)).toBe(dia(-3).toISOString().slice(0, 10))
+      for (const d of [-3, -2, -1]) expect(festaDoDia(dia(d))).toBe('carnaval')
+      expect(festaDoDia(dia(-4))).toBeNull()
+      expect(festaDoDia(dia(1))).toBeNull()
     }
     expect(() => pascoaDoAno(1500)).toThrow()
     expect(() => pascoaDoAno(Number.NaN)).toThrow()

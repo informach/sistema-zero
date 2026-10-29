@@ -1689,7 +1689,7 @@ e receita; não acrescenta roupas nem prêmios de presença.
 O calendário usa o dia real de São Paulo, separado do relógio acelerado do jogo.
 `CALENDARIO_DAS_FESTAS` concentra as datas e seus motivos:
 
-- Carnaval: a terça-feira calculada 47 dias antes da Páscoa gregoriana. Sem ampliar a janela.
+- Carnaval: de sábado à terça-feira de Carnaval (a terça é 47 dias antes da Páscoa gregoriana; `sabadoDeCarnaval` volta três dias). Janela aprovada pela dona em 29/10/2026.
 - Festa Junina: de 1 a 30 de junho, inclusive.
 - Fim de ano: **proposta de 20/12 a 06/01, ainda desativada**. A dona precisa aprovar a janela.
 - Noite das Lanternas: **sem data e fora do calendário**, aguardando decisão da dona.
