@@ -3,9 +3,9 @@
  * uns 37 cm (escala 0,5): com 22 cm eles sumiam na areia vistos da câmera do jogo.
  */
 export const HABITANTES_DA_PRAIA = {
-  nico: { x: 0, z: 25, giro: Math.PI, escala: 1, raio: 0.43, altura: 1.15, fase: 0 },
-  estrelinha: { x: 2, z: 25, giro: Math.PI, escala: 0.5, raio: 0.09, altura: 0.36, fase: 0.25 },
-  buzio: { x: 3, z: 26, giro: Math.PI, escala: 0.5, raio: 0.16, altura: 0.36, fase: 1.1 },
+  nico: { x: 0, z: 25, giro: Math.PI, escala: 1, raio: 0.43, altura: 1.15 },
+  estrelinha: { x: 2, z: 25, giro: Math.PI, escala: 0.5, raio: 0.09, altura: 0.36 },
+  buzio: { x: 3, z: 26, giro: Math.PI, escala: 0.5, raio: 0.16, altura: 0.36 },
 } as const
 
 export type HabitanteDaPraia = keyof typeof HABITANTES_DA_PRAIA

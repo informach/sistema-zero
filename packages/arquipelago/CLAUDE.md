@@ -1,5 +1,35 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Ajustes da arte aj-ligar-02 a 09 (29/10/2026)
+
+- `sistemas/ajustes-da-arte.ts`: fase FNV-1a por id e clipe, patins +0,085 m só no desenho,
+  voo (borboleta 1,6 m, bem-te-vi 2,8 m, pássaro das Nuvens 3,2 m) e pelo menos 0,6 m acima
+  do topo de obstáculos informado pelo chamador. A rota futura deve fornecer esse topo por ponto.
+- `mundo/arte-animada.ts`: cópia de esqueleto e morfos, materiais noturnos próprios e descarte.
+  `luz`, `perolaLuz`, `cristalLuz` e os quatro papéis das lanternas ficam sem emissão de dia
+  e recuperam a força original à noite. Seguem `ambiente.noite`, como a casa e o lampião.
+  `IlhaCompleta` também prepara essas luzes, inclusive materiais transparentes, para o Recife futuro.
+- `useCopiaAnimada` configura `virar`, `abrir`, `abrir-interna` e `estourar` como LoopOnce com
+  clampWhenFinished, além dos clipes de uma vez explícitos de cada personagem. `trocarClipe`
+  exige id estável; só laços recebem fase, ações únicas sempre começam no primeiro quadro.
+  Capi, Nico, Lumis da praia, bichos do Bosque e adotado usam a regra. Não usar a ordem da lista como id.
+- `PecaDaArte` mantém âncora/giro fora da raiz do mixer, para o barco balançar sem sair da posição.
+  Sua fala tem id e texto; Íris move B/C/D em todas as três submalhas da cabeça, a 12 letras/s,
+  peso até 0,8, sem mexer no smile. Pausa congela o tempo, pontuação e fim fecham a boca.
+  O id permite recomeçar uma fala de texto igual. A pausa usa o mixer e preserva clipes terminados.
+- `CapsulaDoPinguim` deve ficar dentro do corpo do pinguim, fora da escala do desenho. Adulto:
+  raio 0,13 m, meia altura 0,11 m em pé e 0,12 m deitado; centro y 0,24/0,14 m, z 0/0,24 m,
+  giro X 0/90 graus. Filhote usa 60% das medidas. Só uma cápsula existe por vez.
+- `AvatarDoJogo comPatins` eleva o desenho, sem mudar a cápsula do jogador. Ainda não há sistema
+  de calçar ou movimentar com patins. A sala mostra o par ao lado para conferir as rodas; não
+  simula que já foi vestido no avatar.
+- `/arte` no playground exercita os componentes e os GLBs reais. Ainda não há Recife/Pico/Nuvens,
+  Íris, pássaros, pinguins, baús animados ou festas montados no mundo. A implementação dessas
+  mecânicas deve consumir estes componentes, sem copiar regras. Lumis da praia já acendem no jogo.
+- Testes: `tests/ajustes-da-arte.test.ts`; navegador: compilar `playground/verificar-arte-browser.ts`
+  para Node com `bun build --target=node --external playwright-core`. Provas e prints em
+  `docs/qa/2026-10-29-arquipelago-ajustes-arte.md`. Nenhum Blender ou GLB foi alterado.
+
 O jogo 3D **Arquipélago Vagalume** no navegador (React Three Fiber, Rapier, zustand). Proposta e
 decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e `docs/arquipelago.md`.
 

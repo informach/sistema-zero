@@ -349,7 +349,7 @@ function BichoDoEsconde({
     g.visible = aparecer.current > 0.01
 
     if (quer !== tocando.current) {
-      trocarClipe(actions, tocando.current, quer)
+      trocarClipe(actions, tocando.current, quer, 0.25, `bosque-${bicho}`)
       tocando.current = quer
     }
     olhosNoInstante(olhos, agora, piscarEm, quer === 'feliz')

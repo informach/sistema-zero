@@ -35,6 +35,11 @@ Bun.serve({
   port: PORTA,
   async fetch(req) {
     const { pathname } = new URL(req.url)
+    if (pathname === '/arte.js') return compilar('arte.tsx')
+    if (pathname === '/arte')
+      return new Response(pagina('Arquipélago · conferência da arte', '/arte.js'), {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
     if (pathname === '/jogo.js') return compilar('playground.tsx')
     if (pathname === '/animacoes.js') return compilar('animacoes.tsx')
     if (pathname === '/animacoes')

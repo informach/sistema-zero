@@ -23,6 +23,7 @@ import {
   opacidadeAlvo,
   proximoEstadoDaIlha,
 } from '../sistemas/ilhas-completas'
+import { iluminarArte, prepararLuzesNoturnas } from './arte-animada'
 import { buscarIlha, reterIlha, soltarIlha } from './carregar-ilha'
 import {
   bordaQueCabe,
@@ -72,6 +73,7 @@ export const ILHAS_COMPLETAS: Partial<Record<IlhaId, IlhaCompletaInfo>> = {
 
 /** O que fica pronto antes de a ilha aparecer: o desenho já girado (e com a tinta) e os colisores. */
 export interface IlhaPreparada {
+  luzesNoturnas: ReturnType<typeof prepararLuzesNoturnas>
   modelo: Object3D
   colisores: ColisorDaIlha[]
   /** Os materiais opacos de tudo (as peças que esmaecem têm, além deles, cópias transparentes). */
@@ -117,6 +119,7 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
       : null
   const vegetacao = prepararVegetacao([...materiais, ...copas.flatMap((c) => c.suaves)])
   const preparada = {
+    luzesNoturnas: prepararLuzesNoturnas([...materiais, ...copas.flatMap((c) => c.suaves)]),
     vegetacao,
     pontes,
     modelo: cena,
@@ -370,11 +373,12 @@ export function IlhaCompleta({
   colide: boolean
   troca: Troca
 }) {
-  const { rastro } = useJogo()
+  const { rastro, ambiente } = useJogo()
   const camera = useThree((s) => s.camera)
   const aplicada = useRef(-1)
   const pontos = useRef(Array.from({ length: 6 }, () => new Vector3()))
   useFrame((_, dt) => {
+    iluminarArte(preparada.luzesNoturnas, ambiente.noite)
     if (troca.opacidade !== aplicada.current) {
       aplicada.current = troca.opacidade
       aplicarOpacidade(preparada.materiais, troca.opacidade)

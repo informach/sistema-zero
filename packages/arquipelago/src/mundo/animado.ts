@@ -1,15 +1,10 @@
 import { useAnimations, useGLTF } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { type RefObject, useEffect, useMemo } from 'react'
-import {
-  type AnimationAction,
-  type AnimationMixer,
-  type Group,
-  LoopOnce,
-  type Mesh,
-  type Object3D,
-} from 'three'
-import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import type { AnimationAction, AnimationMixer, Group, Mesh, Object3D } from 'three'
+import { useJogo } from '../estado/contexto'
+import { configurarAcao, copiarArteAnimada, iluminarArte, iniciarClipe } from './arte-animada'
 
 /**
  * Uma cópia animada de um personagem ou bicho do Blender (com esqueleto: `SkeletonUtils.clone`,
@@ -20,6 +15,7 @@ export function useCopiaAnimada(
   url: string,
   raiz: RefObject<Group | null>,
   umaVez: readonly string[],
+  pausado = false,
 ): {
   cena: Object3D
   actions: Record<string, AnimationAction | null>
@@ -29,27 +25,26 @@ export function useCopiaAnimada(
 } {
   const gltf = useGLTF(url, false, false)
   const reduzido = useReducedMotion()
-  const { cena, olhos } = useMemo(() => {
-    const cena = clone(gltf.scene)
+  const { ambiente } = useJogo()
+  const copia = useMemo(() => copiarArteAnimada(gltf.scene), [gltf.scene])
+  const { cena } = copia
+  const olhos = useMemo(() => {
     let olhos: Mesh | null = null
     cena.traverse((o) => {
       const m = o as Mesh
       if (m.isMesh && o.name.endsWith('-olhos') && m.morphTargetDictionary) olhos = m
     })
-    return { cena, olhos: olhos as Mesh | null }
-  }, [gltf.scene])
+    return olhos as Mesh | null
+  }, [cena])
+  useEffect(() => () => copia.soltar(), [copia])
+  useFrame(() => iluminarArte(copia.luzes, ambiente.noite))
   const { actions, mixer } = useAnimations(gltf.animations, raiz)
   useEffect(() => {
-    for (const nome of umaVez) {
-      const a = actions[nome]
-      if (!a) continue
-      a.setLoop(LoopOnce, 1)
-      a.clampWhenFinished = true
-    }
+    for (const acao of Object.values(actions)) if (acao) configurarAcao(acao, umaVez)
   }, [actions, umaVez])
   useEffect(() => {
-    mixer.timeScale = reduzido ? 0.5 : 1
-  }, [mixer, reduzido])
+    mixer.timeScale = pausado ? 0 : reduzido ? 0.5 : 1
+  }, [mixer, reduzido, pausado])
   return { cena, actions, mixer, olhos }
 }
 
@@ -58,11 +53,12 @@ export function trocarClipe(
   actions: Record<string, AnimationAction | null>,
   de: string | null,
   para: string,
-  mistura = 0.25,
+  mistura: number,
+  id: string,
 ): void {
   const novo = actions[para]
   const velho = de && de !== para ? actions[de] : null
-  novo?.reset().fadeIn(mistura).play()
+  if (novo) iniciarClipe(novo, id, mistura)
   velho?.fadeOut(mistura)
 }
 

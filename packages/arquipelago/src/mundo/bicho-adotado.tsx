@@ -213,13 +213,13 @@ function CorpoDoBicho({
     if (r.n !== reacaoVista.current) {
       reacaoVista.current = r.n
       reacaoAte.current = agora + duracaoDoClipe(actions, mixer, r.tipo)
-      trocarClipe(actions, tocando.current, r.tipo)
+      trocarClipe(actions, tocando.current, r.tipo, 0.25, `adotado-${id}`)
       tocando.current = r.tipo
     }
     if (agora < reacaoAte.current && tocando.current) quer = tocando.current
     else if (cuidando && quer === 'sentar') quer = 'parado'
     if (quer !== tocando.current) {
-      trocarClipe(actions, tocando.current, quer)
+      trocarClipe(actions, tocando.current, quer, 0.25, `adotado-${id}`)
       tocando.current = quer
     }
     olhosNoInstante(olhos, agora, piscarEm, quer === 'feliz')

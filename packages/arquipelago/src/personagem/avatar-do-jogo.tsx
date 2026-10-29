@@ -6,6 +6,7 @@ import { type RefObject, Suspense, useCallback, useMemo, useRef, useState } from
 import { type AnimationAction, type Group, LoopOnce, LoopRepeat, Vector3 } from 'three'
 import locomocaoGlb from '../assets/avatar/locomocao.glb'
 import { useEstado } from '../estado/contexto'
+import { ELEVACAO_DOS_PATINS } from '../sistemas/ajustes-da-arte'
 import {
   CLIPES,
   type Clipe,
@@ -31,10 +32,13 @@ const UMA_VEZ: readonly Clipe[] = ['Pulo', 'Aterrissagem', 'SubirBorda']
 export function AvatarDoJogo({
   movimento,
   depoisDaPose,
+  comPatins = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** Mexe nos ossos depois da pose de cada quadro (os braços para cima no cipó e no tronco). */
   depoisDaPose?: () => void
+  /** Só o desenho sobe. Equipar patins não altera o corpo do Rapier do personagem. */
+  comPatins?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
@@ -87,7 +91,11 @@ export function AvatarDoJogo({
   })
 
   return (
-    <group visible={emPe}>
+    <group
+      name="avatar-visual"
+      visible={emPe}
+      position={[0, comPatins ? ELEVACAO_DOS_PATINS : 0, 0]}
+    >
       <Suspense fallback={null}>
         <AvatarComClipes
           slots={slots}

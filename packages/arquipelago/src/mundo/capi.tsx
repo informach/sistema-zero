@@ -169,7 +169,8 @@ function ModeloDaCapi({ lugar }: { lugar: { x: number; z: number } }) {
     } else {
       quer = conversando && c.tela === 'falas' ? 'falar' : 'parado'
     }
-    if (quer !== tocando.current || pedido) trocarClipe(actions, tocando.current, quer)
+    if (quer !== tocando.current || pedido)
+      trocarClipe(actions, tocando.current, quer, 0.25, 'capi')
     tocando.current = quer
 
     // Os olhos: piscar de vez em quando; feliz (fechadinhos) enquanto comemora.

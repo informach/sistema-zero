@@ -9,6 +9,7 @@ import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
 import { folhasAgora } from './folhas-ao-vento'
 import { mecanismosAgora } from './mecanismos'
+import { materiaisDe } from './modelos'
 import { reativosAgora } from './objetos-reativos'
 import { ondasAgora } from './ondinhas'
 import { pontesAgora } from './pontes-vivas'
@@ -27,6 +28,7 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  luzesDosLumis: Record<string, number[]>
   qualidade: NivelDeQualidade
   metaDeQuadros: 30 | 60
   dpr: number
@@ -125,6 +127,12 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      luzesDosLumis: Object.fromEntries(
+        ['estrelinha', 'buzio'].map((id) => {
+          const objeto = cena.getObjectByName(`habitante-${id}`)
+          return [id, objeto ? materiaisDe(objeto, 'luz').map((m) => m.emissiveIntensity) : []]
+        }),
+      ),
       qualidade: qualidade.nivel,
       metaDeQuadros: qualidade.meta,
       dpr: gl.getPixelRatio(),

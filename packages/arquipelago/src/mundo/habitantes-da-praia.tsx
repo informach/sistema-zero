@@ -60,11 +60,8 @@ function Habitante({ nome }: { nome: HabitanteDaPraia }) {
   const olhar = useRef<number>(lugar.giro)
 
   useEffect(() => {
-    trocarClipe(actions, null, 'parado', 0)
-    // Os Lumis já piscam no clipe. Fases diferentes evitam movimentos sincronizados.
-    const parado = actions.parado
-    if (parado) parado.time = lugar.fase
-  }, [actions, lugar.fase])
+    trocarClipe(actions, null, 'parado', 0, nome)
+  }, [actions, nome])
 
   useEffect(() => {
     for (const acao of Object.values(actions)) if (acao) acao.paused = pausado
@@ -80,7 +77,7 @@ function Habitante({ nome }: { nome: HabitanteDaPraia }) {
       false,
     )
     if (quer !== tocando.current) {
-      trocarClipe(actions, tocando.current, quer)
+      trocarClipe(actions, tocando.current, quer, 0.25, nome)
       tocando.current = quer
     }
     // Vira para a criança que chega perto, como a Capi.
