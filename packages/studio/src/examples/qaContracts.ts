@@ -1622,9 +1622,9 @@ export const EXAMPLE_QA_CONTRACTS = [
     name: 'Mapa do Pinta e duas fases',
     experience: 'demo',
     promise:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
     scenario:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
     interactions: ['arrows', 'space'],
   },
   {

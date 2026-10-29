@@ -220,6 +220,37 @@ SZGame2D.gameLoop(() => { if (SZGame2D.keyDown('${key}')) { SZGame2D.clear(); } 
     expect(game.errors).toEqual([])
   })
 
+  it('a moeda da segunda fase é coletada no encontro e volta ao reiniciar a fase', () => {
+    const game = exampleHarness(recipe('Mapa do Pinta e duas fases'))
+    const hero = game.sprites[0]
+    const coins = game.groups[1]
+    if (!hero || !coins) throw new Error('Personagem ou grupo ausente')
+    expect(game.api.countGroup(coins)).toBe(0)
+    game.fireKey('n')
+    game.fireKey('n', 'keyup')
+    game.nextFrame()
+    expect(game.api.countGroup(coins)).toBe(1)
+    const collect = () => {
+      const coin = coins.items[0]
+      if (!coin) throw new Error('Moeda ausente')
+      hero.x = coin.x
+      hero.y = coin.y
+      hero.vx = 0
+      hero.vy = 0
+      game.nextFrame()
+      expect(game.api.countGroup(coins)).toBe(0)
+      for (let frame = 0; frame < 5; frame++) game.nextFrame()
+      expect(game.api.countGroup(coins)).toBe(0)
+    }
+    collect()
+    game.fireKey('r')
+    game.fireKey('r', 'keyup')
+    game.nextFrame()
+    expect(game.api.countGroup(coins)).toBe(1)
+    collect()
+    expect(game.errors).toEqual([])
+  })
+
   it('a pista termina com o percurso avançando e mantém desenho após trocar a vista', () => {
     const game = exampleHarness(recipe('Pista do meu desenho'), () => 0.5, { contarCtx: true })
     game.fireKey('Enter')

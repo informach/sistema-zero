@@ -280,8 +280,16 @@ SZGame2D.gameLoop(function () {
   {
     name: 'Mapa do Pinta e duas fases',
     description:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
-    concepts: ['mapa do Pinta', 'mapa vetorial', 'Mundo', 'Fase', 'câmera', 'reinício'],
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+    concepts: [
+      'mapa do Pinta',
+      'mapa vetorial',
+      'Mundo',
+      'Fase',
+      'câmera',
+      'reinício',
+      'encontro com grupo',
+    ],
     assets: [mapAsset],
     interactions: ['arrows', 'space'],
     source: `
@@ -304,6 +312,7 @@ const fase2 = SZGame2D.createLevel(mundo2, 40, 190);
 const moedas = SZGame2D.createGroup();
 SZGame2D.resetGroupWithLevel(fase2, moedas); SZGame2D.setGravity(0.4);
 SZGame2D.onLevelEnter(() => fase2, function () { SZGame2D.spawn(moedas, {x:400,y:220,w:20,h:20,color:'#ffce63'}); });
+SZGame2D.onTouchGroup(() => heroi, () => moedas, function (moeda) { SZGame2D.removeFromGroup(moedas, moeda); });
 SZGame2D.enterLevel(fase, heroi);
 SZGame2D.onKey('n', function () { if (SZGame2D.levelIsActive(fase)) { SZGame2D.enterLevel(fase2, heroi); } else { SZGame2D.enterLevel(fase, heroi); } });
 SZGame2D.onKey('r', function () { if (SZGame2D.levelIsActive(fase)) { SZGame2D.restartLevel(fase, heroi); } else { SZGame2D.restartLevel(fase2, heroi); } });
