@@ -92,6 +92,12 @@ const CONCURRENCY = 3
 const has3dNavigation = objectives.some(({ rule }) =>
   rule.steps?.some((step) => step.action === 'approachObject3d'),
 )
+// Todo jogo 3D clássico renderiza por software, com ou sem a navegação: objetivos que só
+// apertam teclas também abriam três mundos juntos e nenhum ficava pronto (quadros acima de
+// 400 ms na espera dos modelos, num executor de 4 núcleos).
+const renders3d =
+  has3dNavigation ||
+  (mode === 'classic' && resources.get('/index.html').bytes.includes('SZGame3D'))
 
 let browser
 const observations = []
@@ -106,7 +112,7 @@ try {
   // O Chromium da imagem usa renderização 3D por software. Três mundos simultâneos
   // atrasam tanto os quadros e as entradas que a navegação oscila e vence o prazo.
   // Estes projetos compartilham uma vaga de renderização, mantendo o orçamento existente.
-  const concurrency = has3dNavigation ? 1 : CONCURRENCY
+  const concurrency = renders3d ? 1 : CONCURRENCY
   await Promise.all(
     Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
       for (;;) {
@@ -138,7 +144,7 @@ async function runObjective(objective, index) {
     viewport: { width: 1024, height: 640 },
     // Keep CSS geometry, camera and keyboard behavior; rasterize fewer pixels
     // for software WebGL. No learner state or game timing is modified.
-    deviceScaleFactor: has3dNavigation ? 0.5 : 1,
+    deviceScaleFactor: renders3d ? 0.5 : 1,
     acceptDownloads: false,
     serviceWorkers: 'block',
   })
