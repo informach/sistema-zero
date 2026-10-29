@@ -26,11 +26,28 @@ Data: 29/10/2026. Escopo autorizado: jogo, contrato e porta da plataforma.
 - [x] Porta e testes: acesso disponível com viewer correto, download privado, id correspondente, exportação, aborto e recusas. Sem leitura de galeria de terceiros nem gravações.
 - [x] Jogo e testes: carregador privado, encaixe, orientação, pintura, reserva, descarte, retorno da oficina e visitas.
 - [x] Plataforma falsa e navegador: exemplos reaproveitados, falha e ausência; computador e celular, troca e retorno, prints.
-- [ ] Documentação, revisão completa, testes dos pacotes, typechecks, Biome, commit e envio com rebase.
+- [x] Documentação, revisão completa, testes dos pacotes, typechecks e Biome. Commits e envio pelo staging com rebase.
 
 ## Pedidos de arte
 
 Não impedem o Molda nem a pintura dos dois modelos já preparados. Para liberar também o Pinta nos demais objetos, faltam faces planas com UV de 0 a 1 nos modelos forno, aquário, lareira, banda, museu, casinha e planta-interior. Definir no Blender quais superfícies fazem sentido em cada objeto e informar suas medidas para o catálogo; nomes previstos: `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir`, `pintaTopo`, somente onde houver superfície adequada. Não colocar um plano sobre folhas, vidros ou instrumentos apenas para completar a lista. Nenhum GLB ou gerador será alterado nesta tarefa.
+
+Pedido reunido para a sessão do Blender, sem modelo novo:
+
+| Modelo | Superfícies a preparar, se forem adequadas no modelo atual | Motivo |
+| --- | --- | --- |
+| Forno | Frente exterior da porta, laterais e topo da caixa | Personalizar a carcaça sem cobrir o interior |
+| Aquário | Base e moldura exterior | Preservar o vidro e a visão dos peixes |
+| Lareira | Moldura exterior, laterais e topo | Preservar a abertura e o fogo |
+| Banda | Superfícies planas dos corpos ou da base já existente | Evitar projetar a mesma imagem sobre instrumentos de formas distintas |
+| Museu | Frente e laterais da base de exposição | Preservar os fósseis e as peças expostas |
+| Casinha | Paredes exteriores, com a frente em +z | Preservar a abertura por onde o bicho entra |
+| Planta de interior | Somente o vaso | Preservar as folhas e o volume da planta |
+
+Para cada superfície aprovada, informar largura e altura reais no referencial do objeto e usar
+material ou nó `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir` ou `pintaTopo`, conforme o lado.
+UV com u para a direita e v para cima, vista de fora. Sem superfície adequada, manter o molde
+sem essa face. O catálogo só deve declarar as faces efetivamente entregues e medidas.
 
 ## Revisão e evidências
 

@@ -1,0 +1,52 @@
+[
+  {
+    "aparelho": "computador",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "medicao": {
+      "ativas": 1,
+      "carregadas": 5,
+      "liberadas": 4,
+      "molda": 4,
+      "pinta": 1
+    },
+    "erros": [],
+    "casos": [
+      "colocar",
+      "Molda",
+      "Pinta",
+      "trocar",
+      "mesmo id",
+      "galeria",
+      "falha",
+      "sem método"
+    ]
+  },
+  {
+    "aparelho": "celular",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "medicao": {
+      "ativas": 1,
+      "carregadas": 5,
+      "liberadas": 4,
+      "molda": 4,
+      "pinta": 1
+    },
+    "erros": [],
+    "casos": [
+      "colocar",
+      "Molda",
+      "Pinta",
+      "trocar",
+      "mesmo id",
+      "galeria",
+      "falha",
+      "sem método"
+    ]
+  }
+]

@@ -1507,6 +1507,34 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
       faces no Pinta, Estúdio não abre objeto); `?objetos=sem-acesso` no playground simula a
       ferramenta não liberada.
 
+#### A criação aparece no objeto (29/10/2026)
+
+- A plataforma lê a própria criação pelo download privado da conta, com a sessão do documento e
+  a identidade do perfil. O jogo recebe apenas bytes pelo método opcional `lerAparencia`, sem
+  importar Pinta, Molda ou rotas. Contrato da plataforma continua na versão 1; nenhum campo foi
+  acrescentado ao salvamento.
+- Molda: o exportador existente produz GLB estático com o atlas PNG embutido. O jogo usa a mesma
+  escala da caixa da oficina (16 unidades por célula, maior lado limitado a 30). A criação fica
+  apoiada no chão e centralizada, com frente +z; se ultrapassar a caixa, encolhe inteira, sem
+  deformar. Uma criação pequena não cresce artificialmente para preencher o molde.
+- Pinta: o PNG composto é a planificação inteira. As quatro faces da geladeira e a tela do
+  fliperama recebem seus recortes com a orientação das UVs da arte. Se existir capa de minijogo,
+  ela continua aparecendo na tela do fliperama. Os outros objetos mantêm o Pinta desligado até
+  terem faces adequadas no Blender; a lista completa está no plano desta implementação.
+- Tetos técnicos propostos e validados no contrato: GLB de até 2 MiB e 5.000 triângulos, atlas de
+  até 512 por 512; pintura PNG de até 256 KiB e lado máximo 192, com dimensões iguais às da
+  planificação. GLB com recursos externos, animações, extensões ou geometria inconsistente não
+  entra. O molde atual usa modelo clássico; documento de versão futura mantém a reserva.
+- Enquanto lê, se falhar ou se a página não oferecer o método, permanece o modelo do catálogo.
+  A colisão e a função continuam sendo as do objeto. O histórico usado no aconchego não muda.
+  Ao voltar da oficina, a leitura se renova mesmo quando a criação mantém o mesmo id.
+- Cada objeto tem seus recursos próprios. Trocar ou desmontar aborta a leitura e solta malhas,
+  materiais, texturas e imagens decodificadas, inclusive as que chegam depois do cancelamento.
+  Na casa de outra pessoa aparece o modelo do catálogo: a visita não autoriza ler criações dela.
+- Playground: `?aparencias=pronto|falha|sem-metodo`; a oficina de teste reutiliza a planta de interior existente
+  como GLB de exemplo e uma planificação com faces coloridas. Verificador:
+  `playground/verificar-aparencias-browser.ts`; evidências em `docs/qa/2026-10-29-molda-no-mundo/`.
+
 ### 6.16.1 Aconchego dos cômodos (fase1-15)
 
 Regra pura `sistemas/construcao/aconchego.ts`, calculada pela planta da obra da casa ou cabana.

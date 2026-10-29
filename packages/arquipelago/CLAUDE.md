@@ -348,7 +348,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `recadoDaFerramentaFechada`, e a plataforma de mentira responde com as mesmas recusas
   (`objetos: 'sem-acesso'`, `?objetos=sem-acesso` no playground).
 - `mundo/objetos-da-casa.tsx`: os objetos postos (holograma do Blender ou azul no código; com
-  aparência, o modelo), o "Abrir" e `GanharProjetos` (montado pela `Casa`). Painel:
+  aparência, o modelo ou a criação lida pela plataforma), o "Abrir" e `GanharProjetos` (montado pela `Casa`). Painel:
   `interface/projeto-azul.tsx` (`painelAberto` = `objeto:<id>`). Testes: `tests/construcao.test.ts` (inclusive o lote contra
   `alturaDaIlha` e contra todos os colisores que caem nele).
 - `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
@@ -390,8 +390,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   conta o "feito por você" pelas `aparencias` (comprar nunca tira esse ponto).
 - Quem diz o que foi pago e o saldo é SEMPRE o serviço; o salvamento com uma da galeria não paga é
   recusado lá. A plataforma de mentira tem a mesma régua (`plataforma/galeria-falsa.ts`;
-  `?moedas=` e `?galeria=fora-do-ar` no playground). Hoje toda aparência mostra o modelo do
-  objeto; variação da galeria pede o arquivo e a escolha pelo `modelo` em
+  `?moedas=` e `?galeria=fora-do-ar` no playground). Aparências próprias usam `carregar-aparencia.ts`; variação da galeria pede o arquivo e a escolha pelo `modelo` em
   `mundo/objetos-da-casa.tsx`.
 - Testes: `tests/galeria.test.ts` e o caso da galeria em `tests/aconchego.test.ts`. Regras e
   textos: `docs/arquipelago-regras.md` §6.16 e §9.9.
@@ -1108,3 +1107,16 @@ Regras e números em `docs/arquipelago-regras.md`, seção da fase4-02. Filhote 
   navegador: `playground/verificar-recife-browser.ts`. Os pedidos de arte (as âncoras e os corais
   desbotados de verdade) foram feitos na conferência; o plano é
   `docs/plans/2026-10-29-arquipelago-recife-corais-aquario-mapa.md`.
+
+## Aparências autorais no mundo (29/10/2026)
+
+`mundo/carregar-aparencia.ts` lê `plataforma.lerAparencia?`, valida bytes pelo contrato e mantém
+recursos privados de cada objeto. Molda encaixa na caixa sem inverter +z; Pinta recorta
+`planificacaoDoMolde` nas faces preparadas. Nunca transformar malha autoral em colisor.
+A reserva permanece durante leitura, falha, excesso ou página antiga. Mudança de id, retorno da
+oficina (inclusive mesmo id), visita e desmontagem cancelam e liberam recursos, inclusive tardios.
+Não usar `useGLTF` para estas criações nem descartar geometrias/texturas do catálogo na pintura.
+Visitas não leem criação alheia. A capa do fliperama prevalece na tela; a animação do aquário do
+catálogo continua quando esse modelo aparece. Testes: `aparencias.test.ts`; verificador:
+`playground/verificar-aparencias-browser.ts`. Plano e pedidos de faces de arte:
+`docs/plans/2026-10-29-arquipelago-molda-no-mundo.md`. Regras e tetos em §6.16.

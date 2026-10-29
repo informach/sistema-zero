@@ -1,12 +1,13 @@
 import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import {
+  type AparenciaDoObjeto,
   CATALOGO_DE_OBJETOS,
   type ObjetoDaCasa,
   type Obra,
 } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
-import { memo, useEffect, useMemo } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import {
   AdditiveBlending,
   AnimationMixer,
@@ -40,6 +41,11 @@ import {
 } from '../sistemas/construcao/projeto-azul'
 import { PEIXES_DO_AQUARIO, peixesVisiveis } from '../sistemas/corais-do-recife'
 import { jogoPausado } from '../sistemas/pausa'
+import {
+  type AparenciaNoMundo,
+  carregarAparencia,
+  trocarMaterialDaFace,
+} from './carregar-aparencia'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
@@ -80,12 +86,21 @@ const AZUL = new Color('#5fb8ff')
 /**
  * Um objeto em projeto azul: o holograma do Blender (a luz soma: `AdditiveBlending`, sem
  * `depthWrite`, como a bancada) ou, sem ele, o modelo com todos os materiais trocados por um azul
- * translúcido. Com aparência, o modelo de verdade.
+ * translúcido. Com aparência própria, carrega a criação e mantém o modelo como reserva.
  */
-function ModeloDoObjeto({ id, completo }: { id: ObjetoDaCasa; completo: boolean }) {
+function ModeloDoObjeto({
+  id,
+  completo,
+  aparencia,
+}: {
+  id: ObjetoDaCasa
+  completo: boolean
+  aparencia: AparenciaDoObjeto | null
+}) {
   const { loja, plataforma } = useJogo()
   const fonte = lojaDosMinijogos(loja, plataforma)
   const capa = useMinijogos(fonte, (s) => s.lista[0]?.capa ?? null)
+  const visita = useEstado((s) => s.visita !== null)
   const url = completo ? MODELO_DO_OBJETO[id] : (HOLOGRAMA_DO_OBJETO[id] ?? MODELO_DO_OBJETO[id])
   const raiz = useModelo(url)
   const { copia, materiaisProprios } = useMemo(() => {
@@ -129,30 +144,66 @@ function ModeloDoObjeto({ id, completo }: { id: ObjetoDaCasa; completo: boolean 
     })
     return { copia: c, materiaisProprios }
   }, [raiz, id, completo])
+  const oficinaAberta = useEstado((s) => s.ferramentaAberta)
+  const [leitura, definirLeitura] = useState<{
+    recurso: AparenciaNoMundo
+    id: string
+    modelo: Object3D
+    porta: typeof plataforma
+  } | null>(null)
+  const criacaoId = aparencia?.origem === 'galeria' ? null : aparencia?.id
+  // Na troca, o render já retira a criação anterior antes do efeito liberar seus recursos.
+  const criada =
+    !oficinaAberta &&
+    leitura?.id === criacaoId &&
+    leitura?.modelo === copia &&
+    leitura?.porta === plataforma
+      ? leitura.recurso
+      : null
   useEffect(() => {
-    if (id !== 'fliperama' || !capa) return
+    const controle = new AbortController()
+    let recurso: AparenciaNoMundo | null = null
+    definirLeitura(null)
+    if (!oficinaAberta && criacaoId && plataforma.lerAparencia) {
+      void carregarAparencia(
+        plataforma.lerAparencia.bind(plataforma),
+        criacaoId,
+        CATALOGO_DE_OBJETOS[id].molde,
+        copia,
+        controle.signal,
+      ).then((r) => {
+        if (controle.signal.aborted) r?.liberar()
+        else {
+          recurso = r
+          definirLeitura(r ? { recurso: r, id: criacaoId, modelo: copia, porta: plataforma } : null)
+        }
+      })
+    }
+    return () => {
+      controle.abort()
+      recurso?.liberar()
+    }
+  }, [criacaoId, copia, id, plataforma, oficinaAberta])
+  const desenho = criada?.raiz ?? copia
+  useEffect(() => {
+    if (id !== 'fliperama' || !capa || visita) return
     let vivo = true
-    const anteriores: { malha: Mesh; material: Material | Material[] }[] = []
+    let restaurar = () => {}
     const material = new MeshBasicMaterial({ toneMapped: false })
     const textura = new TextureLoader().load(capa, (t) => {
       if (!vivo) return
       t.colorSpace = SRGBColorSpace
       material.map = t
       material.needsUpdate = true
-      copia.getObjectByName('tela')?.traverse((o) => {
-        const m = o as Mesh
-        if (!m.isMesh) return
-        anteriores.push({ malha: m, material: m.material })
-        m.material = material
-      })
+      restaurar = trocarMaterialDaFace(desenho, 'tela', material)
     })
     return () => {
       vivo = false
-      for (const a of anteriores) a.malha.material = a.material
+      restaurar()
       textura.dispose()
       material.dispose()
     }
-  }, [copia, capa, id])
+  }, [desenho, capa, id, visita])
   useEffect(
     () => () => {
       for (const material of materiaisProprios) material.dispose()
@@ -165,8 +216,8 @@ function ModeloDoObjeto({ id, completo }: { id: ObjetoDaCasa; completo: boolean 
   })
   return (
     <>
-      <primitive object={copia} />
-      {id === 'aquario' ? <PeixesDoAquario copia={copia} url={url} /> : null}
+      <primitive object={desenho} dispose={null} />
+      {id === 'aquario' && !criada ? <PeixesDoAquario copia={copia} url={url} /> : null}
     </>
   )
 }
@@ -216,10 +267,12 @@ const ObjetoNaObra = memo(function ObjetoNaObra({
   obj,
   base,
   completo,
+  aparencia,
 }: {
   obj: Obra['objetos'][number]
   base: [number, number, number]
   completo: boolean
+  aparencia: AparenciaDoObjeto | null
 }) {
   const { loja } = useJogo()
   const { largura, fundo } = areaComGiro(obj.id, obj.giro)
@@ -263,7 +316,7 @@ const ObjetoNaObra = memo(function ObjetoNaObra({
     <>
       <group position={[base[0] + x, base[1] + y, base[2] + z]} rotation-y={giro}>
         <ComReserva reserva={<FormaDoObjeto id={obj.id} />}>
-          <ModeloDoObjeto id={obj.id} completo={completo} />
+          <ModeloDoObjeto id={obj.id} completo={completo} aparencia={aparencia} />
         </ComReserva>
       </group>
       <Colisores lista={colisores} />
@@ -294,6 +347,7 @@ export function ObjetosDaObra({ obra, base }: { obra: Obra; base: [number, numbe
           key={o.id}
           obj={o}
           base={base}
+          aparencia={visita ? null : (projetos[o.id]?.aparencia ?? null)}
           completo={visita ? visita.completos.includes(o.id) : Boolean(projetos[o.id]?.aparencia)}
         />
       ))}

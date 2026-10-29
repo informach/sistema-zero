@@ -3,6 +3,7 @@ import recifeGlb from '../src/assets/ilhas/recife.glb'
 import pierGlb from '../src/assets/mundo/pier.glb'
 import { montarArquipelago } from '../src/entrada'
 import { definirFestaDoPlayground } from '../src/estado/festas'
+import { medicaoDasAparencias } from '../src/mundo/carregar-aparencia'
 import { giroDaIlha, ilhasEmVolta, PIER } from '../src/mundo/medidas'
 import { ancorasDoPorto } from '../src/mundo/portos'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
@@ -10,6 +11,7 @@ import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { lerFesta } from '../src/sistemas/festas'
+import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
 
 /**
  * O jogo sozinho, com a plataforma de mentira. Parâmetros na URL:
@@ -30,6 +32,7 @@ import { lerFesta } from '../src/sistemas/festas'
  * `?perder-pulso=1` simula uma resposta perdida após registrar tempo, para testar recuperação.
  */
 const q = new URLSearchParams(location.search)
+Object.assign(window, { __arquipelagoAparencias: medicaoDasAparencias })
 // Conferência do barco usa as mesmas âncoras da produção, sem coordenadas de teste no jogo.
 const portoDeTeste = q.get('barco')
 let partidaDoBarco: { x: number; y: number; z: number } | undefined
@@ -102,6 +105,13 @@ const plataforma = criarPlataformaFalsa({
   lumis: q.has('lumis') ? lerLumis(q.get('lumis') ?? '') : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,
+  aparencias:
+    q.get('aparencias') === 'falha'
+      ? 'falha'
+      : q.get('aparencias') === 'sem-metodo'
+        ? 'sem-metodo'
+        : 'pronto',
+  editarObjeto: q.has('aparencias') ? abrirOficinaDeExemplo : undefined,
   familia: lerFamilia(q.get('familia')),
   galeria: {
     moedas: q.has('moedas') ? Number(q.get('moedas')) : undefined,

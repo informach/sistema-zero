@@ -23,6 +23,7 @@ import {
   type ResultadoDeFerramenta,
   type SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
+import { lerAparenciaFalsa } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
 import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
@@ -57,6 +58,8 @@ export interface OpcoesDaPlataformaFalsa {
    * hora) ou `sem-acesso` (a página responde que a ferramenta não está liberada).
    */
   objetos?: 'pronto' | 'sem-acesso'
+  aparencias?: 'pronto' | 'falha' | 'sem-metodo'
+  editarObjeto?: (pedido: PedidoDeFerramenta) => Promise<boolean>
   /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
   obra?: 'exemplo'
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
@@ -151,6 +154,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     if (pedido.ferramenta === 'pinta' && molde.data.faces.length === 0)
       return { situacao: 'indisponivel', motivo: 'sem-faces' }
     await new Promise((r) => setTimeout(r, 400))
+    if (o.editarObjeto && !(await o.editarObjeto(pedido))) return { situacao: 'cancelado' }
     return { situacao: 'pronto', criacaoId: `molde-${molde.data.objeto}-${pedido.ferramenta}` }
   }
 
@@ -260,6 +264,11 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
 
   return {
     versaoContrato: 1,
+    ...(o.aparencias === 'sem-metodo'
+      ? {}
+      : {
+          lerAparencia: o.aparencias === 'falha' ? async () => null : lerAparenciaFalsa,
+        }),
     publico,
     perfil: { id: 'perfil-de-teste', primeiroNome: 'Lia' },
     lerJornada: async () => ({ posicao: o.posicao ?? 2 }),
