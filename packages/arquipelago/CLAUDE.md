@@ -670,8 +670,10 @@ Plano e decisões propostas: `docs/plans/2026-10-29-arquipelago-recife.md`. Test
 O nado faz parte do modo `chao`: a conferência verifica a cintura na superfície e o corpo
 sem apoio, em vez de procurar um modo chamado `nadar`.
 
-Achado visual registrado no plano: o teto baixo da caverna aproxima demais a câmera do avatar.
-O ajuste do enquadramento fica com a sessão responsável por `src/personagem/camera.tsx`.
+Sob tetos baixos, `desvioVerticalDaCamera` também compara passar abaixo do alvo pela folga de
+`FOLGA_DA_CAMERA`, com a sonda real e o ganho mínimo da grua. A posição horizontal exata pode
+tangenciar o teto; não retirar colisores para resolver isso. O desvio entra e sai suavemente,
+sem alterar a preferência. Testes em `camera-sob-teto.test.ts` e no roteiro do Recife.
 
 ## Rodar
 

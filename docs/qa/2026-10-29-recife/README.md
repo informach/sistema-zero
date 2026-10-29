@@ -34,12 +34,12 @@ Na raiz:
 bun run lint
 ```
 
-- Testes: 767 passaram, 1 pulado, nenhuma falha. O teste pulado requer Postgres local descartável.
+- Testes finais: 772 passaram, 1 pulado, nenhuma falha. O teste pulado requer Postgres local descartável.
   Inclui a lagoa nova, as faces coplanares, os colisores, a Maré e a liberação do GLB.
 - A primeira execução concorrente com o navegador teve dois estouros de 5 segundos em testes
   antigos do Bosque e da Vila. A repetição completa, sem o navegador concorrente, passou em 24,51 s.
 - Lint da raiz: terminou com código 0, sem erros; avisos e informações existentes no repositório.
-- Typecheck: código 0. Biome nos 13 arquivos de código desta tarefa: sem ajustes ou diagnósticos.
+- Typecheck final: código 0. Biome dos quatro arquivos de código da correção: sem diagnósticos.
 - O roteiro final do navegador terminou com código 0 nos dois tamanhos, incluindo sair e voltar.
 
 ## Prints
@@ -48,24 +48,24 @@ bun run lint
 | --- | --- | --- |
 | Chegada | [Ver](recife-computador-chegada.png) | [Ver](recife-celular-chegada.png) |
 | Cais | [Ver](recife-computador-cais.png) | [Ver](recife-celular-cais.png) |
-| Caverna | [Ver](recife-computador-caverna.png) | [Ver](recife-celular-caverna.png) |
+| Caverna corrigida | [Ver](recife-computador-caverna-corrigida.png) | [Ver](recife-celular-caverna-corrigida.png) |
 | Maré | [Ver](recife-computador-mare.png) | [Ver](recife-celular-mare.png) |
 | Lagoa | [Ver](recife-computador-lagoa.png) | [Ver](recife-celular-lagoa.png) |
 
-## Achado que depende da outra sessão
+## Correção do enquadramento
 
-A câmera fica muito próxima do avatar ao passar sob o teto baixo da caverna. O teste comprova
-a passagem pela boca, mas o print registra a limitação de visibilidade. Não foram retiradas
-colisões nem alterado `src/personagem/camera.tsx`, reservado expressamente à outra sessão.
-O ajuste do enquadramento e a validação em celular físico continuam pendentes. A lagoa não tem
-pendência de Blender; nenhum GLB foi regenerado nesta tarefa.
+O teste adicional reproduziu a câmera dentro do avatar sob o teto. A medição da sonda mostrou
+que tanto subir quanto ficar exatamente na horizontal tocavam o teto, enquanto descer pela
+folga existente deixava 9 unidades livres. A regra agora compara essa saída baixa com as subidas,
+mantendo a sonda e a suavização. A conferência passou nos dois tamanhos, exigindo pelo menos
+2 unidades de afastamento horizontal do avatar na caverna. Os prints antigos preservam a falha;
+os links da tabela mostram a correção. Nenhuma colisão foi removida, nenhum GLB foi regenerado.
 
 ## Nota para a página de andamento
 
 A página não foi alterada, pois esta sessão não tem acesso. Texto para fase3-01:
 “Recife completo ligado, com lagoa para nadar, cais, Quadro das Cores e apresentação da Maré.
-Conferido no computador e no celular emulado. Falta ajustar a câmera sob o teto da caverna e
-conferir em celular físico.”
+Câmera ajustada para passar sob o teto da caverna. Conferido no computador e no celular emulado.”
 
 Texto para a parte do Recife de aj-ligar-10:
 “A caverna fora da ilha leve entra na espera pelo modelo e na área segura de nado.

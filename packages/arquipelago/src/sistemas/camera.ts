@@ -44,6 +44,37 @@ export function pesoNoAlto(alturaAcimaDoChao: number, limite: number): number {
   return Math.max(0, Math.min(1, (alturaAcimaDoChao - limite * 0.6) / (limite * 0.4)))
 }
 
+/**
+ * Sem saída para os lados, compara passar por baixo com subir por cima do obstáculo.
+ * Só troca com ganho suficiente de espaço. O retorno é um desvio do ângulo escolhido pela pessoa;
+ * não altera a preferência e pode ser suavizado enquanto entra ou sai de um teto baixo.
+ */
+export function desvioVerticalDaCamera(
+  inclinacao: number,
+  inclinacaoBaixa: number,
+  medir: (angulo: number) => number,
+  subidas: readonly number[],
+  maxima: number,
+  ganhoMinimo: number,
+): number {
+  let melhor = medir(inclinacao)
+  let desvio = 0
+  const baixo = medir(inclinacaoBaixa)
+  if (baixo > melhor + ganhoMinimo) {
+    melhor = baixo
+    desvio = inclinacaoBaixa - inclinacao
+  }
+  for (const extra of subidas) {
+    const angulo = Math.min(inclinacao + extra, maxima)
+    const livre = medir(angulo)
+    if (livre > melhor + ganhoMinimo) {
+      melhor = livre
+      desvio = angulo - inclinacao
+    }
+  }
+  return desvio
+}
+
 /** A distância pedida pela pinça: abrir os dedos aproxima, fechar afasta (na mesma proporção). */
 export function zoomDaPinca(
   distanciaNoComeco: number,

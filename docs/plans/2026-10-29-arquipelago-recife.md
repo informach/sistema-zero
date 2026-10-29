@@ -24,10 +24,15 @@ A primeira leitura encontrou uma lagoa decorativa sem bacia. A pendência foi re
 
 Navio, labirinto, mergulho e plataformas das Nuvens ficam fora desta fase. Não há pedido de modelo adicional.
 
-## Achado para a sessão da câmera
+## Câmera sob o teto da caverna
 
-A passagem nadando pela boca funciona, mas o teto baixo faz a câmera encostar demais no avatar
-dentro da caverna. O print `docs/qa/2026-10-29-recife/recife-computador-caverna.png` registra o
-enquadramento padrão. Não retirar colisão do teto ou das paredes para esconder o problema.
-Ajustar o enquadramento de espaços baixos na sessão responsável por `src/personagem/camera.tsx`,
-arquivo expressamente reservado nesta tarefa. A conferência em celular físico também fica pendente.
+O achado foi corrigido: além de subir, a câmera compara uma saída abaixo do teto, usando a mesma
+sonda e preservando todas as colisões. A saída baixa mira uma folga de 0,35 abaixo do alvo, já
+definida em `FOLGA_DA_CAMERA`; a posição horizontal exata tangenciava a face inferior do teto.
+O desvio só muda com ganho superior a 0,5, como a grua existente, e é suavizado ao entrar e sair.
+Não altera a inclinação escolhida pela pessoa. A integração no controlador ficou restrita à
+escolha desse desvio, com regra pura em `sistemas/camera.ts` e testes em `camera-sob-teto.test.ts`.
+
+O roteiro de navegador reproduziu a falha antes da correção e passou depois no computador e
+no celular emulado. Os prints `recife-computador-caverna-corrigida.png` e
+`recife-celular-caverna-corrigida.png`, na pasta de QA, mostram o resultado.

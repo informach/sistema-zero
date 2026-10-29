@@ -18,7 +18,7 @@ import { CORPO } from '../src/sistemas/corpo'
 import { CINTURA } from '../src/sistemas/modos/chao'
 
 type P = { x: number; y: number; z: number }
-type Desenho = { posicao: P; ilhasCompletas: number; modo: string; noChao: boolean }
+type Desenho = { posicao: P; camera: P; ilhasCompletas: number; modo: string; noChao: boolean }
 const port = process.env.ARQUIPELAGO_TEST_PORT
   ? Number(process.env.ARQUIPELAGO_TEST_PORT)
   : await new Promise<number>((resolve, reject) => {
@@ -209,7 +209,19 @@ try {
       await page.keyboard.up('KeyW')
     }
     console.log(`${tipo}: entrou na caverna nadando`, await ler())
+    // A câmera precisa mostrar o corpo por inteiro, sem ser empurrada para dentro da cabeça.
+    await page.waitForTimeout(2500)
     await page.screenshot({ path: path.join(prints, `recife-${tipo}-caverna.png`) })
+    const naCaverna = await ler()
+    if (
+      !naCaverna ||
+      Math.hypot(
+        naCaverna.camera.x - naCaverna.posicao.x,
+        naCaverna.camera.z - naCaverna.posicao.z,
+      ) < 2
+    ) {
+      throw new Error('A câmera entrou no avatar sob o teto da caverna')
+    }
 
     const casa = local('casa-mare')
     const mare = mundo(casa)

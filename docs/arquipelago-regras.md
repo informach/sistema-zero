@@ -2535,9 +2535,10 @@ Testes puros e dos GLBs: `tests/luneta.test.ts`. Visita real no playground:
 - Navio, labirinto e mergulho ficam para a fase3-02. Não foi necessário gerar arte nesta
   integração. O teste dos lagos confere fundo e rampa; o roteiro de navegador confere ponte,
   cais, caverna, lagoa e conversa no playground, com `?posicao=4`.
-- Achado visual: a câmera padrão chega perto demais do avatar sob o teto da caverna. A passagem
-  funciona, mas o enquadramento precisa de ajuste pela sessão da câmera. Celular físico ainda
-  precisa de conferência.
+- Sob o teto, a câmera compara uma posição baixa com as posições acima do ombro. Usa a folga
+  existente de 0,35 abaixo do alvo, só troca com ganho de espaço maior que 0,5 e suaviza o desvio.
+  A sonda continua impedindo atravessar paredes e teto. A preferência de inclinação não muda.
+  O teste de navegador confere o enquadramento no computador e no celular emulado.
 
 Plano: `docs/plans/2026-10-29-arquipelago-recife.md`. Evidências e limites da conferência:
 `docs/qa/2026-10-29-recife/README.md`.

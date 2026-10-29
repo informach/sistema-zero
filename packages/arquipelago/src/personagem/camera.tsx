@@ -21,6 +21,7 @@ import {
   VOLTA_DA_CAMERA,
 } from '../mundo/medidas'
 import {
+  desvioVerticalDaCamera,
   distanciaDaCamera,
   giroMaisCurto,
   limitarPosicaoDaCamera,
@@ -488,7 +489,7 @@ export function Camera() {
     }
     // Tapada de perto (o tronco atrás, no deque): primeiro a câmera gira para o lado livre, como
     // nos jogos de terceira pessoa (o controle gira junto, a frente continua sendo a da tela);
-    // sem lado livre, sobe por cima do ombro. Os dois andam aos poucos, e o raio final é o da
+    // sem lado livre, compara passar por baixo com subir por cima do ombro. A mudança é suave e o raio final é o da
     // posição em que a câmera está de verdade.
     let alvoDaSubida = 0
     const tapada = !dentro && lancar(inclinacao) < dist * GRUA_DA_CAMERA.tapada
@@ -508,14 +509,15 @@ export function Camera() {
       }
     }
     if (tapada && !girou) {
-      let melhor = lancar(inclinacao)
-      for (const extra of GRUA_DA_CAMERA.subidas) {
-        const livreAqui = lancar(Math.min(inclinacao + extra, GRUA_DA_CAMERA.inclinacaoMaxima))
-        if (livreAqui > melhor + GRUA_DA_CAMERA.ganhoMinimo) {
-          melhor = livreAqui
-          alvoDaSubida = extra
-        }
-      }
+      alvoDaSubida = desvioVerticalDaCamera(
+        inclinacao,
+        // A mesma folga da sonda abaixo do alvo: evita tangenciar o teto no limite do float.
+        -Math.atan2(FOLGA_DA_CAMERA, dist),
+        lancar,
+        GRUA_DA_CAMERA.subidas,
+        GRUA_DA_CAMERA.inclinacaoMaxima,
+        GRUA_DA_CAMERA.ganhoMinimo,
+      )
     }
     subida.current += (alvoDaSubida - subida.current) * k
     inclinacao = Math.min(
