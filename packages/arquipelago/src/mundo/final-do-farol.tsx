@@ -9,7 +9,7 @@ import {
   Quaternion,
   Vector3,
 } from 'three'
-import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import altoGlb from '../assets/ilhas/alto-do-farol.glb'
 import irisGlb from '../assets/personagens/iris.glb'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
@@ -30,11 +30,12 @@ import {
 import {
   ALTO_DO_FAROL,
   ALVOS_DO_FACHO,
-  COLISORES_DO_ALTO,
   LUGAR_DA_IRIS,
   ORIGEM_DO_FACHO,
   PORTA_DO_FINAL,
   pontosDoAlto,
+  prepararSala,
+  type SalaCarregada,
   VOLTA_DO_FAROL,
 } from './alto-do-farol'
 import { liberarObjeto } from './carregar-ilha'
@@ -68,7 +69,7 @@ export function FinalDoFarol() {
   useEffect(() => {
     farol.setState({ menosMovimento: aparelho || preferencia })
   }, [farol, aparelho, preferencia])
-  const [modelo, porModelo] = useState<GLTF | null>(null)
+  const [modelo, porModelo] = useState<SalaCarregada | null>(null)
   const troca = useRef<{ tempo: number; fez: boolean; fazer: () => void } | null>(null)
   const querSair = useRef(false)
   const cortar = useCallback(
@@ -152,7 +153,7 @@ export function FinalDoFarol() {
         return
       }
       farol.setState({ varanda: pontosDoAlto(cena).varanda })
-      porModelo(gltf)
+      porModelo({ gltf, colisores: prepararSala(cena) })
     })().catch((erro) => {
       if (encerrado) return
       farol.setState({ etapa: 'fora' })
@@ -168,7 +169,7 @@ export function FinalDoFarol() {
   }, [dentro, farol, loja, plataforma])
   useEffect(() => {
     if (!modelo) return
-    const p = pontosDoAlto(modelo.scene).entrada
+    const p = pontosDoAlto(modelo.gltf.scene).chegada
     cortar(() => {
       pedidos.teleporte = { ...p, y: p.y + 1.2 }
       pedidos.olharPara = Math.PI
@@ -219,7 +220,7 @@ export function FinalDoFarol() {
   })
   return (
     <>
-      {modelo && dentro && <SalaDoFarol modelo={modelo} />}
+      {modelo && dentro && <SalaDoFarol gltf={modelo.gltf} colisores={modelo.colisores} />}
       {(etapa === 'fachos' || etapa === 'fim') && <FachosDoFinal />}
       {voltou && etapa === 'fora' && podeSubirOFarol(jornada) && (
         <ComReserva reserva={null}>
@@ -230,7 +231,7 @@ export function FinalDoFarol() {
   )
 }
 
-function SalaDoFarol({ modelo }: { modelo: GLTF }) {
+function SalaDoFarol({ gltf: modelo, colisores }: SalaCarregada) {
   const { loja, rastro } = useJogo()
   const farol = lojaDoFarol(loja)
   const naVista = useFarol(loja, (s) => s.etapa === 'fachos' || s.etapa === 'fim')
@@ -252,8 +253,8 @@ function SalaDoFarol({ modelo }: { modelo: GLTF }) {
       mixer.update(Math.min(dt, 0.1))
   })
   useInterativo('ultima-pagina', {
-    x: pontos.mesa.x,
-    z: pontos.mesa.z,
+    x: pontos.leitura.x,
+    z: pontos.leitura.z,
     raio: 2.1,
     rotulo: () =>
       farol.getState().etapa === 'sala' && rastro.y > ALTO_DO_FAROL.y
@@ -267,7 +268,7 @@ function SalaDoFarol({ modelo }: { modelo: GLTF }) {
   return (
     <group name="sala-do-final" position={[ALTO_DO_FAROL.x, ALTO_DO_FAROL.y, ALTO_DO_FAROL.z]}>
       <primitive object={modelo.scene} dispose={null} visible={!naVista} />
-      <Colisores lista={COLISORES_DO_ALTO} />
+      <Colisores lista={colisores} />
       <pointLight position={[0, 2.8, 1]} intensity={20} distance={12} color="#fff1d0" />
     </group>
   )

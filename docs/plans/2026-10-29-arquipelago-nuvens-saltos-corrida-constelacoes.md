@@ -89,6 +89,9 @@ sempre.
    trocar a constante `MIRANTE_DAS_NUVENS` pela âncora.
 2. (Opcional) Um modelo de argola de nuvem para a corrida de balão; hoje as argolas são toros
    desenhados no código.
+   Feito em 29/10: `nuvens-argola.glb` (`arte/ilhas-b/argola_nuvem.py`), tufos de nuvem por fora
+   de uma faixa no raio 4,2 que o jogo pinta com a cor de cada argola; o toro fica só enquanto o
+   arquivo carrega.
 
 ## Etapas
 

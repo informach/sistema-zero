@@ -5,6 +5,7 @@
  * arquivo (`tests/movimento-do-bosque.test.ts`).
  */
 import { type BichoDoBosque, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
+import { type Mesh, type Object3D, Vector3 } from 'three'
 import type { Ponto } from '../sistemas/cipo'
 import type { Tronco } from '../sistemas/escalada'
 import type { DequeDoPercurso, PontosDoPercurso } from '../sistemas/percurso'
@@ -35,15 +36,41 @@ export const RAIOS_DOS_DEQUES = [2.9, 2.0, 2.1, 2.0] as const
 
 /**
  * O tronco de escalar: a árvore do galho dos cipós (T6 do `bosque.py`). Lá de cima, pular para
- * longe do tronco cai no `cipo-1`. Medido nos colisores `col-cil-tronco` dela, com o raio da casca
- * desenhada (o colisor tem 85% dela). Ainda não há nó no GLB: quando o Blender ganhar o nó
- * `escalada-cil-tronco-dos-cipos` (README de `arte/ilhas`), estes números saem de lá.
+ * longe do tronco cai no `cipo-1`. O jogo lê o nó `escalada-cil-tronco-dos-cipos` do `bosque.glb`
+ * (`troncoDoNo`); estes números são os mesmos dele (um teste confere) e valem só se o nó faltar.
  */
 export const TRONCO_DOS_CIPOS: Tronco = {
   base: { x: 8.6, y: TOPO_DO_BOSQUE, z: 5.21 },
   topo: { x: 8.84, y: 6.5, z: 5.07 },
   raioBase: 0.86,
   raioTopo: 0.5,
+}
+
+/** O nó do tronco de escalar no `bosque.glb`. */
+export const NO_DO_TRONCO_DOS_CIPOS = 'escalada-cil-tronco-dos-cipos'
+
+/**
+ * O tronco de um nó `escalada-cil-*` (dois anéis, embaixo e em cima, e as tampas), no referencial
+ * do modelo: o meio e o raio de cada anel. `null` sem o nó.
+ */
+export function troncoDoNo(modelo: Object3D, nome = NO_DO_TRONCO_DOS_CIPOS): Tronco | null {
+  const no = modelo.getObjectByName(nome) as Mesh | undefined
+  const pos = no?.isMesh ? no.geometry.getAttribute('position') : undefined
+  if (!no || !pos || pos.count < 6) return null
+  no.updateMatrix()
+  const pontos: Vector3[] = []
+  for (let i = 0; i < pos.count; i++)
+    pontos.push(new Vector3().fromBufferAttribute(pos, i).applyMatrix4(no.matrix))
+  const meioY = pontos.reduce((t, p) => t + p.y, 0) / pontos.length
+  const anel = (deBaixo: boolean) => {
+    const lista = pontos.filter((p) => p.y < meioY === deBaixo)
+    const c = lista.reduce((t, p) => t.add(p), new Vector3()).divideScalar(lista.length)
+    const r = lista.reduce((t, p) => t + Math.hypot(p.x - c.x, p.z - c.z), 0) / lista.length
+    return { meio: { x: c.x, y: c.y, z: c.z }, raio: r }
+  }
+  const base = anel(true)
+  const topo = anel(false)
+  return { base: base.meio, topo: topo.meio, raioBase: base.raio, raioTopo: topo.raio }
 }
 
 /** A placa de largada, ao lado do pé da escada (na trilha, sem tapar o primeiro degrau). */

@@ -405,6 +405,34 @@ def galho_dos_cipos(col, copas, troncos):
     return p
 
 
+# O tronco de escalar (a árvore T6): o meio da casca desenhada embaixo (no chão) e em cima, e o raio
+# dela em cada ponta. O jogo lê o nó `escalada-cil-tronco-dos-cipos` (`troncoDoNo` em
+# `src/mundo/bosque.ts`) no lugar da constante de antes.
+TRONCO_DE_ESCALAR = dict(base=(8.6, 5.21, TOPO), topo=(8.84, 5.07, 6.5), raio_base=0.86, raio_topo=0.5)
+
+
+def tronco_de_escalar():
+    """`escalada-cil-tronco-dos-cipos`: o tronco que dá para subir, em pé, sem material (não desenha:
+    é a forma da escalada, como os `col-*` são as da colisão). Dois anéis de 12 lados e as tampas."""
+    t = TRONCO_DE_ESCALAR
+    verts, faces = [], []
+    for (x, z, y), r in ((t['base'], t['raio_base']), (t['topo'], t['raio_topo'])):
+        for k in range(12):
+            a = 2 * math.pi * k / 12
+            verts.append((x + math.cos(a) * r, -z + math.sin(a) * r, y))
+    for k in range(12):
+        j = (k + 1) % 12
+        faces.append((k, j, 12 + j, 12 + k))
+    faces.append(tuple(range(11, -1, -1)))
+    faces.append(tuple(range(12, 24)))
+    me = bpy.data.meshes.new('escalada-cil-tronco-dos-cipos')
+    me.from_pydata(verts, [], faces)
+    me.update()
+    o = bpy.data.objects.new('escalada-cil-tronco-dos-cipos', me)
+    bpy.context.collection.objects.link(o)
+    return o
+
+
 def cipo(i):
     """Um cipó pendurado (pivô no galho): a corda verde com folhinhas e uma alça no fim."""
     cx, cz, ch = CIPOS[i]
@@ -697,7 +725,7 @@ def construir():
     for i in range(len(CIPOS)):
         objs, pivo = cipo(i)
         cipos[f'cipo-{i + 1}'] = (objs, pivo)
-    anc = ancoras(pista)
+    anc = ancoras(pista) + [tronco_de_escalar()]
     nos_copa = {f'copa-{i + 1}': c for i, c in enumerate(copas)}
     nos_copa.update({f'tronco-{i + 1}': t for i, t in enumerate(troncos)})
     nos = {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos, **nos_copa,

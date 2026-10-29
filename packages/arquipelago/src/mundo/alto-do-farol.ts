@@ -1,5 +1,6 @@
 import { type Object3D, Vector3 } from 'three'
-import type { ColisorDaIlha } from './colisores-da-ilha'
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { type ColisorDaIlha, lerColisores, tirarNosDeColisao } from './colisores-da-ilha'
 import { ALTURA_DA_TERRA, alturaDaIlha, FAROL, ilhasEmVolta } from './medidas'
 
 /** Sala própria, afastada da torre exterior. Não representa uma altura da história. */
@@ -15,6 +16,14 @@ export const LUGAR_DA_IRIS = { x: -8, y: alturaDaIlha(-8, -9), z: -9, descanso: 
 export const ALVOS_DO_FACHO = ilhasEmVolta()
 export const ORIGEM_DO_FACHO = { x: FAROL.x, y: ALTURA_DA_TERRA + 9.4, z: FAROL.z }
 
+/** A sala carregada: o arquivo e os colisores lidos dos nós `col-*` dele. */
+export type SalaCarregada = { gltf: GLTF; colisores: ColisorDaIlha[] }
+
+/**
+ * As âncoras do alto (`arte/ilhas-b/alto_do_farol.py`), no mundo: `chegada` (onde a criança
+ * aparece, fora da grade da escada e da lente), `leitura` (de frente para a mesa da Íris) e
+ * `camera-varanda` (de onde a câmera parte para a vista do anel).
+ */
 export function pontosDoAlto(modelo: Object3D) {
   modelo.updateMatrixWorld(true)
   const ponto = (nome: string) => {
@@ -23,46 +32,18 @@ export function pontosDoAlto(modelo: Object3D) {
     const p = modelo.worldToLocal(no.getWorldPosition(new Vector3()))
     return { x: p.x + ALTO_DO_FAROL.x, y: p.y + ALTO_DO_FAROL.y, z: p.z + ALTO_DO_FAROL.z }
   }
-  return { entrada: ponto('entrada'), mesa: ponto('mesa'), varanda: ponto('varanda') }
+  return { chegada: ponto('chegada'), leitura: ponto('leitura'), varanda: ponto('camera-varanda') }
 }
 
-/** Medidas de alto-do-farol.glb: piso escuro raio 4,2; parede 4,55; mesa no setor -x/-z. */
-export const COLISORES_DO_ALTO: readonly ColisorDaIlha[] = [
-  {
-    nome: 'col-piso-sala',
-    forma: 'cilindro',
-    posicao: [0, -0.1, 0],
-    rotacao: [0, 0, 0, 1],
-    raio: 4.2,
-    meiaAltura: 0.1,
-  },
-  // Dezesseis faces fecham a sala. A varanda é usada pela câmera, sem permitir uma queda.
-  ...Array.from({ length: 16 }, (_, i): ColisorDaIlha => {
-    const a = (i * Math.PI) / 8
-    return {
-      nome: `col-parede-sala-${i}`,
-      forma: 'caixa',
-      posicao: [Math.sin(a) * 4.35, 1.75, Math.cos(a) * 4.35],
-      rotacao: [0, Math.sin(a / 2), 0, Math.cos(a / 2)],
-      meio: [0.9, 1.75, 0.15],
-    }
-  }),
-  {
-    nome: 'col-mesa-iris',
-    forma: 'caixa',
-    posicao: [-0.88, 0.47, -3.1],
-    rotacao: [0, 0, 0, 1],
-    meio: [1.47, 0.47, 1.07],
-  },
-  {
-    nome: 'col-base-lente',
-    forma: 'cilindro',
-    posicao: [0, 0.55, 0],
-    rotacao: [0, 0, 0, 1],
-    raio: 0.65,
-    meiaAltura: 0.55,
-  },
-]
+/**
+ * Lê os colisores da sala (piso, anel da parede, grade da escada, mesa e lente: só formas simples)
+ * e tira os nós `col-*` da cena, que não desenham. Chamar uma vez, logo depois de carregar.
+ */
+export function prepararSala(cena: Object3D): ColisorDaIlha[] {
+  const lista = lerColisores(cena)
+  tirarNosDeColisao(cena)
+  return lista
+}
 
 /** Enquadramento panorâmico com margem para o anel de raio 82, inclusive em retrato. */
 export function vistaFinal(aspecto: number) {

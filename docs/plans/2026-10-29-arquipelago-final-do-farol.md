@@ -19,6 +19,8 @@ Um booleano `finalDoFarol`, inicialmente `false`, registra a conclusão. O acré
 - Acrescentar `chegada` no piso livre junto de `entrada` (-0,95; 0; 0,85), `leitura` junto de `mesa` (-0,82; 0; -1,99), e `camera-varanda` junto de `varanda` (5,2; 0; 0), com orientação voltada para fora. As âncoras atuais permitem a implementação sem regenerar agora.
 - Em `mundo/farol.glb`, separar a porta num nó com pivô de dobradiça se for desejada a abertura física animada. Nesta entrega, a porta ganha a ação de subir; não é alterada a malha fundida da torre.
 
+Atendido em 29/10: `alto-do-farol.glb` traz os colisores (`col-cil-piso-sala-1`, `col-parede-sala-1..16`, `col-cil-grade-escada-1` no lugar da grade do vão, `col-mesa-iris-1` com a estante, `col-cil-base-lente-1`, raio 0,72, cobrindo também a lente que gira na altura da criança) e as âncoras `chegada` (-0,9; 0; 0,8: a posição pedida encostava na grade do vão, que agora colide), `leitura` e `camera-varanda`. O guarda-corpo da varanda não colide: a varanda fica fora das paredes e só a câmera vai lá. Os colisores temporários do código saíram (`prepararSala` lê os do arquivo). O `farol.glb` ganhou o nó `porta` com pivô na dobradiça, e a porta abre quando a criança chega perto com a Lenda aberta.
+
 ## Etapas
 
 - [x] Regras puras, texto final e estado de sessão.

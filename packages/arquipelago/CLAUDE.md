@@ -466,13 +466,13 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   tubo refeito a cada quadro sobre a corrente (Catmull-Rom, lados levados de anel em anel), a alça
   na ponta e as folhas dobradas pela altura de repouso delas. Monta no efeito da ilha ativa e
   desmonta ao sair (a corda do arquivo volta).
-- **Escalada** (`sistemas/escalada.ts`): o tronco da árvore dos cipós (`TRONCO_DOS_CIPOS`, um cone
-  um pouco torto do tamanho da casca desenhada). Andar contra ele por `esperaParaGrudar` (ou pular
+- **Escalada** (`sistemas/escalada.ts`): o tronco da árvore dos cipós (o nó
+  `escalada-cil-tronco-dos-cipos` do `bosque.glb`, lido por `troncoDoNo`; um cone um pouco torto do
+  tamanho da casca desenhada; `TRONCO_DOS_CIPOS` é a reserva com os mesmos números). Andar contra ele por `esperaParaGrudar` (ou pular
   nele) gruda; frente e trás sobem e descem, os lados seguem a tela, descer no pé solta, pular solta
   para fora (ou para onde se pede, se for para longe). Lá de cima, o pulo cai no `cipo-1`. A
   trepadeira em espiral (desenhada no código) mostra que aquele tronco sobe e esmaece com ele.
-  Ainda não há nó `escalada-*` no GLB: o que falta passar para o Blender está no README de
-  `arte/ilhas`.
+  Os nós `escalada-*` não desenham: `prepararIlha` os esconde.
 - **Lago**: o nó `agua` (a elipse da caixa e a altura da superfície) com a bacia de 0,85 m no
   `col-terreno`: nada como no mar (mesma regra, `ENTRAR_NO_NADO`/`SAIR_DO_NADO`). O tronco que boia
   (`mundo/tronco-no-lago.tsx`) é um corpo dinâmico com quatro pontos de flutuação
@@ -730,7 +730,9 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   vêm de `colecaoDoBosque` e `colecaoDeReceitas` do diário, e o painel (`interface/album.tsx`,
   `PAINEL_DO_ALBUM`, aberto pelo menu) desenha com os `Bicho` e `Receita` exportados de
   `interface/diario.tsx`. Os Lumis: `ESPECIES_DE_LUMI` (nome, ilha, comum ou rara e a cor do
-  material `corpo` do GLB, conferida no teste); sem miniatura desenhada ainda, um círculo da cor.
+  material `corpo` do GLB, conferida no teste) e a miniatura de cada espécie (`MINIATURA_DO_LUMI` de
+  `interface/miniaturas-dos-lumis.ts`, PNGs de `arte/lumis/miniaturas.py`); quem ainda não foi
+  encontrado aparece como a silhueta escura da mesma imagem. A rotina usa as mesmas miniaturas.
 - Modo foto: `PAINEL_DA_FOTO` em `painelAberto` (a pausa dos painéis para o personagem; a câmera
   segue girando). O `Hud` troca tudo pela `ModoFoto` (`interface/foto.tsx`), como na luneta;
   `AtalhoDaFoto` escuta o F. A captura mora dentro do `<Canvas>` (`mundo/foto.tsx`, `CameraDaFoto`,
@@ -1215,13 +1217,14 @@ Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipel
 - Testes: `balao.test.ts` (regras e modo), `balao-das-nuvens.test.ts` (lugar livre, alcance a pé e
   saída contra os colisores). Verificador: `playground/verificar-balao-browser.ts`. Pedidos de arte
   no plano `docs/plans/2026-10-29-arquipelago-balao.md` (feitos: a âncora `balao` foi para perto do
-  poste, em (5,6; 6,0), e o cesto ganhou a âncora `passageiro`, que o código ainda não lê).
+  poste, em (5,6; 6,0), e o cesto ganhou a âncora `passageiro`). No voo, a criança é desenhada na
+  âncora `passageiro` (o piso do cesto, que sobe e balança com o clipe), não na base do nó `balao`.
 
 
 ## Final no alto do Farol (fase4-11, 29/10/2026)
 
 - `sistemas/final-do-farol.ts`: acesso na Lenda, pausas, quatro trechos da página, seis fachos e apresentação da Íris. `estado/farol.ts` isola a animação por montagem com WeakMap; a página e a conclusão ficam em `salvamento.farol` (V16). Não inferir conclusão apenas de jornada 8.
-- `mundo/final-do-farol.tsx`, montado pelo Farol: carregamento privado com AbortController, descarte ao sair, sala a y 40, âncoras lidas no referencial local mesmo depois de montar a cena. `mundo/alto-do-farol.ts` concentra medidas, colisores simples temporários e alvos do anel. Substituir esses colisores pelos nós definitivos quando a sessão de arte os entregar. Não usar o carregador de ilhas completas para o interior.
+- `mundo/final-do-farol.tsx`, montado pelo Farol: carregamento privado com AbortController, descarte ao sair, sala a y 40, âncoras lidas no referencial local mesmo depois de montar a cena. `mundo/alto-do-farol.ts` concentra medidas, âncoras e alvos do anel. Os colisores vêm do arquivo: `prepararSala` lê os `col-*` (piso, 16 caixas da parede, grade do vão da escada, mesa com estante, lente) e tira esses nós da cena, uma vez, logo depois de carregar. A chegada é a âncora `chegada` (fora da grade e da lente), a leitura é `leitura` e a câmera da vista parte de `camera-varanda`. A porta do farol de fora é o nó `porta` do `farol.glb` (pivô na dobradiça): `mundo/farol.tsx` abre para fora quando a criança chega a 3 m de `PORTA_DO_FINAL` e o Farol já pode ser subido (sem animação com menos movimento). Não usar o carregador de ilhas completas para o interior.
 - A câmera existente continua a única dona da vista. O perfil `farol` usa 65 graus, com panorama adaptado ao aspecto. Ao sair, restaura a pose anterior. Na sequência, sala, avatar e Zappy 3D ficam ocultos; a fala do Zappy permanece no painel. O céu retira a névoa apenas nessa vista. Não carregar ilhas completas por causa da câmera. O facho de exploração fica oculto durante os seis fachos do final e respeita pausa e menos movimento fora dele.
 - `interface/farol.tsx` usa o estilo dos painéis de moradores. Não dar foco automático ao botão da sala: isso captura WASD. A leitura recebe foco. Esc e Descer usam a mesma saída. Os relógios não guardam a posição do interior nem iniciam cochilo nele, mas o limite de tempo da plataforma continua valendo.
 - `paginasDoDiario(s)` lê `salvamento.farol.pagina`, inclusive depois de reabrir. A Íris só monta após a sequência e usa `MoradorDaIlha`, sem amizade. A porta fechada passa por `VozDoJogo`, inclusive para adultos.
@@ -1241,7 +1244,10 @@ O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas 
   numa plataforma lê `PlataformaDasNuvens.elevacao`, escrita a cada passo da física.
 - **Corrida de balão:** regra pura em `sistemas/corrida-de-balao.ts` (`ARGOLAS`,
   `LUGARES_DAS_ARGOLAS`, `passouPelaArgola`, `passoDaCorridaDeBalao`); desenho em
-  `mundo/corrida-de-balao.tsx` (toros no código, com as cores dos `fio1` a `fio6`). O tempo-alvo
+  `mundo/corrida-de-balao.tsx`: a argola de nuvem do `nuvens-argola.glb` (`arte/ilhas-b/argola_nuvem.py`,
+  carga privada como o balão; nós `nuvem`, igual nas seis, e `faixa`, com o material de cada argola nas
+  cores dos `fio1` a `fio6`, que acende na próxima). Enquanto carrega, ou sem o arquivo, ficam os toros
+  lisos. Os tufos ficam por fora da faixa: o vão livre é o mesmo de antes. O tempo-alvo
   vem do piloto do teste, que voa pelas regras de `sistemas/balao.ts`.
 - **Constelações:** regra pura em `sistemas/constelacoes.ts`; mirante em
   `mundo/constelacoes-das-nuvens.tsx` (carga privada do `nuvens-constelacoes.glb`, colisores por

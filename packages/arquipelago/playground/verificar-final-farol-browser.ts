@@ -97,6 +97,9 @@ try {
       )
     await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2`)
     await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+    // Perto da porta, com a Lenda aberta, a porta do farol abre na dobradiça.
+    await page.waitForTimeout(1500)
+    await page.screenshot({ path: path.join(prints, `porta-${tipo}.png`) })
     const antes = await ler()
     await usar()
     await etapa('sala')

@@ -1,7 +1,16 @@
 import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
-import { useEffect, useMemo, useRef } from 'react'
-import { type Group, MeshStandardMaterial, TorusGeometry } from 'three'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type BufferGeometry,
+  type Group,
+  type Mesh,
+  MeshStandardMaterial,
+  type Object3D,
+  TorusGeometry,
+} from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import argolaUrl from '../assets/ilhas/nuvens-argola.glb'
 import { lojaDoConforto } from '../estado/conforto'
 import { useJogo } from '../estado/contexto'
 import type { Ponto } from '../sistemas/cipo'
@@ -16,6 +25,7 @@ import {
 import { jogoPausado } from '../sistemas/pausa'
 import { PERCURSO_DO_BALAO, vagalumesPegos } from '../sistemas/percurso'
 import { paraOMundo, rumoNoMundo } from './bosque'
+import { liberarObjeto } from './carregar-ilha'
 import { Coletavel, type CoresDoColetavel, terminarCorrida } from './corrida-na-ilha'
 
 /** As cores dos fios do tear da Iriê (`fio1` a `fio6` do `nuvens.glb`), da argola 1 à 6. */
@@ -41,7 +51,32 @@ const CORES_DA_FITA: CoresDoColetavel = {
   degrade: ['rgba(255,240,250,1)', 'rgba(255,170,220,0.55)', 'rgba(255,210,120,0)'],
 }
 
+/** O toro liso enquanto a argola de nuvem carrega (ou se ela não abrir). */
 const GEOMETRIA = new TorusGeometry(ARGOLAS.raio, ARGOLAS.tubo, 10, 56)
+
+/** A argola de nuvem (`nuvens-argola.glb`): os tufos e a geometria da faixa colorida. */
+interface ArteDaArgola {
+  nuvem: Object3D
+  faixa: BufferGeometry
+  soltar: () => void
+}
+
+/** Sem cache global: a argola sai da memória junto com a ilha (como o balão). */
+async function carregarArgola(): Promise<ArteDaArgola> {
+  const g = await new GLTFLoader().loadAsync(new URL(argolaUrl, import.meta.url).href)
+  const soltar = () => liberarObjeto(g.scene)
+  const nuvem = g.scene.getObjectByName('nuvem')
+  let faixa: BufferGeometry | undefined
+  g.scene.getObjectByName('faixa')?.traverse((o) => {
+    const m = o as Mesh
+    if (m.isMesh && !faixa) faixa = m.geometry
+  })
+  if (!nuvem || !faixa) {
+    soltar()
+    throw new Error('nuvens-argola sem os nós nuvem e faixa')
+  }
+  return { nuvem, faixa, soltar }
+}
 
 /**
  * A corrida de balão das Nuvens (fase4-07, regras em `sistemas/corrida-de-balao.ts`): as seis
@@ -81,6 +116,27 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
       for (const m of materiais) m.dispose()
     },
     [materiais],
+  )
+  const [arte, porArte] = useState<ArteDaArgola | null>(null)
+  useEffect(() => {
+    let vale = true
+    let carregada: ArteDaArgola | null = null
+    carregarArgola()
+      .then((a) => {
+        if (!vale) return a.soltar()
+        carregada = a
+        porArte(a)
+      })
+      // Sem o arquivo, ficam os toros lisos: a corrida funciona do mesmo jeito.
+      .catch(() => {})
+    return () => {
+      vale = false
+      carregada?.soltar()
+    }
+  }, [])
+  const nuvens = useMemo(
+    () => (arte ? argolas.map(() => arte.nuvem.clone(true)) : []),
+    [arte, argolas],
   )
   const estado = useRef<EstadoDaCorrida>({ corrida: null }).current
   const passo = useRef({
@@ -202,15 +258,16 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
   return (
     <>
       {argolas.map((g, i) => (
-        <mesh
+        <group
           // biome-ignore lint/suspicious/noArrayIndexKey: as argolas são fixas e na ordem
           key={i}
           name={`argola-${i + 1}`}
-          geometry={GEOMETRIA}
-          material={materiais[i]}
           position={[g.x, g.y, g.z]}
           rotation-y={g.rumo}
-        />
+        >
+          <mesh geometry={arte ? arte.faixa : GEOMETRIA} material={materiais[i]} />
+          {nuvens[i] && <primitive object={nuvens[i]} />}
+        </group>
       ))}
       {fitas.map((f, i) => (
         <group

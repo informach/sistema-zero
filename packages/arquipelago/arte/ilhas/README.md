@@ -190,13 +190,12 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
 O jogo marca no código o que ainda não está no `bosque.glb`. O Blender sem tela roda pelo `bpy`
 do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
 
-- **Tronco de escalar:** um nó `escalada-cil-tronco-dos-cipos` no tronco da árvore do galho dos
-  cipós (T6), na convenção dos colisores: cilindro unitário sem material, em pé, do chão (y = 1) até
-  6,5, com o raio da casca desenhada (0,86 embaixo, 0,5 em cima; o meio vai de x 8,6, z 5,21 a
-  x 8,84, z 5,07 no referencial do jogo). Hoje esses números estão em `TRONCO_DOS_CIPOS`
-  (`src/mundo/bosque.ts`), e o jogo desenha uma trepadeira em espiral por cima para mostrar que ele
-  sobe. Ficaria melhor com a trepadeira modelada (ou degraus de madeira pregados) no próprio tronco.
-  O jogo ainda não lê `escalada-*`: quando o nó chegar, troque a constante pela leitura dele.
+- **Tronco de escalar (feito em 29/10/2026):** o nó `escalada-cil-tronco-dos-cipos` está no
+  `bosque.glb` (`TRONCO_DE_ESCALAR` e `tronco_de_escalar()` em `bosque.py`): dois anéis de 12 lados
+  sem material, do chão (y = 1, raio 0,86, meio em x 8,6, z 5,21) até 6,5 (raio 0,5, meio em x 8,84,
+  z 5,07). O jogo lê com `troncoDoNo` (`src/mundo/bosque.ts`) e esconde os `escalada-*` ao preparar a
+  ilha; `TRONCO_DOS_CIPOS` ficou só de reserva, e `tests/movimento-do-bosque.test.ts` confere que os
+  dois batem. A trepadeira em espiral continua desenhada pelo código.
 - **Lago (28/10/2026):** a bacia de 0,85 m já está no `col-terreno` (`cavar_bacia` do
   `lib_ilhas.py`, só na colisão; a lagoa do Recife usa a mesma desde 29/10/2026, com o nó `agua` de
   um material só e a bacia acabando em 1,08 raio, antes dos corais grandes; `tests/lagos-das-ilhas.test.ts` mede o fundo e a rampa). O desenho continua com a água
