@@ -56,6 +56,33 @@ describe('impressão digital do conteúdo', () => {
 
   // ⚠️ O nome fica fora do PROJETO, mas o `index.html` regerado pelo editor de blocos leva o
   // `<title>` com ele: na vida real, renomear e mexer num bloco muda a impressão.
+  test('o desenho da vaga de arte (`lesson-art`) fica fora da impressão, como a biblioteca do curso', async () => {
+    const base = await studioContentFingerprint(projeto)
+    const desenho = {
+      id: 'minha-chave',
+      name: 'minha-chave',
+      kind: 'image',
+      dataUrl: 'data:image/png;base64,DESENHO',
+      source: 'lesson-art',
+    }
+    const comDesenho = await studioContentFingerprint({
+      ...projeto,
+      assets: [...projeto.assets, desenho],
+    })
+    const redesenhado = await studioContentFingerprint({
+      ...projeto,
+      assets: [...projeto.assets, { ...desenho, dataUrl: 'data:image/png;base64,OUTRO' }],
+    })
+    expect(comDesenho).toBe(base)
+    expect(redesenhado).toBe(base)
+    // Anti-vácuo: a MESMA imagem enviada pela criança muda a impressão.
+    const enviada = await studioContentFingerprint({
+      ...projeto,
+      assets: [...projeto.assets, { ...desenho, source: 'upload' }],
+    })
+    expect(enviada).not.toBe(base)
+  })
+
   test('o Estúdio ignora nome, datas, posição dos blocos, versão da extensão e a biblioteca do curso', async () => {
     const base = await studioContentFingerprint(projeto)
     expect(isContentFingerprint(base)).toBe(true)

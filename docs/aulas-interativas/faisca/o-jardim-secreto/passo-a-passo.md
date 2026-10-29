@@ -77,7 +77,7 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 **Teste:** Pressione R e vá direto à flor, sem recolher: ela fica fechada e o aviso pede o regador. Depois recolha, afaste-se e volte à flor: ela abre e o aviso conta o sucesso. Continue andando para conferir que ela permanece aberta.
 
-**Se não funcionar:** Se abrir cedo, confira se a reação está dentro do então e se a pergunta lê a mesma memória da coleta. Se nunca abrir, confira a alteração para verdadeiro e o nome da imagem ou do clipe. Não precisa criar outra variável para impedir uma nova animação.
+**Se não funcionar:** Se abrir cedo, confira se a reação está dentro do então e se a pergunta lê a mesma memória da coleta. Se nunca abrir, confira a alteração para verdadeiro e o nome da imagem ou do clipe.
 
 ### Escolha seu lugar para o regador
 
@@ -155,7 +155,21 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 **Teste:** Pressione R e vá direto à flor, sem recolher: ela fica fechada e o aviso pede o regador. Depois recolha, afaste-se e volte à flor: ela abre e o aviso conta o sucesso. Continue andando para conferir que ela permanece aberta.
 
-**Se não funcionar:** Se abrir cedo, confira se a reação está dentro do então e se a pergunta lê a mesma memória da coleta. Se nunca abrir, confira a alteração para verdadeiro e o nome da imagem ou do clipe. Não precisa criar outra variável para impedir uma nova animação.
+**Se não funcionar:** Se abrir cedo, confira se a reação está dentro do então e se a pergunta lê a mesma memória da coleta. Se nunca abrir, confira a alteração para verdadeiro e o nome da imagem ou do clipe.
+
+### A flor abre uma vez só
+
+**Relembre:** A flor é o fim do jogo. Como no farol da Ilha, o encontro roda de novo a cada volta do personagem; a variável ganhou guarda que a partida já foi vencida, e o Se não ganhou faz a flor parar de responder.
+
+1. Em Ao iniciar, depois de temRegador, crie a variável ganhou com o valor falso, do mesmo jeito que criou temRegador.
+2. No então do Se temRegador, depois de Tocar a animação, encaixe Alterar variável. Escolha ganhou, encaixe verdadeiro ou falso no valor e escolha verdadeiro.
+3. Em Quando acontecer, deixe à vista um espaço vazio ao lado do encontro com flor, fora do fazer. Em Programação → Lógica e Se, pegue Se e solte nesse espaço.
+4. Arraste a comparação que veio na pergunta do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio. Em Programação → Valores, pegue valor da variável, encaixe dentro do não e escolha ganhou.
+5. Pegue o Se temRegador pela palavra Se e arraste até o então do Se novo; tudo o que está dentro dele vai junto. Depois encaixe o Se novo no fazer do encontro com flor, que ficou vazio.
+
+**Teste:** Recolha o regador e vá à flor: ela abre. Saia de perto e volte: ela continua aberta, sem florescer de novo. Numa partida nova, vá à flor sem o regador: ela continua pedindo o regador.
+
+**Se não funcionar:** Se a flor florescer de novo ao voltar, confira se ganhou fica verdadeiro no então e se o Se temRegador inteiro está dentro de Se não ganhou. Se nunca abrir, confira se ganhou começa em falso.
 
 ### Escolha seu lugar para o regador
 

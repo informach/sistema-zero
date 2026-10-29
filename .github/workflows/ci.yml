@@ -620,6 +620,10 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:lesson-layout
 
+      - name: O desenho do Pinta da aula entra no jogo do Estúdio
+        working-directory: packages/community-kids
+        run: bun run e2e:art-slots
+
       - name: Texturas por peça do Molda no navegador
         working-directory: packages/molda
         run: bunx playwright test e2e/paint-texture-creation.spec.ts --project=chromium
@@ -633,6 +637,7 @@ jobs:
             packages/community-kids/.cache/playwright-results
             packages/community-kids/.cache/scene-results
             packages/community-kids/.cache/lesson-layout-results
+            packages/community-kids/.cache/art-slots-results
             packages/pensa/.cache/playwright-results
             packages/molda/.cache/playwright-results
           retention-days: 7

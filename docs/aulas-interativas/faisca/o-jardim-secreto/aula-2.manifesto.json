@@ -37,7 +37,7 @@
             "files": {
               "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
               "style.css": "",
-              "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -2, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  SZGame3D.onTouch(personagem, flor, () => {\n    if (temRegador) {\n      SZGame3D.playAnimation(flor, \"florescer\", \"uma-vez\");\n      aviso = \"A flor abriu! Você fez o jardim florescer.\";\n    } else {\n      aviso = \"Busque o regador primeiro. A flor espera por você.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+              "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -2, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  let ganhou = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  SZGame3D.onTouch(personagem, flor, () => {\n    if (!ganhou) {\n      if (temRegador) {\n        SZGame3D.playAnimation(flor, \"florescer\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"A flor abriu! Você fez o jardim florescer.\";\n      } else {\n        aviso = \"Busque o regador primeiro. A flor espera por você.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
             },
             "extraFiles": [],
             "assets": [
@@ -46,8 +46,8 @@
                 "name": "jardim-acolhedor",
                 "kind": "model3d",
                 "source": "library",
-                "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-                "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+                "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                 "originalFileName": "jardim-acolhedor.glb"
               },
               {
@@ -55,8 +55,8 @@
                 "name": "regador-azul",
                 "kind": "model3d",
                 "source": "library",
-                "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-                "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+                "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                 "originalFileName": "regador-azul.glb"
               },
               {
@@ -64,8 +64,8 @@
                 "name": "flor-do-jardim",
                 "kind": "model3d",
                 "source": "library",
-                "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-                "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+                "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+                "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
                 "originalFileName": "flor-do-jardim.glb"
               },
               {
@@ -121,7 +121,7 @@
                     "asset": "jardim-acolhedor",
                     "size": {
                       "type": "num",
-                      "value": 25.2
+                      "value": 25.18
                     }
                   },
                   {
@@ -261,6 +261,14 @@
                     }
                   },
                   {
+                    "type": "var",
+                    "name": "ganhou",
+                    "value": {
+                      "type": "bool",
+                      "value": false
+                    }
+                  },
+                  {
                     "type": "g3d:cornerText",
                     "corner": "bottom-center",
                     "text": {
@@ -316,34 +324,54 @@
                       {
                         "type": "if",
                         "cond": {
-                          "type": "var",
-                          "name": "temRegador"
+                          "type": "logicalNot",
+                          "value": {
+                            "type": "var",
+                            "name": "ganhou"
+                          }
                         },
                         "then": [
                           {
-                            "type": "g3d:modelAnimation",
-                            "op": "tocar",
-                            "objVar": "flor",
-                            "clip": "florescer",
-                            "mode": "uma-vez"
-                          },
-                          {
-                            "type": "assign",
-                            "name": "aviso",
-                            "value": {
-                              "type": "str",
-                              "value": "A flor abriu! Você fez o jardim florescer."
-                            }
-                          }
-                        ],
-                        "else": [
-                          {
-                            "type": "assign",
-                            "name": "aviso",
-                            "value": {
-                              "type": "str",
-                              "value": "Busque o regador primeiro. A flor espera por você."
-                            }
+                            "type": "if",
+                            "cond": {
+                              "type": "var",
+                              "name": "temRegador"
+                            },
+                            "then": [
+                              {
+                                "type": "g3d:modelAnimation",
+                                "op": "tocar",
+                                "objVar": "flor",
+                                "clip": "florescer",
+                                "mode": "uma-vez"
+                              },
+                              {
+                                "type": "assign",
+                                "name": "ganhou",
+                                "value": {
+                                  "type": "bool",
+                                  "value": true
+                                }
+                              },
+                              {
+                                "type": "assign",
+                                "name": "aviso",
+                                "value": {
+                                  "type": "str",
+                                  "value": "A flor abriu! Você fez o jardim florescer."
+                                }
+                              }
+                            ],
+                            "else": [
+                              {
+                                "type": "assign",
+                                "name": "aviso",
+                                "value": {
+                                  "type": "str",
+                                  "value": "Busque o regador primeiro. A flor espera por você."
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -440,7 +468,7 @@
                                       "shadow": {
                                         "type": "sz_val_number",
                                         "fields": {
-                                          "NUM": 25.2
+                                          "NUM": 25.18
                                         }
                                       }
                                     }
@@ -709,16 +737,34 @@
                                                                               },
                                                                               "next": {
                                                                                 "block": {
-                                                                                  "type": "sz_g3d_hud_text",
+                                                                                  "type": "sz_js_var_create",
                                                                                   "fields": {
-                                                                                    "CORNER": "bottom-center"
+                                                                                    "NAME": "ganhou"
                                                                                   },
                                                                                   "inputs": {
-                                                                                    "TEXT": {
-                                                                                      "shadow": {
-                                                                                        "type": "sz_val_text",
+                                                                                    "VALUE": {
+                                                                                      "block": {
+                                                                                        "type": "sz_val_bool",
                                                                                         "fields": {
-                                                                                          "TEXT": "Setas ou WASD: andar. R: nova partida."
+                                                                                          "VALUE": "false"
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  },
+                                                                                  "next": {
+                                                                                    "block": {
+                                                                                      "type": "sz_g3d_hud_text",
+                                                                                      "fields": {
+                                                                                        "CORNER": "bottom-center"
+                                                                                      },
+                                                                                      "inputs": {
+                                                                                        "TEXT": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_text",
+                                                                                            "fields": {
+                                                                                              "TEXT": "Setas ou WASD: andar. R: nova partida."
+                                                                                            }
+                                                                                          }
                                                                                         }
                                                                                       }
                                                                                     }
@@ -841,61 +887,101 @@
                                         "inputs": {
                                           "THEN": {
                                             "block": {
-                                              "type": "sz_g3d_play_animation",
-                                              "fields": {
-                                                "OBJ": "flor",
-                                                "CLIP": "florescer",
-                                                "MODE": "uma-vez"
-                                              },
-                                              "next": {
-                                                "block": {
-                                                  "type": "sz_js_var_assign",
-                                                  "fields": {
-                                                    "NAME": "aviso"
-                                                  },
-                                                  "inputs": {
-                                                    "VALUE": {
+                                              "type": "sz_js_if_else",
+                                              "inputs": {
+                                                "THEN": {
+                                                  "block": {
+                                                    "type": "sz_g3d_play_animation",
+                                                    "fields": {
+                                                      "OBJ": "flor",
+                                                      "CLIP": "florescer",
+                                                      "MODE": "uma-vez"
+                                                    },
+                                                    "next": {
                                                       "block": {
-                                                        "type": "sz_val_text",
+                                                        "type": "sz_js_var_assign",
                                                         "fields": {
-                                                          "TEXT": "A flor abriu! Você fez o jardim florescer."
+                                                          "NAME": "ganhou"
+                                                        },
+                                                        "inputs": {
+                                                          "VALUE": {
+                                                            "block": {
+                                                              "type": "sz_val_bool",
+                                                              "fields": {
+                                                                "VALUE": "true"
+                                                              }
+                                                            }
+                                                          }
+                                                        },
+                                                        "next": {
+                                                          "block": {
+                                                            "type": "sz_js_var_assign",
+                                                            "fields": {
+                                                              "NAME": "aviso"
+                                                            },
+                                                            "inputs": {
+                                                              "VALUE": {
+                                                                "block": {
+                                                                  "type": "sz_val_text",
+                                                                  "fields": {
+                                                                    "TEXT": "A flor abriu! Você fez o jardim florescer."
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
                                                         }
                                                       }
                                                     }
                                                   }
-                                                }
-                                              }
-                                            }
-                                          },
-                                          "ELSE": {
-                                            "block": {
-                                              "type": "sz_js_var_assign",
-                                              "fields": {
-                                                "NAME": "aviso"
-                                              },
-                                              "inputs": {
-                                                "VALUE": {
+                                                },
+                                                "ELSE": {
                                                   "block": {
-                                                    "type": "sz_val_text",
+                                                    "type": "sz_js_var_assign",
                                                     "fields": {
-                                                      "TEXT": "Busque o regador primeiro. A flor espera por você."
+                                                      "NAME": "aviso"
+                                                    },
+                                                    "inputs": {
+                                                      "VALUE": {
+                                                        "block": {
+                                                          "type": "sz_val_text",
+                                                          "fields": {
+                                                            "TEXT": "Busque o regador primeiro. A flor espera por você."
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "COND": {
+                                                  "block": {
+                                                    "type": "sz_val_variable",
+                                                    "fields": {
+                                                      "NAME": "temRegador"
                                                     }
                                                   }
                                                 }
+                                              },
+                                              "extraState": {
+                                                "hasElse": true
                                               }
                                             }
                                           },
                                           "COND": {
                                             "block": {
-                                              "type": "sz_val_variable",
-                                              "fields": {
-                                                "NAME": "temRegador"
+                                              "type": "sz_val_not",
+                                              "inputs": {
+                                                "VALUE": {
+                                                  "block": {
+                                                    "type": "sz_val_variable",
+                                                    "fields": {
+                                                      "NAME": "ganhou"
+                                                    }
+                                                  }
+                                                }
                                               }
                                             }
                                           }
-                                        },
-                                        "extraState": {
-                                          "hasElse": true
                                         }
                                       }
                                     }
@@ -1063,7 +1149,9 @@
                 "label": "O regador aparece de novo no chão."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "Tirar o regador da cena não muda a informação guardada. Ela ainda está em Não, por isso a flor continua fechada e o aviso pede o regador. Essa regra não manda o regador voltar. Na coleta, também precisamos guardar que ele foi pego."
           },
           {
@@ -1083,7 +1171,9 @@
                 "label": "Trocar a cor do personagem e pegar o regador outra vez."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Uma nova partida começa sem a coleta. Indo direto à flor, você pode conferir se ela fica fechada e avisa o que falta. Encostar de novo depois do sucesso não testa a situação sem o regador."
           },
           {
@@ -1104,7 +1194,9 @@
                 "label": "O lugar de onde olhamos."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "Mudou o lugar de onde olhamos: a câmera. O regador e a pedra ficaram nas mesmas posições. Um objeto pode estar escondido na imagem e continuar ali no jardim."
           },
           {
@@ -1125,7 +1217,9 @@
                 "label": "Olhar de cima impede todos os encontros."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "De lado, vemos um espaço entre os dois: o regador está alto demais. Em 3D, o encontro depende também da altura. A cor e o ponto de vista não desligam a coleta."
           }
         ]
@@ -1150,7 +1244,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-missao-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -1174,6 +1270,7 @@
           "sz_js_var_assign",
           "sz_js_var_create",
           "sz_val_bool",
+          "sz_val_not",
           "sz_val_number",
           "sz_val_text",
           "sz_val_variable"
@@ -1189,7 +1286,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
           },
           "extraFiles": [],
           "assets": [
@@ -1198,8 +1295,8 @@
               "name": "jardim-acolhedor",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "jardim-acolhedor.glb"
             },
             {
@@ -1207,8 +1304,8 @@
               "name": "regador-azul",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "regador-azul.glb"
             },
             {
@@ -1216,8 +1313,8 @@
               "name": "flor-do-jardim",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+              "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
               "originalFileName": "flor-do-jardim.glb"
             },
             {
@@ -1273,7 +1370,7 @@
                   "asset": "jardim-acolhedor",
                   "size": {
                     "type": "num",
-                    "value": 25.2
+                    "value": 25.18
                   }
                 },
                 {
@@ -1507,7 +1604,7 @@
                                     "shadow": {
                                       "type": "sz_val_number",
                                       "fields": {
-                                        "NUM": 25.2
+                                        "NUM": 25.18
                                       }
                                     }
                                   }
@@ -1888,7 +1985,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -1897,8 +1994,8 @@
                   "name": "jardim-acolhedor",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "jardim-acolhedor.glb"
                 },
                 {
@@ -1906,8 +2003,8 @@
                   "name": "regador-azul",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "regador-azul.glb"
                 },
                 {
@@ -1915,8 +2012,8 @@
                   "name": "flor-do-jardim",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+                  "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
                   "originalFileName": "flor-do-jardim.glb"
                 },
                 {
@@ -1972,7 +2069,7 @@
                       "asset": "jardim-acolhedor",
                       "size": {
                         "type": "num",
-                        "value": 25.2
+                        "value": 25.18
                       }
                     },
                     {
@@ -2206,7 +2303,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 25.2
+                                            "NUM": 25.18
                                           }
                                         }
                                       }
@@ -2584,7 +2681,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -2593,8 +2690,8 @@
                   "name": "jardim-acolhedor",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "jardim-acolhedor.glb"
                 },
                 {
@@ -2602,8 +2699,8 @@
                   "name": "regador-azul",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "regador-azul.glb"
                 },
                 {
@@ -2611,8 +2708,8 @@
                   "name": "flor-do-jardim",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+                  "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
                   "originalFileName": "flor-do-jardim.glb"
                 },
                 {
@@ -2668,7 +2765,7 @@
                       "asset": "jardim-acolhedor",
                       "size": {
                         "type": "num",
-                        "value": 25.2
+                        "value": 25.18
                       }
                     },
                     {
@@ -2910,7 +3007,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 25.2
+                                            "NUM": 25.18
                                           }
                                         }
                                       }
@@ -3306,7 +3403,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -3315,8 +3412,8 @@
                   "name": "jardim-acolhedor",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "jardim-acolhedor.glb"
                 },
                 {
@@ -3324,8 +3421,8 @@
                   "name": "regador-azul",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "regador-azul.glb"
                 },
                 {
@@ -3333,8 +3430,8 @@
                   "name": "flor-do-jardim",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+                  "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
                   "originalFileName": "flor-do-jardim.glb"
                 },
                 {
@@ -3390,7 +3487,7 @@
                       "asset": "jardim-acolhedor",
                       "size": {
                         "type": "num",
-                        "value": 25.2
+                        "value": 25.18
                       }
                     },
                     {
@@ -3668,7 +3765,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 25.2
+                                            "NUM": 25.18
                                           }
                                         }
                                       }
@@ -4138,7 +4235,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  SZGame3D.onTouch(personagem, flor, () => {\n    if (temRegador) {\n      SZGame3D.playAnimation(flor, \"florescer\", \"uma-vez\");\n      aviso = \"A flor abriu! Você fez o jardim florescer.\";\n    } else {\n      aviso = \"Busque o regador primeiro. A flor espera por você.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -4, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  let ganhou = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  SZGame3D.onTouch(personagem, flor, () => {\n    if (!ganhou) {\n      if (temRegador) {\n        SZGame3D.playAnimation(flor, \"florescer\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"A flor abriu! Você fez o jardim florescer.\";\n      } else {\n        aviso = \"Busque o regador primeiro. A flor espera por você.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -4147,8 +4244,8 @@
                   "name": "jardim-acolhedor",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "jardim-acolhedor.glb"
                 },
                 {
@@ -4156,8 +4253,8 @@
                   "name": "regador-azul",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "regador-azul.glb"
                 },
                 {
@@ -4165,8 +4262,8 @@
                   "name": "flor-do-jardim",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+                  "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
                   "originalFileName": "flor-do-jardim.glb"
                 },
                 {
@@ -4222,7 +4319,7 @@
                       "asset": "jardim-acolhedor",
                       "size": {
                         "type": "num",
-                        "value": 25.2
+                        "value": 25.18
                       }
                     },
                     {
@@ -4362,6 +4459,14 @@
                       }
                     },
                     {
+                      "type": "var",
+                      "name": "ganhou",
+                      "value": {
+                        "type": "bool",
+                        "value": false
+                      }
+                    },
+                    {
                       "type": "g3d:cornerText",
                       "corner": "bottom-center",
                       "text": {
@@ -4417,34 +4522,54 @@
                         {
                           "type": "if",
                           "cond": {
-                            "type": "var",
-                            "name": "temRegador"
+                            "type": "logicalNot",
+                            "value": {
+                              "type": "var",
+                              "name": "ganhou"
+                            }
                           },
                           "then": [
                             {
-                              "type": "g3d:modelAnimation",
-                              "op": "tocar",
-                              "objVar": "flor",
-                              "clip": "florescer",
-                              "mode": "uma-vez"
-                            },
-                            {
-                              "type": "assign",
-                              "name": "aviso",
-                              "value": {
-                                "type": "str",
-                                "value": "A flor abriu! Você fez o jardim florescer."
-                              }
-                            }
-                          ],
-                          "else": [
-                            {
-                              "type": "assign",
-                              "name": "aviso",
-                              "value": {
-                                "type": "str",
-                                "value": "Busque o regador primeiro. A flor espera por você."
-                              }
+                              "type": "if",
+                              "cond": {
+                                "type": "var",
+                                "name": "temRegador"
+                              },
+                              "then": [
+                                {
+                                  "type": "g3d:modelAnimation",
+                                  "op": "tocar",
+                                  "objVar": "flor",
+                                  "clip": "florescer",
+                                  "mode": "uma-vez"
+                                },
+                                {
+                                  "type": "assign",
+                                  "name": "ganhou",
+                                  "value": {
+                                    "type": "bool",
+                                    "value": true
+                                  }
+                                },
+                                {
+                                  "type": "assign",
+                                  "name": "aviso",
+                                  "value": {
+                                    "type": "str",
+                                    "value": "A flor abriu! Você fez o jardim florescer."
+                                  }
+                                }
+                              ],
+                              "else": [
+                                {
+                                  "type": "assign",
+                                  "name": "aviso",
+                                  "value": {
+                                    "type": "str",
+                                    "value": "Busque o regador primeiro. A flor espera por você."
+                                  }
+                                }
+                              ]
                             }
                           ]
                         }
@@ -4541,7 +4666,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 25.2
+                                            "NUM": 25.18
                                           }
                                         }
                                       }
@@ -4810,16 +4935,34 @@
                                                                                 },
                                                                                 "next": {
                                                                                   "block": {
-                                                                                    "type": "sz_g3d_hud_text",
+                                                                                    "type": "sz_js_var_create",
                                                                                     "fields": {
-                                                                                      "CORNER": "bottom-center"
+                                                                                      "NAME": "ganhou"
                                                                                     },
                                                                                     "inputs": {
-                                                                                      "TEXT": {
-                                                                                        "shadow": {
-                                                                                          "type": "sz_val_text",
+                                                                                      "VALUE": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_bool",
                                                                                           "fields": {
-                                                                                            "TEXT": "Setas ou WASD: andar. R: nova partida."
+                                                                                            "VALUE": "false"
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    },
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g3d_hud_text",
+                                                                                        "fields": {
+                                                                                          "CORNER": "bottom-center"
+                                                                                        },
+                                                                                        "inputs": {
+                                                                                          "TEXT": {
+                                                                                            "shadow": {
+                                                                                              "type": "sz_val_text",
+                                                                                              "fields": {
+                                                                                                "TEXT": "Setas ou WASD: andar. R: nova partida."
+                                                                                              }
+                                                                                            }
                                                                                           }
                                                                                         }
                                                                                       }
@@ -4942,61 +5085,101 @@
                                           "inputs": {
                                             "THEN": {
                                               "block": {
-                                                "type": "sz_g3d_play_animation",
-                                                "fields": {
-                                                  "OBJ": "flor",
-                                                  "CLIP": "florescer",
-                                                  "MODE": "uma-vez"
-                                                },
-                                                "next": {
-                                                  "block": {
-                                                    "type": "sz_js_var_assign",
-                                                    "fields": {
-                                                      "NAME": "aviso"
-                                                    },
-                                                    "inputs": {
-                                                      "VALUE": {
+                                                "type": "sz_js_if_else",
+                                                "inputs": {
+                                                  "THEN": {
+                                                    "block": {
+                                                      "type": "sz_g3d_play_animation",
+                                                      "fields": {
+                                                        "OBJ": "flor",
+                                                        "CLIP": "florescer",
+                                                        "MODE": "uma-vez"
+                                                      },
+                                                      "next": {
                                                         "block": {
-                                                          "type": "sz_val_text",
+                                                          "type": "sz_js_var_assign",
                                                           "fields": {
-                                                            "TEXT": "A flor abriu! Você fez o jardim florescer."
+                                                            "NAME": "ganhou"
+                                                          },
+                                                          "inputs": {
+                                                            "VALUE": {
+                                                              "block": {
+                                                                "type": "sz_val_bool",
+                                                                "fields": {
+                                                                  "VALUE": "true"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_js_var_assign",
+                                                              "fields": {
+                                                                "NAME": "aviso"
+                                                              },
+                                                              "inputs": {
+                                                                "VALUE": {
+                                                                  "block": {
+                                                                    "type": "sz_val_text",
+                                                                    "fields": {
+                                                                      "TEXT": "A flor abriu! Você fez o jardim florescer."
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
                                                           }
                                                         }
                                                       }
                                                     }
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            "ELSE": {
-                                              "block": {
-                                                "type": "sz_js_var_assign",
-                                                "fields": {
-                                                  "NAME": "aviso"
-                                                },
-                                                "inputs": {
-                                                  "VALUE": {
+                                                  },
+                                                  "ELSE": {
                                                     "block": {
-                                                      "type": "sz_val_text",
+                                                      "type": "sz_js_var_assign",
                                                       "fields": {
-                                                        "TEXT": "Busque o regador primeiro. A flor espera por você."
+                                                        "NAME": "aviso"
+                                                      },
+                                                      "inputs": {
+                                                        "VALUE": {
+                                                          "block": {
+                                                            "type": "sz_val_text",
+                                                            "fields": {
+                                                              "TEXT": "Busque o regador primeiro. A flor espera por você."
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "COND": {
+                                                    "block": {
+                                                      "type": "sz_val_variable",
+                                                      "fields": {
+                                                        "NAME": "temRegador"
                                                       }
                                                     }
                                                   }
+                                                },
+                                                "extraState": {
+                                                  "hasElse": true
                                                 }
                                               }
                                             },
                                             "COND": {
                                               "block": {
-                                                "type": "sz_val_variable",
-                                                "fields": {
-                                                  "NAME": "temRegador"
+                                                "type": "sz_val_not",
+                                                "inputs": {
+                                                  "VALUE": {
+                                                    "block": {
+                                                      "type": "sz_val_variable",
+                                                      "fields": {
+                                                        "NAME": "ganhou"
+                                                      }
+                                                    }
+                                                  }
                                                 }
                                               }
                                             }
-                                          },
-                                          "extraState": {
-                                            "hasElse": true
                                           }
                                         }
                                       }
@@ -5086,7 +5269,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O Jardim Secreto — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.2);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -2, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  SZGame3D.onTouch(personagem, flor, () => {\n    if (temRegador) {\n      SZGame3D.playAnimation(flor, \"florescer\", \"uma-vez\");\n      aviso = \"A flor abriu! Você fez o jardim florescer.\";\n    } else {\n      aviso = \"Busque o regador primeiro. A flor espera por você.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#c4e2df\");\n  SZGame3D.frameScene(cena, 25, 2, 16);\n  const jardim = SZGame3D.createModelFile(cena, \"jardim-acolhedor\", 25.18);\n  SZGame3D.setPosition(jardim, 0, 2.35, 0);\n  const regador = SZGame3D.createModelFile(cena, \"regador-azul\", 1.95);\n  SZGame3D.setPosition(regador, -2, 0.53, -2);\n  const flor = SZGame3D.createModelFile(cena, \"flor-do-jardim\", 1.76);\n  SZGame3D.setPosition(flor, 5, 0.83, 1);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -7, 0.8, 1);\n  SZGame3D.walkArea(personagem, -9, 9, -4, 4);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let aviso = \"Recolha o regador e leve o personagem até a flor.\";\n  let temRegador = false;\n  let ganhou = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: nova partida.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, regador, () => {\n    SZGame3D.setVisible(regador, \"hide\");\n    temRegador = true;\n    aviso = \"Você pegou o regador! Agora vá até a flor.\";\n  });\n  SZGame3D.onTouch(personagem, flor, () => {\n    if (!ganhou) {\n      if (temRegador) {\n        SZGame3D.playAnimation(flor, \"florescer\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"A flor abriu! Você fez o jardim florescer.\";\n      } else {\n        aviso = \"Busque o regador primeiro. A flor espera por você.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -5095,8 +5278,8 @@
                   "name": "jardim-acolhedor",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f359072450f2b1d96be5c9520450550fcd1f0b3cc54004e4eb0ff4f6680f317f",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYzNTkwNzI0NTBmMmIxZDk2YmU1Yzk1MjA0NTA1NTBmY2QxZjBiM2NjNTQwMDRlNGViMGZmNGY2NjgwZjMxN2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjI5ZmQ3YzkwOGYzNDRmMmVjNDdlZjBjYmUzN2FhNDFjZWMyMDdlOWE4MjM3MTgyZmYzNmYwNjJhYWZkZTNhNzIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "jardim-acolhedor.glb"
                 },
                 {
@@ -5104,8 +5287,8 @@
                   "name": "regador-azul",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:31cad4edc0d65baca722b3fc8ccd8df3ef4c79bfa7dafe597067e96f0398a6a1",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjMxY2FkNGVkYzBkNjViYWNhNzIyYjNmYzhjY2Q4ZGYzZWY0Yzc5YmZhN2RhZmU1OTcwNjdlOTZmMDM5OGE2YTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+                  "libId": "modelo-curso:08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4OTQ1YTkyNjgxN2E0NjAxNmEyOWRmZjg4NjRiM2M4MDk0MDJhOTNmNzM0YmJiYTdiNjdiMTQyNWVhZmUyZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
                   "originalFileName": "regador-azul.glb"
                 },
                 {
@@ -5113,8 +5296,8 @@
                   "name": "flor-do-jardim",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:f1de48e9457d6e3dd83630cbdb6c6aa67264920a23254a3605562427e96a359b",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImYxZGU0OGU5NDU3ZDZlM2RkODM2MzBjYmRiNmM2YWE2NzI2NDkyMGEyMzI1NGEzNjA1NTYyNDI3ZTk2YTM1OWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
+                  "libId": "modelo-curso:b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706",
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAMAQAA+AAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImI3ZGMwYTBiYTA0MjgwOTU2OWI0NGQ1YjU2ZjE0YWEwZWYyODdlMTk0YjkyMmU1MjI1N2YyODA4ZDk3MDA3MDYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiZmxvcmVzY2VyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119XX0gIA==",
                   "originalFileName": "flor-do-jardim.glb"
                 },
                 {
@@ -5170,7 +5353,7 @@
                       "asset": "jardim-acolhedor",
                       "size": {
                         "type": "num",
-                        "value": 25.2
+                        "value": 25.18
                       }
                     },
                     {
@@ -5310,6 +5493,14 @@
                       }
                     },
                     {
+                      "type": "var",
+                      "name": "ganhou",
+                      "value": {
+                        "type": "bool",
+                        "value": false
+                      }
+                    },
+                    {
                       "type": "g3d:cornerText",
                       "corner": "bottom-center",
                       "text": {
@@ -5365,34 +5556,54 @@
                         {
                           "type": "if",
                           "cond": {
-                            "type": "var",
-                            "name": "temRegador"
+                            "type": "logicalNot",
+                            "value": {
+                              "type": "var",
+                              "name": "ganhou"
+                            }
                           },
                           "then": [
                             {
-                              "type": "g3d:modelAnimation",
-                              "op": "tocar",
-                              "objVar": "flor",
-                              "clip": "florescer",
-                              "mode": "uma-vez"
-                            },
-                            {
-                              "type": "assign",
-                              "name": "aviso",
-                              "value": {
-                                "type": "str",
-                                "value": "A flor abriu! Você fez o jardim florescer."
-                              }
-                            }
-                          ],
-                          "else": [
-                            {
-                              "type": "assign",
-                              "name": "aviso",
-                              "value": {
-                                "type": "str",
-                                "value": "Busque o regador primeiro. A flor espera por você."
-                              }
+                              "type": "if",
+                              "cond": {
+                                "type": "var",
+                                "name": "temRegador"
+                              },
+                              "then": [
+                                {
+                                  "type": "g3d:modelAnimation",
+                                  "op": "tocar",
+                                  "objVar": "flor",
+                                  "clip": "florescer",
+                                  "mode": "uma-vez"
+                                },
+                                {
+                                  "type": "assign",
+                                  "name": "ganhou",
+                                  "value": {
+                                    "type": "bool",
+                                    "value": true
+                                  }
+                                },
+                                {
+                                  "type": "assign",
+                                  "name": "aviso",
+                                  "value": {
+                                    "type": "str",
+                                    "value": "A flor abriu! Você fez o jardim florescer."
+                                  }
+                                }
+                              ],
+                              "else": [
+                                {
+                                  "type": "assign",
+                                  "name": "aviso",
+                                  "value": {
+                                    "type": "str",
+                                    "value": "Busque o regador primeiro. A flor espera por você."
+                                  }
+                                }
+                              ]
                             }
                           ]
                         }
@@ -5489,7 +5700,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 25.2
+                                            "NUM": 25.18
                                           }
                                         }
                                       }
@@ -5758,16 +5969,34 @@
                                                                                 },
                                                                                 "next": {
                                                                                   "block": {
-                                                                                    "type": "sz_g3d_hud_text",
+                                                                                    "type": "sz_js_var_create",
                                                                                     "fields": {
-                                                                                      "CORNER": "bottom-center"
+                                                                                      "NAME": "ganhou"
                                                                                     },
                                                                                     "inputs": {
-                                                                                      "TEXT": {
-                                                                                        "shadow": {
-                                                                                          "type": "sz_val_text",
+                                                                                      "VALUE": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_bool",
                                                                                           "fields": {
-                                                                                            "TEXT": "Setas ou WASD: andar. R: nova partida."
+                                                                                            "VALUE": "false"
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    },
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g3d_hud_text",
+                                                                                        "fields": {
+                                                                                          "CORNER": "bottom-center"
+                                                                                        },
+                                                                                        "inputs": {
+                                                                                          "TEXT": {
+                                                                                            "shadow": {
+                                                                                              "type": "sz_val_text",
+                                                                                              "fields": {
+                                                                                                "TEXT": "Setas ou WASD: andar. R: nova partida."
+                                                                                              }
+                                                                                            }
                                                                                           }
                                                                                         }
                                                                                       }
@@ -5890,61 +6119,101 @@
                                           "inputs": {
                                             "THEN": {
                                               "block": {
-                                                "type": "sz_g3d_play_animation",
-                                                "fields": {
-                                                  "OBJ": "flor",
-                                                  "CLIP": "florescer",
-                                                  "MODE": "uma-vez"
-                                                },
-                                                "next": {
-                                                  "block": {
-                                                    "type": "sz_js_var_assign",
-                                                    "fields": {
-                                                      "NAME": "aviso"
-                                                    },
-                                                    "inputs": {
-                                                      "VALUE": {
+                                                "type": "sz_js_if_else",
+                                                "inputs": {
+                                                  "THEN": {
+                                                    "block": {
+                                                      "type": "sz_g3d_play_animation",
+                                                      "fields": {
+                                                        "OBJ": "flor",
+                                                        "CLIP": "florescer",
+                                                        "MODE": "uma-vez"
+                                                      },
+                                                      "next": {
                                                         "block": {
-                                                          "type": "sz_val_text",
+                                                          "type": "sz_js_var_assign",
                                                           "fields": {
-                                                            "TEXT": "A flor abriu! Você fez o jardim florescer."
+                                                            "NAME": "ganhou"
+                                                          },
+                                                          "inputs": {
+                                                            "VALUE": {
+                                                              "block": {
+                                                                "type": "sz_val_bool",
+                                                                "fields": {
+                                                                  "VALUE": "true"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_js_var_assign",
+                                                              "fields": {
+                                                                "NAME": "aviso"
+                                                              },
+                                                              "inputs": {
+                                                                "VALUE": {
+                                                                  "block": {
+                                                                    "type": "sz_val_text",
+                                                                    "fields": {
+                                                                      "TEXT": "A flor abriu! Você fez o jardim florescer."
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
                                                           }
                                                         }
                                                       }
                                                     }
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            "ELSE": {
-                                              "block": {
-                                                "type": "sz_js_var_assign",
-                                                "fields": {
-                                                  "NAME": "aviso"
-                                                },
-                                                "inputs": {
-                                                  "VALUE": {
+                                                  },
+                                                  "ELSE": {
                                                     "block": {
-                                                      "type": "sz_val_text",
+                                                      "type": "sz_js_var_assign",
                                                       "fields": {
-                                                        "TEXT": "Busque o regador primeiro. A flor espera por você."
+                                                        "NAME": "aviso"
+                                                      },
+                                                      "inputs": {
+                                                        "VALUE": {
+                                                          "block": {
+                                                            "type": "sz_val_text",
+                                                            "fields": {
+                                                              "TEXT": "Busque o regador primeiro. A flor espera por você."
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "COND": {
+                                                    "block": {
+                                                      "type": "sz_val_variable",
+                                                      "fields": {
+                                                        "NAME": "temRegador"
                                                       }
                                                     }
                                                   }
+                                                },
+                                                "extraState": {
+                                                  "hasElse": true
                                                 }
                                               }
                                             },
                                             "COND": {
                                               "block": {
-                                                "type": "sz_val_variable",
-                                                "fields": {
-                                                  "NAME": "temRegador"
+                                                "type": "sz_val_not",
+                                                "inputs": {
+                                                  "VALUE": {
+                                                    "block": {
+                                                      "type": "sz_val_variable",
+                                                      "fields": {
+                                                        "NAME": "ganhou"
+                                                      }
+                                                    }
+                                                  }
                                                 }
                                               }
                                             }
-                                          },
-                                          "extraState": {
-                                            "hasElse": true
                                           }
                                         }
                                       }
@@ -6056,13 +6325,20 @@
       "title": "O mesmo desafio, com profundidade",
       "intent": "explanation",
       "objective": "O mesmo desafio, com profundidade.",
-      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
+      "blockKeys": [
+        "video-abertura",
+        "ponte-abertura",
+        "jogo-pronto"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura", "jogo-pronto"]
+        "blockIds": [
+          "video-abertura",
+          "jogo-pronto"
+        ]
       }
     },
     {
@@ -6070,13 +6346,18 @@
       "title": "Caminhe pelo jardim 3D",
       "intent": "application",
       "objective": "Caminhe pelo jardim 3D.",
-      "blockKeys": ["video-movimento", "ponte-movimento"],
+      "blockKeys": [
+        "video-movimento",
+        "ponte-movimento"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-movimento"],
+        "blockIds": [
+          "video-movimento"
+        ],
         "projectChecks": [
           {
             "id": "andar",
@@ -6196,13 +6477,18 @@
       "title": "Recolha o regador em 3D",
       "intent": "application",
       "objective": "Recolha o regador em 3D.",
-      "blockKeys": ["video-coleta", "ponte-coleta"],
+      "blockKeys": [
+        "video-coleta",
+        "ponte-coleta"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-coleta"],
+        "blockIds": [
+          "video-coleta"
+        ],
         "projectChecks": [
           {
             "id": "andar",
@@ -6380,13 +6666,18 @@
       "title": "Faça a flor responder",
       "intent": "application",
       "objective": "Faça a flor responder.",
-      "blockKeys": ["video-decisao", "ponte-decisao"],
+      "blockKeys": [
+        "video-decisao",
+        "ponte-decisao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-decisao"],
+        "blockIds": [
+          "video-decisao"
+        ],
         "projectChecks": [
           {
             "id": "andar",
@@ -6586,7 +6877,9 @@
                       "maxZ": 4
                     }
                   ],
-                  "avoidPaths": ["regador"]
+                  "avoidPaths": [
+                    "regador"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -6760,6 +7053,97 @@
                       "path": "flor.userData.sz.animDone"
                     },
                     "compare": "notEquals",
+                    "value": true
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "uma-vez",
+            "label": "Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "regador",
+                  "timeoutMs": 3500,
+                  "walkable": [
+                    {
+                      "minX": -9,
+                      "maxX": 9,
+                      "minZ": -4,
+                      "maxZ": 4
+                    }
+                  ]
+                },
+                {
+                  "action": "wait",
+                  "ms": 120
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "flor",
+                  "timeoutMs": 5000,
+                  "walkable": [
+                    {
+                      "minX": -9,
+                      "maxX": 9,
+                      "minZ": -4,
+                      "maxZ": 4
+                    }
+                  ]
+                },
+                {
+                  "action": "wait",
+                  "ms": 1500
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowLeft",
+                  "holdMs": 600
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 700
+                },
+                {
+                  "action": "wait",
+                  "ms": 100
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "flor.userData.sz.animDone"
+                },
+                "compare": "equals",
+                "value": true
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "regador.visible"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                },
+                {
+                  "afterStep": 4,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "flor.userData.sz.animDone"
+                    },
+                    "compare": "equals",
                     "value": true
                   }
                 }
@@ -6774,13 +7158,18 @@
       "title": "Encontre um novo lugar no chão",
       "intent": "application",
       "objective": "Encontre um novo lugar no chão.",
-      "blockKeys": ["video-posicao", "ponte-posicao"],
+      "blockKeys": [
+        "video-posicao",
+        "ponte-posicao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao"],
+        "blockIds": [
+          "video-posicao"
+        ],
         "projectChecks": [
           {
             "id": "andar",
@@ -6980,7 +7369,9 @@
                       "maxZ": 4
                     }
                   ],
-                  "avoidPaths": ["regador"]
+                  "avoidPaths": [
+                    "regador"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -7161,13 +7552,107 @@
             }
           },
           {
+            "id": "uma-vez",
+            "label": "Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "regador",
+                  "timeoutMs": 3500,
+                  "walkable": [
+                    {
+                      "minX": -9,
+                      "maxX": 9,
+                      "minZ": -4,
+                      "maxZ": 4
+                    }
+                  ]
+                },
+                {
+                  "action": "wait",
+                  "ms": 120
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "flor",
+                  "timeoutMs": 5000,
+                  "walkable": [
+                    {
+                      "minX": -9,
+                      "maxX": 9,
+                      "minZ": -4,
+                      "maxZ": 4
+                    }
+                  ]
+                },
+                {
+                  "action": "wait",
+                  "ms": 1500
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowLeft",
+                  "holdMs": 600
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 700
+                },
+                {
+                  "action": "wait",
+                  "ms": 100
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "flor.userData.sz.animDone"
+                },
+                "compare": "equals",
+                "value": true
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "regador.visible"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                },
+                {
+                  "afterStep": 4,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "flor.userData.sz.animDone"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ]
+            }
+          },
+          {
             "id": "posicao",
             "label": "Escolha outro lugar alcançável para o regador e confira as regras.",
             "rule": {
               "type": "changedGamePosition",
               "dimension": "3d",
               "object": "regador",
-              "initial": [-4, -2]
+              "initial": [
+                -4,
+                -2
+              ]
             }
           }
         ]
@@ -7178,13 +7663,18 @@
       "title": "Pense nos seus testes",
       "intent": "explanation",
       "objective": "Pense nos seus testes.",
-      "blockKeys": ["ponte-revisao", "quiz"],
+      "blockKeys": [
+        "ponte-revisao",
+        "quiz"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz"]
+        "blockIds": [
+          "quiz"
+        ]
       }
     },
     {
@@ -7192,13 +7682,20 @@
       "title": "Entregue sua missão",
       "intent": "delivery",
       "objective": "Entregue sua missão.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "blockKeys": [
+        "video-entrega",
+        "ponte-entrega",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": [
+          "video-entrega",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "andar",
@@ -7398,7 +7895,9 @@
                       "maxZ": 4
                     }
                   ],
-                  "avoidPaths": ["regador"]
+                  "avoidPaths": [
+                    "regador"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -7579,13 +8078,107 @@
             }
           },
           {
+            "id": "uma-vez",
+            "label": "Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "regador",
+                  "timeoutMs": 3500,
+                  "walkable": [
+                    {
+                      "minX": -9,
+                      "maxX": 9,
+                      "minZ": -4,
+                      "maxZ": 4
+                    }
+                  ]
+                },
+                {
+                  "action": "wait",
+                  "ms": 120
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "flor",
+                  "timeoutMs": 5000,
+                  "walkable": [
+                    {
+                      "minX": -9,
+                      "maxX": 9,
+                      "minZ": -4,
+                      "maxZ": 4
+                    }
+                  ]
+                },
+                {
+                  "action": "wait",
+                  "ms": 1500
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowLeft",
+                  "holdMs": 600
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 700
+                },
+                {
+                  "action": "wait",
+                  "ms": 100
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "flor.userData.sz.animDone"
+                },
+                "compare": "equals",
+                "value": true
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "regador.visible"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                },
+                {
+                  "afterStep": 4,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "flor.userData.sz.animDone"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ]
+            }
+          },
+          {
             "id": "posicao",
             "label": "Escolha outro lugar alcançável para o regador e confira as regras.",
             "rule": {
               "type": "changedGamePosition",
               "dimension": "3d",
               "object": "regador",
-              "initial": [-4, -2]
+              "initial": [
+                -4,
+                -2
+              ]
             }
           }
         ],

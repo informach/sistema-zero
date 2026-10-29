@@ -21,7 +21,10 @@ import {
   assertCurrentStudioAuthoring,
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
+  guardArtSlots,
+  startArtSlotGuard,
 } from '../../../application/content-admin/content-admin.service'
+import { draftArtSlotIssues, hasArtSlots } from '../../../domain/course/art-slot-course'
 import { blockRevisionFingerprint } from '../../../domain/course/block-revision'
 import { certificateLessonIssues } from '../../../domain/course/certificate-lesson'
 import {
@@ -54,6 +57,7 @@ import {
   lessonDrafts,
   lessonStructures,
   lessons,
+  modules,
   quizAttempts,
 } from './schema'
 import { studioCurationProjection, studioEnvironmentProjection } from './studio-runtime-projection'
@@ -360,12 +364,16 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           throw new NoPublishedLessonError(
             'Esta é a última aula publicada — despublique o curso antes de removê-la.',
           )
-        await content.updateLesson(lessonId, {
-          title: snapshot.lesson.title,
-          slug: snapshot.lesson.slug,
-          estimatedMinutes: snapshot.lesson.estimatedMinutes,
-          isPublished: false,
-        })
+        // Despublicar tira desta aula os desenhos das vagas de arte que ela preenche: a mesma
+        // conferência do curso (a trava do curso já é do write()).
+        await guardArtSlots(content, snapshot.lesson.courseId, () =>
+          content.updateLesson(lessonId, {
+            title: snapshot.lesson.title,
+            slug: snapshot.lesson.slug,
+            estimatedMinutes: snapshot.lesson.estimatedMinutes,
+            isPublished: false,
+          }),
+        )
         return draft.document
       },
     )
@@ -555,7 +563,37 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       ...(course?.modality === 'live'
         ? liveLessonCompletionIssues(draft.document.blocks, draft.document.sections)
         : []),
+      ...(await this.artSlotIssues(lessonId, draft.document)),
     ]
+  }
+
+  /** O "Conferir" das vagas de arte: o que publicar este rascunho criaria no curso. */
+  private async artSlotIssues(
+    lessonId: string,
+    document: LessonDraftDocument,
+  ): Promise<LessonDraftIssue[]> {
+    const [position] = await this.db
+      .select({
+        courseId: lessons.courseId,
+        lessonOrder: lessons.sortOrder,
+        moduleOrder: modules.sortOrder,
+      })
+      .from(lessons)
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(eq(lessons.id, lessonId))
+    if (!position) return []
+    const content = new DrizzleContentAdminRepository(this.db, this.studioPolicy)
+    return draftArtSlotIssues(
+      await content.listArtSlotBlocks(position.courseId),
+      {
+        lessonId,
+        lessonTitle: document.title.trim(),
+        moduleOrder: position.moduleOrder,
+        lessonOrder: position.lessonOrder,
+      },
+      document.blocks,
+      document.sections,
+    ).map((issue) => ({ message: issue.message }))
   }
 
   async publish(
@@ -593,6 +631,13 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           .select()
           .from(lessonBlocks)
           .where(eq(lessonBlocks.lessonId, lessonId))
+        // Vagas de arte: a aula só entra na conferência do curso se preenche ou importa alguma,
+        // antes ou depois (a conferência lê todos os jogos do curso; aula sem vaga não paga isso).
+        const confirmArtSlots =
+          blocks.some((block) => hasArtSlots(block.content)) ||
+          existingRows.some((row) => !row.archivedAt && hasArtSlots(row.content))
+            ? await startArtSlotGuard(content, snapshot.lesson.courseId)
+            : null
         // Course lock is already held by write(). Claim BEFORE any old chain is overwritten.
         await content.claimStudioChains(
           snapshot.lesson.courseId,
@@ -706,6 +751,8 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           .insert(lessonStructures)
           .values(structure)
           .onConflictDoUpdate({ target: lessonStructures.lessonId, set: structure })
+        // Depois das partes: a ordem do desenho e do jogo DENTRO da aula vem delas.
+        await confirmArtSlots?.()
         const [course] = await tx
           .select()
           .from(courses)

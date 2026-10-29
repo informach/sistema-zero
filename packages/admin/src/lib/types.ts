@@ -670,6 +670,8 @@ export interface StudioBlock {
   projectExamples?: unknown
   /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
   chain?: string
+  /** Os desenhos das vagas de arte que este jogo importa (até 8). */
+  artSlots?: import('@sistemazero/core/learning').StudioArtSlotImport[]
   /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */
   showcase?: {
     enabled: boolean
@@ -735,6 +737,8 @@ export interface PintaBlock {
   allowTools?: string[]
   /** Nome do desenho contínuo (cadeia entre aulas). */
   chain?: string
+  /** A vaga de arte que o desenho preenche (o jogo de um bloco de Estúdio o importa). */
+  artSlot?: import('@sistemazero/core/learning').PintaArtSlot
 }
 
 /** Os tipos de item que cabem num bloco de materiais complementares. */

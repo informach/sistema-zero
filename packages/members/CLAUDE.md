@@ -9,10 +9,64 @@ O nome da vaga tem a régua de um nome de imagem do Estúdio (`ART_SLOT_NAME_PAT
 VIRA o nome da imagem. DTO TypeBox nos dois blocos; `assertBlockCoherent` recusa a vaga no Pinta de
 galeria ou de exploração (precisa da entrega do próprio desenho) e as vagas no Estúdio de galeria.
 A criança recebe só os NOMES (`STUDIO_MEMBER_CONTENT_KEYS` + `toMemberFacingStudioContent`; o Pinta
-já ia inteiro). Ainda NÃO existe: a validação por curso (repetidas, inexistentes, fora de ordem), a
-rota que entrega o desenho ao Estúdio e o Admin (etapas 2 a 6 do plano). Testes:
-`tests/unit/art-slots-blocks.test.ts`, os de vaga em `tests/integration/pinta.test.ts` e
-`core/src/learning/art-slots.test.ts`.
+já ia inteiro). Testes: `tests/unit/art-slots-blocks.test.ts`, os de vaga em
+`tests/integration/pinta.test.ts` e `core/src/learning/art-slots.test.ts`.
+
+**Etapa 2, a conferência do CURSO (29/10/2026).** A régua é pura no core
+(`artSlotCourseIssues`): vaga preenchida por dois desenhos; jogo importando vaga que nenhum desenho
+preenche; vaga preenchida DEPOIS do jogo (ordem módulo → aula → PARTE da aula → bloco); `replace`
+sem `replaces` ou com imagem que o jogo não tem; e `add` com o nome de uma imagem que o jogo já tem
+(a quinta, fora da lista do design: o desenho colidiria com a imagem nos materiais). Cada problema
+tem uma `key` estável, e quem grava compara antes × depois (`newArtSlotCourseIssues`): só recusa o
+que a gravação CRIOU, **409 `ART_SLOT_CONFLICT`** com a frase da régua (nomeia aula e vaga).
+- **Onde roda**, sempre com o repositório da transação da trava do curso (`withStudioAuthoringLock`,
+  o `FOR UPDATE` da linha do curso): `guardArtSlots` em reordenar e excluir aula e módulo, e no
+  `BlockAdminService` (criar, editar, excluir, reordenar; ele não tem rota, só os testes de banco o
+  usam); `startArtSlotGuard` na publicação do rascunho (lê antes de trocar os blocos, confirma
+  DEPOIS de gravar as partes, porque a ordem dentro da aula vem delas). A publicação só paga a
+  leitura quando a aula tem vaga antes ou depois (`hasArtSlots`). A importação de manifesto vai ao
+  rascunho e passa pela mesma publicação.
+- **O "Conferir"** (`POST …/draft/validate`) simula: as vagas de agora com os blocos da aula
+  trocados pelos do rascunho (`draftArtSlotIssues`), e devolve o problema como item da conferência.
+- **A leitura** é `listArtSlotBlocks` (`art-slots.repository.ts`): blocos não arquivados do curso
+  (aula rascunho inclusa) com vaga, e os NOMES das imagens do jogo tirados no banco (o projeto tem
+  até 1,5 MB). ⚠️ Esse SQL espelha `studioGameImageNames` (`domain/course/art-slot-course.ts`); o
+  falso em memória usa a função de domínio, então só `tests/db/art-slots-sql.test.ts` alcança o SQL.
+- ⚠️ O falso de `withStudioAuthoringLock` agora é REENTRANTE (`AsyncLocalStorage`, como o `FOR
+  UPDATE` na mesma transação) e DESFAZ módulos, aulas e blocos no erro (a conferência recusa depois
+  de escrever). Testes: `tests/integration/art-slots-course.test.ts` e o SQL acima.
+
+**Etapa 3, a leitura da criança (29/10/2026).** `GET /members/lessons/:lessonId/blocks/:blockId/art-slots`
+(`GetArtSlotsService`, rota de gateway `members-art-slots`) → `{slots: [{name, mode, replaces, asset}]}`
+na ordem das vagas do bloco de Estúdio. Régua do carryover: aula publicada e liberada, bloco numa
+parte aberta, acesso pela CONTA e entrega pelo PERFIL (`getOne(userId, …)`, nunca de outra
+criança). O desenho de cada vaga vem do bloco de Pinta em aula PUBLICADA do curso que a preenche
+(`CourseRepository.findArtSlotFillers`, o primeiro em ordem de curso; `replaces` sai dele). Vaga sem
+desenho publicado ou sem entrega volta com `asset: null`; vagas ilegíveis valem como nenhuma; bloco
+que não é Estúdio é 404. Testes: `tests/integration/art-slots-read.test.ts` e o SQL em
+`tests/db/art-slots-sql.test.ts`.
+
+**Full review das vagas (29/10/2026).** (1) A busca do desenho da criança (`findArtSlotFillers`)
+passou a usar a MESMA leitura da conferência (`listArtSlotBlocks`) com `artSlotFillers` do domínio:
+sem bloco arquivado (antes pegava o bloco de Pinta arquivado por uma publicação) e na ordem com a
+PARTE da aula; vaga ilegível vale como nenhuma. (2) `ArtSlotCourseBlock.published`: um Estúdio de
+aula publicada que importa uma vaga preenchida só em aula NÃO publicada é o problema
+`unpublished` ("Publique essa aula antes"); despublicar uma aula (rascunho `/unpublish` e
+`LessonAdminService.update`) passa pela conferência, e o "Conferir" trata o rascunho como
+publicado. (3) As chaves dos problemas não dependem da ordem dos blocos (`duplicate:<vaga>:<bloco>`
+por bloco repetido, `order:<jogo>:<vaga>`, `replace-missing:<jogo>:<vaga>`): reordenar vagas
+repetidas de antes não vira 409. (4) Vaga de arte em Pinta de MAPA é recusada (`tilemap` não vira
+imagem sozinho). Testes: `tests/integration/art-slots-course.test.ts` (§review),
+`tests/db/art-slots-sql.test.ts` e `core/src/learning/art-slots.test.ts`.
+
+**Texto dos materiais na publicação (29/10/2026).** O item `text` do bloco `materials` aceitava
+até 2000 caracteres no DTO de publicação (`MaterialsBlockSchema`), enquanto o core
+(`isLearningManifest`) aceita 50000: a importação dos cursos do Faísca passava e a PUBLICAÇÃO
+recusava ("Preencha os campos obrigatórios deste bloco"), porque o Passo a passo do projeto vai
+inteiro num item de texto com a prévia em livro (3 a 15 mil caracteres). Hoje
+`MATERIALS_TEXT_MAX_CHARS` = 50000, igual ao core. Teste: `tests/unit/materials-text-publish.test.ts`
+(todo bloco de materiais com itens dos manifestos do Faísca passa no `parsePublishedLessonBlock`).
+Achado pelo ensaio de ponta a ponta da vaga de arte (`community-kids/e2e-art-slots`).
 
 ## Leituras internas do Arquipélago (27/10/2026)
 

@@ -128,7 +128,14 @@ export interface ProjectAsset {
   originalFileName?: string
   width?: number
   height?: number
-  source: 'upload' | 'library'
+  /**
+   * `lesson-art` (29/10/2026): o desenho que a criança fez num bloco de Pinta da aula, posto
+   * pelo HOST nos materiais do jogo com o nome da vaga de arte (`docs/plans/2026-10-29-desenho-
+   * da-crianca-no-jogo-design.md`). Volta a cada abertura do bloco, então fica fora da impressão
+   * do conteúdo (como a biblioteca do curso) e o painel não deixa renomear nem apagar: o nome é
+   * o da vaga, e quem muda o desenho é o Pinta da aula.
+   */
+  source: 'upload' | 'library' | 'lesson-art'
   /** Quando veio da biblioteca embutida (starter pack) ou da pessoal (`personal:<id>`). */
   libId?: string
   /**
@@ -574,7 +581,8 @@ export function sanitizeProjectAssets(
     const name = typeof a.name === 'string' ? normalizeAssetName(a.name) : null
     if (!name || seenNames.has(name)) continue
     if (totalChars + a.dataUrl.length > dataLimits.maxAssetsTotalChars) continue
-    const source: ProjectAsset['source'] = a.source === 'library' ? 'library' : 'upload'
+    const source: ProjectAsset['source'] =
+      a.source === 'library' || a.source === 'lesson-art' ? a.source : 'upload'
     const asset: ProjectAsset = {
       id: typeof a.id === 'string' && a.id.trim() ? a.id.slice(0, 64) : name,
       name,

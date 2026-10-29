@@ -82,3 +82,153 @@ export function studioArtSlotsIssue(slots: unknown): string | null {
   }
   return null
 }
+
+/**
+ * Um bloco do curso que mexe com vagas, como a conferência do CURSO o enxerga (etapa 2). A
+ * `order` é a posição no curso, comparada da esquerda para a direita: módulo, aula, parte e
+ * bloco. `imageNames` são as imagens do jogo do Estúdio (`initialProject.assets` de tipo imagem).
+ * `published` diz se a aula está publicada (ausente vale como publicada): a criança só recebe o
+ * desenho de um bloco de Pinta em aula publicada.
+ */
+export type ArtSlotCourseBlock =
+  | {
+      kind: 'pinta'
+      blockId: string
+      lessonId: string
+      lessonTitle: string
+      order: readonly number[]
+      published?: boolean
+      slot: PintaArtSlot
+    }
+  | {
+      kind: 'studio'
+      blockId: string
+      lessonId: string
+      lessonTitle: string
+      order: readonly number[]
+      published?: boolean
+      slots: readonly StudioArtSlotImport[]
+      imageNames: readonly string[]
+    }
+
+/**
+ * Um problema das vagas no curso. A `key` identifica o problema sem depender da frase: quem grava
+ * compara as chaves de antes e de depois, e só recusa o que a gravação CRIOU (um curso que já
+ * nasceu torto não prende quem está consertando outra coisa).
+ */
+export interface ArtSlotCourseIssue {
+  key: string
+  message: string
+}
+
+export function compareArtSlotOrder(a: readonly number[], b: readonly number[]): number {
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const diff = (a[i] ?? 0) - (b[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  return 0
+}
+
+type PintaCourseBlock = Extract<ArtSlotCourseBlock, { kind: 'pinta' }>
+
+/**
+ * Os problemas das vagas de arte de um curso, na ordem em que os blocos aparecem.
+ *
+ * ⚠️ As chaves NÃO dependem da ordem dos blocos (review de 29/10/2026): quem grava compara as
+ * chaves de antes e de depois, e uma reordenação que só troca qual de duas vagas repetidas vem
+ * primeiro não pode virar um problema "novo".
+ */
+export function artSlotCourseIssues(blocks: readonly ArtSlotCourseBlock[]): ArtSlotCourseIssue[] {
+  const ordered = [...blocks].sort((a, b) => compareArtSlotOrder(a.order, b.order))
+  const fillers = new Map<string, PintaCourseBlock>()
+  const repeated = new Map<string, PintaCourseBlock[]>()
+  const published = new Set<string>()
+  const issues: ArtSlotCourseIssue[] = []
+  for (const block of ordered) {
+    if (block.kind !== 'pinta') continue
+    if (block.published !== false) published.add(block.slot.name)
+    const all = repeated.get(block.slot.name) ?? []
+    all.push(block)
+    repeated.set(block.slot.name, all)
+    if (!fillers.has(block.slot.name)) fillers.set(block.slot.name, block)
+  }
+  // Uma chave por bloco repetido: reordenar não muda as chaves, tirar uma repetição só as diminui
+  // e acrescentar outra cria a dela.
+  for (const [name, all] of repeated) {
+    if (all.length < 2) continue
+    for (const block of all) {
+      const other = all.find((candidate) => candidate !== block) as PintaCourseBlock
+      const [first, second] =
+        compareArtSlotOrder(block.order, other.order) <= 0 ? [block, other] : [other, block]
+      issues.push({
+        key: `duplicate:${name}:${block.blockId}`,
+        message:
+          `As aulas "${first.lessonTitle}" e "${second.lessonTitle}" preenchem a mesma vaga de arte ` +
+          `"${name}". Cada vaga recebe um desenho só no curso: dê outro nome a uma delas.`,
+      })
+    }
+  }
+  for (const block of ordered) {
+    if (block.kind !== 'studio') continue
+    const game = `O Estúdio da aula "${block.lessonTitle}"`
+    for (const slot of block.slots) {
+      const filler = fillers.get(slot.name)
+      if (!filler) {
+        issues.push({
+          key: `missing:${block.blockId}:${slot.name}`,
+          message: `${game} importa a vaga de arte "${slot.name}", mas nenhum desenho do curso preenche essa vaga.`,
+        })
+        continue
+      }
+      if (block.published !== false && !published.has(slot.name))
+        issues.push({
+          key: `unpublished:${block.blockId}:${slot.name}`,
+          message:
+            `${game} importa a vaga de arte "${slot.name}", mas o desenho que a preenche está na ` +
+            `aula "${filler.lessonTitle}", que não está publicada. Publique essa aula antes.`,
+        })
+      if (compareArtSlotOrder(filler.order, block.order) > 0)
+        issues.push({
+          key: `order:${block.blockId}:${slot.name}`,
+          message:
+            `${game} importa a vaga de arte "${slot.name}", que só é preenchida depois, na aula ` +
+            `"${filler.lessonTitle}". O desenho precisa vir antes do jogo que o usa.`,
+        })
+      if (slot.mode === 'add') {
+        if (block.imageNames.includes(slot.name))
+          issues.push({
+            key: `add-collision:${block.blockId}:${slot.name}`,
+            message:
+              `O jogo do Estúdio da aula "${block.lessonTitle}" já tem uma imagem chamada ` +
+              `"${slot.name}". Dê outro nome à vaga, ou escolha trocar a imagem.`,
+          })
+        continue
+      }
+      const replaces = filler.slot.replaces
+      if (!replaces)
+        issues.push({
+          key: `replace-missing:${block.blockId}:${slot.name}`,
+          message:
+            `${game} troca uma imagem pelo desenho da vaga "${slot.name}", mas o desenho da aula ` +
+            `"${filler.lessonTitle}" não diz qual imagem do jogo ele substitui.`,
+        })
+      else if (!block.imageNames.includes(replaces))
+        issues.push({
+          key: `replace-unknown:${block.blockId}:${slot.name}:${replaces}`,
+          message:
+            `O desenho da vaga "${slot.name}" substitui a imagem "${replaces}", que não existe no ` +
+            `jogo do Estúdio da aula "${block.lessonTitle}".`,
+        })
+    }
+  }
+  return issues
+}
+
+/** Os problemas de `after` que `before` não tinha: o que uma gravação criou. */
+export function newArtSlotCourseIssues(
+  before: readonly ArtSlotCourseIssue[],
+  after: readonly ArtSlotCourseIssue[],
+): ArtSlotCourseIssue[] {
+  const known = new Set(before.map((issue) => issue.key))
+  return after.filter((issue) => !known.has(issue.key))
+}

@@ -1005,6 +1005,13 @@ export interface LearningManifest {
   >
 }
 
+/**
+ * O teto do texto de um item de materiais: o Passo a passo do projeto vai inteiro num item de
+ * texto com a prévia em livro. O DTO de publicação do members usa a MESMA constante (com números
+ * diferentes, a importação aceitava e a publicação recusava; 29/10/2026).
+ */
+export const MATERIALS_TEXT_MAX_CHARS = 50_000
+
 function isManifestContent(content: unknown): boolean {
   if (!record(content)) return false
   if (Object.hasOwn(content, 'solutionProject')) return false
@@ -1063,7 +1070,7 @@ function isManifestContent(content: unknown): boolean {
           (item.kind === 'file'
             ? text(item.attachmentId, 64)
             : item.kind === 'text'
-              ? text(item.markdown, 50000)
+              ? text(item.markdown, MATERIALS_TEXT_MAX_CHARS)
               : item.kind === 'link'
                 ? text(item.url, 2000) && text(item.label, 200)
                 : item.kind === 'image'

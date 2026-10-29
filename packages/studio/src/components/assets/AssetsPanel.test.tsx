@@ -252,6 +252,32 @@ describe('Materiais do jogo — as abas', () => {
   })
 })
 
+describe('Materiais do jogo — o desenho da aula (vaga de arte)', () => {
+  const PNG =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+  it('mostra o selo, sem renomear nem apagar; a imagem enviada segue com os dois', () => {
+    const project = createEmptyProject('p1', 'Meu Jogo')
+    project.assets = [
+      { id: 'minha-chave', name: 'minha-chave', kind: 'image', dataUrl: PNG, source: 'lesson-art' },
+      { id: 'foto', name: 'foto', kind: 'image', dataUrl: PNG, source: 'upload' },
+    ]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<AssetsPanel open onClose={() => {}} />)
+
+    const itens = within(screen.getByRole('tabpanel')).getAllByRole('listitem')
+    const desenho = itens.find((li) => li.textContent?.includes('minha-chave'))
+    const foto = itens.find((li) => li.querySelector('img[alt="foto"]'))
+    if (!desenho || !foto) throw new Error('itens da lista não achados')
+    expect(within(desenho).getByText('Seu desenho da aula')).toBeTruthy()
+    expect(within(desenho).queryByRole('textbox')).toBeNull()
+    expect(within(desenho).queryByRole('button', { name: /Excluir|Apagar|Remover/ })).toBeNull()
+    // Anti-vácuo: a imagem comum continua com o campo do nome e o botão de apagar.
+    expect(within(foto).getByRole('textbox')).toBeTruthy()
+    expect(within(foto).getByRole('button', { name: /Excluir|Apagar|Remover/ })).toBeTruthy()
+  })
+})
+
 describe('Materiais do jogo — a aba "Modelos 3D"', () => {
   function abrir3D() {
     render(<AssetsPanel open onClose={() => {}} />)

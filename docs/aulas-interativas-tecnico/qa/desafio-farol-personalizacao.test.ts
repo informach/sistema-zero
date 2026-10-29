@@ -79,7 +79,10 @@ describe('personalização completa do Farol', () => {
     const [actor, key, tower, boat] = game.sprites
     if (!actor || !key || !tower || !boat) throw new Error('Objetos ausentes')
     const towerImage = () => (tower as typeof tower & { image: unknown }).image
+    const towerName = () => (tower as typeof tower & { imageName?: string | null }).imageName
     const dark = towerImage()
+    // O nome curto que o objetivo de execução lê (`farol.imageName`, 29/10/2026).
+    expect(towerName()).toBe(choice.farol.apagado)
     actor.x = FAROL_LAYOUT.personagemNaPorta.x
     actor.y = FAROL_LAYOUT.personagemNaPorta.y
     game.nextFrame()
@@ -93,6 +96,7 @@ describe('personalização completa do Farol', () => {
     actor.y = FAROL_LAYOUT.personagemNaPorta.y
     game.nextFrame()
     expect(towerImage()).not.toBe(dark)
+    expect(towerName()).toBe(choice.farol.aceso)
     for (let frame = 0; frame < 100; frame++) game.nextFrame()
     expect(boat.x).toBe(FAROL_LAYOUT.chegadaBarcoX)
     expect([tower.x, tower.y, tower.w, tower.h]).toEqual(Object.values(FAROL_LAYOUT.farol))
@@ -107,14 +111,28 @@ describe('personalização completa do Farol', () => {
     expect(restart.sprites[1]?.x).toBe(choice.posicao.x)
     expect(restart.sprites[1]?.y).toBe(choice.posicao.y)
     expect(restart.sprites[3]?.x).toBe(FAROL_LAYOUT.barco.x)
+    // Desde 29/10/2026 qualquer imagem passa a ESTRUTURA (um farol desenhado pela criança também):
+    // quem pega o farol que não acende é o objetivo que roda o jogo, pelo `imageName` que não muda.
     light.image = choice.farol.apagado
     const apagado = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
-    expect(
-      evaluateStudioSectionProject(portaCompleta, apagado).find(
-        (item) => item.checkId === 'acender',
-      )?.passed,
-    ).toBe(false)
-    expect(evaluateStudioSectionProject(farolEscolhido, apagado)[0]?.passed).toBe(false)
+    expect(evaluateStudioSectionProject(farolEscolhido, apagado)[0]?.passed).toBe(true)
+    const semLuz = exampleHarness({
+      name: project.name,
+      experience: 'game',
+      ir,
+      assets: project.assets,
+    })
+    const [ator, chave, farol] = semLuz.sprites
+    if (!ator || !chave || !farol) throw new Error('Objetos ausentes')
+    ator.x = chave.x
+    ator.y = chave.y
+    semLuz.nextFrame()
+    ator.x = FAROL_LAYOUT.personagemNaPorta.x
+    ator.y = FAROL_LAYOUT.personagemNaPorta.y
+    semLuz.nextFrame()
+    expect((farol as typeof farol & { imageName?: string | null }).imageName).toBe(
+      choice.farol.apagado,
+    )
   })
 
   test('um projeto salvo recebe novas escolhas sem perder imagens, código ou mensagens próprias', async () => {

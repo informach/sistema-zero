@@ -103,6 +103,9 @@ export function ImagesTab({
               // Quem edita esta imagem: o Pinta (desenho) ou o Molda (textura).
               const editTarget = editTargetOf(asset)
               const isCover = coverAssetName !== undefined && asset.name === coverAssetName
+              // O desenho da vaga de arte volta a cada abertura com o nome da vaga: renomear ou
+              // apagar aqui não teria efeito duradouro (e renomear soltaria o vínculo).
+              const lessonArt = asset.source === 'lesson-art'
               return (
                 <li
                   key={asset.id}
@@ -118,14 +121,28 @@ export function ImagesTab({
                     style={{ imageRendering: 'pixelated' }}
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <AssetNameInput
-                      asset={asset}
-                      what="a imagem"
-                      onRename={onRename}
-                      codeName={codeNameOf?.(asset)}
-                      className="w-full"
-                    />
+                    {lessonArt ? (
+                      <span className="truncate font-mono text-xs text-sz-fg" title={asset.name}>
+                        {asset.name}
+                      </span>
+                    ) : (
+                      <AssetNameInput
+                        asset={asset}
+                        what="a imagem"
+                        onRename={onRename}
+                        codeName={codeNameOf?.(asset)}
+                        className="w-full"
+                      />
+                    )}
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      {lessonArt ? (
+                        <span
+                          className="rounded bg-sz-accent/15 px-1 text-[10px] font-semibold text-sz-accent"
+                          title={t('assets.lessonArt.hint')}
+                        >
+                          {t('assets.lessonArt.badge')}
+                        </span>
+                      ) : null}
                       {asset.tilemap ? (
                         <span
                           className="text-[9px] text-sz-fg-soft"
@@ -134,7 +151,7 @@ export function ImagesTab({
                           🗺️ mapa
                         </span>
                       ) : null}
-                      {asset.pintaImage ? (
+                      {lessonArt ? null : asset.pintaImage ? (
                         onReviewPintaImage ? (
                           <button
                             type="button"
@@ -203,7 +220,7 @@ export function ImagesTab({
                           Molda.
                         </span>
                       ) : null}
-                      <DeleteAssetButton asset={asset} onDelete={onDelete} />
+                      {lessonArt ? null : <DeleteAssetButton asset={asset} onDelete={onDelete} />}
                     </div>
                   </div>
                 </li>

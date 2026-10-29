@@ -1,5 +1,23 @@
 # CLAUDE.md — @sistemazero/admin
 
+## O desenho da criança no jogo: os campos de vaga (29/10/2026, etapa 6)
+
+Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. Os dois blocos do editor de
+aula ganharam campos (`components/editor/art-slot-fields.tsx`, réguas puras em
+`lib/art-slot-authoring.ts`):
+- **Pinta, "Desenho para o jogo"** (`PintaArtSlotFields`, só fora da exploração): a caixa "Este
+  desenho entra num jogo do curso" abre a imagem do jogo que a criança vai redesenhar (lista das
+  imagens dos blocos de Estúdio DESTA aula, ou "Outra imagem" digitada) e o nome da vaga, sugerido
+  da imagem (`chave-dourada` → `minha-chave`) e normalizado ao sair do campo. Sem molde por baixo
+  (decisão dela). Grava `artSlot {name, replaces?}`.
+- **Estúdio, "Desenhos da criança"** (`StudioArtSlotsFields`): as vagas dos blocos de Pinta desta
+  aula com uma caixinha e o modo ("Nos materiais" ou "Trocando a imagem do jogo sozinho"), mais
+  "Vaga de outra aula (nome)". Até 8; grava `artSlots [{name, mode}]`.
+- As opções vêm só do rascunho desta aula: vaga e imagem de outra aula entram pelo nome. Quem
+  confere o curso inteiro (repetida, fora de ordem, imagem que o jogo não tem) é o "Conferir" e a
+  publicação, pela régua do members (etapa 2).
+- Testes: `tests/art-slot-authoring.test.ts` e `tests/art-slot-fields.test.tsx`.
+
 ## Jogo: Medição (geral-06, 28/10/2026)
 
 A aba `Medição` em `game-admin.tsx` monta `game-measurement.tsx`. Período inclusivo de até

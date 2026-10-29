@@ -1,5 +1,35 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## O desenho da criança no jogo: vagas de arte (29/10/2026, etapa 5)
+
+Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. O bloco de Estúdio da
+aula com `content.artSlots` põe nos materiais do jogo o desenho que a criança entregou no bloco de
+Pinta de cada vaga, a cada abertura:
+- **Leitura**: `GET /api/members/lessons/:lessonId/blocks/:blockId/art-slots` (handler
+  `routes.artSlots`, client `members.getArtSlots`, atalhos `route.ts` no community e no Kids) →
+  `ArtSlotsView {slots: [{name, mode, replaces, asset}]}`; quem decide acesso e de qual perfil é o
+  members.
+- **Conversão** (`lib/lesson-art-load.ts`, `loadLessonArt` + `convertPintaWire`): o desenho guardado
+  (`pintaAssetFromWire`) vira imagem do Estúdio pelo MESMO exportador do Pinta
+  (`exportLoadedAssetForStudio` de `@sistemazero/pinta/studio-library`, PNG nos tetos do Estúdio,
+  com as animações). Leitura que falha ou desenho que não converte deixam a vaga vazia e ligam o
+  recado `copy.estudio.desenhoNaoVeio`; o bloco nunca quebra por isso.
+- **Montagem** (`lib/lesson-art-slots.ts`, `applyLessonArt`, puro): `add` acrescenta ou atualiza a
+  imagem com o nome da vaga (id `lesson-art-<vaga>`, `source: 'lesson-art'`) e NUNCA troca uma
+  imagem da criança com o mesmo nome; `replace` troca a imagem `replaces` mantendo id e nome (os
+  blocos que a usavam passam a mostrar o desenho). Vaga vazia não tira o que já entrou; sem
+  mudança volta o MESMO objeto; Pro e Python ficam como estão.
+- **Onde roda**: no efeito da semente do `studio-block.tsx`, DEPOIS de escolher a versão (local,
+  envio, cadeia, inicial) e antes de montar o editor; só com `player.viewerId` (a prévia e o ensaio
+  do Admin não têm desenho de criança). A impressão do conteúdo ignora `lesson-art`, então abrir
+  com o desenho não marca o projeto como mudado.
+- **Full review (29/10/2026):** a montagem respeita os tetos de materiais do Estúdio
+  (`STUDIO_ASSETS_TOTAL_CHARS` 33 milhões e `STUDIO_ASSETS_MAX_COUNT` 128, amarrados ao
+  `PROJECT_ASSET_LIMITS` por teste): o desenho que estouraria fica de fora com o recado
+  (`onTooBig`), em vez de o saneamento do Estúdio sumir com imagens caladas. A leitura das vagas
+  começa junto com a escolha da versão (não depois) e não roda sem internet (`resumeOffline`).
+- Testes: `tests/lesson-art.test.ts`.
+
 ## Arquipélago Vagalume: a porta do jogo (27/10/2026)
 
 O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta da plataforma.

@@ -8,6 +8,11 @@ import {
 import type { PythonLearningLevel } from '@sistemazero/core/studio/python-learning'
 import { PINTA_TOOL_PRESETS, type PintaLessonAssetKind } from '@sistemazero/pinta/assets'
 import type { BlockLevel, EditableStudioProject, IDEMode } from '@sistemazero/studio'
+import {
+  isArtSlotName,
+  type StudioArtSlotForm,
+  studioArtSlotsFormIssue,
+} from './art-slot-authoring'
 import { EMPTY_LEARNING } from './learning-form-defaults'
 import type { LessonFormSnapshot } from './lesson-form-buffer'
 import {
@@ -91,6 +96,8 @@ export interface BlockForm {
   studioAllowBlocks: string[]
   /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
   studioChain: string
+  /** Estúdio: os desenhos das vagas de arte que este jogo importa (vazia = nenhum). */
+  studioArtSlots: StudioArtSlotForm[]
   /** Estúdio: vitrine (Mural) — auto-publicar o projeto ao concluir esta aula. */
   studioShowcaseEnabled: boolean
   studioShowcaseTitle: string
@@ -118,6 +125,10 @@ export interface BlockForm {
   pintaToolPreset: 'essencial' | 'livre' | 'tudo'
   /** Pinta: nome do desenho contínuo (cadeia). Vazio = aula independente. */
   pintaChain: string
+  /** Pinta: a vaga de arte que o desenho preenche (vazia = o desenho não entra em jogo). */
+  pintaArtSlotName: string
+  /** Pinta: a imagem do jogo que o desenho substitui (referência e modo "trocar"). */
+  pintaArtSlotReplaces: string
   /** Materiais complementares: o nome do bloco e a lista ordenada de itens. */
   materials: MaterialsValue
   /** Exibe o primeiro PDF em um leitor ao lado do vídeo quando couber. */
@@ -161,6 +172,7 @@ export const EMPTY_BLOCK: BlockForm = {
   studioAllowReveal: false,
   studioAllowBlocks: [],
   studioChain: '',
+  studioArtSlots: [],
   studioShowcaseEnabled: false,
   studioShowcaseTitle: '',
   studioShowcaseSummary: '',
@@ -180,6 +192,8 @@ export const EMPTY_BLOCK: BlockForm = {
   // curadoria). Quem quiser a caixa inteira escolhe "Tudo" de propósito.
   pintaToolPreset: 'essencial',
   pintaChain: '',
+  pintaArtSlotName: '',
+  pintaArtSlotReplaces: '',
   materials: EMPTY_MATERIALS,
   materialsBookPreview: false,
 }
@@ -267,6 +281,9 @@ export function buildContent(
           : {}),
         allowLevelReveal: f.studioAllowReveal,
         ...(f.studioChain.trim() ? { chain: f.studioChain.trim() } : {}),
+        ...(f.studioArtSlots.length > 0
+          ? { artSlots: f.studioArtSlots.map(({ name, mode }) => ({ name, mode })) }
+          : {}),
         ...(f.studioShowcaseEnabled
           ? {
               showcase: {
@@ -394,6 +411,17 @@ export function buildContent(
           ? {}
           : { allowTools: [...PINTA_TOOL_PRESETS[f.pintaToolPreset]] }),
         ...(opt(f.pintaChain) ? { chain: f.pintaChain.trim() } : {}),
+        // A vaga só vale no desenho que a criança ENVIA (o members recusa na exploração).
+        ...(f.toolPurpose !== 'experiment' && isArtSlotName(f.pintaArtSlotName)
+          ? {
+              artSlot: {
+                name: f.pintaArtSlotName,
+                ...(isArtSlotName(f.pintaArtSlotReplaces)
+                  ? { replaces: f.pintaArtSlotReplaces }
+                  : {}),
+              },
+            }
+          : {}),
       }
     default: {
       // O dicionário só guarda o que ainda casa com o texto (e a pronúncia) de AGORA: uma pergunta
@@ -439,6 +467,18 @@ export function validateBlock(f: LessonFormSnapshot<BlockForm>): string | null {
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
       // (o OPOSTO da intenção do autor; achado do review).
       if (f.studioModes.length === 0) return 'Selecione ao menos um modo do Estúdio.'
+      return studioArtSlotsFormIssue(f.studioArtSlots)
+    }
+    case 'pinta': {
+      // No modo exploração os campos da vaga somem e ela não vai ao payload: nada a conferir.
+      if (f.toolPurpose === 'experiment') return null
+      if (f.pintaArtSlotReplaces && !f.pintaArtSlotName)
+        return 'Dê um nome à vaga do desenho, ou tire a imagem do jogo que ele substitui.'
+      // Nome fora da régua não pode sumir calado do payload (review de 29/10/2026).
+      if (f.pintaArtSlotName && !isArtSlotName(f.pintaArtSlotName))
+        return 'O nome da vaga do desenho usa só letras minúsculas, números e hífen.'
+      if (f.pintaArtSlotReplaces && !isArtSlotName(f.pintaArtSlotReplaces))
+        return 'A imagem do jogo que o desenho substitui precisa ser um nome de imagem do jogo.'
       return null
     }
     case 'certificate': {

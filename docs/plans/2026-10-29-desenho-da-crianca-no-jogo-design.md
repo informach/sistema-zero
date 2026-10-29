@@ -75,7 +75,13 @@ Estúdio declara as vagas que IMPORTA.
   - duas vagas com o mesmo nome no curso;
   - um Estúdio importando uma vaga que nenhum Pinta do curso preenche;
   - uma vaga preenchida só DEPOIS do Estúdio que a importa (ordem do curso);
-  - `replace` sem `replaces` na vaga, ou com `replaces` que não é imagem do jogo do bloco.
+  - `replace` sem `replaces` na vaga, ou com `replaces` que não é imagem do jogo do bloco;
+  - `add` com o nome de uma imagem que o jogo já tem (acrescentada na etapa 2: o desenho colidiria
+    com a imagem nos materiais).
+- A ordem é a do curso até a PARTE da aula (módulo, aula, parte, bloco): na mesma aula, o desenho
+  vem numa parte antes do jogo. Reordenar e excluir aulas e módulos passam pela mesma conferência.
+- Só recusa o que a gravação cria: um curso que já tem um problema não prende quem mexe em outra
+  coisa. O "Conferir" do rascunho mostra o problema antes do "Publicar".
 - O conteúdo da vaga é do aluno: a view pública do bloco leva os nomes, nunca a entrega de outro
   perfil.
 
@@ -118,27 +124,28 @@ antes do Admin, do member-shell e dos apps.
 1. **Core e members, contrato.** `PintaBlock.artSlot` e `StudioBlock.artSlots` no domínio
    (`packages/members/src/domain/course/lesson-block.ts`), validação de forma e tetos, DTO TypeBox,
    projeção pública (nomes sim, entrega não). Testes unitários do domínio.
-2. **Members, validação de curso.** As quatro recusas da autoria no `BlockAdminService` (create e
-   update) e na importação de manifesto, com trava por curso no molde de `withPintaChainLock`.
-   Teste SQL das consultas (régua de `tests/db/pinta-chain-sql.test.ts`).
-3. **Members, leitura da aula.** `GET /members/lessons/:lessonId/blocks/:blockId/art-slots` →
-   `{ slots: { name, asset: PintaAsset | null }[] }` (`GetArtSlotsService`, acesso pela conta,
+2. **Members, validação de curso.** ✅ (29/10/2026) As recusas na publicação do rascunho (por onde
+   passa a importação de manifesto), em reordenar e excluir aula e módulo e no `BlockAdminService`,
+   sob a trava da linha do curso (`withStudioAuthoringLock`). Teste SQL da consulta em
+   `tests/db/art-slots-sql.test.ts`.
+3. **Members, leitura da aula.** ✅ (29/10/2026) `GET /members/lessons/:lessonId/blocks/:blockId/art-slots` →
+   `{ slots: { name, mode, replaces, asset: PintaAsset | null }[] }` (`GetArtSlotsService`, acesso pela conta,
    entrega pelo perfil, só blocos publicados). Rota no gateway. Teste de integração.
-4. **Studio, a origem `lesson-art`.** Asset com `source: 'lesson-art'` fora da impressão do conteúdo
+4. **Studio, a origem `lesson-art`.** ✅ (29/10/2026) Asset com `source: 'lesson-art'` fora da impressão do conteúdo
    e do teto do projeto contado como os da biblioteca; o seletor mostra o desenho com o nome da
    vaga. Testes em `core/projectAssets` e no `FieldAssetPicker`.
-5. **Member-shell, o bloco de Estúdio.** Buscar as vagas ao montar o projeto, converter com o
+5. **Member-shell, o bloco de Estúdio.** ✅ (29/10/2026) Buscar as vagas ao montar o projeto, converter com o
    exportador do Pinta e mesclar nos assets (`add`) ou substituir (`replace`). Falha de leitura ou
    de conversão não derruba o bloco: segue sem o desenho e mostra um recado curto. Testes do bloco.
-6. **Admin.** Seções **Desenho para o jogo** (Pinta) e **Desenhos da criança** (Estúdio) em
+6. **Admin.** ✅ (29/10/2026; as opções vêm do rascunho da aula, outra aula entra pelo nome) Seções **Desenho para o jogo** (Pinta) e **Desenhos da criança** (Estúdio) em
    `packages/admin/src/components/editor/lesson-structure-editor.tsx`, lendo as imagens do jogo do
    bloco de Estúdio escolhido e as vagas anteriores do curso.
-7. **Chave do Farol, objetivo do farol livre.** `desafio-farol-criterios.ts` (estrutura com
+7. **Chave do Farol, objetivo do farol livre.** ✅ (29/10/2026; a imagem que muda é lida em `farol.imageName`) `desafio-farol-criterios.ts` (estrutura com
    qualquer imagem + execução "a imagem do farol muda ao vencer"), cenários do executor 2D,
    manifestos regenerados e a exceção retirada das DIRETRIZES.
-8. **O extra.** Proposta, conteúdo (roteiro na régua das DIRETRIZES), gerador, manifesto, caderno
+8. **O extra.** ✅ (29/10/2026; `docs/aulas-interativas/faisca/meu-primeiro-desenho-no-pinta`, curso `jornada-faisca-extra-2`. A entrega do desenho fica na parte de Entrega e o jogo no Fechamento, porque a régua das entregas só aceita Estúdio ou Pinta nessas partes; assim o desenho é enviado antes de o jogo abrir) Proposta, conteúdo (roteiro na régua das DIRETRIZES), gerador, manifesto, caderno
    PDF no padrão do Cadê, registro no curso e na jornada (`creator-journey-curriculum.json`, a
    tabela do Faísca), validadores e testes do curso.
-9. **Verificação de ponta a ponta.** Navegador real: desenhar no Pinta da aula, enviar, abrir o
+9. **Verificação de ponta a ponta.** ✅ (29/10/2026; `packages/community-kids/e2e-art-slots`, `bun run e2e:art-slots`, também no CI: o members de verdade em memória com o extra importado e publicado, o executor de verdade no Chromium e os componentes reais da aula. O ensaio pôs no roteiro o Entendi! das Dicas rápidas do Pinta, o Expandir nos dois blocos, rolar até o fim das Imagens e esconder a pré-visualização para ver o fim do bloco; afastou as áreas do projeto do extra, porque o Quando acontecer cobria a imagem da chave; e achou o teto de 2000 caracteres do texto dos materiais na publicação, que o members agora alinha aos 50000 do core) Navegador real: desenhar no Pinta da aula, enviar, abrir o
    Estúdio da parte seguinte, ver `minha-chave` em Materiais, trocar, jogar, verificar e enviar;
    redesenhar e ver o jogo atualizado.

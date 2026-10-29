@@ -11,6 +11,30 @@ apenas o parser da representação em blocos, sem conceder edição, LSP, assist
 exportado para esse host: no Admin, executar a entrega e inspecionar seu código em `observer`
 são superfícies separadas. Não usar `authoring` com um rascunho inventado para revisar entregas.
 
+## O desenho da vaga de arte: `source: 'lesson-art'` (29/10/2026)
+
+Etapa 4 de `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. `ProjectAsset.source`
+ganhou `lesson-art`: o desenho que a criança fez no bloco de Pinta da aula, posto pelo HOST
+(member-shell) nos materiais do jogo com o nome da vaga. `sanitizeProjectAssets` o preserva (origem
+desconhecida segue virando `upload`; `libId` continua só da biblioteca); a impressão do conteúdo do
+core (`content-fingerprint.ts`) o ignora como ignora a biblioteca do curso, senão toda abertura
+marcaria o projeto como mudado. Na aba Imagens ele aparece com o selo "Seu desenho da aula", sem
+renomear nem apagar (o nome é o da vaga; o desenho volta a cada abertura) e sem as ações de peças.
+O `addAsset` da store aceita o tipo mas grava como `upload`: só o host cria `lesson-art`. Testes:
+`core/__tests__/projectAssets.test.ts`, `components/assets/AssetsPanel.test.tsx` (a aba) e
+`core/tests/submission-up-to-date.test.ts` (a impressão, com anti-vácuo).
+
+## Jogo 2D: o sprite guarda o nome da imagem (`imageName`, 29/10/2026)
+
+O objetivo de execução da Chave do Farol passou a aceitar qualquer farol (os de fábrica ou um
+desenho da criança, `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`, etapa 7) e
+confere que a imagem do farol MUDA ao vencer. O endereço da imagem (`sprite.image.url`) é um data
+URL que pode passar dos 20 mil caracteres que o leitor do executor aceita, então o runtime agora
+guarda o NOME curto: `sprite.imageName` (`runtime/sprites.ts`; `createSprite` com `image`,
+`setImage`, e `null` em figura, animação, texto e ao destruir). Tipado em
+`runtimeContract.ts`. Prova no executor de verdade: `docs/aulas-interativas-tecnico/qa/desafio-farol-browser.ts`
+(correto, farol que não muda reprova, farol desenhado passa).
+
 ## A luz do Jogo 3D é a cor escolhida (27/10/2026)
 
 O Jogo 3D cria em toda cena `AmbientLight` 2,1 + `DirectionalLight` 1,7 (`LIGHT_AMBIENT` e

@@ -68,14 +68,16 @@ Master integral da professora. Montagem completa na ajuda opcional, sem resolver
 
 **Clipe:** `video-decisao`
 
-**Na tela:** Flor inicialmente fechada; indicar nome do clipe na ajuda, sem montar no vídeo.
+**Na tela:** Flor inicialmente fechada; indicar nome do clipe na ajuda, sem montar no vídeo. Ao falar do farol, 2 a 3 segundos da Ilha: o farol aceso apagando e acendendo de novo na volta pelo cais.
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Sua flor também tem duas respostas. Sem o regador, ela fica fechada e o aviso pede a coleta. Com ele, a animação florescer abre as pétalas e o aviso conta que deu certo. A animação veio pronta; você escolhe quando ela toca.
 
-[upbeat, encouraging voice] Monte a decisão no encontro com a flor. Teste uma partida sem a coleta e outra com a coleta. Depois que ela abrir, continue andando: a flor deve ficar aberta. Se voltar e a animação repetir, tudo bem.
+[curious] Lembra do farol da Ilha, que acendia tudo de novo quando o personagem voltava? A flor é o fim deste jogo, então ela também abre uma vez só. Crie a variável ganhou começando em falso, guarde verdadeiro quando a flor abrir e coloque a pergunta do regador dentro de Se não ganhou, como você fez no farol.
+
+[upbeat, encouraging voice] Monte a decisão no encontro com a flor. Teste uma partida sem a coleta e outra com a coleta. Depois que ela abrir, saia de perto e volte: a flor deve continuar aberta, sem florescer de novo.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
@@ -121,7 +123,7 @@ Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha
 ```text
 [pleased, lively voice] Você usou a memória e a decisão em dois jardins e conferiu o que muda no espaço em três dimensões.
 
-[confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor. Pressione R no jogo depois de um sucesso: o regador deve voltar e a flor deve começar fechada. Seus blocos continuam iguais. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor. Confira também que, depois de aberta, ela não floresce de novo quando você volta. Pressione R no jogo depois de um sucesso: o regador deve voltar e a flor deve começar fechada. Seus blocos continuam iguais. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 
 [upbeat, encouraging voice] Sua missão fica registrada na jornada. Confira lá o que falta para avançar de posto.
 ```

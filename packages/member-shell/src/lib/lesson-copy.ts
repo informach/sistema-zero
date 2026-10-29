@@ -108,6 +108,8 @@ export interface LessonCopy {
     trazerExplica: string
     recomecarExplica: string
     erroAoAbrir: string
+    /** O desenho da vaga de arte não chegou (leitura ou conversão falhou): o jogo abre sem ele. */
+    desenhoNaoVeio: string
   }
   pinta: {
     enviar: string
@@ -366,6 +368,8 @@ export const COMMON_LESSON_COPY: LessonCopy = {
     recomecarExplica:
       'O Estúdio vai abrir o projeto inicial mais recente desta aula. O que você mudou neste aparelho será substituído. Se você já enviou um projeto, o envio continua guardado.',
     erroAoAbrir: 'Não conseguimos abrir o seu projeto. O que você fez não foi substituído.',
+    desenhoNaoVeio:
+      'Não consegui trazer o seu desenho agora. O jogo abriu com as imagens dele. Abra a aula de novo daqui a pouco.',
   },
   pinta: {
     enviar: 'Enviar meu desenho',

@@ -18,7 +18,10 @@ import {
   assertBlockCoherent,
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
+  guardArtSlots,
+  startArtSlotGuard,
 } from '../../src/application/content-admin/content-admin.service'
+import { draftArtSlotIssues, hasArtSlots } from '../../src/domain/course/art-slot-course'
 import { blockRevisionFingerprint } from '../../src/domain/course/block-revision'
 import { certificateLessonIssues } from '../../src/domain/course/certificate-lesson'
 import {
@@ -45,7 +48,10 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     private readonly courses: InMemoryCourseRepository,
     private readonly learning: InMemoryLearningRepository,
     private readonly studioPolicy?: StudioAuthoringPolicy,
-  ) {}
+  ) {
+    // As partes da aula publicada decidem a ordem do desenho e do jogo dentro dela.
+    courses.lessonSections = (lessonId) => learning.structures.get(lessonId)?.sections
+  }
   async readStudioRuntimeContext(lessonId: string, blockId: string | null) {
     const draft = this.drafts.get(lessonId)
     if (!draft) return null
@@ -216,6 +222,29 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     )
   }
   async validate(lessonId: string, expectedRevision: string, readyVideoIds: string[]) {
+    const issues = await this.publishIssues(lessonId, expectedRevision, readyVideoIds)
+    // Espelha o `artSlotIssues` do Drizzle: só o "Conferir" simula as vagas; a publicação
+    // confere de verdade, sob a trava do curso (`startArtSlotGuard`).
+    const draft = await this.read(lessonId)
+    const lesson = this.courses.lessons.find((l) => l.id === lessonId)
+    if (lesson)
+      issues.push(
+        ...draftArtSlotIssues(
+          await this.courses.listArtSlotBlocks(lesson.courseId),
+          {
+            lessonId,
+            lessonTitle: draft.document.title.trim(),
+            moduleOrder: this.courses.modules.find((m) => m.id === lesson.moduleId)?.sortOrder ?? 0,
+            lessonOrder: lesson.sortOrder,
+          },
+          draft.document.blocks,
+          draft.document.sections,
+        ).map((issue) => ({ message: issue.message })),
+      )
+    return issues
+  }
+
+  private async publishIssues(lessonId: string, expectedRevision: string, readyVideoIds: string[]) {
     const draft = await this.read(lessonId)
     if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
     const issues: LessonDraftIssue[] = []
@@ -264,12 +293,18 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     operationId: string,
     readyVideoIds: string[],
   ) {
-    const issues = await this.validate(lessonId, expectedRevision, readyVideoIds)
+    const issues = await this.publishIssues(lessonId, expectedRevision, readyVideoIds)
     if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
     const draft = await this.read(lessonId)
     const lesson = this.courses.lessons.find((l) => l.id === lessonId)
     if (!lesson) throw new LessonNotFoundError()
     const previous = [...this.courses.blocks]
+    const confirmArtSlots =
+      draft.document.blocks.some((block) => hasArtSlots(block.content)) ||
+      previous.some((block) => block.lessonId === lessonId && hasArtSlots(block.content))
+        ? await startArtSlotGuard(this.courses, lesson.courseId)
+        : null
+    const previousSections = this.learning.structures.get(lessonId)
     const hadShowcase =
       (await this.courses.listCourseIdsWithShowcaseBlock([lesson.courseId])).length > 0
     const blocks = draft.document.blocks.map((b, sortOrder) => {
@@ -336,6 +371,14 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
       revision: randomUUID(),
       sections: draft.document.sections,
     })
+    try {
+      await confirmArtSlots?.()
+    } catch (error) {
+      // `withStudioAuthoringLock` desfaz aulas e blocos; as partes moram no falso da aprendizagem.
+      if (previousSections) this.learning.structures.set(lessonId, previousSections)
+      else this.learning.structures.delete(lessonId)
+      throw error
+    }
     const next = await this.replace(lessonId, authorId, expectedRevision, operationId, {
       ...draft.document,
       blocks: blocks.map((b) => ({ id: b.id, content: { ...b.content } })),
@@ -361,12 +404,17 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
       })) === 0
     )
       throw new NoPublishedLessonError()
-    await this.courses.updateLesson(lessonId, {
-      title: existing.title,
-      slug: existing.slug,
-      estimatedMinutes: existing.estimatedMinutes,
-      isPublished: false,
-    })
+    // Espelha o Drizzle: despublicar passa pela conferência das vagas de arte do curso.
+    await this.courses.withStudioAuthoringLock(existing.courseId, (repository) =>
+      guardArtSlots(repository, existing.courseId, () =>
+        repository.updateLesson(lessonId, {
+          title: existing.title,
+          slug: existing.slug,
+          estimatedMinutes: existing.estimatedMinutes,
+          isPublished: false,
+        }),
+      ),
+    )
     const next = await this.replace(
       lessonId,
       authorId,

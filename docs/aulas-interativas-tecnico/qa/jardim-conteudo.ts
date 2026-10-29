@@ -118,8 +118,9 @@ export const jardimAulas: {
         title: 'Faça a flor responder',
         kind: 'build',
         etapa: 'decisao',
-        screen: 'Flor inicialmente fechada; indicar nome do clipe na ajuda, sem montar no vídeo.',
-        text: `[engaging, energetic, conversational voice] Sua flor também tem duas respostas. Sem o regador, ela fica fechada e o aviso pede a coleta. Com ele, a animação florescer abre as pétalas e o aviso conta que deu certo. A animação veio pronta; você escolhe quando ela toca. [upbeat, encouraging voice] Monte a decisão no encontro com a flor. Teste uma partida sem a coleta e outra com a coleta. Depois que ela abrir, continue andando: a flor deve ficar aberta. Se voltar e a animação repetir, tudo bem. ${conferir}`,
+        screen:
+          'Flor inicialmente fechada; indicar nome do clipe na ajuda, sem montar no vídeo. Ao falar do farol, 2 a 3 segundos da Ilha: o farol aceso apagando e acendendo de novo na volta pelo cais.',
+        text: `[engaging, energetic, conversational voice] Sua flor também tem duas respostas. Sem o regador, ela fica fechada e o aviso pede a coleta. Com ele, a animação florescer abre as pétalas e o aviso conta que deu certo. A animação veio pronta; você escolhe quando ela toca. [curious] Lembra do farol da Ilha, que acendia tudo de novo quando o personagem voltava? A flor é o fim deste jogo, então ela também abre uma vez só. Crie a variável ganhou começando em falso, guarde verdadeiro quando a flor abrir e coloque a pergunta do regador dentro de Se não ganhou, como você fez no farol. [upbeat, encouraging voice] Monte a decisão no encontro com a flor. Teste uma partida sem a coleta e outra com a coleta. Depois que ela abrir, saia de perto e volte: a flor deve continuar aberta, sem florescer de novo. ${conferir}`,
       },
       {
         key: 'posicao',
@@ -149,7 +150,7 @@ function entrega(d: JardimDimensao): JardimTrecho {
     etapa: 'posicao',
     screen:
       'Projeto atual, objetivos, Salvo, Enviar meu projeto, confirmação Enviar e Projeto enviado!. Não preencher Recado nem simular envio.',
-    text: `[pleased, lively voice] ${d === '2d' ? 'Seu primeiro jardim já pode florescer! Na próxima aula, você vai construir a versão em três dimensões.' : 'Você usou a memória e a decisão em dois jardins e conferiu o que muda no espaço em três dimensões.'} [confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor. Pressione R no jogo depois de um sucesso: o regador deve voltar e a flor deve começar fechada. Seus blocos continuam iguais. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. ${d === '3d' ? '[upbeat, encouraging voice] Sua missão fica registrada na jornada. Confira lá o que falta para avançar de posto.' : ''}`.trim(),
+    text: `[pleased, lively voice] ${d === '2d' ? 'Seu primeiro jardim já pode florescer! Na próxima aula, você vai construir a versão em três dimensões.' : 'Você usou a memória e a decisão em dois jardins e conferiu o que muda no espaço em três dimensões.'} [confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor.${d === '3d' ? ' Confira também que, depois de aberta, ela não floresce de novo quando você volta.' : ''} Pressione R no jogo depois de um sucesso: o regador deve voltar e a flor deve começar fechada. Seus blocos continuam iguais. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. ${d === '3d' ? '[upbeat, encouraging voice] Sua missão fica registrada na jornada. Confira lá o que falta para avançar de posto.' : ''}`.trim(),
   }
 }
 
@@ -258,8 +259,27 @@ export function jardimAjuda(d: JardimDimensao): {
       ],
       test: 'Pressione R e vá direto à flor, sem recolher: ela fica fechada e o aviso pede o regador. Depois recolha, afaste-se e volte à flor: ela abre e o aviso conta o sucesso. Continue andando para conferir que ela permanece aberta.',
       correction:
-        'Se abrir cedo, confira se a reação está dentro do então e se a pergunta lê a mesma memória da coleta. Se nunca abrir, confira a alteração para verdadeiro e o nome da imagem ou do clipe. Não precisa criar outra variável para impedir uma nova animação.',
+        'Se abrir cedo, confira se a reação está dentro do então e se a pergunta lê a mesma memória da coleta. Se nunca abrir, confira a alteração para verdadeiro e o nome da imagem ou do clipe.',
     },
+    ...(three
+      ? [
+          {
+            key: 'uma-vez',
+            title: 'A flor abre uma vez só',
+            idea: 'A flor é o fim do jogo. Como no farol da Ilha, o encontro roda de novo a cada volta do personagem; a variável ganhou guarda que a partida já foi vencida, e o Se não ganhou faz a flor parar de responder.',
+            steps: [
+              'Em Ao iniciar, depois de temRegador, crie a variável ganhou com o valor falso, do mesmo jeito que criou temRegador.',
+              'No então do Se temRegador, depois de Tocar a animação, encaixe Alterar variável. Escolha ganhou, encaixe verdadeiro ou falso no valor e escolha verdadeiro.',
+              'Em Quando acontecer, deixe à vista um espaço vazio ao lado do encontro com flor, fora do fazer. Em Programação → Lógica e Se, pegue Se e solte nesse espaço.',
+              'Arraste a comparação que veio na pergunta do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio. Em Programação → Valores, pegue valor da variável, encaixe dentro do não e escolha ganhou.',
+              'Pegue o Se temRegador pela palavra Se e arraste até o então do Se novo; tudo o que está dentro dele vai junto. Depois encaixe o Se novo no fazer do encontro com flor, que ficou vazio.',
+            ],
+            test: 'Recolha o regador e vá à flor: ela abre. Saia de perto e volte: ela continua aberta, sem florescer de novo. Numa partida nova, vá à flor sem o regador: ela continua pedindo o regador.',
+            correction:
+              'Se a flor florescer de novo ao voltar, confira se ganhou fica verdadeiro no então e se o Se temRegador inteiro está dentro de Se não ganhou. Se nunca abrir, confira se ganhou começa em falso.',
+          },
+        ]
+      : []),
     {
       key: 'posicao',
       title: 'Escolha seu lugar para o regador',

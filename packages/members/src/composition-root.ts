@@ -52,6 +52,7 @@ import { LiveRewardsService } from './application/gamification/live-rewards.serv
 import { RecordStudioActivityDayService } from './application/gamification/record-studio-activity-day.service'
 import { RecordStudioRemixService } from './application/gamification/record-studio-remix.service'
 import { SetVacationService } from './application/gamification/set-vacation.service'
+import { GetArtSlotsService } from './application/get-art-slots/get-art-slots.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { RecordMaterialDownloadService } from './application/get-attachment-download/record-material-download.service'
 import { GetCertificateService } from './application/get-certificate/get-certificate.service'
@@ -989,6 +990,13 @@ export async function createApplication(env: Env): Promise<Application> {
     sectionProgression,
     studioBindings,
   )
+  const getArtSlots = new GetArtSlotsService(
+    checkAccess,
+    courses,
+    progress,
+    studioSubmissions,
+    sectionProgression,
+  )
   const openLessonStudio = new OpenLessonStudioService(
     new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
     courses,
@@ -1239,6 +1247,7 @@ export async function createApplication(env: Env): Promise<Application> {
       submitQuiz,
       submitStudio,
       getStudioCarryover,
+      getArtSlots,
       openLessonStudio,
       authorizeLessonRuntime,
       getOwnStudioSubmission,
