@@ -25,10 +25,10 @@ import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-roti
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
 import {
-  AvisoDaFerramenta,
   type EstadoDaPorta,
   type FerramentaDaPorta,
-  PortaDoArquipelago,
+  PELE_KIDS_DA_PORTA,
+  type PeleDaPorta,
 } from './arquipelago-porta'
 
 const RotinaDialog = lazy(() =>
@@ -46,7 +46,12 @@ const MinijogoPlayer = lazy(() =>
 )
 
 class ToolLoadBoundary extends Component<
-  { children: ReactNode; ferramenta: FerramentaDaPorta; onCancel: () => void },
+  {
+    children: ReactNode
+    ferramenta: FerramentaDaPorta
+    onCancel: () => void
+    Aviso: PeleDaPorta['Aviso']
+  },
   { failed: boolean }
 > {
   state = { failed: false }
@@ -55,9 +60,8 @@ class ToolLoadBoundary extends Component<
   }
   render() {
     if (!this.state.failed) return this.props.children
-    return (
-      <AvisoDaFerramenta ferramenta={this.props.ferramenta} falhou onVoltar={this.props.onCancel} />
-    )
+    const { Aviso } = this.props
+    return <Aviso ferramenta={this.props.ferramenta} falhou onVoltar={this.props.onCancel} />
   }
 }
 
@@ -85,6 +89,19 @@ const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
 const DESAFIOS_DO_JOGO = new RegExp(
   `^/desafios(?:\\?ilha=[a-z][a-z-]{0,39}|/${UUID}(?:/recompensa-vista)?)?$`,
 )
+
+/**
+ * O que só existe no Kids: o tempo livre (a comunidade adulta não tem limite) e a família (irmãos,
+ * recordes e visitas). No adulto o host responde 404 sem ir à rede, e o community não tem os shims.
+ */
+export function soDoKids(caminho: string): boolean {
+  return (
+    caminho === '/tempo/sessao' ||
+    caminho === '/tempo/recuperar' ||
+    caminho === '/irmaos' ||
+    CASA_DO_IRMAO.test(caminho)
+  )
+}
 
 export function caminhoDoJogo(caminho: string): boolean {
   return (
@@ -222,11 +239,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     servico: {
       async buscar(caminho, pedido) {
-        if (
-          !caminhoDoJogo(caminho) ||
-          ((caminho === '/tempo/sessao' || caminho === '/tempo/recuperar') &&
-            opcoes.publico !== 'kids')
-        )
+        if (!caminhoDoJogo(caminho) || (opcoes.publico !== 'kids' && soDoKids(caminho)))
           return { status: 404, corpo: { code: 'NOT_FOUND' } }
         return json(`${BASE}${caminho}`, {
           ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
@@ -250,7 +263,13 @@ export function ArquipelagoHost(props: {
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
   narrationEnabled?: boolean
+  /**
+   * A tela da porta e o aviso das ferramentas. Sem ela, a do Kids. A comunidade adulta entra por
+   * `arquipelago-host-adulto`, que passa a dela (o Kids nunca baixa a tela adulta).
+   */
+  pele?: PeleDaPorta
 }) {
+  const { Porta, Aviso } = props.pele ?? PELE_KIDS_DA_PORTA
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
   const [challenge, setChallenge] = useState<DesafioAberto | null>(null)
@@ -410,6 +429,7 @@ export function ArquipelagoHost(props: {
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
       {minijogo && (
         <ToolLoadBoundary
+          Aviso={Aviso}
           ferramenta="estudio"
           onCancel={() => {
             setMinijogo(null)
@@ -417,7 +437,7 @@ export function ArquipelagoHost(props: {
             pendente.current = null
           }}
         >
-          <Suspense fallback={<AvisoDaFerramenta ferramenta="estudio" falhou={false} />}>
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
             <MinijogoPlayer
               url={`${BASE}/minijogos/${minijogo}`}
               onClose={() => {
@@ -431,6 +451,7 @@ export function ArquipelagoHost(props: {
       )}
       {challenge ? (
         <ToolLoadBoundary
+          Aviso={Aviso}
           key={`${id}-${challenge.id}-${challenge.revisao}`}
           ferramenta="estudio"
           onCancel={() => {
@@ -440,7 +461,7 @@ export function ArquipelagoHost(props: {
             resolve?.({ situacao: 'cancelado' })
           }}
         >
-          <Suspense fallback={<AvisoDaFerramenta ferramenta="estudio" falhou={false} />}>
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
             <ChallengeDialog
               desafio={challenge}
               audience={publico === 'kids' ? 'kids' : 'adult'}
@@ -466,6 +487,7 @@ export function ArquipelagoHost(props: {
       ) : null}
       {moldeRotina ? (
         <ToolLoadBoundary
+          Aviso={Aviso}
           ferramenta="estudio"
           onCancel={() => {
             setMoldeRotina(null)
@@ -473,7 +495,7 @@ export function ArquipelagoHost(props: {
             fimRotina.current = null
           }}
         >
-          <Suspense fallback={<AvisoDaFerramenta ferramenta="estudio" falhou={false} />}>
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
             <RotinaDialog
               molde={moldeRotina}
               lerCartas={() => cartasDaRotina(() => json(`${BASE}/cartas`))}
@@ -488,6 +510,7 @@ export function ArquipelagoHost(props: {
       ) : null}
       {creation ? (
         <ToolLoadBoundary
+          Aviso={Aviso}
           ferramenta={creation.ferramenta}
           onCancel={() => {
             setCreation(null)
@@ -496,9 +519,7 @@ export function ArquipelagoHost(props: {
             resolve?.({ situacao: 'indisponivel', motivo: 'em-breve' })
           }}
         >
-          <Suspense
-            fallback={<AvisoDaFerramenta ferramenta={creation.ferramenta} falhou={false} />}
-          >
+          <Suspense fallback={<Aviso ferramenta={creation.ferramenta} falhou={false} />}>
             <CreationDialog
               ferramenta={creation.ferramenta}
               viewerId={id}
@@ -518,9 +539,7 @@ export function ArquipelagoHost(props: {
           </Suspense>
         </ToolLoadBoundary>
       ) : null}
-      {estado === 'pronto' ? null : (
-        <PortaDoArquipelago estado={estado} publico={publico} voltarPara={voltarPara} />
-      )}
+      {estado === 'pronto' ? null : <Porta estado={estado} voltarPara={voltarPara} />}
     </div>
   )
 }

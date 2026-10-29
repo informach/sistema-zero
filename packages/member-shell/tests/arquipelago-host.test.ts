@@ -198,4 +198,20 @@ describe('a porta da plataforma para o jogo', () => {
     ).toBe(404)
     expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/tempo/sessao'])
   })
+
+  test('irmãos, recordes e visitas também ficam só no Kids', async () => {
+    const id = '11111111-1111-4111-8111-111111111111'
+    const pedidos = servir({
+      'GET /api/arquipelago/irmaos': { status: 200, body: { situacao: 'ok', irmaos: [] } },
+    })
+    expect((await plataforma().servico.buscar('/irmaos')).status).toBe(200)
+    const adulto = criarPlataformaDoArquipelago({
+      publico: 'adulto',
+      perfil: { id: 'a1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    for (const caminho of ['/irmaos', `/irmaos/${id}/casa`, '/tempo/recuperar'])
+      expect((await adulto.servico.buscar(caminho)).status).toBe(404)
+    expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/irmaos'])
+  })
 })

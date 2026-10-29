@@ -236,6 +236,37 @@ describe('a semana da família', () => {
   })
 })
 
+describe('a conta adulta (fase3-13)', () => {
+  const adulto = {
+    'x-internal-token': TOKEN,
+    'x-auth-user-id': '88888888-8888-4888-8888-888888888888',
+    'x-auth-user-role': 'member',
+    'x-auth-user-status': 'active',
+  }
+
+  test('não tem família: limite, semana e permissões recusados, sem gravar nada', async () => {
+    politica = { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() }
+    montar()
+    for (const [metodo, caminho, corpo] of [
+      ['GET', `/arquipelago/familia/limite?perfis=${LIA}`],
+      ['PUT', '/arquipelago/familia/limite', { limiteDiarioMinutos: 60 }],
+      ['GET', `/arquipelago/familia/semana?perfis=${LIA}`],
+      ['GET', '/arquipelago/familia/permissoes'],
+      ['PUT', '/arquipelago/familia/permissoes', PERMISSOES_PADRAO],
+    ] as const)
+      expect((await chamar(metodo, caminho, adulto, corpo)).status, `${metodo} ${caminho}`).toBe(
+        403,
+      )
+    expect(familia.permissoes.size).toBe(0)
+    // O jogo dela abre e não tem limite.
+    expect((await chamar('GET', '/arquipelago/acesso', adulto)).json).toMatchObject({
+      liberado: true,
+      limiteDiarioMinutos: null,
+      contabilizaTempo: false,
+    })
+  })
+})
+
 describe('as permissões de visita', () => {
   test('sem escolha guardada, o padrão restrito; o responsável muda e lê de volta', async () => {
     expect((await chamar('GET', '/arquipelago/familia/permissoes', responsavel)).json).toEqual(

@@ -56,6 +56,17 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   "Voltar ao jogo" e "Usar no jogo" (`sz-btn-gradient`, a cor de ação de cada pele); voltar com a
   ferramenta ainda abrindo sai na hora, e "Sair sem guardar" só aparece quando guardar falhou.
   Testes: `tests/arquipelago-porta.test.tsx` e a fixture do diálogo.
+- **A porta adulta (fase3-13, 29/10/2026):** `arquipelago-porta.tsx` virou só do Kids (com o
+  Zappy) e exporta `PeleDaPorta`, `PELE_KIDS_DA_PORTA`, a `Paisagem` e as animações. A adulta é
+  outra tela, `arquipelago-porta-adulta.tsx` (a mesma paisagem, o cartão `sz-palco`, `sz-kicker`,
+  `sz-h2`, `sz-btn`/`sz-btn-outline`, sem mascote; textos em `TEXTOS_DA_PORTA_ADULTA` e
+  `AVISOS_DA_PORTA_ADULTA`), que ⚠️ só entra pela ENTRADA `arquipelago-host-adulto`
+  (`ArquipelagoHostAdulto`: o host com `publico="adulto"` e `pele`), no padrão do avatar e do
+  quarto adultos. O `ArquipelagoHost` recebe `pele` (padrão, a do Kids) e passa o `Aviso` ao
+  `ToolLoadBoundary`. O diálogo da ferramenta muda por `audience` só por classes (`CABECALHO`: no
+  adulto, o cabeçalho no palco e a ação `sz-btn`). `soDoKids` (tempo e irmãos) responde 404 sem
+  rede fora do Kids. Testes: `tests/arquipelago-porta.test.tsx` (porta do Kids byte a byte, por
+  hash), `tests/arquipelago-porta-adulta.test.tsx` e `tests/arquipelago-host.test.ts`.
 - Dependência nova: `@sistemazero/arquipelago-contracts` (o único pacote do jogo que a plataforma
   pode importar). Testes: `tests/arquipelago-routes.test.ts` e `tests/arquipelago-host.test.ts`.
 

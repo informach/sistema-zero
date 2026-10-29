@@ -1,53 +1,60 @@
 'use client'
 
-import type { PublicoJogo } from '@sistemazero/arquipelago-contracts'
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 /**
  * A porta do Arquipélago Vagalume: o que aparece antes de o jogo montar (abrindo, ainda não
  * abriu, deu erro) e por cima dele quando uma ferramenta está abrindo ou falhou.
  *
- * Um visual só, de propósito, nas duas comunidades: a noite do arquipélago (o mesmo azul de
- * fundo do jogo), com a ilha e o farol, para a espera já parecer o jogo. O que muda por público
- * é a voz e o Zappy (só no Kids: o vagalume é o mascote de lá), e os botões, que usam a classe
- * de ação de cada app (`sz-btn-gradient`), então vestem a paleta escolhida.
+ * A noite do arquipélago (o mesmo azul de fundo do jogo), com a ilha e o farol, para a espera já
+ * parecer o jogo. Este arquivo é a porta do Kids (com o Zappy, o mascote de lá, e a ação
+ * `sz-btn-gradient`). A da comunidade adulta é outra tela, com a mesma paisagem
+ * (`arquipelago-porta-adulta.tsx`), e só entra pela entrada própria (`arquipelago-host-adulto`):
+ * quem importa só o Kids nunca baixa a tela adulta.
  */
 
 export type EstadoDaPorta = 'carregando' | 'indisponivel' | 'erro'
 
 const TEXTOS: Record<
   EstadoDaPorta,
-  { titulo: string; kids: string; adulto: string; zappy: 'happy' | 'sleeping' | 'thinking' }
+  { titulo: string; texto: string; zappy: 'happy' | 'sleeping' | 'thinking' }
 > = {
   carregando: {
     titulo: 'Abrindo o Arquipélago',
-    kids: 'O Zappy está acendendo o caminho até a sua ilha.',
-    adulto: 'Preparando a sua ilha.',
+    texto: 'O Zappy está acendendo o caminho até a sua ilha.',
     zappy: 'happy',
   },
   indisponivel: {
     titulo: 'O Arquipélago ainda não abriu por aqui',
-    kids: 'Ele está abrindo aos poucos. Quando chegar a sua vez, ele aparece no menu.',
-    adulto: 'Ele está abrindo aos poucos. Quando chegar a sua vez, ele aparece no menu.',
+    texto: 'Ele está abrindo aos poucos. Quando chegar a sua vez, ele aparece no menu.',
     zappy: 'sleeping',
   },
   erro: {
     titulo: 'Não consegui abrir o Arquipélago agora',
-    kids: 'Pode ser a internet. Tente de novo daqui a pouco.',
-    adulto: 'Pode ser a conexão. Tente de novo daqui a pouco.',
+    texto: 'Pode ser a internet. Tente de novo daqui a pouco.',
     zappy: 'thinking',
   },
 }
 
-const NOME_DA_FERRAMENTA = { pinta: 'o Pinta', molda: 'o Molda', estudio: 'o Estúdio' } as const
+export const NOME_DA_FERRAMENTA = {
+  pinta: 'o Pinta',
+  molda: 'o Molda',
+  estudio: 'o Estúdio',
+} as const
 export type FerramentaDaPorta = keyof typeof NOME_DA_FERRAMENTA
+
+/** A tela da porta e o aviso por cima do jogo de uma comunidade (o host recebe os dois). */
+export interface PeleDaPorta {
+  Porta: ComponentType<{ estado: EstadoDaPorta; voltarPara: string }>
+  Aviso: ComponentType<{ ferramenta: FerramentaDaPorta; falhou: boolean; onVoltar?: () => void }>
+}
 
 /** Classe do botão secundário sobre a noite (as duas peles têm só a ação clara aqui). */
 const BOTAO_NA_NOITE =
   'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/35 px-5 font-bold text-sm text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
 const BOTAO_DE_ACAO = 'sz-btn-gradient h-11 gap-2 px-6 text-sm'
 
-const ANIMACOES = `
+export const ANIMACOES = `
 @keyframes arqp-facho { from { transform: rotate(-24deg) } 50% { transform: rotate(24deg) } to { transform: rotate(-24deg) } }
 @keyframes arqp-pisca { 0%, 100% { opacity: .35 } 50% { opacity: 1 } }
 @keyframes arqp-onda { from { transform: translateX(0) } to { transform: translateX(-280px) } }
@@ -79,7 +86,7 @@ const ESTRELAS: Array<[number, number, number, number]> = [
 ]
 
 /** A ilha com o farol e o mar à noite (SVG, sem arquivo para baixar). */
-function Paisagem() {
+export function Paisagem() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_100%,#24407a_0%,#16244f_38%,#0e1430_72%)]" />
@@ -184,11 +191,9 @@ function Cartao({ children }: { children: ReactNode }) {
 /** A porta inteira (antes de o jogo montar). */
 export function PortaDoArquipelago({
   estado,
-  publico,
   voltarPara,
 }: {
   estado: EstadoDaPorta
-  publico: PublicoJogo
   voltarPara: string
 }) {
   const texto = TEXTOS[estado]
@@ -197,7 +202,7 @@ export function PortaDoArquipelago({
       <style>{ANIMACOES}</style>
       <Paisagem />
       <Cartao>
-        {publico === 'kids' ? <Zappy expressao={texto.zappy} /> : null}
+        <Zappy expressao={texto.zappy} />
         <p className="font-bold text-[0.7rem] text-white/70 uppercase tracking-[0.14em]">
           Arquipélago Vagalume
         </p>
@@ -205,9 +210,7 @@ export function PortaDoArquipelago({
           <h1 className="sz-display text-balance text-3xl text-white sm:text-4xl">
             {texto.titulo}
           </h1>
-          <p className="max-w-sm text-pretty text-base text-white/80">
-            {publico === 'kids' ? texto.kids : texto.adulto}
-          </p>
+          <p className="max-w-sm text-pretty text-base text-white/80">{texto.texto}</p>
         </div>
         {estado === 'carregando' ? (
           <div className="mt-2 h-1.5 w-48 overflow-hidden rounded-full bg-white/15">
@@ -272,4 +275,9 @@ export function AvisoDaFerramenta({
       </div>
     </div>
   )
+}
+
+export const PELE_KIDS_DA_PORTA: PeleDaPorta = {
+  Porta: PortaDoArquipelago,
+  Aviso: AvisoDaFerramenta,
 }

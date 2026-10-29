@@ -2,37 +2,55 @@ import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AvisoDaFerramenta, PortaDoArquipelago } from '../src/components/arquipelago-porta'
 
-const porta = (estado: 'carregando' | 'indisponivel' | 'erro', publico: 'kids' | 'adulto') =>
-  renderToStaticMarkup(
-    <PortaDoArquipelago estado={estado} publico={publico} voltarPara="/inicio" />,
-  )
+const porta = (estado: 'carregando' | 'indisponivel' | 'erro') =>
+  renderToStaticMarkup(<PortaDoArquipelago estado={estado} voltarPara="/inicio" />)
 
-describe('a porta do Arquipélago', () => {
-  test('o Zappy aparece só no Kids e a voz muda por público', () => {
-    expect(porta('carregando', 'kids')).toContain('/zappy/happy.webp')
-    expect(porta('carregando', 'kids')).toContain('O Zappy está acendendo')
-    expect(porta('carregando', 'adulto')).not.toContain('/zappy/')
-    expect(porta('carregando', 'adulto')).toContain('Preparando a sua ilha.')
+const sha = (html: string) => new Bun.CryptoHasher('sha256').update(html).digest('hex')
+
+describe('a porta do Arquipélago no Kids', () => {
+  test('o Zappy acende o caminho', () => {
+    expect(porta('carregando')).toContain('/zappy/happy.webp')
+    expect(porta('carregando')).toContain('O Zappy está acendendo')
   })
 
   test('esperando não oferece botão; os outros estados levam de volta', () => {
-    expect(porta('carregando', 'kids')).not.toContain('href="/inicio"')
-    expect(porta('indisponivel', 'kids')).toContain('href="/inicio"')
-    expect(porta('indisponivel', 'kids')).not.toContain('Tentar de novo')
-    expect(porta('erro', 'adulto')).toContain('Tentar de novo')
-    expect(porta('erro', 'adulto')).toContain('href="/inicio"')
+    expect(porta('carregando')).not.toContain('href="/inicio"')
+    expect(porta('indisponivel')).toContain('href="/inicio"')
+    expect(porta('indisponivel')).not.toContain('Tentar de novo')
+    expect(porta('erro')).toContain('Tentar de novo')
+    expect(porta('erro')).toContain('href="/inicio"')
+  })
+
+  test('a pele adulta (fase3-13) não mudou um byte da porta do Kids', () => {
+    // Os hashes do HTML de antes da entrada adulta. Mudou a porta do Kids de propósito? Atualize.
+    expect(sha(porta('carregando'))).toBe(
+      '7f0a02f66a807e938e00885aafe4bc527af12ee4b04a604cdf6c2de63d7ef2eb',
+    )
+    expect(sha(porta('indisponivel'))).toBe(
+      'aed6b23e5694de61c74323555f090aa877a9c7a7a675e350f1a166f6e30b58ee',
+    )
+    expect(sha(porta('erro'))).toBe(
+      '8bf58a046f9234780328b6439b79b559847378b9b0d6bc537539bd0d388c4374',
+    )
+    expect(sha(renderToStaticMarkup(<AvisoDaFerramenta ferramenta="molda" falhou={false} />))).toBe(
+      '43592e673078f18f6a003c4de5632231cc04e12a645b49e316e9e76243a73214',
+    )
+    expect(
+      sha(
+        renderToStaticMarkup(<AvisoDaFerramenta ferramenta="estudio" falhou onVoltar={() => {}} />),
+      ),
+    ).toBe('3994f65417f3b016afd591cad039a453ae49dce85ffc942a86f53b4b95c08637')
   })
 
   test('o estado é anunciado e o texto segue as regras da casa', () => {
-    for (const estado of ['carregando', 'indisponivel', 'erro'] as const)
-      for (const publico of ['kids', 'adulto'] as const) {
-        const html = porta(estado, publico)
-        expect(html).toContain('aria-live="polite"')
-        const texto = html.replace(/<[^>]+>/g, ' ')
-        expect(texto).not.toContain('!')
-        expect(texto).not.toContain('—')
-        expect(texto).not.toContain('…')
-      }
+    for (const estado of ['carregando', 'indisponivel', 'erro'] as const) {
+      const html = porta(estado)
+      expect(html).toContain('aria-live="polite"')
+      const texto = html.replace(/<[^>]+>/g, ' ')
+      expect(texto).not.toContain('!')
+      expect(texto).not.toContain('—')
+      expect(texto).not.toContain('…')
+    }
   })
 })
 

@@ -33,9 +33,23 @@ const AVISOS = {
 
 /**
  * A ferramenta de verdade por cima do jogo. A criação só é entregue depois da gravação local e
- * da confirmação na conta (`concluir()` da ferramenta). O cabeçalho veste o tema do app (tokens
- * e `sz-btn-gradient`), então fica na cara da comunidade que hospeda.
+ * da confirmação na conta (`concluir()` da ferramenta). O cabeçalho veste o tema do app pelos
+ * tokens: no Kids a ação é a `sz-btn-gradient`; no adulto o cabeçalho é o palco do "Estúdio à
+ * noite" (`sz-palco`) e a ação é o amarelo com degrau (`sz-btn`), as classes do community.
  */
+const CABECALHO = {
+  kids: {
+    faixa: 'bg-card',
+    voltar: 'rounded-full',
+    acao: 'sz-btn-gradient',
+  },
+  adult: {
+    faixa: 'sz-palco',
+    voltar: 'rounded-[0.7rem]',
+    acao: 'sz-btn',
+  },
+} as const
+
 export function ArquipelagoCreationDialog({
   ferramenta,
   viewerId,
@@ -102,6 +116,7 @@ export function ArquipelagoCreationDialog({
   }
 
   const { nome, icone: Icone } = FERRAMENTAS[ferramenta]
+  const pele = CABECALHO[audience]
   const falhouAoGuardar = error === AVISOS.naoGuardou
 
   return (
@@ -115,13 +130,15 @@ export function ArquipelagoCreationDialog({
       className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden border-0 bg-background p-0 text-foreground backdrop:bg-black/70"
     >
       <div className="flex h-full min-h-0 flex-col">
-        <header className="flex items-center gap-2 border-border border-b bg-card px-3 py-2.5 sm:gap-3 sm:px-4">
+        <header
+          className={`flex items-center gap-2 border-border border-b ${pele.faixa} px-3 py-2.5 sm:gap-3 sm:px-4`}
+        >
           <Button
             variant="outline"
             disabled={saving}
             onClick={() => void finish(false)}
             aria-label="Voltar ao jogo"
-            className="h-11 shrink-0 gap-2 rounded-full px-3 font-semibold text-sm sm:px-4"
+            className={`h-11 shrink-0 gap-2 ${pele.voltar} px-3 font-semibold text-sm sm:px-4`}
           >
             <ArrowLeft aria-hidden className="size-4" />
             <span className="hidden sm:inline">Voltar ao jogo</span>
@@ -149,7 +166,7 @@ export function ArquipelagoCreationDialog({
             type="button"
             disabled={saving}
             onClick={() => void finish(true)}
-            className="sz-btn-gradient h-11 shrink-0 gap-2 px-4 text-sm sm:px-5"
+            className={`${pele.acao} h-11 shrink-0 gap-2 px-4 text-sm sm:px-5`}
           >
             {saving ? <Loader2 aria-hidden className="size-4 animate-spin" /> : null}
             {saving ? 'Guardando…' : 'Usar no jogo'}
