@@ -294,6 +294,10 @@ async function diaNasNuvens(context: BrowserContext, celular: boolean, tipo: str
     if (!g) throw new Error(`Sem a argola ${i}`)
     return { x: g.x + Math.sin(g.rumo) * metros, y: g.y, z: g.z + Math.cos(g.rumo) * metros }
   }
+  // Primeiro sobe em cima do lugar do balão (os lampiões ficam perto do poste), depois vai.
+  const primeira = argolas[0]
+  if (!primeira) throw new Error('Sem a argola vermelha')
+  await pilotar({ x: casa.x, y: primeira.y + 3, z: casa.z })
   await pilotar(antesE(0, -3))
   await pilotar(antesE(0, 3))
   await page.getByRole('timer', { name: 'Corrida de balão' }).waitFor()

@@ -170,7 +170,9 @@ describe('a volta das argolas no arquivo', () => {
       y: g.y,
       z: g.z + Math.cos(g.rumo) * m,
     })
-    const alvos: Ponto[] = []
+    // Primeiro sobe em cima do lugar do balão (os lampiões ficam perto do poste), depois vai.
+    const primeira = argolas[0] as Argola
+    const alvos: Ponto[] = [{ x: casa.x, y: primeira.y + 3, z: casa.z }]
     for (const [i, g] of argolas.entries()) {
       alvos.push(antesE(g, -3), antesE(g, 3))
       const f = fitas[[0, 2, 4].indexOf(i)]
