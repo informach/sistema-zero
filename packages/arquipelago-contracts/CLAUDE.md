@@ -83,6 +83,6 @@ plataforma pode importar.
 
 ## Minijogos aprovados (desafios-16, 29/10/2026)
 
-Contrato minijogos.ts: lista, cópia aprovada e capa escolhida embutida PNG/JPEG/WebP. Mesmo teto de projeto dos desafios. Medição inclui minijogos com proteção de grupos.
+Contrato minijogos.ts: lista, cópia aprovada e capa escolhida embutida PNG/JPEG/WebP. Mesmo teto de projeto dos desafios. A capa tem teto próprio, `CAPA_DO_MINIJOGO_CARACTERES` (400 mil caracteres do data URL): acima dele fica `null` (`capaDoMinijogo` ao guardar, `capaQueCabe` ao ler), porque a lista leva a capa de cada minijogo. Medição inclui minijogos com proteção de grupos.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

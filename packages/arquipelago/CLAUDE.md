@@ -176,9 +176,18 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Testes: `tests/colisao-da-ilha-central.test.ts` (nós sem material, colisor debaixo do desenho,
   quem a câmera ignora, trilhas de pedra livres, porta, e uma busca em grade de 25 cm que chega da
   porta a cada canteiro, à bancada, ao farol, ao píer e à cabeça de cada ponte) e o bloco "os
-  enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`.
+  enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`. A Vila Doce (29/10/2026) tem os dela no
+  `vila-doce.glb` (casas e lojas até o topo plano, o percurso dos telhados, a fonte, as barracas e os
+  enfeites de pé), conferidos em `tests/colisores-da-vila-doce.test.ts` (paradas do percurso em cima de
+  colisor, vãos dentro do pulo andando, chegada e frente das lojas livres).
 
 ## Ilhas completas (o Bosque, 27/10/2026)
+
+- Vila Doce (fase2-01, 29/10/2026): `vila-doce.glb` em `ILHAS_COMPLETAS`, com os colisores do
+  Blender (`tests/colisores-da-vila-doce.test.ts`) e sem faces coplanares. Ainda sem `ILHAS_VIVAS`
+  (o Bento e as lojas vêm depois), então lá continua o "Olhar em volta". No navegador:
+  `bun playground/verificar-vila-doce-browser.ts` (chegada até a praça e de pé em cada parada do
+  percurso dos telhados).
 
 - `src/sistemas/ilhas-completas.ts`: o ciclo puro `longe → carregando → pronta → ativa →
   descarregando`. Busca na cabeça da ponte (`naPonteDa`, faixa `BUSCA_NA_PONTE`), troca no meio dela
@@ -381,8 +390,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - **Regra:** nenhum modelo tem faces coplanares de materiais diferentes se sobrepondo nem emenda em
   T. `scripts/faces-coplanares.ts` acha as duas coisas num GLB (por plano: normal e distância em
   grade; sobreposição por recorte de triângulos; emenda em T por vértice no meio de aresta vizinha);
-  `tests/faces-coplanares.test.ts` roda em todos os GLBs do mundo, no Quadro das Cores e nas peças
-  no lugar do jogo em cima do chão. O Bosque tem uma lista `PENDENTES_DO_BOSQUE` (pares que já
+  `tests/faces-coplanares.test.ts` roda em todos os GLBs do mundo, no Quadro das Cores, na Vila Doce
+  (29/10/2026) e nas peças no lugar do jogo em cima do chão. O Bosque tem uma lista `PENDENTES_DO_BOSQUE` (pares que já
   existiam); par novo reprova.
 - **Câmera:** `PERTO_DA_CAMERA` 0,25 e `LONGE_DA_CAMERA` 450 (`mundo/medidas.ts`, explicação lá).
   O `near` é quem dá precisão de profundidade (2,5 vezes a de 0,1) e o canto do plano de corte fica

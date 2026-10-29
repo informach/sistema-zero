@@ -16,6 +16,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import bosqueGlb from '../assets/ilhas/bosque.glb'
+import vilaDoceGlb from '../assets/ilhas/vila-doce.glb'
 import { useJogo } from '../estado/contexto'
 import {
   type EstadoDaIlha,
@@ -69,6 +70,7 @@ export interface IlhaCompletaInfo {
 
 export const ILHAS_COMPLETAS: Partial<Record<IlhaId, IlhaCompletaInfo>> = {
   bosque: { url: new URL(bosqueGlb, import.meta.url).href },
+  'vila-doce': { url: new URL(vilaDoceGlb, import.meta.url).href },
 }
 
 /** O que fica pronto antes de a ilha aparecer: o desenho já girado (e com a tinta) e os colisores. */

@@ -759,7 +759,10 @@ The Sims):
 Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medidas.ts`.
 
 - **Duas versões:** cada ilha do anel tem uma versão leve e pode ter uma versão completa, feita
-  no Blender. Hoje só o Bosque tem a completa (`ILHAS_COMPLETAS` em `mundo/ilha-completa.tsx`).
+  no Blender. O Bosque e, desde 29/10/2026, a Vila Doce têm a completa (`ILHAS_COMPLETAS` em
+  `mundo/ilha-completa.tsx`). Na Vila Doce o percurso dos telhados já se pisa (caixotes a 1 m,
+  casinhas a 2,0, 2,8 e 3,6 m, terraço da sorveteria a 4,4 m); o Bento, as lojas e as entregas vêm
+  nas próximas etapas.
 - **O ciclo** (`proximoEstadoDaIlha`): `longe` → `carregando` → `pronta` → `ativa` →
   `descarregando` → `longe`.
 - **Quando busca:** a ilha precisa estar aberta. A busca começa quando a pessoa entra na faixa da
@@ -2187,7 +2190,9 @@ Testes puros e dos GLBs: `tests/luneta.test.ts`. Visita real no playground:
   requisito para jogar. O objeto posto em casa abre a lista e cada Jogar abre o player do
   Estúdio por cima do jogo. Voltar ou Esc retorna ao lugar em que a criança estava.
 - A tela do fliperama usa a capa escolhida do minijogo atualizado mais recentemente, quando
-  houver. Aceita imagens PNG, JPEG e WebP embutidas. Não inventa capa nem busca imagem externa.
+  houver. Aceita imagens PNG, JPEG e WebP embutidas de até 400 mil caracteres
+  (`CAPA_DO_MINIJOGO_CARACTERES`); maior que isso, o minijogo fica sem capa. Não inventa capa nem
+  busca imagem externa.
 - Rotas próprias GET /arquipelago/minijogos e /arquipelago/minijogos/:id. A lista traz resumo
   e capa; a rota de abertura traz o projeto. Nenhuma delas entrega o gabarito do desafio.
 - Pais: GET /arquipelago/familia/minijogos/:perfil e /:perfil/:id. O serviço exige a ligação

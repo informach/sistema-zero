@@ -645,8 +645,9 @@ def janela(cx, cy, cz, w, h, giro, m_moldura='acabamento', m_vidro='vidroJanela'
     p = [box((w + 0.16, 0.08, h + 0.16), (cx + nx * 0.02, cy + ny * 0.02, cz), m_moldura, bevel=0.02, segs=1, rot=rot),
          box((w, 0.1, h), (cx + nx * 0.04, cy + ny * 0.04, cz), m_vidro, bevel=0.0, rot=rot)]
     if cruz:
-        p.append(box((0.05, 0.12, h), (cx + nx * 0.05, cy + ny * 0.05, cz), m_moldura, bevel=0.0, rot=rot))
-        p.append(box((w, 0.12, 0.05), (cx + nx * 0.05, cy + ny * 0.05, cz), m_moldura, bevel=0.0, rot=rot))
+        # A cruz um pouco menor que o vidro e sem o fundo no plano dele (piscaria).
+        p.append(box((0.05, 0.11, h - 0.02), (cx + nx * 0.055, cy + ny * 0.055, cz), m_moldura, bevel=0.0, rot=rot))
+        p.append(box((w - 0.02, 0.11, 0.05), (cx + nx * 0.055, cy + ny * 0.055, cz), m_moldura, bevel=0.0, rot=rot))
     return p
 
 
@@ -656,7 +657,9 @@ def porta(cx, cy, z0, w, h, giro, m='portaNova', m_batente='batente'):
     rot = (0, 0, giro + math.pi / 2)
     p = [box((w + 0.2, 0.1, h + 0.1), (cx + nx * 0.03, cy + ny * 0.03, z0 + (h + 0.1) / 2), m_batente, bevel=0.02,
              segs=1, rot=rot),
-         box((w, 0.12, h), (cx + nx * 0.06, cy + ny * 0.06, z0 + h / 2), m, bevel=0.03, segs=1, rot=rot)]
+         # A folha começa 1 cm acima do batente: os fundos dos dois não ficam no mesmo plano.
+         box((w, 0.12, h - 0.01), (cx + nx * 0.06, cy + ny * 0.06, z0 + 0.01 + (h - 0.01) / 2), m, bevel=0.03, segs=1,
+             rot=rot)]
     ox, oy = math.cos(giro + math.pi / 2) * w * 0.32, math.sin(giro + math.pi / 2) * w * 0.32
     p.append(uvball(0.06, (cx + nx * 0.14 + ox, cy + ny * 0.14 + oy, z0 + h * 0.48), 'macaneta', seg=6, ring=4))
     return p
@@ -672,7 +675,10 @@ def toldo_listrado(cx, cy, z, w, prof, giro, cores, inclin=R(22), n=8):
         o = -w / 2 + larg * (i + 0.5)
         c = (cx + tx * o + nx * prof / 2 * math.cos(inclin), cy + ty * o + ny * prof / 2 * math.cos(inclin),
              z - prof / 2 * math.sin(inclin))
-        p.append(box((prof, larg * 1.01, 0.06), c, cores[i % len(cores)], bevel=0.0, rot=(0, inclin, giro)))
+        # Listras vizinhas se sobrepõem um pouco: alternar a espessura e o comprimento tira as faces das
+        # duas do mesmo plano.
+        p.append(box((prof + 0.012 * (i % 2), larg * 1.01, 0.06 + 0.016 * (i % 2)), c, cores[i % len(cores)], bevel=0.0,
+                     rot=(0, inclin, giro)))
         # Babado redondo na ponta de cada listra.
         bc = (cx + tx * o + nx * prof * math.cos(inclin), cy + ty * o + ny * prof * math.cos(inclin),
               z - prof * math.sin(inclin) - 0.06)

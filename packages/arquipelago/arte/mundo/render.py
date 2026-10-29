@@ -57,6 +57,10 @@ if env('ESPALHAR'):
     raizes = [o for o in bpy.data.objects if o.parent is None]
     for i, o in enumerate(raizes):
         o.location.x += (i - (len(raizes) - 1) / 2) * passo
+# Os nós de colisão (`col-*`) nunca se desenham no jogo: sem material, a prévia os pintaria de branco.
+for o in bpy.data.objects:
+    if o.name.startswith('col-'):
+        o.hide_render = True
 for nome in (env('ESCONDER') or '').split(','):
     o = bpy.data.objects.get(nome)
     if o:

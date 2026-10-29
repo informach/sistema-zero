@@ -615,19 +615,19 @@
         "z": 6.26
       },
       "barraca-4": {
-        "x": 5.18,
+        "x": 5.37,
         "y": 1.0,
-        "z": -3.76
+        "z": -3.49
       },
       "barraca-5": {
-        "x": 3.49,
+        "x": 3.76,
         "y": 1.0,
-        "z": -5.37
+        "z": -5.18
       },
       "barraca-6": {
-        "x": 1.33,
+        "x": 1.66,
         "y": 1.0,
-        "z": -6.26
+        "z": -6.18
       },
       "chegada": {
         "x": 11.6,
@@ -660,19 +660,19 @@
         "z": 4.0
       },
       "morador": {
-        "x": -1.35,
+        "x": -1.49,
         "y": 1.0,
-        "z": -5.63
+        "z": -5.66
       },
       "padaria": {
-        "x": -1.36,
+        "x": -1.54,
         "y": 1.0,
-        "z": -6.61
+        "z": -6.63
       },
       "sorveteria": {
-        "x": -4.58,
+        "x": -4.35,
         "y": 1.0,
-        "z": -3.96
+        "z": -3.77
       },
       "telhados-1": {
         "x": -5.4,
@@ -701,7 +701,30 @@
       }
     },
     "clipes": "",
-    "kb": 925.6,
+    "colisores": {
+      "col-balcao": 1,
+      "col-banco": 3,
+      "col-barraca": 6,
+      "col-caixote": 2,
+      "col-casinha": 3,
+      "col-chamine": 1,
+      "col-cil-banquinho": 2,
+      "col-cil-casquinha": 1,
+      "col-cil-fonte": 3,
+      "col-cil-jujuba": 6,
+      "col-cil-mesa": 1,
+      "col-cil-moita": 4,
+      "col-cil-morango": 1,
+      "col-cil-poste": 39,
+      "col-cil-saco": 2,
+      "col-cil-vaso": 3,
+      "col-mureta": 3,
+      "col-padaria": 1,
+      "col-sorveteria": 1,
+      "col-telhado-padaria": 2,
+      "col-terreno": 1
+    },
+    "kb": 960.6,
     "nos": {
       "construcoes": 6216,
       "enfeites": 4166,
