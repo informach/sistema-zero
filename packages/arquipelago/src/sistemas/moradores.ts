@@ -1,10 +1,12 @@
-import { AMIZADE_MAXIMA, type Capi } from '@sistemazero/arquipelago-contracts'
+import { AMIZADE_MAXIMA, type Capi, type Morador } from '@sistemazero/arquipelago-contracts'
 import { type Inventario, ITENS, quantidade, remover } from './itens'
 
 /**
- * A Capi, a capivara do Bosque (regras puras). A amizade sobe conversando uma vez por dia,
- * entregando o pedido do dia e dando um presente por dia; ela nunca desce. Tudo conta pelo dia do
- * calendário no horário do aparelho (`diaDe`), não pelo dia e noite do jogo.
+ * Os moradores (regras puras): a Capi, a capivara do Bosque, e o Bento, o tamanduá da Vila Doce
+ * (`bento.ts`). A amizade sobe conversando uma vez por dia, entregando o pedido do dia e dando um
+ * presente por dia; ela nunca desce. Tudo conta pelo dia do calendário no horário do aparelho
+ * (`diaDe`), não pelo dia e noite do jogo. Cada morador tem os gostos, o aniversário e os pedidos
+ * dele; as contas são as mesmas.
  */
 
 export const AMIZADE = {
@@ -39,22 +41,35 @@ export function diaDe(agora: Date): string {
   return `${a}-${m}-${d}`
 }
 
-export function ehAniversario(dia: string): boolean {
-  const [, m, d] = dia.split('-').map(Number)
-  return m === ANIVERSARIO_DA_CAPI.mes && d === ANIVERSARIO_DA_CAPI.dia
+/** O dia do aniversário de um morador (mês e dia). */
+export interface Aniversario {
+  mes: number
+  dia: number
 }
+
+/** Se `dia` é o aniversário (de quem for; sem dizer, o da Capi). */
+export function ehAniversario(
+  dia: string,
+  aniversario: Aniversario = ANIVERSARIO_DA_CAPI,
+): boolean {
+  const [, m, d] = dia.split('-').map(Number)
+  return m === aniversario.mes && d === aniversario.dia
+}
+
+/** O que um morador acha de cada comida (o que não está aqui é comum; o que não é comida volta). */
+export type Gostos = Readonly<Record<string, 'gosta' | 'comum'>>
 
 /** Quantos corações cheios (de 0 a 5). */
 export function coracoes(amizade: number): number {
   return Math.min(AMIZADE_MAXIMA / AMIZADE.porCoracao, Math.floor(amizade / AMIZADE.porCoracao))
 }
 
-function somar(capi: Capi, pontos: number): Capi {
-  return { ...capi, amizade: Math.min(AMIZADE_MAXIMA, capi.amizade + pontos) }
+function somar<M extends Morador>(m: M, pontos: number): M {
+  return { ...m, amizade: Math.min(AMIZADE_MAXIMA, m.amizade + pontos) }
 }
 
 /** Conversar: só a primeira conversa do dia conta (e é a única com fala nova). */
-export function conversar(capi: Capi, dia: string): { capi: Capi; primeiraDoDia: boolean } {
+export function conversar(capi: Morador, dia: string): { capi: Morador; primeiraDoDia: boolean } {
   if (capi.conversaEm === dia) return { capi, primeiraDoDia: false }
   return { capi: { ...somar(capi, AMIZADE.conversa), conversaEm: dia }, primeiraDoDia: true }
 }
@@ -67,19 +82,21 @@ export type ReacaoAoPresente = 'adorou' | 'agradeceu' | 'devolveu' | 'ja-ganhou-
  * amanhã, e o item também não sai.
  */
 export function darPresente(
-  capi: Capi,
+  capi: Morador,
   inv: Inventario,
   itemId: string,
   dia: string,
-): { capi: Capi; inv: Inventario; reacao: ReacaoAoPresente } {
+  gostos: Gostos = GOSTOS_DA_CAPI,
+  aniversario: Aniversario = ANIVERSARIO_DA_CAPI,
+): { capi: Morador; inv: Inventario; reacao: ReacaoAoPresente } {
   if (quantidade(inv, itemId) < 1) return { capi, inv, reacao: 'sem-item' }
-  const gosto = ITENS[itemId]?.comida ? (GOSTOS_DA_CAPI[itemId] ?? 'comum') : null
+  const gosto = ITENS[itemId]?.comida ? (gostos[itemId] ?? 'comum') : null
   if (!gosto) return { capi, inv, reacao: 'devolveu' }
   if (capi.presenteEm === dia) return { capi, inv, reacao: 'ja-ganhou-hoje' }
   const novo = remover(inv, itemId, 1)
   if (!novo) return { capi, inv, reacao: 'sem-item' }
   const base = gosto === 'gosta' ? AMIZADE.presenteQueGosta : AMIZADE.presenteComum
-  const pontos = ehAniversario(dia) ? base * 2 : base
+  const pontos = ehAniversario(dia, aniversario) ? base * 2 : base
   return {
     capi: { ...somar(capi, pontos), presenteEm: dia },
     inv: novo,
@@ -89,13 +106,16 @@ export function darPresente(
 
 // ── O pedido do dia ─────────────────────────────────────────────────────────────────────────────
 
-export interface PedidoDaCapi {
+export interface PedidoDeMorador {
   id: string
   /** O texto curto do que ela pede (na tela). */
   texto: string
   /** Itens a entregar; ausente nos pedidos de achar um bicho. */
   itens?: Readonly<Record<string, number>>
 }
+
+/** O pedido da Capi (o nome de antes; o formato é o de qualquer morador). */
+export type PedidoDaCapi = PedidoDeMorador
 
 /** Os pedidos de itens. O de achar um bicho é montado na hora (`achar-bicho-N`). */
 export const PEDIDOS_DA_CAPI: readonly PedidoDaCapi[] = [
@@ -115,7 +135,7 @@ export function pedidoPeloId(id: string): PedidoDaCapi | null {
 }
 
 /** Um número estável a partir de um texto (o mesmo pedido o dia inteiro, em qualquer aparelho). */
-function sorteio(texto: string): number {
+export function sorteio(texto: string): number {
   let h = 2166136261
   for (let i = 0; i < texto.length; i++) {
     h ^= texto.charCodeAt(i)
@@ -171,6 +191,44 @@ export function entregarPedido(
   }
 }
 
+// ── Pedido de itens (qualquer morador) ─────────────────────────────────────────────────────────
+
+/** Se os itens do pedido estão todos no inventário. */
+export function temOsItens(pedido: PedidoDeMorador | null, inv: Inventario): boolean {
+  if (!pedido?.itens) return false
+  return Object.entries(pedido.itens).every(([id, qtd]) => quantidade(inv, id) >= qtd)
+}
+
+/**
+ * Entrega um pedido de itens guardado em `m.pedido` (`pedidos` traduz o id): tira os itens e dá a
+ * amizade do pedido. Sem pedido de hoje em aberto ou sem os itens, nada muda.
+ */
+export function entregarItens<M extends Morador>(
+  m: M,
+  inv: Inventario,
+  pedidos: (id: string) => PedidoDeMorador | null,
+): { morador: M; inv: Inventario; entregou: boolean } {
+  const pedido = m.pedido && !m.pedido.entregue ? pedidos(m.pedido.id) : null
+  if (!m.pedido || !pedido || !temOsItens(pedido, inv)) return { morador: m, inv, entregou: false }
+  let novo: Inventario | null = inv
+  for (const [id, qtd] of Object.entries(pedido.itens ?? {})) novo = novo && remover(novo, id, qtd)
+  if (!novo) return { morador: m, inv, entregou: false }
+  return {
+    morador: { ...somar(m, AMIZADE.pedido), pedido: { ...m.pedido, entregue: true } },
+    inv: novo,
+    entregou: true,
+  }
+}
+
+/** O que falta no inventário para um pedido de itens (`null` se nada falta ou não há itens). */
+export function oQueFaltaDosItens(pedido: PedidoDeMorador, inv: Inventario): string | null {
+  if (!pedido.itens || temOsItens(pedido, inv)) return null
+  return Object.entries(pedido.itens)
+    .filter(([id, qtd]) => quantidade(inv, id) < qtd)
+    .map(([id, qtd]) => `${ITENS[id]?.nome ?? id}: você tem ${quantidade(inv, id)} de ${qtd}`)
+    .join('. ')
+}
+
 // ── A Capi no Bosque ────────────────────────────────────────────────────────────────────────────
 
 export const CAPI_NO_BOSQUE = {
@@ -187,16 +245,30 @@ export const CAPI_NO_BOSQUE = {
   altura: 1.3,
 } as const
 
-/** Para onde ela olha: para a criança, se perto (ou conversando); senão para o `descanso`. */
+/**
+ * Para onde um morador olha: para a criança, se a menos de `olharDe` no chão (ou conversando);
+ * senão para o `descanso`.
+ */
+export function olharDoMorador(
+  morador: { x: number; z: number },
+  crianca: { x: number; z: number },
+  descanso: number,
+  conversando: boolean,
+  olharDe: number,
+): number {
+  const dx = crianca.x - morador.x
+  const dz = crianca.z - morador.z
+  if (!conversando && dx * dx + dz * dz > olharDe ** 2) return descanso
+  if (dx === 0 && dz === 0) return descanso
+  return Math.atan2(dx, dz)
+}
+
+/** Para onde a Capi olha (`olharDoMorador` com a distância dela). */
 export function olharDaCapi(
   capi: { x: number; z: number },
   crianca: { x: number; z: number },
   descanso: number,
   conversando: boolean,
 ): number {
-  const dx = crianca.x - capi.x
-  const dz = crianca.z - capi.z
-  if (!conversando && dx * dx + dz * dz > CAPI_NO_BOSQUE.olharDe ** 2) return descanso
-  if (dx === 0 && dz === 0) return descanso
-  return Math.atan2(dx, dz)
+  return olharDoMorador(capi, crianca, descanso, conversando, CAPI_NO_BOSQUE.olharDe)
 }

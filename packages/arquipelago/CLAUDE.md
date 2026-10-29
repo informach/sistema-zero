@@ -186,8 +186,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 ## Ilhas completas (o Bosque, 27/10/2026)
 
 - Vila Doce (fase2-01, 29/10/2026): `vila-doce.glb` em `ILHAS_COMPLETAS`, com os colisores do
-  Blender (`tests/colisores-da-vila-doce.test.ts`) e sem faces coplanares. Ainda sem `ILHAS_VIVAS`
-  (o Bento e as lojas vêm depois), então lá continua o "Olhar em volta". No navegador:
+  Blender (`tests/colisores-da-vila-doce.test.ts`) e sem faces coplanares. Em `ILHAS_VIVAS` desde a
+  fase2-02 (`mundo/vila-viva.tsx`, com o Bento; as lojas vêm depois). No navegador:
   `bun playground/verificar-vila-doce-browser.ts` (chegada até a praça e de pé em cada parada do
   percurso dos telhados).
 
@@ -493,7 +493,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - `mundo/capi.tsx` (montado pelo `BosqueVivo`, dentro de `ComReserva`): o `capi.glb` copiado com
   `SkeletonUtils.clone` (tem esqueleto), na âncora `morador`, de costas para a `cabana`. Vira para
   a criança (`olharDaCapi`), acena, fala, comemora (`alegria` na loja da conversa) e pisca pelo
-  morfo `piscar` dos olhos. O colisor `col-morador-capi` só segura o corpo.
+  morfo `piscar` dos olhos. O colisor `col-morador-capi` só segura o corpo. Desde a fase2-02 tudo
+  isso mora no morador genérico `mundo/morador.tsx` (o mesmo do Bento).
 - `estado/moradores.ts`: a loja da conversa (uma por montagem, como a dos desafios): falas, passo e
   tela. O painel é `interface/capi.tsx` (`PAINEL_DA_CAPI` em `painelAberto`).
 - Câmera da conversa: quem abre a conversa põe a cabeça de quem fala em `pedidos.conversa` (com o
@@ -518,6 +519,27 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   reação que o modelo toca); regras em `sistemas/cuidar.ts`; a queda das medidas roda nos
   `Relogios`, junto com as necessidades. Testes: `tests/cuidar.test.ts`.
 
+## O Bento na Vila Doce (fase2-02, 29/10/2026)
+
+- Salvamento V7 (`moradores.bento`, o mesmo formato da Capi). Regras puras em `sistemas/bento.ts`
+  (gostos, aniversário de São João, pedidos, `BENTO_NA_VILA`, `falasDoBento`) e
+  `sistemas/conversa-do-bento.ts` (sobre o salvamento: `comecarConversaComOBento`,
+  `presentearOBento`, `entregarAoBento`, `podeEntregarAoBento`, `oQueFaltaAoBento`). As contas de
+  amizade e de pedido de itens são as de `moradores.ts`, agora gerais (`darPresente` recebe os
+  gostos e o aniversário; `temOsItens`, `entregarItens`, `oQueFaltaDosItens`, `olharDoMorador`).
+- No mundo: `mundo/morador.tsx` (`MoradorDaIlha`) é o morador parado que vira, acena, fala,
+  comemora, pisca e abre a conversa; `mundo/capi.tsx` e `mundo/bento.tsx` só dizem o modelo, o
+  painel, as medidas e onde ficam. O Bento fica na âncora `morador` da `vila-doce.glb`, de costas
+  para a `padaria`, montado por `mundo/vila-viva.tsx` (`ILHAS_VIVAS['vila-doce']`).
+- A loja da conversa é por morador (`lojaDaConversa(loja, 'bento')`, padrão `'capi'`); o painel é
+  `interface/bento.tsx` (`PAINEL_DO_BENTO`), com os `Coracoes` e os `Presentes` exportados de
+  `interface/capi.tsx`. Regras e textos: `docs/arquipelago-regras.md` §6.15.1. Testes:
+  `tests/bento.test.ts`; navegador: `bun playground/verificar-bento-browser.ts`.
+- ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
+  `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
+  piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em
+  cada uma; `tests/olhos-dos-personagens.test.ts` confere todos os GLBs de personagens e bichos.
+
 ## Diário e pegadas (28/10/2026, Fase 1)
 
 - Regras puras em `sistemas/diario.ts` (páginas da Íris e a coleção do Bosque, derivadas do
@@ -535,10 +557,11 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 
 ## Salvamento e tempo
 
-- `SalvamentoV5` (contrato) com versão; a V1, a V2, a V3 e a V4 migram sozinhas (`migrarDaV1`: nenhum
+- `SalvamentoV7` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
-  e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue). Gravar aceita a versão de
-  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta V5: só a
+  e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue; `migrarDaV5`: a
+  aparência em uso guardada; `migrarDaV6`: o Bento novo). Gravar aceita a versão de
+  uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta atual: só a
   primeira gravação dela fica, as seguintes falham até recarregar.
   Gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.

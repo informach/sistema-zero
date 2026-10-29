@@ -52,6 +52,7 @@ import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { PlacaDaPonte } from './placa-da-ponte'
 import { QuadroDasCores } from './quadro-das-cores'
+import { VilaViva } from './vila-viva'
 
 const TRECHO_QUEBRADO = 0.25
 const DURACAO_DA_CHEGADA_MS = 4500
@@ -227,7 +228,10 @@ function Enfeites({ id, cor }: { id: Ilha['id']; cor: number }) {
 const ALTURA_DAS_NUVENS = 7
 
 /** O que mexe em cada ilha completa (montado com ela ativa, em coordenadas do mundo). */
-const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = { bosque: BosqueVivo }
+const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
+  bosque: BosqueVivo,
+  'vila-doce': VilaViva,
+}
 
 function IlhaDoAnel({
   ilha,

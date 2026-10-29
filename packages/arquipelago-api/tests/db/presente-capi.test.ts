@@ -62,6 +62,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
       const v4 = {
         ...anterior,
         versao: 4,
+        moradores: { capi: anterior.moradores.capi },
         bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null },
       }
       await db.db.insert(salvamentos).values({
@@ -73,7 +74,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         atualizadoEm: AGORA,
       })
       const lido = await servico.lerSalvamento(jogador)
-      expect(lido.salvamento).toMatchObject({ versao: 6, presenteDosBichosEntregue: false })
+      expect(lido.salvamento).toMatchObject({ versao: 7, presenteDosBichosEntregue: false })
       if (!lido.salvamento) throw new Error('O serviço não leu a V4 guardada')
       const entregue = {
         ...lido.salvamento,

@@ -69,7 +69,7 @@ test('não separa um presente de seu consumo na mochila', () => {
   const local = {
     ...base,
     inventario: {},
-    moradores: { capi: { ...base.moradores.capi, amizade: 10 } },
+    moradores: { ...base.moradores, capi: { ...base.moradores.capi, amizade: 10 } },
   }
   const remoto = { ...base, necessidades: { ...base.necessidades, fome: 50 } }
   expect(conciliarSalvamento(base, local, remoto)).toBeNull()

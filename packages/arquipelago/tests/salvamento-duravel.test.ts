@@ -106,7 +106,12 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     presenteDosBichosEntregue: _presente,
     ...v3
   } = inicial()
-  const antigo = { ...v3, versao: 3, inventario: { milho: 4 } }
+  const antigo = {
+    ...v3,
+    versao: 3,
+    moradores: { capi: v3.moradores.capi },
+    inventario: { milho: 4 },
+  }
   const enviado = { ...antigo, inventario: { milho: 3 } }
   const local = { ...antigo, inventario: { milho: 2 } }
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -129,13 +134,13 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     })
     const lido = await armazem.ler()
     expect(lido?.base.salvamento).toMatchObject({
-      versao: 6,
+      versao: 7,
       inventario: { milho: 4 },
       projetos: {},
     })
-    expect(lido?.enviado).toMatchObject({ versao: 6, inventario: { milho: 3 } })
+    expect(lido?.enviado).toMatchObject({ versao: 7, inventario: { milho: 3 } })
     expect(lido?.local).toMatchObject({
-      versao: 6,
+      versao: 7,
       inventario: { milho: 2 },
       construcao: { casa: null, cabanas: {} },
     })

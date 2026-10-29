@@ -8,7 +8,7 @@ import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 6
+export const VERSAO_SALVAMENTO = 7
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -78,8 +78,11 @@ const dia = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 /** Até onde vai a amizade com um morador (5 corações de 100). */
 export const AMIZADE_MAXIMA = 500
 
-/** O que a criança construiu com a Capi (`sistemas/moradores.ts` tem as regras). */
-export const CapiSchema = z.strictObject({
+/**
+ * O que a criança construiu com um morador (`sistemas/moradores.ts` tem as regras): a Capi, no
+ * Bosque, e o Bento, na Vila Doce (V7), guardam o mesmo formato.
+ */
+export const MoradorSchema = z.strictObject({
   amizade: z.number().int().min(0).max(AMIZADE_MAXIMA),
   /** O último dia em que conversaram (a primeira conversa do dia é a que conta). */
   conversaEm: dia.nullable(),
@@ -88,7 +91,18 @@ export const CapiSchema = z.strictObject({
   /** O pedido do dia, guardado para não mudar no meio do dia. */
   pedido: z.strictObject({ dia, id: z.string().min(1).max(40), entregue: z.boolean() }).nullable(),
 })
-export type Capi = z.infer<typeof CapiSchema>
+export type Morador = z.infer<typeof MoradorSchema>
+/** A Capi (o nome de antes da V7; o formato é o de qualquer morador). */
+export const CapiSchema = MoradorSchema
+export type Capi = Morador
+
+/** Um morador que a criança ainda não conheceu. */
+export const MORADOR_NOVO: Morador = {
+  amizade: 0,
+  conversaEm: null,
+  presenteEm: null,
+  pedido: null,
+}
 
 /** O bicho adotado (`sistemas/bichos.ts` tem as regras de cuidar, ensinar e crescer). */
 export const BichoAdotadoSchema = z.strictObject({
@@ -327,30 +341,45 @@ export function migrarDaV5(v5: SalvamentoV5): SalvamentoV6 {
   return { ...v5, versao: 6, projetos }
 }
 
+/** V7 (29/10/2026): os moradores ganham o Bento, da Vila Doce (fase2-02). */
+export const SalvamentoV7Schema = SalvamentoV6Schema.extend({
+  versao: z.literal(7),
+  moradores: z.strictObject({ capi: MoradorSchema, bento: MoradorSchema }),
+})
+export type SalvamentoV7 = z.infer<typeof SalvamentoV7Schema>
+
+/** Da V6 para a V7: tudo igual, e o Bento ainda sem conhecer a criança. */
+export function migrarDaV6(v6: SalvamentoV6): SalvamentoV7 {
+  return { ...v6, versao: 7, moradores: { ...v6.moradores, bento: { ...MORADOR_NOVO } } }
+}
+
 /**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V6): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V7): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV6Schema,
-  SalvamentoV5Schema.transform(migrarDaV5),
-  SalvamentoV4Schema.transform((v4) => migrarDaV5(migrarDaV4(v4))),
-  SalvamentoV3Schema.transform((v3) => migrarDaV5(migrarDaV4(migrarDaV3(v3)))),
-  SalvamentoV2Schema.transform((v2) => migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))),
+  SalvamentoV7Schema,
+  SalvamentoV6Schema.transform(migrarDaV6),
+  SalvamentoV5Schema.transform((v5) => migrarDaV6(migrarDaV5(v5))),
+  SalvamentoV4Schema.transform((v4) => migrarDaV6(migrarDaV5(migrarDaV4(v4)))),
+  SalvamentoV3Schema.transform((v3) => migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))),
+  SalvamentoV2Schema.transform((v2) =>
+    migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))),
+  ),
   SalvamentoV1Schema.transform((v1) =>
-    migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))),
+    migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1)))))),
   ),
 ])
-export type Salvamento = SalvamentoV6
+export type Salvamento = SalvamentoV7
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 6,
+    versao: 7,
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
@@ -365,7 +394,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     pontesVistas: [],
     casa: { portaNova: false },
     percursos: {},
-    moradores: { capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null } },
+    moradores: { capi: { ...MORADOR_NOVO }, bento: { ...MORADOR_NOVO } },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
     projetos: {},

@@ -20,8 +20,8 @@ export function useCopiaAnimada(
   cena: Object3D
   actions: Record<string, AnimationAction | null>
   mixer: AnimationMixer
-  /** A malha dos olhos (com os morfos `piscar` e `feliz`), se houver. */
-  olhos: Mesh | null
+  /** As malhas dos olhos (com os morfos `piscar` e `feliz`); vazia se não houver. */
+  olhos: readonly Mesh[]
 } {
   const gltf = useGLTF(url, false, false)
   const reduzido = useReducedMotion()
@@ -33,14 +33,7 @@ export function useCopiaAnimada(
     return c
   }, [gltf.scene, ambiente])
   const { cena } = copia
-  const olhos = useMemo(() => {
-    let olhos: Mesh | null = null
-    cena.traverse((o) => {
-      const m = o as Mesh
-      if (m.isMesh && o.name.endsWith('-olhos') && m.morphTargetDictionary) olhos = m
-    })
-    return olhos as Mesh | null
-  }, [cena])
+  const olhos = useMemo(() => malhasDosOlhos(cena), [cena])
   useEffect(() => () => copia.soltar(), [copia])
   useFrame(() => iluminarArte(copia.luzes, ambiente.noite))
   const { actions, mixer } = useAnimations(gltf.animations, raiz)
@@ -77,6 +70,20 @@ export function duracaoDoClipe(
   return a ? a.getClip().duration / Math.max(0.01, mixer.timeScale) : 0
 }
 
+/**
+ * As malhas dos olhos com morfos. O olho do Blender tem dois materiais (o branco e a pupila), e o
+ * three divide a malha em uma por material: `capi-olhos_1` e `capi-olhos_2` num grupo `capi-olhos`.
+ * Os morfos ficam em cada uma, então piscar mexe em todas.
+ */
+export function malhasDosOlhos(cena: Object3D): Mesh[] {
+  const olhos: Mesh[] = []
+  cena.traverse((o) => {
+    const m = o as Mesh
+    if (m.isMesh && /-olhos(_\d+)?$/.test(o.name) && m.morphTargetDictionary) olhos.push(m)
+  })
+  return olhos
+}
+
 /** Piscar: fecha por um instante a cada tanto, com um pouco de acaso para não ficar mecânico. */
 export const PISCAR = { aCada: 3.4, acaso: 2.2, dura: 0.14 } as const
 
@@ -85,20 +92,23 @@ export const PISCAR = { aCada: 3.4, acaso: 2.2, dura: 0.14 } as const
  * quando começa a próxima piscada (o chamador mantém o valor entre os quadros).
  */
 export function olhosNoInstante(
-  olhos: Mesh | null,
+  olhos: readonly Mesh[],
   agora: number,
   proxima: { current: number },
   feliz: boolean,
 ): void {
-  const morfos = olhos?.morphTargetInfluences
-  const dic = olhos?.morphTargetDictionary
-  if (!morfos || !dic) return
+  if (olhos.length === 0) return
   if (agora > proxima.current + PISCAR.dura) {
     proxima.current = agora + PISCAR.aCada + Math.random() * PISCAR.acaso
   }
   const piscando = agora >= proxima.current && agora < proxima.current + PISCAR.dura
-  const iPiscar = dic.piscar
-  const iFeliz = dic.feliz
-  if (iPiscar !== undefined) morfos[iPiscar] = piscando && !feliz ? 1 : 0
-  if (iFeliz !== undefined) morfos[iFeliz] = feliz ? 1 : 0
+  for (const olho of olhos) {
+    const morfos = olho.morphTargetInfluences
+    const dic = olho.morphTargetDictionary
+    if (!morfos || !dic) continue
+    const iPiscar = dic.piscar
+    const iFeliz = dic.feliz
+    if (iPiscar !== undefined) morfos[iPiscar] = piscando && !feliz ? 1 : 0
+    if (iFeliz !== undefined) morfos[iFeliz] = feliz ? 1 : 0
+  }
 }

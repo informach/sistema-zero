@@ -11,6 +11,7 @@ import { comer } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
@@ -484,6 +485,7 @@ export function Hud() {
       )}
       <PainelDoQuadro />
       <PainelDaCapi />
+      <PainelDoBento />
       <PainelDoBicho />
       <CadernoDosLumis />
       <PainelDoObjeto />

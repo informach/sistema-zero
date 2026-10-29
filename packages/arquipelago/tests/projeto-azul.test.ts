@@ -48,6 +48,7 @@ describe('ganhar o projeto azul', () => {
     const entregue = {
       ...s,
       moradores: {
+        ...s.moradores,
         capi: {
           ...s.moradores.capi,
           pedido: { dia: '2026-10-28', id: 'alface-2', entregue: true },

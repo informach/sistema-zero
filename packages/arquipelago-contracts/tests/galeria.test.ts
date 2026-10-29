@@ -8,6 +8,7 @@ import {
   galeriaDoObjeto,
   IDS_DA_GALERIA,
   migrarDaV5,
+  migrarDaV6,
   migrarSalvamento,
   OBJETOS_DA_CASA,
   PRECO_MAXIMO_DA_GALERIA,
@@ -89,6 +90,7 @@ describe('salvamento V6: as aparências guardadas', () => {
     const v5: SalvamentoV5 = {
       ...resto,
       versao: 5,
+      moradores: { capi: resto.moradores.capi },
       projetos: {
         geladeira: { ganhoEm: ganho, aparencia: { origem: 'pinta', id: 'c1' } },
         forno: { ganhoEm: ganho, aparencia: null },
@@ -98,7 +100,7 @@ describe('salvamento V6: as aparências guardadas', () => {
     expect(v6.versao).toBe(6)
     expect(v6.projetos.geladeira?.aparencias).toEqual([{ origem: 'pinta', id: 'c1' }])
     expect(v6.projetos.forno?.aparencias).toEqual([])
-    expect(migrarSalvamento(v5)).toEqual(v6)
+    expect(migrarSalvamento(v5)).toEqual(migrarDaV6(v6))
   })
 
   test('a aparência em uso fica entre as guardadas, sem repetir', () => {

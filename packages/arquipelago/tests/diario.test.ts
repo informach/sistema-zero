@@ -16,7 +16,7 @@ import { AMIZADE } from '../src/sistemas/moradores'
 const inicial = () => criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z'))
 const comAmizade = (amizade: number) => {
   const s = inicial()
-  return { ...s, moradores: { capi: { ...s.moradores.capi, amizade } } }
+  return { ...s, moradores: { ...s.moradores, capi: { ...s.moradores.capi, amizade } } }
 }
 const pontosDaPagina = CORACOES_DA_PAGINA * AMIZADE.porCoracao
 
@@ -103,7 +103,7 @@ describe('a Capi entrega a página na conversa', () => {
     const s = comAmizade(pontosDaPagina - AMIZADE.conversa)
     const conversou = {
       ...s,
-      moradores: { capi: { ...s.moradores.capi, conversaEm: '2026-10-27' } },
+      moradores: { ...s.moradores, capi: { ...s.moradores.capi, conversaEm: '2026-10-27' } },
     }
     const { falas } = comecarConversa(conversou, '2026-10-28', 'perfil-1')
     expect(falas.slice(-FALA_DA_PAGINA.length)).toEqual([...FALA_DA_PAGINA])

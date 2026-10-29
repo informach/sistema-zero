@@ -4,11 +4,16 @@ import type { LojaDoJogo } from './loja'
 
 /** O nome do painel da conversa com a Capi na loja do jogo. */
 export const PAINEL_DA_CAPI = 'capi'
+/** O nome do painel da conversa com o Bento. */
+export const PAINEL_DO_BENTO = 'bento'
+
+/** Quem conversa: cada morador tem a loja da conversa dele (a comemoração de um não mexe no outro). */
+export type QuemConversa = 'capi' | 'bento'
 
 /**
- * A conversa com a Capi (uma loja por montagem, como a dos desafios). O painel mostra as falas uma
- * a uma e depois as escolhas; o modelo dela fala enquanto o painel está aberto e comemora a cada
- * número novo em `alegria`.
+ * A conversa com um morador (uma loja por montagem e por morador, como a dos desafios). O painel
+ * mostra as falas uma a uma e depois as escolhas; o modelo do morador fala enquanto o painel está
+ * aberto e comemora a cada número novo em `alegria`.
  */
 export interface EstadoDaConversa {
   falas: string[]
@@ -16,7 +21,7 @@ export interface EstadoDaConversa {
   indice: number
   /** O que está aberto embaixo das falas. */
   tela: 'falas' | 'escolhas' | 'presente' | 'adotar'
-  /** Conta as comemorações (presente de que ela gostou, pedido entregue). */
+  /** Conta as comemorações (presente de que gostou, pedido entregue). */
   alegria: number
   abrir(falas: string[]): void
   /** Uma resposta dela no meio da conversa (o presente, a entrega). */
@@ -29,10 +34,15 @@ export interface EstadoDaConversa {
 
 export type LojaDaConversa = StoreApi<EstadoDaConversa>
 
-const lojas = new WeakMap<LojaDoJogo, LojaDaConversa>()
+const lojas = new WeakMap<LojaDoJogo, Map<QuemConversa, LojaDaConversa>>()
 
-export function lojaDaConversa(loja: LojaDoJogo): LojaDaConversa {
-  let conversa = lojas.get(loja)
+export function lojaDaConversa(loja: LojaDoJogo, quem: QuemConversa = 'capi'): LojaDaConversa {
+  let doJogo = lojas.get(loja)
+  if (!doJogo) {
+    doJogo = new Map()
+    lojas.set(loja, doJogo)
+  }
+  let conversa = doJogo.get(quem)
   if (!conversa) {
     conversa = createStore<EstadoDaConversa>((set, get) => ({
       falas: [],
@@ -64,7 +74,7 @@ export function lojaDaConversa(loja: LojaDoJogo): LojaDaConversa {
         set({ tela: 'escolhas' })
       },
     }))
-    lojas.set(loja, conversa)
+    doJogo.set(quem, conversa)
   }
   return conversa
 }

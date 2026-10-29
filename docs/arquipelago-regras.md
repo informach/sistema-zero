@@ -331,10 +331,12 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoT
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 5` (`SalvamentoV5Schema`, estrito: campo desconhecido é
+- **Versão:** `VERSAO_SALVAMENTO = 7` (`SalvamentoV7Schema`, estrito: campo desconhecido é
   recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
   a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
   projetos azuis. A V5 acrescenta `presenteDosBichosEntregue`, sem alterar os formatos anteriores.
+  A V6 (29/10/2026) guarda as `aparencias` de cada projeto azul (a galeria, §9.9). A V7
+  (29/10/2026) acrescenta o Bento em `moradores.bento`, no mesmo formato da Capi (§6.15.1).
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -348,6 +350,7 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   - a Capi (`moradores.capi`): a amizade (de 0 a 500, `AMIZADE_MAXIMA`), o último dia de conversa e
     de presente e o pedido do dia (o dia, qual é e se já foi entregue). Os dias são `AAAA-MM-DD`
     no horário do aparelho;
+  - o Bento (`moradores.bento`, desde a V7): os mesmos campos da Capi (`MoradorSchema`);
   - os bichos do Bosque (`bichos`): os achados (cada um no máximo uma vez, de `BICHOS_DO_BOSQUE`:
     cachorro, gato, coelho e porquinho) e o adotado, com nome (de 1 a 16 letras), fase (filhote
     ou adulto), fome, limpeza e carinho (de 0 a 100), os dias bem cuidado e o truque (sessões, o
@@ -370,10 +373,12 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
   `migrarSalvamento`. Assim ninguém perde o progresso.
-- **A V1, a V2, a V3 e a V4 continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`:
+- **As versões de antes continuam valendo:** um salvamento antigo é lido já migrado (`migrarDaV1`:
   tudo igual e nenhum percurso corrido; `migrarDaV2`: tudo igual, a Capi com amizade 0, nenhum
   bicho achado e nenhum adotado; `migrarDaV3`: tudo igual, a casa de antes, nenhuma cabana e
-  nenhum projeto azul; `migrarDaV4`: tudo igual e `presenteDosBichosEntregue: false`).
+  nenhum projeto azul; `migrarDaV4`: tudo igual e `presenteDosBichosEntregue: false`;
+  `migrarDaV5`: a aparência em uso vira a única guardada; `migrarDaV6`: tudo igual e o Bento sem
+  amizade, conversa, presente nem pedido, `MORADOR_NOVO`).
 - **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
   já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
@@ -1089,6 +1094,46 @@ adotado já estão no jogo. O plano da parte que falta:
 - **Truque** (`ensinar`, `fazTruque`, `TRUQUE`, `TRUQUE_FEITO`): uma aula por dia, com as três
   medidas acima de 50. Na quinta aula ele aprende e passa a fazer o truque quando pedem (dar a
   pata, rolar no chão, dar um pulinho ou girar no lugar), tocando o clipe "truque".
+- **Moedas:** nada disto paga moedas.
+
+### 6.15.1 O Bento da Vila Doce (fase2-02)
+
+Arquivos: `arquipelago/src/sistemas/bento.ts` (gostos, aniversário, pedidos, onde ele fica e os
+textos), `conversa-do-bento.ts` (a conversa sobre o salvamento) e as contas de amizade de
+`moradores.ts`, as mesmas da Capi; no mundo, `mundo/bento.tsx` (montado por `mundo/vila-viva.tsx`
+com a Vila Doce completa ativa) sobre o morador genérico `mundo/morador.tsx`, e o painel
+`interface/bento.tsx`. Testes: `tests/bento.test.ts`; no navegador,
+`bun playground/verificar-bento-browser.ts`.
+
+- **Quem é:** o tamanduá confeiteiro da Vila Doce. Quando a cor foi embora ele esqueceu as
+  receitas, e cada pedido entregue o ajuda a lembrar um pedaço. Abrir as receitas pela amizade com
+  ele é a fase2-04.
+- **Onde ele fica:** na âncora `morador` do `vila-doce.glb`, na frente da padaria, de costas para a
+  porta (a âncora `padaria`) e olhando para a praça. A até 7 m (`BENTO_NA_VILA.olharDe`) ele se
+  vira para a criança e acena quando ela chega (no máximo uma vez a cada 45 s). Segura o corpo
+  (cilindro de 0,45 de raio e 1,6 de altura; o chapéu passa um pouco), e a câmera passa por ele.
+  Pisca, fala enquanto a conversa está aberta e comemora presente e pedido entregue.
+- **Conversar** (E perto dele, a até 2,2 m): a mesma caixa da Capi, com "Bento", os corações, as
+  falas e as escolhas (entregar o pedido do dia, dar um presente, "Tchau, Bento"). A câmera da
+  conversa é a mesma (§6.15). Na Vila Doce não aparece mais o "Olhar em volta" da ilha.
+- **Amizade:** as mesmas contas da Capi (`AMIZADE`, `coracoes`): 10 pela primeira conversa do dia,
+  30 pelo pedido do dia, 20 por presente de que ele gosta e 8 por comum, de 0 a 500. A amizade de
+  um morador não mexe na do outro, e cada um tem a sua loja da conversa (a comemoração de um não
+  faz o outro comemorar).
+- **Presentes** (`GOSTOS_DO_BENTO`): milho (o fubá do bolo) e pipoca são os preferidos; salada,
+  alface e tomate são comuns. O resto segue a regra da Capi: o que não é comida volta, e só o
+  primeiro presente do dia conta.
+- **Aniversário** (`ANIVERSARIO_DO_BENTO`): 24 de junho, dia de São João. O presente vale o dobro,
+  ele agradece lembrando o São João e, na primeira conversa do dia, fala do aniversário.
+- **Pedido do dia** (`PEDIDOS_DO_BENTO`, `pedidoDoDiaDoBento`): dois milhos, um milho, duas
+  pipocas, uma salada ou dois tomates. O sorteio usa `bento:`, o perfil e o dia, então é o mesmo o
+  dia inteiro em qualquer aparelho e não segue o da Capi. Fica guardado em `moradores.bento.pedido`.
+  Pedido de outro dia não se entrega (o painel mostra só o de hoje).
+- **Conversa** (`falasDoBento`): no primeiro encontro ele se apresenta, conta das receitas
+  esquecidas e já diz o pedido. Na primeira conversa do dia: o aniversário (se for), uma fala do
+  nível de amizade (duas por nível, trocando pelo dia) e o pedido. As outras conversas do mesmo dia
+  são só uma despedida. Mesmas regras de texto (sem travessão, sem exclamação, sem começar com
+  pergunta), conferidas no teste.
 - **Moedas:** nada disto paga moedas.
 
 ### 6.16 O modo construção (a grade e as paredes)

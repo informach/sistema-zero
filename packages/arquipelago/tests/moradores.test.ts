@@ -290,6 +290,7 @@ describe('a conversa com a Capi no salvamento', () => {
       ...base,
       inventario: { alface: 1 },
       moradores: {
+        ...base.moradores,
         capi: { ...base.moradores.capi, pedido: { dia: HOJE, id: 'alface-2', entregue: false } },
       },
     }
@@ -310,6 +311,7 @@ describe('a conversa com a Capi no salvamento', () => {
     const s = {
       ...base,
       moradores: {
+        ...base.moradores,
         capi: {
           ...base.moradores.capi,
           pedido: { dia: HOJE, id: 'achar-bicho-0', entregue: false },

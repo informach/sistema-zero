@@ -16,7 +16,7 @@ import { AMIZADE, coracoes, diaDe } from '../sistemas/moradores'
 
 const CORACOES = 5
 
-function Coracoes({ amizade }: { amizade: number }) {
+export function Coracoes({ amizade }: { amizade: number }) {
   const cheios = coracoes(amizade)
   return (
     <span className="arq-capi-coracoes" role="img" aria-label={`Amizade: ${cheios} de 5 corações`}>
@@ -154,28 +154,38 @@ export function PainelDaCapi() {
         </>
       ) : null}
 
-      {tela === 'presente' ? <Presentes aoEscolher={aoPresentear} principal={principal} /> : null}
+      {tela === 'presente' ? (
+        <Presentes
+          convite="Escolha um presente para a Capi. Comida da horta é o que ela mais gosta."
+          aoEscolher={aoPresentear}
+          aoVoltar={() => conversa.getState().voltarAsEscolhas()}
+          principal={principal}
+        />
+      ) : null}
       {tela === 'adotar' ? <Adotar principal={principal} /> : null}
     </div>
   )
 }
 
-function Presentes({
+/** A mochila para escolher um presente (de qualquer morador; `convite` diz para quem). */
+export function Presentes({
+  convite,
   aoEscolher,
+  aoVoltar,
   principal,
 }: {
+  convite: string
   aoEscolher: (itemId: string) => void
+  aoVoltar: () => void
   principal: React.RefObject<HTMLButtonElement | null>
 }) {
-  const { loja } = useJogo()
   const inventario = useEstado((s) => s.salvamento.inventario)
   const itens = itensVisiveis(inventario)
-  const voltar = () => lojaDaConversa(loja).getState().voltarAsEscolhas()
   return (
     <>
       <p className="arq-capi-fala">
         {itens.length > 0
-          ? 'Escolha um presente para a Capi. Comida da horta é o que ela mais gosta.'
+          ? convite
           : 'A sua mochila está vazia. A horta da sua ilha dá alface, tomate e milho.'}
       </p>
       {itens.length > 0 ? (
@@ -191,7 +201,7 @@ function Presentes({
         </ul>
       ) : null}
       <div className="arq-menu-acoes">
-        <button ref={principal} type="button" className="arq-botao leve" onClick={voltar}>
+        <button ref={principal} type="button" className="arq-botao leve" onClick={aoVoltar}>
           Voltar
         </button>
       </div>
