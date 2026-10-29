@@ -63,7 +63,10 @@ describe('a porta com duas peças no player', () => {
     const fechada = run([{ type: 'take-piece', piece: 'key' }, { type: 'try-cabin' }])
     const html = renderToStaticMarkup(<TwoPiecesControls state={fechada} dispatch={() => {}} />)
     expect(html).toContain('data-estado="escolhido"')
-    expect(html).toMatch(/data-estado="escolhido"[^]*senão/)
+    // O "então" foi pulado e o "senão" foi o escolhido.
+    expect(html).toMatch(
+      /data-estado="ignorado"[\s\S]*então[\s\S]*data-estado="escolhido"[\s\S]*senão/,
+    )
     const ou = run([
       { type: 'cabin-rule', rule: 'or' },
       { type: 'take-piece', piece: 'key' },
