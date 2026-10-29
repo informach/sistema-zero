@@ -1541,6 +1541,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** Os desenhos das vagas de arte do bloco de Estúdio (montados no projeto pelo bloco). */
+  const artSlots = {
+    GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const { status, body } = await members.getArtSlots(lessonId, blockId)
+      return NextResponse.json(body ?? { slots: [] }, { status })
+    },
+  }
+
   // ── Recados (conversas com o professor — canal de retorno) ────────────────
   /** Caixa de entrada do aluno (suas conversas com o professor). */
   const teacherThreadsList = {
@@ -1963,6 +1972,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     pintaSubmit,
     pintaSubmissionGet,
     pintaCarryover,
+    artSlots,
     teacherThreadsList,
     teacherThreadsUnread,
     teacherThreadGet,

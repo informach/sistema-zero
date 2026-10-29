@@ -134,7 +134,7 @@ antes do Admin, do member-shell e dos apps.
 4. **Studio, a origem `lesson-art`.** ✅ (29/10/2026) Asset com `source: 'lesson-art'` fora da impressão do conteúdo
    e do teto do projeto contado como os da biblioteca; o seletor mostra o desenho com o nome da
    vaga. Testes em `core/projectAssets` e no `FieldAssetPicker`.
-5. **Member-shell, o bloco de Estúdio.** Buscar as vagas ao montar o projeto, converter com o
+5. **Member-shell, o bloco de Estúdio.** ✅ (29/10/2026) Buscar as vagas ao montar o projeto, converter com o
    exportador do Pinta e mesclar nos assets (`add`) ou substituir (`replace`). Falha de leitura ou
    de conversão não derruba o bloco: segue sem o desenho e mostra um recado curto. Testes do bloco.
 6. **Admin.** Seções **Desenho para o jogo** (Pinta) e **Desenhos da criança** (Estúdio) em

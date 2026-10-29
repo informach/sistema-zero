@@ -19,6 +19,7 @@ import type {
   AiCreditsView,
   AiUsageConsumeView,
   AmbassadorEnrollmentView,
+  ArtSlotsView,
   AttachmentDownloadView,
   AvatarConfigInput,
   AvatarEquipResult,
@@ -1435,6 +1436,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-carryover`,
         { method: 'GET' },
       )
+    },
+
+    /** Os desenhos das vagas de arte que um bloco de Estúdio importa (a entrega do perfil). */
+    getArtSlots(lessonId: string, blockId: string): Promise<GatewayResponse<ArtSlotsView>> {
+      return gw.gatewayFetch(`/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/art-slots`, {
+        method: 'GET',
+      })
     },
 
     // ── "Guardado na sua conta": criações do Estúdio Completo/Pinta (índice; blob no R2) ──
