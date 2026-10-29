@@ -49,10 +49,11 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV10` estrito (29/10/2026, fase2-07: a V9 mais `rotinas`, a rotina
+- `salvamento.ts`: `SalvamentoV11` estrito (fase3-02: V10 mais as três marcas de `recife`).
+  A V10 (29/10/2026, fase2-07) é a V9 mais `rotinas`, a rotina
   de cada Lumi preso, só das espécies em `lumis`, com o teto somando todas; `migrarDaV9` começa
   sem nenhuma; testes em `tests/salvamento-v10.test.ts`, com o pior caso de 64 KB com tudo no teto,
-  que fica a 290 bytes do limite). A V9 é a V8 mais `lumis`, quantos Lumis
+  medido em bytes UTF-8 também com as marcas da V11). A V9 é a V8 mais `lumis`, quantos Lumis
   de cada espécie ela já prendeu com a lanterna, de 1 a 999, com a lista inteira `LUMIS` (as 14
   espécies das sete famílias) para as ilhas seguintes não pedirem versão nova; `migrarDaV8` começa
   sem nenhum; testes em `tests/salvamento-v9.test.ts`). A V8 é a V7 mais `turnos`, um por balcão
@@ -120,3 +121,11 @@ Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
 Núcleo puro sem React, three ou I/O. Não mudar os schemas de salvamento existentes ao evoluir o molde.
 
 Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.
+
+## Salvamento V11: descobertas do Recife (29/10/2026)
+
+`SalvamentoV11Schema` acrescenta somente `recife: { bau, pagina, tesouro }`, três booleanos.
+`migrarDaV10` preserva o documento e começa as marcas em false. A união pública aceita V1 a V11
+e devolve V11. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
+rotinas é compartilhada sem mudar a régua da V10. O pior caso completo continua limitado a 64 KB.
+Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.

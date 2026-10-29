@@ -128,6 +128,8 @@ export interface BordaViva {
   fora: Ponto
 }
 
+import type { VolumeDeMergulho } from '../sistemas/mergulho'
+
 export type ModoDoCorpo =
   | 'chao'
   | 'cipo'
@@ -138,6 +140,7 @@ export type ModoDoCorpo =
   | 'borda'
   | 'descanso'
   | 'barco'
+  | 'mergulho'
 
 /**
  * Onde descansar (fase2-13, `sistemas/descanso.ts`): sentado num banco ou deitado na cama. O corpo
@@ -160,6 +163,7 @@ export interface LugarDeDescanso {
  * alocar.
  */
 export interface Movimento {
+  mergulhos: VolumeDeMergulho[]
   barco: Travessia | null
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
@@ -179,6 +183,7 @@ export interface Movimento {
     | { tipo: 'descanso'; lugar: LugarDeDescanso }
     | { tipo: 'levantar' }
     | { tipo: 'barco'; viagem: Travessia }
+    | { tipo: 'mergulho'; volume: VolumeDeMergulho }
     | null
   /** Escritos pelo personagem. */
   modo: ModoDoCorpo
@@ -203,6 +208,7 @@ export function criarMovimento(): Movimento {
     cipos: [],
     troncos: [],
     aguas: [],
+    mergulhos: [],
     equilibrios: [],
     escadas: [],
     escorregadores: [],

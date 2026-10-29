@@ -20,6 +20,7 @@ import {
   SaldoDosMembrosSchema,
   type SalvamentoV5,
 } from '../src'
+import { migrarDaV10 } from '../src/salvamento'
 
 describe('o catálogo da galeria', () => {
   test('uma aparência por objeto, com o id estável que começa pelo objeto', () => {
@@ -95,6 +96,7 @@ describe('salvamento V6: as aparências guardadas', () => {
       turnos: _t,
       lumis: _l,
       rotinas: _r,
+      recife: _recife,
       ...resto
     } = criarSalvamentoInicial(AGORA)
     const v5: SalvamentoV5 = {
@@ -110,7 +112,9 @@ describe('salvamento V6: as aparências guardadas', () => {
     expect(v6.versao).toBe(6)
     expect(v6.projetos.geladeira?.aparencias).toEqual([{ origem: 'pinta', id: 'c1' }])
     expect(v6.projetos.forno?.aparencias).toEqual([])
-    expect(migrarSalvamento(v5)).toEqual(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6)))))
+    expect(migrarSalvamento(v5)).toEqual(
+      migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))),
+    )
   })
 
   test('a aparência em uso fica entre as guardadas, sem repetir', () => {

@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
+import { ACHADOS_DO_RECIFE } from '../sistemas/achados-do-recife'
 import {
   albumDoSalvamento,
   type ContaDaSecao,
@@ -157,6 +158,23 @@ export function Album() {
         <p className="arq-caderno-explica">
           O que falta não se perde: continua esperando por você nas ilhas.
         </p>
+        <Secao
+          id="recife"
+          nome="Achados do Recife"
+          conta={{
+            tem: Object.values(salvamento.recife).filter(Boolean).length,
+            total: 3,
+            faltam: 3 - Object.values(salvamento.recife).filter(Boolean).length,
+          }}
+          explica="Os achados do mergulho ficam guardados aqui."
+        >
+          {(Object.keys(ACHADOS_DO_RECIFE) as (keyof typeof ACHADOS_DO_RECIFE)[]).map((id) => (
+            <li key={id} className="arq-quadro-corpo">
+              <b>{ACHADOS_DO_RECIFE[id].nome}</b>
+              <span>{salvamento.recife[id] ? 'Encontrado.' : ACHADOS_DO_RECIFE[id].dica}</span>
+            </li>
+          ))}
+        </Secao>
         <Secao
           id="bichos"
           nome="Bichos do Bosque"

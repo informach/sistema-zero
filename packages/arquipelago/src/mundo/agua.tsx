@@ -1,4 +1,5 @@
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
+import { DoubleSide } from 'three'
 import { FUNDO_DO_MAR, NIVEL_DA_AGUA } from './medidas'
 
 /** O mar em volta de tudo, e um fundo para ninguém cair para sempre. */
@@ -8,6 +9,7 @@ export function Agua() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, NIVEL_DA_AGUA, 0]} renderOrder={1}>
         <circleGeometry args={[700, 64]} />
         <meshStandardMaterial
+          side={DoubleSide}
           color="#3aa6c4"
           transparent
           opacity={0.82}

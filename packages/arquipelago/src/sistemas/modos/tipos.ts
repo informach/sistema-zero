@@ -13,6 +13,7 @@ import type { Travessia } from '../barco'
 import type { Ponto } from '../cipo'
 import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
+import type { VolumeDeMergulho } from '../mergulho'
 import { criarPulo, type EstadoDoPulo } from '../movimento'
 
 /**
@@ -26,6 +27,7 @@ import { criarPulo, type EstadoDoPulo } from '../movimento'
 
 /** O corpo como os modos o veem e mexem (objetos fixos: o laço da física não aloca). */
 export interface EstadoDoCorpo {
+  mergulho: VolumeDeMergulho | null
   barco: Travessia | null
   modo: ModoDoCorpo
   cipo: CipoVivo | null
@@ -95,6 +97,7 @@ export interface EstadoDoCorpo {
 export function criarEstadoDoCorpo(): EstadoDoCorpo {
   return {
     barco: null,
+    mergulho: null,
     modo: 'chao',
     cipo: null,
     tronco: null,
@@ -158,6 +161,8 @@ export interface EntradaDoPasso {
   /** O lado da câmera no mundo (a direita da tela). */
   ladoX: number
   ladoZ: number
+  subir?: boolean
+  descer?: boolean
   pulou: boolean
   usou: boolean
   correr: boolean
@@ -173,6 +178,7 @@ export interface EntradaDoPasso {
 
 /** O que as ilhas registraram por perto (`movimento` do contexto). */
 export interface MundoDoMovimento {
+  mergulhos?: VolumeDeMergulho[]
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]

@@ -8,6 +8,7 @@ export interface Controle {
   eixoZ: number
   correr: boolean
   pular: boolean
+  descer: boolean
   /** Conta os pedidos de "usar" (o personagem compara com o último que atendeu). */
   usar: number
   /**
@@ -28,6 +29,7 @@ export function criarControle(): Controle {
     eixoZ: 0,
     correr: false,
     pular: false,
+    descer: false,
     usar: 0,
     pulos: 0,
     cameraX: 0,
@@ -37,7 +39,7 @@ export function criarControle(): Controle {
 }
 
 type Fonte = 'teclado' | 'toque' | 'gamepad'
-type Entrada = Pick<Controle, 'eixoX' | 'eixoZ' | 'correr' | 'pular'>
+type Entrada = Pick<Controle, 'eixoX' | 'eixoZ' | 'correr' | 'pular' | 'descer'>
 interface Canal extends Entrada {
   ordem: number
 }
@@ -54,14 +56,22 @@ export function atualizarEntrada(c: Controle, fonte: Fonte, parte: Partial<Entra
     fontes = new Map()
     canais.set(c, fontes)
   }
-  const antes = fontes.get(fonte) ?? { eixoX: 0, eixoZ: 0, correr: false, pular: false, ordem: 0 }
+  const antes = fontes.get(fonte) ?? {
+    eixoX: 0,
+    eixoZ: 0,
+    correr: false,
+    pular: false,
+    descer: false,
+    ordem: 0,
+  }
   const proxima = { ...antes, ...parte }
   if (
     fontes.has(fonte) &&
     proxima.eixoX === antes.eixoX &&
     proxima.eixoZ === antes.eixoZ &&
     proxima.correr === antes.correr &&
-    proxima.pular === antes.pular
+    proxima.pular === antes.pular &&
+    proxima.descer === antes.descer
   )
     return
   if (proxima.eixoX !== antes.eixoX || proxima.eixoZ !== antes.eixoZ) {
@@ -72,20 +82,23 @@ export function atualizarEntrada(c: Controle, fonte: Fonte, parte: Partial<Entra
   let direcao: Canal | undefined
   let correr = false
   let pular = false
+  let descer = false
   for (const canal of fontes.values()) {
     if ((canal.eixoX !== 0 || canal.eixoZ !== 0) && (!direcao || canal.ordem > direcao.ordem))
       direcao = canal
     correr ||= canal.correr
     pular ||= canal.pular
+    descer ||= canal.descer
   }
   c.eixoX = direcao?.eixoX ?? 0
   c.eixoZ = direcao?.eixoZ ?? 0
   c.correr = correr
   c.pular = pular
+  c.descer = descer
 }
 
 export function soltarEntrada(c: Controle, fonte: Fonte): void {
-  atualizarEntrada(c, fonte, { eixoX: 0, eixoZ: 0, correr: false, pular: false })
+  atualizarEntrada(c, fonte, { eixoX: 0, eixoZ: 0, correr: false, pular: false, descer: false })
 }
 
 const FRENTE = new Set(['KeyW', 'ArrowUp'])
@@ -112,6 +125,7 @@ export function ligarTeclado(c: Controle, alvo: Window = window): () => void {
       eixoX: (tem(DIREITA) ? 1 : 0) - (tem(ESQUERDA) ? 1 : 0),
       correr: apertadas.has('ShiftLeft') || apertadas.has('ShiftRight'),
       pular: apertadas.has('Space'),
+      descer: apertadas.has('KeyQ'),
     })
   }
   const desce = (e: KeyboardEvent) => {

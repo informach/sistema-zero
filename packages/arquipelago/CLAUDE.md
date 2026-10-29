@@ -716,10 +716,10 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 
 ## Salvamento e tempo
 
-- `SalvamentoV10` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
+- `SalvamentoV11` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
   e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue; `migrarDaV5`: a
-  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina).
+  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina; `migrarDaV10`: nenhum achado do Recife).
   Gravar aceita a versão de
   uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta atual: só a
   primeira gravação dela fica, as seguintes falham até recarregar.
@@ -944,3 +944,34 @@ Relatório, prints e decisões pendentes em `docs/qa/2026-10-29-primeira-festa-d
   `barco-colisao.test.ts`. `playground/verificar-barco-browser.ts` confere os dois sentidos,
   pausa, controles, espera por carga, ilha fechada e toque, com SwiftShader e
   `ARQUIPELAGO_CHROMIUM`. Prints em `docs/qa/2026-10-29-barco/`. Nenhum GLB gerado nesta tarefa.
+
+## Mergulho do Recife (fase3-02, 29/10/2026)
+
+- Regra pura em `sistemas/modos/mergulho.ts`, sobre o contrato dos modos. O sensor registrado em
+  `movimento.mergulhos` delimita a água. O mesmo controlador livre do cipó resolve colisões;
+  sem degrau automático, snap ou corpo novo. Passo fixo 1/60 s, corrente somada, pausa sem avanço.
+- `sistemas/mergulho.ts` centraliza alcance, velocidades, corrente e posições dos modelos.
+  Entrada pela âncora `mergulho`, Espaço/Q ou Subir/Descer, gamepad inferior/esquerdo.
+  Não há fôlego nem punição. Sair pela superfície volta ao nado. Câmera baixa até 3 m, sem
+  grua automática; menos movimento congela os mixers de balanço.
+- `mundo/mergulho-do-recife.tsx` é filho do Recife. Carga privada dos GLBs existentes do navio,
+  labirinto, baú e página, com descarte de carga parcial/tardia e uncache dos mixers. Não usar
+  `buscarIlha` para cada peça. Colisores da arte, ativação só depois de todos estarem montados.
+- O Recife retém o cenário a 55 m e o ativa a 51 m para cobrir a exploração submersa de raio
+  48 m. Boias a 52,6 m. Posições locais: navio (18,0,-30), labirinto (-1,0,27). Não deslocar o
+  piso global de -3,5 m. Os testes usam a cápsula real e os col-* dos arquivos reais.
+- V11 acrescenta `recife: { bau, pagina, tesouro }`. Recompensa pura/idempotente em
+  `achados-do-recife.ts`, +15 diversão no baú e no tesouro; página abre diário. Não criar moedas
+  locais. Entrada grava um ponto seguro; `relogios.tsx` não salva posição temporária no mergulho.
+- Testes: `mergulho.test.ts`, `mergulho-colisores.test.ts`, migração V11 no contrato e HTTP no
+  serviço. `playground/verificar-mergulho-browser.ts` usa SwiftShader e controles reais do jogo
+  com gamepad emulado, em computador e celular emulado. `ARQUIPELAGO_CHROMIUM` escolhe o Chrome.
+  Evidências, comandos e limites em `docs/qa/2026-10-29-mergulho/README.md`.
+
+### Visão nos corredores estreitos
+
+Quando a colisão aproxima a câmera a menos de 1,4 m do centro do corpo no mergulho, só o desenho
+do avatar fica oculto, para não mostrar seu interior. Ele reaparece a partir de 1,65 m. Essa
+folga evita piscar na borda. A cápsula, a posição, as animações e os comandos não mudam.
+A escolha da ilha completa é única nas áreas de carga sobrepostas; durante o mergulho, o Recife
+mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de outra ilha.

@@ -104,6 +104,21 @@ export function ControlesDeToque() {
         </div>
       </div>
       <div className="arq-botoes-toque">
+        {modo === 'mergulho' && (
+          <button
+            type="button"
+            className="arq-botao"
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId)
+              atualizarEntrada(controle, 'toque', { descer: true })
+            }}
+            onPointerUp={() => atualizarEntrada(controle, 'toque', { descer: false })}
+            onPointerCancel={() => atualizarEntrada(controle, 'toque', { descer: false })}
+            onLostPointerCapture={() => atualizarEntrada(controle, 'toque', { descer: false })}
+          >
+            Descer
+          </button>
+        )}
         <button
           type="button"
           className="arq-botao"
@@ -118,7 +133,7 @@ export function ControlesDeToque() {
           onPointerCancel={soltarPulo}
           onLostPointerCapture={soltarPulo}
         >
-          {modo === 'cipo' ? 'Soltar' : 'Pular'}
+          {modo === 'mergulho' ? 'Subir' : modo === 'cipo' ? 'Soltar' : 'Pular'}
         </button>
         <button type="button" className="arq-botao leve" onClick={() => controle.usar++}>
           Usar

@@ -249,8 +249,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",
   senão o jogo criaria um salvamento novo por cima). Formato novo = a próxima versão no contrato
-  (hoje `SalvamentoV5`) com a migração da anterior. V1 a V4 são lidas e recebidas já migradas
-  para V5. A marca `presenteDosBichosEntregue` e o inventário ficam no mesmo JSONB e na mesma
+  (hoje `SalvamentoV11`) com a migração da anterior. V1 a V10 são lidas e recebidas já migradas
+  para V11. A marca `presenteDosBichosEntregue` e o inventário ficam no mesmo JSONB e na mesma
   revisão CAS, sem nova coluna ou migração SQL. O teto continua 64 KB. A suíte
   `tests/db/presente-capi.test.ts` usa somente Postgres local descartável para conferir V4,
   V5, concorrência e limite, nos dois públicos; `tests/integration/http.test.ts` cobre a rota.
@@ -279,3 +279,11 @@ com `bun run --filter @sistemazero/arquipelago build`.
 Cópias aprovadas em minijogos: migration 0009, serviço/repositório/rotas próprios. Principal com recompensa.atracao guarda JSON imutável até nova aprovação; família confere perfis_da_conta no serviço. Só banco local descartável nos testes.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Salvamento V11: Recife (29/10/2026)
+
+O formato atual é V11, com `recife: { bau, pagina, tesouro }`. A rota e o repositório continuam
+usando `SalvamentoSchema`: recebem e leem V1 a V10 migradas para V11. Não há coluna nova nem
+migração SQL, pois as marcas ficam no mesmo JSONB e na mesma revisão CAS. Limite de 64 KB mantido.
+A prova HTTP local cobre envio V10, retorno V11, guarda das três marcas e recusa de revisão velha.
+Os testes de banco continuam restritos a Postgres local cujo nome começa por `arquipelago_test`.

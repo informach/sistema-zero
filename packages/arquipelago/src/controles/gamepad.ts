@@ -13,6 +13,7 @@ export const ZONA_MORTA = 0.15
 
 export const BOTOES = {
   pular: 0,
+  descer: 2,
   usar: 1,
   ombroDireito: 5,
   gatilhoDireito: 7,
@@ -41,6 +42,7 @@ export interface PedidoDoGamepad {
   cameraY: number
   correr: boolean
   pular: boolean
+  descer?: boolean
   usar: boolean
   recentrar: boolean
   menu: boolean
@@ -61,6 +63,7 @@ export function lerPedido(p: LeituraDoGamepad): PedidoDoGamepad {
       apertado(BOTOES.ombroDireito) ||
       Math.hypot(andar.x, andar.y) > 0.95,
     pular: apertado(BOTOES.pular),
+    descer: apertado(BOTOES.descer),
     usar: apertado(BOTOES.usar),
     recentrar: apertado(BOTOES.recentrar),
     menu: apertado(BOTOES.menu),
@@ -82,6 +85,7 @@ export function aplicarPedido(
     eixoZ: agora.andarZ,
     correr: agora.correr,
     pular: agora.pular,
+    descer: agora.descer ?? false,
   })
   c.cameraX = agora.cameraX
   c.cameraY = agora.cameraY

@@ -29,6 +29,7 @@ import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import type { EntradaDaLocomocao } from '../sistemas/locomocao'
+import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
   type AvisoDeModo,
   atenderPedido,
@@ -299,6 +300,8 @@ export function Personagem() {
     e.ladoZ = -Math.sin(g)
     e.pedidoX = -Math.sin(g) * iz + e.ladoX * ix
     e.pedidoZ = -Math.cos(g) * iz + e.ladoZ * ix
+    e.subir = !parado && controle.pular
+    e.descer = !parado && controle.descer
     e.pulou = !parado && controle.pulos !== pulosAtendidos.current
     pulosAtendidos.current = controle.pulos
     e.usou = controle.usar !== usosAtendidos.current
@@ -335,7 +338,7 @@ export function Personagem() {
     )
     b.setNextKinematicTranslation(v.prox)
     // Pegou um cipó ou grudou no tronco neste passo: no ar e na casca ela está sempre "andando".
-    if (v.modo !== 'chao' && v.modo !== 'barco') v.velPedida = 1
+    if (v.modo !== 'chao' && v.modo !== 'barco' && v.modo !== 'mergulho') v.velPedida = 1
     movimento.noChao = v.modo === 'chao' && v.noChao
     const usou = e.usou && !gastouUsar
     const prox = v.prox
@@ -359,7 +362,7 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     m.especial =
-      v.modo === 'chao' || v.modo === 'barco'
+      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'mergulho'
         ? null
         : v.modo === 'descanso'
           ? (v.descanso?.jeito ?? null)
@@ -379,10 +382,12 @@ export function Personagem() {
       estado.dizer(falaDaSaida(nome))
     }
     estado.definirAlvo(
-      parado || v.modo !== 'chao' || estado.visita ? null : maisPerto(interativos, prox.x, prox.z),
+      parado || (v.modo !== 'chao' && v.modo !== 'mergulho') || estado.visita
+        ? null
+        : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho'),
     )
 
-    if (usou && v.modo === 'chao' && !parado) {
+    if (usou && (v.modo === 'chao' || v.modo === 'mergulho') && !parado) {
       const alvo = estado.alvo
       if (alvo) interativos.get(alvo.id)?.agir()
     }
@@ -391,7 +396,7 @@ export function Personagem() {
   // O desenho, a cada quadro: para onde o avatar olha (vira suave), a inclinação na curva, no cipó
   // e no nado, onde os pés encostam, o corpo que as cordas enxergam e o `rastro` (a câmera e o
   // Zappy seguem a posição suavizada, sem tremer entre passos).
-  useFrame((_, dtBruto) => {
+  useFrame(({ camera }, dtBruto) => {
     const dt = Math.min(dtBruto, 0.1)
     const vis = visual.current
     const corpoDoRapier = vis?.parent
@@ -476,6 +481,18 @@ export function Personagem() {
     noMundo(corpoDesenhado.cabeca, CORPO.desenho.cabeca, vis.matrix, centro)
     movimento.corpoDesenhado = corpoDesenhado
 
+    // Em túneis a sonda pode aproximar a câmera até o corpo. Só o desenho some;
+    // a cápsula, as animações e os comandos continuam iguais.
+    vis.visible =
+      v.modo !== 'mergulho' ||
+      mostrarAvatarNoMergulho(
+        Math.hypot(
+          camera.position.x - centro.x,
+          camera.position.y - centro.y,
+          camera.position.z - centro.z,
+        ),
+        vis.visible,
+      )
     rastro.x = centro.x
     rastro.y = centro.y
     rastro.z = centro.z

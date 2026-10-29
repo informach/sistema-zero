@@ -6,6 +6,7 @@ import { useJogo } from '../estado/contexto'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Mare } from './mare'
 import { giroDaIlha } from './medidas'
+import { MergulhoDoRecife } from './mergulho-do-recife'
 import { ComReserva } from './modelos'
 import { aguaDoRecife } from './recife'
 
@@ -47,6 +48,7 @@ export function RecifeVivo({
   })
   return (
     <group ref={pecas} visible={false}>
+      <MergulhoDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <ComReserva reserva={null}>
         <Mare modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>

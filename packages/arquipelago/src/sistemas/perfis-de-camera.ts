@@ -17,6 +17,7 @@ export const NOMES_DOS_PERFIS = [
   'escorregar',
   'luneta',
   'barco',
+  'mergulho',
 ] as const
 export type NomeDoPerfil = (typeof NOMES_DOS_PERFIS)[number]
 
@@ -43,6 +44,7 @@ export interface PerfilDeCamera {
 }
 
 export const PERFIS_DE_CAMERA: Readonly<Record<NomeDoPerfil, PerfilDeCamera>> = {
+  mergulho: { inclinacao: { fixa: 0.08 }, distancia: { maxima: 3 }, antecipar: 0 },
   barco: { inclinacao: { minima: 0.55 }, distancia: { minima: 13 } },
   exploracao: {},
   luneta: { inclinacao: { fixa: 0.32 }, distancia: { minima: 36, maxima: 36 }, campoDeVisao: 45 },
@@ -61,6 +63,7 @@ export const TROCA_DE_PERFIL = 0.5
 export const ANTECIPACAO_MAXIMA = 2
 
 export interface SituacaoDaCamera {
+  mergulho?: boolean
   barco?: boolean
   luneta?: boolean
   /** Uma conversa aberta (o painel e quem fala). */
@@ -76,6 +79,7 @@ export interface SituacaoDaCamera {
  * A luneta tem vista fixa própria. Fora dela: conversa, casa, escorregador, percurso e exploração.
  */
 export function perfilDaVez(s: SituacaoDaCamera): NomeDoPerfil {
+  if (s.mergulho) return 'mergulho'
   if (s.barco) return 'barco'
   if (s.luneta) return 'luneta'
   if (s.conversa) return 'conversa'
@@ -90,6 +94,7 @@ export type PesosDosPerfis = Record<NomeDoPerfil, number>
 export function criarPesos(inicial: NomeDoPerfil = 'exploracao'): PesosDosPerfis {
   return {
     barco: 0,
+    mergulho: 0,
     exploracao: 0,
     casa: 0,
     conversa: 0,

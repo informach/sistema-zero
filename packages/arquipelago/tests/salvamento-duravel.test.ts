@@ -107,6 +107,7 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     turnos: _turnos,
     lumis: _lumis,
     rotinas: _rotinas,
+    recife: _recife,
     ...v3
   } = inicial()
   const antigo = {
@@ -137,13 +138,13 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     })
     const lido = await armazem.ler()
     expect(lido?.base.salvamento).toMatchObject({
-      versao: 10,
+      versao: 11,
       inventario: { milho: 4 },
       projetos: {},
     })
-    expect(lido?.enviado).toMatchObject({ versao: 10, inventario: { milho: 3 } })
+    expect(lido?.enviado).toMatchObject({ versao: 11, inventario: { milho: 3 } })
     expect(lido?.local).toMatchObject({
-      versao: 10,
+      versao: 11,
       inventario: { milho: 2 },
       construcao: { casa: null, cabanas: {} },
     })

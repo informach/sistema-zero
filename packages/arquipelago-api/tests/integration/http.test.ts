@@ -215,12 +215,38 @@ describe('acesso', () => {
 describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
 
+  test('V10 migra na rota e V11 preserva as descobertas do Recife por revisão', async () => {
+    const { recife: _, ...base } = salvamento
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: { ...base, versao: 10 },
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.recife).toEqual({ bau: false, pagina: false, tesouro: false })
+    if (!lido.salvamento) throw new Error('A gravação V10 não devolveu o salvamento')
+    const atual = { ...lido.salvamento, recife: { bau: true, pagina: true, tesouro: true } }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const recebido = await chamar('GET', '/arquipelago/salvamento', crianca())
+    expect(SalvamentoGuardadoSchema.parse(recebido.json).salvamento).toEqual(atual)
+    const velha = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: { ...base, versao: 10 },
+    })
+    expect(velha.status).toBe(409)
+  })
+
   test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
     const {
       presenteDosBichosEntregue: _,
       turnos: _t,
       lumis: _l,
       rotinas: _r,
+      recife: _recife,
       ...anterior
     } = salvamento
     const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
@@ -230,7 +256,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 10, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 11, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,

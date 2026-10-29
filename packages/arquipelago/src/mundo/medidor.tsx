@@ -29,6 +29,7 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  mergulho: { pronto: boolean; achados: { bau: boolean; pagina: boolean; tesouro: boolean } }
   barco: {
     fase: string
     distancia: number
@@ -197,6 +198,10 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      mergulho: {
+        pronto: movimento.mergulhos.some((v) => v.ativo),
+        achados: { ...loja.getState().salvamento.recife },
+      },
       barco: movimento.barco
         ? {
             fase: movimento.barco.fase,

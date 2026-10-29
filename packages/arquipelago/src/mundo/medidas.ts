@@ -1,4 +1,5 @@
 import { type Ilha, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
+import { MERGULHO } from '../sistemas/mergulho'
 
 /**
  * As medidas do mundo (1 unidade = 1 célula do quarto, mais ou menos 1 metro). Tudo o que é
@@ -129,7 +130,7 @@ export function rodaDaIlhaNoModelo(
 ): { x: number; z: number; livre: number } {
   if (ilha.id === 'recife') {
     const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
-    return { x: 0, z: 0, livre: RAIO_VISITAVEL_DO_RECIFE + folga }
+    return { x: 0, z: 0, livre: MERGULHO.raio + folga }
   }
   if (ilha.id !== 'bosque') return { x: 0, z: 0, livre: boias }
   const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)

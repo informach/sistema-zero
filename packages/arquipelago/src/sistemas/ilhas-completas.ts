@@ -70,3 +70,22 @@ export function esmaecer(atual: number, alvo: number, dt: number, duracao: numbe
   const passo = duracao > 0 ? dt / duracao : 1
   return alvo > atual ? Math.min(alvo, atual + passo) : Math.max(alvo, atual - passo)
 }
+
+/** Um único dono do cache. Durante o mergulho, a ilha do volume mantém seus colisores. */
+export function ilhaPreferida(
+  p: { x: number; z: number },
+  candidatas: readonly { id: string; x: number; z: number }[],
+  mergulhando: string | null,
+): string | null {
+  let escolhida: string | null = null
+  let menor = Number.POSITIVE_INFINITY
+  for (const ilha of candidatas) {
+    if (ilha.id === mergulhando) return ilha.id
+    const d = (ilha.x - p.x) ** 2 + (ilha.z - p.z) ** 2
+    if (d < menor) {
+      menor = d
+      escolhida = ilha.id
+    }
+  }
+  return escolhida
+}

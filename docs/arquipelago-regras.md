@@ -2851,3 +2851,40 @@ Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026
   incluem o Vale. Navegador: `playground/verificar-vale-browser.ts`, com `?posicao=6`, computador
   e celular emulado. Plano e decisões em `docs/plans/2026-10-29-arquipelago-vale.md`.
   Nenhuma arte foi alterada e não foi necessário solicitar modelo ou âncora ao Blender.
+
+## Mergulho do Recife (fase3-02, 29/10/2026)
+
+- Na marca de mergulho do Recife, use **Mergulhar** depois que o cenário carregar. A direção
+  segue a câmera. Espaço sobe e Q desce; no toque há Subir e Descer. No controle físico, o botão
+  inferior sobe e o esquerdo desce. Soltar mantém a profundidade. Subir até a superfície volta
+  ao nado comum. O menu, uma ferramenta aberta e a aba escondida pausam o movimento.
+- Não existe contador de fôlego, dano ou perda por demorar, nem no Kids nem no adulto. A subida
+  é escolhida pela pessoa, evitando empurrar o corpo contra o teto do porão. O limite diário do
+  Kids continua sendo o tempo livre da família, sem regra nova de tempo para o mergulho.
+- Velocidade até 2,6 m/s na horizontal e 1,4 m/s na vertical. Aceleração 6 m/s², freio 4 m/s².
+  A física continua em passos de 1/60 s, mesmo quando o desenho fica a 30 quadros por segundo.
+  Nos últimos 3 m do volume de 48 m de raio, a corrente cresce suavemente até 1,2 m/s para dentro.
+- O navio fica em (18, 0, -30) e o labirinto em (-1, 0, 27), coordenadas locais do Recife.
+  A roda de boias do Recife fica a 52,6 m, com o corredor do barco preservado. A prova lê os
+  modelos e confere a folga para o barco, todas as pontes e as boias. O fundo continua a -3,5 m.
+- O baú e o tesouro das pérolas entram no álbum e dão diversão +15 cada, até o teto 100, só uma
+  vez. A página abre o relato do Recife no diário. São descobertas, sem moedas ou item novo.
+  As três marcas ficam juntas no salvamento V11. V1 a V10 migram sem perder o que já havia.
+- Reabrir o jogo durante o mergulho volta à entrada segura e mantém os achados. A posição
+  temporária no fundo não substitui o ponto seguro. Não há retorno automático que retire progresso.
+- A câmera chega até 3 m, com foco baixo para enxergar dentro do porão, sem balanço nem giro
+  automático. A opção de menos movimento também pausa o balanço dos cenários. O corpo e seus
+  colisores continuam os mesmos. Os colisores do navio e do labirinto vêm dos GLBs existentes.
+- O mergulho carrega e libera seus modelos junto com o Recife. Falha parcial ou resposta tardia
+  libera os recursos; não se entra antes de os colisores estarem prontos.
+
+Plano: `docs/plans/2026-10-29-arquipelago-mergulho.md`. Conferência local e limites das provas:
+`docs/qa/2026-10-29-mergulho/README.md`.
+
+### Visão nos corredores estreitos
+
+Quando a colisão aproxima a câmera a menos de 1,4 m do centro do corpo no mergulho, só o desenho
+do avatar fica oculto, para não mostrar seu interior. Ele reaparece a partir de 1,65 m. Essa
+folga evita piscar na borda. A cápsula, a posição, as animações e os comandos não mudam.
+A escolha da ilha completa é única nas áreas de carga sobrepostas; durante o mergulho, o Recife
+mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de outra ilha.

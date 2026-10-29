@@ -12,6 +12,8 @@ export interface Interativo {
   /** O texto do botão agora (`null` = nada a fazer aqui por enquanto). */
   rotulo(): string | null
   agir(): void
+  /** Pode ser usado no modo mergulho. */
+  submerso?: boolean
   /**
    * Só vale quando nenhum outro está ao alcance: o bicho adotado anda sempre perto da criança e
    * não pode tomar o E da Capi, do "Achar" ou da porta.
@@ -30,10 +32,12 @@ export function maisPerto(
   r: RegistroDeInterativos,
   x: number,
   z: number,
+  submerso = false,
 ): { id: string; rotulo: string } | null {
   let melhor: { id: string; rotulo: string; d: number } | null = null
   let fundo: { id: string; rotulo: string; d: number } | null = null
   for (const [id, it] of r) {
+    if (submerso && !it.submerso) continue
     const d = (it.x - x) ** 2 + (it.z - z) ** 2
     if (d > it.raio ** 2) continue
     const rotulo = it.rotulo()
@@ -60,6 +64,9 @@ export function useInterativo(id: string, it: Interativo): void {
       },
       get raio() {
         return ultimo.current.raio
+      },
+      get submerso() {
+        return ultimo.current.submerso
       },
       get deFundo() {
         return ultimo.current.deFundo

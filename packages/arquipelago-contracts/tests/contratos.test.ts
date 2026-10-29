@@ -42,9 +42,10 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV10Schema,
+  SalvamentoV11Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
+import { migrarDaV10 } from '../src/salvamento'
 
 describe('ilhas', () => {
   test('oito ilhas, uma por posição da jornada, ids únicos', () => {
@@ -170,6 +171,7 @@ describe('salvamento V2 (percursos)', () => {
       turnos: _t,
       lumis: _l,
       rotinas: _r,
+      recife: _recife,
       ...resto
     } = criarSalvamentoInicial(agora)
     return { ...resto, versao: 2 }
@@ -179,6 +181,7 @@ describe('salvamento V2 (percursos)', () => {
     return { ...resto, versao: 1 }
   }
   const semMoradores = {
+    recife: { bau: false, pagina: false, tesouro: false },
     presenteDosBichosEntregue: false,
     moradores: {
       capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
@@ -196,19 +199,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV10Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV11Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 10, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 11, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(10)
+    expect(r.salvamento.versao).toBe(11)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -337,11 +340,12 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       turnos: _t,
       lumis: _l,
       rotinas: _r,
+      recife: _recife,
       ...resto
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(10)
+    expect(v3?.versao).toBe(11)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -350,8 +354,10 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       pedido: null,
     })
     expect(
-      migrarDaV9(
-        migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))))),
+      migrarDaV10(
+        migrarDaV9(
+          migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))))),
+        ),
       ),
     ).toEqual(v3 as NonNullable<typeof v3>)
   })
@@ -438,6 +444,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       turnos: _t,
       lumis: _l,
       rotinas: _r,
+      recife: _recife,
       ...resto
     } = inicial()
     const v3: SalvamentoV3 = {
@@ -447,12 +454,14 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(10)
+    expect(v4?.versao).toBe(11)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
     expect(
-      migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))))),
+      migrarDaV10(
+        migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))))),
+      ),
     ).toEqual(v4 as NonNullable<typeof v4>)
   })
 

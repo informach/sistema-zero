@@ -30,7 +30,10 @@ export const ILHAS_DO_DIARIO = [
 export type IlhaDoDiario = (typeof ILHAS_DO_DIARIO)[number]
 
 /** O texto de cada página que já chegou ao jogo (o da proposta do jogo, assinado pela Íris). */
+// A página do Recife é narrativa nova da fase3-02.
 export const TEXTO_DA_PAGINA: Readonly<Partial<Record<IlhaDoDiario, string>>> = {
+  recife:
+    'Desenhei um caminho entre os corais. Na primeira curva me perdi. Voltei, olhei com calma e encontrei outro jeito de passar.',
   bosque:
     'Hoje desenhei uma ponte e apaguei três vezes. Ninguém viu o desenho. Talvez seja melhor assim.',
   'vila-doce':
@@ -127,6 +130,10 @@ export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
           coracoes(s.moradores.bento.amizade),
         ),
       }
+    if (ilha === 'recife')
+      return s.recife.pagina && texto
+        ? { ilha, nome, aberta: true, texto }
+        : { ilha, nome, aberta: false, dica: 'No cesto sob a vela caída do navio afundado.' }
     if (ilha === 'farol')
       return { ilha, nome, aberta: false, dica: 'A última página fica no alto do Farol.' }
     return { ilha, nome, aberta: false, dica: `Fica ${NA_ILHA[ilha]} ${nome}, com quem mora lá.` }

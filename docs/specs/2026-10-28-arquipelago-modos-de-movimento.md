@@ -211,3 +211,24 @@ Os quatro critérios do levantamento: resposta (o comando aparece na hora), prev
 gesto dá o mesmo resultado), continuidade (as trocas guardam a velocidade) e recuperação (errar não
 castiga: sai, solta, tenta de novo). Assistência de alcance opcional e pontos de recuperação perto
 valem para Kids e Adultos.
+
+## Mergulho implementado (fase3-02, 29/10/2026)
+
+O modo `mergulho` segue `valendo`, `passo` e `depois` do contrato. A âncora do Recife pede a
+entrada somente após registrar o volume de água e montar os colisores. A água é um sensor; o
+controlador livre resolve o corpo contra os col-* reais do navio e do labirinto. Não há alocação
+no passo puro. Corrente é velocidade somada, e o desenho não define o tempo físico.
+
+- Resposta: 2,6 m/s horizontal, 1,4 m/s vertical, aceleração 6 m/s², freio 4 m/s². Espaço/Q,
+  Subir/Descer no toque e inferior/esquerdo no gamepad. Soltar segura a profundidade.
+- Previsibilidade: passos de 1/60 s, teste das mesmas entradas com desenho a 30 e 60 quadros.
+  Pausa produz deslocamento zero e mantém estado. O fundo de -3,5 m permanece igual.
+- Continuidade: saída à superfície preserva a velocidade horizontal no embalo do chão. A
+  direção segue a câmera; câmera baixa até 3 m, sem giro automático, respeita menos movimento.
+- Recuperação: não há contador de fôlego nos dois públicos nem perda de progresso. Não subir
+  automaticamente sob o teto. Reabrir volta à entrada segura com os achados já guardados.
+  Corrente mansa na borda do volume impede que a exploração exija transporte através de paredes.
+
+Números, posições e escolhas: `docs/plans/2026-10-29-arquipelago-mergulho.md`. Provas e limites:
+`docs/qa/2026-10-29-mergulho/README.md`. A linha da tabela acima era a decisão preliminar; esta
+seção registra a implementação sobre o contrato, sem alterar as decisões dos outros modos.

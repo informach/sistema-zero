@@ -46,6 +46,7 @@ export function mudarModo(
     c.barco.fase = 'atracado'
     c.barco = null
   }
+  if (modo !== 'mergulho') c.mergulho = null
   c.modo = modo
   c.noModo = 0
   aviso(modo)

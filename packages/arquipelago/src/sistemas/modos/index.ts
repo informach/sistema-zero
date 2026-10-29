@@ -1,6 +1,7 @@
 import type { ModoDoCorpo, Movimento } from '../../estado/contexto'
 import { BARCO } from '../barco'
 import type { Ponto } from '../cipo'
+import { podeMergulhar } from '../mergulho'
 import { MODO_BARCO } from './barco'
 import { MODO_BORDA } from './borda'
 import { MODO_CHAO } from './chao'
@@ -10,6 +11,7 @@ import { MODO_EQUILIBRIO } from './equilibrio'
 import { MODO_ESCADA } from './escada'
 import { agarrarTronco, MODO_ESCALADA } from './escalada'
 import { MODO_ESCORREGAR } from './escorregar'
+import { MODO_MERGULHO } from './mergulho'
 import type { AvisoDeModo, EstadoDoCorpo, ModoDeMovimento, MundoDoMovimento } from './tipos'
 import { mudarModo } from './trocas'
 
@@ -27,6 +29,7 @@ export { mudarModo } from './trocas'
 /** Os modos do corpo. Ilha nova com modo novo (escada, borda, escorregar) entra aqui. */
 export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   barco: MODO_BARCO,
+  mergulho: MODO_MERGULHO,
   chao: MODO_CHAO,
   cipo: MODO_CIPO,
   escalada: MODO_ESCALADA,
@@ -50,6 +53,18 @@ export function atenderPedido(
   agora: number,
   aviso: AvisoDeModo,
 ): void {
+  if (pedido.tipo === 'mergulho') {
+    if (
+      c.modo === 'chao' &&
+      mundo.mergulhos?.includes(pedido.volume) &&
+      podeMergulhar(pedido.volume, de)
+    ) {
+      mudarModo(c, 'mergulho', agora, aviso)
+      c.mergulho = pedido.volume
+      c.embalo.x = c.embalo.y = c.embalo.z = c.velY = 0
+    }
+    return
+  }
   if (pedido.tipo === 'levantar') {
     if (c.modo === 'descanso') levantar(c, agora, aviso)
     return

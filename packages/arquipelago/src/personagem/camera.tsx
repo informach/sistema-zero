@@ -35,6 +35,7 @@ import {
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
+import { MERGULHO } from '../sistemas/mergulho'
 import {
   criarPesos,
   type Enquadramento,
@@ -298,6 +299,7 @@ export function Camera() {
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
     const perfilAtual = perfilDaVez({
       barco: movimento.modo === 'barco',
+      mergulho: movimento.modo === 'mergulho',
       luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA,
       conversa: loja.getState().painelAberto !== null && pedidos.conversa !== null,
       dentroDeCasa: dentro,
@@ -393,7 +395,10 @@ export function Camera() {
     const f = noCipo.current
     const k = 1 - Math.exp(-dt * (6 - SEGUIR_NO_CIPO * Math.min(1, f / FOCO_NO_CIPO)))
     let ax = rastro.x + (movimento.foco.x - rastro.x) * f
-    let ay = rastro.y + 0.9 + (movimento.foco.y - rastro.y - 0.9) * f
+    const mergulhando = movimento.modo === 'mergulho'
+    // No porão o teto fica perto. O foco acompanha o corpo, não a cabeça em pé.
+    const alturaDoFoco = mergulhando ? MERGULHO.focoDaCamera : 0.9
+    let ay = rastro.y + alturaDoFoco + (movimento.foco.y - rastro.y - alturaDoFoco) * f
     let az = rastro.z + (movimento.foco.z - rastro.z) * f
     // O perfil da vez (`sistemas/perfis-de-camera.ts`) e a troca aos poucos.
     const fala = loja.getState().painelAberto !== null ? pedidos.conversa : null
@@ -444,7 +449,7 @@ export function Camera() {
       }
       // Da cabeça e do peito: um tronco que esconde só o corpo também conta.
       let livre = comprimento
-      for (const abaixo of [0, ALTURA_DO_PEITO]) {
+      for (const abaixo of [0, mergulhando ? MERGULHO.sondaAbaixo : ALTURA_DO_PEITO]) {
         const de = { x: alvo.current.x, y: alvo.current.y - abaixo, z: alvo.current.z }
         const bateu = world.castShape(
           de,
@@ -495,7 +500,7 @@ export function Camera() {
     let alvoDaSubida = 0
     const tapada = !dentro && lancar(inclinacao) < dist * GRUA_DA_CAMERA.tapada
     let girou = false
-    if (tapada && !arrastandoAgora.current) {
+    if (tapada && !mergulhando && !menosMovimento && !arrastandoAgora.current) {
       for (const angulo of GRUA_DA_CAMERA.giros) {
         for (const sentido of [lado.current, -lado.current]) {
           const giro = rastro.giro + sentido * angulo
@@ -509,7 +514,7 @@ export function Camera() {
         if (girou) break
       }
     }
-    if (tapada && !girou) {
+    if (tapada && !girou && !mergulhando && !menosMovimento) {
       alvoDaSubida = desvioVerticalDaCamera(
         inclinacao,
         // A mesma folga da sonda abaixo do alvo: evita tangenciar o teto no limite do float.

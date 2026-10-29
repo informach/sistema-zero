@@ -5,8 +5,8 @@ import {
   RoundCylinderCollider,
   TrimeshCollider,
 } from '@react-three/rapier'
-import type { Ilha, IlhaId } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useRef, useState } from 'react'
+import { type Ilha, type IlhaId, ilhaAberta } from '@sistemazero/arquipelago-contracts'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   type Camera,
   type Material,
@@ -20,13 +20,15 @@ import picoGlb from '../assets/ilhas/pico.glb'
 import recifeGlb from '../assets/ilhas/recife.glb'
 import valeGlb from '../assets/ilhas/vale-dos-dinos.glb'
 import vilaDoceGlb from '../assets/ilhas/vila-doce.glb'
-import { useJogo } from '../estado/contexto'
+import { useEstado, useJogo } from '../estado/contexto'
 import {
   type EstadoDaIlha,
   esmaecer,
+  ilhaPreferida,
   opacidadeAlvo,
   proximoEstadoDaIlha,
 } from '../sistemas/ilhas-completas'
+import { MERGULHO } from '../sistemas/mergulho'
 import { iluminarArte, prepararLuzesNoturnas } from './arte-animada'
 import { buscarIlha, reterIlha, soltarIlha } from './carregar-ilha'
 import {
@@ -51,6 +53,7 @@ import {
   DURACAO_DA_TROCA,
   DURACAO_DO_ESMAECER_DA_COPA,
   giroDaIlha,
+  ilhasEmVolta,
   MARGEM_DA_ESPERA_PELO_CHAO,
   naPonteDa,
   nivelDeDetalhe,
@@ -232,7 +235,15 @@ export function useIlhaCompleta(
   aberta: boolean,
   troca: Troca,
 ): { estado: EstadoDaIlha; preparada: IlhaPreparada | null } {
-  const { rastro, pedidos } = useJogo()
+  const { rastro, pedidos, movimento } = useJogo()
+  const jornada = useEstado((s) => s.jornada)
+  const candidatas = useMemo(
+    () =>
+      ilhasEmVolta()
+        .filter((i) => !!ILHAS_COMPLETAS[i.ilha.id] && ilhaAberta(i.ilha.id, jornada))
+        .map((i) => ({ id: i.ilha.id, ...i.centro })),
+    [jornada],
+  )
   const { gl, camera, scene } = useThree()
   const info = ILHAS_COMPLETAS[ilha.id]
   const [estado, setEstado] = useState<EstadoDaIlha>('longe')
@@ -251,12 +262,21 @@ export function useIlhaCompleta(
     const perto =
       !!info &&
       aberta &&
-      nivelDeDetalhe(distancia, naPonteDa(ilha, rastro.x, rastro.z)) !== 'silhueta'
+      ilhaPreferida(
+        rastro,
+        candidatas,
+        movimento.modo === 'mergulho'
+          ? (movimento.mergulhos.find((v) => v.ativo)?.id ?? null)
+          : null,
+      ) === ilha.id &&
+      (ilha.id === 'recife'
+        ? distancia < MERGULHO.carregar
+        : nivelDeDetalhe(distancia, naPonteDa(ilha, rastro.x, rastro.z)) !== 'silhueta')
     if (!perto) v.falhou = false
     troca.opacidade = esmaecer(troca.opacidade, opacidadeAlvo(v.estado), dt, DURACAO_DA_TROCA)
     const proximo = proximoEstadoDaIlha(v.estado, {
       perto,
-      naTroca: perto && distancia < DISTANCIA_DA_TROCA,
+      naTroca: perto && distancia < (ilha.id === 'recife' ? MERGULHO.ativar : DISTANCIA_DA_TROCA),
       carregada: v.preparada !== null,
       falhou: v.falhou,
       saiuDeVista: troca.opacidade <= 0,
@@ -326,7 +346,13 @@ export function useIlhaCompleta(
 }
 
 /** Os colisores dos nós `col-*`, com as bordas arredondadas (o personagem não engancha). */
-function ColisoresDaIlha({ colisores, troca }: { colisores: ColisorDaIlha[]; troca: Troca }) {
+export function ColisoresDaIlha({
+  colisores,
+  troca,
+}: {
+  colisores: ColisorDaIlha[]
+  troca: Troca
+}) {
   // Os colisores entram no mundo nos efeitos dos filhos, que rodam antes deste.
   useEffect(() => {
     troca.colisoresNaCena = true
