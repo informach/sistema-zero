@@ -10,6 +10,7 @@ import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta
  * só a comunidade adulta baixa (`adulto/pele-adulta.ts`).
  */
 export interface VozDoJogo {
+  farolFechado: string
   carregando: { titulo: string; texto: string }
   bloqueado: { titulo: string; motivos: Record<MotivoDeBloqueio, string> }
   descanso: { titulo: string; texto: string }
@@ -31,6 +32,7 @@ export interface VozDoJogo {
 }
 
 export const VOZ_KIDS: VozDoJogo = {
+  farolFechado: 'O Farol abre na Lenda. Enquanto isso, há muito para criar nas ilhas.',
   carregando: {
     titulo: 'Acendendo o Arquipélago',
     texto: 'O Zappy está trazendo a sua casa e o seu avatar.',

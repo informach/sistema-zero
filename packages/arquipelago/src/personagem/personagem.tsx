@@ -11,6 +11,7 @@ import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
 import { GRUPO_DE_NINGUEM } from '../mundo/grupos'
 import { maisPerto } from '../mundo/interativos'
 import {
@@ -543,16 +544,19 @@ export function Personagem() {
 
     // Em túneis a sonda pode aproximar a câmera até o corpo. Só o desenho some;
     // a cápsula, as animações e os comandos continuam iguais.
+    const final = lojaDoFarol(loja).getState().etapa
     vis.visible =
-      v.modo !== 'mergulho' ||
-      mostrarAvatarNoMergulho(
-        Math.hypot(
-          camera.position.x - centro.x,
-          camera.position.y - centro.y,
-          camera.position.z - centro.z,
-        ),
-        vis.visible,
-      )
+      final !== 'fachos' &&
+      final !== 'fim' &&
+      (v.modo !== 'mergulho' ||
+        mostrarAvatarNoMergulho(
+          Math.hypot(
+            camera.position.x - centro.x,
+            camera.position.y - centro.y,
+            camera.position.z - centro.z,
+          ),
+          vis.visible,
+        ))
     rastro.x = centro.x
     rastro.y = centro.y
     rastro.z = centro.z

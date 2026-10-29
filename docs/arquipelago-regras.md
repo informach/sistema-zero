@@ -3219,3 +3219,26 @@ coral e até a mesa) e `arquipelago-contracts/tests/salvamento-v13.test.ts`. Nav
 - A pausa congela o voo e o clipe `flutuar`; com menos movimento (aparelho ou menu), o `flutuar` vai
   a 35% da velocidade. A câmera se afasta um pouco (no mínimo 11 m, inclinação mínima 0,45). A
   posição não é gravada durante o voo, e o balão não muda o salvamento: ele sempre recomeça parado.
+
+
+## Proteja os ninhos no Estúdio (fase4-05, 29/10/2026)
+
+O pacote do Vale fica em `docs/desafios-do-jogo/vale`. O Quadro das Cores 6, ordem 60, usa ondas de cinza e uma lista de ninhos. Cenário, desenho, placar e botão de recomeçar vêm prontos. A criança completa três regras: cobrir um ninho ao tocar, começar a próxima onda e percorrer a lista para contar o que ficou protegido ou com cinza. Não há contagem regressiva. Cada onda começa pelo botão, depois de preparar os ninhos.
+
+A proposta local usa três ninhos, três ondas e um ponto por proteção. Cada onda limpa a proteção para permitir tentar de novo. As três variações, ordens 61 a 63, mudam uma regra cada: quatro ondas, dois pontos por proteção e um quarto ninho na lista. O extra reinicia pelo Enter. O principal dá 20 moedas e o extra 10; os desafios do dia dão 10 e 5, conforme `MOEDAS_PADRAO_POR_TIPO`. Só o principal pinta a ilha. A atração é `proteja-os-ninhos`.
+
+Os oito projetos são JavaScript em blocos, sem HTML, CSS ou Canvas. As provas usam o executor real, incluindo versões com erros para impedir que um objetivo passe só pelo desenho. Importar e publicar no Admin é outra etapa. O quadro estava livre nos manifestos locais e precisa ser conferido também na futura importação. Nenhum banco foi acessado.
+
+## A última página e a volta da Íris (fase4-11, 29/10/2026)
+
+Na Lenda, posição 8 da jornada, E / Usar oferece **Subir o Farol**. Antes, a porta oferece um recado gentil, com voz própria para o público adulto. Visitas não iniciam esse final. A porta exterior continua com sua malha atual; a passagem para o interior acontece pelo interativo, sem abrir uma dobradiça que o modelo ainda não tem.
+
+O interior é a sala existente em `alto-do-farol.glb`, carregada só ao entrar e descartada ao sair. A sala usa um referencial próprio, 40 m acima do zero do mar, para não sobrepor a torre exterior. Esse número é uma decisão técnica, não uma medida da história. As âncoras `entrada`, `mesa` e `varanda` orientam chegada, leitura e vista. O piso tem raio 4,2 m e topo y 0 no modelo; 16 caixas fecham o anel das paredes, com centro a 4,35 m. A mesa e a base da lente têm formas simples. Nenhuma malha de desenho vira colisor. Os nós de colisão definitivos foram pedidos no plano para a sessão do Blender.
+
+O alcance da porta é 2 m e o da leitura é 2,1 m. O corte de entrada e saída mantém a duração de 600 ms, com relógio próprio que pausa junto do jogo, trocando a cena no meio opaco, aos 300 ms de tempo ativo. Esc e o botão de descer devolvem o corpo a um ponto livre diante da porta. A posição da sala não entra no salvamento e o cochilo automático espera a pessoa descer. Uma falha ao carregar mantém a criança na ilha e permite tentar de novo.
+
+A última página tem quatro trechos, sem tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica disponível no diário da sessão depois da leitura. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
+
+A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9, no chão medido pela ilha. Usa o morador genérico, os cinco clipes existentes e os olhos com `piscar` e `feliz`. O corpo simples tem raio 0,49 m e altura 2,13 m, medidos na cabeça e na pele do GLB, sem chapéu e braços estendidos. O foco da conversa fica a 1,7035 m dos pés, no centro vertical da cabeça. Alcance de conversa 2,2 m, olhar a 7 m, aceno a cada 45 s e giro com rapidez 3, iguais aos demais moradores. A conversa é fixa e não cria amizade, pedido ou presente.
+
+A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o final novamente. Não há versão nova de salvamento. O plano pede um booleano futuro `finalDoFarol`, com custo de 21 bytes quando falso e 20 quando verdadeiro, para a migração conjunta. Os pedidos de arte e as provas ficam em `docs/plans/2026-10-29-arquipelago-final-do-farol.md` e `docs/qa/2026-10-29-final-farol/`.

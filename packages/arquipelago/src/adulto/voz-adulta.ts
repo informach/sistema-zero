@@ -15,6 +15,8 @@ function falaDaLuneta(ilha: Ilha): string {
 }
 
 export const VOZ_ADULTA: VozDoJogo = {
+  farolFechado:
+    'O Farol abre no último marco da jornada. As ilhas continuam disponíveis para explorar e criar.',
   carregando: {
     titulo: 'Acendendo o Arquipélago',
     texto: 'Trazendo a sua casa e o seu avatar.',

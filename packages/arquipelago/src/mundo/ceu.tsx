@@ -10,6 +10,7 @@ import {
   type PointsMaterial,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
 import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
 import { NEVOA, RAIO_DAS_ESTRELAS } from './medidas'
@@ -28,7 +29,7 @@ const HEMI_CHAO_NOITE = new Color('#33456a')
 /** Céu, sol, lua e estrelas, pelo relógio do jogo. */
 export function Ceu() {
   const { nivel } = useQualidade()
-  const { ambiente } = useJogo()
+  const { ambiente, loja } = useJogo()
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   const scene = useThree((s) => s.scene)
   const sol = useRef<DirectionalLight>(null)
@@ -63,7 +64,9 @@ export function Ceu() {
     nevoa.color.copy(cor)
     nevoa.near = PERFIS_DE_QUALIDADE[nivel].nevoaInicio
     nevoa.far = PERFIS_DE_QUALIDADE[nivel].nevoaFim
-    scene.fog = nevoa
+    // A vista final enquadra o anel inteiro. Não carrega ilhas nem muda a qualidade.
+    const final = lojaDoFarol(loja).getState().etapa
+    scene.fog = final === 'fachos' || final === 'fim' ? null : nevoa
     const angulo = m.fracao * Math.PI * 2
     if (sol.current) {
       sol.current.intensity = 0.25 + m.luz * 1.35

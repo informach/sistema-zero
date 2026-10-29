@@ -3,6 +3,8 @@ import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-thr
 import { useEffect, useMemo, useRef } from 'react'
 import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
+import { fachosAcesos } from '../sistemas/final-do-farol'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { medirFesta } from './catalogo-da-festa'
@@ -29,6 +31,7 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  finalDoFarol: { etapa: string; tempo: number; fachos: number; leu: boolean; voltou: boolean }
   plataformasDasNuvens: {
     numero: number
     corpoY: number
@@ -248,7 +251,15 @@ export function Medidor() {
       }
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
+    const final = lojaDoFarol(loja).getState()
     const medida: MedidaDoDesenho = {
+      finalDoFarol: {
+        etapa: final.etapa,
+        tempo: final.tempo,
+        fachos: fachosAcesos(final.tempo, final.menosMovimento),
+        leu: final.leu,
+        voltou: final.voltou,
+      },
       plataformasDasNuvens,
       mergulho: {
         pronto: movimento.mergulhos.some((v) => v.ativo),

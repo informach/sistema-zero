@@ -103,4 +103,6 @@ export const ESTILOS = `
 .arq-filhote-hoje{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.arq-filhote-hoje li{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:12px;background:#fff;border:2px dashed #e0c48c;font-size:14px;font-weight:700;color:#5a4630}.arq-filhote-hoje li.feito{border-style:solid;border-color:#9ad9c2;background:#f1fbf6;color:#0f5a46}@media (max-width:480px){.arq-filhote-hoje{grid-template-columns:1fr}}
 .arq-museu ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}.arq-museu li{display:grid;gap:2px;padding:6px 10px;border-radius:10px;background:#f6f1e8;color:#3a4060;font-size:14px}.arq-museu li.veio{background:#fdf0d8;color:#5b3b22}.arq-museu li strong{display:flex;gap:8px;align-items:center}
 @media (max-width:640px){.arq-necessidades{min-width:130px;padding:8px}.arq-nec{font-size:0}.arq-dica{bottom:236px;max-width:calc(100% - 152px)}.arq-cronometro{top:112px}.arq-acao{flex-wrap:wrap;justify-content:center;border-radius:18px}}
+.arq-farol-voltar{position:absolute;top:74px;right:16px;pointer-events:auto}.arq-final-farol{max-height:65dvh;overflow:auto;box-sizing:border-box}
+@media (max-width:640px){.arq-farol-voltar{top:120px}}
 `

@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import { PAINEL_DO_CADERNO } from '../estado/cartas'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol, useFarol } from '../estado/farol'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
+import { PAINEL_DO_FINAL } from '../sistemas/final-do-farol'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO } from '../sistemas/modo-foto'
@@ -24,6 +26,7 @@ import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { CorteDoFarol, PainelDaIris, PainelDoFarol } from './farol'
 import { PainelDoFilhote } from './filhote'
 import { FogueiraDaFesta } from './fogueira-da-festa'
 import { AtalhoDaFoto, ModoFoto } from './foto'
@@ -467,6 +470,7 @@ type Aviso = { tom: 'ok' | 'atencao'; texto: string } | null
 
 function Menu() {
   const { loja, plataforma, pedidos } = useJogo()
+  const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' || s.corte !== null)
   const voz = useVoz()
   const visitando = useEstado((s) => s.visita !== null)
   const aberto = useEstado((s) => s.menuAberto)
@@ -539,7 +543,7 @@ function Menu() {
           <button
             type="button"
             className="arq-botao leve"
-            disabled={ferramentaAberta}
+            disabled={ferramentaAberta || noFarol}
             onClick={() => {
               loja.getState().abrirMenu(false)
               if (loja.getState().visita) voltarDaVisita(loja, pedidos)
@@ -563,7 +567,7 @@ function Menu() {
         <button
           type="button"
           className="arq-botao leve"
-          disabled={ferramentaAberta}
+          disabled={ferramentaAberta || noFarol}
           onClick={() => {
             loja.getState().abrirMenu(false)
             loja.getState().abrirPainel(PAINEL_DA_FOTO)
@@ -619,6 +623,7 @@ function Menu() {
 
 export function Hud() {
   const { loja } = useJogo()
+  const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' || s.corte !== null)
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const naFoto = useEstado(hudEscondido)
@@ -628,6 +633,18 @@ export function Hud() {
       const s = loja.getState()
       if (e.code !== 'Escape') return
       if (salvamentoPausado(s.salvamentoSituacao)) return
+      const final = lojaDoFarol(loja).getState()
+      if (
+        final.etapa !== 'fora' &&
+        (s.painelAberto === null || s.painelAberto === PAINEL_DO_FINAL) &&
+        !s.menuAberto &&
+        !s.tempoPausado &&
+        !s.tempoAcabou &&
+        !s.ferramentaAberta
+      ) {
+        final.sair?.()
+        return
+      }
       // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
       if (s.resultado) s.mostrarResultado(null)
       else if (s.tempoPausado || s.ferramentaAberta) return
@@ -672,7 +689,7 @@ export function Hud() {
       <RotinaAndando />
       <Dica />
       {/* Na casa do irmão só se olha: no lugar de Viver e Construir, de quem é a casa e a volta. */}
-      {visitando ? <FaixaDaVisita /> : <ModosDoJogo />}
+      {!noFarol && (visitando ? <FaixaDaVisita /> : <ModosDoJogo />)}
       {construindo ? (
         <BarraDeConstruir />
       ) : (
@@ -691,6 +708,8 @@ export function Hud() {
       <PainelDoFloco />
       <PainelDaJade />
       <PainelDaIrie />
+      <PainelDaIris />
+      <PainelDoFarol />
       <PainelDaBancada />
       <FogueiraDaFesta />
       <PainelDoTurno />
@@ -703,7 +722,8 @@ export function Hud() {
       <PainelDasVisitas />
       <Album />
       <PainelDoMapa />
-      <AtalhoDaFoto />
+      {!noFarol && <AtalhoDaFoto />}
+      <CorteDoFarol />
       <Menu />
       <Resultado />
       <Corte />

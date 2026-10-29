@@ -6,7 +6,9 @@ import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol, useFarol } from '../estado/farol'
 import { useToque } from '../estado/preferencias'
+import { ALTO_DO_FAROL, campoDaSala, vistaFinal } from '../mundo/alto-do-farol'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
 import { vistaDaLuneta } from '../mundo/luneta-medidas'
 import {
@@ -34,6 +36,7 @@ import {
   METROS_DA_DISTANCIA,
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
+import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { MERGULHO } from '../sistemas/mergulho'
 import {
@@ -104,12 +107,25 @@ function gravarDica() {
  */
 export function Camera() {
   const { rastro, movimento, loja, pedidos, controle } = useJogo()
+  const farol = lojaDoFarol(loja)
+  const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' && s.etapa !== 'carregando')
+  const antesDoFarol = useRef({
+    ativa: false,
+    posicao: new Vector3(),
+    giro: new Quaternion(),
+    campo: 55,
+    giroDoCorpo: 0,
+  })
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const jornada = useEstado((s) => s.jornada)
   const tamanho = useThree((s) => s.size)
+  const panoramaDoFinal = useMemo(
+    () => vistaFinal(tamanho.width / tamanho.height),
+    [tamanho.width, tamanho.height],
+  )
   const vista = useMemo(
     () => vistaDaLuneta(ilhaDaLuneta(jornada), tamanho.width / tamanho.height),
     [jornada, tamanho.width, tamanho.height],
@@ -157,7 +173,7 @@ export function Camera() {
   const recentrarVisto = useRef(controle.recentrar)
 
   useEffect(() => {
-    if (construindo || naLuneta) return
+    if (construindo || naLuneta || noFarol) return
     const el = gl.domElement
     const dedos = new Map<number, { x: number; y: number }>()
     let pinca: { separacao: number; distancia: number } | null = null
@@ -264,7 +280,7 @@ export function Camera() {
       el.removeEventListener('wheel', roda)
       window.removeEventListener('keydown', tecla)
     }
-  }, [gl, rastro, conforto, construindo, naLuneta])
+  }, [gl, rastro, conforto, construindo, naLuneta, noFarol])
 
   // Mudou a distância nas preferências: a câmera vai até ela (a roda e a pinça seguem valendo).
   useEffect(
@@ -297,6 +313,52 @@ export function Camera() {
   useFrame((_, dt) => {
     // Uma única dona da câmera por quadro. O Construir cuida do alvo, controles e suavização.
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
+    const final = farol.getState()
+    const antesF = antesDoFarol.current
+    if (final.etapa !== 'fora' && !antesF.ativa && camera instanceof PerspectiveCamera) {
+      antesF.ativa = true
+      antesF.posicao.copy(camera.position)
+      antesF.giro.copy(camera.quaternion)
+      antesF.campo = camera.fov
+      antesF.giroDoCorpo = rastro.giro
+    }
+    if (
+      final.etapa !== 'fora' &&
+      final.etapa !== 'carregando' &&
+      camera instanceof PerspectiveCamera
+    ) {
+      if ((final.etapa === 'fachos' || final.etapa === 'fim') && final.varanda) {
+        const vista = panoramaDoFinal
+        const p = final.menosMovimento ? 1 : Math.min(1, final.tempo / SEGUNDOS_DA_VISTA)
+        const k = p * p * (3 - 2 * p)
+        camera.position.set(
+          final.varanda.x + (vista.x - final.varanda.x) * k,
+          final.varanda.y + 1.8 + (vista.y - final.varanda.y - 1.8) * k,
+          final.varanda.z + (vista.z - final.varanda.z) * k,
+        )
+        // Mira abaixo do anel para deixar as seis ilhas acima do painel de fala.
+        camera.lookAt(0, -55 * k, 0)
+      } else {
+        camera.position.set(ALTO_DO_FAROL.x + 2, ALTO_DO_FAROL.y + 2.8, ALTO_DO_FAROL.z + 2.7)
+        camera.lookAt(ALTO_DO_FAROL.x - 0.7, ALTO_DO_FAROL.y + 1.3, ALTO_DO_FAROL.z - 1.2)
+        rastro.giro = Math.atan2(2.7, 3.9)
+      }
+      camera.fov =
+        final.etapa === 'sala' || final.etapa === 'pagina'
+          ? campoDaSala(tamanho.width / tamanho.height)
+          : (PERFIS_DE_CAMERA.farol.campoDeVisao ?? 65)
+      camera.updateProjectionMatrix()
+      return
+    }
+    if (antesF.ativa && final.etapa === 'fora' && camera instanceof PerspectiveCamera) {
+      antesF.ativa = false
+      camera.position.copy(antesF.posicao)
+      camera.quaternion.copy(antesF.giro)
+      camera.fov = antesF.campo
+      rastro.giro = antesF.giroDoCorpo
+      camera.updateProjectionMatrix()
+      return
+    }
     const perfilAtual = perfilDaVez({
       barco: movimento.modo === 'barco',
       balao: movimento.modo === 'balao',

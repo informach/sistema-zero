@@ -16,6 +16,7 @@ export const NOMES_DOS_PERFIS = [
   'percurso',
   'escorregar',
   'luneta',
+  'farol',
   'barco',
   'balao',
   'mergulho',
@@ -45,6 +46,7 @@ export interface PerfilDeCamera {
 }
 
 export const PERFIS_DE_CAMERA: Readonly<Record<NomeDoPerfil, PerfilDeCamera>> = {
+  farol: { campoDeVisao: 65 },
   mergulho: { inclinacao: { fixa: 0.08 }, distancia: { maxima: 3 }, antecipar: 0 },
   barco: { inclinacao: { minima: 0.55 }, distancia: { minima: 13 } },
   // No balão (fase4-09): um pouco mais longe e mais alta, para ver em volta do cesto.
@@ -66,6 +68,7 @@ export const TROCA_DE_PERFIL = 0.5
 export const ANTECIPACAO_MAXIMA = 2
 
 export interface SituacaoDaCamera {
+  farol?: boolean
   mergulho?: boolean
   barco?: boolean
   balao?: boolean
@@ -83,6 +86,7 @@ export interface SituacaoDaCamera {
  * A luneta tem vista fixa própria. Fora dela: conversa, casa, escorregador, percurso e exploração.
  */
 export function perfilDaVez(s: SituacaoDaCamera): NomeDoPerfil {
+  if (s.farol) return 'farol'
   if (s.mergulho) return 'mergulho'
   if (s.barco) return 'barco'
   if (s.balao) return 'balao'
@@ -98,6 +102,7 @@ export type PesosDosPerfis = Record<NomeDoPerfil, number>
 
 export function criarPesos(inicial: NomeDoPerfil = 'exploracao'): PesosDosPerfis {
   return {
+    farol: 0,
     barco: 0,
     balao: 0,
     mergulho: 0,
