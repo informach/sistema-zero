@@ -2,8 +2,10 @@ import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import { journeySlotsForTier } from '@sistemazero/core/journey'
 import {
+  artSlotCourseIssues,
   isInteractiveBlock,
   isPdfAttachment,
+  newArtSlotCourseIssues,
   pintaArtSlotIssue,
   readStudioProjectExamples,
   studioArtSlotsIssue,
@@ -22,8 +24,10 @@ import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-do
 import { STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION } from '@sistemazero/core/studio/project-format'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { pythonCourseUnlockIssue } from '@sistemazero/studio/python-course-unlocks'
+import { hasArtSlots } from '../../domain/course/art-slot-course'
 import type { CourseAudience } from '../../domain/course/course'
 import {
+  ArtSlotConflictError,
   CloneSameAudienceError,
   ContentNotFoundError,
   CourseConflictError,
@@ -468,14 +472,23 @@ export class ModuleAdminService {
         )
       }
     }
-    if (!(await this.content.deleteModule(id)))
-      throw new ContentNotFoundError('Módulo não encontrado')
+    // Excluir o módulo leva junto os desenhos que os jogos de outros módulos importam.
+    await this.content.withStudioAuthoringLock(mod.courseId, (repository) =>
+      guardArtSlots(repository, mod.courseId, async () => {
+        if (!(await repository.deleteModule(id)))
+          throw new ContentNotFoundError('Módulo não encontrado')
+      }),
+    )
     return { ok: true }
   }
 
   async reorder(courseId: string, orderedIds: string[]): Promise<{ ok: true }> {
-    assertSameSet(await this.content.listModuleIds(courseId), orderedIds)
-    await this.content.reorderModules(courseId, orderedIds)
+    await this.content.withStudioAuthoringLock(courseId, (repository) =>
+      guardArtSlots(repository, courseId, async () => {
+        assertSameSet(await repository.listModuleIds(courseId), orderedIds)
+        await repository.reorderModules(courseId, orderedIds)
+      }),
+    )
     return { ok: true }
   }
 }
@@ -516,7 +529,11 @@ export class LessonAdminService {
     if (existing.isPublished) {
       await this.assertNotLastPublished(existing.courseId, id)
     }
-    if (!(await this.content.deleteLesson(id))) throw new LessonNotFoundError()
+    await this.content.withStudioAuthoringLock(existing.courseId, (repository) =>
+      guardArtSlots(repository, existing.courseId, async () => {
+        if (!(await repository.deleteLesson(id))) throw new LessonNotFoundError()
+      }),
+    )
     return { ok: true }
   }
 
@@ -539,8 +556,14 @@ export class LessonAdminService {
   }
 
   async reorder(moduleId: string, orderedIds: string[]): Promise<{ ok: true }> {
-    assertSameSet(await this.content.listLessonIds(moduleId), orderedIds)
-    await this.content.reorderLessons(moduleId, orderedIds)
+    const mod = await this.content.findModuleById(moduleId)
+    if (!mod) throw new ContentNotFoundError('Módulo não encontrado')
+    await this.content.withStudioAuthoringLock(mod.courseId, (repository) =>
+      guardArtSlots(repository, mod.courseId, async () => {
+        assertSameSet(await repository.listLessonIds(moduleId), orderedIds)
+        await repository.reorderLessons(moduleId, orderedIds)
+      }),
+    )
     return { ok: true }
   }
 
@@ -821,6 +844,41 @@ export async function assertPintaChainTypeMatches(
   )
 }
 
+/**
+ * A conferência das vagas de arte do curso em volta de uma gravação (etapa 2 de
+ * `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`). Lê as vagas antes, grava, lê de
+ * novo e recusa o problema que a gravação CRIOU; o que já existia antes não prende ninguém.
+ *
+ * ⚠️ Chame com o repositório da transação de `withStudioAuthoringLock`: a trava do curso fecha a
+ * corrida entre duas gravações, e o erro desfaz a escrita junto.
+ */
+export async function guardArtSlots<T>(
+  repository: ContentAdminRepository,
+  courseId: string,
+  write: () => Promise<T>,
+): Promise<T> {
+  const confirm = await startArtSlotGuard(repository, courseId)
+  const result = await write()
+  await confirm()
+  return result
+}
+
+/**
+ * A mesma conferência em dois tempos, para quem grava em vários passos (a publicação do
+ * rascunho): lê as vagas agora e devolve a confirmação, que roda depois da última escrita.
+ */
+export async function startArtSlotGuard(
+  repository: ContentAdminRepository,
+  courseId: string,
+): Promise<() => Promise<void>> {
+  const before = artSlotCourseIssues(await repository.listArtSlotBlocks(courseId))
+  return async () => {
+    const after = artSlotCourseIssues(await repository.listArtSlotBlocks(courseId))
+    const [created] = newArtSlotCourseIssues(before, after)
+    if (created) throw new ArtSlotConflictError(created.message)
+  }
+}
+
 export class BlockAdminService {
   constructor(
     private readonly content: ContentAdminRepository,
@@ -847,21 +905,38 @@ export class BlockAdminService {
     }
     if (canonicalContent.kind === 'pinta') {
       const chain = canonicalContent.chain?.trim()
-      if (chain) {
-        return this.content.withPintaChainLock(lesson.courseId, chain, async (repository) => {
-          await assertPintaChainTypeMatches(repository, lesson.courseId, canonicalContent)
-          return toBlockView(
-            await repository.createBlock(lessonId, canonicalContent.kind, canonicalContent),
-          )
-        })
-      }
+      const write = async (repository: ContentAdminRepository) =>
+        chain
+          ? repository.withPintaChainLock(lesson.courseId, chain, async (locked) => {
+              await assertPintaChainTypeMatches(locked, lesson.courseId, canonicalContent)
+              return toBlockView(
+                await locked.createBlock(lessonId, canonicalContent.kind, canonicalContent),
+              )
+            })
+          : toBlockView(
+              await repository.createBlock(lessonId, canonicalContent.kind, canonicalContent),
+            )
+      // Trava do curso ANTES da trava da cadeia: a mesma ordem da edição e da publicação.
+      if (hasArtSlots(canonicalContent))
+        return this.content.withStudioAuthoringLock(lesson.courseId, (repository) =>
+          guardArtSlots(repository, lesson.courseId, () => write(repository)),
+        )
+      return write(this.content)
     }
     if (canonicalContent.kind === 'studio') {
       return this.content.withStudioAuthoringLock(lesson.courseId, async (repository) => {
-        await repository.claimStudioChains(lesson.courseId, studioChainCandidate(canonicalContent))
-        return toBlockView(
-          await repository.createBlock(lessonId, canonicalContent.kind, canonicalContent),
-        )
+        const write = async () => {
+          await repository.claimStudioChains(
+            lesson.courseId,
+            studioChainCandidate(canonicalContent),
+          )
+          return toBlockView(
+            await repository.createBlock(lessonId, canonicalContent.kind, canonicalContent),
+          )
+        }
+        return hasArtSlots(canonicalContent)
+          ? guardArtSlots(repository, lesson.courseId, write)
+          : write()
       })
     }
     return toBlockView(
@@ -875,17 +950,21 @@ export class BlockAdminService {
     assertBlockCoherent(canonicalContent, this.studioPolicy)
     const courseId = await this.content.findBlockCourseId(id)
     if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
-    return this.content.withStudioAuthoringLock(courseId, async (repository) => {
-      await repository.claimStudioChains(
-        courseId,
-        studioChainCandidate(canonicalContent),
-        await repository.findStudioBlockChain(id),
-      )
-      return new BlockAdminService(repository, this.studioPolicy).updateInTransaction(
-        id,
-        canonicalContent,
-      )
-    })
+    return this.content.withStudioAuthoringLock(courseId, (repository) =>
+      // A versão de ANTES também conta: tirar a vaga de um desenho deixa sem desenho o jogo que
+      // a importava.
+      guardArtSlots(repository, courseId, async () => {
+        await repository.claimStudioChains(
+          courseId,
+          studioChainCandidate(canonicalContent),
+          await repository.findStudioBlockChain(id),
+        )
+        return new BlockAdminService(repository, this.studioPolicy).updateInTransaction(
+          id,
+          canonicalContent,
+        )
+      }),
+    )
   }
 
   private async updateInTransaction(
@@ -932,17 +1011,26 @@ export class BlockAdminService {
   async remove(id: string): Promise<{ ok: true }> {
     const courseId = await this.content.findBlockCourseId(id)
     if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
-    await this.content.withStudioAuthoringLock(courseId, async (repository) => {
-      await repository.claimStudioChains(courseId, [], await repository.findStudioBlockChain(id))
-      if (!(await repository.deleteBlock(id)))
-        throw new ContentNotFoundError('Bloco não encontrado')
-    })
+    await this.content.withStudioAuthoringLock(courseId, (repository) =>
+      guardArtSlots(repository, courseId, async () => {
+        await repository.claimStudioChains(courseId, [], await repository.findStudioBlockChain(id))
+        if (!(await repository.deleteBlock(id)))
+          throw new ContentNotFoundError('Bloco não encontrado')
+      }),
+    )
     return { ok: true }
   }
 
   async reorder(lessonId: string, orderedIds: string[]): Promise<{ ok: true }> {
-    assertSameSet(await this.content.listBlockIds(lessonId), orderedIds)
-    await this.content.reorderBlocks(lessonId, orderedIds)
+    const lesson = await this.content.findLessonById(lessonId)
+    if (!lesson) throw new LessonNotFoundError()
+    // A ordem dos blocos é parte da ordem do curso: o desenho precisa vir antes do jogo.
+    await this.content.withStudioAuthoringLock(lesson.courseId, (repository) =>
+      guardArtSlots(repository, lesson.courseId, async () => {
+        assertSameSet(await repository.listBlockIds(lessonId), orderedIds)
+        await repository.reorderBlocks(lessonId, orderedIds)
+      }),
+    )
     return { ok: true }
   }
 }

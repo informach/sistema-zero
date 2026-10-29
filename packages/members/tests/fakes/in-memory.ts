@@ -1,7 +1,9 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import type { CertificateRecord } from '../../src/domain/certificate/certificate'
+import { lessonArtSlotBlocks } from '../../src/domain/course/art-slot-course'
 import { blockRevisionFingerprint } from '../../src/domain/course/block-revision'
 import {
   type Course,
@@ -1096,7 +1098,49 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       }))
   }
 
+  /**
+   * As partes da aula publicada (o `lesson_structures` do Postgres). O falso dos rascunhos liga
+   * aqui as estruturas do falso da aprendizagem; sem ele, cada aula é uma parte só.
+   */
+  lessonSections: (lessonId: string) => unknown = () => undefined
+
+  async listArtSlotBlocks(courseId: string) {
+    // Espelha `listArtSlotBlocks` (Drizzle) pelas mesmas funções de domínio.
+    return this.lessons
+      .filter((lesson) => lesson.courseId === courseId)
+      .flatMap((lesson) =>
+        lessonArtSlotBlocks(
+          {
+            lessonId: lesson.id,
+            lessonTitle: lesson.title,
+            moduleOrder: this.modules.find((m) => m.id === lesson.moduleId)?.sortOrder ?? 0,
+            lessonOrder: lesson.sortOrder,
+          },
+          this.blocks
+            .filter((block) => block.lessonId === lesson.id)
+            .sort((a, b) => a.sortOrder - b.sortOrder),
+          this.lessonSections(lesson.id),
+        ),
+      )
+  }
+
+  /** As travas de curso já seguras no fluxo assíncrono atual (o `FOR UPDATE` é reentrante). */
+  private readonly heldStudioAuthoringLocks = new AsyncLocalStorage<ReadonlySet<string>>()
+
   async withStudioAuthoringLock<T>(
+    courseId: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T> {
+    // No Postgres, quem já segura a linha do curso na transação trava de novo sem esperar
+    // (a exclusão de aula e de módulo trava por dentro da conferência das vagas).
+    const held = this.heldStudioAuthoringLocks.getStore()
+    if (held?.has(courseId)) return operation(this)
+    return this.heldStudioAuthoringLocks.run(new Set([...(held ?? []), courseId]), () =>
+      this.lockStudioAuthoring(courseId, operation),
+    )
+  }
+
+  private async lockStudioAuthoring<T>(
     courseId: string,
     operation: (repository: ContentAdminRepository) => Promise<T>,
   ): Promise<T> {
@@ -1111,12 +1155,29 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const before = new Map(
       [...this.studioChainEnvironments].filter(([key]) => key.startsWith(`${courseId}:`)),
     )
+    // A transação do Postgres desfaz TUDO o que o callback gravou: a conferência das vagas de
+    // arte recusa DEPOIS de escrever, então o falso desfaz módulos, aulas e blocos também.
+    const rows = (list: object[]) => list.map((row) => [row, { ...row }] as const)
+    const saved = {
+      modules: rows(this.modules),
+      lessons: rows(this.lessons),
+      blocks: rows(this.blocks),
+    }
+    const restore = <T extends object>(snapshot: (readonly [T, T])[]) =>
+      snapshot.map(([row, copy]) => {
+        for (const key of Object.keys(row))
+          if (!(key in copy)) delete (row as Record<string, unknown>)[key]
+        return Object.assign(row, copy)
+      })
     try {
       return await operation(this)
     } catch (error) {
       for (const key of this.studioChainEnvironments.keys())
         if (key.startsWith(`${courseId}:`)) this.studioChainEnvironments.delete(key)
       for (const [key, value] of before) this.studioChainEnvironments.set(key, value)
+      this.modules = restore(saved.modules as (readonly [Module, Module])[])
+      this.lessons = restore(saved.lessons as (readonly [Lesson, Lesson])[])
+      this.blocks = restore(saved.blocks as (readonly [LessonBlock, LessonBlock])[])
       throw error
     } finally {
       release()

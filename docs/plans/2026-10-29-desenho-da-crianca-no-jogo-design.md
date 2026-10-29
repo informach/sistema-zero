@@ -75,7 +75,13 @@ Estúdio declara as vagas que IMPORTA.
   - duas vagas com o mesmo nome no curso;
   - um Estúdio importando uma vaga que nenhum Pinta do curso preenche;
   - uma vaga preenchida só DEPOIS do Estúdio que a importa (ordem do curso);
-  - `replace` sem `replaces` na vaga, ou com `replaces` que não é imagem do jogo do bloco.
+  - `replace` sem `replaces` na vaga, ou com `replaces` que não é imagem do jogo do bloco;
+  - `add` com o nome de uma imagem que o jogo já tem (acrescentada na etapa 2: o desenho colidiria
+    com a imagem nos materiais).
+- A ordem é a do curso até a PARTE da aula (módulo, aula, parte, bloco): na mesma aula, o desenho
+  vem numa parte antes do jogo. Reordenar e excluir aulas e módulos passam pela mesma conferência.
+- Só recusa o que a gravação cria: um curso que já tem um problema não prende quem mexe em outra
+  coisa. O "Conferir" do rascunho mostra o problema antes do "Publicar".
 - O conteúdo da vaga é do aluno: a view pública do bloco leva os nomes, nunca a entrega de outro
   perfil.
 
@@ -118,9 +124,10 @@ antes do Admin, do member-shell e dos apps.
 1. **Core e members, contrato.** `PintaBlock.artSlot` e `StudioBlock.artSlots` no domínio
    (`packages/members/src/domain/course/lesson-block.ts`), validação de forma e tetos, DTO TypeBox,
    projeção pública (nomes sim, entrega não). Testes unitários do domínio.
-2. **Members, validação de curso.** As quatro recusas da autoria no `BlockAdminService` (create e
-   update) e na importação de manifesto, com trava por curso no molde de `withPintaChainLock`.
-   Teste SQL das consultas (régua de `tests/db/pinta-chain-sql.test.ts`).
+2. **Members, validação de curso.** ✅ (29/10/2026) As recusas na publicação do rascunho (por onde
+   passa a importação de manifesto), em reordenar e excluir aula e módulo e no `BlockAdminService`,
+   sob a trava da linha do curso (`withStudioAuthoringLock`). Teste SQL da consulta em
+   `tests/db/art-slots-sql.test.ts`.
 3. **Members, leitura da aula.** `GET /members/lessons/:lessonId/blocks/:blockId/art-slots` →
    `{ slots: { name, asset: PintaAsset | null }[] }` (`GetArtSlotsService`, acesso pela conta,
    entrega pelo perfil, só blocos publicados). Rota no gateway. Teste de integração.
