@@ -92,7 +92,7 @@ export function MoradorDaIlha({
         diaDe(new Date()),
         plataforma.perfil.id,
       )
-      s.mudar(() => salvamento)
+      if (salvamento !== s.salvamento) s.mudar(() => salvamento)
       conversa.getState().abrir(falas)
       pedidos.conversa = cabeca
       s.abrirPainel(painel)

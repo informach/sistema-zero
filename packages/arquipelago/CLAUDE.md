@@ -644,6 +644,35 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   A comunidade adulta não tem limite diário nem usa esta fila. O dia do evento usa o relógio do
   aparelho, e os limites dessa confiança precisam ser considerados antes da abertura em produção.
 
+## O Recife e a Maré (fase3-01, 29/10/2026)
+
+O Recife está em `ILHAS_COMPLETAS` e `RecifeVivo` em `ILHAS_VIVAS`. Segue o ciclo existente de
+carregar, preparar, esmaecer e soltar; a Maré e a lagoa só ficam montadas com a ilha ativa. O
+Quadro das Cores usa a montagem genérica na chegada. Nenhum navio ou sistema de mergulho entra
+nesta fase.
+
+`mundo/recife.ts` lê as âncoras `casa-mare` e `morador` e a elipse do nó `agua`. O GLB recebido
+em `02cfe22f4` já tem a bacia no terreno, com fundo de 0,85. A água entra em `movimento.aguas`
+e sai na desmontagem. A roda de nado já registrada em `anel.tsx` usa raio 28,6 no Recife,
+incluindo a aproximação à boca da caverna. `raioDaEsperaDaIlha` espera os colisores até 24 do
+centro, também fora do contorno da ilha leve, sem acrescentar chão invisível.
+
+`mundo/mare.tsx` usa `MoradorDaIlha`: cópia animada, aceno, giro, piscar e conversa. O cilindro
+`col-morador-mare` segura só o corpo, com raio 0,46 e altura 1,45; cabeça a 1,2. As distâncias
+e os tempos seguem o Bento. `sistemas/mare.ts` retorna o mesmo salvamento na apresentação;
+o morador genérico só chama `mudar` quando recebe outra referência. Não criar amizade,
+presentes ou pedidos nesta fase. A amizade espera uma próxima versão, sem alterar a V10.
+
+Plano e decisões propostas: `docs/plans/2026-10-29-arquipelago-recife.md`. Testes:
+`tests/recife.test.ts`, `tests/colisores-do-recife.test.ts`, `tests/lagos-das-ilhas.test.ts`,
+`tests/ilhas-completas.test.ts` e `tests/faces-coplanares.test.ts`. Navegador:
+`playground/verificar-recife-browser.ts`, com `?posicao=4`, computador e celular emulado.
+O nado faz parte do modo `chao`: a conferência verifica a cintura na superfície e o corpo
+sem apoio, em vez de procurar um modo chamado `nadar`.
+
+Achado visual registrado no plano: o teto baixo da caverna aproxima demais a câmera do avatar.
+O ajuste do enquadramento fica com a sessão responsável por `src/personagem/camera.tsx`.
+
 ## Rodar
 
 - `bun run dev`: playground em `http://127.0.0.1:4520` (parâmetros na URL: `posicao`, `publico`,

@@ -53,6 +53,7 @@ import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { PlacaDaPonte } from './placa-da-ponte'
 import { QuadroDasCores } from './quadro-das-cores'
+import { RecifeVivo } from './recife-vivo'
 import { VilaViva } from './vila-viva'
 
 const DURACAO_DA_CHEGADA_MS = 4500
@@ -231,6 +232,7 @@ const ALTURA_DAS_NUVENS = 7
 const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
   bosque: BosqueVivo,
   'vila-doce': VilaViva,
+  recife: RecifeVivo,
 }
 
 function IlhaDoAnel({

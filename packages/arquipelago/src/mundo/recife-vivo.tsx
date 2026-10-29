@@ -1,0 +1,47 @@
+import { useFrame } from '@react-three/fiber'
+import type { Ilha } from '@sistemazero/arquipelago-contracts'
+import { useEffect, useMemo, useRef } from 'react'
+import type { Group } from 'three'
+import { useJogo } from '../estado/contexto'
+import type { IlhaPreparada, Troca } from './ilha-completa'
+import { Mare } from './mare'
+import { giroDaIlha } from './medidas'
+import { ComReserva } from './modelos'
+import { aguaDoRecife } from './recife'
+
+/** Só existe com a ilha ativa. Água e conversa são retiradas junto com a ilha. */
+export function RecifeVivo({
+  ilha,
+  centro,
+  preparada,
+  troca,
+}: {
+  ilha: Ilha
+  centro: { x: number; z: number }
+  preparada: IlhaPreparada
+  troca: Troca
+}) {
+  const { movimento } = useJogo()
+  const giro = giroDaIlha(ilha)
+  const meio = useMemo(() => ({ ...centro, y: 0 }), [centro])
+  const agua = useMemo(() => aguaDoRecife(preparada.modelo, meio, giro), [preparada, meio, giro])
+  const pecas = useRef<Group>(null)
+  useEffect(() => {
+    if (!agua) return
+    movimento.aguas.push(agua)
+    return () => {
+      const i = movimento.aguas.indexOf(agua)
+      if (i >= 0) movimento.aguas.splice(i, 1)
+    }
+  }, [agua, movimento])
+  useFrame(() => {
+    if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
+  })
+  return (
+    <group ref={pecas} visible={false}>
+      <ComReserva reserva={null}>
+        <Mare modelo={preparada.modelo} meio={meio} giro={giro} />
+      </ComReserva>
+    </group>
+  )
+}

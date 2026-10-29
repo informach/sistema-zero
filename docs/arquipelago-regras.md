@@ -2512,6 +2512,36 @@ Arquivos: `sistemas/luneta.ts`, `mundo/luneta-medidas.ts`, `mundo/luneta.tsx`,
 Testes puros e dos GLBs: `tests/luneta.test.ts`. Visita real no playground:
 `playground/verificar-luneta-browser.ts`. Celular físico ainda precisa de conferência.
 
+## Recife completo e apresentação da Maré (fase3-01, 29/10/2026)
+
+- A ilha completa entra pelo mesmo ciclo do Bosque e da Vila Doce. O Quadro das Cores fica
+  perto da chegada e usa os desafios publicados, sem inventar novos desafios nesta fase.
+- A lagoa usa o nó `agua` e a bacia do GLB recebido em `02cfe22f4`: o fundo tem 0,85 de
+  profundidade e rampa para sair andando. A leitura da superfície segue o Bosque e só fica
+  registrada enquanto a ilha completa está ativa.
+- A parte do Recife de `aj-ligar-10` considera a caverna fora do círculo da ilha leve. Proposta
+  de medida: 24 unidades para a área visitável, cobrindo a boca a cerca de 21,3 do centro,
+  mais 2 de aproximação por fora e folga do corpo. A roda de nado conserva as 4,6 unidades
+  de folga das outras ilhas e fica a 28,6. Isso amplia a espera pelos colisores e o mar livre,
+  sem desenhar ou criar chão invisível. As plataformas das Nuvens continuam fora desta fase.
+- A Maré fica na âncora `casa-mare`, voltada à marca `morador`, com os mesmos gestos e controles
+  dos outros moradores. Proposta de medidas baseada no GLB: cilindro com raio 0,46, altura
+  1,45 e câmera da conversa a 1,2 dos pés. Só o corpo colide, sem prender a câmera. Olhar a
+  7, conversar a 2,2, intervalo de aceno de 45 segundos e rapidez de giro 3 seguem o Bento.
+- A apresentação proposta é “Sou Maré. Faço mapas do mar.” e “Sem meus mapas, o mar perdeu
+  as rotas.” Base: a tartaruga cartógrafa da proposta fornecida em HTML. Não há amizade,
+  pedidos ou presentes e a conversa não grava no salvamento. A amizade espera uma próxima
+  versão, fora da V10 que está sendo feita por outra sessão.
+- Navio, labirinto e mergulho ficam para a fase3-02. Não foi necessário gerar arte nesta
+  integração. O teste dos lagos confere fundo e rampa; o roteiro de navegador confere ponte,
+  cais, caverna, lagoa e conversa no playground, com `?posicao=4`.
+- Achado visual: a câmera padrão chega perto demais do avatar sob o teto da caverna. A passagem
+  funciona, mas o enquadramento precisa de ajuste pela sessão da câmera. Celular físico ainda
+  precisa de conferência.
+
+Plano: `docs/plans/2026-10-29-arquipelago-recife.md`. Evidências e limites da conferência:
+`docs/qa/2026-10-29-recife/README.md`.
+
 ## Minijogos aprovados viram brinquedos (desafios-16, 29/10/2026)
 
 - Passar nos objetivos principais de um desafio com recompensa.atracao guarda uma cópia do

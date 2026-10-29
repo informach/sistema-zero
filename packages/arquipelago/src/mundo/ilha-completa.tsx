@@ -16,6 +16,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import bosqueGlb from '../assets/ilhas/bosque.glb'
+import recifeGlb from '../assets/ilhas/recife.glb'
 import vilaDoceGlb from '../assets/ilhas/vila-doce.glb'
 import { useJogo } from '../estado/contexto'
 import {
@@ -53,7 +54,7 @@ import {
   nivelDeDetalhe,
   noModelo,
   OPACIDADE_DA_COPA_NA_FRENTE,
-  raioDoChaoDaIlha,
+  raioDaEsperaDaIlha,
 } from './medidas'
 import { materiaisDe } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
@@ -71,6 +72,7 @@ export interface IlhaCompletaInfo {
 export const ILHAS_COMPLETAS: Partial<Record<IlhaId, IlhaCompletaInfo>> = {
   bosque: { url: new URL(bosqueGlb, import.meta.url).href },
   'vila-doce': { url: new URL(vilaDoceGlb, import.meta.url).href },
+  recife: { url: new URL(recifeGlb, import.meta.url).href },
 }
 
 /** O que fica pronto antes de a ilha aparecer: o desenho já girado (e com a tinta) e os colisores. */
@@ -261,9 +263,9 @@ export function useIlhaCompleta(
       v.estado === 'carregando' ||
       v.estado === 'pronta' ||
       (v.estado === 'ativa' && !troca.colisoresNaCena)
-    // Em cima do chão da ilha (no rumo em que a pessoa está: o Bosque cresce para um lado só).
+    // Espera também fora do contorno leve: ponta do Bosque e caverna do Recife.
     const m = noModelo(rastro.x - centro.x, rastro.z - centro.z, giroDaIlha(ilha))
-    const emCima = distancia < raioDoChaoDaIlha(ilha, m.x, m.z) + MARGEM_DA_ESPERA_PELO_CHAO
+    const emCima = distancia < raioDaEsperaDaIlha(ilha, m.x, m.z) + MARGEM_DA_ESPERA_PELO_CHAO
     if (chegando && emCima) {
       pedidos.chaoChegando.add(ilha.id)
     } else pedidos.chaoChegando.delete(ilha.id)
