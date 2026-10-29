@@ -69,10 +69,15 @@ def uv_em_volta(o, material):
             continue
         pts = [M @ me.vertices[me.loops[li].vertex_index].co for li in p.loop_indices]
         us = [0.5 + math.atan2(w.x, -w.y) / (2 * math.pi) for w in pts]
-        # Na emenda (atrás), a face não pode ir de 0,98 a 0,02: leva os de perto de 0 para perto de 1.
+        # Na emenda (atrás) a face não pode ir de 0,96 a 0,04 dando a volta inteira: o lado da emenda
+        # em que ela fica (o do meio da face) decide se o ponto da emenda é 0 ou 1.
         if max(us) - min(us) > 0.5:
-            us = [u + 1 if u < 0.5 else u for u in us]
-            us = [min(u, 1.0) for u in us]
+            meio = math.atan2(sum(w.x for w in pts), -sum(w.y for w in pts))
+            if meio < 0:
+                us = [u - 1 if u > 0.5 else u for u in us]
+            else:
+                us = [u + 1 if u < 0.5 else u for u in us]
+            us = [min(max(u, 0.0), 1.0) for u in us]
         for li, u, w in zip(p.loop_indices, us, pts):
             uv[li].uv = (u, (w.z - z0) / (z1 - z0))
     return o
