@@ -31,7 +31,10 @@ function sementeQueDaParaPlantar(inv: Record<string, number>): Semente | null {
 export const ESCALA_DO_CANTEIRO_DO_QUINTAL = 0.66
 
 /** Onde fica o canteiro: o da horta de antes pela fila; o do quintal, no meio da célula dele. */
-export function lugarDoCanteiro(id: string, indice: number): { x: number; z: number; escala: number } {
+export function lugarDoCanteiro(
+  id: string,
+  indice: number,
+): { x: number; z: number; escala: number } {
   const celula = celulaDoCanteiro(id)
   if (celula) return { x: celula.x + 0.5, z: celula.z + 0.5, escala: ESCALA_DO_CANTEIRO_DO_QUINTAL }
   return { ...posicaoDoCanteiro(indice), escala: 1 }

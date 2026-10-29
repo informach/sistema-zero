@@ -21,8 +21,8 @@ import { IlhaCentral } from './ilha-central'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
-import { RotinaDosLumis } from './rotina-dos-lumis'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
+import { RotinaDosLumis } from './rotina-dos-lumis'
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
 carregarModelos()
