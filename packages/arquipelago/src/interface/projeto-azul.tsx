@@ -23,6 +23,7 @@ import {
 import { ITENS } from '../sistemas/itens'
 import { CartaoDaGaleria, SuasAparencias } from './galeria'
 import { MinijogosDoFliperama } from './minijogos'
+import { ListaDeReceitas } from './receitas'
 
 function objetoDoPainel(painel: string | null): ObjetoDaCasa | null {
   if (!painel?.startsWith('objeto:')) return null
@@ -181,6 +182,7 @@ export function PainelDoObjeto() {
         {origem ? <p className="arq-caderno-explica">{origem}</p> : null}
         {id === 'geladeira' ? <Geladeira /> : null}
         {id === 'fliperama' ? <MinijogosDoFliperama /> : null}
+        {id === 'forno' ? <ListaDeReceitas onde="forno" /> : null}
         <h3 className="arq-menu-titulo">A aparência</h3>
         <p className="arq-caderno-explica">
           {`O molde tem o tamanho dele: ${molde.area.largura} por ${molde.area.fundo} na grade, com a frente marcada.`}

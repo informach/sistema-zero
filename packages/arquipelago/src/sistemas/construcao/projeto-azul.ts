@@ -8,6 +8,7 @@ import {
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { ITENS } from '../itens'
+import { coracoes } from '../moradores'
 import { planta } from './comodos'
 import { chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
@@ -132,9 +133,9 @@ export function tirarObjeto(obra: Obra, c: Celula): Resultado {
 
 /**
  * Os projetos que a pessoa ganhou e ainda não estavam guardados: a geladeira vem do primeiro
- * pedido entregue (o da Capi, o único pedido do jogo hoje), a casinha de adotar um bicho no
- * Bosque e a planta de interior da primeira obra (da casa ou de uma cabana). Devolve o mesmo
- * salvamento quando nada mudou.
+ * pedido entregue à Capi, o forno da primeira receita do Bento (um coração de amizade), a casinha
+ * de adotar um bicho no Bosque e a planta de interior da primeira obra (da casa ou de uma cabana).
+ * Devolve o mesmo salvamento quando nada mudou.
  */
 export function ganharProjetos(
   s: Salvamento,
@@ -144,6 +145,8 @@ export function ganharProjetos(
   const ganhos: ObjetoDaCasa[] = []
   if (!s.projetos.fliperama && temMinijogo) ganhos.push('fliperama')
   if (!s.projetos.geladeira && s.moradores.capi.pedido?.entregue) ganhos.push('geladeira')
+  // O forno chega com a primeira receita que o Bento lembra (o bolo de fubá, com um coração).
+  if (!s.projetos.forno && coracoes(s.moradores.bento.amizade) >= 1) ganhos.push('forno')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
   const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0
   if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')

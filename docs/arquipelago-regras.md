@@ -512,6 +512,11 @@ Arquivo: `sistemas/itens.ts`, constante `ITENS`.
 | Milho | fome +10 |
 | Salada da horta | fome +40, energia +5 |
 | Pipoca | fome +15, diversão +25 |
+| Fubá, leite, ovo, polvilho, queijo, cacau | não é comida (ingrediente das receitas do Bento) |
+| Bolo de fubá | fome +50 |
+| Pão de queijo | fome +30 |
+| Brigadeiro | fome +10, diversão +20 |
+| Chocolate quente | fome +15, energia +15 |
 
 - **Teto por item:** 999 (`adicionar`). Também é o teto do salvamento.
 - **Item desconhecido** (de uma versão futura) é ignorado pelo jogo.
@@ -519,15 +524,26 @@ Arquivo: `sistemas/itens.ts`, constante `ITENS`.
 
 ### 6.5 Receitas
 
-Arquivos: `sistemas/receitas.ts` (`RECEITAS`) e `mundo/bancada.tsx`.
+Arquivos: `sistemas/receitas.ts` (`RECEITAS`), `mundo/bancada.tsx`, `interface/receitas.tsx` (a
+lista com o que falta, na bancada e no forno) e, para as do Bento, `sistemas/conversa-do-bento.ts`.
 
-| Receita | Precisa | Faz |
-|---|---|---|
-| Salada da horta | 1 alface e 1 tomate | 1 salada |
-| Pipoca | 1 milho | 2 pipocas |
+| Receita | Precisa | Faz | Onde | Quem ensina |
+|---|---|---|---|---|
+| Salada da horta | 1 alface e 1 tomate | 1 salada | bancada | já se sabe |
+| Pipoca | 1 milho | 2 pipocas | bancada | já se sabe |
+| Bolo de fubá | 1 fubá, 1 leite e 1 ovo | 1 bolo | forno | o Bento, com 1 coração |
+| Pão de queijo | 1 polvilho e 1 queijo | 3 pães | forno | o Bento, com 2 corações |
+| Brigadeiro | 1 cacau e 2 leites | 4 brigadeiros | bancada | o Bento, com 3 corações |
+| Chocolate quente | 1 cacau e 1 leite | 1 caneca | bancada | o Bento, com 4 corações |
 
-- **A bancada** oferece a primeira receita da lista que dá para fazer (`receitaPossivel`).
-- **Sem ingrediente,** o Zappy lista as receitas e o que cada uma precisa.
+Os números das receitas do Bento seguem a proposta (bolo de fubá fome +50, pão de queijo +30) e
+são de exemplo, para ajustar.
+
+- **A bancada** (o fogão e a pia da ilha): com uma receita só possível, faz na hora; com mais de
+  uma, ou nenhuma, abre a lista das que ela sabe, cada uma com o que precisa e o que falta.
+- **O forno** (projeto azul da casa): o painel dele tem a mesma lista, com as receitas do forno.
+- Só aparecem as receitas que ela já sabe (`receitasConhecidas`, pelos corações com o Bento); a
+  lista diz quantas o Bento ainda vai lembrar.
 - O raio da ação é 2,2.
 
 ### 6.6 O personagem
@@ -1129,6 +1145,15 @@ com a Vila Doce completa ativa) sobre o morador genérico `mundo/morador.tsx`, e
   pipocas, uma salada ou dois tomates. O sorteio usa `bento:`, o perfil e o dia, então é o mesmo o
   dia inteiro em qualquer aparelho e não segue o da Capi. Fica guardado em `moradores.bento.pedido`.
   Pedido de outro dia não se entrega (o painel mostra só o de hoje).
+- **As receitas que ele lembra** (fase2-04, `FALA_DA_RECEITA`): a cada coração novo ele lembra
+  uma receita (bolo de fubá, pão de queijo, brigadeiro, chocolate quente, §6.5), conta como se faz
+  e dá os ingredientes da primeira vez. Vale na conversa, no presente e na entrega, quando a
+  amizade passa o coração. Quem já tinha os corações antes da fase2-04 já sabe as receitas (vêm da
+  amizade, nada novo no salvamento), sem a fala nem os ingredientes da primeira vez.
+- **A cesta da despensa** (`cestaDoBento`): cada pedido entregue traz os ingredientes de uma
+  receita que ele já ensinou (sorteada pelo dia), menos no pedido que o fez lembrar uma agora.
+  Antes do primeiro coração não há cesta. A feira da Vila (fase2-03) vai vender os ingredientes.
+- **O forno** chega como projeto azul com o primeiro coração (`ganharProjetos`).
 - **Conversa** (`falasDoBento`): no primeiro encontro ele se apresenta, conta das receitas
   esquecidas e já diz o pedido. Na primeira conversa do dia: o aniversário (se for), uma fala do
   nível de amizade (duas por nível, trocando pelo dia) e o pedido. As outras conversas do mesmo dia

@@ -3,7 +3,7 @@ import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { CRESCIMENTO_MS, colher, estagio, plantar, regar } from '../src/sistemas/horta'
 import { adicionar, ITENS, itensVisiveis, quantidade, remover } from '../src/sistemas/itens'
 import { comer, dormir, humor, passarTempo, ritmo } from '../src/sistemas/necessidades'
-import { cozinhar, RECEITAS, receitaPossivel } from '../src/sistemas/receitas'
+import { cozinhar, RECEITAS, receitasConhecidas, receitasPossiveis } from '../src/sistemas/receitas'
 import { DURACAO_DO_DIA_MS, momentoDoDia, relogio } from '../src/sistemas/tempo-do-dia'
 import { minutosRestantes } from '../src/sistemas/tempo-livre'
 
@@ -45,7 +45,7 @@ describe('itens e receitas', () => {
   test('salada gasta alface e tomate e faz uma salada', () => {
     const salada = RECEITAS.find((r) => r.id === 'salada')
     if (!salada) throw new Error('sem salada')
-    expect(receitaPossivel({ alface: 1 })).toBeNull()
+    expect(receitasPossiveis({ alface: 1 }, 'bancada', receitasConhecidas(0))).toEqual([])
     expect(cozinhar({ alface: 1, tomate: 2 }, salada)).toEqual({ tomate: 1, salada: 1 })
     expect(cozinhar({ alface: 1 }, salada)).toBeNull()
   })

@@ -21,6 +21,7 @@ import { Diario, PAINEL_DO_DIARIO } from './diario'
 import { VisorDaLuneta } from './luneta'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
+import { PainelDaBancada } from './receitas'
 import { ControlesDeToque } from './toque'
 
 function Necessidades() {
@@ -486,6 +487,7 @@ export function Hud() {
       <PainelDoQuadro />
       <PainelDaCapi />
       <PainelDoBento />
+      <PainelDaBancada />
       <PainelDoBicho />
       <CadernoDosLumis />
       <PainelDoObjeto />

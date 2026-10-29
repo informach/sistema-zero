@@ -10,6 +10,7 @@ import { criarPlataformaFalsa } from '../src/plataforma/falsa'
  * `?em=x,z` ou `?em=x,z,y` (começa fora de casa, nesse ponto; o `y` põe em cima de um deque) e `?adiantar=13` (a noite chega aos 12 min).
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
+ * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
  * `?cartas=todas` (ou `desligadas`, `fora-do-ar`) muda os cartões dos Lumis do caderno.
  * `?dia=feito` (ou `nenhum`; padrão `pronto`) muda o desafio do dia do Quadro das Cores.
  * `?objetos=sem-acesso` faz o Pinta e o Molda no molde de um objeto responderem sem acesso.
@@ -34,6 +35,7 @@ const plataforma = criarPlataformaFalsa({
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
+  bento: q.has('bento') ? Number(q.get('bento')) : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,
   galeria: {

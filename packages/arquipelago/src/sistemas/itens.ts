@@ -18,6 +18,38 @@ export const ITENS: Record<string, Item> = {
   milho: { id: 'milho', nome: 'Milho', emoji: '🌽', comida: { fome: 10 } },
   salada: { id: 'salada', nome: 'Salada da horta', emoji: '🥗', comida: { fome: 40, energia: 5 } },
   pipoca: { id: 'pipoca', nome: 'Pipoca', emoji: '🍿', comida: { fome: 15, diversao: 25 } },
+  // Os ingredientes das receitas do Bento (fase2-04): vêm da despensa da padaria, não se comem.
+  fuba: { id: 'fuba', nome: 'Fubá', emoji: '🌾' },
+  leite: { id: 'leite', nome: 'Leite', emoji: '🥛' },
+  ovo: { id: 'ovo', nome: 'Ovo', emoji: '🥚' },
+  polvilho: { id: 'polvilho', nome: 'Polvilho', emoji: '🫙' },
+  queijo: { id: 'queijo', nome: 'Queijo', emoji: '🧀' },
+  cacau: { id: 'cacau', nome: 'Cacau', emoji: '🫘' },
+  // O que sai do forno e da bancada com as receitas do Bento.
+  'bolo-de-fuba': {
+    id: 'bolo-de-fuba',
+    nome: 'Bolo de fubá',
+    emoji: '🍰',
+    comida: { fome: 50 },
+  },
+  'pao-de-queijo': {
+    id: 'pao-de-queijo',
+    nome: 'Pão de queijo',
+    emoji: '🥯',
+    comida: { fome: 30 },
+  },
+  brigadeiro: {
+    id: 'brigadeiro',
+    nome: 'Brigadeiro',
+    emoji: '🍫',
+    comida: { fome: 10, diversao: 20 },
+  },
+  'chocolate-quente': {
+    id: 'chocolate-quente',
+    nome: 'Chocolate quente',
+    emoji: '☕',
+    comida: { fome: 15, energia: 15 },
+  },
 }
 
 export function sementeDoItem(id: string): Semente | null {

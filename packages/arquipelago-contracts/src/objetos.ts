@@ -205,7 +205,7 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
       [],
       'Assa o bolo de fubá e o pão de queijo.',
     ),
-    origem: null,
+    origem: 'Vem com a primeira receita que o Bento lembra, na Vila Doce.',
   },
   aquario: {
     molde: molde('aquario', 'Aquário', [2, 1], [1.53, 1.39, 0.68], [], null),

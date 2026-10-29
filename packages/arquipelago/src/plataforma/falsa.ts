@@ -1,5 +1,6 @@
 import {
   type Acesso,
+  AMIZADE_MAXIMA,
   BICHOS_DO_BOSQUE,
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
@@ -52,6 +53,8 @@ export interface OpcoesDaPlataformaFalsa {
   obra?: 'exemplo'
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
   bichos?: 'achados'
+  /** A amizade com o Bento (de 0 a 500): com 100 ele já lembrou o bolo de fubá (fase2-04). */
+  bento?: number
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
   cartas?: CartasDoPlayground
   /** A galeria: o saldo de moedas (`moedas`, padrão 80) ou `situacao: 'fora-do-ar'` (424). */
@@ -171,6 +174,18 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     guardado = {
       revisao: guardado.revisao + 1,
       salvamento: { ...atual, bichos: { ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] } },
+      atualizadoEm: agora().toISOString(),
+    }
+  }
+  if (o.bento !== undefined && Number.isFinite(o.bento)) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const amizade = Math.max(0, Math.min(AMIZADE_MAXIMA, Math.round(o.bento)))
+    guardado = {
+      revisao: guardado.revisao + 1,
+      salvamento: {
+        ...atual,
+        moradores: { ...atual.moradores, bento: { ...atual.moradores.bento, amizade } },
+      },
       atualizadoEm: agora().toISOString(),
     }
   }

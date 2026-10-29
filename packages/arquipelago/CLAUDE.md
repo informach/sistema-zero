@@ -535,6 +535,14 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `interface/bento.tsx` (`PAINEL_DO_BENTO`), com os `Coracoes` e os `Presentes` exportados de
   `interface/capi.tsx`. Regras e textos: `docs/arquipelago-regras.md` §6.15.1. Testes:
   `tests/bento.test.ts`; navegador: `bun playground/verificar-bento-browser.ts`.
+- Receitas do Bento (fase2-04): ingredientes e pratos em `sistemas/itens.ts`; `RECEITAS` com
+  `onde` (`bancada` ou `forno`) e `bento` (o coração que ensina), `receitasConhecidas`,
+  `receitasPossiveis`, `fazerReceita` e `PAINEL_DA_BANCADA` em `sistemas/receitas.ts`. A conversa
+  (`conversa-do-bento.ts`) acrescenta `FALA_DA_RECEITA` e os ingredientes quando a amizade passa
+  um coração, e a cesta da despensa (`cestaDoBento`) a cada entrega. O forno chega pelo
+  `ganharProjetos` com o primeiro coração; o painel dele e o da bancada usam `ListaDeReceitas`
+  (`interface/receitas.tsx`). Playground: `?bento=290` (amizade com o Bento). Testes:
+  `tests/receitas-do-bento.test.ts`; navegador: `bun playground/verificar-receitas-browser.ts`.
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em
