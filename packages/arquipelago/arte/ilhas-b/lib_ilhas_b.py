@@ -130,6 +130,33 @@ lib_q.PALETTE.update({
 lib_q.ALPHA.update({'janelaFarol': 0.3, 'lenteFarol': 0.55, 'gelo': 0.85, 'geloClaro': 0.9})
 
 
+# ------------------------------------------------------------------ colisão (nós col-*)
+# A convenção do README de `arte/ilhas`: `col-terreno` vira malha de triângulos, `col-cil-*` cilindro
+# em pé e o resto caixa. `col_caixa`, `col_cilindro` e `grupos_col` vêm do `lib_mundo`.
+def col_terreno(objs):
+    """`col-terreno`: cópia das malhas do chão (e do que se pisa como chão), juntas e sem material."""
+    copias = []
+    for o in objs:
+        c = o.copy()
+        c.data = o.data.copy()
+        bpy.context.collection.objects.link(c)
+        copias.append(c)
+    t = lib_mundo._juntar(copias, 'col-terreno')
+    t.data.materials.clear()
+    return t
+
+
+def col_entre(base, a, b, larg, alto, baixo=0.0):
+    """Caixa em pé de `a` até `b` (pontos do Blender, a altura de cada um é o chão ali): `larg` de
+    espessura, de `baixo` abaixo do chão mais baixo até `alto` acima do mais alto (guarda-corpo)."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    comp = math.hypot(dx, dy)
+    z0 = min(a[2], b[2]) - baixo
+    z1 = max(a[2], b[2]) + alto
+    return col_caixa(base, (comp, larg, z1 - z0), ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (z0 + z1) / 2),
+                     rot=(0, 0, math.atan2(dy, dx)))
+
+
 # ------------------------------------------------------------------ ponto e âncora
 def P(x, z, y=TOPO):
     """Ponto do jogo (x, z) na altura y, em coordenadas do Blender."""

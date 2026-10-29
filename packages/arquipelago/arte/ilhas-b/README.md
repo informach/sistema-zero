@@ -48,7 +48,7 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 
 | Arquivo | Nós | Âncoras próprias | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `pico.glb` | `chao`, `montanha` (com a trilha em espiral), `cenario` | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume`, `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` | | 21.029 | 639 KB |
+| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario` e 101 `col-*` mais o `col-terreno` | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` | | 22.051 | 758 KB |
 | `pico-props.glb` | `pinheiro-nevado-a`, `pinheiro-nevado-b`, `bloco-de-gelo`, `boneco-de-neve`, `painel-de-gelo` (base em y = 0) | | | 3.300 | 96 KB |
 | `pico-treno.glb` | `treno` (frente para −z do jogo) | | | 668 | 33 KB |
 | `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 584 KB |
@@ -62,9 +62,17 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 
 ### O que o jogo pode ligar
 
-- **Pico:** a trilha é uma rampa que dá 1,25 volta na montanha, do `trilha-inicio` ao `trilha-fim`.
-  O colisor dela é do código (a rampa é larga, de ~1,2 m). A parede de gelo tem três painéis em
-  degraus, e no alto dela fica o platô do `topo-da-parede`.
+- **Pico (29/10/2026, aj-ligar-01):** a montanha tem 12 m, e o cume é um platô plano de uns 5 m
+  de diâmetro (o `cume`, com o mastro no meio). A trilha é um corte em espiral na encosta (boolean
+  de um sólido varrido, `cavar_trilha`): dá 1,25 volta no sentido horário, pelo lado do iglu, do
+  `trilha-inicio` (a um degrau do chão) ao platô, sempre na mesma rampa (18°). O chão do corte tem
+  uns 1,5 a 1,9 m entre a parede de rocha de dentro e a beira da encosta. A encosta (66°) não se
+  sobe; os postinhos com corda da beira têm o guarda-corpo invisível `col-guarda-trilha-*` entre
+  eles. A colisão vem toda do arquivo: o `col-terreno` (chão, montanha cortada e montinhos de
+  neve) e os colisores das peças (iglu fechado por enquanto, palco com os degraus de 0,15 e 0,30,
+  painéis e topo da parede de gelo, trenó, pinheiros, bonecos, blocos, postes). Teste:
+  `tests/colisores-do-pico.test.ts` (busca em grade da chegada ao platô). A parede de gelo tem três
+  painéis em degraus, e no alto dela fica o platô do `topo-da-parede`.
 - **Vale:** o nó `lava` pode pulsar o brilho, e a fumaça fica no `cenario`. As pegadas de dino vão
   da ponte até o observatório.
 - **Nuvens:**

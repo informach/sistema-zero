@@ -67,6 +67,7 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'ilhas/recife.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/recife-props.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'ilhas/barco.glb', juntos: TODOS_JUNTOS },
+  { caminho: 'ilhas/pico.glb', juntos: TODOS_JUNTOS },
 ]
 
 /**

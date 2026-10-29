@@ -185,7 +185,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   enfeites de pé), conferidos em `tests/colisores-da-vila-doce.test.ts` (paradas do percurso em cima de
   colisor, vãos dentro do pulo andando, chegada e frente das lojas livres). O Recife (29/10/2026, ainda não
   ligado no jogo) também tem os dele no `recife.glb` (cais, casa da Maré, caverna para quem nada),
-  em `tests/colisores-do-recife.test.ts`; os ajudantes dos testes ficam em `tests/ajuda-colisores.ts`.
+  em `tests/colisores-do-recife.test.ts`; os ajudantes dos testes ficam em `tests/ajuda-colisores.ts`. O Pico
+  (29/10/2026, ainda não ligado) tem os dele no `pico.glb`, com a trilha cavada na montanha até o platô do
+  cume, em `tests/colisores-do-pico.test.ts` (busca em grade da chegada ao platô, encosta que não se sobe).
 
 ## Ilhas completas (o Bosque, 27/10/2026)
 
