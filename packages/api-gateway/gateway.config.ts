@@ -1395,6 +1395,19 @@ const config: GatewayConfigInput = {
       transforms: authInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
+    // Os irmãos da criança na sessão de PERFIL (Arquipélago, fase3-12): só id e nome dos outros
+    // perfis ativos da mesma conta, para o BFF pôr o nome nos recordes e nas visitas do jogo. O
+    // auth recusa fora da sessão de perfil; a política do Kids libera só este GET ao aluno.
+    {
+      id: 'auth-profile-session-siblings',
+      methods: ['GET'],
+      pathPattern: '/auth/profile-session/siblings',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
     // Sair do perfil para a área dos pais (gateado pela senha do responsável no auth).
     {
       id: 'auth-profile-session-exit',

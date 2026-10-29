@@ -13,6 +13,11 @@ export interface TempoNaJanela {
 export interface RepositorioDaFamilia {
   /** Dos perfis pedidos, os que guardaram o jogo logados nesta conta. */
   perfisDaConta(contaId: string, perfis: readonly string[]): Promise<string[]>
+  /**
+   * Os outros perfis desta conta que já guardaram o jogo nela (os irmãos de `menos`), do mais
+   * antigo ao mais novo, até `limite` (fase3-12, recordes e visitas).
+   */
+  outrosPerfisDaConta(contaId: string, menos: string, limite: number): Promise<string[]>
   /** Tempo livre de cada perfil entre `inicio` e `fim` (dias de São Paulo, inclusive). */
   tempoNaJanela(
     perfis: readonly string[],

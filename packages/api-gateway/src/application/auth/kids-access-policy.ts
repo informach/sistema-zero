@@ -65,7 +65,9 @@ export function kidsMayAccess(
     return (
       (method === 'PATCH' &&
         pathname.toLowerCase() === `/auth/profiles/${subject.toLowerCase()}`) ||
-      (method === 'GET' && pathname === '/auth/me')
+      (method === 'GET' && pathname === '/auth/me') ||
+      // Os irmãos (só id e nome) para os recordes e as visitas do Arquipélago (fase3-12).
+      (method === 'GET' && pathname === '/auth/profile-session/siblings')
     )
   }
   return (

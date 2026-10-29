@@ -94,6 +94,18 @@ describe.skipIf(!url)('DrizzleRepositorioDaFamilia (Postgres real)', () => {
     expect(await familia.perfisDaConta(CONTA, [])).toEqual([])
   })
 
+  test('os irmãos (fase3-12): os outros da mesma conta, sem ela, na ordem e até o teto', async () => {
+    const BIA = '44444444-4444-4444-8444-444444444444'
+    for (const id of [TOM, LIA, BIA]) expect((await guardar(id, CONTA)).ok).toBe(true)
+    expect((await guardar('77777777-7777-4777-8777-777777777777', OUTRA)).ok).toBe(true)
+    // Mesma hora de ligação: desempata pelo id.
+    expect(await familia.outrosPerfisDaConta(CONTA, LIA, 20)).toEqual([TOM, BIA].sort())
+    expect(await familia.outrosPerfisDaConta(CONTA, LIA, 1)).toHaveLength(1)
+    expect(await familia.outrosPerfisDaConta(OUTRA, LIA, 20)).toEqual([
+      '77777777-7777-4777-8777-777777777777',
+    ])
+  })
+
   test('tempo da janela: soma os dias de dentro e conta em quantos jogou', async () => {
     await jogo.somarTempo(LIA, '2026-10-21', 900, AGORA)
     await jogo.somarTempo(LIA, '2026-10-22', 300, AGORA)

@@ -1,5 +1,7 @@
 import 'server-only'
 import {
+  IrmaosDoJogadorSchema,
+  type IrmaosParaOJogo,
   MinijogosSchema,
   PERFIS_DA_FAMILIA_MAXIMO,
   type SemanaDaFamiliaParaOsPais,
@@ -71,7 +73,7 @@ const invalido = () =>
  */
 export function createArquipelagoRoutes(deps: {
   gateway: GatewayModule
-  profiles: Pick<ProfilesClient, 'list'>
+  profiles: Pick<ProfilesClient, 'list' | 'siblings'>
 }) {
   const { gateway } = deps
   const chamar = (
@@ -88,7 +90,11 @@ export function createArquipelagoRoutes(deps: {
       })
       .then((r) => {
         const resposta = repasse(r)
-        if (caminho.startsWith('/minijogos') || caminho.startsWith('/familia/minijogos'))
+        if (
+          caminho.startsWith('/minijogos') ||
+          caminho.startsWith('/familia/minijogos') ||
+          caminho.startsWith('/irmaos')
+        )
           resposta.headers.set('cache-control', 'private, no-store')
         return resposta
       })
@@ -165,6 +171,42 @@ export function createArquipelagoRoutes(deps: {
         const id = new URL(req.url).searchParams.get('id')
         if (id !== null && !UUID.test(id)) return invalido()
         return chamar(`/familia/minijogos/${perfil}${id ? `/${id}` : ''}`, 'GET')
+      },
+    },
+    /**
+     * Recordes da família e visitas (fase3-12, 29/10/2026): os irmãos que o serviço do jogo acha
+     * (sem nomes) e o NOME de cada um, da leitura dos irmãos da sessão de perfil no Auth (a grade
+     * completa é da área dos pais). Quem não estiver na lista do Auth sai; sem a leitura do Auth,
+     * 502: o jogo nunca mostra um irmão sem nome. Resposta fora do contrato também vira 502.
+     */
+    arquipelagoIrmaos: {
+      GET: async () => {
+        const r = await gateway.gatewayFetch('/arquipelago/irmaos', { method: 'GET' })
+        if (r.status !== 200) return repasse(r)
+        const lido = IrmaosDoJogadorSchema.safeParse(r.body)
+        if (!lido.success) return repasse({ ...r, body: null })
+        const semCache = { headers: { 'cache-control': 'private, no-store' } }
+        if (lido.data.irmaos.length === 0)
+          return NextResponse.json({ ...lido.data, irmaos: [] } satisfies IrmaosParaOJogo, semCache)
+        const lista = await deps.profiles.siblings()
+        if (lista.status !== 200 || !Array.isArray(lista.body?.siblings))
+          return repasse({ ...lista, status: 502, body: null })
+        const nomes = new Map(lista.body.siblings.map((p) => [p.id.toLowerCase(), nomeDoPerfil(p)]))
+        const paraOJogo: IrmaosParaOJogo = {
+          ...lido.data,
+          irmaos: lido.data.irmaos.flatMap((i) => {
+            const nome = nomes.get(i.perfilId.toLowerCase())
+            return nome ? [{ ...i, nome }] : []
+          }),
+        }
+        return NextResponse.json(paraOJogo, semCache)
+      },
+    },
+    /** A casa de um irmão para a visita (só olhar): repasse, com o id conferido. */
+    arquipelagoCasaDoIrmao: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/irmaos/${id}/casa`, 'GET') : invalido()
       },
     },
     arquipelagoAcesso: { GET: () => chamar('/acesso', 'GET') },

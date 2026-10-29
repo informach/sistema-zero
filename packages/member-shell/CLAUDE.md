@@ -17,7 +17,12 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   prontos, confere a resposta pelo contrato (fora dele, 502) e põe o NOME de cada criança da grade
   do Auth (o serviço do jogo nunca sabe nomes; id fora da grade sai). A galeria (29/10/2026):
   `arquipelagoGaleria` (GET) e `arquipelagoGaleriaCompras` (POST, corpo até 1 KB), e `/galeria` e
-  `/galeria/compras` em `CAMINHOS_DO_JOGO` do host. `arquipelagoPermissoesDaFamilia`
+  `/galeria/compras` em `CAMINHOS_DO_JOGO` do host. Recordes e visitas (fase3-12, 29/10/2026):
+  `arquipelagoIrmaos` (GET) pede ao serviço os irmãos (sem nomes) e, se houver algum, os irmãos da
+  sessão de perfil ao Auth (`profiles.siblings()`, `GET /auth/profile-session/siblings`), junta o
+  NOME pelo id e tira quem não está na lista; Auth fora ou resposta fora do contrato → 502.
+  `arquipelagoCasaDoIrmao` (GET `:id` uuid) é repasse. As duas sem cache; `/irmaos` e
+  `/irmaos/<uuid>/casa` no host (`caminhoDoJogo`). `arquipelagoPermissoesDaFamilia`
   (GET/PUT, corpo pequeno) é repasse. `arquipelagoCliente` (GET
   `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
   build (`.js`, `.js.map`, `.glb`, `.json`), com o IP de quem pediu e só os cabeçalhos de cache.

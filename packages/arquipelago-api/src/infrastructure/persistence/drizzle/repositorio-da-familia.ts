@@ -1,5 +1,5 @@
 import type { PermissoesDaFamilia } from '@sistemazero/arquipelago-contracts'
-import { and, between, eq, gt, inArray } from 'drizzle-orm'
+import { and, asc, between, eq, gt, inArray, ne } from 'drizzle-orm'
 import type { RepositorioDaFamilia, TempoNaJanela } from '../../../domain/familia.port'
 import type { Database } from './db'
 import {
@@ -19,6 +19,16 @@ export class DrizzleRepositorioDaFamilia implements RepositorioDaFamilia {
       .select({ jogadorId: perfisDaConta.jogadorId })
       .from(perfisDaConta)
       .where(and(eq(perfisDaConta.contaId, contaId), inArray(perfisDaConta.jogadorId, [...perfis])))
+    return linhas.map((l) => l.jogadorId)
+  }
+
+  async outrosPerfisDaConta(contaId: string, menos: string, limite: number): Promise<string[]> {
+    const linhas = await this.db
+      .select({ jogadorId: perfisDaConta.jogadorId })
+      .from(perfisDaConta)
+      .where(and(eq(perfisDaConta.contaId, contaId), ne(perfisDaConta.jogadorId, menos)))
+      .orderBy(asc(perfisDaConta.criadoEm), asc(perfisDaConta.jogadorId))
+      .limit(limite)
     return linhas.map((l) => l.jogadorId)
   }
 

@@ -11,6 +11,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
 import { minutosRestantes } from '../sistemas/tempo-livre'
+import type { Visita } from '../sistemas/visitas'
 import type { ModoDoCorpo } from './contexto'
 
 /** O fim de uma corrida, para a tela de resultado. */
@@ -67,7 +68,12 @@ export interface EstadoDoJogo {
   lanterna: boolean
   /** Sentada no banco ou deitada na cama (`sistemas/descanso.ts`), escrito pelo personagem. */
   descanso: 'sentar' | 'deitar' | null
-  /** Muda o salvamento (a fila de salvamento grava depois). */
+  /**
+   * Na casa de um irmão (fase3-12, `sistemas/visitas.ts`): o mundo desenha a casa, o quintal e a
+   * horta dele, e NADA é gravado (o `mudar` não faz nada). Não é salvo: recarregar volta para casa.
+   */
+  visita: Visita | null
+  /** Muda o salvamento (a fila de salvamento grava depois). Na visita, não muda nada. */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
   definirAlvo(alvo: { id: string; rotulo: string } | null): void
@@ -86,6 +92,8 @@ export interface EstadoDoJogo {
   calcarPatins(calcados: boolean): void
   acenderLanterna(acesa: boolean): void
   definirDescanso(jeito: 'sentar' | 'deitar' | null): void
+  /** Começa (com a casa do irmão) ou termina (`null`) a visita. */
+  visitar(visita: Visita | null): void
 }
 
 export interface DadosIniciais {
@@ -132,8 +140,11 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     patins: false,
     lanterna: false,
     descanso: null,
+    visita: null,
     mudar(fn) {
       if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
+      // Na casa do irmão só se olha: nada do jogo dela muda (e nada do dele, que nem está aqui).
+      if (get().visita) return
       const novo = fn(get().salvamento)
       if (novo === get().salvamento) return
       set({ salvamento: novo })
@@ -210,6 +221,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     acenderLanterna(lanterna) {
       if (get().lanterna !== lanterna) set({ lanterna })
+    },
+    visitar(visita) {
+      set({ visita })
     },
     definirDescanso(descanso) {
       if (get().descanso !== descanso) set({ descanso })

@@ -93,6 +93,15 @@ describe('Arquipélago Vagalume no gateway', () => {
       maxBodyBytes: 1024,
     })
     expect(registry.resolve('GET', '/arquipelago/galeria/compras', 'v1')).toBeUndefined()
+    // Recordes da família e visitas (fase3-12): só leitura, fora de /familia/.
+    expect(registry.resolve('GET', '/arquipelago/irmaos', 'v1')?.route.id).toBe(
+      'arquipelago-irmaos',
+    )
+    expect(registry.resolve('GET', `/arquipelago/irmaos/${desafio}/casa`, 'v1')?.route.id).toBe(
+      'arquipelago-irmao-casa',
+    )
+    expect(registry.resolve('POST', '/arquipelago/irmaos', 'v1')).toBeUndefined()
+    expect(registry.resolve('PUT', `/arquipelago/irmaos/${desafio}/casa`, 'v1')).toBeUndefined()
     expect(registry.resolve('GET', '/arquipelago/familia/semana', 'v1')?.route.id).toBe(
       'arquipelago-familia-semana',
     )

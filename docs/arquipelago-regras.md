@@ -231,7 +231,8 @@ ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são o
   vale `PERMISSOES_PADRAO`.
 - O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
   leitura recebe 403 `SOMENTE_LEITURA`.
-- Hoje só se grava, lê e mostra. Quem vai obedecer a elas são as visitas e as fotos da Fase 3.
+- Quem obedece a "Visitas de irmãos" desde 29/10/2026: os recordes da família e as visitas (§6.20).
+  As outras duas ainda só se gravam, leem e mostram.
 
 **No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
 família esconde o cartão inteiro (e a semana e as permissões nem são pedidas); semana ou
@@ -1739,6 +1740,63 @@ interação e painel, cancela carregamento pendente e libera os recursos gráfic
 Somente no playground, `?festa=carnaval|junina|lanternas|fim-de-ano` permite conferir as
 quatro montagens fora de época. Evidências e pendências em
 `docs/qa/2026-10-29-primeira-festa-da-estacao.md`.
+
+### 6.20 Recordes da família e visitas (fase3-12, 29/10/2026)
+
+Entre as crianças da MESMA conta, sempre dentro da permissão "Visitas de irmãos" dos responsáveis
+(§3, as permissões de visita). Plano com as decisões: `docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md`.
+Arquivos: no contrato, `familia.ts` (`IrmaosDoJogadorSchema`, `IrmaosParaOJogoSchema`,
+`CasaDoIrmaoSchema`, `VERSAO_DAS_VISITAS`); no serviço, `servico-das-visitas.ts` e
+`rotas-das-visitas.ts`; no Auth, `list-siblings.service.ts`; no BFF, `arquipelagoIrmaos` e
+`arquipelagoCasaDoIrmao`; no jogo, `sistemas/visitas.ts`, `estado/familia.ts`,
+`interface/visitas.tsx` e `plataforma/familia-falsa.ts`. Testes: `arquipelago-api`
+(`tests/integration/visitas.test.ts`, `tests/unit/visitas.test.ts`, o bloco dos irmãos de
+`tests/db/familia.test.ts`), `arquipelago/tests/visitas.test.ts`, o teste dos irmãos no Auth e
+os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-browser.ts`.
+
+- **Quem é irmão:** quem guardou o jogo logado na mesma conta (`perfis_da_conta`), não é a própria
+  criança e vê o jogo pela mesma decisão de acesso. Irmão que nunca jogou nesta conta não aparece.
+  A comunidade adulta não tem família.
+- **A permissão:** "Visitas de irmãos" (`visitasDeIrmaos`, padrão ligada) liga as duas coisas.
+  Desligada, a lista vem `desligado` e a casa dá 403 `VISITAS_DESLIGADAS`. As outras duas
+  permissões não mudam nada aqui. O jogo relê a lista a cada resultado e a cada abertura do painel.
+- **As rotas** (só leitura, de quem joga, fora de `/arquipelago/familia/`):
+  - `GET /arquipelago/irmaos`: os irmãos com o melhor de cada percurso e se já construíram a casa;
+  - `GET /arquipelago/irmaos/:perfilId/casa`: a obra da casa com o quintal, a horta e os objetos com
+    aparência, de um irmão. Quem não é irmão (outra conta, a própria criança, id torto) dá 404
+    `IRMAO_NAO_ENCONTRADO`, sem dizer por quê.
+- **Os nomes:** o serviço do jogo nunca sabe nomes. O BFF pede ao Auth os irmãos da sessão de perfil
+  (`GET /auth/profile-session/siblings`: só id e nome dos outros perfis ativos da conta; fora da
+  sessão de perfil, 403) e põe o nome de cada um. Quem não está na lista do Auth sai; sem a
+  resposta do Auth, 502 (o jogo nunca mostra irmão sem nome).
+- **Recordes da família:** no resultado de cada percurso com tempo (`PERCURSOS_DO_JOGO`), embaixo
+  dos tempos, "Recordes da família": ela ("Você") e cada irmão, com as estrelas (★★☆) e o melhor
+  tempo, do menor para o maior; quem ainda não correu aquele percurso vem no fim, com "Ainda não
+  correu". No empate, ela vem antes. Sem irmão ou com a permissão desligada, a parte não aparece;
+  lendo, "Lendo os recordes da família."; sem resposta, "Os recordes da família não carregaram
+  agora."
+- **Visitas:** "🏡 Visitar um irmão" no menu abre o painel (`PAINEL_DAS_VISITAS`) com cada irmão
+  ("Já construiu a casa." ou "Ainda mora na casa de antes.") e "Ver a casa".
+  - Na visita, o jogo desenha a casa, o quintal e a horta do irmão (os objetos com aparência com o
+    modelo). O personagem vai para a frente da casa (`CHEGADA_DA_VISITA`) e o Zappy diz "Você está
+    na casa de Ana. Aqui você só olha.".
+  - No lugar de Viver e Construir, a faixa no alto: "🏡 Você está na casa de Ana. Aqui você só
+    olha." com "Voltar para a minha casa" (no celular, abaixo das necessidades, longe do
+    direcional). O menu troca o item para "🏡 Voltar para a minha casa".
+  - **Nada é gravado:** o `mudar` da loja não faz nada durante a visita (nem horta, nem obra, nem
+    necessidades, nem a posição). Os canteiros e os objetos não oferecem ação, o Construir some e a
+    rotina dos Lumis espera a volta (se estava andando, para; o colhido já está na mochila). O que
+    ela mudou antes de entrar ainda pode ser gravado nos primeiros 20 segundos (a fila do jogo).
+  - O quarto de dentro aparece vazio (o quarto real é da plataforma, e o serviço do jogo não o lê).
+  - Volta: "Voltar para a minha casa" devolve a casa, a horta e os objetos dela, leva para a frente
+    da casa e o Zappy diz "De volta para a sua casa.". Recarregar a página também volta.
+- **Recados do painel:** "As visitas entre irmãos estão desligadas. Quem decide são os
+  responsáveis.", "Ainda não há irmãos jogando o Arquipélago nesta conta.", "As visitas não
+  carregaram agora. Tente de novo daqui a pouco." (com "Tentar de novo") e "Não deu para abrir esta
+  casa agora.".
+- **Playground:** `?familia=irmaos` (a Ana, com a casa da obra de exemplo, e o Tomás, com a casa de
+  antes), `sozinha` (padrão), `desligada` e `fora-do-ar`.
+- **Moedas:** nada disto paga moedas. O salvamento não mudou (continua na V10).
 
 ## 7. Desafios
 

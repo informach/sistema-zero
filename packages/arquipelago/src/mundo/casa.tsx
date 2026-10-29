@@ -14,6 +14,7 @@ import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/
 import { useEstado, useJogo } from '../estado/contexto'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
+import { obraVisivel, QUARTO_DA_VISITA } from '../sistemas/visitas'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
@@ -374,9 +375,10 @@ const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
 
 export function Casa() {
   const { loja } = useJogo()
-  const quarto = useEstado((s) => s.quarto)
+  // Na visita (fase3-12), o quarto de dentro fica vazio e a obra é a do irmão.
+  const quarto = useEstado((s) => (s.visita ? QUARTO_DA_VISITA : s.quarto))
   // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
-  const obra = useEstado((s) => s.salvamento.construcao.casa)
+  const obra = useEstado(obraVisivel)
   // O Construir aberto mexe na casa ou na cabana da ilha (`onde`).
   const aqui = useConstrucao(lojaDaConstrucao(loja), (s) => s.onde === 'casa')
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR) && aqui

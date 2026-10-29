@@ -646,6 +646,24 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   editor para dentro do jogo (`tests/fronteira.test.ts`). Até ele chegar, o painel de cartões segue
   valendo.
 
+## Recordes da família e visitas (fase3-12, 29/10/2026)
+
+- Regras puras em `sistemas/visitas.ts` (`leituraDosIrmaos`, `leituraDaCasa`, `recordesDaFamilia`,
+  `obraVisivel`, `hortaVisivel`, `objetoCompleto`, `CHEGADA_DA_VISITA`, `QUARTO_DA_VISITA` e os
+  textos); loja à parte em `estado/familia.ts` (`lojaDaFamilia(loja, plataforma)`: `GET /irmaos` a
+  cada resultado e a cada abertura do painel, e `abrirCasa`). Na loja principal, `visita` e
+  `visitar(v | null)`: com a visita, ⚠️ o `mudar` não faz nada (nada é gravado).
+- No mundo, `mundo/casa.tsx` (a obra e o quarto vazio), `mundo/objetos-da-casa.tsx` (completo pelo
+  irmão, nenhum "Abrir") e `mundo/horta.tsx` (a horta do irmão, nenhuma ação) leem pelas regras
+  acima; `mundo/rotina-dos-lumis.tsx` não começa nem continua rotina na visita.
+- Interface em `interface/visitas.tsx`: `RecordesDaFamilia` (no `Resultado` do HUD),
+  `PainelDasVisitas` (`PAINEL_DAS_VISITAS`, pelo menu) e `FaixaDaVisita` (no lugar de
+  `ModosDoJogo`, `top:68px`; no celular `top:106px`, longe do direcional).
+- Plataforma de mentira: `plataforma/familia-falsa.ts` (`?familia=irmaos|sozinha|desligada|fora-do-ar`).
+  Regras e textos: `docs/arquipelago-regras.md` §6.20. Testes: `tests/visitas.test.ts`; navegador:
+  `playground/verificar-visitas-browser.ts` (compilar para Node no Windows; o roteiro espera os 20 s
+  da fila do jogo antes de conferir que a visita não grava).
+
 ## Diário e pegadas (28/10/2026, Fase 1)
 
 - Regras puras em `sistemas/diario.ts` (páginas da Íris e a coleção do Bosque, derivadas do

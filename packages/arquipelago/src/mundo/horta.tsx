@@ -5,6 +5,7 @@ import { useEstado, useJogo } from '../estado/contexto'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
 import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
 import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
+import { hortaVisivel } from '../sistemas/visitas'
 import {
   ALTURA_QUE_SEGURA,
   colisoresDaHorta,
@@ -59,6 +60,8 @@ function Canteiro({
     x,
     z,
     () => {
+      // Na horta do irmão só se olha (fase3-12).
+      if (loja.getState().visita) return null
       const s = loja.getState().salvamento
       const c = s.horta[indice]
       if (!c) return null
@@ -275,7 +278,8 @@ function colisoresDoQuintal(horta: readonly DadosDoCanteiro[]): Solido[] {
 }
 
 export function Horta() {
-  const horta = useEstado((s) => s.salvamento.horta)
+  // Na visita (fase3-12), a horta do irmão.
+  const horta = useEstado(hortaVisivel)
   const doQuintal = useMemo(() => colisoresDoQuintal(horta), [horta])
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {

@@ -18,6 +18,14 @@ outras crianças e fotos no Clube desligadas: ECA Digital, art. 21). Objetos est
 criança (`{dias}`), `HORAS_DA_VOLTA_AO_CURSO = 24` e, em `membros.ts`,
 `AulasConcluidasDosMembrosSchema` (a resposta da rota interna do Members). Regras em `docs/arquipelago-regras.md`, seção 3.
 
+## Recordes da família e visitas (fase3-12, 29/10/2026)
+
+Em `familia.ts`: `IrmaosDoJogadorSchema` (o serviço: `versao`, `situacao` `ok`|`desligado` e os
+irmãos com `percursos` e `temCasa`, sem nome), `IrmaosParaOJogoSchema` (o mesmo com o `nome` que o
+BFF põe) e `CasaDoIrmaoSchema` (a obra, a horta e os objetos `completos` de um irmão, nada mais do
+salvamento). `VERSAO_DAS_VISITAS = 1`. Sem mudança no salvamento. Testes em `tests/familia.test.ts`;
+regras em `docs/arquipelago-regras.md` §6.20.
+
 ## A galeria de aparências (fase1-13, 29/10/2026)
 
 `galeria.ts`: o catálogo (`IDS_DA_GALERIA`, `GALERIA`: id estável, objeto, nome, preço e

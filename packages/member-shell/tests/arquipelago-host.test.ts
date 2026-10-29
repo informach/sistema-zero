@@ -164,6 +164,19 @@ describe('a porta da plataforma para o jogo', () => {
       expect(caminhoDoJogo(nao)).toBe(false)
   })
 
+  test('irmãos e visitas (fase3-12): a lista e a casa de um irmão por uuid, nada mais', () => {
+    const id = '33333333-3333-4333-8333-333333333333'
+    for (const ok of ['/irmaos', `/irmaos/${id}/casa`]) expect(caminhoDoJogo(ok)).toBe(true)
+    for (const nao of [
+      '/irmaos/',
+      `/irmaos/${id}`,
+      `/irmaos/${id}/casa/x`,
+      '/irmaos/abc/casa',
+      '/irmaos?perfis=1',
+    ])
+      expect(caminhoDoJogo(nao)).toBe(false)
+  })
+
   test('a sessão de tempo passa apenas pelo host Kids', async () => {
     const pedidos = servir({
       'POST /api/arquipelago/tempo/sessao': { status: 200, body: { situacao: 'ativa' } },

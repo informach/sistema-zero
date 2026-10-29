@@ -6,6 +6,20 @@ export class AcessoBloqueadoError extends Error {
   }
 }
 
+/** Os responsáveis desligaram as visitas de irmãos (fase3-12). */
+export class VisitasDesligadasError extends Error {
+  constructor() {
+    super('As visitas entre irmãos estão desligadas pelos responsáveis')
+  }
+}
+
+/** Não é irmão (outra conta, nunca jogou nela, não vê o jogo) ou é a própria criança. */
+export class IrmaoNaoEncontradoError extends Error {
+  constructor() {
+    super('Irmão não encontrado')
+  }
+}
+
 export class SomenteLeituraError extends Error {
   constructor() {
     super('A sessão de suporte só olha o jogo, sem gravar')

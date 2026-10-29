@@ -110,7 +110,8 @@ export function RotinaDosLumis() {
         if (cartoes) rotina.getState().pedir({ lumi, cartoes, origem: 'quando' })
       }
     }
-    if (!atual && rotina.getState().fila.length > 0) {
+    // Na casa de um irmão (fase3-12) a horta é a dele: a rotina espera a volta.
+    if (!atual && !loja.getState().visita && rotina.getState().fila.length > 0) {
       const pedido = rotina.getState().tirarDaFila()
       if (pedido) setAtual({ ...pedido, chave: proxima.current++ })
     }
@@ -205,6 +206,11 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
     }
     if (rotina.getState().paradas !== paradas.current) {
       registro.current.push('Você parou a rotina.')
+      acabar(null)
+      return
+    }
+    if (loja.getState().visita) {
+      registro.current.push('A rotina parou porque você foi visitar um irmão.')
       acabar(null)
       return
     }

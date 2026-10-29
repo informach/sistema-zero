@@ -12,6 +12,7 @@ import {
   DesafioMudouError,
   DesafioNaoEncontradoError,
   DesafiosDesligadosError,
+  IrmaoNaoEncontradoError,
   ManifestoDesatualizadoError,
   ManifestoExcedeLimiteError,
   PlataformaIndisponivelError,
@@ -21,6 +22,7 @@ import {
   SemPermissaoDeEscritaError,
   SessaoTempoNaoPermitidaError,
   SomenteLeituraError,
+  VisitasDesligadasError,
 } from '../../application/erros'
 import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
 import type { ServicoDaFamilia } from '../../application/servico-da-familia'
@@ -30,6 +32,7 @@ import {
   type ServicoDaMedicao,
 } from '../../application/servico-da-medicao'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
+import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
@@ -42,6 +45,7 @@ import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
+import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
@@ -59,6 +63,8 @@ export interface DependenciasHttp {
   familia?: ServicoDaFamilia
   /** A galeria de aparências (29/10/2026); ausente, as rotas dela não existem. */
   galeria?: ServicoDaGaleria
+  /** Recordes da família e visitas (fase3-12); ausente, as rotas dos irmãos não existem. */
+  visitas?: ServicoDasVisitas
   cliente: { dir: string; servirMapas: boolean }
   tokenInterno?: string
   maxRequestBodyBytes?: number
@@ -120,6 +126,14 @@ export function createServer(deps: DependenciasHttp) {
           preco: error.preco,
           saldo: error.saldo,
         }
+      }
+      if (error instanceof VisitasDesligadasError) {
+        set.status = 403
+        return envelope('VISITAS_DESLIGADAS', error.message)
+      }
+      if (error instanceof IrmaoNaoEncontradoError) {
+        set.status = 404
+        return envelope('IRMAO_NAO_ENCONTRADO', error.message)
       }
       if (error instanceof AparenciaNaoCompradaError) {
         set.status = 422
@@ -242,6 +256,11 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.familia
         ? rotasDaFamilia({ familia: deps.familia, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.visitas
+        ? rotasDasVisitas({ visitas: deps.visitas, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .use(

@@ -12,7 +12,11 @@ pública (o cliente compilado). `kidsMayAccess`: o aluno alcança `/arquipelago/
 `/arquipelago/familia/limite`, `/arquipelago/familia/permissoes` (GET/PUT, 1 KB) e o GET de
 `/arquipelago/familia/semana` (fase1-18, 28/10/2026). Galeria (29/10/2026):
 `arquipelago-galeria` (GET) e `arquipelago-galeria-compras` (POST, 1 KB, 20/min), da régua do
-jogador (o aluno alcança, o responsável não). `GET /arquipelago/cartas` (cartões dos Lumis) segue a régua do
+jogador (o aluno alcança, o responsável não). Recordes e visitas (fase3-12, 29/10/2026):
+`arquipelago-irmaos` (`GET /arquipelago/irmaos`) e `arquipelago-irmao-casa`
+(`GET /arquipelago/irmaos/:perfilId/casa`), 60/min, régua do jogador; e
+`auth-profile-session-siblings` (`GET /auth/profile-session/siblings`, JWT de conta ativa +
+`authInternalTransforms`), que `kidsMayAccess` libera ao aluno só em GET. `GET /arquipelago/cartas` (cartões dos Lumis) segue a régua do
 jogador. **Seção Jogo do Admin (27/10/2026):** rotas explícitas `arquipelago-admin-*` (sem
 curinga): leitura (`GET /arquipelago/admin/desafios[/:id]`, `/cobertura`, `POST …/:id/analisar`)
 para superadmin/admin/staff; escrita (`POST /desafios`, `PUT /desafios/:id`, `POST

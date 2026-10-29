@@ -182,7 +182,13 @@ const ObjetoNaObra = memo(function ObjetoNaObra({
     x: base[0] + x,
     z: base[2] + z,
     raio: Math.max(largura, fundo) / 2 + 1.4,
-    rotulo: () => (obj.id === 'geladeira' ? 'Abrir a geladeira' : `Ver ${nome.toLowerCase()}`),
+    // Na casa do irmão só se olha: nenhum objeto abre.
+    rotulo: () =>
+      loja.getState().visita
+        ? null
+        : obj.id === 'geladeira'
+          ? 'Abrir a geladeira'
+          : `Ver ${nome.toLowerCase()}`,
     agir: () => loja.getState().abrirPainel(painelDoObjeto(obj.id)),
   })
   const colisores = useMemo<Solido[]>(() => {
@@ -227,7 +233,9 @@ function FormaDoObjeto({ id }: { id: ObjetoDaCasa }) {
 
 /** Os objetos postos na obra da casa. */
 export function ObjetosDaObra({ obra, base }: { obra: Obra; base: [number, number, number] }) {
+  // Na visita (fase3-12), o objeto do irmão aparece completo se tem aparência na casa dele.
   const projetos = useEstado((s) => s.salvamento.projetos)
+  const visita = useEstado((s) => s.visita)
   return (
     <>
       {obra.objetos.map((o) => (
@@ -235,7 +243,7 @@ export function ObjetosDaObra({ obra, base }: { obra: Obra; base: [number, numbe
           key={o.id}
           obj={o}
           base={base}
-          completo={Boolean(projetos[o.id]?.aparencia)}
+          completo={visita ? visita.completos.includes(o.id) : Boolean(projetos[o.id]?.aparencia)}
         />
       ))}
     </>

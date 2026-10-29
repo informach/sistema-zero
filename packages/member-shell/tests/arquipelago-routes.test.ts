@@ -368,3 +368,96 @@ describe('repasse do Arquipélago', () => {
     expect(chamadas).toEqual([])
   })
 })
+
+describe('recordes da família e visitas (fase3-12)', () => {
+  const OUTRO = '44444444-4444-4444-8444-444444444444'
+  const recorde = {
+    estrelas: { chegada: true, tempo: false, vagalumes: true },
+    melhorTempoMs: 61_000,
+  }
+  const doServico = {
+    versao: 1,
+    situacao: 'ok',
+    irmaos: [
+      { perfilId: IRMAO, percursos: { 'bosque-copas': recorde }, temCasa: true },
+      { perfilId: OUTRO, percursos: {}, temCasa: false },
+    ],
+  }
+  function comIrmaos(servico: Resposta, irmaos: Resposta) {
+    let pedidosAoAuth = 0
+    const routes = createArquipelagoRoutes({
+      gateway: { gatewayFetch: async () => servico } as never,
+      profiles: {
+        list: async () => ({ status: 403, body: null }),
+        siblings: async () => {
+          pedidosAoAuth++
+          return irmaos
+        },
+      } as never,
+    })
+    return { routes, pedidos: () => pedidosAoAuth }
+  }
+
+  test('põe o nome da leitura dos irmãos no Auth e tira quem não está nela', async () => {
+    const { routes } = comIrmaos(
+      { status: 200, body: doServico },
+      { status: 200, body: { siblings: [{ id: IRMAO, name: ' Tomás ' }] } },
+    )
+    const r = await routes.arquipelagoIrmaos.GET()
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(await r.json()).toEqual({
+      versao: 1,
+      situacao: 'ok',
+      irmaos: [
+        { perfilId: IRMAO, percursos: { 'bosque-copas': recorde }, temCasa: true, nome: 'Tomás' },
+      ],
+    })
+  })
+
+  test('sem irmão (ou visitas desligadas) não pergunta ao Auth', async () => {
+    const { routes, pedidos } = comIrmaos(
+      { status: 200, body: { versao: 1, situacao: 'desligado', irmaos: [] } },
+      { status: 200, body: { siblings: [] } },
+    )
+    expect(await (await routes.arquipelagoIrmaos.GET()).json()).toEqual({
+      versao: 1,
+      situacao: 'desligado',
+      irmaos: [],
+    })
+    expect(pedidos()).toBe(0)
+  })
+
+  test('Auth fora ou resposta fora do contrato viram 502; recusa do serviço passa adiante', async () => {
+    const semAuth = comIrmaos({ status: 200, body: doServico }, { status: 503, body: null })
+    expect((await semAuth.routes.arquipelagoIrmaos.GET()).status).toBe(502)
+    const estranha = comIrmaos(
+      { status: 200, body: { ...doServico, versao: 9 } },
+      { status: 200, body: { siblings: [] } },
+    )
+    expect((await estranha.routes.arquipelagoIrmaos.GET()).status).toBe(502)
+    const fechada = comIrmaos(
+      { status: 403, body: { error: { code: 'ACESSO_BLOQUEADO' } } },
+      {
+        status: 200,
+        body: { siblings: [] },
+      },
+    )
+    expect((await fechada.routes.arquipelagoIrmaos.GET()).status).toBe(403)
+  })
+
+  test('a casa do irmão: id conferido, repasse sem cache', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { versao: 1 } })
+    const r = await routes.arquipelagoCasaDoIrmao.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: IRMAO }),
+    })
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(chamadas.map((c) => c.caminho)).toEqual([`/arquipelago/irmaos/${IRMAO}/casa`])
+    const torto = await routes.arquipelagoCasaDoIrmao.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: '../acesso' }),
+    })
+    expect(torto.status).toBe(400)
+    expect(chamadas).toHaveLength(1)
+  })
+})

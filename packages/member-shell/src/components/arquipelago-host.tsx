@@ -66,8 +66,11 @@ const CAMINHOS_DO_JOGO = new Set([
   '/galeria',
   '/galeria/compras',
   '/minijogos',
+  '/irmaos',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+/** A casa de um irmão para a visita (fase3-12), só leitura. */
+const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
 /**
  * Os desafios: a lista (com `?ilha=`), o desafio aberto e o prêmio visto. Conferir NÃO está aqui:
  * quem manda o projeto é o Estúdio de desafio da página, nunca o jogo.
@@ -77,7 +80,9 @@ const DESAFIOS_DO_JOGO = new RegExp(
 )
 
 export function caminhoDoJogo(caminho: string): boolean {
-  return CAMINHOS_DO_JOGO.has(caminho) || DESAFIOS_DO_JOGO.test(caminho)
+  return (
+    CAMINHOS_DO_JOGO.has(caminho) || DESAFIOS_DO_JOGO.test(caminho) || CASA_DO_IRMAO.test(caminho)
+  )
 }
 
 type Estado = EstadoDaPorta | 'pronto'

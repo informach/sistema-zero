@@ -187,6 +187,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `GET` e `PUT /familia/permissoes` | responsável do Kids | as permissões de visita da família (sem nada gravado, `PERMISSOES_PADRAO`); suporte não grava |
 | `GET /galeria` | jogador liberado | as aparências da galeria pagas, o saldo de moedas (`null` sem a leitura) e `ilimitado` (equipe) |
 | `POST /galeria/compras` | jogador liberado, sem suporte | `{aparencia, chave}`: debita no Members e só então vale; saldo curto → 409 `SALDO_INSUFICIENTE` com `preco` e `saldo`; porta fora → 424 |
+| `GET /irmaos` | jogador liberado | os irmãos (mesma conta em `perfis_da_conta`, que veem o jogo) com o melhor de cada percurso e `temCasa`, sem nomes; `situacao: 'desligado'` com as visitas de irmãos desligadas; adulto, lista vazia (fase3-12) |
+| `GET /irmaos/:perfilId/casa` | jogador liberado | a obra, a horta e os objetos com aparência de UM irmão (só olhar); visitas desligadas → 403 `VISITAS_DESLIGADAS`; quem não é irmão → 404 `IRMAO_NAO_ENCONTRADO` |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 
 - **Quem é quem** (`interfaces/http/identidade.ts`, mesmas regras de sessão do Members): sessão de
@@ -220,6 +222,13 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   cache); Members desligado ou fora = `voltaAoCurso: null`. Permissões em `permissoes_da_familia`, por conta. Testes:
   `tests/unit/semana-da-familia.test.ts`, `tests/integration/familia.test.ts` e
   `tests/db/familia.test.ts` (Postgres local `arquipelago_test`).
+- **Recordes da família e visitas** (fase3-12, 29/10/2026): `ServicoDasVisitas`
+  (`application/servico-das-visitas.ts`, rotas em `interfaces/http/rotas-das-visitas.ts`, montadas
+  só com a dependência `visitas`). Usa o `DrizzleRepositorioDaFamilia` (`outrosPerfisDaConta`, novo,
+  e `perfisDaConta` para conferir a posse), a permissão `visitasDeIrmaos` da conta e
+  `decidirAcesso` para cada irmão. Nunca sabe nomes (o BFF põe). Testes:
+  `tests/integration/visitas.test.ts`, `tests/unit/visitas.test.ts` e o bloco dos irmãos de
+  `tests/db/familia.test.ts`.
 - **Galeria** (fase1-13, 29/10/2026): `ServicoDaGaleria` (`application/servico-da-galeria.ts`),
   tabela `compras_da_galeria` (uma linha por jogador e aparência: `pendente` com a chave e o preço,
   `paga` quando o Members confirma), repositório `DrizzleRepositorioDaGaleria`, rotas em

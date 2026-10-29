@@ -8,6 +8,7 @@ import { ancorasDoPorto } from '../src/mundo/portos'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
 import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { lerFesta } from '../src/sistemas/festas'
 
 /**
@@ -58,6 +59,15 @@ function lerLumis(texto: string): Partial<Record<LumiId, number>> {
   }
   return lumis
 }
+/** `?familia=irmaos|sozinha|desligada|fora-do-ar`: os irmãos de mentira (recordes e visitas, fase3-12). */
+function lerFamilia(texto: string | null): FamiliaDoPlayground | undefined {
+  return texto === 'irmaos' ||
+    texto === 'sozinha' ||
+    texto === 'desligada' ||
+    texto === 'fora-do-ar'
+    ? texto
+    : undefined
+}
 if (q.get('novo') === '1') localStorage.removeItem('arquipelago-playground')
 const plataforma = criarPlataformaFalsa({
   posicao: Number(q.get('posicao') ?? (partidaDoBarco ? 4 : 2)),
@@ -77,6 +87,7 @@ const plataforma = criarPlataformaFalsa({
   lumis: q.has('lumis') ? lerLumis(q.get('lumis') ?? '') : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,
+  familia: lerFamilia(q.get('familia')),
   galeria: {
     moedas: q.has('moedas') ? Number(q.get('moedas')) : undefined,
     situacao: q.get('galeria') === 'fora-do-ar' ? 'fora-do-ar' : undefined,

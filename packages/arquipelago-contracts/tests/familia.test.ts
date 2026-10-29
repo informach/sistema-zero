@@ -1,10 +1,17 @@
 import { describe, expect, test } from 'bun:test'
 import {
   AulasConcluidasDosMembrosSchema,
+  type CasaDoIrmao,
+  CasaDoIrmaoSchema,
+  type IrmaosDoJogador,
+  IrmaosDoJogadorSchema,
+  IrmaosParaOJogoSchema,
+  OBJETOS_DA_CASA,
   PERMISSOES_PADRAO,
   PermissoesDaFamiliaSchema,
   SemanaDaFamiliaParaOsPaisSchema,
   SemanaDaFamiliaSchema,
+  VERSAO_DAS_VISITAS,
 } from '../src'
 
 const A = '11111111-1111-4111-8111-111111111111'
@@ -109,5 +116,58 @@ describe('a volta ao curso (29/10/2026)', () => {
     expect(AulasConcluidasDosMembrosSchema.safeParse(semHora).success).toBe(false)
     const aMais = { usuarios: [{ userId: A, concluidasEm: [], aulas: 1 }] }
     expect(AulasConcluidasDosMembrosSchema.safeParse(aMais).success).toBe(false)
+  })
+})
+
+describe('recordes da família e visitas (fase3-12)', () => {
+  const recorde = {
+    estrelas: { chegada: true, tempo: false, vagalumes: true },
+    melhorTempoMs: 61_000,
+  }
+  const irmao = { perfilId: B, percursos: { 'bosque-copas': recorde }, temCasa: true }
+  const irmaos = {
+    versao: VERSAO_DAS_VISITAS,
+    situacao: 'ok',
+    irmaos: [irmao],
+  } satisfies IrmaosDoJogador
+
+  test('os irmãos vêm sem nome do serviço e com nome do BFF', () => {
+    expect(IrmaosDoJogadorSchema.parse(irmaos)).toEqual(irmaos)
+    expect(
+      IrmaosDoJogadorSchema.safeParse({ ...irmaos, irmaos: [{ ...irmao, nome: 'Ana' }] }).success,
+    ).toBe(false)
+    const comNome = { ...irmaos, irmaos: [{ ...irmao, nome: 'Ana' }] }
+    expect(IrmaosParaOJogoSchema.parse(comNome)).toEqual(comNome)
+    expect(IrmaosParaOJogoSchema.safeParse(irmaos).success).toBe(false)
+  })
+
+  test('recusa versão desconhecida, situação fora da lista e percurso inventado', () => {
+    expect(IrmaosDoJogadorSchema.safeParse({ ...irmaos, versao: 2 }).success).toBe(false)
+    expect(IrmaosDoJogadorSchema.safeParse({ ...irmaos, situacao: 'talvez' }).success).toBe(false)
+    expect(
+      IrmaosDoJogadorSchema.safeParse({
+        ...irmaos,
+        irmaos: [{ perfilId: B, percursos: { 'pico-gelado': recorde }, temCasa: false }],
+      }).success,
+    ).toBe(false)
+    expect(
+      IrmaosDoJogadorSchema.parse({ versao: 1, situacao: 'desligado', irmaos: [] }).irmaos,
+    ).toEqual([])
+  })
+
+  test('a casa do irmão leva só a obra, a horta e os objetos com aparência', () => {
+    const casa = {
+      versao: VERSAO_DAS_VISITAS,
+      perfilId: B,
+      obra: null,
+      horta: [{ id: 'c1', semente: 'alface', plantadoEm: '2026-10-29T12:00:00Z', regadoEm: null }],
+      completos: ['geladeira'],
+    } satisfies CasaDoIrmao
+    expect(CasaDoIrmaoSchema.parse(casa)).toEqual(casa)
+    expect(CasaDoIrmaoSchema.safeParse({ ...casa, inventario: {} }).success).toBe(false)
+    expect(CasaDoIrmaoSchema.safeParse({ ...casa, completos: ['nave'] }).success).toBe(false)
+    expect(
+      CasaDoIrmaoSchema.parse({ ...casa, completos: [...OBJETOS_DA_CASA] }).completos,
+    ).toHaveLength(OBJETOS_DA_CASA.length)
   })
 })

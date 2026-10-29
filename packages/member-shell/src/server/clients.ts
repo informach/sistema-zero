@@ -216,6 +216,13 @@ export function createProfilesClient(gw: GatewayModule) {
     listReadonly(): Promise<GatewayResponse<{ profiles: ProfileView[] }>> {
       return gw.gatewayFetchReadonly('/auth/profiles')
     },
+    /**
+     * Os irmãos da criança na sessão de PERFIL (Arquipélago, fase3-12): só id e nome dos outros
+     * perfis ativos da conta. O auth recusa (403) fora da sessão de perfil.
+     */
+    siblings(): Promise<GatewayResponse<{ siblings: { id: string; name: string }[] }>> {
+      return gw.gatewayFetch('/auth/profile-session/siblings')
+    },
     create(body: ProfileCreateInput): Promise<GatewayResponse<{ profile: ProfileView }>> {
       return gw.gatewayFetch('/auth/profiles', { method: 'POST', body })
     },

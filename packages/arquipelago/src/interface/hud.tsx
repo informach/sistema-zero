@@ -14,6 +14,7 @@ import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../
 import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { PAINEL_DAS_VISITAS } from '../sistemas/visitas'
 import { Album, PAINEL_DO_ALBUM } from './album'
 import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
@@ -32,6 +33,7 @@ import { PainelDaBancada } from './receitas'
 import { PainelDaRotina, RotinaAndando } from './rotina'
 import { ControlesDeToque } from './toque'
 import { PainelDoTurno } from './turno'
+import { FaixaDaVisita, PainelDasVisitas, RecordesDaFamilia, voltarDaVisita } from './visitas'
 
 function Necessidades() {
   const n = useEstado((s) => s.salvamento.necessidades)
@@ -352,6 +354,7 @@ function Resultado() {
             </dd>
           </div>
         </dl>
+        <RecordesDaFamilia percurso={r.percurso} />
         <div className="arq-menu-acoes">
           <button
             type="button"
@@ -402,7 +405,8 @@ const FERRAMENTAS: ReadonlyArray<{
 type Aviso = { tom: 'ok' | 'atencao'; texto: string } | null
 
 function Menu() {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, pedidos } = useJogo()
+  const visitando = useEstado((s) => s.visita !== null)
   const aberto = useEstado((s) => s.menuAberto)
   const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
   const [aviso, setAviso] = useState<Aviso>(null)
@@ -468,6 +472,18 @@ function Menu() {
           }}
         >
           📖 Diário
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={ferramentaAberta}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            if (loja.getState().visita) voltarDaVisita(loja, pedidos)
+            else loja.getState().abrirPainel(PAINEL_DAS_VISITAS)
+          }}
+        >
+          {visitando ? '🏡 Voltar para a minha casa' : '🏡 Visitar um irmão'}
         </button>
         <button
           type="button"
@@ -542,6 +558,7 @@ export function Hud() {
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const naFoto = useEstado(hudEscondido)
+  const visitando = useEstado((s) => s.visita !== null)
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       const s = loja.getState()
@@ -590,7 +607,8 @@ export function Hud() {
       <Cronometro />
       <RotinaAndando />
       <Dica />
-      <ModosDoJogo />
+      {/* Na casa do irmão só se olha: no lugar de Viver e Construir, de quem é a casa e a volta. */}
+      {visitando ? <FaixaDaVisita /> : <ModosDoJogo />}
       {construindo ? (
         <BarraDeConstruir />
       ) : (
@@ -614,6 +632,7 @@ export function Hud() {
       <PainelDaRotina />
       <PainelDoObjeto />
       <Diario />
+      <PainelDasVisitas />
       <Album />
       <AtalhoDaFoto />
       <Menu />

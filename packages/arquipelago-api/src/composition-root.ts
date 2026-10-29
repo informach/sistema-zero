@@ -6,6 +6,7 @@ import { ServicoDaFamilia } from './application/servico-da-familia'
 import { aparenciasPagas, ServicoDaGaleria } from './application/servico-da-galeria'
 import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDasCartas } from './application/servico-das-cartas'
+import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
@@ -84,8 +85,9 @@ export function createApplication(env: Env): Application {
     politica,
     logger,
   })
+  const repositorioDaFamilia = new DrizzleRepositorioDaFamilia(connection.db)
   const familia = new ServicoDaFamilia({
-    familia: new DrizzleRepositorioDaFamilia(connection.db),
+    familia: repositorioDaFamilia,
     jogo: new DrizzleRepositorioDoJogo(connection.db),
     desafios: new DrizzleRepositorioDoJogadorNosDesafios(connection.db),
     politica,
@@ -108,6 +110,7 @@ export function createApplication(env: Env): Application {
     desafios,
     familia,
     galeria,
+    visitas: new ServicoDasVisitas({ familia: repositorioDaFamilia, politica }),
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

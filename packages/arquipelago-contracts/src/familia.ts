@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
+import { OBJETOS_DA_CASA } from './objetos'
+import { CanteiroSchema, ObraSchema, PERCURSOS, ResultadoDoPercursoSchema } from './salvamento'
 
 /**
  * A família no Arquipélago (28/10/2026, fase1-18): o resumo da semana de cada criança e as
@@ -95,3 +97,55 @@ export const PERMISSOES_PADRAO: Readonly<PermissoesDaFamilia> = Object.freeze({
   visitasDeOutrasCriancas: false,
   fotosNoClube: false,
 })
+
+// ── Recordes da família e visitas (fase3-12, 29/10/2026) ───────────────────────────────────────
+
+/**
+ * Versão das respostas dos irmãos e da casa do irmão. O jogo trata versão que não conhece como
+ * "não carregou" (`docs/plans/2026-10-29-arquipelago-recordes-e-visitas.md`).
+ */
+export const VERSAO_DAS_VISITAS = 1
+
+/** O melhor de cada percurso de um irmão (o mesmo formato do salvamento). */
+const RecordesSchema = z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema)
+
+/** Um irmão como o serviço do jogo o vê: só o id, os recordes e se já construiu a casa. */
+export const IrmaoDoJogadorSchema = z.strictObject({
+  perfilId: z.uuid(),
+  percursos: RecordesSchema,
+  temCasa: z.boolean(),
+})
+export type IrmaoDoJogador = z.infer<typeof IrmaoDoJogadorSchema>
+
+/**
+ * `GET /arquipelago/irmaos`: os irmãos da criança (a mesma conta, que veem o jogo e já jogaram
+ * nela). `desligado` = os responsáveis desligaram as visitas de irmãos (`irmaos` vem vazia).
+ * O serviço do jogo nunca manda nomes.
+ */
+export const IrmaosDoJogadorSchema = z.strictObject({
+  versao: z.literal(VERSAO_DAS_VISITAS),
+  situacao: z.enum(['ok', 'desligado']),
+  irmaos: z.array(IrmaoDoJogadorSchema).max(PERFIS_DA_FAMILIA_MAXIMO),
+})
+export type IrmaosDoJogador = z.infer<typeof IrmaosDoJogadorSchema>
+
+/** O que o jogo recebe do BFF: os mesmos irmãos com o nome da grade de perfis do Auth. */
+export const IrmaosParaOJogoSchema = IrmaosDoJogadorSchema.extend({
+  irmaos: z.array(IrmaoDoJogadorSchema.extend({ nome: NOME })).max(PERFIS_DA_FAMILIA_MAXIMO),
+})
+export type IrmaosParaOJogo = z.infer<typeof IrmaosParaOJogoSchema>
+export type IrmaoParaOJogo = IrmaosParaOJogo['irmaos'][number]
+
+/**
+ * `GET /arquipelago/irmaos/:perfilId/casa`: o que a visita mostra de UM irmão, só para ver. A obra
+ * da casa com o quintal (`null` = a casa de antes), a horta e os objetos com aparência (o jogo
+ * desenha o modelo do objeto; a criação em si não vem). Nada mais do salvamento dele.
+ */
+export const CasaDoIrmaoSchema = z.strictObject({
+  versao: z.literal(VERSAO_DAS_VISITAS),
+  perfilId: z.uuid(),
+  obra: ObraSchema.nullable(),
+  horta: z.array(CanteiroSchema).max(24),
+  completos: z.array(z.enum(OBJETOS_DA_CASA)).max(OBJETOS_DA_CASA.length),
+})
+export type CasaDoIrmao = z.infer<typeof CasaDoIrmaoSchema>

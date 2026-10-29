@@ -22,6 +22,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
+import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 
@@ -68,6 +69,8 @@ export interface OpcoesDaPlataformaFalsa {
   cartas?: CartasDoPlayground
   /** A galeria: o saldo de moedas (`moedas`, padrão 80) ou `situacao: 'fora-do-ar'` (424). */
   galeria?: OpcoesDaGaleriaFalsa
+  /** Os irmãos (recordes e visitas, fase3-12): `sozinha` (padrão), `irmaos`, `desligada` ou `fora-do-ar`. */
+  familia?: FamiliaDoPlayground
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -99,6 +102,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
   const desafios = criarDesafiosFalsos(o.posicao ?? 2, { dia: o.dia, agora })
   const galeria = criarGaleriaFalsa(o.galeria)
+  const familia = criarFamiliaFalsa(o.familia)
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
@@ -275,6 +279,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         const metodo = opcoes?.metodo ?? 'GET'
         const daGaleria = galeria.buscar(caminho, metodo, opcoes?.corpo)
         if (daGaleria) return daGaleria
+        const daFamilia = familia.buscar(caminho, metodo)
+        if (daFamilia) return daFamilia
         if (caminho.startsWith('/desafios')) {
           if (o.desafios === 'desligados')
             return { status: 403, corpo: { error: { code: 'DESAFIOS_DESLIGADOS' } } }

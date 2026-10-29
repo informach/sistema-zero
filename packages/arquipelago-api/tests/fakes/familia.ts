@@ -14,6 +14,13 @@ export class FamiliaEmMemoria implements RepositorioDaFamilia {
     return perfis.filter((id) => this.jogo.contas.get(id) === contaId)
   }
 
+  async outrosPerfisDaConta(contaId: string, menos: string, limite: number) {
+    return [...this.jogo.contas]
+      .filter(([id, conta]) => conta === contaId && id !== menos)
+      .map(([id]) => id)
+      .slice(0, limite)
+  }
+
   async tempoNaJanela(perfis: readonly string[], inicio: string, fim: string) {
     const tempos = new Map<string, TempoNaJanela>()
     for (const [chave, segundos] of this.jogo.tempo) {

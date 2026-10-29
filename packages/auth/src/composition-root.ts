@@ -43,6 +43,7 @@ import { CreateProfileService } from './application/profiles/create-profile.serv
 import { ExitProfileSessionService } from './application/profiles/exit-profile-session.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { ListProfilesService } from './application/profiles/list-profiles.service'
+import { ListSiblingsService } from './application/profiles/list-siblings.service'
 import { ProfileAdmissionService } from './application/profiles/profile-admission.service'
 import { SelectProfileService } from './application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
@@ -451,6 +452,7 @@ export async function createApplication(env: Env): Promise<Application> {
     readProfileCohort: new ReadProfileCohortService(new DrizzleProfileCohortRepository(db)),
     profiles: {
       listProfiles,
+      listSiblings: new ListSiblingsService(profilesRepo),
       createProfile,
       updateProfile: updateProfileDetails,
       archiveProfile,
