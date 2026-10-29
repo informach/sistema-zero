@@ -54,6 +54,8 @@ export const ITENS: Record<string, Item> = {
   },
   // O prêmio da entrega pelos telhados (fase2-05, `sistemas/patins.ts`).
   patins: { id: 'patins', nome: 'Patins', emoji: '🛼', equipamento: true },
+  // O presente do Bento para prender os borrões (fase2-06, `sistemas/borroes.ts`).
+  lanterna: { id: 'lanterna', nome: 'Lanterna', emoji: '🏮', equipamento: true },
 }
 
 export function sementeDoItem(id: string): Semente | null {
