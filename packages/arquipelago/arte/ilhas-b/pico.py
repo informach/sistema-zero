@@ -602,7 +602,8 @@ def ilha():
     cen += montar(lambda c: boneco_de_neve(col=c), 6.6, 6.0, angulo_para(6.6, 6.0, 4, 0))
     # O pequeno saiu do pé da montanha (estava enterrado na encosta), para perto do palco.
     cen += montar(lambda c: boneco_de_neve(0.7, col=c), -1.6, -8.8, angulo_para(-1.6, -8.8, 2, 0))
-    for i, (x, z) in enumerate(((5.6, -4.2), (-1.0, 7.0), (9.4, -8.8), (-9.6, 7.8), (0.6, -10.2))):
+    # O segundo saiu da frente do painel mais alto (estava onde sobe o vento do planador, fase3-09).
+    for i, (x, z) in enumerate(((5.6, -4.2), (-2.7, 6.3), (9.4, -8.8), (-9.6, 7.8), (0.6, -10.2))):
         cen += montar(lambda c, i=i: bloco_de_gelo(0.9, seed=i, col=c), x, z, R(23 * i))
     montinhos = []
     for i, (x, z, rx, rz) in enumerate(((-8.5, -5.5, 1.8, 1.2), (-4.0, -8.6, 1.0, 0.6), (-6.5, 6.8, 1.4, 0.9),
@@ -671,7 +672,10 @@ def ilha():
                 ('trilha-inicio', pe_trilha[0], -pe_trilha[1], pe_trilha[2]),
                 ('trilha-fim', fim_trilha[0], -fim_trilha[1], fim_trilha[2]),
                 ('cume', cume[0], -cume[1], cume[2]), ('parede-de-gelo', -2.5, 8.2),
-                ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1)]
+                ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1),
+                # O vento que sobe na frente do painel mais alto (fase3-09): com o planador, leva ao
+                # alto da parede. O jogo põe o raio e a altura (`CORRENTE_DO_PICO`).
+                ('corrente-de-ar', -0.9, 7.7, TOPO)]
         + extras_do_jogo + ancoras_da_banda(giro_iglu, giro_palco, (cx, cy, zc), a_boca))
     # O desenho do trenó num nó próprio, com a origem na base dele: o jogo o leva debaixo de quem
     # desce de trenó (o nome `treno` é da âncora; dois nós com o mesmo nome viravam `treno.001`).

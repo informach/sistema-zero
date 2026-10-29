@@ -8,7 +8,7 @@ import {
   useRapier,
 } from '@react-three/rapier'
 import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { maisPerto } from '../mundo/interativos'
@@ -43,6 +43,7 @@ import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { ritmo } from '../sistemas/necessidades'
 import { comPatins, RAPIDEZ_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado } from '../sistemas/pausa'
+import { temPlanador } from '../sistemas/planador'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { falaDaSaida, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
@@ -53,6 +54,7 @@ import {
   INCLINACAO_NO_CIPO,
   segurarACorda,
 } from './bracos'
+import { PlanadorAberto } from './planador-aberto'
 
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
@@ -81,6 +83,8 @@ function noMundo(saida: Ponto, altura: number, desenho: Matrix4, centro: Ponto):
 /** O quanto o avatar inclina para dentro da curva (radianos por radiano/segundo de giro). */
 const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
+/** No planador, o corpo pende um pouco para a frente, pendurado na barra (radianos). */
+const INCLINACAO_NO_PLANADOR = 0.25
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /**
@@ -109,6 +113,7 @@ export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
   const calcados = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
+  const comPlanador = useEstado((s) => temPlanador(s.salvamento))
   const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
@@ -239,6 +244,7 @@ export function Personagem() {
     correr: false,
     ritmo: 1,
     patins: false,
+    planador: false,
     conversa: null,
     gravidade: GRAVIDADE,
     nivelDoMar: NIVEL_DA_AGUA,
@@ -313,6 +319,7 @@ export function Personagem() {
     e.correr = controle.correr
     e.ritmo = ritmo(estado.salvamento.necessidades)
     e.patins = comPatins(estado.patins, estado.salvamento.inventario)
+    e.planador = temPlanador(estado.salvamento)
     e.conversa = pedidos.conversa
 
     // Pedido de um interativo ("Pegar o cipó", "Escalar o tronco").
@@ -429,9 +436,11 @@ export function Personagem() {
         ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
         : nadando
           ? 1.1
-          : deitada
-            ? -Math.PI / 2
-            : 0
+          : v.modo === 'planar'
+            ? INCLINACAO_NO_PLANADOR
+            : deitada
+              ? -Math.PI / 2
+              : 0
     vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     const curva =
       v.modo === 'chao' && !nadando
@@ -528,6 +537,11 @@ export function Personagem() {
           comPatins={calcados}
           comLanterna={lanterna}
         />
+        {comPlanador ? (
+          <Suspense fallback={null}>
+            <PlanadorAberto />
+          </Suspense>
+        ) : null}
       </group>
     </RigidBody>
   )

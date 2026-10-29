@@ -138,6 +138,7 @@ export interface BordaViva {
 }
 
 import type { VolumeDeMergulho } from '../sistemas/mergulho'
+import type { CorrenteDeAr } from '../sistemas/planador'
 
 export type ModoDoCorpo =
   | 'chao'
@@ -150,6 +151,7 @@ export type ModoDoCorpo =
   | 'descanso'
   | 'barco'
   | 'mergulho'
+  | 'planar'
 
 /**
  * Onde descansar (fase2-13, `sistemas/descanso.ts`): sentado num banco ou deitado na cama. O corpo
@@ -186,6 +188,8 @@ export interface Movimento {
    * do anel aberta, registrada pelo `Anel`. Fora delas, a correnteza leva de volta.
    */
   rodasDeNado: RodaDeNado[]
+  /** As correntes de vento que sobem (`sistemas/planador.ts`), registradas pela ilha ativa. */
+  correntes: CorrenteDeAr[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido:
     | { tipo: 'cipo' | 'tronco'; id: string }
@@ -224,6 +228,7 @@ export function criarMovimento(): Movimento {
     escorregadores: [],
     bordas: [],
     rodasDeNado: [RODA_DA_ILHA_CENTRAL],
+    correntes: [],
     pedido: null,
     modo: 'chao',
     noChao: false,

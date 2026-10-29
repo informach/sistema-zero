@@ -13,6 +13,7 @@ import { comer } from '../sistemas/necessidades'
 import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
+import { COMO_USAR_O_PLANADOR, ID_DO_PLANADOR } from '../sistemas/planador'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { PAINEL_DAS_VISITAS } from '../sistemas/visitas'
 import { Album, PAINEL_DO_ALBUM } from './album'
@@ -164,6 +165,17 @@ function Inventario() {
           >
             <span aria-hidden="true">{item.emoji}</span>
           </button>
+        ) : item.id === ID_DO_PLANADOR ? (
+          <button
+            key={item.id}
+            type="button"
+            className="arq-item"
+            title="Como usar o planador"
+            aria-label="Como usar o planador"
+            onClick={() => loja.getState().dizer(COMO_USAR_O_PLANADOR)}
+          >
+            <span aria-hidden="true">{item.emoji}</span>
+          </button>
         ) : (
           <span key={item.id} className="arq-item" title={item.nome}>
             <span aria-hidden="true">{item.emoji}</span>
@@ -225,6 +237,16 @@ function Acao() {
         ou
         <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
         para levantar
+      </div>
+    )
+  }
+  if (modo === 'planar') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? '◎' : 'W A S D'}</span>
+        Guiar
+        <span className="arq-tecla">{toque ? 'Fechar' : 'Espaço'}</span>
+        Fechar o planador
       </div>
     )
   }

@@ -852,6 +852,28 @@ Regras e textos: `docs/arquipelago-regras.md` (seção da fase3-08); plano:
 - Testes: `tests/banda.test.ts`, o bloco do iglu em `tests/colisores-do-pico.test.ts`, o Floco em
   `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts`.
 
+## O planador e o vento da parede de gelo (fase3-09, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-planador.md`; regras e números em `docs/arquipelago-regras.md`.
+
+- **Item e presente** (`sistemas/planador.ts`): `planador` em `ITENS` (equipamento, 🪁), dado pelo
+  Floco na primeira conversa do festival (`comecarConversaComOFloco`, `pegarPlanador`); sem versão
+  nova do salvamento. Tocar no item da mochila diz como usar (`COMO_USAR_O_PLANADOR`).
+- **Modo `planar`** (`sistemas/modos/planar.ts`, em `MODOS` e `ModoDoCorpo`): entra pelo modo chão
+  (`podeAbrirOPlanador`, `abrirOPlanador`, com `EntradaDoPasso.planador`), leva o corpo pelo
+  controlador do chão e fecha pulando, pisando ou na água. `PLANADOR` guarda os números. O HUD diz
+  "Fechar o planador"; no toque, o botão Pular vira Fechar. Na locomoção, usa o clipe Pendurado.
+- **Corrente de ar** (`CorrenteDeAr` em `movimento.correntes`, `subidaDaCorrente`; na coluna dela,
+  `naColunaDaCorrente`, o ar segura no lugar quem plana sem pedir direção): a do Pico vem da
+  âncora `corrente-de-ar` (`mundo/corrente-de-ar.tsx`, `correnteDoPico`, montada pelo `PicoVivo`,
+  com flocos de neve subindo). `CORRENTE_DO_PICO` (raio 1, altura 4,75) é a medida que leva do alto
+  dela ao alto da parede (`topo-da-parede`).
+- **Desenho**: `personagem/planador-aberto.tsx` (`PlanadorAberto`, o `planador.glb` com o clipe
+  `planar` dentro do desenho do avatar, barra em `BARRA_NO_AVATAR`), só com o item na mochila e
+  visível no modo planar; o corpo inclina `INCLINACAO_NO_PLANADOR` para a frente.
+- Testes: `tests/planador.test.ts` e o bloco da fase3-09 em `tests/colisores-do-pico.test.ts`;
+  navegador: `playground/verificar-pico-browser.ts`.
+
 ## O Vale dos Dinos e a Jade (fase4-01, 29/10/2026)
 
 O Vale está em `ILHAS_COMPLETAS` e `ValeVivo` em `ILHAS_VIVAS`, com os 62 colisores do GLB

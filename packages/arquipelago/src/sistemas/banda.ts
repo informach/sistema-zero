@@ -66,7 +66,7 @@ export function rotuloDoInstrumento(i: number): string {
 export function falaDaVolta(i: number, banda: number): string {
   const faltam = INSTRUMENTOS.length - instrumentosDeVolta(banda)
   if (faltam === 0)
-    return 'A banda está completa. Os pinguins voltaram a tocar, e o festival de inverno começou no palco do Floco.'
+    return 'A banda está completa. Os pinguins voltaram a tocar, e o festival de inverno começou no palco do Floco. Ele tem um presente para você.'
   const n = NOME[INSTRUMENTOS[i] ?? 'xilofone']
   const inicio = `${n.o === 'a' ? 'A' : 'O'} ${n.nome} voltou para o palco.`
   return `${inicio} ${faltam === 1 ? 'Falta 1 instrumento' : `Faltam ${faltam} instrumentos`} para a banda tocar.`

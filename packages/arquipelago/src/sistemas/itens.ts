@@ -69,6 +69,8 @@ export const ITENS: Record<string, Item> = {
   lanterna: { id: 'lanterna', nome: 'Lanterna', emoji: '🏮', equipamento: true },
   // O cristal raro da caverna do Pico (fase3-07, `sistemas/cristal-raro.ts`).
   'cristal-rosa': { id: 'cristal-rosa', nome: 'Cristal rosa', emoji: '💎', lembranca: true },
+  // O presente do Floco no festival de inverno (fase3-09, `sistemas/planador.ts`).
+  planador: { id: 'planador', nome: 'Planador', emoji: '🪁', equipamento: true },
 }
 
 export function sementeDoItem(id: string): Semente | null {

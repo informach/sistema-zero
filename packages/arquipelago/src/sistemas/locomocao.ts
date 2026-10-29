@@ -94,6 +94,7 @@ export type ModoEspecial =
   | 'escorregar'
   | 'sentar'
   | 'deitar'
+  | 'planar'
 
 export interface Locomocao {
   pesos: Record<Clipe, number>
@@ -167,7 +168,8 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
       alvo[c] = 1
       l.tempos[c] = (l.tempos[c] + dt / duracao) % 1
     }
-    if (e.especial === 'cipo') laco('Pendurado', DURACAO_DO_PENDURADO)
+    // No planador, pendurada na barra como no cipó (fase3-09).
+    if (e.especial === 'cipo' || e.especial === 'planar') laco('Pendurado', DURACAO_DO_PENDURADO)
     else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR.passada)
     else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA.passada)
     else if (e.especial === 'escorregar') laco('Escorregar', DURACAO_DO_ESCORREGAR)

@@ -13,6 +13,7 @@ import { MODO_ESCADA } from './escada'
 import { agarrarTronco, MODO_ESCALADA } from './escalada'
 import { entrarNoEscorregador, MODO_ESCORREGAR } from './escorregar'
 import { MODO_MERGULHO } from './mergulho'
+import { MODO_PLANAR } from './planar'
 import type { AvisoDeModo, EstadoDoCorpo, ModoDeMovimento, MundoDoMovimento } from './tipos'
 import { mudarModo } from './trocas'
 
@@ -24,6 +25,7 @@ export { MODO_EQUILIBRIO } from './equilibrio'
 export { MODO_ESCADA } from './escada'
 export { MODO_ESCALADA } from './escalada'
 export { MODO_ESCORREGAR } from './escorregar'
+export { MODO_PLANAR } from './planar'
 export * from './tipos'
 export { mudarModo } from './trocas'
 
@@ -39,6 +41,7 @@ export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   escorregar: MODO_ESCORREGAR,
   borda: MODO_BORDA,
   descanso: MODO_DESCANSO,
+  planar: MODO_PLANAR,
 }
 
 /**

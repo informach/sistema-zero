@@ -139,7 +139,13 @@ export function ControlesDeToque() {
           onPointerCancel={soltarPulo}
           onLostPointerCapture={soltarPulo}
         >
-          {modo === 'mergulho' ? 'Subir' : modo === 'cipo' ? 'Soltar' : 'Pular'}
+          {modo === 'mergulho'
+            ? 'Subir'
+            : modo === 'cipo'
+              ? 'Soltar'
+              : modo === 'planar'
+                ? 'Fechar'
+                : 'Pular'}
         </button>
         <button type="button" className="arq-botao leve" onClick={() => controle.usar++}>
           Usar

@@ -2951,6 +2951,39 @@ os colisores em `tests/colisores-do-pico.test.ts`. Navegador: `playground/verifi
   contrato em `salvamento-v14.test.ts`. Navegador: `playground/verificar-pico-browser.ts` (entrar no
   iglu, levar os três instrumentos, o fogareiro sem ingredientes, o festival e o Floco falando dele).
 
+## O planador e o vento da parede de gelo (fase3-09, 29/10/2026)
+
+- **O presente.** Com o festival de inverno começado, a primeira conversa com o Floco dá o
+  planador: "Pela música de volta, este planador é seu. No ar, pule de novo para abrir e pule outra
+  vez para fechar." O festival avisa ("Ele tem um presente para você.") e as conversas seguintes
+  lembram do vento: "Com o planador, o vento na frente da parede de gelo leva lá para o alto dela."
+  O planador é um equipamento na mochila (🪁); tocar nele diz como usar. Fica para sempre.
+- **Abrir e fechar.** Com o planador na mochila, no ar, pular de novo abre: depois de 0,15 s fora
+  do chão e subindo a menos de 1 m/s (perto do alto do pulo ou caindo; o pulo de beirada e o de
+  tolerância continuam sendo pulo). Pular outra vez fecha e o embalo segue até pisar. Pisar no chão
+  ou cair na água também fecha. Vale em qualquer ilha. Sem prazo, sem castigo.
+- **Planando.** O corpo desce a 1,8 m/s (do platô do cume, uns 4,7 s no ar) e segue para a frente a
+  4,2 m/s; com o controle, vai a 5,5 m/s para onde se pede, com o peso do ar (aceleração 4, freio
+  2,5). A pessoa fica pendurada na barra, um pouco inclinada para a frente, com as asas do
+  `planador.glb` abertas por cima. Abrir caindo freia suave (a velocidade de cair chega na pedida
+  aos poucos), sem tranco.
+- **O vento que sobe.** Na frente da parede de gelo do Pico (âncora `corrente-de-ar` do `pico.glb`)
+  há uma corrente de 1 m de raio que sobe 4,75 m do chão, com flocos de neve subindo para mostrar
+  onde ela fica. Planando dentro dela, o corpo sobe a 3,2 m/s; nos últimos 1,5 m a subida some e a
+  pessoa fica pairando lá em cima, um pouco acima do alto da parede. Dentro do vento e acima dele, o
+  ar segura no lugar: sem tocar no controle, o planador não sai andando (quem abre o planador acima
+  do vento desce devagar até o alto dele). Para sair, é só guiar para onde quiser. Guiando para a
+  parede, ela pousa lá em cima (âncora `topo-da-parede`); segurando para a frente além da conta,
+  passa da parede e pousa atrás dela, e para parar em cima basta fechar o planador (pular) sobre o
+  alto da parede. Com menos movimento, os flocos ficam parados.
+- **Salvamento:** nenhuma versão nova. O planador é um item do inventário (que já aceita itens
+  novos), e a corrente e o modo planar não guardam nada.
+- Onde mudar: `PLANADOR` e `CORRENTE_DO_PICO` em `sistemas/planador.ts`; o modo em
+  `sistemas/modos/planar.ts`. Testes: `tests/planador.test.ts` e o bloco do vento em
+  `tests/colisores-do-pico.test.ts` (a corrente livre de colisores do chão ao alto e o voo até o alto
+  da parede). Navegador: `playground/verificar-pico-browser.ts` (o presente no festival, abrir no ar
+  sobre o vento, subir acima da parede, sair do vento planando e pousar).
+
 ## Mergulho do Recife (fase3-02, 29/10/2026)
 
 - Na marca de mergulho do Recife, use **Mergulhar** depois que o cenário carregar. A direção

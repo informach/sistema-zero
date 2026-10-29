@@ -118,7 +118,7 @@ describe('o Floco no palco', () => {
     expect(malhasDosOlhos(gltf.scene).length).toBeGreaterThan(0)
   })
 
-  test('a conversa não muda o salvamento nem compartilha falas mutáveis', () => {
+  test('antes do festival, a conversa não muda o salvamento nem compartilha falas mutáveis', () => {
     const s = criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
     const antes = JSON.stringify(s)
     const a = comecarConversaComOFloco(s)

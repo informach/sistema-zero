@@ -15,6 +15,7 @@ import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
 import type { VolumeDeMergulho } from '../mergulho'
 import { criarPulo, type EstadoDoPulo } from '../movimento'
+import type { CorrenteDeAr } from '../planador'
 
 /**
  * O contrato dos modos de movimento (controlador universal, parte 6;
@@ -170,6 +171,8 @@ export interface EntradaDoPasso {
   ritmo: number
   /** De patins calçados (`sistemas/patins.ts`): no chão desliza, nadando não muda nada. */
   patins: boolean
+  /** Com o planador na mochila (`sistemas/planador.ts`): no ar, pular de novo abre. */
+  planador?: boolean
   /** Com quem a criança conversa (parada, vira para lá). */
   conversa: { x: number; z: number } | null
   gravidade: number
@@ -187,6 +190,8 @@ export interface MundoDoMovimento {
   escorregadores: Escorregador[]
   bordas: BordaViva[]
   rodasDeNado: RodaDeNado[]
+  /** As correntes de vento que sobem (o planador sobe nelas). */
+  correntes?: CorrenteDeAr[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }
