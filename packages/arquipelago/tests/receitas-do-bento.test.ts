@@ -102,7 +102,8 @@ describe('o Bento ensina as receitas', () => {
   })
 
   test('passar um coração na conversa ensina o bolo e dá os ingredientes da primeira vez', () => {
-    const s = comAmizade(100 - AMIZADE.conversa)
+    // Já com a lanterna, que o Bento dá na segunda conversa (fase2-06).
+    const s = comAmizade(100 - AMIZADE.conversa, { ...inicial(), inventario: { lanterna: 1 } })
     const r = comecarConversaComOBento(s, HOJE, PERFIL)
     expect(r.falas.at(-1)).toBe(FALA_DA_RECEITA['bolo-de-fuba'])
     expect(r.salvamento.inventario).toMatchObject({ fuba: 1, leite: 1, ovo: 1 })

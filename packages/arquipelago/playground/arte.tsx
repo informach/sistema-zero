@@ -45,6 +45,7 @@ const CASOS = [
   'barco',
   'iris',
   'patins',
+  'lanterna',
 ] as const
 type Caso = (typeof CASOS)[number]
 type Leitura = {
@@ -115,7 +116,7 @@ function Observar() {
   return null
 }
 
-function Patins({ vestido }: { vestido: boolean }) {
+function Patins({ vestido, lanterna = false }: { vestido: boolean; lanterna?: boolean }) {
   const g = useGLTF(url(patins), false, false)
   const movimento = useRef<EntradaDaLocomocao>({
     velocidade: 0,
@@ -129,7 +130,7 @@ function Patins({ vestido }: { vestido: boolean }) {
       <RigidBody type="fixed" colliders={false} position={[0, CORPO.doCentroAoPe, 0]}>
         <CapsuleCollider args={[CORPO.meiaAltura, CORPO.raio]} />
         <group position={[0, -CORPO.doCentroAoPe, 0]}>
-          <AvatarDoJogo movimento={movimento} comPatins={vestido} />
+          <AvatarDoJogo movimento={movimento} comPatins={vestido} comLanterna={lanterna} />
         </group>
       </RigidBody>
       <group
@@ -193,6 +194,9 @@ function Pecas({ caso, ligado, fala }: { caso: Caso; ligado: boolean; fala: numb
       )
     case 'patins':
       return <Patins vestido={ligado} />
+    case 'lanterna':
+      // A lanterna acesa na mão (fase2-06): `?vestido=1` já começa com ela.
+      return <Patins vestido={false} lanterna={ligado} />
     case 'voo':
       return (
         <>
@@ -238,7 +242,7 @@ function Camera({ caso }: { caso: Caso }) {
     size = useThree((s) => s.size)
   useEffect(() => {
     const vista = VISTAS_DOS_PES[new URLSearchParams(location.search).get('vista') ?? '']
-    if (caso === 'patins' && vista) {
+    if ((caso === 'patins' || caso === 'lanterna') && vista) {
       camera.position.set(...vista)
       camera.lookAt(0, 0.18, 0)
       return

@@ -5,19 +5,29 @@ import {
   BORROES_POR_NOITE,
   borroesDaNoite,
   comLanterna,
+  criarBorrao,
   FALA_DA_LANTERNA,
   FALA_DE_ACENDER,
   FALA_DE_APAGAR,
   FALA_DO_BORRAO_FUGINDO,
   FAMILIA_DA_VILA,
   FOGE_A,
+  FOGE_ATE,
   falaDoLumiNovo,
+  gravarPresos,
   ID_DA_LANTERNA,
+  lerPresos,
   lumisNaVila,
   PRENDE_A,
+  PRESO_POR,
+  passoDoBorrao,
+  podePrender,
+  prender,
   prenderBorrao,
   RARO_A_CADA,
   receberLanterna,
+  SOLTO_ATE,
+  VIRANDO_POR,
 } from '../src/sistemas/borroes'
 import { ITENS, itensParaDar, remover } from '../src/sistemas/itens'
 
@@ -154,4 +164,73 @@ test('os textos seguem as regras: sem travessão, sem exclamação, sem começar
     const primeira = t.split(/(?<=[.?])\s/)[0] ?? ''
     expect(primeira.endsWith('?')).toBe(false)
   }
+})
+
+describe('o borrão no mundo', () => {
+  const dt = 1 / 60
+  const andar = (
+    b: ReturnType<typeof criarBorrao>,
+    s: number,
+    px: number,
+    pz: number,
+    luz: boolean,
+  ) => {
+    const eventos: string[] = []
+    for (let t = 0; t < s; t += dt) {
+      const e = passoDoBorrao(b, dt, px, pz, luz)
+      if (e) eventos.push(e)
+    }
+    return eventos
+  }
+
+  test('sem a lanterna, foge de quem chega perto e para longe o bastante', () => {
+    const b = criarBorrao({ x: 0, z: 0 })
+    expect(andar(b, 1, 5, 0, false)).toEqual([])
+    expect(b.x).toBe(0)
+    // Chega a 2 m: ele foge para o outro lado, uma vez só.
+    expect(andar(b, 0.3, 2, 0, false)).toEqual(['fugiu'])
+    expect(b.x).toBeLessThan(0)
+    andar(b, 2, 2, 0, false)
+    expect(Math.hypot(b.x - 2, b.z)).toBeGreaterThanOrEqual(FOGE_ATE - 0.1)
+    expect(Math.hypot(b.x, b.z)).toBeLessThanOrEqual(SOLTO_ATE + 1e-9)
+  })
+
+  test('encurralado, não passa de SOLTO_ATE do lugar dele, e depois volta para casa', () => {
+    const b = criarBorrao({ x: 0, z: 0 })
+    andar(b, 5, 0.5, 0.2, false)
+    expect(Math.hypot(b.x, b.z)).toBeCloseTo(SOLTO_ATE, 6)
+    andar(b, 10, 30, 0, false)
+    expect(b.x).toBeCloseTo(0, 6)
+    expect(b.z).toBeCloseTo(0, 6)
+    expect(b.fugindo).toBe(false)
+  })
+
+  test('com a lanterna acesa ele não foge e dá para prender de perto', () => {
+    const b = criarBorrao({ x: 0, z: 0 })
+    expect(andar(b, 1, 1, 0, true)).toEqual([])
+    expect(b.x).toBe(0)
+    expect(podePrender(b, 1, 0, true)).toBe(true)
+    expect(podePrender(b, 1, 0, false)).toBe(false)
+    expect(podePrender(b, PRENDE_A + 0.1, 0, true)).toBe(false)
+  })
+
+  test('preso, chacoalha, vira e acaba pronto, com o aviso uma vez só', () => {
+    const b = criarBorrao({ x: 0, z: 0 })
+    prender(b)
+    expect(podePrender(b, 0, 0, true)).toBe(false)
+    expect(andar(b, PRESO_POR * 0.9, 0, 0, false)).toEqual([])
+    expect(b.fase).toBe('preso')
+    expect(andar(b, PRESO_POR * 0.2 + VIRANDO_POR + 0.1, 0, 0, false)).toEqual(['virou'])
+    expect(b.fase).toBe('pronto')
+    expect(andar(b, 2, 0, 0, false)).toEqual([])
+  })
+
+  test('os presos da noite valem só naquela noite e ignoram texto estragado', () => {
+    const t = gravarPresos(4, ['4:0'])
+    expect(lerPresos(t, 4)).toEqual(['4:0'])
+    expect(lerPresos(t, 5)).toEqual([])
+    expect(lerPresos(null, 4)).toEqual([])
+    expect(lerPresos('{', 4)).toEqual([])
+    expect(lerPresos('{"dia":4,"ids":[1,"4:1"]}', 4)).toEqual(['4:1'])
+  })
 })

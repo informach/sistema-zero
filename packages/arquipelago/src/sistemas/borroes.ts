@@ -6,7 +6,8 @@
  *
  * Regras puras, sem three nem React. O que muda o salvamento é só `prenderBorrao` (os Lumis presos,
  * `salvamento.lumis`) e `receberLanterna` (o item na mochila). Quais borrões já foram presos nesta
- * noite não é salvo: recarregar a página traz os da noite de volta.
+ * noite não vai para o salvamento: fica no aparelho, por perfil (`lerPresos`, `gravarPresos`), para
+ * recarregar a página na mesma noite não trazer de volta os já presos.
  */
 import type { LumiId, Salvamento } from '@sistemazero/arquipelago-contracts'
 import { adicionar, type Inventario, quantidade } from './itens'
@@ -143,4 +144,136 @@ export function receberLanterna(s: Salvamento): { salvamento: Salvamento; fala: 
     salvamento: { ...s, inventario: adicionar(s.inventario, ID_DA_LANTERNA) },
     fala: FALA_DA_LANTERNA,
   }
+}
+
+// ── O borrão no mundo (o passo de cada quadro, sem alocar) ─────────────────────────────────────
+
+/** Fugindo, quantos metros por segundo ele anda; voltando para o lugar dele, bem mais devagar. */
+export const RAPIDEZ_DA_FUGA = 3.2
+export const RAPIDEZ_DA_VOLTA = 0.8
+
+/** `solto` flutua (e foge); `preso` chacoalha na luz; `virando` se desfaz; `pronto` já virou Lumi. */
+export type FaseDoBorrao = 'solto' | 'preso' | 'virando' | 'pronto'
+
+export interface EstadoDoBorrao {
+  x: number
+  z: number
+  /** O lugar dele (perto da âncora `lumi-N`), de onde ele não se afasta mais que `SOLTO_ATE`. */
+  casaX: number
+  casaZ: number
+  fase: FaseDoBorrao
+  /** Segundos na fase de agora. */
+  tempo: number
+  fugindo: boolean
+}
+
+export function criarBorrao(casa: { x: number; z: number }): EstadoDoBorrao {
+  return {
+    x: casa.x,
+    z: casa.z,
+    casaX: casa.x,
+    casaZ: casa.z,
+    fase: 'solto',
+    tempo: 0,
+    fugindo: false,
+  }
+}
+
+/** Dá para prender agora: solto, com a lanterna acesa e perto. */
+export function podePrender(b: EstadoDoBorrao, px: number, pz: number, lanterna: boolean): boolean {
+  return b.fase === 'solto' && lanterna && (b.x - px) ** 2 + (b.z - pz) ** 2 <= PRENDE_A ** 2
+}
+
+export function prender(b: EstadoDoBorrao): void {
+  b.fase = 'preso'
+  b.tempo = 0
+  b.fugindo = false
+}
+
+/**
+ * Um quadro do borrão. Solto e sem a lanterna acesa por perto, foge de quem chega a `FOGE_A` até
+ * ficar a `FOGE_ATE`, sem sair de `SOLTO_ATE` do lugar dele (encurralado, desliza pela borda); com
+ * a lanterna ele não foge. Sem a lanterna e com a pessoa ainda a menos de `FOGE_ATE`, espera
+ * parado; depois volta devagar para o lugar dele. Preso, conta o tempo da captura. Devolve `fugiu` no quadro em que
+ * começa a fugir e `virou` no quadro em que termina de virar Lumi.
+ */
+export function passoDoBorrao(
+  b: EstadoDoBorrao,
+  dt: number,
+  px: number,
+  pz: number,
+  lanterna: boolean,
+): 'fugiu' | 'virou' | null {
+  if (b.fase === 'pronto') return null
+  b.tempo += dt
+  if (b.fase === 'preso') {
+    if (b.tempo >= PRESO_POR) {
+      b.fase = 'virando'
+      b.tempo = 0
+    }
+    return null
+  }
+  if (b.fase === 'virando') {
+    if (b.tempo < VIRANDO_POR) return null
+    b.fase = 'pronto'
+    b.tempo = 0
+    return 'virou'
+  }
+  const dx = b.x - px
+  const dz = b.z - pz
+  const d = Math.hypot(dx, dz)
+  const foge = !lanterna && (d < FOGE_A || (b.fugindo && d < FOGE_ATE))
+  let evento: 'fugiu' | null = null
+  if (foge) {
+    if (!b.fugindo) evento = 'fugiu'
+    b.fugindo = true
+    // Em cima da pessoa (d = 0), foge para longe do lugar dela mesmo assim: para fora da casa.
+    const ux = d > 1e-6 ? dx / d : 1
+    const uz = d > 1e-6 ? dz / d : 0
+    b.x += ux * RAPIDEZ_DA_FUGA * dt
+    b.z += uz * RAPIDEZ_DA_FUGA * dt
+    const cx = b.x - b.casaX
+    const cz = b.z - b.casaZ
+    const c = Math.hypot(cx, cz)
+    if (c > SOLTO_ATE) {
+      b.x = b.casaX + (cx / c) * SOLTO_ATE
+      b.z = b.casaZ + (cz / c) * SOLTO_ATE
+    }
+  } else if (!lanterna && d < FOGE_ATE) {
+    // Longe o bastante, mas ela ainda está por perto: espera parado, de olho.
+    b.fugindo = false
+  } else {
+    b.fugindo = false
+    const cx = b.casaX - b.x
+    const cz = b.casaZ - b.z
+    const c = Math.hypot(cx, cz)
+    const passo = Math.min(c, RAPIDEZ_DA_VOLTA * dt)
+    if (c > 1e-6) {
+      b.x += (cx / c) * passo
+      b.z += (cz / c) * passo
+    }
+  }
+  return evento
+}
+
+// ── Os borrões já presos nesta noite (neste aparelho, por perfil) ───────────────────────────────
+
+/** Os ids presos numa noite: recarregar a página na mesma noite não traz de volta os já presos. */
+export interface PresosDaNoite {
+  dia: number
+  ids: string[]
+}
+
+export function lerPresos(texto: string | null, dia: number): string[] {
+  if (!texto) return []
+  try {
+    const p = JSON.parse(texto) as Partial<PresosDaNoite>
+    return p.dia === dia && Array.isArray(p.ids) ? p.ids.filter((i) => typeof i === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function gravarPresos(dia: number, ids: readonly string[]): string {
+  return JSON.stringify({ dia, ids: [...ids] } satisfies PresosDaNoite)
 }

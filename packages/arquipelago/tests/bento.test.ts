@@ -19,6 +19,7 @@ import {
   pedidoDoBentoPeloId,
   pedidoDoDiaDoBento,
 } from '../src/sistemas/bento'
+import { FALA_DA_LANTERNA, ID_DA_LANTERNA } from '../src/sistemas/borroes'
 import {
   comecarConversaComOBento,
   entregarAoBento,
@@ -157,7 +158,10 @@ describe('o Bento: a conversa sobre o salvamento', () => {
     expect(a.salvamento.moradores.capi).toEqual(inicial().moradores.capi)
     const b = comecarConversaComOBento(a.salvamento, HOJE, PERFIL)
     expect(b.salvamento.moradores.bento.amizade).toBe(AMIZADE.conversa)
-    expect(b.falas).toHaveLength(1)
+    // A segunda conversa traz a lanterna (fase2-06), uma vez só.
+    expect(b.falas).toEqual([expect.any(String), FALA_DA_LANTERNA])
+    expect(b.salvamento.inventario[ID_DA_LANTERNA]).toBe(1)
+    expect(comecarConversaComOBento(b.salvamento, HOJE, PERFIL).falas).toHaveLength(1)
   })
 
   test('entregar: tira os itens, dá a amizade e não entrega duas vezes', () => {

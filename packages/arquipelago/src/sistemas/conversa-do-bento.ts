@@ -6,6 +6,7 @@ import {
   pedidoDoBentoPeloId,
   pedidoDoDiaDoBento,
 } from './bento'
+import { receberLanterna } from './borroes'
 import { escolhaDoDia } from './conversa-da-capi'
 import { FALA_DA_PAGINA_DO_BENTO, ganhouAPaginaDaVila } from './diario'
 import { adicionar, ITENS } from './itens'
@@ -102,7 +103,11 @@ export function pedidoDoBentoDeHoje(s: Salvamento, dia: string): string | null {
   return pedidoDoBentoPeloId(p.id)?.texto ?? null
 }
 
-/** Abrir a conversa: o pedido de hoje (se ainda não houver), a conversa do dia e as falas. */
+/**
+ * Abrir a conversa: o pedido de hoje (se ainda não houver), a conversa do dia e as falas. Do
+ * segundo encontro em diante, quem não tem a lanterna ganha (fase2-06), por último: o primeiro
+ * encontro fica só com a apresentação e o pedido.
+ */
 export function comecarConversaComOBento(
   s: Salvamento,
   dia: string,
@@ -111,7 +116,8 @@ export function comecarConversaComOBento(
   const antes = s.moradores.bento
   const { capi: bento, primeiraDoDia } = conversar(pedidoDoDiaDoBento(antes, dia, perfilId), dia)
   const receitas = comAsReceitasNovas(comBento(s, bento), antes.amizade)
-  const salvamento = receitas.salvamento
+  const lanterna = antes.conversaEm === null ? null : receberLanterna(receitas.salvamento)
+  const salvamento = lanterna?.salvamento ?? receitas.salvamento
   const falas = falasDoBento(
     {
       coracoes: coracoes(bento.amizade),
@@ -122,7 +128,10 @@ export function comecarConversaComOBento(
     },
     escolhaDoDia(dia),
   )
-  return { salvamento, falas: [...falas, ...receitas.falas] }
+  return {
+    salvamento,
+    falas: [...falas, ...receitas.falas, ...(lanterna ? [lanterna.fala] : [])],
+  }
 }
 
 export const FALA_DO_PRESENTE_DO_BENTO: Readonly<Record<ReacaoAoPresente, string>> = {

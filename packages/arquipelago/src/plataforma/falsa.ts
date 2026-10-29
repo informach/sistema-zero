@@ -9,6 +9,7 @@ import {
   diaDeSaoPaulo,
   GravarSalvamentoSchema,
   LIMITE_DIARIO_PADRAO_MINUTOS,
+  type LumiId,
   MoldeDeObjetoSchema,
   migrarSalvamento,
   type PedidoDeFerramenta,
@@ -57,6 +58,10 @@ export interface OpcoesDaPlataformaFalsa {
   bento?: number
   /** Põe um par de patins na mochila (o prêmio da entrega pelos telhados, fase2-05). */
   patins?: boolean
+  /** Põe a lanterna na mochila (o presente do Bento, fase2-06). */
+  lanterna?: boolean
+  /** Os Lumis já presos (`{ quindim: 2 }`), como se a lanterna já tivesse prendido (fase2-06). */
+  lumis?: Partial<Record<LumiId, number>>
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
   cartas?: CartasDoPlayground
   /** A galeria: o saldo de moedas (`moedas`, padrão 80) ou `situacao: 'fora-do-ar'` (424). */
@@ -199,6 +204,23 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         salvamento: { ...atual, inventario: { ...atual.inventario, patins: 1 } },
         atualizadoEm: agora().toISOString(),
       }
+  }
+  if (o.lanterna) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    if (!atual.inventario.lanterna)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, inventario: { ...atual.inventario, lanterna: 1 } },
+        atualizadoEm: agora().toISOString(),
+      }
+  }
+  if (o.lumis) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    guardado = {
+      revisao: guardado.revisao + 1,
+      salvamento: { ...atual, lumis: { ...atual.lumis, ...o.lumis } },
+      atualizadoEm: agora().toISOString(),
+    }
   }
   const persistir = () => {
     if (!o.persistir || typeof localStorage === 'undefined') return

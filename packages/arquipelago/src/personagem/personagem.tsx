@@ -23,6 +23,7 @@ import {
   PORTA,
   QUARTO,
 } from '../mundo/medidas'
+import { comLanterna } from '../sistemas/borroes'
 import { CIPO, type Ponto } from '../sistemas/cipo'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
@@ -105,6 +106,7 @@ function lugarSeguro(
 export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
   const calcados = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
+  const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
   const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
@@ -449,7 +451,12 @@ export function Personagem() {
         }}
         position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}
       >
-        <AvatarDoJogo movimento={animacao} depoisDaPose={depoisDaPose} comPatins={calcados} />
+        <AvatarDoJogo
+          movimento={animacao}
+          depoisDaPose={depoisDaPose}
+          comPatins={calcados}
+          comLanterna={lanterna}
+        />
       </group>
     </RigidBody>
   )

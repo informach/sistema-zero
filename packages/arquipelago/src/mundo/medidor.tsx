@@ -1,7 +1,7 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
-import { Box3, type Mesh, type Object3D } from 'three'
+import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
@@ -71,6 +71,11 @@ export interface MedidaDoDesenho {
   fisica: { corposAtivos: number; passoMs: number }
   /** Cada patim calçado: quantas malhas e a altura mais baixa das rodinhas (vazio: descalço). */
   patins: { peca: string; malhas: number; rodas: number }[]
+  /** Os borrões à vista (com onde estão), os Lumis da Vila e se a lanterna está na mão (fase2-06). */
+  borroes: { id: string; x: number; z: number }[]
+  lumisDaVila: string[]
+  /** Onde está a lanterna acesa na mão (no mundo), ou `null`. */
+  lanternaNaMao: { x: number; y: number; z: number } | null
 }
 
 function medirLigado(): boolean {
@@ -99,6 +104,22 @@ function medirPatins(raiz: Object3D): MedidaDoDesenho['patins'] {
     if (malhas) r.push({ peca, malhas, rodas: caixaDoPatim.min.y })
   }
   return r
+}
+
+function medirBorroes(raiz: Object3D) {
+  const borroes: MedidaDoDesenho['borroes'] = []
+  const lumisDaVila: string[] = []
+  let lanternaNaMao: MedidaDoDesenho['lanternaNaMao'] = null
+  raiz.traverse((o) => {
+    if (/^borrao-\d+:\d+$/.test(o.name) && o.visible)
+      borroes.push({ id: o.name.slice(7), x: o.position.x, z: o.position.z })
+    else if (o.name.startsWith('lumi-da-vila-')) lumisDaVila.push(o.name.slice(13))
+    else if (o.name === 'lanterna-na-mao' && o.visible) {
+      const p = o.getWorldPosition(new Vector3())
+      lanternaNaMao = { x: p.x, y: p.y, z: p.z }
+    }
+  })
+  return { borroes, lumisDaVila, lanternaNaMao }
 }
 
 function contarGeometrias(raiz: Object3D): number {
@@ -187,6 +208,7 @@ export function Medidor() {
       modo: movimento.modo,
       noChao: movimento.noChao,
       patins: medirPatins(cena),
+      ...medirBorroes(cena),
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida
     fisica.current.ms = 0

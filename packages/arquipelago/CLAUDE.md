@@ -579,6 +579,16 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   O medidor mostra `patins` (malhas e altura das rodinhas). Regras: §6.13.2. Testes:
   `tests/patins.test.ts` e `tests/patins-nos-pes.test.ts`; navegador:
   `bun playground/verificar-patins-browser.ts` (`?patins=1`).
+- Borrões da noite e Lumis da Vila (fase2-06, salvamento V9 `lumis`): regras puras em
+  `sistemas/borroes.ts` (`borroesDaNoite` pelo dia do jogo, `passoDoBorrao` sem alocar, `prender`,
+  `prenderBorrao`, `lumisNaVila`, `receberLanterna`, `lerPresos`/`gravarPresos`); no mundo,
+  `mundo/borroes-da-vila.tsx` (montado pelo `VilaViva`: borrões à noite perto das âncoras `lumi-N`,
+  Lumis morando nelas). A lanterna é item (`ITENS.lanterna`, equipamento) que o Bento dá do segundo
+  encontro em diante; `loja.lanterna` (transitório) acende pelo botão da mochila e
+  `personagem/lanterna-na-mao.tsx` a pendura na ponta dos dedos (sem luz de verdade: uma luz a mais
+  recompila todos os materiais). Os presos da noite ficam no `localStorage` por perfil. O medidor
+  mostra `borroes`, `lumisDaVila` e `lanternaNaMao`. Regras: §6.15.3. Testes: `tests/borroes.test.ts`;
+  navegador: `bun playground/verificar-borroes-browser.ts` (`?lanterna=1&adiantar=12`).
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em

@@ -5,6 +5,7 @@ import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
+import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO } from '../sistemas/modo-foto'
@@ -95,6 +96,7 @@ function Inventario() {
   const { loja } = useJogo()
   const inv = useEstado((s) => s.salvamento.inventario)
   const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
+  const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
   const itens = itensVisiveis(inv)
   if (itens.length === 0) return null
   return (
@@ -134,6 +136,22 @@ function Inventario() {
               const s = loja.getState()
               s.calcarPatins(!patins)
               s.dizer(patins ? FALA_DE_DESCALCAR : FALA_DE_CALCAR)
+            }}
+          >
+            <span aria-hidden="true">{item.emoji}</span>
+          </button>
+        ) : item.id === ID_DA_LANTERNA ? (
+          <button
+            key={item.id}
+            type="button"
+            className="arq-item"
+            title={lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'}
+            aria-label={lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'}
+            aria-pressed={lanterna}
+            onClick={() => {
+              const s = loja.getState()
+              s.acenderLanterna(!lanterna)
+              s.dizer(lanterna ? FALA_DE_APAGAR : FALA_DE_ACENDER)
             }}
           >
             <span aria-hidden="true">{item.emoji}</span>

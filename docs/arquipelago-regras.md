@@ -1277,6 +1277,43 @@ de mentirinha: ela atende o balcão, sem gastar nada do inventário.
   regras de texto (sem travessão, sem exclamação, sem começar com pergunta), conferidas no teste.
 - Testes: `tests/turnos.test.ts`; navegador: `bun playground/verificar-turnos-browser.ts`.
 
+### 6.15.3 Os borrões da noite e os Lumis da Vila Doce (fase2-06)
+
+Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-vila.tsx` (no mundo),
+`personagem/lanterna-na-mao.tsx` (a lanterna acesa na mão). Salvamento V9: `lumis`, quantos de
+cada espécie ela já prendeu.
+
+- **A lanterna:** o Bento dá do segundo encontro em diante, por último na conversa
+  (`receberLanterna`; o primeiro encontro fica só com a apresentação e o pedido). Se ela sumir da
+  mochila, ele dá de novo. Na mochila é um equipamento (não se come nem se dá de presente); o botão
+  dela acende e apaga (`FALA_DE_ACENDER`, `FALA_DE_APAGAR`). Acesa, ela aparece pendurada na mão
+  direita, com o papel brilhando (sem luz de verdade na cena). Acesa não é salvo: ao abrir o jogo
+  ela começa apagada.
+- **Os borrões:** só à noite (`ambiente.noite`, os últimos 4 minutos de cada dia de 16), dois por
+  noite (`BORROES_POR_NOITE`), perto de duas âncoras `lumi-N` diferentes, puxados 1,5 m para o meio
+  da praça. Os borrões de cada noite e o Lumi que cada um vira saem do dia do jogo (os mesmos em
+  qualquer aparelho). Um em cada `RARO_A_CADA` (5) vira o raro, o Brigadeiro; o primeiro Lumi de
+  todos é sempre o comum, o Quindim.
+- **Sem a lanterna acesa:** quem chega a `FOGE_A` (3 m) faz o borrão fugir (`RAPIDEZ_DA_FUGA`, 3,2
+  m/s) até ficar a `FOGE_ATE` (4,5 m), sem sair de `SOLTO_ATE` (3 m) do lugar dele. Enquanto a criança
+  continua por perto, ele espera parado; depois volta devagar para o lugar dele. Na primeira fuga
+  da noite o Zappy diz `FALA_DO_BORRAO_FUGINDO`.
+- **Com a lanterna acesa:** ele não foge. A `PRENDE_A` (2,2 m) aparece "Prender com a luz" (E /
+  Usar): ele chacoalha na luz (`PRESO_POR`, 1,2 s), se desfaz em faíscas (`VIRANDO_POR`, 1,5 s,
+  clipe `virar`) e o Lumi entra no salvamento na hora (`prenderBorrao`, até 999 de cada), com a
+  fala do Zappy (`falaDoLumiNovo`). Tensão boa, sem dano: deixar um borrão para trás não custa nada.
+- **Os já presos na noite:** ficam no aparelho, por perfil (`arquipelago:borroes-presos:<perfil>`),
+  para recarregar a página na mesma noite não trazer de volta os já presos. Na noite seguinte saem
+  outros dois.
+- **Os Lumis da Vila:** moram nas quatro âncoras `lumi-N`, de dia e de noite (`lumisNaVila`): o
+  primeiro Quindim, o primeiro Brigadeiro e depois mais Quindins e Brigadeiros, até as quatro.
+  Chegam comemorando (`feliz`), descansam virados para a praça, olham para a criança a menos de 4 m
+  e piscam. Um cilindro só para o corpo (`col-morador-lumi-*`). As rotinas deles são a fase2-07.
+- **Textos:** sem travessão, sem exclamação, sem começar com pergunta, conferidos no teste.
+- Testes: `tests/borroes.test.ts` (e a lanterna na conversa em `tests/bento.test.ts`); navegador:
+  `bun playground/verificar-borroes-browser.ts`. Playground: `?lanterna=1`, `?lumis=quindim:2` e
+  `?adiantar=12` (a noite já chegou); na sala de arte, `?caso=lanterna&vestido=1`.
+
 ### 6.16 O modo construção (a grade e as paredes)
 
 Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodos.ts`, `obra.ts`,

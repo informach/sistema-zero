@@ -1,4 +1,4 @@
-import type { PublicoJogo } from '@sistemazero/arquipelago-contracts'
+import { LUMIS, type LumiId, type PublicoJogo } from '@sistemazero/arquipelago-contracts'
 import { montarArquipelago } from '../src/entrada'
 import { definirFestaDoPlayground } from '../src/estado/festas'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
@@ -14,6 +14,8 @@ import { lerFesta } from '../src/sistemas/festas'
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
  * `?patins=1` põe um par de patins na mochila (o prêmio da entrega pelos telhados).
+ * `?lanterna=1` põe a lanterna na mochila e `?lumis=quindim:2,brigadeiro:1` os Lumis já presos
+ * (fase2-06); com `?adiantar=13` a Vila já começa de noite, com os borrões.
  * `?cartas=todas` (ou `desligadas`, `fora-do-ar`) muda os cartões dos Lumis do caderno.
  * `?dia=feito` (ou `nenhum`; padrão `pronto`) muda o desafio do dia do Quadro das Cores.
  * `?objetos=sem-acesso` faz o Pinta e o Molda no molde de um objeto responderem sem acesso.
@@ -25,6 +27,14 @@ const q = new URLSearchParams(location.search)
 function lerPonto(texto: string): { x: number; z: number; y?: number } {
   const [x, z, y] = texto.split(',').map(Number)
   return { x: x ?? 0, z: z ?? 0, ...(y !== undefined && Number.isFinite(y) ? { y } : {}) }
+}
+function lerLumis(texto: string): Partial<Record<LumiId, number>> {
+  const lumis: Partial<Record<LumiId, number>> = {}
+  for (const par of texto.split(',')) {
+    const [id, qtd] = par.split(':')
+    if ((LUMIS as readonly string[]).includes(id ?? '')) lumis[id as LumiId] = Number(qtd ?? 1)
+  }
+  return lumis
 }
 if (q.get('novo') === '1') localStorage.removeItem('arquipelago-playground')
 const plataforma = criarPlataformaFalsa({
@@ -40,6 +50,8 @@ const plataforma = criarPlataformaFalsa({
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   bento: q.has('bento') ? Number(q.get('bento')) : undefined,
   patins: q.get('patins') === '1',
+  lanterna: q.get('lanterna') === '1',
+  lumis: q.has('lumis') ? lerLumis(q.get('lumis') ?? '') : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,
   galeria: {

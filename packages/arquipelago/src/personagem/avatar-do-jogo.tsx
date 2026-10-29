@@ -15,6 +15,7 @@ import {
   passoDaLocomocao,
 } from '../sistemas/locomocao'
 import { jogoPausado } from '../sistemas/pausa'
+import { LanternaNaMao } from './lanterna-na-mao'
 import { PatinsNosPes } from './patins-nos-pes'
 
 const LOCOMOCAO_URL = new URL(locomocaoGlb, import.meta.url).href
@@ -34,12 +35,15 @@ export function AvatarDoJogo({
   movimento,
   depoisDaPose,
   comPatins = false,
+  comLanterna = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** Mexe nos ossos depois da pose de cada quadro (os braços para cima no cipó e no tronco). */
   depoisDaPose?: () => void
   /** Só o desenho sobe. Equipar patins não altera o corpo do Rapier do personagem. */
   comPatins?: boolean
+  /** A lanterna acesa na mão direita (fase2-06). */
+  comLanterna?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
@@ -115,6 +119,11 @@ export function AvatarDoJogo({
             personagem={personagem}
             calcado={slots.shoes?.asset ?? DEFAULT_AVATAR_SLOTS.shoes.asset}
           />
+        </Suspense>
+      ) : null}
+      {comLanterna && emPe ? (
+        <Suspense fallback={null}>
+          <LanternaNaMao avatar={visualRef} personagem={personagem} />
         </Suspense>
       ) : null}
     </group>

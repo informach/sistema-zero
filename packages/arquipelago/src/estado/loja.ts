@@ -63,6 +63,8 @@ export interface EstadoDoJogo {
   corte: number
   /** Os patins calçados (`sistemas/patins.ts`; valem só se ainda estão na mochila, não é salvo). */
   patins: boolean
+  /** A lanterna acesa (`sistemas/borroes.ts`; vale só se ainda está na mochila, não é salva). */
+  lanterna: boolean
   /** Muda o salvamento (a fila de salvamento grava depois). */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
@@ -80,6 +82,7 @@ export interface EstadoDoJogo {
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
   cortar(): void
   calcarPatins(calcados: boolean): void
+  acenderLanterna(acesa: boolean): void
 }
 
 export interface DadosIniciais {
@@ -124,6 +127,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     resultado: null,
     corte: 0,
     patins: false,
+    lanterna: false,
     mudar(fn) {
       if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
       const novo = fn(get().salvamento)
@@ -199,6 +203,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     calcarPatins(patins) {
       if (get().patins !== patins) set({ patins })
+    },
+    acenderLanterna(lanterna) {
+      if (get().lanterna !== lanterna) set({ lanterna })
     },
   }))
 }
