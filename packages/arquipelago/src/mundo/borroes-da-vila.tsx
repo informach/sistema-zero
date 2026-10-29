@@ -6,6 +6,7 @@ import borraoGlb from '../assets/lumis/borrao.glb'
 import brigadeiroGlb from '../assets/lumis/brigadeiro.glb'
 import quindimGlb from '../assets/lumis/quindim.glb'
 import { useEstado, useJogo } from '../estado/contexto'
+import { abrirRotina } from '../estado/rotina'
 import {
   type BorraoDaNoite,
   borroesDaNoite,
@@ -48,6 +49,8 @@ export const ESCALA_DOS_LUMIS_DA_VILA = 0.5
 const BORRAO_PARA_DENTRO = 1.5
 /** De que distância o Lumi da Vila vira para a criança. */
 const LUMI_OLHA_DE = 4
+/** De que distância aparece "Ensinar a rotina" perto do Lumi da Vila (fase2-07). */
+const LUMI_ENSINA_A = 1.6
 
 const CLIPES_DE_UMA_VEZ = ['virar', 'feliz'] as const
 
@@ -130,7 +133,13 @@ export function BorroesDaVila({
         const url = MODELOS_DOS_LUMIS[m.lumi]
         return lugar && url ? (
           <ComReserva key={`${m.ancora}-${m.lumi}`} reserva={null}>
-            <LumiDaVila id={`${m.ancora}-${m.lumi}`} url={url} lugar={lugar} meio={meio} />
+            <LumiDaVila
+              id={`${m.ancora}-${m.lumi}`}
+              lumi={m.lumi}
+              url={url}
+              lugar={lugar}
+              meio={meio}
+            />
           </ComReserva>
         ) : null
       })}
@@ -309,20 +318,31 @@ function colisorDoLumi(id: string): ColisorDaIlha[] {
 
 function LumiDaVila({
   id,
+  lumi,
   url,
   lugar,
   meio,
 }: {
   id: string
+  lumi: LumiId
   url: string
   lugar: Ponto
   meio: Ponto
 }) {
-  const { rastro } = useJogo()
+  const { rastro, loja } = useJogo()
   const pausado = useEstado(jogoPausado)
   const raiz = useRef<Group>(null)
   const { cena, actions, olhos } = useCopiaAnimada(url, raiz, CLIPES_DE_UMA_VEZ, pausado)
   const colisores = useMemo(() => colisorDoLumi(id), [id])
+  // Perto do Lumi preso, o painel da rotina dele (fase2-07). De fundo: nunca toma o E do borrão.
+  useInterativo(`lumi-da-vila-${id}`, {
+    x: lugar.x,
+    z: lugar.z,
+    raio: LUMI_ENSINA_A,
+    deFundo: true,
+    rotulo: () => 'Ensinar a rotina',
+    agir: () => abrirRotina(loja, lumi),
+  })
   const descanso = Math.atan2(meio.x - lugar.x, meio.z - lugar.z)
   const olhar = useRef(descanso)
   const tempo = useRef(0)

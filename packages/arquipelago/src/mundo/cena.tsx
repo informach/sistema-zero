@@ -21,6 +21,7 @@ import { IlhaCentral } from './ilha-central'
 import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
+import { RotinaDosLumis } from './rotina-dos-lumis'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
@@ -81,6 +82,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Medidor />
         </Physics>
         <Zappy />
+        <RotinaDosLumis />
       </Suspense>
     </Canvas>
   )

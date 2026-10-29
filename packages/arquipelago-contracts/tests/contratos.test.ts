@@ -25,6 +25,7 @@ import {
   migrarDaV6,
   migrarDaV7,
   migrarDaV8,
+  migrarDaV9,
   migrarSalvamento,
   normalizarLimiteDiario,
   OBJETOS_DA_CASA,
@@ -41,7 +42,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV9Schema,
+  SalvamentoV10Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 
@@ -168,6 +169,7 @@ describe('salvamento V2 (percursos)', () => {
       presenteDosBichosEntregue: _presente,
       turnos: _t,
       lumis: _l,
+      rotinas: _r,
       ...resto
     } = criarSalvamentoInicial(agora)
     return { ...resto, versao: 2 }
@@ -187,25 +189,26 @@ describe('salvamento V2 (percursos)', () => {
     projetos: {},
     turnos: {},
     lumis: {},
+    rotinas: {},
   }
 
   test('o inicial já é da versão atual, sem nenhum percurso corrido', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV9Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV10Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 9, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 10, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(9)
+    expect(r.salvamento.versao).toBe(10)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -333,11 +336,12 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       presenteDosBichosEntregue: _presente,
       turnos: _t,
       lumis: _l,
+      rotinas: _r,
       ...resto
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(9)
+    expect(v3?.versao).toBe(10)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -346,7 +350,9 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       pedido: null,
     })
     expect(
-      migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))))),
+      migrarDaV9(
+        migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))))),
+      ),
     ).toEqual(v3 as NonNullable<typeof v3>)
   })
 
@@ -431,6 +437,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       presenteDosBichosEntregue: _presente,
       turnos: _t,
       lumis: _l,
+      rotinas: _r,
       ...resto
     } = inicial()
     const v3: SalvamentoV3 = {
@@ -440,13 +447,13 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(9)
+    expect(v4?.versao).toBe(10)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
-    expect(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))))).toEqual(
-      v4 as NonNullable<typeof v4>,
-    )
+    expect(
+      migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))))),
+    ).toEqual(v4 as NonNullable<typeof v4>)
   })
 
   test('guarda a obra da casa, a cabana do Bosque e a geladeira com o que está dentro', () => {

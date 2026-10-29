@@ -2,6 +2,7 @@ import type { TipoDeCarta } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef } from 'react'
 import { lojaDasCartas, PAINEL_DO_CADERNO, useCartas } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
+import { abrirRotina } from '../estado/rotina'
 import { type CartaDoCaderno, ondeAprender, secoesDoCaderno } from '../sistemas/caderno-dos-lumis'
 
 const ICONE: Record<TipoDeCarta, string> = { quando: '🌅', acao: '✨', controle: '🔁' }
@@ -30,7 +31,8 @@ function Carta({ carta }: { carta: CartaDoCaderno }) {
 
 /**
  * O caderno dos Lumis: a coleção de cartões da rotina por tipo, os que a pessoa já tem prontos
- * para usar e os que faltam com o curso que ensina o bloco. Só mostra; montar a rotina é da Fase 2.
+ * para usar e os que faltam com o curso que ensina o bloco. Só mostra; a rotina se monta no painel
+ * "Rotina" (fase2-07), aberto pelo botão daqui.
  */
 export function CadernoDosLumis() {
   const { loja, plataforma } = useJogo()
@@ -109,6 +111,9 @@ export function CadernoDosLumis() {
               </p>
             )}
         <div className="arq-menu-acoes">
+          <button type="button" className="arq-botao" onClick={() => abrirRotina(loja, null)}>
+            Montar a rotina de um Lumi
+          </button>
           <button
             ref={fechar}
             type="button"

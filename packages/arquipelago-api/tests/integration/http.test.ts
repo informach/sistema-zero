@@ -216,7 +216,13 @@ describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
 
   test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
-    const { presenteDosBichosEntregue: _, turnos: _t, lumis: _l, ...anterior } = salvamento
+    const {
+      presenteDosBichosEntregue: _,
+      turnos: _t,
+      lumis: _l,
+      rotinas: _r,
+      ...anterior
+    } = salvamento
     const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
@@ -224,7 +230,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 9, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 10, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
@@ -287,7 +293,7 @@ describe('salvamento', () => {
   test('corpo fora do formato é 400 sem ecoar o que chegou', async () => {
     const r = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
-      salvamento: { ...salvamento, versao: 9, segredo: 'x' },
+      salvamento: { ...salvamento, versao: 10, segredo: 'x' },
     })
     expect(r.status).toBe(400)
     expect(r.texto).not.toContain('segredo')

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { ILHA_IDS } from './ilhas'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
+import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
 
 /**
  * O salvamento do jogo de UM perfil. Tem versão: o serviço aceita a versão atual e as
@@ -8,7 +9,7 @@ import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 9
+export const VERSAO_SALVAMENTO = 10
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -419,18 +420,41 @@ export function migrarDaV8(v8: SalvamentoV8): SalvamentoV9 {
   return { ...v8, versao: 9, lumis: {} }
 }
 
+/**
+ * V10 (29/10/2026, fase2-07): a rotina de cada Lumi preso, montada com os cartões (`rotinas.ts`).
+ * Uma por espécie, só das que ela já prendeu (`lumis`), e com teto somando todas as rotinas.
+ */
+export const SalvamentoV10Schema = SalvamentoV9Schema.extend({
+  versao: z.literal(10),
+  rotinas: z.partialRecord(z.enum(LUMIS), RotinaSchema),
+}).superRefine((s, ctx) => {
+  for (const lumi of Object.keys(s.rotinas) as LumiId[])
+    if (!s.lumis[lumi])
+      ctx.addIssue({ code: 'custom', message: `rotina de um Lumi que ela não tem: ${lumi}` })
+  const total = Object.values(s.rotinas).reduce((n, r) => n + (r ? contarCartoes(r) : 0), 0)
+  if (total > LIMITES_DA_ROTINA.cartoesNasRotinas)
+    ctx.addIssue({ code: 'custom', message: 'cartões demais somando as rotinas' })
+})
+export type SalvamentoV10 = z.infer<typeof SalvamentoV10Schema>
+
+/** Da V9 para a V10: tudo igual, e nenhuma rotina montada ainda. */
+export function migrarDaV9(v9: SalvamentoV9): SalvamentoV10 {
+  return { ...v9, versao: 10, rotinas: {} }
+}
+
 /** Das versões até a V7, passando pelas migrações em ordem, até a atual. */
-const daV7 = (v7: SalvamentoV7) => migrarDaV8(migrarDaV7(v7))
+const daV7 = (v7: SalvamentoV7) => migrarDaV9(migrarDaV8(migrarDaV7(v7)))
 
 /**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V9): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V10): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV9Schema,
-  SalvamentoV8Schema.transform(migrarDaV8),
+  SalvamentoV10Schema,
+  SalvamentoV9Schema.transform(migrarDaV9),
+  SalvamentoV8Schema.transform((v8) => migrarDaV9(migrarDaV8(v8))),
   SalvamentoV7Schema.transform(daV7),
   SalvamentoV6Schema.transform((v6) => daV7(migrarDaV6(v6))),
   SalvamentoV5Schema.transform((v5) => daV7(migrarDaV6(migrarDaV5(v5)))),
@@ -443,14 +467,14 @@ export const SalvamentoSchema = z.union([
     daV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))))),
   ),
 ])
-export type Salvamento = SalvamentoV9
+export type Salvamento = SalvamentoV10
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 9,
+    versao: 10,
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
@@ -471,6 +495,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     projetos: {},
     turnos: {},
     lumis: {},
+    rotinas: {},
   }
 }
 

@@ -336,13 +336,15 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoT
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 8` (`SalvamentoV8Schema`, estrito: campo desconhecido é
+- **Versão:** `VERSAO_SALVAMENTO = 10` (`SalvamentoV10Schema`, estrito: campo desconhecido é
   recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
   a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
   projetos azuis. A V5 acrescenta `presenteDosBichosEntregue`, sem alterar os formatos anteriores.
   A V6 (29/10/2026) guarda as `aparencias` de cada projeto azul (a galeria, §9.9). A V7
   (29/10/2026) acrescenta o Bento em `moradores.bento`, no mesmo formato da Capi (§6.15.1). A V8
-  (29/10/2026) acrescenta os turnos nos balcões da Vila Doce (`turnos`, §6.15.2).
+  (29/10/2026) acrescenta os turnos nos balcões da Vila Doce (`turnos`, §6.15.2). A V9
+  (29/10/2026) acrescenta os Lumis presos (`lumis`, §6.15.3). A V10 (29/10/2026) acrescenta a
+  rotina de cada Lumi preso (`rotinas`, §8.2).
 - **O que guarda:**
   - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
   - a horta (até 24 canteiros);
@@ -376,7 +378,9 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
     teste);
   - os projetos azuis ganhos (`projetos`, por objeto de `OBJETOS_DA_CASA`): quando foi ganho, a
     aparência (de onde veio e o id, ou `null` enquanto é holograma) e, na geladeira, o que está
-    guardado (alimento → quantidade, no máximo 12 no total, `GELADEIRA_GUARDA`).
+    guardado (alimento → quantidade, no máximo 12 no total, `GELADEIRA_GUARDA`);
+  - as rotinas dos Lumis (`rotinas`, desde a V10): uma por espécie, só das que ela já prendeu, com
+    os cartões no formato de `arquipelago-contracts/src/rotinas.ts` e os tetos de §8.2.
 - **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
@@ -387,7 +391,8 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   bicho achado e nenhum adotado; `migrarDaV3`: tudo igual, a casa de antes, nenhuma cabana e
   nenhum projeto azul; `migrarDaV4`: tudo igual e `presenteDosBichosEntregue: false`;
   `migrarDaV5`: a aparência em uso vira a única guardada; `migrarDaV6`: tudo igual e o Bento sem
-  amizade, conversa, presente nem pedido, `MORADOR_NOVO`).
+  amizade, conversa, presente nem pedido, `MORADOR_NOVO`; `migrarDaV7`: nenhum turno feito;
+  `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina montada).
 - **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
   já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
@@ -1308,7 +1313,8 @@ cada espécie ela já prendeu.
 - **Os Lumis da Vila:** moram nas quatro âncoras `lumi-N`, de dia e de noite (`lumisNaVila`): o
   primeiro Quindim, o primeiro Brigadeiro e depois mais Quindins e Brigadeiros, até as quatro.
   Chegam comemorando (`feliz`), descansam virados para a praça, olham para a criança a menos de 4 m
-  e piscam. Um cilindro só para o corpo (`col-morador-lumi-*`). As rotinas deles são a fase2-07.
+  e piscam. Um cilindro só para o corpo (`col-morador-lumi-*`). Perto deles aparece "Ensinar a
+  rotina", que abre o painel da rotina daquele Lumi (§8.2).
 - **Textos:** sem travessão, sem exclamação, sem começar com pergunta, conferidos no teste.
 - Testes: `tests/borroes.test.ts` (e a lanterna na conversa em `tests/bento.test.ts`); navegador:
   `bun playground/verificar-borroes-browser.ts`. Playground: `?lanterna=1`, `?lumis=quindim:2` e
@@ -2102,12 +2108,99 @@ Arquivos: `arquipelago/src/sistemas/caderno-dos-lumis.ts` (regra pura),
   "Tentar de novo". Uma leitura que falha não apaga a coleção que já estava na tela.
 - **Comunidade adulta:** o mesmo painel e os mesmos textos (o jogo não tem pele adulta); os cursos
   do "Aprenda isso em" são os adultos, porque vêm do serviço.
-- **Fica para a Fase 2:** montar a rotina com os cartões e o Lumi executar. O caderno só mostra a
-  coleção.
+- **Montar a rotina:** o botão "Montar a rotina de um Lumi", embaixo do caderno, abre o painel
+  "Rotina" (§8.2). O caderno continua só mostrando a coleção.
 - **Plataforma de mentira** (`src/plataforma/cartas-falsas.ts`, mesma régua do contrato): no
   playground a pessoa tem Repetir e Se; Esperar não tem curso; no adulto os cursos levam
   "(adulto)" no nome. `?cartas=todas` dá a visão da equipe, `?cartas=desligadas` responde 403 e
   `?cartas=fora-do-ar` 424.
+
+### 8.2 A rotina dos Lumis (fase2-07, 29/10/2026)
+
+Da proposta: "você ensina a rotina deles com cartões, que são blocos com outra roupa"; o exemplo é
+a "Rotina da Pitanga" (quando amanhecer, voar até a horta, para cada canteiro regar, se está maduro
+colher, voar até a geladeira, guardar tudo, com um botão "Testar"); "mais postos, mais cartões:
+repetição no começo, condições e variáveis depois". O que a proposta não diz e precisou ser
+decidido está marcado como **proposta** abaixo, para a dona confirmar ou trocar.
+
+Arquivos: `arquipelago-contracts/src/rotinas.ts` (o formato e os tetos), `salvamento.ts` (V10,
+`rotinas`), `arquipelago/src/sistemas/rotina.ts` (validar, montar e o intérprete),
+`src/estado/rotina.ts` (a fila e o que o Lumi faz agora), `src/interface/rotina.tsx` (o painel e
+o aviso no HUD) e `src/mundo/rotina-dos-lumis.tsx` (o Lumi na horta). Testes:
+`arquipelago-contracts/tests/salvamento-v10.test.ts` e `arquipelago/tests/rotina.test.ts`;
+navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
+
+- **Abrir:** "Montar a rotina de um Lumi" no caderno dos Lumis (§8.1), ou "Ensinar a rotina" (E /
+  Usar) perto de um Lumi da Vila (a 1,6 m, de fundo: nunca toma o E do "Prender com a luz").
+  O personagem fica parado (`PAINEL_DA_ROTINA`), e Esc ou "Voltar ao jogo" fecham. Cada abertura
+  lê `GET /cartas` de novo, como o caderno.
+- **O painel:** escolhe o Lumi (as espécies presas, `salvamento.lumis`), mostra a rotina guardada
+  dele (ou só "Quando amanhecer", a de começo) e os cartões que ela tem ("Seus cartões"). Um cartão
+  escolhido entra no fim da rotina, ou dentro do controle marcado com "Pôr cartões aqui". Um
+  Quando troca o começo (a rotina só tem um). Cada cartão sobe, desce e sai; os números e as
+  condições trocam no próprio cartão. Embaixo, o motivo da primeira coisa que falta, ou "Pronta
+  para testar.". Sem nenhum Lumi preso, o painel conta como prender um.
+- **Validar** (`validarRotina`), sempre com o motivo e sem castigo (nada muda no jogo):
+  - começa com um Quando ("Comece com um cartão Quando: Quando amanhecer ou Quando anoitecer."),
+    e só ele é Quando;
+  - tem pelo menos um cartão depois do Quando;
+  - cada cartão de controle está com ela, pela leitura do serviço: "O cartão Para cada ainda não
+    está com você. Ele chega quando você aprende o bloco num curso." Sem a leitura: "Não deu para
+    conferir os seus cartões agora. Tente de novo daqui a pouco." (uma rotina sem controle vale
+    mesmo assim);
+  - nenhum controle vazio ("Ponha pelo menos um cartão dentro do Repetir."), e o Escolha com
+    cartão em pelo menos um caso;
+  - os tetos abaixo.
+- **O que cada cartão faz** (**proposta** nos detalhes que a proposta não diz):
+
+  | Cartão | Na rotina |
+  |---|---|
+  | Quando amanhecer / Quando anoitecer | Quando a rotina começa sozinha: a noite indo embora ou chegando (o mesmo `ambiente.noite` dos borrões, §6.15.3). Abrir o jogo de noite não conta como a noite chegando. |
+  | Voar até | Até a horta da ilha central (o primeiro canteiro) ou a geladeira da casa. Sem a geladeira posta na casa, para: "A geladeira ainda não está na casa. Ponha a geladeira no Construir antes de voar até ela." |
+  | Regar | Rega o canteiro em que o Lumi está, com a regra da horta (`regar`, §6.3). Sem semente ou já regado, não muda nada ("O canteiro 3 está vazio."). Fora da horta, para. |
+  | Colher | Colhe o maduro com a regra da horta (`colher`): o colhido e uma semente vão para a mochila, como na mão da criança, e o Lumi lembra o que colheu. |
+  | Guardar tudo | Na geladeira, leva o que o Lumi colheu da mochila para a geladeira, um por um (`guardarNaGeladeira`), até a capacidade; o que não cabe fica na mochila. Fora da geladeira, para. |
+  | Repetir | Os de dentro de 2 a 9 vezes. |
+  | Para cada | Os de dentro em cada canteiro da horta, um de cada vez: o Lumi voa até o canteiro antes. |
+  | Se / Enquanto | Uma condição: o canteiro está maduro, o canteiro precisa de água, o Lumi carrega alguma coisa, ou o número que ele lembra é menor que um número (de 1 a 99). O Enquanto confere de novo a cada volta. |
+  | Escolha | Um caso para cada jeito do canteiro em que o Lumi está: vazio, precisa de água, crescendo, maduro. Só os casos com cartão ficam guardados. |
+  | Esperar | De 1 a 10 segundos parado. |
+  | Guardar na memória | O Lumi lembra de um número (de 0 a 99). O cartão fala em "número ou palavra"; por enquanto só número, porque nenhum cartão usa uma palavra. |
+  | Contar mais um | Soma 1 ao número que o Lumi lembra (sem número, para com o motivo). |
+
+- **Os tetos** (`LIMITES_DA_ROTINA`, **proposta** pelo espaço que sobra nos 64 KB): até 16 cartões
+  numa rotina, contando os de dentro; até 32 somando as rotinas de todos os Lumis; cartão dentro de
+  cartão até 3 níveis. O pior caso de todo o salvamento com tudo no teto (as duas obras cheias, as
+  aparências, os 14 Lumis, os turnos, os percursos e as rotinas) dá 65.246 de 65.536 bytes
+  (teste). Para crescer, é preciso tirar espaço de outro lugar ou mudar o formato.
+- **Uma execução** (`proximoPasso` e `aplicarPasso`, passo a passo, sem criar nada no laço do
+  quadro): olha no máximo `CARTOES_POR_EXECUCAO` (200) cartões; passando disso, para com "A rotina
+  passou de 200 cartões e parou. Confira se um Enquanto um dia termina e se os Repetir não estão
+  grandes demais.". Como o colhido já está na mochila desde o Colher, parar no meio (erro,
+  "Parar" ou a página fechando) nunca perde nada.
+- **No mundo** (`RotinaDosLumis`, montado na cena): um Lumi de cada vez (os outros esperam na
+  fila) aparece um pouco acima do primeiro canteiro, com o GLB da espécie na escala 0,5, e faz os
+  passos: `andar` voando, `trabalhar` em cada Regar, Colher e Guardar tudo, `parado` no Esperar e
+  `feliz` no fim, antes de sumir. O ritmo (`RITMO_DA_ROTINA`, **proposta**): voo a 2 m/s, 0,9 m
+  acima da terra do canteiro e 0,1 m acima do topo da geladeira, 1,2 s de trabalho e 1,6 s de festa.
+  Cada passo vale no salvamento na hora em que termina. Com o jogo parado (menu, painel), o Lumi
+  espera. O Lumi atravessa as paredes para chegar à geladeira.
+- **O aviso no HUD:** "Rotina do Quindim: regando o canteiro 2" com "Parar", no alto à direita
+  (abaixo do relógio; no celular a 154 px do topo, longe do direcional). No fim, o Zappy diz "A
+  rotina do Quindim terminou." ou "A rotina do Quindim parou no meio. O motivo está no painel
+  Rotina.".
+- **Testar:** confere a rotina e faz uma prévia no mesmo instante. Se ela pararia no meio, o
+  motivo fica no painel ("No teste, a rotina pararia: ...") e o Lumi não sai. Se vai até o fim, o
+  painel fecha e o Lumi faz a rotina de verdade (rega e colhe a horta dela). Não precisa guardar
+  antes.
+- **Guardar:** a rotina vai para o salvamento ("Rotina guardada. O Lumi faz sozinho quando o dia
+  nascer."), sem os casos vazios do Escolha. "Apagar a rotina" esquece a guardada.
+- **A última vez:** o painel mostra como foi a última vez de cada Lumi nesta sessão (o que ele fez,
+  passo a passo, e o motivo se parou), aberta quando parou no meio.
+- **Fica para depois (proposta):** o "jeito próprio" de cada Lumi da proposta ("um é rápido, outro
+  carrega muito, outro brilha à noite") ainda não muda a rotina; todos voam e trabalham no mesmo
+  ritmo. Os lugares são só a horta e a geladeira da ilha central.
+- **Moedas:** nada disto paga moedas.
 
 ## 9. Moedas e prêmios
 
@@ -2303,6 +2396,9 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Passo do tempo livre | 5 min | `limites.ts`, `LIMITE_DIARIO_PASSO_MINUTOS` |
 | Perfis por leitura do cartão dos pais | 20 | `arquipelago-contracts/src/api.ts`, `PERFIS_DA_FAMILIA_MAXIMO` |
 | Nome, ilha e cor de cada Lumi no álbum | 14 espécies (§6.17.1) | `arquipelago/src/sistemas/album.ts`, `ESPECIES_DE_LUMI` |
+| Tetos da rotina dos Lumis | 16 por rotina, 32 somando, 3 níveis (§8.2) | `arquipelago-contracts/src/rotinas.ts`, `LIMITES_DA_ROTINA` |
+| Cartões olhados numa execução | 200 | `arquipelago/src/sistemas/rotina.ts`, `CARTOES_POR_EXECUCAO` |
+| Ritmo do Lumi na rotina | voo 2 m/s, trabalho 1,2 s, festa 1,6 s | `rotina.ts`, `RITMO_DA_ROTINA` |
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |

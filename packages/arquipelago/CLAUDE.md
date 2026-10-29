@@ -281,6 +281,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Caderno dos Lumis (28/10/2026)
 
+- O botão "Montar a rotina de um Lumi" do caderno abre o painel da rotina (fase2-07, abaixo).
 - Regra pura em `src/sistemas/caderno-dos-lumis.ts` (`secoesDoCaderno`, `ondeAprender`,
   `lerCartas`, `motivoDoCadernoFechado`); loja à parte em `src/estado/cartas.ts`
   (`lojaDasCartas(loja, plataforma)`, uma por montagem via WeakMap, como a dos desafios) e o painel
@@ -594,6 +595,33 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em
   cada uma; `tests/olhos-dos-personagens.test.ts` confere todos os GLBs de personagens e bichos.
 
+## A rotina dos Lumis (fase2-07, 29/10/2026)
+
+- Contrato: `arquipelago-contracts/src/rotinas.ts` (o formato curto dos cartões: `c`, `a`, `n`,
+  `se`, `d`, `casos`; `LIMITES_DA_ROTINA`) e o salvamento V10 (`rotinas`, uma por Lumi preso).
+- Regras puras em `sistemas/rotina.ts`: `validarRotina` (começa com um Quando, os de controle na
+  mão pela leitura de `GET /cartas`, `cartasNaMao`), `guardarRotina`, a montagem do rascunho
+  (`Alvo`, `porCartao`, `tirarCartao`, `moverCartao`, `mudarCartao`, `alvoExiste`) e o intérprete
+  (`comecarExecucao` cria a pilha uma vez; `proximoPasso` devolve sempre `e.passo` e não cria nada;
+  `aplicarPasso` usa `regar` e `colher` de `horta.ts` e `guardarNaGeladeira`; o colhido vai para
+  a mochila na hora, e a `carga` só lembra o que levar à geladeira, então parar no meio não perde
+  nada). `rodarRotina` roda inteira (testes e a prévia do "Testar").
+- Loja à parte em `estado/rotina.ts` (`lojaDaRotina`: o Lumi escolhido, a fila, o que ele faz agora
+  e a última vez; `abrirRotina`). Painel `interface/rotina.tsx` (`PAINEL_DA_ROTINA`), aberto pelo
+  caderno ("Montar a rotina de um Lumi") e perto de um Lumi da Vila ("Ensinar a rotina", de fundo,
+  em `mundo/borroes-da-vila.tsx`); o aviso `RotinaAndando` fica no HUD, no alto à direita (no
+  celular, 154 px do topo).
+- No mundo: `mundo/rotina-dos-lumis.tsx` (`RotinaDosLumis`, na `Cena`): a virada de
+  `ambiente.noite` põe na fila as rotinas daquele Quando (`quandoDaVirada`, `rotinasDoQuando`);
+  um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
+  `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
+  de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
+- ⚠️ O pior caso do salvamento fica a 290 bytes do teto de 64 KB com as rotinas no teto
+  (`tests/salvamento-v10.test.ts`): campo novo no salvamento precisa achar espaço antes.
+- Regras e textos: `docs/arquipelago-regras.md` §8.2. Testes: `tests/rotina.test.ts`; navegador:
+  `playground/verificar-rotina-browser.ts` (`?lumis=quindim:1&cartas=todas`, compilar para Node no
+  Windows).
+
 ## Diário e pegadas (28/10/2026, Fase 1)
 
 - Regras puras em `sistemas/diario.ts` (páginas da Íris e a coleção do Bosque, derivadas do
@@ -629,10 +657,10 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 
 ## Salvamento e tempo
 
-- `SalvamentoV9` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
+- `SalvamentoV10` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
   e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue; `migrarDaV5`: a
-  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso).
+  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina).
   Gravar aceita a versão de
   uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta atual: só a
   primeira gravação dela fica, as seguintes falham até recarregar.

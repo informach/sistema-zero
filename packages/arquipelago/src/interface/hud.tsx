@@ -29,6 +29,7 @@ import { PainelDaMare } from './mare'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { PainelDaBancada } from './receitas'
+import { PainelDaRotina, RotinaAndando } from './rotina'
 import { ControlesDeToque } from './toque'
 import { PainelDoTurno } from './turno'
 
@@ -549,6 +550,7 @@ export function Hud() {
         </button>
       </div>
       <Cronometro />
+      <RotinaAndando />
       <Dica />
       <ModosDoJogo />
       {construindo ? (
@@ -571,6 +573,7 @@ export function Hud() {
       <PainelDoTurno />
       <PainelDoBicho />
       <CadernoDosLumis />
+      <PainelDaRotina />
       <PainelDoObjeto />
       <Diario />
       <Album />

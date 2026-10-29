@@ -5,6 +5,7 @@ import {
   migrarDaV6,
   migrarDaV7,
   migrarDaV8,
+  migrarDaV9,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV6,
@@ -16,7 +17,14 @@ const AGORA = new Date('2026-10-29T12:00:00Z')
 
 /** Uma V6 com a Capi já amiga, um bicho adotado e uma geladeira com aparência. */
 function v6(): SalvamentoV6 {
-  const { versao: _, moradores, turnos: _t, lumis: _l, ...resto } = criarSalvamentoInicial(AGORA)
+  const {
+    versao: _,
+    moradores,
+    turnos: _t,
+    lumis: _l,
+    rotinas: _r,
+    ...resto
+  } = criarSalvamentoInicial(AGORA)
   return SalvamentoV6Schema.parse({
     ...resto,
     versao: 6,
@@ -43,7 +51,7 @@ test('a V6 migra para a V7 sem perder nada, com o Bento ainda sem conhecer a cri
     versao: 7,
     moradores: { ...antiga.moradores, bento: MORADOR_NOVO },
   })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV8(migrarDaV7(nova)))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV9(migrarDaV8(migrarDaV7(nova))))
   expect(SalvamentoV7Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
 })
@@ -71,7 +79,7 @@ test('a V7 guarda a amizade e o pedido do Bento e recusa o que sai da régua', (
       },
     },
   }
-  expect(migrarSalvamento(amigo)).toEqual(migrarDaV8(migrarDaV7(amigo)))
+  expect(migrarSalvamento(amigo)).toEqual(migrarDaV9(migrarDaV8(migrarDaV7(amigo))))
   const bento = amigo.moradores.bento
   for (const errado of [
     { ...bento, amizade: 501 },

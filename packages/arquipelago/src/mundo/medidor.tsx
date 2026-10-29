@@ -74,6 +74,8 @@ export interface MedidaDoDesenho {
   /** Os borrões à vista (com onde estão), os Lumis da Vila e se a lanterna está na mão (fase2-06). */
   borroes: { id: string; x: number; z: number }[]
   lumisDaVila: string[]
+  /** O Lumi fazendo a rotina na horta (fase2-07), com onde está, ou `null`. */
+  lumiDaRotina: { lumi: string; x: number; y: number; z: number } | null
   /** Onde está a lanterna acesa na mão (no mundo), ou `null`. */
   lanternaNaMao: { x: number; y: number; z: number } | null
 }
@@ -110,16 +112,19 @@ function medirBorroes(raiz: Object3D) {
   const borroes: MedidaDoDesenho['borroes'] = []
   const lumisDaVila: string[] = []
   let lanternaNaMao: MedidaDoDesenho['lanternaNaMao'] = null
+  let lumiDaRotina: MedidaDoDesenho['lumiDaRotina'] = null
   raiz.traverse((o) => {
     if (/^borrao-\d+:\d+$/.test(o.name) && o.visible)
       borroes.push({ id: o.name.slice(7), x: o.position.x, z: o.position.z })
     else if (o.name.startsWith('lumi-da-vila-')) lumisDaVila.push(o.name.slice(13))
+    else if (o.name.startsWith('lumi-da-rotina-'))
+      lumiDaRotina = { lumi: o.name.slice(15), x: o.position.x, y: o.position.y, z: o.position.z }
     else if (o.name === 'lanterna-na-mao' && o.visible) {
       const p = o.getWorldPosition(new Vector3())
       lanternaNaMao = { x: p.x, y: p.y, z: p.z }
     }
   })
-  return { borroes, lumisDaVila, lanternaNaMao }
+  return { borroes, lumisDaVila, lanternaNaMao, lumiDaRotina }
 }
 
 function contarGeometrias(raiz: Object3D): number {
