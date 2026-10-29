@@ -9,6 +9,7 @@ import {
   ConflitoDeSalvamentoSchema,
   type CurriculoDeBlocos,
   criarSalvamentoInicial,
+  NINHOS_DO_VALE,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
@@ -231,7 +232,7 @@ describe('salvamento', () => {
     })
     if (!lido.salvamento) throw new Error('A gravação V10 não devolveu o salvamento')
     const atual = {
-      ...lido.salvamento,
+      ...lido.salvamento!,
       recife: { bau: true, pagina: true, tesouro: true, corais: 0 },
     }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -259,8 +260,8 @@ describe('salvamento', () => {
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
     expect(lido.salvamento?.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [] })
     const atual = {
-      ...lido.salvamento,
-      vale: { pegadas: true, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'] },
+      ...lido.salvamento!,
+      vale: { pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE] },
     }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: lido.revisao,
@@ -288,7 +289,7 @@ describe('salvamento', () => {
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
     expect(lido.salvamento?.versao).toBe(13)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
-    const atual = { ...lido.salvamento, recife: { ...v12.recife, corais: 15 } }
+    const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: lido.revisao,
       salvamento: atual,

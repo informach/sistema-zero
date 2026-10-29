@@ -89,17 +89,23 @@ function Coral({
     colorido.visible = replantado
     cinza.visible = !replantado
   })
+  // Somente leitura (o suporte olhando) não grava: sem o rótulo, a fala não promete um coral.
+  const podeReplantar = () => {
+    const s = loja.getState()
+    return (
+      troca.opacidade >= 0.99 &&
+      !s.acesso.somenteLeitura &&
+      !coralReplantado(s.salvamento.recife.corais, i)
+    )
+  }
   useInterativo(`recife:coral-${i}`, {
     x: noMundo.x,
     z: noMundo.z,
     raio: CORAIS.alcance,
-    rotulo: () =>
-      troca.opacidade < 0.99 || coralReplantado(loja.getState().salvamento.recife.corais, i)
-        ? null
-        : rotuloDoCoral(i),
+    rotulo: () => (podeReplantar() ? rotuloDoCoral(i) : null),
     agir() {
       const s = loja.getState()
-      if (troca.opacidade < 0.99 || coralReplantado(s.salvamento.recife.corais, i)) return
+      if (!podeReplantar()) return
       const novo = replantarCoral(s.salvamento, i)
       s.mudar(() => novo)
       s.dizer(falaDoReplantio(i, novo.recife.corais))
