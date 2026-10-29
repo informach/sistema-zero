@@ -39,7 +39,10 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV8` estrito (29/10/2026, fase2-03: a V7 mais `turnos`, um por balcão
+- `salvamento.ts`: `SalvamentoV9` estrito (29/10/2026, fase2-06: a V8 mais `lumis`, quantos Lumis
+  de cada espécie ela já prendeu com a lanterna, de 1 a 999, com a lista inteira `LUMIS` (as 14
+  espécies das sete famílias) para as ilhas seguintes não pedirem versão nova; `migrarDaV8` começa
+  sem nenhum; testes em `tests/salvamento-v9.test.ts`). A V8 é a V7 mais `turnos`, um por balcão
   de `POSTOS_DA_VILA` (padaria, sorveteria, sucos) no `TurnoSchema`: `pagoEm`, `melhor` de 1 a 3 e
   `vezes`; `migrarDaV7` começa sem nenhum; testes em `tests/salvamento-v8.test.ts`). A V7 é a V6
   mais `moradores.bento`, no
@@ -51,7 +54,7 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   mais `presenteDosBichosEntregue`; a V4 é a V3
   mais `construcao` e `projetos`, 28/10/2026, o
   modo construção; a V3 é a V2 mais `moradores.capi` e `bichos`; a V2 é a V1 mais `percursos`;
-  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV7`;
+  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV8`;
   `SalvamentoSchema` aceita as anteriores e já devolve migradas; uma aba antiga não lê a resposta
   atual). A migração da V4 preserva o progresso e inicia a marca do presente como `false`.
   Os schemas V1 a V4 continuam imutáveis; os testes `salvamento-v5.test.ts` conferem a cadeia.

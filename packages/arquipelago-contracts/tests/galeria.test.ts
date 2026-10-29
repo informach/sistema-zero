@@ -10,6 +10,7 @@ import {
   migrarDaV5,
   migrarDaV6,
   migrarDaV7,
+  migrarDaV8,
   migrarSalvamento,
   OBJETOS_DA_CASA,
   PRECO_MAXIMO_DA_GALERIA,
@@ -87,7 +88,13 @@ describe('salvamento V6: as aparências guardadas', () => {
   const ganho = AGORA.toISOString()
 
   test('a V5 migra com a aparência em uso como a única guardada', () => {
-    const { versao: _, projetos: __, turnos: _t, ...resto } = criarSalvamentoInicial(AGORA)
+    const {
+      versao: _,
+      projetos: __,
+      turnos: _t,
+      lumis: _l,
+      ...resto
+    } = criarSalvamentoInicial(AGORA)
     const v5: SalvamentoV5 = {
       ...resto,
       versao: 5,
@@ -101,7 +108,7 @@ describe('salvamento V6: as aparências guardadas', () => {
     expect(v6.versao).toBe(6)
     expect(v6.projetos.geladeira?.aparencias).toEqual([{ origem: 'pinta', id: 'c1' }])
     expect(v6.projetos.forno?.aparencias).toEqual([])
-    expect(migrarSalvamento(v5)).toEqual(migrarDaV7(migrarDaV6(v6)))
+    expect(migrarSalvamento(v5)).toEqual(migrarDaV8(migrarDaV7(migrarDaV6(v6))))
   })
 
   test('a aparência em uso fica entre as guardadas, sem repetir', () => {
