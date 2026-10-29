@@ -224,6 +224,20 @@ export interface PontoDaPonte {
 }
 
 /** A ponte sai da praia da sua ilha e chega na borda da ilha do anel, num arco suave. */
+/** Quanto da ponte fechada já existe (o pedaço do lado da sua ilha, com a placa no fim). */
+export const TRECHO_QUEBRADO = 0.25
+
+/**
+ * Quanto da ponte está montado: fechada, o trecho quebrado; abrindo, ela cresce do fim do trecho
+ * quebrado até a ilha conforme a `chegada` (0 a 1), sem sumir o que já estava lá. As tábuas e o
+ * chão que segura o corpo seguem a mesma conta, então quem está em cima não cai no meio da montagem.
+ */
+export function fracaoMontada(inteira: boolean, chegada: number): number {
+  if (!inteira) return TRECHO_QUEBRADO
+  const c = Math.min(1, Math.max(0, chegada))
+  return TRECHO_QUEBRADO + (1 - TRECHO_QUEBRADO) * c
+}
+
 export function trajetoDaPonte(ilha: Ilha, pedacos = 24): PontoDaPonte[] {
   const a = ((ilha.angulo ?? 0) * Math.PI) / 180
   const dx = Math.cos(a)

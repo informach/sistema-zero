@@ -77,6 +77,11 @@ Arquivo: `arquipelago/src/mundo/medidas.ts`.
   (`DURACAO_DA_CHEGADA_MS = 4500`, em `arquipelago/src/mundo/anel.tsx`). O Zappy avisa: "A ponte
   para o ... ficou pronta". Essa chegada aparece uma vez só. A ilha entra em
   `pontesVistas` no salvamento.
+  - Fechada, a ponte tem só o primeiro quarto, do lado da sua ilha (`TRECHO_QUEBRADO = 0,25`,
+    `mundo/medidas.ts`), com a placa no fim. Ao abrir, ela cresce do fim desse trecho até a ilha
+    (`fracaoMontada`), e o chão que segura o corpo acompanha as tábuas: quem está em cima do
+    trecho quebrado continua de pé durante a montagem (antes, o chão da ponte sumia nos 4,5 s e a
+    criança caía na água). Os corrimãos entram quando ela termina.
 - **Ilha aberta hoje:** chegar perto mostra a ação "Olhar em volta". O Zappy explica que os
   moradores e os bichos chegam numa próxima fase. No Bosque, que já tem a Capi (seção 6.15), essa
   ação não aparece (`ILHAS_VIVAS` em `arquipelago/src/mundo/anel.tsx`).

@@ -42,6 +42,7 @@ import { useInterativo } from './interativos'
 import {
   ALTURA_DA_TERRA,
   apoiosDaIlhaLeve,
+  fracaoMontada,
   giroDaIlha,
   ilhasEmVolta,
   RAIO_DA_ILHA_DO_ANEL,
@@ -54,7 +55,6 @@ import { PlacaDaPonte } from './placa-da-ponte'
 import { QuadroDasCores } from './quadro-das-cores'
 import { VilaViva } from './vila-viva'
 
-const TRECHO_QUEBRADO = 0.25
 const DURACAO_DA_CHEGADA_MS = 4500
 
 /** Cor da ilha: cinza antes do posto; a cor volta conforme `cor` (0 a 1). */
@@ -376,10 +376,12 @@ function Ponte({
   const tabuas = useMemo(() => tabuasDaPonte(pontos), [pontos])
   // A corda da ponte inteira segura o corpo (uma parede baixa sob cada corda, só para o corpo).
   const corrimaos = useMemo(() => corrimaosDaPonte(ilha.id, postesDaPonte(tabuas)), [ilha, tabuas])
-  const limite = Math.floor(tabuas.length * (inteira ? tabuasVisiveis : TRECHO_QUEBRADO))
+  const montada = fracaoMontada(inteira, tabuasVisiveis)
+  const limite = Math.floor(tabuas.length * montada)
+  // O chão que segura o corpo acompanha as tábuas (só muda quando um trecho inteiro entra).
+  const ate = Math.floor((pontos.length - 1) * montada)
 
   const trechos = useMemo(() => {
-    const ate = inteira ? pontos.length - 1 : Math.floor((pontos.length - 1) * TRECHO_QUEBRADO)
     const lista: { pos: [number, number, number]; rot: [number, number, number]; meio: number }[] =
       []
     for (let i = 0; i < ate; i++) {
@@ -398,21 +400,19 @@ function Ponte({
       })
     }
     return lista
-  }, [pontos, inteira])
+  }, [pontos, ate])
 
   return (
     <>
       <ComReserva reserva={<TabuasDeAntes tabuas={tabuas} limite={limite} inteira={inteira} />}>
         <PonteDoModelo tabuas={tabuas} limite={limite} inteira={inteira} />
       </ComReserva>
-      {inteira && tabuasVisiveis < 1 ? null : (
-        <RigidBody type="fixed" colliders={false}>
-          {trechos.map((t, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: os trechos seguem a ordem do trajeto.
-            <CuboidCollider key={i} args={[1.1, 0.08, t.meio]} position={t.pos} rotation={t.rot} />
-          ))}
-        </RigidBody>
-      )}
+      <RigidBody type="fixed" colliders={false}>
+        {trechos.map((t, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: os trechos seguem a ordem do trajeto.
+          <CuboidCollider key={i} args={[1.1, 0.08, t.meio]} position={t.pos} rotation={t.rot} />
+        ))}
+      </RigidBody>
       {inteira && tabuasVisiveis >= 1 && <Colisores lista={corrimaos} />}
       {!inteira && tabuas[limite - 1] && <PlacaDaPonte ilha={ilha} tabua={tabuas[limite - 1]!} />}
     </>
