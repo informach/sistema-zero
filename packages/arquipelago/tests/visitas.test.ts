@@ -110,14 +110,14 @@ describe('as leituras do serviço', () => {
 })
 
 describe('a visita', () => {
-  const visita: Visita = {
+  const visita = {
     perfilId: ANA,
     nome: 'Ana',
     obra: obraDeExemplo(),
     horta: [],
     completos: ['geladeira'],
     quarto: { theme: 'espaco', placedItems: [{ itemId: 'beliche', x: 0, y: 1 }], pet: null },
-  }
+  } satisfies Visita
 
   test('o mundo desenha a casa, a horta e os objetos do irmão', () => {
     const salvamento = criarSalvamentoInicial(AGORA)

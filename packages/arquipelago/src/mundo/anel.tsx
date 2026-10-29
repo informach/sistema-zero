@@ -55,6 +55,7 @@ import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { PlacaDaPonte } from './placa-da-ponte'
 import { QuadroDasCores } from './quadro-das-cores'
 import { RecifeVivo } from './recife-vivo'
+import { ValeVivo } from './vale-vivo'
 import { VilaViva } from './vila-viva'
 
 const DURACAO_DA_CHEGADA_MS = 4500
@@ -235,6 +236,7 @@ const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
   'vila-doce': VilaViva,
   recife: RecifeVivo,
   pico: PicoVivo,
+  'vale-dos-dinos': ValeVivo,
 }
 
 function IlhaDoAnel({

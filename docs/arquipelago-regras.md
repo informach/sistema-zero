@@ -2822,3 +2822,32 @@ Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026
   `playground/verificar-pico-browser.ts`, com `?posicao=5`, computador e celular emulado: chegada
   pela ponte, conversa com o Floco, de pé no começo da trilha e no platô do cume, e a ilha que solta
   ao sair e volta.
+
+## Vale dos Dinos completo e apresentação da Jade (fase4-01, 29/10/2026)
+
+- `vale-dos-dinos.glb` entra em `ILHAS_COMPLETAS` e `ValeVivo` em `ILHAS_VIVAS`. Usa os 62
+  colisores existentes, prepara antes da troca e libera os recursos ao sair, como o Pico.
+  O Quadro das Cores usa a montagem compartilhada perto da chegada.
+- A borda inclinada do terreno ultrapassa os 14,4 m da ilha leve. A maior distância medida
+  nos vértices é 15,614 m, na saia submersa. `RAIO_VISITAVEL_DO_VALE` vale 16 m, cobrindo todo
+  o terreno com a folga de 0,35 m do corpo. É apenas a espera pelo carregamento dos colisores;
+  não muda a versão leve nem cria um piso no mar. O teste verifica todos os vértices do terreno
+  e as bordas dos colisores simples, não só seus centros.
+- Proposta de posição: Jade fica na âncora `morador`, no chão diante do observatório, voltada
+  à `chegada`. A torre é fechada e não há subida à varanda nesta fase; a conversa deve ser
+  alcançável pelo caminho da criança. Os degraus existentes continuam sustentando o corpo.
+- `JADE_NO_VALE`, em `sistemas/jade.ts`: raio 0,41 m e altura 1,5 m, medidos no material `penas`
+  do `jade.glb` (x até ±0,405827, topo y 1,5). Asas, chapéu e lupa não ampliam o cilindro.
+  `col-morador-jade` segura só o corpo, não a câmera. A câmera da conversa mira y 1,15 dos pés,
+  centro dos olhos de material `iris` (y 1,045 a 1,255). Os clipes `parado`, `andar`, `falar`,
+  `acenar` e `feliz` existem; as três malhas dos olhos têm `piscar` e `feliz`.
+- Olhar a 7 m, alcance da conversa 2,2 m, aceno a cada 45 segundos e rapidez de giro 3 seguem
+  a Maré. O morador genérico mantém as animações e o respeito à preferência de menos movimento.
+- Apresentação proposta: “Sou Jade. Estudo os fósseis do Vale dos Dinos.” e “Minha lupa ajuda a
+  olhar os detalhes dos fósseis.” Base: a coruja dos fósseis e a lupa da arte. O painel genérico
+  mostra uma fala de cada vez. Sem amizade, presentes, pedidos ou mudanças no salvamento V10.
+  Pegadas, escavação e ninhos interativos são da fase4-02; filhote e museu, da fase4-03.
+- Testes da integração: `tests/vale.test.ts`. Os testes de colisores e faces coplanares já
+  incluem o Vale. Navegador: `playground/verificar-vale-browser.ts`, com `?posicao=6`, computador
+  e celular emulado. Plano e decisões em `docs/plans/2026-10-29-arquipelago-vale.md`.
+  Nenhuma arte foi alterada e não foi necessário solicitar modelo ou âncora ao Blender.

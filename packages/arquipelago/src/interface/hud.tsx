@@ -25,6 +25,7 @@ import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
 import { FogueiraDaFesta } from './fogueira-da-festa'
 import { AtalhoDaFoto, ModoFoto } from './foto'
+import { PainelDaJade } from './jade'
 import { VisorDaLuneta } from './luneta'
 import { PainelDaMare, PainelDoFloco } from './mare'
 import { PainelDoObjeto } from './projeto-azul'
@@ -625,6 +626,7 @@ export function Hud() {
       <PainelDoBento />
       <PainelDaMare />
       <PainelDoFloco />
+      <PainelDaJade />
       <PainelDaBancada />
       <FogueiraDaFesta />
       <PainelDoTurno />

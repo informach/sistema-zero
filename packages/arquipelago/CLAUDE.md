@@ -779,6 +779,20 @@ altura 1,49, cabeça 1,19, alcance 2,6). A apresentação usa o painel genérico
 novo. Percurso, trenó e caverna são da fase3-07; iglu, festival e banda, da fase3-08. Testes:
 `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts` (`?posicao=5`).
 
+## O Vale dos Dinos e a Jade (fase4-01, 29/10/2026)
+
+O Vale está em `ILHAS_COMPLETAS` e `ValeVivo` em `ILHAS_VIVAS`, com os 62 colisores do GLB
+existente e o mesmo ciclo do Pico. `RAIO_VISITAVEL_DO_VALE` espera o chão até 16 m: o terreno
+inclinado passa dos 14,4 m da ilha leve e sua saia chega a 15,614 m. Não cria chão fora da ilha.
+Jade usa `MoradorDaIlha`, na âncora `morador` do chão, olhando para `chegada` (`mundo/vale.ts`).
+A varanda não tem acesso nesta fase e a torre é fechada. Medidas do `jade.glb` em
+`sistemas/jade.ts`: raio 0,41, altura 1,5, cabeça 1,15, alcance 2,2. Só o corpo colide.
+As duas falas usam `PainelDeApresentacao`, sem amizade, pedidos, presentes ou mudança da V10.
+Escavar, ninhos, filhote e museu interativos continuam nas fases4-02 e 4-03.
+Testes: `tests/vale.test.ts`, `tests/colisores-do-vale.test.ts` e o Vale já incluído em
+`tests/faces-coplanares.test.ts`. Navegador: `playground/verificar-vale-browser.ts`, `?posicao=6`;
+prints em `docs/qa/2026-10-29-vale`. Nenhum GLB ou gerador foi alterado.
+
 ## Rodar
 
 - `bun run dev`: playground em `http://127.0.0.1:4520` (parâmetros na URL: `posicao`, `publico`,

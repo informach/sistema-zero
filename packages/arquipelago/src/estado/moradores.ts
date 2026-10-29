@@ -10,9 +10,11 @@ export const PAINEL_DO_BENTO = 'bento'
 export const PAINEL_DA_MARE = 'mare'
 /** A apresentação do Floco no palco do Pico Gelado (fase3-06). */
 export const PAINEL_DO_FLOCO = 'floco'
+/** A apresentação da Jade no Vale dos Dinos (fase4-01). */
+export const PAINEL_DA_JADE = 'jade'
 
 /** Quem conversa: cada morador tem a loja da conversa dele (a comemoração de um não mexe no outro). */
-export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco'
+export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade'
 
 /**
  * A conversa com um morador (uma loja por montagem e por morador, como a dos desafios). O painel

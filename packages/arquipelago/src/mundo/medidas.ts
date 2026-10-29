@@ -35,9 +35,12 @@ export const RAIO_DO_ANEL = 82
 export const RAIO_DA_ILHA_DO_ANEL = 13
 /** Boca da caverna (21,3), aproximação por fora (2) e folga do corpo, sem criar chão no mar. */
 export const RAIO_VISITAVEL_DO_RECIFE = 24
+/** col-terreno do Vale chega a 15,614 m; 16 inclui a borda e o raio de 0,35 m do corpo. */
+export const RAIO_VISITAVEL_DO_VALE = 16
 
 /** Até onde esperar os colisores ao abrir o jogo, incluindo a caverna fora da ilha leve. */
 export function raioDaEsperaDaIlha(ilha: Ilha, x: number, z: number): number {
+  if (ilha.id === 'vale-dos-dinos') return RAIO_VISITAVEL_DO_VALE
   return ilha.id === 'recife' ? RAIO_VISITAVEL_DO_RECIFE : raioDoChaoDaIlha(ilha, x, z)
 }
 
