@@ -68,13 +68,47 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
+**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+
+## Parte 3. O farol acende uma vez só
+
+**Clipe:** `video-uma-vez`
+
+**Na tela:** Projeto decisao. Ao vivo: partida com a chave, farol aceso, andar para trás pelo cais e voltar; mostrar a luz apagando e acendendo de novo. Meme de 2 a 3 segundos no apito final: Zappy de juiz apitando e a bola entrando no gol depois, com o placar parado. Montar Se não ganhou: Se novo num espaço vazio ao lado do encontro com farol, a pergunta x maior que zero na lixeira, não no lugar da pergunta, valor da variável ganhou dentro do não, o Se temChave arrastado para o então do Se novo e o Se novo no fazer do encontro. Testar de novo: ao voltar, a luz continua acesa e o feixe segue girando.
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa que todo jogo precisa cuidar. Execute uma partida, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
+
+[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. É que cada vez que o personagem encosta no farol, o encontro roda outra vez e manda acender de novo.
+
+[curious] Sabe o apito final de um jogo de futebol? Depois dele, chutar a bola no gol não vale mais gol, porque a partida acabou. No seu jogo, o apito final é ganhou ficar verdadeiro: a partida já foi vencida, e o farol não precisa responder outra vez.
+
+[engaging, energetic, conversational voice] Por isso, o encontro vai fazer uma pergunta antes de tudo: a partida ainda não foi ganha? A palavra não vira a pergunta ao contrário. Não ganhou quer dizer que ganhou ainda está falso.
+
+[confident, clear, unhurried voice] Nos blocos, em Quando acontecer, deixe à vista o encontro com farol e um espaço vazio ao lado dele, fora do fazer. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. Abra Programação, Lógica e Se, pegue Se e solte nesse espaço vazio. Repare: o Se chega com a pergunta x maior que zero. Arraste essa comparação pelo sinal de maior até a lixeira.
+
+[confident, clear, unhurried voice] Em Programação, Lógica e Se, pegue não e encaixe no lugar vazio da pergunta. Depois, em Programação, Valores, pegue valor da variável e encaixe no espaço do não. Clique em x e escolha ganhou. Agora o Se novo pergunta: não ganhou?
+
+[confident, clear, unhurried voice] Volte ao encontro com farol. Pegue o Se temChave pela palavra Se e arraste até o então do Se novo. Tudo o que estava dentro dele vai junto. Depois pegue o Se novo pela palavra Se e encaixe dentro do fazer do encontro com farol, que ficou vazio.
+
+[interested, animated voice] Olha aqui: o encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere a chave.
+
+[upbeat, encouraging voice] Execute uma partida nova, pegue a chave e acenda o farol. Ande para trás pelo cais e volte. Olha só: a luz continua acesa, o feixe segue girando e o barco continua chegando. Numa partida nova, vá ao farol sem a chave: ele continua pedindo a chave.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+
+[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+```
+
 **Recado na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
 
-## Parte 3. Deixe o jogo com a sua cara
+## Parte 4. Deixe o jogo com a sua cara
 
 **Clipe:** `video-aparencia`
 
-**Na tela:** Projeto decisao. Antes de gravar, preparar duas combinações em perfis de teste (robo, lancha, chave-prateada, farol-colorido, ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira, costa-rochosa) e gravar 3 a 4 segundos de cada com o farol acendendo e o barco chegando. Depois, ao vivo: em Ao iniciar, abrir a lista do modelo de cada Criar o objeto e escolher pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha. Não mudar nome do objeto nem tamanho.
+**Na tela:** Projeto uma-vez. Antes de gravar, preparar duas combinações em perfis de teste (robo, lancha, chave-prateada, farol-colorido, ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira, costa-rochosa) e gravar 3 a 4 segundos de cada com o farol acendendo e o barco chegando. Depois, ao vivo: em Ao iniciar, abrir a lista do modelo de cada Criar o objeto e escolher pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha. Não mudar nome do objeto nem tamanho.
 
 **Fala para ElevenLabs:**
 
@@ -110,7 +144,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 **Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-## Parte 4. Escolha seu esconderijo e teste de verdade
+## Parte 5. Escolha seu esconderijo e teste de verdade
 
 **Clipe:** `video-personalizar`
 
@@ -132,7 +166,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 **Recado na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
-## Parte 5. Sua ilha está pronta
+## Parte 6. Sua ilha está pronta
 
 **Clipe:** `video-fecho`
 

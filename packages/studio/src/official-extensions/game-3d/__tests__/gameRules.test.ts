@@ -317,4 +317,29 @@ describe('Jogo 3D — peça de efeito do modelo fora da área de toque', () => {
     api.setPosition?.(heroi, 0.8, 0, 0)
     expect(api.hitAny?.(heroi, [farol])).toBe(true)
   })
+
+  it('montado o modelo, o cubo de reserva (do tamanho do lado maior) sai da área de toque', () => {
+    const { api } = boot()
+    const cena = api.createFullscreenScene?.('#000') as unknown
+    // O farol da Ilha: 5,3 de altura, 1,8 de largura. O cubo de reserva tem 5,3 de lado.
+    const farol = api.createBox?.(cena, { size: 5.3 }) as THREE.Mesh
+    const heroi = api.createBox?.(cena, { size: 1 }) as THREE.Mesh
+    for (const efeito of [false, true]) {
+      const modelo = new THREE.Group()
+      modelo.add(new THREE.Mesh(new THREE.BoxGeometry(1.8, 5.3, 1.8)))
+      if (efeito) {
+        const feixe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2))
+        feixe.userData = { szSemCaixa: true }
+        modelo.add(feixe)
+      }
+      farol.clear()
+      farol.add(modelo)
+      ;(farol.userData.sz as Record<string, unknown>).modelRoot = modelo
+      // Antes, a 2 de distância (dentro do cubo, fora da torre) já encostava: é o cais.
+      api.setPosition?.(heroi, 2, 0, 0)
+      expect(api.hitAny?.(heroi, [farol])).toBe(false)
+      api.setPosition?.(heroi, 1.3, 0, 0)
+      expect(api.hitAny?.(heroi, [farol])).toBe(true)
+    }
+  })
 })

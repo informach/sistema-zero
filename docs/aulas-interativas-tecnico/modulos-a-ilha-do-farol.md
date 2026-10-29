@@ -5,7 +5,7 @@ Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Au
 ## Fontes
 
 - `qa/ilha-do-farol-conteudo.ts`: fala integral, notas de tela e passos do caderno.
-- `qa/ilha-do-farol-projeto.ts`: dez projetos progressivos (com `aparencia`, a troca dos modelos); só IR de Programação e Jogo 3D. `ILHA_ESCOLHAS_DO_VIDEO` é a combinação dos exemplos da personalização.
+- `qa/ilha-do-farol-projeto.ts`: onze projetos progressivos (com `aparencia`, a troca dos modelos, e `uma-vez`, a guarda `Se não ganhou` em volta do `Se temChave`; os dois ficam com os últimos ids de exemplo, para os de antes não mudarem); só IR de Programação e Jogo 3D. `ILHA_ESCOLHAS_DO_VIDEO` é a combinação dos exemplos da personalização.
 - `docs/design/ilha-do-farol-blender/`: os modelos no Blender (cenários, faróis animados, barcos, chaves e personagens animados).
 - `qa/publicar-ilha-modelos.ts`: otimiza os GLBs do Blender, grava a biblioteca de modelos dos cursos (`packages/studio/src/core/course-models/`) e o `modelos.json` (sha, clipes, caixa).
 - `qa/ilha-do-farol-assets.ts`: as referências dos modelos no projeto (GLB mínimo + `libId`), com os nomes da Chave do Farol 2D.

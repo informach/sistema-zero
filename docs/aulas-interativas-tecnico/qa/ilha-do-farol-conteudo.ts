@@ -212,11 +212,31 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           verificar,
       },
       {
+        key: 'uma-vez',
+        title: 'O farol acende uma vez só',
+        kind: 'build',
+        screen:
+          'Projeto decisao. Ao vivo: partida com a chave, farol aceso, andar para trás pelo cais e voltar; mostrar a luz apagando e acendendo de novo. Meme de 2 a 3 segundos no apito final: Zappy de juiz apitando e a bola entrando no gol depois, com o placar parado. Montar Se não ganhou: Se novo num espaço vazio ao lado do encontro com farol, a pergunta x maior que zero na lixeira, não no lugar da pergunta, valor da variável ganhou dentro do não, o Se temChave arrastado para o então do Se novo e o Se novo no fazer do encontro. Testar de novo: ao voltar, a luz continua acesa e o feixe segue girando.',
+        steps: [
+          'Teste antes de montar: pegue a chave e acenda o farol. Ande para trás pelo cais e volte ao farol. Repare: a luz apaga e acende de novo.',
+          'Em Quando acontecer, deixe à vista o encontro com farol e um espaço vazio ao lado dele, fora do fazer.',
+          'Em Programação → Lógica e Se, pegue Se e solte nesse espaço vazio.',
+          'Arraste a pergunta x maior que zero do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio da pergunta.',
+          'Em Programação → Valores, pegue valor da variável e encaixe no espaço do não. Clique em x e escolha ganhou.',
+          'No encontro com farol, pegue o Se temChave pela palavra Se e arraste até o então do Se novo. Tudo o que está dentro dele vai junto.',
+          'Pegue o Se novo pela palavra Se e encaixe dentro do fazer do encontro com farol, que ficou vazio.',
+          'Reinicie. Pegue a chave, acenda o farol, ande para trás pelo cais e volte: a luz continua acesa e o feixe segue girando. Numa partida nova, vá ao farol sem a chave: ele continua pedindo a chave.',
+        ],
+        text:
+          '[engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa que todo jogo precisa cuidar. Execute uma partida, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol. [interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. É que cada vez que o personagem encosta no farol, o encontro roda outra vez e manda acender de novo. [curious] Sabe o apito final de um jogo de futebol? Depois dele, chutar a bola no gol não vale mais gol, porque a partida acabou. No seu jogo, o apito final é ganhou ficar verdadeiro: a partida já foi vencida, e o farol não precisa responder outra vez. [engaging, energetic, conversational voice] Por isso, o encontro vai fazer uma pergunta antes de tudo: a partida ainda não foi ganha? A palavra não vira a pergunta ao contrário. Não ganhou quer dizer que ganhou ainda está falso. [confident, clear, unhurried voice] Nos blocos, em Quando acontecer, deixe à vista o encontro com farol e um espaço vazio ao lado dele, fora do fazer. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. Abra Programação, Lógica e Se, pegue Se e solte nesse espaço vazio. Repare: o Se chega com a pergunta x maior que zero. Arraste essa comparação pelo sinal de maior até a lixeira. [confident, clear, unhurried voice] Em Programação, Lógica e Se, pegue não e encaixe no lugar vazio da pergunta. Depois, em Programação, Valores, pegue valor da variável e encaixe no espaço do não. Clique em x e escolha ganhou. Agora o Se novo pergunta: não ganhou? [confident, clear, unhurried voice] Volte ao encontro com farol. Pegue o Se temChave pela palavra Se e arraste até o então do Se novo. Tudo o que estava dentro dele vai junto. Depois pegue o Se novo pela palavra Se e encaixe dentro do fazer do encontro com farol, que ficou vazio. [interested, animated voice] Olha aqui: o encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere a chave. [upbeat, encouraging voice] Execute uma partida nova, pegue a chave e acenda o farol. Ande para trás pelo cais e volte. Olha só: a luz continua acesa, o feixe segue girando e o barco continua chegando. Numa partida nova, vá ao farol sem a chave: ele continua pedindo a chave. ' +
+          verificar,
+      },
+      {
         key: 'aparencia',
         title: 'Deixe o jogo com a sua cara',
         kind: 'build',
         screen:
-          'Projeto decisao. Antes de gravar, preparar duas combinações em perfis de teste (robo, lancha, chave-prateada, farol-colorido, ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira, costa-rochosa) e gravar 3 a 4 segundos de cada com o farol acendendo e o barco chegando. Depois, ao vivo: em Ao iniciar, abrir a lista do modelo de cada Criar o objeto e escolher pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha. Não mudar nome do objeto nem tamanho.',
+          'Projeto uma-vez. Antes de gravar, preparar duas combinações em perfis de teste (robo, lancha, chave-prateada, farol-colorido, ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira, costa-rochosa) e gravar 3 a 4 segundos de cada com o farol acendendo e o barco chegando. Depois, ao vivo: em Ao iniciar, abrir a lista do modelo de cada Criar o objeto e escolher pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha. Não mudar nome do objeto nem tamanho.',
         steps: [
           'Em Ao iniciar, deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique em aventureiro e escolha outro personagem da lista.',
           'Faça o mesmo em Criar o objeto barco, chave e farol: clique no nome do modelo e escolha outro.',

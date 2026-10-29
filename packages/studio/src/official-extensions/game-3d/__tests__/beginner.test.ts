@@ -144,6 +144,25 @@ describe('percurso básico do Jogo 3D', () => {
     // Uma caixa só (de z -1 a 7) barraria; com um pedaço por vez, o vão entre eles fica livre.
     expect(player.position.x).toBeGreaterThan(5)
   })
+  test('um modelo sólido barra pelo modelo, não pelo cubo de reserva que o envolve', () => {
+    const { api, fire } = loadRuntime({ realGeometry: true }),
+      world = call(api, 'createScene', 'tela'),
+      player = call(api, 'createBox', world, { size: 1 }),
+      // O cenário da Ilha: o cubo de reserva (140 de lado) envolve a ilha inteira e quem anda.
+      cenario = call(api, 'createBox', world, { size: 40 }),
+      pedra = call(api, 'createBox', world, { size: 2 })
+    world._dt = 1 / 60
+    cenario.add(pedra)
+    pedra.position.set(3, 0, 0)
+    cenario.userData.sz.modelRoot = pedra
+    call(api, 'setSolid', cenario)
+    fire('keydown', { code: 'ArrowRight', preventDefault() {} })
+    for (let i = 0; i < 120; i++) call(api, 'topDown', player, 4)
+    fire('keyup', { code: 'ArrowRight' })
+    // Com o cubo contando, quem anda começava "dentro de um sólido" e atravessava a pedra.
+    expect(player.position.x).toBeGreaterThan(1.4)
+    expect(player.position.x).toBeLessThanOrEqual(1.5)
+  })
   test('encontro direto dispara uma vez por contato e ignora elementos escondidos', () => {
     const { api } = loadRuntime({ realGeometry: true }),
       world = call(api, 'createScene', 'tela')

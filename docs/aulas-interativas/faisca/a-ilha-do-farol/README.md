@@ -6,7 +6,7 @@ Curso do posto **Faísca**, depois de **A Chave do Farol**. Três aulas em bloco
 | --- | --- | --- |
 | [Uma ilha com profundidade](ilha-aula-1.roteiro.md) | Ponto de vista: revelar a chave sem mover os objetos | Movimento nas quatro direções, parada e reinício |
 | [A chave está ao seu alcance](ilha-aula-2.roteiro.md) | X/Z no chão, Y na altura; contato em três dimensões | Posição da chave, coleta, memória e aviso |
-| [A luz volta ao farol](ilha-aula-3.roteiro.md) | Revisão e aplicação dos conceitos, sem repetir experiências do 2D | Resposta sem chave, vitória com chave (o farol acende com a animação do modelo), personalização com as variações e teste completo |
+| [A luz volta ao farol](ilha-aula-3.roteiro.md) | Revisão e aplicação dos conceitos, sem repetir experiências do 2D | Resposta sem chave, vitória com chave (o farol acende com a animação do modelo), a luz que acende uma vez só (guarda `Se não ganhou`), personalização com as variações e teste completo |
 
 Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e índice de edição. A fonte editorial é [ilha-do-farol-conteudo.ts](../../../aulas-interativas-tecnico/qa/ilha-do-farol-conteudo.ts). Não editar somente os derivados. Nesta versão a professora grava o master inteiro, sem substituições por Dedé/Debinha.
 

@@ -45,8 +45,16 @@ for (const f of readdirSync(runtime))
   }
 const scenario = process.argv[2] ?? 'correto'
 const positionScenario = scenario.startsWith('posicao-')
+// A parte uma-vez: a luz acende uma vez só (com a guarda) e o erro de antes (sem ela).
+const onceScenario = scenario === 'uma-vez' || scenario === 'sem-guarda'
 const p = montarProjetoIlha(
-    scenario === 'posicao-inalterada' ? 'movimento' : positionScenario ? 'posicao' : 'personalizar',
+    scenario === 'posicao-inalterada'
+      ? 'movimento'
+      : positionScenario
+        ? 'posicao'
+        : onceScenario
+          ? 'uma-vez'
+          : 'personalizar',
     // Outros modelos em todos os objetos: a mesma caixa por categoria, o mesmo jogo.
     scenario === 'personalizado' ? ILHA_ESCOLHAS_DO_VIDEO : {},
   ),
@@ -59,8 +67,9 @@ if (scenario === 'chave-alta')
 if (scenario === 'outra-posicao')
   js = js.replace(/setPosition\(chave, -3, 1, -2\)/, 'setPosition(chave, -7, 1, 3)')
 if (scenario === 'barco-lento') js = js.replace('4.5, 1.8)', '4.5, 0.03)')
+if (scenario === 'sem-guarda') js = js.replace('if (!ganhou) {', 'if (true) {')
 if (
-  !['correto', 'personalizado'].includes(scenario) &&
+  !['correto', 'personalizado', 'uma-vez'].includes(scenario) &&
   !positionScenario &&
   js === p.files['script.js']
 )
@@ -79,7 +88,9 @@ writeFileSync(
     runtimeInspection: true,
   }),
 )
-const objectives = ilhaChecks(positionScenario ? 'posicao' : 'personalizar').filter((c) =>
+const objectives = ilhaChecks(
+  positionScenario ? 'posicao' : onceScenario ? 'uma-vez' : 'personalizar',
+).filter((c) =>
   isExecutionRule(c.rule),
 )
 writeFileSync(
@@ -141,6 +152,8 @@ const expected: Record<string, boolean[]> = {
   'barco-lento': [true, true, true, true, true, true, false],
   'posicao-correta': [true, true, true, true, true, true],
   'posicao-inalterada': [true, true, true, true, false, false],
+  'uma-vez': [true, true, true, true, true, true, true],
+  'sem-guarda': [true, true, true, true, true, true, false],
 }
 if (JSON.stringify(verdicts.map((v) => v.passed)) !== JSON.stringify(expected[scenario]))
   throw Error('Os objetivos não distinguiram o cenário esperado: ' + scenario)

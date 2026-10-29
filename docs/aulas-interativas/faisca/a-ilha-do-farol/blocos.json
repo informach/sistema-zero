@@ -24,6 +24,7 @@
     "sz_js_var_assign",
     "sz_js_var_create",
     "sz_val_bool",
+    "sz_val_not",
     "sz_val_number",
     "sz_val_text",
     "sz_val_variable"

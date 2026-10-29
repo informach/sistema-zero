@@ -89,6 +89,16 @@ teclado", logo depois de "Andar só dentro da área".
   trechos curtos em volta da pedra estourava os 7,5 s da ida ao farol (agora são três curvas). O
   teto de retângulos de chão da ida 3D subiu para `MAX_WALKABLE_RECTS` (32) no core.
 - Testes: `game-3d/__tests__/beginner.test.ts` §sólido (parar, deslizar, sair, um pedaço por caixa).
+- ⚠️⚠️ **O cubo de reserva do modelo não conta (29/10/2026).** `createModelFile` nasce como um cubo
+  do tamanho do lado MAIOR e o `.glb` entra como filho; carregado, o cubo só perdia a tinta. Ele
+  seguia medido: a área de toque do farol da Ilha (5,3 de altura, 1,8 de largura) virou um cubo de
+  5,3 que cobria o cais, e o cubo do cenário (140) envolvia o personagem, que por começar "dentro
+  de um sólido" NUNCA era barrado pela pedra (o sólido acima estava desligado na prática, e os
+  testes não pegavam porque usavam cubo de reserva do tamanho do modelo). Hoje `isModelReserve`
+  (o nó com `sz.modelRoot`) tira a forma dele de `boxOf`, `expandWithoutEffects` e `solidParts`,
+  e `quietReserve` (`runtimeModelAssets.ts`) zera o `raycast` dele e das cópias: mira e clique
+  só no modelo. Sem modelo carregado, o cubo segue valendo inteiro. Testes com cubo MAIOR que o
+  modelo, provados por mutação: `gameRules.test.ts` (toque) e `beginner.test.ts` (sólido).
 
 ## O executor espera os modelos do Jogo 3D (28/10/2026)
 
