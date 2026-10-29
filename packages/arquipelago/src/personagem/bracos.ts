@@ -3,10 +3,10 @@ import { CIPO } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
 
 /**
- * As mãos na corda do cipó. As poses da plataforma (`Poses.glb`) não têm uma de segurar uma corda,
- * então, depois da pose de cada quadro, cada braço é dobrado por IK de dois ossos (braço e
- * antebraço) até o punho chegar ao ponto da pegada. Os ossos são os do Mixamo, com o nome que o
- * `GLTFLoader` deixa (sem os dois-pontos).
+ * As mãos na corda do cipó. O clipe "Corda" (o "Climbing A Rope" do Mixamo) segura uma corda na
+ * frente do rosto, e a do jogo passa ao lado dele; então, depois da pose de cada quadro, cada braço
+ * é dobrado por IK de dois ossos (braço e antebraço) até o punho chegar ao ponto da pegada. Os
+ * ossos são os do Mixamo, com o nome que o `GLTFLoader` deixa (sem os dois-pontos).
  *
  * O avatar é chibi: o ombro fica a 1,01 m do pé, do ombro ao punho são 0,36 m e a cabeça é grande
  * (vai de 1,28 m a 2,13 m, 0,98 m de largura, com o rosto 0,44 m à frente). Por isso as mãos
@@ -26,8 +26,11 @@ const OSSOS = {
  */
 export const CORDA_NO_CORPO = new Vector3(0.24, CORPO.doCentroAoPe + CIPO.maosAcimaDoCentro, 0.4)
 
-/** O corpo pende um pouco para trás no cipó (radianos), com os braços à frente. */
-export const INCLINACAO_NO_CIPO = 0.3
+/**
+ * O corpo pende para trás no cipó (radianos), além do que o clipe "Corda" já faz: nada, a pose do
+ * Mixamo (agarrada na corda, pernas cruzadas) já tem o corpo no jeito.
+ */
+export const INCLINACAO_NO_CIPO = 0
 
 /**
  * Onde cada punho segura: um pouco antes da corda (a palma passa do punho e fecha em volta dela),

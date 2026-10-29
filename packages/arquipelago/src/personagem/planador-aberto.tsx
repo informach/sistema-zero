@@ -9,10 +9,11 @@ const URL_DO_PLANADOR = new URL(planadorGlb, import.meta.url).href
 const SEM_UMA_VEZ: readonly string[] = []
 /**
  * Onde a barra do planador fica no desenho do avatar (metros a partir dos pés, olhando para +z):
- * nas mãos do clipe "Pendurado" (as do cipó, `CORDA_NO_CORPO`), na frente do peito. A asa fica uns
- * 1,2 m acima dela, por cima da cabeça e do cabelo. O vazio `pegada` do arquivo é a barra.
+ * nas mãos do clipe "Planar", fechadas na frente do peito (o script do Mixamo põe as mãos nesta
+ * altura e mede 0,2 m à frente). A asa fica uns 1,2 m acima dela, por cima da cabeça e do cabelo.
+ * O vazio `pegada` do arquivo é a barra.
  */
-export const BARRA_NO_AVATAR = { y: 1.25, z: 0.35 } as const
+export const BARRA_NO_AVATAR = { y: 1.25, z: 0.2 } as const
 
 /**
  * O planador aberto em cima da criança (fase3-09): o `planador.glb` do kit de movimento, com as

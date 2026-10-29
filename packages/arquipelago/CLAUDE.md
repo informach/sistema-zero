@@ -254,26 +254,34 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre, enfeites que seguram o corpo).
 
-## Animações do avatar (28/10/2026)
+## Animações do avatar (Mixamo, 29/10/2026)
 
-- Clipes em `src/assets/avatar/locomocao.glb` (Andar, Correr, Pulo, Queda, Aterrissagem, Nado,
-  Pendurado, Escalar, e os dos modos novos: Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
-  Escorregar),
-  gerados por `arte/avatar/locomocao.py` no esqueleto Mixamo da plataforma: IK de dois ossos nas
-  pernas, pé que gira sobre calcanhar e bola, bacia, peito, braços e cabeça. O "Idle" é o da
-  plataforma (`Poses.glb`). O script enxuga o GLB: só giros e a posição da bacia.
-- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe. Andar
-  e correr na MESMA fase, que anda pela distância dividida pela passada (o pé não patina). As
-  medidas dos ciclos ficam nos dois arquivos e precisam bater (o teste confere a duração e que o pé
-  no apoio acompanha o chão).
+- Clipes em `src/assets/avatar/locomocao.glb`, vindos do Mixamo pelo `arte/avatar/mixamo.py`
+  (os FBX ficam fora do repositório, em `MIXAMO_DIR`): Parado, Andar, Correr, Pulo, Queda,
+  Aterrissagem, Nado, NadoParado, Corda (cipó), Planar, Escalar, SubirEscada, Equilibrar,
+  PendurarBorda, SubirBorda, Escorregar, Sentar, Montar e Deitar. O "Idle" da plataforma não é
+  mais usado. O script tira o deslocamento (o corpo do jogo anda), encaixa assento, sela, barra,
+  borda e colchão, e enxuga o GLB (só giros e a posição da bacia). O README de `arte/avatar` diz o
+  que vem de cada arquivo do Mixamo.
+- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe, com
+  as durações e passadas do `RESUMO` do script. Andar e correr na MESMA fase (os dois começam no
+  pé esquerdo), que anda pela distância dividida pela passada. Na água, Nado acima de
+  `NADANDO_ACIMA_DE` e NadoParado abaixo; no tronco caído, Equilibrar parada e Andar andando.
+- Os clipes de nadar e de deitar já vêm deitados: o personagem não inclina mais o desenho nesses
+  casos. No cipó o Corda faz as pernas e o `depoisDaPose` ainda fecha as mãos na corda
+  (`personagem/bracos.ts`, `INCLINACAO_NO_CIPO` 0). O planador põe a barra nas mãos do Planar
+  (`BARRA_NO_AVATAR`, 1,25 m de altura e 0,2 m à frente).
 - `personagem/avatar-do-jogo.tsx` aplica a regra às ações (`AvatarRig` com `extraClips` e
-  `onAnimations`: o rig deixa de tocar a pose sozinho). O personagem escreve `movimento` (velocidade
-  de verdade, chão, subida, nado, `pendurado`: `cipo` ou `escalada`); o desenho desce
-  `FOLGA_DO_CONTROLADOR` para o pé encostar. Na escalada a velocidade é a 3D (subir conta), e o
-  Escalar anda por `velocidade / CICLO_DE_ESCALAR.passada`. No cipó, `depoisDaPose` fecha as
-  mãos na corda por cima do Pendurado.
-- Conferir sem o jogo: `/animacoes` no playground (`playground/animacoes.tsx`), com o chão
-  quadriculado correndo na velocidade do passo.
+  `onAnimations`), todas no tempo da regra.
+- Prints no jogo: `playground/verificar-animacoes-browser.ts` (Bosque, cama e banco, Pico e Vale;
+  `ARQUIPELAGO_CENAS` escolhe). O medidor dá `__arquipelagoMovimento()` e
+  `__arquipelagoCameraEmVolta(desvio)` para levar o corpo a cada modo e virar a câmera. O pulo
+  sai pelo relógio virtual do navegador (`Emulation.setVirtualTimePolicy`, 1/30 s por quadro): a
+  1 quadro por segundo do SwiftShader o pulo inteiro cabe em dois quadros. Prints em
+  `docs/qa/2026-10-29-animacoes-mixamo/`.
+- ⚠️ No navegador a pedra de agarrar do Bosque não agarrou (nem caindo junto da quina, nem
+  pulando, nem quadro a quadro), embora `bordaAoAlcance` agarre na regra pura com as mesmas
+  quinas: falta achar a causa; por isso os prints de PendurarBorda e SubirBorda ainda não saem.
 
 ## Quadro das Cores (28/10/2026)
 
@@ -613,8 +621,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `sonecaAcabou`, `lugarNoBanco`, `lugarNaCama`) e o modo do corpo `modos/descanso.ts` (entra pelo
   pedido `{ tipo: 'descanso', lugar }` do interativo, sai andando, pulando, usando ou pelo pedido
   `levantar`). O corpo do Rapier fica de pé ao lado do móvel e só o desenho vai para o assento ou o
-  colchão (`personagem.tsx`; deitado, o desenho gira −90° em X, como no nado ele deita para a
-  frente). Clipes "Sentar" e "Deitar" no `locomocao.glb`. A energia sobe nos `Relogios`
+  colchão (`personagem.tsx`; o clipe "Deitar" já vem deitado de costas). Clipes "Sentar" e
+  "Deitar" no `locomocao.glb`. A energia sobe nos `Relogios`
   (`loja.descanso`); a barrinha "Soneca" fica no HUD. Bancos: `mundo/bancos-da-vila.tsx` lê os
   colisores `col-banco-N` da ilha preparada (já girados com a ilha: não girar de novo). Testes:
   `tests/descanso.test.ts`; navegador: `bun playground/verificar-descanso-browser.ts`
@@ -862,7 +870,7 @@ Plano: `docs/plans/2026-10-29-arquipelago-planador.md`; regras e números em `do
 - **Modo `planar`** (`sistemas/modos/planar.ts`, em `MODOS` e `ModoDoCorpo`): entra pelo modo chão
   (`podeAbrirOPlanador`, `abrirOPlanador`, com `EntradaDoPasso.planador`), leva o corpo pelo
   controlador do chão e fecha pulando, pisando ou na água. `PLANADOR` guarda os números. O HUD diz
-  "Fechar o planador"; no toque, o botão Pular vira Fechar. Na locomoção, usa o clipe Pendurado.
+  "Fechar o planador"; no toque, o botão Pular vira Fechar. Na locomoção, usa o clipe Planar.
 - **Corrente de ar** (`CorrenteDeAr` em `movimento.correntes`, `subidaDaCorrente`; na coluna dela,
   `naColunaDaCorrente`, o ar segura no lugar quem plana sem pedir direção): a do Pico vem da
   âncora `corrente-de-ar` (`mundo/corrente-de-ar.tsx`, `correnteDoPico`, montada pelo `PicoVivo`,

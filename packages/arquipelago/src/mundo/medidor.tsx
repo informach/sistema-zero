@@ -25,7 +25,9 @@ import { qualidadeDaVegetacao, ventoAgora } from './vegetacao-ao-vento'
  * `localStorage['arquipelago:medir'] = '1'`, deixa os números do `renderer.info` em
  * `globalThis.__arquipelagoDesenho` (com a posição do personagem) a cada quarto de segundo, e
  * `globalThis.__arquipelagoLevar(x, y, z, giro)` leva o personagem a um ponto (para medir a memória
- * na mesma pose antes e depois de uma visita). Desligado, não faz nada.
+ * na mesma pose antes e depois de uma visita) e `globalThis.__arquipelagoMovimento()` dá o que a
+ * ilha registrou para os modos; `globalThis.__arquipelagoCameraEmVolta(desvio)` gira a câmera em
+ * volta do avatar (para os prints das poses). Desligado, não faz nada.
  */
 export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
@@ -198,6 +200,8 @@ export function Medidor() {
   useEffect(() => {
     if (!ligado) return
     const g = globalThis as {
+      __arquipelagoMovimento?: () => Movimento
+      __arquipelagoCameraEmVolta?: (desvio: number) => void
       __arquipelagoLevar?: (...a: number[]) => void
       __arquipelagoLerCorpo?: () => {
         x: number
@@ -215,6 +219,13 @@ export function Medidor() {
       giro: rastro.giro,
       noChao: movimento.noChao,
     })
+    // O que a ilha ativa registrou para os modos (cipós, troncos, escadas, bordas...) e o pedido
+    // de um interativo: para a conferência das animações levar o corpo a cada um.
+    g.__arquipelagoMovimento = () => movimento
+    // A câmera em volta do avatar, a `desvio` de onde ele olha (0 é de frente, π é das costas).
+    g.__arquipelagoCameraEmVolta = (desvio: number) => {
+      rastro.giro = rastro.direcao + desvio
+    }
     g.__arquipelagoLevar = (x = 0, y = 0, z = 0, giro?: number) => {
       pedidos.teleporte = { x, y, z }
       if (giro !== undefined) rastro.giro = giro
@@ -222,6 +233,8 @@ export function Medidor() {
     return () => {
       g.__arquipelagoLevar = undefined
       g.__arquipelagoLerCorpo = undefined
+      g.__arquipelagoMovimento = undefined
+      g.__arquipelagoCameraEmVolta = undefined
     }
   }, [ligado, pedidos, rastro, movimento])
   useFrame((_, dt) => {

@@ -74,7 +74,7 @@ export function AvatarDoJogo({
       acao.setLoop(UMA_VEZ.includes(nome) ? LoopOnce : LoopRepeat, Infinity)
       acao.clampWhenFinished = true
       acao.setEffectiveTimeScale(0)
-      acao.setEffectiveWeight(nome === 'Idle' ? 1 : 0)
+      acao.setEffectiveWeight(nome === 'Parado' ? 1 : 0)
       acao.play()
       prontas[nome] = acao
     }
@@ -85,15 +85,12 @@ export function AvatarDoJogo({
     if (pausado) return
     const dt = Math.min(dtBruto, 0.1)
     const l = passoDaLocomocao(locomocao.current, movimento.current, dt)
-    const idle = acoes.current.Idle
     for (const nome of CLIPES) {
       const acao = acoes.current[nome]
       if (!acao) continue
       acao.setEffectiveWeight(l.pesos[nome])
-      // O "Idle" (a pose parada da plataforma) corre no tempo dele; os outros seguem a regra.
-      if (acao !== idle) acao.time = l.tempos[nome] * acao.getClip().duration
+      acao.time = l.tempos[nome] * acao.getClip().duration
     }
-    if (idle) idle.time = (idle.time + dt) % idle.getClip().duration
   })
 
   return (

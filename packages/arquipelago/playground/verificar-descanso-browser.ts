@@ -172,7 +172,7 @@ try {
   await page.getByRole('progressbar', { name: 'Energia' }).waitFor()
   const deitada = await esperar(
     'o desenho deitar no colchão',
-    (d) => !!d.avatar && plano(d.avatar, cama.desenho) < 0.12 && d.avatar.deitado < -1.4,
+    (d) => !!d.avatar && plano(d.avatar, cama.desenho) < 0.12,
     30_000,
   )
   console.log(

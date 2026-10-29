@@ -1,32 +1,42 @@
-# Animações do avatar no Blender
+# Animações do avatar (Mixamo)
 
-`locomocao.py` abre o esqueleto do avatar da plataforma
-(`community-kids/public/avatar3d/base/Poses.glb`) e grava as animações de movimento do jogo em
+`mixamo.py` passa as animações baixadas do Mixamo para o esqueleto do avatar da plataforma
+(`community-kids/public/avatar3d/base/Poses.glb`) e grava os clipes do jogo em
 `src/assets/avatar/locomocao.glb`.
 
+Os FBX ficam fora do repositório. São baixados do Mixamo com o nosso avatar
+(`avatar-com-esqueleto.fbx`, o esqueleto `mixamorig` de 75 ossos), sem marcar "In Place"; o script
+os procura pelo nome em qualquer subpasta de `MIXAMO_DIR`:
+
 ```sh
-/tmp/claude-0/blender-venv/bin/python -B arte/avatar/locomocao.py
+MIXAMO_DIR=/caminho/dos/fbx /tmp/claude-0/blender-venv/bin/python -B arte/avatar/mixamo.py
 ```
 
-## Como cada ciclo é montado
+`LOCOMOCAO_OUT` grava em outro lugar (para comparar antes de trocar o do jogo) e `MIXAMO_BLEND`
+salva a cena do Blender antes de exportar (para fotografar as poses com o avatar vestido).
 
-- A pose de base é o primeiro quadro do "Idle" da plataforma (braços soltos, dedos relaxados).
-- Pernas por IK de dois ossos: o script decide onde fica o tornozelo e calcula coxa e canela. O
-  pé gira sobre o calcanhar ao pisar e sobre a bola ao sair; os dedos ficam no chão.
-- No apoio, o pé desliza para trás na velocidade do ciclo (`passada / duracao`). No jogo o corpo anda
-  para a frente na mesma velocidade, então o pé fica parado no chão.
-- A bacia desce sozinha quando um pé não alcança o alvo (a perna nunca estica além do osso).
-- O ciclo começa com o pé esquerdo pisando e fecha (o último quadro repete o primeiro).
-- No fim, `enxugar()` tira do GLB a escala dos ossos, as posições (menos a da bacia) e as pontas
-  `_end_end`, que o avatar não tem.
+## O que o script faz com cada clipe
 
-## Ao mudar um ciclo
+- Passa o movimento osso a osso pela rotação no mundo em relação à pose de descanso dos dois
+  esqueletos. É o mesmo esqueleto, então nada distorce.
+- Tira o deslocamento: quem anda, sobe e cai é o corpo do jogo. Nos ciclos, a reta do começo ao
+  fim sai da bacia e vira a `passada` (quanto o corpo anda por ciclo), que a regra usa para o pé não
+  patinar. No pulo e na queda a bacia fica parada na altura de pé e só pernas e braços mexem.
+- Encaixa onde o jogo espera: o bumbum no assento (0,53 m) e na sela, as mãos na barra do
+  planador (1,25 m) e na quina da borda, as costas no colchão, o nadador na linha da água e os pés
+  dos que sobem (tronco, escada) logo acima da origem.
+- Ajustes de pose: andar e correr recomeçam no toque do pé esquerdo (os dois tocam na mesma
+  fase); o planador usa o corpo do "Hanging Idle" com os braços do "Driving" (as mãos na frente do
+  peito); a montaria abre as pernas do "Driving" para os lados da sela; o "Climbing Ladder" vem de
+  costas e leva meia volta.
+- Grava cada clipe como uma faixa e enxuga o GLB: só os giros dos ossos e a posição da bacia.
 
-`ANDAR` e `CORRER` daqui têm de bater com `CICLO_DE_ANDAR` e `CICLO_DE_CORRER` de
-`src/sistemas/locomocao.ts` (duração em quadros de 30 por segundo e passada). Depois de gerar,
-rode `bun test tests/locomocao.test.ts` e confira no playground em `/animacoes?v=2.2`.
+No fim imprime um `RESUMO` em JSON: as durações, as passadas e onde ficaram as mãos, a bacia, os
+pés e a cabeça (medidos no esqueleto do jogo).
 
-Do mesmo jeito, `ESCALAR` (duração e quanto o corpo sobe por ciclo) bate com `CICLO_DE_ESCALAR`, e
-os 48 quadros do Pendurado com `DURACAO_DO_PENDURADO`. Os dois se conferem em `/animacoes?escalar=1`
-(com `&lado=frente` as mãos alternando aparecem melhor) e `/animacoes?cipo=1`; no jogo, no tronco
-e nos cipós do Bosque.
+## Ao trocar um clipe
+
+As durações e as passadas de `src/sistemas/locomocao.ts` têm de bater com o resumo (quadros de
+30 por segundo). Depois de gerar, rode `bun test tests/locomocao.test.ts` (nomes, durações, só
+giros e a bacia, e o pé no apoio parado no chão) e tire os prints no jogo com
+`playground/verificar-animacoes-browser.ts`.

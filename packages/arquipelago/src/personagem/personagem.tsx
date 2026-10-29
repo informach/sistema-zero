@@ -405,9 +405,7 @@ export function Personagem() {
         ? null
         : v.modo === 'descanso'
           ? (v.descanso?.jeito ?? null)
-          : v.modo === 'montar'
-            ? 'sentar'
-            : v.modo
+          : v.modo
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
@@ -462,19 +460,14 @@ export function Personagem() {
     delta = Math.atan2(Math.sin(delta), Math.cos(delta))
     const giro = delta * Math.min(1, dt * 12)
     vis.rotation.y += giro
-    // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita de bruços; na
-    // cama, deita de costas.
-    const deitada = v.modo === 'descanso' && v.descanso?.jeito === 'deitar'
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô). Nadar de bruços e deitar de
+    // costas já vêm deitados nos clipes.
     const inclinar =
       v.modo === 'cipo' && v.cipo
         ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
-        : nadando
-          ? 1.1
-          : v.modo === 'planar'
-            ? INCLINACAO_NO_PLANADOR
-            : deitada
-              ? -Math.PI / 2
-              : 0
+        : v.modo === 'planar'
+          ? INCLINACAO_NO_PLANADOR
+          : 0
     vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     const curva =
       v.modo === 'chao' && !nadando

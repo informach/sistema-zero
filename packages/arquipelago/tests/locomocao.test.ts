@@ -5,6 +5,7 @@ import { AnimationMixer, type Bone, Group, type Object3D, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   AR_PARA_ATERRISSAR,
+  CICLO_DA_ESCADA,
   CICLO_DE_ANDAR,
   CICLO_DE_CORRER,
   CICLO_DE_ESCALAR,
@@ -12,7 +13,13 @@ import {
   CLIPES,
   ciclosPorSegundo,
   criarLocomocao,
-  DURACAO_DO_PENDURADO,
+  DURACAO_DA_ATERRISSAGEM,
+  DURACAO_DA_CORDA,
+  DURACAO_DA_MONTARIA,
+  DURACAO_DO_DEITAR,
+  DURACAO_DO_PARADO,
+  DURACAO_DO_PLANAR,
+  DURACAO_DO_SENTAR,
   type EntradaDaLocomocao,
   passoDaLocomocao,
   pesosNoChao,
@@ -35,8 +42,8 @@ function rodar(l = criarLocomocao(), e: EntradaDaLocomocao, segundos: number) {
 }
 
 describe('pesos no chão', () => {
-  test('parado é só o Idle; andar e correr nas velocidades dos clipes', () => {
-    expect(pesosNoChao(0)).toEqual({ Idle: 1, Andar: 0, Correr: 0 })
+  test('parado é só o Parado; andar e correr nas velocidades dos clipes', () => {
+    expect(pesosNoChao(0)).toEqual({ Parado: 1, Andar: 0, Correr: 0 })
     const andar = pesosNoChao(VELOCIDADE_DO_ANDAR)
     expect(andar.Andar).toBeCloseTo(1)
     expect(pesosNoChao(VELOCIDADE_DO_CORRER).Correr).toBeCloseTo(1)
@@ -57,7 +64,7 @@ describe('máquina de estados', () => {
     expect(l.pesos.Correr).toBeCloseTo(1)
     expect(soma(l.pesos)).toBeCloseTo(1)
     rodar(l, chao(0), 0.5)
-    expect(l.pesos.Idle).toBeCloseTo(1)
+    expect(l.pesos.Parado).toBeCloseTo(1)
   })
 
   test('pulo: sai do chão subindo, vira queda ao descer e aterrissa', () => {
@@ -76,7 +83,7 @@ describe('máquina de estados', () => {
     expect(l.pesos.Aterrissagem).toBeGreaterThan(0.8)
     rodar(l, chao(0), 0.6)
     expect(l.pesos.Aterrissagem).toBe(0)
-    expect(l.pesos.Idle).toBeCloseTo(1)
+    expect(l.pesos.Parado).toBeCloseTo(1)
   })
 
   test('descer um degrau (pouco tempo no ar) não troca a animação nem aterrissa', () => {
@@ -89,13 +96,13 @@ describe('máquina de estados', () => {
     expect(AR_PARA_ATERRISSAR).toBeGreaterThan(0.1)
   })
 
-  test('pendurada no cipó: pernas soltas, e soltar cai e aterrissa', () => {
+  test('pendurada no cipó: agarrada na corda, e soltar cai e aterrissa', () => {
     const l = rodar(
       undefined,
       { velocidade: 0, noChao: true, velY: 0, nadando: false, especial: 'cipo' },
       0.5,
     )
-    expect(l.pesos.Pendurado).toBeCloseTo(1)
+    expect(l.pesos.Corda).toBeCloseTo(1)
     rodar(l, { velocidade: 3, noChao: false, velY: -5, nadando: false, especial: null }, 0.5)
     expect(l.pesos.Queda).toBeGreaterThan(0.9)
     passoDaLocomocao(l, chao(0), 1 / 60)
@@ -119,14 +126,27 @@ describe('máquina de estados', () => {
     expect((l.tempos.Escalar - antes + 1) % 1).toBeCloseTo(0.5, 1)
   })
 
-  test('na água, só o nado', () => {
-    const l = rodar(
-      undefined,
-      { velocidade: 2.6, noChao: false, velY: 0, nadando: true, especial: null },
-      1,
-    )
+  test('na água: nadando para a frente dá braçadas; parada, boia batendo as pernas', () => {
+    const agua = { velocidade: 2.6, noChao: false, velY: 0, nadando: true, especial: null }
+    const l = rodar(undefined, agua, 1)
     expect(l.pesos.Nado).toBeCloseTo(1)
     expect(soma(l.pesos)).toBeCloseTo(1)
+    rodar(l, { ...agua, velocidade: 0 }, 1)
+    expect(l.pesos.NadoParado).toBeCloseTo(1)
+    expect(soma(l.pesos)).toBeCloseTo(1)
+  })
+
+  test('cada modo especial tem o clipe dele (planador, montaria, descanso, tronco caído)', () => {
+    const modo = (especial: EntradaDaLocomocao['especial'], velocidade = 0) =>
+      rodar(undefined, { velocidade, noChao: true, velY: 0, nadando: false, especial }, 1).pesos
+    expect(modo('planar').Planar).toBeCloseTo(1)
+    expect(modo('montar').Montar).toBeCloseTo(1)
+    expect(modo('sentar').Sentar).toBeCloseTo(1)
+    expect(modo('deitar').Deitar).toBeCloseTo(1)
+    expect(modo('escada', 0.5).SubirEscada).toBeCloseTo(1)
+    // No tronco caído: parada se equilibra; andando, um pé na frente do outro.
+    expect(modo('equilibrio').Equilibrar).toBeCloseTo(1)
+    expect(modo('equilibrio', 0.8).Andar).toBeCloseTo(1)
   })
 })
 
@@ -151,14 +171,22 @@ describe('locomocao.glb', async () => {
     ),
   )
 
-  test('tem os clipes da regra (menos o Idle, que é da plataforma), com as durações dela', () => {
+  test('tem os clipes da regra, com as durações dela', () => {
     const nomes = loco.animations.map((a) => a.name).sort()
-    expect(nomes).toEqual(CLIPES.filter((c) => c !== 'Idle').sort())
+    expect(nomes).toEqual([...CLIPES].sort())
     const dur = (n: string) => loco.animations.find((a) => a.name === n)?.duration ?? 0
     expect(dur('Andar')).toBeCloseTo(CICLO_DE_ANDAR.duracao, 3)
     expect(dur('Correr')).toBeCloseTo(CICLO_DE_CORRER.duracao, 3)
     expect(dur('Escalar')).toBeCloseTo(CICLO_DE_ESCALAR.duracao, 3)
-    expect(dur('Pendurado')).toBeCloseTo(DURACAO_DO_PENDURADO, 3)
+    expect(dur('SubirEscada')).toBeCloseTo(CICLO_DA_ESCADA.duracao, 3)
+    expect(dur('Parado')).toBeCloseTo(DURACAO_DO_PARADO, 3)
+    expect(dur('Corda')).toBeCloseTo(DURACAO_DA_CORDA, 3)
+    expect(dur('Planar')).toBeCloseTo(DURACAO_DO_PLANAR, 3)
+    expect(dur('Sentar')).toBeCloseTo(DURACAO_DO_SENTAR, 3)
+    expect(dur('Montar')).toBeCloseTo(DURACAO_DA_MONTARIA, 3)
+    expect(dur('Deitar')).toBeCloseTo(DURACAO_DO_DEITAR, 3)
+    // A aterrissagem é tocada um pouco mais depressa que o clipe, nunca mais devagar.
+    expect(DURACAO_DA_ATERRISSAGEM).toBeLessThanOrEqual(dur('Aterrissagem'))
   })
 
   test('só giros dos ossos do avatar e a posição da bacia (nada de escala ou ossos a mais)', () => {
@@ -207,7 +235,9 @@ describe('locomocao.glb', async () => {
         if (p.y < 0.012) noChao.push(p.z + v * t)
       }
       expect(noChao.length).toBeGreaterThan(8)
-      expect(Math.max(...noChao) - Math.min(...noChao)).toBeLessThan(0.02)
+      // O Mixamo leva a bacia com velocidade que varia no passo, e o script tira só a reta: no
+      // correr o pé apoiado ainda anda uns 2 cm (andando, menos de 1).
+      expect(Math.max(...noChao) - Math.min(...noChao)).toBeLessThan(0.025)
       expect(menorAltura).toBeGreaterThan(-0.01)
     }
   })
