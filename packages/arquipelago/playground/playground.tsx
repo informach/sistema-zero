@@ -1,8 +1,10 @@
 import type { PublicoJogo } from '@sistemazero/arquipelago-contracts'
 import { montarArquipelago } from '../src/entrada'
+import { definirFestaDoPlayground } from '../src/estado/festas'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
 import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import { lerFesta } from '../src/sistemas/festas'
 
 /**
  * O jogo sozinho, com a plataforma de mentira. Parâmetros na URL:
@@ -45,6 +47,8 @@ const plataforma = criarPlataformaFalsa({
     situacao: q.get('galeria') === 'fora-do-ar' ? 'fora-do-ar' : undefined,
   },
 })
+const festa = lerFesta(q.get('festa'))
+if (festa) definirFestaDoPlayground(plataforma, festa)
 if (q.get('perder-pulso') === '1') {
   const buscar = plataforma.servico.buscar
   let perder = true

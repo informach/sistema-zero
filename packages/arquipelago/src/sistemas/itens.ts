@@ -20,6 +20,12 @@ export const ITENS: Record<string, Item> = {
   milho: { id: 'milho', nome: 'Milho', emoji: '🌽', comida: { fome: 10 } },
   salada: { id: 'salada', nome: 'Salada da horta', emoji: '🥗', comida: { fome: 40, energia: 5 } },
   pipoca: { id: 'pipoca', nome: 'Pipoca', emoji: '🍿', comida: { fome: 15, diversao: 25 } },
+  'pipoca-de-festa': {
+    id: 'pipoca-de-festa',
+    nome: 'Pipoca de festa',
+    emoji: '🍿',
+    comida: { fome: 15, diversao: 30 },
+  },
   // Os ingredientes das receitas do Bento (fase2-04): vêm da despensa da padaria, não se comem.
   fuba: { id: 'fuba', nome: 'Fubá', emoji: '🌾' },
   leite: { id: 'leite', nome: 'Leite', emoji: '🥛' },

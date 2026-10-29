@@ -147,7 +147,15 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
 
   test('a coleção mostra as receitas sabidas com o que precisam e as outras com os corações', () => {
     const zero = colecaoDeReceitas(inicial())
-    expect(zero.filter((r) => r.sabe).map((r) => r.id)).toEqual(['salada', 'pipoca'])
+    expect(zero.filter((r) => r.sabe).map((r) => r.id)).toEqual([
+      'pipoca-de-festa',
+      'salada',
+      'pipoca',
+    ])
+    expect(zero.find((r) => r.id === 'pipoca-de-festa')).toMatchObject({
+      sabe: true,
+      onde: 'Na fogueira da Festa Junina, em junho',
+    })
     const bolo = zero.find((r) => r.id === 'bolo-de-fuba')
     expect(bolo && !bolo.sabe && bolo.dica).toContain('com 1 coração de amizade (falta 1)')
     const tudo = colecaoDeReceitas(comBento(500))

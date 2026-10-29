@@ -1643,6 +1643,49 @@ amplitude do vento; as medidas das plantas e das ondas mostram o efeito aplicado
 `tests/qualidade.test.ts` e `bun run test:qualidade-browser`. Ainda é necessária conferência
 prolongada em celular, tablet e Chromebook reais, incluindo aquecimento e bateria.
 
+### 6.19 Festas da estação na Vila Doce (fase2-10, 29/10/2026)
+
+As festas voltam todo ano. Faltar não tira itens, progresso ou oportunidades futuras.
+A pipoca já feita continua no inventário depois da festa. Esta entrega liga decoração
+e receita; não acrescenta roupas nem prêmios de presença.
+
+O calendário usa o dia real de São Paulo, separado do relógio acelerado do jogo.
+`CALENDARIO_DAS_FESTAS` concentra as datas e seus motivos:
+
+- Carnaval: a terça-feira calculada 47 dias antes da Páscoa gregoriana. Sem ampliar a janela.
+- Festa Junina: de 1 a 30 de junho, inclusive.
+- Fim de ano: **proposta de 20/12 a 06/01, ainda desativada**. A dona precisa aprovar a janela.
+- Noite das Lanternas: **sem data e fora do calendário**, aguardando decisão da dona.
+
+A data é relida a cada 30 segundos e ao voltar à aba. Abrir a fogueira e fazer a receita
+também conferem a festa atual, sem esperar essa atualização visual.
+
+Os arquivos GLB são catálogos. O jogo copia apenas os nós de cada peça. Na Junina há
+três barracas, três segmentos de bandeirinhas emendados por `ponta-esq` e `ponta-dir`,
+balão e fogueira com o clipe `crepitar`. Carnaval, Lanternas e fim de ano usam as peças
+dos respectivos catálogos; os fogos tocam uma vez e param no último quadro.
+Materiais luminosos seguem a noite. A fogueira também usa uma luz quente de alcance
+de 5 metros, intensidade 2 à noite e zero de dia, sem produzir sombras extras.
+
+Não havia âncoras de festa no modelo da Vila. As posições ficam em `arranjo-da-festa.ts`,
+no espaço local da ilha: barracas em x -1, 1,5 e 4, z 9,5, y 1; fogueira em x 6,8,
+z 7, y 1. A aproximação livre da fogueira fica a leste, em x 8,5. Os testes leem os
+colisores reais da Vila e protegem chegada, frente das lojas, moradores e percurso
+dos telhados. Apenas peças com volume no chão recebem colisores simples.
+
+Perto da fogueira, durante a Junina, E ou Usar abre a lista de receitas existente.
+**Um milho vira uma pipoca de festa**. Comer recupera fome +15 e diversão +30, com teto
+100, usando as necessidades já existentes. O diário informa o local e o mês da receita.
+
+O Zappy avisa uma vez por festa e ano, por perfil neste dispositivo. O registro fica no
+localStorage; se estiver bloqueado, a sessão mantém o aviso em memória. Nada da festa
+entra no formato de salvamento. Ao sair da Vila ou terminar a festa, o jogo retira
+interação e painel, cancela carregamento pendente e libera os recursos gráficos próprios.
+
+Somente no playground, `?festa=carnaval|junina|lanternas|fim-de-ano` permite conferir as
+quatro montagens fora de época. Evidências e pendências em
+`docs/qa/2026-10-29-primeira-festa-da-estacao.md`.
+
 ## 7. Desafios
 
 Arquivos principais:

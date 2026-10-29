@@ -196,7 +196,12 @@ export function colecaoDeReceitas(s: Salvamento): EstadoDaReceita[] {
       emoji,
       sabe: true,
       precisa,
-      onde: r.onde === 'forno' ? 'No forno da casa' : 'Na bancada da ilha',
+      onde:
+        r.onde === 'fogueira'
+          ? 'Na fogueira da Festa Junina, em junho'
+          : r.onde === 'forno'
+            ? 'No forno da casa'
+            : 'Na bancada da ilha',
     }
   })
 }

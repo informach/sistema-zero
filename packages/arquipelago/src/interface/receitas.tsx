@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
+import { festaAtual } from '../estado/festas'
 import { ITENS, quantidade } from '../sistemas/itens'
 import { coracoes } from '../sistemas/moradores'
 import {
@@ -35,7 +36,7 @@ function oQueFalta(inv: Record<string, number>, r: Receita): string | null {
  * botão de fazer, e quantas o Bento ainda vai lembrar.
  */
 export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const inventario = useEstado((s) => s.salvamento.inventario)
   const amizade = useEstado((s) => s.salvamento.moradores.bento.amizade)
   const sabidas = receitasConhecidas(coracoes(amizade)).filter((r) => r.onde === onde)
@@ -57,7 +58,10 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
                   type="button"
                   className="arq-botao leve"
                   disabled={falta !== null}
-                  onClick={() => fazerNaLoja(loja, r)}
+                  onClick={() => {
+                    if (onde === 'fogueira' && festaAtual(plataforma) !== 'junina') return
+                    fazerNaLoja(loja, r)
+                  }}
                 >
                   {`${ITENS[r.faz.id]?.emoji ?? ''} ${r.nome}: ${Object.entries(r.precisa)
                     .map(([id, q]) => `${q} ${nome(id)}`)

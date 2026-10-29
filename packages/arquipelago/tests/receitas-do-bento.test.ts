@@ -57,8 +57,8 @@ describe('as receitas', () => {
 
   test('o Bento lembra uma receita por coração, do bolo de fubá ao chocolate quente', () => {
     const ids = (c: number) => receitasConhecidas(c).map((r) => r.id)
-    expect(ids(0)).toEqual(['salada', 'pipoca'])
-    expect(ids(1)).toEqual(['salada', 'pipoca', 'bolo-de-fuba'])
+    expect(ids(0)).toEqual(['pipoca-de-festa', 'salada', 'pipoca'])
+    expect(ids(1)).toEqual(['pipoca-de-festa', 'salada', 'pipoca', 'bolo-de-fuba'])
     expect(ids(2)).toContain('pao-de-queijo')
     expect(ids(3)).toContain('brigadeiro')
     expect(ids(4)).toHaveLength(RECEITAS.length)

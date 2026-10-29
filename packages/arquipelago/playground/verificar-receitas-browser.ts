@@ -165,16 +165,16 @@ try {
   })
   console.log(`Forno nos projetos: ${forno}`)
   if (forno === false) throw new Error('O forno não chegou.')
-  // 5. O diário: a página da Vila Doce aberta (2 corações) e as receitas sabidas (5 de 6).
+  // 5. O diário: a página da Vila Doce aberta (2 corações) e as receitas sabidas (6 de 7).
   await page.getByRole('button', { name: 'Abrir o menu' }).click()
   await page.getByRole('button', { name: /Diário/ }).click()
   const diario = page.getByRole('dialog', { name: 'Diário' })
   await diario.waitFor({ timeout: 10_000 })
   await diario.getByText('O Bento me pediu a receita do bolo de fubá', { exact: false }).waitFor()
-  await diario.getByText('Receitas: 5 de 6').waitFor()
-  await diario.getByText('Receitas: 5 de 6').scrollIntoViewIfNeeded()
+  await diario.getByText('Receitas: 6 de 7').waitFor()
+  await diario.getByText('Receitas: 6 de 7').scrollIntoViewIfNeeded()
   await page.screenshot({ path: path.join(prints, 'receitas-diario.png') })
-  console.log('Diário: página da Vila e 5 de 6 receitas')
+  console.log('Diário: página da Vila e 6 de 7 receitas')
   if (erros.length) throw new Error(erros.join('\n'))
   console.log('Receitas conferidas.')
 } finally {

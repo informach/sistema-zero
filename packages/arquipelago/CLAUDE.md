@@ -738,3 +738,27 @@ Não havia outro componente de Lumi no mundo para reaproveitar. Decisão e confe
 Fliperama chega ao ler o primeiro minijogo aprovado, pela regra ganharProjetos. Loja transitória estado/minijogos.ts relê ao voltar de ferramenta. Lista no painel do objeto; player pertence à plataforma. Capa na face tela, recursos próprios descartados.
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Festas da estação na Vila (fase2-10, 29/10/2026)
+
+`sistemas/festas.ts` concentra o calendário puro pelo dia de São Paulo. Carnaval é Páscoa
+menos 47 dias; Junina ocupa junho. Fim de ano tem proposta desativada de 20/12 a 06/01;
+Lanternas não tem data. As duas decisões pertencem à dona. Não ativar por inferência.
+`estado/festas.ts` relê a data a cada 30 segundos e ao voltar à aba. O override de QA
+fica em WeakMap da plataforma falsa, registrado só pelo playground, nunca pela URL de produção.
+
+`mundo/festa-na-vila.tsx` monta apenas durante a festa. Os GLBs de festas são catálogos:
+`catalogo-da-festa.ts` copia nós individuais e emenda varais pelos vazios, preservando os
+alvos dos clipes. Carregamento privado com aborto, materiais emissivos próprios e descarte
+de mixers/geometrias/materiais ao sair. Não descartar recursos de um cache compartilhado.
+`arranjo-da-festa.ts` guarda posições e colisores, conferidos contra o GLB real da Vila.
+Luzes acompanham a noite; animações respeitam pausa e movimento reduzido.
+
+A fogueira abre `ListaDeReceitas` via E ou Usar, só na Junina. A receita usa um milho e
+gera `pipoca-de-festa`, com fome +15 e diversão +30 ao comer. Abrir e cozinhar revalidam
+o calendário. Painel fecha ao sair/terminar. O aviso é local por perfil, festa e ano;
+não acrescentar festa ao salvamento, não criar necessidade nova e não expirar a pipoca.
+
+Testes: `tests/festas.test.ts` e `playground/verificar-festa-browser.ts`. O browser usa
+plataforma falsa, verifica os fluxos em 1280 e 390 pixels e aceita `ARQUIPELAGO_CHROMIUM`.
+Relatório, prints e decisões pendentes em `docs/qa/2026-10-29-primeira-festa-da-estacao.md`.

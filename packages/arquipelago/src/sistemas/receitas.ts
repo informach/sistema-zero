@@ -5,7 +5,7 @@ import { adicionar, type Inventario, quantidade, remover } from './itens'
 export const PAINEL_DA_BANCADA = 'bancada'
 
 /** Onde a receita se faz: a bancada da ilha (fogão e pia) ou o forno da casa (projeto azul). */
-export type LugarDaReceita = 'bancada' | 'forno'
+export type LugarDaReceita = 'bancada' | 'forno' | 'fogueira'
 
 export interface Receita {
   id: string
@@ -23,6 +23,13 @@ export interface Receita {
  * chocolate quente com quatro.
  */
 export const RECEITAS: Receita[] = [
+  {
+    id: 'pipoca-de-festa',
+    nome: 'Pipoca de festa',
+    precisa: { milho: 1 },
+    faz: { id: 'pipoca-de-festa', qtd: 1 },
+    onde: 'fogueira',
+  },
   {
     id: 'salada',
     nome: 'Salada da horta',

@@ -5,6 +5,7 @@ import { Box3, type Mesh, type Object3D } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
+import { medirFesta } from './catalogo-da-festa'
 import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
 import { folhasAgora } from './folhas-ao-vento'
@@ -28,6 +29,7 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  festa: ReturnType<typeof medirFesta>
   luzesDosLumis: Record<string, number[]>
   qualidade: NivelDeQualidade
   metaDeQuadros: 30 | 60
@@ -149,6 +151,7 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      festa: medirFesta(cena),
       luzesDosLumis: Object.fromEntries(
         ['estrelinha', 'buzio'].map((id) => {
           const objeto = cena.getObjectByName(`habitante-${id}`)
