@@ -139,6 +139,9 @@ export interface QuizQuestion {
     | 'jardim-memory'
     | 'jardim-view'
     | 'jardim-height'
+    | 'moedas-poucas'
+    | 'moedas-igual'
+    | 'moedas-volta'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]

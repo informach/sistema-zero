@@ -43,6 +43,9 @@ const QuizQuestionImportSchema = z
         'jardim-memory',
         'jardim-view',
         'jardim-height',
+        'moedas-poucas',
+        'moedas-igual',
+        'moedas-volta',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),

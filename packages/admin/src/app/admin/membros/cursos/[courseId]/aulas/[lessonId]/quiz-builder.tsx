@@ -240,6 +240,9 @@ export function QuizBuilder({
                     <option value="jardim-memory">Jardim: memória da coleta</option>
                     <option value="jardim-view">Jardim: ponto de vista</option>
                     <option value="jardim-height">Jardim: altura e contato</option>
+                    <option value="moedas-poucas">Moedas: baú com poucas moedas</option>
+                    <option value="moedas-igual">Moedas: igual ou pelo menos</option>
+                    <option value="moedas-volta">Moedas: voltar ao lugar na ilha</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

@@ -105,6 +105,9 @@ export interface MemberQuizContent {
       | 'jardim-memory'
       | 'jardim-view'
       | 'jardim-height'
+      | 'moedas-poucas'
+      | 'moedas-igual'
+      | 'moedas-volta'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

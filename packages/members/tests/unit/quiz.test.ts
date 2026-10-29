@@ -177,6 +177,9 @@ test.each([
   'jardim-memory',
   'jardim-view',
   'jardim-height',
+  'moedas-poucas',
+  'moedas-igual',
+  'moedas-volta',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

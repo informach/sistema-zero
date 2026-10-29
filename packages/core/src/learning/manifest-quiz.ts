@@ -19,6 +19,9 @@ export interface ManifestQuiz {
       | 'jardim-memory'
       | 'jardim-view'
       | 'jardim-height'
+      | 'moedas-poucas'
+      | 'moedas-igual'
+      | 'moedas-volta'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -54,6 +57,9 @@ export function validatePredictionQuiz(
           'jardim-memory',
           'jardim-view',
           'jardim-height',
+          'moedas-poucas',
+          'moedas-igual',
+          'moedas-volta',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -98,6 +104,9 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'jardim-memory',
           'jardim-view',
           'jardim-height',
+          'moedas-poucas',
+          'moedas-igual',
+          'moedas-volta',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

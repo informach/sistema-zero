@@ -105,3 +105,34 @@ describe('Moedas no caminho', () => {
     expect(js).toContain('SZGame2D.onKey("r"')
   })
 })
+
+describe('quiz das Moedas', () => {
+  test('as duas revisões são válidas, com previsões de uma só resposta certa', async () => {
+    const { isManifestQuiz } = await import('../../../packages/core/src/learning/manifest-quiz')
+    const { moedasQuiz2d, moedasQuiz3d } = await import('./moedas-quiz')
+    expect(isManifestQuiz(moedasQuiz2d)).toBe(true)
+    expect(isManifestQuiz(moedasQuiz3d)).toBe(true)
+    expect(moedasQuiz2d.questions).toHaveLength(4)
+    expect(moedasQuiz3d.questions).toHaveLength(2)
+    // A certa não fica sempre no mesmo lugar.
+    const certas = [...moedasQuiz2d.questions, ...moedasQuiz3d.questions].map(
+      (q) => q.correctChoiceIds[0],
+    )
+    expect(new Set(certas).size).toBeGreaterThan(1)
+  })
+
+  test('as cenas 2D do quiz saem do motor da experiência', async () => {
+    const { moedasQuizState } = await import(
+      '../../../packages/member-shell/src/components/quiz-moedas-scene'
+    )
+    const poucas = moedasQuizState('moedas-poucas', true)
+    expect(poucas.coins.moedas).toBe(4)
+    expect(poucas.coins.chest).toBe('closed')
+    expect(poucas.coins.at).toBe('chest')
+    const igual = moedasQuizState('moedas-igual', true)
+    expect(igual.coins.moedas).toBe(6)
+    expect(igual.coins.chest).toBe('closed')
+    expect(moedasQuizState('moedas-igual', true, true).coins.chest).toBe('open')
+    expect(moedasQuizState('moedas-igual', false).coins.at).toBeNull()
+  })
+})
