@@ -16,7 +16,7 @@ Identificador: aula-1. Dimensão: 2D.
 8. Pense nas moedas.
 9. Envie o seu jogo com moedas.
 
-[Manifesto](aula-1.manifesto.json) · [Roteiro](aula-1.roteiro.md).
+[Manifesto](moedas-aula-1.manifesto.json) · [Roteiro](moedas-aula-1.roteiro.md).
 
 ## Aula 2. Moedas na ilha
 
@@ -29,6 +29,6 @@ Identificador: aula-2. Dimensão: 3D.
 5. Pense nas moedas da ilha.
 6. Envie a sua ilha com moedas.
 
-[Manifesto](aula-2.manifesto.json) · [Roteiro](aula-2.roteiro.md).
+[Manifesto](moedas-aula-2.manifesto.json) · [Roteiro](moedas-aula-2.roteiro.md).
 
 Uma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.

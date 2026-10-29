@@ -8,6 +8,7 @@ export const CURSOS_POR_PREFIXO = {
   desafio: 'faisca/desafio-primeiro-jogo',
   ilha: 'faisca/a-ilha-do-farol',
   moedas: 'faisca/poder-moedas-no-caminho',
+  cabana: 'faisca/poder-o-segredo-da-cabana',
   'nave-contra-asteroides': 'construtor/nave-contra-asteroides',
   'corre-dino': 'inventor/corre-dino',
   'meu-jeito': 'construtor/o-jogo-do-meu-jeito',

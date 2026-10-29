@@ -8,13 +8,13 @@ import {
 import { sanitizeProjectForHost } from '../../state/projectValidation'
 
 /**
- * O Jogo 3D é a extensão da Ilha do Farol inteira e da aula 2 do Jardim Secreto e do Poder Moedas no
- * caminho (os dois fazem o jogo em 2D na aula 1 e o levam para o 3D na aula 2); o resto ensina o Jogo 2D.
+ * O Jogo 3D é a extensão da Ilha do Farol inteira e da aula 2 do Jardim Secreto e dos Poderes do
+ * Faísca (todos fazem o jogo em 2D na aula 1 e o levam para o 3D na aula 2); o resto ensina o Jogo 2D.
  */
 function extensaoEnsinada(courseSlug: string, lessonSlug: string): 'game-2d' | 'game-3d' {
   if (courseSlug === 'jornada-faisca-base-3d') return 'game-3d'
   if (
-    (courseSlug === 'jornada-faisca-missao' || courseSlug === 'jornada-faisca-poder-1') &&
+    (courseSlug === 'jornada-faisca-missao' || courseSlug.startsWith('jornada-faisca-poder-')) &&
     lessonSlug === 'aula-2'
   )
     return 'game-3d'
@@ -45,5 +45,5 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
     }
   }
   expect(checked).toBeGreaterThan(20)
-  expect(checked3d).toBe(5)
+  expect(checked3d).toBe(6)
 })
