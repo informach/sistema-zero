@@ -17,7 +17,13 @@ import { useQualidade } from './qualidade-da-cena'
 
 const CEU_DIA = new Color('#bfe6f5')
 const CEU_TARDE = new Color('#f6c99a')
-const CEU_NOITE = new Color('#0e1638')
+/** O céu da noite: azul de lua, não preto (aj-visual-01: a noite do jogo estava mais escura que a dos renders). */
+const CEU_NOITE = new Color('#16224f')
+/** A luz que vem de cima e a do chão: de dia, céu claro e grama; de noite, o azul da lua. */
+const HEMI_CEU_DIA = new Color('#dff3ff')
+const HEMI_CEU_NOITE = new Color('#a9bcff')
+const HEMI_CHAO_DIA = new Color('#5f7a4a')
+const HEMI_CHAO_NOITE = new Color('#33456a')
 
 /** Céu, sol, lua e estrelas, pelo relógio do jogo. */
 export function Ceu() {
@@ -64,7 +70,13 @@ export function Ceu() {
       sol.current.position.set(Math.cos(angulo) * 60, 40 + Math.sin(angulo) * 30, 30)
       sol.current.color.set(m.noite ? '#9fb4ff' : '#fff1dc')
     }
-    if (hemi.current) hemi.current.intensity = 0.35 + m.luz * 0.6
+    if (hemi.current) {
+      // Sem sol, a lua ainda clareia as sombras: o preenchimento não cai abaixo de 0,5.
+      const dia = Math.min(1, m.luz * 4)
+      hemi.current.intensity = 0.5 + m.luz * 0.45
+      hemi.current.color.copy(HEMI_CEU_NOITE).lerp(HEMI_CEU_DIA, dia)
+      hemi.current.groundColor.copy(HEMI_CHAO_NOITE).lerp(HEMI_CHAO_DIA, dia)
+    }
     if (estrelas.current) estrelas.current.opacity = Math.max(0, 1 - m.luz * 4)
   })
 

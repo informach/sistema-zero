@@ -455,6 +455,10 @@ Arquivo: `sistemas/tempo-do-dia.ts`.
   O "Dia 1" é o primeiro. Ele não precisa ser salvo e é igual em qualquer aparelho.
 - **A luz** (`luzDoSol`): 0,25 no nascer e no pôr do sol, 1 ao meio-dia. Na noite, escurece nos
   primeiros 15% e clareia nos últimos 15%. No meio da noite, a luz é 0.
+- **A lua** (`mundo/ceu.tsx`, aj-visual-01): a noite é azul de lua, não preta. O céu e a névoa da
+  noite são `#16224f`, e a luz de preenchimento (hemisfério) passa para o azul da lua (`#a9bcff` de
+  cima, `#33456a` de baixo) sem cair abaixo de 0,5, então o mar, a praia e as casas longe continuam
+  visíveis, como nas prévias noturnas do Blender. De dia nada muda.
 - **O relógio** aparece no topo da tela como "Dia N · HH:MM", com sol ou lua.
 
 ### 6.2 Necessidades
