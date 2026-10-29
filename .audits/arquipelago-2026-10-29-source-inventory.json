@@ -1,0 +1,1906 @@
+{
+  "base": "a3cd791de786df3961e94ecbefe29f5d1d610a36",
+  "scope": "Inventario de fontes; nao declara revisao manual de cada linha",
+  "files": [
+    {
+      "path": "packages/arquipelago/src/adulto/estilos-adultos.ts",
+      "sha256": "4f31223f52a21519a9e9fb9a8a25d338b0429980c9493ee4b922bd3328ad922f",
+      "bytes": 6683
+    },
+    {
+      "path": "packages/arquipelago/src/adulto/pele-adulta.ts",
+      "sha256": "69118cad5fc175224ed0f5e4c53d73379c45c4bf713982c9c710d22d3cc27511",
+      "bytes": 390
+    },
+    {
+      "path": "packages/arquipelago/src/adulto/voz-adulta.ts",
+      "sha256": "ec29a9f0e68674bfcb303b28e2f60d777dadf05d5c8306415a92ff4ffbd665e2",
+      "bytes": 2577
+    },
+    {
+      "path": "packages/arquipelago/src/assets/glb.d.ts",
+      "sha256": "cc822a53c477d005da0184a2c5b034dd99638ff0d4853208f9b230de2253db9b",
+      "bytes": 177
+    },
+    {
+      "path": "packages/arquipelago/src/assets/imagens.d.ts",
+      "sha256": "04730a9fa7a762451f3161120dc559727abf9de1299413ad98d8657faf69a66f",
+      "bytes": 187
+    },
+    {
+      "path": "packages/arquipelago/src/controles/controle.ts",
+      "sha256": "9f15fc838e28eee89804b134af809daffbdbf1793b76b1beb3b805a4b08ce36d",
+      "bytes": 4972
+    },
+    {
+      "path": "packages/arquipelago/src/controles/gamepad.ts",
+      "sha256": "8ded6af62be46432ed09388ad14f5273673cbd5917ecbf8f86d764c780ce4aca",
+      "bytes": 4566
+    },
+    {
+      "path": "packages/arquipelago/src/entrada.tsx",
+      "sha256": "b9152c9853f2163cbcabe7e0b8a13bba0d4d8b5acc1b8c7edae3d7c428ad0cc7",
+      "bytes": 1399
+    },
+    {
+      "path": "packages/arquipelago/src/estado/bicho.ts",
+      "sha256": "a8d54afa8370afb6ef0e3223b6fdc103af8dbd5f2099434d77ae22c81dfdf1b6",
+      "bytes": 1740
+    },
+    {
+      "path": "packages/arquipelago/src/estado/cartas.ts",
+      "sha256": "4ee9e0db0979b6d534ef98fbf0f2cb15e03557de562cc4c9c8a229b0d8f699d8",
+      "bytes": 2870
+    },
+    {
+      "path": "packages/arquipelago/src/estado/conforto.ts",
+      "sha256": "2a0f20db2df6a738d046755312523ad9f20e5f67be978c9f7b5f94699706a785",
+      "bytes": 1654
+    },
+    {
+      "path": "packages/arquipelago/src/estado/construcao.ts",
+      "sha256": "0c36a0bdcc0491adbbb00a91825d1523760c45b6337b8e98112a32efd2c563bb",
+      "bytes": 9802
+    },
+    {
+      "path": "packages/arquipelago/src/estado/contexto.tsx",
+      "sha256": "9a04a4cc46c707258e269de8c000dca5f437ffd0273f22d0be5310df4f492867",
+      "bytes": 10076
+    },
+    {
+      "path": "packages/arquipelago/src/estado/desafios.ts",
+      "sha256": "a012d6ffae7ce52b018bdf7c8d87bfd0f6d69ed0d4725473c46303f77455649a",
+      "bytes": 5059
+    },
+    {
+      "path": "packages/arquipelago/src/estado/familia.ts",
+      "sha256": "6a6a6612aac2219248fb71af221e48ea10b76ce81acd5cd6d27b0634706e86ba",
+      "bytes": 2677
+    },
+    {
+      "path": "packages/arquipelago/src/estado/farol.ts",
+      "sha256": "1b77b32e9d79236d2ed67f0d706d5fe8be9e6d91e5ccb6365a5d21ae7ae210f7",
+      "bytes": 1196
+    },
+    {
+      "path": "packages/arquipelago/src/estado/festas.ts",
+      "sha256": "a0d5359b27e77e7e6a2f213ff969ce005d69e620190321da71aa78c3ec8c3a1a",
+      "bytes": 1103
+    },
+    {
+      "path": "packages/arquipelago/src/estado/filhote.ts",
+      "sha256": "ebd9ad0adc776813114743b4933aa9dbabbe8a4e7538c9f4f6fc0d6bf57bbce0",
+      "bytes": 1267
+    },
+    {
+      "path": "packages/arquipelago/src/estado/foto.ts",
+      "sha256": "7f844da251cc8b9a67e35f9ce4f00e8095dcc711688d460428147e73f3aa94c5",
+      "bytes": 657
+    },
+    {
+      "path": "packages/arquipelago/src/estado/galeria.ts",
+      "sha256": "5eff028c55e0704a09cc475e53ea381a4800cad64ca172690e67d1d18878eb9f",
+      "bytes": 3506
+    },
+    {
+      "path": "packages/arquipelago/src/estado/loja.ts",
+      "sha256": "1b13271957fde48ba5bd750949fde61cc4a86210a3e8f279f0226205699ec5d6",
+      "bytes": 9140
+    },
+    {
+      "path": "packages/arquipelago/src/estado/minijogos.ts",
+      "sha256": "3c3cc292121c913be05020322d150da16b4c319515eb4f7a1aa09f770225aa3e",
+      "bytes": 1862
+    },
+    {
+      "path": "packages/arquipelago/src/estado/moradores.ts",
+      "sha256": "94e3256bd3d9acafd5c6a22d14c92c58c150d159855f67c9b470a831607b6b18",
+      "bytes": 3145
+    },
+    {
+      "path": "packages/arquipelago/src/estado/preferencias.ts",
+      "sha256": "2f34bd05f54e38ebf78e0a653060789f495552fb8fef6d9e141aa04b8a780637",
+      "bytes": 735
+    },
+    {
+      "path": "packages/arquipelago/src/estado/relogios.tsx",
+      "sha256": "b82d29a27887c5e606be0fba0330e2cf3756bd5cccb85a4facd12b9e619415d2",
+      "bytes": 4449
+    },
+    {
+      "path": "packages/arquipelago/src/estado/rotina.ts",
+      "sha256": "3188e079797a3fb2087d4b818e385706e7a1261816ede06036847e1f687c10d7",
+      "bytes": 3320
+    },
+    {
+      "path": "packages/arquipelago/src/estado/turno.ts",
+      "sha256": "3053c67a4a2ce3b605e97b59a77c5644baa2b8620e95d38a55081f7cdb21663f",
+      "bytes": 2929
+    },
+    {
+      "path": "packages/arquipelago/src/interface/aconchego.tsx",
+      "sha256": "4821dfba30f2f962b4d2f4753546c39dcaa8e03e1138959dbf3a6eec77ea8253",
+      "bytes": 3515
+    },
+    {
+      "path": "packages/arquipelago/src/interface/album.tsx",
+      "sha256": "8402dbefb6af67f4a8ac2d36c9c958236d7d6f8f9d9d5b4f88c3dc9e80592da0",
+      "bytes": 7946
+    },
+    {
+      "path": "packages/arquipelago/src/interface/apresentacao.tsx",
+      "sha256": "20453e0573222257d7d70587885cba53c4032d922c25f10744f69dfbacfe583c",
+      "bytes": 1695
+    },
+    {
+      "path": "packages/arquipelago/src/interface/aquario.tsx",
+      "sha256": "4d31dbaec06a38feaf437c2918bddb3076534a6ec4175731212d1fd48bb0c0c8",
+      "bytes": 745
+    },
+    {
+      "path": "packages/arquipelago/src/interface/bento.tsx",
+      "sha256": "c9a6d7c05cca4d41091a22396a58ec22b2ff441510a4de1bb367fb2ac851348d",
+      "bytes": 4749
+    },
+    {
+      "path": "packages/arquipelago/src/interface/bicho.tsx",
+      "sha256": "33372aa86b8f6bf4cec048638d380c9d289117b0237651f6f57f615ab9003238",
+      "bytes": 6977
+    },
+    {
+      "path": "packages/arquipelago/src/interface/caderno-dos-lumis.tsx",
+      "sha256": "8d130760e27c4ba7d7acb6ce4cdc1ff8c7fe2527bc8f9591b0b5009dd7d9996c",
+      "bytes": 4838
+    },
+    {
+      "path": "packages/arquipelago/src/interface/capi.tsx",
+      "sha256": "bd28d7d67e99a013653c13067b1669890653223e32e56393c4b8880a3275a3cb",
+      "bytes": 9934
+    },
+    {
+      "path": "packages/arquipelago/src/interface/clima.tsx",
+      "sha256": "662aec641e1953aef8da9999edefe89f9001a28899d5476d59d468c2cfa70382",
+      "bytes": 1408
+    },
+    {
+      "path": "packages/arquipelago/src/interface/conforto.tsx",
+      "sha256": "084072b469d256cd7856d068250d91d37130ee3e99aa18fb52a05aef0dc140ca",
+      "bytes": 3419
+    },
+    {
+      "path": "packages/arquipelago/src/interface/construir.tsx",
+      "sha256": "185862edc974504a14a977726b66e10bd238b1fa75110c5f6bb2c3a8a9f38ba1",
+      "bytes": 10791
+    },
+    {
+      "path": "packages/arquipelago/src/interface/diario.tsx",
+      "sha256": "56524b20ab2e2608ff740f9a275529c0b1ba2a3f8c1228e43511d5c2f0692e49",
+      "bytes": 7629
+    },
+    {
+      "path": "packages/arquipelago/src/interface/estilos.ts",
+      "sha256": "62cfe083b0ee6c0806dbc515c5a2a84cfd504d7dfc773e723d6d5582d134afca",
+      "bytes": 33143
+    },
+    {
+      "path": "packages/arquipelago/src/interface/estrelas.tsx",
+      "sha256": "df3ac6289e3a1b38e3208c4fa92a15f61e011111d230451cc1c182bbd6da56fe",
+      "bytes": 3265
+    },
+    {
+      "path": "packages/arquipelago/src/interface/farol.tsx",
+      "sha256": "189ccf3651dd89fe409cedbec257086805cee87cf86d688b4ceae8d19c9a3c02",
+      "bytes": 3690
+    },
+    {
+      "path": "packages/arquipelago/src/interface/filhote.tsx",
+      "sha256": "8cf00aecf5640b07e272e5ed8883c6e6b85962ec938d092f7c8b7c435766abd7",
+      "bytes": 5508
+    },
+    {
+      "path": "packages/arquipelago/src/interface/fogueira-da-festa.tsx",
+      "sha256": "5cabe44b65f2dc54753a5b0a80bf11c935bc8e2bb3e7c7684d42fe5e70c2fe0a",
+      "bytes": 1495
+    },
+    {
+      "path": "packages/arquipelago/src/interface/foto.tsx",
+      "sha256": "96a4c39f4737cc9bdf91fe55e37ea7b925be0108904125910894737a76383eec",
+      "bytes": 4442
+    },
+    {
+      "path": "packages/arquipelago/src/interface/galeria.tsx",
+      "sha256": "89a8b0b542d1f00d246f94e60b96af27f9499fb7ece9bcb3e3e88c75302be44d",
+      "bytes": 7263
+    },
+    {
+      "path": "packages/arquipelago/src/interface/hud.tsx",
+      "sha256": "4a84033258d352f021c8c75ad62059431dc708b974485c886ff619c9a149a7a8",
+      "bytes": 25665
+    },
+    {
+      "path": "packages/arquipelago/src/interface/irie.tsx",
+      "sha256": "5ffa9d7f716d4739f0f55ec3b549d59199e883d5394ff1e98a90a7483ff14665",
+      "bytes": 257
+    },
+    {
+      "path": "packages/arquipelago/src/interface/jade.tsx",
+      "sha256": "05121363e321f8d63fe52065abbe76eeea406ee36bc2c06ecdd646a810cac87b",
+      "bytes": 255
+    },
+    {
+      "path": "packages/arquipelago/src/interface/luneta.tsx",
+      "sha256": "51698a5ed1d9d59ad206b7e4f6b804411cafcecf75e08db12431e3882f9b2ab2",
+      "bytes": 1240
+    },
+    {
+      "path": "packages/arquipelago/src/interface/mapa.tsx",
+      "sha256": "9efc082c1ed602f14b2e03495178b2c97d91bdf94b72993afc3c05eaaf45a120",
+      "bytes": 3460
+    },
+    {
+      "path": "packages/arquipelago/src/interface/mare.tsx",
+      "sha256": "a11b6057d5252d371e478d9da68dc2df8bcbd0d303cdc912dcdb7fa772772a48",
+      "bytes": 578
+    },
+    {
+      "path": "packages/arquipelago/src/interface/miniaturas.ts",
+      "sha256": "1dcf95e3f3596fc2456f0e31b3297ce95fadb08e37eb6335087e11c3710cde3b",
+      "bytes": 2477
+    },
+    {
+      "path": "packages/arquipelago/src/interface/minijogos.tsx",
+      "sha256": "2557aca8d5951fec8376baea6bef6d6927b8578a8b702d29cc7003fe4a32b828",
+      "bytes": 2190
+    },
+    {
+      "path": "packages/arquipelago/src/interface/museu.tsx",
+      "sha256": "1aeb5a931b1f93448c20a61ea35f33e2ba51f72d8ba684b26cf249beeb49b197",
+      "bytes": 965
+    },
+    {
+      "path": "packages/arquipelago/src/interface/pegadas.tsx",
+      "sha256": "92835af52d4d84933123fa6bb736a3a8c51170b6b37d21a6d19f5342de11c2be",
+      "bytes": 703
+    },
+    {
+      "path": "packages/arquipelago/src/interface/projeto-azul.tsx",
+      "sha256": "5f59a3d6523223c3468322363f321c72cf9005c1e20d72842d9a49e81b35d921",
+      "bytes": 9732
+    },
+    {
+      "path": "packages/arquipelago/src/interface/quadro-das-cores.tsx",
+      "sha256": "9360fdaee9bd29f75dd80cc7a437b49abf9be057edb9c0b9fdfb40a371aacc4d",
+      "bytes": 9231
+    },
+    {
+      "path": "packages/arquipelago/src/interface/receitas.tsx",
+      "sha256": "60ca34dae7f08ee61cafec29fce188360fabf030c739e8b4f017e3a73b9694c8",
+      "bytes": 4427
+    },
+    {
+      "path": "packages/arquipelago/src/interface/rotina.tsx",
+      "sha256": "6058a83d4f32f8f7a6070c93fdde72c8bd5955b7b186fc21331625b6b32bb56c",
+      "bytes": 19775
+    },
+    {
+      "path": "packages/arquipelago/src/interface/salvamento.tsx",
+      "sha256": "ae49dcc5e6dfea1ccca2f0b3f9388d9b70bf444a763989294d3a0ceb78de791e",
+      "bytes": 4029
+    },
+    {
+      "path": "packages/arquipelago/src/interface/telas.tsx",
+      "sha256": "ac39dbbe6790761154bff560ff95a97cb3ed717276dc7f957cb912c3c38f78fb",
+      "bytes": 1980
+    },
+    {
+      "path": "packages/arquipelago/src/interface/toque.tsx",
+      "sha256": "475ff074b5842887ed3e04627c6b4f3d1b4ca107cccdc6a3244b14ba049d1391",
+      "bytes": 5590
+    },
+    {
+      "path": "packages/arquipelago/src/interface/turno.tsx",
+      "sha256": "36145d7fa63d047132bb62945b9be6014177f4020610330475743b5f52990d63",
+      "bytes": 6731
+    },
+    {
+      "path": "packages/arquipelago/src/interface/visitas.tsx",
+      "sha256": "a02ab86157d3e8fac62610561d71a34dcdea6d1027b5cea8d57890a0ddef8c49",
+      "bytes": 7469
+    },
+    {
+      "path": "packages/arquipelago/src/interface/voz.ts",
+      "sha256": "c0c9b2c67fbf2df2f85938b2be8cb5c320a06f9ebb9a0fded651540bbd39db7e",
+      "bytes": 3251
+    },
+    {
+      "path": "packages/arquipelago/src/jogo.tsx",
+      "sha256": "aeabc364dd8f5fb5ff65878a4ed245e28735e4d24c019c7e5f71809038c7449d",
+      "bytes": 13570
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/agua.tsx",
+      "sha256": "2bc1b20fd35d96c7a39413a93c1693d9753239e5592f85efef709960867d37d9",
+      "bytes": 1011
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/alto-do-farol.ts",
+      "sha256": "89e5719166c2e3b469c9c4202cc10ecf1c6dec2d6f2b38ebab1b402e3bc20e44",
+      "bytes": 2979
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/anel.tsx",
+      "sha256": "e8e7b0647d8cfa5088738b1931eae8d565a4efda594a2a0c2e888858f9b877e6",
+      "bytes": 24655
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/animado.ts",
+      "sha256": "7d6dd6b6416cc6f422b22f0506fb00e49fb4da847e0151d4099c29d693719118",
+      "bytes": 4848
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/arranjo-da-festa.ts",
+      "sha256": "6a3feb075ff7735120f68f6d9dbaa3c5aec5f2ceef04b885598656a2156f3c55",
+      "bytes": 3215
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/arte-animada.ts",
+      "sha256": "d1c982db7a12de720d2cd9ee7bdb02393a57a98ff873b2b55c43c26b85e789d9",
+      "bytes": 2827
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/balao-das-nuvens.tsx",
+      "sha256": "2e711df65a01939143086dffd504c077ba7e55c39a0db05961bee9dd0e078592",
+      "bytes": 7562
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/balcoes-da-vila.tsx",
+      "sha256": "59ef327a220c8937397d19881ab978621df0d913105d34d4d1c92d916a2ae09c",
+      "bytes": 1959
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bancada.tsx",
+      "sha256": "82635849dc588101cfb70274af9b96bc9ff859ae41d42442e64ebf8419248af9",
+      "bytes": 3868
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bancos-da-vila.tsx",
+      "sha256": "08ce107387f1f09cc8e1ad31f5e7074280505cd6f7914853c48e61b73627df02",
+      "bytes": 2873
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/banda-do-pico.tsx",
+      "sha256": "1b6ad06ec9657650a28f419f1d369e6b3a4a3ea0dd8dc8a809a75bd98c5f495e",
+      "bytes": 11646
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/barcos.tsx",
+      "sha256": "49112aec8c921d0c3bf7dd11134f2bfb7cf5b211b8de197402440f45916fade7",
+      "bytes": 7571
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bento.tsx",
+      "sha256": "5c8de3022e4622ca01fb06df4ed8f5d010aee2d7b5b81b322f22f71c92f01488",
+      "bytes": 1553
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bicho-adotado.tsx",
+      "sha256": "6afc92ad9d657e11536355cc9b659451d12e48175a0908fa704329f8e211ff29",
+      "bytes": 9430
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bichos-do-bosque.tsx",
+      "sha256": "9ffaa4e85387349b678a7e1f3f9e9b13ab98fa41af3fbca2325ee7098aca8ca8",
+      "bytes": 14056
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/boias.tsx",
+      "sha256": "548b7e4f7b5581c9efb3ceccd0d60562e4c81ca5f041c8d966c11200e91410bc",
+      "bytes": 6241
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/borroes-da-vila.tsx",
+      "sha256": "2266abf0e2daaa9809f975389dc4a6a32bd4c06d76e3898128a53bdf72a4045c",
+      "bytes": 12380
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bosque-vivo.tsx",
+      "sha256": "6135f5eb72d7600ef6677a4c34228f10511c568dd1518108a9647c3bf84e35e2",
+      "bytes": 20943
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/bosque.ts",
+      "sha256": "bbdb25e92f24b25cc33057dd1ae2a96cbcda0d6e6f9df1f23525e289e694d673",
+      "bytes": 8786
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/cabana-do-bosque.tsx",
+      "sha256": "66ff231914c54aceb4cc1182941db65c08a4a659b746f222055d9afa86c695f9",
+      "bytes": 3928
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/capi.tsx",
+      "sha256": "58897ca77a6a39e805d66c13e3b7ac3581c80befd991d92ee5908a8092009452",
+      "bytes": 1588
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/carregar-aparencia.ts",
+      "sha256": "7ce8df4cdf55fb367c9711434b537a7ff186729ea074b455a89a9a5f67553f5b",
+      "bytes": 6510
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/carregar-ilha.ts",
+      "sha256": "57cc2d4e24c490b347f481cd8034445fcacff2faa033f7a9dc3776f3ed4aa3b6",
+      "bytes": 3990
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/casa.tsx",
+      "sha256": "51027e4b1562731c18bb2a6bce4108f4ed66ff95547c7f81b98954c5b9e80bba",
+      "bytes": 15851
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/catalogo-da-festa.ts",
+      "sha256": "72c9ddf451f12cbdcd91b6cbb6ad42b45458bf940e8555bfe713c92bab4249d7",
+      "bytes": 4568
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/cena.tsx",
+      "sha256": "479223fd0c2720645d39fcae2d80300c65f411e2d5f51225c861ceb106756a13",
+      "bytes": 3295
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/ceu.tsx",
+      "sha256": "782cb6bd367070e28e84526e453200941365272be2fd9c684419aec79fa62c9d",
+      "bytes": 4391
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/chao-livre.ts",
+      "sha256": "c7ea6e464c394a85baf975e1aaeb5c00178b62292d4da2eb8028ddde7c8a4a31",
+      "bytes": 2945
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/cipo-desenhado.ts",
+      "sha256": "ffd669d07162690495c2f8200f76f81daa5bce3180bceab97ddcf19d55c9a6dc",
+      "bytes": 9979
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/clima-da-ilha.tsx",
+      "sha256": "2cf97124603ceb688289f46d55b383ee7fd83be4dc9d79c527f82ae976f2b94a",
+      "bytes": 4930
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/colisao-da-ilha-central.ts",
+      "sha256": "2f7e5417fcae23c022e6ad1daf2073eb8f66d48f838d1502bee5a9c866cc658f",
+      "bytes": 12993
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/colisores-da-ilha.ts",
+      "sha256": "fa44bdf1be6c95f8311b74a755d92f2767f54650a791e1ca59c7a90164740fe1",
+      "bytes": 7067
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/colisores.tsx",
+      "sha256": "4abfb8e6f896561550032220588b01c0164fa7bee7de295b7ce0a45714ec7151",
+      "bytes": 1557
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/constelacoes-das-nuvens.tsx",
+      "sha256": "79c74ce09beaa7c1d509601b2486e3a135909b63b9d785827db4943c7d1d3035",
+      "bytes": 13864
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/construir.tsx",
+      "sha256": "21fd3918fa645bbc47346a371765b2f1a4e74ee62450c45e7ae5f685f6d99a24",
+      "bytes": 17547
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/copas.ts",
+      "sha256": "728739b4f8a2973aaf94a262e9ea7601ea089f837cb9e9c820c330be2bae37ff",
+      "bytes": 5484
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/corais-do-recife.tsx",
+      "sha256": "fbd68ed7b8b0e508a77865f79990395b363ef9d9678ea8df4598f6f575a52d16",
+      "bytes": 6062
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/corrente-de-ar.tsx",
+      "sha256": "211d6833a9a573a1197e1a034968744a0c5886780dc197a58c9ff4b2a76267b5",
+      "bytes": 3460
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/corrida-de-balao.tsx",
+      "sha256": "8077c770cc5c4a486ce2acc811dc1c97913fda2c4a808b7c73df779892f298c8",
+      "bytes": 7592
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/corrida-na-ilha.tsx",
+      "sha256": "35268107c8a96164147120da2c8b1ddd6e93fffb56becb858b2933e414bd0afb",
+      "bytes": 11255
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/cristal-do-pico.tsx",
+      "sha256": "cc38d7653cc4c901baecf70c4db9789ac2e58b9c401554cf26a0e545a821afe5",
+      "bytes": 1945
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/descobertas-do-vale.tsx",
+      "sha256": "18cf86f1173aa685c79090e6ded6a2e1dc8fac8d163ab3e5bc16f484a30640f2",
+      "bytes": 5860
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/exploracao-do-vale.ts",
+      "sha256": "dd16bd2bb1da2f73ff21fd646db03b979c7c5b61ba649877954a2e4b46d72b75",
+      "bytes": 4353
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/farol.tsx",
+      "sha256": "14cae323647b172d825c614a4d85a5f9d3baad88020f44a9941d170487ffd0be",
+      "bytes": 7276
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/festa-na-vila.tsx",
+      "sha256": "19b8fe15ffef82bf6a1ec4db4ac49e3222666c9c385513d03f4fcf129cc5d4a9",
+      "bytes": 5872
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/filhote-do-vale.tsx",
+      "sha256": "1c47b4014c41e965e22d77b3a7794c53679936820592f80fb906cfc824a8b89f",
+      "bytes": 7586
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/final-do-farol.tsx",
+      "sha256": "e25290f549a05ff7e571beae317dbd377642839d9a39677350ee31efd938b977",
+      "bytes": 9886
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/floco.tsx",
+      "sha256": "32df149056b271744069560baea5fc294bee20e5aed53307422d24e7b4f4e177",
+      "bytes": 940
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/fogueira-viva.tsx",
+      "sha256": "b703346c167291031e8404f8cac7098dfedf2376755059006ce992f1b9b9275d",
+      "bytes": 6764
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/folhas-ao-vento.tsx",
+      "sha256": "8d0945a41916bfcc5dc5ef1827f3900100c828b580343f16e4cc712a47475722",
+      "bytes": 2322
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/foto.tsx",
+      "sha256": "e08c2a9eba1460f0b9c104a5e9a7cd5d7a59108fc60ebfaa5fcaf6556e0a14a1",
+      "bytes": 901
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/grupos.ts",
+      "sha256": "9cd8317f10e7b67457722c2afdadebffc84208ba4612a030642e177a4474d80f",
+      "bytes": 1278
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/habitantes-da-praia-colisao.ts",
+      "sha256": "a1614e68c43af6e46ab4f4e4f328723996cdd0a2acd3248a5f6e726c637dd7f5",
+      "bytes": 572
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/habitantes-da-praia.tsx",
+      "sha256": "ad220d4b7c9f79e8175e1d557fe5b4ed47248a86e0e1af26300eff16ed220ca9",
+      "bytes": 3400
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/horta.tsx",
+      "sha256": "4e9f9fd7cc71a5f0d7d7e346f24b4aa9eb92acef93481a19981a777f9ede15a8",
+      "bytes": 11289
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/ilha-central.tsx",
+      "sha256": "bd5bd43b43732066bc3525c930d0e6cfd56c40b49c2b577f6f0934b7d8fc9ddb",
+      "bytes": 7820
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/ilha-completa.tsx",
+      "sha256": "117c63b6d403e2f5725466a74087a793400ddbf2fd16131ba5570cf23cc947d6",
+      "bytes": 17977
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/interativos.ts",
+      "sha256": "0aced06f8bd59a1dc7f037084afeb444c8f03ccfc33c11700bdd46184845d415",
+      "bytes": 2392
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/irie.tsx",
+      "sha256": "c0ca9a3529ea0af7b6e1ce93effcc965bdb95fe08176b6499165850b6051258a",
+      "bytes": 934
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/jade.tsx",
+      "sha256": "31cb108d6d2b71cc128d08132f5ecefa785eb4ec4ae630c56d585f5d158fe7ab",
+      "bytes": 922
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/lugar-do-quadro.ts",
+      "sha256": "f840ae7fdc9c1c057b3229ce04cee20c07d4c72de069bca5baa0dcc5fe8c3ea3",
+      "bytes": 2242
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/luneta-medidas.ts",
+      "sha256": "a0c0452636a7a09491b7758a406106579c1f2187c00125f10c18a59474db83bb",
+      "bytes": 1605
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/luneta.tsx",
+      "sha256": "52fca514bae1b529fd6cdb76290b106e673257ddd3ae37f4c6b96a23b3c44f58",
+      "bytes": 4316
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/mare.tsx",
+      "sha256": "e84c68c1bc62bdf120800fab3074fd93ef5eae11e48d8954b93953c0d639508d",
+      "bytes": 931
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/mecanismos.tsx",
+      "sha256": "13391f6ace52856af14501ce89c863f3e46c8cd903e57dfed6eeb8f6d2ae7fd9",
+      "bytes": 6873
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/medidas.ts",
+      "sha256": "772948c0812f36071b6e079e2f2e7c6d8539ea97ab78c4bccec3789b6e9aa7ea",
+      "bytes": 19609
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/medidor.tsx",
+      "sha256": "4f0901ce20c7baae774f8be79ad9a55aed0b7b0226b5e9082db9e12d4c5d78f7",
+      "bytes": 14492
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/mergulho-do-recife.tsx",
+      "sha256": "a0b7976939b8040f4a73191214ce3418e4ef054799d8eade05e62767d456967b",
+      "bytes": 9576
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/mesa-de-mapas.tsx",
+      "sha256": "21b84179a5b0ed323ab61e132045cf25428a26e019e56be1eb346b599a70f438",
+      "bytes": 1152
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/modelos.tsx",
+      "sha256": "b0c8fe868529f0ef3901ddf7c0901a1820cb55d33e55e6255a109ffe781d2021",
+      "bytes": 5076
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/montaria-do-vale.tsx",
+      "sha256": "ebac8feba90eb12fa7ef11822bb70c2cf299b58bff902d35ff92b2a032b4649e",
+      "bytes": 6677
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/morador.tsx",
+      "sha256": "c9ff13f0f007803cd53b931908947f4327f6bf772c52825f499ef331c78ea1b3",
+      "bytes": 6778
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/nuvens-vivo.tsx",
+      "sha256": "98eafcec554d7ef278a780a32e86422bd1228b2a222767800e092705dd9d2336",
+      "bytes": 3136
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/nuvens.ts",
+      "sha256": "8a89a5812a0e1cbc5c24513fe452c15f924340016d2a5aa70e0e212e95299c5a",
+      "bytes": 1197
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/objetos-da-casa.tsx",
+      "sha256": "c18b6b9ccf8bb6b1245935c341bd98bd65f59502232a95416ce332eb4575ebc2",
+      "bytes": 13288
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/objetos-reativos.tsx",
+      "sha256": "3f171cf0e43708e15769e131bd114db91e9a6e17657de1aa550b3fc904ce1e5e",
+      "bytes": 7382
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/obra.tsx",
+      "sha256": "24c0102dc6260dafa51c7bed25509d54f1c203ba1f8273b6405cd476233eb2a6",
+      "bytes": 10788
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/ondinhas.tsx",
+      "sha256": "f8ef515b1255b6ccc883ec61b6dfa9fdf99df401e1aed647ae25b19070ff7b86",
+      "bytes": 4315
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/peca-da-arte.tsx",
+      "sha256": "aad7deb9d0d1c13a03b9d6b69aeeecb1c932339df43c4cdebb84947560929e48",
+      "bytes": 2767
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/pico-vivo.tsx",
+      "sha256": "e2103fed54ee76c8bb8d97e511ab637d377db9b1f0fb4d514373d3d3486f889c",
+      "bytes": 3201
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/pico.ts",
+      "sha256": "a0285c65a1f0fb592fe7e4e554cb128a4fa16276710ec8a0f8d27939af41c98b",
+      "bytes": 731
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/pintura-da-ilha.ts",
+      "sha256": "60ff6d729c88bf596734bee77311d6fb5c02c9ec05a1b6dfa839cdd73c807157",
+      "bytes": 4557
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/placa-da-ponte.tsx",
+      "sha256": "e40c1de547419ad9b71a5ab76a62a097cdedb04fefbcd1556f6f5ee8e98de4eb",
+      "bytes": 4061
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/plataformas-das-nuvens.tsx",
+      "sha256": "798477adc7323fcfa035ac450e0acc2614c5c891f225ffa31b0b06a45226a6b9",
+      "bytes": 4604
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/pontes-vivas.tsx",
+      "sha256": "c379218d44c386fe0ce43cc26e036248cc41b23de2b80b140882be2cd57e3366",
+      "bytes": 7851
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/portos.ts",
+      "sha256": "1a8d6d42ed06cdbb8123d043a7841098fa5ad0151e326567927dcb52e96d3fba",
+      "bytes": 1863
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/quadro-das-cores.tsx",
+      "sha256": "0f338e23119488809fdb3e0f11fbe239282b013c2d85001c1b56d45259844388",
+      "bytes": 4858
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/qualidade-da-cena.tsx",
+      "sha256": "d5f962940c11bd8a100397934e7e14d8bb7748504ac9294949bc48096109a304",
+      "bytes": 3128
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/rastro-de-pegadas.tsx",
+      "sha256": "799ec1636ea5c310ad6b22f71413917b77387b1fdb17801708ed5198f113cede",
+      "bytes": 2648
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/recife-vivo.tsx",
+      "sha256": "a0f6fb4baca2e4ddd99f66d62415417298d5b241d6293156c801b0fd8d5d76fa",
+      "bytes": 2136
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/recife.ts",
+      "sha256": "c7f2d7d89970b9afeef982901f2a9d5a78865228440a624a68f1a9f1d61294b9",
+      "bytes": 1491
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/rotina-dos-lumis.tsx",
+      "sha256": "7b9ede409121c77904b261c2279bf3fdabafa4ed3d8440d61a0dc8d7640cea20",
+      "bytes": 10438
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/saltos-das-nuvens.ts",
+      "sha256": "567a065c43842788797a7dce7cfbfc86e0b90486243aa3a66ee5f450081a784b",
+      "bytes": 4932
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/subida.ts",
+      "sha256": "c6ae7c40bebc5cb24d9655925a74bbef24a06f16f7f595b7e4514e7181e5b8a7",
+      "bytes": 3839
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/telhados.ts",
+      "sha256": "551066b76d5f2ef3534370c20873fc88fdf9231e82d956bd484f045158882ab9",
+      "bytes": 3061
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/treno-do-pico.tsx",
+      "sha256": "29c7f5231f0213924b949351132d38d8b95ac89283a18334d01d75aeb5f3f067",
+      "bytes": 3740
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/tronco-no-lago.tsx",
+      "sha256": "fa3573d2b069b12357c9f313f6f95a3694640533c79224e6ff71cf8119adc9f4",
+      "bytes": 6638
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/vale-vivo.tsx",
+      "sha256": "f3c699e93d96ea0f7380ac4710ad34313408e529721a84c5098790a61ff4675d",
+      "bytes": 1524
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/vale.ts",
+      "sha256": "d582e8e02c8d053e9b46b5d87318626952051619fb3307c0573feacb28d896f4",
+      "bytes": 656
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/vegetacao-ao-vento.ts",
+      "sha256": "357a6ec7ad3d84bc9281e2e84211564af6273d72ed4154e81fd6f1d5221a976e",
+      "bytes": 3193
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/vila-viva.tsx",
+      "sha256": "db39cf5eab4aa7ec113206287c28b7408c25fa987a65f8dc34ef556e43b4b380",
+      "bytes": 3325
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/vista-da-luneta.ts",
+      "sha256": "1f6749370848e65674b3cbddfac5d353731025fd9a3bb02cf97ec645c012f064",
+      "bytes": 749
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/avatar-do-jogo.tsx",
+      "sha256": "3dc71b5e0db07b98caebbcb4c85c4d3a6308ea650e2b2084ae1ad70c3fa47b43",
+      "bytes": 5659
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/bracos.ts",
+      "sha256": "bc3c3237ce123eae17798f26a4966473a788eebe409c7c3ded46d23003cc14af",
+      "bytes": 5093
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/camera.tsx",
+      "sha256": "f54616bc99f4b4a11170aaf46a63bcfa09083fefe48286b796c3d640f2d27764",
+      "bytes": 28057
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/lanterna-na-mao.tsx",
+      "sha256": "1ff8fd9f9c15ac36feaa3e4e075e53f11845d78a6cde0bc1617126d5debebff6",
+      "bytes": 2849
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/patins-nos-pes.tsx",
+      "sha256": "e350e84a16f4f3cb65f11aba8f603d9d21582deaf213503ac8b8c200b1fb6ed0",
+      "bytes": 6726
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/personagem.tsx",
+      "sha256": "ce798c0a429ed671c270bc8fa61db6d25c63846d2e38ddc9abc04c13abbb6f24",
+      "bytes": 24902
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/planador-aberto.tsx",
+      "sha256": "437195c8ae0f02820e44fdbbe70f8e880204aeefb78851755e3e1fa2ce0eaa1c",
+      "bytes": 1963
+    },
+    {
+      "path": "packages/arquipelago/src/personagem/zappy.tsx",
+      "sha256": "dfa893e248a3a3b6c1f4e4428be5af3816d9d721ae4f68a50fcf137b879333e7",
+      "bytes": 8399
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/aparencias-falsas.ts",
+      "sha256": "19735d872ca38051aca5a15005af1f320c38450b08dd654a3004fc4e775fe3ee",
+      "bytes": 2550
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/cartas-falsas.ts",
+      "sha256": "34e665dd153d6037a33026a6afd543e43e571aff80b100fd647039fa6cba9a91",
+      "bytes": 2323
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/desafios-falsos.ts",
+      "sha256": "ef8dccff7fcb4a6e9787242ad86b8f001750b3c6732f47abbd180303bb3e69b8",
+      "bytes": 3796
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/falsa.ts",
+      "sha256": "b2120d0e0ea4c8847d8d613602b3fb318a4a7b9b04dc44460d1c7e24329aa674",
+      "bytes": 19746
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/familia-falsa.ts",
+      "sha256": "a5001b49d0f32608bfc166104ccfcaa1c0b3ee6b082d5c4747a69d4b0b63a62e",
+      "bytes": 4386
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/galeria-falsa.ts",
+      "sha256": "bef26c3c07e2dee60cf49a31dee7450802bf8b61f632a61e263c3ec4bf569345",
+      "bytes": 4060
+    },
+    {
+      "path": "packages/arquipelago/src/plataforma/obra-de-exemplo.ts",
+      "sha256": "584b37829b531cd4f94a5bf9a47bbeca6c7151babb17baa1dda402f7ba017449",
+      "bytes": 2507
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/achados-do-recife.ts",
+      "sha256": "a4658affab339107fec649e433a1fdd38e6b99fd7754adbe2c5cf5ece694fd75",
+      "bytes": 1105
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/agua.ts",
+      "sha256": "c8135dee17dad14c68bcfd0ecf04609410c14f387455de6cb0022a32ba6d7751",
+      "bytes": 608
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/ajustes-da-arte.ts",
+      "sha256": "27e5f57af93338dbaaa3b2c92c0d47f31e2ae395ad3e1d6124448c7bc45d17e7",
+      "bytes": 2780
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/album.ts",
+      "sha256": "695ca9936606b81d7fc9cd43ef7b5b22523663fc3e156eee2efbd6fd22115986",
+      "bytes": 7936
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/armazem-salvamento.ts",
+      "sha256": "882d4845c2275258a0225ae07fef2f2baf7342a5723b182c4a42d765da3c1914",
+      "bytes": 3980
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/armazem-tempo.ts",
+      "sha256": "b0bc406758fed6a036eabd5fdfa56a382d99f7a42768787ee0bdca0cfa866b4f",
+      "bytes": 3660
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/balao.ts",
+      "sha256": "72d6c70dd9b23628f662467b1c8f711c9cc697ce1b7bdcd1487405eb6dcf6154",
+      "bytes": 9958
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/banda.ts",
+      "sha256": "655b0dcb2eb1e2d61e6cdf491ef263311b1d7ae5a4d5f4ee4cf31e77077a730a",
+      "bytes": 5517
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/barco.ts",
+      "sha256": "03867265e513ea7a115a24df9fe7fe23810ed5942aa8f1cb202b941f525d9f5d",
+      "bytes": 9399
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/bento.ts",
+      "sha256": "3b142ce9157e7797ebbc8ffd8f161b90efb3adc0e7f004746b60409698ea67c6",
+      "bytes": 5683
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/bichos.ts",
+      "sha256": "9a4c0df27773e9efe6a69afa8b9134d3632d9fc87e075163e5d19b6c099ae2ef",
+      "bytes": 7608
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/borroes.ts",
+      "sha256": "60f046b1792e0b6f3cfc9dc5fe828fa7a39e05791803492f11fb45878a440ab0",
+      "bytes": 10355
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/caderno-dos-lumis.ts",
+      "sha256": "ce5c316cce580d99fd87896ae285d8d33414fa8582faba62a8e42ecbabdb3196",
+      "bytes": 2420
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/camera.ts",
+      "sha256": "7114d871a894ab1c48b36e1e0fea35b2fb5f5d788f91d523e206aaa2cd62fa45",
+      "bytes": 3636
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/caminho.ts",
+      "sha256": "b616ff92917bd4de6ef8267e62b81903cb00b7f6c7499f7f9eae46b177d8711b",
+      "bytes": 7835
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/cipo.ts",
+      "sha256": "9a76d32fed7a445d7c5253bcef1ae99e614efb99bd5f18ab00f67859fcf15ba7",
+      "bytes": 7981
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/clima.ts",
+      "sha256": "f245a8ca835b1c64faa4d4ad6b53ac6efcd43ed9ecd8750b5ea6525cc301601b",
+      "bytes": 4802
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/conciliar-salvamento.ts",
+      "sha256": "c777915067b84af2614b5bb06ef5d18379d306ca2702c482842f435b6c81b3fd",
+      "bytes": 3649
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/conforto.ts",
+      "sha256": "5a11c6588af664c1d8de4d32ce88c88dcb19ae76bdd0aa4f5883a7574cbd44b2",
+      "bytes": 3953
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/constelacoes.ts",
+      "sha256": "5848e4554cd6cec85731c3685218efbcab1f769eae8a3767faef6c3cef04456d",
+      "bytes": 5089
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/aconchego.ts",
+      "sha256": "69e1806d47706b574a2cddf0dc5f5f553e9b563297f67162cc16a8ad64fa1fb7",
+      "bytes": 7586
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+      "sha256": "220bc3f2e69a1313592b7bf2a061bda39a655972dfe1f7fb56d99179e429b943",
+      "bytes": 5925
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/falas.ts",
+      "sha256": "ef530c6d1074094f848e3263cf4414fb25a909256f95712ede9099ee90bff6c5",
+      "bytes": 2145
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/ferramentas.ts",
+      "sha256": "63a3e3c422846b8f9c2627b0d5092e253ce9d7a6619ab2d3f33b060c21a058e8",
+      "bytes": 6591
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/galeria.ts",
+      "sha256": "9931a9b54b790f1b6f66c9c29875e5958d84b45b689d42b7e904c846d51846a8",
+      "bytes": 5573
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/grade.ts",
+      "sha256": "3bc31e520e8a17c18a66c5e4fcb2f4a47444cb537069ae80e4007ddf693ab08a",
+      "bytes": 5369
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/lote.ts",
+      "sha256": "4bea55a90a4149e3603f5b3ecdaf9bc673eac7518f55910f24ff634eff329d38",
+      "bytes": 5772
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/obra.ts",
+      "sha256": "5977aea3a82df24fb593695e9f799e02c664b80732f964be5124624e6c8284a5",
+      "bytes": 10329
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/pecas.ts",
+      "sha256": "7b32faf5c1ca0e2d1d6a84e30f9f3dfe872a988ba46ed21ddbc67a4e7e02e65c",
+      "bytes": 10954
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+      "sha256": "eee18d11b985a41bacc8a83e4c60a6807c033c425a498d2f8cbfe2b5474f0637",
+      "bytes": 11337
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
+      "sha256": "ba70384656e62455efaffdf73c5fabd3069f0c0b0ef6d858c6c1fcc1a5367d24",
+      "bytes": 9434
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/construcao/telhado.ts",
+      "sha256": "1724f325b2ee682b04e4fdb1cac392da0f0b8a864b2e45e0c902a490083b51d6",
+      "bytes": 5796
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/conversa-da-capi.ts",
+      "sha256": "0c57b115266aabeca8a8abeeb7776f3d53a176c5ac6b4f4133780fe0a2fa62cb",
+      "bytes": 6262
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/conversa-do-bento.ts",
+      "sha256": "ee2ebfddc225c98bfe21ed7c11a47ef66344127c68ac56e6610186a44894e6c5",
+      "bytes": 9579
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/cor-da-ilha.ts",
+      "sha256": "0818dafed3478b4e32ce241c46f27b1b46a2bfa74ce00799bc41e635e4f32024",
+      "bytes": 3103
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/corais-do-recife.ts",
+      "sha256": "9643aaebea37e4c994589127d41bf74f87bb048f07d63c1b039c2a5df59e5e46",
+      "bytes": 4354
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/cordas.ts",
+      "sha256": "ad2091bbe35c6628511c6c6642bf94e1bea9eef86602f3f7b8a46e1b7d23a23f",
+      "bytes": 15870
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/corpo.ts",
+      "sha256": "a6fa1f85d79e4a195d66e0d416b9f1bb50822ba40663584c38999e109a8623fb",
+      "bytes": 2926
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/correnteza.ts",
+      "sha256": "8d02042c1a4a0b04cadb8768839581822b5e7520b25fe4c97692af872dc038f5",
+      "bytes": 3912
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/corrida-de-balao.ts",
+      "sha256": "9507a72e1f51a344dcda86565d4146f595b16569fc15152147ac964fb7028f15",
+      "bytes": 5762
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/cristal-raro.ts",
+      "sha256": "6788bbecf09a4cfd398cfca767abe233c61896d0943bab3c4d8224d3e9eebd21",
+      "bytes": 1522
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/cuidar.ts",
+      "sha256": "c176ca76e88c3140441d38761cd139c7793689b340c9da0ed7fdeb33c8549599",
+      "bytes": 3985
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/descanso.ts",
+      "sha256": "fce03c63a6351d713ec960b80ca6606ec7d5ddbaf215c6fb23a173c48e7c5280",
+      "bytes": 4656
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/diario.ts",
+      "sha256": "038d255e5d1cffe58c057a9cc5462f89a311c77ecb95868a2ad6a754a9f62ccc",
+      "bytes": 10565
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/empuxo.ts",
+      "sha256": "5fb75a859066b222bd568b87e7c358ea19186cca8baa098677e822307f5aa4c3",
+      "bytes": 2773
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/escalada.ts",
+      "sha256": "4682213bbbbed91373e66936f37f18baee30874fbfe78e1f371195945f871df5",
+      "bytes": 5850
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/esconde.ts",
+      "sha256": "1b1f9392d83debe5bd31d42db39e5c0b3902d9113e18da25c172a1deab4a3a80",
+      "bytes": 3884
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/estados-dos-materiais.ts",
+      "sha256": "9843230583bf2fb38440654acab5bdbc6e9bb0f923ae01a9ee9c50d31301b876",
+      "bytes": 2964
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/falas-da-capi.ts",
+      "sha256": "a83af7b5a8184380a4c74c67b3f599c1eb40081e2de74ac1f07a716a2ce79f1f",
+      "bytes": 4335
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/ferramenta-da-rotina.ts",
+      "sha256": "b3481310f955ebe689412356da4d16fdf43a35173b7ba23408965574fcb49cf5",
+      "bytes": 2900
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/festas.ts",
+      "sha256": "0b5ebcb37b4b34afec66efa3ac7dee3861e6302c1b580f686686476ea2431293",
+      "bytes": 3176
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/fila-tempo.ts",
+      "sha256": "41b60b53c0ef9a861fd4805ab711f2cc0ff40bfe2448f87f62470e4533f5d434",
+      "bytes": 2872
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/filhote-do-vale.ts",
+      "sha256": "cc24ba1a248299ac702cdc8d0dca87326a6ce52669b31774ed038df0084720b1",
+      "bytes": 8705
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/final-do-farol.ts",
+      "sha256": "6f62f8ebbb1dd6d1712f4f1ee8be6782e4651a8add4833e6616b6958c5ae9821",
+      "bytes": 3424
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/floco.ts",
+      "sha256": "62d2957139c8e19a4bd29e29c7408586836f98a2f12e8567b4899f4f59b23e43",
+      "bytes": 1348
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/gerente-tempo.ts",
+      "sha256": "85352ab351959569819e2cbf45f1c8fa0a8c8a97f92660e8dcc8c7905767d157",
+      "bytes": 2942
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/habitantes-da-praia.ts",
+      "sha256": "11e96d70961a81fbc44dbf1aac61e1dddb8c8004ebef869d030ddc6395c66eb9",
+      "bytes": 2230
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/horta.ts",
+      "sha256": "b44b81786e9afda59e4ce5970da38579336e1d834efa58f492c0e4d4e4387ecc",
+      "bytes": 153
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/ilhas-completas.ts",
+      "sha256": "81e091e620b4220563e4de04ab36d9f5886053fbcdad993b264ca0587d328816",
+      "bytes": 3707
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/irie.ts",
+      "sha256": "52833061b38289e3c77e98bff49e71cb22567919f8b548d72450a7de3fa22a25",
+      "bytes": 826
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/itens.ts",
+      "sha256": "52270090ae877276d2ab3477eb845f9bd8115c9ae2a3a22cd8421e57c7f6ac2d",
+      "bytes": 4646
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/jade.ts",
+      "sha256": "ae8172bfe781db88d0a81e48a4379999f60676780f31dc37021010c1f9a47ec3",
+      "bytes": 1681
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/locomocao.ts",
+      "sha256": "71cb30e8e5ca291dc7f997ff45772ba31bc57304b3f277e372a2f54a561a042a",
+      "bytes": 10612
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/lumis.ts",
+      "sha256": "94bcc98754cdd624f9172eeb2951fdc936940faaa7598c69f2326ccc4fe99e46",
+      "bytes": 1880
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/luneta.ts",
+      "sha256": "d7a3b182f6a93a6c623a32107489d17c6efd903ce366a1aec415394e854c7a8a",
+      "bytes": 1836
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/mapa.ts",
+      "sha256": "89b6e58b0b92fa5c3a3bea1d50a3c545ecc1fa105b3be3b0a58c6040f918937a",
+      "bytes": 1666
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/mare.ts",
+      "sha256": "c163863e7741be1dd2fea4b4672776ac556fd3e7c776457e927f41fcc96a8101",
+      "bytes": 876
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/materiais-fisicos.ts",
+      "sha256": "0feaaedc81b7f402966493a7d86bb6bacd39d5e3ed25a15d46030e2b55be7e1b",
+      "bytes": 2184
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/mecanismos.ts",
+      "sha256": "92bcc75d5c052cfe02ec06b3f407eb35e572fcf30006b714b645cec6998b1330",
+      "bytes": 652
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/mergulho.ts",
+      "sha256": "4392505601ec5eca49efde04738fa2bdffc544f4d7069b6d63b9a6eda04e291b",
+      "bytes": 2359
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modo-foto.ts",
+      "sha256": "600463a70f1c4d8712f7bedd9f370e11dd9d1a0b7083e5bf476eaaa7f5512329",
+      "bytes": 2869
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/balao.ts",
+      "sha256": "0bfd45b6b9ea9f4d89cbf397b4b2e5a648bdefc0f0fac20196402cc7efe13b15",
+      "bytes": 1985
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/barco.ts",
+      "sha256": "d6c5de98554e2136ed7bd3cc9cebb694bf5ce4c9f426c832ad3ee33eb6e62bb5",
+      "bytes": 1497
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/borda.ts",
+      "sha256": "4a1861cbd1bdae025c0afd6cbd37636313319d4759a9122e4848d98ee5dc2bfc",
+      "bytes": 7302
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/chao.ts",
+      "sha256": "40226b208eafc3bcb447c197defc075597c739c84b7a05b4c8fd3502888cee77",
+      "bytes": 7800
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/cipo.ts",
+      "sha256": "6a0ea66511b6ea44944fea03abee4c7afbfc62d8f52b9128b198ed5dc1b2be83",
+      "bytes": 4021
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/colisao.ts",
+      "sha256": "f604cc43a24ec8d4a0da8bba032271fba2e6b52a77017e0ba27e535e789ce1e2",
+      "bytes": 3470
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/descanso.ts",
+      "sha256": "c5159113ccd49f3b05422c5529caf10fb593887f0b1aaf00ab529da255a4a893",
+      "bytes": 2478
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/equilibrio.ts",
+      "sha256": "bd008570684c178f631fe81a5fb58f9ab85b79e3b6e0ce5a3c93da355674cf52",
+      "bytes": 7541
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/escada.ts",
+      "sha256": "31497deffef475a87466649b66aac02b40cd1d85a1c965bada8820b29f8a8a5a",
+      "bytes": 7291
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/escalada.ts",
+      "sha256": "dd8939f290c1bc573c4938d4e7bfc0ace3d175101d1e10273935669a81642431",
+      "bytes": 3968
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/escorregar.ts",
+      "sha256": "ffb1f6d80d768152cfa497e8f326ae8d6be9500b9cf43e37213b6c735fc5b144",
+      "bytes": 7322
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/index.ts",
+      "sha256": "925d32a84178691f4cf7b8605eca3a16dbe8b0fc059151aa05619eee32002868",
+      "bytes": 5091
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/mergulho.ts",
+      "sha256": "61918bc879e646403490e3df02797668f6918f1fcd9a0ad963072a9680cf21bb",
+      "bytes": 1970
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/montar.ts",
+      "sha256": "5727010c17a458878d25e832be44f9c40b5475e4c9308c4c07b8a8dab43ba1b6",
+      "bytes": 4260
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/planar.ts",
+      "sha256": "10677802564e09e6447404f0c15d9041c1fdf8014afdb27abd1bb15eb7e8ad29",
+      "bytes": 4018
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/tipos.ts",
+      "sha256": "c0a3bb73432d3c29b6f131fe89d0d419ede5dc8187a649fdb319eb2144b1fa28",
+      "bytes": 8570
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/modos/trocas.ts",
+      "sha256": "fa0785910b198fc9c4e411543444de20b831d4340694e83c029eeeff6e8c9016",
+      "bytes": 2124
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/montaria.ts",
+      "sha256": "070989891c1fdd52c1538811faab9d656918b2a9c25093faba16465d09412378",
+      "bytes": 3792
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/moradores.ts",
+      "sha256": "b4e1432b3693acad647747cff41450e43b91f12209793d64f401e5d348c60c33",
+      "bytes": 11196
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/movimento.ts",
+      "sha256": "3d39c2dfe95e85d16b57fb7c1069669b447ca4daa7ff63206a44ff77ebbc1351",
+      "bytes": 3860
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/mundo-reativo.ts",
+      "sha256": "2632211283fda5404570d65c6966db4d9621fbd4a40f98afcadbcab2fe404dbf",
+      "bytes": 2004
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/necessidades.ts",
+      "sha256": "d6fade76a4493f2b82672f7976ba735384a661b38da33ad89b2f9a4a87da6f78",
+      "bytes": 1739
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/patins.ts",
+      "sha256": "51fd4bf1e6e77c6f7ec18cc28e7ef8b30b7da327bc26c75c1b26404c0b51485b",
+      "bytes": 1803
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/pausa.ts",
+      "sha256": "58fc50fb31f2a87aa6b9dd0b7f93badd6c7ac7ea17ebbebb67dce3179e6f823d",
+      "bytes": 799
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/pegadas.ts",
+      "sha256": "563b93f7aef2e4a3b0a9af25d7ac76968b35d9cf651fb292d57b5767ab3e845a",
+      "bytes": 4187
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/percurso.ts",
+      "sha256": "45cde63372fbb71c74d1ec743f76c6cd1c2139b62e7cc400810d5bd3e209b11e",
+      "bytes": 16403
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/perfis-de-camera.ts",
+      "sha256": "09c19b1f98cba7d54d1e2a1dd34c1283e4c042f5e5b504ba090485cfbbc75267",
+      "bytes": 6444
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/planador.ts",
+      "sha256": "81b7b3a6778c0acf4888ad204eb9608a96c62e65b6795139edcc432bff7320a5",
+      "bytes": 4041
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/plataformas-das-nuvens.ts",
+      "sha256": "f463e89f34fc841a642adad0838bd47225f7004a1c2438aa1444553ebc0153b6",
+      "bytes": 980
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/pontes-vivas.ts",
+      "sha256": "df1c6aef76a83022ab8347ccfdf5e3f6b0f169dfb444ac5e4bf431d8e4592340",
+      "bytes": 1265
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/ponto-de-partida.ts",
+      "sha256": "47f13a0ae4ab128cba2d886c0e9f48b64cdf91a775d042890990f8d81b8f04de",
+      "bytes": 3214
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/quadro-das-cores.ts",
+      "sha256": "db912a91fec3c8cc1552077e1690d4aec9cc860745d6bf56618e18408d82bd5c",
+      "bytes": 4415
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/qualidade.ts",
+      "sha256": "2c869ef0c6ec82b51c3093b0dbc5d4655e6b28700ced52e14a899b55133d0fc9",
+      "bytes": 2947
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/receitas.ts",
+      "sha256": "f564c088862ac1f84fb4c119e79896ec9451083a28cb05968a325e9dd13c56a6",
+      "bytes": 4115
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/rotina.ts",
+      "sha256": "660f8db309ed54d3d1ad37958997fb7606dadacc404899be7467b13509dcc4ab",
+      "bytes": 11086
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/salvar.ts",
+      "sha256": "41be0bc17b608f542f2337d6b5b596ce80b6687ead1389089d5b14138ad65d1c",
+      "bytes": 7709
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/seguir.ts",
+      "sha256": "cf68c2f29346165922f45e5dd635e19fa859267271907a9d65447308264e41f9",
+      "bytes": 4249
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/sessao-tempo.ts",
+      "sha256": "7e4284d6198d0421e06b6107e79e47d3e8b40a04940125a0107cad1a81b2d2b2",
+      "bytes": 4780
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/tempo-do-dia.ts",
+      "sha256": "d1c6fc4f0ad946774cef482777ef63bdd766698e465c9e71c905220255efdd94",
+      "bytes": 1879
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/tempo-livre.ts",
+      "sha256": "0605ffe53504efd8016033aa9595e876ed845c7be895806d419671894ee428ef",
+      "bytes": 229
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/treno.ts",
+      "sha256": "e7d3f0f3d4ff01bdc6a7efb78568b27709e9ee17b284c2cb3c3487c1659449ad",
+      "bytes": 1701
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/turnos.ts",
+      "sha256": "b2cec3b8e9bd434d10817fc0c2d1a9781279ab334f0c6f5f53d4c5b11e4e3a85",
+      "bytes": 11879
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/vale.ts",
+      "sha256": "920c4f6b56e32a529eab7b41b27d61e0ce83dd7cd2e1fcf69a668fba66bda41d",
+      "bytes": 2936
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/vento.ts",
+      "sha256": "72e475169041de8f4ed89b8f42d862e57c85f2d4dc9a22a2bf5f58bc3681c244",
+      "bytes": 1097
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/visitas.ts",
+      "sha256": "6cae63918903d33e3192497073d1e81d8725266979eb8da67f24fdc0da81b982",
+      "bytes": 8773
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/zappy.ts",
+      "sha256": "3857bb9910206946102ee744eb91a6f548b4252b5b385f81e8edb7cfbd17aaf0",
+      "bytes": 3716
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/erros.ts",
+      "sha256": "4a79a08241a274d6479611cf7c1c63ab7fe2720a2e7b9e73c04a8597b0ea6df4",
+      "bytes": 4426
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/leituras-dos-membros.ts",
+      "sha256": "797bf5f128e5f4f5ecf2c5af84f769737366ac8ab31e05210ea11bb9395801a0",
+      "bytes": 4316
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/mapa-das-ilhas.ts",
+      "sha256": "677b4d42a4c2108dc4104ff5111f64bcc348b0413e9597a768f9abc6268b922c",
+      "bytes": 1910
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-da-equipe.ts",
+      "sha256": "671f0a98279d88262a4b661ce7bcc708b5c4277d25263187bb7307c3bad352c9",
+      "bytes": 17473
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-da-familia.ts",
+      "sha256": "298d9d5ec7cbd07c42189cfcb6f1cf4afef98df6092ca483c137211404e6c116",
+      "bytes": 6519
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-da-galeria.ts",
+      "sha256": "36337e04916e026cb00343bd027751d368eea0474e84aad293253f96ba927296",
+      "bytes": 5036
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-da-medicao.ts",
+      "sha256": "7602cf4435db767df9353b6c7d5caffc26711e29d02f48bb9455dcf95ed9f5c8",
+      "bytes": 5621
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-das-cartas.ts",
+      "sha256": "3682a0105c259a3ccbdd6fc9bbb594444ed6e3a13b3b352ee2938410aef7b4d3",
+      "bytes": 1554
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-das-visitas.ts",
+      "sha256": "8056e130300cac152b5afd8d6c3af988733162c3d8441090851164444bd2739f",
+      "bytes": 5111
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-do-jogo.ts",
+      "sha256": "71990abda5aec9066303d8c6a875d6d6ba1206c55d002f744810f20ed3bd52b6",
+      "bytes": 7263
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-dos-desafios.ts",
+      "sha256": "e6167a1fe01c564d2bc296c8fcfc82d5c291585ee34233c7b810e6f3497388bf",
+      "bytes": 16583
+    },
+    {
+      "path": "packages/arquipelago-api/src/application/servico-dos-minijogos.ts",
+      "sha256": "62bdba56ddbdb25230210bd3c4388072d35946f6e338c37f6728eb2f41793039",
+      "bytes": 1504
+    },
+    {
+      "path": "packages/arquipelago-api/src/composition-root.ts",
+      "sha256": "7f391b6ed36c052330f18ce0be71dcae1c208fb0c7d1a36ef9c36ddd7f35f734",
+      "bytes": 5732
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/acesso.ts",
+      "sha256": "1435e6175e19d2a57930c35d3ba94dd253fe61d09b3386dcd89902201ae4aa4e",
+      "bytes": 2046
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/desafio-do-dia.ts",
+      "sha256": "3223d7d91c4a56c0b6f568b7a1b4ce75c52922947a581193cba589222f214ace",
+      "bytes": 2262
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/desafios.port.ts",
+      "sha256": "17a97473c7e35f14a3f6fa091082069175869f71f707da4334af5f2fd3b25da5",
+      "bytes": 7181
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/desafios.ts",
+      "sha256": "9f7281d5e290eaac8abd5c1e14ddcd2adf8304f8b584ceb2223a444a46bb89ba",
+      "bytes": 2962
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/familia.port.ts",
+      "sha256": "ed4b95d607327fd8ee84baf9d81d20a1ccf3f663b6f8160acc21fe1a12c75907",
+      "bytes": 1748
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/galeria.port.ts",
+      "sha256": "3099ff0ef4041bc502217b7f658ba6395c49f80df0748a7a91f80806d815af8d",
+      "bytes": 1168
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/intervalo-de-tempo.ts",
+      "sha256": "79e2f93ce91701b0af89d2128edb5376fb1b9e57ec1fb0e3e2a84d63c6039ba7",
+      "bytes": 1394
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/jogador.ts",
+      "sha256": "f91e93c3b3512298835fecd1d563e6b8a1685a3f063ab8a2d879e46895de6c2e",
+      "bytes": 1092
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/manifestos.ts",
+      "sha256": "b1362cabd17efe0e47a88a8cb608cf1160a6c90dd9a6ba3fd9f0ab50415fb015",
+      "bytes": 9687
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/medicao.ts",
+      "sha256": "baed274e5926b99547e8501202d7bf8779bf806b3535ffda01c341fbedf59f05",
+      "bytes": 4050
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/membros.port.ts",
+      "sha256": "7df11b01fb07cf10bbaa75dccb6528507149e00441988e1da9883cd15b2d761c",
+      "bytes": 2752
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/minijogos.port.ts",
+      "sha256": "87865fa904c1ae80c1f59435ef8a679b7cbee3431e5422e062ece218137e59d9",
+      "bytes": 502
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/moedas.port.ts",
+      "sha256": "f28236d1af7589ecc12dd8c694b347723bba75978747af5009376b996c6c954a",
+      "bytes": 2059
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/repositorio-sessoes-tempo.port.ts",
+      "sha256": "99fee832e5b41cd7b605f2ee8076a3ca1a0e7a9384108331be4b92bd49aad15d",
+      "bytes": 697
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/repositorio.port.ts",
+      "sha256": "a355f5ee279ae13c59895c9d9dcd0501eac9d6245e9f7aec8ca181477b1427d5",
+      "bytes": 1524
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/semana-da-familia.ts",
+      "sha256": "6851ce361ce8dcd2a82d68f197739ec957ca562c2a5e5a12feee6af74709b4b6",
+      "bytes": 3357
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/sessao-de-tempo.ts",
+      "sha256": "66243ce7e4afcf282aa4bb52a376150a19e5dea3b925c292801098572078dd76",
+      "bytes": 1747
+    },
+    {
+      "path": "packages/arquipelago-api/src/domain/tempo-erros.ts",
+      "sha256": "a7351fd756a74c64ce1c0f3f7c9a9bfc8509800b87a98ed4f8917ea02655d92a",
+      "bytes": 265
+    },
+    {
+      "path": "packages/arquipelago-api/src/index.ts",
+      "sha256": "84be4f806acf07e539bc384c60205ca51570c000e5eef4bd93344d8cf03ccd49",
+      "bytes": 1918
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/config/env.ts",
+      "sha256": "51800c96c4e7a9062207dc0664520b1673196019642b4c686273380b9cc124f4",
+      "bytes": 5163
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/members/membros-http.ts",
+      "sha256": "8f0b34991cbd1de83b6cda0d1567d7c563e278b44d27a313e5933a99833d1f5c",
+      "bytes": 5794
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/members/moedas-http.ts",
+      "sha256": "e89eb48e3dbe1334ad202a263a73de78f0abb13a8f28cf477c3575a0a44982d4",
+      "bytes": 2884
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/observability/sentry.ts",
+      "sha256": "06a76c571889973e8049893ec3b726d2a16149d297ec19cdba83c1a100ea3c46",
+      "bytes": 2864
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/db.ts",
+      "sha256": "cf9fc296a0052a11d90ec414e67fcb7fbdcaf42b975152f0a9d25a60bb78cde4",
+      "bytes": 1240
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-da-familia.ts",
+      "sha256": "38180cfb570db09a6c4a1447495361fc6e366cd5e95a3ba870e2b2c31bfddb58",
+      "bytes": 4530
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-da-galeria.ts",
+      "sha256": "e064d687ad8431a2e2bb751a637e38034c18c41ea4591a199cf5bcd12972b5bc",
+      "bytes": 2916
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-de-desafios.ts",
+      "sha256": "1e6d9dc9dfa922613b4564feb46a9c884c2c7276a9442eb3cb21936d14e91906",
+      "bytes": 18194
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-medicao.ts",
+      "sha256": "0fd4ef8a6e93bfe30c616d76991d61cfdb0f9c1bb64618c796ca7b8723a44b03",
+      "bytes": 5082
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-minijogos.ts",
+      "sha256": "84e010da9123b1a8cc5d57cb3553ff02e6f9b92a544f9a646ae428bc945393d7",
+      "bytes": 2785
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-sessoes-tempo.ts",
+      "sha256": "bc1ac0f9cbf470273bb391349ddeea79353f31dcc40d34e4789b1eb9836745fd",
+      "bytes": 9845
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts",
+      "sha256": "55b44f4cd5441e049637995c83bf2e02cde639d067363a9a2e2d8c955cf261e9",
+      "bytes": 5713
+    },
+    {
+      "path": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/schema.ts",
+      "sha256": "af6be223acbe442f835ecec56f506e7833a958931ef403075666a813ffffbfe2",
+      "bytes": 13052
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/identidade.ts",
+      "sha256": "c2929620489af2a03b3fd39beeeead760eb5d9427c8c4fc60439337fe6eecf2a",
+      "bytes": 3976
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-da-equipe.ts",
+      "sha256": "3f412b40e1addac62da5b46b13f7b4cc4be2948329928bf5d1362fc349dab9ed",
+      "bytes": 4453
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-da-familia.ts",
+      "sha256": "3ef7dc631e58ef4c9274aa31b8660c4aded19bd4bd6dea824157d407607162ff",
+      "bytes": 1450
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-da-galeria.ts",
+      "sha256": "575de04b34ce91dd519e1e42e83b80df995c394977dac13ad9e0d0ccad6ad914",
+      "bytes": 1155
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-da-medicao.ts",
+      "sha256": "f229a809b1185bf070907dc5709666b72ea59d31495c48c3fe46dbe420f97ac0",
+      "bytes": 599
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-das-visitas.ts",
+      "sha256": "09d0b988fa742d4cd03f9297175aa211a28360c04006fca0844d062d03bbc6a6",
+      "bytes": 1149
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-do-cliente.ts",
+      "sha256": "194a524c15334f63bdd022c643eab607985fba53f49141ae759f973068a1b8a8",
+      "bytes": 1943
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-do-jogo.ts",
+      "sha256": "bfd4631e919bca9634382ebfc5b9d8214ff8ce4e47c9044f9d17e48300d31cb1",
+      "bytes": 2999
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-dos-desafios.ts",
+      "sha256": "6a0ec6c2d1acfc46a3a7415b79c67275b536b07a4f57aa782b93ccf3b8288686",
+      "bytes": 1785
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/rotas-dos-minijogos.ts",
+      "sha256": "2e52b50a820029da733b91a07990f1f2f9efa9d57c64a27193c65b7889ccfc8f",
+      "bytes": 1260
+    },
+    {
+      "path": "packages/arquipelago-api/src/interfaces/http/server.ts",
+      "sha256": "23a4fe9b51063e10f8aef131daae5493c3ffd5299319715cdaf7f81836ba6b82",
+      "bytes": 11544
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/aparencias.ts",
+      "sha256": "0e1422224a4f4b2e2e3b6d89a7017247a8c952c9e72197843117e6bd578c473d",
+      "bytes": 7323
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/api.ts",
+      "sha256": "78fe4c700450d191e97789e2ab5cbbda162e0deeadf3948f3c9d7477892748bf",
+      "bytes": 5929
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/aprenda.ts",
+      "sha256": "276e79c6e9501e01c800c9c21fdcc3c0a8d062ba7497cee22d37ce5ee5c582b1",
+      "bytes": 2865
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/cartas-lumi.ts",
+      "sha256": "506bd226c8dae3d993b553a904109898a4f6c33b5569b1c3fb4d600f38bbcd8e",
+      "bytes": 3546
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/desafios.ts",
+      "sha256": "0fa41e1530b672911a7194c167a743ba32529cd24b33aa5463dedbcdb6170be9",
+      "bytes": 20913
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/familia.ts",
+      "sha256": "610ec643f9b2144278ecc78c57183efdb72f5cec3c399fba31528f32db668a49",
+      "bytes": 6967
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/galeria.ts",
+      "sha256": "948b9a8816bb5659eda4232b93cb4f180283a406670742728da149f5edc6d744",
+      "bytes": 5159
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/horta.ts",
+      "sha256": "9d13751e486dde8b2ec2f100d84be8c5d09b482a2e1a2e1b74113ec800415f83",
+      "bytes": 1726
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/ilhas.ts",
+      "sha256": "a61ea8b6e0238aed90260f19e3bd0dccdd125e4d7031e4a5fe2b2f4429a1314e",
+      "bytes": 3504
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/index.ts",
+      "sha256": "5d5d6f7c4f64fc465ec68971d0a6191bf3ff03042ab547811527c43d55bfee1a",
+      "bytes": 617
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/limites.ts",
+      "sha256": "6ab8539b1925ae8d1c08f9f6e01b9ff696eabcb7c745be84c7e233dd5e048abe",
+      "bytes": 1150
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/medicao.ts",
+      "sha256": "7bee5a0440903884471cdb5456ceae9956d8a3c21fee8190a0210361d7395800",
+      "bytes": 2596
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/membros.ts",
+      "sha256": "78c75fadbf62caff2f81c5d549d862f82aaec2d1e7a5eb136bccb7c887b38e35",
+      "bytes": 8638
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/minijogos.ts",
+      "sha256": "5faa17b59687d7a08b700f13ccb2c73634bd99ff18eaa4658a9cbc0894d6586b",
+      "bytes": 2055
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/objetos.ts",
+      "sha256": "aea6386ec4e3c981c508304dcad8e3ffa10ab5c84ddecb7cc6f96b3b06d5cefa",
+      "bytes": 10072
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/plataforma.ts",
+      "sha256": "73dbd0780aba8c33b82073113c1a577e8f3add97d61f3deda724f0466f030a9c",
+      "bytes": 5767
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/rotina-execucao.ts",
+      "sha256": "2723c097f2892066b3cb705351aff22409d0c644c137596ce8715baaea74b5e9",
+      "bytes": 15612
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/rotina-ferramenta.ts",
+      "sha256": "0845b62e62e8ed6071f6a1f1321e3733654fc5fe90567d9395bccc4460b370f3",
+      "bytes": 2565
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/rotina-mundo.ts",
+      "sha256": "3727e076fff0949b292fed38d4ed8fc0c75def775201a1e26089a50311087780",
+      "bytes": 1226
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/rotina-ponte.ts",
+      "sha256": "d071e18e8691bab477e184c3ec09d3e07f8fe22db23f1d2cdc4cab5092d894f3",
+      "bytes": 1649
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/rotina-validacao.ts",
+      "sha256": "336d50a93ffd599a3593a06561e04db2f7172ac4d49cd8e733cdf8a4f5135c58",
+      "bytes": 5506
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/rotinas.ts",
+      "sha256": "9996d0a3909b0cbff20a8e982aa3eced6d7c59f527a2f6073f9e5864fae9f9cf",
+      "bytes": 6723
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/salvamento.ts",
+      "sha256": "aafad504bbfbf455dd7e82b3f0e3b5b42a585e0c2cf8b5bff149b2b3b82e8611",
+      "bytes": 27857
+    }
+  ]
+}
