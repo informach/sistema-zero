@@ -48,7 +48,7 @@ chegada (`conferir_corredor`).
     para o mar;
   - no Bosque, as copas e o galho dos cipós passam um pouco da borda.
 - **Colisões:** o desenho nunca vira colisão. Cada ilha traz nós de colisão `col-*`, feitos à mão
-  ao lado das peças (veja abaixo). Vila Doce e Recife ainda não têm os deles.
+  ao lado das peças (veja abaixo). O Recife ainda não tem os dele.
 - **Brilho:** os vidros que acendem (`vidroJanela`, `lampiao`, `lanterna`) e os novos `perolaLuz` e
   `cristalLuz` saem com força de emissão 1; o jogo regula o brilho.
 
@@ -57,7 +57,7 @@ chegada (`conferir_corredor`).
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
 | `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4` | não tem | 27.762 | 958 KB |
-| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 925 KB |
+| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` e 86 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 961 KB |
 | `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 547 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
@@ -96,6 +96,15 @@ desenho; o `exportar(..., colisores=col)` grava tudo.
   pedras, cogumelos, tocas (um degrau baixo, o personagem sobe), as pedras da beira do lago (abaixo
   do degrau, `PEDRA_DO_LAGO_ALTA`, para os cipós ficarem ao alcance), as floreiras da cabana e as
   pernas do escorregador.
+- **O que colide na Vila Doce (29/10/2026):** chão, a fonte em três cilindros, as casinhas e a
+  sorveteria como caixas até o topo plano (o percurso dos telhados se pisa: caixotes a 1, casinhas
+  a 2,0, 2,8 e 3,6, terraço a 4,4, com a mureta aberta na frente), o morango em cima da casinha
+  rosa, a casquinha gigante, a padaria com as duas águas do telhado e a chaminé, os sacos de
+  farinha, a mesinha e os banquinhos, o balcão da sorveteria, as barracas (balcão e quatro postes)
+  e os enfeites de pé: pirulitos, bengalas e lampiões (`col-cil-poste`), jujubas, bancos,
+  canteiros (`col-cil-vaso`) e moitas, os dois últimos com 0,72 a 0,75 de altura para segurar o
+  corpo. Toldos, flores, tufos e o miúdo das construções não colidem.
+  `tests/colisores-da-vila-doce.test.ts` confere o percurso, a chegada e a frente das lojas.
 - **O que não colide:** copas, raízes, flores, tufos, taboas, vitórias-régias, o balde da roldana e
   os enfeites miúdos das construções. O personagem passa por eles sem tropeçar.
 - **Câmera:** o jogo diz pelo prefixo do nome o que só segura o corpo (`SO_PARA_O_CORPO` em

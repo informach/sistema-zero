@@ -176,7 +176,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - Testes: `tests/colisao-da-ilha-central.test.ts` (nós sem material, colisor debaixo do desenho,
   quem a câmera ignora, trilhas de pedra livres, porta, e uma busca em grade de 25 cm que chega da
   porta a cada canteiro, à bancada, ao farol, ao píer e à cabeça de cada ponte) e o bloco "os
-  enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`.
+  enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`. A Vila Doce (29/10/2026) tem os dela no
+  `vila-doce.glb` (casas e lojas até o topo plano, o percurso dos telhados, a fonte, as barracas e os
+  enfeites de pé), conferidos em `tests/colisores-da-vila-doce.test.ts` (paradas do percurso em cima de
+  colisor, vãos dentro do pulo andando, chegada e frente das lojas livres).
 
 ## Ilhas completas (o Bosque, 27/10/2026)
 

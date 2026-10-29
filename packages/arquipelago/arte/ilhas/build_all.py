@@ -50,6 +50,10 @@ CONTRATO = {
         'ancoras': COMUNS + ['fonte', 'padaria', 'sorveteria', 'telhados-inicio', 'telhados-1', 'telhados-2',
                              'telhados-3', 'telhados-fim'] + [f'barraca-{i}' for i in range(1, 7)],
         'clipes': [],
+        'colisores': ['col-terreno', 'col-cil-fonte', 'col-casinha', 'col-cil-morango', 'col-caixote',
+                      'col-sorveteria', 'col-mureta', 'col-balcao', 'col-cil-casquinha', 'col-padaria',
+                      'col-telhado-padaria', 'col-chamine', 'col-barraca', 'col-cil-poste', 'col-cil-jujuba',
+                      'col-banco', 'col-cil-vaso', 'col-cil-moita'],
     },
     'recife': {
         'nos': ['terreno', 'lagoa', 'construcoes', 'corais', 'enfeites', 'caverna'] + [f'alga-{i}' for i in range(1, 11)],
