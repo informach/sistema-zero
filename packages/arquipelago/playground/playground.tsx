@@ -16,6 +16,7 @@ import { lerFesta } from '../src/sistemas/festas'
  * `?patins=1` põe um par de patins na mochila (o prêmio da entrega pelos telhados).
  * `?lanterna=1` põe a lanterna na mochila e `?lumis=quindim:2,brigadeiro:1` os Lumis já presos
  * (fase2-06); com `?adiantar=13` a Vila já começa de noite, com os borrões.
+ * `?energia=20` começa com pouca energia, para conferir o descanso no banco e na cama (fase2-13).
  * `?cartas=todas` (ou `desligadas`, `fora-do-ar`) muda os cartões dos Lumis do caderno.
  * `?dia=feito` (ou `nenhum`; padrão `pronto`) muda o desafio do dia do Quadro das Cores.
  * `?objetos=sem-acesso` faz o Pinta e o Molda no molde de um objeto responderem sem acesso.
@@ -51,6 +52,7 @@ const plataforma = criarPlataformaFalsa({
   bento: q.has('bento') ? Number(q.get('bento')) : undefined,
   patins: q.get('patins') === '1',
   lanterna: q.get('lanterna') === '1',
+  energia: q.has('energia') ? Number(q.get('energia')) : undefined,
   lumis: q.has('lumis') ? lerLumis(q.get('lumis') ?? '') : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,

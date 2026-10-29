@@ -6,7 +6,7 @@ export type Necessidades = Salvamento['necessidades']
 /**
  * Fome, energia e diversão (100 = tudo bem). Caem devagar com o tempo de jogo; bem cuidadas,
  * dão humor bom (anda um pouco mais rápido). Nada castiga: energia no zero faz o avatar cochilar
- * e acordar em casa, sem perder nada.
+ * e acordar em casa, sem perder nada. Descansar no banco e na cama: `sistemas/descanso.ts`.
  */
 const QUEDA_POR_MINUTO = { fome: 2, energia: 1.2, diversao: 1 }
 
@@ -30,11 +30,6 @@ export function comer(n: Necessidades, item: Item): Necessidades {
     energia: limitar(n.energia + (item.comida.energia ?? 0)),
     diversao: limitar(n.diversao + (item.comida.diversao ?? 0)),
   }
-}
-
-/** Dormir (na cama ou no cochilo) recupera a energia toda. */
-export function dormir(n: Necessidades): Necessidades {
-  return { ...n, energia: 100 }
 }
 
 export type Humor = 'otimo' | 'bem' | 'cansado'

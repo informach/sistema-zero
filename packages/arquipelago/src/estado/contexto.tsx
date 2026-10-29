@@ -135,6 +135,22 @@ export type ModoDoCorpo =
   | 'escada'
   | 'escorregar'
   | 'borda'
+  | 'descanso'
+
+/**
+ * Onde descansar (fase2-13, `sistemas/descanso.ts`): sentado num banco ou deitado na cama. O corpo
+ * do Rapier fica de pé em `corpo`, fora do móvel; só o desenho vai para o assento ou o colchão.
+ */
+export interface LugarDeDescanso {
+  id: string
+  jeito: 'sentar' | 'deitar'
+  /** Onde fica a origem do desenho (os pés, no clipe), no mundo. */
+  desenho: Ponto
+  /** Para onde o desenho olha (giro `d` olha para `(sin d, cos d)`). */
+  giro: number
+  /** Onde o corpo do Rapier fica de pé enquanto descansa. */
+  corpo: { x: number; z: number }
+}
 
 /**
  * Cipós, troncos de escalar e águas rasas das ilhas completas, e o que o personagem faz com eles
@@ -155,7 +171,11 @@ export interface Movimento {
    */
   rodasDeNado: RodaDeNado[]
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
-  pedido: { tipo: 'cipo' | 'tronco'; id: string } | null
+  pedido:
+    | { tipo: 'cipo' | 'tronco'; id: string }
+    | { tipo: 'descanso'; lugar: LugarDeDescanso }
+    | { tipo: 'levantar' }
+    | null
   /** Escritos pelo personagem. */
   modo: ModoDoCorpo
   /** Pisando em algo (chão, deque, ponte); falso no ar, no cipó e no tronco. */

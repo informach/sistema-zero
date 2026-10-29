@@ -1,6 +1,6 @@
 """As animações de movimento do avatar no jogo: andar, correr, pular, cair, aterrissar, nadar,
 ficar pendurado no cipó, escalar o tronco e os modos novos do Bosque (equilibrar no tronco caído,
-subir escada, pendurar na borda e subir, escorregar).
+subir escada, pendurar na borda e subir, escorregar, sentar e deitar).
 
 O avatar é o mesmo da plataforma (esqueleto Mixamo em `community-kids/public/avatar3d/base/`), que
 só traz a pose "Idle" com movimento. Este script abre esse esqueleto no Blender sem tela, monta
@@ -620,6 +620,44 @@ def pose_escorregar(t):
     pernas_soltas(0, (0.42, 0.05, 0.07), (0.42, 0.05, -0.07), giro_pe=R(-18))
 
 
+# ── Descanso (fase2-13): sentado no banco e deitado na cama ─────────────────────────────────────
+# O banco da Vila tem o assento a 0,53 do chão, alto para o avatar (a perna toda tem 0,42): sentado,
+# a bacia fica 9 cm acima da de pé e 18 cm para trás, as coxas vão para a frente e as canelas pendem
+# e balançam devagar, uma de cada vez. No jogo o desenho vai para o banco; o corpo fica na frente.
+SENTADO = dict(sobe=0.09, atras=0.18, duracao=4.0)
+
+
+def pose_sentar(t):
+    """Laço sentado: mãos nos joelhos, o peito respirando e os pés balançando no ar."""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    bacia(sobe=SENTADO['sobe'], frente=-SENTADO['atras'])
+    tronco(inclinar=R(4) + R(1.5) * math.sin(w))
+    for lado in ('Left', 'Right'):
+        braco(lado, R(30), R(40), R(6))
+    firmar_cabeca(0.7)
+    pernas_soltas(0, (0.21 + 0.04 * math.sin(2 * w), 0.19, 0.07),
+                  (0.21 + 0.04 * math.sin(2 * w + math.pi), 0.19, -0.07), giro_pe=R(10))
+
+
+# Deitado: o corpo reto (no jogo o desenho inteiro deita de costas na cama, como no nado ele deita
+# de bruços), os braços soltos ao lado, as pernas soltas e a respiração devagar.
+DEITADO = dict(duracao=4.0)
+
+
+def pose_deitar(t):
+    """Laço deitado de costas: braços soltos ao lado do corpo, respirando, a cabeça no travesseiro.
+    (Deitado, a "frente" do braço é para cima: dobrar o cotovelo levantaria a mão no ar.)"""
+    voltar_a_base()
+    w = 2 * math.pi * t
+    tronco(inclinar=R(-1.5) * math.sin(w))
+    for lado in ('Left', 'Right'):
+        braco(lado, R(4) + R(1) * math.sin(w), R(12), R(10))
+    firmar_cabeca(0.8)
+    girar(b('Head'), q(X, R(-10)), cabeca(b('Head')))  # o queixo um pouco para cima
+    pernas_soltas(0, (0.03, 0.40, 0.08), (0.03, 0.40, -0.08), giro_pe=R(12))
+
+
 # ── Gravar ───────────────────────────────────────────────────────────────────────────────────────
 def gravar(nome, quadros, pose, laco=True):
     """Cria a ação `nome` com `quadros` + 1 chaves (no laço, a última repete a primeira)."""
@@ -674,6 +712,9 @@ resumo['SubirEscada'] = {'duracao': round(ESCADA['duracao'] * FPS) / FPS, 'passa
 gravar('PendurarBorda', round(1.4 * FPS), pose_pendurar_borda)
 gravar('SubirBorda', round(0.5 * FPS), pose_subir_borda, laco=False)
 gravar('Escorregar', round(1.0 * FPS), pose_escorregar)
+gravar('Sentar', round(SENTADO['duracao'] * FPS), pose_sentar)
+gravar('Deitar', round(DEITADO['duracao'] * FPS), pose_deitar)
+resumo['Sentar'] = {'duracao': round(SENTADO['duracao'] * FPS) / FPS, 'sobe': SENTADO['sobe'], 'atras': SENTADO['atras']}
 
 os.makedirs(os.path.dirname(SAIDA), exist_ok=True)
 bpy.ops.object.select_all(action='DESELECT')

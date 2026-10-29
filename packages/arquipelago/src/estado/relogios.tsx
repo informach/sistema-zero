@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempoDoBicho } from '../sistemas/bichos'
+import { descansar, FALA_DA_SONECA_CHEIA, sonecaAcabou } from '../sistemas/descanso'
 import { passarTempo } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { useJogo } from './contexto'
@@ -10,7 +11,7 @@ import { useJogo } from './contexto'
  * energia acaba, a posição guardada de vez em quando e a conta do tempo livre.
  */
 export function Relogios() {
-  const { loja, controle, plataforma, rastro, pedidos, gerenteTempo } = useJogo()
+  const { loja, controle, plataforma, rastro, pedidos, gerenteTempo, movimento } = useJogo()
 
   useEffect(() => {
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
@@ -38,6 +39,16 @@ export function Relogios() {
             ? { ...sv.bichos, adotado: passarTempoDoBicho(sv.bichos.adotado, 2) }
             : sv.bichos,
         }))
+        // Sentada no banco ou deitada na cama, a energia volta aos poucos (`sistemas/descanso.ts`);
+        // na cama, cheia, a soneca acaba e ela levanta.
+        const jeito = loja.getState().descanso
+        if (jeito) {
+          s.mudar((sv) => ({ ...sv, necessidades: descansar(sv.necessidades, jeito, 2) }))
+          if (sonecaAcabou(loja.getState().salvamento.necessidades, jeito)) {
+            movimento.pedido = { tipo: 'levantar' }
+            s.dizer(FALA_DA_SONECA_CHEIA)
+          }
+        }
         // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
         const agora = loja.getState()
         if (agora.salvamento.necessidades.energia <= 0 && agora.painelAberto === null) {
@@ -88,7 +99,7 @@ export function Relogios() {
       document.removeEventListener('visibilitychange', atualizar)
       void gerenteTempo?.encerrar().catch((erro) => plataforma.relatarErro(erro, 'encerrar-tempo'))
     }
-  }, [loja, controle, plataforma, rastro, pedidos, gerenteTempo])
+  }, [loja, controle, plataforma, rastro, pedidos, gerenteTempo, movimento])
 
   return null
 }

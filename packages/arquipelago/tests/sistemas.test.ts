@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { CRESCIMENTO_MS, colher, estagio, plantar, regar } from '../src/sistemas/horta'
 import { adicionar, ITENS, itensVisiveis, quantidade, remover } from '../src/sistemas/itens'
-import { comer, dormir, humor, passarTempo, ritmo } from '../src/sistemas/necessidades'
+import { comer, humor, passarTempo, ritmo } from '../src/sistemas/necessidades'
 import { cozinhar, RECEITAS, receitasConhecidas, receitasPossiveis } from '../src/sistemas/receitas'
 import { DURACAO_DO_DIA_MS, momentoDoDia, relogio } from '../src/sistemas/tempo-do-dia'
 import { minutosRestantes } from '../src/sistemas/tempo-livre'
@@ -92,11 +92,10 @@ describe('necessidades', () => {
     expect(passarTempo(n, 60 * 60 * 10, true).energia).toBe(0)
   })
 
-  test('comer e dormir repõem, sem passar de 100', () => {
+  test('comer repõe, sem passar de 100', () => {
     const salada = ITENS.salada
     if (!salada) throw new Error('sem salada')
     expect(comer({ fome: 90, energia: 50, diversao: 50 }, salada).fome).toBe(100)
-    expect(dormir({ fome: 10, energia: 0, diversao: 10 }).energia).toBe(100)
   })
 
   test('humor bom acelera, cansaço desacelera', () => {

@@ -170,6 +170,33 @@ function Inventario() {
   )
 }
 
+/**
+ * Deitada na cama (fase2-13): a tela escurece um pouco em volta e uma barrinha mostra a energia
+ * voltando. Não pega toque nem clique (é só um véu por cima do jogo).
+ */
+function Soneca() {
+  const deitada = useEstado((s) => s.descanso === 'deitar')
+  const energia = useEstado((s) => Math.round(s.salvamento.necessidades.energia))
+  if (!deitada) return null
+  return (
+    <div className="arq-soneca">
+      <div className="arq-soneca-cartao arq-cartao">
+        <b>Soneca</b>
+        <div
+          className="arq-soneca-barra"
+          role="progressbar"
+          aria-label="Energia"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={energia}
+        >
+          <i style={{ width: `${energia}%` }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /** A tecla (ou, no toque, o botão) da ação perto, e o que fazer no cipó e no tronco. */
 function Acao() {
   const alvo = useEstado((s) => s.alvo)
@@ -182,6 +209,16 @@ function Acao() {
         Soltar do cipó
         <span className="arq-tecla">{toque ? '◎' : 'W S'}</span>
         Balançar
+      </div>
+    )
+  }
+  if (modo === 'descanso') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? '◎' : 'W A S D'}</span>
+        ou
+        <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
+        para levantar
       </div>
     )
   }
@@ -536,6 +573,7 @@ export function Hud() {
     )
   return (
     <div className="arq-hud">
+      <Soneca />
       <Necessidades />
       <div className="arq-topo-dir">
         <Relogio />

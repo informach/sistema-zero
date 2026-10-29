@@ -483,9 +483,20 @@ Arquivos: `sistemas/necessidades.ts` e `estado/relogios.tsx`.
 - **Faixa:** cada necessidade fica entre 0 e 100.
 - **Cochilo:** com a energia em 0, o personagem volta para casa e a energia vai para 60. O Zappy
   diz: "Você cansou e tirou um cochilo em casa. Nada se perdeu." Nada é castigado.
-- **Cama:** dormir na cama (ou no beliche) do quarto devolve a energia toda, 100 (`dormir`). Só
-  funciona se a pessoa tiver uma cama ou um beliche no quarto. O raio da ação é 2,6
-  (`mundo/casa.tsx`).
+- **Descansar (fase2-13, combinado com a dona em 29/10/2026):** sentar num banco ou deitar na cama
+  devolve a energia aos poucos (`sistemas/descanso.ts`, `ENERGIA_POR_SEGUNDO`):
+  - **banco:** 0,55 por segundo (de vazia a cheia em uns 3 minutos). Hoje são os três bancos da
+    praça da Vila Doce (`col-banco-N`), com "Sentar no banco" a 1,5 m;
+  - **cama** (ou beliche) do quarto: 1,7 por segundo (cheia em 1 minuto), com "Deitar na cama" a
+    2,6 m (`mundo/casa.tsx`). Só aparece com cama ou beliche no quarto. A tela escurece um pouco em
+    volta e a barrinha "Soneca" mostra a energia subindo; cheia, o Zappy diz "Que soneca boa. A
+    energia voltou toda." e ela levanta sozinha;
+  - andar, pular ou usar levantam a qualquer hora (depois de meio segundo, para o mesmo toque que
+    sentou não levantar), e o que voltou fica. Fome e diversão não mudam descansando;
+  - o corpo do jogo fica de pé ao lado do banco ou da cama (fora do móvel) e só o desenho vai para o
+    assento ou o colchão, com os clipes "Sentar" e "Deitar" (`arte/avatar/locomocao.py`). O banco
+    da Vila é alto para o avatar: sentado, os pés ficam balançando;
+  - o cochilo com a energia no zero continua igual (acorda em casa com 60).
 - **Comer:** soma o valor da comida a cada necessidade (`comer`). A tabela está em 6.4.
 - **Humor** (`humor`):
   - `cansado`: energia ou fome abaixo de 15;
@@ -2409,6 +2420,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Duração do dia do jogo | 16 min | `arquipelago/src/sistemas/tempo-do-dia.ts`, `DURACAO_DO_DIA_MS` |
 | Parte clara do dia | 75% | `tempo-do-dia.ts`, `PARTE_CLARA` |
 | Queda das necessidades | fome 2, energia 1,2, diversão 1 por minuto | `arquipelago/src/sistemas/necessidades.ts`, `QUEDA_POR_MINUTO` |
+| Energia descansando | banco 0,55 e cama 1,7 por segundo | `arquipelago/src/sistemas/descanso.ts`, `ENERGIA_POR_SEGUNDO` |
 | Energia depois do cochilo | 60 | `arquipelago/src/estado/relogios.tsx` |
 | Humor e ritmo | 15 e 60; 1,1, 1, 0,8 | `necessidades.ts`, `humor` e `ritmo` |
 | Crescimento da horta | 3, 5 e 8 min | `arquipelago/src/sistemas/horta.ts`, `CRESCIMENTO_MS` |

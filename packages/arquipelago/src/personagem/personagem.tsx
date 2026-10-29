@@ -10,7 +10,7 @@ import {
 import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
-import { useEstado, useJogo } from '../estado/contexto'
+import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { maisPerto } from '../mundo/interativos'
 import {
   alturaDaIlha,
@@ -125,6 +125,9 @@ export function Personagem() {
   const v = useRef(criarEstadoDoCorpo()).current
   /** O Zappy já avisou da correnteza desde que o jogo abriu. */
   const avisouDaCorrenteza = useRef(false)
+  /** De 0 (de pé) a 1 (no assento ou no colchão), e o último lugar, para o desenho voltar suave. */
+  const emDescanso = useRef(0)
+  const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
 
   const inicial = useMemo(() => {
     const { salvamento, quarto } = loja.getState()
@@ -208,8 +211,9 @@ export function Personagem() {
       procurouBracos.current = false
       movimento.modo = modo
       loja.getState().definirModo(modo)
+      loja.getState().definirDescanso(modo === 'descanso' ? (v.descanso?.jeito ?? null) : null)
     },
-    [movimento, loja],
+    [movimento, loja, v],
   )
 
   /** O que chega a cada passo (um objeto só, reescrito: o laço da física não aloca). */
@@ -352,7 +356,8 @@ export function Personagem() {
     m.noChao = v.modo !== 'chao' || v.noChao
     m.velY = v.velY
     m.nadando = nadando
-    m.especial = v.modo === 'chao' ? null : v.modo
+    m.especial =
+      v.modo === 'chao' ? null : v.modo === 'descanso' ? (v.descanso?.jeito ?? null) : v.modo
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
@@ -392,9 +397,17 @@ export function Personagem() {
     delta = Math.atan2(Math.sin(delta), Math.cos(delta))
     const giro = delta * Math.min(1, dt * 12)
     vis.rotation.y += giro
-    // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita.
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita de bruços; na
+    // cama, deita de costas.
+    const deitada = v.modo === 'descanso' && v.descanso?.jeito === 'deitar'
     const inclinar =
-      v.modo === 'cipo' && v.cipo ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO : nadando ? 1.1 : 0
+      v.modo === 'cipo' && v.cipo
+        ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
+        : nadando
+          ? 1.1
+          : deitada
+            ? -Math.PI / 2
+            : 0
     vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     const curva =
       v.modo === 'chao' && !nadando
@@ -418,6 +431,20 @@ export function Personagem() {
         (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
       -noCorpo.z * k,
     )
+    // Descansando, o desenho vai para o assento ou o colchão (o corpo do Rapier fica de pé ao
+    // lado, fora do móvel): a origem do desenho (os pés no clipe) no lugar do descanso.
+    const lugar = v.descanso
+    if (lugar) {
+      ultimoDescanso.current = lugar
+      emDescanso.current += (1 - emDescanso.current) * Math.min(1, dt * 6)
+    } else emDescanso.current += (0 - emDescanso.current) * Math.min(1, dt * 8)
+    const d = emDescanso.current
+    const ultimo = ultimoDescanso.current
+    if (ultimo && d > 0.001) {
+      vis.position.x += (ultimo.desenho.x - centro.x - vis.position.x) * d
+      vis.position.y += (ultimo.desenho.y - centro.y - vis.position.y) * d
+      vis.position.z += (ultimo.desenho.z - centro.z - vis.position.z) * d
+    }
     // O corpo desenhado, no mundo, para as cordas encostarem nele (o desenho é filho do corpo
     // do Rapier, que está em `centro`).
     vis.updateMatrix()

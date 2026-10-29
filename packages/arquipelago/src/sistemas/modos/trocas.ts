@@ -41,6 +41,7 @@ export function mudarModo(
     c.balanco = 0
     c.deLado = 0
   }
+  if (c.descanso && modo !== 'descanso') c.descanso = null
   c.modo = modo
   c.noModo = 0
   aviso(modo)

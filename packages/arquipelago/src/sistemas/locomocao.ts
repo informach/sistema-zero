@@ -24,6 +24,8 @@ export const CLIPES = [
   'PendurarBorda',
   'SubirBorda',
   'Escorregar',
+  'Sentar',
+  'Deitar',
 ] as const
 export type Clipe = (typeof CLIPES)[number]
 
@@ -41,6 +43,8 @@ export const CICLO_DA_ESCADA = { passada: 0.5, duracao: 21 / 30 } as const
 /** Os laços pendurado na borda e escorregando, e o subir a borda (uma vez, levado pelo modo). */
 export const DURACAO_DA_BORDA = 42 / 30
 export const DURACAO_DO_ESCORREGAR = 30 / 30
+/** Os laços do descanso (fase2-13): sentado no banco e deitado na cama (`SENTADO` e `DEITADO`). */
+export const DURACAO_DO_DESCANSO = 120 / 30
 export const VELOCIDADE_DO_ANDAR = CICLO_DE_ANDAR.passada / CICLO_DE_ANDAR.duracao
 export const VELOCIDADE_DO_CORRER = CICLO_DE_CORRER.passada / CICLO_DE_CORRER.duracao
 
@@ -81,7 +85,15 @@ export interface EntradaDaLocomocao {
   subindo?: number
 }
 
-export type ModoEspecial = 'cipo' | 'escalada' | 'equilibrio' | 'escada' | 'borda' | 'escorregar'
+export type ModoEspecial =
+  | 'cipo'
+  | 'escalada'
+  | 'equilibrio'
+  | 'escada'
+  | 'borda'
+  | 'escorregar'
+  | 'sentar'
+  | 'deitar'
 
 export interface Locomocao {
   pesos: Record<Clipe, number>
@@ -159,7 +171,11 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR.passada)
     else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA.passada)
     else if (e.especial === 'escorregar') laco('Escorregar', DURACAO_DO_ESCORREGAR)
-    else if (e.especial === 'equilibrio') {
+    else if (e.especial === 'sentar' || e.especial === 'deitar') {
+      // Sentar e deitar entram devagar, como quem se acomoda.
+      transicao = TRANSICAO.agua
+      laco(e.especial === 'sentar' ? 'Sentar' : 'Deitar', DURACAO_DO_DESCANSO)
+    } else if (e.especial === 'equilibrio') {
       // Parada no tronco, os braços continuam abertos (o ciclo fica no passo em que está).
       pelaDistancia('Equilibrar', CICLO_DE_EQUILIBRAR.passada)
     } else {
