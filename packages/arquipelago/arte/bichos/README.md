@@ -15,6 +15,10 @@ O mesmo `bpy` 5.2.3 do Zappy, dos moradores e dos Lumis:
 BICHO_CONTAR=1 …/adotar.py gato   # lista as peças que mais gastam triângulos
 ```
 
+Os bichos de adotar ficam em até 3 mil triângulos (o `teto` do grupo no `build_all.py`, desde
+29/10/2026). A cabeça fica inteira; o resto do corpo usa menos gomos e, se ainda passar do `alvo`,
+afina toda peça fora da cabeça a partir de `afinar_de` triângulos (90 nos de adotar, 150 no padrão).
+
 Prévia (Cycles na CPU, lê o próprio GLB; as opções estão no topo do arquivo):
 
 ```sh

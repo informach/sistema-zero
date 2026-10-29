@@ -90,7 +90,7 @@ def _alinhar(de, ate):
 class Bicho:
     """Monta um bicho peça a peça; cada peça pertence a um osso."""
 
-    def __init__(self, pid, paleta, alvo=ALVO_TRIANGULOS, escala=1.0):
+    def __init__(self, pid, paleta, alvo=ALVO_TRIANGULOS, escala=1.0, afinar_de=150):
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.context.scene.render.fps = FPS
         self.pid = pid
@@ -102,6 +102,8 @@ class Bicho:
         self.arm = None
         self.animados = None
         self.alvo = alvo
+        # A partir de quantos triângulos uma peça (fora da cabeça) pode afinar para caber no alvo.
+        self.afinar_de = afinar_de
         # O filhote é o mesmo desenho menor: tudo é feito em metros do desenho e `finalizar`
         # encolhe as malhas; o esqueleto, as posições dos clipes e os soquetes seguem a escala.
         self.escala = escala
@@ -522,7 +524,7 @@ class Bicho:
         olhos = sum(tris(o) for o, *_ in self.olhos)
         # A cabeça é o que mais aparece (diálogo, retrato): nada nela afina.
         cabeca = set(self.pecas.get('cabeca', []))
-        grandes = [o for o in pecas if tris(o) >= 150 and o not in cabeca]
+        grandes = [o for o in pecas if tris(o) >= self.afinar_de and o not in cabeca]
         total = sum(tris(o) for o in pecas) + olhos
         if total <= self.alvo or not grandes:
             return
