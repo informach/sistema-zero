@@ -103,20 +103,45 @@ export function pisoEm(
  * a 25 e 35 cm, o raio do corpo, não passa do degrau: parede, encosta). `alcance` diz as células
  * que se alcançam andando, subindo no máximo a rampa que o corpo sobe.
  */
-export function gradeDeAndar(terreno: Mesh, formas: readonly Forma[], raio = 14, passo = 0.25) {
+/**
+ * Opções da grade: um centro fora do meio da ilha (a caverna do Pico), as formas que também são
+ * chão mesmo sem a ilha embaixo (o piso e a rampa da caverna, por cima do mar) e o chão mais baixo
+ * que ainda conta (o padrão é o tampo da ilha).
+ */
+export interface OpcoesDaGrade {
+  meioX?: number
+  meioZ?: number
+  ePiso?: (c: Forma) => boolean
+  pisoMinimo?: number
+}
+
+export function gradeDeAndar(
+  terreno: Mesh,
+  formas: readonly Forma[],
+  raio = 14,
+  passo = 0.25,
+  opcoes: OpcoesDaGrade = {},
+) {
+  const { meioX = 0, meioZ = 0, ePiso, pisoMinimo = TAMPO - 0.05 } = opcoes
+  const pisos = ePiso ? formas.filter(ePiso) : []
   const sobePorPasso = passo * Math.tan((CORPO.sobeAte * Math.PI) / 180) * 0.9
   const lado = Math.round((2 * raio) / passo) + 1
   const raios = new Raycaster()
   const baixo = new Vector3(0, -1, 0)
   const chaoEm = (x: number, z: number): number | undefined => {
     raios.set(new Vector3(x, 40, z), baixo)
-    return raios.intersectObject(terreno, false)[0]?.point.y
+    let y = raios.intersectObject(terreno, false)[0]?.point.y
+    for (const c of pisos) {
+      const topo = topoEm(c, x, z)
+      if (topo !== undefined && (y === undefined || topo > y)) y = topo
+    }
+    return y
   }
   const indice = (x: number, z: number) =>
-    Math.round((z + raio) / passo) * lado + Math.round((x + raio) / passo)
+    Math.round((z - meioZ + raio) / passo) * lado + Math.round((x - meioX + raio) / passo)
   const centro = (i: number) => ({
-    x: (i % lado) * passo - raio,
-    z: Math.floor(i / lado) * passo - raio,
+    x: (i % lado) * passo - raio + meioX,
+    z: Math.floor(i / lado) * passo - raio + meioZ,
   })
   // O piso: o chão da ilha ou, em cima dele, o topo de uma forma baixa (até um degrau: os degraus
   // do palco, do observatório). Forma mais alta que isso é obstáculo, não piso.
@@ -139,7 +164,7 @@ export function gradeDeAndar(terreno: Mesh, formas: readonly Forma[], raio = 14,
   const celulas: ({ y: number; livre: boolean } | null)[] = []
   for (let i = 0; i < lado * lado; i++) {
     const y = alturas[i]
-    if (y === undefined || y < TAMPO - 0.05) {
+    if (y === undefined || y < pisoMinimo) {
       celulas.push(null)
       continue
     }

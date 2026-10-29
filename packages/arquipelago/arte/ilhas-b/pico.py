@@ -4,12 +4,15 @@ os pinheiros nevados, a parede de gelo para escalar, o lago congelado e o palco 
 Gera três arquivos em `src/assets/ilhas/`:
 
 - `pico.glb`: nós `chao` (o chão da ilha leve, mesmo contorno), `montanha` (com a trilha),
-  `cenario` (iglu, palco, parede de gelo, árvores, lago, enfeites) e as âncoras;
+  `cenario` (iglu, palco, parede de gelo, árvores, lago, enfeites), `treno` (no platô do cume),
+  `caverna` e `caverna-joia` (a caverna de cristal de `pico_caverna.py`, atrás da montanha) e as
+  âncoras, com as da subida ao cume (`subida-N`, `floco-N`) e da descida de trenó (`treno-curva-N`);
 - `pico-props.glb`: peças soltas para o jogo repetir (`pinheiro-nevado-a`, `pinheiro-nevado-b`,
   `bloco-de-gelo`, `boneco-de-neve`, `painel-de-gelo`), cada uma com a base em y = 0;
 - `pico-treno.glb`: o trenó (`treno`), frente para −z do jogo.
 """
 from lib_ilhas_b import *
+from pico_caverna import montar_caverna
 
 MONTANHA = dict(x=-4.5, z=-1.5, r=6.6, h=12.0)
 # A trilha (para o jogo, fase3-07): um corte em espiral na encosta, 1,25 volta no sentido horário
@@ -24,6 +27,17 @@ DESVIO_DO_RAIO = 0.03
 DESVIO_DA_ALTURA = 0.06
 # O platô do cume: plano, uns 5 m de diâmetro (o corte da trilha chega nele).
 T_DO_PLATO = 0.739
+# A caverna de cristal (fase3-07): a peça de `pico_caverna.py` com a boca aqui, sem giro, atrás da
+# montanha; o morro fica por cima do mar (proposta do README).
+BOCA_DA_CAVERNA = dict(x=-14.2, z=-0.5)
+# A subida ao cume com tempo (fase3-07): paradas em 1/4, 1/2, 3/4 e no fim da trilha, e os flocos
+# de neve (o jogo põe a altura) nestas frações do caminho.
+PARADAS_DA_SUBIDA = (0.25, 0.5, 0.75, 1.0)
+FLOCOS_DA_SUBIDA = (0.14, 0.34, 0.54, 0.74, 0.9)
+# O trenó no platô: a esta distância do meio, deste tanto (graus) antes da boca da trilha (do lado
+# oposto ao de onde a trilha chega, que vem dos ângulos maiores), virado para ela. A descida segue a linha do meio da trilha, um ponto a cada `PASSO_DA_DESCIDA` seções.
+TRENO_NO_PLATO = dict(raio=1.45, desvio=55)
+PASSO_DA_DESCIDA = 4
 
 
 def raio_montanha(t):
@@ -104,7 +118,9 @@ def montanha(col):
     bm.free()
 
     meio, rampa = cavar_trilha(o)
-    print(f'TRILHA do Pico: rampa de {rampa:.1f}°, {len(meio)} pontos')
+    TRILHA['meio'] = meio
+    comp = sum(math.dist(a, b) for a, b in zip(meio, meio[1:]))
+    print(f'TRILHA do Pico: rampa de {rampa:.1f}°, {len(meio)} pontos, {comp:.1f} m pela linha do meio')
     corte = altura_montanha(0.5)
     # O chão da trilha é o plano de cima abaixo do platô; a neve cobre o alto e o platô.
     pintar_por(o, lambda c, nn: ('neveTrilha' if c.z < zc - 0.02 else 'neve') if nn.z > 0.9 else
@@ -420,7 +436,6 @@ def ilha():
     cen.append(box((2.1, 1.6, 0.3), (-0.4, -10.0, TOPO + 4.25), 'neve', bevel=0.1, segs=1))
     col.append(col_caixa('topo-parede', (2.1, 1.6, 0.3), (-0.4, -10.0, TOPO + 4.25)))
     cen += lago_congelado(8.0, -6.6)
-    cen += montar(lambda c: treno(c), 7.6, 4.3, R(-35), y=TOPO + 0.02)
     # Pinheiros nevados na volta, bonecos de neve, blocos de gelo e montinhos.
     for i, (x, z, s_, v) in enumerate(((-9.5, 5.5, 1.1, 'a'), (-10.5, 1.5, 0.95, 'b'), (-7.5, -8.5, 1.15, 'a'),
                                        (-2.0, -10.5, 1.0, 'b'), (5.5, -10.2, 0.9, 'a'), (10.4, -3.8, 0.85, 'b'),
@@ -443,6 +458,50 @@ def ilha():
     for x, z in ((5.0, -2.8), (5.0, 2.8), (2.2, -3.8)):
         cen += poste_lampiao(x, z)
         col.append(col_cilindro('poste-lampiao', 0.1, 2.9, (x, -z, TOPO + 1.45)))
+    # O trenó no platô, ao lado da boca da trilha e virado para ela (a descida começa nele).
+    meio = TRILHA['meio']
+    cx, cy, zc = cume
+    bx, by, _ = meio[-1]
+    a_boca = math.atan2(by - cy, bx - cx)
+    a_treno = a_boca - R(TRENO_NO_PLATO['desvio'])
+    tx = cx + math.cos(a_treno) * TRENO_NO_PLATO['raio']
+    ty = cy + math.sin(a_treno) * TRENO_NO_PLATO['raio']
+    treno_ = montar(lambda c: treno(c), tx, -ty, angulo_para(tx, -ty, bx, -by), y=zc + 0.02)
+    # A descida: do trenó à boca da trilha e trilha abaixo pela linha do meio, no chão dela.
+    # Acaba no começo da trilha (a seção 2, a âncora `trilha-inicio`): as duas primeiras seções
+    # ficam debaixo da beira da encosta.
+    descida = [(tx, ty, zc)] + [meio[i] for i in range(len(meio) - 1, 2, -PASSO_DA_DESCIDA)]
+    descida.append(meio[2])
+    # A boca da trilha fica uns 5 cm acima do platô: a linha nunca sobe (o trenó só desce).
+    for i in range(1, len(descida)):
+        x, y, z = descida[i]
+        descida[i] = (x, y, min(z, descida[i - 1][2]))
+    extras_do_jogo = [('treno', tx, -ty, zc)]
+    extras_do_jogo += [(f'treno-curva-{k}', x, -y, z) for k, (x, y, z) in enumerate(descida, 1)]
+    ultimo = len(meio) - 1
+    for k, f in enumerate(PARADAS_DA_SUBIDA, 1):
+        x, y, z = meio[round(ultimo * f)]
+        extras_do_jogo.append((f'subida-{k}', x, -y, z))
+    for k, f in enumerate(FLOCOS_DA_SUBIDA, 1):
+        x, y, z = meio[round(ultimo * f)]
+        extras_do_jogo.append((f'floco-{k}', x, -y, z))
+    # A caverna de cristal no lugar dela: desenho, joia (some quando a criança pega), colisores com
+    # `caverna-` no nome e as âncoras com `caverna-` (menos o `cristal-raro`).
+    cav_nos, cav_anc, cav_col = montar_caverna()
+    dx, dz = BOCA_DA_CAVERNA['x'], BOCA_DA_CAVERNA['z']
+    caverna_ = colocar([o for k, v in cav_nos.items() if k != 'joia' for o in v], dx, dz, 0)
+    joia_ = colocar(cav_nos['joia'], dx, dz, 0)
+    for o in colocar(cav_col, dx, dz, 0):
+        # O poste da placa segue os outros postes (a câmera passa: `col-cil-poste-*`).
+        if o.name.startswith('col-cil-poste-'):
+            o.name = o.name.replace('col-cil-poste-', 'col-cil-poste-caverna-', 1)
+        elif o.name.startswith('col-cil-'):
+            o.name = o.name.replace('col-cil-', 'col-cil-caverna-', 1)
+        else:
+            o.name = o.name.replace('col-', 'col-caverna-', 1)
+        col.append(o)
+    for n, x, z, y in cav_anc:
+        extras_do_jogo.append((n if n == 'cristal-raro' else f'caverna-{n}', x + dx, z + dz, y))
     conferir_corredor(cen + mont, 'pico')
     # O chão que se pisa: tampo, praia e barranco, a montanha com a trilha e os montinhos de neve
     # (as manchas e os caminhos, milímetros acima, só desenham).
@@ -452,9 +511,10 @@ def ilha():
         extras=[('palco', 2.6, -7.3, TOPO + 0.47), ('iglu', 3.0, 4.3), ('trilha-inicio', pe_trilha[0], -pe_trilha[1], pe_trilha[2]),
                 ('trilha-fim', fim_trilha[0], -fim_trilha[1], fim_trilha[2]),
                 ('cume', cume[0], -cume[1], cume[2]), ('parede-de-gelo', -2.5, 8.2),
-                ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1),
-                ('treno', 7.6, 4.3)])
-    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen}, ancoras, colisores=col)
+                ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1)]
+        + extras_do_jogo)
+    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen, 'treno': treno_, 'caverna': caverna_,
+                      'caverna-joia': joia_}, ancoras, colisores=col)
 
 
 def props():

@@ -352,8 +352,9 @@ def enfeites_da_boca(col):
 
 
 # ------------------------------------------------------------------ montagem
-def construir():
-    lib_q.reset()
+def montar_caverna():
+    """As peças da caverna sem exportar: ({nó: objetos}, [(âncora, x, z, y)], colisores), no
+    referencial da boca. O `pico.glb` põe tudo no lugar dela na ilha (fase3-07)."""
     col = []
     pedra = rocha(col)
     piso, lago = chao(col)
@@ -364,12 +365,19 @@ def construir():
     rx, ry, rz = tops[-1]
     raro = cristal_raro(rx, ry, rz)
     gx, gy = CENTRO
-    anc = [ancora('entrada', 0.6, 0.0, TOPO), ancora('galeria', gx + 1.5, -gy, CHAO), ancora('laguinho', lago[0], -lago[1], CHAO + 0.09),
-           ancora('cristal-raro', rx, -ry, rz)]
+    anc = [('entrada', 0.6, 0.0, TOPO), ('galeria', gx + 1.5, -gy, CHAO), ('laguinho', lago[0], -lago[1], CHAO + 0.09),
+           ('cristal-raro', rx, -ry, rz)]
     for k, (x, y, z) in enumerate(tops[:-1], 1):
-        anc.append(ancora(f'degrau-{k}', x, -y, z))
-    exportar('pico-caverna', {'rocha': pedra, 'chao': piso, 'cristais': normais, 'cristais-luz': luz,
-                              'gelo': gelo, 'percurso': trilho, 'joia': raro}, anc, colisores=col)
+        anc.append((f'degrau-{k}', x, -y, z))
+    nos = {'rocha': pedra, 'chao': piso, 'cristais': normais, 'cristais-luz': luz, 'gelo': gelo,
+           'percurso': trilho, 'joia': raro}
+    return nos, anc, col
+
+
+def construir():
+    lib_q.reset()
+    nos, anc, col = montar_caverna()
+    exportar('pico-caverna', nos, [ancora(n, x, z, y) for n, x, z, y in anc], colisores=col)
 
 
 if __name__ == '__main__':

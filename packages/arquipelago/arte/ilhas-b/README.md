@@ -48,7 +48,7 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 
 | Arquivo | Nós | Âncoras próprias | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario` e 101 `col-*` mais o `col-terreno` | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` | | 22.051 | 758 KB |
+| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario`, `treno` (no platô), `caverna` e `caverna-joia` (a caverna de cristal, fase3-07) e 150 `col-*` mais o `col-terreno` (os da caverna com `caverna` no nome) | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` (o trenó no platô), `treno-curva-1` a `-26` (a descida, do trenó ao começo da trilha, no chão dela), `subida-1` a `-4` (as paradas da subida ao cume), `floco-1` a `-5` (os flocos, no chão da trilha), `caverna-entrada`, `caverna-galeria`, `caverna-laguinho`, `caverna-degrau-1` a `-4`, `cristal-raro` | | 28.847 | 1.108 KB |
 | `pico-props.glb` | `pinheiro-nevado-a`, `pinheiro-nevado-b`, `bloco-de-gelo`, `boneco-de-neve`, `painel-de-gelo` (base em y = 0) | | | 3.300 | 96 KB |
 | `pico-treno.glb` | `treno` (frente para −z do jogo) | | | 668 | 33 KB |
 | `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` e 61 `col-*` mais o `col-terreno` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 626 KB |
@@ -135,7 +135,9 @@ dois é de 12 mil triângulos e 512 KB.
   força 1), `cristalRaro` (rosa, força 1), `rochaCaverna`, `rochaCavernaEscura`, `pedraLaje`,
   `madeiraPlaca`, mais os do Pico (`gelo`, `geloClaro`, `geloFundo`, `neve`, `neveSombra`,
   `neveTrilha`, `poste`). `gelo` e `geloClaro` são transparentes.
-- **Onde fica no Pico (proposta):** a boca em x −14,2, z −0,5, sem giro, atrás da montanha; o morro
+- **No Pico (fase3-07):** a mesma peça entra no `pico.glb` (`montar_caverna`), no lugar abaixo; o
+  `pico-caverna.glb` avulso continua para a conferência.
+- **Onde fica no Pico:** a boca em x −14,2, z −0,5, sem giro, atrás da montanha; o morro
   vai até x −28,5, por cima do mar. A ponta de neve chega em x −11,6, em cima do tampo, entre os
   pinheiros de (−11,2; −3) e (−10,5; 1,5); a placa fica em (−12; 1,5). Chega-se pela beira da ilha,
   passando atrás da montanha (a faixa entre o pé dela e a borda tem uns 1,3 m).

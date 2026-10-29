@@ -8,8 +8,16 @@ import { malhasDosOlhos } from '../src/mundo/animado'
 import { buscarIlha, ilhasNaMemoria, reterIlha, soltarIlha } from '../src/mundo/carregar-ilha'
 import { lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { ILHAS_COMPLETAS, prepararIlha, soltarExtras } from '../src/mundo/ilha-completa'
-import { raioDaEsperaDaIlha, raioDoChaoDaIlha } from '../src/mundo/medidas'
+import {
+  CAVERNA_DO_PICO,
+  naDirecaoDaCavernaDoPico,
+  RAIO_DA_ILHA_DO_ANEL,
+  raioDaEsperaDaIlha,
+  raioDoChaoDaIlha,
+  rodaDaIlhaNoModelo,
+} from '../src/mundo/medidas'
 import { lugarDoFloco } from '../src/mundo/pico'
+import { BOIAS_DA_ILHA_DO_ANEL } from '../src/sistemas/correnteza'
 import {
   APRESENTACAO_DO_FLOCO,
   comecarConversaComOFloco,
@@ -31,7 +39,7 @@ describe('Pico completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('pico.glb')))
     const preparada = prepararIlha(cena, pico)
-    expect(preparada.colisores.length).toBe(102)
+    expect(preparada.colisores.length).toBe(151)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, pico)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -48,7 +56,7 @@ describe('Pico completo', () => {
     expect(ilhasNaMemoria()).toBe(antes)
   })
 
-  test('tudo o que se pisa cabe no contorno da ilha leve: a espera pelo chão é a de sempre', async () => {
+  test('tudo o que se pisa cabe na espera pelo chão: a de sempre e, para o lado da caverna, até ela', async () => {
     const modelo = await carregarGlb(arquivoDaIlha('pico.glb'))
     const formas = lerColisores(modelo).filter((c): c is Forma => c.forma !== 'malha')
     for (const c of formas) {
@@ -59,6 +67,21 @@ describe('Pico completo', () => {
       ])
     }
     expect(raioDaEsperaDaIlha(pico, 1, 0)).toBe(raioDoChaoDaIlha(pico, 1, 0))
+    // Do lado da caverna a espera alcança o fundo do morro; nos outros lados, a de sempre.
+    expect(raioDaEsperaDaIlha(pico, -1, 0)).toBe(CAVERNA_DO_PICO.raio)
+    expect(raioDaEsperaDaIlha(pico, 0, 1)).toBe(raioDoChaoDaIlha(pico, 0, 1))
+    const cavernas = formas.filter((c) => c.nome.includes('caverna'))
+    expect(cavernas.length).toBeGreaterThan(40)
+    for (const c of cavernas)
+      expect([c.nome, naDirecaoDaCavernaDoPico(c.posicao[0], c.posicao[2])]).toEqual([c.nome, true])
+  })
+
+  test('a roda de boias cobre a ilha e a caverna com folga de mar', () => {
+    const roda = rodaDaIlhaNoModelo(pico, BOIAS_DA_ILHA_DO_ANEL)
+    const folga = BOIAS_DA_ILHA_DO_ANEL - (RAIO_DA_ILHA_DO_ANEL + 1.4)
+    // Do lado da ponte, a roda passa onde passava; do lado da caverna, depois do fundo do morro.
+    expect(roda.x + roda.livre).toBeCloseTo(BOIAS_DA_ILHA_DO_ANEL)
+    expect(roda.x - roda.livre).toBeCloseTo(-(CAVERNA_DO_PICO.fundo + folga))
   })
 })
 

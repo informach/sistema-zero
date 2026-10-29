@@ -38,10 +38,26 @@ export const RAIO_DA_ILHA_DO_ANEL = 13
 export const RAIO_VISITAVEL_DO_RECIFE = 24
 /** col-terreno do Vale chega a 15,614 m; 16 inclui a borda e o raio de 0,35 m do corpo. */
 export const RAIO_VISITAVEL_DO_VALE = 16
+/**
+ * A caverna de cristal do Pico (fase3-07, `arte/ilhas-b/pico.py`): atrás da montanha, no −x do
+ * modelo, com a boca a 14,2 m do meio e o fundo do morro a 28,5 m, por cima do mar. Dentro desta
+ * abertura (para cada lado do −x) a espera pelo chão vai até `raio`.
+ */
+export const CAVERNA_DO_PICO = {
+  meiaAbertura: (25 * Math.PI) / 180,
+  raio: 28,
+  fundo: 28.5,
+} as const
+
+/** O ponto (x, z) do modelo do Pico fica na direção da caverna? */
+export function naDirecaoDaCavernaDoPico(x: number, z: number): boolean {
+  return x < 0 && Math.abs(Math.atan2(z, -x)) < CAVERNA_DO_PICO.meiaAbertura
+}
 
 /** Até onde esperar os colisores ao abrir o jogo, incluindo a caverna fora da ilha leve. */
 export function raioDaEsperaDaIlha(ilha: Ilha, x: number, z: number): number {
   if (ilha.id === 'vale-dos-dinos') return RAIO_VISITAVEL_DO_VALE
+  if (ilha.id === 'pico' && naDirecaoDaCavernaDoPico(x, z)) return CAVERNA_DO_PICO.raio
   return ilha.id === 'recife' ? RAIO_VISITAVEL_DO_RECIFE : raioDoChaoDaIlha(ilha, x, z)
 }
 
@@ -131,6 +147,16 @@ export function rodaDaIlhaNoModelo(
   if (ilha.id === 'recife') {
     const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
     return { x: 0, z: 0, livre: MERGULHO.raio + folga }
+  }
+  if (ilha.id === 'pico') {
+    // O meio vai para o lado da caverna: a roda cobre a ilha e o morro dela com a mesma folga.
+    const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
+    const borda = RAIO_DA_ILHA_DO_ANEL + 1.4
+    return {
+      x: -(CAVERNA_DO_PICO.fundo - borda) / 2,
+      z: 0,
+      livre: (CAVERNA_DO_PICO.fundo + borda) / 2 + folga,
+    }
   }
   if (ilha.id !== 'bosque') return { x: 0, z: 0, livre: boias }
   const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
