@@ -108,6 +108,42 @@ test('chapéu da noite abre intacto, mas não pode ser guardado sem uma ação',
   expect(abriu).toBe(true)
 })
 
+test('a Escolha com um caso ainda vazio abre nos blocos, como no Guardar e no Testar', async () => {
+  const rascunho = [
+    { c: 'quando-amanhecer' },
+    { c: 'voar-ate', a: 'horta' },
+    {
+      c: 'para-cada',
+      d: [{ c: 'escolha', casos: { 'precisa-de-agua': [{ c: 'regar' }], maduro: [] } }],
+    },
+  ] as CartaoDaRotina[]
+  let recebido: unknown = null
+  const plataforma = criarPlataformaFalsa({
+    cartas: 'todas',
+    rotina: 'editor',
+    editarRotina: async (x) => {
+      recebido = x.rotina
+      return null
+    },
+  })
+  const r = await editarRotinaNaPlataforma({
+    plataforma,
+    lumi: 'quindim',
+    rascunho,
+    ler: inicial,
+    ativo: () => true,
+    guardar: () => {
+      throw Error('não gravar cancelamento')
+    },
+  })
+  expect(r.motivo).toBeUndefined()
+  expect(recebido).toEqual([
+    { c: 'quando-amanhecer' },
+    { c: 'voar-ate', a: 'horta' },
+    { c: 'para-cada', d: [{ c: 'escolha', casos: { 'precisa-de-agua': [{ c: 'regar' }] } }] },
+  ])
+})
+
 test('permissão revogada durante a edição e teto conjunto recusam o retorno', async () => {
   const m = molde()
   let n = 0

@@ -131,7 +131,9 @@ describe('a visita', () => {
 
   test('o quarto de dentro é o do irmão; sem ele, vazio e o Zappy avisa', () => {
     expect(quartoVisivel({ visita: null, quarto: QUARTO_DE_EXEMPLO })).toBe(QUARTO_DE_EXEMPLO)
-    expect(quartoVisivel({ visita, quarto: QUARTO_DE_EXEMPLO })).toBe(visita.quarto)
+    const doIrmao = visita.quarto
+    if (!doIrmao) throw new Error('a visita de exemplo vem com o quarto do irmão')
+    expect(quartoVisivel({ visita, quarto: QUARTO_DE_EXEMPLO })).toBe(doIrmao)
     const semQuarto = { ...visita, quarto: null }
     expect(quartoVisivel({ visita: semQuarto, quarto: QUARTO_DE_EXEMPLO })).toBe(QUARTO_DA_VISITA)
     expect(QUARTO_DA_VISITA.placedItems).toEqual([])

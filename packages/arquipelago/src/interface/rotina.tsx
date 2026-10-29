@@ -331,10 +331,12 @@ export function PainelDaRotina() {
     loja.getState().abrirPainel(null)
   }
   const abrirBlocos = async () => {
-    if (!lumi || editandoRef.current) return
+    if (!lumi || editandoRef.current || loja.getState().ferramentaAberta) return
     const minha = abertura.current
     editandoRef.current = true
     setEditando(true)
+    // Como as outras ferramentas (hud.tsx): o jogo e o tempo livre param com os blocos abertos.
+    loja.getState().definirFerramentaAberta(true)
     try {
       const r = await editarRotinaNaPlataforma({
         plataforma,
@@ -352,6 +354,7 @@ export function PainelDaRotina() {
         setAviso({ tom: 'ok', texto: 'Rotina guardada. Use Testar para ver o Lumi na ilha.' })
       } else if (r.motivo) setAviso({ tom: 'atencao', texto: r.motivo })
     } finally {
+      loja.getState().definirFerramentaAberta(false)
       if (minha === abertura.current) {
         editandoRef.current = false
         setEditando(false)
