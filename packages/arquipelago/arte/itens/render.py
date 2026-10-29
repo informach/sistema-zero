@@ -15,7 +15,7 @@ import os
 import sys
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 ITENS = os.path.join(AQUI, '..', '..', 'src', 'assets', 'itens')
@@ -42,7 +42,7 @@ def cena(glb, fundo, preparar=None, direcao=None):
     mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     centro = (mn + mx) / 2
-    d = Vector(direcao or tuple(float(t) for t in (env('DIR') or '0.75,-1.25,0.85').split(','))).normalized()
+    d = Vector(direcao or tuple(float(t) for t in (env('DIR') or DIRECAO_DO_ICONE).split(','))).normalized()
     # Escala ortográfica: o maior lado da caixa projetada no plano da câmera, com folga.
     cam_d = bpy.data.cameras.new('cam')
     cam_d.type = 'ORTHO'
@@ -91,6 +91,38 @@ def cena(glb, fundo, preparar=None, direcao=None):
     return sc
 
 
+# Itens compridos e finos (a vara, a espiga) ficam miúdos de pé ou deitados no quadrado do ícone:
+# giram em volta da direção da câmera (graus) e passam a ocupar a diagonal.
+GIRO_NO_ICONE = {'vara-de-pescar': -42, 'milho': 38}
+# E a vara engrossa só no ícone (largura e fundo; o comprimento fica), para a haste não sumir.
+GROSSURA_NO_ICONE = {'vara-de-pescar': 1.9}
+DIRECAO_DO_ICONE = '0.75,-1.25,0.85'
+
+
+def girar_na_tela(graus, grossura=1.0):
+    """Gira as peças em volta da direção da câmera, pelo meio da caixa delas (o enquadramento
+    continua o mesmo: `cena` mede a caixa depois); `grossura` engrossa antes, em x e y."""
+
+    def preparar():
+        if grossura != 1.0:
+            for o in bpy.data.objects:
+                if o.parent is None:
+                    o.scale = (o.scale.x * grossura, o.scale.y * grossura, o.scale.z)
+        bpy.context.view_layer.update()
+        malhas = [o for o in bpy.data.objects if o.type == 'MESH']
+        pts = [o.matrix_world @ Vector(c) for o in malhas for c in o.bound_box]
+        meio = sum(pts, Vector()) / len(pts)
+        eixo = Vector(tuple(float(t) for t in (env('DIR') or DIRECAO_DO_ICONE).split(','))).normalized()
+        giro = (Matrix.Translation(meio) @ Matrix.Rotation(math.radians(graus), 4, eixo)
+                @ Matrix.Translation(-meio))
+        for o in bpy.data.objects:
+            if o.parent is None:
+                o.matrix_world = giro @ o.matrix_world
+        return None
+
+    return preparar
+
+
 def gravar(sc, saida, res):
     sc.render.resolution_x = sc.render.resolution_y = res
     sc.render.resolution_percentage = 100
@@ -107,7 +139,9 @@ if __name__ == '__main__':
         for nome in sorted(os.listdir(ITENS)):
             if not nome.endswith('.glb') or (so and nome[:-4] not in so):
                 continue
-            sc = cena(os.path.join(ITENS, nome), None)
+            giro = GIRO_NO_ICONE.get(nome[:-4])
+            sc = cena(os.path.join(ITENS, nome), None,
+                      girar_na_tela(giro, GROSSURA_NO_ICONE.get(nome[:-4], 1.0)) if giro else None)
             gravar(sc, os.path.join(ICONES, nome[:-4] + '.png'), int(env('RES') or 256))
             print('ICONE', nome[:-4])
     else:

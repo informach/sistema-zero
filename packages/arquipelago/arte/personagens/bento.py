@@ -5,7 +5,7 @@ atravessa o ombro (a marca do tamanduá-bandeira), braços claros com a pulseira
 de pincel. De confeiteiro: chapéu alto com pregas, avental com debrum rosa e bolso, e o batedor
 de arame na mão esquerda.
 
-  /tmp/blender-venv/bin/python arte/personagens/bento.py   # grava src/assets/personagens/bento.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/bento.py   # grava src/assets/personagens/bento.glb
 """
 import math
 import os

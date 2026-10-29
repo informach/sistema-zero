@@ -10,7 +10,7 @@ Peças do avatar são densas (a cabeça sozinha tem ~4,7 mil triângulos e as 13
 as outras são afinadas aqui para o arquivo ficar leve. A cabeça fica inteira para manter as bocas
 de fala (`B`, `C`, `D`) e o `smile`. Os olhos ganham as formas `piscar` e `feliz`.
 
-  /tmp/blender-venv/bin/python arte/personagens/iris.py   # grava src/assets/personagens/iris.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/iris.py   # grava src/assets/personagens/iris.glb
 """
 import math
 import os
@@ -202,7 +202,8 @@ def pose_parado(t):
     }
 
 
-def bracos(esq=(0.0, 0.0), dir=(0.0, 0.0), antebraco_esq=40.0, antebraco_dir=10.0, sobe_esq=0.0, sobe_dir=0.0):
+def bracos(esq=(0.0, 0.0), dir=(0.0, 0.0), antebraco_esq=40.0, antebraco_dir=10.0, sobe_esq=0.0, sobe_dir=0.0,
+           abertura=1.0):
     """Braços caídos com o balanço (frente) e o quanto sobem pelo lado; o esquerdo segura o lampião
     com a mão fechada."""
     pose = {
@@ -215,6 +216,23 @@ def bracos(esq=(0.0, 0.0), dir=(0.0, 0.0), antebraco_esq=40.0, antebraco_dir=10.
         for j, a in ((1, 35), (2, 45), (3, 30)):
             pose[f'mixamorig:LeftHand{dedo}{j}'] = {'rot': [('Y', a)]}
     pose['mixamorig:LeftHandThumb1'] = {'rot': [('Z', -20)]}
+    pose.update(mao_solta(abertura))
+    return pose
+
+
+# A mão direita solta, com os dedos um pouco dobrados, mais no mindinho que no indicador (com os
+# dedos todos retos, a mão parecia uma raquete). `abertura` 1 é a mão caída; menor, mais aberta
+# (o aceno).
+CURVA_DOS_DEDOS = {'Index': 12, 'Middle': 18, 'Ring': 24, 'Pinky': 30}
+
+
+def mao_solta(abertura=1.0):
+    pose = {}
+    for dedo, a in CURVA_DOS_DEDOS.items():
+        for j, k in ((1, 1.0), (2, 1.2), (3, 0.8)):
+            pose[f'mixamorig:RightHand{dedo}{j}'] = {'rot': [('Y', -a * k * abertura)]}
+    pose['mixamorig:RightHandThumb1'] = {'rot': [('Z', 12 * abertura)]}
+    pose['mixamorig:RightHandThumb2'] = {'rot': [('Z', 10 * abertura)]}
     return pose
 
 
@@ -253,7 +271,7 @@ def pose_acenar(t):
         'mixamorig:Hips': {'loc': (0, 0, 0.004 * sen(t, 3))},
         'mixamorig:Spine1': {'rot': [('Y', 3 + 1.5 * sen(t, 3))]},
         'mixamorig:Head': {'rot': [('Y', 7 + 3 * sen(t, 3)), ('X', -3)]},
-        **bracos(esq=(3, 0)),
+        **bracos(esq=(3, 0), abertura=0.35),
     }
     pose['mixamorig:RightArm'] = {'rot': [('Y', 18), ('X', -18)]}
     pose['mixamorig:RightForeArm'] = {'rot': [('Y', 72 + 24 * sen(t, 3))]}

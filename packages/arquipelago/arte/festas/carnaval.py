@@ -53,39 +53,43 @@ def serpentinas():
     return p
 
 
-def mascara(cx, cz, cor, pena):
+def mascara(cx, cz, cor, pena, k=1.35):
+    """Uma máscara de baile no painel; `k` é o tamanho (1,35: com 1 elas sumiam no painel)."""
     p = []
     # Máscara de baile: dois lóbulos com a ponta para cima nas laterais.
     pts = []
-    for k in range(25):
-        t = k / 24 * 2 * math.pi
+    for i in range(25):
+        t = i / 24 * 2 * math.pi
         x = 0.16 * math.sin(t)
         z = 0.06 * math.cos(t) + 0.03 * math.cos(2 * t) + 0.04 * abs(math.sin(t)) ** 3
         if abs(x) < 0.02 and math.cos(t) < 0:
             z += 0.03
-        pts.append((x, z))
+        pts.append((x * k, z * k))
     p.append(prism(pts, 0.025, (cx, -0.05, cz), cor, bevel=0.006))
     for s in (-1, 1):
-        olho = esfera(0.035, (cx + s * 0.065, -0.065, cz + 0.01), 'ferro', escala=(1.25, 0.3, 0.8), seg=10, aneis=6)
+        olho = esfera(0.035 * k, (cx + s * 0.065 * k, -0.065, cz + 0.01 * k), 'ferro', escala=(1.25, 0.3, 0.8), seg=10,
+                      aneis=6)
         p.append(olho)
-        p.append(lib_q.torus(0.042, 0.007, (cx + s * 0.065, -0.068, cz + 0.01), 'brilho', seg=14, rseg=4,
-                             rot=(R(90), 0, 0)))
-    # Penas saindo do canto de cima, abertas em leque.
-    for k in range(3):
-        yaw = R(-20 + 25 * k)
-        p.append(leaf((cx + 0.12, -0.06, cz + 0.05), yaw, 0.2, 0.045, pena, lift=0.22, droop=0.05, fold=0.2, n=6))
-    for k in range(5):
-        p.append(sphere(0.008, (cx - 0.1 + k * 0.05, -0.068, cz - 0.045), 'brilho', subdiv=1))
+        p.append(lib_q.torus(0.042 * k, 0.007 * k, (cx + s * 0.065 * k, -0.068, cz + 0.01 * k), 'brilho', seg=14,
+                             rseg=4, rot=(R(90), 0, 0)))
+    # Penas saindo do canto de cima, abertas em leque para cima (sem passar da borda do painel).
+    for i in range(3):
+        yaw = R(-30 + 25 * i)
+        p.append(leaf((cx + 0.11 * k, -0.06, cz + 0.05 * k), yaw, 0.14 * k, 0.045 * k, pena, lift=0.3, droop=0.04,
+                      fold=0.2, n=6))
+    for i in range(5):
+        p.append(sphere(0.008 * k, (cx + (-0.1 + i * 0.05) * k, -0.068, cz - 0.045 * k), 'brilho', subdiv=1))
     return p
 
 
 def mascaras():
-    p = [box((1.2, 0.04, 0.6), (0, 0, 0.3), 'parede', bevel=0.02, segs=1)]
-    p.append(box((1.26, 0.05, 0.05), (0, -0.005, 0.6), 'madeira', bevel=0.012, segs=1))
-    p.append(box((1.26, 0.05, 0.05), (0, -0.005, 0.0), 'madeira', bevel=0.012, segs=1))
-    for k, (cor, pena) in enumerate((('confeteRosa', 'pena'), ('confeteAzul', 'confeteAmarelo'),
+    p = [box((1.5, 0.04, 0.66), (0, 0, 0.33), 'parede', bevel=0.02, segs=1)]
+    p.append(box((1.56, 0.05, 0.05), (0, -0.005, 0.66), 'madeira', bevel=0.012, segs=1))
+    p.append(box((1.56, 0.05, 0.05), (0, -0.005, 0.0), 'madeira', bevel=0.012, segs=1))
+    for i, (cor, pena) in enumerate((('confeteRosa', 'pena'), ('confeteAzul', 'confeteAmarelo'),
                                      ('confeteLilas', 'confeteVerde'))):
-        p += mascara(-0.38 + k * 0.38, 0.32, cor, pena)
+        # As penas saem para a direita: o trio fica um pouco à esquerda para a última não passar da borda.
+        p += mascara(-0.5 + i * 0.46, 0.26, cor, pena)
     return p
 
 

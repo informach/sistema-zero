@@ -19,23 +19,24 @@ Scripts de Blender sem tela que geram Íris e os sete moradores em
 O mesmo `bpy` 5.2.3 das peças do avatar e do quarto (ver `community-kids/scripts/avatar-blender`):
 
 ```sh
-/tmp/blender-venv/bin/python arte/personagens/build_all.py           # todos, e confere os limites
-/tmp/blender-venv/bin/python arte/personagens/build_all.py capi iris  # só alguns
-/tmp/blender-venv/bin/python arte/personagens/capi.py                 # um só
+/tmp/claude-0/blender-venv/bin/python arte/personagens/build_all.py           # todos, e confere os limites
+/tmp/claude-0/blender-venv/bin/python arte/personagens/build_all.py capi iris  # só alguns
+/tmp/claude-0/blender-venv/bin/python arte/personagens/capi.py                 # um só
 PERSONAGEM_CONTAR=1 …/capi.py   # lista as peças que mais gastam triângulos
 ```
 
 Prévia (Cycles na CPU, lê o próprio GLB):
 
 ```sh
-/tmp/blender-venv/bin/python arte/personagens/render.py saida.png \
+/tmp/claude-0/blender-venv/bin/python arte/personagens/render.py saida.png \
   "src/assets/personagens/capi.glb:clipe=acenar:q=8" "src/assets/zappy.glb:x=1.2:z=1.5:escala=0.4"
 ```
 
 ## O que cada arquivo traz
 
 - **Clipes em laço:** `parado` (2 s), `andar` (1 s, um ciclo de dois passos), `falar` (2 s),
-  `acenar` (2 s, com a mão direita) e `feliz` (1 s, um pulinho). Todos os clipes animam os mesmos
+  `acenar` (2 s, com a mão direita, aberta mas com os dedos soltos; parada, a mão direita da Íris
+  fica com os dedos um pouco dobrados, `mao_solta` em `iris.py`) e `feliz` (1 s, um pulinho). Todos os clipes animam os mesmos
   ossos, então trocar de clipe com fade no `AnimationMixer` não deixa osso preso.
 - **Olhos numa malha própria** (`<id>-olhos`, materiais `olho` e `brilho`, a coruja também
   `iris`) com as formas `piscar` e `feliz` (olho em arco). Começam em 0; o jogo pisca mudando

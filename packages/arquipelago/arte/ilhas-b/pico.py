@@ -224,6 +224,24 @@ def lago_congelado(x, z):
     return p
 
 
+def bandeiras_da_trilha(antes, inicio, lado=0.95):
+    """Duas bandeirinhas no começo da trilha (pontos do jogo): um mastro de cada lado do caminho,
+    meio metro antes do início, com a bandeira virada para quem vem da chegada."""
+    dx, dz = inicio[0] - antes[0], inicio[1] - antes[1]
+    n = math.hypot(dx, dz)
+    dx, dz = dx / n, dz / n
+    px, pz = -dz, dx
+    x0, z0 = inicio[0] - dx * 0.5, inicio[1] - dz * 0.5
+    giro = angulo_para(x0, z0, antes[0], antes[1])
+    p = []
+    for s in (-1, 1):
+        mastro = [cyl(0.045, 1.5, (0, 0, 0.75), 'poste', verts=6),
+                  prism([(0, 0), (0.42, -0.12), (0, -0.26)], 0.02, (0.04, 0, 1.45), 'agarra',
+                        rot=(R(90), 0, 0))]
+        p += colocar(mastro, x0 + px * lado * s, z0 + pz * lado * s, giro, y=TOPO)
+    return p
+
+
 # ------------------------------------------------------------------ a ilha
 def ilha():
     lib_q.reset()
@@ -236,6 +254,8 @@ def ilha():
     for k, ramo in enumerate(([(3, 0.2), (3.1, 2.5), (3.0, 4.2)], [(3, -0.2), (2.9, -3.0), (2.7, -4.6)],
                               [(2.8, 0.0), (2.6, -1.0), (pe_trilha[0], -pe_trilha[1])])):
         cen.append(caminho(ramo, 0.7, 'neveTrilha', z1=0.024 - 0.006 * k))
+    # Duas bandeirinhas laranja marcam o começo da trilha, uma de cada lado (de longe, no branco).
+    cen += bandeiras_da_trilha((2.6, -1.0), (pe_trilha[0], -pe_trilha[1]))
     # Iglu (frente para o caminho), palco do Floco, parede de gelo, lago congelado.
     cen += colocar(iglu(), 3.0, 7.2, angulo_para(3.0, 7.2, 3.0, 2.0), y=TOPO)
     cen += colocar(palco(), 2.6, -7.3, angulo_para(2.6, -7.3, 3.0, 0.0), y=TOPO)

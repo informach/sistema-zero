@@ -40,7 +40,8 @@ def bem_te_vi(pid):
 
 def borboleta(pid):
     p = Bicho(pid, {**COMUM, 'corpo': ('#2b2440', 0.6), 'asa': ('#3d8cff', 0.35), 'borda': ('#1a1830', 0.5),
-                     'ponto': ('#ffffff', 0.5), 'antena': ('#2b2440', 0.6)}, alvo=1600)
+                     'ponto': ('#ffffff', 0.5), 'antena': ('#2b2440', 0.6), 'avesso': ('#9cc4ff', 0.45),
+                     'olhoDaAsa': ('#2b5fc0', 0.5)}, alvo=1600)
     z = 0.03
     p.capsula('corpo', 'corpo', (0, 0.045, z), (0, -0.03, z), 0.009, 0.012, seg=8)
     cab = p.esfera('cabeca', 'corpo', (0, -0.045, z + 0.005), (0.016, 0.016, 0.016), seg=12, aneis=8)
@@ -60,8 +61,15 @@ def borboleta(pid):
                 borda, meio = borda[::-1], meio[::-1]
             p.placa(osso, 'borda', borda, 0.003, centro=(0.006 * s, 0.0, z + 0.002))
             p.placa(osso, 'asa', meio, 0.003, centro=(0.004 * s, 0.0, z + 0.004))
+            # O avesso azul-claro: pousada, a borboleta fecha as asas e é ele que aparece (antes,
+            # só a beirada preta).
+            p.placa(osso, 'avesso', meio, 0.002, centro=(0.004 * s, 0.0, z - 0.0005))
         for x, y in ((0.1, -0.04), (0.085, -0.05), (0.07, 0.06)):
             p.esfera(osso, 'ponto', (x * s, y, z + 0.0035), (0.006, 0.006, 0.0025), seg=6, aneis=3)
+        # Duas pintas de olho no avesso, como as das borboletas de verdade.
+        for x, y, r in ((0.075, -0.035, 0.011), (0.05, 0.045, 0.009)):
+            p.esfera(osso, 'olhoDaAsa', (x * s, y, z - 0.0018), (r, r, 0.0015), seg=10, aneis=4)
+            p.esfera(osso, 'ponto', (x * s, y, z - 0.0026), (r * 0.4, r * 0.4, 0.001), seg=6, aneis=3)
     p.esqueleto_ave(corpo=((0, 0.045, z), (0, -0.04, z)), pescoco=(0, -0.04, z), topo=(0, -0.07, z + 0.05),
                     ombro=(0.006, 0.0, z + 0.003), ponta=(0.12, 0.0, z + 0.003))
     p.finalizar()

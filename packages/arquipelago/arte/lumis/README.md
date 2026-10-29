@@ -51,7 +51,8 @@ Como eles são:
 - **Ovinho**: dinozinho saindo do ovo, com a tampa da casca de chapéu e espinhos macios.
 - **Brotinho**: saurópode bebê de quatro patas, placas de samambaia acesas nas costas e um broto na
   cabeça.
-- **Algodão**: nuvem fofa com uma gotinha de chuva no alto.
+- **Algodão**: nuvem fofa com uma gotinha de chuva no alto. A luz dele é azul de chuva: o coração e a
+  gotinha acendem juntos (com o coração rosa pequeno e a gota apagada, ele sumia à noite).
 - **Pluma**: passarinho redondo com penacho e rabo de arco-íris.
 - **Estrelinha**: estrela-do-mar fofa cor de laranja, com bolinhas claras em fila em cada ponta (na
   frente e nas costas) e a pontinha de cada ponta acesa. Os braços são as pontas dos lados.

@@ -15,7 +15,9 @@ def algodao():
     L.comecar({
         'corpo': ('#ffffff', 0.85, '#f4f8ff', 0.08, 1),
         'detalhe': ('#86cbff', 0.25, '#9fd6ff', 0.2, 1),
-        'luz': ('#ff6fae', 0.35, '#ff4f9e', 2.5, 1),
+        # A luz do Algodão é azul de chuva: o coração e a gotinha acendem juntos (o jogo pulsa a
+        # `luz` e acende mais à noite). Com o coração rosa pequeno e a gota apagada, ele sumia no escuro.
+        'luz': ('#a6dcff', 0.3, '#5cc3ff', 3.2, 1),
         'pupila': ('#1c2238', 0.25, None, 0, 1),
         'bochecha': ('#ffadc8', 0.8, None, 0, 1),
     })
@@ -27,12 +29,12 @@ def algodao():
     nuvem = L.fundir(bolas, 'nuvem', voxel=0.026, tris=1100, alisar=3)
     rosto, olho = L.rosto(nuvem, 0.15, 0.66, 0.088, 0.11, boca_z=0.52, boca_larg=0.05, boca_alt=0.04,
                           bochecha_x=0.27, bochecha_z=0.54)
-    cor = L.coracao(nuvem, 0.44, 0.055)
+    cor = L.coracao(nuvem, 0.44, 0.072)
     corpo = L.juntar([nuvem, *rosto, cor], 'corpo', pivo=(0, 0, 0.16))
     olhos = L.juntar(olho, 'olhos', pivo=(0, -0.38, 0.66))
 
     # Uma gotinha de chuva no alto, presa num fiozinho de nuvem.
-    gota = [L.torneado('detalhe', [(0, 0.0)] + [(0.07 * math.sin(math.pi * t) ** 0.8 * (1 - 0.55 * t), 0.15 * t)
+    gota = [L.torneado('luz', [(0, 0.0)] + [(0.07 * math.sin(math.pi * t) ** 0.8 * (1 - 0.55 * t), 0.15 * t)
                                                 for t in (0.15, 0.3, 0.45, 0.6, 0.75, 0.9)] + [(0, 0.16)],
                        pos=(0.1, 0.05, 1.08), seg=14)]
     gota.append(L.tubo('corpo', [(0.05, 0.05, 1.04), (0.08, 0.05, 1.08), (0.1, 0.05, 1.1)], [0.02, 0.016, 0.012], seg=6))
@@ -54,7 +56,7 @@ def pluma():
         'pena1': ('#ff6f9a', 0.6, None, 0, 1),
         'pena2': ('#ffd25a', 0.6, None, 0, 1),
         'pena3': ('#58dcc6', 0.6, None, 0, 1),
-        'luz': ('#ffb21f', 0.3, '#ff9a00', 3.0, 1),
+        'luz': ('#ffb21f', 0.3, '#ff9a00', 3.6, 1),
         'pupila': ('#1f1636', 0.25, None, 0, 1),
         'bochecha': ('#ff9fc6', 0.8, None, 0, 1),
         'faisca': ('#fffbe6', 0.3, '#fff0a8', 5.0, 1),
@@ -64,7 +66,7 @@ def pluma():
     barriga = L.decalque(casca, 'corpo2', (0, 0.47), (0.2, 0.15), alto=0.003, bojo=0.006, aneis=2)
     olho = L.olhos(casca, 0.14, 0.66, 0.088, 0.112)
     bochechas = [L.decalque(casca, 'bochecha', (0.25 * lado, 0.56), (0.055, 0.032), alto=0.003, aneis=1) for lado in (-1, 1)]
-    cor = L.coracao(barriga, 0.45, 0.045)
+    cor = L.coracao(barriga, 0.45, 0.062)
     # O biquinho, dois cones achatados.
     bico_p, bico_n = L.projetar(casca, 0, 0.56)
     bico = [L.cone('detalhe', 0.055, 0.09, tuple(bico_p - bico_n * 0.01), rot=(90, 0, 0), seg=10, escala=(1, 0.7, 1), liso=True)]
@@ -77,7 +79,7 @@ def pluma():
         penacho.append(L.folha(mat, comp, 0.1, (0, 0.04, 0.94), rot=(-18, ang, 0), curva=0.35, dobra=0.3, gordura=0.7))
         a = math.radians(ang)
         ponta = Vector((math.sin(a) * comp * 0.92, 0.04 + comp * 0.32, 0.94 + math.cos(a) * comp * 0.88))
-        penacho.append(L.bola('luz', 0.028, tuple(ponta), seg=8, aneis=5))
+        penacho.append(L.bola('luz', 0.045, tuple(ponta), seg=8, aneis=5))
     penacho = L.juntar(penacho, 'penacho', pivo=(0, 0.04, 0.94))
     rabo = []
     for mat, ang in (('pena3', -28), ('pena1', 0), ('pena2', 28)):

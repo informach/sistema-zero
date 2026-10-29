@@ -49,7 +49,8 @@ lib_q.PALETTE.update({
     'geloFundo': ('#6fc3e6', 0.2, None, 0),
     'agarra': ('#ff8a5a', 0.6, None, 0),
     'agarraAzul': ('#5b8fd6', 0.6, None, 0),
-    'neveTrilha': ('#e2e7ef', 0.9, None, 0),
+    # Neve batida, um cinza-azulado mais fundo que a neve (#e8eef5): com #e2e7ef o caminho sumia de dia.
+    'neveTrilha': ('#c3cddb', 0.9, None, 0),
     'iglu': ('#f7fbff', 0.7, None, 0),
     'igluJunta': ('#d2e4f2', 0.8, None, 0),
     'trenoVermelho': ('#e0584f', 0.5, None, 0),

@@ -4,7 +4,7 @@ Vermelha, com o rosto branco em volta dos olhos, o bico grande e curvo (claro em
 embaixo), asas com a faixa amarela e as pontas azuis, e o rabo comprido. Carrega na asa esquerda
 o tear de mão com o arco-íris pela metade e os fios esticados.
 
-  /tmp/blender-venv/bin/python arte/personagens/irie.py   # grava src/assets/personagens/irie.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/irie.py   # grava src/assets/personagens/irie.glb
 """
 import math
 import os

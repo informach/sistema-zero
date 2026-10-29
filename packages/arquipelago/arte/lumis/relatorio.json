@@ -3,9 +3,9 @@
     "familia": "nuvens",
     "raridade": "comum",
     "triangulos": 2092,
-    "kb": 76.9,
+    "kb": 76.7,
     "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
-    "materiais": ["boca", "bochecha", "corpo", "detalhe", "lingua", "luz", "olho", "pupila"]
+    "materiais": ["boca", "bochecha", "corpo", "lingua", "luz", "olho", "pupila"]
   },
   "bolha": {
     "familia": "recife",

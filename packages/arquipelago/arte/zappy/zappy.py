@@ -12,8 +12,8 @@ cima do three.js e a frente vira +Z). Altura total ~1,5 (o jogo reduz). O materi
 brilha chama `luz`: o jogo pulsa o `emissiveIntensity` dele e acende mais à noite.
 
 Rodar (mesmo ambiente das peças do quarto):
-  /tmp/blender-venv/bin/python arte/zappy/zappy.py            # grava src/assets/zappy.glb
-  ZAPPY_OUT=/tmp/z.glb /tmp/blender-venv/bin/python arte/zappy/zappy.py
+  /tmp/claude-0/blender-venv/bin/python arte/zappy/zappy.py            # grava src/assets/zappy.glb
+  ZAPPY_OUT=/tmp/z.glb /tmp/claude-0/blender-venv/bin/python arte/zappy/zappy.py
 """
 import math
 import os

@@ -169,13 +169,13 @@
       "trilha-inicio": [2.22, 1.0, -2.09]
     },
     "clipes": [],
-    "kb": 638.7,
+    "kb": 641.6,
     "nos": {
-      "cenario": 19299,
+      "cenario": 19355,
       "chao": 462,
       "montanha": 1268
     },
-    "triangulos": 21029
+    "triangulos": 21085
   },
   "pico-caverna": {
     "ancoras": {

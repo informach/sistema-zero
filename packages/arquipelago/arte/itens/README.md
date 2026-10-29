@@ -4,7 +4,8 @@ Lote 5 do `arte/INVENTARIO.md`: colheita, sementes, comidas, ferramentas, coleç
 a cozinha da casa, os ingredientes das receitas, as iscas de pesca e as coleções de cada ilha. Cada
 item tem uma função num script por grupo, que monta o modelo no Blender sem tela (o mesmo `bpy` do
 mundo, dos personagens e dos Lumis) e grava um GLB em `src/assets/itens/<id>.glb`. Para o HUD,
-cada item também tem um ícone de 256 px com fundo transparente em `src/assets/icones/<id>.png`. Os
+cada item também tem um ícone de 256 px com fundo transparente em `src/assets/icones/<id>.png` (os
+compridos, a vara e a espiga, deitados na diagonal: `GIRO_NO_ICONE` em `render.py`). Os
 itens ainda não estão ligados ao jogo.
 
 ## Rodar

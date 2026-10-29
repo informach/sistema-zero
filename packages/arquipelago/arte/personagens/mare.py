@@ -4,7 +4,7 @@ Cabeça redonda com o bico sorridente e as manchinhas, casco nas costas com as p
 clara, o peito amarelo em gomos e nadadeiras no lugar dos braços. De cartógrafa: óculos redondos
 dourados, a bússola no pescoço e o mapa enrolado com fita vermelha na nadadeira esquerda.
 
-  /tmp/blender-venv/bin/python arte/personagens/mare.py   # grava src/assets/personagens/mare.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/mare.py   # grava src/assets/personagens/mare.glb
 """
 import math
 import os

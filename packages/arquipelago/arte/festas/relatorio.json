@@ -2,10 +2,10 @@
   "barco": {
     "pasta": "movimento",
     "grupo": "veiculos",
-    "triangulos": 2304,
-    "kb": 86.5,
+    "triangulos": 2544,
+    "kb": 90.7,
     "nos": {
-      "barco": 2304
+      "barco": 2544
     },
     "vazios": ["assento"],
     "clipes": ["balancar"],
@@ -56,7 +56,7 @@
     "pasta": "festas",
     "grupo": "festas",
     "triangulos": 9670,
-    "kb": 295.2,
+    "kb": 295.7,
     "nos": {
       "confetes": 1208,
       "serpentinas": 1936,
@@ -84,7 +84,7 @@
       "parede",
       "pena"
     ],
-    "tamanho": [4.029, 2.32, 4.541]
+    "tamanho": [4.26, 2.32, 4.541]
   },
   "cipo": {
     "pasta": "movimento",

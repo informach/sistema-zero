@@ -30,14 +30,14 @@ Prévia (Cycles na CPU, lê o próprio GLB; as opções estão no topo do arquiv
 | `gato`, `gato-filhote` | adotar | idem | frajola de olhos verdes e bigodes; truque: espreguiça |
 | `coelho`, `coelho-filhote` | adotar | idem | cinza-lavanda, orelhas em pé; anda aos pulinhos; truque: pulo alto com giro |
 | `porquinho`, `porquinho-filhote` | adotar | idem | porquinho-da-índia tricolor; truque: pulinhos de pipoca |
-| `peixe-palhaco`, `peixe-cirurgiao`, `baiacu` | recife | `nadar`, `parado` | origem no meio do corpo (eles boiam) |
+| `peixe-palhaco`, `peixe-cirurgiao`, `baiacu` | recife | `nadar`, `parado` | origem no meio do corpo (eles boiam); a paleta do cirurgião são fitas coladas no corpo (`fita_no_corpo` em `recife.py`), de borda lisa |
 | `tartaruguinha` | recife | `nadar`, `parado` | nadadeiras da frente batem como asas |
 | `pinguim`, `pinguim-filhote` | pico | `parado`, `andar`, `deslizar` | o filhote é cinza e mais fofo |
 | `rex-filhote` | vale | `parado`, `andar`, `pular` | bípede, cabeção e bracinhos |
 | `triceratops-filhote` | vale | `parado`, `andar`, `pular` | babado de bolinhas e três chifrinhos |
 | `passaro-das-nuvens` | nuvens | `voar`, `pousado` | azul-céu, peito de nuvem, penacho enrolado |
 | `bem-te-vi` | bosque | `voar`, `pousado` | barriga amarela e faixa branca na cabeça |
-| `borboleta` | bosque | `voar`, `pousado` | azul-morfo; pousa com as asas fechadas e abre devagar |
+| `borboleta` | bosque | `voar`, `pousado` | azul-morfo; pousa com as asas fechadas e abre devagar; o avesso das asas é azul-claro com pintas de olho (é o que aparece pousada) |
 | `dino-montaria` | montaria | `parado`, `andar`, `correr`, `pular` | parassaurolofo de sela e manta; vazio `sela` |
 
 O filhote dos bichos de adotar é o mesmo desenho com a cabeça maior, as pernas mais curtas e os olhos

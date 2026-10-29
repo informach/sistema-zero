@@ -87,8 +87,9 @@ def barquinho():
 
 def barco():
     comp, larg, alt = 4.0, 1.8, 0.55
-    p = _casco(comp, larg, alt, 0.0, [(0.22, 'cascoVermelho'), (0.3, 'cascoBranco'), (9, 'cascoBranco')],
-               'cascoAzul', seg=20, ring=10)
+    # A faixa vermelha sobe um pouco acima da linha d'água (0,22) para aparecer com o barco boiando;
+    # com 16 anéis a divisa cai numa linha do casco (com 10, sobrava um fio vermelho).
+    p = _casco(comp, larg, alt, 0.0, [(0.32, 'cascoVermelho'), (9, 'cascoBranco')], 'cascoAzul', seg=20, ring=16)
     p.append(slab(contorno(comp, larg, 0.9), 0.46, 0.52, 'convesMadeira', bevel=0.015))
     # Cabine: paredes brancas, janelas, porta e o teto azul com a chaminé.
     p.append(box((1.1, 1.0, 0.75), (0, -0.35, 0.9), 'cascoBranco', bevel=0.05, segs=2))

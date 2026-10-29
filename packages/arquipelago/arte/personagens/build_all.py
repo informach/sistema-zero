@@ -1,7 +1,7 @@
 """Gera todos os personagens (Lote 2) de uma vez e confere os limites.
 
-  /tmp/blender-venv/bin/python arte/personagens/build_all.py          # todos
-  /tmp/blender-venv/bin/python arte/personagens/build_all.py capi iris
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/build_all.py          # todos
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/build_all.py capi iris
 
 Cada script roda num processo próprio (o Blender começa limpo em cada um). No fim confere o que o
 jogo pede de cada arquivo: os cinco clipes, a malha dos olhos com `piscar` e `feliz` e o tamanho

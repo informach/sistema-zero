@@ -3,7 +3,7 @@
 Cabeça grande e quadradona com o focinho largo, orelhinhas redondas no alto, corpo de barril e
 perninhas curtas. Usa a folha de chapéu e carrega a maleta de cuidar dos bichos na mão esquerda.
 
-  /tmp/blender-venv/bin/python arte/personagens/capi.py   # grava src/assets/personagens/capi.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/capi.py   # grava src/assets/personagens/capi.glb
 """
 import os
 import sys
