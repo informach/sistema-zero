@@ -139,6 +139,40 @@ async function subir(m: ManifestoDeDesafios) {
 }
 
 describe('manifesto de desafios', () => {
+  test('o arquivo da Vila Doce importa, exporta e reimporta sem criar novas revisões', async () => {
+    const m = ManifestoDeDesafiosSchema.parse(
+      await Bun.file(
+        new URL(
+          '../../../../docs/desafios-do-jogo/vila-doce/vila-doce.manifesto.json',
+          import.meta.url,
+        ),
+      ).json(),
+    )
+    // Aqui a porta do Members é falsa: a prova do jogo usa o executor real no studio-runtime.
+    analisar.mockImplementation(async (p: Parameters<PortaDosMembros['analisarObjetivos']>[0]) => ({
+      ...analiseOk,
+      vista: p.objetivos.map((o) => ({ id: o.id, label: o.label, kind: 'game' as const })),
+      gabarito: p.objetivos.map((o) => ({ id: o.id, passou: true })),
+      inicial: p.objetivos.map((o) => ({ id: o.id, passou: false })),
+    }))
+    const { aplicacao } = await subir(m)
+    expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
+      m.desafios.map((d) => [d.slug, 'criar', true]),
+    )
+    const revisoes = [...desafios.linhas.values()].map((d) => d.revisao)
+    const exportado = await chamar('GET', '/manifestos/exportar?publico=kids&ilha=vila-doce')
+    expect(exportado.status).toBe(200)
+    expect(ManifestoDeDesafiosSchema.parse(exportado.json)).toEqual(m)
+    const deNovo = await subir(m)
+    expect(deNovo.conferencia.contagem).toMatchObject({
+      igual: 4,
+      criar: 0,
+      atualizar: 0,
+      publica: 0,
+    })
+    expect([...desafios.linhas.values()].map((d) => d.revisao)).toEqual(revisoes)
+  })
+
   test('edição concorrente durante a gravação informa a linha sem esconder os demais resultados', async () => {
     await subir(manifesto([item('existente', { quadro: 2 })]))
     const alterado = item('existente', {
