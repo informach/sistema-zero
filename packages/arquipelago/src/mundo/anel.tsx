@@ -20,6 +20,7 @@ import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { andarPedacos, corMedia, pedacosPintados } from '../sistemas/cor-da-ilha'
 import { BOIAS_DA_ILHA_DO_ANEL, RODA_DA_ILHA_CENTRAL } from '../sistemas/correnteza'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
+import { artigoDaIlha } from '../sistemas/luneta'
 import { quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { Boias } from './boias'
 import { BosqueVivo } from './bosque-vivo'
@@ -617,9 +618,11 @@ function useChegada(ilha: Ilha, aberta: boolean): number {
     if (aberta && !jaViu && progresso === 0) {
       loja
         .getState()
-        .dizer(`A ponte para o ${ilha.nome} ficou pronta. A cor começou a voltar para lá.`)
+        .dizer(
+          `A ponte para ${artigoDaIlha(ilha)} ${ilha.nome} ficou pronta. A cor começou a voltar para lá.`,
+        )
     }
-  }, [aberta, jaViu, progresso, ilha.nome, loja])
+  }, [aberta, jaViu, progresso, ilha, loja])
   useFrame(() => {
     if (progresso >= 1) return
     if (inicio.current === null) inicio.current = performance.now()
@@ -679,7 +682,7 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
       loja
         .getState()
         .dizer(
-          `Este é o ${ilha.nome}. Os moradores e os bichos chegam aqui na próxima fase do jogo.`,
+          `${artigoDaIlha(ilha) === 'a' ? 'Esta é a' : 'Este é o'} ${ilha.nome}. Os moradores e os bichos chegam aqui na próxima fase do jogo.`,
         ),
   })
   return (
