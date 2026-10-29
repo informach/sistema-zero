@@ -24,6 +24,7 @@ export async function carregarGlb(arquivo: string): Promise<Object3D> {
 export function jsonDoGlb(arquivo: string): {
   nodes: { name?: string; mesh?: number }[]
   meshes: { primitives: { material?: number }[] }[]
+  animations?: { name?: string; channels: { target: { node: number; path: string } }[] }[]
 } {
   const buf = readFileSync(arquivo)
   const n = buf.readUInt32LE(12)

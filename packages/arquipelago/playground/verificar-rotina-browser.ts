@@ -106,6 +106,7 @@ try {
   browser = await chromium.launch({
     ...(executavel ? { executablePath: executavel } : { channel: 'chrome' }),
     headless: true,
+    args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
   for (const caso of CASOS) {
     const contexto = await browser.newContext({

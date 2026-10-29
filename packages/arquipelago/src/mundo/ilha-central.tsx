@@ -183,15 +183,18 @@ function PierDeAntes() {
 
 /**
  * O píer do Blender, com o barquinho; o lampião da ponta acende à noite. Estacas, poste e lanterna
- * do lampião e o casco do barquinho colidem pelos nós `col-*` do arquivo.
+ * do lampião e o casco do barquinho colidem pelos nós `col-*` do arquivo. O barquinho é um nó à
+ * parte (`barquinho-decorativo`, com o casco no `col-barco-1`) para o barco da viagem poder
+ * ficar no lugar dele; as âncoras `barco` e `embarque` dizem onde (fase3-04).
  */
 function PierDoModelo() {
   const { ambiente } = useJogo()
   const raiz = useModelo(MODELOS.pier)
-  const { pier, lanternas, colisores } = useMemo(() => {
+  const { pier, barquinho, lanternas, colisores } = useMemo(() => {
     const copia = copiarNo(raiz, 'pier', true)
     return {
       pier: copia,
+      barquinho: copiarNo(raiz, 'barquinho-decorativo'),
       lanternas: materiaisDe(copia, 'lanterna'),
       colisores: lerColisores(raiz),
     }
@@ -202,6 +205,7 @@ function PierDoModelo() {
   return (
     <>
       <primitive object={pier} />
+      <primitive object={barquinho} />
       <Colisores lista={colisores} />
     </>
   )

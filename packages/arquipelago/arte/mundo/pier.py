@@ -3,16 +3,29 @@
 Referencial: o grupo `Pier` do jogo (x = -5, z = 27 no mundo; y = 0 no nível do mar). As tábuas
 seguem +z de 0 a 10 com o tampo em y ~0,61, em cima do colisor de antes (caixa de 2 de largura).
 
-Nó: `pier`. O vidro do lampião usa o material `lanterna` (o jogo acende à noite).
+Nós: `pier` e `barquinho-decorativo` (o barquinho a remo e a corda até ele, à parte para o jogo
+poder trocá-lo pelo barco da viagem). O vidro do lampião usa o material `lanterna` (o jogo acende à
+noite).
+
+Âncoras (fase3-04, o barco entre as ilhas):
+- `barco`: onde o barco da viagem (`ilhas/barco.glb`) atraca, na linha d'água (y = 0), ao lado do
+  píer; o giro em y aponta a proa do barco (o +x dele) para o mar (+z do píer);
+- `embarque`: no tampo (y 0,61), na frente do meio do barco, longe da luneta (z 8,8), das estacas e
+  do lampião; vale também para desembarcar.
 
 Colisão: o tampo é a caixa do código. As estacas, o poste e a lanterna do lampião e o barquinho
 trazem os nós `col-cil-estaca-*`, `col-cil-poste-*` e `col-barco-*` (sem material), que o jogo lê
-do arquivo. A corda e a boia não colidem.
+do arquivo. O `col-barco-1` é o casco do barquinho decorativo: quem troca o barquinho tira ele
+também. A corda e a boia não colidem.
 """
 from lib_mundo import *
 
 COMP = 10.0
 YT = 0.55       # meio das tábuas
+TAMPO = YT + 0.06
+# O barco da viagem: 5 × 2 m, pneus até 1,26 do meio. Ao lado das estacas (1,08 + 0,13), com folga.
+BARCO = dict(x=2.6, z=6.6)
+EMBARQUE = dict(x=0.45, z=6.6)
 
 
 def G(x, y, z):
@@ -23,7 +36,7 @@ def caixa(sx, sy, sz, x, y, z, m, bevel=0.02, rot=(0, 0, 0)):
     return box((sx, sz, sy), G(x, y, z), m, bevel=bevel, segs=1, rot=rot)
 
 
-def pier(col):
+def pier(col, barquinho_):
     p = []
     rnd = random.Random(5)
     n = int(COMP / 0.5)
@@ -51,8 +64,8 @@ def pier(col):
     zc = COMP - 0.5
     p.append(torus(0.14, 0.035, G(1.08, 0.5, zc), 'corda', seg=14, rseg=5))
     p.append(torus(0.12, 0.035, G(1.08, 0.42, zc), 'corda', seg=14, rseg=5))
-    p.append(tube([G(1.2, 0.45, zc), G(1.6, 0.25, zc - 0.4), G(2.0, 0.42, zc - 0.9)], [0.03, 0.03, 0.03], 'corda',
-                  seg=5))
+    barquinho_.append(tube([G(1.2, 0.45, zc), G(1.6, 0.25, zc - 0.4), G(2.0, 0.42, zc - 0.9)], [0.03, 0.03, 0.03],
+                           'corda', seg=5))
     # Lampião na ponta.
     lx, lz = -1.08, COMP - 0.5
     p.append(cyl(0.06, 1.8, G(lx, 1.5, lz), 'poste', verts=8))
@@ -65,7 +78,7 @@ def pier(col):
     # A lanterna fica na altura da cabeça de quem anda no píer.
     col.append(col_cilindro('poste-lanterna', 0.17, 0.5, G(lx + 0.42, 2.1, lz)))
     # Barquinho a remo boiando ao lado (casco amarelo, banco e remos).
-    p += barquinho((2.25, 0.2, COMP - 1.6))
+    barquinho_ += barquinho((2.25, 0.2, COMP - 1.6))
     # O casco (1 × 2,2, da quilha à borda): quem nada bate nele e quem pula do píer fica de pé.
     col.append(col_caixa('barco', (0.86, 2.0, 0.5), G(2.25, 0.12, COMP - 1.6)))
     # Boia salva-vidas pendurada numa estaca.
@@ -109,10 +122,26 @@ def barquinho(c):
     return p
 
 
+def ancoras():
+    """`barco` (proa do barco da viagem para o mar) e `embarque` (no tampo)."""
+    barco = bpy.data.objects.new('barco', None)
+    barco.location = G(BARCO['x'], 0.0, BARCO['z'])
+    # O +x do barco vira o +z do píer (o −y do Blender).
+    barco.rotation_euler = (0, 0, R(-90))
+    embarque = bpy.data.objects.new('embarque', None)
+    embarque.location = G(EMBARQUE['x'], TAMPO, EMBARQUE['z'])
+    for e in (barco, embarque):
+        e.empty_display_type = 'PLAIN_AXES'
+        bpy.context.collection.objects.link(e)
+    return [barco, embarque]
+
+
 def main():
     lib_q.reset()
     col = []
-    exportar('pier', {'pier': pier(col)}, colisores=col)
+    barquinho_ = []
+    exportar('pier', {'pier': pier(col, barquinho_), 'barquinho-decorativo': barquinho_}, colisores=col,
+             ancoras=ancoras())
 
 
 if __name__ == '__main__':

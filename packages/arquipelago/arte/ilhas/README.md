@@ -62,7 +62,7 @@ chegada (`conferir_corredor`).
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
 | `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 1.416 | 49 KB |
-| `barco.glb` | `barco` (pivô na linha d'água, proa em +x) | | `balancar` (3 s: rola, arfa e sobe e desce) | 2.456 | 70 KB |
+| `barco.glb` | `barco` (pivô na linha d'água, proa em +x) | `passageiro` (filha do `barco`: no convés, entre os bancos da proa, olhando para a proa; acompanha o balanço) | `balancar` (3 s: rola, arfa e sobe e desce) | 2.456 | 70 KB |
 | `recife-navio.glb` | `navio`, `vela`, `carga`, `fundo`, `corais`, `alga-1`…`alga-6` e 71 `col-*` | `entrada`, `bau`, `pagina-diario`, `escotilha`, `mastro` | `balancar` (as algas) | 13.931 | 447 KB |
 | `recife-labirinto.glb` | `paredes`, `corais`, `chao`, `portais`, `gruta`, `alga-1`…`alga-6` e 64 `col-*` | `entrada`, `saida`, `tesouro` | `balancar` (as algas) | 27.472 | 627 KB |
 

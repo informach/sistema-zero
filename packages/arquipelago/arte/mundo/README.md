@@ -86,7 +86,7 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 | `horta.glb` | `horta.py` | centro de um canteiro | `canteiro`, `semente`, `alface-broto`/`-crescendo`/`-maduro`, `tomate-…`, `milho-…` | 3.010 | 111 KB |
 | `bancada.glb` | `bancada.py` | grupo `Bancada` | `projetor`, `holograma` | 2.342 | 89 KB |
 | `farol.glb` | `farol.py` | grupo `Farol` | `farol`, `vidro`, `lampada`, `facho` e os `col-cil-pedra-farol-*`, `col-degrau-farol-*` | 5.852 | 206 KB |
-| `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier` e os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1` | 3.604 | 149 KB |
+| `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier`, `barquinho-decorativo` (o barquinho a remo e a corda até ele, com o casco no `col-barco-1`), os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1` e as âncoras `barco` (o barco da viagem atracado na linha d'água, giro com a proa para o mar) e `embarque` (no tampo, longe da luneta; também o desembarque) | 3.604 | 150 KB |
 | `ponte.glb` | `ponte.py` | uma peça na origem (instanciada) | `tabua`, `poste`, `corda` | 192 | 9 KB |
 | `ilhas-do-anel.glb` | `ilhas_anel.py` | centro de cada ilha, y = 0 no mar | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` | 19.336 | 527 KB |
 | `boias.glb` | `boias.py` | uma peça na linha d'água (instanciada) | `boia`, `corda`, `flutuador` | 1.208 | 28 KB |

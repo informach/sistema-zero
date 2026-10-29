@@ -708,6 +708,11 @@ Plano e decisões propostas: `docs/plans/2026-10-29-arquipelago-recife.md`. Test
 O nado faz parte do modo `chao`: a conferência verifica a cintura na superfície e o corpo
 sem apoio, em vez de procurar um modo chamado `nadar`.
 
+Barco entre as ilhas (fase3-04): no `pier.glb`, o barquinho a remo é o nó `barquinho-decorativo`
+(casco no `col-barco-1`) e as âncoras `barco` (linha d'água, proa para o mar) e `embarque` (tampo,
+fora do alcance da luneta) dizem onde o barco da viagem atraca; no Recife, `barco` e `cais`. O
+`barco.glb` tem a âncora `passageiro`, filha do nó animado `barco`. Testes: `tests/ancoras-do-barco.test.ts`.
+
 Sob tetos baixos, `desvioVerticalDaCamera` também compara passar abaixo do alvo pela folga de
 `FOLGA_DA_CAMERA`, com a sonda real e o ganho mínimo da grua. A posição horizontal exata pode
 tangenciar o teto; não retirar colisores para resolver isso. O desvio entra e sai suavemente,

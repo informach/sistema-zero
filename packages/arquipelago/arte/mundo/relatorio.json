@@ -82,15 +82,28 @@
     "triangulos": 20280
   },
   "pier": {
+    "ancoras": {
+      "barco": {
+        "x": 2.6,
+        "y": 0.0,
+        "z": 6.6
+      },
+      "embarque": {
+        "x": 0.45,
+        "y": 0.61,
+        "z": 6.6
+      }
+    },
     "colisores": {
       "col-barco": 1,
       "col-cil-estaca": 8,
       "col-cil-poste-lampiao": 1,
       "col-cil-poste-lanterna": 1
     },
-    "kb": 149.3,
+    "kb": 150.2,
     "nos": {
-      "pier": 3604
+      "barquinho-decorativo": 762,
+      "pier": 2842
     },
     "triangulos": 3604
   },

@@ -409,8 +409,9 @@ def _juntar(objs, nome, pivo=None):
 RELATORIO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'relatorio.json')
 
 
-def exportar(pid, nos, colisores=()):
-    """Grava `SAIDA/pid.glb` com um nó por chave de `nos` e os nós de colisão `col-*`.
+def exportar(pid, nos, colisores=(), ancoras=()):
+    """Grava `SAIDA/pid.glb` com um nó por chave de `nos`, os nós de colisão `col-*` e as âncoras
+    (nós vazios de nome fixo, onde o jogo põe alguma coisa).
 
     `nos` = {nome: [objetos]} ou {nome: ([objetos], pivô)}. Cada nó vira UMA malha (um nó com
     vários materiais vira várias primitivas). Os nomes dos nós e dos materiais são o contrato com
@@ -420,7 +421,7 @@ def exportar(pid, nos, colisores=()):
         objs, pivo = (val if isinstance(val, tuple) else (val, None))
         juntos.append(_juntar(list(objs), nome, pivo))
     bpy.ops.object.select_all(action='DESELECT')
-    for o in juntos + list(colisores):
+    for o in juntos + list(colisores) + list(ancoras):
         o.select_set(True)
     path = os.path.join(SAIDA, f'{pid}.glb')
     bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True,
@@ -438,6 +439,9 @@ def exportar(pid, nos, colisores=()):
     rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no}
     if colisores:
         rel[pid]['colisores'] = grupos_col(colisores)
+    if ancoras:
+        rel[pid]['ancoras'] = {e.name: {'x': round(e.location.x, 2), 'y': round(e.location.z, 2),
+                                        'z': round(-e.location.y, 2)} for e in ancoras}
     with open(RELATORIO, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')

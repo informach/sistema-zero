@@ -516,6 +516,23 @@ def barco():
     return p
 
 
+# Onde a criança fica no barco (fase3-04): no convés (topo em 0,5), entre os dois bancos da proa,
+# virada para a proa (+x). O jogo põe o desenho dela aqui; a âncora é filha do nó animado `barco`,
+# então acompanha o balanço.
+PASSAGEIRO = (1.0, 0.0, 0.5)
+
+
+def passageiro(barco_):
+    e = bpy.data.objects.new('passageiro', None)
+    e.empty_display_type = 'PLAIN_AXES'
+    bpy.context.collection.objects.link(e)
+    e.parent = barco_
+    e.matrix_parent_inverse.identity()
+    e.location = PASSAGEIRO
+    # Sem giro: o +x da âncora é para onde ela olha (a proa).
+    return e
+
+
 def clipe_barco(juntos):
     o = juntos['barco']
     rot, loc = [], []
@@ -604,7 +621,14 @@ def props():
     nos['alga'] = (alga_objs, pivo)
     exportar('recife-props', nos, clipes_=lambda j: clipe_algas({'alga-0': j['alga']}))
     lib_q.reset()
-    exportar('barco', {'barco': barco()}, clipes_=clipe_barco)
+    # A âncora nasce com o nó `barco` já juntado (dentro do `clipes_`); `exportar` lê a lista depois.
+    filhas = []
+
+    def clipe_e_passageiro(juntos):
+        filhas.append(passageiro(juntos['barco']))
+        return clipe_barco(juntos)
+
+    exportar('barco', {'barco': barco()}, filhas, clipes_=clipe_e_passageiro)
 
 
 def main():
