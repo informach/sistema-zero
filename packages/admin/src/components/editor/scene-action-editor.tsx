@@ -80,6 +80,13 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Pergunta da cabana: e', value: { type: 'cabin-rule', rule: 'and' } },
   { label: 'Pergunta da cabana: ou', value: { type: 'cabin-rule', rule: 'or' } },
   { label: 'Recomeçar a partida da cabana', value: { type: 'restart-cabin' } },
+  // A ponte apressada (29/10/2026): os nomes são os da bancada da criança.
+  { label: 'Puxar a alavanca', value: { type: 'pull-lever' } },
+  { label: 'Esperar 1 segundo', value: { type: 'wait-second' } },
+  { label: 'Encostar na ponte', value: { type: 'touch-bridge' } },
+  { label: '"Depois de" dentro da alavanca', value: { type: 'timer-place', place: 'lever' } },
+  { label: '"Depois de" no começo do jogo', value: { type: 'timer-place', place: 'start' } },
+  { label: 'Recomeçar a partida da ponte', value: { type: 'restart-bridge' } },
   // O andar do Farol (05/10/2026), o Dia 1 do Desafio: os nomes são os da bancada da criança.
   { label: 'Segurar a seta para a direita', value: { type: 'hold-arrow', held: true } },
   { label: 'Soltar a seta para a direita', value: { type: 'hold-arrow', held: false } },

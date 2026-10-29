@@ -15,6 +15,7 @@ import {
   TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import {
+  BRIDGE_TIMER_PLACES,
   CABIN_PIECES,
   CABIN_RULES,
   CHEST_RULES,
@@ -115,6 +116,15 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('try-cabin') }),
   t.Object({ type: t.Literal('cabin-rule'), rule: t.Union(CABIN_RULES.map((r) => t.Literal(r))) }),
   t.Object({ type: t.Literal('restart-cabin') }),
+  // A ponte apressada (Poder "A ponte apressada", 29/10/2026).
+  t.Object({ type: t.Literal('pull-lever') }),
+  t.Object({ type: t.Literal('wait-second') }),
+  t.Object({ type: t.Literal('touch-bridge') }),
+  t.Object({
+    type: t.Literal('timer-place'),
+    place: t.Union(BRIDGE_TIMER_PLACES.map((p) => t.Literal(p))),
+  }),
+  t.Object({ type: t.Literal('restart-bridge') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
   t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),

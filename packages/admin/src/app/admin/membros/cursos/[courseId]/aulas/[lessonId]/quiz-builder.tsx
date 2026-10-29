@@ -246,6 +246,9 @@ export function QuizBuilder({
                     <option value="cabana-so-chave">Cabana: só com a chave</option>
                     <option value="cabana-ou">Cabana: "e" ou "ou"</option>
                     <option value="cabana-ordem">Cabana: ordem das peças na ilha</option>
+                    <option value="ponte-a-tempo">Ponte: a tempo</option>
+                    <option value="ponte-atrasado">Ponte: atrasado</option>
+                    <option value="ponte-de-novo">Ponte: puxar de novo na ilha</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

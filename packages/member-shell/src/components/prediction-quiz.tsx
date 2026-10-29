@@ -21,6 +21,7 @@ import { IslandQuizScene } from './quiz-island-scene'
 import { JardimQuizScene } from './quiz-jardim-scene'
 import { LighthouseQuizScene } from './quiz-lighthouse-scene'
 import { MoedasQuizScene } from './quiz-moedas-scene'
+import { PonteQuizScene } from './quiz-ponte-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */
 export function PredictionQuiz(props: {
@@ -322,6 +323,8 @@ function PredictionQuizSession({
             <p className="p-5 text-base">
               Leia a pergunta e escolha uma resposta. Depois, veja a explicação.
             </p>
+          ) : question.predictionScene.startsWith('ponte-') ? (
+            <PonteQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('cabana-') ? (
             <CabanaQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('moedas-') ? (

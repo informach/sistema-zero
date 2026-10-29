@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-material",
+    "video-experiencia",
+    "video-alavanca",
+    "video-sobe",
+    "video-atravessar",
+    "video-entrega"
+  ],
+  "intervencoes": []
+}

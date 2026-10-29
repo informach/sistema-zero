@@ -9,6 +9,7 @@ import {
   STAGE_TARGET,
   sceneFrameRate,
   sceneLongFrame,
+  TIMED_BRIDGE,
 } from './actions'
 import {
   FOLHA_DA_NAVE,
@@ -83,6 +84,7 @@ import {
   lighthouseWalkGone,
   lighthouseWalkMaxX,
   lighthouseWalkOutSeenX,
+  newBridgeMatch,
   observe,
   PLACAR_NAO_VISTO,
   POOL_CROSSING,
@@ -187,6 +189,9 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
   aberto.coins.last = null
   // As peças que o caso deixou guardadas são o mundo; as aberturas "começando por" são da criança.
   aberto.pieces.opened = { keyFirst: false, emblemFirst: false }
+  // A ponte do caso (baixada, o relógio contando) é o mundo; as puxadas e subidas são da criança.
+  aberto.bridge.pulls = 0
+  aberto.bridge.rises = 0
   aberto.lighthouse.checkedKey = null
   aberto.keyPosition.before = null
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
@@ -645,6 +650,86 @@ export function stepScene(
         opened: { ...s.pieces.opened },
       }
       s.caption = 'A partida recomeçou: as duas peças voltaram ao chão e a cabana fechou.'
+      break
+    case 'pull-lever': {
+      const b = s.bridge
+      if (b.at === 'stone') {
+        s.caption = 'O personagem está na pedra do sino: recomece a partida para puxar de novo.'
+        break
+      }
+      const baixou = !b.ponteAberta
+      b.at = 'lever'
+      b.ponteAberta = true
+      b.sincePull = 0
+      b.pulls = Math.min(b.pulls + 1, TIMED_BRIDGE.countMax)
+      // Como o jogo: cada encontro com a alavanca roda o "depois de" de novo (se ele mora lá).
+      if (b.place === 'lever' && b.timers.length < TIMED_BRIDGE.timers)
+        b.timers = [...b.timers, TIMED_BRIDGE.seconds]
+      s.caption = baixou
+        ? 'Você puxou a alavanca: a ponte baixou e ponteAberta agora é verdadeiro.'
+        : 'Você puxou de novo com a ponte baixada: ponteAberta continua verdadeiro.'
+      if (baixou) {
+        observe(s, 'lever-opens', 'A alavanca baixou a ponte')
+        if (b.rises > 0) observe(s, 'pull-again', 'Depois que subiu, puxar de novo baixou a ponte')
+      }
+      break
+    }
+    case 'wait-second': {
+      const b = s.bridge
+      b.clock = Math.min(b.clock + 1, TIMED_BRIDGE.clockMax)
+      if (b.sincePull !== null) b.sincePull = Math.min(b.sincePull + 1, TIMED_BRIDGE.sinceMax)
+      const faltam = b.timers.map((t) => t - 1)
+      const rodou = faltam.some((t) => t <= 0)
+      b.timers = faltam.filter((t) => t > 0)
+      s.caption = 'Passou 1 segundo.'
+      if (rodou) {
+        if (b.ponteAberta) {
+          b.ponteAberta = false
+          b.rises = Math.min(b.rises + 1, TIMED_BRIDGE.countMax)
+          s.caption = 'Passou 1 segundo: a ponte subiu e ponteAberta voltou a falso.'
+          observe(s, 'rises-alone', 'Depois de 4 segundos, a ponte subiu sozinha')
+        } else s.caption = 'Passou 1 segundo: o "depois de" rodou, e a ponte já estava levantada.'
+      }
+      // Com o "depois de" no começo do jogo, a puxada não começa relógio nenhum.
+      if (
+        b.place === 'start' &&
+        b.ponteAberta &&
+        b.sincePull !== null &&
+        b.sincePull >= TIMED_BRIDGE.seconds
+      )
+        observe(s, 'timer-place', 'Com o "depois de" no começo, a ponte não subiu mais')
+      break
+    }
+    case 'touch-bridge': {
+      const b = s.bridge
+      if (b.at === 'stone') {
+        s.caption = 'O personagem já atravessou: ele está na pedra do sino.'
+        break
+      }
+      if (b.ponteAberta) {
+        b.at = 'stone'
+        s.caption = 'O personagem atravessou a ponte e o sino tocou!'
+        if (b.sincePull !== null && b.sincePull >= 1 && b.sincePull < TIMED_BRIDGE.seconds)
+          observe(s, 'in-time', 'Indo antes dos 4 segundos, o personagem atravessou')
+      } else {
+        b.at = 'bridge'
+        // O aviso do jogo (`PONTE_AVISO.levantada` do projeto), puxada ou não.
+        s.caption = 'A ponte está levantada. Puxe a alavanca primeiro.'
+        if (b.pulls === 0)
+          observe(s, 'closed-start', 'Antes de puxar, a ponte não deixou atravessar')
+      }
+      break
+    }
+    case 'timer-place':
+      s.bridge = newBridgeMatch(action.place)
+      s.caption =
+        action.place === 'lever'
+          ? 'O "depois de 4 segundos" agora está dentro da alavanca. A partida recomeçou.'
+          : 'O "depois de 4 segundos" agora está no começo do jogo. A partida recomeçou.'
+      break
+    case 'restart-bridge':
+      s.bridge = newBridgeMatch(s.bridge.place)
+      s.caption = 'A partida recomeçou: a ponte está levantada e ponteAberta é falso.'
       break
     case 'movement-command':
       s.walk.movement = action.enabled

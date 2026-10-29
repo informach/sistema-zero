@@ -346,6 +346,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   'lighthouse-position': [],
   'coin-counter': [],
   'two-pieces': [],
+  'timed-bridge': [],
   restart: ['hero', 'obstacle'],
   hitbox: ['hero', 'obstacle'],
   // ⚠️ Lote 5 do Raio-X: a `score` ganhou o cacto que vem na partida; `random` e `acceleration`
@@ -392,6 +393,7 @@ export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenario
   'lighthouse-position': 'farol',
   'coin-counter': 'farol',
   'two-pieces': 'farol',
+  'timed-bridge': 'farol',
 }
 
 /**

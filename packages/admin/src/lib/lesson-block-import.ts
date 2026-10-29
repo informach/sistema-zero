@@ -49,6 +49,9 @@ const QuizQuestionImportSchema = z
         'cabana-so-chave',
         'cabana-ou',
         'cabana-ordem',
+        'ponte-a-tempo',
+        'ponte-atrasado',
+        'ponte-de-novo',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),

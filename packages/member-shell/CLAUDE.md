@@ -3602,6 +3602,22 @@ e as duas casinhas "Leva:" com as peças guardadas) e a bancada tem a `RegraDoJo
 - ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como as Moedas.
 - Teste: `tests/scene-two-pieces.test.tsx`.
 
+### A ponte apressada (`timed-bridge`, Faísca Poder 3, 29/10/2026)
+
+A experiência do Poder "A ponte apressada" (`scene-timed-bridge.tsx`), no mesmo princípio da
+cabana: o palco é o JOGO (praia, laguinho, pedra do sino, ponte e alavanca nos lugares de
+`LAGUINHO_2D`/`SINO_2D`/`PONTE_2D`/`ALAVANCA_2D` do `docs/aulas-interativas-tecnico/qa/ponte-projeto.ts`,
+o aviso do jogo e o relógio do "depois de" com uma marquinha por segundo, até 4).
+
+- O tempo anda UM SEGUNDO por clique ("Esperar 1 segundo", ação `wait-second`), sem o relógio de
+  quadro do player: a criança controla o tempo e observa cada momento.
+- "Dentro da alavanca" / "No começo do jogo" mudam o lugar do "depois de" e recomeçam a partida
+  (como editar o projeto recomeça o jogo); a regra da bancada mostra o bloco no lugar escolhido.
+- Cada puxada com o "depois de" na alavanca soma um relógio (como o jogo: cada encontro roda o
+  bloco de novo); no começo do jogo há um só, que já conta na partida nova.
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a cabana.
+- Teste: `tests/scene-timed-bridge.test.tsx`.
+
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 
 Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo

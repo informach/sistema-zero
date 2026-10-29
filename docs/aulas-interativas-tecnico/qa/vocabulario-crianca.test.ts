@@ -101,8 +101,8 @@ test('quem recebe e responde é a equipe também nas notas e nos planos de víde
 })
 
 describe('linguagem comum nos cursos', () => {
-  test('as 46 aulas usam os mesmos rótulos de tela para os dois públicos', () => {
-    expect(manifestos.length).toBe(46)
+  test('as 48 aulas usam os mesmos rótulos de tela para os dois públicos', () => {
+    expect(manifestos.length).toBe(48)
     const antigos = manifestos.flatMap(({ nome, manifesto }) =>
       textosVisiveis(manifesto)
         .filter(({ texto }) => PALAVRAS_DA_ESCOLA.test(texto))

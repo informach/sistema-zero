@@ -719,6 +719,21 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'A partida recomeçou: as duas peças voltaram ao chão e a cabana fechou.',
     ],
   },
+  'timed-bridge': {
+    readouts: [
+      { label: 'ponteAberta', value: 'verdadeiro', tone: 'a' },
+      { label: 'relógio', value: '3 de 4 s', tone: 'b' },
+      { label: 'ponte', value: 'levantada', tone: 'plain' },
+    ],
+    situations: [
+      'A ponte está levantada.',
+      'O personagem está na pedra do sino. 12 segundos passaram.',
+      'Você puxou a alavanca: a ponte baixou e ponteAberta agora é verdadeiro.',
+      'Passou 1 segundo: o "depois de" rodou, e a ponte já estava levantada.',
+      'O "depois de 4 segundos" agora está no começo do jogo. A partida recomeçou.',
+      'O personagem está na pedra do sino: recomece a partida para puxar de novo.',
+    ],
+  },
   'lighthouse-key': {
     readouts: [
       { label: 'temChave', value: 'verdadeiro', tone: 'a' },

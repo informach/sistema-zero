@@ -25,6 +25,9 @@ export interface ManifestQuiz {
       | 'cabana-so-chave'
       | 'cabana-ou'
       | 'cabana-ordem'
+      | 'ponte-a-tempo'
+      | 'ponte-atrasado'
+      | 'ponte-de-novo'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -66,6 +69,9 @@ export function validatePredictionQuiz(
           'cabana-so-chave',
           'cabana-ou',
           'cabana-ordem',
+          'ponte-a-tempo',
+          'ponte-atrasado',
+          'ponte-de-novo',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -116,6 +122,9 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'cabana-so-chave',
           'cabana-ou',
           'cabana-ordem',
+          'ponte-a-tempo',
+          'ponte-atrasado',
+          'ponte-de-novo',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

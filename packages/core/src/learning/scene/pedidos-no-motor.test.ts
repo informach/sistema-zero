@@ -1327,6 +1327,62 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) => s.caption.startsWith('A cabana continua fechada'),
   },
+  'timed-bridge': {
+    pedidos: {
+      'closed-start': {
+        texto: 'Clique em Encostar na ponte antes de puxar a alavanca.',
+        faz: (m) => {
+          m.faz({ type: 'restart-bridge' })
+          m.faz({ type: 'touch-bridge' })
+        },
+      },
+      'lever-opens': {
+        texto: 'Clique em Puxar a alavanca.',
+        faz: (m) => {
+          m.faz({ type: 'restart-bridge' })
+          m.faz({ type: 'pull-lever' })
+        },
+      },
+      'in-time': {
+        texto:
+          'Puxe a alavanca, clique em Esperar 1 segundo e encoste na ponte antes de passarem 4 segundos.',
+        faz: (m) => {
+          m.faz({ type: 'restart-bridge' })
+          m.faz({ type: 'pull-lever' })
+          m.faz({ type: 'wait-second' })
+          m.faz({ type: 'touch-bridge' })
+        },
+      },
+      'rises-alone': {
+        texto: 'Puxe a alavanca e clique em Esperar 1 segundo até passarem 4 segundos.',
+        faz: (m) => {
+          m.faz({ type: 'timer-place', place: 'lever' })
+          m.faz({ type: 'pull-lever' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+        },
+      },
+      'pull-again': {
+        texto: 'Deixe a ponte subir sozinha e clique em Puxar a alavanca de novo.',
+        faz: (m) => {
+          m.faz({ type: 'timer-place', place: 'lever' })
+          m.faz({ type: 'pull-lever' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+          m.faz({ type: 'pull-lever' })
+        },
+      },
+      'timer-place': {
+        texto:
+          'Escolha No começo do jogo, clique em Esperar 1 segundo quatro vezes, puxe a alavanca e espere mais quatro segundos.',
+        faz: (m) => {
+          m.faz({ type: 'timer-place', place: 'start' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+          m.faz({ type: 'pull-lever' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+        },
+      },
+    },
+    mostra: (s) => s.bridge.at === 'stone',
+  },
   'lighthouse-position': {
     pedidos: {
       'x-minus': {

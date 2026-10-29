@@ -1,4 +1,6 @@
 import {
+  BRIDGE_TIMER_PLACES,
+  type BridgeTimerPlace,
   CABIN_PIECES,
   CABIN_RULES,
   type CabinPiece,
@@ -16,6 +18,7 @@ import {
   type SceneId,
   type SceneSetup,
   SHEET_CROP_WIDTHS,
+  TIMED_BRIDGE,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
 import { type IslandState, initialIsland, isIslandState } from './island-3d'
@@ -144,6 +147,26 @@ export interface SceneTwoPieces {
   order: CabinPiece[]
   /** Gesto: a cabana aberta com "e" começando por cada peça (a ordem não importa). */
   opened: { keyFirst: boolean; emblemFirst: boolean }
+}
+
+/**
+ * A ponte apressada (`timed-bridge`, Poder "A ponte apressada"): o que o jogo guarda
+ * (`ponteAberta`), onde mora o "depois de 4 segundos" e os relógios dele que ainda esperam.
+ */
+export interface SceneTimedBridge {
+  ponteAberta: boolean
+  place: BridgeTimerPlace
+  /** Os segundos que faltam em cada "depois de" que ainda espera (cada puxada soma um). */
+  timers: number[]
+  /** Os segundos desde a última puxada (null antes de puxar nesta partida). */
+  sincePull: number | null
+  /** Os segundos da partida. */
+  clock: number
+  /** Onde o personagem está: no começo, na alavanca, na entrada da ponte ou na pedra do sino. */
+  at: 'start' | 'lever' | 'bridge' | 'stone'
+  /** Gesto: puxadas e subidas sozinhas nesta partida. */
+  pulls: number
+  rises: number
 }
 
 /** A posição atual e a anterior permitem comparar um eixo por vez no mapa. */
@@ -1436,6 +1459,7 @@ export interface SceneState {
   collection: SceneCollectionMemory
   coins: SceneCoinCounter
   pieces: SceneTwoPieces
+  bridge: SceneTimedBridge
   walk: SceneLighthouseWalk
   keyPosition: SceneLighthousePosition
   once: SceneOnce
@@ -1758,6 +1782,23 @@ const PIECES_PADRAO: SceneTwoPieces = {
 export function clonePieces(p: SceneTwoPieces): SceneTwoPieces {
   return { ...p, order: [...p.order], opened: { ...p.opened } }
 }
+const BRIDGE_PADRAO: SceneTimedBridge = {
+  ponteAberta: false,
+  place: 'lever',
+  timers: [],
+  sincePull: null,
+  clock: 0,
+  at: 'start',
+  pulls: 0,
+  rises: 0,
+}
+/** Uma partida nova da ponte: levantada; com o "depois de" no começo, o relógio dele já conta. */
+export function newBridgeMatch(place: BridgeTimerPlace): SceneTimedBridge {
+  return { ...BRIDGE_PADRAO, place, timers: place === 'start' ? [TIMED_BRIDGE.seconds] : [] }
+}
+export function cloneBridge(b: SceneTimedBridge): SceneTimedBridge {
+  return { ...b, timers: [...b.timers] }
+}
 const WALK_PADRAO: SceneLighthouseWalk = {
   frame: 0,
   x: LIGHTHOUSE_WALK.start,
@@ -1794,6 +1835,7 @@ function gruposComPadrao() {
     ['collection', COLLECTION_PADRAO],
     ['coins', COINS_PADRAO],
     ['pieces', PIECES_PADRAO],
+    ['bridge', BRIDGE_PADRAO],
     ['walk', WALK_PADRAO],
     ['keyPosition', KEY_POSITION_PADRAO],
     ['once', initialOnce(undefined)],
@@ -1954,6 +1996,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     collection: { ...COLLECTION_PADRAO },
     coins: cloneCoins(COINS_PADRAO),
     pieces: clonePieces(PIECES_PADRAO),
+    bridge: cloneBridge(BRIDGE_PADRAO),
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
     keyPosition: { ...KEY_POSITION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
@@ -2129,6 +2172,7 @@ export function cloneScene(state: SceneState): SceneState {
     collection: { ...state.collection },
     coins: cloneCoins(state.coins),
     pieces: clonePieces(state.pieces),
+    bridge: cloneBridge(state.bridge),
     walk: {
       ...state.walk,
       trail: [...state.walk.trail],
@@ -2405,6 +2449,23 @@ function isSceneTwoPieces(v: unknown): v is SceneTwoPieces {
     bool(v.opened.emblemFirst)
   )
 }
+function isSceneTimedBridge(v: unknown): v is SceneTimedBridge {
+  const inteiro = (x: unknown, max: number) =>
+    typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= max
+  return (
+    isRecord(v) &&
+    bool(v.ponteAberta) &&
+    BRIDGE_TIMER_PLACES.some((p) => p === v.place) &&
+    Array.isArray(v.timers) &&
+    v.timers.length <= TIMED_BRIDGE.timers &&
+    v.timers.every((t) => inteiro(t, TIMED_BRIDGE.seconds) && t > 0) &&
+    (v.sincePull === null || inteiro(v.sincePull, TIMED_BRIDGE.sinceMax)) &&
+    inteiro(v.clock, TIMED_BRIDGE.clockMax) &&
+    ['start', 'lever', 'bridge', 'stone'].includes(v.at as string) &&
+    inteiro(v.pulls, TIMED_BRIDGE.countMax) &&
+    inteiro(v.rises, TIMED_BRIDGE.countMax)
+  )
+}
 const strings = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((s) => typeof s === 'string' && s.length <= 80)
 const numbers = (v: unknown, max: number): v is number[] =>
@@ -2444,6 +2505,7 @@ export function isSceneState(value: unknown): value is SceneState {
     return false
   if (!isSceneCoinCounter(value.coins)) return false
   if (!isSceneTwoPieces(value.pieces)) return false
+  if (!isSceneTimedBridge(value.bridge)) return false
   if (!isSceneLighthouseWalk(value.walk)) return false
   const position = value.keyPosition
   const validPosition = (point: unknown) =>

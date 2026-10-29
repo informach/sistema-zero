@@ -111,6 +111,9 @@ export interface MemberQuizContent {
       | 'cabana-so-chave'
       | 'cabana-ou'
       | 'cabana-ordem'
+      | 'ponte-a-tempo'
+      | 'ponte-atrasado'
+      | 'ponte-de-novo'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

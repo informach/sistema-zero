@@ -61,6 +61,8 @@ export const SCENE_IDS = [
   'coin-counter',
   // Poder "O segredo da cabana" (Faísca, 29/10/2026): a porta que pede a chave e o emblema.
   'two-pieces',
+  // Poder "A ponte apressada" (Faísca, 29/10/2026): a ponte que baixa e sobe sozinha depois de 4 s.
+  'timed-bridge',
   'restart',
   'hitbox',
   'score',
@@ -169,6 +171,14 @@ export type SceneAction =
   /** `two-pieces`: o bloco que junta as duas perguntas da cabana, "e" ou "ou". */
   | { type: 'cabin-rule'; rule: CabinRule }
   | { type: 'restart-cabin' }
+  /** `timed-bridge`: o personagem puxa a alavanca (a ponte baixa e o relógio do "depois de" começa). */
+  | { type: 'pull-lever' }
+  /** `timed-bridge`: o tempo do jogo anda um segundo. */
+  | { type: 'wait-second' }
+  | { type: 'touch-bridge' }
+  /** `timed-bridge`: onde fica o "depois de 4 segundos": dentro da alavanca ou no começo do jogo. */
+  | { type: 'timer-place'; place: BridgeTimerPlace }
+  | { type: 'restart-bridge' }
   /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
   | { type: 'hold-arrow'; held: boolean }
   | { type: 'movement-command'; enabled: boolean }
@@ -356,6 +366,22 @@ export type CabinPiece = (typeof CABIN_PIECES)[number]
 export const CABIN_RULES = ['and', 'or'] as const
 export type CabinRule = (typeof CABIN_RULES)[number]
 
+/**
+ * A ponte apressada: onde mora o "depois de 4 segundos" com a subida dentro, e os limites do
+ * estado (o relógio para de contar depois de alguns minutos; os relógios pendentes têm teto).
+ */
+export const BRIDGE_TIMER_PLACES = ['lever', 'start'] as const
+export type BridgeTimerPlace = (typeof BRIDGE_TIMER_PLACES)[number]
+export const TIMED_BRIDGE = {
+  /** Os segundos do "depois de", os mesmos do jogo (`PONTE_SEGUNDOS`). */
+  seconds: 4,
+  /** Quantos "depois de" podem esperar ao mesmo tempo (puxar de novo com a ponte baixada soma um). */
+  timers: 8,
+  clockMax: 600,
+  sinceMax: 60,
+  countMax: 99,
+} as const
+
 /** A tela 480 × 360 e a chave 32 × 32 do Farol. O player confere contra FAROL_LAYOUT. */
 export const LIGHTHOUSE_POSITION = {
   start: { x: 211, y: 53 },
@@ -418,6 +444,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'lighthouse-position': [],
   'coin-counter': [],
   'two-pieces': [],
+  'timed-bridge': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -781,6 +808,13 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'two-pieces'
     case 'cabin-rule':
       return scene === 'two-pieces' && CABIN_RULES.some((r) => r === value.rule)
+    case 'pull-lever':
+    case 'wait-second':
+    case 'touch-bridge':
+    case 'restart-bridge':
+      return scene === 'timed-bridge'
+    case 'timer-place':
+      return scene === 'timed-bridge' && BRIDGE_TIMER_PLACES.some((p) => p === value.place)
     case 'movement-command':
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'walk-frames':

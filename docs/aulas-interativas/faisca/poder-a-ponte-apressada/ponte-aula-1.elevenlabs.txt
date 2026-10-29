@@ -1,0 +1,117 @@
+[upbeat, welcoming voice] O Farol ganhou um laguinho! No meio da água tem uma pedra com um sino, e para chegar lá existe uma ponte levadiça. Só que ela é apressada: começa levantada.
+
+[interested, animated voice] Olha aqui: o personagem puxa a alavanca, na areia, e a ponte baixa. Se ele for direto, atravessa e o sino toca. Mas, se demorar, a ponte sobe sozinha antes de ele chegar. O farol continua como antes: com a chave, ele acende.
+
+[upbeat, encouraging voice] Agora é a sua vez de jogar. Clique no jogo aqui na página e use as setas do teclado. Puxe a alavanca e atravesse. Depois tente chegar atrasado e veja o que acontece. A tecla R começa uma nova partida. Você pode seguir mesmo sem terminar a partida: é só clicar em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olha aqui: este é o seu Passo a passo do projeto! Ele tem cada montagem das duas aulas, com o caminho na paleta, o nome do bloco, onde encaixar e como testar. Tem uma parte para o jogo 2D e outra para a ilha em 3D, que você vai fazer na próxima aula.
+
+[reassuring, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser. Depois clique em Próxima parte.
+
+[long pause]
+
+[curious] Sabe o botão do semáforo de pedestre? Você aperta, e o sinal fica verde por um tempo. Depois ele volta para o vermelho sozinho. Ninguém precisa apertar outro botão para ficar vermelho: o semáforo já sabe esperar. E, se você apertar de novo, ele abre de novo.
+
+[engaging, energetic, conversational voice] No seu jogo vai ser igual. A alavanca é o botão. A ponte baixada é o sinal verde. E o jogo guarda numa variável, ponteAberta, se a ponte está baixada ou não.
+
+[interested, animated voice] O que faz a ponte subir sozinha é um bloco que sabe esperar: depois de 4 segundos, fazer. Tudo o que estiver dentro dele acontece só quando o tempo acaba.
+
+[upbeat, encouraging voice] Na experiência, puxe a alavanca e conte os segundos, um de cada vez. Observe o que muda quando o tempo acaba, e o que acontece se você chegar atrasado. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora faça a alavanca baixar a ponte. Clique no jogo e leve o personagem até a alavanca, na areia, ao lado da ponte. Tá vendo? Ele passa por ela e não acontece nada, porque o encontro com a alavanca ainda não tem nenhuma reação.
+
+[engaging, energetic, conversational voice] Primeiro, a gente precisa criar a variável ponteAberta, que guarda se a ponte está baixada. Ela nasce quando o jogo começa. Por isso, encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, pegue o bloco Criar variável e encaixe no fim de Ao iniciar.
+
+[engaging, energetic, conversational voice] Esse bloco chega com o nome contador. Clique em contador, apague e escreva ponteAberta, tudo junto e com o A maiúsculo. Depois clique fora do campo.
+
+[engaging, energetic, conversational voice] O valor desse bloco vem com o número 0. Só que ponteAberta guarda verdadeiro ou falso. Abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 0.
+
+[confident, clear, unhurried voice] No menu desse bloco, troque verdadeiro por falso, porque o jogo começa com a ponte levantada.
+
+[confident, clear, unhurried voice] Agora o encontro. Encontre a área Quando acontecer e deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue o bloco Quando o sprite começar a encostar no sprite e encaixe nesse espaço.
+
+[confident, clear, unhurried voice] Esse bloco chega com jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha alavanca.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço ao lado da palavra fazer, dentro desse encontro. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência. Pegue o bloco Trocar imagem do sprite e encaixe ali. Ele chega com heroi duas vezes: clique no primeiro e escolha alavanca; clique no segundo e escolha alavanca-baixo.
+
+[confident, clear, unhurried voice] Logo abaixo, encaixe outro Trocar imagem do sprite. Clique no primeiro heroi e escolha ponte; clique no segundo e escolha ponte-baixada.
+
+[confident, clear, unhurried voice] Embaixo dele, encaixe Alterar variável, de Programação e Variáveis. Clique em contador e escolha ponteAberta. O valor vem com o número 1: abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1. Desta vez, deixe em verdadeiro.
+
+[confident, clear, unhurried voice] Por último, ainda dentro do fazer, encaixe outro Alterar variável e escolha aviso. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1. Clique em Olá, apague e escreva: A ponte baixou! Atravesse antes que ela suba.
+
+[engaging, energetic, conversational voice] Agora teste. Clique no jogo e leve o personagem até a alavanca. Olha só: a alavanca desce, a ponte baixa e o aviso muda. A ponte ainda não sobe sozinha, e ainda não dá para atravessar: isso vem nas próximas partes.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável ponteAberta com valor falso, e no encontro entre personagem e alavanca estão as duas trocas de imagem, Alterar ponteAberta para verdadeiro e Alterar aviso. Depois de corrigir, teste de novo.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora faça a ponte subir sozinha. Clique no jogo, puxe a alavanca e espere. Tá vendo? A ponte baixa e fica baixada para sempre, porque nada no jogo manda ela subir. Lembra da experiência? Depois de 4 segundos, a ponte subia sozinha, e o relógio só começava quando a alavanca era puxada. Agora a gente vai montar esse relógio no seu jogo!
+
+[engaging, energetic, conversational voice] O relógio tem que começar quando a alavanca é puxada. Por isso ele fica dentro do encontro com a alavanca, logo depois do aviso. Encontre esse encontro em Quando acontecer e deixe à vista o espaço embaixo do último bloco do fazer, o Alterar aviso.
+
+[confident, clear, unhurried voice] Abra Programação e depois Repetições. Pegue o bloco depois de 1 segundos, fazer e encaixe embaixo do Alterar aviso, ainda dentro do encontro com a alavanca.
+
+[confident, clear, unhurried voice] Repare que ele chega com o número 1. Clique no 1, apague e escreva 4.
+
+[engaging, energetic, conversational voice] Tudo o que ficar dentro do fazer desse bloco acontece só quando os 4 segundos acabam. E o que tem que acontecer é desfazer o que a alavanca fez.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço ao lado da palavra fazer, dentro do depois de 4 segundos. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência. Pegue o bloco Trocar imagem do sprite e encaixe ali. Clique no primeiro heroi e escolha alavanca; clique no segundo e escolha alavanca-cima.
+
+[confident, clear, unhurried voice] Logo abaixo, ainda dentro do depois de 4 segundos, encaixe outro Trocar imagem do sprite. Clique no primeiro heroi e escolha ponte; clique no segundo e escolha ponte-levantada.
+
+[confident, clear, unhurried voice] Embaixo dele, encaixe Alterar variável, de Programação e Variáveis, e escolha ponteAberta. Solte o bloco verdadeiro, de Programação e Lógica e Se, em cima do 1, e no menu troque para falso.
+
+[confident, clear, unhurried voice] Por último, ainda dentro do depois de 4 segundos, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação e Valores, em cima do 1, apague Olá e escreva: A ponte subiu. Puxe a alavanca de novo.
+
+[engaging, energetic, conversational voice] Agora teste. Clique no jogo, puxe a alavanca e conte: um, dois, três, quatro. Olha só: a ponte sobe sozinha, a alavanca volta para cima e o aviso muda. Agora puxe a alavanca de novo: a ponte baixa outra vez, e o relógio começa de novo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o depois de 4 segundos está dentro do encontro com a alavanca, embaixo do aviso, e dentro dele estão as duas trocas de imagem de volta, Alterar ponteAberta para falso e Alterar aviso. Se ele ficar fora do encontro, o relógio não começa quando a alavanca é puxada. Depois de corrigir, teste de novo.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora faça o personagem atravessar. Clique no jogo, puxe a alavanca e vá até a ponte baixada. Tá vendo? Ele chega na ponte e não acontece nada, porque o encontro com a ponte ainda não tem uma regra. Lembra da experiência? Com a ponte baixada, o personagem atravessava. Com ela levantada, o aviso pedia para puxar a alavanca.
+
+[confident, clear, unhurried voice] Primeiro, encontre a área Quando acontecer e deixe à vista um espaço vazio depois do encontro com a alavanca, fora do fazer dele.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue o bloco Quando o sprite começar a encostar no sprite e encaixe nesse espaço. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha ponte.
+
+[engaging, energetic, conversational voice] A ponte faz uma pergunta: ela está baixada? Quem faz uma pergunta no jogo é o bloco Se. Deixe à vista o espaço ao lado da palavra fazer, dentro do encontro com a ponte. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
+
+[confident, clear, unhurried voice] Repare que o Se já vem com uma condição pronta: x maior que 0. Não é isso que a ponte precisa perguntar, por isso segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos. O lugar ao lado de Se fica vazio.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, pegue o bloco valor da variável e solte no lugar vazio ao lado de Se. Clique no x e escolha ponteAberta.
+
+[engaging, energetic, conversational voice] A ponte tem duas respostas, por isso o Se precisa do senão. Olha aqui, na linha de baixo do bloco Se, depois do então: tem dois sinais de mais. Clique no segundo, antes da palavra senão. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Agora o então, que roda quando a ponte está baixada. Deixe à vista o espaço dentro do então. Abra Jogo 2D, depois Movimento e depois Posição e tamanho. Pegue o bloco Mudar a posição do sprite e encaixe ali. Clique em jogador e escolha personagem. Clique no número do x, que vem com 0, e coloque 96. Depois clique no número do y e coloque 240. Esse é o lugar em cima da pedra.
+
+[confident, clear, unhurried voice] Logo abaixo, ainda dentro do então, encaixe Trocar imagem do sprite, de Jogo 2D, Sprites e Criar e trocar aparência. Clique no primeiro heroi e escolha sino; clique no segundo e escolha pedra-do-sino-tocando.
+
+[confident, clear, unhurried voice] Embaixo dele, encaixe Alterar variável, de Programação e Variáveis, e escolha aviso. Solte um texto, de Programação e Valores, em cima do 1, apague Olá e escreva: Você atravessou e tocou o sino!
+
+[confident, clear, unhurried voice] Agora o senão, que roda quando a ponte está levantada. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva: A ponte está levantada. Puxe a alavanca primeiro.
+
+[engaging, energetic, conversational voice] Agora teste todos os casos. Pressione R e vá direto à ponte, sem puxar: o aviso pede para puxar a alavanca. Puxe a alavanca e vá logo para a ponte: o personagem atravessa e o sino toca! Pressione R, puxe a alavanca e espere a ponte subir antes de encostar nela: ele fica na praia, e o aviso aparece.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro usa personagem e ponte, a pergunta do Se é ponteAberta, a mudança de posição, a troca do sino e o aviso de sucesso estão dentro do então, e o aviso da ponte levantada está dentro do senão. Depois de corrigir, teste de novo.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[pleased, lively voice] Olha só o que você programou: a ponte baixa com a alavanca, espera 4 segundos e sobe sozinha, e só dá para atravessar a tempo! Na próxima aula, você leva essa regra para a ilha, em três dimensões.
+
+[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Acenda o farol com a chave também. Depois pressione R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

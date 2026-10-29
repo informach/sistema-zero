@@ -183,6 +183,9 @@ test.each([
   'cabana-so-chave',
   'cabana-ou',
   'cabana-ordem',
+  'ponte-a-tempo',
+  'ponte-atrasado',
+  'ponte-de-novo',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

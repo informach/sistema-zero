@@ -1634,6 +1634,63 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Encoste na cabana sem nada, pegue a chave e encoste, pegue o emblema e encoste, recomece começando pelo emblema e, por fim, escolha ou e tente com uma peça só.',
     ],
   },
+  /**
+   * O Poder "A ponte apressada" (Faísca, 29/10/2026): o jogo que a criança monta, com a alavanca,
+   * a ponte e a pedra do sino. O tempo anda um segundo por vez, num botão: a criança controla o
+   * relógio e observa cada momento. ⚠️ Os rótulos da bancada ("Puxar a alavanca", "Esperar 1
+   * segundo", "Encostar na ponte", "Dentro da alavanca", "No começo do jogo", "Recomeçar a
+   * partida") são citados pelos pedidos e pelas pistas letra por letra.
+   */
+  'timed-bridge': {
+    id: 'timed-bridge',
+    group: 'events',
+    title: 'A ponte apressada',
+    instruction:
+      'Puxe a alavanca, deixe o tempo passar um segundo por vez e tente a ponte: acompanhe ponteAberta e o relógio do "depois de". Depois mude o lugar do "depois de".',
+    manipulates: 'A alavanca, o relógio de segundos, a ponte e o lugar do "depois de 4 segundos"',
+    success:
+      'A alavanca baixou a ponte e, 4 segundos depois, ela subiu sozinha; indo antes disso, o personagem atravessou. No começo do jogo, o "depois de" rodou uma vez só e a ponte não subiu mais.',
+    extra: 'E se o "depois de" esperasse 2 segundos: daria tempo de atravessar?',
+    goals: [
+      {
+        id: 'closed-start',
+        label: 'Antes de puxar, a ponte não deixou atravessar',
+        pedido: 'Clique em Encostar na ponte antes de puxar a alavanca.',
+      },
+      {
+        id: 'lever-opens',
+        label: 'A alavanca baixou a ponte',
+        pedido: 'Clique em Puxar a alavanca.',
+      },
+      {
+        id: 'in-time',
+        label: 'Indo antes dos 4 segundos, o personagem atravessou',
+        pedido:
+          'Puxe a alavanca, clique em Esperar 1 segundo e encoste na ponte antes de passarem 4 segundos.',
+      },
+      {
+        id: 'rises-alone',
+        label: 'Depois de 4 segundos, a ponte subiu sozinha',
+        pedido: 'Puxe a alavanca e clique em Esperar 1 segundo até passarem 4 segundos.',
+      },
+      {
+        id: 'pull-again',
+        label: 'Depois que subiu, puxar de novo baixou a ponte',
+        pedido: 'Deixe a ponte subir sozinha e clique em Puxar a alavanca de novo.',
+      },
+      {
+        id: 'timer-place',
+        label: 'Com o "depois de" no começo, a ponte não subiu mais',
+        pedido:
+          'Escolha No começo do jogo, clique em Esperar 1 segundo quatro vezes, puxe a alavanca e espere mais quatro segundos.',
+      },
+    ],
+    hints: [
+      'Olhe ponteAberta antes de encostar na ponte: ela está verdadeiro ou falso?',
+      'Puxe a alavanca e conte os segundos no relógio. O que acontece com a ponte no quarto segundo?',
+      'Encoste na ponte sem puxar, puxe e atravesse antes dos 4 segundos, recomece e deixe a ponte subir, puxe de novo e, por fim, escolha No começo do jogo e espere bastante depois de puxar.',
+    ],
+  },
   'lighthouse-position': {
     id: 'lighthouse-position',
     group: 'stage',
@@ -2870,6 +2927,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'lighthouse-position': PREVIA_INICIAL,
   'coin-counter': PREVIA_INICIAL,
   'two-pieces': PREVIA_INICIAL,
+  'timed-bridge': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

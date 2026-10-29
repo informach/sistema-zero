@@ -474,6 +474,9 @@ export interface QuizQuestion {
     | 'cabana-so-chave'
     | 'cabana-ou'
     | 'cabana-ordem'
+    | 'ponte-a-tempo'
+    | 'ponte-atrasado'
+    | 'ponte-de-novo'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

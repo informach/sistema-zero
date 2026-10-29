@@ -263,6 +263,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, você vai testar a cabana sem peça, com uma e com as duas, e comparar o "e" com o "ou".',
   },
+  'timed-bridge': {
+    label: 'A ponte apressada',
+    explanation:
+      'Nesta experiência, você vai puxar a alavanca, contar os segundos e ver quando a ponte deixa atravessar.',
+  },
   'lighthouse-position': {
     label: 'O lugar da chave no mapa',
     explanation: 'Nesta experiência, você muda um número por vez e acompanha a chave no mapa.',
@@ -1386,6 +1391,35 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       correctChoiceId: 'basta',
       explanation:
         'Com "ou", uma resposta verdadeira já basta. Com "e", as duas precisam ser verdadeiras: é a regra que a cabana precisa.',
+    },
+  },
+  'timed-bridge': {
+    prediction: {
+      prompt:
+        'Imagine que o personagem puxa a alavanca, espera 2 segundos e encosta na ponte. A ponte sobe 4 segundos depois da puxada. O que acontece?',
+      choices: [
+        { id: 'atravessa', label: 'Ele atravessa e o sino toca.' },
+        {
+          id: 'fica',
+          label: 'A ponte já subiu e ele fica na praia.',
+          shows: 'Com 2 segundos a ponte ainda estava baixada, e o personagem atravessou.',
+        },
+      ],
+      correctChoiceId: 'atravessa',
+      revealOn: 'in-time',
+    },
+    explain: {
+      prompt: 'Por que, no começo do jogo, o "depois de 4 segundos" não fez a ponte subir de novo?',
+      choices: [
+        {
+          id: 'uma-vez',
+          label: 'Porque o relógio só começa quando o bloco roda, e no começo ele roda uma vez só.',
+        },
+        { id: 'quebrou', label: 'Porque o relógio quebra depois de contar uma vez.' },
+      ],
+      correctChoiceId: 'uma-vez',
+      explanation:
+        'O "depois de" começa a contar quando o bloco roda. Dentro da alavanca, ele roda a cada puxada; no começo do jogo, uma vez só.',
     },
   },
   'lighthouse-position': {

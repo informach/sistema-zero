@@ -1,4 +1,4 @@
-import { MESH_SKIN_LABELS, type SceneId, STAGE_TARGET } from './actions'
+import { MESH_SKIN_LABELS, type SceneId, STAGE_TARGET, TIMED_BRIDGE } from './actions'
 import {
   FOLHA_DA_NAVE,
   LUPA,
@@ -662,6 +662,22 @@ function leituras(
           tone: 'plain',
         },
       ]
+    case 'timed-bridge': {
+      const b = state.bridge
+      const falta = b.timers.length ? Math.min(...b.timers) : null
+      return [
+        { label: 'ponteAberta', value: b.ponteAberta ? 'verdadeiro' : 'falso', tone: 'a' },
+        {
+          label: 'relógio',
+          value:
+            falta === null
+              ? 'parado'
+              : `${TIMED_BRIDGE.seconds - falta} de ${TIMED_BRIDGE.seconds} s`,
+          tone: 'b',
+        },
+        { label: 'ponte', value: b.ponteAberta ? 'baixada' : 'levantada', tone: 'plain' },
+      ]
+    }
     case 'lighthouse-position':
       return [
         { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
@@ -1287,6 +1303,17 @@ function situacao(scene: SceneId, state: SceneState): string {
         state.caption ||
         `${quantos(2 - pecas, 'peça está no chão', 'peças estão no chão')}. A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}.`
       )
+    }
+    case 'timed-bridge': {
+      const b = state.bridge
+      const onde =
+        b.at === 'stone'
+          ? 'O personagem está na pedra do sino.'
+          : `A ponte está ${b.ponteAberta ? 'baixada' : 'levantada'}.`
+      if (state.caption) return state.caption
+      return b.clock === 0
+        ? onde
+        : `${onde} ${quantos(b.clock, 'segundo passou', 'segundos passaram')}.`
     }
     case 'lighthouse-position':
       return `A chave está em x ${state.keyPosition.x}, y ${state.keyPosition.y}.`
