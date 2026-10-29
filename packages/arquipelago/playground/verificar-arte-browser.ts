@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
+import { ELEVACAO_DOS_PATINS } from '../src/sistemas/ajustes-da-arte'
 
 const porta = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4598)
 const base = `http://127.0.0.1:${porta}`
@@ -127,9 +128,10 @@ try {
         const antes = await page.evaluate(() => globalThis.__arte)
         await page.getByRole('button', { name: 'Elevar com patins', exact: true }).click()
         await page.waitForFunction(
-          () =>
-            Math.abs((globalThis.__arte?.objetos['avatar-visual']?.posicao[1] ?? 0) - 0.085) <
+          (elevacao) =>
+            Math.abs((globalThis.__arte?.objetos['avatar-visual']?.posicao[1] ?? 0) - elevacao) <
             0.001,
+          ELEVACAO_DOS_PATINS,
         )
         const depois = await page.evaluate(() => globalThis.__arte)
         assert.deepEqual(depois?.colisores, antes?.colisores)

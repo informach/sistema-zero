@@ -16,9 +16,9 @@ import {
   bocaDaIris,
   capsulaDoPinguim,
   ELEVACAO_DOS_PATINS,
+  faseDaAnimacao,
   PE_PARADO_ACIMA_DA_SOLA,
   RODAS_ABAIXO_DA_SOLA,
-  faseDaAnimacao,
 } from '../src/sistemas/ajustes-da-arte'
 import { momentoDoDia } from '../src/sistemas/tempo-do-dia'
 

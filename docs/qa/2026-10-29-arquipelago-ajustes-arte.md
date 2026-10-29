@@ -1,5 +1,25 @@
 # Ajustes da arte no Arquipélago
 
+## Conciliação com os patins novos em 29/10
+
+O remoto `69c4d9803` acrescentou patins equipáveis e refez o modelo. A elevação visual agora é
+0,089 m, calculada por `RODAS_ABAIXO_DA_SOLA - PE_PARADO_ACIMA_DA_SOLA`. A descrição original
+abaixo registra a entrega anterior, quando não havia equipamento. A cápsula continua igual.
+
+O teste de navegador ainda esperava 0,085 m e falhou por timeout. Foi corrigido para receber
+a medida atual da regra. O par solto da sala usa 0,11 m, pois não tem a pose do avatar: assim
+suas rodas ficam sobre o chão. Também foi corrigida a ordem dos imports do teste de arte,
+único erro encontrado pelo lint do pacote nessa composição.
+
+Validação desta conciliação: 686 testes passaram, 69.897 asserções, zero falhas e um teste de
+Postgres pulado; tipagem aprovada; lint aprovado em 306 arquivos; 26 casos de navegador passaram
+em 1280 e 390 pixels. O celular continua emulado. Nenhum modelo ou script Blender foi alterado
+neste complemento. As edições locais de outras sessões ficaram fora do commit.
+
+[Patins no computador](assets/2026-10-29-arte-patins-remoto/patins-1280.png),
+[patins no celular emulado](assets/2026-10-29-arte-patins-remoto/patins-390.png) e
+[resultado dos 26 casos](assets/2026-10-29-arte-patins-remoto/resultado.json).
+
 ## Entrega por item
 
 | Item | Implementação | Situação no mundo |

@@ -27,7 +27,7 @@ import { criarRegistro } from '../src/mundo/interativos'
 import { CapsulaDoPinguim, PecaDaArte } from '../src/mundo/peca-da-arte'
 import { AvatarDoJogo } from '../src/personagem/avatar-do-jogo'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
-import { ELEVACAO_DOS_PATINS } from '../src/sistemas/ajustes-da-arte'
+import { RODAS_ABAIXO_DA_SOLA } from '../src/sistemas/ajustes-da-arte'
 import { CORPO } from '../src/sistemas/corpo'
 import type { EntradaDaLocomocao } from '../src/sistemas/locomocao'
 import { momentoDoDia } from '../src/sistemas/tempo-do-dia'
@@ -134,7 +134,8 @@ function Patins({ vestido }: { vestido: boolean }) {
       </RigidBody>
       <group
         name="arte-rodas"
-        position={[1.5, ELEVACAO_DOS_PATINS, 0]}
+        // O par solto não tem a pose do avatar: sua sola está na origem do arquivo.
+        position={[1.5, RODAS_ABAIXO_DA_SOLA, 0]}
         // Nas vistas de perto dos pés o par solto sai do caminho da câmera.
         visible={!new URLSearchParams(location.search).has('vista')}
         dispose={null}
