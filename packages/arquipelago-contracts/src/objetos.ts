@@ -175,9 +175,10 @@ function molde(
 }
 
 /**
- * O catálogo. Áreas e caixas do README de `arte/objetos`. Só a geladeira tem as faces do Pinta no
- * modelo (`pintaFrente`, `pintaLadoEsq`, `pintaLadoDir`, `pintaTopo`) e o fliperama a `tela`; os
- * outros ganham as faces quando o modelo tiver (anotado no README de lá).
+ * O catálogo. Áreas, caixas e faces do README de `arte/objetos`. As faces do Pinta
+ * (`pintaFrente`, `pintaLadoEsq`, `pintaLadoDir`, `pintaTopo`) estão na geladeira, no forno, no
+ * aquário, no museu, na casinha e na planta (o rótulo que dá a volta no vaso, fase3-11); o
+ * fliperama tem a `tela`. A lareira e a banda ficam sem faces de propósito (README de lá).
  */
 export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo>> = {
   geladeira: {
@@ -202,7 +203,11 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
       'Forno',
       [1, 1],
       [0.76, 1.06, 0.74],
-      [],
+      [
+        { face: 'frente', largura: 0.66, altura: 0.43 },
+        { face: 'lado-esq', largura: 0.53, altura: 0.72 },
+        { face: 'lado-dir', largura: 0.53, altura: 0.72 },
+      ],
       'Assa o bolo de fubá e o pão de queijo.',
     ),
     origem: 'Vem com a primeira receita que o Bento lembra, na Vila Doce.',
@@ -213,7 +218,11 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
       'Aquário',
       [2, 1],
       [1.53, 1.39, 0.68],
-      [],
+      [
+        { face: 'frente', largura: 1.41, altura: 0.34 },
+        { face: 'lado-esq', largura: 0.55, altura: 0.42 },
+        { face: 'lado-dir', largura: 0.55, altura: 0.42 },
+      ],
       'Ganha um peixe para cada coral replantado na lagoa do Recife.',
     ),
     origem: 'Vem do primeiro coral replantado no Recife Coral.',
@@ -238,11 +247,33 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
     origem: 'Vem dos minijogos aprovados.',
   },
   museu: {
-    molde: molde('museu', 'Museu dos fósseis', [3, 2], [2.63, 1.27, 1.49], [], null),
+    molde: molde(
+      'museu',
+      'Museu dos fósseis',
+      [3, 2],
+      [2.63, 1.27, 1.49],
+      [
+        { face: 'frente', largura: 0.82, altura: 0.12 },
+        { face: 'lado-esq', largura: 0.44, altura: 0.12 },
+        { face: 'lado-dir', largura: 0.44, altura: 0.12 },
+      ],
+      null,
+    ),
     origem: 'Pedido do Vale dos Dinos.',
   },
   casinha: {
-    molde: molde('casinha', 'Casinha de bicho', [2, 2], [1.79, 1.2, 1.7], [], null),
+    molde: molde(
+      'casinha',
+      'Casinha de bicho',
+      [2, 2],
+      [1.79, 1.2, 1.7],
+      [
+        { face: 'frente', largura: 0.98, altura: 0.58 },
+        { face: 'lado-esq', largura: 1.08, altura: 0.58 },
+        { face: 'lado-dir', largura: 1.08, altura: 0.58 },
+      ],
+      null,
+    ),
     origem: 'Vem do Bosque dos Bichos, quando você adota um bicho.',
   },
   'planta-interior': {
@@ -251,7 +282,7 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
       'Planta de interior',
       [1, 1],
       [0.78, 1.28, 0.88],
-      [],
+      [{ face: 'frente', largura: 1.13, altura: 0.37 }],
       'Deixa o cômodo mais aconchegante.',
     ),
     origem: 'Vem com a primeira obra da casa ou da cabana.',

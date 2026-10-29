@@ -1450,8 +1450,9 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   - **A geladeira** (`GELADEIRA_GUARDA`): guarda 4 alimentos no holograma e 12 com aparência, um
     por vez, da mochila para dentro e de volta. Só alimento (item que se come). "Conserva" fica para
     quando a comida estragar (hoje nada estraga).
-  - **A aparência** (painel do objeto, `interface/projeto-azul.tsx`): "Pintar no Pinta" (a frente,
-    os lados e o topo da caixa; só com as faces no modelo, hoje só a geladeira) e "Modelar no
+  - **A aparência** (painel do objeto, `interface/projeto-azul.tsx`): "Pintar no Pinta" (as faces
+    que o modelo tiver: a geladeira, o forno, o aquário, o museu, a casinha e o vaso da planta; a
+    lareira e a banda não têm faces) e "Modelar no
     Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
     `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
     a origem e o id da criação). "Usar uma criação minha" entra com o cartão dele.

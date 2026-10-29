@@ -1,7 +1,16 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { CATALOGO_DE_OBJETOS, OBJETOS_DA_CASA } from '@sistemazero/arquipelago-contracts'
-import { Box3, type BufferGeometry, type Material, Mesh, Triangle, Vector2, Vector3 } from 'three'
+import {
+  Box3,
+  type BufferAttribute,
+  type BufferGeometry,
+  type Material,
+  Mesh,
+  Triangle,
+  Vector2,
+  Vector3,
+} from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { NOMES_DAS_FACES } from '../src/mundo/carregar-aparencia'
 
@@ -36,8 +45,8 @@ async function medirFaces(objeto: string) {
     if (!(o instanceof Mesh)) return
     const geo = o.geometry as BufferGeometry
     const mats = (Array.isArray(o.material) ? o.material : [o.material]) as Material[]
-    const pos = geo.attributes.position!
-    const uvs = geo.attributes.uv
+    const pos = geo.attributes.position as BufferAttribute
+    const uvs = geo.attributes.uv as BufferAttribute | undefined
     const indices = geo.index
     const grupos = geo.groups.length
       ? geo.groups

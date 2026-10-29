@@ -11,6 +11,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { criarLojaDaGaleria } from '../src/estado/galeria'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import { MOEDAS_DE_EXEMPLO } from '../src/plataforma/galeria-falsa'
 import {
   aparenciasQueEleTem,
   estadoDoCartao,
@@ -190,6 +191,40 @@ describe('a loja da galeria com a plataforma de mentira', () => {
       // A página recarregou: a mesma aparência continua paga, e o salvamento segue aceito.
       const reaberta = criarPlataformaFalsa({ persistir: true, galeria: { moedas: 100 } })
       expect((await gravar(reaberta, 1)).status).toBe(200)
+    } finally {
+      ;(globalThis as { localStorage?: unknown }).localStorage = antes
+    }
+  })
+
+  test('a compra fica guardada mesmo quando o progresso com ela só chega depois de reabrir', async () => {
+    const guardados = new Map<string, string>()
+    const antes = (globalThis as { localStorage?: unknown }).localStorage
+    ;(globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => guardados.get(k) ?? null,
+      setItem: (k: string, v: string) => guardados.set(k, v),
+      removeItem: (k: string) => guardados.delete(k),
+    }
+    try {
+      const primeira = criarPlataformaFalsa({ persistir: true })
+      const loja = criarLojaDaGaleria(primeira)
+      await loja.getState().carregar()
+      expect(await loja.getState().comprar(GELADEIRA.id)).toEqual({ ok: true })
+      // A página fechou antes de a fila gravar: o progresso com a aparência ficou no aparelho.
+      const reaberta = criarPlataformaFalsa({ persistir: true })
+      const vestido = {
+        ...criarSalvamentoInicial(AGORA),
+        projetos: { geladeira: usarAparencia(vazio, daGaleria) },
+      }
+      const r = await reaberta.servico.buscar('/salvamento', {
+        metodo: 'PUT',
+        corpo: GravarSalvamentoSchema.parse({ revisaoBase: 0, salvamento: vestido }),
+      })
+      expect(r.status).toBe(200)
+      const lida = await reaberta.servico.buscar('/galeria')
+      expect(lida.corpo).toMatchObject({
+        possuidas: [GELADEIRA.id],
+        saldo: MOEDAS_DE_EXEMPLO - GELADEIRA.preco,
+      })
     } finally {
       ;(globalThis as { localStorage?: unknown }).localStorage = antes
     }

@@ -22,8 +22,8 @@ describe('a ponte do molde de objeto (projeto azul)', () => {
     ])
   })
 
-  test('Pinta: objeto sem faces não abre (o modelo ainda não tem)', () => {
-    expect(telaDoPinta(CATALOGO_DE_OBJETOS.forno.molde)).toBeNull()
+  test('Pinta: objeto sem faces não abre (a lareira não tem, de propósito)', () => {
+    expect(telaDoPinta(CATALOGO_DE_OBJETOS.lareira.molde)).toBeNull()
   })
 
   test('Molda: a caixa na proporção do molde, 16 por célula quando cabe', () => {
@@ -59,7 +59,7 @@ describe('a ponte do molde de objeto (projeto azul)', () => {
       lerPedidoDeObjeto({
         ferramenta: 'pinta',
         proposito: 'objeto',
-        molde: CATALOGO_DE_OBJETOS.forno.molde,
+        molde: CATALOGO_DE_OBJETOS.lareira.molde,
       }),
     ).toEqual({ recusa: 'sem-faces' })
     expect(

@@ -2,7 +2,7 @@
   "aquario": {
     "grupo": "aquario",
     "triangulos": 7322,
-    "kb": 309.3,
+    "kb": 358.1,
     "nos": {
       "aquario": 4498,
       "peixe-1": 772,
@@ -44,6 +44,9 @@
       "peixeLaranja",
       "peixeRosa",
       "peixeRoxo",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
       "planta",
       "plantaClara",
       "plantaEscura",
@@ -108,7 +111,7 @@
   "casinha": {
     "grupo": "casinha",
     "triangulos": 4840,
-    "kb": 172.9,
+    "kb": 219.8,
     "nos": {
       "casinha": 4632,
       "placa": 164,
@@ -124,6 +127,9 @@
       "casinhaEscura",
       "metalEscuro",
       "osso2",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
       "placa",
       "placaFace",
       "portaCasinha",
@@ -168,7 +174,7 @@
   "forno": {
     "grupo": "forno",
     "triangulos": 5592,
-    "kb": 212.7,
+    "kb": 274.4,
     "nos": {
       "forno": 4996,
       "porta": 596
@@ -189,6 +195,9 @@
       "grade",
       "luz",
       "metalEscuro",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
       "plastico",
       "tinta",
       "vidroForno"
@@ -302,7 +311,7 @@
   "museu": {
     "grupo": "museu",
     "triangulos": 8398,
-    "kb": 244.2,
+    "kb": 265.6,
     "nos": {
       "redoma": 1824,
       "vitrine": 2556,
@@ -326,6 +335,9 @@
       "ossoSombra",
       "pedestal",
       "pedestalEscuro",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
       "placa",
       "placaFace",
       "rocha",
@@ -339,7 +351,7 @@
   "planta-interior": {
     "grupo": "planta",
     "triangulos": 4536,
-    "kb": 107.8,
+    "kb": 130.7,
     "nos": {
       "vaso": 840,
       "terra": 336,
@@ -353,6 +365,7 @@
       "folhaNova",
       "nervuraFolha",
       "pedrinhaVaso",
+      "pintaFrente",
       "talo",
       "terraVaso",
       "vasoCeramica",

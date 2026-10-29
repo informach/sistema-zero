@@ -102,6 +102,8 @@ export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
 }
 
 const CHAVE = 'arquipelago-playground'
+/** As compras da galeria de mentira, à parte do salvamento (o `?novo=1` do playground apaga). */
+export const CHAVE_DA_GALERIA = 'arquipelago-playground:galeria'
 
 export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataforma & {
   guardado(): SalvamentoGuardado
@@ -110,7 +112,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const publico = o.publico ?? 'kids'
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
   const desafios = criarDesafiosFalsos(o.posicao ?? 2, { dia: o.dia, agora })
-  const galeria = criarGaleriaFalsa(o.galeria)
+  const galeria = criarGaleriaFalsa(
+    o.galeria,
+    o.persistir && typeof localStorage !== 'undefined'
+      ? {
+          ler: () => localStorage.getItem(CHAVE_DA_GALERIA),
+          gravar: (v) => localStorage.setItem(CHAVE_DA_GALERIA, v),
+        }
+      : undefined,
+  )
   const familia = criarFamiliaFalsa(o.familia)
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }

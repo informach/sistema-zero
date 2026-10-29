@@ -8,7 +8,7 @@ import { giroDaIlha, ilhasEmVolta, PIER } from '../src/mundo/medidas'
 import { ancorasDoPorto } from '../src/mundo/portos'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
 import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
-import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import { CHAVE_DA_GALERIA, criarPlataformaFalsa } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { lerFesta } from '../src/sistemas/festas'
 import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
@@ -71,7 +71,10 @@ function lerFamilia(texto: string | null): FamiliaDoPlayground | undefined {
     ? texto
     : undefined
 }
-if (q.get('novo') === '1') localStorage.removeItem('arquipelago-playground')
+if (q.get('novo') === '1') {
+  localStorage.removeItem('arquipelago-playground')
+  localStorage.removeItem(CHAVE_DA_GALERIA)
+}
 const plataforma = criarPlataformaFalsa({
   rotina:
     q.get('rotina') === 'cancelado'

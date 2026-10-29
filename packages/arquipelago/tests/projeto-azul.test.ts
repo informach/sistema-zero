@@ -214,17 +214,17 @@ describe('o Pinta e o Molda no molde', () => {
     const { criarPlataformaFalsa } = await import('../src/plataforma/falsa')
     const { CATALOGO_DE_OBJETOS } = await import('@sistemazero/arquipelago-contracts')
     const geladeira = CATALOGO_DE_OBJETOS.geladeira.molde
-    const forno = CATALOGO_DE_OBJETOS.forno.molde
+    const lareira = CATALOGO_DE_OBJETOS.lareira.molde
     const p = criarPlataformaFalsa({ persistir: false })
     expect(
       await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'objeto', molde: geladeira }),
     ).toEqual({ situacao: 'pronto', criacaoId: 'molde-geladeira-pinta' })
     expect(
-      await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'objeto', molde: forno }),
+      await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'objeto', molde: lareira }),
     ).toEqual({ situacao: 'indisponivel', motivo: 'sem-faces' })
     expect(
-      await p.abrirFerramenta({ ferramenta: 'molda', proposito: 'objeto', molde: forno }),
-    ).toEqual({ situacao: 'pronto', criacaoId: 'molde-forno-molda' })
+      await p.abrirFerramenta({ ferramenta: 'molda', proposito: 'objeto', molde: lareira }),
+    ).toEqual({ situacao: 'pronto', criacaoId: 'molde-lareira-molda' })
     const semAcesso = criarPlataformaFalsa({ persistir: false, objetos: 'sem-acesso' })
     expect(
       await semAcesso.abrirFerramenta({

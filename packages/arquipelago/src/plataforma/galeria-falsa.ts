@@ -10,6 +10,12 @@ import {
 /** Saldo do playground quando a URL não diz (`?moedas=`): dá para comprar uma ou duas. */
 export const MOEDAS_DE_EXEMPLO = 80
 
+/** Onde a galeria de mentira guarda as compras e o saldo entre uma abertura e outra. */
+export interface GuardaDaGaleria {
+  ler(): string | null
+  gravar(valor: string): void
+}
+
 export interface OpcoesDaGaleriaFalsa {
   moedas?: number
   /** `fora-do-ar`: a leitura e a compra respondem 424, como o serviço sem o Members. */
@@ -21,10 +27,25 @@ export interface OpcoesDaGaleriaFalsa {
  * a mesma chave (ou o que já é dela) nunca cobra de novo, saldo curto devolve 409
  * `SALDO_INSUFICIENTE` e o salvamento com uma da galeria não paga é recusado (422).
  */
-export function criarGaleriaFalsa(o: OpcoesDaGaleriaFalsa = {}) {
+export function criarGaleriaFalsa(o: OpcoesDaGaleriaFalsa = {}, guarda?: GuardaDaGaleria) {
   let saldo = Math.max(0, Math.floor(o.moedas ?? MOEDAS_DE_EXEMPLO))
   const pagas = new Set<IdDaGaleria>()
   const chaves = new Set<string>()
+  // Como o serviço de verdade, as compras ficam guardadas à parte do salvamento: ao reabrir, o
+  // jogo pode mandar o progresso que ficou no aparelho, mais novo que o salvamento guardado aqui.
+  try {
+    const bruto = guarda?.ler()
+    const lido = bruto ? (JSON.parse(bruto) as { pagas?: unknown; saldo?: unknown }) : null
+    if (lido && typeof lido.saldo === 'number' && o.moedas === undefined) saldo = lido.saldo
+    if (lido && Array.isArray(lido.pagas))
+      for (const id of lido.pagas)
+        if (typeof id === 'string' && aparenciaDaGaleria(id)) pagas.add(id as IdDaGaleria)
+  } catch {}
+  const gravar = () => {
+    try {
+      guarda?.gravar(JSON.stringify({ pagas: [...pagas], saldo }))
+    } catch {}
+  }
   const ler = (): GaleriaDoJogador => ({ possuidas: [...pagas], saldo, ilimitado: false })
   return {
     pagas: () => new Set(pagas),
@@ -47,6 +68,7 @@ export function criarGaleriaFalsa(o: OpcoesDaGaleriaFalsa = {}) {
         saldo -= item.preco
         pagas.add(item.id)
         chaves.add(pedido.data.chave)
+        gravar()
         return { status: 200, corpo: ler() }
       }
       return { status: 404, corpo: { error: { code: 'NOT_FOUND' } } }
@@ -59,6 +81,7 @@ export function criarGaleriaFalsa(o: OpcoesDaGaleriaFalsa = {}) {
       for (const p of Object.values(s?.projetos ?? {}))
         for (const a of p?.aparencias ?? [])
           if (a.origem === 'galeria' && aparenciaDaGaleria(a.id)) pagas.add(a.id as IdDaGaleria)
+      gravar()
     },
     /** O salvamento só passa com as da galeria pagas e no objeto delas. */
     aceita(s: Salvamento): boolean {

@@ -1116,7 +1116,10 @@ recursos privados de cada objeto. Molda encaixa na caixa sem inverter +z; Pinta 
 A reserva permanece durante leitura, falha, excesso ou página antiga. Mudança de id, retorno da
 oficina (inclusive mesmo id), visita e desmontagem cancelam e liberam recursos, inclusive tardios.
 Não usar `useGLTF` para estas criações nem descartar geometrias/texturas do catálogo na pintura.
-Visitas não leem criação alheia. A capa do fliperama prevalece na tela; a animação do aquário do
+Visitas não leem criação alheia. As faces do Pinta (29/10/2026) estão na geladeira, no forno, no aquário, no museu,
+na casinha e no vaso da planta (a lareira e a banda, de propósito, não), conferidas contra o
+catálogo por `tests/faces-dos-objetos.test.ts`. A galeria de mentira guarda as compras à parte do
+salvamento (`CHAVE_DA_GALERIA`, que o `?novo=1` apaga), como o serviço. A capa do fliperama prevalece na tela; a animação do aquário do
 catálogo continua quando esse modelo aparece. Testes: `aparencias.test.ts`; verificador:
 `playground/verificar-aparencias-browser.ts`. Plano e pedidos de faces de arte:
 `docs/plans/2026-10-29-arquipelago-molda-no-mundo.md`. Regras e tetos em §6.16.

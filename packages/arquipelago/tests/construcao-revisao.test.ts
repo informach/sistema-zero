@@ -133,6 +133,7 @@ describe('textos', () => {
       'A frente, os lados e o topo',
     )
     expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.fliperama.molde.faces)).toBe('A tela')
-    expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.forno.molde.faces)).toBeNull()
+    expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.forno.molde.faces)).toBe('A frente e os lados')
+    expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.lareira.molde.faces)).toBeNull()
   })
 })
