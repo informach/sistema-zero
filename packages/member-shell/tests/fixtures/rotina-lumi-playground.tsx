@@ -4,8 +4,8 @@ import {
   type RespostaDoServico,
   type ResultadoDaFerramentaRotina,
 } from '@sistemazero/arquipelago-contracts'
-import { RotinaLumiEditor } from '@sistemazero/studio/lumi-editor'
 import { createRoot } from 'react-dom/client'
+import { RotinaLumiEditor } from '../../src/components/arquipelago-rotina/RotinaLumiEditor'
 
 /** Host local de QA. O bundle publicado do jogo não importa a plataforma. */
 export async function abrirEditorLumiNoPlayground(

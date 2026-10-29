@@ -38,7 +38,7 @@ bun run test:salvamento-browser
 
 O build publicado do jogo (`bun run build`) passou. A tipagem integral do Studio (`bun run typecheck`) também passou depois de corrigir a preparação dos sprites no teste de contato com grupo, que tratava o retorno anulável de `spawn` como sempre presente. Seus 6 testes passaram com 13 asserções.
 
-No Studio, `bun test src/lumi/blocks.test.ts` passou: 4 testes e 1.594 asserções. Cobre os cartões, condições, casos, limites e recusas de peças soltas, bloqueadas e inválidas. Os testes do jogo comparam o intérprete compartilhado com a execução real e verificam cancelamento, revogação de conquistas, rotina concorrente e preservação de outras mudanças no salvamento.
+No Studio, `bun test src/lumi/blocks.test.ts` passou: 4 testes e 1.594 asserções. Depois da revisão o editor foi para o member-shell, e o mesmo teste roda lá como `tests/arquipelago-rotina-blocks.test.ts`. Cobre os cartões, condições, casos, limites e recusas de peças soltas, bloqueadas e inválidas. Os testes do jogo comparam o intérprete compartilhado com a execução real e verificam cancelamento, revogação de conquistas, rotina concorrente e preservação de outras mudanças no salvamento.
 
 Uma rodada ampla do Studio terminou com 11.152 testes aprovados e seis falhas. As verificações isoladas separaram timeouts e mudança de catálogo durante a execução de uma referência realmente desatualizada: o exemplo Mapa do Pinta e duas fases ganhou o evento de recolher moedas. Reverter apenas esse evento, descrição e conceito reproduziu o hash antigo. Após atualizar a referência, os 2 testes de catálogo e os 21 testes de receitas passaram. A rodada ampla não é apresentada como uma suíte integral verde.
 

@@ -8,9 +8,8 @@ import {
   LIMITES_DA_ROTINA,
   validarRotina,
 } from '@sistemazero/arquipelago-contracts'
+import { CATEGORY_COLORS, ensureWhiteTextContrast } from '@sistemazero/studio/blockly-theme'
 import * as Blockly from 'blockly/core'
-import { CATEGORY_COLORS } from '../blockly/categoryColors'
-import { ensureWhiteTextContrast } from '../blockly/colorShades'
 
 const PREFIXO = 'sz_lumi_'
 const cor = {

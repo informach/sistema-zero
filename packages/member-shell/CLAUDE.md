@@ -3634,4 +3634,23 @@ Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
 
 `ArquipelagoHost` carrega `arquipelago-rotina-dialog` sob demanda, cancela no descarte ou troca de perfil e compartilha a ponte `arquipelago-rotina` com a plataforma falsa. A página Kids e a adulta usam o mesmo host e a mesma sessão de `/cartas`.
 
+O editor mora aqui desde 29/10/2026, em `components/arquipelago-rotina/` (`RotinaLumiEditor.tsx`,
+`blocks.ts`, `blockly-dialog.ts`, `editor.css`); antes era a entrada `@sistemazero/studio/lumi-editor`,
+e o Studio passou a depender dos contratos do jogo. ⚠️ Não devolver para o Studio: ele é a ferramenta
+geral da plataforma e não conhece jogo nenhum. Do Studio o editor usa só o visual do Blockly
+(`@sistemazero/studio/blockly-theme`: `szThemeFor`, `CATEGORY_COLORS`, `ensureWhiteTextContrast`), e
+o `blockly` virou dependência direta deste pacote. Aqui e não num pacote novo porque o `ci.yml`
+escolhe o que publicar por pasta: o member-shell já publica o Kids, o adulto e o admin, e um pacote
+novo exigiria mexer no workflow.
+
+- Entrada `MoldeDaRotina` versão 1; saída `ResultadoDaFerramentaRotina` versão 1, ou `null` ao
+  cancelar. `lerCartas` relê as conquistas; guardar exige uma leitura atual.
+- A prévia usa o `rotina-execucao` do contrato, o mesmo intérprete do jogo, sobre uma cópia do
+  mundo recebido; não grava nem chama o serviço para rodar a rotina.
+- Os portais do Blockly ficam no diálogo durante a edição e voltam ao host ao fechar.
+- O jogo não importa o editor: pede `rotina-lumi` pela porta `abrirFerramenta`. O host de QA em
+  `tests/fixtures/rotina-lumi-playground.tsx` serve o playground do jogo (o CSS sai de
+  `components/arquipelago-rotina/editor.css` pelo `playground/servidor.ts` de lá).
+- Testes da conversão: `tests/arquipelago-rotina-blocks.test.ts`.
+
 Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.

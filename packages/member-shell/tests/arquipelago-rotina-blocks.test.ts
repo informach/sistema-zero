@@ -13,7 +13,7 @@ import {
   lerRotinaLumi,
   registrarBlocosLumi,
   tipoDoBlocoLumi,
-} from './blocks'
+} from '../src/components/arquipelago-rotina/blocks'
 
 const cartas: CartasDoJogador = {
   cartas: CARTAS_LUMI.map((c) => ({ ...c, conquistada: true, aprendaEm: [] })),

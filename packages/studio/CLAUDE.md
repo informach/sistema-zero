@@ -5169,8 +5169,11 @@ Cópias aprovadas do Arquipélago: o leitor JavaScript preserva programmingLangu
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
 
-## Mini estúdio dos Lumis (29/10/2026)
+## Visual do Blockly para outras ferramentas (29/10/2026)
 
-Entrada pública `@sistemazero/studio/lumi-editor`, exclusiva para rotinas do jogo. Reusa Blockly e `szThemeFor`, sem registrar blocos Lumi na paleta de projetos ou alterar conquistas do Estúdio. Não é uma nova linguagem do Estúdio.
-
-Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.
+Entrada `@sistemazero/studio/blockly-theme` (`src/blockly/publicTheme.ts`): `szThemeFor`,
+`CATEGORY_COLORS` e `ensureWhiteTextContrast`, só aparência. Quem usa hoje é o editor da rotina dos
+Lumis do Arquipélago, que mora no member-shell (`components/arquipelago-rotina/`). Ele chegou a
+morar aqui como `./lumi-editor` e saiu no mesmo dia: o Estúdio não depende de pacote de jogo
+(`@sistemazero/arquipelago-contracts` saiu das dependências). Ferramenta de jogo que precisar de
+Blockly fica na plataforma e pede só o visual por esta entrada.

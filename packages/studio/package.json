@@ -55,7 +55,7 @@
     "./editable-project-validation": "./src/state/editableProjectValidation.ts",
     "./python-snapshot": "./src/runtime/python/snapshot.ts",
     "./python-project-validation": "./src/state/pythonProjectValidation.ts",
-    "./lumi-editor": "./src/lumi/RotinaLumiEditor.tsx"
+    "./blockly-theme": "./src/blockly/publicTheme.ts"
   },
   "imports": {
     "#core": "./src/core/index.ts",
@@ -141,8 +141,7 @@
     "three": "0.184.0",
     "ulid": "^3.0.2",
     "zod": "^4.4.3",
-    "zustand": "^5.0.0",
-    "@sistemazero/arquipelago-contracts": "workspace:*"
+    "zustand": "^5.0.0"
   },
   "peerDependencies": {
     "react": "^19",

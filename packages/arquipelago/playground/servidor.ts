@@ -37,7 +37,12 @@ Bun.serve({
     const { pathname } = new URL(req.url)
     if (pathname === '/rotina-lumi.css') {
       const css = await Bun.build({
-        entrypoints: [resolve(import.meta.dir, '../../studio/src/lumi/editor.css')],
+        entrypoints: [
+          resolve(
+            import.meta.dir,
+            '../../member-shell/src/components/arquipelago-rotina/editor.css',
+          ),
+        ],
         target: 'browser',
       })
       if (!css.success) return new Response(css.logs.join('\n'), { status: 500 })

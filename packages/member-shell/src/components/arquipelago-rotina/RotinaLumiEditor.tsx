@@ -14,10 +14,10 @@ import {
   type ResultadoDaFerramentaRotina,
   terminarExecucao,
 } from '@sistemazero/arquipelago-contracts'
+import { szThemeFor } from '@sistemazero/studio/blockly-theme'
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { szThemeFor } from '../blockly/theme'
 import { portaisBlocklyNoDialogo } from './blockly-dialog'
 import { caixaDeBlocosLumi, carregarRotinaLumi, lerRotinaLumi, registrarBlocosLumi } from './blocks'
 import './editor.css'

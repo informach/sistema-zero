@@ -1,2 +1,2 @@
 'use client'
-export { RotinaLumiEditor as ArquipelagoRotinaDialog } from '@sistemazero/studio/lumi-editor'
+export { RotinaLumiEditor as ArquipelagoRotinaDialog } from './arquipelago-rotina/RotinaLumiEditor'
