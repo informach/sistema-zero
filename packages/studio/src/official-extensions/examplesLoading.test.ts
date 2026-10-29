@@ -72,7 +72,9 @@ const goldenCatalogs = {
     // adversário" (a tela nomeia o recurso, sem "IA"; pedido da dona).
     // Review 25/10: fontes sem página, progressão editorial e nove receitas.
     // Full review: I keeps the fixed Pinta image until Space or restart.
-    sha256: 'dd303c288819aea53b1b13ff9dfed28e74a288de1b88e69913473f1a46fe79c6',
+    // 29/10: Mapa do Pinta e duas fases inclui o evento de recolher a moeda do grupo.
+    // Reverter apenas evento, descrição e conceito reproduz exatamente o hash anterior.
+    sha256: '77fcb5eb467fe14ca8565c130b0efcdd2363eea3083f26dc74e3477f38aa6fac',
   },
   'game-2d-advanced': {
     // 01/10: Descida da Neve entra no FIM da vitrine ("Meu primeiro jogo" continua

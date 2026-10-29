@@ -18,8 +18,8 @@ export function creatorJourneyEditorialReviews(
         kind: 'optional-public-sharing' as const,
         action: 'review-existing-lesson-draft' as const,
         source: farol
-          ? 'docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
-          : 'docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json',
+          ? 'docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
+          : 'docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json',
         sourceFields: [
           `blocks[key=${farol ? 'ponte-d3-publicar' : 'ponte-a2-publicar'}].content.text`,
           `sections[key=${farol ? 'fecho' : 'conclusao'}].title`,

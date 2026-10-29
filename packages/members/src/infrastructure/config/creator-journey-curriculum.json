@@ -39,7 +39,7 @@
           "title": "A Ilha do Farol",
           "dimension": "3D",
           "environment": "Blocos · núcleo do Jogo 3D",
-          "origin": "Curso escrito em docs/aulas-interativas/a-ilha-do-farol. Três aulas, Jogo 3D, sem certificado. Artes atuais substituíveis pelo Molda.",
+          "origin": "Curso escrito em docs/aulas-interativas/faisca/a-ilha-do-farol. Três aulas, Jogo 3D, sem certificado. Artes atuais substituíveis pelo Molda.",
           "status": "Implementado localmente; produção de mídia e publicação pendentes",
           "lessons": [
             "A mesma ilha, com profundidade — jogar, comparar os eixos e mover o personagem com câmera fixa.",
@@ -48,7 +48,7 @@
           ],
           "authoredSource": {
             "courseSlug": "jornada-faisca-base-3d",
-            "directory": "docs/aulas-interativas/a-ilha-do-farol",
+            "directory": "docs/aulas-interativas/faisca/a-ilha-do-farol",
             "lessons": ["ilha-aula-1", "ilha-aula-2", "ilha-aula-3"],
             "note": "O outline do seed conserva seu hash de identidade. A autoria detalhada e os títulos das aulas estão nos manifestos; importar no curso reservado sem recriar seu ID."
           }
@@ -56,10 +56,16 @@
       ],
       "mission": {
         "title": "O Jardim Secreto",
+        "authoredSource": {
+          "courseSlug": "jornada-faisca-missao",
+          "directory": "docs/aulas-interativas/faisca/o-jardim-secreto",
+          "lessons": ["aula-1", "aula-2"],
+          "note": "Autoria local completa. Importar nas duas aulas reservadas, preservando IDs. Outline two/three conservado para manter o hash do seed. Mídia e publicação pendentes."
+        },
         "lessons": 2,
         "brief": "O jardim tem uma flor fechada. O aluno recolhe um regador e faz a flor crescer somente quando estiver com ele. Repete a lógica em um jardim 3D.",
         "same": "Chave → regador; farol → flor. A informação guardada e a condição continuam iguais. O contexto muda e o pedido deixa de indicar os blocos.",
-        "prepared": "Jardins, personagens, câmera fixa, controles e aparência das duas flores. As regras de coleta, memória e decisão ficam para o aluno.",
+        "prepared": "Jardins, personagens, câmera fixa, desenho, reinício e animações. O aluno constrói movimento, limite 2D, coleta, memória, avisos e decisão, e escolhe outra posição para o regador nas duas versões.",
         "two": [
           "Guardar que pegou o regador e impedir que ele seja recolhido novamente.",
           "Na flor: sem regador, mostrar um aviso; com regador, fazer crescer."
@@ -88,7 +94,7 @@
           "lessons": 1
         },
         {
-          "title": "Duas peças para abrir",
+          "title": "O segredo da cabana",
           "addition": "Combinar duas informações com E.",
           "prerequisite": "Variável booleana e Se/senão.",
           "application": "Criar uma segunda porta que exige chave e emblema.",
@@ -96,7 +102,7 @@
           "lessons": 1
         },
         {
-          "title": "A porta fica aberta por um tempo",
+          "title": "A ponte apressada",
           "addition": "Relógio e estado temporário.",
           "prerequisite": "Evento e decisão.",
           "application": "Acionar uma ponte que fecha depois de alguns segundos.",

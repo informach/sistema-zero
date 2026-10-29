@@ -164,6 +164,12 @@ export type SectionExecutionRule =
 
 export const EXECUTION_RULE_TYPES = ['behavior', 'functionReturns', 'script'] as const
 
+/**
+ * Quantos retângulos de chão uma ida 3D aceita. O chão de um jogo com obstáculos sólidos sai
+ * recortado em volta de cada um (a Ilha do Farol dá 20 com a pedra e os coqueiros); a grade do
+ * robô continua limitada pelo tamanho total (40 mil células no executor).
+ */
+export const MAX_WALKABLE_RECTS = 32
 export function isExecutionRuleType(type: unknown): type is SectionExecutionRule['type'] {
   return EXECUTION_RULE_TYPES.some((known) => known === type)
 }
@@ -289,7 +295,7 @@ export function isExecutionStep(
         (step.action !== 'approachObject3d' ||
           (Array.isArray(step.walkable) &&
             step.walkable.length > 0 &&
-            step.walkable.length <= 8 &&
+            step.walkable.length <= MAX_WALKABLE_RECTS &&
             step.walkable.every(
               (r: unknown) =>
                 record(r) &&

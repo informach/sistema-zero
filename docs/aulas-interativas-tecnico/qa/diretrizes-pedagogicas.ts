@@ -9,6 +9,7 @@ export function conteudoBloco(block: LearningManifest['blocks'][number] | undefi
 export const CURSOS_DIRETRIZES_ATUAIS = new Set([
   'cade-todo-mundo',
   'jornada-faisca-base-3d',
+  'jornada-faisca-missao',
   'desafio-primeiro-jogo',
   'nave-contra-asteroides',
   'corre-dino',

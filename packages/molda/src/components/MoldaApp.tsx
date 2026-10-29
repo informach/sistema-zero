@@ -11,6 +11,8 @@ import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { unlistedReadIssues } from '../core/assetSummary'
 import { COPY } from '../core/copy'
+import { MOLDA_LIMITS } from '../core/limits'
+import { moldeBounds } from '../core/model'
 import { createGallerySceneSource } from '../state/gallerySceneSource'
 import { createGalleryStore } from '../state/galleryStore'
 import {
@@ -18,10 +20,17 @@ import {
   getMoldaGenerationStore,
   type MoldaPersistence,
 } from '../state/persistence'
-import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
+import {
+  MoldaAppProvider,
+  type MoldaHostAdapter,
+  type MoldaInitialModel,
+  useGallery,
+  useMoldaApp,
+} from './appContext'
 import type { MoldaCompletionControl } from './completionControl'
 import { DeferredModule } from './editor/DeferredEditor'
 import { EditorScreen } from './editor/EditorScreen'
+import { type MoldeDaOficina, MoldeDaOficinaContext } from './editor/scene/moldeContext'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { MoldaToolAccessProvider } from './toolAccess'
 import { ToastProvider, useToast } from './ui/Toast'
@@ -76,6 +85,48 @@ function InitialAssetOpener({
   return null
 }
 
+/**
+ * Abre o modelo com molde do host (`adapter.initialModel`), 1x: reabre o modelo de mesmo nome ou
+ * cria um com a caixa do molde. Espera a galeria e a nuvem assentarem, como o deep link.
+ */
+function InitialModelOpener({
+  model,
+  onOpen,
+}: {
+  model: MoldaInitialModel | undefined
+  /** Abre a criação do molde (o MoldaApp guarda que ela é a do molde). */
+  onOpen: (id: string) => void
+}): null {
+  const ready = useGallery((state) => state.loaded && !state.syncing)
+  const { gallery } = useMoldaApp()
+  const { showToast } = useToast()
+  const done = useRef(false)
+  useEffect(() => {
+    if (!model || done.current || !ready) return
+    done.current = true
+    // O nome com sufixo também conta (`molde-geladeira-2`): quando o nome puro já era de outra
+    // criação, a galeria criou esta com sufixo, e da próxima vez ela tem que ser achada.
+    const doMolde = (name: string) =>
+      name === model.name ||
+      (name.startsWith(`${model.name}-`) && /^\d+$/.test(name.slice(model.name.length + 1)))
+    const existing = gallery
+      .getState()
+      .assets.find((asset) => asset.kind === 'model' && doMolde(asset.name))
+    if (existing) {
+      onOpen(existing.id)
+      return
+    }
+    void gallery
+      .getState()
+      .create({ kind: 'model', name: model.name, starterBox: model.box })
+      .then((result) => {
+        if (result.ok) onOpen(result.asset.id)
+        else showToast(COPY.gallery.moldeError)
+      })
+  }, [model, ready, gallery, onOpen, showToast])
+  return null
+}
+
 export function MoldaApp({
   adapter,
   persistence,
@@ -90,6 +141,20 @@ export function MoldaApp({
   const [scene] = useState(() => createGallerySceneSource(sceneStore))
   const [gallery] = useState(() => createGalleryStore(persist, { scene }))
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
+  // O molde do host: lido 1x (o adapter pode mudar de identidade a cada render).
+  const [initialModel] = useState(() => adapterValue.initialModel)
+  // A criação aberta pelo molde: só ela ganha o guia e as conferências na oficina.
+  const [moldeId, setMoldeId] = useState<string | null>(null)
+  const molde = useMemo<MoldeDaOficina | null>(() => {
+    if (!initialModel) return null
+    const { min, max } = moldeBounds(initialModel.box)
+    return {
+      name: initialModel.box.name ?? initialModel.name,
+      min,
+      max,
+      maxTriangles: initialModel.maxTriangles ?? MOLDA_LIMITS.maxTriangles,
+    }
+  }, [initialModel])
   const screenRef = useRef(screen)
   const editorControl = useRef<MoldaCompletionControl | null>(null)
   useLayoutEffect(() => {
@@ -132,6 +197,11 @@ export function MoldaApp({
     setScreen({ type: 'editor', assetId, workshop: summary?.kind === 'model' })
   }
 
+  const openMolde = useCallback((id: string) => {
+    setMoldeId(id)
+    setScreen({ type: 'editor', assetId: id, workshop: true })
+  }, [])
+
   useEffect(() => {
     void gallery.getState().load()
     return gallery.getState().attachPersistence()
@@ -164,27 +234,29 @@ export function MoldaApp({
             {screen.type === 'gallery' ? (
               <GalleryScreen onOpen={open} />
             ) : screen.workshop ? (
-              <DeferredModule
-                reloadPage
-                key={screen.assetId}
-                load={loadSceneWorkshop}
-                onBack={() => setScreen({ type: 'gallery' })}
-                props={{
-                  store: sceneStore,
-                  initialId: screen.assetId,
-                  theme: adapterValue.theme ?? 'light',
-                  onCompletionControlChange: registerControl,
-                  ...(adapterValue.resyncToStudio
-                    ? {
-                        resyncToStudio: adapterValue.resyncToStudio,
-                        canResyncToStudio: adapterValue.canResyncToStudio,
-                      }
-                    : {}),
-                  onRouteChange: (id: string | null) => {
-                    if (id === null) setScreen({ type: 'gallery' })
-                  },
-                }}
-              />
+              <MoldeDaOficinaContext.Provider value={screen.assetId === moldeId ? molde : null}>
+                <DeferredModule
+                  reloadPage
+                  key={screen.assetId}
+                  load={loadSceneWorkshop}
+                  onBack={() => setScreen({ type: 'gallery' })}
+                  props={{
+                    store: sceneStore,
+                    initialId: screen.assetId,
+                    theme: adapterValue.theme ?? 'light',
+                    onCompletionControlChange: registerControl,
+                    ...(adapterValue.resyncToStudio
+                      ? {
+                          resyncToStudio: adapterValue.resyncToStudio,
+                          canResyncToStudio: adapterValue.canResyncToStudio,
+                        }
+                      : {}),
+                    onRouteChange: (id: string | null) => {
+                      if (id === null) setScreen({ type: 'gallery' })
+                    },
+                  }}
+                />
+              </MoldeDaOficinaContext.Provider>
             ) : (
               <EditorScreen
                 key={screen.assetId}
@@ -194,6 +266,7 @@ export function MoldaApp({
               />
             )}
             <InitialAssetOpener id={adapterValue.initialAssetId} onOpen={open} />
+            <InitialModelOpener model={initialModel} onOpen={openMolde} />
           </ToastProvider>
         </MoldaToolAccessProvider>
       </MoldaAppProvider>

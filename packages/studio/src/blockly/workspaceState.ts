@@ -1571,6 +1571,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           { BODY: statementsToBlocks(stmt.body) },
           stmt.__id,
         )
+      case 'g2d:onTouchGroup':
+        return block(
+          'sz_g2d_on_touch_group',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       case 'g2d:onJump':
         return block(
           'sz_g2d_on_jump',

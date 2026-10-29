@@ -506,6 +506,74 @@ describe('PintaApp — galeria', () => {
   })
 })
 
+describe('PintaApp: tela com molde (Arquipélago)', () => {
+  const canvas = {
+    name: 'molde-geladeira',
+    width: 12,
+    height: 10,
+    guide: [
+      { x: 0, y: 2, width: 3, height: 8 },
+      { x: 3, y: 0, width: 6, height: 10, marked: true },
+    ],
+  }
+
+  it('cria o desenho com o molde e abre o editor; da segunda vez reabre o mesmo', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const persistence = createMemoryPersistence()
+    const first = render(<PintaApp adapter={{ initialCanvas: canvas }} persistence={persistence} />)
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
+    })
+    const salvos = await persistence.listAllAssets()
+    expect(salvos.map((a) => a.name)).toEqual(['molde-geladeira'])
+    const criado = salvos[0]
+    if (!criado || criado.kind !== 'pixel-background') throw new Error('cenário esperado')
+    expect(criado.layers.map((l) => l.name)).toEqual(['Molde', 'Pintura'])
+    expect(criado.cels[0]?.width).toBe(12)
+    first.unmount()
+
+    render(<PintaApp adapter={{ initialCanvas: canvas }} persistence={persistence} />)
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
+    })
+    expect((await persistence.listAllAssets()).map((a) => a.id)).toEqual([criado.id])
+  })
+
+  it('nome já usado por outro desenho: o do molde entra com sufixo e é reaberto', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const persistence = createMemoryPersistence([
+      createPixelSpriteAsset({ name: 'molde-geladeira', frameSize: 8 }),
+    ])
+    const first = render(<PintaApp adapter={{ initialCanvas: canvas }} persistence={persistence} />)
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
+    })
+    const nomes = () => persistence.listAllAssets().then((l) => l.map((a) => a.name).sort())
+    expect(await nomes()).toEqual(['molde-geladeira', 'molde-geladeira-2'])
+    first.unmount()
+    render(<PintaApp adapter={{ initialCanvas: canvas }} persistence={persistence} />)
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
+    })
+    expect(await nomes()).toEqual(['molde-geladeira', 'molde-geladeira-2'])
+  })
+
+  it('tela fora dos limites fica na galeria com o recado', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    render(
+      <PintaApp
+        adapter={{ initialCanvas: { ...canvas, width: 900 } }}
+        persistence={createMemoryPersistence()}
+      />,
+    )
+    await waitFor(() => {
+      expect(screen.getByText(COPY.editor.saveError)).toBeTruthy()
+    })
+    expect(screen.queryByRole('img', { name: COPY.a11y.drawArea })).toBeNull()
+  })
+})
+
 /**
  * "Voltar ao plano" (09/2026): o painel do brief pede a saída, o `PintaApp` GRAVA o
  * desenho aberto e só então chama o host. A ordem é o que importa — por isso ela é

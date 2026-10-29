@@ -11,6 +11,8 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
   readonly salvamentos = new Map<string, SalvamentoNoBanco>()
   readonly tempo = new Map<string, number>()
   readonly limites = new Map<string, number>()
+  /** De que conta é cada criança (gravado com o salvamento aceito, como no Drizzle). */
+  readonly contas = new Map<string, string>()
   readonly eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
 
   async lerSalvamento(jogadorId: string) {
@@ -28,6 +30,7 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
       atualizadoEm: e.agora,
     }
     this.salvamentos.set(e.jogadorId, guardado)
+    if (e.contaId && !this.contas.has(e.jogadorId)) this.contas.set(e.jogadorId, e.contaId)
     return { ok: true, guardado }
   }
 

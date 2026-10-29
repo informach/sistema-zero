@@ -1,6 +1,13 @@
 # Apoio técnico das aulas interativas
 
-As 40 aulas dos seis cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
+As 42 aulas dos sete cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
+
+Desde 28/10/2026, os materiais ficam em `docs/aulas-interativas/<posto>/<curso>/`.
+O posto vem do currículo da jornada; não é deduzido do nível técnico antigo do curso.
+Cadê e os dois Faróis ficam em Faísca; Nave e Meu Jeito, em Construtor; Dino, em Inventor.
+As demais pastas de posto têm índices de planejamento. O Jardim Secreto acrescenta duas aulas de missão, com autoria local e publicação pendente. Geradores e fontes comuns continuam nesta árvore
+técnica; `qa/caminhos.ts` resolve os nomes preservados das aulas para os novos diretórios.
+Os slugs, IDs e contratos de publicação não mudaram com a organização.
 
 - [A Ilha do Farol](modulos-a-ilha-do-farol.md): curso 3D do Faísca, três aulas sem certificado, comandos e contrato de troca das artes do Molda.
 - [Conceito, investigação e construção](DESCOBERTA-GUIADA.md): vídeo conceitual, Zappy por etapa, previsão e objetivos observáveis.
@@ -43,7 +50,7 @@ python docs/aulas-interativas-tecnico/recursos/corre-dino/gerar-materiais.py
 python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 ```
 
-As saídas são `docs/aulas-interativas/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
+As saídas são `docs/aulas-interativas/<posto>/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
 
 Importar é uma etapa separada: confira curso/aula de destino e preserve anexos existentes. O adaptador comum só altera `courseSlug` entre o curso canônico e seu correspondente adulto, mantendo aula, blocos, partes e critérios. A geração local não publica vídeos nem gera áudio pago.
 

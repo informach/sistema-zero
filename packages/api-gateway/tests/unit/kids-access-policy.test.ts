@@ -14,6 +14,20 @@ const student: KidsSessionClaim = {
   grantId: crypto.randomUUID(),
 }
 describe('áreas separadas no servidor', () => {
+  test('minijogos da família só abrem em leitura pelo responsável', () => {
+    const perfil = '11111111-1111-4111-8111-111111111111'
+    const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+    for (const rota of [
+      `/arquipelago/familia/minijogos/${perfil}`,
+      `/arquipelago/familia/minijogos/${perfil}/${id}`,
+    ]) {
+      expect(kidsMayAccess(parent, rota, 'GET', 'pai')).toBe(true)
+      expect(kidsMayAccess(parent, rota, 'POST', 'pai')).toBe(false)
+      expect(kidsMayAccess(student, rota, 'GET', 'crianca')).toBe(false)
+    }
+    expect(kidsMayAccess(parent, '/arquipelago/minijogos', 'GET', 'pai')).toBe(false)
+    expect(kidsMayAccess(student, '/arquipelago/minijogos', 'GET', 'crianca')).toBe(true)
+  })
   test('cartão de assinatura só é acessível ao responsável, sem exigir produto ativo', () => {
     for (const path of [
       '/payments/my/card-config',
@@ -62,6 +76,9 @@ describe('áreas separadas no servidor', () => {
       expect(kidsMayAccess(student, path, 'GET', 'andre')).toBe(false)
     expect(kidsMayAccess(student, '/auth/profiles/debora', 'PATCH', 'andre')).toBe(false)
     expect(kidsMayAccess(student, '/auth/profiles/andre', 'PATCH', 'andre')).toBe(true)
+    // Os irmãos (só id e nome) para os recordes e as visitas do Arquipélago (fase3-12): só GET.
+    expect(kidsMayAccess(student, '/auth/profile-session/siblings', 'GET', 'andre')).toBe(true)
+    expect(kidsMayAccess(student, '/auth/profile-session/siblings', 'POST', 'andre')).toBe(false)
     expect(kidsMayAccess(student, '/members/learning/session', 'POST', 'andre')).toBe(true)
   })
   test('responsável gerencia sem começar a estudar em nome do perfil', () => {
@@ -84,12 +101,65 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(student, path as string, method as string, 'aluno')).toBe(true)
       expect(kidsMayAccess(parent, path as string, method as string, 'responsavel')).toBe(false)
     }
-    for (const path of ['/arquipelago/familia/limite', '/arquipelago//familia/limite']) {
+    for (const path of [
+      '/arquipelago/familia/limite',
+      '/arquipelago//familia/limite',
+      '/arquipelago/familia/permissoes',
+      '/arquipelago/familia/semana',
+    ]) {
       expect(kidsMayAccess(student, path, 'PUT', 'aluno')).toBe(false)
+      expect(kidsMayAccess(student, path, 'GET', 'aluno')).toBe(false)
     }
   })
-  test('o responsável só muda o limite diário', () => {
+  test('a seção Jogo do Admin nunca abre para aluno nem responsável', () => {
+    for (const path of [
+      '/arquipelago/admin/desafios',
+      '/arquipelago//admin/desafios',
+      '/arquipelago/ADMIN/desafios/x/publicar',
+      '/arquipelago/admin/cobertura',
+    ]) {
+      for (const method of ['GET', 'POST', 'PUT']) {
+        expect(kidsMayAccess(student, path, method, 'aluno-admin')).toBe(false)
+        expect(kidsMayAccess(parent, path, method, 'responsavel-admin')).toBe(false)
+      }
+    }
+    expect(kidsMayAccess(student, '/arquipelago/cartas', 'GET', 'aluno')).toBe(true)
+    // Desafios: a criança lista, abre, confere e marca o prêmio visto; o responsável não joga.
+    const d = '/arquipelago/desafios/22222222-2222-4222-8222-222222222222'
+    for (const [method, path] of [
+      ['GET', '/arquipelago/desafios'],
+      ['GET', d],
+      ['POST', `${d}/verificar`],
+      ['POST', `${d}/recompensa-vista`],
+    ] as const) {
+      expect(kidsMayAccess(student, path, method, 'aluno')).toBe(true)
+      expect(kidsMayAccess(parent, path, method, 'responsavel')).toBe(false)
+    }
+  })
+  test('recordes e visitas são de quem joga: a criança lê, o responsável não', () => {
+    const casa = '/arquipelago/irmaos/33333333-3333-4333-8333-333333333333/casa'
+    expect(kidsMayAccess(student, '/arquipelago/irmaos', 'GET', 'aluno')).toBe(true)
+    expect(kidsMayAccess(student, casa, 'GET', 'aluno')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/irmaos', 'GET', 'responsavel')).toBe(false)
+    expect(kidsMayAccess(parent, casa, 'GET', 'responsavel')).toBe(false)
+  })
+  test('a galeria é de quem joga: a criança lê e compra, o responsável não', () => {
+    expect(kidsMayAccess(student, '/arquipelago/galeria', 'GET', 'aluno')).toBe(true)
+    expect(kidsMayAccess(student, '/arquipelago/galeria/compras', 'POST', 'aluno')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/galeria', 'GET', 'responsavel')).toBe(false)
+    expect(kidsMayAccess(parent, '/arquipelago/galeria/compras', 'POST', 'responsavel')).toBe(false)
+  })
+  test('o responsável cuida só da família: limite, permissões e a leitura da semana', () => {
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'GET', 'responsavel')).toBe(true)
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'PUT', 'responsavel')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/permissoes', 'GET', 'responsavel')).toBe(
+      true,
+    )
+    expect(kidsMayAccess(parent, '/arquipelago/familia/permissoes', 'PUT', 'responsavel')).toBe(
+      true,
+    )
+    expect(kidsMayAccess(parent, '/arquipelago/familia/semana', 'GET', 'responsavel')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/semana', 'PUT', 'responsavel')).toBe(false)
+    expect(kidsMayAccess(parent, '/arquipelago/familia/outra', 'GET', 'responsavel')).toBe(false)
   })
 })

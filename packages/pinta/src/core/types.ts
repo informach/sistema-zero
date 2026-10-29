@@ -126,6 +126,32 @@ export interface PintaInitialIntent {
   style?: 'pixel' | 'vector' | 'either'
 }
 
+/**
+ * Um retângulo do MOLDE, em pixels da tela. `marked` = a face marcada (a frente de um objeto),
+ * desenhada em rosa; as outras, no contorno discreto.
+ */
+export interface PintaGuideRect {
+  x: number
+  y: number
+  width: number
+  height: number
+  marked?: boolean
+}
+
+/**
+ * Tela com MOLDE pedida pelo host (28/10/2026, o Arquipélago abre o Pinta com a planificação de um
+ * objeto): um cenário de pixel com o tamanho pedido e o contorno de cada face numa camada de
+ * baixo, trancada ("Molde"), e a camada de cima livre para pintar. Abre UMA vez no mount, depois
+ * que a galeria carrega; se já existe um desenho com este nome e este tamanho, reabre ele.
+ */
+export interface PintaInitialCanvas {
+  /** Nome do desenho (kebab-case, como os outros; o mesmo nome reabre o mesmo desenho). */
+  name: string
+  width: number
+  height: number
+  guide: readonly PintaGuideRect[]
+}
+
 export type PintaTaskSession = import('@sistemazero/ui/pensa-mission-session').PensaMissionSession
 
 export interface PintaHostAdapter {
@@ -172,6 +198,8 @@ export interface PintaHostAdapter {
    * ainda não conhece); desenho apagado cai na galeria com um recado gentil.
    */
   initialAssetId?: string
+  /** Tela com molde (Arquipélago): cria ou reabre o desenho e abre o editor, 1x no mount. */
+  initialCanvas?: PintaInitialCanvas
   /** Sessão desacoplada do Pensa, restaurada pelo host a partir de `?missao=`. */
   taskSession?: PintaTaskSession
   /**

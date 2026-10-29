@@ -12,6 +12,10 @@ import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stat
 import { StudioAiAccountService } from './application/ai-usage/studio-ai-account.service'
 import { StudioAiUsageService } from './application/ai-usage/studio-ai-usage.service'
 import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
+import { ArquipelagoCourseActivityService } from './application/arquipelago/arquipelago-course-activity.service'
+import { ArquipelagoObjectivesService } from './application/arquipelago/arquipelago-objectives.service'
+import { ArquipelagoReadsService } from './application/arquipelago/arquipelago-reads.service'
+import { ArquipelagoRoomService } from './application/arquipelago/arquipelago-room.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
@@ -154,6 +158,7 @@ import { DrizzleAdultProfileRepository } from './infrastructure/persistence/driz
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { ArquipelagoCoinsRepository } from './infrastructure/persistence/drizzle/arquipelago-coins.repository'
+import { ArquipelagoCourseActivityRepository } from './infrastructure/persistence/drizzle/arquipelago-course-activity.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
@@ -1156,6 +1161,21 @@ export async function createApplication(env: Env): Promise<Application> {
     arquipelagoCoins: {
       repository: new ArquipelagoCoinsRepository(db),
       token: env.ARQUIPELAGO_COINS_TOKEN,
+    },
+    arquipelagoInternal: {
+      kidsJourney: kidsJourneyQuery,
+      adultJourney,
+      leituras: new ArquipelagoReadsService({
+        kidsJourney: kidsJourneyQuery,
+        adultJourney,
+        unlocks: getStudioUnlocks,
+        courses,
+      }),
+      objetivos: new ArquipelagoObjectivesService({ verificador: sectionProgression }),
+      aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
+      saldo: gamificationRepo,
+      quartos: new ArquipelagoRoomService(roomRepo),
+      token: env.ARQUIPELAGO_MEMBERS_TOKEN,
     },
     liveMaterials,
     livePublication,

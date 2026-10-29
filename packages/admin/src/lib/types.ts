@@ -597,6 +597,21 @@ export interface QuizQuestion {
     | 'island-position'
     | 'island-height'
     | 'island-retest'
+    | 'jardim-memory'
+    | 'jardim-view'
+    | 'jardim-height'
+    | 'moedas-poucas'
+    | 'moedas-igual'
+    | 'moedas-volta'
+    | 'cabana-so-chave'
+    | 'cabana-ou'
+    | 'cabana-ordem'
+    | 'ponte-a-tempo'
+    | 'ponte-atrasado'
+    | 'ponte-de-novo'
+    | 'simbolos-ordem'
+    | 'simbolos-fora'
+    | 'simbolos-recomeca'
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]

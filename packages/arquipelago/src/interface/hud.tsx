@@ -1,11 +1,43 @@
 import type { FerramentaDaPlataforma } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { PAINEL_DO_CADERNO } from '../estado/cartas'
+import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
+import { useToque } from '../estado/preferencias'
+import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
+import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
+import { hudEscondido, PAINEL_DA_FOTO } from '../sistemas/modo-foto'
 import { comer } from '../sistemas/necessidades'
+import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
+import { salvamentoPausado } from '../sistemas/pausa'
+import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { PAINEL_DAS_VISITAS } from '../sistemas/visitas'
+import { Album, PAINEL_DO_ALBUM } from './album'
+import { PainelDoBento } from './bento'
+import { PainelDoBicho } from './bicho'
+import { CadernoDosLumis } from './caderno-dos-lumis'
+import { PainelDaCapi } from './capi'
+import { PreferenciasDeConforto } from './conforto'
+import { BarraDeConstruir, ModosDoJogo } from './construir'
+import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { FogueiraDaFesta } from './fogueira-da-festa'
+import { AtalhoDaFoto, ModoFoto } from './foto'
+import { PainelDaIrie } from './irie'
+import { PainelDaJade } from './jade'
+import { VisorDaLuneta } from './luneta'
+import { PainelDoMapa } from './mapa'
+import { PainelDaMare, PainelDoFloco } from './mare'
+import { PainelDoObjeto } from './projeto-azul'
+import { PainelDoQuadro } from './quadro-das-cores'
+import { PainelDaBancada } from './receitas'
+import { PainelDaRotina, RotinaAndando } from './rotina'
 import { ControlesDeToque } from './toque'
+import { PainelDoTurno } from './turno'
+import { FaixaDaVisita, PainelDasVisitas, RecordesDaFamilia, voltarDaVisita } from './visitas'
+import { useVoz } from './voz'
 
 function Necessidades() {
   const n = useEstado((s) => s.salvamento.necessidades)
@@ -71,6 +103,8 @@ function Dica() {
 function Inventario() {
   const { loja } = useJogo()
   const inv = useEstado((s) => s.salvamento.inventario)
+  const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
+  const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
   const itens = itensVisiveis(inv)
   if (itens.length === 0) return null
   return (
@@ -98,6 +132,38 @@ function Inventario() {
             <span aria-hidden="true">{item.emoji}</span>
             <b>{qtd}</b>
           </button>
+        ) : item.id === ID_DOS_PATINS ? (
+          <button
+            key={item.id}
+            type="button"
+            className="arq-item"
+            title={patins ? 'Tirar os patins' : 'Calçar os patins'}
+            aria-label={patins ? 'Tirar os patins' : 'Calçar os patins'}
+            aria-pressed={patins}
+            onClick={() => {
+              const s = loja.getState()
+              s.calcarPatins(!patins)
+              s.dizer(patins ? FALA_DE_DESCALCAR : FALA_DE_CALCAR)
+            }}
+          >
+            <span aria-hidden="true">{item.emoji}</span>
+          </button>
+        ) : item.id === ID_DA_LANTERNA ? (
+          <button
+            key={item.id}
+            type="button"
+            className="arq-item"
+            title={lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'}
+            aria-label={lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'}
+            aria-pressed={lanterna}
+            onClick={() => {
+              const s = loja.getState()
+              s.acenderLanterna(!lanterna)
+              s.dizer(lanterna ? FALA_DE_APAGAR : FALA_DE_ACENDER)
+            }}
+          >
+            <span aria-hidden="true">{item.emoji}</span>
+          </button>
         ) : (
           <span key={item.id} className="arq-item" title={item.nome}>
             <span aria-hidden="true">{item.emoji}</span>
@@ -110,41 +176,268 @@ function Inventario() {
   )
 }
 
+/**
+ * Deitada na cama (fase2-13): a tela escurece um pouco em volta e uma barrinha mostra a energia
+ * voltando. Não pega toque nem clique (é só um véu por cima do jogo).
+ */
+function Soneca() {
+  const deitada = useEstado((s) => s.descanso === 'deitar')
+  const energia = useEstado((s) => Math.round(s.salvamento.necessidades.energia))
+  if (!deitada) return null
+  return (
+    <div className="arq-soneca">
+      <div className="arq-soneca-cartao arq-cartao">
+        <b>Soneca</b>
+        <div
+          className="arq-soneca-barra"
+          role="progressbar"
+          aria-label="Energia"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={energia}
+        >
+          <i style={{ width: `${energia}%` }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** A tecla (ou, no toque, o botão) da ação perto, e o que fazer no cipó e no tronco. */
 function Acao() {
   const alvo = useEstado((s) => s.alvo)
+  const modo = useEstado((s) => s.modo)
+  const toque = useToque()
+  if (modo === 'cipo') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? 'Soltar' : 'Espaço'}</span>
+        Soltar do cipó
+        <span className="arq-tecla">{toque ? '◎' : 'W S'}</span>
+        Balançar
+      </div>
+    )
+  }
+  if (modo === 'descanso') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? '◎' : 'W A S D'}</span>
+        ou
+        <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
+        para levantar
+      </div>
+    )
+  }
+  if (modo === 'escalada') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? '◎' : 'W S'}</span>
+        Subir e descer
+        <span className="arq-tecla">{toque ? 'Pular' : 'Espaço'}</span>
+        Pular do tronco
+      </div>
+    )
+  }
   if (!alvo) return null
   return (
     <div className="arq-acao">
-      <span className="arq-tecla">E</span>
+      <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
       {alvo.rotulo}
     </div>
   )
 }
 
+/** O cronômetro discreto do percurso, só durante a corrida (o tempo anda fora do React). */
+function Cronometro() {
+  const { movimento } = useJogo()
+  const corrida = useEstado((s) => s.corrida)
+  const texto = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    if (!corrida) return
+    let quadro = 0
+    const mostrar = () => {
+      const c = movimento.corrida
+      if (c && texto.current) {
+        texto.current.textContent = formatarTempo(c.tempoMs)
+      }
+      quadro = requestAnimationFrame(mostrar)
+    }
+    mostrar()
+    return () => cancelAnimationFrame(quadro)
+  }, [corrida, movimento])
+  if (!corrida) return null
+  const config = PERCURSOS_DO_JOGO[corrida.percurso]
+  return (
+    <div className="arq-cronometro" role="timer" aria-label={config.nome}>
+      <span className="arq-pilula">
+        ⏱ <span ref={texto}>0:00,0</span>
+      </span>
+      <span className="arq-pilula" title={`${config.coletavel.Varios} pegos`}>
+        {config.coletavel.simbolo} {corrida.vagalumes}/{corrida.totalDeVagalumes}
+      </span>
+      <button
+        type="button"
+        className="arq-botao leve"
+        onClick={() => {
+          movimento.pedidoDoPercurso = 'parar'
+        }}
+      >
+        Parar
+      </button>
+    </div>
+  )
+}
+
+/** A tela curta do fim do percurso: estrelas, tempo, melhor tempo e correr de novo. */
+function Resultado() {
+  const { loja, movimento, plataforma } = useJogo()
+  const r = useEstado((s) => s.resultado)
+  const continuar = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (r) continuar.current?.focus()
+  }, [r])
+  if (!r) return null
+  const config = PERCURSOS_DO_JOGO[r.percurso]
+  const estrelas = [
+    { ganhou: r.estrelas.chegada, texto: 'Chegou ao fim' },
+    {
+      ganhou: r.estrelas.tempo,
+      texto: `Em até ${Math.round(config.tempoAlvoMs / 1000)} segundos`,
+    },
+    {
+      ganhou: r.estrelas.vagalumes,
+      texto: `Os ${r.totalDeVagalumes} ${config.coletavel.varios}`,
+    },
+  ]
+  const fechar = () => loja.getState().mostrarResultado(null)
+  return (
+    <div className="arq-sobre">
+      <div
+        className="arq-resultado arq-cartao"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="arq-resultado-titulo"
+        onKeyDown={(e) => {
+          // Fechar o resultado não abre o menu (o Esc do menu escuta a janela).
+          if (e.key === 'Escape') {
+            e.stopPropagation()
+            fechar()
+          }
+        }}
+      >
+        <h2 id="arq-resultado-titulo">{config.nome}</h2>
+        <ul className="arq-estrelas">
+          {estrelas.map((e, i) => (
+            <li
+              key={e.texto}
+              className={e.ganhou ? 'ganhou' : ''}
+              style={{ animationDelay: `${i * 0.18}s` }}
+            >
+              <span aria-hidden="true">{e.ganhou ? '★' : '☆'}</span>
+              <small>{e.texto}</small>
+              <span className="arq-sr">{e.ganhou ? 'estrela ganha' : 'estrela que falta'}</span>
+            </li>
+          ))}
+        </ul>
+        <dl className="arq-tempos">
+          <div>
+            <dt>Tempo</dt>
+            <dd>{formatarTempo(r.tempoMs)}</dd>
+          </div>
+          <div>
+            <dt>Melhor tempo</dt>
+            <dd>
+              {formatarTempo(r.melhor.melhorTempoMs)}
+              {r.recorde ? <b className="arq-recorde">Recorde novo</b> : null}
+            </dd>
+          </div>
+          <div>
+            <dt>{config.coletavel.Varios}</dt>
+            <dd>
+              {r.vagalumes} de {r.totalDeVagalumes}
+            </dd>
+          </div>
+        </dl>
+        {/* Família e irmãos são do Kids: a comunidade adulta não lê `/irmaos`. */}
+        {plataforma.publico === 'kids' ? <RecordesDaFamilia percurso={r.percurso} /> : null}
+        <div className="arq-menu-acoes">
+          <button
+            type="button"
+            className="arq-botao"
+            onClick={() => {
+              movimento.pedidoDoPercurso = 'recomecar'
+            }}
+          >
+            Correr de novo
+          </button>
+          <button ref={continuar} type="button" className="arq-botao leve" onClick={fechar}>
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** O corte suave da volta ao deque: escurece e clareia a cada número novo de `corte`. */
+function Corte() {
+  const corte = useEstado((s) => s.corte)
+  if (corte === 0) return null
+  return (
+    <div
+      key={corte}
+      className="arq-corte"
+      aria-hidden="true"
+      style={{
+        animationDuration: `${PERCURSO_DAS_COPAS.corteSaiMs + PERCURSO_DAS_COPAS.corteVoltaMs}ms`,
+      }}
+    />
+  )
+}
+
+/** As ferramentas da plataforma que o jogo abre por cima dele (as de verdade, nunca cópias). */
+const FERRAMENTAS: ReadonlyArray<{
+  id: FerramentaDaPlataforma
+  nome: string
+  faz: string
+  emoji: string
+}> = [
+  { id: 'pinta', nome: 'Pinta', faz: 'Desenhar', emoji: '🎨' },
+  { id: 'molda', nome: 'Molda', faz: 'Modelar em 3D', emoji: '🧊' },
+  { id: 'estudio', nome: 'Estúdio', faz: 'Programar', emoji: '🧩' },
+]
+
+type Aviso = { tom: 'ok' | 'atencao'; texto: string } | null
+
 function Menu() {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, pedidos } = useJogo()
+  const voz = useVoz()
+  const visitando = useEstado((s) => s.visita !== null)
   const aberto = useEstado((s) => s.menuAberto)
   const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
-  const [aviso, setAviso] = useState('')
+  const [aviso, setAviso] = useState<Aviso>(null)
   async function abrirFerramenta(ferramenta: FerramentaDaPlataforma) {
     if (loja.getState().ferramentaAberta) return
-    setAviso('')
+    setAviso(null)
     loja.getState().definirFerramentaAberta(true)
     try {
       const resultado = await plataforma.abrirFerramenta({
         ferramenta,
         proposito: 'criar no Arquipélago',
       })
-      if (resultado.situacao === 'pronto') setAviso('Sua criação foi guardada.')
+      if (resultado.situacao === 'pronto')
+        setAviso({ tom: 'ok', texto: 'A sua criação foi guardada na sua conta.' })
       if (resultado.situacao === 'indisponivel')
-        setAviso(
-          resultado.motivo === 'acesso-necessario'
-            ? 'Confira seu acesso e sua jornada para usar esta ferramenta.'
-            : 'Esta ferramenta não está disponível para abrir agora.',
-        )
+        setAviso({
+          tom: 'atencao',
+          texto:
+            resultado.motivo === 'acesso-necessario'
+              ? 'Esta ferramenta ainda não abriu para você. Ela chega com a sua jornada.'
+              : 'Não deu para abrir esta ferramenta agora. Tente de novo daqui a pouco.',
+        })
     } catch (erro) {
       plataforma.relatarErro(erro, 'abrir-ferramenta')
-      setAviso('Não consegui abrir a ferramenta agora. Tente novamente.')
+      setAviso({ tom: 'atencao', texto: 'Não consegui abrir a ferramenta agora. Tente de novo.' })
     } finally {
       loja.getState().definirFerramentaAberta(false)
     }
@@ -155,42 +448,114 @@ function Menu() {
       <div className="arq-menu arq-cartao" role="dialog" aria-label="Menu do jogo">
         <h2>Arquipélago Vagalume</h2>
         <ul>
-          <li>Andar: W A S D ou as setas (no tablet, o círculo da esquerda)</li>
+          <li>Andar: W A S D ou as setas (no tablet, toque e arraste na esquerda de baixo)</li>
           <li>Correr: Shift · Pular: espaço</li>
           <li>Usar o que está perto: E</li>
-          <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse</li>
+          <li>Modo foto: F · Sair dele: Esc</li>
+          <li>Cipó: Espaço solta · Tronco: W e S sobem e descem, Espaço pula</li>
+          <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse · Câmera nas costas: C</li>
+          <li>Com controle de videogame: analógicos andam e giram, botão de baixo pula</li>
         </ul>
-        <p>Crie com as ferramentas da plataforma:</p>
-        <div className="arq-ferramentas">
-          {(['pinta', 'molda', 'estudio'] as const).map((ferramenta) => (
-            <button
-              key={ferramenta}
-              type="button"
-              className="arq-botao leve"
-              disabled={ferramentaAberta}
-              onClick={() => void abrirFerramenta(ferramenta)}
-            >
-              {ferramenta === 'pinta' ? 'Pinta' : ferramenta === 'molda' ? 'Molda' : 'Estúdio'}
-            </button>
-          ))}
-        </div>
-        {aviso ? <p role="status">{aviso}</p> : null}
+        <PreferenciasDeConforto />
         <button
           type="button"
-          className="arq-botao"
+          className="arq-botao leve"
           disabled={ferramentaAberta}
-          onClick={() => loja.getState().abrirMenu(false)}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DO_CADERNO)
+          }}
         >
-          Continuar jogando
+          📒 Caderno dos Lumis
         </button>
         <button
           type="button"
           className="arq-botao leve"
           disabled={ferramentaAberta}
-          onClick={() => plataforma.voltarParaPlataforma()}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DO_DIARIO)
+          }}
         >
-          Voltar para a plataforma
+          📖 Diário
         </button>
+        {plataforma.publico === 'kids' ? (
+          <button
+            type="button"
+            className="arq-botao leve"
+            disabled={ferramentaAberta}
+            onClick={() => {
+              loja.getState().abrirMenu(false)
+              if (loja.getState().visita) voltarDaVisita(loja, pedidos)
+              else loja.getState().abrirPainel(PAINEL_DAS_VISITAS)
+            }}
+          >
+            {visitando ? '🏡 Voltar para a minha casa' : '🏡 Visitar um irmão'}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={ferramentaAberta}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DO_ALBUM)
+          }}
+        >
+          🏛️ Álbum de coleções
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={ferramentaAberta}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DA_FOTO)
+          }}
+        >
+          📷 Modo foto
+        </button>
+        <h3 className="arq-menu-titulo">Criar com as ferramentas</h3>
+        <div className="arq-ferramentas">
+          {FERRAMENTAS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className="arq-ferramenta"
+              disabled={ferramentaAberta}
+              onClick={() => void abrirFerramenta(f.id)}
+            >
+              <span className="arq-ferramenta-icone" aria-hidden="true">
+                {f.emoji}
+              </span>
+              <b>{f.nome}</b>
+              <small>{f.faz}</small>
+            </button>
+          ))}
+        </div>
+        {aviso ? (
+          <p role="status" className={`arq-aviso ${aviso.tom}`}>
+            {aviso.texto}
+          </p>
+        ) : null}
+        <div className="arq-menu-acoes">
+          <button
+            type="button"
+            className="arq-botao"
+            disabled={ferramentaAberta}
+            onClick={() => loja.getState().abrirMenu(false)}
+          >
+            Continuar jogando
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            disabled={ferramentaAberta}
+            onClick={() => plataforma.voltarParaPlataforma()}
+          >
+            {voz.voltar}
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -198,16 +563,42 @@ function Menu() {
 
 export function Hud() {
   const { loja } = useJogo()
+  const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
+  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
+  const naFoto = useEstado(hudEscondido)
+  const visitando = useEstado((s) => s.visita !== null)
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (e.code === 'Escape' && !loja.getState().tempoPausado && !loja.getState().ferramentaAberta)
-        loja.getState().abrirMenu(!loja.getState().menuAberto)
+      const s = loja.getState()
+      if (e.code !== 'Escape') return
+      if (salvamentoPausado(s.salvamentoSituacao)) return
+      // Com o resultado na tela, o Esc fecha ele (mesmo com o foco fora da janela dele).
+      if (s.resultado) s.mostrarResultado(null)
+      else if (s.tempoPausado || s.ferramentaAberta) return
+      // Com um painel aberto (o Quadro das Cores, a conversa com a Capi, o caderno, o diário), o Esc
+      // fecha.
+      else if (s.painelAberto !== null) s.abrirPainel(null)
+      else s.abrirMenu(!s.menuAberto)
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)
   }, [loja])
+  if (naLuneta)
+    return (
+      <div className="arq-hud">
+        <VisorDaLuneta />
+      </div>
+    )
+  // Modo foto: o HUD, a fala do Zappy e as dicas somem; só ficam "Tirar foto" e "Voltar".
+  if (naFoto)
+    return (
+      <div className="arq-hud">
+        <ModoFoto />
+      </div>
+    )
   return (
     <div className="arq-hud">
+      <Soneca />
       <Necessidades />
       <div className="arq-topo-dir">
         <Relogio />
@@ -221,13 +612,44 @@ export function Hud() {
           ☰ Menu
         </button>
       </div>
+      <Cronometro />
+      <RotinaAndando />
       <Dica />
-      <div className="arq-baixo">
-        <Acao />
-        <Inventario />
-      </div>
-      <ControlesDeToque />
+      {/* Na casa do irmão só se olha: no lugar de Viver e Construir, de quem é a casa e a volta. */}
+      {visitando ? <FaixaDaVisita /> : <ModosDoJogo />}
+      {construindo ? (
+        <BarraDeConstruir />
+      ) : (
+        <>
+          <div className="arq-baixo">
+            <Acao />
+            <Inventario />
+          </div>
+          <ControlesDeToque />
+        </>
+      )}
+      <PainelDoQuadro />
+      <PainelDaCapi />
+      <PainelDoBento />
+      <PainelDaMare />
+      <PainelDoFloco />
+      <PainelDaJade />
+      <PainelDaIrie />
+      <PainelDaBancada />
+      <FogueiraDaFesta />
+      <PainelDoTurno />
+      <PainelDoBicho />
+      <CadernoDosLumis />
+      <PainelDaRotina />
+      <PainelDoObjeto />
+      <Diario />
+      <PainelDasVisitas />
+      <Album />
+      <PainelDoMapa />
+      <AtalhoDaFoto />
       <Menu />
+      <Resultado />
+      <Corte />
     </div>
   )
 }

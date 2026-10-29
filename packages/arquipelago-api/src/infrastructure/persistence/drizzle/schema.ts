@@ -1,12 +1,18 @@
+import { LIMITES_DO_DESAFIO, type MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
 import { sql } from 'drizzle-orm'
 import {
+  boolean,
   check,
   date,
+  index,
   integer,
   jsonb,
   pgSchema,
   primaryKey,
+  smallint,
+  text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
@@ -16,6 +22,29 @@ import {
  * jogo lê e grava aqui; a plataforma nunca toca estas tabelas (e o jogo nunca toca as dela).
  */
 export const arquipelagoSchema = pgSchema('arquipelago')
+
+/** Uma cópia aprovada por jogador e desafio; a primeira aprovação é preservada para medição. */
+export const minijogos = arquipelagoSchema.table(
+  'minijogos',
+  {
+    jogadorId: uuid().notNull(),
+    desafioId: uuid().notNull(),
+    publico: varchar({ length: 8 }).notNull(),
+    titulo: varchar({ length: 200 }).notNull(),
+    projeto: text().notNull(),
+    capa: text(),
+    aprovadoEm: timestamp({ withTimezone: true }).notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.desafioId] }),
+    check('minijogos_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'minijogos_tamanho_check',
+      sql`length(${t.projeto}) <= ${sql.raw(String(LIMITES_DO_DESAFIO.projetoCaracteres))}`,
+    ),
+  ],
+)
 
 /** Um salvamento por jogador (perfil no Kids, conta no adulto). `revisao` é a trava. */
 export const salvamentos = arquipelagoSchema.table(
@@ -104,11 +133,216 @@ export const limitesDaFamilia = arquipelagoSchema.table(
   (t) => [check('limites_da_familia_minutos_check', sql`${t.minutos} between 10 and 240`)],
 )
 
+/**
+ * De que conta é cada criança (28/10/2026, fase1-18): gravado quando ela guarda o jogo, com a conta
+ * que vem do login dela (`x-auth-account-id`). É o que deixa a área dos pais ler a semana só das
+ * crianças da própria conta, sem confiar na lista que chega pelo repasse.
+ */
+export const perfisDaConta = arquipelagoSchema.table(
+  'perfis_da_conta',
+  {
+    jogadorId: uuid().primaryKey(),
+    contaId: uuid().notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [index('perfis_da_conta_conta_idx').on(t.contaId)],
+)
+
+/**
+ * As permissões de visita da família (ECA Digital, art. 21; sem linha = o padrão restrito do
+ * contrato, `PERMISSOES_PADRAO`). As visitas são da Fase 3: hoje só se grava e se lê.
+ */
+export const permissoesDaFamilia = arquipelagoSchema.table('permissoes_da_familia', {
+  contaId: uuid().primaryKey(),
+  visitasDeIrmaos: boolean().notNull(),
+  visitasDeOutrasCriancas: boolean().notNull(),
+  fotosNoClube: boolean().notNull(),
+  atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+})
+
+/**
+ * As compras da galeria (fase1-13, 29/10/2026): uma linha por jogador e aparência. Nasce
+ * `pendente` com a chave que vai ao Members (repetir nunca cobra duas vezes) e vira `paga` quando
+ * o Members confirma o débito. Só a paga vale como aparência dela.
+ */
+export const comprasDaGaleria = arquipelagoSchema.table(
+  'compras_da_galeria',
+  {
+    jogadorId: uuid().notNull(),
+    aparenciaId: varchar({ length: 80 }).notNull(),
+    objeto: varchar({ length: 20 }).notNull(),
+    moedas: integer().notNull(),
+    chave: uuid().notNull(),
+    situacao: varchar({ length: 10 }).notNull(),
+    criadaEm: timestamp({ withTimezone: true }).notNull(),
+    pagaEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.aparenciaId] }),
+    uniqueIndex('compras_da_galeria_chave_idx').on(t.chave),
+    check('compras_da_galeria_situacao_check', sql`${t.situacao} in ('pendente', 'paga')`),
+    check('compras_da_galeria_moedas_check', sql`${t.moedas} >= 0`),
+  ],
+)
+
+/**
+ * Os desafios cadastrados pela equipe (seção Jogo do Admin). `revisao` é a trava da edição; a
+ * publicação congela uma cópia em `desafio_publicacoes`. Um quadro do Quadro das Cores por ilha e
+ * público (fora os arquivados).
+ */
+export const desafios = arquipelagoSchema.table(
+  'desafios',
+  {
+    id: uuid().primaryKey(),
+    slug: varchar({ length: 80 }).notNull(),
+    publico: varchar({ length: 8 }).notNull(),
+    ilha: varchar({ length: 40 }).notNull(),
+    tipo: varchar({ length: 40 }).notNull(),
+    quadro: smallint(),
+    ordem: integer().notNull(),
+    situacao: varchar({ length: 12 }).notNull(),
+    revisao: integer().notNull(),
+    revisaoPublicada: integer(),
+    /** Projeção da posição publicada para impor unicidade, atualizada na transação de publicação. */
+    metadadosPublicados: jsonb().$type<MetadadosDoDesafio>(),
+    conteudo: jsonb().notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+    atualizadoPor: uuid().notNull(),
+  },
+  (t) => [
+    uniqueIndex('desafios_slug_unico').on(t.slug),
+    uniqueIndex('desafios_quadro_unico')
+      .on(
+        sql`coalesce(${t.metadadosPublicados}->>'publico', ${t.publico})`,
+        sql`coalesce(${t.metadadosPublicados}->>'ilha', ${t.ilha})`,
+        sql`(case when ${t.metadadosPublicados} is null then ${t.quadro} else (${t.metadadosPublicados}->>'quadro')::int end)`,
+      )
+      .where(
+        sql`coalesce(${t.metadadosPublicados}->>'tipo', ${t.tipo}) = 'quadro-das-cores' and ${t.situacao} <> 'arquivado'`,
+      ),
+    index('desafios_lista').on(t.publico, t.ilha, t.ordem),
+    check('desafios_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'desafios_tipo_check',
+      sql`${t.tipo} in ('quadro-das-cores', 'desafio-do-dia', 'pedido-de-morador')`,
+    ),
+    check('desafios_situacao_check', sql`${t.situacao} in ('rascunho', 'publicado', 'arquivado')`),
+    check(
+      'desafios_quadro_check',
+      sql`(${t.tipo} = 'quadro-das-cores') = (${t.quadro} is not null) and (${t.quadro} is null or ${t.quadro} between 1 and 6)`,
+    ),
+    check('desafios_revisao_check', sql`${t.revisao} >= 1`),
+  ],
+)
+
+/** Cópia imutável de cada publicação: o que a pessoa joga e o que a conferência usa. */
+export const desafioPublicacoes = arquipelagoSchema.table(
+  'desafio_publicacoes',
+  {
+    desafioId: uuid()
+      .notNull()
+      .references(() => desafios.id, { onDelete: 'cascade' }),
+    revisao: integer().notNull(),
+    metadados: jsonb().$type<MetadadosDoDesafio>().notNull(),
+    conteudo: jsonb().notNull(),
+    blocosDerivados: text().array().notNull(),
+    blocosExigidos: text().array().notNull(),
+    /** Os objetivos como a criança os vê (sem regra), feitos pelo Members na publicação. */
+    vista: jsonb().notNull(),
+    analise: jsonb().notNull(),
+    publicadoEm: timestamp({ withTimezone: true }).notNull(),
+    publicadoPor: uuid().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.desafioId, t.revisao] })],
+)
+
+/** O último resultado de cada objetivo para quem está tentando (por desafio). */
+export const desafioProgresso = arquipelagoSchema.table(
+  'desafio_progresso',
+  {
+    jogadorId: uuid().notNull(),
+    desafioId: uuid()
+      .notNull()
+      .references(() => desafios.id, { onDelete: 'cascade' }),
+    revisao: integer().notNull(),
+    ultimosResultados: jsonb().notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.jogadorId, t.desafioId] })],
+)
+
+/**
+ * Desafio feito. Feito continua feito: existindo a linha, a disponibilidade não é recalculada
+ * (mudança nos blocos dos cursos não tira o que a pessoa fez). As moedas saem pela porta do
+ * Members com chave única; `moedas_situacao` guarda o que ainda falta confirmar (`teto` = o teto
+ * semanal de moedas do jogo já tinha sido alcançado: o prêmio espera e é cobrado de novo numa semana
+ * seguinte, guardada em `moedas_teto_semana`).
+ */
+export const desafiosConcluidos = arquipelagoSchema.table(
+  'desafios_concluidos',
+  {
+    jogadorId: uuid().notNull(),
+    desafioId: uuid()
+      .notNull()
+      .references(() => desafios.id, { onDelete: 'cascade' }),
+    publico: varchar({ length: 8 }).notNull(),
+    revisao: integer().notNull(),
+    concluidoEm: timestamp({ withTimezone: true }).notNull(),
+    extraConcluidoEm: timestamp({ withTimezone: true }),
+    recompensaVistaEm: timestamp({ withTimezone: true }),
+    moedas: integer().notNull(),
+    moedasSituacao: varchar({ length: 12 }).notNull(),
+    moedasExtra: integer().notNull(),
+    moedasExtraSituacao: varchar({ length: 12 }).notNull(),
+    /** Semana (segunda, em São Paulo, `AAAA-MM-DD`) em que o prêmio bateu no teto semanal. */
+    moedasTetoSemana: varchar({ length: 10 }),
+    moedasExtraTetoSemana: varchar({ length: 10 }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.desafioId] }),
+    index('desafios_concluidos_jogador').on(t.jogadorId),
+    check('desafios_concluidos_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'desafios_concluidos_moedas_check',
+      sql`${t.moedasSituacao} in ('nenhuma', 'pendente', 'creditado', 'teto') and ${t.moedasExtraSituacao} in ('nenhuma', 'pendente', 'creditado', 'teto')`,
+    ),
+  ],
+)
+
+/**
+ * O desafio do dia de cada pessoa (28/10/2026): escolhido na primeira leitura do dia de São Paulo e
+ * fixo até a meia-noite (`domain/desafio-do-dia.ts`). `feito_em`: a conferência passou nesse
+ * desafio naquele dia ("Amanhã tem outro"), mesmo quando ele já tinha sido feito antes.
+ */
+export const desafioDoDia = arquipelagoSchema.table(
+  'desafio_do_dia',
+  {
+    jogadorId: uuid().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    desafioId: uuid()
+      .notNull()
+      .references(() => desafios.id, { onDelete: 'cascade' }),
+    escolhidoEm: timestamp({ withTimezone: true }).notNull(),
+    feitoEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.jogadorId, t.dia] })],
+)
+
 export const schema = {
+  minijogos,
   salvamentos,
   tempoDiario,
   eventosTempo,
   controleDeTempo,
   sessoesDeTempo,
   limitesDaFamilia,
+  perfisDaConta,
+  permissoesDaFamilia,
+  comprasDaGaleria,
+  desafios,
+  desafioPublicacoes,
+  desafioProgresso,
+  desafiosConcluidos,
+  desafioDoDia,
 }

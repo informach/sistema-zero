@@ -1,4 +1,4 @@
-import { MESH_SKIN_LABELS, type SceneId, STAGE_TARGET } from './actions'
+import { MESH_SKIN_LABELS, type SceneId, STAGE_TARGET, TIMED_BRIDGE } from './actions'
 import {
   FOLHA_DA_NAVE,
   LUPA,
@@ -639,6 +639,56 @@ function leituras(
           tone: 'b',
         },
       ]
+    case 'coin-counter':
+      return [
+        { label: 'moedas', value: String(state.coins.moedas), tone: 'a' },
+        {
+          label: 'baú',
+          value: state.coins.chest === 'open' ? 'aberto' : 'fechado',
+          tone: 'b',
+        },
+      ]
+    case 'two-pieces':
+      return [
+        { label: 'temChave', value: state.pieces.temChave ? 'verdadeiro' : 'falso', tone: 'a' },
+        {
+          label: 'temEmblema',
+          value: state.pieces.temEmblema ? 'verdadeiro' : 'falso',
+          tone: 'b',
+        },
+        {
+          label: 'cabana',
+          value: state.pieces.door === 'open' ? 'aberta' : 'fechada',
+          tone: 'plain',
+        },
+      ]
+    case 'timed-bridge': {
+      const b = state.bridge
+      const falta = b.timers.length ? Math.min(...b.timers) : null
+      return [
+        { label: 'ponteAberta', value: b.ponteAberta ? 'verdadeiro' : 'falso', tone: 'a' },
+        {
+          label: 'relógio',
+          value:
+            falta === null
+              ? 'parado'
+              : `${TIMED_BRIDGE.seconds - falta} de ${TIMED_BRIDGE.seconds} s`,
+          tone: 'b',
+        },
+        { label: 'ponte', value: b.ponteAberta ? 'baixada' : 'levantada', tone: 'plain' },
+      ]
+    }
+    case 'symbol-sequence': {
+      const q = state.sequence
+      const acesos = q.lit.length ? q.lit.join(', ') : 'nenhum'
+      return [
+        q.mode === 'order'
+          ? { label: 'passo', value: String(q.passo), tone: 'a' }
+          : { label: 'contados', value: `${q.lit.length} de 3`, tone: 'a' },
+        { label: 'acesos', value: acesos, tone: 'b' },
+        { label: 'baú', value: q.chest === 'open' ? 'aberto' : 'fechado', tone: 'plain' },
+      ]
+    }
     case 'lighthouse-position':
       return [
         { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
@@ -1249,6 +1299,42 @@ function situacao(scene: SceneId, state: SceneState): string {
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'
         : 'A porta do farol está fechada.'
+    case 'coin-counter': {
+      const c = state.coins
+      const noCaminho = c.present.filter(Boolean).length
+      return (
+        state.caption ||
+        `${quantos(noCaminho, 'moeda está no caminho', 'moedas estão no caminho')}. moedas guarda ${c.moedas}.`
+      )
+    }
+    case 'two-pieces': {
+      const p = state.pieces
+      const pecas = Number(p.temChave) + Number(p.temEmblema)
+      return (
+        state.caption ||
+        `${quantos(2 - pecas, 'peça está no chão', 'peças estão no chão')}. A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}.`
+      )
+    }
+    case 'timed-bridge': {
+      const b = state.bridge
+      const onde =
+        b.at === 'stone'
+          ? 'O personagem está na pedra do sino.'
+          : `A ponte está ${b.ponteAberta ? 'baixada' : 'levantada'}.`
+      if (state.caption) return state.caption
+      return b.clock === 0
+        ? onde
+        : `${onde} ${quantos(b.clock, 'segundo passou', 'segundos passaram')}.`
+    }
+    case 'symbol-sequence': {
+      if (state.caption) return state.caption
+      const q = state.sequence
+      const acesos =
+        q.lit.length === 0
+          ? 'Nenhum símbolo aceso.'
+          : `${quantos(q.lit.length, 'símbolo aceso', 'símbolos acesos')}.`
+      return `O baú está ${q.chest === 'open' ? 'aberto' : 'fechado'}. ${acesos}`
+    }
     case 'lighthouse-position':
       return `A chave está em x ${state.keyPosition.x}, y ${state.keyPosition.y}.`
     case 'lighthouse-walk': {

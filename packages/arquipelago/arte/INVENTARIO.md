@@ -22,6 +22,7 @@ até lá ficam na galeria de modelos do playground.
 | Farol da sua ilha (apagado e aceso, feixe que gira) | ✅ | |
 | Píer com boia e barquinho | ✅ | |
 | Tábuas, cordas e postes das pontes | ✅ | |
+| Boias do limite do mar (boia listrada, corda e flutuador) | ✅ | `arte/mundo/boias.py`: a linha de boias da correnteza mansa, em volta da sua ilha e das ilhas do anel abertas |
 | As 6 ilhas do anel em versão leve (cinza até a cor chegar) | ✅ | |
 
 ## Lote 2: personagens
@@ -35,6 +36,7 @@ até lá ficam na galeria de modelos do playground.
 | Floco, pinguim músico do Pico Gelado | 🟡 | cachecol e cavaquinho |
 | Jade, coruja dos fósseis e ninhos do Vale dos Dinos | 🟡 | chapéu de safári e lupa |
 | Iriê, arara que tece o arco-íris da Ilha das Nuvens | 🟡 | tear com o arco-íris |
+| Nico, caranguejo carteiro da praia (recebe a criança com o Zappy) | 🟡 | `arte/personagens/nico.py`: quepe, bolsa de cartas e carta na pinça; clipes próprios com os mesmos nomes |
 
 ## Lote 3: Lumis e o Cinza
 
@@ -47,6 +49,7 @@ até lá ficam na galeria de modelos do playground.
 | Família do Pico | 🟡 | Gelinho e Cristal |
 | Família do Vale dos Dinos | 🟡 | Ovinho e Brotinho |
 | Família das Nuvens | 🟡 | Algodão e Pluma |
+| Família da praia (sua ilha) | 🟡 | `arte/lumis/praia.py`: Estrelinha e Búzio (nomes provisórios) |
 
 ## Lote 4: bichos
 
@@ -66,6 +69,17 @@ até lá ficam na galeria de modelos do playground.
 | Chave e carta da chegada, páginas do diário, baús, moedas | 🟡 | `arte/itens/colecao.py`; baú com a `tampa` e o clipe `abrir`, moeda com `girar` |
 | Luneta do píer, Quadro das Cores, placas | 🟡 | `arte/itens/lugares.py`; luneta com o `tubo` que gira, quadro com `cor-1` a `cor-6`, três placas com a face `texto` |
 | Fogão e utensílios da cozinha da casa | 🟡 | `arte/itens/cozinha.py`: fogão a lenha com o nó `fogo`, panela, frigideira, colher de pau e tábua; móveis do quarto vêm da plataforma |
+| Ingredientes das receitas e chocolate quente | 🟡 | `arte/itens/ingredientes.py`: fubá, leite, ovo, polvilho, queijo, peixe, coco, limão e cacau; o chocolate quente em `comidas.py` |
+| Iscas de pescar | 🟡 | `arte/itens/iscas.py`: minhoca e pena |
+| Coleções: conchas, peixes, notas, cristais e estrelas | 🟡 | `arte/itens/colecoes.py`: 6 conchas (com a estrela-do-mar), 5 peixes, 4 notas, 4 cristais e 4 estrelas; ícones em `src/assets/icones` |
+
+## Lote 5b: a casa que cresce
+
+| Peça | Estado | Observação |
+|---|---|---|
+| Kit do modo construir: paredes, portas, janelas, quinas, pisos e telhado | 🟡 | `arte/casa/kit.py`: grade de 1 por célula, paredes de 4 de altura; portas com os clipes `abrir` e `abrir-interna` |
+| Móveis da cozinha, da sala e do banheiro | 🟡 | `arte/casa/comodos.py` |
+| Objetos com função: geladeira (e a de holograma), forno, aquário, lareira, banda, fliperama, museu dos fósseis, casinha de bicho | 🟡 | `arte/objetos`: um script por objeto; portas que abrem, peixes que nadam, fogo que crepita |
 
 ## Lote 6: as ilhas completas
 
@@ -78,6 +92,9 @@ até lá ficam na galeria de modelos do playground.
 | Vale dos Dinos | 🟡 | `arte/ilhas-b/vale.py`: vulcão com o nó `lava` (material que acende), escavação com o esqueleto, três ninhos com ovos, samambaias gigantes, cavalinhas, observatório da Jade |
 | Ilha das Nuvens | 🟡 | `arte/ilhas-b/nuvens.py`: tear com `fio-1` a `fio-6`, ninho da Iriê na árvore alta, `plataforma-1` a `-4` em degraus; balão com `flutuar` em `nuvens-balao.glb` |
 | O alto do Farol (final) | 🟡 | `arte/ilhas-b/alto_do_farol.py`: sala da lanterna com a `lente` que gira (`girar`), escada em caracol, mesa e quadro com os rascunhos da Íris, janelas e varanda |
+| Exploração do Recife: navio afundado e labirinto de corais | 🟡 | `arte/ilhas/recife_navio.py` (casco com o rombo, porão com o baú que brilha) e `recife_labirinto.py` (corredores de cabeças de coral) |
+| Exploração do Pico: a caverna de gelo | 🟡 | `arte/ilhas-b/pico_caverna.py`: entrada com placa, galeria com saliências para subir |
+| Exploração das Nuvens: as constelações e o mirante | 🟡 | `arte/ilhas-b/nuvens_constelacoes.py`: seis figuras (arara, balão, vagalume, peixe, farol, colcheia) e o mirante com a luneta |
 
 ## Lote 7: movimento, veículos e festas
 

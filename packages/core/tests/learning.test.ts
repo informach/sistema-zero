@@ -276,8 +276,14 @@ const MANIFESTOS = listarArquivosAulas()
   .sort()
 describe('os manifestos atuais das aulas', () => {
   test('o inventário distingue os cursos, incluindo o novo Desafio e Cadê Todo Mundo?', () => {
-    expect(MANIFESTOS).toHaveLength(40)
+    expect(MANIFESTOS).toHaveLength(50)
+    // O Jardim Secreto (Faísca) usa os nomes curtos da pasta própria.
+    expect(MANIFESTOS.filter((name) => /^aula-\d+\.manifesto\.json$/.test(name))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('ilha-aula-'))).toHaveLength(3)
+    expect(MANIFESTOS.filter((name) => name.startsWith('moedas-aula-'))).toHaveLength(2)
+    expect(MANIFESTOS.filter((name) => name.startsWith('cabana-aula-'))).toHaveLength(2)
+    expect(MANIFESTOS.filter((name) => name.startsWith('ponte-aula-'))).toHaveLength(2)
+    expect(MANIFESTOS.filter((name) => name.startsWith('simbolos-aula-'))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('cade-todo-mundo-'))).toHaveLength(3)
     expect(MANIFESTOS.filter((name) => name.startsWith('corre-dino-'))).toHaveLength(13)
     expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(4)
@@ -613,6 +619,10 @@ describe('o cenário das cenas dos cursos', () => {
     'cade-todo-mundo': 'jardim',
     'corre-dino': 'corre-dino',
     'desafio-primeiro-jogo': 'farol',
+    'jornada-faisca-poder-1': 'farol',
+    'jornada-faisca-poder-2': 'farol',
+    'jornada-faisca-poder-3': 'farol',
+    'jornada-faisca-poder-4': 'farol',
     'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }

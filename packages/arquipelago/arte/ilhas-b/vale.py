@@ -4,7 +4,9 @@ ninhos com ovos pintados, as samambaias gigantes e o observatório da Jade.
 Gera dois arquivos em `src/assets/ilhas/`:
 
 - `vale-dos-dinos.glb`: nós `chao` (o chão da ilha leve), `vulcao` (rocha), `lava` (tudo o que é
-  lava: cratera e rios, material `lava`, que o jogo faz pulsar), `cenario` e as âncoras;
+  lava: cratera e rios, material `lava`, que o jogo faz pulsar), `cenario`, as âncoras e os
+  colisores `col-*` (aj-ligar-01: o vulcão entra no `col-terreno`, com as encostas que não se
+  sobem; o resto são formas simples, na convenção do README de `arte/ilhas`);
 - `vale-dos-dinos-props.glb`: `samambaia-gigante`, `cavalinha`, `ninho`, `ovo-dino`, `osso`,
   `cranio-fossil`, cada um com a base em y = 0.
 """
@@ -14,7 +16,7 @@ VULCAO = dict(x=-4.2, z=-2.6, r=5.6, h=7.2)
 
 
 # ------------------------------------------------------------------ vulcão
-def vulcao():
+def vulcao(col):
     cx, cy = VULCAO['x'], -VULCAO['z']
     h, r = VULCAO['h'], VULCAO['r']
     rnd = random.Random(7)
@@ -49,8 +51,10 @@ def vulcao():
     pedras = [o]
     for i in range(7):
         a = 2 * math.pi * i / 7 + 0.4
-        pedras.append(rock((cx + math.cos(a) * (r + 0.4), cy + math.sin(a) * (r + 0.4), TOPO), (1.1, 0.9, 0.7),
-                           'rochaVulcaoEscura', seed=30 + i, subdiv=1, rough=0.2))
+        px, py = cx + math.cos(a) * (r + 0.4), cy + math.sin(a) * (r + 0.4)
+        pedras.append(rock((px, py, TOPO), (1.1, 0.9, 0.7), 'rochaVulcaoEscura', seed=30 + i, subdiv=1, rough=0.2))
+        # Baixa (uns 0,35 acima do chão): sobe-se andando, como nas pedras do lago do Bosque.
+        col.append(col_cilindro('pedra-vulcao', 0.42, 0.6, (px, py, TOPO + 0.05)))
     # Lava: o lago da cratera, os rios pelas encostas e as poças no pé.
     lava = [cyl(r * 0.28, 0.1, (cx, cy, TOPO - 0.3 + h - 0.5), 'lava', verts=n)]
     for k, a in enumerate((math.radians(-60), math.radians(15), math.radians(120))):
@@ -68,12 +72,15 @@ def vulcao():
     for k, (dx, dy, dz, rr) in enumerate(((0, 0, 0.9, 0.95), (0.6, 0.3, 1.7, 0.75), (-0.3, 0.7, 2.4, 0.6),
                                           (0.4, -0.2, 3.0, 0.45))):
         fumaca.append(uvball(rr, (cx + dx, cy + dy, TOPO + h + dz), 'nuvemSombra', seg=10, ring=6))
-    return pedras, lava, fumaca
+    return pedras, lava, fumaca, o
 
 
 # ------------------------------------------------------------------ peças
-def samambaia_gigante(s=1.0, seed=0):
+def samambaia_gigante(s=1.0, seed=0, col=None):
     rnd = random.Random(seed)
+    if col is not None:
+        # Macia: só o miolo e os brotos seguram o corpo (as folhas passam por cima).
+        col.append(col_cilindro('moita-samambaia', 0.4 * s, 1.2 * s, (0, 0, 0.6 * s)))
     p = [superellipsoid((0.6 * s, 0.6 * s, 0.4 * s), (0, 0, 0.1 * s), 'samambaiaFunda', e1=0.8, e2=0.9, seg=8, ring=5)]
     n = 9
     for k in range(n):
@@ -90,9 +97,11 @@ def samambaia_gigante(s=1.0, seed=0):
     return p
 
 
-def cavalinha(s=1.0, seed=0):
+def cavalinha(s=1.0, seed=0, col=None):
     """Tufo de cavalinhas (planta pré-histórica): hastes com anéis escuros."""
     rnd = random.Random(seed)
+    if col is not None:
+        col.append(col_cilindro('moita-cavalinha', 0.32 * s, 1.6 * s, (0, 0, 0.8 * s)))
     p = []
     for k in range(5):
         a = 2 * math.pi * k / 5 + rnd.uniform(-0.3, 0.3)
@@ -122,8 +131,11 @@ def ovo(s=1.0, pinta='pintaDino', seed=0):
     return p
 
 
-def ninho(s=1.0, ovos=3, seed=0):
+def ninho(s=1.0, ovos=3, seed=0, col=None):
     rnd = random.Random(seed)
+    if col is not None:
+        # A borda de palha com os gravetos e os ovos (uns 0,8 de alto).
+        col.append(col_cilindro('ninho', 1.2 * s, 0.8 * s, (0, 0, 0.4 * s)))
     p = [torus(0.95 * s, 0.32 * s, (0, 0, 0.22 * s), 'palha', seg=16, rseg=6),
          cyl(0.85 * s, 0.12 * s, (0, 0, 0.08 * s), 'ninhoEscuro', verts=14)]
     for k in range(12):
@@ -158,9 +170,16 @@ def cranio_fossil(s=1.0):
     return p
 
 
-def esqueleto():
+def esqueleto(col=None):
     """O esqueleto deitado na escavação: crânio, coluna em curva, costelas e a cauda."""
     p = []
+    if col is not None:
+        # O crânio e a gaiola das costelas seguram o corpo; a coluna, a cauda e os ossos soltos são
+        # baixos e se pisam.
+        c = [col_caixa('cranio', (1.35, 0.75, 0.6), (0, 0, 0.3))]
+        lib_ilha.place(c, loc=(2.2, 0.25, 0.0), rot_z=R(10))
+        col += c
+        col.append(col_caixa('costelas', (2.5, 1.5, 0.95), (-0.45, 0.0, 0.475)))
     cr = cranio_fossil(0.9)
     lib_ilha.place(cr, loc=(1.9, 0.2, 0.0), rot_z=R(10))
     p += cr
@@ -184,12 +203,15 @@ def esqueleto():
     return p
 
 
-def escavacao(x, z):
-    """Buraco de areia com o esqueleto, cerca de corda, baldinho, pá e pincel."""
+def escavacao(x, z, col):
+    """Buraco de areia com o esqueleto, cerca de corda (aberta entre o 5º e o 6º postes, a
+    entrada), baldinho, pá e pincel."""
     p = [mancha(x, z, 3.8, 3.0, 'areiaEscavacao', seed=4, z1=TOPO + 0.04),
          mancha(x, z, 3.0, 2.2, 'areiaEscavacaoFunda', seed=5, z1=TOPO + 0.06)]
-    esq = esqueleto()
+    c = []
+    esq = esqueleto(c)
     colocar(esq, x, z, R(-20), y=TOPO + 0.02, escala=1.0)
+    col.extend(colocar(c, x, z, R(-20), y=TOPO + 0.02, escala=1.0))
     p += esq
     postes = []
     for i in range(10):
@@ -197,6 +219,7 @@ def escavacao(x, z):
         px, pz = x + math.cos(a) * 3.6, z + math.sin(a) * 2.8
         postes.append((px, -pz, TOPO + 0.7))
         p.append(cyl(0.06, 0.75, (px, -pz, TOPO + 0.37), 'poste', verts=6))
+        col.append(col_cilindro('poste-cerca', 0.08, 0.85, (px, -pz, TOPO + 0.42)))
         p.append(uvball(0.08, (px, -pz, TOPO + 0.78), 'cordaEscavacao', seg=6, ring=4))
     for i in range(10):
         a, b = postes[i], postes[(i + 1) % 10]
@@ -204,6 +227,8 @@ def escavacao(x, z):
             continue
         meio = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[2] - 0.12)
         p.append(tube([a, meio, b], [0.025] * 3, 'cordaEscavacao', seg=4, cap=False))
+        # A corda segura quem anda (a cerca é baixa, mas não se passa por cima dela).
+        col.append(col_entre('guarda-cerca', (a[0], a[1], TOPO), (b[0], b[1], TOPO), 0.1, 0.85))
     bx, by = x - 2.4, -z - 1.0
     p.append(cyl(0.25, 0.4, (bx, by, TOPO + 0.2), 'agarraAzul', verts=12, r2=0.2))
     p.append(torus(0.22, 0.02, (bx, by, TOPO + 0.5), 'metalEscuro', seg=10, rseg=3, rot=(R(90), 0, 0), arc=180))
@@ -214,8 +239,17 @@ def escavacao(x, z):
     return p
 
 
-def observatorio():
+def observatorio(col=None):
     """Observatório da Jade: torre de pedra, varanda de madeira, cúpula com a fresta e a luneta."""
+    if col is not None:
+        # A torre (porta fechada por enquanto), a varanda que se pisa (a escada de mão é enfeite) e a
+        # cúpula; os degraus da frente.
+        col.append(col_cilindro('observatorio', 1.72, 2.7, (0, 0, 1.35)))
+        col.append(col_cilindro('varanda', 2.3, 0.18, (0, 0, 2.7)))
+        col.append(col_cilindro('cupula', 1.6, 2.4, (0, 0, 4.0)))
+        for k in range(3):
+            topo_ = 0.42 - k * 0.12
+            col.append(col_caixa('degrau-observatorio', (1.2, 0.35, topo_), (0, -1.95 - k * 0.32, topo_ / 2)))
     p = [cyl(1.7, 2.6, (0, 0, 1.3), 'pedraObservatorio', verts=16, bevel=0.06)]
     for z in (0.6, 1.3, 2.0):
         p.append(cyl(1.73, 0.08, (0, 0, z), 'pedraObservatorioEscura', verts=16))
@@ -269,37 +303,52 @@ def pegada(x, z, a, s=1.0):
 # ------------------------------------------------------------------ a ilha
 def ilha():
     lib_q.reset()
+    col = []
     chao = base_da_ilha('vale-dos-dinos', topo='gramaEscura')
-    pedras, lava, fumaca = vulcao()
+    pedras, lava, fumaca, vulcao_ = vulcao(col)
+
+    def montar(pecas, x, z, giro, y=TOPO):
+        """Põe uma peça montada na origem (desenho e colisores dela) no lugar."""
+        c = []
+        objs = colocar(pecas(c), x, z, giro, y=y)
+        col.extend(colocar(c, x, z, giro, y=y))
+        return objs
+
     cen = list(fumaca)
     cen.append(caminho([(12.3, 0), (6.5, 0.2), (2.0, 0.6)], 1.0, 'terraIlha'))
     for k, ramo in enumerate(([(2.4, 0.6), (3.0, 3.0), (3.6, 4.2)], [(2.2, 0.3), (2.8, -3.0), (3.0, -4.9)])):
         cen.append(caminho(ramo, 0.7, 'terraIlha', z1=0.024 - 0.006 * k))
-    cen += escavacao(4.4, 6.8)
-    cen += colocar(observatorio(), 3.2, -7.6, angulo_para(3.2, -7.6, 3.0, -2.0), y=TOPO)
+    cen += escavacao(4.4, 6.8, col)
+    cen += montar(lambda c: observatorio(c), 3.2, -7.6, angulo_para(3.2, -7.6, 3.0, -2.0))
     for k, (x, z, n_ovos) in enumerate(((-7.6, 6.6, 3), (8.6, -6.4, 2), (-1.4, 9.8, 4))):
-        cen += colocar(ninho(1.0, n_ovos, seed=k), x, z, R(40 * k), y=TOPO)
+        cen += montar(lambda c, k=k, n_ovos=n_ovos: ninho(1.0, n_ovos, seed=k, col=c), x, z, R(40 * k))
     for i, (x, z, s) in enumerate(((-9.5, 3.0, 1.2), (-4.0, 6.0, 1.0), (0.2, 6.2, 0.8), (8.6, 5.8, 1.0),
                                    (-0.8, 3.8, 0.75), (-10.0, -5.2, 1.1), (-1.0, -9.6, 1.15), (6.0, -10.0, 0.9),
                                    (-6.8, 9.6, 1.0), (10.2, -5.8, 0.8))):
-        cen += colocar(samambaia_gigante(s, seed=i), x, z, R(31 * i), y=TOPO)
+        cen += montar(lambda c, s=s, i=i: samambaia_gigante(s, seed=i, col=c), x, z, R(31 * i))
     for i, (x, z) in enumerate(((-8.8, 8.4), (8.0, 7.8), (0.8, -6.0), (-5.5, -9.4))):
-        cen += colocar(cavalinha(1.0, seed=i), x, z, R(50 * i), y=TOPO)
+        cen += montar(lambda c, i=i: cavalinha(1.0, seed=i, col=c), x, z, R(50 * i))
     for x, z, s in ((-10.4, 6.0, 1.1), (9.6, 7.0, 1.0), (11.0, -6.8, 0.9)):
         cen += anel.coqueiro_leve(x, z, s, incl=(-0.5, 0.3))
+        col.append(col_cilindro('coqueiro', 0.22 * s, 2.0 * s, (x, -z, TOPO + 1.0 * s)))
     for i, (x, z, s) in enumerate(((7.0, 9.6, 0.9), (-8.6, -1.0, 0.8), (-2.6, -10.5, 1.0), (10.0, -9.0, 0.8))):
         cen += anel.pedra_leve(x, z, s, 'rochaVulcaoEscura', seed=i + 5)
+        col.append(col_cilindro('pedra', 0.55 * s, 0.3 * s + 0.2, (x, -z, TOPO + 0.15 * s - 0.1)))
     for k in range(7):
         cen += pegada(5.0 + k * 0.85, -4.6 + (k % 2) * 0.55, R(10), 1.0)
     for x, z in ((5.2, -2.8), (5.2, 2.8), (0.2, 3.4)):
         cen += poste_lampiao(x, z)
+        col.append(col_cilindro('poste-lampiao', 0.1, 2.9, (x, -z, TOPO + 1.45)))
     conferir_corredor(cen + pedras + lava, 'vale')
+    # O chão que se pisa: tampo, praia e barranco e o vulcão (a lava e as manchas só desenham).
+    col.insert(0, col_terreno(chao + [vulcao_]))
     ancoras = ancoras_padrao(
-        lumis=[(6.0, 4.0), (-0.6, 4.4), (6.4, -3.8), (-0.4, -4.8)], morador=(3.0, -4.6),
+        # O lumi-4 e o pé do vulcão estavam na encosta (2,6 e 0,8 m acima do chão): agora no plano.
+        lumis=[(6.0, 4.0), (-0.6, 4.4), (6.4, -3.8), (0.4, -8.6)], morador=(3.0, -4.6),
         extras=[('observatorio', 3.2, -5.3), ('varanda', 3.2, -7.6, TOPO + 2.8), ('escavacao', 4.4, 6.8, TOPO + 0.06),
                 ('ninho-1', -7.6, 6.6), ('ninho-2', 8.6, -6.4), ('ninho-3', -1.4, 9.8),
-                ('cratera', VULCAO['x'], VULCAO['z'], TOPO - 0.3 + VULCAO['h'] - 0.4), ('pe-do-vulcao', 0.6, -1.4)])
-    exportar('vale-dos-dinos', {'chao': chao, 'vulcao': pedras, 'lava': lava, 'cenario': cen}, ancoras)
+                ('cratera', VULCAO['x'], VULCAO['z'], TOPO - 0.3 + VULCAO['h'] - 0.4), ('pe-do-vulcao', 2.4, -1.9)])
+    exportar('vale-dos-dinos', {'chao': chao, 'vulcao': pedras, 'lava': lava, 'cenario': cen}, ancoras, colisores=col)
 
 
 def props():

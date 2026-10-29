@@ -71,6 +71,7 @@ export const GAME_TWO_D_INITIAL_CORE: ReadonlySet<string> = new Set<string>([
   'sz_g2d_fit_tilemap_to_stage',
   'sz_g2d_load_spritesheet',
   'sz_g2d_on_overlap',
+  'sz_g2d_on_touch_group',
   'sz_g2d_platformer',
   'sz_g2d_random_between',
   'sz_g2d_set_image',

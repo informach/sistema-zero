@@ -1051,6 +1051,11 @@ export function sanitizeJavaScriptProjectPayload(
 
   const project: Project = {
     ...base,
+    // Documentos JavaScript v2 podem trazer o idioma explícito. Preservá-lo evita uma
+    // falsa perda de conteúdo ao abrir cópias aprovadas e manifestos existentes.
+    ...(r.programmingLanguage === 'javascript'
+      ? { programmingLanguage: 'javascript' as const }
+      : {}),
     id,
     name,
     files,
@@ -1583,6 +1588,7 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:onKey':
     case 'g2d:onActionPressed':
     case 'g2d:onOverlap':
+    case 'g2d:onTouchGroup':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onGroupOverlap':

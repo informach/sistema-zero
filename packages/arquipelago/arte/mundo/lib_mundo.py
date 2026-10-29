@@ -320,6 +320,66 @@ def flor(base, cor, seed=0, r=0.17, haste=0.22):
     return p
 
 
+# ---------------------------------------------------------------- colisão (nós col-*)
+# A mesma convenção das ilhas completas (README de `arte/ilhas`): `col-cil-*` vira cilindro em pé
+# (raio = metade da escala no chão, altura = escala no y do jogo) e qualquer outro `col-*` vira
+# caixa do tamanho do nó. A malha é sempre a unitária, sem material; o tamanho fica no TRS do nó,
+# que o exportador guarda (estes nós não passam pelo `_juntar`). O jogo lê com `lerColisores`.
+_CONTA_COL = {}
+
+
+def _malha_col(tipo):
+    nome = f'col-unidade-{tipo}'
+    me = bpy.data.meshes.get(nome)
+    if me is not None:
+        return me
+    bm = bmesh.new()
+    if tipo == 'caixa':
+        bmesh.ops.create_cube(bm, size=1)
+    else:
+        bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=12, radius1=0.5, radius2=0.5, depth=1)
+    me = bpy.data.meshes.new(nome)
+    bm.to_mesh(me)
+    bm.free()
+    return me
+
+
+def _no_col(base, tipo, escala, loc, rot):
+    n = _CONTA_COL.get(base, 0) + 1
+    _CONTA_COL[base] = n
+    o = bpy.data.objects.new(f'col-{base}-{n}', _malha_col(tipo))
+    o.scale = escala
+    o.rotation_euler = rot
+    o.location = loc
+    bpy.context.collection.objects.link(o)
+    return o
+
+
+def col_caixa(base, tamanho, loc, rot=(0, 0, 0)):
+    """Caixa de colisão com `tamanho` (x, y, z do Blender) centrada em `loc`."""
+    return _no_col(base, 'caixa', tamanho, loc, rot)
+
+
+def col_cilindro(base, r, h, loc, rot=(0, 0, 0)):
+    """Cilindro de colisão (eixo z do Blender antes de `rot`), centrado em `loc`."""
+    return _no_col(f'cil-{base}', 'cilindro', (2 * r, 2 * r, h), loc, rot)
+
+
+def col_no_chao(base, x, z, r, alto, fundo=0.25):
+    """Cilindro em pé no chão da ilha central em (x, z) do jogo: de `fundo` abaixo do chão até `alto`
+    acima dele (o pé enterrado cobre o chão inclinado)."""
+    return col_cilindro(base, r, alto + fundo, no_chao(x, z, (alto - fundo) / 2))
+
+
+def grupos_col(objs):
+    """{grupo: quantos} dos nós `col-*` (o nome sem o número do fim), para o relatório."""
+    g = {}
+    for o in objs:
+        base = o.name.rsplit('-', 1)[0] if o.name.rsplit('-', 1)[-1].isdigit() else o.name
+        g[base] = g.get(base, 0) + 1
+    return dict(sorted(g.items()))
+
+
 # ---------------------------------------------------------------- exportação
 def _contar(objs):
     return sum(len(p.vertices) - 2 for o in objs for p in o.data.polygons)
@@ -349,18 +409,19 @@ def _juntar(objs, nome, pivo=None):
 RELATORIO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'relatorio.json')
 
 
-def exportar(pid, nos):
-    """Grava `SAIDA/pid.glb` com um nó por chave de `nos`.
+def exportar(pid, nos, colisores=(), ancoras=()):
+    """Grava `SAIDA/pid.glb` com um nó por chave de `nos`, os nós de colisão `col-*` e as âncoras
+    (nós vazios de nome fixo, onde o jogo põe alguma coisa).
 
     `nos` = {nome: [objetos]} ou {nome: ([objetos], pivô)}. Cada nó vira UMA malha (um nó com
     vários materiais vira várias primitivas). Os nomes dos nós e dos materiais são o contrato com
-    o jogo (README)."""
+    o jogo (README). `colisores` vão cada um com o seu TRS, sem juntar."""
     juntos = []
     for nome, val in nos.items():
         objs, pivo = (val if isinstance(val, tuple) else (val, None))
         juntos.append(_juntar(list(objs), nome, pivo))
     bpy.ops.object.select_all(action='DESELECT')
-    for o in juntos:
+    for o in juntos + list(colisores) + list(ancoras):
         o.select_set(True)
     path = os.path.join(SAIDA, f'{pid}.glb')
     bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True,
@@ -369,13 +430,18 @@ def exportar(pid, nos):
     tris = _contar(juntos)
     kb = os.path.getsize(path) / 1024
     por_no = {o.name: _contar([o]) for o in juntos}
-    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}')
+    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(colisores)} colisores')
     try:
         with open(RELATORIO) as f:
             rel = json.load(f)
     except (OSError, ValueError):
         rel = {}
     rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no}
+    if colisores:
+        rel[pid]['colisores'] = grupos_col(colisores)
+    if ancoras:
+        rel[pid]['ancoras'] = {e.name: {'x': round(e.location.x, 2), 'y': round(e.location.z, 2),
+                                        'z': round(-e.location.y, 2)} for e in ancoras}
     with open(RELATORIO, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')

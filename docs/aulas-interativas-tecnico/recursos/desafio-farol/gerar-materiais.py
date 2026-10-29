@@ -8,7 +8,7 @@ import sys
 from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[4]
 WORK = ROOT / 'tmp' / 'pdfs' / 'desafio-farol'
-OUTPUT = ROOT / 'docs/aulas-interativas/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf'
+OUTPUT = ROOT / 'docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf'
 
 def main():
     global WORK, OUTPUT
@@ -16,7 +16,7 @@ def main():
     generator = Path(__file__).with_name('gerar-caderno.ts')
     if cade:
         WORK = ROOT / 'tmp' / 'pdfs' / 'cade-todo-mundo'
-        OUTPUT = ROOT / 'docs/aulas-interativas/cade-todo-mundo/passo-a-passo-do-projeto.pdf'
+        OUTPUT = ROOT / 'docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf'
         generator = Path(__file__).parent.parent / 'cade-todo-mundo' / 'gerar-caderno.ts'
     bun = shutil.which('bun')
     if not bun:

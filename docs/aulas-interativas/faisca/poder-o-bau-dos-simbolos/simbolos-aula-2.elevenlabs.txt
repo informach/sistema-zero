@@ -1,0 +1,29 @@
+[upbeat, welcoming voice] O baú dos símbolos chegou à Ilha do Farol, em três dimensões! A regra é a mesma do seu jogo 2D: o sol começa, a lua pergunta se passo é um, e a estrela abre o baú se passo for dois.
+
+[engaging, energetic, conversational voice] Olha aqui: as pedras e o baú têm animações que já vêm prontas. Cada pedra acende e apaga, e o baú abre. Você vai escolher quando cada uma toca.
+
+[upbeat, encouraging voice] Agora clique no jogo aqui na página e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú. Depois erre a ordem. A tecla R começa uma nova partida. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na ilha, a regra é a mesma do seu jogo 2D. Crie a variável passo começando em 0, no fim de Ao iniciar. No encontro do personagem com o sol, passo vira 1, o sol toca a animação acender e o aviso muda.
+
+[interested, animated voice] No encontro com a lua vem o Se com senão. A pergunta é passo igual a 1. No então, passo vira 2, a lua toca acender e o aviso muda. No senão, passo volta a 0, o sol e a lua tocam a animação apagar e o aviso pede para começar pelo sol. No 3D, o encontro fica em Jogo 3D, na gaveta Encostar, e as animações ficam em Objetos, na Animação do modelo. O Se e a comparação são os mesmos blocos de Programação.
+
+[upbeat, encouraging voice] Agora teste. Toque o sol e a lua: os dois acendem. Pressione R e toque a lua primeiro: nada acende. Se precisar, o Passo a passo do projeto, que está na primeira aula, tem a montagem completa da ilha.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora a estrela da ilha. Monte o encontro do personagem com a estrela e, dentro dele, um Se com senão. A pergunta é passo igual a 2. No então, a estrela toca a animação acender, o baú toca a animação abrir e o aviso conta que o baú abriu. No senão, o mesmo recomeço da lua: passo volta a 0, o sol e a lua apagam e o aviso pede para começar pelo sol.
+
+[upbeat, encouraging voice] Teste todos os casos. Toque o sol, a lua e a estrela: o baú abre. Pressione R e toque o sol e a estrela: tudo apaga e o baú fica fechado. Depois, sem apertar R, recomece pelo sol: o baú abre.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[pleased, lively voice] Pronto, você levou o passo para outro mundo: na ilha, o baú também só abre na ordem certa.
+
+[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Depois pressione R e confira que o baú volta fechado. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

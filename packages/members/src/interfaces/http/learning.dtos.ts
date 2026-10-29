@@ -15,6 +15,10 @@ import {
   TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import {
+  BRIDGE_TIMER_PLACES,
+  CABIN_PIECES,
+  CABIN_RULES,
+  CHEST_RULES,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
   MAP_TILES,
@@ -26,6 +30,8 @@ import {
   SCENE_LIMITS,
   SCENE_PILHAS,
   SCENE_PORTS,
+  SEQUENCE_MODES,
+  SEQUENCE_SYMBOLS,
   SETUP_LIMITS,
   SHEET_CROP_WIDTHS,
   SYMMETRY_PIECES,
@@ -86,6 +92,51 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('collect-key') }),
   t.Object({ type: t.Literal('leave-key') }),
   t.Object({ type: t.Literal('restart-collection') }),
+  // O contador de moedas (Poder "Moedas no caminho", 29/10/2026).
+  t.Object({
+    type: t.Literal('touch-coin'),
+    // Os literais do `CoinIndex` do core (as seis moedas do contador): um inteiro não cabe no tipo.
+    coin: t.Union([
+      t.Literal(0),
+      t.Literal(1),
+      t.Literal(2),
+      t.Literal(3),
+      t.Literal(4),
+      t.Literal(5),
+    ]),
+  }),
+  t.Object({ type: t.Literal('leave-coin') }),
+  t.Object({ type: t.Literal('try-chest') }),
+  t.Object({ type: t.Literal('coin-disappears'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('chest-rule'), rule: t.Union(CHEST_RULES.map((r) => t.Literal(r))) }),
+  t.Object({ type: t.Literal('restart-coins') }),
+  // A porta com duas peças (Poder "O segredo da cabana", 29/10/2026).
+  t.Object({
+    type: t.Literal('take-piece'),
+    piece: t.Union(CABIN_PIECES.map((p) => t.Literal(p))),
+  }),
+  t.Object({ type: t.Literal('try-cabin') }),
+  t.Object({ type: t.Literal('cabin-rule'), rule: t.Union(CABIN_RULES.map((r) => t.Literal(r))) }),
+  t.Object({ type: t.Literal('restart-cabin') }),
+  // A ponte apressada (Poder "A ponte apressada", 29/10/2026).
+  t.Object({ type: t.Literal('pull-lever') }),
+  t.Object({ type: t.Literal('wait-second') }),
+  t.Object({ type: t.Literal('touch-bridge') }),
+  t.Object({
+    type: t.Literal('timer-place'),
+    place: t.Union(BRIDGE_TIMER_PLACES.map((p) => t.Literal(p))),
+  }),
+  t.Object({ type: t.Literal('restart-bridge') }),
+  // O baú dos símbolos (Poder "O baú dos símbolos", 29/10/2026).
+  t.Object({
+    type: t.Literal('touch-symbol'),
+    symbol: t.Union(SEQUENCE_SYMBOLS.map((s) => t.Literal(s))),
+  }),
+  t.Object({
+    type: t.Literal('sequence-mode'),
+    mode: t.Union(SEQUENCE_MODES.map((m) => t.Literal(m))),
+  }),
+  t.Object({ type: t.Literal('restart-symbols') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
   t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),
@@ -843,6 +894,19 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
           maxProperties: 20,
         }),
       ),
+    }),
+    t.Object({
+      type: t.Literal('collectionMemory'),
+      dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
+      actor: t.String({ maxLength: 100 }),
+      item: t.String({ maxLength: 100 }),
+      destination: t.String({ maxLength: 100 }),
+    }),
+    t.Object({
+      type: t.Literal('changedGamePosition'),
+      dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
+      object: t.String({ maxLength: 100 }),
+      initial: t.Tuple([t.Number(), t.Number()]),
     }),
     ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
       t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),

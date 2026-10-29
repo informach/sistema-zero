@@ -83,6 +83,7 @@ export function collectSprites(workspace: Blockly.Workspace | null | undefined):
 const SPRITE_LOOP_BINDERS: Record<string, string[]> = {
   sz_g2d_for_each_in_group: ['ITEM'],
   sz_g2d_on_group_click: ['ITEM'],
+  sz_g2d_on_touch_group: ['ITEM'],
   sz_g2d_prune_offscreen: ['ITEM'],
   sz_g2d_on_group_overlap: ['ANAME', 'BNAME'],
   sz_g2d_on_sprite_group_overlap: ['ANAME'],

@@ -1238,6 +1238,13 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     else if (keys.KeyD || keys.ArrowRight) s.vx = sp;
     if (keys.KeyW || keys.ArrowUp) s.vz = -sp;
     else if (keys.KeyS || keys.ArrowDown) s.vz = sp;
+    // Na vista que o jogador gira (frameScene), "para cima" é para longe da câmera.
+    var world = worldOf(obj), view = world && world._cameraMode === 'framed' && world._framedView;
+    if (view && view.az && (s.vx || s.vz)) {
+      var ca = Math.cos(view.az), sa = Math.sin(view.az), ix = s.vx, iz = s.vz;
+      s.vx = ix * ca + iz * sa;
+      s.vz = iz * ca - ix * sa;
+    }
   }
 
   // Percurso iniciante: uma ação de movimento, sem listas nem leitura de propriedades.
@@ -1261,16 +1268,66 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
     return false;
   }
+  // As caixas dos objetos marcados como sólidos (menos quem anda), medidas uma vez por passo.
+  // Uma caixa por PEDAÇO do modelo (a pedra da Ilha é um bloco, a cópia menor e duas colunas: uma
+  // caixa só cobriria a trilha e a chave escondida atrás), sem as peças de efeito (szSemCaixa:
+  // as folhas do coqueiro, as pedrinhas do pé).
+  var _solidBox = null;
+  function solidParts(o, out) {
+    if (o.userData && o.userData.szSemCaixa) return;
+    var g = o.geometry;
+    if (g) {
+      if (g.boundingBox === null) g.computeBoundingBox();
+      o.updateWorldMatrix(true, false);
+      var b = _solidBox.copy(g.boundingBox).applyMatrix4(o.matrixWorld);
+      if (!(b.isEmpty && b.isEmpty())) out.push([b.min.x, b.max.x, b.min.y, b.max.y, b.min.z, b.max.z]);
+    }
+    for (var i = 0; i < o.children.length; i++) solidParts(o.children[i], out);
+  }
+  function solidBoxes(obj) {
+    var world = worldOf(obj), solids = world && world._solids, out = [];
+    if (!solids || !solids.length) return out;
+    if (!_solidBox) _solidBox = new THREE.Box3();
+    for (var i = 0; i < solids.length; i++) {
+      var o = solids[i];
+      if (o && o !== obj && o.visible !== false) solidParts(o, out);
+    }
+    return out;
+  }
+  // Quem anda ocupa a caixa dele; um sólido só barra se subir acima dos pés (o chão não barra).
+  // Um modelo 3D (personagem) usa a pegada do corpo, 60% da caixa: a caixa inclui os braços e a
+  // folga do Blender, e com ela inteira a criança batia na pedra antes de encostar.
+  function solidAt(boxes, obj, s, x, z) {
+    var foot = s.modelRoot ? 0.6 : 1;
+    var hx = halfX(obj, s) * foot, hy = halfY(obj, s), hz = halfZ(obj, s) * foot, y = obj.position.y;
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (x + hx > b[0] && x - hx < b[1] && z + hz > b[4] && z - hz < b[5] &&
+        b[3] > y - hy + 0.05 && b[2] < y + hy) return true;
+    }
+    return false;
+  }
   function topDown(obj, speed) {
     if (!obj || !obj.position) return;
+    var framedWorld = worldOf(obj);
+    if (framedWorld && framedWorld._framedView) framedWorld._framedView.focus = obj;
     controlWithKeys(obj, clamp(speed, 0, 100, 3));
     var s = szData(obj), scale = frameScale(obj), startX = obj.position.x, startZ = obj.position.z;
     var dx = s.vx * scale, dz = s.vz * scale;
+    // "Marcar … como sólido": quem anda com as setas não atravessa, e desliza junto da parede.
+    // Quem já começou dentro de um sólido pode sair dele.
+    var boxes = dx || dz ? solidBoxes(obj) : [];
+    var free = !boxes.length || !solidAt(boxes, obj, s, startX, startZ);
     // Verifica o caminho também, para não saltar por cima de um intervalo sem chão.
     var steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.05));
     for (var i = 0; i < steps; i++) {
-      var x = obj.position.x + dx / steps, z = obj.position.z + dz / steps;
+      var px = obj.position.x, pz = obj.position.z, x = px + dx / steps, z = pz + dz / steps;
       if (!walkAllowed(s.walkAreas, x, z)) break;
+      if (free && solidAt(boxes, obj, s, x, z)) {
+        if (x !== px && !solidAt(boxes, obj, s, x, pz) && walkAllowed(s.walkAreas, x, pz)) z = pz;
+        else if (z !== pz && !solidAt(boxes, obj, s, px, z) && walkAllowed(s.walkAreas, px, z)) x = px;
+        else break;
+      }
       obj.position.x = x; obj.position.z = z;
     }
     var moving = obj.position.x !== startX || obj.position.z !== startZ;
@@ -1286,25 +1343,167 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (worldOf(a) !== worldOf(b)) return;
     rules.onTouchGroup(a, [b], fn);
   }
-  // Enquadramento de uma área conhecida, independente do tamanho do painel da prévia.
+  // Enquadramento de uma área conhecida, independente do tamanho do painel da prévia. O jogador
+  // ajusta a vista: rodinha do mouse (ou dois dedos) aproxima e afasta, arrastar gira em volta,
+  // duplo clique volta ao começo. De perto, a câmera acompanha quem anda pelo topDown, e as
+  // setas andam em relação à câmera (controlWithKeys).
+  var FRAMED_START = 0.75, FRAMED_ZOOM_MIN = 0.35, FRAMED_ZOOM_MAX = 1.6, FRAMED_FOLLOW = 0.35;
+  var FRAMED_EL_START = Math.PI / 6, FRAMED_EL_MIN = 0.2, FRAMED_EL_MAX = 1.25;
   function frameScene(world, width, height, depth) {
     if (!world || !world.camera) return;
     var w = clamp(width, 1, 500, 24), h = clamp(height, 1, 500, 8), d = clamp(depth, 1, 500, 16);
     usePerspectiveCamera(world, true);
     activateCameraMode(world, 'framed');
     attachCameraToScene(world);
+    var view = world._framedView ||
+      (world._framedView = { az: 0, el: FRAMED_EL_START, zoom: 1, fit: 10, h: h, focus: null });
+    view.h = h;
     world._resizeCamera = function (cam, nw, nh) {
       cam.aspect = nw / nh;
       var tan = Math.tan(cam.fov * Math.PI / 360), up = Math.sqrt(3) / 2;
       var projectedHeight = h / 2 * up + d / 4;
       var projectedDepth = h / 4 + d / 2 * up;
-      var distance = 1.12 * Math.max(w / 2 / (tan * cam.aspect), projectedHeight / tan) + projectedDepth;
-      cam.far = Math.max(1000, distance + projectedDepth + 10);
-      cam.position.set(0, h / 2 + distance / 2, distance * up);
-      cam.lookAt(0, h / 2, 0);
+      // Começa perto (80% da área) e não se afasta só porque o painel é estreito: a proporção
+      // conta no máximo como 1,2. Para ver tudo, o jogador afasta com a rodinha.
+      view.fit = FRAMED_START * Math.max(w / 2 / (tan * Math.max(cam.aspect, 1.2)), projectedHeight / tan) +
+        projectedDepth;
+      cam.far = Math.max(1000, view.fit * FRAMED_ZOOM_MAX + projectedDepth + 10);
+      placeFramedCamera(world);
       cam.updateProjectionMatrix();
     };
+    wireFramedControls(world);
     world._resize();
+  }
+  function placeFramedCamera(world) {
+    var v = world._framedView, cam = world.camera;
+    if (!v || !cam || !cam.position || world._cameraMode !== 'framed') return;
+    // A vista acompanha de leve quem anda (um terço do caminho), como nos jogos: a área fica
+    // centrada e ninguém some na beira. Mais perto, acompanha até o fim; mais longe, solta.
+    var t = v.zoom <= 1
+      ? FRAMED_FOLLOW + (1 - FRAMED_FOLLOW) * (1 - v.zoom) / (1 - FRAMED_ZOOM_MIN)
+      : FRAMED_FOLLOW * (FRAMED_ZOOM_MAX - v.zoom) / (FRAMED_ZOOM_MAX - 1);
+    t = Math.max(0, Math.min(1, t));
+    var f = v.focus && v.focus.position && worldOf(v.focus) === world ? v.focus.position : null;
+    // Mira baixa (um quarto da altura): o chão onde se joga fica no meio da tela.
+    var tx = f ? f.x * t : 0, tz = f ? f.z * t : 0, ty = v.h / 4;
+    var dist = v.fit * v.zoom, ce = Math.cos(v.el);
+    cam.position.set(tx + dist * ce * Math.sin(v.az), ty + dist * Math.sin(v.el), tz + dist * ce * Math.cos(v.az));
+    if (cam.lookAt) cam.lookAt(tx, ty, tz);
+  }
+  function wireFramedControls(world) {
+    var canvas = world._canvas;
+    if (world._framedWired || !canvas || !canvas.addEventListener) return;
+    world._framedWired = true;
+    // Sem isto o navegador usa os dois dedos para dar zoom na página, não no jogo.
+    if (canvas.style) canvas.style.touchAction = 'none';
+    var pointers = {}, drag = null, pinch = null;
+    function active() { return world._cameraMode === 'framed' && world._framedView; }
+    function count() { var n = 0; for (var k in pointers) n++; return n; }
+    function spread() {
+      var p = [];
+      for (var k in pointers) p.push(pointers[k]);
+      return p.length < 2 ? 0 : Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+    }
+    function setZoom(z) {
+      world._framedView.zoom = Math.max(FRAMED_ZOOM_MIN, Math.min(FRAMED_ZOOM_MAX, z));
+      placeFramedCamera(world);
+    }
+    listen(world, canvas, 'wheel', function (e) {
+      if (!active()) return;
+      // A página de fora não rola enquanto a criança dá zoom no jogo.
+      if (e.preventDefault) e.preventDefault();
+      setZoom(world._framedView.zoom * Math.pow(1.0015, finite(e.deltaY, 0)));
+    }, { passive: false });
+    listen(world, canvas, 'pointerdown', function (e) {
+      if (!active()) return;
+      pointers[e.pointerId] = { x: e.clientX || 0, y: e.clientY || 0 };
+      if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) {} }
+      var n = count();
+      if (n === 1) drag = { x: e.clientX || 0, y: e.clientY || 0, moved: false };
+      else if (n === 2) { drag = null; pinch = { spread: spread(), zoom: world._framedView.zoom }; }
+    });
+    listen(world, canvas, 'pointermove', function (e) {
+      if (!active() || !pointers[e.pointerId]) return;
+      pointers[e.pointerId] = { x: e.clientX || 0, y: e.clientY || 0 };
+      var v = world._framedView;
+      if (pinch && count() >= 2) {
+        var now = spread();
+        if (pinch.spread > 0 && now > 0) setZoom(pinch.zoom * pinch.spread / now);
+        return;
+      }
+      if (!drag) return;
+      var dx = (e.clientX || 0) - drag.x, dy = (e.clientY || 0) - drag.y;
+      // Um toque parado continua sendo clique; só gira depois de arrastar um pouco.
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+      drag.moved = true;
+      drag.x = e.clientX || 0; drag.y = e.clientY || 0;
+      v.az -= dx * 0.008;
+      v.el = Math.max(FRAMED_EL_MIN, Math.min(FRAMED_EL_MAX, v.el + dy * 0.006));
+      placeFramedCamera(world);
+    });
+    function release(e) {
+      delete pointers[e.pointerId];
+      if (count() < 2) pinch = null;
+      if (count() === 0) drag = null;
+    }
+    listen(world, canvas, 'pointerup', release);
+    listen(world, canvas, 'pointercancel', release);
+    function reset() {
+      if (!active()) return;
+      var v = world._framedView;
+      v.az = 0; v.el = FRAMED_EL_START; v.zoom = 1;
+      placeFramedCamera(world);
+    }
+    listen(world, canvas, 'dblclick', reset);
+    framedButtons(world, canvas, setZoom, reset);
+  }
+  // Os botões da vista no canto do jogo: o mesmo que a rodinha (ou dois dedos), o arrastar e o
+  // duplo clique, para quem não sabe que eles existem. Não pegam o foco (as teclas continuam
+  // indo para o jogo) e somem quando a câmera troca de modo.
+  function framedButtons(world, canvas, setZoom, reset) {
+    if (typeof document === 'undefined' || !document.createElement || !document.body) return;
+    var fixed = !canvas.parentNode || (canvas.style && canvas.style.position === 'fixed');
+    var bar = document.createElement('div');
+    bar.setAttribute('data-sz-vista', '');
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', 'Vista da cena');
+    bar.style.cssText = (fixed ? 'position:fixed;' : 'position:absolute;') +
+      'right:12px;bottom:56px;z-index:31;display:flex;flex-direction:column;gap:6px';
+    function spin(d) {
+      return function () {
+        if (world._cameraMode !== 'framed' || !world._framedView) return;
+        world._framedView.az += d;
+        placeFramedCamera(world);
+      };
+    }
+    var acts = [
+      ['+', 'Aproximar', function () { if (world._framedView) setZoom(world._framedView.zoom / 1.25); }],
+      ['\u2212', 'Afastar', function () { if (world._framedView) setZoom(world._framedView.zoom * 1.25); }],
+      ['\u21BA', 'Girar a cena para um lado', spin(0.4)],
+      ['\u21BB', 'Girar a cena para o outro lado', spin(-0.4)],
+      ['\u2302', 'Voltar \u00e0 vista do come\u00e7o', reset]
+    ];
+    for (var i = 0; i < acts.length; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.tabIndex = -1;
+      btn.textContent = acts[i][0];
+      btn.title = acts[i][1];
+      btn.setAttribute('aria-label', acts[i][1]);
+      btn.style.cssText = 'width:40px;height:40px;padding:0;border-radius:50%;cursor:pointer;' +
+        'font:bold 22px/1 var(--sz-game-ui-font,sans-serif);color:#fff;touch-action:manipulation;' +
+        'background:rgba(15,23,42,0.6);border:2px solid rgba(255,255,255,0.75)';
+      listen(world, btn, 'mousedown', function (e) { if (e.preventDefault) e.preventDefault(); });
+      listen(world, btn, 'click', acts[i][2]);
+      bar.appendChild(btn);
+    }
+    (fixed ? document.body : canvas.parentNode).appendChild(bar);
+    world._vistaBar = bar;
+    if (!world._disposers) world._disposers = [];
+    world._disposers.push(function () {
+      if (bar.parentNode) bar.parentNode.removeChild(bar);
+      world._vistaBar = null;
+    });
   }
 
   // Câmera "segue de longe": guarda o enquadramento (offset) da hora em que ligou —
@@ -2551,6 +2750,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     var previous = world._cameraMode;
     if (previous === 'framed' && mode !== 'framed') world._resizeCamera = null;
     world._cameraMode = mode;
+    if (world._vistaBar) world._vistaBar.style.display = mode === 'framed' ? 'flex' : 'none';
     if (mode !== 'follow') {
       world._camFollow = null;
       world._camFollowTarget = null;
@@ -2746,6 +2946,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function _updateCameras(world) {
     if (world._cameraMode === 'follow') updateFollow(world);
     else if (world._cameraMode === 'orbit') updateOrbit(world);
+    else if (world._cameraMode === 'framed') placeFramedCamera(world);
     else if (world._cameraMode === 'third-person') updateThirdPerson(world);
     else if ((world._cameraMode === 'isometric' || world._cameraMode === 'top') && world._orthoFollow) {
       updateOrthoFollow(world);

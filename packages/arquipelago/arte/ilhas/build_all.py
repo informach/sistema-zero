@@ -3,8 +3,9 @@
   /tmp/claude-0/blender-venv/bin/python -B arte/ilhas/build_all.py
 
 Cada ilha roda num processo próprio (a cena do Blender começa limpa). Depois, sem o Blender, lê o
-JSON de cada GLB e confere: os nós e as âncoras do contrato (README), os clipes, o teto de
-triângulos e de tamanho, e o `relatorio.json` terminando em quebra de linha. O corredor da chegada
+JSON de cada GLB e confere: os nós e as âncoras do contrato (README), os clipes, os nós de colisão
+`col-*` (os grupos que o jogo espera, sem material), o teto de triângulos e de tamanho, e o
+`relatorio.json` terminando em quebra de linha. O corredor da chegada
 é conferido dentro de cada script, antes de exportar (`conferir_corredor`).
 """
 import json
@@ -15,38 +16,83 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAIDA = os.environ.get('ILHAS_OUT', os.path.join(HERE, '..', '..', 'src', 'assets', 'ilhas'))
-ILHAS = ['bosque', 'vila_doce', 'recife']
+ILHAS = ['bosque', 'vila_doce', 'recife', 'recife_navio', 'recife_labirinto']
 
 COMUNS = ['chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4']
 CONTRATO = {
     'bosque': {
-        'nos': ['terreno', 'agua', 'construcoes', 'vegetacao', 'cipo-1', 'cipo-2', 'cipo-3'],
+        # copa-1…copa-11 (a copa de cada árvore: 4 do percurso, a do galho e 6 de enfeite), tronco-1…5 (os
+        # troncos das árvores grandes) e telhado-casa-na-arvore ficam à parte para o jogo esmaecer o que
+        # estiver entre a câmera e o personagem.
+        'nos': ['terreno', 'agua', 'construcoes', 'vegetacao', 'cipo-1', 'cipo-2', 'cipo-3']
+        + [f'copa-{i}' for i in range(1, 12)] + [f'tronco-{i}' for i in range(1, 6)] + ['telhado-casa-na-arvore'],
         'ancoras': COMUNS + ['escada', 'casa-na-arvore', 'cabana', 'cercado', 'lago', 'escorregador-fim',
-                             'copas-1', 'copas-2', 'copas-3', 'copas-4'],
+                             'copas-1', 'copas-2', 'copas-3', 'copas-4']
+        + [f'esconderijo-{i}' for i in range(1, 5)] + ['equilibrio-1-a', 'equilibrio-1-b']
+        + ['escada-1-base', 'escada-1-topo', 'escada-1-saida']
+        + [f'mecanismos-{n}' for n in ('casa', 'rumo', 'placa', 'caixote', 'alcapao')]
+        + ['lote-cabana-a', 'lote-cabana-b']
+        + [f'borda-{i}-{p}' for i in range(1, 5) for p in ('a', 'b', 'fora')]
+        + [f'escorregador-curva-{i}' for i in range(1, 14)],
         'clipes': [],
+        # Grupos de nós de colisão (o nome sem o número do fim): o percurso nas copas inteiro, a casa na
+        # árvore, o escorregador, a cabana, o cercadinho, os troncos, o chão e os enfeites que seguram o
+        # corpo (moitas, pedras, cogumelos, tocas, floreiras e as pernas do escorregador).
+        'colisores': ['col-terreno', 'col-cil-deque', 'col-guarda', 'col-ponte', 'col-ponte-lado', 'col-degrau',
+                      'col-casa-na-arvore', 'col-escorregador', 'col-escorregador-lado', 'col-cabana', 'col-varanda',
+                      'col-cerca', 'col-cil-tronco', 'col-cil-tora', 'col-cil-toco', 'col-cil-moita',
+                      'col-cil-pedra', 'col-cil-pedra-lago', 'col-cil-cogumelo', 'col-cil-toca', 'col-floreira',
+                      'col-cil-perna-escorregador', 'col-escada-reta',
+                      'col-pedra-de-agarrar'],
     },
     'vila-doce': {
         'nos': ['terreno', 'fonte', 'construcoes', 'telhados', 'feira', 'enfeites'],
         'ancoras': COMUNS + ['fonte', 'padaria', 'sorveteria', 'telhados-inicio', 'telhados-1', 'telhados-2',
                              'telhados-3', 'telhados-fim'] + [f'barraca-{i}' for i in range(1, 7)],
         'clipes': [],
+        'colisores': ['col-terreno', 'col-cil-fonte', 'col-casinha', 'col-cil-morango', 'col-caixote',
+                      'col-sorveteria', 'col-mureta', 'col-balcao', 'col-cil-casquinha', 'col-padaria',
+                      'col-telhado-padaria', 'col-chamine', 'col-barraca', 'col-cil-poste', 'col-cil-jujuba',
+                      'col-banco', 'col-cil-vaso', 'col-cil-moita'],
     },
     'recife': {
         'nos': ['terreno', 'lagoa', 'construcoes', 'corais', 'enfeites', 'caverna'] + [f'alga-{i}' for i in range(1, 11)],
         'ancoras': COMUNS + ['casa-mare', 'mapa', 'lagoa', 'cais', 'barco', 'caverna-entrada', 'caverna',
-                             'caverna-tesouro', 'mergulho'],
+                             'caverna-tesouro', 'mergulho'] + [f'coral-muda-{i}' for i in range(1, 5)],
         'clipes': ['balancar'],
+        'colisores': ['col-terreno', 'col-cil-casa-mare', 'col-cil-poste-luneta', 'col-mesa', 'col-cavalete',
+                      'col-cil-cesto', 'col-cais', 'col-cil-estaca', 'col-cil-poste', 'col-caixote',
+                      'col-cil-rocha-caverna', 'col-arco-caverna', 'col-cil-teto-caverna', 'col-cil-chao-caverna',
+                      'col-cil-tronco', 'col-cil-coral', 'col-cil-pedra', 'col-cil-castelo'],
     },
     'bosque-props': {'nos': ['arvore-grande-a', 'arvore-grande-b', 'arvore-grande-c', 'arvore-media', 'moita', 'tora',
-                             'toco', 'cogumelo'], 'ancoras': [], 'clipes': []},
+                             'toco', 'cogumelo', 'tora-que-boia'], 'ancoras': [], 'clipes': []},
     'vila-doce-props': {'nos': ['casinha-a', 'casinha-b', 'casinha-c', 'barraca', 'pirulito', 'jujuba', 'bengala',
                                 'lampiao'], 'ancoras': [], 'clipes': []},
-    'recife-props': {'nos': ['coral-galho', 'coral-cerebro', 'coral-leque', 'coral-tubo', 'mapa-aberto', 'mapa-rolo',
-                             'alga'], 'ancoras': [], 'clipes': ['balancar']},
+    'recife-props': {'nos': ['coral-galho', 'coral-cerebro', 'coral-leque', 'coral-tubo', 'coral-galho-desbotado',
+                             'coral-cerebro-desbotado', 'coral-leque-desbotado', 'coral-tubo-desbotado',
+                             'mapa-aberto', 'mapa-rolo', 'alga'], 'ancoras': [], 'clipes': ['balancar']},
     'barco': {'nos': ['barco'], 'ancoras': [], 'clipes': ['balancar']},
+    # Lugares de exploração do Recife (mergulho), cada um no seu referencial (README).
+    'recife-navio': {
+        'nos': ['navio', 'vela', 'carga', 'fundo', 'corais'] + [f'alga-{i}' for i in range(1, 7)],
+        'ancoras': ['entrada', 'bau', 'pagina-diario', 'escotilha', 'mastro'],
+        'clipes': ['balancar'],
+        'colisores': ['col-casco', 'col-conves', 'col-cil-mastro', 'col-cil-timao', 'col-areia-porao', 'col-cil-barril',
+                      'col-barril-deitado', 'col-caixote', 'col-cil-areia', 'col-cil-pedra', 'col-cil-mastro-caido',
+                      'col-cil-verga', 'col-cesto', 'col-ancora', 'col-cil-coral'],
+    },
+    'recife-labirinto': {
+        'nos': ['paredes', 'corais', 'chao', 'portais', 'gruta'] + [f'alga-{i}' for i in range(1, 7)],
+        'ancoras': ['entrada', 'saida', 'tesouro'],
+        'clipes': ['balancar'],
+        'colisores': ['col-parede', 'col-cil-pilar', 'col-bloco', 'col-arco', 'col-teto', 'col-cil-mexilhao'],
+    },
 }
 TETO_ILHA = (40_000, 1536)   # triângulos, KB
 TETO_PROPS = (12_000, 320)
+TETO_LUGAR = (30_000, 768)   # os lugares de exploração (navio e labirinto)
+LUGARES = ('recife-navio', 'recife-labirinto')
 
 
 def ler_glb(caminho):
@@ -89,11 +135,25 @@ def main():
         for a in c['ancoras']:
             if a not in vazios:
                 erros.append(f'{pid}: falta a âncora {a}')
+        grupos = set()
+        for n in doc.get('nodes', []):
+            nome = n.get('name', '')
+            if not nome.startswith('col-'):
+                continue
+            grupos.add(nome.rsplit('-', 1)[0] if nome.rsplit('-', 1)[-1].isdigit() else nome)
+            prims = doc['meshes'][n['mesh']]['primitives'] if 'mesh' in n else []
+            if not prims:
+                erros.append(f'{pid}: {nome} sem malha')
+            elif any('material' in pr for pr in prims):
+                erros.append(f'{pid}: {nome} tem material (colisão não desenha)')
+        for g in c.get('colisores', []):
+            if g not in grupos:
+                erros.append(f'{pid}: falta o colisor {g}')
         clipes = sorted(a.get('name') for a in doc.get('animations', []))
         if clipes != sorted(c['clipes']):
             erros.append(f'{pid}: clipes {clipes}, esperado {c["clipes"]}')
         tris, kb = dados[pid]['triangulos'], os.path.getsize(caminho) / 1024
-        teto = TETO_PROPS if pid.endswith('props') or pid == 'barco' else TETO_ILHA
+        teto = TETO_PROPS if pid.endswith('props') or pid == 'barco' else TETO_LUGAR if pid in LUGARES else TETO_ILHA
         if tris > teto[0] or kb > teto[1]:
             erros.append(f'{pid}: {tris} triângulos / {kb:.0f} KB passa do teto {teto}')
     tris = sum(d['triangulos'] for d in dados.values())
@@ -101,7 +161,7 @@ def main():
     print(f'TOTAL: {len(dados)} arquivos, {tris} triângulos, {kb / 1024:.2f} MB')
     if erros:
         sys.exit('ERROS:\n  ' + '\n  '.join(erros))
-    print('CONFERIDO: nós, âncoras, clipes, tetos e relatório')
+    print('CONFERIDO: nós, âncoras, colisores, clipes, tetos e relatório')
 
 
 if __name__ == '__main__':

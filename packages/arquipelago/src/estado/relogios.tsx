@@ -1,14 +1,17 @@
 import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
+import { passarTempoDoBicho } from '../sistemas/bichos'
+import { descansar, FALA_DA_SONECA_CHEIA, sonecaAcabou } from '../sistemas/descanso'
 import { passarTempo } from '../sistemas/necessidades'
+import { salvamentoPausado } from '../sistemas/pausa'
 import { useJogo } from './contexto'
 
 /**
- * O que corre com o tempo, fora da cena: necessidades, o cochilo quando a energia acaba, a
- * posição guardada de vez em quando e a conta do tempo livre.
+ * O que corre com o tempo, fora da cena: necessidades (e as do bicho adotado), o cochilo quando a
+ * energia acaba, a posição guardada de vez em quando e a conta do tempo livre.
  */
 export function Relogios() {
-  const { loja, controle, plataforma, rastro, pedidos, gerenteTempo } = useJogo()
+  const { loja, controle, plataforma, rastro, pedidos, gerenteTempo, movimento } = useJogo()
 
   useEffect(() => {
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
@@ -21,14 +24,34 @@ export function Relogios() {
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
         !s.tempoPausado &&
+        !salvamentoPausado(s.salvamentoSituacao) &&
         !s.tempoSincronizando
       if (!ativo) return
       if (gerenteTempo && !gerenteTempo.verificar()) return
       segundos++
 
       if (segundos % 2 === 0) {
-        s.mudar((sv) => ({ ...sv, necessidades: passarTempo(sv.necessidades, 2, controle.correr) }))
-        if (loja.getState().salvamento.necessidades.energia <= 0) {
+        // O bicho adotado também sente o tempo jogado (fome, limpeza e carinho caem devagar).
+        s.mudar((sv) => ({
+          ...sv,
+          necessidades: passarTempo(sv.necessidades, 2, controle.correr),
+          bichos: sv.bichos.adotado
+            ? { ...sv.bichos, adotado: passarTempoDoBicho(sv.bichos.adotado, 2) }
+            : sv.bichos,
+        }))
+        // Sentada no banco ou deitada na cama, a energia volta aos poucos (`sistemas/descanso.ts`);
+        // na cama, cheia, a soneca acaba e ela levanta.
+        const jeito = loja.getState().descanso
+        if (jeito) {
+          s.mudar((sv) => ({ ...sv, necessidades: descansar(sv.necessidades, jeito, 2) }))
+          if (sonecaAcabou(loja.getState().salvamento.necessidades, jeito)) {
+            movimento.pedido = { tipo: 'levantar' }
+            s.dizer(FALA_DA_SONECA_CHEIA)
+          }
+        }
+        // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
+        const agora = loja.getState()
+        if (agora.salvamento.necessidades.energia <= 0 && agora.painelAberto === null) {
           pedidos.teleporte = {
             x: CENTRO_DA_CASA.x,
             y: ALTURA_DA_TERRA + 1.2,
@@ -40,6 +63,8 @@ export function Relogios() {
       }
 
       if (
+        movimento.modo !== 'barco' &&
+        movimento.modo !== 'mergulho' &&
         segundos % 15 === 0 &&
         Math.hypot(rastro.x - ultimaPosicao.x, rastro.z - ultimaPosicao.z) > 1
       ) {
@@ -56,7 +81,8 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
-        !s.tempoPausado
+        !s.tempoPausado &&
+        !salvamentoPausado(s.salvamentoSituacao)
       )
     }
     let anterior = false
@@ -75,7 +101,7 @@ export function Relogios() {
       document.removeEventListener('visibilitychange', atualizar)
       void gerenteTempo?.encerrar().catch((erro) => plataforma.relatarErro(erro, 'encerrar-tempo'))
     }
-  }, [loja, controle, plataforma, rastro, pedidos, gerenteTempo])
+  }, [loja, controle, plataforma, rastro, pedidos, gerenteTempo, movimento])
 
   return null
 }

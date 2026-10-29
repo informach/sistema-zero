@@ -32,6 +32,18 @@ function presetOf(asset: MoldaAsset | undefined): string | null {
   return asset?.kind === 'sky' ? asset.params.preset : null
 }
 
+/**
+ * O editor aberto pelo deep link monta fora do `act`, e os botões aparecem antes dos efeitos
+ * passivos: a inscrição no store e o registro do controle do host. O preset marcado só se
+ * redesenha depois deles (o efeito do pai nunca roda depois do efeito do filho), então ele
+ * prova que o controle já está registrado.
+ */
+async function waitForEditorEffects(preset: string): Promise<void> {
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: preset }).getAttribute('aria-pressed')).toBe('true'),
+  )
+}
+
 /** O nome acessível do cartão que abre a grade: título + dica. */
 const NEW_CARD_NAME = `${GALLERY_SHELL_COPY.newCardTitle} ${GALLERY_SHELL_COPY.newCardHint}`
 
@@ -209,7 +221,10 @@ describe('MoldaApp', () => {
     const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
     expect(undo.disabled).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
-    expect(undo.disabled).toBe(false)
+    // O documento chega fora do `act` (o `waitFor` desliga esse ambiente): o título pode
+    // aparecer antes dos efeitos passivos da montagem. O clique já entra no histórico, mas a
+    // barra só se inscreve no store nesses efeitos e redesenha logo depois deles.
+    await waitFor(() => expect(undo.disabled).toBe(false))
     await waitFor(() => expect(presetOf(persistence.snapshot()[0])).toBe('nublado'))
     fireEvent.click(undo)
     expect(
@@ -653,6 +668,7 @@ test('controle do host grava o céu aberto antes de entregar o snapshot', async 
   )
   await screen.findByRole('button', { name: COPY.skyPresets.nublado })
   fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+  await waitForEditorEffects(COPY.skyPresets.nublado)
   const results: Awaited<ReturnType<MoldaCompletionControl['flush']>>[] = []
   await act(async () => {
     results.push(await control!.flush())
@@ -682,6 +698,7 @@ test('controle do host recusa criação quando salvamento do editor falha', asyn
   )
   await screen.findByRole('button', { name: COPY.skyPresets.nublado })
   fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+  await waitForEditorEffects(COPY.skyPresets.nublado)
   let failed = false
   await act(async () => {
     try {
@@ -691,4 +708,53 @@ test('controle do host recusa criação quando salvamento do editor falha', asyn
     }
   })
   expect(failed).toBe(true)
+})
+
+describe('MoldaApp: molde do host (Arquipélago)', () => {
+  const molde = {
+    name: 'molde-geladeira',
+    box: { width: 13.12, height: 28, depth: 13.28, name: 'Geladeira' },
+    maxTriangles: 5000,
+  }
+
+  test('cria o modelo com a caixa do molde e abre a oficina; da segunda vez reabre o mesmo', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    let view: ReturnType<typeof render> | undefined
+    try {
+      const persistence = createMemoryPersistence()
+      // A galeria e a oficina leem o mesmo armazenamento no host real.
+      const save = persistence.save
+      persistence.save = async (asset) => {
+        await save(asset)
+        await db.seed(`${DOCUMENT_KEY_PREFIX}${asset.id}`, { ...asset, formatVersion: 1 })
+      }
+      view = render(<MoldaApp persistence={persistence} adapter={{ initialModel: molde }} />)
+      await waitFor(() =>
+        expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('molde-geladeira'),
+      )
+      const criado = persistence.snapshot()[0]
+      if (criado?.kind !== 'model') throw new Error('modelo esperado')
+      expect(persistence.snapshot()).toHaveLength(1)
+      expect(criado.parts.map((p) => [p.name, p.from, p.to])).toEqual([
+        ['Geladeira', [-6.5, 0, -6.75], [6.5, 28, 6.75]],
+      ])
+      // As conferências do molde no painel da oficina.
+      const cartao = await screen.findByRole('region', { name: 'Molde: Geladeira' })
+      expect(within(cartao).getByText('Cabe no molde')).toBeDefined()
+      expect(within(cartao).getByText('A frente está na marca rosa')).toBeDefined()
+      expect(within(cartao).getByText('Leve para a ilha: 12 de 5.000 triângulos')).toBeDefined()
+      view.unmount()
+
+      view = render(<MoldaApp persistence={persistence} adapter={{ initialModel: molde }} />)
+      await waitFor(() =>
+        expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('molde-geladeira'),
+      )
+      expect(persistence.snapshot().map((a) => a.id)).toEqual([criado.id])
+    } finally {
+      view?.unmount()
+      db.close()
+      setMoldaGenerationStoreFactory(null)
+    }
+  })
 })

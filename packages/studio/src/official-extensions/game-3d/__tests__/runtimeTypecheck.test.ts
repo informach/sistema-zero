@@ -15,6 +15,8 @@ interface Window {
   // PRÓPRIO do bridge, com o \`kind\` junto (o runtime escolhe o loader por ele).
   __SZGAME_ASSETS_3D?: Record<string, { kind: string; dataUrl: string; fileName?: string }>
   webkitAudioContext?: typeof AudioContext
+  // Quantos modelos ainda estão chegando: o executor dos objetivos espera chegar a zero.
+  __szModelosPendentes?: number
 }
 `
 

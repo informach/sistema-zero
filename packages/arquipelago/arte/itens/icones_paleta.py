@@ -4,6 +4,7 @@ Roda com o Python do sistema (precisa do Pillow), não com o `bpy`:
 
   python3 -I arte/itens/icones_paleta.py                 # reduz todos os PNG de src/assets/icones
   python3 -I arte/itens/icones_paleta.py folha.png       # e grava a folha com todos lado a lado
+  PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py   # outra pasta
 """
 import json
 import os
@@ -12,7 +13,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ICONES = os.path.join(AQUI, '..', '..', 'src', 'assets', 'icones')
+ICONES = os.environ.get('PASTA') or os.path.join(AQUI, '..', '..', 'src', 'assets', 'icones')
 RELATORIO = os.path.join(AQUI, 'relatorio.json')
 
 nomes = sorted(n for n in os.listdir(ICONES) if n.endswith('.png'))

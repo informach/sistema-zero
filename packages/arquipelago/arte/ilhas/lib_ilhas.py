@@ -8,7 +8,10 @@ Reaproveita o `lib_mundo` (paleta, formas, `_juntar`) e as ilhas leves de `arte/
 - `ancora(nome, x, z, y)`: um nó vazio com nome fixo, onde o jogo põe morador, Lumis e pontos;
 - `exportar(pid, nos, ancoras, clipes_)`: um GLB com um nó por chave, as âncoras e, se houver,
   os clipes (faixas do NLA, como o farol da Ilha do Farol);
-- `conferir_corredor(objs)`: nada acima do chão no corredor da chegada da ponte.
+- `conferir_corredor(objs)`: nada acima do chão no corredor da chegada da ponte;
+- `col_caixa`, `col_cilindro`, `col_entre` e `col_terreno`: os nós de colisão `col-*` (invisíveis,
+  sem material), que o jogo lê para montar os colisores; as peças que pisam (deque, ponte, escada,
+  cerca) recebem uma lista `col` e põem ali a colisão delas, ao lado do desenho.
 
 Referencial de cada ilha: o centro dela, y = 0 no mar, tampo plano em y = 1 (o mesmo das leves).
 A chegada da ponte é o +x do jogo; o corredor é x > 5,5 e |z| < 2,5 (o jogo gira a ilha).
@@ -31,6 +34,7 @@ from lib_mundo import *  # noqa: E402,F401,F403
 import ilhas_anel as anel  # noqa: E402
 import lib_ilha  # noqa: E402
 
+import bmesh  # noqa: E402
 import bpy  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
@@ -96,6 +100,9 @@ lib_q.PALETTE.update({
     'coralLaranja': ('#ffa25a', 0.7, None, 0),
     'coralAmarelo': ('#ffd86b', 0.7, None, 0),
     'coralAzul': ('#7fc8f8', 0.7, None, 0),
+    # O coral desbotado (fase3-03): o branco de osso, fosco, e a sombra dele nos detalhes.
+    'coralDesbotado': ('#ebe6d8', 0.95, None, 0),
+    'coralDesbotadoSombra': ('#cbc4b2', 0.95, None, 0),
     'rochaRecife': ('#8a96a8', 0.9, None, 0),
     'rochaRecifeEscura': ('#6c7889', 0.9, None, 0),
     'perolaLuz': ('#f4f1ff', 0.3, '#cfe8ff', 1.0),
@@ -133,6 +140,81 @@ def colocar(objs, x, z, frente):
     """Leva uma peça montada na origem, de frente para −Y, até (x, z) do jogo, com a frente olhando
     para o ângulo `frente` (no chão do Blender)."""
     return place(objs, loc=(x, -z, 0), rot_z=frente + math.pi / 2)
+
+
+# ------------------------------------------------------------------ colisão (nós col-*)
+# Convenção (README): `col-terreno` vira malha de triângulos; `col-cil-*` vira cilindro (eixo no y do
+# jogo, raio = metade da escala no chão, altura = escala no y); qualquer outro `col-*` vira caixa com
+# a escala do nó. A forma do nó é sempre a unitária (cubo 1, cilindro de diâmetro 1): o tamanho fica
+# no TRS do nó, que o exportador guarda (estes nós não passam pelo `_juntar`).
+_CONTA_COL = {}
+
+
+def _malha_col(tipo):
+    nome = f'col-unidade-{tipo}'
+    me = bpy.data.meshes.get(nome)
+    if me is not None:
+        return me
+    bm = bmesh.new()
+    if tipo == 'caixa':
+        bmesh.ops.create_cube(bm, size=1)
+    else:
+        bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=12, radius1=0.5, radius2=0.5, depth=1)
+    me = bpy.data.meshes.new(nome)
+    bm.to_mesh(me)
+    bm.free()
+    return me
+
+
+def _no_col(base, tipo, escala, loc, rot):
+    n = _CONTA_COL.get(base, 0) + 1
+    _CONTA_COL[base] = n
+    o = bpy.data.objects.new(f'col-{base}-{n}', _malha_col(tipo))
+    o.scale = escala
+    o.rotation_euler = rot
+    o.location = loc
+    bpy.context.collection.objects.link(o)
+    return o
+
+
+def col_caixa(base, tamanho, loc, rot=(0, 0, 0)):
+    """Caixa de colisão com `tamanho` (x, y, z do Blender) centrada em `loc`."""
+    return _no_col(base, 'caixa', tamanho, loc, rot)
+
+
+def col_cilindro(base, r, h, loc, rot=(0, 0, 0)):
+    """Cilindro de colisão (eixo z do Blender antes de `rot`), centrado em `loc`."""
+    return _no_col(f'cil-{base}', 'cilindro', (2 * r, 2 * r, h), loc, rot)
+
+
+def col_entre(base, a, b, r, sobra=0.0):
+    """Cilindro de colisão de `a` até `b` (pontos do Blender), `sobra` a mais em cada ponta (emenda os
+    pedaços de um tronco torto sem degrau)."""
+    a, b = Vector(a), Vector(b)
+    d = b - a
+    return col_cilindro(base, r, d.length + 2 * sobra, (a + b) / 2, d.to_track_quat('Z', 'Y').to_euler())
+
+
+def col_terreno(objs):
+    """`col-terreno`: cópia das malhas do chão, juntas e sem material."""
+    copias = []
+    for o in objs:
+        c = o.copy()
+        c.data = o.data.copy()
+        bpy.context.collection.objects.link(c)
+        copias.append(c)
+    t = lib_mundo._juntar(copias, 'col-terreno')
+    t.data.materials.clear()
+    return t
+
+
+def grupos_col(objs):
+    """{grupo: quantos} dos nós `col-*` (o nome sem o número do fim), para o relatório."""
+    g = {}
+    for o in objs:
+        base = o.name.rsplit('-', 1)[0] if o.name.rsplit('-', 1)[-1].isdigit() else o.name
+        g[base] = g.get(base, 0) + 1
+    return dict(sorted(g.items()))
 
 
 # ------------------------------------------------------------------ chão
@@ -202,10 +284,19 @@ def mancha(x, z, rx, rz, m, seed=0, z0=TOPO - 0.02, z1=TOPO + 0.025, n=24, wob=0
 
 
 # ------------------------------------------------------------------ vegetação
-def arvore_grande(x, z, s=1.0, variante='a', seed=0, y=TOPO):
+# O cilindro de colisão do tronco é um pouco mais fino que o desenho (que é torto e com casca): no
+# deque o personagem contorna o tronco sem raspar.
+TRONCO_COL = 0.85
+
+
+def arvore_grande(x, z, s=1.0, variante='a', seed=0, y=TOPO, col=None, copa=None, tronco=None):
     """Árvore grande do Bosque (onde ficam as plataformas do percurso nas copas).
 
-    a: copa larga e baixa, raízes de fora; b: alta, em andares; c: ipê rosa redondinho."""
+    a: copa larga e baixa, raízes de fora; b: alta, em andares; c: ipê rosa redondinho. Com `col`, o
+    tronco ganha um cilindro de colisão por trecho (ele é torto); raízes e copa não colidem. Com
+    `copa`, os blocos da copa vão para essa lista (o nó `copa-*`, que o jogo esmaece quando fica
+    entre a câmera e o personagem) em vez de ficarem com o tronco; com `tronco`, o tronco vai para
+    essa lista (o nó `tronco-*`, que esmaece do mesmo jeito)."""
     rnd = random.Random(seed)
     bx, by = x, -z
     p = []
@@ -217,7 +308,12 @@ def arvore_grande(x, z, s=1.0, variante='a', seed=0, y=TOPO):
         t = k / 4
         pts.append((bx + math.sin(seed + t * 2.1) * 0.25 * s * t, by + math.cos(seed * 1.7 + t * 1.6) * 0.2 * s * t,
                     y + altura_tronco * t))
-    p.append(tube(pts, [r * 1.15, r, r * 0.86, r * 0.74, r * 0.62], 'troncoGrande', seg=10))
+    raios = [r * 1.15, r, r * 0.86, r * 0.74, r * 0.62]
+    (p if tronco is None else tronco).append(tube(pts, raios, 'troncoGrande', seg=10))
+    if col is not None:
+        for k in range(4):
+            r_col = (raios[k] + raios[k + 1]) / 2 * TRONCO_COL
+            col.append(col_entre('tronco', pts[k], pts[k + 1], r_col, sobra=0.08))
     # Raízes que saem do pé.
     for k in range(5):
         a = 2 * math.pi * k / 5 + rnd.uniform(-0.3, 0.3)
@@ -226,11 +322,13 @@ def arvore_grande(x, z, s=1.0, variante='a', seed=0, y=TOPO):
                        (bx + math.cos(a) * r * 2.1, by + math.sin(a) * r * 2.1, y - 0.05)],
                       [r * 0.36, r * 0.24, r * 0.12], 'troncoGrandeClaro', seg=6))
     topo = pts[-1]
+    # Os galhos lá de cima ficam com a copa (esmaecem juntos quando tapam a câmera).
+    folhas = p if copa is None else copa
     if variante == 'a':
         for k in range(3):
             a = 2 * math.pi * k / 3 + seed
             galho_fim = (topo[0] + math.cos(a) * 2.0 * s, topo[1] + math.sin(a) * 2.0 * s, topo[2] + 0.6 * s)
-            p.append(tube([(topo[0], topo[1], topo[2] - 0.8 * s), galho_fim], [r * 0.5, r * 0.25], 'troncoGrande', seg=6))
+            folhas.append(tube([(topo[0], topo[1], topo[2] - 0.8 * s), galho_fim], [r * 0.5, r * 0.25], 'troncoGrande', seg=6))
         blocos = [((0, 0, 1.3), (6.4, 6.0, 3.0), 'copaEscura'), ((1.6, 0.8, 2.2), (3.8, 3.6, 2.4), 'copa'),
                   ((-1.7, 0.5, 2.0), (3.6, 3.4, 2.2), 'copa'), ((0.2, -1.6, 2.4), (3.4, 3.2, 2.2), 'copaClara'),
                   ((0.3, 0.4, 3.2), (3.0, 3.0, 2.0), 'copaClara')]
@@ -241,8 +339,8 @@ def arvore_grande(x, z, s=1.0, variante='a', seed=0, y=TOPO):
         blocos = [((0, 0, 1.0), (5.0, 4.8, 3.4), 'ipe'), ((1.1, 0.6, 1.8), (2.8, 2.6, 2.2), 'ipeClaro'),
                   ((-1.0, -0.7, 1.6), (2.8, 2.6, 2.2), 'ipeClaro'), ((0.2, 0.2, 2.6), (2.4, 2.4, 1.6), 'ipe')]
     for (dx, dy, dz), (sx, sy, sz), m in blocos:
-        p.append(superellipsoid((sx * s, sy * s, sz * s), (topo[0] + dx * s, topo[1] + dy * s, topo[2] + dz * s), m,
-                                e1=0.75, e2=0.85, seg=12, ring=8))
+        folhas.append(superellipsoid((sx * s, sy * s, sz * s), (topo[0] + dx * s, topo[1] + dy * s, topo[2] + dz * s),
+                                     m, e1=0.75, e2=0.85, seg=12, ring=8))
     if variante == 'c':
         # Florzinhas caídas no chão em volta do ipê.
         for k in range(10):
@@ -252,13 +350,16 @@ def arvore_grande(x, z, s=1.0, variante='a', seed=0, y=TOPO):
     return p
 
 
-def arvore_media(x, z, s=1.0, copa='copa', seed=0, y=TOPO):
-    """Árvore de enfeite, menor que as do percurso."""
+def arvore_media(x, z, s=1.0, copa='copa', seed=0, y=TOPO, col=None, folhas=None):
+    """Árvore de enfeite, menor que as do percurso (com `folhas`, a copa vai para essa lista)."""
     rnd = random.Random(seed)
     bx, by = x, -z
     p = [cyl(0.24 * s, 2.0 * s, (bx, by, y + 1.0 * s), 'tronco', verts=7, r2=0.17 * s)]
-    p.append(superellipsoid((2.6 * s, 2.5 * s, 2.2 * s), (bx, by, y + 2.7 * s), copa, e1=0.8, e2=0.9, seg=10, ring=7))
-    p.append(superellipsoid((1.5 * s, 1.5 * s, 1.3 * s),
+    if col is not None:
+        col.append(col_cilindro('tronco', 0.21 * s, 2.0 * s, (bx, by, y + 1.0 * s)))
+    f = p if folhas is None else folhas
+    f.append(superellipsoid((2.6 * s, 2.5 * s, 2.2 * s), (bx, by, y + 2.7 * s), copa, e1=0.8, e2=0.9, seg=10, ring=7))
+    f.append(superellipsoid((1.5 * s, 1.5 * s, 1.3 * s),
                             (bx + rnd.uniform(-0.5, 0.5) * s, by + rnd.uniform(-0.5, 0.5) * s, y + 3.6 * s),
                             'copaClara', e1=0.8, e2=0.9, seg=9, ring=6))
     return p
@@ -297,18 +398,22 @@ def tufos(x, z, raio, n, seed=0, y=TOPO):
     return p
 
 
-def tora(x, z, comp, rot, r=0.32, y=TOPO):
+def tora(x, z, comp, rot, r=0.32, y=TOPO, col=None):
     """Tora deitada (anéis claros nas pontas)."""
     bx, by = x, -z
     p = [cyl(r, comp, (bx, by, y + r * 0.9), 'tora', verts=10, rot=(R(90), 0, rot))]
+    if col is not None:
+        col.append(col_cilindro('tora', r, comp, (bx, by, y + r * 0.9), (R(90), 0, rot)))
     for sgn in (-1, 1):
         dx, dy = -math.sin(rot) * comp / 2 * sgn, math.cos(rot) * comp / 2 * sgn
         p.append(cyl(r * 0.92, 0.04, (bx + dx, by + dy, y + r * 0.9), 'toraAnel', verts=10, rot=(R(90), 0, rot)))
     return p
 
 
-def toco(x, z, r=0.45, h=0.55, y=TOPO):
+def toco(x, z, r=0.45, h=0.55, y=TOPO, col=None):
     bx, by = x, -z
+    if col is not None:
+        col.append(col_cilindro('toco', r * 0.95, h, (bx, by, y + h / 2)))
     return [cyl(r, h, (bx, by, y + h / 2), 'tora', verts=10, r2=r * 0.9),
             cyl(r * 0.88, 0.04, (bx, by, y + h), 'toraAnel', verts=10)]
 
@@ -329,13 +434,39 @@ def pedra(x, z, s, m='pedra', seed=0, y=TOPO, top_m=None):
 
 
 # ------------------------------------------------------------------ madeira, corda, construção
-def plataforma(cx, cz, h, r=1.7, aberturas=(), y=TOPO):
+# Guarda-corpo invisível dos deques: pedaços retos em volta da borda, na altura dos postinhos, com um
+# vão onde chega ponte, escada ou escorregador (a meia-largura deles mais uma folga, para o corpo
+# passar sem raspar e sem sobrar fresta por onde cair do lado).
+GUARDA_PEDACOS = 24
+GUARDA_ALTURA = 0.95
+GUARDA_ESPESSURA = 0.1
+GUARDA_MEIO_VAO = 0.7
+
+
+def plataforma(cx, cz, h, r=1.7, aberturas=(), y=TOPO, col=None):
     """Deque redondo em volta de um tronco, com postinhos (sem postes onde chega uma ponte).
 
-    `aberturas`: ângulos (radianos, no chão do Blender) onde as pontes chegam."""
+    `aberturas`: ângulos (radianos, no chão do Blender) onde as pontes chegam. Com `col`: o piso
+    (cilindro) e o guarda-corpo invisível, aberto nas mesmas aberturas."""
     bx, by = cx, -cz
     z = y + h
     p = [cyl(r, 0.22, (bx, by, z - 0.11), 'tabua', verts=16, bevel=0.04)]
+    if col is not None:
+        col.append(col_cilindro('deque', r, 0.22, (bx, by, z - 0.11)))
+        rg = r - GUARDA_ESPESSURA / 2  # rente à borda: o anel livre do deque fica inteiro
+        meio_vao = math.asin(min(1.0, GUARDA_MEIO_VAO / rg))
+        passo = 2 * math.pi / GUARDA_PEDACOS
+        for k in range(GUARDA_PEDACOS):
+            a0, a1 = k * passo, (k + 1) * passo
+            meio = (a0 + a1) / 2
+            if any(abs(math.atan2(math.sin(meio - b), math.cos(meio - b))) < meio_vao + passo / 2
+                   for b in aberturas):
+                continue
+            corda = 2 * rg * math.sin(passo / 2) + GUARDA_ESPESSURA
+            d = rg * math.cos(passo / 2)
+            col.append(col_caixa('guarda', (corda, GUARDA_ESPESSURA, GUARDA_ALTURA),
+                                 (bx + math.cos(meio) * d, by + math.sin(meio) * d, z + GUARDA_ALTURA / 2),
+                                 (0, 0, meio + math.pi / 2)))
     # Tábuas desenhadas por cima (sulcos) e a viga de baixo.
     for k in range(6):
         a = math.pi * k / 6
@@ -355,16 +486,45 @@ def plataforma(cx, cz, h, r=1.7, aberturas=(), y=TOPO):
     return p
 
 
-def ponte_corda(a, b, flecha=0.35, largura=1.15):
+PONTE_FLECHA_POR_METRO = 0.08  # ponte curta cede pouco: a barriga inteira numa ponte de 1 m vira rampa de 50°
+PONTE_TRECHO_COL = 0.6     # comprimento de cada caixa do piso de colisão (segue a barriga da ponte)
+PONTE_PONTA_COL = 0.12     # o piso entra um pouco no deque (sem fresta na emenda)
+
+
+def ponte_corda(a, b, flecha=0.35, largura=1.15, col=None):
     """Ponte de corda entre dois pontos do Blender (bordas das plataformas): tábuas que cedem um
-    pouco no meio, dois corrimãos de corda e os amarrilhos."""
+    pouco no meio, dois corrimãos de corda e os amarrilhos. Com `col`: o piso em trechos retos que
+    seguem a barriga (sem as frestas entre as tábuas) e uma parede baixa sob cada corrimão."""
     a, b = Vector(a), Vector(b)
     d = b - a
     comp = math.hypot(d.x, d.y)
+    flecha = min(flecha, comp * PONTE_FLECHA_POR_METRO)
     giro = math.atan2(d.y, d.x)
     nx, ny = -math.sin(giro), math.cos(giro)
     n = max(3, int(comp / 0.42))
     p = []
+    if col is not None:
+        m = max(4, math.ceil(comp / PONTE_TRECHO_COL))
+
+        def no_piso(t):
+            c = a + d * t
+            c.z -= flecha * math.sin(math.pi * t)
+            return c
+
+        for k in range(m):
+            p0, p1 = no_piso(k / m), no_piso((k + 1) / m)
+            trecho = p1 - p0
+            incl = math.atan2(trecho.z, math.hypot(trecho.x, trecho.y))
+            ini = PONTE_PONTA_COL if k == 0 else 0.03
+            fim = PONTE_PONTA_COL if k == m - 1 else 0.03
+            dir_ = trecho.normalized()
+            meio = (p0 + p1) / 2 + dir_ * ((fim - ini) / 2)
+            L = trecho.length + ini + fim
+            rot = (0, -incl, giro)
+            col.append(col_caixa('ponte', (L, largura, 0.1), (meio.x, meio.y, meio.z - 0.05), rot))
+            for lado in (-1, 1):
+                o = (largura / 2 + 0.04) * lado
+                col.append(col_caixa('ponte-lado', (L, 0.08, 1.0), (meio.x + nx * o, meio.y + ny * o, meio.z + 0.5), rot))
     for i in range(n + 1):
         t = i / n
         c = a + d * t
@@ -389,10 +549,10 @@ def ponte_corda(a, b, flecha=0.35, largura=1.15):
     return p
 
 
-def escada_espiral(cx, cz, h0, h1, r_tronco, raio, giro0=0.0, passo=0.33, y=TOPO, sentido=1):
+def escada_espiral(cx, cz, h0, h1, r_tronco, raio, giro0=0.0, passo=0.33, y=TOPO, sentido=1, col=None):
     """Degraus de tábua, um encostado no outro, subindo em volta do tronco a `raio` do centro (por
     fora do deque, para o último degrau chegar na borda). O controlador do personagem sobe degrau.
-    Devolve (objetos, ângulo do último degrau)."""
+    Com `col`, uma caixa por degrau. Devolve (objetos, ângulo do último degrau)."""
     p = []
     n = max(2, int(round((h1 - h0) / passo)))
     bx, by = cx, -cz
@@ -403,6 +563,9 @@ def escada_espiral(cx, cz, h0, h1, r_tronco, raio, giro0=0.0, passo=0.33, y=TOPO
         z = y + h0 + (h1 - h0) * (i + 1) / n
         p.append(box((1.0, 1.0, 0.1), (bx + math.cos(a) * raio, by + math.sin(a) * raio, z - 0.05),
                      'tabua' if i % 2 else 'tabuaEscura', bevel=0.02, segs=1, rot=(0, 0, a)))
+        if col is not None:
+            col.append(col_caixa('degrau', (1.0, 1.0, 0.1), (bx + math.cos(a) * raio, by + math.sin(a) * raio, z - 0.05),
+                                 (0, 0, a)))
         # Mão-francesa de cada degrau, presa no tronco.
         p.append(tube([(bx + math.cos(a) * r_tronco * 0.9, by + math.sin(a) * r_tronco * 0.9, z - 0.9),
                        (bx + math.cos(a) * (raio + 0.2), by + math.sin(a) * (raio + 0.2), z - 0.1)], [0.06, 0.045],
@@ -414,8 +577,8 @@ def escada_espiral(cx, cz, h0, h1, r_tronco, raio, giro0=0.0, passo=0.33, y=TOPO
     return p, a
 
 
-def cerca(pts, h=0.8, m='tabua', m_poste='poste', fechar=False):
-    """Cerquinha baixa por pontos do jogo (postes e duas réguas)."""
+def cerca(pts, h=0.8, m='tabua', m_poste='poste', fechar=False, col=None):
+    """Cerquinha baixa por pontos do jogo (postes e duas réguas). Com `col`, uma caixa por lado."""
     bl = [Vector((x, -z, TOPO)) for x, z in pts]
     if fechar:
         bl.append(bl[0])
@@ -430,6 +593,8 @@ def cerca(pts, h=0.8, m='tabua', m_poste='poste', fechar=False):
             c = a + d * (k / n)
             p.append(box((0.12, 0.12, h), (c.x, c.y, TOPO + h / 2), m_poste, bevel=0.02, segs=1, rot=(0, 0, giro)))
         mid = (a + b) / 2
+        if col is not None:
+            col.append(col_caixa('cerca', (L + 0.12, 0.12, h), (mid.x, mid.y, TOPO + h / 2), (0, 0, giro)))
         for zz in (h * 0.4, h * 0.82):
             p.append(box((L, 0.06, 0.1), (mid.x, mid.y, TOPO + zz), m, bevel=0.015, segs=1, rot=(0, 0, giro)))
     return p
@@ -457,7 +622,8 @@ def placa(x, z, texto_cor, rot=0.0, y=TOPO, h=1.3, w=1.0, m='placaBranca'):
 def lampiao_poste(x, z, y=TOPO, h=2.6, m='metalEscuro'):
     """Poste com lampião (o vidro `lampiao` acende à noite)."""
     bx, by = x, -z
-    p = [cyl(0.07, h, (bx, by, y + h / 2), m, verts=8, r2=0.05),
+    # O poste nasce no topo da base (do chão, os fundos dos dois ficavam no mesmo plano).
+    p = [cyl(0.07, h - 0.12, (bx, by, y + 0.12 + (h - 0.12) / 2), m, verts=8, r2=0.05),
          cyl(0.2, 0.12, (bx, by, y + 0.06), m, verts=8)]
     p.append(cyl(0.2, 0.4, (bx, by, y + h + 0.2), 'lampiao', verts=6))
     p.append(cone(0.3, 0.25, (bx, by, y + h + 0.52), m, verts=6))
@@ -483,8 +649,9 @@ def janela(cx, cy, cz, w, h, giro, m_moldura='acabamento', m_vidro='vidroJanela'
     p = [box((w + 0.16, 0.08, h + 0.16), (cx + nx * 0.02, cy + ny * 0.02, cz), m_moldura, bevel=0.02, segs=1, rot=rot),
          box((w, 0.1, h), (cx + nx * 0.04, cy + ny * 0.04, cz), m_vidro, bevel=0.0, rot=rot)]
     if cruz:
-        p.append(box((0.05, 0.12, h), (cx + nx * 0.05, cy + ny * 0.05, cz), m_moldura, bevel=0.0, rot=rot))
-        p.append(box((w, 0.12, 0.05), (cx + nx * 0.05, cy + ny * 0.05, cz), m_moldura, bevel=0.0, rot=rot))
+        # A cruz um pouco menor que o vidro e sem o fundo no plano dele (piscaria).
+        p.append(box((0.05, 0.11, h - 0.02), (cx + nx * 0.055, cy + ny * 0.055, cz), m_moldura, bevel=0.0, rot=rot))
+        p.append(box((w - 0.02, 0.11, 0.05), (cx + nx * 0.055, cy + ny * 0.055, cz), m_moldura, bevel=0.0, rot=rot))
     return p
 
 
@@ -494,7 +661,9 @@ def porta(cx, cy, z0, w, h, giro, m='portaNova', m_batente='batente'):
     rot = (0, 0, giro + math.pi / 2)
     p = [box((w + 0.2, 0.1, h + 0.1), (cx + nx * 0.03, cy + ny * 0.03, z0 + (h + 0.1) / 2), m_batente, bevel=0.02,
              segs=1, rot=rot),
-         box((w, 0.12, h), (cx + nx * 0.06, cy + ny * 0.06, z0 + h / 2), m, bevel=0.03, segs=1, rot=rot)]
+         # A folha começa 1 cm acima do batente: os fundos dos dois não ficam no mesmo plano.
+         box((w, 0.12, h - 0.01), (cx + nx * 0.06, cy + ny * 0.06, z0 + 0.01 + (h - 0.01) / 2), m, bevel=0.03, segs=1,
+             rot=rot)]
     ox, oy = math.cos(giro + math.pi / 2) * w * 0.32, math.sin(giro + math.pi / 2) * w * 0.32
     p.append(uvball(0.06, (cx + nx * 0.14 + ox, cy + ny * 0.14 + oy, z0 + h * 0.48), 'macaneta', seg=6, ring=4))
     return p
@@ -510,7 +679,10 @@ def toldo_listrado(cx, cy, z, w, prof, giro, cores, inclin=R(22), n=8):
         o = -w / 2 + larg * (i + 0.5)
         c = (cx + tx * o + nx * prof / 2 * math.cos(inclin), cy + ty * o + ny * prof / 2 * math.cos(inclin),
              z - prof / 2 * math.sin(inclin))
-        p.append(box((prof, larg * 1.01, 0.06), c, cores[i % len(cores)], bevel=0.0, rot=(0, inclin, giro)))
+        # Listras vizinhas se sobrepõem um pouco: alternar a espessura e o comprimento tira as faces das
+        # duas do mesmo plano.
+        p.append(box((prof + 0.012 * (i % 2), larg * 1.01, 0.06 + 0.016 * (i % 2)), c, cores[i % len(cores)], bevel=0.0,
+                     rot=(0, inclin, giro)))
         # Babado redondo na ponta de cada listra.
         bc = (cx + tx * o + nx * prof * math.cos(inclin), cy + ty * o + ny * prof * math.cos(inclin),
               z - prof * math.sin(inclin) - 0.06)
@@ -542,9 +714,10 @@ def conferir_corredor(objs, rotulo=''):
         raise RuntimeError(f'corredor da chegada ocupado ({rotulo}): ' + '; '.join(ruins[:8]))
 
 
-def exportar(pid, nos, ancoras=(), clipes_=None):
+def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
     """Grava `ILHAS_OUT/pid.glb`: um nó por chave de `nos` ({nome: objs} ou {nome: (objs, pivô)}),
-    as âncoras (nós vazios) e, com `clipes_`, as animações.
+    as âncoras (nós vazios), os nós de colisão `col-*` (cada um com o seu TRS, sem juntar) e, com
+    `clipes_`, as animações.
 
     `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}."""
     juntos = {}
@@ -568,7 +741,7 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
                     st.extrapolation = 'NOTHING'
         animado = True
     bpy.ops.object.select_all(action='DESELECT')
-    for o in list(juntos.values()) + list(ancoras):
+    for o in list(juntos.values()) + list(ancoras) + list(colisores):
         o.select_set(True)
     path = os.path.join(ILHAS_OUT, f'{pid}.glb')
     kw = dict(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True,
@@ -588,7 +761,9 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
     # Objetos, não listas: o biome junta lista curta numa linha só e o relatório sairia "mal formatado".
     anc = {e.name: {'x': round(e.location.x, 2), 'y': round(e.location.z, 2), 'z': round(-e.location.y, 2)}
            for e in ancoras}
-    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras')
+    grupos = grupos_col(colisores)
+    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras, '
+          f'{len(colisores)} colisores')
     try:
         with open(RELATORIO_ILHAS) as f:
             rel = json.load(f)
@@ -596,7 +771,64 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
         rel = {}
     rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no, 'ancoras': anc,
                 'clipes': ', '.join(sorted(chaves)) if clipes_ else ''}
+    if grupos:
+        rel[pid]['colisores'] = grupos
     with open(RELATORIO_ILHAS, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')
     return path
+
+
+# ------------------------------------------------------------------ bacia de nadar
+def profundidade_da_bacia(t, fundo, plana, fim):
+    """Profundidade da bacia (abaixo do tampo) a `t` raios do meio: funda e plana até `plana`, sobe
+    em curva suave e chega a zero em `fim` (fim maior que 1 passa da beira da água)."""
+    if t <= plana:
+        return fundo
+    if t >= fim:
+        return 0.0
+    s = (t - plana) / (fim - plana)
+    return fundo * (1 - s * s * (3 - 2 * s))
+
+
+def cavar_bacia(chao_col, centro, raios, fundo, plana, fim, voltas=36, aneis=12):
+    """Cava uma bacia elíptica no `col-terreno` (só na colisão: a água do desenho cobre o fundo),
+    para a criança nadar: boolean exato com um molde fechado (o fundo em anéis, a parede e a tampa
+    acima do tampo). O anel de fora fica um pouco acima do tampo, para o corte nunca ficar rente à
+    face de cima. É a mesma conta do lago do Bosque (`bosque.py`, `bacia`)."""
+    x, z = centro
+    rx, rz = raios
+    bm = bmesh.new()
+    meio = bm.verts.new(P(x, z, TOPO - fundo))
+    aneis_v = []
+    for i in range(1, aneis + 1):
+        t = fim * i / aneis
+        y = TOPO + 0.05 if i == aneis else TOPO - profundidade_da_bacia(t, fundo, plana, fim)
+        aneis_v.append([bm.verts.new(P(x + math.cos(2 * math.pi * k / voltas) * rx * t,
+                                       z + math.sin(2 * math.pi * k / voltas) * rz * t, y))
+                        for k in range(voltas)])
+    tampa = [bm.verts.new((v.co.x, v.co.y, TOPO + 0.4)) for v in aneis_v[-1]]
+    for k in range(voltas):
+        k2 = (k + 1) % voltas
+        bm.faces.new((meio, aneis_v[0][k2], aneis_v[0][k]))
+        for a, b in zip(aneis_v, aneis_v[1:]):
+            bm.faces.new((a[k], a[k2], b[k2], b[k]))
+        bm.faces.new((aneis_v[-1][k], aneis_v[-1][k2], tampa[k2], tampa[k]))
+    bm.faces.new(tampa)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new('molde-bacia')
+    bm.to_mesh(me)
+    bm.free()
+    molde = bpy.data.objects.new('molde-bacia', me)
+    bpy.context.collection.objects.link(molde)
+    m = chao_col.modifiers.new('bacia', 'BOOLEAN')
+    m.operation = 'DIFFERENCE'
+    m.solver = 'EXACT'
+    m.use_hole_tolerant = True
+    m.object = molde
+    bpy.context.view_layer.objects.active = chao_col
+    bpy.ops.object.select_all(action='DESELECT')
+    chao_col.select_set(True)
+    bpy.ops.object.modifier_apply(modifier='bacia')
+    bpy.data.objects.remove(molde, do_unlink=True)
+    chao_col.data.materials.clear()

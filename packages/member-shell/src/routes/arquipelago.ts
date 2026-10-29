@@ -1,7 +1,16 @@
 import 'server-only'
-import { tipoDoArquivoDoCliente } from '@sistemazero/arquipelago-contracts'
+import {
+  IrmaosDoJogadorSchema,
+  type IrmaosParaOJogo,
+  MinijogosSchema,
+  PERFIS_DA_FAMILIA_MAXIMO,
+  type SemanaDaFamiliaParaOsPais,
+  SemanaDaFamiliaSchema,
+  tipoDoArquivoDoCliente,
+} from '@sistemazero/arquipelago-contracts'
 import { NextResponse } from 'next/server'
 import { getEnv } from '../lib/env'
+import type { ProfilesClient } from '../server/clients'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from '../server/gateway'
 import { readJsonBodyWithLimit } from '../server/read-json-body'
 
@@ -10,6 +19,13 @@ export type ArquipelagoRoutes = ReturnType<typeof createArquipelagoRoutes>
 /** Salvamento de até 64 KB mais a revisão; tempo e limite são minúsculos (os mesmos do gateway). */
 const CORPO_DO_SALVAMENTO = 96 * 1024
 const CORPO_PEQUENO = 1024
+/** Conferir um desafio leva o projeto do Estúdio (o mesmo teto do serviço e do gateway). */
+const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
+/** Conferir roda o jogo no executor pelo Members: o prazo do "Verificar projeto" das aulas. */
+const ESPERA_DA_CONFERENCIA_MS = 165_000
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+/** As ilhas do contrato (minúsculas e hífen); o serviço confere o valor de verdade. */
+const ILHA = /^[a-z][a-z-]{0,39}$/
 /** Até os cabeçalhos chegarem; o corpo (o jogo tem MB) segue sem prazo total. */
 const ESPERA_DOS_CABECALHOS_MS = 15_000
 const CABECALHOS_DO_CLIENTE = ['content-type', 'cache-control', 'x-content-type-options', 'etag']
@@ -37,6 +53,12 @@ async function corpoJson(
   }
 }
 
+/** O nome da criança na grade de perfis (o card mostra; o serviço do jogo nunca sabe nomes). */
+function nomeDoPerfil(perfil: { name?: unknown }): string {
+  const nome = typeof perfil.name === 'string' ? perfil.name.trim().slice(0, 80) : ''
+  return nome || 'Criança'
+}
+
 const invalido = () =>
   NextResponse.json(
     { error: { code: 'VALIDATION_ERROR', message: 'Requisição inválida' } },
@@ -49,15 +71,57 @@ const invalido = () =>
  * decide acesso, salvamento, tempo e suporte somente leitura é o `@sistemazero/arquipelago-api`.
  * O cliente compilado do jogo também passa por aqui, na mesma origem da página.
  */
-export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
+export function createArquipelagoRoutes(deps: {
+  gateway: GatewayModule
+  profiles: Pick<ProfilesClient, 'list' | 'siblings'>
+}) {
   const { gateway } = deps
-  const chamar = (caminho: string, metodo: 'GET' | 'PUT' | 'POST', corpo?: unknown) =>
+  const chamar = (
+    caminho: string,
+    metodo: 'GET' | 'PUT' | 'POST',
+    corpo?: unknown,
+    extra: { query?: Record<string, string>; timeoutMs?: number } = {},
+  ) =>
     gateway
       .gatewayFetch(`/arquipelago${caminho}`, {
         method: metodo,
         ...(corpo === undefined ? {} : { body: corpo }),
+        ...extra,
       })
-      .then(repasse)
+      .then((r) => {
+        const resposta = repasse(r)
+        if (
+          caminho.startsWith('/minijogos') ||
+          caminho.startsWith('/familia/minijogos') ||
+          caminho.startsWith('/irmaos')
+        )
+          resposta.headers.set('cache-control', 'private, no-store')
+        return resposta
+      })
+  const idDe = async (ctx: { params: Promise<{ id: string }> }) => {
+    const { id } = await ctx.params
+    return UUID.test(id) ? id : null
+  }
+
+  /**
+   * Os perfis prontos da conta (a grade do Auth; o pendente ainda não abre o perfil). Sem a lista,
+   * nada segue: a área dos pais esconde os cartões do jogo.
+   */
+  const perfisProntos = async (): Promise<
+    { ok: true; perfis: { id: string; name?: unknown }[] } | { ok: false; resposta: NextResponse }
+  > => {
+    const lista = await deps.profiles.list()
+    if (lista.status !== 200 || !Array.isArray(lista.body?.profiles)) {
+      return {
+        ok: false,
+        resposta: repasse({ ...lista, body: lista.status === 200 ? null : lista.body }),
+      }
+    }
+    const perfis = lista.body.profiles
+      .filter((p) => p.admissionState !== 'pending')
+      .slice(0, PERFIS_DA_FAMILIA_MAXIMO)
+    return { ok: true, perfis }
+  }
 
   const comCorpo =
     (caminho: string, metodo: 'PUT' | 'POST', teto: number) => async (req: Request) => {
@@ -66,6 +130,85 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
     }
 
   return {
+    arquipelagoTodosMinijogosDaFamilia: {
+      GET: async () => {
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        const criancas = await Promise.all(
+          lista.perfis.map(async (p) => {
+            try {
+              const r = await gateway.gatewayFetch(`/arquipelago/familia/minijogos/${p.id}`, {
+                method: 'GET',
+              })
+              const d = MinijogosSchema.safeParse(r.body)
+              return r.status === 200 && d.success && d.data.minijogos.length
+                ? { perfilId: p.id, nome: nomeDoPerfil(p), ...d.data }
+                : null
+            } catch {
+              return null
+            }
+          }),
+        )
+        return NextResponse.json(
+          { criancas: criancas.filter((c) => c !== null) },
+          { headers: { 'cache-control': 'private, no-store' } },
+        )
+      },
+    },
+    arquipelagoMinijogos: { GET: () => chamar('/minijogos', 'GET') },
+    arquipelagoMinijogo: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/minijogos/${id}`, 'GET') : invalido()
+      },
+    },
+    arquipelagoMinijogosDaFamilia: {
+      GET: async (req: Request, ctx: { params: Promise<{ perfil: string }> }) => {
+        const { perfil } = await ctx.params
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        if (!UUID.test(perfil) || !lista.perfis.some((p) => p.id === perfil)) return invalido()
+        const id = new URL(req.url).searchParams.get('id')
+        if (id !== null && !UUID.test(id)) return invalido()
+        return chamar(`/familia/minijogos/${perfil}${id ? `/${id}` : ''}`, 'GET')
+      },
+    },
+    /**
+     * Recordes da família e visitas (fase3-12, 29/10/2026): os irmãos que o serviço do jogo acha
+     * (sem nomes) e o NOME de cada um, da leitura dos irmãos da sessão de perfil no Auth (a grade
+     * completa é da área dos pais). Quem não estiver na lista do Auth sai; sem a leitura do Auth,
+     * 502: o jogo nunca mostra um irmão sem nome. Resposta fora do contrato também vira 502.
+     */
+    arquipelagoIrmaos: {
+      GET: async () => {
+        const r = await gateway.gatewayFetch('/arquipelago/irmaos', { method: 'GET' })
+        if (r.status !== 200) return repasse(r)
+        const lido = IrmaosDoJogadorSchema.safeParse(r.body)
+        if (!lido.success) return repasse({ ...r, body: null })
+        const semCache = { headers: { 'cache-control': 'private, no-store' } }
+        if (lido.data.irmaos.length === 0)
+          return NextResponse.json({ ...lido.data, irmaos: [] } satisfies IrmaosParaOJogo, semCache)
+        const lista = await deps.profiles.siblings()
+        if (lista.status !== 200 || !Array.isArray(lista.body?.siblings))
+          return repasse({ ...lista, status: 502, body: null })
+        const nomes = new Map(lista.body.siblings.map((p) => [p.id.toLowerCase(), nomeDoPerfil(p)]))
+        const paraOJogo: IrmaosParaOJogo = {
+          ...lido.data,
+          irmaos: lido.data.irmaos.flatMap((i) => {
+            const nome = nomes.get(i.perfilId.toLowerCase())
+            return nome ? [{ ...i, nome }] : []
+          }),
+        }
+        return NextResponse.json(paraOJogo, semCache)
+      },
+    },
+    /** A casa de um irmão para a visita (só olhar): repasse, com o id conferido. */
+    arquipelagoCasaDoIrmao: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/irmaos/${id}/casa`, 'GET') : invalido()
+      },
+    },
     arquipelagoAcesso: { GET: () => chamar('/acesso', 'GET') },
     arquipelagoSalvamento: {
       GET: () => chamar('/salvamento', 'GET'),
@@ -74,10 +217,96 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
     arquipelagoTempo: { POST: comCorpo('/tempo', 'POST', CORPO_PEQUENO) },
     arquipelagoRecuperarTempo: { POST: comCorpo('/tempo/recuperar', 'POST', CORPO_PEQUENO) },
     arquipelagoSessaoTempo: { POST: comCorpo('/tempo/sessao', 'POST', CORPO_PEQUENO) },
-    /** Área dos pais: o app embrulha com o portão do responsável. */
+    /** Cartões da rotina dos Lumis (os de controle pelos blocos conquistados nos cursos). */
+    arquipelagoCartas: { GET: () => chamar('/cartas', 'GET') },
+    /** A galeria do Arquipélago (29/10/2026): o que ela comprou, o saldo e comprar. */
+    arquipelagoGaleria: { GET: () => chamar('/galeria', 'GET') },
+    arquipelagoGaleriaCompras: { POST: comCorpo('/galeria/compras', 'POST', CORPO_PEQUENO) },
+    /** Desafios da ilha (`?ilha=`): situação, o que falta e de onde se aprende. */
+    arquipelagoDesafios: {
+      GET: (req: Request) => {
+        const ilha = new URL(req.url).searchParams.get('ilha')
+        if (ilha !== null && !ILHA.test(ilha)) return invalido()
+        return chamar('/desafios', 'GET', undefined, ilha ? { query: { ilha } } : {})
+      },
+    },
+    /** O desafio aberto para o Estúdio de desafio (sem gabarito nem regra: o serviço garante). */
+    arquipelagoDesafio: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/desafios/${id}`, 'GET') : invalido()
+      },
+    },
+    /** Conferir o projeto da pessoa: o serviço confere no Members e dá o prêmio uma vez só. */
+    arquipelagoDesafioVerificar: {
+      POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        if (!id) return invalido()
+        const lido = await corpoJson(req, CORPO_DA_CONFERENCIA)
+        if (!lido.ok) return invalido()
+        return chamar(`/desafios/${id}/verificar`, 'POST', lido.corpo, {
+          timeoutMs: ESPERA_DA_CONFERENCIA_MS,
+        })
+      },
+    },
+    /** O jogo mostrou a festa do prêmio. */
+    arquipelagoDesafioRecompensaVista: {
+      POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/desafios/${id}/recompensa-vista`, 'POST', {}) : invalido()
+      },
+    },
+    /**
+     * Área dos pais: o app embrulha com o portão do responsável. A leitura leva os perfis prontos
+     * da conta (a grade do Auth; o pendente ainda não abre o perfil) para o serviço dizer se alguma
+     * criança vê o jogo. Sem a lista, nada segue. O teto só pesa para a equipe, que cria perfis sem
+     * limite e entra com qualquer um deles.
+     */
     arquipelagoLimiteDaFamilia: {
-      GET: () => chamar('/familia/limite', 'GET'),
+      GET: async () => {
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        return chamar('/familia/limite', 'GET', undefined, {
+          query: { perfis: lista.perfis.map((p) => p.id).join(',') },
+        })
+      },
       PUT: comCorpo('/familia/limite', 'PUT', CORPO_PEQUENO),
+    },
+    /**
+     * A semana das crianças no jogo (28/10/2026, fase1-18), para o cartão da área dos pais: os
+     * mesmos perfis prontos do limite, e o nome de cada criança vem daqui (da grade do Auth),
+     * nunca do serviço do jogo. Resposta fora do contrato vira 502: o cartão fica escondido.
+     */
+    arquipelagoSemanaDaFamilia: {
+      GET: async () => {
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        const r = await gateway.gatewayFetch('/arquipelago/familia/semana', {
+          method: 'GET',
+          query: { perfis: lista.perfis.map((p) => p.id).join(',') },
+        })
+        if (r.status !== 200) return repasse(r)
+        const lido = SemanaDaFamiliaSchema.safeParse(r.body)
+        if (!lido.success) return repasse({ ...r, body: null })
+        const nomes = new Map(lista.perfis.map((p) => [p.id.toLowerCase(), nomeDoPerfil(p)]))
+        const paraOsPais: SemanaDaFamiliaParaOsPais = {
+          ...lido.data,
+          criancas: lido.data.criancas.flatMap((c) => {
+            const nome = nomes.get(c.perfilId)
+            return nome ? [{ ...c, nome }] : []
+          }),
+          aindaSemJogo: lido.data.aindaSemJogo.flatMap((perfilId) => {
+            const nome = nomes.get(perfilId)
+            return nome ? [{ perfilId, nome }] : []
+          }),
+        }
+        return NextResponse.json(paraOsPais)
+      },
+    },
+    /** As permissões de visita da família (só gravar e ler por enquanto: Fase 3 do jogo). */
+    arquipelagoPermissoesDaFamilia: {
+      GET: () => chamar('/familia/permissoes', 'GET'),
+      PUT: comCorpo('/familia/permissoes', 'PUT', CORPO_PEQUENO),
     },
     arquipelagoCliente: {
       async GET(_req: Request, ctx: { params: Promise<{ arquivo: string }> }) {

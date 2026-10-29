@@ -5,8 +5,26 @@
 Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o jogo.
 
 - **`/arquipelago`** (`app/arquipelago/page.tsx`, fora do grupo `(app)`: o jogo ocupa a tela) monta
-  o `ArquipelagoHost` do member-shell com o perfil da sessão. Sem item de menu por enquanto; quem
-  vê o jogo é o serviço do jogo (sem ele, a página diz "O Arquipélago ainda não abriu por aqui.").
+  o `ArquipelagoHost` do member-shell com o perfil da sessão. Quem vê o jogo é o serviço do jogo
+  (sem ele, a página diz "O Arquipélago ainda não abriu por aqui").
+- **Menu:** item "Arquipélago" (aba "Jogo" no celular, ícone `TreePalm`: o `Castle` já é o ícone
+  de um posto) só quando o layout confirma `/arquipelago/acesso`. Com ele são seis abas: o rótulo
+  da aba corta (`truncate`, `tracking-tight`) em vez de encostar no vizinho.
+- **Área dos pais:** `_components/arquipelago-limit-card.tsx` ("Tempo livre no Arquipélago", na
+  Família): passos de 5 minutos entre 10 min e 4 h, o tempo escrito como a família fala
+  (`duracaoPorExtenso`) e "Salvar" só quando mudou. O cartão só aparece quando a leitura diz
+  `algumaCriancaVe` (28/10/2026); sem resposta do serviço ou com resposta estranha, ele não aparece.
+  **Fase1-18 (28/10/2026):** o cartão virou "Arquipélago Vagalume", com três partes: "A semana no
+  jogo" (`_components/arquipelago-familia.tsx`, `SemanaDasCriancas`: desafios aprovados, objetos
+  do Pinta e do Molda desde o começo, o tempo livre ao lado do limite e, desde 29/10/2026, em
+  quantos dias de jogo ela concluiu aula do curso até 24 h depois de jogar; em ladrilhos `StatTile`
+  de `ladrilhosDaSemana`, cada um só com o número que o serviço tem, um cartão por criança na
+  largura toda), "Tempo livre no Arquipélago" (o formulário de antes) e "Com quem pode
+  interagir" (`PermissoesDeVisita`: três interruptores no padrão do resumo semanal, gravam ao
+  tocar e voltam se não gravar). A semana e as permissões só são pedidas depois que o limite diz
+  `algumaCriancaVe`, e cada uma some sozinha se a leitura falhar. Shims
+  `app/api/parents/arquipelago/{semana,permissoes}` (`requireParentGateAccountOnly`). Testes:
+  `tests/arquipelago-familia.test.tsx` e `tests/arquipelago-limit-card.test.tsx`.
   Nenhuma variável de ambiente nova (a regra do Railway pede criar no painel antes).
 - Shims em `app/api/arquipelago/{acesso,salvamento,tempo,cliente/[arquivo]}` e
   `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`
@@ -3840,3 +3858,15 @@ atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
   consulta, e os dois não se confundem). Estilos em `globals.css` (`.sz-help-*`, em camada).
 - Autoria: admin em `/admin/como-fazer` (coleções, tutoriais, importar/exportar JSON, revisar e
   publicar). Lote inicial em `docs/como-fazer/`.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Minijogos no cartão dos pais: leitura independente da semana, some se vazia ou falhar. Todas as rotas de família são embrulhadas por requireParentGateAccountOnly. Jogar usa o player compartilhado e a cópia do serviço.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Mini estúdio dos Lumis (29/10/2026)
+
+A página `/arquipelago` continua usando o `ArquipelagoHost`. A ferramenta nova usa o shim existente `/api/arquipelago/cartas`, sem rota de escrita ou configuração nova.
+
+Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.

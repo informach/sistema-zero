@@ -2,6 +2,10 @@
 // Walkable rectangles describe the authored floor, never a learner's key position.
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 export class NavigationBlocked extends Error {}
+// A leg longer than this is walked holding the arrow; the last stretch goes in pulses.
+const CRUISE_MIN = 1.2
+// Pause between position reads while the arrow is held (the read itself waits for a frame).
+const CRUISE_POLL_MS = 20
 export function planApproach3d(actor, target, walkable, avoid = []) {
   const unit = 0.25,
     margin = 0.12
@@ -23,44 +27,61 @@ export function planApproach3d(actor, target, walkable, avoid = []) {
   if (cols * rows > 40000) throw Error('A área de navegação 3D excedeu o limite.')
   const point = (c, r) => ({ x: minX + c * unit, z: minZ + r * unit })
   const origin = { c: Math.round((actor.x - minX) / unit), r: Math.round((actor.z - minZ) / unit) }
-  const key = (c, r) => r * cols + c,
-    queue = [origin],
-    parents = new Map([[key(origin.c, origin.r), null]])
+  // Shortest walk with a cost per turn (Dial's algorithm over cell + heading): every corner
+  // ends in a precise stop and slow pulses, so a staircase of short legs around solid
+  // obstacles ran out of time where one detour with three turns fits. A turn costs as much
+  // as one unit of extra walking.
+  const DIRS = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ]
+  const TURN = Math.round(1 / unit)
+  const cells = cols * rows,
+    state = (cell, dir) => cell * 5 + dir,
+    cost = new Float64Array(cells * 5).fill(Infinity),
+    parents = new Int32Array(cells * 5).fill(-1),
+    buckets = []
+  const push = (s, c) => {
+    if (c >= cost[s]) return false
+    cost[s] = c
+    if (!buckets[c]) buckets[c] = []
+    buckets[c].push(s)
+    return true
+  }
+  const start = state(origin.r * cols + origin.c, 4)
+  push(start, 0)
   let end
-  for (let i = 0; i < queue.length; i++) {
-    const q = queue[i],
-      p = point(q.c, q.r)
-    if (hit(p.x, p.z, target, -0.25)) {
-      end = q
-      break
-    }
-    for (const [dc, dr] of [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ]) {
-      const c = q.c + dc,
-        r = q.r + dr,
-        k = key(c, r),
-        v = point(c, r)
-      if (
-        c < 0 ||
-        r < 0 ||
-        c >= cols ||
-        r >= rows ||
-        parents.has(k) ||
-        !inside(v.x, v.z) ||
-        avoid.some((b) => hit(v.x, v.z, b, margin))
-      )
-        continue
-      parents.set(k, q)
-      queue.push({ c, r })
+  for (let c = 0; c < buckets.length && end === undefined; c++) {
+    for (const s of buckets[c] ?? []) {
+      if (cost[s] !== c) continue
+      const cell = Math.floor(s / 5),
+        dir = s % 5,
+        q = { c: cell % cols, r: Math.floor(cell / cols) },
+        p = point(q.c, q.r)
+      if (hit(p.x, p.z, target, -0.25)) {
+        end = s
+        break
+      }
+      for (let d = 0; d < 4; d++) {
+        const nc = q.c + DIRS[d][0],
+          nr = q.r + DIRS[d][1]
+        if (nc < 0 || nr < 0 || nc >= cols || nr >= rows) continue
+        const v = point(nc, nr)
+        if (!inside(v.x, v.z) || avoid.some((b) => hit(v.x, v.z, b, margin))) continue
+        const next = state(nr * cols + nc, d)
+        if (push(next, c + 1 + (dir !== 4 && dir !== d ? TURN : 0))) parents[next] = s
+      }
     }
   }
-  if (!end) throw Error('Não há um caminho no chão até o alvo sem recolher os objetos a evitar.')
+  if (end === undefined)
+    throw Error('Não há um caminho no chão até o alvo sem recolher os objetos a evitar.')
   const path = []
-  for (let q = end; q; q = parents.get(key(q.c, q.r))) path.push(point(q.c, q.r))
+  for (let s = end; s !== -1; s = parents[s]) {
+    const cell = Math.floor(s / 5)
+    path.push(point(cell % cols, Math.floor(cell / cols)))
+  }
   path.reverse()
   path[0] = { x: actor.x, z: actor.z }
   const turns = [path[0]]
@@ -130,6 +151,37 @@ export async function approachObject3d(page, step, readMany) {
       await page.keyboard.up(k)
     }
   }
+  const cruise = async (key, alongX, target, start) => {
+    const sign = Math.sign(target - start)
+    await release()
+    held = key
+    await page.keyboard.down(key)
+    let prev = start,
+      prevAt = Date.now(),
+      speed = 0,
+      latency = 0,
+      still = 0
+    while (Date.now() < deadline) {
+      await page.waitForTimeout(CRUISE_POLL_MS)
+      const asked = Date.now()
+      const [x, z] = await numbers([`${step.actorPath}.position.x`, `${step.actorPath}.position.z`])
+      const at = Date.now()
+      latency = Math.max(latency * 0.6, at - asked)
+      const c = alongX ? x : z
+      if (x !== actor.x || z !== actor.z) observedMovement = true
+      if (at > prevAt) speed = Math.max(speed * 0.5, Math.abs(c - prev) / (at - prevAt))
+      still = Math.abs(c - prev) < 0.002 ? still + 1 : 0
+      prev = c
+      prevAt = at
+      const left = (target - c) * sign
+      // Stop distance: what the character still walks while this read ages and the key-up
+      // travels (two latencies and a poll), plus a margin that stays inside the planner's
+      // clearance from the objects to avoid.
+      if (left <= 0.25 + speed * (2 * latency + CRUISE_POLL_MS) || still >= 4) break
+    }
+    await release()
+    previousPulse = null
+  }
   try {
     for (const goal of route.slice(1)) {
       let reached = false,
@@ -163,18 +215,30 @@ export async function approachObject3d(page, step, readMany) {
             : dz > 0
               ? 'ArrowDown'
               : 'ArrowUp'
-        const coordinate = Math.abs(dx) > 0.22 ? x : z
-        const remaining = Math.abs(dx) > 0.22 ? Math.abs(dx) : Math.abs(dz)
+        const alongX = Math.abs(dx) > 0.22
+        const coordinate = alongX ? x : z
+        const remaining = alongX ? Math.abs(dx) : Math.abs(dz)
+        if (remaining > CRUISE_MIN) {
+          // Long leg: hold the arrow and follow the position (a test driver, not a series of
+          // taps). Each read waits for a frame (~170 ms without a GPU), so the release comes
+          // early by the measured speed and the read latency; pulses below finish the leg.
+          await cruise(next, alongX, alongX ? goal.x : goal.z, coordinate)
+          continue
+        }
         // Estimate speed from the last actual pulse. Larger safe pulses reduce the
         // number of expensive browser round trips on software-rendered 3D, while
         // limiting each pulse to half the remaining distance at the measured speed.
+        // Each pulse costs ~300 ms of reads there, so a 200 ms ceiling spent more
+        // time observing than walking: a long straight leg (the Ilha's 11 units to the
+        // lighthouse) ran out of time on a correct game. Half the remaining distance
+        // still bounds the overshoot.
         const speed =
           previousPulse?.key === next
             ? Math.abs(coordinate - previousPulse.coordinate) / previousPulse.duration
             : 0
         const duration =
           speed > 0.0001
-            ? Math.max(16, Math.min(200, Math.floor((remaining * 0.5) / speed)))
+            ? Math.max(16, Math.min(600, Math.floor((remaining * 0.5) / speed)))
             : remaining > 0.6
               ? 80
               : 16

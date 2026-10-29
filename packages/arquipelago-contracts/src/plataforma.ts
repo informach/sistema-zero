@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import type { AparenciaLida } from './aparencias'
+import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
 
 /**
  * A PORTA entre o jogo e a plataforma. A página da plataforma que hospeda o jogo monta este
@@ -71,7 +73,7 @@ export interface ServicoDoJogo {
 }
 
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */
-export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio'
+export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi'
 export interface PedidoDeFerramenta {
   ferramenta: FerramentaDaPlataforma
   /** Identifica o que o jogo quer de volta (o objeto, o desafio). */
@@ -81,6 +83,7 @@ export interface PedidoDeFerramenta {
 }
 export type ResultadoDeFerramenta =
   | { situacao: 'pronto'; criacaoId: string }
+  | { situacao: 'rotina-pronta'; resultado: ResultadoDaFerramentaRotina }
   | { situacao: 'cancelado' }
   | { situacao: 'indisponivel'; motivo: string }
 
@@ -94,6 +97,8 @@ export interface Plataforma {
   salvarQuarto(quarto: QuartoDoJogo): Promise<QuartoDoJogo>
   servico: ServicoDoJogo
   abrirFerramenta(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta>
+  /** Só criações da pessoa desta montagem. Bytes próprios, sem URL autenticada no jogo. */
+  lerAparencia?(criacaoId: string, sinal?: AbortSignal): Promise<AparenciaLida | null>
   /** Sai do jogo e volta para a plataforma (a página decide para onde). */
   voltarParaPlataforma(): void
   relatarErro(erro: unknown, contexto: string): void

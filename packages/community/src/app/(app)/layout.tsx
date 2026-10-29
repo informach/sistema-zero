@@ -38,7 +38,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     >
       <CommunityFrame
         user={user}
-        arquipelagoLiberado={acesso.success && acesso.data.liberado}
+        // Restrição temporária só do menu durante a validação do jogo.
+        arquipelagoLiberado={
+          (session.role === 'admin' || session.role === 'superadmin') &&
+          acesso.success &&
+          acesso.data.liberado
+        }
         banner={
           session.act ? (
             <ImpersonationBanner

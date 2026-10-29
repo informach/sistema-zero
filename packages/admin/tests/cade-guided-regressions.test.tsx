@@ -7,9 +7,9 @@ import {
   type SectionExecutionRule,
 } from '@sistemazero/core/learning'
 import type { QuizBlock } from '@sistemazero/member-shell/lib/types'
-import aula1 from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
-import aula2 from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
-import certificado from '../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
+import aula1 from '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import aula2 from '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
+import certificado from '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
 import type { QuizBlock as AuthoredQuiz } from '../../members/src/domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../members/src/domain/course/quiz'
 import { parseQuizImport } from '../src/lib/lesson-block-import'
@@ -164,30 +164,38 @@ test('editar passos preserva as referências das verificações e mostra o selet
   }
 })
 
-test('manifesto, autoria e importação recusam previsão mista e múltiplas corretas', () => {
-  for (const issue of ['mixed', 'multiple']) {
-    const invalid = structuredClone(quiz)
-    if (issue === 'mixed') delete invalid.questions[1]!.predictionScene
-    else
-      invalid.questions[0]!.correctChoiceIds = invalid.questions[0]!.choices.slice(0, 2).map(
-        (c) => c.id,
-      )
-    expect(isManifestQuiz(invalid)).toBe(false)
-    expect(validateQuizAuthoring(invalid)).not.toBeNull()
-    const imported = parseQuizImport(
-      JSON.stringify({
-        questions: invalid.questions.map((q) => ({
-          predictionScene: q.predictionScene,
-          prompt: q.prompt,
-          choices: q.choices.map((c) => ({
-            label: c.label,
-            correct: q.correctChoiceIds.includes(c.id),
-          })),
+/** O quiz como chega na importação do Admin. */
+const paraImportar = (q: AuthoredQuiz) =>
+  parseQuizImport(
+    JSON.stringify({
+      questions: q.questions.map((p) => ({
+        predictionScene: p.predictionScene,
+        prompt: p.prompt,
+        choices: p.choices.map((c) => ({
+          label: c.label,
+          correct: p.correctChoiceIds.includes(c.id),
         })),
-      }),
-    )
-    expect(imported.success).toBe(false)
-  }
+      })),
+    }),
+  )
+
+test('manifesto, autoria e importação recusam mais de uma resposta certa', () => {
+  const invalid = structuredClone(quiz)
+  invalid.questions[0]!.correctChoiceIds = invalid.questions[0]!.choices.slice(0, 2).map(
+    (c) => c.id,
+  )
+  expect(isManifestQuiz(invalid)).toBe(false)
+  expect(validateQuizAuthoring(invalid)).not.toBeNull()
+  expect(paraImportar(invalid).success).toBe(false)
+})
+
+test('manifesto, autoria e importação aceitam demonstração só em algumas perguntas', () => {
+  // Desde o Jardim Secreto, cada pergunta pode ter ou não a própria demonstração.
+  const misto = structuredClone(quiz)
+  delete misto.questions[1]!.predictionScene
+  expect(isManifestQuiz(misto)).toBe(true)
+  expect(validateQuizAuthoring(misto)).toBeNull()
+  expect(paraImportar(misto).success).toBe(true)
 })
 
 test('prévia sem nota corrige e retoma a pergunta após desmontar, sem confiar em correção local', async () => {

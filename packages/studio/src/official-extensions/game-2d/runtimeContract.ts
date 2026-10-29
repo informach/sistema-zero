@@ -596,6 +596,16 @@ export interface GameTwoDWorldApi {
     id?: string,
   ): void
   /**
+   * "Quando o sprite começar a encostar em algum do grupo": uma vez por membro a cada
+   * novo encontro (o par do onTouchGroup do Jogo 3D). Sprite e grupo entram como thunks.
+   */
+  onTouchGroup(
+    getSprite: () => GameTwoDSprite | null,
+    getGroup: () => GameTwoDGroup | null,
+    fn: (item: GameTwoDSprite) => void,
+    id?: string,
+  ): void
+  /**
    * "Quando o sprite pular": o MOTOR avisa no instante do pulo (plataforma,
    * pular no chão e kit dino). O sprite entra como thunk, como no onOverlap.
    */
@@ -1031,6 +1041,7 @@ export const GAME_TWO_D_API_KEYS = [
   'onActionPressed',
   'onAnyInput',
   'onOverlap',
+  'onTouchGroup',
   'onJump',
   'keyDown',
   'pointerDown',

@@ -1,4 +1,13 @@
 import {
+  BRIDGE_TIMER_PLACES,
+  type BridgeTimerPlace,
+  CABIN_PIECES,
+  CABIN_RULES,
+  type CabinPiece,
+  type CabinRule,
+  CHEST_RULES,
+  type ChestRule,
+  COIN_COUNTER,
   isRecord,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
@@ -8,7 +17,12 @@ import {
   SCENE_LIMITS,
   type SceneId,
   type SceneSetup,
+  SEQUENCE_MODES,
+  SEQUENCE_SYMBOLS,
+  type SequenceMode,
+  type SequenceSymbol,
   SHEET_CROP_WIDTHS,
+  TIMED_BRIDGE,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
 import { type IslandState, initialIsland, isIslandState } from './island-3d'
@@ -97,6 +111,83 @@ export interface SceneCollectionMemory {
   position: 'near' | 'touching' | 'away'
   /** Não creditar afastamento/reinício de uma coleta preparada pelo autor no setup. */
   collectedThisRound: boolean
+}
+
+/**
+ * O contador de moedas (`coin-counter`, Poder "Moedas no caminho"): o valor de `moedas`, as moedas
+ * que ainda estão no caminho, as duas escolhas da regra e onde o personagem está.
+ */
+export interface SceneCoinCounter {
+  moedas: number
+  /** As seis moedas, da esquerda para a direita: ainda no caminho? */
+  present: boolean[]
+  /** A linha "Tirar a moeda do grupo" está na regra da coleta. */
+  disappear: boolean
+  rule: ChestRule
+  /** Numa moeda (0 a 5), no baú, ou afastado. */
+  at: number | 'chest' | null
+  chest: 'closed' | 'open'
+  /** A última soma, antes → agora; null antes da primeira e depois de recomeçar. */
+  last: { before: number; after: number } | null
+  /** Gesto: as somas desta partida e as moedas que já somaram nela. */
+  adds: number
+  counted: boolean[]
+  /** Gesto: o baú com mais de 5 moedas visto nas duas regras (fechado com "igual", aberto com "pelo menos"). */
+  compared: { equals: boolean; atLeast: boolean }
+}
+
+/**
+ * A porta com duas peças (`two-pieces`, Poder "O segredo da cabana"): as duas informações que o
+ * jogo guarda, o bloco que junta as perguntas da cabana e onde o personagem está.
+ */
+export interface SceneTwoPieces {
+  temChave: boolean
+  temEmblema: boolean
+  rule: CabinRule
+  /** Numa das peças, na porta da cabana, ou no começo. */
+  at: CabinPiece | 'door' | null
+  door: 'closed' | 'open'
+  /** As peças pegas nesta partida, na ordem em que foram pegas. */
+  order: CabinPiece[]
+  /** Gesto: a cabana aberta com "e" começando por cada peça (a ordem não importa). */
+  opened: { keyFirst: boolean; emblemFirst: boolean }
+}
+
+/**
+ * A ponte apressada (`timed-bridge`, Poder "A ponte apressada"): o que o jogo guarda
+ * (`ponteAberta`), onde mora o "depois de 4 segundos" e os relógios dele que ainda esperam.
+ */
+export interface SceneTimedBridge {
+  ponteAberta: boolean
+  place: BridgeTimerPlace
+  /** Os segundos que faltam em cada "depois de" que ainda espera (cada puxada soma um). */
+  timers: number[]
+  /** Os segundos desde a última puxada (null antes de puxar nesta partida). */
+  sincePull: number | null
+  /** Os segundos da partida. */
+  clock: number
+  /** Onde o personagem está: no começo, na alavanca, na entrada da ponte ou na pedra do sino. */
+  at: 'start' | 'lever' | 'bridge' | 'stone'
+  /** Gesto: puxadas e subidas sozinhas nesta partida. */
+  pulls: number
+  rises: number
+}
+
+/**
+ * O baú dos símbolos (`symbol-sequence`, Poder "O baú dos símbolos"): o jeito de o baú decidir,
+ * o `passo` que o jogo guarda (na ordem), os símbolos acesos e o baú.
+ */
+export interface SceneSymbolSequence {
+  mode: SequenceMode
+  /** Até onde a sequência chegou: 0 antes do sol, 1 depois do sol, 2 depois da lua. */
+  passo: number
+  /** Os símbolos acesos, na ordem em que acenderam (só contando, é a contagem). */
+  lit: SequenceSymbol[]
+  chest: 'closed' | 'open'
+  /** A pedra em que o personagem encostou por último (null no começo da partida). */
+  at: SequenceSymbol | null
+  /** Gesto: nesta partida, um símbolo fora da vez já recomeçou a tentativa. */
+  missed: boolean
 }
 
 /** A posição atual e a anterior permitem comparar um eixo por vez no mapa. */
@@ -1387,6 +1478,10 @@ export interface SceneState {
   evidence: SceneEvidence
   lighthouse: SceneLighthouseKey
   collection: SceneCollectionMemory
+  coins: SceneCoinCounter
+  pieces: SceneTwoPieces
+  bridge: SceneTimedBridge
+  sequence: SceneSymbolSequence
   walk: SceneLighthouseWalk
   keyPosition: SceneLighthousePosition
   once: SceneOnce
@@ -1676,6 +1771,71 @@ const COLLECTION_PADRAO: SceneCollectionMemory = {
   position: 'near',
   collectedThisRound: false,
 }
+const COINS_PADRAO: SceneCoinCounter = {
+  moedas: 0,
+  present: Array(COIN_COUNTER.coins).fill(true),
+  disappear: true,
+  rule: 'at-least',
+  at: null,
+  chest: 'closed',
+  last: null,
+  adds: 0,
+  counted: Array(COIN_COUNTER.coins).fill(false),
+  compared: { equals: false, atLeast: false },
+}
+export function cloneCoins(c: SceneCoinCounter): SceneCoinCounter {
+  return {
+    ...c,
+    present: [...c.present],
+    counted: [...c.counted],
+    last: c.last ? { ...c.last } : null,
+    compared: { ...c.compared },
+  }
+}
+const PIECES_PADRAO: SceneTwoPieces = {
+  temChave: false,
+  temEmblema: false,
+  rule: 'and',
+  at: null,
+  door: 'closed',
+  order: [],
+  opened: { keyFirst: false, emblemFirst: false },
+}
+export function clonePieces(p: SceneTwoPieces): SceneTwoPieces {
+  return { ...p, order: [...p.order], opened: { ...p.opened } }
+}
+const BRIDGE_PADRAO: SceneTimedBridge = {
+  ponteAberta: false,
+  place: 'lever',
+  timers: [],
+  sincePull: null,
+  clock: 0,
+  at: 'start',
+  pulls: 0,
+  rises: 0,
+}
+/** Uma partida nova da ponte: levantada; com o "depois de" no começo, o relógio dele já conta. */
+export function newBridgeMatch(place: BridgeTimerPlace): SceneTimedBridge {
+  return { ...BRIDGE_PADRAO, place, timers: place === 'start' ? [TIMED_BRIDGE.seconds] : [] }
+}
+export function cloneBridge(b: SceneTimedBridge): SceneTimedBridge {
+  return { ...b, timers: [...b.timers] }
+}
+const SEQUENCE_PADRAO: SceneSymbolSequence = {
+  mode: 'order',
+  passo: 0,
+  lit: [],
+  chest: 'closed',
+  at: null,
+  missed: false,
+}
+/** Uma partida nova dos símbolos: tudo apagado, o baú fechado e o passo em 0, no mesmo modo. */
+export function newSequenceMatch(mode: SequenceMode): SceneSymbolSequence {
+  return { ...SEQUENCE_PADRAO, mode, lit: [] }
+}
+export function cloneSequence(q: SceneSymbolSequence): SceneSymbolSequence {
+  return { ...q, lit: [...q.lit] }
+}
 const WALK_PADRAO: SceneLighthouseWalk = {
   frame: 0,
   x: LIGHTHOUSE_WALK.start,
@@ -1710,6 +1870,10 @@ function gruposComPadrao() {
   return [
     ['lighthouse', LIGHTHOUSE_PADRAO],
     ['collection', COLLECTION_PADRAO],
+    ['coins', COINS_PADRAO],
+    ['pieces', PIECES_PADRAO],
+    ['bridge', BRIDGE_PADRAO],
+    ['sequence', SEQUENCE_PADRAO],
     ['walk', WALK_PADRAO],
     ['keyPosition', KEY_POSITION_PADRAO],
     ['once', initialOnce(undefined)],
@@ -1868,6 +2032,10 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     ...(scene === 'island-3d' ? { island3d: initialIsland(setup?.goals) } : {}),
     lighthouse: { ...LIGHTHOUSE_PADRAO },
     collection: { ...COLLECTION_PADRAO },
+    coins: cloneCoins(COINS_PADRAO),
+    pieces: clonePieces(PIECES_PADRAO),
+    bridge: cloneBridge(BRIDGE_PADRAO),
+    sequence: cloneSequence(SEQUENCE_PADRAO),
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
     keyPosition: { ...KEY_POSITION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
@@ -2041,6 +2209,10 @@ export function cloneScene(state: SceneState): SceneState {
     },
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
+    coins: cloneCoins(state.coins),
+    pieces: clonePieces(state.pieces),
+    bridge: cloneBridge(state.bridge),
+    sequence: cloneSequence(state.sequence),
     walk: {
       ...state.walk,
       trail: [...state.walk.trail],
@@ -2271,6 +2443,86 @@ function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
 const between = (v: unknown, min: number, max: number): v is number =>
   num(v) && v >= min && v <= max
 const bool = (v: unknown): v is boolean => typeof v === 'boolean'
+function isSceneCoinCounter(v: unknown): v is SceneCoinCounter {
+  const n = COIN_COUNTER.coins
+  const count = (x: unknown) =>
+    typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= COIN_COUNTER.max
+  const flags = (x: unknown) => Array.isArray(x) && x.length === n && x.every(bool)
+  return (
+    isRecord(v) &&
+    count(v.moedas) &&
+    flags(v.present) &&
+    bool(v.disappear) &&
+    CHEST_RULES.some((r) => r === v.rule) &&
+    (v.at === null || v.at === 'chest' || (count(v.at) && (v.at as number) < n)) &&
+    (v.chest === 'closed' || v.chest === 'open') &&
+    (v.last === null ||
+      (isRecord(v.last) &&
+        count(v.last.before) &&
+        count(v.last.after) &&
+        v.last.after === Math.min(COIN_COUNTER.max, (v.last.before as number) + 1))) &&
+    count(v.adds) &&
+    flags(v.counted) &&
+    isRecord(v.compared) &&
+    bool(v.compared.equals) &&
+    bool(v.compared.atLeast)
+  )
+}
+function isSceneTwoPieces(v: unknown): v is SceneTwoPieces {
+  const piece = (x: unknown) => CABIN_PIECES.some((p) => p === x)
+  return (
+    isRecord(v) &&
+    bool(v.temChave) &&
+    bool(v.temEmblema) &&
+    CABIN_RULES.some((r) => r === v.rule) &&
+    (v.at === null || v.at === 'door' || piece(v.at)) &&
+    (v.door === 'closed' || v.door === 'open') &&
+    Array.isArray(v.order) &&
+    v.order.length <= CABIN_PIECES.length &&
+    v.order.every(piece) &&
+    new Set(v.order).size === v.order.length &&
+    // Uma peça na ordem é uma peça guardada (e só as guardadas entram).
+    v.order.includes('key') === v.temChave &&
+    v.order.includes('emblem') === v.temEmblema &&
+    isRecord(v.opened) &&
+    bool(v.opened.keyFirst) &&
+    bool(v.opened.emblemFirst)
+  )
+}
+function isSceneTimedBridge(v: unknown): v is SceneTimedBridge {
+  const inteiro = (x: unknown, max: number) =>
+    typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= max
+  return (
+    isRecord(v) &&
+    bool(v.ponteAberta) &&
+    BRIDGE_TIMER_PLACES.some((p) => p === v.place) &&
+    Array.isArray(v.timers) &&
+    v.timers.length <= TIMED_BRIDGE.timers &&
+    v.timers.every((t) => inteiro(t, TIMED_BRIDGE.seconds) && t > 0) &&
+    (v.sincePull === null || inteiro(v.sincePull, TIMED_BRIDGE.sinceMax)) &&
+    inteiro(v.clock, TIMED_BRIDGE.clockMax) &&
+    ['start', 'lever', 'bridge', 'stone'].includes(v.at as string) &&
+    inteiro(v.pulls, TIMED_BRIDGE.countMax) &&
+    inteiro(v.rises, TIMED_BRIDGE.countMax)
+  )
+}
+function isSceneSymbolSequence(v: unknown): v is SceneSymbolSequence {
+  return (
+    isRecord(v) &&
+    SEQUENCE_MODES.some((m) => m === v.mode) &&
+    typeof v.passo === 'number' &&
+    Number.isInteger(v.passo) &&
+    v.passo >= 0 &&
+    v.passo <= 2 &&
+    Array.isArray(v.lit) &&
+    v.lit.length <= SEQUENCE_SYMBOLS.length &&
+    new Set(v.lit).size === v.lit.length &&
+    v.lit.every((x) => SEQUENCE_SYMBOLS.some((y) => y === x)) &&
+    (v.chest === 'closed' || v.chest === 'open') &&
+    (v.at === null || SEQUENCE_SYMBOLS.some((y) => y === v.at)) &&
+    bool(v.missed)
+  )
+}
 const strings = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((s) => typeof s === 'string' && s.length <= 80)
 const numbers = (v: unknown, max: number): v is number[] =>
@@ -2308,6 +2560,10 @@ export function isSceneState(value: unknown): value is SceneState {
       (value.collection.hasKey || value.collection.collectedThisRound))
   )
     return false
+  if (!isSceneCoinCounter(value.coins)) return false
+  if (!isSceneTwoPieces(value.pieces)) return false
+  if (!isSceneTimedBridge(value.bridge)) return false
+  if (!isSceneSymbolSequence(value.sequence)) return false
   if (!isSceneLighthouseWalk(value.walk)) return false
   const position = value.keyPosition
   const validPosition = (point: unknown) =>

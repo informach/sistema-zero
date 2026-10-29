@@ -2,6 +2,10 @@
  * Publica os modelos do Blender da Ilha do Farol na biblioteca de modelos dos cursos.
  *
  *   ILHA_OUT=<pasta dos .glb> bun docs/aulas-interativas-tecnico/qa/publicar-ilha-modelos.ts [--remover-antigos]
+ *   ILHA_OUT=<pasta> bun …/publicar-ilha-modelos.ts --so pedras,cenario-praia-tropical
+ *
+ * Com `--so`, publica só as peças listadas (a pasta precisa ter só elas) e mantém as outras como
+ * estão no `modelos.json`: refazer uma peça no Blender não muda o sha das demais.
  *
  * Para cada peça de `docs/design/ilha-do-farol-blender` (gerada com `build_all.py`): otimiza o GLB
  * (solda, deduplica e quantiza, como a arte do Molda), grava o módulo da biblioteca
@@ -100,8 +104,18 @@ if (import.meta.main) {
     ? JSON.parse(readFileSync(MODELOS_JSON, 'utf8'))
     : {}
   const modelos: Record<string, IlhaModelo> = {}
+  const so = process.argv.includes('--so')
+    ? new Set(process.argv[process.argv.indexOf('--so') + 1]?.split(',') ?? [])
+    : null
+  for (const id of so ?? [])
+    if (!(ILHA_PECAS as readonly string[]).includes(id)) throw Error(`Peça desconhecida: ${id}`)
   let total = 0
   for (const id of ILHA_PECAS) {
+    if (so && !so.has(id)) {
+      if (!anteriores[id]) throw Error(`${id} não está no modelos.json`)
+      modelos[id] = anteriores[id]
+      continue
+    }
     const r = await otimizar(readFileSync(resolve(pasta, `${id}.glb`)))
     const sha = publishCourseModel(r.bytes)
     modelos[id] = { sha, bytes: r.bytes.length, clips: r.clips, center: r.center, size: r.size }

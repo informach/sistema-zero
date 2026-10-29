@@ -1890,6 +1890,17 @@ function compileStatementCode(
         const id = stmt.__id ?? identifiers.reserveInternal('eventoDeContato')
         return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
       }
+      case 'g2d:onTouchGroup': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        // Sprite e grupo como thunks, pela mesma razão do onOverlap.
+        const id = stmt.__id ?? identifiers.reserveInternal('eventoDeContato')
+        return `${pad}SZGame2D.onTouchGroup(() => ${identifiers.get(stmt.spriteVar)}, () => ${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      }
       case 'g2d:onJump': {
         const body = compileStatements(
           stmt.body,
@@ -4310,6 +4321,7 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:onKey':
       case 'g2d:onActionPressed':
       case 'g2d:onOverlap':
+      case 'g2d:onTouchGroup':
       case 'g2d:onJump':
       case 'g2d:onAnyInput':
       case 'g2d:onLevelEnter':
@@ -4379,6 +4391,7 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:onKey':
       case 'g2d:onActionPressed':
       case 'g2d:onOverlap':
+      case 'g2d:onTouchGroup':
       case 'g2d:onJump':
       case 'g2d:onAnyInput':
       case 'g2d:onLevelEnter':
@@ -5480,6 +5493,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(stmt.vy, names)
         return
       case 'g2d:onSpriteGroupOverlap':
+      case 'g2d:onTouchGroup':
         names.add(stmt.spriteVar)
         names.add(stmt.groupVar)
         names.add(stmt.itemName)

@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, CylinderCollider, RigidBody } from '@react-three/rapier'
-import { type Ilha, ilhaAberta } from '@sistemazero/arquipelago-contracts'
+import { type Ilha, type IlhaId, ilhaAberta } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   type BufferGeometry,
@@ -16,11 +16,50 @@ import {
   Vector3,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosDesafios, useDesafios } from '../estado/desafios'
+import { andarPedacos, corMedia, pedacosPintados } from '../sistemas/cor-da-ilha'
+import { BOIAS_DA_ILHA_DO_ANEL, RODA_DA_ILHA_CENTRAL } from '../sistemas/correnteza'
+import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
+import { quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import { Boias } from './boias'
+import { BosqueVivo } from './bosque-vivo'
+import {
+  ALTURA_DA_CORDA,
+  corrimaosDaPonte,
+  postesDaPonte,
+  type Tabua,
+  tabuasDaPonte,
+} from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
+import {
+  aplicarOpacidade,
+  IlhaCompleta,
+  type IlhaPreparada,
+  type Troca,
+  useIlhaCompleta,
+} from './ilha-completa'
 import { useInterativo } from './interativos'
-import { ALTURA_DA_TERRA, ilhasEmVolta, RAIO_DA_ILHA_DO_ANEL, trajetoDaPonte } from './medidas'
-import { CINZA, ComReserva, copiarNo, coresOriginais, MODELOS, tingir, useModelo } from './modelos'
+import {
+  ALTURA_DA_TERRA,
+  ALTURA_DAS_NUVENS,
+  apoiosDaIlhaLeve,
+  fracaoMontada,
+  giroDaIlha,
+  ilhasEmVolta,
+  RAIO_DA_ILHA_DO_ANEL,
+  rodasDaIlhaNoModelo,
+  trajetoDaPonte,
+} from './medidas'
+import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { NuvensVivo } from './nuvens-vivo'
+import { PicoVivo } from './pico-vivo'
+import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
+import { PlacaDaPonte } from './placa-da-ponte'
+import { QuadroDasCores } from './quadro-das-cores'
+import { RecifeVivo } from './recife-vivo'
+import { ValeVivo } from './vale-vivo'
+import { VilaViva } from './vila-viva'
 
-const TRECHO_QUEBRADO = 0.25
 const DURACAO_DA_CHEGADA_MS = 4500
 
 /** Cor da ilha: cinza antes do posto; a cor volta conforme `cor` (0 a 1). */
@@ -191,48 +230,108 @@ function Enfeites({ id, cor }: { id: Ilha['id']; cor: number }) {
   }
 }
 
-const ALTURA_DAS_NUVENS = 7
+/** O que mexe em cada ilha completa (montado com ela ativa, em coordenadas do mundo). */
+const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
+  bosque: BosqueVivo,
+  'vila-doce': VilaViva,
+  recife: RecifeVivo,
+  pico: PicoVivo,
+  'vale-dos-dinos': ValeVivo,
+  nuvens: NuvensVivo,
+}
 
 function IlhaDoAnel({
   ilha,
   centro,
   cor,
+  estado,
+  preparada,
+  troca,
 }: {
   ilha: Ilha
   centro: { x: number; z: number }
   cor: number
+  estado: EstadoDaIlha
+  preparada: IlhaPreparada | null
+  troca: Troca
 }) {
   const flutua = ilha.id === 'nuvens'
+  const Viva = ILHAS_VIVAS[ilha.id]
   const y = flutua ? ALTURA_DAS_NUVENS : 0
+  // O chão de antes, girado como o modelo (o grupo fica sem giro; a cópia do modelo é que gira).
+  const apoios = useMemo(() => {
+    const g = giroDaIlha(ilha)
+    return apoiosDaIlhaLeve(ilha).map((a) => ({
+      x: a.x * Math.cos(g) + a.z * Math.sin(g),
+      z: -a.x * Math.sin(g) + a.z * Math.cos(g),
+      raio: a.raio,
+    }))
+  }, [ilha])
+  // A leve fica sempre montada: é a reserva enquanto a completa baixa ou se ela falhar, e some
+  // esmaecendo quando a completa entra. Só uma das duas colide por vez.
   return (
-    <group position={[centro.x, y, centro.z]}>
-      <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
-        <IlhaDoModelo ilha={ilha} cor={cor} />
-      </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CylinderCollider
-          args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
-          position={[0, ALTURA_DA_TERRA - 0.8, 0]}
-        />
-      </RigidBody>
-    </group>
+    <>
+      <group position={[centro.x, y, centro.z]}>
+        <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
+          <IlhaDoModelo ilha={ilha} troca={troca} />
+        </ComReserva>
+        {!completaColide(estado) && (
+          <RigidBody type="fixed" colliders={false}>
+            {apoios.map((a) => (
+              <CylinderCollider
+                key={`${a.x},${a.z}`}
+                args={[0.8, a.raio]}
+                position={[a.x, ALTURA_DA_TERRA - 0.8, a.z]}
+              />
+            ))}
+          </RigidBody>
+        )}
+        {preparada && completaNaCena(estado) && (
+          <IlhaCompleta preparada={preparada} colide={completaColide(estado)} troca={troca} />
+        )}
+        {preparada && completaColide(estado) && (
+          <ComReserva reserva={null}>
+            <QuadroDasCores ilha={ilha} centro={centro} preparada={preparada} />
+          </ComReserva>
+        )}
+      </group>
+      {/* O que mexe na ilha (no Bosque: cipós, escalada, lago, percurso): só com a completa ativa. */}
+      {preparada && completaColide(estado) && Viva ? (
+        <Viva ilha={ilha} centro={centro} preparada={preparada} troca={troca} />
+      ) : null}
+    </>
   )
 }
 
 /**
  * A ilha do Blender (`ilhas-do-anel.glb`, um nó por ilha). O lado da chegada da ponte (+x do
- * modelo) é virado para a sua ilha; as cores saem do cinza conforme `cor` (a lava acende junto).
+ * modelo) é virado para a sua ilha; os pedaços saem do cinza pela tinta da ilha (a lava acende junto).
  */
-function IlhaDoModelo({ ilha, cor }: { ilha: Ilha; cor: number }) {
+function IlhaDoModelo({ ilha, troca }: { ilha: Ilha; troca: Troca }) {
   const raiz = useModelo(MODELOS.ilhas)
-  const { modelo, cores } = useMemo(() => {
+  const { modelo, materiais } = useMemo(() => {
     const copia = copiarNo(raiz, ilha.id, true)
-    copia.rotation.y = Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
-    return { modelo: copia, cores: coresOriginais(copia) }
-  }, [raiz, ilha.id, ilha.angulo])
+    copia.rotation.y = giroDaIlha(ilha)
+    const materiais = materiaisDe(copia)
+    // Os pedaços saem do cinza no shader (`pintura-da-ilha.ts`), os mesmos da completa.
+    pintarMateriais(materiais, pinturaDaIlha(ilha))
+    return { modelo: copia, materiais }
+  }, [raiz, ilha])
   useEffect(() => {
-    tingir(cores, cor)
-  }, [cores, cor])
+    troca.leve = modelo
+    return () => {
+      if (troca.leve === modelo) troca.leve = undefined
+    }
+  }, [troca, modelo])
+  // Sai esmaecendo quando a completa entra (e volta quando ela sai); parada, não mexe em nada.
+  const aplicada = useRef(1)
+  useFrame(() => {
+    const opacidade = 1 - troca.opacidade
+    if (opacidade === aplicada.current) return
+    aplicada.current = opacidade
+    aplicarOpacidade(materiais, opacidade)
+    modelo.visible = opacidade > 0
+  })
   return <primitive object={modelo} />
 }
 
@@ -281,31 +380,15 @@ function Ponte({
   tabuasVisiveis: number
 }) {
   const pontos = useMemo(() => trajetoDaPonte(ilha, 36), [ilha])
-  const tabuas = useMemo(() => {
-    const lista: Tabua[] = []
-    for (let i = 0; i < pontos.length - 1; i++) {
-      const a = pontos[i]
-      const b = pontos[i + 1]
-      if (!a || !b) continue
-      const giro = Math.atan2(b.x - a.x, b.z - a.z)
-      const incl = -Math.atan2(b.y - a.y, Math.hypot(b.x - a.x, b.z - a.z))
-      for (let k = 0; k < 2; k++) {
-        const t = k / 2 + 0.25
-        lista.push({
-          x: a.x + (b.x - a.x) * t,
-          y: a.y + (b.y - a.y) * t,
-          z: a.z + (b.z - a.z) * t,
-          giro,
-          incl,
-        })
-      }
-    }
-    return lista
-  }, [pontos])
-  const limite = Math.floor(tabuas.length * (inteira ? tabuasVisiveis : TRECHO_QUEBRADO))
+  const tabuas = useMemo(() => tabuasDaPonte(pontos), [pontos])
+  // A corda da ponte inteira segura o corpo (uma parede baixa sob cada corda, só para o corpo).
+  const corrimaos = useMemo(() => corrimaosDaPonte(ilha.id, postesDaPonte(tabuas)), [ilha, tabuas])
+  const montada = fracaoMontada(inteira, tabuasVisiveis)
+  const limite = Math.floor(tabuas.length * montada)
+  // O chão que segura o corpo acompanha as tábuas (só muda quando um trecho inteiro entra).
+  const ate = Math.floor((pontos.length - 1) * montada)
 
   const trechos = useMemo(() => {
-    const ate = inteira ? pontos.length - 1 : Math.floor((pontos.length - 1) * TRECHO_QUEBRADO)
     const lista: { pos: [number, number, number]; rot: [number, number, number]; meio: number }[] =
       []
     for (let i = 0; i < ate; i++) {
@@ -324,31 +407,23 @@ function Ponte({
       })
     }
     return lista
-  }, [pontos, inteira])
+  }, [pontos, ate])
 
   return (
     <>
       <ComReserva reserva={<TabuasDeAntes tabuas={tabuas} limite={limite} inteira={inteira} />}>
         <PonteDoModelo tabuas={tabuas} limite={limite} inteira={inteira} />
       </ComReserva>
-      {inteira && tabuasVisiveis < 1 ? null : (
-        <RigidBody type="fixed" colliders={false}>
-          {trechos.map((t, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: os trechos seguem a ordem do trajeto.
-            <CuboidCollider key={i} args={[1.1, 0.08, t.meio]} position={t.pos} rotation={t.rot} />
-          ))}
-        </RigidBody>
-      )}
+      <RigidBody type="fixed" colliders={false}>
+        {trechos.map((t, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: os trechos seguem a ordem do trajeto.
+          <CuboidCollider key={i} args={[1.1, 0.08, t.meio]} position={t.pos} rotation={t.rot} />
+        ))}
+      </RigidBody>
+      {inteira && tabuasVisiveis >= 1 && <Colisores lista={corrimaos} />}
+      {!inteira && tabuas[limite - 1] && <PlacaDaPonte ilha={ilha} tabua={tabuas[limite - 1]!} />}
     </>
   )
-}
-
-interface Tabua {
-  x: number
-  y: number
-  z: number
-  giro: number
-  incl: number
 }
 
 /** Põe cada tábua no lugar; as que ainda não chegaram ficam escondidas lá embaixo. */
@@ -389,10 +464,6 @@ function TabuasDeAntes({
   )
 }
 
-/** De quantas em quantas tábuas vai um par de postes (com a corda entre eles). */
-const TABUAS_POR_POSTE = 6
-const LADO_DO_POSTE = 1.2
-const ALTURA_DA_CORDA = 0.8
 const CINZA_DA_PONTE = new Color('#9aa0aa')
 const FRENTE = new Vector3(0, 0, 1)
 const tmpA = new Vector3()
@@ -439,23 +510,15 @@ function PonteDoModelo({
   }, [inteira, pecas])
 
   // Postes: dos dois lados, de tantas em tantas tábuas, com a base no tampo da tábua.
-  const postes = useMemo(() => {
-    const lista: { tabua: number; pos: Vector3; q: Quaternion }[] = []
-    for (let i = 0; i < tabuas.length; i += TABUAS_POR_POSTE) {
-      const t = tabuas[i]
-      if (!t) continue
-      for (const lado of [-1, 1]) {
-        const dx = Math.cos(t.giro) * LADO_DO_POSTE * lado
-        const dz = -Math.sin(t.giro) * LADO_DO_POSTE * lado
-        lista.push({
-          tabua: i,
-          pos: new Vector3(t.x + dx, t.y + 0.02, t.z + dz),
-          q: new Quaternion().setFromEuler(new Euler(0, t.giro, 0)),
-        })
-      }
-    }
-    return lista
-  }, [tabuas])
+  const postes = useMemo(
+    () =>
+      postesDaPonte(tabuas).map((p) => ({
+        tabua: p.tabua,
+        pos: new Vector3(...p.pos),
+        q: new Quaternion().setFromEuler(new Euler(0, p.giro, 0)),
+      })),
+    [tabuas],
+  )
   const [malhaTabuas, setMalhaTabuas] = useState<InstancedMesh | null>(null)
   const [malhaPostes, setMalhaPostes] = useState<InstancedMesh | null>(null)
   const [malhaCorda, setMalhaCorda] = useState<InstancedMesh | null>(null)
@@ -514,6 +577,36 @@ function PonteDoModelo({
   )
 }
 
+/**
+ * A tinta da ilha a cada quadro: a chegada da ponte e os seis pedaços do Quadro das Cores (o feito
+ * escorre; a primeira leitura vai na hora). Devolve a cor média, para as formas simples.
+ */
+function usePinturaDaIlha(ilha: Ilha, chegada: number): number {
+  const { loja, plataforma } = useJogo()
+  const desafios = lojaDosDesafios(loja, plataforma)
+  const dados = useDesafios(desafios, (s) => s.dados)
+  const fechado = useDesafios(desafios, (s) => s.fechado)
+  const pintura = pinturaDaIlha(ilha)
+  // Sem lista ainda (carregando): espera, sem mexer; fechada (desligada ou fora): toda colorida.
+  const alvo = useMemo(
+    () =>
+      dados
+        ? pedacosPintados(quadrosDaIlha(dados.desafios, ilha.id))
+        : fechado
+          ? pedacosPintados(null)
+          : null,
+    [dados, fechado, ilha.id],
+  )
+  const primeira = useRef(true)
+  useFrame((_, dt) => {
+    pintura.uniforms.uArqChegada.value = chegada
+    if (!alvo) return
+    andarPedacos(pintura.uniforms.uArqPedacos.value, alvo, Math.min(dt, 0.1), primeira.current)
+    primeira.current = false
+  })
+  return corMedia(chegada, alvo ?? pedacosPintados(null))
+}
+
 /** Quando a ponte acabou de abrir: a cor escorre pela ilha e as tábuas aparecem uma a uma. */
 function useChegada(ilha: Ilha, aberta: boolean): number {
   const { loja } = useJogo()
@@ -522,7 +615,9 @@ function useChegada(ilha: Ilha, aberta: boolean): number {
   const inicio = useRef<number | null>(null)
   useEffect(() => {
     if (aberta && !jaViu && progresso === 0) {
-      loja.getState().dizer(`A ponte para o ${ilha.nome} ficou pronta. A cor voltou para lá.`)
+      loja
+        .getState()
+        .dizer(`A ponte para o ${ilha.nome} ficou pronta. A cor começou a voltar para lá.`)
     }
   }, [aberta, jaViu, progresso, ilha.nome, loja])
   useFrame(() => {
@@ -544,15 +639,41 @@ function useChegada(ilha: Ilha, aberta: boolean): number {
 }
 
 function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: number } }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const jornada = useEstado((s) => s.jornada)
   const aberta = ilhaAberta(ilha.id, jornada)
   const chegada = useChegada(ilha, aberta)
-  // Na ilha aberta (nesta fase só a silhueta), o Zappy explica o que vem.
+  const cor = usePinturaDaIlha(ilha, aberta ? chegada : 0)
+  const troca = useRef<Troca>({ opacidade: 0 }).current
+  const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
+  // A ilha aberta ganha as rodas de boias dela: dá para nadar em volta (a das Nuvens fica no céu).
+  // No Bosque o meio da roda vai para o lado da ponta de campo; o Recife tem também as do navio e
+  // do labirinto (`rodasDaIlhaNoModelo`).
+  const rodas = useMemo(() => {
+    const g = giroDaIlha(ilha)
+    return rodasDaIlhaNoModelo(ilha, BOIAS_DA_ILHA_DO_ANEL).map((r) => ({
+      x: centro.x + r.x * Math.cos(g) + r.z * Math.sin(g),
+      z: centro.z - r.x * Math.sin(g) + r.z * Math.cos(g),
+      livre: r.livre,
+    }))
+  }, [centro, ilha])
+  const temRoda = aberta && ilha.id !== 'nuvens'
+  useEffect(() => {
+    if (!temRoda) return
+    movimento.rodasDeNado.push(...rodas)
+    return () => {
+      for (const roda of rodas) {
+        const i = movimento.rodasDeNado.indexOf(roda)
+        if (i >= 0) movimento.rodasDeNado.splice(i, 1)
+      }
+    }
+  }, [temRoda, rodas, movimento])
+  // Na ilha aberta que ainda não tem nada vivo (só a silhueta), o Zappy explica o que vem. No
+  // Bosque já moram a Capi e os bichos: lá o "E" é dela, dos cipós e da placa.
   useInterativo(`ilha-${ilha.id}`, {
     x: centro.x,
     z: centro.z,
-    raio: aberta ? RAIO_DA_ILHA_DO_ANEL : 0,
+    raio: aberta && !ILHAS_VIVAS[ilha.id] ? RAIO_DA_ILHA_DO_ANEL : 0,
     rotulo: () => 'Olhar em volta',
     agir: () =>
       loja
@@ -563,16 +684,40 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   })
   return (
     <>
-      <IlhaDoAnel ilha={ilha} centro={centro} cor={aberta ? chegada : 0} />
+      <IlhaDoAnel
+        ilha={ilha}
+        centro={centro}
+        cor={cor}
+        estado={estado}
+        preparada={preparada}
+        troca={troca}
+      />
       <Ponte ilha={ilha} inteira={aberta} tabuasVisiveis={chegada} />
+      {temRoda &&
+        rodas.map((roda, i) => (
+          <Boias
+            // biome-ignore lint/suspicious/noArrayIndexKey: as rodas de uma ilha são fixas e na ordem
+            key={i}
+            roda={roda}
+            outras={rodas.filter((r) => r !== roda)}
+          />
+        ))}
     </>
   )
 }
 
 export function Anel() {
   const ilhas = useMemo(() => ilhasEmVolta(), [])
+  // A lista dos desafios pinta os pedaços de todas as ilhas: lida uma vez ao abrir o jogo.
+  const { loja, plataforma } = useJogo()
+  useEffect(() => {
+    const desafios = lojaDosDesafios(loja, plataforma)
+    void desafios.getState().carregar()
+    return () => desafios.getState().cancelar()
+  }, [loja, plataforma])
   return (
     <>
+      <Boias roda={RODA_DA_ILHA_CENTRAL} />
       {ilhas.map(({ ilha, centro }) => (
         <IlhaComPonte key={ilha.id} ilha={ilha} centro={centro} />
       ))}

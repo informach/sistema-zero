@@ -91,7 +91,8 @@ export class SubmitQuizAttemptService {
     if (questionId !== undefined) {
       const question = block.content.questions.find((q) => q.id === questionId)
       if (
-        !question?.predictionScene ||
+        !question ||
+        !block.content.questions.some((q) => q.predictionScene) ||
         Object.keys(answers).length !== 1 ||
         !answers[questionId]?.length ||
         !answers[questionId]?.every((id) => question.choices.some((c) => c.id === id))

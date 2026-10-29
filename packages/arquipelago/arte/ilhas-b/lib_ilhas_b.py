@@ -49,9 +49,14 @@ lib_q.PALETTE.update({
     'geloFundo': ('#6fc3e6', 0.2, None, 0),
     'agarra': ('#ff8a5a', 0.6, None, 0),
     'agarraAzul': ('#5b8fd6', 0.6, None, 0),
-    'neveTrilha': ('#e2e7ef', 0.9, None, 0),
+    # Neve batida, um cinza-azulado mais fundo que a neve (#e8eef5): com #e2e7ef o caminho sumia de dia.
+    'neveTrilha': ('#c3cddb', 0.9, None, 0),
     'iglu': ('#f7fbff', 0.7, None, 0),
     'igluJunta': ('#d2e4f2', 0.8, None, 0),
+    # O iglu por dentro (fase3-08): a parede de dentro, a brasa do fogareiro (sempre acesa) e o chocolate.
+    'igluDentro': ('#e2eefa', 0.75, None, 0),
+    'brasa': ('#ff7a3c', 0.5, '#ff8a3c', 1.2),
+    'chocolate': ('#6b3f25', 0.5, None, 0),
     'trenoVermelho': ('#e0584f', 0.5, None, 0),
     'trenoMadeira': ('#c08a5a', 0.85, None, 0),
     'patimTreno': ('#4a4f57', 0.4, None, 0),
@@ -127,6 +132,33 @@ lib_q.PALETTE.update({
     'livro3': ('#5b8fd6', 0.8, None, 0),
 })
 lib_q.ALPHA.update({'janelaFarol': 0.3, 'lenteFarol': 0.55, 'gelo': 0.85, 'geloClaro': 0.9})
+
+
+# ------------------------------------------------------------------ colisão (nós col-*)
+# A convenção do README de `arte/ilhas`: `col-terreno` vira malha de triângulos, `col-cil-*` cilindro
+# em pé e o resto caixa. `col_caixa`, `col_cilindro` e `grupos_col` vêm do `lib_mundo`.
+def col_terreno(objs):
+    """`col-terreno`: cópia das malhas do chão (e do que se pisa como chão), juntas e sem material."""
+    copias = []
+    for o in objs:
+        c = o.copy()
+        c.data = o.data.copy()
+        bpy.context.collection.objects.link(c)
+        copias.append(c)
+    t = lib_mundo._juntar(copias, 'col-terreno')
+    t.data.materials.clear()
+    return t
+
+
+def col_entre(base, a, b, larg, alto, baixo=0.0):
+    """Caixa em pé de `a` até `b` (pontos do Blender, a altura de cada um é o chão ali): `larg` de
+    espessura, de `baixo` abaixo do chão mais baixo até `alto` acima do mais alto (guarda-corpo)."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    comp = math.hypot(dx, dy)
+    z0 = min(a[2], b[2]) - baixo
+    z1 = max(a[2], b[2]) + alto
+    return col_caixa(base, (comp, larg, z1 - z0), ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (z0 + z1) / 2),
+                     rot=(0, 0, math.atan2(dy, dx)))
 
 
 # ------------------------------------------------------------------ ponto e âncora
@@ -239,9 +271,11 @@ def contar(o):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
-def exportar(pid, nos, ancoras=(), clipes_=None):
+def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
     """Grava `SAIDA_ILHAS/pid.glb`: um nó por chave de `nos` ({nome: objs} ou {nome: (objs, pivô)}),
-    as âncoras (nós vazios) e, com `clipes_`, as animações.
+    as âncoras (nós vazios), os nós de colisão `col-*` (cada um com o seu TRS, sem juntar; ajudantes
+    `col_caixa` e `col_cilindro` do `lib_mundo`, `col_terreno` e `col_entre` aqui) e, com `clipes_`,
+    as animações.
 
     `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}."""
     juntos = {}
@@ -264,7 +298,7 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
                 for st in t.strips:
                     st.extrapolation = 'NOTHING'
     bpy.ops.object.select_all(action='DESELECT')
-    for o in list(juntos.values()) + list(ancoras):
+    for o in list(juntos.values()) + list(ancoras) + list(colisores):
         o.select_set(True)
     path = os.path.join(SAIDA_ILHAS, f'{pid}.glb')
     kw = dict(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True,
@@ -282,7 +316,8 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
     kb = os.path.getsize(path) / 1024
     por_no = {n: contar(o) for n, o in juntos.items()}
     anc = {e.name: [round(e.location.x, 2), round(e.location.z, 2), round(-e.location.y, 2)] for e in ancoras}
-    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras')
+    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {por_no}, {len(anc)} âncoras, '
+          f'{len(colisores)} colisores')
     try:
         with open(RELATORIO_B) as f:
             rel = json.load(f)
@@ -290,6 +325,8 @@ def exportar(pid, nos, ancoras=(), clipes_=None):
         rel = {}
     rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no, 'ancoras': anc,
                 'clipes': sorted(chaves)}
+    if colisores:
+        rel[pid]['colisores'] = grupos_col(colisores)
     with open(RELATORIO_B, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')

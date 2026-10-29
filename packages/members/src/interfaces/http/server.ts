@@ -26,6 +26,7 @@ import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { adultJourneyRoutes } from './routes/adult-journey.routes'
 import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { arquipelagoCoinsRoutes } from './routes/arquipelago-coins.routes'
+import { arquipelagoInternalRoutes } from './routes/arquipelago-internal.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
@@ -52,6 +53,7 @@ import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.route
 
 export interface HttpDeps {
   arquipelagoCoins?: Parameters<typeof arquipelagoCoinsRoutes>[0]
+  arquipelagoInternal?: Parameters<typeof arquipelagoInternalRoutes>[0]
   kidsJourney?: Parameters<typeof kidsJourneyRoutes>[0]
   kidsProfileAdmission?: Parameters<typeof kidsProfileAdmissionRoutes>[0]
   adultJourney?: Parameters<typeof adultJourneyRoutes>[0]
@@ -104,6 +106,14 @@ const ADMIN_BLOCK_UPDATE_PATH = /\/members\/admin\/blocks\/[^/]+$/
  */
 const PINTA_SUBMISSION_PATH = /\/pinta-submission$/
 
+/**
+ * Objetivos dos desafios do Arquipélago (S2S, fora do gateway): o corpo leva DOIS projetos do
+ * Estúdio (inicial + gabarito, ou inicial + o da pessoa), cada um até `MAX_STUDIO_PROJECT_CHARS`.
+ */
+const ARQUIPELAGO_OBJECTIVES_PATH =
+  /^\/members\/internal\/arquipelago\/objetivos\/(?:analisar|verificar)$/
+const ARQUIPELAGO_OBJECTIVES_BODY_BYTES = 4 * 1024 * 1024
+
 // Rotas do Pensa com corpo GRANDE (conversa de turno, artefato jsonb, replace de
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
@@ -112,6 +122,7 @@ function bodyLimitForPath(pathname: string, env: Env): number {
   if (pathname === '/members/admin/python-project-checks/test')
     return SECTION_PYTHON_PROJECT_TEST_BODY_BYTES
   if (pathname === '/members/internal/studio-ai/builder') return 3_004_096
+  if (ARQUIPELAGO_OBJECTIVES_PATH.test(pathname)) return ARQUIPELAGO_OBJECTIVES_BODY_BYTES
   if (
     PINTA_SUBMISSION_PATH.test(pathname) ||
     STUDIO_SUBMISSION_PATH.test(pathname) ||
@@ -151,6 +162,7 @@ export function createServer(deps: HttpDeps) {
   // aplicado no `onParse`; senão o Bun cortaria a entrega do Estúdio antes dela.
   const serveCeiling = Math.max(
     SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
+    ARQUIPELAGO_OBJECTIVES_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
     1024 * 1024,
@@ -269,6 +281,9 @@ export function createServer(deps: HttpDeps) {
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
     .use(deps.arquipelagoCoins ? arquipelagoCoinsRoutes(deps.arquipelagoCoins) : new Elysia())
+    .use(
+      deps.arquipelagoInternal ? arquipelagoInternalRoutes(deps.arquipelagoInternal) : new Elysia(),
+    )
     .use(
       deps.kidsProfileAdmission
         ? kidsProfileAdmissionRoutes(deps.kidsProfileAdmission)

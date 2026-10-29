@@ -2,10 +2,10 @@
   "barco": {
     "pasta": "movimento",
     "grupo": "veiculos",
-    "triangulos": 2304,
-    "kb": 86.5,
+    "triangulos": 2544,
+    "kb": 90.7,
     "nos": {
-      "barco": 2304
+      "barco": 2544
     },
     "vazios": ["assento"],
     "clipes": ["balancar"],
@@ -56,7 +56,7 @@
     "pasta": "festas",
     "grupo": "festas",
     "triangulos": 9670,
-    "kb": 295.2,
+    "kb": 295.7,
     "nos": {
       "confetes": 1208,
       "serpentinas": 1936,
@@ -84,7 +84,7 @@
       "parede",
       "pena"
     ],
-    "tamanho": [4.029, 2.32, 4.541]
+    "tamanho": [4.26, 2.32, 4.541]
   },
   "cipo": {
     "pasta": "movimento",
@@ -241,16 +241,28 @@
   "patins": {
     "pasta": "movimento",
     "grupo": "movimento",
-    "triangulos": 3352,
-    "kb": 101.6,
+    "triangulos": 6064,
+    "kb": 149.9,
     "nos": {
-      "patim-esq": 1676,
-      "patim-dir": 1676
+      "patim-esq": 3032,
+      "patim-dir": 3032
     },
     "vazios": ["pe-dir", "pe-esq"],
     "clipes": [],
-    "materiais": ["cadarco", "cascoVermelho", "metalEscuro", "patim", "patimClaro", "roda"],
-    "tamanho": [0.573, 0.373, 0.389]
+    "materiais": [
+      "cadarco",
+      "freio",
+      "metal",
+      "metalEscuro",
+      "patim",
+      "patimClaro",
+      "patimCubo",
+      "patimForro",
+      "patimLingua",
+      "patimSola",
+      "roda"
+    ],
+    "tamanho": [0.819, 0.339, 0.522]
   },
   "planador": {
     "pasta": "movimento",

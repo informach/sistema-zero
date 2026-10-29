@@ -17,6 +17,7 @@ import {
   type PintaHostChrome,
   PintaHostChromeProvider,
   type PintaHostChromeStatus,
+  type PintaInitialCanvas,
   type PintaTaskSession,
   setPintaStorageNamespace,
 } from '@sistemazero/pinta'
@@ -199,6 +200,14 @@ function PintaDemo() {
           })
           return { updated: true }
         },
+        // Tela com molde (o Arquipélago): `?tela=<JSON>` com o `PintaInitialCanvas` que o host manda.
+        ...(new URLSearchParams(window.location.search).get('tela')
+          ? {
+              initialCanvas: JSON.parse(
+                new URLSearchParams(window.location.search).get('tela') ?? '{}',
+              ) as PintaInitialCanvas,
+            }
+          : {}),
         // Deep link do botão "Editar" do Estúdio: `?desenho=<id>`.
         ...(new URLSearchParams(window.location.search).get('desenho')
           ? { initialAssetId: new URLSearchParams(window.location.search).get('desenho') ?? '' }

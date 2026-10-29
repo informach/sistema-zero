@@ -8,7 +8,25 @@ parte, sem entrar em `PROD_REQUIRED_SECRETS` nem em `nonLoopbackProdUrls`). Rota
 `/salvamento` (GET/PUT, 96 KB), `/tempo` (POST, 1 KB), `/familia/limite` (GET/PUT) com JWT de
 conta ativa e `x-internal-token` (`ARQUIPELAGO_INTERNAL_TOKEN`), e `/arquipelago/cliente/:arquivo`
 pública (o cliente compilado). `kidsMayAccess`: o aluno alcança `/arquipelago/*` menos
-`/arquipelago/familia/*`; o responsável, só `/arquipelago/familia/limite`. Testes:
+`/arquipelago/familia/*` (e nenhum segmento `admin`, regra geral); o responsável, só
+`/arquipelago/familia/limite`, `/arquipelago/familia/permissoes` (GET/PUT, 1 KB) e o GET de
+`/arquipelago/familia/semana` (fase1-18, 28/10/2026). Galeria (29/10/2026):
+`arquipelago-galeria` (GET) e `arquipelago-galeria-compras` (POST, 1 KB, 20/min), da régua do
+jogador (o aluno alcança, o responsável não). Recordes e visitas (fase3-12, 29/10/2026):
+`arquipelago-irmaos` (`GET /arquipelago/irmaos`) e `arquipelago-irmao-casa`
+(`GET /arquipelago/irmaos/:perfilId/casa`), 60/min, régua do jogador; e
+`auth-profile-session-siblings` (`GET /auth/profile-session/siblings`, JWT de conta ativa +
+`authInternalTransforms`), que `kidsMayAccess` libera ao aluno só em GET. `GET /arquipelago/cartas` (cartões dos Lumis) segue a régua do
+jogador. **Seção Jogo do Admin (27/10/2026):** rotas explícitas `arquipelago-admin-*` (sem
+curinga): leitura (`GET /arquipelago/admin/desafios[/:id]`, `/cobertura`, `POST …/:id/analisar`)
+para superadmin/admin/staff; escrita (`POST /desafios`, `PUT /desafios/:id`, `POST
+…/:id/{publicar,arquivar,reativar}`) só superadmin/admin, com `audit: {}` e corpo de 4 MB (dois
+projetos do Estúdio). Analisar e publicar rodam o jogo no executor pelo Members: `timeoutMs:
+165_000`, 20/min. Desafios de quem joga (27/10/2026): `arquipelago-desafios` (`GET /arquipelago/desafios`),
+`arquipelago-desafio-abrir` (`GET …/:id`), `arquipelago-desafio-verificar` (`POST
+…/:id/verificar`, corpo 4 MB, `timeoutMs: 165_000`, 10/min) e
+`arquipelago-desafio-recompensa-vista`, na régua do jogador (o serviço decide se estão ligados).
+A criança alcança; o responsável não. Testes:
 `tests/unit/arquipelago-config.test.ts` e o fim de `tests/unit/kids-access-policy.test.ts`.
 
 
@@ -429,3 +447,9 @@ nem reutilização da política adulta. Members revalida a identidade própria a
 antes das mutações (sem perfil/contexto/impersonação) e persiste ator/motivo/versão no fluxo
 canônico de preparação/publicação. O teste de configuração/stage não substitui a prova
 integrada de JWT, forwarding e banco; rollout depende dos gates e seed persistida.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Minijogos: quatro rotas GET do Arquipélago. Kids pai acessa apenas familia/minijogos; aluno usa as próprias rotas e nunca as da família. Serviço confere novamente a conta.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.

@@ -11,7 +11,10 @@
     "test": "bun test",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "test:tempo-browser": "node playground/verificar-tempo-browser.mjs"
+    "test:tempo-browser": "node playground/verificar-tempo-browser.mjs",
+    "test:qualidade-browser": "bun build playground/verificar-qualidade-browser.ts --target=node --external playwright-core --outfile .cache/verificar-qualidade-browser.mjs && node .cache/verificar-qualidade-browser.mjs",
+    "test:capi-browser": "bun build playground/verificar-presente-capi-browser.ts --target=node --external playwright-core --outfile .cache/verificar-presente-capi-browser.mjs && node .cache/verificar-presente-capi-browser.mjs",
+    "test:salvamento-browser": "bun build playground/verificar-salvamento-browser.ts --target=node --external playwright-core --outfile .cache/verificar-salvamento-browser.mjs && node .cache/verificar-salvamento-browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10",
@@ -26,6 +29,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
+    "@types/node": "24.19.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",

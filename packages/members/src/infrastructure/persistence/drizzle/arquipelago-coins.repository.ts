@@ -13,6 +13,14 @@ export type MovimentoArquipelago = {
   amount: number
 }
 
+/**
+ * Teto de moedas que o Arquipélago pode dar por semana (de segunda a domingo, no horário de São
+ * Paulo), tudo ou nada. 150 = metade do que uma criança que estuda com regularidade ganha nos
+ * cursos (~300 por semana): o curso continua a fonte principal (decisão de 27/10/2026, regras em
+ * `docs/arquipelago-regras.md`). Separado do teto diário de 100 dos cursos (`DAILY_COIN_CAP`).
+ */
+export const ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150
+
 /** Operações serializadas com a mesma trava da carteira e a cerca de exclusão do perfil. */
 export class ArquipelagoCoinsRepository {
   constructor(private readonly db: Database) {}
@@ -77,7 +85,7 @@ export class ArquipelagoCoinsRepository {
               sql`timezone('America/Sao_Paulo', ${coinEvents.createdAt}) < date_trunc('week', timezone('America/Sao_Paulo', ${now.toISOString()}::timestamptz)) + interval '7 days'`,
             ),
           )
-        if ((weekly?.total ?? 0) + input.amount > 100)
+        if ((weekly?.total ?? 0) + input.amount > ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS)
           return { ok: false as const, code: 'WEEKLY_LIMIT' as const }
       }
       const balanceAfter = balance + signed

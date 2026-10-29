@@ -25,7 +25,7 @@ import { ILHA_ASSETS, ILHA_MODELS } from './ilha-do-farol-assets'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
 
-const dir = resolve(import.meta.dirname, '../../aulas-interativas/a-ilha-do-farol')
+const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
 describe('A Ilha do Farol', () => {
   test('três aulas válidas, sem certificado, com exemplos portáteis dentro do orçamento', () => {
     for (let i = 1; i <= 3; i++) {

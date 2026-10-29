@@ -32,7 +32,10 @@ import { FONTE as nunito } from '../../../../packages/studio/src/official-extens
 
 const scriptDir = import.meta.dir
 const root = resolve(scriptDir, '../../../..')
-const output = resolve(root, 'docs/aulas-interativas/cade-todo-mundo/passo-a-passo-do-projeto.pdf')
+const output = resolve(
+  root,
+  'docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf',
+)
 const templatePath = resolve(scriptDir, 'caderno-do-aluno.template.html')
 const fontFaces = [
   `@font-face { font-family: Nunito; src: url(data:font/woff2;base64,${nunito.base64}) format('woff2'); font-style: normal; font-weight: 400 800; }`,

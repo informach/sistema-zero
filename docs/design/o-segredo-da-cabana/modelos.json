@@ -1,0 +1,16 @@
+{
+  "emblema-do-farol": {
+    "sha": "0f5a1e4f196e8a7691e51bb7246e1b62775d1c124763850cf962cd3e97b7e669",
+    "bytes": 35368,
+    "center": [0, 0.4189, 0],
+    "size": 0.5978,
+    "clips": []
+  },
+  "cabana-do-faroleiro": {
+    "sha": "66e32d2c65b5d2f57cd295a95c3772a19e7a815e8180ec8d4749a7b0bd62a04d",
+    "bytes": 105424,
+    "center": [-0.0048, 1.305, 0.07],
+    "size": 2.61,
+    "clips": ["abrir"]
+  }
+}

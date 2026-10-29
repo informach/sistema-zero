@@ -268,8 +268,8 @@ jobs:
         working-directory: packages/community-kids
         run: bun run test:reachability
 
-      # Valida os 37 manifestos comuns, versionados junto dos roteiros em
-      # docs/aulas-interativas/<curso>.
+      # Valida os 42 manifestos comuns, versionados junto dos roteiros em
+      # docs/aulas-interativas/<posto>/<curso>.
       - name: Manifestos das aulas interativas
         run: |
           bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts
@@ -374,16 +374,6 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
-      - name: Testes DB do Arquipélago Vagalume (Postgres real)
-        run: |
-          PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE arquipelago_test"
-          cd packages/arquipelago-api && bun test tests/db
-        env:
-          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/arquipelago_test
-
-      - name: Build do cliente do Arquipélago Vagalume (manifesto validado pelo contrato)
-        run: bun run --filter '@sistemazero/arquipelago' build
-
       - name: Separação comercial Kids e Adultos (Postgres isolado)
         run: |
           PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE catalog_audience_test"
@@ -441,6 +431,71 @@ jobs:
           name: pensa-native-failure
           path: packages/pensa/.cache/playwright-native-results
           if-no-files-found: ignore
+
+  # O jogo tem uma prova própria: um problema no executor Pro não pode impedir que
+  # suas revisões, migrations, contratos e cliente sejam exercitados neste mesmo commit.
+  arquipelago:
+    name: arquipelago
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: arquipelago_test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d arquipelago_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Preparar fontes Ubuntu assinadas antes das instalações
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - name: Instalar dependências congeladas
+        run: bun install --frozen-lockfile
+      - name: Contratos e API do jogo
+        run: |
+          bun test --cwd packages/arquipelago-contracts
+          bun test --cwd packages/arquipelago-api tests/unit tests/integration
+      - name: Revisões, migrations e concorrência no Postgres
+        working-directory: packages/arquipelago-api
+        run: bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/arquipelago_test
+      - name: Cliente e recuperação com API e banco
+        working-directory: packages/arquipelago
+        run: bun test tests
+        env:
+          ARQUIPELAGO_TEMPO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/arquipelago_test
+      - name: Tipos e build independente do jogo
+        run: |
+          bun run --cwd packages/arquipelago-contracts typecheck
+          bun run --cwd packages/arquipelago-api typecheck
+          bun run --cwd packages/arquipelago typecheck
+          bun run --cwd packages/arquipelago build
+      - name: Instalar Chromium para a prova do jogo
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
+      - name: Recuperação de tempo no navegador
+        working-directory: packages/arquipelago
+        run: bun run test:tempo-browser
+        env:
+          ARQUIPELAGO_BROWSER_CHANNEL: chromium
+      - name: Salvamento, duas abas e pausa da física no navegador
+        working-directory: packages/arquipelago
+        run: bun run test:salvamento-browser
+        env:
+          ARQUIPELAGO_BROWSER_CHANNEL: chromium
 
   studio-python-extensions:
     name: studio-python-extensions
@@ -712,7 +767,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
+    needs: [ci, arquipelago, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-24.04

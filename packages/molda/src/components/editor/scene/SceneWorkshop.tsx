@@ -51,6 +51,7 @@ import { SceneKnifePanel } from './SceneKnifePanel'
 import { SceneModelColumn } from './SceneModelColumn'
 import { SceneDivisionChoices, SceneModelGuideBar } from './SceneModelGuideControls'
 import { SceneModeTabs } from './SceneModeTabs'
+import { SceneMoldeChecks } from './SceneMoldeChecks'
 import { SceneNodeProperties } from './SceneNodeProperties'
 import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColorBar } from './ScenePaintColorBar'
@@ -1165,13 +1166,16 @@ export function SceneWorkshop({
                   ) : null
                 }
                 pieces={
-                  <SceneHierarchyPanel
-                    workshop={workshop}
-                    shapeOf={shapeOf}
-                    joinPieces={
-                      mode === 'model' && can('model.mesh') && joinReady ? joinPieces : undefined
-                    }
-                  />
+                  <>
+                    <SceneMoldeChecks document={workshop.document} />
+                    <SceneHierarchyPanel
+                      workshop={workshop}
+                      shapeOf={shapeOf}
+                      joinPieces={
+                        mode === 'model' && can('model.mesh') && joinReady ? joinPieces : undefined
+                      }
+                    />
+                  </>
                 }
               >
                 {mode === 'animation' ? (

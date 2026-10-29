@@ -95,11 +95,24 @@ const BUDGETS: readonly {
   // contato entre objetos e enquadramento responsivo. +2_755 caracteres no runtime.
   // Medido: 230_336 caracteres; gzip Bun 1.3.11 Linux 62_225 / Windows 64_626.
   // Os tetos gzip mantêm a catraca própria para cada compressor.
+  // 28/10: a vista do jogador no frameScene (rodinha/dois dedos dão zoom, arrastar gira, duplo
+  // clique volta, a vista acompanha quem anda e as setas andam em relação à câmera): +3_865
+  // caracteres e +1_226 bytes gzip. Medido: 234_201; gzip 63_849 no Bun 1.4.4 Linux e, somado
+  // às medidas acima do Bun 1.3.11, ~63_450 no Linux e ~65_850 no Windows.
+  // 28/10: o Jogo 3D publica quantos modelos ainda estão chegando (`__szModelosPendentes`), e o
+  // executor dos objetivos só aperta a primeira tecla com zero. Medido: 234_374 (+173).
+  // 29/10: os botões da vista no canto do "Mostrar a cena inteira" (aproximar, afastar, girar
+  // para os dois lados e voltar ao começo), pedido dela: sem eles ninguém sabia que a rodinha e o
+  // arrastar existiam. +2_105 / +714. Medido: 236_479; gzip 64_563 no Bun 1.4.4 Linux.
+  // 29/10: o "Fazer andar com as setas" respeita o "marcar … como sólido" (a pedra e os coqueiros
+  // da Ilha), deslizando junto do obstáculo, com uma caixa por pedaço do modelo (sem as peças
+  // szSemCaixa) e a pegada do personagem. +1_537 / +529. Medido: 238_016; gzip 65_092 no Bun
+  // 1.4.4 Linux.
   {
     extension: gameThreeDExtension,
-    maxChars: 230_500,
-    maxGzipBytes: 62_800,
-    maxGzipBytesWindows: 64_700,
+    maxChars: 238_050,
+    maxGzipBytes: 65_150,
+    maxGzipBytesWindows: 67_550,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -118,9 +131,16 @@ const BUDGETS: readonly {
     // 27/10, +257 do carregador comum (o que não faz sombra). Medido: 193_499.
     // Mesmo percurso iniciante: 196_254 caracteres; gzip Bun 1.3.11 Linux 52_811 /
     // Windows 54_908. O teto cobre ambos, sem incluir o Kit Plataforma.
-    maxChars: 196_400,
-    maxGzipBytes: 53_100,
-    maxGzipBytesWindows: 55_000,
+    // 28/10, a vista do jogador no frameScene (ver acima): +3_865 / +1_215. Medido: 200_119;
+    // gzip 54_371 no Bun 1.4.4 Linux; ~54_030 no Linux e ~56_120 no Windows do Bun 1.3.11.
+    // 28/10, os modelos pendentes (ver acima): +173. Medido: 200_292.
+    // 29/10, os botões da vista (ver acima): +2_105 / +684. Medido: 202_397; gzip 55_055.
+    // 29/10, o andar com as setas respeita os sólidos (ver acima): +1_175 / +408. Medido: 203_572;
+    // gzip 55_463.
+    // 29/10: o andar com as setas respeita o sólido (ver acima). Medido: 203_934; gzip 55_608.
+    maxChars: 203_950,
+    maxGzipBytes: 55_650,
+    maxGzipBytesWindows: 57_500,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO

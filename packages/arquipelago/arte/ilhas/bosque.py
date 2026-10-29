@@ -8,7 +8,15 @@ Mesmo chão da versão leve (contorno, praia e barranco de `ilhas_anel.base`), c
 - toras, tocos, cogumelos, flores, moitas, pedras com musgo e as tocas dos bichos.
 
 Saídas: `bosque.glb` (nós `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3` com o pivô
-no galho, e as âncoras) e `bosque-props.glb` (peças soltas para o jogo repetir).
+no galho, as âncoras e os nós de colisão `col-*`) e `bosque-props.glb` (peças soltas para o jogo
+repetir).
+
+A colisão é feita à mão, em formas simples ao lado de cada peça que se pisa ou que segura (deques,
+guarda-corpos, pontes, degraus, casa na árvore, escorregador, cabana, cercadinho, troncos, toras e
+tocos), e o chão é uma cópia do tampo, da praia e do barranco. Moitas, pedras, cogumelos, tocas,
+as floreiras da cabana e as pernas do escorregador também seguram o corpo (um cilindro ou caixa um
+pouco menor que o desenho). Copas, raízes, flores, capim, taboas e vitórias-régias não colidem: o
+personagem passa por eles sem tropeçar.
 """
 from lib_ilhas import *
 
@@ -16,9 +24,10 @@ SEMENTE = 1.0 * 1.7 * 2  # a mesma da versão leve
 
 # Árvores do percurso: (x, z, escala, variante, altura do deque, raio do deque)
 T1 = (-2.0, -3.0, 1.35, 'a', 4.0, 2.9)   # casa na árvore (começo)
-T2 = (-7.2, -6.2, 1.4, 'b', 4.4, 1.8)
-T3 = (-8.6, 1.6, 1.4, 'a', 4.8, 1.8)
-T4 = (-4.0, 6.6, 1.65, 'c', 4.2, 1.8)    # escorregador (fim)
+# Os deques têm folga para contornar o tronco (o anel livre fica com mais de 1 de largura).
+T2 = (-7.2, -6.2, 1.4, 'b', 4.4, 2.0)
+T3 = (-8.6, 1.6, 1.4, 'a', 4.8, 2.1)
+T4 = (-4.0, 6.6, 1.65, 'c', 4.2, 2.0)    # escorregador (fim)
 PERCURSO = [T1, T2, T3, T4]
 T6 = (8.6, 5.2)                          # a árvore do galho dos cipós
 LAGO = (4.4, 5.6)
@@ -38,7 +47,73 @@ def no_galho(x):
 
 CIPOS = [no_galho(x) for x in CIPOS_X]
 CABANA = (6.6, -6.4)
+# O tronco caído do equilíbrio (controlador universal, parte 6): estreito e baixo (sobe-se pela
+# ponta andando), ao lado da trilha do lago. As pontas (x, z do jogo) e o raio; o jogo lê o eixo das
+# âncoras `equilibrio-1-a` e `equilibrio-1-b`, no tampo, no meio do tronco.
+TRONCO_CAIDO = ((3.3, 1.3), (3.7, 4.0), 0.19)
+# A escada reta (modo escada) do chão até o deque da T4, onde começa o escorregador: no ângulo
+# (chão do Blender) longe da ponte e do escorregador. O jogo lê `escada-1-base`, `-topo` (o eixo na
+# frente dos degraus) e `-saida` (no deque).
+ESCADA_RETA = {'angulo': R(60), 'largura': 0.6, 'degrau': 0.3}
+ESCADA_GIRO0 = R(-64)   # ângulo (no chão do Blender) do primeiro degrau da escada da T1
+# A pedra de agarrar (modo borda): um bloco de tampo reto alto demais para o pulo sozinho (1,5 m)
+# e baixo o bastante para pular, agarrar a quina e subir (até uns 3,65 m). Fica (x, z do jogo) entre os
+# deques da T3 e da T4, no único canto do chão plano com o bloco e 0,6 m de folga em volta livres de
+# tudo até 5 m de altura (deques, pontes, moitas, trilhas) e longe das âncoras. O jogo lê as quinas
+# de cima das âncoras `borda-N-a`, `-b` (as pontas, recuadas dos cantos) e `-fora` (do lado de onde
+# se pendura), uma por lado.
+PEDRA_DE_AGARRAR = {'centro': (-8.25, 6.75), 'lado': 2.0, 'altura': 2.1, 'recuo': 0.3}
 CERCADO = (2.4, -9.2)
+# O lote da cabana que a criança constrói: a área do lobo de fora (`anel.LOBO_DO_BOSQUE`), plana e
+# sem nada que colida, de céu aberto (longe dos deques: o telhado do kit começa a 4 m). Células de
+# x0 a x1 - 1 e de z0 a z1 - 1, no chão do jogo; as âncoras `lote-cabana-a` e `-b` ficam nos cantos.
+LOTE_DA_CABANA = {'x0': -18, 'z0': -4, 'x1': -12, 'z1': 4}
+# A casa na árvore no deque da T1 (física viva, etapa 5). `lado` é o ângulo (chão do Blender) do
+# tronco para o meio da casa; `largura` vai na direção do tronco para fora, `fundo` em volta do
+# tronco. A porta fica na parede de +y local (a do lado da escada), com o meio em `porta_x`: a parede
+# virada para o tronco não serve, porque entre ela e o tronco não passa ninguém. A porta de 1,1 m e
+# o batente vêm do jogo (`mundo/mecanismos.tsx`), montados nas âncoras `mecanismos-casa` (a
+# dobradiça) e `mecanismos-rumo` (para dentro da casa). O vão é 10 cm mais largo que a folha e a
+# folha fica fora da espessura da parede: a folha colide com a casa e, encostada, abria sozinha. A verga fica a `altura` − 0,1 do piso: a
+# cápsula do corpo vai a 1,8 m dos pés, mais a folga do controlador.
+CASA_NA_ARVORE = {'lado': R(200), 'raio': 1.9, 'largura': 1.7, 'fundo': 1.8, 'altura': 2.2,
+                  'porta_x': -0.2, 'porta_largura': 1.2, 'folha': 1.1}
+# A placa, o caixote e o alçapão ficam no anel do deque do outro lado do tronco, perto da guarda
+# (x, z do jogo, a partir do meio da T1): a criança empurra o caixote em linha reta até a placa, e o
+# lado do tronco fica livre, porque é por ali que o percurso passa da escada para a ponte da T2.
+# Dentro da casa não cabe: o corpo precisa de 0,7 m atrás do caixote para empurrar.
+# O alçapão abre girando na borda dele: fica onde a guarda não o segura no meio do caminho.
+MECANISMOS_NO_DEQUE = {'placa': (2.1, -0.9), 'caixote': (2.1, 0.3), 'alcapao': (1.1, -1.6)}
+
+
+def na_casa(lx, ly):
+    """(x, y) do Blender de um ponto no referencial da casa na árvore (x para fora do tronco)."""
+    c = CASA_NA_ARVORE
+    cx = T1[0] + math.cos(c['lado']) * c['raio']
+    cy = -T1[1] + math.sin(c['lado']) * c['raio']
+    a = c['lado']
+    return (cx + math.cos(a) * lx - math.sin(a) * ly, cy + math.sin(a) * lx + math.cos(a) * ly)
+
+
+# ------------------------------------------------------------------ colisão dos enfeites
+# Medidas por escala, um pouco menores que o desenho: o corpo encosta e não atravessa.
+MOITA_COL = (0.65, 0.75)     # raio e altura da moita (a folhagem vai a ~0,9 de raio)
+PEDRA_COL = (0.58, 0.85)     # raio e altura da pedra (antes de tirar o pé enterrado)
+COGUMELO_COL = (0.25, 0.55)  # raio e altura do cogumelo (chapéu de 0,3 a ~0,55)
+# O personagem sobe sozinho até uns 0,58 (degrau de 0,45 mais a curva do pé): a moita passa disto
+# e o corpo para nela. As pedras da beira do lago ficam abaixo: ele sobe nelas e chega aos cipós
+# por qualquer lado.
+PEDRA_DO_LAGO_ALTA = 0.4
+
+
+def col_no_tampo(col, base, x, z, r, alto, fundo=0.1):
+    """Cilindro em pé no tampo em (x, z) do jogo: de `fundo` abaixo dele até `alto` acima."""
+    col.append(col_cilindro(base, r, alto + fundo, (x, -z, TOPO + (alto - fundo) / 2)))
+
+
+def col_pedra(col, base, x, z, s, teto=None):
+    alto = PEDRA_COL[1] * s - 0.2  # a pedra afunda 0,12 e o topo é arredondado
+    col_no_tampo(col, base, x, z, PEDRA_COL[0] * s, alto if teto is None else min(teto, alto))
 
 
 def tronco_r(t):
@@ -55,51 +130,69 @@ def borda(t, ang):
 
 
 # ------------------------------------------------------------------ percurso nas copas
-def casa_na_arvore():
+def casa_na_arvore(col, telhado):
+    """A casa na árvore no deque da T1 e a escada em espiral. O telhado e a bandeirinha vão para
+    `telhado` (nó que o jogo esmaece quando tapa a câmera). Devolve (objetos, ângulo em que a escada
+    chega no deque)."""
     x, z, s, _, h, r = T1
     bx, by = x, -z
     zt = TOPO + h
     p = []
     # A casinha fica de um lado do deque (o tronco passa ao lado, não por dentro).
-    lado = R(200)
-    cx, cy = bx + math.cos(lado) * 1.85, by + math.sin(lado) * 1.85
+    c = CASA_NA_ARVORE
+    lado = c['lado']
+    cx, cy = na_casa(0, 0)
     giro_casa = lado
-    caixa = box((1.9, 2.4, 2.0), (cx, cy, zt + 1.0), 'casaArvore', bevel=0.08, segs=1, rot=(0, 0, giro_casa))
-    p.append(caixa)
-    # Tábuas na parede (frisos horizontais).
-    for k in range(4):
-        p.append(box((1.96, 2.46, 0.05), (cx, cy, zt + 0.35 + k * 0.45), 'troncoClaro', bevel=0.0,
-                     rot=(0, 0, giro_casa)))
-    p.append(cone(1.95, 1.2, (cx, cy, zt + 2.6), 'telhadoArvore', verts=4, rot=(0, 0, giro_casa + R(45))))
-    p.append(uvball(0.14, (cx, cy, zt + 3.25), 'casaArvore', seg=8, ring=5))
-    # Porta virada para o tronco (o deque) e janela redonda para fora.
-    dentro = giro_casa + math.pi
-    px, py = cx + math.cos(dentro) * 0.97, cy + math.sin(dentro) * 0.97
-    p += porta(px, py, zt, 0.9, 1.6, dentro, m='tronco', m_batente='troncoClaro')
-    fx, fy = cx + math.cos(giro_casa) * 0.98, cy + math.sin(giro_casa) * 0.98
+    W, L, H = c['largura'], c['fundo'], c['altura']
+    e = 0.12
+    # O vão da porta na parede de +y: do batente da dobradiça ao outro (o batente fica no código).
+    v0 = c['porta_x'] - c['porta_largura'] / 2
+    v1 = c['porta_x'] + c['porta_largura'] / 2
+    yp = L / 2 - e / 2
+    # O piso do deque continua inteiro, inclusive sob o alçapão, para ninguém cair.
+    paredes = [((e, L, H), (W / 2 - e / 2, 0, H / 2)),
+               ((e, L, H), (-(W / 2 - e / 2), 0, H / 2)),
+               ((W, e, H), (0, -yp, H / 2)),
+               ((v0 + W / 2, e, H), ((-W / 2 + v0) / 2, yp, H / 2)),
+               ((W / 2 - v1, e, H), ((v1 + W / 2) / 2, yp, H / 2)),
+               ((v1 - v0, e, 0.1), ((v0 + v1) / 2, yp, H - 0.05))]
+    for dimensoes, (lx, ly, lz) in paredes:
+        px, py = na_casa(lx, ly)
+        pos = (px, py, zt + lz)
+        p.append(box(dimensoes, pos, 'casaArvore', bevel=0.025, segs=1, rot=(0, 0, lado)))
+        col.append(col_caixa('casa-na-arvore', dimensoes, pos, (0, 0, lado)))
+    meia_diagonal = math.hypot(W / 2, L / 2)
+    telhado.append(cone(meia_diagonal * 1.28, 1.2, (cx, cy, zt + H + 0.6), 'telhadoArvore', verts=4,
+                        rot=(0, 0, giro_casa + math.atan2(L, W))))
+    telhado.append(uvball(0.14, (cx, cy, zt + H + 1.25), 'casaArvore', seg=8, ring=5))
+    # Janela redonda para fora (a parede da beira do deque) e uma quadrada na parede sem porta.
+    fx, fy = na_casa(W / 2 + 0.03, 0)
     p.append(torus(0.32, 0.07, (fx, fy, zt + 1.25), 'troncoClaro', seg=12, rseg=4, rot=(R(90), 0, giro_casa + R(90))))
     p.append(cyl(0.3, 0.05, (fx, fy, zt + 1.25), 'vidroJanela', verts=12, rot=(R(90), 0, giro_casa + R(90))))
-    for lado2 in (-1, 1):
-        a2 = giro_casa + lado2 * math.pi / 2
-        p += janela(cx + math.cos(a2) * 1.22, cy + math.sin(a2) * 1.22, zt + 1.15, 0.5, 0.5, a2,
-                    m_moldura='troncoClaro')
+    jx, jy = na_casa(0, -(L / 2 + 0.02))
+    p += janela(jx, jy, zt + 1.15, 0.5, 0.5, giro_casa - math.pi / 2, m_moldura='troncoClaro')
     # Bandeirinha no telhado e balde na roldana até o chão.
-    p.append(cyl(0.03, 0.9, (cx, cy, zt + 3.65), 'poste', verts=5))
-    p.append(prism([(0, 0), (0.55, -0.15), (0, -0.3)], 0.02, (cx + 0.02, cy, zt + 4.05), 'telhadoArvore'))
-    braco = R(300)
+    telhado.append(cyl(0.03, 0.9, (cx, cy, zt + CASA_NA_ARVORE['altura'] + 1.65), 'poste', verts=5))
+    telhado.append(prism([(0, 0), (0.55, -0.15), (0, -0.3)], 0.02,
+                         (cx + 0.02, cy, zt + CASA_NA_ARVORE['altura'] + 2.05), 'telhadoArvore'))
+    braco = R(250)  # entre a casa e o pé da escada
     rx, ry = bx + math.cos(braco) * (r + 0.4), by + math.sin(braco) * (r + 0.4)
-    p.append(tube([(bx + math.cos(braco) * 0.9, by + math.sin(braco) * 0.9, zt + 1.6), (rx, ry, zt + 1.6)],
+    # O braço passa acima da cabeça de quem anda no deque até a porta (o desenho não colide).
+    p.append(tube([(bx + math.cos(braco) * 0.9, by + math.sin(braco) * 0.9, zt + 2.2), (rx, ry, zt + 2.2)],
                   [0.07, 0.06], 'poste', seg=5))
-    p.append(torus(0.12, 0.03, (rx, ry, zt + 1.5), 'metalEscuro', seg=10, rseg=4, rot=(R(90), 0, braco)))
-    p.append(tube([(rx, ry, zt + 1.45), (rx, ry, TOPO + 1.0)], [0.015, 0.015], 'corda', seg=4, cap=False))
+    p.append(torus(0.12, 0.03, (rx, ry, zt + 2.1), 'metalEscuro', seg=10, rseg=4, rot=(R(90), 0, braco)))
+    p.append(tube([(rx, ry, zt + 2.05), (rx, ry, TOPO + 1.0)], [0.015, 0.015], 'corda', seg=4, cap=False))
     p.append(cyl(0.22, 0.32, (rx, ry, TOPO + 0.85), 'metalEscuro', verts=10, r2=0.17))
     # Escada em espiral do chão até a borda do deque, do lado da trilha.
-    degraus, _ = escada_espiral(x, z, 0.0, h, tronco_r(T1), raio=r + 0.55, giro0=R(-20), sentido=-1)
+    # A escada sobe pelo lado de fora da clareira e chega no deque longe da casa e da ponte (a 38° da
+    # ponte para a T2): quem chega tem o anel do deque inteiro para contornar o tronco.
+    degraus, chegada = escada_espiral(x, z, 0.0, h, tronco_r(T1), raio=r + 0.55, giro0=ESCADA_GIRO0, sentido=1,
+                                      col=col)
     p += degraus
-    return p
+    return p, chegada
 
 
-def escorregador():
+def escorregador(col):
     """Escorregador do deque da T4 até o chão: calha com duas laterais, curva no fim."""
     x, z, s, _, h, r = T4
     ang = R(-28)  # no chão do Blender: para o +x e um pouco para −y (o jogo: +x, +z)
@@ -120,23 +213,35 @@ def escorregador():
         incl = math.atan2(d.z, math.hypot(d.x, d.y))
         meio = (a + b) / 2
         p.append(box((comp + 0.04, 1.0, 0.08), meio, 'toldoAzul', bevel=0.0, rot=(0, -incl, ang)))
+        col.append(col_caixa('escorregador', (comp + 0.06, 1.0, 0.08), meio, (0, -incl, ang)))
         for lado in (-1, 1):
             ox, oy = -math.sin(ang) * 0.52 * lado, math.cos(ang) * 0.52 * lado
             p.append(box((comp + 0.04, 0.08, 0.4), (meio.x + ox, meio.y + oy, meio.z + 0.18), 'toldoAmarelo',
                          bevel=0.0, rot=(0, -incl, ang)))
+            col.append(col_caixa('escorregador-lado', (comp + 0.06, 0.08, 0.4), (meio.x + ox, meio.y + oy, meio.z + 0.18),
+                                 (0, -incl, ang)))
         if i % 3 == 1 and meio.z > TOPO + 0.6:
             for lado in (-1, 1):
                 ox, oy = -math.sin(ang) * 0.4 * lado, math.cos(ang) * 0.4 * lado
                 hp = meio.z - TOPO
                 p.append(cyl(0.07, hp, (meio.x + ox, meio.y + oy, TOPO + hp / 2), 'poste', verts=6))
-    return p, pts[-1]
+                col.append(col_cilindro('perna-escorregador', 0.08, hp, (meio.x + ox, meio.y + oy, TOPO + hp / 2)))
+    return p, pts
 
 
 # ------------------------------------------------------------------ cabana da Capi
-def cabana():
-    """Cabana de toras (consultório dos bichos), montada na origem de frente para −Y."""
+def cabana(col):
+    """Cabana de toras (consultório dos bichos), montada na origem de frente para −Y. A porta é
+    fechada: a cabana colide como uma caixa (até o beiral), mais a varanda, os postes, o barril e o
+    caixote."""
     W, D, H = 4.0, 3.4, 2.4
     p = []
+    col.append(col_caixa('cabana', (W + 0.34, D + 0.34, H + 0.1), (0, 0, TOPO + (H + 0.1) / 2)))
+    col.append(col_caixa('varanda', (W + 0.4, 1.3, 0.2), (0, -D / 2 - 0.65, TOPO + 0.1)))
+    for sx in (-1, 1):
+        col.append(col_cilindro('poste', 0.09, 2.3, (sx * (W / 2 - 0.1), -D / 2 - 1.15, TOPO + 1.25)))
+    col.append(col_cilindro('barril', 0.38, 0.85, (-W / 2 - 0.6, -D / 2 + 0.3, TOPO + 0.43)))
+    col.append(col_caixa('caixote', (0.6, 0.6, 0.6), (W / 2 + 0.6, -D / 2 + 0.2, TOPO + 0.3)))
     rlog = 0.17
     n = int(H / (rlog * 1.9))
     for k in range(n):
@@ -174,6 +279,7 @@ def cabana():
     for sx in (-1, 1):
         p += janela(sx * (W / 2 + 0.18), 0, TOPO + 1.4, 0.75, 0.65, 0 if sx > 0 else math.pi, m_moldura='placaBranca')
         p.append(box((0.3, 0.9, 0.22), (sx * (W / 2 + 0.38), 0, TOPO + 0.95), 'floreira', bevel=0.03, segs=1))
+        col.append(col_caixa('floreira', (0.3, 0.9, 0.22), (sx * (W / 2 + 0.38), 0, TOPO + 0.95)))
         for k in range(3):
             p += flor((sx * (W / 2 + 0.38), -0.3 + k * 0.3, TOPO + 1.02), ['petalaRosa', 'petalaAmarela', 'petalaLilas'][k],
                       seed=k + (5 if sx > 0 else 0), r=0.13, haste=0.12)
@@ -199,13 +305,16 @@ def cabana():
     return p
 
 
-def cercadinho():
+def cercadinho(col):
     """Cercadinho dos bichos para adotar (montado na origem, porteira para −Y)."""
     p = []
     w, d = 3.6, 2.8
     # A cerca usa (x, z) do jogo: na origem, z = +d/2 vira y = −d/2 do Blender (a porteira, na frente).
-    p += cerca([(-w / 2, d / 2), (-0.6, d / 2)], h=0.75)
-    p += cerca([(0.6, d / 2), (w / 2, d / 2), (w / 2, -d / 2), (-w / 2, -d / 2), (-w / 2, d / 2)], h=0.75)
+    p += cerca([(-w / 2, d / 2), (-0.6, d / 2)], h=0.75, col=col)
+    p += cerca([(0.6, d / 2), (w / 2, d / 2), (w / 2, -d / 2), (-w / 2, -d / 2), (-w / 2, d / 2)], h=0.75, col=col)
+    col.append(col_caixa('casinha', (1.0, 0.9, 0.7), (-1.0, -0.6, TOPO + 0.35)))
+    col.append(col_caixa('cocho', (1.1, 0.4, 0.3), (0.9, -0.8, TOPO + 0.3)))
+    col.append(col_cilindro('feno', 0.38, 0.75, (-1.2, 0.8, TOPO + 0.38), (0, R(90), 0)))
     p.append(mancha(0, 0, w / 2 - 0.1, d / 2 - 0.1, 'palha', seed=3, z0=TOPO - 0.02, z1=TOPO + 0.02))
     # Casinha de bicho, cocho e potinhos.
     p.append(box((1.0, 0.9, 0.7), (-1.0, -0.6, TOPO + 0.35), 'casaArvore', bevel=0.05, segs=1))
@@ -222,7 +331,12 @@ def cercadinho():
 
 
 # ------------------------------------------------------------------ lago e cipós
-def lago():
+# Do eixo do tronco de escalar até o centro de uma pedra: raio da casca (0,86), o corpo agarrado
+# (0,08 de folga e 0,35 de raio, dos dois lados do centro dele) e a pedra (até 0,41).
+LONGE_DO_TRONCO_DE_ESCALAR = 0.86 + 0.08 + 0.35 * 2 + 0.41
+
+
+def lago(col):
     x, z = LAGO
     agua = [mancha(x, z, 2.2, 1.5, 'lagoBosque', seed=7, z0=TOPO - 0.03, z1=TOPO + 0.04, n=28, wob=0.07)]
     borda_ = [mancha(x, z, 2.55, 1.85, 'areiaMolhada', seed=7, z0=TOPO - 0.03, z1=TOPO + 0.02, n=28, wob=0.07)]
@@ -230,8 +344,14 @@ def lago():
     enfeite = []
     for k in range(9):
         a = 2 * math.pi * k / 9 + rnd.uniform(-0.2, 0.2)
-        enfeite += pedra(x + math.cos(a) * 2.5, z + math.sin(a) * 1.85, 0.45 + rnd.uniform(0, 0.25), 'pedraClara',
-                         seed=40 + k, top_m='musgo' if k % 3 == 0 else None)
+        s = 0.45 + rnd.uniform(0, 0.25)
+        px, pz = x + math.cos(a) * 2.5, z + math.sin(a) * 1.85
+        # Nenhuma pedra no pé do tronco de escalar (T6): quem dá a volta nele, lá embaixo, passaria
+        # por dentro dela (`LONGE_DO_TRONCO_DE_ESCALAR` = casca, corpo e a pedra).
+        if math.hypot(px - T6[0], pz - T6[1]) < LONGE_DO_TRONCO_DE_ESCALAR:
+            continue
+        enfeite += pedra(px, pz, s, 'pedraClara', seed=40 + k, top_m='musgo' if k % 3 == 0 else None)
+        col_pedra(col, 'pedra-lago', px, pz, s, teto=PEDRA_DO_LAGO_ALTA)
     for k, (dx, dz) in enumerate(((-0.8, -0.3), (0.6, 0.4), (1.2, -0.5), (-0.2, 0.7))):
         bx, by = x + dx, -z - dz
         o = cyl(0.36, 0.03, (bx, by, TOPO + 0.06), 'vitoriaRegia', verts=12)
@@ -248,15 +368,40 @@ def lago():
     return borda_, agua, enfeite
 
 
-def galho_dos_cipos():
-    """A árvore do galho comprido e o galho que passa por cima do lago."""
+# O lago tem fundo (física viva, etapa 2): uma bacia na colisão do chão, para a água ter onde boiar
+# e a criança nadar. Só na colisão: a água do desenho é opaca e cobre o fundo. Funda no meio
+# (`FUNDO_DO_LAGO`, a cintura da criança passa da linha da água) e com rampa até debaixo da areia
+# molhada da beira (até uns 43°; o personagem sobe 52°). Raios em fração dos raios da água.
+FUNDO_DO_LAGO = 0.85
+# O tronco que boia nele: comprimento e raio (`tora-que-boia` em bosque-props.glb).
+TORA_QUE_BOIA = (1.6, 0.16)
+RAIOS_DO_LAGO = (2.2, 1.5)
+BACIA_PLANA, BACIA_FIM = 0.35, 1.25
+
+
+def fundo_da_bacia(t):
+    """Profundidade da bacia (abaixo do tampo) a `t` raios do meio do lago."""
+    return profundidade_da_bacia(t, FUNDO_DO_LAGO, BACIA_PLANA, BACIA_FIM)
+
+
+def bacia(chao_col):
+    """Cava a bacia no `col-terreno` (`cavar_bacia` do `lib_ilhas`, a mesma do Recife)."""
+    cavar_bacia(chao_col, LAGO, RAIOS_DO_LAGO, FUNDO_DO_LAGO, BACIA_PLANA, BACIA_FIM)
+
+
+def galho_dos_cipos(col, copas, troncos):
+    """A árvore do galho comprido e o galho que passa por cima do lago (as folhas do galho entram na
+    copa da mesma árvore)."""
     x, z = T6
-    p = arvore_grande(x, z, 1.05, 'a', seed=6)
+    copa, tronco = [], []
+    copas.append(copa)
+    troncos.append(tronco)
+    p = arvore_grande(x, z, 1.05, 'a', seed=6, col=col, copa=copa, tronco=tronco)
     pts = [(gx, -gz, TOPO + gh) for gx, gz, gh in GALHO]
     p.append(tube(pts, [0.42, 0.3, 0.22, 0.14], 'troncoGrande', seg=8))
     for k, (cx, cz, ch) in enumerate(CIPOS + [no_galho(3.0)]):
-        p.append(superellipsoid((1.4, 1.2, 0.8), (cx + 0.2, -cz, TOPO + ch + 0.45), 'copa' if k % 2 else 'copaEscura',
-                                e1=0.8, e2=0.9, seg=8, ring=5))
+        copa.append(superellipsoid((1.4, 1.2, 0.8), (cx + 0.2, -cz, TOPO + ch + 0.45), 'copa' if k % 2 else 'copaEscura',
+                                   e1=0.8, e2=0.9, seg=8, ring=5))
     return p
 
 
@@ -280,25 +425,37 @@ def cipo(i):
 
 
 # ------------------------------------------------------------------ vegetação de enfeite
-def vegetacao():
+def vegetacao(col, copas, troncos):
+    """A vegetação de enfeite. A copa de cada árvore vai para uma lista própria em `copas` (um nó
+    `copa-*` por árvore, para o jogo esmaecer só a que tapa a câmera)."""
     p = []
     for t in PERCURSO:
-        p += arvore_grande(t[0], t[1], t[2], t[3], seed=int(abs(t[0] * 7 + t[1] * 3)))
+        copa, tronco = [], []
+        copas.append(copa)
+        troncos.append(tronco)
+        p += arvore_grande(t[0], t[1], t[2], t[3], seed=int(abs(t[0] * 7 + t[1] * 3)), col=col, copa=copa,
+                           tronco=tronco)
     for i, (x, z, s, c) in enumerate([(9.6, -4.4, 0.9, 'copa'), (-10.4, -4.8, 0.85, 'copaFunda'), (-6.8, 9.6, 0.8, 'copa'),
                                       (-1.4, -10.4, 0.85, 'copaEscura'), (5.4, -10.0, 0.75, 'copaFunda'),
                                       (-10.4, 5.4, 0.8, 'copaEscura')]):
-        p += arvore_media(x, z, s, c, seed=90 + i)
+        copa = []
+        copas.append(copa)
+        p += arvore_media(x, z, s, c, seed=90 + i, col=col, folhas=copa)
     for i, (x, z) in enumerate(((4.2, -10.8), (-4.0, -8.8), (-11.0, 1.4), (8.6, -8.6), (3.6, 9.6), (-7.0, 9.6),
                                 (0.6, -6.2), (-5.4, 0.4))):
-        p += moita(x, z, 0.9 + (i % 3) * 0.15, seed=i)
-    p += tora(1.6, -5.6, 2.4, R(25))
-    p += tora(-1.6, 10.3, 2.0, R(75), r=0.28)
-    p += tora(-10.4, -2.0, 1.8, R(10), r=0.26)
+        s = 0.9 + (i % 3) * 0.15
+        p += moita(x, z, s, seed=i)
+        col_no_tampo(col, 'moita', x, z, MOITA_COL[0] * s, MOITA_COL[1] * s)
+    p += tora(1.6, -5.6, 2.4, R(25), col=col)
+    p += tora(-1.6, 10.3, 2.0, R(75), r=0.28, col=col)
+    p += tora(-10.4, -2.0, 1.8, R(10), r=0.26, col=col)
     for x, z in ((3.8, -3.6), (-5.8, -2.6), (2.0, 7.0)):
-        p += toco(x, z)
+        p += toco(x, z, col=col)
     for i, (x, z) in enumerate(((-3.2, 2.2), (-6.0, -8.4), (0.4, 4.4), (-9.6, 4.0), (6.8, 2.8 + 0.6), (-2.4, -6.6))):
         for k in range(3):
-            p += cogumelo(x + k * 0.35, z + (k % 2) * 0.3, 0.8 + 0.2 * k)
+            cx, cz, s = x + k * 0.35, z + (k % 2) * 0.3, 0.8 + 0.2 * k
+            p += cogumelo(cx, cz, s)
+            col_no_tampo(col, 'cogumelo', cx, cz, COGUMELO_COL[0] * s, COGUMELO_COL[1] * s)
     for i, (x, z, r, n) in enumerate(((0.0, 1.8, 2.2, 14), (-5.6, 3.2, 1.6, 8), (4.6, -2.8 - 0.4, 1.0, 6),
                                       (-1.0, -7.6, 1.6, 8), (7.8, 9.0 - 1.2, 1.2, 6), (-8.6, -8.2, 1.2, 6),
                                       (9.8, -6.4, 1.0, 5))):
@@ -306,30 +463,67 @@ def vegetacao():
     for i, (x, z, r, n) in enumerate(((2.0, 3.0, 3.0, 14), (-6.0, -4.0, 3.0, 12), (-3.0, 9.0, 2.0, 8),
                                       (5.6, -8.4, 1.6, 6), (-10.0, -0.6, 1.4, 6), (9.0, 8.6 - 1.4, 1.2, 4))):
         p += tufos(x, z, r, n, seed=200 + i)
-    for i, (x, z, s) in enumerate(((10.2, 4.4, 0.7), (-11.2, -3.2, 0.8), (6.0, 9.4, 0.6), (-3.6, 11.0, 0.7),
+    # A primeira pedra fica longe do tronco de escalar (`TRONCO_DOS_CIPOS`): quem dá a volta nele
+    # passaria por dentro dela.
+    for i, (x, z, s) in enumerate(((11.0, 3.9, 0.7), (-11.2, -3.2, 0.8), (6.0, 9.4, 0.6), (-3.6, 11.0, 0.7),
                                    (10.4, -6.4, 0.75))):
         p += pedra(x, z, s, 'pedra', seed=300 + i, top_m='musgo')
+        col_pedra(col, 'pedra', x, z, s)
     # Tocas dos bichos (montinho de terra com a entrada escura).
     for x, z in ((-8.0, -10.0 + 2.0), (8.4, -2.8 - 0.6)):
         p.append(uvball(0.8, (x, -z, TOPO - 0.2), 'terraIlha', seg=10, ring=5, scale=(1, 1, 0.72)))
         p.append(cyl(0.34, 0.12, (x, -z - 0.56, TOPO + 0.22), 'black', verts=10, rot=(R(80), 0, 0)))
+        # O montinho (0,38 de alto) vira um degrau baixo: o personagem sobe nele em vez de afundar.
+        col_no_tampo(col, 'toca', x, z, 0.6, 0.3)
+    p += enfeites_do_lobo(col, copas)
     return p
 
 
-def terreno():
-    p = anel.base(SEMENTE)
+def enfeites_do_lobo(col, copas):
+    """A ponta de campo do lado de fora, em volta do lote da cabana (que fica livre): duas árvores
+    médias nos cantos, moitas na beira, flores e tufos."""
+    p = []
+    for i, (x, z, s, c) in enumerate([(-16.6, -6.8, 0.8, 'copaFunda'), (-16.4, 6.9, 0.85, 'copa')]):
+        copa = []
+        copas.append(copa)
+        p += arvore_media(x, z, s, c, seed=120 + i, col=col, folhas=copa)
+    for i, (x, z, s) in enumerate(((-13.8, -6.4, 0.9), (-13.4, 6.6, 1.0), (-18.6, -4.9, 0.9), (-18.4, 5.0, 0.9))):
+        p += moita(x, z, s, seed=40 + i)
+        col_no_tampo(col, 'moita', x, z, MOITA_COL[0] * s, MOITA_COL[1] * s)
+    for i, (x, z, r, n) in enumerate(((-15.2, -5.4, 1.0, 6), (-14.6, 5.4, 1.1, 6), (-19.0, 0.4, 0.8, 4))):
+        p += flores(x, z, r, n, seed=140 + i)
+    for i, (x, z, r, n) in enumerate(((-12.6, -5.2, 1.0, 5), (-17.6, 5.6, 1.0, 5), (-18.9, -2.0, 0.8, 4),
+                                      (-18.9, 2.6, 0.8, 4))):
+        p += tufos(x, z, r, n, seed=240 + i)
+    return p
+
+
+def terreno(col):
+    base = anel.base(SEMENTE, lobo=anel.LOBO_DO_BOSQUE)
+    # O chão que se pisa: tampo, praia e barranco (as trilhas e manchas, milímetros acima, só desenham).
+    col.append(col_terreno(base))
+    bacia(col[-1])
+    p = list(base)
     # Clareira mais clara no meio e as trilhas de terra.
     p.append(mancha(0.6, 0.6, 3.6, 3.0, 'gramaClara', seed=5, z0=TOPO - 0.02, z1=TOPO + 0.012))
     p.append(trilha([(12.4, 0.0), (9.0, 0.0), (6.0, 0.1), (3.4, 0.5), (1.4, 0.4)], 0.95))
-    p.append(trilha([(1.9, 0.3), (1.6, -0.8), (1.3, -1.7)], 0.65))   # até a escada
+    p.append(trilha([(1.6, 0.3), (0.6, 0.2), (-0.3, 0.1)], 0.65))    # até a escada
     p.append(trilha([(3.6, 0.3), (4.8, -2.0), (5.6, -3.8), (6.0, -4.6)], 0.65))    # cabana
     p.append(trilha([(2.6, 0.0), (2.2, -3.0), (2.4, -6.0), (2.4, -7.6)], 0.6))     # cercadinho
     p.append(trilha([(2.4, 0.6), (2.6, 2.4), (2.4, 3.6)], 0.6))                    # lago
     p.append(trilha([(0.8, 0.8), (-1.6, 2.6), (-3.0, 3.6)], 0.55))                 # debaixo das copas
+    p.append(trilha([(-0.6, 0.3), (-3.2, -0.8), (-6.6, -1.0), (-9.6, -0.8), (-12.0, -0.2)], 0.6))  # cabana de fora
     return p
 
 
 ALVO_CABANA = (2.0, -1.0)
+
+# Onde cada bicho se esconde (x, z do jogo, giro): cachorro atrás da moita-6, gato entre os cogumelos e
+# as pedras do lago, coelho na toca-1, porquinho atrás da cabana. O giro é para onde o bicho olha,
+# (sen g, cos g) no chão do jogo; vai no giro em Z do empty, que o glTF leva para o giro em Y do jogo
+# com o mesmo sinal. As medidas são as de `ESCONDERIJOS_NO_MODELO` (src/mundo/bosque.ts), e
+# tests/esconde-no-bosque.test.ts confere que as duas batem.
+ESCONDERIJOS = [(-6.2, 10.2, -2.21), (1.2, 5.4, -2.65), (-8.0, -7.4, 0.0), (7.3, -8.9, 1.34)]
 
 
 def frente_da_cabana(d):
@@ -338,29 +532,136 @@ def frente_da_cabana(d):
     return CABANA[0] + dx / n * d, CABANA[1] + dz / n * d
 
 
-def ancoras(fim_escorregador):
-    lado = R(200)
-    bx, by = T1[0] + math.cos(lado) * 1.85, -T1[1] + math.sin(lado) * 1.85
-    porta_casa = (bx + math.cos(lado + math.pi) * 1.3, by + math.sin(lado + math.pi) * 1.3)
+def tronco_caido(col):
+    """O tronco caído do equilíbrio: uma tora fina deitada ao longo das pontas de `TRONCO_CAIDO`."""
+    (x0, z0), (x1, z1), r = TRONCO_CAIDO
+    comp = math.hypot(x1 - x0, z1 - z0)
+    # A tora deita ao longo de (−sen rot, cos rot) no chão do Blender (y = −z do jogo).
+    rot = math.atan2(-(x1 - x0), -(z1 - z0))
+    return tora((x0 + x1) / 2, (z0 + z1) / 2, comp, rot, r=r, col=col)
+
+
+def escada_reta(col):
+    """Escada de mão encostada na borda do deque da T4: dois montantes e degraus, com a parte de
+    cima passando do deque (para segurar ao sair). Colide como uma tábua fina (só segura o corpo)."""
+    t, e = T4, ESCADA_RETA
+    a, r, h = e['angulo'], t[5] + 0.06, t[4]
+    rx, ry = math.cos(a), math.sin(a)          # para fora do deque (chão do Blender)
+    tx, ty = -math.sin(a), math.cos(a)         # de lado, ao longo dos degraus
+    bx, by = t[0] + rx * r, -t[1] + ry * r
+    alto = h + 0.9
+    p = []
+    for lado in (-1, 1):
+        x, y = bx + tx * lado * e['largura'] / 2, by + ty * lado * e['largura'] / 2
+        p.append(box((0.07, 0.07, alto), (x, y, TOPO + alto / 2), 'poste', bevel=0.01, rot=(0, 0, a)))
+    n = int(h / e['degrau'])
+    for k in range(1, n + 1):
+        p.append(cyl(0.03, e['largura'], (bx, by, TOPO + k * e['degrau']), 'tabua', verts=6, rot=(R(90), 0, a)))
+    col.append(col_caixa('escada-reta', (0.1, e['largura'] + 0.1, h), (bx, by, TOPO + h / 2), (0, 0, a)))
+    return p
+
+
+def pedra_de_agarrar(col):
+    """A pedra de agarrar: um bloco de pedra com musgo no tampo. Colide do tamanho do desenho (é dura)."""
+    e = PEDRA_DE_AGARRAR
+    (x, z), lado, h = e['centro'], e['lado'], e['altura']
+    enterrado = 0.1
+    p = [box((lado, lado, h + enterrado), P(x, z, TOPO + (h - enterrado) / 2), 'pedra', bevel=0.1, segs=2)]
+    # O musgo afunda um pouco no tampo (nenhuma face no mesmo plano da pedra).
+    p.append(box((lado - 0.4, lado - 0.5, 0.05), P(x + 0.08, z - 0.05, TOPO + h + 0.01), 'musgo', bevel=0.02, segs=1))
+    col.append(col_caixa('pedra-de-agarrar', (lado, lado, h + enterrado), P(x, z, TOPO + (h - enterrado) / 2)))
+    return p
+
+
+def ancoras_da_pedra_de_agarrar():
+    """As quatro quinas de cima da pedra de agarrar: pontas recuadas dos cantos e o lado de fora."""
+    e = PEDRA_DE_AGARRAR
+    (x, z), m, y = e['centro'], e['lado'] / 2, TOPO + e['altura']
+    ponta = m - e['recuo']
+    a = []
+    for i, (nx, nz) in enumerate([(1, 0), (0, 1), (-1, 0), (0, -1)]):
+        # De lado, ao longo da quina (perpendicular ao lado de fora).
+        tx, tz = -nz, nx
+        qx, qz = x + nx * m, z + nz * m
+        a.append(ancora(f'borda-{i + 1}-a', qx - tx * ponta, qz - tz * ponta, y))
+        a.append(ancora(f'borda-{i + 1}-b', qx + tx * ponta, qz + tz * ponta, y))
+        a.append(ancora(f'borda-{i + 1}-fora', qx + nx, qz + nz, y))
+    return a
+
+
+def ancoras_da_escada_reta():
+    t, e = T4, ESCADA_RETA
+    a, r, h = e['angulo'], t[5] + 0.06, t[4]
+    # Do Blender para o jogo: x igual, z = −y.
+    base = (t[0] + math.cos(a) * r, t[1] - math.sin(a) * r)
+    dentro = t[5] - 0.7
+    saida = (t[0] + math.cos(a) * dentro, t[1] - math.sin(a) * dentro)
+    return [ancora('escada-1-base', base[0], base[1], TOPO), ancora('escada-1-topo', base[0], base[1], TOPO + h),
+            ancora('escada-1-saida', saida[0], saida[1], TOPO + h)]
+
+
+def tampo_do_tronco_caido():
+    """A altura do tampo do tronco caído (a tora fica com o meio a 0,9 do raio acima do chão)."""
+    return TOPO + TRONCO_CAIDO[2] * 1.9
+
+
+ESPESSURA_DA_PISTA = 0.08  # a tábua da pista tem o meio nos pontos: a superfície fica meia espessura acima
+
+
+def ancoras(pista):
+    fim_escorregador = pista[-1]
+    casa = CASA_NA_ARVORE
+    # Na frente da porta, do lado de fora (onde a criança fica para entrar).
+    porta_casa = na_casa(casa['porta_x'], casa['fundo'] / 2 + 0.6)
     a = [ancora('chegada', 11.6, 0.0), ancora('morador', *frente_da_cabana(3.4)),
          ancora('lumi-1', -0.6, 3.8), ancora('lumi-2', 3.4, -2.2), ancora('lumi-3', -6.4, 4.4),
          ancora('lumi-4', 6.6, 8.6),
-         ancora('escada', T1[0] + math.cos(R(-20)) * (T1[5] + 0.55), T1[1] - math.sin(R(-20)) * (T1[5] + 0.55)),
+         ancora('escada', T1[0] + math.cos(ESCADA_GIRO0) * (T1[5] + 0.55), T1[1] - math.sin(ESCADA_GIRO0) * (T1[5] + 0.55)),
          ancora('casa-na-arvore', porta_casa[0], -porta_casa[1], TOPO + T1[4]),
          ancora('cabana', *frente_da_cabana(2.3)), ancora('cercado', CERCADO[0], CERCADO[1]),
          ancora('lago', LAGO[0], LAGO[1]),
          ancora('escorregador-fim', fim_escorregador.x, -fim_escorregador.y)]
     for i, t in enumerate(PERCURSO):
         a.append(ancora(f'copas-{i + 1}', t[0] + 0.0, t[1], TOPO + t[4]))
+    # Porta de 1,1 m na parede de +y da casa: a dobradiça a 5 cm do lado do vão que dá para o tronco,
+    # no plano da folha (6 cm para fora da face da parede, a folha tem 9 cm), e o rumo para dentro
+    # da casa (−y local).
+    deque = TOPO + T1[4]
+    yp = casa['fundo'] / 2 + 0.06
+    hx, hy = na_casa(casa['porta_x'] - casa['porta_largura'] / 2 + 0.05, yp)
+    dentro = casa['lado'] - math.pi / 2
+    a.append(ancora('mecanismos-casa', hx, -hy, deque))
+    a.append(ancora('mecanismos-rumo', hx + math.cos(dentro), -(hy + math.sin(dentro)), deque))
+    # A placa, o caixote e o alçapão no anel livre do deque (o jogo os monta nessas posições).
+    for nome, (dx, dz) in MECANISMOS_NO_DEQUE.items():
+        a.append(ancora(f'mecanismos-{nome}', T1[0] + dx, T1[1] + dz, deque))
+
+    (x0, z0), (x1, z1), _ = TRONCO_CAIDO
+    a.append(ancora('equilibrio-1-a', x0, z0, tampo_do_tronco_caido()))
+    a.append(ancora('equilibrio-1-b', x1, z1, tampo_do_tronco_caido()))
+    a += ancoras_da_escada_reta()
+    a += ancoras_da_pedra_de_agarrar()
+    # A linha do meio da pista do escorregador, na superfície (modo escorregar).
+    for i, pt in enumerate(pista):
+        a.append(ancora(f'escorregador-curva-{i + 1}', pt.x, -pt.y, pt.z + ESPESSURA_DA_PISTA / 2))
+    lote = LOTE_DA_CABANA
+    a.append(ancora('lote-cabana-a', lote['x0'], lote['z0']))
+    a.append(ancora('lote-cabana-b', lote['x1'], lote['z1']))
+    for i, (x, z, giro) in enumerate(ESCONDERIJOS):
+        e = ancora(f'esconderijo-{i + 1}', x, z)
+        e.rotation_euler = (0.0, 0.0, giro)
+        a.append(e)
     return a
 
 
 def construir():
     lib_q.reset()
-    chao = terreno()
-    borda_lago, agua, enfeite_lago = lago()
+    col = []
+    chao = terreno(col)
+    borda_lago, agua, enfeite_lago = lago(col)
     chao += borda_lago
-    obras = []
+    telhado = []
+    obras, chegada_escada = casa_na_arvore(col, telhado)
     for t in PERCURSO:
         aberturas = []
         i = PERCURSO.index(t)
@@ -370,22 +671,38 @@ def construir():
             aberturas.append(angulo(t, PERCURSO[i + 1]))
         if i == len(PERCURSO) - 1:
             aberturas.append(R(-28))
-        obras += plataforma(t[0], t[1], t[4], r=t[5], aberturas=aberturas)
+            aberturas.append(ESCADA_RETA['angulo'])  # a escada reta chega no deque da T4
+        if i == 0:
+            aberturas.append(chegada_escada)  # a escada chega na borda do deque da T1
+        obras += plataforma(t[0], t[1], t[4], r=t[5], aberturas=aberturas, col=col)
     for a_, b_ in zip(PERCURSO, PERCURSO[1:]):
-        obras += ponte_corda(borda(a_, angulo(a_, b_)), borda(b_, angulo(b_, a_)))
-    obras += casa_na_arvore()
-    esc, fim = escorregador()
+        obras += ponte_corda(borda(a_, angulo(a_, b_)), borda(b_, angulo(b_, a_)), col=col)
+    esc, pista = escorregador(col)
     obras += esc
-    obras += colocar(cabana(), CABANA[0], CABANA[1], olhar_para(CABANA[0], CABANA[1], *ALVO_CABANA))
-    obras += colocar(cercadinho(), CERCADO[0], CERCADO[1], olhar_para(CERCADO[0], CERCADO[1], 2.4, -6.0))
-    veg = vegetacao() + enfeite_lago + galho_dos_cipos()
-    conferir_corredor(obras + veg, 'bosque')
+    obras += escada_reta(col)
+    frente = olhar_para(CABANA[0], CABANA[1], *ALVO_CABANA)
+    col_cabana = []
+    obras += colocar(cabana(col_cabana), CABANA[0], CABANA[1], frente)
+    col += colocar(col_cabana, CABANA[0], CABANA[1], frente)
+    frente = olhar_para(CERCADO[0], CERCADO[1], 2.4, -6.0)
+    col_cercado = []
+    obras += colocar(cercadinho(col_cercado), CERCADO[0], CERCADO[1], frente)
+    col += colocar(col_cercado, CERCADO[0], CERCADO[1], frente)
+    copas, troncos = [], []
+    veg = vegetacao(col, copas, troncos) + enfeite_lago + galho_dos_cipos(col, copas, troncos)
+    veg += tronco_caido(col)
+    obras += pedra_de_agarrar(col)
+    conferir_corredor(obras + veg + telhado + [o for c in copas + troncos for o in c], 'bosque')
     cipos = {}
     for i in range(len(CIPOS)):
         objs, pivo = cipo(i)
         cipos[f'cipo-{i + 1}'] = (objs, pivo)
-    anc = ancoras(fim)
-    exportar('bosque', {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos}, anc)
+    anc = ancoras(pista)
+    nos_copa = {f'copa-{i + 1}': c for i, c in enumerate(copas)}
+    nos_copa.update({f'tronco-{i + 1}': t for i, t in enumerate(troncos)})
+    nos = {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos, **nos_copa,
+           'telhado-casa-na-arvore': telhado}
+    exportar('bosque', nos, anc, colisores=col)
 
 
 def props():
@@ -401,6 +718,10 @@ def props():
         'tora': tora(0, 0, 2.2, 0.0, y=0),
         'toco': toco(0, 0, y=0),
         'cogumelo': cogumelo(0, 0, 1.0, y=0),
+        # O tronco que boia no lago (física viva, etapa 2): fino e curto para a criança empurrar e
+        # subir nele. Fica com o MEIO na origem (é o centro do corpo da física) e deitado ao longo do
+        # z do jogo; as medidas são as de `TRONCO_QUE_BOIA` (src/mundo/tronco-no-lago.tsx).
+        'tora-que-boia': tora(0, 0, TORA_QUE_BOIA[0], 0.0, r=TORA_QUE_BOIA[1], y=-0.9 * TORA_QUE_BOIA[1]),
     }
     exportar('bosque-props', nos)
 

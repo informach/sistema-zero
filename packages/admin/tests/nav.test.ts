@@ -31,6 +31,7 @@ describe('nav — grupos e helpers de seção', () => {
       'Oficinas',
       'Jornada',
       'Desafio do mês',
+      'Jogo',
       'Como fazer',
       'Clube e Comunidade',
       'Visão geral',

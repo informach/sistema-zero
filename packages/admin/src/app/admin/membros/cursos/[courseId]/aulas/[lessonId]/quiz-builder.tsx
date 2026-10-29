@@ -237,6 +237,21 @@ export function QuizBuilder({
                     <option value="island-position">Ilha: posição</option>
                     <option value="island-height">Ilha: altura</option>
                     <option value="island-retest">Ilha: novo teste</option>
+                    <option value="jardim-memory">Jardim: memória da coleta</option>
+                    <option value="jardim-view">Jardim: ponto de vista</option>
+                    <option value="jardim-height">Jardim: altura e contato</option>
+                    <option value="moedas-poucas">Moedas: baú com poucas moedas</option>
+                    <option value="moedas-igual">Moedas: igual ou pelo menos</option>
+                    <option value="moedas-volta">Moedas: voltar ao lugar na ilha</option>
+                    <option value="cabana-so-chave">Cabana: só com a chave</option>
+                    <option value="cabana-ou">Cabana: "e" ou "ou"</option>
+                    <option value="cabana-ordem">Cabana: ordem das peças na ilha</option>
+                    <option value="ponte-a-tempo">Ponte: a tempo</option>
+                    <option value="ponte-atrasado">Ponte: atrasado</option>
+                    <option value="ponte-de-novo">Ponte: puxar de novo na ilha</option>
+                    <option value="simbolos-ordem">Símbolos: a estrela na vez dela</option>
+                    <option value="simbolos-fora">Símbolos: a estrela fora da vez</option>
+                    <option value="simbolos-recomeca">Símbolos: recomeçar na ilha</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

@@ -102,17 +102,19 @@ export function StatusChip({
   )
 }
 
-/** Um número grande com o rótulo embaixo (dias seguidos, XP, medalhas…). */
+/** Um número grande com o rótulo embaixo (dias seguidos, XP, medalhas…) e, se houver, um detalhe. */
 export function StatTile({
   icon: Icon,
   value,
   label,
   color,
+  hint,
 }: {
   icon: typeof MoreHorizontal
   value: ReactNode
   label: string
   color: string
+  hint?: string
 }) {
   return (
     <div className="flex min-w-0 flex-col items-start gap-0.5 rounded-2xl bg-background px-3 py-2.5">
@@ -121,6 +123,9 @@ export function StatTile({
         {value}
       </span>
       <span className="text-muted-foreground text-xs">{label}</span>
+      {hint ? (
+        <span className="text-[0.6875rem] text-muted-foreground leading-snug">{hint}</span>
+      ) : null}
     </div>
   )
 }

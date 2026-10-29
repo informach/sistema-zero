@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  caminhoDoJogo,
   criarPlataformaDoArquipelago,
   lerFerramentasMolda,
   pertenceAoPerfil,
@@ -137,6 +138,45 @@ describe('a porta da plataforma para o jogo', () => {
     })
   })
 
+  test('desafios: lista, abrir e prêmio visto; conferir só pela página', () => {
+    const id = '22222222-2222-4222-8222-222222222222'
+    for (const ok of [
+      '/desafios',
+      '/desafios?ilha=bosque',
+      `/desafios/${id}`,
+      `/desafios/${id}/recompensa-vista`,
+    ])
+      expect(caminhoDoJogo(ok)).toBe(true)
+    for (const nao of [
+      `/desafios/${id}/verificar`,
+      '/desafios/nao-uuid',
+      '/desafios?ilha=../admin',
+      '/desafios?ilha=bosque&x=1',
+      '/admin/desafios',
+      '/familia/limite',
+    ])
+      expect(caminhoDoJogo(nao)).toBe(false)
+  })
+
+  test('galeria: o jogo lê e compra; nada além desses dois caminhos', () => {
+    for (const ok of ['/galeria', '/galeria/compras']) expect(caminhoDoJogo(ok)).toBe(true)
+    for (const nao of ['/galeria/', '/galeria/compras/x', '/galeria?saldo=999'])
+      expect(caminhoDoJogo(nao)).toBe(false)
+  })
+
+  test('irmãos e visitas (fase3-12): a lista e a casa de um irmão por uuid, nada mais', () => {
+    const id = '33333333-3333-4333-8333-333333333333'
+    for (const ok of ['/irmaos', `/irmaos/${id}/casa`]) expect(caminhoDoJogo(ok)).toBe(true)
+    for (const nao of [
+      '/irmaos/',
+      `/irmaos/${id}`,
+      `/irmaos/${id}/casa/x`,
+      '/irmaos/abc/casa',
+      '/irmaos?perfis=1',
+    ])
+      expect(caminhoDoJogo(nao)).toBe(false)
+  })
+
   test('a sessão de tempo passa apenas pelo host Kids', async () => {
     const pedidos = servir({
       'POST /api/arquipelago/tempo/sessao': { status: 200, body: { situacao: 'ativa' } },
@@ -157,5 +197,21 @@ describe('a porta da plataforma para o jogo', () => {
       (await adulto.servico.buscar('/tempo/sessao', { metodo: 'POST', corpo: comando })).status,
     ).toBe(404)
     expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/tempo/sessao'])
+  })
+
+  test('irmãos, recordes e visitas também ficam só no Kids', async () => {
+    const id = '11111111-1111-4111-8111-111111111111'
+    const pedidos = servir({
+      'GET /api/arquipelago/irmaos': { status: 200, body: { situacao: 'ok', irmaos: [] } },
+    })
+    expect((await plataforma().servico.buscar('/irmaos')).status).toBe(200)
+    const adulto = criarPlataformaDoArquipelago({
+      publico: 'adulto',
+      perfil: { id: 'a1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    for (const caminho of ['/irmaos', `/irmaos/${id}/casa`, '/tempo/recuperar'])
+      expect((await adulto.servico.buscar(caminho)).status).toBe(404)
+    expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/irmaos'])
   })
 })

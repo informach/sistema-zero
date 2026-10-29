@@ -15,9 +15,14 @@ import { DialogueBlockView } from './dialogue-block'
 import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { CabanaQuizScene } from './quiz-cabana-scene'
 import { GardenQuizScene } from './quiz-garden-scene'
 import { IslandQuizScene } from './quiz-island-scene'
+import { JardimQuizScene } from './quiz-jardim-scene'
 import { LighthouseQuizScene } from './quiz-lighthouse-scene'
+import { MoedasQuizScene } from './quiz-moedas-scene'
+import { PonteQuizScene } from './quiz-ponte-scene'
+import { SimbolosQuizScene } from './quiz-simbolos-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */
 export function PredictionQuiz(props: {
@@ -83,7 +88,7 @@ function PredictionQuizSession({
       saveDraft(nextAnswers, index, selected)
       setFeedback(correction)
     } catch {
-      setError('Não foi possível conferir a previsão. Tente de novo.')
+      setError('Não foi possível conferir a resposta. Tente de novo.')
     } finally {
       setBusy(false)
     }
@@ -204,6 +209,7 @@ function PredictionQuizSession({
   const move = (retry: boolean) => {
     setSelected(null)
     setFeedback(null)
+    setScenePlaying(false)
     if (!retry) setIndex((i) => i + 1)
     saveDraft(answers, retry ? index : index + 1, null)
     setFocusRevision((revision) => revision + 1)
@@ -271,7 +277,8 @@ function PredictionQuizSession({
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        Pergunta {index + 1} de {questions.length} · Escolha, teste e compare
+        Pergunta {index + 1} de {questions.length} ·{' '}
+        {question.predictionScene ? 'Escolha, teste e compare' : 'Escolha uma resposta'}
       </p>
       <DialogueBlockView
         key={question.id}
@@ -307,9 +314,31 @@ function PredictionQuizSession({
             data-result={checked}
           >
             {checked ? <CheckCircle2 size={16} aria-hidden /> : <Hand size={16} aria-hidden />}
-            {checked ? 'Resultado da experiência' : 'Antes do teste'}
+            {question.predictionScene
+              ? checked
+                ? 'Resultado da experiência'
+                : 'Antes do teste'
+              : 'Pense no seu jogo'}
           </span>
-          {question.predictionScene?.startsWith('island-') ? (
+          {!question.predictionScene ? (
+            <p className="p-5 text-base">
+              Leia a pergunta e escolha uma resposta. Depois, veja a explicação.
+            </p>
+          ) : question.predictionScene.startsWith('simbolos-') ? (
+            <SimbolosQuizScene
+              key={question.id}
+              scene={question.predictionScene}
+              result={checked}
+            />
+          ) : question.predictionScene.startsWith('ponte-') ? (
+            <PonteQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('cabana-') ? (
+            <CabanaQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('moedas-') ? (
+            <MoedasQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('jardim-') ? (
+            <JardimQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('island-') ? (
             <IslandQuizScene
               key={question.id}
               scene={question.predictionScene}
@@ -331,7 +360,9 @@ function PredictionQuizSession({
           )}
           <p className="sz-garden-caption">
             {checked
-              ? 'Observe o resultado antes de continuar.'
+              ? question.predictionScene
+                ? 'Observe o resultado antes de continuar.'
+                : 'Leia a explicação antes de continuar.'
               : (captions[sceneIndex] ?? 'Observe a situação antes de escolher a resposta.')}
           </p>
           {checked && sceneIndex === 1 && (
@@ -412,11 +443,15 @@ function PredictionQuizSession({
                   <span className="flex-1 min-w-0">
                     {renderInline(choice.label, { plainLinks: true })}
                     {checked && right && (
-                      <small className="sz-garden-answer-label">É o que acontece na cena</small>
+                      <small className="sz-garden-answer-label">
+                        {question.predictionScene ? 'É o que acontece na cena' : 'Resposta correta'}
+                      </small>
                     )}
                     {checked && chosen && !right && (
                       <small className="sz-garden-answer-label">
-                        Sua previsão · compare com a cena
+                        {question.predictionScene
+                          ? 'Sua previsão · compare com a cena'
+                          : 'Sua resposta'}
                       </small>
                     )}
                   </span>
@@ -440,7 +475,7 @@ function PredictionQuizSession({
               onClick={() => void reveal()}
             >
               <Play size={16} aria-hidden />
-              Ver o que acontece
+              {question.predictionScene ? 'Ver o que acontece' : 'Responder'}
             </SceneButton>
           ) : (
             <>
@@ -481,7 +516,7 @@ function PredictionQuizSession({
                     }}
                   >
                     <RotateCcw size={16} aria-hidden />
-                    Testar novamente
+                    {question.predictionScene ? 'Testar novamente' : 'Responder novamente'}
                   </SceneButton>
                 )}
               </div>

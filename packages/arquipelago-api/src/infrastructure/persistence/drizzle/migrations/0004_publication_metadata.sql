@@ -1,0 +1,4 @@
+DROP INDEX "arquipelago"."desafios_quadro_unico";--> statement-breakpoint
+ALTER TABLE "arquipelago"."desafio_publicacoes" ADD COLUMN "metadados" jsonb;--> statement-breakpoint
+ALTER TABLE "arquipelago"."desafios" ADD COLUMN "metadados_publicados" jsonb;--> statement-breakpoint
+CREATE UNIQUE INDEX "desafios_quadro_unico" ON "arquipelago"."desafios" USING btree (coalesce("metadados_publicados"->>'publico', "publico"),coalesce("metadados_publicados"->>'ilha', "ilha"),(case when "metadados_publicados" is null then "quadro" else ("metadados_publicados"->>'quadro')::int end)) WHERE coalesce("arquipelago"."desafios"."metadados_publicados"->>'tipo', "arquipelago"."desafios"."tipo") = 'quadro-das-cores' and "arquipelago"."desafios"."situacao" <> 'arquivado';

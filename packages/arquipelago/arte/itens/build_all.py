@@ -12,7 +12,8 @@ import subprocess
 import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-GRUPOS = ['colheita', 'sementes', 'comidas', 'ferramentas', 'colecao', 'lugares', 'cozinha']
+GRUPOS = ['colheita', 'sementes', 'comidas', 'ferramentas', 'colecao', 'lugares', 'cozinha', 'ingredientes', 'iscas',
+          'colecoes']
 ITENS = os.path.join(AQUI, '..', '..', 'src', 'assets', 'itens')
 ICONES = os.path.join(AQUI, '..', '..', 'src', 'assets', 'icones')
 TETO_TRIS, TETO_KB, TETO_ICONE_KB = 4000, 300, 20
@@ -34,6 +35,10 @@ CONTRATO = {
     'placa-tabuleta': {'nos': ['placa', 'texto'], 'materiais': ['placaFace']},
     'fogao': {'nos': ['fogao', 'fogo'], 'materiais': ['fogo', 'brasa']},
 }
+# As notas musicais e as estrelas caídas brilham com o material `luz`.
+for _pid in ('nota-seminima', 'nota-colcheia', 'nota-dupla', 'nota-clave-de-sol', 'estrela-cadente', 'estrela-sorriso',
+             'estrela-cintilante', 'estrela-trio'):
+    CONTRATO[_pid] = {'materiais': ['luz']}
 
 rel = os.path.join(AQUI, 'relatorio.json')
 if os.path.exists(rel):

@@ -23,6 +23,11 @@ export interface RepositorioDoJogo {
     revisaoBase: number
     salvamento: Salvamento
     agora: Date
+    /**
+     * A conta da criança do Kids (do login dela): guardada uma vez com a gravação aceita, para a
+     * área dos pais ler só as crianças da própria conta. Adulto e equipe sem perfil: ausente.
+     */
+    contaId?: string | null
   }): Promise<ResultadoDaGravacao>
   /** Soma segundos ao dia (data de São Paulo, AAAA-MM-DD) e devolve o total do dia. */
   somarTempo(

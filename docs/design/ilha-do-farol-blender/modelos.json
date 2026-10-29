@@ -1,35 +1,35 @@
 {
   "cenario-praia-tropical": {
-    "sha": "bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
-    "bytes": 585380,
+    "sha": "ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
+    "bytes": 585288,
     "clips": [],
     "center": [0, 33.6, 0],
     "size": 140
   },
   "cenario-costa-rochosa": {
-    "sha": "5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
-    "bytes": 555040,
+    "sha": "5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
+    "bytes": 561728,
     "clips": [],
     "center": [0, 33.6, 0],
     "size": 140
   },
   "cenario-ilha-nevada": {
-    "sha": "eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
-    "bytes": 567728,
+    "sha": "7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
+    "bytes": 565116,
     "clips": [],
     "center": [0, 33.6, 0],
     "size": 140
   },
   "cenario-noite-na-ilha": {
-    "sha": "a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
-    "bytes": 577072,
+    "sha": "77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
+    "bytes": 577100,
     "clips": [],
     "center": [0, 33.6, 0],
     "size": 140
   },
   "pedras": {
-    "sha": "90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
-    "bytes": 21520,
+    "sha": "c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
+    "bytes": 27464,
     "clips": [],
     "center": [-0.0258, 1.1897, 0.4919],
     "size": 4.5298

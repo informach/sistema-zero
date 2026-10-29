@@ -110,7 +110,9 @@ describe('bundle inicial do Jogo 2D', () => {
 // O teste de equivalência abaixo conserva tokens e fronteiras de linha (ASI).
 // Review 25/10: trim indentation only in the authored engine, preserving the
 // serialized run context. Measured: 415,166 chars / 119,134 bytes gzip.
-const RUNTIME_TETO_CRU = 420_000
+// 29/10/2026: +1,6 KB do evento "Quando começar a encostar em algum do grupo"
+// (decisão da dona, Poder Moedas no caminho). Medido: 421,1 mil chars / 116,8 mil gzip.
+const RUNTIME_TETO_CRU = 422_500
 const RUNTIME_TETO_GZIP = 121_500
 
 /**

@@ -4,9 +4,11 @@ import {
   type ConflitoDeSalvamento,
   GravarSalvamentoSchema,
   LimiteDaFamiliaSchema,
+  PerfisDaFamiliaSchema,
   RegistrarTempoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { Elysia } from 'elysia'
+import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import { exigirGateway, lerJogador, lerResponsavel } from './identidade'
 
@@ -29,12 +31,17 @@ function validar<T>(
  * Rotas do jogo, chamadas pelo navegador através do repasse da plataforma e do gateway. Quem é
  * a pessoa vem SEMPRE dos `x-auth-*` do gateway, nunca do corpo.
  */
-export function rotasDoJogo(deps: { servico: ServicoDoJogo; tokenInterno?: string }) {
+export function rotasDoJogo(deps: {
+  servico: ServicoDoJogo
+  cartas: ServicoDasCartas
+  tokenInterno?: string
+}) {
   const { servico } = deps
   return new Elysia({ prefix: '/arquipelago' })
     .onBeforeHandle(({ headers }) => exigirGateway(headers['x-internal-token'], deps.tokenInterno))
     .get('/acesso', ({ headers }) => servico.acesso(lerJogador(headers)))
     .get('/salvamento', ({ headers }) => servico.lerSalvamento(lerJogador(headers)))
+    .get('/cartas', ({ headers }) => deps.cartas.cartas(lerJogador(headers)))
     .put('/salvamento', async ({ headers, body, set }) => {
       const r = await servico.gravarSalvamento(
         lerJogador(headers),
@@ -64,9 +71,12 @@ export function rotasDoJogo(deps: { servico: ServicoDoJogo; tokenInterno?: strin
     .post('/tempo/sessao', ({ headers, body }) =>
       servico.comandarSessaoTempo(lerJogador(headers), validar(ComandoSessaoTempoSchema, body)),
     )
-    .get('/familia/limite', async ({ headers }) => ({
-      limiteDiarioMinutos: await servico.lerLimiteDaFamilia(lerResponsavel(headers)),
-    }))
+    .get('/familia/limite', ({ headers, query }) =>
+      servico.lerLimiteDaFamilia(
+        lerResponsavel(headers),
+        validar(PerfisDaFamiliaSchema, query.perfis),
+      ),
+    )
     .put('/familia/limite', async ({ headers, body }) => ({
       limiteDiarioMinutos: await servico.gravarLimiteDaFamilia(
         lerResponsavel(headers),

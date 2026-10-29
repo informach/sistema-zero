@@ -23,11 +23,11 @@ interface Manifest {
   }[]
 }
 const paths = [
-  'desafio-primeiro-jogo/desafio-dia-3',
-  'cade-todo-mundo/cade-todo-mundo-aula-2',
-  'nave-contra-asteroides/nave-contra-asteroides-dia-5',
-  'corre-dino/corre-dino-aula-13',
-  'o-jogo-do-meu-jeito/meu-jeito-aula-08',
+  'faisca/desafio-primeiro-jogo/desafio-dia-3',
+  'faisca/cade-todo-mundo/cade-todo-mundo-aula-2',
+  'construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5',
+  'inventor/corre-dino/corre-dino-aula-13',
+  'construtor/o-jogo-do-meu-jeito/meu-jeito-aula-08',
 ]
 const manifest = (path: string): Manifest =>
   JSON.parse(

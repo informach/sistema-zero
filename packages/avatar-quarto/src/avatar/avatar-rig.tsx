@@ -84,6 +84,8 @@ export function AvatarRig({
   charRef,
   onStood,
   completeRef,
+  extraClips,
+  onAnimations,
 }: {
   slots: Slots
   pose?: string
@@ -95,6 +97,16 @@ export function AvatarRig({
   onStood?: () => void
   /** `true` enquanto todas as peças mostradas estão na cena (a foto só mede o corpo inteiro). */
   completeRef?: RefObject<boolean>
+  /** Clipes a mais no mesmo esqueleto (o jogo traz andar, correr, pular...). */
+  extraClips?: THREE.AnimationClip[]
+  /**
+   * Quem passa isto controla as animações (pesos e tempo de cada clipe) e o rig deixa de tocar a
+   * `pose` sozinho. Chamado quando as ações ficam prontas.
+   */
+  onAnimations?: (
+    actions: Record<string, THREE.AnimationAction | null>,
+    mixer: THREE.AnimationMixer,
+  ) => void
 }) {
   const animRoot = useRef<THREE.Group>(null)
   const springRef = useRef<THREE.Group>(null)
@@ -107,7 +119,11 @@ export function AvatarRig({
   // `CompileError` no console. Desligar mantém a CSP estrita e zera o erro (ver asset-part).
   const armature = useGLTF(baseGlbUrl('Armature'), false, false)
   const poses = useGLTF(baseGlbUrl('Poses'), false, false)
-  const { actions } = useAnimations(poses.animations, animRoot)
+  const clips = useMemo(
+    () => (extraClips?.length ? [...poses.animations, ...extraClips] : poses.animations),
+    [poses.animations, extraClips],
+  )
+  const { actions, mixer } = useAnimations(clips, animRoot)
 
   const skeleton = useMemo(() => findSkeleton(armature.scene), [armature.scene])
   const rootBone = useMemo(() => (skeleton ? rootBoneOf(skeleton) : null), [skeleton])
@@ -119,14 +135,20 @@ export function AvatarRig({
     if (headColor) skin.color.set(headColor)
   }, [skin, headColor])
 
+  // Animação controlada por fora (o jogo): entrega as ações e não toca a pose.
+  useEffect(() => {
+    if (onAnimations && actions) onAnimations(actions, mixer)
+  }, [actions, mixer, onAnimations])
+
   // Pose (animação) — best-effort: action inexistente → fica na pose de bind.
   useEffect(() => {
+    if (onAnimations) return
     const action = actions?.[pose] ?? actions?.Idle
     action?.reset().fadeIn(0.3).play()
     return () => {
       action?.fadeOut(0.3)
     }
-  }, [actions, pose])
+  }, [actions, pose, onAnimations])
 
   // As peças mostradas (sem as "nenhum" e sem as escondidas por outra, ex.: chapéu→cabelo).
   const parts = useMemo(() => visibleParts(slots), [slots])

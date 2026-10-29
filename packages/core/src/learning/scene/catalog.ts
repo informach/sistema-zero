@@ -1525,6 +1525,229 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Clique em Avançar 1 quadro com Segurar a seta para a direita desligado. Depois ligue a seta e clique em Avançar 1 quadro mais duas vezes.',
     ],
   },
+  /**
+   * O Poder "Moedas no caminho" (Faísca, 29/10/2026): o mesmo jogo que a criança monta, com as seis
+   * moedas, o baú e as duas escolhas da regra. ⚠️ Os rótulos da bancada ("Encostar na moeda",
+   * "Afastar", "Encostar no baú", "A moeda some", "Pelo menos 5", "Igual a 5", "Recomeçar a
+   * partida") são citados pelos pedidos e pelas pistas letra por letra.
+   */
+  'coin-counter': {
+    id: 'coin-counter',
+    group: 'events',
+    title: 'O contador de moedas',
+    instruction:
+      'Pegue moedas e acompanhe o número moedas: antes, somar 1, agora. Afaste-se, tente o baú e compare as duas regras dele.',
+    manipulates: 'As moedas, o baú, a regra que faz a moeda sumir e a comparação do baú',
+    success:
+      'Cada moeda nova somou 1, a mesma moeda não contou duas vezes e o número ficou guardado. O baú abriu com pelo menos 5, e "igual a 5" não abriu com 6.',
+    extra: 'E se a moeda não sumir: quantas vezes ela conta?',
+    goals: [
+      {
+        id: 'each-adds',
+        label: 'Cada moeda somou 1',
+        pedido: 'Use Encostar na moeda em duas moedas diferentes.',
+      },
+      {
+        id: 'no-double',
+        label: 'A mesma moeda não contou duas vezes',
+        pedido:
+          'Com A moeda some ligado, pegue uma moeda, clique em Afastar e use Encostar na moeda nela de novo.',
+      },
+      {
+        id: 'counts-again',
+        soNoCaso: true,
+        label: 'Sem sumir, a mesma moeda contou de novo',
+        pedido:
+          'Desligue A moeda some, pegue uma moeda, clique em Afastar e use Encostar na moeda nela outra vez.',
+      },
+      {
+        id: 'kept',
+        label: 'O número continuou guardado longe das moedas',
+        pedido: 'Depois de pegar uma moeda, clique em Afastar e olhe moedas.',
+      },
+      {
+        id: 'below-goal',
+        label: 'Com menos de 5, o baú ficou fechado',
+        pedido: 'Pegue de uma a quatro moedas e clique em Encostar no baú.',
+      },
+      {
+        id: 'compare-rules',
+        label: 'Com 6 moedas, "pelo menos 5" abriu e "igual a 5" não',
+        pedido:
+          'Pegue as seis moedas e clique em Encostar no baú com Pelo menos 5 e depois com Igual a 5.',
+      },
+    ],
+    hints: [
+      'Olhe moedas antes e depois de cada encontro: quanto o número muda?',
+      'Compare tentar o baú com poucas moedas e com todas. Depois troque a regra do baú.',
+      'Encoste em duas moedas, clique em Afastar, volte numa delas, tente o baú com quatro, pegue as seis e tente com Pelo menos 5 e com Igual a 5.',
+    ],
+  },
+  /**
+   * O Poder "O segredo da cabana" (Faísca, 29/10/2026): o mesmo jogo que a criança monta, com a
+   * chave, o emblema e a cabana do faroleiro. ⚠️ Os rótulos da bancada ("Pegar a chave", "Pegar o
+   * emblema", "Encostar na cabana", "e", "ou", "Recomeçar a partida") são citados pelos pedidos e
+   * pelas pistas letra por letra.
+   */
+  'two-pieces': {
+    id: 'two-pieces',
+    group: 'events',
+    title: 'A porta com duas peças',
+    instruction:
+      'Pegue as peças em ordens diferentes e tente a cabana: acompanhe temChave, temEmblema e a resposta da pergunta. Depois troque o "e" pelo "ou".',
+    manipulates: 'A chave, o emblema, a porta da cabana e o bloco que junta as duas perguntas',
+    success:
+      'Sem peça nenhuma e com uma só a cabana ficou fechada; com as duas ela abriu, em qualquer ordem. Com "ou", uma peça só já abria.',
+    extra: 'E se a cabana pedisse três peças: o que mudaria na pergunta?',
+    goals: [
+      {
+        id: 'none-closed',
+        label: 'Sem nenhuma peça, a cabana ficou fechada',
+        pedido: 'Com e escolhido, clique em Encostar na cabana antes de pegar qualquer peça.',
+      },
+      {
+        id: 'one-closed',
+        label: 'Com uma peça só, a cabana ficou fechada',
+        pedido:
+          'Com e escolhido, use Pegar a chave ou Pegar o emblema e clique em Encostar na cabana.',
+      },
+      {
+        id: 'both-open',
+        label: 'Com as duas peças, a cabana abriu',
+        pedido: 'Com e escolhido, pegue as duas peças e clique em Encostar na cabana.',
+      },
+      {
+        id: 'any-order',
+        label: 'A cabana abriu começando por qualquer peça',
+        pedido:
+          'Abra a cabana começando pela chave, clique em Recomeçar a partida e abra de novo começando pelo emblema.',
+      },
+      {
+        id: 'and-vs-or',
+        label: 'Com "ou", uma peça só já abriu',
+        pedido: 'Escolha ou, pegue uma peça só e clique em Encostar na cabana.',
+      },
+    ],
+    hints: [
+      'Olhe temChave e temEmblema antes de encostar na cabana: quantos estão verdadeiro?',
+      'Tente a cabana sem peça, com uma e com as duas. Depois recomece e pegue na outra ordem.',
+      'Encoste na cabana sem nada, pegue a chave e encoste, pegue o emblema e encoste, recomece começando pelo emblema e, por fim, escolha ou e tente com uma peça só.',
+    ],
+  },
+  /**
+   * O Poder "A ponte apressada" (Faísca, 29/10/2026): o jogo que a criança monta, com a alavanca,
+   * a ponte e a pedra do sino. O tempo anda um segundo por vez, num botão: a criança controla o
+   * relógio e observa cada momento. ⚠️ Os rótulos da bancada ("Puxar a alavanca", "Esperar 1
+   * segundo", "Encostar na ponte", "Dentro da alavanca", "No começo do jogo", "Recomeçar a
+   * partida") são citados pelos pedidos e pelas pistas letra por letra.
+   */
+  'timed-bridge': {
+    id: 'timed-bridge',
+    group: 'events',
+    title: 'A ponte apressada',
+    instruction:
+      'Puxe a alavanca, deixe o tempo passar um segundo por vez e tente a ponte: acompanhe ponteAberta e o relógio do "depois de". Depois mude o lugar do "depois de".',
+    manipulates: 'A alavanca, o relógio de segundos, a ponte e o lugar do "depois de 4 segundos"',
+    success:
+      'A alavanca baixou a ponte e, 4 segundos depois, ela subiu sozinha; indo antes disso, o personagem atravessou. No começo do jogo, o "depois de" rodou uma vez só e a ponte não subiu mais.',
+    extra: 'E se o "depois de" esperasse 2 segundos: daria tempo de atravessar?',
+    goals: [
+      {
+        id: 'closed-start',
+        label: 'Antes de puxar, a ponte não deixou atravessar',
+        pedido: 'Clique em Encostar na ponte antes de puxar a alavanca.',
+      },
+      {
+        id: 'lever-opens',
+        label: 'A alavanca baixou a ponte',
+        pedido: 'Clique em Puxar a alavanca.',
+      },
+      {
+        id: 'in-time',
+        label: 'Indo antes dos 4 segundos, o personagem atravessou',
+        pedido:
+          'Puxe a alavanca, clique em Esperar 1 segundo e encoste na ponte antes de passarem 4 segundos.',
+      },
+      {
+        id: 'rises-alone',
+        label: 'Depois de 4 segundos, a ponte subiu sozinha',
+        pedido: 'Puxe a alavanca e clique em Esperar 1 segundo até passarem 4 segundos.',
+      },
+      {
+        id: 'pull-again',
+        label: 'Depois que subiu, puxar de novo baixou a ponte',
+        pedido: 'Deixe a ponte subir sozinha e clique em Puxar a alavanca de novo.',
+      },
+      {
+        id: 'timer-place',
+        label: 'Com o "depois de" no começo, a ponte não subiu mais',
+        pedido:
+          'Escolha No começo do jogo, clique em Esperar 1 segundo quatro vezes, puxe a alavanca e espere mais quatro segundos.',
+      },
+    ],
+    hints: [
+      'Olhe ponteAberta antes de encostar na ponte: ela está verdadeiro ou falso?',
+      'Puxe a alavanca e conte os segundos no relógio. O que acontece com a ponte no quarto segundo?',
+      'Encoste na ponte sem puxar, puxe e atravesse antes dos 4 segundos, recomece e deixe a ponte subir, puxe de novo e, por fim, escolha No começo do jogo e espere bastante depois de puxar.',
+    ],
+  },
+  /**
+   * O Poder "O baú dos símbolos" (Faísca, 29/10/2026): o jogo que a criança monta, com as pedras do
+   * sol, da lua e da estrela, a placa da ordem e o baú. O passo fica à vista. ⚠️ Os rótulos da
+   * bancada ("Tocar o sol", "Tocar a lua", "Tocar a estrela", "Na ordem", "Só contando",
+   * "Recomeçar a partida") são citados pelos pedidos e pelas pistas letra por letra.
+   */
+  'symbol-sequence': {
+    id: 'symbol-sequence',
+    group: 'events',
+    title: 'A ordem dos símbolos',
+    instruction:
+      'Toque os símbolos e acompanhe passo: na ordem da placa, fora da vez e começando pelo meio. Depois compare com o baú que só conta.',
+    manipulates: 'As pedras do sol, da lua e da estrela, o baú e o jeito de o baú decidir',
+    success:
+      'O passo andou 1, 2 com a ordem certa e a estrela abriu o baú. Fora da vez, a tentativa recomeçou, e começar de novo pelo sol abriu. Só contando, a ordem errada também abriu: é por isso que o baú precisa do passo.',
+    extra: 'E se fossem quatro símbolos: até que número o passo precisaria contar?',
+    goals: [
+      {
+        id: 'step-moves',
+        label: 'O passo andou com a ordem certa',
+        pedido: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a lua.',
+      },
+      {
+        id: 'right-order',
+        label: 'A ordem certa abriu o baú',
+        pedido:
+          'Com Na ordem escolhido, clique em Tocar o sol, Tocar a lua e Tocar a estrela, nessa ordem.',
+      },
+      {
+        id: 'out-of-turn',
+        label: 'Fora da vez, a tentativa recomeçou',
+        pedido: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a estrela.',
+      },
+      {
+        id: 'middle-start',
+        label: 'Começando pelo meio, nada avançou',
+        pedido: 'Com Na ordem escolhido, recomece a partida e clique em Tocar a lua antes do sol.',
+      },
+      {
+        id: 'restart-works',
+        label: 'Depois de errar, a ordem certa abriu o baú',
+        pedido:
+          'Com Na ordem escolhido, erre a ordem e, sem recomeçar a partida, toque o sol, a lua e a estrela.',
+      },
+      {
+        id: 'count-vs-order',
+        label: 'Só contando, a ordem errada também abriu o baú',
+        pedido:
+          'Depois de abrir o baú na ordem certa, escolha Só contando e toque a estrela, a lua e o sol.',
+      },
+    ],
+    hints: [
+      'Olhe passo depois de cada toque: quanto ele vale depois do sol? E depois da lua?',
+      'Toque um símbolo fora da vez. O que acontece com passo e com os símbolos acesos?',
+      'Toque o sol, a lua e a estrela, toque o sol e a estrela, recomece pelo sol, e por fim escolha Só contando e toque a estrela, a lua e o sol.',
+    ],
+  },
   'lighthouse-position': {
     id: 'lighthouse-position',
     group: 'stage',
@@ -2759,6 +2982,10 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'lighthouse-key': PREVIA_INICIAL,
   'lighthouse-walk': PREVIA_INICIAL,
   'lighthouse-position': PREVIA_INICIAL,
+  'coin-counter': PREVIA_INICIAL,
+  'two-pieces': PREVIA_INICIAL,
+  'timed-bridge': PREVIA_INICIAL,
+  'symbol-sequence': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

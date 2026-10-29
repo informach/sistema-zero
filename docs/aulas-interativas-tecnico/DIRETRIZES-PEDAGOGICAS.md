@@ -317,3 +317,30 @@ entregue à pessoa. Arquivos portáteis levam as artes completas; referências c
 manifestos exigem uma biblioteca compatível e um erro visível quando não puderem carregar.
 Testar o enquadramento na prévia estreita, além do jogo em tela ampla. Atualizar montagem,
 critérios, roteiros e PDF juntos quando mudar o comando que a pessoa usa.
+
+
+## Missões de posto: aplicar o repertório, direção de 28/10/2026
+
+O Jardim Secreto é a primeira referência dessa aplicação. A missão exige os conceitos investigados e os comandos efetivamente montados nos cursos-base. Câmera, luz, desenho, modelos, caminhada permitida e reinício que vieram prontos não viram exigências de programação por acidente.
+
+- O vídeo principal apresenta o resultado, relembra a ideia e convida a construir. Não repete todas as experiências nem resolve os encaixes da missão.
+- A ajuda é opcional, disponível desde o início e completa: lembrete do resultado, conceito, paleta, nome do bloco, destino, campos, valores, teste e correção. Usa os elementos da própria missão. Consultá-la não reduz mérito nem consome tentativas.
+- Um projeto por dimensão permanece entre as partes. Objetivos crescem por etapa; a coleta não cobra a decisão ainda não pedida. Uma entrega atualizada encerra cada dimensão.
+- Verificar precisa rodar os dois casos: antes e depois da coleta. A memória pode ter outro nome; a posição não precisa coincidir com a solução da professora. Arte preparada e variáveis declaradas sem uso não comprovam aprendizagem.
+- Se a navegação não chega ao alvo, não afirmar que a decisão está errada: indicar que o teste não terminou e orientar a conferir movimento, caminho e altura. Testar erros plausíveis, nomes alternativos e reinício, além da solução correta.
+- Quiz de previsão usa uma cena fiel e mostra o resultado depois da escolha. Pergunta de diagnóstico ou de escolha de teste pode ficar sem demonstração; o mesmo quiz pode reunir os dois formatos. Alternativas permanecem equivalentes antes da escolha e a correção pertence ao servidor.
+- Reiniciar a partida conserva regras e posições editadas. Restaurar o projeto inicial é outra ação e não deve ser pedido como teste.
+- Uma missão não concede certificado nem promove sozinha. A jornada conserva seus outros critérios. Artes, roteiro, manifesto, ajuda, PDF e fontes de voz devem acompanhar a mesma versão; gravação e publicação são etapas verificadas separadamente.
+
+## Poderes do posto: conceito novo nas duas dimensões, direção de 29/10/2026
+
+Moedas no caminho é a primeira referência. Um Poder acrescenta um conceito que os cursos-base não
+ensinaram, por isso a **primeira aula** segue o formato de curso: jogo pronto, Passo a passo do
+projeto, vídeo conceitual com a experiência do conceito, montagens guiadas por completo no vídeo
+(uma ideia por seção, destino antes da peça, retomada no próprio jogo), quiz e entrega. A **segunda
+aula** é a transferência para a outra dimensão, como a aula 3D da missão: o vídeo lembra a regra e
+convida a construir, e a montagem completa fica no Passo a passo do projeto, com objetivos por etapa.
+Não repetir a experiência na segunda aula; o quiz dela pode ter uma previsão com cena da outra
+dimensão. O Poder conta com as duas aulas concluídas. Quando o conceito pede um bloco que só uma das
+dimensões tinha, conferir o catálogo inteiro antes: descer um bloco existente para o iniciante vem
+antes de criar um novo (ver `faisca/README.md`).

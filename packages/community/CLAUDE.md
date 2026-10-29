@@ -1040,3 +1040,16 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Arquipélago na comunidade adulta (fase3-13, 29/10/2026)
+
+`/arquipelago` monta `ArquipelagoHostAdulto` (a entrada adulta do member-shell: a porta no palco,
+sem mascote) e o jogo veste a pele adulta pelos tokens deste `globals.css` (`--noite`, `--palco`,
+`--carta`, `--cta`, `--cta-degrau`, `--font-sans`, `--font-display`), que a raiz do jogo herda.
+Sem família: os shims `api/arquipelago/irmaos/*` saíram e o host recusa `/irmaos` fora do Kids.
+O item do menu continua pela liberação do serviço (`ARQUIPELAGO_PUBLICOS`). Lista de lançamento:
+`docs/plans/2026-10-29-arquipelago-lancamento-adulto.md`.
+
+## Minijogos aprovados do Arquipélago (29/10/2026)
+
+As rotas GET /api/arquipelago/minijogos e /:id usam o mesmo repasse do member-shell que o Kids. A conta adulta abre somente suas cópias aprovadas. Player e autorização continuam compartilhados.

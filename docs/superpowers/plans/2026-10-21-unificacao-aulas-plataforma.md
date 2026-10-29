@@ -6,7 +6,7 @@
 
 **Goal:** Manter uma única fonte dos cinco cursos, com linguagem comum nas duas comunidades, uma gravação principal por aula e substituições kids localizadas e documentadas.
 
-**Architecture:** Consolidar a autoria em `docs/aulas-interativas/<curso>/`, mantendo os identificadores publicados. Compartilhar a linguagem operacional e os conteúdos; a vinculação de mídia seleciona o master ou a montagem kids. Gerar os arquivos de fala e o índice de edição a partir de um roteiro de produção único, com tags ElevenLabs v4 e intervenções marcadas.
+**Architecture:** Consolidar a autoria em `docs/aulas-interativas/<posto>/<curso>/`, mantendo os identificadores publicados. Compartilhar a linguagem operacional e os conteúdos; a vinculação de mídia seleciona o master ou a montagem kids. Gerar os arquivos de fala e o índice de edição a partir de um roteiro de produção único, com tags ElevenLabs v4 e intervenções marcadas.
 
 **Tech Stack:** Bun/TypeScript, React/Next.js, Python, Markdown, manifestos v5, geradores de PDF existentes e ElevenLabs v4 na etapa de produção de áudio.
 
@@ -205,7 +205,7 @@ bun test docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts do
 
 ### T6. Migrar as fontes para uma árvore única
 
-**Modificar:** `qa/caminhos.ts`, cinco geradores, testes dos cursos, validadores, recursos/PDFs, links, índices e CI. **Destino:** `docs/aulas-interativas/<curso>/`.
+**Modificar:** `qa/caminhos.ts`, cinco geradores, testes dos cursos, validadores, recursos/PDFs, links, índices e CI. **Destino:** `docs/aulas-interativas/<posto>/<curso>/`.
 
 **Interface preservada:** `caminhoAula(nome: string, pasta?: string): string` e `listarArquivosAulas(pasta?: string): string[]`. A raiz comum deve ter lista explícita de cursos para não tratar README ou documentação auxiliar como curso. Não publicar duas cópias de conteúdo para resolver caminhos antigos.
 

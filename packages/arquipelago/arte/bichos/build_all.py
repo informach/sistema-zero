@@ -20,7 +20,7 @@ LIMITE_KB = 400
 ADOTAR = ['parado', 'andar', 'correr', 'sentar', 'feliz', 'truque']
 GRUPOS = {
     'adotar': {
-        'teto': 4000,
+        'teto': 3000,
         'bichos': {f'{e}{f}': ADOTAR for e in ('cachorro', 'gato', 'coelho', 'porquinho') for f in ('', '-filhote')},
     },
     'recife': {

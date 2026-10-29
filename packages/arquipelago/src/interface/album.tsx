@@ -1,0 +1,245 @@
+import { type ReactNode, useEffect, useRef } from 'react'
+import { useEstado, useJogo } from '../estado/contexto'
+import { ACHADOS_DO_RECIFE } from '../sistemas/achados-do-recife'
+import {
+  albumDoSalvamento,
+  type ContaDaSecao,
+  faltamNaSecao,
+  type LumiDoAlbum,
+  type ObjetoDoAlbum,
+  type PercursoDoAlbum,
+  tituloDaSecao,
+} from '../sistemas/album'
+import { Bicho, Receita } from './diario'
+import { MINIATURA_DO_OBJETO } from './miniaturas'
+
+/** O valor de `painelAberto` do álbum. */
+export const PAINEL_DO_ALBUM = 'album'
+
+function Secao({
+  id,
+  nome,
+  conta,
+  explica,
+  grade = false,
+  children,
+}: {
+  id: string
+  nome: string
+  conta: ContaDaSecao
+  explica: string
+  /** Em colunas no computador (as listas compridas: aparências e Lumis). */
+  grade?: boolean
+  children: ReactNode
+}) {
+  return (
+    <section className="arq-caderno-secao" aria-labelledby={`arq-album-${id}`}>
+      <h3 id={`arq-album-${id}`} className="arq-menu-titulo">
+        {tituloDaSecao(nome, conta)}
+      </h3>
+      <p className="arq-caderno-explica">
+        <b className={conta.faltam === 0 ? 'arq-album-completa' : undefined}>
+          {faltamNaSecao(conta)}
+        </b>{' '}
+        {explica}
+      </p>
+      <ul className={`arq-quadro-lista arq-diario-bichos${grade ? ' arq-album-grade' : ''}`}>
+        {children}
+      </ul>
+    </section>
+  )
+}
+
+function Percurso({ p }: { p: PercursoDoAlbum }) {
+  return (
+    <li className={`arq-diario-bicho arq-album-percurso${p.melhorTempo ? '' : ' escondido'}`}>
+      <div className="arq-quadro-corpo">
+        <b>{p.nome}</b>
+        <span className="arq-quadro-estado">{p.ilha}</span>
+        <ul className="arq-album-estrelas">
+          {p.estrelas.map((e) => (
+            <li key={e.texto} className={e.ganhou ? 'ganhou' : ''}>
+              <span aria-hidden="true">{e.ganhou ? '★' : '☆'}</span> {e.texto}
+              <span className="arq-sr">{e.ganhou ? ': estrela ganha' : ': estrela que falta'}</span>
+            </li>
+          ))}
+        </ul>
+        <span className="arq-caderno-efeito">
+          {p.melhorTempo ? `Melhor tempo: ${p.melhorTempo}` : 'Ainda não correu.'}
+        </span>
+      </div>
+    </li>
+  )
+}
+
+function Objeto({ o }: { o: ObjetoDoAlbum }) {
+  const tem = o.estado === 'com-aparencia'
+  return (
+    <li className={`arq-diario-bicho arq-album-item${tem ? '' : ' escondido'}`}>
+      <img
+        className={`arq-album-miniatura${o.estado === 'ainda-nao-chegou' ? ' silhueta' : ''}`}
+        src={MINIATURA_DO_OBJETO[o.objeto]}
+        alt=""
+        draggable={false}
+      />
+      <div className="arq-quadro-corpo">
+        <b>{o.nome}</b>
+        {o.estado === 'com-aparencia' ? (
+          <span className="arq-caderno-efeito">{`Guardadas: ${o.aparencias.join(', ')}.`}</span>
+        ) : (
+          <>
+            <span className="arq-quadro-estado">
+              {o.estado === 'sem-aparencia' ? 'Ainda sem aparência' : 'Ainda não chegou'}
+            </span>
+            <span className="arq-caderno-efeito">{o.dica}</span>
+          </>
+        )}
+      </div>
+    </li>
+  )
+}
+
+function Lumi({ l }: { l: LumiDoAlbum }) {
+  const especie = l.raro ? 'Espécie rara' : 'Espécie comum'
+  if (l.estado === 'nao-encontrado')
+    return (
+      <li className="arq-diario-bicho arq-album-item escondido">
+        <span className="arq-album-lumi silhueta" aria-hidden="true" />
+        <div className="arq-quadro-corpo">
+          <b>Ainda não encontrado</b>
+          <span className="arq-quadro-estado">{l.ilha}</span>
+          <span className="arq-caderno-efeito">{especie}</span>
+        </div>
+      </li>
+    )
+  return (
+    <li className="arq-diario-bicho arq-album-item">
+      <span
+        className={`arq-album-lumi${l.raro ? ' raro' : ''}`}
+        style={{ ['--cor' as string]: l.cor }}
+        aria-hidden="true"
+      />
+      <div className="arq-quadro-corpo">
+        <b>{l.nome}</b>
+        <span className="arq-quadro-estado">{l.ilha}</span>
+        <span className="arq-caderno-efeito">{`${especie}. Presos: ${l.quantos}.`}</span>
+      </div>
+    </li>
+  )
+}
+
+/**
+ * O álbum de coleções (fase2-09): bichos, receitas, estrelas dos percursos, aparências guardadas e
+ * Lumis presos, cada seção com quantos tem e quantos faltam. Só lê o salvamento; nada aqui muda o
+ * jogo, e o que falta nunca se perde.
+ */
+export function Album() {
+  const { loja } = useJogo()
+  const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_ALBUM)
+  const salvamento = useEstado((s) => s.salvamento)
+  const fechar = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (aberto) fechar.current?.focus({ preventScroll: true })
+  }, [aberto])
+
+  if (!aberto) return null
+  const a = albumDoSalvamento(salvamento)
+
+  return (
+    <div className="arq-sobre">
+      <div
+        className="arq-menu arq-cartao arq-quadro arq-caderno arq-diario arq-album"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="arq-album-titulo"
+      >
+        <h2 id="arq-album-titulo">Álbum de coleções</h2>
+        <p className="arq-caderno-explica">
+          O que falta não se perde: continua esperando por você nas ilhas.
+        </p>
+        <Secao
+          id="recife"
+          nome="Achados do Recife"
+          conta={{
+            tem: Object.values(salvamento.recife).filter(Boolean).length,
+            total: 3,
+            faltam: 3 - Object.values(salvamento.recife).filter(Boolean).length,
+          }}
+          explica="Os achados do mergulho ficam guardados aqui."
+        >
+          {(Object.keys(ACHADOS_DO_RECIFE) as (keyof typeof ACHADOS_DO_RECIFE)[]).map((id) => (
+            <li key={id} className="arq-quadro-corpo">
+              <b>{ACHADOS_DO_RECIFE[id].nome}</b>
+              <span>{salvamento.recife[id] ? 'Encontrado.' : ACHADOS_DO_RECIFE[id].dica}</span>
+            </li>
+          ))}
+        </Secao>
+        <Secao
+          id="bichos"
+          nome="Bichos do Bosque"
+          conta={a.bichos.conta}
+          explica="Cada bicho que você acha no esconde-esconde entra aqui."
+        >
+          {a.bichos.itens.map((b) => (
+            <Bicho key={b.bicho} b={b} />
+          ))}
+        </Secao>
+        <Secao
+          id="receitas"
+          nome="Receitas"
+          conta={a.receitas.conta}
+          explica="O Bento, da Vila Doce, lembra mais uma a cada coração de amizade."
+        >
+          {a.receitas.itens.map((r) => (
+            <Receita key={r.id} r={r} />
+          ))}
+        </Secao>
+        <Secao
+          id="percursos"
+          nome="Estrelas dos percursos"
+          conta={a.percursos.conta}
+          explica="Cada percurso tem três estrelas, e cada estrela ganha fica para sempre."
+        >
+          {a.percursos.itens.map((p) => (
+            <Percurso key={p.id} p={p} />
+          ))}
+        </Secao>
+        <Secao
+          id="aparencias"
+          nome="Aparências guardadas"
+          conta={a.aparencias.conta}
+          grade
+          explica={`Os objetos da casa com aparência. Você guarda ${
+            a.aparencias.guardadas === 1 ? '1 aparência' : `${a.aparencias.guardadas} aparências`
+          }.`}
+        >
+          {a.aparencias.itens.map((o) => (
+            <Objeto key={o.objeto} o={o} />
+          ))}
+        </Secao>
+        <Secao
+          id="lumis"
+          nome="Lumis presos"
+          conta={a.lumis.conta}
+          grade
+          explica="À noite, a lanterna prende um borrão de névoa e ele vira um Lumi. Cada ilha tem uma espécie comum e uma rara."
+        >
+          {a.lumis.itens.map((l) => (
+            <Lumi key={l.id} l={l} />
+          ))}
+        </Secao>
+        <div className="arq-menu-acoes">
+          <button
+            ref={fechar}
+            type="button"
+            className="arq-botao leve"
+            onClick={() => loja.getState().abrirPainel(null)}
+          >
+            Voltar ao jogo
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

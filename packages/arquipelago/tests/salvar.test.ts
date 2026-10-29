@@ -1,7 +1,21 @@
 import { describe, expect, test } from 'bun:test'
 import { criarSalvamentoInicial, type SalvamentoGuardado } from '@sistemazero/arquipelago-contracts'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
-import { criarFilaDeSalvamento } from '../src/sistemas/salvar'
+import { criarFilaDeSalvamento as criarFila, type OpcoesDaFila } from '../src/sistemas/salvar'
+
+function criarFilaDeSalvamento(
+  o: Omit<OpcoesDaFila, 'guardadoInicial' | 'rascunhoInicial' | 'armazem' | 'aoSituacao'> & {
+    revisaoInicial: number
+  },
+) {
+  return criarFila({
+    ...o,
+    guardadoInicial: { revisao: o.revisaoInicial, salvamento: null, atualizadoEm: null },
+    rascunhoInicial: null,
+    armazem: { ler: async () => null, gravar: async () => {}, fechar: () => {} },
+    aoSituacao: () => {},
+  })
+}
 
 function relogioManual() {
   const tarefas: (() => void)[] = []
@@ -40,7 +54,7 @@ describe('fila de salvamento', () => {
     expect(p.guardado().revisao).toBe(2)
   })
 
-  test('no conflito adota a versão guardada (outro aparelho salvou antes)', async () => {
+  test('no conflito conserva o progresso local até uma escolha explícita', async () => {
     const p = criarPlataformaFalsa()
     const s = criarSalvamentoInicial(new Date())
     // Outro aparelho grava primeiro.
@@ -60,8 +74,12 @@ describe('fila de salvamento', () => {
     })
     fila.guardar({ ...s, inventario: { alface: 1 } })
     await fila.salvarAgora()
-    expect((adotado as SalvamentoGuardado | null)?.salvamento?.inventario).toEqual({ milho: 9 })
+    expect(adotado).toBeNull()
     expect(p.guardado().salvamento?.inventario).toEqual({ milho: 9 })
+    expect(fila.temPendente()).toBe(true)
+    expect(JSON.parse(fila.copiaLocal()).local.inventario).toEqual({ alface: 1 })
+    await fila.resolver('remoto')
+    expect((adotado as SalvamentoGuardado | null)?.salvamento?.inventario).toEqual({ milho: 9 })
     expect(fila.temPendente()).toBe(false)
   })
 

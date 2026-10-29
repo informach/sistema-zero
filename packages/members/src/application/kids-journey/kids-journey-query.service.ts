@@ -1,6 +1,7 @@
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import {
   analyzeKidsJourneyReadiness,
+  type CreatorJourneyCurriculum,
   KIDS_CREATOR_CAPABILITIES,
   type KidsCourseMilestone,
   type KidsJourneyStaffPreview,
@@ -64,6 +65,19 @@ export class KidsJourneyQueryService {
         policy: snapshot.policy.policy,
         catalog: snapshot.catalog,
       }),
+    }
+  }
+
+  /** O currículo da política publicada (null em política sem currículo). Só leitura, sem aluno. */
+  async publishedCurriculum(): Promise<{
+    version: number
+    curriculum: CreatorJourneyCurriculum | null
+  }> {
+    const snapshot = await this.journey.readSnapshot([])
+    assertPublished(snapshot.policy)
+    return {
+      version: snapshot.policy.version,
+      curriculum: snapshot.policy.policy.curriculum ?? null,
     }
   }
 

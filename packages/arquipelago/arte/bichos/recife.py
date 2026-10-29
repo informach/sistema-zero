@@ -13,6 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lib_bichos import Bicho, clipes_peixe, sen  # noqa: E402
 from mathutils import Vector  # noqa: E402
+import bpy  # noqa: E402
 
 COMUM = {
     'olho': ('#151216', 0.1),
@@ -86,10 +87,12 @@ def peixe_cirurgiao(pid):
         f = 1.0 - 0.25 * max(0.0, v.y)
         return (v.x * f, v.y, v.z * f)
     corpo = p.esfera('corpo', 'corpo', (0, 0, 0), (rx, ry, rz), deformar=oval, seg=16, aneis=10)
-    # A faixa escura em forma de paleta do cirurgião, dos olhos até a cauda.
-    p.casca('corpo', 'escuro', 'escuro', (0, 0, 0), (rx, ry, rz), deformar=oval, folga=0.003, espessura=0.002,
-            seg=20, aneis=12, cortes=[((0, -0.06, 0), (0, -1, 0)), ((0, 0.1, 0), (0, 1, 0)),
-                                      ((0, 0, 0.065), (0, 0.25, 1)), ((0, 0.02, 0.012), (0, 0.5, -1))])
+    # A mancha escura em forma de paleta do cirurgião: um laço que sai de trás do olho, contorna um
+    # oval azul no meio do corpo e afina até a cauda. Fitas coladas no corpo, de borda lisa (antes,
+    # quatro cortes retos davam um triângulo).
+    fita_no_corpo(p, 'corpo', 'escuro', (rx, ry, rz), oval, _laco_da_paleta(), 0.3, fechada=True)
+    fita_no_corpo(p, 'corpo', 'escuro', (rx, ry, rz), oval, [(0.5 + 0.4 * t, 0.2 - 0.18 * t) for t in
+                                                           (i / 8 for i in range(9))], (0.26, 0.08))
     rosto = [corpo]
     for lado in (1, -1):
         olho_lateral(p, rosto, -0.085, 0.02, (0.02, 0.012, 0.022), lado)
@@ -106,6 +109,62 @@ def peixe_cirurgiao(pid):
     p.finalizar()
     clipes_peixe(p)
     return p
+
+
+def _laco_da_paleta(n=28):
+    """O laço da paleta no lado do peixe, em (comprimento, altura) da elipse do corpo (de -1 a 1):
+    em volta do oval azul, do olho até onde começa a faixa da cauda."""
+    return [(0.1 + 0.44 * math.cos(2 * math.pi * i / n), 0.2 + 0.3 * math.sin(2 * math.pi * i / n))
+            for i in range(n)]
+
+
+def fita_no_corpo(p, osso, m, raios, deformar, pontos, largura, fechada=False, folga=0.0025,
+                  espessura=0.0015):
+    """Uma fita colada nos dois lados de um corpo elipsoide (`raios` e o mesmo `deformar` da
+    esfera), seguindo `pontos` em (comprimento, altura) da elipse, de -1 a 1. `largura` é na
+    mesma medida da altura (um número, ou o começo e o fim); a borda fica lisa, sem os degraus
+    de recortar a malha do corpo."""
+    import bmesh
+    rx, ry, rz = raios
+    n = len(pontos)
+    l0, l1 = largura if isinstance(largura, tuple) else (largura, largura)
+
+    def no_corpo(u, w, lado):
+        # A esfera unitária deformada e escalada, achada ao contrário pelo (comprimento, altura).
+        y = max(-0.98, min(0.98, u))
+        f = deformar(Vector((1.0, y, 1.0)))[0]
+        z = max(-0.98, min(0.98, w / f))
+        x = math.sqrt(max(0.0, 1 - y * y - z * z))
+        q = Vector(deformar(Vector((x * lado, y, z))))
+        pt = Vector((q.x * rx, q.y * ry, q.z * rz))
+        normal = Vector((pt.x / rx ** 2, pt.y / ry ** 2, pt.z / rz ** 2)).normalized()
+        return pt + normal * folga
+
+    bm = bmesh.new()
+    for lado in (1, -1):
+        linhas = []
+        for i, (u, w) in enumerate(pontos):
+            a = pontos[(i - 1) % n] if fechada or i > 0 else pontos[i]
+            b = pontos[(i + 1) % n] if fechada or i < n - 1 else pontos[i]
+            tu, tw = (b[0] - a[0]) * ry, (b[1] - a[1]) * rz
+            c = math.hypot(tu, tw) or 1.0
+            nu, nw = -tw / c / ry, tu / c / rz
+            h = (l0 + (l1 - l0) * (i / max(1, n - 1))) / 2 * rz
+            linhas.append((bm.verts.new(no_corpo(u + nu * h, w + nw * h, lado)),
+                           bm.verts.new(no_corpo(u - nu * h, w - nw * h, lado))))
+        for i in range(n if fechada else n - 1):
+            a, b = linhas[i], linhas[(i + 1) % n]
+            f = bm.faces.new((a[0], b[0], b[1], a[1]))
+            f.normal_update()
+            if f.normal.x * lado < 0:
+                f.normal_flip()
+    o = p._objeto(bm, osso, m)
+    mod = o.modifiers.new('espessura', 'SOLIDIFY')
+    mod.thickness = espessura
+    mod.offset = -1.0
+    bpy.context.view_layer.objects.active = o
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    return o
 
 
 # --------------------------------------------------------------------- baiacu

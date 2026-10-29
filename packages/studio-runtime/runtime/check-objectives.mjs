@@ -2,6 +2,7 @@
 // aberto num Chromium sem internet, UMA página nova por objetivo, os passos acontecem (esperar,
 // apertar tecla, clicar) e o que importa é OBSERVADO. Quem decide se passou é o Worker, com a régua
 // do core (`compareExecutionValue`): este script só relata o que viu.
+
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
@@ -17,6 +18,7 @@ import {
   stagePointToViewport,
 } from './check-click-target.mjs'
 import { createImageThreeModuleResolver } from './check-javascript-modules.mjs'
+import { waitForModels } from './check-models-ready.mjs'
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 
 const root = process.cwd()
@@ -90,6 +92,11 @@ const CONCURRENCY = 3
 const has3dNavigation = objectives.some(({ rule }) =>
   rule.steps?.some((step) => step.action === 'approachObject3d'),
 )
+// Todo jogo 3D clássico renderiza por software, com ou sem a navegação: objetivos que só
+// apertam teclas também abriam três mundos juntos e nenhum ficava pronto (quadros acima de
+// 400 ms na espera dos modelos, num executor de 4 núcleos).
+const renders3d =
+  has3dNavigation || (mode === 'classic' && resources.get('/index.html').bytes.includes('SZGame3D'))
 
 let browser
 const observations = []
@@ -104,7 +111,7 @@ try {
   // O Chromium da imagem usa renderização 3D por software. Três mundos simultâneos
   // atrasam tanto os quadros e as entradas que a navegação oscila e vence o prazo.
   // Estes projetos compartilham uma vaga de renderização, mantendo o orçamento existente.
-  const concurrency = has3dNavigation ? 1 : CONCURRENCY
+  const concurrency = renders3d ? 1 : CONCURRENCY
   await Promise.all(
     Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
       for (;;) {
@@ -136,7 +143,7 @@ async function runObjective(objective, index) {
     viewport: { width: 1024, height: 640 },
     // Keep CSS geometry, camera and keyboard behavior; rasterize fewer pixels
     // for software WebGL. No learner state or game timing is modified.
-    deviceScaleFactor: has3dNavigation ? 0.5 : 1,
+    deviceScaleFactor: renders3d ? 0.5 : 1,
     acceptDownloads: false,
     serviceWorkers: 'block',
   })
@@ -296,6 +303,7 @@ async function startGame(page, probe) {
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     )
     .catch(() => undefined)
+  await waitForModels(page, probe)
   await page.waitForTimeout(SETTLE_MS)
 }
 

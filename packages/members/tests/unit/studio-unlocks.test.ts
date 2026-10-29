@@ -95,6 +95,21 @@ function setup() {
 }
 
 describe('GetStudioUnlocksService', () => {
+  test('read: a mesma união (congelada + atual) sem congelar nada', async () => {
+    const { courses, unlocks, service, userId, accountId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    await unlocks.freezeGrants({ userId, accountId }, 'kids', [
+      { courseId: randomUUID(), blocks: ['sz_py_pass'] },
+    ])
+    const antes = await unlocks.listGrants(userId, 'kids')
+    expect((await service.read(userId, 'kids')).blocks.sort()).toEqual(
+      ['sz_g2d_create_ship', 'sz_py_pass'].sort(),
+    )
+    expect(await unlocks.listGrants(userId, 'kids')).toEqual(antes)
+  })
+
   for (const audience of ['kids', 'adult'] as const) {
     test(`LIVE ${audience}: completion unlocks literal JS/Python rewards without Mural`, async () => {
       const { courses, gamification, service, userId, accountId } = setup()

@@ -12,7 +12,7 @@ Atualizado em 21/10/2026. Implementação, revisão e integração local conclu�
 
 ## Decisões aprovadas que prevalecem
 
-- Uma fonte por curso em `docs/aulas-interativas/<curso>/`, comum a adultos e infantojuvenil. A explicação precisa ser compreensível para crianças e respeitosa para adolescentes e adultos.
+- Uma fonte por curso em `docs/aulas-interativas/<posto>/<curso>/`, comum a adultos e infantojuvenil. A explicação precisa ser compreensível para crianças e respeitosa para adolescentes e adultos.
 - Vocabulário comum: Curso → Aula → Parte; Próxima parte; Verificar esta parte; Enviar meu projeto; Concluir aula; equipe; Passo a passo do projeto. Aplicar também em início, catálogo, trilhas, ajuda, acessibilidade, quizzes e materiais. Preservar nomes legítimos de fases do jogo e de recursos próprios.
 - A professora grava a aula inteira, com conversa contínua. A versão adulta funciona sozinha.
 - No kids, substituir somente a MESMA frase indicada pelo áudio e pela camada visual de Dedé ou Debinha. Silenciar apenas esse intervalo da professora; sem duas vozes, repetição ou resposta pelo nome no master.

@@ -17,6 +17,7 @@ import {
   type MoldaHostChrome,
   MoldaHostChromeProvider,
   type MoldaHostChromeStatus,
+  type MoldaInitialModel,
   type MoldaPersistence,
   setMoldaStorageNamespace,
 } from '@sistemazero/molda'
@@ -217,6 +218,10 @@ const app = (
       onOpenStudio: () => console.log('[playground] onOpenStudio'),
       // Deep link de teste: `?criacao=<id>` abre direto uma criação.
       ...(initialAssetId ? { initialAssetId } : {}),
+      // Molde do Arquipélago: `?caixa=<JSON>` com o `MoldaInitialModel` que o host manda.
+      ...(params.get('caixa')
+        ? { initialModel: JSON.parse(params.get('caixa') ?? '{}') as MoldaInitialModel }
+        : {}),
       ...(toolAccess ? { toolAccess } : {}),
     }}
   />

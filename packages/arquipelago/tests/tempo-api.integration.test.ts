@@ -1,13 +1,20 @@
 import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import 'fake-indexeddb/auto'
+import { LeiturasDosMembros } from '../../arquipelago-api/src/application/leituras-dos-membros'
+import { ConferenciaDoMapa } from '../../arquipelago-api/src/application/mapa-das-ilhas'
+import { ServicoDaEquipe } from '../../arquipelago-api/src/application/servico-da-equipe'
+import { ServicoDasCartas } from '../../arquipelago-api/src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../arquipelago-api/src/application/servico-do-jogo'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../arquipelago-api/src/infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from '../../arquipelago-api/src/infrastructure/persistence/drizzle/repositorio'
+import { DrizzleRepositorioDeDesafios } from '../../arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-de-desafios'
 import { createServer } from '../../arquipelago-api/src/interfaces/http/server'
+import { migrarBancoDeTeste } from '../../arquipelago-api/tests/fakes/banco-migrado'
+import { desafiosDesligados } from '../../arquipelago-api/tests/fakes/desafios'
 import { createLogger } from '../../core/src/logging'
 import { criarFilaDeTempo } from '../src/sistemas/fila-tempo'
 
@@ -21,8 +28,11 @@ if (url) {
     throw new Error('Use somente banco local descartável arquipelago_test')
 }
 let db: DbConnection
-beforeAll(() => {
-  if (url) db = createDbConnection(url)
+beforeAll(async () => {
+  if (url) {
+    db = createDbConnection(url)
+    await migrarBancoDeTeste(db)
+  }
 })
 afterAll(async () => {
   await db?.close()
@@ -34,14 +44,26 @@ test.skipIf(!url)(
     const user = randomUUID(),
       account = randomUUID()
     const repo = new DrizzleRepositorioDoJogo(db.db)
-    const service = new ServicoDoJogo(repo, {
-      modo: 'aberto',
-      publicos: new Set(['kids']),
-      lista: new Set(),
-    })
+    const politica = {
+      modo: 'aberto' as const,
+      publicos: new Set(['kids' as const]),
+      lista: new Set<string>(),
+    }
+    const service = new ServicoDoJogo(repo, politica)
+    const logger = createLogger({ level: 'error' })
+    // Sem Members: cartões, cadastro e desafios ficam desligados (este teste é só do tempo).
+    const leituras = new LeiturasDosMembros(null)
     const app = createServer({
-      logger: createLogger({ level: 'error' }),
+      logger,
       servico: service,
+      cartas: new ServicoDasCartas(politica, leituras),
+      equipe: new ServicoDaEquipe(
+        new DrizzleRepositorioDeDesafios(db.db),
+        null,
+        leituras,
+        new ConferenciaDoMapa(null, logger),
+      ),
+      desafios: desafiosDesligados(politica),
       cliente: { dir: '.', servirMapas: false },
       tokenInterno: 'token-local-de-teste',
       readiness: async () => {},

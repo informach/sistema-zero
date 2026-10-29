@@ -1,29 +1,58 @@
 'use client'
 
 import {
+  type DesafioAberto,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
+  type MoldeDaRotina,
+  MoldeDeDesafioSchema,
   type MontagemDoArquipelago,
   type PedidoDeFerramenta,
   type Plataforma,
   type PublicoJogo,
   posicaoDoPostoKids,
   QuartoSchema,
+  type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import { lerAparenciaDaConta } from '../lib/arquipelago-aparencia'
+import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
+import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
+import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-rotina'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
+import {
+  type EstadoDaPorta,
+  type FerramentaDaPorta,
+  PELE_KIDS_DA_PORTA,
+  type PeleDaPorta,
+} from './arquipelago-porta'
+
+const RotinaDialog = lazy(() =>
+  import('./arquipelago-rotina-dialog').then((m) => ({ default: m.ArquipelagoRotinaDialog })),
+)
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
 )
+const ChallengeDialog = lazy(() =>
+  import('./arquipelago-challenge-dialog').then((m) => ({ default: m.ArquipelagoChallengeDialog })),
+)
+const MinijogoPlayer = lazy(() =>
+  import('./arquipelago-minijogo-player').then((m) => ({ default: m.ArquipelagoMinijogoPlayer })),
+)
 
 class ToolLoadBoundary extends Component<
-  { children: ReactNode; onCancel: () => void },
+  {
+    children: ReactNode
+    ferramenta: FerramentaDaPorta
+    onCancel: () => void
+    Aviso: PeleDaPorta['Aviso']
+  },
   { failed: boolean }
 > {
   state = { failed: false }
@@ -32,32 +61,56 @@ class ToolLoadBoundary extends Component<
   }
   render() {
     if (!this.state.failed) return this.props.children
-    return (
-      <div
-        className="absolute inset-0 z-50 grid place-items-center bg-background p-6 text-center text-foreground"
-        role="alert"
-      >
-        <div>
-          <p>Não foi possível abrir a ferramenta agora.</p>
-          <button
-            type="button"
-            onClick={this.props.onCancel}
-            className="mt-4 rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground"
-          >
-            Voltar ao jogo
-          </button>
-        </div>
-      </div>
-    )
+    const { Aviso } = this.props
+    return <Aviso ferramenta={this.props.ferramenta} falhou onVoltar={this.props.onCancel} />
   }
 }
 
 /** O repasse do BFF (`routes/arquipelago.ts`). */
 const BASE = '/api/arquipelago'
 /** As únicas rotas do serviço que o jogo chama (o limite da família é da área dos pais). */
-const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo/recuperar', '/tempo/sessao'])
+const CAMINHOS_DO_JOGO = new Set([
+  '/acesso',
+  '/salvamento',
+  '/tempo/recuperar',
+  '/tempo/sessao',
+  '/cartas',
+  '/galeria',
+  '/galeria/compras',
+  '/minijogos',
+  '/irmaos',
+])
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+/** A casa de um irmão para a visita (fase3-12), só leitura. */
+const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
+/**
+ * Os desafios: a lista (com `?ilha=`), o desafio aberto e o prêmio visto. Conferir NÃO está aqui:
+ * quem manda o projeto é o Estúdio de desafio da página, nunca o jogo.
+ */
+const DESAFIOS_DO_JOGO = new RegExp(
+  `^/desafios(?:\\?ilha=[a-z][a-z-]{0,39}|/${UUID}(?:/recompensa-vista)?)?$`,
+)
 
-type Estado = 'carregando' | 'pronto' | 'indisponivel' | 'erro'
+/**
+ * O que só existe no Kids: o tempo livre (a comunidade adulta não tem limite) e a família (irmãos,
+ * recordes e visitas). No adulto o host responde 404 sem ir à rede, e o community não tem os shims.
+ */
+export function soDoKids(caminho: string): boolean {
+  return (
+    caminho === '/tempo/sessao' ||
+    caminho === '/tempo/recuperar' ||
+    caminho === '/irmaos' ||
+    CASA_DO_IRMAO.test(caminho)
+  )
+}
+
+export function caminhoDoJogo(caminho: string): boolean {
+  return (
+    CAMINHOS_DO_JOGO.has(caminho) || DESAFIOS_DO_JOGO.test(caminho) || CASA_DO_IRMAO.test(caminho)
+  )
+}
+
+type Estado = EstadoDaPorta | 'pronto'
 
 export function pertenceAoPerfil(corpo: unknown, viewerId: string): boolean {
   return (
@@ -154,6 +207,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     versaoContrato: VERSAO_CONTRATO_PLATAFORMA,
     publico: opcoes.publico,
     perfil: opcoes.perfil,
+    lerAparencia: (id, sinal) => lerAparenciaDaConta(opcoes.perfil.id, id, sinal),
     async lerJornada() {
       const r = await json('/api/members/gamification/me')
       const dados =
@@ -187,11 +241,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     servico: {
       async buscar(caminho, pedido) {
-        if (
-          !CAMINHOS_DO_JOGO.has(caminho) ||
-          ((caminho === '/tempo/sessao' || caminho === '/tempo/recuperar') &&
-            opcoes.publico !== 'kids')
-        )
+        if (!caminhoDoJogo(caminho) || (opcoes.publico !== 'kids' && soDoKids(caminho)))
           return { status: 404, corpo: { code: 'NOT_FOUND' } }
         return json(`${BASE}${caminho}`, {
           ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
@@ -215,15 +265,27 @@ export function ArquipelagoHost(props: {
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
   narrationEnabled?: boolean
+  /**
+   * A tela da porta e o aviso das ferramentas. Sem ela, a do Kids. A comunidade adulta entra por
+   * `arquipelago-host-adulto`, que passa a dela (o Kids nunca baixa a tela adulta).
+   */
+  pele?: PeleDaPorta
 }) {
+  const { Porta, Aviso } = props.pele ?? PELE_KIDS_DA_PORTA
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
+  const [challenge, setChallenge] = useState<DesafioAberto | null>(null)
+  const [minijogo, setMinijogo] = useState<string | null>(null)
   const [creation, setCreation] = useState<{
     ferramenta: 'pinta' | 'molda' | 'estudio'
     studioAvailable: boolean
     toolAccess: MoldaToolAccess | null
     studioConfig: ArquipelagoStudioConfig | null
+    /** Aparência de um objeto (projeto azul): o Pinta e o Molda abrem com o molde. */
+    objeto: PedidoDeObjeto | null
   } | null>(null)
+  const [moldeRotina, setMoldeRotina] = useState<MoldeDaRotina | null>(null)
+  const fimRotina = useRef<((resultado: ResultadoDaFerramentaRotina | null) => void) | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
   const { publico, voltarPara } = props
@@ -233,11 +295,50 @@ export function ArquipelagoHost(props: {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
     const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
-      if (pedido.molde !== undefined) return { situacao: 'indisponivel', motivo: 'em-breve' }
       if (abrindo.current || pendente.current)
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.ferramenta === 'rotina-lumi') {
+          return await abrirRotinaNaPlataforma(
+            pedido,
+            () => json(`${BASE}/cartas`),
+            async (molde) => {
+              if (!vivo) return null
+              return new Promise<ResultadoDaFerramentaRotina | null>((resolve) => {
+                fimRotina.current = resolve
+                setMoldeRotina(molde)
+              })
+            },
+          )
+        }
+        if (pedido.ferramenta === 'estudio' && pedido.proposito === 'minijogo') {
+          const idDoJogo = (pedido.molde as { desafioId?: unknown } | undefined)?.desafioId
+          if (typeof idDoJogo !== 'string' || !new RegExp(`^${UUID}$`).test(idDoJogo))
+            return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setMinijogo(idDoJogo)
+          })
+        }
+        // O molde de um objeto (o projeto azul do modo construção) abre o Pinta ou o Molda de
+        // verdade com a planificação ou a caixa; o resto do caminho é o de criar no jogo.
+        const objeto = lerPedidoDeObjeto(pedido)
+        if (objeto && 'recusa' in objeto) return { situacao: 'indisponivel', motivo: objeto.recusa }
+        if (!objeto && pedido.molde !== undefined) {
+          const molde = MoldeDeDesafioSchema.safeParse(pedido.molde)
+          if (!molde.success || pedido.ferramenta !== 'estudio' || pedido.proposito !== 'desafio')
+            return { situacao: 'indisponivel', motivo: 'em-breve' }
+          const resposta = await json(`${BASE}/desafios/${molde.data.desafioId}`)
+          if (!vivo) return { situacao: 'cancelado' }
+          if (resposta.status !== 200)
+            return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+          const desafio = challengeForViewer(resposta.corpo, id, molde.data)
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setChallenge(desafio)
+          })
+        }
         const acesso = await json(`${BASE}/ferramentas/${pedido.ferramenta}`)
         if (!vivo) return { situacao: 'cancelado' }
         const situacao = (acesso.corpo as { situacao?: string } | null)?.situacao
@@ -259,12 +360,14 @@ export function ArquipelagoHost(props: {
             : null
         if (pedido.ferramenta === 'estudio' && !studioConfig)
           return { situacao: 'indisponivel', motivo: 'em-breve' }
+        const ferramenta = pedido.ferramenta
         return await new Promise<ResultadoDeFerramenta>((resolve) => {
           pendente.current = resolve
           setCreation({
-            ferramenta: pedido.ferramenta,
+            ferramenta,
             toolAccess: tools.access,
             studioConfig,
+            objeto,
             studioAvailable:
               pedido.ferramenta === 'estudio' ||
               (acesso.corpo as { studioAvailable?: unknown } | null)?.studioAvailable === true,
@@ -310,6 +413,12 @@ export function ArquipelagoHost(props: {
     })
     return () => {
       vivo = false
+      fimRotina.current?.(null)
+      fimRotina.current = null
+      setMoldeRotina(null)
+      setChallenge(null)
+      setMinijogo(null)
+      setCreation(null)
       pendente.current?.({ situacao: 'cancelado' })
       pendente.current = null
       montagem?.desmontar()
@@ -320,8 +429,91 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {minijogo && (
+        <ToolLoadBoundary
+          Aviso={Aviso}
+          ferramenta="estudio"
+          onCancel={() => {
+            setMinijogo(null)
+            pendente.current?.({ situacao: 'cancelado' })
+            pendente.current = null
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
+            <MinijogoPlayer
+              url={`${BASE}/minijogos/${minijogo}`}
+              onClose={() => {
+                setMinijogo(null)
+                pendente.current?.({ situacao: 'cancelado' })
+                pendente.current = null
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      )}
+      {challenge ? (
+        <ToolLoadBoundary
+          Aviso={Aviso}
+          key={`${id}-${challenge.id}-${challenge.revisao}`}
+          ferramenta="estudio"
+          onCancel={() => {
+            setChallenge(null)
+            const resolve = pendente.current
+            pendente.current = null
+            resolve?.({ situacao: 'cancelado' })
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
+            <ChallengeDialog
+              desafio={challenge}
+              audience={publico === 'kids' ? 'kids' : 'adult'}
+              onFinish={(completed) => {
+                setChallenge(null)
+                const resolve = pendente.current
+                pendente.current = null
+                const draft = challengeDraftScope(
+                  publico === 'kids' ? 'kids' : 'adult',
+                  id,
+                  challenge.id,
+                  challenge.revisao,
+                )
+                resolve?.(
+                  completed
+                    ? { situacao: 'pronto', criacaoId: draft.projectId }
+                    : { situacao: 'cancelado' },
+                )
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
+      {moldeRotina ? (
+        <ToolLoadBoundary
+          Aviso={Aviso}
+          ferramenta="estudio"
+          onCancel={() => {
+            setMoldeRotina(null)
+            fimRotina.current?.(null)
+            fimRotina.current = null
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
+            <RotinaDialog
+              molde={moldeRotina}
+              lerCartas={() => cartasDaRotina(() => json(`${BASE}/cartas`))}
+              onFinish={(resultado) => {
+                setMoldeRotina(null)
+                fimRotina.current?.(resultado)
+                fimRotina.current = null
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
       {creation ? (
         <ToolLoadBoundary
+          Aviso={Aviso}
+          ferramenta={creation.ferramenta}
           onCancel={() => {
             setCreation(null)
             const resolve = pendente.current
@@ -329,16 +521,7 @@ export function ArquipelagoHost(props: {
             resolve?.({ situacao: 'indisponivel', motivo: 'em-breve' })
           }}
         >
-          <Suspense
-            fallback={
-              <div
-                className="absolute inset-0 grid place-items-center bg-background text-foreground"
-                role="status"
-              >
-                Abrindo a ferramenta…
-              </div>
-            }
-          >
+          <Suspense fallback={<Aviso ferramenta={creation.ferramenta} falhou={false} />}>
             <CreationDialog
               ferramenta={creation.ferramenta}
               viewerId={id}
@@ -347,6 +530,7 @@ export function ArquipelagoHost(props: {
               narrationEnabled={props.narrationEnabled ?? false}
               toolAccess={creation.toolAccess}
               studioConfig={creation.studioConfig}
+              objeto={creation.objeto}
               onFinish={(criacaoId) => {
                 setCreation(null)
                 const resolve = pendente.current
@@ -357,30 +541,7 @@ export function ArquipelagoHost(props: {
           </Suspense>
         </ToolLoadBoundary>
       ) : null}
-      {estado === 'pronto' ? null : (
-        <div
-          className="grid place-items-center p-6 text-center text-white"
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          <div className="max-w-sm space-y-4" role="status" aria-live="polite">
-            <p className="font-bold text-xl">
-              {estado === 'carregando'
-                ? 'Abrindo o Arquipélago…'
-                : estado === 'indisponivel'
-                  ? 'O Arquipélago ainda não abriu por aqui.'
-                  : 'Não consegui abrir o Arquipélago agora.'}
-            </p>
-            {estado === 'carregando' ? null : (
-              <a
-                href={voltarPara}
-                className="inline-flex h-11 items-center rounded-full bg-white px-6 font-bold text-[#0e1430]"
-              >
-                Voltar
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      {estado === 'pronto' ? null : <Porta estado={estado} voltarPara={voltarPara} />}
     </div>
   )
 }

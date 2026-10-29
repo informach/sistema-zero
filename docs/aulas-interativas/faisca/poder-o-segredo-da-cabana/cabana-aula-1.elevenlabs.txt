@@ -1,0 +1,93 @@
+[upbeat, welcoming voice] O Farol ganhou um segredo! No canto do gramado tem a cabana do faroleiro, com a porta trancada. Para abrir, ela pede duas peças: a chave, que você já conhece, e um emblema novo, escondido do outro lado do caminho.
+
+[interested, animated voice] Olha aqui: o personagem encostou na cabana sem nada, e o aviso diz que ela pede a chave e o emblema. O farol continua como antes: com a chave, ele acende.
+
+[upbeat, encouraging voice] Agora é a sua vez de jogar. Clique no jogo aqui na página e use as setas do teclado. Tente a cabana sem nada, depois com uma peça só e depois com as duas. A tecla R começa uma nova partida. Você pode seguir mesmo sem terminar a partida: é só clicar em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olha aqui: este é o seu Passo a passo do projeto! Ele tem cada montagem das duas aulas, com o caminho na paleta, o nome do bloco, onde encaixar e como testar. Tem uma parte para o jogo 2D e outra para a ilha em 3D, que você vai fazer na próxima aula.
+
+[reassuring, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser. Depois clique em Próxima parte.
+
+[long pause]
+
+[curious] Sabe quando você vai andar de bicicleta? Você precisa da bicicleta e do capacete. Só a bicicleta não vale. Só o capacete também não. É preciso ter as duas coisas ao mesmo tempo.
+
+[engaging, energetic, conversational voice] No seu jogo vai ser igual. A cabana faz duas perguntas: o personagem tem a chave? E o personagem tem o emblema? Cada resposta fica guardada numa variável: temChave e temEmblema. E um bloco novo junta as duas perguntas numa só, com a palavra e no meio.
+
+[interested, animated voice] Com e, a resposta só é sim quando as duas são verdadeiras.
+
+[upbeat, encouraging voice] Na experiência, tente a cabana sem nada, com uma peça só e com as duas. Pegue as peças em ordens diferentes e compare com a regra ou. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora faça o emblema ficar guardado. Clique no jogo e leve o personagem até o emblema, no gramado de baixo. Tá vendo? Ele passa por cima e não acontece nada, porque o encontro com o emblema ainda não tem nenhuma reação. Lembra da chave, no Farol? Ela sumia do chão e o jogo guardava em temChave que ela foi pega. O emblema vai funcionar do mesmo jeito!
+
+[engaging, energetic, conversational voice] Primeiro, a gente precisa criar a variável temEmblema. Ela nasce quando o jogo começa. Por isso, encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, pegue o bloco Criar variável e encaixe no fim de Ao iniciar.
+
+[engaging, energetic, conversational voice] Esse bloco chega com o nome contador. Clique em contador, apague e escreva temEmblema, tudo junto e com o E maiúsculo. Depois clique fora do campo.
+
+[engaging, energetic, conversational voice] O valor desse bloco vem com o número 0. Só que temEmblema guarda verdadeiro ou falso. Abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 0.
+
+[confident, clear, unhurried voice] No menu desse bloco, troque verdadeiro por falso, porque o jogo começa sem o emblema.
+
+[confident, clear, unhurried voice] Agora o encontro. Encontre a área Quando acontecer e deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue o bloco Quando o sprite começar a encostar no sprite e encaixe nesse espaço.
+
+[confident, clear, unhurried voice] Esse bloco chega com jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha emblema.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço ao lado da palavra fazer, dentro desse encontro. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Destruir o sprite e encaixe ali. Ele chega com o nome resposta: clique em resposta e escolha emblema.
+
+[confident, clear, unhurried voice] Logo abaixo de Destruir o sprite, encaixe Alterar variável, de Programação e Variáveis. Clique em contador e escolha temEmblema. O valor vem com o número 1: abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1. Desta vez, deixe em verdadeiro.
+
+[confident, clear, unhurried voice] Por último, ainda dentro do fazer, encaixe outro Alterar variável e escolha aviso. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1. Clique em Olá, apague e escreva: Você pegou o emblema!
+
+[engaging, energetic, conversational voice] Agora teste. Clique no jogo e leve o personagem até o emblema. Olha só: ele some, e o aviso conta que você pegou o emblema. A cabana ainda não abre: ela vai aprender a perguntar na próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável temEmblema com valor falso, e no encontro entre personagem e emblema estão Destruir o sprite emblema, Alterar temEmblema para verdadeiro e Alterar aviso. Depois de corrigir, teste de novo.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora faça a cabana pedir as duas peças. Clique no jogo, pegue a chave e o emblema e encoste na cabana. Tá vendo? Não acontece nada, porque o encontro com a cabana ainda não tem uma regra. Lembra da experiência? Sem peça e com uma só, a cabana ficava fechada. Com as duas, ela abria, em qualquer ordem. Agora a gente vai montar essa pergunta no seu jogo!
+
+[confident, clear, unhurried voice] Primeiro, encontre a área Quando acontecer e deixe à vista um espaço vazio depois do encontro com o emblema, fora do fazer dele.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue o bloco Quando o sprite começar a encostar no sprite e encaixe nesse espaço. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha cabana.
+
+[engaging, energetic, conversational voice] Quem faz uma pergunta no jogo é o bloco Se. Deixe à vista o espaço ao lado da palavra fazer, dentro do encontro com a cabana. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
+
+[confident, clear, unhurried voice] Repare que o Se já vem com uma condição pronta: x maior que 0. Não é isso que a cabana precisa perguntar, por isso segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos. O lugar ao lado de Se fica vazio. Deixe esse lugar à vista.
+
+[engaging, energetic, conversational voice] Agora vem o bloco novo, o que junta duas perguntas numa só. Abra Programação e depois Lógica e Se, e pegue o bloco que tem a palavra e no meio. Ele chega assim: 0, e, 0. Solte no lugar vazio ao lado de Se.
+
+[confident, clear, unhurried voice] Agora as duas perguntas. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima do primeiro 0. Clique no x e escolha temChave.
+
+[confident, clear, unhurried voice] Pegue outro valor da variável e solte em cima do segundo 0. Clique no x e escolha temEmblema.
+
+[engaging, energetic, conversational voice] Pronto: agora a pergunta é temChave e temEmblema. Ela só dá sim quando as duas são verdadeiras.
+
+[engaging, energetic, conversational voice] A cabana tem duas respostas, por isso o Se precisa do senão. Olha aqui, na linha de baixo do bloco Se, depois do então: tem dois sinais de mais. Clique no segundo, antes da palavra senão. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Agora o então, que roda quando a resposta é sim. Deixe à vista o espaço dentro do então. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência. Pegue o bloco Trocar imagem do sprite e encaixe ali. Ele chega com heroi duas vezes: clique no primeiro e escolha cabana; clique no segundo e escolha cabana-aberta.
+
+[confident, clear, unhurried voice] Logo abaixo, ainda dentro do então, encaixe Alterar variável, de Programação e Variáveis, e escolha aviso. Solte um texto, de Programação e Valores, em cima do 1, apague Olá e escreva: A cabana abriu! Você tinha as duas peças.
+
+[confident, clear, unhurried voice] Agora o senão, que roda quando a resposta é não. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva: A cabana pede a chave e o emblema.
+
+[engaging, energetic, conversational voice] Agora teste todos os casos. Pressione R e vá direto à cabana: ela continua fechada e avisa. Pegue só a chave e encoste: continua fechada. Pressione R, pegue só o emblema e encoste: continua fechada. Agora pegue as duas peças e encoste. Olha só: a cabana abre! Pressione R mais uma vez, pegue primeiro o emblema e depois a chave: a cabana abre do mesmo jeito.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro usa personagem e cabana, a pergunta é temChave e temEmblema, com a palavra e no meio, a troca de imagem e o aviso de sucesso estão dentro do então, e o aviso que pede as duas peças está dentro do senão. Depois de corrigir, teste de novo.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+
+[long pause]
+
+[pleased, lively voice] Olha só o que você programou: o jogo guarda as duas peças, e a cabana só abre quando as duas respostas são verdadeiras! Na próxima aula, você leva essa pergunta para a ilha, em três dimensões.
+
+[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: tente a cabana com uma peça só e depois com as duas, e acenda o farol com a chave. Depois pressione R e confira que as peças voltam e a cabana volta fechada. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

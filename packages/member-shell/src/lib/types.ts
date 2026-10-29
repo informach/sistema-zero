@@ -77,6 +77,11 @@ export interface SessionUser {
 /** Perfil (estilo Netflix) — a grade do responsável (view do `/auth/profiles`). */
 export interface ProfileView {
   id: string
+  /**
+   * `pending` enquanto o perfil novo entra na jornada: a criança ainda não abre o perfil. OPCIONAL
+   * para tolerar o auth antigo (ausente conta como pronto).
+   */
+  admissionState?: 'pending' | 'ready'
   name: string
   avatarUrl: string | null
   whatsapp: string | null
@@ -460,6 +465,21 @@ export interface QuizQuestion {
     | 'island-position'
     | 'island-height'
     | 'island-retest'
+    | 'jardim-memory'
+    | 'jardim-view'
+    | 'jardim-height'
+    | 'moedas-poucas'
+    | 'moedas-igual'
+    | 'moedas-volta'
+    | 'cabana-so-chave'
+    | 'cabana-ou'
+    | 'cabana-ordem'
+    | 'ponte-a-tempo'
+    | 'ponte-atrasado'
+    | 'ponte-de-novo'
+    | 'simbolos-ordem'
+    | 'simbolos-fora'
+    | 'simbolos-recomeca'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

@@ -71,7 +71,7 @@ describe('regras de jogo 3D — codec', () => {
   })
 
   it('regra que o prefixo NÃO oferece vira código avançado, nunca um bloco que não existe', () => {
-    // O Avançado recomeça entrando em "jogando" (não tem o "Recomeçar o jogo" das regras).
+    // O Avançado recomeça entrando em "jogando" (não tem o "Reiniciar o jogo" das regras).
     const raw = { type: 'sz_adv_raw_js' } as never
     const made: string[] = []
     const block = gameRulesStatementToBlock({ type: 'g3k:restart' } as JSStatement, {

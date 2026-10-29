@@ -4,17 +4,69 @@
 
 O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta da plataforma.
 
-- **`routes/arquipelago.ts`** (`createArquipelagoRoutes({ gateway })`, espalhado no `createShell`):
+- **`routes/arquipelago.ts`** (`createArquipelagoRoutes({ gateway, profiles })`, espalhado no
+  `createShell`):
   `arquipelagoAcesso` (GET), `arquipelagoSalvamento` (GET/PUT), `arquipelagoTempo` (POST) e
-  `arquipelagoLimiteDaFamilia` (GET/PUT, o app embrulha com o portão dos pais) repassam ao gateway
+  `arquipelagoLimiteDaFamilia` (GET/PUT, o app embrulha com o portão dos pais) e `arquipelagoCartas`
+  (GET, os cartões da rotina dos Lumis, 27/10/2026) repassam ao gateway
   `/arquipelago/*` com a sessão; corpo JSON de até 96 KB, sem regra de jogo (quem decide acesso,
-  revisão, tempo e suporte somente leitura é o `arquipelago-api`). `arquipelagoCliente` (GET
+  revisão, tempo e suporte somente leitura é o `arquipelago-api`). A exceção é o GET do limite
+  (28/10/2026): ele lê antes a grade de perfis da conta no Auth e manda os ids dos perfis prontos em
+  `?perfis=` (até `PERFIS_DA_FAMILIA_MAXIMO`), para o serviço dizer `algumaCriancaVe`; sem a grade,
+  nada segue e o cartão some. `arquipelagoSemanaDaFamilia` (GET, fase1-18) usa os mesmos perfis
+  prontos, confere a resposta pelo contrato (fora dele, 502) e põe o NOME de cada criança da grade
+  do Auth (o serviço do jogo nunca sabe nomes; id fora da grade sai). A galeria (29/10/2026):
+  `arquipelagoGaleria` (GET) e `arquipelagoGaleriaCompras` (POST, corpo até 1 KB), e `/galeria` e
+  `/galeria/compras` em `CAMINHOS_DO_JOGO` do host. Recordes e visitas (fase3-12, 29/10/2026):
+  `arquipelagoIrmaos` (GET) pede ao serviço os irmãos (sem nomes) e, se houver algum, os irmãos da
+  sessão de perfil ao Auth (`profiles.siblings()`, `GET /auth/profile-session/siblings`), junta o
+  NOME pelo id e tira quem não está na lista; Auth fora ou resposta fora do contrato → 502.
+  `arquipelagoCasaDoIrmao` (GET `:id` uuid) é repasse. As duas sem cache; `/irmaos` e
+  `/irmaos/<uuid>/casa` no host (`caminhoDoJogo`). `arquipelagoPermissoesDaFamilia`
+  (GET/PUT, corpo pequeno) é repasse. `arquipelagoCliente` (GET
   `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
   build (`.js`, `.js.map`, `.glb`, `.json`), com o IP de quem pediu e só os cabeçalhos de cache.
+  Desafios (27/10/2026): `arquipelagoDesafios` (GET, `?ilha=` conferida), `arquipelagoDesafio`
+  (GET `:id` uuid), `arquipelagoDesafioVerificar` (POST, corpo até 4 MB, prazo de 165 s no
+  gateway; os shims põem `maxDuration = 180`) e `arquipelagoDesafioRecompensaVista` (POST).
 - **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
   `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
   monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
-  serviço só em `/acesso`, `/salvamento` e `/tempo`. Ferramentas: "indisponível" por enquanto.
+  serviço só em `/acesso`, `/salvamento`, `/tempo`, `/cartas` e nos desafios (`caminhoDoJogo`:
+  lista com `?ilha=`, o desafio por uuid e o prêmio visto; conferir NÃO, quem manda o projeto é
+  o Estúdio de desafio da página). Ferramentas: Pinta, Molda e Estúdio abrem de
+  verdade por cima do jogo (`arquipelago-creation-dialog.tsx`), com o jogo pausado.
+- **O molde de um objeto (28/10/2026):** o jogo pede `abrirFerramenta({ferramenta: 'pinta' |
+  'molda', proposito: 'objeto', molde})` (o projeto azul do modo construção). `lerPedidoDeObjeto`
+  (`lib/arquipelago-objeto.ts`, puro) lê o `MoldeDeObjetoSchema` e devolve a tela do Pinta
+  (`telaDoPinta`: a `planificacaoDoMolde` do contrato com a frente marcada) ou a caixa do Molda
+  (`caixaDoMolda`: 16 unidades da grade por célula, encolhida para caber, com o teto de
+  triângulos do molde em `maxTriangles` para o "Leve para a ilha" da oficina), ou a recusa
+  (`sem-faces`, `molde-invalido`, `em-breve` para o Estúdio). Depois segue o MESMO caminho de criar
+  no jogo (acesso em `/ferramentas/:ferramenta`, posse do perfil); o diálogo passa `initialCanvas`
+  ao `PintaClient` e `initialModel` ao `MoldaClient`, e o subtítulo vira "Molde: <nome>". O id
+  devolvido é o da criação aberta (`concluir()`), que o jogo guarda em `aparencia`. O nome
+  `molde-<objeto>` reabre a mesma criação na segunda vez. Testes: `tests/arquipelago-objeto.test.ts`.
+- **`components/arquipelago-porta.tsx`** (27/10/2026, polimento da Fase 0): `PortaDoArquipelago`
+  desenha os estados antes de o jogo montar (abrindo, ainda não abriu, erro) na noite do
+  arquipélago (céu com estrelas, ilha com farol e casinha em SVG, sem arquivo para baixar), com o
+  Zappy só no Kids e a voz de cada público; `AvisoDaFerramenta` cobre o jogo enquanto a
+  ferramenta carrega e quando ela falha ("O jogo ficou pausado"). Animações com
+  `prefers-reduced-motion`. O diálogo da ferramenta tem cabeçalho com o nome e o ícone dela,
+  "Voltar ao jogo" e "Usar no jogo" (`sz-btn-gradient`, a cor de ação de cada pele); voltar com a
+  ferramenta ainda abrindo sai na hora, e "Sair sem guardar" só aparece quando guardar falhou.
+  Testes: `tests/arquipelago-porta.test.tsx` e a fixture do diálogo.
+- **A porta adulta (fase3-13, 29/10/2026):** `arquipelago-porta.tsx` virou só do Kids (com o
+  Zappy) e exporta `PeleDaPorta`, `PELE_KIDS_DA_PORTA`, a `Paisagem` e as animações. A adulta é
+  outra tela, `arquipelago-porta-adulta.tsx` (a mesma paisagem, o cartão `sz-palco`, `sz-kicker`,
+  `sz-h2`, `sz-btn`/`sz-btn-outline`, sem mascote; textos em `TEXTOS_DA_PORTA_ADULTA` e
+  `AVISOS_DA_PORTA_ADULTA`), que ⚠️ só entra pela ENTRADA `arquipelago-host-adulto`
+  (`ArquipelagoHostAdulto`: o host com `publico="adulto"` e `pele`), no padrão do avatar e do
+  quarto adultos. O `ArquipelagoHost` recebe `pele` (padrão, a do Kids) e passa o `Aviso` ao
+  `ToolLoadBoundary`. O diálogo da ferramenta muda por `audience` só por classes (`CABECALHO`: no
+  adulto, o cabeçalho no palco e a ação `sz-btn`). `soDoKids` (tempo e irmãos) responde 404 sem
+  rede fora do Kids. Testes: `tests/arquipelago-porta.test.tsx` (porta do Kids byte a byte, por
+  hash), `tests/arquipelago-porta-adulta.test.tsx` e `tests/arquipelago-host.test.ts`.
 - Dependência nova: `@sistemazero/arquipelago-contracts` (o único pacote do jogo que a plataforma
   pode importar). Testes: `tests/arquipelago-routes.test.ts` e `tests/arquipelago-host.test.ts`.
 
@@ -3521,6 +3573,67 @@ mesma cena com `cenario: 'nave'`.
   `core/src/learning/scene/lighthouse-walk.test.ts`; e2e em
   `community-kids/e2e-scenes/lighthouse-walk.spec.ts`.
 
+### O contador de moedas (`coin-counter`, Faísca Poder 1, 29/10/2026)
+
+A experiência do Poder "Moedas no caminho" (`scene-coin-counter.tsx`). Mesmo princípio das cenas do
+Farol: o palco é o JOGO (praia, as seis moedas e o baú nos lugares de `MOEDAS_2D`/`BAU_2D` do
+`docs/aulas-interativas-tecnico/qa/moedas-projeto.ts`, o aviso do jogo e o placar "Moedas: N" com o
+ícone) e a bancada tem as duas `RegraDoJogo` (coleta e baú) como a criança monta.
+
+- A soma aparece no palco como "antes → +1 → agora" (`coins.last`) e some ao recomeçar.
+- "A moeda some" é a `Chave` da bancada; desligada, a linha "Tirar o sprite moeda do grupo" vira o
+  encaixe vazio, e encostar de novo na mesma moeda conta outra vez (a meta `counts-again`, só no caso).
+- As regras do baú ("Pelo menos 5" / "Igual a 5") ficam como a criança escolheu ao recomeçar.
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a coleta do Farol: ele desligaria
+  as escolhas em silêncio. Sem `freeExploration` (faltam os componentes de descoberta).
+- Teste: `tests/scene-coin-counter.test.tsx`.
+
+### A porta com duas peças (`two-pieces`, Faísca Poder 2, 29/10/2026)
+
+A experiência do Poder "O segredo da cabana" (`scene-two-pieces.tsx`), no mesmo princípio do
+contador de moedas: o palco é o JOGO (praia, a chave do Farol, o emblema e a cabana nos lugares de
+`EMBLEMA_2D`/`CABANA_2D` do `docs/aulas-interativas-tecnico/qa/cabana-projeto.ts`, o aviso do jogo
+e as duas casinhas "Leva:" com as peças guardadas) e a bancada tem a `RegraDoJogo` da cabana.
+
+- A linha "A pergunta agora" mostra `temChave (…) e/ou temEmblema (…) → resposta`, e a regra marca
+  o ramo que a tentativa seguiu (só com o personagem na cabana).
+- "e" / "ou" trocam o bloco que junta as perguntas (como "Pelo menos 5" / "Igual a 5"); a escolha
+  fica ao recomeçar. Peça já guardada não se pega de novo (botão `fechado`).
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como as Moedas.
+- Teste: `tests/scene-two-pieces.test.tsx`.
+
+### A ponte apressada (`timed-bridge`, Faísca Poder 3, 29/10/2026)
+
+A experiência do Poder "A ponte apressada" (`scene-timed-bridge.tsx`), no mesmo princípio da
+cabana: o palco é o JOGO (praia, laguinho, pedra do sino, ponte e alavanca nos lugares de
+`LAGUINHO_2D`/`SINO_2D`/`PONTE_2D`/`ALAVANCA_2D` do `docs/aulas-interativas-tecnico/qa/ponte-projeto.ts`,
+o aviso do jogo e o relógio do "depois de" com uma marquinha por segundo, até 4).
+
+- O tempo anda UM SEGUNDO por clique ("Esperar 1 segundo", ação `wait-second`), sem o relógio de
+  quadro do player: a criança controla o tempo e observa cada momento.
+- "Dentro da alavanca" / "No começo do jogo" mudam o lugar do "depois de" e recomeçam a partida
+  (como editar o projeto recomeça o jogo); a regra da bancada mostra o bloco no lugar escolhido.
+- Cada puxada com o "depois de" na alavanca soma um relógio (como o jogo: cada encontro roda o
+  bloco de novo); no começo do jogo há um só, que já conta na partida nova.
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a cabana.
+- Teste: `tests/scene-timed-bridge.test.tsx`.
+
+### A ordem dos símbolos (`symbol-sequence`, Faísca Poder 4, 29/10/2026)
+
+A experiência do Poder "O baú dos símbolos" (`scene-symbol-sequence.tsx`), no mesmo princípio da
+ponte: o palco é o JOGO (praia, placa da ordem, as três pedras e o baú nos lugares de
+`PEDRAS_2D`/`PLACA_2D`/`BAU_2D` do `docs/aulas-interativas-tecnico/qa/simbolos-projeto.ts`, o aviso
+do jogo e o número que o baú consulta à vista: `passo`, ou a contagem no modo "só contando").
+
+- "Na ordem" / "Só contando" mudam o jeito de o baú decidir e recomeçam a partida; a regra da
+  bancada troca junto (os três encontros com os dois Se, ou o contador).
+- O personagem fica em cima da pedra em que encostou por último (`sequence.at`).
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a ponte.
+- O quiz usa o mesmo palco nas cenas 2D (`quiz-simbolos-scene.tsx`: `simbolos-ordem`,
+  `simbolos-fora`) e a ilha 3D com as pedras e o baú do Blender em `simbolos-recomeca`
+  (`@sistemazero/studio/simbolos-quiz-artes`).
+- Teste: `tests/scene-symbol-sequence.test.tsx`.
+
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 
 Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo
@@ -3553,3 +3666,47 @@ ao aluno). O que vive AQUI:
 - Clients: `listHelpCollectionsReadonly`, `listHelpTutorialsReadonly`, `getHelpTutorialReadonly`
   (Server Components, sem refresh). Testes: `tests/help-tutorial-view.test.tsx`,
   `tests/materials-block.test.tsx` (link interno), `tests/studio-zappy.test.ts` (`helpReferences`).
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Minijogos aprovados: routes/arquipelago.ts repassa jogador e família, com perfis da grade e autorização adicional no serviço. ArquipelagoMinijogoPlayer usa o player real do Estúdio em dialog modal; sem editar a cópia.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Mini estúdio dos Lumis (29/10/2026)
+
+`ArquipelagoHost` carrega `arquipelago-rotina-dialog` sob demanda, cancela no descarte ou troca de perfil e compartilha a ponte `arquipelago-rotina` com a plataforma falsa. A página Kids e a adulta usam o mesmo host e a mesma sessão de `/cartas`.
+
+O editor mora aqui desde 29/10/2026, em `components/arquipelago-rotina/` (`RotinaLumiEditor.tsx`,
+`blocks.ts`, `blockly-dialog.ts`, `editor.css`); antes era a entrada `@sistemazero/studio/lumi-editor`,
+e o Studio passou a depender dos contratos do jogo. ⚠️ Não devolver para o Studio: ele é a ferramenta
+geral da plataforma e não conhece jogo nenhum. Do Studio o editor usa só o visual do Blockly
+(`@sistemazero/studio/blockly-theme`: `szThemeFor`, `CATEGORY_COLORS`, `ensureWhiteTextContrast`), e
+o `blockly` virou dependência direta deste pacote. Aqui e não num pacote novo porque o `ci.yml`
+escolhe o que publicar por pasta: o member-shell já publica o Kids, o adulto e o admin, e um pacote
+novo exigiria mexer no workflow.
+
+- Entrada `MoldeDaRotina` versão 1; saída `ResultadoDaFerramentaRotina` versão 1, ou `null` ao
+  cancelar. `lerCartas` relê as conquistas; guardar exige uma leitura atual.
+- A prévia usa o `rotina-execucao` do contrato, o mesmo intérprete do jogo, sobre uma cópia do
+  mundo recebido; não grava nem chama o serviço para rodar a rotina.
+- Os portais do Blockly ficam no diálogo durante a edição e voltam ao host ao fechar.
+- O jogo não importa o editor: pede `rotina-lumi` pela porta `abrirFerramenta`. O host de QA em
+  `tests/fixtures/rotina-lumi-playground.tsx` serve o playground do jogo (o CSS sai de
+  `components/arquipelago-rotina/editor.css` pelo `playground/servidor.ts` de lá).
+- Testes da conversão: `tests/arquipelago-rotina-blocks.test.ts`.
+
+Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.
+
+## Criações como aparência no Arquipélago (29/10/2026)
+
+`lib/arquipelago-aparencia.ts` implementa `Plataforma.lerAparencia?`: confere acesso à ferramenta
+com `viewerId`, baixa somente o id da própria conta via `createCreationsCloud.download` e
+confere também o id do documento nativo. O download usa sessão do documento e `x-sz-viewer`;
+o Members autoriza por pessoa, público, ferramenta e id. Não substituir por leitura de IndexedDB
+nem por URL pública. Não grava nada. Exportadores existentes são carregados dinamicamente pelos
+subpaths `molda/studio-library` e `pinta/studio-library`; o jogo não importa essas ferramentas.
+Recusas, versões futuras, erro e aborto devolvem null para manter o modelo de reserva. O molde
+atual abre modelo clássico e cenário pixel; cenas do Molda e outros formatos ficam na reserva.
+A escala da caixa agora vem do contrato. Testes: `tests/arquipelago-aparencia.test.ts` e
+`tests/arquipelago-objeto.test.ts`. Regras em §6.16 e plano `2026-10-29-arquipelago-molda-no-mundo.md`.

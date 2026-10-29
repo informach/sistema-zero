@@ -75,7 +75,7 @@ def pata(p, osso, m, centro, r):
 
 
 def coleira(p, m_fita, m_medalha, centro, R, r, inclina):
-    p.toro('corpo', m_fita, centro, R, r, rot=(inclina, 0, 0), seg=16, rseg=4)
+    p.toro('corpo', m_fita, centro, R, r, rot=(inclina, 0, 0), seg=12, rseg=4)
     c = Vector(centro)
     frente = Vector((0, -math.cos(math.radians(inclina)), -math.sin(math.radians(inclina))))
     baixo = Vector((0, math.sin(math.radians(inclina)) * 0.3, -1)).normalized()
@@ -87,7 +87,7 @@ def coleira(p, m_fita, m_medalha, centro, R, r, inclina):
 # --------------------------------------------------------------------- cachorro caramelo
 def cachorro(pid, filhote):
     fc, fp, fo = (1.34, 0.7, 1.22) if filhote else (1.0, 1.0, 1.0)
-    p = Bicho(pid, paleta('cachorro'), escala=0.7 if filhote else 1.0, alvo=3000)
+    p = Bicho(pid, paleta('cachorro'), escala=0.7 if filhote else 1.0, alvo=3000, afinar_de=90)
     perna = 0.24 * fp
     rx, rz, L = 0.15, 0.15, 0.27 * (0.8 if filhote else 1.0)
     hc = perna + rz * 0.5
@@ -97,14 +97,14 @@ def cachorro(pid, filhote):
     def peito(v):
         f = 1.0 + 0.1 * max(0.0, -v.y)
         return (v.x * f, v.y, v.z * f)
-    p.esfera('corpo', 'pelo', (0, 0, hc), (rx, L, rz), deformar=peito, seg=18, aneis=10)
-    p.esfera('corpo', 'claro', (0, -L * 0.72, hc - 0.025), (rx * 0.72, 0.09, rz * 0.78), seg=12, aneis=7)
-    p.esfera('corpo', 'claro', (0, -L * 0.1, hc - rz * 0.45), (rx * 0.7, L * 0.7, rz * 0.5), seg=12, aneis=7)
+    p.esfera('corpo', 'pelo', (0, 0, hc), (rx, L, rz), deformar=peito, seg=14, aneis=8)
+    p.esfera('corpo', 'claro', (0, -L * 0.72, hc - 0.025), (rx * 0.72, 0.09, rz * 0.78), seg=10, aneis=6)
+    p.esfera('corpo', 'claro', (0, -L * 0.1, hc - rz * 0.45), (rx * 0.7, L * 0.7, rz * 0.5), seg=10, aneis=6)
     for s, lado in ((1, 'e'), (-1, 'd')):
-        p.capsula(f'pata_f{lado}', 'pelo', (ox * s, oy, hc - 0.03), (ox * s, oy, 0.045), 0.054, 0.05, seg=8)
+        p.capsula(f'pata_f{lado}', 'pelo', (ox * s, oy, hc - 0.03), (ox * s, oy, 0.045), 0.054, 0.05, seg=6)
         pata(p, f'pata_f{lado}', 'claro', (ox * s, oy - 0.02, 0.032), 0.05)
-        p.esfera(f'pata_t{lado}', 'pelo', ((ax + 0.01) * s, ay, hc - 0.02), (0.07, 0.1, 0.105), seg=12, aneis=7)
-        p.capsula(f'pata_t{lado}', 'pelo', (ax * s, ay + 0.02, hc - 0.07), (ax * s, ay + 0.01, 0.045), 0.05, 0.048, seg=8)
+        p.esfera(f'pata_t{lado}', 'pelo', ((ax + 0.01) * s, ay, hc - 0.02), (0.07, 0.1, 0.105), seg=10, aneis=6)
+        p.capsula(f'pata_t{lado}', 'pelo', (ax * s, ay + 0.02, hc - 0.07), (ax * s, ay + 0.01, 0.045), 0.05, 0.048, seg=6)
         pata(p, f'pata_t{lado}', 'claro', (ax * s, ay - 0.01, 0.032), 0.05)
 
     # Pescoço (no corpo) e cabeça redonda com o focinho claro comprido.
@@ -114,10 +114,10 @@ def cachorro(pid, filhote):
     cab = p.esfera('cabeca', 'pelo', tuple(cc), (0.15 * fc, 0.14 * fc, 0.135 * fc), seg=18, aneis=10)
     foc_c = (0, cc.y - 0.13 * fc, cc.z - 0.045 * fc)
     foc = p.esfera('cabeca', 'claro', foc_c, (0.085 * fc, 0.085 * fc * (0.85 if filhote else 1.0), 0.07 * fc),
-                   seg=16, aneis=9)
+                   seg=12, aneis=8)
     rosto = [cab, foc]
     p.no_rosto('cabeca', 'nariz', rosto, 0, foc_c[2] + 0.03 * fc, (0.04 * fc, 0.028 * fc, 0.03 * fc), afunda=0.35,
-               seg=12, aneis=7)
+               seg=10, aneis=6)
     boca_w(p, rosto, foc_c[2] - 0.012 * fc, 0.035 * fc, 0.03 * fc)
     olhos(p, rosto, 0.068 * fc, cc.z + 0.03 * fc, (0.033 * fo * fc, 0.022 * fc, 0.04 * fo * fc), afunda=0.2)
     # Sobrancelhas claras de caramelo, por cima dos olhos.
@@ -149,7 +149,7 @@ def cachorro(pid, filhote):
     for i in range(7):
         a = math.radians(-30 + 200 * i / 6)
         pts.append((0, L * 0.92 + 0.07 * (1 - math.cos(a)) * 0.9 + 0.02, hc + 0.05 + 0.1 * math.sin(a) + 0.06 * i / 6))
-    p.tubo('cauda', 'pelo', pts, [0.036 - 0.0025 * i for i in range(7)], seg=8)
+    p.tubo('cauda', 'pelo', pts, [0.036 - 0.0025 * i for i in range(7)], seg=6)
     p.esfera('cauda', 'claro', pts[-1], (0.024, 0.026, 0.024), seg=8, aneis=5)
     coleira(p, 'coleira', 'medalha', (0, -L * 0.8, hc + 0.1), 0.082, 0.016, -35)
 
@@ -178,20 +178,20 @@ def cachorro(pid, filhote):
 # --------------------------------------------------------------------- gato frajola
 def gato(pid, filhote):
     fc, fp, fo = (1.34, 0.72, 1.22) if filhote else (1.0, 1.0, 1.0)
-    p = Bicho(pid, paleta('gato'), escala=0.68 if filhote else 1.0, alvo=3000)
+    p = Bicho(pid, paleta('gato'), escala=0.68 if filhote else 1.0, alvo=3000, afinar_de=90)
     perna = 0.2 * fp
     rx, rz, L = 0.12, 0.12, 0.24 * (0.8 if filhote else 1.0)
     hc = perna + rz * 0.5
     ox, oy = 0.07, -L * 0.62
     ax, ay = 0.078, L * 0.62
-    p.esfera('corpo', 'pelo', (0, 0, hc), (rx, L, rz), seg=18, aneis=10)
-    p.esfera('corpo', 'claro', (0, -L * 0.74, hc - 0.02), (rx * 0.7, 0.075, rz * 0.8), seg=12, aneis=7)
-    p.esfera('corpo', 'claro', (0, -L * 0.05, hc - rz * 0.5), (rx * 0.6, L * 0.62, rz * 0.45), seg=12, aneis=7)
+    p.esfera('corpo', 'pelo', (0, 0, hc), (rx, L, rz), seg=14, aneis=8)
+    p.esfera('corpo', 'claro', (0, -L * 0.74, hc - 0.02), (rx * 0.7, 0.075, rz * 0.8), seg=10, aneis=6)
+    p.esfera('corpo', 'claro', (0, -L * 0.05, hc - rz * 0.5), (rx * 0.6, L * 0.62, rz * 0.45), seg=10, aneis=6)
     for s, lado in ((1, 'e'), (-1, 'd')):
-        p.capsula(f'pata_f{lado}', 'pelo', (ox * s, oy, hc - 0.03), (ox * s, oy, 0.04), 0.042, 0.038, seg=8)
+        p.capsula(f'pata_f{lado}', 'pelo', (ox * s, oy, hc - 0.03), (ox * s, oy, 0.04), 0.042, 0.038, seg=6)
         pata(p, f'pata_f{lado}', 'claro', (ox * s, oy - 0.015, 0.026), 0.04)
-        p.esfera(f'pata_t{lado}', 'pelo', ((ax + 0.008) * s, ay, hc - 0.015), (0.056, 0.085, 0.085), seg=12, aneis=7)
-        p.capsula(f'pata_t{lado}', 'pelo', (ax * s, ay + 0.02, hc - 0.06), (ax * s, ay + 0.01, 0.04), 0.04, 0.037, seg=8)
+        p.esfera(f'pata_t{lado}', 'pelo', ((ax + 0.008) * s, ay, hc - 0.015), (0.056, 0.085, 0.085), seg=10, aneis=6)
+        p.capsula(f'pata_t{lado}', 'pelo', (ax * s, ay + 0.02, hc - 0.06), (ax * s, ay + 0.01, 0.04), 0.04, 0.037, seg=6)
         pata(p, f'pata_t{lado}', 'claro', (ax * s, ay - 0.008, 0.026), 0.04)
 
     cc = Vector((0, -L - 0.04 * fc, hc + 0.16 * (0.92 if filhote else 1.0)))
@@ -210,7 +210,7 @@ def gato(pid, filhote):
              seg=10, aneis=6)
     rosto = [cab, foc]
     p.no_rosto('cabeca', 'nariz', rosto, 0, cc.z - 0.018 * fc, (0.018 * fc, 0.012, 0.012 * fc), afunda=0.3,
-               seg=10, aneis=6)
+               seg=8, aneis=5)
     boca_w(p, rosto, cc.z - 0.045 * fc, 0.024 * fc, 0.022 * fc)
     for s in (1, -1):
         p.olho_no_rosto(s, rosto, 0.052 * fc * s, cc.z + 0.02 * fc,
@@ -241,7 +241,7 @@ def gato(pid, filhote):
         u = i / 7
         pts.append((0, L * 0.92 + 0.2 * u - 0.05 * math.sin(math.pi * u * 1.6), hc + 0.03 + 0.26 * u ** 1.3
                     + 0.03 * math.sin(math.pi * u * 2)))
-    p.tubo('cauda', 'pelo', pts, [0.027 - 0.001 * i for i in range(8)], seg=8)
+    p.tubo('cauda', 'pelo', pts, [0.027 - 0.001 * i for i in range(8)], seg=6)
     p.esfera('cauda', 'claro', pts[-1], (0.022, 0.022, 0.026), seg=8, aneis=5)
     coleira(p, 'coleira', 'medalha', (0, -L * 0.78, hc + 0.085), 0.066, 0.012, -38)
 
@@ -275,7 +275,7 @@ def gato(pid, filhote):
 # --------------------------------------------------------------------- coelho
 def coelho(pid, filhote):
     fc, fp, fo = (1.3, 0.85, 1.22) if filhote else (1.0, 1.0, 1.0)
-    p = Bicho(pid, paleta('coelho'), escala=0.68 if filhote else 1.0, alvo=3000)
+    p = Bicho(pid, paleta('coelho'), escala=0.68 if filhote else 1.0, alvo=3000, afinar_de=90)
     L = 0.17 * (0.9 if filhote else 1.0)
     hc = 0.2 * fp
     ox, oy = 0.06, -L * 0.75
@@ -285,14 +285,14 @@ def coelho(pid, filhote):
         # Mais alto e cheio atrás: o coelho sentado sobre as patas de trás.
         f = 1.0 + 0.18 * max(0.0, v.y)
         return (v.x * f, v.y, v.z * f + 0.12 * max(0.0, v.y) * max(0.0, v.z))
-    p.esfera('corpo', 'pelo', (0, 0.02, hc), (0.14, L, 0.135), deformar=corcunda, seg=18, aneis=10)
-    p.esfera('corpo', 'claro', (0, -L * 0.6, hc - 0.03), (0.09, 0.07, 0.1), seg=12, aneis=7)
+    p.esfera('corpo', 'pelo', (0, 0.02, hc), (0.14, L, 0.135), deformar=corcunda, seg=14, aneis=8)
+    p.esfera('corpo', 'claro', (0, -L * 0.6, hc - 0.03), (0.09, 0.07, 0.1), seg=10, aneis=6)
     for s, lado in ((1, 'e'), (-1, 'd')):
-        p.capsula(f'pata_f{lado}', 'pelo', (ox * s, oy, hc - 0.05), (ox * s, oy, 0.035), 0.034, 0.032, seg=8)
+        p.capsula(f'pata_f{lado}', 'pelo', (ox * s, oy, hc - 0.05), (ox * s, oy, 0.035), 0.034, 0.032, seg=6)
         pata(p, f'pata_f{lado}', 'claro', (ox * s, oy - 0.012, 0.022), 0.032)
         # Coxa grande e o pé comprido deitado no chão.
-        p.esfera(f'pata_t{lado}', 'pelo', ((ax + 0.015) * s, ay, hc - 0.075), (0.072, 0.105, 0.095), seg=12, aneis=7)
-        p.esfera(f'pata_t{lado}', 'claro', (ax * s, ay - 0.05, 0.024), (0.042, 0.095, 0.028), seg=12, aneis=7)
+        p.esfera(f'pata_t{lado}', 'pelo', ((ax + 0.015) * s, ay, hc - 0.075), (0.072, 0.105, 0.095), seg=10, aneis=6)
+        p.esfera(f'pata_t{lado}', 'claro', (ax * s, ay - 0.05, 0.024), (0.042, 0.095, 0.028), seg=10, aneis=6)
 
     cc = Vector((0, -L - 0.03 * fc, hc + 0.15 * (0.92 if filhote else 1.0)))
     cab = p.esfera('cabeca', 'pelo', tuple(cc), (0.12 * fc, 0.112 * fc, 0.11 * fc), seg=18, aneis=10)
@@ -317,7 +317,7 @@ def coelho(pid, filhote):
         p.esfera(osso, 'orelha', (meio[0], meio[1] - 0.012 * fc, meio[2] + 0.005), (0.022 * fc, 0.01 * fc, 0.095 * fc),
                  rot=(-8, 12 * s, 0), seg=10, aneis=8)
     # Rabinho de algodão.
-    p.esfera('cauda', 'claro', (0, L * 1.18, hc + 0.03), (0.045, 0.04, 0.045), seg=12, aneis=7)
+    p.esfera('cauda', 'claro', (0, L * 1.18, hc + 0.03), (0.045, 0.04, 0.045), seg=10, aneis=6)
 
     p.esqueleto_quadrupede(
         hc=hc, anca=(ax, ay, hc - 0.03), ombro=(ox, oy, hc - 0.04),
@@ -349,7 +349,7 @@ def coelho(pid, filhote):
 # --------------------------------------------------------------------- porquinho-da-índia
 def porquinho(pid, filhote):
     fc, fo = (1.22, 1.2) if filhote else (1.0, 1.0)
-    p = Bicho(pid, paleta('porquinho'), escala=0.7 if filhote else 1.0, alvo=3000)
+    p = Bicho(pid, paleta('porquinho'), escala=0.7 if filhote else 1.0, alvo=3000, afinar_de=90)
     L = 0.19 * (0.9 if filhote else 1.0)
     hc = 0.12
     ox, oy = 0.062, -L * 0.58

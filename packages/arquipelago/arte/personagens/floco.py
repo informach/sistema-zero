@@ -4,7 +4,7 @@ Cabeça grande azul-marinho com o rosto branco em coração, bico e pés laranja
 nadadeiras. De músico: cachecol de tricô listrado com as pontas soltas e o cavaquinho pendurado
 na nadadeira esquerda. Anda gingando.
 
-  /tmp/blender-venv/bin/python arte/personagens/floco.py   # grava src/assets/personagens/floco.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/floco.py   # grava src/assets/personagens/floco.glb
 """
 import math
 import os

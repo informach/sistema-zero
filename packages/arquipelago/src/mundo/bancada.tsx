@@ -1,10 +1,16 @@
 import { useFrame } from '@react-three/fiber'
-import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useMemo, useRef } from 'react'
 import { AdditiveBlending, BoxGeometry, EdgesGeometry, type Group } from 'three'
 import { useJogo } from '../estado/contexto'
-import { ITENS } from '../sistemas/itens'
-import { cozinhar, RECEITAS, receitaPossivel } from '../sistemas/receitas'
+import { coracoes } from '../sistemas/moradores'
+import {
+  fazerReceita,
+  PAINEL_DA_BANCADA,
+  receitasConhecidas,
+  receitasPossiveis,
+} from '../sistemas/receitas'
+import { COLISORES_DA_BANCADA } from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, BANCADA } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -15,32 +21,33 @@ import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos
  */
 export function Bancada() {
   const { loja } = useJogo()
+  const possiveis = () => {
+    const s = loja.getState().salvamento
+    return receitasPossiveis(
+      s.inventario,
+      'bancada',
+      receitasConhecidas(coracoes(s.moradores.bento.amizade)),
+    )
+  }
   useInterativo('bancada', {
     x: BANCADA.x,
     z: BANCADA.z,
     raio: 2.2,
     rotulo: () => {
-      const r = receitaPossivel(loja.getState().salvamento.inventario)
-      return r ? `Cozinhar ${r.nome.toLowerCase()}` : 'Ver as receitas'
+      const r = possiveis()
+      return r.length === 1 && r[0] ? `Cozinhar ${r[0].nome.toLowerCase()}` : 'Ver as receitas'
     },
+    // Uma receita só: faz na hora. Mais de uma (ou nenhuma): a escolha com o que falta.
     agir: () => {
+      const r = possiveis()
       const s = loja.getState()
-      const r = receitaPossivel(s.salvamento.inventario)
-      if (!r) {
-        const lista = RECEITAS.map(
-          (x) =>
-            `${x.nome}: ${Object.entries(x.precisa)
-              .map(([id, q]) => `${q} ${ITENS[id]?.nome.toLowerCase()}`)
-              .join(' e ')}`,
-        ).join('. ')
-        s.dizer(`Ainda falta ingrediente. ${lista}.`)
+      const feito = r.length === 1 && r[0] ? fazerReceita(s.salvamento, r[0]) : null
+      if (!feito) {
+        s.abrirPainel(PAINEL_DA_BANCADA)
         return
       }
-      s.mudar((sv) => {
-        const inv = cozinhar(sv.inventario, r)
-        return inv ? { ...sv, inventario: inv } : sv
-      })
-      s.dizer(`Ficou pronto: ${r.nome.toLowerCase()}. Clique nele embaixo para comer.`)
+      s.mudar(() => feito.salvamento)
+      s.dizer(feito.fala)
     },
   })
   return (
@@ -48,9 +55,7 @@ export function Bancada() {
       <ComReserva reserva={<ProjetoDeAntes />}>
         <ProjetoDoModelo />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[1.1, 0.5, 0.5]} position={[0, 0.5, 0]} />
-      </RigidBody>
+      <Colisores lista={COLISORES_DA_BANCADA} />
     </group>
   )
 }

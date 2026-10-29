@@ -336,6 +336,21 @@ describe('loadGatewayConfig', () => {
     expect(route?.auth).not.toBe('public')
   })
 
+  test('irmãos da sessão de perfil (Arquipélago, fase3-12): GET com JWT de conta ativa e token interno', () => {
+    const route = realConfig.routes.find((item) => item.id === 'auth-profile-session-siblings')
+    expect(route).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/auth/profile-session/siblings',
+      service: 'auth',
+      authorize: { statuses: ['active'] },
+    })
+    expect(route?.auth).not.toBe('public')
+    // O mesmo token interno das outras rotas da sessão de perfil (vazio só sem AUTH_INTERNAL_TOKEN).
+    const sair = realConfig.routes.find((item) => item.id === 'auth-profile-session-exit')
+    expect(route?.transforms).toBeDefined()
+    expect(route?.transforms).toEqual(sair?.transforms)
+  })
+
   test('"Como fazer": a criança lê com qualquer conta ativa; a escrita é admin+ com auditoria', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
     expect(byId.get('members-help-read')).toMatchObject({

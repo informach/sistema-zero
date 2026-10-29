@@ -4,7 +4,7 @@ Coruja redonda verde-jade com o disco claro do rosto em coração, olhos grandes
 curvo, tufos de orelha, peito com as penas em escama e asas com as pontas das penas. De
 exploradora: chapéu de safári com a fita e a lupa de cabo de madeira na asa esquerda.
 
-  /tmp/blender-venv/bin/python arte/personagens/jade.py   # grava src/assets/personagens/jade.glb
+  /tmp/claude-0/blender-venv/bin/python arte/personagens/jade.py   # grava src/assets/personagens/jade.glb
 """
 import math
 import os

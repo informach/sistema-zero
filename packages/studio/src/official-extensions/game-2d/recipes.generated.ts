@@ -2055,8 +2055,16 @@ export const gameTwoDRecipes: readonly ExtensionExample[] = [
   {
     name: 'Mapa do Pinta e duas fases',
     description:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
-    concepts: ['mapa do Pinta', 'mapa vetorial', 'Mundo', 'Fase', 'câmera', 'reinício'],
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+    concepts: [
+      'mapa do Pinta',
+      'mapa vetorial',
+      'Mundo',
+      'Fase',
+      'câmera',
+      'reinício',
+      'encontro com grupo',
+    ],
     assets: [
       {
         id: 'receita-mapa',
@@ -2369,6 +2377,19 @@ export const gameTwoDRecipes: readonly ExtensionExample[] = [
                   type: 'num',
                   value: 0,
                 },
+              },
+            ],
+          },
+          {
+            type: 'g2d:onTouchGroup',
+            spriteVar: 'heroi',
+            groupVar: 'moedas',
+            itemName: 'moeda',
+            body: [
+              {
+                type: 'g2d:removeFromGroup',
+                spriteVar: 'moeda',
+                groupVar: 'moedas',
               },
             ],
           },

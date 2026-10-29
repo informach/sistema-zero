@@ -4,26 +4,90 @@ import { serializeError } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import {
   AcessoBloqueadoError,
+  AparenciaNaoCompradaError,
+  ConflitoDoCadastroError,
+  DesafioBloqueadoError,
+  DesafioComProblemasError,
+  DesafioDesatualizadoError,
+  DesafioMudouError,
+  DesafioNaoEncontradoError,
+  DesafiosDesligadosError,
+  IrmaoNaoEncontradoError,
+  ManifestoDesatualizadoError,
+  ManifestoExcedeLimiteError,
+  PlataformaIndisponivelError,
+  SaldoInsuficienteError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
+  SemPermissaoDeEscritaError,
   SessaoTempoNaoPermitidaError,
   SomenteLeituraError,
+  VisitasDesligadasError,
 } from '../../application/erros'
+import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
+import type { ServicoDaFamilia } from '../../application/servico-da-familia'
+import type { ServicoDaGaleria } from '../../application/servico-da-galeria'
+import {
+  PeriodoDaMedicaoInvalidoError,
+  type ServicoDaMedicao,
+} from '../../application/servico-da-medicao'
+import type { ServicoDasCartas } from '../../application/servico-das-cartas'
+import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
+import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
+import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
+import { ConferenciaIndisponivelError } from '../../domain/membros.port'
 import {
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
+import { rotasDaEquipe } from './rotas-da-equipe'
+import { rotasDaFamilia } from './rotas-da-familia'
+import { rotasDaGaleria } from './rotas-da-galeria'
+import { rotasDaMedicao } from './rotas-da-medicao'
+import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
+import { rotasDosDesafios } from './rotas-dos-desafios'
+import { rotasDosMinijogos } from './rotas-dos-minijogos'
 
 export interface DependenciasHttp {
+  minijogos?: ServicoDosMinijogos
+  medicao?: ServicoDaMedicao
   logger: Logger
   servico: ServicoDoJogo
+  cartas: ServicoDasCartas
+  equipe: ServicoDaEquipe
+  desafios: ServicoDosDesafios
+  /** A área dos pais (semana e permissões); ausente, as rotas da família não existem. */
+  familia?: ServicoDaFamilia
+  /** A galeria de aparências (29/10/2026); ausente, as rotas dela não existem. */
+  galeria?: ServicoDaGaleria
+  /** Recordes da família e visitas (fase3-12); ausente, as rotas dos irmãos não existem. */
+  visitas?: ServicoDasVisitas
   cliente: { dir: string; servirMapas: boolean }
   tokenInterno?: string
   maxRequestBodyBytes?: number
   readiness: () => Promise<void>
+  /** Situação da conferência do mapa ilha → posto (informativa: não derruba o `/readyz`). */
+  mapaDasIlhas?: () => string
+}
+
+/**
+ * Corpo da seção Jogo do Admin: dois projetos do Estúdio (inicial e gabarito, até 1,5 MB cada) e o
+ * resto do desafio. As rotas do jogo continuam com o teto pequeno (`maxRequestBodyBytes`).
+ */
+export const CORPO_DA_EQUIPE = 4 * 1024 * 1024
+
+/** Conferir um desafio leva o projeto do Estúdio da pessoa (até 1,5 milhão de caracteres). */
+export const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
+const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/verificar$/
+
+/** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
+function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
+  if (caminho.startsWith('/arquipelago/admin/')) return CORPO_DA_EQUIPE
+  if (CONFERIR.test(caminho)) return CORPO_DA_CONFERENCIA
+  return tetoDoJogo
 }
 
 /**
@@ -31,7 +95,17 @@ export interface DependenciasHttp {
  * prova de origem é o `x-internal-token`). Falha aqui só afeta a página do jogo.
  */
 export function createServer(deps: DependenciasHttp) {
-  return new Elysia({ serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 96 * 1024 } })
+  const tetoDoJogo = deps.maxRequestBodyBytes ?? 96 * 1024
+  const tetoDoServidor = Math.max(tetoDoJogo, CORPO_DA_EQUIPE, CORPO_DA_CONFERENCIA)
+  return new Elysia({ serve: { maxRequestBodySize: tetoDoServidor } })
+    .onRequest(({ request, set }) => {
+      // O servidor aceita até o maior teto; cada caminho tem o seu (o jogo, o pequeno).
+      const tamanho = Number(request.headers.get('content-length') ?? 0)
+      if (tamanho > tetoDoCaminho(new URL(request.url).pathname, tetoDoJogo)) {
+        set.status = 413
+        return envelope('CORPO_GRANDE_DEMAIS', 'Requisição grande demais')
+      }
+    })
     .onError(({ error, set, code }) => {
       if (error instanceof SequenciaDeTempoInvalidaError) {
         set.status = 409
@@ -45,9 +119,89 @@ export function createServer(deps: DependenciasHttp) {
         set.status = 409
         return envelope('TEMPO_CONFLITANTE', 'Este registro de tempo não corresponde ao anterior.')
       }
+      if (error instanceof SaldoInsuficienteError) {
+        set.status = 409
+        return {
+          ...envelope('SALDO_INSUFICIENTE', error.message),
+          preco: error.preco,
+          saldo: error.saldo,
+        }
+      }
+      if (error instanceof VisitasDesligadasError) {
+        set.status = 403
+        return envelope('VISITAS_DESLIGADAS', error.message)
+      }
+      if (error instanceof IrmaoNaoEncontradoError) {
+        set.status = 404
+        return envelope('IRMAO_NAO_ENCONTRADO', error.message)
+      }
+      if (error instanceof AparenciaNaoCompradaError) {
+        set.status = 422
+        return envelope('APARENCIA_NAO_COMPRADA', error.message)
+      }
       if (error instanceof AcessoBloqueadoError) {
         set.status = 403
         return { ...envelope('ACESSO_BLOQUEADO', error.message), motivo: error.motivo }
+      }
+      if (error instanceof PlataformaIndisponivelError) {
+        // 424, não 5xx: o disjuntor do gateway contaria a queda do Members contra o jogo inteiro.
+        set.status = 424
+        return envelope('PLATAFORMA_INDISPONIVEL', error.message)
+      }
+      if (error instanceof DesafiosDesligadosError) {
+        set.status = 403
+        return envelope('DESAFIOS_DESLIGADOS', error.message)
+      }
+      if (error instanceof DesafioMudouError) {
+        set.status = 409
+        return envelope('DESAFIO_MUDOU', error.message)
+      }
+      if (error instanceof DesafioBloqueadoError) {
+        set.status = 403
+        return { ...envelope('DESAFIO_BLOQUEADO', error.message), situacao: error.situacao }
+      }
+      if (error instanceof ConferenciaIndisponivelError) {
+        // Nada foi guardado: a pessoa tenta de novo. Nunca 5xx (disjuntor do gateway).
+        const resposta = {
+          indisponivel: [424, 'CONFERENCIA_INDISPONIVEL'],
+          ocupado: [429, 'CONFERENCIA_OCUPADA'],
+          sincronizando: [409, 'CONFERENCIA_SINCRONIZANDO'],
+          recusado: [400, 'PROJETO_RECUSADO'],
+        } as const
+        const [status, codigo] = resposta[error.motivo]
+        set.status = status
+        return envelope(codigo, error.message)
+      }
+      if (error instanceof DesafioNaoEncontradoError) {
+        set.status = 404
+        return envelope('DESAFIO_NAO_ENCONTRADO', error.message)
+      }
+      if (error instanceof DesafioDesatualizadoError) {
+        set.status = 409
+        return { ...envelope('DESAFIO_DESATUALIZADO', error.message), atual: error.atual }
+      }
+      if (error instanceof ManifestoDesatualizadoError) {
+        set.status = 409
+        return envelope('MANIFESTO_DESATUALIZADO', error.message)
+      }
+      if (error instanceof ManifestoExcedeLimiteError) {
+        set.status = 422
+        return envelope('MANIFESTO_EXCEDE_LIMITE', error.message)
+      }
+      if (error instanceof ConflitoDoCadastroError) {
+        set.status = 409
+        return envelope(
+          error.motivo === 'slug-em-uso' ? 'SLUG_EM_USO' : 'QUADRO_OCUPADO',
+          error.message,
+        )
+      }
+      if (error instanceof DesafioComProblemasError) {
+        set.status = 422
+        return { ...envelope('DESAFIO_COM_PROBLEMAS', error.message), problemas: error.problemas }
+      }
+      if (error instanceof SemPermissaoDeEscritaError) {
+        set.status = 403
+        return envelope('SEM_PERMISSAO', error.message)
       }
       if (error instanceof SomenteLeituraError) {
         set.status = 403
@@ -71,7 +225,12 @@ export function createServer(deps: DependenciasHttp) {
         set.status = 403
         return envelope('FORBIDDEN', error.message)
       }
-      if (error instanceof CorpoInvalidoError || code === 'VALIDATION' || code === 'PARSE') {
+      if (
+        error instanceof CorpoInvalidoError ||
+        error instanceof PeriodoDaMedicaoInvalidoError ||
+        code === 'VALIDATION' ||
+        code === 'PARSE'
+      ) {
         // Envelope fixo: nunca ecoar o que chegou.
         set.status = 400
         return envelope('VALIDATION_ERROR', 'Requisição inválida')
@@ -85,12 +244,41 @@ export function createServer(deps: DependenciasHttp) {
       return envelope('INTERNAL_ERROR', 'Erro interno')
     })
     .use(rotasDoCliente({ ...deps.cliente, tokenInterno: deps.tokenInterno }))
-    .use(rotasDoJogo({ servico: deps.servico, tokenInterno: deps.tokenInterno }))
+    .use(
+      rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
+    )
+    .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.medicao
+        ? rotasDaMedicao({ medicao: deps.medicao, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.familia
+        ? rotasDaFamilia({ familia: deps.familia, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.visitas
+        ? rotasDasVisitas({ visitas: deps.visitas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.galeria
+        ? rotasDaGaleria({ galeria: deps.galeria, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(rotasDosDesafios({ desafios: deps.desafios, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.minijogos
+        ? rotasDosMinijogos({ minijogos: deps.minijogos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .get('/healthz', () => ({ status: 'ok' }))
     .get('/readyz', async ({ set }) => {
       try {
         await deps.readiness()
-        return { status: 'ready' }
+        return { status: 'ready', mapaDasIlhas: deps.mapaDasIlhas?.() ?? 'desligada' }
       } catch {
         set.status = 503
         return { status: 'unavailable' }

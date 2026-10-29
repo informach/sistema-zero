@@ -32,6 +32,93 @@ Os blocos de luz da criança SOMAM a esta luz e não mudaram.
   ACES e Neutral mudam o matiz); igualar a cor lá é um projeto do pipeline inteiro, com revisão
   dos 34 exemplos.
 
+## A vista do jogador no `frameScene` (28/10/2026)
+
+Pedido dela na Ilha do Farol: câmera mais perto, zoom e girar. É do motor, sem bloco novo
+(`game-3d/runtime.ts`, `placeFramedCamera`/`wireFramedControls`), e só vale no modo `framed`:
+- Começa a 75% do enquadramento antigo e a proporção do painel conta no máximo como 1,2 (painel
+  estreito não afasta mais a câmera). Mira em um quarto da altura, não na metade.
+- Rodinha (`wheel` com `passive: false` e `preventDefault`, senão a página da aula rola) e dois
+  dedos dão zoom de 0,35 a 1,6; arrastar gira (só depois de 4 px, para o clique continuar clique),
+  elevação entre 0,2 e 1,25 rad; duplo clique volta. `touch-action: none` no canvas.
+- A vista acompanha quem anda pelo `topDown` (`_framedView.focus`): 35% na vista inicial, 100% no
+  zoom mínimo, nada no máximo. ⚠️ `controlWithKeys` gira as setas pelo ângulo da câmera SÓ no modo
+  `framed` com ângulo diferente de zero: em qualquer outro jogo o movimento continua igual.
+- O `orbitCamera` ("câmera em volta") já existia, mas é outro bloco: troca o modo da câmera e não
+  enquadra a área. Testes: `game-3d/__tests__/beginner.test.ts` §"a vista do jogador".
+- **Botões da vista (29/10/2026, pedido dela: "não estou conseguindo visualizar os controles"):**
+  `framedButtons` põe no canto de baixo à direita do jogo uma barra (`role="toolbar"`,
+  `data-sz-vista`) com aproximar, afastar, girar para os dois lados e voltar ao começo, os mesmos
+  da rodinha, do arrastar e do duplo clique. Os botões têm `tabIndex = -1` e o `mousedown` é
+  cancelado: o foco fica no jogo e as teclas continuam andando. Somem quando a câmera troca de modo
+  (`activateCameraMode`) e saem da página no descarte do mundo (`_disposers`). Vale para todo
+  projeto com "Mostrar a cena inteira", então para os cinco jogos 3D dos cursos (Ilha do Farol,
+  Jardim Secreto, Moedas, Cabana e Ponte). O `platformHarness` ganhou `realDom` para o teste.
+- **Nomes que a criança lê (28/10/2026, só o texto; campos iguais):** o bloco do `frameScene` é
+  "Mostrar a cena … inteira" (era "Enquadrar a cena"; não começa com "Câmera" para não parecer um
+  sétimo modo do "Câmera da cena …"). Mudaram junto: "Fazer … andar com as setas (ou WASD)"
+  (`topDown`), "Animar …: parado toca …, andando toca …", "Levar … até x y z aos poucos"
+  (`moveTowards`), "Colocar o objeto … em x y z" (`setPosition`), "Escrever na tela …" (o meio é
+  "⊕ no centro") e "Reiniciar o jogo" (o mesmo nome do Jogo 2D) nas regras de jogo dos três 3D.
+
+## Jogo 3D: quem anda com as setas respeita o "sólido" (29/10/2026)
+
+Pedido dela: nos jogos 3D dos cursos o personagem atravessava a pedra e os coqueiros. Decisão
+dela: usar o bloco que já existia, sem bloco novo. "Marcar … como sólido" (`setSolid`) só valia
+para a física (`sz_g3d_physics`); agora também vale para o `topDown` ("Fazer … andar com as
+setas"), e o bloco desceu para o `iniciante-3d` (`INICIANTE_3D_G3D`) e para a gaveta "Andar com o
+teclado", logo depois de "Andar só dentro da área".
+- **Uma caixa por PEDAÇO do modelo** (`solidParts`/`solidBoxes` no runtime): cada malha vira uma
+  caixa no mundo, e as peças com `szSemCaixa` nos extras ficam de fora (folhas do coqueiro,
+  pedrinhas do pé da pedra). Uma caixa só da pedra inteira cobriria a trilha e a chave escondida
+  atrás dela. O sólido só barra o que sobe acima dos pés de quem anda (o chão não barra).
+- Quem anda é medido pela caixa dele; um modelo (personagem) usa 60% da caixa na largura e na
+  profundidade (a caixa tem os braços e a folga do Blender). Bater de lado DESLIZA (tenta só x,
+  depois só z); quem já começou dentro de um sólido pode sair dele.
+- Os cenários da Ilha (`docs/design/ilha-do-farol-blender/cenario.py`, `exportar_em_pedacos`)
+  saem com a base juntada e marcada `szSemCaixa` e os obstáculos (troncos, rochas) como nós
+  próprios; a pedra sai em quatro blocos. Os jogos da Ilha, Moedas, Cabana e Ponte marcam
+  `cenario` e `pedra` como sólidos. O Jardim Secreto não precisou: o que ele tem fica fora da área.
+- O robô do executor contorna os mesmos obstáculos (`ILHA_OBSTACULOS` + `recortarObstaculos` em
+  `docs/aulas-interativas-tecnico/qa/ilha-do-farol-observacao.ts`); `ilha-obstaculos.test.ts`
+  confere as caixas contra os GLB publicados. A área A da Ilha foi até x 1 (era 0,7): o corredor
+  entre a pedra e o cais ficava estreito demais para o robô.
+- O robô planeja a ida com um custo por CURVA (`planApproach3d` em
+  `studio-runtime/runtime/check-approach-3d.mjs`, Dial sobre casa + direção; uma curva vale uma
+  unidade de caminho): cada curva termina numa parada precisa com pulsos lentos, e a escada de seis
+  trechos curtos em volta da pedra estourava os 7,5 s da ida ao farol (agora são três curvas). O
+  teto de retângulos de chão da ida 3D subiu para `MAX_WALKABLE_RECTS` (32) no core.
+- Testes: `game-3d/__tests__/beginner.test.ts` §sólido (parar, deslizar, sair, um pedaço por caixa).
+
+## O executor espera os modelos do Jogo 3D (28/10/2026)
+
+O Jogo 3D publica `window.__szModelosPendentes` (quantos modelos ainda estão sendo lidos e
+aquecidos, pelo `trackPending` do carregador comum em `game-3d/runtimeModelAssets.ts`). O
+executor dos objetivos (`studio-runtime/runtime/check-objectives.mjs`, `waitForModels`) só
+aperta a primeira tecla com zero e depois de uma janela de 2 s sem quadro acima de 400 ms: sem
+placa de vídeo, o primeiro desenho com os modelos trava os quadros por 4 a 6 s, e teclas
+apertadas ali não andavam nada. O robô de navegação 3D segura a seta nos trechos longos
+(`check-approach-3d.mjs`). Declarado no `HOST_CONTRACT` do `runtimeTypecheck` do Jogo 3D.
+
+## Jogo 2D: "Quando começar a encostar em algum do grupo" (29/10/2026)
+
+Decisão dela, para o Poder "Moedas no caminho": alinhar o 2D ao 3D no encontro com GRUPO.
+Antes, o catálogo inteiro foi conferido: o 2D tinha o evento sprite×sprite (`sz_g2d_on_overlap`)
+e o laço por quadro "Para cada sprite do grupo que colidir" (`sz_g2d_on_sprite_group_overlap`),
+mas não o EVENTO de grupo que o 3D tem (`sz_g3d_on_touch_group`). Bloco novo
+**`sz_g2d_on_touch_group`** ("Quando o sprite … começar a encostar em algum do grupo …, chamando
+de …", ⚡ Quando acontecer, núcleo de entrada do iniciante), IR `g2d:onTouchGroup`
+(`spriteVar`/`groupVar`/`itemName`), runtime `onTouchGroup(() => sprite, () => grupo, (item) =>
+{…}, id)`, o mesmo nome do 3D.
+- Mora na MESMA tabela do `onOverlap` (`overlapHandlers`, `worldEvents.ts`): herda pausa,
+  reinício, geração e o desligamento do handler que falha. Guarda o `Set` dos membros que
+  encostavam no quadro anterior: um disparo por membro a cada encontro; quem sai do grupo sai do
+  conjunto.
+- O laço antigo não mudou (regra do bloco congelado) e continua para o que é contínuo.
+- Catracas medidas e registradas: runtime cru 421.105 (teto 422.500), +4 parâmetros (1495).
+- Testes: `game-2d/__tests__/touchGroup.test.ts` (provado por mutação) e
+  `blockly/__tests__/gameCtxRoundtrip.test.ts` (Ponte).
+
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e
@@ -5112,3 +5199,18 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
 - `<ProjectList>` adapter-based (hoje acoplada ao IndexedDB local).
 - `baseUrl` da IA (OpenRouterProvider não suporta).
 - CSS pré-compilado como alternativa ao `@source` dos consumers.
+
+## Minijogos aprovados (desafios-16, 29/10/2026)
+
+Cópias aprovadas do Arquipélago: o leitor JavaScript preserva programmingLanguage explícito em documentos v2. Regressão com o projeto real do Bosque em member-shell/tests/arquipelago-minijogo-project.test.ts.
+
+Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
+
+## Visual do Blockly para outras ferramentas (29/10/2026)
+
+Entrada `@sistemazero/studio/blockly-theme` (`src/blockly/publicTheme.ts`): `szThemeFor`,
+`CATEGORY_COLORS` e `ensureWhiteTextContrast`, só aparência. Quem usa hoje é o editor da rotina dos
+Lumis do Arquipélago, que mora no member-shell (`components/arquipelago-rotina/`). Ele chegou a
+morar aqui como `./lumi-editor` e saiu no mesmo dia: o Estúdio não depende de pacote de jogo
+(`@sistemazero/arquipelago-contracts` saiu das dependências). Ferramenta de jogo que precisar de
+Blockly fica na plataforma e pede só o visual por esta entrada.

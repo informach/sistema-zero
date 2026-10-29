@@ -13,4 +13,4 @@ Direção aprovada em 25/10/2026: conservar o protótipo aprovado e distribuir a
 
 Sem alteração de credenciais, importação em contas, geração paga de voz ou publicação de mídia nesta revisão. O usuário autorizou a implementação local e os materiais do curso.
 
-Conferência executada e limites registrados em [Revisão de 25/10/2026](../aulas-interativas/cade-todo-mundo/REVISAO-2026-10-25.md). Há falhas globais externas a esta implementação; a lista concluída acima registra a execução das conferências, sem declarar o repositório inteiro aprovado.
+Conferência executada e limites registrados em [Revisão de 25/10/2026](../aulas-interativas/faisca/cade-todo-mundo/REVISAO-2026-10-25.md). Há falhas globais externas a esta implementação; a lista concluída acima registra a execução das conferências, sem declarar o repositório inteiro aprovado.

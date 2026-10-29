@@ -210,7 +210,7 @@ describe('Jogo 3D — regras de jogo de ponta a ponta', () => {
     expect(real.score?.()).toBe(1)
   })
 
-  it('"Recomeçar o jogo" pedido no meio de um quadro termina o quadro velho antes', async () => {
+  it('"Reiniciar o jogo" pedido no meio de um quadro termina o quadro velho antes', async () => {
     const { real } = boot()
     let quadros = 0
     let factories = 0

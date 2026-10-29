@@ -85,6 +85,7 @@
     "@tiptap/react": "^3.22.2",
     "@tiptap/starter-kit": "^3.22.2",
     "@vimeo/player": "^2.30.4",
+    "blockly": "^12.5.1",
     "clsx": "^2.1.1",
     "jose": "^6.1.0",
     "lucide-react": "^0.546.0",

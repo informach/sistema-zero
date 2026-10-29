@@ -5076,14 +5076,22 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     extension: 'game-2d',
     name: 'Mapa do Pinta e duas fases',
     description:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
     difficulty: 'intermediate',
-    concepts: ['mapa do Pinta', 'mapa vetorial', 'Mundo', 'Fase', 'câmera', 'reinício'],
+    concepts: [
+      'mapa do Pinta',
+      'mapa vetorial',
+      'Mundo',
+      'Fase',
+      'câmera',
+      'reinício',
+      'encontro com grupo',
+    ],
     genre: 'receita',
     promise:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
     scenario:
-      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial, onde encostar na moeda a recolhe; R restaura a fase e a moeda. A câmera acompanha e as plataformas são atravessáveis por baixo.',
     blockTypes: [
       'sz_frame_events',
       'sz_frame_loops',
@@ -5116,9 +5124,11 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
       'sz_g2d_level_reset_group',
       'sz_g2d_on_key',
       'sz_g2d_on_level_enter',
+      'sz_g2d_on_touch_group',
       'sz_g2d_paint_line',
       'sz_g2d_paint_rect',
       'sz_g2d_place_tilemap',
+      'sz_g2d_remove_from_group',
       'sz_g2d_restart_level',
       'sz_g2d_set_gravity',
       'sz_g2d_set_stage_description',

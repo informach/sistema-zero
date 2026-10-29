@@ -4,8 +4,8 @@ Lote 7 do `arte/INVENTARIO.md`: o kit de movimento (cipó, mergulho, planador e 
 (o barquinho da chegada e o barco entre ilhas) e as quatro festas (Carnaval, Festa Junina, Noite das
 Lanternas e fim de ano). Cada script monta as peças no Blender sem tela (o mesmo `bpy` do mundo, dos
 personagens, dos itens e dos bichos) e grava os GLBs em `src/assets/movimento/` e
-`src/assets/festas/`. Ainda não estão ligados ao jogo. O trenó e o balão de passeio são das ilhas
-completas (Lote 6) e moram lá.
+`src/assets/festas/`. Só os patins já estão no jogo (fase2-05, calçados nos ossos dos pés); o resto
+ainda não. O trenó e o balão de passeio são das ilhas completas (Lote 6) e moram lá.
 
 ## Rodar
 
@@ -45,11 +45,18 @@ exportação), com a paleta do Lote 7 e três mudanças:
   o y para cima do three.js (a frente fica em +Z). Cada arquivo sai com a origem no meio da base
   (o ponto mais baixo em y = 0), na escala do avatar (1,6 de altura).
 - **Peças vestidas (mergulho, patins):** saem na posição em que ficam no corpo do avatar, com a
-  origem nos pés dele. O avatar do jogo tem 0,751 da altura do `Armature.glb` (2,13). Os vazios
-  ficam no lugar dos ossos: `cabeca` = `mixamorig:Head` (y 1,012), `pe-esq` = `LeftFoot`
-  (x +0,155, y 0,064) e `pe-dir` = `RightFoot` (x −0,174, y 0,064). Para prender uma peça num osso,
-  o jogo põe a peça como filha do osso e a desloca pelo inverso do vazio dela. As rodinhas dos
-  patins ficam 0,085 abaixo do pé: o jogo sobe o avatar esse tanto quando ele calça.
+  origem nos pés dele. ⚠️ O `AV` (0,751) dos scripts supunha o avatar menor que o `Armature.glb`;
+  no jogo as peças do avatar ficam na escala delas (conferido em 29/10/2026). Os patins são
+  desenhados com as medidas multiplicadas por `AV` e crescidos por `1 / AV` no fim (`CRESCER`); os
+  vazios `pe-esq` e `pe-dir` ficam nos ossos `LeftFoot` e `RightFoot` sem o `AV`. O mergulho
+  (`cabeca` = `mixamorig:Head`) ainda está com o `AV`: conferir antes de ligá-lo.
+- **Patins:** a bota foi medida pelas peças do avatar (`community-kids/public/avatar3d/parts`): por
+  dentro cabem o pé, a perna e a barra das calças e das fantasias de bicho; a boca fica logo acima
+  do tornozelo, com acolchoado, e um fundo escuro por onde a perna entra. A faixa branca (biqueira,
+  lados e contraforte) é uma curva lisa, porque cada coluna do casco tem um anel na altura dela.
+  O jogo faz da bota uma malha com o esqueleto (o pé leva a sola, o chassi e as rodas, a canela leva
+  o cano) e esconde o calçado do avatar. As rodinhas ficam 0,11 abaixo da sola; parado, o jogo sobe
+  o avatar 0,089 (`ELEVACAO_DOS_PATINS`: o calçado parado desce 2,1 cm abaixo do osso do pé). O teste `tests/patins-nos-pes.test.ts` confere as peças do avatar dentro da bota.
 - **Festas:** um arquivo por festa, com uma peça por nó. Cada nó tem o pivô no meio da própria base,
   então o jogo pode copiar o nó e pôr a peça em qualquer lugar (o arquivo é um catálogo, não a cena
   montada). Nós com mais de um material viram um grupo com uma malha por material no three.js.
@@ -75,7 +82,7 @@ exportação), com a paleta do Lote 7 e três mudanças:
 | `cipo.glb` | movimento | `cipo` (pivô no alto) | `pegada`, `topo` | `balancar` | 1192 | 32 KB |
 | `mergulho.glb` | movimento | `mascara`, `pe-de-pato-esq`, `pe-de-pato-dir` | `cabeca`, `pe-esq`, `pe-dir` | — | 1556 | 41 KB |
 | `planador.glb` | movimento | `planador`, `asa-esq`, `asa-dir` | `pegada` | `planar` | 562 | 28 KB |
-| `patins.glb` | movimento | `patim-esq`, `patim-dir` | `pe-esq`, `pe-dir` | — | 3352 | 102 KB |
+| `patins.glb` | movimento | `patim-esq`, `patim-dir` | `pe-esq`, `pe-dir` | — | 6064 | 150 KB |
 | `barquinho.glb` | movimento | `barquinho`, `remo-esq`, `remo-dir` | `assento` | `remar` | 1770 | 66 KB |
 | `barco.glb` | movimento | `barco` | `assento` | `balancar` | 2304 | 87 KB |
 | `carnaval.glb` | festas | `confetes`, `serpentinas`, `mascaras`, `carro-alegorico`, `sol-do-carro`, `faixas` | — | `girar` | 9670 | 295 KB |

@@ -4,6 +4,7 @@
  */
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
+import type { MoldaStarterBox } from '../core/model'
 import type { MoldaToolAccess } from '../core/toolFamilies'
 import type { MoldaExportedAsset, MoldaStudioResyncResult } from '../export/studioLibrary'
 import type { GallerySceneSource } from '../state/gallerySceneSource'
@@ -37,6 +38,11 @@ export interface MoldaHostAdapter {
   /** Abre esta criação assim que a galeria carregar (deep link `?criacao=`). */
   initialAssetId?: string
   /**
+   * Molde pedido pelo host (28/10/2026, o Arquipélago): abre o modelo com este nome ou, se ainda
+   * não existe, cria um com a caixa do molde como peça de começo. 1x, depois que a galeria carrega.
+   */
+  initialModel?: MoldaInitialModel
+  /**
    * A VOLTA da ponte "Trazer do Molda": depois de SALVAR, o editor reenvia a criação já
    * no formato do Estúdio (`.glb`/`.hdr`/`.png`) e o host atualiza a biblioteca pessoal
    * de lá, de onde ela entra sozinha nos jogos. `updated: false` quando a criação nunca
@@ -53,6 +59,14 @@ export interface MoldaHostAdapter {
    * autoria, nunca a leitura: ver `core/toolFamilies.ts`.
    */
   toolAccess?: MoldaToolAccess
+}
+
+/** O modelo com molde: o nome (kebab-case) e a caixa em unidades da grade. */
+export interface MoldaInitialModel {
+  name: string
+  box: MoldaStarterBox
+  /** O teto de triângulos do molde ("Leve para a ilha"); ausente = o do Molda. */
+  maxTriangles?: number
 }
 
 export interface MoldaAppContextValue {

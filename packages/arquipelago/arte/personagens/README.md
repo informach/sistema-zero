@@ -1,6 +1,6 @@
 # Personagens do Arquipélago (Lote 2)
 
-Scripts de Blender sem tela que geram Íris e os seis moradores em
+Scripts de Blender sem tela que geram Íris e os sete moradores em
 `src/assets/personagens/<id>.glb`. Ainda não estão ligados ao jogo (ver `arte/INVENTARIO.md`).
 
 | id | Quem | Acessórios |
@@ -12,29 +12,31 @@ Scripts de Blender sem tela que geram Íris e os seis moradores em
 | `floco` | Floco, pinguim músico do Pico Gelado | cachecol de tricô, cavaquinho |
 | `jade` | Jade, coruja dos fósseis e ninhos do Vale dos Dinos | chapéu de safári, lupa |
 | `irie` | Iriê, arara que tece o arco-íris da Ilha das Nuvens | tear de mão com o arco-íris |
+| `nico` | Nico, caranguejo carteiro da praia (recebe a criança na sua ilha, com o Zappy) | quepe de carteiro, bolsa de cartas a tiracolo com envelopes, carta na pinça |
 
 ## Rodar
 
 O mesmo `bpy` 5.2.3 das peças do avatar e do quarto (ver `community-kids/scripts/avatar-blender`):
 
 ```sh
-/tmp/blender-venv/bin/python arte/personagens/build_all.py           # todos, e confere os limites
-/tmp/blender-venv/bin/python arte/personagens/build_all.py capi iris  # só alguns
-/tmp/blender-venv/bin/python arte/personagens/capi.py                 # um só
+/tmp/claude-0/blender-venv/bin/python arte/personagens/build_all.py           # todos, e confere os limites
+/tmp/claude-0/blender-venv/bin/python arte/personagens/build_all.py capi iris  # só alguns
+/tmp/claude-0/blender-venv/bin/python arte/personagens/capi.py                 # um só
 PERSONAGEM_CONTAR=1 …/capi.py   # lista as peças que mais gastam triângulos
 ```
 
 Prévia (Cycles na CPU, lê o próprio GLB):
 
 ```sh
-/tmp/blender-venv/bin/python arte/personagens/render.py saida.png \
+/tmp/claude-0/blender-venv/bin/python arte/personagens/render.py saida.png \
   "src/assets/personagens/capi.glb:clipe=acenar:q=8" "src/assets/zappy.glb:x=1.2:z=1.5:escala=0.4"
 ```
 
 ## O que cada arquivo traz
 
 - **Clipes em laço:** `parado` (2 s), `andar` (1 s, um ciclo de dois passos), `falar` (2 s),
-  `acenar` (2 s, com a mão direita) e `feliz` (1 s, um pulinho). Todos os clipes animam os mesmos
+  `acenar` (2 s, com a mão direita, aberta mas com os dedos soltos; parada, a mão direita da Íris
+  fica com os dedos um pouco dobrados, `mao_solta` em `iris.py`) e `feliz` (1 s, um pulinho). Todos os clipes animam os mesmos
   ossos, então trocar de clipe com fade no `AnimationMixer` não deixa osso preso.
 - **Olhos numa malha própria** (`<id>-olhos`, materiais `olho` e `brilho`, a coruja também
   `iris`) com as formas `piscar` e `feliz` (olho em arco). Começam em 0; o jogo pisca mudando
@@ -50,6 +52,15 @@ Esqueleto próprio e simples (`raiz`, `quadril`, `tronco`, `cabeca`, `braco_esq`
 um osso só, o que combina com as formas arredondadas e separadas. O acessório de mão vai na mão
 esquerda, para a direita ficar livre no `acenar`. Teto de ~6 mil triângulos: se passar, `lib_personagens`
 afina só as peças grandes e lisas do corpo (a cabeça e os detalhes ficam inteiros).
+
+### Nico
+
+O caranguejo usa o mesmo esqueleto dos moradores com outro sentido: o casco é o `tronco` (com o
+rosto, o quepe e a bolsa, que ficam firmes), a `cabeca` leva só as antenas e os olhos (balançam
+quando ele fala), as pinças são `braco_esq` e `braco_dir` e as três perninhas de cada lado vão em
+`perna_esq` e `perna_dir`. Os clipes são dele (`clipes` em `nico.py`), com os mesmos nomes e
+durações: no `andar` as perninhas de cada lado sapateiam alternadas, duas vezes por segundo. A
+alça da bolsa dá a volta no casco num plano inclinado (`faixa`), encostada na superfície.
 
 ### Íris
 

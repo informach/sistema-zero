@@ -22,6 +22,62 @@
       "when": 1793142224589,
       "tag": "0002_common_masked_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793172413996,
+      "tag": "0003_desafios",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793175384615,
+      "tag": "0004_publication_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793175385692,
+      "tag": "0005_backfill_publication_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793175386857,
+      "tag": "0006_require_publication_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793217009376,
+      "tag": "0007_desafio_do_dia",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793227655983,
+      "tag": "0008_familia_semana_permissoes",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793233864349,
+      "tag": "0009_vengeful_rhino",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793237653835,
+      "tag": "0010_galeria_compras",
+      "breakpoints": true
     }
   ]
 }

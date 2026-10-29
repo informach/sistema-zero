@@ -265,7 +265,8 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **Colisões com grupos**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
   "fazer" com os dois sprites; \`Para cada sprite do grupo que encostar no sprite\`
   compara um sprite com qualquer grupo. Os dois ficam em **Colisões** e são usados dentro
-  do "a cada quadro".
+  do "a cada quadro". Para PEGAR (moedas), use o evento \`Quando o sprite começar a
+  encostar em algum do grupo\` em **Quando acontecer**: roda uma vez por encontro.
 - **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos) e
   \`Depois de N segundos fazer\` (roda UMA vez por partida: mensagem de abertura, chegada
   do chefe; reiniciar o jogo re-arma). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.
@@ -378,7 +379,7 @@ Melhor num canvas **em pé** (ex.: 360×480). Estes kits não combinam com Cená
   o PLACAR é seu: crie a variável \`pontos\` e some 1 na travessia e 2 extras no acerto
   perfeito (mais som e brilho). Registre UMA vez, fora do "a cada quadro do jogo".
 - **o equilibrista caiu no caminho?** Para o fim de jogo: troque de tela num "se" e
-  recomece com o "Recomeçar o jogo" genérico.
+  recomece com o "Reiniciar o jogo" genérico.
 
 Veja o exemplo pronto **"Equilibrista"** na vitrine: ele mostra o se/senão do mouse,
 os pontos por variável e as telas de início e fim.
@@ -404,7 +405,7 @@ segurando o ponteiro (gasta combustível), voe baixo para economizar e desvie da
   regra de fim (trocar de tela). Registre UMA vez, fora do "a cada quadro do jogo".
 - **os metros voados no caminho** / **o combustível do balão** (0 a 100, use com
   "Mostrar barra") / **o balão pousou sem combustível?** Para o placar, a barra e o
-  fim de jogo; recomece com o "Recomeçar o jogo" genérico.
+  fim de jogo; recomece com o "Reiniciar o jogo" genérico.
 
 Veja o exemplo pronto **"Balão"** na vitrine: ele mostra o "se" do mouse, a barra de
 combustível, o evento da árvore e as telas de início e fim.

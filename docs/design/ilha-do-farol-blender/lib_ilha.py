@@ -545,6 +545,30 @@ def exportar_estatico(pid, objs):
     print('EXPORTADO', pid, tris, 'triângulos', os.path.getsize(path) // 1024, 'KB')
 
 
+def exportar_em_pedacos(pid, base, pedacos, nomes=None):
+    """Peça parada com OBSTÁCULOS: `base` vira uma malha só, marcada `szSemCaixa` (não conta na área
+    de toque nem como sólido), e cada lista de `pedacos` vira uma malha própria (o tronco de um
+    coqueiro, um pedregulho). Marcado como sólido no Jogo 3D, o modelo barra quem anda só nos
+    pedaços, cada um com a sua caixa. A caixa do modelo inteiro (o encaixe) não muda."""
+    objs = []
+    if base:
+        o = join(base, pid)
+        o['szSemCaixa'] = True
+        objs.append(o)
+    for k, grupo in enumerate(pedacos):
+        objs.append(join(grupo, (nomes[k] if nomes else f'{pid}-obstaculo-{k + 1}')))
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in objs:
+        o.select_set(True)
+    path = os.path.join(lib_q.OUT, f'{pid}.glb')
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
+                              export_yup=True, export_texcoords=True, export_animations=False,
+                              export_extras=True)
+    tris = sum(len(p.vertices) - 2 for o in objs for p in o.data.polygons)
+    print('EXPORTADO', pid, tris, 'triângulos', len(objs) - (1 if base else 0), 'obstáculos',
+          os.path.getsize(path) // 1024, 'KB')
+
+
 # Caixa de cada categoria (Blender: z para cima, frente em -Y). O jogo encaixa o modelo pela caixa
 # e usa a caixa como área de toque; as variações de uma categoria têm TODAS esta caixa, então a
 # troca na personalização não muda tamanho, centro nem toque (no 2D vale a mesma regra).

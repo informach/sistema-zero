@@ -57,6 +57,14 @@ export const SCENE_IDS = [
   'lighthouse-walk',
   // Dia 3 do Desafio: x e y da chave, um eixo por vez, antes de a criança escolher o lugar dela.
   'lighthouse-position',
+  // Poder "Moedas no caminho" (Faísca, 29/10/2026): o contador, a moeda que some e a meta do baú.
+  'coin-counter',
+  // Poder "O segredo da cabana" (Faísca, 29/10/2026): a porta que pede a chave e o emblema.
+  'two-pieces',
+  // Poder "A ponte apressada" (Faísca, 29/10/2026): a ponte que baixa e sobe sozinha depois de 4 s.
+  'timed-bridge',
+  // Poder "O baú dos símbolos" (Faísca, 29/10/2026): sol, lua e estrela na ordem abrem o baú.
+  'symbol-sequence',
   'restart',
   'hitbox',
   'score',
@@ -150,6 +158,34 @@ export type SceneAction =
   | { type: 'collect-key' }
   | { type: 'leave-key' }
   | { type: 'restart-collection' }
+  /** `coin-counter`: o personagem encosta numa das seis moedas (de 0 a 5, da esquerda). */
+  | { type: 'touch-coin'; coin: CoinIndex }
+  | { type: 'leave-coin' }
+  | { type: 'try-chest' }
+  /** `coin-counter`: a linha "Tirar a moeda do grupo" entra ou sai da regra da coleta. */
+  | { type: 'coin-disappears'; enabled: boolean }
+  /** `coin-counter`: a comparação da regra do baú, "pelo menos 5" ou "igual a 5". */
+  | { type: 'chest-rule'; rule: ChestRule }
+  | { type: 'restart-coins' }
+  /** `two-pieces`: o personagem pega uma das duas peças (ela sai do chão e guarda verdadeiro). */
+  | { type: 'take-piece'; piece: CabinPiece }
+  | { type: 'try-cabin' }
+  /** `two-pieces`: o bloco que junta as duas perguntas da cabana, "e" ou "ou". */
+  | { type: 'cabin-rule'; rule: CabinRule }
+  | { type: 'restart-cabin' }
+  /** `timed-bridge`: o personagem puxa a alavanca (a ponte baixa e o relógio do "depois de" começa). */
+  | { type: 'pull-lever' }
+  /** `timed-bridge`: o tempo do jogo anda um segundo. */
+  | { type: 'wait-second' }
+  | { type: 'touch-bridge' }
+  /** `timed-bridge`: onde fica o "depois de 4 segundos": dentro da alavanca ou no começo do jogo. */
+  | { type: 'timer-place'; place: BridgeTimerPlace }
+  | { type: 'restart-bridge' }
+  /** `symbol-sequence`: o personagem encosta numa pedra de símbolo. */
+  | { type: 'touch-symbol'; symbol: SequenceSymbol }
+  /** `symbol-sequence`: como o baú decide: na ordem (com o passo) ou só contando os tocados. */
+  | { type: 'sequence-mode'; mode: SequenceMode }
+  | { type: 'restart-symbols' }
   /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
   | { type: 'hold-arrow'; held: boolean }
   | { type: 'movement-command'; enabled: boolean }
@@ -322,6 +358,43 @@ export type SceneAction =
 export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
 export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
 
+/**
+ * O contador de moedas: seis moedas e a meta "5" do baú, as do jogo do Poder (o projeto e esta
+ * cena usam os mesmos números). O DTO do servidor e o editor do admin leem daqui.
+ */
+export const COIN_COUNTER = { coins: 6, goal: 5, max: 99 } as const
+export type CoinIndex = 0 | 1 | 2 | 3 | 4 | 5
+export const CHEST_RULES = ['at-least', 'equals'] as const
+export type ChestRule = (typeof CHEST_RULES)[number]
+
+/** A porta com duas peças: a chave e o emblema, e o bloco "e / ou" que junta as duas perguntas. */
+export const CABIN_PIECES = ['key', 'emblem'] as const
+export type CabinPiece = (typeof CABIN_PIECES)[number]
+export const CABIN_RULES = ['and', 'or'] as const
+export type CabinRule = (typeof CABIN_RULES)[number]
+
+/**
+ * A ponte apressada: onde mora o "depois de 4 segundos" com a subida dentro, e os limites do
+ * estado (o relógio para de contar depois de alguns minutos; os relógios pendentes têm teto).
+ */
+export const BRIDGE_TIMER_PLACES = ['lever', 'start'] as const
+export type BridgeTimerPlace = (typeof BRIDGE_TIMER_PLACES)[number]
+export const TIMED_BRIDGE = {
+  /** Os segundos do "depois de", os mesmos do jogo (`PONTE_SEGUNDOS`). */
+  seconds: 4,
+  /** Quantos "depois de" podem esperar ao mesmo tempo (puxar de novo com a ponte baixada soma um). */
+  timers: 8,
+  clockMax: 600,
+  sinceMax: 60,
+  countMax: 99,
+} as const
+
+/** O baú dos símbolos: os símbolos na ordem da placa e os dois jeitos de o baú decidir. */
+export const SEQUENCE_SYMBOLS = ['sol', 'lua', 'estrela'] as const
+export type SequenceSymbol = (typeof SEQUENCE_SYMBOLS)[number]
+export const SEQUENCE_MODES = ['order', 'count'] as const
+export type SequenceMode = (typeof SEQUENCE_MODES)[number]
+
 /** A tela 480 × 360 e a chave 32 × 32 do Farol. O player confere contra FAROL_LAYOUT. */
 export const LIGHTHOUSE_POSITION = {
   start: { x: 211, y: 53 },
@@ -382,6 +455,10 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'lighthouse-key': [],
   'lighthouse-walk': [],
   'lighthouse-position': [],
+  'coin-counter': [],
+  'two-pieces': [],
+  'timed-bridge': [],
+  'symbol-sequence': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -723,6 +800,41 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'leave-key':
     case 'restart-collection':
       return scene === 'collect-and-remember'
+    case 'touch-coin':
+      return (
+        scene === 'coin-counter' &&
+        Number.isInteger(value.coin) &&
+        (value.coin as number) >= 0 &&
+        (value.coin as number) < COIN_COUNTER.coins
+      )
+    case 'leave-coin':
+    case 'try-chest':
+    case 'restart-coins':
+      return scene === 'coin-counter'
+    case 'coin-disappears':
+      return scene === 'coin-counter' && typeof value.enabled === 'boolean'
+    case 'chest-rule':
+      return scene === 'coin-counter' && CHEST_RULES.some((r) => r === value.rule)
+    case 'take-piece':
+      return scene === 'two-pieces' && CABIN_PIECES.some((p) => p === value.piece)
+    case 'try-cabin':
+    case 'restart-cabin':
+      return scene === 'two-pieces'
+    case 'cabin-rule':
+      return scene === 'two-pieces' && CABIN_RULES.some((r) => r === value.rule)
+    case 'pull-lever':
+    case 'wait-second':
+    case 'touch-bridge':
+    case 'restart-bridge':
+      return scene === 'timed-bridge'
+    case 'timer-place':
+      return scene === 'timed-bridge' && BRIDGE_TIMER_PLACES.some((p) => p === value.place)
+    case 'touch-symbol':
+      return scene === 'symbol-sequence' && SEQUENCE_SYMBOLS.some((x) => x === value.symbol)
+    case 'sequence-mode':
+      return scene === 'symbol-sequence' && SEQUENCE_MODES.some((m) => m === value.mode)
+    case 'restart-symbols':
+      return scene === 'symbol-sequence'
     case 'movement-command':
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'walk-frames':

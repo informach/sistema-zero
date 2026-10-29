@@ -10,11 +10,19 @@ import { RoomMotionContext } from '@sistemazero/avatar-quarto/quarto/room-glb-mo
 import { Walls } from '@sistemazero/avatar-quarto/quarto/walls'
 import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
+import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
-import { dormir } from '../sistemas/necessidades'
+import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
+import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
+import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
+import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
+import { Colisores } from './colisores'
+import { ModoConstruir } from './construir'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { GanharProjetos, ObjetosDaObra } from './objetos-da-casa'
+import { ObraNoMundo } from './obra'
 
 const NADA = () => {}
 const BASE = ALTURA_DA_TERRA + 0.02
@@ -112,20 +120,35 @@ function ColisaoDosMoveis({ quarto }: { quarto: QuartoDoJogo }) {
   )
 }
 
+/**
+ * A cama do quarto (ou o beliche): deitar devolve a energia aos poucos (fase2-13,
+ * `sistemas/descanso.ts`). O travesseiro fica no −Z da cama; girada `rot` vezes 90°, os pés ficam
+ * para o rumo `rot × 90°`.
+ */
 function Cama({ quarto }: { quarto: QuartoDoJogo }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const cama = quarto.placedItems.find((p) => p.itemId === 'cama' || p.itemId === 'beliche')
   const info = cama ? ROOM_ITEM_INFO[cama.itemId] : undefined
-  const fp = cama && info ? effectiveFootprint(info.w, info.h, (cama.rot ?? 0) as Rot) : null
+  const rot = (cama?.rot ?? 0) as Rot
+  const fp = cama && info ? effectiveFootprint(info.w, info.h, rot) : null
   const c = cama && fp ? cellToWorld(cama.x, cama.y, fp.w, fp.h) : { x: 0, z: 0 }
+  const lugar = useMemo(
+    () =>
+      lugarNaCama(
+        { x: CENTRO_DA_CASA.x + c.x, y: BASE, z: CENTRO_DA_CASA.z + c.z },
+        (rot * Math.PI) / 2,
+      ),
+    [c.x, c.z, rot],
+  )
   useInterativo('cama', {
     x: CENTRO_DA_CASA.x + c.x,
     z: CENTRO_DA_CASA.z + c.z,
     raio: cama ? 2.6 : 0,
-    rotulo: () => (cama ? 'Dormir um pouco' : null),
+    // Na casa do irmão só se olha (fase3-12): a cama dele não é para deitar.
+    rotulo: () => (cama && !loja.getState().visita ? 'Deitar na cama' : null),
     agir: () => {
-      loja.getState().mudar((s) => ({ ...s, necessidades: dormir(s.necessidades) }))
-      loja.getState().dizer('Que soneca boa. A energia voltou toda.')
+      movimento.pedido = { tipo: 'descanso', lugar }
+      loja.getState().dizer(FALA_DE_DEITAR)
     },
   })
   return null
@@ -138,27 +161,16 @@ function Porta() {
     x: CENTRO_DA_CASA.x + PORTA.x,
     z: CENTRO_DA_CASA.z + MEIO_Z - 0.6,
     raio: 2.4,
-    rotulo: () => (aberta ? null : 'Abrir a porta nova'),
+    rotulo: () => (aberta || loja.getState().visita ? null : 'Abrir a porta nova'),
     agir: () => {
       loja.getState().mudar((s) => ({ ...s, casa: { ...s.casa, portaNova: true } }))
       loja.getState().dizer('A porta nova abriu. Agora a ilha toda é sua para explorar.')
     },
   })
-  const y = PORTA.altura / 2
   return (
-    <>
-      <ComReserva reserva={<PortaDeAntes aberta={aberta} />}>
-        <PortaDoModelo aberta={aberta} />
-      </ComReserva>
-      {aberta ? null : (
-        <RigidBody type="fixed" colliders={false}>
-          <CuboidCollider
-            args={[PORTA.largura / 2, PORTA.altura / 2, 0.1]}
-            position={[PORTA.x, y, MEIO_Z]}
-          />
-        </RigidBody>
-      )}
-    </>
+    <ComReserva reserva={<PortaDeAntes aberta={aberta} />}>
+      <PortaDoModelo aberta={aberta} />
+    </ComReserva>
   )
 }
 
@@ -187,9 +199,6 @@ function PortaDeAntes({ aberta }: { aberta: boolean }) {
   )
 }
 
-/** Quanto a porta nova gira para fora quando abre (em volta da dobradiça). */
-const GIRO_DA_PORTA_ABERTA = -1.75
-
 /** A porta nova do Blender: o nó `porta` tem o pivô na dobradiça e gira para fora ao abrir. */
 function PortaDoModelo({ aberta }: { aberta: boolean }) {
   const { ambiente } = useJogo()
@@ -213,56 +222,36 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
   return <primitive object={porta} />
 }
 
-/** Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. */
-function Casca() {
-  const dentro = useEstado((s) => s.dentroDeCasa)
-  const esquerdaDaPorta = PORTA.x - PORTA.largura / 2
-  const direitaDaPorta = PORTA.x + PORTA.largura / 2
-  const larguraEsq = esquerdaDaPorta + MEIO_X
-  const larguraDir = MEIO_X - direitaDaPorta
+/**
+ * Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. A casca
+ * inteira colide (paredes, quinas, alicerce, floreiras, vasinhos, colunas e a porta nova, fechada
+ * no vão ou aberta para fora): `colisoresDaCasa`. Na casa construída, a frente e a direita são do
+ * kit (`ObraNoMundo`) e daqui ficam o revestimento, o telhado e a varanda.
+ */
+function Casca({ construida }: { construida: boolean }) {
+  // No Construir e com a pessoa num cômodo da obra o telhado do quarto sai, como no quarto.
+  const { loja } = useJogo()
+  const naObra = useConstrucao(lojaDaConstrucao(loja), (s) => s.dentroDaObra)
+  const dentro =
+    useEstado((s) => s.dentroDeCasa || s.painelAberto === PAINEL_DE_CONSTRUIR) || naObra
+  const aberta = useEstado((s) => s.salvamento.casa.portaNova)
+  const colisores = useMemo(() => colisoresDaCasa(aberta, construida), [aberta, construida])
   return (
     <>
-      <ComReserva reserva={<CascaDeAntes dentro={dentro} />}>
-        <CascaDoModelo dentro={dentro} />
+      <ComReserva reserva={<CascaDeAntes dentro={dentro} construida={construida} />}>
+        <CascaDoModelo dentro={dentro} construida={construida} />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider
-          args={[larguraEsq / 2, QUARTO.altura / 2, 0.15]}
-          position={[-MEIO_X + larguraEsq / 2, QUARTO.altura / 2, MEIO_Z]}
-        />
-        <CuboidCollider
-          args={[larguraDir / 2, QUARTO.altura / 2, 0.15]}
-          position={[MEIO_X - larguraDir / 2, QUARTO.altura / 2, MEIO_Z]}
-        />
-        <CuboidCollider
-          args={[0.15, QUARTO.altura / 2, MEIO_Z]}
-          position={[MEIO_X, QUARTO.altura / 2, 0]}
-        />
-        <CuboidCollider
-          args={[0.15, QUARTO.altura / 2, MEIO_Z]}
-          position={[-MEIO_X, QUARTO.altura / 2, 0]}
-        />
-        <CuboidCollider
-          args={[MEIO_X, QUARTO.altura / 2, 0.15]}
-          position={[0, QUARTO.altura / 2, -MEIO_Z]}
-        />
-      </RigidBody>
+      <Colisores lista={colisores} />
     </>
   )
 }
-
-/** As colunas da varanda do modelo (x em volta da porta, z na frente do deque). */
-const COLUNAS_DA_VARANDA: [number, number][] = [
-  [PORTA.x - 1.95, MEIO_Z + 1.6],
-  [PORTA.x + 1.95, MEIO_Z + 1.6],
-]
 
 /**
  * A casca do Blender (`casa.glb`): paredes com lambri, janelas com floreira, telhado de duas
  * águas, varanda com toldo e lampião. Dentro de casa as paredes da frente e do lado ficam
  * translúcidas e o telhado some; à noite as janelas e o lampião acendem.
  */
-function CascaDoModelo({ dentro }: { dentro: boolean }) {
+function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: boolean }) {
   const { ambiente } = useJogo()
   const raiz = useModelo(MODELOS.casa)
   const partes = useMemo(() => {
@@ -298,21 +287,16 @@ function CascaDoModelo({ dentro }: { dentro: boolean }) {
   return (
     <>
       <primitive object={partes.revestimento} />
-      <primitive object={partes.paredes} />
-      <primitive object={partes.janelas} />
+      {construida ? null : <primitive object={partes.paredes} />}
+      {construida ? null : <primitive object={partes.janelas} />}
       <primitive object={partes.telhado} />
       <primitive object={partes.varanda} />
-      <RigidBody type="fixed" colliders={false}>
-        {COLUNAS_DA_VARANDA.map(([x, z]) => (
-          <CuboidCollider key={x} args={[0.12, 1.7, 0.12]} position={[x, 1.7, z]} />
-        ))}
-      </RigidBody>
     </>
   )
 }
 
 /** A casca de antes (formas do código). */
-function CascaDeAntes({ dentro }: { dentro: boolean }) {
+function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boolean }) {
   const { ambiente } = useJogo()
   const janela = useRef<MeshStandardMaterial>(null)
   useFrame(() => {
@@ -331,6 +315,7 @@ function CascaDeAntes({ dentro }: { dentro: boolean }) {
       depthWrite={!dentro}
     />
   )
+  if (construida) return null
   return (
     <>
       {/* frente, em volta da porta */}
@@ -386,17 +371,40 @@ function CascaDeAntes({ dentro }: { dentro: boolean }) {
   )
 }
 
+/** Onde fica o ponto (0, 0) da grade da casa: o mundo, na altura do topo do piso. */
+const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
+
 export function Casa() {
-  const quarto = useEstado((s) => s.quarto)
+  const { loja } = useJogo()
+  // Na visita (fase3-12), o quarto e a obra são os do irmão.
+  const quarto = useEstado(quartoVisivel)
+  // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
+  const obra = useEstado(obraVisivel)
+  // O Construir aberto mexe na casa ou na cabana da ilha (`onde`).
+  const aqui = useConstrucao(lojaDaConstrucao(loja), (s) => s.onde === 'casa')
+  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR) && aqui
   return (
-    <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
-      <Quarto quarto={quarto} />
-      <Casca />
-      <Porta />
-      <Cama quarto={quarto} />
-      <RigidBody type="fixed" colliders={false}>
-        <ColisaoDosMoveis quarto={quarto} />
-      </RigidBody>
-    </group>
+    <>
+      <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
+        <Quarto quarto={quarto} />
+        <Casca construida={obra !== null} />
+        {obra ? null : <Porta />}
+        <Cama quarto={quarto} />
+        <RigidBody type="fixed" colliders={false}>
+          <ColisaoDosMoveis quarto={quarto} />
+        </RigidBody>
+      </group>
+      {obra ? (
+        <ObraNoMundo
+          obra={obra}
+          lote={LOTE_DA_CASA}
+          base={BASE_DA_OBRA}
+          construindo={construindo}
+        />
+      ) : null}
+      {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
+      {obra && construindo ? <ModoConstruir lote={LOTE_DA_CASA} obra={obra} base={BASE} /> : null}
+      <GanharProjetos />
+    </>
   )
 }

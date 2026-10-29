@@ -118,6 +118,33 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
     expect(out).not.toContain('rawJS')
   })
 
+  it('o "Quando começar a encostar em algum do grupo" sobrevive ao ciclo blocos<->código', () => {
+    expect(
+      parseJS(
+        'SZGame2D.onTouchGroup(() => jogador, () => moedas, (moeda) => { SZGame2D.removeFromGroup(moedas, moeda); }, "pegar");',
+      ),
+    ).toEqual([
+      {
+        type: 'g2d:onTouchGroup',
+        spriteVar: 'jogador',
+        groupVar: 'moedas',
+        itemName: 'moeda',
+        body: [{ type: 'g2d:removeFromGroup', groupVar: 'moedas', spriteVar: 'moeda' }],
+      },
+    ])
+    const js = [
+      'const jogador = SZGame2D.createSprite({ x: 10, y: 10, w: 20, h: 20, color: "#22d3ee" });',
+      'const moedas = SZGame2D.createGroup();',
+      'SZGame2D.onTouchGroup(() => jogador, () => moedas, (moeda) => {',
+      '  SZGame2D.removeFromGroup(moedas, moeda);',
+      '});',
+    ].join('\n')
+    const out = bridgeCycleJS(js)
+    expect(out).toContain('SZGame2D.onTouchGroup(() => jogador, () => moedas, (moeda) =>')
+    expect(out).toContain('SZGame2D.removeFromGroup(moedas, moeda);')
+    expect(out).not.toContain('rawJS')
+  })
+
   it('parseJS reconhece keyDown e touches como perguntas (booleanos)', () => {
     expect(
       JSON.stringify(

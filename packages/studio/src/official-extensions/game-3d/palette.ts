@@ -102,6 +102,8 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
         types: [
           'sz_g3d_top_down',
           'sz_g3d_walk_area',
+          // Pedra, árvore, parede: quem anda com as setas (ou pela física) não atravessa.
+          'sz_g3d_set_solid',
           'sz_g3d_walk_animations',
           'sz_g3d_control_keys',
           'sz_g3d_jump',
@@ -165,7 +167,6 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
         types: [
           'sz_g3d_body',
           'sz_g3d_step_body',
-          'sz_g3d_set_solid',
           'sz_g3d_resolve_collision',
           'sz_g3d_for_each_hit',
           'sz_g3d_hit_is',

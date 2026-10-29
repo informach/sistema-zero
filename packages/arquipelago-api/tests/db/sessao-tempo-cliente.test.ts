@@ -4,14 +4,20 @@ import path from 'node:path'
 import { createLogger } from '@sistemazero/core/logging'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { criarSessaoTempo } from '../../../arquipelago/src/sistemas/sessao-tempo'
+import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
+import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
+import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
+import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from '../../src/infrastructure/persistence/drizzle/repositorio'
+import { DrizzleRepositorioDeDesafios } from '../../src/infrastructure/persistence/drizzle/repositorio-de-desafios'
 import { RepositorioDeSessoesDeTempo } from '../../src/infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { createServer } from '../../src/interfaces/http/server'
+import { desafiosDesligados } from '../fakes/desafios'
 
 const url = process.env.TEST_DATABASE_URL
 if (url) {
@@ -36,6 +42,12 @@ beforeAll(async () => {
 }, 30_000)
 afterAll(async () => db?.close())
 
+const POLITICA = {
+  modo: 'aberto' as const,
+  publicos: new Set(['kids', 'adulto'] as const),
+  lista: new Set<string>(),
+}
+
 test.skipIf(!url)(
   'o cliente recupera resposta perdida da API real sem duplicar tempo no Postgres',
   async () => {
@@ -53,6 +65,14 @@ test.skipIf(!url)(
     const app = createServer({
       logger: createLogger({ level: 'error' }),
       servico,
+      cartas: new ServicoDasCartas(POLITICA, new LeiturasDosMembros(null)),
+      equipe: new ServicoDaEquipe(
+        new DrizzleRepositorioDeDesafios(db.db),
+        null,
+        new LeiturasDosMembros(null),
+        new ConferenciaDoMapa(null, createLogger({ level: 'error' })),
+      ),
+      desafios: desafiosDesligados(POLITICA),
       cliente: { dir: '.', servirMapas: false },
       tokenInterno: 'token-local-de-teste',
       readiness: async () => {},

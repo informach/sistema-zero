@@ -43,8 +43,8 @@
   },
   "cachorro": {
     "grupo": "adotar",
-    "triangulos": 3588,
-    "kb": 145.5,
+    "triangulos": 2984,
+    "kb": 129.0,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": [
       "boca",
@@ -61,8 +61,8 @@
   },
   "cachorro-filhote": {
     "grupo": "adotar",
-    "triangulos": 3588,
-    "kb": 145.6,
+    "triangulos": 2984,
+    "kb": 129.0,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": [
       "boca",
@@ -79,15 +79,15 @@
   },
   "coelho": {
     "grupo": "adotar",
-    "triangulos": 3252,
-    "kb": 137.1,
+    "triangulos": 2982,
+    "kb": 129.6,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": ["boca", "bochecha", "brilho", "claro", "dente", "nariz", "olho", "orelha", "pelo"]
   },
   "coelho-filhote": {
     "grupo": "adotar",
-    "triangulos": 3252,
-    "kb": 137.2,
+    "triangulos": 2982,
+    "kb": 129.8,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": ["boca", "bochecha", "brilho", "claro", "dente", "nariz", "olho", "orelha", "pelo"]
   },
@@ -116,8 +116,8 @@
   },
   "gato": {
     "grupo": "adotar",
-    "triangulos": 3812,
-    "kb": 167.3,
+    "triangulos": 2988,
+    "kb": 144.8,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": [
       "bigode",
@@ -136,8 +136,8 @@
   },
   "gato-filhote": {
     "grupo": "adotar",
-    "triangulos": 3812,
-    "kb": 168.1,
+    "triangulos": 2988,
+    "kb": 145.5,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": [
       "bigode",
@@ -191,8 +191,8 @@
   },
   "porquinho": {
     "grupo": "adotar",
-    "triangulos": 2996,
-    "kb": 135.6,
+    "triangulos": 2990,
+    "kb": 137.3,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": [
       "boca",
@@ -209,8 +209,8 @@
   },
   "porquinho-filhote": {
     "grupo": "adotar",
-    "triangulos": 2996,
-    "kb": 136.0,
+    "triangulos": 2988,
+    "kb": 137.8,
     "clipes": ["andar", "correr", "feliz", "parado", "sentar", "truque"],
     "materiais": [
       "boca",

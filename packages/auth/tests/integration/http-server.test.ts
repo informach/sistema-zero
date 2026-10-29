@@ -38,6 +38,7 @@ import { CreateProfileService } from '../../src/application/profiles/create-prof
 import { ExitProfileSessionService } from '../../src/application/profiles/exit-profile-session.service'
 import { GetPublicProfileService } from '../../src/application/profiles/get-public-profile.service'
 import { ListProfilesService } from '../../src/application/profiles/list-profiles.service'
+import { ListSiblingsService } from '../../src/application/profiles/list-siblings.service'
 import { ProfileAdmissionService } from '../../src/application/profiles/profile-admission.service'
 import { SelectProfileService } from '../../src/application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
@@ -295,6 +296,7 @@ function buildApp(
       new InMemoryProfileCohortRepository(profilesRepo),
     ),
     profiles: {
+      listSiblings: new ListSiblingsService(profilesRepo),
       listProfiles,
       createProfile,
       updateProfile: updateProfileDetails,
@@ -2652,6 +2654,39 @@ describe('Auth — sessão de perfil (PR2)', () => {
     const payload = decodeJwt(body.tokens.accessToken)
     expect(payload.sub).toBe(PROFILE_ID)
     expect(payload.pfl).toEqual({ accountId, name: 'Sofia', pub: false })
+  })
+
+  test('irmãos (Arquipélago, fase3-12): só na sessão de perfil, só id e nome, sem ela mesma', async () => {
+    const { app, accountId, profilesRepo } = await setup()
+    const IRMAO = '00000000-0000-4000-8000-0000000000b2'
+    const DE_OUTRA = '00000000-0000-4000-8000-0000000000c3'
+    profilesRepo.seedReady(
+      ProfileAggregate.create({
+        birthDate: '2014-02-01',
+        id: IRMAO,
+        accountUserId: accountId,
+        name: 'Tomás',
+        whatsapp: '+5511999990000',
+      }),
+    )
+    profilesRepo.seedReady(
+      ProfileAggregate.create({
+        birthDate: '2015-03-01',
+        id: DE_OUTRA,
+        accountUserId: '00000000-0000-4000-8000-0000000000d4',
+        name: 'Outra',
+      }),
+    )
+    const res = await app.handle(
+      req('GET', '/auth/profile-session/siblings', gwProfile(PROFILE_ID, accountId)),
+    )
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ siblings: [{ id: IRMAO, name: 'Tomás' }] })
+    // Na sessão da conta (área dos pais) não existe: a grade completa é o /auth/profiles.
+    const daConta = await app.handle(
+      req('GET', '/auth/profile-session/siblings', gwAccount(accountId)),
+    )
+    expect(daConta.status).toBe(403)
   })
 
   test('sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos', async () => {

@@ -5,7 +5,7 @@
  * `@sistemazero/molda/studio-library`.
  */
 export * from './assets/index'
-export type { MoldaHostAdapter } from './components/appContext'
+export type { MoldaHostAdapter, MoldaInitialModel } from './components/appContext'
 export type { MoldaCompletionControl } from './components/completionControl'
 export { MoldaHostChromeProvider, useMoldaHostChrome } from './components/hostChrome'
 export type { MoldaAppProps } from './components/MoldaApp'
@@ -19,6 +19,7 @@ export type {
   MoldaHostChromeMenu,
   MoldaHostChromeStatus,
 } from './core/hostChrome'
+export type { MoldaStarterBox } from './core/model'
 export type { MemoryPersistence } from './state/memoryPersistence'
 export { createMemoryPersistence } from './state/memoryPersistence'
 export type {

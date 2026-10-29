@@ -55,6 +55,19 @@ const EnvSchema = z
         message: "deve ser 'true', 'false', '1' ou '0'",
       }),
 
+    // ── Members (rotas internas, nunca pelo gateway) ─────────────────────────
+    /** Sem os dois, o serviço segue sem as leituras do Members (desafios e cartões desligados). */
+    MEMBERS_URL: z.string().url().optional(),
+    /** Token de leitura do Members para o jogo; separado do das moedas. */
+    ARQUIPELAGO_MEMBERS_TOKEN: z.string().min(32).optional(),
+    /** Token da porta de moedas do Members (só crédito dos prêmios). Sem ele, prêmios ficam pendentes. */
+    ARQUIPELAGO_COINS_TOKEN: z.string().min(32).optional(),
+    /**
+     * Desafios para quem joga: desligado, equipe (só a equipe, para testar) ou aberto. Sem valor:
+     * aberto no desenvolvimento e DESLIGADO em deploy.
+     */
+    ARQUIPELAGO_DESAFIOS: z.enum(['desligado', 'equipe', 'aberto']).optional(),
+
     // ── Borda própria ────────────────────────────────────────────────────────
     /** Prova de origem do gateway (header-inject) nas rotas /arquipelago/*. */
     INTERNAL_API_TOKEN: z.string().min(16).optional(),
@@ -70,6 +83,8 @@ const EnvSchema = z
     ...env,
     ARQUIPELAGO_MODO:
       env.ARQUIPELAGO_MODO ?? (env.NODE_ENV === 'production' ? 'desligado' : 'aberto'),
+    ARQUIPELAGO_DESAFIOS:
+      env.ARQUIPELAGO_DESAFIOS ?? (env.NODE_ENV === 'production' ? 'desligado' : 'aberto'),
     ARQUIPELAGO_PUBLICOS:
       env.ARQUIPELAGO_PUBLICOS.length > 0 ? env.ARQUIPELAGO_PUBLICOS : (['kids'] as const),
     ARQUIPELAGO_SERVIR_MAPAS:

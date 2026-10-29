@@ -22,7 +22,8 @@ export const montarArquipelago: MontarArquipelago = (elemento, plataforma) => {
   const estilo = document.createElement('style')
   estilo.textContent = ESTILOS
   const raiz = document.createElement('div')
-  raiz.className = 'arq-raiz'
+  // O CSS da pele adulta só vale dentro de `.arq-adulto` (ele chega com o pedaço do adulto).
+  raiz.className = plataforma.publico === 'adulto' ? 'arq-raiz arq-adulto' : 'arq-raiz'
   elemento.append(estilo, raiz)
   const react = createRoot(raiz)
   react.render(<Jogo plataforma={plataforma} />)

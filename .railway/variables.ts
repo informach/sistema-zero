@@ -61,6 +61,8 @@ const common: Record<string, string[]> = {
   'arquipelago-api': [
     'APP_ENV',
     'ARQUIPELAGO_COINS_TOKEN',
+    'ARQUIPELAGO_DESAFIOS',
+    'ARQUIPELAGO_MEMBERS_TOKEN',
     'ARQUIPELAGO_MODO',
     'ARQUIPELAGO_PUBLICOS',
     'DATABASE_URL',
@@ -330,6 +332,7 @@ const common: Record<string, string[]> = {
   ],
   members: [
     'ARQUIPELAGO_COINS_TOKEN',
+    'ARQUIPELAGO_MEMBERS_TOKEN',
     'STUDIO_AI_VAULT_KEYS',
     'STUDIO_AI_VAULT_ACTIVE_ID',
     'STUDIO_AI_CALLBACK_ORIGINS',

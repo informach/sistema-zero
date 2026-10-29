@@ -1,13 +1,17 @@
 import {
+  COIN_COUNTER,
   isSceneAction,
   LIGHTHOUSE_POSITION,
   type MeshLevel,
   SCENE_LIMITS,
   type SceneAction,
   type SceneId,
+  SEQUENCE_SYMBOLS,
+  type SequenceSymbol,
   STAGE_TARGET,
   sceneFrameRate,
   sceneLongFrame,
+  TIMED_BRIDGE,
 } from './actions'
 import {
   FOLHA_DA_NAVE,
@@ -82,6 +86,8 @@ import {
   lighthouseWalkGone,
   lighthouseWalkMaxX,
   lighthouseWalkOutSeenX,
+  newBridgeMatch,
+  newSequenceMatch,
   observe,
   PLACAR_NAO_VISTO,
   POOL_CROSSING,
@@ -176,8 +182,31 @@ function aberturaDaChave(start: SceneStart): { x: number; y: number } {
  *
  * O mundo é do professor; a história é da criança, e ela começa vazia.
  */
+/** Como a cena fala de cada símbolo (com o artigo e a concordância). */
+const SIMBOLO_FALADO: Record<
+  SequenceSymbol,
+  { o: string; cap: string; da: string; aceso: string }
+> = {
+  sol: { o: 'o sol', cap: 'O sol', da: 'do sol', aceso: 'aceso' },
+  lua: { o: 'a lua', cap: 'A lua', da: 'da lua', aceso: 'acesa' },
+  estrela: { o: 'a estrela', cap: 'A estrela', da: 'da estrela', aceso: 'acesa' },
+}
+
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
   aberto.collection.collectedThisRound = false
+  // O caso pode deixar moedas pegas e um valor em `moedas` (o mundo); as somas, as moedas que
+  // "já contaram" e as comparações do baú são da criança.
+  aberto.coins.adds = 0
+  aberto.coins.counted = Array(COIN_COUNTER.coins).fill(false)
+  aberto.coins.compared = { equals: false, atLeast: false }
+  aberto.coins.last = null
+  // As peças que o caso deixou guardadas são o mundo; as aberturas "começando por" são da criança.
+  aberto.pieces.opened = { keyFirst: false, emblemFirst: false }
+  // A ponte do caso (baixada, o relógio contando) é o mundo; as puxadas e subidas são da criança.
+  aberto.bridge.pulls = 0
+  aberto.bridge.rises = 0
+  // Os acesos e o passo do caso são o mundo; o erro que recomeçou a tentativa é da criança.
+  aberto.sequence.missed = false
   aberto.lighthouse.checkedKey = null
   aberto.keyPosition.before = null
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
@@ -383,7 +412,13 @@ export function stepScene(
       !previous.collection.keyPresent &&
       !start.setup?.freeExploration) ||
     (action.type === 'collect-key' && !previous.collection.keyPresent) ||
-    (action.type === 'leave-key' && previous.collection.position !== 'touching')
+    (action.type === 'leave-key' && previous.collection.position !== 'touching') ||
+    // Continuar encostado na mesma moeda não é um encontro novo; afastar-se de lugar nenhum, nada.
+    (action.type === 'touch-coin' && previous.coins.at === action.coin) ||
+    (action.type === 'leave-coin' && previous.coins.at === null) ||
+    // Uma peça já guardada saiu do chão: não há o que pegar de novo.
+    (action.type === 'take-piece' &&
+      (action.piece === 'key' ? previous.pieces.temChave : previous.pieces.temEmblema))
   )
     return previous
   // A sequência da cena `world` é intencionalmente guiada: primeiro o personagem existe nos
@@ -499,6 +534,293 @@ export function stepScene(
         collectedThisRound: false,
       }
       s.caption = 'A partida recomeçou. A chave voltou ao chão.'
+      break
+    case 'touch-coin': {
+      const c = s.coins,
+        i = action.coin
+      c.at = i
+      if (!c.present[i]) {
+        s.caption = 'Esta moeda já saiu do caminho: nada somou.'
+        if (c.counted[i]) observe(s, 'no-double', 'A mesma moeda não contou duas vezes')
+        break
+      }
+      const before = c.moedas
+      const outra = c.counted.some((v, k) => v && k !== i)
+      const repetida = c.counted[i]
+      c.moedas = Math.min(COIN_COUNTER.max, before + 1)
+      c.last = { before, after: c.moedas }
+      c.adds = Math.min(COIN_COUNTER.max, c.adds + 1)
+      c.counted[i] = true
+      if (c.disappear) c.present[i] = false
+      s.caption = `Somou 1: moedas era ${before} e agora é ${c.moedas}.`
+      if (repetida) observe(s, 'counts-again', 'Sem sumir, a mesma moeda contou de novo')
+      else if (outra) observe(s, 'each-adds', 'Cada moeda somou 1')
+      break
+    }
+    case 'leave-coin':
+      s.coins.at = null
+      s.caption = 'O personagem se afastou.'
+      if (s.coins.adds > 0 && s.coins.moedas > 0)
+        observe(s, 'kept', 'O número continuou guardado longe das moedas')
+      break
+    case 'try-chest': {
+      const c = s.coins
+      const abre =
+        c.rule === 'at-least' ? c.moedas >= COIN_COUNTER.goal : c.moedas === COIN_COUNTER.goal
+      c.at = 'chest'
+      c.chest = abre ? 'open' : 'closed'
+      s.caption = abre
+        ? 'O baú abriu!'
+        : `O baú continua fechado: a regra pede ${c.rule === 'at-least' ? 'pelo menos' : 'exatamente'} ${COIN_COUNTER.goal} moedas.`
+      if (c.adds === 0) break
+      if (!abre && c.moedas >= 1 && c.moedas < COIN_COUNTER.goal)
+        observe(s, 'below-goal', 'Com menos de 5, o baú ficou fechado')
+      if (c.moedas > COIN_COUNTER.goal) {
+        if (c.rule === 'equals' && !abre) c.compared.equals = true
+        if (c.rule === 'at-least' && abre) c.compared.atLeast = true
+        if (c.compared.equals && c.compared.atLeast)
+          observe(s, 'compare-rules', 'Com 6 moedas, "pelo menos 5" abriu e "igual a 5" não')
+      }
+      break
+    }
+    case 'coin-disappears':
+      s.coins.disappear = action.enabled
+      s.caption = action.enabled
+        ? 'A moeda some ao ser pega.'
+        : 'A moeda fica no caminho depois de pega.'
+      break
+    case 'chest-rule':
+      s.coins.rule = action.rule
+      s.caption =
+        action.rule === 'at-least'
+          ? 'O baú abre com pelo menos 5 moedas.'
+          : 'O baú abre com exatamente 5 moedas.'
+      break
+    case 'restart-coins':
+      s.coins = {
+        ...s.coins,
+        moedas: 0,
+        present: Array(COIN_COUNTER.coins).fill(true),
+        at: null,
+        chest: 'closed',
+        last: null,
+        adds: 0,
+        counted: Array(COIN_COUNTER.coins).fill(false),
+        compared: { ...s.coins.compared },
+      }
+      s.caption = 'A partida recomeçou: moedas voltou a 0 e as seis moedas voltaram.'
+      break
+    case 'take-piece': {
+      const p = s.pieces
+      if (action.piece === 'key') p.temChave = true
+      else p.temEmblema = true
+      p.at = action.piece
+      p.order = [...p.order, action.piece]
+      s.caption =
+        action.piece === 'key'
+          ? 'Você pegou a chave: temChave agora é verdadeiro.'
+          : 'Você pegou o emblema: temEmblema agora é verdadeiro.'
+      break
+    }
+    case 'try-cabin': {
+      const p = s.pieces
+      const pecas = Number(p.temChave) + Number(p.temEmblema)
+      const abre = p.rule === 'and' ? pecas === 2 : pecas >= 1
+      p.at = 'door'
+      // Como o jogo: a imagem da cabana aberta fica até a nova partida.
+      if (abre) p.door = 'open'
+      s.caption = abre
+        ? 'A cabana abriu!'
+        : `A cabana continua fechada: ela pede a chave ${p.rule === 'and' ? 'e' : 'ou'} o emblema.`
+      if (p.rule === 'and') {
+        if (!abre && pecas === 0)
+          observe(s, 'none-closed', 'Sem nenhuma peça, a cabana ficou fechada')
+        if (!abre && pecas === 1)
+          observe(s, 'one-closed', 'Com uma peça só, a cabana ficou fechada')
+        if (abre) {
+          observe(s, 'both-open', 'Com as duas peças, a cabana abriu')
+          if (p.order[0] === 'key') p.opened.keyFirst = true
+          if (p.order[0] === 'emblem') p.opened.emblemFirst = true
+          if (p.opened.keyFirst && p.opened.emblemFirst)
+            observe(s, 'any-order', 'A cabana abriu começando por qualquer peça')
+        }
+      } else if (abre && pecas === 1) observe(s, 'and-vs-or', 'Com "ou", uma peça só já abriu')
+      break
+    }
+    case 'cabin-rule':
+      s.pieces.rule = action.rule
+      s.caption =
+        action.rule === 'and'
+          ? 'A cabana pergunta: temChave e temEmblema.'
+          : 'A cabana pergunta: temChave ou temEmblema.'
+      break
+    case 'restart-cabin':
+      s.pieces = {
+        ...s.pieces,
+        temChave: false,
+        temEmblema: false,
+        at: null,
+        door: 'closed',
+        order: [],
+        opened: { ...s.pieces.opened },
+      }
+      s.caption = 'A partida recomeçou: as duas peças voltaram ao chão e a cabana fechou.'
+      break
+    case 'pull-lever': {
+      const b = s.bridge
+      if (b.at === 'stone') {
+        s.caption = 'O personagem está na pedra do sino: recomece a partida para puxar de novo.'
+        break
+      }
+      const baixou = !b.ponteAberta
+      b.at = 'lever'
+      b.ponteAberta = true
+      b.sincePull = 0
+      b.pulls = Math.min(b.pulls + 1, TIMED_BRIDGE.countMax)
+      // Como o jogo: cada encontro com a alavanca roda o "depois de" de novo (se ele mora lá).
+      if (b.place === 'lever' && b.timers.length < TIMED_BRIDGE.timers)
+        b.timers = [...b.timers, TIMED_BRIDGE.seconds]
+      s.caption = baixou
+        ? 'Você puxou a alavanca: a ponte baixou e ponteAberta agora é verdadeiro.'
+        : 'Você puxou de novo com a ponte baixada: ponteAberta continua verdadeiro.'
+      if (baixou) {
+        observe(s, 'lever-opens', 'A alavanca baixou a ponte')
+        if (b.rises > 0) observe(s, 'pull-again', 'Depois que subiu, puxar de novo baixou a ponte')
+      }
+      break
+    }
+    case 'wait-second': {
+      const b = s.bridge
+      b.clock = Math.min(b.clock + 1, TIMED_BRIDGE.clockMax)
+      if (b.sincePull !== null) b.sincePull = Math.min(b.sincePull + 1, TIMED_BRIDGE.sinceMax)
+      const faltam = b.timers.map((t) => t - 1)
+      const rodou = faltam.some((t) => t <= 0)
+      b.timers = faltam.filter((t) => t > 0)
+      s.caption = 'Passou 1 segundo.'
+      if (rodou) {
+        if (b.ponteAberta) {
+          b.ponteAberta = false
+          b.rises = Math.min(b.rises + 1, TIMED_BRIDGE.countMax)
+          s.caption = 'Passou 1 segundo: a ponte subiu e ponteAberta voltou a falso.'
+          observe(s, 'rises-alone', 'Depois de 4 segundos, a ponte subiu sozinha')
+        } else s.caption = 'Passou 1 segundo: o "depois de" rodou, e a ponte já estava levantada.'
+      }
+      // Com o "depois de" no começo do jogo, a puxada não começa relógio nenhum.
+      if (
+        b.place === 'start' &&
+        b.ponteAberta &&
+        b.sincePull !== null &&
+        b.sincePull >= TIMED_BRIDGE.seconds
+      )
+        observe(s, 'timer-place', 'Com o "depois de" no começo, a ponte não subiu mais')
+      break
+    }
+    case 'touch-bridge': {
+      const b = s.bridge
+      if (b.at === 'stone') {
+        s.caption = 'O personagem já atravessou: ele está na pedra do sino.'
+        break
+      }
+      if (b.ponteAberta) {
+        b.at = 'stone'
+        s.caption = 'O personagem atravessou a ponte e o sino tocou!'
+        if (b.sincePull !== null && b.sincePull >= 1 && b.sincePull < TIMED_BRIDGE.seconds)
+          observe(s, 'in-time', 'Indo antes dos 4 segundos, o personagem atravessou')
+      } else {
+        b.at = 'bridge'
+        // O aviso do jogo (`PONTE_AVISO.levantada` do projeto), puxada ou não.
+        s.caption = 'A ponte está levantada. Puxe a alavanca primeiro.'
+        if (b.pulls === 0)
+          observe(s, 'closed-start', 'Antes de puxar, a ponte não deixou atravessar')
+      }
+      break
+    }
+    case 'timer-place':
+      s.bridge = newBridgeMatch(action.place)
+      s.caption =
+        action.place === 'lever'
+          ? 'O "depois de 4 segundos" agora está dentro da alavanca. A partida recomeçou.'
+          : 'O "depois de 4 segundos" agora está no começo do jogo. A partida recomeçou.'
+      break
+    case 'restart-bridge':
+      s.bridge = newBridgeMatch(s.bridge.place)
+      s.caption = 'A partida recomeçou: a ponte está levantada e ponteAberta é falso.'
+      break
+    case 'touch-symbol': {
+      const q = s.sequence
+      const nome = SIMBOLO_FALADO[action.symbol]
+      q.at = action.symbol
+      if (q.chest === 'open') {
+        s.caption = 'O baú já abriu: recomece a partida para tentar de novo.'
+        break
+      }
+      if (q.mode === 'count') {
+        // Só contando: cada símbolo novo soma 1; com os três, o baú abre, em qualquer ordem.
+        if (q.lit.includes(action.symbol)) {
+          s.caption = `${nome.cap} já estava ${nome.aceso}: a contagem não mudou.`
+          break
+        }
+        q.lit = [...q.lit, action.symbol]
+        if (q.lit.length < SEQUENCE_SYMBOLS.length) {
+          s.caption = `Você tocou ${nome.o}: ${quantos(q.lit.length, 'símbolo tocado', 'símbolos tocados')}.`
+          break
+        }
+        q.chest = 'open'
+        const naOrdem = SEQUENCE_SYMBOLS.every((x, i) => q.lit[i] === x)
+        s.caption = naOrdem
+          ? 'Os três símbolos foram tocados: o baú abriu!'
+          : 'Os três símbolos foram tocados, fora da ordem da placa, e o baú abriu mesmo assim!'
+        if (!naOrdem && s.evidence.discoveries.includes('right-order'))
+          observe(s, 'count-vs-order', 'Só contando, a ordem errada também abriu o baú')
+        break
+      }
+      // Na ordem: cada símbolo pergunta se é a vez dele, comparando o passo (como o jogo).
+      if (action.symbol === 'sol') {
+        q.passo = 1
+        if (!q.lit.includes('sol')) q.lit = ['sol', ...q.lit]
+        s.caption = 'Você tocou o sol: passo agora é 1 e o sol acendeu.'
+        break
+      }
+      const vez = action.symbol === 'lua' ? 1 : 2
+      if (q.passo === vez) {
+        if (action.symbol === 'lua') {
+          q.passo = 2
+          q.lit = [...q.lit.filter((x) => x !== 'lua'), 'lua']
+          s.caption = 'Era a vez da lua: passo agora é 2 e a lua acendeu.'
+          observe(s, 'step-moves', 'O passo andou com a ordem certa')
+        } else {
+          q.lit = [...q.lit.filter((x) => x !== 'estrela'), 'estrela']
+          q.chest = 'open'
+          s.caption = 'Era a vez da estrela: ela acendeu e o baú abriu!'
+          observe(s, 'right-order', 'A ordem certa abriu o baú')
+          if (q.missed) observe(s, 'restart-works', 'Depois de errar, a ordem certa abriu o baú')
+        }
+        break
+      }
+      // O senão: a tentativa recomeça (o passo volta a 0 e os acesos apagam).
+      const tinhaAceso = q.lit.length > 0
+      q.passo = 0
+      q.lit = []
+      q.missed = true
+      if (tinhaAceso) {
+        s.caption = `Não era a vez ${nome.da}: passo voltou a 0 e os símbolos apagaram.`
+        observe(s, 'out-of-turn', 'Fora da vez, a tentativa recomeçou')
+      } else {
+        s.caption = `Não era a vez ${nome.da}: passo continua 0 e nada acendeu.`
+        observe(s, 'middle-start', 'Começando pelo meio, nada avançou')
+      }
+      break
+    }
+    case 'sequence-mode':
+      s.sequence = newSequenceMatch(action.mode)
+      s.caption =
+        action.mode === 'order'
+          ? 'Agora o baú confere a ordem com o passo. A partida recomeçou.'
+          : 'Agora o baú só conta os símbolos tocados. A partida recomeçou.'
+      break
+    case 'restart-symbols':
+      s.sequence = newSequenceMatch(s.sequence.mode)
+      s.caption = 'A partida recomeçou: os símbolos apagaram, o baú fechou e passo é 0.'
       break
     case 'movement-command':
       s.walk.movement = action.enabled

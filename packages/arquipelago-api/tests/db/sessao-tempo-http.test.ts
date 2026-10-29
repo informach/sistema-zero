@@ -4,14 +4,20 @@ import path from 'node:path'
 import { RespostaSessaoTempoSchema } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
+import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
+import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
+import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from '../../src/infrastructure/persistence/drizzle/repositorio'
+import { DrizzleRepositorioDeDesafios } from '../../src/infrastructure/persistence/drizzle/repositorio-de-desafios'
 import { RepositorioDeSessoesDeTempo } from '../../src/infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { createServer } from '../../src/interfaces/http/server'
+import { desafiosDesligados } from '../fakes/desafios'
 
 const url = process.env.TEST_DATABASE_URL
 if (url) {
@@ -36,6 +42,12 @@ beforeAll(async () => {
 })
 afterAll(async () => conexao?.close())
 
+const POLITICA = {
+  modo: 'aberto' as const,
+  publicos: new Set(['kids', 'adulto'] as const),
+  lista: new Set<string>(),
+}
+
 test.skipIf(!url)(
   'a API usa o horário do servidor e protege identidade e sessões de leitura',
   async () => {
@@ -45,13 +57,21 @@ test.skipIf(!url)(
     let agora = new Date('2026-10-27T12:00:00.000Z')
     const servico = new ServicoDoJogo(
       new DrizzleRepositorioDoJogo(conexao.db),
-      { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() },
+      POLITICA,
       () => agora,
       new RepositorioDeSessoesDeTempo(conexao.db),
     )
     const app = createServer({
       logger: createLogger({ level: 'error' }),
       servico,
+      cartas: new ServicoDasCartas(POLITICA, new LeiturasDosMembros(null)),
+      equipe: new ServicoDaEquipe(
+        new DrizzleRepositorioDeDesafios(conexao.db),
+        null,
+        new LeiturasDosMembros(null),
+        new ConferenciaDoMapa(null, createLogger({ level: 'error' })),
+      ),
+      desafios: desafiosDesligados(POLITICA),
       cliente: { dir: '.', servirMapas: false },
       tokenInterno: 'token-local-de-teste',
       readiness: async () => {},

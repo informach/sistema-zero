@@ -27,6 +27,10 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
   const movedUserId = randomUUID()
   const bonusCourseId = randomUUID()
   const movedCourseId = randomUUID()
+  // Comunidade adulta (cartões dos Lumis e desafios do Arquipélago com os cursos adultos).
+  const adultUserId = randomUUID()
+  const adultCourseId = randomUUID()
+  const kidsOnlyCourseId = randomUUID()
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
@@ -70,8 +74,8 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
 
   afterAll(async () => {
     if (conn) {
-      await conn.sql`delete from members.xp_events where user_id in (${userId}, ${movedUserId})`
-      await conn.sql`delete from members.courses where id in (${bonusCourseId}, ${movedCourseId})`
+      await conn.sql`delete from members.xp_events where user_id in (${userId}, ${movedUserId}, ${adultUserId})`
+      await conn.sql`delete from members.courses where id in (${bonusCourseId}, ${movedCourseId}, ${adultCourseId}, ${kidsOnlyCourseId})`
       await conn.close()
     }
   })
@@ -122,5 +126,35 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
 
     expect(await repo.listStudioUnlocksByCourse(movedUserId, 'kids')).toEqual([])
     expect(await repo.getStudioUnlockRevision(movedUserId, 'kids')).toBe(studioUnlockRevision([]))
+  })
+
+  test('adulto: o bloco do curso adulto concluído conta; o de um curso Kids, não', async () => {
+    await conn.sql`
+      insert into members.courses
+        (id, slug, title, status, audience, level, track, career_slot, metadata)
+      values
+        (${adultCourseId}, ${`adulto-${adultCourseId}`}, 'Laços adultos', 'published',
+         'adult', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_js_repeat'] })}::jsonb),
+        (${kidsOnlyCourseId}, ${`kids-${kidsOnlyCourseId}`}, 'Laços Kids', 'published',
+         'kids', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_js_while'] })}::jsonb)`
+    // A mesma pessoa concluiu o curso adulto e tem uma conclusão no curso Kids (nos dois públicos).
+    await conn.sql`
+      insert into members.xp_events
+        (id, user_id, audience, source_type, source_id, amount, created_at)
+      values
+        (${randomUUID()}, ${adultUserId}, 'adult', 'course_complete', ${adultCourseId}, 0, now()),
+        (${randomUUID()}, ${adultUserId}, 'kids', 'course_complete', ${kidsOnlyCourseId}, 0, now()),
+        (${randomUUID()}, ${adultUserId}, 'adult', 'course_complete', ${kidsOnlyCourseId}, 0, now())`
+
+    expect(await repo.listStudioUnlocksByCourse(adultUserId, 'adult')).toEqual([
+      { courseId: adultCourseId, blocks: ['sz_js_repeat'] },
+    ])
+    expect(await repo.listStudioUnlocksByCourse(adultUserId, 'kids')).toEqual([
+      { courseId: kidsOnlyCourseId, blocks: ['sz_js_while'] },
+    ])
+  })
+
+  test('adulto sem o curso adulto concluído não tem o bloco', async () => {
+    expect(await repo.listStudioUnlocksByCourse(randomUUID(), 'adult')).toEqual([])
   })
 })

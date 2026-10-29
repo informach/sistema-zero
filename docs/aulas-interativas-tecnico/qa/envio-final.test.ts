@@ -11,8 +11,8 @@ const files = listarArquivosAulas()
   .filter((file) => file.endsWith('.manifesto.json'))
   .sort()
 
-test('os seis cursos têm um ponto de envio por projeto, com as partes intermediárias independentes dele', () => {
-  expect(files).toHaveLength(40)
+test('os onze cursos têm um ponto de envio por projeto, com as partes intermediárias independentes dele', () => {
+  expect(files).toHaveLength(50)
   let projects = 0
   for (const file of files) {
     const manifest = JSON.parse(readFileSync(caminhoAula(file), 'utf8')) as LearningManifest
@@ -59,7 +59,7 @@ test('os seis cursos têm um ponto de envio por projeto, com as partes intermedi
       }
     }
   }
-  expect(projects).toBe(38)
+  expect(projects).toBe(48)
 })
 
 test.each([

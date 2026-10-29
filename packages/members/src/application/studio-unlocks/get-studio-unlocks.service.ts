@@ -41,6 +41,20 @@ export class GetStudioUnlocksService {
     private readonly logger: Logger,
   ) {}
 
+  /**
+   * A mesma união (congelada + atual), SÓ leitura: nunca congela nada. É a leitura S2S do jogo,
+   * que não pode virar escrita no banco a cada visita de outro serviço.
+   */
+  async read(userId: string, audience: CourseAudience): Promise<StudioUnlocksView> {
+    const [live, frozen] = await Promise.all([
+      this.gamification.listStudioUnlocksByCourse(userId, audience),
+      this.unlocks.listGrants(userId, audience),
+    ])
+    const blocks = new Set<string>()
+    for (const list of [...frozen, ...live]) for (const type of list.blocks) blocks.add(type)
+    return { blocks: [...blocks] }
+  }
+
   async execute(
     userId: string,
     audience: CourseAudience,

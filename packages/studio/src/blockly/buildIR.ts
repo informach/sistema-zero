@@ -2348,6 +2348,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             body: getStatementChildren(block, 'BODY', seen),
           },
         }
+      case 'sz_g2d_on_touch_group':
+        seen.add('game-2d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g2d:onTouchGroup',
+            spriteVar: f(block, 'SPRITE'),
+            groupVar: f(block, 'GROUP'),
+            itemName: f(block, 'ITEM') || 'moeda',
+            body: getStatementChildren(block, 'BODY', seen),
+          },
+        }
       case 'sz_g2d_on_jump':
         seen.add('game-2d')
         return {

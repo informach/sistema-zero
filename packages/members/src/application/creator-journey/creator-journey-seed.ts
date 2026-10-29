@@ -28,6 +28,7 @@ export interface CreatorEditorialSpec {
       lessons: string[]
     }[]
     mission: {
+      authoredSource?: { courseSlug: string; directory: string; lessons: string[]; note: string }
       title: string
       lessons: number
       brief: string

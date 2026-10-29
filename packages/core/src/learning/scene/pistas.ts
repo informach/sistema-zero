@@ -71,6 +71,18 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['opened-with-key'],
     ['locked-without-key', 'opened-with-key'],
   ],
+  'coin-counter': [['each-adds'], ['no-double', 'kept'], ['below-goal', 'compare-rules']],
+  'two-pieces': [['none-closed'], ['one-closed', 'both-open'], ['any-order', 'and-vs-or']],
+  'timed-bridge': [
+    ['closed-start', 'lever-opens'],
+    ['in-time', 'rises-alone'],
+    ['pull-again', 'timer-place'],
+  ],
+  'symbol-sequence': [
+    ['step-moves', 'right-order'],
+    ['out-of-turn', 'middle-start'],
+    ['restart-works', 'count-vs-order'],
+  ],
   'lighthouse-position': [
     ['mover-horizontal'],
     ['mover-vertical'],

@@ -66,6 +66,8 @@ const EnvSchema = z
       .optional(),
     STUDIO_RUNTIME_HOSTS_JSON: z.string().min(1).max(200_000).optional(),
     ARQUIPELAGO_COINS_TOKEN: z.string().min(32).optional(),
+    /** Leituras do serviço do jogo (jornada, blocos): token próprio, separado do das moedas. */
+    ARQUIPELAGO_MEMBERS_TOKEN: z.string().min(32).optional(),
     // Dedicated authenticated Python service. Never fall back to the JS/Pro service.
     STUDIO_PYTHON_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PYTHON_RUNTIME_TOKEN: z.string().min(16).optional(),

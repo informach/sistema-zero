@@ -6,6 +6,7 @@ import type { CreateProfileService } from '../../../application/profiles/create-
 import type { ExitProfileSessionService } from '../../../application/profiles/exit-profile-session.service'
 import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
 import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
+import type { ListSiblingsService } from '../../../application/profiles/list-siblings.service'
 import type { SelectProfileService } from '../../../application/profiles/select-profile.service'
 import type { UpdateProfileDetailsService } from '../../../application/profiles/update-profile.service'
 import { VOICE_INPUT_PARENT_ONLY_MESSAGE } from '../../../application/profiles/voice-input.policy'
@@ -28,6 +29,8 @@ import { requireInternalToken } from '../internal-auth'
 
 export interface ProfilesRoutesDeps {
   listProfiles: ListProfilesService
+  /** Os irmãos na sessão de perfil (só id e nome; o jogo põe o nome nos recordes e visitas). */
+  listSiblings: ListSiblingsService
   createProfile: CreateProfileService
   updateProfile: UpdateProfileDetailsService
   archiveProfile: ArchiveProfileService
@@ -224,6 +227,14 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
         },
         { body: t.Optional(SelectProfileSessionBody), params: ProfileIdParams },
       )
+      // Os irmãos da criança (Arquipélago, fase3-12): SÓ na sessão de perfil, só id e nome dos
+      // outros perfis ativos e prontos da mesma conta. Fora da sessão de perfil, 403.
+      .get('/profile-session/siblings', ({ headers }) => {
+        const actor = ensureOrigin(headers)
+        const accountUserId = headers['x-auth-account-id']?.trim()
+        if (!accountUserId) throw new ForbiddenError('Os irmãos só aparecem na sessão de perfil')
+        return deps.listSiblings.execute(accountUserId, actor.id)
+      })
       // Sair do perfil para a área dos pais — gateado pela SENHA do responsável.
       .post(
         '/profile-session/exit',

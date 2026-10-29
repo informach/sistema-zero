@@ -692,6 +692,63 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'Guardar a coleta está desligado.',
     ],
   },
+  'coin-counter': {
+    readouts: [
+      { label: 'moedas', value: '6', tone: 'a' },
+      { label: 'baú', value: 'fechado', tone: 'b' },
+    ],
+    situations: [
+      '6 moedas estão no caminho. moedas guarda 0.',
+      'Somou 1: moedas era 4 e agora é 5.',
+      'Esta moeda já saiu do caminho: nada somou.',
+      'O baú continua fechado: a regra pede exatamente 5 moedas.',
+      'A partida recomeçou: moedas voltou a 0 e as seis moedas voltaram.',
+    ],
+  },
+  'two-pieces': {
+    readouts: [
+      { label: 'temChave', value: 'verdadeiro', tone: 'a' },
+      { label: 'temEmblema', value: 'verdadeiro', tone: 'b' },
+      { label: 'cabana', value: 'fechada', tone: 'plain' },
+    ],
+    situations: [
+      '2 peças estão no chão. A cabana está fechada.',
+      'Você pegou o emblema: temEmblema agora é verdadeiro.',
+      'A cabana continua fechada: ela pede a chave e o emblema.',
+      'A cabana pergunta: temChave ou temEmblema.',
+      'A partida recomeçou: as duas peças voltaram ao chão e a cabana fechou.',
+    ],
+  },
+  'timed-bridge': {
+    readouts: [
+      { label: 'ponteAberta', value: 'verdadeiro', tone: 'a' },
+      { label: 'relógio', value: '3 de 4 s', tone: 'b' },
+      { label: 'ponte', value: 'levantada', tone: 'plain' },
+    ],
+    situations: [
+      'A ponte está levantada.',
+      'O personagem está na pedra do sino. 12 segundos passaram.',
+      'Você puxou a alavanca: a ponte baixou e ponteAberta agora é verdadeiro.',
+      'Passou 1 segundo: o "depois de" rodou, e a ponte já estava levantada.',
+      'O "depois de 4 segundos" agora está no começo do jogo. A partida recomeçou.',
+      'O personagem está na pedra do sino: recomece a partida para puxar de novo.',
+    ],
+  },
+  'symbol-sequence': {
+    readouts: [
+      { label: 'contados', value: '2 de 3', tone: 'a' },
+      { label: 'acesos', value: 'sol, lua, estrela', tone: 'b' },
+      { label: 'baú', value: 'fechado', tone: 'plain' },
+    ],
+    situations: [
+      'O baú está fechado. Nenhum símbolo aceso.',
+      'Os três símbolos foram tocados, fora da ordem da placa, e o baú abriu mesmo assim!',
+      'Não era a vez da estrela: passo voltou a 0 e os símbolos apagaram.',
+      'Agora o baú só conta os símbolos tocados. A partida recomeçou.',
+      'A partida recomeçou: os símbolos apagaram, o baú fechou e passo é 0.',
+      'O baú já abriu: recomece a partida para tentar de novo.',
+    ],
+  },
   'lighthouse-key': {
     readouts: [
       { label: 'temChave', value: 'verdadeiro', tone: 'a' },

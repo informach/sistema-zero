@@ -24,7 +24,7 @@ export interface V3Like {
   z: number
 }
 
-export function loadRuntime({ realGeometry = false } = {}) {
+export function loadRuntime({ realGeometry = false, realDom = false } = {}) {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
 
@@ -224,6 +224,16 @@ export function loadRuntime({ realGeometry = false } = {}) {
     },
   }
 
+  // Com `realDom`, o que não é canvas vem do DOM de teste (botões da vista, painéis), com o body.
+  if (realDom) {
+    const real = globalThis.document,
+      fake = doc.createElement
+    Object.assign(doc, {
+      body: real.body,
+      head: real.head,
+      createElement: (tag: string) => (tag === 'canvas' ? fake(tag) : real.createElement(tag)),
+    })
+  }
   new Function('THREE', 'window', 'document', runtimeBody)(THREE, win, doc)
   return {
     api: win.SZGame3D as Any,

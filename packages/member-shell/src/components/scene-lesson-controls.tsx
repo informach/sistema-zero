@@ -13,6 +13,7 @@ import { Ear } from 'lucide-react'
 import { SceneButton } from './exploration-stage'
 import { AtelieSceneControls } from './scene-atelie-controls'
 import { Escolha, Medida } from './scene-bench'
+import { CoinCounterControls } from './scene-coin-counter'
 import { CollectionMemoryControls } from './scene-collect-and-remember'
 import { CollisionPairControls } from './scene-collision-pair'
 import { CopyVsOriginalControls, PublishedCopyControls } from './scene-copies'
@@ -30,7 +31,10 @@ import { NucleoSceneControls } from './scene-nucleo-controls'
 import { NumberLineControls } from './scene-number-line'
 import { OnceVsAlwaysControls } from './scene-once-vs-always'
 import { SameRulesControls } from './scene-same-rules'
+import { SymbolSequenceControls } from './scene-symbol-sequence'
+import { TimedBridgeControls } from './scene-timed-bridge'
 import { TwoClocksControls } from './scene-two-clocks'
+import { TwoPiecesControls } from './scene-two-pieces'
 import { UniqueNamesControls } from './scene-unique-names'
 
 /**
@@ -109,6 +113,10 @@ export function LessonSceneControls({
       {m === 'collect-and-remember' && (
         <CollectionMemoryControls state={state} dispatch={dispatch} />
       )}
+      {m === 'coin-counter' && <CoinCounterControls state={state} dispatch={dispatch} />}
+      {m === 'two-pieces' && <TwoPiecesControls state={state} dispatch={dispatch} />}
+      {m === 'timed-bridge' && <TimedBridgeControls state={state} dispatch={dispatch} />}
+      {m === 'symbol-sequence' && <SymbolSequenceControls state={state} dispatch={dispatch} />}
       {/* O andar do Farol: a bancada inteira (a seta, a velocidade, o limite e o tempo) é dela, e o
           que aparece depende do CASO (`goals`). O Rodar é o relógio do player (`onRunning`). */}
       {m === 'lighthouse-walk' && (

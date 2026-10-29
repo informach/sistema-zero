@@ -166,7 +166,7 @@ test.each(mistakes)('rejects a plausible learner mistake: $name', ({ lesson, edi
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -187,7 +187,7 @@ test.each(
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),

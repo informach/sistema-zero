@@ -186,6 +186,11 @@ lib_q.PALETTE.update({
     'patimClaro': ('#f6f0ff', 0.6, None, 0),
     'roda': ('#5bd6b8', 0.45, None, 0),
     'cadarco': ('#ffffff', 0.8, None, 0),
+    'patimForro': ('#4b3a6b', 0.85, None, 0),
+    'patimLingua': ('#c7aef0', 0.6, None, 0),
+    'patimSola': ('#f3eee6', 0.7, None, 0),
+    'patimCubo': ('#f6f0ff', 0.4, None, 0),
+    'freio': ('#ff6f8e', 0.7, None, 0),
     # veículos
     'cascoAmarelo': ('#f5c330', 0.55, None, 0),
     'cascoAzul': ('#3f86c8', 0.55, None, 0),

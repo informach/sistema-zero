@@ -89,6 +89,17 @@ criança aponta para o sha antigo). `--remover-antigos` no publicador só antes 
   tufos. O material do chão leva `szSemSombra` nos extras: o Jogo 3D não o deixa fazer sombra (uma
   folha aberta faria sombra nela mesma nas encostas). Peça translúcida (a água, o feixe) também não
   faz sombra.
+- **Colisão** (29/10/2026): o jogo marca o cenário e a pedra como sólidos, e o Jogo 3D barra quem
+  anda com as setas usando uma caixa por PEDAÇO (malha) e pulando o que tem `szSemCaixa`. Por isso
+  `exportar_em_pedacos` (em `lib_ilha.py`) junta a base (chão, mar, grama, folhas, enfeites) numa
+  peça com `szSemCaixa` e exporta cada obstáculo como nó próprio: o tronco de cada coqueiro, o
+  tronco e a saia de cada pinheiro, cada rocha da costa (`ARVORES` em `cenario.py` devolve
+  `(enfeite, obstaculos)`). A pedra sai em quatro blocos (bloco maior, a cópia da frente e as duas
+  colunas), com as pedrinhas do pé na base. Os extras saem com `export_extras=True` e sobrevivem à
+  otimização. Mudou a forma de um obstáculo? Atualize `ILHA_OBSTACULOS` em
+  `docs/aulas-interativas-tecnico/qa/ilha-do-farol-observacao.ts` (o caminho do robô do executor);
+  `ilha-obstaculos.test.ts` compara com os GLB publicados. `publicar-ilha-modelos.ts --so id,id`
+  publica só as peças pedidas e mantém as outras.
 - Ao juntar as peças, só a primeira camada de UV vira `TEXCOORD_0`: a camada do céu se chama
   `UVMap`, como as outras, e o material liga a textura a ela num nó UV Map. Sem isso o exportador
   gravava `texCoord: -1`, a otimização tirava as coordenadas e o degradê do céu sumia.

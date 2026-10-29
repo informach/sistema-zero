@@ -1,0 +1,14 @@
+{
+  "extends": "../../../packages/studio/tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": ["bun"],
+    "typeRoots": ["../../../node_modules/@types", "../../../packages/studio/node_modules/@types"]
+  },
+  "include": [
+    "*.ts",
+    "../../../packages/studio/src/blockly/__tests__/vilaDoceManifest.test.ts",
+    "../../../packages/studio-runtime/tests/vila-doce-browser.test.ts"
+  ],
+  "exclude": ["node_modules"]
+}

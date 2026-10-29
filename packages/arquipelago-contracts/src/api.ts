@@ -16,6 +16,8 @@ export const AcessoSchema = z.strictObject({
   usadoHojeSegundos: z.number().int().min(0),
   /** Suporte apenas visualiza; não começa nem consome uma sessão de tempo. */
   contabilizaTempo: z.boolean().optional(),
+  /** Uma sessão de suporte não altera nem cria rascunhos locais do perfil observado. */
+  somenteLeitura: z.boolean().optional(),
 })
 export type Acesso = z.infer<typeof AcessoSchema>
 
@@ -50,7 +52,7 @@ export type ConflitoDeSalvamento = z.infer<typeof ConflitoDeSalvamentoSchema>
 export const RegistrarTempoSchema = z.strictObject({
   eventoId: z.uuid(),
   dia: z.iso.date(),
-  /** Segundos jogados desde o último aviso (o jogo avisa a cada minuto). */
+  /** Segundos jogados desde o último aviso (lotes de até 10 s, e também ao esconder a aba ou fechar). */
   segundos: z.number().int().min(1).max(120),
 })
 export const TempoRegistradoSchema = z.strictObject({
@@ -79,7 +81,67 @@ export const RespostaSessaoTempoSchema = z.strictObject({
 })
 export type RespostaSessaoTempo = z.infer<typeof RespostaSessaoTempoSchema>
 
+/** `PUT /arquipelago/familia/limite`: o corpo e a resposta. */
 export const LimiteDaFamiliaSchema = z.strictObject({
   limiteDiarioMinutos: z.number().int().positive(),
 })
 export type LimiteDaFamilia = z.infer<typeof LimiteDaFamiliaSchema>
+
+/**
+ * `GET /arquipelago/familia/limite`: o limite e se alguma criança da conta vê o jogo pela política
+ * de acesso. A área dos pais só mostra o cartão do tempo livre quando `algumaCriancaVe`.
+ */
+export const LeituraDoLimiteDaFamiliaSchema = z.strictObject({
+  limiteDiarioMinutos: z.number().int().positive(),
+  algumaCriancaVe: z.boolean(),
+})
+export type LeituraDoLimiteDaFamilia = z.infer<typeof LeituraDoLimiteDaFamiliaSchema>
+
+/** Uma família tem poucos perfis; o teto só barra pedido abusivo. */
+export const PERFIS_DA_FAMILIA_MAXIMO = 20
+/** O formato dos ids de identidade da plataforma (o serviço compara em minúsculas). */
+const ID_DE_PERFIL = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * `?perfis=` do `GET /arquipelago/familia/limite`: os ids dos perfis das crianças da conta,
+ * separados por vírgula. Quem manda é o BFF dos pais, que lê a lista no Auth. Ausente ou vazio
+ * quer dizer nenhuma criança.
+ */
+export const PerfisDaFamiliaSchema = z
+  .string()
+  .max(PERFIS_DA_FAMILIA_MAXIMO * 37)
+  .optional()
+  .transform((v) => (v ? v.split(',') : []))
+  .pipe(
+    z
+      .array(
+        z
+          .string()
+          .regex(ID_DE_PERFIL)
+          .transform((id) => id.toLowerCase()),
+      )
+      .max(PERFIS_DA_FAMILIA_MAXIMO),
+  )
+
+/** `GET /arquipelago/cartas`: os cartões da rotina dos Lumis e onde aprender os que faltam. */
+export const CartasDoJogadorSchema = z.strictObject({
+  cartas: z.array(
+    z.strictObject({
+      id: z.string().min(1).max(60),
+      nome: z.string().min(1).max(80),
+      tipo: z.enum(['quando', 'acao', 'controle']),
+      efeito: z.string().max(200),
+      conquistada: z.boolean(),
+      /** Só nos que faltam: os cursos que liberam o bloco do cartão. */
+      aprendaEm: z.array(
+        z.strictObject({
+          courseId: z.uuid(),
+          titulo: z.string().min(1).max(200),
+          slug: z.string().min(1).max(200),
+          posto: z.string().min(1).max(40).nullable(),
+        }),
+      ),
+    }),
+  ),
+})
+export type CartasDoJogador = z.infer<typeof CartasDoJogadorSchema>

@@ -146,7 +146,9 @@ abaixo do piso saem `completed` (sem `missing`) e contam como anteriores conclu�
 (`ExecutionObjectiveRequest`, `ExecutionObservation`, `ProjectCheckResponse`) e a régua ÚNICA de
 julgamento (`judgeExecutionObservation`, com o motivo para a equipe). `SectionProjectCheck.rule` é
 `SectionObjectiveRule` (estrutura OU execução); `isSectionCompletion` aceita até 8 de execução por
-parte; `projectObjectiveKind` dá `game`/`function`/`script`. Testes: `tests/project-execution.test.ts`.
+parte; `projectObjectiveKind` dá `game`/`function`/`script`. A ida 3D (`approachObject3d`) aceita até
+`MAX_WALKABLE_RECTS` (32, era 8 até 29/10/2026) retângulos de chão: com a pedra e os coqueiros
+sólidos, o chão da Ilha do Farol sai recortado em 20. Testes: `tests/project-execution.test.ts`.
 
 ## Impressão do conteúdo e "envio em dia" (10/10/2026)
 

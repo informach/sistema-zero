@@ -16,6 +16,7 @@ export function kidsMayAccess(
 ): boolean {
   const pathname = normalizePolicyPath(rawPath)
   if (!pathname) return false
+  if (pathname.toLowerCase().startsWith('/arquipelago/equipe/')) return false
   // Rotas com nome histórico /internal que já são APIs JWT do aluno.
   // Os serviços continuam validando visibilidade, posse e direito de publicar.
   if (claim.kind === 'student') {
@@ -46,8 +47,13 @@ export function kidsMayAccess(
       pathname.startsWith('/members/parents/') ||
       pathname.startsWith('/helpdesk/portal/') ||
       pathname === '/referrals/me/ambassador' ||
-      // Arquipélago Vagalume: o responsável só muda o tempo livre da família.
+      // Arquipélago Vagalume: o responsável muda o tempo livre e as permissões de visita da
+      // família e lê a semana das crianças (o cartão da área dos pais).
       pathname === '/arquipelago/familia/limite' ||
+      pathname === '/arquipelago/familia/permissoes' ||
+      (method === 'GET' && pathname === '/arquipelago/familia/semana') ||
+      (method === 'GET' &&
+        /^\/arquipelago\/familia\/minijogos\/[0-9a-f-]+(?:\/[0-9a-f-]+)?$/i.test(pathname)) ||
       (method === 'GET' &&
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,
@@ -59,7 +65,9 @@ export function kidsMayAccess(
     return (
       (method === 'PATCH' &&
         pathname.toLowerCase() === `/auth/profiles/${subject.toLowerCase()}`) ||
-      (method === 'GET' && pathname === '/auth/me')
+      (method === 'GET' && pathname === '/auth/me') ||
+      // Os irmãos (só id e nome) para os recordes e as visitas do Arquipélago (fase3-12).
+      (method === 'GET' && pathname === '/auth/profile-session/siblings')
     )
   }
   return (

@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Tela com MOLDE pedida pelo host (28/10/2026, o Arquipélago)
+
+`PintaHostAdapter.initialCanvas?: PintaInitialCanvas` (`{name, width, height, guide}`, retângulos
+em pixels com `marked` na frente): 1x no mount, depois que a galeria carrega e a nuvem assenta, o
+`InitialCanvasOpener` (`components/PintaApp.tsx`) reabre o desenho de mesmo nome e tamanho
+(`findInitialCanvasAsset`) ou cria um pela `galleryStore.createPrepared` (mesmo nome único e mesma
+cota do `create`) e abre o editor. `core/guidedCanvas.ts` (puro): um cenário de pixel com DUAS
+camadas, "Molde" embaixo e trancada (o contorno de cada face no índice 11 da Arcade; a marcada em
+rosa, índice 3, desenhada por último para vencer na divisa) e "Pintura" em cima, vazia, que é a
+ativa ao abrir. Tela fora dos limites (`isValidInitialCanvas`) fica na galeria com o recado de
+erro. O Pinta não conhece o jogo: quem traduz o molde é o host (`member-shell/src/lib/
+arquipelago-objeto.ts`). Playground: `?tela=<JSON>`. Testes: `core/guidedCanvas.test.ts` e o bloco
+"tela com molde" do `PintaApp.test.tsx`. A tela com molde abre com o desenho inteiro à vista
+(`fitZoomFor`: o maior degrau de `ZOOM_LEVELS` em que o lado maior cabe em `GUIDED_FIT_SIDE`, 480
+pontos; a geladeira de 165 × 192 abre em 2×): o `PintaApp` abre esse desenho com `fit`, e o
+`EditorScreen` passa a régua só para o cenário de pixel. Os outros desenhos seguem abrindo em 8×.
+O nome com sufixo (`molde-geladeira-2`, quando o nome puro já era de outro desenho) também é
+achado ao reabrir; o `createPrepared` dá o sufixo como o import.
+
 ## ⚠️⚠️ `content-visibility: auto` num cartão que recebe o ponteiro faz o cursor PISCAR (13/09/2026)
 
 Relato dela: "quando passo o mouse em cima de um card de um projeto em andamento, o mouse fica

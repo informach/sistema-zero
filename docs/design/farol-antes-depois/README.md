@@ -1,6 +1,6 @@
 # A Chave do Farol — protótipo antes e depois
 
-Protótipo solicitado em 26/10/2026, baseado na [análise pedagógica](../../aulas-interativas/desafio-primeiro-jogo/ANALISE-PEDAGOGICA-2026-10-26.md). Destina-se à avaliação da proposta, sem modificar o curso publicado.
+Protótipo solicitado em 26/10/2026, baseado na [análise pedagógica](../../aulas-interativas/faisca/desafio-primeiro-jogo/ANALISE-PEDAGOGICA-2026-10-26.md). Destina-se à avaliação da proposta, sem modificar o curso publicado.
 
 ## Desenho
 

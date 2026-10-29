@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Irmãos da sessão de perfil (Arquipélago, fase3-12, 29/10/2026)
+
+`GET /auth/profile-session/siblings` (`ListSiblingsService`): só na sessão de PERFIL
+(`x-auth-account-id`; fora dela, 403). Devolve `{ siblings: [{ id, name }] }` dos outros perfis
+ATIVOS e prontos da mesma conta, na ordem da grade, e nada mais (sem foto, nascimento, telefone ou
+dado da conta). É o que o BFF usa para pôr o nome nos recordes e nas visitas do jogo; a grade
+completa (`/auth/profiles`) segue sendo da área dos pais. Teste em
+`tests/integration/http-server.test.ts` ("irmãos").
+
 ## Aviso de 18 anos do perfil Kids (20/10/2026)
 
 O perfil NUNCA é cortado ao completar 18 anos (a regra "um perfil válido não perde acesso" do

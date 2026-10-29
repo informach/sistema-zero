@@ -10,15 +10,20 @@ import {
 import { Component, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { criarControle, ligarTeclado } from './controles/controle'
-import { Contexto, type ContextoDoJogo } from './estado/contexto'
+import { ligarGamepad } from './controles/gamepad'
+import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto'
 import { criarLoja } from './estado/loja'
 import { Relogios } from './estado/relogios'
 import { Hud } from './interface/hud'
+import { SalvamentoDoJogo } from './interface/salvamento'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
+import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
+import { criarArmazemDeSalvamento, JogoAbertoEmOutraAbaError } from './sistemas/armazem-salvamento'
 import { criarFilaDeTempo } from './sistemas/fila-tempo'
 import { criarGerenteTempo } from './sistemas/gerente-tempo'
+import { salvamentoPausado } from './sistemas/pausa'
 import { criarFilaDeSalvamento, type FilaDeSalvamento } from './sistemas/salvar'
 import { criarSessaoTempo } from './sistemas/sessao-tempo'
 
@@ -26,8 +31,8 @@ type Situacao =
   | { tipo: 'carregando' }
   | { tipo: 'bloqueado'; motivo: NonNullable<Acesso['motivo']> }
   | { tipo: 'descanso' }
-  | { tipo: 'erro' }
-  | { tipo: 'pronto'; contexto: ContextoDoJogo; fila: FilaDeSalvamento }
+  | { tipo: 'erro'; mensagem?: string }
+  | { tipo: 'pronto'; contexto: ContextoDoJogo; fila: FilaDeSalvamento | null }
 
 const QUARTO_VAZIO = { theme: 'padrao', placedItems: [], pet: null }
 
@@ -70,15 +75,27 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     acesso,
     aoMudar: (s) => fila?.guardar(s),
   })
-  fila = criarFilaDeSalvamento({
-    servico: plataforma.servico,
-    revisaoInicial: guardado.revisao,
-    aoAdotar: (g) => {
-      loja.getState().adotar(g)
-      loja.getState().dizer('O seu jogo foi atualizado com o que você fez em outro aparelho.')
-    },
-    aoErro: (e) => plataforma.relatarErro(e, 'salvamento'),
-  })
+  if (!acesso.somenteLeitura) {
+    const armazem = await criarArmazemDeSalvamento(`${plataforma.publico}:${plataforma.perfil.id}`)
+    let rascunhoInicial: Awaited<ReturnType<typeof armazem.ler>>
+    try {
+      rascunhoInicial = await armazem.ler()
+    } catch (erro) {
+      armazem.fechar()
+      throw erro
+    }
+    fila = criarFilaDeSalvamento({
+      servico: plataforma.servico,
+      guardadoInicial: guardado,
+      rascunhoInicial,
+      armazem,
+      aoAdotar: (g) => {
+        loja.getState().adotar(g)
+      },
+      aoSituacao: (s) => loja.getState().definirSituacaoSalvamento(s),
+      aoErro: (e) => plataforma.relatarErro(e, 'salvamento'),
+    })
+  }
   let gerenteTempo: ReturnType<typeof criarGerenteTempo> | null = null
   if (plataforma.publico === 'kids' && acesso.contabilizaTempo !== false) {
     try {
@@ -95,7 +112,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       })
       await filaAntiga.encerrar()
       if (loja.getState().tempoAcabou) {
-        fila.parar()
+        await fila?.parar()
         return { tipo: 'descanso' }
       }
       const sessao = criarSessaoTempo({
@@ -121,21 +138,31 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
         },
       })
     } catch (erro) {
-      fila.parar()
+      await fila?.parar()
       throw erro
     }
   }
   // Um jogo novo só entra na fila depois que a recuperação do tempo termina.
-  if (guardado.revisao === 0) fila.guardar(salvamento)
+  if (guardado.revisao === 0 && !fila?.temPendente()) fila?.guardar(salvamento)
   const contexto: ContextoDoJogo = {
     loja,
     gerenteTempo,
     plataforma,
     controle: criarControle(),
     interativos: criarRegistro(),
-    rastro: { x: 0, y: 0, z: 0, giro: 0, inclinacao: 0.5 },
+    rastro: {
+      x: 0,
+      y: 0,
+      z: 0,
+      giro: 0,
+      inclinacao: 0.5,
+      direcao: 0,
+      velocidade: 0,
+      zappy: { x: 0, y: 0, z: 0 },
+    },
     ambiente: { luz: 1, noite: false },
-    pedidos: { teleporte: null },
+    pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null, conversa: null },
+    movimento: criarMovimento(),
   }
   return { tipo: 'pronto', contexto, fila }
 }
@@ -220,21 +247,34 @@ function JogoPronto({
   aoFalhar,
 }: {
   contexto: ContextoDoJogo
-  fila: FilaDeSalvamento
+  fila: FilaDeSalvamento | null
   aoFalhar: (e: unknown) => void
 }) {
   const tempoAcabou = useStore(contexto.loja, (s) => s.tempoAcabou)
   const tempoPausado = useStore(contexto.loja, (s) => s.tempoPausado)
   const tempoSincronizando = useStore(contexto.loja, (s) => s.tempoSincronizando)
   useEffect(() => ligarTeclado(contexto.controle), [contexto])
+  // O Start do controle faz o que o Esc faz: fecha o painel aberto, senão abre ou fecha o menu.
+  useEffect(
+    () =>
+      ligarGamepad(contexto.controle, () => {
+        const s = contexto.loja.getState()
+        if (salvamentoPausado(s.salvamentoSituacao)) return
+        if (s.tempoPausado || s.ferramentaAberta) return
+        if (s.painelAberto !== null) s.abrirPainel(null)
+        else s.abrirMenu(!s.menuAberto)
+      }),
+    [contexto],
+  )
   useEffect(() => {
+    if (!fila) return
     const aoEsconder = () => {
       if (document.visibilityState === 'hidden') void fila.salvarAgora()
     }
     document.addEventListener('visibilitychange', aoEsconder)
     return () => {
       document.removeEventListener('visibilitychange', aoEsconder)
-      void fila.salvarAgora().finally(() => fila.parar())
+      void fila.parar()
     }
   }, [fila])
   // A primeira fala do Zappy.
@@ -254,6 +294,7 @@ function JogoPronto({
       </Barreira>
       <Relogios />
       <Hud />
+      {fila ? <SalvamentoDoJogo fila={fila} /> : null}
       {tempoSincronizando && !tempoPausado && !tempoAcabou ? (
         <div className="arq-dica" role="status" aria-live="polite">
           Preparando o jogo…
@@ -269,7 +310,48 @@ function JogoPronto({
   )
 }
 
+type Pele = { voz: VozDoJogo; estilos: string | null }
+const PELE_KIDS: Pele = { voz: VOZ_KIDS, estilos: null }
+
+/**
+ * A pele de cada público. O Kids já está no pedaço principal; o adulto baixa o pedaço dele
+ * (`adulto/pele-adulta.ts`) antes da primeira tela. Se esse pedaço falhar, o jogo abre com a voz
+ * e o desenho do Kids em vez de não abrir (o erro vai para `relatarErro`).
+ */
+function usePele(plataforma: Plataforma): Pele | null {
+  const { publico } = plataforma
+  const [adulta, setAdulta] = useState<Pele | null>(null)
+  useEffect(() => {
+    if (publico !== 'adulto') return
+    let vivo = true
+    import('./adulto/pele-adulta')
+      .then((m) => {
+        if (vivo) setAdulta({ voz: m.VOZ_ADULTA, estilos: m.ESTILOS_ADULTOS })
+      })
+      .catch((erro) => {
+        plataforma.relatarErro(erro, 'pele-adulta')
+        if (vivo) setAdulta(PELE_KIDS)
+      })
+    return () => {
+      vivo = false
+    }
+  }, [publico, plataforma])
+  return publico === 'adulto' ? adulta : PELE_KIDS
+}
+
 export function Jogo({ plataforma }: { plataforma: Plataforma }) {
+  const pele = usePele(plataforma)
+  return pele ? (
+    <VozContexto.Provider value={pele.voz}>
+      {pele.estilos ? <style>{pele.estilos}</style> : null}
+      <JogoNaPele plataforma={plataforma} />
+    </VozContexto.Provider>
+  ) : (
+    <div className="arq-tela" role="status" aria-busy="true" />
+  )
+}
+
+function JogoNaPele({ plataforma }: { plataforma: Plataforma }) {
   const [situacao, setSituacao] = useState<Situacao>({ tipo: 'carregando' })
   const tentativa = useRef(0)
 
@@ -281,12 +363,16 @@ export function Jogo({ plataforma }: { plataforma: Plataforma }) {
         if (minha === tentativa.current) setSituacao(s)
         else if (s.tipo === 'pronto') {
           void s.contexto.gerenteTempo?.encerrar().catch(() => {})
-          s.fila.parar()
+          void s.fila?.parar()
         }
       })
       .catch((e) => {
         plataforma.relatarErro(e, 'carregar')
-        if (minha === tentativa.current) setSituacao({ tipo: 'erro' })
+        if (minha === tentativa.current)
+          setSituacao({
+            tipo: 'erro',
+            mensagem: e instanceof JogoAbertoEmOutraAbaError ? e.message : undefined,
+          })
       })
   }, [plataforma])
 
@@ -314,7 +400,7 @@ export function Jogo({ plataforma }: { plataforma: Plataforma }) {
     case 'descanso':
       return <TelaDescanso aoVoltar={voltar} />
     case 'erro':
-      return <TelaErro aoTentar={iniciar} aoVoltar={voltar} />
+      return <TelaErro aoTentar={iniciar} aoVoltar={voltar} mensagem={situacao.mensagem} />
     case 'pronto':
       return <JogoPronto contexto={situacao.contexto} fila={situacao.fila} aoFalhar={aoFalhar} />
   }

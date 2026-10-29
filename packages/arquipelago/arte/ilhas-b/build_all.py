@@ -1,4 +1,5 @@
-"""Gera os GLBs do Pico Gelado, do Vale dos Dinos, da Ilha das Nuvens e do alto do Farol em
+"""Gera os GLBs do Pico Gelado, do Vale dos Dinos, da Ilha das Nuvens, do alto do Farol e dos lugares de
+exploração (a caverna de cristal do Pico e as constelações das Nuvens) em
 `src/assets/ilhas/` e o `relatorio.json` (triângulos, tamanho, nós, âncoras e clipes), e confere
 o contrato com o jogo.
 
@@ -15,10 +16,12 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.abspath(os.path.join(AQUI, '..', '..', '..', '..'))
-SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol']
+SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol', 'pico_caverna', 'nuvens_constelacoes']
 ILHA = ('chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4')
 ESPERADO = {
-    'pico': {'nos': ('chao', 'montanha', 'cenario'), 'ancoras': ILHA + ('palco', 'iglu', 'cume', 'parede-de-gelo')},
+    'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu'),
+             'ancoras': ILHA + ('palco', 'iglu', 'cume', 'parede-de-gelo', 'iglu-dentro', 'fogareiro')
+             + tuple(f'{p}-{i}' for p in ('instrumento', 'banda', 'musico') for i in ('xilofone', 'violao', 'bateria'))},
     'pico-props': {'nos': ('pinheiro-nevado-a', 'pinheiro-nevado-b', 'bloco-de-gelo', 'boneco-de-neve', 'painel-de-gelo')},
     'pico-treno': {'nos': ('treno',)},
     'vale-dos-dinos': {'nos': ('chao', 'vulcao', 'lava', 'cenario'),
@@ -29,9 +32,20 @@ ESPERADO = {
     'nuvens-balao': {'nos': ('balao',), 'clipes': ('flutuar',)},
     'alto-do-farol': {'nos': ('sala', 'escada', 'mesa-da-iris', 'vidros', 'lente'), 'ancoras': ('entrada', 'lanterna', 'mesa'),
                       'clipes': ('girar',)},
+    # Lugares de exploração (cada um com os seus col-*; o referencial de cada um está no README).
+    'pico-caverna': {'nos': ('rocha', 'chao', 'cristais', 'cristais-luz', 'gelo', 'percurso', 'joia'),
+                     'ancoras': ('entrada', 'galeria', 'laguinho', 'cristal-raro') + tuple(f'degrau-{k}' for k in range(1, 5)),
+                     'colisores': ('col-parede', 'col-cil-teto', 'col-cil-chao', 'col-rampa', 'col-boca', 'col-cil-coluna',
+                                   'col-cil-laje', 'col-cil-cristal', 'col-cil-poste')},
+    'nuvens-constelacoes': {'nos': ('mirante', 'luneta-tubo') + tuple(f'constelacao-{k}' for k in range(1, 7))
+                            + tuple(f'constelacao-{k}-estrela-1' for k in range(1, 7)),
+                            'ancoras': ('luneta', 'quadro-das-estrelas'),
+                            'colisores': ('col-cil-deque', 'col-degrau', 'col-guarda', 'col-cil-tripe', 'col-quadro',
+                                          'col-cil-banco', 'col-cil-poste')},
 }
 TETO_ILHA = dict(triangulos=40_000, kb=1_536)
 TETO_PECA = dict(triangulos=8_000, kb=300)
+TETO_LUGAR = dict(triangulos=12_000, kb=512)   # caverna e constelações
 
 rel = os.path.join(AQUI, 'relatorio.json')
 if os.path.exists(rel):
@@ -55,7 +69,8 @@ for pid, esp in ESPERADO.items():
     if not d:
         erros.append(f'{pid}: não foi gerado')
         continue
-    teto = TETO_ILHA if pid in ('pico', 'vale-dos-dinos', 'nuvens', 'alto-do-farol') else TETO_PECA
+    teto = (TETO_ILHA if pid in ('pico', 'vale-dos-dinos', 'nuvens', 'alto-do-farol') else
+            TETO_LUGAR if pid in ('pico-caverna', 'nuvens-constelacoes') else TETO_PECA)
     if d['triangulos'] > teto['triangulos'] or d['kb'] > teto['kb']:
         erros.append(f"{pid}: {d['triangulos']} triângulos, {d['kb']} KB (teto {teto})")
     for n in esp.get('nos', ()):
@@ -67,6 +82,9 @@ for pid, esp in ESPERADO.items():
     for c in esp.get('clipes', ()):
         if c not in d['clipes']:
             erros.append(f'{pid}: falta o clipe {c}')
+    for c in esp.get('colisores', ()):
+        if c not in d.get('colisores', {}):
+            erros.append(f'{pid}: falta o colisor {c}')
     if not os.path.exists(os.path.join(RAIZ, 'packages/arquipelago/src/assets/ilhas', f'{pid}.glb')):
         erros.append(f'{pid}: arquivo ausente')
 # Nó com o mesmo nome de uma âncora vira "nome001" no three.js: proibido.

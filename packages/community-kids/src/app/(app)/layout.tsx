@@ -80,6 +80,9 @@ async function menuTools(): Promise<CreativeToolId[]> {
 
 // A mesma consulta é compartilhada entre sidebar e barra móvel apenas nesta requisição.
 const jogoLiberado = cache(async (): Promise<boolean> => {
+  // Durante a validação, só o menu fica restrito. A página e o jogo mantêm suas regras.
+  const session = await getSession()
+  if (session?.role !== 'admin' && session?.role !== 'superadmin') return false
   try {
     const resposta = await shell.gateway.gatewayFetchReadonly<unknown>('/arquipelago/acesso', {
       signal: AbortSignal.timeout(1500),

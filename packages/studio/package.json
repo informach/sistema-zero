@@ -35,6 +35,11 @@
     "./local-persistence": "./src/persistence/local.ts",
     "./project-list": "./src/projects/ProjectList.tsx",
     "./arte": "./src/arte/index.ts",
+    "./jardim-quiz-artes": "./src/arte/jardim-quiz.generated.ts",
+    "./moedas-quiz-artes": "./src/arte/moedas-quiz.generated.ts",
+    "./cabana-quiz-artes": "./src/arte/cabana-quiz.generated.ts",
+    "./ponte-quiz-artes": "./src/arte/ponte-quiz.generated.ts",
+    "./simbolos-quiz-artes": "./src/arte/simbolos-quiz.generated.ts",
     "./ilha-farol-scene": "./src/arte/ilha-farol-scene.generated.ts",
     "./controls": "./src/controls/projectControls.ts",
     "./server-project-checks": "./src/blockly/projectCheckAuthoring.ts",
@@ -51,7 +56,8 @@
     "./project-validation": "./src/state/projectValidation.ts",
     "./editable-project-validation": "./src/state/editableProjectValidation.ts",
     "./python-snapshot": "./src/runtime/python/snapshot.ts",
-    "./python-project-validation": "./src/state/pythonProjectValidation.ts"
+    "./python-project-validation": "./src/state/pythonProjectValidation.ts",
+    "./blockly-theme": "./src/blockly/publicTheme.ts"
   },
   "imports": {
     "#core": "./src/core/index.ts",

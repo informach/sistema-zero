@@ -111,3 +111,17 @@ obrigatória. A criança recebe orientação do Zappy, da lista de descobertas e
 Conservar as ações que executam o experimento, como **Testar o encontro**, e a resposta às perguntas.
 Quando houver uma pergunta após a descoberta, **Continuar** pode levar o foco até ela; isso não
 substitui nem altera a avaliação automática ou a correção da resposta no servidor.
+
+
+## Missões de posto: aplicar o repertório, direção de 28/10/2026
+
+O Jardim Secreto é a primeira referência dessa aplicação. A missão exige os conceitos investigados e os comandos efetivamente montados nos cursos-base. Câmera, luz, desenho, modelos, caminhada permitida e reinício que vieram prontos não viram exigências de programação por acidente.
+
+- O vídeo principal apresenta o resultado, relembra a ideia e convida a construir. Não repete todas as experiências nem resolve os encaixes da missão.
+- A ajuda é opcional, disponível desde o início e completa: lembrete do resultado, conceito, paleta, nome do bloco, destino, campos, valores, teste e correção. Usa os elementos da própria missão. Consultá-la não reduz mérito nem consome tentativas.
+- Um projeto por dimensão permanece entre as partes. Objetivos crescem por etapa; a coleta não cobra a decisão ainda não pedida. Uma entrega atualizada encerra cada dimensão.
+- Verificar precisa rodar os dois casos: antes e depois da coleta. A memória pode ter outro nome; a posição não precisa coincidir com a solução da professora. Arte preparada e variáveis declaradas sem uso não comprovam aprendizagem.
+- Se a navegação não chega ao alvo, não afirmar que a decisão está errada: indicar que o teste não terminou e orientar a conferir movimento, caminho e altura. Testar erros plausíveis, nomes alternativos e reinício, além da solução correta.
+- Quiz de previsão usa uma cena fiel e mostra o resultado depois da escolha. Pergunta de diagnóstico ou de escolha de teste pode ficar sem demonstração; o mesmo quiz pode reunir os dois formatos. Alternativas permanecem equivalentes antes da escolha e a correção pertence ao servidor.
+- Reiniciar a partida conserva regras e posições editadas. Restaurar o projeto inicial é outra ação e não deve ser pedido como teste.
+- Uma missão não concede certificado nem promove sozinha. A jornada conserva seus outros critérios. Artes, roteiro, manifesto, ajuda, PDF e fontes de voz devem acompanhar a mesma versão; gravação e publicação são etapas verificadas separadamente.

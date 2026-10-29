@@ -2,12 +2,24 @@
 
 Um nó por arquivo, com o nome do arquivo e a base na origem:
   salada · pipoca · pao-de-queijo · bolo-de-fuba · brigadeiro · acai · moqueca · peixe-com-coco
+  chocolate-quente (caneca no pires, com chantili, marshmallows e a fumacinha)
 """
 import random
 
 from lib_itens import *
 
 T = TOPO_DO_PRATO
+
+lib_q.PALETTE.update({
+    'caneca': ('#e0584f', 0.45, None, 0),
+    'canecaListra': ('#fffaf3', 0.45, None, 0),
+    'chocolate': ('#6b3a26', 0.35, None, 0),
+    'espumaChocolate': ('#c98f62', 0.6, None, 0),
+    'chantili': ('#fffaf3', 0.7, None, 0),
+    'marshmallow': ('#ffc9d8', 0.85, None, 0),
+    'marshmallowBranco': ('#fffdf8', 0.85, None, 0),
+    'fumaca': ('#f6f9ff', 0.9, None, 0),
+})
 
 
 def salada():
@@ -174,8 +186,76 @@ def peixe_com_coco():
     return p
 
 
+def chocolate_quente():
+    """Caneca de chocolate quente no pires: espuma, chantili em espiral, marshmallows e a fumacinha."""
+    p = [prato(0.095, 'loucaBranca')]
+    z0 = T - 0.002
+    caneca = torneado([(0, z0), (0.04, z0), (0.045, z0 + 0.005), (0.048, z0 + 0.02), (0.05, z0 + 0.06),
+                       (0.0505, z0 + 0.07), (0.051, z0 + 0.08), (0.0515, z0 + 0.092), (0.052, z0 + 0.1),
+                       (0.047, z0 + 0.103), (0.045, z0 + 0.097), (0.044, z0 + 0.02), (0, z0 + 0.016)], 'caneca', seg=28)
+    # Uma faixa branca no alto da caneca.
+    pintar_por(caneca, lambda c, n: 'canecaListra' if z0 + 0.07 < c.z < z0 + 0.08 and n.z < 0.5 and
+               math.hypot(c.x, c.y) > 0.048 else None)
+    p.append(caneca)
+    # Asa do lado direito (o lado que a câmera vê).
+    asa = torus(0.024, 0.0078, (0, 0, 0), 'caneca', seg=14, rseg=8, arc=180, rot=(R(90), R(90), 0))
+    asa.location = (0.047, 0, z0 + 0.052)
+    lib_ilha.place([asa], rot_z=R(31))
+    p.append(asa)
+    zc = z0 + 0.088
+    p.append(disco(0.0455, zc, 'chocolate', seg=28))
+    # Espuma: bolhinhas claras encostadas na borda de dentro.
+    for k in range(11):
+        a = 2 * math.pi * k / 11 + 0.3
+        r = 0.006 + 0.002 * (k % 3 == 0)
+        p.append(esfera(r, (math.cos(a) * 0.039, math.sin(a) * 0.039, zc), 'espumaChocolate', escala=(1, 1, 0.55),
+                        seg=8, aneis=5))
+    # Chantili em espiral, como sorvete de máquina.
+    perfil = [(0.0, zc + 0.003), (0.025, zc + 0.003), (0.028, zc + 0.011), (0.022, zc + 0.018), (0.023, zc + 0.023),
+              (0.016, zc + 0.03), (0.017, zc + 0.034), (0.009, zc + 0.041), (0.003, zc + 0.047), (0, zc + 0.048)]
+    ch = torneado(perfil, 'chantili', seg=24)
+
+    def espiral(v):
+        a = math.atan2(v.y, v.x)
+        rr = math.hypot(v.x, v.y)
+        k = 1 + 0.12 * math.cos(6 * a)
+        g = (v.z - zc) * 14
+        return Vector((rr * k * math.cos(a + g), rr * k * math.sin(a + g), v.z))
+    deformar(ch, espiral)
+    ch.location = (-0.004, 0.004, 0)
+    p.append(ch)
+    # Dois marshmallows encostados no chantili e o chocolate raspado por cima.
+    for k, (x, y, cor, rot) in enumerate(((0.022, -0.024, 'marshmallow', (R(20), R(10), R(-30))),
+                                         (-0.03, -0.012, 'marshmallowBranco', (R(-15), R(25), R(40))),
+                                         (0.03, 0.016, 'marshmallow', (R(10), R(-20), R(10))))):
+        o = cyl(0.0085, 0.014, (x, y, zc + 0.005), cor, verts=12, bevel=0.0025)
+        o.rotation_euler = rot
+        p.append(o)
+    rnd = random.Random(9)
+    for k in range(9):
+        a = rnd.uniform(0, 2 * math.pi)
+        r = rnd.uniform(0.004, 0.02)
+        z = zc + 0.048 * (1 - r / 0.026) + 0.002
+        o = box((0.006, 0.003, 0.002), (math.cos(a) * r - 0.004, math.sin(a) * r + 0.004, z), 'chocolate', bevel=0)
+        o.rotation_euler = (R(rnd.uniform(-30, 30)), R(rnd.uniform(-30, 30)), a)
+        p.append(o)
+    # A fumacinha: dois fios que sobem ondulando e afinam.
+    for k, (x0, y0, fase, alto) in enumerate(((-0.022, 0.012, 0.0, 0.075), (0.02, 0.02, 0.0, 0.06))):
+        pts, raios = [], []
+        for i in range(9):
+            t = i / 8
+            z = zc + 0.05 + t * alto
+            pts.append((x0 + 0.007 * math.sin(t * 4.6 + fase), y0 + 0.003 * math.cos(t * 3 + fase), z))
+            raios.append(0.0095 * (1 - 0.6 * t) + 0.0015)
+        p.append(tube(pts, raios, 'fumaca', seg=8))
+        p.append(esfera(raios[-1], pts[-1], 'fumaca', seg=8, aneis=5))
+        p.append(esfera(raios[0], pts[0], 'fumaca', seg=8, aneis=5))
+    return p
+
+
 FUNCOES = {'salada': salada, 'pipoca': pipoca, 'pao-de-queijo': pao_de_queijo, 'bolo-de-fuba': bolo_de_fuba,
-           'brigadeiro': brigadeiro, 'acai': acai, 'moqueca': moqueca, 'peixe-com-coco': peixe_com_coco}
+           'brigadeiro': brigadeiro, 'acai': acai, 'moqueca': moqueca, 'peixe-com-coco': peixe_com_coco,
+           'chocolate-quente': chocolate_quente}
 ITENS = [(pid, (lambda pid=pid: {'nos': {pid: FUNCOES[pid]()}, 'grupo': 'comidas'})) for pid in FUNCOES]
 
 if __name__ == '__main__':

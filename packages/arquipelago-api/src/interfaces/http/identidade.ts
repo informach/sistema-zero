@@ -1,7 +1,7 @@
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { safeEqual } from '@sistemazero/core/security'
-import { type Jogador, PAPEIS_DA_EQUIPE, type Responsavel } from '../../domain/jogador'
+import { type Equipe, type Jogador, PAPEIS_DA_EQUIPE, type Responsavel } from '../../domain/jogador'
 
 type Cabecalhos = Record<string, string | undefined>
 
@@ -61,9 +61,26 @@ export function lerJogador(h: Cabecalhos): Jogador {
 
 /** O responsável do Kids, na própria conta (sem perfil). */
 export function lerResponsavel(h: Cabecalhos): Responsavel {
-  const { id, somenteLeitura } = base(h)
+  const { id, papel, somenteLeitura } = base(h)
   if (h['x-auth-account-id'] !== undefined || h['x-auth-kids-context'] !== 'parent') {
     throw new ForbiddenError('Só o responsável muda o tempo do jogo')
   }
-  return { contaId: id, somenteLeitura }
+  return { contaId: id, equipe: PAPEIS_DA_EQUIPE.has(papel), somenteLeitura }
+}
+
+/** Quem pode o quê na seção Jogo do Admin: ler (equipe) e escrever (só administração). */
+export const PAPEIS_QUE_ESCREVEM_DESAFIOS = new Set(['superadmin', 'admin'])
+
+/**
+ * A equipe na própria conta: papel de equipe, sem perfil do Kids e sem contexto do Kids. Sessão de
+ * suporte só lê. É a terceira barreira do Admin do jogo (o gateway confere os papéis e a política
+ * do Kids recusa `/arquipelago/admin/*` ao aluno e ao responsável).
+ */
+export function lerEquipe(h: Cabecalhos): Equipe {
+  const { id, papel, somenteLeitura } = base(h)
+  if (!PAPEIS_DA_EQUIPE.has(papel)) throw new ForbiddenError('Só a equipe cuida dos desafios')
+  if (h['x-auth-account-id'] !== undefined || h['x-auth-kids-context'] !== undefined) {
+    throw new ForbiddenError('Use a conta da equipe, sem perfil')
+  }
+  return { id, podeEscrever: PAPEIS_QUE_ESCREVEM_DESAFIOS.has(papel) && !somenteLeitura }
 }

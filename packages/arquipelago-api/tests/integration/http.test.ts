@@ -4,14 +4,25 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
+  BICHOS_DO_BOSQUE,
+  CartasDoJogadorSchema,
   ConflitoDeSalvamentoSchema,
+  type CurriculoDeBlocos,
   criarSalvamentoInicial,
+  NINHOS_DO_VALE,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
+import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
+import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
+import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
+import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
+import { MembrosIndisponiveisError, type PortaDosMembros } from '../../src/domain/membros.port'
 import { createServer } from '../../src/interfaces/http/server'
+import { DesafiosEmMemoria, desafiosDesligados } from '../fakes/desafios'
+import { membrosDeMentira } from '../fakes/membros'
 import { RepositorioEmMemoria } from '../fakes/memoria'
 
 const TOKEN = 'token-interno-de-teste'
@@ -27,11 +38,43 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }))
 let repo: RepositorioEmMemoria
 let politica: PoliticaDeAcesso
 let app: ReturnType<typeof createServer>
+let membros: PortaDosMembros | null
+let desafios: DesafiosEmMemoria
+
+const CURSO = '55555555-5555-4555-8555-555555555555'
+const curriculo: CurriculoDeBlocos = {
+  versao: 1,
+  cursos: [
+    {
+      courseId: CURSO,
+      titulo: 'Repetições',
+      slug: 'repeticoes',
+      posto: 'coder',
+      papel: 'base2d',
+      blocos: ['sz_js_repeat'],
+    },
+  ],
+  catalogo: [],
+}
+const membrosComBlocos = (blocos: string[]): PortaDosMembros =>
+  membrosDeMentira({
+    lerJogador: async () => ({ posicao: 2, total: 8, blocos }),
+    lerCurriculo: async () => curriculo,
+  })
 
 function montar(servirMapas = true) {
   app = createServer({
     logger: createLogger({ level: 'error' }),
     servico: new ServicoDoJogo(repo, politica, () => AGORA),
+    cartas: new ServicoDasCartas(politica, new LeiturasDosMembros(membros)),
+    equipe: new ServicoDaEquipe(
+      desafios,
+      membros,
+      new LeiturasDosMembros(membros),
+      new ConferenciaDoMapa(membros, createLogger({ level: 'error' })),
+      () => AGORA,
+    ),
+    desafios: desafiosDesligados(politica),
     cliente: { dir, servirMapas },
     tokenInterno: TOKEN,
     readiness: async () => {},
@@ -41,6 +84,8 @@ function montar(servirMapas = true) {
 beforeEach(() => {
   repo = new RepositorioEmMemoria()
   politica = { modo: 'aberto', publicos: new Set(['kids']), lista: new Set() }
+  membros = membrosComBlocos(['sz_js_if_else'])
+  desafios = new DesafiosEmMemoria()
   montar()
 })
 
@@ -90,7 +135,10 @@ describe('borda', () => {
 
   test('healthz e readyz', async () => {
     expect((await chamar('GET', '/healthz', {})).status).toBe(200)
-    expect((await chamar('GET', '/readyz', {})).json).toEqual({ status: 'ready' })
+    expect((await chamar('GET', '/readyz', {})).json).toEqual({
+      status: 'ready',
+      mapaDasIlhas: 'desligada',
+    })
   })
 })
 
@@ -104,6 +152,7 @@ describe('acesso', () => {
       limiteDiarioMinutos: 30,
       usadoHojeSegundos: 90,
       contabilizaTempo: true,
+      somenteLeitura: false,
     })
   })
 
@@ -120,6 +169,7 @@ describe('acesso', () => {
       limiteDiarioMinutos: null,
       usadoHojeSegundos: 0,
       contabilizaTempo: false,
+      somenteLeitura: false,
     })
   })
 
@@ -166,6 +216,167 @@ describe('acesso', () => {
 describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
 
+  test('V10 migra na rota e a versão atual preserva as descobertas do Recife por revisão', async () => {
+    const { recife: _, vale: _vale, pico: _pico, ...base } = salvamento
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: { ...base, versao: 10 },
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.recife).toEqual({
+      bau: false,
+      pagina: false,
+      tesouro: false,
+      corais: 0,
+    })
+    if (!lido.salvamento) throw new Error('A gravação V10 não devolveu o salvamento')
+    const atual = {
+      ...lido.salvamento!,
+      recife: { bau: true, pagina: true, tesouro: true, corais: 0 },
+    }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const recebido = await chamar('GET', '/arquipelago/salvamento', crianca())
+    expect(SalvamentoGuardadoSchema.parse(recebido.json).salvamento).toEqual(atual)
+    const velha = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: { ...base, versao: 10 },
+    })
+    expect(velha.status).toBe(409)
+  })
+
+  test('V11 migra sem perder o Recife e a V12 guarda todas as descobertas do Vale', async () => {
+    const { vale: _, pico: _pico, ...base } = salvamento
+    const v11 = { ...base, versao: 11, recife: { bau: true, pagina: true, tesouro: true } }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v11,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [] })
+    const atual = {
+      ...lido.salvamento!,
+      vale: { pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE] },
+    }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    expect(relido.salvamento?.recife).toEqual({ ...v11.recife, corais: 0 })
+  })
+
+  test('V12 migra na rota e a V13 guarda os corais replantados do Recife', async () => {
+    const { pico: _pico, ...semPico } = salvamento
+    const v12 = {
+      ...semPico,
+      versao: 12,
+      recife: { bau: true, pagina: false, tesouro: true },
+    }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v12,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.versao).toBe(14)
+    expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
+    const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    const fora = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: relido.revisao,
+      salvamento: { ...atual, recife: { ...atual.recife, corais: 16 } },
+    })
+    expect(fora.status).toBe(400)
+  })
+
+  test('V13 migra na rota e a V14 guarda a banda do Pico', async () => {
+    const { pico: _pico, ...semPico } = salvamento
+    const v13 = { ...semPico, versao: 13 }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v13,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.versao).toBe(14)
+    expect(lido.salvamento?.pico).toEqual({ banda: 0 })
+    const atual = { ...lido.salvamento!, pico: { banda: 7 } }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    const fora = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: relido.revisao,
+      salvamento: { ...atual, pico: { banda: 8 } },
+    })
+    expect(fora.status).toBe(400)
+  })
+
+  test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
+    const {
+      presenteDosBichosEntregue: _,
+      turnos: _t,
+      lumis: _l,
+      rotinas: _r,
+      recife: _recife,
+      vale: _vale,
+      pico: _pico,
+      ...anterior
+    } = salvamento
+    const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v4,
+    })
+    expect(primeira.status).toBe(200)
+    const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(migrado.salvamento).toMatchObject({ versao: 14, presenteDosBichosEntregue: false })
+    if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
+    const entregue = {
+      ...migrado.salvamento,
+      bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null },
+      inventario: { salada: 1 },
+      presenteDosBichosEntregue: true,
+    }
+    const gravado = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 1,
+      salvamento: entregue,
+    })
+    expect(gravado.status).toBe(200)
+    expect(SalvamentoGuardadoSchema.parse(gravado.json).salvamento).toEqual(entregue)
+    const atrasado = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 1,
+      salvamento: v4,
+    })
+    expect(atrasado.status).toBe(409)
+    expect(ConflitoDeSalvamentoSchema.parse(atrasado.json).atual.salvamento).toEqual(entregue)
+    const relido = await chamar('GET', '/arquipelago/salvamento', crianca())
+    expect(SalvamentoGuardadoSchema.parse(relido.json).salvamento).toEqual(entregue)
+  })
+
   test('nada guardado, primeira gravação, revisão velha recebe o guardado', async () => {
     expect((await chamar('GET', '/arquipelago/salvamento', crianca())).json).toEqual({
       revisao: 0,
@@ -205,7 +416,7 @@ describe('salvamento', () => {
   test('corpo fora do formato é 400 sem ecoar o que chegou', async () => {
     const r = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
-      salvamento: { ...salvamento, versao: 9, segredo: 'x' },
+      salvamento: { ...salvamento, versao: 10, segredo: 'x' },
     })
     expect(r.status).toBe(400)
     expect(r.texto).not.toContain('segredo')
@@ -249,6 +460,7 @@ describe('salvamento', () => {
     const suporte = { ...crianca(), 'x-auth-impersonator-id': ADULTO }
     expect((await chamar('GET', '/arquipelago/acesso', suporte)).json).toMatchObject({
       contabilizaTempo: false,
+      somenteLeitura: true,
     })
     const r = await chamar('PUT', '/arquipelago/salvamento', suporte, {
       revisaoBase: 0,
@@ -341,9 +553,9 @@ describe('tempo livre e limite da família', () => {
   })
 
   test('responsável lê o padrão e muda (normalizado em passos de 5)', async () => {
-    expect((await chamar('GET', '/arquipelago/familia/limite', responsavel)).json).toEqual({
-      limiteDiarioMinutos: 30,
-    })
+    expect(
+      (await chamar('GET', `/arquipelago/familia/limite?perfis=${PERFIL}`, responsavel)).json,
+    ).toEqual({ limiteDiarioMinutos: 30, algumaCriancaVe: true })
     const r = await chamar('PUT', '/arquipelago/familia/limite', responsavel, {
       limiteDiarioMinutos: 47,
     })
@@ -355,6 +567,36 @@ describe('tempo livre e limite da família', () => {
       limiteDiarioMinutos: 999,
     })
     expect(alto.json).toEqual({ limiteDiarioMinutos: 240 })
+  })
+
+  test('a leitura dos pais diz se alguma criança da conta vê o jogo', async () => {
+    const ler = async (query: string) =>
+      (await chamar('GET', `/arquipelago/familia/limite${query}`, responsavel)).json
+    politica = { modo: 'lista', publicos: new Set(['kids']), lista: new Set([IRMAO]) }
+    montar()
+    expect(await ler(`?perfis=${PERFIL}`)).toEqual({
+      limiteDiarioMinutos: 30,
+      algumaCriancaVe: false,
+    })
+    expect(await ler(`?perfis=${PERFIL},${IRMAO.toUpperCase()}`)).toMatchObject({
+      algumaCriancaVe: true,
+    })
+    // Sem perfis na conta, nenhuma criança vê.
+    expect(await ler('')).toMatchObject({ algumaCriancaVe: false })
+    expect(await ler('?perfis=')).toMatchObject({ algumaCriancaVe: false })
+    politica = { modo: 'desligado', publicos: new Set(['kids']), lista: new Set([PERFIL]) }
+    montar()
+    expect(await ler(`?perfis=${PERFIL}`)).toMatchObject({ algumaCriancaVe: false })
+    politica = { modo: 'aberto', publicos: new Set(['kids']), lista: new Set() }
+    montar()
+    expect(await ler(`?perfis=${PERFIL}`)).toMatchObject({ algumaCriancaVe: true })
+  })
+
+  test('perfis fora do formato são recusados, e a criança não lê a família', async () => {
+    const r = await chamar('GET', '/arquipelago/familia/limite?perfis=lixo', responsavel)
+    expect(r.status).toBe(400)
+    const crianca1 = await chamar('GET', `/arquipelago/familia/limite?perfis=${PERFIL}`, crianca())
+    expect(crianca1.status).toBe(403)
   })
 
   test('a criança não muda o próprio limite', async () => {
@@ -398,5 +640,149 @@ describe('cliente do jogo', () => {
     expect((await chamar('GET', '/arquipelago/cliente/nao-existe.js', h)).status).toBe(404)
     montar(false)
     expect((await chamar('GET', '/arquipelago/cliente/entrada-abc.js.map', h)).status).toBe(404)
+  })
+})
+
+describe('cartões dos Lumis', () => {
+  test('os do jogo sempre; os de controle pelos blocos; os que faltam dizem onde aprender', async () => {
+    const r = await chamar('GET', '/arquipelago/cartas', crianca())
+    expect(r.status).toBe(200)
+    const { cartas } = CartasDoJogadorSchema.parse(r.json)
+    const por = (id: string) => cartas.find((c) => c.id === id)
+    expect(por('regar')).toMatchObject({ conquistada: true, aprendaEm: [] })
+    expect(por('se')).toMatchObject({ conquistada: true, aprendaEm: [] })
+    expect(por('repetir')).toMatchObject({
+      conquistada: false,
+      aprendaEm: [{ courseId: CURSO, titulo: 'Repetições', slug: 'repeticoes', posto: 'coder' }],
+    })
+  })
+
+  test('equipe vê todos os cartões', async () => {
+    const r = await chamar('GET', '/arquipelago/cartas', {
+      ...crianca(),
+      'x-auth-user-role': 'staff',
+    })
+    const { cartas } = CartasDoJogadorSchema.parse(r.json)
+    expect(cartas.every((c) => c.conquistada)).toBe(true)
+  })
+
+  test('sem Members configurado ou com ele fora: 424, nunca 5xx', async () => {
+    membros = null
+    montar()
+    const r = await chamar('GET', '/arquipelago/cartas', crianca())
+    expect(r.status).toBe(424)
+    expect(r.json).toMatchObject({ error: { code: 'PLATAFORMA_INDISPONIVEL' } })
+    membros = {
+      ...membrosComBlocos([]),
+      lerJogador: async () => {
+        throw new MembrosIndisponiveisError('rede')
+      },
+    }
+    montar()
+    expect((await chamar('GET', '/arquipelago/cartas', crianca())).status).toBe(424)
+  })
+
+  test('jogo bloqueado para a pessoa: 403 como as outras rotas', async () => {
+    politica = { modo: 'desligado', publicos: new Set(['kids']), lista: new Set() }
+    montar()
+    expect((await chamar('GET', '/arquipelago/cartas', crianca())).status).toBe(403)
+  })
+})
+
+describe('cartões dos Lumis na comunidade adulta', () => {
+  const CURSO_ADULTO = '66666666-6666-4666-8666-666666666666'
+  const CURSO_KIDS = '77777777-7777-4777-8777-777777777777'
+  const curso = (courseId: string, titulo: string, blocos: string[]) => ({
+    courseId,
+    titulo,
+    slug: titulo.toLowerCase().replaceAll(' ', '-'),
+    posto: 'coder',
+    papel: 'base2d',
+    blocos,
+  })
+  // Cada público tem o próprio currículo; `sz_js_while` só existe num curso Kids.
+  const curriculos = {
+    kids: {
+      versao: 1,
+      cursos: [curso(CURSO_KIDS, 'Laços Kids', ['sz_js_repeat', 'sz_js_while'])],
+      catalogo: [],
+    },
+    adult: {
+      versao: 1,
+      cursos: [curso(CURSO_ADULTO, 'Laços adultos', ['sz_js_repeat'])],
+      catalogo: [],
+    },
+  } satisfies Record<string, CurriculoDeBlocos>
+  const adulto = {
+    'x-internal-token': TOKEN,
+    'x-auth-user-id': ADULTO,
+    'x-auth-user-role': 'member',
+    'x-auth-user-status': 'active',
+  }
+  let perguntas: unknown[]
+
+  function comBlocosDoAdulto(blocos: string[]) {
+    perguntas = []
+    politica = { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() }
+    membros = membrosDeMentira({
+      // O Members só devolve blocos do público pedido (a régua mora lá, por `courses.audience`).
+      lerJogador: async (pergunta) => {
+        perguntas.push(pergunta)
+        return {
+          posicao: 2,
+          total: 8,
+          blocos: pergunta.audience === 'adult' ? blocos : ['sz_js_while'],
+        }
+      },
+      lerCurriculo: async (publico) => {
+        perguntas.push(publico)
+        return curriculos[publico]
+      },
+    })
+    montar()
+  }
+
+  async function cartasDoAdulto() {
+    const r = await chamar('GET', '/arquipelago/cartas', adulto)
+    expect(r.status).toBe(200)
+    const { cartas } = CartasDoJogadorSchema.parse(r.json)
+    return (id: string) => cartas.find((c) => c.id === id)
+  }
+
+  test('o adulto pergunta ao Members como adulto: a própria conta e o currículo adulto', async () => {
+    comBlocosDoAdulto([])
+    await cartasDoAdulto()
+    expect(perguntas).toContainEqual({ userId: ADULTO, accountId: ADULTO, audience: 'adult' })
+    expect(perguntas).toContain('adult')
+    expect(perguntas).not.toContain('kids')
+  })
+
+  test('com o bloco de um curso adulto, o cartão está na mão', async () => {
+    comBlocosDoAdulto(['sz_js_repeat'])
+    const por = await cartasDoAdulto()
+    expect(por('repetir')).toMatchObject({ conquistada: true, aprendaEm: [] })
+    expect(por('regar')).toMatchObject({ conquistada: true, aprendaEm: [] })
+  })
+
+  test('sem o bloco, trancado com o curso adulto que ensina', async () => {
+    comBlocosDoAdulto([])
+    const por = await cartasDoAdulto()
+    expect(por('repetir')).toMatchObject({
+      conquistada: false,
+      aprendaEm: [
+        { courseId: CURSO_ADULTO, titulo: 'Laços adultos', slug: 'laços-adultos', posto: 'coder' },
+      ],
+    })
+  })
+
+  test('um bloco que só existe em curso Kids não conta nem é sugerido ao adulto', async () => {
+    comBlocosDoAdulto([])
+    const por = await cartasDoAdulto()
+    // A criança da mentira tem `sz_js_while`; o adulto não, e nenhum curso adulto ensina.
+    expect(por('enquanto')).toMatchObject({ conquistada: false, aprendaEm: [] })
+    const kids = CartasDoJogadorSchema.parse(
+      (await chamar('GET', '/arquipelago/cartas', crianca())).json,
+    )
+    expect(kids.cartas.find((c) => c.id === 'enquanto')).toMatchObject({ conquistada: true })
   })
 })

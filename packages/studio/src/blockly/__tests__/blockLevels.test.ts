@@ -49,6 +49,7 @@ const INICIANTE_3D_G3D_ESPERADO = [
   'sz_g3d_set_life',
   'sz_g3d_set_position',
   'sz_g3d_set_screen_text',
+  'sz_g3d_set_solid',
   'sz_g3d_set_visible',
   'sz_g3d_sky_photo',
   'sz_g3d_spawn_copy',

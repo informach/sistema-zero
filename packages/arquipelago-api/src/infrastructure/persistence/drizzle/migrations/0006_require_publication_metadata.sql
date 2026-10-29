@@ -1,0 +1,1 @@
+ALTER TABLE "arquipelago"."desafio_publicacoes" ALTER COLUMN "metadados" SET NOT NULL;

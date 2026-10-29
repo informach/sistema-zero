@@ -31,7 +31,7 @@ const manifests = aulasMeuJeito.map((lesson) => {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}.manifesto.json`,
+        `../../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-${lesson.slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -56,7 +56,7 @@ for (const [index, manifest] of manifests.entries())
     const script = readFileSync(
       resolve(
         import.meta.dir,
-        `../../aulas-interativas/o-jogo-do-meu-jeito/meu-jeito-${manifest.lessonSlug}.roteiro.md`,
+        `../../aulas-interativas/construtor/o-jogo-do-meu-jeito/meu-jeito-${manifest.lessonSlug}.roteiro.md`,
       ),
       'utf8',
     )

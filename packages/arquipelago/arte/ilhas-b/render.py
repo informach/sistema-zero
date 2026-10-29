@@ -13,6 +13,10 @@ ASSETS = os.path.join(AQUI, '..', '..', 'src', 'assets', 'ilhas')
 
 VISTAS = {
     'pico': ('pico.glb', dict(ALVO='0,3,0', DIR='1,0.85,0.7', DIST='38', AGUA='1', RES='1200,800')),
+    # A caverna de cristal atrás da montanha e o trenó no platô (fase3-07).
+    'pico-caverna': ('pico.glb', dict(ALVO='-15,1.5,-0.5', DIR='0.25,1,0.45', DIST='42', AGUA='1', RES='1200,800')),
+    'pico-boca': ('pico.glb', dict(ALVO='-13.6,1.8,-0.5', DIR='0.55,0.45,1', DIST='11', AGUA='1', RES='1200,800')),
+    'pico-cume': ('pico.glb', dict(ALVO='-4.5,9.8,-1.2', DIR='0.6,0.9,1', DIST='9', AGUA='1', RES='1200,800')),
     'vale': ('vale-dos-dinos.glb', dict(ALVO='0,3,0', DIR='1,0.85,0.75', DIST='38', AGUA='1', RES='1200,800')),
     'nuvens': ('nuvens.glb', dict(ALVO='-2,9,0', DIR='1,0.7,0.75', DIST='46', AGUA='1', RES='1200,800',
                                   POS=f"{os.path.join(ASSETS, 'nuvens.glb')}=0,7,0")),

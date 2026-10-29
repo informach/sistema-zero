@@ -205,6 +205,8 @@ const G3K_LEVEL: BlockLevel = 'avancado-3d'
 const INICIANTE_3D_G3D: ReadonlySet<string> = new Set<string>([
   'sz_g3d_top_down',
   'sz_g3d_walk_area',
+  // A pedra e os coqueiros da Ilha (29/10/2026): o "Fazer andar com as setas" não os atravessa.
+  'sz_g3d_set_solid',
   'sz_g3d_walk_animations',
   'sz_g3d_frame_scene',
   'sz_g3d_on_touch',

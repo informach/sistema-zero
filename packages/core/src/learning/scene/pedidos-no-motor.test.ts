@@ -1210,6 +1210,244 @@ const CENAS: Record<SceneId, Cena> = {
     mostra: (s) =>
       s.lighthouse.door === 'closed' && s.evidence.discoveries.includes('locked-without-key'),
   },
+  'coin-counter': {
+    pedidos: {
+      'each-adds': {
+        texto: 'Use Encostar na moeda em duas moedas diferentes.',
+        faz: (m) => {
+          m.faz({ type: 'touch-coin', coin: 0 })
+          m.faz({ type: 'touch-coin', coin: 1 })
+        },
+      },
+      'no-double': {
+        texto:
+          'Com A moeda some ligado, pegue uma moeda, clique em Afastar e use Encostar na moeda nela de novo.',
+        faz: (m) => {
+          m.faz({ type: 'coin-disappears', enabled: true })
+          m.faz({ type: 'touch-coin', coin: 2 })
+          m.faz({ type: 'leave-coin' })
+          m.faz({ type: 'touch-coin', coin: 2 })
+        },
+      },
+      'counts-again': {
+        texto:
+          'Desligue A moeda some, pegue uma moeda, clique em Afastar e use Encostar na moeda nela outra vez.',
+        faz: (m) => {
+          m.faz({ type: 'coin-disappears', enabled: false })
+          m.faz({ type: 'touch-coin', coin: 3 })
+          m.faz({ type: 'leave-coin' })
+          m.faz({ type: 'touch-coin', coin: 3 })
+        },
+      },
+      kept: {
+        texto: 'Depois de pegar uma moeda, clique em Afastar e olhe moedas.',
+        faz: (m) => {
+          m.faz({ type: 'touch-coin', coin: 4 })
+          m.faz({ type: 'leave-coin' })
+        },
+      },
+      'below-goal': {
+        texto: 'Pegue de uma a quatro moedas e clique em Encostar no baú.',
+        faz: (m) => {
+          m.faz({ type: 'restart-coins' })
+          m.faz({ type: 'touch-coin', coin: 0 })
+          m.faz({ type: 'try-chest' })
+        },
+      },
+      'compare-rules': {
+        texto:
+          'Pegue as seis moedas e clique em Encostar no baú com Pelo menos 5 e depois com Igual a 5.',
+        faz: (m) => {
+          m.faz({ type: 'restart-coins' })
+          m.faz({ type: 'coin-disappears', enabled: true })
+          for (const coin of [0, 1, 2, 3, 4, 5] as const) m.faz({ type: 'touch-coin', coin })
+          m.faz({ type: 'chest-rule', rule: 'at-least' })
+          m.faz({ type: 'try-chest' })
+          m.faz({ type: 'chest-rule', rule: 'equals' })
+          m.faz({ type: 'try-chest' })
+        },
+      },
+    },
+    mostra: (s) => s.caption.startsWith('Esta moeda já saiu do caminho'),
+  },
+  'two-pieces': {
+    pedidos: {
+      'none-closed': {
+        texto: 'Com e escolhido, clique em Encostar na cabana antes de pegar qualquer peça.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'one-closed': {
+        texto:
+          'Com e escolhido, use Pegar a chave ou Pegar o emblema e clique em Encostar na cabana.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'both-open': {
+        texto: 'Com e escolhido, pegue as duas peças e clique em Encostar na cabana.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'any-order': {
+        texto:
+          'Abra a cabana começando pela chave, clique em Recomeçar a partida e abra de novo começando pelo emblema.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'and' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'try-cabin' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'emblem' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+      'and-vs-or': {
+        texto: 'Escolha ou, pegue uma peça só e clique em Encostar na cabana.',
+        faz: (m) => {
+          m.faz({ type: 'cabin-rule', rule: 'or' })
+          m.faz({ type: 'restart-cabin' })
+          m.faz({ type: 'take-piece', piece: 'key' })
+          m.faz({ type: 'try-cabin' })
+        },
+      },
+    },
+    mostra: (s) => s.caption.startsWith('A cabana continua fechada'),
+  },
+  'timed-bridge': {
+    pedidos: {
+      'closed-start': {
+        texto: 'Clique em Encostar na ponte antes de puxar a alavanca.',
+        faz: (m) => {
+          m.faz({ type: 'restart-bridge' })
+          m.faz({ type: 'touch-bridge' })
+        },
+      },
+      'lever-opens': {
+        texto: 'Clique em Puxar a alavanca.',
+        faz: (m) => {
+          m.faz({ type: 'restart-bridge' })
+          m.faz({ type: 'pull-lever' })
+        },
+      },
+      'in-time': {
+        texto:
+          'Puxe a alavanca, clique em Esperar 1 segundo e encoste na ponte antes de passarem 4 segundos.',
+        faz: (m) => {
+          m.faz({ type: 'restart-bridge' })
+          m.faz({ type: 'pull-lever' })
+          m.faz({ type: 'wait-second' })
+          m.faz({ type: 'touch-bridge' })
+        },
+      },
+      'rises-alone': {
+        texto: 'Puxe a alavanca e clique em Esperar 1 segundo até passarem 4 segundos.',
+        faz: (m) => {
+          m.faz({ type: 'timer-place', place: 'lever' })
+          m.faz({ type: 'pull-lever' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+        },
+      },
+      'pull-again': {
+        texto: 'Deixe a ponte subir sozinha e clique em Puxar a alavanca de novo.',
+        faz: (m) => {
+          m.faz({ type: 'timer-place', place: 'lever' })
+          m.faz({ type: 'pull-lever' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+          m.faz({ type: 'pull-lever' })
+        },
+      },
+      'timer-place': {
+        texto:
+          'Escolha No começo do jogo, clique em Esperar 1 segundo quatro vezes, puxe a alavanca e espere mais quatro segundos.',
+        faz: (m) => {
+          m.faz({ type: 'timer-place', place: 'start' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+          m.faz({ type: 'pull-lever' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'wait-second' })
+        },
+      },
+    },
+    mostra: (s) => s.bridge.at === 'stone',
+  },
+  'symbol-sequence': {
+    pedidos: {
+      'step-moves': {
+        texto: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a lua.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+        },
+      },
+      'right-order': {
+        texto:
+          'Com Na ordem escolhido, clique em Tocar o sol, Tocar a lua e Tocar a estrela, nessa ordem.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+        },
+      },
+      'out-of-turn': {
+        texto: 'Com Na ordem escolhido, clique em Tocar o sol e depois em Tocar a estrela.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+        },
+      },
+      'middle-start': {
+        texto: 'Com Na ordem escolhido, recomece a partida e clique em Tocar a lua antes do sol.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'restart-symbols' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+        },
+      },
+      'restart-works': {
+        texto:
+          'Com Na ordem escolhido, erre a ordem e, sem recomeçar a partida, toque o sol, a lua e a estrela.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+        },
+      },
+      'count-vs-order': {
+        texto:
+          'Depois de abrir o baú na ordem certa, escolha Só contando e toque a estrela, a lua e o sol.',
+        faz: (m) => {
+          m.faz({ type: 'sequence-mode', mode: 'order' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+          m.faz({ type: 'sequence-mode', mode: 'count' })
+          m.faz({ type: 'touch-symbol', symbol: 'estrela' })
+          m.faz({ type: 'touch-symbol', symbol: 'lua' })
+          m.faz({ type: 'touch-symbol', symbol: 'sol' })
+        },
+      },
+    },
+    mostra: (s) =>
+      s.sequence.passo === 0 && s.sequence.chest === 'closed' && s.sequence.lit.length === 0,
+  },
   'lighthouse-position': {
     pedidos: {
       'x-minus': {

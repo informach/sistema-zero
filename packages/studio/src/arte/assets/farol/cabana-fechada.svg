@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <ellipse cx="48" cy="88" rx="40" ry="5" fill="#096946"/>
+  <rect x="64" y="14" width="9" height="18" rx="1.5" fill="#46536e"/>
+  <rect x="62.5" y="12" width="12" height="4" rx="1.5" fill="#333c57"/>
+  <rect x="16" y="44" width="64" height="44" fill="#9b7150"/>
+  <rect x="16" y="54" width="64" height="1.6" fill="#835d3f"/>
+  <rect x="16" y="65" width="64" height="1.6" fill="#835d3f"/>
+  <rect x="16" y="76" width="64" height="1.6" fill="#835d3f"/>
+  <rect x="13" y="42" width="6" height="47" rx="1.5" fill="#6a4a31"/>
+  <rect x="77" y="42" width="6" height="47" rx="1.5" fill="#6a4a31"/>
+  <rect x="11" y="84" width="74" height="5" rx="2" fill="#6a4a31"/>
+  <polygon points="6,48 48,14 90,48" fill="#cf3f36"/>
+  <polygon points="6,48 48,14 48,20 13,48" fill="#a8322b"/>
+  <rect x="5" y="46" width="86" height="5" rx="2.5" fill="#a8322b"/>
+  <ellipse cx="48" cy="33" rx="5" ry="5" fill="#f3f6fb"/>
+  <ellipse cx="48" cy="33" rx="3.2" ry="3.2" fill="#46536e"/>
+  <rect x="22" y="57" width="14" height="14" rx="2" fill="#6a4a31"/>
+  <rect x="24" y="59" width="10" height="10" rx="1" fill="#46536e"/>
+  <rect x="28.3" y="59" width="1.4" height="10" fill="#6a4a31"/>
+  <rect x="24" y="63.3" width="10" height="1.4" fill="#6a4a31"/>
+  <rect x="60" y="57" width="14" height="14" rx="2" fill="#6a4a31"/>
+  <rect x="62" y="59" width="10" height="10" rx="1" fill="#46536e"/>
+  <rect x="66.3" y="59" width="1.4" height="10" fill="#6a4a31"/>
+  <rect x="62" y="63.3" width="10" height="1.4" fill="#6a4a31"/>
+  <rect x="38" y="56" width="20" height="31" rx="3" fill="#6a4a31"/>
+  <rect x="40.5" y="59" width="15" height="11" rx="1.5" fill="#5a3e29"/>
+  <rect x="40.5" y="73" width="15" height="11" rx="1.5" fill="#5a3e29"/>
+  <rect x="44" y="65" width="8" height="10" rx="2" fill="#f3b123"/>
+  <ellipse cx="48" cy="68.6" rx="1.4" ry="1.4" fill="#0f1a33"/>
+  <polygon points="47.4,69.4 48.6,69.4 49,72.4 47,72.4" fill="#0f1a33"/>
+  <path d="M 48 47.5 L 52.5 49.2 L 52.5 51.8 C 52.5 54 50.6 55.6 48 56.4 C 45.4 55.6 43.5 54 43.5 51.8 L 43.5 49.2 Z" fill="#46536e" stroke="#f3b123" stroke-width="1"/>
+</svg>

@@ -5,17 +5,33 @@ mock.module('server-only', () => ({}))
 
 const { createArquipelagoRoutes } = await import('../src/routes/arquipelago')
 
-type Chamada = { caminho: string; metodo?: string; corpo?: unknown }
+type Chamada = { caminho: string; metodo?: string; corpo?: unknown; query?: unknown }
+type Resposta = { status: number; body: unknown; retryAfter?: string }
 
-function montar(resposta: { status: number; body: unknown; retryAfter?: string }) {
+const PERFIL = '11111111-1111-4111-8111-111111111111'
+const IRMAO = '33333333-3333-4333-8333-333333333333'
+
+function montar(
+  resposta: Resposta,
+  perfis: Resposta = { status: 200, body: { profiles: [{ id: PERFIL }, { id: IRMAO }] } },
+) {
   const chamadas: Chamada[] = []
   const routes = createArquipelagoRoutes({
     gateway: {
-      gatewayFetch: async (caminho: string, opts: { method?: string; body?: unknown }) => {
-        chamadas.push({ caminho, metodo: opts.method, corpo: opts.body })
+      gatewayFetch: async (
+        caminho: string,
+        opts: { method?: string; body?: unknown; query?: unknown },
+      ) => {
+        chamadas.push({
+          caminho,
+          metodo: opts.method,
+          corpo: opts.body,
+          ...(opts.query ? { query: opts.query } : {}),
+        })
         return resposta
       },
     } as never,
+    profiles: { list: async () => perfis } as never,
   })
   return { routes, chamadas }
 }
@@ -24,6 +40,52 @@ const pedido = (corpo: string) =>
   new Request('http://local/api/arquipelago/salvamento', { method: 'PUT', body: corpo })
 
 const fetchOriginal = globalThis.fetch
+describe('minijogos aprovados no repasse', () => {
+  test('jogador lista e abre só pelo id validado', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { minijogos: [] } })
+    const lista = await routes.arquipelagoMinijogos.GET()
+    expect(lista.headers.get('cache-control')).toBe('private, no-store')
+    await routes.arquipelagoMinijogo.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: IRMAO }),
+    })
+    expect(chamadas.map((c) => c.caminho)).toEqual([
+      '/arquipelago/minijogos',
+      `/arquipelago/minijogos/${IRMAO}`,
+    ])
+    expect(
+      (
+        await routes.arquipelagoMinijogo.GET(new Request('http://local'), {
+          params: Promise.resolve({ id: '../outra-pessoa' }),
+        })
+      ).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(2)
+  })
+  test('pais só repassam perfis da grade da própria conta', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { minijogos: [] } })
+    const ctx = (perfil: string) => ({ params: Promise.resolve({ perfil }) })
+    expect(
+      (
+        await routes.arquipelagoMinijogosDaFamilia.GET(
+          new Request('http://local'),
+          ctx('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+        )
+      ).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(0)
+    await routes.arquipelagoMinijogosDaFamilia.GET(
+      new Request(`http://local?id=${IRMAO}`),
+      ctx(PERFIL),
+    )
+    expect(chamadas[0]?.caminho).toBe(`/arquipelago/familia/minijogos/${PERFIL}/${IRMAO}`)
+  })
+  test('lista agregada da família esconde falha sem inventar minijogos', async () => {
+    const { routes } = montar({ status: 503, body: null })
+    const r = await routes.arquipelagoTodosMinijogosDaFamilia.GET()
+    expect(await r.json()).toEqual({ criancas: [] })
+    expect(r.headers.get('cache-control')).toContain('no-store')
+  })
+})
 afterEach(() => {
   globalThis.fetch = fetchOriginal
 })
@@ -51,9 +113,11 @@ describe('repasse do Arquipélago', () => {
     expect(r.status).toBe(409)
     expect(await r.json()).toEqual({ error: { code: 'X' }, atual: {} })
     await routes.arquipelagoAcesso.GET()
+    await routes.arquipelagoCartas.GET()
     expect(chamadas).toEqual([
       { caminho: '/arquipelago/salvamento', metodo: 'PUT', corpo: { revisaoBase: 1 } },
       { caminho: '/arquipelago/acesso', metodo: 'GET', corpo: undefined },
+      { caminho: '/arquipelago/cartas', metodo: 'GET', corpo: undefined },
     ])
   })
 
@@ -76,6 +140,144 @@ describe('repasse do Arquipélago', () => {
     const r = await routes.arquipelagoLimiteDaFamilia.PUT(pedido('{"limiteDiarioMinutos":45}'))
     expect(await r.json()).toEqual({ limiteDiarioMinutos: 45 })
     expect(chamadas[0]?.caminho).toBe('/arquipelago/familia/limite')
+  })
+
+  test('a leitura do limite leva os perfis da conta para o serviço decidir quem vê o jogo', async () => {
+    const lido = { limiteDiarioMinutos: 30, algumaCriancaVe: true }
+    const { routes, chamadas } = montar({ status: 200, body: lido })
+    const r = await routes.arquipelagoLimiteDaFamilia.GET()
+    expect(await r.json()).toEqual(lido)
+    expect(chamadas).toEqual([
+      {
+        caminho: '/arquipelago/familia/limite',
+        metodo: 'GET',
+        corpo: undefined,
+        query: { perfis: `${PERFIL},${IRMAO}` },
+      },
+    ])
+  })
+
+  test('conta sem perfis vai sem nenhum; sem a lista de perfis, nada segue', async () => {
+    const vazia = montar({ status: 200, body: {} }, { status: 200, body: { profiles: [] } })
+    await vazia.routes.arquipelagoLimiteDaFamilia.GET()
+    expect(vazia.chamadas[0]?.query).toEqual({ perfis: '' })
+    const recusada = montar(
+      { status: 200, body: {} },
+      { status: 403, body: { error: { code: 'FORBIDDEN' } } },
+    )
+    const r = await recusada.routes.arquipelagoLimiteDaFamilia.GET()
+    expect(r.status).toBe(403)
+    expect(recusada.chamadas).toEqual([])
+    for (const corpo of [null, {}, { profiles: 'x' }]) {
+      const estranha = montar({ status: 200, body: {} }, { status: 200, body: corpo })
+      expect((await estranha.routes.arquipelagoLimiteDaFamilia.GET()).status).toBe(502)
+      expect(estranha.chamadas).toEqual([])
+    }
+  })
+
+  test('a semana leva os mesmos perfis e volta com o nome de cada criança, da grade do Auth', async () => {
+    const semana = {
+      algumaCriancaVe: true,
+      inicio: '2026-10-22',
+      fim: '2026-10-28',
+      limiteDiarioMinutos: 30,
+      criancas: [
+        {
+          perfilId: PERFIL,
+          desafios: { aprovados: 2, deIlhasAnteriores: null },
+          objetos: { pinta: 1, molda: 0 },
+          tempoLivre: { segundos: 600, dias: 1 },
+        },
+      ],
+      aindaSemJogo: [IRMAO],
+    }
+    const perfis = {
+      status: 200,
+      body: {
+        profiles: [
+          { id: PERFIL, name: ' Lia ' },
+          { id: IRMAO, name: 'Tom' },
+        ],
+      },
+    }
+    const { routes, chamadas } = montar({ status: 200, body: semana }, perfis)
+    const r = await routes.arquipelagoSemanaDaFamilia.GET()
+    expect(await r.json()).toEqual({
+      ...semana,
+      criancas: [{ ...semana.criancas[0], nome: 'Lia' }],
+      aindaSemJogo: [{ perfilId: IRMAO, nome: 'Tom' }],
+    })
+    expect(chamadas).toEqual([
+      {
+        caminho: '/arquipelago/familia/semana',
+        metodo: 'GET',
+        corpo: undefined,
+        query: { perfis: `${PERFIL},${IRMAO}` },
+      },
+    ])
+  })
+
+  test('semana fora do contrato vira 502; erro do serviço passa como veio', async () => {
+    const estranha = montar({ status: 200, body: { algumaCriancaVe: true } })
+    expect((await estranha.routes.arquipelagoSemanaDaFamilia.GET()).status).toBe(502)
+    const fechada = montar({ status: 403, body: { error: { code: 'FORBIDDEN' } } })
+    expect((await fechada.routes.arquipelagoSemanaDaFamilia.GET()).status).toBe(403)
+    const semPerfis = montar(
+      { status: 200, body: {} },
+      { status: 503, body: { error: { code: 'X' } } },
+    )
+    expect((await semPerfis.routes.arquipelagoSemanaDaFamilia.GET()).status).toBe(503)
+    expect(semPerfis.chamadas).toEqual([])
+  })
+
+  test('as permissões vão e voltam pelo serviço, com corpo pequeno', async () => {
+    const escolha = { visitasDeIrmaos: true, visitasDeOutrasCriancas: false, fotosNoClube: true }
+    const { routes, chamadas } = montar({ status: 200, body: escolha })
+    expect(await (await routes.arquipelagoPermissoesDaFamilia.GET()).json()).toEqual(escolha)
+    await routes.arquipelagoPermissoesDaFamilia.PUT(pedido(JSON.stringify(escolha)))
+    expect(chamadas).toEqual([
+      { caminho: '/arquipelago/familia/permissoes', metodo: 'GET', corpo: undefined },
+      { caminho: '/arquipelago/familia/permissoes', metodo: 'PUT', corpo: escolha },
+    ])
+    expect((await routes.arquipelagoPermissoesDaFamilia.PUT(pedido('{x'))).status).toBe(400)
+  })
+
+  test('a galeria: ler e comprar vão ao serviço do jogo, a compra com corpo pequeno', async () => {
+    const compra = { aparencia: 'forno-classico', chave: '11111111-1111-4111-8111-111111111111' }
+    const { routes, chamadas } = montar({ status: 200, body: { possuidas: [] } })
+    await routes.arquipelagoGaleria.GET()
+    await routes.arquipelagoGaleriaCompras.POST(
+      new Request('http://local/api/arquipelago/galeria/compras', {
+        method: 'POST',
+        body: JSON.stringify(compra),
+      }),
+    )
+    expect(chamadas).toEqual([
+      { caminho: '/arquipelago/galeria', metodo: 'GET', corpo: undefined },
+      { caminho: '/arquipelago/galeria/compras', metodo: 'POST', corpo: compra },
+    ])
+    const grande = new Request('http://local/api/arquipelago/galeria/compras', {
+      method: 'POST',
+      body: JSON.stringify({ ...compra, sobra: 'x'.repeat(2000) }),
+    })
+    // Acima de 1 KB não sai do BFF (como o salvamento acima do teto: 400).
+    expect((await routes.arquipelagoGaleriaCompras.POST(grande)).status).toBe(400)
+    expect(chamadas).toHaveLength(2)
+  })
+
+  test('o perfil que ainda entra na jornada não conta (a criança não abre esse perfil)', async () => {
+    const perfis = {
+      status: 200,
+      body: {
+        profiles: [
+          { id: PERFIL, admissionState: 'pending' },
+          { id: IRMAO, admissionState: 'ready' },
+        ],
+      },
+    }
+    const { routes, chamadas } = montar({ status: 200, body: {} }, perfis)
+    await routes.arquipelagoLimiteDaFamilia.GET()
+    expect(chamadas[0]?.query).toEqual({ perfis: IRMAO })
   })
 
   test('cliente: só nomes do build, com os cabeçalhos de cache do serviço', async () => {
@@ -105,5 +307,157 @@ describe('repasse do Arquipélago', () => {
       ).toBe(404)
     }
     expect(pedidos).toEqual(['/arquipelago/cliente/entrada-abc.js'])
+  })
+
+  test('desafios: ilha e id conferidos no BFF; conferir com o prazo longo', async () => {
+    const chamadas: { caminho: string; opts: Record<string, unknown> }[] = []
+    const routes = createArquipelagoRoutes({
+      gateway: {
+        gatewayFetch: async (caminho: string, opts: Record<string, unknown>) => {
+          chamadas.push({ caminho, opts })
+          return { status: 200, body: { ok: true } }
+        },
+      } as never,
+      profiles: { list: async () => ({ status: 200, body: { profiles: [] } }) } as never,
+    })
+    const id = '22222222-2222-4222-8222-222222222222'
+    const ctx = (valor: string) => ({ params: Promise.resolve({ id: valor }) })
+    await routes.arquipelagoDesafios.GET(new Request('http://local/api/arquipelago/desafios'))
+    await routes.arquipelagoDesafios.GET(
+      new Request('http://local/api/arquipelago/desafios?ilha=bosque'),
+    )
+    expect(
+      (
+        await routes.arquipelagoDesafios.GET(
+          new Request('http://local/api/arquipelago/desafios?ilha=../x'),
+        )
+      ).status,
+    ).toBe(400)
+    await routes.arquipelagoDesafio.GET(new Request('http://local'), ctx(id))
+    expect(
+      (await routes.arquipelagoDesafio.GET(new Request('http://local'), ctx('x'))).status,
+    ).toBe(400)
+    await routes.arquipelagoDesafioVerificar.POST(
+      new Request('http://local', { method: 'POST', body: '{"revisao":1,"projeto":{}}' }),
+      ctx(id),
+    )
+    await routes.arquipelagoDesafioRecompensaVista.POST(new Request('http://local'), ctx(id))
+    expect(chamadas.map((c) => c.caminho)).toEqual([
+      '/arquipelago/desafios',
+      '/arquipelago/desafios',
+      `/arquipelago/desafios/${id}`,
+      `/arquipelago/desafios/${id}/verificar`,
+      `/arquipelago/desafios/${id}/recompensa-vista`,
+    ])
+    expect(chamadas[1]?.opts.query).toEqual({ ilha: 'bosque' })
+    expect(chamadas[3]?.opts).toMatchObject({
+      method: 'POST',
+      body: { revisao: 1, projeto: {} },
+      timeoutMs: 165_000,
+    })
+  })
+
+  test('conferir: corpo acima de 4 MB não sai do BFF', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: {} })
+    const grande = JSON.stringify({ revisao: 1, projeto: { x: 'a'.repeat(4 * 1024 * 1024) } })
+    const r = await routes.arquipelagoDesafioVerificar.POST(
+      new Request('http://local', { method: 'POST', body: grande }),
+      { params: Promise.resolve({ id: '22222222-2222-4222-8222-222222222222' }) },
+    )
+    expect(r.status).toBe(400)
+    expect(chamadas).toEqual([])
+  })
+})
+
+describe('recordes da família e visitas (fase3-12)', () => {
+  const OUTRO = '44444444-4444-4444-8444-444444444444'
+  const recorde = {
+    estrelas: { chegada: true, tempo: false, vagalumes: true },
+    melhorTempoMs: 61_000,
+  }
+  const doServico = {
+    versao: 1,
+    situacao: 'ok',
+    irmaos: [
+      { perfilId: IRMAO, percursos: { 'bosque-copas': recorde }, temCasa: true },
+      { perfilId: OUTRO, percursos: {}, temCasa: false },
+    ],
+  }
+  function comIrmaos(servico: Resposta, irmaos: Resposta) {
+    let pedidosAoAuth = 0
+    const routes = createArquipelagoRoutes({
+      gateway: { gatewayFetch: async () => servico } as never,
+      profiles: {
+        list: async () => ({ status: 403, body: null }),
+        siblings: async () => {
+          pedidosAoAuth++
+          return irmaos
+        },
+      } as never,
+    })
+    return { routes, pedidos: () => pedidosAoAuth }
+  }
+
+  test('põe o nome da leitura dos irmãos no Auth e tira quem não está nela', async () => {
+    const { routes } = comIrmaos(
+      { status: 200, body: doServico },
+      { status: 200, body: { siblings: [{ id: IRMAO, name: ' Tomás ' }] } },
+    )
+    const r = await routes.arquipelagoIrmaos.GET()
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(await r.json()).toEqual({
+      versao: 1,
+      situacao: 'ok',
+      irmaos: [
+        { perfilId: IRMAO, percursos: { 'bosque-copas': recorde }, temCasa: true, nome: 'Tomás' },
+      ],
+    })
+  })
+
+  test('sem irmão (ou visitas desligadas) não pergunta ao Auth', async () => {
+    const { routes, pedidos } = comIrmaos(
+      { status: 200, body: { versao: 1, situacao: 'desligado', irmaos: [] } },
+      { status: 200, body: { siblings: [] } },
+    )
+    expect(await (await routes.arquipelagoIrmaos.GET()).json()).toEqual({
+      versao: 1,
+      situacao: 'desligado',
+      irmaos: [],
+    })
+    expect(pedidos()).toBe(0)
+  })
+
+  test('Auth fora ou resposta fora do contrato viram 502; recusa do serviço passa adiante', async () => {
+    const semAuth = comIrmaos({ status: 200, body: doServico }, { status: 503, body: null })
+    expect((await semAuth.routes.arquipelagoIrmaos.GET()).status).toBe(502)
+    const estranha = comIrmaos(
+      { status: 200, body: { ...doServico, versao: 9 } },
+      { status: 200, body: { siblings: [] } },
+    )
+    expect((await estranha.routes.arquipelagoIrmaos.GET()).status).toBe(502)
+    const fechada = comIrmaos(
+      { status: 403, body: { error: { code: 'ACESSO_BLOQUEADO' } } },
+      {
+        status: 200,
+        body: { siblings: [] },
+      },
+    )
+    expect((await fechada.routes.arquipelagoIrmaos.GET()).status).toBe(403)
+  })
+
+  test('a casa do irmão: id conferido, repasse sem cache', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { versao: 1 } })
+    const r = await routes.arquipelagoCasaDoIrmao.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: IRMAO }),
+    })
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(chamadas.map((c) => c.caminho)).toEqual([`/arquipelago/irmaos/${IRMAO}/casa`])
+    const torto = await routes.arquipelagoCasaDoIrmao.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: '../acesso' }),
+    })
+    expect(torto.status).toBe(400)
+    expect(chamadas).toHaveLength(1)
   })
 })

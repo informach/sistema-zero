@@ -6,7 +6,10 @@ Gera dois arquivos em `src/assets/ilhas/`:
 - `nuvens.glb`: nós `chao` (o chão da ilha leve que flutua, mesmo contorno), `cenario`, `fio-1`
   a `fio-6` (os fios do tear, um material cada: o jogo acende um por um quando a cor volta),
   `plataforma-1` a `plataforma-4` (ilhas flutuantes, cada uma no seu lugar, para o jogo mexer) e
-  as âncoras. No jogo a ilha fica num grupo a y = 7.
+  as âncoras e os colisores `col-*` (aj-ligar-01/10: o `col-terreno` do chão que flutua, formas
+  simples para as peças e o tampo de cada plataforma, `col-cil-plataforma-N`, no mesmo lugar do nó
+  `plataforma-N`: quem move a plataforma move o colisor junto). No jogo a ilha fica num grupo a
+  y = 7.
 - `nuvens-balao.glb`: o balão (`balao`, base do cesto em y = 0) com o clipe `flutuar` (3 s, em
   laço: sobe, desce e balança um pouco).
 """
@@ -18,13 +21,18 @@ NINHO = dict(x=-5.8, z=5.4)
 
 
 # ------------------------------------------------------------------ peças
-def tear():
+def tear(col=None):
     """Tear de madeira de frente para −Y: dois pés, o rolo de cima e o de baixo, o pente, os fios
     da urdidura e o pano do arco-íris saindo pela frente. Devolve (peças, [fio1..fio6])."""
     p = []
+    if col is not None:
+        # O quadro inteiro (pés, rolos, pente e fios) e o banquinho da frente.
+        col.append(col_caixa('tear', (3.5, 0.65, 3.05), (0, -0.05, 1.52)))
+        col.append(col_caixa('banquinho', (1.2, 0.5, 0.61), (0, -1.3, 0.305)))
     for x in (-1.6, 1.6):
         p.append(box((0.22, 0.9, 0.18), (x, 0, 0.09), 'madeiraTearEscura', bevel=0.03, segs=1))
-        p.append(box((0.18, 0.18, 2.9), (x, 0, 1.45), 'madeiraTear', bevel=0.03, segs=1))
+        # O poste começa em cima do pé (os dois no mesmo plano do chão piscariam).
+        p.append(box((0.18, 0.18, 2.72), (x, 0, 0.18 + 1.36), 'madeiraTear', bevel=0.03, segs=1))
         p.append(uvball(0.14, (x, 0, 2.95), 'madeiraTearEscura', seg=8, ring=5))
     p.append(cyl(0.14, 3.4, (0, 0, 2.6), 'madeiraTearEscura', verts=10, rot=(0, R(90), 0)))
     p.append(cyl(0.16, 3.4, (0, -0.25, 0.75), 'madeiraTearEscura', verts=10, rot=(0, R(90), 0)))
@@ -32,7 +40,8 @@ def tear():
     # Banquinho na frente e novelos.
     p.append(box((1.2, 0.5, 0.12), (0, -1.3, 0.55), 'madeiraTear', bevel=0.04, segs=1))
     for x in (-0.45, 0.45):
-        p.append(box((0.1, 0.4, 0.5), (x, -1.3, 0.25), 'madeiraTearEscura', bevel=0.02, segs=1))
+        # Os pés afundam 2 cm: o pano estendido no chão passa embaixo do banquinho.
+        p.append(box((0.1, 0.4, 0.52), (x, -1.3, 0.24), 'madeiraTearEscura', bevel=0.02, segs=1))
     fios = []
     for k, m in enumerate(FIOS):
         x = -1.25 + k * 0.5
@@ -46,15 +55,25 @@ def tear():
     return p, fios
 
 
-def arvore_do_ninho():
+def arvore_do_ninho(col=None):
     """Árvore alta e torta com o ninho grande da Iriê lá em cima, penas coloridas na borda e um
     poleiro de balanço."""
+    if col is not None:
+        col.append(col_cilindro('tronco-ninho', 0.42, 4.0, (0.05, 0.1, 2.0)))
+        # O fundo do ninho se pisa (a âncora `ninho`); a borda de palha segura quem está dentro.
+        col.append(col_cilindro('ninho-fundo', 1.15, 0.2, (0.1, -0.05, 3.98)))
+        for k in range(10):
+            a = 2 * math.pi * k / 10
+            col.append(col_caixa('guarda-ninho', (0.85, 0.4, 0.5), (0.1 + math.cos(a) * 1.3, -0.05 + math.sin(a) * 1.3, 4.3),
+                                 rot=(0, 0, a + math.pi / 2)))
     pts = [(0, 0, 0), (0.15, 0.1, 1.2), (-0.1, 0.3, 2.4), (0.25, 0.1, 3.4), (0.1, -0.05, 4.0)]
     p = [tube(pts, [0.42, 0.36, 0.3, 0.26, 0.22], 'tronco', seg=8)]
     for a, h, L in ((0.4, 2.2, 1.6), (2.6, 2.8, 1.3), (4.4, 3.3, 1.4)):
         ponta = (math.cos(a) * L, math.sin(a) * L, h + 0.7)
         p.append(tube([(0, 0, h), (math.cos(a) * L * 0.5, math.sin(a) * L * 0.5, h + 0.4), ponta], [0.14, 0.1, 0.07], 'tronco', seg=6))
         p.append(superellipsoid((1.2, 1.1, 0.8), ponta, 'copaClara', e1=0.8, e2=0.9, seg=9, ring=6))
+        if col is not None:
+            col.append(col_cilindro('copa-ninho', 0.5, 0.7, ponta))
     topo = (0.1, -0.05, 4.1)
     p.append(torus(1.25, 0.36, topo, 'ninho', seg=18, rseg=6))
     p.append(cyl(1.1, 0.2, (topo[0], topo[1], topo[2] - 0.12), 'ninhoEscuro', verts=14))
@@ -150,60 +169,85 @@ PLATAFORMAS = [  # (x, z, altura acima do tampo, raio): sobem em degraus do lado
 
 def ilha():
     lib_q.reset()
+    col = []
     chao = base_da_ilha('nuvens', topo='gramaClara', praia='terraIlha', flutua=True)
     cen = []
     cen.append(caminho([(12.3, 0), (6.5, 0.0), (1.5, -0.4)], 1.0, 'nuvemAzulada'))
     for k, ramo in enumerate(([(1.8, -0.4), (-1.0, -2.0), (TEAR['x'] + 0.4, TEAR['z'] + 2.1)],
                               [(1.6, 0.0), (-1.5, 2.6), (NINHO['x'] + 1.2, NINHO['z'] - 1.4)])):
         cen.append(caminho(ramo, 0.7, 'nuvemAzulada', z1=0.024 - 0.006 * k))
-    pecas, fios = tear()
+    c = []
+    pecas, fios = tear(c)
     giro = angulo_para(TEAR['x'], TEAR['z'], TEAR['x'] + 1.5, TEAR['z'] + 4.0)
     colocar(pecas, TEAR['x'], TEAR['z'], giro, y=TOPO)
+    col.extend(colocar(c, TEAR['x'], TEAR['z'], giro, y=TOPO))
     for f in fios:
         colocar(f, TEAR['x'], TEAR['z'], giro, y=TOPO)
     cen += pecas
-    cen += colocar(arvore_do_ninho(), NINHO['x'], NINHO['z'], R(20), y=TOPO)
+    c = []
+    cen += colocar(arvore_do_ninho(c), NINHO['x'], NINHO['z'], R(20), y=TOPO)
+    col.extend(colocar(c, NINHO['x'], NINHO['z'], R(20), y=TOPO))
     # Nuvens fofas no chão (moitas de nuvem) e no ar em volta.
     for i, (x, z, s, dy) in enumerate(((3.5, 5.5, 0.8, 0.4), (7.5, -6.0, 0.9, 0.4), (-1.0, 9.6, 0.7, 0.4),
                                        (-9.6, -5.5, 0.85, 0.4), (4.0, -9.8, 0.75, 0.4), (9.8, 5.8, 0.7, 0.4),
                                        (6.0, 9.0, 1.2, 4.8), (-3.0, -9.0, 1.3, 5.4), (9.0, -3.5, 1.0, 6.5))):
         cen += nuvem_fofa(x, -z, TOPO + dy, s, i)
+        if dy < 1:
+            # As do chão são moitas de nuvem (macias: a câmera passa); as do alto ficam fora do alcance.
+            col.append(col_cilindro('moita-nuvem', 0.95 * s, dy + 0.75 * s, (x, -z, TOPO + (dy + 0.75 * s) / 2)))
     # Arco-íris pequeno saindo do pano do tear (o resto ele tece).
     bx, by = TEAR['x'] + 3.2, -(TEAR['z'] - 3.0)
     for k, m in enumerate(FIOS):
         cen.append(torus(2.9 - k * 0.2, 0.1, (bx, by, TOPO + 0.05), m, seg=18, rseg=4, rot=(R(90), 0, R(25)), arc=180))
     for d in (-2.4, 2.4):
-        cen += nuvem_fofa(bx + d * math.cos(R(25)), by + d * math.sin(R(25)), TOPO + 0.3, 0.6, 70 + int(d))
+        nx, ny = bx + d * math.cos(R(25)), by + d * math.sin(R(25))
+        cen += nuvem_fofa(nx, ny, TOPO + 0.3, 0.6, 70 + int(d))
+        # O pé do arco-íris (os seis arcos, de 1,9 a 2,9 do meio) e a nuvem em volta dele.
+        col.append(col_cilindro('moita-nuvem', 0.75, 0.8, (nx, ny, TOPO + 0.4)))
+        px, py = bx + math.copysign(2.4, d) * math.cos(R(25)), by + math.copysign(2.4, d) * math.sin(R(25))
+        col.append(col_caixa('pe-arco-iris', (1.2, 0.3, 1.6), (px, py, TOPO + 0.8), rot=(0, 0, R(25))))
     # Degraus de nuvem da beira da ilha até a primeira ilha flutuante.
     for k, (x, z, dy) in enumerate(((-11.6, -2.2, 0.5), (-12.9, -2.6, 1.1), (-14.1, -2.9, 1.7))):
         cen += nuvem_fofa(x, -z, TOPO + dy, 0.55, 80 + k, 'nuvem', 'nuvemAzulada', 4)
+        # Degrau que se pisa: o topo na bola do meio, que é achatada (0,6 × 0,72 = 0,43 acima).
+        col.append(col_cilindro('degrau-nuvem', 0.6, 0.6, (x, -z, TOPO + dy + 0.13)))
     # Cata-ventos coloridos na beira do caminho.
     for k, (x, z) in enumerate(((3.6, 1.6), (0.2, -1.8), (-0.6, 1.8), (8.4, -3.2))):
         bx2, by2 = x, -z
         cen.append(cyl(0.04, 1.3, (bx2, by2, TOPO + 0.65), 'madeiraTear', verts=6))
+        col.append(col_cilindro('poste-cataventos', 0.08, 1.4, (bx2, by2, TOPO + 0.7)))
         for j in range(4):
             a = j * math.pi / 2 + k
             cen.append(prism([(0, 0), (0.32, 0.1), (0.3, 0.32)], 0.02, (bx2, by2 - 0.06, TOPO + 1.3), FIOS[(k + j) % 6],
                              rot=(R(90), a, 0)))
     for i, (x, z, s) in enumerate(((-8.6, -1.0, 0.9), (8.8, 7.6, 0.85), (-1.5, -10.4, 0.9), (2.8, 10.6, 0.8))):
         cen += anel.arvore_leve(x, z, s, 'copaClara', seed=60 + i)
+        col.append(col_cilindro('tronco', 0.22 * s, 1.6 * s, (x, -z, TOPO + 0.8 * s)))
+        col.append(col_cilindro('copa', 1.0 * s, 1.8 * s, (x, -z, TOPO + 2.3 * s)))
     for i, (x, z) in enumerate(((5.0, 3.6), (-2.8, 5.5), (6.4, -4.2), (-6.0, 1.2), (0.8, -5.4), (3.8, 8.0))):
         for k in range(3):
             cen += flor((x + 0.4 * k, -z + 0.3 * (k % 2), TOPO), ('petalaRosa', 'petalaAmarela', 'petalaLilas')[k], seed=i * 3 + k)
     # Poste de amarrar o balão, com a corda solta.
     bx, by = 4.6, -7.6
     cen.append(cyl(0.12, 1.2, (bx, by, TOPO + 0.6), 'poste', verts=8))
+    col.append(col_cilindro('poste-balao', 0.15, 1.2, (bx, by, TOPO + 0.6)))
     cen.append(torus(0.16, 0.04, (bx, by, TOPO + 1.0), 'corda', seg=10, rseg=3))
     cen.append(tube([(bx, by, TOPO + 1.0), (bx + 0.5, by - 0.2, TOPO + 0.4), (bx + 0.9, by - 0.1, TOPO + 0.05)],
                     [0.03] * 3, 'corda', seg=4))
     for x, z in ((5.0, -2.8), (5.0, 2.8)):
         cen += poste_lampiao(x, z)
+        col.append(col_cilindro('poste-lampiao', 0.1, 2.9, (x, -z, TOPO + 1.45)))
     conferir_corredor(cen + [o for f in fios for o in f], 'nuvens')
+    # O chão que se pisa: o tampo e a rocha de baixo da ilha que flutua.
+    col.insert(0, col_terreno(chao))
     plataformas = {}
     for i, (x, z, dy, r) in enumerate(PLATAFORMAS, 1):
         objs = ilha_flutuante(r, seed=i, arvore=(i == 4))
         colocar(objs, x, z, R(30 * i), y=TOPO + dy)
         plataformas[f'plataforma-{i}'] = (objs, (x, -z, TOPO + dy))
+        # O tampo (o meio dele no y do tampo); a rocha de baixo é fora do alcance.
+        # Base sem número: o contador dá col-cil-plataforma-1 a -4, o mesmo número do nó.
+        col.append(col_cilindro('plataforma', r * 0.9, 0.35, (x, -z, TOPO + dy - 0.175)))
     ancoras = ancoras_padrao(
         lumis=[(5.4, 4.6), (-0.8, 4.0), (6.2, -3.8), (-0.6, -4.6)], morador=(-3.4, 3.2),
         extras=[('tear', TEAR['x'] + 1.1, TEAR['z'] + 2.6), ('ninho', NINHO['x'] + 0.1, NINHO['z'] + 0.05, TOPO + 4.1),
@@ -214,7 +258,7 @@ def ilha():
     for k, f in enumerate(fios, 1):
         nos[f'fio-{k}'] = f
     nos.update(plataformas)
-    exportar('nuvens', nos, ancoras)
+    exportar('nuvens', nos, ancoras, colisores=col)
 
 
 def so_balao():

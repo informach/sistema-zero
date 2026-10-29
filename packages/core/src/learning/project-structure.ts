@@ -1,4 +1,5 @@
 import { DomainError } from '../errors'
+import { evaluatesChangedGamePosition, evaluatesCollectionMemory } from './collection-memory'
 import { isExecutionRule } from './project-execution'
 import {
   isProjectBlockPattern,
@@ -201,6 +202,8 @@ export function evaluateProjectStructure(
   valueBlockTypes?: ReadonlySet<string>,
 ): boolean {
   if (!record(project)) return false
+  if (rule.type === 'collectionMemory') return evaluatesCollectionMemory(rule, project)
+  if (rule.type === 'changedGamePosition') return evaluatesChangedGamePosition(rule, project)
   if (rule.type === 'usesBlock') return matchesBlock(rule, project.blocksState, valueBlockTypes)
   const ir = record(project.ir) ? project.ir : {}
   const behavior = record(ir.behavior) ? ir.behavior : {}

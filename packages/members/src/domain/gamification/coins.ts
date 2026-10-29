@@ -72,10 +72,12 @@ export interface DailyCapResult {
 }
 
 /**
- * Aplica o teto DIÁRIO a candidatos que contam no teto (faucets de rotina), em
- * ordem: cada um é concedido até o que resta do teto; o excedente é descartado
- * (perdido — o teto é um limite duro de GANHO por dia). Marcos/missões/ligas que
- * NÃO contam no teto não passam por aqui (são concedidos integralmente).
+ * Aplica o teto DIÁRIO a candidatos que contam no teto, em ordem: cada um é concedido até o que
+ * resta do teto; o excedente é descartado (perdido: o teto é um limite duro de GANHO por dia).
+ * Contam: aula, quiz, Estúdio, baú, Pensa, publicar no Mural e o prêmio das MISSÕES
+ * (`claimMission`). Só os marcos de sequência ficam fora e são concedidos inteiros. As moedas do
+ * Arquipélago também não passam por aqui: têm o teto SEMANAL próprio
+ * (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, na porta de moedas do jogo).
  */
 export function applyDailyCap(amounts: number[], earnedToday: number, cap: number): DailyCapResult {
   let room = Math.max(0, cap - Math.max(0, earnedToday))

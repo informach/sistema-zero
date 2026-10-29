@@ -42,7 +42,7 @@ export function QuizBlockView(props: Props) {
   if (predictionError)
     return <p role="alert">Esta revisão precisa de um ajuste na autoria: {predictionError}</p>
   return props.content.questions.length > 0 &&
-    props.content.questions.every((q) => q.predictionScene) ? (
+    props.content.questions.some((q) => q.predictionScene) ? (
     <PredictionQuiz key={`${props.blockId}:${JSON.stringify(props.content)}`} {...props} />
   ) : (
     <ClassicQuizBlockView {...props} />

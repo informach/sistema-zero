@@ -36,9 +36,9 @@ import { TouchResponseStage } from '../../../packages/member-shell/src/component
 import { SceneWorkspace } from '../../../packages/member-shell/src/components/scene-workspace'
 import { KIDS_LESSON_COPY } from '../../../packages/member-shell/src/lib/lesson-copy-kids'
 import { jardimSpriteRect, jardimSvgUrl } from '../../../packages/studio/src/arte/jardim-assets'
-import aula1 from '../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
-import aula2 from '../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
-import certificado from '../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
+import aula1 from '../../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import aula2 from '../../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
+import certificado from '../../aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
 import { CONFIGS, gameStep, newGame, OBJECTIVES } from './data'
 import { PrototypeMascot } from './shared'
 import {
