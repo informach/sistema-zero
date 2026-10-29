@@ -37,8 +37,8 @@ entra em `COMMON_COURSE_SLUGS`).
 
 O Farol concluído continua inteiro (andar, limite, chave, aviso, farol que acende, barco). Entram:
 
-- **O emblema do farol**: um distintivo redondo com a estrela do farol, no gramado de baixo, longe
-  da chave (que fica no gramado de cima). Nenhum dos dois começa encostado no personagem.
+- **O emblema do farol**: um escudo azul de borda dourada com o farolzinho listrado, no gramado de
+  baixo, longe da chave (que fica no gramado de cima). Nenhum dos dois começa encostado no personagem.
 - **A cabana do faroleiro**, no canto do gramado de baixo, com a porta fechada. É a segunda porta:
   abre só com a chave **e** o emblema, e aberta mostra a luz de dentro. O farol continua pedindo
   só a chave.
@@ -169,8 +169,8 @@ navegação não chega a uma peça, o teste diz que não terminou e orienta a co
 
 Mesma família visual do Farol 2D e da Ilha no Blender:
 
-- **2D (SVG, no estilo dos sprites do Farol):** o emblema do farol (distintivo redondo com a
-  estrela, 32 × 32) e a cabana do faroleiro fechada e aberta (mesma caixa e ponto de apoio nas
+- **2D (SVG, no estilo dos sprites do Farol):** o emblema do farol (escudo azul de borda
+  dourada com o farolzinho, 32 × 32) e a cabana do faroleiro fechada e aberta (mesma caixa e ponto de apoio nas
   duas imagens, a aberta com a luz de dentro).
 - **3D (Blender, com o acabamento da Ilha):** o emblema e a cabana com o clipe `abrir`, na caixa e
   na origem certas, com a área de toque estável e pose final aberta.

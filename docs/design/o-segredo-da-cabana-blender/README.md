@@ -5,7 +5,7 @@ Os modelos 3D do Poder "O segredo da cabana" (Faísca), com o mesmo acabamento d
 
 | Modelo | O que é | Medidas (Blender, base no chão) |
 |---|---|---|
-| `emblema-do-farol` | escudo de borda dourada e fundo azul com um farolzinho listrado em relevo dos dois lados, de pé e de frente para a câmera; o jogo o faz girar (bloco "Girar") | 0,5 x 0,6, centro a 0,42 do chão |
+| `emblema-do-farol` | escudo de borda dourada e fundo azul com um farolzinho listrado em relevo dos dois lados, de pé e de frente para a câmera | 0,5 x 0,6, centro a 0,42 do chão |
 | `cabana-do-faroleiro` | paredes de tábuas, telhado vermelho de duas águas, chaminé, claraboia, duas janelas com cruz, o encaixe do emblema acima da porta e a porta com fechadura de ouro. Repouso = fechada; clipe `abrir` | 2,4 x 2,0 x 2,6 |
 
 O clipe `abrir` (24 quadros por segundo, ~1,7 s): a porta dá um tranco, abre para fora além do
