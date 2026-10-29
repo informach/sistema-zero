@@ -127,7 +127,13 @@
         {
           "title": "Meu primeiro desenho no Pinta",
           "purpose": "Criar uma imagem e usá-la no próprio Farol. É uma exploração de ferramenta, não um Poder de lógica.",
-          "origin": "Novo extra curto sobre Pinta"
+          "origin": "Novo extra curto sobre Pinta",
+          "authoredSource": {
+            "courseSlug": "jornada-faisca-extra-2",
+            "directory": "docs/aulas-interativas/faisca/meu-primeiro-desenho-no-pinta",
+            "lessons": ["aula-1"],
+            "note": "Uma aula com duas entregas: o desenho no bloco de Pinta preenche a vaga de arte minha-chave, que o bloco de Estúdio da mesma aula importa. Importar na aula reservada, preservando IDs. Mídia e publicação pendentes."
+          }
         }
       ],
       "unlocks": [

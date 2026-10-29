@@ -143,7 +143,7 @@ antes do Admin, do member-shell e dos apps.
 7. **Chave do Farol, objetivo do farol livre.** ✅ (29/10/2026; a imagem que muda é lida em `farol.imageName`) `desafio-farol-criterios.ts` (estrutura com
    qualquer imagem + execução "a imagem do farol muda ao vencer"), cenários do executor 2D,
    manifestos regenerados e a exceção retirada das DIRETRIZES.
-8. **O extra.** Proposta, conteúdo (roteiro na régua das DIRETRIZES), gerador, manifesto, caderno
+8. **O extra.** ✅ (29/10/2026; `docs/aulas-interativas/faisca/meu-primeiro-desenho-no-pinta`, curso `jornada-faisca-extra-2`. A entrega do desenho fica na parte de Entrega e o jogo no Fechamento, porque a régua das entregas só aceita Estúdio ou Pinta nessas partes; assim o desenho é enviado antes de o jogo abrir) Proposta, conteúdo (roteiro na régua das DIRETRIZES), gerador, manifesto, caderno
    PDF no padrão do Cadê, registro no curso e na jornada (`creator-journey-curriculum.json`, a
    tabela do Faísca), validadores e testes do curso.
 9. **Verificação de ponta a ponta.** Navegador real: desenhar no Pinta da aula, enviar, abrir o

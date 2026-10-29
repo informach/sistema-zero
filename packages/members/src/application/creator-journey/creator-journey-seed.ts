@@ -49,7 +49,12 @@ export interface CreatorEditorialSpec {
       check: string
       lessons: number
     }[]
-    extras: { title: string; purpose: string; origin: string }[]
+    extras: {
+      title: string
+      purpose: string
+      origin: string
+      authoredSource?: { courseSlug: string; directory: string; lessons: string[]; note: string }
+    }[]
   }[]
   masteries: {
     id: string

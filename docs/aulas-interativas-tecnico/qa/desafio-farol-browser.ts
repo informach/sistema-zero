@@ -76,7 +76,7 @@ writeFileSync(
     js: instrumentCheckScript(js, scope),
     extensionScripts: [gameTwoDRuntime],
     assets: Object.fromEntries(assets.map((a) => [a.name, a.dataUrl])),
-    assetMeta: assetMetaManifest(assets),
+    assetsMeta: assetMetaManifest(assets),
     runtimeInspection: true,
   }),
 )
