@@ -1,4 +1,5 @@
 import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { juntarFilhotes } from './filhote-do-vale'
 
 /** Compara dados JSON, sem depender da ordem das chaves de um inventário. */
 export function mesmosDados(a: unknown, b: unknown): boolean {
@@ -82,6 +83,8 @@ export function conciliarSalvamento(
       pegadas: local.vale.pegadas || remoto.vale.pegadas,
       escavacao: Math.max(local.vale.escavacao, remoto.vale.escavacao),
       ninhos: [...new Set([...remoto.vale.ninhos, ...local.vale.ninhos])],
+      // O filhote só avança cuidando (a comida sai do inventário, que já se concilia): o mais adiantado.
+      filhote: juntarFilhotes(local.vale.filhote, remoto.vale.filhote),
     },
     // Levar um instrumento ao palco também não gasta nada: os bits das duas sessões (fase3-08).
     pico: { banda: local.pico.banda | remoto.pico.banda },

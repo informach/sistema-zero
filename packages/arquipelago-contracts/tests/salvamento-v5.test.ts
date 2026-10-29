@@ -1,7 +1,6 @@
 import { expect, test } from 'bun:test'
 import {
   BICHOS_DO_BOSQUE,
-  criarSalvamentoInicial,
   migrarDaV4,
   migrarDaV5,
   migrarDaV6,
@@ -12,6 +11,7 @@ import {
   migrarDaV11,
   migrarDaV12,
   migrarDaV13,
+  migrarDaV14,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   SalvamentoV1Schema,
@@ -21,6 +21,7 @@ import {
   type SalvamentoV5,
   SalvamentoV5Schema,
 } from '../src/salvamento'
+import { inicialV14 } from './ajuda-salvamento'
 
 const AGORA = new Date('2026-10-28T12:00:00Z')
 function antiga() {
@@ -33,7 +34,7 @@ function antiga() {
     vale: _vale,
     pico: _pico,
     ...base
-  } = criarSalvamentoInicial(AGORA)
+  } = inicialV14(AGORA)
   return SalvamentoV4Schema.parse({
     ...base,
     versao: 4,
@@ -52,10 +53,12 @@ test('V4 migra sem alterar progresso e sem presumir entrega do presente', () => 
   const esperado = { ...v4, versao: 5, presenteDosBichosEntregue: false } satisfies SalvamentoV5
   expect(migrarDaV4(v4)).toEqual(esperado)
   expect(migrarSalvamento(v4)).toEqual(
-    migrarDaV13(
-      migrarDaV12(
-        migrarDaV11(
-          migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(esperado)))))),
+    migrarDaV14(
+      migrarDaV13(
+        migrarDaV12(
+          migrarDaV11(
+            migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(esperado)))))),
+          ),
         ),
       ),
     ),
@@ -80,16 +83,16 @@ test('os schemas V1 a V4 continuam aceitando apenas seu formato original', () =>
   ] as const) {
     expect(schema.safeParse(versao).success).toBe(true)
     expect(schema.safeParse({ ...versao, presenteDosBichosEntregue: true }).success).toBe(false)
-    expect(migrarSalvamento(versao)).toMatchObject({ versao: 14, presenteDosBichosEntregue: false })
+    expect(migrarSalvamento(versao)).toMatchObject({ versao: 15, presenteDosBichosEntregue: false })
   }
 })
 
 test('V5 exige marca booleana e preserva entrega após serializar', () => {
-  const s = { ...criarSalvamentoInicial(AGORA), presenteDosBichosEntregue: true }
-  expect(migrarSalvamento(JSON.parse(JSON.stringify(s)))).toEqual(s)
+  const s = { ...inicialV14(AGORA), presenteDosBichosEntregue: true }
+  expect(migrarSalvamento(JSON.parse(JSON.stringify(s)))).toEqual(migrarDaV14(s))
   for (const valor of [undefined, 'true', 1, null])
     expect(migrarSalvamento({ ...s, presenteDosBichosEntregue: valor })).toBeNull()
   // Versão futura (ainda não existe) volta nula.
-  expect(migrarSalvamento({ ...s, versao: 15 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 16 })).toBeNull()
   expect(SALVAMENTO_MAX_BYTES).toBe(64 * 1024)
 })

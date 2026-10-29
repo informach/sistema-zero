@@ -24,6 +24,7 @@ import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { PainelDoFilhote } from './filhote'
 import { FogueiraDaFesta } from './fogueira-da-festa'
 import { AtalhoDaFoto, ModoFoto } from './foto'
 import { PainelDaIrie } from './irie'
@@ -661,6 +662,7 @@ export function Hud() {
       <FogueiraDaFesta />
       <PainelDoTurno />
       <PainelDoBicho />
+      <PainelDoFilhote />
       <CadernoDosLumis />
       <PainelDaRotina />
       <PainelDoObjeto />

@@ -1,6 +1,5 @@
 import { expect, test } from 'bun:test'
 import {
-  criarSalvamentoInicial,
   MORADOR_NOVO,
   migrarDaV6,
   migrarDaV7,
@@ -10,12 +9,14 @@ import {
   migrarDaV11,
   migrarDaV12,
   migrarDaV13,
+  migrarDaV14,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV6,
   SalvamentoV6Schema,
   SalvamentoV7Schema,
 } from '../src/salvamento'
+import { inicialV14 } from './ajuda-salvamento'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 
@@ -31,7 +32,7 @@ function v6(): SalvamentoV6 {
     vale: _vale,
     pico: _pico,
     ...resto
-  } = criarSalvamentoInicial(AGORA)
+  } = inicialV14(AGORA)
   return SalvamentoV6Schema.parse({
     ...resto,
     versao: 6,
@@ -59,7 +60,9 @@ test('a V6 migra para a V7 sem perder nada, com o Bento ainda sem conhecer a cri
     moradores: { ...antiga.moradores, bento: MORADOR_NOVO },
   })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(nova))))))),
+    migrarDaV14(
+      migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(nova))))))),
+    ),
   )
   expect(SalvamentoV7Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
@@ -89,7 +92,9 @@ test('a V7 guarda a amizade e o pedido do Bento e recusa o que sai da régua', (
     },
   }
   expect(migrarSalvamento(amigo)).toEqual(
-    migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(amigo))))))),
+    migrarDaV14(
+      migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(amigo))))))),
+    ),
   )
   const bento = amigo.moradores.bento
   for (const errado of [
@@ -104,6 +109,6 @@ test('a V7 guarda a amizade e o pedido do Bento e recusa o que sai da régua', (
 })
 
 test('o Bento cabe no teto do salvamento', () => {
-  const s = criarSalvamentoInicial(AGORA)
+  const s = inicialV14(AGORA)
   expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
 })

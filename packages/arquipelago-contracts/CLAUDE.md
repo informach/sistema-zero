@@ -136,7 +136,7 @@ Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 `vila-telhados`: só alarga o que a V2 em diante aceitam. O pior caso de 64 KB (com uma entrada por
 percurso, em `tests/salvamento-v10.test.ts`) tinha 140 bytes de margem antes da V12. O teste
 agora inclui também os três ninhos do Vale e a escavação, os corais e a banda, dentro do mesmo
-teto: sobram 29 bytes (medido em 29/10/2026, depois da V14). Campo novo precisa conferir o espaço
+teto: sobravam 29 bytes depois da V14; a V15 abriu espaço (4579, abaixo). Campo novo precisa conferir o espaço
 antes.
 
 ## Salvamento V12: descobertas do Vale (29/10/2026)
@@ -176,3 +176,17 @@ V14; a V13 continua estrita. 19 bytes no pior caso: sobram 29 do teto. Testes em
 `Plataforma.lerAparencia(criacaoId, sinal?)` é opcional, recebe somente id da conta e devolve
 bytes próprios ou null. Mantém contrato 1 e salvamento intactos. A visita não recebe esses ids.
 Testes em `tests/aparencias.test.ts`; regra completa em `docs/arquipelago-regras.md` §6.16.
+
+## Salvamento V15: o filhote do Vale (fase4-03, 29/10/2026)
+
+`SalvamentoV15Schema` troca `vale` por `ValeV15Schema`: o da V12 mais `filhote`
+(`FilhoteDoValeSchema`, `null` até a Jade entregar o ovo): `ovo` de 0 a `DIAS_PARA_CHOCAR` (3),
+`aquecidoEm`, `comeuEm` e `carinhoEm` (dia ou `null`), `nome` de 1 a 16 letras ou `null` e `dias`
+de 0 a `DIAS_CUIDADOS_MAXIMO` (99). Para caber, o id de uma aparência guardada vai até
+`ID_DA_APARENCIA_MAXIMO` (40; `AparenciaV15Schema`, `ProjetoAzulV15Schema`, também na
+`rotina-ferramenta.ts`); `migrarDaV14` tira das guardadas o que passar disso (a em uso vira
+`null`) e começa o filhote em `null`. A união pública aceita V1 a V15 e devolve V15; a V14 continua
+estrita. Pior caso de 64 KB: sobram 4579 bytes (medido em `salvamento-v10.test.ts`, que agora usa
+o salvamento inicial da V15 com o filhote no máximo). Os testes das versões antigas montam a base
+pela V14 (`tests/ajuda-salvamento.ts`, `inicialV14`). Testes: `salvamento-v15.test.ts`. O catálogo
+diz de onde vem o museu (o fóssil descoberto no Vale).

@@ -2,17 +2,38 @@ import {
   BICHOS_DO_BOSQUE,
   type BichoDoBosque,
   type Capi,
+  DIAS_PARA_CHOCAR,
   ILHAS,
   type IlhaId,
   NINHOS_DO_VALE,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { NOME_DO_BICHO } from './bichos'
+import { cresceu, DIAS_PARA_CRESCER, nasceu } from './filhote-do-vale'
 import { ITENS } from './itens'
 import { coracoes } from './moradores'
 import { RECEITAS } from './receitas'
 
-/** Conquistas do Vale, sem criar uma página da Íris nem antecipar o museu. */
+/** O filhote na coleção do Vale: do ovo que a Jade entrega ao tricerátopo crescido. */
+function filhoteNaColecao(s: Salvamento) {
+  const f = s.vale.filhote
+  const nome = f?.nome ?? 'O filhote'
+  return {
+    id: 'filhote',
+    nome: f?.nome ?? 'Filhote de tricerátopo',
+    feito: nasceu(f),
+    texto:
+      f === null
+        ? 'Cuide dos três ninhos e converse com a Jade.'
+        : !nasceu(f)
+          ? `O ovo está no chão quente do pé do vulcão: aquecido ${f.ovo} de ${DIAS_PARA_CHOCAR} dias.`
+          : cresceu(f)
+            ? `${nome} cresceu e mora no pé do vulcão.`
+            : `${nome} cresce com comida e carinho: ${f.dias} de ${DIAS_PARA_CRESCER} dias.`,
+  }
+}
+
+/** Conquistas do Vale (o que o museu dos fósseis mostra), sem criar uma página da Íris. */
 export function colecaoDoVale(s: Salvamento) {
   return [
     {
@@ -40,6 +61,7 @@ export function colecaoDoVale(s: Salvamento) {
         ? 'Você observou os ovos e deu espaço ao ninho.'
         : 'Observe os ovos sem tocar. Depois, dê alguns passos para longe.',
     })),
+    filhoteNaColecao(s),
   ]
 }
 

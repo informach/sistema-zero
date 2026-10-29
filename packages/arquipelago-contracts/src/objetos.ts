@@ -259,7 +259,7 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
       ],
       null,
     ),
-    origem: 'Pedido do Vale dos Dinos.',
+    origem: 'Vem do fóssil descoberto no Vale dos Dinos.',
   },
   casinha: {
     molde: molde(

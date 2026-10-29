@@ -4,11 +4,13 @@ import {
   migrarDaV11,
   migrarDaV12,
   migrarDaV13,
+  migrarDaV14,
   migrarSalvamento,
   NINHOS_DO_VALE,
   SalvamentoV11Schema,
   SalvamentoV12Schema,
 } from '../src/salvamento'
+import { inicialV14 } from './ajuda-salvamento'
 
 test('V11 migra para V12 sem alterar suas conquistas, rotina ou documento original', () => {
   const { vale: _, pico: _pico, ...base } = criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
@@ -26,13 +28,13 @@ test('V11 migra para V12 sem alterar suas conquistas, rotina ou documento origin
     versao: 12,
     vale: { pegadas: false, escavacao: 0, ninhos: [] },
   })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV13(migrarDaV12(atual)))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV14(migrarDaV13(migrarDaV12(atual))))
   expect(antiga).toEqual(copia)
   expect(SalvamentoV11Schema.safeParse({ ...antiga, vale: atual.vale }).success).toBe(false)
 })
 
 test('V12 conserva cada etapa pelo JSON e recusa progresso impossível, duplicado ou futuro', () => {
-  const base = criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
+  const base = inicialV14(new Date('2026-10-29T12:00:00Z'))
   for (let etapa = 0; etapa <= 3; etapa++)
     for (let bits = 0; bits < 8; bits++) {
       const s = {
@@ -43,7 +45,7 @@ test('V12 conserva cada etapa pelo JSON e recusa progresso impossível, duplicad
           ninhos: NINHOS_DO_VALE.filter((_, i) => bits & (1 << i)),
         },
       }
-      expect(migrarSalvamento(JSON.parse(JSON.stringify(s)))).toEqual(s)
+      expect(migrarSalvamento(JSON.parse(JSON.stringify(s)))).toEqual(migrarDaV14(s))
     }
   for (const vale of [
     null,

@@ -658,7 +658,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
   `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
   de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
-- ⚠️ O pior caso do salvamento fica a 29 bytes do teto de 64 KB com as rotinas no teto (era
+- ⚠️ O pior caso do salvamento ficava a 29 bytes do teto de 64 KB com as rotinas no teto (era
   290 na V10; o `recife` da V11 custa 54, o percurso `pico-cume` uns 96, o `vale` da V12 80, os
   corais da V13 12 e a banda da V14 19; medido em 29/10/2026, `tests/salvamento-v10.test.ts`):
   campo novo no salvamento precisa achar espaço antes (encurtar outro campo ou mudar o formato
@@ -805,7 +805,7 @@ Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`; regra
   `floco-1..5`, `cume` e a linha `treno-curva-N` (para o rumo das voltas) e monta os
   `PontosDoPercurso`; o `PicoVivo` roda o `CorridaNaIlha` genérico com flocos de neve brancos.
   ⚠️ O pior caso do salvamento ganhou a entrada `pico-cume` (uns 96 bytes): sobravam uns 140 do
-  teto de 64 KB; depois da V12, da V13 e da V14 sobram 29.
+  teto de 64 KB; depois da V12, da V13 e da V14 sobravam 29 (a V15 abriu espaço: 4579).
 - **Trenó** (`sistemas/treno.ts`, `mundo/treno-do-pico.tsx`): não é um modo novo. A trilha vira uma
   pista do MESMO modo `escorregar`, com o atrito do gelo (`MATERIAIS.gelo`), teto de 4,5 m/s e
   `soPorPedido` (andar na trilha não senta; só o pedido `escorregar` do "Descer de trenó", do
@@ -848,7 +848,7 @@ Regras e textos: `docs/arquipelago-regras.md` (seção da fase3-08); plano:
   `col-morador-pinguim-N`, curvados sem o instrumento e balançando quando ele volta (menos
   movimento: parados); as notas do festival sobem do palco com a banda completa. Tudo respeita a
   pausa, a troca da ilha (0,99) e o somente leitura.
-- ⚠️ O pior caso do salvamento ficou com 29 bytes de folga depois da V14.
+- ⚠️ O pior caso do salvamento ficou com 29 bytes de folga depois da V14 (a V15 abriu espaço: 4579).
 - Testes: `tests/banda.test.ts`, o bloco do iglu em `tests/colisores-do-pico.test.ts`, o Floco em
   `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts`.
 
@@ -1145,3 +1145,26 @@ salvamento (`CHAVE_DA_GALERIA`, que o `?novo=1` apaga), como o serviço. A capa 
 catálogo continua quando esse modelo aparece. Testes: `aparencias.test.ts`; verificador:
 `playground/verificar-aparencias-browser.ts`. Plano e pedidos de faces de arte:
 `docs/plans/2026-10-29-arquipelago-molda-no-mundo.md`. Regras e tetos em §6.16.
+
+## O filhote do Vale e o museu (fase4-03, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`; regras e textos em
+`docs/arquipelago-regras.md` (seção da fase4-03).
+
+- **Salvamento V15** (`vale.filhote`): regras puras em `sistemas/filhote-do-vale.ts` (aquecer,
+  nome, comida, carinho, o dia cuidado, o tamanho, o passeio e `juntarFilhotes`, usado pela
+  `conciliar-salvamento.ts`). A Jade entrega o ovo na conversa (`sistemas/jade.ts`), uma vez, com os
+  três ninhos cuidados.
+- **No mundo**: `mundo/filhote-do-vale.tsx` (`FilhoteDoVale`, montado pelo `ValeVivo` na sua própria
+  `ComReserva`): o chão quente na âncora `pe-do-vulcao` (o `ovo-dino` do GLB de props com 0,47 m e
+  um círculo amarelo, para não sumir na lava) e, depois que choca, o filhote (`triceratops-filhote.glb`, `andar`, `parado`,
+  `pular`) passeando por `PASSEIO_DO_FILHOTE` (pontos no referencial do GLB, conferidos no teste,
+  também a reta entre eles). Nada colide. Pausa, visita, somente leitura e a troca da ilha (0,99)
+  bloqueiam as ações.
+- **Painel**: `interface/filhote.tsx` (`PAINEL_DO_FILHOTE`, loja `estado/filhote.ts` com a fala e o
+  pulinho), primeiro o nome, depois "Dar comida" e "Fazer carinho" com o que já foi feito hoje.
+- **Museu**: chega em `ganharProjetos` com `vale.escavacao === 3`; o painel do objeto mostra a
+  coleção do Vale (`interface/museu.tsx`, `colecaoDoVale`, que ganhou o filhote; os ícones são
+  `ICONE_DO_VALE` de `interface/diario.tsx`).
+- Testes: `tests/filhote-do-vale.test.ts`; navegador: `playground/verificar-filhote-browser.ts`
+  (semeia o salvamento no `localStorage` do playground, um contexto limpo por começo).

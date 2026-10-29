@@ -20,7 +20,7 @@ import {
   SaldoDosMembrosSchema,
   type SalvamentoV5,
 } from '../src'
-import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13 } from '../src/salvamento'
+import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13, migrarDaV14 } from '../src/salvamento'
 
 describe('o catálogo da galeria', () => {
   test('uma aparência por objeto, com o id estável que começa pelo objeto', () => {
@@ -115,8 +115,10 @@ describe('salvamento V6: as aparências guardadas', () => {
     expect(v6.projetos.geladeira?.aparencias).toEqual([{ origem: 'pinta', id: 'c1' }])
     expect(v6.projetos.forno?.aparencias).toEqual([])
     expect(migrarSalvamento(v5)).toEqual(
-      migrarDaV13(
-        migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))))),
+      migrarDaV14(
+        migrarDaV13(
+          migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))))),
+        ),
       ),
     )
   })

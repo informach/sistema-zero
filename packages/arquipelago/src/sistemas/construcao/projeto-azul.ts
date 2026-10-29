@@ -153,6 +153,8 @@ export function ganharProjetos(
   if (!s.projetos.forno && coracoes(s.moradores.bento.amizade) >= 1) ganhos.push('forno')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
   if (!s.projetos.aquario && s.recife.corais !== 0) ganhos.push('aquario')
+  // O museu dos fósseis chega com o fóssil descoberto no Vale (fase4-03).
+  if (!s.projetos.museu && s.vale.escavacao === 3) ganhos.push('museu')
   // Os instrumentos da banda chegam com o festival de inverno do Pico (fase3-08).
   if (!s.projetos.banda && s.pico.banda === 2 ** INSTRUMENTOS_DA_BANDA - 1) ganhos.push('banda')
   const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0

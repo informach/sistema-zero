@@ -1,5 +1,5 @@
 /**
- * Vale dos Dinos real no playground (fases 4-01 e 4-02). Executar no pacote:
+ * Vale dos Dinos real no playground (fases 4-01, 4-02 e a entrega do ovo da 4-03). Executar no pacote:
  * bun build playground/verificar-vale-browser.ts --target=node --external playwright-core --outfile .cache/verificar-vale-browser.mjs
  * node .cache/verificar-vale-browser.mjs
  * ARQUIPELAGO_CHROMIUM escolhe o navegador; ARQUIPELAGO_PRINTS escolhe a pasta dos prints.
@@ -16,6 +16,7 @@ import { lerColisores } from '../src/mundo/colisores-da-ilha'
 import { explorarVale } from '../src/mundo/exploracao-do-vale'
 import { giroDaIlha, ilhasEmVolta, trajetoDaPonte } from '../src/mundo/medidas'
 import { CORPO } from '../src/sistemas/corpo'
+import { FALA_DA_JADE_COM_O_OVO, FALA_DO_OVO } from '../src/sistemas/filhote-do-vale'
 import { ACOES_DA_ESCAVACAO, EXPLORACAO_DO_VALE as V } from '../src/sistemas/vale'
 
 type P = { x: number; y: number; z: number }
@@ -374,8 +375,11 @@ try {
     await conversa.getByText('Você cuidou dos três ninhos.').waitFor()
     await page.waitForTimeout(2500)
     await page.screenshot({ path: path.join(prints, `vale-${tipo}-jade.png`) })
-    await conversa.getByRole('button', { name: 'Continuar' }).click()
-    await conversa.getByText('Observar sem tocar e dar espaço ajuda a cuidar dos ovos.').waitFor()
+    // Com os três ninhos, a Jade entrega o ovo do filhote (fase4-03).
+    for (const fala of FALA_DO_OVO) {
+      await conversa.getByRole('button', { name: 'Continuar' }).click()
+      await conversa.getByText(fala).waitFor()
+    }
     await conversa.getByRole('button', { name: 'Tchau, Jade' }).click()
     await conversa.waitFor({ state: 'detached' })
     await conferirDiario(5)
@@ -411,7 +415,8 @@ try {
     // A apresentação também abre depois de soltar o modelo, e Esc libera a câmera.
     if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
     else await page.keyboard.press('KeyE')
-    await conversa.getByText('Você cuidou dos três ninhos.').waitFor()
+    // Com o ovo já entregue, ela lembra do chão quente.
+    await conversa.getByText(FALA_DA_JADE_COM_O_OVO).waitFor()
     await page.keyboard.press('Escape')
     await conversa.waitFor({ state: 'detached' })
     if (celular && (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)))

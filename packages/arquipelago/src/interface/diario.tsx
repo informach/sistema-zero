@@ -11,6 +11,8 @@ import {
 } from '../sistemas/diario'
 import { Pegada } from './pegadas'
 
+export const ICONE_DO_VALE: Record<string, string> = { pegadas: '🐾', fossil: '🦴', filhote: '🦕' }
+
 /** O valor de `painelAberto` do diário. */
 export const PAINEL_DO_DIARIO = 'diario'
 
@@ -169,7 +171,7 @@ export function Diario() {
             {colecaoDoVale(salvamento).map((item) => (
               <li key={item.id} className="arq-diario-bicho">
                 <span className="arq-caderno-icone" aria-hidden="true">
-                  {item.id === 'pegadas' ? '🐾' : item.id === 'fossil' ? '🦴' : '🥚'}
+                  {ICONE_DO_VALE[item.id] ?? '🥚'}
                 </span>
                 <div className="arq-quadro-corpo">
                   <b>{item.nome}</b>

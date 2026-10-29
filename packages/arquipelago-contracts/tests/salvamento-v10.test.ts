@@ -7,6 +7,9 @@ import {
   CONDICOES_DA_ROTINA,
   contarCartoes,
   criarSalvamentoInicial,
+  DIAS_CUIDADOS_MAXIMO,
+  DIAS_PARA_CHOCAR,
+  ID_DA_APARENCIA_MAXIMO,
   LIMITES_DA_ROTINA,
   LUGARES_DA_ROTINA,
   LUMIS,
@@ -25,7 +28,8 @@ import {
   SalvamentoV9Schema,
   SalvamentoV10Schema,
 } from '../src'
-import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13 } from '../src/salvamento'
+import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13, migrarDaV14 } from '../src/salvamento'
+import { inicialV14 } from './ajuda-salvamento'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 
@@ -38,7 +42,7 @@ function v9(): SalvamentoV9 {
     vale: _vale,
     pico: _pico,
     ...resto
-  } = criarSalvamentoInicial(AGORA)
+  } = inicialV14(AGORA)
   return SalvamentoV9Schema.parse({ ...resto, versao: 9, lumis: { quindim: 2, brigadeiro: 1 } })
 }
 
@@ -52,37 +56,35 @@ const ROTINA_DO_EXEMPLO: CartaoDaRotina[] = [
 ]
 
 const com = (rotinas: object, lumis: object = { quindim: 2, brigadeiro: 1 }) =>
-  migrarSalvamento({ ...criarSalvamentoInicial(AGORA), lumis, rotinas })
+  migrarSalvamento({ ...inicialV14(AGORA), lumis, rotinas })
 
 test('a V9 migra para a V10 sem perder nada, sem nenhuma rotina', () => {
   const antiga = v9()
   const clone = structuredClone(antiga)
   const nova = migrarDaV9(antiga)
   expect(nova).toEqual({ ...antiga, versao: 10, rotinas: {} })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(nova)))))
+  expect(migrarSalvamento(antiga)).toEqual(
+    migrarDaV14(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(nova))))),
+  )
   expect(SalvamentoV10Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
-  expect(criarSalvamentoInicial(AGORA)).toMatchObject({ versao: 14, rotinas: {} })
+  expect(inicialV14(AGORA)).toMatchObject({ versao: 14, rotinas: {} })
 })
 
 test('a V9 continua aceitando só o formato dela, e as antigas chegam até a V10', () => {
   expect(SalvamentoV9Schema.safeParse({ ...v9(), rotinas: {} }).success).toBe(false)
-  const {
-    rotinas: _,
-    recife: _recife,
-    vale: _vale,
-    pico: _pico,
-    ...semRotinas
-  } = criarSalvamentoInicial(AGORA)
+  const { rotinas: _, recife: _recife, vale: _vale, pico: _pico, ...semRotinas } = inicialV14(AGORA)
   expect(migrarSalvamento({ ...semRotinas, versao: 10 })).toBeNull()
   const v7 = (() => {
     const { turnos: _t, lumis: _l, ...v } = v9()
     return { ...v, versao: 7 as const }
   })()
   expect(migrarSalvamento(v7)).toEqual(
-    migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))))),
+    migrarDaV14(
+      migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))))),
+    ),
   )
-  expect(migrarSalvamento({ ...criarSalvamentoInicial(AGORA), versao: 15 })).toBeNull()
+  expect(migrarSalvamento({ ...inicialV14(AGORA), versao: 15 })).toBeNull()
 })
 
 test('guarda a rotina de um Lumi preso, e só de Lumi preso', () => {
@@ -208,7 +210,7 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
   })
   const aparencias = Array.from({ length: APARENCIAS_GUARDADAS_MAXIMO }, (_, i) => ({
     origem: 'criacao' as const,
-    id: `${i}`.padStart(80, 'x'),
+    id: `${i}`.padStart(ID_DA_APARENCIA_MAXIMO, 'x'),
   }))
   const projeto = { ganhoEm: AGORA.toISOString(), aparencia: aparencias[0], aparencias }
   const turno = { pagoEm: '2026-10-29', melhor: 3, vezes: 9999 }
@@ -216,10 +218,19 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
     estrelas: { chegada: true, tempo: true, vagalumes: true },
     melhorTempoMs: 3_599_999,
   }
+  // O filhote do Vale mais pesado (V15): nome de 16 letras, as três datas e dois dígitos nos dias.
+  const filhote = {
+    ovo: DIAS_PARA_CHOCAR,
+    aquecidoEm: '2026-10-29',
+    nome: 'x'.repeat(16),
+    comeuEm: '2026-10-29',
+    carinhoEm: '2026-10-29',
+    dias: DIAS_CUIDADOS_MAXIMO,
+  }
   const base = {
     ...criarSalvamentoInicial(AGORA),
     // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
-    vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'] },
+    vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'], filhote },
     construcao: { casa: cheia(), cabanas: { bosque: cheia() } },
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
@@ -245,6 +256,8 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
     maior = Math.max(maior, new TextEncoder().encode(JSON.stringify(s)).byteLength)
   }
   expect(maior).toBeLessThan(SALVAMENTO_MAX_BYTES)
+  // Folga para o que vem (as Nuvens e o final do Farol): a V15 abriu uns 5 KB.
+  expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(4000)
 })
 
 test('as listas da régua não mudam sem querer', () => {

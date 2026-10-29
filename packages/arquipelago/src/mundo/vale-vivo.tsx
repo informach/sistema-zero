@@ -3,12 +3,13 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { DescobertasDoVale } from './descobertas-do-vale'
+import { FilhoteDoVale } from './filhote-do-vale'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Jade } from './jade'
 import { giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 
-/** Jade, pegadas, escavação e ninhos só existem com a ilha completa ativa. */
+/** Jade, pegadas, escavação, ninhos e o filhote só existem com a ilha completa ativa. */
 export function ValeVivo({
   ilha,
   centro,
@@ -31,6 +32,7 @@ export function ValeVivo({
       <ComReserva reserva={null}>
         <Jade modelo={preparada.modelo} meio={meio} giro={giro} />
         <DescobertasDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
+        <FilhoteDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
       </ComReserva>
     </group>
   )

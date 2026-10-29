@@ -9,7 +9,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 14
+export const VERSAO_SALVAMENTO = 15
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -578,20 +578,97 @@ export type SalvamentoV14 = z.infer<typeof SalvamentoV14Schema>
 export function migrarDaV13(v13: SalvamentoV13): SalvamentoV14 {
   return { ...v13, versao: 14, pico: { banda: 0 } }
 }
-export const SalvamentoSchema = z.union([
+const SalvamentoAteV14Schema = z.union([
   SalvamentoV14Schema,
   SalvamentoAteV13Schema.transform(migrarDaV13),
 ])
-export type Salvamento = SalvamentoV14
+
+/**
+ * V15 (fase4-03, 29/10/2026). O id de uma aparência guardada vai até `ID_DA_APARENCIA_MAXIMO`
+ * (40; eram 80): os ids de verdade são os do catálogo da galeria e os das criações da conta
+ * (uuid, 36), e os 40 que sobram por aparência, vezes 12 aparências por objeto, abrem uns 5 KB
+ * no pior caso para o que vem (o filhote do Vale e as próximas ilhas).
+ */
+export const ID_DA_APARENCIA_MAXIMO = 40
+export const AparenciaV15Schema = z.strictObject({
+  origem: z.enum(ORIGENS_DA_APARENCIA),
+  id: z.string().min(1).max(ID_DA_APARENCIA_MAXIMO),
+})
+export const ProjetoAzulV15Schema = ProjetoAzulV4Schema.extend({
+  aparencia: AparenciaV15Schema.nullable(),
+  aparencias: z.array(AparenciaV15Schema).max(APARENCIAS_GUARDADAS_MAXIMO),
+})
+  .refine(
+    (p) => p.aparencias.every((a, i) => p.aparencias.findIndex((b) => mesmaAparencia(a, b)) === i),
+    'aparência repetida',
+  )
+  .refine(
+    (p) => p.aparencia === null || p.aparencias.some((a) => mesmaAparencia(a, p.aparencia!)),
+    'a aparência em uso fica entre as guardadas',
+  )
+export type ProjetoAzulV15 = z.infer<typeof ProjetoAzulV15Schema>
+
+/**
+ * O filhote de dino do Vale (fase4-03): `ovo` conta os dias em que o ovo foi aquecido no chão
+ * quente do pé do vulcão (com `DIAS_PARA_CHOCAR` ele nasce), `aquecidoEm` o último desses dias;
+ * nascido, ganha um `nome` (até lá, `null`), e `dias` conta os dias em que comeu e ganhou carinho
+ * (`comeuEm` e `carinhoEm`, o último dia de cada um). Sem prazo: um dia sem cuidar não tira nada.
+ */
+export const DIAS_PARA_CHOCAR = 3
+export const DIAS_CUIDADOS_MAXIMO = 99
+export const FilhoteDoValeSchema = z.strictObject({
+  ovo: z.number().int().min(0).max(DIAS_PARA_CHOCAR),
+  aquecidoEm: dia.nullable(),
+  nome: z.string().trim().min(1).max(16).nullable(),
+  comeuEm: dia.nullable(),
+  carinhoEm: dia.nullable(),
+  dias: z.number().int().min(0).max(DIAS_CUIDADOS_MAXIMO),
+})
+export type FilhoteDoVale = z.infer<typeof FilhoteDoValeSchema>
+export const ValeV15Schema = ValeSchema.extend({ filhote: FilhoteDoValeSchema.nullable() })
+
+export const SalvamentoV15Schema = z
+  .strictObject({
+    ...SalvamentoV14Schema.shape,
+    versao: z.literal(15),
+    projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulV15Schema),
+    vale: ValeV15Schema,
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV15 = z.infer<typeof SalvamentoV15Schema>
+
+/**
+ * Da V14: o filhote ainda não existe, e uma aparência com id além de 40 sai das guardadas (e da em
+ * uso). Nenhum id real passa de 40; se um passar, perde-se só aquela aparência, nunca o objeto.
+ */
+export function migrarDaV14(v14: SalvamentoV14): SalvamentoV15 {
+  const cabe = (a: AparenciaDoObjeto) => a.id.length <= ID_DA_APARENCIA_MAXIMO
+  const projetos: SalvamentoV15['projetos'] = {}
+  for (const [id, p] of Object.entries(v14.projetos) as [
+    keyof SalvamentoV15['projetos'],
+    ProjetoAzul,
+  ][])
+    projetos[id] = {
+      ...p,
+      aparencia: p.aparencia && cabe(p.aparencia) ? p.aparencia : null,
+      aparencias: p.aparencias.filter(cabe),
+    }
+  return { ...v14, versao: 15, projetos, vale: { ...v14.vale, filhote: null } }
+}
+export const SalvamentoSchema = z.union([
+  SalvamentoV15Schema,
+  SalvamentoAteV14Schema.transform(migrarDaV14),
+])
+export type Salvamento = SalvamentoV15
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 14,
+    versao: 15,
     pico: { banda: 0 },
-    vale: { pegadas: false, escavacao: 0, ninhos: [] },
+    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),

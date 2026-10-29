@@ -4,7 +4,7 @@ import {
   GELADEIRA_GUARDA,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
-  ProjetoAzulSchema,
+  ProjetoAzulV15Schema,
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -24,6 +24,7 @@ import { ITENS } from '../sistemas/itens'
 import { Aquario } from './aquario'
 import { CartaoDaGaleria, SuasAparencias } from './galeria'
 import { MinijogosDoFliperama } from './minijogos'
+import { Museu } from './museu'
 import { ListaDeReceitas } from './receitas'
 import { useVoz } from './voz'
 
@@ -147,7 +148,7 @@ export function PainelDoObjeto() {
         // A que ela fez vira a em uso e fica guardada (trocar de volta não cobra nada).
         const novo = atual && usarAparencia(atual, { origem: origemDaAparencia, id: r.criacaoId })
         // Um id fora do contrato faria o serviço recusar o salvamento: ele não entra.
-        if (!novo || !ProjetoAzulSchema.safeParse(novo).success) {
+        if (!novo || !ProjetoAzulV15Schema.safeParse(novo).success) {
           setAviso({ tom: 'atencao', texto: 'Não deu para guardar a aparência. Tente de novo.' })
           return
         }
@@ -187,6 +188,7 @@ export function PainelDoObjeto() {
         {id === 'fliperama' ? <MinijogosDoFliperama /> : null}
         {id === 'forno' ? <ListaDeReceitas onde="forno" /> : null}
         {id === 'aquario' ? <Aquario /> : null}
+        {id === 'museu' ? <Museu /> : null}
         <h3 className="arq-menu-titulo">A aparência</h3>
         <p className="arq-caderno-explica">
           {`O molde tem o tamanho dele: ${molde.area.largura} por ${molde.area.fundo} na grade, com a frente marcada.`}

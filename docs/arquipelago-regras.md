@@ -3063,10 +3063,51 @@ mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de o
 - A V12 guarda pegadas seguidas, etapa da escavação e ids dos ninhos cuidados. V1 a V11 migram
   sem perder conquistas. Retomar mantém inclusive a escavação parcial. Duas sessões conciliam
   as descobertas por união dos ninhos, maior etapa e rastro concluído, sem duplicar recompensas.
-- Nenhuma mudança de GLB, gerador, amizade ou inventário. Filhote e museu continuam na fase4-03.
+- Nenhuma mudança de GLB, gerador, amizade ou inventário. Filhote e museu são da fase4-03 (abaixo).
 
 Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência e capturas:
 `docs/qa/2026-10-29-vale-pegadas-ninhos/README.md`.
+
+## O filhote do Vale e o museu dos fósseis (fase4-03, 29/10/2026)
+
+- **O ovo.** Com os três ninhos cuidados, a conversa com a Jade entrega um ovo, uma vez só:
+  "Você cuidou dos três ninhos.", "Um dos ovos dos ninhos precisa de calor para chocar." e "Leve
+  este ovo ao chão quente, no pé do vulcão, e aqueça um pouco a cada dia.". Depois ela lembra do
+  calor ("O ovo precisa de calor. Aqueça no chão quente do pé do vulcão, um dia de cada vez.") ou
+  fala do filhote ("O filhote cresce com comida e carinho, um dia de cada vez."). Antes dos ninhos,
+  a apresentação de sempre.
+- **O chão quente.** Na âncora `pe-do-vulcao` do `vale-dos-dinos.glb`, um círculo amarelo de
+  0,6 m que pulsa devagar e o `ovo-dino` do GLB de props com 0,47 m (escala 0,6), balançando de leve
+  (parado com menos movimento e na pausa). "Aquecer o ovo" (E ou Usar, até 2,2 m) conta um dia;
+  no mesmo dia, "Ver o ovo" só lembra de voltar amanhã. Com `DIAS_PARA_CHOCAR` (3) dias ele choca.
+  Os dias não precisam ser seguidos: um dia sem aquecer não tira nada. O dia é o de São Paulo
+  (`diaDe`, o mesmo dos moradores).
+- **O filhote.** Um tricerátopo filhote (`triceratops-filhote.glb`, clipes `andar`, `parado` e
+  `pular`), que passeia devagar (0,5 m/s, 4 s parado em cada ponto) entre cinco pontos de chão
+  plano em volta do chão quente (`PASSEIO_DO_FILHOTE`, conferidos contra o GLB, também na reta
+  entre um e outro). Não colide: é bicho miúdo que anda em volta, como o adotado. "Dar um nome ao
+  filhote" abre o painel com o nome (1 a 16 letras); depois, "Cuidar de Tricê" abre a comida e o
+  carinho. "Dar comida" usa uma alface, um tomate ou um milho da mochila (nessa ordem), uma vez por
+  dia; sem nada disso, "Ele come alface, tomate ou milho. Colha na horta e traga.". "Fazer
+  carinho" vale uma vez por dia. O dia em que ele come e ganha carinho conta para crescer, uma vez
+  só; com `DIAS_PARA_CRESCER` (5) dias cuidados ele está crescido. O desenho vai da escala 1
+  (0,48 m) à 1,8 (0,86 m), aos poucos, a cada dia cuidado. Comer ou carinho que muda algo toca o
+  pulinho. Sem fome que cai, sem tristeza, sem prazo e sem perda.
+- **O museu.** O projeto azul do museu dos fósseis chega com o fóssil descoberto (a escavação
+  nas três etapas, `ganharProjetos`). No painel do objeto, "N de 6 descobertas do Vale dos
+  Dinos" e a coleção do Vale: pegadas, fóssil, os três ninhos e o filhote, com o mesmo texto do
+  diário. O filhote entrou também na coleção do Vale do diário.
+- **Salvamento V15:** `vale.filhote`, `null` até a Jade entregar o ovo, depois `{ ovo, aquecidoEm,
+  nome, comeuEm, carinhoEm, dias }` (ovo de 0 a 3, dias de 0 a 99, nome de 1 a 16 letras). A V14
+  migra com `null`. Para caber, o id de uma aparência guardada passou a ter até 40 caracteres
+  (`ID_DA_APARENCIA_MAXIMO`; os ids de hoje têm até 36, o uuid): a migração tira das guardadas o
+  que passar disso. No pior caso de 64 KB, com o filhote também no máximo, sobram 4579 bytes.
+  Duas sessões juntam o filhote mais adiantado (o maior ovo e os maiores dias, as datas mais
+  recentes, o nome da sessão local quando as duas deram nome).
+
+Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`. Testes:
+`tests/filhote-do-vale.test.ts` e `arquipelago-contracts/tests/salvamento-v15.test.ts`. Navegador:
+`playground/verificar-filhote-browser.ts`, no computador e no celular emulado.
 
 ## Corais, aquário e mapa do Recife (fase3-03, 29/10/2026)
 
