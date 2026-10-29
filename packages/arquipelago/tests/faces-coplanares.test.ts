@@ -62,6 +62,8 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'mundo/ilhas-do-anel.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'mundo/boias.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'itens/quadro-das-cores.glb', juntos: TODOS_JUNTOS },
+  { caminho: 'ilhas/vila-doce.glb', juntos: TODOS_JUNTOS },
+  { caminho: 'ilhas/vila-doce-props.glb', juntos: CADA_NO_SOZINHO },
 ]
 
 /**

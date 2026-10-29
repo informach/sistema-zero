@@ -28,9 +28,11 @@ CAIXOTES = (-2.6, 6.6)
 CASINHAS = [(-5.4, 7.0, 2.0, 'a'), (-8.6, 3.6, 2.8, 'b'), (-9.2, -1.4, 3.6, 'c')]
 SORVETERIA = (-6.6, -5.6)
 ALTURA_SORVETERIA = 4.4
-PADARIA = (-1.8, -9.0)
+# A padaria e as barracas do lado dela ficam com folga entre o canto da casa e os toldos (antes o
+# canto da padaria entrava na barraca 6).
+PADARIA = (-2.1, -9.0)
 RAIO_FEIRA = 7.8
-ANGULOS_FEIRA = (36, 57, 78, -36, -57, -78)
+ANGULOS_FEIRA = (36, 57, 78, -33, -54, -75)
 PRODUTOS = ('frutas', 'doces', 'flores', 'verduras', 'sucos', 'brinquedos')
 TOLDOS = ('toldoRosa', 'toldoAmarelo', 'toldoVerde', 'toldoAzul', 'toldoLaranja', 'toldoLilas')
 
@@ -48,7 +50,7 @@ def casinha(variante, w=3.0, d=3.0, h=2.0, col=None):
                                   'c': ('casinhaAzul', 'menta', 'doceBranco')}[variante]
     p = [box((w, d, h - 0.18), (0, 0, TOPO + (h - 0.18) / 2), parede, bevel=0.14, segs=2)]
     # Rodapé de biscoito e a cobertura de cima (o topo plano fica em y = h).
-    p.append(box((w + 0.12, d + 0.12, 0.28), (0, 0, TOPO + 0.14), 'casquinha', bevel=0.06, segs=1))
+    p.append(box((w + 0.12, d + 0.12, 0.3), (0, 0, TOPO + 0.13), 'casquinha', bevel=0.06, segs=1))
     p.append(box((w + 0.32, d + 0.32, 0.24), (0, 0, TOPO + h - 0.12), cobertura, bevel=0.1, segs=2))
     # Pingos escorrendo pelas quatro bordas.
     rnd = random.Random(ord(variante))
@@ -99,7 +101,7 @@ def casinha(variante, w=3.0, d=3.0, h=2.0, col=None):
             a = rnd.uniform(0, 2 * math.pi)
             r = rnd.uniform(0.2, min(w, d) / 2 - 0.2)
             cores = ('morango', 'toldoAmarelo', 'doceBranco', 'toldoLilas')
-            p.append(box((0.16, 0.05, 0.03), (math.cos(a) * r, math.sin(a) * r, TOPO + h + 0.012), cores[k % 4],
+            p.append(box((0.16, 0.05, 0.03), (math.cos(a) * r, math.sin(a) * r, TOPO + h + 0.012 + 0.007 * (k % 9)), cores[k % 4],
                          bevel=0.0, rot=(0, 0, rnd.uniform(0, math.pi))))
         for sx in (-1, 1):
             p.append(leaf((sx * (w / 2 + 0.15), -d / 2 - 0.15, TOPO + h - 0.1), R(-90 + sx * 35), 0.5, 0.2, 'doceVerde',
@@ -137,7 +139,7 @@ def sorveteria(col=None):
     # Faixas brancas (listras de baunilha) e o rodapé de biscoito.
     for k in range(3):
         p.append(box((W + 0.06, D + 0.06, 0.12), (0, 0, TOPO + 1.1 + k * 1.05), 'baunilha', bevel=0.03, segs=1))
-    p.append(box((W + 0.14, D + 0.14, 0.32), (0, 0, TOPO + 0.16), 'casquinha', bevel=0.06, segs=1))
+    p.append(box((W + 0.14, D + 0.14, 0.34), (0, 0, TOPO + 0.15), 'casquinha', bevel=0.06, segs=1))
     # Terraço: laje com mureta baixa (fica uma abertura na frente-esquerda para chegar pelo telhado).
     p.append(box((W + 0.3, D + 0.3, 0.22), (0, 0, TOPO + H - 0.11), 'baunilha', bevel=0.08, segs=1))
     for (cx, cy, sx, sy) in ((0.9, -D / 2 - 0.05, W / 2 + 0.3, 0.16), (W / 2 + 0.05, 0, 0.16, D + 0.3),
@@ -184,8 +186,9 @@ def padaria(col=None):
     pães e bolos, toldo listrado, chaminé fumegando e a placa do pão pendurada."""
     W, D, H = 4.5, 3.6, 3.0
     inc = math.atan2(1.4, D / 2 + 0.25)
-    # A mesinha de fora fica na frente do lado esquerdo: do lado direito ela tapava a barraca 6.
-    MX, MY = -W / 2 + 0.25, -D / 2 - 1.3
+    # A mesinha de fora fica na frente da vitrine, ao lado de onde o Bento espera (longe da barraca 6
+    # e da sorveteria).
+    MX, MY = -1.0, -D / 2 - 0.95
     if col is not None:
         # As paredes, as duas águas do telhado, a chaminé, os sacos de farinha e a mesinha de fora.
         col.append(col_caixa('padaria', (W + 0.12, D + 0.12, H), (0, 0, TOPO + H / 2)))
@@ -199,7 +202,7 @@ def padaria(col=None):
         for k in (-1, 1):
             col.append(col_cilindro('banquinho', 0.2, 0.45, (MX + k * 0.65, MY, TOPO + 0.22)))
     p = [box((W, D, H), (0, 0, TOPO + H / 2), 'casinhaCreme', bevel=0.1, segs=1)]
-    p.append(box((W + 0.12, D + 0.12, 0.3), (0, 0, TOPO + 0.15), 'chocolateClaro', bevel=0.05, segs=1))
+    p.append(box((W + 0.12, D + 0.12, 0.32), (0, 0, TOPO + 0.14), 'chocolateClaro', bevel=0.05, segs=1))
     # Vigas (enxaimel) na frente e nos lados.
     for x in (-W / 2 + 0.1, -0.75, 0.75, W / 2 - 0.1):
         p.append(box((0.16, 0.08, H - 0.3), (x, -D / 2 - 0.03, TOPO + 0.3 + (H - 0.3) / 2), 'chocolate', bevel=0.0))
@@ -226,7 +229,8 @@ def padaria(col=None):
     for k, (dz, r) in enumerate(((2.4, 0.3), (2.85, 0.38), (3.35, 0.46))):
         p.append(uvball(r, (W / 2 - 0.8 + k * 0.15, D / 4 - k * 0.05, TOPO + H + dz), 'nuvemSombra', seg=8, ring=5))
     # Vitrine (pães e bolo) à esquerda, porta à direita, toldo listrado por cima.
-    p.append(box((1.5, 0.1, 1.15), (-1.35, -D / 2 - 0.04, TOPO + 1.35), 'vidroJanela', bevel=0.0))
+    # O vidro fica à frente do fundo das vigas (o fundo das duas ficava no mesmo plano).
+    p.append(box((1.5, 0.08, 1.15), (-1.35, -D / 2 - 0.05, TOPO + 1.35), 'vidroJanela', bevel=0.0))
     p.append(box((1.7, 0.12, 0.12), (-1.35, -D / 2 - 0.06, TOPO + 0.74), 'chocolate', bevel=0.0))
     p.append(box((1.6, 0.45, 0.08), (-1.35, -D / 2 - 0.2, TOPO + 0.8), 'madeiraDoce', bevel=0.02, segs=1))
     for k in range(3):
@@ -275,17 +279,20 @@ def barraca(i, col=None):
             p.append(cyl(0.05, 2.2, (sx * (W / 2 - 0.05), sy * (D / 2 + 0.1), TOPO + 1.1), 'tronco', verts=6))
     # Toldo de duas águas listrado (listras ao longo da largura) e o babado da frente.
     cores = [toldo, 'toldoBranco']
+    # As listras vizinhas se sobrepõem um pouco: a branca é mais grossa e mais comprida, para as faces
+    # das duas não ficarem no mesmo plano. Barracas vizinhas têm o toldo em alturas diferentes (os cantos se cruzam).
+    alto = TOPO + 2.35 + 0.05 * (i % 2)
     for sy in (-1, 1):
         for k in range(6):
             x = -W / 2 - 0.15 + (k + 0.5) * (W + 0.3) / 6
-            p.append(box(((W + 0.3) / 6 * 1.01, D / 2 + 0.45, 0.05), (x, sy * (D / 4 + 0.22), TOPO + 2.35),
+            p.append(box(((W + 0.3) / 6 * 1.01, D / 2 + 0.45 + 0.012 * (k % 2), 0.05 + 0.016 * (k % 2)), (x, sy * (D / 4 + 0.22), alto),
                          cores[k % 2], bevel=0.0, rot=(-sy * R(18), 0, 0)))
     for k in range(7):
         x = -W / 2 - 0.15 + k * (W + 0.3) / 6
-        p.append(uvball(0.12, (x, -D / 2 - 0.6, TOPO + 2.17), cores[k % 2], seg=8, ring=4, scale=(1, 0.4, 0.8)))
+        p.append(uvball(0.12, (x, -D / 2 - 0.6, alto - 0.18), cores[k % 2], seg=8, ring=4, scale=(1, 0.4, 0.8)))
     # Placa no alto da frente.
-    p.append(box((1.0, 0.06, 0.36), (0, -D / 2 - 0.66, TOPO + 2.5), 'doceBranco', bevel=0.03, segs=1))
-    p.append(box((0.7, 0.07, 0.1), (0, -D / 2 - 0.67, TOPO + 2.5), toldo, bevel=0.0))
+    p.append(box((1.0, 0.06, 0.36), (0, -D / 2 - 0.66, alto + 0.15), 'doceBranco', bevel=0.03, segs=1))
+    p.append(box((0.7, 0.07, 0.1), (0, -D / 2 - 0.67, alto + 0.15), toldo, bevel=0.0))
     # Produtos em cima do balcão.
     rnd = random.Random(i)
     topo = TOPO + 0.96
@@ -308,7 +315,7 @@ def barraca(i, col=None):
             p.append(cyl(0.1, 0.12, (x, 0.0, topo + 0.06), 'casquinha', verts=8, r2=0.12))
             p.append(uvball(0.12, (x, 0.0, topo + 0.17), ('morango', 'baunilha', 'menta')[k % 3], seg=8, ring=5,
                             scale=(1, 1, 0.8)))
-        p.append(cyl(0.3, 0.2, (0.0, 0.3, topo + 0.1), 'casinhaRosa', verts=12))
+        p.append(cyl(0.22, 0.22, (0.0, 0.3, topo + 0.11), 'casinhaRosa', verts=12))
     elif produto == 'sucos':
         for k in range(7):
             x = -0.8 + k * 0.26
@@ -340,7 +347,7 @@ def fonte():
     p = [cyl(1.7, 0.5, (0, 0, TOPO + 0.25), 'doceBranco', verts=24, bevel=0.08)]
     p.append(cyl(1.5, 0.08, (0, 0, TOPO + 0.44), 'chocolate', verts=24))
     p.append(torus(1.68, 0.1, (0, 0, TOPO + 0.5), 'morango', seg=24, rseg=5))
-    p.append(cyl(0.22, 1.2, (0, 0, TOPO + 1.0), 'doceBranco', verts=10))
+    p.append(cyl(0.22, 1.15, (0, 0, TOPO + 1.025), 'doceBranco', verts=10))
     p.append(cyl(0.95, 0.22, (0, 0, TOPO + 1.55), 'doceBranco', verts=18, r2=0.8, bevel=0.04))
     p.append(cyl(0.82, 0.06, (0, 0, TOPO + 1.67), 'chocolate', verts=18))
     p.append(cyl(0.14, 0.6, (0, 0, TOPO + 1.95), 'doceBranco', verts=8))

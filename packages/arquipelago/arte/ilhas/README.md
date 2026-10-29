@@ -105,6 +105,11 @@ desenho; o `exportar(..., colisores=col)` grava tudo.
   canteiros (`col-cil-vaso`) e moitas, os dois últimos com 0,72 a 0,75 de altura para segurar o
   corpo. Toldos, flores, tufos e o miúdo das construções não colidem.
   `tests/colisores-da-vila-doce.test.ts` confere o percurso, a chegada e a frente das lojas.
+- **Sem pisca-pisca na Vila Doce (29/10/2026):** `tests/faces-coplanares.test.ts` passa na
+  `vila-doce.glb` e nas peças soltas. Os ajudantes `janela`, `porta` e `toldo_listrado` do
+  `lib_ilhas.py` deixaram de pôr faces no mesmo plano (a cruz da janela, o fundo da porta e as
+  listras vizinhas); os rodapés afundam 2 cm no chão. O Bosque e o Recife usam os mesmos
+  ajudantes e saem sem esses pares quando forem regerados (aí a lista `PENDENTES_DO_BOSQUE` encolhe).
 - **O que não colide:** copas, raízes, flores, tufos, taboas, vitórias-régias, o balde da roldana e
   os enfeites miúdos das construções. O personagem passa por eles sem tropeçar.
 - **Câmera:** o jogo diz pelo prefixo do nome o que só segura o corpo (`SO_PARA_O_CORPO` em

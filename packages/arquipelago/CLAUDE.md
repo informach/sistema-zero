@@ -365,8 +365,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - **Regra:** nenhum modelo tem faces coplanares de materiais diferentes se sobrepondo nem emenda em
   T. `scripts/faces-coplanares.ts` acha as duas coisas num GLB (por plano: normal e distância em
   grade; sobreposição por recorte de triângulos; emenda em T por vértice no meio de aresta vizinha);
-  `tests/faces-coplanares.test.ts` roda em todos os GLBs do mundo, no Quadro das Cores e nas peças
-  no lugar do jogo em cima do chão. O Bosque tem uma lista `PENDENTES_DO_BOSQUE` (pares que já
+  `tests/faces-coplanares.test.ts` roda em todos os GLBs do mundo, no Quadro das Cores, na Vila Doce
+  (29/10/2026) e nas peças no lugar do jogo em cima do chão. O Bosque tem uma lista `PENDENTES_DO_BOSQUE` (pares que já
   existiam); par novo reprova.
 - **Câmera:** `PERTO_DA_CAMERA` 0,25 e `LONGE_DA_CAMERA` 450 (`mundo/medidas.ts`, explicação lá).
   O `near` é quem dá precisão de profundidade (2,5 vezes a de 0,1) e o canto do plano de corte fica
