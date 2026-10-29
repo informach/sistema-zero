@@ -774,3 +774,58 @@ def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')
     return path
+
+
+# ------------------------------------------------------------------ bacia de nadar
+def profundidade_da_bacia(t, fundo, plana, fim):
+    """Profundidade da bacia (abaixo do tampo) a `t` raios do meio: funda e plana até `plana`, sobe
+    em curva suave e chega a zero em `fim` (fim maior que 1 passa da beira da água)."""
+    if t <= plana:
+        return fundo
+    if t >= fim:
+        return 0.0
+    s = (t - plana) / (fim - plana)
+    return fundo * (1 - s * s * (3 - 2 * s))
+
+
+def cavar_bacia(chao_col, centro, raios, fundo, plana, fim, voltas=36, aneis=12):
+    """Cava uma bacia elíptica no `col-terreno` (só na colisão: a água do desenho cobre o fundo),
+    para a criança nadar: boolean exato com um molde fechado (o fundo em anéis, a parede e a tampa
+    acima do tampo). O anel de fora fica um pouco acima do tampo, para o corte nunca ficar rente à
+    face de cima. É a mesma conta do lago do Bosque (`bosque.py`, `bacia`)."""
+    x, z = centro
+    rx, rz = raios
+    bm = bmesh.new()
+    meio = bm.verts.new(P(x, z, TOPO - fundo))
+    aneis_v = []
+    for i in range(1, aneis + 1):
+        t = fim * i / aneis
+        y = TOPO + 0.05 if i == aneis else TOPO - profundidade_da_bacia(t, fundo, plana, fim)
+        aneis_v.append([bm.verts.new(P(x + math.cos(2 * math.pi * k / voltas) * rx * t,
+                                       z + math.sin(2 * math.pi * k / voltas) * rz * t, y))
+                        for k in range(voltas)])
+    tampa = [bm.verts.new((v.co.x, v.co.y, TOPO + 0.4)) for v in aneis_v[-1]]
+    for k in range(voltas):
+        k2 = (k + 1) % voltas
+        bm.faces.new((meio, aneis_v[0][k2], aneis_v[0][k]))
+        for a, b in zip(aneis_v, aneis_v[1:]):
+            bm.faces.new((a[k], a[k2], b[k2], b[k]))
+        bm.faces.new((aneis_v[-1][k], aneis_v[-1][k2], tampa[k2], tampa[k]))
+    bm.faces.new(tampa)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new('molde-bacia')
+    bm.to_mesh(me)
+    bm.free()
+    molde = bpy.data.objects.new('molde-bacia', me)
+    bpy.context.collection.objects.link(molde)
+    m = chao_col.modifiers.new('bacia', 'BOOLEAN')
+    m.operation = 'DIFFERENCE'
+    m.solver = 'EXACT'
+    m.use_hole_tolerant = True
+    m.object = molde
+    bpy.context.view_layer.objects.active = chao_col
+    bpy.ops.object.select_all(action='DESELECT')
+    chao_col.select_set(True)
+    bpy.ops.object.modifier_apply(modifier='bacia')
+    bpy.data.objects.remove(molde, do_unlink=True)
+    chao_col.data.materials.clear()

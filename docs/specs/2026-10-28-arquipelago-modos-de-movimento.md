@@ -72,7 +72,7 @@ interface ModoDeMovimento {
   `movimento.aguas`). **Sai:** pisa e a cintura sai da água por 0,02 m.
 - **Números:** 2,6 m/s, aceleração 6 e freio 4 m/s², sem pulo, a cintura boia na linha da água.
 - **Animação:** Nado. **Câmera:** exploração.
-- **Testes:** `tests/lago-do-bosque.test.ts` (o fundo e a rampa); no navegador, a cintura na linha
+- **Testes:** `tests/lagos-das-ilhas.test.ts` (o fundo e a rampa); no navegador, a cintura na linha
   da água no meio do lago.
 
 ### Cipó (`cipo`), o pêndulo controlado

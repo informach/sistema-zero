@@ -9,7 +9,7 @@ Mesmo chão da versão leve (areia, praia molhada), com:
 - a caverna submarina no lado de fora da ilha (−x): rochas em ferradura, teto de pedra, chão de areia
   embaixo d'água, pérolas e cristais que brilham. Entra-se nadando pela boca, virada para o mar.
 
-Saídas: `recife.glb` (nós `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`,
+Saídas: `recife.glb` (nós `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`,
 `alga-1`…`alga-10` com o clipe `balancar`, as âncoras e os nós de colisão `col-*`, 29/10/2026),
 `recife-props.glb` e `barco.glb`.
 
@@ -17,8 +17,10 @@ Colisão (README de `arte/ilhas`): o chão (`col-terreno`), a casa da Maré (um 
 a mesa e o cavalete de mapas, o cesto, o deque do cais (aberto nas bordas: dali se mergulha) com as
 estacas, o lampião e o caixote, a caverna (as pedras da parede, o arco da boca, o teto e o chão de
 areia), os corais grandes em volta da lagoa, os coqueiros, as pedras, o guarda-sol e o castelinho.
-A lagoa é rasa (só desenho) e o miúdo (conchas, estrelas, algas, os corais pequenos dentro da
-lagoa e os da caverna) não colide.
+A lagoa (nó `agua`, um material só, que o jogo lê como o lago do Bosque) tem fundo na colisão:
+a bacia de `FUNDO_DA_LAGOA` cavada no `col-terreno` (`cavar_bacia`), para a criança nadar; o
+miolo mais escuro (`lagoaFunda`) é enfeite. O miúdo (conchas, estrelas, algas, os corais pequenos
+dentro da lagoa e os da caverna) não colide.
 """
 from lib_ilhas import *
 
@@ -347,10 +349,22 @@ def terreno(col=None):
     return p
 
 
+# A bacia de nadar (só na colisão, a água do desenho cobre o fundo): funda como o lago do Bosque
+# (a cintura da criança passa da linha da água), plana até `BACIA_PLANA` dos raios e com rampa até
+# `BACIA_FIM`, ainda dentro da areia molhada da beira e antes dos colisores dos corais grandes (a
+# 5,3 × 4,7 do meio, o de dentro a uns 3,9 no eixo curto).
+RAIOS_DA_LAGOA = (4.2, 3.6)
+FUNDO_DA_LAGOA = 0.85
+BACIA_PLANA, BACIA_FIM = 0.4, 1.08
+
+
 def lagoa():
+    """A água (um material só: o jogo lê a elipse e a altura dela) e o miolo mais escuro."""
     x, z = LAGOA
-    return [mancha(x, z, 4.2, 3.6, 'lagoa', seed=2, z0=TOPO - 0.04, z1=TOPO + 0.045, n=32, wob=0.06),
-            mancha(x + 0.4, z + 0.2, 2.2, 1.8, 'lagoaFunda', seed=5, z0=TOPO - 0.03, z1=TOPO + 0.05, n=24, wob=0.08)]
+    agua = [mancha(x, z, *RAIOS_DA_LAGOA, 'lagoa', seed=2, z0=TOPO - 0.04, z1=TOPO + 0.045, n=32, wob=0.06)]
+    miolo = [mancha(x + 0.4, z + 0.2, 2.2, 1.8, 'lagoaFunda', seed=5, z0=TOPO - 0.03, z1=TOPO + 0.05, n=24,
+                    wob=0.08)]
+    return agua, miolo
 
 
 # Colisor de cada coral grande em volta da lagoa (raio e altura por escala), um pouco menor que o desenho.
@@ -538,7 +552,8 @@ def construir():
     lib_q.reset()
     col = []
     chao = terreno(col)
-    agua = lagoa()
+    cavar_bacia(col[0], LAGOA, RAIOS_DA_LAGOA, FUNDO_DA_LAGOA, BACIA_PLANA, BACIA_FIM)
+    agua, miolo = lagoa()
     alvo_casa = (-2.6, 3.4)
 
     def montar(fn, x, z, frente_):
@@ -553,7 +568,7 @@ def construir():
     deque_cais, ponta_cais, lugar_barco = cais(col)
     obras += deque_cais
     cor = corais(col)
-    enf = enfeites(col)
+    enf = enfeites(col) + miolo
     cav = caverna(col)
     conferir_corredor(obras + cor + enf, 'recife')
     algas = {}
@@ -571,7 +586,7 @@ def construir():
            ancora('caverna-tesouro', cx + 1.4, cz + 0.1, FUNDO_CAVERNA), ancora('mergulho', CAIS_FIM[0], CAIS_FIM[1] - 0.6, 0.0)]
     # A âncora do barco também diz para onde ele aponta (giro em y, no jogo).
     anc[10].rotation_euler = (0, 0, lugar_barco[2])
-    exportar('recife', {'terreno': chao, 'lagoa': agua, 'construcoes': obras, 'corais': cor, 'enfeites': enf,
+    exportar('recife', {'terreno': chao, 'agua': agua, 'construcoes': obras, 'corais': cor, 'enfeites': enf,
                         'caverna': cav, **algas}, anc, clipes_=clipe_algas, colisores=col)
 
 

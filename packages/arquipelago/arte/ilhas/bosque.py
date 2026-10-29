@@ -381,54 +381,12 @@ BACIA_PLANA, BACIA_FIM = 0.35, 1.25
 
 def fundo_da_bacia(t):
     """Profundidade da bacia (abaixo do tampo) a `t` raios do meio do lago."""
-    if t <= BACIA_PLANA:
-        return FUNDO_DO_LAGO
-    if t >= BACIA_FIM:
-        return 0.0
-    s = (t - BACIA_PLANA) / (BACIA_FIM - BACIA_PLANA)
-    return FUNDO_DO_LAGO * (1 - s * s * (3 - 2 * s))
+    return profundidade_da_bacia(t, FUNDO_DO_LAGO, BACIA_PLANA, BACIA_FIM)
 
 
-def bacia(chao_col, voltas=36, aneis=12):
-    """Cava a bacia no `col-terreno`: boolean exato com um molde fechado (o fundo em anéis, a
-    parede e a tampa acima do tampo). O anel de fora fica um pouco acima do tampo, para o corte
-    nunca ficar rente à face de cima."""
-    x, z = LAGO
-    rx, rz = RAIOS_DO_LAGO
-    bm = bmesh.new()
-    meio = bm.verts.new(P(x, z, TOPO - FUNDO_DO_LAGO))
-    aneis_v = []
-    for i in range(1, aneis + 1):
-        t = BACIA_FIM * i / aneis
-        y = TOPO + 0.05 if i == aneis else TOPO - fundo_da_bacia(t)
-        aneis_v.append([bm.verts.new(P(x + math.cos(2 * math.pi * k / voltas) * rx * t,
-                                       z + math.sin(2 * math.pi * k / voltas) * rz * t, y))
-                        for k in range(voltas)])
-    tampa = [bm.verts.new((v.co.x, v.co.y, TOPO + 0.4)) for v in aneis_v[-1]]
-    for k in range(voltas):
-        k2 = (k + 1) % voltas
-        bm.faces.new((meio, aneis_v[0][k2], aneis_v[0][k]))
-        for a, b in zip(aneis_v, aneis_v[1:]):
-            bm.faces.new((a[k], a[k2], b[k2], b[k]))
-        bm.faces.new((aneis_v[-1][k], aneis_v[-1][k2], tampa[k2], tampa[k]))
-    bm.faces.new(tampa)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    me = bpy.data.meshes.new('molde-bacia')
-    bm.to_mesh(me)
-    bm.free()
-    molde = bpy.data.objects.new('molde-bacia', me)
-    bpy.context.collection.objects.link(molde)
-    m = chao_col.modifiers.new('bacia', 'BOOLEAN')
-    m.operation = 'DIFFERENCE'
-    m.solver = 'EXACT'
-    m.use_hole_tolerant = True
-    m.object = molde
-    bpy.context.view_layer.objects.active = chao_col
-    bpy.ops.object.select_all(action='DESELECT')
-    chao_col.select_set(True)
-    bpy.ops.object.modifier_apply(modifier='bacia')
-    bpy.data.objects.remove(molde, do_unlink=True)
-    chao_col.data.materials.clear()
+def bacia(chao_col):
+    """Cava a bacia no `col-terreno` (`cavar_bacia` do `lib_ilhas`, a mesma do Recife)."""
+    cavar_bacia(chao_col, LAGO, RAIOS_DO_LAGO, FUNDO_DO_LAGO, BACIA_PLANA, BACIA_FIM)
 
 
 def galho_dos_cipos(col, copas, troncos):

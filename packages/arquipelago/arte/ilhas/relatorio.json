@@ -476,8 +476,9 @@
       "col-mesa": 1,
       "col-terreno": 1
     },
-    "kb": 574.5,
+    "kb": 614.1,
     "nos": {
+      "agua": 94,
       "alga-1": 240,
       "alga-10": 240,
       "alga-2": 240,
@@ -491,8 +492,7 @@
       "caverna": 2353,
       "construcoes": 5841,
       "corais": 3680,
-      "enfeites": 2144,
-      "lagoa": 164,
+      "enfeites": 2214,
       "terreno": 902
     },
     "triangulos": 17484

@@ -58,7 +58,7 @@ chegada (`conferir_corredor`).
 |---|---|---|---|---|---|
 | `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4` | não tem | 27.762 | 958 KB |
 | `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` e 86 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 961 KB |
-| `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 574 KB |
+| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 614 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
 | `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 1.416 | 49 KB |
@@ -191,8 +191,9 @@ do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
   (`src/mundo/bosque.ts`), e o jogo desenha uma trepadeira em espiral por cima para mostrar que ele
   sobe. Ficaria melhor com a trepadeira modelada (ou degraus de madeira pregados) no próprio tronco.
   O jogo ainda não lê `escalada-*`: quando o nó chegar, troque a constante pela leitura dele.
-- **Lago (28/10/2026):** a bacia de 0,85 m já está no `col-terreno` (`bacia` em `bosque.py`, só na
-  colisão; `tests/lago-do-bosque.test.ts` mede o fundo e a rampa). O desenho continua com a água
+- **Lago (28/10/2026):** a bacia de 0,85 m já está no `col-terreno` (`cavar_bacia` do
+  `lib_ilhas.py`, só na colisão; a lagoa do Recife usa a mesma desde 29/10/2026, com o nó `agua` de
+  um material só e a bacia acabando em 1,08 raio, antes dos corais grandes; `tests/lagos-das-ilhas.test.ts` mede o fundo e a rampa). O desenho continua com a água
   opaca por cima do tampo: um fundo desenhado e a água com transparência e ondinhas (física viva,
   etapa 2) ficam para quando a água ganhar shader.
 - **Placa de largada e vagalumes:** desenhados no código (`PLACA_DA_LARGADA` e
