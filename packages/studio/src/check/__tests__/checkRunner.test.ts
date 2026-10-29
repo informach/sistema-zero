@@ -6,7 +6,14 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -37,23 +44,10 @@ async function check(project: unknown, objectives: ExecutionObjectiveRequest[]) 
     join(runtime, 'node_modules'),
     process.platform === 'win32' ? 'junction' : 'dir',
   )
-  writeFileSync(join(runtime, 'check-objectives.mjs'), readFileSync(RUNNER))
-  writeFileSync(
-    join(runtime, 'check-click-target.mjs'),
-    readFileSync(join(dirname(RUNNER), 'check-click-target.mjs')),
-  )
-  writeFileSync(
-    join(runtime, 'check-javascript-modules.mjs'),
-    readFileSync(join(dirname(RUNNER), 'check-javascript-modules.mjs')),
-  )
-  writeFileSync(
-    join(runtime, 'check-approach.mjs'),
-    readFileSync(join(dirname(RUNNER), 'check-approach.mjs')),
-  )
-  writeFileSync(
-    join(runtime, 'execution-observation.generated.mjs'),
-    readFileSync(join(dirname(RUNNER), 'execution-observation.generated.mjs')),
-  )
+  // Todos os módulos do executor, como o Dockerfile do `studio-runtime` copia: uma lista à mão
+  // ficava para trás a cada módulo novo (o `check-approach-3d.mjs` do Jardim Secreto).
+  for (const nome of readdirSync(dirname(RUNNER)).filter((n) => n.endsWith('.mjs')))
+    writeFileSync(join(runtime, nome), readFileSync(join(dirname(RUNNER), nome)))
   const scope = createCheckScope()
   writeFileSync(join(dir, 'game.html'), await prepareClassicCheckDocument(project, scope))
   writeFileSync(
