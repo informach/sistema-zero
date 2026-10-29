@@ -86,11 +86,11 @@ variável.
 - **Se o pedaço adulto não baixar,** o jogo abre com a voz e o desenho do Kids (o erro vai para
   `relatarErro`). Não abrir seria pior.
 
-**Fica pendente (precisa tocar em `mundo/`, fora do escopo desta fase):** a placa 3D da ponte
-fechada (`mundo/placa-da-ponte.tsx`, o nome do posto pintado na tábua e o recado da Íris) e a
-fala da luneta dita pelo `mundo/luneta.tsx` ainda usam os nomes dos postos do Kids. O painel
-da luneta já usa a voz. Para fechar, a sessão dona do mundo troca `falaDaLuneta(ilha)` por
-`useVoz().falaDaLuneta(ilha)` e acrescenta à voz o texto da placa e o recado da Íris.
+**Fechado na conferência (29/10/2026):** a placa 3D da ponte fechada (`mundo/placa-da-ponte.tsx`)
+e a fala da luneta dita pelo `mundo/luneta.tsx` usavam os nomes dos postos do Kids. Agora leem a
+voz: `placaDaPonte(ilha)` (no adulto, "A ponte abre na" e "etapa 3 da jornada") e
+`recadoDaIris(ilha)` entraram na `VozDoJogo`, e a luneta do mundo usa `useVoz().falaDaLuneta`. O
+R3F 9 leva o contexto da voz para dentro do `<Canvas>`.
 
 ## 2. Pele adulta do jogo
 

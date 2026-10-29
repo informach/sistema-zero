@@ -30,7 +30,7 @@ function textos(voz: VozDoJogo): string[] {
   const saida: string[] = []
   const andar = (v: unknown) => {
     if (typeof v === 'string') saida.push(v)
-    else if (typeof v === 'function') for (const ilha of ILHAS) saida.push(v(ilha))
+    else if (typeof v === 'function') for (const ilha of ILHAS) andar(v(ilha))
     else if (v && typeof v === 'object') for (const x of Object.values(v)) andar(x)
   }
   andar(voz)
@@ -65,10 +65,18 @@ describe('a pele do Kids não mudou (fase3-13)', () => {
     }
   })
 
-  test('a fala da luneta do Kids é a de sempre', () => {
-    for (const ilha of ILHAS)
+  test('a fala da luneta, a placa da ponte e o recado da Íris do Kids são os de sempre', () => {
+    for (const ilha of ILHAS) {
       if (ilha.id !== 'farol')
         expect(VOZ_KIDS.falaDaLuneta(ilha)).toContain(NOMES_DOS_POSTOS[ilha.posto])
+      expect(VOZ_KIDS.placaDaPonte(ilha)).toEqual({
+        antes: 'A ponte abre em',
+        marco: NOMES_DOS_POSTOS[ilha.posto],
+      })
+      expect(VOZ_KIDS.recadoDaIris(ilha)).toBe(
+        `Tem mais para descobrir. A ponte abre em ${NOMES_DOS_POSTOS[ilha.posto]}. Íris.`,
+      )
+    }
   })
 })
 
@@ -92,6 +100,13 @@ describe('a voz adulta', () => {
       'Lá é a Vila Doce. A ponte abre quando você chegar à etapa 3 da sua jornada.',
     )
     expect(VOZ_ADULTA.moldaFechado).toBe('Abre na etapa 4 da sua jornada')
+    expect(VOZ_ADULTA.placaDaPonte(vila)).toEqual({
+      antes: 'A ponte abre na',
+      marco: 'etapa 3 da jornada',
+    })
+    expect(VOZ_ADULTA.recadoDaIris(vila)).toBe(
+      'Tem mais para descobrir. A ponte abre na etapa 3 da sua jornada. Íris.',
+    )
   })
 
   test('as duas vozes seguem a régua da casa; a adulta, também a do community', () => {

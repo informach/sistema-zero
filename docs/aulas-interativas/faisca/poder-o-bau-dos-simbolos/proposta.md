@@ -1,6 +1,6 @@
 # O baú dos símbolos: proposta do Poder do Faísca
 
-29/10/2026 · **Proposta para aprovação.** Define a autoria; não declara curso implementado, mídia
+29/10/2026 · **Proposta aprovada.** Define a autoria; não declara curso implementado, mídia
 produzida ou publicação realizada. Quarto e último dos Poderes do Faísca, no mesmo formato de
 [Moedas no caminho](../poder-moedas-no-caminho/proposta.md),
 [O segredo da cabana](../poder-o-segredo-da-cabana/proposta.md) e

@@ -5,6 +5,7 @@ O conversor aceita somente os elementos presentes no fundo deste pack.
 """
 from pathlib import Path
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -35,6 +36,9 @@ FILES = {
     "ponte-levantada": "ponte-levantada.svg", "ponte-baixada": "ponte-baixada.svg",
     "pedra-do-sino": "pedra-do-sino.svg", "pedra-do-sino-tocando": "pedra-do-sino-tocando.svg",
     "laguinho": "laguinho.svg",
+    # Poder "O baú dos símbolos": as três pedras (mesma caixa apagada e acesa) e a placa da ordem.
+    **{f"pedra-{s}{e}": f"pedra-{s}{e}.svg" for s in ("sol", "lua", "estrela") for e in ("", "-acesa")},
+    "placa-da-ordem": "placa-da-ordem.svg",
     **{f"farol-{modelo.replace(' ', '-')}-{estado}": f"farol-{modelo.replace(' ', '-')}-{estado}.svg"
        for modelo in ("listrado", "de pedra", "de madeira", "colorido")
        for estado in ("apagado", "aceso")},
@@ -59,6 +63,8 @@ CAIXAS = {**{nome: (64, 64) for nome in PERSONAGENS},
           **{nome: (96, 48) for nome in ("ponte-levantada", "ponte-baixada")},
           **{nome: (64, 64) for nome in ("pedra-do-sino", "pedra-do-sino-tocando")},
           "laguinho": (128, 80),
+          **{f"pedra-{s}{e}": (48, 48) for s in ("sol", "lua", "estrela") for e in ("", "-acesa")},
+          "placa-da-ordem": (64, 48),
           **{nome: (152, 152) for nome in FILES if nome.startswith("farol-") and nome not in ("farol-apagado", "farol-aceso")}}
 HEADER = "// Gerado por scripts/gen-farol-assets.py a partir de arte/assets/farol. Não editar.\n"
 
@@ -71,13 +77,56 @@ def call(method, *values):
     return f"ctx.{method}({', '.join(map(str, values))})"
 
 
+def arc_to_beziers(x1, y1, rx, ry, phi, large, sweep, x2, y2):
+    """O arco do SVG (de x1,y1 até x2,y2) em cúbicas de até 90°, pela conversão da especificação
+    (SVG 1.1, apêndice F.6.5)."""
+    if (x1, y1) == (x2, y2):
+        return []
+    if rx == 0 or ry == 0:
+        return [(x1, y1, x2, y2, x2, y2)]
+    rx, ry, phi = abs(rx), abs(ry), math.radians(phi)
+    cp, sp = math.cos(phi), math.sin(phi)
+    dx, dy = (x1 - x2) / 2, (y1 - y2) / 2
+    x1p, y1p = cp * dx + sp * dy, -sp * dx + cp * dy
+    lam = (x1p / rx) ** 2 + (y1p / ry) ** 2
+    if lam > 1:
+        rx, ry = rx * math.sqrt(lam), ry * math.sqrt(lam)
+    num = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p
+    den = rx * rx * y1p * y1p + ry * ry * x1p * x1p
+    co = math.sqrt(max(0.0, num / den)) * (-1 if large == sweep else 1)
+    cxp, cyp = co * rx * y1p / ry, -co * ry * x1p / rx
+    cx, cy = cp * cxp - sp * cyp + (x1 + x2) / 2, sp * cxp + cp * cyp + (y1 + y2) / 2
+    angle = lambda ux, uy, vx, vy: math.atan2(ux * vy - uy * vx, ux * vx + uy * vy)
+    t1 = angle(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry)
+    dt = angle((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry)
+    if not sweep and dt > 0:
+        dt -= 2 * math.pi
+    elif sweep and dt < 0:
+        dt += 2 * math.pi
+    parts = max(1, math.ceil(abs(dt) / (math.pi / 2)))
+    step = dt / parts
+    k = 4 / 3 * math.tan(step / 4)
+    point = lambda t: (cx + rx * math.cos(t) * cp - ry * math.sin(t) * sp,
+                       cy + rx * math.cos(t) * sp + ry * math.sin(t) * cp)
+    deriv = lambda t: (-rx * math.sin(t) * cp - ry * math.cos(t) * sp,
+                       -rx * math.sin(t) * sp + ry * math.cos(t) * cp)
+    curves = []
+    for i in range(parts):
+        a, b = t1 + i * step, t1 + (i + 1) * step
+        (ax, ay), (bx, by) = point(a), point(b)
+        (dax, day), (dbx, dby) = deriv(a), deriv(b)
+        curves.append(tuple(round(v, 3) for v in (ax + k * dax, ay + k * day, bx - k * dbx, by - k * dby, bx, by)))
+    return curves
+
+
 def shape(element):
     tag = element.tag.rsplit("}", 1)[-1]
     a = element.attrib
-    allowed = {"fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "transform"}
+    allowed = {"fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "transform",
+               "opacity"}
     fields = {"rect": {"x", "y", "width", "height", "rx"},
-              "ellipse": {"cx", "cy", "rx", "ry"}, "line": {"x1", "y1", "x2", "y2"},
-              "polygon": {"points"}, "path": {"d"}}
+              "ellipse": {"cx", "cy", "rx", "ry"}, "circle": {"cx", "cy", "r"},
+              "line": {"x1", "y1", "x2", "y2"}, "polygon": {"points"}, "path": {"d"}}
     if tag not in fields or set(a) - fields[tag] - allowed or list(element):
         raise ValueError(f"SVG de fundo não suportado: {tag} {a}")
     lines = ["ctx.save()"]
@@ -93,6 +142,8 @@ def shape(element):
     ]:
         if a.get(svg) != "none":
             lines.append(f"ctx.{canvas} = {js(a.get(svg, default))}")
+    if "opacity" in a:
+        lines.append(f"ctx.globalAlpha = {float(a['opacity'])}")
     lines += [f"ctx.lineWidth = {a.get('stroke-width', 1)}", "ctx.beginPath()"]
     n = lambda key: float(a.get(key, 0))
     if tag == "rect":
@@ -100,6 +151,8 @@ def shape(element):
         lines.append(call("roundRect", *values, n("rx")) if "rx" in a else call("rect", *values))
     elif tag == "ellipse":
         lines.append(call("ellipse", *(n(k) for k in ("cx", "cy", "rx", "ry")), 0, 0, "Math.PI * 2"))
+    elif tag == "circle":
+        lines.append(call("ellipse", n("cx"), n("cy"), n("r"), n("r"), 0, 0, "Math.PI * 2"))
     elif tag == "line":
         lines += [call("moveTo", n("x1"), n("y1")), call("lineTo", n("x2"), n("y2"))]
     elif tag == "polygon":
@@ -109,8 +162,9 @@ def shape(element):
         lines.append("ctx.closePath()")
     elif tag == "path":
         tokens = re.findall(r"[A-Za-z]|-?\d+(?:\.\d+)?", a["d"])
-        counts = {"M": 2, "L": 2, "C": 6, "Z": 0}
+        counts = {"M": 2, "L": 2, "C": 6, "A": 7, "Z": 0}
         methods = {"M": "moveTo", "L": "lineTo", "C": "bezierCurveTo", "Z": "closePath"}
+        x = y = sx = sy = 0.0
         while tokens:
             command = tokens.pop(0)
             if command not in counts:
@@ -118,7 +172,18 @@ def shape(element):
             count = counts[command]
             values = [float(v) for v in tokens[:count]]
             del tokens[:count]
-            lines.append(call(methods[command], *values))
+            if command == "A":
+                # O arco vira curvas Bézier (como fazem os editores de vetor), no mesmo desenho.
+                for curve in arc_to_beziers(x, y, *values):
+                    lines.append(call("bezierCurveTo", *curve))
+            else:
+                lines.append(call(methods[command], *values))
+            if command == "M":
+                sx, sy = values
+            if command == "Z":
+                x, y = sx, sy
+            elif values:
+                x, y = values[-2], values[-1]
     if a.get("fill") != "none":
         lines.append("ctx.fill()")
     if a.get("stroke", "none") != "none":

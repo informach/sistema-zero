@@ -1,7 +1,7 @@
 import type { Ilha, MotivoDeBloqueio } from '@sistemazero/arquipelago-contracts'
 import { createContext, useContext } from 'react'
 import { recadoDaCompra } from '../sistemas/construcao/galeria'
-import { falaDaLuneta, NOMES_DOS_POSTOS } from '../sistemas/luneta'
+import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta'
 
 /**
  * A voz das telas do jogo que falam com quem joga sobre a plataforma (abrir, voltar, a jornada,
@@ -18,6 +18,10 @@ export interface VozDoJogo {
   voltar: string
   /** O que o Zappy diz na luneta sobre a próxima ilha fechada. */
   falaDaLuneta: (ilha: Ilha) => string
+  /** A face da placa 3D da ponte fechada: a linha de antes e o marco em destaque. */
+  placaDaPonte: (ilha: Ilha) => { antes: string; marco: string }
+  /** O recado da Íris ao ler a placa da ponte fechada. */
+  recadoDaIris: (ilha: Ilha) => string
   /** O Molda ainda fechado no painel do projeto azul. */
   moldaFechado: string
   /** A compra da galeria recusada porque a sessão é de suporte (só leitura). */
@@ -51,6 +55,8 @@ export const VOZ_KIDS: VozDoJogo = {
   },
   voltar: 'Voltar para a plataforma',
   falaDaLuneta,
+  placaDaPonte: (ilha) => ({ antes: 'A ponte abre em', marco: NOMES_DOS_POSTOS[ilha.posto] }),
+  recadoDaIris,
   moldaFechado: 'Abre no posto Explorador(a) de Mundos',
   compraSomenteLeitura: recadoDaCompra({ ok: false, motivo: 'somente-leitura' }),
   ilhaFechadaNoMapa: (ilha) =>

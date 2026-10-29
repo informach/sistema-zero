@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react'
 import { BufferAttribute, CanvasTexture, Mesh, MeshBasicMaterial, SRGBColorSpace } from 'three'
 import placaGlb from '../assets/itens/placa-quadro.glb'
 import { useJogo } from '../estado/contexto'
-import { NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta'
+import { useVoz } from '../interface/voz'
 import type { Tabua } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
@@ -31,6 +31,7 @@ export function PlacaDaPonte({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
 
 function PlacaCarregada({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
   const { loja, rastro } = useJogo()
+  const voz = useVoz()
   const original = useModelo(URL_DA_PLACA)
   const desenho = useMemo(() => {
     const cena = original.clone(true)
@@ -46,9 +47,11 @@ function PlacaCarregada({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
     ctx.font = 'bold 44px sans-serif'
     ctx.fillText('Tem mais para descobrir.', 384, 78)
     ctx.font = '38px sans-serif'
-    ctx.fillText('A ponte abre em', 384, 155)
+    // O marco na voz de cada público: o posto no Kids, a etapa da jornada no adulto.
+    const { antes, marco } = voz.placaDaPonte(ilha)
+    ctx.fillText(antes, 384, 155)
     ctx.font = 'bold 38px sans-serif'
-    ctx.fillText(NOMES_DOS_POSTOS[ilha.posto], 384, 219, 720)
+    ctx.fillText(marco, 384, 219, 720)
     ctx.font = 'italic 38px sans-serif'
     ctx.fillText('Íris', 384, 315)
     const textura = new CanvasTexture(tela)
@@ -74,7 +77,7 @@ function PlacaCarregada({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
       o.material = material
     })
     return { cena, textura, material, geometrias }
-  }, [original, ilha.posto])
+  }, [original, ilha, voz])
   useEffect(
     () => () => {
       desenho.textura.dispose()
@@ -91,7 +94,7 @@ function PlacaCarregada({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
     z,
     raio: 2.3,
     rotulo: () => (Math.abs(rastro.y - tabua.y - 0.9) < 1.3 ? 'Ler recado da Íris' : null),
-    agir: () => loja.getState().dizer(recadoDaIris(ilha)),
+    agir: () => loja.getState().dizer(voz.recadoDaIris(ilha)),
   })
   return (
     <group
