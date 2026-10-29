@@ -26,7 +26,7 @@ import { Diario, PAINEL_DO_DIARIO } from './diario'
 import { FogueiraDaFesta } from './fogueira-da-festa'
 import { AtalhoDaFoto, ModoFoto } from './foto'
 import { VisorDaLuneta } from './luneta'
-import { PainelDaMare } from './mare'
+import { PainelDaMare, PainelDoFloco } from './mare'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { PainelDaBancada } from './receitas'
@@ -624,6 +624,7 @@ export function Hud() {
       <PainelDaCapi />
       <PainelDoBento />
       <PainelDaMare />
+      <PainelDoFloco />
       <PainelDaBancada />
       <FogueiraDaFesta />
       <PainelDoTurno />

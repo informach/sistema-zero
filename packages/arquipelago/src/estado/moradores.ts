@@ -8,9 +8,11 @@ export const PAINEL_DA_CAPI = 'capi'
 export const PAINEL_DO_BENTO = 'bento'
 /** A apresentação da Maré, sem amizade nem pedidos nesta fase. */
 export const PAINEL_DA_MARE = 'mare'
+/** A apresentação do Floco no palco do Pico Gelado (fase3-06). */
+export const PAINEL_DO_FLOCO = 'floco'
 
 /** Quem conversa: cada morador tem a loja da conversa dele (a comemoração de um não mexe no outro). */
-export type QuemConversa = 'capi' | 'bento' | 'mare'
+export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco'
 
 /**
  * A conversa com um morador (uma loja por montagem e por morador, como a dos desafios). O painel

@@ -105,6 +105,8 @@ describe('a trilha até o cume', () => {
     const cume = ancora('cume')
     // A um degrau do chão da ilha: entra-se nela andando.
     expect((chaoEm(inicio.x, inicio.z) ?? 0) - TAMPO).toBeLessThan(CORPO.degrau)
+    // A âncora fica no chão da trilha (que ali já subiu um pouco), não no chão da ilha.
+    expect(Math.abs((chaoEm(inicio.x, inicio.z) ?? 0) - inicio.y)).toBeLessThan(0.1)
     expect(Math.abs((chaoEm(fim.x, fim.z) ?? 0) - cume.y)).toBeLessThan(0.15)
     expect(cume.y - TAMPO).toBeGreaterThan(7)
   })

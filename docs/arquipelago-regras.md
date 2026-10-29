@@ -2779,3 +2779,25 @@ padrão. `posicao=2` permite conferir a recusa antes da abertura. Medidas em
 `__arquipelagoDesenho.barco`. Plano: `docs/plans/2026-10-29-arquipelago-barco.md`.
 Testes: `barco.test.ts`, `barco-colisao.test.ts` e `ancoras-do-barco.test.ts`.
 Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026-10-29-barco/`.
+
+## Pico Gelado completo e apresentação do Floco (fase3-06, 29/10/2026)
+
+- A ilha completa entra pelo mesmo ciclo do Bosque, da Vila Doce e do Recife, com o `pico.glb`
+  do commit `d5fa00281`: os colisores vêm todos do arquivo (aj-ligar-01) e cabem no contorno da
+  ilha leve, então a espera pelo chão é a de sempre. O Quadro das Cores fica perto da chegada.
+- O Floco fica em cima do tablado do palco (âncora `palco`, no topo dele, a 0,45 do chão), voltado
+  à marca `morador`, na frente do palco. Medidas tiradas do `floco.glb`: cilindro com raio 0,43 e
+  altura 1,49 (o cavaquinho, que sai para o lado, fica fora), câmera da conversa a 1,19 dos pés. Só
+  o corpo colide. Olhar a 7, aceno a cada 45 segundos e giro 3 seguem o Bento e a Maré; o alcance
+  da conversa é 2,6 (o da Maré é 2,2), para alcançar o Floco no tablado a partir da marca da frente.
+- A apresentação proposta é "Sou Floco. Toco cavaquinho no palco do Pico Gelado." e "Ainda falta
+  gente para a banda tocar no festival de inverno." Base: o pinguim músico de cachecol e cavaquinho
+  da arte e a banda e o festival de inverno da fase3-08. Não há amizade, pedidos ou presentes, e a
+  conversa não grava no salvamento (V10).
+- A trilha até o cume se anda desde já (o platô fica a uns 8 m do chão). O percurso com tempo, o
+  trenó e a caverna de cristal ficam para a fase3-07; o iglu, o festival e a banda, para a fase3-08.
+- O painel da apresentação é o mesmo da Maré, agora genérico (`PainelDeApresentacao`).
+- Testes: `tests/pico.test.ts` e `tests/colisores-do-pico.test.ts`. Navegador:
+  `playground/verificar-pico-browser.ts`, com `?posicao=5`, computador e celular emulado: chegada
+  pela ponte, conversa com o Floco, de pé no começo da trilha e no platô do cume, e a ilha que solta
+  ao sair e volta.

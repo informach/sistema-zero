@@ -183,10 +183,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`. A Vila Doce (29/10/2026) tem os dela no
   `vila-doce.glb` (casas e lojas até o topo plano, o percurso dos telhados, a fonte, as barracas e os
   enfeites de pé), conferidos em `tests/colisores-da-vila-doce.test.ts` (paradas do percurso em cima de
-  colisor, vãos dentro do pulo andando, chegada e frente das lojas livres). O Recife (29/10/2026, ainda não
-  ligado no jogo) também tem os dele no `recife.glb` (cais, casa da Maré, caverna para quem nada),
+  colisor, vãos dentro do pulo andando, chegada e frente das lojas livres). O Recife (29/10/2026, ligado na
+  fase3-01) também tem os dele no `recife.glb` (cais, casa da Maré, caverna para quem nada),
   em `tests/colisores-do-recife.test.ts`; os ajudantes dos testes ficam em `tests/ajuda-colisores.ts`. O Pico
-  (29/10/2026, ainda não ligado) tem os dele no `pico.glb`, com a trilha cavada na montanha até o platô do
+  (29/10/2026, ligado na fase3-06) tem os dele no `pico.glb`, com a trilha cavada na montanha até o platô do
   cume, em `tests/colisores-do-pico.test.ts` (busca em grade da chegada ao platô, encosta que não se sobe), e o
   Vale dos Dinos no `vale-dos-dinos.glb`, em `tests/colisores-do-vale.test.ts`, e a Ilha das Nuvens no `nuvens.glb`,
   em `tests/colisores-das-nuvens.test.ts` (o tampo de cada plataforma é `col-cil-plataforma-N`: quem move o nó
@@ -749,6 +749,18 @@ Sob tetos baixos, `desvioVerticalDaCamera` também compara passar abaixo do alvo
 `FOLGA_DA_CAMERA`, com a sonda real e o ganho mínimo da grua. A posição horizontal exata pode
 tangenciar o teto; não retirar colisores para resolver isso. O desvio entra e sai suavemente,
 sem alterar a preferência. Testes em `camera-sob-teto.test.ts` e no roteiro do Recife.
+
+## O Pico Gelado e o Floco (fase3-06, 29/10/2026)
+
+O Pico está em `ILHAS_COMPLETAS` e `PicoVivo` (`mundo/pico-vivo.tsx`) em `ILHAS_VIVAS`, no mesmo
+ciclo do Recife. Os colisores vêm todos do `pico.glb` (a trilha cavada até o platô do cume, o palco,
+o iglu fechado) e cabem no contorno da ilha leve: `raioDaEsperaDaIlha` é o de sempre. O Floco
+(`mundo/floco.tsx`, `MoradorDaIlha`) fica no topo do tablado (âncora `palco`), voltado à marca
+`morador` (`lugarDoFloco` em `mundo/pico.ts`); medidas e falas em `sistemas/floco.ts` (raio 0,43,
+altura 1,49, cabeça 1,19, alcance 2,6). A apresentação usa o painel genérico
+`interface/apresentacao.tsx` (`PainelDeApresentacao`), o mesmo da Maré. Sem amizade nem salvamento
+novo. Percurso, trenó e caverna são da fase3-07; iglu, festival e banda, da fase3-08. Testes:
+`tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts` (`?posicao=5`).
 
 ## Rodar
 

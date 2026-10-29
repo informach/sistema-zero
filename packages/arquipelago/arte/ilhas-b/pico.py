@@ -449,7 +449,7 @@ def ilha():
     col.insert(0, col_terreno(chao + [montanha_] + montinhos))
     ancoras = ancoras_padrao(
         lumis=[(5.2, 3.6), (-0.6, 4.8), (6.6, -3.4), (0.4, -9.2)], morador=(3.4, -5.1),
-        extras=[('palco', 2.6, -7.3, TOPO + 0.47), ('iglu', 3.0, 4.3), ('trilha-inicio', pe_trilha[0], -pe_trilha[1]),
+        extras=[('palco', 2.6, -7.3, TOPO + 0.47), ('iglu', 3.0, 4.3), ('trilha-inicio', pe_trilha[0], -pe_trilha[1], pe_trilha[2]),
                 ('trilha-fim', fim_trilha[0], -fim_trilha[1], fim_trilha[2]),
                 ('cume', cume[0], -cume[1], cume[2]), ('parede-de-gelo', -2.5, 8.2),
                 ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1),

@@ -50,6 +50,7 @@ import {
   trajetoDaPonte,
 } from './medidas'
 import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { PicoVivo } from './pico-vivo'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { PlacaDaPonte } from './placa-da-ponte'
 import { QuadroDasCores } from './quadro-das-cores'
@@ -233,6 +234,7 @@ const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
   bosque: BosqueVivo,
   'vila-doce': VilaViva,
   recife: RecifeVivo,
+  pico: PicoVivo,
 }
 
 function IlhaDoAnel({

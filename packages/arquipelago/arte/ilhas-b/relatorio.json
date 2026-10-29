@@ -184,7 +184,7 @@
       "topo-da-parede": [-0.4, 5.4, 10.0],
       "treno": [7.6, 1.0, 4.3],
       "trilha-fim": [-4.35, 9.57, 0.22],
-      "trilha-inicio": [0.92, 1.0, -1.09]
+      "trilha-inicio": [0.92, 1.34, -1.09]
     },
     "clipes": [],
     "colisores": {
