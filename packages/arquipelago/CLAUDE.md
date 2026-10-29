@@ -599,6 +599,24 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - O rastro sai no `BichosDoBosque`, à toa (`requestIdleCallback`), pelo mesmo
   `caminhoAteOCercado` da corrida até o cercadinho (que monta a grade se ainda não houver).
 
+## Álbum de coleções e modo foto (fase2-09, 29/10/2026)
+
+- Álbum: regras puras em `sistemas/album.ts` (`albumDoSalvamento` e uma função por seção, cada uma
+  com `conta` = tem, total e faltam), derivadas só do salvamento, sem campo novo. Bichos e receitas
+  vêm de `colecaoDoBosque` e `colecaoDeReceitas` do diário, e o painel (`interface/album.tsx`,
+  `PAINEL_DO_ALBUM`, aberto pelo menu) desenha com os `Bicho` e `Receita` exportados de
+  `interface/diario.tsx`. Os Lumis: `ESPECIES_DE_LUMI` (nome, ilha, comum ou rara e a cor do
+  material `corpo` do GLB, conferida no teste); sem miniatura desenhada ainda, um círculo da cor.
+- Modo foto: `PAINEL_DA_FOTO` em `painelAberto` (a pausa dos painéis para o personagem; a câmera
+  segue girando). O `Hud` troca tudo pela `ModoFoto` (`interface/foto.tsx`), como na luneta;
+  `AtalhoDaFoto` escuta o F. A captura mora dentro do `<Canvas>` (`mundo/foto.tsx`, `CameraDaFoto`,
+  registrada por montagem em `estado/foto.ts`): `capturarQuadro` faz `gl.render` e `toBlob` na mesma
+  chamada. ⚠️ Não ligar `preserveDrawingBuffer` (o teste confere `mundo/cena.tsx`). A foto só é
+  baixada no aparelho; nada vai para o serviço nem para o Clube.
+- Regras e textos: `docs/arquipelago-regras.md` §6.17.1. Testes: `tests/album.test.ts`; navegador:
+  `playground/verificar-album-browser.ts` (compilar para Node no Windows, `ARQUIPELAGO_CHROMIUM`
+  aceito), que semeia um salvamento com um pouco de cada coleção no `localStorage` do playground.
+
 ## Salvamento e tempo
 
 - `SalvamentoV9` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum

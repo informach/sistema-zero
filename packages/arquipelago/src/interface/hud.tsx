@@ -7,11 +7,13 @@ import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
+import { hudEscondido, PAINEL_DA_FOTO } from '../sistemas/modo-foto'
 import { comer } from '../sistemas/necessidades'
 import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
+import { Album, PAINEL_DO_ALBUM } from './album'
 import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
@@ -19,6 +21,7 @@ import { PainelDaCapi } from './capi'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
+import { AtalhoDaFoto, ModoFoto } from './foto'
 import { VisorDaLuneta } from './luneta'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
@@ -380,6 +383,7 @@ function Menu() {
           <li>Andar: W A S D ou as setas (no tablet, toque e arraste na esquerda de baixo)</li>
           <li>Correr: Shift · Pular: espaço</li>
           <li>Usar o que está perto: E</li>
+          <li>Modo foto: F · Sair dele: Esc</li>
           <li>Cipó: Espaço solta · Tronco: W e S sobem e descem, Espaço pula</li>
           <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse · Câmera nas costas: C</li>
           <li>Com controle de videogame: analógicos andam e giram, botão de baixo pula</li>
@@ -406,6 +410,28 @@ function Menu() {
           }}
         >
           📖 Diário
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={ferramentaAberta}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DO_ALBUM)
+          }}
+        >
+          🏛️ Álbum de coleções
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={ferramentaAberta}
+          onClick={() => {
+            loja.getState().abrirMenu(false)
+            loja.getState().abrirPainel(PAINEL_DA_FOTO)
+          }}
+        >
+          📷 Modo foto
         </button>
         <h3 className="arq-menu-titulo">Criar com as ferramentas</h3>
         <div className="arq-ferramentas">
@@ -457,6 +483,7 @@ export function Hud() {
   const { loja } = useJogo()
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
+  const naFoto = useEstado(hudEscondido)
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       const s = loja.getState()
@@ -477,6 +504,13 @@ export function Hud() {
     return (
       <div className="arq-hud">
         <VisorDaLuneta />
+      </div>
+    )
+  // Modo foto: o HUD, a fala do Zappy e as dicas somem; só ficam "Tirar foto" e "Voltar".
+  if (naFoto)
+    return (
+      <div className="arq-hud">
+        <ModoFoto />
       </div>
     )
   return (
@@ -517,6 +551,8 @@ export function Hud() {
       <CadernoDosLumis />
       <PainelDoObjeto />
       <Diario />
+      <Album />
+      <AtalhoDaFoto />
       <Menu />
       <Resultado />
       <Corte />

@@ -14,6 +14,7 @@ import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
 import { Ceu } from './ceu'
 import { Farol } from './farol'
+import { CameraDaFoto } from './foto'
 import { HabitantesDaPraia } from './habitantes-da-praia'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
@@ -53,6 +54,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
       }}
     >
       <MonitorDeQualidade />
+      <CameraDaFoto />
       <Ceu />
       <Suspense fallback={null}>
         {/* Passo fixo com o desenho suavizado entre passos; os passos rodam antes dos outros

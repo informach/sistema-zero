@@ -4,6 +4,7 @@ import { EMOJI_DO_BICHO } from '../sistemas/bichos'
 import {
   colecaoDeReceitas,
   colecaoDoBosque,
+  type EstadoDaReceita,
   type EstadoDoBicho,
   paginasDoDiario,
 } from '../sistemas/diario'
@@ -14,7 +15,8 @@ export const PAINEL_DO_DIARIO = 'diario'
 
 const maiuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
 
-function Bicho({ b }: { b: EstadoDoBicho }) {
+/** Um bicho da coleção do Bosque (o diário e o álbum mostram igual). */
+export function Bicho({ b }: { b: EstadoDoBicho }) {
   if (b.estado === 'escondido')
     return (
       <li className="arq-diario-bicho escondido">
@@ -40,6 +42,34 @@ function Bicho({ b }: { b: EstadoDoBicho }) {
         <span className="arq-caderno-efeito">{b.pegada}</span>
       </div>
       <Pegada bicho={b.bicho} titulo={`A pegada do ${b.nome}`} />
+    </li>
+  )
+}
+
+/** Uma receita da coleção (o diário e o álbum mostram igual). */
+export function Receita({ r }: { r: EstadoDaReceita }) {
+  if (r.sabe)
+    return (
+      <li className="arq-diario-bicho">
+        <span className="arq-caderno-icone" aria-hidden="true">
+          {r.emoji}
+        </span>
+        <div className="arq-quadro-corpo">
+          <b>{r.nome}</b>
+          <span className="arq-quadro-estado">{r.onde}</span>
+          <span className="arq-caderno-efeito">{`Precisa de ${r.precisa}.`}</span>
+        </div>
+      </li>
+    )
+  return (
+    <li className="arq-diario-bicho escondido">
+      <span className="arq-caderno-icone" aria-hidden="true">
+        ❔
+      </span>
+      <div className="arq-quadro-corpo">
+        <b>{r.nome}</b>
+        <span className="arq-quadro-estado">{r.dica}</span>
+      </div>
     </li>
   )
 }
@@ -125,30 +155,9 @@ export function Diario() {
             coração de amizade.
           </p>
           <ul className="arq-quadro-lista arq-diario-bichos">
-            {receitas.map((r) =>
-              r.sabe ? (
-                <li key={r.id} className="arq-diario-bicho">
-                  <span className="arq-caderno-icone" aria-hidden="true">
-                    {r.emoji}
-                  </span>
-                  <div className="arq-quadro-corpo">
-                    <b>{r.nome}</b>
-                    <span className="arq-quadro-estado">{r.onde}</span>
-                    <span className="arq-caderno-efeito">{`Precisa de ${r.precisa}.`}</span>
-                  </div>
-                </li>
-              ) : (
-                <li key={r.id} className="arq-diario-bicho escondido">
-                  <span className="arq-caderno-icone" aria-hidden="true">
-                    ❔
-                  </span>
-                  <div className="arq-quadro-corpo">
-                    <b>{r.nome}</b>
-                    <span className="arq-quadro-estado">{r.dica}</span>
-                  </div>
-                </li>
-              ),
-            )}
+            {receitas.map((r) => (
+              <Receita key={r.id} r={r} />
+            ))}
           </ul>
         </section>
         <div className="arq-menu-acoes">

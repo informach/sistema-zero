@@ -1546,6 +1546,63 @@ Arquivos: `sistemas/diario.ts`, `sistemas/pegadas.ts`, `interface/diario.tsx`,
   sai quando o navegador está à toa depois de a ilha ficar ativa, e some quando o bicho é achado.
 - **Moedas:** nada disto paga moedas.
 
+### 6.17.1 O álbum de coleções e o modo foto (fase2-09, 29/10/2026)
+
+Da proposta: o álbum é o "museu para completar" (como no Animal Crossing), as fotos são expressão
+e coisa da família, e vale a regra "nada se perde por faltar". Arquivos: `sistemas/album.ts`,
+`sistemas/modo-foto.ts`, `estado/foto.ts`, `interface/album.tsx`, `interface/foto.tsx` e
+`mundo/foto.tsx`. Testes: `tests/album.test.ts`; navegador: `playground/verificar-album-browser.ts`.
+
+- **Abrir o álbum:** "🏛️ Álbum de coleções" no menu do jogo (`PAINEL_DO_ALBUM`). O personagem fica
+  parado, e Esc ou "Voltar ao jogo" fecham. Ele só mostra; nada ali muda o jogo, e tudo sai do que o
+  salvamento já guarda (o álbum não tem campo próprio).
+- **Cada seção** diz quantos ela tem, de quantos ("Receitas: 2 de 6"), e quantos faltam ("Faltam
+  4.", "Falta 1." ou "Completa."). O que falta aparece apagado com a dica de onde procurar, nunca
+  como perda: "O que falta não se perde: continua esperando por você nas ilhas."
+- **As seções:**
+
+  | Seção | De onde sai | Conta | Total |
+  |---|---|---|---|
+  | Bichos do Bosque | `colecaoDoBosque` (a mesma do diário, §6.17) | achados e o adotado | 4 |
+  | Receitas | `colecaoDeReceitas` (a mesma do diário) | as que ela sabe | todas as receitas (§6.5) |
+  | Estrelas dos percursos | `salvamento.percursos`, com `PERCURSOS_DO_JOGO` | cada estrela ganha | 3 por percurso (6 com as copas e os telhados) |
+  | Aparências guardadas | `projetos[*].aparencias` | objetos da casa com pelo menos uma aparência | os objetos da casa (9) |
+  | Lumis presos | `salvamento.lumis` (V9) | espécies com pelo menos um preso | as 14 de `LUMIS` |
+
+  - Os bichos e as receitas aparecem do mesmo jeito do diário (`Bicho` e `Receita`, exportados de
+    `interface/diario.tsx`).
+  - Cada percurso mostra a ilha, as três estrelas com o texto da tela do resultado e o melhor tempo
+    ("Ainda não correu." antes da primeira corrida).
+  - Cada objeto mostra a miniatura e os nomes das aparências guardadas (os mesmos de "Suas
+    aparências", §6.16). Ganho e sem aparência: "Na casa, abra o objeto para dar uma aparência a
+    ele." (o painel do objeto tem o Pinta, o Molda e a galeria) Ainda não ganho: a miniatura em silhueta e de onde ele vem (a `origem` do
+    catálogo de objetos).
+  - Os Lumis: as 14 espécies na ordem de `LUMIS`, com a ilha e se a espécie é comum ou rara. Os
+    presos mostram o nome e quantos ("Presos: 3."), com a cor do corpo do modelo (`ESPECIES_DE_LUMI`
+    em `sistemas/album.ts`: nome, ilha e cor do README e dos scripts de `arte/lumis`; o teste confere
+    a cor contra o material `corpo` de cada GLB). Os que ainda não vieram aparecem como silhueta, com
+    "Ainda não encontrado" e a ilha, sem o nome. Os nomes da praia (Estrelinha e Búzio) continuam
+    provisórios, como no README de lá. Ainda não há miniatura desenhada de cada Lumi: o álbum usa um
+    círculo da cor do corpo, com o coração de luz.
+- **Modo foto:** "📷 Modo foto" no menu ou a tecla F (sem Ctrl, Alt ou Meta, fora de campo de texto)
+  com o jogo correndo (nada de menu, painel, ferramenta ou resultado aberto). É um painel
+  (`PAINEL_DA_FOTO`): o personagem fica parado e a câmera gira e aproxima como sempre (arrastar,
+  roda, pinça, + e -).
+  - O HUD inteiro some: necessidades, relógio, tempo livre, menu, a fala do Zappy e as dicas, a ação
+    perto, a mochila e o toque. Ficam o cartão "📷 Modo foto" com "Gire e aproxime a câmera para
+    enquadrar.", "Voltar" no alto e "Tirar foto" embaixo à direita. Nenhum deles fica na metade
+    esquerda de baixo, onde mora o direcional do toque.
+  - "Tirar foto" desenha o quadro e lê o canvas na mesma chamada (`gl.render` e depois `toBlob`,
+    `capturarQuadro`), sem ligar `preserveDrawingBuffer` no jogo todo (custa no celular a cada
+    quadro). O PNG é oferecido para baixar no aparelho, com o nome
+    `arquipelago-AAAA-MM-DD-HHhMM.png` (a hora do aparelho), e o cartão diz "Foto pronta. Ela ficou
+    só neste aparelho." com "Baixar de novo". Se falhar: "A foto não saiu agora. Tente de novo."
+  - Esc ou "Voltar" saem, e o HUD volta.
+  - Com menos movimento (do aparelho ou do menu), a barra entra sem animação.
+  - **Nada vai para o serviço nem para o Clube:** fotos no Clube estão desligadas por padrão
+    (`PERMISSOES_PADRAO`, ECA Digital, art. 21; §3). A foto não fica no salvamento.
+- **Moedas:** nada disto paga moedas.
+
 ### 6.18 Qualidade automática em aparelho fraco
 
 O jogo procura manter **60 quadros por segundo no computador** e **30 no celular, tablet,
@@ -2165,6 +2222,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Tempo livre máximo | 240 min | `limites.ts`, `LIMITE_DIARIO_MAXIMO_MINUTOS` |
 | Passo do tempo livre | 5 min | `limites.ts`, `LIMITE_DIARIO_PASSO_MINUTOS` |
 | Perfis por leitura do cartão dos pais | 20 | `arquipelago-contracts/src/api.ts`, `PERFIS_DA_FAMILIA_MAXIMO` |
+| Nome, ilha e cor de cada Lumi no álbum | 14 espécies (§6.17.1) | `arquipelago/src/sistemas/album.ts`, `ESPECIES_DE_LUMI` |
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |
