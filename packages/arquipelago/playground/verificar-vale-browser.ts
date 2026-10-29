@@ -1,5 +1,5 @@
 /**
- * Vale dos Dinos real no playground (fase4-01). Executar no pacote:
+ * Vale dos Dinos real no playground (fases 4-01 e 4-02). Executar no pacote:
  * bun build playground/verificar-vale-browser.ts --target=node --external playwright-core --outfile .cache/verificar-vale-browser.mjs
  * node .cache/verificar-vale-browser.mjs
  * ARQUIPELAGO_CHROMIUM escolhe o navegador; ARQUIPELAGO_PRINTS escolhe a pasta dos prints.
@@ -11,10 +11,12 @@ import path from 'node:path'
 import { chromium } from 'playwright-core'
 import { Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { chaoLivre } from '../src/mundo/chao-livre'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
+import { explorarVale } from '../src/mundo/exploracao-do-vale'
 import { giroDaIlha, ilhasEmVolta, trajetoDaPonte } from '../src/mundo/medidas'
 import { CORPO } from '../src/sistemas/corpo'
-import { APRESENTACAO_DA_JADE } from '../src/sistemas/jade'
+import { ACOES_DA_ESCAVACAO, EXPLORACAO_DO_VALE as V } from '../src/sistemas/vale'
 
 type P = { x: number; y: number; z: number }
 type Desenho = {
@@ -37,7 +39,8 @@ const port = process.env.ARQUIPELAGO_TEST_PORT
       })
     })
 const baseURL = `http://127.0.0.1:${port}`
-const prints = process.env.ARQUIPELAGO_PRINTS ?? path.resolve('../../docs/qa/2026-10-29-vale')
+const prints =
+  process.env.ARQUIPELAGO_PRINTS ?? path.resolve('../../docs/qa/2026-10-29-vale-pegadas-ninhos')
 mkdirSync(prints, { recursive: true })
 const vale = ilhasEmVolta().find((i) => i.ilha.id === 'vale-dos-dinos')
 if (!vale) throw new Error('Vale fora do anel')
@@ -54,6 +57,14 @@ const local = (nome: string) => {
   if (!no) throw new Error(`Sem âncora ${nome}`)
   return no.position.clone()
 }
+const colisores = lerColisores(modelo)
+const exploracao = explorarVale(modelo, colisores)
+const livre = chaoLivre(colisores, {
+  chao: exploracao.chegada.y,
+  raio: CORPO.raio + V.folgaDoCaminho,
+  altura: CORPO.doCentroAoPe * 2,
+  raioDaIlha: 12,
+})
 const mundo = (p: P): P => ({
   x: vale.centro.x + p.x * Math.cos(giro) + p.z * Math.sin(giro),
   y: p.y,
@@ -97,8 +108,30 @@ try {
       hasTouch: celular,
     })
     context.setDefaultTimeout(120_000)
-    await context.addInitScript(() => localStorage.setItem('arquipelago:medir', '1'))
+    await context.addInitScript(() => {
+      localStorage.setItem('arquipelago:medir', '1')
+      localStorage.setItem(
+        'arquipelago:conforto',
+        JSON.stringify({ menosMovimento: true, qualidade: 'leve' }),
+      )
+      const g = globalThis as unknown as {
+        qaPad: {
+          axes: number[]
+          buttons: { pressed: boolean }[]
+          connected: boolean
+          mapping: string
+        }
+      }
+      g.qaPad = {
+        axes: [0, 0, 0, 0],
+        buttons: Array.from({ length: 12 }, () => ({ pressed: false })),
+        connected: true,
+        mapping: 'standard',
+      }
+      Object.defineProperty(navigator, 'getGamepads', { value: () => [g.qaPad] })
+    })
     const page = await context.newPage()
+    await page.emulateMedia({ reducedMotion: celular ? 'reduce' : 'no-preference' })
     const erros: string[] = []
     page.on('pageerror', (e) => erros.push(e.message))
     const ponte = trajetoDaPonte(vale.ilha)
@@ -183,6 +216,152 @@ try {
       console.log(`${tipo}: de pé ${rotulo}`)
     }
 
+    // Só entradas do controle em cada trecho. O transporte prepara os cenários distantes,
+    // como no roteiro da fase4-01; não atravessa a cerca nem conclui um cuidado de ninho.
+    const andar = async (alvos: P[]) => {
+      for (const alvo of alvos)
+        await page
+          .evaluate(async (alvo) => {
+            const g = globalThis as unknown as {
+              __arquipelagoDesenho: Desenho
+              qaPad: { axes: number[] }
+            }
+            const limite = performance.now() + 120_000
+            try {
+              while (true) {
+                const d = g.__arquipelagoDesenho
+                const dx = alvo.x - d.posicao.x,
+                  dz = alvo.z - d.posicao.z,
+                  distancia = Math.hypot(dx, dz)
+                if (distancia < 0.08 && d.noChao) break
+                if (performance.now() > limite)
+                  throw new Error(
+                    `Caminho bloqueado: ${JSON.stringify({ alvo, atual: d.posicao, modo: d.modo })}`,
+                  )
+                // Compensa a zona morta sem velocidade mínima, para não oscilar em volta
+                // do alvo quando o SwiftShader demora a publicar a próxima medida.
+                const fator =
+                  (0.15 + 0.85 * Math.min(0.45, distancia * 0.4)) / Math.max(0.001, distancia)
+                const x = dx * fator,
+                  z = dz * fator
+                g.qaPad.axes[0] = x * Math.cos(d.giro) - z * Math.sin(d.giro)
+                g.qaPad.axes[1] = x * Math.sin(d.giro) + z * Math.cos(d.giro)
+                await new Promise((r) => setTimeout(r, 35))
+              }
+            } finally {
+              g.qaPad.axes[0] = g.qaPad.axes[1] = 0
+            }
+          }, alvo)
+          .then(() => console.log(`${tipo}: trecho percorrido`, alvo))
+          .catch(async (erro: unknown) => {
+            console.log('Diagnóstico da caminhada', await ler())
+            await page.screenshot({ path: path.join(prints, `vale-${tipo}-falha.png`) })
+            throw erro
+          })
+    }
+    const usar = () =>
+      celular
+        ? page.getByRole('button', { name: 'Usar', exact: true }).tap()
+        : page.keyboard.press('KeyE')
+    const acao = (nome: string) => page.locator('.arq-acao').filter({ hasText: nome })
+    const abrirDiario = async () => {
+      await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+      await page.getByRole('button', { name: /Diário/ }).click()
+      return page.getByRole('dialog', { name: 'Diário', exact: true })
+    }
+    const conferirDiario = async (quantos: number) => {
+      const diario = await abrirDiario()
+      const vale = diario.locator('section').filter({ hasText: 'Descobertas do Vale dos Dinos' })
+      await vale.scrollIntoViewIfNeeded()
+      const total = await vale.getByText('Registrado no diário', { exact: true }).count()
+      if (total !== quantos) throw new Error(`Diário com ${total} registros, esperado ${quantos}`)
+      const larguras = await vale.locator('.arq-diario-bicho').evaluateAll((itens) =>
+        itens.map((item) => ({
+          cartao: item.getBoundingClientRect().width,
+          texto: item.querySelector('.arq-quadro-corpo')!.getBoundingClientRect().width,
+        })),
+      )
+      if (larguras.some((l) => l.texto < l.cartao * 0.4))
+        throw new Error('Texto do diário ficou na coluna do ícone')
+      await page.screenshot({ path: path.join(prints, `vale-${tipo}-diario-${quantos}.png`) })
+      await diario.getByRole('button', { name: 'Voltar ao jogo' }).click()
+    }
+
+    await andar(
+      [...exploracao.caminho].reverse().map((p) => mundo({ ...p, y: exploracao.chegada.y })),
+    )
+    await acao(ACOES_DA_ESCAVACAO[0]).waitFor()
+    console.log(`${tipo}: seguiu o rastro pela abertura da cerca`, await ler())
+    await conferirDiario(1)
+    // Abrir o diário pausa a experiência: E não escava atrás do painel.
+    const diarioPausado = await abrirDiario()
+    await page.keyboard.press('KeyE')
+    await page.waitForTimeout(300)
+    await diarioPausado.getByRole('button', { name: 'Voltar ao jogo' }).click()
+    await acao(ACOES_DA_ESCAVACAO[0]).waitFor()
+    for (const rotulo of ACOES_DA_ESCAVACAO) {
+      await acao(rotulo).waitFor()
+      await usar()
+      await page.waitForTimeout(500)
+      if (rotulo === ACOES_DA_ESCAVACAO[0]) {
+        await page.waitForFunction(() => {
+          const salvo = localStorage.getItem('arquipelago-playground')
+          return salvo && JSON.parse(salvo).salvamento?.vale?.escavacao === 1
+        })
+        const url = new URL(page.url())
+        url.searchParams.delete('novo')
+        url.searchParams.delete('em')
+        await page.goto(url.href, { waitUntil: 'domcontentloaded' })
+        await page.waitForFunction(() =>
+          Boolean((globalThis as { __arquipelagoLevar?: unknown }).__arquipelagoLevar),
+        )
+        const p = mundo(exploracao.escavacao)
+        await dePe(p, giro, 'de volta à escavação')
+        await acao(ACOES_DA_ESCAVACAO[1]).waitFor()
+        console.log(`${tipo}: reabriu com a escavação parcial preservada`)
+      }
+    }
+    await acao('Rever o fóssil').waitFor()
+    await page.screenshot({ path: path.join(prints, `vale-${tipo}-fossil.png`) })
+    await conferirDiario(2)
+
+    for (const ninho of exploracao.ninhos) {
+      // Um raio livre a partir do ninho permite observar e se afastar sem tocar no colisor.
+      let perto: P | null = null,
+        longe: P | null = null
+      for (let i = 0; i < 32 && !perto; i++) {
+        const a = (i * Math.PI * 2) / 32
+        let cabe = true
+        for (let d = 1.9; d <= V.afastamento + 0.4; d += 0.05)
+          if (!livre(ninho.x + Math.sin(a) * d, ninho.z + Math.cos(a) * d)) {
+            cabe = false
+            break
+          }
+        if (cabe) {
+          perto = mundo({
+            x: ninho.x + Math.sin(a) * 1.9,
+            y: ninho.y,
+            z: ninho.z + Math.cos(a) * 1.9,
+          })
+          longe = mundo({
+            x: ninho.x + Math.sin(a) * (V.afastamento + 0.4),
+            y: ninho.y,
+            z: ninho.z + Math.cos(a) * (V.afastamento + 0.4),
+          })
+        }
+      }
+      if (!perto || !longe) throw new Error(`Sem passagem para cuidar de ${ninho.id}`)
+      await dePe(perto, rumo(perto, mundo(ninho)), ninho.id)
+      await acao(`Observar os ovos do ninho ${ninho.id.slice(-1)}`).waitFor()
+      await usar()
+      await page.waitForTimeout(350)
+      await page.screenshot({ path: path.join(prints, `vale-${tipo}-${ninho.id}.png`) })
+      await andar([longe])
+      await page.getByText(new RegExp(`${ninho.id.slice(-1)} de 3 ninhos cuidados`)).waitFor()
+    }
+    await conferirDiario(5)
+    console.log(`${tipo}: escavou, cuidou dos três ninhos e conferiu os cinco registros`)
+
     // A Jade fica no chão. Aproximação pelo rumo da chegada, dentro do alcance da conversa.
     const jade = mundo(local('morador'))
     const direcao = local('chegada').sub(local('morador')).setY(0).normalize()
@@ -192,13 +371,14 @@ try {
     if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
     else await page.keyboard.press('KeyE')
     const conversa = page.getByRole('dialog', { name: 'Jade', exact: true })
-    await conversa.getByText(APRESENTACAO_DA_JADE[0]).waitFor()
+    await conversa.getByText('Você cuidou dos três ninhos.').waitFor()
     await page.waitForTimeout(2500)
     await page.screenshot({ path: path.join(prints, `vale-${tipo}-jade.png`) })
     await conversa.getByRole('button', { name: 'Continuar' }).click()
-    await conversa.getByText(APRESENTACAO_DA_JADE[1]).waitFor()
+    await conversa.getByText('Observar sem tocar e dar espaço ajuda a cuidar dos ovos.').waitFor()
     await conversa.getByRole('button', { name: 'Tchau, Jade' }).click()
     await conversa.waitFor({ state: 'detached' })
+    await conferirDiario(5)
     console.log(`${tipo}: conversa abriu, avançou e fechou`)
 
     // O segundo degrau sustenta o corpo. O deslocamento de metade da meia largura evita
@@ -231,7 +411,7 @@ try {
     // A apresentação também abre depois de soltar o modelo, e Esc libera a câmera.
     if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
     else await page.keyboard.press('KeyE')
-    await conversa.getByText(APRESENTACAO_DA_JADE[0]).waitFor()
+    await conversa.getByText('Você cuidou dos três ninhos.').waitFor()
     await page.keyboard.press('Escape')
     await conversa.waitFor({ state: 'detached' })
     if (celular && (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)))

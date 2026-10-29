@@ -93,7 +93,13 @@ const VIZINHOS: readonly (readonly [number, number])[] = [
  * O caminho de `de` até `ate` pelas casas livres (com os dois pontos nas pontas), ou `null` se não
  * houver. Na diagonal só passa se as duas casas do lado também estiverem livres (não corta quina).
  */
-export function acharCaminho(g: Grade, de: PontoNoChao, ate: PontoNoChao): PontoNoChao[] | null {
+export function acharCaminho(
+  g: Grade,
+  de: PontoNoChao,
+  ate: PontoNoChao,
+  /** Conferência contínua opcional para caminhos de pessoas junto a peças estreitas. */
+  segmentoLivre?: (de: PontoNoChao, ate: PontoNoChao) => boolean,
+): PontoNoChao[] | null {
   const a0 = casaDe(g, de)
   const b0 = casaDe(g, ate)
   const a = casaLivreMaisPerto(g, a0.c, a0.l)
@@ -105,6 +111,13 @@ export function acharCaminho(g: Grade, de: PontoNoChao, ate: PontoNoChao): Ponto
   const fechado = new Uint8Array(total)
   const inicio = a.l * g.colunas + a.c
   const fim = b.l * g.colunas + b.c
+  if (inicio === fim && segmentoLivre && !segmentoLivre(de, ate)) return null
+  const ponto = (c: number, l: number) =>
+    c === a.c && l === a.l
+      ? de
+      : c === b.c && l === b.l
+        ? ate
+        : { x: g.de.x + c * g.passo, z: g.de.z + l * g.passo }
   const estimativa = (i: number) =>
     Math.hypot((i % g.colunas) - b.c, Math.floor(i / g.colunas) - b.l)
   // Fila de prioridade simples (lista ordenada por inserção binária): a grade é pequena.
@@ -123,6 +136,7 @@ export function acharCaminho(g: Grade, de: PontoNoChao, ate: PontoNoChao): Ponto
       const nc = c + dc
       const nl = l + dl
       if (!livreEm(g, nc, nl)) continue
+      if (segmentoLivre && !segmentoLivre(ponto(c, l), ponto(nc, nl))) continue
       if (dc !== 0 && dl !== 0 && (!livreEm(g, c + dc, l) || !livreEm(g, c, l + dl))) continue
       const j = nl * g.colunas + nc
       const novo = (custo[i] ?? 0) + (dc !== 0 && dl !== 0 ? Math.SQRT2 : 1)
@@ -156,7 +170,11 @@ export function acharCaminho(g: Grade, de: PontoNoChao, ate: PontoNoChao): Ponto
     let longe = k + 1
     for (let m = casas.length - 1; m > k + 1; m--) {
       const ali = casas[m]
-      if (ali && seVeem(g, daqui, ali)) {
+      if (
+        ali &&
+        seVeem(g, daqui, ali) &&
+        (!segmentoLivre || segmentoLivre(ponto(daqui.c, daqui.l), ponto(ali.c, ali.l)))
+      ) {
         longe = m
         break
       }

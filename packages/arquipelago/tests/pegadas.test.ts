@@ -4,7 +4,7 @@ import { FORMA_DA_PEGADA, RASTRO, rastroNoCaminho } from '../src/sistemas/pegada
 
 describe('as pegadas dos bichos do Bosque', () => {
   test('cada desenho cabe no quadro de 64 e é diferente dos outros', () => {
-    for (const b of BICHOS_DO_BOSQUE) {
+    for (const b of [...BICHOS_DO_BOSQUE, 'dino'] as const) {
       const forma = FORMA_DA_PEGADA[b]
       expect(forma.length).toBeGreaterThan(1)
       for (const e of forma) {
@@ -17,6 +17,18 @@ describe('as pegadas dos bichos do Bosque', () => {
     }
     const assinaturas = BICHOS_DO_BOSQUE.map((b) => JSON.stringify(FORMA_DA_PEGADA[b]))
     expect(new Set(assinaturas).size).toBe(BICHOS_DO_BOSQUE.length)
+  })
+
+  test('o Vale pode estender o rastro até a chegada sem mudar a régua do Bosque', () => {
+    const caminho = [
+      { x: 0, z: 0 },
+      { x: 0, z: 20 },
+    ]
+    const doVale = rastroNoCaminho(caminho, { comeca: 0.7, acaba: 20, passo: 0.7, lado: 0.13 })
+    expect(doVale.length).toBeGreaterThan(rastroNoCaminho(caminho).length)
+    expect(doVale.at(-1)!.z).toBeGreaterThan(18)
+    expect(FORMA_DA_PEGADA.dino).toHaveLength(4)
+    expect(rastroNoCaminho(caminho, { ...RASTRO, passo: 0 })).toEqual([])
   })
 
   test('o rastro vai pelo caminho, de perto do esconderijo para longe, apontando para ele', () => {

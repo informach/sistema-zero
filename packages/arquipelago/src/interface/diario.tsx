@@ -4,6 +4,7 @@ import { EMOJI_DO_BICHO } from '../sistemas/bichos'
 import {
   colecaoDeReceitas,
   colecaoDoBosque,
+  colecaoDoVale,
   type EstadoDaReceita,
   type EstadoDoBicho,
   paginasDoDiario,
@@ -157,6 +158,28 @@ export function Diario() {
           <ul className="arq-quadro-lista arq-diario-bichos">
             {receitas.map((r) => (
               <Receita key={r.id} r={r} />
+            ))}
+          </ul>
+        </section>
+        <section className="arq-caderno-secao" aria-labelledby="arq-diario-vale">
+          <h3 id="arq-diario-vale" className="arq-menu-titulo">
+            Descobertas do Vale dos Dinos
+          </h3>
+          <ul className="arq-quadro-lista arq-diario-bichos">
+            {colecaoDoVale(salvamento).map((item) => (
+              <li key={item.id} className="arq-diario-bicho">
+                <span className="arq-caderno-icone" aria-hidden="true">
+                  {item.id === 'pegadas' ? '🐾' : item.id === 'fossil' ? '🦴' : '🥚'}
+                </span>
+                <div className="arq-quadro-corpo">
+                  <b>{item.nome}</b>
+                  <span className="arq-quadro-estado">
+                    {item.feito ? 'Registrado no diário' : 'Para descobrir'}
+                  </span>
+                  <span className="arq-caderno-efeito">{item.texto}</span>
+                </div>
+                {item.id === 'pegadas' && <Pegada bicho="dino" titulo="Pegada de três dedos" />}
+              </li>
             ))}
           </ul>
         </section>

@@ -32,6 +32,7 @@ function economia(s: Salvamento) {
     pontesVistas: _pontes,
     percursos: _percursos,
     posicao: _posicao,
+    vale: _vale,
     ...transacao
   } = s
   return transacao
@@ -75,6 +76,12 @@ export function conciliarSalvamento(
     casa: { portaNova: local.casa.portaNova || remoto.casa.portaNova },
     pontesVistas: [...new Set([...remoto.pontesVistas, ...local.pontesVistas])],
     percursos,
+    // Descobertas não consomem itens nem se desfazem: juntar as conquistas das duas sessões.
+    vale: {
+      pegadas: local.vale.pegadas || remoto.vale.pegadas,
+      escavacao: Math.max(local.vale.escavacao, remoto.vale.escavacao),
+      ninhos: [...new Set([...remoto.vale.ninhos, ...local.vale.ninhos])],
+    },
     posicao: mesmosDados(base.posicao, local.posicao) ? remoto.posicao : local.posicao,
   }
 }

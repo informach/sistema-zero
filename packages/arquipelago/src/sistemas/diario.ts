@@ -4,12 +4,44 @@ import {
   type Capi,
   ILHAS,
   type IlhaId,
+  NINHOS_DO_VALE,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { NOME_DO_BICHO } from './bichos'
 import { ITENS } from './itens'
 import { coracoes } from './moradores'
 import { RECEITAS } from './receitas'
+
+/** Conquistas do Vale, sem criar uma página da Íris nem antecipar o museu. */
+export function colecaoDoVale(s: Salvamento) {
+  return [
+    {
+      id: 'pegadas',
+      nome: 'Pegadas de três dedos',
+      feito: s.vale.pegadas,
+      texto: s.vale.pegadas
+        ? 'Você seguiu o rastro até a escavação.'
+        : 'Siga o rastro perto da chegada do Vale.',
+    },
+    {
+      id: 'fossil',
+      nome: 'Osso fossilizado',
+      feito: s.vale.escavacao === 3,
+      texto:
+        s.vale.escavacao === 3
+          ? 'Você retirou a areia e observou o fóssil.'
+          : `Escavação: ${s.vale.escavacao} de 3 etapas. Use o pincel com cuidado.`,
+    },
+    ...NINHOS_DO_VALE.map((id, i) => ({
+      id,
+      nome: `Ninho ${i + 1}`,
+      feito: s.vale.ninhos.includes(id),
+      texto: s.vale.ninhos.includes(id)
+        ? 'Você observou os ovos e deu espaço ao ninho.'
+        : 'Observe os ovos sem tocar. Depois, dê alguns passos para longe.',
+    })),
+  ]
+}
 
 /**
  * O diário (regras puras): as páginas do diário da Íris, uma em cada ilha do anel e a última no

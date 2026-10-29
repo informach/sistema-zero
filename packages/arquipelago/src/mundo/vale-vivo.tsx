@@ -2,12 +2,13 @@ import { useFrame } from '@react-three/fiber'
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
+import { DescobertasDoVale } from './descobertas-do-vale'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Jade } from './jade'
 import { giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 
-/** O Vale vivo (fase4-01): a Jade só existe com a ilha completa ativa. */
+/** Jade, pegadas, escavação e ninhos só existem com a ilha completa ativa. */
 export function ValeVivo({
   ilha,
   centro,
@@ -29,6 +30,7 @@ export function ValeVivo({
     <group ref={pecas} visible={false}>
       <ComReserva reserva={null}>
         <Jade modelo={preparada.modelo} meio={meio} giro={giro} />
+        <DescobertasDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
       </ComReserva>
     </group>
   )

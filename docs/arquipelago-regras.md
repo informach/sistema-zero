@@ -2936,3 +2936,37 @@ do avatar fica oculto, para não mostrar seu interior. Ele reaparece a partir de
 folga evita piscar na borda. A cápsula, a posição, as animações e os comandos não mudam.
 A escolha da ilha completa é única nas áreas de carga sobrepostas; durante o mergulho, o Recife
 mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de outra ilha.
+
+## Pegadas, escavação e cuidado dos ninhos do Vale (fase4-02, 29/10/2026)
+
+- O rastro de três dedos vai da chegada até a escavação, passando pela abertura da cerca.
+  A espécie não é identificada: a arte não informa qual dino deixou a marca. Não associar
+  o desenho da pegada ao osso encontrado. As pegadas reaproveitam as elipses e a malha
+  instanciada do Bosque, cujas medidas permanecem iguais.
+- A busca considera os colisores da ilha e o cavalete do Quadro das Cores. Converte os
+  colisores preparados e girados para o referencial das âncoras. Grade de 12,5 cm, corpo
+  de 35 cm de raio e folga de 3 cm para evitar as quinas das costelas. Confere também
+  os segmentos entre células, em vez de apenas os centros. O rastro é calculado ao montar
+  a ilha, nunca no passo da física. Marca de 60 cm, alternância lateral de 13 cm, passo de 70 cm.
+- Seguir começo, meio e fim, em ordem, registra o rastro no diário. A tolerância é 1,3 m.
+  Não é preciso pisar em cada marca. A escavação também pode ser encontrada por outro caminho.
+- Escavar tem três ações de E/Usar: tirar areia, limpar com o pincel e observar o fóssil.
+  Não há tempo, perda ou consumo. O nó osso do GLB de props existente aparece com metade
+  da altura coberta na primeira ação e inteiro na segunda. Observar conclui o registro
+  no diário. Seu tamanho medido é 1,56 m de largura e 0,28 m de altura; a posição reserva
+  raio de 0,8 m dentro da cerca, fora do esqueleto. Osso miúdo no chão não segura o corpo.
+- Em cada um dos três ninhos, observar os ovos sem tocar e andar para longe dá espaço ao
+  ninho. E/Usar alcança 2,2 m, como a conversa da Jade. Afastar-se 3 m conclui o cuidado.
+  São parâmetros da brincadeira, não medidas biológicas. Zappy explica e informa quantos
+  ninhos já receberam cuidado. O diário guarda cada ninho, e a Jade reconhece os três.
+  Não há perigo, inimigos, ovos quebrados, castigo ou contagem regressiva.
+- Pausa, visita e sessão somente leitura não avançam as descobertas. Sair da ilha cancela
+  apenas a observação ainda não concluída. Não há animação extra de câmera ou balanço,
+  então o movimento reduzido mantém a mesma brincadeira estática.
+- A V12 guarda pegadas seguidas, etapa da escavação e ids dos ninhos cuidados. V1 a V11 migram
+  sem perder conquistas. Retomar mantém inclusive a escavação parcial. Duas sessões conciliam
+  as descobertas por união dos ninhos, maior etapa e rastro concluído, sem duplicar recompensas.
+- Nenhuma mudança de GLB, gerador, amizade ou inventário. Filhote e museu continuam na fase4-03.
+
+Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência e capturas:
+`docs/qa/2026-10-29-vale-pegadas-ninhos/README.md`.

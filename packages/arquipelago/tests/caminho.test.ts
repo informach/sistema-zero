@@ -25,6 +25,22 @@ function passaPorDentro(
 }
 
 describe('caminho pelo chão', () => {
+  test('a conferência contínua contorna uma peça entre células e também confere atalhos', () => {
+    const g = criarGrade({ x: 0, z: 0 }, { x: 4, z: 4 }, 1, () => true)
+    // Parede fina em x=1,5, invisível nos centros da grade; a passagem fica em z>2.
+    const segmento = (a: { x: number; z: number }, b: { x: number; z: number }) => {
+      if (a.x < 1.5 === b.x < 1.5) return true
+      const t = (1.5 - a.x) / (b.x - a.x)
+      return a.z + (b.z - a.z) * t > 2
+    }
+    const caminho = acharCaminho(g, { x: 0, z: 0 }, { x: 4, z: 0 }, segmento)
+    expect(caminho).not.toBeNull()
+    expect(caminho!.some((p) => p.z > 2)).toBe(true)
+    for (let i = 1; i < caminho!.length; i++)
+      expect(segmento(caminho![i - 1]!, caminho![i]!)).toBe(true)
+    expect(acharCaminho(g, { x: 0, z: 0 }, { x: 4, z: 0 }, () => false)).toBeNull()
+    expect(acharCaminho(g, { x: 0, z: 0 }, { x: 0.2, z: 0 }, () => false)).toBeNull()
+  })
   test('sem nada no meio, vai reto (só as duas pontas)', () => {
     const g = criarGrade({ x: 0, z: 0 }, { x: 10, z: 10 }, 1, () => true)
     expect(acharCaminho(g, { x: 1, z: 1 }, { x: 9, z: 7 })).toEqual([

@@ -730,10 +730,10 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 
 ## Salvamento e tempo
 
-- `SalvamentoV11` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
+- `SalvamentoV12` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
   e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue; `migrarDaV5`: a
-  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina; `migrarDaV10`: nenhum achado do Recife).
+  aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina; `migrarDaV10`: nenhum achado do Recife; `migrarDaV11`: nenhuma descoberta do Vale).
   Gravar aceita a versão de
   uma aba aberta antes da atualização e guarda migrada, mas essa aba não lê a resposta atual: só a
   primeira gravação dela fica, as seguintes falham até recarregar.
@@ -1019,3 +1019,22 @@ do avatar fica oculto, para não mostrar seu interior. Ele reaparece a partir de
 folga evita piscar na borda. A cápsula, a posição, as animações e os comandos não mudam.
 A escolha da ilha completa é única nas áreas de carga sobrepostas; durante o mergulho, o Recife
 mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de outra ilha.
+
+## Pegadas, escavação e ninhos do Vale (fase4-02, 29/10/2026)
+
+`DescobertasDoVale` só monta com `ValeVivo`. Regras puras em `sistemas/vale.ts`; progresso
+na V12 (`vale`) e coleção em `diario.ts`. Escavar tem três ações, sem prazo; cuidar é observar
+os ovos e se afastar, sem tocar nem mover a arte. A Jade reconhece os três ninhos.
+
+`exploracao-do-vale.ts` usa as âncoras locais, normaliza os colisores preparados girados e
+inclui o Quadro das Cores com as mesmas medidas de `lugar-do-quadro.ts`. Não usar diretamente
+os colisores girados contra âncoras locais. A busca `acharCaminho` aceita conferência contínua
+opcional dos segmentos; o Bosque mantém o padrão anterior. Uma malha instanciada desenha
+as pegadas de três dedos. O osso vem do nó separado do GLB de props e não colide, por ser
+miúdo no chão. Não gerar modelos ou transformar cenário unido em objetos independentes.
+
+Pausa, visita e somente leitura bloqueiam as ações. Movimento reduzido não perde nenhuma
+etapa, pois não há animação nova. União de conquistas em `conciliar-salvamento.ts`, sem
+somar inventário. Testes leem os GLBs, caminham na grade e conferem o caminho com a ilha
+girada e o cavalete. `playground/verificar-vale-browser.ts` confere computador e toque.
+Regras e números em `docs/arquipelago-regras.md`, seção da fase4-02. Filhote e museu ficam fora.

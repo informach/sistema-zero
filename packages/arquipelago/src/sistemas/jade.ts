@@ -1,4 +1,5 @@
 import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { todosOsNinhosCuidados } from './vale'
 
 /** Apresentação proposta a partir da coruja dos fósseis e da lupa que aparece no modelo. */
 export const APRESENTACAO_DA_JADE = [
@@ -19,7 +20,12 @@ export const JADE_NO_VALE = {
   alturaDaCabeca: 1.15,
 } as const
 
-/** Só apresentação: preserva o salvamento e não compartilha uma lista mutável de falas. */
+/** Apresentação ou reconhecimento dos ninhos, sem mudar o salvamento ou compartilhar a lista. */
 export function comecarConversaComAJade(salvamento: Salvamento) {
-  return { salvamento, falas: [...APRESENTACAO_DA_JADE] }
+  return {
+    salvamento,
+    falas: todosOsNinhosCuidados(salvamento)
+      ? ['Você cuidou dos três ninhos.', 'Observar sem tocar e dar espaço ajuda a cuidar dos ovos.']
+      : [...APRESENTACAO_DA_JADE],
+  }
 }

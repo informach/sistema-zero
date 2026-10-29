@@ -1,4 +1,3 @@
-import type { BichoDoBosque } from '@sistemazero/arquipelago-contracts'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import {
   type BufferGeometry,
@@ -8,7 +7,7 @@ import {
   Object3D,
 } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { FORMA_DA_PEGADA, type PegadaNoChao, RASTRO } from '../sistemas/pegadas'
+import { FORMA_DA_PEGADA, type PegadaNoChao, RASTRO, type TipoDePegada } from '../sistemas/pegadas'
 
 /** Um pouco acima do chão, para a pegada não brigar com a grama (com `polygonOffset` também). */
 const ACIMA_DO_CHAO = 0.02
@@ -27,8 +26,8 @@ const material = new MeshBasicMaterial({
  * Uma pegada deitada no chão, das elipses de `FORMA_DA_PEGADA` (o quadro de 64 do SVG, com o y
  * para baixo): a ponta dos dedos fica para −z, e o giro de cada pegada a vira para o esconderijo.
  */
-function geometriaDaPegada(bicho: BichoDoBosque): BufferGeometry {
-  const escala = RASTRO.tamanho / 64
+function geometriaDaPegada(bicho: TipoDePegada, tamanho: number): BufferGeometry {
+  const escala = tamanho / 64
   const partes = FORMA_DA_PEGADA[bicho].map((e) => {
     const g = new CircleGeometry(1, 14)
     g.scale(e.rx, e.ry, 1)
@@ -37,7 +36,7 @@ function geometriaDaPegada(bicho: BichoDoBosque): BufferGeometry {
     g.scale(escala, escala, escala)
     return g
   })
-  const junta = mergeGeometries(partes) ?? new CircleGeometry(RASTRO.tamanho / 2, 14)
+  const junta = mergeGeometries(partes) ?? new CircleGeometry(tamanho / 2, 14)
   for (const p of partes) p.dispose()
   junta.rotateX(-Math.PI / 2)
   return junta
@@ -53,13 +52,15 @@ export function RastroDePegadas({
   bicho,
   pegadas,
   y,
+  tamanho = RASTRO.tamanho,
 }: {
-  bicho: BichoDoBosque
+  bicho: TipoDePegada
   pegadas: readonly PegadaNoChao[]
   y: number
+  tamanho?: number
 }) {
   const malha = useRef<InstancedMesh>(null)
-  const geometria = useMemo(() => geometriaDaPegada(bicho), [bicho])
+  const geometria = useMemo(() => geometriaDaPegada(bicho, tamanho), [bicho, tamanho])
   useLayoutEffect(() => () => geometria.dispose(), [geometria])
 
   useLayoutEffect(() => {

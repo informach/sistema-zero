@@ -25,7 +25,21 @@ const dedos = (lista: readonly [number, number, number?][], rx: number, ry: numb
  * quatro dedos redondos, sem unhas. Coelho: a pata de trás comprida e a da frente redondinha.
  * Porquinho-da-índia: a pata da frente com quatro dedinhos e a de trás com três.
  */
-export const FORMA_DA_PEGADA: Readonly<Record<BichoDoBosque, readonly Elipse[]>> = {
+export type TipoDePegada = BichoDoBosque | 'dino'
+export const FORMA_DA_PEGADA: Readonly<Record<TipoDePegada, readonly Elipse[]>> = {
+  // Os três dedos já desenhados na arte do Vale, sem atribuir uma espécie ao rastro.
+  dino: [
+    { x: 32, y: 43, rx: 12, ry: 10 },
+    ...dedos(
+      [
+        [18, 27, -30],
+        [32, 20],
+        [46, 27, 30],
+      ],
+      5,
+      15,
+    ),
+  ],
   cachorro: [
     { x: 32, y: 40, rx: 10, ry: 8 },
     ...dedos(
@@ -117,14 +131,18 @@ export interface PegadaNoChao {
  * `RASTRO.acaba` metros dele, em dois lados alternados, todas apontando para o esconderijo. Um
  * caminho curto demais dá um rastro mais curto (ou nenhum).
  */
-export function rastroNoCaminho(caminho: readonly PontoNoChao[]): PegadaNoChao[] {
-  const ate = Math.min(RASTRO.acaba, comprimentoDoCaminho(caminho) - RASTRO.passo)
+export function rastroNoCaminho(
+  caminho: readonly PontoNoChao[],
+  medidas: { comeca: number; acaba: number; passo: number; lado: number } = RASTRO,
+): PegadaNoChao[] {
+  if (medidas.passo <= 0 || !Number.isFinite(medidas.passo)) return []
+  const ate = Math.min(medidas.acaba, comprimentoDoCaminho(caminho) - medidas.passo)
   const pegadas: PegadaNoChao[] = []
   let i = 0
-  for (let d = RASTRO.comeca; d <= ate + 1e-9; d += RASTRO.passo, i++) {
+  for (let d = medidas.comeca; d <= ate + 1e-9; d += medidas.passo, i++) {
     const p = pontoNoCaminho(caminho, d)
     // `rumo` é para onde o caminho segue (para longe do esconderijo): a pegada aponta ao contrário.
-    const lado = i % 2 === 0 ? RASTRO.lado : -RASTRO.lado
+    const lado = i % 2 === 0 ? medidas.lado : -medidas.lado
     const fx = Math.sin(p.rumo)
     const fz = Math.cos(p.rumo)
     pegadas.push({ x: p.x + fz * lado, z: p.z - fx * lado, giro: p.rumo + Math.PI })

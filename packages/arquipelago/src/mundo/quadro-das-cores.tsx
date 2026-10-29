@@ -12,18 +12,16 @@ import {
   quadrosDaIlha,
 } from '../sistemas/quadro-das-cores'
 import { Colisores } from './colisores'
-import type { ColisorDaIlha } from './colisores-da-ilha'
 import type { IlhaPreparada } from './ilha-completa'
 import { useInterativo } from './interativos'
+import { COLISORES_DO_QUADRO, posicaoDoQuadro } from './lugar-do-quadro'
+
+export { LUGAR_DO_QUADRO, posicaoDoQuadro } from './lugar-do-quadro'
+
 import { CINZA, copiarNo, materiaisDe, useModelo } from './modelos'
 
 const QUADRO_URL = new URL(quadroGlb, import.meta.url).href
 
-/**
- * Onde o quadro fica: perto da chegada da ponte (a primeira coisa que a pessoa vê ao entrar na
- * ilha), um pouco para dentro e para o lado do caminho. Medidas no chão do modelo da ilha.
- */
-export const LUGAR_DO_QUADRO = { paraDentro: 3.2, paraOLado: 2.4 } as const
 /** De que distância o botão "Ver o Quadro das Cores" aparece. */
 export const ALCANCE_DO_QUADRO = 2.6
 /** Quanto tempo a mancha leva para sair do cinza na festa da cor. */
@@ -50,29 +48,6 @@ function gravarAviso(perfil: string, dia: string) {
 
 /** O nome do painel na loja (um por ilha). */
 export const painelDoQuadro = (ilha: Ilha) => `quadro:${ilha.id}`
-
-/** Onde o quadro fica, no espaço do grupo da ilha (o giro da ilha já aplicado). */
-export function posicaoDoQuadro(modelo: Object3D): {
-  x: number
-  y: number
-  z: number
-  giro: number
-} {
-  const chegada = modelo.getObjectByName('chegada')
-  const local = chegada ? chegada.position : { x: 11.6, y: 1, z: 0 }
-  // No chão do modelo a chegada fica no +x: o quadro vem para dentro (−x) e para o lado (+z).
-  const lx = local.x - LUGAR_DO_QUADRO.paraDentro
-  const lz = local.z + LUGAR_DO_QUADRO.paraOLado
-  const g = modelo.rotation.y
-  const cos = Math.cos(g)
-  const sin = Math.sin(g)
-  const x = lx * cos + lz * sin
-  const z = -lx * sin + lz * cos
-  // De frente para a chegada (a frente do cavalete é o +z do arquivo).
-  const cx = local.x * cos + local.z * sin
-  const cz = -local.x * sin + local.z * cos
-  return { x, y: local.y, z, giro: Math.atan2(cx - x, cz - z) }
-}
 
 export function QuadroDasCores({
   ilha,
@@ -168,17 +143,3 @@ export function QuadroDasCores({
     </group>
   )
 }
-
-/**
- * O cavalete segura o corpo (1,3 de largura e 1,5 de altura, das pernas da frente à de trás); a
- * câmera passa por ele.
- */
-const COLISORES_DO_QUADRO: ColisorDaIlha[] = [
-  {
-    forma: 'caixa',
-    nome: 'col-quadro-das-cores',
-    posicao: [0, 0.75, -0.14],
-    rotacao: [0, 0, 0, 1],
-    meio: [0.6, 0.75, 0.2],
-  },
-]
