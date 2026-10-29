@@ -1227,6 +1227,57 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
       faces no Pinta, Estúdio não abre objeto); `?objetos=sem-acesso` no playground simula a
       ferramenta não liberada.
 
+### 6.16.1 Aconchego dos cômodos (fase1-15)
+
+Regra pura `sistemas/construcao/aconchego.ts`, calculada pela planta da obra da casa ou cabana.
+Não entra no salvamento. Cada objeto pertence ao cômodo da célula onde foi posto; objetos no
+quintal e projetos guardados sem colocação não contam. Os móveis da plataforma contam somente
+no quarto fixo, incluindo peças de parede e em cima de móveis, pelo ID do catálogo compartilhado.
+
+Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação com crianças:
+
+| Parte | Regra | Motivo |
+|---|---|---|
+| Variedade | 2 por tipo diferente, até 6 tipos, máximo 12 | Premia usos diferentes sem pedir acúmulo |
+| Luz | 2 por tipo de janela, até 3 tipos, mais 2 por tipo de objeto que ilumina, até 2 tipos, máximo 10 | Uma janela ou fonte já ajuda; repetir não multiplica |
+| Plantas | 2 por tipo, até 3 tipos, máximo 6 | Variedade de plantas, sem tarefa de encher de vasos |
+| Capricho | 2 pelo piso, 2 por ter porta, 2 por ter janela e 2 pelo espaço útil, máximo 8 | Escolhas de construção acessíveis sem compra |
+| Feito por você | 1 por tipo com aparência do Pinta, Molda ou criação guardada, até 3 tipos, máximo 3 | Extra pequeno pela autoria; toda a base continua igual |
+
+- Os três pisos valem igual, inclusive a tábua inicial. O salvamento não diferencia tábua
+  escolhida e padrão. O piso do quarto também recebe a mesma parcela.
+- Espaço útil: pelo menos 9 células e até 36 células. Acima de 36, soma os mesmos 2 se houver
+  pelo menos um tipo diferente de objeto ou móvel para cada 12 células, arredondando para cima.
+  Repetição não preenche essa proporção. Cômodo pequeno ou grande vazio apenas não recebe esse
+  bônus, sem subtrair pontos das outras partes.
+- Aberturas só contam sobre paredes existentes. Janela compartilhada soma para os dois cômodos;
+  largura da janela não multiplica a pontuação. Cada tipo soma uma vez por cômodo.
+- Luzes reconhecidas: lareira na obra; luminária, vela, luminária de mesa, lâmpada de lava,
+  varal de luzes e letreiro neon no quarto. A janela decorativa do quarto também conta como
+  um tipo de janela. A conta independe da hora do dia e da animação do fogo.
+- Plantas do quarto: planta, árvore, cacto, vaso de flores e planta pendurada. Ainda não há
+  planta de interior no catálogo de projetos azuis. Nos cômodos novos e cabanas esta parte é 0,
+  com lista de tipos preparada. Canteiro do quintal não soma dentro de casa. Pedido de arte
+  consolidado em `docs/plans/2026-10-28-arquipelago-aconchego-arte.md`.
+- Comprado e holograma têm parcelas idênticas. Nenhuma origem gera desconto. Criação própria
+  acrescenta somente o bônus, por tipo colocado. É possível atingir a faixa máxima com objetos
+  comprados e sem plantas, conforme o teste.
+- Níveis: Começando desde 0, Gostoso desde 6, Aconchegante desde 12 e Muito aconchegante desde
+  22 pontos. São de uma a quatro estrelas, acompanhadas de texto, não apenas de cor.
+  Teto da soma: 39 pontos. `ACONCHEGO_QUE_CHAMA_VISITA` = 12 e `ACONCHEGO_DA_FESTA` = 22,
+  alinhados aos dois níveis de cima. Visitas e festas ficam para outra fase; estes números
+  ainda não acionam moradores, recompensas ou eventos.
+- Olhar: toque de até 6 px seleciona o cômodo no chão; arrastar continua movendo a câmera.
+  A célula observada é transitória, para continuar no mesmo lugar quando o ID do cômodo muda.
+  O botão Aconchego abre o painel da barra, com seletor acessível para teclado e toque.
+  O piso do cômodo recebe um destaque amarelo com uma única malha simples, sem corpo físico.
+- O painel mostra as cinco parcelas e uma dica positiva. Não recomenda plantas em lugares
+  onde não podem ser colocadas. Fechar o painel ou escolher outra ferramenta libera a vista.
+  A conta só muda por edição da obra, projeto ou quarto, nunca no laço da física.
+
+Testes: `tests/aconchego.test.ts` e `playground/verificar-aconchego-browser.ts`, usando plataforma
+falsa e sem persistência. Prints e evidências em `docs/qa/2026-10-28-arquipelago-aconchego.md`.
+
 ### 6.17 O diário e as pegadas
 
 Arquivos: `sistemas/diario.ts`, `sistemas/pegadas.ts`, `interface/diario.tsx`,

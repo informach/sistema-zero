@@ -9,7 +9,7 @@ import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { falaDaRecusa } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
-import { LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
+import { type Celula, LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
 import { hortaComOQuintal } from '../sistemas/construcao/quintal'
 import { salvamentoPausado } from '../sistemas/pausa'
@@ -78,6 +78,11 @@ export function obraDe(s: EstadoDoJogo, onde: OndeSeConstroi): Obra | null {
 }
 
 export interface EstadoDaConstrucao {
+  /** Inspeção local, sem entrar no salvamento ou no histórico da obra. */
+  aconchegoAberto: boolean
+  celulaObservada: Celula | null
+  observarComodo(celula: Celula | null): void
+  mostrarAconchego(aberto: boolean): void
   ferramenta: Ferramenta
   janela: TipoDeJanela
   piso: PisoDaCasa
@@ -156,6 +161,10 @@ function alvoAoAbrir(onde: OndeSeConstroi, cabana: CabanaAoAlcance | null) {
 export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
   let ultimaObra: Obra | null = null
   return createStore<EstadoDaConstrucao>((set, get) => ({
+    aconchegoAberto: false,
+    celulaObservada: null,
+    observarComodo: (celulaObservada) => set({ celulaObservada, aconchegoAberto: true }),
+    mostrarAconchego: (aconchegoAberto) => set({ aconchegoAberto }),
     ferramenta: 'parede',
     janela: 'janela-grande',
     piso: 'tabua',
@@ -175,7 +184,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     definirDentroDaObra: (dentro) => {
       if (get().dentroDaObra !== dentro) set({ dentroDaObra: dentro })
     },
-    escolher: (ferramenta) => set({ ferramenta }),
+    escolher: (ferramenta) => set({ ferramenta, aconchegoAberto: false }),
     escolherJanela: (janela) => set({ janela, ferramenta: 'janela' }),
     escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),
     escolherCaminho: (caminho) => set({ caminho, ferramenta: 'caminho' }),
@@ -234,6 +243,8 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       ultimaObra = obraDe(loja.getState(), onde)
       set({
         onde,
+        aconchegoAberto: false,
+        celulaObservada: null,
         antes: [],
         camera: { ...get().camera, alvo: alvoAoAbrir(onde, cabana), giro: 0 },
       })

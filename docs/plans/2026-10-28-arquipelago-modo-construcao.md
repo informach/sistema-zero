@@ -3,7 +3,8 @@
 Cartões da página de acompanhamento: **fase1-10** (grade, paredes que se esticam, porta e janela,
 corte das paredes), **fase1-11** (quintal, cerca, caminho, canteiro e cabana) e **fase1-12**
 (projeto azul, a função pronta, e os moldes dos objetos). A galeria, o Pinta no molde e o
-aconchego dos cômodos são os cartões seguintes (fase1-13 a fase1-15) e ficam fora daqui.
+aconchego dos cômodos são os cartões seguintes (fase1-13 a fase1-15). O aconchego passa a fazer
+parte deste plano no item 9, conforme o pedido de implementação da dona.
 
 ## O que a proposta pede (texto do Canvas, "Modo criação · a casa")
 
@@ -82,6 +83,24 @@ aconchego dos cômodos são os cartões seguintes (fase1-13 a fase1-15) e ficam 
 8. **Projeto azul.** Ganhar a geladeira e a casinha, pôr o objeto no Construir, o holograma
    funcionando (a geladeira guarda 4), o painel do objeto com a função, o molde e o pedido ao Pinta
    e ao Molda.
+
+9. **Aconchego dos cômodos (fase1-15).** Cálculo puro por cômodo, sem persistir pontos.
+   Execução nesta sessão com as skills writing-plans e executing-plans, usando a especificação
+   da dona e as regras de §6.16. TypeScript, React e a loja local do Construir já existentes.
+   - [x] Criar `sistemas/construcao/aconchego.ts` e `tests/aconchego.test.ts`. Usar `planta`,
+     atribuir objetos pela célula, aberturas pelas arestas e móveis apenas ao quarto fixo.
+     Testar isolamento, repetição, plantas, luzes, tamanho, pisos e as quatro origens de aparência.
+   - [x] Guardar somente a célula selecionada na loja transitória do Construir. Um toque com
+     Olhar seleciona; arrastar continua movendo a câmera. Painel acessível com seletor de cômodo,
+     estrelas, cinco parcelas e dica em `interface/aconchego.tsx`, integrado à barra.
+   - [x] Conferir ao vivo com plataforma falsa em desktop e 390 px. Testar seleção pelo chão,
+     arrasto, troca de piso, desfazer e retorno ao Viver. Guardar prints em `docs/qa/`.
+   - [x] Documentar números, revisar o diff e rodar testes, typecheck, build e biome check.
+     Commit em staging e push autorizado, preservando o trabalho das outras sessões.
+   Decisões: somas positivas com tetos, variedade por tipo e bônus próprio pequeno. Plantas do
+   catálogo do quarto contam; nenhum objeto atual de projeto azul é planta. Tábua padrão e
+   escolhida são indistinguíveis no salvamento, portanto os três pisos valem o mesmo. Visitas e
+   festas recebem apenas constantes, sem comportamento novo. Nenhuma arte, contrato ou banco muda.
 
 ## Riscos
 

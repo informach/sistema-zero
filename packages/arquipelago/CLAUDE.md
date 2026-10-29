@@ -252,6 +252,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Modo construção (28/10/2026, fase1-10 a fase1-12)
 
+- Aconchego (fase1-15): `sistemas/construcao/aconchego.ts`, testes `tests/aconchego.test.ts`, painel `interface/aconchego.tsx`; calculado por edição, seleção transitória pela célula no Olhar, regras e números em §6.16.1, sem gravar pontos nem iniciar visitas ou festas.
+
 - Plano e decisões: `docs/plans/2026-10-28-arquipelago-modo-construcao.md`; regras e números:
   `docs/arquipelago-regras.md` §6.16. O que a criança constrói fica em
   `salvamento.construcao` (contrato `SalvamentoV4`, `ObraSchema`).

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BufferGeometry, Float32BufferAttribute, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import { CAMERA_DE_OBRA, lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
+import { planta } from '../sistemas/construcao/comodos'
 import {
   arrasta,
   arrasto,
@@ -11,13 +12,15 @@ import {
   type Previa as PreviaDaRegra,
   toque,
 } from '../sistemas/construcao/ferramentas'
-import type { Aresta, Ponto } from '../sistemas/construcao/grade'
+import { type Aresta, celulaEm, type Ponto } from '../sistemas/construcao/grade'
 import { type Celula, chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
 import { noModelo } from './medidas'
 
 const VERDE = '#3ccf7a'
 const VERMELHO = '#e2475f'
 const AZUL = '#4aa3ff'
+/** Tolera a tremida do dedo sem confundir o toque de inspeção com arrastar a câmera. */
+const DISTANCIA_DO_ARRASTO = 6
 
 /** O que a prévia mostra embaixo do dedo (ou do mouse). */
 type Previa =
@@ -74,6 +77,14 @@ export function ModoConstruir({
   const { loja } = useJogo()
   const construcao = lojaDaConstrucao(loja)
   const ferramenta = useConstrucao(construcao, (s) => s.ferramenta)
+  const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
+  const celulaObservada = useConstrucao(construcao, (s) => s.celulaObservada)
+  const comodoObservado = useMemo(() => {
+    if (!aconchegoAberto) return undefined
+    const p = planta(obra, lote)
+    const i = celulaObservada ? p.comodoDe.get(chaveDaCelula(celulaObservada)) : 0
+    return i === undefined ? undefined : p.comodos[i]
+  }, [obra, lote, aconchegoAberto, celulaObservada])
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
   const [previa, setPrevia] = useState<Previa>(null)
@@ -165,7 +176,14 @@ export function ModoConstruir({
       return noModelo(ponto.x - referencial.x, ponto.z - referencial.z, referencial.giro)
     }
     type Gesto =
-      | { tipo: 'olhar'; id: number; antes: { x: number; y: number }; girar: boolean }
+      | {
+          tipo: 'olhar'
+          id: number
+          antes: { x: number; y: number }
+          inicio: { x: number; y: number }
+          andou: boolean
+          girar: boolean
+        }
       | {
           tipo: 'arrasto'
           id: number
@@ -196,7 +214,14 @@ export function ModoConstruir({
       if (gesto) return
       const girar = e.button === 2
       if (girar || ferramenta === 'olhar') {
-        gesto = { tipo: 'olhar', id: e.pointerId, antes: { x: e.clientX, y: e.clientY }, girar }
+        gesto = {
+          tipo: 'olhar',
+          id: e.pointerId,
+          antes: { x: e.clientX, y: e.clientY },
+          inicio: { x: e.clientX, y: e.clientY },
+          andou: false,
+          girar,
+        }
       } else {
         const onde = noChao(e)
         if (!onde) return
@@ -210,6 +235,11 @@ export function ModoConstruir({
       e.stopPropagation()
       const s = construcao.getState()
       if (gesto?.tipo === 'olhar' && gesto.id === e.pointerId) {
+        if (
+          Math.hypot(e.clientX - gesto.inicio.x, e.clientY - gesto.inicio.y) > DISTANCIA_DO_ARRASTO
+        )
+          gesto.andou = true
+        if (!gesto.andou) return
         const dx = e.clientX - gesto.antes.x
         const dy = e.clientY - gesto.antes.y
         gesto.antes = { x: e.clientX, y: e.clientY }
@@ -262,7 +292,10 @@ export function ModoConstruir({
       el.releasePointerCapture?.(e.pointerId)
       const s = construcao.getState()
       const o = obraAtual.current
-      if (g.tipo === 'arrasto') {
+      if (g.tipo === 'olhar' && !g.girar && !g.andou) {
+        const onde = noChao(e)
+        if (onde) s.observarComodo(celulaEm(onde.x, onde.z))
+      } else if (g.tipo === 'arrasto') {
         const f = ferramenta
         // Sem arrastar: o apagar tira o que está ali; o caminho pinta uma célula.
         const r =
@@ -325,8 +358,45 @@ export function ModoConstruir({
   return (
     <group position={[referencial.x, base, referencial.z]} rotation-y={referencial.giro}>
       <Grade lote={lote} />
+      {comodoObservado && <DestaqueDoComodo celulas={comodoObservado.celulas} />}
       <Previa previa={previa} />
     </group>
+  )
+}
+
+/** Uma única malha leve identifica o cômodo inspecionado, mesmo quando não é retangular. */
+function DestaqueDoComodo({ celulas }: { celulas: Celula[] }) {
+  const geometria = useMemo(() => {
+    const vertices: number[] = []
+    for (const { x, z } of celulas) {
+      vertices.push(
+        x,
+        0.08,
+        z,
+        x,
+        0.08,
+        z + 1,
+        x + 1,
+        0.08,
+        z + 1,
+        x,
+        0.08,
+        z,
+        x + 1,
+        0.08,
+        z + 1,
+        x + 1,
+        0.08,
+        z,
+      )
+    }
+    return new BufferGeometry().setAttribute('position', new Float32BufferAttribute(vertices, 3))
+  }, [celulas])
+  useEffect(() => () => geometria.dispose(), [geometria])
+  return (
+    <mesh geometry={geometria}>
+      <meshBasicMaterial color="#ffc93c" transparent opacity={0.25} depthWrite={false} />
+    </mesh>
   )
 }
 

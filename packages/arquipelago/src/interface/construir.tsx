@@ -14,6 +14,7 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { PainelDeAconchego } from './aconchego'
 import {
   MINIATURA_DA_JANELA,
   MINIATURA_DO_CAMINHO,
@@ -65,7 +66,7 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     id: 'olhar',
     nome: 'Olhar',
     emoji: '✋',
-    dica: 'Arraste para andar pela obra. As setas e o W A S D também andam; Q e E giram.',
+    dica: 'Toque num cômodo para ver o aconchego. Arraste para andar pela obra; Q e E giram.',
   },
 ]
 
@@ -159,6 +160,7 @@ export function BarraDeConstruir() {
   const construcao = lojaDaConstrucao(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const atual = useConstrucao(construcao, (s) => s.ferramenta)
+  const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
   const janela = useConstrucao(construcao, (s) => s.janela)
   const piso = useConstrucao(construcao, (s) => s.piso)
   const caminho = useConstrucao(construcao, (s) => s.caminho)
@@ -177,6 +179,7 @@ export function BarraDeConstruir() {
   const dica = FERRAMENTAS.find((f) => f.id === atual)?.dica
   return (
     <section className="arq-obra" aria-label="Ferramentas de construir">
+      {aconchegoAberto && <PainelDeAconchego />}
       <p className="arq-obra-dica" aria-live="polite">
         {dica}
       </p>
@@ -266,6 +269,18 @@ export function BarraDeConstruir() {
         ))}
       </fieldset>
       <div className="arq-obra-acoes">
+        <button
+          type="button"
+          className="arq-botao leve"
+          aria-expanded={aconchegoAberto}
+          aria-controls="arq-aconchego"
+          onClick={() => {
+            s().escolher('olhar')
+            s().mostrarAconchego(!aconchegoAberto)
+          }}
+        >
+          ☆ Aconchego
+        </button>
         <button
           type="button"
           className="arq-botao leve"
