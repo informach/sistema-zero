@@ -3,10 +3,12 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { useJogo } from '../estado/contexto'
+import { CoraisDoRecife } from './corais-do-recife'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Mare } from './mare'
 import { giroDaIlha } from './medidas'
 import { MergulhoDoRecife } from './mergulho-do-recife'
+import { MesaDeMapas } from './mesa-de-mapas'
 import { ComReserva } from './modelos'
 import { aguaDoRecife } from './recife'
 
@@ -49,6 +51,8 @@ export function RecifeVivo({
   return (
     <group ref={pecas} visible={false}>
       <MergulhoDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
+      <CoraisDoRecife centro={meio} giro={giro} troca={troca} />
+      <MesaDeMapas modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <ComReserva reserva={null}>
         <Mare modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>

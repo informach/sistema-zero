@@ -5,14 +5,17 @@ import {
   type ObjetoDaCasa,
   type Obra,
 } from '@sistemazero/arquipelago-contracts'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { memo, useEffect, useMemo } from 'react'
 import {
   AdditiveBlending,
+  AnimationMixer,
   Color,
   type Material,
   type Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  type Object3D,
   SRGBColorSpace,
   TextureLoader,
 } from 'three'
@@ -26,6 +29,7 @@ import geladeiraHologramaGlb from '../assets/objetos/geladeira-holograma.glb'
 import lareiraGlb from '../assets/objetos/lareira.glb'
 import museuGlb from '../assets/objetos/museu.glb'
 import plantaInteriorGlb from '../assets/objetos/planta-interior.glb'
+import { lojaDoConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
 import {
@@ -34,6 +38,8 @@ import {
   ganharProjetos,
   LUGAR_DO_OBJETO,
 } from '../sistemas/construcao/projeto-azul'
+import { PEIXES_DO_AQUARIO, peixesVisiveis } from '../sistemas/corais-do-recife'
+import { jogoPausado } from '../sistemas/pausa'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
@@ -157,7 +163,52 @@ function ModeloDoObjeto({ id, completo }: { id: ObjetoDaCasa; completo: boolean 
     if (completo) return
     copia.position.y = 0.02 + Math.sin(clock.elapsedTime * 1.6) * 0.015
   })
-  return <primitive object={copia} />
+  return (
+    <>
+      <primitive object={copia} />
+      {id === 'aquario' ? <PeixesDoAquario copia={copia} url={url} /> : null}
+    </>
+  )
+}
+
+/**
+ * Os peixes do aquário (fase3-03): o peixe N aparece com o coral N replantado no Recife; na casa
+ * de um irmão, os quatro (a visita não traz os corais dele). O clipe `nadar` toca no objeto posto,
+ * parado com a pausa e com menos movimento.
+ */
+function PeixesDoAquario({ copia, url }: { copia: Object3D; url: string }) {
+  const { loja } = useJogo()
+  const aparelhoPedeMenos = useReducedMotion()
+  const { animations } = useGLTF(url, false, false)
+  const corais = useEstado((s) => s.salvamento.recife.corais)
+  const visita = useEstado((s) => s.visita !== null)
+  useEffect(() => {
+    const visiveis = visita ? PEIXES_DO_AQUARIO.map(() => true) : peixesVisiveis(corais)
+    PEIXES_DO_AQUARIO.forEach((nome, i) => {
+      const no = copia.getObjectByName(nome)
+      if (no) no.visible = visiveis[i] ?? false
+    })
+  }, [copia, corais, visita])
+  const mixer = useMemo(() => {
+    const clip = animations.find((c) => c.name === 'nadar')
+    if (!clip) return null
+    const m = new AnimationMixer(copia)
+    m.clipAction(clip).play()
+    return m
+  }, [copia, animations])
+  useEffect(
+    () => () => {
+      mixer?.stopAllAction()
+      mixer?.uncacheRoot(copia)
+    },
+    [mixer, copia],
+  )
+  useFrame((_, dt) => {
+    if (!mixer) return
+    const menos = aparelhoPedeMenos || lojaDoConforto(loja).getState().conforto.menosMovimento
+    if (!menos && !jogoPausado(loja.getState())) mixer.update(Math.min(dt, 0.1))
+  })
+  return null
 }
 
 /** O objeto na obra: no meio da área dele, com o giro, a colisão e o "Abrir". */

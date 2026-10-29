@@ -136,7 +136,8 @@ export function tirarObjeto(obra: Obra, c: Celula): Resultado {
 /**
  * Os projetos que a pessoa ganhou e ainda não estavam guardados: a geladeira vem do primeiro
  * pedido entregue à Capi, o forno da primeira receita do Bento (um coração de amizade), a casinha
- * de adotar um bicho no Bosque e a planta de interior da primeira obra (da casa ou de uma cabana).
+ * de adotar um bicho no Bosque, a planta de interior da primeira obra (da casa ou de uma cabana) e
+ * o aquário do primeiro coral replantado no Recife (fase3-03).
  * Devolve o mesmo salvamento quando nada mudou.
  */
 export function ganharProjetos(
@@ -150,6 +151,7 @@ export function ganharProjetos(
   // O forno chega com a primeira receita que o Bento lembra (o bolo de fubá, com um coração).
   if (!s.projetos.forno && coracoes(s.moradores.bento.amizade) >= 1) ganhos.push('forno')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
+  if (!s.projetos.aquario && s.recife.corais !== 0) ganhos.push('aquario')
   const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0
   if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')
   if (ganhos.length === 0) return { salvamento: s, ganhos }

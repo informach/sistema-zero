@@ -28,6 +28,7 @@ import { AtalhoDaFoto, ModoFoto } from './foto'
 import { PainelDaIrie } from './irie'
 import { PainelDaJade } from './jade'
 import { VisorDaLuneta } from './luneta'
+import { PainelDoMapa } from './mapa'
 import { PainelDaMare, PainelDoFloco } from './mare'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
@@ -644,6 +645,7 @@ export function Hud() {
       <Diario />
       <PainelDasVisitas />
       <Album />
+      <PainelDoMapa />
       <AtalhoDaFoto />
       <Menu />
       <Resultado />

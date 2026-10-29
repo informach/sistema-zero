@@ -42,4 +42,8 @@ export const VOZ_ADULTA: VozDoJogo = {
   falaDaLuneta,
   moldaFechado: `Abre na etapa ${POSICAO_DO_MOLDA} da sua jornada`,
   compraSomenteLeitura: 'No acesso de suporte o jogo só mostra. A compra fica com a pessoa.',
+  ilhaFechadaNoMapa: (ilha) =>
+    ilha.id === 'farol'
+      ? 'Acende na última etapa da sua jornada.'
+      : `Abre na etapa ${ilha.posicao} da sua jornada.`,
 }

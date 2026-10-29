@@ -1,5 +1,6 @@
 /**
- * Recife real no playground. Executar no pacote:
+ * Recife real no playground: a chegada, o cais, a caverna, a Maré, os corais e o mapa (fase3-03)
+ * e a lagoa. Executar no pacote:
  * bun build playground/verificar-recife-browser.ts --target=node --external playwright-core --outfile .cache/verificar-recife-browser.mjs
  * node .cache/verificar-recife-browser.mjs
  * ARQUIPELAGO_CHROMIUM escolhe o navegador; ARQUIPELAGO_PRINTS escolhe a pasta dos prints.
@@ -14,8 +15,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
 import { giroDaIlha, ilhasEmVolta, trajetoDaPonte } from '../src/mundo/medidas'
 import { aguaDoRecife } from '../src/mundo/recife'
+import { LAGOA_DO_RECIFE, PONTOS_DOS_CORAIS } from '../src/sistemas/corais-do-recife'
 import { CORPO } from '../src/sistemas/corpo'
 import { CINTURA } from '../src/sistemas/modos/chao'
+import { bate, CENTRO_DO_CORPO, type Forma, TAMPO } from '../tests/ajuda-colisores'
 
 type P = { x: number; y: number; z: number }
 type Desenho = { posicao: P; camera: P; ilhasCompletas: number; modo: string; noChao: boolean }
@@ -55,6 +58,19 @@ const mundo = (p: P): P => ({
 })
 const rumo = (a: P, b: P) => Math.atan2(b.x - a.x, b.z - a.z)
 const PE = CORPO.doCentroAoPe + CORPO.folga
+const formas = lerColisores(modelo).filter((c): c is Forma => c.forma !== 'malha')
+/** O primeiro lugar da lista (local, no tampo) em que o corpo cabe sem bater em nenhum colisor. */
+const livre = (candidatos: P[]): P => {
+  const achado = candidatos.find(
+    (p) => !formas.some((c) => bate(c, new Vector3(p.x, TAMPO + CENTRO_DO_CORPO + 0.05, p.z))),
+  )
+  if (!achado) throw new Error('Nenhum lugar livre perto do ponto')
+  return achado
+}
+/** O salvamento que o playground guardou (a plataforma de mentira grava a cada PUT aceito). */
+type Guardado = {
+  salvamento?: { recife?: { corais?: number }; projetos?: Record<string, unknown> }
+}
 /** No nado, o centro fica a esta altura acima da superfície, com a cintura na água. */
 const CENTRO_NADANDO = CORPO.doCentroAoPe - CINTURA
 const server = spawn('bun', ['playground/servidor.ts'], {
@@ -253,6 +269,82 @@ try {
     await conversa.getByRole('button', { name: 'Tchau, Maré' }).click()
     await conversa.waitFor({ state: 'detached' })
     console.log(`${tipo}: conversa abriu, avançou e fechou`)
+
+    // fase3-03: da areia seca da beira, replantar o coral galho (o aquário chega junto).
+    const usar = async () => {
+      if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
+      else await page.keyboard.press('KeyE')
+    }
+    const dePe = (p: P) =>
+      page.waitForFunction(
+        ({ p, pe }) => {
+          const d = (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho
+          return (
+            d?.noChao &&
+            Math.hypot(d.posicao.x - p.x, d.posicao.z - p.z) < 0.3 &&
+            Math.abs(d.posicao.y - pe - p.y) < 0.15
+          )
+        },
+        { p, pe: PE },
+        { timeout: 30_000 },
+      )
+    const galho = PONTOS_DOS_CORAIS[0]
+    if (!galho) throw new Error('Sem o primeiro coral')
+    const fora = (f: number): P => {
+      const dx = galho.x - LAGOA_DO_RECIFE.x
+      const dz = galho.z - LAGOA_DO_RECIFE.z
+      const d = Math.hypot(dx, dz)
+      return { x: galho.x + (dx / d) * f, y: TAMPO, z: galho.z + (dz / d) * f }
+    }
+    const beira = mundo(livre([0.8, 0.9, 1.0, 1.1].map(fora)))
+    await levar(beira, rumo(beira, mundo(galho)))
+    await dePe(beira)
+    await page.locator('.arq-acao').filter({ hasText: 'Replantar o coral galho' }).waitFor()
+    await usar()
+    await page.locator('.arq-dica').filter({ hasText: 'aquário' }).waitFor({ timeout: 15_000 })
+    await page.waitForFunction(
+      () => {
+        const bruto = localStorage.getItem('arquipelago-playground')
+        const g = bruto ? (JSON.parse(bruto) as Guardado) : null
+        return g?.salvamento?.recife?.corais === 1 && !!g.salvamento.projetos?.aquario
+      },
+      undefined,
+      { timeout: 60_000 },
+    )
+    if ((await page.locator('.arq-acao').filter({ hasText: 'Replantar' }).count()) !== 0)
+      throw new Error('O coral replantado continua oferecendo replantar')
+    await page.waitForTimeout(2500)
+    await page.screenshot({ path: path.join(prints, `recife-${tipo}-coral.png`) })
+    console.log(`${tipo}: coral galho replantado e guardado, com o aquário em projeto azul`)
+
+    // O mapa do arquipélago na mesa da Maré.
+    const mesa = local('mapa')
+    const perto = Array.from({ length: 16 }, (_, i) => {
+      const a = (i * Math.PI) / 8
+      return { x: mesa.x + Math.cos(a) * 1.3, y: TAMPO, z: mesa.z + Math.sin(a) * 1.3 }
+    })
+    const naMesa = mundo(livre(perto))
+    await levar(naMesa, rumo(naMesa, mundo(mesa)))
+    await dePe(naMesa)
+    await page.locator('.arq-acao').filter({ hasText: 'Ver o mapa do arquipélago' }).waitFor()
+    await usar()
+    const mapa = page.getByRole('dialog', { name: 'Mapa do arquipélago' })
+    await mapa.waitFor()
+    const recifeNoMapa = mapa.locator('li').filter({ hasText: 'Recife Coral' })
+    await recifeNoMapa.getByText('Você está aqui.').waitFor()
+    await mapa
+      .locator('li')
+      .filter({ hasText: 'Pico Gelado' })
+      .getByText('Abre em Mestre dos Jogos.')
+      .waitFor()
+    const largura = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+    if (!largura) throw new Error('O mapa abriu com rolagem para o lado')
+    await page.screenshot({ path: path.join(prints, `recife-${tipo}-mapa.png`) })
+    const voltar = mapa.getByRole('button', { name: 'Voltar ao jogo' })
+    if (celular) await voltar.tap()
+    else await voltar.click()
+    await mapa.waitFor({ state: 'detached' })
+    console.log(`${tipo}: o mapa abriu na mesa, com o Recife marcado, e fechou`)
 
     const agua = aguaDoRecife(modelo, { ...recife.centro, y: 0 }, giro)
     if (!agua) throw new Error('GLB sem a água da lagoa')

@@ -21,6 +21,7 @@ import {
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
 import { ITENS } from '../sistemas/itens'
+import { Aquario } from './aquario'
 import { CartaoDaGaleria, SuasAparencias } from './galeria'
 import { MinijogosDoFliperama } from './minijogos'
 import { ListaDeReceitas } from './receitas'
@@ -185,6 +186,7 @@ export function PainelDoObjeto() {
         {id === 'geladeira' ? <Geladeira /> : null}
         {id === 'fliperama' ? <MinijogosDoFliperama /> : null}
         {id === 'forno' ? <ListaDeReceitas onde="forno" /> : null}
+        {id === 'aquario' ? <Aquario /> : null}
         <h3 className="arq-menu-titulo">A aparência</h3>
         <p className="arq-caderno-explica">
           {`O molde tem o tamanho dele: ${molde.area.largura} por ${molde.area.fundo} na grade, com a frente marcada.`}
