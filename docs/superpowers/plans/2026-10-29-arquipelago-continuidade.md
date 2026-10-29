@@ -60,6 +60,6 @@ Arquivos: `packages/arquipelago-api/tests/integration/http.test.ts`, testes DB e
 - [x] `bun test` nos três pacotes; testes DB apenas em banco descartável; typecheck com heap de 8 GB; Biome nos arquivos tocados.
 - [x] Navegador: constelação, corrida e final, salvar/reabrir; pausar e sair antes do final não concede conclusão. Provar cada fluxo sem creditar conquista por hook de teste.
 - [x] Revisar diff completo e registrar limites/evidências em `docs/qa/2026-10-29-continuidade/README.md`.
-- [ ] Commit e integração com staging antes do push da onda.
+- [x] Commit e integração com staging antes do push da onda: `f8f5a231a`, já conciliado com `b2e924b82`.
 
 Critério de fechamento: não basta a API aceitar os campos; o mundo deve escrevê-los e reconstruir a experiência ao abrir de novo. Pendência de browser não é conclusão completa do lote.

@@ -1,6 +1,7 @@
 # Continuidade do Arquipélago, lote L01
 
-Base de implementação: `21151df56`, com a correção independente de CI `9436b6bc4`.
+Base original de implementação: `21151df56`, com a correção independente de CI `9436b6bc4`.
+Após conciliar o remoto, os commits equivalentes são `82e31cf70` e `e84d3195d`.
 Data: 29/10/2026. Apenas playground e Postgres local descartável. Nenhuma escrita remota.
 
 ## O que muda
@@ -101,3 +102,27 @@ Revisão completa do diff realizada, incluindo migração, todos os consumidores
 tetos, oráculos de teste, descarte e documentação. O registro de evidências fica em
 `verificacao.json`. Browser emulado não substitui celular físico.
 Este lote não conclui os demais 13 lotes da proposta nem comprova implantação em produção.
+
+## Conciliação com as animações novas
+
+Antes do push, o remoto avançou para `b2e924b82`, incluindo as animações Mixamo
+(`bc71ecfd0`) e a prova da âncora do mirante. Rebase concluído sem conflitos; o L01 passou a
+`f8f5a231a`. Nenhum contrato, migrador ou consumidor do progresso foi perdido na integração.
+
+Revisados clipes, medidas, consumo pelo avatar, remoção das inclinações duplicadas, alterações
+do medidor e os testes de repouso e âncora. O lint encontrou um import sem uso no verificador
+de descanso vindo do remoto; removido. Nenhum Blender ou GLB foi editado nesta sessão.
+
+A composição integrada passou novamente na suíte do jogo (1.053 aprovados, 1 ignorado,
+132.495 asserções), no typecheck e no navegador: recorde no Álbum após reabrir e interrupção
+do Farol, ambos no computador e celular emulado, com o novo avatar. Prints próprios em
+`integrado-nuvens/` e `integrado-farol/`. As outras provas acima permanecem identificadas
+com a composição anterior; não foram apresentadas como novas execuções.
+
+A repetição final após remover o import excedeu o timeout padrão de 5 segundos na busca
+em grade do Recife (5.844 ms), sem reprovar uma asserção de percurso. Havia outro verificador
+de navegador ativo no computador. O negativo está identificado por hash em `integracao.json`.
+Uma nova execução com `bun test --timeout 15000` terminou com os mesmos 1.053 aprovados,
+1 ignorado e 132.495 asserções, em 93,71 s. Nenhum timeout foi alterado no repositório;
+o prazo desta execução não é uma meta de desempenho do jogo. O teste ignorado exige Postgres
+e já foi executado separadamente no banco local descartável, conforme a prova acima.
