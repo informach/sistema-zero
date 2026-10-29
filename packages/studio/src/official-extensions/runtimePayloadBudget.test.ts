@@ -101,11 +101,14 @@ const BUDGETS: readonly {
   // às medidas acima do Bun 1.3.11, ~63_450 no Linux e ~65_850 no Windows.
   // 28/10: o Jogo 3D publica quantos modelos ainda estão chegando (`__szModelosPendentes`), e o
   // executor dos objetivos só aperta a primeira tecla com zero. Medido: 234_374 (+173).
+  // 29/10: os botões da vista no canto do "Mostrar a cena inteira" (aproximar, afastar, girar
+  // para os dois lados e voltar ao começo), pedido dela: sem eles ninguém sabia que a rodinha e o
+  // arrastar existiam. +2_105 / +714. Medido: 236_479; gzip 64_563 no Bun 1.4.4 Linux.
   {
     extension: gameThreeDExtension,
-    maxChars: 234_450,
-    maxGzipBytes: 63_900,
-    maxGzipBytesWindows: 66_000,
+    maxChars: 236_550,
+    maxGzipBytes: 64_650,
+    maxGzipBytesWindows: 66_750,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -127,9 +130,10 @@ const BUDGETS: readonly {
     // 28/10, a vista do jogador no frameScene (ver acima): +3_865 / +1_215. Medido: 200_119;
     // gzip 54_371 no Bun 1.4.4 Linux; ~54_030 no Linux e ~56_120 no Windows do Bun 1.3.11.
     // 28/10, os modelos pendentes (ver acima): +173. Medido: 200_292.
-    maxChars: 200_350,
-    maxGzipBytes: 54_500,
-    maxGzipBytesWindows: 56_300,
+    // 29/10, os botões da vista (ver acima): +2_105 / +684. Medido: 202_397; gzip 55_055.
+    maxChars: 202_450,
+    maxGzipBytes: 55_150,
+    maxGzipBytesWindows: 57_000,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO

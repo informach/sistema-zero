@@ -46,6 +46,14 @@ Pedido dela na Ilha do Farol: câmera mais perto, zoom e girar. É do motor, sem
   `framed` com ângulo diferente de zero: em qualquer outro jogo o movimento continua igual.
 - O `orbitCamera` ("câmera em volta") já existia, mas é outro bloco: troca o modo da câmera e não
   enquadra a área. Testes: `game-3d/__tests__/beginner.test.ts` §"a vista do jogador".
+- **Botões da vista (29/10/2026, pedido dela: "não estou conseguindo visualizar os controles"):**
+  `framedButtons` põe no canto de baixo à direita do jogo uma barra (`role="toolbar"`,
+  `data-sz-vista`) com aproximar, afastar, girar para os dois lados e voltar ao começo, os mesmos
+  da rodinha, do arrastar e do duplo clique. Os botões têm `tabIndex = -1` e o `mousedown` é
+  cancelado: o foco fica no jogo e as teclas continuam andando. Somem quando a câmera troca de modo
+  (`activateCameraMode`) e saem da página no descarte do mundo (`_disposers`). Vale para todo
+  projeto com "Mostrar a cena inteira", então para os cinco jogos 3D dos cursos (Ilha do Farol,
+  Jardim Secreto, Moedas, Cabana e Ponte). O `platformHarness` ganhou `realDom` para o teste.
 - **Nomes que a criança lê (28/10/2026, só o texto; campos iguais):** o bloco do `frameScene` é
   "Mostrar a cena … inteira" (era "Enquadrar a cena"; não começa com "Câmera" para não parecer um
   sétimo modo do "Câmera da cena …"). Mudaram junto: "Fazer … andar com as setas (ou WASD)"

@@ -1400,11 +1400,61 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
     listen(world, canvas, 'pointerup', release);
     listen(world, canvas, 'pointercancel', release);
-    listen(world, canvas, 'dblclick', function () {
+    function reset() {
       if (!active()) return;
       var v = world._framedView;
       v.az = 0; v.el = FRAMED_EL_START; v.zoom = 1;
       placeFramedCamera(world);
+    }
+    listen(world, canvas, 'dblclick', reset);
+    framedButtons(world, canvas, setZoom, reset);
+  }
+  // Os botões da vista no canto do jogo: o mesmo que a rodinha (ou dois dedos), o arrastar e o
+  // duplo clique, para quem não sabe que eles existem. Não pegam o foco (as teclas continuam
+  // indo para o jogo) e somem quando a câmera troca de modo.
+  function framedButtons(world, canvas, setZoom, reset) {
+    if (typeof document === 'undefined' || !document.createElement || !document.body) return;
+    var fixed = !canvas.parentNode || (canvas.style && canvas.style.position === 'fixed');
+    var bar = document.createElement('div');
+    bar.setAttribute('data-sz-vista', '');
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', 'Vista da cena');
+    bar.style.cssText = (fixed ? 'position:fixed;' : 'position:absolute;') +
+      'right:12px;bottom:56px;z-index:31;display:flex;flex-direction:column;gap:6px';
+    function spin(d) {
+      return function () {
+        if (world._cameraMode !== 'framed' || !world._framedView) return;
+        world._framedView.az += d;
+        placeFramedCamera(world);
+      };
+    }
+    var acts = [
+      ['+', 'Aproximar', function () { if (world._framedView) setZoom(world._framedView.zoom / 1.25); }],
+      ['\u2212', 'Afastar', function () { if (world._framedView) setZoom(world._framedView.zoom * 1.25); }],
+      ['\u21BA', 'Girar a cena para um lado', spin(0.4)],
+      ['\u21BB', 'Girar a cena para o outro lado', spin(-0.4)],
+      ['\u2302', 'Voltar \u00e0 vista do come\u00e7o', reset]
+    ];
+    for (var i = 0; i < acts.length; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.tabIndex = -1;
+      btn.textContent = acts[i][0];
+      btn.title = acts[i][1];
+      btn.setAttribute('aria-label', acts[i][1]);
+      btn.style.cssText = 'width:40px;height:40px;padding:0;border-radius:50%;cursor:pointer;' +
+        'font:bold 22px/1 var(--sz-game-ui-font,sans-serif);color:#fff;touch-action:manipulation;' +
+        'background:rgba(15,23,42,0.6);border:2px solid rgba(255,255,255,0.75)';
+      listen(world, btn, 'mousedown', function (e) { if (e.preventDefault) e.preventDefault(); });
+      listen(world, btn, 'click', acts[i][2]);
+      bar.appendChild(btn);
+    }
+    (fixed ? document.body : canvas.parentNode).appendChild(bar);
+    world._vistaBar = bar;
+    if (!world._disposers) world._disposers = [];
+    world._disposers.push(function () {
+      if (bar.parentNode) bar.parentNode.removeChild(bar);
+      world._vistaBar = null;
     });
   }
 
@@ -2652,6 +2702,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     var previous = world._cameraMode;
     if (previous === 'framed' && mode !== 'framed') world._resizeCamera = null;
     world._cameraMode = mode;
+    if (world._vistaBar) world._vistaBar.style.display = mode === 'framed' ? 'flex' : 'none';
     if (mode !== 'follow') {
       world._camFollow = null;
       world._camFollowTarget = null;

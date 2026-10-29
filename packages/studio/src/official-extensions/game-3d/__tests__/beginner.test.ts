@@ -131,8 +131,8 @@ describe('percurso básico do Jogo 3D', () => {
   })
 
   describe('a vista do jogador no frameScene', () => {
-    function framed() {
-      const { api, fire } = loadRuntime(),
+    function framed(opts: { realDom?: boolean } = {}) {
+      const { api, fire } = loadRuntime(opts),
         world = call(api, 'createScene', 'tela')
       const cam = world.camera
       Object.assign(cam, {
@@ -205,6 +205,41 @@ describe('percurso básico do Jogo 3D', () => {
       send('dblclick')
       expect(world._framedView).toMatchObject({ az: 0, el: Math.PI / 6, zoom: 1 })
       expect(cam.position.x).toBeCloseTo(0, 8)
+    })
+
+    test('os botões no canto aproximam, afastam, giram e voltam, sem pegar o foco', () => {
+      const { api, world } = framed({ realDom: true })
+      const bar = world._vistaBar as HTMLElement
+      expect(bar.getAttribute('role')).toBe('toolbar')
+      const buttons = [...bar.querySelectorAll('button')]
+      const label = (b: HTMLButtonElement) => b.getAttribute('aria-label')
+      expect(buttons.map(label)).toEqual([
+        'Aproximar',
+        'Afastar',
+        'Girar a cena para um lado',
+        'Girar a cena para o outro lado',
+        'Voltar à vista do começo',
+      ])
+      for (const b of buttons) expect(b.tabIndex).toBe(-1)
+      const [mais, menos, girar, , voltar] = buttons as HTMLButtonElement[]
+      mais!.click()
+      expect(world._framedView.zoom).toBeCloseTo(0.8, 8)
+      menos!.click()
+      menos!.click()
+      expect(world._framedView.zoom).toBeCloseTo(1.25, 8)
+      girar!.click()
+      expect(world._framedView.az).toBeCloseTo(0.4, 8)
+      // Apertar o botão não tira o foco de onde ele estava (as teclas continuam no jogo).
+      const down = new MouseEvent('mousedown', { cancelable: true })
+      girar!.dispatchEvent(down)
+      expect(down.defaultPrevented).toBe(true)
+      voltar!.click()
+      expect(world._framedView).toMatchObject({ az: 0, el: Math.PI / 6, zoom: 1 })
+      // Outro modo de câmera esconde os botões; o descarte do mundo os tira da página.
+      call(api, 'cameraMode', world, 'longe', call(api, 'createBox', world, { size: 1 }))
+      expect(bar.style.display).toBe('none')
+      call(api, 'dispose', world)
+      expect(bar.parentNode).toBe(null)
     })
 
     test('dois dedos dão zoom', () => {
