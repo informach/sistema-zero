@@ -38,6 +38,9 @@ export const RAIO_DA_ILHA_DO_ANEL = 13
 export const RAIO_VISITAVEL_DO_RECIFE = 24
 /** col-terreno do Vale chega a 15,614 m; 16 inclui a borda e o raio de 0,35 m do corpo. */
 export const RAIO_VISITAVEL_DO_VALE = 16
+/** Vértice mais afastado 18,7404 m, mais o raio do corpo. */
+export const RAIO_VISITAVEL_DAS_NUVENS = 19.2
+export const ALTURA_DAS_NUVENS = 7
 /**
  * A caverna de cristal do Pico (fase3-07, `arte/ilhas-b/pico.py`): atrás da montanha, no −x do
  * modelo, com a boca a 14,2 m do meio e o fundo do morro a 28,5 m, por cima do mar. Dentro desta
@@ -57,6 +60,7 @@ export function naDirecaoDaCavernaDoPico(x: number, z: number): boolean {
 /** Até onde esperar os colisores ao abrir o jogo, incluindo a caverna fora da ilha leve. */
 export function raioDaEsperaDaIlha(ilha: Ilha, x: number, z: number): number {
   if (ilha.id === 'vale-dos-dinos') return RAIO_VISITAVEL_DO_VALE
+  if (ilha.id === 'nuvens') return RAIO_VISITAVEL_DAS_NUVENS
   if (ilha.id === 'pico' && naDirecaoDaCavernaDoPico(x, z)) return CAVERNA_DO_PICO.raio
   return ilha.id === 'recife' ? RAIO_VISITAVEL_DO_RECIFE : raioDoChaoDaIlha(ilha, x, z)
 }
@@ -310,7 +314,7 @@ export function trajetoDaPonte(ilha: Ilha, pedacos = 24): PontoDaPonte[] {
   const inicio = RAIO_DA_PRAIA - 2.5
   const fim = RAIO_DO_ANEL - RAIO_DA_ILHA_DO_ANEL + 1
   const y0 = alturaDaIlha(dx * inicio, dz * inicio) + 0.12
-  const y1 = ALTURA_DA_TERRA + 0.12
+  const y1 = ALTURA_DA_TERRA + 0.12 + (ilha.id === 'nuvens' ? ALTURA_DAS_NUVENS : 0)
   return Array.from({ length: pedacos + 1 }, (_, i) => {
     const t = i / pedacos
     const r = inicio + (fim - inicio) * t

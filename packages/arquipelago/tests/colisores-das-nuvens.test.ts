@@ -3,6 +3,7 @@ import type { Mesh, Object3D } from 'three'
 import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
 import { alcanceDoPulo, beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
+import { elevacaoDaPlataforma } from '../src/sistemas/plataformas-das-nuvens'
 import {
   arquivoDaIlha,
   carregarGlb,
@@ -132,6 +133,8 @@ describe('andando e pulando nas Nuvens', () => {
       'col-cil-degrau-nuvem-3',
       'col-cil-plataforma-1',
     ].map(forma)
+    const andou = grade.alcance(ancora('chegada').x, ancora('chegada').z)
+    expect(grade.chegaPerto(andou, caminho[0]!.posicao[0], caminho[0]!.posicao[2], 1.5)).toBe(true)
     let antes = {
       x: caminho[0]?.posicao[0] ?? 0,
       z: caminho[0]?.posicao[2] ?? 0,
@@ -181,4 +184,24 @@ describe('andando e pulando nas Nuvens', () => {
     const ninho = ancora('ninho')
     expect(Math.abs(ninho.y - topoDaForma(forma('col-cil-ninho-fundo-1')))).toBeLessThan(0.1)
   })
+})
+
+// Os vãos maiores exigem corrida. Conferir a parábola no momento em que ambas param,
+// com a plataforma de destino abaixo, e não somar alcance plano a uma subida impossível.
+test('cada plataforma alcança a próxima no ciclo, com margem para a cápsula', () => {
+  for (let i = 1; i < 4; i++) {
+    const a = forma(`col-cil-plataforma-${i}`)
+    const b = forma(`col-cil-plataforma-${i + 1}`)
+    if (a.forma !== 'cilindro' || b.forma !== 'cilindro') throw new Error('Tampo sem cilindro')
+    const t = i % 2 === 1 ? 11 : 1
+    const dy =
+      topoDaForma(b) + elevacaoDaPlataforma(i, t) - topoDaForma(a) - elevacaoDaPlataforma(i - 1, t)
+    expect(dy).toBeCloseTo(-0.6)
+    const voo = (CORPO.pulo + Math.sqrt(CORPO.pulo ** 2 - 2 * GRAVIDADE * dy)) / GRAVIDADE
+    const vao =
+      Math.hypot(b.posicao[0] - a.posicao[0], b.posicao[2] - a.posicao[2]) - a.raio - b.raio
+    expect(vao + 0.2).toBeLessThan(voo * CORPO.correr + 2 * CORPO.raio)
+    expect(elevacaoDaPlataforma(i - 1, t + voo)).toBeCloseTo(elevacaoDaPlataforma(i - 1, t))
+    expect(elevacaoDaPlataforma(i, t + voo)).toBeCloseTo(elevacaoDaPlataforma(i, t))
+  }
 })

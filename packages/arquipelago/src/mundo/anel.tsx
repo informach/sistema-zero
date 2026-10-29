@@ -41,6 +41,7 @@ import {
 import { useInterativo } from './interativos'
 import {
   ALTURA_DA_TERRA,
+  ALTURA_DAS_NUVENS,
   apoiosDaIlhaLeve,
   fracaoMontada,
   giroDaIlha,
@@ -50,6 +51,7 @@ import {
   trajetoDaPonte,
 } from './medidas'
 import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { NuvensVivo } from './nuvens-vivo'
 import { PicoVivo } from './pico-vivo'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
 import { PlacaDaPonte } from './placa-da-ponte'
@@ -228,8 +230,6 @@ function Enfeites({ id, cor }: { id: Ilha['id']; cor: number }) {
   }
 }
 
-const ALTURA_DAS_NUVENS = 7
-
 /** O que mexe em cada ilha completa (montado com ela ativa, em coordenadas do mundo). */
 const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
   bosque: BosqueVivo,
@@ -237,6 +237,7 @@ const ILHAS_VIVAS: Partial<Record<IlhaId, typeof BosqueVivo>> = {
   recife: RecifeVivo,
   pico: PicoVivo,
   'vale-dos-dinos': ValeVivo,
+  nuvens: NuvensVivo,
 }
 
 function IlhaDoAnel({

@@ -12,9 +12,10 @@ export const PAINEL_DA_MARE = 'mare'
 export const PAINEL_DO_FLOCO = 'floco'
 /** A apresentação da Jade no Vale dos Dinos (fase4-01). */
 export const PAINEL_DA_JADE = 'jade'
+export const PAINEL_DA_IRIE = 'irie'
 
 /** Quem conversa: cada morador tem a loja da conversa dele (a comemoração de um não mexe no outro). */
-export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade'
+export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade' | 'irie'
 
 /**
  * A conversa com um morador (uma loja por montagem e por morador, como a dos desafios). O painel

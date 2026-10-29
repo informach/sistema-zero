@@ -29,6 +29,14 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  plataformasDasNuvens: {
+    numero: number
+    corpoY: number
+    desenhoY: number
+    topoY: number
+    x: number
+    z: number
+  }[]
   mergulho: { pronto: boolean; achados: { bau: boolean; pagina: boolean; tesouro: boolean } }
   barco: {
     fase: string
@@ -178,26 +186,62 @@ export function Medidor() {
   })
   useEffect(() => {
     if (!ligado) return
-    const g = globalThis as { __arquipelagoLevar?: (...a: number[]) => void }
+    const g = globalThis as {
+      __arquipelagoLevar?: (...a: number[]) => void
+      __arquipelagoLerCorpo?: () => {
+        x: number
+        y: number
+        z: number
+        giro: number
+        noChao: boolean
+      }
+    }
+    // Leitura sob demanda para conferir pulos sem reduzir o intervalo do medidor pesado.
+    g.__arquipelagoLerCorpo = () => ({
+      x: rastro.x,
+      y: rastro.y,
+      z: rastro.z,
+      giro: rastro.giro,
+      noChao: movimento.noChao,
+    })
     g.__arquipelagoLevar = (x = 0, y = 0, z = 0, giro?: number) => {
       pedidos.teleporte = { x, y, z }
       if (giro !== undefined) rastro.giro = giro
     }
     return () => {
       g.__arquipelagoLevar = undefined
+      g.__arquipelagoLerCorpo = undefined
     }
-  }, [ligado, pedidos, rastro])
+  }, [ligado, pedidos, rastro, movimento])
   useFrame((_, dt) => {
     if (!ligado) return
     const c = conta.current
     c.tempo += dt
     c.quadros++
     if (c.tempo < INTERVALO_DE_MEDIDA) return
+    const plataformasDasNuvens: MedidaDoDesenho['plataformasDasNuvens'] = []
     let corposAtivos = 0
     world.bodies.forEach((b) => {
+      const numero = (b.userData as { nuvem?: number } | undefined)?.nuvem
+      if (numero) {
+        const desenho = cena.getObjectByName(`plataforma-${numero}`)
+        const topo = cena.getObjectByName(`topo-plataforma-${numero}`)
+        if (desenho && topo) {
+          const p = b.translation()
+          plataformasDasNuvens.push({
+            numero,
+            corpoY: p.y,
+            desenhoY: desenho.getWorldPosition(new Vector3()).y,
+            topoY: topo.getWorldPosition(new Vector3()).y,
+            x: p.x,
+            z: p.z,
+          })
+        }
+      }
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      plataformasDasNuvens,
       mergulho: {
         pronto: movimento.mergulhos.some((v) => v.ativo),
         achados: { ...loja.getState().salvamento.recife },

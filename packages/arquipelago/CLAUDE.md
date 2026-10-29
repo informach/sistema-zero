@@ -1038,3 +1038,24 @@ etapa, pois não há animação nova. União de conquistas em `conciliar-salvame
 somar inventário. Testes leem os GLBs, caminham na grade e conferem o caminho com a ilha
 girada e o cavalete. `playground/verificar-vale-browser.ts` confere computador e toque.
 Regras e números em `docs/arquipelago-regras.md`, seção da fase4-02. Filhote e museu ficam fora.
+
+## Nuvens e Iriê (fase4-06, 29/10/2026)
+
+- `nuvens.glb` entra em `ILHAS_COMPLETAS`; `NuvensVivo` entra em `ILHAS_VIVAS`.
+  A altura compartilhada `ALTURA_DAS_NUVENS = 7` também determina o final da ponte.
+  `RAIO_VISITAVEL_DAS_NUVENS = 19.2` cobre vértices até 18,7404 m e o raio do corpo.
+- `sistemas/irie.ts`, `mundo/nuvens.ts` e `mundo/irie.tsx`: apresentação no morador genérico,
+  âncora morador voltada a chegada, meio com y 7. Raio 0,39, altura 1,49, olhos 1,19.
+  Sem amizade, recompensas ou campos novos no salvamento.
+- `sistemas/plataformas-das-nuvens.ts`: ciclo puro de 20 s, elevação 2,4 m, viagens de 6 s
+  com suavização cúbica e paradas de 4 s. Vizinhas alternam a fase. Pausa não avança.
+- `mundo/plataformas-das-nuvens.tsx` prepara os quatro pares desenho/âncora/tampo antes da troca.
+  Os quatro tampos saem da lista fixa e viram corpos cinemáticos `plataformaDoMundo`.
+  O controlador existente leva quem está em cima. Não mover personagem por teleporte.
+  O desenho lê a posição interpolada depois da física, antes da câmera e do medidor.
+  As malhas continuam pertencendo à ilha para o descarte compartilhado, sem clones de recursos.
+- O medidor expõe `plataformasDasNuvens`; sua leitura de corpo sob demanda só existe quando
+  `arquipelago:medir` está ligado. Nenhuma leitura pesada foi acrescentada ao laço normal.
+- Testes: `nuvens.test.ts`, `plataformas-das-nuvens.test.ts`, `colisores-das-nuvens.test.ts`.
+  `playground/verificar-nuvens-browser.ts` aceita ARQUIPELAGO_CHROMIUM e ARQUIPELAGO_PRINTS.
+  Relatório e limites em `docs/qa/2026-10-29-nuvens/README.md`. Nenhum Blender nesta fase.

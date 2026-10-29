@@ -16,6 +16,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import bosqueGlb from '../assets/ilhas/bosque.glb'
+import nuvensGlb from '../assets/ilhas/nuvens.glb'
 import picoGlb from '../assets/ilhas/pico.glb'
 import recifeGlb from '../assets/ilhas/recife.glb'
 import valeGlb from '../assets/ilhas/vale-dos-dinos.glb'
@@ -64,6 +65,11 @@ import {
 } from './medidas'
 import { materiaisDe } from './modelos'
 import { pintarMateriais, pinturaDaIlha } from './pintura-da-ilha'
+import {
+  type PlataformaDasNuvens,
+  PlataformasDasNuvens,
+  prepararPlataformasDasNuvens,
+} from './plataformas-das-nuvens'
 import { type PontesPreparadas, PontesVivas, prepararPontes } from './pontes-vivas'
 import { prepararVegetacao } from './vegetacao-ao-vento'
 
@@ -81,6 +87,7 @@ export const ILHAS_COMPLETAS: Partial<Record<IlhaId, IlhaCompletaInfo>> = {
   recife: { url: new URL(recifeGlb, import.meta.url).href },
   pico: { url: new URL(picoGlb, import.meta.url).href },
   'vale-dos-dinos': { url: new URL(valeGlb, import.meta.url).href },
+  nuvens: { url: new URL(nuvensGlb, import.meta.url).href },
 }
 
 /** O que fica pronto antes de a ilha aparecer: o desenho já girado (e com a tinta) e os colisores. */
@@ -94,6 +101,7 @@ export interface IlhaPreparada {
   materiaisSubstituidos: Material[]
   copas: Copa[]
   pontes: PontesPreparadas | null
+  plataformas: PlataformaDasNuvens[]
   vegetacao: ReturnType<typeof prepararVegetacao>
 }
 
@@ -134,6 +142,7 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
     luzesNoturnas: prepararLuzesNoturnas([...materiais, ...copas.flatMap((c) => c.suaves)]),
     vegetacao,
     pontes,
+    plataformas: ilha.id === 'nuvens' ? prepararPlataformasDasNuvens(cena, colisores) : [],
     modelo: cena,
     colisores,
     materiais,
@@ -471,6 +480,13 @@ export function IlhaCompleta({
       {colide && preparada.pontes && (
         <PontesVivas pontes={preparada.pontes} modelo={preparada.modelo} />
       )}
+      {colide && preparada.plataformas.length > 0 && (
+        <PlataformasDasNuvens
+          plataformas={preparada.plataformas}
+          modelo={preparada.modelo}
+          troca={troca}
+        />
+      )}
       {colide && (
         <ColisoresDaIlha
           colisores={
@@ -478,7 +494,9 @@ export function IlhaCompleta({
               ? preparada.colisores.filter(
                   (c) => !preparada.pontes?.trechos.some((t) => t.colisor === c),
                 )
-              : preparada.colisores
+              : preparada.colisores.filter(
+                  (c) => !preparada.plataformas.some((p) => p.colisor === c),
+                )
           }
           troca={troca}
         />

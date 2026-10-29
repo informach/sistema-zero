@@ -2970,3 +2970,28 @@ mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de o
 
 Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência e capturas:
 `docs/qa/2026-10-29-vale-pegadas-ninhos/README.md`.
+
+## Ilha das Nuvens completa e apresentação da Iriê (fase4-06, 29/10/2026)
+
+- A ilha completa usa os 50 colisores de `nuvens.glb`, no mesmo ciclo de preparação, troca e
+  descarte do Pico e do Vale. O Quadro das Cores fica perto da chegada. A ponte termina em
+  y 8,12 m, acompanhando os 7 m de elevação da ilha, sem criar um salto na chegada.
+- Iriê fica na âncora morador, olhando para chegada. Cilindro de raio 0,39 m e altura 1,49 m,
+  medido nas penas da cabeça principal e do corpo, sem asas, cauda, topete ou tear de mão.
+  A câmera mira os olhos a 1,19 m dos pés. A apresentação usa o painel e os clipes do morador
+  genérico, incluindo o movimento reduzido do sistema.
+- Falas: “Sou Iriê. Teço o arco-íris com estes fios.” e “O tear fica aqui na Ilha das Nuvens.”
+  São descrições da arte. A conversa não concede amizade, pedidos ou presentes e não muda
+  o salvamento.
+- Os vértices dos colisores chegam a 18,7404 m do centro. Esperar o chão até 19,2 m inclui
+  as plataformas externas e a folga do corpo. Isso não cria terreno na versão leve.
+- Os quatro tampos ficam originalmente a 3,2, 5, 6,8 e 8,6 m no modelo, além dos 7 m da ilha.
+  Cada um sobe 2,4 m em 6 segundos, espera 4 segundos, desce em 6 e espera mais 4.
+  Vizinhos alternam as pontas. Há quatro segundos para saltar com a próxima plataforma
+  0,6 m mais baixa. Os vãos maiores pedem corrida e pulo.
+- A velocidade aumenta e diminui suavemente, até 0,6 m/s. Desenho, âncora e tampo se movem
+  juntos. O personagem usa o mesmo controlador de colisão das pontes vivas. Pausa congela;
+  menos movimento mantém este transporte, necessário para subir, sem balanço ou giro extra.
+- Esta fase não liga corrida, constelações, clima ou passeio de balão. Não muda o salvamento,
+  não altera geradores e não regrava GLBs. Testes e capturas em
+  `docs/qa/2026-10-29-nuvens/README.md`.
