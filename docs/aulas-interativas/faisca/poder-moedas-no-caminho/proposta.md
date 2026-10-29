@@ -2,7 +2,7 @@
 
 29/10/2026 · Proposta aprovada e aplicada na autoria local (ver o [README](README.md)). Mídia,
 voz e publicação continuam etapas de produção. Primeiro dos quatro Poderes do Faísca e referência de
-qualidade para os outros três (Duas peças para abrir, A porta fica aberta por um tempo e A
+qualidade para os outros três (O segredo da cabana, A porta fica aberta por um tempo e A
 sequência dos símbolos).
 
 ## 1. Recomendação

@@ -1,6 +1,8 @@
-# Duas peças para abrir: proposta do Poder do Faísca
+# O segredo da cabana: proposta do Poder do Faísca
 
-29/10/2026 · Proposta para aprovação. Define a autoria; não declara curso implementado, mídia
+29/10/2026 · Proposta aprovada, com o nome do curso trocado de "Duas peças para abrir" para
+**O segredo da cabana** (a aprovação pediu um nome mais criativo). A aula 1 segue "Duas peças
+para abrir", que é a regra dela. Define a autoria; não declara curso implementado, mídia
 produzida ou publicação realizada. Segundo dos quatro Poderes do Faísca, no mesmo formato de
 [Moedas no caminho](../poder-moedas-no-caminho/proposta.md), que é a referência de qualidade.
 

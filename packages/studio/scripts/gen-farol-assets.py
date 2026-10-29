@@ -27,6 +27,8 @@ FILES = {
     "chave-de-estrela": "chave-de-estrela.svg",
     # Poder "Moedas no caminho": a moeda e o baú (mesma caixa fechado e aberto).
     "moeda": "moeda.svg", "bau-fechado": "bau-fechado.svg", "bau-aberto": "bau-aberto.svg",
+    # Poder "O segredo da cabana": o emblema e a cabana (mesma caixa fechada e aberta).
+    "emblema": "emblema.svg", "cabana-fechada": "cabana-fechada.svg", "cabana-aberta": "cabana-aberta.svg",
     **{f"farol-{modelo.replace(' ', '-')}-{estado}": f"farol-{modelo.replace(' ', '-')}-{estado}.svg"
        for modelo in ("listrado", "de pedra", "de madeira", "colorido")
        for estado in ("apagado", "aceso")},
@@ -44,8 +46,9 @@ PERSONAGENS = ("aventureiro", "menina-de-laco", "marinheira", "menino-de-bone",
 CAIXAS = {**{nome: (64, 64) for nome in PERSONAGENS},
           **{nome: (480, 360) for nome in ("praia-tropical", "costa-rochosa", "ilha-nevada", "noite-na-ilha")},
           **{nome: (88, 88) for nome in ("veleiro", "barco-de-pesca", "lancha", "barco-pirata")},
-          **{nome: (32, 32) for nome in ("chave-dourada", "chave-prateada", "chave-de-estrela", "moeda")},
+          **{nome: (32, 32) for nome in ("chave-dourada", "chave-prateada", "chave-de-estrela", "moeda", "emblema")},
           **{nome: (64, 64) for nome in ("bau-fechado", "bau-aberto")},
+          **{nome: (96, 96) for nome in ("cabana-fechada", "cabana-aberta")},
           **{nome: (152, 152) for nome in FILES if nome.startswith("farol-") and nome not in ("farol-apagado", "farol-aceso")}}
 HEADER = "// Gerado por scripts/gen-farol-assets.py a partir de arte/assets/farol. Não editar.\n"
 

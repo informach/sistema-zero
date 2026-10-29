@@ -5,6 +5,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1.generated'),
   '0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9': () =>
     import('./m-0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9.generated'),
+  '0f5a1e4f196e8a7691e51bb7246e1b62775d1c124763850cf962cd3e97b7e669': () =>
+    import('./m-0f5a1e4f196e8a7691e51bb7246e1b62775d1c124763850cf962cd3e97b7e669.generated'),
   '2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485': () =>
     import('./m-2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485.generated'),
   '29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72': () =>
@@ -17,6 +19,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-48e7ae10862e3529d57a77dac7849601995534a83939a0060782892581334a50.generated'),
   '5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a': () =>
     import('./m-5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a.generated'),
+  '66e32d2c65b5d2f57cd295a95c3772a19e7a815e8180ec8d4749a7b0bd62a04d': () =>
+    import('./m-66e32d2c65b5d2f57cd295a95c3772a19e7a815e8180ec8d4749a7b0bd62a04d.generated'),
   '6dc2b91a0472c05826556eb4ded6e1fe71b60846b4300819fb1d8b1bcb172682': () =>
     import('./m-6dc2b91a0472c05826556eb4ded6e1fe71b60846b4300819fb1d8b1bcb172682.generated'),
   '7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96': () =>

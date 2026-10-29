@@ -94,7 +94,7 @@
           "lessons": 1
         },
         {
-          "title": "Duas peças para abrir",
+          "title": "O segredo da cabana",
           "addition": "Combinar duas informações com E.",
           "prerequisite": "Variável booleana e Se/senão.",
           "application": "Criar uma segunda porta que exige chave e emblema.",
