@@ -10,9 +10,12 @@ import { CORPO } from '../src/sistemas/corpo'
 import { colecaoDoVale } from '../src/sistemas/diario'
 import { comecarConversaComAJade } from '../src/sistemas/jade'
 import {
+  ACOES_DA_ESCAVACAO,
   cuidarDoNinho,
   deuEspacoAoNinho,
   escavarNoVale,
+  FALA_DE_REVER_O_FOSSIL,
+  FALAS_DA_ESCAVACAO,
   registrarPegadasDoVale,
   seguirPegadasDoVale,
   todosOsNinhosCuidados,
@@ -143,4 +146,13 @@ test('a arte reaproveitada tem osso miúdo separado e cabe na folga reservada', 
   const caixa = new Box3().setFromObject(osso!, true)
   expect(Math.max(Math.abs(caixa.min.x), Math.abs(caixa.max.x))).toBeLessThanOrEqual(V.raioDoOsso)
   expect(caixa.max.y).toBeCloseTo(0.28, 2)
+})
+
+test('cada etapa da escavação tem a sua fala, e rever o fóssil não repete a descoberta', () => {
+  expect(FALAS_DA_ESCAVACAO).toHaveLength(ACOES_DA_ESCAVACAO.length)
+  expect(new Set([...FALAS_DA_ESCAVACAO, FALA_DE_REVER_O_FOSSIL]).size).toBe(4)
+  for (const t of [...ACOES_DA_ESCAVACAO, ...FALAS_DA_ESCAVACAO, FALA_DE_REVER_O_FOSSIL]) {
+    expect(t).not.toMatch(/[!—]/)
+    expect(t.split('.')[0]).not.toContain('?')
+  }
 })
