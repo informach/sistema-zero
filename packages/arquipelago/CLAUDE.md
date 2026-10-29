@@ -659,9 +659,10 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
   `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
   de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
-- ⚠️ O pior caso do salvamento fica a uns 140 bytes do teto de 64 KB com as rotinas no teto (era
-  290 na V10; o `recife` da V11 custa 54 e o percurso `pico-cume` uns 96;
-  `tests/salvamento-v10.test.ts`): campo novo no salvamento precisa achar espaço antes.
+- ⚠️ O pior caso do salvamento fica a 60 bytes do teto de 64 KB com as rotinas no teto (era
+  290 na V10; o `recife` da V11 custa 54, o percurso `pico-cume` uns 96 e o `vale` da V12 80;
+  medido em 29/10/2026, `tests/salvamento-v10.test.ts`): campo novo no salvamento precisa achar
+  espaço antes (encurtar outro campo ou mudar o formato numa versão nova).
 - Regras e textos: `docs/arquipelago-regras.md` §8.2. Testes: `tests/rotina.test.ts`; navegador:
   `playground/verificar-rotina-browser.ts` (`?lumis=quindim:1&cartas=todas`, compilar para Node no
   Windows).
@@ -803,8 +804,8 @@ Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`; regra
   em `sistemas/percurso.ts`): `mundo/subida.ts` lê as âncoras `subida-largada`, `subida-1..4`,
   `floco-1..5`, `cume` e a linha `treno-curva-N` (para o rumo das voltas) e monta os
   `PontosDoPercurso`; o `PicoVivo` roda o `CorridaNaIlha` genérico com flocos de neve brancos.
-  ⚠️ O pior caso do salvamento ganhou a entrada `pico-cume` (uns 96 bytes): sobram uns 140 do teto
-  de 64 KB.
+  ⚠️ O pior caso do salvamento ganhou a entrada `pico-cume` (uns 96 bytes): sobravam uns 140 do
+  teto de 64 KB, e depois do `vale` da V12 sobram 60.
 - **Trenó** (`sistemas/treno.ts`, `mundo/treno-do-pico.tsx`): não é um modo novo. A trilha vira uma
   pista do MESMO modo `escorregar`, com o atrito do gelo (`MATERIAIS.gelo`), teto de 4,5 m/s e
   `soPorPedido` (andar na trilha não senta; só o pedido `escorregar` do "Descer de trenó", do

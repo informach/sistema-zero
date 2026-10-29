@@ -35,6 +35,8 @@ export const FALAS_DA_ESCAVACAO = [
   'O osso ficou à mostra. Agora observe o fóssil.',
   'Você descobriu um osso fossilizado. Ele ficou registrado no seu diário.',
 ] as const
+/** Depois das três etapas, rever não repete a descoberta. */
+export const FALA_DE_REVER_O_FOSSIL = 'O fóssil continua aqui, do jeito que você deixou.'
 
 /** Não há cronômetro: pausa, leitura e repetição nunca avançam nem apagam conquistas. */
 export function escavarNoVale(s: Salvamento, podeAgir: boolean): Salvamento {

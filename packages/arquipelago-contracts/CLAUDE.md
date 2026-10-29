@@ -135,8 +135,8 @@ Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 `PERCURSOS` ganhou `pico-cume` (a subida ao cume do Pico Gelado) sem versão nova, como a
 `vila-telhados`: só alarga o que a V2 em diante aceitam. O pior caso de 64 KB (com uma entrada por
 percurso, em `tests/salvamento-v10.test.ts`) tinha 140 bytes de margem antes da V12. O teste
-agora inclui também os três ninhos do Vale e a escavação, dentro do mesmo teto. Campo novo
-precisa conferir o espaço antes.
+agora inclui também os três ninhos do Vale e a escavação, dentro do mesmo teto: sobram 60 bytes
+(medido em 29/10/2026). Campo novo precisa conferir o espaço antes.
 
 ## Salvamento V12: descobertas do Vale (29/10/2026)
 

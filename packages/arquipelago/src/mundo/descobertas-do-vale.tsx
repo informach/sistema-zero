@@ -10,6 +10,7 @@ import {
   cuidarDoNinho,
   deuEspacoAoNinho,
   escavarNoVale,
+  FALA_DE_REVER_O_FOSSIL,
   FALAS_DA_ESCAVACAO,
   registrarPegadasDoVale,
   seguirPegadasDoVale,
@@ -69,7 +70,7 @@ export function DescobertasDoVale({
       if (!podeAgir()) return
       const antes = loja.getState().salvamento.vale.escavacao
       loja.getState().mudar((s) => escavarNoVale(s, true))
-      loja.getState().dizer(FALAS_DA_ESCAVACAO[Math.min(antes, 2)] ?? '')
+      loja.getState().dizer(FALAS_DA_ESCAVACAO[antes] ?? FALA_DE_REVER_O_FOSSIL)
     },
   })
   useFrame(() => {

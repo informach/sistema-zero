@@ -54,7 +54,7 @@ export function PlataformasDasNuvens({
   const { loja } = useJogo()
   const tempo = useRef(0)
   const centro = useMemo(() => new Vector3(), [])
-  const peças = useMemo(
+  const pecas = useMemo(
     () =>
       plataformas.map((p) => ({
         ...p,
@@ -72,7 +72,7 @@ export function PlataformasDasNuvens({
       jogoPausado(loja.getState()) || troca.opacidade < 0.99,
     )
     modelo.getWorldPosition(centro)
-    for (const p of peças) {
+    for (const p of pecas) {
       if (!p.corpo) continue
       const c = p.colisor
       p.alvo.set(
@@ -85,7 +85,7 @@ export function PlataformasDasNuvens({
   })
   useFrame(() => {
     modelo.getWorldPosition(centro)
-    for (const p of peças) {
+    for (const p of pecas) {
       if (!p.visual) continue
       p.visual.getWorldPosition(p.interpolado)
       const dy = p.interpolado.y - centro.y - p.colisor.posicao[1]
@@ -95,16 +95,16 @@ export function PlataformasDasNuvens({
   }, -0.5)
   useEffect(
     () => () => {
-      for (const p of peças) {
+      for (const p of pecas) {
         p.desenho.position.y = p.yDesenho
         p.topo.position.y = p.yTopo
       }
     },
-    [peças],
+    [pecas],
   )
   return (
     <>
-      {peças.map((p) => {
+      {pecas.map((p) => {
         const c = p.colisor
         const b = bordaQueCabe(c.raio, c.meiaAltura)
         return (
