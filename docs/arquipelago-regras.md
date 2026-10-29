@@ -1008,10 +1008,37 @@ do percurso nas copas (§6.13); muda só o que está aqui.
   uns 19 m no plano e quatro pulos para cima); pegar os 4 confeitos na mesma corrida.
 - **O que fica guardado:** `percursos['vila-telhados']`, como o das copas (cada estrela para sempre,
   o melhor tempo é o menor). O id entrou no contrato sem versão nova do salvamento.
-- **Ainda não tem:** os patins (a outra metade da fase2-05) e uma placa desenhada na largada (o
-  "Começar" aparece perto do lugar).
+- **O prêmio:** quem chega ao terraço sem patins na mochila ganha um par (`premio` da config,
+  `receberPatins` em `sistemas/patins.ts`). O Zappy junta à fala do resultado: "O Bento mandou um
+  presente pela entrega: um par de patins. Toque neles na mochila para calçar." Com o par na
+  mochila, as chegadas seguintes não dão outro.
+- **Ainda não tem:** uma placa desenhada na largada (o "Começar" aparece perto do lugar).
 - Testes: `tests/entrega-pelos-telhados.test.ts` (lê o `vila-doce.glb`); navegador:
-  `bun playground/verificar-percursos-browser.ts` (a entrega e o percurso nas copas).
+  `bun playground/verificar-percursos-browser.ts` (a entrega, o par na mochila e o percurso nas
+  copas).
+
+### 6.13.2 Os patins (fase2-05)
+
+Arquivos: `sistemas/patins.ts`, o perfil `PERFIS.patins` em `sistemas/movimento.ts`, o modo chão
+(`sistemas/modos/chao.ts`), o botão na mochila (`interface/hud.tsx`) e o par nos pés
+(`personagem/patins-nos-pes.tsx`).
+
+- **Calçar:** o item `patins` (🛼) da mochila é um botão: um toque calça ("Patins calçados. Solte o
+  controle e o corpo segue deslizando."), outro guarda ("Patins guardados na mochila."). Calçar
+  não fica salvo: o jogo abre sempre descalço. Patins não se comem nem se dão de presente
+  (`equipamento`, `itensParaDar`).
+- **Deslizar:** calçados e fora da água, andar e correr vão 1,3 vezes mais rápido
+  (`RAPIDEZ_DOS_PATINS`: 2,9 e 6 m/s). No chão a velocidade segue o perfil `patins` (aceleração 8,
+  freio 5 m/s²): chega na corrida em uns 0,75 s e, soltando, ainda desliza uns 3,6 m em 1,2 s. No ar
+  vale o perfil de sempre. Nadando, no cipó, na escada, no tronco e na escalada os patins não mudam
+  nada. As pernas andam no passo de sempre (a velocidade das animações é dividida pela rapidez),
+  então os pés deslizam.
+- **No desenho:** cada patim do `patins.glb` vira filho do osso do pé (`mixamorigLeftFoot`,
+  `mixamorigRightFoot`), medido uma vez por avatar com ele parado em pé; o avatar sobe
+  `ELEVACAO_DOS_PATINS` (0,085) para as rodinhas tocarem o chão. O corpo do Rapier não muda.
+- Testes: `tests/patins.test.ts`; navegador: `bun playground/verificar-patins-browser.ts` (calçar,
+  os dois patins nos ossos com as rodinhas no chão, o deslize depois de soltar e guardar).
+  Playground: `?patins=1` põe um par na mochila.
 
 ### 6.14 Colisão
 

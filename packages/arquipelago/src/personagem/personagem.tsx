@@ -10,7 +10,7 @@ import {
 import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
-import { useJogo } from '../estado/contexto'
+import { useEstado, useJogo } from '../estado/contexto'
 import { maisPerto } from '../mundo/interativos'
 import {
   alturaDaIlha,
@@ -39,6 +39,7 @@ import {
 import { passoComColisao } from '../sistemas/modos/colisao'
 import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { ritmo } from '../sistemas/necessidades'
+import { comPatins, RAPIDEZ_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado } from '../sistemas/pausa'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { AvatarDoJogo } from './avatar-do-jogo'
@@ -103,6 +104,7 @@ function lugarSeguro(
  */
 export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
+  const calcados = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
@@ -224,6 +226,7 @@ export function Personagem() {
     usou: false,
     correr: false,
     ritmo: 1,
+    patins: false,
     conversa: null,
     gravidade: GRAVIDADE,
     nivelDoMar: NIVEL_DA_AGUA,
@@ -294,6 +297,7 @@ export function Personagem() {
     usosAtendidos.current = controle.usar
     e.correr = controle.correr
     e.ritmo = ritmo(estado.salvamento.necessidades)
+    e.patins = comPatins(estado.patins, estado.salvamento.inventario)
     e.conversa = pedidos.conversa
 
     // Pedido de um interativo ("Pegar o cipó", "Escalar o tronco").
@@ -334,9 +338,11 @@ export function Personagem() {
     const m = animacao.current
     // No chão, a velocidade no chão; no cipó o laço não anda pela distância; nos outros modos, a
     // do corpo (pela casca, pelo tronco caído), que toca os ciclos deles.
+    // De patins o corpo desliza mais rápido com o mesmo passo das pernas (os pés deslizam).
+    const passada = e.patins && !nadando ? RAPIDEZ_DOS_PATINS : 1
     const real =
       v.modo === 'chao'
-        ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt
+        ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt / passada
         : v.modo === 'cipo'
           ? 0
           : Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
@@ -443,7 +449,7 @@ export function Personagem() {
         }}
         position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}
       >
-        <AvatarDoJogo movimento={animacao} depoisDaPose={depoisDaPose} />
+        <AvatarDoJogo movimento={animacao} depoisDaPose={depoisDaPose} comPatins={calcados} />
       </group>
     </RigidBody>
   )

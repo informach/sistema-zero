@@ -8,6 +8,7 @@ import { useToque } from '../estado/preferencias'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { comer } from '../sistemas/necessidades'
+import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { formatarTempo, PERCURSO_DAS_COPAS, PERCURSOS_DO_JOGO } from '../sistemas/percurso'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
@@ -89,6 +90,7 @@ function Dica() {
 function Inventario() {
   const { loja } = useJogo()
   const inv = useEstado((s) => s.salvamento.inventario)
+  const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const itens = itensVisiveis(inv)
   if (itens.length === 0) return null
   return (
@@ -115,6 +117,22 @@ function Inventario() {
           >
             <span aria-hidden="true">{item.emoji}</span>
             <b>{qtd}</b>
+          </button>
+        ) : item.id === ID_DOS_PATINS ? (
+          <button
+            key={item.id}
+            type="button"
+            className="arq-item"
+            title={patins ? 'Tirar os patins' : 'Calçar os patins'}
+            aria-label={patins ? 'Tirar os patins' : 'Calçar os patins'}
+            aria-pressed={patins}
+            onClick={() => {
+              const s = loja.getState()
+              s.calcarPatins(!patins)
+              s.dizer(patins ? FALA_DE_DESCALCAR : FALA_DE_CALCAR)
+            }}
+          >
+            <span aria-hidden="true">{item.emoji}</span>
           </button>
         ) : (
           <span key={item.id} className="arq-item" title={item.nome}>

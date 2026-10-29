@@ -7,6 +7,8 @@ export interface Item {
   emoji: string
   /** Se dá para comer: quanto repõe de cada necessidade. */
   comida?: { fome: number; diversao?: number; energia?: number }
+  /** Se é coisa de usar (os patins): não se come nem se dá de presente. */
+  equipamento?: true
 }
 
 export const ITENS: Record<string, Item> = {
@@ -50,6 +52,8 @@ export const ITENS: Record<string, Item> = {
     emoji: '☕',
     comida: { fome: 15, energia: 15 },
   },
+  // O prêmio da entrega pelos telhados (fase2-05, `sistemas/patins.ts`).
+  patins: { id: 'patins', nome: 'Patins', emoji: '🛼', equipamento: true },
 }
 
 export function sementeDoItem(id: string): Semente | null {
@@ -84,4 +88,9 @@ export function itensVisiveis(inv: Inventario): { item: Item; qtd: number }[] {
   return Object.values(ITENS)
     .map((item) => ({ item, qtd: quantidade(inv, item.id) }))
     .filter((x) => x.qtd > 0)
+}
+
+/** O que dá para dar de presente (tudo da mochila menos os equipamentos). */
+export function itensParaDar(inv: Inventario): { item: Item; qtd: number }[] {
+  return itensVisiveis(inv).filter(({ item }) => !item.equipamento)
 }

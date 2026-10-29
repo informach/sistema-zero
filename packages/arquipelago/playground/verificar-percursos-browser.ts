@@ -2,7 +2,8 @@
  * Conferência no navegador dos percursos (fase2-05): a entrega pelos telhados da Vila Doce (o
  * "Começar" na frente dos caixotes, o cronômetro com os confeitos, a queda que volta ao telhado,
  * o confeito sobre a primeira casinha e a chegada no terraço da sorveteria com as estrelas) e o percurso nas
- * copas do Bosque, que passou a usar o mesmo componente (começa, conta, cai e volta ao deque).
+ * copas do Bosque, que passou a usar o mesmo componente (começa, conta, cai e volta ao deque). A
+ * primeira entrega põe os patins na mochila.
  *
  * `bun playground/verificar-percursos-browser.ts` (navegador: `ARQUIPELAGO_CHROMIUM` com o caminho
  * do executável, ou o canal `ARQUIPELAGO_BROWSER_CHANNEL`, padrão `chrome`). Os prints vão para
@@ -235,6 +236,9 @@ try {
   if (ganhas !== (todos ? 3 : 2))
     throw new Error('A entrega não deu as estrelas da chegada e do tempo.')
   await page.screenshot({ path: path.join(prints, 'telhados-resultado.png') })
+  // A primeira entrega traz os patins para a mochila.
+  await page.getByRole('button', { name: 'Calçar os patins' }).waitFor({ timeout: 10_000 })
+  await page.getByText('um par de patins', { exact: false }).first().waitFor({ timeout: 10_000 })
   await resultado.getByRole('button', { name: 'Continuar' }).click()
   await resultado.waitFor({ state: 'detached' })
 

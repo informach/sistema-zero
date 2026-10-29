@@ -26,6 +26,11 @@ export const PERFIS = {
   ar: { aceleracao: 7, freio: 3 },
   /** Nadando: a água segura, para acelerar e para parar. */
   agua: { aceleracao: 6, freio: 4 },
+  /**
+   * De patins no chão (`sistemas/patins.ts`): chega aos 2,9 m/s em 0,36 s e aos 6 m/s em 0,75 s;
+   * soltando, desliza 1,2 s (uns 3,6 m) até parar.
+   */
+  patins: { aceleracao: 8, freio: 5 },
 } as const satisfies Record<string, PerfilDeMovimento>
 
 export const TOLERANCIA_DO_PULO = {

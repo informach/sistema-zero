@@ -8,8 +8,10 @@ import {
   MELHOR_TEMPO_MAXIMO_MS,
   type PercursoId,
   type ResultadoDoPercurso,
+  type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
+import { receberPatins } from './patins'
 
 /** O que muda de um percurso para outro (as contas são as mesmas). */
 export interface ConfigDoPercurso {
@@ -40,6 +42,8 @@ export interface ConfigDoPercurso {
   /** Milissegundos do corte suave de volta à parada (escurece, leva e clareia). */
   corteSaiMs: number
   corteVoltaMs: number
+  /** O que a chegada dá (os patins da entrega), com a fala; `null` quando não há nada a dar. */
+  premio?: (s: Salvamento) => { salvamento: Salvamento; fala: string } | null
 }
 
 export const PERCURSO_DAS_COPAS = {
@@ -99,6 +103,8 @@ export const PERCURSO_DOS_TELHADOS = {
   distanciaParaDesistir: 6,
   corteSaiMs: 260,
   corteVoltaMs: 340,
+  /** A primeira chegada traz os patins (`sistemas/patins.ts`). */
+  premio: receberPatins,
 } as const satisfies ConfigDoPercurso
 
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */

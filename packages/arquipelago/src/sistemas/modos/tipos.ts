@@ -156,6 +156,8 @@ export interface EntradaDoPasso {
   correr: boolean
   /** O ritmo do humor (`ritmo`, 0,8 a 1,1). */
   ritmo: number
+  /** De patins calçados (`sistemas/patins.ts`): no chão desliza, nadando não muda nada. */
+  patins: boolean
   /** Com quem a criança conversa (parada, vira para lá). */
   conversa: { x: number; z: number } | null
   gravidade: number

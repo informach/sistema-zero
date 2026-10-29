@@ -1,7 +1,7 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
-import type { Mesh, Object3D } from 'three'
+import { Box3, type Mesh, type Object3D } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
@@ -67,6 +67,8 @@ export interface MedidaDoDesenho {
   mecanismos: typeof mecanismosAgora
   pontes: typeof pontesAgora
   fisica: { corposAtivos: number; passoMs: number }
+  /** Cada patim calçado: o osso que o leva e a altura mais baixa das rodinhas (vazio: descalço). */
+  patins: { peca: string; osso: string; rodas: number }[]
 }
 
 function medirLigado(): boolean {
@@ -75,6 +77,18 @@ function medirLigado(): boolean {
   } catch {
     return false
   }
+}
+
+const caixaDoPatim = new Box3()
+function medirPatins(raiz: Object3D): MedidaDoDesenho['patins'] {
+  const r: MedidaDoDesenho['patins'] = []
+  for (const peca of ['patim-esq', 'patim-dir']) {
+    const o = raiz.getObjectByName(peca)
+    if (!o?.parent) continue
+    caixaDoPatim.setFromObject(o)
+    r.push({ peca, osso: o.parent.name, rodas: caixaDoPatim.min.y })
+  }
+  return r
 }
 
 function contarGeometrias(raiz: Object3D): number {
@@ -161,6 +175,7 @@ export function Medidor() {
       tronco: { ...troncoAgora },
       modo: movimento.modo,
       noChao: movimento.noChao,
+      patins: medirPatins(cena),
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida
     fisica.current.ms = 0

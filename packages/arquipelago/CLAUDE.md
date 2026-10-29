@@ -20,9 +20,9 @@
 - `CapsulaDoPinguim` deve ficar dentro do corpo do pinguim, fora da escala do desenho. Adulto:
   raio 0,13 m, meia altura 0,11 m em pé e 0,12 m deitado; centro y 0,24/0,14 m, z 0/0,24 m,
   giro X 0/90 graus. Filhote usa 60% das medidas. Só uma cápsula existe por vez.
-- `AvatarDoJogo comPatins` eleva o desenho, sem mudar a cápsula do jogador. Ainda não há sistema
-  de calçar ou movimentar com patins. A sala mostra o par ao lado para conferir as rodas; não
-  simula que já foi vestido no avatar.
+- `AvatarDoJogo comPatins` eleva o desenho e calça o par nos ossos dos pés
+  (`personagem/patins-nos-pes.tsx`), sem mudar a cápsula do jogador. A sala mostra também um par
+  solto ao lado para conferir as rodas. O jogo calça pela mochila (fase2-05, abaixo).
 - `/arte` no playground exercita os componentes e os GLBs reais. Ainda não há Recife/Pico/Nuvens,
   Íris, pássaros, pinguins, baús animados ou festas montados no mundo. A implementação dessas
   mecânicas deve consumir estes componentes, sem copiar regras. Lumis da praia já acendem no jogo.
@@ -563,7 +563,14 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   HUD lê nome, coletável e tempo da config. `podeConstruir` some com a barra durante a corrida.
   Testes: `tests/entrega-pelos-telhados.test.ts`; navegador: `bun playground/verificar-percursos-browser.ts`
   (com o SwiftShader a cena anda a ~1 quadro por segundo: espere o corpo sair e voltar, nunca um
-  tempo fixo). Os patins ainda não existem.
+  tempo fixo).
+- Patins (fase2-05, `sistemas/patins.ts`): a primeira chegada da entrega traz o item `patins`
+  (`premio` em `ConfigDoPercurso`); o botão da mochila calça (`loja.patins`, transitório, vale com
+  o item na mochila: `comPatins`). `EntradaDoPasso.patins` muda o modo chão (rapidez 1,3 e o perfil
+  `PERFIS.patins`, nunca nadando); o personagem divide a velocidade das animações pela rapidez. O
+  par vai aos ossos dos pés medidos parado em pé (`medirPesEmPe`), a sola na sola do avatar; o
+  medidor mostra `patins` (osso e altura das rodinhas). Regras: §6.13.2. Testes:
+  `tests/patins.test.ts`; navegador: `bun playground/verificar-patins-browser.ts` (`?patins=1`).
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em

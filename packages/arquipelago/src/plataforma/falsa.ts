@@ -55,6 +55,8 @@ export interface OpcoesDaPlataformaFalsa {
   bichos?: 'achados'
   /** A amizade com o Bento (de 0 a 500): com 100 ele já lembrou o bolo de fubá (fase2-04). */
   bento?: number
+  /** Põe um par de patins na mochila (o prêmio da entrega pelos telhados, fase2-05). */
+  patins?: boolean
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
   cartas?: CartasDoPlayground
   /** A galeria: o saldo de moedas (`moedas`, padrão 80) ou `situacao: 'fora-do-ar'` (424). */
@@ -188,6 +190,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       },
       atualizadoEm: agora().toISOString(),
     }
+  }
+  if (o.patins) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    if (!atual.inventario.patins)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, inventario: { ...atual.inventario, patins: 1 } },
+        atualizadoEm: agora().toISOString(),
+      }
   }
   const persistir = () => {
     if (!o.persistir || typeof localStorage === 'undefined') return

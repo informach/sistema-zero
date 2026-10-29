@@ -3,6 +3,7 @@ import { CORPO } from '../corpo'
 import { correnteza } from '../correnteza'
 import { ESCALADA } from '../escalada'
 import { aproximarVelocidade, PERFIS, passoDoPulo } from '../movimento'
+import { RAPIDEZ_DOS_PATINS } from '../patins'
 import { agarrarBorda, bordaAoAlcance } from './borda'
 import { cipoAoAlcance, pegarCipo } from './cipo'
 import { eixoSobOsPes, entrarNoEquilibrio } from './equilibrio'
@@ -66,7 +67,8 @@ export const MODO_CHAO: ModoDeMovimento = {
     const nadando = decidirNado(c.nadando, c.noChao, naAgua)
 
     const velBase = nadando ? CORPO.nadar : e.correr ? CORPO.correr : CORPO.andar
-    const vel = velBase * e.ritmo
+    const deslizando = e.patins && !nadando
+    const vel = velBase * e.ritmo * (deslizando ? RAPIDEZ_DOS_PATINS : 1)
     let vx: number
     let vz: number
     const comEmbalo = !c.noChao && (c.embalo.x !== 0 || c.embalo.z !== 0)
@@ -77,7 +79,13 @@ export const MODO_CHAO: ModoDeMovimento = {
       c.vel.z = vz
     } else {
       // Com peso: a velocidade vai até a pedida pelo perfil do modo (`sistemas/movimento.ts`).
-      const perfil = nadando ? PERFIS.agua : c.noChao ? PERFIS.chao : PERFIS.ar
+      const perfil = nadando
+        ? PERFIS.agua
+        : !c.noChao
+          ? PERFIS.ar
+          : deslizando
+            ? PERFIS.patins
+            : PERFIS.chao
       aproximarVelocidade(c.vel, e.pedidoX * vel, e.pedidoZ * vel, perfil, e.dt)
       vx = c.vel.x
       vz = c.vel.z

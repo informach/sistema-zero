@@ -181,6 +181,7 @@ function jogar(fps: 30 | 60, nivel: AmostraDeQualidade['nivel']) {
           usou: false,
           correr: false,
           ritmo: 1,
+          patins: false,
           conversa: null,
           gravidade: GRAVIDADE,
           nivelDoMar: -10,

@@ -61,6 +61,8 @@ export interface EstadoDoJogo {
   resultado: ResultadoDaCorrida | null
   /** Conta os cortes suaves (a tela escurece e clareia a cada número novo). */
   corte: number
+  /** Os patins calçados (`sistemas/patins.ts`; valem só se ainda estão na mochila, não é salvo). */
+  patins: boolean
   /** Muda o salvamento (a fila de salvamento grava depois). */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
@@ -77,6 +79,7 @@ export interface EstadoDoJogo {
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
   cortar(): void
+  calcarPatins(calcados: boolean): void
 }
 
 export interface DadosIniciais {
@@ -120,6 +123,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     corrida: null,
     resultado: null,
     corte: 0,
+    patins: false,
     mudar(fn) {
       if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
       const novo = fn(get().salvamento)
@@ -192,6 +196,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     cortar() {
       set({ corte: get().corte + 1 })
+    },
+    calcarPatins(patins) {
+      if (get().patins !== patins) set({ patins })
     },
   }))
 }

@@ -11,7 +11,7 @@ import {
   podeAdotar,
   presentear,
 } from '../sistemas/conversa-da-capi'
-import { itensVisiveis } from '../sistemas/itens'
+import { itensParaDar } from '../sistemas/itens'
 import { AMIZADE, coracoes, diaDe } from '../sistemas/moradores'
 
 const CORACOES = 5
@@ -180,7 +180,7 @@ export function Presentes({
   principal: React.RefObject<HTMLButtonElement | null>
 }) {
   const inventario = useEstado((s) => s.salvamento.inventario)
-  const itens = itensVisiveis(inventario)
+  const itens = itensParaDar(inventario)
   return (
     <>
       <p className="arq-capi-fala">

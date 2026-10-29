@@ -29,6 +29,8 @@ export const ESTILOS = `
 .arq-inventario{display:flex;gap:6px;padding:6px;background:rgba(20,26,58,.82);border-radius:14px;flex-wrap:wrap;justify-content:center}
 .arq-item{position:relative;width:46px;height:46px;border-radius:10px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);font-size:22px;display:grid;place-items:center;color:#fff;cursor:default}
 .arq-item.comida{cursor:pointer;border-color:#ffc93c}
+.arq-item[aria-pressed]{cursor:pointer;border-color:#7fd6ff}
+.arq-item[aria-pressed="true"]{background:rgba(127,214,255,.32);box-shadow:0 0 0 2px #7fd6ff inset}
 .arq-item b{position:absolute;right:3px;bottom:1px;font-size:11px}
 .arq-dica{position:absolute;left:14px;bottom:90px;max-width:min(380px,calc(100% - 28px));display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:rgba(20,26,58,.92);color:#fff;border-radius:16px;font-weight:700;animation:arq-entra .35s ease}
 .arq-zappy{width:22px;height:22px;flex:none;border-radius:50%;background:radial-gradient(circle,#fff8c4 0 30%,#ffc93c 31% 58%,transparent 60%);box-shadow:0 0 14px #ffd84f}

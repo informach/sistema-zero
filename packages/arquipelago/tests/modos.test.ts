@@ -41,6 +41,7 @@ function entrada(p: Ponto, extra: Partial<EntradaDoPasso> = {}): EntradaDoPasso 
     usou: false,
     correr: false,
     ritmo: 1,
+    patins: false,
     conversa: null,
     gravidade: 24,
     nivelDoMar: 0,

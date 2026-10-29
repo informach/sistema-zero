@@ -4,8 +4,8 @@ Lote 7 do `arte/INVENTARIO.md`: o kit de movimento (cipó, mergulho, planador e 
 (o barquinho da chegada e o barco entre ilhas) e as quatro festas (Carnaval, Festa Junina, Noite das
 Lanternas e fim de ano). Cada script monta as peças no Blender sem tela (o mesmo `bpy` do mundo, dos
 personagens, dos itens e dos bichos) e grava os GLBs em `src/assets/movimento/` e
-`src/assets/festas/`. Ainda não estão ligados ao jogo. O trenó e o balão de passeio são das ilhas
-completas (Lote 6) e moram lá.
+`src/assets/festas/`. Só os patins já estão no jogo (fase2-05, calçados nos ossos dos pés); o resto
+ainda não. O trenó e o balão de passeio são das ilhas completas (Lote 6) e moram lá.
 
 ## Rodar
 

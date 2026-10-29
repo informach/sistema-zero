@@ -134,7 +134,15 @@ export function CorridaNaIlha({
     const antes = s.salvamento.percursos[config.id]
     const melhor = juntarResultado(antes, c, config)
     if (!melhor) return
-    s.mudar((sv) => ({ ...sv, percursos: { ...sv.percursos, [config.id]: melhor } }))
+    /** A fala do prêmio, se a chegada trouxe um (escrita dentro do `mudar`). */
+    const premio = { fala: '' }
+    s.mudar((sv) => {
+      const comResultado = { ...sv, percursos: { ...sv.percursos, [config.id]: melhor } }
+      const p = config.premio?.(comResultado)
+      if (!p) return comResultado
+      premio.fala = p.fala
+      return p.salvamento
+    })
     const estrelas = estrelasDaCorrida(c, config)
     const recorde = antes !== undefined && c.tempoMs < antes.melhorTempoMs
     s.definirCorrida(null)
@@ -148,13 +156,12 @@ export function CorridaNaIlha({
       totalDeVagalumes: c.pegos.length,
     })
     const n = quantasEstrelas(estrelas)
-    s.dizer(
-      recorde
-        ? `Recorde novo: ${formatarTempo(c.tempoMs)}.`
-        : n === 3
-          ? config.falaDasTresEstrelas
-          : `Você chegou ao fim em ${formatarTempo(c.tempoMs)}.`,
-    )
+    const fala = recorde
+      ? `Recorde novo: ${formatarTempo(c.tempoMs)}.`
+      : n === 3
+        ? config.falaDasTresEstrelas
+        : `Você chegou ao fim em ${formatarTempo(c.tempoMs)}.`
+    s.dizer(premio.fala ? `${fala} ${premio.fala}` : fala)
   }
 
   useFrame((_, dtBruto) => {
