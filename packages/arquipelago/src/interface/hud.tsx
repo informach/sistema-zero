@@ -7,6 +7,7 @@ import { lojaDoFarol, useFarol } from '../estado/farol'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
 import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
+import { climaLiberado, SIMBOLOS_DOS_CLIMAS } from '../sistemas/clima'
 import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
 import { PAINEL_DO_FINAL } from '../sistemas/final-do-farol'
 import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
@@ -31,6 +32,7 @@ import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
+import { ClimaDaSuaIlha } from './clima'
 import { PreferenciasDeConforto } from './conforto'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { Diario, PAINEL_DO_DIARIO } from './diario'
@@ -77,6 +79,8 @@ function Necessidades() {
 
 function Relogio() {
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
+  // O clima da sua ilha aparece no relógio quando a Iriê já ensinou (fase4-08).
+  const clima = useEstado((s) => (climaLiberado(s.jornada) && !s.visita ? s.clima : null))
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 1000)
@@ -85,7 +89,12 @@ function Relogio() {
   const m = momentoDoDia(agora, criadoEm)
   return (
     <span className="arq-pilula">
-      {m.noite ? '🌙' : '☀️'} Dia {m.dia} · {relogio(m)}
+      {clima === 'chuva'
+        ? SIMBOLOS_DOS_CLIMAS.chuva
+        : m.noite
+          ? '🌙'
+          : SIMBOLOS_DOS_CLIMAS[clima ?? 'sol']}{' '}
+      Dia {m.dia} · {relogio(m)}
     </span>
   )
 }
@@ -529,6 +538,7 @@ function Menu() {
           <li>Com controle de videogame: analógicos andam e giram, botão de baixo pula</li>
         </ul>
         <PreferenciasDeConforto />
+        <ClimaDaSuaIlha />
         <button
           type="button"
           className="arq-botao leve"

@@ -2,6 +2,7 @@ import type { Canteiro as DadosDoCanteiro, Semente } from '@sistemazero/arquipel
 import { useEffect, useMemo, useState } from 'react'
 import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { type Clima, climaLiberado, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
 import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
 import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
@@ -54,6 +55,9 @@ function Canteiro({
   const { x, z, escala } = lugarDoCanteiro(canteiro.id, indice)
   const fase = estagio(canteiro, agora)
   const p = progresso(canteiro, agora)
+  const clima = useEstado((s) => climaDaHorta(s))
+  // A planta que pede água (fase4-08) mostra uma gota em cima.
+  const sede = clima !== null && pedeAgua(canteiro, agora, clima)
 
   useInterativo_(
     `canteiro-${canteiro.id}`,
@@ -72,6 +76,8 @@ function Canteiro({
       }
       if (f === 'semente') return 'Regar'
       if (f === 'maduro') return `Colher ${ITENS[c.semente ?? '']?.nome.toLowerCase()}`
+      const clima = climaDaHorta(loja.getState())
+      if (clima && pedeAgua(c, Date.now(), clima)) return 'Regar'
       return null
     },
     () => {
@@ -97,6 +103,14 @@ function Canteiro({
           loja.getState().dizer('Regado. Daqui a pouco começa a crescer.')
           return { ...s, horta }
         }
+        // Crescendo, ela pode estar pedindo água (fase4-08): regar adianta o crescimento.
+        const clima = climaDaHorta(loja.getState())
+        const comSede = clima && regarComSede(c, agoraData, clima)
+        if (comSede) {
+          horta[indice] = comSede
+          loja.getState().dizer(FALA_DO_BONUS)
+          return { ...s, horta }
+        }
         if (f === 'maduro') {
           const r = colher(c, agoraData.getTime())
           if (!r) return s
@@ -113,6 +127,7 @@ function Canteiro({
 
   return (
     <group position={[x, ALTURA_DA_TERRA, z]} scale={escala}>
+      {sede ? <GotaDaSede /> : null}
       <ComReserva reserva={<CanteiroDeAntes canteiro={canteiro} fase={fase} p={p} />}>
         <CanteiroDoModelo
           semente={canteiro.semente ?? null}
@@ -123,6 +138,24 @@ function Canteiro({
         />
       </ComReserva>
     </group>
+  )
+}
+
+/**
+ * O clima que vale na horta agora: o escolhido, com as Nuvens abertas (a Iriê ensinou) e fora de
+ * uma visita (a horta do irmão só se olha). `null` = a horta de sempre, sem pedir água.
+ */
+function climaDaHorta(s: { jornada: number; visita: unknown; clima: Clima }): Clima | null {
+  return climaLiberado(s.jornada) && !s.visita ? s.clima : null
+}
+
+/** A gota azul em cima da planta que pede água (some quando rega ou quando passa a vontade). */
+function GotaDaSede() {
+  return (
+    <mesh position={[0, 1.15, 0]} scale={[0.12, 0.17, 0.12]} name="gota-da-sede">
+      <sphereGeometry args={[1, 12, 10]} />
+      <meshStandardMaterial color="#5aa9ff" emissive="#2f6fd0" emissiveIntensity={0.4} />
+    </mesh>
   )
 }
 

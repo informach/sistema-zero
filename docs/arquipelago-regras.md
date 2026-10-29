@@ -3275,3 +3275,19 @@ A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o
   Zappy diz o nome (a arara, o balão, o vagalume, o peixe, o farol e a nota musical). Achada, ela
   fica acesa nas noites seguintes enquanto o jogo está aberto. Amanhecendo com a vista aberta, ela
   fecha.
+
+## Clima da sua ilha (fase4-08, 29/10/2026)
+
+- Com a Ilha das Nuvens aberta, a Iriê ensina (a terceira fala dela) e o menu ganha a seção "Clima
+  da sua ilha": sol, nublado ou chuva. O relógio do topo mostra o clima. A escolha vale enquanto o
+  jogo está aberto (ainda não é gravada) e o jogo abre com sol. Numa visita, a ilha é do irmão e o
+  tempo dela não muda.
+- O tempo vale perto da ilha central (até 34 m do meio, sumindo aos poucos em mais 8 m). Nublado:
+  o sol fica a 65% e o céu fica cinza. Chuva: o sol fica a 50%, o céu mais cinza e caem gotas em
+  volta da criança (250 no modo leve, 450 no médio, 700 no completo; nenhuma com menos movimento e
+  nenhuma dentro de casa). A pausa congela as gotas.
+- A chuva rega sozinha o que está plantado (confere a cada segundo).
+- Com o clima ligado, a planta regada pede água de novo no meio do crescimento: com sol aos 30%,
+  nublado aos 60% (o sol forte pede mais cedo); na chuva não pede, a chuva rega. Ela pede durante
+  15% do crescimento, com uma gota azul em cima e "Regar". Regar nessa hora adianta o crescimento
+  em 15%. Sem regar, a planta cresce no mesmo tempo de sempre: nada estraga e nada se perde.

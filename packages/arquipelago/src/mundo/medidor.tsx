@@ -1,5 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
+import { progresso } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
@@ -51,6 +52,10 @@ export interface MedidaDoDesenho {
   } | null
   mira: { naMira: number; posicao: { x: number; y: number; z: number } } | null
   constelacoes: number
+  /** O clima da sua ilha (fase4-08): o escolhido, a luz e o cinza que valem aqui e as gotas. */
+  clima: { escolhido: string; luz: number; cinza: number; gotas: boolean }
+  /** A horta: o que está plantado, se foi regado e quanto já cresceu (0 a 1). */
+  horta: { semente: string | null; regado: boolean; progresso: number }[]
   balao: {
     fase: string
     pousado: boolean
@@ -192,7 +197,7 @@ export function Medidor() {
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const cena = useThree((s) => s.scene)
-  const { rastro, pedidos, movimento, loja } = useJogo()
+  const { rastro, pedidos, movimento, loja, ambiente } = useJogo()
   const conta = useRef({ tempo: 0, quadros: 0 })
   const { world } = useRapier()
   const fisica = useRef({ inicio: 0, ms: 0, passos: 0 })
@@ -291,6 +296,17 @@ export function Medidor() {
         ? { naMira: movimento.mira.naMira, posicao: { ...movimento.mira.posicao } }
         : null,
       constelacoes: loja.getState().constelacoesAchadas,
+      clima: {
+        escolhido: loja.getState().clima,
+        luz: ambiente.luzDoClima ?? 1,
+        cinza: ambiente.cinzaDoClima ?? 0,
+        gotas: cena.getObjectByName('chuva-da-ilha')?.visible === true,
+      },
+      horta: loja.getState().salvamento.horta.map((c) => ({
+        semente: c.semente,
+        regado: c.regadoEm !== null,
+        progresso: progresso(c, Date.now()),
+      })),
       balao: movimento.balao
         ? {
             fase: movimento.balao.fase,

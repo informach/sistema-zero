@@ -14,6 +14,7 @@ import { Barcos } from './barcos'
 import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
 import { Ceu } from './ceu'
+import { ClimaDaIlha } from './clima-da-ilha'
 import { Farol } from './farol'
 import { CameraDaFoto } from './foto'
 import { HabitantesDaPraia } from './habitantes-da-praia'
@@ -74,6 +75,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <HabitantesDaPraia />
           <Casa />
           <Horta />
+          <ClimaDaIlha />
           <Bancada />
           <Farol />
           <Anel />

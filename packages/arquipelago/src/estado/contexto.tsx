@@ -34,6 +34,12 @@ export interface Rastro {
 export interface Ambiente {
   luz: number
   noite: boolean
+  /**
+   * O clima da sua ilha (fase4-08), escrito pelo `ClimaDaIlha` perto da ilha central: quanto da
+   * luz do sol fica (1 = toda) e quanto o céu vai para o cinza do tempo fechado (0 = nada).
+   */
+  luzDoClima?: number
+  cinzaDoClima?: number
 }
 
 /** Pedidos de fora para o personagem (o cochilo leva de volta para casa). */

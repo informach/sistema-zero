@@ -1247,3 +1247,20 @@ O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas 
   Verificador: `playground/verificar-nuvens-aventura-browser.ts` (`ARQUIPELAGO_PARTE=noite` roda
   só as constelações; cada parte abre um contexto novo do navegador). O medidor expõe `corrida`,
   `mira` e `constelacoes`, e `__arquipelagoLerCorpo` devolve o olho da vista.
+
+## Clima da sua ilha (fase4-08, 29/10/2026)
+
+- Regra pura em `sistemas/clima.ts` (`CLIMA`, `pedeAgua`, `regarComSede`, `chuvaNaHorta`). O
+  bônus mexe só no `regadoEm` (vai para trás): nenhum campo novo. `climaLiberado` = Nuvens abertas.
+- A escolha mora na loja (`clima`, `escolherClima`, sessão) e no menu (`interface/clima.tsx`). O
+  relógio do HUD mostra o símbolo. A Iriê tem a terceira fala (o verificador da fase4-06 avança por
+  ela).
+- `mundo/clima-da-ilha.tsx` (montado na cena): escreve `ambiente.luzDoClima` e
+  `ambiente.cinzaDoClima` (opcionais; o `Ceu` multiplica o sol e o preenchimento e puxa o céu para
+  `CEU_FECHADO`), desenha as gotas (`LineSegments` que seguem a criança, nome `chuva-da-ilha`) e a
+  cada 1 s de jogo chama `chuvaNaHorta`. A horta (`mundo/horta.tsx`) usa `climaDaHorta` para o
+  "Regar" da janela, a gota azul (`gota-da-sede`) e o bônus.
+- O medidor expõe `clima` e `horta` (semente, regado, progresso). Testes: `clima.test.ts`.
+  Verificador: `playground/verificar-clima-browser.ts` (espera o relógio de verdade: a alface pede
+  aos 54 s). Pedido de arte (cata-vento perto da horta) no plano
+  `docs/plans/2026-10-29-arquipelago-clima-da-ilha.md`.
