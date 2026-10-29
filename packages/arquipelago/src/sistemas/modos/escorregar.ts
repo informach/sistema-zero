@@ -77,6 +77,7 @@ export function pistaSobOsPes(
 ): { escorregador: Escorregador; s: number; lado: number } | null {
   const pe = c.prox.y - CORPO.doCentroAoPe
   for (const e of mundo.escorregadores) {
+    if (e.soPorPedido) continue
     const total = comprimentoDaPista(e)
     let s0 = 0
     for (let i = 1; i < e.pontos.length; i++) {
@@ -132,8 +133,8 @@ export function entrarNoEscorregador(
 
 /**
  * Escorregar: o corpo segue a pista sentado; a velocidade cresce com a inclinação
- * (`a = g × (sen θ − μ × cos θ)`, com o atrito do plástico), com teto, e nunca para no meio. Pedir o
- * lado mexe um pouco dentro da pista. No fim, a velocidade vira passo no chão (continua correndo um
+ * (`a = g × (sen θ − μ × cos θ)`, com o atrito do plástico ou o da pista, como o gelo do trenó), com
+ * teto, e nunca para no meio. Pedir o lado mexe um pouco dentro da pista. No fim, a velocidade vira passo no chão (continua correndo um
  * pouco e para sozinho); pular sai. A mesma descida dá sempre o mesmo tempo (passo fixo).
  */
 export const MODO_ESCORREGAR: ModoDeMovimento = {
@@ -142,12 +143,19 @@ export const MODO_ESCORREGAR: ModoDeMovimento = {
   passo(c, e) {
     const pista = c.escorregador
     if (!pista) return 'direto'
+    // Pausado: o corpo fica onde está e a velocidade na pista espera.
+    if (e.parado) {
+      c.prox.x = e.p.x
+      c.prox.y = e.p.y
+      c.prox.z = e.p.z
+      return 'direto'
+    }
     pontoDaPista(pista, c.naPista, aqui)
-    const a =
-      e.gravidade * (Math.sin(aqui.inclinacao) - ESCORREGAR.atrito * Math.cos(aqui.inclinacao))
+    const atrito = pista.atrito ?? ESCORREGAR.atrito
+    const a = e.gravidade * (Math.sin(aqui.inclinacao) - atrito * Math.cos(aqui.inclinacao))
     c.velNaPista = Math.max(
       ESCORREGAR.velocidadeMinima,
-      Math.min(ESCORREGAR.velocidadeMaxima, c.velNaPista + a * e.dt),
+      Math.min(pista.velocidadeMaxima ?? ESCORREGAR.velocidadeMaxima, c.velNaPista + a * e.dt),
     )
     c.naPista += c.velNaPista * e.dt
     const lado = e.pedidoX * -aqui.dz + e.pedidoZ * aqui.dx
@@ -170,7 +178,7 @@ export const MODO_ESCORREGAR: ModoDeMovimento = {
   },
   depois(c, e, _mundo, _mov, _pisou, aviso) {
     const pista = c.escorregador
-    if (!pista) return false
+    if (!pista || e.parado) return false
     c.direcao = Math.atan2(c.velDoPasso.x, c.velDoPasso.z)
     c.noChao = true
     c.nadando = false

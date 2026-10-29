@@ -2,7 +2,7 @@
 
 Objetivo: dar ao Pico Gelado (ligado na fase3-06) as três brincadeiras que faltam: subir a trilha
 contra o relógio, descer de trenó e explorar a caverna de cristal até o cristal raro. Sem
-salvamento novo (continua na V10).
+salvamento novo (a V11 do mergulho continua valendo).
 
 ## Decisões propostas
 
@@ -25,6 +25,9 @@ salvamento novo (continua na V10).
   atrito do gelo, teto de velocidade, nunca para no meio, pedir o lado mexe dentro da largura da
   trilha, pular sai. No pé, a velocidade vira passo no chão e o trenó volta ao platô (não vai junto).
   A câmera usa o perfil do escorregador. Pausa congela; movimento reduzido sem giro automático.
+  **Como ficou:** não foi preciso um modo novo. A trilha é uma pista do mesmo modo `escorregar`,
+  com o atrito e o teto dela (`Escorregador.atrito`, `velocidadeMaxima`) e `soPorPedido`, para andar
+  na trilha não sentar. Um modo `treno` repetiria as contas, a animação e a câmera do escorregador.
 - **Caverna de cristal no mesmo GLB.** A peça `pico_caverna.py` entra no `pico.glb`, no lugar
   proposto no README dos geradores: a boca em x −14,2, z −0,5, sem giro, atrás da montanha, com o
   morro por cima do mar até x −28,5. Um arquivo só mantém "uma ilha completa na memória", os
@@ -41,17 +44,18 @@ salvamento novo (continua na V10).
 1. `pico.glb`: a caverna nos nós `caverna-*` (a joia em `cristal-raro`, para sumir), as âncoras da
    caverna com o prefixo `caverna-` (e `cristal-raro`), os colisores dela com os nomes de sempre.
 2. As paradas `subida-1` a `-4` e os flocos `floco-1` a `-5` na trilha, o trenó no platô (âncora
-   `treno`, nó do trenó separado) e a linha `treno-curva-N` do platô ao pé, no chão da trilha.
+   `treno`, e o desenho no nó separado `treno-desenho`, com a origem na base) e a linha
+   `treno-curva-N` do platô ao pé, no chão da trilha.
 3. Testes de colisores: caminho da chegada à caverna e ao cristal raro, paradas e flocos em cima do
    chão da trilha, linha do trenó dentro da trilha.
 
 ## Etapas
 
-- [ ] Blender: caverna no `pico.glb`, âncoras do percurso e do trenó, testes de colisores e faces.
-- [ ] Percurso `pico-cume`: contrato, config, pontos lidos das âncoras, `CorridaNaIlha` no Pico.
-- [ ] Modo `treno`, o trenó no platô e o desenho do trenó com a criança sentada.
-- [ ] Caverna: espera e roda de nado maiores, o cristal raro e o item.
-- [ ] `playground/verificar-pico-browser.ts` com o percurso, a descida e a caverna, computador e
+- [x] Blender: caverna no `pico.glb`, âncoras do percurso e do trenó, testes de colisores e faces.
+- [x] Percurso `pico-cume`: contrato, config, pontos lidos das âncoras, `CorridaNaIlha` no Pico.
+- [x] O trenó (pista do escorregar com gelo), o trenó no platô e o desenho dele debaixo da criança.
+- [x] Caverna: espera e roda de nado maiores, o cristal raro e o item.
+- [x] `playground/verificar-pico-browser.ts` com o percurso, a descida e a caverna, computador e
   celular emulado; regras, CLAUDE e QA.
 
 Sem banco remoto, `.env` ou CI.

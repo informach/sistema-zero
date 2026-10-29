@@ -37,6 +37,8 @@ export const MATERIAIS = {
   },
   /** A pista do escorregador: lisa (quem escorrega desce sozinho) e boia. */
   plastico: { densidade: 950, atrito: 0.3, quique: 0.2 },
+  /** O gelo da trilha do Pico, debaixo do trenó: quase sem atrito (o trenó desce sozinho). */
+  gelo: { densidade: 917, atrito: 0.05, quique: 0.1 },
 } as const satisfies Record<string, MaterialFisico>
 
 export type NomeDoMaterial = keyof typeof MATERIAIS

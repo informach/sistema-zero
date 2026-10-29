@@ -1,6 +1,11 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import type { Mesh, Object3D } from 'three'
-import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
+import {
+  type ColisorDaIlha,
+  lerColisores,
+  pecaDoColisor,
+  soParaOCorpo,
+} from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
 import { alcanceDoPulo, beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
 import {
@@ -230,6 +235,13 @@ describe('a subida ao cume e a descida de trenó (fase3-07)', () => {
     const andou = grade.alcance(ancora('chegada').x, ancora('chegada').z)
     expect(grade.chegaPerto(andou, treno.x, treno.z, 1.5)).toBe(true)
     expect(grade.chegaPerto(andou, cume.x, cume.z, 0.6)).toBe(true)
+  })
+
+  test('o colisor do trenó é da peça: quem senta nele não bate nele', () => {
+    const doTreno = colisores.filter((c) => pecaDoColisor(c.nome) === 'treno')
+    expect(doTreno.map((c) => c.nome)).toEqual(['col-treno-1'])
+    // Nenhum outro colisor do Pico vira peça (o chão continua no corpo da ilha).
+    expect(colisores.filter((c) => pecaDoColisor(c.nome) !== null)).toHaveLength(1)
   })
 
   test('a linha do trenó sai dele, desce sempre pelo chão da trilha e acaba no pé', () => {

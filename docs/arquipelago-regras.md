@@ -2823,6 +2823,40 @@ Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026
   pela ponte, conversa com o Floco, de pé no começo da trilha e no platô do cume, e a ilha que solta
   ao sair e volta.
 
+## Subida ao cume, trenó e caverna de cristal do Pico (fase3-07, 29/10/2026)
+
+- **Subida ao cume.** Nas bandeirinhas do começo da trilha, "Começar a subida ao cume". Ao
+  começar, o Zappy diz "Valendo. Suba a trilha em volta da montanha até a bandeira do cume.". Quatro
+  paradas na trilha (em 1/4, 1/2 e 3/4 do caminho e na boca do platô) e a chegada ao lado da
+  bandeira, no meio do platô (raio 1,2 m). Cinco flocos de neve flutuam na linha do meio da trilha,
+  20 cm acima do centro do corpo de quem anda nela: pega-se andando. Cair da trilha no chão em volta
+  volta à última parada, com o corte suave. Longe da largada, no chão, antes da primeira parada,
+  ou fora da ilha, a subida para: "A subida parou. Nas bandeirinhas da trilha dá para começar de novo quando
+  quiser.". Três estrelas: chegar, chegar em até 18 s e pegar os cinco flocos ("Três
+  estrelas. Você chegou ao cume com todos os flocos de neve."). O caminho tem uns 30 m: correndo,
+  uns 7 s; andando sem parar, uns 14 s. Os 18 s ficam para quem sobe andando sem parar, como nos
+  outros percursos (Copas 24 s para 19 s andando, Vila 15 s para 9 s). As estrelas e o melhor tempo
+  ficam em `percursos['pico-cume']` e entram no álbum, sem prêmio de item. Sem versão nova do
+  salvamento.
+- **Trenó.** No platô, perto do trenó (1,6 m), "Descer de trenó" senta a criança. O Zappy diz
+  "Segure firme. Para os lados, o trenó vai junto. Para sair antes, é só pular.". O trenó desce pela
+  própria trilha, pela linha do meio, até o pé. As contas são as do escorregador
+  (`a = g × (sen θ − μ × cos θ)`) com o atrito do gelo (0,05) e teto de 4,5 m/s (o escorregador
+  vai a 5,5): a trilha faz curva e é longa. Nunca para no meio; pedir o lado mexe dentro de 1,4 m
+  da trilha; pular sai. No pé, a velocidade vira passo no chão, e o trenó volta ao platô. Andar na
+  trilha não senta no trenó: só o "Descer de trenó", do começo. Durante a subida contra o relógio o
+  trenó espera. A pausa segura o trenó onde está (o escorregador do Bosque também passou a parar na
+  pausa). A câmera usa o perfil do escorregador.
+- **Caverna de cristal.** Atrás da montanha, com a boca virada para o mar. A espera pelo chão e a
+  roda de nado do Pico crescem para o lado dela, como no Recife. No alto da saliência do fundo, de
+  pé nela, "Pegar o cristal" põe o cristal rosa na mochila: "O cristal rosa está na mochila. Ele
+  brilha como o gelo da caverna.". Uma vez por jogo: com ele na mochila, o cristal some do
+  pedestal. É uma lembrança: não se come nem se dá de presente. Não vai para o álbum nesta fase.
+
+Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`. Testes:
+`tests/subida-ao-cume.test.ts`, `tests/cristal-raro.test.ts`, o trenó em `tests/modos.test.ts` e
+os colisores em `tests/colisores-do-pico.test.ts`. Navegador: `playground/verificar-pico-browser.ts`.
+
 ## Vale dos Dinos completo e apresentação da Jade (fase4-01, 29/10/2026)
 
 - `vale-dos-dinos.glb` entra em `ILHAS_COMPLETAS` e `ValeVivo` em `ILHAS_VIVAS`. Usa os 62

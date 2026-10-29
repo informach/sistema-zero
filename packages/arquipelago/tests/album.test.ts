@@ -49,7 +49,11 @@ describe('as contas de cada seção', () => {
   test('no começo nada foi achado, e cada seção diz quantos faltam', () => {
     const a = albumDoSalvamento(inicial())
     expect(a.bichos.conta).toEqual({ tem: 0, total: 4, faltam: 4 })
-    expect(a.percursos.conta).toEqual({ tem: 0, total: PERCURSOS.length * 3, faltam: 6 })
+    expect(a.percursos.conta).toEqual({
+      tem: 0,
+      total: PERCURSOS.length * 3,
+      faltam: PERCURSOS.length * 3,
+    })
     expect(a.lumis.conta).toEqual({ tem: 0, total: 14, faltam: 14 })
     expect(a.aparencias.conta).toEqual({
       tem: 0,
@@ -110,7 +114,11 @@ describe('as contas de cada seção', () => {
       },
     }
     const p = percursosDoAlbum(s)
-    expect(p.conta).toEqual({ tem: 2, total: 6, faltam: 4 })
+    expect(p.conta).toEqual({
+      tem: 2,
+      total: PERCURSOS.length * 3,
+      faltam: PERCURSOS.length * 3 - 2,
+    })
     expect(p.itens.map((i) => i.id)).toEqual([...PERCURSOS])
     expect(p.itens[0]).toMatchObject({
       nome: 'Percurso nas copas',
@@ -120,6 +128,11 @@ describe('as contas de cada seção', () => {
     expect(p.itens[0]?.estrelas.map((e) => e.ganhou)).toEqual([true, false, true])
     expect(p.itens[1]).toMatchObject({ ilha: 'Vila Doce', melhorTempo: null })
     expect(p.itens[1]?.estrelas.every((e) => !e.ganhou)).toBe(true)
+    expect(p.itens[2]).toMatchObject({
+      nome: 'Subida ao cume',
+      ilha: 'Pico Gelado',
+      melhorTempo: null,
+    })
   })
 
   test('aparências: o objeto conta com uma guardada; o resto diz como ganhar ou de onde vem', () => {

@@ -35,6 +35,7 @@ import {
   bordaQueCabe,
   type ColisorDaIlha,
   lerColisores,
+  pecaDoColisor,
   soParaOCorpo,
   tirarNosDeColisao,
 } from './colisores-da-ilha'
@@ -360,37 +361,54 @@ export function ColisoresDaIlha({
       troca.colisoresNaCena = false
     }
   }, [troca])
+  // As peças que o corpo usa (o trenó) num corpo próprio, marcado (`pecaDoColisor`).
+  const pecas = new Map<string, ColisorDaIlha[]>()
+  const chao: ColisorDaIlha[] = []
+  for (const c of colisores) {
+    const peca = pecaDoColisor(c.nome)
+    if (!peca) chao.push(c)
+    else pecas.set(peca, [...(pecas.get(peca) ?? []), c])
+  }
   return (
-    <RigidBody type="fixed" colliders={false}>
-      {colisores.map((c) => {
-        if (c.forma === 'malha') {
-          return <TrimeshCollider key={c.nome} args={[c.vertices, c.indices]} />
-        }
-        if (c.forma === 'cilindro') {
-          const b = bordaQueCabe(c.meiaAltura, c.raio)
-          return (
-            <RoundCylinderCollider
-              key={c.nome}
-              {...gruposDoColisor(soParaOCorpo(c.nome))}
-              args={[c.meiaAltura - b, c.raio - b, b]}
-              position={c.posicao}
-              quaternion={c.rotacao}
-            />
-          )
-        }
-        const [x, y, z] = c.meio
-        const b = bordaQueCabe(x, y, z)
-        return (
-          <RoundCuboidCollider
-            key={c.nome}
-            {...gruposDoColisor(soParaOCorpo(c.nome))}
-            args={[x - b, y - b, z - b, b]}
-            position={c.posicao}
-            quaternion={c.rotacao}
-          />
-        )
-      })}
-    </RigidBody>
+    <>
+      <RigidBody type="fixed" colliders={false}>
+        {chao.map(colisorDaIlha)}
+      </RigidBody>
+      {[...pecas].map(([peca, lista]) => (
+        <RigidBody key={peca} type="fixed" colliders={false} userData={{ peca }}>
+          {lista.map(colisorDaIlha)}
+        </RigidBody>
+      ))}
+    </>
+  )
+}
+
+function colisorDaIlha(c: ColisorDaIlha) {
+  if (c.forma === 'malha') {
+    return <TrimeshCollider key={c.nome} args={[c.vertices, c.indices]} />
+  }
+  if (c.forma === 'cilindro') {
+    const b = bordaQueCabe(c.meiaAltura, c.raio)
+    return (
+      <RoundCylinderCollider
+        key={c.nome}
+        {...gruposDoColisor(soParaOCorpo(c.nome))}
+        args={[c.meiaAltura - b, c.raio - b, b]}
+        position={c.posicao}
+        quaternion={c.rotacao}
+      />
+    )
+  }
+  const [x, y, z] = c.meio
+  const b = bordaQueCabe(x, y, z)
+  return (
+    <RoundCuboidCollider
+      key={c.nome}
+      {...gruposDoColisor(soParaOCorpo(c.nome))}
+      args={[x - b, y - b, z - b, b]}
+      position={c.posicao}
+      quaternion={c.rotacao}
+    />
   )
 }
 

@@ -645,8 +645,9 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
   `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
   de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
-- ⚠️ O pior caso do salvamento fica a 290 bytes do teto de 64 KB com as rotinas no teto
-  (`tests/salvamento-v10.test.ts`): campo novo no salvamento precisa achar espaço antes.
+- ⚠️ O pior caso do salvamento fica a uns 140 bytes do teto de 64 KB com as rotinas no teto (era
+  290 na V10; o `recife` da V11 custa 54 e o percurso `pico-cume` uns 96;
+  `tests/salvamento-v10.test.ts`): campo novo no salvamento precisa achar espaço antes.
 - Regras e textos: `docs/arquipelago-regras.md` §8.2. Testes: `tests/rotina.test.ts`; navegador:
   `playground/verificar-rotina-browser.ts` (`?lumis=quindim:1&cartas=todas`, compilar para Node no
   Windows).
@@ -771,13 +772,43 @@ sem alterar a preferência. Testes em `camera-sob-teto.test.ts` e no roteiro do 
 
 O Pico está em `ILHAS_COMPLETAS` e `PicoVivo` (`mundo/pico-vivo.tsx`) em `ILHAS_VIVAS`, no mesmo
 ciclo do Recife. Os colisores vêm todos do `pico.glb` (a trilha cavada até o platô do cume, o palco,
-o iglu fechado) e cabem no contorno da ilha leve: `raioDaEsperaDaIlha` é o de sempre. O Floco
+o iglu fechado e, desde a fase3-07, a caverna de cristal atrás da montanha). O Floco
 (`mundo/floco.tsx`, `MoradorDaIlha`) fica no topo do tablado (âncora `palco`), voltado à marca
 `morador` (`lugarDoFloco` em `mundo/pico.ts`); medidas e falas em `sistemas/floco.ts` (raio 0,43,
 altura 1,49, cabeça 1,19, alcance 2,6). A apresentação usa o painel genérico
 `interface/apresentacao.tsx` (`PainelDeApresentacao`), o mesmo da Maré. Sem amizade nem salvamento
 novo. Percurso, trenó e caverna são da fase3-07; iglu, festival e banda, da fase3-08. Testes:
 `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts` (`?posicao=5`).
+
+## A subida ao cume, o trenó e a caverna de cristal do Pico (fase3-07, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`; regras e números em
+`docs/arquipelago-regras.md` (seção da fase3-07).
+
+- **Subida ao cume** (`pico-cume` em `PERCURSOS` do contrato, sem versão nova; `PERCURSO_DO_CUME`
+  em `sistemas/percurso.ts`): `mundo/subida.ts` lê as âncoras `subida-largada`, `subida-1..4`,
+  `floco-1..5`, `cume` e a linha `treno-curva-N` (para o rumo das voltas) e monta os
+  `PontosDoPercurso`; o `PicoVivo` roda o `CorridaNaIlha` genérico com flocos de neve brancos.
+  ⚠️ O pior caso do salvamento ganhou a entrada `pico-cume` (uns 96 bytes): sobram uns 140 do teto
+  de 64 KB.
+- **Trenó** (`sistemas/treno.ts`, `mundo/treno-do-pico.tsx`): não é um modo novo. A trilha vira uma
+  pista do MESMO modo `escorregar`, com o atrito do gelo (`MATERIAIS.gelo`), teto de 4,5 m/s e
+  `soPorPedido` (andar na trilha não senta; só o pedido `escorregar` do "Descer de trenó", do
+  começo da pista). O nó `treno-desenho` (origem na base do trenó; `treno` é a âncora) vai
+  debaixo de quem desce, virado para `rastro.direcao`, e volta ao platô no fim. ⚠️ Os modos guiados também passam pela colisão
+  (`passoComColisao`: bloqueado, volta ao chão), e o colisor do trenó parado ocupa o começo da
+  pista: por isso `col-treno-*` é uma PEÇA (`pecaDoColisor` em `mundo/colisores-da-ilha.ts`), num
+  corpo do Rapier próprio com `userData.peca`, e o personagem o ignora no `escorregar` (como o
+  barco no modo barco). Peça nova que o corpo usa entra em `PECAS_QUE_O_CORPO_USA`. O escorregar
+  agora para na pausa (`e.parado`), e o relógio do modo (`noModo`) também.
+- **Caverna:** a espera pelo chão e a roda de nado crescem para o lado da caverna
+  (`CAVERNA_DO_PICO` em `mundo/medidas.ts`). O cristal raro (`sistemas/cristal-raro.ts`,
+  `mundo/cristal-do-pico.tsx`): "Pegar o cristal" de pé no alto da saliência põe o item
+  `cristal-rosa` na mochila uma vez; com ele lá, o nó `caverna-joia` some. O item é uma
+  `lembranca` (`sistemas/itens.ts`): não se come nem se dá de presente, senão voltaria ao pedestal.
+- Testes: `tests/subida-ao-cume.test.ts`, `tests/cristal-raro.test.ts`, o trenó em
+  `tests/modos.test.ts`, os colisores em `tests/colisores-do-pico.test.ts`; navegador:
+  `playground/verificar-pico-browser.ts`.
 
 ## O Vale dos Dinos e a Jade (fase4-01, 29/10/2026)
 

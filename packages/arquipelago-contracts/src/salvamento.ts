@@ -41,9 +41,10 @@ export type SalvamentoV1 = z.infer<typeof SalvamentoV1Schema>
 
 /**
  * Os percursos com tempo e estrelas. `vila-telhados` (a entrega pelos telhados da Vila Doce,
- * fase2-05) entrou em 29/10/2026 sem versão nova: só alarga o que a V2 em diante aceitam.
+ * fase2-05) e `pico-cume` (a subida ao cume do Pico Gelado, fase3-07) entraram em 29/10/2026 sem
+ * versão nova: só alargam o que a V2 em diante aceitam.
  */
-export const PERCURSOS = ['bosque-copas', 'vila-telhados'] as const
+export const PERCURSOS = ['bosque-copas', 'vila-telhados', 'pico-cume'] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
 /** Uma hora: o jogo desiste da corrida que passa disto (nada acima vai para o salvamento). */

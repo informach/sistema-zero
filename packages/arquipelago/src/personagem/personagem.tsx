@@ -160,6 +160,9 @@ export function Personagem() {
     () => (colisor: RapierCollider) => {
       const corpo = colisor.parent()
       if (v.modo === 'barco' && (corpo?.userData as { barco?: boolean })?.barco) return false
+      // Sentado no trenó, o colisor dele (que fica no platô) não segura quem desce.
+      if (v.modo === 'escorregar' && (corpo?.userData as { peca?: string })?.peca === 'treno')
+        return false
       return (
         !corpo?.isKinematic() ||
         (corpo.userData as { plataformaDoMundo?: boolean } | undefined)?.plataformaDoMundo === true

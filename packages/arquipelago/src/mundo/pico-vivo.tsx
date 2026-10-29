@@ -2,14 +2,31 @@ import { useFrame } from '@react-three/fiber'
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
+import { PERCURSO_DO_CUME, type PontosDoPercurso } from '../sistemas/percurso'
+import { percursoNoMundo } from './bosque'
+import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { CristalDoPico } from './cristal-do-pico'
 import { Floco } from './floco'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
+import { lerAncorasDaSubida, subidaNoModelo } from './subida'
+import { TrenoDoPico } from './treno-do-pico'
+
+/** Os pés a menos disto do chão em volta da montanha, pisando, contam como queda da subida. */
+const CHAO_DO_PICO = 0.3
+
+/** O floco de neve da trilha: branco, com o brilho azul do gelo. */
+const CORES_DO_FLOCO: CoresDoColetavel = {
+  nucleo: '#f4fbff',
+  brilho: '#bfe6ff',
+  degrade: ['rgba(255,255,255,1)', 'rgba(170,220,255,0.55)', 'rgba(140,200,255,0)'],
+}
 
 /**
- * O Pico Gelado vivo (fase3-06): só existe com a ilha ativa. Por enquanto, o Floco no palco; a
- * trilha até o cume, o trenó e a caverna de cristal são da fase3-07.
+ * O Pico Gelado vivo (fase3-06): só existe com a ilha ativa. O Floco no palco, a subida ao cume
+ * contra o relógio pela trilha em espiral, o trenó que desce por ela e o cristal raro da caverna
+ * (fase3-07).
  */
 export function PicoVivo({
   ilha,
@@ -25,6 +42,13 @@ export function PicoVivo({
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ ...centro, y: 0 }), [centro])
   const pecas = useRef<Group>(null)
+  const subida = useMemo<PontosDoPercurso | null>(() => {
+    const ancoras = lerAncorasDaSubida((nome) => {
+      const no = preparada.modelo.getObjectByName(nome)
+      return no ? { x: no.position.x, y: no.position.y, z: no.position.z } : undefined
+    })
+    return ancoras ? percursoNoMundo(subidaNoModelo(ancoras), meio, giro) : null
+  }, [preparada, meio, giro])
   useFrame(() => {
     if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
   })
@@ -33,6 +57,18 @@ export function PicoVivo({
       <ComReserva reserva={null}>
         <Floco modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
+      <TrenoDoPico modelo={preparada.modelo} meio={meio} giro={giro} />
+      <CristalDoPico modelo={preparada.modelo} meio={meio} giro={giro} />
+      {subida ? (
+        <CorridaNaIlha
+          ilhaId={ilha.id}
+          config={PERCURSO_DO_CUME}
+          pontos={subida}
+          largada={subida.largada}
+          alturaDoChao={subida.centro.y + CHAO_DO_PICO}
+          cores={CORES_DO_FLOCO}
+        />
+      ) : null}
     </group>
   )
 }

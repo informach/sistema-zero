@@ -33,6 +33,7 @@ BOCA_DA_CAVERNA = dict(x=-14.2, z=-0.5)
 # A subida ao cume com tempo (fase3-07): paradas em 1/4, 1/2, 3/4 e no fim da trilha, e os flocos
 # de neve (o jogo põe a altura) nestas frações do caminho.
 PARADAS_DA_SUBIDA = (0.25, 0.5, 0.75, 1.0)
+LARGADA_DA_SUBIDA = (2.6, -1.0)
 FLOCOS_DA_SUBIDA = (0.14, 0.34, 0.54, 0.74, 0.9)
 # O trenó no platô: a esta distância do meio, deste tanto (graus) antes da boca da trilha (do lado
 # oposto ao de onde a trilha chega, que vem dos ângulos maiores), virado para ela. A descida segue a linha do meio da trilha, um ponto a cada `PASSO_DA_DESCIDA` seções.
@@ -425,7 +426,7 @@ def ilha():
                               [(2.8, 0.0), (2.6, -1.0), (pe_trilha[0], -pe_trilha[1])])):
         cen.append(caminho(ramo, 0.7, 'neveTrilha', z1=0.024 - 0.006 * k))
     # Duas bandeirinhas laranja marcam o começo da trilha, uma de cada lado (de longe, no branco).
-    cen += bandeiras_da_trilha((2.6, -1.0), (pe_trilha[0], -pe_trilha[1]), col)
+    cen += bandeiras_da_trilha(LARGADA_DA_SUBIDA, (pe_trilha[0], -pe_trilha[1]), col)
     # Iglu (frente para o caminho), palco do Floco, parede de gelo, lago congelado.
     cen += montar(lambda c: iglu(c), 3.0, 7.2, angulo_para(3.0, 7.2, 3.0, 2.0))
     cen += montar(lambda c: palco(c), 2.6, -7.3, angulo_para(2.6, -7.3, 3.0, 0.0))
@@ -479,6 +480,8 @@ def ilha():
     extras_do_jogo = [('treno', tx, -ty, zc)]
     extras_do_jogo += [(f'treno-curva-{k}', x, -y, z) for k, (x, y, z) in enumerate(descida, 1)]
     ultimo = len(meio) - 1
+    # A largada da subida: no caminho, antes das bandeirinhas (o mesmo ponto que as vira).
+    extras_do_jogo.append(('subida-largada', *LARGADA_DA_SUBIDA, TOPO))
     for k, f in enumerate(PARADAS_DA_SUBIDA, 1):
         x, y, z = meio[round(ultimo * f)]
         extras_do_jogo.append((f'subida-{k}', x, -y, z))
@@ -513,7 +516,10 @@ def ilha():
                 ('cume', cume[0], -cume[1], cume[2]), ('parede-de-gelo', -2.5, 8.2),
                 ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1)]
         + extras_do_jogo)
-    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen, 'treno': treno_, 'caverna': caverna_,
+    # O desenho do trenó num nó próprio, com a origem na base dele: o jogo o leva debaixo de quem
+    # desce de trenó (o nome `treno` é da âncora; dois nós com o mesmo nome viravam `treno.001`).
+    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen,
+                      'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_,
                       'caverna-joia': joia_}, ancoras, colisores=col)
 
 

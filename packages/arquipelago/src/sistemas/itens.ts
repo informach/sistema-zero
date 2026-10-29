@@ -9,6 +9,11 @@ export interface Item {
   comida?: { fome: number; diversao?: number; energia?: number }
   /** Se é coisa de usar (os patins): não se come nem se dá de presente. */
   equipamento?: true
+  /**
+   * Uma lembrança achada uma vez só (o cristal rosa da caverna do Pico): fica na mochila, não se
+   * come nem se dá de presente. Dar de presente a devolveria ao lugar dela, para pegar de novo.
+   */
+  lembranca?: true
 }
 
 export const ITENS: Record<string, Item> = {
@@ -62,6 +67,8 @@ export const ITENS: Record<string, Item> = {
   patins: { id: 'patins', nome: 'Patins', emoji: '🛼', equipamento: true },
   // O presente do Bento para prender os borrões (fase2-06, `sistemas/borroes.ts`).
   lanterna: { id: 'lanterna', nome: 'Lanterna', emoji: '🏮', equipamento: true },
+  // O cristal raro da caverna do Pico (fase3-07, `sistemas/cristal-raro.ts`).
+  'cristal-rosa': { id: 'cristal-rosa', nome: 'Cristal rosa', emoji: '💎', lembranca: true },
 }
 
 export function sementeDoItem(id: string): Semente | null {
@@ -98,7 +105,7 @@ export function itensVisiveis(inv: Inventario): { item: Item; qtd: number }[] {
     .filter((x) => x.qtd > 0)
 }
 
-/** O que dá para dar de presente (tudo da mochila menos os equipamentos). */
+/** O que dá para dar de presente (tudo da mochila menos os equipamentos e as lembranças). */
 export function itensParaDar(inv: Inventario): { item: Item; qtd: number }[] {
-  return itensVisiveis(inv).filter(({ item }) => !item.equipamento)
+  return itensVisiveis(inv).filter(({ item }) => !item.equipamento && !item.lembranca)
 }

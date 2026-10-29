@@ -1,8 +1,8 @@
 /**
- * Um percurso com tempo e estrelas (regras puras, sem three nem física): o das copas do Bosque e a
- * entrega pelos telhados da Vila Doce. Largada perto do chão, um ponto de volta em cada parada
- * (deque ou telhado), coisas para pegar pelo caminho (vagalumes ou confeitos) e a chegada. Nada
- * aqui aloca por quadro.
+ * Um percurso com tempo e estrelas (regras puras, sem three nem física): o das copas do Bosque, a
+ * entrega pelos telhados da Vila Doce e a subida ao cume do Pico Gelado. Largada perto do chão, um
+ * ponto de volta em cada parada (deque, telhado ou trecho da trilha), coisas para pegar pelo
+ * caminho (vagalumes, confeitos ou flocos de neve) e a chegada. Nada aqui aloca por quadro.
  */
 import {
   MELHOR_TEMPO_MAXIMO_MS,
@@ -107,10 +107,39 @@ export const PERCURSO_DOS_TELHADOS = {
   premio: receberPatins,
 } as const satisfies ConfigDoPercurso
 
+/**
+ * A subida ao cume do Pico Gelado (fase3-07): das bandeirinhas do começo da trilha, em volta da
+ * montanha, até a bandeira do platô (âncoras `subida-*`, `floco-*` e `cume` do `pico.glb`), com
+ * cinco flocos de neve flutuando na trilha.
+ */
+export const PERCURSO_DO_CUME = {
+  id: 'pico-cume',
+  nome: 'Subida ao cume',
+  rotuloDaLargada: 'Começar a subida ao cume',
+  falaDoComeco: 'Valendo. Suba a trilha em volta da montanha até a bandeira do cume.',
+  falaDoFim: 'A subida parou. Nas bandeirinhas da trilha dá para começar de novo quando quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você chegou ao cume com todos os flocos de neve.',
+  /**
+   * O caminho tem uns 31 m (1,7 m até a trilha, 27,4 m de trilha pela linha do meio, medidos no
+   * Blender, e o platô até a bandeira): correndo (`CORPO.correr`) são uns 7 s e andando uns 14 s.
+   * 18 s deixa a estrela para quem sobe andando sem parar, pegando os flocos do caminho.
+   */
+  tempoAlvoMs: 18_000,
+  vagalumes: 5,
+  coletavel: { varios: 'flocos de neve', Varios: 'Flocos de neve', simbolo: '❄️' },
+  raioDoVagalume: 0.8,
+  raioDaChegada: 1.2,
+  folgaDoDeque: 0.3,
+  distanciaParaDesistir: 6,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
 export const PERCURSOS_DO_JOGO: Readonly<Record<PercursoId, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
   'vila-telhados': PERCURSO_DOS_TELHADOS,
+  'pico-cume': PERCURSO_DO_CUME,
 }
 
 export interface DequeDoPercurso extends Ponto {

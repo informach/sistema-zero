@@ -68,6 +68,20 @@ export function soParaOCorpo(nome: string): boolean {
   return SO_PARA_O_CORPO.some((p) => nome.startsWith(p))
 }
 
+/**
+ * Peças que o corpo usa e leva junto (o trenó do Pico, fase3-07): os colisores delas ficam num
+ * corpo do Rapier próprio, com `userData.peca`, para o personagem não bater neles enquanto usa a
+ * peça (sentar no trenó e descer com ele).
+ */
+const PECAS_QUE_O_CORPO_USA: readonly { prefixo: string; peca: string }[] = [
+  { prefixo: 'col-treno-', peca: 'treno' },
+]
+
+/** A peça de um colisor (`userData.peca` do corpo dele), ou `null` para o chão da ilha. */
+export function pecaDoColisor(nome: string): string | null {
+  return PECAS_QUE_O_CORPO_USA.find((p) => nome.startsWith(p.prefixo))?.peca ?? null
+}
+
 export function ehNoDeColisao(o: Object3D): boolean {
   return o.name.startsWith(PREFIXO_DE_COLISAO)
 }

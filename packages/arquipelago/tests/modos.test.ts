@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { CipoVivo, ModoDoCorpo, TroncoVivo } from '../src/estado/contexto'
+import type { CipoVivo, Escorregador, ModoDoCorpo, TroncoVivo } from '../src/estado/contexto'
 import type { Ponto } from '../src/sistemas/cipo'
 import { criarBalanco } from '../src/sistemas/cipo'
 import { criarPontos } from '../src/sistemas/cordas'
@@ -22,6 +22,7 @@ import {
   superficieDaAgua,
 } from '../src/sistemas/modos/chao'
 import { PASSO_PARA_FORA_DO_TRONCO } from '../src/sistemas/modos/escalada'
+import { pistaDoTreno, TRENO } from '../src/sistemas/treno'
 
 const dt = 1 / 60
 
@@ -100,8 +101,8 @@ function passo(
   pisou: boolean,
   avisos: ModoDoCorpo[] = [],
 ) {
-  // Como no personagem: o tempo no modo anda antes do passo.
-  c.noModo += e.dt
+  // Como no personagem: o tempo no modo anda antes do passo (e para na pausa).
+  if (!e.parado) c.noModo += e.dt
   const modo = MODOS[c.modo]
   const controlador = modo.passo(c, e, m)
   const mov = controlador === 'direto' ? null : { ...c.desloc }
@@ -417,6 +418,88 @@ describe('o escorregador', () => {
     const { maisDeLado } = descer(1)
     expect(maisDeLado).toBeGreaterThan(0.1)
     expect(maisDeLado).toBeLessThan(pista.largura / 2)
+  })
+})
+
+describe('o trenó na trilha (fase3-07)', () => {
+  // Uma trilha em rampa de 18°: 20 m de chão descendo 6,5 m, com um trecho plano no alto (o platô).
+  const inclinacao = Math.tan((18 * Math.PI) / 180)
+  const pontos = [
+    { x: 0, y: 6.5, z: 0 },
+    { x: 1.5, y: 6.5, z: 0 },
+    ...Array.from({ length: 10 }, (_, i) => ({
+      x: 1.5 + 2 * (i + 1),
+      y: 6.5 - 2 * (i + 1) * inclinacao,
+      z: 0,
+    })),
+  ]
+  const pista = pistaDoTreno('pico:treno', pontos)
+  if (!pista) throw new Error('sem a pista do trenó')
+  const noAlto = { x: 0.3, y: 6.5 + CORPO.doCentroAoPe, z: 0 }
+
+  function sentar(m = mundo({ escorregadores: [pista as Escorregador] })) {
+    const c = criarEstadoDoCorpo()
+    c.noChao = true
+    atenderPedido(
+      c,
+      { tipo: 'escorregar', escorregador: pista as Escorregador },
+      m,
+      noAlto,
+      0,
+      () => {},
+    )
+    return { c, m }
+  }
+
+  test('o pedido senta perto do trenó; longe dele, nada', () => {
+    expect(sentar().c.modo).toBe('escorregar')
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ escorregadores: [pista as Escorregador] })
+    atenderPedido(
+      c,
+      { tipo: 'escorregar', escorregador: pista as Escorregador },
+      m,
+      { x: 8, y: 5, z: 0 },
+      0,
+      () => {},
+    )
+    expect(c.modo).toBe('chao')
+  })
+
+  test('andar pela trilha não senta no trenó', () => {
+    const c = criarEstadoDoCorpo()
+    const m = mundo({ escorregadores: [pista as Escorregador] })
+    c.noChao = true
+    const meio = pontos[5] ?? noAlto
+    passo(c, entrada({ ...meio, y: meio.y + CORPO.doCentroAoPe }, { pedidoX: 1, ix: 1 }), m, true)
+    expect(c.modo).toBe('chao')
+  })
+
+  test('desce a trilha toda no gelo, sem passar do teto, e no pé volta ao chão', () => {
+    const { c, m } = sentar()
+    let maisRapido = 0
+    let passos = 0
+    while (c.modo === 'escorregar' && passos < 60 * 30) {
+      passo(c, entrada(c.prox, { agora: passos * dt * 1000 }), m, false)
+      maisRapido = Math.max(maisRapido, c.velNaPista)
+      passos++
+    }
+    expect(c.modo).toBe('chao')
+    expect(maisRapido).toBeCloseTo(TRENO.velocidadeMaxima, 5)
+    expect(c.prox.x).toBeCloseTo(pontos.at(-1)?.x ?? 0, 0)
+    // No plano do platô o gelo ainda leva (nunca para no meio).
+    expect(passos / 60).toBeLessThan(10)
+  })
+
+  test('a pausa segura o trenó onde está', () => {
+    const { c, m } = sentar()
+    for (let i = 0; i < 90; i++) passo(c, entrada(c.prox, { agora: i * 16 }), m, false)
+    const onde = { ...c.prox }
+    const naPista = c.naPista
+    for (let i = 0; i < 120; i++) passo(c, entrada(c.prox, { parado: true }), m, false)
+    expect(c.prox).toEqual(onde)
+    expect(c.naPista).toBe(naPista)
+    expect(c.modo).toBe('escorregar')
   })
 })
 

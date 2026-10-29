@@ -129,3 +129,10 @@ Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/p
 e devolve V11. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
 rotinas é compartilhada sem mudar a régua da V10. O pior caso completo continua limitado a 64 KB.
 Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
+
+## Percurso `pico-cume` (fase3-07, 29/10/2026)
+
+`PERCURSOS` ganhou `pico-cume` (a subida ao cume do Pico Gelado) sem versão nova, como a
+`vila-telhados`: só alarga o que a V2 em diante aceitam. O pior caso de 64 KB (com uma entrada por
+percurso, em `tests/salvamento-v10.test.ts`) fica a 140 bytes do teto (medido): campo novo precisa
+achar espaço antes.

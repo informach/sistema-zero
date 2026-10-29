@@ -1,14 +1,17 @@
 /**
- * Pico Gelado real no playground (fase3-06). Executar no pacote:
+ * Pico Gelado real no playground (fase3-06, com a subida, o trenó e o cristal da fase3-07).
+ * Executar no pacote:
  * bun build playground/verificar-pico-browser.ts --target=node --external playwright-core --outfile .cache/verificar-pico-browser.mjs
  * node .cache/verificar-pico-browser.mjs
- * ARQUIPELAGO_CHROMIUM escolhe o navegador; ARQUIPELAGO_PRINTS escolhe a pasta dos prints.
+ * ARQUIPELAGO_CHROMIUM escolhe o navegador; ARQUIPELAGO_PRINTS escolhe a pasta dos prints;
+ * ARQUIPELAGO_TELA (`computador` ou `celular`) roda só uma das telas.
  */
 import { spawn } from 'node:child_process'
 import { mkdirSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
+import { Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { giroDaIlha, ilhasEmVolta, trajetoDaPonte } from '../src/mundo/medidas'
 import { CORPO } from '../src/sistemas/corpo'
@@ -79,7 +82,11 @@ try {
     headless: true,
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
-  for (const celular of [false, true]) {
+  for (const celular of [false, true].filter(
+    (c) =>
+      !process.env.ARQUIPELAGO_TELA ||
+      process.env.ARQUIPELAGO_TELA === (c ? 'celular' : 'computador'),
+  )) {
     const tipo = celular ? 'celular' : 'computador'
     const context = await browser.newContext({
       viewport: celular ? { width: 390, height: 844 } : { width: 1280, height: 720 },
@@ -186,6 +193,95 @@ try {
     await dePe(noPlato, rumo(noPlato, mundo(local('chegada'))), 'no platô do cume')
     await page.waitForTimeout(2500)
     await page.screenshot({ path: path.join(prints, `pico-${tipo}-cume.png`) })
+
+    const usar = () =>
+      celular
+        ? page.getByRole('button', { name: 'Usar', exact: true }).tap()
+        : page.keyboard.press('KeyE')
+
+    // A subida ao cume (fase3-07): o "Começar" na largada, as quatro paradas na ordem e a chegada
+    // no platô com as estrelas. Com o SwiftShader a poucos quadros por segundo, subir andando não
+    // serve: o corpo é levado de parada em parada (os flocos ficam para os testes das regras).
+    const largada = mundo(local('subida-largada'))
+    await dePe(largada, rumo(largada, mundo(local('subida-1'))), 'na largada da subida')
+    await page.locator('.arq-acao').filter({ hasText: 'Começar a subida ao cume' }).waitFor()
+    await usar()
+    await page.getByText('Valendo. Suba a trilha').first().waitFor({ timeout: 20_000 })
+    for (let i = 1; i <= 4; i++) {
+      const parada = mundo(local(`subida-${i}`))
+      await dePe(parada, rumo(parada, mundo(local('cume'))), `na parada ${i} da subida`)
+    }
+    // Ao lado do mastro da bandeira (o meio do platô), dentro do raio da chegada.
+    const cumeDaSubida = local('cume')
+    await levar(mundo({ x: cumeDaSubida.x + 0.8, y: cumeDaSubida.y, z: cumeDaSubida.z }), 0)
+    const resultado = page.getByRole('dialog', { name: 'Subida ao cume' })
+    await resultado.waitFor({ timeout: 20_000 })
+    const ganhas = await resultado.locator('li.ganhou').count()
+    console.log(`${tipo}: subida ao cume com ${ganhas} estrelas`)
+    if (ganhas < 2) throw new Error('A subida não deu as estrelas da chegada e do tempo.')
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-subida.png`) })
+    await resultado.getByRole('button', { name: 'Continuar' }).click()
+    await resultado.waitFor({ state: 'detached' })
+
+    // O trenó: ao lado dele (na largura, fora do colisor), "Descer de trenó", a descida pela
+    // trilha toda e a volta ao chão no pé dela.
+    const noTreno = modelo.getObjectByName('treno')
+    if (!noTreno) throw new Error('Sem o trenó')
+    const lado = new Vector3(1, 0, 0).applyQuaternion(noTreno.quaternion)
+    const cumeLocal = local('cume')
+    const sinal =
+      Math.hypot(
+        noTreno.position.x + lado.x - cumeLocal.x,
+        noTreno.position.z + lado.z - cumeLocal.z,
+      ) <
+      Math.hypot(
+        noTreno.position.x - lado.x - cumeLocal.x,
+        noTreno.position.z - lado.z - cumeLocal.z,
+      )
+        ? 1
+        : -1
+    const aoLado = mundo({
+      x: noTreno.position.x + lado.x * 1.2 * sinal,
+      y: noTreno.position.y,
+      z: noTreno.position.z + lado.z * 1.2 * sinal,
+    })
+    await dePe(aoLado, rumo(aoLado, mundo(noTreno.position)), 'ao lado do trenó')
+    await page.locator('.arq-acao').filter({ hasText: 'Descer de trenó' }).waitFor()
+    await usar()
+    await page.waitForFunction(
+      () =>
+        (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho?.modo ===
+        'escorregar',
+      undefined,
+      { timeout: 20_000 },
+    )
+    await page.waitForTimeout(2500)
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-treno.png`) })
+    await page.waitForFunction(
+      () =>
+        (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho?.modo === 'chao',
+      undefined,
+      { timeout: 120_000 },
+    )
+    const pe = mundo(local('trilha-inicio'))
+    const chegou = (await ler())?.posicao
+    if (!chegou || Math.hypot(chegou.x - pe.x, chegou.z - pe.z) > 5)
+      throw new Error(`O trenó não chegou ao pé da trilha: ${JSON.stringify(chegou)}`)
+    console.log(`${tipo}: desceu de trenó até o pé da trilha`)
+
+    // O cristal raro no alto da saliência do fundo da caverna: pegar põe na mochila.
+    const raro = local('cristal-raro')
+    const naLaje = mundo({ x: raro.x + 0.5, y: raro.y, z: raro.z })
+    await dePe(naLaje, rumo(naLaje, mundo(raro)), 'no alto da saliência do cristal')
+    await page.locator('.arq-acao').filter({ hasText: 'Pegar o cristal' }).waitFor()
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-cristal.png`) })
+    await usar()
+    await page.getByText('O cristal rosa está na mochila.').first().waitFor({ timeout: 20_000 })
+    await page
+      .locator('.arq-acao')
+      .filter({ hasText: 'Pegar o cristal' })
+      .waitFor({ state: 'detached' })
+    console.log(`${tipo}: pegou o cristal raro`)
 
     // Afastar solta a ilha; voltar monta de novo e o palco segura o Floco.
     await levar({ x: 0, y: 1, z: 20 }, 0)

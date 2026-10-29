@@ -75,6 +75,7 @@ const NOME_DA_ILHA = Object.fromEntries(ILHAS.map((i) => [i.id, i.nome])) as Rec
 export const ILHA_DO_PERCURSO: Readonly<Record<PercursoId, IlhaId>> = {
   'bosque-copas': 'bosque',
   'vila-telhados': 'vila-doce',
+  'pico-cume': 'pico',
 }
 
 export interface EstrelaDoPercurso {

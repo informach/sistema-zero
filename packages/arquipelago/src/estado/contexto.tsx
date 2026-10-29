@@ -115,6 +115,15 @@ export interface Escorregador {
   id: string
   pontos: Ponto[]
   largura: number
+  /**
+   * Só se senta pelo interativo, do começo (o trenó na trilha do Pico, `sistemas/treno.ts`): andar
+   * em cima não senta, porque a pista é a própria trilha.
+   */
+  soPorPedido?: boolean
+  /** O atrito da pista, quando não é o plástico do escorregador. */
+  atrito?: number
+  /** O teto de velocidade da pista (m/s), quando não é o do escorregador. */
+  velocidadeMaxima?: number
 }
 
 /**
@@ -184,6 +193,7 @@ export interface Movimento {
     | { tipo: 'levantar' }
     | { tipo: 'barco'; viagem: Travessia }
     | { tipo: 'mergulho'; volume: VolumeDeMergulho }
+    | { tipo: 'escorregar'; escorregador: Escorregador }
     | null
   /** Escritos pelo personagem. */
   modo: ModoDoCorpo
