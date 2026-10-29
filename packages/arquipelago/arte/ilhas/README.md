@@ -58,10 +58,10 @@ chegada (`conferir_corredor`).
 |---|---|---|---|---|---|
 | `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4` | não tem | 27.762 | 958 KB |
 | `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` e 86 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 961 KB |
-| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 614 KB |
+| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho`, `coral-muda-1`…`coral-muda-4` | `balancar` (2 s, as algas) | 17.484 | 615 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
-| `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 1.416 | 49 KB |
+| `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, os quatro `coral-<tipo>-desbotado`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 2.488 | 81 KB |
 | `barco.glb` | `barco` (pivô na linha d'água, proa em +x) | `passageiro` (filha do `barco`: no convés, entre os bancos da proa, olhando para a proa; acompanha o balanço) | `balancar` (3 s: rola, arfa e sobe e desce) | 2.456 | 70 KB |
 | `recife-navio.glb` | `navio`, `vela`, `carga`, `fundo`, `corais`, `alga-1`…`alga-6` e 71 `col-*` | `entrada`, `bau`, `pagina-diario`, `escotilha`, `mastro` | `balancar` (as algas) | 13.931 | 447 KB |
 | `recife-labirinto.glb` | `paredes`, `corais`, `chao`, `portais`, `gruta`, `alga-1`…`alga-6` e 64 `col-*` | `entrada`, `saida`, `tesouro` | `balancar` (as algas) | 27.472 | 627 KB |
@@ -115,6 +115,12 @@ desenho; o `exportar(..., colisores=col)` grava tudo.
   colidem. `tests/colisores-do-recife.test.ts` confere a chegada, o cais de ponta a ponta e o nado
   do mergulho até o tesouro da caverna. Os ajudantes desses testes ficam em
   `tests/ajuda-colisores.ts`.
+- **Corais para replantar (fase3-03, 29/10/2026):** as âncoras `coral-muda-1`…`-4`
+  (`ancoras_das_mudas`) ficam a 85% dos raios da água (0°, 78°, 182° e 250° em volta de `LAGOA`),
+  na altura do fundo da bacia ali (0,774), uma por tipo de coral, na ordem galho, cérebro, leque e
+  tubo. O `recife-props.glb` tem o desbotado de cada tipo (`coral-<tipo>-desbotado`): o mesmo
+  desenho do vivo em `coralDesbotado` (branco de osso, fosco) e `coralDesbotadoSombra` nos
+  detalhes, um pouco mais baixo e com três cacos deitados na areia em volta. Não colidem.
 - **Sem pisca-pisca na Vila Doce (29/10/2026):** `tests/faces-coplanares.test.ts` passa na
   `vila-doce.glb` e nas peças soltas. Os ajudantes `janela`, `porta` e `toldo_listrado` do
   `lib_ilhas.py` deixaram de pôr faces no mesmo plano (a cruz da janela, o fundo da porta e as

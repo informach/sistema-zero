@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { type Group, type Material, type Mesh, MeshStandardMaterial, type Object3D } from 'three'
+import type { Object3D } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import propsUrl from '../assets/ilhas/recife-props.glb'
 import { lojaDoConforto } from '../estado/conforto'
@@ -22,58 +22,70 @@ import { useInterativo } from './interativos'
 
 type Ponto = { x: number; y: number; z: number }
 
-/** Os quatro corais soltos do `recife-props.glb`, carregados sem cache global (como o mergulho). */
-async function carregarCorais(): Promise<{ modelos: Object3D[]; soltar: () => void }> {
-  const g = await new GLTFLoader().loadAsync(new URL(propsUrl, import.meta.url).href)
-  const soltar = () => liberarObjeto(g.scene)
-  const modelos = PONTOS_DOS_CORAIS.map((p) => {
-    const no = g.scene.getObjectByName(p.no)
-    if (!no) {
-      soltar()
-      throw new Error(`recife-props sem o nó ${p.no}`)
-    }
-    return no
-  })
-  return { modelos, soltar }
+interface ModelosDoCoral {
+  vivo: Object3D
+  desbotado: Object3D
 }
 
 /**
- * Um coral da lagoa: desbotado (menor, branco acinzentado) até ser replantado; replantado, cresce
- * e volta à cor do arquivo em `CORAIS.crescer` s de jogo. A pausa congela o crescer; com menos
- * movimento ele muda na hora. Não colide (como os corais pequenos e as algas da lagoa).
+ * Os corais soltos do `recife-props.glb`, o vivo e o desbotado de cada tipo, carregados sem cache
+ * global (como o mergulho).
+ */
+async function carregarCorais(): Promise<{ modelos: ModelosDoCoral[]; soltar: () => void }> {
+  const g = await new GLTFLoader().loadAsync(new URL(propsUrl, import.meta.url).href)
+  const soltar = () => liberarObjeto(g.scene)
+  const no = (nome: string) => {
+    const achado = g.scene.getObjectByName(nome)
+    if (!achado) {
+      soltar()
+      throw new Error(`recife-props sem o nó ${nome}`)
+    }
+    return achado
+  }
+  const modelos = PONTOS_DOS_CORAIS.map((p) => ({ vivo: no(p.no), desbotado: no(p.desbotado) }))
+  return { modelos, soltar }
+}
+
+/** As âncoras `coral-muda-N` do `recife.glb`, no referencial do modelo; sem alguma, nenhum coral. */
+export function lugaresDasMudas(modelo: Object3D): Ponto[] | null {
+  const lugares: Ponto[] = []
+  for (const p of PONTOS_DOS_CORAIS) {
+    const no = modelo.getObjectByName(p.ancora)
+    if (!no) return null
+    lugares.push({ x: no.position.x, y: no.position.y, z: no.position.z })
+  }
+  return lugares
+}
+
+/**
+ * Um coral da lagoa: o desbotado do arquivo (branco de osso, com cacos em volta) até ser
+ * replantado; replantado, a muda viva nasce pequena e cresce até `CORAIS.escala` em
+ * `CORAIS.crescer` s de jogo. A pausa congela o crescer; com menos movimento ela já nasce grande.
+ * Não colide (como os corais pequenos e as algas da lagoa).
  */
 function Coral({
   i,
-  modelo,
-  desbotado,
+  modelos,
+  lugar,
   noMundo,
   troca,
 }: {
   i: number
-  modelo: Object3D
-  desbotado: Material
+  modelos: ModelosDoCoral
+  lugar: Ponto
   noMundo: Ponto
   troca: Troca
 }) {
   const { loja } = useJogo()
   const aparelhoPedeMenos = useReducedMotion()
   const replantado = useEstado((s) => coralReplantado(s.salvamento.recife.corais, i))
-  const grupo = useRef<Group>(null)
   // O crescer: 1 = pronto. Quem já chega replantado começa pronto; quem replanta agora cresce.
   const crescer = useRef(replantado ? 1 : 0)
-  const ponto = PONTOS_DOS_CORAIS[i]
-  const { colorido, cinza } = useMemo(() => {
-    const colorido = modelo.clone(true)
-    const cinza = modelo.clone(true)
-    cinza.traverse((o) => {
-      const m = o as Mesh
-      if (m.isMesh) m.material = desbotado
-    })
-    return { colorido, cinza }
-  }, [modelo, desbotado])
+  const { vivo, desbotado } = useMemo(
+    () => ({ vivo: modelos.vivo.clone(true), desbotado: modelos.desbotado.clone(true) }),
+    [modelos],
+  )
   useFrame((_, dt) => {
-    const g = grupo.current
-    if (!g) return
     const s = loja.getState()
     const menos = aparelhoPedeMenos || lojaDoConforto(loja).getState().conforto.menosMovimento
     if (!replantado) crescer.current = 0
@@ -82,12 +94,12 @@ function Coral({
       crescer.current = Math.min(1, crescer.current + Math.min(dt, 0.1) / CORAIS.crescer)
     const t = crescer.current
     const suave = t * t * (3 - 2 * t)
-    const escala = replantado
-      ? CORAIS.escalaDesbotado + (CORAIS.escala - CORAIS.escalaDesbotado) * suave
-      : CORAIS.escalaDesbotado
-    g.scale.setScalar(escala)
-    colorido.visible = replantado
-    cinza.visible = !replantado
+    // O grupo já está em `CORAIS.escala`: a muda cresce de `escalaDaMuda` até ela.
+    vivo.scale.setScalar(
+      (CORAIS.escalaDaMuda + (CORAIS.escala - CORAIS.escalaDaMuda) * suave) / CORAIS.escala,
+    )
+    vivo.visible = replantado
+    desbotado.visible = !replantado
   })
   // Somente leitura (o suporte olhando) não grava: sem o rótulo, a fala não promete um coral.
   const podeReplantar = () => {
@@ -111,31 +123,28 @@ function Coral({
       s.dizer(falaDoReplantio(i, novo.recife.corais))
     },
   })
-  if (!ponto) return null
   return (
-    <group ref={grupo} name={`coral-${i + 1}`} position={[ponto.x, ponto.y, ponto.z]}>
-      <primitive object={colorido} />
-      <primitive object={cinza} />
+    <group name={`coral-${i + 1}`} position={[lugar.x, lugar.y, lugar.z]} scale={CORAIS.escala}>
+      <primitive object={vivo} />
+      <primitive object={desbotado} />
     </group>
   )
 }
 
 /** Filho do Recife: posições locais no desenho (girado com a ilha), mundiais nos interativos. */
 export function CoraisDoRecife({
+  modelo,
   centro,
   giro,
   troca,
 }: {
+  modelo: Object3D
   centro: Ponto
   giro: number
   troca: Troca
 }) {
-  const [modelos, definirModelos] = useState<Object3D[] | null>(null)
-  const desbotado = useMemo(
-    () => new MeshStandardMaterial({ color: CORAIS.desbotado, roughness: 0.95 }),
-    [],
-  )
-  useEffect(() => () => desbotado.dispose(), [desbotado])
+  const [modelos, definirModelos] = useState<ModelosDoCoral[] | null>(null)
+  const lugares = useMemo(() => lugaresDasMudas(modelo), [modelo])
   useEffect(() => {
     let vivo = true
     let soltar: (() => void) | null = null
@@ -156,18 +165,18 @@ export function CoraisDoRecife({
     }
   }, [])
   const noMundo = useMemo(
-    () => PONTOS_DOS_CORAIS.map((p) => paraOMundo(p, centro, giro, { x: 0, y: 0, z: 0 })),
-    [centro, giro],
+    () => lugares?.map((p) => paraOMundo(p, centro, giro, { x: 0, y: 0, z: 0 })) ?? [],
+    [lugares, centro, giro],
   )
-  if (!modelos) return null
+  if (!modelos || !lugares) return null
   return (
     <group name="corais-do-recife" position={[centro.x, centro.y, centro.z]} rotation-y={giro}>
-      {modelos.map((modelo, i) => (
+      {modelos.map((m, i) => (
         <Coral
           key={PONTOS_DOS_CORAIS[i]?.no}
           i={i}
-          modelo={modelo}
-          desbotado={desbotado}
+          modelos={m}
+          lugar={lugares[i] ?? { x: 0, y: 0, z: 0 }}
           noMundo={noMundo[i] ?? { x: 0, y: 0, z: 0 }}
           troca={troca}
         />

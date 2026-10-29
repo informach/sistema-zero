@@ -58,7 +58,7 @@ CONTRATO = {
     'recife': {
         'nos': ['terreno', 'lagoa', 'construcoes', 'corais', 'enfeites', 'caverna'] + [f'alga-{i}' for i in range(1, 11)],
         'ancoras': COMUNS + ['casa-mare', 'mapa', 'lagoa', 'cais', 'barco', 'caverna-entrada', 'caverna',
-                             'caverna-tesouro', 'mergulho'],
+                             'caverna-tesouro', 'mergulho'] + [f'coral-muda-{i}' for i in range(1, 5)],
         'clipes': ['balancar'],
         'colisores': ['col-terreno', 'col-cil-casa-mare', 'col-cil-poste-luneta', 'col-mesa', 'col-cavalete',
                       'col-cil-cesto', 'col-cais', 'col-cil-estaca', 'col-cil-poste', 'col-caixote',
@@ -69,8 +69,9 @@ CONTRATO = {
                              'toco', 'cogumelo', 'tora-que-boia'], 'ancoras': [], 'clipes': []},
     'vila-doce-props': {'nos': ['casinha-a', 'casinha-b', 'casinha-c', 'barraca', 'pirulito', 'jujuba', 'bengala',
                                 'lampiao'], 'ancoras': [], 'clipes': []},
-    'recife-props': {'nos': ['coral-galho', 'coral-cerebro', 'coral-leque', 'coral-tubo', 'mapa-aberto', 'mapa-rolo',
-                             'alga'], 'ancoras': [], 'clipes': ['balancar']},
+    'recife-props': {'nos': ['coral-galho', 'coral-cerebro', 'coral-leque', 'coral-tubo', 'coral-galho-desbotado',
+                             'coral-cerebro-desbotado', 'coral-leque-desbotado', 'coral-tubo-desbotado',
+                             'mapa-aberto', 'mapa-rolo', 'alga'], 'ancoras': [], 'clipes': ['balancar']},
     'barco': {'nos': ['barco'], 'ancoras': [], 'clipes': ['balancar']},
     # Lugares de exploração do Recife (mergulho), cada um no seu referencial (README).
     'recife-navio': {

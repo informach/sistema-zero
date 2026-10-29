@@ -1064,19 +1064,19 @@ Regras e números em `docs/arquipelago-regras.md`, seção da fase4-02. Filhote 
 
 ## Corais, aquário e mapa do Recife (fase3-03, 29/10/2026)
 
-- Regras puras: `sistemas/corais-do-recife.ts` (`PONTOS_DOS_CORAIS`, os quatro pontos da lagoa
-  em coordenadas locais do `recife.glb`, derivados de `LAGOA_DO_RECIFE`, `ANGULOS_DOS_CORAIS` e
-  `FRACAO_DOS_RAIOS`; `CORAIS`, `replantarCoral`, `coraisReplantados`, as falas, `PEIXES_DO_AQUARIO`,
+- Regras puras: `sistemas/corais-do-recife.ts` (`PONTOS_DOS_CORAIS`, os quatro tipos com o nó
+  vivo, o desbotado e a âncora `coral-muda-N` do `recife.glb`; `CORAIS`, `replantarCoral`, `coraisReplantados`, as falas, `PEIXES_DO_AQUARIO`,
   `peixesVisiveis` e `aquarioNoPainel`) e `sistemas/mapa.ts` (`ilhasNoMapa`, `abertasNoMapa`,
   `PAINEL_DO_MAPA`). Salvamento V13 (`recife.corais`, bits).
 - No mundo: `mundo/corais-do-recife.tsx` (carga privada do `recife-props.glb`, como o mergulho;
-  cada coral é uma cópia do nó, desbotada ou colorida, crescendo em `useFrame` com a pausa e o
-  menos movimento) e `mundo/mesa-de-mapas.tsx` (o interativo na âncora `mapa`), os dois montados
+  os lugares saem das âncoras `coral-muda-N` (`lugaresDasMudas`); cada coral é uma cópia do nó
+  desbotado ou do vivo, a muda crescendo em `useFrame` com a pausa e o menos movimento) e `mundo/mesa-de-mapas.tsx` (o interativo na âncora `mapa`), os dois montados
   pelo `RecifeVivo` e valendo só com a ilha a 0,99 de opacidade. O aquário: `PeixesDoAquario` em
   `mundo/objetos-da-casa.tsx` (os peixes pelo salvamento, os quatro na visita, e o `nadar`).
 - Interface: `interface/aquario.tsx` (no `PainelDoObjeto`) e `interface/mapa.tsx` (`PainelDoMapa`,
   no HUD). O que abre uma ilha fechada vem da voz (`ilhaFechadaNoMapa`), porque fala da jornada.
 - O aquário chega em `ganharProjetos` com o primeiro coral. Regras e textos:
   `docs/arquipelago-regras.md`, seção da fase3-03. Testes: `tests/corais-do-recife.test.ts`;
-  navegador: `playground/verificar-recife-browser.ts`. Pedidos de arte (âncoras `coral-muda-N` e um
-  coral desbotado de verdade) no plano `docs/plans/2026-10-29-arquipelago-recife-corais-aquario-mapa.md`.
+  navegador: `playground/verificar-recife-browser.ts`. Os pedidos de arte (as âncoras e os corais
+  desbotados de verdade) foram feitos na conferência; o plano é
+  `docs/plans/2026-10-29-arquipelago-recife-corais-aquario-mapa.md`.

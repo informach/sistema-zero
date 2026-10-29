@@ -9,53 +9,46 @@ export type TipoDeCoral = 'galho' | 'cerebro' | 'leque' | 'tubo'
 
 export interface PontoDeCoral {
   tipo: TipoDeCoral
-  /** O nó do `recife-props.glb`. */
+  /** O nó do coral vivo no `recife-props.glb`. */
   no: `coral-${TipoDeCoral}`
+  /** O nó do coral desbotado no `recife-props.glb` (o mesmo desenho, sem cor, com cacos em volta). */
+  desbotado: `coral-${TipoDeCoral}-desbotado`
+  /** A âncora do `recife.glb` onde ele fica: no fundo da água rasa da beira da lagoa. */
+  ancora: `coral-muda-${number}`
   nome: string
-  /** Coordenadas locais do `recife.glb`: o fundo da lagoa no ponto (y) e o lugar (x, z). */
-  x: number
-  y: number
-  z: number
 }
 
 /**
- * A lagoa do `recife.glb` (`LAGOA` e `RAIOS_DA_LAGOA` de `arte/ilhas/recife.py`) e os pontos a 85%
- * dos raios da água, entre as algas (0°, 78°, 182° e 250°). Ali o fundo fica uns 0,27 abaixo da
- * água: o pé na água rasa da beira. `tests/corais-do-recife.test.ts` confere contra o GLB.
+ * A lagoa do `recife.glb` (`LAGOA` e `RAIOS_DA_LAGOA` de `arte/ilhas/recife.py`). Os pontos de
+ * replantio são as âncoras `coral-muda-1` a `-4` (a 85% dos raios, entre as algas, onde o fundo
+ * fica uns 0,23 abaixo do tampo: dá pé). `tests/corais-do-recife.test.ts` confere contra o GLB.
  */
 export const LAGOA_DO_RECIFE = { x: -0.6, z: -0.6, raioX: 4.2, raioZ: 3.6 } as const
-export const ANGULOS_DOS_CORAIS = [0, 78, 182, 250] as const
-export const FRACAO_DOS_RAIOS = 0.85
 
-const TIPOS: readonly { tipo: TipoDeCoral; nome: string; y: number }[] = [
-  { tipo: 'galho', nome: 'coral galho', y: 0.77 },
-  { tipo: 'cerebro', nome: 'coral cérebro', y: 0.774 },
-  { tipo: 'leque', nome: 'coral leque', y: 0.774 },
-  { tipo: 'tubo', nome: 'coral tubo', y: 0.77 },
+const TIPOS: readonly { tipo: TipoDeCoral; nome: string }[] = [
+  { tipo: 'galho', nome: 'coral galho' },
+  { tipo: 'cerebro', nome: 'coral cérebro' },
+  { tipo: 'leque', nome: 'coral leque' },
+  { tipo: 'tubo', nome: 'coral tubo' },
 ]
 
-export const PONTOS_DOS_CORAIS: readonly PontoDeCoral[] = TIPOS.map((t, i) => {
-  const a = ((ANGULOS_DOS_CORAIS[i] ?? 0) * Math.PI) / 180
-  return {
-    tipo: t.tipo,
-    no: `coral-${t.tipo}` as const,
-    nome: t.nome,
-    x: LAGOA_DO_RECIFE.x + Math.cos(a) * LAGOA_DO_RECIFE.raioX * FRACAO_DOS_RAIOS,
-    y: t.y,
-    z: LAGOA_DO_RECIFE.z + Math.sin(a) * LAGOA_DO_RECIFE.raioZ * FRACAO_DOS_RAIOS,
-  }
-})
+export const PONTOS_DOS_CORAIS: readonly PontoDeCoral[] = TIPOS.map((t, i) => ({
+  tipo: t.tipo,
+  no: `coral-${t.tipo}` as const,
+  desbotado: `coral-${t.tipo}-desbotado` as const,
+  ancora: `coral-muda-${i + 1}` as const,
+  nome: t.nome,
+}))
 
 export const CORAIS = {
   /** De que distância (no chão) dá para replantar. */
   alcance: 1.6,
-  /** O coral desbotado é menor; o replantado cresce até `escala` (os corais pequenos da lagoa). */
-  escalaDesbotado: 0.5,
+  /** O tamanho dos corais pequenos da lagoa: o desbotado já fica nele. */
   escala: 0.8,
-  /** Quanto tempo (s de jogo) o coral leva para crescer e voltar à cor. */
+  /** A muda replantada nasce deste tamanho e cresce até `escala`. */
+  escalaDaMuda: 0.5,
+  /** Quanto tempo (s de jogo) a muda leva para crescer. */
   crescer: 1.2,
-  /** O branco acinzentado do coral desbotado. */
-  desbotado: '#dcd8ce',
 } as const
 
 export function coralReplantado(corais: number, i: number): boolean {

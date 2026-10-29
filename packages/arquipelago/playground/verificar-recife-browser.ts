@@ -288,8 +288,9 @@ try {
         { p, pe: PE },
         { timeout: 30_000 },
       )
-    const galho = PONTOS_DOS_CORAIS[0]
-    if (!galho) throw new Error('Sem o primeiro coral')
+    const primeiro = PONTOS_DOS_CORAIS[0]
+    if (!primeiro) throw new Error('Sem o primeiro coral')
+    const galho = local(primeiro.ancora)
     const fora = (f: number): P => {
       const dx = galho.x - LAGOA_DO_RECIFE.x
       const dz = galho.z - LAGOA_DO_RECIFE.z

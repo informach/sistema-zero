@@ -100,6 +100,9 @@ lib_q.PALETTE.update({
     'coralLaranja': ('#ffa25a', 0.7, None, 0),
     'coralAmarelo': ('#ffd86b', 0.7, None, 0),
     'coralAzul': ('#7fc8f8', 0.7, None, 0),
+    # O coral desbotado (fase3-03): o branco de osso, fosco, e a sombra dele nos detalhes.
+    'coralDesbotado': ('#ebe6d8', 0.95, None, 0),
+    'coralDesbotadoSombra': ('#cbc4b2', 0.95, None, 0),
     'rochaRecife': ('#8a96a8', 0.9, None, 0),
     'rochaRecifeEscura': ('#6c7889', 0.9, None, 0),
     'perolaLuz': ('#f4f1ff', 0.3, '#cfe8ff', 1.0),

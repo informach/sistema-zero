@@ -2976,10 +2976,12 @@ Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência 
 - **Replantar os corais.** São quatro pontos na beira rasa da lagoa, um por tipo de coral do
   `recife-props.glb` (galho, cérebro, leque e tubo, os quatro tipos que crescem em volta da
   lagoa). Ficam a 85% dos raios da água, entre as algas (0°, 78°, 182° e 250° em volta de
-  `LAGOA`), com o fundo uns 0,27 abaixo da água: o pé na água rasa, sem nadar. Antes, o coral está
-  desbotado (o mesmo desenho, menor e num branco acinzentado). "Replantar o coral galho" (E ou
-  Usar, até 1,6 m) faz o coral crescer e voltar à cor do arquivo em 1,2 s de jogo. Com menos
-  movimento (do menu ou do aparelho) ele muda na hora, e a pausa congela o crescer. Não há muda
+  `LAGOA`), com o fundo uns 0,27 abaixo da água: o pé na água rasa, sem nadar. Os pontos são as âncoras
+  `coral-muda-1` a `-4` do `recife.glb`. Antes, o coral está desbotado: o desenho próprio do
+  Blender, o mesmo coral em branco de osso, com cacos caídos na areia. "Replantar o coral galho"
+  (E ou Usar, até 1,6 m) troca o desbotado por uma muda viva, que nasce pequena (escala 0,5) e
+  cresce até 0,8 em 1,2 s de jogo. Com menos movimento (do menu ou do aparelho) ela já nasce
+  grande, e a pausa congela o crescer. Não há muda
   como item, ordem, prazo nem castigo. Os corais replantados (escala 0,8) não colidem, como os
   corais pequenos e as algas da lagoa.
 - **Falas:** "O coral galho voltou a crescer. Um peixe novo foi para o aquário. Faltam 3 corais na

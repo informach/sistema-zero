@@ -18,9 +18,10 @@ arquipélago, `arte/ilhas/README.md`). Nenhum `.glb` nem gerador muda.
   em volta de `LAGOA`), entre as algas (ângulos 0°, 78°, 182° e 250°). O fundo ali fica a uns
   0,27 abaixo da água: a criança chega com o pé na água rasa, sem nadar. A areia seca alcançável
   a pé fica a menos de 0,65 de cada ponto (medido na grade de 25 cm do `col-terreno`).
-- **Antes:** o coral está desbotado (o mesmo modelo, menor e num branco acinzentado), como o
-  cinza das ilhas que esperam cor. **Replantar** (E ou Usar, alcance 1,6): o coral cresce e
-  volta à cor do arquivo em 1,2 s. Com menos movimento, do menu ou do aparelho, muda na hora. A
+- **Antes:** o coral está desbotado (o desenho `coral-<tipo>-desbotado` do `recife-props.glb`:
+  o mesmo coral em branco de osso, com cacos caídos em volta), como o cinza das ilhas que esperam
+  cor. **Replantar** (E ou Usar, alcance 1,6): a muda viva nasce pequena e cresce até o tamanho
+  dos corais pequenos da lagoa em 1,2 s. Com menos movimento, do menu ou do aparelho, muda na hora. A
   pausa congela o crescimento. Não há muda como item, nem ordem, nem prazo: cada ponto é um gesto.
 - Os corais replantados são pequenos (escala 0,8), como os corais pequenos da lagoa, que não
   colidem. Nenhum colisor novo.
@@ -53,15 +54,16 @@ arquipélago, `arte/ilhas/README.md`). Nenhum `.glb` nem gerador muda.
   o que as abre pela voz do jogo (posto no Kids, etapa no adulto). O Recife diz "Você está
   aqui". Só olhar: nada é gravado.
 
-## Pedidos de arte
+## Pedidos de arte (feitos na conferência, 29/10/2026)
 
-Nada impede esta fase. Para a sessão do Blender, quando houver tempo:
-
-1. Âncoras `coral-muda-1` a `coral-muda-4` no `recife.glb`, nos quatro pontos usados hoje pelo
-   código (`PONTOS_DOS_CORAIS` em `sistemas/corais-do-recife.ts`, coordenadas locais do modelo).
-   Com elas o código passa a ler as âncoras em vez das constantes.
-2. Um desenho de coral desbotado de verdade (hoje o código pinta o coral do `recife-props.glb`
-   de branco acinzentado).
+1. Âncoras `coral-muda-1` a `coral-muda-4` no `recife.glb` (`ancoras_das_mudas` em
+   `arte/ilhas/recife.py`), nos mesmos quatro pontos de antes, com a altura do fundo da bacia ali
+   (0,774). O jogo lê as âncoras (`lugaresDasMudas` em `mundo/corais-do-recife.tsx`); sem alguma,
+   não monta corais.
+2. Os corais desbotados de verdade no `recife-props.glb`: `coral-galho-desbotado`,
+   `coral-cerebro-desbotado`, `coral-leque-desbotado` e `coral-tubo-desbotado`, o mesmo desenho
+   do vivo nos materiais `coralDesbotado` e `coralDesbotadoSombra` (um pouco mais baixos e com
+   cacos na areia). O código não pinta mais nada.
 
 ## Etapas
 

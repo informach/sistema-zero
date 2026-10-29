@@ -420,6 +420,26 @@
         "y": 1.0,
         "z": 0.0
       },
+      "coral-muda-1": {
+        "x": 2.97,
+        "y": 0.77,
+        "z": -0.6
+      },
+      "coral-muda-2": {
+        "x": 0.14,
+        "y": 0.77,
+        "z": 2.39
+      },
+      "coral-muda-3": {
+        "x": -4.17,
+        "y": 0.77,
+        "z": -0.71
+      },
+      "coral-muda-4": {
+        "x": -1.82,
+        "y": 0.77,
+        "z": -3.48
+      },
       "lagoa": {
         "x": -0.6,
         "y": 1.0,
@@ -482,7 +502,7 @@
       "col-mesa": 1,
       "col-terreno": 1
     },
-    "kb": 614.1,
+    "kb": 614.5,
     "nos": {
       "agua": 94,
       "alga-1": 240,
@@ -611,17 +631,21 @@
   "recife-props": {
     "ancoras": {},
     "clipes": "balancar",
-    "kb": 49.3,
+    "kb": 80.7,
     "nos": {
       "alga": 240,
       "coral-cerebro": 360,
+      "coral-cerebro-desbotado": 408,
       "coral-galho": 120,
+      "coral-galho-desbotado": 168,
       "coral-leque": 120,
+      "coral-leque-desbotado": 168,
       "coral-tubo": 280,
+      "coral-tubo-desbotado": 328,
       "mapa-aberto": 220,
       "mapa-rolo": 76
     },
-    "triangulos": 1416
+    "triangulos": 2488
   },
   "vila-doce": {
     "ancoras": {

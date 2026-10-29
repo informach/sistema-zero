@@ -51,7 +51,7 @@ export function RecifeVivo({
   return (
     <group ref={pecas} visible={false}>
       <MergulhoDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
-      <CoraisDoRecife centro={meio} giro={giro} troca={troca} />
+      <CoraisDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <MesaDeMapas modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <ComReserva reserva={null}>
         <Mare modelo={preparada.modelo} meio={meio} giro={giro} />

@@ -42,19 +42,20 @@ def coral_galho(x, z, cor, s=1.0, seed=0, y=TOPO):
     return anel.coral(x, z, cor, s, seed=seed, y=y)
 
 
-def coral_cerebro(x, z, cor, s=1.0, y=TOPO):
+def coral_cerebro(x, z, cor, s=1.0, y=TOPO, acento=None):
     bx, by = x, -z
+    acento = acento or ('coralLilas' if cor != 'coralLilas' else 'coralRosa')
     p = [superellipsoid((1.2 * s, 1.1 * s, 0.75 * s), (bx, by, y + 0.2 * s), cor, e1=0.8, e2=0.9, seg=12, ring=7,
                         flat_bottom=0.25)]
     for k in range(3):
-        p.append(torus((0.18 + 0.15 * k) * s, 0.035 * s, (bx, by, y + (0.56 - 0.07 * k) * s), 'coralLilas' if cor != 'coralLilas'
-                       else 'coralRosa', seg=12, rseg=3))
+        p.append(torus((0.18 + 0.15 * k) * s, 0.035 * s, (bx, by, y + (0.56 - 0.07 * k) * s), acento, seg=12, rseg=3))
     return p
 
 
-def coral_leque(x, z, cor, s=1.0, rot=0.0, y=TOPO):
+def coral_leque(x, z, cor, s=1.0, rot=0.0, y=TOPO, acento=None):
     """Leque-do-mar: uma placa fina recortada em ondas, num cabinho."""
     bx, by = x, -z
+    acento = acento or ('coralLilas' if cor != 'coralLilas' else 'coralAzul')
     pts = [(0, 0)]
     for k in range(13):
         a = math.pi * k / 12
@@ -67,22 +68,61 @@ def coral_leque(x, z, cor, s=1.0, rot=0.0, y=TOPO):
         ca, sa = math.cos(rot), math.sin(rot)
         lx = math.cos(a) * 0.5 * s
         p.append(tube([(bx, by, y + 0.2 * s), (bx + ca * lx, by + sa * lx, y + 0.2 * s + math.sin(a) * 0.62 * s)],
-                      [0.025 * s, 0.015 * s], 'coralLilas' if cor != 'coralLilas' else 'coralAzul', seg=4))
+                      [0.025 * s, 0.015 * s], acento, seg=4))
     return p
 
 
-def coral_tubo(x, z, cor, s=1.0, seed=0, y=TOPO):
+def coral_tubo(x, z, cor, s=1.0, seed=0, y=TOPO, boca='rochaRecifeEscura', altura=1.0):
     rnd = random.Random(seed)
     bx, by = x, -z
     p = []
     for k in range(5):
         a = 2 * math.pi * k / 5 + rnd.uniform(-0.3, 0.3)
         d = 0.0 if k == 0 else 0.28 * s
-        h = rnd.uniform(0.5, 1.1) * s
+        h = rnd.uniform(0.5, 1.1) * s * altura
         cx, cy = bx + math.cos(a) * d, by + math.sin(a) * d
         p.append(cyl(0.13 * s, h, (cx, cy, y + h / 2 - 0.05), cor, verts=8, r2=0.15 * s))
-        p.append(cyl(0.1 * s, 0.02, (cx, cy, y + h - 0.05 + 0.005), 'rochaRecifeEscura', verts=8))
+        p.append(cyl(0.1 * s, 0.02, (cx, cy, y + h - 0.05 + 0.005), boca, verts=8))
     return p
+
+
+# ------------------------------------------------------------------ corais desbotados (fase3-03)
+# O coral que a criança replanta na lagoa começa desbotado: o mesmo desenho do vivo, sem cor (o
+# branco de osso de um coral que perdeu as algas), um pouco mais baixo e com pedacinhos quebrados
+# caídos na areia em volta. O jogo troca o desbotado pelo vivo quando ela replanta.
+DESBOTADO, DESBOTADO_SOMBRA = 'coralDesbotado', 'coralDesbotadoSombra'
+
+
+def cacos(x, z, s, seed, y):
+    """Dois ou três pedacinhos de coral quebrado deitados na areia, perto da base."""
+    rnd = random.Random(seed)
+    p = []
+    for k in range(3):
+        a = 2 * math.pi * k / 3 + rnd.uniform(-0.5, 0.5)
+        d = rnd.uniform(0.55, 0.75) * s
+        c = (x + math.cos(a) * d, -z + math.sin(a) * d, y + 0.035 * s)
+        giro = a + rnd.uniform(-0.6, 0.6)
+        comp = rnd.uniform(0.16, 0.26) * s
+        p.append(tube([(c[0] - math.cos(giro) * comp / 2, c[1] - math.sin(giro) * comp / 2, c[2]),
+                       (c[0] + math.cos(giro) * comp / 2, c[1] + math.sin(giro) * comp / 2, c[2])],
+                      [0.035 * s, 0.028 * s], DESBOTADO_SOMBRA if k else DESBOTADO, seg=5))
+    return p
+
+
+def coral_galho_desbotado(s=1.0):
+    return anel.coral(0, 0, DESBOTADO, s * 0.9, seed=1, y=0) + cacos(0, 0, s, 11, 0)
+
+
+def coral_cerebro_desbotado(s=1.0):
+    return coral_cerebro(0, 0, DESBOTADO, s * 0.95, y=0, acento=DESBOTADO_SOMBRA) + cacos(0, 0, s * 1.3, 12, 0)
+
+
+def coral_leque_desbotado(s=1.0):
+    return coral_leque(0, 0, DESBOTADO, s * 0.9, y=0, acento=DESBOTADO_SOMBRA) + cacos(0, 0, s, 13, 0)
+
+
+def coral_tubo_desbotado(s=1.0):
+    return coral_tubo(0, 0, DESBOTADO, s, seed=2, y=0, boca=DESBOTADO_SOMBRA, altura=0.75) + cacos(0, 0, s, 14, 0)
 
 
 def alga(x, z, y, seed=0, s=1.0):
@@ -358,6 +398,22 @@ FUNDO_DA_LAGOA = 0.85
 BACIA_PLANA, BACIA_FIM = 0.4, 1.08
 
 
+# Onde a criança replanta cada coral (fase3-03): a `FRACAO_DA_MUDA` dos raios da água, entre as algas,
+# na água rasa da beira (o pé no fundo da bacia, uns 0,23 abaixo do tampo). Uma por tipo, na ordem
+# galho, cérebro, leque e tubo (`recife-props.glb`).
+ANGULOS_DAS_MUDAS = (0, 78, 182, 250)
+FRACAO_DA_MUDA = 0.85
+
+
+def ancoras_das_mudas():
+    x0, z0 = LAGOA
+    rx, rz = RAIOS_DA_LAGOA
+    y = TOPO - profundidade_da_bacia(FRACAO_DA_MUDA, FUNDO_DA_LAGOA, BACIA_PLANA, BACIA_FIM)
+    return [ancora(f'coral-muda-{i + 1}', x0 + math.cos(math.radians(g)) * rx * FRACAO_DA_MUDA,
+                   z0 + math.sin(math.radians(g)) * rz * FRACAO_DA_MUDA, y)
+            for i, g in enumerate(ANGULOS_DAS_MUDAS)]
+
+
 def lagoa():
     """A água (um material só: o jogo lê a elipse e a altura dela) e o miolo mais escuro."""
     x, z = LAGOA
@@ -600,7 +656,8 @@ def construir():
            ancora('cais', ponta_cais[0], ponta_cais[1], ponta_cais[2]),
            ancora('barco', lugar_barco[0], -lugar_barco[1], 0.0),
            ancora('caverna-entrada', cx - 3.6, cz, 0.0), ancora('caverna', cx, cz, FUNDO_CAVERNA),
-           ancora('caverna-tesouro', cx + 1.4, cz + 0.1, FUNDO_CAVERNA), ancora('mergulho', CAIS_FIM[0], CAIS_FIM[1] - 0.6, 0.0)]
+           ancora('caverna-tesouro', cx + 1.4, cz + 0.1, FUNDO_CAVERNA), ancora('mergulho', CAIS_FIM[0], CAIS_FIM[1] - 0.6, 0.0),
+           *ancoras_das_mudas()]
     # A âncora do barco também diz para onde ele aponta (giro em y, no jogo).
     anc[10].rotation_euler = (0, 0, lugar_barco[2])
     exportar('recife', {'terreno': chao, 'agua': agua, 'construcoes': obras, 'corais': cor, 'enfeites': enf,
@@ -614,6 +671,10 @@ def props():
         'coral-cerebro': coral_cerebro(0, 0, 'coralAmarelo', 1.0, y=0),
         'coral-leque': coral_leque(0, 0, 'coralLilas', 1.0, y=0),
         'coral-tubo': coral_tubo(0, 0, 'coralLaranja', 1.0, seed=2, y=0),
+        'coral-galho-desbotado': coral_galho_desbotado(),
+        'coral-cerebro-desbotado': coral_cerebro_desbotado(),
+        'coral-leque-desbotado': coral_leque_desbotado(),
+        'coral-tubo-desbotado': coral_tubo_desbotado(),
         'mapa-aberto': mapa_aberto(0, 0, 0),
         'mapa-rolo': mapa_rolo(0, 0, 0.05, R(90)),
     }

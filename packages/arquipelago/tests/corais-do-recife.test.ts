@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { criarSalvamentoInicial, ILHAS, PONTOS_DE_CORAL } from '@sistemazero/arquipelago-contracts'
 import { type Mesh, type Object3D, Raycaster, Vector3 } from 'three'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
+import { lugaresDasMudas } from '../src/mundo/corais-do-recife'
 import { centroNoAnel } from '../src/mundo/medidas'
 import { ganharProjetos } from '../src/sistemas/construcao/projeto-azul'
 import {
@@ -139,9 +140,23 @@ describe('no recife.glb e nos modelos', () => {
     terreno = raiz.getObjectByName('col-terreno') as Mesh
   })
 
-  test('os quatro corais e os quatro peixes existem nos arquivos', () => {
-    const props = jsonDoGlb(arquivoDaIlha('recife-props.glb'))
-    for (const p of PONTOS_DOS_CORAIS) expect(props.nodes.some((n) => n.name === p.no)).toBe(true)
+  test('os quatro corais, vivos e desbotados, e os quatro peixes existem nos arquivos', () => {
+    const props = jsonDoGlb(arquivoDaIlha('recife-props.glb')) as ReturnType<typeof jsonDoGlb> & {
+      materials: { name: string }[]
+    }
+    const materiais = (nome: string) => {
+      const no = props.nodes.find((n) => n.name === nome)
+      const malha = no?.mesh === undefined ? undefined : props.meshes[no.mesh]
+      return new Set(malha?.primitives.map((p) => props.materials[p.material ?? -1]?.name))
+    }
+    for (const p of PONTOS_DOS_CORAIS) {
+      expect(materiais(p.no).size, p.no).toBeGreaterThan(0)
+      // O desbotado é o branco de osso de verdade (do Blender), não uma tinta posta no código.
+      expect([...materiais(p.desbotado)].sort(), p.desbotado).toEqual([
+        'coralDesbotado',
+        'coralDesbotadoSombra',
+      ])
+    }
     const aquario = jsonDoGlb(
       join(import.meta.dir, '..', 'src', 'assets', 'objetos', 'aquario.glb'),
     )
@@ -158,7 +173,9 @@ describe('no recife.glb e nos modelos', () => {
     expect(lagoa?.x).toBeCloseTo(LAGOA_DO_RECIFE.x, 3)
     expect(lagoa?.z).toBeCloseTo(LAGOA_DO_RECIFE.z, 3)
     const raios = new Raycaster()
-    for (const p of PONTOS_DOS_CORAIS) {
+    const lugares = lugaresDasMudas(raiz)
+    expect(lugares).toHaveLength(PONTOS_DOS_CORAIS.length)
+    for (const p of lugares ?? []) {
       const dentro =
         ((p.x - LAGOA_DO_RECIFE.x) / LAGOA_DO_RECIFE.raioX) ** 2 +
         ((p.z - LAGOA_DO_RECIFE.z) / LAGOA_DO_RECIFE.raioZ) ** 2
@@ -181,8 +198,10 @@ describe('no recife.glb e nos modelos', () => {
     if (!chegada) throw new Error('sem a chegada')
     const andou = grade.alcance(chegada.x, chegada.z)
     // Uma célula seca alcançada fica bem dentro do alcance (a folga cobre o passo da grade).
-    for (const p of PONTOS_DOS_CORAIS)
-      expect(grade.chegaPerto(andou, p.x, p.z, CORAIS.alcance - 0.5), p.no).toBe(true)
+    for (const [i, p] of (lugaresDasMudas(raiz) ?? []).entries())
+      expect(grade.chegaPerto(andou, p.x, p.z, CORAIS.alcance - 0.5), `coral-muda-${i + 1}`).toBe(
+        true,
+      )
     const mapa = raiz.getObjectByName('mapa')?.position
     if (!mapa) throw new Error('sem a âncora mapa')
     expect(grade.chegaPerto(andou, mapa.x, mapa.z, ALCANCE_DO_MAPA - 0.5)).toBe(true)
