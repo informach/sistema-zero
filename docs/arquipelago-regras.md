@@ -2971,6 +2971,41 @@ mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de o
 Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência e capturas:
 `docs/qa/2026-10-29-vale-pegadas-ninhos/README.md`.
 
+## Corais, aquário e mapa do Recife (fase3-03, 29/10/2026)
+
+- **Replantar os corais.** São quatro pontos na beira rasa da lagoa, um por tipo de coral do
+  `recife-props.glb` (galho, cérebro, leque e tubo, os quatro tipos que crescem em volta da
+  lagoa). Ficam a 85% dos raios da água, entre as algas (0°, 78°, 182° e 250° em volta de
+  `LAGOA`), com o fundo uns 0,27 abaixo da água: o pé na água rasa, sem nadar. Antes, o coral está
+  desbotado (o mesmo desenho, menor e num branco acinzentado). "Replantar o coral galho" (E ou
+  Usar, até 1,6 m) faz o coral crescer e voltar à cor do arquivo em 1,2 s de jogo. Com menos
+  movimento (do menu ou do aparelho) ele muda na hora, e a pausa congela o crescer. Não há muda
+  como item, ordem, prazo nem castigo. Os corais replantados (escala 0,8) não colidem, como os
+  corais pequenos e as algas da lagoa.
+- **Falas:** "O coral galho voltou a crescer. Um peixe novo foi para o aquário. Faltam 3 corais na
+  lagoa." até "Os quatro corais da lagoa voltaram a crescer. O aquário tem quatro peixes.".
+- **Salvamento V13:** `recife.corais`, um número de 0 a 15, um bit por ponto (o ponto N é o bit
+  N - 1). A V12 migra com 0. No pior caso de 64 KB, com o Vale, o Recife e os corais no máximo,
+  sobram 48 bytes (medido em `salvamento-v10.test.ts`). Campo novo precisa achar espaço antes.
+- **O aquário.** O projeto azul chega com o primeiro coral replantado (`ganharProjetos`, com a
+  fala de sempre do Zappy). O aquário ganha um peixe para cada coral replantado: o `peixe-N` do
+  `aquario.glb` aparece com o ponto N. As bolhas ficam sempre. O clipe `nadar` toca no objeto
+  posto em casa e para com a pausa e com menos movimento. "Ver o aquário" abre o painel com
+  "Peixes no aquário: N de 4." e, para cada coral, "O peixe do coral galho chegou." ou "Replante
+  o coral galho na lagoa do Recife.". Na casa de um irmão, o aquário aparece com os quatro peixes,
+  porque a visita não traz os corais dele.
+- **O mapa.** Na mesa de mapas da Maré (âncora `mapa`), "Ver o mapa do arquipélago" (até 2 m)
+  abre o mapa: as oito ilhas desenhadas na posição do anel do mundo, a sua ilha no meio com o
+  Farol, as abertas pela jornada coloridas e as fechadas em cinza. A lista ao lado diz "Aberta.",
+  "Você está aqui." (no Recife) ou o que abre a ilha, pela voz do jogo: no Kids "Abre em Mestre
+  dos Jogos." (o Farol "Acende na Lenda."), no adulto "Abre na etapa 5 da sua jornada.". Só
+  olhar: nada é gravado. Esc ou "Voltar ao jogo" fecha.
+
+Plano, decisões e pedidos de arte: `docs/plans/2026-10-29-arquipelago-recife-corais-aquario-mapa.md`.
+Testes: `tests/corais-do-recife.test.ts` (regras, os arquivos, o fundo e a grade de andar até cada
+coral e até a mesa) e `arquipelago-contracts/tests/salvamento-v13.test.ts`. Navegador:
+`playground/verificar-recife-browser.ts`, no computador e no celular emulado.
+
 ## Ilha das Nuvens completa e apresentação da Iriê (fase4-06, 29/10/2026)
 
 - A ilha completa usa os 50 colisores de `nuvens.glb`, no mesmo ciclo de preparação, troca e
