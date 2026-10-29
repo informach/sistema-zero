@@ -38,6 +38,7 @@ import {
   tirarCartao,
   validarRotina,
 } from '../sistemas/rotina'
+import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 const ICONE: Record<TipoDeCarta, string> = { quando: '🌅', acao: '✨', controle: '🔁' }
 const TIPO = Object.fromEntries(CARTAS_LUMI.map((c) => [c.id, c.tipo])) as Record<
@@ -419,11 +420,7 @@ export function PainelDaRotina() {
                   aria-pressed={id === lumi}
                   onClick={() => rotina.getState().escolher(id)}
                 >
-                  <span
-                    className="arq-album-lumi"
-                    style={{ ['--cor' as string]: ESPECIES_DE_LUMI[id].cor }}
-                    aria-hidden="true"
-                  />
+                  <img className="arq-album-lumi foto" src={MINIATURA_DO_LUMI[id]} alt="" />
                   {ESPECIES_DE_LUMI[id].nome}
                   {guardadas[id] ? <small> (com rotina)</small> : null}
                 </button>

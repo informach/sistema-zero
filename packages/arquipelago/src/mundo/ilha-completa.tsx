@@ -127,6 +127,10 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
   cena.rotation.y = giroDaIlha(ilha)
   const colisores = lerColisores(cena)
   tirarNosDeColisao(cena)
+  // As formas de escalar (`escalada-*`, sem material) são lidas pelo jogo, mas não desenham.
+  cena.traverse((o) => {
+    if (o.name.startsWith('escalada-')) o.visible = false
+  })
   // O arquivo é só desta ilha (não vem de um cache dividido): tinge e esmaece os materiais dele.
   const originais = materiaisDe(cena)
   const copas = separarCopas(cena)

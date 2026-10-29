@@ -7,7 +7,15 @@ nós `sala` (paredes, janelas, piso, teto, varanda e o pedestal da lanterna), `e
 `mesa-da-iris` (a mesa com os rascunhos, o quadro de cortiça e a estante), `vidros` (o vidro das
 janelas, material `janelaFarol`, transparente) e `lente` (a lente da lanterna com a lâmpada,
 material `luz`, pivô no centro da lâmpada) com o clipe `girar` (4 s, uma volta, em laço). Âncoras
-no README (`entrada`, `lanterna`, `mesa`…).
+no README (`entrada`, `lanterna`, `mesa`…) e as três que o jogo usa: `chegada` (no piso livre, entre o
+vão da escada e a lanterna), `leitura` (de frente para a mesa) e `camera-varanda` (na varanda, de
+frente para o mar).
+
+Colisão (formas simples, nenhuma malha de desenho): `col-cil-piso-sala-1` (o piso inteiro, com o vão
+da escada tampado), 16 `col-parede-sala-*` (o anel da parede, por dentro em 4,2 m),
+`col-cil-grade-escada-1` (a grade em volta do vão: não se cai pela escada), `col-mesa-iris-1` (mesa
+e estante juntas; o banquinho fica livre) e `col-cil-base-lente-1` (o pedestal e a lente que gira).
+A varanda fica do lado de fora das paredes: só a câmera vai lá, então o guarda-corpo não colide.
 """
 from lib_ilhas_b import *
 
@@ -18,6 +26,13 @@ VAOS = 8
 VAO_DA_PAREDE = 2  # o vão sem janela, onde fica o quadro de cortiça (atrás da mesa)
 ESCADA = dict(x=-2.4, z=1.3, r=1.05)
 LAMPADA_Y = 1.75
+# Onde a criança chega: junto da `entrada`, fora da grade do vão (1,58 m do meio dele) e da lente
+# (1,2 m do meio), com folga para o corpo de raio 0,35. Andando reto para a mesa (−z), ela contorna a
+# lente pelo lado de fora.
+CHEGADA = (-0.9, 0.8)
+# O cilindro da lente: o pedestal (0,6) com folga. Na altura da criança (até 1,4 m) os anéis da lente
+# não passam de 0,73 m do meio; as lupas grandes giram mais alto (de 1,41 a 2,09 m).
+RAIO_DA_LENTE = 0.72
 
 
 def anel_solido(r_in, r_out, z0, z1, m, n=40, a0=0.0, a1=2 * math.pi):
@@ -266,6 +281,24 @@ def mesa_da_iris():
     return p
 
 
+def colisores(mesa_x, mesa_z, giro_mesa):
+    """As formas de colisão da sala (veja o topo). `mesa_*` é o meio da mesa no jogo."""
+    c = [col_cilindro('piso-sala', RAIO_SALA + 0.15, 0.2, (0, 0, -0.1))]
+    for i in range(16):
+        a = i * math.pi / 8
+        r = RAIO_SALA + 0.15
+        c.append(col_caixa('parede-sala', (1.8, 0.3, 3.5), (math.cos(a) * r, math.sin(a) * r, 1.75), rot=(0, 0, a + math.pi / 2)))
+    ex, ey = ESCADA['x'], -ESCADA['z']
+    c.append(col_cilindro('grade-escada', ESCADA['r'] + 0.12, 1.0, (ex, ey, 0.5)))
+    # A mesa (2 m) e a estante ao lado (até 2,05 m do meio da mesa), com os livros por cima.
+    dx = 0.5
+    cg, sg = math.cos(giro_mesa), math.sin(giro_mesa)
+    c.append(col_caixa('mesa-iris', (3.1, 1.0, 1.3), (mesa_x + dx * cg, -mesa_z + dx * sg, 0.65), rot=(0, 0, giro_mesa)))
+    altura_da_lente = LAMPADA_Y + 1.3
+    c.append(col_cilindro('base-lente', RAIO_DA_LENTE, altura_da_lente, (0, 0, altura_da_lente / 2)))
+    return c
+
+
 def ilha():
     lib_q.reset()
     s = sala()
@@ -283,7 +316,14 @@ def ilha():
                ancora('rascunhos', math.cos(a) * r, -math.sin(a) * r, 0.95),
                ancora('quadro', math.cos(a) * (RAIO_SALA - 0.35), -math.sin(a) * (RAIO_SALA - 0.35), 1.95),
                ancora('janela', math.cos(R(-22.5)) * (RAIO_SALA - 0.6), -math.sin(R(-22.5)) * (RAIO_SALA - 0.6), 0.0),
-               ancora('varanda', RAIO_SALA + 1.0, 0.0, 0.0)]
+               ancora('varanda', RAIO_SALA + 1.0, 0.0, 0.0),
+               ancora('chegada', CHEGADA[0], CHEGADA[1], 0.0),
+               ancora('leitura', math.cos(a) * (r - 1.1), -math.sin(a) * (r - 1.1), 0.0)]
+    # De frente para o mar (o +z do three, o −Y do Blender, virado para o +x).
+    camera = ancora('camera-varanda', RAIO_SALA + 1.0, 0.0, 0.0)
+    camera.rotation_euler = (0, 0, math.pi / 2)
+    ancoras.append(camera)
+    col = colisores(math.cos(a) * r, -math.sin(a) * r, a - math.pi / 2)
 
     def clipes(juntos):
         o = juntos['lente']
@@ -291,7 +331,7 @@ def ilha():
 
     # Nós e âncoras com nomes diferentes (o three.js renomeia nomes repetidos).
     exportar('alto-do-farol', {'sala': s + pedestal, 'escada': e, 'mesa-da-iris': m, 'vidros': v,
-                               'lente': (lente, (0, 0, LAMPADA_Y))}, ancoras, clipes_=clipes)
+                               'lente': (lente, (0, 0, LAMPADA_Y))}, ancoras, clipes_=clipes, colisores=col)
 
 
 if __name__ == '__main__':

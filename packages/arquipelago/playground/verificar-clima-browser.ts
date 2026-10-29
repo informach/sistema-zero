@@ -14,8 +14,8 @@ import path from 'node:path'
 import { ILHAS } from '@sistemazero/arquipelago-contracts'
 import { chromium, type Page } from 'playwright-core'
 import { posicaoDoCanteiro } from '../src/mundo/colisao-da-ilha-central'
-import { ALTURA_DA_TERRA } from '../src/mundo/medidas'
-import { CLIMA, FALA_DO_BONUS } from '../src/sistemas/clima'
+import { ALTURA_DA_TERRA, CATA_VENTO } from '../src/mundo/medidas'
+import { CLIMA, FALA_DO_BONUS, FALA_DO_CLIMA } from '../src/sistemas/clima'
 import { CORPO } from '../src/sistemas/corpo'
 
 type P = { x: number; y: number; z: number }
@@ -129,19 +129,19 @@ try {
       if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
       else await page.keyboard.press('KeyE')
     }
-    const levar = (p: P) =>
+    const levar = (p: P, paraOeste = false) =>
       page.evaluate(
-        ({ p }) => {
+        ({ p, paraOeste }) => {
           const ir = (globalThis as { __arquipelagoLevar?: (...args: number[]) => void })
             .__arquipelagoLevar
           if (!ir) throw new Error('Sem transporte de conferência')
-          // Virado para +x (o canteiro): a câmera fica nas costas (giro + π).
-          ir(p.x, p.y + 1.2, p.z, Math.PI / 2 + Math.PI)
+          // Virado para +x (o canteiro) ou para −x: a câmera fica nas costas (giro + π).
+          ir(p.x, p.y + 1.2, p.z, (paraOeste ? -Math.PI / 2 : Math.PI / 2) + Math.PI)
         },
-        { p },
+        { p, paraOeste },
       )
-    const dePe = async (p: P) => {
-      await levar(p)
+    const dePe = async (p: P, paraOeste = false) => {
+      await levar(p, paraOeste)
       await esperar(
         page,
         (d, a) => {
@@ -228,6 +228,16 @@ try {
     await esperar(page, (d, a) => (d.horta[0]?.progresso ?? 0) >= (a as number) + 0.14, antes)
     console.log(`${tipo}: a planta pediu água e regar adiantou`)
 
+    // 5. O cata-vento ao lado da horta: "Mudar o clima" passa do sol para o nublado.
+    // Um pouco de lado, para a criança não tapar o cata-vento no print.
+    await dePe({ x: CATA_VENTO.x + 1.3, y: ALTURA_DA_TERRA, z: CATA_VENTO.z + 0.9 }, true)
+    await acao('Mudar o clima').waitFor()
+    await page.screenshot({ scale: 'css', path: path.join(prints, `clima-${tipo}-cata-vento.png`) })
+    await usar()
+    await esperar(page, (d) => d.clima.escolhido === 'nublado')
+    await page.getByText(FALA_DO_CLIMA.nublado).first().waitFor()
+    console.log(`${tipo}: o cata-vento mudou o clima`)
+
     await escolher('Nublado')
     await page.waitForFunction(() => {
       const raw = localStorage.getItem('arquipelago-playground')
@@ -247,7 +257,11 @@ try {
     if (erros.length) throw new Error(erros.join('\n'))
     writeFileSync(
       path.join(prints, `resultado-${tipo}.json`),
-      JSON.stringify({ tipo, chuva: true, nublado: true, sede: true, antes }, null, 2),
+      JSON.stringify(
+        { tipo, chuva: true, nublado: true, sede: true, cataVento: true, antes },
+        null,
+        2,
+      ),
     )
     await context.close()
   }

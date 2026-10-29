@@ -6,10 +6,30 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { COLISOR_DA_LUNETA, LUNETA, vistaDaLuneta } from '../src/mundo/luneta-medidas'
 import { PIER } from '../src/mundo/medidas'
-import { falaDaLuneta, ilhaDaLuneta, passoDaPrevia, recadoDaIris } from '../src/sistemas/luneta'
+import {
+  artigoDaIlha,
+  falaDaLuneta,
+  ilhaDaLuneta,
+  passoDaPrevia,
+  recadoDaIris,
+} from '../src/sistemas/luneta'
 import { criarPesos, passoDosPesos, perfilDaVez } from '../src/sistemas/perfis-de-camera'
 
 describe('luneta', () => {
+  test('cada ilha com o artigo do nome (a Vila Doce, a Ilha das Nuvens, o Bosque dos Bichos)', () => {
+    const artigos = Object.fromEntries(
+      ILHAS.filter((i) => i.angulo !== null).map((i) => [i.id, artigoDaIlha(i)]),
+    )
+    expect(artigos).toEqual({
+      bosque: 'o',
+      'vila-doce': 'a',
+      recife: 'o',
+      pico: 'o',
+      'vale-dos-dinos': 'o',
+      nuvens: 'a',
+    })
+  })
+
   test('mostra a primeira ilha ainda fechada e depois o Farol', () => {
     const esperadas = [
       'bosque',

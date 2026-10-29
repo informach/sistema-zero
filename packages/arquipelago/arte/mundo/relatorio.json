@@ -38,16 +38,28 @@
     },
     "triangulos": 6874
   },
+  "cata-vento": {
+    "colisores": {
+      "col-cil-poste-cata-vento": 1
+    },
+    "kb": 41.6,
+    "nos": {
+      "helice": 326,
+      "poste": 336
+    },
+    "triangulos": 662
+  },
   "farol": {
     "colisores": {
       "col-cil-pedra-farol": 8,
       "col-degrau-farol": 3
     },
-    "kb": 206.1,
+    "kb": 206.8,
     "nos": {
       "facho": 80,
-      "farol": 5148,
+      "farol": 5084,
       "lampada": 516,
+      "porta": 64,
       "vidro": 108
     },
     "triangulos": 5852

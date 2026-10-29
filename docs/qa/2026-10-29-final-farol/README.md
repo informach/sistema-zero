@@ -47,6 +47,6 @@ O script aceita `ARQUIPELAGO_CHROMIUM` e `ARQUIPELAGO_PRINTS` e inicia seu próp
 
 ## Limites e continuação
 
-O progresso final é só da sessão, conforme a tarefa. O booleano futuro e os pedidos dos colisores e âncoras definitivos estão no [plano](../../plans/2026-10-29-arquipelago-final-do-farol.md). Os colisores simples atuais permitem concluir o final sem regenerar arte. A porta exterior oferece a passagem, mas não ganha dobradiça animada nesta malha.
+O progresso final é só da sessão, conforme a tarefa. O booleano futuro está no [plano](../../plans/2026-10-29-arquipelago-final-do-farol.md). Desde 29/10 à noite, os colisores e as âncoras vêm do `alto-do-farol.glb` (a grade do vão da escada também colide) e a porta de fora abre na dobradiça quando a criança chega perto (`porta-*.png`). A rodada nova do verificador passou em computador e celular com esses arquivos, e os prints daqui são dela.
 
 Ainda cabe uma conferência em celular físico, sobretudo fluidez, consumo de memória e conforto do controle por toque. A emulação não prova essas condições de hardware.

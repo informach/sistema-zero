@@ -1,7 +1,7 @@
 /**
  * O álbum de coleções e o modo foto no navegador (fase2-09). Só usa a plataforma falsa, sem banco.
  *
- * Abre o álbum pelo menu, confere as cinco seções, entra no modo foto (F no computador, o botão do
+ * Abre o álbum pelo menu, confere as seis seções, entra no modo foto (F no computador, o botão do
  * menu no toque), confere que o HUD sumiu, que o personagem fica parado e a câmera gira, tira a
  * foto e confere o PNG baixado (maior que zero e com a assinatura de PNG), e sai (Esc ou "Voltar").
  *
@@ -80,7 +80,8 @@ const CASOS = [
     semeado: true,
     titulos: [
       'Bichos do Bosque: 2 de 4',
-      'Estrelas dos percursos: 2 de 6',
+      'Achados do Recife: 0 de 3',
+      'Estrelas dos percursos: 2 de 15',
       'Aparências guardadas: 1 de 9',
       'Lumis presos: 3 de 14',
     ],
@@ -96,7 +97,8 @@ const CASOS = [
     semeado: false,
     titulos: [
       'Bichos do Bosque: 0 de 4',
-      'Estrelas dos percursos: 0 de 6',
+      'Achados do Recife: 0 de 3',
+      'Estrelas dos percursos: 0 de 15',
       'Aparências guardadas: 0 de 9',
       'Lumis presos: 0 de 14',
     ],
@@ -149,7 +151,7 @@ try {
     const album = pagina.getByRole('dialog', { name: 'Álbum de coleções' })
     await album.waitFor()
     const titulos = await album.locator('h3').allTextContents()
-    assert.equal(titulos.length, 5, `seções: ${titulos.join(' | ')}`)
+    assert.equal(titulos.length, 6, `seções: ${titulos.join(' | ')}`)
     for (const t of caso.titulos)
       assert(titulos.includes(t), `falta "${t}" em ${titulos.join(' | ')}`)
     assert(titulos.some((t) => t.startsWith('Receitas: ')))
@@ -251,7 +253,7 @@ try {
     if (caso.toque) assert.equal(await pagina.locator('.arq-zona-joystick').count(), 1)
     assert.deepEqual(erros, [])
     console.log(
-      `PASS ${caso.nome}: álbum com as cinco seções, modo foto sem HUD, PNG de ${png.length} bytes, volta do HUD`,
+      `PASS ${caso.nome}: álbum com as seis seções, modo foto sem HUD, PNG de ${png.length} bytes, volta do HUD`,
     )
     await contexto.close()
   }

@@ -16,7 +16,7 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.abspath(os.path.join(AQUI, '..', '..', '..', '..'))
-SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol', 'pico_caverna', 'nuvens_constelacoes']
+SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol', 'pico_caverna', 'nuvens_constelacoes', 'argola_nuvem']
 ILHA = ('chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4')
 ESPERADO = {
     'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu'),
@@ -30,8 +30,12 @@ ESPERADO = {
     'nuvens': {'nos': ('chao', 'cenario') + tuple(f'fio-{k}' for k in range(1, 7)) + tuple(f'plataforma-{k}' for k in range(1, 5)),
                'ancoras': ILHA + ('tear', 'ninho', 'balao', 'topo-plataforma-4')},
     'nuvens-balao': {'nos': ('balao',), 'clipes': ('flutuar',)},
-    'alto-do-farol': {'nos': ('sala', 'escada', 'mesa-da-iris', 'vidros', 'lente'), 'ancoras': ('entrada', 'lanterna', 'mesa'),
+    'alto-do-farol': {'nos': ('sala', 'escada', 'mesa-da-iris', 'vidros', 'lente'),
+                      'ancoras': ('entrada', 'lanterna', 'mesa', 'chegada', 'leitura', 'camera-varanda'),
+                      'colisores': ('col-cil-piso-sala', 'col-parede-sala', 'col-cil-grade-escada', 'col-mesa-iris',
+                                    'col-cil-base-lente'),
                       'clipes': ('girar',)},
+    'nuvens-argola': {'nos': ('nuvem', 'faixa')},
     # Lugares de exploração (cada um com os seus col-*; o referencial de cada um está no README).
     'pico-caverna': {'nos': ('rocha', 'chao', 'cristais', 'cristais-luz', 'gelo', 'percurso', 'joia'),
                      'ancoras': ('entrada', 'galeria', 'laguinho', 'cristal-raro') + tuple(f'degrau-{k}' for k in range(1, 5)),

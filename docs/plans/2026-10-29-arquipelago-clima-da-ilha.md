@@ -44,6 +44,11 @@ pede água e dá o bônus em `mundo/horta.tsx`. Nenhum `.glb` nem gerador muda.
 
 1. Um cata-vento perto da horta da ilha central (com uma âncora `cata-vento` no lugar), para a
    escolha do clima sair do menu e ir para um objeto da ilha, como a proposta sugere.
+   Feito: `arte/mundo/cata_vento.py` → `src/assets/mundo/cata-vento.glb` (poste, hélice de seis pás
+   coloridas e o colisor do poste). O lugar ficou em `CATA_VENTO` (`src/mundo/medidas.ts`, a leste
+   da horta), como as outras peças da ilha central, em vez de uma âncora no GLB. No jogo
+   (`src/mundo/cata-vento.tsx`), a hélice gira mais depressa com o tempo fechado e "Mudar o clima"
+   passa para o próximo (sol, nublado, chuva) depois que as Nuvens abrem; o menu continua.
 
 ## Etapas
 

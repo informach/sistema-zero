@@ -7,14 +7,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   ALTO_DO_FAROL,
   ALVOS_DO_FACHO,
-  COLISORES_DO_ALTO,
   campoDaSala,
   pontosDoAlto,
+  prepararSala,
   vistaFinal,
 } from '../src/mundo/alto-do-farol'
 import { malhasDosOlhos } from '../src/mundo/animado'
 import { liberarObjeto } from '../src/mundo/carregar-ilha'
-import { soParaOCorpo } from '../src/mundo/colisores-da-ilha'
+import { ehNoDeColisao, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { paginasDoDiario, TEXTO_DA_PAGINA } from '../src/sistemas/diario'
 import {
   conversarComAIris,
@@ -93,25 +93,37 @@ test('menu, tempo, ferramenta, aba escondida e conflitos pausam o final', () => 
   expect(finalPausado({ ...s, painelAberto: 'diario' }, true)).toBe(true)
 })
 
-test('a chegada e a mesa se alcançam a pé na sala real, com piso e paredes simples', async () => {
+test('a chegada e a mesa se alcançam a pé na sala real, com os colisores simples do arquivo', async () => {
   const modelo = await carregarGlb(arquivoDaIlha('alto-do-farol.glb'))
   const pontos = pontosDoAlto(modelo)
+  const colisores = prepararSala(modelo)
+  // Os nós de colisão saem da cena (não desenham) e nenhum deles é malha de desenho.
+  let sobrou = 0
+  modelo.traverse((o) => {
+    if (ehNoDeColisao(o)) sobrou++
+  })
+  expect(sobrou).toBe(0)
+  expect(colisores.length).toBe(20)
+  expect(colisores.every((c) => c.forma !== 'malha')).toBe(true)
   const terreno = new Mesh(new CylinderGeometry(4.2, 4.2, 0.2, 32), new MeshBasicMaterial())
   terreno.position.y = -0.1
   terreno.updateMatrixWorld(true)
-  const grade = gradeDeAndar(terreno, COLISORES_DO_ALTO as Forma[], 4.3, 0.1, { pisoMinimo: -0.05 })
-  const x = pontos.entrada.x - ALTO_DO_FAROL.x,
-    z = pontos.entrada.z - ALTO_DO_FAROL.z
-  expect(grade.celulas[grade.indice(x, z)]?.livre).toBe(true)
-  expect(
-    grade.chegaPerto(
-      grade.alcance(x, z),
-      pontos.mesa.x - ALTO_DO_FAROL.x,
-      pontos.mesa.z - ALTO_DO_FAROL.z,
-      0.7,
-    ),
-  ).toBe(true)
-  expect(COLISORES_DO_ALTO.every((c) => c.forma !== 'malha')).toBe(true)
+  const grade = gradeDeAndar(terreno, colisores as Forma[], 4.6, 0.1, { pisoMinimo: -0.05 })
+  const local = (p: { x: number; z: number }) => ({
+    x: p.x - ALTO_DO_FAROL.x,
+    z: p.z - ALTO_DO_FAROL.z,
+  })
+  const chegada = local(pontos.chegada)
+  expect(grade.celulas[grade.indice(chegada.x, chegada.z)]?.livre).toBe(true)
+  const alcance = grade.alcance(chegada.x, chegada.z)
+  const leitura = local(pontos.leitura)
+  expect(grade.chegaPerto(alcance, leitura.x, leitura.z, 0.3)).toBe(true)
+  // Não se cai pelo vão da escada nem se atravessa a lente ou a parede (a varanda é só da câmera).
+  expect(grade.chegaPerto(alcance, -2.4, 1.3, 0.6)).toBe(false)
+  expect(grade.chegaPerto(alcance, 0, 0, 0.65)).toBe(false)
+  expect(grade.chegaPerto(alcance, local(pontos.varanda).x, local(pontos.varanda).z, 0.8)).toBe(
+    false,
+  )
   liberarObjeto(modelo)
   liberarObjeto(terreno)
 })

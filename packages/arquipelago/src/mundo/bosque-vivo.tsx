@@ -44,6 +44,7 @@ import {
   percursoNoMundo,
   TOPO_DO_BOSQUE,
   TRONCO_DOS_CIPOS,
+  troncoDoNo,
   troncoNoMundo,
 } from './bosque'
 import { CabanaDoBosque } from './cabana-do-bosque'
@@ -190,9 +191,9 @@ export function BosqueVivo({
   const tronco = useMemo<TroncoVivo>(
     () => ({
       id: `${ilha.id}:tronco-dos-cipos`,
-      tronco: troncoNoMundo(TRONCO_DOS_CIPOS, meio, giro),
+      tronco: troncoNoMundo(troncoDoNo(preparada.modelo) ?? TRONCO_DOS_CIPOS, meio, giro),
     }),
-    [meio, giro, ilha.id],
+    [preparada, meio, giro, ilha.id],
   )
   const troncos = useMemo(() => [tronco.tronco], [tronco])
 
@@ -498,8 +499,8 @@ function Placa({ x, y, z, giro }: { x: number; y: number; z: number; giro: numbe
 }
 
 /**
- * A trepadeira em espiral no tronco de escalar: mostra que aquele tronco dá para subir (a marca
- * fica no código até o Blender ganhar o nó `escalada-*`).
+ * A trepadeira em espiral no tronco de escalar (lido do nó `escalada-cil-tronco-dos-cipos`): mostra
+ * que aquele tronco dá para subir.
  */
 function Trepadeira({ tronco, preparada }: { tronco: TroncoVivo; preparada: IlhaPreparada }) {
   const geometria = useMemo(() => {

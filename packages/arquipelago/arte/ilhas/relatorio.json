@@ -146,6 +146,11 @@
         "y": 5.2,
         "z": 4.82
       },
+      "escalada-cil-tronco-dos-cipos": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
       "esconderijo-1": {
         "x": -6.2,
         "y": 1.0,
@@ -335,7 +340,7 @@
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1115.0,
+    "kb": 1117.6,
     "nos": {
       "agua": 82,
       "cipo-1": 268,

@@ -47,6 +47,8 @@ interface ArteDoBalao {
   cena: Object3D
   /** O nó `balao`, que o clipe `flutuar` sobe, desce e balança. */
   no: Object3D
+  /** A âncora `passageiro` (filha do `balao`): o piso do cesto, onde a criança fica desenhada. */
+  passageiro: Object3D
   clipes: AnimationClip[]
   chama: MeshStandardMaterial[]
   soltar: () => void
@@ -72,7 +74,8 @@ async function carregarBalao(): Promise<ArteDoBalao> {
       }
     }
   })
-  return { cena: g.scene, no, clipes: g.animations, chama: [...chama], soltar }
+  const passageiro = g.scene.getObjectByName('passageiro') ?? no
+  return { cena: g.scene, no, passageiro, clipes: g.animations, chama: [...chama], soltar }
 }
 
 /** A âncora `balao` do `nuvens.glb` no mundo (a base do cesto parado), ou `null` sem ela. */
@@ -186,7 +189,7 @@ function Balao({
     const p = voo.fase === 'voo' ? voo.pe : voo.casa
     g.position.set(p.x, p.y, p.z)
     g.updateMatrixWorld(true)
-    arte.no.getWorldPosition(noMundo)
+    arte.passageiro.getWorldPosition(noMundo)
     voo.visual.x = noMundo.x
     voo.visual.y = noMundo.y
     voo.visual.z = noMundo.z

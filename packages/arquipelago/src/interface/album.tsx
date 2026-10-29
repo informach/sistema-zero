@@ -12,6 +12,7 @@ import {
 } from '../sistemas/album'
 import { Bicho, Receita } from './diario'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
+import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 /** O valor de `painelAberto` do álbum. */
 export const PAINEL_DO_ALBUM = 'album'
@@ -104,7 +105,7 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
   if (l.estado === 'nao-encontrado')
     return (
       <li className="arq-diario-bicho arq-album-item escondido">
-        <span className="arq-album-lumi silhueta" aria-hidden="true" />
+        <img className="arq-album-lumi foto silhueta" src={MINIATURA_DO_LUMI[l.id]} alt="" />
         <div className="arq-quadro-corpo">
           <b>Ainda não encontrado</b>
           <span className="arq-quadro-estado">{l.ilha}</span>
@@ -114,10 +115,11 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
     )
   return (
     <li className="arq-diario-bicho arq-album-item">
-      <span
-        className={`arq-album-lumi${l.raro ? ' raro' : ''}`}
+      <img
+        className={`arq-album-lumi foto${l.raro ? ' raro' : ''}`}
         style={{ ['--cor' as string]: l.cor }}
-        aria-hidden="true"
+        src={MINIATURA_DO_LUMI[l.id]}
+        alt=""
       />
       <div className="arq-quadro-corpo">
         <b>{l.nome}</b>

@@ -14,7 +14,9 @@ import {
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
+import { podeSubirOFarol } from '../sistemas/final-do-farol'
 import { jogoPausado } from '../sistemas/pausa'
+import { PORTA_DO_FINAL } from './alto-do-farol'
 import { COLISORES_DO_FAROL } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { lerColisores } from './colisores-da-ilha'
@@ -34,6 +36,9 @@ import {
 const ALTURA_DA_LAMPADA = 9.4
 /** Comprimento de cada facho no modelo (do centro da lâmpada até a ponta, em x). */
 const COMPRIMENTO_DO_FACHO = 26
+/** A porta abre para fora (giro em y negativo na dobradiça) quando a criança chega perto. */
+const PORTA_ABERTA = -1.75
+const PERTO_DA_PORTA = 3
 
 /** O Farol fica na sua ilha, ao lado da casa. Apagado até a Lenda (posição 8). */
 export function Farol() {
@@ -58,7 +63,7 @@ export function Farol() {
  * vermelho e branco, a lâmpada e o vidro brilham, a luz alcança longe e os dois fachos giram.
  */
 function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: boolean }) {
-  const { loja } = useJogo()
+  const { loja, rastro } = useJogo()
   const aparelho = useReducedMotion()
   const preferencia = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
   const tempo = useRef(0)
@@ -68,6 +73,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
     const corpo = copiarNo(raiz, 'farol', true)
     const vidro = copiarNo(raiz, 'vidro', true)
     const lampada = copiarNo(raiz, 'lampada', true)
+    const porta = copiarNo(raiz, 'porta', true)
     const facho = copiarNo(raiz, 'facho')
     // O facho é luz no ar: material somado, dos dois lados, forte junto da lâmpada e sumindo na
     // ponta (cor por vértice: preto não soma nada).
@@ -100,10 +106,12 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
       corpo,
       vidro,
       lampada,
+      porta,
+      fechada: porta.rotation.y,
       facho,
       // As pedras do pé e os degraus da porta (nós `col-*` do arquivo); a torre é do código.
       colisores: lerColisores(raiz),
-      cores: [...coresOriginais(corpo), ...coresOriginais(lampada)],
+      cores: [...coresOriginais(corpo), ...coresOriginais(lampada), ...coresOriginais(porta)],
       janelas: materiaisDe(corpo, 'vidroJanela'),
       vidros: materiaisDe(vidro),
       lampadas: materiaisDe(lampada, 'lampadaFarol'),
@@ -119,11 +127,24 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
     acender(partes.janelas, 1.2)
   }, [aceso, partes, mostrarFacho])
   useFrame((_, dt) => {
+    const s = loja.getState()
+    if (!jogoPausado(s) && document.visibilityState === 'visible') {
+      // Com a Lenda aberta, a porta abre quando a criança chega perto (o "Subir o Farol" está ali).
+      const perto =
+        podeSubirOFarol(s.jornada, s.visita !== null) &&
+        Math.hypot(rastro.x - PORTA_DO_FINAL.x, rastro.z - PORTA_DO_FINAL.z) < PERTO_DA_PORTA
+      const alvo = partes.fechada + (perto ? PORTA_ABERTA : 0)
+      const porta = partes.porta.rotation
+      porta.y =
+        aparelho || preferencia
+          ? alvo
+          : porta.y + (alvo - porta.y) * Math.min(1, Math.min(dt, 0.1) * 4)
+    }
     if (!aceso) {
       for (const m of partes.lampadas) m.emissiveIntensity = 0
       return
     }
-    if (jogoPausado(loja.getState()) || document.visibilityState !== 'visible') return
+    if (jogoPausado(s) || document.visibilityState !== 'visible') return
     if (!aparelho && !preferencia) {
       partes.facho.rotation.y += dt * 0.6
       tempo.current += dt
@@ -137,6 +158,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
       <primitive object={partes.corpo} />
       <primitive object={partes.vidro} />
       <primitive object={partes.lampada} />
+      <primitive object={partes.porta} />
       <primitive object={partes.facho} />
       <Colisores lista={partes.colisores} />
       {aceso ? (

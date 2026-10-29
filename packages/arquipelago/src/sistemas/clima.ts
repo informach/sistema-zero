@@ -69,6 +69,18 @@ export const FALA_DO_CLIMA: Readonly<Record<Clima, string>> = {
 export const FALA_DA_SEDE = 'A planta pediu água. Regando agora, ela cresce mais depressa.'
 export const FALA_DO_BONUS = 'Regado. A planta deu uma espichada.'
 
+/** O próximo clima do cata-vento da horta (sol, nublado, chuva e de volta ao sol). */
+export function proximoClima(c: Clima): Clima {
+  return CLIMAS[(CLIMAS.indexOf(c) + 1) % CLIMAS.length] ?? 'sol'
+}
+
+/** Quanto a hélice do cata-vento gira em cada clima (radianos por segundo). */
+export const GIRO_DO_CATA_VENTO: Readonly<Record<Clima, number>> = {
+  sol: 1.4,
+  nublado: 2.6,
+  chuva: 4.8,
+}
+
 /** O clima da sua ilha vale com as Nuvens abertas (a Iriê ensina lá). */
 export function climaLiberado(posicaoNaJornada: number): boolean {
   return ilhaAberta('nuvens', posicaoNaJornada)

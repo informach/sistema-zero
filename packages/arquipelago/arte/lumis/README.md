@@ -151,3 +151,6 @@ Os números de cada geração ficam em `relatorio.json`.
 - `borrao.py`: o borrão do Cinza e as quatro animações dele.
 - `build_all.py`: gera tudo.
 - `previa.py`: renderiza uma cena de conferência (Cycles) a partir dos GLB; não faz parte do jogo.
+- `miniaturas.py`: as miniaturas de 160 px das 14 espécies (`src/assets/lumis/miniaturas/<id>.png`,
+  com o enquadramento dos ícones dos itens) para o álbum e a rotina; depois, a paleta de 128 cores
+  com `PASTA=src/assets/lumis/miniaturas python3 -I arte/itens/icones_paleta.py`.

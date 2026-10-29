@@ -20,10 +20,14 @@ export function ilhaDaLuneta(posicao: number): Ilha {
   return proxima ?? ILHAS.find((i) => i.id === 'farol')!
 }
 
+/** O artigo do nome da ilha nas falas: "a Vila Doce", "a Ilha das Nuvens", "o Bosque dos Bichos". */
+export function artigoDaIlha(ilha: Pick<Ilha, 'id'>): 'a' | 'o' {
+  return ilha.id === 'vila-doce' || ilha.id === 'nuvens' ? 'a' : 'o'
+}
+
 export function falaDaLuneta(ilha: Ilha): string {
   if (ilha.id === 'farol') return 'Lá está o Farol, ao lado da sua casa.'
-  const artigo = ilha.id === 'vila-doce' || ilha.id === 'nuvens' ? 'a' : 'o'
-  return `Lá é ${artigo} ${ilha.nome}. A ponte abre quando você chegar a ${NOMES_DOS_POSTOS[ilha.posto]}.`
+  return `Lá é ${artigoDaIlha(ilha)} ${ilha.nome}. A ponte abre quando você chegar a ${NOMES_DOS_POSTOS[ilha.posto]}.`
 }
 
 export function recadoDaIris(ilha: Ilha): string {

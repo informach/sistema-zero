@@ -70,6 +70,7 @@ export const LOTE_DA_CASA: Lote = {
   area: { x0: -13, z0: -12, x1: 14, z1: 8 },
   ocupadas: [
     { nome: 'a varanda', ret: { x0: 0, z0: 0, x1: 5, z1: 2 } },
+    // A horta e o cata-vento ao lado (`CATA_VENTO`, x 13,9).
     { nome: 'a horta', ret: { x0: 7, z0: -1, x1: 14, z1: 3 } },
     { nome: 'a bancada', ret: { x0: 8, z0: -8, x1: 12, z1: -6 } },
     { nome: 'a árvore', ret: { x0: -11, z0: 2, x1: -7, z1: 6 } },
