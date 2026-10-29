@@ -111,8 +111,8 @@ const REPROVA: Record<string, Partial<Record<string, string[]>>> = {
   'lua-sem-se': { lua: ['lua-primeiro'], estrela: ['fora-da-vez'] },
   'estrela-sem-se': { estrela: ['fora-da-vez'] },
   'nao-volta': { estrela: ['fora-da-vez'] },
-  invertida: { estrela: ['ordem-certa', 'fora-da-vez', 'recomecar', 'reinicio'] },
-  'passo-errado': { estrela: ['ordem-certa', 'recomecar', 'reinicio'] },
+  invertida: { estrela: ['ordem-certa', 'fora-da-vez', 'recomecar'] },
+  'passo-errado': { estrela: ['ordem-certa', 'recomecar'] },
 }
 const reprova = REPROVA[scenario]?.[etapa]
 if (!reprova) throw Error(`Cenário sem expectativa nesta etapa: ${scenario} ${etapa}`)

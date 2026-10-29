@@ -35,7 +35,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 **Teste:** Toque o sol e depois a lua: as duas acendem. Pressione R e toque a lua primeiro: nada acende e o aviso pede para começar pelo sol.
 
-**Se não funcionar:** Se a lua acender sem o sol, confira a comparação: passo, o sinal de igual e o 1. Se tocar um símbolo fora da vez não apagar nada, confira se o senão tem Alterar passo para 0 e as trocas de volta.
+**Se não funcionar:** Se a lua acender sem o sol, confira a comparação: passo, o sinal de igual e o 1.
 
 ### A estrela abre o baú
 
@@ -46,10 +46,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 3. Dentro do então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha estrela; no segundo, escolha pedra-estrela-acesa.
 4. Logo abaixo, ainda no então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha bau; no segundo, escolha bau-aberto.
 5. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Na ordem certa! O baú abriu.
-6. Dentro do senão, encaixe Alterar variável, escolha passo e troque o 1 por 0.
-7. Logo abaixo, ainda no senão, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha sol; no segundo, escolha pedra-sol.
-8. Embaixo, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha lua; no segundo, escolha pedra-lua.
-9. Por último, ainda no senão, encaixe Alterar variável, escolha aviso, solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva Fora da ordem. Comece de novo pelo sol.
+6. Dentro do senão, monte o mesmo recomeço da lua: Alterar passo para 0, as trocas de volta do sol (pedra-sol) e da lua (pedra-lua) e o aviso Fora da ordem. Comece de novo pelo sol.
 
 **Teste:** Toque o sol, a lua e a estrela: o baú abre. Pressione R, toque o sol e a estrela: tudo apaga e o baú fica fechado. Sem apertar R, toque o sol, a lua e a estrela: o baú abre.
 
@@ -88,7 +85,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 **Teste:** Toque o sol e depois a lua: as duas acendem. Pressione R e toque a lua primeiro: nada acende e o aviso pede para começar pelo sol.
 
-**Se não funcionar:** Se a lua acender sem o sol, confira a comparação: passo, o sinal de igual e o 1. Se tocar um símbolo fora da vez não apagar nada, confira se o senão tem Alterar passo para 0 e as trocas de volta.
+**Se não funcionar:** Se a lua acender sem o sol, confira a comparação: passo, o sinal de igual e o 1.
 
 ### A estrela abre o baú
 
@@ -99,10 +96,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 3. Dentro do então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha acender. Clique em heroi e escolha estrela. No modo, escolha uma vez.
 4. Logo abaixo, ainda no então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha abrir. Clique em heroi e escolha bau. No modo, escolha uma vez.
 5. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Na ordem certa! O baú abriu.
-6. Dentro do senão, encaixe Alterar variável, escolha passo e troque o 1 por 0.
-7. Logo abaixo, ainda no senão, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha apagar. Clique em heroi e escolha sol. No modo, escolha uma vez.
-8. Embaixo, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha apagar. Clique em heroi e escolha lua. No modo, escolha uma vez.
-9. Por último, ainda no senão, encaixe Alterar variável, escolha aviso, solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva Fora da ordem. Comece de novo pelo sol.
+6. Dentro do senão, monte o mesmo recomeço da lua: Alterar passo para 0, Tocar a animação apagar no sol e na lua e o aviso Fora da ordem. Comece de novo pelo sol.
 
 **Teste:** Toque o sol, a lua e a estrela: o baú abre. Pressione R, toque o sol e a estrela: tudo apaga e o baú fica fechado. Sem apertar R, toque o sol, a lua e a estrela: o baú abre.
 

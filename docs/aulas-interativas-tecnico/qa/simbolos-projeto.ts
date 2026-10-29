@@ -258,17 +258,20 @@ const CHAO = 0.05
  * As pedras no gramado da frente, na ordem da placa da esquerda para a direita, de frente para a
  * câmera (x e z do centro no chão). A lua fica um passo mais para a frente: do sol à estrela o
  * caminho passa reto atrás dela, sem encostar (numa fileira reta, a volta em torno da lua raspava
- * nela, e o robô do executor também).
+ * nela, e o robô do executor também). O vão entre as colunas deixa folga para a caixa REAL do
+ * personagem, que cresce quando ele vira e balança os braços andando: com o sol a 1,8 da lua, o
+ * robô indo à lua pela frente raspava no sol. A fileira fica perto do começo e a lua só um
+ * passo à frente: as idas do robô cabem nos prazos do executor com folga.
  */
 export const PEDRAS_3D: Record<Simbolo, readonly [number, number]> = {
-  sol: [-6, 3],
-  lua: [-4.2, 4.3],
-  estrela: [-2.4, 3],
+  sol: [-6.4, 2.5],
+  lua: [-4.2, 3.6],
+  estrela: [-2, 2.5],
 }
 /** A placa da ordem à esquerda da fileira, como uma legenda lida antes das pedras. */
-export const PLACA_3D = [-7.9, 3.1] as const
+export const PLACA_3D = [-7.9, 2.6] as const
 /** O baú no fim da fileira, à direita da estrela. */
-export const BAU_3D = [-0.6, 3] as const
+export const BAU_3D = [-0.6, 2.5] as const
 
 const em = (name: keyof typeof SIMBOLOS_MODELOS, [x, z]: readonly [number, number]) => {
   const c = SIMBOLOS_MODELOS[name].center

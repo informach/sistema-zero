@@ -37,9 +37,9 @@ A estrela abre o baú da ilha.
 
 - O encontro com a estrela pergunta se é a vez dela (Se, com senão).
 - Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
-- Um símbolo fora da vez recomeça: sol, estrela, lua e estrela não abrem o baú.
+- Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.
 - Depois de errar, começar de novo pelo sol abre o baú.
-- Uma nova partida (tecla R) começa com o baú fechado.
+- Uma nova partida (tecla R) começa com os símbolos apagados.
 
 ## Parte 4. Pense nos símbolos da ilha
 
@@ -63,8 +63,8 @@ Envie a sua ilha com o baú.
 
 - O encontro com a estrela pergunta se é a vez dela (Se, com senão).
 - Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
-- Um símbolo fora da vez recomeça: sol, estrela, lua e estrela não abrem o baú.
+- Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.
 - Depois de errar, começar de novo pelo sol abre o baú.
-- Uma nova partida (tecla R) começa com o baú fechado.
+- Uma nova partida (tecla R) começa com os símbolos apagados.
 
 [Fala integral](simbolos-aula-2.roteiro.md) · [Passo a passo](passo-a-passo.md).

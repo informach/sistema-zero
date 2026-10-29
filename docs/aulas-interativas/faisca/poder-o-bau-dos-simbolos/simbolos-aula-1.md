@@ -71,9 +71,9 @@ A estrela abre o baú.
 
 - O encontro com a estrela pergunta se é a vez dela (Se, com senão).
 - Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
-- Um símbolo fora da vez recomeça: sol, estrela, lua e estrela não abrem o baú.
+- Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.
 - Depois de errar, começar de novo pelo sol abre o baú.
-- Uma nova partida (tecla R) começa com o baú fechado.
+- Uma nova partida (tecla R) começa com os símbolos apagados.
 - O farol continua: com a chave, ele acende.
 
 ## Parte 7. Pense na ordem
@@ -98,9 +98,9 @@ Envie o seu jogo com o baú.
 
 - O encontro com a estrela pergunta se é a vez dela (Se, com senão).
 - Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
-- Um símbolo fora da vez recomeça: sol, estrela, lua e estrela não abrem o baú.
+- Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.
 - Depois de errar, começar de novo pelo sol abre o baú.
-- Uma nova partida (tecla R) começa com o baú fechado.
+- Uma nova partida (tecla R) começa com os símbolos apagados.
 - O farol continua: com a chave, ele acende.
 
 [Fala integral](simbolos-aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).

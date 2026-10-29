@@ -57,15 +57,17 @@ export function simbolosChecks(d: SimbolosDimensao, etapa: SimbolosEtapa): Secti
   /**
    * Ir até uma pedra sem encostar em outra: evita as pedras que não são o alvo nem a de onde o
    * personagem sai (ele começa a ida em cima dela). O prazo é maior saindo do começo ou dando a
-   * volta numa pedra do que indo à vizinha.
+   * volta numa pedra do que indo à vizinha. No 3D, do começo o sol fica perto e a lua, longe;
+   * cada prazo deixa cerca de um terço de folga sobre a ida medida sem placa de vídeo.
    */
   const ir = (s: Simbolo, de?: Simbolo): ExecutionStep => {
     const vizinha = de !== undefined && Math.abs(ORDEM.indexOf(s) - ORDEM.indexOf(de)) === 1
+    const prazo3d = de === undefined ? (s === 'sol' ? 3000 : 4200) : vizinha ? 3200 : 3800
     return {
       action: three ? 'approachObject3d' : 'approachSprite',
       actorPath: 'personagem',
       targetPath: s,
-      timeoutMs: three ? (vizinha ? 2200 : 3000) : vizinha ? 1800 : 2400,
+      timeoutMs: three ? prazo3d : vizinha ? 1800 : 2400,
       ...(three ? { walkable: ILHA_CAMINHOS } : {}),
       avoidPaths: [...ORDEM.filter((o) => o !== s && o !== de), 'chave'],
     }
@@ -137,12 +139,14 @@ export function simbolosChecks(d: SimbolosDimensao, etapa: SimbolosEtapa): Secti
     [...ordem, espera(300)],
     aberto(true),
   )
-  // Pega a estrela sem o Se, a lua sem o Se e o senão que não volta o passo a 0.
+  // Pega a estrela sem o Se (o baú abre fora da vez), a lua sem o Se e o senão que não volta o
+  // passo a 0 (nos dois, a lua acende depois da estrela errada).
   const foraDaVez = check(
     'fora-da-vez',
-    'Um símbolo fora da vez recomeça: sol, estrela, lua e estrela não abrem o baú.',
-    [ir('sol'), ir('estrela', 'sol'), ir('lua', 'estrela'), ir('estrela', 'lua'), espera(300)],
-    aberto(false),
+    'Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.',
+    [ir('sol'), ir('estrela', 'sol'), ir('lua', 'estrela'), espera(300)],
+    acesa('lua', false),
+    [{ afterStep: 2, expect: aberto(false) }],
   )
   // Pega o senão que trava a tentativa para sempre.
   const recomecar = check(
@@ -151,12 +155,13 @@ export function simbolosChecks(d: SimbolosDimensao, etapa: SimbolosEtapa): Secti
     [ir('lua'), ir('sol', 'lua'), ir('lua', 'sol'), ir('estrela', 'lua'), espera(300)],
     aberto(true),
   )
+  // Uma ida só: a partida nova refaz o jogo inteiro, e o sol aceso basta para ver o recomeço.
   const reinicio = check(
     'reinicio',
-    'Uma nova partida (tecla R) começa com o baú fechado.',
-    [...ordem, espera(300), { action: 'press', key: 'r', holdMs: 80 }, espera(three ? 600 : 400)],
-    aberto(false),
-    [{ afterStep: 4, expect: aberto(true) }],
+    'Uma nova partida (tecla R) começa com os símbolos apagados.',
+    [ir('sol'), espera(300), { action: 'press', key: 'r', holdMs: 80 }, espera(three ? 600 : 400)],
+    acesa('sol', false),
+    [{ afterStep: 2, expect: acesa('sol', true) }],
   )
   const farol = three
     ? null
