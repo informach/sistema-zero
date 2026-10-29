@@ -55,11 +55,16 @@ editorial que o Jardim já usa.
 
 O Farol concluído continua inteiro (andar, limite, chave, aviso, farol, barco). Entram:
 
-- **Seis moedas** ao longo do caminho de areia, do começo do personagem até a praia. Nenhuma
-  começa encostada no personagem, na chave ou no farol.
-- Um **baú** na ilhota da ponte: a recompensa opcional. Fechado, ele espera; com **pelo menos
-  cinco moedas**, abre e mostra o tesouro. O farol continua pedindo só a chave.
+- **Seis moedas**: cinco no caminho de areia, do começo do personagem até a ponte, e a sexta no
+  gramado de cima, perto do coqueiro (para quem explora). Nenhuma começa encostada no
+  personagem, na chave ou no farol.
+- Um **baú** escondido no gramado de baixo, debaixo do começo: a recompensa opcional. Fechado,
+  ele espera; com **pelo menos cinco moedas**, abre e mostra o tesouro. O farol continua pedindo
+  só a chave. (A ilhota da ponte foi a primeira ideia, mas é pequena: o baú ficava em cima da
+  espuma e colado na porta do farol.)
 - Um **ícone de moeda** no canto, ao lado do número de moedas guardadas.
+- A tecla **R** para uma nova partida, que A Chave do Farol não tinha: aqui ela conta (o contador
+  volta a zero).
 
 **Seis moedas e meta cinco, de propósito:** a criança que pega todas tem seis, e o baú precisa
 abrir. É a situação concreta que separa "**pelo menos** cinco" de "**exatamente** cinco", o erro
@@ -67,15 +72,17 @@ mais provável com comparação.
 
 ### 3D: moedas na trilha da Ilha
 
-A Ilha concluída continua inteira. Entram seis moedas girando sobre a trilha, um baú num lugar
-alcançável fora da trilha principal (a definir no cenário, sem atrapalhar o caminho até o farol)
-e o número de moedas escrito na tela. O baú tem o clipe `abrir`. Mesma meta: cinco.
+A Ilha concluída continua inteira. Entram seis moedas (cinco na trilha do começo até a ponte e
+na ponte, a sexta atrás, no canto da praia), um baú atrás do começo, na mesma linha, e o número de
+moedas escrito na tela. O baú tem o clipe `abrir`. Mesma meta: cinco. As moedas 3D ficam paradas,
+de pé e de frente para a câmera: girar cada cópia de um grupo pediria o "Para cada objeto do
+grupo", que não é do iniciante.
 
 ### O que vem preparado e o que a criança constrói
 
 | Preparado pela equipe (não é cobrado) | A criança constrói |
 |---|---|
-| Artes (moedas, baú fechado/aberto, ícone), posições, o grupo das moedas já criado com as seis, o giro das moedas no 3D, o clipe do baú, o desenho e o reinício | A variável `moedas` começando em 0 · a coleta: ao encostar numa moeda, **ela some** e **soma 1** · mostrar o número na tela · no baú: **se** `moedas` ≥ 5, abrir; **senão**, avisar quantas faltam · testar com menos, com cinco e com seis |
+| Artes (moedas, baú fechado/aberto, ícone), posições, o grupo das moedas já criado com as seis, o clipe do baú, o desenho e o reinício | A variável `moedas` começando em 0 · a coleta: ao encostar numa moeda, **ela some** e **soma 1** · mostrar o número na tela · no baú: **se** `moedas` ≥ 5, abrir; **senão**, avisar que o baú pede pelo menos 5 (sem juntar texto: no iniciante não há bloco de juntar texto, e o número já está na tela) · testar com menos, com cinco e com seis |
 
 O grupo é preparado porque a ideia nova é o contador, não a coleção. A criança usa o encontro
 "com alguma moeda do grupo" do mesmo jeito que usou o encontro com a chave.
