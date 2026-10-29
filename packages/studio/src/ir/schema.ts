@@ -2264,6 +2264,15 @@ export type JSStatement =
       bVar: string
       body: JSStatement[]
     })
+  // "Quando o sprite começar a encostar em algum do grupo, chamando de …" (o par do
+  // sz_g3d_on_touch_group): evento, dispara UMA vez por membro a cada novo encontro.
+  | (JSStatementCommon & {
+      type: 'g2d:onTouchGroup'
+      spriteVar: string
+      groupVar: string
+      itemName: string
+      body: JSStatement[]
+    })
   // "Quando o sprite pular" (o motor avisa) e "qualquer tecla ou toque".
   | (JSStatementCommon & { type: 'g2d:onJump'; spriteVar: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'g2d:onAnyInput' | 'g2d:updateEachFrame'; body: JSStatement[] })
@@ -6231,6 +6240,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:onOverlap'),
       aVar: irText(),
       bVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onTouchGroup'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      itemName: irText(),
       body: z.array(JSStatementSchema),
       ...idField,
     }),
@@ -11108,6 +11125,7 @@ const G2D_REGISTERED_EVENT_TYPES = new Set([
   'g2d:onKey',
   'g2d:onActionPressed',
   'g2d:onOverlap',
+  'g2d:onTouchGroup',
   'g2d:onJump',
   'g2d:onAnyInput',
   'g2d:onLevelEnter',
@@ -11421,6 +11439,7 @@ function g2dLocalNames(statement: JSStatement): string[] {
     case 'g2d:onGroupOverlap':
       return [record.aName, record.bName].filter((name): name is string => typeof name === 'string')
     case 'g2d:onGroupClick':
+    case 'g2d:onTouchGroup':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':
@@ -11801,6 +11820,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:setGravity',
   'g2d:applyVelocity',
   'g2d:applyGravity',
+  'g2d:onTouchGroup',
   'g2d:onJump',
   'g2d:onAnyInput',
   'g2d:bounceOnEdges',

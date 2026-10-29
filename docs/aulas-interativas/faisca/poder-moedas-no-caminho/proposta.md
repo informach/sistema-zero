@@ -80,26 +80,24 @@ e o número de moedas escrito na tela. O baú tem o clipe `abrir`. Mesma meta: c
 O grupo é preparado porque a ideia nova é o contador, não a coleção. A criança usa o encontro
 "com alguma moeda do grupo" do mesmo jeito que usou o encontro com a chave.
 
-## 4. O encontro com "alguma moeda": blocos que já existem
+## 4. O encontro com "alguma moeda": o mesmo evento no 2D e no 3D
 
-Antes de criar qualquer bloco, o catálogo inteiro das duas extensões foi conferido (29/10/2026).
-Não há bloco novo neste Poder: tudo o que a montagem pede já existe no nível iniciante.
+O catálogo inteiro das duas extensões foi conferido (29/10/2026) antes de qualquer bloco novo.
 
-- **2D:** "Para cada sprite do grupo `moedas` que colidir com o sprite `personagem`, chamar o
-  sprite de `moeda`, fazer …" (`sz_g2d_on_sprite_group_overlap`), no núcleo de entrada do Jogo 2D
-  (`initialCore.ts`, nível `iniciante-2d`). É um comando de **🔁 Enquanto estiver rodando**, não
-  um evento: roda a cada quadro enquanto a moeda encosta. É o mesmo jeito que o exemplo Vale
-  Ensolarado usa para pegar as gemas ("Tirar do grupo" + somar os pontos).
 - **3D:** "Quando `personagem` encostar em algum do grupo `moedas`, chamando de `moeda`"
-  (`sz_g3d_on_touch_group`) e "Remover `moeda` da cena", no conjunto iniciante do Jogo 3D.
-- Também existem no iniciante: "Tirar o sprite do grupo", "Mostrar placar … valor …", "Trocar a
-  imagem do sprite" (2D); "Escrever na tela", "Tocar a animação", "Girar", "Criar grupo" (3D).
+  (`sz_g3d_on_touch_group`) e "Remover `moeda` da cena", no iniciante do Jogo 3D.
+- **2D:** existia o "Para cada sprite do grupo que colidir com o sprite" (laço, a cada quadro, em
+  🔁 Enquanto estiver rodando), mas não o **evento** de grupo. Decisão da dona (29/10/2026):
+  alinhar o 2D ao 3D. Foi criado o evento **"Quando o sprite `personagem` começar a encostar em
+  algum do grupo `moedas`, chamando de `moeda`"** (`sz_g2d_on_touch_group`), no núcleo de entrada
+  do Jogo 2D. O laço antigo continua para o que é contínuo (perder vida na lava).
+- Também já existiam no iniciante: "Tirar o sprite do grupo", "Mostrar placar … valor …",
+  "Trocar a imagem do sprite" (2D); "Escrever na tela", "Tocar a animação", "Girar", "Criar
+  grupo" (3D).
 
-Consequência para a aula 2D, que vira uma descoberta a mais: como o bloco do 2D roda a cada
-quadro, **se a moeda não sair do grupo, ela conta sem parar** enquanto o personagem estiver em
-cima. Tirar a moeda é o que faz cada moeda contar uma vez só. No 3D o encontro é um evento (conta
-ao começar a encostar), mas a moeda continua precisando sumir, senão conta de novo a cada nova
-encostada. A ideia de "cada moeda conta uma vez" fica igual nas duas dimensões.
+Com isso a criança monta a coleta igual nas duas dimensões, na área ⚡ Quando acontecer, como já
+fez com a chave do Farol. Nas duas, se a moeda não sumir, ela conta de novo a cada nova
+encostada: tirar a moeda é o que faz cada moeda contar uma vez só.
 
 ## 5. Aula 1: Cada moeda conta (2D, `aula-1`)
 
@@ -203,8 +201,8 @@ e voz, ensaio com crianças e publicação ficam com a equipe.
 
 1. Um curso com duas aulas (2D na `aula-1` reservada, 3D numa `aula-2` criada no Admin), sem
    mudar o currículo do seed.
-2. ~~Opção A do §4: bloco novo do Jogo 2D~~. Substituído (29/10/2026): o bloco do grupo já
-   existe no iniciante do Jogo 2D e será usado; nenhum bloco novo (§4).
+2. O evento de grupo do Jogo 2D (§4): aprovado e criado em 29/10/2026, depois de conferido
+   que ele não existia em degrau nenhum.
 3. O jogo: seis moedas, meta "pelo menos cinco", baú como recompensa opcional, farol e chave
    intactos.
 4. A experiência, o quiz e os objetivos como descritos.

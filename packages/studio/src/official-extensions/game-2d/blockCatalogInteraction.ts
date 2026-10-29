@@ -66,6 +66,27 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
       'Roda o que está dentro quando os dois sprites se encostam (ex.: pegar moeda, levar dano). Dispara uma vez a cada vez que começam a encostar.',
   },
   {
+    // O par do "Quando encostar em algum do grupo" do Jogo 3D: evento, uma vez por
+    // membro a cada novo encontro. O "Para cada sprite do grupo que colidir" (laço,
+    // a cada quadro) continua para o que é contínuo.
+    type: 'sz_g2d_on_touch_group',
+    placement: 'event',
+    message0: 'Quando o sprite %1 começar a encostar em algum do grupo %2, chamando de %3',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'moedas', kind: 'group' },
+      { type: 'field_input', name: 'ITEM', text: 'moeda' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Roda o que está dentro quando o sprite começa a encostar num sprite do grupo, com esse sprite no nome escolhido (ex.: pegar a moeda). Dispara uma vez por encontro.',
+  },
+  {
     // Sem userGesture: este dispara DENTRO do laço do jogo, não na pilha de um
     // gesto do navegador (≠ do "qualquer tecla ou toque", logo abaixo).
     type: 'sz_g2d_on_jump',

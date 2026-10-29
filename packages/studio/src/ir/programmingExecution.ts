@@ -116,6 +116,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:onActionPressed',
     'g2d:onAnyInput',
     'g2d:onOverlap',
+    'g2d:onTouchGroup',
     'g2d:onJump',
     'g2d:onLevelEnter',
     'g2d:onEnemyDefeated',
@@ -347,6 +348,7 @@ function localVariablesForChild(
     case 'g2d:forEachTileContact':
       return first === 'body' ? [statement.contactName] : []
     case 'g2d:onGroupClick':
+    case 'g2d:onTouchGroup':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':

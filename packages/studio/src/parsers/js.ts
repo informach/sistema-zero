@@ -3400,6 +3400,21 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!aVar || !bVar || !isFn(args[2])) return null
       return { type: 'g2d:onOverlap', aVar, bVar, body: bodyOfFn(args[2], source, ctx) }
     }
+    case 'onTouchGroup': {
+      // generator: SZGame2D.onTouchGroup(() => sprite, () => grupo, (item) => {…}, "id")
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const groupVar = arrowReturnIdentifier(args[1])
+      if (!spriteVar || !groupVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'moeda'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onTouchGroup',
+        spriteVar,
+        groupVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
     case 'onJump': {
       // generator: SZGame2D.onJump(() => sprite, function(){…}) — thunk, como o onOverlap
       const spriteVar = arrowReturnIdentifier(args[0])

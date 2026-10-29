@@ -55,6 +55,7 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
   // ordem dos blocos no topo não causa erro de "antes de declarar".
   var overlapHandlers = Object.create(null);
   var _overlapOrder = [];
+  var _touchGroupLabel = '“Quando começar a encostar em algum do grupo”';
   function _runOverlapHandlers() {
     // "Pausar o jogo" congela também a checagem de sobreposição: sem isto, dois
     // sprites parados encostados seguiriam disparando o "quando encostar", e ao
@@ -66,6 +67,35 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
         var id = handlers[i];
         var h = overlapHandlers[id];
         if (!h) continue;
+        // "Quando começar a encostar em algum do grupo": o conjunto dos membros que
+        // encostavam no quadro anterior; cada membro dispara UMA vez por encontro, e
+        // quem sai do grupo (ou é destruído) sai do conjunto.
+        if (h.getGroup) {
+          var touching = new Set(), sprite, group;
+          try {
+            sprite = _invokeProjectCallback(h.getA, h, []);
+            group = _invokeProjectCallback(h.getGroup, h, []);
+            if (_runGenerationChanged(generation)) return;
+            if (sprite && !_isDestroyedSprite(sprite) && group && group.items) {
+              var traversal = _beginGroupTraversal(group);
+              for (var t = 0; t < traversal.items.length && !_isDestroyedSprite(sprite); t++) {
+                _refreshGroupTraversal(group, traversal);
+                var it = traversal.items[t];
+                if (!it || it === sprite || !traversal.members.has(it) || _isDestroyedSprite(it) || !isColliding(sprite, it)) continue;
+                touching.add(it);
+                if (h.touching.has(it)) continue;
+                _invokeProjectCallback(h.fn, h, [it]);
+                if (_runGenerationChanged(generation)) return;
+              }
+            }
+            h.touching = touching;
+          } catch (error) {
+            _reportHandlerError(_touchGroupLabel, id, error);
+            _removeOrderedIfCurrent(overlapHandlers, _overlapOrder, id, h);
+            if (_runGenerationChanged(generation)) return;
+          }
+          continue;
+        }
         var a = null, b = null;
         try {
           a = _invokeProjectCallback(h.getA, h, []);
@@ -90,6 +120,17 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
         h.wasOverlapping = over;
       }
     }
+  }
+  function onTouchGroup(getSprite, getGroup, fn, id) {
+    if (typeof getSprite !== 'function' || typeof getGroup !== 'function' || typeof fn !== 'function') return;
+    if (_runningLoopId && !id) {
+      warnOnce('evento-contato-grupo-no-quadro', _touchGroupLabel + ' deve ficar fora de “A cada quadro”.');
+      return;
+    }
+    var handlerId = _stableHandlerId('contato-grupo', id, fn);
+    if (!overlapHandlers[handlerId]) _overlapOrder.push(handlerId);
+    overlapHandlers[handlerId] = { getA: getSprite, getGroup: getGroup, fn: fn, touching: new Set() };
+    _ensureDriver();
   }
   function onOverlap(getA, getB, fn, id) {
     if (typeof getA !== 'function' || typeof getB !== 'function' || typeof fn !== 'function') return;

@@ -415,7 +415,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +1: `_inspectSpriteBounds(sprite)` tem tipo JSDoc e reutiliza a projeção oficial.
   // +1: `_inspectSpritePosition(sprite)` tem JSDoc GameTwoDSprite explícito.
   // +1: `_inspectContactBounds(sprite)` tem JSDoc GameTwoDSprite e lê a caixa de colisão sem mutar.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1491)
+  // +4 (29/10/2026): `onTouchGroup(getSprite, getGroup, fn, id)`, tipado pela interface
+  // pública do contrato, como o `onOverlap` ao lado.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1495)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

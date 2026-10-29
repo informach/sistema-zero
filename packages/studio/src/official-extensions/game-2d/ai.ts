@@ -103,6 +103,11 @@ Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
   Bloco "Quando o sprite pular".
 - onOverlap(() => a, () => b, fn): roda fn quando os sprites a/b COMEÇAM a se tocar
   (edge-triggered, num loop interno). Os sprites entram como thunks (() => sprite).
+- onTouchGroup(() => sprite, () => grupo, (item) => {…}, id?): roda UMA vez quando o
+  sprite COMEÇA a encostar em algum do grupo, com esse membro em item (ex.: pegar
+  moeda: removeFromGroup + somar 1). Em ⚡ Quando acontecer. Bloco "Quando o sprite
+  começar a encostar em algum do grupo, chamando de …". O overlapSpriteGroup (a cada
+  quadro, no gameLoop) fica para o que é contínuo, como perder vida na lava.
 - keyDown('ArrowRight'): true enquanto a tecla está segurada — use dentro de if/gameLoop.
 - touches(a, b): true enquanto os dois sprites se tocam — use dentro de if.
 

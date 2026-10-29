@@ -63,6 +63,25 @@ placa de vídeo, o primeiro desenho com os modelos trava os quadros por 4 a 6 s,
 apertadas ali não andavam nada. O robô de navegação 3D segura a seta nos trechos longos
 (`check-approach-3d.mjs`). Declarado no `HOST_CONTRACT` do `runtimeTypecheck` do Jogo 3D.
 
+## Jogo 2D: "Quando começar a encostar em algum do grupo" (29/10/2026)
+
+Decisão dela, para o Poder "Moedas no caminho": alinhar o 2D ao 3D no encontro com GRUPO.
+Antes, o catálogo inteiro foi conferido: o 2D tinha o evento sprite×sprite (`sz_g2d_on_overlap`)
+e o laço por quadro "Para cada sprite do grupo que colidir" (`sz_g2d_on_sprite_group_overlap`),
+mas não o EVENTO de grupo que o 3D tem (`sz_g3d_on_touch_group`). Bloco novo
+**`sz_g2d_on_touch_group`** ("Quando o sprite … começar a encostar em algum do grupo …, chamando
+de …", ⚡ Quando acontecer, núcleo de entrada do iniciante), IR `g2d:onTouchGroup`
+(`spriteVar`/`groupVar`/`itemName`), runtime `onTouchGroup(() => sprite, () => grupo, (item) =>
+{…}, id)`, o mesmo nome do 3D.
+- Mora na MESMA tabela do `onOverlap` (`overlapHandlers`, `worldEvents.ts`): herda pausa,
+  reinício, geração e o desligamento do handler que falha. Guarda o `Set` dos membros que
+  encostavam no quadro anterior: um disparo por membro a cada encontro; quem sai do grupo sai do
+  conjunto.
+- O laço antigo não mudou (regra do bloco congelado) e continua para o que é contínuo.
+- Catracas medidas e registradas: runtime cru 421.105 (teto 422.500), +4 parâmetros (1495).
+- Testes: `game-2d/__tests__/touchGroup.test.ts` (provado por mutação) e
+  `blockly/__tests__/gameCtxRoundtrip.test.ts` (Ponte).
+
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e

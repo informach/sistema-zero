@@ -17,5 +17,8 @@ da extensão (todos os `blockCatalog*.ts`, a paleta e os degraus em `blockly/blo
 bloco existe num degrau acima, a proposta é descê-lo para o iniciante; bloco novo só quando ele
 realmente não existe. No Jogo 2D, todo `sz_g2d_*` já é `iniciante-2d` (o `initialCore.ts` é só o
 recorte editorial de entrada); no Jogo 3D, o iniciante é o conjunto `INICIANTE_3D_G3D`.
+Como cada Poder vem nas duas dimensões, comparar também 2D com 3D: quando a mesma ideia tem bloco
+num lado e não no outro, a escolha dela é alinhar (29/10/2026: o evento "Quando começar a encostar
+em algum do grupo" ganhou o par no Jogo 2D).
 
 [Todos os postos](../README.md) · [Regras da jornada](../../jornada-do-criador.md)

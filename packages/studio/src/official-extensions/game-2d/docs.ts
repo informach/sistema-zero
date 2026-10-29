@@ -265,7 +265,8 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **Colisões com grupos**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
   "fazer" com os dois sprites; \`Para cada sprite do grupo que encostar no sprite\`
   compara um sprite com qualquer grupo. Os dois ficam em **Colisões** e são usados dentro
-  do "a cada quadro".
+  do "a cada quadro". Para PEGAR (moedas), use o evento \`Quando o sprite começar a
+  encostar em algum do grupo\` em **Quando acontecer**: roda uma vez por encontro.
 - **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos) e
   \`Depois de N segundos fazer\` (roda UMA vez por partida: mensagem de abertura, chegada
   do chefe; reiniciar o jogo re-arma). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.

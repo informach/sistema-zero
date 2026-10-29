@@ -199,6 +199,7 @@ export const GAME_TWO_D_PALETTE = [
           'sz_g2d_touches',
           'sz_g2d_circle_touches',
           'sz_g2d_on_overlap',
+          'sz_g2d_on_touch_group',
           'sz_g2d_collide_group',
           'sz_g2d_collide_sprite',
           'sz_g2d_collide_platform',
