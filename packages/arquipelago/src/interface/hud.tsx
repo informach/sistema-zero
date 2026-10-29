@@ -35,6 +35,7 @@ import { PainelDaRotina, RotinaAndando } from './rotina'
 import { ControlesDeToque } from './toque'
 import { PainelDoTurno } from './turno'
 import { FaixaDaVisita, PainelDasVisitas, RecordesDaFamilia, voltarDaVisita } from './visitas'
+import { useVoz } from './voz'
 
 function Necessidades() {
   const n = useEstado((s) => s.salvamento.necessidades)
@@ -287,7 +288,7 @@ function Cronometro() {
 
 /** A tela curta do fim do percurso: estrelas, tempo, melhor tempo e correr de novo. */
 function Resultado() {
-  const { loja, movimento } = useJogo()
+  const { loja, movimento, plataforma } = useJogo()
   const r = useEstado((s) => s.resultado)
   const continuar = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -355,7 +356,8 @@ function Resultado() {
             </dd>
           </div>
         </dl>
-        <RecordesDaFamilia percurso={r.percurso} />
+        {/* Família e irmãos são do Kids: a comunidade adulta não lê `/irmaos`. */}
+        {plataforma.publico === 'kids' ? <RecordesDaFamilia percurso={r.percurso} /> : null}
         <div className="arq-menu-acoes">
           <button
             type="button"
@@ -407,6 +409,7 @@ type Aviso = { tom: 'ok' | 'atencao'; texto: string } | null
 
 function Menu() {
   const { loja, plataforma, pedidos } = useJogo()
+  const voz = useVoz()
   const visitando = useEstado((s) => s.visita !== null)
   const aberto = useEstado((s) => s.menuAberto)
   const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
@@ -474,18 +477,20 @@ function Menu() {
         >
           📖 Diário
         </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          disabled={ferramentaAberta}
-          onClick={() => {
-            loja.getState().abrirMenu(false)
-            if (loja.getState().visita) voltarDaVisita(loja, pedidos)
-            else loja.getState().abrirPainel(PAINEL_DAS_VISITAS)
-          }}
-        >
-          {visitando ? '🏡 Voltar para a minha casa' : '🏡 Visitar um irmão'}
-        </button>
+        {plataforma.publico === 'kids' ? (
+          <button
+            type="button"
+            className="arq-botao leve"
+            disabled={ferramentaAberta}
+            onClick={() => {
+              loja.getState().abrirMenu(false)
+              if (loja.getState().visita) voltarDaVisita(loja, pedidos)
+              else loja.getState().abrirPainel(PAINEL_DAS_VISITAS)
+            }}
+          >
+            {visitando ? '🏡 Voltar para a minha casa' : '🏡 Visitar um irmão'}
+          </button>
+        ) : null}
         <button
           type="button"
           className="arq-botao leve"
@@ -546,7 +551,7 @@ function Menu() {
             disabled={ferramentaAberta}
             onClick={() => plataforma.voltarParaPlataforma()}
           >
-            Voltar para a plataforma
+            {voz.voltar}
           </button>
         </div>
       </div>

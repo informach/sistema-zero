@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
-import { falaDaLuneta, ilhaDaLuneta } from '../sistemas/luneta'
+import { ilhaDaLuneta } from '../sistemas/luneta'
+import { useVoz } from './voz'
 
 export function VisorDaLuneta() {
   const { loja } = useJogo()
+  const voz = useVoz()
   const jornada = useEstado((s) => s.jornada)
   const ilha = ilhaDaLuneta(jornada)
   const voltar = useRef<HTMLButtonElement>(null)
@@ -32,7 +34,7 @@ export function VisorDaLuneta() {
         <p>
           <strong>Zappy</strong>
           <br />
-          {falaDaLuneta(ilha)}
+          {voz.falaDaLuneta(ilha)}
         </p>
       </div>
     </section>

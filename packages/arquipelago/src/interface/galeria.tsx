@@ -11,6 +11,7 @@ import {
   usarAparencia,
 } from '../sistemas/construcao/galeria'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
+import { useVoz } from './voz'
 
 export type Avisar = (aviso: { tom: 'ok' | 'atencao'; texto: string } | null) => void
 
@@ -32,6 +33,7 @@ function linhaDoSaldo(
  */
 export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avisar: Avisar }) {
   const { loja, plataforma } = useJogo()
+  const voz = useVoz()
   const galeria = lojaDaGaleria(loja, plataforma)
   const dados = useGaleria(galeria, (s) => s.dados)
   const fechada = useGaleria(galeria, (s) => s.fechada)
@@ -76,7 +78,11 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
     if (r.ok) {
       vestir()
       avisar({ tom: 'ok', texto: `Pronto. A ${item.nome} é sua e já está no lugar.` })
-    } else avisar({ tom: 'atencao', texto: recadoDaCompra(r) })
+    } else
+      avisar({
+        tom: 'atencao',
+        texto: r.motivo === 'somente-leitura' ? voz.compraSomenteLeitura : recadoDaCompra(r),
+      })
   }
 
   return (

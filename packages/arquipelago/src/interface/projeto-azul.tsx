@@ -24,6 +24,7 @@ import { ITENS } from '../sistemas/itens'
 import { CartaoDaGaleria, SuasAparencias } from './galeria'
 import { MinijogosDoFliperama } from './minijogos'
 import { ListaDeReceitas } from './receitas'
+import { useVoz } from './voz'
 
 function objetoDoPainel(painel: string | null): ObjetoDaCasa | null {
   if (!painel?.startsWith('objeto:')) return null
@@ -114,6 +115,7 @@ function Geladeira() {
  */
 export function PainelDoObjeto() {
   const { loja, plataforma } = useJogo()
+  const voz = useVoz()
   const painel = useEstado((s) => s.painelAberto)
   const id = objetoDoPainel(painel)
   const projeto = useEstado((s) => (id ? s.salvamento.projetos[id] : undefined))
@@ -210,9 +212,7 @@ export function PainelDoObjeto() {
               {molda ? '🧊' : '🔒'}
             </span>
             <b>Modelar no Molda</b>
-            <small>
-              {molda ? 'A forma inteira dentro do molde' : 'Abre no posto Explorador(a) de Mundos'}
-            </small>
+            <small>{molda ? 'A forma inteira dentro do molde' : voz.moldaFechado}</small>
           </button>
           <CartaoDaGaleria objeto={id} avisar={setAviso} />
         </div>

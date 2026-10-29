@@ -52,6 +52,19 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 ## Entrada e porta
 
+- **Pele adulta (fase3-13, 29/10/2026):** a voz das telas que falam da plataforma mora em
+  `interface/voz.ts` (`VozDoJogo`, `VOZ_KIDS`, `VozContexto`, `useVoz`: telas de abrir, fechado,
+  descanso e erro, o "voltar", a luneta, o Molda fechado e a compra no suporte). O adulto fica em
+  `src/adulto/` (`voz-adulta.ts`, `estilos-adultos.ts`, juntos em `pele-adulta.ts`), e ⚠️ só o
+  `jogo.tsx` chega lá, por `import()` (`usePele`): o build separa o pedaço e o Kids não o baixa
+  (`tests/pele-do-jogo.test.tsx` trava). A `entrada.tsx` dá `.arq-adulto` à raiz e todo o CSS
+  adulto vive dentro dela; o piso de 15 px é gerado do próprio `ESTILOS` (`pisoDaLetra`), então
+  regra nova do Kids já nasce coberta. Texto novo que fale da plataforma, da jornada ou da família
+  entra na voz (com a versão adulta), não solto no componente. Família (visitas, recordes) só com
+  `plataforma.publico === 'kids'`. O mundo não lê a voz ainda: a placa da ponte e a fala da luneta
+  do `mundo/` usam os postos do Kids. Navegador: `playground/verificar-pele-adulta-browser.ts`
+  (`?publico=adulto`, computador e celular emulado, a tela de fechado e o Kids de sempre).
+
 - `src/entrada.tsx`: `montarArquipelago(elemento, plataforma)` cria a própria raiz React, injeta o
   CSS (tudo com prefixo `arq-`) e devolve `desmontar()`. Confere `versaoContrato`.
 - Tudo o que o jogo sabe da plataforma passa pelo objeto `Plataforma` do contrato (ler jornada,

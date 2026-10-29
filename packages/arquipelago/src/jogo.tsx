@@ -17,6 +17,7 @@ import { Relogios } from './estado/relogios'
 import { Hud } from './interface/hud'
 import { SalvamentoDoJogo } from './interface/salvamento'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
+import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
 import { criarArmazemDeSalvamento, JogoAbertoEmOutraAbaError } from './sistemas/armazem-salvamento'
@@ -309,7 +310,48 @@ function JogoPronto({
   )
 }
 
+type Pele = { voz: VozDoJogo; estilos: string | null }
+const PELE_KIDS: Pele = { voz: VOZ_KIDS, estilos: null }
+
+/**
+ * A pele de cada público. O Kids já está no pedaço principal; o adulto baixa o pedaço dele
+ * (`adulto/pele-adulta.ts`) antes da primeira tela. Se esse pedaço falhar, o jogo abre com a voz
+ * e o desenho do Kids em vez de não abrir (o erro vai para `relatarErro`).
+ */
+function usePele(plataforma: Plataforma): Pele | null {
+  const { publico } = plataforma
+  const [adulta, setAdulta] = useState<Pele | null>(null)
+  useEffect(() => {
+    if (publico !== 'adulto') return
+    let vivo = true
+    import('./adulto/pele-adulta')
+      .then((m) => {
+        if (vivo) setAdulta({ voz: m.VOZ_ADULTA, estilos: m.ESTILOS_ADULTOS })
+      })
+      .catch((erro) => {
+        plataforma.relatarErro(erro, 'pele-adulta')
+        if (vivo) setAdulta(PELE_KIDS)
+      })
+    return () => {
+      vivo = false
+    }
+  }, [publico, plataforma])
+  return publico === 'adulto' ? adulta : PELE_KIDS
+}
+
 export function Jogo({ plataforma }: { plataforma: Plataforma }) {
+  const pele = usePele(plataforma)
+  return pele ? (
+    <VozContexto.Provider value={pele.voz}>
+      {pele.estilos ? <style>{pele.estilos}</style> : null}
+      <JogoNaPele plataforma={plataforma} />
+    </VozContexto.Provider>
+  ) : (
+    <div className="arq-tela" role="status" aria-busy="true" />
+  )
+}
+
+function JogoNaPele({ plataforma }: { plataforma: Plataforma }) {
   const [situacao, setSituacao] = useState<Situacao>({ tipo: 'carregando' })
   const tentativa = useRef(0)
 
