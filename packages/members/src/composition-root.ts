@@ -1172,6 +1172,7 @@ export async function createApplication(env: Env): Promise<Application> {
       }),
       objetivos: new ArquipelagoObjectivesService({ verificador: sectionProgression }),
       aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
+      saldo: gamificationRepo,
       token: env.ARQUIPELAGO_MEMBERS_TOKEN,
     },
     liveMaterials,

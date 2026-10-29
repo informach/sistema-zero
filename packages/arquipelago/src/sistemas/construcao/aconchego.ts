@@ -112,8 +112,9 @@ export function aconchegoDosComodos(
     d.tipos.add(o.id)
     if (LUZES_DA_OBRA.includes(o.id)) d.luzes.add(o.id)
     if (PLANTAS_DA_OBRA.includes(o.id)) d.plantas.add(o.id)
-    const origem = projetos[o.id]?.aparencia?.origem
-    if (origem === 'pinta' || origem === 'molda' || origem === 'criacao') d.proprios.add(o.id)
+    // Feito por ela conta pelas aparências que ela guarda, não só pela em uso: comprar (ou usar) a
+    // da galeria nunca tira o ponto de quem já fez a dela (29/10/2026).
+    if (projetos[o.id]?.aparencias.some((a) => a.origem !== 'galeria')) d.proprios.add(o.id)
   }
   return p.comodos.map((comodo, i) => {
     const d = dados[i]!

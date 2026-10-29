@@ -194,3 +194,12 @@ export const AulasConcluidasDosMembrosSchema = z.strictObject({
     .max(PERFIS_DA_FAMILIA_MAXIMO),
 })
 export type AulasConcluidasDosMembros = z.infer<typeof AulasConcluidasDosMembrosSchema>
+
+/**
+ * `GET /members/internal/arquipelago/saldo?userId=&accountId=&audience=` (29/10/2026): as moedas
+ * Zappy de quem joga, para o cartão da galeria mostrar o saldo antes de comprar.
+ */
+export const SaldoDosMembrosSchema = z.strictObject({
+  saldo: z.number().int().min(0),
+})
+export type SaldoDosMembros = z.infer<typeof SaldoDosMembrosSchema>

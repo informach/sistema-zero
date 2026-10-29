@@ -20,7 +20,10 @@ test('V4 preserva construção local ao conciliar progresso remoto independente'
 })
 
 test('V4 preserva projeto azul local ao conciliar progresso remoto independente', () => {
-  const local = { ...base, projetos: { geladeira: { ganhoEm: base.criadoEm, aparencia: null } } }
+  const local = {
+    ...base,
+    projetos: { geladeira: { ganhoEm: base.criadoEm, aparencia: null, aparencias: [] } },
+  }
   const remoto = { ...base, casa: { portaNova: true } }
   expect(conciliarSalvamento(base, local, remoto)).toEqual({ ...local, casa: remoto.casa })
 })
@@ -29,7 +32,9 @@ test('V4 não separa transferência da mochila para a geladeira', () => {
   const antes = {
     ...base,
     inventario: { milho: 2 },
-    projetos: { geladeira: { ganhoEm: base.criadoEm, aparencia: null, guardado: {} } },
+    projetos: {
+      geladeira: { ganhoEm: base.criadoEm, aparencia: null, aparencias: [], guardado: {} },
+    },
   }
   const local = {
     ...antes,

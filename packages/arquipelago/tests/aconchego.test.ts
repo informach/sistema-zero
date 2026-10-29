@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type {
+  AparenciaDoObjeto,
   Obra,
   ProjetoAzul,
   QuartoDoJogo,
@@ -39,7 +40,13 @@ function sala(w = 4, h = 4): Obra {
     ],
   }
 }
-const ganho: ProjetoAzul = { ganhoEm: '2026-10-28T12:00:00Z', aparencia: null }
+const ganho: ProjetoAzul = { ganhoEm: '2026-10-28T12:00:00Z', aparencia: null, aparencias: [] }
+/** O projeto usando esta aparência (V6: a em uso fica entre as guardadas, com as outras). */
+const usando = (aparencia: AparenciaDoObjeto, ...outras: AparenciaDoObjeto[]): ProjetoAzul => ({
+  ...ganho,
+  aparencia,
+  aparencias: [...outras, aparencia],
+})
 const quarto = (ids: string[]): QuartoDoJogo => ({
   theme: 'padrao',
   pet: null,
@@ -85,21 +92,32 @@ describe('aconchego por cômodo', () => {
     expect(azul.total).toBeGreaterThan(vazio.total)
     expect(azul.luz).toBe(2)
     const comprado = medir(o, {
-      lareira: { ...ganho, aparencia: { origem: 'galeria', id: 'modelo' } },
+      lareira: usando({ origem: 'galeria', id: 'lareira-classica' }),
     })
     expect(comprado).toEqual(azul)
     for (const origem of ['pinta', 'molda', 'criacao'] as const) {
-      const proprio = medir(o, { lareira: { ...ganho, aparencia: { origem, id: 'minha' } } })
+      const proprio = medir(o, { lareira: usando({ origem, id: 'minha' }) })
       expect(proprio.total).toBe(azul.total + 1)
       expect(proprio.variedade).toBe(azul.variedade)
       expect(proprio.luz).toBe(azul.luz)
       expect(proprio.capricho).toBe(azul.capricho)
     }
   })
+  test('comprar (ou usar) a da galeria nunca tira o ponto de quem fez a dela', () => {
+    const o = sala()
+    o.objetos = [{ id: 'lareira', x: 1, z: 1, giro: 0 }]
+    const minha = { origem: 'pinta' as const, id: 'minha' }
+    const pintada = medir(o, { lareira: usando(minha) })
+    const comprada = medir(o, {
+      lareira: usando({ origem: 'galeria', id: 'lareira-classica' }, minha),
+    })
+    expect(comprada).toEqual(pintada)
+    expect(comprada.feitoPorVoce).toBe(1)
+  })
   test('repetir tipo não aumenta variedade, luz nem bônus próprio', () => {
     const o = sala()
     o.objetos = [{ id: 'lareira', x: 1, z: 1, giro: 0 }]
-    const projetos = { lareira: { ...ganho, aparencia: { origem: 'pinta' as const, id: 'minha' } } }
+    const projetos = { lareira: usando({ origem: 'pinta', id: 'minha' }) }
     const antes = medir(o, projetos)
     o.objetos.push({ id: 'lareira', x: 2, z: 1, giro: 0 })
     expect(medir(o, projetos)).toEqual(antes)
@@ -195,7 +213,7 @@ describe('aconchego por cômodo', () => {
       { tipo: 'janela-arco', eixo: 'z', x: 0, z: 2 },
     ]
     const projetos = Object.fromEntries(
-      o.objetos.map((v) => [v.id, { ...ganho, aparencia: { origem: 'galeria', id: 'comprado' } }]),
+      o.objetos.map((v) => [v.id, usando({ origem: 'galeria', id: `${v.id}-classica` })]),
     ) as Salvamento['projetos']
     const c = medir(o, projetos)
     expect(c.feitoPorVoce).toBe(0)

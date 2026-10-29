@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   AcessoSchema,
+  APARENCIAS_GUARDADAS_MAXIMO,
   CATALOGO_DE_OBJETOS,
   criarSalvamentoInicial,
   diaDeSaoPaulo,
@@ -20,6 +21,7 @@ import {
   migrarDaV2,
   migrarDaV3,
   migrarDaV4,
+  migrarDaV5,
   migrarSalvamento,
   normalizarLimiteDiario,
   OBJETOS_DA_CASA,
@@ -36,7 +38,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV5Schema,
+  SalvamentoV6Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 
@@ -181,19 +183,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV5Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV6Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 5, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 6, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(5)
+    expect(r.salvamento.versao).toBe(6)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -323,7 +325,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(5)
+    expect(v3?.versao).toBe(6)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -331,7 +333,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       presenteEm: null,
       pedido: null,
     })
-    expect(migrarDaV4(migrarDaV3(migrarDaV2(v2)))).toEqual(v3 as NonNullable<typeof v3>)
+    expect(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))).toEqual(v3 as NonNullable<typeof v3>)
   })
 
   test('guarda a amizade, o pedido do dia, os achados e o bicho adotado', () => {
@@ -408,11 +410,11 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
     } = inicial()
     const v3: SalvamentoV3 = { ...resto, versao: 3, casa: { portaNova: true } }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(5)
+    expect(v4?.versao).toBe(6)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
-    expect(migrarDaV4(migrarDaV3(v3))).toEqual(v4 as NonNullable<typeof v4>)
+    expect(migrarDaV5(migrarDaV4(migrarDaV3(v3)))).toEqual(v4 as NonNullable<typeof v4>)
   })
 
   test('guarda a obra da casa, a cabana do Bosque e a geladeira com o que está dentro', () => {
@@ -423,11 +425,13 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
         geladeira: {
           ganhoEm: agora.toISOString(),
           aparencia: null,
+          aparencias: [],
           guardado: { salada: 2, pipoca: 2 },
         },
         casinha: {
           ganhoEm: agora.toISOString(),
           aparencia: { origem: 'pinta' as const, id: 'c1' },
+          aparencias: [{ origem: 'pinta' as const, id: 'c1' }],
         },
       },
     }
@@ -470,9 +474,15 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       caminhos: Array.from({ length: 240 }, (_, i) => ({ ...ponto(i), tipo: 'grama' as const })),
       canteiros: Array.from({ length: 18 }, (_, i) => ponto(i)),
     })
+    // O pior caso da V6: cada objeto com as 12 aparências guardadas, todas com o id mais longo.
+    const aparencias = Array.from({ length: APARENCIAS_GUARDADAS_MAXIMO }, (_, i) => ({
+      origem: 'criacao' as const,
+      id: `${i}`.padStart(80, 'x'),
+    }))
     const projeto = {
       ganhoEm: agora.toISOString(),
-      aparencia: { origem: 'criacao' as const, id: 'x'.repeat(80) },
+      aparencia: aparencias[0],
+      aparencias,
     }
     const s = {
       ...inicial(),

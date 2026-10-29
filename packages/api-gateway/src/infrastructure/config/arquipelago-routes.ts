@@ -112,6 +112,23 @@ export function arquipelagoGateway(opts: {
         pathPattern: '/arquipelago/cartas',
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
+      // A galeria (29/10/2026): ler o que ela comprou e o saldo, e comprar uma aparência. Comprar
+      // gasta moedas pelo Members: corpo pequeno e um ritmo de quem toca num botão.
+      {
+        ...jogador,
+        id: 'arquipelago-galeria',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/galeria',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-galeria-compras',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/galeria/compras',
+        maxBodyBytes: 1024,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
       // Desafios de quem joga (o serviço decide se estão ligados: ARQUIPELAGO_DESAFIOS). Conferir
       // leva o projeto do Estúdio e roda o jogo no executor pelo Members: corpo e prazo das aulas.
       {

@@ -20,6 +20,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
+import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 
 /**
@@ -53,6 +54,8 @@ export interface OpcoesDaPlataformaFalsa {
   bichos?: 'achados'
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
   cartas?: CartasDoPlayground
+  /** A galeria: o saldo de moedas (`moedas`, padrão 80) ou `situacao: 'fora-do-ar'` (424). */
+  galeria?: OpcoesDaGaleriaFalsa
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -83,6 +86,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const publico = o.publico ?? 'kids'
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
   const desafios = criarDesafiosFalsos(o.posicao ?? 2, { dia: o.dia, agora })
+  const galeria = criarGaleriaFalsa(o.galeria)
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
@@ -210,6 +214,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       async buscar(caminho, opcoes) {
         if (caminho === '/minijogos') return { status: 200, corpo: { minijogos: [] } }
         const metodo = opcoes?.metodo ?? 'GET'
+        const daGaleria = galeria.buscar(caminho, metodo, opcoes?.corpo)
+        if (daGaleria) return daGaleria
         if (caminho.startsWith('/desafios')) {
           if (o.desafios === 'desligados')
             return { status: 403, corpo: { error: { code: 'DESAFIOS_DESLIGADOS' } } }
@@ -223,6 +229,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/salvamento' && metodo === 'PUT') {
           const corpo = GravarSalvamentoSchema.safeParse(opcoes?.corpo)
           if (!corpo.success) return { status: 400, corpo: { code: 'VALIDATION_ERROR' } }
+          if (!galeria.aceita(corpo.data.salvamento))
+            return { status: 422, corpo: { error: { code: 'APARENCIA_NAO_COMPRADA' } } }
           if (corpo.data.revisaoBase !== guardado.revisao) {
             const conflito: ConflitoDeSalvamento = {
               error: { code: CODIGO_SALVAMENTO_DESATUALIZADO, message: 'Salvo em outro aparelho' },

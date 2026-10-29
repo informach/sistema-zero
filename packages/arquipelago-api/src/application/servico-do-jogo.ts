@@ -1,5 +1,6 @@
 import {
   type Acesso,
+  aparenciaDaGaleria,
   type ComandoSessaoTempo,
   diaDeSaoPaulo,
   type GravarSalvamento,
@@ -9,6 +10,7 @@ import {
   normalizarLimiteDiario,
   type RespostaSessaoTempo,
   SALVAMENTO_MAX_BYTES,
+  type Salvamento,
   type SalvamentoGuardado,
   type TempoRegistrado,
 } from '@sistemazero/arquipelago-contracts'
@@ -18,6 +20,7 @@ import type { RepositorioDoJogo, SalvamentoNoBanco } from '../domain/repositorio
 import type { RepositorioSessoesTempo } from '../domain/repositorio-sessoes-tempo.port'
 import {
   AcessoBloqueadoError,
+  AparenciaNaoCompradaError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
   SessaoTempoNaoPermitidaError,
@@ -37,6 +40,8 @@ export class ServicoDoJogo {
     private readonly politica: PoliticaDeAcesso,
     private readonly agora: () => Date = () => new Date(),
     private readonly sessoesTempo?: RepositorioSessoesTempo,
+    /** As aparências da galeria já pagas (29/10/2026); sem ela, nenhuma da galeria é aceita. */
+    private readonly aparenciasPagas?: (jogadorId: string) => Promise<ReadonlySet<string>>,
   ) {}
 
   async acesso(jogador: Jogador): Promise<Acesso> {
@@ -66,6 +71,7 @@ export class ServicoDoJogo {
     if (new TextEncoder().encode(JSON.stringify(pedido.salvamento)).length > SALVAMENTO_MAX_BYTES) {
       throw new SalvamentoGrandeDemaisError()
     }
+    await this.conferirGaleria(jogador, pedido.salvamento)
     const r = await this.repo.gravarSalvamento({
       jogadorId: jogador.id,
       publico: jogador.publico,
@@ -148,6 +154,24 @@ export class ServicoDoJogo {
       normalizarLimiteDiario(minutos),
       this.agora(),
     )
+  }
+
+  /**
+   * Aparência da galeria só entra paga e no objeto dela: o jogo nunca a ganha de graça escrevendo
+   * no salvamento. Sem nenhuma da galeria, nada é lido.
+   */
+  private async conferirGaleria(jogador: Jogador, salvamento: Salvamento): Promise<void> {
+    const pedidas = new Set<string>()
+    for (const [objeto, p] of Object.entries(salvamento.projetos)) {
+      for (const a of p?.aparencias ?? []) {
+        if (a.origem !== 'galeria') continue
+        if (aparenciaDaGaleria(a.id)?.objeto !== objeto) throw new AparenciaNaoCompradaError()
+        pedidas.add(a.id)
+      }
+    }
+    if (pedidas.size === 0) return
+    const pagas = this.aparenciasPagas ? await this.aparenciasPagas(jogador.id) : new Set<string>()
+    for (const id of pedidas) if (!pagas.has(id)) throw new AparenciaNaoCompradaError()
   }
 
   private exigirLiberado(jogador: Jogador): void {

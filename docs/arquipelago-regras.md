@@ -1210,7 +1210,25 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
     os lados e o topo da caixa; só com as faces no modelo, hoje só a geladeira) e "Modelar no
     Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
     `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
-    a origem e o id da criação). A galeria e "usar uma criação minha" entram com os cartões deles.
+    a origem e o id da criação). "Usar uma criação minha" entra com o cartão dele.
+  - **Da galeria** (fase1-13, 29/10/2026; o terceiro cartão, ao lado do Pinta e do Molda): a
+    aparência pronta, comprada com moedas Zappy. Regras na seção 9.9.
+    - O cartão mostra a miniatura (`MINIATURA_DO_OBJETO`), o nome, o preço e o saldo ("Você tem
+      100 moedas."). "Comprar" pede confirmação ("Comprar a Geladeira clássica por 60 moedas",
+      "Sobram 40 moedas.", "Comprar" e "Agora não"); depois de pago, o holograma vira o modelo e o
+      painel diz "Pronto. A Geladeira clássica é sua e já está no lugar."
+    - Sem saldo, o botão diz "Faltam 50 moedas" e o cartão sugere "Um desafio do Quadro das Cores
+      paga 20 moedas." (o prêmio padrão, `MOEDAS_PADRAO.principal`).
+    - Já é dela: "Usar, já é sua" (não cobra). Em uso: o selo "Em uso".
+    - Galeria fora do ar: "A galeria não abriu agora." no cartão, sem preço inventado; na compra,
+      "A galeria não respondeu agora. Tente de novo daqui a pouco: a mesma compra nunca é cobrada
+      duas vezes." Saldo que não carregou: "Seu saldo não carregou agora." (dá para comprar: o
+      serviço confere). Suporte olhando: "Olhando o jogo como a criança, não dá para comprar."
+  - **Suas aparências** (abaixo dos cartões, só com mais de uma): as que ela já tem para aquele
+    objeto (as feitas por ela e as da galeria pagas), com a em uso marcada. Trocar não cobra.
+    Salvamento V6: cada projeto azul guarda `aparencias` (até 12, `APARENCIAS_GUARDADAS_MAXIMO`); a
+    em uso é sempre uma delas, e no teto sai a mais antiga (a da galeria continua paga no serviço e
+    volta pela lista). Na V5 a aparência em uso vira a única guardada.
   - **O Pinta e o Molda de verdade no molde** (28/10/2026, ponte em
     `member-shell/src/lib/arquipelago-objeto.ts`): a página abre a ferramenta da plataforma por cima
     do jogo, com o mesmo acesso de criar no jogo, e o cabeçalho diz "Molde: Geladeira".
@@ -1260,7 +1278,7 @@ Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação 
 | Luz | 2 por tipo de janela, até 3 tipos, mais 2 por tipo de objeto que ilumina, até 2 tipos, máximo 10 | Uma janela ou fonte já ajuda; repetir não multiplica |
 | Plantas | 2 por tipo, até 3 tipos, máximo 6 | Variedade de plantas, sem tarefa de encher de vasos |
 | Capricho | 2 pelo piso, 2 por ter porta, 2 por ter janela e 2 pelo espaço útil, máximo 8 | Escolhas de construção acessíveis sem compra |
-| Feito por você | 1 por tipo com aparência do Pinta, Molda ou criação guardada, até 3 tipos, máximo 3 | Extra pequeno pela autoria; toda a base continua igual |
+| Feito por você | 1 por tipo com uma aparência do Pinta, Molda ou criação guardada entre as que o objeto guarda (mesmo usando a da galeria), até 3 tipos, máximo 3 | Extra pequeno pela autoria; comprar na galeria nunca tira este ponto (29/10/2026) |
 
 - Os três pisos valem igual, inclusive a tábua inicial. O salvamento não diferencia tábua
   escolhida e padrão. O piso do quarto também recebe a mesma parcela.
@@ -1873,6 +1891,61 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
   - no máximo 5.000 pessoas no cache (`MAXIMO_DE_JOGADORES`), e a mais antiga sai primeiro;
   - falha não fica no cache.
 
+### 9.9 Gastar na galeria (fase1-13, 29/10/2026)
+
+O único gasto de moedas do jogo. A função do objeto já vale no projeto azul; a galeria só compra o
+visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
+
+| Aparência | Objeto | Preço |
+|---|---|---|
+| Planta no vaso (`planta-interior-classica`) | Planta de interior | 30 |
+| Casinha de madeira (`casinha-classica`) | Casinha de bicho | 40 |
+| Forno clássico (`forno-classico`) | Forno | 50 |
+| Geladeira clássica (`geladeira-classica`) | Geladeira | 60 |
+| Lareira de pedra (`lareira-classica`) | Lareira | 60 |
+| Aquário do recife (`aquario-classico`) | Aquário | 70 |
+| Instrumentos da banda (`banda-classica`) | Instrumentos da banda | 70 |
+| Fliperama clássico (`fliperama-classico`) | Fliperama | 70 |
+| Museu dos fósseis (`museu-classico`) | Museu dos fósseis | 70 |
+
+- **Por que esses preços:** de 2 a 4 desafios principais (20 moedas cada), ou uns 4 a 7 desafios do
+  dia (10 e 5); a planta, um enfeite pequeno, custa um desafio e meio. O piso é um desafio (`PRECO_MINIMO_DA_GALERIA` 20) e o teto é metade do teto
+  semanal do jogo (`PRECO_MAXIMO_DA_GALERIA` 75, de 150): algumas tarefas, nunca uma semana
+  inteira. Fica dentro da faixa da loja do quarto e do avatar (30 a 300, mediana 70).
+- **O modelo:** hoje cada aparência é o modelo do Blender do próprio objeto (`modelo: 'objeto'`,
+  `arquipelago/src/assets/objetos/<objeto>.glb`). Os ids são estáveis (estão no banco e nos
+  salvamentos): nunca renomear.
+- **Variações (outras cores e estilos):** o catálogo já recebe mais de uma por objeto. Cada uma é
+  uma entrada nova em `IDS_DA_GALERIA` e `GALERIA`, com nome, preço e um `modelo` novo em
+  `MODELOS_DA_GALERIA`; o arquivo vai para `src/assets/objetos/`, e o jogo escolhe o arquivo pelo
+  `modelo` em `mundo/objetos-da-casa.tsx` (hoje toda aparência mostra o `<objeto>.glb`). A
+  miniatura do cartão é a do objeto (`MINIATURA_DO_OBJETO`); a variação pede a dela.
+- **Como cobra** (`arquipelago-api/src/application/servico-da-galeria.ts`):
+  1. `POST /arquipelago/galeria/compras` com `{aparencia, chave}` (o preço vem do catálogo, nunca
+     do corpo).
+  2. Já paga: devolve o que ela tem, sem cobrar.
+  3. Guarda a compra `pendente` com a chave e o preço (`compras_da_galeria`, uma linha por pessoa
+     e aparência). Uma compra pendente que já existe mantém a chave e o preço dela.
+  4. Pede ao Members o débito pela porta de moedas (`operation: 'debit'`, a mesma carteira, a
+     mesma trava e o mesmo livro de moedas da loja do quarto). A chave é a da compra: repetir
+     nunca cobra duas vezes, nem com outro valor.
+  5. O Members confirmou: a compra vira `paga` e só então vale.
+- **Saldo curto:** 409 `SALDO_INSUFICIENTE` com o preço e o saldo de agora. Nada é cobrado, e a
+  reserva sai (a próxima tentativa começa do zero).
+- **Porta de moedas sem resposta:** 424 e a compra fica `pendente` (não se sabe se cobrou); o
+  próximo pedido repete a mesma chave e, se o Members já tinha cobrado, só confirma.
+- **Recusa definitiva** (dono diferente, chave com outro valor): log
+  `arquipelago.galeria.debito_recusado` e 424.
+- **Suporte olhando** (somente leitura): 403 `SOMENTE_LEITURA`, nada é cobrado nem guardado.
+- **Equipe:** compra sem gastar (como na loja do quarto); o cartão diz "Equipe: comprar não gasta
+  moedas."
+- **O salvamento só aceita a da galeria paga:** ao gravar, toda aparência `galeria` precisa estar
+  paga e ser do objeto dela; senão, 422 `APARENCIA_NAO_COMPRADA` (o jogo nunca a ganha escrevendo
+  no salvamento).
+- **O saldo** vem do Members pela leitura interna `GET /members/internal/arquipelago/saldo` (token
+  de leitura do jogo); fora do ar, o cartão diz que o saldo não carregou e a compra segue (quem
+  confere é o débito).
+
 ## 10. Onde mudar cada número
 
 | Regra | Valor atual | Arquivo e nome |
@@ -1949,6 +2022,9 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 | Moedas padrão | 20 e 10; desafio do dia 10 e 5 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
 | Teto semanal de moedas do jogo | 150 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
+| Preços da galeria | 30 a 70 (seção 9.9) | `arquipelago-contracts/src/galeria.ts`, `GALERIA` |
+| Faixa de preço da galeria | 20 a 75 | `galeria.ts`, `PRECO_MINIMO_DA_GALERIA` e `PRECO_MAXIMO_DA_GALERIA` |
+| Aparências guardadas por objeto | 12 | `salvamento.ts`, `APARENCIAS_GUARDADAS_MAXIMO` |
 | Teto diário dos cursos | 100 | `members/src/domain/gamification/coins.ts`, `DAILY_COIN_CAP` |
 | Prêmios cobrados por leitura da lista | 3 | `arquipelago-api/src/application/servico-dos-desafios.ts`, `COBRANCAS_POR_LISTA` |
 | Prazo da porta de moedas | 5 s | `arquipelago-api/src/infrastructure/members/moedas-http.ts`, `TEMPO_DAS_MOEDAS_MS` |

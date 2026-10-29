@@ -185,6 +185,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `PUT /familia/limite` | responsável do Kids | muda o limite diário da família (padrão 30, de 10 a 240, passo 5) |
 | `GET /familia/semana?perfis=` | responsável do Kids | a semana de cada criança que vê o jogo e que guardou o jogo nesta conta (desafios aprovados, objetos com aparência do Pinta e do Molda, tempo livre na janela); as outras em `aindaSemJogo` |
 | `GET` e `PUT /familia/permissoes` | responsável do Kids | as permissões de visita da família (sem nada gravado, `PERMISSOES_PADRAO`); suporte não grava |
+| `GET /galeria` | jogador liberado | as aparências da galeria pagas, o saldo de moedas (`null` sem a leitura) e `ilimitado` (equipe) |
+| `POST /galeria/compras` | jogador liberado, sem suporte | `{aparencia, chave}`: debita no Members e só então vale; saldo curto → 409 `SALDO_INSUFICIENTE` com `preco` e `saldo`; porta fora → 424 |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 
 - **Quem é quem** (`interfaces/http/identidade.ts`, mesmas regras de sessão do Members): sessão de
@@ -218,6 +220,19 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   cache); Members desligado ou fora = `voltaAoCurso: null`. Permissões em `permissoes_da_familia`, por conta. Testes:
   `tests/unit/semana-da-familia.test.ts`, `tests/integration/familia.test.ts` e
   `tests/db/familia.test.ts` (Postgres local `arquipelago_test`).
+- **Galeria** (fase1-13, 29/10/2026): `ServicoDaGaleria` (`application/servico-da-galeria.ts`),
+  tabela `compras_da_galeria` (uma linha por jogador e aparência: `pendente` com a chave e o preço,
+  `paga` quando o Members confirma), repositório `DrizzleRepositorioDaGaleria`, rotas em
+  `interfaces/http/rotas-da-galeria.ts` (montadas só com a dependência `galeria`). O débito é a
+  porta de moedas de sempre com `operation: 'debit'` (`PortaDoDebito`, o mesmo `MoedasHttp`): a
+  mesma carteira, trava e livro de moedas da loja do quarto. A chave guardada (e o preço guardado)
+  vão em toda tentativa: repetir nunca cobra duas vezes; porta fora deixa `pendente`; saldo curto
+  apaga a reserva. A equipe compra com 0 moedas, sem chamar o Members. O saldo vem de
+  `LeiturasDosMembros.saldo` (`GET /members/internal/arquipelago/saldo`, sem cache). ⚠️ O
+  `ServicoDoJogo` recebe `aparenciasPagas` e recusa (422 `APARENCIA_NAO_COMPRADA`) o salvamento com
+  uma aparência `galeria` não paga ou de outro objeto. `objetosCriados` (a semana dos pais) conta
+  pelas `aparencias` guardadas (salvamento V6). Testes: `tests/integration/galeria.test.ts`,
+  `tests/unit/galeria-portas.test.ts` e `tests/db/galeria.test.ts`.
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",

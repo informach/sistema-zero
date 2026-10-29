@@ -161,6 +161,31 @@ export const permissoesDaFamilia = arquipelagoSchema.table('permissoes_da_famili
 })
 
 /**
+ * As compras da galeria (fase1-13, 29/10/2026): uma linha por jogador e aparência. Nasce
+ * `pendente` com a chave que vai ao Members (repetir nunca cobra duas vezes) e vira `paga` quando
+ * o Members confirma o débito. Só a paga vale como aparência dela.
+ */
+export const comprasDaGaleria = arquipelagoSchema.table(
+  'compras_da_galeria',
+  {
+    jogadorId: uuid().notNull(),
+    aparenciaId: varchar({ length: 80 }).notNull(),
+    objeto: varchar({ length: 20 }).notNull(),
+    moedas: integer().notNull(),
+    chave: uuid().notNull(),
+    situacao: varchar({ length: 10 }).notNull(),
+    criadaEm: timestamp({ withTimezone: true }).notNull(),
+    pagaEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.aparenciaId] }),
+    uniqueIndex('compras_da_galeria_chave_idx').on(t.chave),
+    check('compras_da_galeria_situacao_check', sql`${t.situacao} in ('pendente', 'paga')`),
+    check('compras_da_galeria_moedas_check', sql`${t.moedas} >= 0`),
+  ],
+)
+
+/**
  * Os desafios cadastrados pela equipe (seção Jogo do Admin). `revisao` é a trava da edição; a
  * publicação congela uma cópia em `desafio_publicacoes`. Um quadro do Quadro das Cores por ilha e
  * público (fora os arquivados).
@@ -314,6 +339,7 @@ export const schema = {
   limitesDaFamilia,
   perfisDaConta,
   permissoesDaFamilia,
+  comprasDaGaleria,
   desafios,
   desafioPublicacoes,
   desafioProgresso,

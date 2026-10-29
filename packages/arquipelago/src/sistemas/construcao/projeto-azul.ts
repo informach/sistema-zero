@@ -149,7 +149,8 @@ export function ganharProjetos(
   if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')
   if (ganhos.length === 0) return { salvamento: s, ganhos }
   const projetos = { ...s.projetos }
-  for (const id of ganhos) projetos[id] = { ganhoEm: agora.toISOString(), aparencia: null }
+  for (const id of ganhos)
+    projetos[id] = { ganhoEm: agora.toISOString(), aparencia: null, aparencias: [] }
   return { salvamento: { ...s, projetos }, ganhos }
 }
 

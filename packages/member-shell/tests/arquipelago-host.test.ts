@@ -158,6 +158,12 @@ describe('a porta da plataforma para o jogo', () => {
       expect(caminhoDoJogo(nao)).toBe(false)
   })
 
+  test('galeria: o jogo lê e compra; nada além desses dois caminhos', () => {
+    for (const ok of ['/galeria', '/galeria/compras']) expect(caminhoDoJogo(ok)).toBe(true)
+    for (const nao of ['/galeria/', '/galeria/compras/x', '/galeria?saldo=999'])
+      expect(caminhoDoJogo(nao)).toBe(false)
+  })
+
   test('a sessão de tempo passa apenas pelo host Kids', async () => {
     const pedidos = servir({
       'POST /api/arquipelago/tempo/sessao': { status: 200, body: { situacao: 'ativa' } },

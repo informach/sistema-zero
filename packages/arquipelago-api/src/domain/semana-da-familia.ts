@@ -79,15 +79,19 @@ export function diasDeVoltaAoCurso(
   return dias.size
 }
 
-/** Projetos azuis com a aparência feita no Pinta e no Molda; `null` se o salvamento não abre. */
+/**
+ * Projetos azuis com aparência feita no Pinta e no Molda, pelas aparências que ela guarda (a em
+ * uso pode ser a da galeria: o que ela fez continua contando); `null` se o salvamento não abre.
+ */
 export function objetosCriados(dados: unknown): SemanaDaCrianca['objetos'] {
   const salvamento = migrarSalvamento(dados)
   if (!salvamento) return null
   let pinta = 0
   let molda = 0
   for (const projeto of Object.values(salvamento.projetos)) {
-    if (projeto?.aparencia?.origem === 'pinta') pinta += 1
-    else if (projeto?.aparencia?.origem === 'molda') molda += 1
+    const origens = new Set(projeto?.aparencias.map((a) => a.origem))
+    if (origens.has('pinta')) pinta += 1
+    if (origens.has('molda')) molda += 1
   }
   return { pinta, molda }
 }

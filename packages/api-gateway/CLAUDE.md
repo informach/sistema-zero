@@ -10,7 +10,9 @@ conta ativa e `x-internal-token` (`ARQUIPELAGO_INTERNAL_TOKEN`), e `/arquipelago
 pública (o cliente compilado). `kidsMayAccess`: o aluno alcança `/arquipelago/*` menos
 `/arquipelago/familia/*` (e nenhum segmento `admin`, regra geral); o responsável, só
 `/arquipelago/familia/limite`, `/arquipelago/familia/permissoes` (GET/PUT, 1 KB) e o GET de
-`/arquipelago/familia/semana` (fase1-18, 28/10/2026). `GET /arquipelago/cartas` (cartões dos Lumis) segue a régua do
+`/arquipelago/familia/semana` (fase1-18, 28/10/2026). Galeria (29/10/2026):
+`arquipelago-galeria` (GET) e `arquipelago-galeria-compras` (POST, 1 KB, 20/min), da régua do
+jogador (o aluno alcança, o responsável não). `GET /arquipelago/cartas` (cartões dos Lumis) segue a régua do
 jogador. **Seção Jogo do Admin (27/10/2026):** rotas explícitas `arquipelago-admin-*` (sem
 curinga): leitura (`GET /arquipelago/admin/desafios[/:id]`, `/cobertura`, `POST …/:id/analisar`)
 para superadmin/admin/staff; escrita (`POST /desafios`, `PUT /desafios/:id`, `POST

@@ -97,7 +97,7 @@ test('presente pendente sobrevive ao fechamento e chega inteiro ao serviço sem 
   await segunda.f.parar()
 })
 
-test('diário V3 pendente migra para V5 sem perder alteração nem identidade do envio', async () => {
+test('diário V3 pendente migra para a atual sem perder alteração nem identidade do envio', async () => {
   const perfil = `kids:${crypto.randomUUID()}`
   const armazem = await abrir(perfil)
   const {
@@ -129,13 +129,13 @@ test('diário V3 pendente migra para V5 sem perder alteração nem identidade do
     })
     const lido = await armazem.ler()
     expect(lido?.base.salvamento).toMatchObject({
-      versao: 5,
+      versao: 6,
       inventario: { milho: 4 },
       projetos: {},
     })
-    expect(lido?.enviado).toMatchObject({ versao: 5, inventario: { milho: 3 } })
+    expect(lido?.enviado).toMatchObject({ versao: 6, inventario: { milho: 3 } })
     expect(lido?.local).toMatchObject({
-      versao: 5,
+      versao: 6,
       inventario: { milho: 2 },
       construcao: { casa: null, cabanas: {} },
     })

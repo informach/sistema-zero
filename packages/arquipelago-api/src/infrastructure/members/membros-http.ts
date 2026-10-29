@@ -9,6 +9,8 @@ import {
   JogadorDosMembrosSchema,
   type JornadaDosMembros,
   JornadaDosMembrosSchema,
+  type SaldoDosMembros,
+  SaldoDosMembrosSchema,
   type VerificacaoDosMembros,
   VerificacaoDosMembrosSchema,
 } from '@sistemazero/arquipelago-contracts'
@@ -58,6 +60,18 @@ export class MembrosHttp implements PortaDosMembros {
         `/members/internal/arquipelago/curriculo-de-blocos?audience=${audience}`,
         signal,
       ),
+    )
+  }
+
+  async lerSaldo(pergunta: PerguntaDoJogador, signal?: AbortSignal): Promise<SaldoDosMembros> {
+    const q = new URLSearchParams({
+      userId: pergunta.userId,
+      accountId: pergunta.accountId,
+      audience: pergunta.audience,
+    })
+    return validar(
+      SaldoDosMembrosSchema,
+      await this.ler(`/members/internal/arquipelago/saldo?${q}`, signal),
     )
   }
 

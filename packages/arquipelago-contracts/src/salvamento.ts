@@ -8,7 +8,7 @@ import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 5
+export const VERSAO_SALVAMENTO = 6
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -224,19 +224,29 @@ export type Obra = z.infer<typeof ObraSchema>
 export const ILHAS_COM_CABANA = ['bosque'] as const
 export type IlhaComCabana = (typeof ILHAS_COM_CABANA)[number]
 
+/** De onde vem a aparência de um objeto: a galeria (comprada) ou feita por ela. */
+export const ORIGENS_DA_APARENCIA = ['galeria', 'pinta', 'molda', 'criacao'] as const
+export type OrigemDaAparencia = (typeof ORIGENS_DA_APARENCIA)[number]
+
+/** Uma aparência: a origem e o id (o da galeria no catálogo, ou o da criação na conta). */
+export const AparenciaDoObjetoSchema = z.strictObject({
+  origem: z.enum(ORIGENS_DA_APARENCIA),
+  id: z.string().min(1).max(80),
+})
+export type AparenciaDoObjeto = z.infer<typeof AparenciaDoObjetoSchema>
+
+export function mesmaAparencia(a: AparenciaDoObjeto, b: AparenciaDoObjeto): boolean {
+  return a.origem === b.origem && a.id === b.id
+}
+
 /**
- * O projeto azul de um objeto: a função já vale desde que ele foi ganho. A aparência (da galeria,
- * do Pinta, do Molda ou de uma criação guardada) chega depois; `guardado` é o que está na
+ * O projeto azul de um objeto (V4 e V5): a função já vale desde que ele foi ganho. A aparência (da
+ * galeria, do Pinta, do Molda ou de uma criação guardada) chega depois; `guardado` é o que está na
  * geladeira (alimento → quantidade).
  */
-export const ProjetoAzulSchema = z.strictObject({
+export const ProjetoAzulV4Schema = z.strictObject({
   ganhoEm: iso,
-  aparencia: z
-    .strictObject({
-      origem: z.enum(['galeria', 'pinta', 'molda', 'criacao']),
-      id: z.string().min(1).max(80),
-    })
-    .nullable(),
+  aparencia: AparenciaDoObjetoSchema.nullable(),
   guardado: z
     .record(z.string().min(1).max(40), z.number().int().min(1).max(GELADEIRA_GUARDA.completa))
     .refine(
@@ -245,6 +255,27 @@ export const ProjetoAzulSchema = z.strictObject({
     )
     .optional(),
 })
+export type ProjetoAzulV4 = z.infer<typeof ProjetoAzulV4Schema>
+
+/** Quantas aparências um objeto guarda (as da galeria e as feitas por ela). */
+export const APARENCIAS_GUARDADAS_MAXIMO = 12
+
+/**
+ * O projeto azul de hoje (V6, 29/10/2026): a V4 mais `aparencias`, as que ela já tem para este
+ * objeto (a da galeria só entra depois de paga; as dela, ao voltar do Pinta ou do Molda). Trocar
+ * entre elas não cobra de novo, e a aparência em uso é sempre uma delas.
+ */
+export const ProjetoAzulSchema = ProjetoAzulV4Schema.extend({
+  aparencias: z.array(AparenciaDoObjetoSchema).max(APARENCIAS_GUARDADAS_MAXIMO),
+})
+  .refine(
+    (p) => p.aparencias.every((a, i) => p.aparencias.findIndex((b) => mesmaAparencia(a, b)) === i),
+    'aparência repetida',
+  )
+  .refine(
+    (p) => p.aparencia === null || p.aparencias.some((a) => mesmaAparencia(a, p.aparencia!)),
+    'a aparência em uso fica entre as guardadas',
+  )
 export type ProjetoAzul = z.infer<typeof ProjetoAzulSchema>
 
 /**
@@ -257,7 +288,7 @@ export const SalvamentoV4Schema = SalvamentoV3Schema.extend({
     casa: ObraSchema.nullable(),
     cabanas: z.partialRecord(z.enum(ILHAS_COM_CABANA), ObraSchema),
   }),
-  projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulSchema),
+  projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulV4Schema),
 })
 export type SalvamentoV4 = z.infer<typeof SalvamentoV4Schema>
 
@@ -278,27 +309,48 @@ export function migrarDaV4(v4: SalvamentoV4): SalvamentoV5 {
   return { ...v4, versao: 5, presenteDosBichosEntregue: false }
 }
 
+/** V6 (29/10/2026): os projetos azuis guardam as aparências que ela já tem (`aparencias`). */
+export const SalvamentoV6Schema = SalvamentoV5Schema.extend({
+  versao: z.literal(6),
+  projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulSchema),
+})
+export type SalvamentoV6 = z.infer<typeof SalvamentoV6Schema>
+
+/** Da V5 para a V6: a aparência em uso passa a ser a única guardada. */
+export function migrarDaV5(v5: SalvamentoV5): SalvamentoV6 {
+  const projetos: SalvamentoV6['projetos'] = {}
+  for (const [id, p] of Object.entries(v5.projetos) as [
+    keyof SalvamentoV6['projetos'],
+    ProjetoAzulV4,
+  ][])
+    projetos[id] = { ...p, aparencias: p.aparencia ? [p.aparencia] : [] }
+  return { ...v5, versao: 6, projetos }
+}
+
 /**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V5): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V6): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV5Schema,
-  SalvamentoV4Schema.transform(migrarDaV4),
-  SalvamentoV3Schema.transform((v3) => migrarDaV4(migrarDaV3(v3))),
-  SalvamentoV2Schema.transform((v2) => migrarDaV4(migrarDaV3(migrarDaV2(v2)))),
-  SalvamentoV1Schema.transform((v1) => migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))),
+  SalvamentoV6Schema,
+  SalvamentoV5Schema.transform(migrarDaV5),
+  SalvamentoV4Schema.transform((v4) => migrarDaV5(migrarDaV4(v4))),
+  SalvamentoV3Schema.transform((v3) => migrarDaV5(migrarDaV4(migrarDaV3(v3)))),
+  SalvamentoV2Schema.transform((v2) => migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2))))),
+  SalvamentoV1Schema.transform((v1) =>
+    migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))),
+  ),
 ])
-export type Salvamento = SalvamentoV5
+export type Salvamento = SalvamentoV6
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 5,
+    versao: 6,
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },

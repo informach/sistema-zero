@@ -5,6 +5,7 @@ import type {
   JogadorDosMembros,
   JornadaDosMembros,
   ObjetivoDoDesafio,
+  SaldoDosMembros,
   VerificacaoDosMembros,
 } from '@sistemazero/arquipelago-contracts'
 
@@ -22,6 +23,8 @@ export interface PortaDosMembros {
   lerJornada(signal?: AbortSignal): Promise<JornadaDosMembros>
   lerJogador(pergunta: PerguntaDoJogador, signal?: AbortSignal): Promise<JogadorDosMembros>
   lerCurriculo(audience: PublicoDosMembros, signal?: AbortSignal): Promise<CurriculoDeBlocos>
+  /** As moedas Zappy de quem joga (o cartão da galeria mostra antes de comprar). */
+  lerSaldo(pergunta: PerguntaDoJogador, signal?: AbortSignal): Promise<SaldoDosMembros>
   /** A hora das aulas concluídas destas pessoas entre `de` e `ate` (a volta ao curso dos pais). */
   lerAulasConcluidas(
     pergunta: { usuarios: string[]; de: Date; ate: Date },

@@ -45,6 +45,6 @@ export function obraDeExemplo(): Obra {
   return o
 }
 
-const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null }
+const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null, aparencias: [] }
 /** Os projetos azuis que a obra de exemplo já ganhou (geladeira, planta e casinha). */
 export const PROJETOS_DE_EXEMPLO = { geladeira: GANHO, 'planta-interior': GANHO, casinha: GANHO }

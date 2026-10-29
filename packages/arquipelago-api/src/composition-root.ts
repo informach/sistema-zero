@@ -3,6 +3,7 @@ import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
 import { ServicoDaFamilia } from './application/servico-da-familia'
+import { aparenciasPagas, ServicoDaGaleria } from './application/servico-da-galeria'
 import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
@@ -15,6 +16,7 @@ import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
 import { DrizzleRepositorioDaFamilia } from './infrastructure/persistence/drizzle/repositorio-da-familia'
+import { DrizzleRepositorioDaGaleria } from './infrastructure/persistence/drizzle/repositorio-da-galeria'
 import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
@@ -40,11 +42,13 @@ export function createApplication(env: Env): Application {
     publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
     lista: new Set(env.ARQUIPELAGO_LISTA),
   }
+  const comprasDaGaleria = new DrizzleRepositorioDaGaleria(connection.db)
   const servico = new ServicoDoJogo(
     new DrizzleRepositorioDoJogo(connection.db),
     politica,
     undefined,
     new RepositorioDeSessoesDeTempo(connection.db),
+    (jogadorId) => aparenciasPagas(comprasDaGaleria, jogadorId),
   )
   const membros =
     env.MEMBERS_URL && env.ARQUIPELAGO_MEMBERS_TOKEN
@@ -73,6 +77,13 @@ export function createApplication(env: Env): Application {
     moedas,
     logger,
   })
+  const galeria = new ServicoDaGaleria({
+    galeria: comprasDaGaleria,
+    debito: moedas,
+    leituras,
+    politica,
+    logger,
+  })
   const familia = new ServicoDaFamilia({
     familia: new DrizzleRepositorioDaFamilia(connection.db),
     jogo: new DrizzleRepositorioDoJogo(connection.db),
@@ -96,6 +107,7 @@ export function createApplication(env: Env): Application {
     equipe,
     desafios,
     familia,
+    galeria,
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

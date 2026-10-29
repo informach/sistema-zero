@@ -242,6 +242,29 @@ describe('repasse do Arquipélago', () => {
     expect((await routes.arquipelagoPermissoesDaFamilia.PUT(pedido('{x'))).status).toBe(400)
   })
 
+  test('a galeria: ler e comprar vão ao serviço do jogo, a compra com corpo pequeno', async () => {
+    const compra = { aparencia: 'forno-classico', chave: '11111111-1111-4111-8111-111111111111' }
+    const { routes, chamadas } = montar({ status: 200, body: { possuidas: [] } })
+    await routes.arquipelagoGaleria.GET()
+    await routes.arquipelagoGaleriaCompras.POST(
+      new Request('http://local/api/arquipelago/galeria/compras', {
+        method: 'POST',
+        body: JSON.stringify(compra),
+      }),
+    )
+    expect(chamadas).toEqual([
+      { caminho: '/arquipelago/galeria', metodo: 'GET', corpo: undefined },
+      { caminho: '/arquipelago/galeria/compras', metodo: 'POST', corpo: compra },
+    ])
+    const grande = new Request('http://local/api/arquipelago/galeria/compras', {
+      method: 'POST',
+      body: JSON.stringify({ ...compra, sobra: 'x'.repeat(2000) }),
+    })
+    // Acima de 1 KB não sai do BFF (como o salvamento acima do teto: 400).
+    expect((await routes.arquipelagoGaleriaCompras.POST(grande)).status).toBe(400)
+    expect(chamadas).toHaveLength(2)
+  })
+
   test('o perfil que ainda entra na jornada não conta (a criança não abre esse perfil)', async () => {
     const perfis = {
       status: 200,

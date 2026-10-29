@@ -30,6 +30,10 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   ao curso" do cartão dos pais: quem decide de quais crianças perguntar é o serviço do jogo (só as
   ligadas à conta do responsável). Testes: `tests/unit/arquipelago-course-activity.service.test.ts`,
   `tests/db/arquipelago-course-activity.test.ts` e as rotas em `tests/arquipelago-internal.routes.test.ts`.
+- `GET /saldo?userId&accountId&audience` (29/10/2026, dep `saldo` = o repositório da gamificação,
+  `getBalance`): as moedas Zappy de quem joga, para o cartão da galeria do Arquipélago
+  (`SaldoDosMembrosSchema`). Só leitura: gastar é pela porta de moedas (`operation: 'debit'`, que já
+  existia e usa a mesma carteira, trava e livro da loja do quarto). Sem a dep, 424.
 - `GET /curriculo-de-blocos?audience`: cursos GRAVADOS publicados com `studioUnlockBlocks`, com o
   posto mais cedo no currículo (`lugarNoCurriculo`; política sem currículo = posto nulo) e o
   catálogo do Estúdio (tipo, rótulo, categoria).

@@ -49,7 +49,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
   })
 
   for (const publico of ['kids', 'adulto'] as const) {
-    test(`${publico}: migra V4, persiste V5 e mantém item e marca sob concorrência`, async () => {
+    test(`${publico}: migra V4, persiste a atual e mantém item e marca sob concorrência`, async () => {
       const jogador: Jogador = {
         id: crypto.randomUUID(),
         publico,
@@ -73,7 +73,7 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         atualizadoEm: AGORA,
       })
       const lido = await servico.lerSalvamento(jogador)
-      expect(lido.salvamento).toMatchObject({ versao: 5, presenteDosBichosEntregue: false })
+      expect(lido.salvamento).toMatchObject({ versao: 6, presenteDosBichosEntregue: false })
       if (!lido.salvamento) throw new Error('O serviço não leu a V4 guardada')
       const entregue = {
         ...lido.salvamento,

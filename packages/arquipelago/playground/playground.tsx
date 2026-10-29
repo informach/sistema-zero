@@ -36,6 +36,10 @@ const plataforma = criarPlataformaFalsa({
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   dia: (q.get('dia') as DiaDoPlayground | null) ?? undefined,
   objetos: q.get('objetos') === 'sem-acesso' ? 'sem-acesso' : undefined,
+  galeria: {
+    moedas: q.has('moedas') ? Number(q.get('moedas')) : undefined,
+    situacao: q.get('galeria') === 'fora-do-ar' ? 'fora-do-ar' : undefined,
+  },
 })
 if (q.get('perder-pulso') === '1') {
   const buscar = plataforma.servico.buscar

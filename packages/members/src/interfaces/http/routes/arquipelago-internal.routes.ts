@@ -100,6 +100,8 @@ export function arquipelagoInternalRoutes(deps: {
   objetivos: Pick<ArquipelagoObjectivesService, 'analisar' | 'verificar'>
   /** A hora das aulas concluídas (a "volta ao curso" da área dos pais); ausente, 424. */
   aulas?: Pick<ArquipelagoCourseActivityService, 'concluidas'>
+  /** O saldo de moedas Zappy de quem joga (o cartão da galeria); ausente, 424. */
+  saldo?: { getBalance(userId: string, audience: 'kids' | 'adult'): Promise<number> }
   token?: string
 }) {
   const jornadaIndisponivel = (error: unknown) =>
@@ -170,6 +172,22 @@ export function arquipelagoInternalRoutes(deps: {
           set.status = 400
           return { error: { code: 'INVALID_QUERY' } }
         }
+      })
+      /**
+       * O saldo de moedas Zappy de quem joga (29/10/2026, a galeria do Arquipélago), no formato
+       * `SaldoDosMembrosSchema`. Só leitura: gastar é pela porta de moedas, com o token dela.
+       */
+      .get('/saldo', async ({ query, set }) => {
+        const pergunta = PerguntaDoJogador.safeParse(query)
+        if (!pergunta.success) {
+          set.status = 400
+          return { error: { code: 'INVALID_QUERY' } }
+        }
+        if (!deps.saldo) {
+          set.status = 424
+          return { error: { code: 'SALDO_INDISPONIVEL' } }
+        }
+        return { saldo: await deps.saldo.getBalance(pergunta.data.userId, pergunta.data.audience) }
       })
       /** Cursos publicados (gravados) com os blocos que liberam e o posto de cada um. */
       .get('/curriculo-de-blocos', async ({ query, set }) => {

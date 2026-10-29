@@ -55,6 +55,21 @@ export class LeiturasDosMembros {
     )
   }
 
+  /** O saldo de moedas de quem joga, sem cache (muda a cada compra e a cada prêmio). */
+  async saldo(jogador: Jogador): Promise<number> {
+    const membros = this.exigir()
+    try {
+      const r = await membros.lerSaldo({
+        userId: jogador.id,
+        accountId: jogador.contaId ?? jogador.id,
+        audience: publicoDosMembros(jogador),
+      })
+      return r.saldo
+    } catch (erro) {
+      throw new PlataformaIndisponivelError(erro)
+    }
+  }
+
   /**
    * A hora das aulas concluídas de cada pessoa (id em minúsculas) entre `de` e `ate`. Sem cache:
    * só a área dos pais pergunta. Falha ou formato estranho: `PlataformaIndisponivelError`.

@@ -12,6 +12,23 @@ export class SomenteLeituraError extends Error {
   }
 }
 
+/** Comprar na galeria sem moedas suficientes: nada foi cobrado. */
+export class SaldoInsuficienteError extends Error {
+  constructor(
+    readonly preco: number,
+    readonly saldo: number | null,
+  ) {
+    super('Faltam moedas para esta aparência')
+  }
+}
+
+/** O salvamento traz uma aparência da galeria que ela não comprou (ou de outro objeto). */
+export class AparenciaNaoCompradaError extends Error {
+  constructor() {
+    super('Esta aparência da galeria ainda não é sua')
+  }
+}
+
 export class SessaoTempoNaoPermitidaError extends Error {
   constructor() {
     super('A sessão de tempo pertence apenas a perfis Kids')

@@ -4,6 +4,7 @@ import { serializeError } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import {
   AcessoBloqueadoError,
+  AparenciaNaoCompradaError,
   ConflitoDoCadastroError,
   DesafioBloqueadoError,
   DesafioComProblemasError,
@@ -14,6 +15,7 @@ import {
   ManifestoDesatualizadoError,
   ManifestoExcedeLimiteError,
   PlataformaIndisponivelError,
+  SaldoInsuficienteError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
   SemPermissaoDeEscritaError,
@@ -22,6 +24,7 @@ import {
 } from '../../application/erros'
 import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
 import type { ServicoDaFamilia } from '../../application/servico-da-familia'
+import type { ServicoDaGaleria } from '../../application/servico-da-galeria'
 import {
   PeriodoDaMedicaoInvalidoError,
   type ServicoDaMedicao,
@@ -37,6 +40,7 @@ import {
 } from '../../domain/tempo-erros'
 import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
+import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
@@ -53,6 +57,8 @@ export interface DependenciasHttp {
   desafios: ServicoDosDesafios
   /** A área dos pais (semana e permissões); ausente, as rotas da família não existem. */
   familia?: ServicoDaFamilia
+  /** A galeria de aparências (29/10/2026); ausente, as rotas dela não existem. */
+  galeria?: ServicoDaGaleria
   cliente: { dir: string; servirMapas: boolean }
   tokenInterno?: string
   maxRequestBodyBytes?: number
@@ -106,6 +112,18 @@ export function createServer(deps: DependenciasHttp) {
       if (error instanceof EventoTempoConflitanteError) {
         set.status = 409
         return envelope('TEMPO_CONFLITANTE', 'Este registro de tempo não corresponde ao anterior.')
+      }
+      if (error instanceof SaldoInsuficienteError) {
+        set.status = 409
+        return {
+          ...envelope('SALDO_INSUFICIENTE', error.message),
+          preco: error.preco,
+          saldo: error.saldo,
+        }
+      }
+      if (error instanceof AparenciaNaoCompradaError) {
+        set.status = 422
+        return envelope('APARENCIA_NAO_COMPRADA', error.message)
       }
       if (error instanceof AcessoBloqueadoError) {
         set.status = 403
@@ -224,6 +242,11 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.familia
         ? rotasDaFamilia({ familia: deps.familia, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.galeria
+        ? rotasDaGaleria({ galeria: deps.galeria, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .use(rotasDosDesafios({ desafios: deps.desafios, tokenInterno: deps.tokenInterno }))

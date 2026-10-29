@@ -25,7 +25,7 @@ import {
 
 const L = LOTE_DA_CASA
 const agora = new Date('2026-10-28T12:00:00Z')
-const ganho = (): ProjetoAzul => ({ ganhoEm: agora.toISOString(), aparencia: null })
+const ganho = (): ProjetoAzul => ({ ganhoEm: agora.toISOString(), aparencia: null, aparencias: [] })
 const PROJETOS = { geladeira: ganho(), casinha: ganho() }
 
 function ok(r: Resultado): Obra {
@@ -59,6 +59,7 @@ describe('ganhar o projeto azul', () => {
     expect(r.salvamento.projetos.geladeira).toEqual({
       ganhoEm: agora.toISOString(),
       aparencia: null,
+      aparencias: [],
     })
     // Já ganho: não ganha de novo.
     expect(ganharProjetos(r.salvamento, agora).ganhos).toEqual([])
@@ -174,7 +175,8 @@ describe('a geladeira funcionando', () => {
     expect(inv).toEqual({ salada: 1, 'semente-milho': 2 })
     expect(guardarNaGeladeira(p, inv, 'salada')).toBeNull()
     expect(guardarNaGeladeira(p, inv, 'semente-milho')).toBeNull()
-    const completa = { ...p, aparencia: { origem: 'pinta' as const, id: 'c1' } }
+    const c1 = { origem: 'pinta' as const, id: 'c1' }
+    const completa = { ...p, aparencia: c1, aparencias: [c1] }
     expect(capacidade(completa)).toBe(GELADEIRA_GUARDA.completa)
     expect(guardarNaGeladeira(completa, inv, 'salada')?.projeto.guardado).toEqual({ salada: 5 })
     const tirou = tirarDaGeladeira(p, inv, 'salada')

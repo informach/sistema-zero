@@ -63,6 +63,8 @@ const CAMINHOS_DO_JOGO = new Set([
   '/tempo/recuperar',
   '/tempo/sessao',
   '/cartas',
+  '/galeria',
+  '/galeria/compras',
   '/minijogos',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'

@@ -210,8 +210,16 @@ describe('a semana da família', () => {
       dados: {
         ...dados,
         projetos: {
-          geladeira: { ganhoEm: AGORA.toISOString(), aparencia: { origem: 'pinta', id: 'p1' } },
-          casinha: { ganhoEm: AGORA.toISOString(), aparencia: { origem: 'molda', id: 'm1' } },
+          geladeira: {
+            ganhoEm: AGORA.toISOString(),
+            aparencia: { origem: 'pinta', id: 'p1' },
+            aparencias: [{ origem: 'pinta', id: 'p1' }],
+          },
+          casinha: {
+            ganhoEm: AGORA.toISOString(),
+            aparencia: { origem: 'molda', id: 'm1' },
+            aparencias: [{ origem: 'molda', id: 'm1' }],
+          },
         },
       },
     })

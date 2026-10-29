@@ -66,16 +66,28 @@ describe('os objetos criados por ela', () => {
   const ganho = '2026-10-21T15:00:00.000Z'
 
   test('projetos azuis com aparência do Pinta e do Molda; galeria e sem aparência não contam', () => {
+    const pinta = { origem: 'pinta' as const, id: 'a' }
+    const galeria = { origem: 'galeria' as const, id: 'lareira-classica' }
     const salvamento = {
       ...inicial,
       projetos: {
-        geladeira: { ganhoEm: ganho, aparencia: { origem: 'pinta' as const, id: 'a' } },
-        casinha: { ganhoEm: ganho, aparencia: { origem: 'molda' as const, id: 'b' } },
-        forno: { ganhoEm: ganho, aparencia: { origem: 'galeria' as const, id: 'c' } },
-        aquario: { ganhoEm: ganho, aparencia: null },
+        geladeira: { ganhoEm: ganho, aparencia: pinta, aparencias: [pinta] },
+        casinha: {
+          ganhoEm: ganho,
+          aparencia: { origem: 'molda' as const, id: 'b' },
+          aparencias: [{ origem: 'molda' as const, id: 'b' }],
+        },
+        forno: {
+          ganhoEm: ganho,
+          aparencia: { origem: 'galeria' as const, id: 'forno-classico' },
+          aparencias: [{ origem: 'galeria' as const, id: 'forno-classico' }],
+        },
+        aquario: { ganhoEm: ganho, aparencia: null, aparencias: [] },
+        // Pintou a lareira e hoje usa a da galeria: o que ela fez continua contando.
+        lareira: { ganhoEm: ganho, aparencia: galeria, aparencias: [pinta, galeria] },
       },
     }
-    expect(objetosCriados(salvamento)).toEqual({ pinta: 1, molda: 1 })
+    expect(objetosCriados(salvamento)).toEqual({ pinta: 2, molda: 1 })
     expect(objetosCriados(inicial)).toEqual({ pinta: 0, molda: 0 })
   })
 

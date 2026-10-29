@@ -177,6 +177,9 @@ export function createArquipelagoRoutes(deps: {
     arquipelagoSessaoTempo: { POST: comCorpo('/tempo/sessao', 'POST', CORPO_PEQUENO) },
     /** Cartões da rotina dos Lumis (os de controle pelos blocos conquistados nos cursos). */
     arquipelagoCartas: { GET: () => chamar('/cartas', 'GET') },
+    /** A galeria do Arquipélago (29/10/2026): o que ela comprou, o saldo e comprar. */
+    arquipelagoGaleria: { GET: () => chamar('/galeria', 'GET') },
+    arquipelagoGaleriaCompras: { POST: comCorpo('/galeria/compras', 'POST', CORPO_PEQUENO) },
     /** Desafios da ilha (`?ilha=`): situação, o que falta e de onde se aprende. */
     arquipelagoDesafios: {
       GET: (req: Request) => {

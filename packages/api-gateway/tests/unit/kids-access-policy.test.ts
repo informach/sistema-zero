@@ -133,6 +133,12 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(parent, path, method, 'responsavel')).toBe(false)
     }
   })
+  test('a galeria é de quem joga: a criança lê e compra, o responsável não', () => {
+    expect(kidsMayAccess(student, '/arquipelago/galeria', 'GET', 'aluno')).toBe(true)
+    expect(kidsMayAccess(student, '/arquipelago/galeria/compras', 'POST', 'aluno')).toBe(true)
+    expect(kidsMayAccess(parent, '/arquipelago/galeria', 'GET', 'responsavel')).toBe(false)
+    expect(kidsMayAccess(parent, '/arquipelago/galeria/compras', 'POST', 'responsavel')).toBe(false)
+  })
   test('o responsável cuida só da família: limite, permissões e a leitura da semana', () => {
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'GET', 'responsavel')).toBe(true)
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'PUT', 'responsavel')).toBe(true)

@@ -27,6 +27,7 @@ function criar(over: {
   leituras?: unknown
   objetivos?: unknown
   aulas?: unknown
+  saldo?: unknown
 }) {
   const staffPreview = mock(over.staffPreview ?? (async () => ({ policyVersion: 4 })))
   const policy = mock(
@@ -52,6 +53,7 @@ function criar(over: {
         leituras: (over.leituras ?? { jogador: mock(), curriculoDeBlocos: mock() }) as never,
         objetivos: (over.objetivos ?? { analisar: mock(), verificar: mock() }) as never,
         aulas: over.aulas as never,
+        saldo: over.saldo as never,
         token: 'configurado' in over ? over.configurado : token,
       }),
     )
@@ -298,5 +300,32 @@ describe('aulas concluídas (a volta ao curso dos pais, 29/10/2026)', () => {
     })
     const { app } = criar({ aulas: { concluidas } })
     expect((await app.handle(pedir(`usuarios=${lia}&${janela}`))).status).toBe(400)
+  })
+})
+
+describe('saldo (a galeria do Arquipélago, 29/10/2026)', () => {
+  const lia = '11111111-1111-4111-8111-111111111111'
+  const pedir = (query: string, chave = token) =>
+    new Request(`http://local/members/internal/arquipelago/saldo?${query}`, {
+      headers: { 'x-arquipelago-token': chave },
+    })
+
+  test('lê o saldo da pessoa no público dela', async () => {
+    const getBalance = mock(async () => 85)
+    const { app } = criar({ saldo: { getBalance } })
+    const res = await app.handle(pedir(`userId=${lia}&accountId=${lia}&audience=kids`))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ saldo: 85 })
+    expect(getBalance).toHaveBeenCalledWith(lia, 'kids')
+  })
+
+  test('token das moedas não lê; pergunta malformada é 400; sem a leitura, 424', async () => {
+    const getBalance = mock(async () => 0)
+    const { app } = criar({ saldo: { getBalance } })
+    const q = `userId=${lia}&accountId=${lia}&audience=kids`
+    expect((await app.handle(pedir(q, tokenDasMoedas))).status).toBe(401)
+    expect((await app.handle(pedir(`userId=x&accountId=${lia}&audience=kids`))).status).toBe(400)
+    expect(getBalance).toHaveBeenCalledTimes(0)
+    expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
   })
 })

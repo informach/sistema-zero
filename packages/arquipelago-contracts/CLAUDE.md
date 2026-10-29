@@ -18,6 +18,16 @@ outras crianças e fotos no Clube desligadas: ECA Digital, art. 21). Objetos est
 criança (`{dias}`), `HORAS_DA_VOLTA_AO_CURSO = 24` e, em `membros.ts`,
 `AulasConcluidasDosMembrosSchema` (a resposta da rota interna do Members). Regras em `docs/arquipelago-regras.md`, seção 3.
 
+## A galeria de aparências (fase1-13, 29/10/2026)
+
+`galeria.ts`: o catálogo (`IDS_DA_GALERIA`, `GALERIA`: id estável, objeto, nome, preço e
+`modelo`), uma aparência por objeto hoje, pronto para variações (entrada nova com id e `modelo`
+próprios). Preço entre `PRECO_MINIMO_DA_GALERIA` (20, um desafio) e `PRECO_MAXIMO_DA_GALERIA` (75,
+metade do teto semanal do jogo). Rotas: `GaleriaDoJogadorSchema` (possuídas, saldo ou `null`,
+`ilimitado` da equipe), `CompraNaGaleriaSchema` (`{aparencia, chave}`, o preço nunca vem do corpo)
+e `SaldoInsuficienteSchema`. Em `membros.ts`, `SaldoDosMembrosSchema` (a leitura do saldo).
+Testes: `tests/galeria.test.ts`. Regras em `docs/arquipelago-regras.md` §9.9.
+
 Tipos e validação (zod) de tudo o que atravessa a fronteira do jogo **Arquipélago Vagalume**:
 plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 
@@ -29,7 +39,10 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV5` estrito (a V4 mais `presenteDosBichosEntregue`; a V4 é a V3
+- `salvamento.ts`: `SalvamentoV6` estrito (29/10/2026: a V5 mais `aparencias` em cada projeto
+  azul, as que ela já tem, até `APARENCIAS_GUARDADAS_MAXIMO`, com a em uso sempre entre elas;
+  `migrarDaV5` guarda a em uso como a única; `ProjetoAzulV4Schema` é o da V4 e da V5). A V5 é a V4
+  mais `presenteDosBichosEntregue`; a V4 é a V3
   mais `construcao` e `projetos`, 28/10/2026, o
   modo construção; a V3 é a V2 mais `moradores.capi` e `bichos`; a V2 é a V1 mais `percursos`),
   teto de 64 KB, salvamento inicial e migrações (`migrarDaV1`, `migrarDaV2`, `migrarDaV3`, `migrarDaV4`;

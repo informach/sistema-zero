@@ -341,6 +341,25 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`). Conferir no navegador: a
   câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 
+## A galeria de aparências (fase1-13, 29/10/2026)
+
+- Regras puras em `sistemas/construcao/galeria.ts` (`usarAparencia`: vira a em uso e fica entre as
+  guardadas, sem repetir, no teto sai a mais antiga; `aparenciasQueEleTem`; `estadoDoCartao`:
+  comprar, falta, usar ou em uso; os recados), loja à parte em `estado/galeria.ts`
+  (`lojaDaGaleria(loja, plataforma)`, uma por montagem via WeakMap: `GET /galeria` a cada painel de
+  objeto que abre e `POST /galeria/compras` com uma chave nova), componentes em
+  `interface/galeria.tsx` (`CartaoDaGaleria` ao lado do Pinta e do Molda, com confirmação;
+  `SuasAparencias` para trocar sem cobrar).
+- O Pinta e o Molda também passam por `usarAparencia`: o que ela fez fica guardado e o aconchego
+  conta o "feito por você" pelas `aparencias` (comprar nunca tira esse ponto).
+- Quem diz o que foi pago e o saldo é SEMPRE o serviço; o salvamento com uma da galeria não paga é
+  recusado lá. A plataforma de mentira tem a mesma régua (`plataforma/galeria-falsa.ts`;
+  `?moedas=` e `?galeria=fora-do-ar` no playground). Hoje toda aparência mostra o modelo do
+  objeto; variação da galeria pede o arquivo e a escolha pelo `modelo` em
+  `mundo/objetos-da-casa.tsx`.
+- Testes: `tests/galeria.test.ts` e o caso da galeria em `tests/aconchego.test.ts`. Regras e
+  textos: `docs/arquipelago-regras.md` §6.16 e §9.9.
+
 ## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
 
 - `src/sistemas/zappy.ts` (puro, `tests/zappy.test.ts`): voa à direita e um pouco atrás de onde

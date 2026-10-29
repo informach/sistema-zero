@@ -18,7 +18,7 @@ const L = LOTE_DA_CASA
  */
 const GRANDE = { ...LOTE_DA_CASA, area: { x0: -20, z0: -10, x1: 20, z1: 10 }, ocupadas: [] }
 const inicial = (): Obra => structuredClone(L.obraInicial)
-const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null }
+const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null, aparencias: [] }
 const PROJETOS = { geladeira: GANHO, casinha: GANHO, aquario: GANHO }
 
 function ok(r: Resultado): Obra {

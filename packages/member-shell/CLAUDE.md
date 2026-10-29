@@ -15,7 +15,9 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   `?perfis=` (até `PERFIS_DA_FAMILIA_MAXIMO`), para o serviço dizer `algumaCriancaVe`; sem a grade,
   nada segue e o cartão some. `arquipelagoSemanaDaFamilia` (GET, fase1-18) usa os mesmos perfis
   prontos, confere a resposta pelo contrato (fora dele, 502) e põe o NOME de cada criança da grade
-  do Auth (o serviço do jogo nunca sabe nomes; id fora da grade sai). `arquipelagoPermissoesDaFamilia`
+  do Auth (o serviço do jogo nunca sabe nomes; id fora da grade sai). A galeria (29/10/2026):
+  `arquipelagoGaleria` (GET) e `arquipelagoGaleriaCompras` (POST, corpo até 1 KB), e `/galeria` e
+  `/galeria/compras` em `CAMINHOS_DO_JOGO` do host. `arquipelagoPermissoesDaFamilia`
   (GET/PUT, corpo pequeno) é repasse. `arquipelagoCliente` (GET
   `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
   build (`.js`, `.js.map`, `.glb`, `.json`), com o IP de quem pediu e só os cabeçalhos de cache.

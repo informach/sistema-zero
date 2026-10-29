@@ -8,6 +8,8 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDaGaleria } from '../estado/galeria'
+import { usarAparencia } from '../sistemas/construcao/galeria'
 import {
   capacidade,
   ehAlimento,
@@ -19,6 +21,7 @@ import {
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
 import { ITENS } from '../sistemas/itens'
+import { CartaoDaGaleria, SuasAparencias } from './galeria'
 import { MinijogosDoFliperama } from './minijogos'
 
 function objetoDoPainel(painel: string | null): ObjetoDaCasa | null {
@@ -104,8 +107,9 @@ function Geladeira() {
 
 /**
  * O painel de um objeto com função (projeto azul): o que ele faz, de onde veio, a geladeira por
- * dentro e o caminho para a aparência (o Pinta e o Molda abrem com o molde do objeto). A galeria e
- * as criações guardadas entram com os cartões deles.
+ * dentro e o caminho para a aparência: o Pinta e o Molda abrem com o molde do objeto, e a galeria
+ * vende a pronta (fase1-13). Trocar entre as que ela já tem não cobra de novo ("Suas aparências").
+ * As criações guardadas entram com o cartão delas.
  */
 export function PainelDoObjeto() {
   const { loja, plataforma } = useJogo()
@@ -120,6 +124,10 @@ export function PainelDoObjeto() {
     if (id) fechar.current?.focus()
     else setAviso(null)
   }, [id])
+  // A galeria relê o que ela comprou e o saldo a cada painel que abre (um prêmio pode ter caído).
+  useEffect(() => {
+    if (id) void lojaDaGaleria(loja, plataforma).getState().carregar()
+  }, [id, loja, plataforma])
   if (!id || !projeto) return null
   const { molde, origem } = CATALOGO_DE_OBJETOS[id]
 
@@ -132,10 +140,8 @@ export function PainelDoObjeto() {
       if (r.situacao === 'pronto') {
         const origemDaAparencia = ferramenta === 'molda' ? 'molda' : 'pinta'
         const atual = loja.getState().salvamento.projetos[id]
-        const novo = atual && {
-          ...atual,
-          aparencia: { origem: origemDaAparencia, id: r.criacaoId },
-        }
+        // A que ela fez vira a em uso e fica guardada (trocar de volta não cobra nada).
+        const novo = atual && usarAparencia(atual, { origem: origemDaAparencia, id: r.criacaoId })
         // Um id fora do contrato faria o serviço recusar o salvamento: ele não entra.
         if (!novo || !ProjetoAzulSchema.safeParse(novo).success) {
           setAviso({ tom: 'atencao', texto: 'Não deu para guardar a aparência. Tente de novo.' })
@@ -175,7 +181,7 @@ export function PainelDoObjeto() {
         {origem ? <p className="arq-caderno-explica">{origem}</p> : null}
         {id === 'geladeira' ? <Geladeira /> : null}
         {id === 'fliperama' ? <MinijogosDoFliperama /> : null}
-        <h3 className="arq-menu-titulo">Fazer a aparência</h3>
+        <h3 className="arq-menu-titulo">A aparência</h3>
         <p className="arq-caderno-explica">
           {`O molde tem o tamanho dele: ${molde.area.largura} por ${molde.area.fundo} na grade, com a frente marcada.`}
         </p>
@@ -206,8 +212,10 @@ export function PainelDoObjeto() {
               {molda ? 'A forma inteira dentro do molde' : 'Abre no posto Explorador(a) de Mundos'}
             </small>
           </button>
+          <CartaoDaGaleria objeto={id} avisar={setAviso} />
         </div>
         <p className="arq-caderno-explica">Feito por você não custa moeda.</p>
+        <SuasAparencias objeto={id} avisar={setAviso} />
         {aviso ? (
           <p role="status" className={`arq-aviso ${aviso.tom}`}>
             {aviso.texto}

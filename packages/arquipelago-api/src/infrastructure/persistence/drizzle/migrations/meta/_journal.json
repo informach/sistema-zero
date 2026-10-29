@@ -71,6 +71,13 @@
       "when": 1793233864349,
       "tag": "0009_vengeful_rhino",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793237653835,
+      "tag": "0010_galeria_compras",
+      "breakpoints": true
     }
   ]
 }

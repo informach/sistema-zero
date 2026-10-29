@@ -71,13 +71,19 @@ export async function semearMedicao(db: DbConnection) {
     for (let i = 1; i <= 5; i++) {
       const dados = criarSalvamentoInicial(AGORA_MEDICAO)
       const ganhoEm = '2026-10-02T03:00:00.000Z'
+      // V6: a aparência em uso também fica entre as guardadas (`aparencias`).
+      const com = (aparencia: { origem: 'pinta' | 'molda' | 'galeria'; id: string }) => ({
+        ganhoEm,
+        aparencia,
+        aparencias: [aparencia],
+      })
       dados.projetos =
         publico === 'kids'
           ? {
-              geladeira: { ganhoEm, aparencia: { origem: 'pinta', id: 'ficticio' } },
-              forno: { ganhoEm, aparencia: { origem: 'molda', id: 'ficticio' } },
+              geladeira: com({ origem: 'pinta', id: 'ficticio' }),
+              forno: com({ origem: 'molda', id: 'ficticio' }),
             }
-          : { geladeira: { ganhoEm, aparencia: { origem: 'galeria', id: 'ficticio' } } }
+          : { geladeira: com({ origem: 'galeria', id: 'ficticio' }) }
       await db.db.insert(salvamentos).values({
         jogadorId: idMedicao(i + (publico === 'adulto' ? 100 : 0)),
         publico,
