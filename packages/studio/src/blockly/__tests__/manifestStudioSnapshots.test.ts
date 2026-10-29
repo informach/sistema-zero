@@ -53,5 +53,6 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
     'ilha-aula-3.manifesto.json',
     'moedas-aula-2.manifesto.json',
     'ponte-aula-2.manifesto.json',
+    'simbolos-aula-2.manifesto.json',
   ])
 })
