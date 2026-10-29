@@ -360,6 +360,15 @@ mensagem para disfarçar ou mexer no motor para ignorar o pedido repetido.
 - Só blocos que o curso já usa: `Se`, `não` e o valor da variável que guarda o estado.
 - O objetivo executado sai do objeto, volta e confere que o estado final continua (a luz `aceso`,
   não um `acender` recomeçado).
-- Aplicado à Ilha do Farol (parte **O farol acende uma vez só**). Nos Poderes 3D e no Jardim
-  Secreto o mesmo padrão aparece (baú, porta, flor, estrela, alavanca); a aplicação neles
-  depende da decisão da dona.
+- **Só no gatilho que fecha o jogo** (decisão da dona, 29/10/2026): "o farol era a finalização do
+  jogo. Agora, se for uma coisa intermediária em que eu posso fazer a ação várias vezes, aí não."
+  A guarda vale para a vitória (o farol aceso, a flor aberta). Uma ação que faz parte do jogo e
+  pode se repetir (a alavanca que baixa a ponte de novo, a sequência dos símbolos tentada outra
+  vez) não ganha guarda, nem uma recompensa do meio que não encerra a partida (o baú das Moedas,
+  a porta da cabana): o fim continua sendo o farol.
+- Aplicado à Ilha do Farol (parte **O farol acende uma vez só**) e ao Jardim Secreto 3D, em que a
+  flor é o fim do jogo: a guarda entra na parte **Faça a flor responder**, sem parte nova, porque
+  a missão aplica o que a criança já aprendeu na Ilha (ajuda própria "A flor abre uma vez só" no
+  Passo a passo). No 2D a troca de imagem para a mesma imagem não muda nada na tela, e o Jardim
+  2D fica como está. Nos Poderes 3D (Moedas, Cabana, Ponte e Baú) o farol já vem com a guarda, e
+  os gatilhos próprios deles ficam sem guarda, pela regra acima.

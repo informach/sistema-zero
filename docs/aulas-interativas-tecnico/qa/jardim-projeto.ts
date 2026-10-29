@@ -243,10 +243,11 @@ SZGame3D.walkArea(personagem,-9,9,-4,4);
 SZGame3D.walkAnimations(personagem,"parado","andando");
 let aviso="Recolha o regador e leve o personagem até a flor.";
 ${n >= 3 ? 'let temRegador=false;' : ''}
+${n >= 4 ? 'let ganhou=false;' : ''}
 SZGame3D.hudText("bottom-center","Setas ou WASD: andar. R: nova partida.");
 SZGame3D.onKey("KeyR",()=>{SZGame3D.restart();});
 ${n >= 3 ? `SZGame3D.onTouch(personagem,regador,()=>{SZGame3D.setVisible(regador,"hide");temRegador=true;aviso="Você pegou o regador! Agora vá até a flor.";});` : ''}
-${n >= 4 ? `SZGame3D.onTouch(personagem,flor,()=>{if(temRegador){SZGame3D.playAnimation(flor,"florescer","uma-vez");aviso="A flor abriu! Você fez o jardim florescer.";}else{aviso="Busque o regador primeiro. A flor espera por você.";}});` : ''}
+${n >= 4 ? `SZGame3D.onTouch(personagem,flor,()=>{if(!ganhou){if(temRegador){SZGame3D.playAnimation(flor,"florescer","uma-vez");ganhou=true;aviso="A flor abriu! Você fez o jardim florescer.";}else{aviso="Busque o regador primeiro. A flor espera por você.";}}});` : ''}
 SZGame3D.animate(cena,()=>{${n >= 1 ? 'SZGame3D.topDown(personagem,4);' : ''}SZGame3D.hudText("top-center",aviso);});`),
   })
 }

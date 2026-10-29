@@ -27,11 +27,15 @@ const check = (
 })
 export function jardimChecks(d: JardimDimensao, part: JardimEtapa): SectionProjectCheck[] {
   const three = d === '3d'
-  const approach = (targetPath: string, avoidPaths?: string[]): ExecutionStep => ({
+  const approach = (
+    targetPath: string,
+    avoidPaths?: string[],
+    timeoutMs = 5500,
+  ): ExecutionStep => ({
     action: three ? 'approachObject3d' : 'approachSprite',
     actorPath: 'personagem',
     targetPath,
-    timeoutMs: 5500,
+    timeoutMs,
     ...(three ? { walkable: [{ minX: -9, maxX: 9, minZ: -4, maxZ: 4 }] } : {}),
     ...(avoidPaths ? { avoidPaths } : {}),
   })
@@ -205,6 +209,29 @@ export function jardimChecks(d: JardimDimensao, part: JardimEtapa): SectionProje
       { afterStep: 6, expect: flower(false) },
     ],
   )
+  // A flor abre uma vez só (3D): com o regador, abrir a flor, sair dela pela esquerda e voltar.
+  // O encontro só conta quando começa, por isso a saída e a volta. Sem a guarda (Se não ganhou),
+  // a volta pede florescer de novo e a animação recomeça do botão fechado (animDone volta a
+  // falso); com ela, a flor segue aberta. As idas têm prazos menores que as outras (3,5 s e 5 s)
+  // para a parte caber nos 40 s do executor; a ida medida do começo até a flor leva cerca de 3 s.
+  const once = check(
+    'uma-vez',
+    'Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.',
+    [
+      approach('regador', undefined, 3500),
+      { action: 'wait', ms: 120 },
+      approach('flor', undefined, 5000),
+      { action: 'wait', ms: 1500 },
+      { action: 'press', key: 'ArrowLeft', holdMs: 600 },
+      { action: 'press', key: 'ArrowRight', holdMs: 700 },
+      { action: 'wait', ms: 100 },
+    ],
+    flower(true),
+    [
+      { afterStep: 1, expect: present(false) },
+      { afterStep: 4, expect: flower(true) },
+    ],
+  )
   const position: SectionProjectCheck = {
     id: 'posicao',
     label: 'Escolha outro lugar alcançável para o regador e confira as regras.',
@@ -221,7 +248,7 @@ export function jardimChecks(d: JardimDimensao, part: JardimEtapa): SectionProje
     ...(n >= 1 ? [movement] : []),
     ...(n >= 2 && !three ? [boundary] : []),
     ...(n >= 3 ? [collection] : []),
-    ...(n >= 4 ? [memory, missing, success] : []),
+    ...(n >= 4 ? [memory, missing, success, ...(three ? [once] : [])] : []),
     ...(n >= 5 ? [position] : []),
   ]
 }

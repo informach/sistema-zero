@@ -72,6 +72,17 @@ function drawings(three: boolean): Record<string, string> {
           body,
         ),
     )
+  const decision = () =>
+    block(
+      'sz_js_if_else',
+      `Se ${value('sz_val_variable', 'temRegador')}<div class="branch-label">então</div><div class="event-body">${three ? block('sz_g3d_play_animation', `Tocar a animação ${field('florescer')} em ${field('flor')} ${field('uma vez')}`) : block('sz_g2d_set_image', `Trocar imagem do sprite ${field('flor')} para ${field('flor-aberta')}`)}${message('A flor abriu! Você fez o jardim florescer.')}</div><div class="branch-label">senão</div><div class="event-body">${message('Busque o regador primeiro. A flor espera por você.')}</div>`,
+    )
+  // No 3D a flor abre uma vez só: o Se temRegador inteiro mora no então do Se não ganhou.
+  const notWon = (inner: string) =>
+    block(
+      'sz_js_if_else',
+      `Se <span class="value-block" ${attrs('sz_val_not')}>não ${value('sz_val_variable', 'ganhou')}</span><div class="branch-label">então</div><div class="event-body">${inner}</div>`,
+    )
   const remove = three
     ? block('sz_g3d_set_visible', `${field('Esconder')} o objeto ${field('regador')}`)
     : block('sz_g2d_destroy_sprite', `Destruir o sprite ${field('regador')}`)
@@ -135,11 +146,15 @@ function drawings(three: boolean): Record<string, string> {
         assign('temRegador', bool('verdadeiro')) +
         message('Você pegou o regador! Agora vá até a flor.'),
     ),
-    decisao: encounter(
+    decisao: encounter('flor', decision()),
+    // A criação de ganhou (falso, em Ao iniciar) fica no passo a passo: com ela, a página estoura.
+    'uma-vez': encounter(
       'flor',
-      block(
-        'sz_js_if_else',
-        `Se ${value('sz_val_variable', 'temRegador')}<div class="branch-label">então</div><div class="event-body">${three ? block('sz_g3d_play_animation', `Tocar a animação ${field('florescer')} em ${field('flor')} ${field('uma vez')}`) : block('sz_g2d_set_image', `Trocar imagem do sprite ${field('flor')} para ${field('flor-aberta')}`)}${message('A flor abriu! Você fez o jardim florescer.')}</div><div class="branch-label">senão</div><div class="event-body">${message('Busque o regador primeiro. A flor espera por você.')}</div>`,
+      notWon(
+        block(
+          'sz_js_if_else',
+          `Se ${value('sz_val_variable', 'temRegador')}<div class="branch-label">então</div><div class="event-body">${block('sz_g3d_play_animation', `Tocar a animação ${field('florescer')} em ${field('flor')} ${field('uma vez')}`)}${assign('ganhou', bool('verdadeiro'))}<div class="prepared">O aviso de sucesso que você montou</div></div><div class="branch-label">senão</div><div class="event-body"><div class="prepared">O aviso que pede o regador</div></div>`,
+        ),
       ),
     ),
     posicao: area(

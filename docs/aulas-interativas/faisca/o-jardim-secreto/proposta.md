@@ -97,7 +97,7 @@ O encontro com a flor executa a ação. Não acrescentar uma tecla para regar, u
 
 Na linguagem da missão, **estar com o regador** significa que o jogo lembra da coleta: ele sai do chão e não precisa aparecer na mão do personagem. Não acrescentar inventário nem animação de carregar. **Florescer** significa o botão da flor abrir e revelar suas pétalas, com crescimento visual perceptível. Isso atende à flor que cresce prevista no currículo sem introduzir regas sucessivas. O nome Jardim Secreto descreve o lugar acolhedor entre plantas; não anuncia uma porta, um labirinto ou uma busca de objetos escondidos.
 
-Ao terminar a reação, a flor fica aberta enquanto a pessoa continua andando. Um novo encontro pode repetir o efeito de florescer; isso não reprova a missão nem exige outra variável para impedir a repetição. O clipe 3D deve terminar aberto e conservar a pose final. Não presumir que toda chamada futura de animação será ignorada pelo motor. Reiniciar a partida deixa o personagem sem a coleta, o regador disponível no chão e a flor fechada, conservando o programa.
+Ao terminar a reação, a flor fica aberta enquanto a pessoa continua andando. No 2D, um novo encontro troca para a mesma imagem e nada muda na tela. **No 3D, a flor abre uma vez só (decisão da dona, 29/10/2026):** a flor é o fim do jogo, e um novo encontro repetiria o florescer; a criança aplica a guarda que aprendeu na Ilha (variável `ganhou` começando em falso, verdadeiro quando a flor abre, e o `Se temRegador` dentro de `Se não ganhou`), na mesma parte da decisão, e o objetivo `uma-vez` sai da flor, volta e confere que ela segue aberta. O clipe 3D deve terminar aberto e conservar a pose final. Não presumir que toda chamada futura de animação será ignorada pelo motor. Reiniciar a partida deixa o personagem sem a coleta, o regador disponível no chão e a flor fechada, conservando o programa.
 
 ### Composição visual
 
@@ -330,7 +330,7 @@ Avaliar o programa atual por comportamento. Uma montagem válida que usa blocos 
 | Memória duradoura | Coletar, afastar-se, esperar e visitar a flor | A regra só funciona enquanto está perto do lugar da coleta |
 | Resposta sem regador | Em partida nova, ir à flor sem tocar no regador | Flor abre sempre; ausência de orientação sobre o que falta |
 | Resposta com regador | Coletar e depois visitar a flor; conferir abertura e aviso de sucesso | Apenas o aviso muda; abre na coleta antes de chegar à flor; não avisa o sucesso |
-| Resultado estável | Aguardar o fim do efeito e afastar-se da flor | Flor volta a fechar apenas por sair do contato; um novo toque repetir a animação não é erro |
+| Resultado estável | Aguardar o fim do efeito e afastar-se da flor; no 3D, voltar a ela | Flor volta a fechar apenas por sair do contato; no 3D, a volta repete o florescer (falta a guarda `Se não ganhou`) |
 | Valor inicial da memória, após reinício | Usar o reinício fornecido e repetir o caso sem regador | A memória criada pela criança já começa liberando a flor; defeito no mecanismo pronto é falha da equipe |
 | Variação de posição, em 2D e 3D | Conferir edição, testar alcance e repetir os dois caminhos | Validação só aceita a posição-modelo ou ignora altura no 3D |
 

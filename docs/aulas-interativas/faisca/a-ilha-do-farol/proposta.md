@@ -43,7 +43,7 @@ com a chave**, começa pelo problema no próprio jogo (pegar a chave, acender, v
 a luz recomeçar) e coloca o `Se temChave` dentro de `Se não ganhou`. A comparação é o apito final
 do futebol: depois dele, o gol não conta. Só blocos do iniciante (`Se`, `não`, valor da variável),
 sem bloco novo. O objetivo executado volta ao farol pelo cais e confere que a luz segue `aceso`.
-Os Poderes que partem da Ilha (Moedas, Cabana, Ponte e Baú) herdam a regra com a guarda.
+Os Poderes que partem da Ilha (Moedas, Cabana, Ponte e Baú) herdam a regra com a guarda. O Jardim Secreto 3D aplica a mesma guarda na flor, o fim daquele jogo (29/10/2026); ações do meio do jogo que podem se repetir não ganham guarda (ver as Diretrizes, "Gatilho de uma vez").
 
 Junto, o motor do Jogo 3D deixou de medir o cubo de reserva dos modelos (do tamanho do lado
 maior) na área de toque, no sólido e no clique: com ele, a área de toque do farol cobria o cais,

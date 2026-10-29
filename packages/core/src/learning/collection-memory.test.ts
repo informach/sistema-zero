@@ -79,6 +79,33 @@ describe('memória ligada à coleta e à decisão', () => {
     b.decision.else = b.decision.then
     expect(evaluatesCollectionMemory(rule, b.project)).toBe(false)
   })
+  test('aceita a decisão dentro de uma guarda que não lê a memória (Se não ganhou)', () => {
+    const guarded = fixture('pegou')
+    const events = guarded.project.ir.behavior.events
+    const destination = events[1]!
+    destination.body = [
+      {
+        type: 'if',
+        cond: { type: 'logicalNot', value: { type: 'var', name: 'ganhou' } },
+        // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+        then: [guarded.decision],
+        else: [],
+      },
+    ]
+    expect(evaluatesCollectionMemory(rule, guarded.project)).toBe(true)
+    // A guarda que lê a própria memória não vale como guarda: a decisão de dentro não conta.
+    const byMemory = fixture('pegou')
+    byMemory.project.ir.behavior.events[1]!.body = [
+      {
+        type: 'if',
+        cond: { type: 'var', name: 'pegou' },
+        // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+        then: [byMemory.decision],
+        else: [],
+      },
+    ]
+    expect(evaluatesCollectionMemory(rule, byMemory.project)).toBe(false)
+  })
   test('posição exige mudança finita em pelo menos um eixo do chão', () => {
     const r = {
       type: 'changedGamePosition' as const,

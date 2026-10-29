@@ -50,6 +50,7 @@ Faça a flor responder.
 - Faça o jogo lembrar se o personagem já pegou o regador. No começo, ele ainda não pegou.
 - Antes da coleta, mantenha a flor fechada e avise o que falta.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
+- Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
 
 ## Parte 5. Encontre um novo lugar no chão
 
@@ -65,6 +66,7 @@ Encontre um novo lugar no chão.
 - Faça o jogo lembrar se o personagem já pegou o regador. No começo, ele ainda não pegou.
 - Antes da coleta, mantenha a flor fechada e avise o que falta.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
+- Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
 - Escolha outro lugar alcançável para o regador e confira as regras.
 
 ## Parte 6. Pense nos seus testes
@@ -92,6 +94,7 @@ Entregue sua missão.
 - Faça o jogo lembrar se o personagem já pegou o regador. No começo, ele ainda não pegou.
 - Antes da coleta, mantenha a flor fechada e avise o que falta.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
+- Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
 - Escolha outro lugar alcançável para o regador e confira as regras.
 
 [Fala integral](aula-2.roteiro.md) · [Ajuda completa](passo-a-passo.md).
