@@ -45,7 +45,7 @@ O roteiro grava no `localStorage` do playground um jogo com:
 |---|---|
 | `assets/2026-10-29-arquipelago-album/computador-1-album.png` | O começo do álbum: "Bichos do Bosque: 2 de 4" e "Receitas: 4 de 6", com "Faltam 2." |
 | `assets/2026-10-29-arquipelago-album/computador-2-album-aparencias.png` | As estrelas dos percursos (2 de 6, com o melhor tempo) e as aparências (a geladeira pintada, o forno sem aparência e os que ainda não chegaram em silhueta). |
-| `assets/2026-10-29-arquipelago-album/computador-3-album-lumis.png` | Os Lumis em duas colunas: Estrelinha, Pitanga e Brigadeiro presos, com quantos; as outras 11 espécies em silhueta. |
+| `assets/2026-10-29-arquipelago-album/computador-3-album-lumis.png` | Os Lumis em duas colunas, com as miniaturas dos modelos (29/10 à noite): Estrelinha, Pitanga e Brigadeiro presos, com quantos; as outras 11 espécies na silhueta escura da própria forma. |
 | `assets/2026-10-29-arquipelago-album/computador-4-modo-foto.png` | O modo foto: só o cartão com a dica, "Voltar" e "Tirar foto". |
 | `assets/2026-10-29-arquipelago-album/computador-5-foto-baixada.png` | O PNG baixado, sem nada do HUD. |
 | `assets/2026-10-29-arquipelago-album/computador-6-foto-pronta.png` | Depois da foto: "Foto pronta. Ela ficou só neste aparelho." e "Baixar de novo". |
@@ -56,7 +56,7 @@ O roteiro grava no `localStorage` do playground um jogo com:
 |---|---|
 | `assets/2026-10-29-arquipelago-album/celular-1-album.png` | O álbum de um jogo novo: tudo por achar, com a dica de onde procurar. |
 | `assets/2026-10-29-arquipelago-album/celular-2-album-aparencias.png` | As aparências, uma coluna. |
-| `assets/2026-10-29-arquipelago-album/celular-3-album-lumis.png` | As 14 silhuetas dos Lumis. |
+| `assets/2026-10-29-arquipelago-album/celular-3-album-lumis.png` | As 14 silhuetas dos Lumis (a forma de cada espécie). |
 | `assets/2026-10-29-arquipelago-album/celular-4-modo-foto.png` | O modo foto no celular: o cartão e "Voltar" no alto, "Tirar foto" embaixo à direita. |
 | `assets/2026-10-29-arquipelago-album/celular-5-foto-baixada.png` | O PNG baixado. |
 | `assets/2026-10-29-arquipelago-album/celular-6-foto-pronta.png` | "Foto pronta" no celular. |
