@@ -8,7 +8,7 @@ import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 8
+export const VERSAO_SALVAMENTO = 9
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -384,35 +384,73 @@ export function migrarDaV7(v7: SalvamentoV7): SalvamentoV8 {
 }
 
 /**
+ * Os Lumis (fase2-06), as criaturinhas de luz que nascem do Cinza: à noite a lanterna prende um
+ * borrão de névoa e ele vira um Lumi da família da ilha. Duas espécies por ilha, a comum e a rara
+ * (nomes e jeito de ser no README de `arquipelago/arte/lumis`). A lista inteira entra já, para as
+ * ilhas seguintes não pedirem versão nova.
+ */
+export const LUMIS = [
+  'estrelinha',
+  'buzio',
+  'pitanga',
+  'ipe',
+  'quindim',
+  'brigadeiro',
+  'bolha',
+  'perola',
+  'gelinho',
+  'cristal',
+  'ovinho',
+  'brotinho',
+  'algodao',
+  'pluma',
+] as const
+export type LumiId = (typeof LUMIS)[number]
+
+/** V9 (29/10/2026): quantos Lumis de cada espécie ela já prendeu com a lanterna (fase2-06). */
+export const SalvamentoV9Schema = SalvamentoV8Schema.extend({
+  versao: z.literal(9),
+  lumis: z.partialRecord(z.enum(LUMIS), z.number().int().min(1).max(999)),
+})
+export type SalvamentoV9 = z.infer<typeof SalvamentoV9Schema>
+
+/** Da V8 para a V9: tudo igual, e nenhum Lumi preso ainda. */
+export function migrarDaV8(v8: SalvamentoV8): SalvamentoV9 {
+  return { ...v8, versao: 9, lumis: {} }
+}
+
+/** Das versões até a V7, passando pelas migrações em ordem, até a atual. */
+const daV7 = (v7: SalvamentoV7) => migrarDaV8(migrarDaV7(v7))
+
+/**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V8): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V9): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 export const SalvamentoSchema = z.union([
-  SalvamentoV8Schema,
-  SalvamentoV7Schema.transform(migrarDaV7),
-  SalvamentoV6Schema.transform((v6) => migrarDaV7(migrarDaV6(v6))),
-  SalvamentoV5Schema.transform((v5) => migrarDaV7(migrarDaV6(migrarDaV5(v5)))),
-  SalvamentoV4Schema.transform((v4) => migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(v4))))),
-  SalvamentoV3Schema.transform((v3) =>
-    migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))),
-  ),
+  SalvamentoV9Schema,
+  SalvamentoV8Schema.transform(migrarDaV8),
+  SalvamentoV7Schema.transform(daV7),
+  SalvamentoV6Schema.transform((v6) => daV7(migrarDaV6(v6))),
+  SalvamentoV5Schema.transform((v5) => daV7(migrarDaV6(migrarDaV5(v5)))),
+  SalvamentoV4Schema.transform((v4) => daV7(migrarDaV6(migrarDaV5(migrarDaV4(v4))))),
+  SalvamentoV3Schema.transform((v3) => daV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3)))))),
   SalvamentoV2Schema.transform((v2) =>
-    migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2)))))),
+    daV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2)))))),
   ),
   SalvamentoV1Schema.transform((v1) =>
-    migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))))),
+    daV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(migrarDaV1(v1))))))),
   ),
 ])
-export type Salvamento = SalvamentoV8
+export type Salvamento = SalvamentoV9
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 8,
+    versao: 9,
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
     necessidades: { fome: 80, energia: 100, diversao: 70 },
@@ -432,6 +470,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     construcao: { casa: null, cabanas: {} },
     projetos: {},
     turnos: {},
+    lumis: {},
   }
 }
 

@@ -216,7 +216,7 @@ describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
 
   test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
-    const { presenteDosBichosEntregue: _, turnos: _t, ...anterior } = salvamento
+    const { presenteDosBichosEntregue: _, turnos: _t, lumis: _l, ...anterior } = salvamento
     const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
@@ -224,7 +224,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 8, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 9, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
