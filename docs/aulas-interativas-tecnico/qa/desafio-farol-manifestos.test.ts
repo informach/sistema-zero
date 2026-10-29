@@ -315,14 +315,16 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     ])
     // O mexa e veja do curso: aplicação antes da entrega, no mesmo projeto. Uma ideia só
     // (decisão da dona, 06/10/2026): todas as trocas de imagem, o par do farol incluído. A única
-    // conferência é a do farol aceso, que aceita qualquer modelo: nenhuma escolha vira critério.
+    // conferência é a da troca da imagem do farol no então, com QUALQUER imagem (29/10/2026: um
+    // farol desenhado pela criança também vale); que ela muda ao vencer, o objetivo que roda confere.
     const mexa = m.sections[3]!
     expect(mexa.intent).toBe('application')
     expect(mexa.workspaceKey).toBe('projeto')
     expect(mexa.completion?.blockIds).toEqual(['video-d3-personalizar'])
     expect(mexa.completion?.projectChecks?.map((check) => check.id)).toEqual(['acender'])
-    const acesos = [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso']
-    expect(JSON.stringify(mexa.completion?.projectChecks)).toContain(JSON.stringify(acesos))
+    expect(JSON.stringify(mexa.completion?.projectChecks)).not.toContain('fieldOptions')
+    for (const { aceso } of FAROL_FAROIS)
+      expect(JSON.stringify(mexa.completion?.projectChecks)).not.toContain(aceso)
     const decisaoAcender = m.sections[2]?.completion?.projectChecks?.find((c) => c.id === 'acender')
     expect(mexa.completion?.projectChecks?.[0]?.rule).toEqual(decisaoAcender?.rule)
     const avisos = m.sections[4]!

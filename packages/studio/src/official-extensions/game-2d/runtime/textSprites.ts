@@ -177,6 +177,7 @@ export const gameTwoDTextSpritesRuntime = `
       _cancelSpriteImageRedraw(sprite);
     }
     sprite.image = null;
+    sprite.imageName = null;
     sprite.anim = null;
     sprite._animState = null;
     sprite.skin = { kind: 'text' };

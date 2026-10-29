@@ -44,7 +44,7 @@ export const portaSemChaveObservada: SectionJavaScriptProjectCheck = {
 export const portaComChaveObservada: SectionJavaScriptProjectCheck = {
   id: 'porta-com-chave-em-execucao',
   label: 'Com a chave, acenda o farol e chame o barco.',
-  hint: 'Teste recolher a chave antes de ir ao farol. O então deve registrar a vitória, acender o farol e mudar o aviso.',
+  hint: 'Teste recolher a chave antes de ir ao farol. O então deve registrar a vitória, trocar a imagem do farol e mudar o aviso.',
   rule: {
     type: 'behavior',
     steps: [approach('chave'), approach('farol')],
@@ -52,6 +52,12 @@ export const portaComChaveObservada: SectionJavaScriptProjectCheck = {
       {
         afterStep: 1,
         expect: { target: { kind: 'value', path: 'temChave' }, compare: 'equals', value: true },
+      },
+      // Qualquer farol vale (os de fábrica ou um desenho da criança, 29/10/2026): o que se confere
+      // é que a imagem MUDA ao vencer. `imageName` é o nome curto que o Jogo 2D guarda no sprite.
+      {
+        afterStep: 2,
+        expect: { target: { kind: 'value', path: 'farol.imageName' }, compare: 'changed' },
       },
     ],
     expect: { target: { kind: 'value', path: 'ganhou' }, compare: 'equals', value: true },

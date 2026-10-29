@@ -51,8 +51,26 @@ test('a lista de valores aceitos sobrevive ao salvar a estrutura, no topo e anin
   const before = await readDraft(env.app, lessonId)
   const checks = (sections: typeof before.document.sections) =>
     sections.flatMap((section) => section.completion?.projectChecks ?? [])
+  // Desde 29/10/2026 o `acender` do Farol aceita qualquer imagem (sem lista): a regra aninhada é
+  // montada aqui, no mesmo formato que ele tinha.
   const acender = checks(before.document.sections).find((check) => check.id === 'acender')
-  expect(JSON.stringify(acender?.rule)).toContain('"fieldOptions"')
+  const aninhada: SectionProjectCheck = {
+    id: 'aninhada',
+    label: 'No encontro com o farol, troque a imagem por uma acesa.',
+    rule: {
+      type: 'usesBlock',
+      blockType: 'sz_g2d_on_overlap',
+      area: 'events',
+      fields: { A: 'personagem', B: 'farol' },
+      inputBlocks: {
+        BODY: {
+          blockType: 'sz_g2d_set_image',
+          fields: { SPRITE: 'farol' },
+          fieldOptions: { IMAGE: ACESOS },
+        },
+      },
+    },
+  }
 
   const topo: SectionProjectCheck = {
     id: 'topo',
@@ -71,7 +89,7 @@ test('a lista de valores aceitos sobrevive ao salvar a estrutura, no topo e anin
           ...section,
           completion: {
             ...section.completion,
-            projectChecks: [...(section.completion.projectChecks ?? []), topo],
+            projectChecks: [...(section.completion.projectChecks ?? []), topo, aninhada],
           },
         }
       : section,
@@ -81,5 +99,9 @@ test('a lista de valores aceitos sobrevive ao salvar a estrutura, no topo e anin
 
   const after = checks((await readDraft(env.app, lessonId)).document.sections)
   expect(after.find((check) => check.id === 'topo')?.rule).toEqual(topo.rule)
+  expect(after.find((check) => check.id === 'aninhada')?.rule).toEqual(aninhada.rule)
+  expect(JSON.stringify(after.find((check) => check.id === 'aninhada')?.rule)).toContain(
+    '"fieldOptions"',
+  )
   expect(after.find((check) => check.id === 'acender')?.rule).toEqual(acender?.rule)
 })

@@ -140,7 +140,7 @@ antes do Admin, do member-shell e dos apps.
 6. **Admin.** ✅ (29/10/2026; as opções vêm do rascunho da aula, outra aula entra pelo nome) Seções **Desenho para o jogo** (Pinta) e **Desenhos da criança** (Estúdio) em
    `packages/admin/src/components/editor/lesson-structure-editor.tsx`, lendo as imagens do jogo do
    bloco de Estúdio escolhido e as vagas anteriores do curso.
-7. **Chave do Farol, objetivo do farol livre.** `desafio-farol-criterios.ts` (estrutura com
+7. **Chave do Farol, objetivo do farol livre.** ✅ (29/10/2026; a imagem que muda é lida em `farol.imageName`) `desafio-farol-criterios.ts` (estrutura com
    qualquer imagem + execução "a imagem do farol muda ao vencer"), cenários do executor 2D,
    manifestos regenerados e a exceção retirada das DIRETRIZES.
 8. **O extra.** Proposta, conteúdo (roteiro na régua das DIRETRIZES), gerador, manifesto, caderno

@@ -221,6 +221,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       vx: _finiteNumber(options.vx, 0),
       vy: _finiteNumber(options.vy, 0),
       image: options.image ? loadImage(options.image) : null,
+      // O NOME da imagem atual (curto): é o que um objetivo confere ("a imagem do farol mudou").
+      imageName: options.image || null,
       anim: null,
       _hitboxArt: options.image ? _artHitboxOf(options.image) : null
     };
@@ -278,6 +280,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = name ? loadImage(name) : null;
+    sprite.imageName = name || null;
     sprite.anim = null;
     sprite._animState = null;
     _applyArtHitbox(sprite, name);
@@ -302,6 +305,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = { kind: 'custom', shape: name };
     sprite.image = null;
+    sprite.imageName = null;
     sprite.anim = null;
     sprite._animState = null;
     // Figura desenhada por codigo nao tem arte medida: volta ao quadro inteiro.
@@ -470,6 +474,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = null;
+    sprite.imageName = null;
     var loopRequests = Object.create(null);
     if (_runningLoopId) loopRequests[_runningLoopId] = _frameStamp;
     sprite.anim = {
