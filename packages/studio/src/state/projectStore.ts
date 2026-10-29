@@ -344,7 +344,8 @@ export interface NewAssetInput {
   originalFileName?: string
   width?: number
   height?: number
-  source?: 'upload' | 'library'
+  /** `lesson-art` só nasce do HOST (o desenho da vaga de arte); por aqui entra como `upload`. */
+  source?: ProjectAsset['source']
   libId?: string
   libRevision?: number
   /** Origem da criação quando `libId` é `personal:<id>` (ver `ProjectAsset.libOrigin`). */

@@ -131,7 +131,7 @@ antes do Admin, do member-shell e dos apps.
 3. **Members, leitura da aula.** ✅ (29/10/2026) `GET /members/lessons/:lessonId/blocks/:blockId/art-slots` →
    `{ slots: { name, mode, replaces, asset: PintaAsset | null }[] }` (`GetArtSlotsService`, acesso pela conta,
    entrega pelo perfil, só blocos publicados). Rota no gateway. Teste de integração.
-4. **Studio, a origem `lesson-art`.** Asset com `source: 'lesson-art'` fora da impressão do conteúdo
+4. **Studio, a origem `lesson-art`.** ✅ (29/10/2026) Asset com `source: 'lesson-art'` fora da impressão do conteúdo
    e do teto do projeto contado como os da biblioteca; o seletor mostra o desenho com o nome da
    vaga. Testes em `core/projectAssets` e no `FieldAssetPicker`.
 5. **Member-shell, o bloco de Estúdio.** Buscar as vagas ao montar o projeto, converter com o

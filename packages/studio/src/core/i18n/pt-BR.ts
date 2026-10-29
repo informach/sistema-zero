@@ -105,6 +105,9 @@ export const ptBR: Record<string, string> = {
   'assets.cover.useAria': 'Usar {name} como capa do jogo',
   'assets.cover.useHint': 'Esta imagem vira a capa do seu jogo na lista',
   'assets.cover.current': 'Capa do jogo',
+  'assets.lessonArt.badge': 'Seu desenho da aula',
+  'assets.lessonArt.hint':
+    'Este desenho vem do Pinta da aula. Para mudar, desenhe de novo lá e envie: ele volta aqui sozinho.',
   'assets.cover.reset': 'Voltar para a foto automática',
   'assets.cover.resetAria': 'Voltar para a foto automática da capa',
   'assets.cover.resetHint': 'A capa volta a ser uma foto do jogo rodando',

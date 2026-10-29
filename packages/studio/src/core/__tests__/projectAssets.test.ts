@@ -180,6 +180,16 @@ describe('sanitizeProjectAssets', () => {
     expect(out.map((a) => a.libOrigin)).toEqual(['molda', 'pinta', undefined, undefined])
   })
 
+  it('preserva a origem `lesson-art` (o desenho da vaga de arte) e trata origem estranha como upload', () => {
+    const out = sanitizeProjectAssets([
+      { kind: 'image', name: 'minha-chave', dataUrl: PNG, source: 'lesson-art', libId: 'x' },
+      { kind: 'image', name: 'outra', dataUrl: PNG, source: 'zappy' },
+    ])
+    expect(out.map((a) => a.source)).toEqual(['lesson-art', 'upload'])
+    // O `libId` é só da biblioteca: o desenho da aula não carrega vínculo com nenhuma.
+    expect(out[0]?.libId).toBeUndefined()
+  })
+
   it('respeita o orçamento total (descarta o que estoura)', () => {
     // Dinâmico sobre os tetos: cada imagem ~metade do limite por-imagem (válida),
     // e quantidade suficiente para a SOMA estourar o orçamento total — sem encostar
