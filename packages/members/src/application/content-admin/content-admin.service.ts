@@ -4,7 +4,9 @@ import { journeySlotsForTier } from '@sistemazero/core/journey'
 import {
   isInteractiveBlock,
   isPdfAttachment,
+  pintaArtSlotIssue,
   readStudioProjectExamples,
+  studioArtSlotsIssue,
   studioProjectExampleEnvironmentIssues,
 } from '@sistemazero/core/learning'
 import {
@@ -606,6 +608,24 @@ export function assertBlockCoherent(
     throw new InvalidContentCommandError(
       'Experimentos não podem continuar uma cadeia ou publicar no Mural.',
     )
+  // Vaga de arte (29/10/2026). O Pinta que a preenche precisa de uma ENTREGA do próprio desenho:
+  // a galeria entrega criações de fora da aula e o experimento não entrega nada.
+  if (content.kind === 'pinta' && content.artSlot !== undefined) {
+    const issue = pintaArtSlotIssue(content.artSlot)
+    if (issue) throw new InvalidContentCommandError(issue)
+    if (content.gallery !== undefined || content.purpose === 'experiment')
+      throw new InvalidContentCommandError(
+        'A vaga de arte precisa do desenho feito e enviado neste bloco: sem entrega pela galeria e sem modo de exploração.',
+      )
+  }
+  if (content.kind === 'studio' && content.artSlots !== undefined) {
+    const issue = studioArtSlotsIssue(content.artSlots)
+    if (issue) throw new InvalidContentCommandError(issue)
+    if (content.gallery !== undefined)
+      throw new InvalidContentCommandError(
+        'A entrega pela galeria traz um jogo pronto de fora da aula e não importa vagas de arte.',
+      )
+  }
   if (content.kind === 'quiz') {
     const problem = validateQuizAuthoring(content)
     if (problem) throw new InvalidContentCommandError(problem)

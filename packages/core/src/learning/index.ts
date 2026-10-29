@@ -1,4 +1,6 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
+
+export * from './art-slots'
 export * from './authoring'
 export * from './authoring-manifest-projection'
 export * from './gallery-delivery'
@@ -24,6 +26,7 @@ export * from './video-watch'
 import { isStudioAuthoringProject } from '../studio/authoring-project'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '../studio/project-format'
 import { StudioPythonLearningLevelSchema } from '../studio/python-learning'
+import type { PintaArtSlot, StudioArtSlotImport } from './art-slots'
 import { type GalleryDeliveryConfig, isGalleryDeliveryConfig } from './gallery-delivery'
 import { isLearningPredictionContext, type LearningPredictionContext } from './prediction-context'
 import {
@@ -959,6 +962,8 @@ export interface LearningManifest {
               allowLevelReveal?: boolean
               pythonLevel?: 1 | 2 | 3
               chain?: string
+              /** Vagas de arte que o jogo importa (desenhos da criança nos blocos de Pinta). */
+              artSlots?: StudioArtSlotImport[]
               showcase?: {
                 enabled: boolean
                 title?: string
@@ -973,6 +978,8 @@ export interface LearningManifest {
               purpose?: 'experiment' | 'submission'
               allowTools?: string[]
               chain?: string
+              /** A vaga de arte que este desenho preenche. */
+              artSlot?: PintaArtSlot
             }
           | { kind: 'materials'; title?: string; items: unknown[]; bookPreview?: boolean }
           | {
