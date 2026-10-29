@@ -66,6 +66,17 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 5. Ainda no então, encaixe mais um Alterar variável e escolha aviso. No valor, encaixe Texto, de Programação → Valores, e escreva Você acendeu o farol! O barco pode chegar.
 6. Teste sem chave; depois recolha e volte ao farol. Confira a luz acendendo, o feixe girando e a chegada do barco.
 
+### O farol acende uma vez só
+
+1. Teste antes de montar: pegue a chave e acenda o farol. Ande para trás pelo cais e volte ao farol. Repare: a luz apaga e acende de novo.
+2. Em Quando acontecer, deixe à vista o encontro com farol e um espaço vazio ao lado dele, fora do fazer.
+3. Em Programação → Lógica e Se, pegue Se e solte nesse espaço vazio.
+4. Arraste a pergunta x maior que zero do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio da pergunta.
+5. Em Programação → Valores, pegue valor da variável e encaixe no espaço do não. Clique em x e escolha ganhou.
+6. No encontro com farol, pegue o Se temChave pela palavra Se e arraste até o então do Se novo. Tudo o que está dentro dele vai junto.
+7. Pegue o Se novo pela palavra Se e encaixe dentro do fazer do encontro com farol, que ficou vazio.
+8. Reinicie. Pegue a chave, acenda o farol, ande para trás pelo cais e volte: a luz continua acesa e o feixe segue girando. Numa partida nova, vá ao farol sem a chave: ele continua pedindo a chave.
+
 ### Deixe o jogo com a sua cara
 
 1. Em Ao iniciar, deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique em aventureiro e escolha outro personagem da lista.

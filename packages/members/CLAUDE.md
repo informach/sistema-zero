@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/members
 
+## Vaga de arte: o desenho do Pinta da aula no jogo do Estúdio (29/10/2026, etapa 1)
+
+Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. Contrato PURO no core
+(`@sistemazero/core/learning`, `art-slots.ts`): `PintaBlock.artSlot?: {name, replaces?}` (o desenho
+preenche a vaga) e `StudioBlock.artSlots?: {name, mode: 'add'|'replace'}[]` (até 8; o jogo importa).
+O nome da vaga tem a régua de um nome de imagem do Estúdio (`ART_SLOT_NAME_PATTERN`, até 48), porque
+VIRA o nome da imagem. DTO TypeBox nos dois blocos; `assertBlockCoherent` recusa a vaga no Pinta de
+galeria ou de exploração (precisa da entrega do próprio desenho) e as vagas no Estúdio de galeria.
+A criança recebe só os NOMES (`STUDIO_MEMBER_CONTENT_KEYS` + `toMemberFacingStudioContent`; o Pinta
+já ia inteiro). Ainda NÃO existe: a validação por curso (repetidas, inexistentes, fora de ordem), a
+rota que entrega o desenho ao Estúdio e o Admin (etapas 2 a 6 do plano). Testes:
+`tests/unit/art-slots-blocks.test.ts`, os de vaga em `tests/integration/pinta.test.ts` e
+`core/src/learning/art-slots.test.ts`.
+
 ## Leituras internas do Arquipélago (27/10/2026)
 
 `interfaces/http/routes/arquipelago-internal.routes.ts`, prefixo `/members/internal/arquipelago`

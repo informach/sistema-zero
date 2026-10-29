@@ -34,8 +34,10 @@ const projects = Object.fromEntries(
 ) as Record<IlhaParte, ReturnType<typeof montarProjetoIlha>>
 // O jogo pronto da primeira aula e o projeto final importável: os modelos do começo do curso.
 const jogoPronto = montarProjetoIlha('personalizar')
-// A aparência entrou depois: fica com o último número para os exemplos de antes não mudarem.
-const ORDEM_DOS_IDS: IlhaParte[] = [...ILHA_PARTES.filter((p) => p !== 'aparencia'), 'aparencia']
+// A aparência e o uma-vez entraram depois: ficam com os últimos números, na ordem em que
+// entraram, para os exemplos de antes não mudarem.
+const DEPOIS: IlhaParte[] = ['aparencia', 'uma-vez']
+const ORDEM_DOS_IDS: IlhaParte[] = [...ILHA_PARTES.filter((p) => !DEPOIS.includes(p)), ...DEPOIS]
 const id = (p: IlhaParte) =>
   `1fa00000-0000-4000-8000-${String(ORDEM_DOS_IDS.indexOf(p) + 1).padStart(12, '0')}`
 const palette = new Set<string>()
@@ -53,7 +55,7 @@ const goals: Record<string, string[]> = {
 const builds: IlhaParte[][] = [
   ['movimento'],
   ['posicao', 'recolher', 'memoria', 'aviso'],
-  ['sem-chave', 'decisao', 'aparencia', 'personalizar'],
+  ['sem-chave', 'decisao', 'uma-vez', 'aparencia', 'personalizar'],
 ]
 const starts: IlhaParte[] = ['inicio', 'movimento', 'aviso']
 for (const [i, aula] of ilhaAulas.entries()) {

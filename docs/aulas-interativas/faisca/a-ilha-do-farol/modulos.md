@@ -12,6 +12,6 @@
 
 1. [Uma ilha com profundidade](ilha-aula-1.md): jogo pronto, caderno opcional, ponto de vista, movimento e primeiro envio.
 2. [A chave está ao seu alcance](ilha-aula-2.md): chão x/z, altura y, posição, contato em 3D, coleta, memória, aviso e envio.
-3. [A luz volta ao farol](ilha-aula-3.md): resposta sem chave, vitória com chave, revisão, personalização, teste final, envio e publicação opcional.
+3. [A luz volta ao farol](ilha-aula-3.md): resposta sem chave, vitória com chave, o farol que acende uma vez só, revisão, personalização, teste final, envio e publicação opcional.
 
 Posto: Faísca. Pré-requisito pedagógico: A Chave do Farol. Identidade reservada: `jornada-faisca-base-3d` (e a projeção adulta existente). Mídias, importação no Admin e publicação do curso são etapas de produção posteriores ao código e à autoria.

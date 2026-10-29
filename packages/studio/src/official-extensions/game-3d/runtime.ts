@@ -1275,7 +1275,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   var _solidBox = null;
   function solidParts(o, out) {
     if (o.userData && o.userData.szSemCaixa) return;
-    var g = o.geometry;
+    var g = isModelReserve(o) ? null : o.geometry;
     if (g) {
       if (g.boundingBox === null) g.computeBoundingBox();
       o.updateWorldMatrix(true, false);
@@ -3362,10 +3362,19 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
     return known;
   }
+  // O objeto de um modelo nasce como um cubo de reserva do tamanho do lado MAIOR, e o modelo
+  // carregado entra como filho dele. O cubo fica (é o objeto da criança), só sem tinta; montado
+  // o modelo, a forma dele não conta mais: medida com ele, a área de toque do farol (5,3 de
+  // altura) ia até o meio do cais, e o cubo do cenário (140) envolvia quem anda, que por
+  // começar "dentro de um sólido" nunca era barrado pela pedra.
+  function isModelReserve(o) {
+    var s = o && o.userData && o.userData.sz;
+    return !!(s && s.modelRoot);
+  }
   function expandWithoutEffects(box, o) {
     if (o.userData && o.userData.szSemCaixa) return;
     o.updateWorldMatrix(false, false);
-    var g = o.geometry;
+    var g = isModelReserve(o) ? null : o.geometry;
     if (g) {
       if (g.boundingBox === null) g.computeBoundingBox();
       if (!_partBox) _partBox = new THREE.Box3();
@@ -3376,7 +3385,14 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
   function boxOf(obj, target) {
     var box = target || new THREE.Box3();
-    if (!hasNoBoxParts(obj)) return box.setFromObject(obj);
+    if (!hasNoBoxParts(obj)) {
+      if (!isModelReserve(obj)) return box.setFromObject(obj);
+      // A régua de sempre (setFromObject) só dos filhos: o modelo e o que estiver preso nele.
+      box.makeEmpty();
+      obj.updateWorldMatrix(true, false);
+      for (var i = 0; i < obj.children.length; i++) box.expandByObject(obj.children[i]);
+      return box;
+    }
     box.makeEmpty();
     expandWithoutEffects(box, obj);
     return box;

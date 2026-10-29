@@ -75,6 +75,14 @@ const gameThreeDModelAssetsRuntimeTemplate = `
     if (hit) onReady(hit);
   }
 
+  // Montado o modelo, o cubo de reserva também não é mais mirado nem clicado: só o modelo (o
+  // raycast do three olha a forma, não a tinta). A área de toque e o sólido, no runtime, já o
+  // deixam de fora (isModelReserve).
+  function noRaycast() {}
+  function quietReserve(mesh) {
+    if (mesh && mesh.isMesh) mesh.raycast = noRaycast;
+  }
+
   /** Pendura o modelo no cubo de reserva (que some) — só se o objeto ainda vive. */
   function attachModelToObject(mesh, world, hit, size) {
     if (!mesh || !hit || !hit.scene) return;
@@ -93,6 +101,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
     mesh.add(clone);
     // O cubo de reserva some (só o material; o Mesh segue sendo o objeto da criança).
     if (mesh.material) mesh.material.visible = false;
+    quietReserve(mesh);
     mesh.castShadow = false;
     mesh.receiveShadow = false;
     if (mesh.userData && mesh.userData.sz) {
@@ -217,6 +226,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
       var root = at >= 0 && copy.children ? copy.children[at] : null;
       if (!root) return;
       hideOn(copyState, 'modelRoot', root);
+      quietReserve(copy);
       var hit = models.cached(state.modelFile);
       if (hit) startModelAnimator(copy, world, root, hit);
       return;

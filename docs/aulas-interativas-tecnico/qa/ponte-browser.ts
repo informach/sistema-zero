@@ -126,7 +126,29 @@ const REPROVA: Record<string, Partial<Record<string, string[]>>> = {
   'sem-se': { atravessar: ['atrasado', 'fechada'] },
   invertida: { atravessar: ['a-tempo', 'atrasado', 'fechada'] },
 }
+/**
+ * No 3D o robô chega à alavanca pela entrada da ponte, encostando nela levantada. Com a pergunta
+ * tirada ou ao contrário, esse encontro já leva o personagem à pedra, o robô não chega e todos os
+ * objetivos da travessia reprovam (o jogo errado não passa, só o motivo é outro).
+ */
+if (d === '3d') {
+  const todos = ['a-tempo', 'atrasado', 'fechada', 'reinicio']
+  REPROVA['sem-se'] = { atravessar: todos }
+  REPROVA.invertida = { atravessar: todos }
+}
+/**
+ * O que depende da hora em que o robô puxa e por isso pode dar os dois resultados: no "fora", o
+ * "depois de" solto no começo sobe a ponte 4 s depois de o jogo começar, antes ou depois do
+ * primeiro puxão; no "rapido", a ponte sobe 1 s depois de cada puxão, perto das conferências
+ * logo depois dele (o aperto que leva à alavanca ainda corre depois do encontro).
+ */
+const INDIFERENTE: Record<string, Partial<Record<string, string[]>>> = {
+  fora: { sobe: ['de-novo'] },
+  rapido: { sobe: ['sobe-sozinha', 'de-novo'] },
+}
 const reprova = REPROVA[scenario]?.[etapa]
 if (!reprova) throw Error(`Cenário sem expectativa nesta etapa: ${scenario} ${etapa}`)
+const indiferente = INDIFERENTE[scenario]?.[etapa] ?? []
 const expected = (id: string) => !reprova.includes(id)
-if (verdicts.some((v) => v.passed !== expected(v.id))) process.exit(1)
+if (verdicts.some((v) => !indiferente.includes(v.id) && v.passed !== expected(v.id)))
+  process.exit(1)

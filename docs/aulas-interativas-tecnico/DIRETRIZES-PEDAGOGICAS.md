@@ -344,3 +344,22 @@ Não repetir a experiência na segunda aula; o quiz dela pode ter uma previsão 
 dimensão. O Poder conta com as duas aulas concluídas. Quando o conceito pede um bloco que só uma das
 dimensões tinha, conferir o catálogo inteiro antes: descer um bloco existente para o iniciante vem
 antes de criar um novo (ver `faisca/README.md`).
+
+## Gatilho de uma vez: a recompensa respeita o estado da partida, direção de 29/10/2026
+
+Relato da dona na Ilha do Farol: depois de pegar a chave, cada volta ao farol reiniciava a
+animação da luz. Um encontro só conta quando começa; sair e voltar roda a regra de novo. Uma
+recompensa disparada por encontro (acender, abrir, florescer, tocar o sino da vitória) precisa
+de uma **guarda de estado**, como nos jogos profissionais: a regra só responde enquanto a
+partida não foi ganha (`Se não ganhou`) ou enquanto o objeto ainda está fechado. Pedido da dona:
+"do jeito profissional de criar jogos, sem gambiarra". Nada de esconder o objeto, mudar a
+mensagem para disfarçar ou mexer no motor para ignorar o pedido repetido.
+
+- Ensinar com o problema primeiro: no próprio jogo, a criança volta ao objeto e vê a animação
+  recomeçar; a guarda vem como conserto, numa parte curta (uma ideia por seção).
+- Só blocos que o curso já usa: `Se`, `não` e o valor da variável que guarda o estado.
+- O objetivo executado sai do objeto, volta e confere que o estado final continua (a luz `aceso`,
+  não um `acender` recomeçado).
+- Aplicado à Ilha do Farol (parte **O farol acende uma vez só**). Nos Poderes 3D e no Jardim
+  Secreto o mesmo padrão aparece (baú, porta, flor, estrela, alavanca); a aplicação neles
+  depende da decisão da dona.

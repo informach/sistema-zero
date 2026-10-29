@@ -6,7 +6,7 @@ O objetivo é reconstruir a relação causal do Farol em um mundo 3D: mover, rec
 
 1. **Uma ilha com profundidade:** jogar a versão pronta, conhecer o material de consulta, comparar a mesma ilha de frente/lado/cima e programar o movimento. A experiência distingue a posição da câmera da posição dos objetos. O projeto já traz cenário, câmera, caminhos, HUD e reinício; o aluno acrescenta a regra de controle e testa as quatro direções.
 2. **A chave está ao seu alcance:** explorar os três eixos com referências visuais, colocar a chave em outro lugar, investigar a diferença entre sobreposição na imagem e contato real, programar coleta, guardar `temChave` e mudar o aviso. A posição entra antes de ser usada na montagem. Uma chave alta demais não pode ser recolhida, mesmo que pareça sobre o personagem de cima.
-3. **A luz volta ao farol:** montar primeiro a resposta do `senão`, depois a vitória no `então`; responder ao quiz; escolher uma posição pessoal para a chave; testar os dois caminhos e o reinício; enviar a versão atual. O quiz antecede a entrega final para permitir aplicar a descoberta ao próprio jogo. Fechamento sem certificado.
+3. **A luz volta ao farol:** montar primeiro a resposta do `senão`, depois a vitória no `então`; consertar a luz que recomeçava a cada volta ao farol com a guarda da partida (`Se não ganhou`); responder ao quiz; escolher uma posição pessoal para a chave; testar os dois caminhos e o reinício; enviar a versão atual. O quiz antecede a entrega final para permitir aplicar a descoberta ao próprio jogo. Fechamento sem certificado.
 
 ## Experiências e linguagem
 
@@ -20,9 +20,9 @@ O destaque principal indica uma ação sugerida; alternativas de resposta têm o
 
 Quatro questões: ponto de vista; mudança de x sem mudar altura; separação escondida pela vista superior; teste após reposicionar a chave. Cada pergunta tem demonstração “Ver o que acontece”, explicação concreta, nova tentativa e correção pelo servidor. A cena é igual para qualquer escolha: não se altera para premiar uma resposta.
 
-Os objetivos de montagem dizem quais relações entre blocos conferir. Os objetivos executados observam movimento nas quatro direções, chave visível antes do contato, coleta no lugar atual, memória persistente, farol sem chave, vitória e reinício. A navegação automática usa as posições e dimensões atuais, caminha com teclas reais pelos caminhos preparados e não escreve em variáveis do aluno. Mensagens não precisam repetir as palavras da professora.
+Os objetivos de montagem dizem quais relações entre blocos conferir. Os objetivos executados observam movimento nas quatro direções, chave visível antes do contato, coleta no lugar atual, memória persistente, farol sem chave, vitória, a luz que continua acesa ao voltar ao farol e reinício. A navegação automática usa as posições e dimensões atuais, caminha com teclas reais pelos caminhos preparados e não escreve em variáveis do aluno. Mensagens não precisam repetir as palavras da professora.
 
-Há nove retratos de projeto para entrada e solução das partes. A solução de uma parte intermediária não contém silenciosamente a construção da parte seguinte. O envio acontece uma vez por aula, depois das alterações; a versão enviada precisa corresponder ao projeto atual.
+Há dez retratos de projeto para entrada e solução das partes. A solução de uma parte intermediária não contém silenciosamente a construção da parte seguinte. O envio acontece uma vez por aula, depois das alterações; a versão enviada precisa corresponder ao projeto atual.
 
 ## Restrição de nível
 
@@ -32,3 +32,19 @@ coordenadas em um trecho pronto. Usar comandos concretos da extensão para andar
 caminhos, animar a caminhada e detectar um encontro entre dois elementos. As variáveis simples
 e o se/senão permanecem explícitos. O termo objeto nos blocos visuais significa um elemento da
 cena, não a estrutura de dados de Programação. Conferir o nível real sem liberar exceções na paleta.
+
+## O farol acende uma vez só (29/10/2026)
+
+Relato da dona: depois de pegar a chave, cada volta ao farol reiniciava a animação da luz. O
+encontro só conta quando começa, então sair do farol e voltar rodava a resposta de novo e
+pedia `acender` outra vez. A correção é a de qualquer jogo profissional: um gatilho de uma vez,
+guardado pelo estado da partida. A parte **O farol acende uma vez só**, depois de **Acenda o farol
+com a chave**, começa pelo problema no próprio jogo (pegar a chave, acender, voltar pelo cais e ver
+a luz recomeçar) e coloca o `Se temChave` dentro de `Se não ganhou`. A comparação é o apito final
+do futebol: depois dele, o gol não conta. Só blocos do iniciante (`Se`, `não`, valor da variável),
+sem bloco novo. O objetivo executado volta ao farol pelo cais e confere que a luz segue `aceso`.
+Os Poderes que partem da Ilha (Moedas, Cabana, Ponte e Baú) herdam a regra com a guarda.
+
+Junto, o motor do Jogo 3D deixou de medir o cubo de reserva dos modelos (do tamanho do lado
+maior) na área de toque, no sólido e no clique: com ele, a área de toque do farol cobria o cais,
+e o cubo do cenário envolvia o personagem, que nunca era barrado pela pedra.

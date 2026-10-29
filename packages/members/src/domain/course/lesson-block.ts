@@ -271,6 +271,13 @@ export interface StudioBlock {
    */
   chain?: string
   /**
+   * VAGAS DE ARTE que o jogo importa (29/10/2026): os desenhos que a criança fez nos blocos de
+   * Pinta do curso entram nos materiais do jogo com o nome da vaga (`add`) ou no lugar da imagem
+   * que a vaga substitui (`replace`). Contrato e régua em `@sistemazero/core/learning`
+   * (`art-slots.ts`); só nomes viajam aqui, nunca o desenho de outro perfil.
+   */
+  artSlots?: import('@sistemazero/core/learning').StudioArtSlotImport[]
+  /**
    * VITRINE (Mural dos Criadores): o admin marca `enabled` no bloco da ÚLTIMA aula do
    * projeto. Ao concluí-la, o aluno ganha o botão "Publicar no Mural" (a conclusão
    * devolve o `showcase` no `LessonCompleteView`) e o post é montado com este `title`/
@@ -362,6 +369,11 @@ export interface PintaBlock {
    * cadeia com desenhos de tipos diferentes não encaixam (ver a validação da autoria).
    */
   chain?: string
+  /**
+   * A VAGA DE ARTE que este desenho preenche (29/10/2026): o bloco de Estúdio que importa a vaga
+   * recebe a entrega deste bloco como imagem do jogo. Ver `StudioBlock.artSlots`.
+   */
+  artSlot?: import('@sistemazero/core/learning').PintaArtSlot
 }
 
 /**
@@ -613,6 +625,7 @@ export const STUDIO_MEMBER_CONTENT_KEYS = [
   'allowedModes',
   'allowLevelReveal',
   'chain',
+  'artSlots',
   'showcase',
 ] as const satisfies readonly (keyof StudioBlock)[]
 
@@ -643,6 +656,9 @@ export function toMemberFacingStudioContent(content: StudioBlock): MemberFacingS
       ? { allowLevelReveal: content.allowLevelReveal }
       : {}),
     ...(content.chain !== undefined ? { chain: content.chain } : {}),
+    ...(content.artSlots
+      ? { artSlots: content.artSlots.map((slot) => ({ name: slot.name, mode: slot.mode })) }
+      : {}),
     ...(content.showcase
       ? {
           showcase: {

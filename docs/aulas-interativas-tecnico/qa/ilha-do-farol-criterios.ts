@@ -8,6 +8,7 @@ import {
   ilhaCollectWithMessage,
   ilhaMemory,
   ilhaMissing,
+  ilhaOnce,
   ilhaWin,
 } from './ilha-do-farol-observacao'
 import type { IlhaParte } from './ilha-do-farol-projeto'
@@ -35,14 +36,26 @@ const visibility = (OBJ: string, MODE: string): ProjectBlockPattern => ({
   blockType: 'sz_g3d_set_visible',
   fields: { OBJ, MODE },
 })
-const branch = (where: 'THEN' | 'ELSE', body: ProjectBlockPattern[]) =>
-  encounter('farol', [
-    {
-      blockType: 'sz_js_if_else',
-      inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
-      inputBlocksAll: { [where]: body },
+/** A guarda da partida: o encontro com farol só responde enquanto não ganhou. */
+const notWon = (body: ProjectBlockPattern[]): ProjectBlockPattern => ({
+  blockType: 'sz_js_if_else',
+  inputBlocks: {
+    COND: {
+      blockType: 'sz_val_not',
+      inputBlocks: { VALUE: { blockType: 'sz_val_variable', fields: { NAME: 'ganhou' } } },
     },
-  ])
+  },
+  inputBlocksAll: { THEN: body },
+})
+/** A decisão da chave no encontro com farol; da parte uma-vez em diante, dentro da guarda. */
+const branch = (where: 'THEN' | 'ELSE', body: ProjectBlockPattern[], guarded = false) => {
+  const decision: ProjectBlockPattern = {
+    blockType: 'sz_js_if_else',
+    inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
+    inputBlocksAll: { [where]: body },
+  }
+  return encounter('farol', [guarded ? notWon([decision]) : decision])
+}
 const movement = check(
   'movimento-no-quadro',
   'Dentro de A cada quadro, coloque o comando que move personagem com o teclado.',
@@ -121,21 +134,33 @@ const message = check(
   'Mude aviso dentro do encontro com chave.',
   encounter('chave', [set('aviso')]),
 )
-const missing = check(
-  'resposta-sem-chave',
-  'No encontro com farol, consulte temChave e mude aviso no senão.',
-  branch('ELSE', [set('aviso')]),
-)
-const win = check(
-  'resposta-com-chave',
-  'No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.',
-  branch('THEN', [
-    {
-      blockType: 'sz_g3d_play_animation',
-      fields: { CLIP: 'acender', OBJ: 'farol', MODE: 'uma-vez' },
-    },
-    set('ganhou', true),
-    set('aviso'),
+const missingBody = [set('aviso')]
+const winBody: ProjectBlockPattern[] = [
+  {
+    blockType: 'sz_g3d_play_animation',
+    fields: { CLIP: 'acender', OBJ: 'farol', MODE: 'uma-vez' },
+  },
+  set('ganhou', true),
+  set('aviso'),
+]
+const missingLabel = 'No encontro com farol, consulte temChave e mude aviso no senão.'
+const winLabel =
+  'No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.'
+const missing = check('resposta-sem-chave', missingLabel, branch('ELSE', missingBody))
+const win = check('resposta-com-chave', winLabel, branch('THEN', winBody))
+// Os mesmos ids da decisão: o que muda é só onde ela mora, dentro da guarda.
+const missingGuarded = check('resposta-sem-chave', missingLabel, branch('ELSE', missingBody, true))
+const winGuarded = check('resposta-com-chave', winLabel, branch('THEN', winBody, true))
+const guard = check(
+  'uma-vez-guarda',
+  'No encontro com farol, coloque o Se temChave dentro de Se não ganhou.',
+  encounter('farol', [
+    notWon([
+      {
+        blockType: 'sz_js_if_else',
+        inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
+      },
+    ]),
   ]),
 )
 export function ilhaChecks(part: IlhaParte): SectionProjectCheck[] {
@@ -148,10 +173,12 @@ export function ilhaChecks(part: IlhaParte): SectionProjectCheck[] {
       'aviso',
       'sem-chave',
       'decisao',
+      'uma-vez',
       'aparencia',
       'personalizar',
     ],
     n = ids.indexOf(part)
+  const guarded = n >= 8
   return [
     movement,
     ...directions,
@@ -160,7 +187,10 @@ export function ilhaChecks(part: IlhaParte): SectionProjectCheck[] {
     ...(n >= 3 ? [collect, n >= 5 ? ilhaCollectWithMessage : ilhaCollect] : []),
     ...(n >= 4 ? [memory, remember, ...(n < 7 ? [ilhaMemory] : [])] : []),
     ...(n >= 5 ? [message] : []),
-    ...(n >= 6 ? [missing, ilhaMissing] : []),
-    ...(n >= 7 ? [win, ilhaWin] : []),
+    ...(n >= 6 ? [guarded ? missingGuarded : missing, ilhaMissing] : []),
+    // A parte uma-vez confere a volta ao farol; a vitória com o recomeço (R) fica nas outras
+    // partes: as duas idas mais a volta não cabem com ela nos 40 s de uma parte.
+    ...(n >= 7 ? [guarded ? winGuarded : win, part === 'uma-vez' ? ilhaOnce : ilhaWin] : []),
+    ...(guarded ? [guard] : []),
   ]
 }
