@@ -25,13 +25,19 @@ import {
   SalvamentoV9Schema,
   SalvamentoV10Schema,
 } from '../src'
-import { migrarDaV10 } from '../src/salvamento'
+import { migrarDaV10, migrarDaV11 } from '../src/salvamento'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 
 /** Uma V9 com dois Lumis presos. */
 function v9(): SalvamentoV9 {
-  const { versao: _, rotinas: _r, recife: _recife, ...resto } = criarSalvamentoInicial(AGORA)
+  const {
+    versao: _,
+    rotinas: _r,
+    recife: _recife,
+    vale: _vale,
+    ...resto
+  } = criarSalvamentoInicial(AGORA)
   return SalvamentoV9Schema.parse({ ...resto, versao: 9, lumis: { quindim: 2, brigadeiro: 1 } })
 }
 
@@ -52,22 +58,24 @@ test('a V9 migra para a V10 sem perder nada, sem nenhuma rotina', () => {
   const clone = structuredClone(antiga)
   const nova = migrarDaV9(antiga)
   expect(nova).toEqual({ ...antiga, versao: 10, rotinas: {} })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV10(nova))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV11(migrarDaV10(nova)))
   expect(SalvamentoV10Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
-  expect(criarSalvamentoInicial(AGORA)).toMatchObject({ versao: 11, rotinas: {} })
+  expect(criarSalvamentoInicial(AGORA)).toMatchObject({ versao: 12, rotinas: {} })
 })
 
 test('a V9 continua aceitando só o formato dela, e as antigas chegam até a V10', () => {
   expect(SalvamentoV9Schema.safeParse({ ...v9(), rotinas: {} }).success).toBe(false)
-  const { rotinas: _, recife: _recife, ...semRotinas } = criarSalvamentoInicial(AGORA)
+  const { rotinas: _, recife: _recife, vale: _vale, ...semRotinas } = criarSalvamentoInicial(AGORA)
   expect(migrarSalvamento({ ...semRotinas, versao: 10 })).toBeNull()
   const v7 = (() => {
     const { turnos: _t, lumis: _l, ...v } = v9()
     return { ...v, versao: 7 as const }
   })()
-  expect(migrarSalvamento(v7)).toEqual(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7)))))
-  expect(migrarSalvamento({ ...criarSalvamentoInicial(AGORA), versao: 12 })).toBeNull()
+  expect(migrarSalvamento(v7)).toEqual(
+    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))),
+  )
+  expect(migrarSalvamento({ ...criarSalvamentoInicial(AGORA), versao: 13 })).toBeNull()
 })
 
 test('guarda a rotina de um Lumi preso, e só de Lumi preso', () => {

@@ -7,6 +7,7 @@ import {
   migrarDaV8,
   migrarDaV9,
   migrarDaV10,
+  migrarDaV11,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV6,
@@ -25,6 +26,7 @@ function v6(): SalvamentoV6 {
     lumis: _l,
     rotinas: _r,
     recife: _recife,
+    vale: _vale,
     ...resto
   } = criarSalvamentoInicial(AGORA)
   return SalvamentoV6Schema.parse({
@@ -53,7 +55,9 @@ test('a V6 migra para a V7 sem perder nada, com o Bento ainda sem conhecer a cri
     versao: 7,
     moradores: { ...antiga.moradores, bento: MORADOR_NOVO },
   })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(nova)))))
+  expect(migrarSalvamento(antiga)).toEqual(
+    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(nova))))),
+  )
   expect(SalvamentoV7Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
 })
@@ -81,7 +85,9 @@ test('a V7 guarda a amizade e o pedido do Bento e recusa o que sai da régua', (
       },
     },
   }
-  expect(migrarSalvamento(amigo)).toEqual(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(amigo)))))
+  expect(migrarSalvamento(amigo)).toEqual(
+    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(amigo))))),
+  )
   const bento = amigo.moradores.bento
   for (const errado of [
     { ...bento, amizade: 501 },

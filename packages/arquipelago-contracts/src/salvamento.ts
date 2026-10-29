@@ -9,7 +9,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 11
+export const VERSAO_SALVAMENTO = 12
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -457,7 +457,7 @@ const daV7 = (v7: SalvamentoV7) => migrarDaV9(migrarDaV8(migrarDaV7(v7)))
 /**
  * O formato atual. Aceita também as versões anteriores e já devolve migradas: um salvamento
  * guardado antes continua valendo, e a gravação antiga de uma aba aberta antes da atualização é
- * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V11): a primeira gravação dela
+ * guardada já migrada. Essa aba antiga, porém, não lê a resposta (V12): a primeira gravação dela
  * fica, e as seguintes falham até a página recarregar.
  */
 const SalvamentoAteV10Schema = z.union([
@@ -488,18 +488,46 @@ export type SalvamentoV11 = z.infer<typeof SalvamentoV11Schema>
 export function migrarDaV10(v10: SalvamentoV10): SalvamentoV11 {
   return { ...v10, versao: 11, recife: { bau: false, pagina: false, tesouro: false } }
 }
-export const SalvamentoSchema = z.union([
+const SalvamentoAteV11Schema = z.union([
   SalvamentoV11Schema,
   SalvamentoAteV10Schema.transform(migrarDaV10),
 ])
-export type Salvamento = SalvamentoV11
+export const NINHOS_DO_VALE = ['ninho-1', 'ninho-2', 'ninho-3'] as const
+export type NinhoDoVale = (typeof NINHOS_DO_VALE)[number]
+
+/** V12: descobertas do Vale, sem prazo, perdas ou posição temporária de observação. */
+export const ValeSchema = z.strictObject({
+  pegadas: z.boolean(),
+  escavacao: z.number().int().min(0).max(3),
+  ninhos: z
+    .array(z.enum(NINHOS_DO_VALE))
+    .max(3)
+    .refine((ids) => new Set(ids).size === ids.length, 'ninhos repetidos'),
+})
+export const SalvamentoV12Schema = z
+  .strictObject({
+    ...SalvamentoV11Schema.shape,
+    versao: z.literal(12),
+    vale: ValeSchema,
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV12 = z.infer<typeof SalvamentoV12Schema>
+export function migrarDaV11(v11: SalvamentoV11): SalvamentoV12 {
+  return { ...v11, versao: 12, vale: { pegadas: false, escavacao: 0, ninhos: [] } }
+}
+export const SalvamentoSchema = z.union([
+  SalvamentoV12Schema,
+  SalvamentoAteV11Schema.transform(migrarDaV11),
+])
+export type Salvamento = SalvamentoV12
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 11,
+    versao: 12,
+    vale: { pegadas: false, escavacao: 0, ninhos: [] },
     recife: { bau: false, pagina: false, tesouro: false },
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),

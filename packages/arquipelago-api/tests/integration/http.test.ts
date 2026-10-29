@@ -215,8 +215,8 @@ describe('acesso', () => {
 describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
 
-  test('V10 migra na rota e V11 preserva as descobertas do Recife por revisão', async () => {
-    const { recife: _, ...base } = salvamento
+  test('V10 migra na rota e a versão atual preserva as descobertas do Recife por revisão', async () => {
+    const { recife: _, vale: _vale, ...base } = salvamento
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
       salvamento: { ...base, versao: 10 },
@@ -240,6 +240,32 @@ describe('salvamento', () => {
     expect(velha.status).toBe(409)
   })
 
+  test('V11 migra sem perder o Recife e a V12 guarda todas as descobertas do Vale', async () => {
+    const { vale: _, ...base } = salvamento
+    const v11 = { ...base, versao: 11, recife: { bau: true, pagina: true, tesouro: true } }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v11,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [] })
+    const atual = {
+      ...lido.salvamento,
+      vale: { pegadas: true, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'] },
+    }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    expect(relido.salvamento?.recife).toEqual(v11.recife)
+  })
+
   test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
     const {
       presenteDosBichosEntregue: _,
@@ -247,6 +273,7 @@ describe('salvamento', () => {
       lumis: _l,
       rotinas: _r,
       recife: _recife,
+      vale: _vale,
       ...anterior
     } = salvamento
     const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
@@ -256,7 +283,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 11, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 12, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,

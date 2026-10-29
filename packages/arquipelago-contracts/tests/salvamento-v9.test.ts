@@ -6,6 +6,7 @@ import {
   migrarDaV8,
   migrarDaV9,
   migrarDaV10,
+  migrarDaV11,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV8,
@@ -22,6 +23,7 @@ function v8(): SalvamentoV8 {
     lumis: _l,
     rotinas: _r,
     recife: _recife,
+    vale: _vale,
     ...resto
   } = criarSalvamentoInicial(AGORA)
   return SalvamentoV8Schema.parse({
@@ -36,20 +38,26 @@ test('a V8 migra para a V9 sem perder nada, sem nenhum Lumi preso', () => {
   const clone = structuredClone(antiga)
   const nova = migrarDaV8(antiga)
   expect(nova).toEqual({ ...antiga, versao: 9, lumis: {} })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV10(migrarDaV9(nova)))
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV11(migrarDaV10(migrarDaV9(nova))))
   expect(SalvamentoV9Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
 })
 
 test('a V8 continua aceitando só o formato dela (sem os Lumis)', () => {
   expect(SalvamentoV8Schema.safeParse({ ...v8(), lumis: {} }).success).toBe(false)
-  const { lumis: _, rotinas: _r, recife: _recife, ...semLumis } = criarSalvamentoInicial(AGORA)
+  const {
+    lumis: _,
+    rotinas: _r,
+    recife: _recife,
+    vale: _vale,
+    ...semLumis
+  } = criarSalvamentoInicial(AGORA)
   expect(migrarSalvamento({ ...semLumis, versao: 9 })).toBeNull()
 })
 
 test('a V9 guarda quantos Lumis de cada espécie ela prendeu, e recusa o que sai da régua', () => {
   const s = criarSalvamentoInicial(AGORA)
-  expect(s.versao).toBe(11)
+  expect(s.versao).toBe(12)
   expect(s.lumis).toEqual({})
   expect(LUMIS).toHaveLength(14)
   expect(new Set(LUMIS).size).toBe(14)
@@ -64,8 +72,10 @@ test('as versões antigas chegam até a V9', () => {
     const { turnos: _, ...v } = v8()
     return { ...v, versao: 7 as const }
   })()
-  expect(migrarSalvamento(v7)).toEqual(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7)))))
-  expect(migrarSalvamento(v7)?.versao).toBe(11)
+  expect(migrarSalvamento(v7)).toEqual(
+    migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))),
+  )
+  expect(migrarSalvamento(v7)?.versao).toBe(12)
 })
 
 test('os 14 Lumis no máximo cabem no teto do salvamento', () => {

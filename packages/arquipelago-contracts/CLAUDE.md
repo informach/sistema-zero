@@ -126,7 +126,7 @@ Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/p
 
 `SalvamentoV11Schema` acrescenta somente `recife: { bau, pagina, tesouro }`, três booleanos.
 `migrarDaV10` preserva o documento e começa as marcas em false. A união pública aceita V1 a V11
-e devolve V11. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
+e, na época da V11, devolvia V11. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
 rotinas é compartilhada sem mudar a régua da V10. O pior caso completo continua limitado a 64 KB.
 Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 
@@ -136,3 +136,11 @@ Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 `vila-telhados`: só alarga o que a V2 em diante aceitam. O pior caso de 64 KB (com uma entrada por
 percurso, em `tests/salvamento-v10.test.ts`) fica a 140 bytes do teto (medido): campo novo precisa
 achar espaço antes.
+
+## Salvamento V12: descobertas do Vale (29/10/2026)
+
+`SalvamentoV12Schema` acrescenta `vale: { pegadas, escavacao, ninhos }`: booleano, inteiro de 0 a 3
+e lista sem repetição dos três ids de `NINHOS_DO_VALE`. `migrarDaV11` começa em false, 0 e lista
+vazia. A união pública aceita V1 a V12 e devolve V12. Schemas históricos continuam estritos,
+e a validação das rotinas e o teto de 64 KB permanecem. Não guardar observação temporária,
+posição ou cronômetro nesta coleção. Testes de migração e rejeição em `salvamento-v12.test.ts`.
