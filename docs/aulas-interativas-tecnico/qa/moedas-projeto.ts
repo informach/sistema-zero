@@ -244,13 +244,16 @@ export const MOEDAS_ASSETS_3D: ProjectAsset[] = [
   moedasModeloAsset('bau-do-tesouro'),
 ]
 /**
- * A linha do personagem até a ponte e a ponte (z 0,75): as cinco da trilha; a sexta atrás.
+ * A trilha até o farol: duas na frente da pedra (z 1,75, por onde se passa contornando a pedra,
+ * que é sólida) e três na ponte (z 0,75); a sexta atrás. Na linha do começo (z 0,75), a segunda
+ * ficava colada na pedra: só era recolhida enquanto a pedra deixava passar e a área de toque
+ * contava o cubo de reserva do modelo (29/10/2026).
  * As moedas 3D ficam paradas, de frente para a câmera: girar cada cópia de um grupo pede o
  * "Para cada objeto do grupo", que não é do iniciante.
  */
 export const MOEDAS_3D = [
-  [-4.4, 0.75],
-  [-2.2, 0.75],
+  [-4.4, 1.75],
+  [-2.2, 1.75],
   [1.0, 0.75],
   [2.1, 0.75],
   [3.2, 0.75],
