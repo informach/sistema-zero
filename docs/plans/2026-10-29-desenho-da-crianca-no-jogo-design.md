@@ -137,7 +137,7 @@ antes do Admin, do member-shell e dos apps.
 5. **Member-shell, o bloco de Estúdio.** ✅ (29/10/2026) Buscar as vagas ao montar o projeto, converter com o
    exportador do Pinta e mesclar nos assets (`add`) ou substituir (`replace`). Falha de leitura ou
    de conversão não derruba o bloco: segue sem o desenho e mostra um recado curto. Testes do bloco.
-6. **Admin.** Seções **Desenho para o jogo** (Pinta) e **Desenhos da criança** (Estúdio) em
+6. **Admin.** ✅ (29/10/2026; as opções vêm do rascunho da aula, outra aula entra pelo nome) Seções **Desenho para o jogo** (Pinta) e **Desenhos da criança** (Estúdio) em
    `packages/admin/src/components/editor/lesson-structure-editor.tsx`, lendo as imagens do jogo do
    bloco de Estúdio escolhido e as vagas anteriores do curso.
 7. **Chave do Farol, objetivo do farol livre.** `desafio-farol-criterios.ts` (estrutura com
