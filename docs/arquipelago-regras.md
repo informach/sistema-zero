@@ -3291,3 +3291,14 @@ A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o
   nublado aos 60% (o sol forte pede mais cedo); na chuva não pede, a chuva rega. Ela pede durante
   15% do crescimento, com uma gota azul em cima e "Regar". Regar nessa hora adianta o crescimento
   em 15%. Sem regar, a planta cresce no mesmo tempo de sempre: nada estraga e nada se perde.
+
+## Minijogo do Estúdio "Jardim que floresce" (fase4-10, 29/10/2026)
+
+- O pacote de desafios das Nuvens: um Quadro das Cores (quadro 6) e três desafios do dia, no Jogo 2D
+  com os blocos ensinados até o Gênio da Criação. Ainda não foi importado no Admin.
+- A simulação: começo com 0 de água e 3 de sol; Regar e Sol guardam 3 cada; a cada 1 segundo o
+  tempo aumenta 1 e, com água e sol, a flor cresce 10 e gasta 1 de cada; em 100 o jardim floresce.
+- As variações mudam uma regra: rega forte (Regar guarda 5), sol forte (com 6 ou mais de sol a flor
+  cresce 20) e chuva (cai 1 de água por segundo). O extra é a tecla Enter recomeçar o jardim.
+- Moedas de sempre: 20 e 10 de extra no quadro, 10 e 5 nos desafios do dia. Detalhes e provas em
+  `docs/desafios-do-jogo/nuvens/README.md`.

@@ -1264,3 +1264,12 @@ O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas 
   Verificador: `playground/verificar-clima-browser.ts` (espera o relógio de verdade: a alface pede
   aos 54 s). Pedido de arte (cata-vento perto da horta) no plano
   `docs/plans/2026-10-29-arquipelago-clima-da-ilha.md`.
+
+## Minijogo "Jardim que floresce" (fase4-10, 29/10/2026)
+
+- Fora do pacote do jogo: `docs/desafios-do-jogo/nuvens/` (fontes, manifesto, README, conferência
+  visual), com as provas em `arquipelago-contracts/tests/manifesto-das-nuvens.test.ts`,
+  `studio/src/blockly/__tests__/nuvensManifest.test.ts`, `arquipelago-api` (manifestos) e
+  `studio-runtime/tests/nuvens-browser.test.ts` (executor real, com `SZ_CHECK_CHROMIUM`).
+- "A cada N segundos" (`g2d:everySeconds`) tem de ser bloco raiz do projeto, ao lado do laço; o
+  executor recusa `checkpoints: []` (ausente ou com pontos) e espera de mais de 10 s num passo.
