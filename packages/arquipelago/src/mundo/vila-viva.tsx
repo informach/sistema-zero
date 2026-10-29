@@ -5,6 +5,7 @@ import type { Group } from 'three'
 import type { PontosDoPercurso } from '../sistemas/percurso'
 import { PERCURSO_DOS_TELHADOS } from '../sistemas/percurso'
 import { BalcoesDaVila } from './balcoes-da-vila'
+import { BancosDaVila } from './bancos-da-vila'
 import { Bento } from './bento'
 import { BorroesDaVila } from './borroes-da-vila'
 import { percursoNoMundo } from './bosque'
@@ -33,7 +34,7 @@ const CORES_DO_CONFEITO: CoresDoColetavel = {
  * O que mexe na Vila Doce (montado pelo `anel.tsx` só com a ilha completa ATIVA, em coordenadas do
  * mundo): o Bento na frente da padaria, os balcões dos turnos (fase2-03), a entrega pelos
  * telhados (fase2-05), a festa da estação (fase2-10), os borrões da noite e os Lumis da Vila
- * (fase2-06).
+ * (fase2-06) e os bancos de sentar (fase2-13).
  */
 export function VilaViva({
   ilha,
@@ -68,6 +69,7 @@ export function VilaViva({
         <Bento modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
       <BalcoesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
+      <BancosDaVila colisores={preparada.colisores} meio={meio} />
       <FestaNaVila meio={meio} giro={giro} />
       <BorroesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       {telhados ? (

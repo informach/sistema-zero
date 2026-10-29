@@ -3,6 +3,7 @@ import type { Ponto } from '../cipo'
 import { MODO_BORDA } from './borda'
 import { MODO_CHAO } from './chao'
 import { MODO_CIPO, pegarCipo } from './cipo'
+import { levantar, MODO_DESCANSO, sentarOuDeitar } from './descanso'
 import { MODO_EQUILIBRIO } from './equilibrio'
 import { MODO_ESCADA } from './escada'
 import { agarrarTronco, MODO_ESCALADA } from './escalada'
@@ -12,6 +13,7 @@ import type { AvisoDeModo, EstadoDoCorpo, ModoDeMovimento, MundoDoMovimento } fr
 export { MODO_BORDA } from './borda'
 export { MODO_CHAO } from './chao'
 export { MODO_CIPO } from './cipo'
+export { MODO_DESCANSO } from './descanso'
 export { MODO_EQUILIBRIO } from './equilibrio'
 export { MODO_ESCADA } from './escada'
 export { MODO_ESCALADA } from './escalada'
@@ -28,11 +30,13 @@ export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   escada: MODO_ESCADA,
   escorregar: MODO_ESCORREGAR,
   borda: MODO_BORDA,
+  descanso: MODO_DESCANSO,
 }
 
 /**
- * O pedido de um interativo ("Pegar o cipó", "Escalar o tronco"), atendido no passo seguinte e só
- * no chão: entra no modo do objeto pedido, parado (sem embalo).
+ * O pedido de um interativo ("Pegar o cipó", "Escalar o tronco", "Sentar no banco", "Deitar na
+ * cama"), atendido no passo seguinte e só no chão: entra no modo do objeto pedido, parado (sem
+ * embalo). "Levantar" (a soneca acabou) só vale descansando.
  */
 export function atenderPedido(
   c: EstadoDoCorpo,
@@ -42,7 +46,15 @@ export function atenderPedido(
   agora: number,
   aviso: AvisoDeModo,
 ): void {
+  if (pedido.tipo === 'levantar') {
+    if (c.modo === 'descanso') levantar(c, agora, aviso)
+    return
+  }
   if (c.modo !== 'chao') return
+  if (pedido.tipo === 'descanso') {
+    if (!c.nadando) sentarOuDeitar(c, pedido.lugar, de, agora, aviso)
+    return
+  }
   if (pedido.tipo === 'cipo') {
     for (const cipo of mundo.cipos) {
       if (cipo.id === pedido.id && !cipo.seguro)

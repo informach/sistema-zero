@@ -589,6 +589,16 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   recompila todos os materiais). Os presos da noite ficam no `localStorage` por perfil. O medidor
   mostra `borroes`, `lumisDaVila` e `lanternaNaMao`. Regras: §6.15.3. Testes: `tests/borroes.test.ts`;
   navegador: `bun playground/verificar-borroes-browser.ts` (`?lanterna=1&adiantar=12`).
+- Descanso (fase2-13): `sistemas/descanso.ts` (energia por segundo no banco e na cama, `descansar`,
+  `sonecaAcabou`, `lugarNoBanco`, `lugarNaCama`) e o modo do corpo `modos/descanso.ts` (entra pelo
+  pedido `{ tipo: 'descanso', lugar }` do interativo, sai andando, pulando, usando ou pelo pedido
+  `levantar`). O corpo do Rapier fica de pé ao lado do móvel e só o desenho vai para o assento ou o
+  colchão (`personagem.tsx`; deitado, o desenho gira −90° em X, como no nado ele deita para a
+  frente). Clipes "Sentar" e "Deitar" no `locomocao.glb`. A energia sobe nos `Relogios`
+  (`loja.descanso`); a barrinha "Soneca" fica no HUD. Bancos: `mundo/bancos-da-vila.tsx` lê os
+  colisores `col-banco-N` da ilha preparada (já girados com a ilha: não girar de novo). Testes:
+  `tests/descanso.test.ts`; navegador: `bun playground/verificar-descanso-browser.ts`
+  (`?energia=20`); medidor: `descanso`, `energia`, `avatar`.
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em

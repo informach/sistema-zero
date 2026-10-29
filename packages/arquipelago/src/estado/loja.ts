@@ -65,6 +65,8 @@ export interface EstadoDoJogo {
   patins: boolean
   /** A lanterna acesa (`sistemas/borroes.ts`; vale só se ainda está na mochila, não é salva). */
   lanterna: boolean
+  /** Sentada no banco ou deitada na cama (`sistemas/descanso.ts`), escrito pelo personagem. */
+  descanso: 'sentar' | 'deitar' | null
   /** Muda o salvamento (a fila de salvamento grava depois). */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
@@ -83,6 +85,7 @@ export interface EstadoDoJogo {
   cortar(): void
   calcarPatins(calcados: boolean): void
   acenderLanterna(acesa: boolean): void
+  definirDescanso(jeito: 'sentar' | 'deitar' | null): void
 }
 
 export interface DadosIniciais {
@@ -128,6 +131,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     corte: 0,
     patins: false,
     lanterna: false,
+    descanso: null,
     mudar(fn) {
       if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
       const novo = fn(get().salvamento)
@@ -206,6 +210,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     acenderLanterna(lanterna) {
       if (get().lanterna !== lanterna) set({ lanterna })
+    },
+    definirDescanso(descanso) {
+      if (get().descanso !== descanso) set({ descanso })
     },
   }))
 }

@@ -72,10 +72,7 @@ for (const lago of LAGOS) {
         [0, lago.fim + 0.1],
         [0, -(lago.fim + 0.1)],
       ] as const) {
-        expect(alturaEm(meio.x + dx * raios.x, meio.z + dz * raios.z)).toBeCloseTo(
-          lago.topo,
-          2,
-        )
+        expect(alturaEm(meio.x + dx * raios.x, meio.z + dz * raios.z)).toBeCloseTo(lago.topo, 2)
       }
     })
 

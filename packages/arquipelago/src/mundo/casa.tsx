@@ -13,7 +13,7 @@ import type { MeshStandardMaterial } from 'three'
 import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
-import { dormir } from '../sistemas/necessidades'
+import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
@@ -119,20 +119,34 @@ function ColisaoDosMoveis({ quarto }: { quarto: QuartoDoJogo }) {
   )
 }
 
+/**
+ * A cama do quarto (ou o beliche): deitar devolve a energia aos poucos (fase2-13,
+ * `sistemas/descanso.ts`). O travesseiro fica no −Z da cama; girada `rot` vezes 90°, os pés ficam
+ * para o rumo `rot × 90°`.
+ */
 function Cama({ quarto }: { quarto: QuartoDoJogo }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const cama = quarto.placedItems.find((p) => p.itemId === 'cama' || p.itemId === 'beliche')
   const info = cama ? ROOM_ITEM_INFO[cama.itemId] : undefined
-  const fp = cama && info ? effectiveFootprint(info.w, info.h, (cama.rot ?? 0) as Rot) : null
+  const rot = (cama?.rot ?? 0) as Rot
+  const fp = cama && info ? effectiveFootprint(info.w, info.h, rot) : null
   const c = cama && fp ? cellToWorld(cama.x, cama.y, fp.w, fp.h) : { x: 0, z: 0 }
+  const lugar = useMemo(
+    () =>
+      lugarNaCama(
+        { x: CENTRO_DA_CASA.x + c.x, y: BASE, z: CENTRO_DA_CASA.z + c.z },
+        (rot * Math.PI) / 2,
+      ),
+    [c.x, c.z, rot],
+  )
   useInterativo('cama', {
     x: CENTRO_DA_CASA.x + c.x,
     z: CENTRO_DA_CASA.z + c.z,
     raio: cama ? 2.6 : 0,
-    rotulo: () => (cama ? 'Dormir um pouco' : null),
+    rotulo: () => (cama ? 'Deitar na cama' : null),
     agir: () => {
-      loja.getState().mudar((s) => ({ ...s, necessidades: dormir(s.necessidades) }))
-      loja.getState().dizer('Que soneca boa. A energia voltou toda.')
+      movimento.pedido = { tipo: 'descanso', lugar }
+      loja.getState().dizer(FALA_DE_DEITAR)
     },
   })
   return null

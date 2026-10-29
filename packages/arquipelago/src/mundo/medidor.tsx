@@ -76,6 +76,10 @@ export interface MedidaDoDesenho {
   lumisDaVila: string[]
   /** Onde está a lanterna acesa na mão (no mundo), ou `null`. */
   lanternaNaMao: { x: number; y: number; z: number } | null
+  /** Descansando (fase2-13): o jeito, a energia e onde está a origem do desenho do avatar (os pés). */
+  descanso: 'sentar' | 'deitar' | null
+  energia: number
+  avatar: { x: number; y: number; z: number; deitado: number } | null
 }
 
 function medirLigado(): boolean {
@@ -122,6 +126,13 @@ function medirBorroes(raiz: Object3D) {
   return { borroes, lumisDaVila, lanternaNaMao }
 }
 
+function medirAvatar(raiz: Object3D): MedidaDoDesenho['avatar'] {
+  const a = raiz.getObjectByName('avatar-visual')?.parent
+  if (!a) return null
+  const p = a.getWorldPosition(new Vector3())
+  return { x: p.x, y: p.y, z: p.z, deitado: a.rotation.x }
+}
+
 function contarGeometrias(raiz: Object3D): number {
   const vistas = new Set<unknown>()
   raiz.traverse((o) => {
@@ -137,7 +148,7 @@ export function Medidor() {
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const cena = useThree((s) => s.scene)
-  const { rastro, pedidos, movimento } = useJogo()
+  const { rastro, pedidos, movimento, loja } = useJogo()
   const conta = useRef({ tempo: 0, quadros: 0 })
   const { world } = useRapier()
   const fisica = useRef({ inicio: 0, ms: 0, passos: 0 })
@@ -209,6 +220,9 @@ export function Medidor() {
       noChao: movimento.noChao,
       patins: medirPatins(cena),
       ...medirBorroes(cena),
+      descanso: loja.getState().descanso,
+      energia: loja.getState().salvamento.necessidades.energia,
+      avatar: medirAvatar(cena),
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida
     fisica.current.ms = 0

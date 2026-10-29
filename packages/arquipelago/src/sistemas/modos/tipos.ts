@@ -5,6 +5,7 @@ import type {
   EixoDeEquilibrio,
   EscadaViva,
   Escorregador,
+  LugarDeDescanso,
   ModoDoCorpo,
   TroncoVivo,
 } from '../../estado/contexto'
@@ -51,6 +52,8 @@ export interface EstadoDoCorpo {
   subindoNaBorda: number
   /** `performance.now()` de quando soltou uma borda (não pega a mesma na hora). */
   soltouDaBorda: number
+  /** Onde está sentada ou deitada (`modos/descanso.ts`), ou nada. */
+  descanso: LugarDeDescanso | null
   /** A força da correnteza no último passo (0 a 1), nadando no mar fora das boias. */
   correnteza: number
   /** Segundos no modo atual (o encaixe suave depois de pegar ou grudar). */
@@ -109,6 +112,7 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     naBorda: 0,
     subindoNaBorda: 0,
     soltouDaBorda: Number.NEGATIVE_INFINITY,
+    descanso: null,
     correnteza: 0,
     noModo: 0,
     embalo: { x: 0, y: 0, z: 0 },

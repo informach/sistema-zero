@@ -60,6 +60,8 @@ export interface OpcoesDaPlataformaFalsa {
   patins?: boolean
   /** Põe a lanterna na mochila (o presente do Bento, fase2-06). */
   lanterna?: boolean
+  /** A energia de começo (de 0 a 100), para conferir o descanso (fase2-13). */
+  energia?: number
   /** Os Lumis já presos (`{ quindim: 2 }`), como se a lanterna já tivesse prendido (fase2-06). */
   lumis?: Partial<Record<LumiId, number>>
   /** Cartões dos Lumis: `algumas` (padrão: Repetir e Se conquistados), `todas` (equipe), `desligadas` (403) ou `fora-do-ar` (424). */
@@ -204,6 +206,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         salvamento: { ...atual, inventario: { ...atual.inventario, patins: 1 } },
         atualizadoEm: agora().toISOString(),
       }
+  }
+  if (o.energia !== undefined) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const energia = Math.max(0, Math.min(100, o.energia))
+    guardado = {
+      revisao: guardado.revisao + 1,
+      salvamento: { ...atual, necessidades: { ...atual.necessidades, energia } },
+      atualizadoEm: agora().toISOString(),
+    }
   }
   if (o.lanterna) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
