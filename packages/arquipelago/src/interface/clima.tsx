@@ -14,7 +14,7 @@ import {
 export function ClimaDaSuaIlha() {
   const { loja } = useJogo()
   const liberado = useEstado((s) => climaLiberado(s.jornada))
-  const clima = useEstado((s) => s.clima)
+  const clima = useEstado((s) => s.salvamento.clima)
   const visitando = useEstado((s) => s.visita !== null)
   if (!liberado || visitando) return null
   return (
@@ -30,7 +30,7 @@ export function ClimaDaSuaIlha() {
             aria-pressed={clima === c}
             onClick={() => {
               const s = loja.getState()
-              if (s.clima === c) return
+              if (s.salvamento.clima === c) return
               s.escolherClima(c)
               s.dizer(FALA_DO_CLIMA[c])
             }}

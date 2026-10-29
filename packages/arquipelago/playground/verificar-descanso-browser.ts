@@ -15,7 +15,6 @@ import path from 'node:path'
 import { chromium } from 'playwright-core'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
-import { CORPO } from '../src/sistemas/corpo'
 import { lugarNaCama, lugarNoBanco } from '../src/sistemas/descanso'
 
 const port = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4598)

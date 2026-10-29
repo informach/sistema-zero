@@ -38,11 +38,15 @@ test('a Lenda abre o final, visitas e posições inválidas não abrem', () => {
   expect(podeSubirOFarol(8, true)).toBe(false)
 })
 
-test('a página fica escondida até a leitura, sem alterar o salvamento', () => {
+test('a página fica escondida até a leitura guardada, e consultar não altera o salvamento', () => {
   const s = criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
   const antes = JSON.stringify(s)
   expect(paginasDoDiario(s).find((p) => p.ilha === 'farol')?.aberta).toBe(false)
-  expect(paginasDoDiario(s, true).find((p) => p.ilha === 'farol')).toMatchObject({
+  expect(
+    paginasDoDiario({ ...s, farol: { pagina: true, concluido: false } }).find(
+      (p) => p.ilha === 'farol',
+    ),
+  ).toMatchObject({
     aberta: true,
     texto: TEXTO_DA_PAGINA.farol,
   })

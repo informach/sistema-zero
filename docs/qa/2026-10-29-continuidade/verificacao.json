@@ -1,0 +1,161 @@
+{
+  "lote": "L01",
+  "base": "9436b6bc4150649bd55a9db8c053cea2cb3459ed",
+  "registradoEmUtc": "2026-10-29T21:24:07.1209341Z",
+  "validacao": "árvore de trabalho revisada, antes do commit",
+  "contratos": 143,
+  "api": 292,
+  "jogoDistintos": 1053,
+  "typechecks": ["arquipelago-contracts", "arquipelago-api", "arquipelago"],
+  "biomeArquivos": 46,
+  "limites": [
+    "SwiftShader não mede GPU física",
+    "Nuvens usa transporte QA entre plataformas",
+    "Balão browser não completa todas as argolas",
+    "Sem implantação ou escrita remota"
+  ],
+  "fontes": [
+    {
+      "path": "packages/arquipelago-contracts/src/rotina-ferramenta.ts",
+      "sha256": "f1f4512ea036b7cf02c15a8e7ab60bf7a44c96323e28b47b4bd9080d3ebf86b7"
+    },
+    {
+      "path": "packages/arquipelago-contracts/src/salvamento.ts",
+      "sha256": "578403401ad7653944554be8148b9b74cea306494c08dc11ca0498e9bfea27cd"
+    },
+    {
+      "path": "packages/arquipelago/src/estado/farol.ts",
+      "sha256": "00a2bba4b4fd494181a8297b734dc0146e48174bc7e74e65a2a670baa7f76442"
+    },
+    {
+      "path": "packages/arquipelago/src/estado/loja.ts",
+      "sha256": "3948ba137482a3c21a50b0ea162b921abb9e4205608c952ea7c9ab69c7050b28"
+    },
+    {
+      "path": "packages/arquipelago/src/interface/clima.tsx",
+      "sha256": "bac5c79b11a22d55285f22548218cea399c951ed7e0c7dc793215f7950db86e9"
+    },
+    {
+      "path": "packages/arquipelago/src/interface/diario.tsx",
+      "sha256": "38128dd7a9a69d4c74a9fd836067e15f29e57bc5bd217167ec0131764714debe"
+    },
+    {
+      "path": "packages/arquipelago/src/interface/estrelas.tsx",
+      "sha256": "94b10767c40689d95b19197c7fdb47f4f5c79d2dda0e7b6b12a79faf4e47ae5c"
+    },
+    {
+      "path": "packages/arquipelago/src/interface/hud.tsx",
+      "sha256": "32d47299d50a5d57d98099359b433caf4383ac41a806b05d7aba0a5584522664"
+    },
+    {
+      "path": "packages/arquipelago/src/interface/projeto-azul.tsx",
+      "sha256": "4a852d86a9f65bd644d587d226904260e946bdd43098f13633412ccbe8726184"
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/clima-da-ilha.tsx",
+      "sha256": "c1d68ae3c30afa1fb2de4a568102721478b56136c9889c806ecc473c17f51843"
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/constelacoes-das-nuvens.tsx",
+      "sha256": "3a170a70e90330e87972c208dda3b779f163dd51c8d746826c59b1d8c8100d5b"
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/corrida-na-ilha.tsx",
+      "sha256": "3583328494d013dcebe56003a09e5f8f87eae9d7d3146a15a2ddd6c067d442e9"
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/final-do-farol.tsx",
+      "sha256": "fe2165a3644000ff7696e89c69fcf4e8a0496708254df0d451b9cf5a4eae086a"
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/horta.tsx",
+      "sha256": "516af47ad46ab892e29c2abb76f557b9176d3d47a81e875b8a72511885c7bc7d"
+    },
+    {
+      "path": "packages/arquipelago/src/mundo/medidor.tsx",
+      "sha256": "cb0af533aa9489603f6596e173006b788c65f98a63aa7a19f5536717dd95569c"
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/album.ts",
+      "sha256": "eff4fa72876bde46bbb2b97d651becfdd2d61abd070f12874a9c68fbbacb0be1"
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/clima.ts",
+      "sha256": "31a4cf56441b14cd290069c44a58dd739712ebb0c40f7961521e1d606b45ba30"
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/conciliar-salvamento.ts",
+      "sha256": "2fc045fa744d197161110da7a7a53f4d712a4ee1f24660e7ddd6103aace955fc"
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/constelacoes.ts",
+      "sha256": "62a355f67c3646259abdeada6aa92157f95f5cfce91a56ec6cd18f734a6caac9"
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/diario.ts",
+      "sha256": "ba72e6df893453cc8c044d4fdccd2769a56f10a09a101f111e57fd0a59bbac5b"
+    },
+    {
+      "path": "packages/arquipelago/src/sistemas/percurso.ts",
+      "sha256": "5cf9084f3d94d361f001a8552b459489519c7e0fe6a4e44aec3060587d9bef45"
+    }
+  ],
+  "logs": [
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-contracts-final-r2.log",
+      "sha256": "18914b076f2796ee97cd53f8053e3e79cdaa1ebf4a467b0952cb1ae457d5a667"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-game-serial.log",
+      "sha256": "82906bc6f0fa479128ade2be7939dad32af67a3d5d85a3021c8761acdced37cb"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-api-all-r2.log",
+      "sha256": "4c010c7125eaaeaa95d5502204630e21a38c11f40089448514030246a10eb32d"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-tempo-db.log",
+      "sha256": "427de49289be4c4646ebf8a914f2b1e6149c0044216fb246493a1d18f3586389"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-arquipelago-contracts-types-final.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-arquipelago-api-types-final.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-arquipelago-types-final.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-biome-final.log",
+      "sha256": "f7d6b6ae54c9f884879105b83efaadb5d874e6831528efe4643c682ecc6569ca"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-farol-browser-r3.log",
+      "sha256": "392bd53367ecf26070d12968a00ab746174c057b83e862798bc61df86a14365c"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-farol-interrompido.log",
+      "sha256": "1b6bb2391dbf1b9b13dd1ac093020320a883469108a8707fd980adb713a6070b"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-nuvens-browser-r1.log",
+      "sha256": "ae872c5b5f04f5a508815564dbf0123ba5a7d6f348cf2f3070fb2a124b0b2200"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-nuvens-browser-r4.log",
+      "sha256": "94867fb65f65fccd2aa3a9b83d72fadbe368b1659d18c09b4e54fc2967ca5a03"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-nuvens-album.log",
+      "sha256": "b5992e0bad9d1dec57ecaf2a1909b50c121a5cb3759afb825070a238a8af9658"
+    },
+    {
+      "arquivoLocal": ".cache/arquipelago-v16-clima-browser-r1.log",
+      "sha256": "701965cc2de7431031ba84ea42b7e63710cb1317fe4ce6c80ae8b7fffad2cd2a"
+    }
+  ]
+}

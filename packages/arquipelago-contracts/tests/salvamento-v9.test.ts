@@ -8,7 +8,7 @@ import {
   migrarDaV11,
   migrarDaV12,
   migrarDaV13,
-  migrarDaV14,
+  migrarDaV14ParaAtual,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   type SalvamentoV8,
@@ -43,7 +43,7 @@ test('a V8 migra para a V9 sem perder nada, sem nenhum Lumi preso', () => {
   const nova = migrarDaV8(antiga)
   expect(nova).toEqual({ ...antiga, versao: 9, lumis: {} })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV14(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(nova)))))),
+    migrarDaV14ParaAtual(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(nova)))))),
   )
   expect(SalvamentoV9Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
@@ -69,7 +69,7 @@ test('a V9 guarda quantos Lumis de cada espécie ela prendeu, e recusa o que sai
   expect(LUMIS).toHaveLength(14)
   expect(new Set(LUMIS).size).toBe(14)
   const comLumis = { ...s, lumis: { quindim: 3, brigadeiro: 1 } }
-  expect(migrarSalvamento(comLumis)).toEqual(migrarDaV14(comLumis))
+  expect(migrarSalvamento(comLumis)).toEqual(migrarDaV14ParaAtual(comLumis))
   for (const errado of [{ quindim: 0 }, { quindim: 1000 }, { quindim: 1.5 }, { robo: 1 }])
     expect(migrarSalvamento({ ...s, lumis: errado })).toBeNull()
 })
@@ -80,16 +80,16 @@ test('as versões antigas chegam até a V9', () => {
     return { ...v, versao: 7 as const }
   })()
   expect(migrarSalvamento(v7)).toEqual(
-    migrarDaV14(
+    migrarDaV14ParaAtual(
       migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))))),
     ),
   )
-  expect(migrarSalvamento(v7)?.versao).toBe(15)
+  expect(migrarSalvamento(v7)?.versao).toBe(16)
 })
 
 test('os 14 Lumis no máximo cabem no teto do salvamento', () => {
   const lumis = Object.fromEntries(LUMIS.map((id) => [id, 999]))
   const s = { ...inicialV14(AGORA), lumis }
-  expect(migrarSalvamento(s)).toEqual(migrarDaV14(s))
+  expect(migrarSalvamento(s)).toEqual(migrarDaV14ParaAtual(s))
   expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
 })

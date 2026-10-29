@@ -145,8 +145,12 @@ function Canteiro({
  * O clima que vale na horta agora: o escolhido, com as Nuvens abertas (a Iriê ensinou) e fora de
  * uma visita (a horta do irmão só se olha). `null` = a horta de sempre, sem pedir água.
  */
-function climaDaHorta(s: { jornada: number; visita: unknown; clima: Clima }): Clima | null {
-  return climaLiberado(s.jornada) && !s.visita ? s.clima : null
+function climaDaHorta(s: {
+  jornada: number
+  visita: unknown
+  salvamento: { clima: Clima }
+}): Clima | null {
+  return climaLiberado(s.jornada) && !s.visita ? s.salvamento.clima : null
 }
 
 /** A gota azul em cima da planta que pede água (some quando rega ou quando passa a vontade). */

@@ -288,8 +288,8 @@ export function Medidor() {
         etapa: final.etapa,
         tempo: final.tempo,
         fachos: fachosAcesos(final.tempo, final.menosMovimento),
-        leu: final.leu,
-        voltou: final.voltou,
+        leu: loja.getState().salvamento.farol.pagina,
+        voltou: loja.getState().salvamento.farol.concluido,
       },
       plataformasDasNuvens,
       mergulho: {
@@ -308,9 +308,9 @@ export function Medidor() {
       mira: movimento.mira
         ? { naMira: movimento.mira.naMira, posicao: { ...movimento.mira.posicao } }
         : null,
-      constelacoes: loja.getState().constelacoesAchadas,
+      constelacoes: loja.getState().salvamento.nuvens.constelacoes,
       clima: {
-        escolhido: loja.getState().clima,
+        escolhido: loja.getState().salvamento.clima,
         luz: ambiente.luzDoClima ?? 1,
         cinza: ambiente.cinzaDoClima ?? 0,
         gotas: cena.getObjectByName('chuva-da-ilha')?.visible === true,

@@ -32,7 +32,7 @@ export function ClimaDaIlha() {
   const aparelhoPedeMenos = useReducedMotion()
   const jogoPedeMenos = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
   const menos = aparelhoPedeMenos || jogoPedeMenos
-  const chovendo = useEstado((s) => s.clima === 'chuva' && climaLiberado(s.jornada))
+  const chovendo = useEstado((s) => s.salvamento.clima === 'chuva' && climaLiberado(s.jornada))
   const quantas = chovendo && !menos ? CLIMA.gotas[nivel] : 0
   const linhas = useRef<LineSegments>(null)
   const relogio = useRef(0)
@@ -71,7 +71,7 @@ export function ClimaDaIlha() {
     const s = loja.getState()
     const liberado = climaLiberado(s.jornada)
     // Numa visita, a ilha é do irmão: o tempo dela não muda.
-    const clima = liberado && !s.visita ? s.clima : 'sol'
+    const clima = liberado && !s.visita ? s.salvamento.clima : 'sol'
     const longe = Math.hypot(rastro.x - MEIO.x, rastro.z - MEIO.z) - CLIMA.alcance
     const perto = Math.min(1, Math.max(0, 1 - longe / FAIXA))
     ambiente.luzDoClima = 1 - (1 - CLIMA.luz[clima]) * perto

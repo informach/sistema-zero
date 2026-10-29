@@ -158,7 +158,7 @@ function dicaDoMorador(quem: string, guarda: number, coracoesAgora: number): str
 }
 
 /** As páginas do diário, abertas ou guardadas, com o texto ou a dica de onde está cada uma. */
-export function paginasDoDiario(s: Salvamento, leuOFinal = false): EstadoDaPagina[] {
+export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
   return ILHAS_DO_DIARIO.map((ilha): EstadoDaPagina => {
     const nome = NOME_DA_ILHA[ilha]
     const texto = TEXTO_DA_PAGINA[ilha]
@@ -190,7 +190,7 @@ export function paginasDoDiario(s: Salvamento, leuOFinal = false): EstadoDaPagin
       return s.recife.pagina && texto
         ? { ilha, nome, aberta: true, texto }
         : { ilha, nome, aberta: false, dica: 'No cesto sob a vela caída do navio afundado.' }
-    if (ilha === 'farol' && leuOFinal && texto) return { ilha, nome, aberta: true, texto }
+    if (ilha === 'farol' && s.farol.pagina && texto) return { ilha, nome, aberta: true, texto }
     if (ilha === 'farol')
       return { ilha, nome, aberta: false, dica: 'A última página fica no alto do Farol.' }
     return { ilha, nome, aberta: false, dica: `Fica ${NA_ILHA[ilha]} ${nome}, com quem mora lá.` }

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { CartasDoJogadorSchema } from './api'
 import { cartasNaMao, validarRotina } from './rotina-validacao'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
-import { CanteiroSchema, LUMIS, ProjetoAzulV15Schema } from './salvamento'
+import { CanteiroSchema, LUMIS, ProjetoAzulAtualSchema } from './salvamento'
 
 export const VERSAO_FERRAMENTA_ROTINA = 1
 /** Um início vazio pode abrir no editor, mas nunca é aceito como rotina guardada. */
@@ -14,7 +14,7 @@ export const MundoDaRotinaSchema = z
   .strictObject({
     horta: z.array(CanteiroSchema).max(24),
     inventario: z.record(z.string().min(1).max(60), z.number().int().min(0).max(999)),
-    geladeira: ProjetoAzulV15Schema.nullable(),
+    geladeira: ProjetoAzulAtualSchema.nullable(),
     geladeiraPosta: z.boolean(),
   })
   .refine((m) => !m.geladeiraPosta || m.geladeira !== null, 'geladeira ausente')

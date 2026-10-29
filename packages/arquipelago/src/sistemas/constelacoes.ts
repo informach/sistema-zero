@@ -1,8 +1,8 @@
 /**
  * As constelações escondidas das Nuvens (fase4-07, regras puras, sem three): à noite, no mirante,
  * olhar pela luneta e mirar o céu; segurar a mira numa figura acende ela, uma estrela por vez, e o
- * Zappy diz o nome. As achadas valem na sessão (`constelacoesAchadas` da loja, um bit por figura):
- * o salvamento ainda não tem lugar para elas (o plano da fase4-07 pede o campo).
+ * Zappy diz o nome. As achadas ficam no salvamento V16, em `nuvens.constelacoes`,
+ * com um bit por figura. Reabrir o jogo mantém as descobertas.
  */
 import type { Ponto } from './cipo'
 

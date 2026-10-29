@@ -267,7 +267,9 @@ function MiranteVivo({ mirante, lugar, giro }: { mirante: Mirante; lugar: Ponto;
       q.busca.figura = -1
       q.busca.segundos = 0
       s.dizer(
-        quantasAchadas(s.constelacoesAchadas) === FIGURAS.length ? FALA_DE_TODAS : FALA_DA_LUNETA,
+        quantasAchadas(s.salvamento.nuvens.constelacoes) === FIGURAS.length
+          ? FALA_DE_TODAS
+          : FALA_DA_LUNETA,
       )
       s.abrirPainel(PAINEL_DAS_ESTRELAS)
     },
@@ -322,12 +324,13 @@ function MiranteVivo({ mirante, lugar, giro }: { mirante: Mirante; lugar: Ponto;
       movimento.mira = vista
       const naMira = figuraNaMira(olho, d, meios)
       vista.naMira = naMira
-      const achou = passoDaBusca(q.busca, naMira, s.constelacoesAchadas, dt)
+      const achou = passoDaBusca(q.busca, naMira, s.salvamento.nuvens.constelacoes, dt)
       if (achou >= 0) {
         s.acharConstelacao(achou)
         q.acesas[achou] = 0
         const figura = FIGURAS[achou]
-        const todas = quantasAchadas(loja.getState().constelacoesAchadas) === FIGURAS.length
+        const todas =
+          quantasAchadas(loja.getState().salvamento.nuvens.constelacoes) === FIGURAS.length
         if (figura) s.dizer(todas ? `${figura.fala} ${FALA_DE_TODAS}` : figura.fala)
       }
       // O tubo acompanha a mira (girando a partir de onde o arquivo deixa ele).
@@ -340,7 +343,7 @@ function MiranteVivo({ mirante, lugar, giro }: { mirante: Mirante; lugar: Ponto;
 
     // As figuras: de dia, nada; à noite, a achada acende uma estrela por vez e fica acesa; a ainda
     // escondida só aparece fraca pela luneta, sem as linhas.
-    const achadas = s.constelacoesAchadas
+    const achadas = s.salvamento.nuvens.constelacoes
     const pelaLuneta = s.painelAberto === PAINEL_DAS_ESTRELAS && ambiente.noite
     for (let i = 0; i < mirante.figuras.length; i++) {
       const f = mirante.figuras[i]

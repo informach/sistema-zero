@@ -1,0 +1,126 @@
+{
+  "lote": "L01",
+  "base": "f8f5a231a7e80c28a9a1d4d99156dfc5f20306bc",
+  "remotoRevisado": "b2e924b82f795263d3a4c9d9a4cbcf478bd0d78f",
+  "registradoEmUtc": "2026-10-29T21:39:34.9822023Z",
+  "fonteAdicional": "Remoção do import CORPO sem uso no verificador de descanso",
+  "testes": {
+    "comando": "bun test --timeout 15000",
+    "aprovados": 1053,
+    "ignorados": 1,
+    "falhas": 0,
+    "assercoes": 132495,
+    "segundos": 93.71,
+    "ignorado": "Postgres: executado separadamente no lote original",
+    "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 bun run typecheck, exit 0"
+  },
+  "negativo": {
+    "comando": "bun test",
+    "motivo": "Busca geométrica do Recife excedeu o prazo padrão de 5000 ms",
+    "duracaoMs": 5844,
+    "assercaoReprovada": false
+  },
+  "navegador": [
+    "Nuvens: recorde no Álbum após reabrir, computador e celular emulado",
+    "Farol: interrupção não concede página nem conclusão, computador e celular emulado"
+  ],
+  "limites": [
+    "Não qualifica GPU ou celular físico",
+    "Não é a entrega dos demais lotes",
+    "Não comprova implantação"
+  ],
+  "evidencias": [
+    {
+      "path": ".cache/arquipelago-v16-integrado-tests.log",
+      "sha256": "404148aa8578aed5fa6672aec47ca3ee24b9b9688a984175542db67972f835b5"
+    },
+    {
+      "path": ".cache/arquipelago-v16-integrado-types.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "path": ".cache/arquipelago-v16-integrado-final-tests.log",
+      "sha256": "d29ce4f9ba3afc94396c887efdf48cfb5293e715906e65ed080ef09cd867fea0"
+    },
+    {
+      "path": ".cache/arquipelago-v16-integrado-final-r2-tests.log",
+      "sha256": "fa8e961d15f0925660502dc14ed8ecd609e7c2a874f389dbf099e6ece68468b9"
+    },
+    {
+      "path": ".cache/arquipelago-v16-integrado-final-r2-types.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "path": ".cache/arquipelago-v16-integrado-nuvens.log",
+      "sha256": "b5992e0bad9d1dec57ecaf2a1909b50c121a5cb3759afb825070a238a8af9658"
+    },
+    {
+      "path": ".cache/arquipelago-v16-integrado-farol.log",
+      "sha256": "1b6bb2391dbf1b9b13dd1ac093020320a883469108a8707fd980adb713a6070b"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/interrompido-celular.json",
+      "sha256": "30fe73589c7f2e56d70a363ade58f3e34fd421cfcca3a598e17846fd7b0fcfa9"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/interrompido-celular.png",
+      "sha256": "922aebfbe11c21de2f91733f9d2446707c372bc2e0ef252e52b8b994dd336852"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/interrompido-computador.json",
+      "sha256": "f6d4af8199d5792b3745315651a1d51b547bbf6023d809dc57f55ced20460056"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/interrompido-computador.png",
+      "sha256": "9403042ac4143bb71c412d831b7ad04cc0c581769e7628361c8319d9ee751038"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/pagina-celular.png",
+      "sha256": "a137b9db7f238fd0481467a247017747523fa3ecea2fc7f8cfb3c526e52d25e5"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/pagina-computador.png",
+      "sha256": "8117280737faa36cddd04bd738e0393486c96331a27e9ff3604aeac0e80509a2"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/sala-celular.png",
+      "sha256": "d8072b9405f9aa8d6163e93f269e0bd392ad758e5cb794a66bb7ec84389b0fa2"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-farol/sala-computador.png",
+      "sha256": "a42ac203e476dcd79e9138ba0e89bab4212a9f22b1376fdfd358ae3e3133bdff"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/saltos-celular-alto.png",
+      "sha256": "2de43b2cc9b9e36dee135235bb76cc8a6e450949d3c4ae27b40f005f5d5ed0ba"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/saltos-celular-reaberto.png",
+      "sha256": "c30c52dfd77f39ee21e3dd96aaf197c43c93fe6d0a31caa1d9c7fc837b8d3473"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/saltos-celular-resultado.png",
+      "sha256": "df0cfd10fa6b06d4b57130e572d6d27e327ae9d91658ba90dce4237a7a423593"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/saltos-computador-alto.png",
+      "sha256": "80c287c37c5bc15735d786818b827237c2383e8456acb1e54a940ca1be01d399"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/saltos-computador-reaberto.png",
+      "sha256": "8310e19c40cc217fa21bee43d62779951ad57e1363d06085e2cc87fc803375dd"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/saltos-computador-resultado.png",
+      "sha256": "5071385ff8a4a4ba06b0e91a1de398d574e97704ff08c2f4f630c02a0cee96e7"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/salvamento-celular.json",
+      "sha256": "be00cf1f7eb6affbd636fabe5832f49ab511f1918fd8da876bbc472d5f2bff3e"
+    },
+    {
+      "path": "docs/qa/2026-10-29-continuidade/integrado-nuvens/salvamento-computador.json",
+      "sha256": "f3605ddf115535bab2571c556f2892dbb15d74b494b29c6c8b3f43fb26f0e0b5"
+    }
+  ]
+}

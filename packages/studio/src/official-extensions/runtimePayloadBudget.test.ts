@@ -108,10 +108,14 @@ const BUDGETS: readonly {
   // da Ilha), deslizando junto do obstáculo, com uma caixa por pedaço do modelo (sem as peças
   // szSemCaixa) e a pegada do personagem. +1_537 / +529. Medido: 238_016; gzip 65_092 no Bun
   // 1.4.4 Linux.
+  // 29/10: a correção 7b8cb510f retira o cubo de reserva das colisões, do toque e do raycast
+  // depois de carregar o modelo, inclusive nas cópias. Acrescenta 481 caracteres nas duas
+  // variantes. Medição isolada: 238_497; gzip Bun 1.3.11 Linux 64_810 / Windows 67_291;
+  // Bun 1.4.4 Linux 65_235. O teto cobre os compressores medidos, sem mudar o runtime.
   {
     extension: gameThreeDExtension,
-    maxChars: 238_050,
-    maxGzipBytes: 65_150,
+    maxChars: 238_550,
+    maxGzipBytes: 65_300,
     maxGzipBytesWindows: 67_550,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
@@ -138,9 +142,11 @@ const BUDGETS: readonly {
     // 29/10, o andar com as setas respeita os sólidos (ver acima): +1_175 / +408. Medido: 203_572;
     // gzip 55_463.
     // 29/10: o andar com as setas respeita o sólido (ver acima). Medido: 203_934; gzip 55_608.
-    maxChars: 203_950,
-    maxGzipBytes: 55_650,
-    maxGzipBytesWindows: 57_500,
+    // Mesma correção do cubo de reserva: 204_415; gzip Bun 1.3.11 Linux 55_387 /
+    // Windows 57_577; Bun 1.4.4 Linux 55_749. Crescimento funcional, sem Kit adicional.
+    maxChars: 204_450,
+    maxGzipBytes: 55_800,
+    maxGzipBytesWindows: 57_650,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO

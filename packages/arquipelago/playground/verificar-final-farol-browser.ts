@@ -156,6 +156,30 @@ try {
     await usar()
     await etapa('pagina')
     await page.screenshot({ path: path.join(prints, `pagina-${tipo}.png`) })
+    if (process.env.ARQUIPELAGO_INTERROMPER === '1') {
+      await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+      await page.keyboard.press('Escape')
+      await etapa('fora')
+      await page.waitForFunction(() => {
+        const raw = localStorage.getItem('arquipelago-playground')
+        const f = raw && JSON.parse(raw).salvamento?.farol
+        return f?.pagina === false && f.concluido === false
+      })
+      await page.goto(`${baseURL}/?posicao=8`)
+      await page.waitForFunction(() => {
+        const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
+        return d?.finalDoFarol.etapa === 'fora' && !d.finalDoFarol.leu && !d.finalDoFarol.voltou
+      })
+      if (erros.length) throw new Error(erros.join('\n'))
+      await page.screenshot({ path: path.join(prints, `interrompido-${tipo}.png`) })
+      writeFileSync(
+        path.join(prints, `interrompido-${tipo}.json`),
+        JSON.stringify(await ler(), null, 2),
+      )
+      console.log(`${tipo}: leitura interrompida não concedeu página nem conclusão ao reabrir`)
+      await context.close()
+      continue
+    }
     for (let i = 0; i < 3; i++)
       await page.getByRole('button', { name: 'Continuar', exact: true }).click()
     await page.getByRole('button', { name: 'Ver a luz do Farol', exact: true }).click()
@@ -217,6 +241,21 @@ try {
       await etapa('fora')
       await page.unroute('**/*alto-do-farol*.glb')
     }
+    // Reabrir sem ?novo: comprova a leitura durável, não apenas o estado React desta sessão.
+    await page.waitForFunction(() => {
+      const raw = localStorage.getItem('arquipelago-playground')
+      if (!raw) return false
+      const s = JSON.parse(raw)
+      return s.salvamento?.farol?.concluido === true
+    })
+    await page.goto(`${baseURL}/?posicao=8`)
+    await page.waitForFunction(() => {
+      const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
+      return d?.finalDoFarol.leu && d.finalDoFarol.voltou && d.finalDoFarol.etapa === 'fora'
+    })
+    await levar(-7.1, 2.2, -8)
+    await page.locator('.arq-acao').filter({ hasText: 'Conversar com a Íris' }).waitFor()
+    await page.screenshot({ path: path.join(prints, `reaberto-${tipo}.png`) })
     if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
       throw new Error('Interface ultrapassou a tela')
     if (erros.length) throw new Error(erros.join('\n'))

@@ -1,21 +1,22 @@
 /**
  * O clima da sua ilha (fase4-08, regras puras): a Iriê ensina a escolher o tempo da ilha central
  * entre sol, nublado e chuva (proposta: "controlar o clima da sua ilha"; na horta, "chuva rega
- * sozinha, sol forte pede água"). Vale com a Ilha das Nuvens aberta. A escolha fica na sessão: o
- * salvamento ainda não tem lugar para ela (o plano da fase4-08 pede o campo).
+ * sozinha, sol forte pede água"). Vale com a Ilha das Nuvens aberta. A escolha fica no
+ * salvamento V16 e volta ao reabrir o jogo.
  *
  * Nada aqui estraga planta nem castiga: a planta que pede água e não ganha cresce como sempre;
  * regar quando ela pede adianta o crescimento (o bônus mexe no `regadoEm` que já existe).
  */
 import {
   type Canteiro,
+  CLIMAS_DO_JOGO,
   CRESCIMENTO_MS,
   ilhaAberta,
   progresso,
   regar,
 } from '@sistemazero/arquipelago-contracts'
 
-export const CLIMAS = ['sol', 'nublado', 'chuva'] as const
+export const CLIMAS = CLIMAS_DO_JOGO
 export type Clima = (typeof CLIMAS)[number]
 
 export const NOMES_DOS_CLIMAS: Readonly<Record<Clima, string>> = {

@@ -3237,18 +3237,17 @@ O interior é a sala existente em `alto-do-farol.glb`, carregada só ao entrar e
 
 O alcance da porta é 2 m e o da leitura é 2,1 m. O corte de entrada e saída mantém a duração de 600 ms, com relógio próprio que pausa junto do jogo, trocando a cena no meio opaco, aos 300 ms de tempo ativo. Esc e o botão de descer devolvem o corpo a um ponto livre diante da porta. A posição da sala não entra no salvamento e o cochilo automático espera a pessoa descer. Uma falha ao carregar mantém a criança na ilha e permite tentar de novo.
 
-A última página tem quatro trechos, sem tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica disponível no diário da sessão depois da leitura. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
+A última página tem quatro trechos, sem tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica guardada no diário depois da leitura, inclusive ao reabrir o jogo. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
 
 A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9, no chão medido pela ilha. Usa o morador genérico, os cinco clipes existentes e os olhos com `piscar` e `feliz`. O corpo simples tem raio 0,49 m e altura 2,13 m, medidos na cabeça e na pele do GLB, sem chapéu e braços estendidos. O foco da conversa fica a 1,7035 m dos pés, no centro vertical da cabeça. Alcance de conversa 2,2 m, olhar a 7 m, aceno a cada 45 s e giro com rapidez 3, iguais aos demais moradores. A conversa é fixa e não cria amizade, pedido ou presente.
 
-A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o final novamente. Não há versão nova de salvamento. O plano pede um booleano futuro `finalDoFarol`, com custo de 21 bytes quando falso e 20 quando verdadeiro, para a migração conjunta. Os pedidos de arte e as provas ficam em `docs/plans/2026-10-29-arquipelago-final-do-farol.md` e `docs/qa/2026-10-29-final-farol/`.
+A leitura e a volta da Íris ficam no salvamento V16. Reabrir mantém a página no diário e a Íris em casa. A conclusão só é guardada ao terminar a sequência, nunca apenas por alcançar a Lenda. Sair antes disso permite tentar de novo. A animação recomeça ao entrar no Farol; a conquista não se perde.
 
 ## Saltos entre nuvens, corrida de balão e constelações (fase4-07, 29/10/2026)
 
-- **Nada disto é gravado ainda.** O salvamento não tem folga: os recordes das duas corridas e as
-  constelações achadas valem só enquanto o jogo está aberto. O plano da fase4-07 pede os campos
-  (as duas corridas no formato de sempre dos percursos e as constelações num número de 0 a 63)
-  para a versão nova do salvamento.
+- **O progresso fica guardado.** A V16 guarda as estrelas e o melhor tempo das duas corridas,
+  além das seis constelações descobertas. Reabrir mantém as conquistas. Duas sessões juntam
+  descobertas e estrelas e preservam o menor tempo, sem somar prêmios.
 - **Saltos entre nuvens.** "Começar os saltos entre nuvens" no chão, antes dos degraus de nuvem.
   As paradas são o terceiro degrau e as plataformas 1 a 3; a chegada, o tampo da plataforma 4, que
   vale em qualquer altura do sobe e desce. Caindo no chão da ilha, o corte suave leva de volta à
@@ -3279,8 +3278,7 @@ A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o
 ## Clima da sua ilha (fase4-08, 29/10/2026)
 
 - Com a Ilha das Nuvens aberta, a Iriê ensina (a terceira fala dela) e o menu ganha a seção "Clima
-  da sua ilha": sol, nublado ou chuva. O relógio do topo mostra o clima. A escolha vale enquanto o
-  jogo está aberto (ainda não é gravada) e o jogo abre com sol. Numa visita, a ilha é do irmão e o
+  da sua ilha": sol, nublado ou chuva. O relógio do topo mostra o clima. A escolha fica guardada e volta ao reabrir. Um jogo novo começa com sol. Numa visita, a ilha é do irmão e o
   tempo dela não muda.
 - O tempo vale perto da ilha central (até 34 m do meio, sumindo aos poucos em mais 8 m). Nublado:
   o sol fica a 65% e o céu fica cinza. Chuva: o sol fica a 50%, o céu mais cinza e caem gotas em
@@ -3302,3 +3300,15 @@ A leitura e a volta da Íris duram nesta sessão. Reabrir o jogo permite fazer o
   cresce 20) e chuva (cai 1 de água por segundo). O extra é a tecla Enter recomeçar o jardim.
 - Moedas de sempre: 20 e 10 de extra no quadro, 10 e 5 nos desafios do dia. Detalhes e provas em
   `docs/desafios-do-jogo/nuvens/README.md`.
+
+## Continuidade e limite do salvamento (L01, 29/10/2026)
+
+O salvamento V16 reúne o progresso das Nuvens, a última página, a volta da Íris e o clima.
+As versões antigas continuam legíveis. Uma referência antiga de criação não é cortada para
+caber: os até 80 caracteres aceitos antes são preservados. A migração não inventa conquistas.
+
+O documento continua limitado a 65.536 bytes UTF-8. A conferência inclui os dados depois de
+migrar. Se passar do teto, o serviço recusa a nova gravação e conserva a anterior; o jogo mantém
+o rascunho local. Os testes distinguem o orçamento dos IDs canônicos dos produtores de uma
+combinação artificial de referências antigas longas. Não se promete que qualquer combinação
+máxima de todos os campos caiba no teto.

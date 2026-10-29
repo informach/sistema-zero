@@ -183,10 +183,25 @@ Testes em `tests/aparencias.test.ts`; regra completa em `docs/arquipelago-regras
 (`FilhoteDoValeSchema`, `null` até a Jade entregar o ovo): `ovo` de 0 a `DIAS_PARA_CHOCAR` (3),
 `aquecidoEm`, `comeuEm` e `carinhoEm` (dia ou `null`), `nome` de 1 a 16 letras ou `null` e `dias`
 de 0 a `DIAS_CUIDADOS_MAXIMO` (99). Para caber, o id de uma aparência guardada vai até
-`ID_DA_APARENCIA_MAXIMO` (40; `AparenciaV15Schema`, `ProjetoAzulV15Schema`, também na
-`rotina-ferramenta.ts`); `migrarDaV14` tira das guardadas o que passar disso (a em uso vira
-`null`) e começa o filhote em `null`. A união pública aceita V1 a V15 e devolve V15; a V14 continua
-estrita. Pior caso de 64 KB: sobram 4579 bytes (medido em `salvamento-v10.test.ts`, que agora usa
-o salvamento inicial da V15 com o filhote no máximo). Os testes das versões antigas montam a base
+`ID_DA_APARENCIA_MAXIMO` (40; `AparenciaV15Schema`, `ProjetoAzulV15Schema`); o migrador histórico
+`migrarDaV14` tira das guardadas o que passar disso (a em uso vira `null`) e começa o filhote
+em `null`. Esse filtro não é usado pela migração pública atual, descrita na V16 abaixo.
+Na entrega da V15, a fixture de capacidade com IDs canônicos deixava 4579 bytes livres;
+ela não representa todas as combinações de referências legadas longas. Os testes antigos montam a base
 pela V14 (`tests/ajuda-salvamento.ts`, `inicialV14`). Testes: `salvamento-v15.test.ts`. O catálogo
 diz de onde vem o museu (o fóssil descoberto no Vale).
+
+
+## Salvamento V16: continuidade sem descarte (L01, 29/10/2026)
+
+A união pública aceita V1 a V16 e devolve V16. `migrarDaV15` acrescenta `nuvens.constelacoes`
+(0..63), `farol.pagina`, `farol.concluido` e `clima` (`sol`, `nublado`, `chuva`). Final concluído
+exige página. `PERCURSOS` inclui `nuvens-saltos` e `nuvens-balao`; os schemas até V15 mantêm o
+catálogo histórico. `migrarDaV14ParaAtual` preserva IDs antigos de até 80, sem chamar o filtro
+histórico de `migrarDaV14`. Os schemas e migradores históricos não mudam de semântica.
+
+`ProjetoAzulAtualSchema` volta ao limite aceito antes da V15. O formato da ferramenta Lumi V1
+não muda; sua geladeira aceita referências antigas completas. `ID_DA_APARENCIA_MAXIMO` é o
+limite histórico V15, não o limite global de bytes nem uma instrução para truncar IDs.
+O orçamento com IDs canônicos e a recusa global acima de 64 KB são provas diferentes.
+Testes: `salvamento-v16.test.ts`, `salvamento-v10.test.ts` e HTTP do serviço.

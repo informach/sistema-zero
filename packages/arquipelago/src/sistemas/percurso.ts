@@ -6,7 +6,6 @@
  */
 import {
   MELHOR_TEMPO_MAXIMO_MS,
-  PERCURSOS,
   type PercursoId,
   type ResultadoDoPercurso,
   type Salvamento,
@@ -14,18 +13,8 @@ import {
 import type { Ponto } from './cipo'
 import { receberPatins } from './patins'
 
-/**
- * Os percursos que o salvamento ainda não guarda (as corridas das Nuvens, fase4-07): ficam fora de
- * `PERCURSOS` porque o pior caso do salvamento não tem folga. O melhor deles vale só na sessão
- * (`recordesDaSessao` da loja); o plano da fase4-07 pede os campos para a versão nova.
- */
-export const PERCURSOS_DA_SESSAO = ['nuvens-saltos', 'nuvens-balao'] as const
-export type IdDoPercurso = PercursoId | (typeof PERCURSOS_DA_SESSAO)[number]
-
-/** O percurso tem lugar no salvamento (os outros guardam o melhor só na sessão). */
-export function percursoGravado(id: IdDoPercurso): id is PercursoId {
-  return (PERCURSOS as readonly string[]).includes(id)
-}
+/** Todos os percursos atuais têm progresso durável, incluindo as corridas das Nuvens. */
+export type IdDoPercurso = PercursoId
 
 /** O que muda de um percurso para outro (as contas são as mesmas). */
 export interface ConfigDoPercurso {

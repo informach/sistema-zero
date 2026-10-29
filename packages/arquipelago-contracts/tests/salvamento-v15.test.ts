@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test'
 import {
-  criarSalvamentoInicial,
   DIAS_CUIDADOS_MAXIMO,
   DIAS_PARA_CHOCAR,
   ID_DA_APARENCIA_MAXIMO,
   migrarDaV14,
+  migrarDaV15,
   migrarSalvamento,
   SalvamentoV14Schema,
   SalvamentoV15Schema,
@@ -32,9 +32,9 @@ test('V14 migra para V15 sem tocar no resto, com o filhote ainda por vir', () =>
   })
   const copia = structuredClone(antiga)
   const atual = migrarDaV14(antiga)
-  expect(VERSAO_SALVAMENTO).toBe(15)
+  expect(VERSAO_SALVAMENTO).toBe(16)
   expect(atual).toEqual({ ...antiga, versao: 15, vale: { ...antiga.vale, filhote: null } })
-  expect(migrarSalvamento(antiga)).toEqual(atual)
+  expect(migrarSalvamento(antiga)).toEqual(migrarDaV15(atual))
   expect(antiga).toEqual(copia)
   // A V14 continua estrita: o filhote só existe da V15 em diante.
   expect(SalvamentoV14Schema.safeParse({ ...antiga, vale: atual.vale }).success).toBe(false)
@@ -63,7 +63,7 @@ test('uma aparência com id além de 40 sai das guardadas e, se estava em uso, d
 })
 
 test('o filhote atravessa o JSON, e nada fora da régua', () => {
-  const s = criarSalvamentoInicial(AGORA)
+  const s = migrarDaV14(inicialV14(AGORA))
   expect(s.vale.filhote).toBeNull()
   const filhote = {
     ovo: DIAS_PARA_CHOCAR,
@@ -74,7 +74,7 @@ test('o filhote atravessa o JSON, e nada fora da régua', () => {
     dias: 4,
   }
   const com = { ...s, vale: { ...s.vale, filhote } }
-  expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(com)
+  expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(migrarDaV15(com))
   const ruins: Record<string, unknown>[] = [
     { ovo: -1 },
     { ovo: DIAS_PARA_CHOCAR + 1 },

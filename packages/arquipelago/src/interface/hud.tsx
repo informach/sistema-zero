@@ -21,7 +21,6 @@ import {
   formatarTempo,
   PERCURSO_DAS_COPAS,
   PERCURSOS_DO_JOGO,
-  percursoGravado,
   todasAsColetaveis,
 } from '../sistemas/percurso'
 import { COMO_USAR_O_PLANADOR, ID_DO_PLANADOR } from '../sistemas/planador'
@@ -80,7 +79,9 @@ function Necessidades() {
 function Relogio() {
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   // O clima da sua ilha aparece no relógio quando a Iriê já ensinou (fase4-08).
-  const clima = useEstado((s) => (climaLiberado(s.jornada) && !s.visita ? s.clima : null))
+  const clima = useEstado((s) =>
+    climaLiberado(s.jornada) && !s.visita ? s.salvamento.clima : null,
+  )
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 1000)
@@ -436,10 +437,7 @@ function Resultado() {
           </div>
         </dl>
         {/* Família e irmãos são do Kids: a comunidade adulta não lê `/irmaos`. */}
-        {/* As corridas das Nuvens ainda não são gravadas (o melhor vale só nesta sessão). */}
-        {plataforma.publico === 'kids' && percursoGravado(r.percurso) ? (
-          <RecordesDaFamilia percurso={r.percurso} />
-        ) : null}
+        {plataforma.publico === 'kids' ? <RecordesDaFamilia percurso={r.percurso} /> : null}
         <div className="arq-menu-acoes">
           <button
             type="button"

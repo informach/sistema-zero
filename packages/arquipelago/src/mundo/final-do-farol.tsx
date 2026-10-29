@@ -60,7 +60,7 @@ export function FinalDoFarol() {
   const { loja, pedidos, rastro, plataforma } = useJogo()
   const farol = lojaDoFarol(loja)
   const etapa = useFarol(loja, (s) => s.etapa)
-  const voltou = useFarol(loja, (s) => s.voltou)
+  const voltou = useEstado((s) => s.salvamento.farol.concluido)
   const jornada = useEstado((s) => s.jornada)
   const voz = useVoz()
   const aparelho = useReducedMotion()
@@ -97,13 +97,16 @@ export function FinalDoFarol() {
       sair,
       mostrarLuz: () =>
         cortar(() => {
-          farol.setState({ etapa: 'fachos', tempo: 0, leu: true })
+          loja
+            .getState()
+            .mudar((s) => (s.farol.pagina ? s : { ...s, farol: { ...s.farol, pagina: true } }))
+          farol.setState({ etapa: 'fachos', tempo: 0 })
         }),
     })
     return () => {
       farol.setState({ sair: null, mostrarLuz: null })
     }
-  }, [farol, sair, cortar])
+  }, [farol, sair, cortar, loja])
   useInterativo('porta-do-farol', {
     ...PORTA_DO_FINAL,
     raio: 2,
@@ -204,7 +207,14 @@ export function FinalDoFarol() {
     if (s.etapa !== 'fachos') return
     const tempo = s.tempo + Math.min(dt, 0.1)
     if (finalTerminou(tempo, s.menosMovimento)) {
-      farol.setState({ tempo, etapa: 'fim', voltou: true })
+      loja
+        .getState()
+        .mudar((salvo) =>
+          salvo.farol.concluido || !salvo.farol.pagina
+            ? salvo
+            : { ...salvo, farol: { pagina: true, concluido: true } },
+        )
+      farol.setState({ tempo, etapa: 'fim' })
     } else farol.setState({ tempo })
   })
   return (
