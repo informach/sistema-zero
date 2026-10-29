@@ -61,6 +61,35 @@ Pedido dela na Ilha do Farol: câmera mais perto, zoom e girar. É do motor, sem
   (`moveTowards`), "Colocar o objeto … em x y z" (`setPosition`), "Escrever na tela …" (o meio é
   "⊕ no centro") e "Reiniciar o jogo" (o mesmo nome do Jogo 2D) nas regras de jogo dos três 3D.
 
+## Jogo 3D: quem anda com as setas respeita o "sólido" (29/10/2026)
+
+Pedido dela: nos jogos 3D dos cursos o personagem atravessava a pedra e os coqueiros. Decisão
+dela: usar o bloco que já existia, sem bloco novo. "Marcar … como sólido" (`setSolid`) só valia
+para a física (`sz_g3d_physics`); agora também vale para o `topDown` ("Fazer … andar com as
+setas"), e o bloco desceu para o `iniciante-3d` (`INICIANTE_3D_G3D`) e para a gaveta "Andar com o
+teclado", logo depois de "Andar só dentro da área".
+- **Uma caixa por PEDAÇO do modelo** (`solidParts`/`solidBoxes` no runtime): cada malha vira uma
+  caixa no mundo, e as peças com `szSemCaixa` nos extras ficam de fora (folhas do coqueiro,
+  pedrinhas do pé da pedra). Uma caixa só da pedra inteira cobriria a trilha e a chave escondida
+  atrás dela. O sólido só barra o que sobe acima dos pés de quem anda (o chão não barra).
+- Quem anda é medido pela caixa dele; um modelo (personagem) usa 60% da caixa na largura e na
+  profundidade (a caixa tem os braços e a folga do Blender). Bater de lado DESLIZA (tenta só x,
+  depois só z); quem já começou dentro de um sólido pode sair dele.
+- Os cenários da Ilha (`docs/design/ilha-do-farol-blender/cenario.py`, `exportar_em_pedacos`)
+  saem com a base juntada e marcada `szSemCaixa` e os obstáculos (troncos, rochas) como nós
+  próprios; a pedra sai em quatro blocos. Os jogos da Ilha, Moedas, Cabana e Ponte marcam
+  `cenario` e `pedra` como sólidos. O Jardim Secreto não precisou: o que ele tem fica fora da área.
+- O robô do executor contorna os mesmos obstáculos (`ILHA_OBSTACULOS` + `recortarObstaculos` em
+  `docs/aulas-interativas-tecnico/qa/ilha-do-farol-observacao.ts`); `ilha-obstaculos.test.ts`
+  confere as caixas contra os GLB publicados. A área A da Ilha foi até x 1 (era 0,7): o corredor
+  entre a pedra e o cais ficava estreito demais para o robô.
+- O robô planeja a ida com um custo por CURVA (`planApproach3d` em
+  `studio-runtime/runtime/check-approach-3d.mjs`, Dial sobre casa + direção; uma curva vale uma
+  unidade de caminho): cada curva termina numa parada precisa com pulsos lentos, e a escada de seis
+  trechos curtos em volta da pedra estourava os 7,5 s da ida ao farol (agora são três curvas). O
+  teto de retângulos de chão da ida 3D subiu para `MAX_WALKABLE_RECTS` (32) no core.
+- Testes: `game-3d/__tests__/beginner.test.ts` §sólido (parar, deslizar, sair, um pedaço por caixa).
+
 ## O executor espera os modelos do Jogo 3D (28/10/2026)
 
 O Jogo 3D publica `window.__szModelosPendentes` (quantos modelos ainda estão sendo lidos e

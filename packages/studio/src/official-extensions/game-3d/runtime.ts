@@ -1268,6 +1268,45 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
     return false;
   }
+  // As caixas dos objetos marcados como sólidos (menos quem anda), medidas uma vez por passo.
+  // Uma caixa por PEDAÇO do modelo (a pedra da Ilha é um bloco, a cópia menor e duas colunas: uma
+  // caixa só cobriria a trilha e a chave escondida atrás), sem as peças de efeito (szSemCaixa:
+  // as folhas do coqueiro, as pedrinhas do pé).
+  var _solidBox = null;
+  function solidParts(o, out) {
+    if (o.userData && o.userData.szSemCaixa) return;
+    var g = o.geometry;
+    if (g) {
+      if (g.boundingBox === null) g.computeBoundingBox();
+      o.updateWorldMatrix(true, false);
+      var b = _solidBox.copy(g.boundingBox).applyMatrix4(o.matrixWorld);
+      if (!(b.isEmpty && b.isEmpty())) out.push([b.min.x, b.max.x, b.min.y, b.max.y, b.min.z, b.max.z]);
+    }
+    for (var i = 0; i < o.children.length; i++) solidParts(o.children[i], out);
+  }
+  function solidBoxes(obj) {
+    var world = worldOf(obj), solids = world && world._solids, out = [];
+    if (!solids || !solids.length) return out;
+    if (!_solidBox) _solidBox = new THREE.Box3();
+    for (var i = 0; i < solids.length; i++) {
+      var o = solids[i];
+      if (o && o !== obj && o.visible !== false) solidParts(o, out);
+    }
+    return out;
+  }
+  // Quem anda ocupa a caixa dele; um sólido só barra se subir acima dos pés (o chão não barra).
+  // Um modelo 3D (personagem) usa a pegada do corpo, 60% da caixa: a caixa inclui os braços e a
+  // folga do Blender, e com ela inteira a criança batia na pedra antes de encostar.
+  function solidAt(boxes, obj, s, x, z) {
+    var foot = s.modelRoot ? 0.6 : 1;
+    var hx = halfX(obj, s) * foot, hy = halfY(obj, s), hz = halfZ(obj, s) * foot, y = obj.position.y;
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (x + hx > b[0] && x - hx < b[1] && z + hz > b[4] && z - hz < b[5] &&
+        b[3] > y - hy + 0.05 && b[2] < y + hy) return true;
+    }
+    return false;
+  }
   function topDown(obj, speed) {
     if (!obj || !obj.position) return;
     var framedWorld = worldOf(obj);
@@ -1275,11 +1314,20 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     controlWithKeys(obj, clamp(speed, 0, 100, 3));
     var s = szData(obj), scale = frameScale(obj), startX = obj.position.x, startZ = obj.position.z;
     var dx = s.vx * scale, dz = s.vz * scale;
+    // "Marcar … como sólido": quem anda com as setas não atravessa, e desliza junto da parede.
+    // Quem já começou dentro de um sólido pode sair dele.
+    var boxes = dx || dz ? solidBoxes(obj) : [];
+    var free = !boxes.length || !solidAt(boxes, obj, s, startX, startZ);
     // Verifica o caminho também, para não saltar por cima de um intervalo sem chão.
     var steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.05));
     for (var i = 0; i < steps; i++) {
-      var x = obj.position.x + dx / steps, z = obj.position.z + dz / steps;
+      var px = obj.position.x, pz = obj.position.z, x = px + dx / steps, z = pz + dz / steps;
       if (!walkAllowed(s.walkAreas, x, z)) break;
+      if (free && solidAt(boxes, obj, s, x, z)) {
+        if (x !== px && !solidAt(boxes, obj, s, x, pz) && walkAllowed(s.walkAreas, x, pz)) z = pz;
+        else if (z !== pz && !solidAt(boxes, obj, s, px, z) && walkAllowed(s.walkAreas, px, z)) x = px;
+        else break;
+      }
       obj.position.x = x; obj.position.z = z;
     }
     var moving = obj.position.x !== startX || obj.position.z !== startZ;

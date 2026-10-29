@@ -29,7 +29,11 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": ["axis-x", "axis-y", "axis-z"],
+            "goals": [
+              "axis-x",
+              "axis-y",
+              "axis-z"
+            ],
             "freeExploration": true
           }
         }
@@ -72,7 +76,10 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": ["contact-apart", "contact-touch"],
+            "goals": [
+              "contact-apart",
+              "contact-touch"
+            ],
             "freeExploration": true
           }
         }
@@ -133,7 +140,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -151,6 +160,7 @@
           "sz_g3d_play_animation",
           "sz_g3d_restart",
           "sz_g3d_set_position",
+          "sz_g3d_set_solid",
           "sz_g3d_set_visible",
           "sz_g3d_top_down",
           "sz_g3d_walk_animations",
@@ -174,7 +184,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -2, 1, -3);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -2, 1, -3);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
           },
           "extraFiles": [],
           "assets": [
@@ -183,45 +193,45 @@
               "name": "praia-tropical",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
+              "libId": "modelo-curso:ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
               "originalFileName": "praia-tropical.glb",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImFlNTBmZjQ0ZjZhYTY3YmU1NGRhYWU2NDg1Y2M3YWY4ZDdjZmNiYmJkZWVhMjg0YmQ0Y2ZhOTYyN2IyMmFhOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
             },
             {
               "id": "ilha-modelo-cenario-costa-rochosa",
               "name": "costa-rochosa",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
+              "libId": "modelo-curso:5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
               "originalFileName": "costa-rochosa.glb",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVmZTEwYjdkYTBmNmIwOWNmMTQ1NzI4ZTE5MzcyMDk2MTk2OTQyMmM5OTAzZDIwODYxYjA1OTUyMzQzOTNjNzcifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
             },
             {
               "id": "ilha-modelo-cenario-ilha-nevada",
               "name": "ilha-nevada",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
+              "libId": "modelo-curso:7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
               "originalFileName": "ilha-nevada.glb",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjcwMzlmZmZlNmRmOTdhMTdmNjc4ZTgyYjExMDA5Y2JhOWM3OTJjMzA5NzE3MjZmM2ExZjY4OTIzMDViMTFlM2IifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
             },
             {
               "id": "ilha-modelo-cenario-noite-na-ilha",
               "name": "noite-na-ilha",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
+              "libId": "modelo-curso:77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
               "originalFileName": "noite-na-ilha.glb",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6Ijc3Y2JmOGRmZjA0MTYwZDM3NGJhOTA0ODgzNjliOGU1ZjIwZWU5ZDQ4Mzg5ZDE5YjgwOTA2NzNhN2NkNzU3ZjYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
             },
             {
               "id": "ilha-modelo-pedras",
               "name": "pedras",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
+              "libId": "modelo-curso:c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
               "originalFileName": "pedras.glb",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0YmI3MTM1Zjc3ZmUzMjgwMjRhYjQzM2UzNmIzNzc3Mjg3ZGYyOWU3NWZiZDAwZTMwYTljMGZlNmFmOWI4YmMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
             },
             {
               "id": "ilha-modelo-farol-listrado",
@@ -587,7 +597,7 @@
                   },
                   "maxX": {
                     "type": "num",
-                    "value": 0.7
+                    "value": 1
                   },
                   "minZ": {
                     "type": "num",
@@ -637,6 +647,14 @@
                     "type": "num",
                     "value": 1.7
                   }
+                },
+                {
+                  "type": "g3d:setSolid",
+                  "objVar": "cenario"
+                },
+                {
+                  "type": "g3d:setSolid",
+                  "objVar": "pedra"
                 },
                 {
                   "type": "g3d:walkAnimations",
@@ -1122,7 +1140,7 @@
                                                                                     "shadow": {
                                                                                       "type": "sz_val_number",
                                                                                       "fields": {
-                                                                                        "NUM": 0.7
+                                                                                        "NUM": 1
                                                                                       }
                                                                                     }
                                                                                   },
@@ -1225,56 +1243,72 @@
                                                                                         },
                                                                                         "next": {
                                                                                           "block": {
-                                                                                            "type": "sz_g3d_walk_animations",
+                                                                                            "type": "sz_g3d_set_solid",
                                                                                             "fields": {
-                                                                                              "OBJ": "personagem",
-                                                                                              "IDLE": "parado",
-                                                                                              "WALK": "andando"
+                                                                                              "OBJ": "cenario"
                                                                                             },
                                                                                             "next": {
                                                                                               "block": {
-                                                                                                "type": "sz_js_var_create",
+                                                                                                "type": "sz_g3d_set_solid",
                                                                                                 "fields": {
-                                                                                                  "NAME": "ganhou"
-                                                                                                },
-                                                                                                "inputs": {
-                                                                                                  "VALUE": {
-                                                                                                    "block": {
-                                                                                                      "type": "sz_val_bool",
-                                                                                                      "fields": {
-                                                                                                        "VALUE": "false"
-                                                                                                      }
-                                                                                                    }
-                                                                                                  }
+                                                                                                  "OBJ": "pedra"
                                                                                                 },
                                                                                                 "next": {
                                                                                                   "block": {
-                                                                                                    "type": "sz_js_var_create",
+                                                                                                    "type": "sz_g3d_walk_animations",
                                                                                                     "fields": {
-                                                                                                      "NAME": "aviso"
-                                                                                                    },
-                                                                                                    "inputs": {
-                                                                                                      "VALUE": {
-                                                                                                        "block": {
-                                                                                                          "type": "sz_val_text",
-                                                                                                          "fields": {
-                                                                                                            "TEXT": "Encontre a chave e leve o personagem até o farol."
-                                                                                                          }
-                                                                                                        }
-                                                                                                      }
+                                                                                                      "OBJ": "personagem",
+                                                                                                      "IDLE": "parado",
+                                                                                                      "WALK": "andando"
                                                                                                     },
                                                                                                     "next": {
                                                                                                       "block": {
-                                                                                                        "type": "sz_g3d_hud_text",
+                                                                                                        "type": "sz_js_var_create",
                                                                                                         "fields": {
-                                                                                                          "CORNER": "bottom-center"
+                                                                                                          "NAME": "ganhou"
                                                                                                         },
                                                                                                         "inputs": {
-                                                                                                          "TEXT": {
-                                                                                                            "shadow": {
-                                                                                                              "type": "sz_val_text",
+                                                                                                          "VALUE": {
+                                                                                                            "block": {
+                                                                                                              "type": "sz_val_bool",
                                                                                                               "fields": {
-                                                                                                                "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                "VALUE": "false"
+                                                                                                              }
+                                                                                                            }
+                                                                                                          }
+                                                                                                        },
+                                                                                                        "next": {
+                                                                                                          "block": {
+                                                                                                            "type": "sz_js_var_create",
+                                                                                                            "fields": {
+                                                                                                              "NAME": "aviso"
+                                                                                                            },
+                                                                                                            "inputs": {
+                                                                                                              "VALUE": {
+                                                                                                                "block": {
+                                                                                                                  "type": "sz_val_text",
+                                                                                                                  "fields": {
+                                                                                                                    "TEXT": "Encontre a chave e leve o personagem até o farol."
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            },
+                                                                                                            "next": {
+                                                                                                              "block": {
+                                                                                                                "type": "sz_g3d_hud_text",
+                                                                                                                "fields": {
+                                                                                                                  "CORNER": "bottom-center"
+                                                                                                                },
+                                                                                                                "inputs": {
+                                                                                                                  "TEXT": {
+                                                                                                                    "shadow": {
+                                                                                                                      "type": "sz_val_text",
+                                                                                                                      "fields": {
+                                                                                                                        "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                }
                                                                                                               }
                                                                                                             }
                                                                                                           }
@@ -1507,7 +1541,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -2, 1, -3);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -2, 1, -3);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -1516,45 +1550,45 @@
                   "name": "praia-tropical",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
+                  "libId": "modelo-curso:ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
                   "originalFileName": "praia-tropical.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImFlNTBmZjQ0ZjZhYTY3YmU1NGRhYWU2NDg1Y2M3YWY4ZDdjZmNiYmJkZWVhMjg0YmQ0Y2ZhOTYyN2IyMmFhOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-costa-rochosa",
                   "name": "costa-rochosa",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
+                  "libId": "modelo-curso:5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
                   "originalFileName": "costa-rochosa.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVmZTEwYjdkYTBmNmIwOWNmMTQ1NzI4ZTE5MzcyMDk2MTk2OTQyMmM5OTAzZDIwODYxYjA1OTUyMzQzOTNjNzcifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-ilha-nevada",
                   "name": "ilha-nevada",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
+                  "libId": "modelo-curso:7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
                   "originalFileName": "ilha-nevada.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjcwMzlmZmZlNmRmOTdhMTdmNjc4ZTgyYjExMDA5Y2JhOWM3OTJjMzA5NzE3MjZmM2ExZjY4OTIzMDViMTFlM2IifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-noite-na-ilha",
                   "name": "noite-na-ilha",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
+                  "libId": "modelo-curso:77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
                   "originalFileName": "noite-na-ilha.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6Ijc3Y2JmOGRmZjA0MTYwZDM3NGJhOTA0ODgzNjliOGU1ZjIwZWU5ZDQ4Mzg5ZDE5YjgwOTA2NzNhN2NkNzU3ZjYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-pedras",
                   "name": "pedras",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
+                  "libId": "modelo-curso:c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
                   "originalFileName": "pedras.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0YmI3MTM1Zjc3ZmUzMjgwMjRhYjQzM2UzNmIzNzc3Mjg3ZGYyOWU3NWZiZDAwZTMwYTljMGZlNmFmOWI4YmMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-farol-listrado",
@@ -1920,7 +1954,7 @@
                       },
                       "maxX": {
                         "type": "num",
-                        "value": 0.7
+                        "value": 1
                       },
                       "minZ": {
                         "type": "num",
@@ -1970,6 +2004,14 @@
                         "type": "num",
                         "value": 1.7
                       }
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "cenario"
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "pedra"
                     },
                     {
                       "type": "g3d:walkAnimations",
@@ -2455,7 +2497,7 @@
                                                                                         "shadow": {
                                                                                           "type": "sz_val_number",
                                                                                           "fields": {
-                                                                                            "NUM": 0.7
+                                                                                            "NUM": 1
                                                                                           }
                                                                                         }
                                                                                       },
@@ -2558,56 +2600,72 @@
                                                                                             },
                                                                                             "next": {
                                                                                               "block": {
-                                                                                                "type": "sz_g3d_walk_animations",
+                                                                                                "type": "sz_g3d_set_solid",
                                                                                                 "fields": {
-                                                                                                  "OBJ": "personagem",
-                                                                                                  "IDLE": "parado",
-                                                                                                  "WALK": "andando"
+                                                                                                  "OBJ": "cenario"
                                                                                                 },
                                                                                                 "next": {
                                                                                                   "block": {
-                                                                                                    "type": "sz_js_var_create",
+                                                                                                    "type": "sz_g3d_set_solid",
                                                                                                     "fields": {
-                                                                                                      "NAME": "ganhou"
-                                                                                                    },
-                                                                                                    "inputs": {
-                                                                                                      "VALUE": {
-                                                                                                        "block": {
-                                                                                                          "type": "sz_val_bool",
-                                                                                                          "fields": {
-                                                                                                            "VALUE": "false"
-                                                                                                          }
-                                                                                                        }
-                                                                                                      }
+                                                                                                      "OBJ": "pedra"
                                                                                                     },
                                                                                                     "next": {
                                                                                                       "block": {
-                                                                                                        "type": "sz_js_var_create",
+                                                                                                        "type": "sz_g3d_walk_animations",
                                                                                                         "fields": {
-                                                                                                          "NAME": "aviso"
-                                                                                                        },
-                                                                                                        "inputs": {
-                                                                                                          "VALUE": {
-                                                                                                            "block": {
-                                                                                                              "type": "sz_val_text",
-                                                                                                              "fields": {
-                                                                                                                "TEXT": "Encontre a chave e leve o personagem até o farol."
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
+                                                                                                          "OBJ": "personagem",
+                                                                                                          "IDLE": "parado",
+                                                                                                          "WALK": "andando"
                                                                                                         },
                                                                                                         "next": {
                                                                                                           "block": {
-                                                                                                            "type": "sz_g3d_hud_text",
+                                                                                                            "type": "sz_js_var_create",
                                                                                                             "fields": {
-                                                                                                              "CORNER": "bottom-center"
+                                                                                                              "NAME": "ganhou"
                                                                                                             },
                                                                                                             "inputs": {
-                                                                                                              "TEXT": {
-                                                                                                                "shadow": {
-                                                                                                                  "type": "sz_val_text",
+                                                                                                              "VALUE": {
+                                                                                                                "block": {
+                                                                                                                  "type": "sz_val_bool",
                                                                                                                   "fields": {
-                                                                                                                    "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                    "VALUE": "false"
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            },
+                                                                                                            "next": {
+                                                                                                              "block": {
+                                                                                                                "type": "sz_js_var_create",
+                                                                                                                "fields": {
+                                                                                                                  "NAME": "aviso"
+                                                                                                                },
+                                                                                                                "inputs": {
+                                                                                                                  "VALUE": {
+                                                                                                                    "block": {
+                                                                                                                      "type": "sz_val_text",
+                                                                                                                      "fields": {
+                                                                                                                        "TEXT": "Encontre a chave e leve o personagem até o farol."
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                },
+                                                                                                                "next": {
+                                                                                                                  "block": {
+                                                                                                                    "type": "sz_g3d_hud_text",
+                                                                                                                    "fields": {
+                                                                                                                      "CORNER": "bottom-center"
+                                                                                                                    },
+                                                                                                                    "inputs": {
+                                                                                                                      "TEXT": {
+                                                                                                                        "shadow": {
+                                                                                                                          "type": "sz_val_text",
+                                                                                                                          "fields": {
+                                                                                                                            "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    }
                                                                                                                   }
                                                                                                                 }
                                                                                                               }
@@ -2837,7 +2895,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -2846,45 +2904,45 @@
                   "name": "praia-tropical",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
+                  "libId": "modelo-curso:ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
                   "originalFileName": "praia-tropical.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImFlNTBmZjQ0ZjZhYTY3YmU1NGRhYWU2NDg1Y2M3YWY4ZDdjZmNiYmJkZWVhMjg0YmQ0Y2ZhOTYyN2IyMmFhOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-costa-rochosa",
                   "name": "costa-rochosa",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
+                  "libId": "modelo-curso:5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
                   "originalFileName": "costa-rochosa.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVmZTEwYjdkYTBmNmIwOWNmMTQ1NzI4ZTE5MzcyMDk2MTk2OTQyMmM5OTAzZDIwODYxYjA1OTUyMzQzOTNjNzcifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-ilha-nevada",
                   "name": "ilha-nevada",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
+                  "libId": "modelo-curso:7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
                   "originalFileName": "ilha-nevada.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjcwMzlmZmZlNmRmOTdhMTdmNjc4ZTgyYjExMDA5Y2JhOWM3OTJjMzA5NzE3MjZmM2ExZjY4OTIzMDViMTFlM2IifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-noite-na-ilha",
                   "name": "noite-na-ilha",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
+                  "libId": "modelo-curso:77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
                   "originalFileName": "noite-na-ilha.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6Ijc3Y2JmOGRmZjA0MTYwZDM3NGJhOTA0ODgzNjliOGU1ZjIwZWU5ZDQ4Mzg5ZDE5YjgwOTA2NzNhN2NkNzU3ZjYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-pedras",
                   "name": "pedras",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
+                  "libId": "modelo-curso:c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
                   "originalFileName": "pedras.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0YmI3MTM1Zjc3ZmUzMjgwMjRhYjQzM2UzNmIzNzc3Mjg3ZGYyOWU3NWZiZDAwZTMwYTljMGZlNmFmOWI4YmMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-farol-listrado",
@@ -3250,7 +3308,7 @@
                       },
                       "maxX": {
                         "type": "num",
-                        "value": 0.7
+                        "value": 1
                       },
                       "minZ": {
                         "type": "num",
@@ -3300,6 +3358,14 @@
                         "type": "num",
                         "value": 1.7
                       }
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "cenario"
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "pedra"
                     },
                     {
                       "type": "g3d:walkAnimations",
@@ -3785,7 +3851,7 @@
                                                                                         "shadow": {
                                                                                           "type": "sz_val_number",
                                                                                           "fields": {
-                                                                                            "NUM": 0.7
+                                                                                            "NUM": 1
                                                                                           }
                                                                                         }
                                                                                       },
@@ -3888,56 +3954,72 @@
                                                                                             },
                                                                                             "next": {
                                                                                               "block": {
-                                                                                                "type": "sz_g3d_walk_animations",
+                                                                                                "type": "sz_g3d_set_solid",
                                                                                                 "fields": {
-                                                                                                  "OBJ": "personagem",
-                                                                                                  "IDLE": "parado",
-                                                                                                  "WALK": "andando"
+                                                                                                  "OBJ": "cenario"
                                                                                                 },
                                                                                                 "next": {
                                                                                                   "block": {
-                                                                                                    "type": "sz_js_var_create",
+                                                                                                    "type": "sz_g3d_set_solid",
                                                                                                     "fields": {
-                                                                                                      "NAME": "ganhou"
-                                                                                                    },
-                                                                                                    "inputs": {
-                                                                                                      "VALUE": {
-                                                                                                        "block": {
-                                                                                                          "type": "sz_val_bool",
-                                                                                                          "fields": {
-                                                                                                            "VALUE": "false"
-                                                                                                          }
-                                                                                                        }
-                                                                                                      }
+                                                                                                      "OBJ": "pedra"
                                                                                                     },
                                                                                                     "next": {
                                                                                                       "block": {
-                                                                                                        "type": "sz_js_var_create",
+                                                                                                        "type": "sz_g3d_walk_animations",
                                                                                                         "fields": {
-                                                                                                          "NAME": "aviso"
-                                                                                                        },
-                                                                                                        "inputs": {
-                                                                                                          "VALUE": {
-                                                                                                            "block": {
-                                                                                                              "type": "sz_val_text",
-                                                                                                              "fields": {
-                                                                                                                "TEXT": "Encontre a chave e leve o personagem até o farol."
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
+                                                                                                          "OBJ": "personagem",
+                                                                                                          "IDLE": "parado",
+                                                                                                          "WALK": "andando"
                                                                                                         },
                                                                                                         "next": {
                                                                                                           "block": {
-                                                                                                            "type": "sz_g3d_hud_text",
+                                                                                                            "type": "sz_js_var_create",
                                                                                                             "fields": {
-                                                                                                              "CORNER": "bottom-center"
+                                                                                                              "NAME": "ganhou"
                                                                                                             },
                                                                                                             "inputs": {
-                                                                                                              "TEXT": {
-                                                                                                                "shadow": {
-                                                                                                                  "type": "sz_val_text",
+                                                                                                              "VALUE": {
+                                                                                                                "block": {
+                                                                                                                  "type": "sz_val_bool",
                                                                                                                   "fields": {
-                                                                                                                    "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                    "VALUE": "false"
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            },
+                                                                                                            "next": {
+                                                                                                              "block": {
+                                                                                                                "type": "sz_js_var_create",
+                                                                                                                "fields": {
+                                                                                                                  "NAME": "aviso"
+                                                                                                                },
+                                                                                                                "inputs": {
+                                                                                                                  "VALUE": {
+                                                                                                                    "block": {
+                                                                                                                      "type": "sz_val_text",
+                                                                                                                      "fields": {
+                                                                                                                        "TEXT": "Encontre a chave e leve o personagem até o farol."
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                },
+                                                                                                                "next": {
+                                                                                                                  "block": {
+                                                                                                                    "type": "sz_g3d_hud_text",
+                                                                                                                    "fields": {
+                                                                                                                      "CORNER": "bottom-center"
+                                                                                                                    },
+                                                                                                                    "inputs": {
+                                                                                                                      "TEXT": {
+                                                                                                                        "shadow": {
+                                                                                                                          "type": "sz_val_text",
+                                                                                                                          "fields": {
+                                                                                                                            "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    }
                                                                                                                   }
                                                                                                                 }
                                                                                                               }
@@ -4167,7 +4249,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -4176,45 +4258,45 @@
                   "name": "praia-tropical",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
+                  "libId": "modelo-curso:ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
                   "originalFileName": "praia-tropical.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImFlNTBmZjQ0ZjZhYTY3YmU1NGRhYWU2NDg1Y2M3YWY4ZDdjZmNiYmJkZWVhMjg0YmQ0Y2ZhOTYyN2IyMmFhOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-costa-rochosa",
                   "name": "costa-rochosa",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
+                  "libId": "modelo-curso:5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
                   "originalFileName": "costa-rochosa.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVmZTEwYjdkYTBmNmIwOWNmMTQ1NzI4ZTE5MzcyMDk2MTk2OTQyMmM5OTAzZDIwODYxYjA1OTUyMzQzOTNjNzcifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-ilha-nevada",
                   "name": "ilha-nevada",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
+                  "libId": "modelo-curso:7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
                   "originalFileName": "ilha-nevada.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjcwMzlmZmZlNmRmOTdhMTdmNjc4ZTgyYjExMDA5Y2JhOWM3OTJjMzA5NzE3MjZmM2ExZjY4OTIzMDViMTFlM2IifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-noite-na-ilha",
                   "name": "noite-na-ilha",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
+                  "libId": "modelo-curso:77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
                   "originalFileName": "noite-na-ilha.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6Ijc3Y2JmOGRmZjA0MTYwZDM3NGJhOTA0ODgzNjliOGU1ZjIwZWU5ZDQ4Mzg5ZDE5YjgwOTA2NzNhN2NkNzU3ZjYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-pedras",
                   "name": "pedras",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
+                  "libId": "modelo-curso:c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
                   "originalFileName": "pedras.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0YmI3MTM1Zjc3ZmUzMjgwMjRhYjQzM2UzNmIzNzc3Mjg3ZGYyOWU3NWZiZDAwZTMwYTljMGZlNmFmOWI4YmMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-farol-listrado",
@@ -4580,7 +4662,7 @@
                       },
                       "maxX": {
                         "type": "num",
-                        "value": 0.7
+                        "value": 1
                       },
                       "minZ": {
                         "type": "num",
@@ -4630,6 +4712,14 @@
                         "type": "num",
                         "value": 1.7
                       }
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "cenario"
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "pedra"
                     },
                     {
                       "type": "g3d:walkAnimations",
@@ -5127,7 +5217,7 @@
                                                                                         "shadow": {
                                                                                           "type": "sz_val_number",
                                                                                           "fields": {
-                                                                                            "NUM": 0.7
+                                                                                            "NUM": 1
                                                                                           }
                                                                                         }
                                                                                       },
@@ -5230,56 +5320,72 @@
                                                                                             },
                                                                                             "next": {
                                                                                               "block": {
-                                                                                                "type": "sz_g3d_walk_animations",
+                                                                                                "type": "sz_g3d_set_solid",
                                                                                                 "fields": {
-                                                                                                  "OBJ": "personagem",
-                                                                                                  "IDLE": "parado",
-                                                                                                  "WALK": "andando"
+                                                                                                  "OBJ": "cenario"
                                                                                                 },
                                                                                                 "next": {
                                                                                                   "block": {
-                                                                                                    "type": "sz_js_var_create",
+                                                                                                    "type": "sz_g3d_set_solid",
                                                                                                     "fields": {
-                                                                                                      "NAME": "ganhou"
-                                                                                                    },
-                                                                                                    "inputs": {
-                                                                                                      "VALUE": {
-                                                                                                        "block": {
-                                                                                                          "type": "sz_val_bool",
-                                                                                                          "fields": {
-                                                                                                            "VALUE": "false"
-                                                                                                          }
-                                                                                                        }
-                                                                                                      }
+                                                                                                      "OBJ": "pedra"
                                                                                                     },
                                                                                                     "next": {
                                                                                                       "block": {
-                                                                                                        "type": "sz_js_var_create",
+                                                                                                        "type": "sz_g3d_walk_animations",
                                                                                                         "fields": {
-                                                                                                          "NAME": "aviso"
-                                                                                                        },
-                                                                                                        "inputs": {
-                                                                                                          "VALUE": {
-                                                                                                            "block": {
-                                                                                                              "type": "sz_val_text",
-                                                                                                              "fields": {
-                                                                                                                "TEXT": "Encontre a chave e leve o personagem até o farol."
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
+                                                                                                          "OBJ": "personagem",
+                                                                                                          "IDLE": "parado",
+                                                                                                          "WALK": "andando"
                                                                                                         },
                                                                                                         "next": {
                                                                                                           "block": {
-                                                                                                            "type": "sz_g3d_hud_text",
+                                                                                                            "type": "sz_js_var_create",
                                                                                                             "fields": {
-                                                                                                              "CORNER": "bottom-center"
+                                                                                                              "NAME": "ganhou"
                                                                                                             },
                                                                                                             "inputs": {
-                                                                                                              "TEXT": {
-                                                                                                                "shadow": {
-                                                                                                                  "type": "sz_val_text",
+                                                                                                              "VALUE": {
+                                                                                                                "block": {
+                                                                                                                  "type": "sz_val_bool",
                                                                                                                   "fields": {
-                                                                                                                    "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                    "VALUE": "false"
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            },
+                                                                                                            "next": {
+                                                                                                              "block": {
+                                                                                                                "type": "sz_js_var_create",
+                                                                                                                "fields": {
+                                                                                                                  "NAME": "aviso"
+                                                                                                                },
+                                                                                                                "inputs": {
+                                                                                                                  "VALUE": {
+                                                                                                                    "block": {
+                                                                                                                      "type": "sz_val_text",
+                                                                                                                      "fields": {
+                                                                                                                        "TEXT": "Encontre a chave e leve o personagem até o farol."
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                },
+                                                                                                                "next": {
+                                                                                                                  "block": {
+                                                                                                                    "type": "sz_g3d_hud_text",
+                                                                                                                    "fields": {
+                                                                                                                      "CORNER": "bottom-center"
+                                                                                                                    },
+                                                                                                                    "inputs": {
+                                                                                                                      "TEXT": {
+                                                                                                                        "shadow": {
+                                                                                                                          "type": "sz_val_text",
+                                                                                                                          "fields": {
+                                                                                                                            "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    }
                                                                                                                   }
                                                                                                                 }
                                                                                                               }
@@ -5529,7 +5635,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -5538,45 +5644,45 @@
                   "name": "praia-tropical",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
+                  "libId": "modelo-curso:ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
                   "originalFileName": "praia-tropical.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImFlNTBmZjQ0ZjZhYTY3YmU1NGRhYWU2NDg1Y2M3YWY4ZDdjZmNiYmJkZWVhMjg0YmQ0Y2ZhOTYyN2IyMmFhOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-costa-rochosa",
                   "name": "costa-rochosa",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
+                  "libId": "modelo-curso:5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
                   "originalFileName": "costa-rochosa.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVmZTEwYjdkYTBmNmIwOWNmMTQ1NzI4ZTE5MzcyMDk2MTk2OTQyMmM5OTAzZDIwODYxYjA1OTUyMzQzOTNjNzcifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-ilha-nevada",
                   "name": "ilha-nevada",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
+                  "libId": "modelo-curso:7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
                   "originalFileName": "ilha-nevada.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjcwMzlmZmZlNmRmOTdhMTdmNjc4ZTgyYjExMDA5Y2JhOWM3OTJjMzA5NzE3MjZmM2ExZjY4OTIzMDViMTFlM2IifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-noite-na-ilha",
                   "name": "noite-na-ilha",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
+                  "libId": "modelo-curso:77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
                   "originalFileName": "noite-na-ilha.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6Ijc3Y2JmOGRmZjA0MTYwZDM3NGJhOTA0ODgzNjliOGU1ZjIwZWU5ZDQ4Mzg5ZDE5YjgwOTA2NzNhN2NkNzU3ZjYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-pedras",
                   "name": "pedras",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
+                  "libId": "modelo-curso:c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
                   "originalFileName": "pedras.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0YmI3MTM1Zjc3ZmUzMjgwMjRhYjQzM2UzNmIzNzc3Mjg3ZGYyOWU3NWZiZDAwZTMwYTljMGZlNmFmOWI4YmMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-farol-listrado",
@@ -5942,7 +6048,7 @@
                       },
                       "maxX": {
                         "type": "num",
-                        "value": 0.7
+                        "value": 1
                       },
                       "minZ": {
                         "type": "num",
@@ -5992,6 +6098,14 @@
                         "type": "num",
                         "value": 1.7
                       }
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "cenario"
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "pedra"
                     },
                     {
                       "type": "g3d:walkAnimations",
@@ -6505,7 +6619,7 @@
                                                                                         "shadow": {
                                                                                           "type": "sz_val_number",
                                                                                           "fields": {
-                                                                                            "NUM": 0.7
+                                                                                            "NUM": 1
                                                                                           }
                                                                                         }
                                                                                       },
@@ -6608,49 +6722,29 @@
                                                                                             },
                                                                                             "next": {
                                                                                               "block": {
-                                                                                                "type": "sz_g3d_walk_animations",
+                                                                                                "type": "sz_g3d_set_solid",
                                                                                                 "fields": {
-                                                                                                  "OBJ": "personagem",
-                                                                                                  "IDLE": "parado",
-                                                                                                  "WALK": "andando"
+                                                                                                  "OBJ": "cenario"
                                                                                                 },
                                                                                                 "next": {
                                                                                                   "block": {
-                                                                                                    "type": "sz_js_var_create",
+                                                                                                    "type": "sz_g3d_set_solid",
                                                                                                     "fields": {
-                                                                                                      "NAME": "ganhou"
-                                                                                                    },
-                                                                                                    "inputs": {
-                                                                                                      "VALUE": {
-                                                                                                        "block": {
-                                                                                                          "type": "sz_val_bool",
-                                                                                                          "fields": {
-                                                                                                            "VALUE": "false"
-                                                                                                          }
-                                                                                                        }
-                                                                                                      }
+                                                                                                      "OBJ": "pedra"
                                                                                                     },
                                                                                                     "next": {
                                                                                                       "block": {
-                                                                                                        "type": "sz_js_var_create",
+                                                                                                        "type": "sz_g3d_walk_animations",
                                                                                                         "fields": {
-                                                                                                          "NAME": "aviso"
-                                                                                                        },
-                                                                                                        "inputs": {
-                                                                                                          "VALUE": {
-                                                                                                            "block": {
-                                                                                                              "type": "sz_val_text",
-                                                                                                              "fields": {
-                                                                                                                "TEXT": "Encontre a chave e leve o personagem até o farol."
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
+                                                                                                          "OBJ": "personagem",
+                                                                                                          "IDLE": "parado",
+                                                                                                          "WALK": "andando"
                                                                                                         },
                                                                                                         "next": {
                                                                                                           "block": {
                                                                                                             "type": "sz_js_var_create",
                                                                                                             "fields": {
-                                                                                                              "NAME": "temChave"
+                                                                                                              "NAME": "ganhou"
                                                                                                             },
                                                                                                             "inputs": {
                                                                                                               "VALUE": {
@@ -6664,16 +6758,52 @@
                                                                                                             },
                                                                                                             "next": {
                                                                                                               "block": {
-                                                                                                                "type": "sz_g3d_hud_text",
+                                                                                                                "type": "sz_js_var_create",
                                                                                                                 "fields": {
-                                                                                                                  "CORNER": "bottom-center"
+                                                                                                                  "NAME": "aviso"
                                                                                                                 },
                                                                                                                 "inputs": {
-                                                                                                                  "TEXT": {
-                                                                                                                    "shadow": {
+                                                                                                                  "VALUE": {
+                                                                                                                    "block": {
                                                                                                                       "type": "sz_val_text",
                                                                                                                       "fields": {
-                                                                                                                        "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                        "TEXT": "Encontre a chave e leve o personagem até o farol."
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                },
+                                                                                                                "next": {
+                                                                                                                  "block": {
+                                                                                                                    "type": "sz_js_var_create",
+                                                                                                                    "fields": {
+                                                                                                                      "NAME": "temChave"
+                                                                                                                    },
+                                                                                                                    "inputs": {
+                                                                                                                      "VALUE": {
+                                                                                                                        "block": {
+                                                                                                                          "type": "sz_val_bool",
+                                                                                                                          "fields": {
+                                                                                                                            "VALUE": "false"
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    },
+                                                                                                                    "next": {
+                                                                                                                      "block": {
+                                                                                                                        "type": "sz_g3d_hud_text",
+                                                                                                                        "fields": {
+                                                                                                                          "CORNER": "bottom-center"
+                                                                                                                        },
+                                                                                                                        "inputs": {
+                                                                                                                          "TEXT": {
+                                                                                                                            "shadow": {
+                                                                                                                              "type": "sz_val_text",
+                                                                                                                              "fields": {
+                                                                                                                                "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                              }
+                                                                                                                            }
+                                                                                                                          }
+                                                                                                                        }
                                                                                                                       }
                                                                                                                     }
                                                                                                                   }
@@ -6943,7 +7073,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 0.7, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -6952,45 +7082,45 @@
                   "name": "praia-tropical",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
+                  "libId": "modelo-curso:ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93",
                   "originalFileName": "praia-tropical.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImFlNTBmZjQ0ZjZhYTY3YmU1NGRhYWU2NDg1Y2M3YWY4ZDdjZmNiYmJkZWVhMjg0YmQ0Y2ZhOTYyN2IyMmFhOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-costa-rochosa",
                   "name": "costa-rochosa",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
+                  "libId": "modelo-curso:5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77",
                   "originalFileName": "costa-rochosa.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVmZTEwYjdkYTBmNmIwOWNmMTQ1NzI4ZTE5MzcyMDk2MTk2OTQyMmM5OTAzZDIwODYxYjA1OTUyMzQzOTNjNzcifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-ilha-nevada",
                   "name": "ilha-nevada",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
+                  "libId": "modelo-curso:7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b",
                   "originalFileName": "ilha-nevada.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjcwMzlmZmZlNmRmOTdhMTdmNjc4ZTgyYjExMDA5Y2JhOWM3OTJjMzA5NzE3MjZmM2ExZjY4OTIzMDViMTFlM2IifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-cenario-noite-na-ilha",
                   "name": "noite-na-ilha",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
+                  "libId": "modelo-curso:77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6",
                   "originalFileName": "noite-na-ilha.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6Ijc3Y2JmOGRmZjA0MTYwZDM3NGJhOTA0ODgzNjliOGU1ZjIwZWU5ZDQ4Mzg5ZDE5YjgwOTA2NzNhN2NkNzU3ZjYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-pedras",
                   "name": "pedras",
                   "kind": "model3d",
                   "source": "library",
-                  "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
+                  "libId": "modelo-curso:c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc",
                   "originalFileName": "pedras.glb",
-                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+                  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0YmI3MTM1Zjc3ZmUzMjgwMjRhYjQzM2UzNmIzNzc3Mjg3ZGYyOWU3NWZiZDAwZTMwYTljMGZlNmFmOWI4YmMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
                 },
                 {
                   "id": "ilha-modelo-farol-listrado",
@@ -7356,7 +7486,7 @@
                       },
                       "maxX": {
                         "type": "num",
-                        "value": 0.7
+                        "value": 1
                       },
                       "minZ": {
                         "type": "num",
@@ -7406,6 +7536,14 @@
                         "type": "num",
                         "value": 1.7
                       }
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "cenario"
+                    },
+                    {
+                      "type": "g3d:setSolid",
+                      "objVar": "pedra"
                     },
                     {
                       "type": "g3d:walkAnimations",
@@ -7927,7 +8065,7 @@
                                                                                         "shadow": {
                                                                                           "type": "sz_val_number",
                                                                                           "fields": {
-                                                                                            "NUM": 0.7
+                                                                                            "NUM": 1
                                                                                           }
                                                                                         }
                                                                                       },
@@ -8030,49 +8168,29 @@
                                                                                             },
                                                                                             "next": {
                                                                                               "block": {
-                                                                                                "type": "sz_g3d_walk_animations",
+                                                                                                "type": "sz_g3d_set_solid",
                                                                                                 "fields": {
-                                                                                                  "OBJ": "personagem",
-                                                                                                  "IDLE": "parado",
-                                                                                                  "WALK": "andando"
+                                                                                                  "OBJ": "cenario"
                                                                                                 },
                                                                                                 "next": {
                                                                                                   "block": {
-                                                                                                    "type": "sz_js_var_create",
+                                                                                                    "type": "sz_g3d_set_solid",
                                                                                                     "fields": {
-                                                                                                      "NAME": "ganhou"
-                                                                                                    },
-                                                                                                    "inputs": {
-                                                                                                      "VALUE": {
-                                                                                                        "block": {
-                                                                                                          "type": "sz_val_bool",
-                                                                                                          "fields": {
-                                                                                                            "VALUE": "false"
-                                                                                                          }
-                                                                                                        }
-                                                                                                      }
+                                                                                                      "OBJ": "pedra"
                                                                                                     },
                                                                                                     "next": {
                                                                                                       "block": {
-                                                                                                        "type": "sz_js_var_create",
+                                                                                                        "type": "sz_g3d_walk_animations",
                                                                                                         "fields": {
-                                                                                                          "NAME": "aviso"
-                                                                                                        },
-                                                                                                        "inputs": {
-                                                                                                          "VALUE": {
-                                                                                                            "block": {
-                                                                                                              "type": "sz_val_text",
-                                                                                                              "fields": {
-                                                                                                                "TEXT": "Encontre a chave e leve o personagem até o farol."
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
+                                                                                                          "OBJ": "personagem",
+                                                                                                          "IDLE": "parado",
+                                                                                                          "WALK": "andando"
                                                                                                         },
                                                                                                         "next": {
                                                                                                           "block": {
                                                                                                             "type": "sz_js_var_create",
                                                                                                             "fields": {
-                                                                                                              "NAME": "temChave"
+                                                                                                              "NAME": "ganhou"
                                                                                                             },
                                                                                                             "inputs": {
                                                                                                               "VALUE": {
@@ -8086,16 +8204,52 @@
                                                                                                             },
                                                                                                             "next": {
                                                                                                               "block": {
-                                                                                                                "type": "sz_g3d_hud_text",
+                                                                                                                "type": "sz_js_var_create",
                                                                                                                 "fields": {
-                                                                                                                  "CORNER": "bottom-center"
+                                                                                                                  "NAME": "aviso"
                                                                                                                 },
                                                                                                                 "inputs": {
-                                                                                                                  "TEXT": {
-                                                                                                                    "shadow": {
+                                                                                                                  "VALUE": {
+                                                                                                                    "block": {
                                                                                                                       "type": "sz_val_text",
                                                                                                                       "fields": {
-                                                                                                                        "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                        "TEXT": "Encontre a chave e leve o personagem até o farol."
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                },
+                                                                                                                "next": {
+                                                                                                                  "block": {
+                                                                                                                    "type": "sz_js_var_create",
+                                                                                                                    "fields": {
+                                                                                                                      "NAME": "temChave"
+                                                                                                                    },
+                                                                                                                    "inputs": {
+                                                                                                                      "VALUE": {
+                                                                                                                        "block": {
+                                                                                                                          "type": "sz_val_bool",
+                                                                                                                          "fields": {
+                                                                                                                            "VALUE": "false"
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    },
+                                                                                                                    "next": {
+                                                                                                                      "block": {
+                                                                                                                        "type": "sz_g3d_hud_text",
+                                                                                                                        "fields": {
+                                                                                                                          "CORNER": "bottom-center"
+                                                                                                                        },
+                                                                                                                        "inputs": {
+                                                                                                                          "TEXT": {
+                                                                                                                            "shadow": {
+                                                                                                                              "type": "sz_val_text",
+                                                                                                                              "fields": {
+                                                                                                                                "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                                                              }
+                                                                                                                            }
+                                                                                                                          }
+                                                                                                                        }
                                                                                                                       }
                                                                                                                     }
                                                                                                                   }
@@ -8401,13 +8555,20 @@
       "title": "Duas direções no chão e uma na altura",
       "intent": "exploration",
       "objective": "Duas direções no chão e uma na altura.",
-      "blockKeys": ["video-posicao-3d", "ponte-posicao-3d", "experiencia-posicao-3d"],
+      "blockKeys": [
+        "video-posicao-3d",
+        "ponte-posicao-3d",
+        "experiencia-posicao-3d"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao-3d", "experiencia-posicao-3d"]
+        "blockIds": [
+          "video-posicao-3d",
+          "experiencia-posicao-3d"
+        ]
       }
     },
     {
@@ -8415,13 +8576,18 @@
       "title": "Coloque a chave na ilha",
       "intent": "application",
       "objective": "Coloque a chave na ilha.",
-      "blockKeys": ["video-posicao", "ponte-posicao"],
+      "blockKeys": [
+        "video-posicao",
+        "ponte-posicao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao"],
+        "blockIds": [
+          "video-posicao"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -8644,13 +8810,20 @@
       "title": "Parece junto, mas está encostando?",
       "intent": "exploration",
       "objective": "Parece junto, mas está encostando?.",
-      "blockKeys": ["video-contato-3d", "ponte-contato-3d", "experiencia-contato-3d"],
+      "blockKeys": [
+        "video-contato-3d",
+        "ponte-contato-3d",
+        "experiencia-contato-3d"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-contato-3d", "experiencia-contato-3d"]
+        "blockIds": [
+          "video-contato-3d",
+          "experiencia-contato-3d"
+        ]
       }
     },
     {
@@ -8658,13 +8831,18 @@
       "title": "Recolha a chave",
       "intent": "application",
       "objective": "Recolha a chave.",
-      "blockKeys": ["video-recolher", "ponte-recolher"],
+      "blockKeys": [
+        "video-recolher",
+        "ponte-recolher"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-recolher"],
+        "blockIds": [
+          "video-recolher"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -8888,8 +9066,110 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.7,
+                      "maxX": -7.4,
                       "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.1,
+                      "maxX": -4.6,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": -5,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -6.5,
+                      "minZ": -5,
+                      "maxZ": -4.76
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -7,
+                      "minZ": -3.74,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": -3.74,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": -5,
+                      "maxZ": -1.46
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": -5,
+                      "maxZ": -1.56
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0.2,
+                      "maxX": 1,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": -5,
+                      "maxZ": -0.76
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": 1.26,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": 0,
+                      "minZ": -5,
+                      "maxZ": -2.56
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": -1.7,
+                      "minZ": 0.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -1.7,
+                      "maxX": 0,
+                      "minZ": 1.26,
                       "maxZ": 5
                     },
                     {
@@ -8939,13 +9219,18 @@
       "title": "Guarde que você pegou a chave",
       "intent": "application",
       "objective": "Guarde que você pegou a chave.",
-      "blockKeys": ["video-memoria", "ponte-memoria"],
+      "blockKeys": [
+        "video-memoria",
+        "ponte-memoria"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-memoria"],
+        "blockIds": [
+          "video-memoria"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9169,8 +9454,110 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.7,
+                      "maxX": -7.4,
                       "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.1,
+                      "maxX": -4.6,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": -5,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -6.5,
+                      "minZ": -5,
+                      "maxZ": -4.76
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -7,
+                      "minZ": -3.74,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": -3.74,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": -5,
+                      "maxZ": -1.46
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": -5,
+                      "maxZ": -1.56
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0.2,
+                      "maxX": 1,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": -5,
+                      "maxZ": -0.76
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": 1.26,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": 0,
+                      "minZ": -5,
+                      "maxZ": -2.56
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": -1.7,
+                      "minZ": 0.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -1.7,
+                      "maxX": 0,
+                      "minZ": 1.26,
                       "maxZ": 5
                     },
                     {
@@ -9273,8 +9660,110 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.7,
+                      "maxX": -7.4,
                       "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.1,
+                      "maxX": -4.6,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": -5,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -6.5,
+                      "minZ": -5,
+                      "maxZ": -4.76
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -7,
+                      "minZ": -3.74,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": -3.74,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": -5,
+                      "maxZ": -1.46
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": -5,
+                      "maxZ": -1.56
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0.2,
+                      "maxX": 1,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": -5,
+                      "maxZ": -0.76
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": 1.26,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": 0,
+                      "minZ": -5,
+                      "maxZ": -2.56
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": -1.7,
+                      "minZ": 0.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -1.7,
+                      "maxX": 0,
+                      "minZ": 1.26,
                       "maxZ": 5
                     },
                     {
@@ -9333,13 +9822,20 @@
       "title": "Conte que a chave foi recolhida",
       "intent": "delivery",
       "objective": "Conte que a chave foi recolhida.",
-      "blockKeys": ["video-aviso", "ponte-aviso", "projeto"],
+      "blockKeys": [
+        "video-aviso",
+        "ponte-aviso",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-aviso", "projeto"],
+        "blockIds": [
+          "video-aviso",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9563,8 +10059,110 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.7,
+                      "maxX": -7.4,
                       "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.1,
+                      "maxX": -4.6,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": -5,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -6.5,
+                      "minZ": -5,
+                      "maxZ": -4.76
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -7,
+                      "minZ": -3.74,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": -3.74,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": -5,
+                      "maxZ": -1.46
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": -5,
+                      "maxZ": -1.56
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0.2,
+                      "maxX": 1,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": -5,
+                      "maxZ": -0.76
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": 1.26,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": 0,
+                      "minZ": -5,
+                      "maxZ": -2.56
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": -1.7,
+                      "minZ": 0.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -1.7,
+                      "maxX": 0,
+                      "minZ": 1.26,
                       "maxZ": 5
                     },
                     {
@@ -9677,8 +10275,110 @@
                   "walkable": [
                     {
                       "minX": -11,
-                      "maxX": 0.7,
+                      "maxX": -7.4,
                       "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.1,
+                      "maxX": -4.6,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": -5,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -6.5,
+                      "maxX": -6.1,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -6.5,
+                      "minZ": -5,
+                      "maxZ": -4.76
+                    },
+                    {
+                      "minX": -7.4,
+                      "maxX": -7,
+                      "minZ": -3.74,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": -3.74,
+                      "maxZ": 4.04
+                    },
+                    {
+                      "minX": -7,
+                      "maxX": -6.5,
+                      "minZ": 4.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": -5,
+                      "maxZ": -1.46
+                    },
+                    {
+                      "minX": -4.6,
+                      "maxX": -4.1,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": -5,
+                      "maxZ": -1.56
+                    },
+                    {
+                      "minX": -4.1,
+                      "maxX": -3.3,
+                      "minZ": 0.36,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0.2,
+                      "maxX": 1,
+                      "minZ": -5,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": -5,
+                      "maxZ": -0.76
+                    },
+                    {
+                      "minX": 0,
+                      "maxX": 0.2,
+                      "minZ": 1.26,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": 0,
+                      "minZ": -5,
+                      "maxZ": -2.56
+                    },
+                    {
+                      "minX": -3.3,
+                      "maxX": -1.7,
+                      "minZ": 0.96,
+                      "maxZ": 5
+                    },
+                    {
+                      "minX": -1.7,
+                      "maxX": 0,
+                      "minZ": 1.26,
                       "maxZ": 5
                     },
                     {
@@ -9766,15 +10466,22 @@
       "title": "A chave já pode ser encontrada",
       "intent": "closing",
       "objective": "A chave já pode ser encontrada.",
-      "blockKeys": ["video-fecho", "ponte-fecho"],
+      "blockKeys": [
+        "video-fecho",
+        "ponte-fecho"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho"]
+        "blockIds": [
+          "video-fecho"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["materiais"]
+  "retireBlockKeys": [
+    "materiais"
+  ]
 }

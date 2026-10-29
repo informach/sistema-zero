@@ -57,6 +57,7 @@
     "sz_g3d_remove_object",
     "sz_g3d_restart",
     "sz_g3d_set_position",
+    "sz_g3d_set_solid",
     "sz_g3d_set_visible",
     "sz_g3d_spawn_copy",
     "sz_g3d_top_down",

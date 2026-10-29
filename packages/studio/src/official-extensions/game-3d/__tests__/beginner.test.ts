@@ -88,6 +88,62 @@ describe('percurso básico do Jogo 3D', () => {
     expect(player.position.x).toBeLessThanOrEqual(2)
     expect(player.position.x).toBeGreaterThan(1.9)
   })
+  test('quem anda com as setas não atravessa o sólido, desliza junto dele e pisa no chão', () => {
+    const { api, fire } = loadRuntime({ realGeometry: true }),
+      world = call(api, 'createScene', 'tela'),
+      player = call(api, 'createBox', world, { size: 1 }),
+      pedra = call(api, 'createBox', world, { size: 2 }),
+      chao = call(api, 'createBox', world, { size: 1 })
+    world._dt = 1 / 60
+    call(api, 'setPosition', pedra, 3, 0, 0)
+    // O chão fica embaixo dos pés: marcado como sólido, não barra quem anda em cima.
+    chao.scale.set(20, 1, 20)
+    call(api, 'setPosition', chao, 0, -1, 0)
+    call(api, 'setSolid', pedra)
+    call(api, 'setSolid', chao)
+    fire('keydown', { code: 'ArrowRight', preventDefault() {} })
+    for (let i = 0; i < 120; i++) call(api, 'topDown', player, 4)
+    fire('keyup', { code: 'ArrowRight' })
+    // A pedra vai de x 2 a 4; o jogador (meio de lado 0,5) para encostado nela.
+    expect(player.position.x).toBeGreaterThan(1.4)
+    expect(player.position.x).toBeLessThanOrEqual(1.5)
+    // Na diagonal, desliza junto da pedra em vez de parar; passada a quina, volta a ir para a direita.
+    fire('keydown', { code: 'ArrowRight', preventDefault() {} })
+    fire('keydown', { code: 'ArrowDown', preventDefault() {} })
+    for (let i = 0; i < 15; i++) call(api, 'topDown', player, 4)
+    expect(player.position.z).toBeGreaterThan(0.9)
+    expect(player.position.x).toBeLessThanOrEqual(1.5)
+    for (let i = 0; i < 30; i++) call(api, 'topDown', player, 4)
+    expect(player.position.x).toBeGreaterThan(2)
+    fire('keyup', { code: 'ArrowRight' })
+    fire('keyup', { code: 'ArrowDown' })
+    // Quem começa dentro de um sólido consegue sair dele.
+    call(api, 'setPosition', player, 3, 0, 0)
+    fire('keydown', { code: 'ArrowLeft', preventDefault() {} })
+    for (let i = 0; i < 60; i++) call(api, 'topDown', player, 4)
+    expect(player.position.x).toBeLessThan(0)
+  })
+  test('cada pedaço do sólido conta sozinho; as peças de efeito (szSemCaixa) não barram', () => {
+    const { api, fire } = loadRuntime({ realGeometry: true }),
+      world = call(api, 'createScene', 'tela'),
+      player = call(api, 'createBox', world, { size: 1 }),
+      pedra = call(api, 'createBox', world, { size: 2 })
+    world._dt = 1 / 60
+    call(api, 'setPosition', pedra, 3, 0, 0)
+    // Outro pedaço do mesmo sólido, longe (z 6), e uma folha de efeito no vão entre os dois.
+    const longe = pedra.clone(false),
+      folha = pedra.clone(false)
+    longe.position.set(0, 0, 6)
+    folha.position.set(0, 0, 3)
+    folha.userData = { szSemCaixa: true }
+    pedra.add(longe, folha)
+    call(api, 'setSolid', pedra)
+    call(api, 'setPosition', player, 0, 0, 3)
+    fire('keydown', { code: 'ArrowRight', preventDefault() {} })
+    for (let i = 0; i < 120; i++) call(api, 'topDown', player, 4)
+    // Uma caixa só (de z -1 a 7) barraria; com um pedaço por vez, o vão entre eles fica livre.
+    expect(player.position.x).toBeGreaterThan(5)
+  })
   test('encontro direto dispara uma vez por contato e ignora elementos escondidos', () => {
     const { api } = loadRuntime({ realGeometry: true }),
       world = call(api, 'createScene', 'tela')

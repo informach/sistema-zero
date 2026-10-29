@@ -27,6 +27,28 @@ test('3D route follows the bridge and the actual position; height cannot be fake
   expect(planApproach3d(actor, farol, floor, [key]).length).toBeGreaterThan(1)
 })
 
+test('3D route around a solid obstacle takes one detour, not a staircase of short legs', () => {
+  // The floor cut around a rock (as the Ilha's walk areas minus its solid pieces): every corner
+  // costs a precise stop, so the planner trades a little distance for fewer turns.
+  const cut = [
+    { minX: -8, maxX: -3.5, minZ: -3, maxZ: 3 },
+    { minX: -3.5, maxX: -1, minZ: 1, maxZ: 3 },
+    { minX: -1, maxX: 1.5, minZ: 1.5, maxZ: 3 },
+    { minX: 1.5, maxX: 8, minZ: -3, maxZ: 3 },
+  ]
+  const route = planApproach3d(
+    { x: -6, y: 0.8, z: 0, hw: 0.3, hh: 0.8, hd: 0.3 },
+    { x: 6, y: 0.8, z: 0, hw: 0.5, hh: 1, hd: 0.5 },
+    cut,
+  )
+  // Start, the way down, along, back up, end: at most three turns.
+  expect(route.length).toBeLessThanOrEqual(5)
+  for (const p of route)
+    expect(cut.some((r) => p.x >= r.minX && p.x <= r.maxX && p.z >= r.minZ && p.z <= r.maxZ)).toBe(
+      true,
+    )
+})
+
 test.each([
   [true, false],
   [false, false],

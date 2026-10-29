@@ -277,8 +277,8 @@ const bau=SZGame3D.createModelFile(cena,"bau-do-tesouro",${bau.size});
 SZGame3D.setPosition(bau,${BAU_3D[0]},${+bau.center[1].toFixed(2)},${BAU_3D[1]});
 ${n >= 1 ? 'let moedas=0;' : ''}`
   s = s.replace(
-    'SZGame3D.walkArea(personagem,-11,0.7,-5,5);',
-    `${preparo.trim()}\nSZGame3D.walkArea(personagem,-11,0.7,-5,5);`,
+    'SZGame3D.walkArea(personagem,-11,1,-5,5);',
+    `${preparo.trim()}\nSZGame3D.walkArea(personagem,-11,1,-5,5);`,
   )
   const regras = [
     n >= 2

@@ -48,6 +48,7 @@
     "sz_g3d_play_animation",
     "sz_g3d_restart",
     "sz_g3d_set_position",
+    "sz_g3d_set_solid",
     "sz_g3d_set_visible",
     "sz_g3d_top_down",
     "sz_g3d_walk_animations",

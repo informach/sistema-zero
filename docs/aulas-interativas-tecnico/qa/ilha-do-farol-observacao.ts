@@ -4,12 +4,69 @@ import {
   type ExecutionStep,
 } from '../../../packages/core/src/learning/project-execution'
 import type { SectionProjectCheck } from '../../../packages/core/src/learning/section-progression'
+export interface Retangulo {
+  minX: number
+  maxX: number
+  minZ: number
+  maxZ: number
+}
 /** Os mesmos retângulos dos `walkArea` do jogo (`ilha-do-farol-projeto.ts`). */
-export const ILHA_CAMINHOS = [
-  { minX: -11, maxX: 0.7, minZ: -5, maxZ: 5 },
+export const ILHA_AREAS: Retangulo[] = [
+  { minX: -11, maxX: 1, minZ: -5, maxZ: 5 },
   { minX: 0.6, maxX: 4.1, minZ: 0.4, maxZ: 1.1 },
   { minX: 4, maxX: 6.1, minZ: -0.5, maxZ: 1.7 },
 ]
+/**
+ * Os obstáculos sólidos da Ilha (o jogo marca o cenário e a pedra com "marcar … como sólido"), no
+ * chão do jogo: os quatro blocos da pedra e os troncos dos dois coqueiros da praia tropical. São
+ * os pedaços dos modelos do Blender (`ilha-obstaculos.test.ts` confere contra os arquivos).
+ */
+export const ILHA_OBSTACULOS: Retangulo[] = [
+  { minX: -3, maxX: -0.3, minZ: -2.2, maxZ: 0.6 },
+  { minX: -1.4, maxX: -0.1, minZ: -0.4, maxZ: 0.9 },
+  { minX: -3.8, maxX: -2.7, minZ: -1.2, maxZ: -0.2 },
+  { minX: -4.3, maxX: -3.3, minZ: -1.1, maxZ: 0 },
+  { minX: -7.1, maxX: -6.8, minZ: -4.4, maxZ: -4.1 },
+  { minX: -6.7, maxX: -6.4, minZ: 4.4, maxZ: 4.6 },
+]
+/**
+ * A metade da pegada do personagem (x, z): o Jogo 3D usa 60% da caixa dele (0,5 por 0,6) para
+ * bater nos sólidos, e o centro dele não chega mais perto que isso.
+ */
+const PERSONAGEM = { x: 0.3, z: 0.36 }
+/**
+ * Tira de cada área os lugares em que o CENTRO do personagem bateria num obstáculo: o robô do
+ * executor planeja o caminho pelo que sobra e contorna a pedra e os troncos, como a criança.
+ */
+export function recortarObstaculos(areas: Retangulo[], obstaculos: Retangulo[]): Retangulo[] {
+  let pedacos = areas
+  for (const o of obstaculos) {
+    const h = {
+      minX: o.minX - PERSONAGEM.x,
+      maxX: o.maxX + PERSONAGEM.x,
+      minZ: o.minZ - PERSONAGEM.z,
+      maxZ: o.maxZ + PERSONAGEM.z,
+    }
+    pedacos = pedacos.flatMap((r) => {
+      if (h.minX >= r.maxX || h.maxX <= r.minX || h.minZ >= r.maxZ || h.maxZ <= r.minZ) return [r]
+      const sobra: Retangulo[] = []
+      if (h.minX > r.minX) sobra.push({ ...r, maxX: h.minX })
+      if (h.maxX < r.maxX) sobra.push({ ...r, minX: h.maxX })
+      const meio = { minX: Math.max(r.minX, h.minX), maxX: Math.min(r.maxX, h.maxX) }
+      if (h.minZ > r.minZ) sobra.push({ ...meio, minZ: r.minZ, maxZ: h.minZ })
+      if (h.maxZ < r.maxZ) sobra.push({ ...meio, minZ: h.maxZ, maxZ: r.maxZ })
+      return sobra
+    })
+  }
+  return pedacos.map((r) => ({
+    minX: +r.minX.toFixed(3),
+    maxX: +r.maxX.toFixed(3),
+    minZ: +r.minZ.toFixed(3),
+    maxZ: +r.maxZ.toFixed(3),
+  }))
+}
+/** Por onde o robô pode andar na Ilha: as áreas do jogo, sem a pedra e os troncos. */
+export const ILHA_CAMINHOS = recortarObstaculos(ILHA_AREAS, ILHA_OBSTACULOS)
 /**
  * O prazo é do ROBÔ que aperta as setas no lugar da criança, não do jogo: no jogo a chave fica
  * guardada em `temChave` pelo tempo que for. Sem a chave, o caminho vai direto do começo ao

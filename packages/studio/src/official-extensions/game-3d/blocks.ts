@@ -1344,7 +1344,8 @@ const gameThreeDBlockDefinitions = [
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'chao', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Diz que esse objeto é parede/chão: a física não deixa atravessá-lo.',
+    tooltip:
+      'Diz que esse objeto é obstáculo (pedra, árvore, parede, chão): quem anda com as setas ou pela física não o atravessa.',
   },
   {
     type: 'sz_g3d_platformer_controls',

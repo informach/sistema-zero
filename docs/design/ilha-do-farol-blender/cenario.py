@@ -643,8 +643,10 @@ ARVORE_TRAS, ARVORE_FRENTE = (-7.0, -4.2), (-6.6, 4.5)
 
 
 def _coqueiros():
+    """(enfeite, obstáculos): o tronco de cada coqueiro é um obstáculo; a copa e os cocos, não."""
     # O coqueiro de trás é o mesmo na escala 1,2 do Molda (o da frente é 1,15), girado.
-    return _coqueiro(1.2 / 1.15, R(40), ARVORE_TRAS) + _coqueiro(1.0, 0.0, ARVORE_FRENTE)
+    tras, frente = _coqueiro(1.2 / 1.15, R(40), ARVORE_TRAS), _coqueiro(1.0, 0.0, ARVORE_FRENTE)
+    return tras[1:] + frente[1:], [[tras[0]], [frente[0]]]
 
 
 def _pinheiro(onde, escala=1.0, seed=0):
@@ -661,13 +663,16 @@ def _pinheiro(onde, escala=1.0, seed=0):
 
 
 def _pinheiros():
-    return (_pinheiro(ARVORE_TRAS, 1.15) + _pinheiro((-9.6, -2.6), 0.9) + _pinheiro(ARVORE_FRENTE, 1.05)
-            + [ellipsoid((*g(x, z), 0.02), (rx, rx * 0.7, 0.06), cor('espuma'), seg=12, ring=6)
-               for x, z, rx in ((-9.8, 5.8, 0.5), (-8.4, 6.1, 0.35), (-3.9, -5.6, 0.4), (-10.6, -0.4, 0.3))])
+    """(enfeite, obstáculos): o tronco e o andar de baixo da copa barram; o resto, não."""
+    arvores = [_pinheiro(ARVORE_TRAS, 1.15), _pinheiro((-9.6, -2.6), 0.9), _pinheiro(ARVORE_FRENTE, 1.05)]
+    neve = [ellipsoid((*g(x, z), 0.02), (rx, rx * 0.7, 0.06), cor('espuma'), seg=12, ring=6)
+            for x, z, rx in ((-9.8, 5.8, 0.5), (-8.4, 6.1, 0.35), (-3.9, -5.6, 0.4), (-10.6, -0.4, 0.3))]
+    return [o for a in arvores for o in a[3:]] + neve, [a[:3] for a in arvores]
 
 
 def _rochas():
-    """Pedregulhos (costa rochosa) nos lugares das árvores e soltos na grama, como no desenho."""
+    """Pedregulhos (costa rochosa) nos lugares das árvores e soltos na grama, como no desenho.
+    (enfeite, obstáculos): cada pedregulho é um obstáculo."""
     base, _ = PEDRAS['cinza']
     pedra, topo = cor_hex(base[0]), cor_hex(base[2])
     p = []
@@ -678,7 +683,7 @@ def _rochas():
             dx, dz = (0, 0) if k == 0 else (rnd.uniform(-0.8, 0.8), rnd.uniform(-0.6, 0.6))
             p.append(rock((*g(x + dx, z + dz), 0), (s * 1.6, s * 1.3, s * 1.1), pedra, seed=rnd.randint(0, 999),
                           subdiv=1, rough=0.2, top_m=topo))
-    return p
+    return [], [[o] for o in p]
 
 
 def _vagalumes():
@@ -691,7 +696,7 @@ def _vagalumes():
         if abs(z - 0.75) < 1.0:
             continue
         p.append(sphere(0.05, (*g(x, z), rnd.uniform(0.35, 1.3)), luz, subdiv=1))
-    return p
+    return p, []
 
 
 def _moita(x, z, seed, s=1.0, tons=('folhaEscura', 'grama')):
@@ -774,19 +779,26 @@ def _pedras():
 ARVORES = {'coqueiro': _coqueiros, 'pinheiro': _pinheiros, 'rochas': _rochas, 'vagalumes': _vagalumes}
 
 
-def pecas_do_cenario(nome, ceu=True):
-    """Todas as peças de um cenário, já no lugar (referencial do jogo, com a origem no centro)."""
+def pecas_do_cenario(nome, ceu=True, com_obstaculos=False):
+    """Todas as peças de um cenário, já no lugar (referencial do jogo, com a origem no centro).
+
+    Com `com_obstaculos`, devolve (enfeite, obstáculos): os troncos, os pedregulhos e o pé dos
+    pinheiros, cada um numa lista, para virarem pedaços próprios do modelo."""
     global TEMA
     TEMA = nome
     # As pedras NÃO entram: o curso as põe como objeto próprio (`pedra`, modelo `pedras`) no mesmo
     # lugar, e duas cópias no mesmo lugar brigam pela superfície.
-    p = _mar() + _terreno() + _grama() + _ponte() + _vegetacao() + ARVORES[TEMAS[nome]['arvore']]()
-    return p + (_ceu() if ceu else [])
+    enfeite, obstaculos = ARVORES[TEMAS[nome]['arvore']]()
+    p = _mar() + _terreno() + _grama() + _ponte() + _vegetacao() + enfeite + (_ceu() if ceu else [])
+    if com_obstaculos:
+        return p, obstaculos
+    return p + [o for grupo in obstaculos for o in grupo]
 
 
 def _exportar_cenario(nome):
     reset()
-    p = pecas_do_cenario(nome)
+    base, obstaculos = pecas_do_cenario(nome, com_obstaculos=True)
+    p = base + [o for grupo in obstaculos for o in grupo]
     bpy.context.view_layer.update()
     pts = [o.matrix_world @ Vector(c) for o in p for c in o.bound_box]
     mn = [round(min(v[i] for v in pts), 2) for i in range(3)]
@@ -794,7 +806,9 @@ def _exportar_cenario(nome):
     # A mesma caixa em todos: o mar (±70) e a cúpula (até 67,7). Sem isso, trocar o cenário mexeria na ilha.
     if mn != [-70.0, -70.0, -0.5] or mx != [70.0, 70.0, round(CEU_R - 0.3, 2)]:
         raise RuntimeError(f'caixa do cenário {nome} fora do contrato: {mn} {mx}')
-    exportar_estatico(f'cenario-{nome}', p)
+    # O cenário é enfeite (szSemCaixa) e as árvores são obstáculos: "marcar cenario como sólido"
+    # no Jogo 3D faz o personagem contornar os troncos, e trocar o cenário continua um bloco só.
+    exportar_em_pedacos(f'cenario-{nome}', base, obstaculos)
 
 
 def cenario_praia_tropical():
@@ -814,13 +828,20 @@ def cenario_noite_na_ilha():
 
 
 def pedras():
-    """As pedras sozinhas (praia tropical, no referencial do Molda): para o `verificar_pedra.py`."""
+    """As pedras sozinhas (praia tropical, no referencial do Molda): para o `verificar_pedra.py`.
+
+    Cada bloco grande é um pedaço próprio e as três pedrinhas do pé são enfeite (szSemCaixa):
+    marcada como sólida no Jogo 3D, a pedra barra quem anda bloco a bloco, e a chave escondida
+    no canto de trás do bloco maior continua ao alcance (uma caixa só cobriria a chave e a trilha)."""
     reset()
     global TEMA
     TEMA = 'praia-tropical'
     p = _pedras()
     place(p, loc=(*(-Vector((*g(-2, -1), 0))),))
-    export('pedras', p)
+    blocos = [o for o in p if o.name.startswith('Pedra')]
+    pedrinhas = [o for o in p if o not in blocos]
+    exportar_em_pedacos('pedras', pedrinhas, [[o] for o in blocos],
+                        nomes=['bloco-maior', 'bloco-maior-frente', 'coluna', 'coluna-frente'])
 
 
 def bancada():

@@ -67,9 +67,11 @@ ${placed(escolhas, 'barco', [13, -0.1, 4.5])}
 ${placed(escolhas, 'pedra', [-2, 0, -1])}
 ${placed(escolhas, 'personagem', [-6.5, 0.8, 0.75], true)}
 ${placed(escolhas, 'chave', n >= 2 ? [-3, 1, -2] : [-2, 1, -3], true)}
-SZGame3D.walkArea(personagem,-11,0.7,-5,5);
+SZGame3D.walkArea(personagem,-11,1,-5,5);
 SZGame3D.walkArea(personagem,0.6,4.1,0.4,1.1);
 SZGame3D.walkArea(personagem,4,6.1,-0.5,1.7);
+SZGame3D.setSolid(cenario);
+SZGame3D.setSolid(pedra);
 SZGame3D.walkAnimations(personagem,"parado","andando");
 let ganhou=false;
 let aviso="Encontre a chave e leve o personagem até o farol.";

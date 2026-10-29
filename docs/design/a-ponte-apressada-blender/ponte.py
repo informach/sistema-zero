@@ -14,7 +14,8 @@ acabamento da Ilha do Farol.
 - Laguinho (`laguinho.svg`): a água rasa com a borda de areia e a espuma, chato no chão.
 
 Convenções da Ilha (`../ilha-do-farol-blender/lib_ilha.py`): z para cima, frente em -Y (vira +Z,
-o lado da câmera, no three.js). A ponte atravessa no eixo x do jogo (a margem fica em x mínimo).
+o lado da câmera, no three.js). A ponte atravessa no eixo x do jogo: a margem fica no x maior e o
+tabuleiro vai para -x (da margem da direita do laguinho até a pedra).
 Cores: as do desenho 2D.
 """
 import os, sys, math
@@ -62,21 +63,23 @@ def _rot_y(o, ang, pivo):
 L = 2.0            # comprimento do tabuleiro
 LARG = 0.9         # largura
 Z_TAB = 0.2        # altura do tabuleiro deitado
-LEVANTA = R(-78)   # a pose em pé (o tabuleiro sobe girando em y)
+# A ponte sai da margem e vai para -x (no jogo, da margem da direita do laguinho até a pedra).
+S = -1
+LEVANTA = S * R(-78)   # a pose em pé (o tabuleiro sobe girando em y)
 
 
 def ponte_levadica():
     reset()
     fixa = []
     # A tábua fixa de entrada, na margem (é a área de toque).
-    fixa.append(box((0.62, LARG + 0.1, 0.1), (-0.33, 0, Z_TAB - 0.02), 'p/madeiraEscura', bevel=0.02))
+    fixa.append(box((0.62, LARG + 0.1, 0.1), (S * -0.33, 0, Z_TAB - 0.02), 'p/madeiraEscura', bevel=0.02))
     for k in range(3):
-        fixa.append(box((0.16, LARG, 0.03), (-0.52 + k * 0.19, 0, Z_TAB + 0.04), 'p/madeira', bevel=0.008))
+        fixa.append(box((0.16, LARG, 0.03), (S * (-0.52 + k * 0.19), 0, Z_TAB + 0.04), 'p/madeira', bevel=0.008))
     # Os dois postes da margem, com a travessa e a roldana.
     for sy in (-1, 1):
-        fixa.append(box((0.14, 0.14, 1.45), (-0.08, sy * (LARG / 2 + 0.1), 0.72), 'p/madeiraEscura', bevel=0.025))
-        fixa.append(box((0.18, 0.18, 0.08), (-0.08, sy * (LARG / 2 + 0.1), 1.46), 'p/madeiraFunda', bevel=0.02))
-    fixa.append(box((0.12, LARG + 0.36, 0.12), (-0.08, 0, 1.36), 'p/madeiraFunda', bevel=0.02))
+        fixa.append(box((0.14, 0.14, 1.45), (S * -0.08, sy * (LARG / 2 + 0.1), 0.72), 'p/madeiraEscura', bevel=0.025))
+        fixa.append(box((0.18, 0.18, 0.08), (S * -0.08, sy * (LARG / 2 + 0.1), 1.46), 'p/madeiraFunda', bevel=0.02))
+    fixa.append(box((0.12, LARG + 0.36, 0.12), (S * -0.08, 0, 1.36), 'p/madeiraFunda', bevel=0.02))
     for sy in (-1, 1):
         fixa.append(cyl(0.1, 0.05, (0.0, sy * 0.3, 1.36), 'p/ferro', verts=16, rot=(R(90), 0, 0)))
     base = join(fixa, 'margem')
@@ -84,8 +87,8 @@ def ponte_levadica():
     # Os postinhos do outro lado (onde o tabuleiro pousa): sem caixa, como o tabuleiro.
     outro = []
     for sy in (-1, 1):
-        outro.append(box((0.12, 0.12, 0.5), (L + 0.08, sy * (LARG / 2 + 0.06), 0.2), 'p/madeiraEscura', bevel=0.02))
-    outro.append(box((0.16, LARG + 0.2, 0.08), (L + 0.08, 0, Z_TAB - 0.04), 'p/madeiraFunda', bevel=0.015))
+        outro.append(box((0.12, 0.12, 0.5), (S * (L + 0.08), sy * (LARG / 2 + 0.06), 0.2), 'p/madeiraEscura', bevel=0.02))
+    outro.append(box((0.16, LARG + 0.2, 0.08), (S * (L + 0.08), 0, Z_TAB - 0.04), 'p/madeiraFunda', bevel=0.015))
     pouso = join(outro, 'pouso')
     pouso['szSemCaixa'] = True
 
@@ -94,14 +97,14 @@ def ponte_levadica():
     n = 9
     passo = L / n
     for k in range(n):
-        tab.append(box((passo - 0.03, LARG, 0.06), (passo * (k + 0.5), 0, 0.0), 'p/madeira' if k % 2 else 'p/madeiraClara', bevel=0.01))
+        tab.append(box((passo - 0.03, LARG, 0.06), (S * passo * (k + 0.5), 0, 0.0), 'p/madeira' if k % 2 else 'p/madeiraClara', bevel=0.01))
     for sy in (-1, 1):
-        tab.append(box((L, 0.08, 0.06), (L / 2, sy * (LARG / 2 - 0.08), -0.05), 'p/madeiraEscura', bevel=0.01))
-        tab.append(box((L - 0.1, 0.04, 0.04), (L / 2 + 0.03, sy * (LARG / 2 - 0.01), 0.17), 'p/madeiraEscura', bevel=0.008))
+        tab.append(box((L, 0.08, 0.06), (S * L / 2, sy * (LARG / 2 - 0.08), -0.05), 'p/madeiraEscura', bevel=0.01))
+        tab.append(box((L - 0.1, 0.04, 0.04), (S * (L / 2 + 0.03), sy * (LARG / 2 - 0.01), 0.17), 'p/madeiraEscura', bevel=0.008))
         for x in (0.25, L / 2, L - 0.2):
-            tab.append(box((0.04, 0.04, 0.16), (x, sy * (LARG / 2 - 0.01), 0.08), 'p/madeiraEscura', bevel=0.006))
+            tab.append(box((0.04, 0.04, 0.16), (S * x, sy * (LARG / 2 - 0.01), 0.08), 'p/madeiraEscura', bevel=0.006))
     # O anel de ferro na ponta, por onde a corrente puxaria.
-    tab.append(box((0.06, LARG * 0.5, 0.05), (L - 0.06, 0, 0.05), 'p/ferro', bevel=0.01))
+    tab.append(box((0.06, LARG * 0.5, 0.05), (S * (L - 0.06), 0, 0.05), 'p/ferro', bevel=0.01))
     tabuleiro = join(tab, 'tabuleiro')
     tabuleiro['szSemCaixa'] = True
     tabuleiro.location = Vector((0.0, 0.0, Z_TAB))
@@ -111,12 +114,13 @@ def ponte_levadica():
     # `baixar` (24 qps, ~1,2 s): começa devagar, deita, quica um pouco e assenta.
     # `subir`: dá um tranco e levanta, passando um pouquinho e voltando.
     deita = -LEVANTA
+    k = S
     chaves = {
         'baixar': {tabuleiro: {'rotation_euler': [
-            (0, Euler((0, 0, 0))), (4, Euler((0, R(4), 0))), (20, Euler((0, deita + R(2), 0))),
-            (24, Euler((0, deita - R(3), 0))), (29, Euler((0, deita, 0)))]}},
+            (0, Euler((0, 0, 0))), (4, Euler((0, k * R(4), 0))), (20, Euler((0, deita + k * R(2), 0))),
+            (24, Euler((0, deita - k * R(3), 0))), (29, Euler((0, deita, 0)))]}},
         'subir': {tabuleiro: {'rotation_euler': [
-            (0, Euler((0, deita, 0))), (3, Euler((0, deita + R(1.5), 0))), (22, Euler((0, R(-3), 0))),
+            (0, Euler((0, deita, 0))), (3, Euler((0, deita + k * R(1.5), 0))), (22, Euler((0, k * R(-3), 0))),
             (28, Euler((0, 0, 0)))]}},
     }
     clipes(chaves, fps=24)

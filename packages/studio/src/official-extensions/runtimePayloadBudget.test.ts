@@ -104,11 +104,15 @@ const BUDGETS: readonly {
   // 29/10: os botões da vista no canto do "Mostrar a cena inteira" (aproximar, afastar, girar
   // para os dois lados e voltar ao começo), pedido dela: sem eles ninguém sabia que a rodinha e o
   // arrastar existiam. +2_105 / +714. Medido: 236_479; gzip 64_563 no Bun 1.4.4 Linux.
+  // 29/10: o "Fazer andar com as setas" respeita o "marcar … como sólido" (a pedra e os coqueiros
+  // da Ilha), deslizando junto do obstáculo, com uma caixa por pedaço do modelo (sem as peças
+  // szSemCaixa) e a pegada do personagem. +1_537 / +529. Medido: 238_016; gzip 65_092 no Bun
+  // 1.4.4 Linux.
   {
     extension: gameThreeDExtension,
-    maxChars: 236_550,
-    maxGzipBytes: 64_650,
-    maxGzipBytesWindows: 66_750,
+    maxChars: 238_050,
+    maxGzipBytes: 65_150,
+    maxGzipBytesWindows: 67_550,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -131,9 +135,12 @@ const BUDGETS: readonly {
     // gzip 54_371 no Bun 1.4.4 Linux; ~54_030 no Linux e ~56_120 no Windows do Bun 1.3.11.
     // 28/10, os modelos pendentes (ver acima): +173. Medido: 200_292.
     // 29/10, os botões da vista (ver acima): +2_105 / +684. Medido: 202_397; gzip 55_055.
-    maxChars: 202_450,
-    maxGzipBytes: 55_150,
-    maxGzipBytesWindows: 57_000,
+    // 29/10, o andar com as setas respeita os sólidos (ver acima): +1_175 / +408. Medido: 203_572;
+    // gzip 55_463.
+    // 29/10: o andar com as setas respeita o sólido (ver acima). Medido: 203_934; gzip 55_608.
+    maxChars: 203_950,
+    maxGzipBytes: 55_650,
+    maxGzipBytesWindows: 57_500,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO

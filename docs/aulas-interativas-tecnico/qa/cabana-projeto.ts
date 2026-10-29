@@ -222,8 +222,8 @@ const cabana=SZGame3D.createModelFile(cena,"cabana-do-faroleiro",${CABANA_3D_TAM
 SZGame3D.setPosition(cabana,${CABANA_3D[0]},${yCabana},${CABANA_3D[1]});
 ${n >= 1 ? 'let temEmblema=false;' : ''}`
   s = s.replace(
-    'SZGame3D.walkArea(personagem,-11,0.7,-5,5);',
-    `${preparo.trim()}\nSZGame3D.walkArea(personagem,-11,0.7,-5,5);`,
+    'SZGame3D.walkArea(personagem,-11,1,-5,5);',
+    `${preparo.trim()}\nSZGame3D.walkArea(personagem,-11,1,-5,5);`,
   )
   const regras = [
     n >= 1

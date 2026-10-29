@@ -3,6 +3,7 @@ import {
   executionObservationUnavailableReason,
   isSectionExecutionRule,
   judgeExecutionObservation,
+  MAX_WALKABLE_RECTS,
   type SectionExecutionRule,
 } from './project-execution'
 
@@ -133,6 +134,16 @@ test('3D navigation requires a bounded floor and preserves the global time budge
     walkable: [{ minX: -10, maxX: 10, minZ: -5, maxZ: 5 }],
   }
   expect(isSectionExecutionRule({ ...rule, steps: [step] })).toBe(true)
+  // O chão recortado em volta dos obstáculos sólidos cabe; acima do teto, não.
+  const pedaco = (i: number) => ({ minX: i, maxX: i + 1, minZ: 0, maxZ: 1 })
+  const recortado = Array.from({ length: MAX_WALKABLE_RECTS }, (_, i) => pedaco(i))
+  expect(isSectionExecutionRule({ ...rule, steps: [{ ...step, walkable: recortado }] })).toBe(true)
+  expect(
+    isSectionExecutionRule({
+      ...rule,
+      steps: [{ ...step, walkable: [...recortado, pedaco(MAX_WALKABLE_RECTS)] }],
+    }),
+  ).toBe(false)
   for (const walkable of [
     undefined,
     [],
