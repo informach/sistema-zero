@@ -55,6 +55,19 @@ describe.skipIf(!url)('medição no Postgres local e na rota real', () => {
     expect(adulto.galeria).toEqual({ quantidade: 5, pessoas: 5 })
     expect(adulto.desafiosAprovados.quantidade).toBe(0)
   })
+  test('fins de sessão: só as que contaram tempo, no intervalo pedido', async () => {
+    const repo = new DrizzleRepositorioDaMedicao(db.db)
+    const fins = await repo.finsDeSessao(
+      new Date('2026-10-01T00:00:00Z'),
+      new Date('2026-10-03T00:00:00Z'),
+    )
+    expect(fins.size).toBe(10)
+    expect(fins.has(idMedicao(11))).toBe(false)
+    expect(
+      (await repo.finsDeSessao(new Date('2026-10-02T00:00:00Z'), new Date('2026-10-03T00:00:00Z')))
+        .size,
+    ).toBe(0)
+  })
   test('fronteira de meia-noite em São Paulo, independente do dia UTC', async () => {
     const repo = new DrizzleRepositorioDaMedicao(db.db)
     const primeiro = await repo.agregar(
@@ -80,6 +93,13 @@ describe.skipIf(!url)('medição no Postgres local e na rota real', () => {
     expect(report.volta.coortes[1]?.dia1).toEqual({ situacao: 'poucos-dados', valor: null })
     expect(report.volta.coortes[2]?.diaSeguinte.situacao).toBe('aguardando')
     expect(report.desafiosAprovados.valor).toBe(5)
+    // Volta ao curso: 10 pessoas jogaram em 01/10, 5 concluíram aula depois (a sessão só
+    // aberta da pessoa 11 não conta).
+    expect(report.voltaAoCurso).toEqual({
+      diasDeJogo: { situacao: 'disponivel', valor: 10 },
+      diasComAula: { situacao: 'disponivel', valor: 5 },
+    })
+    expect(report.semFonte).not.toContain('curso-24h')
     expect(text).not.toContain('12345678-')
     expect(text).not.toContain('jogador')
     expect(text).not.toContain('ficticio')

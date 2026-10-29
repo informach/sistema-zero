@@ -80,7 +80,12 @@ export function createApplication(env: Env): Application {
     logger,
   })
   const app = createServer({
-    medicao: new ServicoDaMedicao(new DrizzleRepositorioDaMedicao(connection.db)),
+    medicao: new ServicoDaMedicao(
+      new DrizzleRepositorioDaMedicao(connection.db),
+      undefined,
+      leituras,
+      logger,
+    ),
     logger,
     servico,
     cartas,

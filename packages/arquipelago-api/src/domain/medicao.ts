@@ -22,8 +22,17 @@ export interface AgregadosDaMedicao {
   galeria: ContagemDaMedicao
   desafiosAprovados: ContagemDaMedicao
 }
+/** A volta ao curso somada na equipe; `pessoas` são as que jogaram em algum dia contado. */
+export interface VoltaAoCursoDaMedicao {
+  pessoas: number
+  pessoasComAula: number
+  diasDeJogo: number
+  diasComAula: number
+}
 export interface RepositorioDaMedicao {
   agregar(filtro: FiltroDaMedicao, hoje: string): Promise<AgregadosDaMedicao>
+  /** O fim de cada sessão que contou tempo entre `de` e `ate`, por pessoa. */
+  finsDeSessao(de: Date, ate: Date): Promise<Map<string, Date[]>>
 }
 
 const poucos: NumeroDaMedicao = { situacao: 'poucos-dados', valor: null }
@@ -56,11 +65,26 @@ export function protegerCoorte(
   }
 }
 
+/** Como a coorte: grupo pequeno, ou um complementar pequeno, esconde os dois números. */
+export function protegerVoltaAoCurso(
+  v: VoltaAoCursoDaMedicao,
+): NonNullable<RelatorioDaMedicao['voltaAoCurso']> {
+  const revelar =
+    v.pessoas >= GRUPO_MINIMO_DA_MEDICAO &&
+    !pequeno(v.pessoasComAula) &&
+    !pequeno(v.pessoas - v.pessoasComAula)
+  return {
+    diasDeJogo: revelar ? numero(v.diasDeJogo) : poucos,
+    diasComAula: revelar ? numero(v.diasComAula) : poucos,
+  }
+}
+
 export function montarMedicao(
   filtro: FiltroDaMedicao,
   dados: AgregadosDaMedicao,
   hoje: string,
   agora: Date,
+  volta: VoltaAoCursoDaMedicao | null = null,
 ): RelatorioDaMedicao {
   return {
     periodo: filtro,
@@ -75,11 +99,12 @@ export function montarMedicao(
       galeria: protegerContagem(dados.galeria),
     },
     desafiosAprovados: protegerContagem(dados.desafiosAprovados),
+    ...(volta ? { voltaAoCurso: protegerVoltaAoCurso(volta) } : {}),
     semFonte: [
       ...(filtro.publico === 'adulto' ? ['volta-adulto' as const] : []),
       'compras',
       'minijogos',
-      'curso-24h',
+      ...(volta ? [] : ['curso-24h' as const]),
       'conclusoes-curso',
     ],
   }

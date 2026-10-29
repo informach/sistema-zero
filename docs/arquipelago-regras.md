@@ -201,9 +201,14 @@ serviço em `arquipelago-api/src/application/servico-da-familia.ts` e regra pura
     (`lesson_completions.completed_at`). Aula só aberta não conta: concluir é o sinal de verdade.
     O serviço do jogo faz uma ida só para a família toda, do fim da primeira sessão até agora.
   - A aula precisa vir DEPOIS do fim da sessão (durante a sessão não conta) e até 24 horas.
-  - O cartão diz o fato, nunca a causa: "Concluiu aula do curso até 24 h depois de jogar em 2 dos
-    4 dias em que jogou." (ou "nos 4 dias em que jogou", ou, num dia só, sem a conta). Sem nenhuma:
-    "Nenhuma aula do curso concluída até 24 h depois de jogar."
+  - O cartão diz o fato, nunca a causa. Desde 29/10/2026 a semana aparece em ladrilhos: o da volta
+    ao curso mostra "2 de 4" com "dias de jogo com aula concluída depois" e "aula do curso, até
+    24 h depois de jogar".
+  - **A Medição da equipe usa a mesma conta** (a mesma regra e a mesma rota do Members, somadas):
+    "Dias de jogo" (cada criança em cada dia) e "Com aula concluída depois". Só entram sessões com
+    as 24 horas já passadas, e grupos com menos de 5 crianças viram "Poucos dados". As leituras
+    vão em lotes de 20 crianças e 9 dias; com leituras demais (mais de 200) ou com o Members fora,
+    o número não aparece e a lista "O que estes dados ainda não mostram" explica.
   - **Na dúvida, some:** Members não ligado ou fora do ar dá `voltaAoCurso: null` e a linha não
     aparece; sem tempo de jogo na janela também não. O campo é opcional no contrato para o serviço
     e o app subirem em qualquer ordem.

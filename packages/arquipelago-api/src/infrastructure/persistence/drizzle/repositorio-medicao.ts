@@ -1,12 +1,12 @@
 import type { FiltroDaMedicao } from '@sistemazero/arquipelago-contracts'
-import { sql } from 'drizzle-orm'
+import { and, between, gt, sql } from 'drizzle-orm'
 import type {
   AgregadosDaMedicao,
   ContagemDaMedicao,
   RepositorioDaMedicao,
 } from '../../../domain/medicao'
 import type { Database } from './db'
-import { desafiosConcluidos, salvamentos, tempoDiario } from './schema'
+import { desafiosConcluidos, salvamentos, sessoesDeTempo, tempoDiario } from './schema'
 
 /** Só agregados saem do banco. Uma fotografia consistente, sem ler tabelas da plataforma. */
 export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
@@ -76,5 +76,21 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
       },
       { isolationLevel: 'repeatable read', accessMode: 'read only' },
     )
+  }
+
+  /** O mesmo recorte do cartão dos pais: sessão que só abriu e não contou tempo não é jogar. */
+  async finsDeSessao(de: Date, ate: Date): Promise<Map<string, Date[]>> {
+    const linhas = await this.db
+      .select({ jogadorId: sessoesDeTempo.jogadorId, fim: sessoesDeTempo.cursor })
+      .from(sessoesDeTempo)
+      .where(
+        and(
+          between(sessoesDeTempo.cursor, de, ate),
+          gt(sessoesDeTempo.cursor, sessoesDeTempo.criadoEm),
+        ),
+      )
+    const fins = new Map<string, Date[]>()
+    for (const l of linhas) fins.set(l.jogadorId, [...(fins.get(l.jogadorId) ?? []), l.fim])
+    return fins
   }
 }

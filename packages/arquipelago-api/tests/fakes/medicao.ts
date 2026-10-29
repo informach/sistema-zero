@@ -12,6 +12,7 @@ import {
   desafios,
   desafiosConcluidos,
   salvamentos,
+  sessoesDeTempo,
   tempoDiario,
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { createServer } from '../../src/interfaces/http/server'
@@ -31,7 +32,7 @@ export function validarBancoMedicao(url: string): void {
 }
 /** Dados fictícios exclusivamente no banco descartável validado pelo chamador. */
 export async function semearMedicao(db: DbConnection) {
-  await db.sql`TRUNCATE arquipelago.tempo_diario, arquipelago.salvamentos, arquipelago.desafios CASCADE`
+  await db.sql`TRUNCATE arquipelago.tempo_diario, arquipelago.sessoes_de_tempo, arquipelago.salvamentos, arquipelago.desafios CASCADE`
   for (let i = 1; i <= 10; i++) {
     const dias = ['2026-10-01', ...(i <= 5 ? ['2026-10-02', '2026-10-07'] : [])]
     for (const dia of dias)
@@ -53,6 +54,19 @@ export async function semearMedicao(db: DbConnection) {
     { jogadorId: idMedicao(31), dia: '2026-10-27', segundos: 60, atualizadoEm: AGORA_MEDICAO },
     { jogadorId: idMedicao(32), dia: '2026-10-01', segundos: 0, atualizadoEm: AGORA_MEDICAO },
   ])
+  // Dez pessoas jogaram em 01/10 (sessão que contou tempo); uma sessão só aberta não conta.
+  for (let i = 1; i <= 11; i++)
+    await db.db.insert(sessoesDeTempo).values({
+      jogadorId: idMedicao(i),
+      sessaoId: idMedicao(500 + i),
+      cursor: new Date(i === 11 ? '2026-10-01T15:00:00Z' : '2026-10-01T16:00:00Z'),
+      vencimento: new Date('2026-10-01T16:00:20Z'),
+      estado: 'encerrada',
+      ultimaSequencia: 3,
+      ultimaAcao: 'pausar',
+      criadoEm: new Date('2026-10-01T15:00:00Z'),
+      atualizadoEm: new Date('2026-10-01T16:00:00Z'),
+    })
   for (const publico of ['kids', 'adulto'] as const) {
     for (let i = 1; i <= 5; i++) {
       const dados = criarSalvamentoInicial(AGORA_MEDICAO)
@@ -101,6 +115,17 @@ export async function semearMedicao(db: DbConnection) {
       moedasExtraSituacao: 'creditado',
     })
 }
+/** Members de mentira: as pessoas 1 a 5 concluíram aula duas horas depois de jogar em 01/10. */
+export const aulasDaMedicao = {
+  ligadas: () => true,
+  async aulasConcluidas(usuarios: readonly string[]) {
+    return new Map(
+      usuarios
+        .filter((u) => Number(u.slice(-12)) <= 5)
+        .map((u) => [u, [new Date('2026-10-01T18:00:00Z')]]),
+    )
+  },
+}
 export function servidorMedicao(db: DbConnection) {
   const politica = {
     modo: 'aberto' as const,
@@ -120,7 +145,11 @@ export function servidorMedicao(db: DbConnection) {
       new ConferenciaDoMapa(null, logger),
     ),
     desafios: desafiosDesligados(politica),
-    medicao: new ServicoDaMedicao(new DrizzleRepositorioDaMedicao(db.db), () => AGORA_MEDICAO),
+    medicao: new ServicoDaMedicao(
+      new DrizzleRepositorioDaMedicao(db.db),
+      () => AGORA_MEDICAO,
+      aulasDaMedicao,
+    ),
     cliente: { dir: '/nao-existe', servirMapas: false },
     tokenInterno: TOKEN_MEDICAO,
     readiness: async () => {},

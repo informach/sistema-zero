@@ -15,9 +15,16 @@ Não há histórico de tempo equivalente para adultos: não inferir jogo pela da
 
 As aparências são uma fotografia atual dos projetos azuis ganhos no período, agrupadas pela
 origem; não são compras nem eventos datados de criação. Aprovações são primeiras conclusões de
-desafios do Estúdio, sem presumir que todos sejam minijogos. Cursos exigem uma fonte interna
-agregável do Members; não chamar a linha do tempo pessoal do Admin em um laço por jogador.
-O cartão dos pais está em outra frente, e o resumo semanal dele não equivale ao retorno em 24 h.
+desafios do Estúdio, sem presumir que todos sejam minijogos. Não chamar a linha do tempo pessoal
+do Admin em um laço por jogador.
+
+**Volta ao curso na Medição (29/10/2026):** a MESMA regra (`diasDeVoltaAoCurso`) e a MESMA rota do
+Members (`aulasConcluidas`) do cartão dos pais, somadas na equipe, para os números nunca
+discordarem. `finsDeSessao` lê o fim das sessões que contaram tempo; só entram as do período cujas
+24 h já passaram. As leituras vão em blocos de 8 dias de sessão (aulas até 24 h depois, dentro
+dos 9 dias da rota) e 20 pessoas, 4 por vez, até `PEDIDOS_DA_VOLTA_MAXIMO` (200). Sem Members, com
+ele fora ou acima do teto: sem `voltaAoCurso`, e `curso-24h` fica em `semFonte`. Proteção como a
+coorte (`protegerVoltaAoCurso`). Só Kids.
 
 Testes: `tests/unit/medicao.test.ts`, `tests/db/medicao.test.ts` (rota real e Postgres).
 `ARQUIPELAGO_MEDICAO_TEST_DATABASE_URL` precisa apontar para localhost e um banco descartável

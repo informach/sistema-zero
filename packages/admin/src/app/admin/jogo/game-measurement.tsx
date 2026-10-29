@@ -21,7 +21,7 @@ const semFonte: Record<RelatorioDaMedicao['semFonte'][number], string> = {
   minijogos:
     'Minijogos aprovados: os desafios ainda não têm uma classificação que identifique quais são minijogos.',
   'curso-24h':
-    'Volta ao curso em 24 horas: depende da fonte de atividade de cursos do Members integrada ao histórico do jogo.',
+    'Volta ao curso em 24 horas: a leitura das aulas concluídas no Members não respondeu agora, ou o período pediria leituras demais.',
   'conclusoes-curso':
     'Conclusões antes e depois de jogar: falta uma fonte integrada com as datas de conclusão e de entrada no jogo.',
 }
@@ -242,6 +242,34 @@ export function GameMeasurement({
               </>
             )}
           </div>
+          {report.voltaAoCurso && (
+            <div className="min-w-0 space-y-3 rounded-xl border border-border bg-card p-3 sm:p-5">
+              <h3 className="font-semibold">Volta ao curso depois de jogar</h3>
+              <p className="text-sm text-muted-foreground">
+                Dias de jogo (cada pessoa em cada dia) e, deles, os que tiveram aula do curso
+                concluída até 24 horas depois do fim de uma sessão. É a mesma conta do cartão dos
+                pais e diz o que aconteceu, não que o jogo foi a causa. Só entram sessões com as 24
+                horas já passadas.
+              </p>
+              <dl className="grid grid-cols-2 gap-3">
+                {(
+                  [
+                    ['Dias de jogo', report.voltaAoCurso.diasDeJogo],
+                    ['Com aula concluída depois', report.voltaAoCurso.diasComAula],
+                  ] as const
+                ).map(([titulo, numero]) => (
+                  <div key={titulo} className="min-w-0 rounded-lg bg-muted/40 p-3">
+                    <dt className="text-sm text-muted-foreground">{titulo}</dt>
+                    <dd
+                      className={`mt-1 font-semibold tabular-nums ${numero.situacao === 'disponivel' ? 'text-2xl' : 'text-lg text-muted-foreground'}`}
+                    >
+                      {measurementNumber(numero)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
           <aside
             className="space-y-2 rounded-xl border border-border bg-muted/30 p-4"
             aria-label="Limites das fontes"
