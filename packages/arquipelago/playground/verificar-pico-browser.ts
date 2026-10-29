@@ -1,5 +1,6 @@
 /**
- * Pico Gelado real no playground (fase3-06, com a subida, o trenó e o cristal da fase3-07).
+ * Pico Gelado real no playground (fase3-06, com a subida, o trenó e o cristal da fase3-07, e o
+ * iglu por dentro, a banda e o festival de inverno da fase3-08).
  * Executar no pacote:
  * bun build playground/verificar-pico-browser.ts --target=node --external playwright-core --outfile .cache/verificar-pico-browser.mjs
  * node .cache/verificar-pico-browser.mjs
@@ -177,8 +178,19 @@ try {
     await page.screenshot({ path: path.join(prints, `pico-${tipo}-floco.png`) })
     await conversa.getByRole('button', { name: 'Continuar' }).click()
     await conversa
-      .getByText('Ainda falta gente para a banda tocar no festival de inverno.')
+      .getByText(
+        'Os pinguins da banda perderam os instrumentos na neve, e sem eles não tem festival de inverno.',
+      )
       .waitFor()
+    // As dicas de onde ficou cada instrumento (fase3-08), uma por fala, até o Tchau.
+    for (const dica of [
+      'O xilofone ficou dentro do iglu.',
+      'O violão ficou perto do lago congelado.',
+      'A bateria ficou lá no alto da montanha, no platô do cume.',
+    ]) {
+      await conversa.getByRole('button', { name: 'Continuar' }).click()
+      await conversa.getByText(dica).waitFor()
+    }
     await conversa.getByRole('button', { name: 'Tchau, Floco' }).click()
     await conversa.waitFor({ state: 'detached' })
     console.log(`${tipo}: conversa abriu, avançou e fechou`)
@@ -282,6 +294,75 @@ try {
       .filter({ hasText: 'Pegar o cristal' })
       .waitFor({ state: 'detached' })
     console.log(`${tipo}: pegou o cristal raro`)
+
+    // A banda do festival de inverno (fase3-08). Um ponto a `d` de um lugar, na direção de outro.
+    const perto = (lugar: P, rumoA: P, d: number): P => {
+      const n = Math.hypot(rumoA.x - lugar.x, rumoA.z - lugar.z) || 1
+      return {
+        x: lugar.x + ((rumoA.x - lugar.x) / n) * d,
+        y: lugar.y,
+        z: lugar.z + ((rumoA.z - lugar.z) / n) * d,
+      }
+    }
+    const levarAoPalco = async (id: string, rotulo: string, fala: string) => {
+      await page.locator('.arq-acao').filter({ hasText: rotulo }).waitFor()
+      await usar()
+      await page.getByText(fala).first().waitFor({ timeout: 20_000 })
+      console.log(`${tipo}: levou ${id} ao palco`)
+    }
+    // O iglu por dentro: a criança de pé lá dentro, o xilofone perdido e o fogareiro.
+    const dentro = mundo(local('iglu-dentro'))
+    await dePe(dentro, rumo(dentro, mundo(local('fogareiro'))), 'dentro do iglu')
+    const xilofone = mundo(local('instrumento-xilofone'))
+    const juntoDoXilofone = perto(xilofone, dentro, 0.75)
+    await dePe(juntoDoXilofone, rumo(juntoDoXilofone, xilofone), 'junto do xilofone')
+    await page.waitForTimeout(2500)
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-iglu.png`) })
+    await levarAoPalco('o xilofone', 'Levar o xilofone ao palco', 'O xilofone voltou para o palco.')
+    const fogareiro = mundo(local('fogareiro'))
+    const juntoDoFogo = perto(fogareiro, dentro, 1.0)
+    await dePe(juntoDoFogo, rumo(juntoDoFogo, fogareiro), 'junto do fogareiro')
+    await page.locator('.arq-acao').filter({ hasText: 'Fazer chocolate quente' }).waitFor()
+    await usar()
+    await page
+      .getByText('Para o chocolate quente, traga 1 cacau e 1 leite.')
+      .first()
+      .waitFor({ timeout: 20_000 })
+    console.log(`${tipo}: o fogareiro pediu o cacau e o leite`)
+    // O violão na beira do lago congelado e a bateria no platô do cume.
+    const violao = mundo(local('instrumento-violao'))
+    const juntoDoViolao = perto(violao, mundo({ x: 0, y: violao.y, z: 0 }), 1.0)
+    await dePe(juntoDoViolao, rumo(juntoDoViolao, violao), 'junto do violão')
+    await levarAoPalco('o violão', 'Levar o violão ao palco', 'O violão voltou para o palco.')
+    const bateria = mundo(local('instrumento-bateria'))
+    const juntoDaBateria = perto(bateria, mundo(local('cume')), 0.85)
+    await dePe(juntoDaBateria, rumo(juntoDaBateria, bateria), 'junto da bateria')
+    await levarAoPalco('a bateria', 'Levar a bateria ao palco', 'o festival de inverno começou')
+    await page.waitForFunction(
+      () => {
+        const bruto = localStorage.getItem('arquipelago-playground')
+        const g = bruto
+          ? (JSON.parse(bruto) as { salvamento?: { pico?: { banda: number } } })
+          : null
+        return g?.salvamento?.pico?.banda === 7
+      },
+      undefined,
+      { timeout: 30_000 },
+    )
+    // O festival no palco: os três pinguins tocando e o Floco falando dele.
+    await dePe(encontro, rumo(encontro, palco), 'na frente do palco, no festival', 0.3)
+    await page.waitForTimeout(3000)
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-festival.png`) })
+    await page.locator('.arq-acao').filter({ hasText: 'Conversar com o Floco' }).waitFor()
+    await usar()
+    const festa = page.getByRole('dialog', { name: 'Floco' })
+    await festa
+      .getByText('A banda voltou a tocar. É o festival de inverno do Pico Gelado.')
+      .waitFor()
+    await festa.getByRole('button', { name: 'Continuar' }).click()
+    await festa.getByRole('button', { name: 'Tchau, Floco' }).click()
+    await festa.waitFor({ state: 'detached' })
+    console.log(`${tipo}: festival de inverno no palco, guardado no salvamento`)
 
     // Afastar solta a ilha; voltar monta de novo e o palco segura o Floco.
     await levar({ x: 0, y: 1, z: 20 }, 0)

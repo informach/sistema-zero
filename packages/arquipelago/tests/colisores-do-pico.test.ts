@@ -1,13 +1,17 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import type { Mesh, Object3D } from 'three'
+import { ALCANCE_DO_BANCO, bancosDosColisores, pontoDoBanco } from '../src/mundo/bancos-da-vila'
 import {
   type ColisorDaIlha,
   lerColisores,
   pecaDoColisor,
   soParaOCorpo,
 } from '../src/mundo/colisores-da-ilha'
+import { maisPerto, type RegistroDeInterativos } from '../src/mundo/interativos'
 import { GRAVIDADE } from '../src/mundo/medidas'
+import { BANDA } from '../src/sistemas/banda'
 import { alcanceDoPulo, beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
+import { lugarNoBanco } from '../src/sistemas/descanso'
 import {
   arquivoDaIlha,
   carregarGlb,
@@ -52,8 +56,11 @@ describe('os nós col-* do Pico', () => {
     const nos = doc.nodes.filter((n) => n.name?.startsWith('col-'))
     const quantos = (g: string) => nos.filter((n) => grupo(n.name ?? '') === g).length
     expect(quantos('col-terreno')).toBe(1)
-    expect(quantos('col-cil-iglu')).toBe(1)
-    expect(quantos('col-tunel-iglu')).toBe(1)
+    // O iglu oco (fase3-08): o anel da parede menos a porta, os dois lados do vestíbulo, o fogareiro
+    // e os dois bancos de gelo.
+    expect(quantos('col-parede-iglu')).toBe(21)
+    expect(quantos('col-cil-fogareiro')).toBe(1)
+    expect(quantos('col-banco')).toBe(2)
     expect(quantos('col-cil-palco')).toBe(1)
     expect(quantos('col-degrau-palco')).toBe(2)
     expect(quantos('col-parede-gelo')).toBe(3)
@@ -100,7 +107,7 @@ describe('os nós col-* do Pico', () => {
     expect(soParaOCorpo('col-guarda-trilha-1')).toBe(true)
     expect(soParaOCorpo('col-cil-poste-trilha-1')).toBe(true)
     expect(soParaOCorpo('col-cil-poste-lampiao-1')).toBe(true)
-    expect(soParaOCorpo('col-cil-iglu-1')).toBe(false)
+    expect(soParaOCorpo('col-parede-iglu-1')).toBe(false)
     // Na caverna, as paredes e o teto seguram a câmera; o poste da placa, não.
     expect(soParaOCorpo('col-caverna-parede-1')).toBe(false)
     expect(soParaOCorpo('col-cil-caverna-teto-1')).toBe(false)
@@ -316,5 +323,141 @@ describe('a caverna de cristal (fase3-07)', () => {
     const cristal = ancora('cristal-raro')
     const laje = colunas[colunas.length - 1]
     expect(Math.abs(cristal.y - topoDaForma(laje as Forma))).toBeLessThan(0.05)
+  })
+})
+
+describe('o iglu por dentro e a banda (fase3-08)', () => {
+  let grade: ReturnType<typeof gradeDeAndar>
+  let andou: Set<number>
+  beforeAll(() => {
+    grade = gradeDeAndar(terreno, formas)
+    const chegada = ancora('chegada')
+    andou = grade.alcance(chegada.x, chegada.z)
+  }, 120_000)
+
+  test('da chegada, a criança entra no iglu pela porta e fica de pé lá dentro', () => {
+    const porta = ancora('iglu')
+    const dentro = ancora('iglu-dentro')
+    expect(grade.chegaPerto(andou, porta.x, porta.z, 0.5)).toBe(true)
+    expect(grade.chegaPerto(andou, dentro.x, dentro.z, 0.5)).toBe(true)
+    expect(Math.abs((grade.chaoEm(dentro.x, dentro.z) ?? 0) - TAMPO)).toBeLessThan(0.15)
+  })
+
+  test('em nenhum lugar onde se anda lá dentro a cabeça passa da cúpula nem do arco da porta', () => {
+    // A cúpula de dentro (arte/ilhas-b/pico.py, IGLU): raio 2,6 e 2,455 de altura no meio. A porta:
+    // meia-largura 0,75, lados retos até 1,45 e o arco em cima.
+    const dentro = ancora('iglu-dentro')
+    const porta = ancora('iglu')
+    const fx = porta.x - dentro.x
+    const fz = porta.z - dentro.z
+    const n = Math.hypot(fx, fz)
+    const raio = 2.6
+    const alto = 2.455
+    // O alto da cápsula sobe até `doCentroAoPe * 2` acima do pé, mais a folga do controlador.
+    const cabeca = CORPO.doCentroAoPe * 2 + CORPO.folga
+    let celulas = 0
+    for (const i of andou) {
+      const c = grade.centro(i)
+      const dx = c.x - dentro.x
+      const dz = c.z - dentro.z
+      const d = Math.hypot(dx, dz)
+      if (d > raio + 1.5) continue
+      const frente = (dx * fx + dz * fz) / n
+      const lado = (dx * fz - dz * fx) / n
+      if (d < raio - 0.05) celulas++
+      // A cúpula de dentro e, no corredor da porta, o arco: onde a cúpula fica abaixo dele, o vão
+      // da porta a cortou, e o teto é o arco.
+      const cupula = d < raio ? alto * Math.sqrt(1 - (d / raio) ** 2) : Number.POSITIVE_INFINITY
+      const arco = Math.abs(lado) < 0.75 && frente > 0 ? 1.45 + Math.sqrt(0.75 ** 2 - lado ** 2) : 0
+      const teto = Math.max(cupula, arco)
+      expect(teto, `em ${d.toFixed(2)}`).toBeGreaterThan(cabeca)
+    }
+    // Lá dentro dá para andar, não só a porta: uns 4,5 m² livres entre o fogareiro e os bancos
+    // (72 células de 25 cm em 29/10/2026).
+    expect(celulas).toBeGreaterThan(60)
+  })
+
+  test('os dois bancos de gelo olham para o meio do iglu, e quem senta fica num lugar livre', () => {
+    const dentro = ancora('iglu-dentro')
+    const bancos = bancosDosColisores(lerColisores(raiz), { x: 0, y: 0, z: 0 })
+    expect(bancos).toHaveLength(2)
+    for (const b of bancos) {
+      const dx = dentro.x - b.centro.x
+      const dz = dentro.z - b.centro.z
+      const n = Math.hypot(dx, dz)
+      // A frente do banco aponta para o meio (o cosseno entre as duas direções perto de 1).
+      expect((Math.sin(b.frente) * dx + Math.cos(b.frente) * dz) / n, b.id).toBeGreaterThan(0.95)
+      const lugar = lugarNoBanco(b.id, b.centro, b.frente)
+      expect(grade.chegaPerto(andou, lugar.corpo.x, lugar.corpo.z, 0.3), b.id).toBe(true)
+    }
+  })
+
+  test('o fogareiro e o xilofone perdido ficam ao alcance de quem está dentro', () => {
+    for (const nome of ['fogareiro', 'instrumento-xilofone']) {
+      const p = ancora(nome)
+      expect(grade.chegaPerto(andou, p.x, p.z, 1.6), nome).toBe(true)
+    }
+  })
+
+  test('de pé junto do xilofone, do fogareiro ou de um banco, o botão é o daquele', () => {
+    // Os interativos de lá de dentro, nos lugares e alcances do jogo (o banco pela frente dele).
+    const registro: RegistroDeInterativos = new Map()
+    const por = (id: string, p: { x: number; z: number }, raio: number) =>
+      registro.set(id, { ...p, raio, rotulo: () => id, agir: () => {} })
+    por('xilofone', ancora('instrumento-xilofone'), BANDA.alcance)
+    por('fogareiro', ancora('fogareiro'), BANDA.alcanceDoFogareiro)
+    for (const b of bancosDosColisores(lerColisores(raiz), { x: 0, y: 0, z: 0 }))
+      por(b.id, pontoDoBanco(b.centro, b.frente), ALCANCE_DO_BANCO)
+    expect(registro.size).toBe(4)
+    const dentro = ancora('iglu-dentro')
+    const livres = [...andou]
+      .map((i) => grade.centro(i))
+      .filter((c) => Math.hypot(c.x - dentro.x, c.z - dentro.z) < 2.6)
+    for (const [id, it] of registro) {
+      // Chegando de frente (do meio do iglu, a até 20 cm da linha reta até ele), do lugar livre
+      // mais perto (encostada no fogareiro, na frente do banco) até 20 cm além, o botão é o dele,
+      // não o do lado.
+      const d = (c: { x: number; z: number }) => Math.hypot(c.x - it.x, c.z - it.z)
+      const meio = Math.hypot(dentro.x - it.x, dentro.z - it.z)
+      const ux = (dentro.x - it.x) / meio
+      const uz = (dentro.z - it.z) / meio
+      const deFrente = livres.filter(
+        (c) =>
+          (c.x - it.x) * ux + (c.z - it.z) * uz > 0 &&
+          Math.abs((c.x - it.x) * uz - (c.z - it.z) * ux) <= 0.2,
+      )
+      // O colisor do xilofone vem do jogo: o corpo encosta nele a meia profundidade (0,26) mais o raio.
+      const encostada = Math.max(
+        Math.min(...deFrente.map(d)),
+        id === 'xilofone' ? 0.26 + CORPO.raio : 0,
+      )
+      // O corpo encosta a 0,81 m do meio do fogareiro (0,46 + 0,35); a grade é de 25 cm.
+      expect(encostada, id).toBeLessThan(1)
+      const chegando = deFrente.filter((c) => d(c) <= encostada + 0.2)
+      expect(chegando.length, id).toBeGreaterThan(0)
+      for (const c of chegando)
+        expect(maisPerto(registro, c.x, c.z)?.id, `${id} em ${c.x}, ${c.z}`).toBe(id)
+    }
+  })
+
+  test('o violão perdido fica no chão perto do lago, e a bateria no platô do cume', () => {
+    const violao = ancora('instrumento-violao')
+    expect(grade.chegaPerto(andou, violao.x, violao.z, 1.2)).toBe(true)
+    expect(Math.abs((grade.chaoEm(violao.x, violao.z) ?? 0) - TAMPO)).toBeLessThan(0.15)
+    const bateria = ancora('instrumento-bateria')
+    const cume = ancora('cume')
+    expect(Math.hypot(bateria.x - cume.x, bateria.z - cume.z)).toBeLessThan(2)
+    expect(Math.abs(bateria.y - cume.y)).toBeLessThan(0.1)
+    expect(grade.chegaPerto(andou, bateria.x, bateria.z, 1.4)).toBe(true)
+  })
+
+  test('cada instrumento e cada músico têm o seu lugar em cima do tablado do palco', () => {
+    const palco = ancora('palco')
+    for (const nome of ['xilofone', 'violao', 'bateria']) {
+      for (const p of [ancora(`banda-${nome}`), ancora(`musico-${nome}`)]) {
+        expect(Math.hypot(p.x - palco.x, p.z - palco.z)).toBeLessThan(2.2)
+        expect(Math.abs(p.y - palco.y)).toBeLessThan(0.02)
+      }
+    }
   })
 })

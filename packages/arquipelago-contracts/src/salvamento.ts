@@ -9,7 +9,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 13
+export const VERSAO_SALVAMENTO = 14
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -547,18 +547,50 @@ export type SalvamentoV13 = z.infer<typeof SalvamentoV13Schema>
 export function migrarDaV12(v12: SalvamentoV12): SalvamentoV13 {
   return { ...v12, versao: 13, recife: { ...v12.recife, corais: 0 } }
 }
-export const SalvamentoSchema = z.union([
+const SalvamentoAteV13Schema = z.union([
   SalvamentoV13Schema,
   SalvamentoAteV12Schema.transform(migrarDaV12),
 ])
-export type Salvamento = SalvamentoV13
+
+/**
+ * Os instrumentos da banda do festival de inverno do Pico Gelado (fase3-08), um bit por
+ * instrumento de volta ao palco, na ordem xilofone, violão e bateria: o instrumento N voltou
+ * quando o bit N - 1 está ligado. Um número de 0 a 7 cabe nos 64 KB (19 bytes no pior caso).
+ */
+export const INSTRUMENTOS_DA_BANDA = 3
+export const PicoSchema = z.strictObject({
+  banda: z
+    .number()
+    .int()
+    .min(0)
+    .max(2 ** INSTRUMENTOS_DA_BANDA - 1),
+})
+
+/** V14: a banda do Pico Gelado. */
+export const SalvamentoV14Schema = z
+  .strictObject({
+    ...SalvamentoV13Schema.shape,
+    versao: z.literal(14),
+    pico: PicoSchema,
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV14 = z.infer<typeof SalvamentoV14Schema>
+export function migrarDaV13(v13: SalvamentoV13): SalvamentoV14 {
+  return { ...v13, versao: 14, pico: { banda: 0 } }
+}
+export const SalvamentoSchema = z.union([
+  SalvamentoV14Schema,
+  SalvamentoAteV13Schema.transform(migrarDaV13),
+])
+export type Salvamento = SalvamentoV14
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 13,
+    versao: 14,
+    pico: { banda: 0 },
     vale: { pegadas: false, escavacao: 0, ninhos: [] },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     presenteDosBichosEntregue: false,

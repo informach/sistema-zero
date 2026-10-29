@@ -4,8 +4,13 @@ import { FALA_DE_SENTAR, lugarNoBanco } from '../sistemas/descanso'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import { useInterativo } from './interativos'
 
-/** De que distância do meio do banco aparece "Sentar no banco". */
+/** De que distância do lugar de sentar aparece "Sentar no banco". */
 export const ALCANCE_DO_BANCO = 1.5
+
+/** Onde o "Sentar no banco" fica: a 0,6 m da frente do banco (onde se para para sentar). */
+export function pontoDoBanco(centro: { x: number; z: number }, frente: number) {
+  return { x: centro.x + Math.sin(frente) * 0.6, z: centro.z + Math.cos(frente) * 0.6 }
+}
 
 export interface BancoNoMundo {
   id: string
@@ -70,9 +75,10 @@ function Banco({
 }) {
   const { loja, movimento } = useJogo()
   const lugar = useMemo(() => lugarNoBanco(id, centro, frente), [id, centro, frente])
+  const ponto = useMemo(() => pontoDoBanco(centro, frente), [centro, frente])
   useInterativo(id, {
-    x: centro.x + Math.sin(frente) * 0.6,
-    z: centro.z + Math.cos(frente) * 0.6,
+    x: ponto.x,
+    z: ponto.z,
     raio: ALCANCE_DO_BANCO,
     rotulo: () => 'Sentar no banco',
     agir: () => {

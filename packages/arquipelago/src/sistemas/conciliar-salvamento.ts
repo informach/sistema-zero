@@ -33,6 +33,7 @@ function economia(s: Salvamento) {
     percursos: _percursos,
     posicao: _posicao,
     vale: _vale,
+    pico: _pico,
     ...transacao
   } = s
   return transacao
@@ -82,6 +83,8 @@ export function conciliarSalvamento(
       escavacao: Math.max(local.vale.escavacao, remoto.vale.escavacao),
       ninhos: [...new Set([...remoto.vale.ninhos, ...local.vale.ninhos])],
     },
+    // Levar um instrumento ao palco também não gasta nada: os bits das duas sessões (fase3-08).
+    pico: { banda: local.pico.banda | remoto.pico.banda },
     posicao: mesmosDados(base.posicao, local.posicao) ? remoto.posicao : local.posicao,
   }
 }

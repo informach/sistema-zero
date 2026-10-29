@@ -3,6 +3,8 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { PERCURSO_DO_CUME, type PontosDoPercurso } from '../sistemas/percurso'
+import { BancosDaVila } from './bancos-da-vila'
+import { BandaDoPico } from './banda-do-pico'
 import { percursoNoMundo } from './bosque'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import { CristalDoPico } from './cristal-do-pico'
@@ -26,7 +28,7 @@ const CORES_DO_FLOCO: CoresDoColetavel = {
 /**
  * O Pico Gelado vivo (fase3-06): só existe com a ilha ativa. O Floco no palco, a subida ao cume
  * contra o relógio pela trilha em espiral, o trenó que desce por ela e o cristal raro da caverna
- * (fase3-07).
+ * (fase3-07); a banda do festival de inverno, o fogareiro e os bancos do iglu (fase3-08).
  */
 export function PicoVivo({
   ilha,
@@ -59,6 +61,8 @@ export function PicoVivo({
       </ComReserva>
       <TrenoDoPico modelo={preparada.modelo} meio={meio} giro={giro} />
       <CristalDoPico modelo={preparada.modelo} meio={meio} giro={giro} />
+      <BandaDoPico modelo={preparada.modelo} meio={meio} giro={giro} troca={troca} />
+      <BancosDaVila colisores={preparada.colisores} meio={meio} />
       {subida ? (
         <CorridaNaIlha
           ilhaId={ilha.id}

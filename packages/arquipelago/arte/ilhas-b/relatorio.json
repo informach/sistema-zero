@@ -270,6 +270,21 @@
   },
   "pico": {
     "ancoras": {
+      "banda-bateria": [
+        2.55,
+        1.47,
+        -8.25
+      ],
+      "banda-violao": [
+        3.78,
+        1.47,
+        -7.67
+      ],
+      "banda-xilofone": [
+        1.39,
+        1.47,
+        -7.53
+      ],
       "caverna-degrau-1": [
         -19.55,
         1.05,
@@ -345,10 +360,35 @@
         9.07,
         -0.3
       ],
-      "iglu": [
-        3.0,
+      "fogareiro": [
+        3.5,
         1.0,
-        4.3
+        8.95
+      ],
+      "iglu": [
+        3.07,
+        1.0,
+        2.91
+      ],
+      "iglu-dentro": [
+        3.4,
+        1.0,
+        7.6
+      ],
+      "instrumento-bateria": [
+        -4.63,
+        9.54,
+        -2.99
+      ],
+      "instrumento-violao": [
+        8.6,
+        1.0,
+        -4.5
+      ],
+      "instrumento-xilofone": [
+        4.76,
+        1.03,
+        8.45
       ],
       "lago-congelado": [
         8.0,
@@ -379,6 +419,21 @@
         3.4,
         1.0,
         -5.1
+      ],
+      "musico-bateria": [
+        2.53,
+        1.47,
+        -8.62
+      ],
+      "musico-violao": [
+        3.76,
+        1.47,
+        -8.08
+      ],
+      "musico-xilofone": [
+        1.36,
+        1.47,
+        -7.95
       ],
       "palco": [
         2.6,
@@ -568,6 +623,7 @@
     },
     "clipes": [],
     "colisores": {
+      "col-banco": 2,
       "col-bloco-de-gelo": 5,
       "col-caixa-de-som": 2,
       "col-caverna-boca": 3,
@@ -579,7 +635,7 @@
       "col-cil-caverna-cristal": 4,
       "col-cil-caverna-laje": 1,
       "col-cil-caverna-teto": 1,
-      "col-cil-iglu": 1,
+      "col-cil-fogareiro": 1,
       "col-cil-palco": 1,
       "col-cil-pinheiro": 12,
       "col-cil-poste-arco": 2,
@@ -593,21 +649,22 @@
       "col-degrau-palco": 2,
       "col-guarda-trilha": 29,
       "col-parede-gelo": 3,
+      "col-parede-iglu": 21,
       "col-terreno": 1,
       "col-topo-parede": 1,
-      "col-treno": 1,
-      "col-tunel-iglu": 1
+      "col-treno": 1
     },
-    "kb": 1108.0,
+    "kb": 1168.2,
     "nos": {
       "caverna": 6588,
       "caverna-joia": 208,
-      "cenario": 18687,
+      "cenario": 18621,
       "chao": 462,
       "montanha": 2234,
+      "telhado-iglu": 1766,
       "treno-desenho": 668
     },
-    "triangulos": 28847
+    "triangulos": 30547
   },
   "pico-caverna": {
     "ancoras": {

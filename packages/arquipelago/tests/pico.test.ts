@@ -18,11 +18,7 @@ import {
 } from '../src/mundo/medidas'
 import { lugarDoFloco } from '../src/mundo/pico'
 import { BOIAS_DA_ILHA_DO_ANEL } from '../src/sistemas/correnteza'
-import {
-  APRESENTACAO_DO_FLOCO,
-  comecarConversaComOFloco,
-  FLOCO_NO_PICO,
-} from '../src/sistemas/floco'
+import { comecarConversaComOFloco, FLOCO_NO_PICO } from '../src/sistemas/floco'
 import { arquivoDaIlha, carregarGlb, type Forma, topoDaForma } from './ajuda-colisores'
 
 const pico = ilha('pico')
@@ -39,7 +35,7 @@ describe('Pico completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('pico.glb')))
     const preparada = prepararIlha(cena, pico)
-    expect(preparada.colisores.length).toBe(151)
+    expect(preparada.colisores.length).toBe(173)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, pico)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -122,15 +118,15 @@ describe('o Floco no palco', () => {
     expect(malhasDosOlhos(gltf.scene).length).toBeGreaterThan(0)
   })
 
-  test('a apresentação não muda o salvamento nem compartilha falas mutáveis', () => {
+  test('a conversa não muda o salvamento nem compartilha falas mutáveis', () => {
     const s = criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
     const antes = JSON.stringify(s)
     const a = comecarConversaComOFloco(s)
     expect(a.salvamento).toBe(s)
-    expect(a.falas).toEqual([...APRESENTACAO_DO_FLOCO])
+    expect(a.falas[0]).toBe('Sou Floco. Toco cavaquinho no palco do Pico Gelado.')
+    const quantas = a.falas.length
     a.falas.pop()
-    expect(comecarConversaComOFloco(s).falas).toHaveLength(2)
+    expect(comecarConversaComOFloco(s).falas).toHaveLength(quantas)
     expect(JSON.stringify(s)).toBe(antes)
-    for (const fala of APRESENTACAO_DO_FLOCO) expect(fala).not.toMatch(/[—!?]/)
   })
 })

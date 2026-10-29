@@ -19,7 +19,9 @@ RAIZ = os.path.abspath(os.path.join(AQUI, '..', '..', '..', '..'))
 SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol', 'pico_caverna', 'nuvens_constelacoes']
 ILHA = ('chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4')
 ESPERADO = {
-    'pico': {'nos': ('chao', 'montanha', 'cenario'), 'ancoras': ILHA + ('palco', 'iglu', 'cume', 'parede-de-gelo')},
+    'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu'),
+             'ancoras': ILHA + ('palco', 'iglu', 'cume', 'parede-de-gelo', 'iglu-dentro', 'fogareiro')
+             + tuple(f'{p}-{i}' for p in ('instrumento', 'banda', 'musico') for i in ('xilofone', 'violao', 'bateria'))},
     'pico-props': {'nos': ('pinheiro-nevado-a', 'pinheiro-nevado-b', 'bloco-de-gelo', 'boneco-de-neve', 'painel-de-gelo')},
     'pico-treno': {'nos': ('treno',)},
     'vale-dos-dinos': {'nos': ('chao', 'vulcao', 'lava', 'cenario'),

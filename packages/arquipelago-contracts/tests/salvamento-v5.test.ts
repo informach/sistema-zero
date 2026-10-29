@@ -11,6 +11,7 @@ import {
   migrarDaV10,
   migrarDaV11,
   migrarDaV12,
+  migrarDaV13,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   SalvamentoV1Schema,
@@ -30,6 +31,7 @@ function antiga() {
     rotinas: _r,
     recife: _recife,
     vale: _vale,
+    pico: _pico,
     ...base
   } = criarSalvamentoInicial(AGORA)
   return SalvamentoV4Schema.parse({
@@ -50,9 +52,11 @@ test('V4 migra sem alterar progresso e sem presumir entrega do presente', () => 
   const esperado = { ...v4, versao: 5, presenteDosBichosEntregue: false } satisfies SalvamentoV5
   expect(migrarDaV4(v4)).toEqual(esperado)
   expect(migrarSalvamento(v4)).toEqual(
-    migrarDaV12(
-      migrarDaV11(
-        migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(esperado)))))),
+    migrarDaV13(
+      migrarDaV12(
+        migrarDaV11(
+          migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(esperado)))))),
+        ),
       ),
     ),
   )
@@ -76,7 +80,7 @@ test('os schemas V1 a V4 continuam aceitando apenas seu formato original', () =>
   ] as const) {
     expect(schema.safeParse(versao).success).toBe(true)
     expect(schema.safeParse({ ...versao, presenteDosBichosEntregue: true }).success).toBe(false)
-    expect(migrarSalvamento(versao)).toMatchObject({ versao: 13, presenteDosBichosEntregue: false })
+    expect(migrarSalvamento(versao)).toMatchObject({ versao: 14, presenteDosBichosEntregue: false })
   }
 })
 
@@ -86,6 +90,6 @@ test('V5 exige marca booleana e preserva entrega após serializar', () => {
   for (const valor of [undefined, 'true', 1, null])
     expect(migrarSalvamento({ ...s, presenteDosBichosEntregue: valor })).toBeNull()
   // Versão futura (ainda não existe) volta nula.
-  expect(migrarSalvamento({ ...s, versao: 14 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 15 })).toBeNull()
   expect(SALVAMENTO_MAX_BYTES).toBe(64 * 1024)
 })

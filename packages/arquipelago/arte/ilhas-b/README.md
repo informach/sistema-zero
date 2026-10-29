@@ -48,7 +48,7 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 
 | Arquivo | Nós | Âncoras próprias | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario`, `treno-desenho` (o trenó no platô, origem na base dele), `caverna` e `caverna-joia` (a caverna de cristal, fase3-07) e 150 `col-*` mais o `col-terreno` (os da caverna com `caverna` no nome) | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` (o trenó no platô), `treno-curva-1` a `-26` (a descida, do trenó ao começo da trilha, no chão dela), `subida-1` a `-4` (as paradas da subida ao cume), `floco-1` a `-5` (os flocos, no chão da trilha), `caverna-entrada`, `caverna-galeria`, `caverna-laguinho`, `caverna-degrau-1` a `-4`, `cristal-raro` | | 28.847 | 1.108 KB |
+| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario`, `treno-desenho` (o trenó no platô, origem na base dele), `telhado-iglu` (a cúpula oca do iglu com o vestíbulo, que o jogo esmaece, fase3-08), `caverna` e `caverna-joia` (a caverna de cristal, fase3-07) e 172 `col-*` mais o `col-terreno` (os da caverna com `caverna` no nome) | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` (o trenó no platô), `treno-curva-1` a `-26` (a descida, do trenó ao começo da trilha, no chão dela), `subida-1` a `-4` (as paradas da subida ao cume), `floco-1` a `-5` (os flocos, no chão da trilha), `caverna-entrada`, `caverna-galeria`, `caverna-laguinho`, `caverna-degrau-1` a `-4`, `cristal-raro`, `iglu-dentro`, `fogareiro`, `instrumento-xilofone`/`-violao`/`-bateria` (onde cada um se perdeu), `banda-*` e `musico-*` (o lugar do instrumento e do pinguim no palco) | | 30.547 | 1.168 KB |
 | `pico-props.glb` | `pinheiro-nevado-a`, `pinheiro-nevado-b`, `bloco-de-gelo`, `boneco-de-neve`, `painel-de-gelo` (base em y = 0) | | | 3.300 | 96 KB |
 | `pico-treno.glb` | `treno` (frente para −z do jogo) | | | 668 | 33 KB |
 | `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` e 61 `col-*` mais o `col-terreno` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 626 KB |
@@ -69,10 +69,25 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
   uns 1,5 a 1,9 m entre a parede de rocha de dentro e a beira da encosta. A encosta (66°) não se
   sobe; os postinhos com corda da beira têm o guarda-corpo invisível `col-guarda-trilha-*` entre
   eles. A colisão vem toda do arquivo: o `col-terreno` (chão, montanha cortada e montinhos de
-  neve) e os colisores das peças (iglu fechado por enquanto, palco com os degraus de 0,15 e 0,30,
+  neve) e os colisores das peças (o iglu oco, palco com os degraus de 0,15 e 0,30,
   painéis e topo da parede de gelo, trenó, pinheiros, bonecos, blocos, postes). Teste:
   `tests/colisores-do-pico.test.ts` (busca em grade da chegada ao platô). A parede de gelo tem três
   painéis em degraus, e no alto dela fica o platô do `topo-da-parede`.
+- **O iglu por dentro (fase3-08, 29/10/2026):** a cúpula (raio 2,9, 2,76 de altura, parede de
+  0,3) é oca e tem a porta em arco virada para o meio da ilha (meia-largura 0,75, lados retos até
+  1,45 e o arco a 2,2), com o vestíbulo de 1,2 m na frente; lá dentro, o tapete, o fogareiro aceso
+  (`brasa`, que brilha sempre) com a panela de chocolate no fundo, e dois bancos de gelo
+  (`col-banco-N`, onde se senta) dos lados, perto da porta, virados para o meio. O xilofone perdido
+  fica no fundo, à esquerda: chegando de frente em cada um (xilofone, fogareiro, banco), o botão do
+  jogo é o daquele, não o do lado (`DENTRO_DO_IGLU`; o teste confere). A cúpula, as juntas e o vestíbulo são o nó `telhado-iglu`, que o jogo esmaece
+  quando fica entre a câmera e a criança. O anel `col-parede-iglu` (24 pedaços de 2,0 a 3,0 do
+  meio, menos os que invadem o corredor da porta) e os lados grossos do vestíbulo seguram o corpo
+  onde a cúpula ainda passa da cabeça: o teste em grade confere que, de tudo que se alcança lá
+  dentro, nada fica com a cabeça acima da cúpula ou do arco (`tests/colisores-do-pico.test.ts`).
+  O iglu foi para (3,4; 7,6), longe da parede de gelo e dos pinheiros, e o caminho de neve vai até
+  a porta. A banda: o xilofone perdido fica dentro do iglu, o violão na beira do lago congelado e a
+  bateria no platô do cume, do outro lado da boca da trilha; no palco, `banda-*` e `musico-*`
+  ficam em cima do tablado (o Floco no meio).
 - **Vale:** o nó `lava` pode pulsar o brilho, e a fumaça fica no `cenario`. As pegadas de dino vão
   da ponte até o observatório. Colisão (29/10/2026, aj-ligar-01): o vulcão entra no `col-terreno`
   (as encostas não se sobem; o facetado deixa subir uns 0,8 m no pé, e a cratera fica a 6,5 m); o

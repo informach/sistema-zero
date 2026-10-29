@@ -282,27 +282,175 @@ def painel_de_gelo(w=2.2, h=3.0, seed=0, col=None):
     return p
 
 
-def iglu(col=None):
-    """Iglu de blocos: cúpula com as juntas, túnel de entrada virado para −Y e um tapete."""
-    if col is not None:
-        # Fechado por enquanto (entrar no iglu é da fase3-08): a cúpula e o túnel.
-        col.append(col_cilindro('iglu', 2.0, 1.85, (0, 0, 0.925)))
-        col.append(col_caixa('tunel-iglu', (1.6, 1.45, 0.85), (0, -2.05, 0.425)))
-    p = [meia_esfera(2.1, (0, 0, 0), 'iglu', seg=20, ring=12, sz=0.9)]
-    for k, z in enumerate((0.5, 1.0, 1.45)):
-        rr = 2.1 * math.sqrt(max(0.0, 1 - (z / (2.1 * 0.9)) ** 2)) + 0.015
-        p.append(torus(rr, 0.035, (0, 0, z), 'igluJunta', seg=24, rseg=3))
-        for i in range(10 - k * 2):
-            a = 2 * math.pi * (i + 0.5 * (k % 2)) / (10 - k * 2)
-            p.append(box((0.05, 0.05, 0.48), (math.cos(a) * rr, math.sin(a) * rr, z - 0.24), 'igluJunta', bevel=0.0,
-                         rot=(0, 0, a)))
-    tunel = cyl(0.85, 1.4, (0, -2.05, 0), 'iglu', verts=14, rot=(R(90), 0, 0))
-    p.append(cortar_abaixo(tunel, 0.0))
-    p.append(cortar_abaixo(cyl(0.6, 0.06, (0, -2.76, 0), 'black', verts=14, rot=(R(90), 0, 0)), 0.0))
-    p.append(cortar_abaixo(torus(0.82, 0.05, (0, -2.74, 0), 'igluJunta', seg=16, rseg=3, rot=(R(90), 0, 0)), 0.0))
-    p.append(cyl(0.7, 0.03, (0, -3.4, 0.05), 'tapete', verts=14))
-    p.append(cyl(0.45, 0.03, (0, -3.4, 0.065), 'tapeteClaro', verts=14))
-    return p
+# O iglu por dentro (fase3-08): a cúpula oca, grande para a criança andar de pé lá dentro (a
+# cápsula vai a 1,8 m dos pés), com a porta em arco virada para −Y, o vestíbulo na frente dela, o
+# fogareiro no fundo, dois bancos de gelo e o tapete. `raio` e `achata` são da cúpula de fora; a
+# parede tem `parede` de espessura. A porta tem `porta` de meia-largura, os lados retos até
+# `ombro` e o arco em cima (2,2 no alto). O vestíbulo sai `fundo` para fora da cúpula.
+IGLU = dict(x=3.4, z=7.6, raio=2.9, achata=0.95, parede=0.3, porta=0.75, ombro=1.45, fundo=1.2)
+# Onde ficam as coisas lá dentro (no referencial do iglu, a porta para −Y).
+# O fogareiro no fundo, os bancos dos lados perto da porta e o xilofone no fundo à esquerda, longe
+# o bastante dos dois: de pé junto de cada um, ele é o mais perto (`tests/colisores-do-pico.test.ts`).
+DENTRO_DO_IGLU = dict(fogareiro=(0.0, 1.35), xilofone=(-1.3, 0.95), bancos=((-1.45, -0.8), (1.45, -0.8)))
+# O anel de paredes que segura o corpo: de `de` a `ate` do meio, em `n` pedaços, menos os da porta.
+PAREDE_DO_IGLU = dict(de=2.0, ate=3.0, n=24, altura=2.3)
+
+
+def _cortar(o, cortes):
+    """Diferença exata (o booleano do Blender) de cada corte, apagando os cortes depois."""
+    for c in cortes:
+        m = o.modifiers.new('corte', 'BOOLEAN')
+        m.operation, m.solver, m.object = 'DIFFERENCE', 'EXACT', c
+        bpy.context.view_layer.objects.active = o
+        bpy.ops.object.modifier_apply(modifier=m.name)
+        bpy.data.objects.remove(c, do_unlink=True)
+    return o
+
+
+def _vao_da_porta(comprimento, y, folga=0.0):
+    """O vão em arco (lados retos e meia-lua em cima), deitado ao longo de Y, para cortar."""
+    e = IGLU
+    w, h = e['porta'] + folga, e['ombro']
+    reto = box((2 * w, comprimento, h + 0.3), (0, y, (h - 0.3) / 2), 'iglu', bevel=0.0, segs=1)
+    arco = cyl(w, comprimento, (0, y, h), 'iglu', verts=20, rot=(R(90), 0, 0))
+    m = reto.modifiers.new('arco', 'BOOLEAN')
+    m.operation, m.solver, m.object = 'UNION', 'EXACT', arco
+    bpy.context.view_layer.objects.active = reto
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    bpy.data.objects.remove(arco, do_unlink=True)
+    return reto
+
+
+def _giro_do_banco(bx, by):
+    """O giro em z que vira o +Y de um banco em (bx, by) para o meio do iglu."""
+    return math.atan2(bx, -by)
+
+
+def iglu(col):
+    """O iglu de blocos (fase3-08): `telhado` (a cúpula oca com as juntas e o vestíbulo, que o jogo
+    esmaece quando fica entre a câmera e a criança) e `dentro` (o tapete, o fogareiro e os bancos)."""
+    e = IGLU
+    r, sz, t = e['raio'], e['achata'], e['parede']
+    ri = r - t
+    # A cúpula: a esfera de fora menos a de dentro (o material de dentro vem dela), menos a metade
+    # de baixo e menos o vão da porta.
+    fora = uvball(r, (0, 0, 0), 'iglu', seg=28, ring=16, scale=(1, 1, sz))
+    dentro = uvball(ri, (0, 0, 0), 'igluDentro', seg=28, ring=16, scale=(1, 1, (r * sz - t) / ri))
+    baixo = box((2 * r + 1, 2 * r + 1, r), (0, 0, -r / 2), 'iglu', bevel=0.0, segs=1)
+    cupula = _cortar(fora, [dentro, baixo, _vao_da_porta(r + 1.0, -r / 2 - 0.5)])
+    telhado = [cupula]
+    # As juntas dos blocos por fora: três anéis e as juntas de pé entre eles, menos na porta.
+    for k, z in enumerate((0.55, 1.15, 1.75, 2.3)):
+        rr = r * math.sqrt(max(0.0, 1 - (z / (r * sz)) ** 2)) + 0.012
+        n = 14 - k * 3
+        for i in range(n):
+            a = 2 * math.pi * (i + 0.5 * (k % 2)) / n
+            perto_da_porta = abs(math.atan2(math.sin(a + math.pi / 2), math.cos(a + math.pi / 2))) < 0.42
+            if perto_da_porta and z < e['ombro'] + e['porta']:
+                continue
+            telhado.append(box((0.05, 0.05, 0.55), (math.cos(a) * rr, math.sin(a) * rr, z - 0.27), 'igluJunta',
+                               bevel=0.0, rot=(0, 0, a)))
+        if z > e['ombro'] + e['porta'] + 0.05:
+            telhado.append(torus(rr, 0.035, (0, 0, z), 'igluJunta', seg=28, rseg=3))
+    # O vestíbulo: um túnel de blocos com o mesmo arco, da cúpula para fora.
+    y0 = -math.sqrt(max(0.0, r * r - (e['porta'] + t) ** 2)) + 0.25
+    y1 = -r - e['fundo']
+    comp = y0 - y1
+    tunel = box((2 * (e['porta'] + t), comp, e['ombro'] + 0.3), (0, (y0 + y1) / 2, (e['ombro'] - 0.3) / 2),
+                'iglu', bevel=0.0, segs=1)
+    teto = cyl(e['porta'] + t, comp, (0, (y0 + y1) / 2, e['ombro']), 'iglu', verts=20, rot=(R(90), 0, 0))
+    m = tunel.modifiers.new('teto', 'BOOLEAN')
+    m.operation, m.solver, m.object = 'UNION', 'EXACT', teto
+    bpy.context.view_layer.objects.active = tunel
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    bpy.data.objects.remove(teto, do_unlink=True)
+    baixo = box((4, comp + 2, 2), (0, (y0 + y1) / 2, -1), 'iglu', bevel=0.0, segs=1)
+    telhado.append(_cortar(tunel, [_vao_da_porta(comp + 2, (y0 + y1) / 2), baixo]))
+    telhado.append(torus(e['porta'] + t / 2, 0.05, (0, y1 - 0.01, e['ombro']), 'igluJunta', seg=16, rseg=3,
+                         rot=(R(90), 0, 0), arc=180))
+    # Por dentro: o tapete, o fogareiro (pedras em roda, a brasa e a panela) e os bancos de gelo.
+    dentro_ = [cyl(1.1, 0.03, (0, 0.1, 0.015), 'tapete', verts=20), cyl(0.7, 0.03, (0, 0.1, 0.03), 'tapeteClaro', verts=20)]
+    fx, fy = DENTRO_DO_IGLU['fogareiro']
+    for i in range(9):
+        a = 2 * math.pi * i / 9
+        dentro_.append(uvball(0.12, (fx + math.cos(a) * 0.34, fy + math.sin(a) * 0.34, 0.08), 'rochaMontanha', seg=7,
+                              ring=4, scale=(1.1, 1.0, 0.75)))
+    dentro_.append(uvball(0.24, (fx, fy, 0.06), 'brasa', seg=10, ring=5, scale=(1, 1, 0.35)))
+    for i in range(3):
+        a = 2 * math.pi * i / 3 + 0.4
+        dentro_.append(cyl(0.025, 0.62, (fx + math.cos(a) * 0.22, fy + math.sin(a) * 0.22, 0.32), 'metalEscuro',
+                           verts=5, rot=(math.sin(a) * 0.32, -math.cos(a) * 0.32, 0)))
+    dentro_.append(cyl(0.2, 0.2, (fx, fy, 0.62), 'metalEscuro', verts=12, r2=0.17))
+    dentro_.append(cyl(0.2, 0.02, (fx, fy, 0.73), 'chocolate', verts=12))
+    for bx, by in DENTRO_DO_IGLU['bancos']:
+        g = _giro_do_banco(bx, by)
+        dentro_.append(box((1.1, 0.5, 0.42), (bx, by, 0.21), 'gelo', bevel=0.06, segs=2, rot=(0, 0, g)))
+        dentro_.append(box((1.0, 0.42, 0.04), (bx, by, 0.44), 'tapeteClaro', bevel=0.02, segs=1, rot=(0, 0, g)))
+    # O que segura o corpo: o anel da parede (menos a porta), os lados do vestíbulo, o fogareiro e os
+    # bancos (`col-banco-N`, onde a criança pode sentar).
+    w = PAREDE_DO_IGLU
+    meio_r = (w['de'] + w['ate']) / 2
+    larg = 2 * w['ate'] * math.tan(math.pi / w['n']) + 0.05
+    fundo_ = w['ate'] - w['de']
+    for i in range(w['n']):
+        a = 2 * math.pi * i / w['n'] - math.pi / 2
+        ca, sa = math.cos(a), math.sin(a)
+        # Fora o pedaço com algum canto no corredor da porta (|x| < porta, do lado de −Y).
+        cantos = [((meio_r + dr) * ca - dt * sa, (meio_r + dr) * sa + dt * ca)
+                  for dr in (-fundo_ / 2, fundo_ / 2) for dt in (-larg / 2, larg / 2)]
+        if any(abs(x) < e['porta'] + 0.02 and y < 0 for x, y in cantos):
+            continue
+        col.append(col_caixa('parede-iglu', (fundo_, larg, w['altura']), (meio_r * ca, meio_r * sa, w['altura'] / 2),
+                             rot=(0, 0, a)))
+    # Os lados do vestíbulo vão da boca até dentro da cúpula e cobrem a espessura dela.
+    # Vão até 1,2 do meio: ali a cúpula ainda passa de 1,9 de altura, e não sobra fresta entre eles e
+    # o anel onde a cabeça bateria na cúpula.
+    for lado in (-1, 1):
+        y_fim = -1.2
+        col.append(col_caixa('parede-iglu', (0.7, y_fim - y1, w['altura']),
+                             (lado * (e['porta'] + 0.35), (y_fim + y1) / 2, w['altura'] / 2)))
+    col.append(col_cilindro('fogareiro', 0.46, 0.8, (fx, fy, 0.4)))
+    # A frente de um `col-banco-N` é o +Y dele (o −Z no jogo, `bancosDosColisores`): girado para
+    # olhar para o meio do iglu, com o comprido (1,1) ao longo do banco.
+    for bx, by in DENTRO_DO_IGLU['bancos']:
+        col.append(col_caixa('banco', (1.1, 0.5, 0.46), (bx, by, 0.23), rot=(0, 0, _giro_do_banco(bx, by))))
+    return {'telhado': telhado, 'dentro': dentro_}
+
+
+# A banda do festival de inverno (fase3-08): onde cada instrumento se perdeu (o xilofone dentro
+# do iglu, o violão na beira do lago congelado, a bateria no platô do cume, do lado oposto à boca
+# da trilha) e, no palco, onde ele toca (`banda-*`) e onde o pinguim músico fica (`musico-*`),
+# no referencial do palco (a frente para −Y; o Floco fica no meio).
+INSTRUMENTOS_DA_BANDA = ('xilofone', 'violao', 'bateria')
+VIOLAO_PERDIDO = (8.6, -4.5)
+BATERIA_NO_PLATO = 1.5
+NO_PALCO = {'xilofone': ((-1.2, 0.3), (-1.2, 0.72)), 'violao': ((1.2, 0.3), (1.2, 0.72)),
+            'bateria': ((0.0, 0.95), (0.0, 1.32))}
+
+
+def ancoras_da_banda(giro_iglu, giro_palco, cume, a_boca):
+    """As âncoras do iglu por dentro e da banda (pontos do jogo; a altura de cada uma)."""
+    e = IGLU
+    a = [('iglu-dentro', *no_mundo(0, 0, e['x'], e['z'], giro_iglu), TOPO),
+         ('fogareiro', *no_mundo(*DENTRO_DO_IGLU['fogareiro'], e['x'], e['z'], giro_iglu), TOPO),
+         ('instrumento-xilofone', *no_mundo(*DENTRO_DO_IGLU['xilofone'], e['x'], e['z'], giro_iglu), TOPO + 0.03),
+         ('instrumento-violao', *VIOLAO_PERDIDO, TOPO)]
+    cx, cy, zc = cume
+    bx = cx + math.cos(a_boca + math.pi) * BATERIA_NO_PLATO
+    by = cy + math.sin(a_boca + math.pi) * BATERIA_NO_PLATO
+    a.append(('instrumento-bateria', bx, -by, zc + 0.02))
+    for nome in INSTRUMENTOS_DA_BANDA:
+        lugar, musico = NO_PALCO[nome]
+        a.append((f'banda-{nome}', *no_mundo(*lugar, 2.6, -7.3, giro_palco), TOPO + 0.47))
+        a.append((f'musico-{nome}', *no_mundo(*musico, 2.6, -7.3, giro_palco), TOPO + 0.47))
+    return a
+
+
+def no_mundo(lx, ly, x, z, giro):
+    """Um ponto do referencial de uma peça (Blender, a frente para −Y) posta em (x, z) do jogo com
+    `giro`, em (x, z) do jogo."""
+    c, s_ = math.cos(giro), math.sin(giro)
+    return x + lx * c - ly * s_, -(-z + lx * s_ + ly * c)
 
 
 # Os degraus da frente do palco: o de fora (mais longe do meio) baixo, o de dentro mais alto, e o
@@ -422,14 +570,22 @@ def ilha():
     # Caminho de neve batida da ponte até o meio e aos lugares.
     cen.append(caminho([(12.3, 0), (6, 0), (2.8, 0.2)], 1.0, 'neveTrilha'))
     # Cada ramo numa altura um pouco diferente: faces no mesmo plano piscam (e sombreiam preto).
-    for k, ramo in enumerate(([(3, 0.2), (3.1, 2.5), (3.0, 4.2)], [(3, -0.2), (2.9, -3.0), (2.7, -4.6)],
+    porta_iglu = no_mundo(0, -IGLU['raio'] - IGLU['fundo'] - 0.6, IGLU['x'], IGLU['z'],
+                          angulo_para(IGLU['x'], IGLU['z'], 3.0, 2.0))
+    for k, ramo in enumerate(([(3, 0.2), (3.1, 2.0), porta_iglu], [(3, -0.2), (2.9, -3.0), (2.7, -4.6)],
                               [(2.8, 0.0), (2.6, -1.0), (pe_trilha[0], -pe_trilha[1])])):
         cen.append(caminho(ramo, 0.7, 'neveTrilha', z1=0.024 - 0.006 * k))
     # Duas bandeirinhas laranja marcam o começo da trilha, uma de cada lado (de longe, no branco).
     cen += bandeiras_da_trilha(LARGADA_DA_SUBIDA, (pe_trilha[0], -pe_trilha[1]), col)
     # Iglu (frente para o caminho), palco do Floco, parede de gelo, lago congelado.
-    cen += montar(lambda c: iglu(c), 3.0, 7.2, angulo_para(3.0, 7.2, 3.0, 2.0))
-    cen += montar(lambda c: palco(c), 2.6, -7.3, angulo_para(2.6, -7.3, 3.0, 0.0))
+    giro_iglu = angulo_para(IGLU['x'], IGLU['z'], 3.0, 2.0)
+    c_iglu = []
+    partes_do_iglu = iglu(c_iglu)
+    telhado_iglu = colocar(partes_do_iglu['telhado'], IGLU['x'], IGLU['z'], giro_iglu, y=TOPO)
+    cen += colocar(partes_do_iglu['dentro'], IGLU['x'], IGLU['z'], giro_iglu, y=TOPO)
+    col.extend(colocar(c_iglu, IGLU['x'], IGLU['z'], giro_iglu, y=TOPO))
+    giro_palco = angulo_para(2.6, -7.3, 3.0, 0.0)
+    cen += montar(lambda c: palco(c), 2.6, -7.3, giro_palco)
     # Parede de gelo em degraus (três painéis lado a lado), virada para o meio da ilha.
     giro = angulo_para(-2.5, 9.4, -2.5, 4.0)
     for i, h in enumerate((2.6, 3.4, 4.2)):
@@ -511,14 +667,15 @@ def ilha():
     col.insert(0, col_terreno(chao + [montanha_] + montinhos))
     ancoras = ancoras_padrao(
         lumis=[(5.2, 3.6), (-0.6, 4.8), (6.6, -3.4), (0.4, -9.2)], morador=(3.4, -5.1),
-        extras=[('palco', 2.6, -7.3, TOPO + 0.47), ('iglu', 3.0, 4.3), ('trilha-inicio', pe_trilha[0], -pe_trilha[1], pe_trilha[2]),
+        extras=[('palco', 2.6, -7.3, TOPO + 0.47), ('iglu', *porta_iglu),
+                ('trilha-inicio', pe_trilha[0], -pe_trilha[1], pe_trilha[2]),
                 ('trilha-fim', fim_trilha[0], -fim_trilha[1], fim_trilha[2]),
                 ('cume', cume[0], -cume[1], cume[2]), ('parede-de-gelo', -2.5, 8.2),
                 ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1)]
-        + extras_do_jogo)
+        + extras_do_jogo + ancoras_da_banda(giro_iglu, giro_palco, (cx, cy, zc), a_boca))
     # O desenho do trenó num nó próprio, com a origem na base dele: o jogo o leva debaixo de quem
     # desce de trenó (o nome `treno` é da âncora; dois nós com o mesmo nome viravam `treno.001`).
-    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen,
+    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen, 'telhado-iglu': telhado_iglu,
                       'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_,
                       'caverna-joia': joia_}, ancoras, colisores=col)
 

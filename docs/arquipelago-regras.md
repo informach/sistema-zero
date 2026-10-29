@@ -2812,10 +2812,9 @@ Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026
   altura 1,49 (o cavaquinho, que sai para o lado, fica fora), câmera da conversa a 1,19 dos pés. Só
   o corpo colide. Olhar a 7, aceno a cada 45 segundos e giro 3 seguem o Bento e a Maré; o alcance
   da conversa é 2,6 (o da Maré é 2,2), para alcançar o Floco no tablado a partir da marca da frente.
-- A apresentação proposta é "Sou Floco. Toco cavaquinho no palco do Pico Gelado." e "Ainda falta
-  gente para a banda tocar no festival de inverno." Base: o pinguim músico de cachecol e cavaquinho
-  da arte e a banda e o festival de inverno da fase3-08. Não há amizade, pedidos ou presentes, e a
-  conversa não grava no salvamento (V10).
+- A apresentação começa com "Sou Floco. Toco cavaquinho no palco do Pico Gelado." Base: o pinguim
+  músico de cachecol e cavaquinho da arte. Desde a fase3-08 o resto da conversa fala da banda (veja
+  a seção da fase3-08). Não há amizade, pedidos ou presentes, e a conversa não grava no salvamento.
 - A trilha até o cume se anda desde já (o platô fica a uns 8 m do chão). O percurso com tempo, o
   trenó e a caverna de cristal ficam para a fase3-07; o iglu, o festival e a banda, para a fase3-08.
 - O painel da apresentação é o mesmo da Maré, agora genérico (`PainelDeApresentacao`).
@@ -2886,6 +2885,42 @@ os colisores em `tests/colisores-do-pico.test.ts`. Navegador: `playground/verifi
   incluem o Vale. Navegador: `playground/verificar-vale-browser.ts`, com `?posicao=6`, computador
   e celular emulado. Plano e decisões em `docs/plans/2026-10-29-arquipelago-vale.md`.
   Nenhuma arte foi alterada e não foi necessário solicitar modelo ou âncora ao Blender.
+
+## Iglu, festival de inverno e a banda do Pico (fase3-08, 29/10/2026)
+
+- **O iglu por dentro.** O iglu ficou oco e maior (cúpula de 2,9 m de raio e 2,76 de altura) e
+  mudou para perto da parede de gelo, com a porta em arco virada para o meio da ilha e o caminho de
+  neve chegando nela. A criança entra andando e fica de pé lá dentro: a cúpula passa da cabeça em
+  todo lugar onde se anda (o anel de paredes por dentro segura o corpo antes disso). Quando a
+  cúpula fica entre a câmera e a criança, ela esmaece, como os telhados da Vila. Lá dentro: o
+  tapete, dois bancos de gelo ("Sentar no banco", como os bancos da Vila) e o fogareiro aceso.
+- **O fogareiro.** "Fazer chocolate quente" (E ou Usar, até 1,5 m) faz a receita do chocolate
+  quente do Bento (1 cacau e 1 leite) sem precisar dos corações dele. Sem os ingredientes, o Zappy
+  diz "Para o chocolate quente, traga 1 cacau e 1 leite." e nada muda. O primeiro chocolate feito
+  no iglu traz a lareira como projeto azul ("O calor do iglu deu uma ideia: chegou o projeto azul
+  da lareira. Ponha em casa no modo Construir.").
+- **Montar a banda.** Três pinguins músicos esperam no palco do Floco, curvados, cada um sem o seu
+  instrumento. Os instrumentos (os do `banda.glb` da casa) se perderam pela ilha: o xilofone dentro
+  do iglu, o violão perto do lago congelado e a bateria no platô do cume. Perto de cada um, "Levar o
+  xilofone ao palco" (até 1,8 m): o instrumento vai para o lugar dele no palco, o pinguim dele
+  começa a tocar (balança no ritmo; com menos movimento, fica parado) e o Zappy conta o que falta
+  ("O xilofone voltou para o palco. Faltam 2 instrumentos para a banda tocar."). Sem ordem, prazo
+  nem castigo. Os instrumentos e os pinguins colidem com o corpo, com formas simples do tamanho
+  deles; a câmera passa por eles.
+- **O Floco** diz onde ficou cada instrumento que ainda falta ("O xilofone ficou dentro do iglu.",
+  "O violão ficou perto do lago congelado.", "A bateria ficou lá no alto da montanha, no platô do
+  cume.") e quantos já voltaram.
+- **O festival de inverno.** Com os três de volta: "A banda está completa. Os pinguins voltaram a
+  tocar, e o festival de inverno começou no palco do Floco." Daí em diante a banda toca sempre, com
+  notas subindo do palco (com menos movimento, as notas ficam paradas no ar), o Floco fala do
+  festival, e os instrumentos da banda chegam como projeto azul (`ganharProjetos`).
+- **Salvamento V14:** `pico.banda`, um número de 0 a 7, um bit por instrumento de volta (xilofone,
+  violão e bateria). `migrarDaV13` começa em 0. São 19 bytes no pior caso; sobram 29 do teto de 64
+  KB (medido em 29/10/2026). A lareira não precisa de campo: o próprio projeto azul é a marca.
+  Jogando em duas abas, os instrumentos levados em cada uma se juntam (levar não gasta nada).
+- Testes: `tests/banda.test.ts` e o bloco do iglu e da banda em `tests/colisores-do-pico.test.ts`;
+  contrato em `salvamento-v14.test.ts`. Navegador: `playground/verificar-pico-browser.ts` (entrar no
+  iglu, levar os três instrumentos, o fogareiro sem ingredientes, o festival e o Floco falando dele).
 
 ## Mergulho do Recife (fase3-02, 29/10/2026)
 

@@ -659,10 +659,11 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
   `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
   de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
-- ⚠️ O pior caso do salvamento fica a 60 bytes do teto de 64 KB com as rotinas no teto (era
-  290 na V10; o `recife` da V11 custa 54, o percurso `pico-cume` uns 96 e o `vale` da V12 80;
-  medido em 29/10/2026, `tests/salvamento-v10.test.ts`): campo novo no salvamento precisa achar
-  espaço antes (encurtar outro campo ou mudar o formato numa versão nova).
+- ⚠️ O pior caso do salvamento fica a 29 bytes do teto de 64 KB com as rotinas no teto (era
+  290 na V10; o `recife` da V11 custa 54, o percurso `pico-cume` uns 96, o `vale` da V12 80, os
+  corais da V13 12 e a banda da V14 19; medido em 29/10/2026, `tests/salvamento-v10.test.ts`):
+  campo novo no salvamento precisa achar espaço antes (encurtar outro campo ou mudar o formato
+  numa versão nova).
 - Regras e textos: `docs/arquipelago-regras.md` §8.2. Testes: `tests/rotina.test.ts`; navegador:
   `playground/verificar-rotina-browser.ts` (`?lumis=quindim:1&cartas=todas`, compilar para Node no
   Windows).
@@ -792,7 +793,7 @@ o iglu fechado e, desde a fase3-07, a caverna de cristal atrás da montanha). O 
 `morador` (`lugarDoFloco` em `mundo/pico.ts`); medidas e falas em `sistemas/floco.ts` (raio 0,43,
 altura 1,49, cabeça 1,19, alcance 2,6). A apresentação usa o painel genérico
 `interface/apresentacao.tsx` (`PainelDeApresentacao`), o mesmo da Maré. Sem amizade nem salvamento
-novo. Percurso, trenó e caverna são da fase3-07; iglu, festival e banda, da fase3-08. Testes:
+novo. Percurso, trenó e caverna são da fase3-07; iglu, festival e banda, da fase3-08 (abaixo). Testes:
 `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts` (`?posicao=5`).
 
 ## A subida ao cume, o trenó e a caverna de cristal do Pico (fase3-07, 29/10/2026)
@@ -805,7 +806,7 @@ Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`; regra
   `floco-1..5`, `cume` e a linha `treno-curva-N` (para o rumo das voltas) e monta os
   `PontosDoPercurso`; o `PicoVivo` roda o `CorridaNaIlha` genérico com flocos de neve brancos.
   ⚠️ O pior caso do salvamento ganhou a entrada `pico-cume` (uns 96 bytes): sobravam uns 140 do
-  teto de 64 KB, e depois do `vale` da V12 sobram 60.
+  teto de 64 KB; depois da V12, da V13 e da V14 sobram 29.
 - **Trenó** (`sistemas/treno.ts`, `mundo/treno-do-pico.tsx`): não é um modo novo. A trilha vira uma
   pista do MESMO modo `escorregar`, com o atrito do gelo (`MATERIAIS.gelo`), teto de 4,5 m/s e
   `soPorPedido` (andar na trilha não senta; só o pedido `escorregar` do "Descer de trenó", do
@@ -824,6 +825,33 @@ Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`; regra
 - Testes: `tests/subida-ao-cume.test.ts`, `tests/cristal-raro.test.ts`, o trenó em
   `tests/modos.test.ts`, os colisores em `tests/colisores-do-pico.test.ts`; navegador:
   `playground/verificar-pico-browser.ts`.
+
+## O iglu, a banda e o festival de inverno do Pico (fase3-08, 29/10/2026)
+
+Regras e textos: `docs/arquipelago-regras.md` (seção da fase3-08); plano:
+`docs/plans/2026-10-29-arquipelago-pico-iglu-festival-banda.md`.
+
+- **Iglu oco** (`arte/ilhas-b/pico.py`, `IGLU`): a cúpula é o nó `telhado-iglu`, que esmaece como
+  os telhados (`mundo/copas.ts`). O anel `col-parede-iglu` (menos o corredor da porta) segura o
+  corpo onde a cúpula ainda passa da cabeça; o teste em grade de `tests/colisores-do-pico.test.ts`
+  confere teto e passagem. Os bancos de gelo são `col-banco-N`: o `PicoVivo` monta o
+  `BancosDaVila` (genérico) com os colisores da ilha.
+- **Regra pura** em `sistemas/banda.ts`: `INSTRUMENTOS` (a ordem dos bits de `pico.banda`, V14),
+  `devolverInstrumento`, `festivalDeInverno`, os rótulos e falas, `falasDoFloco` (a conversa do
+  Floco agora sai daqui) e `fazerChocolateNoIglu` (a receita do chocolate quente sem os corações do
+  Bento; o primeiro traz a lareira por `ganharProjeto`, o projeto azul é a própria marca). A banda
+  chega em `ganharProjetos` com `pico.banda === 7`.
+  Duas sessões juntam os bits (`conciliar-salvamento.ts`): levar ao palco não gasta nada.
+- **No mundo**: `mundo/banda-do-pico.tsx` (`BandaDoPico`, montado pelo `PicoVivo`) lê as âncoras
+  `instrumento-*`, `banda-*`, `musico-*`, `palco`, `morador` e `fogareiro`; os instrumentos são
+  cópias dos nós do `banda.glb` da casa (posição zerada), com colisor `col-instrumento-*` do tamanho
+  da caixa deles (só para o corpo); os pinguins (`pinguim.glb`, escala 1,8) ficam no palco com
+  `col-morador-pinguim-N`, curvados sem o instrumento e balançando quando ele volta (menos
+  movimento: parados); as notas do festival sobem do palco com a banda completa. Tudo respeita a
+  pausa, a troca da ilha (0,99) e o somente leitura.
+- ⚠️ O pior caso do salvamento ficou com 29 bytes de folga depois da V14.
+- Testes: `tests/banda.test.ts`, o bloco do iglu em `tests/colisores-do-pico.test.ts`, o Floco em
+  `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts`.
 
 ## O Vale dos Dinos e a Jade (fase4-01, 29/10/2026)
 

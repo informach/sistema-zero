@@ -3,6 +3,7 @@ import {
   capacidadeDaGeladeira,
   guardadosNaGeladeira,
   guardarAlimentoNaGeladeira,
+  INSTRUMENTOS_DA_BANDA,
   type ObjetoDaCasa,
   type Obra,
   POSTOS_DA_JORNADA,
@@ -152,6 +153,8 @@ export function ganharProjetos(
   if (!s.projetos.forno && coracoes(s.moradores.bento.amizade) >= 1) ganhos.push('forno')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
   if (!s.projetos.aquario && s.recife.corais !== 0) ganhos.push('aquario')
+  // Os instrumentos da banda chegam com o festival de inverno do Pico (fase3-08).
+  if (!s.projetos.banda && s.pico.banda === 2 ** INSTRUMENTOS_DA_BANDA - 1) ganhos.push('banda')
   const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0
   if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')
   if (ganhos.length === 0) return { salvamento: s, ganhos }
@@ -159,6 +162,21 @@ export function ganharProjetos(
   for (const id of ganhos)
     projetos[id] = { ganhoEm: agora.toISOString(), aparencia: null, aparencias: [] }
   return { salvamento: { ...s, projetos }, ganhos }
+}
+
+/**
+ * Um projeto azul que chega por um gesto num lugar, não por uma regra do salvamento (a lareira, com
+ * o primeiro chocolate quente feito no iglu do Pico). O mesmo salvamento se ele já existe.
+ */
+export function ganharProjeto(s: Salvamento, id: ObjetoDaCasa, agora: Date): Salvamento {
+  if (s.projetos[id]) return s
+  return {
+    ...s,
+    projetos: {
+      ...s.projetos,
+      [id]: { ganhoEm: agora.toISOString(), aparencia: null, aparencias: [] },
+    },
+  }
 }
 
 /** O que o Zappy diz quando um projeto azul chega. */

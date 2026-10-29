@@ -220,11 +220,11 @@ export const CATALOGO_DE_OBJETOS: Readonly<Record<ObjetoDaCasa, ObjetoDoCatalogo
   },
   lareira: {
     molde: molde('lareira', 'Lareira', [2, 1], [1.85, 1.47, 0.88], [], null),
-    origem: 'Pedido do Pico Gelado.',
+    origem: 'Vem do primeiro chocolate quente feito no iglu do Pico Gelado.',
   },
   banda: {
     molde: molde('banda', 'Instrumentos da banda', [3, 2], [2.85, 1.28, 1.56], [], null),
-    origem: 'Pedido do Pico Gelado.',
+    origem: 'Vem do festival de inverno do Pico Gelado, com a banda completa.',
   },
   fliperama: {
     molde: molde(

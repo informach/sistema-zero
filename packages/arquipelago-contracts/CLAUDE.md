@@ -135,8 +135,9 @@ Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 `PERCURSOS` ganhou `pico-cume` (a subida ao cume do Pico Gelado) sem versão nova, como a
 `vila-telhados`: só alarga o que a V2 em diante aceitam. O pior caso de 64 KB (com uma entrada por
 percurso, em `tests/salvamento-v10.test.ts`) tinha 140 bytes de margem antes da V12. O teste
-agora inclui também os três ninhos do Vale e a escavação, dentro do mesmo teto: sobram 60 bytes
-(medido em 29/10/2026). Campo novo precisa conferir o espaço antes.
+agora inclui também os três ninhos do Vale e a escavação, os corais e a banda, dentro do mesmo
+teto: sobram 29 bytes (medido em 29/10/2026, depois da V14). Campo novo precisa conferir o espaço
+antes.
 
 ## Salvamento V12: descobertas do Vale (29/10/2026)
 
@@ -156,3 +157,12 @@ para cada coral replantado") e a origem (o primeiro coral). ⚠️ O pior caso d
 `tests/salvamento-v10.test.ts` passa a pôr também o Recife mais pesado (`false` ocupa um byte a
 mais que `true`, os corais com dois dígitos): sobram 48 bytes (medido em 29/10/2026). Campo novo
 precisa achar espaço antes. Testes: `salvamento-v13.test.ts`.
+
+## Salvamento V14: a banda do Pico (fase3-08, 29/10/2026)
+
+`SalvamentoV14Schema` acrescenta `pico: { banda }`, um número de 0 a 7, um bit por instrumento de
+volta ao palco, na ordem xilofone, violão e bateria (`INSTRUMENTOS_DA_BANDA = 3`; o jogo tem a
+lista em `sistemas/banda.ts`). `migrarDaV13` começa em 0. A união pública aceita V1 a V14 e devolve
+V14; a V13 continua estrita. 19 bytes no pior caso: sobram 29 do teto. Testes em
+`salvamento-v14.test.ts`. Em `objetos.ts`, a origem da lareira e da banda diz de onde elas vêm
+(o primeiro chocolate quente no iglu e o festival de inverno).

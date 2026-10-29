@@ -53,6 +53,10 @@ lib_q.PALETTE.update({
     'neveTrilha': ('#c3cddb', 0.9, None, 0),
     'iglu': ('#f7fbff', 0.7, None, 0),
     'igluJunta': ('#d2e4f2', 0.8, None, 0),
+    # O iglu por dentro (fase3-08): a parede de dentro, a brasa do fogareiro (sempre acesa) e o chocolate.
+    'igluDentro': ('#e2eefa', 0.75, None, 0),
+    'brasa': ('#ff7a3c', 0.5, '#ff8a3c', 1.2),
+    'chocolate': ('#6b3f25', 0.5, None, 0),
     'trenoVermelho': ('#e0584f', 0.5, None, 0),
     'trenoMadeira': ('#c08a5a', 0.85, None, 0),
     'patimTreno': ('#4a4f57', 0.4, None, 0),

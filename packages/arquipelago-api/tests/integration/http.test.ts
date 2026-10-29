@@ -217,7 +217,7 @@ describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
 
   test('V10 migra na rota e a versão atual preserva as descobertas do Recife por revisão', async () => {
-    const { recife: _, vale: _vale, ...base } = salvamento
+    const { recife: _, vale: _vale, pico: _pico, ...base } = salvamento
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
       salvamento: { ...base, versao: 10 },
@@ -250,7 +250,7 @@ describe('salvamento', () => {
   })
 
   test('V11 migra sem perder o Recife e a V12 guarda todas as descobertas do Vale', async () => {
-    const { vale: _, ...base } = salvamento
+    const { vale: _, pico: _pico, ...base } = salvamento
     const v11 = { ...base, versao: 11, recife: { bau: true, pagina: true, tesouro: true } }
     const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
@@ -276,8 +276,9 @@ describe('salvamento', () => {
   })
 
   test('V12 migra na rota e a V13 guarda os corais replantados do Recife', async () => {
+    const { pico: _pico, ...semPico } = salvamento
     const v12 = {
-      ...salvamento,
+      ...semPico,
       versao: 12,
       recife: { bau: true, pagina: false, tesouro: true },
     }
@@ -287,7 +288,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(13)
+    expect(lido.salvamento?.versao).toBe(14)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -306,6 +307,34 @@ describe('salvamento', () => {
     expect(fora.status).toBe(400)
   })
 
+  test('V13 migra na rota e a V14 guarda a banda do Pico', async () => {
+    const { pico: _pico, ...semPico } = salvamento
+    const v13 = { ...semPico, versao: 13 }
+    const primeira = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v13,
+    })
+    expect(primeira.status).toBe(200)
+    const lido = SalvamentoGuardadoSchema.parse(primeira.json)
+    expect(lido.salvamento?.versao).toBe(14)
+    expect(lido.salvamento?.pico).toEqual({ banda: 0 })
+    const atual = { ...lido.salvamento!, pico: { banda: 7 } }
+    const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: lido.revisao,
+      salvamento: atual,
+    })
+    expect(segunda.status).toBe(200)
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.salvamento).toEqual(atual)
+    const fora = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: relido.revisao,
+      salvamento: { ...atual, pico: { banda: 8 } },
+    })
+    expect(fora.status).toBe(400)
+  })
+
   test('recebe V4 como a atual, guarda o presente e recusa a revisão anterior sem apagar a entrega', async () => {
     const {
       presenteDosBichosEntregue: _,
@@ -314,6 +343,7 @@ describe('salvamento', () => {
       rotinas: _r,
       recife: _recife,
       vale: _vale,
+      pico: _pico,
       ...anterior
     } = salvamento
     const v4 = { ...anterior, versao: 4, moradores: { capi: anterior.moradores.capi } }
@@ -323,7 +353,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 13, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 14, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,

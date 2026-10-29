@@ -54,6 +54,8 @@ const SO_PARA_O_CORPO = [
   'col-canteiro-',
   'col-barco-',
   'col-quadro-',
+  // Os instrumentos da banda do Pico (fase3-08), perdidos pela ilha ou no palco.
+  'col-instrumento-',
   'col-morador-',
   'col-escada-reta-',
   // A parede da obra cortada (modo construção): baixa na tela, a câmera vê dentro de casa.

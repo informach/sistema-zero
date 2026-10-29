@@ -42,10 +42,10 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV13Schema,
+  SalvamentoV14Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
-import { migrarDaV10, migrarDaV11, migrarDaV12 } from '../src/salvamento'
+import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13 } from '../src/salvamento'
 
 describe('ilhas', () => {
   test('oito ilhas, uma por posição da jornada, ids únicos', () => {
@@ -173,6 +173,7 @@ describe('salvamento V2 (percursos)', () => {
       rotinas: _r,
       recife: _recife,
       vale: _vale,
+      pico: _pico,
       ...resto
     } = criarSalvamentoInicial(agora)
     return { ...resto, versao: 2 }
@@ -182,6 +183,7 @@ describe('salvamento V2 (percursos)', () => {
     return { ...resto, versao: 1 }
   }
   const semMoradores = {
+    pico: { banda: 0 },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     vale: { pegadas: false, escavacao: 0, ninhos: [] },
     presenteDosBichosEntregue: false,
@@ -201,19 +203,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV13Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV14Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 13, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 14, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(13)
+    expect(r.salvamento.versao).toBe(14)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -344,11 +346,12 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       rotinas: _r,
       recife: _recife,
       vale: _vale,
+      pico: _pico,
       ...resto
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(13)
+    expect(v3?.versao).toBe(14)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -357,12 +360,14 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       pedido: null,
     })
     expect(
-      migrarDaV12(
-        migrarDaV11(
-          migrarDaV10(
-            migrarDaV9(
-              migrarDaV8(
-                migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2)))))),
+      migrarDaV13(
+        migrarDaV12(
+          migrarDaV11(
+            migrarDaV10(
+              migrarDaV9(
+                migrarDaV8(
+                  migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(migrarDaV2(v2)))))),
+                ),
               ),
             ),
           ),
@@ -455,6 +460,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       rotinas: _r,
       recife: _recife,
       vale: _vale,
+      pico: _pico,
       ...resto
     } = inicial()
     const v3: SalvamentoV3 = {
@@ -464,15 +470,19 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(13)
+    expect(v4?.versao).toBe(14)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
     expect(
-      migrarDaV12(
-        migrarDaV11(
-          migrarDaV10(
-            migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3))))))),
+      migrarDaV13(
+        migrarDaV12(
+          migrarDaV11(
+            migrarDaV10(
+              migrarDaV9(
+                migrarDaV8(migrarDaV7(migrarDaV6(migrarDaV5(migrarDaV4(migrarDaV3(v3)))))),
+              ),
+            ),
           ),
         ),
       ),
