@@ -408,8 +408,8 @@ try {
       await voltar()
     })
     await tentar('borda', async () => {
-      // ⚠️ No navegador a pedra de agarrar do Bosque ainda não agarra (na regra pura, sim): o
-      // print fica de fora até o modo borda pegar no jogo.
+      // Junto da pedra de agarrar, a 0,45 m da quina: sem pedir direção, porque perto da pedra a
+      // câmera gira para o lado livre e a frente da tela deixa de ser a frente da pedra.
       let agarrou = false
       for (const b of m.bordas) {
         const meio = { x: (b.a.x + b.b.x) / 2, y: (b.a.y + b.b.y) / 2, z: (b.a.z + b.b.z) / 2 }
@@ -418,21 +418,22 @@ try {
         const fz = b.fora.z - meio.z
         const n = Math.hypot(fx, fz) || 1
         const de = { x: meio.x + (fx / n) * 0.45, z: meio.z + (fz / n) * 0.45 }
-        // Um pouco acima de pendurada, andando para a parede: cai, passa pela quina e agarra.
-        await levar(page, de, meio.y - BORDA.maosAcimaDoCentro + 0.3, rumo(de, meio))
-        await page.keyboard.down('KeyW')
-        agarrou = await esperarModo(page, 'borda', 8000)
-        await page.keyboard.up('KeyW')
+        // Logo abaixo de pendurada: cai e as mãos agarram a quina (pular dali é soltar).
+        await levar(page, de, meio.y - BORDA.maosAcimaDoCentro + 0.15, rumo(de, meio))
+        agarrou = await esperarModo(page, 'borda', 15_000)
         if (agarrou) break
       }
       if (!agarrou) throw new Error('não agarrou nenhuma borda')
       await page.waitForTimeout(2500)
       await foto(page, 'pendurada-na-borda', Math.PI * 0.7)
       await foto(page, 'pendurada-de-lado', Math.PI / 2, 300)
+      // Subir: a câmera nas costas dela (virada para a pedra), a frente sobe.
+      await page.evaluate(() => (globalThis as Global).__arquipelagoCameraEmVolta?.(Math.PI))
       await page.keyboard.down('KeyW')
-      await page.waitForTimeout(300)
-      await foto(page, 'subindo-a-borda', Math.PI / 2, 0)
+      await page.screenshot({ path: path.join(prints, 'animacao-subindo-a-borda.png') })
+      feitos.push('subindo-a-borda')
       await page.keyboard.up('KeyW')
+      console.log('print: subindo-a-borda', (await ler(page))?.modo)
       await voltar()
     })
     await tentar('escorregar', async () => {

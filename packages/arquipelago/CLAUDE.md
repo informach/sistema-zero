@@ -279,9 +279,12 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   sai pelo relógio virtual do navegador (`Emulation.setVirtualTimePolicy`, 1/30 s por quadro): a
   1 quadro por segundo do SwiftShader o pulo inteiro cabe em dois quadros. Prints em
   `docs/qa/2026-10-29-animacoes-mixamo/`.
-- ⚠️ No navegador a pedra de agarrar do Bosque não agarrou (nem caindo junto da quina, nem
-  pulando, nem quadro a quadro), embora `bordaAoAlcance` agarre na regra pura com as mesmas
-  quinas: falta achar a causa; por isso os prints de PendurarBorda e SubirBorda ainda não saem.
+- ⚠️ A borda soltava sozinha (até 29/10/2026): pendurada, o corpo ia a `daParede` da quina, mais
+  perto que o raio mais a folga do controlador; no fim do encaixe o Rapier não deixava chegar, o
+  passo guiado virava "bloqueado" e devolvia ao chão. `BORDA.daParede` agora é
+  `CORPO.raio + CORPO.folga + 0,02` (teste com o Rapier em `tests/modos-colisao.test.ts`), e o
+  PendurarBorda põe as mãos 0,43 m à frente (`maos_a_frente` do script). No roteiro: posta logo
+  abaixo da quina, ela agarra ao cair; ⚠️ pular pendurada é soltar.
 
 ## Quadro das Cores (28/10/2026)
 

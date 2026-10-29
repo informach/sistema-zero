@@ -515,3 +515,107 @@ test('subida da borda passa acima da quina de uma plataforma real', () => {
     world.free()
   }
 })
+
+test('pular encostada na pedra agarra a quina e continua pendurada (o encaixe não trava na parede)', () => {
+  // A pedra de agarrar do Bosque: tampo 2,1 m acima do chão (o chão em y 1). Sem pedir direção,
+  // a criança pula ao pé dela; na descida as mãos passam pela quina. Até 29/10/2026 ela agarrava
+  // e soltava sozinha no fim do encaixe: `daParede` ficava mais perto que o raio com a folga.
+  const world = new R.World({ x: 0, y: -24, z: 0 })
+  try {
+    world.timestep = 1 / 60
+    world.createCollider(R.ColliderDesc.cuboid(30, 0.5, 30).setTranslation(0, 0.5, 0))
+    world.createCollider(R.ColliderDesc.roundCuboid(0.97, 1.07, 0.97, 0.03).setTranslation(0, 2, 0))
+    const pe = 1 + CORPO.doCentroAoPe + CORPO.folga
+    const corpo = world.createRigidBody(
+      R.RigidBodyDesc.kinematicPositionBased().setTranslation(
+        1 + CORPO.raio + CORPO.folga + 0.04,
+        pe,
+        0,
+      ),
+    )
+    const col = world.createCollider(R.ColliderDesc.capsule(CORPO.meiaAltura, CORPO.raio), corpo)
+    const chao = world.createCharacterController(CORPO.folga)
+    chao.enableAutostep(CORPO.degrau, 0.25, true)
+    chao.enableSnapToGround(0.35)
+    const livre = world.createCharacterController(CORPO.folga)
+    const mundo: MundoDoMovimento = {
+      cipos: [],
+      troncos: [],
+      aguas: [],
+      equilibrios: [],
+      escadas: [],
+      escorregadores: [],
+      bordas: [
+        {
+          id: 'pedra',
+          a: { x: 1, y: 3.1, z: -0.7 },
+          b: { x: 1, y: 3.1, z: 0.7 },
+          fora: { x: 2, y: 3.1, z: 0 },
+        },
+      ],
+      rodasDeNado: [],
+      foco: { x: 0, y: 0, z: 0 },
+    }
+    const c = criarEstadoDoCorpo()
+    c.noChao = true
+    const proprio = (o: InstanceType<typeof R.Collider>) => o.parent()?.handle !== corpo.handle
+    const passo = (i: number, pulou = false) => {
+      // O relógio do modo anda como no `personagem.tsx` (o encaixe na borda depende dele).
+      c.noModo += 1 / 60
+      const e: EntradaDoPasso = {
+        dt: 1 / 60,
+        agora: 10_000 + (i * 1000) / 60,
+        parado: false,
+        p: corpo.translation(),
+        ix: 0,
+        iz: 0,
+        pedidoX: 0,
+        pedidoZ: 0,
+        ladoX: 1,
+        ladoZ: 0,
+        pulou,
+        usou: false,
+        correr: false,
+        ritmo: 1,
+        patins: false,
+        conversa: null,
+        gravidade: 24,
+        nivelDoMar: -10,
+      }
+      passoComColisao(
+        MODOS[c.modo],
+        c,
+        e,
+        mundo,
+        col,
+        chao,
+        livre,
+        R.QueryFilterFlags.EXCLUDE_SENSORS,
+        proprio,
+        () => {},
+      )
+      corpo.setNextKinematicTranslation(c.prox)
+      world.step()
+    }
+    // De pé no chão primeiro (a pedra ainda sem a quina: o corpo novo começa sem apoio e, ao
+    // lado de uma quina tão baixa, agarraria antes de pisar).
+    const quinas = mundo.bordas.splice(0)
+    for (let i = 0; i < 20; i++) passo(i)
+    expect(c.noChao).toBe(true)
+    mundo.bordas.push(...quinas)
+    passo(20)
+    expect(c.modo).toBe('chao')
+    passo(21, true)
+    let agarrou = -1
+    for (let i = 22; i < 200; i++) {
+      passo(i)
+      if (agarrou < 0 && c.modo === 'borda') agarrou = i
+    }
+    expect(agarrou).toBeGreaterThan(0)
+    // Um segundo e meio depois de agarrar, ainda pendurada, com as mãos na quina.
+    expect(c.modo).toBe('borda')
+    expect(corpo.translation().y + BORDA.maosAcimaDoCentro).toBeCloseTo(3.1, 1)
+  } finally {
+    world.free()
+  }
+})

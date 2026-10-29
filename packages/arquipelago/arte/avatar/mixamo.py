@@ -46,6 +46,7 @@ BACIA_ATRAS = 0.18      # a bacia sentada fica atrás da origem (`BANCO.baciaAtr
 CENTRO = 0.95           # do pé ao centro do corpo (`CORPO.doCentroAoPe` + `CORPO.folga`)
 MAOS_NA_BARRA = 1.25    # a barra do planador (`BARRA_NO_AVATAR.y`)
 MAOS_NA_BORDA = CENTRO + 0.9   # pendurada na quina (`BORDA.maosAcimaDoCentro`)
+MAOS_A_FRENTE_NA_BORDA = 0.43  # da origem à quina, pendurada (`BORDA.daParede`)
 QUADRIL_NADANDO = 0.58  # o nadador deitado na linha da água (a cintura do modo chão)
 QUADRIL_DE_PE = 0.55    # a bacia de pé, parada (o "Idle")
 COSTAS = 0.10           # deitada, as costas ficam isto abaixo da origem (`CAMA.costas`)
@@ -90,7 +91,7 @@ CLIPES = [
     dict(nome='Equilibrar', arquivo='Teeter', laco=True, plano='xy0', altura=QUADRIL_DE_PE),
     # Pendurada na borda: o fim do "Braced Hang" (os pés na parede), indo e voltando.
     dict(nome='PendurarBorda', arquivo='Braced Hang', trecho=(25, 39), vaivem=True, plano='xy0',
-         maos=MAOS_NA_BORDA),
+         maos=MAOS_NA_BORDA, maos_a_frente=MAOS_A_FRENTE_NA_BORDA),
     # Subir a borda: o começo do "Braced Hang Hop Up" (da quina, o corpo sobe e estica as pernas),
     # sem o deslocamento (o modo leva o corpo do pendurado até em cima).
     dict(nome='SubirBorda', arquivo='Braced Hang Hop Up', trecho=(1, 18), plano='xyz'),
@@ -394,6 +395,14 @@ def gravar_clipe(c):
         for q in quadris:
             q.z += c['altura'] - media
     amostra = range(0, n, max(1, n // 12))
+    if c.get('maos_a_frente') is not None:
+        # As mãos à frente da origem (a frente é −y): o corpo vai para trás até elas chegarem à quina.
+        def frente(i):
+            m = medir(aplicar(poses[i], repouso, quadris[i]))
+            return -(m['LeftHand'].y + m['RightHand'].y) / 2
+        media = sum(frente(i) for i in range(0, n, max(1, n // 12))) / len(range(0, n, max(1, n // 12)))
+        for q in quadris:
+            q.y -= c['maos_a_frente'] - media
     if c.get('maos') is not None:
         # As mãos medidas no esqueleto do jogo (com os braços trocados, se for o caso).
         def mao(i):
