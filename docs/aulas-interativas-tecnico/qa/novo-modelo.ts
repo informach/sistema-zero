@@ -1,7 +1,7 @@
 /**
  * Manifestos já migrados para a direção pedagógica de 21/09/2026.
  *
- * Os 48 trios têm cobertura editorial; gravação e ensaio continuam etapas de produção.
+ * Os 50 trios têm cobertura editorial; gravação e ensaio continuam etapas de produção.
  */
 export const MANIFESTOS_NOVO_MODELO = new Set([
   'aula-1.manifesto.json',

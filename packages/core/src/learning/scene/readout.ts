@@ -678,6 +678,17 @@ function leituras(
         { label: 'ponte', value: b.ponteAberta ? 'baixada' : 'levantada', tone: 'plain' },
       ]
     }
+    case 'symbol-sequence': {
+      const q = state.sequence
+      const acesos = q.lit.length ? q.lit.join(', ') : 'nenhum'
+      return [
+        q.mode === 'order'
+          ? { label: 'passo', value: String(q.passo), tone: 'a' }
+          : { label: 'contados', value: `${q.lit.length} de 3`, tone: 'a' },
+        { label: 'acesos', value: acesos, tone: 'b' },
+        { label: 'baú', value: q.chest === 'open' ? 'aberto' : 'fechado', tone: 'plain' },
+      ]
+    }
     case 'lighthouse-position':
       return [
         { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
@@ -1314,6 +1325,15 @@ function situacao(scene: SceneId, state: SceneState): string {
       return b.clock === 0
         ? onde
         : `${onde} ${quantos(b.clock, 'segundo passou', 'segundos passaram')}.`
+    }
+    case 'symbol-sequence': {
+      if (state.caption) return state.caption
+      const q = state.sequence
+      const acesos =
+        q.lit.length === 0
+          ? 'Nenhum símbolo aceso.'
+          : `${quantos(q.lit.length, 'símbolo aceso', 'símbolos acesos')}.`
+      return `O baú está ${q.chest === 'open' ? 'aberto' : 'fechado'}. ${acesos}`
     }
     case 'lighthouse-position':
       return `A chave está em x ${state.keyPosition.x}, y ${state.keyPosition.y}.`

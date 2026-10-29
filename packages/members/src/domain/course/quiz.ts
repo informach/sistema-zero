@@ -114,6 +114,9 @@ export interface MemberQuizContent {
       | 'ponte-a-tempo'
       | 'ponte-atrasado'
       | 'ponte-de-novo'
+      | 'simbolos-ordem'
+      | 'simbolos-fora'
+      | 'simbolos-recomeca'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

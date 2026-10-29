@@ -17,6 +17,10 @@ import {
   SCENE_LIMITS,
   type SceneId,
   type SceneSetup,
+  SEQUENCE_MODES,
+  SEQUENCE_SYMBOLS,
+  type SequenceMode,
+  type SequenceSymbol,
   SHEET_CROP_WIDTHS,
   TIMED_BRIDGE,
 } from './actions'
@@ -167,6 +171,23 @@ export interface SceneTimedBridge {
   /** Gesto: puxadas e subidas sozinhas nesta partida. */
   pulls: number
   rises: number
+}
+
+/**
+ * O baú dos símbolos (`symbol-sequence`, Poder "O baú dos símbolos"): o jeito de o baú decidir,
+ * o `passo` que o jogo guarda (na ordem), os símbolos acesos e o baú.
+ */
+export interface SceneSymbolSequence {
+  mode: SequenceMode
+  /** Até onde a sequência chegou: 0 antes do sol, 1 depois do sol, 2 depois da lua. */
+  passo: number
+  /** Os símbolos acesos, na ordem em que acenderam (só contando, é a contagem). */
+  lit: SequenceSymbol[]
+  chest: 'closed' | 'open'
+  /** A pedra em que o personagem encostou por último (null no começo da partida). */
+  at: SequenceSymbol | null
+  /** Gesto: nesta partida, um símbolo fora da vez já recomeçou a tentativa. */
+  missed: boolean
 }
 
 /** A posição atual e a anterior permitem comparar um eixo por vez no mapa. */
@@ -1460,6 +1481,7 @@ export interface SceneState {
   coins: SceneCoinCounter
   pieces: SceneTwoPieces
   bridge: SceneTimedBridge
+  sequence: SceneSymbolSequence
   walk: SceneLighthouseWalk
   keyPosition: SceneLighthousePosition
   once: SceneOnce
@@ -1799,6 +1821,21 @@ export function newBridgeMatch(place: BridgeTimerPlace): SceneTimedBridge {
 export function cloneBridge(b: SceneTimedBridge): SceneTimedBridge {
   return { ...b, timers: [...b.timers] }
 }
+const SEQUENCE_PADRAO: SceneSymbolSequence = {
+  mode: 'order',
+  passo: 0,
+  lit: [],
+  chest: 'closed',
+  at: null,
+  missed: false,
+}
+/** Uma partida nova dos símbolos: tudo apagado, o baú fechado e o passo em 0, no mesmo modo. */
+export function newSequenceMatch(mode: SequenceMode): SceneSymbolSequence {
+  return { ...SEQUENCE_PADRAO, mode, lit: [] }
+}
+export function cloneSequence(q: SceneSymbolSequence): SceneSymbolSequence {
+  return { ...q, lit: [...q.lit] }
+}
 const WALK_PADRAO: SceneLighthouseWalk = {
   frame: 0,
   x: LIGHTHOUSE_WALK.start,
@@ -1836,6 +1873,7 @@ function gruposComPadrao() {
     ['coins', COINS_PADRAO],
     ['pieces', PIECES_PADRAO],
     ['bridge', BRIDGE_PADRAO],
+    ['sequence', SEQUENCE_PADRAO],
     ['walk', WALK_PADRAO],
     ['keyPosition', KEY_POSITION_PADRAO],
     ['once', initialOnce(undefined)],
@@ -1997,6 +2035,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     coins: cloneCoins(COINS_PADRAO),
     pieces: clonePieces(PIECES_PADRAO),
     bridge: cloneBridge(BRIDGE_PADRAO),
+    sequence: cloneSequence(SEQUENCE_PADRAO),
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
     keyPosition: { ...KEY_POSITION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
@@ -2173,6 +2212,7 @@ export function cloneScene(state: SceneState): SceneState {
     coins: cloneCoins(state.coins),
     pieces: clonePieces(state.pieces),
     bridge: cloneBridge(state.bridge),
+    sequence: cloneSequence(state.sequence),
     walk: {
       ...state.walk,
       trail: [...state.walk.trail],
@@ -2466,6 +2506,23 @@ function isSceneTimedBridge(v: unknown): v is SceneTimedBridge {
     inteiro(v.rises, TIMED_BRIDGE.countMax)
   )
 }
+function isSceneSymbolSequence(v: unknown): v is SceneSymbolSequence {
+  return (
+    isRecord(v) &&
+    SEQUENCE_MODES.some((m) => m === v.mode) &&
+    typeof v.passo === 'number' &&
+    Number.isInteger(v.passo) &&
+    v.passo >= 0 &&
+    v.passo <= 2 &&
+    Array.isArray(v.lit) &&
+    v.lit.length <= SEQUENCE_SYMBOLS.length &&
+    new Set(v.lit).size === v.lit.length &&
+    v.lit.every((x) => SEQUENCE_SYMBOLS.some((y) => y === x)) &&
+    (v.chest === 'closed' || v.chest === 'open') &&
+    (v.at === null || SEQUENCE_SYMBOLS.some((y) => y === v.at)) &&
+    bool(v.missed)
+  )
+}
 const strings = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((s) => typeof s === 'string' && s.length <= 80)
 const numbers = (v: unknown, max: number): v is number[] =>
@@ -2506,6 +2563,7 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!isSceneCoinCounter(value.coins)) return false
   if (!isSceneTwoPieces(value.pieces)) return false
   if (!isSceneTimedBridge(value.bridge)) return false
+  if (!isSceneSymbolSequence(value.sequence)) return false
   if (!isSceneLighthouseWalk(value.walk)) return false
   const position = value.keyPosition
   const validPosition = (point: unknown) =>

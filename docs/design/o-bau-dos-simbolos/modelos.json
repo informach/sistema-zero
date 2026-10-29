@@ -1,21 +1,21 @@
 {
   "pedra-sol": {
-    "sha": "b08b80c8dae0f2b4f41833ad5024a1126904cd6e78a8f0304a685042ce1103b1",
-    "bytes": 36828,
+    "sha": "caa4eec50423511c0d09ab0d430a653f374f32aadbb1e9871d01d807bbbd715d",
+    "bytes": 36776,
     "center": [-0.0049, 0.355, 0.0397],
     "size": 0.939,
     "clips": ["acender", "apagar"]
   },
   "pedra-lua": {
-    "sha": "721147b5f272b32db97e3b657336a7097765975e9fa4ef95f21430bfa01db11b",
-    "bytes": 35956,
+    "sha": "041261defe6b98aba436bee2558e6287d79b9d62622691951780344c1a31155f",
+    "bytes": 35904,
     "center": [0.0282, 0.3654, 0.032],
     "size": 0.964,
     "clips": ["acender", "apagar"]
   },
   "pedra-estrela": {
-    "sha": "86d6d435365d44f25e5c8b3c44abdd91085338453f931095031005307d1752b3",
-    "bytes": 30816,
+    "sha": "801641471a4695578ebd355169eadb10befce579cf362fddec1e0bd0ac187706",
+    "bytes": 30768,
     "center": [-0.0279, 0.355, 0.0812],
     "size": 0.8767,
     "clips": ["acender", "apagar"]

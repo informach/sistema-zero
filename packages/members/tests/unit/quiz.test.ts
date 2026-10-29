@@ -186,6 +186,9 @@ test.each([
   'ponte-a-tempo',
   'ponte-atrasado',
   'ponte-de-novo',
+  'simbolos-ordem',
+  'simbolos-fora',
+  'simbolos-recomeca',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

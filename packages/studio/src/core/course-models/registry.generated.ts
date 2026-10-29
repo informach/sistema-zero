@@ -1,6 +1,8 @@
 // Gerado por scripts/course-models.ts. Não edite.
 // Um import() literal por modelo: cada um vira um pedaço próprio, baixado só por quem usa.
 export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ default: string }>>> = {
+  '041261defe6b98aba436bee2558e6287d79b9d62622691951780344c1a31155f': () =>
+    import('./m-041261defe6b98aba436bee2558e6287d79b9d62622691951780344c1a31155f.generated'),
   '08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1': () =>
     import('./m-08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1.generated'),
   '0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9': () =>
@@ -29,8 +31,6 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b.generated'),
   '7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96': () =>
     import('./m-7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96.generated'),
-  '721147b5f272b32db97e3b657336a7097765975e9fa4ef95f21430bfa01db11b': () =>
-    import('./m-721147b5f272b32db97e3b657336a7097765975e9fa4ef95f21430bfa01db11b.generated'),
   '748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f': () =>
     import('./m-748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f.generated'),
   '77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6': () =>
@@ -39,10 +39,10 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345.generated'),
   '79fffe1f370a10cad0e514eefa28db740429003d74e6b1595a8f32d4a932e53d': () =>
     import('./m-79fffe1f370a10cad0e514eefa28db740429003d74e6b1595a8f32d4a932e53d.generated'),
+  '801641471a4695578ebd355169eadb10befce579cf362fddec1e0bd0ac187706': () =>
+    import('./m-801641471a4695578ebd355169eadb10befce579cf362fddec1e0bd0ac187706.generated'),
   '85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7': () =>
     import('./m-85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7.generated'),
-  '86d6d435365d44f25e5c8b3c44abdd91085338453f931095031005307d1752b3': () =>
-    import('./m-86d6d435365d44f25e5c8b3c44abdd91085338453f931095031005307d1752b3.generated'),
   '90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04': () =>
     import('./m-90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04.generated'),
   '9a9cd8727a2361f6e8e996baa1cfa1f4dc29632f3c4d823ecff8fd4ae2c5a27e': () =>
@@ -57,8 +57,6 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03.generated'),
   ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93: () =>
     import('./m-ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93.generated'),
-  b08b80c8dae0f2b4f41833ad5024a1126904cd6e78a8f0304a685042ce1103b1: () =>
-    import('./m-b08b80c8dae0f2b4f41833ad5024a1126904cd6e78a8f0304a685042ce1103b1.generated'),
   b4ebb3a039df0cf4c728a06ba7aaab40de6784ec28445f28c16f11ad21923613: () =>
     import('./m-b4ebb3a039df0cf4c728a06ba7aaab40de6784ec28445f28c16f11ad21923613.generated'),
   b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706: () =>
@@ -73,6 +71,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc.generated'),
   c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e: () =>
     import('./m-c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e.generated'),
+  caa4eec50423511c0d09ab0d430a653f374f32aadbb1e9871d01d807bbbd715d: () =>
+    import('./m-caa4eec50423511c0d09ab0d430a653f374f32aadbb1e9871d01d807bbbd715d.generated'),
   d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38: () =>
     import('./m-d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38.generated'),
   dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92: () =>

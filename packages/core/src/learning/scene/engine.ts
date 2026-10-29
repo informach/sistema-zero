@@ -6,6 +6,8 @@ import {
   SCENE_LIMITS,
   type SceneAction,
   type SceneId,
+  SEQUENCE_SYMBOLS,
+  type SequenceSymbol,
   STAGE_TARGET,
   sceneFrameRate,
   sceneLongFrame,
@@ -85,6 +87,7 @@ import {
   lighthouseWalkMaxX,
   lighthouseWalkOutSeenX,
   newBridgeMatch,
+  newSequenceMatch,
   observe,
   PLACAR_NAO_VISTO,
   POOL_CROSSING,
@@ -179,6 +182,16 @@ function aberturaDaChave(start: SceneStart): { x: number; y: number } {
  *
  * O mundo é do professor; a história é da criança, e ela começa vazia.
  */
+/** Como a cena fala de cada símbolo (com o artigo e a concordância). */
+const SIMBOLO_FALADO: Record<
+  SequenceSymbol,
+  { o: string; cap: string; da: string; aceso: string }
+> = {
+  sol: { o: 'o sol', cap: 'O sol', da: 'do sol', aceso: 'aceso' },
+  lua: { o: 'a lua', cap: 'A lua', da: 'da lua', aceso: 'acesa' },
+  estrela: { o: 'a estrela', cap: 'A estrela', da: 'da estrela', aceso: 'acesa' },
+}
+
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
   aberto.collection.collectedThisRound = false
   // O caso pode deixar moedas pegas e um valor em `moedas` (o mundo); as somas, as moedas que
@@ -192,6 +205,8 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
   // A ponte do caso (baixada, o relógio contando) é o mundo; as puxadas e subidas são da criança.
   aberto.bridge.pulls = 0
   aberto.bridge.rises = 0
+  // Os acesos e o passo do caso são o mundo; o erro que recomeçou a tentativa é da criança.
+  aberto.sequence.missed = false
   aberto.lighthouse.checkedKey = null
   aberto.keyPosition.before = null
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
@@ -730,6 +745,82 @@ export function stepScene(
     case 'restart-bridge':
       s.bridge = newBridgeMatch(s.bridge.place)
       s.caption = 'A partida recomeçou: a ponte está levantada e ponteAberta é falso.'
+      break
+    case 'touch-symbol': {
+      const q = s.sequence
+      const nome = SIMBOLO_FALADO[action.symbol]
+      q.at = action.symbol
+      if (q.chest === 'open') {
+        s.caption = 'O baú já abriu: recomece a partida para tentar de novo.'
+        break
+      }
+      if (q.mode === 'count') {
+        // Só contando: cada símbolo novo soma 1; com os três, o baú abre, em qualquer ordem.
+        if (q.lit.includes(action.symbol)) {
+          s.caption = `${nome.cap} já estava ${nome.aceso}: a contagem não mudou.`
+          break
+        }
+        q.lit = [...q.lit, action.symbol]
+        if (q.lit.length < SEQUENCE_SYMBOLS.length) {
+          s.caption = `Você tocou ${nome.o}: ${quantos(q.lit.length, 'símbolo tocado', 'símbolos tocados')}.`
+          break
+        }
+        q.chest = 'open'
+        const naOrdem = SEQUENCE_SYMBOLS.every((x, i) => q.lit[i] === x)
+        s.caption = naOrdem
+          ? 'Os três símbolos foram tocados: o baú abriu!'
+          : 'Os três símbolos foram tocados, fora da ordem da placa, e o baú abriu mesmo assim!'
+        if (!naOrdem && s.evidence.discoveries.includes('right-order'))
+          observe(s, 'count-vs-order', 'Só contando, a ordem errada também abriu o baú')
+        break
+      }
+      // Na ordem: cada símbolo pergunta se é a vez dele, comparando o passo (como o jogo).
+      if (action.symbol === 'sol') {
+        q.passo = 1
+        if (!q.lit.includes('sol')) q.lit = ['sol', ...q.lit]
+        s.caption = 'Você tocou o sol: passo agora é 1 e o sol acendeu.'
+        break
+      }
+      const vez = action.symbol === 'lua' ? 1 : 2
+      if (q.passo === vez) {
+        if (action.symbol === 'lua') {
+          q.passo = 2
+          q.lit = [...q.lit.filter((x) => x !== 'lua'), 'lua']
+          s.caption = 'Era a vez da lua: passo agora é 2 e a lua acendeu.'
+          observe(s, 'step-moves', 'O passo andou com a ordem certa')
+        } else {
+          q.lit = [...q.lit.filter((x) => x !== 'estrela'), 'estrela']
+          q.chest = 'open'
+          s.caption = 'Era a vez da estrela: ela acendeu e o baú abriu!'
+          observe(s, 'right-order', 'A ordem certa abriu o baú')
+          if (q.missed) observe(s, 'restart-works', 'Depois de errar, a ordem certa abriu o baú')
+        }
+        break
+      }
+      // O senão: a tentativa recomeça (o passo volta a 0 e os acesos apagam).
+      const tinhaAceso = q.lit.length > 0
+      q.passo = 0
+      q.lit = []
+      q.missed = true
+      if (tinhaAceso) {
+        s.caption = `Não era a vez ${nome.da}: passo voltou a 0 e os símbolos apagaram.`
+        observe(s, 'out-of-turn', 'Fora da vez, a tentativa recomeçou')
+      } else {
+        s.caption = `Não era a vez ${nome.da}: passo continua 0 e nada acendeu.`
+        observe(s, 'middle-start', 'Começando pelo meio, nada avançou')
+      }
+      break
+    }
+    case 'sequence-mode':
+      s.sequence = newSequenceMatch(action.mode)
+      s.caption =
+        action.mode === 'order'
+          ? 'Agora o baú confere a ordem com o passo. A partida recomeçou.'
+          : 'Agora o baú só conta os símbolos tocados. A partida recomeçou.'
+      break
+    case 'restart-symbols':
+      s.sequence = newSequenceMatch(s.sequence.mode)
+      s.caption = 'A partida recomeçou: os símbolos apagaram, o baú fechou e passo é 0.'
       break
     case 'movement-command':
       s.walk.movement = action.enabled

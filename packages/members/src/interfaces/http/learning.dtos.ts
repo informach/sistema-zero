@@ -30,6 +30,8 @@ import {
   SCENE_LIMITS,
   SCENE_PILHAS,
   SCENE_PORTS,
+  SEQUENCE_MODES,
+  SEQUENCE_SYMBOLS,
   SETUP_LIMITS,
   SHEET_CROP_WIDTHS,
   SYMMETRY_PIECES,
@@ -125,6 +127,16 @@ const SceneActionSchema = t.Union([
     place: t.Union(BRIDGE_TIMER_PLACES.map((p) => t.Literal(p))),
   }),
   t.Object({ type: t.Literal('restart-bridge') }),
+  // O baú dos símbolos (Poder "O baú dos símbolos", 29/10/2026).
+  t.Object({
+    type: t.Literal('touch-symbol'),
+    symbol: t.Union(SEQUENCE_SYMBOLS.map((s) => t.Literal(s))),
+  }),
+  t.Object({
+    type: t.Literal('sequence-mode'),
+    mode: t.Union(SEQUENCE_MODES.map((m) => t.Literal(m))),
+  }),
+  t.Object({ type: t.Literal('restart-symbols') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
   t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),

@@ -78,6 +78,11 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['in-time', 'rises-alone'],
     ['pull-again', 'timer-place'],
   ],
+  'symbol-sequence': [
+    ['step-moves', 'right-order'],
+    ['out-of-turn', 'middle-start'],
+    ['restart-works', 'count-vs-order'],
+  ],
   'lighthouse-position': [
     ['mover-horizontal'],
     ['mover-vertical'],

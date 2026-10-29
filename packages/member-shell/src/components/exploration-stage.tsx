@@ -71,6 +71,7 @@ import { NumberLineStage } from './scene-number-line'
 import { OnceVsAlwaysStage } from './scene-once-vs-always'
 import { SameRulesStage } from './scene-same-rules'
 import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
+import { SymbolSequenceStage } from './scene-symbol-sequence'
 import { TimedBridgeStage } from './scene-timed-bridge'
 import { TouchResponseStage } from './scene-touch-response'
 import { TwoClocksStage } from './scene-two-clocks'
@@ -322,6 +323,7 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
   if (m === 'coin-counter') return <CoinCounterStage state={state} />
   if (m === 'two-pieces') return <TwoPiecesStage state={state} />
   if (m === 'timed-bridge') return <TimedBridgeStage state={state} />
+  if (m === 'symbol-sequence') return <SymbolSequenceStage state={state} />
   if (m === 'lighthouse-walk') return <LighthouseWalkStage state={state} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): as sete cenas em
