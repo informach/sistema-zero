@@ -4,7 +4,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { Box3, Matrix4, type Object3D, Quaternion, Ray, Vector3 } from 'three'
+import { Box3, Matrix4, type Mesh, type Object3D, Quaternion, Ray, Raycaster, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ColisorDaIlha } from '../src/mundo/colisores-da-ilha'
 import { CORPO } from '../src/sistemas/corpo'
@@ -61,6 +61,11 @@ export function topoEm(c: Forma, x: number, z: number): number | undefined {
   return c.posicao[1] + c.meiaAltura
 }
 
+/** O ponto mais alto da forma (caixas giradas só em volta do y, como as dos modelos). */
+export function topoDaForma(c: Forma): number {
+  return c.posicao[1] + (c.forma === 'caixa' ? c.meio[1] : c.meiaAltura)
+}
+
 /** O corpo (centro em `p`) bate nesta forma? */
 export function bate(c: Forma, p: Vector3): boolean {
   const local = p.clone().applyMatrix4(matriz(c).invert())
@@ -90,4 +95,92 @@ export function pisoEm(
     if (y !== undefined && y > melhor.y) melhor = { y, nome: c.nome }
   }
   return melhor
+}
+
+/**
+ * A grade de andar de uma ilha (passos de 25 cm): em cada célula, a altura do piso (`col-terreno`,
+ * de cima para baixo, ou o topo de uma forma baixa em cima dele) e se o corpo cabe ali (nenhuma forma o bate, e o chão das células vizinhas,
+ * a 25 e 35 cm, o raio do corpo, não passa do degrau: parede, encosta). `alcance` diz as células
+ * que se alcançam andando, subindo no máximo a rampa que o corpo sobe.
+ */
+export function gradeDeAndar(terreno: Mesh, formas: readonly Forma[], raio = 14, passo = 0.25) {
+  const sobePorPasso = passo * Math.tan((CORPO.sobeAte * Math.PI) / 180) * 0.9
+  const lado = Math.round((2 * raio) / passo) + 1
+  const raios = new Raycaster()
+  const baixo = new Vector3(0, -1, 0)
+  const chaoEm = (x: number, z: number): number | undefined => {
+    raios.set(new Vector3(x, 40, z), baixo)
+    return raios.intersectObject(terreno, false)[0]?.point.y
+  }
+  const indice = (x: number, z: number) =>
+    Math.round((z + raio) / passo) * lado + Math.round((x + raio) / passo)
+  const centro = (i: number) => ({
+    x: (i % lado) * passo - raio,
+    z: Math.floor(i / lado) * passo - raio,
+  })
+  // O piso: o chão da ilha ou, em cima dele, o topo de uma forma baixa (até um degrau: os degraus
+  // do palco, do observatório). Forma mais alta que isso é obstáculo, não piso.
+  const alturas: (number | undefined)[] = []
+  for (let i = 0; i < lado * lado; i++) {
+    const { x, z } = centro(i)
+    const chao = chaoEm(x, z)
+    if (chao === undefined) {
+      alturas.push(undefined)
+      continue
+    }
+    let piso = chao
+    for (const c of formas) {
+      const topo = topoEm(c, x, z)
+      if (topo !== undefined && topo > piso && topo - chao <= CORPO.degrau + 0.01) piso = topo
+    }
+    alturas.push(piso)
+  }
+  const vizinhas = [-lado - 1, -lado, -lado + 1, -1, 1, lado - 1, lado, lado + 1]
+  const celulas: ({ y: number; livre: boolean } | null)[] = []
+  for (let i = 0; i < lado * lado; i++) {
+    const y = alturas[i]
+    if (y === undefined || y < TAMPO - 0.05) {
+      celulas.push(null)
+      continue
+    }
+    const { x, z } = centro(i)
+    const corpo = new Vector3(x, y + CENTRO_DO_CORPO + 0.05, z)
+    // Forma com o topo a até um degrau do piso o corpo sobe sozinho: não é obstáculo.
+    const livre =
+      !vizinhas.some((d) => (alturas[i + d] ?? -Infinity) > y + CORPO.degrau) &&
+      !formas.some((c) => topoDaForma(c) > y + CORPO.degrau && bate(c, corpo))
+    celulas.push({ y, livre })
+  }
+  const alcance = (x: number, z: number): Set<number> => {
+    const inicio = indice(x, z)
+    const visto = new Set<number>([inicio])
+    const fila = [inicio]
+    while (fila.length) {
+      const i = fila.pop() as number
+      const c = celulas[i]
+      if (!c) continue
+      const col = i % lado
+      for (const [di, dc] of [
+        [-lado, 0],
+        [lado, 0],
+        [-1, -1],
+        [1, 1],
+      ] as const) {
+        if ((dc === -1 && col === 0) || (dc === 1 && col === lado - 1)) continue
+        const j = i + di
+        const v = celulas[j]
+        if (!v?.livre || visto.has(j) || v.y - c.y > sobePorPasso) continue
+        visto.add(j)
+        fila.push(j)
+      }
+    }
+    return visto
+  }
+  /** Alguma célula alcançada fica a menos de `perto` de (x, z)? */
+  const chegaPerto = (andou: Set<number>, x: number, z: number, perto = 1.2) =>
+    [...andou].some((i) => {
+      const c = centro(i)
+      return Math.hypot(c.x - x, c.z - z) < perto
+    })
+  return { celulas, chaoEm, indice, centro, alcance, chegaPerto }
 }

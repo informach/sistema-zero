@@ -51,7 +51,7 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 | `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario` e 101 `col-*` mais o `col-terreno` | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` | | 22.051 | 758 KB |
 | `pico-props.glb` | `pinheiro-nevado-a`, `pinheiro-nevado-b`, `bloco-de-gelo`, `boneco-de-neve`, `painel-de-gelo` (base em y = 0) | | | 3.300 | 96 KB |
 | `pico-treno.glb` | `treno` (frente para −z do jogo) | | | 668 | 33 KB |
-| `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 584 KB |
+| `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` e 61 `col-*` mais o `col-terreno` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 626 KB |
 | `vale-dos-dinos-props.glb` | `samambaia-gigante`, `cavalinha`, `ninho`, `ovo-dino`, `osso`, `cranio-fossil` | | | 4.278 | 100 KB |
 | `nuvens.glb` | `chao`, `cenario`, `fio-1` a `fio-6`, `plataforma-1` a `plataforma-4` | `tear`, `ninho` (dentro do ninho, no alto da árvore), `pe-da-arvore`, `balao`, `arco-iris`, `topo-plataforma-1` a `-4` | | 19.560 | 471 KB |
 | `nuvens-balao.glb` | `balao` (base do cesto em y = 0) | | `flutuar` (3 s, laço) | 848 | 36 KB |
@@ -74,7 +74,13 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
   `tests/colisores-do-pico.test.ts` (busca em grade da chegada ao platô). A parede de gelo tem três
   painéis em degraus, e no alto dela fica o platô do `topo-da-parede`.
 - **Vale:** o nó `lava` pode pulsar o brilho, e a fumaça fica no `cenario`. As pegadas de dino vão
-  da ponte até o observatório.
+  da ponte até o observatório. Colisão (29/10/2026, aj-ligar-01): o vulcão entra no `col-terreno`
+  (as encostas não se sobem; o facetado deixa subir uns 0,8 m no pé, e a cratera fica a 6,5 m); o
+  observatório é fechado (torre, varanda e cúpula, com os degraus da frente); a cerca da escavação
+  segura quem anda (`col-guarda-cerca-*`), com a entrada entre o 5º e o 6º postes, e o crânio e as
+  costelas do esqueleto seguram o corpo; ninhos, samambaias e cavalinhas (`col-cil-moita-*`, a
+  câmera passa), coqueiros, pedras e postes. O `lumi-4` e o `pe-do-vulcao` saíram da encosta.
+  Teste: `tests/colisores-do-vale.test.ts`.
 - **Nuvens:**
   - cada `fio-N` tem a cor do arco-íris e um material próprio (`fio1` a `fio6`): o jogo pode
     deixá-los cinza e acender um por vez;

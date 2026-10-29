@@ -1,13 +1,12 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
-import { type Mesh, type Object3D, Raycaster, Vector3 } from 'three'
+import type { Mesh, Object3D } from 'three'
 import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { CORPO } from '../src/sistemas/corpo'
 import {
   arquivoDaIlha,
-  bate,
-  CENTRO_DO_CORPO,
   carregarGlb,
   type Forma,
+  gradeDeAndar,
   grupo,
   jsonDoGlb,
   TAMPO,
@@ -19,10 +18,6 @@ import {
  * da ponte até o platô pela trilha, com o corpo inteiro cabendo, sem degrau maior que o do corpo.
  */
 const ARQUIVO = arquivoDaIlha('pico.glb')
-const PASSO = 0.25
-/** O que o corpo sobe de uma célula à vizinha, andando (a rampa de 52° em 25 cm, com folga). */
-const SOBE_POR_PASSO = PASSO * Math.tan((CORPO.sobeAte * Math.PI) / 180) * 0.9
-const RAIO_DA_GRADE = 14
 
 let raiz: Object3D
 let colisores: ColisorDaIlha[]
@@ -32,14 +27,6 @@ const ancora = (nome: string) => {
   const o = raiz.getObjectByName(nome)
   if (!o) throw new Error(`sem a âncora ${nome}`)
   return o.position
-}
-
-const raio = new Raycaster()
-const baixo = new Vector3(0, -1, 0)
-/** A altura do chão (col-terreno) em (x, z), de cima para baixo; undefined fora da ilha. */
-function chaoEm(x: number, z: number): number | undefined {
-  raio.set(new Vector3(x, 40, z), baixo)
-  return raio.intersectObject(terreno, false)[0]?.point.y
 }
 
 beforeAll(async () => {
@@ -89,66 +76,14 @@ describe('os nós col-* do Pico', () => {
 })
 
 describe('a trilha até o cume', () => {
-  type Celula = { y: number; livre: boolean }
-  const lado = Math.round((2 * RAIO_DA_GRADE) / PASSO) + 1
-  const celulas: (Celula | null)[] = []
-  const indice = (x: number, z: number) =>
-    Math.round((z + RAIO_DA_GRADE) / PASSO) * lado + Math.round((x + RAIO_DA_GRADE) / PASSO)
-  const centro = (i: number) => ({
-    x: (i % lado) * PASSO - RAIO_DA_GRADE,
-    z: Math.floor(i / lado) * PASSO - RAIO_DA_GRADE,
-  })
-
+  let grade: ReturnType<typeof gradeDeAndar>
+  const celulas = () => grade.celulas
+  const centro = (i: number) => grade.centro(i)
+  const alcance = (x: number, z: number) => grade.alcance(x, z)
+  const chaoEm = (x: number, z: number) => grade.chaoEm(x, z)
   beforeAll(() => {
-    const alturas: (number | undefined)[] = []
-    for (let i = 0; i < lado * lado; i++) {
-      const { x, z } = centro(i)
-      alturas.push(chaoEm(x, z))
-    }
-    // Em volta do corpo (as células vizinhas, a 25 e 35 cm: o raio dele), o chão não pode passar do
-    // degrau: a parede de rocha da trilha, a encosta.
-    const vizinhas = [-lado - 1, -lado, -lado + 1, -1, 1, lado - 1, lado, lado + 1]
-    for (let i = 0; i < lado * lado; i++) {
-      const y = alturas[i]
-      if (y === undefined || y < TAMPO - 0.05) {
-        celulas.push(null)
-        continue
-      }
-      const { x, z } = centro(i)
-      const corpo = new Vector3(x, y + CENTRO_DO_CORPO + 0.05, z)
-      const livre =
-        !vizinhas.some((d) => (alturas[i + d] ?? -Infinity) > y + CORPO.degrau) &&
-        !formas.some((c) => bate(c, corpo))
-      celulas.push({ y, livre })
-    }
+    grade = gradeDeAndar(terreno, formas)
   }, 120_000)
-
-  /** As células que se alcançam andando a partir de (x, z). */
-  function alcance(x: number, z: number): Set<number> {
-    const inicio = indice(x, z)
-    const visto = new Set<number>([inicio])
-    const fila = [inicio]
-    while (fila.length) {
-      const i = fila.pop() as number
-      const c = celulas[i]
-      if (!c) continue
-      const col = i % lado
-      for (const [di, dc] of [
-        [-lado, 0],
-        [lado, 0],
-        [-1, -1],
-        [1, 1],
-      ] as const) {
-        if ((dc === -1 && col === 0) || (dc === 1 && col === lado - 1)) continue
-        const j = i + di
-        const v = celulas[j]
-        if (!v?.livre || visto.has(j) || v.y - c.y > SOBE_POR_PASSO) continue
-        visto.add(j)
-        fila.push(j)
-      }
-    }
-    return visto
-  }
 
   test('da chegada da ponte, a criança anda até o platô do cume', () => {
     const chegada = ancora('chegada')
@@ -157,7 +92,7 @@ describe('a trilha até o cume', () => {
     let noPlato = 0
     for (const i of andou) {
       const { x, z } = centro(i)
-      const c = celulas[i]
+      const c = celulas()[i]
       if (c && Math.hypot(x - cume.x, z - cume.z) < 2 && Math.abs(c.y - cume.y) < 0.15) noPlato++
     }
     // Pelo menos um pedaço do platô (não só uma célula na beira).
@@ -183,7 +118,7 @@ describe('a trilha até o cume', () => {
     const andou = alcance(chegada.x, chegada.z)
     let altas = 0
     for (const i of andou) {
-      const c = celulas[i]
+      const c = celulas()[i]
       if (!c || c.y < TAMPO + 1.5) continue
       altas++
       const { x, z } = centro(i)
