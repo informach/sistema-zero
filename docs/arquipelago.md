@@ -98,13 +98,33 @@ salvamento por revisão e tempo livre: `packages/arquipelago-api/CLAUDE.md`.
   pais), `/arquipelago` nos prefixos protegidos, `api/arquipelago/cliente` fora do matcher do proxy,
   CSP própria da página com `'wasm-unsafe-eval'` garantido.
 - **community (adulto):** página `/arquipelago`, item no menu lateral e em "Mais" no celular, pela
-  mesma liberação do serviço; sem limite de tempo.
+  mesma liberação do serviço; sem limite de tempo, sem família (sem os shims dos irmãos desde a
+  fase3-13) e com a pele adulta (seção abaixo).
 - **api-gateway:** `src/infrastructure/config/arquipelago-routes.ts`, que só entra na config com
   `ARQUIPELAGO_URL` (sem a variável, o gateway fica idêntico). O escopo do Kids libera
   `/arquipelago/*` ao aluno (menos a família) e ao responsável só a família: o limite, as
   permissões de visita e a leitura da semana.
 - **CI:** os quatro pacotes entram sozinhos no typecheck e nos testes; o `ci.yml` ganhou os testes
   de banco do serviço e o build do cliente; o deploy de staging mapeia `avatar-quarto` e o contrato.
+
+## Comunidade adulta (fase3-13, 29/10/2026)
+
+O mundo, os moradores e as ilhas são os mesmos; a etapa adulta na mesma posição do posto abre a
+mesma ilha. Mudam a voz e o desenho do que fala com quem joga:
+
+- **No jogo:** `src/interface/voz.ts` (`VozDoJogo`, `VOZ_KIDS`, `useVoz`) e o pedaço adulto
+  `src/adulto/pele-adulta.ts` (`VOZ_ADULTA` e `ESTILOS_ADULTOS`, tokens do "Estúdio à noite" do
+  community, letra mínima de 15 px), carregado por `import()` só com `publico === 'adulto'`; a
+  raiz ganha `.arq-adulto`. O adulto não vê "Visitar um irmão" nem os "Recordes da família".
+- **Na plataforma:** a página adulta usa a entrada `arquipelago-host-adulto` do member-shell (a
+  porta adulta, `arquipelago-porta-adulta.tsx`); o Kids continua com `arquipelago-host`. O host
+  responde 404, sem ir à rede, ao tempo e à família fora do Kids (`soDoKids`).
+- O Kids ficou byte a byte igual (hashes do HTML nos testes da porta e das telas).
+- Pendente: a placa 3D da ponte e a fala da luneta dita pelo mundo ainda usam os nomes dos postos
+  do Kids (precisa tocar em `mundo/`).
+
+Plano, levantamento e a lista de lançamento (variáveis, ordem, o que conferir em staging):
+[plans/2026-10-29-arquipelago-lancamento-adulto.md](plans/2026-10-29-arquipelago-lancamento-adulto.md).
 
 ## Ligado e pendente (27/10/2026)
 

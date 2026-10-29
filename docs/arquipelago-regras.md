@@ -2183,8 +2183,9 @@ Arquivos: `arquipelago/src/sistemas/caderno-dos-lumis.ts` (regra pura),
 - **Fechado:** 403 (jogo bloqueado para a pessoa) diz "O caderno ainda não abriu para você.".
   Serviço ou Members fora (424, rede, resposta estranha) diz que não conseguiu ler e oferece
   "Tentar de novo". Uma leitura que falha não apaga a coleção que já estava na tela.
-- **Comunidade adulta:** o mesmo painel e os mesmos textos (o jogo não tem pele adulta); os cursos
-  do "Aprenda isso em" são os adultos, porque vêm do serviço.
+- **Comunidade adulta:** o mesmo painel e os mesmos textos, na pele adulta do jogo (fase3-13: as
+  cores, a letra e os botões do community); os cursos do "Aprenda isso em" são os adultos, porque
+  vêm do serviço.
 - **Montar a rotina:** o botão "Montar a rotina de um Lumi", embaixo do caderno, abre o painel
   "Rotina" (§8.2). O caderno continua só mostrando a coleção.
 - **Plataforma de mentira** (`src/plataforma/cartas-falsas.ts`, mesma régua do contrato): no
