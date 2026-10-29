@@ -166,3 +166,13 @@ lista em `sistemas/banda.ts`). `migrarDaV13` começa em 0. A união pública ace
 V14; a V13 continua estrita. 19 bytes no pior caso: sobram 29 do teto. Testes em
 `salvamento-v14.test.ts`. Em `objetos.ts`, a origem da lareira e da banda diz de onde elas vêm
 (o primeiro chocolate quente no iglu e o festival de inverno).
+
+## Aparências lidas pela plataforma (29/10/2026)
+
+`aparencias.ts`: `AparenciaLidaSchema` valida GLB estático autônomo ou PNG. Tetos propostos em
+`LIMITES_DA_APARENCIA`: 2 MiB de GLB, 5.000 triângulos contando instâncias, atlas 512; PNG
+256 KiB e lado 192. Confere cabeçalho, buffers, acesso à geometria, imagens embutidas e ciclos.
+`escalaDaCaixaDoMolda` é compartilhada pela oficina e pelo encaixe do jogo. O método
+`Plataforma.lerAparencia(criacaoId, sinal?)` é opcional, recebe somente id da conta e devolve
+bytes próprios ou null. Mantém contrato 1 e salvamento intactos. A visita não recebe esses ids.
+Testes em `tests/aparencias.test.ts`; regra completa em `docs/arquipelago-regras.md` §6.16.

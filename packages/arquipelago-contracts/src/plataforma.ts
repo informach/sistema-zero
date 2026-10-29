@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { AparenciaLida } from './aparencias'
 import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
 
 /**
@@ -96,6 +97,8 @@ export interface Plataforma {
   salvarQuarto(quarto: QuartoDoJogo): Promise<QuartoDoJogo>
   servico: ServicoDoJogo
   abrirFerramenta(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta>
+  /** Só criações da pessoa desta montagem. Bytes próprios, sem URL autenticada no jogo. */
+  lerAparencia?(criacaoId: string, sinal?: AbortSignal): Promise<AparenciaLida | null>
   /** Sai do jogo e volta para a plataforma (a página decide para onde). */
   voltarParaPlataforma(): void
   relatarErro(erro: unknown, contexto: string): void

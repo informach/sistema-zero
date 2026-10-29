@@ -3681,3 +3681,16 @@ novo exigiria mexer no workflow.
 - Testes da conversão: `tests/arquipelago-rotina-blocks.test.ts`.
 
 Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/plans/2026-10-29-mini-estudio-lumis.md`, regras §8.2. Prévia isolada, salvamento V10 intacto, releitura das conquistas e limites mantidos. JavaScript/TypeScript somente; não executa código livre.
+
+## Criações como aparência no Arquipélago (29/10/2026)
+
+`lib/arquipelago-aparencia.ts` implementa `Plataforma.lerAparencia?`: confere acesso à ferramenta
+com `viewerId`, baixa somente o id da própria conta via `createCreationsCloud.download` e
+confere também o id do documento nativo. O download usa sessão do documento e `x-sz-viewer`;
+o Members autoriza por pessoa, público, ferramenta e id. Não substituir por leitura de IndexedDB
+nem por URL pública. Não grava nada. Exportadores existentes são carregados dinamicamente pelos
+subpaths `molda/studio-library` e `pinta/studio-library`; o jogo não importa essas ferramentas.
+Recusas, versões futuras, erro e aborto devolvem null para manter o modelo de reserva. O molde
+atual abre modelo clássico e cenário pixel; cenas do Molda e outros formatos ficam na reserva.
+A escala da caixa agora vem do contrato. Testes: `tests/arquipelago-aparencia.test.ts` e
+`tests/arquipelago-objeto.test.ts`. Regras em §6.16 e plano `2026-10-29-arquipelago-molda-no-mundo.md`.

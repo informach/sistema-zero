@@ -1,3 +1,4 @@
+export * from './aparencias'
 export * from './api'
 export * from './aprenda'
 export * from './cartas-lumi'

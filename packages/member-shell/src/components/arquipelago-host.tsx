@@ -19,6 +19,7 @@ import {
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import { lerAparenciaDaConta } from '../lib/arquipelago-aparencia'
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
 import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
 import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-rotina'
@@ -206,6 +207,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     versaoContrato: VERSAO_CONTRATO_PLATAFORMA,
     publico: opcoes.publico,
     perfil: opcoes.perfil,
+    lerAparencia: (id, sinal) => lerAparenciaDaConta(opcoes.perfil.id, id, sinal),
     async lerJornada() {
       const r = await json('/api/members/gamification/me')
       const dados =

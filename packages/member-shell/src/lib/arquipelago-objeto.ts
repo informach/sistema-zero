@@ -1,4 +1,5 @@
 import {
+  escalaDaCaixaDoMolda,
   type MoldeDeObjeto,
   MoldeDeObjetoSchema,
   type PedidoDeFerramenta,
@@ -39,18 +40,12 @@ export function telaDoPinta(molde: MoldeDeObjeto): PintaInitialCanvas | null {
 }
 
 /** Unidades da grade do Molda por célula do jogo (a grade tem 32 de largura e de altura). */
-export const UNIDADES_DO_MOLDA_POR_CELULA = 16
-/** O maior lado da caixa na grade do Molda, com folga para a criança passar da caixa um pouco. */
-const MAIOR_LADO_NA_GRADE = 30
+export { UNIDADES_DO_MOLDA_POR_CELULA } from '@sistemazero/arquipelago-contracts'
 
 /** A caixa do Molda: a do molde, na proporção dele, encolhida quando não cabe na grade. */
 export function caixaDoMolda(molde: MoldeDeObjeto): MoldaInitialModel {
   const { largura, altura, fundo } = molde.caixa
-  const escala = Math.min(
-    UNIDADES_DO_MOLDA_POR_CELULA,
-    MAIOR_LADO_NA_GRADE / Math.max(largura, fundo),
-    MAIOR_LADO_NA_GRADE / altura,
-  )
+  const escala = escalaDaCaixaDoMolda(molde)
   return {
     name: nomeDaCriacaoDoMolde(molde),
     box: {
