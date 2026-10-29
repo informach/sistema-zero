@@ -1272,6 +1272,8 @@ const ComingSoonBlockSchema = t.Object({
  * aluno, lendo o anexo. Declará-los aqui deixaria o admin gravar um tamanho que envelhece na
  * primeira troca de arquivo. O `normalize` do Elysia descarta o que não está declarado.
  */
+/** O teto do texto de um item de materiais, igual ao do manifesto no core. */
+export const MATERIALS_TEXT_MAX_CHARS = 50_000
 const MaterialsBlockSchema = t.Object({
   kind: t.Literal('materials'),
   title: t.Optional(t.String({ maxLength: 120 })),
@@ -1295,7 +1297,10 @@ const MaterialsBlockSchema = t.Object({
       t.Object({
         id: t.String({ minLength: 1, maxLength: 64 }),
         kind: t.Literal('text'),
-        markdown: t.String({ minLength: 1, maxLength: 2000 }),
+        // O mesmo teto do core (`isLearningManifest`): o Passo a passo do projeto vai inteiro
+        // num item de texto com a prévia em livro, e tem de 3 a 15 mil caracteres. Com os 2000
+        // de antes, a importação aceitava e a PUBLICAÇÃO recusava (29/10/2026).
+        markdown: t.String({ minLength: 1, maxLength: MATERIALS_TEXT_MAX_CHARS }),
       }),
       t.Object({
         id: t.String({ minLength: 1, maxLength: 64 }),

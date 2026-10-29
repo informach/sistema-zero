@@ -24,6 +24,12 @@ export const CHAVE_DO_JOGO = 'chave-dourada'
 export const QUADRO_DA_CHAVE = 64
 
 const NOME = 'A Chave do Farol'
+/**
+ * O espaço entre as áreas do projeto no canvas. O padrão (420) põe o "Quando acontecer" por cima
+ * do fim das linhas do "Ao iniciar", e é justo ali que está a imagem da chave (a linha "Criar
+ * sprite chave … com imagem chave-dourada" tem uns 760 px). Medido no ensaio de ponta a ponta.
+ */
+const COLUNAS_DAS_AREAS = 900
 
 /**
  * Uma chave rosa como a aula ensina (o gabarito do Admin e o jogo pronto): argola com o Círculo,
@@ -44,7 +50,12 @@ export const CHAVE_EXEMPLO: ProjectAsset = {
 
 /** O jogo pronto da Chave do Farol: o ponto de partida do bloco de Estúdio. */
 export function projetoInicialMeuDesenho(): Project {
-  return montarProjetoFarol('concluido')
+  const farol = montarProjetoFarol('concluido')
+  if (!farol.ir) throw Error('O jogo do Farol perdeu a IR')
+  return {
+    ...farol,
+    blocksState: buildWorkspaceStateFromIR(farol.ir, { colGap: COLUNAS_DAS_AREAS }),
+  }
 }
 
 /** O gabarito: a chave do jogo criada com a imagem `minha-chave`, e o desenho nos materiais. */
@@ -62,7 +73,7 @@ export function projetoComMinhaChave(): Project {
   return {
     ...base,
     ir,
-    blocksState: buildWorkspaceStateFromIR(ir),
+    blocksState: buildWorkspaceStateFromIR(ir, { colGap: COLUNAS_DAS_AREAS }),
     files: generateProjectFiles({ ir, projectName: NOME }),
     assets: [...(base.assets ?? []), CHAVE_EXEMPLO],
   }

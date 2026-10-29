@@ -46,6 +46,15 @@ desenho publicado ou sem entrega volta com `asset: null`; vagas ilegíveis valem
 que não é Estúdio é 404. Testes: `tests/integration/art-slots-read.test.ts` e o SQL em
 `tests/db/art-slots-sql.test.ts`.
 
+**Texto dos materiais na publicação (29/10/2026).** O item `text` do bloco `materials` aceitava
+até 2000 caracteres no DTO de publicação (`MaterialsBlockSchema`), enquanto o core
+(`isLearningManifest`) aceita 50000: a importação dos cursos do Faísca passava e a PUBLICAÇÃO
+recusava ("Preencha os campos obrigatórios deste bloco"), porque o Passo a passo do projeto vai
+inteiro num item de texto com a prévia em livro (3 a 15 mil caracteres). Hoje
+`MATERIALS_TEXT_MAX_CHARS` = 50000, igual ao core. Teste: `tests/unit/materials-text-publish.test.ts`
+(todo bloco de materiais com itens dos manifestos do Faísca passa no `parsePublishedLessonBlock`).
+Achado pelo ensaio de ponta a ponta da vaga de arte (`community-kids/e2e-art-slots`).
+
 ## Leituras internas do Arquipélago (27/10/2026)
 
 `interfaces/http/routes/arquipelago-internal.routes.ts`, prefixo `/members/internal/arquipelago`

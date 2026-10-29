@@ -1422,7 +1422,7 @@
                         }
                       }
                     },
-                    "x": 452,
+                    "x": 932,
                     "y": 392
                   },
                   {
@@ -1620,7 +1620,7 @@
                         }
                       }
                     },
-                    "x": 872,
+                    "x": 1832,
                     "y": 392
                   }
                 ]
@@ -1664,7 +1664,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora desenhe a sua chave: um Círculo para a argola, um Retângulo para a haste e dois Retângulos pequenos para os dentes. Use o quadro inteiro. Quando gostar, clique em Enviar meu desenho, confirme em Enviar e depois clique em Próxima parte."
+        "text": "Agora desenhe a sua chave. Clique em Expandir para ter mais espaço e use um Círculo para a argola, um Retângulo para a haste e dois Retângulos pequenos para os dentes. Quando gostar, clique em Reduzir, em Enviar meu desenho, confirme em Enviar e depois clique em Próxima parte."
       }
     },
     {
@@ -1676,7 +1676,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora coloque o seu desenho no jogo: em Ao iniciar, no bloco Criar sprite chave, troque chave-dourada por minha-chave. Teste, clique em Verificar projeto, depois em Enviar meu projeto, confirme em Enviar e clique em Concluir aula."
+        "text": "Agora coloque o seu desenho no jogo: clique em Expandir e, em Ao iniciar, no bloco Criar sprite chave, troque chave-dourada por minha-chave. Teste, clique em Reduzir e em Verificar projeto, depois em Enviar meu projeto, confirme em Enviar e clique em Concluir aula."
       }
     },
     {
@@ -1689,7 +1689,7 @@
           {
             "id": "passos",
             "kind": "text",
-            "markdown": "# Passo a passo do projeto — Meu primeiro desenho no Pinta\n\nExtra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pinta e colocar o desenho no jogo da Chave do Farol. Você pode consultar quantas vezes quiser.\n\n## 1. Desenhe a sua chave\n\n**Relembre:** O quadro do Pinta é quadrado, como a chave do jogo. O que você desenha nele vira a imagem minha-chave, que vai para o jogo quando você envia o desenho.\n\n1. Embaixo da caixa de ferramentas, clique no quadradinho cheio, o Preenchimento. No painel Cores, à direita, escolha a cor da chave. O Contorno, o quadradinho vazado, já vem preto.\n2. Pegue a ferramenta Círculo. No lado esquerdo do quadro, aperte o botão do mouse e arraste na diagonal até a argola ficar grande e redonda. Solte.\n3. Pegue a ferramenta Retângulo. Começando no meio da argola, arraste para a direita até perto da borda do quadro, num retângulo baixinho: é a haste.\n4. Ainda com o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro: são os dentes.\n5. Para arrumar, pegue a ferramenta Selecionar, clique numa forma e arraste. Para mudar o tamanho, puxe um dos quadradinhos da borda da seleção.\n6. Se quiser, pegue o Pincel e faça um brilho na argola. Use o quadro inteiro: no jogo a chave fica pequena.\n7. Clique em Enviar meu desenho, em cima do Pinta, e confirme em Enviar.\n\n**Teste:** A sua chave ocupa quase todo o quadro, e aparece a mensagem Desenho enviado!\n\n**Se não funcionar:** Se uma forma sumiu ou ficou errada, use Desfazer, no alto do Pinta. Se o envio não foi, clique em Enviar meu desenho de novo.\n\n## 2. A sua chave no jogo\n\n**Relembre:** O desenho chega aos materiais do jogo com o nome minha-chave. Trocar a imagem do sprite chave muda só a aparência: o nome do sprite continua chave, e as regras do jogo continuam valendo.\n\n1. Se quiser ver o desenho, abra o menu de três pontinhos e depois Imagens: a minha-chave tem o selo Seu desenho da aula. Feche a janela.\n2. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.\n3. Procure o bloco Criar sprite chave. No fim dele, clique em chave-dourada e escolha minha-chave.\n\n**Teste:** Clique no jogo e leve o personagem até a chave: ela some e o aviso muda. Depois vá até o farol: ele acende.\n\n**Se não funcionar:** Se a chave dourada continuar aparecendo, confira se a troca foi no bloco Criar sprite chave. Se minha-chave não estiver na lista, volte à parte anterior, clique em Enviar meu desenho e abra a aula de novo.\n\n## Entrega\n\nEnvie o desenho antes de abrir o jogo: é assim que ele chega aos materiais do jogo. No jogo, troque a imagem, jogue uma partida inteira e clique em Verificar projeto. Corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. Quer outra chave? Volte à parte do desenho, mude e clique em Enviar de novo: na próxima vez que você abrir a aula, o jogo vem com a chave nova.\n"
+            "markdown": "# Passo a passo do projeto — Meu primeiro desenho no Pinta\n\nExtra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pinta e colocar o desenho no jogo da Chave do Farol. Você pode consultar quantas vezes quiser.\n\n## 1. Desenhe a sua chave\n\n**Relembre:** O quadro do Pinta é quadrado, como a chave do jogo. O que você desenha nele vira a imagem minha-chave, que vai para o jogo quando você envia o desenho.\n\n1. Se aparecer o quadro Dicas rápidas, clique em Entendi!. Depois clique em Expandir, em cima do Pinta, para ele ocupar a tela toda.\n2. Embaixo da caixa de ferramentas, clique no quadradinho cheio, o Preenchimento. No painel Cores, à direita, escolha a cor da chave. O Contorno, o quadradinho vazado, já vem preto.\n3. Pegue a ferramenta Círculo. No lado esquerdo do quadro, aperte o botão do mouse e arraste na diagonal até a argola ficar grande e redonda. Solte.\n4. Pegue a ferramenta Retângulo. Começando no meio da argola, arraste para a direita até perto da borda do quadro, num retângulo baixinho: é a haste.\n5. Ainda com o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro: são os dentes.\n6. Para arrumar, pegue a ferramenta Selecionar, clique numa forma e arraste. Para mudar o tamanho, puxe um dos quadradinhos da borda da seleção.\n7. Se quiser, pegue o Pincel e faça um brilho na argola. Use o quadro inteiro: no jogo a chave fica pequena.\n8. Clique em Reduzir, para voltar à aula. Depois clique em Enviar meu desenho, em cima do Pinta, e confirme em Enviar.\n\n**Teste:** A sua chave ocupa quase todo o quadro, e aparece a mensagem Desenho enviado!\n\n**Se não funcionar:** Se uma forma sumiu ou ficou errada, use Desfazer, no alto do Pinta. Se o envio não foi, clique em Enviar meu desenho de novo.\n\n## 2. A sua chave no jogo\n\n**Relembre:** O desenho chega aos materiais do jogo com o nome minha-chave. Trocar a imagem do sprite chave muda só a aparência: o nome do sprite continua chave, e as regras do jogo continuam valendo.\n\n1. Se quiser ver o desenho, abra o menu de três pontinhos e depois Imagens, e role a lista até o fim: a minha-chave tem o selo Seu desenho da aula. Clique em Fechar.\n2. Clique em Expandir, em cima do Estúdio. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.\n3. Procure o bloco Criar sprite chave. Se a pré-visualização cobrir o fim dele, clique no botão do olho, lá em cima, para escondê-la.\n4. No fim do bloco, clique em chave-dourada e escolha minha-chave. Clique no olho de novo para a pré-visualização voltar.\n\n**Teste:** Clique no jogo e leve o personagem até a chave: ela some e o aviso muda. Depois vá até o farol: ele acende. Clique em Reduzir para voltar à aula e verificar.\n\n**Se não funcionar:** Se a chave dourada continuar aparecendo, confira se a troca foi no bloco Criar sprite chave. Se minha-chave não estiver na lista, volte à parte anterior, clique em Enviar meu desenho e abra a aula de novo.\n\n## Entrega\n\nEnvie o desenho antes de abrir o jogo: é assim que ele chega aos materiais do jogo. No jogo, troque a imagem, jogue uma partida inteira e clique em Verificar projeto. Corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. Quer outra chave? Volte à parte do desenho, mude e clique em Enviar de novo: na próxima vez que você abrir a aula, o jogo vem com a chave nova.\n"
           },
           {
             "id": "como-estudio",
@@ -3171,7 +3171,7 @@
                       }
                     }
                   },
-                  "x": 452,
+                  "x": 932,
                   "y": 392
                 },
                 {
@@ -3369,7 +3369,7 @@
                       }
                     }
                   },
-                  "x": 872,
+                  "x": 1832,
                   "y": 392
                 }
               ]
@@ -4779,7 +4779,7 @@
                           }
                         }
                       },
-                      "x": 452,
+                      "x": 932,
                       "y": 392
                     },
                     {
@@ -4977,7 +4977,7 @@
                           }
                         }
                       },
-                      "x": 872,
+                      "x": 1832,
                       "y": 392
                     }
                   ]
@@ -6387,7 +6387,7 @@
                           }
                         }
                       },
-                      "x": 452,
+                      "x": 932,
                       "y": 392
                     },
                     {
@@ -6585,7 +6585,7 @@
                           }
                         }
                       },
-                      "x": 872,
+                      "x": 1832,
                       "y": 392
                     }
                   ]

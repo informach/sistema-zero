@@ -15,6 +15,7 @@
     "e2e:smoke": "playwright test --project=chromium",
     "e2e:scenes": "playwright test --config playwright.scenes.config.ts",
     "e2e:lesson-layout": "playwright test --config playwright.lesson-layout.config.ts",
+    "e2e:art-slots": "playwright test --config playwright.art-slots.config.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts",

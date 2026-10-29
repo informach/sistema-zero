@@ -146,6 +146,6 @@ antes do Admin, do member-shell e dos apps.
 8. **O extra.** ✅ (29/10/2026; `docs/aulas-interativas/faisca/meu-primeiro-desenho-no-pinta`, curso `jornada-faisca-extra-2`. A entrega do desenho fica na parte de Entrega e o jogo no Fechamento, porque a régua das entregas só aceita Estúdio ou Pinta nessas partes; assim o desenho é enviado antes de o jogo abrir) Proposta, conteúdo (roteiro na régua das DIRETRIZES), gerador, manifesto, caderno
    PDF no padrão do Cadê, registro no curso e na jornada (`creator-journey-curriculum.json`, a
    tabela do Faísca), validadores e testes do curso.
-9. **Verificação de ponta a ponta.** Navegador real: desenhar no Pinta da aula, enviar, abrir o
+9. **Verificação de ponta a ponta.** ✅ (29/10/2026; `packages/community-kids/e2e-art-slots`, `bun run e2e:art-slots`, também no CI: o members de verdade em memória com o extra importado e publicado, o executor de verdade no Chromium e os componentes reais da aula. O ensaio pôs no roteiro o Entendi! das Dicas rápidas do Pinta, o Expandir nos dois blocos, rolar até o fim das Imagens e esconder a pré-visualização para ver o fim do bloco; afastou as áreas do projeto do extra, porque o Quando acontecer cobria a imagem da chave; e achou o teto de 2000 caracteres do texto dos materiais na publicação, que o members agora alinha aos 50000 do core) Navegador real: desenhar no Pinta da aula, enviar, abrir o
    Estúdio da parte seguinte, ver `minha-chave` em Materiais, trocar, jogar, verificar e enviar;
    redesenhar e ver o jogo atualizado.
