@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { NOME_DO_BICHO } from './bichos'
 import { cresceu, DIAS_PARA_CRESCER, nasceu } from './filhote-do-vale'
+import { ULTIMA_PAGINA } from './final-do-farol'
 import { ITENS } from './itens'
 import { coracoes } from './moradores'
 import { RECEITAS } from './receitas'
@@ -86,6 +87,7 @@ export type IlhaDoDiario = (typeof ILHAS_DO_DIARIO)[number]
 /** O texto de cada página que já chegou ao jogo (o da proposta do jogo, assinado pela Íris). */
 // A página do Recife é narrativa nova da fase3-02.
 export const TEXTO_DA_PAGINA: Readonly<Partial<Record<IlhaDoDiario, string>>> = {
+  farol: ULTIMA_PAGINA.join(' '),
   recife:
     'Desenhei um caminho entre os corais. Na primeira curva me perdi. Voltei, olhei com calma e encontrei outro jeito de passar.',
   bosque:
@@ -188,6 +190,7 @@ export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
       return s.recife.pagina && texto
         ? { ilha, nome, aberta: true, texto }
         : { ilha, nome, aberta: false, dica: 'No cesto sob a vela caída do navio afundado.' }
+    if (ilha === 'farol' && s.farol.pagina && texto) return { ilha, nome, aberta: true, texto }
     if (ilha === 'farol')
       return { ilha, nome, aberta: false, dica: 'A última página fica no alto do Farol.' }
     return { ilha, nome, aberta: false, dica: `Fica ${NA_ILHA[ilha]} ${nome}, com quem mora lá.` }

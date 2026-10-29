@@ -1,14 +1,15 @@
 import type {
   Acesso,
   AvatarDoJogo,
-  PercursoId,
   QuartoDoJogo,
   ResultadoDoPercurso,
   Salvamento,
   SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type { Clima } from '../sistemas/clima'
 import { salvamentoPausado } from '../sistemas/pausa'
+import type { IdDoPercurso } from '../sistemas/percurso'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
 import { minutosRestantes } from '../sistemas/tempo-livre'
 import type { Visita } from '../sistemas/visitas'
@@ -16,7 +17,7 @@ import type { ModoDoCorpo } from './contexto'
 
 /** O fim de uma corrida, para a tela de resultado. */
 export interface ResultadoDaCorrida {
-  percurso: PercursoId
+  percurso: IdDoPercurso
   tempoMs: number
   /** As estrelas DESTA corrida. */
   estrelas: ResultadoDoPercurso['estrelas']
@@ -30,7 +31,7 @@ export interface ResultadoDaCorrida {
 
 /** A corrida em andamento, para o cronômetro (o tempo corre fora do React). */
 export interface CorridaNaTela {
-  percurso: PercursoId
+  percurso: IdDoPercurso
   vagalumes: number
   totalDeVagalumes: number
 }
@@ -88,6 +89,8 @@ export interface EstadoDoJogo {
   definirModo(modo: EstadoDoJogo['modo']): void
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
+  acharConstelacao(indice: number): void
+  escolherClima(clima: Clima): void
   cortar(): void
   calcarPatins(calcados: boolean): void
   acenderLanterna(acesa: boolean): void
@@ -212,6 +215,16 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     mostrarResultado(resultado) {
       set({ resultado })
+    },
+    escolherClima(clima) {
+      get().mudar((s) => (s.clima === clima ? s : { ...s, clima }))
+    },
+    acharConstelacao(indice) {
+      if (!Number.isInteger(indice) || indice < 0 || indice >= 6) return
+      get().mudar((s) => {
+        const constelacoes = s.nuvens.constelacoes | (1 << indice)
+        return constelacoes === s.nuvens.constelacoes ? s : { ...s, nuvens: { constelacoes } }
+      })
     },
     cortar() {
       set({ corte: get().corte + 1 })

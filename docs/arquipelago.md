@@ -2,7 +2,8 @@
 
 O jogo 3D das comunidades Kids e adulta. Proposta e decisões da dona no Canvas
 <https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W>. Este documento descreve o que existe no
-código depois da Fase 0 (27/10/2026).
+código e as entregas registradas até 29/10/2026. O levantamento completo e os critérios de
+conclusão estão em `docs/plans/2026-10-29-arquipelago-entrega-integral-design.md`.
 
 ## Decisões da dona
 
@@ -25,7 +26,7 @@ código depois da Fase 0 (27/10/2026).
 | Pacote | O que é |
 |---|---|
 | `packages/avatar-quarto` | Avatar 3D e quarto 3D (saíram do member-shell sem mudar comportamento; os caminhos antigos repassam) |
-| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV2`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
+| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV16`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
 | `packages/arquipelago` | O jogo no navegador (R3F, drei, Rapier, zustand), com playground e plataforma de mentira |
 | `packages/arquipelago-api` | O serviço do jogo (Bun, Elysia, Drizzle, schema `arquipelago`, porta 3015) |
 
@@ -172,3 +173,11 @@ A implementação e os testes locais não indicam implantação em staging ou pr
 `em=x,z`, `adiantar`, `bichos=achados`, `cartas`, `dia=pronto|feito|nenhum` para o desafio do dia e
 `objetos=sem-acesso` para o Pinta e o Molda no molde).
 O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).
+
+
+## Continuidade do progresso (L01)
+
+O salvamento V16 guarda os dois percursos das Nuvens, suas seis constelações, a página e a
+conclusão do Farol e a escolha do clima. Conserva referências de aparência antigas, sem
+truncamento. Não exige alteração nas tabelas. As provas e limitações do lote ficam em
+`docs/qa/2026-10-29-continuidade/README.md`; o restante da proposta segue os 14 lotes do plano.

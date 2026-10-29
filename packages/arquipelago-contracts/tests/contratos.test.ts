@@ -43,10 +43,16 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV15Schema,
+  SalvamentoV16Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
-import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13, migrarDaV14 } from '../src/salvamento'
+import {
+  migrarDaV10,
+  migrarDaV11,
+  migrarDaV12,
+  migrarDaV13,
+  migrarDaV14ParaAtual,
+} from '../src/salvamento'
 
 describe('ilhas', () => {
   test('oito ilhas, uma por posição da jornada, ids únicos', () => {
@@ -175,15 +181,21 @@ describe('salvamento V2 (percursos)', () => {
       recife: _recife,
       vale: _vale,
       pico: _pico,
+      nuvens: _nuvens,
+      farol: _farol,
+      clima: _clima,
       ...resto
     } = criarSalvamentoInicial(agora)
-    return { ...resto, versao: 2 }
+    return { ...resto, percursos: {}, versao: 2 }
   }
   const v1 = (): SalvamentoV1 => {
     const { percursos: _, ...resto } = v2()
     return { ...resto, versao: 1 }
   }
   const semMoradores = {
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false },
+    clima: 'sol' as const,
     pico: { banda: 0 },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
@@ -204,19 +216,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV15Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV16Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 15, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 16, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(15)
+    expect(r.salvamento.versao).toBe(16)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -348,11 +360,14 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       recife: _recife,
       vale: _vale,
       pico: _pico,
+      nuvens: _nuvens,
+      farol: _farol,
+      clima: _clima,
       ...resto
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(15)
+    expect(v3?.versao).toBe(16)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -361,7 +376,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       pedido: null,
     })
     expect(
-      migrarDaV14(
+      migrarDaV14ParaAtual(
         migrarDaV13(
           migrarDaV12(
             migrarDaV11(
@@ -436,7 +451,9 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
         adotado,
       },
     }
-    expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
+    expect(new TextEncoder().encode(JSON.stringify(s)).byteLength).toBeLessThan(
+      SALVAMENTO_MAX_BYTES,
+    )
   })
 })
 
@@ -464,6 +481,9 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       recife: _recife,
       vale: _vale,
       pico: _pico,
+      nuvens: _nuvens,
+      farol: _farol,
+      clima: _clima,
       ...resto
     } = inicial()
     const v3: SalvamentoV3 = {
@@ -473,12 +493,12 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(15)
+    expect(v4?.versao).toBe(16)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
     expect(
-      migrarDaV14(
+      migrarDaV14ParaAtual(
         migrarDaV13(
           migrarDaV12(
             migrarDaV11(
@@ -535,7 +555,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
     expect(migrarSalvamento({ ...base, projetos: { geladeira: passou } })).toBeNull()
   })
 
-  test('com a casa e a cabana no teto de tudo, o salvamento ainda cabe em 64 KB', () => {
+  test('casa e cabana no teto com IDs canônicos cabem em 64 KB', () => {
     const ponto = (i: number) => ({ x: -60 + (i % 60), z: -60 + Math.floor(i / 60) })
     const trecho = (i: number) => ({ ...ponto(i), eixo: 'x' as const, n: 60 })
     const cheia = (): Obra => ({
@@ -551,7 +571,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       caminhos: Array.from({ length: 240 }, (_, i) => ({ ...ponto(i), tipo: 'grama' as const })),
       canteiros: Array.from({ length: 18 }, (_, i) => ponto(i)),
     })
-    // O pior caso: cada objeto com as 12 aparências guardadas, todas com o id mais longo (V15).
+    // IDs canônicos dos produtores (até 40). Referências antigas de 80 têm teste separado.
     const aparencias = Array.from({ length: APARENCIAS_GUARDADAS_MAXIMO }, (_, i) => ({
       origem: 'criacao' as const,
       id: `${i}`.padStart(ID_DA_APARENCIA_MAXIMO, 'x'),
@@ -567,7 +587,9 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     }
     expect(migrarSalvamento(s)).not.toBeNull()
-    expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)
+    expect(new TextEncoder().encode(JSON.stringify(s)).byteLength).toBeLessThan(
+      SALVAMENTO_MAX_BYTES,
+    )
   })
 })
 

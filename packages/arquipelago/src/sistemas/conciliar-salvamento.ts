@@ -35,6 +35,9 @@ function economia(s: Salvamento) {
     posicao: _posicao,
     vale: _vale,
     pico: _pico,
+    nuvens: _nuvens,
+    farol: _farol,
+    clima: _clima,
     ...transacao
   } = s
   return transacao
@@ -55,6 +58,14 @@ export function conciliarSalvamento(
   const er = economia(remoto)
   const comum = mesmosDados(el, er) || mesmosDados(eb, er) ? el : mesmosDados(eb, el) ? er : null
   if (!comum) return null
+  // A preferência não transfere itens. Mudanças distintas nas duas sessões pedem escolha.
+  const clima =
+    local.clima === remoto.clima || base.clima === remoto.clima
+      ? local.clima
+      : base.clima === local.clima
+        ? remoto.clima
+        : null
+  if (clima === null) return null
 
   const percursos = { ...remoto.percursos }
   for (const [id, resultado] of Object.entries(local.percursos)) {
@@ -75,6 +86,7 @@ export function conciliarSalvamento(
   return {
     ...remoto,
     ...comum,
+    clima,
     casa: { portaNova: local.casa.portaNova || remoto.casa.portaNova },
     pontesVistas: [...new Set([...remoto.pontesVistas, ...local.pontesVistas])],
     percursos,
@@ -88,6 +100,11 @@ export function conciliarSalvamento(
     },
     // Levar um instrumento ao palco também não gasta nada: os bits das duas sessões (fase3-08).
     pico: { banda: local.pico.banda | remoto.pico.banda },
+    nuvens: { constelacoes: local.nuvens.constelacoes | remoto.nuvens.constelacoes },
+    farol: {
+      pagina: local.farol.pagina || remoto.farol.pagina,
+      concluido: local.farol.concluido || remoto.farol.concluido,
+    },
     posicao: mesmosDados(base.posicao, local.posicao) ? remoto.posicao : local.posicao,
   }
 }

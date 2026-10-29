@@ -11,6 +11,7 @@ import { Component, type ReactNode, useCallback, useEffect, useMemo, useRef, use
 import { useStore } from 'zustand'
 import { criarControle, ligarTeclado } from './controles/controle'
 import { ligarGamepad } from './controles/gamepad'
+import { abrirAbertura, lerAberturaVista } from './estado/abertura'
 import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto'
 import { criarLoja } from './estado/loja'
 import { Relogios } from './estado/relogios'
@@ -20,6 +21,7 @@ import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interfa
 import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
+import { boasVindas, deveMostrarAbertura, PAINEL_DA_ABERTURA } from './sistemas/abertura'
 import { criarArmazemDeSalvamento, JogoAbertoEmOutraAbaError } from './sistemas/armazem-salvamento'
 import { criarFilaDeTempo } from './sistemas/fila-tempo'
 import { criarGerenteTempo } from './sistemas/gerente-tempo'
@@ -164,6 +166,16 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null, conversa: null },
     movimento: criarMovimento(),
   }
+  // A abertura na primeira vez (uma vez por perfil no aparelho) já abre antes do primeiro quadro:
+  // o HUD nem pisca por baixo dela.
+  if (
+    deveMostrarAbertura({
+      vista: lerAberturaVista(plataforma.publico, plataforma.perfil.id),
+      jogoNovo: guardado.revisao === 0,
+      somenteLeitura: acesso.somenteLeitura === true,
+    })
+  )
+    abrirAbertura(loja, 'primeira')
   return { tipo: 'pronto', contexto, fila }
 }
 
@@ -253,6 +265,7 @@ function JogoPronto({
   const tempoAcabou = useStore(contexto.loja, (s) => s.tempoAcabou)
   const tempoPausado = useStore(contexto.loja, (s) => s.tempoPausado)
   const tempoSincronizando = useStore(contexto.loja, (s) => s.tempoSincronizando)
+  const naAbertura = useStore(contexto.loja, (s) => s.painelAberto === PAINEL_DA_ABERTURA)
   useEffect(() => ligarTeclado(contexto.controle), [contexto])
   // O Start do controle faz o que o Esc faz: fecha o painel aberto, senão abre ou fecha o menu.
   useEffect(
@@ -277,14 +290,11 @@ function JogoPronto({
       void fila.parar()
     }
   }, [fila])
-  // A primeira fala do Zappy.
+  // A primeira fala do Zappy: depois da abertura (`interface/abertura.tsx`) ou, sem ela, ao abrir.
   useEffect(() => {
     const s = contexto.loja.getState()
-    if (!s.salvamento.casa.portaNova) {
-      s.dizer(
-        `Oi, ${contexto.plataforma.perfil.primeiroNome}. Só o seu quarto ainda tem cor. Vamos abrir a porta nova e acender o resto?`,
-      )
-    }
+    if (s.painelAberto !== PAINEL_DA_ABERTURA && !s.salvamento.casa.portaNova)
+      s.dizer(boasVindas(contexto.plataforma.perfil.primeiroNome))
   }, [contexto])
 
   return (
@@ -295,7 +305,7 @@ function JogoPronto({
       <Relogios />
       <Hud />
       {fila ? <SalvamentoDoJogo fila={fila} /> : null}
-      {tempoSincronizando && !tempoPausado && !tempoAcabou ? (
+      {tempoSincronizando && !tempoPausado && !tempoAcabou && !naAbertura ? (
         <div className="arq-dica" role="status" aria-live="polite">
           Preparando o jogo…
         </div>

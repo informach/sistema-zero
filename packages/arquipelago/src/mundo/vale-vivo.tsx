@@ -8,8 +8,9 @@ import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Jade } from './jade'
 import { giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
+import { MontariaDoVale } from './montaria-do-vale'
 
-/** Jade, pegadas, escavação, ninhos e o filhote só existem com a ilha completa ativa. */
+/** Jade, pegadas, escavação, ninhos, o filhote e a montaria só existem com a ilha completa ativa. */
 export function ValeVivo({
   ilha,
   centro,
@@ -33,6 +34,9 @@ export function ValeVivo({
         <Jade modelo={preparada.modelo} meio={meio} giro={giro} />
         <DescobertasDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
         <FilhoteDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
+        <ComReserva reserva={null}>
+          <MontariaDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
+        </ComReserva>
       </ComReserva>
     </group>
   )

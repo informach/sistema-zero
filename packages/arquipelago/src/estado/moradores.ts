@@ -15,7 +15,7 @@ export const PAINEL_DA_JADE = 'jade'
 export const PAINEL_DA_IRIE = 'irie'
 
 /** Quem conversa: cada morador tem a loja da conversa dele (a comemoração de um não mexe no outro). */
-export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade' | 'irie'
+export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade' | 'irie' | 'iris'
 
 /**
  * A conversa com um morador (uma loja por montagem e por morador, como a dos desafios). O painel

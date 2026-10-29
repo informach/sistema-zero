@@ -13,9 +13,12 @@ import {
 import type { Ponto } from './cipo'
 import { receberPatins } from './patins'
 
+/** Todos os percursos atuais têm progresso durável, incluindo as corridas das Nuvens. */
+export type IdDoPercurso = PercursoId
+
 /** O que muda de um percurso para outro (as contas são as mesmas). */
 export interface ConfigDoPercurso {
-  id: PercursoId
+  id: IdDoPercurso
   /** O título da tela de resultado e o nome do cronômetro. */
   nome: string
   /** O texto do botão na largada. */
@@ -29,8 +32,11 @@ export interface ConfigDoPercurso {
   tempoAlvoMs: number
   /** Quantas coisas estão espalhadas (pegar todas é a terceira estrela). */
   vagalumes: number
-  /** O nome delas (a estrela, o cronômetro e o resultado) e o símbolo do cronômetro. */
-  coletavel: { varios: string; Varios: string; simbolo: string }
+  /**
+   * O nome delas (a estrela, o cronômetro e o resultado), o símbolo do cronômetro e se a palavra é
+   * feminina ("as fitas", "pegas").
+   */
+  coletavel: { varios: string; Varios: string; simbolo: string; feminino?: boolean }
   /** A coisa é pega a esta distância do centro do corpo. */
   raioDoVagalume: number
   /** Chegou: a esta distância (no chão) da chegada. */
@@ -135,11 +141,89 @@ export const PERCURSO_DO_CUME = {
   corteVoltaMs: 340,
 } as const satisfies ConfigDoPercurso
 
+/** As fitas do arco-íris que a Iriê perdeu: a terceira estrela das duas corridas das Nuvens. */
+const FITAS_DO_ARCO_IRIS = {
+  varios: 'fitas do arco-íris',
+  Varios: 'Fitas do arco-íris',
+  simbolo: '🎀',
+  feminino: true,
+} as const
+
+/**
+ * Os saltos entre nuvens (fase4-07): dos degraus de nuvem, de plataforma em plataforma (as que
+ * sobem e descem, fase4-06), até o tampo da mais alta, com uma fita do arco-íris em cada vão.
+ */
+export const PERCURSO_DOS_SALTOS = {
+  id: 'nuvens-saltos',
+  nome: 'Saltos entre nuvens',
+  rotuloDaLargada: 'Começar os saltos entre nuvens',
+  falaDoComeco:
+    'Valendo. Suba os degraus de nuvem e pule de plataforma em plataforma até a mais alta.',
+  falaDoFim: 'Os saltos pararam. Nos degraus de nuvem dá para começar de novo quando quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você pulou de nuvem em nuvem com todas as fitas.',
+  /**
+   * Cada salto entre plataformas só cabe quando a de trás está no alto e a da frente embaixo, numa
+   * janela a cada 10 s, e a plataforma 1 só recebe do degrau quando está embaixo. Sem perder
+   * nenhuma janela, a volta leva até uns 55 s, conforme a fase do ciclo na largada (o teste conta):
+   * 60 s dá a estrela a quem não perde nenhuma janela.
+   */
+  tempoAlvoMs: 60_000,
+  /** Uma fita em cada vão entre as plataformas (do degrau para a 1 é só um passo, sem vão). */
+  vagalumes: 3,
+  coletavel: FITAS_DO_ARCO_IRIS,
+  raioDoVagalume: 0.8,
+  /** O tampo da plataforma mais alta tem 1,8 m de raio. */
+  raioDaChegada: 1.4,
+  folgaDoDeque: 0.3,
+  distanciaParaDesistir: 6,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A corrida de balão (fase4-07): passar de balão pelas seis argolas do arco-íris na ordem
+ * (`sistemas/corrida-de-balao.ts`). A primeira argola começa; a sexta é a chegada.
+ */
+export const PERCURSO_DO_BALAO = {
+  id: 'nuvens-balao',
+  nome: 'Corrida de balão',
+  rotuloDaLargada: 'Passe de balão pela argola vermelha',
+  falaDoComeco: 'Valendo. Passe pelas seis argolas do arco-íris na ordem, da vermelha à roxa.',
+  falaDoFim: 'A corrida parou. A argola vermelha começa de novo quando você passar por ela.',
+  falaDasTresEstrelas: 'Três estrelas. Você voou pelo arco-íris inteiro com todas as fitas.',
+  /**
+   * Um piloto que não erra, pelas regras do balão, faz a volta em uns 29 s (o teste da corrida
+   * mede): 45 s dá a estrela a quem pilota com calma, sem precisar ser perfeito.
+   */
+  tempoAlvoMs: 45_000,
+  vagalumes: 3,
+  coletavel: FITAS_DO_ARCO_IRIS,
+  /** O balão pega a fita a esta distância do meio dele (o envelope é largo). */
+  raioDoVagalume: 1.6,
+  raioDaChegada: 1.8,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
-export const PERCURSOS_DO_JOGO: Readonly<Record<PercursoId, ConfigDoPercurso>> = {
+export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
   'vila-telhados': PERCURSO_DOS_TELHADOS,
   'pico-cume': PERCURSO_DO_CUME,
+  'nuvens-saltos': PERCURSO_DOS_SALTOS,
+  'nuvens-balao': PERCURSO_DO_BALAO,
+}
+
+/** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */
+export function todasAsColetaveis(config: ConfigDoPercurso, quantas: number): string {
+  return `${config.coletavel.feminino ? 'As' : 'Os'} ${quantas} ${config.coletavel.varios}`
+}
+
+/** "Vagalumes pegos", "Fitas do arco-íris pegas" (o título do contador). */
+export function coletaveisPegas(config: ConfigDoPercurso): string {
+  return `${config.coletavel.Varios} ${config.coletavel.feminino ? 'pegas' : 'pegos'}`
 }
 
 export interface DequeDoPercurso extends Ponto {

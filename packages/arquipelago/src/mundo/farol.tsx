@@ -1,4 +1,5 @@
 import { useFrame } from '@react-three/fiber'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   AdditiveBlending,
@@ -10,10 +11,14 @@ import {
   type MeshStandardMaterial,
   type PointLight,
 } from 'three'
-import { useEstado } from '../estado/contexto'
+import { lojaDoConforto, useConforto } from '../estado/conforto'
+import { useEstado, useJogo } from '../estado/contexto'
+import { useFarol } from '../estado/farol'
+import { jogoPausado } from '../sistemas/pausa'
 import { COLISORES_DO_FAROL } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { lerColisores } from './colisores-da-ilha'
+import { FinalDoFarol } from './final-do-farol'
 import { ALTURA_DA_TERRA, FAROL } from './medidas'
 import {
   ComReserva,
@@ -32,14 +37,19 @@ const COMPRIMENTO_DO_FACHO = 26
 
 /** O Farol fica na sua ilha, ao lado da casa. Apagado até a Lenda (posição 8). */
 export function Farol() {
+  const { loja } = useJogo()
+  const mostrarFacho = useFarol(loja, (s) => s.etapa !== 'fachos' && s.etapa !== 'fim')
   const aceso = useEstado((s) => s.jornada >= 8)
   return (
-    <group position={[FAROL.x, ALTURA_DA_TERRA, FAROL.z]}>
-      <ComReserva reserva={<FarolDeAntes aceso={aceso} />}>
-        <FarolDoModelo aceso={aceso} />
-      </ComReserva>
-      <Colisores lista={COLISORES_DO_FAROL} />
-    </group>
+    <>
+      <FinalDoFarol />
+      <group position={[FAROL.x, ALTURA_DA_TERRA, FAROL.z]}>
+        <ComReserva reserva={<FarolDeAntes aceso={aceso} mostrarFacho={mostrarFacho} />}>
+          <FarolDoModelo aceso={aceso} mostrarFacho={mostrarFacho} />
+        </ComReserva>
+        <Colisores lista={COLISORES_DO_FAROL} />
+      </group>
+    </>
   )
 }
 
@@ -47,7 +57,11 @@ export function Farol() {
  * O farol do Blender. Apagado: as cores desbotam para o cinza e a lanterna fica escura. Aceso:
  * vermelho e branco, a lâmpada e o vidro brilham, a luz alcança longe e os dois fachos giram.
  */
-function FarolDoModelo({ aceso }: { aceso: boolean }) {
+function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: boolean }) {
+  const { loja } = useJogo()
+  const aparelho = useReducedMotion()
+  const preferencia = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
+  const tempo = useRef(0)
   const raiz = useModelo(MODELOS.farol)
   const luz = useRef<PointLight>(null)
   const partes = useMemo(() => {
@@ -97,20 +111,24 @@ function FarolDoModelo({ aceso }: { aceso: boolean }) {
   }, [raiz])
   useEffect(() => {
     desbotar(partes.cores, aceso ? 0 : 0.92)
-    partes.facho.visible = aceso
+    partes.facho.visible = aceso && mostrarFacho
     const acender = (lista: MeshStandardMaterial[], forca: number) => {
       for (const m of lista) m.emissiveIntensity = aceso ? forca : 0
     }
     acender(partes.vidros, 0.9)
     acender(partes.janelas, 1.2)
-  }, [aceso, partes])
-  useFrame(({ clock }, dt) => {
+  }, [aceso, partes, mostrarFacho])
+  useFrame((_, dt) => {
     if (!aceso) {
       for (const m of partes.lampadas) m.emissiveIntensity = 0
       return
     }
-    partes.facho.rotation.y += dt * 0.6
-    const pulso = 0.9 + 0.1 * Math.sin(clock.elapsedTime * 3)
+    if (jogoPausado(loja.getState()) || document.visibilityState !== 'visible') return
+    if (!aparelho && !preferencia) {
+      partes.facho.rotation.y += dt * 0.6
+      tempo.current += dt
+    }
+    const pulso = aparelho || preferencia ? 1 : 0.9 + 0.1 * Math.sin(tempo.current * 3)
     for (const m of partes.lampadas) m.emissiveIntensity = 2.6 * pulso
     if (luz.current) luz.current.intensity = 60 * pulso
   })
@@ -135,10 +153,21 @@ function FarolDoModelo({ aceso }: { aceso: boolean }) {
 }
 
 /** O farol de antes (formas do código). */
-function FarolDeAntes({ aceso }: { aceso: boolean }) {
+function FarolDeAntes({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: boolean }) {
+  const { loja } = useJogo()
+  const aparelho = useReducedMotion()
+  const preferencia = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
   const facho = useRef<Group>(null)
   useFrame((_, dt) => {
-    if (facho.current && aceso) facho.current.rotation.y += dt * 0.6
+    if (
+      facho.current &&
+      aceso &&
+      !aparelho &&
+      !preferencia &&
+      !jogoPausado(loja.getState()) &&
+      document.visibilityState === 'visible'
+    )
+      facho.current.rotation.y += dt * 0.6
   })
   return (
     <>
@@ -166,7 +195,7 @@ function FarolDeAntes({ aceso }: { aceso: boolean }) {
       {aceso ? (
         <>
           <pointLight position={[0, 9.9, 0]} intensity={60} distance={60} color="#ffd27a" />
-          <group ref={facho} position={[0, 9.9, 0]}>
+          <group ref={facho} visible={mostrarFacho} position={[0, 9.9, 0]}>
             <mesh position={[0, 0, 14]} rotation={[Math.PI / 2, 0, 0]}>
               <coneGeometry args={[3, 28, 16, 1, true]} />
               <meshBasicMaterial color="#fff1a8" transparent opacity={0.12} depthWrite={false} />

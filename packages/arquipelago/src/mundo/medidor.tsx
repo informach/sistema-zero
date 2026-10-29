@@ -1,8 +1,11 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
+import { progresso } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
+import { fachosAcesos } from '../sistemas/final-do-farol'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { medirFesta } from './catalogo-da-festa'
@@ -23,12 +26,15 @@ import { qualidadeDaVegetacao, ventoAgora } from './vegetacao-ao-vento'
  * `localStorage['arquipelago:medir'] = '1'`, deixa os números do `renderer.info` em
  * `globalThis.__arquipelagoDesenho` (com a posição do personagem) a cada quarto de segundo, e
  * `globalThis.__arquipelagoLevar(x, y, z, giro)` leva o personagem a um ponto (para medir a memória
- * na mesma pose antes e depois de uma visita). Desligado, não faz nada.
+ * na mesma pose antes e depois de uma visita) e `globalThis.__arquipelagoMovimento()` dá o que a
+ * ilha registrou para os modos; `globalThis.__arquipelagoCameraEmVolta(desvio)` gira a câmera em
+ * volta do avatar (para os prints das poses). Desligado, não faz nada.
  */
 export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  finalDoFarol: { etapa: string; tempo: number; fachos: number; leu: boolean; voltou: boolean }
   plataformasDasNuvens: {
     numero: number
     corpoY: number
@@ -38,6 +44,28 @@ export interface MedidaDoDesenho {
     z: number
   }[]
   mergulho: { pronto: boolean; achados: { bau: boolean; pagina: boolean; tesouro: boolean } }
+  /** A corrida em andamento (fase4-07: as Nuvens têm duas) e as constelações achadas. */
+  corrida: {
+    percurso: string | null
+    deque: number
+    situacao: string
+    tempoMs: number
+    pegos: number
+  } | null
+  mira: { naMira: number; posicao: { x: number; y: number; z: number } } | null
+  constelacoes: number
+  /** O clima da sua ilha (fase4-08): o escolhido, a luz e o cinza que valem aqui e as gotas. */
+  clima: { escolhido: string; luz: number; cinza: number; gotas: boolean }
+  /** A horta: o que está plantado, se foi regado e quanto já cresceu (0 a 1). */
+  horta: { semente: string | null; regado: boolean; progresso: number }[]
+  balao: {
+    fase: string
+    pousado: boolean
+    fogo: boolean
+    pe: { x: number; y: number; z: number }
+    casa: { x: number; y: number; z: number }
+    vel: { x: number; y: number; z: number }
+  } | null
   barco: {
     fase: string
     distancia: number
@@ -171,7 +199,7 @@ export function Medidor() {
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const cena = useThree((s) => s.scene)
-  const { rastro, pedidos, movimento, loja } = useJogo()
+  const { rastro, pedidos, movimento, loja, ambiente } = useJogo()
   const conta = useRef({ tempo: 0, quadros: 0 })
   const { world } = useRapier()
   const fisica = useRef({ inicio: 0, ms: 0, passos: 0 })
@@ -187,6 +215,8 @@ export function Medidor() {
   useEffect(() => {
     if (!ligado) return
     const g = globalThis as {
+      __arquipelagoMovimento?: () => Movimento
+      __arquipelagoCameraEmVolta?: (desvio: number) => void
       __arquipelagoLevar?: (...a: number[]) => void
       __arquipelagoLerCorpo?: () => {
         x: number
@@ -194,6 +224,8 @@ export function Medidor() {
         z: number
         giro: number
         noChao: boolean
+        /** O olho da vista pela luneta do mirante, quando aberta (fase4-07). */
+        olho: { x: number; y: number; z: number } | null
       }
     }
     // Leitura sob demanda para conferir pulos sem reduzir o intervalo do medidor pesado.
@@ -203,7 +235,15 @@ export function Medidor() {
       z: rastro.z,
       giro: rastro.giro,
       noChao: movimento.noChao,
+      olho: movimento.mira ? { ...movimento.mira.posicao } : null,
     })
+    // O que a ilha ativa registrou para os modos (cipós, troncos, escadas, bordas...) e o pedido
+    // de um interativo: para a conferência das animações levar o corpo a cada um.
+    g.__arquipelagoMovimento = () => movimento
+    // A câmera em volta do avatar, a `desvio` de onde ele olha (0 é de frente, π é das costas).
+    g.__arquipelagoCameraEmVolta = (desvio: number) => {
+      rastro.giro = rastro.direcao + desvio
+    }
     g.__arquipelagoLevar = (x = 0, y = 0, z = 0, giro?: number) => {
       pedidos.teleporte = { x, y, z }
       if (giro !== undefined) rastro.giro = giro
@@ -211,6 +251,8 @@ export function Medidor() {
     return () => {
       g.__arquipelagoLevar = undefined
       g.__arquipelagoLerCorpo = undefined
+      g.__arquipelagoMovimento = undefined
+      g.__arquipelagoCameraEmVolta = undefined
     }
   }, [ligado, pedidos, rastro, movimento])
   useFrame((_, dt) => {
@@ -240,12 +282,54 @@ export function Medidor() {
       }
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
+    const final = lojaDoFarol(loja).getState()
     const medida: MedidaDoDesenho = {
+      finalDoFarol: {
+        etapa: final.etapa,
+        tempo: final.tempo,
+        fachos: fachosAcesos(final.tempo, final.menosMovimento),
+        leu: loja.getState().salvamento.farol.pagina,
+        voltou: loja.getState().salvamento.farol.concluido,
+      },
       plataformasDasNuvens,
       mergulho: {
         pronto: movimento.mergulhos.some((v) => v.ativo),
         achados: { ...loja.getState().salvamento.recife },
       },
+      corrida: movimento.corrida
+        ? {
+            percurso: loja.getState().corrida?.percurso ?? null,
+            deque: movimento.corrida.deque,
+            situacao: movimento.corrida.situacao,
+            tempoMs: movimento.corrida.tempoMs,
+            pegos: movimento.corrida.pegos.filter(Boolean).length,
+          }
+        : null,
+      mira: movimento.mira
+        ? { naMira: movimento.mira.naMira, posicao: { ...movimento.mira.posicao } }
+        : null,
+      constelacoes: loja.getState().salvamento.nuvens.constelacoes,
+      clima: {
+        escolhido: loja.getState().salvamento.clima,
+        luz: ambiente.luzDoClima ?? 1,
+        cinza: ambiente.cinzaDoClima ?? 0,
+        gotas: cena.getObjectByName('chuva-da-ilha')?.visible === true,
+      },
+      horta: loja.getState().salvamento.horta.map((c) => ({
+        semente: c.semente,
+        regado: c.regadoEm !== null,
+        progresso: progresso(c, Date.now()),
+      })),
+      balao: movimento.balao
+        ? {
+            fase: movimento.balao.fase,
+            pousado: movimento.balao.pousado,
+            fogo: movimento.balao.fogo,
+            pe: { ...movimento.balao.pe },
+            casa: { ...movimento.balao.casa },
+            vel: { ...movimento.balao.vel },
+          }
+        : null,
       barco: movimento.barco
         ? {
             fase: movimento.barco.fase,

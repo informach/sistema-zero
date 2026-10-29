@@ -198,7 +198,7 @@ describe('a Irie na ilha', () => {
     expect(a.salvamento).toBe(s)
     expect(a.falas).toEqual([...APRESENTACAO_DA_IRIE])
     a.falas.pop()
-    expect(comecarConversaComAIrie(s).falas).toHaveLength(2)
+    expect(comecarConversaComAIrie(s).falas).toHaveLength(APRESENTACAO_DA_IRIE.length)
     expect(JSON.stringify(s)).toBe(antes)
     for (const fala of APRESENTACAO_DA_IRIE) expect(fala).not.toMatch(/[—!?]/)
   })

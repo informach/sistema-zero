@@ -7,6 +7,11 @@ import { interactionGroups } from '@react-three/rapier'
  */
 export const GRUPO_SO_DO_CORPO = interactionGroups([1])
 export const GRUPOS_DO_RAIO_DA_CAMERA = interactionGroups([0], [0])
+/**
+ * Um colisor que não encosta em nada (nenhum corpo, nem o raio da câmera): o de quem vai montada no
+ * dino do Vale, que só o controlador do personagem usa para medir o caminho.
+ */
+export const GRUPO_DE_NINGUEM = interactionGroups([2], [])
 
 /**
  * A propriedade `collisionGroups` de um colisor só para o que segura só o corpo. ⚠️ Nunca

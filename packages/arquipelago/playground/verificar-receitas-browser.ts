@@ -167,7 +167,7 @@ try {
   if (forno === false) throw new Error('O forno não chegou.')
   // 5. O diário: a página da Vila Doce aberta (2 corações) e as receitas sabidas (6 de 7).
   await page.getByRole('button', { name: 'Abrir o menu' }).click()
-  await page.getByRole('button', { name: /Diário/ }).click()
+  await page.getByRole('button', { name: 'Diário', exact: true }).click()
   const diario = page.getByRole('dialog', { name: 'Diário' })
   await diario.waitFor({ timeout: 10_000 })
   await diario.getByText('O Bento me pediu a receita do bolo de fubá', { exact: false }).waitFor()

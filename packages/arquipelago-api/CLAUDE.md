@@ -287,3 +287,12 @@ usando `SalvamentoSchema`: recebem e leem V1 a V10 migradas para V11. Não há c
 migração SQL, pois as marcas ficam no mesmo JSONB e na mesma revisão CAS. Limite de 64 KB mantido.
 A prova HTTP local cobre envio V10, retorno V11, guarda das três marcas e recusa de revisão velha.
 Os testes de banco continuam restritos a Postgres local cujo nome começa por `arquipelago_test`.
+
+
+## Continuidade V16 (L01, 29/10/2026)
+
+A leitura e o PUT usam a migração do contrato até V16. A atualização é do JSON, sem coluna
+nova. Não executar migração em lote do banco remoto. Referências antigas de até 80 caracteres
+são preservadas; o tamanho UTF-8 é conferido depois da normalização e antes de gravar. Acima
+de 64 KB, 413 sem modificar a revisão anterior. Revisão concorrente continua 409, com a cópia
+atual. Testes HTTP cobrem V14 com Unicode, V16 com Nuvens/Farol/clima e reabertura do serviço.

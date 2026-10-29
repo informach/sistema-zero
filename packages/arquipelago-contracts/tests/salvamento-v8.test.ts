@@ -8,7 +8,7 @@ import {
   migrarDaV11,
   migrarDaV12,
   migrarDaV13,
-  migrarDaV14,
+  migrarDaV14ParaAtual,
   migrarSalvamento,
   POSTOS_DA_VILA,
   SALVAMENTO_MAX_BYTES,
@@ -49,7 +49,9 @@ test('a V7 migra para a V8 sem perder nada, sem nenhum turno feito', () => {
   const nova = migrarDaV7(antiga)
   expect(nova).toEqual({ ...antiga, versao: 8, turnos: {} })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV14(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(nova))))))),
+    migrarDaV14ParaAtual(
+      migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(nova)))))),
+    ),
   )
   expect(SalvamentoV8Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
@@ -77,7 +79,7 @@ test('a V8 guarda o turno de cada balcão e recusa o que sai da régua', () => {
   expect(POSTOS_DA_VILA).toEqual(['padaria', 'sorveteria', 'sucos'])
   const turno = { pagoEm: '2026-10-29', melhor: 3, vezes: 2 }
   const comTurnos = { ...s, turnos: { padaria: turno, sucos: { ...turno, pagoEm: null } } }
-  expect(migrarSalvamento(comTurnos)).toEqual(migrarDaV14(comTurnos))
+  expect(migrarSalvamento(comTurnos)).toEqual(migrarDaV14ParaAtual(comTurnos))
   for (const errado of [
     { ...turno, melhor: 0 },
     { ...turno, melhor: 4 },
@@ -95,13 +97,13 @@ test('as versões antigas chegam até a V8', () => {
     return { ...v, versao: 6 as const, moradores: { capi: moradores.capi } }
   })()
   expect(migrarSalvamento(v6)).toEqual(
-    migrarDaV14(
+    migrarDaV14ParaAtual(
       migrarDaV13(
         migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))))),
       ),
     ),
   )
-  expect(migrarSalvamento(v6)?.versao).toBe(15)
+  expect(migrarSalvamento(v6)?.versao).toBe(16)
 })
 
 test('os três turnos cabem no teto do salvamento', () => {
@@ -119,6 +121,6 @@ test('a entrega pelos telhados entra nos percursos sem versão nova', () => {
     melhorTempoMs: 18_400,
   }
   const s = { ...inicialV14(AGORA), percursos: { 'vila-telhados': resultado } }
-  expect(migrarSalvamento(s)).toEqual(migrarDaV14(s))
+  expect(migrarSalvamento(s)).toEqual(migrarDaV14ParaAtual(s))
   expect(migrarSalvamento({ ...s, percursos: { 'vila-praca': resultado } })).toBeNull()
 })

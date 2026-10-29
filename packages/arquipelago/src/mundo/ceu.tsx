@@ -10,6 +10,7 @@ import {
   type PointsMaterial,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
 import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
 import { NEVOA, RAIO_DAS_ESTRELAS } from './medidas'
@@ -24,11 +25,13 @@ const HEMI_CEU_DIA = new Color('#dff3ff')
 const HEMI_CEU_NOITE = new Color('#a9bcff')
 const HEMI_CHAO_DIA = new Color('#5f7a4a')
 const HEMI_CHAO_NOITE = new Color('#33456a')
+/** O céu de tempo fechado da sua ilha (fase4-08): o cinza da chuva e do nublado. */
+const CEU_FECHADO = new Color('#8f9aa8')
 
 /** Céu, sol, lua e estrelas, pelo relógio do jogo. */
 export function Ceu() {
   const { nivel } = useQualidade()
-  const { ambiente } = useJogo()
+  const { ambiente, loja } = useJogo()
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   const scene = useThree((s) => s.scene)
   const sol = useRef<DirectionalLight>(null)
@@ -59,21 +62,26 @@ export function Ceu() {
       .copy(CEU_NOITE)
       .lerp(CEU_DIA, Math.min(1, m.luz * 1.3))
       .lerp(CEU_TARDE, tarde * 0.6)
+      .lerp(CEU_FECHADO, ambiente.cinzaDoClima ?? 0)
     scene.background = cor
     nevoa.color.copy(cor)
     nevoa.near = PERFIS_DE_QUALIDADE[nivel].nevoaInicio
     nevoa.far = PERFIS_DE_QUALIDADE[nivel].nevoaFim
-    scene.fog = nevoa
+    // A vista final enquadra o anel inteiro. Não carrega ilhas nem muda a qualidade.
+    const final = lojaDoFarol(loja).getState().etapa
+    scene.fog = final === 'fachos' || final === 'fim' ? null : nevoa
     const angulo = m.fracao * Math.PI * 2
     if (sol.current) {
-      sol.current.intensity = 0.25 + m.luz * 1.35
+      // Nublado e chuva na sua ilha tiram parte do sol (`ambiente.luzDoClima`, fase4-08).
+      sol.current.intensity = (0.25 + m.luz * 1.35) * (ambiente.luzDoClima ?? 1)
       sol.current.position.set(Math.cos(angulo) * 60, 40 + Math.sin(angulo) * 30, 30)
       sol.current.color.set(m.noite ? '#9fb4ff' : '#fff1dc')
     }
     if (hemi.current) {
       // Sem sol, a lua ainda clareia as sombras: o preenchimento não cai abaixo de 0,5.
       const dia = Math.min(1, m.luz * 4)
-      hemi.current.intensity = 0.5 + m.luz * 0.45
+      // O tempo fechado da sua ilha também apaga um pouco o preenchimento.
+      hemi.current.intensity = (0.5 + m.luz * 0.45) * (0.6 + 0.4 * (ambiente.luzDoClima ?? 1))
       hemi.current.color.copy(HEMI_CEU_NOITE).lerp(HEMI_CEU_DIA, dia)
       hemi.current.groundColor.copy(HEMI_CHAO_NOITE).lerp(HEMI_CHAO_DIA, dia)
     }

@@ -24,8 +24,12 @@ export const BORDA = {
   longeDaPonta: 0.2,
   /** De pendurado até de pé em cima, em tanto tempo. */
   subida: 0.5,
-  /** Pendurado, o corpo fica a isto da parede (do meio do corpo à quina, no chão). */
-  daParede: CORPO.raio + 0.05,
+  /**
+   * Pendurado, o corpo fica a isto da parede (do meio do corpo à quina, no chão). ⚠️ Mais que o
+   * raio com a folga do controlador: mais perto, o Rapier não deixa chegar, o encaixe vira
+   * "bloqueado" no fim e a criança solta sozinha (achado em 29/10/2026 no navegador).
+   */
+  daParede: CORPO.raio + CORPO.folga + 0.02,
   /** Em cima, o corpo termina isto para dentro da quina. */
   paraDentro: 0.6,
   /** Pendurado, anda de lado na quina a isto (m/s). */

@@ -28,7 +28,13 @@ import {
   SalvamentoV9Schema,
   SalvamentoV10Schema,
 } from '../src'
-import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13, migrarDaV14 } from '../src/salvamento'
+import {
+  migrarDaV10,
+  migrarDaV11,
+  migrarDaV12,
+  migrarDaV13,
+  migrarDaV14ParaAtual,
+} from '../src/salvamento'
 import { inicialV14 } from './ajuda-salvamento'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
@@ -64,7 +70,7 @@ test('a V9 migra para a V10 sem perder nada, sem nenhuma rotina', () => {
   const nova = migrarDaV9(antiga)
   expect(nova).toEqual({ ...antiga, versao: 10, rotinas: {} })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV14(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(nova))))),
+    migrarDaV14ParaAtual(migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(nova))))),
   )
   expect(SalvamentoV10Schema.parse(nova)).toEqual(nova)
   expect(antiga).toEqual(clone)
@@ -80,7 +86,7 @@ test('a V9 continua aceitando só o formato dela, e as antigas chegam até a V10
     return { ...v, versao: 7 as const }
   })()
   expect(migrarSalvamento(v7)).toEqual(
-    migrarDaV14(
+    migrarDaV14ParaAtual(
       migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))))),
     ),
   )
@@ -192,7 +198,7 @@ function rotinaPesada(n: number): CartaoDaRotina[] {
   return lista
 }
 
-test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
+test('construção e rotinas no teto com IDs canônicos cabem nos 64 KB', () => {
   const ponto = (i: number) => ({ x: -60 + (i % 60), z: -60 + Math.floor(i / 60) })
   const trecho = (i: number) => ({ ...ponto(i), eixo: 'x' as const, n: 60 })
   const cheia = (): Obra => ({
@@ -229,6 +235,8 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
   }
   const base = {
     ...criarSalvamentoInicial(AGORA),
+    nuvens: { constelacoes: 63 },
+    clima: 'nublado' as const,
     // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
     vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'], filhote },
     construcao: { casa: cheia(), cabanas: { bosque: cheia() } },
@@ -256,7 +264,7 @@ test('com tudo no teto, as rotinas ainda cabem nos 64 KB', () => {
     maior = Math.max(maior, new TextEncoder().encode(JSON.stringify(s)).byteLength)
   }
   expect(maior).toBeLessThan(SALVAMENTO_MAX_BYTES)
-  // Folga para o que vem (as Nuvens e o final do Farol): a V15 abriu uns 5 KB.
+  // Com IDs canônicos de até 40 caracteres, inclusive o progresso V16, permanece esta margem.
   expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(4000)
 })
 

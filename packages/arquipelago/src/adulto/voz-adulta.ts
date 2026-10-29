@@ -15,6 +15,8 @@ function falaDaLuneta(ilha: Ilha): string {
 }
 
 export const VOZ_ADULTA: VozDoJogo = {
+  farolFechado:
+    'O Farol abre no último marco da jornada. As ilhas continuam disponíveis para explorar e criar.',
   carregando: {
     titulo: 'Acendendo o Arquipélago',
     texto: 'Trazendo a sua casa e o seu avatar.',
@@ -49,4 +51,5 @@ export const VOZ_ADULTA: VozDoJogo = {
     ilha.id === 'farol'
       ? 'Acende na última etapa da sua jornada.'
       : `Abre na etapa ${ilha.posicao} da sua jornada.`,
+  marcoDaJornada: (posicao) => `Etapa ${Math.min(8, Math.max(1, Math.floor(posicao) || 1))}`,
 }

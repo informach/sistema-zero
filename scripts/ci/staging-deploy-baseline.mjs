@@ -439,7 +439,9 @@ export function createGitHubApi(repository, token, fetchImpl = fetch) {
     getRun: (id) => request(`runs/${id}`),
     listRuns: (page) =>
       request(
-        `workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=${page}`,
+        // Only successful push runs can qualify below. GitHub caps filtered searches
+        // at 1,000 results, so failed/cancelled attempts must not exhaust that budget.
+        `workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=${page}`,
         'workflow_runs',
         page,
       ),

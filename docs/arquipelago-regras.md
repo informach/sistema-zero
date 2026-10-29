@@ -3109,6 +3109,35 @@ Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`. Testes:
 `tests/filhote-do-vale.test.ts` e `arquipelago-contracts/tests/salvamento-v15.test.ts`. Navegador:
 `playground/verificar-filhote-browser.ts`, no computador e no celular emulado.
 
+## A montaria do Vale (fase4-04, 29/10/2026)
+
+- **O dino.** Um parassaurolofo de sela (`dino-montaria.glb`, clipes `parado`, `andar`, `correr` e
+  `pular`) na escala 0,85: 2 m de altura e 3,65 m de comprimento. Ele espera entre o vulcão e a
+  chegada (`MONTARIA_NO_VALE`, chão plano e largo, conferido contra o GLB), olhando para quem vem
+  da ponte. Parado, o corpo dele segura o corpo da criança (uma caixa de 1,1 × 2 × 3,2 m, só para
+  o corpo).
+- **Montar.** "Montar no dino" (E ou Usar, até 2,2 m), de pé no chão e fora da água. Antes dos três
+  ninhos: "O dino ainda não conhece você. Cuide dos três ninhos do Vale e ele vai confiar.". Depois:
+  "Você subiu na sela. Use o mesmo botão para descer.", e o dino vem para baixo da criança, que vai
+  sentada na sela.
+- **Montada.** O modo `montar`: anda a 3,6 m/s e corre a 6 (a criança anda a 2,2 e corre a 4,6), com
+  o mesmo peso de começar e parar do chão, e pula um pouco mais alto que a criança (9 m/s de
+  subida). O controle é o de sempre; a câmera, também. O dino não entra na água: o passo para na
+  beira, e o Zappy diz "O dino não entra na água. Ele prefere a terra do Vale.". Ele também não sai
+  do Vale: anda até 10,8 m do meio da ilha (a ponte começa a 11,5), e lá o Zappy diz "O dino não
+  sai do Vale. Ele gosta daqui.". Quem vai montada
+  usa um colisor maior (raio 0,6, o pé no mesmo lugar): a cabeça e a cauda passam um pouco dele,
+  porque a cápsula não gira com o corpo.
+- **Descer.** O mesmo E ou Usar, no chão. A criança desce com um pulinho para o lado esquerdo dele
+  (cai a uns 1,1 m do meio do corpo, fora dele; uma parede ao lado segura o pulinho mais perto, e o
+  colisor do dino espera ela se afastar); o dino fica parado onde parou, olhando para onde ia,
+  e o colisor dele volta quando ela se afasta. A ilha que sai de cena também tira da sela.
+- Nada vai para o salvamento: quando a ilha monta de novo, o dino volta ao lugar dele. Sem prazo,
+  sem cansaço e sem queda.
+
+Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`. Testes: `tests/montaria.test.ts`.
+Navegador: `playground/verificar-montaria-browser.ts`, no computador e no celular emulado.
+
 ## Corais, aquário e mapa do Recife (fase3-03, 29/10/2026)
 
 - **Replantar os corais.** São quatro pontos na beira rasa da lagoa, um por tipo de coral do
@@ -3170,3 +3199,135 @@ coral e até a mesa) e `arquipelago-contracts/tests/salvamento-v13.test.ts`. Nav
 - Esta fase não liga corrida, constelações, clima ou passeio de balão. Não muda o salvamento,
   não altera geradores e não regrava GLBs. Testes e capturas em
   `docs/qa/2026-10-29-nuvens/README.md`.
+
+## Balão da Ilha das Nuvens (fase4-09, 29/10/2026)
+
+- O balão fica parado na âncora `balao` do `nuvens.glb`. A pé, no chão e a até 1,6 m do cesto,
+  "Subir no balão" (E ou Usar) leva a criança para dentro do cesto em 0,7 s, com um pulinho de
+  0,95 m por cima da borda (0,82 m). O cesto parado segura quem anda em volta (caixa de 1,1 ×
+  0,82 × 1,1 m, só para o corpo).
+- No voo, segurar Pular (no toque, o botão vira "Subir") acende o fogo: o balão sobe com 1,4 m/s²
+  até 1,8 m/s. Soltando, desce devagar, até 0,7 m/s. O direcional empurra para os lados com
+  1,6 m/s², até 3 m/s; sem ele, o ar segura e a velocidade de lado cai pela metade a cada 0,8 s.
+- Limites sem castigo: teto de 18 m acima do tampo da ilha; passando de 24 m do meio da ilha, uma
+  brisa mansa traz de volta (até 4 m/s² em 6 m, mais forte que o direcional). Fora do chão da ilha
+  (mais de 19,2 m do meio), o ar segura o cesto 1,5 m acima do tampo.
+- O cesto pousa quando encosta em algo por baixo: o chão, o ninho no alto da árvore, um degrau de
+  nuvem. Pousado, não desliza, e aparece "Descer do balão" (E ou Usar). Perto do lugar do balão
+  (até 1,5 m) a criança sai 1,4 m para o meio da ilha; longe dele, fica de pé onde pousou. O balão
+  volta sozinho ao lugar dele. No voo, nada do mundo lá embaixo oferece ação.
+- A pausa congela o voo e o clipe `flutuar`; com menos movimento (aparelho ou menu), o `flutuar` vai
+  a 35% da velocidade. A câmera se afasta um pouco (no mínimo 11 m, inclinação mínima 0,45). A
+  posição não é gravada durante o voo, e o balão não muda o salvamento: ele sempre recomeça parado.
+
+
+## Proteja os ninhos no Estúdio (fase4-05, 29/10/2026)
+
+O pacote do Vale fica em `docs/desafios-do-jogo/vale`. O Quadro das Cores 6, ordem 60, usa ondas de cinza e uma lista de ninhos. Cenário, desenho, placar e botão de recomeçar vêm prontos. A criança completa três regras: cobrir um ninho ao tocar, começar a próxima onda e percorrer a lista para contar o que ficou protegido ou com cinza. Não há contagem regressiva. Cada onda começa pelo botão, depois de preparar os ninhos.
+
+A proposta local usa três ninhos, três ondas e um ponto por proteção. Cada onda limpa a proteção para permitir tentar de novo. As três variações, ordens 61 a 63, mudam uma regra cada: quatro ondas, dois pontos por proteção e um quarto ninho na lista. O extra reinicia pelo Enter. O principal dá 20 moedas e o extra 10; os desafios do dia dão 10 e 5, conforme `MOEDAS_PADRAO_POR_TIPO`. Só o principal pinta a ilha. A atração é `proteja-os-ninhos`.
+
+Os oito projetos são JavaScript em blocos, sem HTML, CSS ou Canvas. As provas usam o executor real, incluindo versões com erros para impedir que um objetivo passe só pelo desenho. Importar e publicar no Admin é outra etapa. O quadro estava livre nos manifestos locais e precisa ser conferido também na futura importação. Nenhum banco foi acessado.
+
+## A última página e a volta da Íris (fase4-11, 29/10/2026)
+
+Na Lenda, posição 8 da jornada, E / Usar oferece **Subir o Farol**. Antes, a porta oferece um recado gentil, com voz própria para o público adulto. Visitas não iniciam esse final. A porta exterior continua com sua malha atual; a passagem para o interior acontece pelo interativo, sem abrir uma dobradiça que o modelo ainda não tem.
+
+O interior é a sala existente em `alto-do-farol.glb`, carregada só ao entrar e descartada ao sair. A sala usa um referencial próprio, 40 m acima do zero do mar, para não sobrepor a torre exterior. Esse número é uma decisão técnica, não uma medida da história. As âncoras `entrada`, `mesa` e `varanda` orientam chegada, leitura e vista. O piso tem raio 4,2 m e topo y 0 no modelo; 16 caixas fecham o anel das paredes, com centro a 4,35 m. A mesa e a base da lente têm formas simples. Nenhuma malha de desenho vira colisor. Os nós de colisão definitivos foram pedidos no plano para a sessão do Blender.
+
+O alcance da porta é 2 m e o da leitura é 2,1 m. O corte de entrada e saída mantém a duração de 600 ms, com relógio próprio que pausa junto do jogo, trocando a cena no meio opaco, aos 300 ms de tempo ativo. Esc e o botão de descer devolvem o corpo a um ponto livre diante da porta. A posição da sala não entra no salvamento e o cochilo automático espera a pessoa descer. Uma falha ao carregar mantém a criança na ilha e permite tentar de novo.
+
+A última página tem quatro trechos, sem tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica guardada no diário depois da leitura, inclusive ao reabrir o jogo. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
+
+A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9, no chão medido pela ilha. Usa o morador genérico, os cinco clipes existentes e os olhos com `piscar` e `feliz`. O corpo simples tem raio 0,49 m e altura 2,13 m, medidos na cabeça e na pele do GLB, sem chapéu e braços estendidos. O foco da conversa fica a 1,7035 m dos pés, no centro vertical da cabeça. Alcance de conversa 2,2 m, olhar a 7 m, aceno a cada 45 s e giro com rapidez 3, iguais aos demais moradores. A conversa é fixa e não cria amizade, pedido ou presente.
+
+A leitura e a volta da Íris ficam no salvamento V16. Reabrir mantém a página no diário e a Íris em casa. A conclusão só é guardada ao terminar a sequência, nunca apenas por alcançar a Lenda. Sair antes disso permite tentar de novo. A animação recomeça ao entrar no Farol; a conquista não se perde.
+
+## Saltos entre nuvens, corrida de balão e constelações (fase4-07, 29/10/2026)
+
+- **O progresso fica guardado.** A V16 guarda as estrelas e o melhor tempo das duas corridas,
+  além das seis constelações descobertas. Reabrir mantém as conquistas. Duas sessões juntam
+  descobertas e estrelas e preservam o menor tempo, sem somar prêmios.
+- **Saltos entre nuvens.** "Começar os saltos entre nuvens" no chão, antes dos degraus de nuvem.
+  As paradas são o terceiro degrau e as plataformas 1 a 3; a chegada, o tampo da plataforma 4, que
+  vale em qualquer altura do sobe e desce. Caindo no chão da ilha, o corte suave leva de volta à
+  última parada, no lugar onde a plataforma estiver. Três fitas do arco-íris, uma em cada vão entre
+  as plataformas, na altura do pulo correndo feito na hora certa (a de trás no alto, a da frente
+  embaixo). Estrela do tempo até 60 s: sem perder nenhuma janela das plataformas a volta leva até
+  uns 55 s, conforme a fase do ciclo na largada.
+- **Corrida de balão.** Seis argolas de pé em volta da ilha, a 15 m do meio, uma de cada cor dos
+  fios do tear (vermelha, laranja, amarela, verde, azul e roxa), com o meio de 5 a 11 m acima do
+  tampo. Raio de 4,2 m: o balão inteiro passa. Conta passar o meio do balão (3,3 m acima da base do
+  cesto) pelo plano da argola a menos de 1,8 m do meio dela, na ordem. A vermelha começa a corrida
+  (o cronômetro aparece) e a roxa chega. Três fitas do arco-íris entre as argolas, um pouco mais
+  altas, pegas a 1,6 m do meio do balão. Estrela do tempo até 45 s (quem pilota sem errar leva uns
+  29 s). Descer do balão no meio, ou "Parar", termina sem chegar; "Correr de novo" volta a esperar a
+  argola vermelha. A argola da vez brilha mais (o brilho pulsa, parado com menos movimento).
+- **Para pilotar melhor:** soltando o fogo, o embalo para cima acaba em pouco mais de 1 s (freia a
+  1,5 m/s²) e depois o balão desce devagar como antes.
+- **Constelações escondidas.** O mirante (deque com a luneta grande) fica entre o tear e a beira da
+  ilha. De dia, "Olhar pela luneta" faz o Zappy dizer que as estrelas só aparecem à noite. À noite
+  abre a vista: as setas (ou o direcional, ou os botões do visor) miram o céu. Pela luneta, as
+  figuras ainda escondidas aparecem bem fracas, sem as linhas; a olho nu, não aparecem. Segurar o
+  centro das estrelas de uma figura a menos de 7° do meio da vista por 1,2 s a acende: as estrelas
+  aparecem uma por uma em 1 s (todas juntas com menos movimento), as linhas entram por último e o
+  Zappy diz o nome (a arara, o balão, o vagalume, o peixe, o farol e a nota musical). Achada, ela
+  fica acesa nas noites seguintes enquanto o jogo está aberto. Amanhecendo com a vista aberta, ela
+  fecha.
+
+## Clima da sua ilha (fase4-08, 29/10/2026)
+
+- Com a Ilha das Nuvens aberta, a Iriê ensina (a terceira fala dela) e o menu ganha a seção "Clima
+  da sua ilha": sol, nublado ou chuva. O relógio do topo mostra o clima. A escolha fica guardada e volta ao reabrir. Um jogo novo começa com sol. Numa visita, a ilha é do irmão e o
+  tempo dela não muda.
+- O tempo vale perto da ilha central (até 34 m do meio, sumindo aos poucos em mais 8 m). Nublado:
+  o sol fica a 65% e o céu fica cinza. Chuva: o sol fica a 50%, o céu mais cinza e caem gotas em
+  volta da criança (250 no modo leve, 450 no médio, 700 no completo; nenhuma com menos movimento e
+  nenhuma dentro de casa). A pausa congela as gotas.
+- A chuva rega sozinha o que está plantado (confere a cada segundo).
+- Com o clima ligado, a planta regada pede água de novo no meio do crescimento: com sol aos 30%,
+  nublado aos 60% (o sol forte pede mais cedo); na chuva não pede, a chuva rega. Ela pede durante
+  15% do crescimento, com uma gota azul em cima e "Regar". Regar nessa hora adianta o crescimento
+  em 15%. Sem regar, a planta cresce no mesmo tempo de sempre: nada estraga e nada se perde.
+
+## Minijogo do Estúdio "Jardim que floresce" (fase4-10, 29/10/2026)
+
+- O pacote de desafios das Nuvens: um Quadro das Cores (quadro 6) e três desafios do dia, no Jogo 2D
+  com os blocos ensinados até o Gênio da Criação. Ainda não foi importado no Admin.
+- A simulação: começo com 0 de água e 3 de sol; Regar e Sol guardam 3 cada; a cada 1 segundo o
+  tempo aumenta 1 e, com água e sol, a flor cresce 10 e gasta 1 de cada; em 100 o jardim floresce.
+- As variações mudam uma regra: rega forte (Regar guarda 5), sol forte (com 6 ou mais de sol a flor
+  cresce 20) e chuva (cai 1 de água por segundo). O extra é a tecla Enter recomeçar o jardim.
+- Moedas de sempre: 20 e 10 de extra no quadro, 10 e 5 nos desafios do dia. Detalhes e provas em
+  `docs/desafios-do-jogo/nuvens/README.md`.
+
+## Continuidade e limite do salvamento (L01, 29/10/2026)
+
+O salvamento V16 reúne o progresso das Nuvens, a última página, a volta da Íris e o clima.
+As versões antigas continuam legíveis. Uma referência antiga de criação não é cortada para
+caber: os até 80 caracteres aceitos antes são preservados. A migração não inventa conquistas.
+
+O documento continua limitado a 65.536 bytes UTF-8. A conferência inclui os dados depois de
+migrar. Se passar do teto, o serviço recusa a nova gravação e conserva a anterior; o jogo mantém
+o rascunho local. Os testes distinguem o orçamento dos IDs canônicos dos produtores de uma
+combinação artificial de referências antigas longas. Não se promete que qualquer combinação
+máxima de todos os campos caiba no teto.
+
+## HUD, menu de pausa e abertura "O Cinza" (29/10/2026)
+
+- **A abertura** aparece sozinha uma vez por perfil em cada aparelho (a marca fica no aparelho; sem
+  armazenamento, só num jogo novo) e nunca no acesso de suporte. Ela tem 8 cenas e 73 segundos. Um
+  toque, Enter ou a seta passam a cena; segurar Espaço ou o botão por 1 segundo pula tudo; Esc fecha.
+  A primeira fala do Zappy vem quando ela fecha. Fechada pela tela do tempo ou pelo salvamento, ela
+  não conta como vista. Dá para rever no Diário ("Rever a abertura: O Cinza"), sem a fala nem a marca.
+  Enquanto ela cobre a tela, o mundo 3D não é desenhado; na saída (1,2 s) ele volta.
+- **O "Agora"** lembra no máximo 3 coisas (no celular, a primeira), nesta ordem: abrir a porta nova,
+  comer (fome abaixo de 25), descansar (energia abaixo de 25), regar o que foi plantado, colher o que
+  amadureceu e o desafio de hoje no Quadro das Cores. Não dá prêmio nem cria tarefa.
+- **A mochila**: os itens que fazem alguma coisa vêm primeiro e as teclas 1 a 5 usam os cinco
+  primeiros. As teclas não valem com o jogo parado nem na corrida ou no balão (lá a mochila some).
+- **Na corrida e no balão** a HUD mostra só quem joga (sem moedas), o relógio, o menu, a barra da
+  corrida e, no balão, a altura (de 0 ao teto de 18 m acima do tampo) com o fogo.
+- **A ilha no alto** é a mais perto da pessoa (na ponte, a ponta mais perto), conferida duas vezes por
+  segundo; o Quadro das Cores dela aparece quando a ilha tem algum desafio.
+- **As moedas** são o saldo da conta lido do serviço da galeria; sem leitura, não aparecem.

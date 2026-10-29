@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempoDoBicho } from '../sistemas/bichos'
 import { descansar, FALA_DA_SONECA_CHEIA, sonecaAcabou } from '../sistemas/descanso'
+import { foraDaPassagemDoFarol } from '../sistemas/final-do-farol'
 import { passarTempo } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { useJogo } from './contexto'
+import { lojaDoFarol } from './farol'
 
 /**
  * O que corre com o tempo, fora da cena: necessidades (e as do bicho adotado), o cochilo quando a
@@ -51,7 +53,11 @@ export function Relogios() {
         }
         // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
         const agora = loja.getState()
-        if (agora.salvamento.necessidades.energia <= 0 && agora.painelAberto === null) {
+        if (
+          agora.salvamento.necessidades.energia <= 0 &&
+          agora.painelAberto === null &&
+          foraDaPassagemDoFarol(lojaDoFarol(loja).getState(), pedidos.teleporte !== null)
+        ) {
           pedidos.teleporte = {
             x: CENTRO_DA_CASA.x,
             y: ALTURA_DA_TERRA + 1.2,
@@ -63,7 +69,9 @@ export function Relogios() {
       }
 
       if (
+        foraDaPassagemDoFarol(lojaDoFarol(loja).getState(), pedidos.teleporte !== null) &&
         movimento.modo !== 'barco' &&
+        movimento.modo !== 'balao' &&
         movimento.modo !== 'mergulho' &&
         segundos % 15 === 0 &&
         Math.hypot(rastro.x - ultimaPosicao.x, rastro.z - ultimaPosicao.z) > 1

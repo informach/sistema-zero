@@ -100,7 +100,7 @@ const revisao = (pagina: Page) =>
 
 async function abrirVisitas(pagina: Page) {
   await pagina.getByRole('button', { name: 'Abrir o menu' }).click()
-  await pagina.getByRole('button', { name: '🏡 Visitar um irmão' }).click()
+  await pagina.getByRole('button', { name: 'Visitar um irmão' }).click()
   const painel = pagina.getByRole('dialog', { name: 'Visitar um irmão' })
   await painel.waitFor()
   return painel

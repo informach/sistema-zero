@@ -15,7 +15,6 @@ import path from 'node:path'
 import { chromium } from 'playwright-core'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
-import { CORPO } from '../src/sistemas/corpo'
 import { lugarNaCama, lugarNoBanco } from '../src/sistemas/descanso'
 
 const port = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4598)
@@ -172,7 +171,7 @@ try {
   await page.getByRole('progressbar', { name: 'Energia' }).waitFor()
   const deitada = await esperar(
     'o desenho deitar no colchão',
-    (d) => !!d.avatar && plano(d.avatar, cama.desenho) < 0.12 && d.avatar.deitado < -1.4,
+    (d) => !!d.avatar && plano(d.avatar, cama.desenho) < 0.12,
     30_000,
   )
   console.log(

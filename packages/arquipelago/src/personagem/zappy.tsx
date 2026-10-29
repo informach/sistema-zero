@@ -12,6 +12,7 @@ import {
 } from 'three'
 import zappyGlb from '../assets/zappy.glb'
 import { useJogo } from '../estado/contexto'
+import { useFarol } from '../estado/farol'
 import {
   ALTURA_DO_ZAPPY,
   diferencaDeAngulo,
@@ -48,7 +49,8 @@ const SALTO = 8
  * virada ele dá a volta por fora em vez de atravessar o corpo dela. À noite a bunda ilumina em volta.
  */
 export function Zappy() {
-  const { rastro, ambiente } = useJogo()
+  const { loja, rastro, ambiente } = useJogo()
+  const noFinal = useFarol(loja, (s) => s.etapa === 'fachos' || s.etapa === 'fim')
   const camera = useThree((s) => s.camera)
   const reduzido = useReducedMotion()
   const grupo = useRef<Group>(null)
@@ -113,7 +115,7 @@ export function Zappy() {
     if (luz.current) luz.current.intensity = 2 + noite * 14
   })
   return (
-    <group ref={grupo}>
+    <group ref={grupo} visible={!noFinal}>
       <Barreira reserva={<Bolinha />}>
         <Suspense fallback={<Bolinha />}>
           <ModeloDoZappy brilho={brilho} voando={voando} />
