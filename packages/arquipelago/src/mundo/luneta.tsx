@@ -5,7 +5,8 @@ import type { Group, Mesh } from 'three'
 import lunetaGlb from '../assets/itens/luneta.glb'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
-import { falaDaLuneta, ilhaDaLuneta, PAINEL_DA_LUNETA, passoDaPrevia } from '../sistemas/luneta'
+import { useVoz } from '../interface/voz'
+import { ilhaDaLuneta, PAINEL_DA_LUNETA, passoDaPrevia } from '../sistemas/luneta'
 import { Colisores } from './colisores'
 import { useInterativo } from './interativos'
 import { alvoDaLuneta, COLISOR_DA_LUNETA, LUNETA } from './luneta-medidas'
@@ -23,6 +24,7 @@ export function LunetaDoPier() {
 
 function LunetaCarregada() {
   const { loja, rastro } = useJogo()
+  const voz = useVoz()
   const jornada = useEstado((s) => s.jornada)
   const aberta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const ilha = ilhaDaLuneta(jornada)
@@ -48,7 +50,7 @@ function LunetaCarregada() {
         ? 'Olhar pela luneta'
         : null,
     agir: () => {
-      loja.getState().dizer(falaDaLuneta(ilha))
+      loja.getState().dizer(voz.falaDaLuneta(ilha))
       loja.getState().abrirPainel(PAINEL_DA_LUNETA)
     },
   })

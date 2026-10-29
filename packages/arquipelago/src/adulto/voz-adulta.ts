@@ -40,6 +40,9 @@ export const VOZ_ADULTA: VozDoJogo = {
   },
   voltar: 'Voltar para a comunidade',
   falaDaLuneta,
+  placaDaPonte: (ilha) => ({ antes: 'A ponte abre na', marco: `etapa ${ilha.posicao} da jornada` }),
+  recadoDaIris: (ilha) =>
+    `Tem mais para descobrir. A ponte abre na etapa ${ilha.posicao} da sua jornada. Íris.`,
   moldaFechado: `Abre na etapa ${POSICAO_DO_MOLDA} da sua jornada`,
   compraSomenteLeitura: 'No acesso de suporte o jogo só mostra. A compra fica com a pessoa.',
 }

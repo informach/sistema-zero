@@ -61,8 +61,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   adulto vive dentro dela; o piso de 15 px é gerado do próprio `ESTILOS` (`pisoDaLetra`), então
   regra nova do Kids já nasce coberta. Texto novo que fale da plataforma, da jornada ou da família
   entra na voz (com a versão adulta), não solto no componente. Família (visitas, recordes) só com
-  `plataforma.publico === 'kids'`. O mundo não lê a voz ainda: a placa da ponte e a fala da luneta
-  do `mundo/` usam os postos do Kids. Navegador: `playground/verificar-pele-adulta-browser.ts`
+  `plataforma.publico === 'kids'`. O mundo também lê a voz (o R3F 9 leva o contexto para dentro
+  do `<Canvas>`): a placa da ponte fechada (`placaDaPonte`, `recadoDaIris`) e a fala da luneta.
+  Navegador: `playground/verificar-pele-adulta-browser.ts`
   (`?publico=adulto`, computador e celular emulado, a tela de fechado e o Kids de sempre).
 
 - `src/entrada.tsx`: `montarArquipelago(elemento, plataforma)` cria a própria raiz React, injeta o
