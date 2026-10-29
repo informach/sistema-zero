@@ -38,6 +38,14 @@ describe.skipIf(!testDatabaseUrl)('aulas concluídas para o Arquipélago (SQL re
     await conn.sql.unsafe(`create table if not exists members.lesson_completions (
       id uuid primary key, user_id uuid not null, lesson_id uuid not null,
       course_id uuid not null, completed_at timestamptz not null)`)
+    // Outro arquivo (content-readiness-fixture) pode ter criado a tabela antes, sem id e sem
+    // completed_at: as colunas que esta prova usa entram aqui também.
+    await conn.sql.unsafe(`alter table members.lesson_completions
+      add column if not exists id uuid,
+      add column if not exists user_id uuid,
+      add column if not exists lesson_id uuid,
+      add column if not exists course_id uuid,
+      add column if not exists completed_at timestamptz not null default now()`)
     await concluir(lia, '2026-10-26T15:00:00Z')
     await concluir(lia, '2026-10-24T09:00:00Z')
     await concluir(lia, '2026-10-10T09:00:00Z') // antes da janela
