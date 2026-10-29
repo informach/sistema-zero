@@ -36,8 +36,9 @@ function harness() {
 function coinsScene(api: GameTwoDRuntimeApi) {
   const jogador = api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
   const moedas = api.createGroup()
-  const primeira = api.spawn(moedas, { x: 100, y: 0, w: 10, h: 10 }) as GameTwoDSprite
-  const segunda = api.spawn(moedas, { x: 200, y: 0, w: 10, h: 10 }) as GameTwoDSprite
+  const primeira = api.spawn(moedas, { x: 100, y: 0, w: 10, h: 10 })
+  const segunda = api.spawn(moedas, { x: 200, y: 0, w: 10, h: 10 })
+  if (!primeira || !segunda) throw new Error('A cena precisa das duas moedas.')
   return { jogador, moedas, primeira, segunda }
 }
 
@@ -100,6 +101,7 @@ describe('onTouchGroup — começar a encostar em algum do grupo', () => {
     const moedas = api.createGroup()
     const a = api.spawn(moedas, { x: 0, y: 0, w: 10, h: 10 })
     const b = api.spawn(moedas, { x: 20, y: 0, w: 10, h: 10 })
+    if (!a || !b) throw new Error('A cena precisa de dois membros encostados.')
     const tocadas: GameTwoDSprite[] = []
     api.onTouchGroup(
       () => jogador,
@@ -147,6 +149,7 @@ describe('onTouchGroup — começar a encostar em algum do grupo', () => {
     frame()
     moedas = api.createGroup()
     const nova = api.spawn(moedas, { x: 0, y: 0, w: 10, h: 10 })
+    if (!nova) throw new Error('O novo grupo precisa de uma moeda.')
     frame()
     expect(tocadas).toEqual([nova])
   })
