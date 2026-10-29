@@ -619,7 +619,8 @@ def placa(x, z, texto_cor, rot=0.0, y=TOPO, h=1.3, w=1.0, m='placaBranca'):
 def lampiao_poste(x, z, y=TOPO, h=2.6, m='metalEscuro'):
     """Poste com lampião (o vidro `lampiao` acende à noite)."""
     bx, by = x, -z
-    p = [cyl(0.07, h, (bx, by, y + h / 2), m, verts=8, r2=0.05),
+    # O poste nasce no topo da base (do chão, os fundos dos dois ficavam no mesmo plano).
+    p = [cyl(0.07, h - 0.12, (bx, by, y + 0.12 + (h - 0.12) / 2), m, verts=8, r2=0.05),
          cyl(0.2, 0.12, (bx, by, y + 0.06), m, verts=8)]
     p.append(cyl(0.2, 0.4, (bx, by, y + h + 0.2), 'lampiao', verts=6))
     p.append(cone(0.3, 0.25, (bx, by, y + h + 0.52), m, verts=6))

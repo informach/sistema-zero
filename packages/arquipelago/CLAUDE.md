@@ -179,7 +179,9 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   enfeites do Bosque" em `tests/colisores-da-ilha.test.ts`. A Vila Doce (29/10/2026) tem os dela no
   `vila-doce.glb` (casas e lojas até o topo plano, o percurso dos telhados, a fonte, as barracas e os
   enfeites de pé), conferidos em `tests/colisores-da-vila-doce.test.ts` (paradas do percurso em cima de
-  colisor, vãos dentro do pulo andando, chegada e frente das lojas livres).
+  colisor, vãos dentro do pulo andando, chegada e frente das lojas livres). O Recife (29/10/2026, ainda não
+  ligado no jogo) também tem os dele no `recife.glb` (cais, casa da Maré, caverna para quem nada),
+  em `tests/colisores-do-recife.test.ts`; os ajudantes dos testes ficam em `tests/ajuda-colisores.ts`.
 
 ## Ilhas completas (o Bosque, 27/10/2026)
 

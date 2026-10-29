@@ -10,7 +10,15 @@ Mesmo chão da versão leve (areia, praia molhada), com:
   embaixo d'água, pérolas e cristais que brilham. Entra-se nadando pela boca, virada para o mar.
 
 Saídas: `recife.glb` (nós `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`,
-`alga-1`…`alga-10` com o clipe `balancar`, e as âncoras), `recife-props.glb` e `barco.glb`.
+`alga-1`…`alga-10` com o clipe `balancar`, as âncoras e os nós de colisão `col-*`, 29/10/2026),
+`recife-props.glb` e `barco.glb`.
+
+Colisão (README de `arte/ilhas`): o chão (`col-terreno`), a casa da Maré (um cilindro até o casco),
+a mesa e o cavalete de mapas, o cesto, o deque do cais (aberto nas bordas: dali se mergulha) com as
+estacas, o lampião e o caixote, a caverna (as pedras da parede, o arco da boca, o teto e o chão de
+areia), os corais grandes em volta da lagoa, os coqueiros, as pedras, o guarda-sol e o castelinho.
+A lagoa é rasa (só desenho) e o miúdo (conchas, estrelas, algas, os corais pequenos dentro da
+lagoa e os da caverna) não colide.
 """
 from lib_ilhas import *
 
@@ -83,16 +91,24 @@ def alga(x, z, y, seed=0, s=1.0):
         a = 2 * math.pi * k / 3 + rnd.uniform(-0.4, 0.4)
         d = Vector((math.cos(a) * 0.25, math.sin(a) * 0.25, 1.0))
         cor = ('alga', 'algaClara', 'algaFunda')[k]
-        p.append(lib_ilha.lock((x, -z, y - 0.05), d, (1.1 + 0.35 * k) * s, 0.09 * s, cor,
+        # Cada fita nasce um pouco afastada do meio, para o seu lado (as três saindo do mesmo ponto
+        # tinham faces no mesmo plano perto da base).
+        p.append(lib_ilha.lock((x + math.cos(a) * 0.06 * s, -z + math.sin(a) * 0.06 * s, y - 0.05), d,
+                               (1.1 + 0.35 * k) * s, 0.09 * s, cor,
                                bend=(math.cos(a + 1.3) * 0.3, math.sin(a + 1.3) * 0.3, 0), n=6, seg=6))
     return p, (x, -z, y)
 
 
 # ------------------------------------------------------------------ casa da Maré (na origem)
-def casa_mare():
+def casa_mare(col=None):
     p = []
     rp = 2.0
     hp = 2.4
+    lx, ly = 1.7, -rp - 0.9
+    if col is not None:
+        # Um cilindro do chão até a base do casco (o casco não se pisa) e o tripé da luneta.
+        col.append(col_cilindro('casa-mare', rp + 0.2, 3.6, (0, 0, TOPO + 1.8)))
+        col.append(col_cilindro('poste-luneta', 0.3, 1.4, (lx, ly, TOPO + 0.7)))
     p.append(cyl(rp + 0.25, 0.25, (0, 0, TOPO + 0.12), 'rochaRecife', verts=20, bevel=0.05))
     p.append(cyl(rp, hp, (0, 0, TOPO + 0.25 + hp / 2), 'paredeConcha', verts=22))
     for k in range(2):
@@ -133,7 +149,6 @@ def casa_mare():
     p.append(slab([(math.cos(math.pi + math.pi * k / 10) * 1.1, -rp - 0.05 + math.sin(math.pi + math.pi * k / 10) * 0.8)
                    for k in range(11)], TOPO, TOPO + 0.15, 'rochaRecife', bevel=0.04, segs=1, fundo=False))
     # Luneta num tripé, do lado da porta.
-    lx, ly = 1.7, -rp - 0.9
     for k in range(3):
         a = 2 * math.pi * k / 3
         p.append(tube([(lx, ly, TOPO + 1.1), (lx + math.cos(a) * 0.4, ly + math.sin(a) * 0.4, TOPO)], [0.03, 0.03],
@@ -142,8 +157,13 @@ def casa_mare():
     return p
 
 
-def mesa_de_mapas():
+def mesa_de_mapas(col=None):
     """Mesa com o mapa aberto, o cavalete do arquipélago e o cesto de mapas (na origem, frente −Y)."""
+    if col is not None:
+        col.append(col_caixa('mesa', (1.6, 1.0, 0.89), (0, 0, TOPO + 0.445)))
+        col.append(col_caixa('cavalete', (1.3, 0.8, 2.0), (-1.6, 0.4, TOPO + 1.0)))
+        # O cesto é baixo (0,5): o colisor vai até a altura que segura, para ninguém subir nele.
+        col.append(col_cilindro('cesto', 0.36, 0.72, (1.3, 0.6, TOPO + 0.36)))
     p = [box((1.6, 1.0, 0.08), (0, 0, TOPO + 0.85), 'deque', bevel=0.02, segs=1)]
     for sx in (-1, 1):
         for sy in (-1, 1):
@@ -177,8 +197,9 @@ def mapa_aberto(x, y, z):
         p.append(cyl(0.035, 0.67, (x + sx * 0.48, y, z + 0.03), 'pergaminhoEscuro', verts=8, rot=(R(90), 0, 0)))
     rnd = random.Random(3)
     for k in range(5):
-        p.append(cyl(rnd.uniform(0.05, 0.1), 0.006, (x + rnd.uniform(-0.3, 0.3), y + rnd.uniform(-0.2, 0.2), z + 0.012),
-                     'tintaMapa' if k else 'coral', verts=8))
+        # Cada mancha um pouco acima da anterior: duas que se cruzam não ficam no mesmo plano.
+        p.append(cyl(rnd.uniform(0.05, 0.1), 0.006, (x + rnd.uniform(-0.3, 0.3), y + rnd.uniform(-0.2, 0.2),
+                                                       z + 0.012 + 0.004 * k), 'tintaMapa' if k else 'coral', verts=8))
     p.append(tube([(x - 0.35, y - 0.2, z + 0.013), (x - 0.1, y + 0.05, z + 0.013), (x + 0.2, y - 0.1, z + 0.013)],
                   [0.008] * 3, 'fitaMapa', seg=3, cap=False))
     return p
@@ -191,7 +212,7 @@ def mapa_rolo(x, y, z, incl=R(70), k=0):
 
 
 # ------------------------------------------------------------------ cais e caverna
-def cais():
+def cais(col=None):
     a = Vector((CAIS_INI[0], -CAIS_INI[1], 0))
     b = Vector((CAIS_FIM[0], -CAIS_FIM[1], 0))
     d = b - a
@@ -201,6 +222,12 @@ def cais():
     p = []
     zdeck = 0.85
     n = int(comp / 0.45)
+    if col is not None:
+        # O deque da tábua 3 até a ponta (antes dela as tábuas ficam na areia): uma caixa de 0,4 com o
+        # topo no das tábuas. As bordas ficam abertas: dali se pula no mar para mergulhar.
+        ini, fim_ = a + d * (2.5 / n), b + d / comp * 0.18
+        meio, compr = (ini + fim_) / 2, (fim_ - ini).length
+        col.append(col_caixa('cais', (compr, 1.7, 0.4), (meio.x, meio.y, zdeck + 0.04 - 0.2), (0, 0, giro)))
     for i in range(n + 1):
         c = a + d * (i / n)
         # Começa em cima da areia (y = 1) e desce até a altura do cais.
@@ -212,6 +239,8 @@ def cais():
         for lado in (-1, 1):
             px, py = c.x + nx * 0.9 * lado, c.y + ny * 0.9 * lado
             p.append(cyl(0.12, 3.0, (px, py, zdeck - 1.0), 'poste', verts=8))
+            if col is not None:
+                col.append(col_cilindro('estaca', 0.13, 3.0, (px, py, zdeck - 1.0)))
             p.append(cyl(0.13, 0.08, (px, py, zdeck + 0.52), 'tabuaEscura', verts=8))
     # Cabeços de amarrar, a boia na estaca, o lampião e caixotes com mapas.
     fim = b
@@ -221,15 +250,21 @@ def cais():
         p.append(cyl(0.18, 0.06, (cx, cy, zdeck + 0.4), 'metalEscuro', verts=10))
     p.append(torus(0.32, 0.1, (fim.x + nx * 0.98, fim.y + ny * 0.98, zdeck + 0.75), 'boia', seg=14, rseg=6,
                    rot=(R(90), 0, giro)))
-    p += lampiao_poste(fim.x - nx * 0.85, -(fim.y - ny * 0.85), y=zdeck, h=2.0, m='poste')
+    # O lampião fica um pouco para dentro do deque: na borda ele encostava na última estaca.
+    p += lampiao_poste(fim.x - nx * 0.6, -(fim.y - ny * 0.6), y=zdeck + 0.04, h=2.0, m='poste')
     mid = a + d * 0.55
     p += caixote(mid.x - nx * 0.5, -(mid.y - ny * 0.5), s=0.55, y=zdeck, rot=giro, m='deque')
+    if col is not None:
+        col.append(col_cilindro('poste', 0.08, 2.3, (fim.x - nx * 0.6, fim.y - ny * 0.6, zdeck + 1.15)))
+        # O caixote é baixo (0,55): o colisor vai até a altura que segura.
+        col.append(col_caixa('caixote', (0.55, 0.55, 0.72), (mid.x - nx * 0.5, mid.y - ny * 0.5, zdeck + 0.36),
+                             (0, 0, giro)))
     p.append(torus(0.25, 0.06, (mid.x + nx * 0.45, mid.y + ny * 0.45, zdeck + 0.08), 'corda', seg=12, rseg=4))
     p.append(torus(0.15, 0.06, (mid.x + nx * 0.45, mid.y + ny * 0.45, zdeck + 0.16), 'corda', seg=10, rseg=4))
     return p, (fim.x - d.x / comp * 1.2, -(fim.y - d.y / comp * 1.2), zdeck), (fim.x + nx * 2.2, fim.y + ny * 2.2, giro)
 
 
-def caverna():
+def caverna(col=None):
     """Caverna submarina: ferradura de rochas com a boca para o mar (−x), teto de pedra, chão de areia
     embaixo d'água e o tesouro de pérolas e cristais (que brilham, para dar para ver lá dentro)."""
     cx, cz = CAVERNA
@@ -246,19 +281,31 @@ def caverna():
         h = rnd.uniform(4.2, 4.9)
         p.append(rock((bx + math.cos(a) * r, by + math.sin(a) * r, -2.6), (2.5, 2.3, h), 'rochaRecife' if k % 3 else
                       'rochaRecifeEscura', seed=100 + k, subdiv=1, rough=0.2))
-    # Pilares da boca e o arco por cima (a boca fica com ~1,2 de vão acima da água).
+        if col is not None:
+            # Um pouco menor que a pedra (a pedra é redonda): do fundo até perto do topo.
+            col.append(col_cilindro('rocha-caverna', 1.0, h * 0.9, (bx + math.cos(a) * r, by + math.sin(a) * r,
+                                                                     -2.6 + h * 0.45)))
+    # Pilares da boca e o arco por cima (o arco começa 1,6 acima da água: quem nada passa com a cabeça).
     for lado in (-1, 1):
         a = math.pi + lado * R(36)
         p.append(rock((bx + math.cos(a) * 3.0, by + math.sin(a) * 3.0, -2.6), (2.0, 1.9, 4.6), 'rochaRecifeEscura',
                       seed=200 + lado, subdiv=1, rough=0.18))
-    p.append(rock((bx - 3.0, by, 1.15), (1.5, 3.8, 1.3), 'rochaRecife', seed=210, subdiv=1, rough=0.15))
+        if col is not None:
+            col.append(col_cilindro('rocha-caverna', 0.8, 4.2, (bx + math.cos(a) * 3.0, by + math.sin(a) * 3.0, -0.5)))
+    p.append(rock((bx - 3.0, by, 1.6), (1.5, 3.8, 1.3), 'rochaRecife', seed=210, subdiv=1, rough=0.15))
+    if col is not None:
+        # O arco da boca, o teto (de cima, um morrinho que se pisa) e o chão de areia lá embaixo.
+        col.append(col_caixa('arco-caverna', (1.3, 3.6, 1.1), (bx - 3.0, by, 1.6 + 0.6)))
+        col.append(col_cilindro('teto-caverna', 3.5, 0.95, (bx, by, 1.7 + 0.475)))
+        col.append(col_cilindro('chao-caverna', 2.6, 0.3, (bx, by, FUNDO_CAVERNA - 0.15)))
+        col.append(col_entre('tronco', (bx + 0.8, by - 0.6, 2.6), (bx + 0.8 + 0.6 * 0.8, by - 0.6, 2.6 + 3.4 * 0.8), 0.12))
     # Teto: placa de pedra irregular, com a areia e a grama por cima (de cima parece um morrinho).
-    teto = slab(blob(bx, by, 3.9, 3.6, seed=4, n=20, wob=0.1), 1.6, 2.4, 'rochaRecife', bevel=0.25, segs=1,
+    teto = slab(blob(bx, by, 3.9, 3.6, seed=4, n=20, wob=0.1), 1.7, 2.5, 'rochaRecife', bevel=0.25, segs=1,
                 name='teto', fundo=True)
     p.append(teto)
-    p.append(slab(blob(bx + 0.3, by, 3.0, 2.7, seed=5, n=18, wob=0.1), 2.35, 2.55, 'areia', bevel=0.12, segs=1,
+    p.append(slab(blob(bx + 0.3, by, 3.0, 2.7, seed=5, n=18, wob=0.1), 2.45, 2.65, 'areia', bevel=0.12, segs=1,
                   name='tetoAreia', fundo=False))
-    p += anel.coqueiro_leve(cx + 0.8, cz + 0.6, 0.8, y=2.5)
+    p += anel.coqueiro_leve(cx + 0.8, cz + 0.6, 0.8, y=2.6)
     # Chão de areia lá embaixo, corais, o mexilhão gigante com as pérolas e os cristais.
     p.append(slab(blob(bx, by, 2.8, 2.5, seed=6, n=20, wob=0.08), FUNDO_CAVERNA - 0.3, FUNDO_CAVERNA, 'areiaMolhada',
                   bevel=0.1, segs=1, name='chaoCaverna', fundo=False))
@@ -285,8 +332,11 @@ def caverna():
 
 
 # ------------------------------------------------------------------ chão, corais e enfeites
-def terreno():
+def terreno(col=None):
     p = anel.base(SEMENTE, topo='areia', praia='areiaMolhada')
+    if col is not None:
+        # O chão que se pisa: tampo, praia e barranco (as manchas e trilhas, milímetros acima, só desenham).
+        col.append(col_terreno(p))
     x, z = LAGOA
     p.append(mancha(x, z, 4.8, 4.2, 'areiaMolhada', seed=2, z0=TOPO - 0.05, z1=TOPO + 0.02, n=32, wob=0.06))
     p.append(mancha(-2.2, 6.4, 3.6, 2.8, 'gramaClara', seed=9, z0=TOPO - 0.03, z1=TOPO + 0.015))
@@ -303,7 +353,11 @@ def lagoa():
             mancha(x + 0.4, z + 0.2, 2.2, 1.8, 'lagoaFunda', seed=5, z0=TOPO - 0.03, z1=TOPO + 0.05, n=24, wob=0.08)]
 
 
-def corais():
+# Colisor de cada coral grande em volta da lagoa (raio e altura por escala), um pouco menor que o desenho.
+COL_CORAL = {'galho': (0.45, 1.0), 'cerebro': (0.55, 0.6), 'leque': (0.5, 0.8), 'tubo': (0.4, 0.9)}
+
+
+def corais(col=None):
     p = []
     x0, z0 = LAGOA
     tipos = ('galho', 'cerebro', 'leque', 'tubo')
@@ -319,6 +373,9 @@ def corais():
         t = tipos[i % 4]
         c = cores[i % 6]
         s = 0.9 + 0.25 * (i % 3)
+        if col is not None:
+            r, h = COL_CORAL[t]
+            col.append(col_cilindro('coral', r * s, h * s + 0.1, (x, -z, TOPO + (h * s - 0.1) / 2)))
         if t == 'galho':
             p += coral_galho(x, z, c, s, seed=i)
         elif t == 'cerebro':
@@ -337,11 +394,17 @@ def corais():
     return p
 
 
-def enfeites():
+def enfeites(col=None):
     p = []
     for x, z, s, incl in ((-9.6, 5.4, 1.0, (0.6, 0.2)), (8.8, 6.6, 0.95, (-0.5, -0.3)), (-0.6, -10.6, 1.1, (0.2, 0.6)),
                           (9.6, -5.6, 0.9, (-0.4, 0.5)), (-8.4, -7.0, 1.0, (0.5, -0.3))):
         p += anel.coqueiro_leve(x, z, s, incl=incl)
+        if col is not None:
+            # O tronco curvo em dois pedaços retos (como o desenho: a ponta anda incl·t²).
+            pts = [(x + incl[0] * t * t * s, -z + incl[1] * t * t * s, TOPO + 3.4 * t * s) for t in (0.0, 0.6, 1.0)]
+            pts[0] = (pts[0][0], pts[0][1], TOPO - 0.1)
+            for k in range(2):
+                col.append(col_entre('tronco', pts[k], pts[k + 1], 0.15 * s, sobra=0.05))
     rnd = random.Random(31)
     for i, (x, z) in enumerate(((9.8, 3.4), (-9.0, -4.0), (3.0, 10.2), (-5.2, -9.8), (10.4, -3.4), (6.4, 8.8),
                                 (-10.8, 2.4))):
@@ -356,9 +419,15 @@ def enfeites():
     for i, (x, z, s) in enumerate(((10.4, 4.6, 1.0), (-10.8, -1.8, 0.9), (6.6, -9.6, 0.8), (-6.4, 9.8, 0.9),
                                    (0.8, 10.8, 0.8))):
         p += pedra(x, z, s, 'rochaRecife', seed=600 + i, top_m='musgo' if i % 2 else None)
+        if col is not None:
+            # Como as pedras do Bosque: um pouco menor que o desenho, do pé enterrado até o topo.
+            alto = 0.85 * s - 0.2
+            col.append(col_cilindro('pedra', 0.58 * s, alto + 0.1, (x, -z, TOPO + (alto - 0.1) / 2)))
     # Guarda-sol listrado e a canga, perto da chegada (fora do corredor).
     gx, gz = 8.2, -4.6
     p.append(cyl(0.05, 2.4, (gx, -gz, TOPO + 1.2), 'doceBranco', verts=6))
+    if col is not None:
+        col.append(col_cilindro('poste', 0.06, 2.4, (gx, -gz, TOPO + 1.2)))
     sombrinha = cone(1.4, 0.55, (gx, -gz, TOPO + 2.35), 'coral', verts=8)
     bpy.context.view_layer.update()
     pintar_por(sombrinha, lambda c, nn: 'doceBranco' if int((math.atan2(c.y + gz, c.x - gx) + math.pi) / (math.pi / 4)) % 2
@@ -369,6 +438,8 @@ def enfeites():
     # Castelinho de areia.
     sx, sz = 6.8, 6.0
     p.append(cyl(0.6, 0.45, (sx, -sz, TOPO + 0.22), 'areiaFunda', verts=10, r2=0.5))
+    if col is not None:
+        col.append(col_cilindro('castelo', 0.72, 0.85, (sx, -sz, TOPO + 0.375)))
     for k in range(4):
         a = 2 * math.pi * k / 4 + 0.4
         p.append(cyl(0.18, 0.6, (sx + math.cos(a) * 0.5, -sz + math.sin(a) * 0.5, TOPO + 0.3), 'areiaFunda', verts=8))
@@ -465,17 +536,25 @@ def frente(x, z, d, tx, tz):
 
 def construir():
     lib_q.reset()
-    chao = terreno()
+    col = []
+    chao = terreno(col)
     agua = lagoa()
     alvo_casa = (-2.6, 3.4)
-    obras = colocar(casa_mare(), CASA[0], CASA[1], olhar_para(CASA[0], CASA[1], *alvo_casa))
+
+    def montar(fn, x, z, frente_):
+        c = []
+        objs = colocar(fn(col=c), x, z, frente_)
+        col.extend(colocar(c, x, z, frente_))
+        return objs
+
+    obras = montar(casa_mare, CASA[0], CASA[1], olhar_para(CASA[0], CASA[1], *alvo_casa))
     mx, mz = MESA
-    obras += colocar(mesa_de_mapas(), mx, mz, olhar_para(mx, mz, -6.0, 1.0))
-    deque_cais, ponta_cais, lugar_barco = cais()
+    obras += montar(mesa_de_mapas, mx, mz, olhar_para(mx, mz, -6.0, 1.0))
+    deque_cais, ponta_cais, lugar_barco = cais(col)
     obras += deque_cais
-    cor = corais()
-    enf = enfeites()
-    cav = caverna()
+    cor = corais(col)
+    enf = enfeites(col)
+    cav = caverna(col)
     conferir_corredor(obras + cor + enf, 'recife')
     algas = {}
     for i, (x, z, y) in enumerate(ALGAS):
@@ -483,7 +562,7 @@ def construir():
         algas[f'alga-{i + 1}'] = (objs, pivo)
     cx, cz = CAVERNA
     anc = [ancora('chegada', 11.6, 0.0), ancora('morador', *frente(CASA[0], CASA[1], 3.4, *alvo_casa)),
-           ancora('lumi-1', 3.0, 4.6), ancora('lumi-2', -4.6, -4.0), ancora('lumi-3', 6.0, -3.6),
+           ancora('lumi-1', 3.0, 4.6), ancora('lumi-2', -6.4, -5.0), ancora('lumi-3', 6.0, -3.6),
            ancora('lumi-4', -7.6, 2.4), ancora('casa-mare', *frente(CASA[0], CASA[1], 2.6, *alvo_casa)),
            ancora('mapa', mx, mz), ancora('lagoa', *LAGOA),
            ancora('cais', ponta_cais[0], ponta_cais[1], ponta_cais[2]),
@@ -493,7 +572,7 @@ def construir():
     # A âncora do barco também diz para onde ele aponta (giro em y, no jogo).
     anc[10].rotation_euler = (0, 0, lugar_barco[2])
     exportar('recife', {'terreno': chao, 'lagoa': agua, 'construcoes': obras, 'corais': cor, 'enfeites': enf,
-                        'caverna': cav, **algas}, anc, clipes_=clipe_algas)
+                        'caverna': cav, **algas}, anc, clipes_=clipe_algas, colisores=col)
 
 
 def props():

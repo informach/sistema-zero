@@ -425,9 +425,9 @@
         "z": 4.6
       },
       "lumi-2": {
-        "x": -4.6,
+        "x": -6.4,
         "y": 1.0,
-        "z": -4.0
+        "z": -5.0
       },
       "lumi-3": {
         "x": 6.0,
@@ -456,7 +456,27 @@
       }
     },
     "clipes": "balancar",
-    "kb": 547.1,
+    "colisores": {
+      "col-arco-caverna": 1,
+      "col-cais": 1,
+      "col-caixote": 1,
+      "col-cavalete": 1,
+      "col-cil-casa-mare": 1,
+      "col-cil-castelo": 1,
+      "col-cil-cesto": 1,
+      "col-cil-chao-caverna": 1,
+      "col-cil-coral": 12,
+      "col-cil-estaca": 6,
+      "col-cil-pedra": 5,
+      "col-cil-poste": 2,
+      "col-cil-poste-luneta": 1,
+      "col-cil-rocha-caverna": 23,
+      "col-cil-teto-caverna": 1,
+      "col-cil-tronco": 11,
+      "col-mesa": 1,
+      "col-terreno": 1
+    },
+    "kb": 574.5,
     "nos": {
       "alga-1": 240,
       "alga-10": 240,

@@ -48,7 +48,7 @@ chegada (`conferir_corredor`).
     para o mar;
   - no Bosque, as copas e o galho dos cipós passam um pouco da borda.
 - **Colisões:** o desenho nunca vira colisão. Cada ilha traz nós de colisão `col-*`, feitos à mão
-  ao lado das peças (veja abaixo). O Recife ainda não tem os dele.
+  ao lado das peças (veja abaixo).
 - **Brilho:** os vidros que acendem (`vidroJanela`, `lampiao`, `lanterna`) e os novos `perolaLuz` e
   `cristalLuz` saem com força de emissão 1; o jogo regula o brilho.
 
@@ -58,7 +58,7 @@ chegada (`conferir_corredor`).
 |---|---|---|---|---|---|
 | `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4` | não tem | 27.762 | 958 KB |
 | `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` e 86 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 961 KB |
-| `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 547 KB |
+| `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 574 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
 | `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 1.416 | 49 KB |
@@ -105,6 +105,16 @@ desenho; o `exportar(..., colisores=col)` grava tudo.
   canteiros (`col-cil-vaso`) e moitas, os dois últimos com 0,72 a 0,75 de altura para segurar o
   corpo. Toldos, flores, tufos e o miúdo das construções não colidem.
   `tests/colisores-da-vila-doce.test.ts` confere o percurso, a chegada e a frente das lojas.
+- **O que colide no Recife (29/10/2026):** chão, a casa da Maré (um cilindro até a base do casco)
+  e o tripé da luneta, a mesa e o cavalete de mapas e o cesto, o deque do cais (aberto nas bordas:
+  dali se pula no mar para mergulhar) com as estacas, o lampião e o caixote, a caverna (as pedras
+  da parede, o arco da boca a 1,6 da água para quem nada passar com a cabeça, o teto, que de cima
+  é um morrinho que se pisa, e o chão de areia), os corais grandes em volta da lagoa
+  (`COL_CORAL`), os coqueiros (o tronco curvo em dois pedaços), as pedras, o guarda-sol e o
+  castelinho. A lagoa é rasa (só desenho); conchas, estrelas, algas e os corais pequenos não
+  colidem. `tests/colisores-do-recife.test.ts` confere a chegada, o cais de ponta a ponta e o nado
+  do mergulho até o tesouro da caverna. Os ajudantes desses testes ficam em
+  `tests/ajuda-colisores.ts`.
 - **Sem pisca-pisca na Vila Doce (29/10/2026):** `tests/faces-coplanares.test.ts` passa na
   `vila-doce.glb` e nas peças soltas. Os ajudantes `janela`, `porta` e `toldo_listrado` do
   `lib_ilhas.py` deixaram de pôr faces no mesmo plano (a cruz da janela, o fundo da porta e as

@@ -1,76 +1,23 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { Box3, Matrix4, type Object3D, Quaternion, Ray, Vector3 } from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import type { Object3D } from 'three'
+import { Vector3 } from 'three'
 import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
 import { posicaoDoQuadro } from '../src/mundo/quadro-das-cores'
 import { alturaDoPulo, CORPO } from '../src/sistemas/corpo'
+import {
+  arquivoDaIlha,
+  bate,
+  CENTRO_DO_CORPO,
+  carregarGlb,
+  type Forma,
+  grupo,
+  jsonDoGlb,
+  pisoEm as pisoDasFormas,
+  TAMPO,
+} from './ajuda-colisores'
 
-const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'vila-doce.glb')
-const TAMPO = 1
-const CENTRO_DO_CORPO = CORPO.doCentroAoPe
-
-async function carregar(): Promise<Object3D> {
-  const buf = readFileSync(ARQUIVO)
-  const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
-  return (await new GLTFLoader().parseAsync(ab, '')).scene
-}
-
-function jsonDoGlb(): {
-  nodes: { name?: string; mesh?: number }[]
-  meshes: { primitives: { material?: number }[] }[]
-} {
-  const buf = readFileSync(ARQUIVO)
-  const n = buf.readUInt32LE(12)
-  return JSON.parse(buf.subarray(20, 20 + n).toString('utf8'))
-}
-
-function grupo(nome: string): string {
-  const partes = nome.split('-')
-  return /^\d+$/.test(partes.at(-1) ?? '') ? partes.slice(0, -1).join('-') : nome
-}
-
-type Forma = Exclude<ColisorDaIlha, { forma: 'malha' }>
-
-function matriz(c: Forma): Matrix4 {
-  return new Matrix4().compose(
-    new Vector3(...c.posicao),
-    new Quaternion(...c.rotacao),
-    new Vector3(1, 1, 1),
-  )
-}
-
-/** A altura do topo da forma em (x, z), olhando de cima; undefined se não está embaixo. */
-function topoEm(c: Forma, x: number, z: number): number | undefined {
-  const raio = new Ray(new Vector3(x, 50, z), new Vector3(0, -1, 0)).applyMatrix4(
-    matriz(c).invert(),
-  )
-  if (c.forma === 'caixa') {
-    const caixa = new Box3(new Vector3(...c.meio).negate(), new Vector3(...c.meio))
-    const p = raio.intersectBox(caixa, new Vector3())
-    return p ? p.applyMatrix4(matriz(c)).y : undefined
-  }
-  if (Math.hypot(raio.origin.x, raio.origin.z) > c.raio) return undefined
-  return c.posicao[1] + c.meiaAltura
-}
-
-/** O corpo (centro em `p`) bate nesta forma? */
-function bate(c: Forma, p: Vector3): boolean {
-  const local = p.clone().applyMatrix4(matriz(c).invert())
-  if (c.forma === 'caixa') {
-    return (
-      Math.abs(local.x) < c.meio[0] + CORPO.raio &&
-      Math.abs(local.y) < c.meio[1] + CENTRO_DO_CORPO &&
-      Math.abs(local.z) < c.meio[2] + CORPO.raio
-    )
-  }
-  return (
-    Math.hypot(local.x, local.z) < c.raio + CORPO.raio &&
-    Math.abs(local.y) < c.meiaAltura + CENTRO_DO_CORPO
-  )
-}
+const ARQUIVO = arquivoDaIlha('vila-doce.glb')
 
 let raiz: Object3D
 let colisores: ColisorDaIlha[]
@@ -82,25 +29,17 @@ const ancora = (nome: string) => {
 }
 const doGrupo = (g: string) => formas.filter((c) => grupo(c.nome) === g)
 
-/** O piso mais alto debaixo de (x, z), contando só as formas (o chão da ilha fica em TAMPO). */
-function pisoEm(x: number, z: number): { y: number; nome?: string } {
-  let melhor: { y: number; nome?: string } = { y: TAMPO }
-  for (const c of formas) {
-    const y = topoEm(c, x, z)
-    if (y !== undefined && y > melhor.y) melhor = { y, nome: c.nome }
-  }
-  return melhor
-}
+const pisoEm = (x: number, z: number) => pisoDasFormas(formas, x, z)
 
 beforeAll(async () => {
-  raiz = await carregar()
+  raiz = await carregarGlb(ARQUIVO)
   colisores = lerColisores(raiz)
   formas = colisores.filter((c): c is Forma => c.forma !== 'malha')
 })
 
 describe('os nós col-* da Vila Doce', () => {
   test('existem todos os grupos, sem material (não desenham)', () => {
-    const doc = jsonDoGlb()
+    const doc = jsonDoGlb(ARQUIVO)
     const nos = doc.nodes.filter((n) => n.name?.startsWith('col-'))
     const grupos = new Set(nos.map((n) => grupo(n.name ?? '')))
     for (const g of [
