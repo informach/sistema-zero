@@ -4,6 +4,7 @@ import {
   conferirResultadoDaRotina,
   contarCartoes,
   type LumiId,
+  limparRotina,
   type MoldeDaRotina,
   type Plataforma,
   RascunhoInicialDaRotinaSchema,
@@ -25,7 +26,8 @@ export async function editarRotinaNaPlataforma(opcoes: {
   const anterior = JSON.stringify(inicial.rotinas[lumi] ?? null)
   const lerCartas = () =>
     plataforma.servico.buscar('/cartas', { sinal: AbortSignal.timeout(15_000) })
-  const rascunho = RascunhoInicialDaRotinaSchema.safeParse(opcoes.rascunho)
+  // Como o Guardar e o Testar: a Escolha com um caso vazio vale (`limparRotina` tira o vazio).
+  const rascunho = RascunhoInicialDaRotinaSchema.safeParse(limparRotina(opcoes.rascunho))
   if (!rascunho.success)
     return {
       motivo:
