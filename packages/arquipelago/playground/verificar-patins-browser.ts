@@ -1,7 +1,7 @@
 /**
  * Conferência no navegador dos patins (fase2-05): com um par na mochila (`?patins=1`), o toque nos
- * patins calça (o botão fica apertado e o Zappy avisa), cada patim fica preso ao osso do pé dele
- * com as rodinhas no chão, e andando na praça da Vila Doce o corpo desliza bem mais depois de
+ * patins calça (o botão fica apertado e o Zappy avisa), os dois patins aparecem nos pés com as
+ * rodinhas no chão, e andando na praça da Vila Doce o corpo desliza bem mais depois de
  * soltar a tecla do que descalço. Tirar os patins solta os dois.
  *
  * `bun playground/verificar-patins-browser.ts` (navegador: `ARQUIPELAGO_CHROMIUM` com o caminho do
@@ -48,7 +48,7 @@ type Desenho = {
   posicao: P
   ilhasCompletas: number
   noChao: boolean
-  patins: { peca: string; osso: string; rodas: number }[]
+  patins: { peca: string; malhas: number; rodas: number }[]
 }
 
 const server = spawn('bun', ['playground/servidor.ts'], {
@@ -136,7 +136,7 @@ try {
     return antes ?? { x: 0, y: 0, z: 0 }
   }
   /** Volta à chegada, anda para a fonte e mede quanto o corpo segue depois de soltar a tecla. */
-  const andarESoltar = async () => {
+  const andarESoltar = async (print?: string) => {
     await levar(chegada, rumo)
     const parado = await esperarParar()
     if (plano(parado, chegada) > 0.5) throw new Error('O corpo não voltou à chegada.')
@@ -148,6 +148,8 @@ try {
       const p = (await ler())?.posicao
       if (p && plano(p, parado) > 1.5) {
         soltouEm = p
+        // As pernas no meio do passo: a bota segue o pé e a canela sem a perna escapar.
+        if (print) await page.screenshot({ path: path.join(prints, print) })
         break
       }
     }
@@ -170,7 +172,7 @@ try {
   await page.getByText('Patins calçados.').first().waitFor()
   await page.locator('canvas').click()
 
-  // Os dois patins nos ossos dos pés, com as rodinhas no chão (parado em pé).
+  // Os dois patins nos pés (malhas com o esqueleto do avatar), com as rodinhas no chão.
   await levar(chegada, rumo)
   await esperarParar()
   const ate = Date.now() + 30_000
@@ -182,14 +184,13 @@ try {
   if (d?.patins.length !== 2) throw new Error('Os patins não apareceram nos pés.')
   const pes = d.posicao.y - CORPO.doCentroAoPe - CORPO.folga
   for (const p of d.patins) {
-    console.log(`${p.peca}: no osso ${p.osso}, rodinhas ${(p.rodas - pes).toFixed(3)} m do chão`)
-    if (!p.osso.includes('Foot')) throw new Error(`${p.peca} não está no osso do pé.`)
-    if (Math.abs(p.rodas - pes) > 0.06)
+    console.log(`${p.peca}: ${p.malhas} malhas, rodinhas ${(p.rodas - pes).toFixed(3)} m do chão`)
+    if (Math.abs(p.rodas - pes) > 0.012)
       throw new Error(`${p.peca} não está com as rodinhas no chão.`)
   }
   await page.screenshot({ path: path.join(prints, 'patins-calcados.png') })
 
-  const calcado = await andarESoltar()
+  const calcado = await andarESoltar('patins-andando.png')
   console.log(`De patins: seguiu ${calcado.toFixed(2)} m depois de soltar`)
   await page.screenshot({ path: path.join(prints, 'patins-deslizou.png') })
   if (calcado < 0.4 || calcado < descalco * 3)

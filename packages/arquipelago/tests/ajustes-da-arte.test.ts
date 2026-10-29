@@ -16,6 +16,8 @@ import {
   bocaDaIris,
   capsulaDoPinguim,
   ELEVACAO_DOS_PATINS,
+  PE_PARADO_ACIMA_DA_SOLA,
+  RODAS_ABAIXO_DA_SOLA,
   faseDaAnimacao,
 } from '../src/sistemas/ajustes-da-arte'
 import { momentoDoDia } from '../src/sistemas/tempo-do-dia'
@@ -175,12 +177,12 @@ for (const arquivo of ['ilhas/barco', 'movimento/barco']) {
   })
 }
 
-test('patins elevam só o desenho 8,5 cm, e as rodas não ficam abaixo do chão', async () => {
+test('patins elevam só o desenho, e as rodas ficam na altura da sola parada', async () => {
   const g = await modelo('movimento/patins')
   const caixa = new Box3().setFromObject(g.scene, true)
-  expect(caixa.min.y + ELEVACAO_DOS_PATINS).toBeGreaterThanOrEqual(-0.002)
-  expect(caixa.min.y + ELEVACAO_DOS_PATINS).toBeLessThan(0.015)
-  expect(ELEVACAO_DOS_PATINS).toBe(0.085)
+  expect(caixa.min.y).toBeCloseTo(-RODAS_ABAIXO_DA_SOLA, 3)
+  expect(ELEVACAO_DOS_PATINS).toBeCloseTo(RODAS_ABAIXO_DA_SOLA - PE_PARADO_ACIMA_DA_SOLA, 6)
+  expect(ELEVACAO_DOS_PATINS).toBeGreaterThan(0.08)
 })
 
 describe('Íris', () => {

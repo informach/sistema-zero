@@ -1033,12 +1033,22 @@ Arquivos: `sistemas/patins.ts`, o perfil `PERFIS.patins` em `sistemas/movimento.
   vale o perfil de sempre. Nadando, no cipó, na escada, no tronco e na escalada os patins não mudam
   nada. As pernas andam no passo de sempre (a velocidade das animações é dividida pela rapidez),
   então os pés deslizam.
-- **No desenho:** cada patim do `patins.glb` vira filho do osso do pé (`mixamorigLeftFoot`,
-  `mixamorigRightFoot`), medido uma vez por avatar com ele parado em pé; o avatar sobe
-  `ELEVACAO_DOS_PATINS` (0,085) para as rodinhas tocarem o chão. O corpo do Rapier não muda.
-- Testes: `tests/patins.test.ts`; navegador: `bun playground/verificar-patins-browser.ts` (calçar,
-  os dois patins nos ossos com as rodinhas no chão, o deslize depois de soltar e guardar).
-  Playground: `?patins=1` põe um par na mochila.
+- **No desenho:** o `patins.glb` é um par de patins de bota feito nas medidas do avatar: a bota
+  envolve o pé, a perna e a barra da calça ou da fantasia de bicho (vestidos e saias longas passam
+  por fora), com a boca logo acima do tornozelo e um fundo acolchoado escuro por onde a perna entra.
+  No jogo cada malha do patim vira uma malha com o esqueleto do avatar: a sola, o chassi, as rodas e
+  a parte de baixo da bota seguem o pé; o cano segue a canela (de 5 a 17 cm de altura passa de um
+  para o outro, `pesoDaCanela`). Assim a perna e a calça nunca escapam da bota, em nenhuma pose.
+  Com os patins calçados o calçado do avatar some (a bota fica no lugar dele). O avatar sobe
+  `ELEVACAO_DOS_PATINS` (0,089) para as rodinhas tocarem o chão parado: elas ficam 0,11 abaixo da sola
+  na pose de referência, e na pose parada o calçado desce 2,1 cm abaixo de onde o pé o deixaria. O
+  corpo do Rapier não muda.
+- Testes: `tests/patins.test.ts` e `tests/patins-nos-pes.test.ts` (os pesos, e a calça, a perna e
+  as fantasias das peças do avatar dentro da bota); navegador: `bun playground/verificar-patins-browser.ts`
+  (calçar, os dois patins nos pés com as rodinhas no chão, o deslize depois de soltar e guardar).
+  Playground: `?patins=1` põe um par na mochila; na sala de arte, `/arte?caso=patins&vestido=1&vista=tres`
+  (ou `frente`, `lado`, `tras`, `cima`) mostra os pés de perto, com `&calcado=`, `&calca=` e
+  `&roupa=` para trocar as peças do avatar.
 
 ### 6.14 Colisão
 

@@ -1,5 +1,13 @@
 /** Contrato visual dos modelos prontos. Medidas em metros, sem mudar o corpo do jogador. */
-export const ELEVACAO_DOS_PATINS = 0.085
+/**
+ * Os patins: as rodinhas ficam `RODAS_ABAIXO_DA_SOLA` abaixo da sola do calçado na pose de referência
+ * do esqueleto (`patins.glb`). Na pose parada do jogo o calçado desce um pouco abaixo de onde o osso
+ * do pé o deixaria (calcanhar e dedos seguem outros ossos), e o patim segue o pé: o avatar sobe
+ * `ELEVACAO_DOS_PATINS` para as rodinhas encostarem no chão parado.
+ */
+export const RODAS_ABAIXO_DA_SOLA = 0.11
+export const PE_PARADO_ACIMA_DA_SOLA = 0.021
+export const ELEVACAO_DOS_PATINS = RODAS_ABAIXO_DA_SOLA - PE_PARADO_ACIMA_DA_SOLA
 export const CLIPES_DE_UMA_VEZ = ['virar', 'abrir', 'abrir-interna', 'estourar'] as const
 const LUZES_NOTURNAS = new Set([
   'perolaLuz',

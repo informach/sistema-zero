@@ -2,7 +2,7 @@
 
 ## Ajustes da arte aj-ligar-02 a 09 (29/10/2026)
 
-- `sistemas/ajustes-da-arte.ts`: fase FNV-1a por id e clipe, patins +0,085 m só no desenho,
+- `sistemas/ajustes-da-arte.ts`: fase FNV-1a por id e clipe, patins +0,089 m só no desenho (`ELEVACAO_DOS_PATINS`),
   voo (borboleta 1,6 m, bem-te-vi 2,8 m, pássaro das Nuvens 3,2 m) e pelo menos 0,6 m acima
   do topo de obstáculos informado pelo chamador. A rota futura deve fornecer esse topo por ponto.
 - `mundo/arte-animada.ts`: cópia de esqueleto e morfos, materiais noturnos próprios e descarte.
@@ -20,9 +20,13 @@
 - `CapsulaDoPinguim` deve ficar dentro do corpo do pinguim, fora da escala do desenho. Adulto:
   raio 0,13 m, meia altura 0,11 m em pé e 0,12 m deitado; centro y 0,24/0,14 m, z 0/0,24 m,
   giro X 0/90 graus. Filhote usa 60% das medidas. Só uma cápsula existe por vez.
-- `AvatarDoJogo comPatins` eleva o desenho e calça o par nos ossos dos pés
-  (`personagem/patins-nos-pes.tsx`), sem mudar a cápsula do jogador. A sala mostra também um par
-  solto ao lado para conferir as rodas. O jogo calça pela mochila (fase2-05, abaixo).
+- `AvatarDoJogo comPatins` eleva o desenho (`ELEVACAO_DOS_PATINS`, 0,089) e calça o par (`personagem/patins-nos-pes.tsx`),
+  sem mudar a cápsula do jogador. A sala mostra também um par solto ao lado para conferir as rodas
+  (some nas vistas de perto, `?vista=`). O jogo calça pela mochila (fase2-05, abaixo).
+- ⚠️ As peças do avatar (`community-kids/public/avatar3d/parts`) já estão na escala do avatar do
+  jogo: do arquivo delas ao `avatar-visual` a escala é 1 (medido em 29/10/2026). O `AV = 0.751` dos
+  scripts de `arte/festas` não vale para elas; o patim é desenhado com ele e crescido por `1 / AV`.
+  Peça vestida nova (mergulho) precisa conferir isso antes.
 - `/arte` no playground exercita os componentes e os GLBs reais. Ainda não há Recife/Pico/Nuvens,
   Íris, pássaros, pinguins, baús animados ou festas montados no mundo. A implementação dessas
   mecânicas deve consumir estes componentes, sem copiar regras. Lumis da praia já acendem no jogo.
@@ -568,9 +572,13 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   (`premio` em `ConfigDoPercurso`); o botão da mochila calça (`loja.patins`, transitório, vale com
   o item na mochila: `comPatins`). `EntradaDoPasso.patins` muda o modo chão (rapidez 1,3 e o perfil
   `PERFIS.patins`, nunca nadando); o personagem divide a velocidade das animações pela rapidez. O
-  par vai aos ossos dos pés medidos parado em pé (`medirPesEmPe`), a sola na sola do avatar; o
-  medidor mostra `patins` (osso e altura das rodinhas). Regras: §6.13.2. Testes:
-  `tests/patins.test.ts`; navegador: `bun playground/verificar-patins-browser.ts` (`?patins=1`).
+  par vira malha com o esqueleto do avatar (`patimNoEsqueleto`: geometria do arquivo no referencial
+  das peças, pesos do pé e da canela por altura, `pesoDaCanela`), igual ao cano da bota do avatar, e
+  o calçado do avatar some enquanto isso (pela geometria da peça `shoes-*` em uso). Não prender peça
+  vestida pela pose parada: o pé gira uns 14° para fora da canela no Idle e a perna escapava da bota.
+  O medidor mostra `patins` (malhas e altura das rodinhas). Regras: §6.13.2. Testes:
+  `tests/patins.test.ts` e `tests/patins-nos-pes.test.ts`; navegador:
+  `bun playground/verificar-patins-browser.ts` (`?patins=1`).
 - ⚠️ Olhos: o olho do Blender tem dois materiais e o three divide a malha em `-olhos_1` e
   `-olhos_2`. Até 29/10/2026 `useCopiaAnimada` procurava só `-olhos` e nenhum personagem ou bicho
   piscava. `malhasDosOlhos` (`mundo/animado.ts`) acha todas as partes e `olhosNoInstante` mexe em

@@ -241,16 +241,28 @@
   "patins": {
     "pasta": "movimento",
     "grupo": "movimento",
-    "triangulos": 3352,
-    "kb": 101.6,
+    "triangulos": 6064,
+    "kb": 149.9,
     "nos": {
-      "patim-esq": 1676,
-      "patim-dir": 1676
+      "patim-esq": 3032,
+      "patim-dir": 3032
     },
     "vazios": ["pe-dir", "pe-esq"],
     "clipes": [],
-    "materiais": ["cadarco", "cascoVermelho", "metalEscuro", "patim", "patimClaro", "roda"],
-    "tamanho": [0.573, 0.373, 0.389]
+    "materiais": [
+      "cadarco",
+      "freio",
+      "metal",
+      "metalEscuro",
+      "patim",
+      "patimClaro",
+      "patimCubo",
+      "patimForro",
+      "patimLingua",
+      "patimSola",
+      "roda"
+    ],
+    "tamanho": [0.819, 0.339, 0.522]
   },
   "planador": {
     "pasta": "movimento",

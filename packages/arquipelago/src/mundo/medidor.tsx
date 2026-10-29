@@ -67,8 +67,8 @@ export interface MedidaDoDesenho {
   mecanismos: typeof mecanismosAgora
   pontes: typeof pontesAgora
   fisica: { corposAtivos: number; passoMs: number }
-  /** Cada patim calçado: o osso que o leva e a altura mais baixa das rodinhas (vazio: descalço). */
-  patins: { peca: string; osso: string; rodas: number }[]
+  /** Cada patim calçado: quantas malhas e a altura mais baixa das rodinhas (vazio: descalço). */
+  patins: { peca: string; malhas: number; rodas: number }[]
 }
 
 function medirLigado(): boolean {
@@ -80,13 +80,21 @@ function medirLigado(): boolean {
 }
 
 const caixaDoPatim = new Box3()
+const caixaDaMalha = new Box3()
 function medirPatins(raiz: Object3D): MedidaDoDesenho['patins'] {
   const r: MedidaDoDesenho['patins'] = []
+  const grupo = raiz.getObjectByName('patins-calcados')
+  if (!grupo) return r
   for (const peca of ['patim-esq', 'patim-dir']) {
-    const o = raiz.getObjectByName(peca)
-    if (!o?.parent) continue
-    caixaDoPatim.setFromObject(o)
-    r.push({ peca, osso: o.parent.name, rodas: caixaDoPatim.min.y })
+    caixaDoPatim.makeEmpty()
+    let malhas = 0
+    for (const m of grupo.children) {
+      if (!m.name.startsWith(`${peca}-`)) continue
+      malhas++
+      // A malha tem esqueleto: a caixa precisa da pose deste quadro.
+      caixaDoPatim.union(caixaDaMalha.setFromObject(m, true))
+    }
+    if (malhas) r.push({ peca, malhas, rodas: caixaDoPatim.min.y })
   }
   return r
 }

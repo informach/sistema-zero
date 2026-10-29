@@ -15,7 +15,7 @@ import {
   passoDaLocomocao,
 } from '../sistemas/locomocao'
 import { jogoPausado } from '../sistemas/pausa'
-import { medirPesEmPe, PatinsNosPes, type PesEmPe } from './patins-nos-pes'
+import { PatinsNosPes } from './patins-nos-pes'
 
 const LOCOMOCAO_URL = new URL(locomocaoGlb, import.meta.url).href
 /** Clipes tocados uma vez só (o tempo é o da regra; não voltam ao começo sozinhos). */
@@ -49,9 +49,6 @@ export function AvatarDoJogo({
   const acoes = useRef<Partial<Record<Clipe, AnimationAction>>>({})
   const locomocao = useRef(criarLocomocao())
   const visualRef = useRef<Group>(null)
-  /** Parado em pé neste quadro (a pose em que os pés são medidos para os patins). */
-  const paradoEmPe = useRef(false)
-  const pes = useRef<PesEmPe | null>(null)
 
   const aoFicarEmPe = () => {
     const g = personagem.current
@@ -93,16 +90,7 @@ export function AvatarDoJogo({
       if (acao !== idle) acao.time = l.tempos[nome] * acao.getClip().duration
     }
     if (idle) idle.time = (idle.time + dt) % idle.getClip().duration
-    paradoEmPe.current = l.pesos.Idle > 0.98
   })
-
-  // Depois da pose: mede os pés parados uma vez por avatar (os patins se prendem por essa medida).
-  const medirPes = useCallback(() => {
-    const avatar = visualRef.current
-    const corpo = personagem.current
-    if (!avatar || !corpo || !paradoEmPe.current) return
-    pes.current = medirPesEmPe(avatar, corpo, pes.current)
-  }, [])
 
   return (
     <group
@@ -119,11 +107,14 @@ export function AvatarDoJogo({
           onAnimations={aoAnimar}
         />
         {depoisDaPose ? <DepoisDaPose fazer={depoisDaPose} /> : null}
-        {emPe ? <DepoisDaPose fazer={medirPes} /> : null}
       </Suspense>
       {comPatins && emPe ? (
         <Suspense fallback={null}>
-          <PatinsNosPes pes={pes} />
+          <PatinsNosPes
+            avatar={visualRef}
+            personagem={personagem}
+            calcado={slots.shoes?.asset ?? DEFAULT_AVATAR_SLOTS.shoes.asset}
+          />
         </Suspense>
       ) : null}
     </group>

@@ -5,7 +5,7 @@ import { CapsuleCollider, Physics, RigidBody, useRapier } from '@react-three/rap
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Box3, type Mesh, MeshStandardMaterial, Vector3 } from 'three'
+import { Box3, type Mesh, MeshStandardMaterial, type Object3D, Vector3 } from 'three'
 import ave from '../src/assets/bichos/bem-te-vi.glb'
 import borboleta from '../src/assets/bichos/borboleta.glb'
 import nuvens from '../src/assets/bichos/passaro-das-nuvens.glb'
@@ -27,6 +27,7 @@ import { criarRegistro } from '../src/mundo/interativos'
 import { CapsulaDoPinguim, PecaDaArte } from '../src/mundo/peca-da-arte'
 import { AvatarDoJogo } from '../src/personagem/avatar-do-jogo'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import { ELEVACAO_DOS_PATINS } from '../src/sistemas/ajustes-da-arte'
 import { CORPO } from '../src/sistemas/corpo'
 import type { EntradaDaLocomocao } from '../src/sistemas/locomocao'
 import { momentoDoDia } from '../src/sistemas/tempo-do-dia'
@@ -57,6 +58,8 @@ type Leitura = {
 }
 declare global {
   var __arte: Leitura | undefined
+  /** A cena, para scripts de conferência medirem as malhas (só no playground). */
+  var __arteCena: Object3D | undefined
 }
 
 function Observar() {
@@ -101,6 +104,7 @@ function Observar() {
         })
     })
     globalThis.__arte = { objetos, colisores }
+    globalThis.__arteCena = cena
   })
   useEffect(
     () => () => {
@@ -128,7 +132,13 @@ function Patins({ vestido }: { vestido: boolean }) {
           <AvatarDoJogo movimento={movimento} comPatins={vestido} />
         </group>
       </RigidBody>
-      <group name="arte-rodas" position={[1.5, 0.085, 0]} dispose={null}>
+      <group
+        name="arte-rodas"
+        position={[1.5, ELEVACAO_DOS_PATINS, 0]}
+        // Nas vistas de perto dos pés o par solto sai do caminho da câmera.
+        visible={!new URLSearchParams(location.search).has('vista')}
+        dispose={null}
+      >
         <primitive object={g.scene} />
       </group>
     </>
@@ -210,10 +220,28 @@ function Pecas({ caso, ligado, fala }: { caso: Caso; ligado: boolean; fala: numb
   }
 }
 
+/**
+ * A câmera perto dos pés para conferir os patins calçados: `?vista=frente`, `lado`, `tras`,
+ * `tres` (três quartos) ou `cima`. O avatar olha para +z.
+ */
+const VISTAS_DOS_PES: Record<string, [number, number, number]> = {
+  frente: [0, 0.55, 1.5],
+  lado: [1.5, 0.45, 0.05],
+  tras: [0.2, 0.6, -1.5],
+  tres: [1.0, 0.75, 1.1],
+  cima: [0.5, 1.6, 0.7],
+}
+
 function Camera({ caso }: { caso: Caso }) {
   const camera = useThree((s) => s.camera),
     size = useThree((s) => s.size)
   useEffect(() => {
+    const vista = VISTAS_DOS_PES[new URLSearchParams(location.search).get('vista') ?? '']
+    if (caso === 'patins' && vista) {
+      camera.position.set(...vista)
+      camera.lookAt(0, 0.18, 0)
+      return
+    }
     const k = size.width < 500 ? 1.55 : 1
     const x = caso === 'barco' ? 3 : 0,
       z = caso === 'barco' ? -2 : 0
@@ -223,11 +251,32 @@ function Camera({ caso }: { caso: Caso }) {
   return null
 }
 
+/**
+ * `?calcado=shoes-04`, `?calca=bottom-04` ou `?roupa=outfit-02`: as peças do avatar que mais
+ * encostam nos patins (o calçado some com eles calçados).
+ */
+function slotsDaUrl() {
+  const q = new URLSearchParams(location.search)
+  const peca = (nome: string, cor: string) => {
+    const asset = q.get(nome)
+    return asset ? { asset, color: cor } : undefined
+  }
+  const slots: Record<string, { asset: string; color: string }> = {}
+  const calcado = peca('calcado', '#2c3e50')
+  const calca = peca('calca', '#34495e')
+  const roupa = peca('roupa', '#e84393')
+  if (calcado) slots.shoes = calcado
+  if (calca) slots.bottom = calca
+  if (roupa) slots.outfit = roupa
+  return slots
+}
+
 function Sala() {
   const q = new URLSearchParams(location.search)
   const [caso, setCaso] = useState<Caso>(CASOS.find((c) => c === q.get('caso')) ?? 'lumis')
   const [noite, setNoite] = useState(false),
-    [ligado, setLigado] = useState(false),
+    // `?vestido=1`: os patins já calçados (ou o pinguim já deslizando).
+    [ligado, setLigado] = useState(q.get('vestido') === '1'),
     [fala, setFala] = useState(0)
   const contexto = useMemo<ContextoDoJogo>(
     () => ({
@@ -235,7 +284,7 @@ function Sala() {
         salvamento: criarSalvamentoInicial(new Date()),
         jornada: 2,
         quarto: { theme: 'padrao', placedItems: [], pet: null },
-        avatar: { slots: {} },
+        avatar: { slots: slotsDaUrl() },
         acesso: { liberado: true, motivo: null, limiteDiarioMinutos: null, usadoHojeSegundos: 0 },
         aoMudar: () => {},
       }),
@@ -254,8 +303,16 @@ function Sala() {
         velocidade: 0,
         zappy: { x: 0, y: 0, z: 0 },
       },
-      ambiente: { luz: 1, noite: false },
-      pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null, conversa: null },
+      ambiente: {
+        luz: 1,
+        noite: false,
+      },
+      pedidos: {
+        teleporte: null,
+        chaoChegando: new Set(),
+        olharPara: null,
+        conversa: null,
+      },
     }),
     [],
   )
