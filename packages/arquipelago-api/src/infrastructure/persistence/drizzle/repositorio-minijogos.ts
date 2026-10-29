@@ -1,5 +1,6 @@
 import {
   capaDoMinijogo,
+  capaQueCabe,
   MinijogoAbertoSchema,
   ProjetoDoMinijogoSchema,
 } from '@sistemazero/arquipelago-contracts'
@@ -47,6 +48,7 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
       .orderBy(desc(minijogos.atualizadoEm), minijogos.desafioId)
     return linhas.map((v) => ({
       ...v,
+      capa: capaQueCabe(v.capa),
       aprovadoEm: v.aprovadoEm.toISOString(),
       atualizadoEm: v.atualizadoEm.toISOString(),
     }))
@@ -63,7 +65,7 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
           projeto: JSON.parse(v.projeto),
           aprovadoEm: v.aprovadoEm.toISOString(),
           atualizadoEm: v.atualizadoEm.toISOString(),
-          capa: v.capa,
+          capa: capaQueCabe(v.capa),
         })
       : null
   }

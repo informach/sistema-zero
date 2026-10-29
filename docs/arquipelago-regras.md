@@ -2111,7 +2111,9 @@ Testes puros e dos GLBs: `tests/luneta.test.ts`. Visita real no playground:
   requisito para jogar. O objeto posto em casa abre a lista e cada Jogar abre o player do
   Estúdio por cima do jogo. Voltar ou Esc retorna ao lugar em que a criança estava.
 - A tela do fliperama usa a capa escolhida do minijogo atualizado mais recentemente, quando
-  houver. Aceita imagens PNG, JPEG e WebP embutidas. Não inventa capa nem busca imagem externa.
+  houver. Aceita imagens PNG, JPEG e WebP embutidas de até 400 mil caracteres
+  (`CAPA_DO_MINIJOGO_CARACTERES`); maior que isso, o minijogo fica sem capa. Não inventa capa nem
+  busca imagem externa.
 - Rotas próprias GET /arquipelago/minijogos e /arquipelago/minijogos/:id. A lista traz resumo
   e capa; a rota de abertura traz o projeto. Nenhuma delas entrega o gabarito do desafio.
 - Pais: GET /arquipelago/familia/minijogos/:perfil e /:perfil/:id. O serviço exige a ligação
