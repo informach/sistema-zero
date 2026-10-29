@@ -127,7 +127,8 @@ export function ModosDoJogo() {
   const construcao = lojaDaConstrucao(loja)
   const permitido = useEstado(podeConstruir)
   const painel = useEstado((s) => s.painelAberto)
-  if (!permitido) return null
+  const noBarco = useEstado((s) => s.modo === 'barco')
+  if (!permitido || noBarco) return null
   const construindo = painel === PAINEL_DE_CONSTRUIR
   return (
     <fieldset className="arq-modos">

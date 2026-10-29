@@ -14,6 +14,7 @@ export function ControlesDeToque() {
   const { controle } = useJogo()
   const toque = useToque()
   const modo = useEstado((s) => s.modo)
+  const noBarco = modo === 'barco'
   const zona = useRef<HTMLDivElement>(null)
   const anel = useRef<HTMLDivElement>(null)
   const bolinha = useRef<HTMLElement>(null)
@@ -36,7 +37,7 @@ export function ControlesDeToque() {
       pulo.current = null
       soltarEntrada(controle, 'toque')
     }
-    if (!toque) {
+    if (!toque || noBarco) {
       limpar()
       return
     }
@@ -45,9 +46,9 @@ export function ControlesDeToque() {
       window.removeEventListener('blur', limpar)
       limpar()
     }
-  }, [controle, soltar, toque])
+  }, [controle, soltar, toque, noBarco])
 
-  if (!toque) return null
+  if (!toque || noBarco) return null
 
   const mover = (e: React.PointerEvent) => {
     const c = centro.current

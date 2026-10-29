@@ -42,6 +42,10 @@ export function mudarModo(
     c.deLado = 0
   }
   if (c.descanso && modo !== 'descanso') c.descanso = null
+  if (c.barco && modo !== 'barco') {
+    c.barco.fase = 'atracado'
+    c.barco = null
+  }
   c.modo = modo
   c.noModo = 0
   aviso(modo)

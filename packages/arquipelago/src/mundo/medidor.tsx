@@ -29,6 +29,15 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  barco: {
+    fase: string
+    distancia: number
+    comprimento: number
+    recifePronto: boolean
+    devolvendo: boolean
+    visual: { x: number; y: number; z: number }
+    pose: { x: number; y: number; z: number }
+  } | null
   festa: ReturnType<typeof medirFesta>
   luzesDosLumis: Record<string, number[]>
   qualidade: NivelDeQualidade
@@ -188,6 +197,17 @@ export function Medidor() {
       if (!b.isFixed() && !b.isSleeping()) corposAtivos++
     })
     const medida: MedidaDoDesenho = {
+      barco: movimento.barco
+        ? {
+            fase: movimento.barco.fase,
+            distancia: movimento.barco.distancia,
+            comprimento: movimento.barco.rota.comprimento,
+            recifePronto: movimento.barco.recifePronto,
+            devolvendo: movimento.barco.devolvendo,
+            visual: { ...movimento.barco.visual },
+            pose: { ...movimento.barco.pose },
+          }
+        : null,
       festa: medirFesta(cena),
       luzesDosLumis: Object.fromEntries(
         ['estrelinha', 'buzio'].map((id) => {

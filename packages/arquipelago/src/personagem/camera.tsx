@@ -297,6 +297,7 @@ export function Camera() {
     // Uma única dona da câmera por quadro. O Construir cuida do alvo, controles e suavização.
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
     const perfilAtual = perfilDaVez({
+      barco: movimento.modo === 'barco',
       luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA,
       conversa: loja.getState().painelAberto !== null && pedidos.conversa !== null,
       dentroDeCasa: dentro,

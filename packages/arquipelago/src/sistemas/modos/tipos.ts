@@ -9,6 +9,7 @@ import type {
   ModoDoCorpo,
   TroncoVivo,
 } from '../../estado/contexto'
+import type { Travessia } from '../barco'
 import type { Ponto } from '../cipo'
 import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
@@ -25,6 +26,7 @@ import { criarPulo, type EstadoDoPulo } from '../movimento'
 
 /** O corpo como os modos o veem e mexem (objetos fixos: o laço da física não aloca). */
 export interface EstadoDoCorpo {
+  barco: Travessia | null
   modo: ModoDoCorpo
   cipo: CipoVivo | null
   tronco: TroncoVivo | null
@@ -92,6 +94,7 @@ export interface EstadoDoCorpo {
 
 export function criarEstadoDoCorpo(): EstadoDoCorpo {
   return {
+    barco: null,
     modo: 'chao',
     cipo: null,
     tronco: null,
@@ -190,6 +193,8 @@ export type AvisoDeModo = (modo: ModoDoCorpo) => void
 
 export interface ModoDeMovimento {
   id: ModoDoCorpo
+  /** Um apoio móvel pode parar e voltar, em vez de soltar a criança na água. */
+  obstruido?(c: EstadoDoCorpo, e: EntradaDoPasso): void
   /** O modo ainda tem onde se segurar? (o cipó e o tronco somem com a ilha) */
   valendo(c: EstadoDoCorpo, mundo: MundoDoMovimento): boolean
   /**

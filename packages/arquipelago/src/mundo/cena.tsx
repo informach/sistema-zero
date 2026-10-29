@@ -10,6 +10,7 @@ import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
 import { Agua } from './agua'
 import { Anel } from './anel'
 import { Bancada } from './bancada'
+import { Barcos } from './barcos'
 import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
 import { Ceu } from './ceu'
@@ -76,6 +77,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Bancada />
           <Farol />
           <Anel />
+          <Barcos />
           <Personagem />
           <BichoAdotado />
           <Camera />

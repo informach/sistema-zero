@@ -73,6 +73,13 @@ export function passoComColisao<Colisor>(
   const avancou =
     pedido > 0 ? (mov.x * c.desloc.x + mov.y * c.desloc.y + mov.z * c.desloc.z) / pedido : 0
   const bloqueado = guiado && pedido - avancou > CORPO.folga * 0.05 && !somenteApoio(k)
+  if (bloqueado && modo.obstruido) {
+    modo.obstruido(c, e)
+    c.prox.x = e.p.x + mov.x
+    c.prox.y = e.p.y + mov.y
+    c.prox.z = e.p.z + mov.z
+    return true
+  }
   const gastou = modo.depois(c, e, mundo, guiado ? null : mov, pisou, aviso)
   if (guiado) {
     c.prox.x = e.p.x + mov.x

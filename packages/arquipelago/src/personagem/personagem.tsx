@@ -157,12 +157,13 @@ export function Personagem() {
   const aceitaColisorDoMundo = useMemo(
     () => (colisor: RapierCollider) => {
       const corpo = colisor.parent()
+      if (v.modo === 'barco' && (corpo?.userData as { barco?: boolean })?.barco) return false
       return (
         !corpo?.isKinematic() ||
         (corpo.userData as { plataformaDoMundo?: boolean } | undefined)?.plataformaDoMundo === true
       )
     },
-    [],
+    [v.modo],
   )
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
@@ -268,7 +269,7 @@ export function Personagem() {
       pedidos.teleporte = null
       return
     }
-    if (pedidos.chaoChegando.size > 0) {
+    if (pedidos.chaoChegando.size > 0 && v.modo !== 'barco') {
       v.velY = 0
       return
     }
@@ -333,7 +334,7 @@ export function Personagem() {
     )
     b.setNextKinematicTranslation(v.prox)
     // Pegou um cipó ou grudou no tronco neste passo: no ar e na casca ela está sempre "andando".
-    if (v.modo !== 'chao') v.velPedida = 1
+    if (v.modo !== 'chao' && v.modo !== 'barco') v.velPedida = 1
     movimento.noChao = v.modo === 'chao' && v.noChao
     const usou = e.usou && !gastouUsar
     const prox = v.prox
@@ -349,7 +350,7 @@ export function Personagem() {
     const real =
       v.modo === 'chao'
         ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt / passada
-        : v.modo === 'cipo'
+        : v.modo === 'cipo' || v.modo === 'barco'
           ? 0
           : Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
     m.velocidade += (real - m.velocidade) * Math.min(1, dt * 14)
@@ -357,7 +358,11 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     m.especial =
-      v.modo === 'chao' ? null : v.modo === 'descanso' ? (v.descanso?.jeito ?? null) : v.modo
+      v.modo === 'chao' || v.modo === 'barco'
+        ? null
+        : v.modo === 'descanso'
+          ? (v.descanso?.jeito ?? null)
+          : v.modo
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
@@ -444,6 +449,14 @@ export function Personagem() {
       vis.position.x += (ultimo.desenho.x - centro.x - vis.position.x) * d
       vis.position.y += (ultimo.desenho.y - centro.y - vis.position.y) * d
       vis.position.z += (ultimo.desenho.z - centro.z - vis.position.z) * d
+    }
+    const viagem = v.barco
+    if (viagem && (viagem.fase === 'viagem' || viagem.fase === 'espera')) {
+      vis.position.set(
+        viagem.visual.x - centro.x,
+        viagem.visual.y - centro.y,
+        viagem.visual.z - centro.z,
+      )
     }
     // O corpo desenhado, no mundo, para as cordas encostarem nele (o desenho é filho do corpo
     // do Rapier, que está em `centro`).

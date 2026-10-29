@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, TrimeshCollider } from '@react-three/rapier'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useJogo } from '../estado/contexto'
 import {
@@ -188,7 +188,8 @@ function PierDeAntes() {
  * ficar no lugar dele; as âncoras `barco` e `embarque` dizem onde (fase3-04).
  */
 function PierDoModelo() {
-  const { ambiente } = useJogo()
+  const { ambiente, movimento } = useJogo()
+  const [viagemDisponivel, definirDisponivel] = useState(false)
   const raiz = useModelo(MODELOS.pier)
   const { pier, barquinho, lanternas, colisores } = useMemo(() => {
     const copia = copiarNo(raiz, 'pier', true)
@@ -200,13 +201,15 @@ function PierDoModelo() {
     }
   }, [raiz])
   useFrame(() => {
+    if (viagemDisponivel !== (movimento.barco !== null)) definirDisponivel(movimento.barco !== null)
     for (const m of lanternas) m.emissiveIntensity = ambiente.noite ? 2.2 : 0
   })
+  const semBarquinho = useMemo(() => colisores.filter((c) => c.nome !== 'col-barco-1'), [colisores])
   return (
     <>
       <primitive object={pier} />
-      <primitive object={barquinho} />
-      <Colisores lista={colisores} />
+      {!viagemDisponivel && <primitive object={barquinho} />}
+      <Colisores lista={viagemDisponivel ? semBarquinho : colisores} />
     </>
   )
 }

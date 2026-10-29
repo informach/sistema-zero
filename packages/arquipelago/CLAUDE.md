@@ -860,3 +860,26 @@ não acrescentar festa ao salvamento, não criar necessidade nova e não expirar
 Testes: `tests/festas.test.ts` e `playground/verificar-festa-browser.ts`. O browser usa
 plataforma falsa, verifica os fluxos em 1280 e 390 pixels e aceita `ARQUIPELAGO_CHROMIUM`.
 Relatório, prints e decisões pendentes em `docs/qa/2026-10-29-primeira-festa-da-estacao.md`.
+
+## Barco entre as ilhas (fase3-04)
+
+- `sistemas/barco.ts` prepara a rota entre os portos e avança a travessia guiada em passo fixo.
+  `modos/barco.ts` usa o mesmo corpo e o controlador livre com colisões; não libera nado nem
+  pulo no mar. A resposta opcional `obstruido` mantém o apoio e permite devolver ao cais.
+- `mundo/barcos.tsx` usa as âncoras dos GLBs, `useCopiaAnimada` e `trocarClipe`. O mixer do
+  barco viajante é manual: `avancar` e leitura da âncora na prioridade menos 0,5, depois da
+  física (menos 1) e antes do personagem (0). Não ler a âncora só depois do personagem:
+  isso deixa o avatar um quadro atrás, principalmente em aparelhos lentos.
+- `mundo/portos.ts` lê só os metadados dos GLBs. Não manter uma segunda cópia completa do
+  Recife para ler âncoras. `RecifeVivo` informa colisores prontos e opacidade de 0,99; sair da
+  ilha limpa o sinal. Espera a 27 m, retorno automático após 20 s sem carga.
+- O barco aparece só com o Recife aberto. Substitui nó e colisor do barquinho decorativo.
+  Boias abrem corredor visual de 5 m de meia largura; a correnteza não muda. Rota externa a
+  120 m, velocidade 12 m/s reduzida a 2 m/s nos cais. Regras completas em
+  `docs/arquipelago-regras.md`, seção fase3-04.
+- Não guardar posição no mar nem estado do barco. Pausa congela clipe e travessia. A câmera
+  acompanha o corpo estável, sem giro automático ou balanço, inclusive com movimento reduzido.
+- Playground `?barco=central|recife`, medidor `.barco`, testes `barco.test.ts` e
+  `barco-colisao.test.ts`. `playground/verificar-barco-browser.ts` confere os dois sentidos,
+  pausa, controles, espera por carga, ilha fechada e toque, com SwiftShader e
+  `ARQUIPELAGO_CHROMIUM`. Prints em `docs/qa/2026-10-29-barco/`. Nenhum GLB gerado nesta tarefa.

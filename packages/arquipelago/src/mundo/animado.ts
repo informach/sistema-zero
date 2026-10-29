@@ -1,7 +1,7 @@
 import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
-import { type RefObject, useEffect, useMemo } from 'react'
+import { type RefObject, useCallback, useEffect, useMemo } from 'react'
 import type { AnimationAction, AnimationMixer, Group, Mesh, Object3D } from 'three'
 import { useJogo } from '../estado/contexto'
 import { configurarAcao, copiarArteAnimada, iluminarArte, iniciarClipe } from './arte-animada'
@@ -16,8 +16,11 @@ export function useCopiaAnimada(
   raiz: RefObject<Group | null>,
   umaVez: readonly string[],
   pausado = false,
+  manual = false,
 ): {
   cena: Object3D
+  /** Atualização manual antes do passageiro, para âncoras móveis no mesmo quadro. */
+  avancar(dt: number): void
   actions: Record<string, AnimationAction | null>
   mixer: AnimationMixer
   /** As malhas dos olhos (com os morfos `piscar` e `feliz`); vazia se não houver. */
@@ -41,9 +44,19 @@ export function useCopiaAnimada(
     for (const acao of Object.values(actions)) if (acao) configurarAcao(acao, umaVez)
   }, [actions, umaVez])
   useEffect(() => {
-    mixer.timeScale = pausado ? 0 : reduzido ? 0.5 : 1
-  }, [mixer, reduzido, pausado])
-  return { cena, actions, mixer, olhos }
+    mixer.timeScale = pausado || manual ? 0 : reduzido ? 0.5 : 1
+  }, [mixer, reduzido, pausado, manual])
+  const avancar = useCallback(
+    (dt: number) => {
+      if (!manual) return
+      mixer.timeScale = pausado ? 0 : reduzido ? 0.5 : 1
+      mixer.update(dt)
+      // O useAnimations continua montado, mas não avança o mesmo clipe duas vezes.
+      mixer.timeScale = 0
+    },
+    [manual, mixer, pausado, reduzido],
+  )
+  return { cena, actions, mixer, olhos, avancar }
 }
 
 /** Troca de clipe com uma mistura curta (o de agora some enquanto o novo entra do começo). */

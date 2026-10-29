@@ -63,6 +63,7 @@ export function Relogios() {
       }
 
       if (
+        movimento.modo !== 'barco' &&
         segundos % 15 === 0 &&
         Math.hypot(rastro.x - ultimaPosicao.x, rastro.z - ultimaPosicao.z) > 1
       ) {

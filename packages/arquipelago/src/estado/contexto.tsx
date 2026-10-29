@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
+import type { Travessia } from '../sistemas/barco'
 import type { Ponto } from '../sistemas/cipo'
 import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
@@ -136,6 +137,7 @@ export type ModoDoCorpo =
   | 'escorregar'
   | 'borda'
   | 'descanso'
+  | 'barco'
 
 /**
  * Onde descansar (fase2-13, `sistemas/descanso.ts`): sentado num banco ou deitado na cama. O corpo
@@ -158,6 +160,7 @@ export interface LugarDeDescanso {
  * alocar.
  */
 export interface Movimento {
+  barco: Travessia | null
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
@@ -175,6 +178,7 @@ export interface Movimento {
     | { tipo: 'cipo' | 'tronco'; id: string }
     | { tipo: 'descanso'; lugar: LugarDeDescanso }
     | { tipo: 'levantar' }
+    | { tipo: 'barco'; viagem: Travessia }
     | null
   /** Escritos pelo personagem. */
   modo: ModoDoCorpo
@@ -195,6 +199,7 @@ export interface Movimento {
 
 export function criarMovimento(): Movimento {
   return {
+    barco: null,
     cipos: [],
     troncos: [],
     aguas: [],

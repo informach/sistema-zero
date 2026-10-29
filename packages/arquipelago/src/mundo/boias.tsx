@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   type BufferGeometry,
   type InstancedMesh,
@@ -9,6 +9,8 @@ import {
   Quaternion,
   Vector3,
 } from 'three'
+import { useJogo } from '../estado/contexto'
+import { noCorredorDoBarco, type RotaDoBarco } from '../sistemas/barco'
 import { pontosDasBoias, type RodaDeNado } from '../sistemas/correnteza'
 import { ComReserva, MODELOS, useModelo } from './modelos'
 
@@ -56,6 +58,12 @@ const tmpS = new Vector3()
 const CIMA = new Vector3(0, 1, 0)
 
 function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
+  const { movimento } = useJogo()
+  const [rota, definirRota] = useState<RotaDoBarco | null>(null)
+  useFrame(() => {
+    const r = movimento.barco?.rota ?? null
+    if (r !== rota) definirRota(r)
+  })
   const raiz = useModelo(MODELOS.boias)
   const pecas = useMemo(
     () => ({
@@ -76,14 +84,25 @@ function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
   )
   const trechos = useMemo(
     () =>
-      boias.map((a, i) => {
+      boias.flatMap((a, i) => {
         const b = boias[(i + 1) % boias.length] ?? a
+        if (
+          rota &&
+          (noCorredorDoBarco(rota, a) ||
+            noCorredorDoBarco(rota, b) ||
+            noCorredorDoBarco(rota, { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }))
+        )
+          return []
         const dx = b.x - a.x
         const dz = b.z - a.z
         const comp = Math.hypot(dx, dz)
-        return { a, ux: dx / comp, uz: dz / comp, comp, giro: Math.atan2(-dz, dx) }
+        return [{ a, ux: dx / comp, uz: dz / comp, comp, giro: Math.atan2(-dz, dx) }]
       }),
-    [boias],
+    [boias, rota],
+  )
+  const visiveis = useMemo(
+    () => (rota ? boias.filter((b) => !noCorredorDoBarco(rota, b)) : boias),
+    [boias, rota],
   )
   const malhas = useRef<{
     boia: (InstancedMesh | null)[]
@@ -114,7 +133,7 @@ function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
     tmpS.set(1, 1, 1)
     for (const m of malhas.current.boia) {
       if (!m) continue
-      boias.forEach((b, i) => {
+      visiveis.forEach((b, i) => {
         tmpQ.setFromAxisAngle(CIMA, b.giro)
         tmpV.set(b.x, BALANCO.altura * Math.sin(t + i * 1.7), b.z)
         tmpM.compose(tmpV, tmpQ, tmpS)
@@ -143,7 +162,7 @@ function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
     pecas[grupo].map((p, i) => (
       <instancedMesh
         // biome-ignore lint/suspicious/noArrayIndexKey: as peças de um nó não mudam de ordem
-        key={i}
+        key={`${i}:${n}:${rota ? 'porto' : 'roda'}`}
         ref={(m) => {
           malhas.current[grupo][i] = m
         }}
@@ -154,7 +173,7 @@ function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
 
   return (
     <group>
-      {instancias('boia', boias.length)}
+      {instancias('boia', visiveis.length)}
       {instancias('corda', trechos.length)}
       {instancias('boinha', trechos.length * BOINHAS_POR_TRECHO)}
     </group>

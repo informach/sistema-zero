@@ -2679,3 +2679,45 @@ Plano: `docs/plans/2026-10-29-arquipelago-recife.md`. Evidências e limites da c
 
 Plano: docs/plans/2026-10-29-arquipelago-minijogos.md. Testes, implantação e prints:
  docs/qa/2026-10-29-arquipelago-minijogos.md.
+
+## Barco entre a ilha central e o Recife (fase3-04, 29/10/2026)
+
+Decisão proposta nesta implementação: viagem guiada, disponível somente quando o Recife já
+está aberto pela jornada. E ou Usar junto da âncora de embarque inicia a ida ou a volta.
+Andar e pular não soltam a criança no mar. Os controles de andar, pular e Construir saem da
+tela durante a viagem; o menu continua disponível. Não há horário nem localização persistente
+do barco. Em repouso há um barco em cada porto, com o do Recife montado só com a ilha ativa.
+
+- As posições vêm das âncoras `barco` e `embarque` do píer e `barco` e `cais` do Recife.
+  A âncora `passageiro`, filha do nó animado, leva o desenho do avatar junto do balanço.
+  O grupo de navegação fica fora da raiz do mixer. A atualização manual do mixer e da âncora
+  acontece entre a física e o desenho do personagem, sem atraso de um quadro.
+- O barco substitui `barquinho-decorativo` e `col-barco-1`. Casco e cabine têm caixas simples
+  que seguram só o corpo. Durante a travessia, o modo `barco` passa pelo controlador livre do
+  Rapier; a cápsula mantém as colisões com o mundo. Obstrução no embarque devolve ao cais.
+- Rota proposta: saída pela proa por 8 m, guia a 60 m do centro no setor 110 graus, entre
+  Nuvens e Vale dos Dinos, depois arco a 120 m pelo leste até o setor menos 70 graus e o cais
+  do Recife. São 10 graus entre guias e 20 amostras por trecho, preparadas uma vez.
+  O trajeto atual mede aproximadamente 524,44 m. A volta inverte a mesma rota.
+- Velocidade máxima de 12 m/s. Os 10 m próximos de cada cais misturam suavemente até 2 m/s,
+  para aproximar e atracar sem arrancada. Embarque e desembarque duram 1,5 s, com elevação
+  de até 0,6 m para passar pela amurada. Alcance do interativo: 1,25 m junto da âncora.
+- O corredor tem 5 m de meia largura nas linhas de boias. Só boias e trechos de corda que
+  ocupam o caminho saem do desenho. A correnteza dos nadadores continua igual.
+- O Recife continua no ciclo normal de carregar e soltar. O barco espera a 27 m do centro,
+  dentro da zona de troca e fora da espera pelo chão. Só prossegue com colisores montados
+  e opacidade de pelo menos 0,99. Depois de 20 s de espera sem carga, retorna ao porto de
+  origem. Isso não libera ilha, não desembarca na silhueta e não deixa a criança na água.
+- Pausa congela viagem e balanço. Perfil de câmera `barco`: distância mínima de 13 m e
+  inclinação mínima de 0,55 radiano, para o casco caber também na tela estreita. Não força giro nem acompanha o balanço; movimento
+  reduzido mantém essa câmera estável e reduz o ritmo do clipe pela metade.
+- O estado é transitório. O relógio não guarda posição durante a viagem; nenhum campo foi
+  acrescentado ao salvamento. Fechar o jogo mantém a última posição segura já guardada.
+- Metadados dos portos são lidos do JSON dos GLBs, sem criar outra ilha completa na GPU.
+  As amostras e os objetos do passo físico são reaproveitados, sem alocação no laço.
+
+Conferência: `?novo=1&barco=central` e `?novo=1&barco=recife`, com o posto do Recife por
+padrão. `posicao=2` permite conferir a recusa antes da abertura. Medidas em
+`__arquipelagoDesenho.barco`. Plano: `docs/plans/2026-10-29-arquipelago-barco.md`.
+Testes: `barco.test.ts`, `barco-colisao.test.ts` e `ancoras-do-barco.test.ts`.
+Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026-10-29-barco/`.
