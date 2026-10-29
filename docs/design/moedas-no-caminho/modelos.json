@@ -1,0 +1,16 @@
+{
+  "moeda-de-ouro": {
+    "sha": "e058ad95d87c2e681e3facc12ce8c9b9810f588ae6b6c92523a1a6acb26b6e98",
+    "bytes": 31520,
+    "center": [0, 0.42, 0],
+    "size": 0.68,
+    "clips": []
+  },
+  "bau-do-tesouro": {
+    "sha": "6dc2b91a0472c05826556eb4ded6e1fe71b60846b4300819fb1d8b1bcb172682",
+    "bytes": 174316,
+    "center": [0, 0.4698, 0.0112],
+    "size": 1.12,
+    "clips": ["abrir"]
+  }
+}
