@@ -20,9 +20,11 @@ const root = resolve(import.meta.dirname, '../../..'),
   runtime = resolve(root, 'packages/studio-runtime/runtime'),
   studio = resolve(root, 'packages/studio')
 const d = (process.argv[2] ?? '2d') as MoedasDimensao,
-  scenario = process.argv[3] ?? 'correto'
+  scenario = process.argv[3] ?? 'correto',
+  // A etapa dos objetivos (o jogo é sempre o completo); as anteriores só no cenário correto.
+  etapa = (process.argv[4] ?? 'bau') as import('./moedas-projeto').MoedasEtapa
 if (!['2d', '3d'].includes(d)) throw Error('Dimensão inválida')
-const dir = resolve(root, `.cache/moedas-check-${d}-${scenario}`)
+const dir = resolve(root, `.cache/moedas-check-${d}-${scenario}-${etapa}`)
 mkdirSync(dir, { recursive: true })
 const driver = Bun.resolveSync(
   'playwright-core',
@@ -76,7 +78,7 @@ writeFileSync(
     runtimeInspection: true,
   }),
 )
-const objectives = moedasChecks(d, 'bau').filter((c) => isExecutionRule(c.rule))
+const objectives = moedasChecks(d, etapa).filter((c) => isExecutionRule(c.rule))
 if (objectives.some((c) => !isSectionExecutionRule(c.rule)))
   throw Error('Contrato de execução inválido')
 writeFileSync(
@@ -127,5 +129,6 @@ const REPROVA: Record<string, string[]> =
         'sem-zerar': ['zero', 'contar', 'uma-vez', 'meta', 'cinco', 'seis', 'reinicio'],
       }
 if (!REPROVA[scenario]) throw Error(`Cenário desconhecido: ${scenario}`)
+if (etapa !== 'bau' && scenario !== 'correto') throw Error('Erros só na última etapa')
 const expected = (id: string) => !REPROVA[scenario]!.includes(id)
 if (verdicts.some((v) => v.passed !== expected(v.id))) process.exit(1)
