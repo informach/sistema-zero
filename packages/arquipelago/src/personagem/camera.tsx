@@ -299,6 +299,7 @@ export function Camera() {
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
     const perfilAtual = perfilDaVez({
       barco: movimento.modo === 'barco',
+      balao: movimento.modo === 'balao',
       mergulho: movimento.modo === 'mergulho',
       luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA,
       conversa: loja.getState().painelAberto !== null && pedidos.conversa !== null,

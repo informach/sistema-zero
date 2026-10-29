@@ -139,7 +139,7 @@ export function ControlesDeToque() {
           onPointerCancel={soltarPulo}
           onLostPointerCapture={soltarPulo}
         >
-          {modo === 'mergulho'
+          {modo === 'mergulho' || modo === 'balao'
             ? 'Subir'
             : modo === 'cipo'
               ? 'Soltar'

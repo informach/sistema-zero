@@ -24,6 +24,7 @@ import {
   PORTA,
   QUARTO,
 } from '../mundo/medidas'
+import { DESCER_DO_BALAO, podeDescerDoBalao } from '../sistemas/balao'
 import { comLanterna } from '../sistemas/borroes'
 import { CIPO, type Ponto } from '../sistemas/cipo'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
@@ -178,6 +179,8 @@ export function Personagem() {
       // Montando, o colisor do dino parado (que some no quadro seguinte) não empurra a sela.
       if (v.modo === 'montar' && (corpo?.userData as { montaria?: boolean })?.montaria) return false
       if (v.modo === 'barco' && (corpo?.userData as { barco?: boolean })?.barco) return false
+      // No balão, o cesto parado (que segura quem anda em volta) não segura quem entra nele.
+      if (v.modo === 'balao' && (corpo?.userData as { balao?: boolean })?.balao) return false
       // Sentado no trenó, o colisor dele (que fica no platô) não segura quem desce.
       if (v.modo === 'escorregar' && (corpo?.userData as { peca?: string })?.peca === 'treno')
         return false
@@ -365,7 +368,13 @@ export function Personagem() {
     b.setNextKinematicTranslation(v.prox)
     // Pegou um cipó ou grudou no tronco neste passo: no ar e na casca ela está sempre "andando".
     // (Montada, a velocidade é a do dino: o desenho dele anda, corre ou para por ela.)
-    if (v.modo !== 'chao' && v.modo !== 'barco' && v.modo !== 'mergulho' && v.modo !== 'montar')
+    if (
+      v.modo !== 'chao' &&
+      v.modo !== 'barco' &&
+      v.modo !== 'mergulho' &&
+      v.modo !== 'montar' &&
+      v.modo !== 'balao'
+    )
       v.velPedida = 1
     movimento.noChao = v.modo === 'chao' && v.noChao
     movimento.beira = v.beira
@@ -383,7 +392,7 @@ export function Personagem() {
     const real =
       v.modo === 'chao'
         ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt / passada
-        : v.modo === 'cipo' || v.modo === 'barco'
+        : v.modo === 'cipo' || v.modo === 'barco' || v.modo === 'balao'
           ? 0
           : Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
     m.velocidade += (real - m.velocidade) * Math.min(1, dt * 14)
@@ -391,7 +400,7 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     m.especial =
-      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'mergulho'
+      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
         ? null
         : v.modo === 'descanso'
           ? (v.descanso?.jeito ?? null)
@@ -413,9 +422,13 @@ export function Personagem() {
       estado.dizer(falaDaSaida(nome))
     }
     estado.definirAlvo(
-      parado || (v.modo !== 'chao' && v.modo !== 'mergulho') || estado.visita
-        ? null
-        : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho'),
+      v.modo === 'balao'
+        ? !parado && v.balao && podeDescerDoBalao(v.balao)
+          ? DESCER_DO_BALAO
+          : null
+        : parado || (v.modo !== 'chao' && v.modo !== 'mergulho') || estado.visita
+          ? null
+          : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho'),
     )
 
     if (usou && (v.modo === 'chao' || v.modo === 'mergulho') && !parado) {
@@ -506,6 +519,11 @@ export function Personagem() {
       vis.position.x += Math.sin(vis.rotation.y) * BANCO.baciaAtras * s
       vis.position.y += MONTARIA.subidaDoDesenho * s
       vis.position.z += Math.cos(vis.rotation.y) * BANCO.baciaAtras * s
+    }
+    // No balão, o desenho vai no cesto como ele está desenhado (com o clipe `flutuar`).
+    const voo = v.balao
+    if (v.modo === 'balao' && voo?.fase === 'voo') {
+      vis.position.set(voo.visual.x - centro.x, voo.visual.y - centro.y, voo.visual.z - centro.z)
     }
     const viagem = v.barco
     if (viagem && (viagem.fase === 'viagem' || viagem.fase === 'espera')) {

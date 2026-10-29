@@ -3199,3 +3199,23 @@ coral e até a mesa) e `arquipelago-contracts/tests/salvamento-v13.test.ts`. Nav
 - Esta fase não liga corrida, constelações, clima ou passeio de balão. Não muda o salvamento,
   não altera geradores e não regrava GLBs. Testes e capturas em
   `docs/qa/2026-10-29-nuvens/README.md`.
+
+## Balão da Ilha das Nuvens (fase4-09, 29/10/2026)
+
+- O balão fica parado na âncora `balao` do `nuvens.glb`. A pé, no chão e a até 1,6 m do cesto,
+  "Subir no balão" (E ou Usar) leva a criança para dentro do cesto em 0,7 s, com um pulinho de
+  0,95 m por cima da borda (0,82 m). O cesto parado segura quem anda em volta (caixa de 1,1 ×
+  0,82 × 1,1 m, só para o corpo).
+- No voo, segurar Pular (no toque, o botão vira "Subir") acende o fogo: o balão sobe com 1,4 m/s²
+  até 1,8 m/s. Soltando, desce devagar, até 0,7 m/s. O direcional empurra para os lados com
+  1,6 m/s², até 3 m/s; sem ele, o ar segura e a velocidade de lado cai pela metade a cada 0,8 s.
+- Limites sem castigo: teto de 18 m acima do tampo da ilha; passando de 24 m do meio da ilha, uma
+  brisa mansa traz de volta (até 4 m/s² em 6 m, mais forte que o direcional). Fora do chão da ilha
+  (mais de 19,2 m do meio), o ar segura o cesto 1,5 m acima do tampo.
+- O cesto pousa quando encosta em algo por baixo: o chão, o ninho no alto da árvore, um degrau de
+  nuvem. Pousado, não desliza, e aparece "Descer do balão" (E ou Usar). Perto do lugar do balão
+  (até 1,5 m) a criança sai 1,4 m para o meio da ilha; longe dele, fica de pé onde pousou. O balão
+  volta sozinho ao lugar dele. No voo, nada do mundo lá embaixo oferece ação.
+- A pausa congela o voo e o clipe `flutuar`; com menos movimento (aparelho ou menu), o `flutuar` vai
+  a 35% da velocidade. A câmera se afasta um pouco (no mínimo 11 m, inclinação mínima 0,45). A
+  posição não é gravada durante o voo, e o balão não muda o salvamento: ele sempre recomeça parado.

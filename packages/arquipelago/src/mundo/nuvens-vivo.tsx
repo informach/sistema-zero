@@ -2,12 +2,15 @@ import { useFrame } from '@react-three/fiber'
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
+import { BalaoDasNuvens } from './balao-das-nuvens'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Irie } from './irie'
 import { ALTURA_DAS_NUVENS, giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 
-/** As Nuvens (fase4-06): a Iriê só existe com a ilha completa ativa. */
+/**
+ * As Nuvens (fase4-06): a Iriê e o balão (fase4-09) só existem com a ilha completa ativa.
+ */
 export function NuvensVivo({
   ilha,
   centro,
@@ -30,6 +33,7 @@ export function NuvensVivo({
       <ComReserva reserva={null}>
         <Irie modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
+      <BalaoDasNuvens modelo={preparada.modelo} meio={meio} giro={giro} />
     </group>
   )
 }

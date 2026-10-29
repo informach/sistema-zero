@@ -1,8 +1,11 @@
 import type { ModoDoCorpo, Movimento } from '../../estado/contexto'
+import { podeSubirNoBalao, subirNoBalao } from '../balao'
 import { BARCO } from '../barco'
 import type { Ponto } from '../cipo'
+import { CORPO } from '../corpo'
 import { podeMergulhar } from '../mergulho'
 import { podeDescerDeTreno } from '../treno'
+import { MODO_BALAO } from './balao'
 import { MODO_BARCO } from './barco'
 import { MODO_BORDA } from './borda'
 import { MODO_CHAO } from './chao'
@@ -34,6 +37,7 @@ export { mudarModo } from './trocas'
 /** Os modos do corpo. Ilha nova com modo novo (escada, borda, escorregar) entra aqui. */
 export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   barco: MODO_BARCO,
+  balao: MODO_BALAO,
   mergulho: MODO_MERGULHO,
   chao: MODO_CHAO,
   cipo: MODO_CIPO,
@@ -46,6 +50,9 @@ export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   planar: MODO_PLANAR,
   montar: MODO_MONTAR,
 }
+
+/** Os pés de quem pede o balão (sem alocar). */
+const pes = { x: 0, y: 0, z: 0 }
 
 /**
  * O pedido de um interativo ("Pegar o cipó", "Escalar o tronco", "Sentar no banco", "Deitar na
@@ -92,6 +99,19 @@ export function atenderPedido(
     c.barco = pedido.viagem
     c.embalo.x = c.embalo.y = c.embalo.z = 0
     mudarModo(c, 'barco', agora, aviso)
+    return
+  }
+  if (pedido.tipo === 'balao') {
+    // "Subir no balão": a pé, no chão e ainda perto do cesto parado (um corte no meio cancela).
+    const v = pedido.voo
+    pes.x = de.x
+    pes.y = de.y - CORPO.doCentroAoPe - CORPO.folga
+    pes.z = de.z
+    if (c.modo !== 'chao' || c.nadando || !podeSubirNoBalao(v, pes, c.noChao)) return
+    subirNoBalao(v, pes)
+    c.balao = v
+    c.embalo.x = c.embalo.y = c.embalo.z = c.velY = 0
+    mudarModo(c, 'balao', agora, aviso)
     return
   }
   if (c.modo !== 'chao') return

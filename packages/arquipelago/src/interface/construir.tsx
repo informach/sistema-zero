@@ -127,7 +127,7 @@ export function ModosDoJogo() {
   const construcao = lojaDaConstrucao(loja)
   const permitido = useEstado(podeConstruir)
   const painel = useEstado((s) => s.painelAberto)
-  const noBarco = useEstado((s) => s.modo === 'barco')
+  const noBarco = useEstado((s) => s.modo === 'barco' || s.modo === 'balao')
   if (!permitido || noBarco) return null
   const construindo = painel === PAINEL_DE_CONSTRUIR
   return (

@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
+import type { Voo } from '../sistemas/balao'
 import type { Travessia } from '../sistemas/barco'
 import type { Ponto } from '../sistemas/cipo'
 import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
@@ -151,6 +152,7 @@ export type ModoDoCorpo =
   | 'borda'
   | 'descanso'
   | 'barco'
+  | 'balao'
   | 'mergulho'
   | 'planar'
   | 'montar'
@@ -178,6 +180,8 @@ export interface LugarDeDescanso {
 export interface Movimento {
   mergulhos: VolumeDeMergulho[]
   barco: Travessia | null
+  /** O balão das Nuvens (fase4-09), registrado pelo desenho dele enquanto a ilha está ativa. */
+  balao: Voo | null
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
@@ -202,6 +206,7 @@ export interface Movimento {
     | { tipo: 'descanso'; lugar: LugarDeDescanso }
     | { tipo: 'levantar' }
     | { tipo: 'barco'; viagem: Travessia }
+    | { tipo: 'balao'; voo: Voo }
     | { tipo: 'mergulho'; volume: VolumeDeMergulho }
     | { tipo: 'escorregar'; escorregador: Escorregador }
     | { tipo: 'montar'; montaria: MontariaViva }
@@ -226,6 +231,7 @@ export interface Movimento {
 export function criarMovimento(): Movimento {
   return {
     barco: null,
+    balao: null,
     cipos: [],
     troncos: [],
     aguas: [],

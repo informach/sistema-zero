@@ -38,6 +38,14 @@ export interface MedidaDoDesenho {
     z: number
   }[]
   mergulho: { pronto: boolean; achados: { bau: boolean; pagina: boolean; tesouro: boolean } }
+  balao: {
+    fase: string
+    pousado: boolean
+    fogo: boolean
+    pe: { x: number; y: number; z: number }
+    casa: { x: number; y: number; z: number }
+    vel: { x: number; y: number; z: number }
+  } | null
   barco: {
     fase: string
     distancia: number
@@ -246,6 +254,16 @@ export function Medidor() {
         pronto: movimento.mergulhos.some((v) => v.ativo),
         achados: { ...loja.getState().salvamento.recife },
       },
+      balao: movimento.balao
+        ? {
+            fase: movimento.balao.fase,
+            pousado: movimento.balao.pousado,
+            fogo: movimento.balao.fogo,
+            pe: { ...movimento.balao.pe },
+            casa: { ...movimento.balao.casa },
+            vel: { ...movimento.balao.vel },
+          }
+        : null,
       barco: movimento.barco
         ? {
             fase: movimento.barco.fase,

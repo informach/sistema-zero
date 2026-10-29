@@ -9,6 +9,7 @@ import type {
   ModoDoCorpo,
   TroncoVivo,
 } from '../../estado/contexto'
+import type { Voo } from '../balao'
 import type { Travessia } from '../barco'
 import type { Ponto } from '../cipo'
 import type { RodaDeNado } from '../correnteza'
@@ -35,6 +36,7 @@ export interface EstadoDoCorpo {
   /** Montada, onde o último passo parou: na beira da água, no limite do Vale ou em nada. */
   beira: BeiraDaMontaria
   barco: Travessia | null
+  balao: Voo | null
   modo: ModoDoCorpo
   cipo: CipoVivo | null
   tronco: TroncoVivo | null
@@ -103,6 +105,7 @@ export interface EstadoDoCorpo {
 export function criarEstadoDoCorpo(): EstadoDoCorpo {
   return {
     barco: null,
+    balao: null,
     mergulho: null,
     montaria: null,
     beira: null,

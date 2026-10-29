@@ -1,4 +1,5 @@
 import type { ModoDoCorpo } from '../../estado/contexto'
+import { guardarBalao } from '../balao'
 import { soltarCorda } from '../cordas'
 import { CORPO } from '../corpo'
 import type { AvisoDeModo, EstadoDoCorpo } from './tipos'
@@ -46,6 +47,11 @@ export function mudarModo(
   if (c.barco && modo !== 'barco') {
     c.barco.fase = 'atracado'
     c.barco = null
+  }
+  if (c.balao && modo !== 'balao') {
+    // Desceu, a ilha saiu ou um corte levou a criança: o balão volta ao lugar dele.
+    if (c.balao.fase !== 'parado') guardarBalao(c.balao)
+    c.balao = null
   }
   if (modo !== 'mergulho') c.mergulho = null
   if (c.montaria && modo !== 'montar') {

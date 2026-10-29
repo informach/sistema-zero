@@ -1185,3 +1185,23 @@ Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipel
   criança sai de cima, `longeParaVoltar`).
 - Testes: `tests/montaria.test.ts` (regras, modo e o lugar no GLB); navegador:
   `playground/verificar-montaria-browser.ts`.
+
+## Balão das Nuvens (fase4-09, 29/10/2026)
+
+- Regras puras em `sistemas/balao.ts` (`BALAO`, `Voo`, `passoDoBalao`); modo `balao` em
+  `sistemas/modos/balao.ts`, guiado (`direto`) como o barco: o voo começa de onde a física deixou o
+  corpo, e o corpo parado mais alto que o pedido é pouso. Pousado, o cesto pressiona o apoio
+  (`BALAO.pressao`) para soltar sozinho se o apoio sair (plataforma descendo).
+- `mundo/balao-das-nuvens.tsx` (montado pelo `NuvensVivo`): `nuvens-balao.glb` em carga privada
+  (sai com a ilha), `AnimationMixer` próprio do `flutuar`, `Voo` em `movimento.balao`, interativo
+  "Subir no balão", caixa do cesto parado com `userData.balao` (o personagem ignora no modo
+  `balao`) e `voo.visual` (o nó animado) para desenhar a criança no cesto, na prioridade −0,5.
+- "Descer do balão" não é interativo do mundo: o personagem põe `DESCER_DO_BALAO` no alvo quando o
+  cesto está pousado, e o "usar" é gasto pelo modo. Saída perto do lugar: `voo.saida` vira
+  `pedidos.teleporte` no desenho.
+- Perfil de câmera `balao`; o toque troca "Pular" por "Subir"; a posição não é gravada no voo; o
+  Construir some no balão. O medidor expõe `balao`.
+- Testes: `balao.test.ts` (regras e modo), `balao-das-nuvens.test.ts` (lugar livre, alcance a pé e
+  saída contra os colisores). Verificador: `playground/verificar-balao-browser.ts`. Pedidos de arte
+  no plano `docs/plans/2026-10-29-arquipelago-balao.md` (a âncora `balao` está do lado oposto do
+  poste).

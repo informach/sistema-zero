@@ -273,6 +273,27 @@ function Acao() {
       </div>
     )
   }
+  if (modo === 'balao') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? 'Subir' : 'Espaço'}</span>
+        Segure para subir
+        {/* No toque o joystick já mostra o lado; a dica fica curta para não cobrir o polegar. */}
+        {toque ? null : (
+          <>
+            <span className="arq-tecla">W A S D</span>
+            Para os lados
+          </>
+        )}
+        {alvo ? (
+          <>
+            <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
+            {alvo.rotulo}
+          </>
+        ) : null}
+      </div>
+    )
+  }
   if (!alvo) return null
   return (
     <div className="arq-acao">
