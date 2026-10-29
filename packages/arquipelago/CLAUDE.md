@@ -1168,3 +1168,20 @@ Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`; regras e textos e
   `ICONE_DO_VALE` de `interface/diario.tsx`).
 - Testes: `tests/filhote-do-vale.test.ts`; navegador: `playground/verificar-filhote-browser.ts`
   (semeia o salvamento no `localStorage` do playground, um contexto limpo por começo).
+
+## A montaria do Vale (fase4-04, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipelago-regras.md`.
+
+- Regras em `sistemas/montaria.ts`; modo `montar` em `sistemas/modos/montar.ts` (em `MODOS`), que
+  entra pelo pedido `montar` e sai pelo E / Usar. ⚠️ `mudarModo` solta a sela em qualquer troca de
+  modo (o dino fica onde estava): não limpar `c.montaria` à mão.
+- `personagem.tsx`: montada, o controlador usa a cápsula de montada (`MONTARIA.raio`, pé no mesmo
+  lugar, `GRUPO_DE_NINGUEM` de `mundo/grupos.ts`), o desenho sobe `MONTARIA.subidaDoDesenho` no
+  clipe Sentar e `velPedida` fica a do dino. `aceitaColisorDoMundo` ignora os colisores do próprio
+  corpo.
+- `mundo/montaria-do-vale.tsx` (no `ValeVivo`, com a sua `ComReserva`): `movimento.montaria`, o
+  interativo, o desenho e o colisor do dino parado (`col-montaria`, só para o corpo, volta quando a
+  criança sai de cima, `longeParaVoltar`).
+- Testes: `tests/montaria.test.ts` (regras, modo e o lugar no GLB); navegador:
+  `playground/verificar-montaria-browser.ts`.

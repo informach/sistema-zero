@@ -1,5 +1,6 @@
 import type { ModoDoCorpo } from '../../estado/contexto'
 import { soltarCorda } from '../cordas'
+import { CORPO } from '../corpo'
 import type { AvisoDeModo, EstadoDoCorpo } from './tipos'
 
 /**
@@ -47,6 +48,17 @@ export function mudarModo(
     c.barco = null
   }
   if (modo !== 'mergulho') c.mergulho = null
+  if (c.montaria && modo !== 'montar') {
+    // Sair da sela por qualquer motivo (descer, um teleporte, a ilha que sai): o dino fica onde
+    // estava, parado, olhando para onde ia.
+    c.montaria.x = c.prox.x
+    c.montaria.z = c.prox.z
+    c.montaria.y = c.prox.y - CORPO.doCentroAoPe - CORPO.folga
+    c.montaria.giro = c.direcao
+    c.montaria.montada = false
+    c.montaria = null
+    c.beira = null
+  }
   c.modo = modo
   c.noModo = 0
   aviso(modo)

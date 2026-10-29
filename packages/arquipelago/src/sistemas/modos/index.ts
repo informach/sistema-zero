@@ -13,6 +13,7 @@ import { MODO_ESCADA } from './escada'
 import { agarrarTronco, MODO_ESCALADA } from './escalada'
 import { entrarNoEscorregador, MODO_ESCORREGAR } from './escorregar'
 import { MODO_MERGULHO } from './mergulho'
+import { MODO_MONTAR, montar } from './montar'
 import { MODO_PLANAR } from './planar'
 import type { AvisoDeModo, EstadoDoCorpo, ModoDeMovimento, MundoDoMovimento } from './tipos'
 import { mudarModo } from './trocas'
@@ -25,6 +26,7 @@ export { MODO_EQUILIBRIO } from './equilibrio'
 export { MODO_ESCADA } from './escada'
 export { MODO_ESCALADA } from './escalada'
 export { MODO_ESCORREGAR } from './escorregar'
+export { MODO_MONTAR } from './montar'
 export { MODO_PLANAR } from './planar'
 export * from './tipos'
 export { mudarModo } from './trocas'
@@ -42,6 +44,7 @@ export const MODOS: Readonly<Record<ModoDoCorpo, ModoDeMovimento>> = {
   borda: MODO_BORDA,
   descanso: MODO_DESCANSO,
   planar: MODO_PLANAR,
+  montar: MODO_MONTAR,
 }
 
 /**
@@ -92,6 +95,11 @@ export function atenderPedido(
     return
   }
   if (c.modo !== 'chao') return
+  if (pedido.tipo === 'montar') {
+    // Só a montaria da ilha ativa (a ilha pode ter saído entre o E e o passo).
+    if (mundo.montaria === pedido.montaria) montar(c, pedido.montaria, de, agora, aviso)
+    return
+  }
   if (pedido.tipo === 'descanso') {
     if (!c.nadando) sentarOuDeitar(c, pedido.lugar, de, agora, aviso)
     return

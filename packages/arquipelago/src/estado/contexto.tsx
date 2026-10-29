@@ -138,6 +138,7 @@ export interface BordaViva {
 }
 
 import type { VolumeDeMergulho } from '../sistemas/mergulho'
+import type { BeiraDaMontaria, MontariaViva } from '../sistemas/montaria'
 import type { CorrenteDeAr } from '../sistemas/planador'
 
 export type ModoDoCorpo =
@@ -152,6 +153,7 @@ export type ModoDoCorpo =
   | 'barco'
   | 'mergulho'
   | 'planar'
+  | 'montar'
 
 /**
  * Onde descansar (fase2-13, `sistemas/descanso.ts`): sentado num banco ou deitado na cama. O corpo
@@ -190,6 +192,10 @@ export interface Movimento {
   rodasDeNado: RodaDeNado[]
   /** As correntes de vento que sobem (`sistemas/planador.ts`), registradas pela ilha ativa. */
   correntes: CorrenteDeAr[]
+  /** O dino de montaria do Vale (`sistemas/montaria.ts`), registrado pela ilha ativa. */
+  montaria: MontariaViva | null
+  /** Montada, onde o passo parou (a água, o limite do Vale): o Vale avisa uma vez. Do personagem. */
+  beira: BeiraDaMontaria
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido:
     | { tipo: 'cipo' | 'tronco'; id: string }
@@ -198,6 +204,7 @@ export interface Movimento {
     | { tipo: 'barco'; viagem: Travessia }
     | { tipo: 'mergulho'; volume: VolumeDeMergulho }
     | { tipo: 'escorregar'; escorregador: Escorregador }
+    | { tipo: 'montar'; montaria: MontariaViva }
     | null
   /** Escritos pelo personagem. */
   modo: ModoDoCorpo
@@ -229,6 +236,8 @@ export function criarMovimento(): Movimento {
     bordas: [],
     rodasDeNado: [RODA_DA_ILHA_CENTRAL],
     correntes: [],
+    montaria: null,
+    beira: null,
     pedido: null,
     modo: 'chao',
     noChao: false,

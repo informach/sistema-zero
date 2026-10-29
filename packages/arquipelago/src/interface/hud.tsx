@@ -241,6 +241,18 @@ function Acao() {
       </div>
     )
   }
+  if (modo === 'montar') {
+    return (
+      <div className="arq-acao">
+        <span className="arq-tecla">{toque ? '◎' : 'W A S D'}</span>
+        Andar
+        <span className="arq-tecla">{toque ? 'Pular' : 'Espaço'}</span>
+        Pular
+        <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
+        Descer do dino
+      </div>
+    )
+  }
   if (modo === 'planar') {
     return (
       <div className="arq-acao">

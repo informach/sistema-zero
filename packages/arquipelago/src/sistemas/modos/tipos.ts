@@ -14,6 +14,7 @@ import type { Ponto } from '../cipo'
 import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
 import type { VolumeDeMergulho } from '../mergulho'
+import type { BeiraDaMontaria, MontariaViva } from '../montaria'
 import { criarPulo, type EstadoDoPulo } from '../movimento'
 import type { CorrenteDeAr } from '../planador'
 
@@ -29,6 +30,10 @@ import type { CorrenteDeAr } from '../planador'
 /** O corpo como os modos o veem e mexem (objetos fixos: o laço da física não aloca). */
 export interface EstadoDoCorpo {
   mergulho: VolumeDeMergulho | null
+  /** O dino em que vai montada (`modos/montar.ts`), ou nada. */
+  montaria: MontariaViva | null
+  /** Montada, onde o último passo parou: na beira da água, no limite do Vale ou em nada. */
+  beira: BeiraDaMontaria
   barco: Travessia | null
   modo: ModoDoCorpo
   cipo: CipoVivo | null
@@ -99,6 +104,8 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
   return {
     barco: null,
     mergulho: null,
+    montaria: null,
+    beira: null,
     modo: 'chao',
     cipo: null,
     tronco: null,
@@ -192,6 +199,8 @@ export interface MundoDoMovimento {
   rodasDeNado: RodaDeNado[]
   /** As correntes de vento que sobem (o planador sobe nelas). */
   correntes?: CorrenteDeAr[]
+  /** O dino de montaria do Vale, com a ilha ativa. */
+  montaria?: MontariaViva | null
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

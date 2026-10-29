@@ -3109,6 +3109,35 @@ Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`. Testes:
 `tests/filhote-do-vale.test.ts` e `arquipelago-contracts/tests/salvamento-v15.test.ts`. Navegador:
 `playground/verificar-filhote-browser.ts`, no computador e no celular emulado.
 
+## A montaria do Vale (fase4-04, 29/10/2026)
+
+- **O dino.** Um parassaurolofo de sela (`dino-montaria.glb`, clipes `parado`, `andar`, `correr` e
+  `pular`) na escala 0,85: 2 m de altura e 3,65 m de comprimento. Ele espera entre o vulcão e a
+  chegada (`MONTARIA_NO_VALE`, chão plano e largo, conferido contra o GLB), olhando para quem vem
+  da ponte. Parado, o corpo dele segura o corpo da criança (uma caixa de 1,1 × 2 × 3,2 m, só para
+  o corpo).
+- **Montar.** "Montar no dino" (E ou Usar, até 2,2 m), de pé no chão e fora da água. Antes dos três
+  ninhos: "O dino ainda não conhece você. Cuide dos três ninhos do Vale e ele vai confiar.". Depois:
+  "Você subiu na sela. Use o mesmo botão para descer.", e o dino vem para baixo da criança, que vai
+  sentada na sela.
+- **Montada.** O modo `montar`: anda a 3,6 m/s e corre a 6 (a criança anda a 2,2 e corre a 4,6), com
+  o mesmo peso de começar e parar do chão, e pula um pouco mais alto que a criança (9 m/s de
+  subida). O controle é o de sempre; a câmera, também. O dino não entra na água: o passo para na
+  beira, e o Zappy diz "O dino não entra na água. Ele prefere a terra do Vale.". Ele também não sai
+  do Vale: anda até 10,8 m do meio da ilha (a ponte começa a 11,5), e lá o Zappy diz "O dino não
+  sai do Vale. Ele gosta daqui.". Quem vai montada
+  usa um colisor maior (raio 0,6, o pé no mesmo lugar): a cabeça e a cauda passam um pouco dele,
+  porque a cápsula não gira com o corpo.
+- **Descer.** O mesmo E ou Usar, no chão. A criança desce com um pulinho para o lado esquerdo dele
+  (cai a uns 1,1 m do meio do corpo, fora dele; uma parede ao lado segura o pulinho mais perto, e o
+  colisor do dino espera ela se afastar); o dino fica parado onde parou, olhando para onde ia,
+  e o colisor dele volta quando ela se afasta. A ilha que sai de cena também tira da sela.
+- Nada vai para o salvamento: quando a ilha monta de novo, o dino volta ao lugar dele. Sem prazo,
+  sem cansaço e sem queda.
+
+Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`. Testes: `tests/montaria.test.ts`.
+Navegador: `playground/verificar-montaria-browser.ts`, no computador e no celular emulado.
+
 ## Corais, aquário e mapa do Recife (fase3-03, 29/10/2026)
 
 - **Replantar os corais.** São quatro pontos na beira rasa da lagoa, um por tipo de coral do
