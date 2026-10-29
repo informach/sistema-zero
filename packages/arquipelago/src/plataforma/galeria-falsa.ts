@@ -51,6 +51,15 @@ export function criarGaleriaFalsa(o: OpcoesDaGaleriaFalsa = {}) {
       }
       return { status: 404, corpo: { error: { code: 'NOT_FOUND' } } }
     },
+    /**
+     * Um salvamento guardado no aparelho só foi aceito com as da galeria pagas: ao reabrir o
+     * playground, elas continuam compradas (o serviço de verdade guarda as compras).
+     */
+    lembrarCompras(s: Salvamento | null) {
+      for (const p of Object.values(s?.projetos ?? {}))
+        for (const a of p?.aparencias ?? [])
+          if (a.origem === 'galeria' && aparenciaDaGaleria(a.id)) pagas.add(a.id as IdDaGaleria)
+    },
     /** O salvamento só passa com as da galeria pagas e no objeto delas. */
     aceita(s: Salvamento): boolean {
       return Object.entries(s.projetos).every(([objeto, p]) =>

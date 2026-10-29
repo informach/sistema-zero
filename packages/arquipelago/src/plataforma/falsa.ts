@@ -176,6 +176,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       const bruto = localStorage.getItem(CHAVE)
       if (bruto) guardado = JSON.parse(bruto) as SalvamentoGuardado
     } catch {}
+    galeria.lembrarCompras(migrarSalvamento(guardado.salvamento))
   }
   if (o.obra === 'exemplo') {
     const atual =

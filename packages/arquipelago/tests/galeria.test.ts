@@ -164,6 +164,37 @@ describe('a loja da galeria com a plataforma de mentira', () => {
     ).toEqual(daGaleria)
   })
 
+  test('reabrir o playground não esquece as compras do salvamento guardado', async () => {
+    const guardados = new Map<string, string>()
+    const antes = (globalThis as { localStorage?: unknown }).localStorage
+    ;(globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => guardados.get(k) ?? null,
+      setItem: (k: string, v: string) => guardados.set(k, v),
+      removeItem: (k: string) => guardados.delete(k),
+    }
+    try {
+      const vestido = {
+        ...criarSalvamentoInicial(AGORA),
+        projetos: { geladeira: usarAparencia(vazio, daGaleria) },
+      }
+      const gravar = (p: ReturnType<typeof criarPlataformaFalsa>, revisaoBase: number) =>
+        p.servico.buscar('/salvamento', {
+          metodo: 'PUT',
+          corpo: GravarSalvamentoSchema.parse({ revisaoBase, salvamento: vestido }),
+        })
+      const primeira = criarPlataformaFalsa({ persistir: true, galeria: { moedas: 100 } })
+      const loja = criarLojaDaGaleria(primeira)
+      await loja.getState().carregar()
+      expect(await loja.getState().comprar(GELADEIRA.id)).toEqual({ ok: true })
+      expect((await gravar(primeira, 0)).status).toBe(200)
+      // A página recarregou: a mesma aparência continua paga, e o salvamento segue aceito.
+      const reaberta = criarPlataformaFalsa({ persistir: true, galeria: { moedas: 100 } })
+      expect((await gravar(reaberta, 1)).status).toBe(200)
+    } finally {
+      ;(globalThis as { localStorage?: unknown }).localStorage = antes
+    }
+  })
+
   test('saldo curto: o motivo com quanto falta e o saldo de agora no cartão', async () => {
     const plataforma = criarPlataformaFalsa({ persistir: false, galeria: { moedas: 10 } })
     const loja = criarLojaDaGaleria(plataforma)
