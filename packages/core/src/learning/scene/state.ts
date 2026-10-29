@@ -1,4 +1,7 @@
 import {
+  CHEST_RULES,
+  type ChestRule,
+  COIN_COUNTER,
   isRecord,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
@@ -97,6 +100,29 @@ export interface SceneCollectionMemory {
   position: 'near' | 'touching' | 'away'
   /** Não creditar afastamento/reinício de uma coleta preparada pelo autor no setup. */
   collectedThisRound: boolean
+}
+
+/**
+ * O contador de moedas (`coin-counter`, Poder "Moedas no caminho"): o valor de `moedas`, as moedas
+ * que ainda estão no caminho, as duas escolhas da regra e onde o personagem está.
+ */
+export interface SceneCoinCounter {
+  moedas: number
+  /** As seis moedas, da esquerda para a direita: ainda no caminho? */
+  present: boolean[]
+  /** A linha "Tirar a moeda do grupo" está na regra da coleta. */
+  disappear: boolean
+  rule: ChestRule
+  /** Numa moeda (0 a 5), no baú, ou afastado. */
+  at: number | 'chest' | null
+  chest: 'closed' | 'open'
+  /** A última soma, antes → agora; null antes da primeira e depois de recomeçar. */
+  last: { before: number; after: number } | null
+  /** Gesto: as somas desta partida e as moedas que já somaram nela. */
+  adds: number
+  counted: boolean[]
+  /** Gesto: o baú com mais de 5 moedas visto nas duas regras (fechado com "igual", aberto com "pelo menos"). */
+  compared: { equals: boolean; atLeast: boolean }
 }
 
 /** A posição atual e a anterior permitem comparar um eixo por vez no mapa. */
@@ -1387,6 +1413,7 @@ export interface SceneState {
   evidence: SceneEvidence
   lighthouse: SceneLighthouseKey
   collection: SceneCollectionMemory
+  coins: SceneCoinCounter
   walk: SceneLighthouseWalk
   keyPosition: SceneLighthousePosition
   once: SceneOnce
@@ -1676,6 +1703,27 @@ const COLLECTION_PADRAO: SceneCollectionMemory = {
   position: 'near',
   collectedThisRound: false,
 }
+const COINS_PADRAO: SceneCoinCounter = {
+  moedas: 0,
+  present: Array(COIN_COUNTER.coins).fill(true),
+  disappear: true,
+  rule: 'at-least',
+  at: null,
+  chest: 'closed',
+  last: null,
+  adds: 0,
+  counted: Array(COIN_COUNTER.coins).fill(false),
+  compared: { equals: false, atLeast: false },
+}
+export function cloneCoins(c: SceneCoinCounter): SceneCoinCounter {
+  return {
+    ...c,
+    present: [...c.present],
+    counted: [...c.counted],
+    last: c.last ? { ...c.last } : null,
+    compared: { ...c.compared },
+  }
+}
 const WALK_PADRAO: SceneLighthouseWalk = {
   frame: 0,
   x: LIGHTHOUSE_WALK.start,
@@ -1710,6 +1758,7 @@ function gruposComPadrao() {
   return [
     ['lighthouse', LIGHTHOUSE_PADRAO],
     ['collection', COLLECTION_PADRAO],
+    ['coins', COINS_PADRAO],
     ['walk', WALK_PADRAO],
     ['keyPosition', KEY_POSITION_PADRAO],
     ['once', initialOnce(undefined)],
@@ -1868,6 +1917,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     ...(scene === 'island-3d' ? { island3d: initialIsland(setup?.goals) } : {}),
     lighthouse: { ...LIGHTHOUSE_PADRAO },
     collection: { ...COLLECTION_PADRAO },
+    coins: cloneCoins(COINS_PADRAO),
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
     keyPosition: { ...KEY_POSITION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
@@ -2041,6 +2091,7 @@ export function cloneScene(state: SceneState): SceneState {
     },
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
+    coins: cloneCoins(state.coins),
     walk: {
       ...state.walk,
       trail: [...state.walk.trail],
@@ -2271,6 +2322,31 @@ function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
 const between = (v: unknown, min: number, max: number): v is number =>
   num(v) && v >= min && v <= max
 const bool = (v: unknown): v is boolean => typeof v === 'boolean'
+function isSceneCoinCounter(v: unknown): v is SceneCoinCounter {
+  const n = COIN_COUNTER.coins
+  const count = (x: unknown) =>
+    typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= COIN_COUNTER.max
+  const flags = (x: unknown) => Array.isArray(x) && x.length === n && x.every(bool)
+  return (
+    isRecord(v) &&
+    count(v.moedas) &&
+    flags(v.present) &&
+    bool(v.disappear) &&
+    CHEST_RULES.some((r) => r === v.rule) &&
+    (v.at === null || v.at === 'chest' || (count(v.at) && (v.at as number) < n)) &&
+    (v.chest === 'closed' || v.chest === 'open') &&
+    (v.last === null ||
+      (isRecord(v.last) &&
+        count(v.last.before) &&
+        count(v.last.after) &&
+        v.last.after === Math.min(COIN_COUNTER.max, (v.last.before as number) + 1))) &&
+    count(v.adds) &&
+    flags(v.counted) &&
+    isRecord(v.compared) &&
+    bool(v.compared.equals) &&
+    bool(v.compared.atLeast)
+  )
+}
 const strings = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((s) => typeof s === 'string' && s.length <= 80)
 const numbers = (v: unknown, max: number): v is number[] =>
@@ -2308,6 +2384,7 @@ export function isSceneState(value: unknown): value is SceneState {
       (value.collection.hasKey || value.collection.collectedThisRound))
   )
     return false
+  if (!isSceneCoinCounter(value.coins)) return false
   if (!isSceneLighthouseWalk(value.walk)) return false
   const position = value.keyPosition
   const validPosition = (point: unknown) =>

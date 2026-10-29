@@ -61,6 +61,18 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Encostar na chave', value: { type: 'collect-key' } },
   { label: 'Afastar da chave', value: { type: 'leave-key' } },
   { label: 'Recomeçar a partida', value: { type: 'restart-collection' } },
+  // O contador de moedas (29/10/2026): os nomes são os da bancada da criança.
+  ...([0, 1, 2, 3, 4, 5] as const).map((coin) => ({
+    label: `Encostar na moeda ${coin + 1}`,
+    value: { type: 'touch-coin', coin } as SceneAction,
+  })),
+  { label: 'Afastar da moeda', value: { type: 'leave-coin' } },
+  { label: 'Encostar no baú', value: { type: 'try-chest' } },
+  { label: 'Ligar A moeda some', value: { type: 'coin-disappears', enabled: true } },
+  { label: 'Desligar A moeda some', value: { type: 'coin-disappears', enabled: false } },
+  { label: 'Regra do baú: Pelo menos 5', value: { type: 'chest-rule', rule: 'at-least' } },
+  { label: 'Regra do baú: Igual a 5', value: { type: 'chest-rule', rule: 'equals' } },
+  { label: 'Recomeçar a partida das moedas', value: { type: 'restart-coins' } },
   // O andar do Farol (05/10/2026), o Dia 1 do Desafio: os nomes são os da bancada da criança.
   { label: 'Segurar a seta para a direita', value: { type: 'hold-arrow', held: true } },
   { label: 'Soltar a seta para a direita', value: { type: 'hold-arrow', held: false } },

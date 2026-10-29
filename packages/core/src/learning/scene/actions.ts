@@ -57,6 +57,8 @@ export const SCENE_IDS = [
   'lighthouse-walk',
   // Dia 3 do Desafio: x e y da chave, um eixo por vez, antes de a criança escolher o lugar dela.
   'lighthouse-position',
+  // Poder "Moedas no caminho" (Faísca, 29/10/2026): o contador, a moeda que some e a meta do baú.
+  'coin-counter',
   'restart',
   'hitbox',
   'score',
@@ -150,6 +152,15 @@ export type SceneAction =
   | { type: 'collect-key' }
   | { type: 'leave-key' }
   | { type: 'restart-collection' }
+  /** `coin-counter`: o personagem encosta numa das seis moedas (de 0 a 5, da esquerda). */
+  | { type: 'touch-coin'; coin: CoinIndex }
+  | { type: 'leave-coin' }
+  | { type: 'try-chest' }
+  /** `coin-counter`: a linha "Tirar a moeda do grupo" entra ou sai da regra da coleta. */
+  | { type: 'coin-disappears'; enabled: boolean }
+  /** `coin-counter`: a comparação da regra do baú, "pelo menos 5" ou "igual a 5". */
+  | { type: 'chest-rule'; rule: ChestRule }
+  | { type: 'restart-coins' }
   /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
   | { type: 'hold-arrow'; held: boolean }
   | { type: 'movement-command'; enabled: boolean }
@@ -322,6 +333,15 @@ export type SceneAction =
 export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
 export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
 
+/**
+ * O contador de moedas: seis moedas e a meta "5" do baú, as do jogo do Poder (o projeto e esta
+ * cena usam os mesmos números). O DTO do servidor e o editor do admin leem daqui.
+ */
+export const COIN_COUNTER = { coins: 6, goal: 5, max: 99 } as const
+export type CoinIndex = 0 | 1 | 2 | 3 | 4 | 5
+export const CHEST_RULES = ['at-least', 'equals'] as const
+export type ChestRule = (typeof CHEST_RULES)[number]
+
 /** A tela 480 × 360 e a chave 32 × 32 do Farol. O player confere contra FAROL_LAYOUT. */
 export const LIGHTHOUSE_POSITION = {
   start: { x: 211, y: 53 },
@@ -382,6 +402,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'lighthouse-key': [],
   'lighthouse-walk': [],
   'lighthouse-position': [],
+  'coin-counter': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -723,6 +744,21 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'leave-key':
     case 'restart-collection':
       return scene === 'collect-and-remember'
+    case 'touch-coin':
+      return (
+        scene === 'coin-counter' &&
+        Number.isInteger(value.coin) &&
+        (value.coin as number) >= 0 &&
+        (value.coin as number) < COIN_COUNTER.coins
+      )
+    case 'leave-coin':
+    case 'try-chest':
+    case 'restart-coins':
+      return scene === 'coin-counter'
+    case 'coin-disappears':
+      return scene === 'coin-counter' && typeof value.enabled === 'boolean'
+    case 'chest-rule':
+      return scene === 'coin-counter' && CHEST_RULES.some((r) => r === value.rule)
     case 'movement-command':
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'walk-frames':

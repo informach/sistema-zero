@@ -3557,6 +3557,21 @@ mesma cena com `cenario: 'nave'`.
   `core/src/learning/scene/lighthouse-walk.test.ts`; e2e em
   `community-kids/e2e-scenes/lighthouse-walk.spec.ts`.
 
+### O contador de moedas (`coin-counter`, Faísca Poder 1, 29/10/2026)
+
+A experiência do Poder "Moedas no caminho" (`scene-coin-counter.tsx`). Mesmo princípio das cenas do
+Farol: o palco é o JOGO (praia, as seis moedas e o baú nos lugares de `MOEDAS_2D`/`BAU_2D` do
+`docs/aulas-interativas-tecnico/qa/moedas-projeto.ts`, o aviso do jogo e o placar "Moedas: N" com o
+ícone) e a bancada tem as duas `RegraDoJogo` (coleta e baú) como a criança monta.
+
+- A soma aparece no palco como "antes → +1 → agora" (`coins.last`) e some ao recomeçar.
+- "A moeda some" é a `Chave` da bancada; desligada, a linha "Tirar o sprite moeda do grupo" vira o
+  encaixe vazio, e encostar de novo na mesma moeda conta outra vez (a meta `counts-again`, só no caso).
+- As regras do baú ("Pelo menos 5" / "Igual a 5") ficam como a criança escolheu ao recomeçar.
+- ⚠️ Fora do "Recomeçar" geral do rodapé (`scene-activity.tsx`), como a coleta do Farol: ele desligaria
+  as escolhas em silêncio. Sem `freeExploration` (faltam os componentes de descoberta).
+- Teste: `tests/scene-coin-counter.test.tsx`.
+
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 
 Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo

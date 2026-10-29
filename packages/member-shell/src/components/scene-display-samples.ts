@@ -692,6 +692,19 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'Guardar a coleta está desligado.',
     ],
   },
+  'coin-counter': {
+    readouts: [
+      { label: 'moedas', value: '6', tone: 'a' },
+      { label: 'baú', value: 'fechado', tone: 'b' },
+    ],
+    situations: [
+      '6 moedas estão no caminho. moedas guarda 0.',
+      'Somou 1: moedas era 4 e agora é 5.',
+      'Esta moeda já saiu do caminho: nada somou.',
+      'O baú continua fechado: a regra pede exatamente 5 moedas.',
+      'A partida recomeçou: moedas voltou a 0 e as seis moedas voltaram.',
+    ],
+  },
   'lighthouse-key': {
     readouts: [
       { label: 'temChave', value: 'verdadeiro', tone: 'a' },

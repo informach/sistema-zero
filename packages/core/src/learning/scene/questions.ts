@@ -253,6 +253,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     label: 'A porta do farol',
     explanation: 'Nesta experiência, você vai testar a mesma porta em duas situações.',
   },
+  'coin-counter': {
+    label: 'O contador de moedas',
+    explanation:
+      'Nesta experiência, você vai acompanhar o número que o jogo guarda a cada moeda e testar a regra do baú.',
+  },
   'lighthouse-position': {
     label: 'O lugar da chave no mapa',
     explanation: 'Nesta experiência, você muda um número por vez e acompanha a chave no mapa.',
@@ -1324,6 +1329,32 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       ],
       correctChoiceId: 'chave',
       explanation: 'O jogo conferiu se o personagem tinha a chave antes de abrir a porta.',
+    },
+  },
+  'coin-counter': {
+    prediction: {
+      prompt:
+        'Com A moeda some ligado, o personagem pega uma moeda, se afasta e volta ao mesmo lugar. O que acontece com moedas?',
+      choices: [
+        {
+          id: 'soma',
+          label: 'moedas soma 1 de novo.',
+          shows: 'moedas ficou igual: a moeda já tinha sumido.',
+        },
+        { id: 'igual', label: 'moedas continua igual.' },
+      ],
+      correctChoiceId: 'igual',
+      revealOn: 'no-double',
+    },
+    explain: {
+      prompt: 'Por que o baú não abriu com 6 moedas na regra "igual a 5"?',
+      choices: [
+        { id: 'igual', label: 'Porque 6 não é igual a 5.' },
+        { id: 'pouco', label: 'Porque 6 moedas ainda é pouco.' },
+      ],
+      correctChoiceId: 'igual',
+      explanation:
+        '"Igual a 5" só abre com exatamente 5. "Pelo menos 5" abre com 5, 6 ou mais: é a regra que o jogo precisa.',
     },
   },
   'lighthouse-position': {

@@ -15,6 +15,8 @@ import {
   TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import {
+  CHEST_RULES,
+  COIN_COUNTER,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
   MAP_TILES,
@@ -86,6 +88,16 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('collect-key') }),
   t.Object({ type: t.Literal('leave-key') }),
   t.Object({ type: t.Literal('restart-collection') }),
+  // O contador de moedas (Poder "Moedas no caminho", 29/10/2026).
+  t.Object({
+    type: t.Literal('touch-coin'),
+    coin: t.Integer({ minimum: 0, maximum: COIN_COUNTER.coins - 1 }),
+  }),
+  t.Object({ type: t.Literal('leave-coin') }),
+  t.Object({ type: t.Literal('try-chest') }),
+  t.Object({ type: t.Literal('coin-disappears'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('chest-rule'), rule: t.Union(CHEST_RULES.map((r) => t.Literal(r))) }),
+  t.Object({ type: t.Literal('restart-coins') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
   t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),

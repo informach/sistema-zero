@@ -1210,6 +1210,66 @@ const CENAS: Record<SceneId, Cena> = {
     mostra: (s) =>
       s.lighthouse.door === 'closed' && s.evidence.discoveries.includes('locked-without-key'),
   },
+  'coin-counter': {
+    pedidos: {
+      'each-adds': {
+        texto: 'Use Encostar na moeda em duas moedas diferentes.',
+        faz: (m) => {
+          m.faz({ type: 'touch-coin', coin: 0 })
+          m.faz({ type: 'touch-coin', coin: 1 })
+        },
+      },
+      'no-double': {
+        texto:
+          'Com A moeda some ligado, pegue uma moeda, clique em Afastar e use Encostar na moeda nela de novo.',
+        faz: (m) => {
+          m.faz({ type: 'coin-disappears', enabled: true })
+          m.faz({ type: 'touch-coin', coin: 2 })
+          m.faz({ type: 'leave-coin' })
+          m.faz({ type: 'touch-coin', coin: 2 })
+        },
+      },
+      'counts-again': {
+        texto:
+          'Desligue A moeda some, pegue uma moeda, clique em Afastar e use Encostar na moeda nela outra vez.',
+        faz: (m) => {
+          m.faz({ type: 'coin-disappears', enabled: false })
+          m.faz({ type: 'touch-coin', coin: 3 })
+          m.faz({ type: 'leave-coin' })
+          m.faz({ type: 'touch-coin', coin: 3 })
+        },
+      },
+      kept: {
+        texto: 'Depois de pegar uma moeda, clique em Afastar e olhe moedas.',
+        faz: (m) => {
+          m.faz({ type: 'touch-coin', coin: 4 })
+          m.faz({ type: 'leave-coin' })
+        },
+      },
+      'below-goal': {
+        texto: 'Pegue de uma a quatro moedas e clique em Encostar no baú.',
+        faz: (m) => {
+          m.faz({ type: 'restart-coins' })
+          m.faz({ type: 'touch-coin', coin: 0 })
+          m.faz({ type: 'try-chest' })
+        },
+      },
+      'compare-rules': {
+        texto:
+          'Pegue as seis moedas e clique em Encostar no baú com Pelo menos 5 e depois com Igual a 5.',
+        faz: (m) => {
+          m.faz({ type: 'restart-coins' })
+          m.faz({ type: 'coin-disappears', enabled: true })
+          for (const coin of [0, 1, 2, 3, 4, 5] as const) m.faz({ type: 'touch-coin', coin })
+          m.faz({ type: 'chest-rule', rule: 'at-least' })
+          m.faz({ type: 'try-chest' })
+          m.faz({ type: 'chest-rule', rule: 'equals' })
+          m.faz({ type: 'try-chest' })
+        },
+      },
+    },
+    mostra: (s) => s.caption.startsWith('Esta moeda já saiu do caminho'),
+  },
   'lighthouse-position': {
     pedidos: {
       'x-minus': {

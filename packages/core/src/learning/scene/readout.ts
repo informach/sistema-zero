@@ -639,6 +639,15 @@ function leituras(
           tone: 'b',
         },
       ]
+    case 'coin-counter':
+      return [
+        { label: 'moedas', value: String(state.coins.moedas), tone: 'a' },
+        {
+          label: 'baú',
+          value: state.coins.chest === 'open' ? 'aberto' : 'fechado',
+          tone: 'b',
+        },
+      ]
     case 'lighthouse-position':
       return [
         { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
@@ -1249,6 +1258,14 @@ function situacao(scene: SceneId, state: SceneState): string {
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'
         : 'A porta do farol está fechada.'
+    case 'coin-counter': {
+      const c = state.coins
+      const noCaminho = c.present.filter(Boolean).length
+      return (
+        state.caption ||
+        `${quantos(noCaminho, 'moeda está no caminho', 'moedas estão no caminho')}. moedas guarda ${c.moedas}.`
+      )
+    }
     case 'lighthouse-position':
       return `A chave está em x ${state.keyPosition.x}, y ${state.keyPosition.y}.`
     case 'lighthouse-walk': {

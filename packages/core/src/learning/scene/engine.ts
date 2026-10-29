@@ -1,4 +1,5 @@
 import {
+  COIN_COUNTER,
   isSceneAction,
   LIGHTHOUSE_POSITION,
   type MeshLevel,
@@ -178,6 +179,12 @@ function aberturaDaChave(start: SceneStart): { x: number; y: number } {
  */
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
   aberto.collection.collectedThisRound = false
+  // O caso pode deixar moedas pegas e um valor em `moedas` (o mundo); as somas, as moedas que
+  // "já contaram" e as comparações do baú são da criança.
+  aberto.coins.adds = 0
+  aberto.coins.counted = Array(COIN_COUNTER.coins).fill(false)
+  aberto.coins.compared = { equals: false, atLeast: false }
+  aberto.coins.last = null
   aberto.lighthouse.checkedKey = null
   aberto.keyPosition.before = null
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
@@ -383,7 +390,10 @@ export function stepScene(
       !previous.collection.keyPresent &&
       !start.setup?.freeExploration) ||
     (action.type === 'collect-key' && !previous.collection.keyPresent) ||
-    (action.type === 'leave-key' && previous.collection.position !== 'touching')
+    (action.type === 'leave-key' && previous.collection.position !== 'touching') ||
+    // Continuar encostado na mesma moeda não é um encontro novo; afastar-se de lugar nenhum, nada.
+    (action.type === 'touch-coin' && previous.coins.at === action.coin) ||
+    (action.type === 'leave-coin' && previous.coins.at === null)
   )
     return previous
   // A sequência da cena `world` é intencionalmente guiada: primeiro o personagem existe nos
@@ -499,6 +509,81 @@ export function stepScene(
         collectedThisRound: false,
       }
       s.caption = 'A partida recomeçou. A chave voltou ao chão.'
+      break
+    case 'touch-coin': {
+      const c = s.coins,
+        i = action.coin
+      c.at = i
+      if (!c.present[i]) {
+        s.caption = 'Esta moeda já saiu do caminho: nada somou.'
+        if (c.counted[i]) observe(s, 'no-double', 'A mesma moeda não contou duas vezes')
+        break
+      }
+      const before = c.moedas
+      const outra = c.counted.some((v, k) => v && k !== i)
+      const repetida = c.counted[i]
+      c.moedas = Math.min(COIN_COUNTER.max, before + 1)
+      c.last = { before, after: c.moedas }
+      c.adds = Math.min(COIN_COUNTER.max, c.adds + 1)
+      c.counted[i] = true
+      if (c.disappear) c.present[i] = false
+      s.caption = `Somou 1: moedas era ${before} e agora é ${c.moedas}.`
+      if (repetida) observe(s, 'counts-again', 'Sem sumir, a mesma moeda contou de novo')
+      else if (outra) observe(s, 'each-adds', 'Cada moeda somou 1')
+      break
+    }
+    case 'leave-coin':
+      s.coins.at = null
+      s.caption = 'O personagem se afastou.'
+      if (s.coins.adds > 0 && s.coins.moedas > 0)
+        observe(s, 'kept', 'O número continuou guardado longe das moedas')
+      break
+    case 'try-chest': {
+      const c = s.coins
+      const abre =
+        c.rule === 'at-least' ? c.moedas >= COIN_COUNTER.goal : c.moedas === COIN_COUNTER.goal
+      c.at = 'chest'
+      c.chest = abre ? 'open' : 'closed'
+      s.caption = abre
+        ? 'O baú abriu!'
+        : `O baú continua fechado: a regra pede ${c.rule === 'at-least' ? 'pelo menos' : 'exatamente'} ${COIN_COUNTER.goal} moedas.`
+      if (c.adds === 0) break
+      if (!abre && c.moedas >= 1 && c.moedas < COIN_COUNTER.goal)
+        observe(s, 'below-goal', 'Com menos de 5, o baú ficou fechado')
+      if (c.moedas > COIN_COUNTER.goal) {
+        if (c.rule === 'equals' && !abre) c.compared.equals = true
+        if (c.rule === 'at-least' && abre) c.compared.atLeast = true
+        if (c.compared.equals && c.compared.atLeast)
+          observe(s, 'compare-rules', 'Com 6 moedas, "pelo menos 5" abriu e "igual a 5" não')
+      }
+      break
+    }
+    case 'coin-disappears':
+      s.coins.disappear = action.enabled
+      s.caption = action.enabled
+        ? 'A moeda some ao ser pega.'
+        : 'A moeda fica no caminho depois de pega.'
+      break
+    case 'chest-rule':
+      s.coins.rule = action.rule
+      s.caption =
+        action.rule === 'at-least'
+          ? 'O baú abre com pelo menos 5 moedas.'
+          : 'O baú abre com exatamente 5 moedas.'
+      break
+    case 'restart-coins':
+      s.coins = {
+        ...s.coins,
+        moedas: 0,
+        present: Array(COIN_COUNTER.coins).fill(true),
+        at: null,
+        chest: 'closed',
+        last: null,
+        adds: 0,
+        counted: Array(COIN_COUNTER.coins).fill(false),
+        compared: { ...s.coins.compared },
+      }
+      s.caption = 'A partida recomeçou: moedas voltou a 0 e as seis moedas voltaram.'
       break
     case 'movement-command':
       s.walk.movement = action.enabled

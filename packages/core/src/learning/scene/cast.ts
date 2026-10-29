@@ -344,6 +344,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   // O personagem é o do projeto do Farol (`FAROL_LAYOUT`), não um papel do elenco.
   'lighthouse-walk': [],
   'lighthouse-position': [],
+  'coin-counter': [],
   restart: ['hero', 'obstacle'],
   hitbox: ['hero', 'obstacle'],
   // ⚠️ Lote 5 do Raio-X: a `score` ganhou o cacto que vem na partida; `random` e `acceleration`
@@ -388,6 +389,7 @@ export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenario
   'lighthouse-key': 'farol',
   'lighthouse-walk': 'farol',
   'lighthouse-position': 'farol',
+  'coin-counter': 'farol',
 }
 
 /**

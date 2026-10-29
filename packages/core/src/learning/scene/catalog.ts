@@ -1525,6 +1525,64 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Clique em Avançar 1 quadro com Segurar a seta para a direita desligado. Depois ligue a seta e clique em Avançar 1 quadro mais duas vezes.',
     ],
   },
+  /**
+   * O Poder "Moedas no caminho" (Faísca, 29/10/2026): o mesmo jogo que a criança monta, com as seis
+   * moedas, o baú e as duas escolhas da regra. ⚠️ Os rótulos da bancada ("Encostar na moeda",
+   * "Afastar", "Encostar no baú", "A moeda some", "Pelo menos 5", "Igual a 5", "Recomeçar a
+   * partida") são citados pelos pedidos e pelas pistas letra por letra.
+   */
+  'coin-counter': {
+    id: 'coin-counter',
+    group: 'events',
+    title: 'O contador de moedas',
+    instruction:
+      'Pegue moedas e acompanhe o número moedas: antes, somar 1, agora. Afaste-se, tente o baú e compare as duas regras dele.',
+    manipulates: 'As moedas, o baú, a regra que faz a moeda sumir e a comparação do baú',
+    success:
+      'Cada moeda nova somou 1, a mesma moeda não contou duas vezes e o número ficou guardado. O baú abriu com pelo menos 5, e "igual a 5" não abriu com 6.',
+    extra: 'E se a moeda não sumir: quantas vezes ela conta?',
+    goals: [
+      {
+        id: 'each-adds',
+        label: 'Cada moeda somou 1',
+        pedido: 'Use Encostar na moeda em duas moedas diferentes.',
+      },
+      {
+        id: 'no-double',
+        label: 'A mesma moeda não contou duas vezes',
+        pedido:
+          'Com A moeda some ligado, pegue uma moeda, clique em Afastar e use Encostar na moeda nela de novo.',
+      },
+      {
+        id: 'counts-again',
+        soNoCaso: true,
+        label: 'Sem sumir, a mesma moeda contou de novo',
+        pedido:
+          'Desligue A moeda some, pegue uma moeda, clique em Afastar e use Encostar na moeda nela outra vez.',
+      },
+      {
+        id: 'kept',
+        label: 'O número continuou guardado longe das moedas',
+        pedido: 'Depois de pegar uma moeda, clique em Afastar e olhe moedas.',
+      },
+      {
+        id: 'below-goal',
+        label: 'Com menos de 5, o baú ficou fechado',
+        pedido: 'Pegue de uma a quatro moedas e clique em Encostar no baú.',
+      },
+      {
+        id: 'compare-rules',
+        label: 'Com 6 moedas, "pelo menos 5" abriu e "igual a 5" não',
+        pedido:
+          'Pegue as seis moedas e clique em Encostar no baú com Pelo menos 5 e depois com Igual a 5.',
+      },
+    ],
+    hints: [
+      'Olhe moedas antes e depois de cada encontro: quanto o número muda?',
+      'Compare tentar o baú com poucas moedas e com todas. Depois troque a regra do baú.',
+      'Encoste em duas moedas, clique em Afastar, volte numa delas, tente o baú com quatro, pegue as seis e tente com Pelo menos 5 e com Igual a 5.',
+    ],
+  },
   'lighthouse-position': {
     id: 'lighthouse-position',
     group: 'stage',
@@ -2759,6 +2817,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'lighthouse-key': PREVIA_INICIAL,
   'lighthouse-walk': PREVIA_INICIAL,
   'lighthouse-position': PREVIA_INICIAL,
+  'coin-counter': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,
