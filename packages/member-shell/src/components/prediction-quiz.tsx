@@ -15,6 +15,7 @@ import { DialogueBlockView } from './dialogue-block'
 import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { CabanaQuizScene } from './quiz-cabana-scene'
 import { GardenQuizScene } from './quiz-garden-scene'
 import { IslandQuizScene } from './quiz-island-scene'
 import { JardimQuizScene } from './quiz-jardim-scene'
@@ -321,6 +322,8 @@ function PredictionQuizSession({
             <p className="p-5 text-base">
               Leia a pergunta e escolha uma resposta. Depois, veja a explicação.
             </p>
+          ) : question.predictionScene.startsWith('cabana-') ? (
+            <CabanaQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('moedas-') ? (
             <MoedasQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('jardim-') ? (

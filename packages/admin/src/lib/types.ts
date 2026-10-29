@@ -603,6 +603,9 @@ export interface QuizQuestion {
     | 'moedas-poucas'
     | 'moedas-igual'
     | 'moedas-volta'
+    | 'cabana-so-chave'
+    | 'cabana-ou'
+    | 'cabana-ordem'
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]

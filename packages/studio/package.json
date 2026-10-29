@@ -37,6 +37,7 @@
     "./arte": "./src/arte/index.ts",
     "./jardim-quiz-artes": "./src/arte/jardim-quiz.generated.ts",
     "./moedas-quiz-artes": "./src/arte/moedas-quiz.generated.ts",
+    "./cabana-quiz-artes": "./src/arte/cabana-quiz.generated.ts",
     "./ilha-farol-scene": "./src/arte/ilha-farol-scene.generated.ts",
     "./controls": "./src/controls/projectControls.ts",
     "./server-project-checks": "./src/blockly/projectCheckAuthoring.ts",

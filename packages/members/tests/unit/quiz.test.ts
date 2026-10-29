@@ -180,6 +180,9 @@ test.each([
   'moedas-poucas',
   'moedas-igual',
   'moedas-volta',
+  'cabana-so-chave',
+  'cabana-ou',
+  'cabana-ordem',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

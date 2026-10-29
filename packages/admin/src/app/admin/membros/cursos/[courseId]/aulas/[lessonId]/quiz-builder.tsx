@@ -243,6 +243,9 @@ export function QuizBuilder({
                     <option value="moedas-poucas">Moedas: baú com poucas moedas</option>
                     <option value="moedas-igual">Moedas: igual ou pelo menos</option>
                     <option value="moedas-volta">Moedas: voltar ao lugar na ilha</option>
+                    <option value="cabana-so-chave">Cabana: só com a chave</option>
+                    <option value="cabana-ou">Cabana: "e" ou "ou"</option>
+                    <option value="cabana-ordem">Cabana: ordem das peças na ilha</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

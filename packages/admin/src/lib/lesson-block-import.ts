@@ -46,6 +46,9 @@ const QuizQuestionImportSchema = z
         'moedas-poucas',
         'moedas-igual',
         'moedas-volta',
+        'cabana-so-chave',
+        'cabana-ou',
+        'cabana-ordem',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),

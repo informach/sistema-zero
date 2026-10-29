@@ -471,6 +471,9 @@ export interface QuizQuestion {
     | 'moedas-poucas'
     | 'moedas-igual'
     | 'moedas-volta'
+    | 'cabana-so-chave'
+    | 'cabana-ou'
+    | 'cabana-ordem'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

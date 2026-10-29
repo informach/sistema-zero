@@ -108,6 +108,9 @@ export interface MemberQuizContent {
       | 'moedas-poucas'
       | 'moedas-igual'
       | 'moedas-volta'
+      | 'cabana-so-chave'
+      | 'cabana-ou'
+      | 'cabana-ordem'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

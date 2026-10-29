@@ -22,6 +22,9 @@ export interface ManifestQuiz {
       | 'moedas-poucas'
       | 'moedas-igual'
       | 'moedas-volta'
+      | 'cabana-so-chave'
+      | 'cabana-ou'
+      | 'cabana-ordem'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -60,6 +63,9 @@ export function validatePredictionQuiz(
           'moedas-poucas',
           'moedas-igual',
           'moedas-volta',
+          'cabana-so-chave',
+          'cabana-ou',
+          'cabana-ordem',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -107,6 +113,9 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'moedas-poucas',
           'moedas-igual',
           'moedas-volta',
+          'cabana-so-chave',
+          'cabana-ou',
+          'cabana-ordem',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

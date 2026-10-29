@@ -104,3 +104,31 @@ describe('O segredo da cabana', () => {
     }
   })
 })
+
+describe('quiz da Cabana', () => {
+  test('as duas revisões são válidas, com previsões de uma só resposta certa', async () => {
+    const { isManifestQuiz } = await import('../../../packages/core/src/learning/manifest-quiz')
+    const { cabanaQuiz2d, cabanaQuiz3d } = await import('./cabana-quiz')
+    expect(isManifestQuiz(cabanaQuiz2d)).toBe(true)
+    expect(isManifestQuiz(cabanaQuiz3d)).toBe(true)
+    expect(cabanaQuiz2d.questions).toHaveLength(4)
+    expect(cabanaQuiz3d.questions).toHaveLength(2)
+    // A certa não fica sempre no mesmo lugar.
+    const certas = [...cabanaQuiz2d.questions, ...cabanaQuiz3d.questions].map(
+      (q) => q.correctChoiceIds[0],
+    )
+    expect(new Set(certas).size).toBeGreaterThan(1)
+  })
+
+  test('as cenas 2D do quiz saem do motor da experiência', async () => {
+    const { cabanaQuizState } = await import(
+      '../../../packages/member-shell/src/components/quiz-cabana-scene'
+    )
+    const soChave = cabanaQuizState('cabana-so-chave', true)
+    expect(soChave.pieces).toMatchObject({ temChave: true, temEmblema: false, door: 'closed' })
+    expect(soChave.pieces.at).toBe('door')
+    const ou = cabanaQuizState('cabana-ou', true)
+    expect(ou.pieces).toMatchObject({ rule: 'or', temEmblema: true, door: 'open' })
+    expect(cabanaQuizState('cabana-ou', false).pieces.at).toBe('emblem')
+  })
+})
