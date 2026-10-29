@@ -5,6 +5,7 @@ import { createServer } from 'node:net'
 import path from 'node:path'
 import { chromium, type Page } from 'playwright-core'
 import { giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
+import { ACHADOS_DO_RECIFE } from '../src/sistemas/achados-do-recife'
 import { MERGULHO } from '../src/sistemas/mergulho'
 import { caminhoSubmerso, type P } from '../tests/ajuda-mergulho'
 
@@ -211,9 +212,9 @@ try {
     }
     const guardar = async (id: 'bau' | 'pagina' | 'tesouro') => {
       const nomes = {
-        bau: 'Guardar baú do navio',
-        pagina: 'Guardar página do recife',
-        tesouro: 'Guardar pérolas do labirinto',
+        bau: ACHADOS_DO_RECIFE.bau.acao,
+        pagina: ACHADOS_DO_RECIFE.pagina.acao,
+        tesouro: ACHADOS_DO_RECIFE.tesouro.acao,
       }
       try {
         await page.locator('.arq-acao').filter({ hasText: nomes[id] }).waitFor({ timeout: 5000 })

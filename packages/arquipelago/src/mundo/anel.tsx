@@ -46,7 +46,7 @@ import {
   giroDaIlha,
   ilhasEmVolta,
   RAIO_DA_ILHA_DO_ANEL,
-  rodaDaIlhaNoModelo,
+  rodasDaIlhaNoModelo,
   trajetoDaPonte,
 } from './medidas'
 import { CINZA, ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -645,26 +645,28 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   const cor = usePinturaDaIlha(ilha, aberta ? chegada : 0)
   const troca = useRef<Troca>({ opacidade: 0 }).current
   const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
-  // A ilha aberta ganha a roda de boias dela: dá para nadar em volta (a das Nuvens fica no céu).
-  // No Bosque o meio da roda vai para o lado da ponta de campo (`rodaDaIlhaNoModelo`).
-  const roda = useMemo(() => {
-    const r = rodaDaIlhaNoModelo(ilha, BOIAS_DA_ILHA_DO_ANEL)
+  // A ilha aberta ganha as rodas de boias dela: dá para nadar em volta (a das Nuvens fica no céu).
+  // No Bosque o meio da roda vai para o lado da ponta de campo; o Recife tem também as do navio e
+  // do labirinto (`rodasDaIlhaNoModelo`).
+  const rodas = useMemo(() => {
     const g = giroDaIlha(ilha)
-    return {
+    return rodasDaIlhaNoModelo(ilha, BOIAS_DA_ILHA_DO_ANEL).map((r) => ({
       x: centro.x + r.x * Math.cos(g) + r.z * Math.sin(g),
       z: centro.z - r.x * Math.sin(g) + r.z * Math.cos(g),
       livre: r.livre,
-    }
+    }))
   }, [centro, ilha])
   const temRoda = aberta && ilha.id !== 'nuvens'
   useEffect(() => {
     if (!temRoda) return
-    movimento.rodasDeNado.push(roda)
+    movimento.rodasDeNado.push(...rodas)
     return () => {
-      const i = movimento.rodasDeNado.indexOf(roda)
-      if (i >= 0) movimento.rodasDeNado.splice(i, 1)
+      for (const roda of rodas) {
+        const i = movimento.rodasDeNado.indexOf(roda)
+        if (i >= 0) movimento.rodasDeNado.splice(i, 1)
+      }
     }
-  }, [temRoda, roda, movimento])
+  }, [temRoda, rodas, movimento])
   // Na ilha aberta que ainda não tem nada vivo (só a silhueta), o Zappy explica o que vem. No
   // Bosque já moram a Capi e os bichos: lá o "E" é dela, dos cipós e da placa.
   useInterativo(`ilha-${ilha.id}`, {
@@ -690,7 +692,15 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
         troca={troca}
       />
       <Ponte ilha={ilha} inteira={aberta} tabuasVisiveis={chegada} />
-      {temRoda && <Boias roda={roda} />}
+      {temRoda &&
+        rodas.map((roda, i) => (
+          <Boias
+            // biome-ignore lint/suspicious/noArrayIndexKey: as rodas de uma ilha são fixas e na ordem
+            key={i}
+            roda={roda}
+            outras={rodas.filter((r) => r !== roda)}
+          />
+        ))}
     </>
   )
 }

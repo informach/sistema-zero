@@ -2863,18 +2863,31 @@ Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026
   Kids continua sendo o tempo livre da família, sem regra nova de tempo para o mergulho.
 - Velocidade até 2,6 m/s na horizontal e 1,4 m/s na vertical. Aceleração 6 m/s², freio 4 m/s².
   A física continua em passos de 1/60 s, mesmo quando o desenho fica a 30 quadros por segundo.
-  Nos últimos 3 m do volume de 48 m de raio, a corrente cresce suavemente até 1,2 m/s para dentro.
+  Nos últimos 3 m do volume de 48 m de raio, a corrente cresce suavemente até 3,2 m/s para dentro,
+  mais que o nado: ninguém sai do volume pelo lado (antes eram 1,2 m/s e dava para sair nadando).
+  A descida automática da entrada dura 1 s de jogo; o relógio do modo para com o jogo pausado.
 - O navio fica em (18, 0, -30) e o labirinto em (-1, 0, 27), coordenadas locais do Recife.
-  A roda de boias do Recife fica a 52,6 m, com o corredor do barco preservado. A prova lê os
-  modelos e confere a folga para o barco, todas as pontes e as boias. O fundo continua a -3,5 m.
+  O navio e o labirinto saem da água, então o Recife tem três rodas de boias: a da ilha (28,6 m),
+  uma em volta do navio e outra em volta do labirinto (o contorno de cada modelo mais a folga de
+  4,6 m), cada uma encostada na da ilha. As boias que caem dentro de outra roda da mesma ilha não
+  aparecem. Uma roda só para os dois (52,6 m, como saiu na primeira entrega) encostava na roda da
+  sua ilha e abria o mar até o centro sem ponte. A prova confere que entre cada roda do Recife e as
+  outras rodas sobra a faixa inteira da correnteza, e a folga dos modelos para o barco e as pontes.
+  O fundo continua a -3,5 m.
 - O baú e o tesouro das pérolas entram no álbum e dão diversão +15 cada, até o teto 100, só uma
   vez. A página abre o relato do Recife no diário. São descobertas, sem moedas ou item novo.
   As três marcas ficam juntas no salvamento V11. V1 a V10 migram sem perder o que já havia.
 - Reabrir o jogo durante o mergulho volta à entrada segura e mantém os achados. A posição
   temporária no fundo não substitui o ponto seguro. Não há retorno automático que retire progresso.
 - A câmera chega até 3 m, com foco baixo para enxergar dentro do porão, sem balanço nem giro
-  automático. A opção de menos movimento também pausa o balanço dos cenários. O corpo e seus
-  colisores continuam os mesmos. Os colisores do navio e do labirinto vêm dos GLBs existentes.
+  automático no mergulho. Fora da água o desvio da câmera (girar para o lado livre, subir pelo
+  ombro) vale com ou sem menos movimento, como antes. A preferência de menos movimento, do menu
+  ou do aparelho, pausa o balanço dos cenários.
+- Os achados: "Guardar o baú do navio", "Guardar a página do Recife" e "Guardar as pérolas do
+  labirinto"; ao guardar, "O baú do navio entrou no álbum." e "As pérolas do labirinto entraram no
+  álbum.", com a diversão. O botão Descer do toque solta sozinho quando o mergulho acaba.
+- O corpo e seus colisores continuam os mesmos. Os colisores do navio e do labirinto vêm dos GLBs
+  existentes.
 - O mergulho carrega e libera seus modelos junto com o Recife. Falha parcial ou resposta tardia
   libera os recursos; não se entra antes de os colisores estarem prontos.
 

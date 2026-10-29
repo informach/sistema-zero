@@ -500,7 +500,7 @@ export function Camera() {
     let alvoDaSubida = 0
     const tapada = !dentro && lancar(inclinacao) < dist * GRUA_DA_CAMERA.tapada
     let girou = false
-    if (tapada && !mergulhando && !menosMovimento && !arrastandoAgora.current) {
+    if (tapada && !mergulhando && !arrastandoAgora.current) {
       for (const angulo of GRUA_DA_CAMERA.giros) {
         for (const sentido of [lado.current, -lado.current]) {
           const giro = rastro.giro + sentido * angulo
@@ -514,7 +514,7 @@ export function Camera() {
         if (girou) break
       }
     }
-    if (tapada && !girou && !mergulhando && !menosMovimento) {
+    if (tapada && !girou && !mergulhando) {
       alvoDaSubida = desvioVerticalDaCamera(
         inclinacao,
         // A mesma folga da sonda abaixo do alvo: evita tangenciar o teto no limite do float.

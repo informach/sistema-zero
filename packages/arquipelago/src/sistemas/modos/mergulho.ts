@@ -13,7 +13,6 @@ export const MODO_MERGULHO: ModoDeMovimento = {
     const v = c.mergulho
     c.nadando = true
     c.noChao = false
-    c.noModo += e.dt
     aproximarVelocidade(
       c.vel,
       e.pedidoX * MERGULHO.horizontal,

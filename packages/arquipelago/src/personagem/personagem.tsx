@@ -277,7 +277,8 @@ export function Personagem() {
     }
 
     const p = b.translation()
-    v.noModo += dt
+    // O relógio do modo (encaixes, a descida da entrada no mergulho) para com o jogo pausado.
+    if (!parado) v.noModo += dt
 
     // Direção pedida, relativa ao giro da câmera.
     let ix = parado ? 0 : controle.eixoX

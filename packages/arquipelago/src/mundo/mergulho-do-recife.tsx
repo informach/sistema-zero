@@ -1,5 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { CylinderCollider, RigidBody } from '@react-three/rapier'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimationMixer, LoopOnce, type Object3D, Vector3 } from 'three'
 import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -128,16 +129,16 @@ function Achado({
     z: ponto.z,
     raio: 1.5,
     submerso: true,
-    rotulo: () => (pode() ? `Guardar ${ACHADOS_DO_RECIFE[id].nome.toLowerCase()}` : null),
+    rotulo: () => (pode() ? ACHADOS_DO_RECIFE[id].acao : null),
     agir() {
       if (!pode()) return
       loja.getState().mudar((s) => guardarAchadoDoRecife(s, id))
       loja
         .getState()
         .dizer(
-          id === 'pagina'
-            ? 'A página do Recife está no diário, no menu.'
-            : `${ACHADOS_DO_RECIFE[id].nome} entrou no álbum. Diversão +15.`,
+          ACHADOS_DO_RECIFE[id].noAlbum
+            ? `${ACHADOS_DO_RECIFE[id].noAlbum} Diversão +${ACHADOS_DO_RECIFE[id].diversao}.`
+            : 'A página do Recife está no diário, no menu.',
         )
     },
   })
@@ -157,6 +158,7 @@ export function MergulhoDoRecife({
   troca: Troca
 }) {
   const { loja, movimento, rastro } = useJogo()
+  const aparelhoPedeMenos = useReducedMotion()
   const [carga, definirCarga] = useState<Carga | null>(null)
   const [falhou, definirFalha] = useState(false)
   const volume = useMemo<VolumeDeMergulho>(() => {
@@ -240,7 +242,8 @@ export function MergulhoDoRecife({
     const s = loja.getState()
     carga.pagina.scene.visible = !s.salvamento.recife.pagina
     if (s.salvamento.recife.bau) carga.abrirBau()
-    if (!jogoPausado(s) && !lojaDoConforto(loja).getState().conforto.menosMovimento) {
+    const menos = aparelhoPedeMenos || lojaDoConforto(loja).getState().conforto.menosMovimento
+    if (!jogoPausado(s) && !menos) {
       carga.navio.mixer.update(Math.min(dt, 0.1))
       carga.labirinto.mixer.update(Math.min(dt, 0.1))
     }

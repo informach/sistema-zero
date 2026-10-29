@@ -1,5 +1,5 @@
 import { type Ilha, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
-import { MERGULHO } from '../sistemas/mergulho'
+import { CONTORNO_DO_MERGULHO, MERGULHO } from '../sistemas/mergulho'
 
 /**
  * As medidas do mundo (1 unidade = 1 célula do quarto, mais ou menos 1 metro). Tudo o que é
@@ -136,6 +136,30 @@ export function apoiosDaIlhaLeve(ilha: Ilha): readonly { x: number; z: number; r
 }
 
 /**
+ * Todas as rodas de nado de uma ilha do anel, no referencial do modelo: a da ilha
+ * (`rodaDaIlhaNoModelo`) e, no Recife, uma em volta do navio e outra em volta do labirinto
+ * (fase3-02), que saem da água, com a mesma folga de mar. Cada uma encosta na da ilha, então dá
+ * para nadar de uma à outra. Uma roda só, grande o bastante para os dois, encostava na roda da sua
+ * ilha e abria o mar até o centro sem ponte.
+ */
+export function rodasDaIlhaNoModelo(
+  ilha: Ilha,
+  boias: number,
+): { x: number; z: number; livre: number }[] {
+  const roda = rodaDaIlhaNoModelo(ilha, boias)
+  if (ilha.id !== 'recife') return [roda]
+  const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
+  return [
+    roda,
+    ...(['navio', 'labirinto'] as const).map((nome) => ({
+      x: MERGULHO[nome].x + CONTORNO_DO_MERGULHO[nome].x,
+      z: MERGULHO[nome].z + CONTORNO_DO_MERGULHO[nome].z,
+      livre: CONTORNO_DO_MERGULHO[nome].raio + folga,
+    })),
+  ]
+}
+
+/**
  * A roda de boias de uma ilha do anel, no referencial do modelo: o meio e o raio. Nas ilhas
  * redondas, no centro com `BOIAS_DA_ILHA_DO_ANEL`; no Bosque o meio vai para o lado da ponta de
  * campo, e o raio deixa a mesma folga de mar até as boias em volta da ilha inteira.
@@ -146,7 +170,7 @@ export function rodaDaIlhaNoModelo(
 ): { x: number; z: number; livre: number } {
   if (ilha.id === 'recife') {
     const folga = boias - (RAIO_DA_ILHA_DO_ANEL + 1.4)
-    return { x: 0, z: 0, livre: MERGULHO.raio + folga }
+    return { x: 0, z: 0, livre: RAIO_VISITAVEL_DO_RECIFE + folga }
   }
   if (ilha.id === 'pico') {
     // O meio vai para o lado da caverna: a roda cobre a ilha e o morro dela com a mesma folga.

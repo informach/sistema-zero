@@ -9,11 +9,22 @@ export const MERGULHO = {
   sondaAbaixo: 0.25,
   vertical: 1.4,
   raio: 48,
-  corrente: 1.2,
+  /** A corrente da borda na força toda: mais que o nado (`horizontal`), para ninguém sair pelo lado. */
+  corrente: 3.2,
   faixaDaCorrente: 3,
   alcance: 1.5,
   navio: { x: 18, y: 0, z: -30 },
   labirinto: { x: -1, y: 0, z: 27 },
+} as const
+
+/**
+ * O contorno no plano do navio e do labirinto, medido nos GLBs (`tests/mergulho-colisores.test.ts`
+ * confere): o meio, a partir da origem do modelo, e a meia diagonal. Os dois saem da água (o mastro
+ * e as torres), então cada um ganha uma roda de nado (`rodasDaIlhaNoModelo`).
+ */
+export const CONTORNO_DO_MERGULHO = {
+  navio: { x: -0.95, z: -1.45, raio: 13 },
+  labirinto: { x: 0.4, z: -0.3, raio: 15.5 },
 } as const
 
 /** Sensor registrado apenas depois de todos os colisores estarem prontos. */

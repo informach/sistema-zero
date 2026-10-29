@@ -47,6 +47,12 @@ export function ControlesDeToque() {
       limpar()
     }
   }, [controle, soltar, toque, noBarco])
+  // O "Descer" só existe no mergulho: se o modo muda com o dedo nele, o botão some sem o
+  // `pointerup`, e o pedido de descer ficaria preso até o próximo mergulho.
+  const mergulhando = modo === 'mergulho'
+  useEffect(() => {
+    if (!mergulhando) atualizarEntrada(controle, 'toque', { descer: false })
+  }, [controle, mergulhando])
 
   if (!toque || noBarco) return null
 
@@ -104,7 +110,7 @@ export function ControlesDeToque() {
         </div>
       </div>
       <div className="arq-botoes-toque">
-        {modo === 'mergulho' && (
+        {mergulhando && (
           <button
             type="button"
             className="arq-botao"

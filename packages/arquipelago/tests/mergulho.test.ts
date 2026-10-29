@@ -5,6 +5,7 @@ import { paginasDoDiario } from '../src/sistemas/diario'
 import { ilhaPreferida } from '../src/sistemas/ilhas-completas'
 import {
   correnteDoMergulho,
+  MERGULHO,
   mostrarAvatarNoMergulho,
   podeMergulhar,
   type VolumeDeMergulho,
@@ -68,6 +69,8 @@ function preparar() {
   return { c, e }
 }
 function passo(c: ReturnType<typeof criarEstadoDoCorpo>, e: EntradaDoPasso) {
+  // Como o personagem: o relógio do modo anda fora do modo, e para na pausa.
+  if (!e.parado) c.noModo += e.dt
   MODO_MERGULHO.passo(c, e, mundo)
   MODO_MERGULHO.depois(c, e, mundo, c.desloc, false, () => {})
   Object.assign(e.p, c.prox)
@@ -118,12 +121,31 @@ test('corrente é velocidade somada para dentro só na borda, não deslocamento 
   correnteDoMergulho(volume, { x: 10, y: -2, z: 0 }, v)
   expect(v).toEqual({ x: 0, z: 0 })
   correnteDoMergulho(volume, { x: 42, y: -2, z: 0 }, v)
-  expect(v.x).toBe(-1.2)
+  expect(v.x).toBe(-MERGULHO.corrente)
   const { c, e } = preparar()
   e.p = { x: 42, y: -2, z: 0 }
   c.noModo = 2
   passo(c, e)
-  expect(e.p.x).toBeCloseTo(42 - 1.2 / 60, 6)
+  expect(e.p.x).toBeCloseTo(42 - MERGULHO.corrente / 60, 6)
+})
+test('nadando para fora com tudo, a corrente da borda segura dentro do volume', () => {
+  const { c, e } = preparar()
+  e.p = { x: 30, y: -2, z: 0 }
+  c.noModo = 2
+  e.pedidoX = 1
+  for (let i = 0; i < 60 * 30; i++) passo(c, e)
+  expect(c.modo).toBe('mergulho')
+  expect(Math.hypot(e.p.x, e.p.z)).toBeLessThan(volume.raio)
+})
+test('a descida da entrada dura um segundo de jogo, e a pausa não a gasta', () => {
+  const { c, e } = preparar()
+  e.parado = true
+  for (let i = 0; i < 120; i++) passo(c, e)
+  e.parado = false
+  for (let i = 0; i < 50; i++) passo(c, e)
+  // Ainda dentro do primeiro segundo: desce sozinho.
+  expect(c.velY).toBeLessThan(0)
+  expect(c.noModo).toBeCloseTo(50 / 60, 6)
 })
 test('30 e 60 quadros entregam os mesmos 240 passos fixos de nado e subida', () => {
   const rodar = (fps: number) => {

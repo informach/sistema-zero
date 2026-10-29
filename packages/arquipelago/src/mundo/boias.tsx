@@ -17,15 +17,25 @@ import { ComReserva, MODELOS, useModelo } from './modelos'
 /**
  * A linha de boias de uma roda de nado (`sistemas/correnteza.ts`): as boias do `boias.glb`, a corda
  * esticada de uma na outra e as boinhas da corda, tudo instanciado. As boias e as boinhas sobem e
- * descem de leve, cada uma no seu tempo. Sem colisão: o limite é a correnteza.
+ * descem de leve, cada uma no seu tempo. Sem colisão: o limite é a correnteza. As boias que caem
+ * dentro de `outras` (as outras rodas da mesma ilha, como o navio do Recife) não aparecem: ali o
+ * mar é livre.
  */
-export function Boias({ roda }: { roda: RodaDeNado }) {
+export function Boias({
+  roda,
+  outras = SEM_OUTRAS,
+}: {
+  roda: RodaDeNado
+  outras?: readonly RodaDeNado[]
+}) {
   return (
     <ComReserva reserva={null}>
-      <BoiasDoModelo roda={roda} />
+      <BoiasDoModelo roda={roda} outras={outras} />
     </ComReserva>
   )
 }
+
+const SEM_OUTRAS: readonly RodaDeNado[] = []
 
 /** Boinhas da corda por trecho entre duas boias. */
 const BOINHAS_POR_TRECHO = 4
@@ -57,7 +67,7 @@ const tmpV = new Vector3()
 const tmpS = new Vector3()
 const CIMA = new Vector3(0, 1, 0)
 
-function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
+function BoiasDoModelo({ roda, outras }: { roda: RodaDeNado; outras: readonly RodaDeNado[] }) {
   const { movimento } = useJogo()
   const [rota, definirRota] = useState<RotaDoBarco | null>(null)
   useFrame(() => {
@@ -78,14 +88,16 @@ function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
       pontosDasBoias(roda).map((b) => {
         // A boia fica com as argolas (o x do arquivo) ao longo da linha, na tangente da roda.
         const a = Math.atan2(b.z - roda.z, b.x - roda.x)
-        return { ...b, giro: Math.atan2(-Math.cos(a), -Math.sin(a)) }
+        const dentro = outras.some((o) => Math.hypot(b.x - o.x, b.z - o.z) < o.livre)
+        return { ...b, giro: Math.atan2(-Math.cos(a), -Math.sin(a)), dentro }
       }),
-    [roda],
+    [roda, outras],
   )
   const trechos = useMemo(
     () =>
       boias.flatMap((a, i) => {
         const b = boias[(i + 1) % boias.length] ?? a
+        if (a.dentro || b.dentro) return []
         if (
           rota &&
           (noCorredorDoBarco(rota, a) ||
@@ -101,7 +113,7 @@ function BoiasDoModelo({ roda }: { roda: RodaDeNado }) {
     [boias, rota],
   )
   const visiveis = useMemo(
-    () => (rota ? boias.filter((b) => !noCorredorDoBarco(rota, b)) : boias),
+    () => boias.filter((b) => !b.dentro && !(rota && noCorredorDoBarco(rota, b))),
     [boias, rota],
   )
   const malhas = useRef<{

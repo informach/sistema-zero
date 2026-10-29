@@ -57,7 +57,7 @@ describe('Recife completo', () => {
     expect(distancia).toBeLessThan(raioDaEsperaDaIlha(recife, fora.x, fora.z))
     expect(distancia).toBeLessThan(DISTANCIA_DA_TROCA)
     expect(distancia + MARE_NO_RECIFE.raio).toBeLessThan(roda.livre)
-    expect(roda.livre).toBeCloseTo(52.6)
+    expect(roda.livre).toBeCloseTo(28.6)
     expect(rodaDaIlhaNoModelo(ilha('vila-doce'), BOIAS_DA_ILHA_DO_ANEL).livre).toBe(
       BOIAS_DA_ILHA_DO_ANEL,
     )

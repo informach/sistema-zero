@@ -1,7 +1,12 @@
 import { expect, test } from 'bun:test'
 import { Box3, Vector3 } from 'three'
-import { giroDaIlha, ilhasEmVolta, rodaDaIlhaNoModelo, trajetoDaPonte } from '../src/mundo/medidas'
+import { giroDaIlha, ilhasEmVolta, rodasDaIlhaNoModelo, trajetoDaPonte } from '../src/mundo/medidas'
 import { noCorredorDoBarco } from '../src/sistemas/barco'
+import {
+  BOIAS_DA_ILHA_CENTRAL,
+  BOIAS_DA_ILHA_DO_ANEL,
+  CORRENTEZA,
+} from '../src/sistemas/correnteza'
 import { MERGULHO } from '../src/sistemas/mergulho'
 import { viagemReal } from './ajuda-barco'
 import { arquivoDaIlha, carregarGlb } from './ajuda-colisores'
@@ -21,17 +26,19 @@ for (const [nome, alvo] of [
 test('modelos reais ficam dentro das boias e fora do barco e das pontes', async () => {
   const recife = ilhasEmVolta().find((i) => i.ilha.id === 'recife')!
   const giro = giroDaIlha(recife.ilha),
-    roda = rodaDaIlhaNoModelo(recife.ilha, 19)
+    [, ...rodasDosModelos] = rodasDaIlhaNoModelo(recife.ilha, BOIAS_DA_ILHA_DO_ANEL)
   const rota = viagemReal().rota
   const pontes = ilhasEmVolta().flatMap((i) => trajetoDaPonte(i.ilha))
-  for (const nome of ['navio', 'labirinto'] as const) {
+  for (const [i, nome] of (['navio', 'labirinto'] as const).entries()) {
+    const roda = rodasDosModelos[i]
+    if (!roda) throw new Error(`sem a roda do ${nome}`)
     const cena = await carregarGlb(arquivoDaIlha(`recife-${nome}.glb`))
     const limites = new Box3()
       .setFromObject(cena)
       .translate(new Vector3(MERGULHO[nome].x, 0, MERGULHO[nome].z))
     for (let x = limites.min.x; x <= limites.max.x; x += 0.5)
       for (let z = limites.min.z; z <= limites.max.z; z += 0.5) {
-        expect(Math.hypot(x, z)).toBeLessThan(roda.livre - 1)
+        expect(Math.hypot(x - roda.x, z - roda.z)).toBeLessThan(roda.livre - 1)
         const p = {
           x: recife.centro.x + x * Math.cos(giro) + z * Math.sin(giro),
           z: recife.centro.z + z * Math.cos(giro) - x * Math.sin(giro),
@@ -41,6 +48,34 @@ test('modelos reais ficam dentro das boias e fora do barco e das pontes', async 
       }
   }
 }, 30_000)
+
+test('as rodas do Recife se ligam e ficam longe da sua ilha e das outras ilhas', () => {
+  const ilhas = ilhasEmVolta()
+  const recife = ilhas.find((i) => i.ilha.id === 'recife')!
+  const noMundo = (ilha: (typeof ilhas)[number]) => {
+    const g = giroDaIlha(ilha.ilha)
+    return rodasDaIlhaNoModelo(ilha.ilha, BOIAS_DA_ILHA_DO_ANEL).map((r) => ({
+      x: ilha.centro.x + r.x * Math.cos(g) + r.z * Math.sin(g),
+      z: ilha.centro.z - r.x * Math.sin(g) + r.z * Math.cos(g),
+      livre: r.livre,
+    }))
+  }
+  const [daIlha, ...dosModelos] = noMundo(recife)
+  if (!daIlha) throw new Error('sem a roda do Recife')
+  for (const r of dosModelos) {
+    // Encosta na da ilha: dá para nadar da praia até o navio e o labirinto.
+    expect(Math.hypot(r.x - daIlha.x, r.z - daIlha.z)).toBeLessThan(r.livre + daIlha.livre - 3)
+  }
+  // Entre cada roda do Recife e as outras rodas sobra a faixa inteira da correnteza: o mar até a
+  // sua ilha e as vizinhas continua fechado (o caminho é a ponte).
+  const outras = [
+    { x: 0, z: 0, livre: BOIAS_DA_ILHA_CENTRAL },
+    ...ilhas.filter((i) => i.ilha.id !== 'recife' && i.ilha.id !== 'nuvens').flatMap(noMundo),
+  ]
+  for (const r of [daIlha, ...dosModelos])
+    for (const o of outras)
+      expect(Math.hypot(r.x - o.x, r.z - o.z) - r.livre - o.livre).toBeGreaterThan(CORRENTEZA.faixa)
+})
 
 test('o foco baixo da câmera cabe no porão onde a cabeça em pé encostava no teto', async () => {
   const caminho = await caminhoSubmerso('navio', 'bau')
