@@ -1,0 +1,20 @@
+[
+  {
+    "publico": "kids",
+    "celular": false,
+    "quem": "jade",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "vale-dos-dinos"
+  },
+  {
+    "publico": "kids",
+    "celular": true,
+    "quem": "jade",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "vale-dos-dinos"
+  }
+]

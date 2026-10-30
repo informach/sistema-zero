@@ -8,7 +8,8 @@
   "include": [
     "*.ts",
     "../../../packages/studio/src/blockly/__tests__/recifeManifest.test.ts",
-    "../../../packages/studio-runtime/tests/recife-browser.test.ts"
+    "../../../packages/studio-runtime/tests/recife-browser.test.ts",
+    "../../../packages/studio-runtime/tests/quadros-recife-browser.test.ts"
   ],
   "exclude": ["node_modules"]
 }

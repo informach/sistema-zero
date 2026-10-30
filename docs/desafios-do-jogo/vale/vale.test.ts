@@ -19,6 +19,9 @@ test('JSON corresponde à fonte, IR é válido e objetivos cabem no executor', a
   expect(await Bun.file(new URL('./vale.manifesto.json', import.meta.url)).text()).toBe(
     `${JSON.stringify(manifesto, null, 2)}\n`,
   )
+  expect(await Bun.file(new URL('./vale-adulto.manifesto.json', import.meta.url)).text()).toBe(
+    `${JSON.stringify(criarManifesto('adulto'), null, 2)}\n`,
+  )
   for (const d of manifesto.desafios) {
     for (const raw of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
       const p = raw as { ir: unknown; blocksState: unknown }

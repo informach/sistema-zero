@@ -1,6 +1,6 @@
+import { descricaoDoTrabalhoLumi } from '@sistemazero/arquipelago-contracts'
 import { type ReactNode, useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
-import { ACHADOS_DO_RECIFE } from '../sistemas/achados-do-recife'
 import {
   albumDoSalvamento,
   type ContaDaSecao,
@@ -125,6 +125,7 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
         <b>{l.nome}</b>
         <span className="arq-quadro-estado">{l.ilha}</span>
         <span className="arq-caderno-efeito">{`${especie}. Presos: ${l.quantos}.`}</span>
+        <span className="arq-caderno-efeito">{descricaoDoTrabalhoLumi(l.id)}</span>
       </div>
     </li>
   )
@@ -163,17 +164,13 @@ export function Album() {
         <Secao
           id="recife"
           nome="Achados do Recife"
-          conta={{
-            tem: Object.values(salvamento.recife).filter(Boolean).length,
-            total: 3,
-            faltam: 3 - Object.values(salvamento.recife).filter(Boolean).length,
-          }}
+          conta={a.recife.conta}
           explica="Os achados do mergulho ficam guardados aqui."
         >
-          {(Object.keys(ACHADOS_DO_RECIFE) as (keyof typeof ACHADOS_DO_RECIFE)[]).map((id) => (
-            <li key={id} className="arq-quadro-corpo">
-              <b>{ACHADOS_DO_RECIFE[id].nome}</b>
-              <span>{salvamento.recife[id] ? 'Encontrado.' : ACHADOS_DO_RECIFE[id].dica}</span>
+          {a.recife.itens.map((item) => (
+            <li key={item.id} className="arq-quadro-corpo">
+              <b>{item.nome}</b>
+              <span>{item.achado ? 'Encontrado.' : item.dica}</span>
             </li>
           ))}
         </Secao>
@@ -191,7 +188,7 @@ export function Album() {
           id="receitas"
           nome="Receitas"
           conta={a.receitas.conta}
-          explica="O Bento, da Vila Doce, lembra mais uma a cada coração de amizade."
+          explica="Novas receitas chegam com amizades, coleções e festas. Cada pista mostra onde aprender."
         >
           {a.receitas.itens.map((r) => (
             <Receita key={r.id} r={r} />

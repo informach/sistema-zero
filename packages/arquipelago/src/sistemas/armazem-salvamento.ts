@@ -1,4 +1,8 @@
 import {
+  type CompraDeInsumos,
+  CompraDeInsumosSchema,
+  type EntregarPedido,
+  EntregarPedidoSchema,
   type Salvamento,
   type SalvamentoGuardado,
   SalvamentoGuardadoSchema,
@@ -10,6 +14,10 @@ export interface RascunhoDoJogo {
   local: Salvamento
   /** Persistido antes do PUT, para reconhecer a resposta perdida depois de reabrir. */
   enviado: Salvamento | null
+  /** Comando confirmado pela pessoa, escrito antes de pedir o débito. Fora do save V18. */
+  compra?: CompraDeInsumos | null
+  /** Entrega do morador, mutuamente exclusiva com a compra. Não pertence ao save V18. */
+  entrega?: EntregarPedido | null
 }
 
 export interface ArmazemDeSalvamento {
@@ -105,10 +113,18 @@ export async function criarArmazemDeSalvamento(
         !('enviado' in dado)
       )
         throw new Error('O salvamento local não pôde ser lido. Ele foi preservado neste aparelho.')
+      if ('compra' in dado && dado.compra && 'entrega' in dado && dado.entrega)
+        throw new Error('Há dois comandos locais incompatíveis. A cópia foi preservada.')
       return {
         base: SalvamentoGuardadoSchema.parse(dado.base),
         local: SalvamentoSchema.parse(dado.local),
         enviado: dado.enviado === null ? null : SalvamentoSchema.parse(dado.enviado),
+        ...('compra' in dado
+          ? { compra: dado.compra === null ? null : CompraDeInsumosSchema.parse(dado.compra) }
+          : {}),
+        ...('entrega' in dado
+          ? { entrega: dado.entrega === null ? null : EntregarPedidoSchema.parse(dado.entrega) }
+          : {}),
       }
     },
     async gravar(rascunho) {

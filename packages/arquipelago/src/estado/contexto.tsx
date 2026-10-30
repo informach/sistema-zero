@@ -12,6 +12,7 @@ import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
 import type { Corrida, IdDoPercurso } from '../sistemas/percurso'
+import type { FilaDeSalvamento } from '../sistemas/salvar'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
 /** Posição do personagem, lida a cada quadro pela câmera e pelo Zappy (fora do React). */
@@ -271,6 +272,7 @@ export function criarMovimento(): Movimento {
 }
 
 export interface ContextoDoJogo {
+  fila?: FilaDeSalvamento | null
   loja: LojaDoJogo
   plataforma: Plataforma
   gerenteTempo: ReturnType<typeof criarGerenteTempo> | null

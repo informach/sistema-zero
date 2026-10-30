@@ -14,8 +14,10 @@ import {
 import { ITENS } from '../src/sistemas/itens'
 import { AMIZADE } from '../src/sistemas/moradores'
 import {
+  cozinhar,
   fazerReceita,
   ingredientesPorExtenso,
+  podeCozinhar,
   RECEITAS,
   receitaPeloId,
   receitasConhecidas,
@@ -42,6 +44,38 @@ function conferirTexto(fala: string) {
 }
 
 describe('as receitas', () => {
+  test('amizade e presente só avançam quando a primeira cesta cabe inteira', () => {
+    const s = comAmizade(100 - AMIZADE.conversa)
+    s.inventario.fuba = 999
+    const antes = structuredClone(s)
+    const recusado = comecarConversaComOBento(s, HOJE, PERFIL)
+    expect(recusado.salvamento).toBe(s)
+    expect(recusado.falas.join(' ')).toContain('não cabe inteira')
+    expect(s).toEqual(antes)
+    s.inventario.fuba = 998
+    const recebido = comecarConversaComOBento(s, HOJE, PERFIL)
+    expect(recebido.salvamento.inventario.fuba).toBe(999)
+    expect(recebido.salvamento.moradores.bento.amizade).toBe(100)
+    const presente = comAmizade(99)
+    presente.inventario = { tomate: 1, fuba: 999 }
+    const volta = presentearOBento(presente, 'tomate', HOJE)
+    expect(volta.salvamento).toBe(presente)
+    expect(volta.reacao).toBe('devolveu')
+  })
+  test('não perde ingredientes nem pratos quando a receita inteira não cabe', () => {
+    for (const r of RECEITAS) {
+      const inv = { ...r.precisa, [r.faz.id]: 1000 - r.faz.qtd }
+      const antes = structuredClone(inv)
+      expect(podeCozinhar(inv, r)).toBe(false)
+      expect(cozinhar(inv, r)).toBeNull()
+      expect(inv).toEqual(antes)
+      expect(receitasPossiveis(inv, r.onde, [r])).toEqual([])
+      const cabe = { ...r.precisa, [r.faz.id]: 999 - r.faz.qtd }
+      expect(podeCozinhar(cabe, r)).toBe(true)
+      expect(cozinhar(cabe, r)).toEqual({ [r.faz.id]: 999 })
+    }
+  })
+
   test('cada ingrediente existe, só o prato se come, e cada prato tem uma receita', () => {
     for (const r of RECEITAS) {
       expect(ITENS[r.faz.id]?.comida).toBeDefined()
@@ -56,12 +90,15 @@ describe('as receitas', () => {
   })
 
   test('o Bento lembra uma receita por coração, do bolo de fubá ao chocolate quente', () => {
-    const ids = (c: number) => receitasConhecidas(c).map((r) => r.id)
-    expect(ids(0)).toEqual(['pipoca-de-festa', 'salada', 'pipoca'])
-    expect(ids(1)).toEqual(['pipoca-de-festa', 'salada', 'pipoca', 'bolo-de-fuba'])
+    const ids = (c: number) =>
+      receitasConhecidas(comAmizade(c * 100))
+        .filter((r) => r.origem.tipo !== 'festa')
+        .map((r) => r.id)
+    expect(ids(0)).toEqual(['salada', 'pipoca'])
+    expect(ids(1)).toEqual(['salada', 'pipoca', 'bolo-de-fuba'])
     expect(ids(2)).toContain('pao-de-queijo')
     expect(ids(3)).toContain('brigadeiro')
-    expect(ids(4)).toHaveLength(RECEITAS.length)
+    expect(ids(4)).toHaveLength(6)
     expect(receita('bolo-de-fuba').onde).toBe('forno')
     expect(receita('pao-de-queijo').onde).toBe('forno')
     expect(receita('brigadeiro').onde).toBe('bancada')
@@ -70,14 +107,13 @@ describe('as receitas', () => {
 
   test('só oferece as que ela sabe, no lugar certo, com os ingredientes', () => {
     const inv = { fuba: 1, leite: 2, ovo: 1, cacau: 1 }
-    expect(receitasPossiveis(inv, 'forno', receitasConhecidas(0))).toEqual([])
-    expect(receitasPossiveis(inv, 'forno', receitasConhecidas(1)).map((r) => r.id)).toEqual([
-      'bolo-de-fuba',
-    ])
-    expect(receitasPossiveis(inv, 'bancada', receitasConhecidas(4)).map((r) => r.id)).toEqual([
-      'brigadeiro',
-      'chocolate-quente',
-    ])
+    expect(receitasPossiveis(inv, 'forno', receitasConhecidas(comAmizade(0)))).toEqual([])
+    expect(
+      receitasPossiveis(inv, 'forno', receitasConhecidas(comAmizade(100))).map((r) => r.id),
+    ).toEqual(['bolo-de-fuba'])
+    expect(
+      receitasPossiveis(inv, 'bancada', receitasConhecidas(comAmizade(400))).map((r) => r.id),
+    ).toEqual(['brigadeiro', 'chocolate-quente'])
   })
 
   test('fazer gasta os ingredientes e põe o prato, com a fala do forno', () => {
@@ -94,7 +130,9 @@ describe('as receitas', () => {
 
 describe('o Bento ensina as receitas', () => {
   test('as falas seguem a voz da casa', () => {
-    for (const r of RECEITAS.filter((x) => x.bento)) {
+    for (const r of RECEITAS.filter(
+      (x) => x.origem.tipo === 'amizade' && x.origem.morador === 'bento',
+    )) {
       const f = FALA_DA_RECEITA[r.id]
       expect(f).toBeDefined()
       conferirTexto(f ?? '')

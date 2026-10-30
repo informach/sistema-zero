@@ -1,0 +1,44 @@
+{
+  "publico": "adulto",
+  "celular": true,
+  "largura": {
+    "tela": 390,
+    "pagina": 390
+  },
+  "leitura": {
+    "tituloVisivel": true,
+    "larguraDoTexto": 260,
+    "largura": 350,
+    "dentroDaTela": true
+  },
+  "festa": [
+    {
+      "quem": "mare",
+      "x": -3.5,
+      "z": -5.5
+    },
+    {
+      "quem": "floco",
+      "x": -0.5,
+      "z": -5.5
+    },
+    {
+      "quem": "irie",
+      "x": 3.5,
+      "z": -5.5
+    }
+  ],
+  "caminhada": {
+    "antes": {
+      "x": 2.500000238418579,
+      "y": 1.9600869417190552,
+      "z": -1.3000000715255737
+    },
+    "depois": {
+      "x": 2.500234842300415,
+      "y": 1.960096836090088,
+      "z": -2.791743516921997
+    }
+  },
+  "erros": []
+}

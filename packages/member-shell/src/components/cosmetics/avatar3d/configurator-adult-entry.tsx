@@ -1,5 +1,6 @@
 'use client'
 
+import type { MoldeDoVestuario } from '@sistemazero/arquipelago-contracts'
 import type { AvatarReturnPath } from '../../../lib/avatar-return'
 import { AvatarConfigurator } from './configurator'
 import { AdultAvatarConfigurator } from './configurator-adult'
@@ -11,14 +12,20 @@ import { AdultAvatarConfigurator } from './configurator-adult'
 export function AdultAvatarConfiguratorEntry({
   dark,
   returnTo,
+  onReturn,
+  festa,
 }: {
   dark: boolean
   returnTo: AvatarReturnPath
+  onReturn?: (saved: boolean) => void
+  festa?: MoldeDoVestuario['festa']
 }) {
   return (
     <AvatarConfigurator
       dark={dark}
       returnTo={returnTo}
+      onReturn={onReturn}
+      festa={festa}
       skin="adult"
       adultView={AdultAvatarConfigurator}
     />

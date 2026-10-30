@@ -1,0 +1,28 @@
+[
+  {
+    "publico": "kids",
+    "celular": false,
+    "crescimento": "três minutos reais",
+    "projeto": {
+      "ganhoEm": "2026-10-30T05:13:43.629Z",
+      "aparencia": null,
+      "aparencias": []
+    },
+    "colhido": 3,
+    "erros": [],
+    "externas": []
+  },
+  {
+    "publico": "adulto",
+    "celular": true,
+    "crescimento": "data do navegador adiantada",
+    "projeto": {
+      "ganhoEm": "2026-10-30T05:17:28.918Z",
+      "aparencia": null,
+      "aparencias": []
+    },
+    "colhido": 3,
+    "erros": [],
+    "externas": []
+  }
+]

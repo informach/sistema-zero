@@ -1,5 +1,6 @@
 'use client'
 
+import type { MoldeDoVestuario } from '@sistemazero/arquipelago-contracts'
 import dynamic from 'next/dynamic'
 import type { AvatarReturnPath } from '../../../lib/avatar-return'
 import { KidsMascot } from '../presentation'
@@ -48,9 +49,13 @@ function ConfiguratorLoading() {
 export function AvatarConfiguratorClient({
   returnTo,
   skin = 'kids',
+  onReturn,
+  festa,
 }: {
   returnTo: AvatarReturnPath
   skin?: CosmeticsSkin
+  onReturn?: (saved: boolean) => void
+  festa?: MoldeDoVestuario['festa']
 }) {
   // Fundo da cena casa com o tema DA COMUNIDADE (hoje só claro), não com a
   // preferência do SO — igual ao Estúdio (`studio-full-client`). Cosmético; `resolvedTheme` pode
@@ -58,6 +63,14 @@ export function AvatarConfiguratorClient({
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
   // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
-  if (skin === 'adult') return <AdultAvatarConfiguratorLoader dark={false} returnTo={returnTo} />
-  return <AvatarConfigurator dark={false} returnTo={returnTo} />
+  if (skin === 'adult')
+    return (
+      <AdultAvatarConfiguratorLoader
+        dark={false}
+        returnTo={returnTo}
+        onReturn={onReturn}
+        festa={festa}
+      />
+    )
+  return <AvatarConfigurator dark={false} returnTo={returnTo} onReturn={onReturn} festa={festa} />
 }

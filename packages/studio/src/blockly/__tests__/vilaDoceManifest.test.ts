@@ -17,7 +17,7 @@ afterAll(async () => {
   if (needsDom) await GlobalRegistrator.unregister()
 })
 
-test('os oito projetos da Vila Doce abrem como blocos e geram o mesmo jogo', () => {
+test('os dezoito projetos da Vila Doce abrem como blocos e geram o mesmo jogo', () => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameTwoDBlocks)
   for (const d of criarManifesto().desafios) {

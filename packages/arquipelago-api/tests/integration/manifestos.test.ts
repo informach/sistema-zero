@@ -139,6 +139,59 @@ async function subir(m: ManifestoDeDesafios) {
 }
 
 describe('manifesto de desafios', () => {
+  for (const ilhaCompleta of ['bosque', 'vila-doce', 'recife', 'pico', 'vale', 'nuvens'])
+    test(`${ilhaCompleta} preserva os dois públicos ao importar, exportar e reimportar`, async () => {
+      // A rota e o repositório são reais/em memória; a execução pedagógica tem sua prova no studio-runtime.
+      analisar.mockImplementation(
+        async (p: Parameters<PortaDosMembros['analisarObjetivos']>[0]) => ({
+          ...analiseOk,
+          vista: p.objetivos.map((o) => ({ id: o.id, label: o.label, kind: 'game' as const })),
+          gabarito: p.objetivos.map((o) => ({ id: o.id, passou: true })),
+          inicial: p.objetivos.map((o) => ({ id: o.id, passou: false })),
+        }),
+      )
+      for (const publico of ['kids', 'adulto'] as const) {
+        const m = ManifestoDeDesafiosSchema.parse(
+          await Bun.file(
+            new URL(
+              `../../../../docs/desafios-do-jogo/${ilhaCompleta}/${ilhaCompleta}${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
+              import.meta.url,
+            ),
+          ).json(),
+        )
+        const { aplicacao } = await subir(m)
+        expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
+          m.desafios.map((d) => [d.slug, 'criar', d.publicar ?? false]),
+        )
+      }
+      expect(desafios.linhas.size).toBe(18)
+      const revisoes = [...desafios.linhas.values()].map((d) => [d.id, d.revisao])
+      for (const publico of ['kids', 'adulto'] as const) {
+        const exportado = await chamar(
+          'GET',
+          `/manifestos/exportar?publico=${publico}&ilha=${ilhaCompleta === 'vale' ? 'vale-dos-dinos' : ilhaCompleta}`,
+        )
+        expect(exportado.status).toBe(200)
+        const m = ManifestoDeDesafiosSchema.parse(exportado.json)
+        expect(m.desafios).toHaveLength(9)
+        expect(m.desafios.every((d) => d.publico === publico)).toBe(true)
+        expect(
+          m.desafios
+            .filter((d) => d.tipo === 'quadro-das-cores')
+            .map((d) => d.quadro)
+            .sort(),
+        ).toEqual([1, 2, 3, 4, 5, 6])
+        const deNovo = await subir(m)
+        expect(deNovo.conferencia.contagem).toMatchObject({
+          igual: 9,
+          criar: 0,
+          atualizar: 0,
+          publica: 0,
+        })
+      }
+      expect([...desafios.linhas.values()].map((d) => [d.id, d.revisao])).toEqual(revisoes)
+    })
+
   test('o arquivo da Vila Doce importa, exporta e reimporta sem criar novas revisões', async () => {
     const m = ManifestoDeDesafiosSchema.parse(
       await Bun.file(
@@ -157,7 +210,7 @@ describe('manifesto de desafios', () => {
     }))
     const { aplicacao } = await subir(m)
     expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
-      m.desafios.map((d) => [d.slug, 'criar', true]),
+      m.desafios.map((d) => [d.slug, 'criar', d.publicar ?? false]),
     )
     const revisoes = [...desafios.linhas.values()].map((d) => d.revisao)
     const exportado = await chamar('GET', '/manifestos/exportar?publico=kids&ilha=vila-doce')
@@ -165,7 +218,7 @@ describe('manifesto de desafios', () => {
     expect(ManifestoDeDesafiosSchema.parse(exportado.json)).toEqual(m)
     const deNovo = await subir(m)
     expect(deNovo.conferencia.contagem).toMatchObject({
-      igual: 4,
+      igual: 9,
       criar: 0,
       atualizar: 0,
       publica: 0,
@@ -188,7 +241,7 @@ describe('manifesto de desafios', () => {
     }))
     const { aplicacao } = await subir(m)
     expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
-      m.desafios.map((d) => [d.slug, 'criar', true]),
+      m.desafios.map((d) => [d.slug, 'criar', d.publicar === true]),
     )
     const revisoes = [...desafios.linhas.values()].map((d) => d.revisao)
     const exportado = await chamar('GET', '/manifestos/exportar?publico=kids&ilha=recife')
@@ -196,7 +249,7 @@ describe('manifesto de desafios', () => {
     expect(ManifestoDeDesafiosSchema.parse(exportado.json)).toEqual(m)
     const deNovo = await subir(m)
     expect(deNovo.conferencia.contagem).toMatchObject({
-      igual: 4,
+      igual: m.desafios.length,
       criar: 0,
       atualizar: 0,
       publica: 0,
@@ -219,7 +272,7 @@ describe('manifesto de desafios', () => {
     }))
     const { aplicacao } = await subir(m)
     expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
-      m.desafios.map((d) => [d.slug, 'criar', true]),
+      m.desafios.map((d) => [d.slug, 'criar', d.publicar === true]),
     )
     const revisoes = [...desafios.linhas.values()].map((d) => d.revisao)
     const exportado = await chamar('GET', '/manifestos/exportar?publico=kids&ilha=pico')
@@ -227,7 +280,7 @@ describe('manifesto de desafios', () => {
     expect(ManifestoDeDesafiosSchema.parse(exportado.json)).toEqual(m)
     const deNovo = await subir(m)
     expect(deNovo.conferencia.contagem).toMatchObject({
-      igual: 4,
+      igual: m.desafios.length,
       criar: 0,
       atualizar: 0,
       publica: 0,
@@ -250,7 +303,7 @@ describe('manifesto de desafios', () => {
     }))
     const { aplicacao } = await subir(m)
     expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
-      m.desafios.map((d) => [d.slug, 'criar', true]),
+      m.desafios.map((d) => [d.slug, 'criar', d.publicar === true]),
     )
     const revisoes = [...desafios.linhas.values()].map((d) => d.revisao)
     const exportado = await chamar('GET', '/manifestos/exportar?publico=kids&ilha=nuvens')
@@ -258,7 +311,7 @@ describe('manifesto de desafios', () => {
     expect(ManifestoDeDesafiosSchema.parse(exportado.json)).toEqual(m)
     const deNovo = await subir(m)
     expect(deNovo.conferencia.contagem).toMatchObject({
-      igual: 4,
+      igual: m.desafios.length,
       criar: 0,
       atualizar: 0,
       publica: 0,

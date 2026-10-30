@@ -11,7 +11,12 @@ export interface SinaisDePausa {
 }
 
 export function salvamentoPausado(situacao?: string): boolean {
-  return situacao === 'conflito' || situacao === 'erro-local' || situacao === 'recusado'
+  return (
+    situacao === 'conflito' ||
+    situacao === 'erro-local' ||
+    situacao === 'recusado' ||
+    situacao === 'confirmando'
+  )
 }
 
 export function jogoPausado(s: SinaisDePausa): boolean {

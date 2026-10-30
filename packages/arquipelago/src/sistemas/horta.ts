@@ -1,6 +1,7 @@
 export {
   COLHEITA,
   CRESCIMENTO_MS,
+  cabeColheita,
   colher,
   type Estagio,
   estagio,

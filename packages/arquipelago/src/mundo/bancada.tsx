@@ -2,10 +2,11 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import { AdditiveBlending, BoxGeometry, EdgesGeometry, type Group } from 'three'
 import { useJogo } from '../estado/contexto'
-import { coracoes } from '../sistemas/moradores'
+import { festaAtual } from '../estado/festas'
 import {
   fazerReceita,
   PAINEL_DA_BANCADA,
+  receitaEmEpoca,
   receitasConhecidas,
   receitasPossiveis,
 } from '../sistemas/receitas'
@@ -20,13 +21,13 @@ import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos
  * aparência que a pessoa vai fazer no Pinta ou no Molda, ou comprar pronta (fase seguinte).
  */
 export function Bancada() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const possiveis = () => {
     const s = loja.getState().salvamento
     return receitasPossiveis(
       s.inventario,
       'bancada',
-      receitasConhecidas(coracoes(s.moradores.bento.amizade)),
+      receitasConhecidas(s).filter((r) => receitaEmEpoca(r, festaAtual(plataforma))),
     )
   }
   useInterativo('bancada', {
@@ -41,7 +42,8 @@ export function Bancada() {
     agir: () => {
       const r = possiveis()
       const s = loja.getState()
-      const feito = r.length === 1 && r[0] ? fazerReceita(s.salvamento, r[0]) : null
+      const feito =
+        r.length === 1 && r[0] ? fazerReceita(s.salvamento, r[0], festaAtual(plataforma)) : null
       if (!feito) {
         s.abrirPainel(PAINEL_DA_BANCADA)
         return

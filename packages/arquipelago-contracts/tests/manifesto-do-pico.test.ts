@@ -37,25 +37,30 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('o Pico Gelado é do Mestre e o pacote tem um quadro e três desafios do dia', () => {
+test('o Pico Gelado é do Mestre e o pacote tem seis quadros e três desafios do dia', () => {
   expect(ilha('pico').posto).toBe('elite')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
+    'pico-pulo-com-apoio',
+    'pico-freio-no-gelo',
+    'pico-floco-recolhido',
+    'pico-mochila-de-neve',
+    'pico-passagem-segura',
     'pico-fase-de-plataforma',
     'pico-fase-de-plataforma-pulo-alto',
     'pico-fase-de-plataforma-floco',
     'pico-fase-de-plataforma-quedas',
   ])
   for (const [i, d] of manifesto.desafios.entries()) {
-    const tipo = i === 0 ? 'quadro-das-cores' : 'desafio-do-dia'
+    const tipo = i < 6 ? 'quadro-das-cores' : 'desafio-do-dia'
     expect(d.ilha).toBe('pico')
     expect(d.publico).toBe('kids')
     expect(d.tipo).toBe(tipo)
-    expect(d.quadro).toBe(i === 0 ? 6 : null)
-    expect(d.ordem).toBe(60 + i)
+    expect(d.quadro).toBe(i < 6 ? i + 1 : null)
+    expect(d.ordem).toBe(i < 6 ? (i + 1) * 10 : 60 + i - 5)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i === 0,
-      atracao: 'fase-de-plataforma',
+      cor: i < 6,
+      atracao: i < 5 ? d.slug : 'fase-de-plataforma',
       moedas: MOEDAS_PADRAO_POR_TIPO[tipo].principal,
       moedasExtra: MOEDAS_PADRAO_POR_TIPO[tipo].extra,
     })
@@ -64,7 +69,7 @@ test('o Pico Gelado é do Mestre e o pacote tem um quadro e três desafios do di
     expect(d.conteudo.objetivos.some((o) => o.optional)).toBe(true)
   }
 })
-test('os oito projetos só usam blocos ensinados até o Mestre e arte embutida', () => {
+test('os dezoito projetos só usam blocos ensinados até o Mestre e arte embutida', () => {
   // As listas que valem hoje: os cursos principais e os Poderes do Faísca.
   expect(cursos.length).toBeGreaterThanOrEqual(9)
   for (const d of manifesto.desafios)

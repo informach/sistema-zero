@@ -87,6 +87,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       throw erro
     }
     fila = criarFilaDeSalvamento({
+      conferirOperacoes: true,
       servico: plataforma.servico,
       guardadoInicial: guardado,
       rascunhoInicial,
@@ -97,6 +98,12 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       aoSituacao: (s) => loja.getState().definirSituacaoSalvamento(s),
       aoErro: (e) => plataforma.relatarErro(e, 'salvamento'),
     })
+    try {
+      await fila.retomarOperacoes()
+    } catch (erro) {
+      await fila.parar()
+      throw erro
+    }
   }
   let gerenteTempo: ReturnType<typeof criarGerenteTempo> | null = null
   if (plataforma.publico === 'kids' && acesso.contabilizaTempo !== false) {
@@ -147,6 +154,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
   // Um jogo novo só entra na fila depois que a recuperação do tempo termina.
   if (guardado.revisao === 0 && !fila?.temPendente()) fila?.guardar(salvamento)
   const contexto: ContextoDoJogo = {
+    fila,
     loja,
     gerenteTempo,
     plataforma,

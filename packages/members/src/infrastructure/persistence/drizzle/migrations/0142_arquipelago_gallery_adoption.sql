@@ -1,0 +1,1 @@
+ALTER TYPE "members"."coin_source_type" ADD VALUE 'arquipelago_gallery_adoption';

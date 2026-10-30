@@ -1,0 +1,5 @@
+{
+  "erro": "TimeoutError: locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Roupas da festa' }).getByRole('button', { name: /^Comprar por 10$/ })\u001b[22m\n",
+  "erros": [],
+  "texto": "Voltar ao jogo\nMeu avatar 3D\n80 moedas\nSortear visual\nSalvar (peça bloqueada)\nIdeias para o Carnaval\nPersonalizar\nCabine de fotos\nParte do avatar\nRosto\nCabelo\nOlhos\nSobrancelhas\nNariz\nPintura de rosto\nBarba\nÓculos\nChapéu\nEnfeite\nBlusa\nCalça\nVestido\nCalçado\nAcessório\nPinturas de rosto\nNenhuma\n10\n\nPrévia: Máscara. Gostou? Desbloqueie para usar sempre.\n\nAgora não\nDesbloquear por 10 moedas"
+}

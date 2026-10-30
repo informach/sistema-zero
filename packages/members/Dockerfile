@@ -10,11 +10,12 @@ FROM base AS dependencies
 COPY package.json bun.lock ./
 COPY --parents packages/*/package.json ./
 COPY patches ./patches
-# "..." inclui as dependências workspace: Members, Core, Studio, Pinta e UI.
+# "..." inclui também os contratos puros do Arquipélago, nunca o pacote do jogo.
 # drizzle-kit permanece instalado para o pre-deploy real db:migrate.
 RUN bun install --frozen-lockfile --production --filter '@sistemazero/members...' \
     && mkdir -p packages/members/node_modules packages/core/node_modules \
-       packages/studio/node_modules packages/pinta/node_modules packages/ui/node_modules
+       packages/studio/node_modules packages/pinta/node_modules packages/ui/node_modules \
+       packages/arquipelago-contracts/node_modules
 
 FROM base AS runtime
 # Preserva a store e os links do Bun, sem copiar o cache global do instalador.
@@ -24,6 +25,7 @@ COPY --from=dependencies /app/packages/core/node_modules ./packages/core/node_mo
 COPY --from=dependencies /app/packages/studio/node_modules ./packages/studio/node_modules
 COPY --from=dependencies /app/packages/pinta/node_modules ./packages/pinta/node_modules
 COPY --from=dependencies /app/packages/ui/node_modules ./packages/ui/node_modules
+COPY --from=dependencies /app/packages/arquipelago-contracts/node_modules ./packages/arquipelago-contracts/node_modules
 COPY package.json tsconfig.base.json ./
 COPY packages/members/package.json packages/members/tsconfig.json packages/members/drizzle.config.ts ./packages/members/
 # Inclui schema, SQL e journal das migrations, além do grafo real de inicialização.
@@ -36,8 +38,11 @@ COPY packages/pinta/package.json packages/pinta/tsconfig.json ./packages/pinta/
 COPY packages/pinta/src ./packages/pinta/src
 COPY packages/ui/package.json packages/ui/tsconfig.json ./packages/ui/
 COPY packages/ui/src ./packages/ui/src
+COPY packages/arquipelago-contracts/package.json packages/arquipelago-contracts/tsconfig.json ./packages/arquipelago-contracts/
+COPY packages/arquipelago-contracts/src ./packages/arquipelago-contracts/src
 # Entradas operacionais existentes; não são executadas durante o build.
 COPY packages/members/scripts/bootstrap-kids-journey.ts \
+     packages/members/scripts/adopt-arquipelago-gallery.ts \
      packages/members/scripts/production-schema-a.ts \
      packages/members/scripts/pensa-maintenance.ts \
      packages/members/scripts/pensa-cutover-migrations.ts \

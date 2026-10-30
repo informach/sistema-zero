@@ -723,101 +723,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   }
 
   async spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult> {
-    return this.db.transaction(async (tx) => {
-      // MESMO lock por aluno do award — serializa o read-then-write do saldo
-      // (dois gastos simultâneos não furam o saldo).
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
-      )
-      // Idempotência: a MESMA compra (reason + key) já debitou? (duplo-clique/retry).
-      const [existing] = await tx
-        .select({ id: coinEvents.id })
-        .from(coinEvents)
-        .where(
-          and(
-            eq(coinEvents.userId, input.userId),
-            eq(coinEvents.audience, input.audience),
-            eq(coinEvents.sourceType, input.reason),
-            eq(coinEvents.sourceId, input.idempotencyKey),
-          ),
-        )
-        .limit(1)
-      const [profile] = await tx
-        .select({ balance: gamificationProfiles.coinBalance })
-        .from(gamificationProfiles)
-        .where(
-          and(
-            eq(gamificationProfiles.userId, input.userId),
-            eq(gamificationProfiles.audience, input.audience),
-          ),
-        )
-        .limit(1)
-      const balance = profile?.balance ?? 0
-      // Concede a posse NA MESMA transação (compra atômica): nunca cobra sem entregar.
-      // Idempotente; roda também no caminho ALREADY_SPENT p/ recuperar uma tentativa anterior
-      // que debitou mas não chegou a conceder (crash entre as 2 transações antigas).
-      const grantInventory = async () => {
-        const g = input.grantInventory
-        if (!g) return
-        if (g.scope === 'avatar') {
-          await tx
-            .insert(avatarInventory)
-            .values({
-              id: randomUUID(),
-              userId: input.userId,
-              audience: input.audience,
-              partId: g.itemId,
-              acquiredAt: input.now,
-            })
-            .onConflictDoNothing({
-              target: [avatarInventory.userId, avatarInventory.audience, avatarInventory.partId],
-            })
-        } else {
-          await tx
-            .insert(roomInventory)
-            .values({
-              id: randomUUID(),
-              userId: input.userId,
-              audience: input.audience,
-              itemId: g.itemId,
-              acquiredAt: input.now,
-            })
-            .onConflictDoNothing({
-              target: [roomInventory.userId, roomInventory.audience, roomInventory.itemId],
-            })
-        }
-      }
-
-      if (existing) {
-        await grantInventory()
-        return { ok: false, code: 'ALREADY_SPENT', balance }
-      }
-      if (balance < input.amount) return { ok: false, code: 'INSUFFICIENT_BALANCE', balance }
-
-      const balanceAfter = balance - input.amount
-      await tx.insert(coinEvents).values({
-        id: randomUUID(),
-        userId: input.userId,
-        audience: input.audience,
-        sourceType: input.reason,
-        sourceId: input.idempotencyKey,
-        amount: -input.amount,
-        balanceAfter,
-        createdAt: input.now,
-      })
-      // O perfil existe (balance ≥ amount > 0 implica linha): atualiza só o saldo.
-      await tx
-        .update(gamificationProfiles)
-        .set({ coinBalance: balanceAfter, updatedAt: input.now })
-        .where(
-          and(
-            eq(gamificationProfiles.userId, input.userId),
-            eq(gamificationProfiles.audience, input.audience),
-          ),
-        )
-      await grantInventory()
-      return { ok: true, balanceAfter }
-    })
+    return this.db.transaction((tx) => spendCoinsInTransaction(tx, input))
   }
 
   async getBalance(userId: string, audience: CourseAudience): Promise<number> {
@@ -2005,4 +1911,134 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
     return rows.map((r) => r.userId)
   }
+}
+
+/** Mesmo primitivo da loja, reutilizado dentro da transação de posse do Arquipélago. */
+export async function spendCoinsInTransaction(
+  tx: Parameters<Parameters<Database['transaction']>[0]>[0],
+  input: SpendCoinsInput,
+): Promise<SpendCoinsResult> {
+  // MESMO lock por aluno do award — serializa o read-then-write do saldo
+  // (dois gastos simultâneos não furam o saldo).
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
+  )
+  // Idempotência: a MESMA compra (reason + key) já debitou? (duplo-clique/retry).
+  const [existing] = await tx
+    .select({ id: coinEvents.id })
+    .from(coinEvents)
+    .where(
+      and(
+        eq(coinEvents.userId, input.userId),
+        eq(coinEvents.audience, input.audience),
+        eq(coinEvents.sourceType, input.reason),
+        eq(coinEvents.sourceId, input.idempotencyKey),
+      ),
+    )
+    .limit(1)
+  const [profile] = await tx
+    .select({ balance: gamificationProfiles.coinBalance })
+    .from(gamificationProfiles)
+    .where(
+      and(
+        eq(gamificationProfiles.userId, input.userId),
+        eq(gamificationProfiles.audience, input.audience),
+      ),
+    )
+    .limit(1)
+  const balance = profile?.balance ?? 0
+  // A posse também pode vir de uma adoção ou de outra entrada da galeria. Conferir
+  // sob a trava da carteira evita cobrar novamente numa corrida com esses caminhos.
+  if (input.grantInventory) {
+    const g = input.grantInventory
+    const owned =
+      g.scope === 'room'
+        ? await tx
+            .select({ id: roomInventory.id })
+            .from(roomInventory)
+            .where(
+              and(
+                eq(roomInventory.userId, input.userId),
+                eq(roomInventory.audience, input.audience),
+                eq(roomInventory.itemId, g.itemId),
+              ),
+            )
+            .limit(1)
+        : await tx
+            .select({ id: avatarInventory.id })
+            .from(avatarInventory)
+            .where(
+              and(
+                eq(avatarInventory.userId, input.userId),
+                eq(avatarInventory.audience, input.audience),
+                eq(avatarInventory.partId, g.itemId),
+              ),
+            )
+            .limit(1)
+    if (owned.length) return { ok: false, code: 'ALREADY_SPENT', balance }
+  }
+  // Concede a posse NA MESMA transação (compra atômica): nunca cobra sem entregar.
+  // Idempotente; roda também no caminho ALREADY_SPENT p/ recuperar uma tentativa anterior
+  // que debitou mas não chegou a conceder (crash entre as 2 transações antigas).
+  const grantInventory = async () => {
+    const g = input.grantInventory
+    if (!g) return
+    if (g.scope === 'avatar') {
+      await tx
+        .insert(avatarInventory)
+        .values({
+          id: randomUUID(),
+          userId: input.userId,
+          audience: input.audience,
+          partId: g.itemId,
+          acquiredAt: input.now,
+        })
+        .onConflictDoNothing({
+          target: [avatarInventory.userId, avatarInventory.audience, avatarInventory.partId],
+        })
+    } else {
+      await tx
+        .insert(roomInventory)
+        .values({
+          id: randomUUID(),
+          userId: input.userId,
+          audience: input.audience,
+          itemId: g.itemId,
+          acquiredAt: input.now,
+        })
+        .onConflictDoNothing({
+          target: [roomInventory.userId, roomInventory.audience, roomInventory.itemId],
+        })
+    }
+  }
+
+  if (existing) {
+    await grantInventory()
+    return { ok: false, code: 'ALREADY_SPENT', balance }
+  }
+  if (balance < input.amount) return { ok: false, code: 'INSUFFICIENT_BALANCE', balance }
+
+  const balanceAfter = balance - input.amount
+  await tx.insert(coinEvents).values({
+    id: randomUUID(),
+    userId: input.userId,
+    audience: input.audience,
+    sourceType: input.reason,
+    sourceId: input.idempotencyKey,
+    amount: -input.amount,
+    balanceAfter,
+    createdAt: input.now,
+  })
+  // O perfil existe (balance ≥ amount > 0 implica linha): atualiza só o saldo.
+  await tx
+    .update(gamificationProfiles)
+    .set({ coinBalance: balanceAfter, updatedAt: input.now })
+    .where(
+      and(
+        eq(gamificationProfiles.userId, input.userId),
+        eq(gamificationProfiles.audience, input.audience),
+      ),
+    )
+  await grantInventory()
+  return { ok: true, balanceAfter }
 }

@@ -115,7 +115,7 @@ const arte: Record<string, string> = {
     '<rect x="2" y="5" width="168" height="37" rx="13" fill="#2f5d86"/><rect x="2" y="1" width="168" height="37" rx="13" fill="#4f86b6"/>',
   ),
 }
-const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
+export const assetsDoPico: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
   id: `pico-${name}`,
   name,
   kind: 'image',
@@ -341,7 +341,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: name }),
-    assets,
+    assets: assetsDoPico,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
 }

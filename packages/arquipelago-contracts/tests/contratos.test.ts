@@ -43,7 +43,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV16Schema,
+  SalvamentoV18Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 import {
@@ -184,6 +184,7 @@ describe('salvamento V2 (percursos)', () => {
       nuvens: _nuvens,
       farol: _farol,
       clima: _clima,
+      ilhasVisitadas: _visitas,
       ...resto
     } = criarSalvamentoInicial(agora)
     return { ...resto, percursos: {}, versao: 2 }
@@ -193,6 +194,7 @@ describe('salvamento V2 (percursos)', () => {
     return { ...resto, versao: 1 }
   }
   const semMoradores = {
+    ilhasVisitadas: 0,
     nuvens: { constelacoes: 0 },
     farol: { pagina: false, concluido: false },
     clima: 'sol' as const,
@@ -203,6 +205,10 @@ describe('salvamento V2 (percursos)', () => {
     moradores: {
       capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
       bento: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
+      mare: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
+      floco: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
+      jade: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
+      irie: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
     },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
@@ -216,19 +222,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV16Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV18Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 16, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 18, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(16)
+    expect(r.salvamento.versao).toBe(18)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -363,11 +369,12 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       nuvens: _nuvens,
       farol: _farol,
       clima: _clima,
+      ilhasVisitadas: _visitas,
       ...resto
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(16)
+    expect(v3?.versao).toBe(18)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -484,6 +491,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       nuvens: _nuvens,
       farol: _farol,
       clima: _clima,
+      ilhasVisitadas: _visitas,
       ...resto
     } = inicial()
     const v3: SalvamentoV3 = {
@@ -493,7 +501,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(16)
+    expect(v4?.versao).toBe(18)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})

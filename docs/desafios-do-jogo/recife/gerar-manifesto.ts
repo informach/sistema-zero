@@ -1,9 +1,11 @@
 import {
   ManifestoDeDesafiosSchema,
   MOEDAS_PADRAO_POR_TIPO,
+  type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
+import { desafiosIniciaisDoRecife } from './quadros-iniciais'
 
 const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: string[] }> = {
   mira: {
@@ -47,47 +49,51 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
     ],
   },
 }
-export function criarManifesto() {
+export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
     escopo: 'ilha',
-    desafios: VARIACOES.map((variacao, index) => {
-      const tipo = variacao === 'mira' ? 'quadro-das-cores' : 'desafio-do-dia'
-      const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-      return {
-        slug: `recife-mira-de-bolhas${variacao === 'mira' ? '' : `-${variacao}`}`,
-        publico: 'kids',
-        ilha: 'recife',
-        tipo,
-        quadro: variacao === 'mira' ? 6 : null,
-        ordem: 60 + index,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[variacao],
-          projetoInicial: montarProjeto(variacao, false),
-          gabarito: montarProjeto(variacao, true),
-          objetivos: objetivos[variacao],
-          desafioExtra: {
-            titulo: 'Mais um desafio',
-            texto:
-              'Faça Enter recomeçar a rodada, como o botão Recomeçar: devolva a mira ao início, solte os alvos, esconda a bolha e zere os pontos.',
+    desafios: [
+      ...desafiosIniciaisDoRecife(publico),
+      ...VARIACOES.map((variacao, index) => {
+        const tipo = variacao === 'mira' ? 'quadro-das-cores' : 'desafio-do-dia'
+        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+        return {
+          slug: `recife-mira-de-bolhas${variacao === 'mira' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'recife',
+          tipo,
+          quadro: variacao === 'mira' ? 6 : null,
+          ordem: 60 + index,
+          publicar: publico === 'kids',
+          conteudo: {
+            versao: 1,
+            ...textos[variacao],
+            projetoInicial: montarProjeto(variacao, false),
+            gabarito: montarProjeto(variacao, true),
+            objetivos: objetivos[variacao],
+            desafioExtra: {
+              titulo: 'Mais um desafio',
+              texto:
+                'Faça Enter recomeçar a rodada, como o botão Recomeçar: devolva a mira ao início, solte os alvos, esconda a bolha e zere os pontos.',
+            },
+            recompensa: {
+              cor: variacao === 'mira',
+              atracao: 'mira-de-bolhas',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          recompensa: {
-            cor: variacao === 'mira',
-            atracao: 'mira-de-bolhas',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-          },
-          blocosManuais: { acrescentar: [], retirar: [] },
-        },
-      }
-    }),
+        }
+      }),
+    ],
   })
 }
 if (import.meta.main)
-  await Bun.write(
-    new URL('./recife.manifesto.json', import.meta.url),
-    `${JSON.stringify(criarManifesto(), null, 2)}\n`,
-  )
+  for (const publico of ['kids', 'adulto'] as const)
+    await Bun.write(
+      new URL(`./recife${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`, import.meta.url),
+      `${JSON.stringify(criarManifesto(publico), null, 2)}\n`,
+    )

@@ -16,8 +16,11 @@ import { Coracoes, Presentes } from './capi'
  * escolhas (entregar o pedido do dia, dar um presente, ajudar no balcão da padaria, tchau). O
  * jogo fica parado enquanto ela está aberta.
  */
+import { entregarPedidoPeloPainel } from './entrega-do-pedido'
+
 export function PainelDoBento() {
-  const { loja } = useJogo()
+  const contexto = useJogo()
+  const { loja } = contexto
   const conversa = lojaDaConversa(loja, 'bento')
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_BENTO)
   const salvamento = useEstado((s) => s.salvamento)
@@ -41,11 +44,9 @@ export function PainelDoBento() {
   const fechar = () => loja.getState().abrirPainel(null)
 
   function aoEntregar() {
-    const s = loja.getState()
-    const r = entregarAoBento(s.salvamento, diaDe(new Date()))
-    if (!r.entregou) return
-    s.mudar(() => r.salvamento)
-    conversa.getState().responder(r.falas, true)
+    void entregarPedidoPeloPainel(contexto, 'bento', PAINEL_DO_BENTO, (s) =>
+      entregarAoBento(s, diaDe(new Date())),
+    )
   }
 
   function aoAjudar() {

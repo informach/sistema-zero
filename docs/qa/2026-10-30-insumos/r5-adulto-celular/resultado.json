@@ -1,0 +1,15 @@
+{
+  "publico": "adulto",
+  "celular": true,
+  "insumos": true,
+  "quantidade": 3,
+  "saldo": 74,
+  "debitos": 1,
+  "limites": {
+    "largura": 350,
+    "conteudo": 350,
+    "direita": 370,
+    "tela": 390
+  },
+  "erros": []
+}

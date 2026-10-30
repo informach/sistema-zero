@@ -17,10 +17,10 @@ afterAll(async () => {
   if (needsDom) await GlobalRegistrator.unregister()
 })
 
-test('os oito projetos do Pico abrem como blocos e geram o mesmo jogo', () => {
+test('os projetos do Pico dos dois públicos abrem como blocos e geram o mesmo jogo', () => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameTwoDBlocks)
-  for (const d of criarManifesto().desafios) {
+  for (const d of [...criarManifesto('kids').desafios, ...criarManifesto('adulto').desafios]) {
     for (const tipo of ['projetoInicial', 'gabarito'] as const) {
       const p = d.conteudo[tipo] as Project
       const workspace = new Blockly.Workspace()

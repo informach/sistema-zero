@@ -62,6 +62,8 @@ nativeTest(
         await writeFile(join(dir, file), source)
       }
       for (const d of manifesto.desafios) {
+        const novo = d.quadro !== null && d.quadro <= 5
+        if (process.env.SZ_VILA_QUADROS_NOVOS === '1' && !novo) continue
         if (
           process.env.SZ_VILA_DOCE_SCENARIO &&
           !d.slug.endsWith(process.env.SZ_VILA_DOCE_SCENARIO)
@@ -73,7 +75,31 @@ nativeTest(
         ]
         const broken = structuredClone(d.conteudo.gabarito) as Project
         const behavior = (broken.ir as SZIRV2).behavior
-        if (d.tipo === 'quadro-das-cores') {
+        if (novo) {
+          const ids = ['forno-certo', 'estoque', 'ordem', 'quente', 'quantidade']
+          // Remove a condição ensinada, sem mudar cenário, entrada ou julgador.
+          visit(behavior.events, (s) => {
+            if (s.type === 'if') s.cond = { type: 'bool', value: true }
+          })
+          scenarios.push({
+            name: 'sem-condicoes',
+            project: broken,
+            ids: [ids[d.quadro! - 1]!],
+            passes: false,
+          })
+          const semReinicio = structuredClone(d.conteudo.gabarito) as Project
+          const enter = (semReinicio.ir as SZIRV2).behavior.events.find(
+            (s) => s.type === 'g2d:onKey' && s.key === 'Enter',
+          )
+          if (enter?.type !== 'g2d:onKey') throw Error('Enter ausente')
+          enter.body = []
+          scenarios.push({
+            name: 'sem-reinicio',
+            project: semReinicio,
+            ids: ['recomecar'],
+            passes: false,
+          })
+        } else if (d.tipo === 'quadro-das-cores') {
           const timer = behavior.loops.find((s) => s.type === 'g2d:everySeconds')
           if (timer?.type !== 'g2d:everySeconds') throw Error('Relógio ausente')
           timer.body = []

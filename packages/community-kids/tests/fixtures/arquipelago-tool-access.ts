@@ -34,6 +34,20 @@ mock.module('@/server/studio-services', () => ({
 const { GET } = await import('../../src/app/api/arquipelago/ferramentas/[ferramenta]/route')
 const requisitar = (ferramenta: string) =>
   GET(new Request('http://local'), { params: Promise.resolve({ ferramenta }) })
+
+test('avatar é livre para o perfil autenticado, mas suporte não edita e resposta não usa cache', async () => {
+  perfil = false
+  expect((await requisitar('avatar')).status).toBe(401)
+  perfil = true
+  suporte = false
+  tools = []
+  const r = await requisitar('avatar')
+  expect(await r.json()).toEqual({ situacao: 'disponivel', viewerId: 'crianca' })
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  suporte = true
+  expect(await (await requisitar('avatar')).json()).toEqual({ situacao: 'bloqueada' })
+  suporte = false
+})
 test('somente perfil autenticado consulta as ferramentas', async () => {
   perfil = false
   expect((await requisitar('pinta')).status).toBe(401)

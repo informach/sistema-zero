@@ -78,6 +78,27 @@
       "when": 1793237653835,
       "tag": "0010_galeria_compras",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793322000052,
+      "tag": "0011_turnos_remunerados",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793337969132,
+      "tag": "0012_compras_de_insumos",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793340588321,
+      "tag": "0013_pedidos_remunerados",
+      "breakpoints": true
     }
   ]
 }

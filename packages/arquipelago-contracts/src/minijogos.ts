@@ -27,6 +27,13 @@ export const MinijogoAbertoSchema = MinijogoSchema.extend({ projeto: ProjetoDoMi
 export type Minijogo = z.infer<typeof MinijogoSchema>
 export type MinijogoAberto = z.infer<typeof MinijogoAbertoSchema>
 
+/** Publicações recentes do próprio perfil, resolvidas pelo Hub. Nunca carregam fonte ou URL. */
+export const JogosDoMuralSchema = z.strictObject({
+  jogos: z.array(z.strictObject({ playId: z.uuid(), titulo: z.string().min(1).max(300) })).max(24),
+})
+export const MoldeDoJogoDoMuralSchema = z.strictObject({ playId: z.uuid() })
+export type JogoDoMural = z.infer<typeof JogosDoMuralSchema>['jogos'][number]
+
 /** Capa escolhida no Estúdio. Só imagem embutida, sem URL externa ou SVG ativo. */
 export function capaDoMinijogo(projeto: unknown): string | null {
   if (!projeto || typeof projeto !== 'object') return null

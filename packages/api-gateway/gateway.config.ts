@@ -4416,6 +4416,16 @@ const config: GatewayConfigInput = {
     },
     // Jornada do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
     {
+      id: 'hub-my-playable-showcase',
+      methods: ['GET'],
+      pathPattern: '/hub/my-playable-showcase',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
       id: 'hub-my-showcase-stats',
       methods: ['GET'],
       pathPattern: '/hub/my-showcase-stats',

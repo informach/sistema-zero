@@ -1,16 +1,19 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import type { Object3D } from 'three'
-import { Vector3 } from 'three'
+import { Mesh, Vector3 } from 'three'
+import { ALCANCE_DO_BALCAO } from '../src/mundo/balcoes-da-vila'
 import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
 import { posicaoDoQuadro } from '../src/mundo/quadro-das-cores'
 import { alturaDoPulo, CORPO } from '../src/sistemas/corpo'
+import { ANCORA_DA_FEIRA } from '../src/sistemas/feira'
 import {
   arquivoDaIlha,
   bate,
   CENTRO_DO_CORPO,
   carregarGlb,
   type Forma,
+  gradeDeAndar,
   grupo,
   jsonDoGlb,
   pisoEm as pisoDasFormas,
@@ -38,6 +41,19 @@ beforeAll(async () => {
 })
 
 describe('os nós col-* da Vila Doce', () => {
+  test('a feira usa uma barraca livre, alcançável a pé e separada do turno de sucos', () => {
+    const terreno = raiz.getObjectByName('col-terreno')
+    if (!(terreno instanceof Mesh)) throw Error('Sem terreno da Vila')
+    const chegada = ancora('chegada')
+    const feira = ancora(ANCORA_DA_FEIRA)
+    const sucos = ancora('barraca-5')
+    // A escolha usa o interativo mais próximo. Cada centro fica fora do alcance do outro;
+    // não é necessário que os círculos inteiros sejam disjuntos entre barracas vizinhas.
+    expect(Math.hypot(feira.x - sucos.x, feira.z - sucos.z)).toBeGreaterThan(ALCANCE_DO_BALCAO)
+    const grade = gradeDeAndar(terreno, formas)
+    expect(grade.chegaPerto(grade.alcance(chegada.x, chegada.z), feira.x, feira.z, 1.2)).toBe(true)
+  }, 30_000)
+
   test('existem todos os grupos, sem material (não desenham)', () => {
     const doc = jsonDoGlb(ARQUIVO)
     const nos = doc.nodes.filter((n) => n.name?.startsWith('col-'))
@@ -109,29 +125,36 @@ describe('os nós col-* da Vila Doce', () => {
     )
     expect(Math.min(...baixo) - TAMPO).toBeLessThan(subida)
     expect(Math.max(...baixo) - Math.min(...baixo)).toBeLessThan(subida)
+    // A geometria não muda entre os saltos. Amostra cada parada uma vez, sem repetir raycasts.
+    const topos = new Map<string, [number, number][]>()
+    const topoDe = (nome: string) => {
+      const pronto = topos.get(nome)
+      if (pronto) return pronto
+      const a = ancora(nome)
+      const pontos: [number, number][] = []
+      for (let x = a.x - 4; x <= a.x + 4; x += 0.1)
+        for (let z = a.z - 4; z <= a.z + 4; z += 0.1)
+          if (Math.abs(pisoEm(x, z).y - a.y) < 0.02) pontos.push([x, z])
+      topos.set(nome, pontos)
+      return pontos
+    }
     for (let k = 1; k < paradas.length; k++) {
       const de = ancora(paradas[k - 1] ?? '')
       const ate = ancora(paradas[k] ?? '')
       expect(ate.y - de.y).toBeGreaterThan(0)
       expect(ate.y - de.y).toBeLessThan(subida)
       // O vão mais curto entre o topo de uma parada e o da outra (amostras de 10 cm em volta).
-      const topoDe = (a: Vector3) => {
-        const pontos: [number, number][] = []
-        for (let x = a.x - 4; x <= a.x + 4; x += 0.1)
-          for (let z = a.z - 4; z <= a.z + 4; z += 0.1)
-            if (Math.abs(pisoEm(x, z).y - a.y) < 0.02) pontos.push([x, z])
-        return pontos
-      }
-      const daqui = topoDe(de)
-      const dali = topoDe(ate)
-      let vao = Infinity
+      const daqui = topoDe(paradas[k - 1] ?? '')
+      const dali = topoDe(paradas[k] ?? '')
+      let vaoQuadrado = Infinity
       for (const [x1, z1] of daqui)
-        for (const [x2, z2] of dali) vao = Math.min(vao, Math.hypot(x2 - x1, z2 - z1))
+        for (const [x2, z2] of dali)
+          vaoQuadrado = Math.min(vaoQuadrado, (x2 - x1) ** 2 + (z2 - z1) ** 2)
       // Andando, o pulo cai no alto depois de subir; o pé redondo pega a borda um raio antes.
       const h = ate.y - de.y
       const tempo = (CORPO.pulo + Math.sqrt(CORPO.pulo ** 2 - 2 * GRAVIDADE * h)) / GRAVIDADE
       const alcance = CORPO.andar * tempo + 2 * CORPO.raio
-      expect(vao).toBeLessThan(alcance - 0.3)
+      expect(Math.sqrt(vaoQuadrado)).toBeLessThan(alcance - 0.3)
     }
   })
 

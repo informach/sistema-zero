@@ -1,5 +1,6 @@
 import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
 import { and, eq, sql } from 'drizzle-orm'
+import { CompraPendenteError } from '../../../domain/insumos.port'
 import type {
   RepositorioDoJogo,
   ResultadoDaGravacao,
@@ -7,7 +8,14 @@ import type {
 } from '../../../domain/repositorio.port'
 import { EventoTempoConflitanteError } from '../../../domain/tempo-erros'
 import type { Database } from './db'
-import { eventosTempo, limitesDaFamilia, perfisDaConta, salvamentos, tempoDiario } from './schema'
+import {
+  comprasDeInsumos,
+  eventosTempo,
+  limitesDaFamilia,
+  perfisDaConta,
+  salvamentos,
+  tempoDiario,
+} from './schema'
 
 const TETO_DO_DIA = 86_400
 
@@ -27,47 +35,71 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
   }
 
   async gravarSalvamento(e: Parameters<RepositorioDoJogo['gravarSalvamento']>[0]) {
-    const colunas = {
-      revisao: salvamentos.revisao,
-      dados: salvamentos.dados,
-      atualizadoEm: salvamentos.atualizadoEm,
-    }
-    // Uma instrução só, nos dois caminhos: o banco decide quem vence (sem ler antes de gravar).
-    const gravadas =
-      e.revisaoBase === 0
-        ? await this.db
-            .insert(salvamentos)
-            .values({
-              jogadorId: e.jogadorId,
-              publico: e.publico,
-              revisao: 1,
-              dados: e.salvamento,
-              criadoEm: e.agora,
-              atualizadoEm: e.agora,
-            })
-            .onConflictDoNothing({ target: salvamentos.jogadorId })
-            .returning(colunas)
-        : await this.db
-            .update(salvamentos)
-            .set({
-              revisao: sql`${salvamentos.revisao} + 1`,
-              dados: e.salvamento,
-              atualizadoEm: e.agora,
-            })
-            .where(
-              and(eq(salvamentos.jogadorId, e.jogadorId), eq(salvamentos.revisao, e.revisaoBase)),
-            )
-            .returning(colunas)
-    const [guardado] = gravadas
-    if (guardado && e.contaId) {
-      // Uma criança nunca muda de conta: a primeira gravação vale.
-      await this.db
-        .insert(perfisDaConta)
-        .values({ jogadorId: e.jogadorId, contaId: e.contaId, criadoEm: e.agora })
-        .onConflictDoNothing({ target: perfisDaConta.jogadorId })
-    }
-    if (guardado) return { ok: true, guardado } satisfies ResultadoDaGravacao
-    return { ok: false, atual: await this.lerSalvamento(e.jogadorId) } satisfies ResultadoDaGravacao
+    return this.db.transaction(async (tx) => {
+      const colunas = {
+        revisao: salvamentos.revisao,
+        dados: salvamentos.dados,
+        atualizadoEm: salvamentos.atualizadoEm,
+      }
+      // O comando de compra usa a mesma linha: um PUT não apaga a entrega nem muda a
+      // base enquanto a carteira ainda pode ter um débito sem resposta.
+      await tx
+        .select({ id: salvamentos.jogadorId })
+        .from(salvamentos)
+        .where(eq(salvamentos.jogadorId, e.jogadorId))
+        .for('update')
+      const [pendente] = await tx
+        .select({ chave: comprasDeInsumos.chave })
+        .from(comprasDeInsumos)
+        .where(
+          and(
+            eq(comprasDeInsumos.jogadorId, e.jogadorId),
+            eq(comprasDeInsumos.situacao, 'pendente'),
+          ),
+        )
+      if (pendente) throw new CompraPendenteError()
+      const gravadas =
+        e.revisaoBase === 0
+          ? await tx
+              .insert(salvamentos)
+              .values({
+                jogadorId: e.jogadorId,
+                publico: e.publico,
+                revisao: 1,
+                dados: e.salvamento,
+                criadoEm: e.agora,
+                atualizadoEm: e.agora,
+              })
+              .onConflictDoNothing({ target: salvamentos.jogadorId })
+              .returning(colunas)
+          : await tx
+              .update(salvamentos)
+              .set({
+                revisao: sql`${salvamentos.revisao} + 1`,
+                dados: e.salvamento,
+                atualizadoEm: e.agora,
+              })
+              .where(
+                and(eq(salvamentos.jogadorId, e.jogadorId), eq(salvamentos.revisao, e.revisaoBase)),
+              )
+              .returning(colunas)
+      const [guardado] = gravadas
+      if (guardado && e.contaId) {
+        // Uma criança nunca muda de conta: a primeira gravação vale.
+        await tx
+          .insert(perfisDaConta)
+          .values({ jogadorId: e.jogadorId, contaId: e.contaId, criadoEm: e.agora })
+          .onConflictDoNothing({ target: perfisDaConta.jogadorId })
+      }
+      if (guardado) return { ok: true, guardado } satisfies ResultadoDaGravacao
+      return {
+        ok: false,
+        atual:
+          (
+            await tx.select(colunas).from(salvamentos).where(eq(salvamentos.jogadorId, e.jogadorId))
+          )[0] ?? null,
+      } satisfies ResultadoDaGravacao
+    })
   }
 
   async somarTempo(

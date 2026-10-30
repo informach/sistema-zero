@@ -493,6 +493,23 @@ export class ShowcaseService {
     return this.threads.showcaseStatsByAuthor(actor.userId)
   }
 
+  /** Publicações recentes do próprio perfil; sem fonte, capa ou identidade de terceiros. */
+  async myPlayableShowcase(actor: Actor): Promise<{ jogos: { playId: string; titulo: string }[] }> {
+    const rows = await this.threads.listShowcaseByAuthor(
+      actor.userId,
+      24,
+      actor.kidsContext ? 'kids' : 'adult',
+    )
+    const vistos = new Set<string>()
+    return {
+      jogos: rows.flatMap((row) => {
+        if (!row.playId || vistos.has(row.playId)) return []
+        vistos.add(row.playId)
+        return [{ playId: row.playId, titulo: row.title }]
+      }),
+    }
+  }
+
   /**
    * Report dos pais (members→hub S2S, rota HMAC — NUNCA exposta no gateway):
    * posts de vitrine visíveis dos PERFIS dados na janela. O members é quem

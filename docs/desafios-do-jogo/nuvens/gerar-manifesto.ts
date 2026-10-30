@@ -1,9 +1,11 @@
 import {
   ManifestoDeDesafiosSchema,
   MOEDAS_PADRAO_POR_TIPO,
+  type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
+import { desafiosIniciaisDasNuvens } from './quadros-iniciais'
 
 const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: string[] }> = {
   jardim: {
@@ -48,47 +50,55 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   },
 }
 
-export function criarManifesto() {
+export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
     escopo: 'ilha',
-    desafios: VARIACOES.map((variacao, index) => {
-      const tipo = variacao === 'jardim' ? 'quadro-das-cores' : 'desafio-do-dia'
-      const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-      return {
-        slug: `nuvens-jardim-que-floresce${variacao === 'jardim' ? '' : `-${variacao}`}`,
-        publico: 'kids',
-        ilha: 'nuvens',
-        tipo,
-        quadro: variacao === 'jardim' ? 6 : null,
-        ordem: 60 + index,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[variacao],
-          projetoInicial: montarProjeto(variacao, false),
-          gabarito: montarProjeto(variacao, true),
-          objetivos: objetivos[variacao],
-          desafioExtra: {
-            titulo: 'Mais um desafio',
-            texto:
-              'Faça a tecla Enter recomeçar o jardim: água, tempo e crescimento voltam a zero, o sol volta a três e o jardim deixa de estar florido.',
+    desafios: [
+      ...desafiosIniciaisDasNuvens(publico),
+      ...VARIACOES.map((variacao, index) => {
+        const tipo = variacao === 'jardim' ? 'quadro-das-cores' : 'desafio-do-dia'
+        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+        return {
+          slug: `nuvens-jardim-que-floresce${variacao === 'jardim' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'nuvens',
+          tipo,
+          quadro: variacao === 'jardim' ? 6 : null,
+          ordem: 60 + index,
+          publicar: publico === 'kids',
+          conteudo: {
+            versao: 1,
+            ...textos[variacao],
+            projetoInicial: montarProjeto(variacao, false),
+            gabarito: montarProjeto(variacao, true),
+            objetivos: objetivos[variacao],
+            desafioExtra: {
+              titulo: 'Mais um desafio',
+              texto:
+                'Faça a tecla Enter recomeçar o jardim: água, tempo e crescimento voltam a zero, o sol volta a três e o jardim deixa de estar florido.',
+            },
+            recompensa: {
+              cor: variacao === 'jardim',
+              atracao: 'jardim-que-floresce',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          recompensa: {
-            cor: variacao === 'jardim',
-            atracao: 'jardim-que-floresce',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-          },
-          blocosManuais: { acrescentar: [], retirar: [] },
-        },
-      }
-    }),
+        }
+      }),
+    ],
   })
 }
-if (import.meta.main)
-  await Bun.write(
-    new URL('./nuvens.manifesto.json', import.meta.url),
-    `${JSON.stringify(criarManifesto(), null, 2)}\n`,
-  )
+if (import.meta.main) {
+  for (const publico of ['kids', 'adulto'] as const)
+    await Bun.write(
+      new URL(
+        publico === 'kids' ? './nuvens.manifesto.json' : './nuvens-adulto.manifesto.json',
+        import.meta.url,
+      ),
+      `${JSON.stringify(criarManifesto(publico), null, 2)}\n`,
+    )
+}

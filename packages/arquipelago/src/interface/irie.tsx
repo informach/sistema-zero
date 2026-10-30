@@ -1,8 +1,6 @@
 import { PAINEL_DA_IRIE } from '../estado/moradores'
-import { PainelDeApresentacao } from './apresentacao'
+import { PainelDeAmizadeDoAnel } from './amizade-do-anel'
 
 export function PainelDaIrie() {
-  return (
-    <PainelDeApresentacao quem="irie" painel={PAINEL_DA_IRIE} nome="Iriê" tchau="Tchau, Iriê" />
-  )
+  return <PainelDeAmizadeDoAnel quem="irie" painel={PAINEL_DA_IRIE} />
 }

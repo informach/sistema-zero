@@ -8,6 +8,7 @@ import { paginasDoDiario } from '../sistemas/diario'
 import { PAINEL_DO_MAPA } from '../sistemas/mapa'
 import { PAINEL_DA_FOTO } from '../sistemas/modo-foto'
 import { PAINEL_DAS_VISITAS } from '../sistemas/visitas'
+import { PAINEL_DOS_CONVIDADOS } from '../sistemas/visitas-dos-moradores'
 import { PAINEL_DO_ALBUM } from './album'
 import { ClimaDaSuaIlha } from './clima'
 import { PreferenciasDeConforto } from './conforto'
@@ -101,6 +102,12 @@ export function Menu() {
     fora?: boolean
     ir: () => void
   }> = [
+    {
+      nome: 'Moradores em casa',
+      icone: 'familia',
+      fora: visitando || noFarol,
+      ir: () => abrirPainel(PAINEL_DOS_CONVIDADOS),
+    },
     { nome: 'Diário', icone: 'diario', ir: () => abrirPainel(PAINEL_DO_DIARIO) },
     { nome: 'Álbum de coleções', icone: 'album', ir: () => abrirPainel(PAINEL_DO_ALBUM) },
     { nome: 'Caderno dos Lumis', icone: 'caderno', ir: () => abrirPainel(PAINEL_DO_CADERNO) },

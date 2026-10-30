@@ -1,0 +1,30 @@
+{
+  "remoto": "080b6a3d25ff31f8ce0f293d3eaec2d9b2daccc4",
+  "modelos": [
+    {
+      "arquivo": "packages/arquipelago/src/assets/ilhas/bosque.glb",
+      "objetoGit": "4fa74f9e096adc7b30a555116063170eef19cd04",
+      "sha256": "7498c15f217a1cdc4d006e4bed67f686f291784245d4ccbacf445dee2411ae6d"
+    },
+    {
+      "arquivo": "packages/arquipelago/src/assets/ilhas/vila-doce.glb",
+      "objetoGit": "dd30f808995cdc5c33b7ab423246d14310bffe40",
+      "sha256": "985e471642ec888a322f1ecfe819313c16c4ad1fc1722646b4cf0068bf381be0"
+    },
+    {
+      "arquivo": "packages/arquipelago/src/assets/ilhas/pico.glb",
+      "objetoGit": "6727258bf278641ea27bc147ae73722c706e7e47",
+      "sha256": "242328da3ac0ca7074133ed6a0d67bd61ccf15ce248752e28c564f690bdd52ac"
+    },
+    {
+      "arquivo": "packages/arquipelago/src/assets/ilhas/vale-dos-dinos.glb",
+      "objetoGit": "31b7ee365fd1bdf21759652f9497bbea821ddb86",
+      "sha256": "743038f53d30ee55a6c789ad1907bc7bd87b8782e14642bdc4e9aa8f029172dc"
+    },
+    {
+      "arquivo": "packages/arquipelago/src/assets/ilhas/nuvens.glb",
+      "objetoGit": "3ef4ebcfcfe9a61fb44dc909632e59c5b1c96bb8",
+      "sha256": "b8535fc94a6430f4b612f11f832cfc5ea2d283796974b89500d353c582aaa80c"
+    }
+  ]
+}

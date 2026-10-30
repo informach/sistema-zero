@@ -87,6 +87,7 @@ export interface EstadoDoJogo {
   registrarTempo(usadoHojeSegundos: number, acabou: boolean, limiteDiarioMinutos?: number): void
   adotar(guardado: SalvamentoGuardado): void
   definirModo(modo: EstadoDoJogo['modo']): void
+  definirAvatar(avatar: AvatarDoJogo): void
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
   acharConstelacao(indice: number): void
@@ -132,7 +133,11 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     definirSituacaoSalvamento(salvamentoSituacao) {
       set({
         salvamentoSituacao,
-        ...(salvamentoPausado(salvamentoSituacao) ? { painelAberto: null } : {}),
+        // A confirmação é transitória e já tem um diálogo modal que bloqueia comandos.
+        // Preserva o painel e a câmera para mostrar o recibo na mesma conversa.
+        ...(salvamentoSituacao !== 'confirmando' && salvamentoPausado(salvamentoSituacao)
+          ? { painelAberto: null }
+          : {}),
       })
     },
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
@@ -199,6 +204,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     definirModo(modo) {
       if (get().modo !== modo) set({ modo })
+    },
+    definirAvatar(avatar) {
+      set({ avatar })
     },
     definirCorrida(corrida) {
       const atual = get().corrida

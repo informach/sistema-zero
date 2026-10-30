@@ -6,7 +6,7 @@ import { comecarConversaComAIrie, IRIE_NAS_NUVENS } from '../sistemas/irie'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
 import { lugarDaIrie } from './nuvens'
 
-const IRIE: MoradorNoMundo = {
+export const IRIE: MoradorNoMundo = {
   quem: 'irie',
   url: new URL(irieGlb, import.meta.url).href,
   painel: PAINEL_DA_IRIE,

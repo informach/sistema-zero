@@ -37,25 +37,30 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('o Vale dos Dinos é do Arquiteto e o pacote tem um quadro e três desafios do dia', () => {
+test('o Vale dos Dinos é do Arquiteto e o pacote tem seis quadros e três desafios do dia', () => {
   expect(ilha('vale-dos-dinos').posto).toBe('architect')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
+    'vale-contagem-da-lista',
+    'vale-cinza-retirada',
+    'vale-folhas-bem-usadas',
+    'vale-uma-onda-por-vez',
+    'vale-rodada-conferida',
     'vale-proteja-os-ninhos',
     'vale-proteja-os-ninhos-ondas',
     'vale-proteja-os-ninhos-pontos',
     'vale-proteja-os-ninhos-lista',
   ])
   for (const [i, d] of manifesto.desafios.entries()) {
-    const tipo = i === 0 ? 'quadro-das-cores' : 'desafio-do-dia'
+    const tipo = i < 6 ? 'quadro-das-cores' : 'desafio-do-dia'
     expect(d.ilha).toBe('vale-dos-dinos')
     expect(d.publico).toBe('kids')
     expect(d.tipo).toBe(tipo)
-    expect(d.quadro).toBe(i === 0 ? 6 : null)
-    expect(d.ordem).toBe(60 + i)
+    expect(d.quadro).toBe(i < 6 ? i + 1 : null)
+    expect(d.ordem).toBe(i < 6 ? (i + 1) * 10 : 60 + i - 5)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i === 0,
-      atracao: 'proteja-os-ninhos',
+      cor: i < 6,
+      atracao: i < 5 ? d.slug : 'proteja-os-ninhos',
       moedas: MOEDAS_PADRAO_POR_TIPO[tipo].principal,
       moedasExtra: MOEDAS_PADRAO_POR_TIPO[tipo].extra,
     })

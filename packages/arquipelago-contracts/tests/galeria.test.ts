@@ -108,6 +108,7 @@ describe('salvamento V6: as aparências guardadas', () => {
       nuvens: _nuvens,
       farol: _farol,
       clima: _clima,
+      ilhasVisitadas: _visitas,
       ...resto
     } = criarSalvamentoInicial(AGORA)
     const v5: SalvamentoV5 = {

@@ -9,6 +9,7 @@ import {
   type Plataforma,
   RascunhoInicialDaRotinaSchema,
   type Salvamento,
+  VERSAO_FERRAMENTA_ROTINA,
 } from '@sistemazero/arquipelago-contracts'
 import { cartasNaMao, guardarRotina, mundoDaRotina } from './rotina'
 
@@ -20,6 +21,7 @@ export async function editarRotinaNaPlataforma(opcoes: {
   ler(): Salvamento
   ativo(): boolean
   guardar(s: Salvamento): void
+  jornada?: number
 }): Promise<{ rotina?: CartaoDaRotina[]; motivo?: string }> {
   const { plataforma, lumi } = opcoes
   const inicial = opcoes.ler()
@@ -37,7 +39,7 @@ export async function editarRotinaNaPlataforma(opcoes: {
     const cartas = await cartasDaRotina(lerCartas)
     if (!opcoes.ativo()) return {}
     const molde: MoldeDaRotina = {
-      versao: 1,
+      versao: VERSAO_FERRAMENTA_ROTINA,
       abertura: crypto.randomUUID(),
       lumi,
       rotina: rascunho.data,
@@ -46,7 +48,7 @@ export async function editarRotinaNaPlataforma(opcoes: {
         0,
       ),
       cartas,
-      mundo: structuredClone(mundoDaRotina(inicial)),
+      mundo: structuredClone(mundoDaRotina(inicial, opcoes.jornada)),
       agora: new Date().toISOString(),
     }
     const resposta = await plataforma.abrirFerramenta({

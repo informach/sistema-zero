@@ -160,6 +160,7 @@ import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/a
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { ArquipelagoCoinsRepository } from './infrastructure/persistence/drizzle/arquipelago-coins.repository'
 import { ArquipelagoCourseActivityRepository } from './infrastructure/persistence/drizzle/arquipelago-course-activity.repository'
+import { ArquipelagoInventoryRepository } from './infrastructure/persistence/drizzle/arquipelago-inventory.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
@@ -1168,6 +1169,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const server = createServer({
     arquipelagoCoins: {
       repository: new ArquipelagoCoinsRepository(db),
+      inventory: new ArquipelagoInventoryRepository(db),
       token: env.ARQUIPELAGO_COINS_TOKEN,
     },
     arquipelagoInternal: {

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { ilhasEmVolta } from '../mundo/medidas'
 import { ilhaMaisPerto } from '../sistemas/hud'
-import { abertasNoMapa, ilhasNoMapa, PAINEL_DO_MAPA } from '../sistemas/mapa'
+import { abertasNoMapa, ilhasNoMapa, PAINEL_DO_MAPA, visitadasNoMapa } from '../sistemas/mapa'
 import { useVoz } from './voz'
 
 /** A cor de cada ilha aberta no papel (as fechadas ficam cinza). */
@@ -34,10 +34,11 @@ export function useIlhaAqui(): IlhaId {
   return aqui
 }
 
-/** O desenho do mapa (as ilhas no anel, coloridas quando abertas, e a marca de onde ela está). */
+/** Preenchimento indica visita; contorno colorido indica acesso ainda por explorar. */
 function PapelDoMapa({ aqui, className }: { aqui: IlhaId; className: string }) {
   const jornada = useEstado((s) => s.jornada)
-  const ilhas = ilhasNoMapa(jornada, aqui)
+  const visitas = useEstado((s) => s.salvamento.ilhasVisitadas)
+  const ilhas = ilhasNoMapa(jornada, aqui, visitas)
   return (
     <svg className={className} viewBox="0 0 100 100" aria-hidden="true">
       <circle cx="50" cy="50" r="48" className="arq-mapa-mar" />
@@ -50,7 +51,10 @@ function PapelDoMapa({ aqui, className }: { aqui: IlhaId; className: string }) {
               cx={i.x}
               cy={i.y}
               r={raio}
-              fill={i.aberta ? COR_NO_MAPA[i.ilha.id] : CINZA}
+              fill={i.visitada ? COR_NO_MAPA[i.ilha.id] : CINZA}
+              stroke={i.aberta ? COR_NO_MAPA[i.ilha.id] : undefined}
+              strokeWidth={i.aberta && !i.visitada ? 1.5 : 0}
+              strokeDasharray={i.aberta && !i.visitada ? '2 1' : undefined}
               className={i.aqui ? 'arq-mapa-aqui' : undefined}
             />
             {i.aqui ? <circle cx={i.x} cy={i.y} r={raio + 2.4} className="arq-mapa-marca" /> : null}
@@ -64,18 +68,18 @@ function PapelDoMapa({ aqui, className }: { aqui: IlhaId; className: string }) {
 /** O mapa pequeno do menu de pausa (só enfeite: a lista para ler fica no painel do mapa). */
 export function MapaPequeno() {
   const aqui = useIlhaAqui()
-  const jornada = useEstado((s) => s.jornada)
+  const visitas = useEstado((s) => s.salvamento.ilhasVisitadas)
   return (
     <div className="arq-mapa-pequeno">
       <PapelDoMapa aqui={aqui} className="arq-mapa-papel" />
-      <small>{`${abertasNoMapa(jornada)} de ${ILHAS.length} ilhas com cor`}</small>
+      <small>{`${visitadasNoMapa(visitas)} de ${ILHAS.length} ilhas visitadas`}</small>
     </div>
   )
 }
 
 /**
- * O mapa do arquipélago (da mesa da Maré e do menu): as ilhas no lugar do anel, coloridas quando
- * abertas, a marca de onde a pessoa está e a lista para ler (o desenho é só enfeite para o leitor
+ * O mapa do arquipélago (da mesa da Maré e do menu): acesso e visitas distintos,
+ * a marca da região atual e a lista para ler (o desenho é só enfeite para o leitor
  * de tela). Só olhar; Esc ou "Voltar ao jogo" fecha.
  */
 export function PainelDoMapa() {
@@ -88,13 +92,14 @@ function MapaAberto() {
   const { loja } = useJogo()
   const voz = useVoz()
   const jornada = useEstado((s) => s.jornada)
+  const visitas = useEstado((s) => s.salvamento.ilhasVisitadas)
   const aqui = useIlhaAqui()
   const fechar = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     // O botão fica no fim: focar sem rolar deixa o título e o mapa à vista.
     fechar.current?.focus({ preventScroll: true })
   }, [])
-  const ilhas = ilhasNoMapa(jornada, aqui)
+  const ilhas = ilhasNoMapa(jornada, aqui, visitas)
   return (
     <div className="arq-sobre">
       <div
@@ -105,7 +110,11 @@ function MapaAberto() {
       >
         <h2 id="arq-mapa-titulo">Mapa do arquipélago</h2>
         <p className="arq-quadro-sub">
-          {`As ilhas com cor já abriram: ${abertasNoMapa(jornada)} de ${ILHAS.length}.`}
+          {`${visitadasNoMapa(visitas)} de ${ILHAS.length} ilhas visitadas. ${abertasNoMapa(jornada)} abertas para explorar.`}
+        </p>
+        <p>
+          As ilhas preenchidas já receberam sua visita. O contorno colorido mostra onde você pode
+          ir.
         </p>
         <PapelDoMapa aqui={aqui} className="arq-mapa-papel" />
         <ul className="arq-mapa-lista">
@@ -114,11 +123,16 @@ function MapaAberto() {
               <span
                 className="arq-mapa-cor"
                 aria-hidden="true"
-                style={{ background: i.aberta ? COR_NO_MAPA[i.ilha.id] : CINZA }}
+                style={{ background: i.visitada ? COR_NO_MAPA[i.ilha.id] : CINZA }}
               />
               <b>{i.ilha.nome}</b>
               <small>
-                {i.aqui ? 'Você está aqui.' : i.aberta ? 'Aberta.' : voz.ilhaFechadaNoMapa(i.ilha)}
+                {i.aberta
+                  ? i.visitada
+                    ? 'Visitada.'
+                    : 'Aberta para explorar.'
+                  : voz.ilhaFechadaNoMapa(i.ilha)}
+                {i.aqui ? ' Você está nesta região.' : ''}
               </small>
             </li>
           ))}

@@ -32,6 +32,7 @@ import {
   tabuasDaPonte,
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { DescobertaDaIlha } from './descoberta-da-ilha'
 import {
   aplicarOpacidade,
   IlhaCompleta,
@@ -259,6 +260,10 @@ function IlhaDoAnel({
   const flutua = ilha.id === 'nuvens'
   const Viva = ILHAS_VIVAS[ilha.id]
   const y = flutua ? ALTURA_DAS_NUVENS : 0
+  const areaDaDescoberta = useMemo(
+    () => ({ ilha: ilha.id, ...centro, raio: 12, alturaMinima: y + ALTURA_DA_TERRA }),
+    [ilha.id, centro, y],
+  )
   // O chão de antes, girado como o modelo (o grupo fica sem giro; a cópia do modelo é que gira).
   const apoios = useMemo(() => {
     const g = giroDaIlha(ilha)
@@ -297,6 +302,7 @@ function IlhaDoAnel({
         )}
       </group>
       {/* O que mexe na ilha (no Bosque: cipós, escalada, lago, percurso): só com a completa ativa. */}
+      {preparada && completaColide(estado) ? <DescobertaDaIlha area={areaDaDescoberta} /> : null}
       {preparada && completaColide(estado) && Viva ? (
         <Viva ilha={ilha} centro={centro} preparada={preparada} troca={troca} />
       ) : null}

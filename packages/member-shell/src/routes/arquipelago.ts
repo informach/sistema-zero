@@ -2,6 +2,7 @@ import 'server-only'
 import {
   IrmaosDoJogadorSchema,
   type IrmaosParaOJogo,
+  JogosDoMuralSchema,
   MinijogosSchema,
   PERFIS_DA_FAMILIA_MAXIMO,
   type SemanaDaFamiliaParaOsPais,
@@ -92,6 +93,9 @@ export function createArquipelagoRoutes(deps: {
         const resposta = repasse(r)
         if (
           caminho.startsWith('/minijogos') ||
+          caminho.startsWith('/profissoes/') ||
+          caminho.startsWith('/insumos/') ||
+          caminho.startsWith('/pedidos/') ||
           caminho.startsWith('/familia/minijogos') ||
           caminho.startsWith('/irmaos')
         )
@@ -130,6 +134,18 @@ export function createArquipelagoRoutes(deps: {
     }
 
   return {
+    arquipelagoJogosDoMural: {
+      GET: async () => {
+        const r = await gateway.gatewayFetch('/hub/my-playable-showcase', { method: 'GET' })
+        const parsed = JogosDoMuralSchema.safeParse(r.body)
+        const resposta =
+          r.status === 200 && parsed.success
+            ? NextResponse.json(parsed.data)
+            : repasse({ ...r, body: r.status === 200 ? null : r.body })
+        resposta.headers.set('cache-control', 'private, no-store')
+        return resposta
+      },
+    },
     arquipelagoTodosMinijogosDaFamilia: {
       GET: async () => {
         const lista = await perfisProntos()
@@ -219,6 +235,12 @@ export function createArquipelagoRoutes(deps: {
     arquipelagoSessaoTempo: { POST: comCorpo('/tempo/sessao', 'POST', CORPO_PEQUENO) },
     /** Cartões da rotina dos Lumis (os de controle pelos blocos conquistados nos cursos). */
     arquipelagoCartas: { GET: () => chamar('/cartas', 'GET') },
+    arquipelagoInsumosPendentes: { GET: () => chamar('/insumos/pendente', 'GET') },
+    arquipelagoInsumosComprar: { POST: comCorpo('/insumos/comprar', 'POST', 1024) },
+    arquipelagoPedidosPendentes: { GET: () => chamar('/pedidos/pendentes', 'GET') },
+    arquipelagoPedidosEntregar: { POST: comCorpo('/pedidos/entregar', 'POST', 1024) },
+    arquipelagoProfissaoIniciar: { POST: comCorpo('/profissoes/iniciar', 'POST', 4096) },
+    arquipelagoProfissaoConcluir: { POST: comCorpo('/profissoes/concluir', 'POST', 4096) },
     /** A galeria do Arquipélago (29/10/2026): o que ela comprou, o saldo e comprar. */
     arquipelagoGaleria: { GET: () => chamar('/galeria', 'GET') },
     arquipelagoGaleriaCompras: { POST: comCorpo('/galeria/compras', 'POST', CORPO_PEQUENO) },

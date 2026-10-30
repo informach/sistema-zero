@@ -164,6 +164,10 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
         ),
       },
     )
+    .get('/hub/my-playable-showcase', async ({ headers, set }) => {
+      set.headers['cache-control'] = 'private, no-store'
+      return deps.showcase.myPlayableShowcase(resolveActor(headers))
+    })
     .get('/hub/my-showcase-stats', async ({ headers }) => {
       // Rota de ALUNO (JWT no gateway; aqui o token interno + ator dos headers):
       // agregado da jornada — "seus jogos já foram jogados N vezes".

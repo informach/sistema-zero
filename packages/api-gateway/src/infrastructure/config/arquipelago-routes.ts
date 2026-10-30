@@ -130,6 +130,44 @@ export function arquipelagoGateway(opts: {
       },
       // A galeria (29/10/2026): ler o que ela comprou e o saldo, e comprar uma aparência. Comprar
       // gasta moedas pelo Members: corpo pequeno e um ritmo de quem toca num botão.
+      ...(['iniciar', 'concluir'] as const).map<Route>((acao) => ({
+        ...jogador,
+        id: `arquipelago-profissao-${acao}`,
+        methods: ['POST'],
+        pathPattern: `/arquipelago/profissoes/${acao}`,
+        maxBodyBytes: 4096,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      })),
+      {
+        ...jogador,
+        id: 'arquipelago-insumos-pendente',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/insumos/pendente',
+        rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-pedidos-pendentes',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/pedidos/pendentes',
+        rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-pedidos-entregar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/pedidos/entregar',
+        maxBodyBytes: 1024,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-insumos-comprar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/insumos/comprar',
+        maxBodyBytes: 1024,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      },
       {
         ...jogador,
         id: 'arquipelago-galeria',

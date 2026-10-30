@@ -73,7 +73,7 @@ export interface ServicoDoJogo {
 }
 
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */
-export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi'
+export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi' | 'avatar'
 export interface PedidoDeFerramenta {
   ferramenta: FerramentaDaPlataforma
   /** Identifica o que o jogo quer de volta (o objeto, o desafio). */
@@ -84,6 +84,7 @@ export interface PedidoDeFerramenta {
 export type ResultadoDeFerramenta =
   | { situacao: 'pronto'; criacaoId: string }
   | { situacao: 'rotina-pronta'; resultado: ResultadoDaFerramentaRotina }
+  | { situacao: 'avatar-pronto'; avatar: AvatarDoJogo }
   | { situacao: 'cancelado' }
   | { situacao: 'indisponivel'; motivo: string }
 

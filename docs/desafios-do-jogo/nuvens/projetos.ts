@@ -116,7 +116,7 @@ const arte: Record<string, string> = {
     '<rect x="2" y="5" width="168" height="37" rx="13" fill="#5b4596"/><rect x="2" y="1" width="168" height="37" rx="13" fill="#7f66c4"/>',
   ),
 }
-const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
+export const assetsDoNuvens: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
   id: `nuvens-${name}`,
   name,
   kind: 'image',
@@ -264,7 +264,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: name }),
-    assets,
+    assets: assetsDoNuvens,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
 }

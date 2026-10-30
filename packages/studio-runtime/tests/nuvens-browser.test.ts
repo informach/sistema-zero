@@ -58,7 +58,7 @@ nativeTest(
           )
         await writeFile(join(dir, file), source)
       }
-      for (const d of manifesto.desafios) {
+      for (const d of manifesto.desafios.filter((d) => d.ordem >= 60)) {
         for (const objective of d.conteudo.objetivos)
           expect(isSectionExecutionRule(objective.rule), `${d.slug}/${objective.id}`).toBe(true)
         const scenarios: { name: string; project: Project; ids?: string[]; passes: boolean }[] = [

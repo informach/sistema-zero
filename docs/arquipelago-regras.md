@@ -527,6 +527,15 @@ Arquivos: `sistemas/horta.ts` e `mundo/horta.tsx`.
 - **A horta cresce no tempo de verdade,** também com o jogo fechado.
 - **Colheita** (`COLHEITA`): alface 2, tomate 3, milho 2. Cada colheita devolve também 1 semente
   da mesma planta, então a horta nunca acaba.
+- **Colheita especial:** com as Nuvens abertas, sol acrescenta 1 tomate, nublado acrescenta
+  1 alface e chuva acrescenta 1 milho. Humor ótimo acrescenta mais 1 alimento, com ou sem
+  clima liberado. Valem o clima e o humor no momento de colher. Não há sorteio nem redução da
+  colheita normal por ficar longe. O resultado anuncia cada bônus, sem criar alimento novo.
+- **Tudo precisa caber:** a mão e os Lumis conferem a quantidade inteira e a semente antes de
+  tirar a planta. Se a mochila ou a carga não comportar tudo, o canteiro continua maduro.
+  O bônus nunca vira alimento perdido por arredondamento ou corte no teto de 999.
+- **Prévia da rotina:** mostra o clima e o humor da abertura. Usa a mesma regra de colheita do
+  mundo, mas não muda a ilha. Se o contexto mudar antes do Testar, o bônus pode mudar também.
 - **Qual semente vai no canteiro:** o canteiro vazio planta a primeira semente que a pessoa tiver,
   nesta ordem: alface, tomate, milho (`ORDEM` em `mundo/horta.tsx`).
 
@@ -575,6 +584,31 @@ são de exemplo, para ajustar.
 - Só aparecem as receitas que ela já sabe (`receitasConhecidas`, pelos corações com o Bento); a
   lista diz quantas o Bento ainda vai lembrar.
 - O raio da ação é 2,2.
+
+#### Receitas das amizades e da coleção do Bosque (L08)
+
+O diário e os lugares de cozinhar mostram o mesmo livro. A receita aprendida fica disponível
+pela conquista, sem prazo para usar e sem perda por ficar um tempo fora. As sete receitas
+anteriores mantêm seus ingredientes e efeitos. Estas cinco completam o catálogo atual:
+
+| Receita | Como aprender | Ingredientes | Onde fazer | Efeito ao comer |
+|---|---|---|---|---|
+| Moqueca de legumes | Um coração com Maré | 2 tomates, 1 milho e 1 leite de coco | Bancada | Fome +55, energia +10 |
+| Açaí na tigela | Um coração com Jade | 1 polpa de açaí | Bancada | Fome +25, energia +15 |
+| Mingau de milho | Um coração com Floco | 1 fubá e 1 leite | Bancada | Fome +35, energia +10 |
+| Canjica | Um coração com Iriê | 2 milhos e 1 leite | Bancada | Fome +35, diversão +10 |
+| Salada colorida | Achar os quatro bichos do Bosque | 2 alfaces, 2 tomates e 1 milho | Bancada | Fome +55, energia +15 |
+
+Cada preparo faz um prato. Os valores são escolhas de equilíbrio desta entrega; as necessidades
+continuam limitadas a 100. Os pedidos diários dos quatro moradores dão os ingredientes que não
+vêm da horta, depois de aprender a receita. A pista no diário e na bancada explica a origem.
+Repetir o pedido entregue não dá outra cesta. Se a cesta inteira não couber, o pedido e os itens
+continuam intactos para tentar depois. Cozinhar também recusa antes de gastar ingredientes se
+o prato não couber. Os itens usam nome e ícone na mochila; não há modelo de prato novo no mundo.
+
+A pipoca de festa continua restrita à fogueira da Junina. Nenhuma data sazonal pendente é
+ativada por esta mudança. A coleção do Recife conta três descobertas: baú, página e tesouro.
+O total de corais achados é outro progresso e não entra nessa contagem.
 
 ### 6.6 O personagem
 
@@ -1278,8 +1312,8 @@ de mentirinha: ela atende o balcão, sem gastar nada do inventário.
   (vai para a bandeja, no máximo `MAXIMO_NA_BANDEJA`, 5; tocar na bandeja tira um) e entrega.
   Certo, vem o próximo; errado, conta um engano, a bandeja esvazia e o freguês repete o pedido.
   Bandeja vazia não entrega. Não há relógio: ninguém perde por demorar.
-- **Os pedidos** são sorteados pelo balcão, o dia e quantos turnos ela já fez ali
-  (`pedidosDoTurno`): o mesmo turno repete os pedidos, o seguinte traz outros.
+- **Os pedidos** vêm da sessão do serviço, com seis bandejas por balcão e dia. Reabrir mantém
+  os mesmos pedidos. O jogo e o serviço usam a mesma regra pura dos contratos.
 - **Estrelas** (`estrelasDoTurno`): nenhum engano, 3; até dois, 2; mais, 1. O salvamento guarda as
   melhores de cada balcão.
 - **Pagamento:** só o primeiro turno do dia em cada balcão paga (`pagoEm`). Padaria: 1 fubá, 1
@@ -1287,9 +1321,13 @@ de mentirinha: ela atende o balcão, sem gastar nada do inventário.
   pago na padaria também vale `AMIZADE.turno` (10) com o Bento e, se passar um coração, traz a
   receita nova e a página do diário (`ajudarOBento`). Os outros turnos do dia são só pela diversão
   e pelas estrelas.
-- **Moedas:** os turnos ainda não pagam moedas. A proposta prevê moedas baixas nos turnos, dentro
-  do teto semanal, mas cada recompensa precisa ser autorizada no serviço antes de ligar (o
-  salvamento é escrito pelo aparelho).
+- **Moedas:** cada balcão dá 5 no primeiro turno do dia, dentro do teto semanal de 100 do jogo.
+  O serviço cria a sessão e confere as seis bandejas. O aparelho não escolhe prêmio nem dia.
+  Resposta perdida é retomada com a mesma chave. Teto ou carteira fora do ar guardam o prêmio
+  no serviço, para tentar quando um balcão abrir novamente. Não se perdem moedas por esperar.
+- **Mochila cheia:** ingredientes do turno e novas cestas do Bento precisam caber inteiros.
+  Sem espaço, a bandeja continua para tentar outra vez; pedido e presente não são consumidos.
+  Um turno antigo não apaga o registro de ingredientes já recebidos em um dia mais novo.
 - **Textos:** as falas dos fregueses concordam em número e gênero (`itensPorExtenso`) e seguem as
   regras de texto (sem travessão, sem exclamação, sem começar com pergunta), conferidas no teste.
 - Testes: `tests/turnos.test.ts`; navegador: `bun playground/verificar-turnos-browser.ts`.
@@ -1433,7 +1471,7 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   `objetos.ts`): o objeto chega com a função pronta e funciona em holograma; com aparência fica
   completo.
   - **De onde vem** (`ganharProjetos`, conferido a cada mudança do salvamento): a geladeira, do
-    primeiro pedido entregue (hoje o da Capi, o único pedido do jogo); a casinha, de adotar um bicho
+    primeiro pedido da ilha central (a primeira colheita manual); entregar à Capi também concede o projeto se ainda faltar; a casinha, de adotar um bicho
     no Bosque. O Zappy avisa: "Chegou o projeto azul: geladeira. Ponha em casa no modo Construir.".
     Os outros objetos (forno, aquário, lareira, banda, fliperama, museu) estão no catálogo com o
     molde; a função e a origem deles entram com as ilhas de cada um.
@@ -1576,8 +1614,7 @@ Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação 
 - Níveis: Começando desde 0, Gostoso desde 6, Aconchegante desde 12 e Muito aconchegante desde
   22 pontos. São de uma a quatro estrelas, acompanhadas de texto, não apenas de cor.
   Teto da soma: 39 pontos. `ACONCHEGO_QUE_CHAMA_VISITA` = 12 e `ACONCHEGO_DA_FESTA` = 22,
-  alinhados aos dois níveis de cima. Visitas e festas ficam para outra fase; estes números
-  ainda não acionam moradores, recompensas ou eventos.
+  alinhados aos dois níveis de cima. As visitas de moradores e festas em casa seguem a seção 6.16.2.
 - Olhar: toque de até 6 px seleciona o cômodo no chão; arrastar continua movendo a câmera.
   A célula observada é transitória, para continuar no mesmo lugar quando o ID do cômodo muda.
   O botão Aconchego abre o painel da barra, com seletor acessível para teclado e toque.
@@ -1588,6 +1625,58 @@ Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação 
 
 Testes: `tests/aconchego.test.ts` e `playground/verificar-aconchego-browser.ts`, usando plataforma
 falsa e sem persistência. Prints e evidências em `docs/qa/2026-10-28-arquipelago-aconchego.md`.
+
+### 6.16.2 Moradores em casa (L06, 29/10/2026)
+
+Com 12 pontos em um cômodo, uma visita conhecida pode aparecer na sua casa. Com 22, o menu
+**Moradores em casa** oferece **Começar festa**, reunindo até três moradores. Não soma os pontos
+de salas diferentes. A casa original usa as medidas da mesma planta do modo Construir.
+
+- A escolha é estável por perfil e dia de São Paulo. Só entram moradores com quem já houve
+  conversa e cuja ilha está liberada pela jornada. Kids e adulto usam as mesmas regras.
+- A busca parte da porta principal. Respeita paredes, portas, móveis e objetos, deixa uma
+  célula livre de folga em volta e pelo menos 3 metros entre convidados. Se a presença cortar
+  o caminho para uma célula antes alcançável, o lugar é recusado. Não empurra móveis nem avatar.
+- Os modelos, colisores e conversas são os mesmos das ilhas. Enquanto um morador está na casa,
+  sua presença original fica oculta. Conversa, presente e pedido continuam com o limite diário.
+- Ao construir, entrar em visita de outra pessoa, perder acesso ou afastar-se mais de 22 metros
+  do centro da casa, os convidados saem e liberam suas cópias. Ao voltar, o encontro escolhido
+  pode reabrir. **Descansar das visitas** mantém a casa sem convidados até convidar novamente.
+- Não há moedas extras, penalidade por faltar ou campo novo no salvamento. A escolha do encontro
+  dura esta montagem do jogo. Ao reabrir, volta a visita automática.
+- A planta só é recalculada quando casa, móveis, projetos, moradores, dia ou escolha mudam.
+  Não roda no passo da física. O painel usa os mesmos cartões, foco e botões da comunidade.
+
+Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posicao=8`.
+Verificador: `playground/verificar-convidados-browser.ts`; evidências em
+`docs/qa/2026-10-29-convidados/`.
+
+### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
+
+O diário mostra uma sugestão nova a cada segunda-feira, pelo dia civil de São Paulo. A lista
+V1 começa em 26/10/2026 e alterna seis temas: luz, caminho da horta, cores próprias, histórias,
+cozinha e visitas. Depois do sexto, recomeça. Os dois públicos veem o mesmo tema.
+
+Todas as ideias continuam disponíveis no seletor. Trocar a semana não apaga uma obra, cobra
+presença nem exige terminar algo. Não há avaliação automática, moeda ou compra obrigatória.
+Cada sugestão traz um caminho com os recursos que já existem. O botão para construir só abre
+na própria casa e mantém as recusas de acesso, tempo, visita e salvamento.
+
+O tema vem da data e não ocupa espaço no salvamento. A virada de ano não reinicia a sequência.
+
+### 6.16.4 Feira semanal da Vila (L09, 29/10/2026)
+
+A barraca de brinquedos da Vila Doce abre a feira com E ou Usar. Três das nove aparências do
+catálogo ganham destaque a cada segunda-feira de São Paulo. As outras continuam na mesma tela,
+com o mesmo preço. Em três semanas, todas passam pelo destaque. Nada some por faltar.
+
+Comprar continua usando a galeria existente, com confirmação e saldo informado pelo serviço.
+Uma aparência comprada não é cobrada novamente. O projeto azul precisa estar na casa antes
+de oferecer sua aparência; o projeto já funciona sem comprar. Visita, suporte, tempo bloqueado
+ou conflito de salvamento não permitem compra. Sair da ilha fecha a feira.
+
+A vitrine não cria carteira, inventário ou prêmio. A unificação da propriedade com o inventário
+do Members continua em L04. Insumos e peças sazonais são entregas distintas, ainda abertas.
 
 ### 6.17 O diário e as pegadas
 
@@ -2288,8 +2377,9 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
 - **No mundo** (`RotinaDosLumis`, montado na cena): um Lumi de cada vez (os outros esperam na
   fila) aparece um pouco acima do primeiro canteiro, com o GLB da espécie na escala 0,5, e faz os
   passos: `andar` voando, `trabalhar` em cada Regar, Colher e Guardar tudo, `parado` no Esperar e
-  `feliz` no fim, antes de sumir. O ritmo (`RITMO_DA_ROTINA`, **proposta**): voo a 2 m/s, 0,9 m
-  acima da terra do canteiro e 0,1 m acima do topo da geladeira, 1,2 s de trabalho e 1,6 s de festa.
+  `feliz` no fim, antes de sumir. O ritmo da espécie vem de `PERFIS_DOS_LUMIS`: voo de 2 a 3 m/s
+  e trabalho de 0,9 a 1,2 s. As alturas são 0,9 m acima da terra do canteiro e 0,1 m acima do topo
+  da geladeira. A festa final dura 1,6 s.
   Cada passo vale no salvamento na hora em que termina. Com o jogo parado (menu, painel), o Lumi
   espera. O Lumi atravessa as paredes para chegar à geladeira.
 - **O aviso no HUD:** "Rotina do Quindim: regando o canteiro 2" com "Parar", no alto à direita
@@ -2304,9 +2394,18 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
   nascer."), sem os casos vazios do Escolha. "Apagar a rotina" esquece a guardada.
 - **A última vez:** o painel mostra como foi a última vez de cada Lumi nesta sessão (o que ele fez,
   passo a passo, e o motivo se parou), aberta quando parou no meio.
-- **Fica para depois (proposta):** o "jeito próprio" de cada Lumi da proposta ("um é rápido, outro
-  carrega muito, outro brilha à noite") ainda não muda a rotina; todos voam e trabalham no mesmo
-  ritmo. Os lugares são só a horta e a geladeira da ilha central.
+- **Jeito próprio:** Bolha e Pluma voam a 3 m/s e levam 8 alimentos; Búzio, Ipê, Brigadeiro e
+  Ovinho levam 24, a 2 m/s. Os demais levam 12. Pitanga, Quindim e Gelinho voam a 2,5 m/s e
+  trabalham em 1 s; Brotinho trabalha em 0,9 s. Estrelinha, Pérola, Cristal e Algodão têm luz
+  noturna 1,5 vez mais intensa. Os demais usam a luz original. O catálogo compartilhado é
+  `arquipelago-contracts/src/lumis-trabalho.ts`; raridade não torna uma espécie melhor em tudo.
+- **Colheita inteira:** carga ou mochila sem espaço deixam o canteiro maduro, com um aviso.
+  A semente que volta também precisa caber. Guardar libera só a carga realmente transferida;
+  geladeira cheia deixa o restante na mochila. A colheita manual segue a mesma proteção.
+- **Prévia:** usa o mesmo intérprete e os mesmos limites da espécie. O passo didático não mede
+  o tempo de voo. O álbum e o mini estúdio mostram capacidade e velocidade, inclusive no celular.
+- **Receita inteira:** se os pratos prontos não couberem, não gasta ingredientes. O painel pede
+  para usar ou guardar alguns pratos antes de tentar de novo.
 - **Moedas:** nada disto paga moedas.
 
 ### Mini estúdio de blocos dos Lumis (fase2-14)
@@ -2342,7 +2441,7 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
 ### 9.2 O teto semanal
 
 Arquivo: `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`,
-constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150`.
+constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 100`.
 
 - **A semana:** de segunda a domingo, no horário de São Paulo
   (`date_trunc('week', ...)` no fuso `America/Sao_Paulo`).
@@ -2353,9 +2452,12 @@ constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150`.
   `members/src/domain/gamification/coins.ts`) não inclui as moedas do jogo
   (`applyDailyCap`).
 
-### 9.3 A conta que levou ao 150
+### 9.3 O teto escolhido para o jogo
 
-Decisão de 27/10/2026. Os valores dos cursos estão em `members/src/domain/gamification/coins.ts`
+Em 29/10/2026, a revisão alinhou o código ao teto de 100 moedas por semana escolhido
+pela dona na conversa. O valor anterior de 150 não autoriza remover saldo já recebido.
+As compras não diminuem a soma de ganhos da semana, e um prêmio pendente guarda sua chave.
+Os valores dos cursos estão em `members/src/domain/gamification/coins.ts`
 (`COIN_VALUES`, `quizPassedCoins`) e em `members/src/domain/gamification/missions.ts`.
 
 | Atividade nos cursos | Moedas |
@@ -2369,8 +2471,8 @@ Decisão de 27/10/2026. Os valores dos cursos estão em `members/src/domain/gami
 - **Quem estuda com regularidade** ganha entre 150 e 300 moedas por semana nos cursos.
 - **Quem usa muito** chega a cerca de 700 por semana, limitado pelo teto diário (7 dias × 100).
   Os marcos de sequência de dias ficam fora do teto diário.
-- **O jogo dá no máximo metade** do que ganha quem estuda com regularidade (cerca de 300 por
-  semana). Por isso o teto é 150, e os cursos continuam sendo a fonte principal de moedas.
+- **O jogo tem teto de 100 por semana**, independente do teto diário dos cursos. Os números
+  de moedas dos cursos são regras de recompensa, não uma medição de quanto cada pessoa estuda.
 - **Gasto só cosmético.** São 138 itens pagos de avatar e de quarto, de 30 a 300 moedas, com
   mediana de 70:
   - 74 peças do avatar, em `members/src/domain/avatar/avatar3d-catalog.ts`;
@@ -2458,8 +2560,8 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Museu dos fósseis (`museu-classico`) | Museu dos fósseis | 70 |
 
 - **Por que esses preços:** de 2 a 4 desafios principais (20 moedas cada), ou uns 4 a 7 desafios do
-  dia (10 e 5); a planta, um enfeite pequeno, custa um desafio e meio. O piso é um desafio (`PRECO_MINIMO_DA_GALERIA` 20) e o teto é metade do teto
-  semanal do jogo (`PRECO_MAXIMO_DA_GALERIA` 75, de 150): algumas tarefas, nunca uma semana
+  dia (10 e 5); a planta, um enfeite pequeno, custa um desafio e meio. O piso é um desafio (`PRECO_MINIMO_DA_GALERIA` 20) e o teto fica abaixo do teto
+  semanal do jogo (`PRECO_MAXIMO_DA_GALERIA` 75, de 100): algumas tarefas, nunca uma semana
   inteira. Fica dentro da faixa da loja do quarto e do avatar (30 a 300, mediana 70).
 - **O modelo:** hoje cada aparência é o modelo do Blender do próprio objeto (`modelo: 'objeto'`,
   `arquipelago/src/assets/objetos/<objeto>.glb`). Os ids são estáveis (estão no banco e nos
@@ -2518,7 +2620,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Nome, ilha e cor de cada Lumi no álbum | 14 espécies (§6.17.1) | `arquipelago/src/sistemas/album.ts`, `ESPECIES_DE_LUMI` |
 | Tetos da rotina dos Lumis | 16 por rotina, 32 somando, 3 níveis (§8.2) | `arquipelago-contracts/src/rotinas.ts`, `LIMITES_DA_ROTINA` |
 | Cartões olhados numa execução | 200 | `arquipelago/src/sistemas/rotina.ts`, `CARTOES_POR_EXECUCAO` |
-| Ritmo do Lumi na rotina | voo 2 m/s, trabalho 1,2 s, festa 1,6 s | `rotina.ts`, `RITMO_DA_ROTINA` |
+| Ritmo do Lumi na rotina | voo 2 a 3 m/s, trabalho 0,9 a 1,2 s, carga 8 a 24, festa 1,6 s | contratos: `PERFIS_DOS_LUMIS`, `RITMO_DA_ROTINA` |
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |
@@ -2575,7 +2677,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
 | Moedas padrão | 20 e 10; desafio do dia 10 e 5 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
-| Teto semanal de moedas do jogo | 150 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
+| Teto semanal de moedas do jogo | 100 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
 | Preços da galeria | 30 a 70 (seção 9.9) | `arquipelago-contracts/src/galeria.ts`, `GALERIA` |
 | Faixa de preço da galeria | 20 a 75 | `galeria.ts`, `PRECO_MINIMO_DA_GALERIA` e `PRECO_MAXIMO_DA_GALERIA` |
 | Aparências guardadas por objeto | 12 | `salvamento.ts`, `APARENCIAS_GUARDADAS_MAXIMO` |
@@ -2589,7 +2691,8 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 ## 11. Diferenças encontradas entre documentação e código
 
 O levantamento de 27/10/2026 achou dez pontos em que a documentação ou um comentário do código
-dizia outra coisa. Todos foram corrigidos no mesmo dia, seguindo o código:
+dizia outra coisa. O registro abaixo preserva a revisão histórica; a decisão posterior de
+29/10 restaura o teto de 100 indicado pela dona, conforme a seção 9.3:
 
 1. `docs/plans/2026-10-27-arquipelago-desafios.md` (linha "Moedas"): o teto semanal passou de 100
    para 150, e o prêmio que bate no teto é cobrado de novo numa semana seguinte (antes dizia que
@@ -2761,6 +2864,12 @@ Plano: `docs/plans/2026-10-29-arquipelago-recife.md`. Evidências e limites da c
 `docs/qa/2026-10-29-recife/README.md`.
 
 ## Minijogos aprovados viram brinquedos (desafios-16, 29/10/2026)
+
+- O fliperama também mostra até 24 publicações recentes do próprio perfil no Mural, separadas
+  por comunidade. Só entram publicações visíveis com jogo. Elas abrem no player público da
+  plataforma, sem copiar fonte para o salvamento. Retirar a publicação impede a próxima abertura,
+  mesmo que o botão ainda estivesse na lista. Voltar fecha o player e atualiza a lista.
+  Não há moeda, prêmio ou desbloqueio adicional por abrir um jogo do Mural.
 
 - Passar nos objetivos principais de um desafio com recompensa.atracao guarda uma cópia do
   projeto conferido. Há uma por jogador e desafio. Refazer e passar troca somente essa cópia;
@@ -3165,10 +3274,23 @@ Navegador: `playground/verificar-montaria-browser.ts`, no computador e no celula
   porque a visita não traz os corais dele.
 - **O mapa.** Na mesa de mapas da Maré (âncora `mapa`), "Ver o mapa do arquipélago" (até 2 m)
   abre o mapa: as oito ilhas desenhadas na posição do anel do mundo, a sua ilha no meio com o
-  Farol, as abertas pela jornada coloridas e as fechadas em cinza. A lista ao lado diz "Aberta.",
-  "Você está aqui." (no Recife) ou o que abre a ilha, pela voz do jogo: no Kids "Abre em Mestre
-  dos Jogos." (o Farol "Acende na Lenda."), no adulto "Abre na etapa 5 da sua jornada.". Só
-  olhar: nada é gravado. Esc ou "Voltar ao jogo" fecha.
+  Farol. A jornada abre o acesso; a visita preenche a ilha no mapa. Contorno colorido indica
+  ilha aberta ainda por explorar; cinza sem contorno indica ilha fechada. A lista diz
+  "Visitada.", "Aberta para explorar." ou o que abre a ilha, pela voz da comunidade. O marcador
+  diz "Você está nesta região.", pois acompanha a ilha mais próxima mesmo durante a travessia.
+  Esc ou "Voltar ao jogo" fecha. Abrir o mapa não grava visita.
+
+### Mapa descoberto (L10, 30/10/2026)
+
+Uma visita fica guardada quando a pessoa está apoiada no chão, no modo de andar, com o chão
+carregado. O miolo do anel usa 12 m de raio; o gramado central, 24 m; o Farol já aberto, 4 m.
+A altura precisa estar acima da terra, inclusive os 8 m das Nuvens. Passar no mar, barco,
+balão ou planador não conta. Pausa, suporte e visita à casa alheia não registram descoberta.
+
+O salvamento V18 guarda oito marcas em `ilhasVisitadas`. Versões anteriores começam sem
+marcas porque não havia registro confiável de visita. Nada da mochila, diário ou jornada
+é apagado. Duas sessões juntam suas marcas sem duplicar itens. Esse registro não dá prêmio,
+moeda, bloco ou acesso. A conferência local está em `docs/qa/2026-10-30-mapa-descoberto/`.
 
 Plano, decisões e pedidos de arte: `docs/plans/2026-10-29-arquipelago-recife-corais-aquario-mapa.md`.
 Testes: `tests/corais-do-recife.test.ts` (regras, os arquivos, o fundo e a grade de andar até cada
@@ -3331,3 +3453,106 @@ máxima de todos os campos caiba no teto.
 - **A ilha no alto** é a mais perto da pessoa (na ponte, a ponta mais perto), conferida duas vezes por
   segundo; o Quadro das Cores dela aparece quando a ilha tem algum desafio.
 - **As moedas** são o saldo da conta lido do serviço da galeria; sem leitura, não aparecem.
+
+## Amizade nas seis ilhas e páginas que faltavam (L02/L06, 29/10/2026)
+
+Maré, Floco, Jade e Iriê agora têm amizade, presente e pedido diário, como Capi e Bento.
+A primeira conversa do dia soma 10 pontos. Um pedido entregue soma 30. O primeiro presente
+de comida soma 20 se for um preferido ou 8 se for outro. No aniversário, esse presente vale
+o dobro. Cada coração vale 100, até cinco corações. Faltar um dia nunca tira pontos.
+
+Maré gosta de salada e alface; Floco, de pipoca e chocolate quente; Jade, de milho e salada;
+Iriê, de tomate e pipoca. Os pedidos usam alface, tomate, milho e pipoca já existentes.
+Aniversários escolhidos para o calendário do jogo: Maré 8 de junho, Floco 21 de junho,
+Jade 18 de maio e Iriê 21 de setembro. Não são informações históricas da proposta.
+
+Com dois corações, Floco, Jade e Iriê entregam as páginas do Pico, Vale e Nuvens. A fala da
+página vem por último. O diário mostra quantos corações faltam e conserva a página depois
+de reabrir. A página do Recife continua sendo encontrada no navio. Floco continua com o
+planador, Jade com o ovo e Íris com a apresentação do final.
+
+O salvamento V17 acrescenta os quatro registros, preservando tudo da V16. Amizade e itens
+consumidos pertencem à mesma alteração, sem somar duas abas. O painel não entrega presentes
+durante visita, suporte, conflito ou sincronização do tempo. No caso pesado dos testes,
+com seis pedidos em Unicode, o documento ocupa 62.605 de 65.536 bytes. Não há corte de dados.
+
+## Galeria compartilhada com o quarto (L04, 30/10/2026)
+
+A posse do aquário, do fliperama e da planta vale no jogo e no Meu quarto. Cada lugar
+usará o seu próprio visual. O preço é o mesmo: 70 moedas para aquário ou fliperama,
+30 para a planta. Quem já comprou não paga outra vez nem paga diferença. As outras
+seis aparências continuam só no jogo, pois ainda não têm modelo no quarto.
+
+A compra só muda a aparência. O projeto azul já funciona sem ela, e comprar no
+quarto não libera o projeto azul. A posse e as moedas ficam no Members, separadas
+por pessoa e comunidade. Perder a resposta ou clicar duas vezes não cobra novamente.
+
+Antes de trocar o sistema, as compras antigas são conferidas e adotadas sem gastar
+moedas. Uma compra sem comprovação fica para revisão, nunca vira nova cobrança.
+Se o serviço não responder, a interface avisa; não finge que os objetos desapareceram.
+
+
+## Primeiro pedido da ilha central (L02/L03, 30/10/2026)
+
+O Zappy convida a plantar, regar e colher um alimento na horta da própria ilha.
+As sementes iniciais bastam. A alface mantém seus três minutos de crescimento,
+e o pedido não tem prazo. O Diário explica a recompensa e o Agora mostra um passo
+por vez, sem repetir a mesma instrução de regar ou colher.
+
+A primeira colheita manual que cabe inteira na mochila entrega o projeto azul da
+geladeira. Alimento, semente devolvida e projeto entram no mesmo salvamento.
+Colheita imatura ou mochila cheia não consome nem entrega nada. Quem já conquistou
+a geladeira conserva a data e as aparências. A entrega à Capi continua disponível.
+A função funciona em holograma; aparência e ferramentas seguem suas próprias regras.
+Não há moedas, blocos concedidos nem uma nova marca de progresso no salvamento.
+
+## Sementes e ingredientes na feira (L07, 30/10/2026)
+
+Comprar é opcional. A horta continua devolvendo sementes e os moradores continuam dando
+ingredientes. A feira vende as três sementes, fubá, leite e ovo por duas moedas a unidade.
+Polvilho, queijo, cacau, leite de coco e polpa de açaí custam três. A pessoa escolhe de uma
+a dez unidades e confere o total antes de confirmar. Cancelar não gasta moedas.
+
+A compra inteira precisa caber na mochila, até 999 de cada item, e no salvamento de 64 KB.
+Sem espaço ou moedas, nada é entregue nem consumido. Comprar ingrediente não ensina uma
+receita, não libera uma ferramenta e não entrega um projeto azul.
+
+O jogo guarda o pedido antes de cobrar. Se a conexão cair, ele pausa e oferece retomar a
+mesma compra. Reabrir ou trocar de aparelho não cobra nem entrega duas vezes. O saldo fica
+na plataforma e os itens no salvamento do jogo. Uma resposta incerta nunca é tratada como
+saldo insuficiente. Kids e adultos usam as mesmas regras de compra.
+
+## Moedas pelos pedidos dos moradores (L07, 30/10/2026)
+
+
+Cada um dos seis moradores pode agradecer um pedido por dia com três moedas. Com humor ótimo,
+são quatro. O dia começa à meia-noite de São Paulo, não quando o sol nasce no jogo. A amizade
+continua ganhando 30 pontos e as cestas seguem as receitas de cada morador. Faltar não tira nada.
+
+Os prêmios usam o mesmo limite de 100 moedas por semana do jogo inteiro. Ao alcançar o limite,
+a pessoa ainda pode ajudar, ganhar amizade e receber ingredientes. As moedas que ficaram fora
+do limite não se acumulam para a semana seguinte. Comprar não reabre esse limite.
+
+A entrega acontece inteira no serviço: confere pedido e itens, guarda a nova mochila e depois
+confirma o crédito na carteira. Se a resposta se perder, retomar usa a mesma entrega, sem gastar
+ingredientes nem ganhar moedas de novo. Uma moeda ainda sem confirmação não impede continuar
+jogando depois que a entrega foi guardada. Kids e adultos seguem a mesma regra.
+
+## Receitas e roupas que voltam com as festas (L09, 30/10/2026)
+
+A Salada do Carnaval leva uma alface, um tomate e um milho, na bancada. Repõe 30 de fome e
+20 de diversão. O Milho da fogueira leva um milho, na fogueira da Junina, e repõe 20 de fome
+e 20 de diversão. A pipoca da festa continua dando 30 de diversão. Os ingredientes vêm da horta.
+
+As receitas ficam no Diário o ano inteiro. O preparo só abre na festa correspondente e volta
+no próximo ano. O prato que já está na mochila não vence nem desaparece. Sem espaço para o
+prato inteiro ou no salvamento de 64 KB, os ingredientes não são consumidos.
+
+Durante uma festa, a feira também oferece sugestões de roupas no avatar da plataforma.
+A pessoa pode escolher outras peças. A prévia não compra nem salva; a confirmação e o saldo
+são os mesmos do configurador do avatar. Cancelar descarta a prévia não salva. A posse de uma
+peça comprada permanece depois da festa. Não há roupa obrigatória nem prêmio por comprar.
+
+Carnaval sugere máscara e coroa de flores; Junina, camiseta listrada e laço. Lanternas e fim
+de ano têm sugestões preparadas, mas continuam sem data automática aprovada. O jogo não
+ativa essas festas por conta própria. Kids e adultos usam suas próprias interfaces e contas.

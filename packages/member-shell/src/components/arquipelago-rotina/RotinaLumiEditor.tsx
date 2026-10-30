@@ -6,8 +6,10 @@ import {
   type CartasDoJogador,
   comecarExecucao,
   conferirResultadoDaRotina,
+  descricaoDoTrabalhoLumi,
   type Execucao,
   estagio,
+  humor,
   type MoldeDaRotina,
   type MundoDaRotina,
   proximoPasso,
@@ -69,7 +71,7 @@ export function RotinaLumiEditor({ molde, lerCartas, onFinish }: RotinaLumiEdito
     const r = conferirResultadoDaRotina(
       { ...molde, cartas: cartasAtuais.current },
       {
-        versao: 1,
+        versao: molde.versao,
         abertura: molde.abertura,
         lumi: molde.lumi,
         rotina: leitura.rotina,
@@ -182,7 +184,7 @@ export function RotinaLumiEditor({ molde, lerCartas, onFinish }: RotinaLumiEdito
       setCartas(novas)
       workspace.current?.updateToolbox(caixaDeBlocosLumi(novas))
       const { rotina } = ler()
-      onFinish({ versao: 1, abertura: molde.abertura, lumi: molde.lumi, rotina })
+      onFinish({ versao: molde.versao, abertura: molde.abertura, lumi: molde.lumi, rotina })
     } catch (e) {
       if (vivo.current)
         setErro(
@@ -216,7 +218,8 @@ export function RotinaLumiEditor({ molde, lerCartas, onFinish }: RotinaLumiEdito
       <header>
         <div>
           <h1 id="sz-lumi-titulo">Rotina do Lumi</h1>
-          <p>Encaixe os blocos e veja o que vai acontecer.</p>
+          <p className="sz-lumi-instrucao">Encaixe os blocos e veja o que vai acontecer.</p>
+          <p>{descricaoDoTrabalhoLumi(molde.lumi)}</p>
         </div>
         <button type="button" onClick={sair} disabled={guardando}>
           Voltar ao jogo
@@ -257,6 +260,19 @@ export function RotinaLumiEditor({ molde, lerCartas, onFinish }: RotinaLumiEdito
         <section className="sz-lumi-previa" aria-label="Prévia da horta">
           <h2>Prévia</h2>
           <p>Este teste não muda sua ilha. O tempo da horta é o da abertura.</p>
+          {mundo.colheita ? (
+            <p>
+              Bônus na abertura:{' '}
+              {mundo.colheita.clima === null
+                ? 'clima ainda não liberado'
+                : `clima ${mundo.colheita.clima}`}
+              {' e '}
+              {humor(mundo.colheita.necessidades) === 'otimo'
+                ? 'humor ótimo'
+                : 'sem bônus de humor'}
+              . Se isso mudar na ilha, a colheita pode ganhar outro bônus.
+            </p>
+          ) : null}
           <div className="sz-lumi-horta">
             {mundo.horta.map((c, i) => (
               <div

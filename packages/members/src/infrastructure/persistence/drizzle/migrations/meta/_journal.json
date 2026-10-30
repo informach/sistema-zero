@@ -995,6 +995,13 @@
       "when": 1793125814900,
       "tag": "0141_arquipelago_coin_sources",
       "breakpoints": true
+    },
+    {
+      "idx": 142,
+      "version": "7",
+      "when": 1793334428456,
+      "tag": "0142_arquipelago_gallery_adoption",
+      "breakpoints": true
     }
   ]
 }

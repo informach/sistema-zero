@@ -3,21 +3,21 @@ import {
   criarSalvamentoInicial,
   GALERIA,
   GaleriaDoJogadorSchema,
+  type PosseDaGaleria,
+  type ResultadoDaCompraDaGaleria,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
 import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
 import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
-import { aparenciasPagas, ServicoDaGaleria } from '../../src/application/servico-da-galeria'
+import { ServicoDaGaleria } from '../../src/application/servico-da-galeria'
 import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
-import { MembrosIndisponiveisError, type PortaDosMembros } from '../../src/domain/membros.port'
-import { MoedasIndisponiveisError, type PortaDoDebito } from '../../src/domain/moedas.port'
+import { type PortaDaPosse, PosseIndisponivelError } from '../../src/domain/posse.port'
 import { createServer } from '../../src/interfaces/http/server'
 import { DesafiosEmMemoria, desafiosDesligados } from '../fakes/desafios'
-import { GaleriaEmMemoria } from '../fakes/galeria'
 import { membrosDeMentira } from '../fakes/membros'
 import { RepositorioEmMemoria } from '../fakes/memoria'
 
@@ -29,43 +29,27 @@ const AGORA = new Date('2026-10-29T15:00:00Z')
 const CHAVE = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 const OUTRA_CHAVE = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
 const FORNO = GALERIA['forno-classico']
-
-let repo: RepositorioEmMemoria
-let compras: GaleriaEmMemoria
 let politica: PoliticaDeAcesso
-let membros: PortaDosMembros | null
-let saldo: number
-let debitos: Parameters<PortaDoDebito['debitar']>[0][]
-let debito: PortaDoDebito | null
+let posse: PortaDaPosse | null
+let resposta: PosseDaGaleria
+let resultado: ResultadoDaCompraDaGaleria
+let pedidos: Parameters<PortaDaPosse['comprar']>[0][]
+let leiturasFeitas: Parameters<PortaDaPosse['ler']>[0][]
 let app: ReturnType<typeof createServer>
 
-/** O Members de mentira: debita da carteira, com a chave idempotente como o de verdade. */
-function carteira(): PortaDoDebito {
-  const feitas = new Map<string, number>()
-  return {
-    async debitar(pedido) {
-      debitos.push(pedido)
-      const feita = feitas.get(pedido.key)
-      if (feita !== undefined) return { situacao: 'debitado', saldo }
-      if (saldo < pedido.amount) return { situacao: 'saldo-insuficiente' }
-      saldo -= pedido.amount
-      feitas.set(pedido.key, pedido.amount)
-      return { situacao: 'debitado', saldo }
-    },
-  }
-}
-
 function montar() {
-  const logger = createLogger({ level: 'error' })
+  const logger = createLogger({ level: 'error' }),
+    membros = membrosDeMentira()
   const leituras = new LeiturasDosMembros(membros)
+  const galeria = new ServicoDaGaleria({ posse, politica })
   app = createServer({
     logger,
     servico: new ServicoDoJogo(
-      repo,
+      new RepositorioEmMemoria(),
       politica,
       () => AGORA,
       undefined,
-      (id) => aparenciasPagas(compras, id),
+      (jogador) => galeria.aparenciasPagas(jogador),
     ),
     cartas: new ServicoDasCartas(politica, leituras),
     equipe: new ServicoDaEquipe(
@@ -76,14 +60,7 @@ function montar() {
       () => AGORA,
     ),
     desafios: desafiosDesligados(politica),
-    galeria: new ServicoDaGaleria({
-      galeria: compras,
-      debito,
-      leituras,
-      politica,
-      logger,
-      agora: () => AGORA,
-    }),
+    galeria,
     cliente: { dir: '/nao-existe', servirMapas: false },
     tokenInterno: TOKEN,
     readiness: async () => {},
@@ -91,13 +68,22 @@ function montar() {
 }
 
 beforeEach(() => {
-  repo = new RepositorioEmMemoria()
-  compras = new GaleriaEmMemoria()
   politica = { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() }
-  saldo = 120
-  debitos = []
-  debito = carteira()
-  membros = membrosDeMentira({ lerSaldo: async () => ({ saldo }) })
+  resposta = { versao: 1, possuidas: [], saldo: 120 }
+  resultado = { ok: true, jaPossuia: false, posse: { versao: 1, possuidas: [FORNO.id], saldo: 70 } }
+  pedidos = []
+  leiturasFeitas = []
+  // Apenas transporte externo. A prova de débito/concorrência usa o Postgres do Members.
+  posse = {
+    async ler(dono) {
+      leiturasFeitas.push(dono)
+      return resposta
+    },
+    async comprar(pedido) {
+      pedidos.push(pedido)
+      return resultado
+    },
+  }
   montar()
 })
 
@@ -133,8 +119,8 @@ async function chamar(metodo: string, caminho: string, headers: object, corpo?: 
 const comprar = (chave = CHAVE, headers: object = crianca(), aparencia = FORNO.id) =>
   chamar('POST', '/arquipelago/galeria/compras', headers, { aparencia, chave })
 
-describe('ler a galeria', () => {
-  test('o que ela já comprou e o saldo do Members', async () => {
+describe('leitura e compra pela autoridade canônica', () => {
+  test('leitura usa perfil, conta e público da sessão', async () => {
     const r = await chamar('GET', '/arquipelago/galeria', crianca())
     expect(r.status).toBe(200)
     expect(GaleriaDoJogadorSchema.parse(r.json)).toEqual({
@@ -142,123 +128,105 @@ describe('ler a galeria', () => {
       saldo: 120,
       ilimitado: false,
     })
+    expect(leiturasFeitas).toEqual([{ userId: LIA, accountId: CONTA, audience: 'kids' }])
   })
-
-  test('saldo fora do ar ou Members desligado: saldo desconhecido, a galeria abre igual', async () => {
-    membros = membrosDeMentira({
-      lerSaldo: async () => {
-        throw new MembrosIndisponiveisError('rede')
-      },
+  test('o adulto usa a própria conta e a vitrine adult', async () => {
+    const headers = {
+      'x-internal-token': TOKEN,
+      'x-auth-user-id': ADULTO,
+      'x-auth-user-role': 'member',
+      'x-auth-user-status': 'active',
+    }
+    expect((await comprar(CHAVE, headers)).status).toBe(200)
+    expect(pedidos[0]).toEqual({
+      userId: ADULTO,
+      accountId: ADULTO,
+      audience: 'adult',
+      aparencia: FORNO.id,
+      equipe: false,
     })
-    montar()
-    expect((await chamar('GET', '/arquipelago/galeria', crianca())).json.saldo).toBeNull()
-    membros = null
-    montar()
-    expect((await chamar('GET', '/arquipelago/galeria', crianca())).json.saldo).toBeNull()
   })
-
-  test('equipe: ilimitado, sem ler saldo', async () => {
-    membros = membrosDeMentira()
-    montar()
-    const r = await chamar('GET', '/arquipelago/galeria', crianca({ 'x-auth-user-role': 'admin' }))
-    expect(r.json).toEqual({ possuidas: [], saldo: null, ilimitado: true })
-  })
-})
-
-describe('comprar', () => {
-  test('debita o preço do catálogo com a chave do pedido e só então vale', async () => {
+  test('não manda preço nem chave de débito fornecidos pelo navegador', async () => {
     const r = await comprar()
     expect(r.status).toBe(200)
-    expect(r.json).toEqual({ possuidas: [FORNO.id], saldo: 120 - FORNO.preco, ilimitado: false })
-    expect(debitos).toEqual([
-      { userId: LIA, accountId: CONTA, audience: 'kids', key: CHAVE, amount: FORNO.preco },
+    expect(r.json).toEqual({ possuidas: [FORNO.id], saldo: 70, ilimitado: false })
+    expect(pedidos).toEqual([
+      { userId: LIA, accountId: CONTA, audience: 'kids', aparencia: FORNO.id, equipe: false },
     ])
+    await comprar(OUTRA_CHAVE)
+    expect(pedidos[1]).toEqual(pedidos[0])
   })
-
-  test('repetir (a mesma chave ou outra) nunca cobra duas vezes', async () => {
-    await comprar()
-    const deNovo = await comprar()
-    const outra = await comprar(OUTRA_CHAVE)
-    expect(deNovo.json.possuidas).toEqual([FORNO.id])
-    expect(outra.json.possuidas).toEqual([FORNO.id])
-    expect(saldo).toBe(120 - FORNO.preco)
-    expect(debitos).toHaveLength(1)
-  })
-
-  test('saldo curto: erro próprio com o preço e o saldo, nada cobrado nem guardado', async () => {
-    saldo = 10
-    const r = await comprar()
-    expect(r.status).toBe(409)
-    expect(r.json).toMatchObject({
-      error: { code: 'SALDO_INSUFICIENTE' },
-      preco: FORNO.preco,
-      saldo: 10,
+  test('saldo curto preserva o erro de negócio e não inventa posse', async () => {
+    resultado = { ok: false, codigo: 'SALDO_INSUFICIENTE' }
+    resposta.saldo = 10
+    expect(await comprar()).toMatchObject({
+      status: 409,
+      json: {
+        error: { code: 'SALDO_INSUFICIENTE' },
+        preco: FORNO.preco,
+        saldo: 10,
+      },
     })
-    expect(compras.linhas.size).toBe(0)
-    // Juntou moedas: outra chave compra do zero.
-    saldo = 100
-    expect((await comprar(OUTRA_CHAVE)).json.possuidas).toEqual([FORNO.id])
-    expect(debitos.at(-1)?.key).toBe(OUTRA_CHAVE)
   })
-
-  test('porta de moedas fora do ar: 424 e a compra fica pendente com a mesma chave', async () => {
-    debito = {
-      async debitar(p) {
-        debitos.push(p)
-        throw new MoedasIndisponiveisError()
+  test('Members fora não vira galeria vazia nem concessão local', async () => {
+    posse = {
+      ler: async () => {
+        throw new PosseIndisponivelError()
+      },
+      comprar: async () => {
+        throw new PosseIndisponivelError()
       },
     }
     montar()
     expect((await comprar()).status).toBe(424)
-    expect((await chamar('GET', '/arquipelago/galeria', crianca())).json.possuidas).toEqual([])
-    // Voltou: o próximo pedido, mesmo com outra chave, repete a chave guardada.
-    debito = carteira()
-    montar()
-    expect((await comprar(OUTRA_CHAVE)).json.possuidas).toEqual([FORNO.id])
-    expect(debitos.map((d) => d.key)).toEqual([CHAVE, CHAVE])
-  })
-
-  test('sem a porta de moedas configurada: 424, nada cobrado', async () => {
-    debito = null
+    expect((await chamar('GET', '/arquipelago/galeria', crianca())).status).toBe(424)
+    expect(
+      (await chamar('GET', '/arquipelago/galeria', crianca({ 'x-auth-user-role': 'admin' })))
+        .status,
+    ).toBe(424)
+    posse = null
     montar()
     expect((await comprar()).status).toBe(424)
   })
-
-  test('sessão somente leitura não compra', async () => {
-    const r = await comprar(CHAVE, crianca({ 'x-auth-impersonator-id': ADULTO }))
-    expect(r.status).toBe(403)
-    expect(r.json).toMatchObject({ error: { code: 'SOMENTE_LEITURA' } })
-    expect(debitos).toEqual([])
-    expect(compras.linhas.size).toBe(0)
+  test('recusa de identidade do Members nunca é sucesso', async () => {
+    resultado = { ok: false, codigo: 'DONO_DIFERENTE' }
+    expect((await comprar()).status).toBe(424)
   })
-
-  test('a equipe compra sem gastar', async () => {
+  test('suporte lê, mas não compra', async () => {
+    const headers = crianca({ 'x-auth-impersonator-id': ADULTO })
+    expect((await chamar('GET', '/arquipelago/galeria', headers)).status).toBe(200)
+    expect((await comprar(CHAVE, headers)).status).toBe(403)
+    expect(pedidos).toHaveLength(0)
+  })
+  test('equipe vem da identidade e continua com saldo visual ilimitado', async () => {
     const r = await comprar(CHAVE, crianca({ 'x-auth-user-role': 'admin' }))
     expect(r.json).toEqual({ possuidas: [FORNO.id], saldo: null, ilimitado: true })
-    expect(debitos).toEqual([])
+    expect(pedidos[0]?.equipe).toBe(true)
   })
-
-  test('pedido estranho (id fora do catálogo, chave inválida, preço no corpo) é 400', async () => {
+  test('corpo estranho, inclusive privilégio forjado, é recusado antes da porta', async () => {
     for (const corpo of [
       { aparencia: 'forno-dourado', chave: CHAVE },
       { aparencia: FORNO.id, chave: 'x' },
       { aparencia: FORNO.id, chave: CHAVE, preco: 1 },
+      { aparencia: FORNO.id, chave: CHAVE, equipe: true },
+      { aparencia: FORNO.id, chave: CHAVE, userId: ADULTO },
     ])
       expect((await chamar('POST', '/arquipelago/galeria/compras', crianca(), corpo)).status).toBe(
         400,
       )
-    expect(debitos).toEqual([])
+    expect(pedidos).toHaveLength(0)
   })
-
-  test('jogo fechado para ela: 403 e nada cobrado', async () => {
-    politica = { modo: 'desligado', publicos: new Set(['kids']), lista: new Set() }
+  test('jogo fechado recusa antes de consultar ou comprar', async () => {
+    politica.modo = 'desligado'
     montar()
     expect((await comprar()).status).toBe(403)
-    expect(debitos).toEqual([])
+    expect((await chamar('GET', '/arquipelago/galeria', crianca())).status).toBe(403)
+    expect(pedidos).toHaveLength(0)
+    expect(leiturasFeitas).toHaveLength(0)
   })
 })
 
-describe('a aparência da galeria no salvamento', () => {
+describe('aparência no salvamento', () => {
   const comForno = (s: Salvamento): Salvamento => {
     const galeria = { origem: 'galeria' as const, id: FORNO.id }
     return {
@@ -268,31 +236,27 @@ describe('a aparência da galeria no salvamento', () => {
       },
     }
   }
-  const gravar = (salvamento: unknown, revisaoBase = 0) =>
-    chamar('PUT', '/arquipelago/salvamento', crianca(), { revisaoBase, salvamento })
-
-  test('só entra depois de paga', async () => {
-    const s = comForno(criarSalvamentoInicial(AGORA))
-    const antes = await gravar(s)
-    expect(antes.status).toBe(422)
-    expect(antes.json).toMatchObject({ error: { code: 'APARENCIA_NAO_COMPRADA' } })
-    await comprar()
-    expect((await gravar(s)).status).toBe(200)
+  const gravar = (salvamento: unknown) =>
+    chamar('PUT', '/arquipelago/salvamento', crianca(), { revisaoBase: 0, salvamento })
+  test('posse canônica aceita o save sem registro de compra no jogo', async () => {
+    expect((await gravar(comForno(criarSalvamentoInicial(AGORA)))).status).toBe(422)
+    resposta.possuidas = [FORNO.id]
+    expect((await gravar(comForno(criarSalvamentoInicial(AGORA)))).status).toBe(200)
+    expect(leiturasFeitas.at(-1)).toEqual({ userId: LIA, accountId: CONTA, audience: 'kids' })
   })
-
   test('a aparência de um objeto não vale em outro', async () => {
-    await comprar()
-    const galeria = { origem: 'galeria' as const, id: FORNO.id }
-    const s = {
-      ...criarSalvamentoInicial(AGORA),
-      projetos: {
-        geladeira: { ganhoEm: AGORA.toISOString(), aparencia: galeria, aparencias: [galeria] },
-      },
-    }
-    expect((await gravar(s)).status).toBe(422)
+    resposta.possuidas = [FORNO.id]
+    const s = comForno(criarSalvamentoInicial(AGORA))
+    expect((await gravar({ ...s, projetos: { geladeira: s.projetos.forno } })).status).toBe(422)
   })
-
-  test('sem nenhuma da galeria, nada muda na gravação', async () => {
+  test('sem aparência comprada não precisa da porta de posse', async () => {
+    posse = null
+    montar()
     expect((await gravar(criarSalvamentoInicial(AGORA))).status).toBe(200)
+  })
+  test('porta fora recusa o save sem substituir a posse por vazia', async () => {
+    posse = null
+    montar()
+    expect((await gravar(comForno(criarSalvamentoInicial(AGORA)))).status).toBe(424)
   })
 })

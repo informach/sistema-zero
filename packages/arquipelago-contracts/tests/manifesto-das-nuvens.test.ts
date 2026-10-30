@@ -45,25 +45,30 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('a Ilha das Nuvens é do Gênio e o pacote tem um quadro e três desafios do dia', () => {
+test('a Ilha das Nuvens é do Gênio e o pacote tem seis quadros e três desafios do dia', () => {
   expect(ilha('nuvens').posto).toBe('champion')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
+    'nuvens-reserva-de-agua',
+    'nuvens-luz-na-medida',
+    'nuvens-canteiros-livres',
+    'nuvens-dois-recursos',
+    'nuvens-colheita-da-lista',
     'nuvens-jardim-que-floresce',
     'nuvens-jardim-que-floresce-rega-forte',
     'nuvens-jardim-que-floresce-sol-forte',
     'nuvens-jardim-que-floresce-chuva',
   ])
   for (const [i, d] of manifesto.desafios.entries()) {
-    const tipo = i === 0 ? 'quadro-das-cores' : 'desafio-do-dia'
+    const tipo = i < 6 ? 'quadro-das-cores' : 'desafio-do-dia'
     expect(d.ilha).toBe('nuvens')
     expect(d.publico).toBe('kids')
     expect(d.tipo).toBe(tipo)
-    expect(d.quadro).toBe(i === 0 ? 6 : null)
-    expect(d.ordem).toBe(60 + i)
+    expect(d.quadro).toBe(i < 6 ? i + 1 : null)
+    expect(d.ordem).toBe(i < 6 ? (i + 1) * 10 : 60 + i - 5)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i === 0,
-      atracao: 'jardim-que-floresce',
+      cor: i < 6,
+      atracao: i < 5 ? d.slug : 'jardim-que-floresce',
       moedas: MOEDAS_PADRAO_POR_TIPO[tipo].principal,
       moedasExtra: MOEDAS_PADRAO_POR_TIPO[tipo].extra,
     })
@@ -72,7 +77,7 @@ test('a Ilha das Nuvens é do Gênio e o pacote tem um quadro e três desafios d
     expect(d.conteudo.objetivos.some((o) => o.optional)).toBe(true)
   }
 })
-test('os oito projetos só usam blocos ensinados até o Gênio e arte embutida', () => {
+test('os projetos usam ações ensinadas, laço preparado da colheita e arte embutida', () => {
   // As listas que valem hoje: os cursos principais e os Poderes do Faísca (o Arquiteto e o Gênio
   // ainda não têm cursos autorados).
   expect(cursos.length).toBeGreaterThanOrEqual(9)
@@ -86,8 +91,18 @@ test('os oito projetos só usam blocos ensinados até o Gênio e arte embutida',
       })
       expect(JSON.stringify(p).length).toBeLessThanOrEqual(LIMITES_DO_DESAFIO.projetoCaracteres)
       const usados = [...new Set(tipos(p.blocksState))]
+      const lacoPreparado = d.quadro === 5
+      if (lacoPreparado) {
+        const inicial = d.conteudo.projetoInicial as { blocksState: unknown }
+        expect(
+          tipos(inicial.blocksState).filter((t) => t === 'sz_g2d_for_each_in_group'),
+        ).toHaveLength(1)
+        expect(tipos(p.blocksState).filter((t) => t === 'sz_g2d_for_each_in_group')).toHaveLength(1)
+      }
       expect(
-        usados.filter((t) => !blocos.has(t)),
+        usados.filter(
+          (t) => !blocos.has(t) && !(lacoPreparado && t === 'sz_g2d_for_each_in_group'),
+        ),
         d.slug,
       ).toEqual([])
       expect(usados.filter((t) => /sz_(?:html|css|canvas|adv_raw|js_object)/.test(t))).toEqual([])

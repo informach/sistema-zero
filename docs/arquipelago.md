@@ -2,10 +2,25 @@
 
 O jogo 3D das comunidades Kids e adulta. Proposta e decisões da dona no Canvas
 <https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W>. Este documento descreve o que existe no
-código e as entregas registradas até 29/10/2026. O levantamento completo e os critérios de
+código e as entregas registradas até 30/10/2026. O levantamento completo e os critérios de
 conclusão estão em `docs/plans/2026-10-29-arquipelago-entrega-integral-design.md`.
 
 ## Decisões da dona
+
+### Entregas locais de 30/10, ainda sem publicação
+
+O primeiro pedido da ilha central entrega o projeto azul da geladeira na primeira colheita
+manual completa. A feira agora permite comprar sementes e ingredientes, com confirmação,
+carteira compartilhada e retomada de compra sem débito duplicado. O comando econômico é
+guardado no serviço e no diário local, separado do salvamento V18. Provas e limites em
+`docs/qa/2026-10-30-primeiro-pedido/README.md` e `docs/qa/2026-10-30-insumos/README.md`.
+Os pedidos dos moradores também são confirmados no serviço, com amizade, cesta e crédito
+idempotente na carteira. Receitas sazonais e sugestões de roupas foram implementadas e
+conferidas localmente. O vestuário abre o configurador da plataforma por cima do jogo.
+Provas adicionais em `docs/qa/2026-10-30-pedidos/`, `2026-10-30-receitas-sazonais/` e
+`2026-10-30-vestuario/`. Revisão integrada e implantação continuam pendentes no plano integral.
+
+### Base do jogo
 
 - Nome: **Arquipélago Vagalume**. A ilha da criança fica no **centro**, com a casa e o farol; as
   outras seis ilhas ficam em volta, cinza até a jornada colorir. Robôs não entram (os Lumis
@@ -26,7 +41,7 @@ conclusão estão em `docs/plans/2026-10-29-arquipelago-entrega-integral-design.
 | Pacote | O que é |
 |---|---|
 | `packages/avatar-quarto` | Avatar 3D e quarto 3D (saíram do member-shell sem mudar comportamento; os caminhos antigos repassam) |
-| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV16`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
+| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV18`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
 | `packages/arquipelago` | O jogo no navegador (R3F, drei, Rapier, zustand), com playground e plataforma de mentira |
 | `packages/arquipelago-api` | O serviço do jogo (Bun, Elysia, Drizzle, schema `arquipelago`, porta 3015) |
 
@@ -181,3 +196,10 @@ O salvamento V16 guarda os dois percursos das Nuvens, suas seis constelações, 
 conclusão do Farol e a escolha do clima. Conserva referências de aparência antigas, sem
 truncamento. Não exige alteração nas tabelas. As provas e limitações do lote ficam em
 `docs/qa/2026-10-29-continuidade/README.md`; o restante da proposta segue os 14 lotes do plano.
+
+## Amizade e diário (L02/L06)
+
+V17 guarda também a amizade de Maré, Floco, Jade e Iriê. Conversa, presentes e pedidos usam
+os mesmos limites de Capi e Bento. Dois corações abrem as páginas do Pico, Vale e Nuvens;
+a página do Recife continua no navio. Ações anteriores dos moradores continuam disponíveis.
+Plano e critérios em `docs/superpowers/plans/2026-10-29-arquipelago-historia-moradores.md`.

@@ -11,6 +11,8 @@ import {
   paginasDoDiario,
 } from '../sistemas/diario'
 import { Pegada } from './pegadas'
+import { PedidoDaIlha } from './primeiro-pedido'
+import { ConviteDaSemana } from './tema-da-semana'
 
 export const ICONE_DO_VALE: Record<string, string> = { pegadas: '🐾', fossil: '🦴', filhote: '🦕' }
 
@@ -62,6 +64,7 @@ export function Receita({ r }: { r: EstadoDaReceita }) {
           <b>{r.nome}</b>
           <span className="arq-quadro-estado">{r.onde}</span>
           <span className="arq-caderno-efeito">{`Precisa de ${r.precisa}.`}</span>
+          <span className="arq-caderno-efeito">{r.fonte}</span>
         </div>
       </li>
     )
@@ -110,6 +113,8 @@ export function Diario() {
         aria-labelledby="arq-diario-titulo"
       >
         <h2 id="arq-diario-titulo">Diário</h2>
+        <PedidoDaIlha />
+        <ConviteDaSemana />
         <section className="arq-caderno-secao" aria-labelledby="arq-diario-paginas">
           <h3 id="arq-diario-paginas" className="arq-menu-titulo">
             {`Páginas do diário da Íris: ${abertas} de ${paginas.length}`}
@@ -162,8 +167,8 @@ export function Diario() {
             {`Receitas: ${sabidas} de ${receitas.length}`}
           </h3>
           <p className="arq-caderno-explica">
-            As receitas que você já sabe fazer. O Bento, da Vila Doce, lembra mais uma a cada
-            coração de amizade.
+            As receitas que você já sabe fazer. Novas receitas chegam com amizades, coleções e
+            festas. Cada pista mostra onde aprender.
           </p>
           <ul className="arq-quadro-lista arq-diario-bichos">
             {receitas.map((r) => (

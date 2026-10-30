@@ -56,8 +56,13 @@ export function copiarArteAnimada(original: Object3D) {
   }
 }
 
-export function iluminarArte(luzes: ReturnType<typeof copiarArteAnimada>['luzes'], noite: boolean) {
-  for (const { material, forca } of luzes) material.emissiveIntensity = noite ? forca : 0
+export function iluminarArte(
+  luzes: ReturnType<typeof copiarArteAnimada>['luzes'],
+  noite: boolean,
+  multiplicador = 1,
+) {
+  for (const { material, forca } of luzes)
+    material.emissiveIntensity = noite ? forca * multiplicador : 0
 }
 
 export function configurarAcao(acao: AnimationAction, umaVez: readonly string[]) {

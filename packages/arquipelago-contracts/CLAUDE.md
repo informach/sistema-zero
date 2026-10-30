@@ -1,5 +1,77 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+## Vestuário sazonal V1 (L09, 30/10/2026)
+
+`vestuario-festas.ts` contém sugestões de peças já existentes e o molde estrito da ferramenta
+`avatar`, propósito `vestir`. Só recebe versão e festa; não recebe usuário, preço, saldo ou
+peças arbitrárias. A seleção não concede posse e não ativa datas de festa. `avatar-pronto`
+devolve o avatar persistido da plataforma. Nada é gravado na V18. O teste de conformidade
+confere nomes e categorias no catálogo puro de apresentação do avatar.
+
+## Pedidos remunerados V1 (L07, 30/10/2026)
+
+`pedidos-catalogo.ts` e `receitas-moradores.ts` são dados puros compartilhados; o jogo conserva
+falas, gostos e o preparo culinário. `pedidos-entrega.ts` escolhe o pedido e calcula a entrega
+inteira, amizade, cesta e prêmio de três ou quatro moedas. Recusa falta de itens, pedido já feito,
+dia diferente, mochila acima de 999 ou save acima de 65.536 bytes. Não modifica a entrada.
+O relógio civil é São Paulo, independente do fuso do aparelho. Não confundir com o ciclo solar.
+
+`pedidos-remunerados.ts` recebe comando V1 estrito com UUID, revisão-base, morador, dia e ID.
+Não recebe identidade, moeda, amizade nem inventário do navegador. Resultado traz o mesmo
+comando, save confirmado e pagamento pendente, creditado, teto ou recusado. Não reinterpretar
+comandos antigos quando mudar a economia; versionar a regra. O prêmio financeiro não mora na V18.
+
+## Insumos V1 (L07, 30/10/2026)
+
+`insumos.ts` contém onze sementes/ingredientes existentes, preço de duas ou três moedas e
+compra de uma a dez unidades. Comando estrito com UUID e revisão confirmada. Não recebe preço,
+público ou identidade do navegador. `prepararEntregaDeInsumos` preserva a entrada e só aceita
+entrega inteira, até 999 por item e 65.536 bytes UTF-8. Resultado valida preço, revisão e saldo
+coerentes com o estado da operação. Reservas financeiras ficam no serviço, fora de V18.
+Não alterar o significado de um comando V1 já reservado ao mudar preços no futuro.
+
+## Salvamento V18: ilhas visitadas (30/10/2026)
+
+`SalvamentoV18Schema` acrescenta `ilhasVisitadas`, inteiro 0 a 255. `BIT_DA_ILHA`, em
+`exploracao.ts`, fixa a identidade dos oito bits; nunca ordenar pelo catálogo mutável.
+`migrarDaV17` começa em zero e preserva todos os campos anteriores, sem inferir descobertas.
+Schemas V1 a V17 continuam estritos. `SalvamentoSchema` recebe todos e devolve V18.
+O teto continua 65.536 bytes UTF-8. `salvamento-v18.test.ts` cobre todas as 256 combinações,
+dados inválidos, entrada histórica intocada e o cenário cheio. Visita não é autoridade para
+abrir ilha, conceder prêmio nem validar atividade.
+
+## Publicações no fliperama (L05)
+
+`minijogos.ts` exporta `JogosDoMuralSchema`: no máximo 24 publicações recentes, apenas UUID
+`playId` e `titulo` até 300 caracteres. `MoldeDoJogoDoMuralSchema` é estrito e aceita só o UUID.
+A ferramenta existente `estudio`, propósito `jogo-do-mural`, não cria fonte nem versão de save.
+Quem decide autoria, comunidade e visibilidade é o Hub; quem roda é o player público da plataforma.
+
+## Pedidos dos balcões e profissão V1 (L07, 29/10/2026)
+
+`turnos.ts` contém a regra pura dos seis fregueses e das bandejas, compartilhada pelo jogo e
+pelo serviço. A semente do turno remunerado é o UUID reservado pelo serviço, não um dia
+escolhido pelo navegador. `numero-estavel.ts` preserva o sorteio estável usado pelos moradores.
+`profissoes.ts` valida o início, as seis respostas e a sessão: dia civil válido e estado de
+pagamento coerente com conclusão. Versão 1 não pode mudar seu significado para sessões já
+guardadas. O prêmio inicial é 5 moedas. O teto total do jogo é conferido no Members.
+Não acrescentar campo de moedas ao salvamento do aparelho.
+
+## Trabalho dos Lumis e colheita inteira (29/10/2026)
+
+`lumis-trabalho.ts` define os 14 perfis de voo, carga, trabalho e brilho. É catálogo, sem campo
+novo no salvamento. `rotina-execucao.ts` confere a carga por espécie e `cabeColheita` confere a
+mochila e a semente devolvida. Recusa preserva a planta madura; guardar transfere só a carga
+colhida e mantém na mochila o que não couber na geladeira. Não duplicar a regra no editor.
+Testes de conservação e paridade passo a passo em `tests/lumis-trabalho.test.ts`.
+
+`colheita.ts` centraliza humor e bônus: clima favorável +1, humor ótimo +1, sem subtrair o
+rendimento básico. `colher` recebe contexto explícito; não consulta relógio ou sorteio escondido.
+`MundoDaRotinaV2Schema` exige esse contexto transitório. O molde novo usa versão 2; V1 continua
+estrito, sem bônus. A resposta precisa ter a mesma versão, abertura e Lumi do pedido. Os schemas
+históricos e o salvamento V17 não recebem campos. Testes em `colheita-especial.test.ts` e
+`rotina-colheita-v2.test.ts`.
+
 ## Medição agregada (28/10/2026)
 
 `medicao.ts`: filtro estrito por público e até 90 dias civis, relatório e números discriminados
@@ -194,7 +266,7 @@ diz de onde vem o museu (o fóssil descoberto no Vale).
 
 ## Salvamento V16: continuidade sem descarte (L01, 29/10/2026)
 
-A união pública aceita V1 a V16 e devolve V16. `migrarDaV15` acrescenta `nuvens.constelacoes`
+Na entrega V16, a união pública aceitava V1 a V16 e devolvia V16. `migrarDaV15` acrescenta `nuvens.constelacoes`
 (0..63), `farol.pagina`, `farol.concluido` e `clima` (`sol`, `nublado`, `chuva`). Final concluído
 exige página. `PERCURSOS` inclui `nuvens-saltos` e `nuvens-balao`; os schemas até V15 mantêm o
 catálogo histórico. `migrarDaV14ParaAtual` preserva IDs antigos de até 80, sem chamar o filtro
@@ -205,3 +277,24 @@ não muda; sua geladeira aceita referências antigas completas. `ID_DA_APARENCIA
 limite histórico V15, não o limite global de bytes nem uma instrução para truncar IDs.
 O orçamento com IDs canônicos e a recusa global acima de 64 KB são provas diferentes.
 Testes: `salvamento-v16.test.ts`, `salvamento-v10.test.ts` e HTTP do serviço.
+
+## Salvamento V17: amizade dos seis moradores (29/10/2026)
+
+A união pública aceita V1 a V17 e devolve V17. `migrarDaV16` acrescenta Maré, Floco, Jade e
+Iriê, cada qual com seu próprio `MoradorSchema` vazio. Capi, Bento, objetos e conquistas são
+preservados. Os esquemas históricos continuam estritos e os migradores de versão conservam
+seu destino. `migrarDaV14ParaAtual` é a composição até a versão atual, preservando os IDs longos.
+
+`MORADORES_DO_ANEL` é a lista dos seis registros. A amizade e o inventário continuam na mesma
+revisão CAS; não se somam cópias concorrentes. O caso pesado com os seis pedidos em Unicode
+ocupa 62.605 bytes, com 2.931 de margem. O teto de 65.536 bytes continua independente dessa
+fixture e nunca autoriza truncar dados. Testes: `salvamento-v17.test.ts` e capacidade V10.
+
+## Posse única da galeria (L04, 30/10/2026)
+
+`posse-da-galeria.ts` mantém os nove IDs de aparência e mapeia a identidade da posse.
+Aquário, fliperama e planta têm destinos quarto e jogo; os outros seis só jogo. Os
+preços únicos permanecem no `GALERIA`. Contratos internos são estritos e não aceitam
+preço no pedido. `adocao-da-galeria.ts` é transferência operacional v1, com limite
+de compras e recusa de chaves/itens repetidos. Nunca expor sua aplicação ao jogador.
+O save V18 permanece igual. Nenhum contrato importa o jogo, React ou three.

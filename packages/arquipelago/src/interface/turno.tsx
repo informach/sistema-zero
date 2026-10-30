@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDoTurno, PAINEL_DO_TURNO, useTurno } from '../estado/turno'
 import { diaDe } from '../sistemas/moradores'
+import { recadoDoPagamento } from '../sistemas/profissoes'
 import {
   BALCOES,
   falaDoPedido,
@@ -18,7 +19,7 @@ const ESTRELAS = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n)
  * bandeja) e o fim com as estrelas e o pagamento. O jogo fica parado enquanto ele está aberto.
  */
 export function PainelDoTurno() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const turnoDaLoja = lojaDoTurno(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_TURNO)
   const salvamento = useEstado((s) => s.salvamento)
@@ -27,18 +28,25 @@ export function PainelDoTurno() {
   const turno = useTurno(turnoDaLoja, (s) => s.turno)
   const resposta = useTurno(turnoDaLoja, (s) => s.resposta)
   const fim = useTurno(turnoDaLoja, (s) => s.fim)
+  const ocupada = useTurno(turnoDaLoja, (s) => s.ocupada)
+  const erro = useTurno(turnoDaLoja, (s) => s.erro)
+  const sessao = useTurno(turnoDaLoja, (s) => s.sessao)
   const principal = useRef<HTMLButtonElement>(null)
 
   const passo = aberto ? `${tela}:${turno?.atual ?? 0}` : null
   useEffect(() => {
     if (passo) principal.current?.focus({ preventScroll: true })
   }, [passo])
+  useEffect(() => {
+    if (!aberto) turnoDaLoja.getState().cancelar()
+    return () => turnoDaLoja.getState().cancelar()
+  }, [aberto, turnoDaLoja])
 
   if (!aberto) return null
   const balcao = BALCOES[posto]
   const registro = salvamento.turnos[posto]
   const fechar = () => loja.getState().abrirPainel(null)
-  const comecar = () => turnoDaLoja.getState().comecar(diaDe(new Date()), registro?.vezes ?? 0)
+  const comecar = () => void turnoDaLoja.getState().comecar(plataforma)
 
   return (
     <div className="arq-sobre">
@@ -49,6 +57,12 @@ export function PainelDoTurno() {
         aria-labelledby="arq-turno-titulo"
       >
         <h2 id="arq-turno-titulo">{balcao.titulo}</h2>
+        {erro ? (
+          <p role="alert" className="arq-turno-resposta">
+            {erro}
+          </p>
+        ) : null}
+        {ocupada ? <p role="status">Conferindo o turno.</p> : null}
 
         {tela === 'convite' ? (
           <>
@@ -56,7 +70,7 @@ export function PainelDoTurno() {
             <p className="arq-turno-info">
               {jaPagouHoje(salvamento, posto, diaDe(new Date()))
                 ? 'O turno de hoje já foi pago. Dá para fazer outro só pela diversão.'
-                : 'O primeiro turno do dia é pago.'}
+                : 'O primeiro turno do dia dá ingredientes e 5 moedas, dentro do limite semanal.'}
               {registro ? (
                 <span>
                   {' '}
@@ -68,7 +82,13 @@ export function PainelDoTurno() {
               ) : null}
             </p>
             <div className="arq-menu-acoes">
-              <button ref={principal} type="button" className="arq-botao" onClick={comecar}>
+              <button
+                ref={principal}
+                type="button"
+                className="arq-botao"
+                onClick={comecar}
+                disabled={ocupada}
+              >
                 Começar o turno
               </button>
               <button type="button" className="arq-botao leve" onClick={fechar}>
@@ -97,11 +117,28 @@ export function PainelDoTurno() {
                 <li key={f}>{f}</li>
               ))}
             </ul>
+            {sessao ? (
+              <p role="status">
+                {sessao.pagamento === 'aguardando'
+                  ? 'Aguardando a confirmação das moedas.'
+                  : recadoDoPagamento(sessao)}
+              </p>
+            ) : null}
+            {erro ? (
+              <button
+                type="button"
+                className="arq-botao"
+                disabled={ocupada}
+                onClick={() => void turnoDaLoja.getState().confirmar()}
+              >
+                Confirmar moedas
+              </button>
+            ) : null}
             <div className="arq-menu-acoes">
               <button ref={principal} type="button" className="arq-botao" onClick={fechar}>
                 Voltar ao jogo
               </button>
-              <button type="button" className="arq-botao leve" onClick={comecar}>
+              <button type="button" className="arq-botao leve" onClick={comecar} disabled={ocupada}>
                 Outro turno
               </button>
             </div>
@@ -184,7 +221,7 @@ function Balcao({
           type="button"
           className="arq-botao"
           disabled={total === 0}
-          onClick={() => t.entregar(diaDe(new Date()))}
+          onClick={() => t.entregar()}
         >
           Entregar
         </button>

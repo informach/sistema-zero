@@ -22,7 +22,7 @@ try {
     await pagina.keyboard.press('e')
     await pagina.getByRole('region', { name: 'Seus minijogos' }).waitFor()
     await pagina.screenshot({ path: `.cache/minijogos/fliperama-${largura}.png` })
-    await pagina.getByRole('button', { name: /^Jogar / }).click()
+    await pagina.getByRole('button', { name: /^Jogar Corrida dos bichos$/i }).click()
     await pagina.waitForTimeout(3000)
     await pagina.getByRole('dialog').locator('iframe').waitFor()
     await pagina.waitForTimeout(3500)

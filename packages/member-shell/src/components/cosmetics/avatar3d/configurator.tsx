@@ -1,5 +1,6 @@
 'use client'
 
+import type { MoldeDoVestuario } from '@sistemazero/arquipelago-contracts'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 
 import { Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
@@ -28,6 +29,7 @@ import {
   POSES,
   type Slots,
 } from './configurator-shared'
+import { SeasonalAvatarChoices } from './seasonal-choices'
 import { AvatarThumb } from './thumb-canvas'
 
 /** Uma peça na grade — com MINIATURA renderizada (igual WawaSensei). "Nenhum" mostra "✕". */
@@ -101,11 +103,16 @@ export function AvatarConfigurator({
   returnTo,
   skin = 'kids',
   adultView: AdultView,
+  onReturn,
+  festa,
 }: {
   dark: boolean
   returnTo: AvatarReturnPath
   skin?: CosmeticsSkin
   adultView?: ComponentType<AdultAvatarConfiguratorProps>
+  /** Fluxo embutido: volta à ferramenta chamadora, sem navegar ou salvar a prévia. */
+  onReturn?: (saved: boolean) => void
+  festa?: MoldeDoVestuario['festa']
 }) {
   const messages = AVATAR_MESSAGES[skin]
   // Sair do avatar = navegação DURA para o destino interno permitido, NÃO `router.push`.
@@ -116,10 +123,24 @@ export function AvatarConfigurator({
   // tem corrida conhecida (vercel/next#54766), então a foto "demorava" a trocar. Um reload
   // re-renderiza a árvore inteira no servidor → layout + página leem o `avatarPhotoUrl` novo
   // (o `gatewayFetch` é `no-store`, sem cache de dados) e a imagem atualiza na hora em todo canto.
-  const exitAvatar = () => window.location.assign(returnTo)
+  const exitAvatar = () => {
+    if (onReturn) {
+      if (!saving && !busy) onReturn(false)
+    } else window.location.assign(returnTo)
+  }
   // Esta é a variante ícone-só: o `aria-label` é a ÚNICA informação que existe, então
   // "Voltar" sozinho não diz nada. O destino é uma allowlist de dois valores.
-  const exitLabel = returnTo === '/' ? 'Voltar ao início' : 'Voltar ao meu perfil'
+  const exitLabel = onReturn
+    ? 'Voltar ao jogo'
+    : returnTo === '/'
+      ? 'Voltar ao início'
+      : 'Voltar ao meu perfil'
+  const onEmbeddedKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && onReturn) {
+      e.preventDefault()
+      exitAvatar()
+    }
+  }
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<Slots>({})
@@ -294,7 +315,7 @@ export function AvatarConfigurator({
    * "Tirar foto" (Cabine) finaliza. No onboarding, ambos retornam à home para continuar o tour.
    */
   async function save({ redirect }: { redirect: boolean }) {
-    if (saving || hasLocked || !state) return
+    if (saving || busy || hasLocked || !state) return
     setSaving(true)
     try {
       const eq = await fetch('/api/members/avatar', {
@@ -321,7 +342,8 @@ export function AvatarConfigurator({
         }
       }
       toast.success(redirect ? messages.savedAndLeaving : messages.saved)
-      if (redirect) exitAvatar()
+      if (onReturn) onReturn(true)
+      else if (redirect) exitAvatar()
     } catch {
       toast.error(messages.saveFailed)
     } finally {
@@ -334,11 +356,27 @@ export function AvatarConfigurator({
   const currentColor = slots[category]?.color
   const items = partsByCategory.get(category) ?? []
   const activePose = mode === 'photo' ? pose : 'Idle'
+  const seasonalChoices = festa ? (
+    <SeasonalAvatarChoices
+      festa={festa}
+      parts={state?.parts ?? []}
+      disabled={saving || Boolean(busy)}
+      onSelect={(part) => {
+        const info = AVATAR_PART_INFO[part.id]
+        if (info) {
+          setCategory(info.category)
+          selectPart(part)
+        }
+      }}
+    />
+  ) : null
 
   if (skin === 'adult' && AdultView) {
     return (
       <AdultView
         returnTo={returnTo}
+        onExit={onReturn ? exitAvatar : undefined}
+        seasonalChoices={seasonalChoices}
         dark={dark}
         state={state}
         loadState={loadState}
@@ -372,7 +410,10 @@ export function AvatarConfigurator({
 
   if (loadState === 'error') {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
+      <div
+        onKeyDown={onEmbeddedKeyDown}
+        className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1"
+      >
         <div className="relative z-10 flex items-center justify-between gap-2 p-4">
           <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
         </div>
@@ -412,7 +453,10 @@ export function AvatarConfigurator({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
+    <div
+      onKeyDown={onEmbeddedKeyDown}
+      className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1"
+    >
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
@@ -441,7 +485,16 @@ export function AvatarConfigurator({
           <button
             type="button"
             onClick={() => save({ redirect: mode === 'photo' || returnTo === '/' })}
-            disabled={saving || hasLocked || !state}
+            aria-label={
+              saving
+                ? 'Salvando'
+                : hasLocked
+                  ? 'Peça travada'
+                  : mode === 'photo'
+                    ? 'Tirar foto'
+                    : 'Salvar'
+            }
+            disabled={saving || Boolean(busy) || hasLocked || !state}
             className={cn(
               'inline-flex h-11 items-center gap-2 rounded-full px-4 font-bold text-sm shadow-md transition-transform active:scale-95',
               hasLocked
@@ -470,6 +523,7 @@ export function AvatarConfigurator({
         </div>
       </div>
 
+      {seasonalChoices}
       {/* Corpo (proposta "painel ao lado", 26/10/2026). Com a área do editor a partir de 45rem
           (720px), o 3D fica à esquerda e o painel à direita, os dois com a altura toda: trocar
           uma peça mostra o resultado sem rolar, e só a grade de peças rola. Abaixo disso, o 3D

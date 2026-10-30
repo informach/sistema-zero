@@ -6,7 +6,7 @@ import { comecarConversaComAMare, MARE_NO_RECIFE } from '../sistemas/mare'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
 import { lugarDaMare } from './recife'
 
-const MARE: MoradorNoMundo = {
+export const MARE: MoradorNoMundo = {
   quem: 'mare',
   url: new URL(mareGlb, import.meta.url).href,
   painel: PAINEL_DA_MARE,

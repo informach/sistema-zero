@@ -6,6 +6,7 @@
  * pelo MESMO `id`. Itens/temas são SINKS das moedas Zappy (cosmético puro).
  */
 
+import { GALERIA } from '@sistemazero/arquipelago-contracts'
 import { type BadgeSlug, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../gamification/badges'
 
 export type RoomItemCategory = 'furniture' | 'decor' | 'plant' | 'light' | 'pet'
@@ -105,7 +106,7 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   item('poltrona', 'furniture', 70, 2, 2),
   item('cadeira-gamer', 'furniture', 90, 1, 1),
   item('mesa-gamer', 'furniture', 150, 3, 1),
-  item('fliperama', 'furniture', 140, 1, 1),
+  item('fliperama', 'furniture', GALERIA['fliperama-classico'].preco, 1, 1),
   item('teclado', 'furniture', 120, 2, 1),
   item('caminha-pet', 'furniture', 60, 1, 1),
   item('arranhador', 'furniture', 60, 1, 1),
@@ -122,7 +123,7 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   item('cafeteira', 'decor', 40, 1, 1, { stackable: true }),
   item('livros', 'decor', 30, 1, 1, { stackable: true }),
   item('porta-retrato', 'decor', 30, 1, 1, { stackable: true }),
-  item('aquario', 'decor', 120, 1, 1, { stackable: true }),
+  item('aquario', 'decor', GALERIA['aquario-classico'].preco, 1, 1, { stackable: true }),
   item('vitrola', 'decor', 70, 1, 1, { stackable: true }),
   // Decoração de PAREDE (`mount: 'wall'` — w = horizontal, h = altura na parede)
   item('quadro', 'decor', 0, 2, 2, { mount: 'wall' }),
@@ -136,7 +137,7 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   item('quadro-cortica', 'decor', 50, 2, 1, { mount: 'wall' }),
   item('mapa-mundi', 'decor', 60, 2, 2, { mount: 'wall' }),
   // Plantas (animadas)
-  item('planta', 'plant', 80, 1, 2),
+  item('planta', 'plant', GALERIA['planta-interior-classica'].preco, 1, 2),
   item('arvore', 'plant', 130, 2, 3),
   item('cacto', 'plant', 40, 1, 1, { stackable: true }),
   item('vaso-flores', 'plant', 50, 1, 1, { stackable: true }),

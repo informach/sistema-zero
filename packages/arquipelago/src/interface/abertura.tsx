@@ -27,17 +27,20 @@ const PAUSA_DO_RELOGIO_MS = 500
  * com ela até ser solto, para o personagem não pular sozinho logo de cara.
  */
 function engolirEspacoAteSoltar() {
+  const limpar = () => {
+    window.removeEventListener('keydown', engolir, { capture: true })
+    window.removeEventListener('keyup', engolir, { capture: true })
+    window.removeEventListener('blur', limpar)
+  }
   const engolir = (e: KeyboardEvent) => {
     if (e.code !== 'Space') return
     e.preventDefault()
     e.stopImmediatePropagation()
-    if (e.type === 'keyup') {
-      window.removeEventListener('keydown', engolir, { capture: true })
-      window.removeEventListener('keyup', engolir, { capture: true })
-    }
+    if (e.type === 'keyup') limpar()
   }
   window.addEventListener('keydown', engolir, { capture: true })
   window.addEventListener('keyup', engolir, { capture: true })
+  window.addEventListener('blur', limpar, { once: true })
 }
 
 /**
@@ -63,10 +66,14 @@ export function Abertura() {
   const segurouEm = useRef<number | null>(null)
   const espacoApertado = useRef(false)
   const saiu = useRef(false)
+  const timerDaSaida = useRef<ReturnType<typeof setTimeout> | null>(null)
   const palco = useRef<HTMLButtonElement>(null)
   const pular = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     palco.current?.focus({ preventScroll: true })
+    return () => {
+      if (timerDaSaida.current !== null) clearTimeout(timerDaSaida.current)
+    }
   }, [])
 
   const sair = useCallback(() => {
@@ -74,7 +81,7 @@ export function Abertura() {
     saiu.current = true
     setSaindo(true)
     lojaDaAbertura(loja).getState().sair()
-    setTimeout(() => {
+    timerDaSaida.current = setTimeout(() => {
       if (loja.getState().painelAberto === PAINEL_DA_ABERTURA) loja.getState().abrirPainel(null)
     }, SAIDA_DA_ABERTURA_MS)
   }, [loja])
@@ -145,23 +152,29 @@ export function Abertura() {
     }
   }, [proxima, sair])
 
-  // Ao fechar: na primeira vez (no fim, pulando ou com Esc), a marca de "já viu" e a primeira
-  // fala do Zappy; fechada à força pela tela do tempo ou pelo salvamento, nada disso.
-  useEffect(
-    () => () => {
+  // Só uma transição real do painel conta como fechamento. Desmontar a página, trocar perfil
+  // ou o ciclo de efeitos do StrictMode não equivale a terminar/pular a história.
+  useEffect(() => {
+    let fechou = false
+    return loja.subscribe((s, antes) => {
+      if (
+        fechou ||
+        antes.painelAberto !== PAINEL_DA_ABERTURA ||
+        s.painelAberto === PAINEL_DA_ABERTURA
+      )
+        return
+      fechou = true
       const abertura = lojaDaAbertura(loja)
       const { origem } = abertura.getState()
       abertura.getState().abrir('rever')
       if (espacoApertado.current) engolirEspacoAteSoltar()
-      const s = loja.getState()
       const aForca = s.tempoPausado || s.tempoAcabou || salvamentoPausado(s.salvamentoSituacao)
       if (aForca || origem !== 'primeira') return
       marcarAberturaVista(plataforma.publico, plataforma.perfil.id)
       if (!s.salvamento.casa.portaNova && !s.visita)
         s.dizer(boasVindas(plataforma.perfil.primeiroNome))
-    },
-    [loja, plataforma],
-  )
+    })
+  }, [loja, plataforma])
 
   const cena = CENAS[indice]!
   const fala = cena.falas[Math.max(0, falaDaVez)] ?? cena.falas[0]!

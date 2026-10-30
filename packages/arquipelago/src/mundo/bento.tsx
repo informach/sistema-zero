@@ -7,7 +7,7 @@ import { comecarConversaComOBento } from '../sistemas/conversa-do-bento'
 import { paraOMundo } from './bosque'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
 
-const BENTO: MoradorNoMundo = {
+export const BENTO: MoradorNoMundo = {
   quem: 'bento',
   url: new URL(bentoGlb, import.meta.url).href,
   painel: PAINEL_DO_BENTO,

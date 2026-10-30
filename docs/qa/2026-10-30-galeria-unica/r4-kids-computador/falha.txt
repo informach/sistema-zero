@@ -1,0 +1,30 @@
+TimeoutError: locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('dialog', { name: 'Feira da Vila Doce', exact: true }) to be visible[22m
+
+Lenda
+Fome: 78 de 100
+Energia: 99 de 100
+Diversão: 69 de 100
+50
+moedas
+Vila Doce
+06:59
+Dia 1 · Sol
+Hoje: 30 min
+AGORA
+Fazer o desafio de hoje no Quadro das Cores
+E
+Ver a feira da semana
+🌱
+Semente de alface
+3
+🌱
+Semente de tomate
+2
+🌱
+Semente de milho
+1
+Modo do jogo
+Viver
+Construir

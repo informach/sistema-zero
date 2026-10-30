@@ -1,16 +1,12 @@
 import { PAINEL_DA_MARE, PAINEL_DO_FLOCO } from '../estado/moradores'
-import { PainelDeApresentacao } from './apresentacao'
+import { PainelDeAmizadeDoAnel } from './amizade-do-anel'
 
-/** Apresentação fixa, sem mostrar escolhas de amizade que ainda não existem. */
+/** Relação da Maré com a mesma conversa e câmera do mundo. */
 export function PainelDaMare() {
-  return (
-    <PainelDeApresentacao quem="mare" painel={PAINEL_DA_MARE} nome="Maré" tchau="Tchau, Maré" />
-  )
+  return <PainelDeAmizadeDoAnel quem="mare" painel={PAINEL_DA_MARE} />
 }
 
 /** O Floco no palco do Pico Gelado (fase3-06), do mesmo jeito. */
 export function PainelDoFloco() {
-  return (
-    <PainelDeApresentacao quem="floco" painel={PAINEL_DO_FLOCO} nome="Floco" tchau="Tchau, Floco" />
-  )
+  return <PainelDeAmizadeDoAnel quem="floco" painel={PAINEL_DO_FLOCO} />
 }
