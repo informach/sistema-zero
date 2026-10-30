@@ -44,7 +44,7 @@ fora dos habitantes e das pontes, com teste de terreno e distância. Nenhuma col
   dos dois públicos. Itens protegidos pelo catálogo único.
 - [x] Navegador local em computador e celular emulado: coletar, pescar, janela perdida,
   pausa, álbum, reabrir e visita sem coleta. Prints e negativos preservados em docs/qa.
-- [ ] Suíte do jogo, tipagem com heap 8192, Biome, build e full review; commit e merge local.
+- [x] Suíte do jogo, tipagem com heap 8192, Biome, build e full review; commit e merge local.
 
 ## Limites do aceite
 

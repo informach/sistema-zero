@@ -121,7 +121,16 @@ Essa prova usa o módulo e os PNGs reais em navegador, sem abrir o mundo 3D e se
 uma segunda cópia dos endereços. O primeiro comando com outfile foi recusado pelo Bun por
 ter vários assets; a reprodução usa outdir. O negativo funcional é o das onze URLs incorretas.
 
-## Limites
+## Integração local
+
+Regras e dados em `789e83895`, interface e provas em `bebfdd1c4`. A composição `eaeae8f45`
+preserva os commits do repertório, da corrida do Bosque e da análise de regras completadas,
+até staging `27cd2b91d`. O merge local é `8ce334a73`. As fontes qualificadas da praia foram
+reconferidas por hash e preservadas. Após conciliar: contratos 208/0, Members dirigido 24/0
+e jogo dirigido 43/0. Lint da raiz: zero erros, 170 avisos e 198 informações anteriores.
+Recibo em [integracao.json](integracao.json). Não houve push ou implantação.
+
+## Limites do aceite
 
 Aceite hospedado, navegação por pessoas reais e aparelhos físicos continuam em Q01/L14.
 Não houve publicação, migração, seed ou implantação. O conteúdo Pega-conchas está em C03.
