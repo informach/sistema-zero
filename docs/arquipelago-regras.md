@@ -2230,6 +2230,37 @@ que a foto fica pronta. A foto vai para a moderação do Clube dos Criadores, nu
 - Sem mudança no salvamento nem no banco do jogo. Plano:
   `2026-10-30-arquipelago-fotos-no-clube.md`.
 
+### 6.24 Segredos das ilhas (N12, 30/10/2026)
+
+A proposta: "o kit de movimento abre segredos nas ilhas antigas" e "baús, Lumis raros e páginas
+extras do diário em lugares que só o kit de movimento completo alcança". Escolha mínima,
+registrada como decisão: nas quatro ilhas antes do Pico, um baú da Íris flutua no alto de um
+vento que sobe, o mesmo do Pico (`CorrenteDeAr`), com flocos dourados. Sem o planador o vento não
+leva ninguém; com ele, a criança pula dentro do vento, abre o planador e sobe até o baú.
+
+| Segredo | Ilha | Pé do vento | Dentro do baú |
+|---|---|---|---|
+| bit 1 | Sua ilha | (10,3; 12,3) no mundo | Estrela cintilante |
+| bit 2 | Bosque dos Bichos | (7; 0) no modelo | Cristal verde |
+| bit 4 | Vila Doce | (0; 6) no modelo | Cristal roxo |
+| bit 8 | Recife | (-8; -2) no modelo | Cristal azul |
+
+- O vento tem 1,1 m de raio e 6,5 m de altura; o baú fica 1,3 m ao lado do alto. O pulo sem
+  planador chega a mais de 3 m dele; no alto do vento ele fica ao alcance (2,2 m).
+- Ao pé do vento, "Olhar o vento": sem planador, "Lá no alto tem um baú, e o vento sobe até ele.
+  Só que ele só leva quem plana. O planador vem do Pico Gelado."; com ele, como subir.
+- Planando, só valem as ações marcadas `noAr` (por ora, o baú); a HUD do planador mostra a ação
+  ao lado de "Fechar o planador". "Abrir o baú" guarda o bit em `segredos` e a lembrança na
+  mochila, uma vez só. Achado, o vento e o baú somem.
+- O álbum ganha "Segredos das ilhas: n de 4". As quatro lembranças usam a arte que já existia
+  sem uso (`cristal-*.glb`, `estrela-cintilante.glb`); o baú é o `bau.glb`.
+- Lumis raros e páginas extras do diário ficam de fora: pediriam espécies e texto novos da
+  história. Ficam como pendência de conteúdo.
+
+Provas: `tests/segredos.test.ts` (colunas livres contra os colisores reais das quatro ilhas,
+chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segredos-browser.ts`
+(com `?planador=1`).
+
 ## 7. Desafios
 
 Arquivos principais:

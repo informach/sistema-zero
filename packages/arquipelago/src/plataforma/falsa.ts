@@ -90,6 +90,8 @@ export interface OpcoesDaPlataformaFalsa {
   bento?: number
   /** Põe um par de patins na mochila (o prêmio da entrega pelos telhados, fase2-05). */
   patins?: boolean
+  /** Põe o planador na mochila (o presente do Floco, fase3-09; os segredos, N12). */
+  planador?: boolean
   /** Põe a lanterna na mochila (o presente do Bento, fase2-06). */
   lanterna?: boolean
   /**
@@ -348,6 +350,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       guardado = {
         revisao: guardado.revisao + 1,
         salvamento: { ...atual, inventario: { ...atual.inventario, patins: 1 } },
+        atualizadoEm: agora().toISOString(),
+      }
+  }
+  if (o.planador) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    if (!atual.inventario.planador)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, inventario: { ...atual.inventario, planador: 1 } },
         atualizadoEm: agora().toISOString(),
       }
   }

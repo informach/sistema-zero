@@ -119,6 +119,16 @@ export const ITENS: Record<string, Item> = {
   'cristal-rosa': { id: 'cristal-rosa', nome: 'Cristal rosa', emoji: '💎', lembranca: true },
   // O presente do Floco no festival de inverno (fase3-09, `sistemas/planador.ts`).
   planador: { id: 'planador', nome: 'Planador', emoji: '🪁', equipamento: true },
+  // As lembranças dos baús no alto do vento (N12, `sistemas/segredos.ts`).
+  'estrela-cintilante': {
+    id: 'estrela-cintilante',
+    nome: 'Estrela cintilante',
+    emoji: '🌟',
+    lembranca: true,
+  },
+  'cristal-verde': { id: 'cristal-verde', nome: 'Cristal verde', emoji: '💎', lembranca: true },
+  'cristal-roxo': { id: 'cristal-roxo', nome: 'Cristal roxo', emoji: '💎', lembranca: true },
+  'cristal-azul': { id: 'cristal-azul', nome: 'Cristal azul', emoji: '💎', lembranca: true },
   // Preserva a prioridade dos alimentos, sementes e equipamentos na barra existente.
   ...Object.fromEntries(
     LEMBRANCAS_DA_PRAIA.map(({ id, nome, emoji }): [string, Item] => [

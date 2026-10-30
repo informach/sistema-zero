@@ -129,6 +129,7 @@ const plataforma = criarPlataformaFalsa({
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   bento: q.has('bento') ? Number(q.get('bento')) : undefined,
   patins: q.get('patins') === '1',
+  planador: q.get('planador') === '1',
   lanterna: q.get('lanterna') === '1',
   pontesVistas: q.get('chegada') !== '1',
   energia: q.has('energia') ? Number(q.get('energia')) : undefined,

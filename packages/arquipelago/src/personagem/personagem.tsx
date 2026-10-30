@@ -425,12 +425,14 @@ export function Personagem() {
         ? !parado && v.balao && podeDescerDoBalao(v.balao)
           ? DESCER_DO_BALAO
           : null
-        : parado || (v.modo !== 'chao' && v.modo !== 'mergulho') || estado.visita
+        : parado ||
+            (v.modo !== 'chao' && v.modo !== 'mergulho' && v.modo !== 'planar') ||
+            estado.visita
           ? null
-          : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho'),
+          : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho', v.modo === 'planar'),
     )
 
-    if (usou && (v.modo === 'chao' || v.modo === 'mergulho') && !parado) {
+    if (usou && (v.modo === 'chao' || v.modo === 'mergulho' || v.modo === 'planar') && !parado) {
       const alvo = estado.alvo
       if (alvo) interativos.get(alvo.id)?.agir()
     }

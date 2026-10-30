@@ -9,6 +9,7 @@ import { Zappy } from '../personagem/zappy'
 import { PAINEL_DA_ABERTURA } from '../sistemas/abertura'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
+import { segredoObrigatorio } from '../sistemas/segredos'
 import { Agua } from './agua'
 import { Anel } from './anel'
 import { Bancada } from './bancada'
@@ -41,6 +42,10 @@ import { carregarModelos } from './modelos'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
+import { SegredoNoAlto } from './segredos-das-ilhas'
+
+/** O segredo da sua ilha (N12): o baú no alto do vento. */
+const SEGREDO_DA_SUA_ILHA = segredoObrigatorio('sua-ilha')
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
 carregarModelos()
@@ -98,6 +103,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <HabitantesDaPraia />
           <ColecoesDaPraia />
           <ChavesDaCasa />
+          <SegredoNoAlto segredo={SEGREDO_DA_SUA_ILHA} />
           <Casa />
           <ConvidadosDaCasa />
           <Horta />
