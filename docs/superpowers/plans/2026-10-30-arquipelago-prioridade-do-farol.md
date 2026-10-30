@@ -42,7 +42,7 @@ mesmo prazo. O teste reproduziu a falha antes da correção e verifica uma fala 
   Biome, revisão de diff e documentação. 1.308 testes aprovados, 1 ignorado, zero falhas;
   navegador completo e repetição específica dos recados aprovados. Evidência em
   `docs/qa/2026-10-30-prioridade-farol/`.
-- [ ] Commit e merge no staging local.
+- [x] Commit `012281a29` e merge `16345a590` no staging local, sem push.
 
 ## Limites
 

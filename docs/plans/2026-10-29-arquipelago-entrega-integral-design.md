@@ -1,5 +1,10 @@
 # Entrega integral do Arquipélago Vagalume
 
+Leitura vigente: [estado atual](../arquipelago-estado-atual.md) e
+[lotes da auditoria](2026-10-30-arquipelago-ajustes-da-auditoria.md). Os checkpoints deste
+documento registram bases anteriores. A autorização posterior de 30/10 permite review,
+commit e merge por lote no staging local, sem push.
+
 ## Checkpoint integrado de 30/10/2026
 
 Por solicitação posterior da dona, o trabalho local já implementado entra em commit e merge
@@ -107,7 +112,10 @@ Testes puros para regras, testes de contrato/rota para autoridade e integração
 - Amplitude da terraformação: entregar edição limitada de terreno sem quebrar rotas, colisores, construções ou vizinhos, com prévia e desfazer; arte nova segue com Blender.
 - Satisfação familiar: só medir respostas efetivas a pesquisa, nunca inferir satisfação de minutos jogados.
 
-## Processo de entrega
+## Processo de entrega registrado em 29/10
+
+A orientação histórica abaixo foi complementada pela autorização de 30/10: executar e
+integrar lotes revisados localmente. Publicação e implantação permanecem aceites separados.
 
 Para cada lote: conferir remoto, registrar base, reproduzir problemas, implementar, testes dos pacotes afetados, tipagem, lint e revisão. Correção da orientação em 29/10: o push de L01 foi antecipado. A dona exige concluir o escopo inteiro, fazer a revisão integrada e corrigir seus achados antes do próximo commit/envio desta sessão. Não publicar lotes intermediários. Implantar apenas a composição revisada; verificar versão do jogo, host, API, executor, contratos e configuração nos dois ambientes.
 

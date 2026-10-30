@@ -1,5 +1,10 @@
 # Arquipélago Vagalume: regras do jogo
 
+Situação por funcionalidade, com código, conteúdo, provas e implantação separados:
+[estado atual](arquipelago-estado-atual.md). Nesta base de 30/10/2026, o formato vigente é V18,
+o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
+versões anteriores registram a evolução; não substituem o contrato atual.
+
 ## Pausa do quarto e movimento ambiente (30/10/2026, A03a)
 
 Na casa própria e na visita, pets e móveis animados param quando o jogo pausa, inclusive no
@@ -3410,13 +3415,13 @@ momento. Nada é concluído ou apagado: ao descer, voltam as pendências e a mes
 passos. Recados temporários vencem no prazo normal, sem reaparecer vencidos. A regra vale para
 os dois públicos e não altera o acesso ao final.
 
-Na Lenda, posição 8 da jornada, E / Usar oferece **Subir o Farol**. Antes, a porta oferece um recado gentil, com voz própria para o público adulto. Visitas não iniciam esse final. A porta exterior continua com sua malha atual; a passagem para o interior acontece pelo interativo, sem abrir uma dobradiça que o modelo ainda não tem.
+Na Lenda, posição 8 da jornada, E / Usar oferece **Subir o Farol**. Antes, a porta oferece um recado gentil, com voz própria para o público adulto. Visitas não iniciam esse final. A passagem para o interior acontece pelo interativo; a dobradiça da porta exterior já está ligada, como descrito abaixo.
 
 O interior é a sala existente em `alto-do-farol.glb`, carregada só ao entrar e descartada ao sair. A sala usa um referencial próprio, 40 m acima do zero do mar, para não sobrepor a torre exterior. Esse número é uma decisão técnica, não uma medida da história. As âncoras `chegada`, `leitura` e `camera-varanda` orientam chegada, leitura e vista. O piso tem raio 4,2 m e topo y 0 no modelo; 16 caixas fecham o anel das paredes, com centro a 4,35 m. A mesa e a base da lente têm formas simples. Nenhuma malha de desenho vira colisor. Os colisores vêm do próprio arquivo (nós `col-*`); a grade do vão da escada também colide, para ninguém cair pela escada. A porta do farol de fora abre na dobradiça quando a criança chega perto e o Farol já pode ser subido.
 
 O alcance da porta é 2 m e o da leitura é 2,1 m. O corte de entrada e saída mantém a duração de 600 ms, com relógio próprio que pausa junto do jogo, trocando a cena no meio opaco, aos 300 ms de tempo ativo. Esc e o botão de descer devolvem o corpo a um ponto livre diante da porta. A posição da sala não entra no salvamento e o cochilo automático espera a pessoa descer. Uma falha ao carregar mantém a criança na ilha e permite tentar de novo.
 
-A última página tem quatro trechos, sem tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica guardada no diário depois da leitura, inclusive ao reabrir o jogo. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
+A última página tem quatro trechos, sem limite de tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica guardada no diário depois da leitura, inclusive ao reabrir o jogo. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
 
 A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9, no chão medido pela ilha. Usa o morador genérico, os cinco clipes existentes e os olhos com `piscar` e `feliz`. O corpo simples tem raio 0,49 m e altura 2,13 m, medidos na cabeça e na pele do GLB, sem chapéu e braços estendidos. O foco da conversa fica a 1,7035 m dos pés, no centro vertical da cabeça. Alcance de conversa 2,2 m, olhar a 7 m, aceno a cada 45 s e giro com rapidez 3, iguais aos demais moradores. A conversa é fixa e não cria amizade, pedido ou presente.
 
