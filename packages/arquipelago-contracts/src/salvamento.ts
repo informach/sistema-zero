@@ -254,9 +254,37 @@ export const ObraSchema = z.strictObject({
 })
 export type Obra = z.infer<typeof ObraSchema>
 
-/** As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). */
-export const ILHAS_COM_CABANA = ['bosque'] as const
+/**
+ * As ilhas onde dá para fazer cabana: o Bosque (28/10/2026) e o iglu do Pico (E04, 30/10/2026). O
+ * lote de cada uma vem das âncoras `lote-cabana-a` e `-b` do modelo da ilha.
+ */
+export const ILHAS_COM_CABANA = ['bosque', 'pico'] as const
 export type IlhaComCabana = (typeof ILHAS_COM_CABANA)[number]
+
+/**
+ * O iglu é pequeno: só paredes, aberturas e piso, com tetos menores que os da cabana. Assim o
+ * salvamento cheio continua abaixo de 64 KB com a casa, a cabana e o iglu no teto.
+ */
+export const LIMITES_DO_IGLU = {
+  paredes: 12,
+  aberturas: 3,
+  pisos: 2,
+  objetos: 0,
+  cercas: 0,
+  caminhos: 0,
+  canteiros: 0,
+} as const satisfies Readonly<Record<keyof Obra, number>>
+
+export function cabeNoIglu(o: Obra): boolean {
+  return (Object.keys(LIMITES_DO_IGLU) as (keyof Obra)[]).every(
+    (k) => o[k].length <= LIMITES_DO_IGLU[k],
+  )
+}
+
+/** As cabanas de cada ilha (o iglu com os tetos dele). */
+export const CabanasSchema = z
+  .partialRecord(z.enum(ILHAS_COM_CABANA), ObraSchema)
+  .refine((c) => !c.pico || cabeNoIglu(c.pico), 'iglu acima do teto')
 
 /** De onde vem a aparência de um objeto: a galeria (comprada) ou feita por ela. */
 export const ORIGENS_DA_APARENCIA = ['galeria', 'pinta', 'molda', 'criacao'] as const
@@ -320,7 +348,7 @@ export const SalvamentoV4Schema = SalvamentoV3Schema.extend({
   versao: z.literal(4),
   construcao: z.strictObject({
     casa: ObraSchema.nullable(),
-    cabanas: z.partialRecord(z.enum(ILHAS_COM_CABANA), ObraSchema),
+    cabanas: CabanasSchema,
   }),
   projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulV4Schema),
 })

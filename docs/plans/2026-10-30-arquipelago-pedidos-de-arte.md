@@ -94,3 +94,24 @@ as ampliações ou a terraformação de L11. Primeiro serão aproveitados o avat
 existentes. Se a revisão desses trechos encontrar uma peça ausente, o pedido será acrescentado
 a este documento com nome, medidas e finalidade. Não produzir modelos por suposição.
 O fantasma familiar é gravação/reprodução do avatar existente e não exige personagem novo.
+
+## Pedido do levantamento de 30/10: o lote do iglu no Pico (E04)
+
+A proposta põe "construir o iglu" no Pico. O código está pronto (`CabanaDaIlha` com
+`ilha="pico"`, tetos do iglu no contrato, `LIMITES_DO_IGLU`) e espera o lote no modelo, como a
+cabana do Bosque. A busca no `pico.glb` atual (chão plano com variação de até 12 cm, nada
+acima até 3 m, dentro do raio de 12 m) só achou a praça de chegada da ponte (x 6 a 11, z -2 a
+3), onde uma construção fecharia a entrada da ilha.
+
+Entregar em `packages/arquipelago/src/assets/ilhas/pico.glb`:
+
+1. Uma clareira plana de pelo menos 5 × 5 m, fora do caminho da ponte, da subida ao cume, do
+   palco do festival, da caverna e do iglu do Floco. Neve plana, sem pedra solta nem pinheiro.
+2. Os Empty `lote-cabana-a` e `lote-cabana-b` em dois cantos opostos dela, na altura do chão
+   (o jogo arredonda x e z para o metro e usa o y da âncora `-a` como piso).
+3. Nada de colisor sobre a clareira até 3 m de altura; o caminho a pé até ela com as folgas do
+   pedido dos portos (faixa de 1,5 m, degraus de até 0,30 m).
+
+O aceite: `tests/cabana.test.ts` troca o teste "ainda não traz as âncoras" por um que confere o
+lote plano e livre contra os colisores do modelo.
+

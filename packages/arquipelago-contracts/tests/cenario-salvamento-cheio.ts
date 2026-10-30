@@ -7,6 +7,7 @@ import {
   DIAS_PARA_CHOCAR,
   ID_DA_APARENCIA_MAXIMO,
   LIMITES_DA_ROTINA,
+  LIMITES_DO_IGLU,
   LUMIS,
   type LumiId,
   MAPAS_DAS_ILHAS,
@@ -54,6 +55,23 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     caminhos: Array.from({ length: 240 }, (_, i) => ({ ...ponto(i), tipo: 'grama' as const })),
     canteiros: Array.from({ length: 18 }, (_, i) => ponto(i)),
   })
+  /** O iglu do Pico no teto dele (E04). */
+  const igluCheio = (): Obra => ({
+    paredes: Array.from({ length: LIMITES_DO_IGLU.paredes }, (_, i) => trecho(i)),
+    aberturas: Array.from({ length: LIMITES_DO_IGLU.aberturas }, (_, i) => ({
+      ...ponto(i),
+      eixo: 'z' as const,
+      tipo: 'janela-redonda' as const,
+    })),
+    pisos: Array.from({ length: LIMITES_DO_IGLU.pisos }, (_, i) => ({
+      ...ponto(i),
+      tipo: 'azulejo' as const,
+    })),
+    objetos: [],
+    cercas: [],
+    caminhos: [],
+    canteiros: [],
+  })
   const aparencias = Array.from({ length: APARENCIAS_GUARDADAS_MAXIMO }, (_, i) => ({
     origem: 'criacao' as const,
     id: `${i}`.padStart(ID_DA_APARENCIA_MAXIMO, 'x'),
@@ -91,7 +109,7 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     clima: 'nublado' as const,
     // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
     vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'], filhote },
-    construcao: { casa: cheia(), cabanas: { bosque: cheia() } },
+    construcao: { casa: cheia(), cabanas: { bosque: cheia(), pico: igluCheio() } },
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
     percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),
