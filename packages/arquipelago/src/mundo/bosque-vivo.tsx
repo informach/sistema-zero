@@ -28,6 +28,7 @@ import { CIPO, comprimentoDaPegada, criarBalanco } from '../sistemas/cipo'
 import { CORDAS, criarPontos, passoDasCordas } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import { PERCURSO_DAS_COPAS, type PontosDoPercurso } from '../sistemas/percurso'
+import { segredoObrigatorio } from '../sistemas/segredos'
 import { DURACAO_DO_DIA_MS, PARTE_CLARA } from '../sistemas/tempo-do-dia'
 import { forcaPorHora } from '../sistemas/vento'
 import { BichosDoBosque } from './bichos-do-bosque'
@@ -67,6 +68,7 @@ import { giroDaIlha, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 import { ObjetosReativos } from './objetos-reativos'
 import { Ondinhas } from './ondinhas'
+import { SegredoNoAlto } from './segredos-das-ilhas'
 import { TroncoNoLago } from './tronco-no-lago'
 import { ventoAgora } from './vegetacao-ao-vento'
 
@@ -88,6 +90,9 @@ const CHAO_DA_ILHA = 0.6
 const LARGURA_DA_ESCADA = 0.6
 /** A largura da pista do escorregador (a tábua de 1 m entre as laterais, no `bosque.py`). */
 const LARGURA_DA_PISTA = 1
+
+/** O segredo desta ilha (N12): o baú no alto do vento. */
+const SEGREDO_BOSQUE = segredoObrigatorio('bosque')
 
 export function BosqueVivo({
   ilha,
@@ -395,6 +400,7 @@ export function BosqueVivo({
   return (
     <group ref={pecas} visible={false}>
       <BorroesDaIlha ilha="bosque" ancoras={lugaresDosLumis} meio={meio} />
+      <SegredoNoAlto segredo={SEGREDO_BOSQUE} meio={meio} giro={giro} />
       <ComReserva reserva={null}>
         <ObjetosReativos pecas={pecasSoltas} galho={galhoSeco} />
       </ComReserva>

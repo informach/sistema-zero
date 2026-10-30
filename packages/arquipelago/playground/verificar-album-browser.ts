@@ -1,7 +1,7 @@
 /**
  * O álbum de coleções e o modo foto no navegador (fase2-09). Só usa a plataforma falsa, sem banco.
  *
- * Abre o álbum pelo menu, confere as oito seções, entra no modo foto (F no computador, o botão do
+ * Abre o álbum pelo menu, confere as nove seções, entra no modo foto (F no computador, o botão do
  * menu no toque), confere que o HUD sumiu, que o personagem fica parado e a câmera gira, tira a
  * foto e confere o PNG baixado (maior que zero e com a assinatura de PNG), e sai (Esc ou "Voltar").
  * Fotos no Clube (N08b): no computador o Clube está ligado ("Mandar para o Clube" só depois da foto,
@@ -155,7 +155,7 @@ try {
     const album = pagina.getByRole('dialog', { name: 'Álbum de coleções' })
     await album.waitFor()
     const titulos = await album.locator('h3').allTextContents()
-    assert.equal(titulos.length, 8, `seções: ${titulos.join(' | ')}`)
+    assert.equal(titulos.length, 9, `seções: ${titulos.join(' | ')}`)
     for (const t of caso.titulos)
       assert(titulos.includes(t), `falta "${t}" em ${titulos.join(' | ')}`)
     assert(titulos.some((t) => t.startsWith('Receitas: ')))
@@ -279,7 +279,7 @@ try {
     if (caso.toque) assert.equal(await pagina.locator('.arq-zona-joystick').count(), 1)
     assert.deepEqual(erros, [])
     console.log(
-      `PASS ${caso.nome}: álbum com as oito seções, modo foto sem HUD, PNG de ${png.length} bytes, Clube ${caso.clube ? 'ligado e foto na moderação' : 'desligado sem botão'}, volta do HUD`,
+      `PASS ${caso.nome}: álbum com as nove seções, modo foto sem HUD, PNG de ${png.length} bytes, Clube ${caso.clube ? 'ligado e foto na moderação' : 'desligado sem botão'}, volta do HUD`,
     )
     await contexto.close()
   }

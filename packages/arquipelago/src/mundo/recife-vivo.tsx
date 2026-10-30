@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { useJogo } from '../estado/contexto'
 import { PERCURSO_DOS_CORAIS } from '../sistemas/percurso'
+import { segredoObrigatorio } from '../sistemas/segredos'
 import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { CoraisDoRecife } from './corais-do-recife'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
@@ -15,6 +16,7 @@ import { MesaDeMapas } from './mesa-de-mapas'
 import { ComReserva } from './modelos'
 import { deslocar, percursoDosCorais } from './percursos-das-ilhas'
 import { aguaDoRecife } from './recife'
+import { SegredoNoAlto } from './segredos-das-ilhas'
 
 /** Só existe com a ilha ativa. Água e conversa são retiradas junto com a ilha. */
 /** As pérolas dos pulos nos corais: brancas com o brilho lilás da lagoa. */
@@ -25,6 +27,9 @@ const CORES_DA_PEROLA: CoresDoColetavel = {
 }
 /** Os pés a menos disto do chão da lagoa, pisando, contam como queda dos corais. */
 const CHAO_DOS_CORAIS = 0.3
+
+/** O segredo desta ilha (N12): o baú no alto do vento. */
+const SEGREDO_RECIFE = segredoObrigatorio('recife')
 
 export function RecifeVivo({
   ilha,
@@ -64,6 +69,7 @@ export function RecifeVivo({
   return (
     <group ref={pecas} visible={false}>
       <BorroesDaIlha ilha="recife" ancoras={lugaresDosLumis} meio={meio} />
+      <SegredoNoAlto segredo={SEGREDO_RECIFE} meio={meio} giro={giro} />
       <MergulhoDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <CoraisDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <MesaDeMapas modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />

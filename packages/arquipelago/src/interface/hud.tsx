@@ -598,6 +598,13 @@ function Acao() {
         Guiar
         <span className="arq-tecla">{toque ? 'Fechar' : 'Espaço'}</span>
         Fechar o planador
+        {/* O baú no alto do vento (N12) se abre planando. */}
+        {alvo ? (
+          <>
+            <span className="arq-tecla">{toque ? 'Usar' : 'E'}</span>
+            {alvo.rotulo}
+          </>
+        ) : null}
       </div>
     )
   }
