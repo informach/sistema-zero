@@ -1,0 +1,50 @@
+{
+  "versao": 1,
+  "dataUtc": "2026-10-30T14:02:30.8323083Z",
+  "merge": "8ce334a73",
+  "composicao": "eaeae8f45",
+  "stagingConciliado": "27cd2b91d",
+  "commits": ["789e83895", "bebfdd1c4"],
+  "fontesConferidas": 13,
+  "contratos": {
+    "aprovados": 208,
+    "falhas": 0,
+    "assercoes": 9044
+  },
+  "membersDirigidos": {
+    "aprovados": 24,
+    "falhas": 0,
+    "assercoes": 195
+  },
+  "jogoDirigidos": {
+    "aprovados": 43,
+    "falhas": 0,
+    "assercoes": 662
+  },
+  "biome": {
+    "erros": 0,
+    "informacoesAnteriores": 198,
+    "arquivos": 13600,
+    "avisosAnteriores": 170
+  },
+  "pushExecutado": false,
+  "implantacaoExecutada": false,
+  "artefatos": [
+    {
+      "sha256": "9e936cae1e1ecf174929f8800425d1c4cd25afcb9c3f48b95aa84b02b25f841e",
+      "arquivo": ".cache/praia-integrada-contratos.log"
+    },
+    {
+      "sha256": "d4a521d082fb37fa61ae9fb44c76bcb9aa8a7200c43191683033803a6966f1ff",
+      "arquivo": ".cache/praia-integrada-members.log"
+    },
+    {
+      "sha256": "22956eafb4e583ea77fdfedd79e7164d5b8b7627643e32e549529b09df53bed4",
+      "arquivo": ".cache/praia-integrada-jogo.log"
+    },
+    {
+      "sha256": "607d3c3650bc7e1e50ce661f7a8fa21afb1a78c60f6d847d56c53a1452b33b77",
+      "arquivo": ".cache/praia-integrada-biome.log"
+    }
+  ]
+}

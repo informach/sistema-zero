@@ -1,0 +1,85 @@
+{
+  "versao": 1,
+  "dataUtc": "2026-10-30T13:57:45.6163688Z",
+  "base": "01b36a7f2",
+  "escopo": "E01: coleta, pesca e colecoes da praia; aceite local",
+  "testes": {
+    "aprovados": 1327,
+    "assercoes": 175581,
+    "ignorados": 1,
+    "falhas": 0
+  },
+  "tipagemExit": 0,
+  "checkExit": 0,
+  "build": {
+    "versao": "20261030135106",
+    "arquivos": 158,
+    "megabytes": 36.32
+  },
+  "salvamento": {
+    "versao": 18,
+    "teto": 65536,
+    "folga": 2212,
+    "bytes": 63324
+  },
+  "navegador": {
+    "celular": "r5-celular: completo depois da correcao",
+    "miniaturas": "r6-miniaturas: smoke final, onze imagens decodificadas",
+    "fisico": false,
+    "computador": "r4-compacta: completo antes da correcao da ordem da zona de toque",
+    "distribuicao": "onze PNGs reais com pagina e modulo em pastas diferentes, RED e GREEN"
+  },
+  "fontes": {
+    "packages/arquipelago/playground/verificar-praia-browser.ts": "9d9891e81ffd8614d213f87724c84422d7f6e77bd43b13e62e2049fe88b4fa22",
+    "packages/arquipelago/src/interface/album.tsx": "eb8fc0901ad9965714caa3653de0c224d151989e6d6bc79af716e9959b46d2ef",
+    "packages/arquipelago/src/interface/hud.tsx": "89820a7fa2c425c28f0a2e5dffd6b68104c62928649aad0704b524ad180db63d",
+    "packages/arquipelago/src/interface/miniaturas-da-praia.ts": "22d64d94083d434a34ccd647dd2772cb82b805d499837c28bea24d013704cf7e",
+    "packages/arquipelago/src/mundo/cena.tsx": "0aa4081a0eee3d96be409abef727408419df9d807a75bd13b7aed2d07436350a",
+    "packages/arquipelago/src/mundo/colecoes-da-praia.tsx": "c1a2f8ebc182076e52ce056a02c815652c74bf6ffbc28cfe263d01ef997bd5ee",
+    "packages/arquipelago/src/mundo/lugares-da-praia.ts": "4b54b8e01f61dde0469b5fbacd358419d448c06cbddc1b5d2b9ebefca5f850e9",
+    "packages/arquipelago/src/sistemas/album.ts": "8fc5f79fd54bd719e3752917ec4f27697bc55cdc1c0e9a0931c005c9993c2256",
+    "packages/arquipelago/src/sistemas/colecoes-da-praia.ts": "70ffd6b6533279a4f311a594994c376e04b243291329843edb5b672156a780d7",
+    "packages/arquipelago/src/sistemas/itens.ts": "5e5d16c6682980e0d13c06bad7b9facfb5857128ef82e1afcca0ab32938de818",
+    "packages/arquipelago/src/sistemas/pesca.ts": "234fe90137af58b87d517404bfdc8d3a990cd470ee0cfa5651ac36bcb0769809",
+    "packages/arquipelago/tests/colecoes-da-praia.test.ts": "e0a482f98e093309d84c7a2d9bad2d6398670ca21764b9afb744a30b4e1a7509",
+    "packages/arquipelago/playground/verificar-miniaturas-praia-browser.mjs": "23559f3dbc4307267b3e3adf1f70131b27228e61970fedf59f4d8f528a1fc7e3"
+  },
+  "artefatos": [
+    {
+      "arquivo": ".cache/praia-final-qualificado-test.log",
+      "sha256": "0d72424b9ea524d2d36ef43e72a56eeaae85936727fa8471c5440ca18607b5da"
+    },
+    {
+      "arquivo": ".cache/praia-final-qualificado-types.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "arquivo": ".cache/praia-final-qualificado-check.log",
+      "sha256": "0e0da863afdb8f2e76933c51ff6f7ee4e7acc2f6676744258bf11abf176c47dd"
+    },
+    {
+      "arquivo": ".cache/praia-final-qualificado-build.log",
+      "sha256": "ca70ff3f291932b6708c7246dc0f8cba87cd7588e182d11cb9ee345ce5c547a6"
+    },
+    {
+      "arquivo": ".cache/praia-browser-r4-compacta.log",
+      "sha256": "462d6717ef5d7d7f92669ec175f93bfd21cbea2b0e7b5498230ce7b246941c4f"
+    },
+    {
+      "arquivo": ".cache/praia-browser-r5-celular.log",
+      "sha256": "d919b1d3a38b8cc8ecf036db21f7acbd87dedf77577797cc944e29ff2d1d431b"
+    },
+    {
+      "arquivo": ".cache/praia-browser-r6-miniaturas.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "arquivo": ".cache/praia-miniaturas-red-r2.log",
+      "sha256": "a187c0eb7355d1a2e81ec84918ea0de3266460b76abc9d6d9027b5dbab1edc0f"
+    },
+    {
+      "arquivo": ".cache/praia-miniaturas-green.log",
+      "sha256": "8f599df2c08ce4c289bbd9ed2886708644e2f6f76c45f7d2ca6074a98d1aca7d"
+    }
+  ]
+}

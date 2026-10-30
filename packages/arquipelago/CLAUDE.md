@@ -5,6 +5,29 @@ código, conteúdo, prova local e implantação separados. Salvamento atual V18,
 65.536 bytes UTF-8, moedas do jogo até 100 por semana. Seções datadas preservam o histórico;
 consultar o contrato e o teste de documento cheio antes de acrescentar campos.
 
+## Coleções da praia e pesca (E01, 30/10/2026)
+
+`sistemas/colecoes-da-praia.ts` mantém o catálogo das cinco conchas, estrela-do-mar e cinco
+peixes. O inventário existente guarda uma lembrança por descoberta, como o cristal raro.
+Nada novo na V18: álbum e mochila leem o mesmo registro. Lembranças não podem ser dadas,
+comidas ou usadas em receitas. A estrela é observada e continua na areia; peixes voltam ao mar.
+`itensDaBarra` preserva os insumos e reúne essas lembranças em um único botão para o álbum,
+sem esconder suas entradas no inventário. Não ocupar onze espaços da HUD no celular.
+O joystick flutuante é montado antes da barra visível na HUD, para a zona de gesto não
+interceptar botões da mochila. Painéis continuam depois dos dois. Não contornar com clique
+forçado em QA ou com um z-index alto que passe por cima das telas de pausa.
+
+`sistemas/pesca.ts` é transitório e puro: espera 3 s ativos e permite recolher por 5 s. Pausa
+congela; sair cancela; perder a janela não gasta nem remove nada. Espécies novas em ordem
+fixa, sem raridade que impeça completar. O passo não aloca e limita retomadas de aba a 0,1 s.
+`mundo/colecoes-da-praia.tsx` só registra comandos depois que o modelo carrega, confere chão,
+altura, proximidade e política de escrita a cada ação. Visitas não permitem coleta ou pesca.
+Materiais e geometrias estáticos pertencem ao cache, nunca à cópia de transformações.
+
+O ponto do píer é compartilhado em `mundo/lugares-da-praia.ts`, longe do embarque e das estacas.
+`tests/colecoes-da-praia.test.ts` confere catálogo, GLBs/ícones, espaço do corpo e save cheio.
+`playground/verificar-praia-browser.ts` usa modelos reais e plataforma falsa, sem dados remotos.
+
 ## Orientação no final do Farol (30/10/2026, A04)
 
 `Hud` usa o estado do final e do corte para suspender Agora, rotina, mochila e primeiros

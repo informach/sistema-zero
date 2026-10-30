@@ -1,0 +1,27 @@
+Fome: 70 de 100
+Energia: 94 de 100
+Diversão: 65 de 100
+80
+moedas
+11:20
+Dia 1 · Sol
+AGORA
+Plante uma semente da mochila em um canteiro da sua horta.
+Usar
+Lançar a linha
+1
+🐚
+🌱
+Semente de alface
+3
+🌱
+Semente de tomate
+2
+🌱
+Semente de milho
+1
+Pular
+Usar
+Modo do jogo
+Viver
+Construir
