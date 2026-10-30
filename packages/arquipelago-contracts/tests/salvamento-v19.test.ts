@@ -85,3 +85,30 @@ test('cada cômodo tem um bit fixo e o mapa junta as células das duas sessões'
   expect(juntarMapas(undefined, '0000000000000001')).toBe('0000000000000001')
   expect(juntarMapas(undefined, undefined)).toBe(MAPA_VAZIO)
 })
+
+test('o iglu do Pico (E04) aceita só o que cabe nos tetos dele', async () => {
+  const { CabanasSchema, LIMITES_DO_IGLU } = await import('../src/salvamento')
+  const vazia = {
+    paredes: [],
+    aberturas: [],
+    pisos: [],
+    objetos: [],
+    cercas: [],
+    caminhos: [],
+    canteiros: [],
+  }
+  const parede = (i: number) => ({ x: i, z: 0, eixo: 'x' as const, n: 1 })
+  const cheio = {
+    ...vazia,
+    paredes: Array.from({ length: LIMITES_DO_IGLU.paredes }, (_, i) => parede(i)),
+  }
+  expect(CabanasSchema.safeParse({ pico: cheio }).success).toBe(true)
+  const demais = { ...cheio, paredes: [...cheio.paredes, parede(LIMITES_DO_IGLU.paredes)] }
+  expect(CabanasSchema.safeParse({ pico: demais }).success).toBe(false)
+  expect(
+    CabanasSchema.safeParse({ pico: { ...vazia, caminhos: [{ x: 0, z: 0, tipo: 'pedra' }] } })
+      .success,
+  ).toBe(false)
+  // A cabana do Bosque continua com os tetos da obra.
+  expect(CabanasSchema.safeParse({ bosque: demais }).success).toBe(true)
+})

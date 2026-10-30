@@ -1,4 +1,9 @@
-import type { Obra, Trecho } from '@sistemazero/arquipelago-contracts'
+import {
+  type IlhaComCabana,
+  LIMITES_DO_IGLU,
+  type Obra,
+  type Trecho,
+} from '@sistemazero/arquipelago-contracts'
 
 /**
  * O lote de uma obra (modo construção): a grade de 1 célula por unidade onde se constrói, o que já
@@ -20,7 +25,7 @@ export interface Celula {
 }
 
 export interface Lote {
-  id: 'casa' | 'bosque'
+  id: 'casa' | IlhaComCabana
   /** Onde dá para construir. */
   area: Retangulo
   /** O que já está no lugar (não se constrói em cima nem se fecha dentro de casa). */
@@ -130,7 +135,7 @@ export const LOTE_DA_CASA: Lote = {
  * menores que os da casa: o salvamento guarda a casa e as cabanas juntos.
  */
 export function loteDaCabana(id: Exclude<Lote['id'], 'casa'>, area: Retangulo): Lote {
-  return {
+  const base = {
     id,
     area,
     ocupadas: [],
@@ -138,6 +143,24 @@ export function loteDaCabana(id: Exclude<Lote['id'], 'casa'>, area: Retangulo): 
     paredesFixas: [],
     paredesTravadas: [],
     obraInicial: OBRA_VAZIA,
+  }
+  // O iglu do Pico (E04): só paredes, aberturas e piso, nos tetos do contrato.
+  if (id === 'pico')
+    return {
+      ...base,
+      limites: {
+        arestasDeParede: 40,
+        trechosDeParede: LIMITES_DO_IGLU.paredes,
+        aberturas: LIMITES_DO_IGLU.aberturas,
+        pisos: LIMITES_DO_IGLU.pisos,
+        arestasDeCerca: 0,
+        trechosDeCerca: LIMITES_DO_IGLU.cercas,
+        caminhos: LIMITES_DO_IGLU.caminhos,
+        canteiros: LIMITES_DO_IGLU.canteiros,
+      },
+    }
+  return {
+    ...base,
     limites: {
       arestasDeParede: 80,
       trechosDeParede: 48,

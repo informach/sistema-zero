@@ -110,7 +110,7 @@ segredos das ilhas (`segredos`, um bit por segredo, até 24), o mapa que se reve
 `quarto` ou `adotado`). A V18 migra sem segredo nem mapa, com o bicho do quarto acompanhando e
 com as chaves que a obra já usava (casa e cabanas, `chavesUsadasNaObra`). Entre
 duas sessões, chaves, segredos e mapa se juntam; a companhia segue a regra da preferência do
-clima. No teto, o documento cheio fica em 63.194 bytes (teste `salvamento-v10`). A migração
+clima. No teto, o documento cheio fica em 63.954 bytes com o iglu do Pico (teste `salvamento-v10`); com o catálogo inteiro a 999, em 64.782 (folga de 754). A migração
 `0017_percursos_da_v19` atualiza a lista de percursos aceita pelos fantasmas.
 
 Os percursos novos usam colisores que as ilhas já têm (`mundo/percursos-das-ilhas.ts`):
@@ -1860,6 +1860,19 @@ que é daquele cômodo. Escolha mínima, registrada como decisão:
 Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/construcao.ts`,
 `interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
 `playground/verificar-chaves-browser.ts`.
+
+### 6.16.2b O iglu do Pico (E04, 30/10/2026)
+
+A proposta põe "construir o iglu" no Pico. O iglu é uma cabana (`ILHAS_COM_CABANA` passa a ter
+`pico`), com o lote lido das âncoras `lote-cabana-a` e `-b` do modelo, como no Bosque, e o piso
+na altura da âncora. Ele é pequeno: até 12 trechos de parede, 3 aberturas e 2 pisos, sem cerca,
+caminho, canteiro nem objeto (`LIMITES_DO_IGLU`, conferidos no contrato por `CabanasSchema`). No
+Construir do iglu, cerca e caminho não aparecem.
+
+Com o iglu cheio, o salvamento cheio fica em 63.954 bytes (folga de 1.582; com o catálogo inteiro
+a 999, 754). O próximo dado grande vai para documento próprio no serviço. O `pico.glb` atual
+não tem o lote: o único chão plano e livre é a praça de chegada da ponte. Pedido de arte em
+`docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`; até lá, nada aparece no Pico.
 
 ### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
 

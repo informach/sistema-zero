@@ -191,11 +191,21 @@ export function BarraDeConstruir() {
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
   // Na cabana não vão canteiro nem objeto: a horta e os projetos azuis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
+  // O iglu do Pico (E04) não tem cerca nem caminho: o lote dele diz o que cabe.
+  const limitesDaCabana = useConstrucao(construcao, (s) =>
+    s.onde !== 'casa' ? (s.cabana?.lote.limites ?? null) : null,
+  )
   const chaves = useEstado((s) => s.salvamento.chaves)
   const nota = (comodo: ComodoDaIris | null) =>
     liberado(chaves, comodo) || !comodo ? undefined : `🔑 ${chaveDoComodo(comodo).nome}`
   const ferramentas = naCabana
-    ? FERRAMENTAS.filter((f) => f.id !== 'canteiro' && f.id !== 'objeto')
+    ? FERRAMENTAS.filter(
+        (f) =>
+          f.id !== 'canteiro' &&
+          f.id !== 'objeto' &&
+          !(f.id === 'cerca' && limitesDaCabana?.trechosDeCerca === 0) &&
+          !(f.id === 'caminho' && limitesDaCabana?.caminhos === 0),
+      )
     : FERRAMENTAS
   if (!aberto) return null
   const s = () => construcao.getState()
