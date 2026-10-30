@@ -23,6 +23,7 @@ import {
 } from './diario'
 import { ESPECIES_DE_LUMI } from './lumis'
 import { formatarTempo, PERCURSOS_DO_JOGO, todasAsColetaveis } from './percurso'
+import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS } from './segredos'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
 
@@ -207,6 +208,28 @@ export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiD
   return { conta: contar(itens.filter((l) => l.estado === 'preso').length, itens.length), itens }
 }
 
+// ── Os segredos das ilhas (N12) ─────────────────────────────────────────────────────────────────
+
+export interface SegredoDoAlbum {
+  id: string
+  ilha: string
+  achado: boolean
+  texto: string
+}
+
+export function segredosDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: SegredoDoAlbum[] } {
+  const itens = SEGREDOS.map((g) => {
+    const achado = segredoAchado(s.segredos, g)
+    return {
+      id: g.id,
+      ilha: ILHAS.find((i) => i.id === g.ilha)?.nome ?? g.ilha,
+      achado,
+      texto: achado ? 'Baú da Íris achado no alto do vento.' : TEXTOS_DOS_SEGREDOS.dica,
+    }
+  })
+  return { conta: contar(itens.filter((i) => i.achado).length, itens.length), itens }
+}
+
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
 
 export function albumDoSalvamento(s: Salvamento) {
@@ -243,6 +266,7 @@ export function albumDoSalvamento(s: Salvamento) {
       conta: contar(achados.filter((a) => a.achado).length, achados.length),
       itens: achados,
     },
+    segredos: segredosDoAlbum(s),
     bichos: bichosDoAlbum(s),
     receitas: receitasDoAlbum(s),
     percursos: percursosDoAlbum(s),

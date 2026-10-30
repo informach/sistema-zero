@@ -307,6 +307,41 @@ describe('as permissões de visita', () => {
   })
 })
 
+describe('fotos no Clube para a criança (N08b)', () => {
+  const clube = (headers: Record<string, string>) => chamar('GET', '/arquipelago/clube', headers)
+
+  test('a criança lê só a permissão da conta dela: desligada até o responsável ligar', async () => {
+    expect(await clube(crianca(LIA))).toEqual({
+      status: 200,
+      json: { versao: 1, fotosNoClube: false },
+    })
+    const escolha = { ...PERMISSOES_PADRAO, fotosNoClube: true }
+    const r = await chamar('PUT', '/arquipelago/familia/permissoes', responsavel, escolha)
+    expect(r.status).toBe(200)
+    expect((await clube(crianca(LIA))).json).toEqual({ versao: 1, fotosNoClube: true })
+    // Criança de outra conta continua com a escolha da conta dela.
+    expect((await clube(crianca(DE_OUTRA, OUTRA_CONTA))).json).toEqual({
+      versao: 1,
+      fotosNoClube: false,
+    })
+  })
+
+  test('adulto recebe desligado; jogo desligado recebe o bloqueio de sempre', async () => {
+    politica = { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() }
+    montar()
+    const adulto = {
+      'x-internal-token': TOKEN,
+      'x-auth-user-id': '88888888-8888-4888-8888-888888888888',
+      'x-auth-user-role': 'member',
+      'x-auth-user-status': 'active',
+    }
+    expect((await clube(adulto)).json).toEqual({ versao: 1, fotosNoClube: false })
+    politica = { modo: 'desligado', publicos: new Set(['kids']), lista: new Set() }
+    montar()
+    expect((await clube(crianca(LIA))).status).toBe(403)
+  })
+})
+
 describe('a volta ao curso depois de jogar (29/10/2026)', () => {
   const sessoes = [
     new Date('2026-10-24T12:00:00Z'),

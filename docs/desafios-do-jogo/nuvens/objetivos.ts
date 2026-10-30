@@ -11,14 +11,9 @@ import type { Variacao } from './projetos'
  * simulação anda de segundo em segundo, e cada conferência é feita depois que toda a água ou todo
  * o sol já foi gasto: o resultado não depende de em que ponto do segundo o clique caiu.
  */
-export const regar: ExecutionStep = {
-  action: 'clickTarget',
-  target: { kind: 'sprite', path: 'regar', groupPath: 'botoesRegar' },
-}
-export const darSol: ExecutionStep = {
-  action: 'clickTarget',
-  target: { kind: 'sprite', path: 'darSol', groupPath: 'botoesSol' },
-}
+/** Espaço rega (A no toque) e a seta para cima dá sol: teclas da trilha (C01b). */
+export const regar: ExecutionStep = { action: 'press', key: 'Space', holdMs: 30 }
+export const darSol: ExecutionStep = { action: 'press', key: 'ArrowUp', holdMs: 30 }
 const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
 const press = (key: 'Enter', holdMs: number): ExecutionStep => ({ action: 'press', key, holdMs })
 const val = (
@@ -81,7 +76,7 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'botoes',
-      'Regar guarda três de água e Sol guarda três de sol.',
+      'Espaço guarda três de água e a seta para cima guarda três de sol.',
       [regar, darSol],
       val('sol', 'greaterThan', 4),
       [point(1, 'agua', 'greaterThan', 1)],
@@ -113,7 +108,7 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
   'rega-forte': [
     behavior(
       'rega-forte',
-      'Regar guarda cinco de água de uma vez.',
+      'Espaço guarda cinco de água de uma vez.',
       [regar, wait(TRES_PASSOS)],
       val('agua', 'equals', 2),
       [point(1, 'agua', 'greaterThan', 3), point(2, 'crescimento', 'equals', 30)],

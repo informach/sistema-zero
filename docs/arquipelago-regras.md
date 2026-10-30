@@ -49,6 +49,29 @@ Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
 
+## Resumo do dia, fim do tempo no fim da ação e festa de fim de ano (N06, N07, 30/10/2026)
+
+- **Resumo do dia** (`sistemas/resumo-do-dia.ts`, `interface/resumo-do-dia.tsx`): no primeiro
+  carregamento de cada dia o jogo fotografa o salvamento no aparelho, por público e perfil
+  (`arquipelago:resumo-do-dia:<público>:<perfil>`). Ao deitar na cama abre "Hoje na sua ilha", só
+  com o que ela fez de bom (Lumis, estrelas, pedidos, corações, projetos azuis, pontes, ilhas,
+  chaves, segredos, constelações) e a boa-noite; "Continuar" volta ainda deitada. A tela de
+  descanso do fim do tempo traz o mesmo resumo. Vale no adulto. Sem campo novo no salvamento.
+- **Fim do tempo no fim da ação** (`sistemas/fim-do-tempo.ts`): se o tempo livre acaba com uma
+  ação em andamento (corrida, balão, montaria, mergulho, barco, cipó, escorregador ou um painel
+  aberto, como a conversa ou a cena da ponte), o jogo espera ela acabar, no máximo 30 s. O Zappy
+  avisa ("O tempo de hoje acabou. Termine o que está fazendo e eu ponho você para dormir.") e,
+  no fim, diz "Hora de descansar" e vem a tela de descanso. Durante a espera o jogo não pede mais
+  tempo ao serviço, que continua sendo quem controla o limite.
+- **Festa de fim de ano**: aprovada pela dona em 30/10/2026, de 20 de dezembro a 6 de janeiro
+  (atravessa a virada). Usa o arranjo e a arte que já existiam na Vila, as ideias de roupa da
+  época e uma receita nova da festa, o manjar de coco (1 leite de coco e 2 leites, na bancada, fome
+  +30 e diversão +20). A Noite das Lanternas continua sem data e desligada.
+- Playground: um jogo novo começa com as pontes das ilhas abertas já vistas (`?chegada=1` mostra a
+  cena); `?usado=SEGUNDOS` simula o tempo já usado hoje. Provas:
+  `tests/resumo-e-fim-do-tempo.test.ts`, `playground/verificar-descanso-browser.ts` e
+  `playground/verificar-fim-do-tempo-browser.ts`.
+
 ## Horta em horas e clima natural (N03 e N04, 30/10/2026)
 
 A horta cresce em horas de verdade (seção 6.3). Antes das Nuvens o tempo da sua ilha muda
@@ -84,9 +107,10 @@ A V19 acrescenta, sem consumir itens: três percursos (`praia-pedras`, `recife-c
 `vale-pegadas`), as chaves dos cômodos da casa da Íris (`chaves`, um bit por cômodo), os
 segredos das ilhas (`segredos`, um bit por segredo, até 24), o mapa que se revela andando
 (`mapa`, uma grade de 8 × 8 por ilha em hexadecimal) e quem acompanha pela ilha (`companhia`:
-`quarto` ou `adotado`). A V18 migra sem nada achado e com o bicho do quarto acompanhando. Entre
+`quarto` ou `adotado`). A V18 migra sem segredo nem mapa, com o bicho do quarto acompanhando e
+com as chaves que a obra já usava (casa e cabanas, `chavesUsadasNaObra`). Entre
 duas sessões, chaves, segredos e mapa se juntam; a companhia segue a regra da preferência do
-clima. No teto, o documento cheio fica em 63.194 bytes (teste `salvamento-v10`). A migração
+clima. No teto, o documento cheio fica em 63.954 bytes com o iglu do Pico (teste `salvamento-v10`); com o catálogo inteiro a 999, em 64.782 (folga de 754). A migração
 `0017_percursos_da_v19` atualiza a lista de percursos aceita pelos fantasmas.
 
 Os percursos novos usam colisores que as ilhas já têm (`mundo/percursos-das-ilhas.ts`):
@@ -383,7 +407,8 @@ ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são o
 - O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
   leitura recebe 403 `SOMENTE_LEITURA`.
 - Quem obedece a "Visitas de irmãos": os recordes da família, as visitas e os trajetos familiares (§6.20).
-  As outras duas ainda só se gravam, leem e mostram.
+  "Visitas de outras crianças" abre as casas de amigos (§6.22) e "Fotos no Clube" abre o envio
+  do modo foto para o Clube (§6.23).
 
 **No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
 família esconde o cartão inteiro (e a semana e as permissões nem são pedidas); semana ou
@@ -1806,6 +1831,56 @@ Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posica
 Verificador: `playground/verificar-convidados-browser.ts`; evidências em
 `docs/qa/2026-10-29-convidados/`.
 
+### 6.16.2a As chaves dos cômodos (N11, 30/10/2026)
+
+A proposta põe como aventura da sua ilha "achar a chave de cada cômodo": a casa da Íris só tem
+cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Como o Construir
+não tem cômodo com tipo (a criança fecha paredes onde quiser), a chave dá cor pelo acabamento
+que é daquele cômodo. Escolha mínima, registrada como decisão:
+
+| Chave | Libera no Construir | Onde fica (x, z) |
+|---|---|---|
+| Cozinha | piso de ladrilho | (20,5; -3,6), a leste da horta |
+| Sala | janelas grande e em arco | (6,8; -18,8), ao sul |
+| Banheiro | piso de azulejo | (-16,5; 2,1), a oeste da casa |
+| Quintal | cerca, caminho e canteiro | (-6; 14,8), ao norte |
+
+- Sem chave nenhuma a casa já cresce: parede, porta, janela redonda, piso de tábua, objetos dos
+  pedidos, apagar e olhar. A janela começa na redonda.
+- Trancado aparece em cinza com 🔑 e o nome da chave. Tocar mostra o recado "Precisa da chave da
+  cozinha. Ela está escondida em algum canto da sua ilha." A loja recusa a escolha e recusa a
+  obra que traga um acabamento trancado novo; o que a obra já usava continua editável.
+- As chaves ficam no gramado, fora do lote da casa (também do quintal grande do Vale), a mais de 4 m da linha de cada ponte e a
+  mais de 3 m das conchas e dos Lumis (teste contra os colisores reais da casa, do farol, do
+  píer, das árvores e do `terreno.glb`). "Pegar a chave da cozinha" guarda o bit em `chaves`; o
+  Zappy diz o que ela abre e quantas faltam. A chave achada some do mundo.
+- O painel do Construir mostra "Chaves da casa: n de 4" até a quarta.
+- Visita e suporte somente leitura não pegam chave.
+
+Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/construcao.ts`,
+`interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
+`playground/verificar-chaves-browser.ts`.
+
+### 6.16.2b O iglu do Pico (E04, adiado)
+
+A proposta põe "construir o iglu" no Pico. Ele espera duas coisas: o lote na arte (o `pico.glb`
+atual só tem chão plano e livre na praça de chegada da ponte; pedido em
+`docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`) e espaço para guardar. Com a V20 (móveis
+e galeria do Farol), o salvamento cheio está a cerca de 600 bytes do teto: o iglu, como o segundo
+andar e o terreno, vai para um documento próprio no serviço. A cabana da ilha já é genérica
+(`CabanaDaIlha`, lote das âncoras `lote-cabana-a` e `-b`, piso na altura da âncora, ferramentas
+conforme os tetos do lote), pronta para receber o iglu.
+
+### 6.16.2c O quintal grande do Vale (E04, 30/10/2026)
+
+A proposta põe o "quintal grande" no Vale. Do posto do Vale em diante (posição 6, Arquiteto), o
+lote da casa cresce 2 m para cada lado: de x -13 a 14 e z -12 a 8 para x -15 a 16 e z -14 a 10
+(`LOTE_DA_CASA_GRANDE`, `loteDaCasa(jornada)`). O chão do anel novo fica na faixa de altura do
+lote de antes (variação até 0,4 m, como o resto do gramado sob a obra). O que está no anel novo
+fica ocupado: a árvore do oeste, os dois pinheiros e o farol. A planta, o aconchego e as visitas
+dos moradores sempre leem o lote grande, que contém o pequeno: a obra de antes dá o mesmo
+resultado. As chaves e o vento do segredo da sua ilha ficam fora dele (a do banheiro foi para
+x -16,5). Provas: `tests/quintal-grande.test.ts`.
 ### 6.16.4 Móveis da cozinha, da sala e do banheiro (salvamento V20, 30/10/2026)
 
 A ferramenta **Móveis** do Construir põe os 21 móveis da arte `arte/casa/comodos.py` nos cômodos
@@ -2152,6 +2227,132 @@ promessa de revogação instantânea por push. Suporte pode consultar, mas não 
 As trajetórias familiares não se tornam públicas por esse convite. Não existe ranking,
 chat, publicação, recompensa ou concessão de blocos por visitar. V18 continua com o mesmo teto.
 Plano e provas locais: `2026-10-30-arquipelago-visitas-adultas.md` e `docs/qa/2026-10-30-visitas-adultas/`.
+
+### 6.22 Visitas de outras crianças (N08a, 30/10/2026)
+
+A proposta diz "No Kids, só família, a menos que os pais liberem" (ECA Digital, art. 21). Tudo
+começa desligado e só funciona com "Visitas de outras crianças" ligado nas **duas** contas.
+
+- **Convite:** na área dos pais, o responsável gera o convite de uma criança. O código (32
+  caracteres, 192 bits) aparece uma vez e é mandado de família para família, fora da plataforma.
+  O serviço guarda só o SHA-256, um convite por criança. Gerar outro código invalida o anterior
+  para aceites novos; as casas já aceitas continuam. "Desligar convite" fecha a casa para todas
+  as famílias que a aceitaram.
+- **Aceite:** o responsável da outra família digita o código e dá um apelido à casa (1 a 24
+  letras, números, espaço, ponto, apóstrofo ou hífen). O aceite vale para as crianças daquela
+  conta, até 20 casas (409 `LIMITE_DE_CASAS`). Código da própria família não vale (404
+  `CASA_DE_AMIGO_INDISPONIVEL`): irmãos já se visitam pela §6.20.
+- **Nomes não atravessam:** o serviço não conhece nomes. O apelido é escrito pela família que
+  visita e fica na conta dela. Não existe diretório, busca ou lista de outras crianças, e a
+  criança nunca digita código.
+- **Na criança:** o painel de visitas mostra "Casas de amigos" embaixo dos irmãos
+  (`GET /amigos`). A visita (`GET /amigos/:id/casa`) é a mesma projeção da casa do irmão (obra,
+  horta, objetos completos e quarto), só de olhar, sem o id de quem mora. A cada leitura o
+  serviço confere de novo: interruptor ligado nas duas contas, convite ativo, criança anfitriã
+  ainda vendo o jogo. Se desligaram, a resposta é 403 `VISITAS_DE_AMIGOS_DESLIGADAS` e o painel
+  diz que quem decide são os responsáveis.
+- **Rotas dos pais** (`/arquipelago/familia/amigos*`, só a sessão da conta com o portão de
+  senha): `GET` (convites por criança, com o nome posto pelo BFF a partir da grade do Auth, e as
+  casas aceitas), `POST convite`, `DELETE convite/:perfilId`, `POST aceitar`, `DELETE :id`.
+  Suporte somente leitura recebe 403 `SOMENTE_LEITURA`.
+- Sem mudança no salvamento. Banco: migração `0018_visitas_de_amigos` (`convites_de_amigos` e
+  `casas_de_amigos`, um aceite por par). Plano: `2026-10-30-arquipelago-visitas-de-amigos.md`.
+
+### 6.23 Fotos no Clube (N08b, 30/10/2026)
+
+Com "Fotos no Clube" ligado pelos responsáveis, o modo foto ganha "Mandar para o Clube" depois
+que a foto fica pronta. A foto vai para a moderação do Clube dos Criadores, nunca direto.
+
+- **Quando aparece:** só no Kids (só o host do Kids monta `plataforma.clube`), com a permissão
+  ligada (`GET /arquipelago/clube`, a criança lê só esta permissão da conta dela) e com o canal
+  `fotos-do-arquipelago` no servidor `clube-dos-criadores`, aberto a membros e com aprovação
+  prévia. Sem o Clube (produto vendido à parte), sem o canal ou com o canal sem aprovação
+  prévia, o botão não aparece e a foto fica só no aparelho, como antes.
+- **O envio** (`POST /api/arquipelago/clube/foto`, no BFF): confere tudo de novo, aceita só o
+  PNG do jogo dentro do limite de imagem do Clube, reencoda pelo mesmo otimizador das imagens do
+  Clube (sem metadados), guarda no R2 de UGC, registra o anexo no hub e abre o tópico "Foto do
+  Arquipélago" no canal. O hub deixa o tópico pendente pela aprovação do canal; aprovar,
+  recusar, esconder e denunciar seguem a moderação do Clube. Sessão de suporte não manda.
+- **Na tela:** "A foto foi para o Clube. Ela aparece lá depois que um adulto da equipe olhar."
+  Uma foto vai uma vez; tirar outra libera o botão de novo. Se o servidor responder que a
+  permissão foi desligada ou que o Clube não recebe fotos, o botão some e o recado diz o motivo.
+- **Para ligar em produção:** a equipe cria o canal `fotos-do-arquipelago` no Clube dos
+  Criadores com "Quem posta: membros" e aprovação prévia. Sem o canal, nada muda para a criança.
+- Sem mudança no salvamento nem no banco do jogo. Plano:
+  `2026-10-30-arquipelago-fotos-no-clube.md`.
+
+### 6.24 Segredos das ilhas (N12, 30/10/2026)
+
+A proposta: "o kit de movimento abre segredos nas ilhas antigas" e "baús, Lumis raros e páginas
+extras do diário em lugares que só o kit de movimento completo alcança". Escolha mínima,
+registrada como decisão: nas quatro ilhas antes do Pico, um baú da Íris flutua no alto de um
+vento que sobe, o mesmo do Pico (`CorrenteDeAr`), com flocos dourados. Sem o planador o vento não
+leva ninguém; com ele, a criança pula dentro do vento, abre o planador e sobe até o baú.
+
+| Segredo | Ilha | Pé do vento |
+|---|---|---|
+| bit 1 | Sua ilha | (10,3; 12,3) no mundo |
+| bit 2 | Bosque dos Bichos | (7; 0) no modelo |
+| bit 4 | Vila Doce | (0; 6) no modelo |
+| bit 8 | Recife | (-8; -2) no modelo |
+
+- O vento tem 1,1 m de raio e 6,5 m de altura; o baú fica 1,3 m ao lado do alto. O pulo sem
+  planador chega a mais de 3 m dele; no alto do vento ele fica ao alcance (2,2 m).
+- Ao pé do vento, "Olhar o vento": sem planador, "Lá no alto tem um baú, e o vento sobe até ele.
+  Só que ele só leva quem plana. O planador vem do Pico Gelado."; com ele, como subir.
+- Planando, só valem as ações marcadas `noAr` (por ora, o baú); a HUD do planador mostra a ação
+  ao lado de "Fechar o planador". "Abrir o baú" guarda o bit em `segredos`, uma vez só. Achado,
+  o vento e o baú somem.
+- O álbum ganha "Segredos das ilhas: n de 4". O baú é o `bau.glb`. Ele não dá item: os cristais e
+  a estrela que estavam sem uso viraram as coleções do Pico e das Nuvens (30/10), e um baú não
+  pode marcar peça de outra coleção.
+- O que vai dentro dos baús pela proposta (Lumis raros e páginas extras do diário) pede espécies
+  e texto novos da história. Fica como pendência de conteúdo.
+
+Provas: `tests/segredos.test.ts` (colunas livres contra os colisores reais das quatro ilhas,
+chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segredos-browser.ts`
+(com `?planador=1`).
+
+### 6.25 O mapa que se revela andando (E02, 30/10/2026)
+
+A proposta: "Mapa que se revela conforme você anda." Cada ilha com mapa (as sete, o Farol fica
+no da sua ilha) tem uma grade de 8 × 8 partes num quadrado em volta dela: 60 m de lado na sua
+ilha e 28 m nas do anel. O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
+por ilha; dois aparelhos juntam as partes, nunca perdem).
+
+- Enquanto a criança está na ilha (andando, nadando ou planando), as partes a até 6 m dela se
+  revelam. Não conta pausado, de visita, em suporte somente leitura nem durante um transporte.
+- Só contam as partes de terra: as que têm o meio dentro da ilha (29 m na sua ilha, 13 m nas do
+  anel), com meia parte de folga.
+- O painel do mapa mostra, embaixo do arquipélago, o mapa da ilha onde a criança está: as partes
+  vistas na cor da ilha, as outras em névoa cinza, e a marca de onde ela está. A legenda conta
+  "Mapa desta ilha: n de m partes descobertas." Na lista, cada ilha visitada diz "Mapa n%
+  descoberto."
+
+Arquivos: `sistemas/mapa-da-ilha.ts`, `estado/exploracao.ts` (`observarMapa`),
+`mundo/descoberta-da-ilha.tsx`, `interface/mapa.tsx`. Provas: `tests/mapa-da-ilha.test.ts` e
+`playground/verificar-mapa-da-ilha-browser.ts`.
+
+### 6.26 Quem acompanha pela ilha (S01, 30/10/2026)
+
+A proposta traz "os bichinhos reais da plataforma" para o jogo. O bichinho do quarto
+(`quarto.pet`: gato, cachorro ou passarinho) sai do quarto e acompanha a criança pela ilha, com o
+mesmo seguir do bicho adotado (`sistemas/seguir.ts`): anda atrás dela, corre quando ela se
+afasta, espera no cipó, no tronco e na água e reaparece atrás dela quando fica longe. Ele não tem
+corpo de física (é pequeno); a altura acompanha o pé da criança quando ela pisa. O passarinho voa
+um pouco acima do chão. Enquanto ele acompanha, o quarto fica sem ele.
+
+- Com um bicho adotado no Bosque, a criança escolhe quem vai com ela, no painel do bicho ("Quem vai
+  com você pela ilha": o nome dele ou "Gato do quarto"). O outro espera: o bichinho no quarto, o
+  bicho adotado no gramado em frente à varanda, onde continua dando para cuidar dele.
+- Adotar faz do bicho a companhia (como sempre foi). A V18 migra com o bicho adotado acompanhando,
+  se houver; sem ele, o bichinho do quarto.
+- Escolha guardada em `companhia` (V19); entre dois aparelhos vale a mesma regra da preferência do
+  clima. Sem o escolhido (o quarto ficou sem bichinho), vai quem houver.
+
+Arquivos: `sistemas/companhia.ts`, `mundo/pet-que-acompanha.tsx`, `mundo/bicho-adotado.tsx`,
+`mundo/casa.tsx`, `interface/bicho.tsx`. Provas: `tests/companhia.test.ts` e
+`playground/verificar-companhia-browser.ts` (com `?adotado=1`).
 
 ## 7. Desafios
 

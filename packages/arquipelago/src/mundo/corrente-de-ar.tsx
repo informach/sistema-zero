@@ -43,8 +43,16 @@ export function CorrenteDoPico({
   meio: Ponto
   giro: number
 }) {
-  const { movimento, loja } = useJogo()
   const corrente = useMemo(() => correnteDoPico(modelo, meio, giro), [modelo, meio, giro])
+  return <VentoQueSobe corrente={corrente} cor="#eef8ff" />
+}
+
+/**
+ * Qualquer vento que sobe (o do Pico e os dos segredos, N12): registra a corrente enquanto está
+ * montado e desenha os flocos na cor dada.
+ */
+export function VentoQueSobe({ corrente, cor }: { corrente: CorrenteDeAr | null; cor: string }) {
+  const { movimento, loja } = useJogo()
   useEffect(() => {
     if (!corrente) return
     movimento.correntes.push(corrente)
@@ -75,7 +83,7 @@ export function CorrenteDoPico({
   })
   if (!corrente) return null
   return (
-    <group position={[corrente.x, corrente.base, corrente.z]} name="corrente-de-ar">
+    <group position={[corrente.x, corrente.base, corrente.z]} name={corrente.id}>
       {Array.from({ length: FLOCOS }, (_, k) => (
         <group
           // biome-ignore lint/suspicious/noArrayIndexKey: os flocos são fixos, um por lugar na espiral
@@ -86,7 +94,7 @@ export function CorrenteDoPico({
         >
           <mesh>
             <octahedronGeometry args={[0.07, 0]} />
-            <meshBasicMaterial color="#eef8ff" toneMapped={false} />
+            <meshBasicMaterial color={cor} toneMapped={false} />
           </mesh>
         </group>
       ))}

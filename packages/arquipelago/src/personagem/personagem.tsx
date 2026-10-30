@@ -416,21 +416,23 @@ export function Personagem() {
     // Na casa de um irmão (fase3-12) só se olha: nada do mundo oferece ação, e sair da ilha
     // central termina a visita (lá fora o jogo é dela e volta a gravar).
     if (estado.visita && !pedidos.teleporte && saiuDaVisita(prox.x, prox.z)) {
-      const nome = estado.visita.nome
+      const { nome, origem } = estado.visita
       estado.visitar(null)
-      estado.dizer(falaDaSaida(nome))
+      estado.dizer(falaDaSaida(nome, origem))
     }
     estado.definirAlvo(
       v.modo === 'balao'
         ? !parado && v.balao && podeDescerDoBalao(v.balao)
           ? DESCER_DO_BALAO
           : null
-        : parado || (v.modo !== 'chao' && v.modo !== 'mergulho') || estado.visita
+        : parado ||
+            (v.modo !== 'chao' && v.modo !== 'mergulho' && v.modo !== 'planar') ||
+            estado.visita
           ? null
-          : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho'),
+          : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho', v.modo === 'planar'),
     )
 
-    if (usou && (v.modo === 'chao' || v.modo === 'mergulho') && !parado) {
+    if (usou && (v.modo === 'chao' || v.modo === 'mergulho' || v.modo === 'planar') && !parado) {
       const alvo = estado.alvo
       if (alvo) interativos.get(alvo.id)?.agir()
     }

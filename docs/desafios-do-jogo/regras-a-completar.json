@@ -1007,7 +1007,9 @@
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
+      "sz_js_if_else",
       "sz_js_var_assign",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
@@ -1075,10 +1077,9 @@
       "sz_g2d_apply_velocity",
       "sz_g2d_arrows_x",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
       "sz_g2d_sprite_y",
@@ -1093,21 +1094,16 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
-      "sz_g2d_set_velocity",
       "sz_g2d_update_each_frame",
-      "sz_js_var_assign",
+      "sz_js_if_else",
       "sz_val_bool",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-mira-de-bolhas-rapida",
@@ -1118,9 +1114,8 @@
     "blocosDerivados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1131,9 +1126,8 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1141,7 +1135,7 @@
       "sz_val_number",
       "sz_val_text"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-mira-de-bolhas-pontos",
@@ -1154,7 +1148,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1168,7 +1162,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1177,7 +1171,7 @@
       "sz_val_number",
       "sz_val_text"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-mira-de-bolhas-alvo-novo",
@@ -1190,7 +1184,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
       "sz_js_if_else",
@@ -1207,7 +1201,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
       "sz_js_if_else",
@@ -1219,7 +1213,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-a-corrente-muda-adulto",
@@ -1283,7 +1277,9 @@
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
+      "sz_js_if_else",
       "sz_js_var_assign",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
@@ -1351,10 +1347,9 @@
       "sz_g2d_apply_velocity",
       "sz_g2d_arrows_x",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
       "sz_g2d_sprite_y",
@@ -1369,21 +1364,16 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
-      "sz_g2d_set_velocity",
       "sz_g2d_update_each_frame",
-      "sz_js_var_assign",
+      "sz_js_if_else",
       "sz_val_bool",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-mira-de-bolhas-rapida-adulto",
@@ -1394,9 +1384,8 @@
     "blocosDerivados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1407,9 +1396,8 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1417,7 +1405,7 @@
       "sz_val_number",
       "sz_val_text"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-mira-de-bolhas-pontos-adulto",
@@ -1430,7 +1418,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1444,7 +1432,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1453,7 +1441,7 @@
       "sz_val_number",
       "sz_val_text"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "recife-mira-de-bolhas-alvo-novo-adulto",
@@ -1466,7 +1454,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
       "sz_js_if_else",
@@ -1483,7 +1471,7 @@
       "sz_g2d_clamp_to_screen",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
+      "sz_g2d_set_image",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
       "sz_js_if_else",
@@ -1495,7 +1483,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-pulo-com-apoio",
@@ -1551,7 +1539,6 @@
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
       "sz_g2d_restart",
-      "sz_g2d_set_opacity",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -1562,10 +1549,12 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-mochila-de-neve",
@@ -1618,20 +1607,15 @@
     "titulo": "Fase de plataforma",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_gravity",
       "sz_g2d_apply_velocity",
       "sz_g2d_arrows_x",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_on_sprite_group_overlap",
       "sz_g2d_set_velocity",
-      "sz_g2d_sprite_y",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_js_var_assign",
-      "sz_math_arithmetic",
       "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
@@ -1641,18 +1625,19 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
       "sz_g2d_set_velocity",
       "sz_g2d_update_each_frame",
+      "sz_js_if_else",
       "sz_js_var_assign",
       "sz_val_bool",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-fase-de-plataforma-pulo-alto",
@@ -1661,7 +1646,6 @@
     "titulo": "Fase de plataforma: pulo alto",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
@@ -1672,7 +1656,6 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
@@ -1682,7 +1665,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-fase-de-plataforma-floco",
@@ -1693,7 +1676,6 @@
     "blocosDerivados": [
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1707,7 +1689,6 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1717,7 +1698,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-fase-de-plataforma-quedas",
@@ -1804,7 +1785,6 @@
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
       "sz_g2d_restart",
-      "sz_g2d_set_opacity",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -1815,10 +1795,12 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-mochila-de-neve-adulto",
@@ -1871,20 +1853,15 @@
     "titulo": "Fase de plataforma",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_gravity",
       "sz_g2d_apply_velocity",
       "sz_g2d_arrows_x",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_on_sprite_group_overlap",
       "sz_g2d_set_velocity",
-      "sz_g2d_sprite_y",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_js_var_assign",
-      "sz_math_arithmetic",
       "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
@@ -1894,18 +1871,19 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
       "sz_g2d_set_velocity",
       "sz_g2d_update_each_frame",
+      "sz_js_if_else",
       "sz_js_var_assign",
       "sz_val_bool",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-fase-de-plataforma-pulo-alto-adulto",
@@ -1914,7 +1892,6 @@
     "titulo": "Fase de plataforma: pulo alto",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
@@ -1925,7 +1902,6 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
@@ -1935,7 +1911,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-fase-de-plataforma-floco-adulto",
@@ -1946,7 +1922,6 @@
     "blocosDerivados": [
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1960,7 +1935,6 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_set_opacity",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
@@ -1970,7 +1944,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "pico-fase-de-plataforma-quedas-adulto",
@@ -2699,21 +2673,18 @@
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_every_seconds",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
       "sz_val_bool",
       "sz_val_compare",
-      "sz_val_logic",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_every_seconds",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_if_else",
       "sz_val_bool",
@@ -2722,7 +2693,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_val_logic"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "nuvens-jardim-que-floresce-rega-forte",
@@ -2731,7 +2702,6 @@
     "titulo": "Jardim que floresce: rega forte",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -2740,7 +2710,6 @@
       "sz_val_text"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -2748,7 +2717,7 @@
       "sz_val_number",
       "sz_val_text"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "nuvens-jardim-que-floresce-sol-forte",
@@ -2932,21 +2901,18 @@
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_every_seconds",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
       "sz_val_bool",
       "sz_val_compare",
-      "sz_val_logic",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_every_seconds",
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_if_else",
       "sz_val_bool",
@@ -2955,7 +2921,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_val_logic"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "nuvens-jardim-que-floresce-rega-forte-adulto",
@@ -2964,7 +2930,6 @@
     "titulo": "Jardim que floresce: rega forte",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -2973,7 +2938,6 @@
       "sz_val_text"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_group_click",
       "sz_g2d_on_key",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -2981,7 +2945,7 @@
       "sz_val_number",
       "sz_val_text"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "nuvens-jardim-que-floresce-sol-forte-adulto",

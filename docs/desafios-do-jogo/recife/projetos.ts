@@ -43,10 +43,11 @@ const vel = (spriteVar: string, vx: JSExpr, vy: JSExpr): JSStatement => ({
   vy,
 })
 const apply = (spriteVar: string): JSStatement => ({ type: 'g2d:applyVelocity', spriteVar })
-const opacity = (spriteVar: string, percent: number): JSStatement => ({
-  type: 'g2d:setOpacity',
+/** Trocar a imagem é da trilha (Faísca); a opacidade só aparece num curso extra (C01b). */
+const imagem = (spriteVar: string, image: string): JSStatement => ({
+  type: 'g2d:setImage',
   spriteVar,
-  percent,
+  image,
 })
 const image = (
   varName: string,
@@ -96,10 +97,15 @@ const arte: Record<string, string> = {
     56,
     '<path d="M28 51C5 40 3 19 14 9c8-6 15 0 14 4 2-6 12-9 18-1 10 14-2 29-18 39Z" fill="#eaa6bd" stroke="#a85b82" stroke-width="3"/><path d="M28 44 15 17m13 27 12-26m-12 26V16" stroke="#fbd9e5" stroke-width="3"/>',
   ),
-  botao: svg(
-    172,
-    44,
-    '<rect x="2" y="5" width="168" height="37" rx="13" fill="#365b7e"/><rect x="2" y="1" width="168" height="37" rx="13" fill="#527fa2"/>',
+  'alvo-preso': svg(
+    56,
+    56,
+    '<g opacity=".55"><path d="m28 3 7 16 18 2-14 12 5 19-16-10-16 10 5-19L3 21l18-2Z" fill="#f9cd71" stroke="#b27a43" stroke-width="3"/></g><circle cx="28" cy="28" r="25" fill="#d9fbff" fill-opacity=".35" stroke="#5eaece" stroke-width="3"/>',
+  ),
+  'novo-preso': svg(
+    56,
+    56,
+    '<g opacity=".55"><path d="M28 51C5 40 3 19 14 9c8-6 15 0 14 4 2-6 12-9 18-1 10 14-2 29-18 39Z" fill="#eaa6bd" stroke="#a85b82" stroke-width="3"/></g><circle cx="28" cy="28" r="25" fill="#d9fbff" fill-opacity=".35" stroke="#5eaece" stroke-width="3"/>',
   ),
 }
 const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
@@ -125,14 +131,14 @@ function recomecar(novo: boolean): JSStatement[] {
   return [
     ...colocar('mira', n(RECIFE.inicioX), RECIFE.inicioY),
     ...colocar('bolha', n(64), RECIFE.bolhaY),
-    opacity('bolha', 0),
-    opacity('alvo', 100),
-    ...(novo ? [opacity('alvoNovo', 100)] : []),
+    set('bolhaVisivel', b(false)),
+    imagem('alvo', 'alvo'),
+    ...(novo ? [imagem('alvoNovo', 'novo')] : []),
     set('emVoo', b(false)),
     set('preso', b(false)),
     set('novoPreso', b(false)),
     set('pontos', n(0)),
-    set('recado', s('Mire com as setas e toque em Soltar bolha.')),
+    set('recado', s('Mire com as setas e solte a bolha com Espaço ou A.')),
   ]
 }
 function soltar(velocidade: number): JSStatement[] {
@@ -141,7 +147,7 @@ function soltar(velocidade: number): JSStatement[] {
       ...colocar('bolha', { type: 'g2d:spriteX', spriteVar: 'mira' }, RECIFE.bolhaY),
       vel('bolha', n(-8), n(0)),
       apply('bolha'),
-      opacity('bolha', 100),
+      set('bolhaVisivel', b(true)),
       vel('bolha', n(0), n(-velocidade)),
       set('emVoo', b(true)),
       set('recado', s('A bolha está subindo.')),
@@ -158,7 +164,7 @@ function prender(alvo: string, marca: string, pontos: number): JSStatement[] {
         vel('bolha', n(-4), n(0)),
         apply('bolha'),
         vel('bolha', n(0), n(0)),
-        opacity(alvo, 35),
+        imagem(alvo, alvo === 'alvo' ? 'alvo-preso' : 'novo-preso'),
         set('pontos', bin('+', v('pontos'), n(pontos))),
         set('recado', s('Alvo preso na bolha.')),
       ]),
@@ -171,38 +177,29 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const novo = variacao === 'alvo-novo'
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: 640, height: 480, bg: '#c6eff3' },
-    { type: 'g2d:enableClassicControls', mode: 'directions' },
-    ...['emVoo', 'preso', 'novoPreso'].map(
+    // Espaço/A solta a bolha e Enter/+ recomeça: teclas da trilha, sem clique em grupo (C01b).
+    { type: 'g2d:enableClassicControls', mode: 'auto' },
+    ...['emVoo', 'preso', 'novoPreso', 'bolhaVisivel'].map(
       (name): JSStatement => ({ type: 'var', name, value: b(false) }),
     ),
     { type: 'var', name: 'pontos', value: n(0) },
-    { type: 'var', name: 'recado', value: s('Mire com as setas e toque em Soltar bolha.') },
+    {
+      type: 'var',
+      name: 'recado',
+      value: s('Mire com as setas e solte a bolha com Espaço ou A.'),
+    },
     image('mira', 'mira', RECIFE.inicioX, RECIFE.inicioY, 48, 48),
     image('bolha', 'bolha', 64, RECIFE.bolhaY, 64, 64),
-    opacity('bolha', 0),
     image('alvo', 'alvo', 430, 120, 56, 56),
-    image('soltar', 'botao', 200, 424, 172, 44),
-    image('recomecar', 'botao', 396, 424, 172, 44),
-    { type: 'g2d:createGroup', varName: 'botoesSoltar' },
-    { type: 'g2d:addToGroup', spriteVar: 'soltar', groupVar: 'botoesSoltar' },
-    { type: 'g2d:createGroup', varName: 'botoesRecomecar' },
-    { type: 'g2d:addToGroup', spriteVar: 'recomecar', groupVar: 'botoesRecomecar' },
     ...(novo ? [image('alvoNovo', 'novo', 190, 120, 56, 56)] : []),
   ]
   const events: JSStatement[] = [
     {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesSoltar',
-      itemName: 'botao',
+      type: 'g2d:onKey',
+      key: 'Space',
       body: basePronta
         ? soltar(variacao === 'rapida' && pronto ? RECIFE.rapida : RECIFE.velocidade)
         : [],
-    },
-    {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesRecomecar',
-      itemName: 'botao',
-      body: recomecar(novo),
     },
     { type: 'g2d:onKey', key: 'Enter', body: pronto ? recomecar(novo) : [] },
     {
@@ -242,7 +239,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
                     apply('bolha'),
                     iff(bin('<', { type: 'g2d:spriteY', spriteVar: 'bolha' }, n(-64)), [
                       set('emVoo', b(false)),
-                      opacity('bolha', 0),
+                      set('bolhaVisivel', b(false)),
                       vel('bolha', n(0), n(0)),
                       set('recado', s('Mire de novo e solte outra bolha.')),
                     ]),
@@ -252,16 +249,13 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             { type: 'g2d:clear' },
             { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'recife' },
             label('Mira de bolhas', 18, 32, 25),
-            label('Use esquerda e direita para alinhar a bolha com o alvo.', 18, 61, 16),
+            label('Esquerda e direita alinham a bolha. Espaço ou A solta a bolha.', 18, 61, 16),
             draw('alvo'),
             ...(novo ? [draw('alvoNovo')] : []),
             draw('mira'),
-            draw('bolha'),
-            label(v('recado'), 180, 410, 15),
-            draw('soltar'),
-            draw('recomecar'),
-            label('Soltar bolha', 224, 451, 18, '#ffffff'),
-            label('Recomeçar', 429, 451, 18, '#ffffff'),
+            iff(v('bolhaVisivel'), [draw('bolha')]),
+            label(v('recado'), 180, 420, 15),
+            label('Enter ou +: nova rodada depois de completar o extra.', 120, 455, 15),
             {
               type: 'g2d:drawScore',
               ctxVar: 'ctx',

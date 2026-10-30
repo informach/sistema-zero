@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { BIT_DA_SEGREDO_MAXIMO, COMPANHIAS, MAPAS_DAS_ILHAS, MapaDaIlhaSchema } from './exploracao'
+import {
+  BIT_DA_SEGREDO_MAXIMO,
+  BIT_DO_COMODO,
+  COMPANHIAS,
+  MAPAS_DAS_ILHAS,
+  MapaDaIlhaSchema,
+} from './exploracao'
 import { ILHA_IDS } from './ilhas'
 import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
@@ -267,7 +273,10 @@ export function obraComMoveis(obra: ObraAteV19): Obra {
   return { ...obra, moveis: [] }
 }
 
-/** As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). */
+/**
+ * As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). O iglu do
+ * Pico (E04) espera o lote na arte e um documento próprio no serviço: o salvamento está cheio.
+ */
 export const ILHAS_COM_CABANA = ['bosque'] as const
 export type IlhaComCabana = (typeof ILHAS_COM_CABANA)[number]
 
@@ -817,9 +826,33 @@ export const SalvamentoV19Schema = z
   .superRefine(conferirRotinas)
 export type SalvamentoV19 = z.infer<typeof SalvamentoV19Schema>
 
-/** Nada é presumido: nenhuma chave, segredo ou célula do mapa; o bicho do quarto acompanha. */
+/**
+ * As chaves que uma obra já usa (N11). Antes da V19 o modo construir era todo livre; o que a
+ * criança já pôs continua dela: ladrilho é da cozinha, azulejo do banheiro, as janelas grande e
+ * em arco da sala, e cerca, caminho ou canteiro do quintal.
+ */
+export function chavesUsadasNaObra(obra: ObraAteV19 | null | undefined): number {
+  if (!obra) return 0
+  let chaves = 0
+  if (obra.pisos.some((p) => p.tipo === 'ladrilho')) chaves |= BIT_DO_COMODO.cozinha
+  if (obra.pisos.some((p) => p.tipo === 'azulejo')) chaves |= BIT_DO_COMODO.banheiro
+  if (obra.aberturas.some((a) => a.tipo === 'janela-grande' || a.tipo === 'janela-arco'))
+    chaves |= BIT_DO_COMODO.sala
+  if (obra.cercas.length > 0 || obra.caminhos.length > 0 || obra.canteiros.length > 0)
+    chaves |= BIT_DO_COMODO.quintal
+  return chaves
+}
+
+/**
+ * Nenhum segredo nem célula do mapa é presumido. As chaves começam com o que a obra (a casa e as
+ * cabanas) já usa, para nada construído deixar de ser editável. Quem já tinha bicho adotado
+ * continua com ele acompanhando; sem ele, o bichinho do quarto acompanha.
+ */
 export function migrarDaV18(s: SalvamentoV18): SalvamentoV19 {
-  return { ...s, versao: 19, chaves: 0, segredos: 0, mapa: {}, companhia: 'quarto' }
+  let chaves = chavesUsadasNaObra(s.construcao.casa)
+  for (const cabana of Object.values(s.construcao.cabanas)) chaves |= chavesUsadasNaObra(cabana)
+  const companhia = s.bichos.adotado ? 'adotado' : 'quarto'
+  return { ...s, versao: 19, chaves, segredos: 0, mapa: {}, companhia }
 }
 
 export const SalvamentoAteV19Schema = z.union([
@@ -881,9 +914,16 @@ export type SalvamentoV20 = z.infer<typeof SalvamentoV20Schema>
 /** Nenhum móvel posto e a galeria vazia: nada é presumido. */
 export function migrarDaV19(s: SalvamentoV19): SalvamentoV20 {
   const { casa, cabanas } = s.construcao
+  // A V19 que já circulou no staging migrou da V18 sem as chaves da obra e com o bicho do quarto
+  // acompanhando (ninguém podia escolher ainda). Aqui as duas coisas se acertam: as chaves só
+  // somam o que a obra já usa, e o bicho adotado volta a acompanhar.
+  let chaves = s.chaves | chavesUsadasNaObra(casa)
+  for (const cabana of Object.values(cabanas)) chaves |= chavesUsadasNaObra(cabana)
   return {
     ...s,
     versao: 20,
+    chaves,
+    companhia: s.bichos.adotado ? 'adotado' : s.companhia,
     construcao: {
       casa: casa ? obraComMoveis(casa) : null,
       cabanas: Object.fromEntries(

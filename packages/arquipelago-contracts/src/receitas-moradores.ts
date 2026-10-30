@@ -9,7 +9,7 @@ export type OrigemDaReceita =
   | { tipo: 'inicio' }
   | { tipo: 'amizade'; morador: 'bento' | MoradorDoAnel; coracoes: number }
   | { tipo: 'colecao'; colecao: 'bichos-do-bosque' }
-  | { tipo: 'festa'; festa: 'junina' | 'carnaval' }
+  | { tipo: 'festa'; festa: 'junina' | 'carnaval' | 'fim-de-ano' }
 
 export interface Receita {
   id: string
@@ -49,6 +49,15 @@ export const RECEITAS: Receita[] = [
     faz: { id: 'pipoca-de-festa', qtd: 1 },
     onde: 'fogueira',
     origem: { tipo: 'festa', festa: 'junina' },
+  },
+  {
+    // A sobremesa da festa de fim de ano (aprovada pela dona em 30/10/2026: 20/12 a 06/01).
+    id: 'manjar-de-coco',
+    nome: 'Manjar de coco',
+    precisa: { 'leite-de-coco': 1, leite: 2 },
+    faz: { id: 'manjar-de-coco', qtd: 1 },
+    onde: 'bancada',
+    origem: { tipo: 'festa', festa: 'fim-de-ano' },
   },
   {
     id: 'salada',

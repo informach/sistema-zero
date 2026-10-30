@@ -79,9 +79,14 @@ do executor continuam necessárias.
 O inventário é mais abrangente: mostra as fontes de todos os tipos, sem afirmar que todos
 sejam bloqueios de acesso. A revisão pedagógica também observa as mudanças de comportamento.
 
-Todos os itens agora usam `publicar: false`. Isso retira 24 pedidos automáticos Kids antes
-da conferência de fontes reais, sem alterar projetos, objetivos, recompensas ou publicações
-remotas. C01a impede publicar cobertura impossível. Os blocos de extras e os apoios sem
+C01b1 desligou todos os pedidos de publicação até a conferência das fontes reais. A revisão
+C01b de 30/10 trocou opacidade, clique em grupo, grupo com sprites avulsos e "e" lógico por
+blocos da trilha (troca de imagem, desenho condicionado, teclas Espaço/A e Enter/+, se dentro de
+se) no Recife, no Pico, no Vale e nas Nuvens. Voltam a pedir publicação os quadros sem nenhum
+tipo fora da trilha (teste `publicacao.test.ts`): os seis do Recife e do Pico, os quadros 3 a 5
+do Vale e o Jardim com os quadros 1 a 4 das Nuvens, Kids e adulto. Os que dependem de lista e
+laço em grupo seguem sem pedido, porque nesses postos a aplicação de listas é em JavaScript
+(C02). A importação e a barreira C01a continuam com a equipe. C01a impede publicar cobertura impossível. Os blocos de extras e os apoios sem
 fonte continuam visíveis como pendências, sem concessão manual.
 
 A Vila atual retoma eventos, estoque, contagem e estados. Ainda não comprova o conjunto de

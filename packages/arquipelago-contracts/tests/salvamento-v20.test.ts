@@ -186,3 +186,39 @@ test('a visita aceita a obra com móveis e a de antes, que chega com a lista vaz
     CasaDoIrmaoSchema.safeParse({ ...casa, obra: { ...nova, moveis: [[99, 0, 0, 0]] } }).success,
   ).toBe(false)
 })
+
+test('a V19 do staging chega à V20 com as chaves da obra e o bicho adotado acompanhando', async () => {
+  const { migrarDaV19, BIT_DO_COMODO } = await import('../src')
+  const v19 = inicialV19(AGORA)
+  const obra = {
+    paredes: [],
+    aberturas: [],
+    pisos: [{ x: 0, z: 0, tipo: 'ladrilho' as const }],
+    objetos: [],
+    cercas: [],
+    caminhos: [],
+    canteiros: [],
+  }
+  const adotado = {
+    id: 'gato' as const,
+    nome: 'Mingau',
+    fase: 'filhote' as const,
+    fome: 80,
+    limpeza: 80,
+    carinho: 80,
+    diasCuidados: 0,
+    diaCuidadoEm: null,
+    truque: { sessoes: 0, ultimaEm: null, aprendido: false },
+  }
+  const v20 = migrarDaV19({
+    ...v19,
+    chaves: BIT_DO_COMODO.sala,
+    companhia: 'quarto',
+    construcao: { casa: obra, cabanas: {} },
+    bichos: { ...v19.bichos, adotado },
+  })
+  expect(v20.chaves).toBe(BIT_DO_COMODO.sala | BIT_DO_COMODO.cozinha)
+  expect(v20.companhia).toBe('adotado')
+  // Sem bicho adotado, a companhia fica como estava.
+  expect(migrarDaV19({ ...v19, companhia: 'quarto' }).companhia).toBe('quarto')
+})

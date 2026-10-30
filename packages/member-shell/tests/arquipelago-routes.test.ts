@@ -679,3 +679,59 @@ describe('recordes da família e visitas (fase3-12)', () => {
     expect(chamadas).toHaveLength(1)
   })
 })
+
+describe('visitas de outras crianças (N08a)', () => {
+  test('os convites ganham o nome da grade do Auth; quem não está na grade sai', async () => {
+    const OUTRO = '99999999-9999-4999-8999-999999999999'
+    const amigos = {
+      versao: 1,
+      situacao: 'ok',
+      convites: [
+        { perfilId: PERFIL, ativo: true },
+        { perfilId: OUTRO, ativo: false },
+      ],
+      casas: [{ id: '88888888-8888-4888-8888-888888888888', apelido: 'Casa da Lua' }],
+    }
+    const perfis = { status: 200, body: { profiles: [{ id: PERFIL, name: 'Lia' }] } }
+    const { routes, chamadas } = montar({ status: 200, body: amigos }, perfis)
+    const r = await routes.arquipelagoAmigosDaFamilia.GET()
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(await r.json()).toEqual({
+      ...amigos,
+      convites: [{ perfilId: PERFIL, ativo: true, nome: 'Lia' }],
+    })
+    expect(chamadas[0]).toMatchObject({
+      caminho: '/arquipelago/familia/amigos',
+      query: { perfis: PERFIL },
+    })
+    const estranha = montar({ status: 200, body: { versao: 1 } }, perfis)
+    expect((await estranha.routes.arquipelagoAmigosDaFamilia.GET()).status).toBe(502)
+  })
+
+  test('desligar o convite e remover a casa conferem o id; a criança só lê', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { versao: 1 } })
+    const ruim = await routes.arquipelagoConviteDeAmigo.DELETE(
+      new Request('http://local/x?perfil=nao-e-uuid', { method: 'DELETE' }),
+    )
+    expect(ruim.status).toBe(400)
+    await routes.arquipelagoConviteDeAmigo.DELETE(
+      new Request(`http://local/x?perfil=${PERFIL}`, { method: 'DELETE' }),
+    )
+    await routes.arquipelagoRemoverAmigo.DELETE(
+      new Request('http://local/x', { method: 'DELETE' }),
+      {
+        params: Promise.resolve({ id: IRMAO }),
+      },
+    )
+    await routes.arquipelagoCasasDeAmigos.GET()
+    await routes.arquipelagoCasaDeAmigo.GET(new Request('http://local/x'), {
+      params: Promise.resolve({ id: IRMAO }),
+    })
+    expect(chamadas.map((c) => `${c.metodo} ${c.caminho}`)).toEqual([
+      `DELETE /arquipelago/familia/amigos/convite/${PERFIL}`,
+      `DELETE /arquipelago/familia/amigos/${IRMAO}`,
+      'GET /arquipelago/amigos',
+      `GET /arquipelago/amigos/${IRMAO}/casa`,
+    ])
+  })
+})

@@ -18,7 +18,7 @@ import type { RegistroDeInterativos } from '../mundo/interativos'
 import { ilhasEmVolta } from '../mundo/medidas'
 import { ID_DA_LANTERNA } from '../sistemas/borroes'
 import { planta } from '../sistemas/construcao/comodos'
-import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
+import { LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
 import { type ContextoDaDica, DICAS, type Dica, type Fala } from '../sistemas/dicas'
 import { ilhaMaisPerto, NECESSIDADE_BAIXA } from '../sistemas/hud'
 import { quantidade } from '../sistemas/itens'
@@ -86,7 +86,9 @@ function lerJogo(
     temGeladeira: Boolean(salv.projetos.geladeira),
     geladeiraPosta: obra?.objetos.some((o) => o.id === 'geladeira') ?? false,
     comodoNovo:
-      precisaDaPlanta && obra ? planta(obra, LOTE_DA_CASA).comodos.some((c) => !c.quarto) : false,
+      precisaDaPlanta && obra
+        ? planta(obra, LOTE_DA_CASA_GRANDE).comodos.some((c) => !c.quarto)
+        : false,
     portaNoComodo:
       obra?.aberturas.some(
         (a) =>

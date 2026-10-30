@@ -162,6 +162,22 @@ export function arquipelagoGateway(opts: {
         pathPattern: '/arquipelago/irmaos/:perfilId/casa',
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
+      // Visitas de outras crianças (N08a): a criança lê as casas que a família aceitou.
+      ...['/arquipelago/amigos', '/arquipelago/amigos/:id/casa'].map<Route>((pathPattern, i) => ({
+        ...jogador,
+        id: `arquipelago-amigos-${i}`,
+        methods: ['GET'],
+        pathPattern,
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      })),
+      // Fotos no Clube (N08b): a criança lê só a permissão da conta dela.
+      {
+        ...jogador,
+        id: 'arquipelago-clube',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/clube',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
       // A galeria (29/10/2026): ler o que ela comprou e o saldo, e comprar uma aparência. Comprar
       // gasta moedas pelo Members: corpo pequeno e um ritmo de quem toca num botão.
       ...(['iniciar', 'concluir'] as const).map<Route>((acao) => ({
@@ -281,6 +297,33 @@ export function arquipelagoGateway(opts: {
         maxBodyBytes: 1024,
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
+      // Visitas de outras crianças (N08a): convites e casas aceitas, só o responsável. Gerar e
+      // aceitar têm um ritmo de quem toca num botão (o código tem 192 bits; nada a adivinhar).
+      {
+        ...jogador,
+        id: 'arquipelago-familia-amigos',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/familia/amigos',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      ...(['convite', 'aceitar'] as const).map<Route>((acao) => ({
+        ...jogador,
+        id: `arquipelago-familia-amigos-${acao}`,
+        methods: ['POST'],
+        pathPattern: `/arquipelago/familia/amigos/${acao}`,
+        maxBodyBytes: 1024,
+        rateLimit: { max: 12, windowMs: 60_000, by: 'principal' },
+      })),
+      ...[
+        '/arquipelago/familia/amigos/convite/:perfilId',
+        '/arquipelago/familia/amigos/:id',
+      ].map<Route>((pathPattern, i) => ({
+        ...jogador,
+        id: `arquipelago-familia-amigos-apagar-${i}`,
+        methods: ['DELETE'],
+        pathPattern,
+        rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      })),
       // Seção Jogo do Admin: leitura para a equipe, escrita só para a administração. Rotas
       // explícitas (nenhum curinga transforma staff em quem publica). Analisar e publicar rodam o
       // jogo no executor pelo Members: prazo longo, como o "Testar agora" das aulas.

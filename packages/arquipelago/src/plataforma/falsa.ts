@@ -3,13 +3,17 @@ import {
   AMIZADE_MAXIMA,
   abrirRotinaNaPlataforma,
   BICHOS_DO_BOSQUE,
+  type ClubeDoJogo,
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
   type ConflitoDeSalvamento,
+  chavesUsadasNaObra,
   criarSalvamentoInicial,
   diaDeSaoPaulo,
   type Fantasma,
   GravarSalvamentoSchema,
+  ilhaAberta,
+  ilhasDoAnel,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   type LumiId,
   type MoldeDaRotina,
@@ -24,7 +28,9 @@ import {
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
   type SalvamentoGuardado,
+  type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
+import { adotar } from '../sistemas/bichos'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
 import { lerAparenciaFalsa } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
@@ -52,6 +58,8 @@ export interface OpcoesDaPlataformaFalsa {
   publico?: PublicoJogo
   posicao?: number
   limiteDiarioMinutos?: number | null
+  /** Segundos já usados hoje (o playground prova o fim do tempo sem esperar o limite inteiro). */
+  usadoHojeSegundos?: number
   liberado?: boolean
   quarto?: QuartoDoJogo
   persistir?: boolean
@@ -81,12 +89,21 @@ export interface OpcoesDaPlataformaFalsa {
   convidados?: boolean
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
   bichos?: 'achados'
+  /** Um gato já adotado, chamado Mingau, como companhia (S01). */
+  adotado?: boolean
   /** A amizade com o Bento (de 0 a 500): com 100 ele já lembrou o bolo de fubá (fase2-04). */
   bento?: number
   /** Põe um par de patins na mochila (o prêmio da entrega pelos telhados, fase2-05). */
   patins?: boolean
+  /** Põe o planador na mochila (o presente do Floco, fase3-09; os segredos, N12). */
+  planador?: boolean
   /** Põe a lanterna na mochila (o presente do Bento, fase2-06). */
   lanterna?: boolean
+  /**
+   * As pontes das ilhas abertas já vistas (o playground começa assim, para a cena da subida de
+   * posto não cobrir as conferências; `?chegada=1` mostra a cena).
+   */
+  pontesVistas?: boolean
   /** A energia de começo (de 0 a 100), para conferir o descanso (fase2-13). */
   energia?: number
   /** Os Lumis já presos (`{ quindim: 2 }`), como se a lanterna já tivesse prendido (fase2-06). */
@@ -97,6 +114,28 @@ export interface OpcoesDaPlataformaFalsa {
   galeria?: OpcoesDaGaleriaFalsa
   /** Os irmãos (recordes e visitas, fase3-12): `sozinha` (padrão), `irmaos`, `desligada` ou `fora-do-ar`. */
   familia?: FamiliaDoPlayground
+  /**
+   * Fotos no Clube (N08b): sem a opção, a plataforma não monta o Clube (como o adulto). Com ela,
+   * a situação que o Clube responde; `falha-no-envio` diz `ligado` e falha ao mandar.
+   */
+  clube?: ClubeDoPlayground
+}
+
+export type ClubeDoPlayground = SituacaoDoClube | 'falha-no-envio'
+
+/** O Clube de mentira: guarda as fotos mandadas para a conferência. */
+function clubeFalso(clube: ClubeDoPlayground): ClubeDoJogo & { mandadas: Blob[] } {
+  const mandadas: Blob[] = []
+  return {
+    mandadas,
+    situacao: async () => (clube === 'falha-no-envio' ? 'ligado' : clube),
+    async mandarFoto(foto) {
+      if (clube === 'falha-no-envio') return 'falhou'
+      if (clube !== 'ligado') return clube === 'fora-do-ar' ? 'falhou' : clube
+      mandadas.push(foto)
+      return 'em-moderacao'
+    },
+  }
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -195,6 +234,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
+  if (o.usadoHojeSegundos) usado.set(diaDeSaoPaulo(agora()), Math.max(0, o.usadoHojeSegundos))
   const eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
   type Sessao = {
     id: string
@@ -273,6 +313,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ...atual,
         casa: { portaNova: true },
         construcao: { ...atual.construcao, casa: obraDeExemplo() },
+        // A obra de exemplo usa acabamentos dos cômodos: as chaves vêm com ela (N11).
+        chaves: atual.chaves | chavesUsadasNaObra(obraDeExemplo()),
         projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
       atualizadoEm: agora().toISOString(),
@@ -308,6 +350,16 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       atualizadoEm: agora().toISOString(),
     }
   }
+  if (o.adotado) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const bichos = adotar({ ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] }, 'gato', 'Mingau')
+    if (bichos && !atual.bichos.adotado)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, bichos, companhia: 'adotado' },
+        atualizadoEm: agora().toISOString(),
+      }
+  }
   if (o.bento !== undefined && Number.isFinite(o.bento)) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
     const amizade = Math.max(0, Math.min(AMIZADE_MAXIMA, Math.round(o.bento)))
@@ -329,6 +381,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         atualizadoEm: agora().toISOString(),
       }
   }
+  if (o.planador) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    if (!atual.inventario.planador)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, inventario: { ...atual.inventario, planador: 1 } },
+        atualizadoEm: agora().toISOString(),
+      }
+  }
   if (o.energia !== undefined) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
     const energia = Math.max(0, Math.min(100, o.energia))
@@ -337,6 +398,19 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: { ...atual, necessidades: { ...atual.necessidades, energia } },
       atualizadoEm: agora().toISOString(),
     }
+  }
+  if (o.pontesVistas) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const abertas = ilhasDoAnel()
+      .filter((i) => ilhaAberta(i.id, o.posicao ?? 1))
+      .map((i) => i.id)
+    const faltam = abertas.filter((id) => !atual.pontesVistas.includes(id))
+    if (faltam.length > 0)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, pontesVistas: [...atual.pontesVistas, ...faltam] },
+        atualizadoEm: agora().toISOString(),
+      }
   }
   if (o.lanterna) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
@@ -630,6 +704,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       }
       return (await desafios.abrir(pedido)) ?? (await abrirNoMolde(pedido))
     },
+    ...(o.clube ? { clube: clubeFalso(o.clube) } : {}),
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,

@@ -89,7 +89,7 @@ try {
   const legenda = () => page.locator('.arq-chegada-legenda')
 
   // 1. Dentro de casa (jogo novo começa no quarto), a cena espera.
-  await abrir(`${baseURL}/?novo=1&persistir=0&posicao=2`)
+  await abrir(`${baseURL}/?novo=1&persistir=0&chegada=1&posicao=2`)
   await pronto()
   await page.waitForTimeout(8000)
   if (await legenda().count()) throw new Error('A cena começou com a criança dentro de casa.')
@@ -97,7 +97,7 @@ try {
 
   // 2. Fora, em pé no trecho quebrado da ponte do Bosque: a cena inteira.
   const em = `${ponto.x.toFixed(2)},${ponto.z.toFixed(2)},${(ponto.y + 0.3).toFixed(2)}`
-  await abrir(`${baseURL}/?novo=1&persistir=0&posicao=2&em=${em}`)
+  await abrir(`${baseURL}/?novo=1&persistir=0&chegada=1&posicao=2&em=${em}`)
   await pronto()
   try {
     await page.getByText('O Zappy voou até o Bosque dos Bichos.').waitFor({ timeout: 60_000 })
@@ -132,7 +132,7 @@ try {
 
   // 3. Duas pontes novas (posição 3): uma cena por vez; o Pular encerra o Bosque e vem a Vila,
   // que o Esc encerra.
-  await abrir(`${baseURL}/?novo=1&persistir=0&posicao=3&em=${em}`)
+  await abrir(`${baseURL}/?novo=1&persistir=0&chegada=1&posicao=3&em=${em}`)
   await pronto()
   await page.getByText('O Zappy voou até o Bosque dos Bichos.').waitFor({ timeout: 60_000 })
   await page.getByRole('button', { name: 'Pular' }).click()

@@ -26,7 +26,9 @@ test('inventário reproduz os arquivos locais sem confundir duas versões com at
       'utf8',
     ),
   ).toBe(relatorioDeRepertorio())
-  expect(inventario.every((d) => !d.publicarAutomaticamente)).toBe(true)
+  // C01b: só pede publicação o que tem todas as fontes na trilha.
+  for (const d of inventario.filter((d) => d.publicarAutomaticamente))
+    expect(d.semFonteNaTrilha, d.slug).toEqual([])
 })
 test('fontes opcionais não comprovam repertório universal e cursos futuros não são inventados', () => {
   expect(
@@ -38,13 +40,16 @@ test('fontes opcionais não comprovam repertório universal e cursos futuros nã
     'construtor/nave-contra-asteroides',
     'inventor/corre-dino',
   ])
-  const recife = inventario.find(
-    (d) => d.ilha === 'recife' && d.cobertura.some((c) => c.bloco === 'sz_g2d_on_group_click'),
+  // Desde C01b o Recife não usa clique em grupo; o Proteja os ninhos do Vale ainda usa.
+  const vale = inventario.find(
+    (d) =>
+      d.ilha === 'vale-dos-dinos' && d.cobertura.some((c) => c.bloco === 'sz_g2d_on_group_click'),
   )!
-  const click = recife.cobertura.find((c) => c.bloco === 'sz_g2d_on_group_click')!
+  const click = vale.cobertura.find((c) => c.bloco === 'sz_g2d_on_group_click')!
   expect(click.trilha).toEqual([])
   expect(click.opcionais).toContain('faisca/cade-todo-mundo')
-  expect(recife.semFonteNaTrilha).toContain(click.bloco)
+  expect(vale.semFonteNaTrilha).toContain(click.bloco)
+  expect(vale.publicarAutomaticamente).toBe(false)
   const lista = inventario.find((d) => d.slug === 'vale-contagem-da-lista')!
   expect(lista.classificacao).toBe('apoio-preparado-em-blocos')
   expect(lista.tiposJaPresentes).toContain('sz_g2d_for_each_in_group')
@@ -60,6 +65,10 @@ test('os quadros do Bosque não exigem extra, e só Noite usa opacidade de fonte
 
 test('a Vila usa somente fontes da trilha, sem depender do clique de um extra', () => {
   for (const d of inventario.filter((d) => d.ilha === 'vila-doce'))
+    expect(d.semFonteNaTrilha, d.slug).toEqual([])
+})
+test('Recife e Pico usam somente fontes da trilha desde C01b', () => {
+  for (const d of inventario.filter((d) => d.ilha === 'recife' || d.ilha === 'pico'))
     expect(d.semFonteNaTrilha, d.slug).toEqual([])
 })
 test('classificação não chama blocos JavaScript de Python ou Pro', () => {

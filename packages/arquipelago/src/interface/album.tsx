@@ -242,6 +242,19 @@ export function Album() {
           ))}
         </Secao>
         <Secao
+          id="segredos"
+          nome="Segredos das ilhas"
+          conta={a.segredos.conta}
+          explica="Baús da Íris no alto do vento, nas ilhas antes do Pico Gelado."
+        >
+          {a.segredos.itens.map((g) => (
+            <li key={g.id} className="arq-quadro-corpo">
+              <b>{g.ilha}</b>
+              <span>{g.texto}</span>
+            </li>
+          ))}
+        </Secao>
+        <Secao
           id="bichos"
           nome="Bichos do Bosque"
           conta={a.bichos.conta}

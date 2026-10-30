@@ -17,7 +17,8 @@ import type { MeshStandardMaterial } from 'three'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
-import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
+import { quemAcompanha } from '../sistemas/companhia'
+import { loteDaCasa } from '../sistemas/construcao/lote'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
@@ -39,6 +40,9 @@ const COR_DE_FORA = '#fbe7d2'
 
 /** O quarto da plataforma, peça por peça, com os mesmos componentes do Meu quarto. */
 function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
+  // O bichinho sai do quarto quando é ele quem acompanha (S01).
+  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) === 'quarto')
+  const petNoQuarto = acompanha ? null : quarto.pet
   const { loja } = useJogo()
   const pausado = useEstado(jogoPausado)
   const menosNoAparelho = useReducedMotion()
@@ -108,7 +112,7 @@ function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
             ),
           )}
           <Pet3D
-            petId={quarto.pet}
+            petId={petNoQuarto}
             occupied={ocupadas}
             reducedMotion={menosMovimento}
             paused={pausado}
@@ -396,6 +400,8 @@ function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boo
 const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
 
 export function Casa() {
+  // O quintal grande do Vale em diante (E04).
+  const lote = loteDaCasa(useEstado((s) => s.jornada))
   const { loja } = useJogo()
   // Na visita (fase3-12), o quarto e a obra são os do irmão.
   const quarto = useEstado(quartoVisivel)
@@ -416,16 +422,11 @@ export function Casa() {
         </RigidBody>
       </group>
       {obra ? (
-        <ObraNoMundo
-          obra={obra}
-          lote={LOTE_DA_CASA}
-          base={BASE_DA_OBRA}
-          construindo={construindo}
-        />
+        <ObraNoMundo obra={obra} lote={lote} base={BASE_DA_OBRA} construindo={construindo} />
       ) : null}
       {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
       {obra ? <MoveisDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
-      {obra && construindo ? <ModoConstruir lote={LOTE_DA_CASA} obra={obra} base={BASE} /> : null}
+      {obra && construindo ? <ModoConstruir lote={lote} obra={obra} base={BASE} /> : null}
       <GanharProjetos />
     </>
   )

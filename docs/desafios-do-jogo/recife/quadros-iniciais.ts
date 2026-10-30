@@ -128,6 +128,10 @@ const imagens = {
   coral: svg(
     '<path d="M60 110V30m0 50L25 58V30m35 30 30-22V13m-30 80L95 80V58M60 43 42 25V9" fill="none" stroke="#db8299" stroke-width="13" stroke-linecap="round"/><path d="M22 111h78" stroke="#b57b61" stroke-width="12" stroke-linecap="round"/>',
   ),
+  /** O coral ainda sem cuidado, desbotado pelo Cinza (troca de imagem no lugar da opacidade). */
+  'coral-cinza': svg(
+    '<path d="M60 110V30m0 50L25 58V30m35 30 30-22V13m-30 80L95 80V58M60 43 42 25V9" fill="none" stroke="#c9c3c6" stroke-width="13" stroke-linecap="round"/><path d="M22 111h78" stroke="#a9a29d" stroke-width="12" stroke-linecap="round"/>',
+  ),
   bolha: svg(
     '<circle cx="60" cy="60" r="48" fill="#bcf5fa" fill-opacity=".7" stroke="#4ca3bf" stroke-width="5"/><path d="M28 51q5-19 24-22" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>',
   ),
@@ -205,8 +209,8 @@ export function projetoDoQuadroRecife(quadro: QuadroInicialDoRecife, pronto: boo
     value('Conchas guardadas:', 'guardadas', 390)
   } else if (quadro === 3) {
     vars({ escolhido: 1, cuidado1: 0, cuidado2: 0, cuidados: 0 })
-    image('coral', 'coral1', 150)
-    image('coral', 'coral2', 390)
+    image('coral-cinza', 'coral1', 150)
+    image('coral-cinza', 'coral2', 390)
     events.push(
       key('ArrowLeft', [set('escolhido', 1)]),
       key('ArrowRight', [set('escolhido', 2)]),
@@ -224,17 +228,10 @@ export function projetoDoQuadroRecife(quadro: QuadroInicialDoRecife, pronto: boo
           : [],
       ),
     )
+    // O cuidado devolve a cor do coral (pronto no cenário; não faz parte do objetivo).
     update.push(
-      {
-        type: 'g2d:setOpacity',
-        spriteVar: 'coral1',
-        percent: bin('+', n(35), bin('*', v('cuidado1'), n(65))),
-      },
-      {
-        type: 'g2d:setOpacity',
-        spriteVar: 'coral2',
-        percent: bin('+', n(35), bin('*', v('cuidado2'), n(65))),
-      },
+      iff(eq('cuidado1', 1), [{ type: 'g2d:setImage', spriteVar: 'coral1', image: 'coral' }]),
+      iff(eq('cuidado2', 1), [{ type: 'g2d:setImage', spriteVar: 'coral2', image: 'coral' }]),
     )
     value('Coral escolhido:', 'escolhido', 350)
     value('Corais cuidados:', 'cuidados', 390)
@@ -273,11 +270,13 @@ export function projetoDoQuadroRecife(quadro: QuadroInicialDoRecife, pronto: boo
           : [],
       ),
     )
-    update.push({
-      type: 'g2d:setOpacity',
-      spriteVar: 'desenhoDaChave',
-      percent: bin('*', v('chave'), n(100)),
-    })
+    // A chave só aparece na mão enquanto não foi usada (desenho condicionado, sem opacidade).
+    const desenhoDaChave = draw.findIndex(
+      (d) => d.type === 'g2d:drawSprite' && d.spriteVar === 'desenhoDaChave',
+    )
+    const chaveNaTela = draw[desenhoDaChave]
+    if (!chaveNaTela) throw new Error('desenho da chave ausente')
+    draw[desenhoDaChave] = iff(eq('chave', 1), [chaveNaTela])
     value('Baú aberto:', 'aberto', 350)
     value('Aberturas:', 'aberturas', 390)
   }
@@ -446,7 +445,8 @@ export function desafiosIniciaisDoRecife(publico: PublicoDoDesafio) {
       tipo: 'quadro-das-cores',
       quadro,
       ordem: quadro * 10,
-      publicar: false,
+      // C01b: todas as fontes na trilha; a importação continua com a equipe.
+      publicar: true,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,

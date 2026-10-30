@@ -73,13 +73,10 @@ try {
           await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
         else await page.keyboard.up('ArrowRight')
       }
-      const canvas = await page.locator('canvas[data-sz-game-2d-stage]').boundingBox()
-      assert(canvas)
-      const tocar = async (x, y) => {
-        const cx = canvas.x + (x / 640) * canvas.width
-        const cy = canvas.y + (y / 480) * canvas.height
-        if (mobile) await page.touchscreen.tap(cx, cy)
-        else await page.mouse.click(cx, cy)
+      // Espaço/A pula e Enter/+ recomeça (teclas da trilha, sem clique em botão, C01b).
+      const input = async (action, key) => {
+        if (mobile) await page.locator(`[data-sz-g2d-action="${action}"]`).tap()
+        else await page.keyboard.press(key)
       }
       // Anda até perto da beira do primeiro gelo, pula e segue até a bandeira.
       await segurarDireita()
@@ -93,7 +90,7 @@ try {
         await soltarDireita()
       }
       assert((await ler(page, 'pinguim.x')) < 230, 'o pinguim passou da beira antes do pulo')
-      await tocar(534, 102)
+      await input('jump', 'Space')
       await segurarDireita()
       try {
         await page.waitForFunction((scope) => globalThis[scope]?.get('chegou')?.v === true, scope, {
@@ -108,10 +105,10 @@ try {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
         'Rolagem horizontal',
       )
-      const filename = `2026-10-29-pico-desafio-${nome}.png`
+      const filename = `2026-10-30-pico-desafio-${nome}.png`
       await page.screenshot({ path: resolve(out, filename), fullPage: true })
       // Recomeçar devolve o pinguim ao começo e limpa a chegada.
-      await tocar(534, 154)
+      await input('start', 'Enter')
       await page.waitForFunction(
         (scope) => {
           const reader = globalThis[scope]
@@ -122,7 +119,7 @@ try {
       )
       assert.deepEqual(errors, [])
       console.log(
-        `${mobile ? 'Celular emulado, toque' : 'Computador, teclado e mouse'} (${width} x ${height}): andar, pular o buraco, chegar à bandeira e recomeçar aprovados; ${filename}`,
+        `${mobile ? 'Celular emulado, toque' : 'Computador, teclado'} (${width} x ${height}): andar, pular o buraco, chegar à bandeira e recomeçar aprovados; ${filename}`,
       )
     } finally {
       await context.close()

@@ -8,6 +8,7 @@ import type {
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { Clima } from '../sistemas/clima'
+import { acaoEmCurso, encerraOTempo } from '../sistemas/fim-do-tempo'
 import type { Isca } from '../sistemas/iscas'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { IdDoPercurso } from '../sistemas/percurso'
@@ -56,6 +57,8 @@ export interface EstadoDoJogo {
   painelAberto: string | null
   ferramentaAberta: boolean
   tempoAcabou: boolean
+  /** Quando o tempo acabou com uma ação em andamento (N07): o fim espera ela, até 30 s. */
+  tempoAcabandoDesde: number | null
   tempoPausado: boolean
   tempoSincronizando: boolean
   salvamentoSituacao: SituacaoDoSalvamento
@@ -134,6 +137,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     painelAberto: null,
     ferramentaAberta: false,
     tempoAcabou: false,
+    tempoAcabandoDesde: null,
     tempoPausado: false,
     tempoSincronizando: false,
     salvamentoSituacao: 'ok',
@@ -197,10 +201,19 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       set({ tempoSincronizando: sincronizando })
     },
     registrarTempo(usadoHojeSegundos, acabou, limiteDiarioMinutos) {
-      const tempoAcabou = acabou || get().tempoAcabou
+      const antes = get()
+      // No fim de uma ação, o tempo espera ela acabar (N07); `encerrarTempo` termina a espera.
+      const esperar =
+        acabou &&
+        !antes.tempoAcabou &&
+        acaoEmCurso(antes) &&
+        (antes.tempoAcabandoDesde === null ||
+          !encerraOTempo(antes.tempoAcabandoDesde, Date.now(), true))
+      const tempoAcabou = (acabou && !esperar) || antes.tempoAcabou
       set({
         usadoHojeSegundos,
         tempoAcabou,
+        tempoAcabandoDesde: esperar ? (antes.tempoAcabandoDesde ?? Date.now()) : null,
         ...(tempoAcabou ? { painelAberto: null } : {}),
         ...(limiteDiarioMinutos === undefined
           ? {}

@@ -1,7 +1,9 @@
 'use client'
 
 import {
+  type ClubeDoJogo,
   type DesafioAberto,
+  EnvioAoClubeSchema,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
   type MoldeDaRotina,
@@ -18,6 +20,7 @@ import {
   QuartoSchema,
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
+  SituacaoDoClubeSchema,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
@@ -97,6 +100,7 @@ const CAMINHOS_DO_JOGO = new Set([
   '/minijogos',
   '/mural',
   '/irmaos',
+  '/amigos',
   '/fantasmas',
   '/visitas-adultas/convite',
   '/visitas-adultas/abrir',
@@ -105,6 +109,8 @@ const CAMINHOS_DO_JOGO = new Set([
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 /** A casa de um irmão para a visita (fase3-12), só leitura. */
 const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
+/** A casa de um amigo que a família aceitou (N08a), só leitura. */
+const CASA_DE_AMIGO = new RegExp(`^/amigos/${UUID}/casa$`)
 const FANTASMA = new RegExp(`^/fantasmas/(${PERCURSOS.join('|')})$`)
 const FANTASMA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/fantasmas/(${PERCURSOS.join('|')})$`)
 /**
@@ -124,7 +130,9 @@ export function soDoKids(caminho: string): boolean {
     caminho === '/tempo/sessao' ||
     caminho === '/tempo/recuperar' ||
     caminho === '/irmaos' ||
+    caminho === '/amigos' ||
     CASA_DO_IRMAO.test(caminho) ||
+    CASA_DE_AMIGO.test(caminho) ||
     FANTASMA_DO_IRMAO.test(caminho)
   )
 }
@@ -134,6 +142,7 @@ export function caminhoDoJogo(caminho: string): boolean {
     CAMINHOS_DO_JOGO.has(caminho) ||
     DESAFIOS_DO_JOGO.test(caminho) ||
     CASA_DO_IRMAO.test(caminho) ||
+    CASA_DE_AMIGO.test(caminho) ||
     FANTASMA.test(caminho) ||
     FANTASMA_DO_IRMAO.test(caminho)
   )
@@ -204,6 +213,35 @@ function lerStudioConfig(value: unknown, viewerId: string): ArquipelagoStudioCon
   )
     return null
   return c as unknown as ArquipelagoStudioConfig
+}
+
+/**
+ * Fotos no Clube (N08b): a situação (permissão dos responsáveis e o canal das fotos no Clube) e o
+ * envio do PNG do modo foto. Só o Kids monta; qualquer falha vira `fora-do-ar` ou `falhou`.
+ */
+export function clubeDoKids(): ClubeDoJogo {
+  return {
+    async situacao() {
+      try {
+        const r = await json('/api/arquipelago/clube')
+        const lido = SituacaoDoClubeSchema.safeParse(r.corpo)
+        return r.status === 200 && lido.success ? lido.data.situacao : 'fora-do-ar'
+      } catch {
+        return 'fora-do-ar'
+      }
+    },
+    async mandarFoto(foto) {
+      try {
+        const form = new FormData()
+        form.append('file', foto, 'arquipelago.png')
+        const r = await json('/api/arquipelago/clube/foto', { method: 'POST', body: form })
+        const lido = EnvioAoClubeSchema.safeParse(r.corpo)
+        return lido.success ? lido.data.situacao : 'falhou'
+      } catch {
+        return 'falhou'
+      }
+    },
+  }
 }
 
 async function json(url: string, init?: RequestInit): Promise<{ status: number; corpo: unknown }> {
@@ -284,6 +322,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     abrirFerramenta:
       opcoes.abrirFerramenta ?? (async () => ({ situacao: 'indisponivel', motivo: 'em-breve' })),
+    ...(opcoes.publico === 'kids' ? { clube: clubeDoKids() } : {}),
     voltarParaPlataforma: () => window.location.assign(opcoes.voltarPara),
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
   }

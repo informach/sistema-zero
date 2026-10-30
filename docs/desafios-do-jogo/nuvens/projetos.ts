@@ -50,7 +50,6 @@ const bin = (op: '===' | '>' | '>=' | '<', left: JSExpr, right: JSExpr): JSExpr 
   left,
   right,
 })
-const e = (left: JSExpr, right: JSExpr): JSExpr => ({ type: 'logical', op: '&&', left, right })
 const iff = (cond: JSExpr, then: JSStatement[], senao?: JSStatement[]): JSStatement => ({
   type: 'if',
   cond,
@@ -99,6 +98,12 @@ const arte: Record<string, string> = {
     96,
     120,
     '<path d="M48 118V70" stroke="#4f9a4a" stroke-width="7" stroke-linecap="round"/><path d="M48 86Q26 76 22 58Q42 58 48 78Z" fill="#6cd06a" stroke="#3f7f3a" stroke-width="3"/><path d="M48 80Q70 70 74 52Q54 52 48 72Z" fill="#6cd06a" stroke="#3f7f3a" stroke-width="3"/>',
+  ),
+  /** A muda ainda sem água ou sem plantio, desbotada (troca de imagem no lugar da opacidade). */
+  'muda-cinza': svg(
+    96,
+    120,
+    '<path d="M48 118V70" stroke="#b9b6c2" stroke-width="7" stroke-linecap="round"/><path d="M48 86Q26 76 22 58Q42 58 48 78Z" fill="#dcdae2" stroke="#a9a6b3" stroke-width="3"/><path d="M48 80Q70 70 74 52Q54 52 48 72Z" fill="#dcdae2" stroke="#a9a6b3" stroke-width="3"/>',
   ),
   botaoFlor: svg(
     96,
@@ -157,14 +162,15 @@ function simular(variacao: Variacao, pronto: boolean): JSStatement[] {
   return [
     somar('tempo', 1),
     ...(chuva ? [somar('agua', JARDIM.chuva)] : []),
-    iff(e(bin('>', v('agua'), n(0)), bin('>', v('sol'), n(0))), [
-      ...crescer,
-      somar('agua', -1),
-      somar('sol', -1),
+    // As duas condições juntas, com um se dentro do outro (o "e" lógico não é da trilha, C01b).
+    iff(bin('>', v('agua'), n(0)), [
+      iff(bin('>', v('sol'), n(0)), [...crescer, somar('agua', -1), somar('sol', -1)]),
     ]),
-    iff(e(bin('>=', v('crescimento'), n(JARDIM.floresce)), bin('===', v('florida'), b(false))), [
-      set('florida', b(true)),
-      set('recado', s('O jardim floresceu.')),
+    iff(bin('>=', v('crescimento'), n(JARDIM.floresce)), [
+      iff(bin('===', v('florida'), b(false)), [
+        set('florida', b(true)),
+        set('recado', s('O jardim floresceu.')),
+      ]),
     ]),
   ]
 }
@@ -174,6 +180,8 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const basePronta = variacao !== 'jardim' || pronto
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: JARDIM.largura, height: JARDIM.altura, bg: '#efe8ff' },
+    // Espaço/A rega e a seta para cima dá sol: teclas da trilha, sem clique em grupo (C01b).
+    { type: 'g2d:enableClassicControls', mode: 'auto' },
     { type: 'var', name: 'agua', value: n(JARDIM.agua) },
     { type: 'var', name: 'sol', value: n(JARDIM.sol) },
     { type: 'var', name: 'tempo', value: n(0) },
@@ -181,27 +189,11 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     { type: 'var', name: 'florida', value: b(false) },
     { type: 'var', name: 'recado', value: s(RECADO_DO_COMECO) },
     image('flor', 'muda', 272, 236, 96, 120),
-    image('regar', 'botao', 120, 424, 172, 44),
-    image('darSol', 'botao', 348, 424, 172, 44),
-    { type: 'g2d:createGroup', varName: 'botoesRegar' },
-    { type: 'g2d:addToGroup', spriteVar: 'regar', groupVar: 'botoesRegar' },
-    { type: 'g2d:createGroup', varName: 'botoesSol' },
-    { type: 'g2d:addToGroup', spriteVar: 'darSol', groupVar: 'botoesSol' },
   ]
   const rega = variacao === 'rega-forte' && pronto ? JARDIM.regaForte : JARDIM.rega
   const events: JSStatement[] = [
-    {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesRegar',
-      itemName: 'botao',
-      body: basePronta ? [somar('agua', rega)] : [],
-    },
-    {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesSol',
-      itemName: 'botao',
-      body: basePronta ? [somar('sol', JARDIM.luz)] : [],
-    },
+    { type: 'g2d:onKey', key: 'Space', body: basePronta ? [somar('agua', rega)] : [] },
+    { type: 'g2d:onKey', key: 'ArrowUp', body: basePronta ? [somar('sol', JARDIM.luz)] : [] },
     { type: 'g2d:onKey', key: 'Enter', body: pronto ? recomecar() : [] },
   ]
   const source: SZIRV2 = {
@@ -244,10 +236,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             placar('Tempo: ', 'tempo', 470, 100),
             placar('Crescimento: ', 'crescimento', 470, 126),
             draw('flor'),
-            draw('regar'),
-            draw('darSol'),
-            label('Regar', 178, 451, 18, '#ffffff'),
-            label('Sol', 420, 451, 18, '#ffffff'),
+            label('Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.', 18, 455, 15),
           ],
         },
       ],

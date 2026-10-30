@@ -1,10 +1,12 @@
 import {
+  type FotosNoClubeDoJogador,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   PERMISSOES_PADRAO,
   type PermissoesDaFamilia,
   POSICOES_DA_JORNADA,
   type SemanaDaCrianca,
   type SemanaDaFamilia,
+  VERSAO_DAS_FOTOS_NO_CLUBE,
 } from '@sistemazero/arquipelago-contracts'
 import type { Logger } from '@sistemazero/core/logging'
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
@@ -19,7 +21,7 @@ import {
   janelaDaSemana,
   objetosCriados,
 } from '../domain/semana-da-familia'
-import { SomenteLeituraError } from './erros'
+import { AcessoBloqueadoError, SomenteLeituraError } from './erros'
 import type { LeiturasDosMembros } from './leituras-dos-membros'
 import type { ModoDosDesafios } from './servico-dos-desafios'
 
@@ -90,6 +92,19 @@ export class ServicoDaFamilia {
 
   async lerPermissoes(responsavel: Responsavel): Promise<PermissoesDaFamilia> {
     return (await this.deps.familia.lerPermissoes(responsavel.contaId)) ?? { ...PERMISSOES_PADRAO }
+  }
+
+  /**
+   * Fotos no Clube (N08b): a criança lê só esta permissão da conta dela. Adulto e conta sem
+   * escolha guardada: desligado. Quem não vê o jogo recebe o bloqueio de sempre.
+   */
+  async fotosNoClube(jogador: Jogador): Promise<FotosNoClubeDoJogador> {
+    const decisao = decidirAcesso(this.deps.politica, jogador)
+    if (!decisao.liberado) throw new AcessoBloqueadoError(decisao.motivo)
+    if (jogador.publico !== 'kids' || jogador.contaId === null)
+      return { versao: VERSAO_DAS_FOTOS_NO_CLUBE, fotosNoClube: false }
+    const p = (await this.deps.familia.lerPermissoes(jogador.contaId)) ?? PERMISSOES_PADRAO
+    return { versao: VERSAO_DAS_FOTOS_NO_CLUBE, fotosNoClube: p.fotosNoClube }
   }
 
   async gravarPermissoes(

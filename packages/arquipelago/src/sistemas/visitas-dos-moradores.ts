@@ -8,7 +8,7 @@ import {
 } from './construcao/aconchego'
 import { planta } from './construcao/comodos'
 import { arestasDaAbertura, chaveDaAresta } from './construcao/grade'
-import { type Celula, chaveDaCelula, LOTE_DA_CASA } from './construcao/lote'
+import { type Celula, chaveDaCelula, LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from './construcao/lote'
 import { celulasDosMoveisAltos } from './construcao/moveis'
 import { celulasDoObjeto } from './construcao/projeto-azul'
 import { sorteio } from './moradores'
@@ -62,7 +62,7 @@ export function encontroNaCasa(
     motivo,
   })
   if (!s.casa.portaNova) return vazio('casa')
-  const comodos = aconchegoDosComodos(obra, LOTE_DA_CASA, s.projetos, quarto)
+  const comodos = aconchegoDosComodos(obra, LOTE_DA_CASA_GRANDE, s.projetos, quarto)
   const pontos = Math.max(0, ...comodos.map((c) => c.total))
   const minimo = tipo === 'festa' ? ACONCHEGO_DA_FESTA : ACONCHEGO_QUE_CHAMA_VISITA
   if (pontos < minimo) return vazio('aconchego', pontos)
@@ -73,7 +73,7 @@ export function encontroNaCasa(
       sorteio(`${perfil}:${dia}:${a}`) - sorteio(`${perfil}:${dia}:${b}`) || a.localeCompare(b),
   )
   if (!moradores.length) return vazio('amizade', pontos)
-  const p = planta(obra, LOTE_DA_CASA)
+  const p = planta(obra, LOTE_DA_CASA_GRANDE)
   const paredes = new Set(p.paredes)
   for (const a of obra.aberturas)
     if (a.tipo === 'porta') for (const e of arestasDaAbertura(a)) paredes.delete(chaveDaAresta(e))

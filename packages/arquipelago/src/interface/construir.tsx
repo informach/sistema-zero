@@ -1,5 +1,7 @@
 import {
   CATALOGO_DE_OBJETOS,
+  COMODOS_DA_IRIS,
+  type ComodoDaIris,
   MOVEIS,
   OBJETOS_DA_CASA,
   type PisoDaCasa,
@@ -16,6 +18,15 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import {
+  chaveDoComodo,
+  comodoDaFerramenta,
+  comodoDaJanela,
+  comodoDoPiso,
+  liberado,
+  quantasChaves,
+  TEXTOS_DAS_CHAVES,
+} from '../sistemas/chaves-da-casa'
 import {
   CATEGORIAS_DOS_MOVEIS,
   type CategoriaDoMovel,
@@ -118,19 +129,23 @@ function Escolha({
   imagem,
   escolhida,
   nota,
+  trancada = false,
   aoEscolher,
 }: {
   nome: string
   imagem: string
   escolhida: boolean
   nota?: string
+  /** Trancada pela chave de um cômodo (N11): continua tocável, e o Zappy diz qual chave falta. */
+  trancada?: boolean
   aoEscolher: () => void
 }) {
   return (
     <button
       type="button"
-      className="arq-obra-escolha"
+      className={`arq-obra-escolha${trancada ? ' trancada' : ''}`}
       aria-pressed={escolhida}
+      aria-disabled={trancada || undefined}
       onClick={aoEscolher}
     >
       <img src={imagem} alt="" width={160} height={160} draggable={false} />
@@ -199,8 +214,22 @@ export function BarraDeConstruir() {
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
   // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
+  // O iglu do Pico (E04) não tem cerca nem caminho: o lote dele diz o que cabe.
+  const limitesDaCabana = useConstrucao(construcao, (s) =>
+    s.onde !== 'casa' ? (s.cabana?.lote.limites ?? null) : null,
+  )
+  const chaves = useEstado((s) => s.salvamento.chaves)
+  const nota = (comodo: ComodoDaIris | null) =>
+    liberado(chaves, comodo) || !comodo ? undefined : `🔑 ${chaveDoComodo(comodo).nome}`
   const ferramentas = naCabana
-    ? FERRAMENTAS.filter((f) => f.id !== 'canteiro' && f.id !== 'objeto' && f.id !== 'movel')
+    ? FERRAMENTAS.filter(
+        (f) =>
+          f.id !== 'canteiro' &&
+          f.id !== 'objeto' &&
+          f.id !== 'movel' &&
+          !(f.id === 'cerca' && limitesDaCabana?.trechosDeCerca === 0) &&
+          !(f.id === 'caminho' && limitesDaCabana?.caminhos === 0),
+      )
     : FERRAMENTAS
   if (!aberto) return null
   const s = () => construcao.getState()
@@ -208,9 +237,15 @@ export function BarraDeConstruir() {
   return (
     <section className="arq-obra" aria-label="Ferramentas de construir">
       {aconchegoAberto && <PainelDeAconchego />}
-      <p className="arq-obra-dica" aria-live="polite">
-        {dica}
-      </p>
+      <div className="arq-obra-dica-linha">
+        <p className="arq-obra-dica" aria-live="polite">
+          {dica}
+        </p>
+        {/* Na mesma linha da dica, para a barra não crescer (N11). */}
+        {quantasChaves(chaves) < COMODOS_DA_IRIS.length ? (
+          <p className="arq-obra-chaves">{TEXTOS_DAS_CHAVES.contagem(quantasChaves(chaves))}</p>
+        ) : null}
+      </div>
       {atual === 'janela' ? (
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Tipo de janela</legend>
@@ -220,6 +255,8 @@ export function BarraDeConstruir() {
               nome={j.nome}
               imagem={MINIATURA_DA_JANELA[j.id]}
               escolhida={janela === j.id}
+              nota={nota(comodoDaJanela(j.id))}
+              trancada={!liberado(chaves, comodoDaJanela(j.id))}
               aoEscolher={() => s().escolherJanela(j.id)}
             />
           ))}
@@ -234,6 +271,8 @@ export function BarraDeConstruir() {
               nome={p.nome}
               imagem={MINIATURA_DO_PISO[p.id]}
               escolhida={piso === p.id}
+              nota={nota(comodoDoPiso(p.id))}
+              trancada={!liberado(chaves, comodoDoPiso(p.id))}
               aoEscolher={() => s().escolherPiso(p.id)}
             />
           ))}
@@ -324,13 +363,14 @@ export function BarraDeConstruir() {
           <button
             key={f.id}
             type="button"
-            className="arq-ferramenta"
+            className={`arq-ferramenta${liberado(chaves, comodoDaFerramenta(f.id)) ? '' : ' trancada'}`}
             data-ferramenta={f.id}
             aria-pressed={atual === f.id}
+            aria-disabled={!liberado(chaves, comodoDaFerramenta(f.id)) || undefined}
             onClick={() => s().escolher(f.id)}
           >
             <span className="arq-ferramenta-icone" aria-hidden="true">
-              {f.emoji}
+              {liberado(chaves, comodoDaFerramenta(f.id)) ? f.emoji : '🔑'}
             </span>
             <b>{f.nome}</b>
           </button>

@@ -17,7 +17,11 @@ Arquivo: [vale.manifesto.json](vale.manifesto.json). Importação e publicação
 
 Valores derivados de `MOEDAS_PADRAO_POR_TIPO`; ordens 60 a 63; atração `proteja-os-ninhos`.
 A busca nos manifestos locais não encontrou outro quadro do Vale. O Admin deve conferir o
-cadastro de novo na importação. Todos os itens usam `publicar: false` após C01b1.
+cadastro de novo na importação. Revisão C01b de 30/10: os quadros 3 a 5 deixaram a opacidade
+(desenho condicionado) e pedem publicação (`publicar: true`). Os quadros 1 e 2 e o Proteja os
+ninhos com as variações dependem de lista e laço em grupo, dados do sprite, clique em grupo e
+"e" lógico, que nenhum curso em blocos da trilha ensina; no Vale isso vem em JavaScript (C02).
+Seguem com `publicar: false` até lá.
 
 ## Cinco quadros complementares (L03)
 

@@ -1,4 +1,5 @@
 import type { Acesso } from '@sistemazero/arquipelago-contracts'
+import type { ReactNode } from 'react'
 import { useVoz } from './voz'
 
 export function TelaCarregando() {
@@ -36,7 +37,14 @@ export function TelaBloqueado({
   )
 }
 
-export function TelaDescanso({ aoVoltar }: { aoVoltar: () => void }) {
+export function TelaDescanso({
+  aoVoltar,
+  children,
+}: {
+  aoVoltar: () => void
+  /** O resumo do dia (N06), quando o jogo já tinha carregado. */
+  children?: ReactNode
+}) {
   const voz = useVoz()
   return (
     <div className="arq-tela">
@@ -44,6 +52,7 @@ export function TelaDescanso({ aoVoltar }: { aoVoltar: () => void }) {
         <div className="arq-zappy" />
         <h1>{voz.descanso.titulo}</h1>
         <p>{voz.descanso.texto}</p>
+        {children}
         <button type="button" className="arq-botao" onClick={aoVoltar}>
           {voz.voltar}
         </button>

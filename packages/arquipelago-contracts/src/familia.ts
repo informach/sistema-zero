@@ -99,6 +99,17 @@ export const PermissoesDaFamiliaSchema = z.strictObject({
 })
 export type PermissoesDaFamilia = z.infer<typeof PermissoesDaFamiliaSchema>
 
+/**
+ * Fotos no Clube (N08b, 30/10/2026): o que a criança lê da permissão da conta dela em
+ * `GET /arquipelago/clube`. Adulto e conta sem escolha guardada recebem `false`.
+ */
+export const VERSAO_DAS_FOTOS_NO_CLUBE = 1
+export const FotosNoClubeDoJogadorSchema = z.strictObject({
+  versao: z.literal(VERSAO_DAS_FOTOS_NO_CLUBE),
+  fotosNoClube: z.boolean(),
+})
+export type FotosNoClubeDoJogador = z.infer<typeof FotosNoClubeDoJogadorSchema>
+
 /** Sem escolha guardada: irmãos podem visitar; outras crianças e fotos no Clube, não. */
 export const PERMISSOES_PADRAO: Readonly<PermissoesDaFamilia> = Object.freeze({
   visitasDeIrmaos: true,
