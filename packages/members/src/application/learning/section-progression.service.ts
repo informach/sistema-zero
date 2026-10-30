@@ -192,6 +192,50 @@ export class SectionProgressionService {
   }
 
   /**
+   * Os objetivos Python fora de uma aula (desafios do Arquipélago, C02, 30/10/2026): o MESMO
+   * `PythonProjectCheckerService.grade` do "Verificar esta parte", sem vínculo de aula. Quem chama
+   * decide a curadoria (o desafio não tem bloco de Estúdio) e o projeto inicial do desafio fixa o
+   * ambiente; a política de runtime continua conferindo release, modo e extensões. Nada é
+   * guardado nem premiado. As falhas sobem como erro de domínio: nunca viram aprovação.
+   */
+  async evaluatePythonObjectives(input: {
+    checks: readonly SectionPythonProjectCheck[]
+    project: unknown
+    userId: string
+    accountId: string
+    curation: StudioProjectCuration
+    signal?: AbortSignal
+  }) {
+    if (!this.python) throw new StudioPythonProjectCheckUnavailableError()
+    const curation = StudioProjectCurationSchema.parse(input.curation)
+    const graded = await this.python.checker.grade({
+      userId: input.userId,
+      accountId: input.accountId,
+      project: input.project,
+      checks: input.checks,
+      ...(input.signal ? { signal: input.signal } : {}),
+      async authorize(signal) {
+        signal.throwIfAborted()
+        return curation
+      },
+    })
+    const byId = new Map(graded.results.map((item) => [item.checkId, item.passed]))
+    if (input.checks.some((check) => !byId.has(check.id)))
+      throw new StudioPythonProjectCheckUnavailableError()
+    const evaluation = summarizeSectionObjectives(
+      input.checks.map((check) => ({
+        checkId: check.id,
+        passed: byId.get(check.id) === true,
+        optional: Boolean(check.optional),
+      })),
+    )
+    return {
+      results: evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed })),
+      passed: evaluation.passed,
+    }
+  }
+
+  /**
    * O verificador único dos objetivos JavaScript (estrutura no members, execução no executor),
    * sem guardar nada nem premiar. Usado pelo "Testar agora" da autoria (`testObjectives`, com as
    * capturas) e pelos desafios do Arquipélago (sem capturas, para o cache do executor valer).

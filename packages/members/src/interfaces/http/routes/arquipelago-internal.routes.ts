@@ -24,6 +24,7 @@ import {
   ProjectCheckUnavailableError,
   StudioProjectSyncingError,
 } from '../../../domain/learning/learning.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../../../domain/studio/python-project-check.errors'
 
 /**
  * Rotas S2S para o serviço do jogo (Arquipélago): nunca roteadas pelo gateway nem expostas ao
@@ -53,6 +54,9 @@ const Objetivo = z.object({
   hint: z.string().trim().max(300).optional(),
   optional: z.literal(true).optional(),
   programmingLanguage: z.string().max(40).optional(),
+  /** Só Python (C02): sem estes dois, o `z.object` os descartaria em silêncio. */
+  profileId: z.string().max(96).optional(),
+  stdin: z.array(z.string().max(4096)).max(4).optional(),
   rule: z.record(z.string(), z.unknown()),
 })
 const PedidoDeAnalise = z.object({
@@ -88,7 +92,8 @@ function erroDaVerificacao(error: unknown): { status: number; code: string; mess
     return { status: 409, code: error.code, message: error.message }
   if (
     error instanceof ProjectCheckUnavailableError ||
-    error instanceof ProjectStructureAnalysisLimitError
+    error instanceof ProjectStructureAnalysisLimitError ||
+    error instanceof StudioPythonProjectCheckUnavailableError
   )
     return { status: 424, code: error.code, message: error.message }
   if (error instanceof ProjectCheckBusyError)

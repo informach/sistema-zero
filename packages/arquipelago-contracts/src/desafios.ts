@@ -73,19 +73,54 @@ const corDoTipo = (d: {
 const Texto = (max: number) => z.string().trim().min(1).max(max)
 const Bloco = z.string().min(1).max(160)
 
-/**
- * Um objetivo, no mesmo formato dos objetivos da parte das aulas (`SectionProjectCheck` do core).
- * A regra é opaca aqui: quem confere o sentido dela é o Members, com o mesmo verificador das aulas.
- * `optional` marca o desafio extra.
- */
-export const ObjetivoDoDesafioSchema = z.strictObject({
+const CAMPOS_DO_OBJETIVO = {
   id: z.string().min(1).max(80),
   label: Texto(200),
   hint: z.string().trim().max(LIMITES_DO_DESAFIO.dica).optional(),
   optional: z.literal(true).optional(),
-  programmingLanguage: z.literal('javascript').optional(),
   rule: z.record(z.string(), z.unknown()),
+}
+
+/** Objetivo de um projeto JavaScript (blocos, Ponte ou Pro). Sem linguagem = JavaScript. */
+export const ObjetivoJavaScriptDoDesafioSchema = z.strictObject({
+  ...CAMPOS_DO_OBJETIVO,
+  programmingLanguage: z.literal('javascript').optional(),
 })
+
+/**
+ * Objetivo de um projeto Python (C02, 30/10/2026), o `SectionPythonProjectCheck` das aulas: o
+ * perfil do ambiente Python do projeto inicial e, só nos objetivos que rodam o programa, até
+ * quatro linhas de entrada (`stdin`). A regra continua opaca: o Members a confere com
+ * `validateSectionPythonProjectChecks` e a executa no runtime Python das aulas.
+ */
+export const ObjetivoPythonDoDesafioSchema = z.strictObject({
+  ...CAMPOS_DO_OBJETIVO,
+  programmingLanguage: z.literal('python'),
+  profileId: z
+    .string()
+    .max(96)
+    .regex(/^[a-z0-9][a-z0-9._-]*$/),
+  stdin: z
+    .array(
+      z
+        .string()
+        .max(4096)
+        .regex(/^[^\r\n]*$/),
+    )
+    .max(4)
+    .optional(),
+})
+
+/**
+ * Um objetivo, no mesmo formato dos objetivos da parte das aulas (`SectionProjectCheck` do core).
+ * A regra é opaca aqui: quem confere o sentido dela é o Members, com o mesmo verificador das aulas.
+ * `optional` marca o desafio extra. Python desde C02; o Members recusa misturar linguagens e
+ * confere que todos usam a linguagem e o perfil do projeto inicial.
+ */
+export const ObjetivoDoDesafioSchema = z.union([
+  ObjetivoJavaScriptDoDesafioSchema,
+  ObjetivoPythonDoDesafioSchema,
+])
 export type ObjetivoDoDesafio = z.infer<typeof ObjetivoDoDesafioSchema>
 
 /** Um projeto do Estúdio, opaco aqui (o Members valida o formato e o teto). */

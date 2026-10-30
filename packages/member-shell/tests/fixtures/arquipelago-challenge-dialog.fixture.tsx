@@ -15,6 +15,7 @@ let changed: (() => void) | undefined
 let initial: EditableStudioProject | null = null
 let stored: EditableStudioProject | null = null
 let grants: unknown
+let mode: string | undefined
 let sends: unknown[] = []
 let respond = async () => ({
   passou: true,
@@ -34,10 +35,12 @@ mock.module('@sistemazero/studio', () => ({
     ref: Ref<StudioHandle>
     initialProject: EditableStudioProject
     grantedBlockIds: unknown
+    initialMode: string
     onReady(): void
   }) => {
     initial = props.initialProject
     grants = props.grantedBlockIds
+    mode = props.initialMode
     useImperativeHandle(props.ref, () => ({
       getProject: () => initial,
       save: async () => {
@@ -186,3 +189,23 @@ test('edits made during verification invalidate displayed feedback', async () =>
   await ui.click('Verificar projeto')
   expect(ui.container.textContent).toContain('O projeto mudou')
 })
+test('C02: o JavaScript em texto abre na Ponte; Python e Pro explicam que ainda não abrem no jogo', async () => {
+  stored = { ...createBlankProjectSnapshot('saved', 'Ondas'), mode: 'bridge' }
+  await render()
+  expect(mode).toBe('bridge')
+  await fechar()
+  mode = undefined
+  initial = null
+  for (const outro of [{ programmingLanguage: 'python' as const }, { kind: 'pro' as const }]) {
+    stored = { ...createBlankProjectSnapshot('saved', 'Outro'), ...outro } as EditableStudioProject
+    const ui = await render()
+    expect(ui.container.textContent).toContain('ainda não abrem dentro do jogo')
+    expect(mode).toBeUndefined()
+    await fechar()
+  }
+})
+async function fechar() {
+  const atual = cleanup
+  cleanup = undefined
+  await atual?.()
+}

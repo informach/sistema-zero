@@ -9,14 +9,15 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import {
   isSectionCompletion,
-  type SectionJavaScriptProjectCheck,
   type SectionObjectiveRule,
+  type SectionProjectCheck,
 } from '@sistemazero/core/learning'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { newExecutionRule } from './execution-rule'
 
+/** Objetivos JavaScript ou, desde C02 (30/10/2026), Python com o perfil do projeto inicial. */
 export type ChallengeDraft = Omit<CriarDesafio, 'conteudo'> & {
-  conteudo: Omit<ConteudoDoDesafio, 'objetivos'> & { objetivos: SectionJavaScriptProjectCheck[] }
+  conteudo: Omit<ConteudoDoDesafio, 'objetivos'> & { objetivos: SectionProjectCheck[] }
 }
 
 export function newChallenge(publico: PublicoDoDesafio): ChallengeDraft {
@@ -44,19 +45,40 @@ export function newChallenge(publico: PublicoDoDesafio): ChallengeDraft {
 }
 export function challengeDraft(value: DesafioDaEquipe): ChallengeDraft {
   const completion: unknown = { version: 1, blockIds: [], projectChecks: value.conteudo.objetivos }
-  if (
-    !isSectionCompletion(completion) ||
-    !completion.projectChecks ||
-    completion.projectChecks.some((c) => c.programmingLanguage === 'python')
-  )
+  if (!isSectionCompletion(completion) || !completion.projectChecks)
     throw new Error(
       'Este desafio contém regras incompatíveis. O conteúdo foi preservado no servidor.',
     )
-  const objetivos = completion.projectChecks.filter(
-    (c): c is SectionJavaScriptProjectCheck => c.programmingLanguage !== 'python',
-  )
+  const objetivos = completion.projectChecks
   return structuredClone({ metadados: value.metadados, conteudo: { ...value.conteudo, objetivos } })
 }
+/** O projeto é Python (o editor de objetivos e o Estúdio do Admin mudam por isso). */
+export function challengeProjectLanguage(project: unknown): 'javascript' | 'python' {
+  return typeof project === 'object' &&
+    project !== null &&
+    (project as { programmingLanguage?: unknown }).programmingLanguage === 'python'
+    ? 'python'
+    : 'javascript'
+}
+
+/**
+ * O Estúdio do Admin abre só projetos JavaScript clássicos (blocos e Ponte) fora das aulas: o
+ * Python precisa de um contexto de runtime e o Pro de um build, que esta página não tem. Esses
+ * projetos chegam pelo manifesto e são conferidos pela análise do Members.
+ */
+export function challengeProjectEditable(project: unknown): boolean {
+  return (
+    challengeProjectLanguage(project) === 'javascript' &&
+    !(
+      typeof project === 'object' &&
+      project !== null &&
+      (project as { kind?: unknown }).kind === 'pro'
+    )
+  )
+}
+export const CHALLENGE_PROJECT_NOT_EDITABLE =
+  'Este projeto é Python ou Pro. Aqui o Estúdio abre só projetos JavaScript em blocos ou na Ponte: troque o projeto pelo manifesto do desafio. A análise confere os dois tipos.'
+
 /**
  * Troca o tipo do desafio: o número de quadro só no Quadro das Cores, o prêmio padrão do novo tipo
  * e a cor desligada no desafio do dia (ele nunca pinta a ilha).
