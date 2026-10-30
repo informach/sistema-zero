@@ -93,8 +93,8 @@ export function projetoDoQuadroNuvens(quadro: QuadroInicialDasNuvens, pronto: bo
       q.update.push(
         iff(
           bin('>', v('agua'), n(i - 1)),
-          [opacity(`reserva${i}`, 100)],
-          [opacity(`reserva${i}`, 20)],
+          [{ type: 'g2d:setImage', spriteVar: `reserva${i}`, image: 'muda' }],
+          [{ type: 'g2d:setImage', spriteVar: `reserva${i}`, image: 'muda-cinza' }],
         ),
       )
     }
@@ -134,7 +134,11 @@ export function projetoDoQuadroNuvens(quadro: QuadroInicialDasNuvens, pronto: bo
     for (let i = 1; i <= 3; i++) {
       q.image(`planta${i}`, 'muda', 70 + (i - 1) * 200)
       q.update.push(
-        iff(eq(`plantado${i}`, 1), [opacity(`planta${i}`, 100)], [opacity(`planta${i}`, 20)]),
+        iff(
+          eq(`plantado${i}`, 1),
+          [{ type: 'g2d:setImage', spriteVar: `planta${i}`, image: 'muda' }],
+          [{ type: 'g2d:setImage', spriteVar: `planta${i}`, image: 'muda-cinza' }],
+        ),
       )
       body.push(
         iff(eq('escolhido', i), [
@@ -295,7 +299,9 @@ export function desafiosIniciaisDasNuvens(publico: PublicoDoDesafio) {
       tipo: 'quadro-das-cores',
       quadro,
       ordem: quadro * 10,
-      publicar: false,
+      // C01b: os quadros sem lista têm todas as fontes na trilha; a Colheita da lista (5) espera o
+      // ensino de listas e laço, que nas Nuvens é em JavaScript (C02).
+      publicar: quadro <= 4,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,

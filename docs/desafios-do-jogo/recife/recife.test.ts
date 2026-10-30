@@ -59,11 +59,13 @@ test('cada variação mantém o cenário e altera só um evento principal, além
     expect(inicial.assets).toEqual(gabarito.assets)
     expect(semantic(a.start)).toBe(semantic(b.start))
     expect(semantic(a.loops)).toBe(semantic(b.loops))
-    const principais = a.events.filter((s) => s.type !== 'g2d:onKey')
-    const completos = b.events.filter((s) => s.type !== 'g2d:onKey')
+    // O extra é o Enter; Espaço (soltar a bolha) é evento principal desde C01b.
+    const extra = (s: (typeof a.events)[number]) => s.type === 'g2d:onKey' && s.key === 'Enter'
+    const principais = a.events.filter((s) => !extra(s))
+    const completos = b.events.filter((s) => !extra(s))
     expect(principais.length).toBe(completos.length)
     const alterados = principais.filter((s, i) => semantic(s) !== semantic(completos[i]))
     expect(alterados).toHaveLength(1)
-    expect(alterados[0]?.type).toBe(variacao === 'rapida' ? 'g2d:onGroupClick' : 'g2d:onOverlap')
+    expect(alterados[0]?.type).toBe(variacao === 'rapida' ? 'g2d:onKey' : 'g2d:onOverlap')
   }
 })

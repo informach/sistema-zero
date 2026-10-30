@@ -19,8 +19,11 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a convenção dos outros
 pacotes; o quadro deve estar livre quando o pacote for importado. O principal dá cor, as variações
-não. `recompensa.atracao` é `jardim-que-floresce`. Todos os itens usam `publicar: false` após
-C01b1; não houve publicação remota.
+não. `recompensa.atracao` é `jardim-que-floresce`. Revisão C01b de 30/10: sem botões em grupo,
+"e" lógico nem opacidade (só apareciam em cursos extras ou fora da trilha), o Jardim e os quadros
+1 a 4 pedem publicação (`publicar: true`). A Colheita da lista (quadro 5) depende de lista e laço
+em grupo, que nenhum curso em blocos da trilha ensina; nas Nuvens isso vem em JavaScript (C02),
+então ela segue com `publicar: false`, como as três variações. Não houve publicação remota.
 
 ## Cinco quadros complementares (L03)
 
@@ -71,8 +74,9 @@ passo fixo com quatro variáveis: `agua`, `sol`, `tempo` e `crescimento`, mais a
   100, o jardim floresce uma vez e o recado muda. Sem água ou sem sol, a flor espera, sem perder.
 - A flor troca de desenho sozinha: muda abaixo de 40, botão até 100, flor aberta em 100.
 
-No principal, a pessoa completa os dois botões e a simulação ("a cada 1 segundo", um bloco raiz).
-O cenário, a flor, os botões, o placar e a troca de desenho estão prontos. Cada variação começa com
+No principal, a pessoa completa as duas teclas (Espaço ou A rega, seta para cima dá sol) e a
+simulação ("a cada 1 segundo", um bloco raiz), com as duas condições num se dentro do outro.
+O cenário, a flor, o placar e a troca de desenho estão prontos; Enter (+) recomeça no extra. Cada variação começa com
 o jardim funcionando e muda uma regra só:
 
 - Rega forte: Regar guarda 5 de água em vez de 3.
@@ -91,7 +95,8 @@ mudar, somar), se e senão, comparação, "e", "a cada N segundos", clique em gr
 imagem, rótulo e placar. Não há `blocosManuais`, objetos JavaScript, HTML, CSS ou Canvas.
 
 Os SVGs em `projetos.ts` desenham o céu lilás com nuvens e o arco-íris, o canteiro de nuvem, a muda,
-o botão de flor, a flor aberta (pétalas nas cores dos fios da Iriê) e os botões. Não há imagem
+o botão de flor, a flor aberta (pétalas nas cores dos fios da Iriê) e a muda desbotada dos
+quadros (troca de imagem no lugar da opacidade). Não há imagem
 externa, modelo novo ou dependência do Blender.
 
 ## Objetivos

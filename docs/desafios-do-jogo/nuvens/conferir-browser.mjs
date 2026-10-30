@@ -67,13 +67,17 @@ try {
       // O primeiro toque no palco só o ativa: um toque no céu vazio antes de regar.
       await tocar(320, 200)
       await page.waitForTimeout(150)
-      // Um toque por vez, como a mão de uma criança: o jogo lê um clique por quadro.
+      // Espaço/A rega e a seta para cima dá sol (teclas da trilha, C01b), um toque por vez.
+      const input = async (action, key) => {
+        if (mobile) await page.locator(`[data-sz-g2d-action="${action}"]`).tap()
+        else await page.keyboard.press(key)
+      }
       for (let i = 0; i < 4; i++) {
-        await tocar(206, 446)
+        await input('jump', 'Space')
         await page.waitForTimeout(150)
       }
       for (let i = 0; i < 3; i++) {
-        await tocar(434, 446)
+        await input('up', 'ArrowUp')
         await page.waitForTimeout(150)
       }
       assert((await ler(page, 'agua')) >= 10, 'Regar não guardou a água')
@@ -87,7 +91,7 @@ try {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
         'Rolagem horizontal',
       )
-      const filename = `2026-10-29-nuvens-desafio-${nome}.png`
+      const filename = `2026-10-30-nuvens-desafio-${nome}.png`
       await page.screenshot({ path: resolve(out, filename), fullPage: true })
       // Enter recomeça o jardim (o extra do gabarito).
       await page.keyboard.press('Enter')
@@ -101,7 +105,7 @@ try {
       )
       assert.deepEqual(errors, [])
       console.log(
-        `${mobile ? 'Celular emulado, toque' : 'Computador, teclado e mouse'} (${width} x ${height}): regar, dar sol, florescer e recomeçar aprovados; ${filename}`,
+        `${mobile ? 'Celular emulado, toque' : 'Computador, teclado'} (${width} x ${height}): regar, dar sol, florescer e recomeçar aprovados; ${filename}`,
       )
     } finally {
       await context.close()

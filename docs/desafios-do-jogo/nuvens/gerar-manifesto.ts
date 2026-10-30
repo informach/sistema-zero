@@ -11,19 +11,19 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   jardim: {
     titulo: 'Jardim que floresce',
     enunciado:
-      'O jardim do céu da Iriê cresce com água, sol e tempo. Complete os botões e a simulação. Regar guarda três de água e Sol guarda três de sol. A cada segundo, o tempo aumenta um; se houver água e sol, a flor cresce dez e gasta um de água e um de sol. Quando o crescimento chegar a cem, marque o jardim como florido uma vez só e troque o recado. Sem água ou sem sol, a flor espera, sem perder nada.',
+      'O jardim do céu da Iriê cresce com água, sol e tempo. Complete as teclas e a simulação. Espaço (A no toque) guarda três de água e a seta para cima guarda três de sol. A cada segundo, o tempo aumenta um; se houver água e sol, a flor cresce dez e gasta um de água e um de sol. Quando o crescimento chegar a cem, marque o jardim como florido uma vez só e troque o recado. Sem água ou sem sol, a flor espera, sem perder nada.',
     dicas: [
-      'O cenário, a flor, os botões e o placar estão prontos. A flor já troca de desenho conforme o crescimento.',
+      'O cenário, a flor e o placar estão prontos. A flor já troca de desenho conforme o crescimento.',
       'Use as variáveis agua, sol, tempo e crescimento. Some e tire um com o bloco de mudar variável.',
-      'Dentro de a cada 1 segundo, confira as duas condições juntas: agua maior que zero e sol maior que zero.',
+      'Dentro de a cada 1 segundo, confira as duas condições, um se dentro do outro: agua maior que zero e sol maior que zero.',
     ],
   },
   'rega-forte': {
     titulo: 'Jardim que floresce: rega forte',
     enunciado:
-      'O jardim já funciona. Mude apenas o botão Regar: ele passa a guardar cinco de água de uma vez, em vez de três. O sol, o tempo e o crescimento continuam iguais. Regue e veja quanta água sobra depois que o sol acaba.',
+      'O jardim já funciona. Mude apenas a rega na tecla Espaço: ela passa a guardar cinco de água de uma vez, em vez de três. O sol, o tempo e o crescimento continuam iguais. Regue e veja quanta água sobra depois que o sol acaba.',
     dicas: [
-      'Procure o evento do botão Regar.',
+      'Procure o evento da tecla Espaço.',
       'Troque só o número somado em agua.',
       'Com três de sol, a flor gasta três de água: dos cinco, sobram dois.',
     ],
@@ -41,7 +41,7 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   chuva: {
     titulo: 'Jardim que floresce: chuva',
     enunciado:
-      'O jardim já funciona. Faça chover: a cada segundo, antes de a flor crescer, cai um de água no jardim. Com sol, a flor cresce mesmo sem regar. A rega pelo botão continua igual.',
+      'O jardim já funciona. Faça chover: a cada segundo, antes de a flor crescer, cai um de água no jardim. Com sol, a flor cresce mesmo sem regar. A rega pela tecla Espaço continua igual.',
     dicas: [
       'A chuva entra em a cada 1 segundo, antes da condição da água e do sol.',
       'Some um em agua a cada passo.',
@@ -67,7 +67,8 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
           tipo,
           quadro: variacao === 'jardim' ? 6 : null,
           ordem: 60 + index,
-          publicar: false,
+          // C01b: o principal pede publicação (fontes na trilha); as variações ficam como estavam.
+          publicar: variacao === 'jardim',
           conteudo: {
             versao: 1,
             ...textos[variacao],

@@ -48,6 +48,7 @@ const iff = (cond: JSExpr, then: JSStatement[]): JSStatement => ({
   else: [],
 })
 const y = (spriteVar: string): JSExpr => ({ type: 'g2d:spriteY', spriteVar })
+const x = (spriteVar: string): JSExpr => ({ type: 'g2d:spriteX', spriteVar })
 const vel = (spriteVar: string, vx: JSExpr, vy: JSExpr): JSStatement => ({
   type: 'g2d:setVelocity',
   spriteVar,
@@ -55,11 +56,6 @@ const vel = (spriteVar: string, vx: JSExpr, vy: JSExpr): JSStatement => ({
   vy,
 })
 const apply = (spriteVar: string): JSStatement => ({ type: 'g2d:applyVelocity', spriteVar })
-const opacity = (spriteVar: string, percent: number): JSStatement => ({
-  type: 'g2d:setOpacity',
-  spriteVar,
-  percent,
-})
 const image = (
   varName: string,
   image: string,
@@ -109,11 +105,6 @@ const arte: Record<string, string> = {
     32,
     '<g stroke="#5fa9e0" stroke-width="3" stroke-linecap="round"><path d="M16 3v26M4.7 9.5l22.6 13M4.7 22.5l22.6-13"/><path d="M12 6l4 3 4-3M12 26l4-3 4 3"/></g><circle cx="16" cy="16" r="4" fill="#ffffff" stroke="#5fa9e0" stroke-width="2"/>',
   ),
-  botao: svg(
-    172,
-    44,
-    '<rect x="2" y="5" width="168" height="37" rx="13" fill="#2f5d86"/><rect x="2" y="1" width="168" height="37" rx="13" fill="#4f86b6"/>',
-  ),
 }
 export const assetsDoPico: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
   id: `pico-${name}`,
@@ -139,10 +130,10 @@ function recomecar(variacao: Variacao): JSStatement[] {
     ...colocar('pinguim', PICO.inicioX, PICO.inicioY),
     set('noChao', b(false)),
     set('chegou', b(false)),
-    ...(variacao === 'floco' ? [opacity('floco', 100), set('pegouFloco', b(false))] : []),
+    ...(variacao === 'floco' ? [set('pegouFloco', b(false))] : []),
     set('flocos', n(0)),
     set('quedas', n(0)),
-    set('recado', s('Ande com as setas e toque em Pular para passar o buraco.')),
+    set('recado', s('Ande com as setas e pule com Espaço ou A para passar o buraco.')),
   ]
 }
 function pular(forca: number): JSStatement[] {
@@ -154,22 +145,32 @@ function pular(forca: number): JSStatement[] {
     ]),
   ]
 }
-/** Pousar: encostou num gelo vindo de cima, o pinguim fica de pé no topo dele. */
-function pousar(): JSStatement {
-  return {
-    type: 'g2d:onSpriteGroupOverlap',
-    spriteVar: 'pinguim',
-    groupVar: 'gelos',
-    itemName: 'gelo',
-    body: [
-      iff(bin('<', y('pinguim'), bin('-', y('gelo'), n(30))), [
-        vel('pinguim', n(0), bin('-', bin('-', y('gelo'), n(48)), y('pinguim'))),
-        apply('pinguim'),
-        vel('pinguim', n(0), n(0)),
-        set('noChao', b(true)),
+/**
+ * Pousar num gelo (pronto no cenário, C01b): o pinguim dentro da faixa do gelo e chegando ao topo
+ * por cima fica de pé nele. Só comparações de posição e contas da trilha; o contato entre dois
+ * sprites só avisa o começo do encontro e não segura o pinguim em pé, e o grupo com sprites
+ * avulsos só aparece num curso extra. A colisão por eixo em código é matéria do Mestre (Python).
+ */
+function pousarEm(inicio: number, fim: number, topo: number): JSStatement {
+  return iff(bin('<', x('pinguim'), n(fim)), [
+    iff(bin('<', n(inicio - 44), x('pinguim')), [
+      iff(bin('<', n(topo - 48), y('pinguim')), [
+        iff(bin('<', y('pinguim'), n(topo - 30)), [
+          vel('pinguim', n(0), bin('-', n(topo - 48), y('pinguim'))),
+          apply('pinguim'),
+          vel('pinguim', n(0), n(0)),
+          set('noChao', b(true)),
+        ]),
       ]),
-    ],
-  }
+    ]),
+  ])
+}
+function pousar(alto: boolean): JSStatement[] {
+  return [
+    pousarEm(0, PICO.fimDoGelo1, PICO.topoDoGelo),
+    pousarEm(PICO.inicioDoGelo2, 640, PICO.topoDoGelo),
+    ...(alto ? [pousarEm(380, 530, 270)] : []),
+  ]
 }
 
 export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
@@ -178,7 +179,8 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const forca = alto ? (pronto ? PICO.puloAlto : PICO.puloBaixo) : PICO.pulo
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: 640, height: 480, bg: '#dcebf7' },
-    { type: 'g2d:enableClassicControls', mode: 'directions' },
+    // Espaço/A pula e Enter/+ recomeça: teclas da trilha, sem clique em grupo (C01b).
+    { type: 'g2d:enableClassicControls', mode: 'auto' },
     ...['noChao', 'chegou', 'pegouFloco'].map(
       (name): JSStatement => ({ type: 'var', name, value: b(false) }),
     ),
@@ -187,43 +189,20 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     {
       type: 'var',
       name: 'recado',
-      value: s('Ande com as setas e toque em Pular para passar o buraco.'),
+      value: s('Ande com as setas e pule com Espaço ou A para passar o buraco.'),
     },
     image('pinguim', 'pinguim', PICO.inicioX, PICO.inicioY, 44, 48),
     image('gelo1', 'gelo', 0, PICO.topoDoGelo, PICO.fimDoGelo1, 64),
     image('gelo2', 'gelo', PICO.inicioDoGelo2, PICO.topoDoGelo, 640 - PICO.inicioDoGelo2, 64),
-    { type: 'g2d:createGroup', varName: 'gelos' },
-    { type: 'g2d:addToGroup', spriteVar: 'gelo1', groupVar: 'gelos' },
-    { type: 'g2d:addToGroup', spriteVar: 'gelo2', groupVar: 'gelos' },
-    ...(alto
-      ? [
-          image('geloAlto', 'gelo', 380, 270, 150, 24),
-          { type: 'g2d:addToGroup', spriteVar: 'geloAlto', groupVar: 'gelos' } as JSStatement,
-        ]
-      : []),
+    ...(alto ? [image('geloAlto', 'gelo', 380, 270, 150, 24)] : []),
     image('mar', 'mar', 0, PICO.mar, 640, 18),
     image('bandeira', 'bandeira', alto ? 470 : 572, alto ? 190 : 336, 40, 80),
     ...(variacao === 'floco' ? [image('floco', 'floco', 46, 236, 32, 32)] : []),
-    image('pular', 'botao', 448, 80, 172, 44),
-    image('recomecar', 'botao', 448, 132, 172, 44),
-    { type: 'g2d:createGroup', varName: 'botoesPular' },
-    { type: 'g2d:addToGroup', spriteVar: 'pular', groupVar: 'botoesPular' },
-    { type: 'g2d:createGroup', varName: 'botoesRecomecar' },
-    { type: 'g2d:addToGroup', spriteVar: 'recomecar', groupVar: 'botoesRecomecar' },
   ]
   const events: JSStatement[] = [
-    {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesPular',
-      itemName: 'botao',
-      body: basePronta ? pular(forca) : [],
-    },
-    {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesRecomecar',
-      itemName: 'botao',
-      body: recomecar(variacao),
-    },
+    { type: 'g2d:onKey', key: 'Space', body: basePronta ? pular(forca) : [] },
+    // Recomeçar é pronto no cenário (o que era o botão).
+    { type: 'g2d:onKey', key: 'Enter', body: recomecar(variacao) },
     { type: 'g2d:onKey', key: 'ArrowUp', body: pronto ? pular(forca) : [] },
     {
       type: 'g2d:onOverlap',
@@ -263,7 +242,6 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
               ? [
                   iff(bin('===', v('pegouFloco'), b(false)), [
                     set('pegouFloco', b(true)),
-                    opacity('floco', 0),
                     set('flocos', bin('+', v('flocos'), n(1))),
                     set('recado', s('O pinguim pegou o floco de neve.')),
                   ]),
@@ -285,32 +263,32 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
         {
           type: 'g2d:updateEachFrame',
           body: [
+            // Gravidade e pouso prontos; as setas e a borda da tela são da criança no principal.
+            set('noChao', b(false)),
+            { type: 'g2d:applyGravity', spriteVar: 'pinguim' } as JSStatement,
             ...(basePronta
-              ? [
-                  set('noChao', b(false)),
-                  { type: 'g2d:applyGravity', spriteVar: 'pinguim' } as JSStatement,
-                  { type: 'g2d:arrowsX', spriteVar: 'pinguim', speed: PICO.passo } as JSStatement,
-                  apply('pinguim'),
-                  { type: 'g2d:clampToScreen', spriteVar: 'pinguim', ctxVar: 'ctx' } as JSStatement,
-                  pousar(),
-                ]
+              ? [{ type: 'g2d:arrowsX', spriteVar: 'pinguim', speed: PICO.passo } as JSStatement]
               : []),
+            apply('pinguim'),
+            ...(basePronta
+              ? [{ type: 'g2d:clampToScreen', spriteVar: 'pinguim', ctxVar: 'ctx' } as JSStatement]
+              : []),
+            ...pousar(alto),
             { type: 'g2d:clear' },
             { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'pico' },
             label('Fase do Pico Gelado', 18, 32, 25),
-            label('Ande com as setas, pule o buraco e chegue à bandeira.', 18, 61, 16),
+            label('Setas andam, Espaço ou A pula. Chegue à bandeira.', 18, 61, 16),
             draw('mar'),
             draw('gelo1'),
             draw('gelo2'),
             ...(alto ? [draw('geloAlto')] : []),
             draw('bandeira'),
-            ...(variacao === 'floco' ? [draw('floco')] : []),
+            ...(variacao === 'floco'
+              ? [iff(bin('===', v('pegouFloco'), b(false)), [draw('floco')])]
+              : []),
             draw('pinguim'),
             label(v('recado'), 18, 92, 15),
-            draw('pular'),
-            draw('recomecar'),
-            label('Pular', 508, 107, 18, '#ffffff'),
-            label('Recomeçar', 482, 159, 18, '#ffffff'),
+            label('Enter ou +: recomeçar a fase.', 400, 32, 15),
             ...(variacao === 'floco' || variacao === 'quedas'
               ? [
                   {

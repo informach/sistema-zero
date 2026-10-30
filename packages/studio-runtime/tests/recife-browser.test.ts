@@ -59,6 +59,8 @@ nativeTest(
         await writeFile(join(dir, file), source)
       }
       for (const d of manifesto.desafios) {
+        // Os cinco quadros iniciais têm o próprio ensaio (`quadros-recife-browser.test.ts`).
+        if (!d.slug.startsWith('recife-mira-de-bolhas')) continue
         for (const objective of d.conteudo.objetivos)
           expect(isSectionExecutionRule(objective.rule), `${d.slug}/${objective.id}`).toBe(true)
         const scenarios: { name: string; project: Project; ids?: string[]; passes: boolean }[] = [
@@ -113,17 +115,13 @@ nativeTest(
             }),
           )
           wrong('pontua-sem-acertar', ['contar'], (behavior) => {
-            const shot = behavior.events.find(
-              (s) => s.type === 'g2d:onGroupClick' && s.groupVar === 'botoesSoltar',
-            )
-            if (shot?.type !== 'g2d:onGroupClick') throw Error('Botão ausente')
+            const shot = behavior.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
+            if (shot?.type !== 'g2d:onKey') throw Error('Tecla de soltar ausente')
             shot.body.push({ type: 'assign', name: 'pontos', value: { type: 'num', value: 1 } })
           })
           wrong('reinicia-bolha-em-voo', ['soltar'], (behavior) => {
-            const shot = behavior.events.find(
-              (s) => s.type === 'g2d:onGroupClick' && s.groupVar === 'botoesSoltar',
-            )
-            if (shot?.type !== 'g2d:onGroupClick' || shot.body[0]?.type !== 'if')
+            const shot = behavior.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
+            if (shot?.type !== 'g2d:onKey' || shot.body[0]?.type !== 'if')
               throw Error('Guarda ausente')
             shot.body[0].cond = { type: 'bool', value: true }
           })

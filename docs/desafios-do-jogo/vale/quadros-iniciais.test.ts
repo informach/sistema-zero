@@ -52,7 +52,8 @@ test('os cinco quadros são determinísticos, por público, e preservam o laço 
     expect(desafios.map((d) => d.quadro)).toEqual([1, 2, 3, 4, 5])
     for (const d of desafios) {
       expect(d.publico).toBe(publico)
-      expect(d.publicar).toBe(false)
+      // C01b: só os quadros sem lista pedem publicação.
+      expect(d.publicar).toBe(d.quadro !== null && d.quadro >= 3)
       expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
       const temLacoPreparado = d.quadro === 1 || d.quadro === 2
       const loops = (raw: unknown) => {

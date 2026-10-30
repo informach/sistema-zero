@@ -48,7 +48,7 @@ test('os cinco quadros são determinísticos, por público, e só usam o repert�
     expect(desafios.map((d) => d.quadro)).toEqual([1, 2, 3, 4, 5])
     for (const d of desafios) {
       expect(d.publico).toBe(publico)
-      expect(d.publicar).toBe(false)
+      expect(d.publicar).toBe(true)
       expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
       for (const raw of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
         const p = raw as { ir: unknown; blocksState: unknown }

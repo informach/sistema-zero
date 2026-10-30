@@ -64,15 +64,12 @@ try {
           await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
         else await page.keyboard.up('ArrowRight')
       }
-      const canvas = await page.locator('canvas[data-sz-game-2d-stage]').boundingBox()
-      assert(canvas)
-      const click = async (x, y) => {
-        const cx = canvas.x + (x / 640) * canvas.width
-        const cy = canvas.y + (y / 480) * canvas.height
-        if (mobile) await page.touchscreen.tap(cx, cy)
-        else await page.mouse.click(cx, cy)
+      // Espaço/A solta a bolha e Enter/+ recomeça (teclas da trilha, sem clique em botão).
+      const input = async (action, key) => {
+        if (mobile) await page.locator(`[data-sz-g2d-action="${action}"]`).tap()
+        else await page.keyboard.press(key)
       }
-      await click(286, 446)
+      await input('jump', 'Space')
       await page.waitForFunction(
         (scope) => {
           const reader = globalThis[scope]
@@ -85,9 +82,9 @@ try {
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
         'Rolagem horizontal',
       )
-      const filename = `2026-10-29-recife-desafio-${nome}.png`
+      const filename = `2026-10-30-recife-desafio-${nome}.png`
       await page.screenshot({ path: resolve(out, filename), fullPage: true })
-      await click(482, 446)
+      await input('start', 'Enter')
       await page.waitForFunction((scope) => {
         const reader = globalThis[scope]
         return reader?.get('pontos')?.v === 0 && reader.get('preso')?.v === false

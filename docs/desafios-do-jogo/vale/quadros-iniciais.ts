@@ -86,7 +86,8 @@ export function projetoDoQuadroVale(quadro: QuadroInicialDoVale, pronto: boolean
   })
   for (let i = 1; i <= 3; i++) {
     q.image(`ninho${i}`, 'ninho', 70 + (i - 1) * 200)
-    q.start.push(opacity(`ninho${i}`, 100))
+    // Só os quadros de lista (1 e 2) conferem a opacidade dos ninhos; os outros não a usam (C01b).
+    if (quadro <= 2) q.start.push(opacity(`ninho${i}`, 100))
   }
   if (quadro === 1) {
     q.vars({ contados: 0 })
@@ -146,16 +147,13 @@ export function projetoDoQuadroVale(quadro: QuadroInicialDoVale, pronto: boolean
       key('Space', pronto ? [iff(eq('emOnda', 0), [set('emOnda', 1), inc('ondas')])] : []),
     )
     q.update.push(
-      iff(
-        eq('emOnda', 1),
-        [
-          opacity('cinza', 100),
-          inc('faltam', -1),
-          iff(eq('faltam', 0), [set('emOnda', 0), set('faltam', 90)]),
-        ],
-        [opacity('cinza', 0)],
-      ),
+      iff(eq('emOnda', 1), [
+        inc('faltam', -1),
+        iff(eq('faltam', 0), [set('emOnda', 0), set('faltam', 90)]),
+      ]),
     )
+    // A cinza só aparece durante a onda (desenho condicionado, sem opacidade, C01b).
+    q.soDesenharSe('cinza', eq('emOnda', 1))
     q.placar('Ondas:', 'ondas')
   } else {
     q.vars({ restantes: 3, fechada: 0, rodadas: 0 })
@@ -275,7 +273,9 @@ export function desafiosIniciaisDoVale(publico: PublicoDoDesafio) {
       tipo: 'quadro-das-cores',
       quadro,
       ordem: quadro * 10,
-      publicar: false,
+      // C01b: os quadros sem lista têm todas as fontes na trilha; os de lista (1 e 2) esperam o
+      // ensino de listas e laço, que nos postos do Vale e das Nuvens é em JavaScript (C02).
+      publicar: quadro >= 3,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
