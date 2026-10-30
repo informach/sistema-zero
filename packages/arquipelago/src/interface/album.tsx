@@ -10,9 +10,19 @@ import {
   type PercursoDoAlbum,
   tituloDaSecao,
 } from '../sistemas/album'
+import { type LembrancaDasIlhas, NOME_DO_GRUPO } from '../sistemas/colecoes-das-ilhas'
 import { Bicho, Receita } from './diario'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
 import { MINIATURA_DA_PRAIA } from './miniaturas-da-praia'
+import { MINIATURA_DAS_ILHAS } from './miniaturas-das-ilhas'
+
+/** O que cada coleção das ilhas pede, dito no topo da seção. */
+const EXPLICA_DO_GRUPO = {
+  notas: 'O festival perdeu quatro notas na neve do Pico Gelado.',
+  cristais: 'A caverna de cristal guarda quatro pedras que brilham.',
+  estrelas: 'À noite, quatro estrelas caem na Ilha das Nuvens.',
+} as const
+
 import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 /** O valor de `painelAberto` do álbum. */
@@ -179,6 +189,32 @@ export function Album() {
                 <img
                   className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
                   src={MINIATURA_DA_PRAIA[p.id]}
+                  alt=""
+                  draggable={false}
+                />
+                <div className="arq-quadro-corpo">
+                  <b>{p.nome}</b>
+                  <span className="arq-quadro-estado">
+                    {p.encontrado ? 'Descoberta registrada.' : p.dica}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </Secao>
+        ))}
+        {(['notas', 'cristais', 'estrelas'] as const).map((grupo) => (
+          <Secao
+            key={grupo}
+            id={grupo}
+            nome={NOME_DO_GRUPO[grupo]}
+            conta={a[grupo].conta}
+            explica={EXPLICA_DO_GRUPO[grupo]}
+          >
+            {a[grupo].itens.map((p) => (
+              <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+                <img
+                  className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                  src={MINIATURA_DAS_ILHAS[p.id as LembrancaDasIlhas]}
                   alt=""
                   draggable={false}
                 />

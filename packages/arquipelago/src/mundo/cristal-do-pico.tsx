@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import type { Object3D } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import type { Ponto } from '../sistemas/cipo'
+import { falaDaColecaoCompleta, grupoCompleto } from '../sistemas/colecoes-das-ilhas'
 import { CORPO } from '../sistemas/corpo'
 import {
   alcancaOCristalRaro,
@@ -55,7 +56,14 @@ export function CristalDoPico({
       const s = loja.getState()
       if (temOCristalRaro(s.salvamento)) return
       s.mudar((v) => pegarOCristalRaro(v))
-      s.dizer(FALA_DO_CRISTAL_RARO)
+      const depois = loja.getState().salvamento
+      if (!temOCristalRaro(depois)) return
+      // O rosa também é uma das quatro peças da coleção de cristais (30/10/2026).
+      s.dizer(
+        grupoCompleto(depois, 'cristais')
+          ? `${FALA_DO_CRISTAL_RARO} ${falaDaColecaoCompleta('cristais')}`
+          : FALA_DO_CRISTAL_RARO,
+      )
     },
   })
   return null

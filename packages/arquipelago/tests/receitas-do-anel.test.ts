@@ -22,15 +22,19 @@ const pares: readonly [MoradorDoAnel, string, Record<string, number>][] = [
 ]
 
 test('catálogo inteiro a 999 cabe junto da obra, amizades e rotinas no teto', () => {
-  const inventario = Object.fromEntries(Object.keys(ITENS).map((id) => [id, 999]))
+  // Lembranças e equipamentos chegam uma vez só (registrar e entregar não somam): ficam em 1.
+  const inventario = Object.fromEntries(
+    Object.values(ITENS).map((i) => [i.id, i.lembranca || i.equipamento ? 1 : 999]),
+  )
   const tamanhos = cenariosDeSalvamentoCheio(inventario).map((s) => {
     const completo = { ...s, ilhasVisitadas: 255 }
     expect(migrarSalvamento(completo)?.inventario).toEqual(inventario)
     return new TextEncoder().encode(JSON.stringify(completo)).byteLength
   })
   expect(Math.max(...tamanhos)).toBeLessThan(SALVAMENTO_MAX_BYTES)
-  // V19 no teto (chaves, segredos, mapa e percursos novos) com o catálogo a 999: 63.918 bytes.
-  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(1500)
+  // V19 no teto com o catálogo a 999, já com as coleções do Pico e das Nuvens e as duas iscas
+  // (30/10/2026): 64.128 bytes.
+  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(1300)
 })
 
 for (const [quem, receitaId, cesta] of pares) {

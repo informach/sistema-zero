@@ -35,7 +35,7 @@ describe('coleções da praia', () => {
     const s = LEMBRANCAS_DA_PRAIA.reduce((v, p) => registrarNaPraia(v, p.id), inicial())
     const antes = structuredClone(s)
     const resumo = itensDaBarra(s.inventario)
-    expect(resumo.descobertasNaPraia).toBe(11)
+    expect(resumo.descobertas).toBe(11)
     expect(resumo.itens.map((p) => p.item.id)).toEqual([
       'semente-alface',
       'semente-tomate',
@@ -165,12 +165,12 @@ describe('coleções da praia', () => {
 describe('pesca tranquila', () => {
   test('espera, permite recolher e não entrega duas vezes pela mesma tentativa', () => {
     const p = criarPesca()
-    expect(agirNaPesca(p)).toBe('lancou')
-    expect(agirNaPesca(p)).toBe('aguardar')
+    expect(agirNaPesca(p).acao).toBe('lancou')
+    expect(agirNaPesca(p).acao).toBe('aguardar')
     for (let i = 0; i < 31; i++) passoDaPesca(p, 0.1, false, true)
     expect(p.fase).toBe('pronta')
-    expect(agirNaPesca(p)).toBe('recolheu')
-    expect(agirNaPesca(p)).toBe('lancou')
+    expect(agirNaPesca(p).acao).toBe('recolheu')
+    expect(agirNaPesca(p).acao).toBe('lancou')
   })
 
   test('pausa congela, sair cancela e perder a janela permite tentar de novo', () => {
@@ -180,7 +180,7 @@ describe('pesca tranquila', () => {
     expect(p.tempo).toBe(0)
     for (let i = 0; i < 81; i++) passoDaPesca(p, 0.1, false, true)
     expect(p.fase).toBe('passou')
-    expect(agirNaPesca(p)).toBe('lancou')
+    expect(agirNaPesca(p).acao).toBe('lancou')
     passoDaPesca(p, 0.1, false, false)
     expect(p).toEqual(criarPesca())
   })

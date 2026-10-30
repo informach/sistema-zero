@@ -7,6 +7,7 @@ import { BancosDaVila } from './bancos-da-vila'
 import { BandaDoPico } from './banda-do-pico'
 import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
+import { ColecoesDaIlha } from './colecoes-das-ilhas'
 import { CorrenteDoPico } from './corrente-de-ar'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import { CristalDoPico } from './cristal-do-pico'
@@ -64,6 +65,7 @@ export function PicoVivo({
   return (
     <group ref={pecas} visible={false}>
       <BorroesDaIlha ilha="pico" ancoras={lugaresDosLumis} meio={meio} />
+      <ColecoesDaIlha ilha="pico" meio={meio} giro={giro} />
       <ComReserva reserva={null}>
         <Floco modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>

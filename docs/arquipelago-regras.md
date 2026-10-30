@@ -3861,3 +3861,36 @@ começo fazendo, uma coisa por vez. Proposta aprovada no canvas "Primeiros passo
 - **Uma de cada vez,** e nunca com os primeiros passos andando. Ficam no menu, em "Dicas que você
   já viu", para ler de novo. "Desligar as dicas" no cartão (com confirmação) e em Conforto e
   controles, onde religa.
+
+## Coleções do Pico e das Nuvens (30/10/2026)
+
+Doze peças novas no álbum, em três grupos de quatro. Cada peça se pega uma vez, com E ou Usar,
+e vai para a mochila como lembrança (quantidade 1, igual às conchas). Não se come, não se dá de
+presente e não ocupa espaço na barra: as lembranças de todas as coleções viram um botão só, que
+abre o álbum. Nada novo no salvamento.
+
+- **Notas musicais do Pico:** semínima perto do lago congelado, colcheia do lado da caverna, duas
+  colcheias perto do iglu e a clave de sol no alto da parede de gelo (chega-se pelo vento, com o
+  planador). As notas flutuam girando devagar; com menos movimento, ficam paradas.
+- **Cristais do Pico:** três no chão da caverna de cristal (ponta de gelo azul, ametista e geodo
+  verde) e o cristal rosa, o de sempre, no alto das pedras do fundo.
+- **Estrelas das Nuvens:** quatro estrelas caídas que só aparecem, e só se pegam, à noite.
+
+Quando a última peça de um grupo entra, o Zappy diz "Coleção completa". Onde mudar: lugares e
+textos em `sistemas/colecoes-das-ilhas.ts` (os lugares são do referencial do GLB da ilha e o teste
+`colecoes-das-ilhas.test.ts` confere chão, caminho a pé e distância de 2 m dos outros interativos).
+
+## Iscas da pesca (30/10/2026)
+
+Duas iscas ajudam a pescar, sem sorte e sem perda:
+
+| Isca | O que muda | De graça | Na feira |
+|---|---|---|---|
+| Minhoca | o peixe chega em 1 s (sem isca, 3 s) | latinha no canto da horta, do lado do cata-vento | 2 moedas |
+| Isca de penas | 10 s para recolher (sem isca, 5 s) | no tampo do píer, mais perto da praia | 2 moedas |
+
+A de graça só aparece quando a mochila não tem nenhuma daquele tipo. A criança escolhe a isca pela
+mochila ("Usar a minhoca na pesca"); o recado do píer passa a dizer "Lançar a linha com a minhoca".
+A isca só é gasta quando o peixe vem: perder a janela, sair do píer ou pausar não gasta nada.
+Trocar de isca com a linha na água não muda o lançamento em curso. Iscas não viram presente.
+Onde mudar: `PESCA_COM_ISCA` em `sistemas/iscas.ts`; preço em `INSUMOS` dos contratos.

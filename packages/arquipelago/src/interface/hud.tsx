@@ -23,6 +23,7 @@ import {
   progressoDoQuadro,
   teclaDoAtalho,
 } from '../sistemas/hud'
+import { ehIsca, falaDaIscaEscolhida, iscaValendo, NOME_NA_FALA } from '../sistemas/iscas'
 import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO, podeEntrarNaFoto } from '../sistemas/modo-foto'
@@ -324,6 +325,7 @@ function useLugaresDaMochila(): LugarDaMochila[] {
   const inv = useEstado((s) => s.salvamento.inventario)
   const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
+  const isca = useEstado((s) => iscaValendo(s.isca, s.salvamento.inventario))
   return useMemo(() => {
     const resumo = itensDaBarra(inv)
     const lugares = resumo.itens.map(({ item, qtd }): LugarDaMochila => {
@@ -362,6 +364,27 @@ function useLugaresDaMochila(): LugarDaMochila[] {
           },
         }
       }
+      if (ehIsca(item.id)) {
+        const escolhida = isca === item.id
+        const nome = escolhida
+          ? `Tirar ${NOME_NA_FALA[item.id]} do anzol`
+          : `Usar ${NOME_NA_FALA[item.id]} na pesca`
+        const id = item.id
+        return {
+          id,
+          emoji: item.emoji,
+          rotulo: `${nome} (${qtd})`,
+          titulo: nome,
+          qtd,
+          pressionado: escolhida,
+          agir: () => {
+            const s = loja.getState()
+            const nova = escolhida ? null : id
+            s.escolherIsca(nova)
+            s.dizer(falaDaIscaEscolhida(nova))
+          },
+        }
+      }
       if (item.id === ID_DA_LANTERNA) {
         const nome = lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'
         return {
@@ -396,17 +419,17 @@ function useLugaresDaMochila(): LugarDaMochila[] {
         agir: null,
       }
     })
-    if (resumo.descobertasNaPraia > 0)
+    if (resumo.descobertas > 0)
       lugares.push({
-        id: 'colecoes-da-praia',
+        id: 'colecoes',
         emoji: '🐚',
-        rotulo: 'Abrir coleções da praia',
-        titulo: `Coleções da praia: ${resumo.descobertasNaPraia} de ${resumo.totalNaPraia} descobertas`,
+        rotulo: 'Abrir o álbum de coleções',
+        titulo: `Coleções: ${resumo.descobertas} de ${resumo.totalDeDescobertas} descobertas`,
         qtd: null,
         agir: () => loja.getState().abrirPainel(PAINEL_DO_ALBUM),
       })
     return lugares
-  }, [inv, patins, lanterna, loja])
+  }, [inv, patins, lanterna, isca, loja])
 }
 
 /**
@@ -449,7 +472,11 @@ function Mochila() {
             aria-label={l.rotulo}
             aria-pressed={l.pressionado}
             aria-keyshortcuts={tecla ? String(tecla) : undefined}
-            onClick={l.agir}
+            onClick={(e) => {
+              // Com o botão focado o teclado não anda nem usa (`controles/controle.ts`).
+              e.currentTarget.blur()
+              l.agir?.()
+            }}
           >
             {tecla ? (
               <span className="arq-item-tecla" aria-hidden="true">

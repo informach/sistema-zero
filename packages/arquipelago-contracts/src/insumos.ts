@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { REVISAO_MAXIMA, SalvamentoGuardadoSchema } from './api'
 import { SALVAMENTO_MAX_BYTES, type Salvamento } from './salvamento'
 
-/** Apenas itens já usados pela horta e pelas receitas. Fonte gratuita continua disponível. */
+/** Itens já usados pela horta, pelas receitas e pela pesca. Fonte gratuita continua disponível. */
 export const INSUMOS = {
   'semente-alface': { preco: 2, fonte: 'horta' },
   'semente-tomate': { preco: 2, fonte: 'horta' },
@@ -15,6 +15,9 @@ export const INSUMOS = {
   cacau: { preco: 3, fonte: 'moradores' },
   'leite-de-coco': { preco: 3, fonte: 'moradores' },
   'polpa-de-acai': { preco: 3, fonte: 'moradores' },
+  // As iscas da pesca (30/10/2026): a de graça aparece na horta e no píer quando a mochila não tem.
+  'isca-minhoca': { preco: 2, fonte: 'praia' },
+  'isca-pena': { preco: 2, fonte: 'praia' },
 } as const
 export type Insumo = keyof typeof INSUMOS
 export const VERSAO_DOS_INSUMOS = 1 as const

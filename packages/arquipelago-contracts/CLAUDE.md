@@ -52,7 +52,7 @@ comandos antigos quando mudar a economia; versionar a regra. O prêmio financeir
 
 ## Insumos V1 (L07, 30/10/2026)
 
-`insumos.ts` contém onze sementes/ingredientes existentes, preço de duas ou três moedas e
+`insumos.ts` contém onze sementes/ingredientes e duas iscas (30/10/2026), de duas ou três moedas, e
 compra de uma a dez unidades. Comando estrito com UUID e revisão confirmada. Não recebe preço,
 público ou identidade do navegador. `prepararEntregaDeInsumos` preserva a entrada e só aceita
 entrega inteira, até 999 por item e 65.536 bytes UTF-8. Resultado valida preço, revisão e saldo

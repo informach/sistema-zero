@@ -6,6 +6,7 @@ import { PERCURSO_DOS_SALTOS, type PontosDoPercurso } from '../sistemas/percurso
 import { BalaoDasNuvens } from './balao-das-nuvens'
 import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
+import { ColecoesDaIlha } from './colecoes-das-ilhas'
 import { ConstelacoesDasNuvens } from './constelacoes-das-nuvens'
 import { CorridaDeBalao } from './corrida-de-balao'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
@@ -66,6 +67,7 @@ export function NuvensVivo({
   return (
     <group ref={pecas} visible={false}>
       <BorroesDaIlha ilha="nuvens" ancoras={lugaresDosLumis} meio={meio} />
+      <ColecoesDaIlha ilha="nuvens" meio={meio} giro={giro} />
       <ComReserva reserva={null}>
         <Irie modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>

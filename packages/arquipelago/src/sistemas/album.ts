@@ -13,6 +13,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
 import { colecaoDaPraia } from './colecoes-da-praia'
+import { colecaoDaIlha } from './colecoes-das-ilhas'
 import { rotuloDaAparencia } from './construcao/galeria'
 import {
   colecaoDeReceitas,
@@ -211,6 +212,9 @@ export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiD
 export function albumDoSalvamento(s: Salvamento) {
   const conchas = colecaoDaPraia(s, 'conchas')
   const peixes = colecaoDaPraia(s, 'peixes')
+  const notas = colecaoDaIlha(s, 'notas')
+  const cristais = colecaoDaIlha(s, 'cristais')
+  const estrelas = colecaoDaIlha(s, 'estrelas')
   const achados = (Object.keys(ACHADOS_DO_RECIFE) as AchadoDoRecife[]).map((id) => ({
     id,
     nome: ACHADOS_DO_RECIFE[id].nome,
@@ -225,6 +229,15 @@ export function albumDoSalvamento(s: Salvamento) {
     peixes: {
       conta: contar(peixes.filter((p) => p.encontrado).length, peixes.length),
       itens: peixes,
+    },
+    notas: { conta: contar(notas.filter((p) => p.encontrado).length, notas.length), itens: notas },
+    cristais: {
+      conta: contar(cristais.filter((p) => p.encontrado).length, cristais.length),
+      itens: cristais,
+    },
+    estrelas: {
+      conta: contar(estrelas.filter((p) => p.encontrado).length, estrelas.length),
+      itens: estrelas,
     },
     recife: {
       conta: contar(achados.filter((a) => a.achado).length, achados.length),

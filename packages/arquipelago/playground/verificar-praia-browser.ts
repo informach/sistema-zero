@@ -137,13 +137,13 @@ try {
     await page.screenshot({ path: path.join(prints, `${tipo}-praia.png`) })
     if (somenteVisual) {
       assert.equal(await page.locator('.arq-inventario .arq-item').count(), 4)
-      await page.getByRole('button', { name: 'Abrir coleções da praia', exact: true }).waitFor()
+      await page.getByRole('button', { name: 'Abrir o álbum de coleções', exact: true }).waitFor()
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
       )
       assert.deepEqual(erros, [])
-      const botao = page.getByRole('button', { name: 'Abrir coleções da praia', exact: true })
+      const botao = page.getByRole('button', { name: 'Abrir o álbum de coleções', exact: true })
       if (celular) await botao.tap()
       else await botao.click()
       await esperarMiniaturas(page)
@@ -180,7 +180,7 @@ try {
     await page.screenshot({ path: path.join(prints, `${tipo}-pesca.png`) })
     assert.equal(await page.locator('.arq-inventario .arq-item').count(), 4)
     console.log(`PASS ${tipo}: pausa, janela perdida e cinco peixes`)
-    const abrirAlbum = page.getByRole('button', { name: 'Abrir coleções da praia', exact: true })
+    const abrirAlbum = page.getByRole('button', { name: 'Abrir o álbum de coleções', exact: true })
     if (celular) await abrirAlbum.tap()
     else await abrirAlbum.click()
     await page

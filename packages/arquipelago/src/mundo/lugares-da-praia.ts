@@ -1,11 +1,30 @@
 import { ALTURA_DO_PIER } from './colisao-da-ilha-central'
-import { PIER } from './medidas'
+import { alturaDaIlha, PIER } from './medidas'
 
 /** Entre estacas, oposto ao embarque; o tampo tem 6 cm acima do centro do colisor. */
 export const PONTO_DA_PESCA = {
   x: PIER.x - 0.45,
   y: ALTURA_DO_PIER + 0.06,
   z: PIER.z + 4.7,
+} as const
+
+/**
+ * A pena de graça (`sistemas/iscas.ts`): no tampo do píer, mais perto da praia que o ponto da pesca,
+ * para os dois recados não disputarem o E / Usar. Escala 3 (a pena tem 16 cm na arte).
+ */
+export const LUGAR_DA_PENA = {
+  x: PIER.x + 0.45,
+  y: ALTURA_DO_PIER + 0.06,
+  z: PIER.z + 2.2,
+  escala: 3,
+} as const
+
+/** A latinha de minhocas de graça, no canto da horta do lado do cata-vento, na grama livre. */
+export const LUGAR_DA_MINHOCA = {
+  x: 12.8,
+  y: alturaDaIlha(12.8, -1.3),
+  z: -1.3,
+  escala: 3,
 } as const
 
 /**

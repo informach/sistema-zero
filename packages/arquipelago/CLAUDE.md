@@ -28,6 +28,26 @@ O ponto do píer é compartilhado em `mundo/lugares-da-praia.ts`, longe do embar
 `tests/colecoes-da-praia.test.ts` confere catálogo, GLBs/ícones, espaço do corpo e save cheio.
 `playground/verificar-praia-browser.ts` usa modelos reais e plataforma falsa, sem dados remotos.
 
+## Coleções do Pico e das Nuvens e iscas da pesca (30/10/2026)
+
+`sistemas/colecoes-das-ilhas.ts`: quatro notas e quatro cristais do Pico e quatro estrelas das
+Nuvens, lembranças de quantidade 1 como as da praia (`registrarNaIlha`), sem campo novo. Os lugares
+são do referencial do GLB da ilha; `mundo/colecoes-das-ilhas.tsx` (montado pelo `PicoVivo` e pelo
+`NuvensVivo`) leva ao mundo por `paraOMundo`. O cristal rosa não tem lugar: é o do pedestal
+(`cristal-do-pico.tsx`), que agora também anuncia a coleção completa. Estrelas só à noite (o
+estado troca só na virada, não a cada quadro). `ITENS[*].colecao` vale `praia`, `pico` ou `nuvens`,
+e `itensDaBarra` junta todas as lembranças num botão só ("Abrir o álbum de coleções").
+`tests/colecoes-das-ilhas.test.ts` confere cada lugar contra os colisores reais: chão livre,
+caminho a pé da chegada (na caverna, da boca), a clave no tampo `col-topo-parede-*` e 2 m dos
+outros interativos. Ponto novo precisa passar nesse teste antes de entrar.
+
+`sistemas/iscas.ts`: minhoca (espera 1 s) e pena (janela 10 s). `EstadoDaPesca` guarda a `regra`
+e a `isca` do lançamento; `agirNaPesca` devolve a isca só ao recolher, e é aí que o mundo a gasta.
+`loja.isca` é transitório (vale só com ela na mochila, `iscaValendo`). A isca de graça
+(`LUGAR_DA_MINHOCA`, `LUGAR_DA_PENA` em `mundo/lugares-da-praia.ts`) aparece só com a mochila sem
+nenhuma. As duas entraram nos `INSUMOS` dos contratos (fonte `praia`). Prova no navegador:
+`playground/verificar-colecoes-e-iscas-browser.ts` (`ARQUIPELAGO_PARTE=pico|nuvens|iscas`).
+
 ## Orientação no final do Farol (30/10/2026, A04)
 
 `Hud` usa o estado do final e do corte para suspender Agora, rotina, mochila e primeiros
@@ -174,7 +194,7 @@ acima de 65.536 bytes sem consumir ingredientes. Pratos prontos não expiram nem
 
 ## Compra de insumos (L07, 30/10/2026)
 
-A feira oferece onze sementes/ingredientes do catálogo V1 compartilhado, uma a dez unidades.
+A feira oferece onze sementes/ingredientes e as duas iscas do catálogo V1 compartilhado, uma a dez unidades.
 O painel informa quantidade, preço total e fontes gratuitas, com confirmação e cancelamento.
 `FilaDeSalvamento` guarda a base e o comando UUID no mesmo diário IndexedDB, fora de V18,
 antes de chamar o serviço. O estado `confirmando` pausa o mundo e permite retomar na proteção do
