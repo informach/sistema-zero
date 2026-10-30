@@ -18,6 +18,17 @@ usar Poderes escolhidos; quem ainda não tem o bloco vê onde aprender. A regra 
 para importar e reativar. Reativar confere a versão publicada; editar o rascunho não altera
 essa versão. Conquistas anteriores continuam válidas. Nada muda na promoção da Jornada.
 
+Limite atual da derivação: o Members exige os tipos acrescentados ao inicial, sem molduras.
+A conferência de publicação trabalha sobre essa lista e os ajustes editoriais existentes.
+Um tipo já presente pode ganhar uma condição ou ação nova; por isso, essa lista sozinha não
+prova todo o repertório pedagógico. O inventário local considera também o apoio preparado,
+e o fechamento do C01 exige rever essa distinção.
+
+No C01b2a, os seis quadros do Bosque, Pedras e Placar passaram a usar apenas fontes locais
+da trilha. A corrida começa por Enter ou + no controle de toque. No extra, as setas escolhem
+o bicho antes da largada e Espaço/A o movimenta. Noite continua opcional, com opacidade de
+Cadê Todo Mundo. Nenhuma concessão de bloco ou publicação remota foi feita.
+
 Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.

@@ -77,9 +77,9 @@ variação não copia regras: o mesmo evento de toque e o mesmo laço atendem ao
 
 O Vale abre em Arquiteto (`architect`, posição 6), perfil `intermediario-3d`. O pacote usa
 somente Jogo 2D e lógica até `intermediario-2d`, sem HTML, CSS, Canvas ou código livre.
-A preparação da lista vem no inicial. A prova antiga dos tipos acrescentados é parcial: o
-Members deriva todos os tipos do gabarito. A cobertura integral e as lacunas aparecem no
-inventário C01b1. Não há liberação manual nem prova de que o laço preparado foi aprendido.
+A preparação da lista vem no inicial. O Members deriva os tipos acrescentados ao inicial,
+excluindo as molduras. Essa régua de acesso é diferente da cobertura pedagógica integral
+do inventário C01b1. Não há liberação manual nem prova de que o laço preparado foi aprendido.
 
 SVGs embutidos desenham o vulcão, cinza, ninhos com ovos, folhas e botões. Nenhum arquivo
 externo ou Blender. Palco de 640 × 480; ninhos 96 × 96; a cinza começa em y 140 e termina

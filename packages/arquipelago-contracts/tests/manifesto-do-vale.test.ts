@@ -82,8 +82,8 @@ test('os blocos a acrescentar já aparecem nas listas locais e toda arte é embu
       })
       expect(JSON.stringify(p).length).toBeLessThanOrEqual(LIMITES_DO_DESAFIO.projetoCaracteres)
       const usados = [...new Set(tipos(p.blocksState))]
-      // Esta prova confere só os tipos novos, não a publicação. O Members deriva todos os
-      // tipos do gabarito. A cobertura integral e suas lacunas estão em repertorio-local.test.ts.
+      // O Members deriva tipos novos, excluindo os do inicial e as molduras. Essa prova de
+      // repertório não comprova aprendizagem do apoio pronto. O inventário confere as fontes integrais.
       const iniciais = new Set(
         tipos((d.conteudo.projetoInicial as { blocksState: unknown }).blocksState),
       )

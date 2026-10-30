@@ -72,7 +72,10 @@ O [inventário C01b1](repertorio-local.md), gerado de todos os arquivos, identif
 das 54 atividades e seus dois públicos, objetivos, linguagem, apoio pronto e fontes por
 bloco. A [versão estruturada](repertorio-local.json) distingue fontes da trilha e opcionais.
 As exceções de lista preparada não comprovam construir a lista ou o laço. Comparar apenas
-tipos novos não equivale à análise do Members, que deriva o gabarito inteiro.
+tipos novos é a regra atual do Members para derivar requisitos, excluindo molduras e tipos
+presentes no inicial. Isso não comprova que alterar uma regra já pronta foi ensinado.
+O inventário é mais abrangente: mostra as fontes de todos os tipos, sem afirmar que todos
+sejam bloqueios de acesso. A revisão pedagógica também observa as mudanças de comportamento.
 
 Todos os itens agora usam `publicar: false`. Isso retira 24 pedidos automáticos Kids antes
 da conferência de fontes reais, sem alterar projetos, objetivos, recompensas ou publicações
