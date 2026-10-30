@@ -33,6 +33,37 @@ const plataforma = () =>
     voltarPara: '/',
   })
 
+test('as três portas de visita adulta são exatas e o host Kids recusa antes da rede', async () => {
+  const caminhos = [
+    '/visitas-adultas/convite',
+    '/visitas-adultas/abrir',
+    '/visitas-adultas/conferir',
+  ]
+  const pedidos = servir({
+    'POST /api/arquipelago/visitas-adultas/abrir': { status: 200, body: { ok: true } },
+  })
+  for (const c of caminhos) {
+    expect(caminhoDoJogo(c)).toBe(true)
+    expect((await plataforma().servico.buscar(c)).status).toBe(404)
+  }
+  expect(pedidos).toHaveLength(0)
+  expect(caminhoDoJogo('/visitas-adultas/abrir/codigo')).toBe(false)
+  const adulta = criarPlataformaDoArquipelago({
+    publico: 'adulto',
+    perfil: { id: 'a', primeiroNome: 'Pessoa' },
+    voltarPara: '/',
+  })
+  expect(
+    (
+      await adulta.servico.buscar(caminhos[1]!, {
+        metodo: 'POST',
+        corpo: { codigo: 'a'.repeat(32) },
+      })
+    ).status,
+  ).toBe(200)
+  expect(pedidos[0]?.method).toBe('POST')
+})
+
 test('trajetos usam somente os percursos conhecidos e a leitura do irmão fica no Kids', async () => {
   const id = '11111111-1111-4111-8111-111111111111'
   const caminho = `/irmaos/${id}/fantasmas/bosque-copas`

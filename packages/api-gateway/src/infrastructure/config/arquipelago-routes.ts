@@ -47,6 +47,22 @@ export function arquipelagoGateway(opts: {
       retry: { maxRetries: 0, baseDelayMs: 50, maxDelayMs: 1_000 },
     },
     routes: [
+      {
+        ...jogador,
+        id: 'arquipelago-convite-adulto',
+        pathPattern: '/arquipelago/visitas-adultas/convite',
+        methods: ['GET', 'POST', 'DELETE'],
+        maxBodyBytes: 1024,
+        rateLimit: { max: 12, windowMs: 60_000, by: 'principal' },
+      },
+      ...['abrir', 'conferir'].map<Route>((acao) => ({
+        ...jogador,
+        id: `arquipelago-visita-adulta-${acao}`,
+        pathPattern: `/arquipelago/visitas-adultas/${acao}`,
+        methods: ['POST'],
+        maxBodyBytes: 1024,
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      })),
       ...[
         '/arquipelago/minijogos',
         '/arquipelago/minijogos/:id',

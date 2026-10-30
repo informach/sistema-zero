@@ -11,6 +11,32 @@ type Resposta = { status: number; body: unknown; retryAfter?: string }
 const PERFIL = '11111111-1111-4111-8111-111111111111'
 const IRMAO = '33333333-3333-4333-8333-333333333333'
 
+test('convites adultos repassam somente os métodos previstos e preservam privacidade no erro local', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { versao: 1, ativo: false } })
+  const post = (corpo: unknown) =>
+    new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) })
+  const respostas = [
+    await routes.arquipelagoConviteAdulto.GET(),
+    await routes.arquipelagoConviteAdulto.POST(post({})),
+    await routes.arquipelagoConviteAdulto.DELETE(),
+    await routes.arquipelagoVisitaAdulta.POST(post({ codigo: 'a'.repeat(32) })),
+    await routes.arquipelagoConferirVisitaAdulta.POST(post({ codigo: 'a'.repeat(32) })),
+  ]
+  for (const r of respostas) expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.map((c) => c.metodo)).toEqual(['GET', 'POST', 'DELETE', 'POST', 'POST'])
+  expect(chamadas.map((c) => c.caminho)).toEqual([
+    '/arquipelago/visitas-adultas/convite',
+    '/arquipelago/visitas-adultas/convite',
+    '/arquipelago/visitas-adultas/convite',
+    '/arquipelago/visitas-adultas/abrir',
+    '/arquipelago/visitas-adultas/conferir',
+  ])
+  const invalida = await routes.arquipelagoVisitaAdulta.POST(post({ codigo: 'a'.repeat(2048) }))
+  expect(invalida.status).toBe(400)
+  expect(invalida.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toHaveLength(5)
+})
+
 function montar(
   resposta: Resposta,
   perfis: Resposta = { status: 200, body: { profiles: [{ id: PERFIL }, { id: IRMAO }] } },

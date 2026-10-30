@@ -98,6 +98,9 @@ const CAMINHOS_DO_JOGO = new Set([
   '/mural',
   '/irmaos',
   '/fantasmas',
+  '/visitas-adultas/convite',
+  '/visitas-adultas/abrir',
+  '/visitas-adultas/conferir',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 /** A casa de um irmão para a visita (fase3-12), só leitura. */
@@ -267,7 +270,11 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     servico: {
       async buscar(caminho, pedido) {
-        if (!caminhoDoJogo(caminho) || (opcoes.publico !== 'kids' && soDoKids(caminho)))
+        if (
+          !caminhoDoJogo(caminho) ||
+          (opcoes.publico !== 'kids' && soDoKids(caminho)) ||
+          (opcoes.publico !== 'adulto' && caminho.startsWith('/visitas-adultas/'))
+        )
           return { status: 404, corpo: { code: 'NOT_FOUND' } }
         return json(`${BASE}${caminho}`, {
           ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),

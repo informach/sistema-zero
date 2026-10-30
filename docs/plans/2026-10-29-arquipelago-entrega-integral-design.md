@@ -18,6 +18,12 @@ gravação, retomada separada do save, serviço com autorização familiar e sel
 jogo. Provas locais em `docs/qa/2026-10-30-fantasma-familiar/`; aceite autenticado em L14.
 L11, L12, lacunas de L13 e a qualificação integrada de L14 continuam abertas.
 
+O recorte de visitas adultas de L12 está implementado localmente com consentimento por código
+revogável, sem diretório, separado do Kids e sem mudanças de V18. Rotação, revogação concorrente,
+projeção privada e suporte têm provas em Postgres local e HTTP reais. Plano em
+`docs/superpowers/plans/2026-10-30-arquipelago-visitas-adultas.md`; não representa implantação
+ou aceite autenticado hospedado. A paridade de conteúdo de L12 continua ligada ao restante de L03.
+
 L07 inclui turnos, insumos e pedidos remunerados. L09 inclui tema, feira, receitas e integração
 do vestuário com o configurador existente. Há provas locais, não implantação. A adoção da
 galeria no Members exige o procedimento operacional documentado e não foi feita remotamente.

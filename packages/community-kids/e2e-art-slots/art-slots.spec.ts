@@ -92,7 +92,15 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   await arrastar(page, [0.7, 0.55], [0.8, 0.8])
   await page.getByRole('button', { name: 'Reduzir' }).click()
   await page.getByRole('button', { name: 'Enviar de novo' }).click()
+  // O "Desenho enviado!" do primeiro envio continua na tela, então ele não prova o reenvio: o
+  // envio guarda o desenho e espera a nuvem do rascunho antes do POST, e recarregar antes disso
+  // perdia o reenvio (a imagem do jogo voltava igual à primeira).
+  const reenvio = page.waitForResponse(
+    (r) => r.url().includes('/pinta-submission') && r.request().method() === 'POST',
+    { timeout: 30_000 },
+  )
   await page.getByRole('dialog').getByRole('button', { name: 'Enviar', exact: true }).click()
+  expect((await reenvio).ok()).toBe(true)
   await expect(page.getByText(/Desenho enviado!/)).toBeVisible({ timeout: 30_000 })
   await page.reload()
   // A aula reabre onde a criança estava (a parte do desenho).

@@ -36,12 +36,14 @@ import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falso
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
+import { criarVisitasAdultasFalsas } from './visitas-adultas-falsas'
 
 /**
  * Uma plataforma de mentira para rodar o jogo sozinho (playground e testes). Cumpre o mesmo
  * contrato da de verdade, com o serviço do jogo em memória (e, se der, no localStorage).
  */
 export interface OpcoesDaPlataformaFalsa {
+  visitaAdulta?: 'ligado' | 'revogar-ao-conferir'
   fantasma?: Fantasma
   somenteLeitura?: boolean
   /** O playground hospeda o editor fora do jogo; a falsa mantém as mesmas recusas da ponte. */
@@ -140,6 +142,13 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       : undefined,
   )
   const familia = criarFamiliaFalsa(o.familia)
+  const visitasAdultas = criarVisitasAdultasFalsas({
+    publico,
+    somenteLeitura: o.somenteLeitura === true,
+    salvo: () => guardado,
+    exemplo: o.visitaAdulta,
+    casa: { versao: 1, obra: obraDeExemplo(), horta: [], completos: [], quarto: null },
+  })
   const fantasmas = criarFantasmasFalsos({
     salvo: () => guardado,
     somenteLeitura: () => o.somenteLeitura === true,
@@ -429,6 +438,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/mural') return { status: 200, corpo: { jogos: [] } }
         if (caminho === '/minijogos') return { status: 200, corpo: { minijogos: [] } }
         const metodo = opcoes?.metodo ?? 'GET'
+        const daVisitaAdulta = visitasAdultas.buscar(caminho, metodo, opcoes?.corpo)
+        if (daVisitaAdulta) return daVisitaAdulta
         const doFantasma = fantasmas.buscar(caminho, metodo, opcoes?.corpo)
         if (doFantasma) return doFantasma
         const dosInsumos = insumos.buscar(caminho, metodo, opcoes?.corpo)

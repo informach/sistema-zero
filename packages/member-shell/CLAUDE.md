@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Visitas adultas do Arquipélago (L12, 30/10/2026)
+
+O host reconhece apenas `/visitas-adultas/convite`, `/abrir` e `/conferir`. O host Kids recusa
+os três antes da rede. Shims só no app community; nunca criar equivalentes no Kids.
+O BFF mantém no-store, corpo de até 1024 bytes e os métodos GET/POST/DELETE previstos.
+Não chama a lista de perfis Kids ou tenta descobrir o nome de quem compartilhou. O código
+segue no corpo autenticado, nunca em URL. A API é dona do consentimento e da projeção.
+
 ## Trajeto familiar do Arquipélago (L10, 30/10/2026)
 
 O BFF repassa PUT de até 129 KB e GET dos percursos conhecidos com `private, no-store`.

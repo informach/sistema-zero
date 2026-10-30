@@ -86,7 +86,7 @@ export function createArquipelagoRoutes(deps: {
   const { gateway } = deps
   const chamar = (
     caminho: string,
-    metodo: 'GET' | 'PUT' | 'POST',
+    metodo: 'GET' | 'PUT' | 'POST' | 'DELETE',
     corpo?: unknown,
     extra: { query?: Record<string, string>; timeoutMs?: number } = {},
   ) =>
@@ -106,7 +106,8 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/familia/minijogos') ||
           caminho.startsWith('/irmaos') ||
           caminho === '/desafios/cores' ||
-          caminho.startsWith('/fantasmas')
+          caminho.startsWith('/fantasmas') ||
+          caminho.startsWith('/visitas-adultas/')
         )
           resposta.headers.set('cache-control', 'private, no-store')
         return resposta
@@ -139,7 +140,11 @@ export function createArquipelagoRoutes(deps: {
   const comCorpo =
     (caminho: string, metodo: 'PUT' | 'POST', teto: number) => async (req: Request) => {
       const lido = await corpoJson(req, teto)
-      return lido.ok ? chamar(caminho, metodo, lido.corpo) : invalido()
+      return lido.ok
+        ? chamar(caminho, metodo, lido.corpo)
+        : caminho.startsWith('/visitas-adultas/')
+          ? privado(invalido())
+          : invalido()
     }
 
   return {
@@ -235,6 +240,17 @@ export function createArquipelagoRoutes(deps: {
       },
     },
     arquipelagoAcesso: { GET: () => chamar('/acesso', 'GET') },
+    arquipelagoConviteAdulto: {
+      GET: () => chamar('/visitas-adultas/convite', 'GET'),
+      POST: comCorpo('/visitas-adultas/convite', 'POST', CORPO_PEQUENO),
+      DELETE: () => chamar('/visitas-adultas/convite', 'DELETE'),
+    },
+    arquipelagoVisitaAdulta: {
+      POST: comCorpo('/visitas-adultas/abrir', 'POST', CORPO_PEQUENO),
+    },
+    arquipelagoConferirVisitaAdulta: {
+      POST: comCorpo('/visitas-adultas/conferir', 'POST', CORPO_PEQUENO),
+    },
     arquipelagoFantasmas: { PUT: comCorpo('/fantasmas', 'PUT', CORPO_DO_FANTASMA_MAX_BYTES) },
     arquipelagoFantasma: {
       GET: async (_req: Request, ctx: { params: Promise<{ percurso: string }> }) => {
