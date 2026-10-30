@@ -50,6 +50,11 @@ export interface ConfigDoPercurso {
   corteVoltaMs: number
   /** O que a chegada dá (os patins da entrega), com a fala; `null` quando não há nada a dar. */
   premio?: (s: Salvamento) => { salvamento: Salvamento; fala: string } | null
+  /**
+   * As paradas só contam na ordem (percursos no chão, em que dava para cortar caminho até a
+   * última). Nos percursos do alto, pular uma parada já é chegar mais longe.
+   */
+  emOrdem?: boolean
 }
 
 export const PERCURSO_DAS_COPAS = {
@@ -207,6 +212,94 @@ export const PERCURSO_DO_BALAO = {
   corteVoltaMs: 340,
 } as const satisfies ConfigDoPercurso
 
+/**
+ * A volta pela praia da sua ilha (V19, "primeiros percursos na praia e nas pedras"): da pedra do
+ * leste, pela areia do sul, de pedra em pedra até a pedra do oeste, pegando conchas brilhantes.
+ * As paradas ficam no chão: contam na ordem. Ninguém cai, só desiste longe da praia.
+ */
+export const PERCURSO_DA_PRAIA = {
+  id: 'praia-pedras',
+  nome: 'Volta pela praia',
+  rotuloDaLargada: 'Começar a volta pela praia',
+  falaDoComeco: 'Valendo. Siga pela areia de pedra em pedra até a pedra grande do oeste.',
+  falaDoFim: 'A volta parou. A pedra do leste começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você deu a volta na praia com todas as conchas.',
+  /**
+   * A volta tem uns 70 m de areia (o teste mede pelas paradas): correndo são uns 16 s e andando
+   * uns 32 s. 26 s deixa a estrela para quem corre a maior parte, parando para pegar as conchas.
+   */
+  tempoAlvoMs: 26_000,
+  vagalumes: 5,
+  coletavel: {
+    varios: 'conchas brilhantes',
+    Varios: 'Conchas brilhantes',
+    simbolo: '🐚',
+    feminino: true,
+  },
+  raioDoVagalume: 0.9,
+  raioDaChegada: 1.8,
+  folgaDoDeque: 0.6,
+  /** Sair da praia para dentro da ilha (mais que isto da linha das paradas) desiste. */
+  distanciaParaDesistir: 9,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+  emOrdem: true,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * Os corais do Recife (V19): de coral em coral pelo arco em volta da lagoa, do primeiro do oeste
+ * ao último do norte, com uma pérola no ar em cada vão. Cair na areia ou na lagoa volta ao último
+ * coral alcançado.
+ */
+export const PERCURSO_DOS_CORAIS = {
+  id: 'recife-corais',
+  nome: 'Pulos nos corais',
+  rotuloDaLargada: 'Começar os pulos nos corais',
+  falaDoComeco: 'Valendo. Pule de coral em coral em volta da lagoa até o último do arco.',
+  falaDoFim: 'Os pulos pararam. O primeiro coral do arco começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você pulou o arco inteiro com todas as pérolas.',
+  /**
+   * Onze pulos de uns 2,2 m entre os topos (o teste mede): quem mira e pula sem cair leva uns
+   * 16 s. 22 s deixa a estrela para quem não cai, sem exigir correr.
+   */
+  tempoAlvoMs: 22_000,
+  vagalumes: 5,
+  coletavel: { varios: 'pérolas', Varios: 'Pérolas', simbolo: '🫧', feminino: true },
+  raioDoVagalume: 0.8,
+  raioDaChegada: 0.7,
+  folgaDoDeque: 0.3,
+  distanciaParaDesistir: 6,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * As pegadas do Vale (V19): seguir as pedras do vulcão na ordem, a pé ou montado no dino (a
+ * montaria é o brinquedo do Vale e chega mais rápido), pegando os fósseis que brilham no caminho.
+ */
+export const PERCURSO_DAS_PEGADAS = {
+  id: 'vale-pegadas',
+  nome: 'Trilha das pedras do vulcão',
+  rotuloDaLargada: 'Começar a trilha das pedras',
+  falaDoComeco: 'Valendo. Passe pelas pedras do vulcão na ordem, a pé ou montado no dino.',
+  falaDoFim: 'A trilha parou. A primeira pedra começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você passou por todas as pedras com todos os fósseis.',
+  /**
+   * Seis trechos de uns 5 m entre as pedras (o teste mede): correndo a pé são uns 8 s, montado
+   * menos. 12 s dá a estrela a quem corre sem parar ou vai no dino com calma.
+   */
+  tempoAlvoMs: 12_000,
+  vagalumes: 5,
+  coletavel: { varios: 'fósseis', Varios: 'Fósseis', simbolo: '🦴' },
+  raioDoVagalume: 1.2,
+  raioDaChegada: 1.6,
+  folgaDoDeque: 2.5,
+  distanciaParaDesistir: 8,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+  emOrdem: true,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
 export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
@@ -214,6 +307,9 @@ export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>>
   'pico-cume': PERCURSO_DO_CUME,
   'nuvens-saltos': PERCURSO_DOS_SALTOS,
   'nuvens-balao': PERCURSO_DO_BALAO,
+  'praia-pedras': PERCURSO_DA_PRAIA,
+  'recife-corais': PERCURSO_DOS_CORAIS,
+  'vale-pegadas': PERCURSO_DAS_PEGADAS,
 }
 
 /** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */
@@ -326,7 +422,10 @@ export function passoDaCorrida(
     c.tempoMs = Math.round(c.tempoMs)
     return { tipo: 'chegou' }
   }
-  for (let i = pontos.deques.length - 1; i > c.deque; i--) {
+  const ate = config.emOrdem
+    ? Math.min(c.deque + 1, pontos.deques.length - 1)
+    : pontos.deques.length - 1
+  for (let i = ate; i > c.deque; i--) {
     const d = pontos.deques[i]
     if (!d) continue
     if (

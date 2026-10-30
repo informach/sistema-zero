@@ -1,7 +1,7 @@
 # Arquipélago Vagalume: regras do jogo
 
 Situação por funcionalidade, com código, conteúdo, provas e implantação separados:
-[estado atual](arquipelago-estado-atual.md). Nesta base de 30/10/2026, o formato vigente é V18,
+[estado atual](arquipelago-estado-atual.md). Nesta base de 30/10/2026, o formato vigente é V19,
 o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
 versões anteriores registram a evolução; não substituem o contrato atual.
 
@@ -48,6 +48,30 @@ a aplicação específica de pulo, gravidade e ritmo do Inventor continua em rev
 Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
+
+## Salvamento V19 e os percursos novos (levantamento de 30/10/2026)
+
+A V19 acrescenta, sem consumir itens: três percursos (`praia-pedras`, `recife-corais`,
+`vale-pegadas`), as chaves dos cômodos da casa da Íris (`chaves`, um bit por cômodo), os
+segredos das ilhas (`segredos`, um bit por segredo, até 24), o mapa que se revela andando
+(`mapa`, uma grade de 8 × 8 por ilha em hexadecimal) e quem acompanha pela ilha (`companhia`:
+`quarto` ou `adotado`). A V18 migra sem nada achado e com o bicho do quarto acompanhando. Entre
+duas sessões, chaves, segredos e mapa se juntam; a companhia segue a regra da preferência do
+clima. No teto, o documento cheio fica em 63.194 bytes (teste `salvamento-v10`). A migração
+`0017_percursos_da_v19` atualiza a lista de percursos aceita pelos fantasmas.
+
+Os percursos novos usam colisores que as ilhas já têm (`mundo/percursos-das-ilhas.ts`):
+- **Pulos nos corais** (Recife): os 12 corais em volta da lagoa, do oeste pelo sul até o norte,
+  com uma pérola em cada um de cinco vãos. Cair na areia ou na lagoa volta ao último coral.
+  Estrela do tempo em 22 s.
+- **Trilha das pedras do vulcão** (Vale): as sete pedras na ordem, a pé ou montado; a sétima é a
+  chegada. Só a próxima pedra conta (`emOrdem`), para não cortar caminho. Estrela em 12 s.
+- **Volta pela praia** (sua ilha): da pedra do leste pela areia do sul até a pedra do oeste,
+  paradas na ordem, cinco conchas brilhantes. Estrela em 26 s (só correndo).
+
+Em todos os percursos, cair na água conta como queda (volta à última parada). Provas:
+`tests/percursos-das-ilhas.test.ts` e `playground/verificar-percursos-v19-browser.ts`
+(compilar com `bun build --target=node --external playwright-core` e rodar com `node`).
 
 ## Medição: fotografia e mudanças de aparência (A06, 30/10/2026)
 

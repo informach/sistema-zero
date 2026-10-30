@@ -194,7 +194,8 @@ export function CorridaNaIlha({
     q.corpo.y = rastro.y
     q.corpo.z = rastro.z
     q.corpo.pes = rastro.y - CORPO.doCentroAoPe
-    q.corpo.noChaoDaIlha = movimento.noChao && q.corpo.pes < alturaDoChao
+    // Cair na água (a lagoa dos corais, o mar da praia) também volta à última parada.
+    q.corpo.noChaoDaIlha = (movimento.noChao && q.corpo.pes < alturaDoChao) || s.nadando
     // Só iniciar depois do corte e do teleporte: o relógio ativo ainda está em zero.
     if (c.tempoMs === 0) fantasmas.comecar(config.id, rastro)
     const ev = passoDaCorrida(c, q.corpo, pontos, dt * 1000, config)

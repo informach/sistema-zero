@@ -1,4 +1,4 @@
-import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { juntarMapas, type Salvamento } from '@sistemazero/arquipelago-contracts'
 import { juntarFilhotes } from './filhote-do-vale'
 
 /** Compara dados JSON, sem depender da ordem das chaves de um inventário. */
@@ -39,6 +39,10 @@ function economia(s: Salvamento) {
     nuvens: _nuvens,
     farol: _farol,
     clima: _clima,
+    chaves: _chaves,
+    segredos: _segredos,
+    mapa: _mapa,
+    companhia: _companhia,
     ...transacao
   } = s
   return transacao
@@ -67,6 +71,18 @@ export function conciliarSalvamento(
         ? remoto.clima
         : null
   if (clima === null) return null
+  const companhia =
+    local.companhia === remoto.companhia || base.companhia === remoto.companhia
+      ? local.companhia
+      : base.companhia === local.companhia
+        ? remoto.companhia
+        : null
+  if (companhia === null) return null
+  const mapa: Salvamento['mapa'] = { ...remoto.mapa }
+  for (const [id, celulas] of Object.entries(local.mapa)) {
+    const ilha = id as keyof Salvamento['mapa']
+    mapa[ilha] = juntarMapas(celulas, remoto.mapa[ilha])
+  }
 
   const percursos = { ...remoto.percursos }
   for (const [id, resultado] of Object.entries(local.percursos)) {
@@ -92,6 +108,11 @@ export function conciliarSalvamento(
     pontesVistas: [...new Set([...remoto.pontesVistas, ...local.pontesVistas])],
     ilhasVisitadas: local.ilhasVisitadas | remoto.ilhasVisitadas,
     percursos,
+    // Chaves, segredos e mapa são descobertas: as duas sessões se juntam (V19).
+    chaves: local.chaves | remoto.chaves,
+    segredos: local.segredos | remoto.segredos,
+    mapa,
+    companhia,
     // Descobertas não consomem itens nem se desfazem: juntar as conquistas das duas sessões.
     vale: {
       pegadas: local.vale.pegadas || remoto.vale.pegadas,

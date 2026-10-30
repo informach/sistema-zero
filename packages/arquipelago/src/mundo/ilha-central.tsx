@@ -3,6 +3,7 @@ import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { useMemo, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useJogo } from '../estado/contexto'
+import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
 import { CataVento } from './cata-vento'
 import {
   ALTURA_DO_PIER,
@@ -12,10 +13,12 @@ import {
   variedadeDaArvore,
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
-import { lerColisores } from './colisores-da-ilha'
+import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
+import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import { LunetaDoPier } from './luneta'
 import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { percursoDaPraia } from './percursos-das-ilhas'
 
 const CORES = {
   grama: [new Color('#7dbb5a'), new Color('#6fae4f')],
@@ -105,7 +108,32 @@ function ChaoDoModelo() {
       <primitive object={enfeites} />
       <primitive object={espuma} />
       <Colisores lista={colisores} />
+      <CorridaDaPraia colisores={colisores} />
     </>
+  )
+}
+
+/** A conchinha da volta pela praia: madrepérola com brilho de areia. */
+const CORES_DA_CONCHA: CoresDoColetavel = {
+  nucleo: '#fff6ea',
+  brilho: '#ffd9b0',
+  degrade: ['rgba(255,247,236,1)', 'rgba(255,214,170,0.55)', 'rgba(255,190,140,0)'],
+}
+
+/** A volta pela praia (V19), lida das pedras do `terreno.glb`: só existe com o chão do modelo. */
+function CorridaDaPraia({ colisores }: { colisores: readonly ColisorDaIlha[] }) {
+  const praia = useMemo(() => percursoDaPraia(colisores, RAIO_DO_RASO), [colisores])
+  if (!praia) return null
+  return (
+    <CorridaNaIlha
+      ilhaId="sua-ilha"
+      config={PERCURSO_DA_PRAIA}
+      pontos={praia}
+      largada={praia.largada}
+      // Ninguém cai na areia: as paradas ficam no chão; entrar no mar volta à última pedra.
+      alturaDoChao={Number.NEGATIVE_INFINITY}
+      cores={CORES_DA_CONCHA}
+    />
   )
 }
 

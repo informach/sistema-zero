@@ -222,6 +222,10 @@ describe('salvamento', () => {
     farol: _farol,
     clima: _clima,
     ilhasVisitadas: _visitas,
+    chaves: _chaves,
+    segredos: _segredos,
+    mapa: _mapa,
+    companhia: _companhia,
     ...semProgressoV16
   } = salvamento
   const ateV15 = {
@@ -307,7 +311,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(18)
+    expect(lido.salvamento?.versao).toBe(19)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -335,7 +339,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(18)
+    expect(lido.salvamento?.versao).toBe(19)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -362,7 +366,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(18)
+    expect(lido.salvamento?.versao).toBe(19)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -407,7 +411,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 18, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 19, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
@@ -569,7 +573,14 @@ describe('salvamento', () => {
   })
 
   test('V17 migra na rota, preserva o histórico e não inventa visitas; V18 inválida não substitui', async () => {
-    const { ilhasVisitadas: _visitas, ...anterior } = salvamento
+    const {
+      ilhasVisitadas: _visitas,
+      chaves: _chaves,
+      segredos: _segredos,
+      mapa: _mapa,
+      companhia: _companhia,
+      ...anterior
+    } = salvamento
     const v17 = { ...anterior, versao: 17 }
     const resposta = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
@@ -578,8 +589,12 @@ describe('salvamento', () => {
     expect(resposta.status).toBe(200)
     expect(SalvamentoGuardadoSchema.parse(resposta.json).salvamento).toEqual({
       ...v17,
-      versao: 18,
+      versao: 19,
       ilhasVisitadas: 0,
+      chaves: 0,
+      segredos: 0,
+      mapa: {},
+      companhia: 'quarto',
     })
     for (const ilhasVisitadas of [-1, 256, 1.5, '3']) {
       expect(

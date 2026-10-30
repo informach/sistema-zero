@@ -176,8 +176,8 @@ test('construção e rotinas no teto com IDs canônicos cabem nos 64 KB', () => 
     maior = Math.max(maior, new TextEncoder().encode(JSON.stringify(s)).byteLength)
   }
   expect(maior).toBeLessThan(SALVAMENTO_MAX_BYTES)
-  // V17 inclui seis moradores com pedidos de 40 caracteres UTF-8: 62.605 bytes neste cenário.
-  expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(2800)
+  // V19 no teto (visitas, chaves, segredos, mapa das sete ilhas e oito percursos): 63.194 bytes.
+  expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(2300)
 })
 
 test('as listas da régua não mudam sem querer', () => {

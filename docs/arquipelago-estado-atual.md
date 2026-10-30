@@ -11,7 +11,7 @@ compara ilha por ilha com a proposta e lista achados novos (N01 a N15) ligados a
 
 | Regra | Valor nesta base | Fonte de autoridade |
 | --- | --- | --- |
-| Salvamento | V18; aceita e migra versões anteriores | `VERSAO_SALVAMENTO` e `SalvamentoSchema`, [salvamento.ts](../packages/arquipelago-contracts/src/salvamento.ts) |
+| Salvamento | V19; aceita e migra versões anteriores | `VERSAO_SALVAMENTO` e `SalvamentoSchema`, [salvamento.ts](../packages/arquipelago-contracts/src/salvamento.ts) |
 | Teto do documento | 65.536 bytes UTF-8, não caracteres | `SALVAMENTO_MAX_BYTES`, mesmo arquivo; [cenários cheios](../packages/arquipelago-contracts/tests/salvamento-v10.test.ts) |
 | Moedas do jogo por semana | 100; preservar créditos antigos | `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, [repositório do Members](../packages/members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts) |
 | Ritmo de movimento | Base 1 para bem e cansado; bônus 1,1 para ótimo | `RITMO`, [necessidades.ts](../packages/arquipelago/src/sistemas/necessidades.ts) |

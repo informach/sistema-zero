@@ -1,0 +1,2 @@
+ALTER TABLE "arquipelago"."fantasmas" DROP CONSTRAINT "fantasmas_percurso_check";--> statement-breakpoint
+ALTER TABLE "arquipelago"."fantasmas" ADD CONSTRAINT "fantasmas_percurso_check" CHECK ("arquipelago"."fantasmas"."percurso" in ('bosque-copas', 'vila-telhados', 'pico-cume', 'nuvens-saltos', 'nuvens-balao', 'praia-pedras', 'recife-corais', 'vale-pegadas'));

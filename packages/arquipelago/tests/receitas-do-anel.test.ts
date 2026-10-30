@@ -29,7 +29,8 @@ test('catálogo inteiro a 999 cabe junto da obra, amizades e rotinas no teto', (
     return new TextEncoder().encode(JSON.stringify(completo)).byteLength
   })
   expect(Math.max(...tamanhos)).toBeLessThan(SALVAMENTO_MAX_BYTES)
-  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(2000)
+  // V19 no teto (chaves, segredos, mapa e percursos novos) com o catálogo a 999: 63.918 bytes.
+  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(1500)
 })
 
 for (const [quem, receitaId, cesta] of pares) {

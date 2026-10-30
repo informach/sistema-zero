@@ -1,5 +1,6 @@
 import {
   APARENCIAS_GUARDADAS_MAXIMO,
+  BIT_DA_SEGREDO_MAXIMO,
   type CartaoDaRotina,
   criarSalvamentoInicial,
   DIAS_CUIDADOS_MAXIMO,
@@ -8,6 +9,7 @@ import {
   LIMITES_DA_ROTINA,
   LUMIS,
   type LumiId,
+  MAPAS_DAS_ILHAS,
   MORADORES_DO_ANEL,
   OBJETOS_DA_CASA,
   type Obra,
@@ -94,6 +96,12 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
     percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),
     lumis: Object.fromEntries(LUMIS.map((id) => [id, 999])),
+    // V19 no teto: todas as visitas, chaves, segredos e células do mapa; "adotado" pesa mais.
+    ilhasVisitadas: 255,
+    chaves: 15,
+    segredos: BIT_DA_SEGREDO_MAXIMO * 2 - 1,
+    mapa: Object.fromEntries(MAPAS_DAS_ILHAS.map((id) => [id, 'f'.repeat(16)])),
+    companhia: 'adotado' as const,
   }
   const L = LIMITES_DA_ROTINA
   // Os jeitos de gastar o teto somando as rotinas: poucas rotinas cheias ou muitas curtas.

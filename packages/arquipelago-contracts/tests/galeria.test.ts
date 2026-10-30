@@ -109,6 +109,10 @@ describe('salvamento V6: as aparências guardadas', () => {
       farol: _farol,
       clima: _clima,
       ilhasVisitadas: _visitas,
+      chaves: _chaves,
+      segredos: _segredos,
+      mapa: _mapa,
+      companhia: _companhia,
       ...resto
     } = criarSalvamentoInicial(AGORA)
     const v5: SalvamentoV5 = {
