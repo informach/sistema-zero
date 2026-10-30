@@ -58,6 +58,22 @@ describe('Arquipélago Vagalume no gateway', () => {
       expect(registry.resolve('GET', `/arquipelago/profissoes/${acao}`, 'v1')).toBeUndefined()
     }
     const salvar = registry.resolve('PUT', '/arquipelago/salvamento', 'v1')?.route
+    expect(registry.resolve('PUT', '/arquipelago/fantasmas', 'v1')?.route).toMatchObject({
+      maxBodyBytes: 129 * 1024,
+      auth: { strategies: ['jwt'] },
+      rateLimit: { max: 12, windowMs: 60000, by: 'principal' },
+    })
+    expect(registry.resolve('GET', '/arquipelago/fantasmas/bosque-copas', 'v1')?.route.id).toBe(
+      'arquipelago-fantasma-ler-0',
+    )
+    expect(
+      registry.resolve(
+        'GET',
+        '/arquipelago/irmaos/11111111-1111-4111-8111-111111111111/fantasmas/bosque-copas',
+        'v1',
+      )?.route.id,
+    ).toBe('arquipelago-fantasma-ler-1')
+    expect(registry.resolve('POST', '/arquipelago/fantasmas', 'v1')).toBeUndefined()
     expect(registry.resolve('POST', '/arquipelago/insumos/comprar', 'v1')?.route).toMatchObject({
       auth: { strategies: ['jwt'] },
       authorize: { statuses: ['active'] },

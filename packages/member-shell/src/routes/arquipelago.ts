@@ -1,9 +1,11 @@
 import 'server-only'
 import {
+  CORPO_DO_FANTASMA_MAX_BYTES,
   IrmaosDoJogadorSchema,
   type IrmaosParaOJogo,
   JogosDoMuralSchema,
   MinijogosSchema,
+  PERCURSOS,
   PERFIS_DA_FAMILIA_MAXIMO,
   type SemanaDaFamiliaParaOsPais,
   SemanaDaFamiliaSchema,
@@ -66,6 +68,11 @@ const invalido = () =>
     { status: 400 },
   )
 
+const privado = (resposta: NextResponse) => {
+  resposta.headers.set('cache-control', 'private, no-store')
+  return resposta
+}
+
 /**
  * Repasse do Arquipélago Vagalume: o navegador fala com o serviço do jogo SÓ por aqui (mesma
  * origem), e daqui pelo gateway com a sessão HttpOnly. Nenhuma regra de jogo mora no BFF: quem
@@ -98,7 +105,8 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/pedidos/') ||
           caminho.startsWith('/familia/minijogos') ||
           caminho.startsWith('/irmaos') ||
-          caminho === '/desafios/cores'
+          caminho === '/desafios/cores' ||
+          caminho.startsWith('/fantasmas')
         )
           resposta.headers.set('cache-control', 'private, no-store')
         return resposta
@@ -227,6 +235,30 @@ export function createArquipelagoRoutes(deps: {
       },
     },
     arquipelagoAcesso: { GET: () => chamar('/acesso', 'GET') },
+    arquipelagoFantasmas: { PUT: comCorpo('/fantasmas', 'PUT', CORPO_DO_FANTASMA_MAX_BYTES) },
+    arquipelagoFantasma: {
+      GET: async (_req: Request, ctx: { params: Promise<{ percurso: string }> }) => {
+        const { percurso } = await ctx.params
+        const id = PERCURSOS.find((id) => id === percurso)
+        return id ? chamar(`/fantasmas/${id}`, 'GET') : invalido()
+      },
+    },
+    arquipelagoFantasmaDoIrmao: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string; percurso: string }> }) => {
+        const { id, percurso } = await ctx.params
+        const nome = PERCURSOS.find((p) => p === percurso)
+        if (!UUID.test(id) || !nome) return privado(invalido())
+        const lista = await deps.profiles.siblings()
+        if (lista.status !== 200 || !Array.isArray(lista.body?.siblings))
+          return privado(repasse({ ...lista, status: 502, body: null }))
+        if (!lista.body.siblings.some((p) => p.id.toLowerCase() === id.toLowerCase()))
+          return NextResponse.json(
+            { error: { code: 'IRMAO_NAO_ENCONTRADO', message: 'Irmão não encontrado' } },
+            { status: 404, headers: { 'cache-control': 'private, no-store' } },
+          )
+        return chamar(`/irmaos/${id}/fantasmas/${nome}`, 'GET')
+      },
+    },
     arquipelagoSalvamento: {
       GET: () => chamar('/salvamento', 'GET'),
       PUT: comCorpo('/salvamento', 'PUT', CORPO_DO_SALVAMENTO),

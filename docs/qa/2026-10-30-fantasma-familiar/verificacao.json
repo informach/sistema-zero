@@ -1,0 +1,153 @@
+{
+  "versao": 1,
+  "dataUtc": "2026-10-30T11:24:08.430Z",
+  "base": "9af68cb3ed3f79df5665924d85e211ce0f6d1edd",
+  "commitsPreparados": ["36751ae36", "bbe7418bf"],
+  "escopo": "L10: implementacao local de trajetos familiares; aceite autenticado e aparelhos fisicos pendentes em L14",
+  "testes": [
+    {
+      "pacote": "avatar-quarto",
+      "aprovados": 4,
+      "ignorados": 0,
+      "arquivos": {
+        ".cache/fantasmas-consolidado-test-avatar-quarto.log": "7850da513e2fb0397902be16ca57527536342186e271b6210eb311bc6c9bc610",
+        ".cache/fantasmas-consolidado-types-avatar-quarto.log": "8c2554d7df4f1896db0fdc12f207eac176218cf4ee7c1fdd9da669cbea516b04",
+        ".cache/fantasmas-consolidado-check-avatar-quarto.log": "12daf418ccbfc37b2b44f91578b625000f4112a8a3c0a240a3931195f38782c6"
+      }
+    },
+    {
+      "pacote": "arquipelago-contracts",
+      "aprovados": 200,
+      "ignorados": 0,
+      "arquivos": {
+        ".cache/fantasmas-consolidado-test-arquipelago-contracts.log": "b05e2a23f7f70a0edfc479abb5d91da2158886df2333f16db7b36eb5a709f02c",
+        ".cache/fantasmas-consolidado-types-arquipelago-contracts.log": "2e2108d1a5963d54ed74dddba708136ff9ad062b627db16e72c6ed31de1dfa41",
+        ".cache/fantasmas-consolidado-check-arquipelago-contracts.log": "e6cd887bf5021cbaed1226c4e11651e5e1a5cc279d06e98b9973d801bd02676a"
+      }
+    },
+    {
+      "pacote": "arquipelago-api",
+      "aprovados": 252,
+      "ignorados": 93,
+      "arquivos": {
+        ".cache/fantasmas-consolidado-test-arquipelago-api.log": "361a570e422505e9f6c061c1abd578119b0fb68d4fcc197ae3227dce53dd96bd",
+        ".cache/fantasmas-consolidado-types-arquipelago-api.log": "9c618335208aa05675a6fc4a57ee70f2f49235e68b73024a40018b1e6d0af3dd",
+        ".cache/fantasmas-consolidado-check-arquipelago-api.log": "00189518f5b10fa8f02e46bb70d59cc0950f7f0251cbbab46cc5679370a74448"
+      }
+    },
+    {
+      "pacote": "api-gateway",
+      "aprovados": 314,
+      "ignorados": 2,
+      "arquivos": {
+        ".cache/fantasmas-consolidado-test-api-gateway.log": "a2e1c13056fccffc86cc9dd874bf96ac9eb45b3550eeccfa0804a1656fbc1548",
+        ".cache/fantasmas-consolidado-types-api-gateway.log": "50b085cb3b25e5ad7d5aca728e632b526653b4e91b992a25a4643d74487849ba",
+        ".cache/fantasmas-consolidado-check-api-gateway.log": "6716e37e17ec0e1812f7111317e4ae147b701ae6ca60cdaa31270ae6d10c8af6"
+      }
+    },
+    {
+      "pacote": "member-shell",
+      "aprovados": 2005,
+      "ignorados": 0,
+      "arquivos": {
+        ".cache/fantasmas-consolidado-test-member-shell.log": "7acee88d3a4ac396227cdd00a237afe52bc05e97cd3924413f546e4231dac092",
+        ".cache/fantasmas-consolidado-types-member-shell.log": "5f85c8122f6a5daf2104c0eb1f40c0339b38c022ebfc903451bac112943b05e6",
+        ".cache/fantasmas-consolidado-check-member-shell.log": "5cb0743290347b1d9a7771196029b03ead49aec30b1d55b0f6d00bfc651bede4"
+      }
+    },
+    {
+      "pacote": "arquipelago",
+      "aprovados": 1308,
+      "ignorados": 0,
+      "arquivos": {
+        ".cache/fantasmas-composicao-final-jogo.log": "f188d51b2840d3a3885a3ae62d56a1ec955daef2611248bd08b6a6a1fef94f53",
+        ".cache/fantasmas-composicao-final-types.log": "62e52d17021ca29a8cc2b53dacfbffefbf3606ea59e4d9048a21833629014010",
+        ".cache/fantasmas-composicao-final-check.log": "236f323a4049b614a251d7e7254bff8d7fa1195c6e49121bafeba32207dfef44"
+      }
+    }
+  ],
+  "build": {
+    "arquivo": ".cache/fantasmas-composicao-final-build.log",
+    "sha256": "1177cd74498a03ab68011a4f275965b62c1dd4f15a9b65008b953818232c7be3",
+    "versao": "20261030112103",
+    "arquivos": 140,
+    "megabytes": 35.86
+  },
+  "navegador": {
+    "arquivo": "docs/qa/2026-10-30-fantasma-familiar/r6-composicao-final/resultado.json",
+    "sha256": "2c977d3a0ab307dbb54729a868ecd015efe0a46fd2b23a0f9676ec4735945fdc",
+    "tipos": [
+      {
+        "tipo": "computador",
+        "erros": 0,
+        "esqueletoProprio": true,
+        "amostras": 21,
+        "primeiraAmostra": [6120, 196, -5754, 36136]
+      },
+      {
+        "tipo": "celular",
+        "erros": 0,
+        "esqueletoProprio": true,
+        "amostras": 22,
+        "primeiraAmostra": [6120, 196, -5754, 36136]
+      }
+    ],
+    "servico": "plataforma falsa local",
+    "renderizador": "SwiftShader"
+  },
+  "fontes": {
+    "packages/api-gateway/src/infrastructure/config/arquipelago-routes.ts": "a9631084282289fa903177eb25ef05fd10956f4f12de5d3c519b32782909a5f4",
+    "packages/api-gateway/tests/unit/arquipelago-config.test.ts": "542bc23ddfdd21cec7f4cb1d5166c2ccde18351a480febccfd07185d04b95905",
+    "packages/arquipelago-api/src/application/servico-das-visitas.ts": "28ed304da84777ccd2c73780367299e018bcb50f6fee32173a8f7259a95b8876",
+    "packages/arquipelago-api/src/application/servico-dos-fantasmas.ts": "a31652f767043d809dc711f2e8670cdc1cbf224c3f5e2b459a9a821259da77d7",
+    "packages/arquipelago-api/src/composition-root.ts": "b293f1be9df530012dd8c0de72e976909e5d1bb54822c14cb0047975849a2755",
+    "packages/arquipelago-api/src/domain/fantasmas.port.ts": "797ba8c514d2c7367c9e06c78d4bc83d0bdc08f9dc84dce1a8964cefbf655720",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/migrations/0014_fantasmas_dos_percursos.sql": "37010001219e3376188a0aa82582bb542b43d141330acc66581cb1dd842805ba",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/migrations/meta/0014_snapshot.json": "36dfaa0082884dae9c4ee0a7df3aade49ac12e8d3fe5030d0b9e56b74c7f0729",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json": "18cf5643a6551ad6e838d8d647607efd76451ceab6c4595ac8b926c155806c8b",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-fantasmas.ts": "776826fc7ad2db55e176379614c5580cf18bde6b62faa6f6770a6516f3e9a18b",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/schema.ts": "858433215d4dfa81abcda5c055c7badb445be4fa30c7a439dcf0eb9a208be66e",
+    "packages/arquipelago-api/src/interfaces/http/rotas-dos-fantasmas.ts": "1976c3d5c393307db9cde5ceb64b880a425d519329c7e920cc1e7b3dbd932ebf",
+    "packages/arquipelago-api/src/interfaces/http/server.ts": "7a6edfac85dd069a5d7ebb5cd9637027c51a9cdf9cf2d0bebbebf5b604444411",
+    "packages/arquipelago-api/tests/db/fantasmas.test.ts": "29e0e3caf97a0bb4e30f06d40f9f3e10a302da6bf7c5208713c12545ea839414",
+    "packages/arquipelago-contracts/src/fantasma.ts": "99b191d764ee615797d22b82a28abf0b6af712327bf0ec265705c82e94930469",
+    "packages/arquipelago-contracts/tests/fantasma.test.ts": "22a1403064fe2acd22477d98717c4edc0591939f83f2821da03fd24ad5f518ae",
+    "packages/arquipelago/playground/fantasma-de-exemplo.ts": "85008ec5e7504fd239427cdd224622ebd727f579830746b3519e0ab198360d0f",
+    "packages/arquipelago/playground/playground.tsx": "9c86c9173eec99d7866bb544ed7804821a804e520a0682b83c088d115905512f",
+    "packages/arquipelago/playground/verificar-fantasma-browser.ts": "9556f524dbcc423359ab32a6702389472c096c8a07b0e9cff898835f08548e44",
+    "packages/arquipelago/src/estado/fantasmas.ts": "f9c1937eba80e43a5fd2bd354cd0f98e3b1f9afc3efbb769d2bdfa308d77bfca",
+    "packages/arquipelago/src/interface/fantasmas.tsx": "0f3f0e588ef87aafc2b9d354079cbf704a404e4a64dd6294328c78ec056e47e2",
+    "packages/arquipelago/src/interface/hud.tsx": "7433697c9d07947c3a45bd15092d007512e8a0e22b96fdf4b114ea632accf214",
+    "packages/arquipelago/src/interface/visitas.tsx": "457bdf3670ee947a37fbc13eb7ae5588d0da56ffaf7b455ea8712a5864ff88aa",
+    "packages/arquipelago/src/jogo.tsx": "4c220b56c778334b98d9ddab081c578df221687204416476ff794e99a52f74b8",
+    "packages/arquipelago/src/mundo/cena.tsx": "c30f5ec7317973717567502d421f1df97d15bd24765c6ea561d0bd450d5b8346",
+    "packages/arquipelago/src/mundo/corrida-de-balao.tsx": "463129d7ead5d54c801380cb809cdab5d3b041eabe36733da0fbfde770e81e96",
+    "packages/arquipelago/src/mundo/corrida-na-ilha.tsx": "c18496da8ed3e2f8c22686d37d52768b28f32935df325850d59f0fc1a05b0530",
+    "packages/arquipelago/src/mundo/fantasma-familiar.tsx": "a1f7d8cbbd80f8d7ffd32ce8ea7c60187c7659fa514785f604e8bb9c5882f31c",
+    "packages/arquipelago/src/mundo/medidor.tsx": "f58dc47735d8d8fb58b869415a29db2761bff747fa42706b661c49ef41416d64",
+    "packages/arquipelago/src/plataforma/falsa.ts": "54d5f915dc2dad23796b742e07c29ab7115941acb35efa49125d66744c489d18",
+    "packages/arquipelago/src/plataforma/fantasmas-falsos.ts": "8510ab2b867e7a7cd0e571bf3eb773b1eedde7c39409566b9e868dc0601fa434",
+    "packages/arquipelago/src/sistemas/armazem-fantasmas.ts": "e4ea800b534b133310f05886c3b6fbff17d040019caef63f822ef577be2ba501",
+    "packages/arquipelago/tests/fantasmas-integracao.test.ts": "479dda49d61dc3d46199c140d5f1f54876256574fd6752bae862ca3011b14646",
+    "packages/avatar-quarto/package.json": "0db4893771eaf93a0a3b9b2a3a7abbc2d0550e55c80fde9837340e460e3e70e6",
+    "packages/avatar-quarto/src/avatar/asset-part.tsx": "077c6097d789bdba5f8d9d5a783955a4ff0b93cb32fe8238afd910b4d6279835",
+    "packages/avatar-quarto/src/avatar/avatar-rig.tsx": "a1463df62fed72192561265748b77f1750ab674010c71c4e4a108ca0df6aff03",
+    "packages/avatar-quarto/src/avatar/instance.ts": "ef837960ec7456c9c30f79a268a61f3f69dfce314d36376675cad3e29b9bf788",
+    "packages/avatar-quarto/tests/avatar-instance.test.ts": "8422c4193ed271b0954f49e6249502995e66483214918705ffcea47a31c95e80",
+    "packages/community-kids/src/app/api/arquipelago/fantasmas/[percurso]/route.ts": "f9dbefc7452d51caa9a2c23892cdd179d50f25f1a69dc63f175eaa770a9ee9e8",
+    "packages/community-kids/src/app/api/arquipelago/fantasmas/route.ts": "c9b20f02a648f43894ecc193ea64958cb7c23edd74ec471648ac1ef390d5927d",
+    "packages/community-kids/src/app/api/arquipelago/irmaos/[id]/fantasmas/[percurso]/route.ts": "d992b25c8560bdba3c863a1949b7671f56f4ae0a03f22689789bc2590ad39aa5",
+    "packages/community-kids/src/app/pais/_components/arquipelago-familia.tsx": "bc3026829cb41fd9a484c42721f676bdd0eab7c3b846764b6ca224593683afa8",
+    "packages/community/src/app/api/arquipelago/fantasmas/[percurso]/route.ts": "f9dbefc7452d51caa9a2c23892cdd179d50f25f1a69dc63f175eaa770a9ee9e8",
+    "packages/community/src/app/api/arquipelago/fantasmas/route.ts": "c9b20f02a648f43894ecc193ea64958cb7c23edd74ec471648ac1ef390d5927d",
+    "packages/member-shell/src/components/arquipelago-host.tsx": "042180b96a65846d87e0362db39482d26b60b5763b0d6d40727da9d1e4191877",
+    "packages/member-shell/src/routes/arquipelago.ts": "9d0ac55e87c3521bf0da3260dab1a17206cbb93c71e73b34fdff46ee6ed5acde",
+    "packages/member-shell/tests/arquipelago-host.test.ts": "5e0b0f8fe950c93b86394d3d10436ae0da27d60ae263d6bcc348f2e624bda0f7",
+    "packages/member-shell/tests/arquipelago-routes.test.ts": "c93d0e750183dd4d96cb1b923fe267b693c30bf59d3169b413e62facead5c714"
+  },
+  "pendencias": [
+    "Fluxo hospedado autenticado Auth/gateway/BFF/jogo com dois perfis reais",
+    "FPS, memoria longa e GPU de aparelhos fisicos",
+    "Aplicar migracao e implantar somente na etapa autorizada"
+  ]
+}

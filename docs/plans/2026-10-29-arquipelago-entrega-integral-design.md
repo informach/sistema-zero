@@ -8,8 +8,9 @@ nem publica serviços ou conteúdo. Os checkpoints abaixo registram a evolução
 
 Os cinco portos estão nos modelos e têm a espera de colisores corrigida e testada. Não existe
 mais bloqueio de arte para a rede ampliada do barco, e a rede ampliada, o painel e as aberturas nas boias estão implementados
-no recorte de 30/10. As provas são locais, descritas no plano da rede. O fantasma familiar tem contrato V1 e gravador/reprodutor
-puros com testes; ainda não tem autorização familiar, persistência, serviço ou interface.
+no recorte de 30/10. As provas são locais, descritas no plano da rede. O fantasma familiar tem
+gravação, retomada separada do save, serviço com autorização familiar e seleção/reprodução no
+jogo. Provas locais em `docs/qa/2026-10-30-fantasma-familiar/`; aceite autenticado em L14.
 L11, L12, lacunas de L13 e a qualificação integrada de L14 continuam abertas.
 
 L07 inclui turnos, insumos e pedidos remunerados. L09 inclui tema, feira, receitas e integração

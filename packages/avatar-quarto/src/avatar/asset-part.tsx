@@ -2,13 +2,14 @@
 
 import { useGLTF } from '@react-three/drei'
 import { useEffect, useMemo } from 'react'
-import type { BufferGeometry, Material, Mesh, MeshStandardMaterial, Skeleton } from 'three'
+import type { Material, Skeleton } from 'three'
 import { partGlbUrl } from './catalog'
+import { prepararPecasDoAvatar } from './instance'
 
 /**
  * Uma PEÇA do avatar: carrega o GLB (`useGLTF`, fetch+parse, sem WASM), e renderiza cada
- * mesh como `<skinnedMesh>` preso ao esqueleto COMPARTILHADO (vindo do Armature). Aplica a
- * cor da peça nos materiais `Color_*` e usa o material de pele compartilhado nos `Skin_*`
+ * mesh como `<skinnedMesh>` preso ao esqueleto próprio do avatar, dividido entre suas peças.
+ * Aplica a cor nos materiais `Color_*` próprios e usa a pele do avatar nos `Skin_*`
  * (a cor da pele = slot `head`). Espelha o `Asset.jsx` do WawaSensei, sem PocketBase.
  */
 export function AssetPart({
@@ -17,15 +18,18 @@ export function AssetPart({
   skin,
   skeleton,
   onSettled,
+  materialOverride,
 }: {
   asset: string
   color?: string
   /** Material de pele COMPARTILHADO (a cor vem do slot `head`). */
   skin: Material
-  /** Esqueleto compartilhado (do `Armature.glb`). */
+  /** Esqueleto desta montagem, derivado do `Armature.glb`. */
   skeleton: Skeleton
   /** Avisa que a peça já está na cena (o rig só mede o corpo com todas lá). */
   onSettled?: () => void
+  /** Material de apresentação de dono externo, como a silhueta do jogo. */
+  materialOverride?: Material
 }) {
   // `false, false` = SEM Draco e SEM Meshopt: os GLBs são simples (sem compressão), e
   // o decoder Meshopt do drei instancia WebAssembly ao ser configurado → bloqueado pela
@@ -38,42 +42,18 @@ export function AssetPart({
     onSettled?.()
   }, [onSettled])
 
-  // Pinta os materiais tintáveis (`Color_*`) com a cor da peça.
+  const montagem = useMemo(
+    () => prepararPecasDoAvatar(scene, skin, materialOverride),
+    [scene, skin, materialOverride],
+  )
   useEffect(() => {
-    if (!color) return
-    scene.traverse((child) => {
-      const mesh = child as Mesh
-      if (!mesh.isMesh) return
-      const mat = mesh.material as MeshStandardMaterial
-      if (mat?.name?.includes('Color_')) mat.color.set(color)
-    })
-  }, [scene, color])
-
-  const meshes = useMemo(() => {
-    const items: {
-      geometry: BufferGeometry
-      material: Material
-      morphTargetDictionary?: Mesh['morphTargetDictionary']
-      morphTargetInfluences?: Mesh['morphTargetInfluences']
-    }[] = []
-    scene.traverse((child) => {
-      const mesh = child as Mesh
-      if (!mesh.isMesh) return
-      const mat = mesh.material as Material
-      items.push({
-        geometry: mesh.geometry,
-        // `Skin_*` → material de pele compartilhado; senão o material da própria peça.
-        material: mat?.name?.includes('Skin_') ? skin : mat,
-        morphTargetDictionary: mesh.morphTargetDictionary,
-        morphTargetInfluences: mesh.morphTargetInfluences,
-      })
-    })
-    return items
-  }, [scene, skin])
+    montagem.pintar(color)
+  }, [montagem, color])
+  useEffect(() => () => montagem.soltar(), [montagem])
 
   return (
     <>
-      {meshes.map((m, i) => (
+      {montagem.pecas.map((m, i) => (
         <skinnedMesh
           // biome-ignore lint/suspicious/noArrayIndexKey: ordem estável dos meshes do GLB.
           key={i}
@@ -82,8 +62,8 @@ export function AssetPart({
           skeleton={skeleton}
           morphTargetDictionary={m.morphTargetDictionary}
           morphTargetInfluences={m.morphTargetInfluences}
-          castShadow
-          receiveShadow
+          castShadow={!materialOverride}
+          receiveShadow={!materialOverride}
         />
       ))}
     </>

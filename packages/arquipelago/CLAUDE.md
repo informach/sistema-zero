@@ -19,6 +19,27 @@ limites e `tests/modos.test.ts` passa necessidades reais ao movimento. A prova d
 `verificar-ritmo-browser.ts` observa velocidade, deslocamento, pulo e pouso com energia 10.
 O medidor opcional inclui `velocidade` na leitura sob demanda de `__arquipelagoLerCorpo()`.
 
+## Fantasma familiar dos percursos (L10, 30/10/2026)
+
+`estado/fantasmas.ts` é por montagem. O gravador recebe o relógio ativo das corridas genéricas
+e do balão. `armazem-fantasmas.ts` é um diário IndexedDB separado da V18, por público/perfil,
+com um melhor por percurso. Só envia após a fila confirmar o save e a leitura do recorde.
+Resposta perdida conserva o envio; confirmação antiga não apaga um trajeto mais rápido.
+
+Os recordes da família oferecem seguir o trajeto. BFF e serviço conferem família e permissão;
+ao começar, retomar a aba e a cada 15 s visíveis a referência é lida de novo, com prazo de 5 s.
+Nas conferências periódicas, usar a lista dos recordes em vez de baixar novamente as amostras.
+Recusa/falha retira a imagem, sem parar a corrida. Adultos guardam seus trajetos, sem ler irmãos.
+Não há prêmio, nome persistido, alteração de V18 ou promessa de validação antitrapaça.
+
+`mundo/fantasma-familiar.tsx` reutiliza o avatar padrão com material e ossos próprios, sem corpo
+do Rapier. `AvatarRig` passou a separar ossos, cores e morphs por montagem. O desenho interpola
+as amostras pelo relógio da corrida; a pausa não o avança. Nada aloca no passo do gravador/replay.
+`?familia=irmaos&fantasma=1` prepara uma trajetória simulada da Vila pelas âncoras reais, só no
+playground. Prova: `playground/verificar-fantasma-browser.ts`, relatório em `docs/qa`.
+No reinício, a captura só começa no primeiro quadro do relógio ativo, depois do corte e do
+teleporte. A plataforma falsa persiste os próprios artefatos de QA; `novo=1` limpa só essa massa.
+
 ## Primeiros passos com o Zappy e dicas de primeira vez (30/10/2026)
 
 Proposta aprovada no canvas `https://claude.ai/artifact/X1GNotDTxZpdJsNG5QvhW8` (decisões com as

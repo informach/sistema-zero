@@ -1,0 +1,2544 @@
+[
+  {
+    "tipo": "computador",
+    "antes": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.2,
+        "y": 0.9999999999999999,
+        "z": -57.54,
+        "malhas": 10,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 0,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 0,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.43384628045533,
+          "y": 0.5394349454773717,
+          "z": 34.60251996482107
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 60,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.09583334376414616
+      },
+      "chamadas": 203,
+      "triangulos": 418866,
+      "geometrias": 301,
+      "texturas": 26,
+      "programas": 30,
+      "quadrosPorSegundo": 3,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9552791235449791,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.05424070377194,
+        "y": 8.949067654905168,
+        "z": -49.09022720734529
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 512,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.3999999999999,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9952791235449792,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "andando": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.15,
+        "y": 1.08,
+        "z": -57.69,
+        "malhas": 13,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 0,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 400,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.4270045068986885,
+          "y": 0.5208132186914909,
+          "z": 34.61183446136351
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 60,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.10909091071649031
+      },
+      "chamadas": 209,
+      "triangulos": 433624,
+      "geometrias": 304,
+      "texturas": 26,
+      "programas": 30,
+      "quadrosPorSegundo": 3,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.958999175071788,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.07999889837234,
+        "y": 9.070042102327655,
+        "z": -48.92951425142155
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 515,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.3599999999999,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9989991750717879,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "pausa": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.07606000000238,
+        "y": 1.1939399999976157,
+        "z": -57.91590999999642,
+        "malhas": 13,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 0,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 1019.6999999880791,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.3941108234206654,
+          "y": 0.49222632359602964,
+          "z": 34.61330305400008
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 60,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0
+      },
+      "chamadas": 209,
+      "triangulos": 433624,
+      "geometrias": 304,
+      "texturas": 26,
+      "programas": 30,
+      "quadrosPorSegundo": 2,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9590397818079945,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.08001962792284,
+        "y": 9.070107097338632,
+        "z": -48.929452265390154
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 515,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.3199999999999,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9990397818079946,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "depois": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.07606000000238,
+        "y": 1.1939399999976157,
+        "z": -57.91590999999642,
+        "malhas": 13,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 0,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 1019.6999999880791,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.3941108234206654,
+          "y": 0.49222632359602964,
+          "z": 34.61330305400008
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 60,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0
+      },
+      "chamadas": 209,
+      "triangulos": 433624,
+      "geometrias": 304,
+      "texturas": 26,
+      "programas": 30,
+      "quadrosPorSegundo": 3,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9590397818079945,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.08001963072074,
+        "y": 9.07010700416159,
+        "z": -48.92945225702745
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 515,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.3199999999999,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9990397818079946,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "primeiroTempo": 4169,
+    "reinicio": {
+      "versao": 1,
+      "percurso": "vila-telhados",
+      "tempoMs": 1920,
+      "passoMs": 100,
+      "amostras": [
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6069, 276, -5906, 36136],
+        [6056, 296, -5944, 36136],
+        [6208, 376, -6112, 36136],
+        [6245, 396, -6154, 36136],
+        [6616, 460, -6110, 36136],
+        [6709, 476, -6099, 36136],
+        [7003, 540, -5824, 36136],
+        [7076, 556, -5755, 36136],
+        [7085, 620, -5363, 36136],
+        [7087, 636, -5265, 36136]
+      ]
+    },
+    "retirado": {
+      "fantasma": null,
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 0,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 1500,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.390271954863137,
+          "y": 0.4866156758755547,
+          "z": 34.611604545683086
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 60,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.12173913095308386
+      },
+      "chamadas": 196,
+      "triangulos": 386832,
+      "geometrias": 304,
+      "texturas": 25,
+      "programas": 27,
+      "quadrosPorSegundo": 3,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9590635857584955,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.08001963140238,
+        "y": 9.07015005916098,
+        "z": -48.929452254990046
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 512,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.03999999999985,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9990635857584955,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "erros": []
+  },
+  {
+    "tipo": "celular",
+    "antes": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.2,
+        "y": 0.9999999999999999,
+        "z": -57.54,
+        "malhas": 10,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 1,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 0,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.3831128656107996,
+          "y": 0.48552203418902684,
+          "z": 34.58404514203352
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 30,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.11590909280560234
+      },
+      "chamadas": 167,
+      "triangulos": 409592,
+      "geometrias": 202,
+      "texturas": 25,
+      "programas": 30,
+      "quadrosPorSegundo": 2,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.954295760392785,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.06063868519591,
+        "y": 8.849726034647276,
+        "z": -49.23247314874237
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 512,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.55999999999993,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9942957603927851,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "andando": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.157780000001196,
+        "y": 1.064439999997616,
+        "z": -57.658879999995236,
+        "malhas": 13,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 1,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 322.19999998807907,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.368619727790837,
+          "y": 0.459869163579519,
+          "z": 34.59899759530103
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 30,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.14000000476837157
+      },
+      "chamadas": 170,
+      "triangulos": 422780,
+      "geometrias": 205,
+      "texturas": 25,
+      "programas": 30,
+      "quadrosPorSegundo": 7,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9591099934586527,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.07701161630072,
+        "y": 9.063436759072205,
+        "z": -48.93869045537146
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 515,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.51999999999992,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9991099934586527,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "pausa": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.086420000004765,
+        "y": 1.1771599999904634,
+        "z": -57.884319999980924,
+        "malhas": 13,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 1,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 935.7999999523163,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.400161785431623,
+          "y": 0.5011761804823367,
+          "z": 34.61572642871163
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 30,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.10833333432674408
+      },
+      "chamadas": 170,
+      "triangulos": 422780,
+      "geometrias": 205,
+      "texturas": 25,
+      "programas": 30,
+      "quadrosPorSegundo": 3,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9591403985019922,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.08000231610865,
+        "y": 9.070167228779871,
+        "z": -48.92950402567666
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 515,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.47999999999992,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9991403985019922,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "depois": {
+      "fantasma": {
+        "visivel": true,
+        "x": 61.086420000004765,
+        "y": 1.1771599999904634,
+        "z": -57.884319999980924,
+        "malhas": 13,
+        "opacidade": 0.35,
+        "esqueletoProprio": true
+      },
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 1,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 935.7999999523163,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.400161785431623,
+          "y": 0.5011761804823367,
+          "z": 34.61572642871163
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 30,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.10833333432674408
+      },
+      "chamadas": 170,
+      "triangulos": 422780,
+      "geometrias": 205,
+      "texturas": 25,
+      "programas": 30,
+      "quadrosPorSegundo": 3,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9591403985019922,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.08000231610865,
+        "y": 9.070167228779871,
+        "z": -48.92950402567666
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 515,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.47999999999992,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9991403985019922,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "primeiroTempo": 7441,
+    "reinicio": {
+      "versao": 1,
+      "percurso": "vila-telhados",
+      "tempoMs": 1936,
+      "passoMs": 100,
+      "amostras": [
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6120, 196, -5754, 36136],
+        [6079, 260, -5875, 36136],
+        [6056, 296, -5944, 36136],
+        [6056, 296, -5944, 36136],
+        [6177, 360, -6078, 36136],
+        [6245, 396, -6154, 36136],
+        [6542, 447, -6119, 36136],
+        [6709, 476, -6099, 36136],
+        [6944, 527, -5879, 36136],
+        [7076, 556, -5755, 36136],
+        [7083, 607, -5441, 36136],
+        [7087, 636, -5265, 36136]
+      ]
+    },
+    "retirado": {
+      "fantasma": null,
+      "convidados": [],
+      "finalDoFarol": {
+        "etapa": "fora",
+        "tempo": 0,
+        "fachos": 1,
+        "leu": false,
+        "voltou": false
+      },
+      "plataformasDasNuvens": [],
+      "mergulho": {
+        "pronto": false,
+        "achados": {
+          "bau": false,
+          "pagina": false,
+          "tesouro": false,
+          "corais": 0
+        }
+      },
+      "corrida": {
+        "percurso": "vila-telhados",
+        "deque": -1,
+        "situacao": "correndo",
+        "tempoMs": 1417.699999988079,
+        "pegos": 0
+      },
+      "mira": null,
+      "constelacoes": 0,
+      "clima": {
+        "escolhido": "sol",
+        "luz": 1,
+        "cinza": 0,
+        "gotas": false
+      },
+      "horta": [
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        },
+        {
+          "semente": null,
+          "regado": false,
+          "progresso": 0
+        }
+      ],
+      "balao": null,
+      "barco": {
+        "fase": "atracado",
+        "distancia": 0,
+        "comprimento": 680.3725640445855,
+        "prontos": [true, false],
+        "itinerario": ["sua-ilha", "recife"],
+        "devolvendo": false,
+        "visual": {
+          "x": -2.4217876350933576,
+          "y": 0.515977498265448,
+          "z": 34.613127276175064
+        },
+        "pose": {
+          "x": -2.4000000953674316,
+          "y": 0,
+          "z": 33.59999990463257,
+          "giro": -1.570796461153735
+        }
+      },
+      "festa": {
+        "nome": null,
+        "pecas": 0,
+        "emissao": [],
+        "escalaDoFogo": []
+      },
+      "luzesDosLumis": {
+        "estrelinha": [0],
+        "buzio": [0]
+      },
+      "qualidade": "leve",
+      "metaDeQuadros": 30,
+      "dpr": 0.75,
+      "amplitudeDoVento": 0,
+      "ondas": {
+        "ativas": 0,
+        "emitidas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "ligadas": false
+      },
+      "reativos": {
+        "montado": false,
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ],
+        "galhoQuebrado": false,
+        "galhoX": 0,
+        "galhoY": 0,
+        "galhoZ": 0
+      },
+      "folhas": {
+        "pecas": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "dormindo": false
+          }
+        ]
+      },
+      "fogo": {
+        "montado": false,
+        "acesas": 0,
+        "molhadas": 0,
+        "queimadas": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vento": {
+        "tempo": 0,
+        "forca": 0,
+        "materiais": 0,
+        "escalaVisual": 1,
+        "qualidadeAplicada": 0
+      },
+      "mecanismos": {
+        "montado": false,
+        "placa": false,
+        "porta": 0,
+        "alcapao": 0,
+        "caixaX": 0,
+        "caixaY": 0,
+        "caixaZ": 0
+      },
+      "pontes": {
+        "montadas": 0,
+        "maiorAfundamento": 0,
+        "sobCarga": 0
+      },
+      "fisica": {
+        "corposAtivos": 1,
+        "passoMs": 0.10857143402099609
+      },
+      "chamadas": 157,
+      "triangulos": 375988,
+      "geometrias": 205,
+      "texturas": 24,
+      "programas": 27,
+      "quadrosPorSegundo": 5,
+      "ilhasCompletas": 1,
+      "posicao": {
+        "x": 61.19952392578125,
+        "y": 1.9590997917665005,
+        "z": -57.5390625
+      },
+      "giro": 6.606046192702237,
+      "camera": {
+        "x": 64.07999197517576,
+        "y": 9.070081145288686,
+        "z": -48.929534951576095
+      },
+      "liberadas": {
+        "geometrias": 108,
+        "materiais": 59,
+        "texturas": 0
+      },
+      "esmaecidas": [],
+      "geometriasNaCena": 512,
+      "tronco": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "submersa": 0,
+        "dormindo": false,
+        "montado": false
+      },
+      "modo": "chao",
+      "noChao": true,
+      "patins": [],
+      "borroes": [],
+      "lumisDaVila": [],
+      "lanternaNaMao": null,
+      "lumiDaRotina": null,
+      "descanso": null,
+      "energia": 99.3199999999999,
+      "avatar": {
+        "x": 61.19952392578125,
+        "y": 0.9990997917665005,
+        "z": -57.5390625,
+        "deitado": 0
+      }
+    },
+    "erros": []
+  }
+]

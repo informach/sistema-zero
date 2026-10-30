@@ -16,6 +16,7 @@ import * as THREE from 'three'
 import { useReducedMotion } from '../use-reduced-motion'
 import { AssetPart } from './asset-part'
 import { type AvatarSlot, baseGlbUrl } from './catalog'
+import { copiarEsqueletoDoAvatar } from './instance'
 import { measureCharacter } from './measure'
 import { allPartsSettled, visibleParts } from './visible-parts'
 
@@ -54,21 +55,6 @@ class PieceErrorBoundary extends Component<
   }
 }
 
-/** Acha o esqueleto compartilhado a partir do 1º skinned mesh do Armature (robusto a nomes). */
-function findSkeleton(scene: THREE.Object3D): THREE.Skeleton | null {
-  let found: THREE.Skeleton | null = null
-  scene.traverse((o) => {
-    const sm = o as THREE.SkinnedMesh
-    if (sm.isSkinnedMesh && !found) found = sm.skeleton
-  })
-  return found
-}
-/** Osso raiz da hierarquia (cujo pai não é osso) — pra colocar a árvore de ossos na cena. */
-function rootBoneOf(skeleton: THREE.Skeleton): THREE.Bone | null {
-  const set = new Set<THREE.Object3D>(skeleton.bones)
-  return skeleton.bones.find((b) => !b.parent || !set.has(b.parent)) ?? skeleton.bones[0] ?? null
-}
-
 /**
  * Monta o personagem: 1 esqueleto compartilhado (`Armature.glb`) + 1 `<AssetPart>` por
  * categoria equipada, CADA UM no seu `<Suspense>` (trocar 1 peça NÃO apaga o resto — fim do
@@ -86,6 +72,7 @@ export function AvatarRig({
   completeRef,
   extraClips,
   onAnimations,
+  materialOverride,
 }: {
   slots: Slots
   pose?: string
@@ -107,6 +94,7 @@ export function AvatarRig({
     actions: Record<string, THREE.AnimationAction | null>,
     mixer: THREE.AnimationMixer,
   ) => void
+  materialOverride?: THREE.Material
 }) {
   const animRoot = useRef<THREE.Group>(null)
   const springRef = useRef<THREE.Group>(null)
@@ -125,11 +113,13 @@ export function AvatarRig({
   )
   const { actions, mixer } = useAnimations(clips, animRoot)
 
-  const skeleton = useMemo(() => findSkeleton(armature.scene), [armature.scene])
-  const rootBone = useMemo(() => (skeleton ? rootBoneOf(skeleton) : null), [skeleton])
+  const montagem = useMemo(() => copiarEsqueletoDoAvatar(armature.scene), [armature.scene])
+  const { skeleton, raiz: rootBone } = montagem
+  useEffect(() => () => montagem.soltar(), [montagem])
 
   // Material de pele COMPARTILHADO — a cor vem do slot `head`.
   const skin = useMemo(() => new THREE.MeshStandardMaterial({ color: '#ecad80', roughness: 1 }), [])
+  useEffect(() => () => skin.dispose(), [skin])
   const headColor = slots.head?.color
   useEffect(() => {
     if (headColor) skin.color.set(headColor)
@@ -243,6 +233,7 @@ export function AvatarRig({
                         color={slots[cat]?.color}
                         skin={skin}
                         skeleton={skeleton}
+                        materialOverride={materialOverride}
                         onSettled={() => markSettled(cat, asset)}
                       />
                     </Suspense>

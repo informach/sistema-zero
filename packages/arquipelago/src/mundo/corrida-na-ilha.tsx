@@ -11,6 +11,7 @@ import {
   SpriteMaterial,
 } from 'three'
 import { useJogo } from '../estado/contexto'
+import { lojaDosFantasmas } from '../estado/fantasmas'
 import type { LojaDoJogo } from '../estado/loja'
 import type { Ponto } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
@@ -74,7 +75,8 @@ export function CorridaNaIlha({
   alturaDoChao: number
   cores: CoresDoColetavel
 }) {
-  const { loja, movimento, rastro, pedidos } = useJogo()
+  const { loja, movimento, rastro, pedidos, plataforma, fila } = useJogo()
+  const fantasmas = lojaDosFantasmas(loja, plataforma, fila)
   const menosMovimento = useReducedMotion()
   const q = useRef<Quadro>({
     corpo: { x: 0, y: 0, z: 0, pes: 0, noChaoDaIlha: false },
@@ -88,12 +90,13 @@ export function CorridaNaIlha({
   // Uma corrida não continua numa ilha que não está mais ali.
   useEffect(
     () => () => {
+      fantasmas.cancelar(config.id)
       if (movimento.corrida) {
         movimento.corrida = null
         loja.getState().definirCorrida(null)
       }
     },
-    [movimento, loja],
+    [movimento, loja, fantasmas, config.id],
   )
 
   /** Escurece, leva o corpo e clareia (a volta à parada e o "Correr de novo"). */
@@ -159,6 +162,7 @@ export function CorridaNaIlha({
       loja.getState().mostrarResultado(null)
       cortarPara(pontos.largada, pontos.rumoDaLargada, true)
     } else if (pedido === 'parar' && movimento.corrida) {
+      fantasmas.cancelar(config.id)
       movimento.corrida = null
       loja.getState().definirCorrida(null)
       loja.getState().dizer(config.falaDoFim)
@@ -191,7 +195,10 @@ export function CorridaNaIlha({
     q.corpo.z = rastro.z
     q.corpo.pes = rastro.y - CORPO.doCentroAoPe
     q.corpo.noChaoDaIlha = movimento.noChao && q.corpo.pes < alturaDoChao
+    // Só iniciar depois do corte e do teleporte: o relógio ativo ainda está em zero.
+    if (c.tempoMs === 0) fantasmas.comecar(config.id, rastro)
     const ev = passoDaCorrida(c, q.corpo, pontos, dt * 1000, config)
+    fantasmas.quadro(c.tempoMs, rastro)
     if (!ev) return
     if (ev.tipo === 'vagalume') {
       s.definirCorrida({
@@ -205,7 +212,9 @@ export function CorridaNaIlha({
     } else if (ev.tipo === 'chegou') {
       movimento.corrida = null
       terminarCorrida(loja, config, c)
+      fantasmas.terminar(config.id, c.tempoMs, rastro)
     } else if (ev.tipo === 'desistiu') {
+      fantasmas.cancelar(config.id)
       movimento.corrida = null
       s.definirCorrida(null)
       s.dizer(config.falaDoFim)

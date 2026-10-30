@@ -9,6 +9,7 @@
     "./avatar/avatar-rig": "./src/avatar/avatar-rig.tsx",
     "./avatar/catalog": "./src/avatar/catalog.ts",
     "./avatar/measure": "./src/avatar/measure.ts",
+    "./avatar/instance": "./src/avatar/instance.ts",
     "./avatar/visible-parts": "./src/avatar/visible-parts.ts",
     "./quarto/catalog": "./src/quarto/catalog.ts",
     "./quarto/coords": "./src/quarto/coords.ts",

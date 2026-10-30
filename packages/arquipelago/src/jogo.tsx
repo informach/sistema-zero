@@ -16,6 +16,7 @@ import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto
 import { criarLoja } from './estado/loja'
 import { lojaDosPassos } from './estado/primeiros-passos'
 import { Relogios } from './estado/relogios'
+import { EfeitoDosFantasmas } from './interface/fantasmas'
 import { Hud } from './interface/hud'
 import { comecarPassosSozinho } from './interface/primeiros-passos'
 import { SalvamentoDoJogo } from './interface/salvamento'
@@ -317,6 +318,7 @@ function JogoPronto({
         <Cena aoFalhar={aoFalhar} />
       </Barreira>
       <Relogios />
+      <EfeitoDosFantasmas />
       <Hud />
       {fila ? <SalvamentoDoJogo fila={fila} /> : null}
       {tempoSincronizando && !tempoPausado && !tempoAcabou && !naAbertura ? (

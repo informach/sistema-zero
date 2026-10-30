@@ -8,6 +8,7 @@ import {
   type ConflitoDeSalvamento,
   criarSalvamentoInicial,
   diaDeSaoPaulo,
+  type Fantasma,
   GravarSalvamentoSchema,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   type LumiId,
@@ -29,6 +30,7 @@ import { lerAparenciaFalsa } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
 import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
+import { CHAVE_DOS_FANTASMAS_FALSOS, criarFantasmasFalsos } from './fantasmas-falsos'
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
@@ -40,6 +42,7 @@ import { criarProfissoesFalsas } from './profissoes-falsas'
  * contrato da de verdade, com o serviço do jogo em memória (e, se der, no localStorage).
  */
 export interface OpcoesDaPlataformaFalsa {
+  fantasma?: Fantasma
   somenteLeitura?: boolean
   /** O playground hospeda o editor fora do jogo; a falsa mantém as mesmas recusas da ponte. */
   editarRotina?: (molde: MoldeDaRotina) => Promise<ResultadoDaFerramentaRotina | null>
@@ -137,6 +140,19 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       : undefined,
   )
   const familia = criarFamiliaFalsa(o.familia)
+  const fantasmas = criarFantasmasFalsos({
+    salvo: () => guardado,
+    somenteLeitura: () => o.somenteLeitura === true,
+    familia: (c, m) => familia.buscar(c, m),
+    exemplo: o.fantasma,
+    persistencia:
+      o.persistir && typeof localStorage !== 'undefined'
+        ? {
+            ler: () => localStorage.getItem(CHAVE_DOS_FANTASMAS_FALSOS),
+            gravar: (dado) => localStorage.setItem(CHAVE_DOS_FANTASMAS_FALSOS, dado),
+          }
+        : undefined,
+  })
   const profissoes = criarProfissoesFalsas({
     agora,
     posicao: o.posicao ?? 2,
@@ -413,6 +429,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/mural') return { status: 200, corpo: { jogos: [] } }
         if (caminho === '/minijogos') return { status: 200, corpo: { minijogos: [] } }
         const metodo = opcoes?.metodo ?? 'GET'
+        const doFantasma = fantasmas.buscar(caminho, metodo, opcoes?.corpo)
+        if (doFantasma) return doFantasma
         const dosInsumos = insumos.buscar(caminho, metodo, opcoes?.corpo)
         if (dosInsumos) return dosInsumos
         const dosPedidos = pedidos.buscar(caminho, metodo, opcoes?.corpo)

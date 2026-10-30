@@ -2,7 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from '@react-three/rapier'
 import { progresso } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
-import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
+import { Box3, Mesh, type Object3D, type Skeleton, SkinnedMesh, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
 import { lojaDosConvidados } from '../estado/convidados'
 import { lojaDoFarol } from '../estado/farol'
@@ -37,6 +37,15 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  fantasma: {
+    visivel: boolean
+    x: number
+    y: number
+    z: number
+    malhas: number
+    opacidade: number | null
+    esqueletoProprio: boolean
+  } | null
   convidados: readonly ConvidadoNaCasa[]
   finalDoFarol: { etapa: string; tempo: number; fachos: number; leu: boolean; voltou: boolean }
   plataformasDasNuvens: {
@@ -198,6 +207,34 @@ function contarGeometrias(raiz: Object3D): number {
   return vistas.size
 }
 
+function medirFantasma(raiz: Object3D): MedidaDoDesenho['fantasma'] {
+  const g = raiz.getObjectByName('fantasma-familiar')
+  if (!g) return null
+  let malhas = 0,
+    opacidade: number | null = null
+  const doJogador = new Set<Skeleton>(),
+    doFantasma = new Set<Skeleton>()
+  raiz.getObjectByName('avatar-visual')?.traverse((o) => {
+    if (o instanceof SkinnedMesh) doJogador.add(o.skeleton)
+  })
+  g.traverse((o) => {
+    if (!(o instanceof Mesh)) return
+    if (o instanceof SkinnedMesh) doFantasma.add(o.skeleton)
+    malhas++
+    opacidade = (Array.isArray(o.material) ? o.material[0] : o.material)?.opacity ?? null
+  })
+  return {
+    visivel: g.visible,
+    x: g.position.x,
+    y: g.position.y,
+    z: g.position.z,
+    malhas,
+    opacidade,
+    esqueletoProprio:
+      doFantasma.size > 0 && doJogador.size > 0 && [...doFantasma].every((s) => !doJogador.has(s)),
+  }
+}
+
 export function Medidor() {
   const qualidade = useQualidade()
   const ligado = useMemo(medirLigado, [])
@@ -304,6 +341,7 @@ export function Medidor() {
     })
     const final = lojaDoFarol(loja).getState()
     const medida: MedidaDoDesenho = {
+      fantasma: medirFantasma(cena),
       convidados: lojaDosConvidados(loja).getState().convidados,
       finalDoFarol: {
         etapa: final.etapa,

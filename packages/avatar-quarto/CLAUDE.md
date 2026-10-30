@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/avatar-quarto
 
+## Várias montagens do avatar (30/10/2026)
+
+`avatar/instance.ts` prepara ossos e texturas de esqueleto próprios por montagem. Nunca montar
+o `rootBone` vindo diretamente do cache do GLTF em dois pais. Peças compartilham geometria,
+mas têm materiais tintáveis e morphs próprios. A pele pertence ao rig, e o material opcional
+`materialOverride` pertence ao chamador. O descarte respeita esses donos; não libera originais
+do cache. `AvatarRig` repassa esse material às peças, sem alterar o visual das outras montagens.
+As regressões reais de Three estão em `tests/avatar-instance.test.ts`. O teste de fronteira
+normaliza separadores de caminho para também funcionar no Windows.
+
 O avatar 3D e o quarto 3D, divididos de propósito pela plataforma e pelo jogo **Arquipélago
 Vagalume** (27/10/2026). É o ÚNICO código 3D que os dois lados compartilham (decisão da dona):
 mudar aqui muda o avatar e o quarto na plataforma E no jogo.

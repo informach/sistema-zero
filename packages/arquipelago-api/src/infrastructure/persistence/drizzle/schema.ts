@@ -1,10 +1,12 @@
 import {
+  FANTASMA_MAX_BYTES,
   type Insumo,
   LIMITES_DO_DESAFIO,
   type MetadadosDoDesafio,
   type MoradorDoPedido,
   type PagamentoDaProfissao,
   type PagamentoDoPedido,
+  PERCURSOS,
   type PostoDaVila,
   type PublicoJogo,
 } from '@sistemazero/arquipelago-contracts'
@@ -70,6 +72,39 @@ export const salvamentos = arquipelagoSchema.table(
   (t) => [
     check('salvamentos_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
     check('salvamentos_revisao_check', sql`${t.revisao} >= 1`),
+  ],
+)
+
+/** Um melhor trajeto por percurso. Nenhum nome nem sessão histórica é guardado. */
+export const fantasmas = arquipelagoSchema.table(
+  'fantasmas',
+  {
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    percurso: varchar({ length: 40 }).notNull(),
+    publico: varchar({ length: 8 }).notNull(),
+    dados: jsonb().notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.percurso] }),
+    check('fantasmas_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'fantasmas_percurso_check',
+      sql`${t.percurso} in (${sql.join(
+        PERCURSOS.map((id) => sql.raw(`'${id}'`)),
+        sql`, `,
+      )})`,
+    ),
+    check(
+      'fantasmas_tamanho_check',
+      sql`octet_length(${t.dados}::text) <= ${sql.raw(String(FANTASMA_MAX_BYTES))}`,
+    ),
+    check(
+      'fantasmas_versao_check',
+      sql`${t.dados}->>'versao' = '1' and ${t.dados}->>'percurso' = ${t.percurso}`,
+    ),
   ],
 )
 
@@ -448,6 +483,7 @@ export const pedidosRemunerados = arquipelagoSchema.table(
 )
 
 export const schema = {
+  fantasmas,
   pedidosRemunerados,
   comprasDeInsumos,
   turnosRemunerados,
