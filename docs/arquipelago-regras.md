@@ -208,18 +208,24 @@ Arquivo: `arquipelago/src/mundo/medidas.ts`.
 - **Distâncias:** as ilhas do anel ficam a `RAIO_DO_ANEL = 82` do centro e têm raio
   `RAIO_DA_ILHA_DO_ANEL = 13`. O gramado da sua ilha vai até 24 (`RAIO_DO_GRAMADO`), a praia até 29
   (`RAIO_DA_PRAIA`) e o raso até 36 (`RAIO_DO_RASO`). Uma unidade é mais ou menos 1 metro.
-- **A ponte:** quando a ilha abre, a ponte aparece e a cor escorre pela ilha em 4,5 segundos
-  (`DURACAO_DA_CHEGADA_MS = 4500`, em `arquipelago/src/mundo/anel.tsx`). O Zappy avisa: "A ponte
-  para o ... ficou pronta". Essa chegada aparece uma vez só. A ilha entra em
-  `pontesVistas` no salvamento.
+- **A ponte (cena da subida de posto, N02, 30/10/2026):** a ponte nova fica fechada e a ilha
+  cinza até a cena dela. A cena começa quando a criança está fora de casa, sem painel, menu,
+  ferramenta, corrida ou visita (`mundo/cena-da-chegada.tsx`, regras em
+  `mundo/chegada-da-ponte.ts`): o Zappy voa até a ilha cinza (2,4 s, câmera no alto da sua ilha),
+  a ponte se monta tábua por tábua com a cor escorrendo (4,5 s, câmera de lado) e a câmera anda
+  pela travessia (3,4 s). A legenda diz cada etapa; "Pular" ou o Esc encerram. Com menos
+  movimento, a câmera fica parada de lado e a cena dura 5,5 s. No fim, o Zappy avisa: "A ponte
+  para o ... ficou pronta" e a ilha entra em `pontesVistas`. Duas pontes novas: uma cena por vez,
+  na ordem dos postos. Provas: `tests/chegada-da-ponte.test.ts` e
+  `playground/verificar-ponte-montando-browser.ts`.
   - Fechada, a ponte tem só o primeiro quarto, do lado da sua ilha (`TRECHO_QUEBRADO = 0,25`,
     `mundo/medidas.ts`), com a placa no fim. Ao abrir, ela cresce do fim desse trecho até a ilha
     (`fracaoMontada`), e o chão que segura o corpo acompanha as tábuas: quem está em cima do
     trecho quebrado continua de pé durante a montagem (antes, o chão da ponte sumia nos 4,5 s e a
     criança caía na água). Os corrimãos entram quando ela termina.
-- **Ilha aberta hoje:** chegar perto mostra a ação "Olhar em volta". O Zappy explica que os
-  moradores e os bichos chegam numa próxima fase. No Bosque, que já tem a Capi (seção 6.15), essa
-  ação não aparece (`ILHAS_VIVAS` em `arquipelago/src/mundo/anel.tsx`).
+- **Ilhas vivas:** as seis ilhas do anel têm moradores e bichos (`ILHAS_VIVAS` em
+  `arquipelago/src/mundo/anel.tsx`). A antiga ação "Olhar em volta", que dizia que eles chegariam
+  numa próxima fase, saiu do código em 30/10/2026 (N13).
 - **O Farol** fica na sua ilha, ao lado da casa (`FAROL = { x: -12, z: -13 }`). Ele acende quando a
   posição é 8 ou mais (`arquipelago/src/mundo/farol.tsx`, `aceso = jornada >= 8`).
 - **Primeira entrada:** a pessoa aparece no quarto (`INICIO`). Enquanto a porta nova não foi

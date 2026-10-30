@@ -1,14 +1,17 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRapier } from '@react-three/rapier'
+import { ILHAS, type IlhaId } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from 'three'
+import { lojaDaChegada } from '../estado/chegada'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol, useFarol } from '../estado/farol'
 import { useToque } from '../estado/preferencias'
 import { ALTO_DO_FAROL, campoDaSala, vistaFinal } from '../mundo/alto-do-farol'
+import { type PalcoDaChegada, palcoDaChegada, vistaDaChegada } from '../mundo/chegada-da-ponte'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
 import { vistaDaLuneta } from '../mundo/luneta-medidas'
 import {
@@ -116,6 +119,13 @@ export function Camera() {
     giro: new Quaternion(),
     campo: 55,
     giroDoCorpo: 0,
+  })
+  const antesDaChegada = useRef({
+    ativa: false,
+    ilha: null as IlhaId | null,
+    palco: null as PalcoDaChegada | null,
+    posicao: new Vector3(),
+    giro: new Quaternion(),
   })
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
@@ -314,6 +324,34 @@ export function Camera() {
   useFrame((_, dt) => {
     // Uma única dona da câmera por quadro. O Construir cuida do alvo, controles e suavização.
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
+    // A cena da subida de posto (N02): a câmera mostra a ilha, a ponte e a travessia.
+    const cena = lojaDaChegada(loja).getState()
+    const antesC = antesDaChegada.current
+    if (cena.ilha !== null && camera instanceof PerspectiveCamera) {
+      if (!antesC.ativa || antesC.ilha !== cena.ilha) {
+        if (!antesC.ativa) {
+          antesC.posicao.copy(camera.position)
+          antesC.giro.copy(camera.quaternion)
+        }
+        antesC.ativa = true
+        antesC.ilha = cena.ilha
+        const ilha = ILHAS.find((i) => i.id === cena.ilha)
+        antesC.palco = ilha ? palcoDaChegada(ilha) : null
+      }
+      if (antesC.palco) {
+        const v = vistaDaChegada(antesC.palco, cena.tempo, cena.menosMovimento)
+        camera.position.set(v.posicao.x, v.posicao.y, v.posicao.z)
+        camera.lookAt(v.alvo.x, v.alvo.y, v.alvo.z)
+        return
+      }
+    }
+    if (antesC.ativa && cena.ilha === null && camera instanceof PerspectiveCamera) {
+      antesC.ativa = false
+      antesC.ilha = null
+      camera.position.copy(antesC.posicao)
+      camera.quaternion.copy(antesC.giro)
+      return
+    }
     const final = farol.getState()
     const antesF = antesDoFarol.current
     if (final.etapa !== 'fora' && !antesF.ativa && camera instanceof PerspectiveCamera) {

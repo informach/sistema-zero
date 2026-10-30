@@ -1,5 +1,6 @@
 import { ILHAS } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { PAINEL_DA_CHEGADA } from '../estado/chegada'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
@@ -46,6 +47,7 @@ import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
+import { LegendaDaChegada } from './chegada'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { PainelDosConvidados } from './convidados'
 import { Diario } from './diario'
@@ -809,6 +811,7 @@ export function Hud() {
   const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' || s.corte !== null)
   const naAbertura = useEstado((s) => s.painelAberto === PAINEL_DA_ABERTURA)
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
+  const naChegada = useEstado((s) => s.painelAberto === PAINEL_DA_CHEGADA)
   const nasEstrelas = useEstado((s) => s.painelAberto === PAINEL_DAS_ESTRELAS)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const naFoto = useEstado(hudEscondido)
@@ -865,6 +868,13 @@ export function Hud() {
     return (
       <div className="arq-hud">
         <VisorDaLuneta />
+      </div>
+    )
+  // A cena da subida de posto (N02): só a legenda e o Pular.
+  if (naChegada)
+    return (
+      <div className="arq-hud">
+        <LegendaDaChegada />
       </div>
     )
   if (nasEstrelas)

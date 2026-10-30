@@ -15,6 +15,7 @@ import { Bancada } from './bancada'
 import { Barcos } from './barcos'
 import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
+import { CenaDaChegada } from './cena-da-chegada'
 import { Ceu } from './ceu'
 import { ClimaDaIlha } from './clima-da-ilha'
 import { ColecoesDaPraia } from './colecoes-da-praia'
@@ -102,6 +103,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Bancada />
           <Farol />
           <Anel />
+          <CenaDaChegada />
           <Barcos />
           <Personagem />
           <FantasmaFamiliar />
