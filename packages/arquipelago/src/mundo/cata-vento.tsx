@@ -5,7 +5,13 @@ import type { Object3D } from 'three'
 import cataVentoGlb from '../assets/mundo/cata-vento.glb'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useJogo } from '../estado/contexto'
-import { climaLiberado, FALA_DO_CLIMA, GIRO_DO_CATA_VENTO, proximoClima } from '../sistemas/clima'
+import {
+  climaEfetivo,
+  climaLiberado,
+  FALA_DO_CLIMA,
+  GIRO_DO_CATA_VENTO,
+  proximoClima,
+} from '../sistemas/clima'
 import { jogoPausado } from '../sistemas/pausa'
 import { Colisores } from './colisores'
 import { ehNoDeColisao, lerColisores } from './colisores-da-ilha'
@@ -73,7 +79,7 @@ function CataVentoCarregado() {
   useFrame((_, dt) => {
     const s = loja.getState()
     if (!helice || jogoPausado(s)) return
-    const clima = climaLiberado(s.jornada) && !s.visita ? s.salvamento.clima : 'sol'
+    const clima = climaEfetivo(s, Date.now())
     const giro = GIRO_DO_CATA_VENTO[clima] * (menos ? GIRO_COM_MENOS_MOVIMENTO : 1)
     // A hélice olha para o +z do modelo: gira em volta dele.
     helice.rotation.z += giro * Math.min(dt, 0.1)

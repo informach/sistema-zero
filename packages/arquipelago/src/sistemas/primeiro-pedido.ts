@@ -1,6 +1,7 @@
 import { cabeColheita, colher, estagio, type Salvamento } from '@sistemazero/arquipelago-contracts'
 import { contextoDaColheita } from './colheita'
 import { ganharProjeto } from './construcao/projeto-azul'
+import { geladeiraEm } from './horta'
 import { adicionar } from './itens'
 
 export interface PrimeiroPedido {
@@ -16,7 +17,7 @@ export function primeiroPedido(
   if (s.projetos.geladeira) return null
   if (!s.casa.portaNova)
     return { etapa: 'porta', texto: 'Abra a porta nova do quarto para conhecer sua horta.' }
-  const fases = s.horta.map((c) => estagio(c, agoraMs))
+  const fases = s.horta.map((c) => estagio(c, agoraMs, null))
   if (fases.includes('maduro'))
     return {
       etapa: 'colher',
@@ -35,7 +36,14 @@ export function primeiroPedido(
 /** Colheita manual inteira: só entrega a primeira função depois de guardar alimento e semente. */
 export function colherNaIlha(s: Salvamento, indice: number, agora: Date, jornada: number) {
   const canteiro = s.horta[indice]
-  const colheita = canteiro && colher(canteiro, agora.getTime(), contextoDaColheita(s, jornada))
+  const colheita =
+    canteiro &&
+    colher(
+      canteiro,
+      agora.getTime(),
+      contextoDaColheita(s, jornada, agora.getTime()),
+      geladeiraEm(s),
+    )
   if (!colheita) return { ok: false as const, motivo: 'imatura' as const }
   if (!cabeColheita(s.inventario, colheita.item, colheita.qtd))
     return { ok: false as const, motivo: 'mochila' as const }

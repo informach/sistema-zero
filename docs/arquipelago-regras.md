@@ -49,6 +49,16 @@ Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
 
+## Horta em horas e clima natural (N03 e N04, 30/10/2026)
+
+A horta cresce em horas de verdade (seção 6.3). Antes das Nuvens o tempo da sua ilha muda
+sozinho, um clima por dia do jogo, igual em qualquer aparelho (`climaNatural`: 55% sol, 25%
+nublado, 20% chuva). Ele faz tudo o que o clima escolhido faz: a chuva rega, o sol pede água mais
+cedo, a colheita especial, o céu e o relógio. Com as Nuvens, a Iriê ensina a escolher, como antes
+(`climaEfetivo` em `sistemas/clima.ts`). Numa visita o tempo é de sol. A prévia da rotina usa a
+hora da prévia. Provas: `tests/horta-e-clima-natural.test.ts`,
+`playground/verificar-clima-natural-browser.ts` e `verificar-clima-browser.ts`.
+
 ## Lumis em todas as ilhas (N01, 30/10/2026)
 
 Cada ilha tem a sua família de Lumis, como pede a proposta: praia (Estrelinha e Búzio), Bosque
@@ -655,11 +665,14 @@ Arquivos: `sistemas/horta.ts` e `mundo/horta.tsx`.
 - **Os canteiros:** 6 no começo, numa grade de 3 colunas por 2 linhas (`HORTA` em `medidas.ts`).
 - **As sementes:** `SEMENTES` = alface, tomate, milho.
 - **O ciclo:** plantar, regar, esperar, colher. A planta só cresce depois de regada.
-- **Tempo para crescer, contado da rega** (`CRESCIMENTO_MS`). O código avisa que estes tempos são
-  curtos de propósito, para dar para ver crescer numa sessão:
-  - alface: 3 minutos;
-  - tomate: 5 minutos;
-  - milho: 8 minutos.
+- **Tempo para crescer, contado da rega** (`CRESCIMENTO_MS`): "planta hoje, colhe amanhã", como
+  na proposta (decisão da dona em 30/10/2026):
+  - alface: 4 horas;
+  - tomate: 8 horas;
+  - milho: 16 horas.
+- **O primeiro pedido** cresce no tempo curto do tutorial (`CRESCIMENTO_DO_PRIMEIRO_PEDIDO_MS`:
+  alface 3, tomate 5 e milho 8 minutos) enquanto a geladeira não foi ganha. O que foi regado até
+  ganhar a geladeira continua no tempo curto (`noTempoDoPrimeiroPedido`): nada "encolhe".
 - **Estágios** (`estagio`):
   - `vazio`;
   - `semente`: plantada e não regada;
@@ -669,8 +682,8 @@ Arquivos: `sistemas/horta.ts` e `mundo/horta.tsx`.
 - **A horta cresce no tempo de verdade,** também com o jogo fechado.
 - **Colheita** (`COLHEITA`): alface 2, tomate 3, milho 2. Cada colheita devolve também 1 semente
   da mesma planta, então a horta nunca acaba.
-- **Colheita especial:** com as Nuvens abertas, sol acrescenta 1 tomate, nublado acrescenta
-  1 alface e chuva acrescenta 1 milho. Humor ótimo acrescenta mais 1 alimento, com ou sem
+- **Colheita especial:** o clima que vale na sua ilha (o natural do dia antes das Nuvens, o
+  escolhido depois) acrescenta: sol, 1 tomate; nublado, 1 alface; chuva, 1 milho. Humor ótimo acrescenta mais 1 alimento, com ou sem
   clima liberado. Valem o clima e o humor no momento de colher. Não há sorteio nem redução da
   colheita normal por ficar longe. O resultado anuncia cada bônus, sem criar alimento novo.
 - **Tudo precisa caber:** a mão e os Lumis conferem a quantidade inteira e a semente antes de

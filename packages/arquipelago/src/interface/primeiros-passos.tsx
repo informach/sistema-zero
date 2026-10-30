@@ -119,7 +119,7 @@ function pontoDoGuia(
   if (guia === 'porta' || guia === 'casa') return de('porta-nova')
   if (guia === 'geladeira') return de('objeto-geladeira')
   for (const c of s.salvamento.horta) {
-    const f = estagio(c, agora)
+    const f = estagio(c, agora, s.salvamento.projetos.geladeira?.ganhoEm ?? null)
     const serve =
       guia === 'canteiro-vazio'
         ? f === 'vazio'

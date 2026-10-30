@@ -7,10 +7,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosPassos } from '../estado/primeiros-passos'
-import { type Clima, climaLiberado, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
+import { type Clima, climaEfetivo, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
 import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
-import { type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
+import { type Estagio, estagio, geladeiraEm, plantar, progresso, regar } from '../sistemas/horta'
 import { ITENS, quantidade, remover } from '../sistemas/itens'
 import { colherNaIlha } from '../sistemas/primeiro-pedido'
 import { hortaVisivel } from '../sistemas/visitas'
@@ -60,11 +60,12 @@ function Canteiro({
 }) {
   const { loja, plataforma } = useJogo()
   const { x, z, escala } = lugarDoCanteiro(canteiro.id, indice)
-  const fase = estagio(canteiro, agora)
-  const p = progresso(canteiro, agora)
-  const clima = useEstado((s) => climaDaHorta(s))
+  const geladeira = useEstado((s) => geladeiraEm(s.salvamento))
+  const fase = estagio(canteiro, agora, geladeira)
+  const p = progresso(canteiro, agora, geladeira)
+  const clima = useEstado((s) => climaDaHorta(s, agora))
   // A planta que pede água (fase4-08) mostra uma gota em cima.
-  const sede = clima !== null && pedeAgua(canteiro, agora, clima)
+  const sede = clima !== null && pedeAgua(canteiro, agora, clima, geladeira)
 
   useInterativo_(
     `canteiro-${canteiro.id}`,
@@ -76,15 +77,15 @@ function Canteiro({
       const s = loja.getState().salvamento
       const c = s.horta[indice]
       if (!c) return null
-      const f = estagio(c, Date.now())
+      const f = estagio(c, Date.now(), geladeiraEm(s))
       if (f === 'vazio') {
         const semente = sementeQueDaParaPlantar(s.inventario)
         return semente ? `Plantar ${ITENS[semente]?.nome.toLowerCase()}` : null
       }
       if (f === 'semente') return 'Regar'
       if (f === 'maduro') return `Colher ${ITENS[c.semente ?? '']?.nome.toLowerCase()}`
-      const clima = climaDaHorta(loja.getState())
-      if (clima && pedeAgua(c, Date.now(), clima)) return 'Regar'
+      const clima = climaDaHorta(loja.getState(), Date.now())
+      if (clima && pedeAgua(c, Date.now(), clima, geladeiraEm(s))) return 'Regar'
       return null
     },
     () => {
@@ -92,7 +93,7 @@ function Canteiro({
       loja.getState().mudar((s) => {
         const c = s.horta[indice]
         if (!c) return s
-        const f = estagio(c, agoraData.getTime())
+        const f = estagio(c, agoraData.getTime(), geladeiraEm(s))
         const horta = [...s.horta]
         if (f === 'vazio') {
           const semente = sementeQueDaParaPlantar(s.inventario)
@@ -111,8 +112,8 @@ function Canteiro({
           return { ...s, horta }
         }
         // Crescendo, ela pode estar pedindo água (fase4-08): regar adianta o crescimento.
-        const clima = climaDaHorta(loja.getState())
-        const comSede = clima && regarComSede(c, agoraData, clima)
+        const clima = climaDaHorta(loja.getState(), agoraData.getTime())
+        const comSede = clima && regarComSede(c, agoraData, clima, geladeiraEm(s))
         if (comSede) {
           horta[indice] = comSede
           loja.getState().dizer(FALA_DO_BONUS)
@@ -163,15 +164,14 @@ function Canteiro({
 }
 
 /**
- * O clima que vale na horta agora: o escolhido, com as Nuvens abertas (a Iriê ensinou) e fora de
- * uma visita (a horta do irmão só se olha). `null` = a horta de sempre, sem pedir água.
+ * O clima que vale na horta agora: o natural do dia antes das Nuvens, o escolhido depois
+ * (`climaEfetivo`). Numa visita a horta do irmão só se olha: `null`, sem pedir água.
  */
-function climaDaHorta(s: {
-  jornada: number
-  visita: unknown
-  salvamento: { clima: Clima }
-}): Clima | null {
-  return climaLiberado(s.jornada) && !s.visita ? s.salvamento.clima : null
+function climaDaHorta(
+  s: { jornada: number; visita: unknown; salvamento: { clima: Clima; criadoEm: string } },
+  agoraMs: number,
+): Clima | null {
+  return s.visita ? null : climaEfetivo(s, agoraMs)
 }
 
 /** A gota azul em cima da planta que pede água (some quando rega ou quando passa a vontade). */

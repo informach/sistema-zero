@@ -64,7 +64,7 @@ try {
    * o jogo novo do playground parecer mudado em outro aparelho.
    */
   let contexto: Awaited<ReturnType<typeof navegador.newContext>> | undefined
-  let page: Awaited<ReturnType<NonNullable<typeof contexto>['newPage']>>
+  let page!: Awaited<ReturnType<NonNullable<typeof contexto>['newPage']>>
   const abrir = async (url: string) => {
     await contexto?.close()
     contexto = await navegador.newContext({ viewport: { width: 1280, height: 720 } })

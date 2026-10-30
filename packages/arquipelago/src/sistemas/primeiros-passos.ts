@@ -1,4 +1,4 @@
-import { CRESCIMENTO_MS, type Semente } from '@sistemazero/arquipelago-contracts'
+import { CRESCIMENTO_DO_PRIMEIRO_PEDIDO_MS, type Semente } from '@sistemazero/arquipelago-contracts'
 import type { PrimeiroPedido } from './primeiro-pedido'
 
 /**
@@ -158,7 +158,7 @@ const POR_EXTENSO: Readonly<Record<number, string>> = {
 export function frasesDaPlanta(semente: Semente | null): { cresce: string; pronta: string } {
   if (!semente) return { cresce: 'A planta cresce de verdade.', pronta: 'A planta ficou pronta.' }
   const a = ARTIGO[semente]
-  const minutos = Math.round(CRESCIMENTO_MS[semente] / 60000)
+  const minutos = Math.round(CRESCIMENTO_DO_PRIMEIRO_PEDIDO_MS[semente] / 60000)
   return {
     cresce: `${a.nome} cresce de verdade, em uns ${POR_EXTENSO[minutos] ?? minutos} minutos.`,
     pronta: `${a.nome} ficou ${a.pronta}.`,

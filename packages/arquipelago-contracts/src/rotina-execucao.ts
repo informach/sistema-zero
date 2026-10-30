@@ -184,14 +184,14 @@ function condicao(
   if (e.lugar !== 'horta') return falhar(e, naHorta('olhar o canteiro'))
   const c = s.horta[e.canteiro]
   if (!c) return false
-  const fase = estagio(c, agoraMs)
+  const fase = estagio(c, agoraMs, geladeiraDoMundo(s))
   return se === 'maduro' ? fase === 'maduro' : fase === 'semente'
 }
 
 /** Como está o canteiro em que o Lumi está, nos casos do "Escolha". */
 export function casoDoCanteiro(s: MundoDaRotina, canteiro: number, agoraMs: number): CasoDaEscolha {
   const c = s.horta[canteiro]
-  const fase = c ? estagio(c, agoraMs) : 'vazio'
+  const fase = c ? estagio(c, agoraMs, geladeiraDoMundo(s)) : 'vazio'
   if (fase === 'vazio') return 'vazio'
   if (fase === 'semente') return 'precisa-de-agua'
   if (fase === 'maduro') return 'maduro'
@@ -354,7 +354,7 @@ export function aplicarPasso(
   }
   if (p.tipo === 'colher') {
     const c = s.horta[p.canteiro]
-    const r = c && colher(c, agora.getTime(), s.colheita)
+    const r = c && colher(c, agora.getTime(), s.colheita, geladeiraDoMundo(s))
     if (!r) return { salvamento: s, texto: `No canteiro ${numero} não havia nada maduro.` }
     if (cargaDoLumi(e.carga) + r.qtd > PERFIS_DOS_LUMIS[e.lumi].carga)
       return {
@@ -487,4 +487,9 @@ export function fazendoAgora(p: Passo): string {
     case 'esperar':
       return `esperando ${p.segundos} ${p.segundos === 1 ? 'segundo' : 'segundos'}`
   }
+}
+
+/** Quando a geladeira foi ganha (`null` com o primeiro pedido aberto): o tempo da horta. */
+function geladeiraDoMundo(s: Pick<MundoDaRotina, 'geladeira'>): string | null {
+  return s.geladeira?.ganhoEm ?? null
 }

@@ -261,13 +261,14 @@ export {
 export function mundoDaRotina(
   s: Salvamento,
   jornada = 0,
+  agoraMs = Date.now(),
 ): MundoDaRotina & { colheita: ReturnType<typeof contextoDaColheita> } {
   return {
     horta: s.horta,
     inventario: s.inventario,
     geladeira: s.projetos.geladeira ?? null,
     geladeiraPosta: temGeladeira(s),
-    colheita: contextoDaColheita(s, jornada),
+    colheita: contextoDaColheita(s, jornada, agoraMs),
   }
 }
 function aplicarMundo(s: Salvamento, m: MundoDaRotina): Salvamento {
@@ -296,7 +297,7 @@ export function aplicarPasso(
   agora: Date,
   jornada = 0,
 ): { salvamento: Salvamento; texto: string } {
-  const r = aplicarPassoNoMundo(e, mundoDaRotina(s, jornada), agora)
+  const r = aplicarPassoNoMundo(e, mundoDaRotina(s, jornada, agora.getTime()), agora)
   return { ...r, salvamento: aplicarMundo(s, r.salvamento) }
 }
 export function terminarExecucao(
@@ -320,7 +321,13 @@ export function rodarRotina(
   naMao: ReadonlySet<string> | null,
   jornada = 0,
 ): ResultadoDaRotina {
-  const r = rodarNoMundo(lumi, lista, mundoDaRotina(inicial, jornada), agora, naMao)
+  const r = rodarNoMundo(
+    lumi,
+    lista,
+    mundoDaRotina(inicial, jornada, agora.getTime()),
+    agora,
+    naMao,
+  )
   return { ...r, salvamento: aplicarMundo(inicial, r.salvamento) }
 }
 

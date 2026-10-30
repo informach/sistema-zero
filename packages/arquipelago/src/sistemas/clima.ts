@@ -10,11 +10,13 @@
 import {
   type Canteiro,
   CLIMAS_DO_JOGO,
-  CRESCIMENTO_MS,
   ilhaAberta,
+  noTempoDoPrimeiroPedido,
   progresso,
   regar,
+  tempoDeCrescer,
 } from '@sistemazero/arquipelago-contracts'
+import { momentoDoDia } from './tempo-do-dia'
 
 export const CLIMAS = CLIMAS_DO_JOGO
 export type Clima = (typeof CLIMAS)[number]
@@ -81,9 +83,53 @@ export const GIRO_DO_CATA_VENTO: Readonly<Record<Clima, number>> = {
   chuva: 4.8,
 }
 
-/** O clima da sua ilha vale com as Nuvens abertas (a Iriê ensina lá). */
+/** Escolher o clima da sua ilha vale com as Nuvens abertas (a Iriê ensina lá). */
 export function climaLiberado(posicaoNaJornada: number): boolean {
   return ilhaAberta('nuvens', posicaoNaJornada)
+}
+
+/**
+ * Antes das Nuvens o tempo muda sozinho, um por dia do jogo, igual em qualquer aparelho (proposta:
+ * "chuva rega sozinha, sol forte pede água, e o clima pode deixar uma colheita especial"; o que a
+ * Iriê ensina é controlar o clima). Mais sol que nublado, mais nublado que chuva.
+ */
+export const CHANCE_DO_CLIMA_NATURAL = { sol: 0.55, nublado: 0.25, chuva: 0.2 } as const
+
+function sorteioDoDia(dia: number): number {
+  let h = 2166136261
+  const texto = `clima:${dia}`
+  for (let i = 0; i < texto.length; i++) {
+    h ^= texto.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  // A mistura final do murmur3: dias seguidos não ficam parecidos.
+  h ^= h >>> 16
+  h = Math.imul(h, 0x85ebca6b)
+  h ^= h >>> 13
+  h = Math.imul(h, 0xc2b2ae35)
+  h ^= h >>> 16
+  return (h >>> 0) / 4294967296
+}
+
+/** O clima natural de um dia do jogo. */
+export function climaNatural(dia: number): Clima {
+  const r = sorteioDoDia(dia)
+  if (r < CHANCE_DO_CLIMA_NATURAL.sol) return 'sol'
+  if (r < CHANCE_DO_CLIMA_NATURAL.sol + CHANCE_DO_CLIMA_NATURAL.nublado) return 'nublado'
+  return 'chuva'
+}
+
+/**
+ * O clima que vale agora na sua ilha: o escolhido, com as Nuvens abertas; antes delas, o natural
+ * do dia do jogo. Numa visita, a ilha é do irmão: o tempo dela fica de sol (`null` para a horta).
+ */
+export function climaEfetivo(
+  s: { jornada: number; visita: unknown; salvamento: { clima: Clima; criadoEm: string } },
+  agoraMs: number,
+): Clima {
+  if (s.visita) return 'sol'
+  if (climaLiberado(s.jornada)) return s.salvamento.clima
+  return climaNatural(momentoDoDia(agoraMs, Date.parse(s.salvamento.criadoEm)).dia)
 }
 
 /** A janela em que a planta pede água neste clima (de, até), ou `null` na chuva. */
@@ -94,23 +140,34 @@ function janelaDaSede(clima: Clima): { de: number; ate: number } | null {
 }
 
 /** A planta está pedindo água agora (plantada, regada, ainda crescendo, na janela do clima). */
-export function pedeAgua(c: Canteiro, agoraMs: number, clima: Clima): boolean {
+export function pedeAgua(
+  c: Canteiro,
+  agoraMs: number,
+  clima: Clima,
+  geladeiraEm?: string | null,
+): boolean {
   const j = janelaDaSede(clima)
   if (!j || !c.semente || !c.regadoEm) return false
-  const p = progresso(c, agoraMs)
+  const p = progresso(c, agoraMs, geladeiraEm)
   return p >= j.de && p < j.ate
 }
 
 /** Adianta o crescimento pelo bônus (o `regadoEm` vai para trás). */
-function adiantar(c: Canteiro): Canteiro | null {
+function adiantar(c: Canteiro, geladeiraEm?: string | null): Canteiro | null {
   if (!c.semente || !c.regadoEm) return null
-  const antes = Date.parse(c.regadoEm) - CLIMA.bonus * CRESCIMENTO_MS[c.semente]
+  const total = tempoDeCrescer(c.semente, noTempoDoPrimeiroPedido(c, geladeiraEm))
+  const antes = Date.parse(c.regadoEm) - CLIMA.bonus * total
   return { ...c, regadoEm: new Date(antes).toISOString() }
 }
 
 /** Regar a planta que pede água: o bônus. `null` se ela não está pedindo. */
-export function regarComSede(c: Canteiro, agora: Date, clima: Clima): Canteiro | null {
-  return pedeAgua(c, agora.getTime(), clima) ? adiantar(c) : null
+export function regarComSede(
+  c: Canteiro,
+  agora: Date,
+  clima: Clima,
+  geladeiraEm?: string | null,
+): Canteiro | null {
+  return pedeAgua(c, agora.getTime(), clima, geladeiraEm) ? adiantar(c, geladeiraEm) : null
 }
 
 /**
@@ -118,7 +175,11 @@ export function regarComSede(c: Canteiro, agora: Date, clima: Clima): Canteiro |
  * janela do sol forte (a chuva chega antes de a planta pedir). Devolve a horta nova, ou `null` se
  * nada mudou.
  */
-export function chuvaNaHorta(horta: readonly Canteiro[], agora: Date): Canteiro[] | null {
+export function chuvaNaHorta(
+  horta: readonly Canteiro[],
+  agora: Date,
+  geladeiraEm?: string | null,
+): Canteiro[] | null {
   let mudou = false
   const nova = horta.map((c) => {
     const regado = regar(c, agora)
@@ -126,8 +187,8 @@ export function chuvaNaHorta(horta: readonly Canteiro[], agora: Date): Canteiro[
       mudou = true
       return regado
     }
-    if (pedeAgua(c, agora.getTime(), 'sol')) {
-      const adiantado = adiantar(c)
+    if (pedeAgua(c, agora.getTime(), 'sol', geladeiraEm)) {
+      const adiantado = adiantar(c, geladeiraEm)
       if (adiantado) {
         mudou = true
         return adiantado
