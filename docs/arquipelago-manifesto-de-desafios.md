@@ -53,6 +53,12 @@ Para conferir os arquivos locais com a mesma regra, rode
 `bun docs/desafios-do-jogo/regras-a-completar.ts`. O JSON ao lado registra fontes locais e
 recusas do leitor do Estúdio, sem afirmar que cursos estejam publicados ou concluídos.
 
+Os geradores devem criar uma instância própria de IR para cada peça: reutilizar o mesmo
+objeto em dois pontos pode duplicar seu ID, mesmo depois de `structuredClone`. Rode
+`bun test docs/desafios-do-jogo/projetos-validos.test.ts` antes de entregar manifestos.
+O teste usa o leitor canônico do Estúdio em todos os projetos, além do schema externo.
+Não confiar apenas na importação Blockly, que pode normalizar esses IDs.
+
 Chegar ao posto abre a ilha, não concede os blocos de seus cursos. A pessoa continua precisando
 do repertório realmente conquistado para abrir o desafio. A reativação de uma publicação
 arquivada confere sua cobertura atual também. Não remove conquistas anteriores.

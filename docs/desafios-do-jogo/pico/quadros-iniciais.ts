@@ -44,8 +44,9 @@ const velocity = (vy: number | JSExpr, vx = 0): JSStatement => ({
   vx: n(vx),
   vy: typeof vy === 'number' ? n(vy) : vy,
 })
-const apply: JSStatement = { type: 'g2d:applyVelocity', spriteVar: 'pinguim' }
-const y: JSExpr = { type: 'g2d:spriteY', spriteVar: 'pinguim' }
+// Não compartilhar instâncias entre ocorrências: cada peça recebe seu próprio ID.
+const apply = (): JSStatement => ({ type: 'g2d:applyVelocity', spriteVar: 'pinguim' })
+const y = (): JSExpr => ({ type: 'g2d:spriteY', spriteVar: 'pinguim' })
 const label = (text: string | JSExpr, x: number, y: number): JSStatement => ({
   type: 'g2d:drawLabel',
   ctxVar: 'ctx',
@@ -143,10 +144,10 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
     )
     update.push(
       { type: 'g2d:applyGravity', spriteVar: 'pinguim' },
-      apply,
-      iff(bin('>', y, n(299)), [
-        velocity(bin('-', n(300), y)),
-        apply,
+      apply(),
+      iff(bin('>', y(), n(299)), [
+        velocity(bin('-', n(300), y())),
+        apply(),
         velocity(0),
         set('noChao', 1),
       ]),
@@ -158,7 +159,7 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
     image('chao', 'gelo', 60, 308, 520, 40)
     start.push(velocity(0, 1))
     events.push(key('Space', pronto ? [set('deslizando', 0), velocity(0)] : []))
-    update.push(iff(eq('deslizando', 1), [apply]), {
+    update.push(iff(eq('deslizando', 1), [apply()]), {
       type: 'g2d:clampToScreen',
       spriteVar: 'pinguim',
       ctxVar: 'ctx',
@@ -225,7 +226,7 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
       iff(eq('atravessou', 1), [
         iff(bin('<', { type: 'g2d:spriteX', spriteVar: 'pinguim' }, n(500)), [
           velocity(0, 2),
-          apply,
+          apply(),
         ]),
       ]),
     )

@@ -46,7 +46,8 @@ const vel = (vx: number, vy = 0): JSStatement => ({
   vx: n(vx),
   vy: n(vy),
 })
-const apply: JSStatement = { type: 'g2d:applyVelocity', spriteVar: 'entregador' }
+// Cada ocorrência precisa de um nó próprio para receber um ID distinto no Blockly.
+const apply = (): JSStatement => ({ type: 'g2d:applyVelocity', spriteVar: 'entregador' })
 const draw = (spriteVar: string): JSStatement => ({
   type: 'g2d:drawSprite',
   spriteVar,
@@ -111,10 +112,10 @@ const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
 function largada(variacao: Variacao): JSStatement[] {
   return [
     vel(-PISTA.largura, -PISTA.altura),
-    apply,
+    apply(),
     { type: 'g2d:clampToScreen', spriteVar: 'entregador', ctxVar: 'ctx' },
     vel(PISTA.inicioX, PISTA.inicioY),
-    apply,
+    apply(),
     vel(0),
     set('tempo', n(variacao === 'tempo' ? PISTA.prazoCurto : PISTA.prazo)),
     set('entregas', n(0)),
