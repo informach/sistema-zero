@@ -72,8 +72,10 @@ O [inventário C01b1](repertorio-local.md), gerado de todos os arquivos, identif
 das 54 atividades e seus dois públicos, objetivos, linguagem, apoio pronto e fontes por
 bloco. A [versão estruturada](repertorio-local.json) distingue fontes da trilha e opcionais.
 As exceções de lista preparada não comprovam construir a lista ou o laço. Comparar apenas
-tipos novos é a regra atual do Members para derivar requisitos, excluindo molduras e tipos
-presentes no inicial. Isso não comprova que alterar uma regra já pronta foi ensinado.
+tipos novos era a regra anterior do Members. Desde C01c, a derivação compara também o
+conteúdo, a ordem e a área dos blocos já presentes; apoio intacto e molduras não contam.
+Isso ainda não comprova que alterar uma regra foi ensinado: a fonte curricular e a evidência
+do executor continuam necessárias.
 O inventário é mais abrangente: mostra as fontes de todos os tipos, sem afirmar que todos
 sejam bloqueios de acesso. A revisão pedagógica também observa as mudanças de comportamento.
 

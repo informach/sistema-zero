@@ -8,12 +8,10 @@ const manifesto = ManifestoDeDesafiosSchema.parse(
   ).json(),
 )
 const cursos = [
-  'faisca/cade-todo-mundo',
   'faisca/desafio-primeiro-jogo',
   'faisca/a-ilha-do-farol',
   'faisca/o-jardim-secreto',
   'construtor/nave-contra-asteroides',
-  'construtor/o-jogo-do-meu-jeito',
   'inventor/corre-dino',
 ]
 const blocos = new Set<string>()

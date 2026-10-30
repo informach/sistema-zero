@@ -29,7 +29,7 @@ Nenhuma migração, campo de salvamento ou contrato HTTP novo.
 - [x] Provar rascunho diferente, público original, ausência de snapshot, edição concorrente
   e reativação legítima; SQL real apenas em Postgres local descartável.
 - [x] Suíte, tipagem, Biome, revisão completa e documentação.
-- [ ] Commit e merge local.
+- [x] Commit `32dd5897a` e merge local `5e76a14d7`, sem push.
 
 ## Provas e revisão
 

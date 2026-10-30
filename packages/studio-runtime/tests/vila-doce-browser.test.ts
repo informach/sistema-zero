@@ -73,6 +73,20 @@ nativeTest(
           { name: 'gabarito', project: d.conteudo.gabarito as Project, passes: true },
           { name: 'projetoInicial', project: d.conteudo.projetoInicial as Project, passes: false },
         ]
+        if (!novo) {
+          const semExtra = structuredClone(d.conteudo.gabarito) as Project
+          const extra = (semExtra.ir as SZIRV2).behavior.events.find(
+            (s) => s.type === 'g2d:onKey' && s.key === 'Space',
+          )
+          if (extra?.type !== 'g2d:onKey') throw Error('Atalho de reinício ausente')
+          extra.body = []
+          scenarios.push({
+            name: 'sem-reinicio-extra',
+            project: semExtra,
+            ids: ['recomecar-enter'],
+            passes: false,
+          })
+        }
         const broken = structuredClone(d.conteudo.gabarito) as Project
         const behavior = (broken.ir as SZIRV2).behavior
         if (novo) {

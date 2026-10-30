@@ -11,9 +11,9 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   corrida: {
     titulo: 'A corrida do entregador',
     enunciado:
-      'Os doces da padaria do Bento precisam chegar pela Vila Doce. Programe a Largada para colocar o entregador no começo e iniciar o prazo de doze segundos. Faça as setas moverem o entregador. Encostar na caixa encerra a corrida, sem contar entrega. Chegar ao doce antes do tempo conta uma entrega e encerra a corrida. Quando o tempo acaba, a corrida também para. O botão Largada permite tentar de novo.',
+      'Os doces da padaria do Bento precisam chegar pela Vila Doce. Programe Enter para dar a largada: colocar o entregador no começo e iniciar o prazo de doze segundos. Faça as setas moverem o entregador. Encostar na caixa encerra a corrida, sem contar entrega. Chegar ao doce antes do tempo conta uma entrega e encerra a corrida. Quando o tempo acaba, a corrida também para. Enter ou + no controle de toque permite tentar de novo.',
     dicas: [
-      'O cenário, as imagens, os textos e o botão já estão prontos. Complete as regras nos eventos e nos laços.',
+      'O cenário, as imagens, os textos e o controle de toque já estão prontos. Complete as regras nos eventos e nos laços.',
       'Use mover em quatro direções dentro do laço, somente enquanto a corrida estiver acontecendo.',
       'A cada segundo, diminua o tempo. Ao encostar na caixa ou concluir a entrega, pare a corrida.',
     ],
@@ -76,7 +76,7 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
             desafioExtra: {
               titulo: 'Mais um desafio',
               texto:
-                'Faça Enter iniciar outra corrida, como o botão Largada: volte ao começo, limpe o recado, zere as entregas e recomece o prazo.',
+                'Faça Espaço iniciar outra corrida, como Enter: volte ao começo, limpe o recado, zere as entregas e recomece o prazo. No controle de toque, A usa a mesma ação de Espaço.',
             },
             recompensa: {
               cor: variacao === 'corrida',

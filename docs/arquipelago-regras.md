@@ -39,6 +39,12 @@ da trilha. A corrida começa por Enter ou + no controle de toque. No extra, as s
 o bicho antes da largada e Espaço/A o movimenta. Noite continua opcional, com opacidade de
 Cadê Todo Mundo. Nenhuma concessão de bloco ou publicação remota foi feita.
 
+No C01b2b, a corrida da Vila Doce e suas três variações usam Enter/+ para a largada e
+Espaço/A no extra para recomeçar. O controle de toque inclui essas ações. Os quatro projetos
+deixam de exigir clique em grupos e inclusão no grupo do botão, que só tinham fonte local
+em extra. Os cinco primeiros quadros permanecem iguais. Isso corrige a dependência opcional;
+a aplicação específica de pulo, gravidade e ritmo do Inventor continua em revisão curricular.
+
 Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.

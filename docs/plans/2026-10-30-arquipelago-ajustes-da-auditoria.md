@@ -18,6 +18,12 @@ separadamente no staging local.
 
 ## Regras de execução
 
+**Orientação mais recente da dona, 30/10/2026:** concluir o lote atual C01b2b e seu review,
+fazer commit e merge no staging local, depois push de staging. Após esse envio, pausar a
+implementação de novos lotes. A restrição anterior de push fica revogada somente para esse
+envio. O início de C01f permanece como rascunho local no worktree da auditoria, fora do lote
+e do staging; ainda não tem suíte completa, review final ou commit.
+
 - Branch própria a partir do staging local, em worktree separado. Preservar todas as mudanças da
   outra sessão, especialmente barcos, HUD e carregamento de ilhas. Integrar apenas quando o Git
   puder preservar a árvore compartilhada; nunca guardar ou descartar o trabalho alheio.
@@ -105,10 +111,11 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | C01a | Barreira de repertório implementada, revisada, verificada e integrada | `796c2ae89`, merge `c06f7ea87` | 265 testes aprovados, tipagem/Biome; publicação, importação e reativação recusam cobertura impossível e quadros dependentes só de opcionais. Classificação dos pacotes continua em C01b |
 | C01b1 | Inventário de repertório e suspensão da publicação automática revisados e integrados | `d34453c25`, merge `9ee93859b` | 54 atividades em dois públicos, fontes por papel/posto; 205 testes de contratos e 18 de conteúdo aprovados, tipagem/Biome; projetos e objetivos preservados. Árvore integrada com visitas adultas: 207 testes de contratos aprovados. Correções de dependência continuam em C01b2/C02 |
 | C01b2a | Corrida do Bosque revisada, verificada e integrada localmente | `0da3ba918`, merge `4b4b985de` | Seis quadros sem dependência de extra; contratos 208, conteúdo 18, runtime 386 aprovados; executor real e oito casos visuais. A lacuna da derivação de tipos já presentes é tratada em C01c |
+| C01b2b | Controles da corrida da Vila revisados e conferidos | Commit deste lote, seguido de merge e envio autorizado | Enter/+ dá largada, Espaço/A recomeça no extra. Quatro jogos sem clique de curso opcional; cinco quadros intactos. Contratos 209, conteúdo/Blockly 128 e runtime 386 testes aprovados; executor real com 167 asserções; oito casos visuais |
 | C01c | Análise de regras alteradas e recusa de blocos desconhecidos, integrada localmente | `6547f2417`, merge `27cd2b91d` | Members 2.131 testes, API dirigida 49, tipagem/Biome; relatório das 108 entradas. Cinco atividades nos dois públicos tinham IDs repetidos, tratados em C01d |
 | C01d | IDs distintos nas fábricas da Vila e do Pico, integrados localmente | `e801f3545`, conciliação `cc6a8c620`, merge `0285b4284` | Leitor canônico em 108 atividades; contratos 208, conteúdo 126 e Estúdio 11.167 testes aprovados, executor real e tipagem/Biome. Ajuste de tipagem do Reino Zero mantém o exemplo idêntico. Praia preservada, 137 testes dirigidos aprovados na árvore conciliada |
 | C01e | Retiradas manuais não ocultam requisitos derivados, integrado localmente | `50ca1203b`, merge `a769f0a78` | API 270 e Admin 971 testes aprovados, tipagem/Biome. Publicação/importação bloqueadas; resposta antiga do Members com desconhecidos também |
-| C01e2 | Reativação reanalisa a publicação exata, revisada e verificada | Commit deste lote, merge local em seguida | API 332 testes aprovados, 45 ignorados, Postgres local descartável, tipagem/Biome. Requisitos históricos incompletos exigem nova publicação; rascunho e conquistas preservados |
+| C01e2 | Reativação reanalisa a publicação exata, integrada localmente | `32dd5897a`, merge `5e76a14d7` | API 332 testes aprovados, 45 ignorados, Postgres local descartável, tipagem/Biome. Requisitos históricos incompletos exigem nova publicação; rascunho e conquistas preservados |
 | E02, rede do barco | Implementada por outra sessão e presente na base | `f27f31aaf` | `docs/qa/2026-10-30-rede-barco/`; mapa detalhado e conexões entre segredos continuam no restante de E02 |
 | E03 | Implementado por outra sessão e integrado localmente | `bbe7418bf`, `5df394ff3`, merge `ae68922b1` | `docs/qa/2026-10-30-fantasma-familiar/`; migração/adoção e aceite autenticado separados em Q01 |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
