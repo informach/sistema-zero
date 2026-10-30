@@ -60,7 +60,7 @@ Estado em código local. Implantação e aceite autenticado ficam todos em L14/Q
 | L07 Economia | Turnos, insumos, pedidos remunerados, teto 100 por semana | Implantação | |
 | L08 Lumis, horta, receitas | Jeitos das espécies, rotina, colheita especial, 12 receitas | Captura fora da Vila (N01); ritmo da horta (N03); clima antes das Nuvens (N04) | |
 | L09 Festas e semana | Tema da semana, feira, Carnaval e Junina, roupas e receitas sazonais | Datas das Lanternas e do fim de ano (decisão da dona) | |
-| L10 Exploração | Mapa de visitas, rede de barcos, fantasma familiar | Segredos com o kit de movimento (N12), percursos em três ilhas (N05), mapa detalhado | E02, E03 |
+| L10 Exploração | Mapa de visitas, rede de barcos, fantasma familiar | (Tratado: segredos com o planador, regras §6.24; percursos nas três ilhas, V19; mapa que se revela andando, regras §6.25) | E02, E03 |
 | L11 Criação avançada e Lenda | Construção atual e final narrativo | Segundo andar, terraformação, cabanas fora do Bosque, modo livre, exposição | E04 |
 | L12 Adultos e social | Pele adulta, visitas adultas por código (local) | Paridade de conteúdo; interruptores dos pais sem efeito (N08) | S01 |
 | L13 Medição | Fotografia e mudanças de aparência (A06), voltou ao curso | Eventos de compra e criação, retorno adulto, satisfação | A06 |
@@ -81,7 +81,7 @@ sendo a fonte dos commits. Integrado = merge no staging local.
 | A06 Medição de aparências | Integrado (`85ee77ecf`) |
 | C01a, C01b1, C01b2a, C01b2b, C01c, C01d, C01e, C01e2 | Integrados; C01b2b com envio autorizado pela dona |
 | E01 Coleções da praia | Implementado (plano e QA próprios) |
-| E02 Rede do barco | Feito por outra sessão; segredos e mapa detalhado continuam |
+| E02 Rede do barco | Feito por outra sessão; segredos (§6.24) e mapa detalhado (§6.25) tratados em 30/10 |
 | E03 Fantasma familiar | Integrado (`ae68922b1`) |
 | C01f | Rascunho local fora do staging |
 | C02, C03, E04, S01, Q01 | Não começados |
