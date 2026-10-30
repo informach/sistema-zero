@@ -308,6 +308,41 @@ describe('análise e publicação', () => {
     expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
   })
 
+  test('reativar recusa lista histórica que omite um requisito agora derivado, mesmo com curso', async () => {
+    analisar.mockImplementation(async () => ({ ...analiseOk, blocosDoGabarito: [] }))
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    analisar.mockImplementation(async () => analiseOk)
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(r.status).toBe(422)
+    expect(ProblemasDePublicacaoSchema.parse(r.json).problemas.map((p) => p.codigo)).toContain(
+      'PUBLICACAO_REQUER_NOVOS_REQUISITOS',
+    )
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
+    expect(desafios.linhas.get(d.resumo.id)?.blocosPublicados).toEqual(['sz_js_repeat'])
+  })
+
+  test('reativar não contorna um gabarito que a análise atual recusa', async () => {
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    analisar.mockImplementation(async () => ({
+      ...analiseOk,
+      problemas: [{ codigo: 'GABARITO_NAO_PASSA', mensagem: 'O gabarito não passa.' }],
+    }))
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(r.status).toBe(422)
+    expect(ProblemasDePublicacaoSchema.parse(r.json).problemas.map((p) => p.codigo)).toContain(
+      'GABARITO_NAO_PASSA',
+    )
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
+  })
+
   test('quadro não exige Poder específico; desafio opcional pode usá-lo', async () => {
     membros = membrosDeMentira({
       analisarObjetivos: async () => analiseOk,
@@ -337,6 +372,70 @@ describe('análise e publicação', () => {
     ).toBe(200)
   })
 
+  test.each([
+    'ausente',
+    'ilegível',
+  ] as const)('publicação %s não reativa nem chama o executor', async (caso) => {
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    if (caso === 'ausente') desafios.publicacoes.delete(d.resumo.id)
+    else {
+      const copia = desafios.publicacoes.get(d.resumo.id)?.[0]
+      if (!copia) throw new Error('Publicação de teste ausente')
+      copia.conteudo = { versao: 999 }
+    }
+    analisar.mockClear()
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(r.status).toBe(422)
+    expect(ProblemasDePublicacaoSchema.parse(r.json).problemas[0]?.codigo).toBe(
+      'PUBLICACAO_INVALIDA',
+    )
+    expect(analisar).not.toHaveBeenCalled()
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
+  })
+
+  test('sem Members a publicação permanece arquivada', async () => {
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    membros = null
+    montar()
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(r.status).toBe(424)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
+  })
+
+  test('edição durante a análise impede reativar e preserva o rascunho novo', async () => {
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    analisar.mockImplementation(async () => {
+      const gravado = await desafios.gravar({
+        id: d.resumo.id,
+        revisaoBase: 2,
+        metadados: d.metadados,
+        conteudo: { ...d.conteudo, titulo: 'Revisão de outra pessoa' },
+        por: ADMIN,
+        agora: AGORA,
+      })
+      expect(gravado.ok).toBe(true)
+      return analiseOk
+    })
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(r.status).toBe(409)
+    expect(DesafioDaEquipeSchema.parse(r.json.atual)).toMatchObject({
+      resumo: { situacao: 'arquivado', revisao: 3 },
+      conteudo: { titulo: 'Revisão de outra pessoa' },
+    })
+  })
+
   test('reativação usa público, ilha e blocos congelados, não uma alteração do rascunho', async () => {
     const d = await criar()
     await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
@@ -344,11 +443,24 @@ describe('análise e publicação', () => {
     await chamar('PUT', `/desafios/${d.resumo.id}`, equipe(), {
       revisaoBase: 2,
       metadados: { ...d.metadados, publico: 'adulto', ilha: 'sua-ilha' },
-      conteudo: { ...d.conteudo, blocosManuais: { acrescentar: ['futuro'], retirar: [] } },
+      conteudo: {
+        ...d.conteudo,
+        gabarito: { files: { 'script.js': 'rascunho diferente' } },
+        projetoInicial: { files: { 'script.js': 'outro inicial' } },
+        blocosManuais: { acrescentar: ['futuro'], retirar: [] },
+      },
     })
     const publicos: string[] = []
     membros = membrosDeMentira({
-      analisarObjetivos: async () => analiseOk,
+      analisarObjetivos: async (entrada) => {
+        expect(entrada).toEqual({
+          audience: 'kids',
+          projetoInicial: d.conteudo.projetoInicial,
+          gabarito: d.conteudo.gabarito,
+          objetivos: d.conteudo.objetivos,
+        })
+        return analiseOk
+      },
       lerCurriculo: async (publico) => {
         publicos.push(publico)
         return curriculo

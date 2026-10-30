@@ -64,7 +64,10 @@ Não confiar apenas na importação Blockly, que pode normalizar esses IDs.
 
 Chegar ao posto abre a ilha, não concede os blocos de seus cursos. A pessoa continua precisando
 do repertório realmente conquistado para abrir o desafio. A reativação de uma publicação
-arquivada confere sua cobertura atual também. Não remove conquistas anteriores.
+arquivada confere sua cobertura e refaz a análise do conteúdo da revisão publicada, nunca
+do rascunho posterior. Se a análise exigir uma ferramenta ausente da lista congelada,
+revise e publique uma nova versão. Falha no gabarito ou na leitura da publicação também
+impede reativar. Não remove conquistas anteriores nem reescreve publicações históricas.
 
 Com `"publicar": true`, o desafio sai publicado quando a análise não acusa problema. Com problema,
 ele é gravado e fica em rascunho, e a linha mostra o motivo. Sem `publicar` (ou com `false`), o

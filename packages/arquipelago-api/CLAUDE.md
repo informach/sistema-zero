@@ -195,7 +195,15 @@ Retirada manual de um derivado produz `BLOCO_DERIVADO_RETIRADO`; publicação e 
 mantêm o rascunho. Cancelar acréscimos não derivados continua válido. Desconhecidos da
 resposta do Members também impedem publicar, inclusive no formato anterior que só os
 listava, sem duplicar um problema já informado. Não altera snapshots publicados nem o
-helper histórico `blocosExigidos` do contrato. Reativação da lista histórica é recorte separado.
+helper histórico `blocosExigidos` do contrato.
+
+**C01e2, 30/10/2026:** reativar lê o conteúdo e os metadados da revisão publicada exata,
+mesmo arquivada, por `lerPublicacaoParaAnalise`. Refaz a análise atual e confere também a
+cobertura dos requisitos congelados. Requisito atual ausente da lista histórica produz
+`PUBLICACAO_REQUER_NOVOS_REQUISITOS`: publicar uma revisão nova, sem reescrever a antiga.
+Cópia ausente/ilegível, gabarito recusado e Members indisponível não reativam. A escrita
+final mantém o CAS; edição durante a análise retorna 409 e preserva o rascunho. Teste SQL
+em Postgres local descartável e testes HTTP, sem alteração de schema ou salvamento.
 
 Tabelas da migration gerada `0002_desafios`: `desafios` (cadastro, `revisao` é a trava; índice
 único de `slug` e de quadro por público e ilha fora os arquivados, nos dois casos traduzidos em

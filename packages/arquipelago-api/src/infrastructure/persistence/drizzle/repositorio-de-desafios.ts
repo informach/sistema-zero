@@ -68,6 +68,18 @@ export class DrizzleRepositorioDeDesafios implements RepositorioDeDesafios {
     return comBlocos ?? null
   }
 
+  async lerPublicacaoParaAnalise(id: string, revisao: number) {
+    const [publicacao] = await this.db
+      .select({
+        conteudo: desafioPublicacoes.conteudo,
+        metadados: desafioPublicacoes.metadados,
+        blocosExigidos: desafioPublicacoes.blocosExigidos,
+      })
+      .from(desafioPublicacoes)
+      .where(and(eq(desafioPublicacoes.desafioId, id), eq(desafioPublicacoes.revisao, revisao)))
+    return publicacao ?? null
+  }
+
   async criar(e: Parameters<RepositorioDeDesafios['criar']>[0]): Promise<ResultadoDaEscrita> {
     try {
       const [linha] = await this.db

@@ -23,13 +23,14 @@ Não confiar no catálogo remoto para legitimar um bloco que o leitor não conhe
 - [x] Preservar derivados na cobertura e impedir a publicação com retiradas indevidas.
 - [x] Provar blocos desconhecidos de uma resposta antiga do Members e rascunho preservado.
 - [x] Atualizar orientação do Admin, docs, revisão, testes, tipagem e Biome.
-- [ ] Commit e merge local.
+- [x] Commit `50ca1203b` e merge local `a769f0a78`, sem push.
 
 ## Histórico e próximos recortes
 
 Publicações antigas têm snapshots próprios. A reativação hoje confere a cobertura da lista
 congelada. Conferir novamente seu conteúdo, sem usar o rascunho e sem mudar conclusões,
-é o próximo recorte C01e2. Implantação e auditoria do conteúdo remoto continuam em Q01.
+foi tratado no recorte C01e2, documentado em `2026-10-30-arquipelago-reativar-publicacoes.md`.
+Implantação e auditoria do conteúdo remoto continuam em Q01.
 Antes de publicar conteúdo revisado, implantar a derivação C01c do Members e esta barreira
 da API. A defesa para respostas antigas não substitui a comparação semântica do Members.
 

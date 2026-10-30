@@ -36,6 +36,13 @@ export interface Publicacao {
   analise: AnaliseDoDesafio
 }
 
+/** A revisão imutável usada para conferir uma reativação, mesmo com o cadastro arquivado. */
+export interface PublicacaoParaAnalise {
+  conteudo: unknown
+  metadados: MetadadosDoDesafio
+  blocosExigidos: string[]
+}
+
 export interface FiltroDosDesafios {
   publico?: MetadadosDoDesafio['publico']
   ilha?: MetadadosDoDesafio['ilha']
@@ -55,6 +62,7 @@ export type ResultadoDaEscrita =
 export interface RepositorioDeDesafios {
   listar(filtro: FiltroDosDesafios): Promise<DesafioNoBanco[]>
   ler(id: string): Promise<DesafioNoBanco | null>
+  lerPublicacaoParaAnalise(id: string, revisao: number): Promise<PublicacaoParaAnalise | null>
   criar(e: {
     id: string
     metadados: MetadadosDoDesafio

@@ -28,6 +28,12 @@ cobertura. Retiradas de acréscimos não derivados continuam válidas. O relató
 `docs/desafios-do-jogo/regras-a-completar.json` usa essa mesma derivação e distingue projetos
 inválidos de projetos sem lacunas; publicação e fontes remotas não são inferidas dele.
 
+Desde C01e2, reativar também refaz a análise do conteúdo original publicado. Se a lista
+antiga omitir uma ferramenta agora necessária, a equipe precisa revisar e publicar uma
+nova versão. O histórico e as conquistas não são reescritos. Um gabarito recusado, uma cópia
+ilegível ou o serviço de análise indisponível mantêm o desafio arquivado. Edição concorrente
+continua protegida pela revisão. Publicações já ativas não são alteradas automaticamente.
+
 No C01b2a, os seis quadros do Bosque, Pedras e Placar passaram a usar apenas fontes locais
 da trilha. A corrida começa por Enter ou + no controle de toque. No extra, as setas escolhem
 o bicho antes da largada e Espaço/A o movimenta. Noite continua opcional, com opacidade de

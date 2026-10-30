@@ -16,6 +16,7 @@ import {
   LIMITES_DO_MANIFESTO,
   type ManifestoDeDesafios,
   type MetadadosDoDesafio,
+  MetadadosDoDesafioSchema,
   migrarConteudoDoDesafio,
   type ProblemaDoDesafio,
   type ResumoDoDesafio,
@@ -372,15 +373,37 @@ export class ServicoDaEquipe {
             },
           ])
         }
+        const publicacao = await this.repo.lerPublicacaoParaAnalise(id, atual.revisaoPublicada)
+        const conteudo = migrarConteudoDoDesafio(publicacao?.conteudo)
+        const metadados = MetadadosDoDesafioSchema.safeParse(publicacao?.metadados)
+        if (!publicacao || !conteudo || !metadados.success)
+          throw new DesafioComProblemasError([
+            {
+              codigo: 'PUBLICACAO_INVALIDA',
+              mensagem:
+                'A publicação anterior não pode ser conferida. Revise e publique novamente.',
+            },
+          ])
         const curriculo = await this.leituras.curriculo(
-          atual.metadadosPublicados.publico === 'kids' ? 'kids' : 'adult',
+          metadados.data.publico === 'kids' ? 'kids' : 'adult',
         )
         const { problemas } = analisarRepertorio(
-          atual.blocosPublicados,
+          publicacao.blocosExigidos,
           curriculo,
-          atual.metadadosPublicados,
+          metadados.data,
         )
         if (problemas.length > 0) throw new DesafioComProblemasError(problemas)
+        const { analise } = await this.analiseDe(metadados.data, conteudo)
+        if (analise.problemas.length > 0) throw new DesafioComProblemasError(analise.problemas)
+        const congelados = new Set(publicacao.blocosExigidos)
+        if (analise.blocosExigidos.some((b) => !congelados.has(b)))
+          throw new DesafioComProblemasError([
+            {
+              codigo: 'PUBLICACAO_REQUER_NOVOS_REQUISITOS',
+              mensagem:
+                'A publicação antiga não guarda todos os requisitos atuais. Revise e publique novamente.',
+            },
+          ])
       }
     }
     return paraEquipe(
