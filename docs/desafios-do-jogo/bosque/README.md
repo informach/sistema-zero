@@ -1,5 +1,11 @@
 # Desafios do Bosque dos Bichos
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. C01b2a retirou as dependências opcionais dos seis quadros: a corrida usa teclado e
+controle de toque da extensão. Noite é a única variação com fonte opcional, pela opacidade
+ensinada em Cadê Todo Mundo. Não contar estruturas prontas como aprendizagem.
+
 Arquivos para importar: `bosque.manifesto.json` (Kids) e `bosque-adulto.manifesto.json` (adulto).
 Formato `arquipelago-desafios`, versão 1, escopo `ilha`. Segue a parte 3 de
 `docs/plans/2026-10-28-arquipelago-desafio-do-dia-e-manifestos.md`.
@@ -19,8 +25,9 @@ Formato `arquipelago-desafios`, versão 1, escopo `ilha`. Segue a parte 3 de
 Os seis quadros pintam a ilha. As três variações diárias não pintam outro quadro.
 Cada variação começa com a corrida funcionando.
 O extra da corrida permite escolher qualquer um dos quatro bichos, antes da Largada, para
-avançar com espaço. Clicar novamente no mesmo bicho devolve o controle automático.
-Os outros extras são dar a largada com Enter, alternar a luz e zerar o placar.
+avançar com Espaço ou A. A seta ao lado do nome escolhe o bicho; repetir a mesma seta antes
+da largada devolve o controle automático. Enter ou + dá a largada. Os outros extras usam
+Espaço ou A para outra largada em Pedras, alternar a luz em Noite e zerar o Placar.
 
 ## Blocos e aprendizagem
 
@@ -32,15 +39,16 @@ conquistados nos cursos. A publicação continua passando pela análise do Membe
 O teste compara os blocos dos dezoito projetos por público com as listas locais até Construtor.
 `quadros-iniciais.test.ts` exige uma base menor nos quadros 1 a 3: Farol e Jardim do Faísca.
 Nos quadros 4 e 5, acrescenta somente a Nave. A entrada no posto não substitui a conquista
-real desses blocos. Régua completa em [conteúdo por posto](../conteudo-por-posto.md).
+real desses blocos. `repertorio-local.test.ts` confere o gabarito inteiro dos seis quadros,
+Pedras e Placar sem fontes opcionais, nos dois públicos. Noite exige só a opacidade além
+dessa trilha. Régua completa em [conteúdo por posto](../conteudo-por-posto.md).
 
 | Fonte | Ferramentas aproveitadas |
 | --- | --- |
-| Faísca: Cadê Todo Mundo | Grupo de botões, clique, arte, textos, opacidade e contagem |
+| Faísca: Cadê Todo Mundo, extra | Opacidade apenas no desafio opcional Noite; a arte reutilizada não exige concluir o curso |
 | Faísca: A Chave do Farol | Velocidade, aplicação do movimento, borda, posição X, contato e estado |
 | Faísca: O Jardim Secreto | Evento de teclado e condições |
 | Construtor: Nave Contra Asteroides | Laço a cada N quadros, sorteio e placar |
-| Construtor: O Jogo do Meu Jeito | Confirmação das ferramentas disponíveis no mesmo posto |
 
 Nenhum bloco do Inventor ou de posto posterior é necessário. `random_between`, `set_position`
 e `on_sprite_click` não constam dessas listas e não foram usados. Nenhuma liberação é forçada
@@ -57,7 +65,7 @@ Há um único vencedor por corrida. A Largada limpa posições, falas e contador
 preservando as vitórias. Zerar placar é uma ação separada.
 
 Nas pedras, a subida e a descida têm a mesma quantidade de passos. A contagem de pulos fica
-visível ao lado de cada faixa. O extra usa Enter para iniciar outra corrida. Não exige um
+visível ao lado de cada faixa. O extra usa Espaço ou A para iniciar outra corrida. Não exige um
 segundo salto tardio, que poderia ser interrompido pela vitória de outro participante.
 
 ## Autoria e reprodução
@@ -69,8 +77,8 @@ do Estúdio são gerados automaticamente, não são programação direta pedida 
 Gato, coelho e pedras reutilizam a arte de Cadê Todo Mundo. Cachorro e porquinho são SVGs
 incluídos no projeto. Não há dependência de imagens externas.
 
-`objetivos.ts` contém as regras. Cliques usam o sprite e seu grupo, sem coordenadas fixas
-da janela. As observações de execução leem valores individuais. Ler o estado inteiro
+`objetivos.ts` contém as regras. Eventos usam teclas e o controle da própria extensão,
+sem grupos de botões ou coordenadas fixas da janela. As observações leem valores individuais. Ler o estado inteiro
 também levaria as imagens e poderia exceder o limite de observação do executor.
 
 `gerar-manifesto.ts` valida o schema antes de escrever. Não edite somente o JSON:
@@ -79,8 +87,8 @@ também levaria as imagens e poderia exceder o limite de observação do executo
 bun docs/desafios-do-jogo/bosque/gerar-manifesto.ts
 ```
 
-Os quatro desafios Kids anteriores mantêm o pedido de publicação. Os cinco novos e os nove
-adultos chegam como rascunhos para conferir os vínculos com os cursos reais. Não existe
+Todos os itens Kids e adultos usam `publicar: false`, incluindo os quatro principais anteriores,
+para conferir os vínculos reais antes da publicação. Não existe
 liberação artificial de blocos. Importar e publicar exige a conferência normal do Admin, incluindo
 cobertura no currículo publicado e disponibilidade dos quadros. Esta entrega não consulta nem
 grava dados de alunos, staging ou produção. Não inclui o brinquedo na ilha ou o rodízio diário,

@@ -1,0 +1,61 @@
+{
+  "resultados": [
+    {
+      "variacao": "corrida",
+      "tela": "computador",
+      "entrada": "teclado",
+      "repeticao": true,
+      "print": "corrida-computador.png"
+    },
+    {
+      "variacao": "pedras",
+      "tela": "computador",
+      "entrada": "teclado",
+      "repeticao": true,
+      "print": "pedras-computador.png"
+    },
+    {
+      "variacao": "noite",
+      "tela": "computador",
+      "entrada": "teclado",
+      "repeticao": true,
+      "print": "noite-computador.png"
+    },
+    {
+      "variacao": "placar",
+      "tela": "computador",
+      "entrada": "teclado",
+      "repeticao": true,
+      "print": "placar-computador.png"
+    },
+    {
+      "variacao": "corrida",
+      "tela": "celular",
+      "entrada": "toque em controles reais",
+      "repeticao": true,
+      "print": "corrida-celular.png"
+    },
+    {
+      "variacao": "pedras",
+      "tela": "celular",
+      "entrada": "toque em controles reais",
+      "repeticao": true,
+      "print": "pedras-celular.png"
+    },
+    {
+      "variacao": "noite",
+      "tela": "celular",
+      "entrada": "toque em controles reais",
+      "repeticao": true,
+      "print": "noite-celular.png"
+    },
+    {
+      "variacao": "placar",
+      "tela": "celular",
+      "entrada": "toque em controles reais",
+      "repeticao": true,
+      "print": "placar-celular.png"
+    }
+  ],
+  "navegadorFechado": true
+}

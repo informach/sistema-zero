@@ -1,5 +1,10 @@
 # Quadros e Mira de bolhas do Recife Coral
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
 Pacote da fase3-05 e complemento L03, formato `arquipelago-desafios` v1, escopo `ilha`.
 Arquivos separados: [Kids](recife.manifesto.json) e [adulto](recife-adulto.manifesto.json).
 A importação e a publicação no Admin ficam para outra etapa.
@@ -20,8 +25,8 @@ Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a 
 do Bosque e da Vila. O quadro deve estar livre quando o pacote for importado. O principal
 dá cor, as variações não. `recompensa.atracao` identifica `mira-de-bolhas`, como nos outros
 minijogos. Os complementares usam a própria atração por slug e `publicar: false`.
-O principal e as variações Kids preservam a instrução `publicar: true` do arquivo anterior.
-Todo o arquivo adulto usa `publicar: false`. Nenhum deles foi importado nesta entrega.
+Todos os itens Kids e adultos usam `publicar: false`. O pedido automático anterior foi
+retirado na revisão C01b1. Nenhum deles foi importado nesta entrega.
 
 ## Os cinco complementares
 

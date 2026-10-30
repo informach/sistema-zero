@@ -11737,7 +11737,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma",
@@ -16588,7 +16588,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: pulo alto",
@@ -22242,7 +22242,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: floco de neve",
@@ -28327,7 +28327,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: quedas",

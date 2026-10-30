@@ -18,6 +18,20 @@ usar Poderes escolhidos; quem ainda não tem o bloco vê onde aprender. A regra 
 para importar e reativar. Reativar confere a versão publicada; editar o rascunho não altera
 essa versão. Conquistas anteriores continuam válidas. Nada muda na promoção da Jornada.
 
+Desde C01c, o Members compara o conteúdo dos blocos, incluindo condições, corpos de laços,
+ordem e área de execução. Completar um tipo já presente exige sua ferramenta; apoio intacto,
+molduras e mudanças só de posição/ID/comentário não. Cópias adicionais e retiradas também
+entram. Bloco desconhecido no inicial ou no gabarito impede publicar. A análise descreve
+ferramentas alteradas, não prova aprendizado: os objetivos continuam conferindo comportamento.
+Ajustes editoriais históricos não devem ocultar requisitos. O relatório local
+`docs/desafios-do-jogo/regras-a-completar.json` usa essa mesma derivação e distingue projetos
+inválidos de projetos sem lacunas; publicação e fontes remotas não são inferidas dele.
+
+No C01b2a, os seis quadros do Bosque, Pedras e Placar passaram a usar apenas fontes locais
+da trilha. A corrida começa por Enter ou + no controle de toque. No extra, as setas escolhem
+o bicho antes da largada e Espaço/A o movimenta. Noite continua opcional, com opacidade de
+Cadê Todo Mundo. Nenhuma concessão de bloco ou publicação remota foi feita.
+
 Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.

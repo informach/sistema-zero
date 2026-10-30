@@ -13355,7 +13355,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce",
@@ -17096,7 +17096,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: rega forte",
@@ -21118,7 +21118,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: sol forte",
@@ -25272,7 +25272,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: chuva",

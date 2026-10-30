@@ -70,10 +70,8 @@ nativeTest(
         const broken = structuredClone(d.conteudo.gabarito) as Project
         const behavior = (broken.ir as SZIRV2).behavior
         if (d.tipo === 'quadro-das-cores') {
-          const event = behavior.events.find(
-            (e) => e.type === 'g2d:onGroupClick' && e.groupVar === 'botoesLargada',
-          )
-          if (event?.type !== 'g2d:onGroupClick') throw Error('Largada ausente')
+          const event = behavior.events.find((e) => e.type === 'g2d:onKey' && e.key === 'Enter')
+          if (event?.type !== 'g2d:onKey') throw Error('Largada ausente')
           event.body = event.body.filter((s) => !s.type.startsWith('g2d:'))
           scenarios.push({
             name: 'largada-sem-reposicionar',
@@ -104,10 +102,8 @@ nativeTest(
           })
           scenarios.push({ name: 'luz-nao-apaga', project: broken, ids: ['apagar'], passes: false })
         } else {
-          const event = behavior.events.find(
-            (e) => e.type === 'g2d:onGroupClick' && e.groupVar === 'botoesLargada',
-          )
-          if (event?.type !== 'g2d:onGroupClick') throw Error('Largada ausente')
+          const event = behavior.events.find((e) => e.type === 'g2d:onKey' && e.key === 'Enter')
+          if (event?.type !== 'g2d:onKey') throw Error('Largada ausente')
           event.body.push({ type: 'assign', name: 'corridas', value: { type: 'num', value: 0 } })
           scenarios.push({
             name: 'largada-apaga-placar',

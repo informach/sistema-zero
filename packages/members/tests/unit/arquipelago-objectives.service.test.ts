@@ -77,7 +77,7 @@ const ESCREVER = { type: 'sz_js_console_log_value' }
 const DESCONHECIDO = { type: 'sz_bloco_que_nao_existe' }
 
 const inicial = projeto([ESCREVER])
-const gabarito = projeto([ESCREVER, REPETIR, DESCONHECIDO])
+const gabarito = projeto([ESCREVER, REPETIR])
 
 const usaRepetir: ObjetivoRecebido = {
   id: 'repetir',
@@ -151,13 +151,40 @@ const codigos = (analise: { problemas: { codigo: string }[] }) =>
   analise.problemas.map((p) => p.codigo)
 
 describe('analisar', () => {
-  test('blocos do gabarito sem moldura, sem os do inicial; desconhecidos à parte; vista sem regra', async () => {
+  test('completar o corpo de um bloco já presente também exige o seu repertório', async () => {
+    const antes = projeto([])
+    antes.blocksState.blocks.blocks[0] = {
+      type: 'sz_frame_start',
+      id: 'area',
+      inputs: {
+        CHILDREN: {
+          block: {
+            type: 'sz_js_repeat',
+            id: 'repetir',
+            fields: { COUNT: 3 },
+          },
+        },
+      },
+    }
+    const depois = structuredClone(antes)
+    Object.assign(depois.blocksState.blocks.blocks[0]!.inputs!.CHILDREN.block as object, {
+      inputs: { BODY: { block: { type: 'sz_js_console_log_value', id: 'escrever' } } },
+    })
+    const analise = await analisar(criar(), {
+      projetoInicial: antes,
+      gabarito: depois,
+      objetivos: [usaRepetir],
+    })
+    expect(analise.blocosDoGabarito).toContain('sz_js_repeat')
+    expect(analise.blocosDoGabarito).toContain('sz_js_console_log_value')
+  })
+  test('blocos alterados sem moldura ou apoio intacto; desconhecidos à parte; vista sem regra', async () => {
     const { executor, chamadas } = executorFalso(() => true)
     const analise = await analisar(criar(executor))
     expect(AnaliseDosMembrosSchema.parse(analise)).toEqual(analise)
     // `sz_frame_start` é moldura e `sz_js_console_log_value` já vem no inicial.
     expect(analise.blocosDoGabarito).toEqual(['sz_js_repeat'])
-    expect(analise.blocosDesconhecidos).toEqual(['sz_bloco_que_nao_existe'])
+    expect(analise.blocosDesconhecidos).toEqual([])
     expect(analise.vista).toEqual([
       {
         id: 'repetir',
@@ -188,6 +215,27 @@ describe('analisar', () => {
       expect(chamada.requester).toBe(REQUISITANTE_DA_ANALISE)
       expect(chamada.objectives.map((o) => o.id)).toEqual(['anda'])
     }
+  })
+
+  test('um bloco desconhecido só no inicial também impede publicar um apoio inválido', async () => {
+    const analise = await analisar(criar(), {
+      projetoInicial: projeto([DESCONHECIDO]),
+      gabarito: projeto([REPETIR]),
+      objetivos: [usaRepetir],
+    })
+    expect(analise.blocosDesconhecidos).toEqual(['sz_bloco_que_nao_existe'])
+    expect(codigos(analise)).toContain('BLOCO_DESCONHECIDO')
+    expect(analise.gabarito).toEqual([])
+    expect(analise.inicial).toEqual([])
+  })
+
+  test('um bloco desconhecido no gabarito é problema, não só informação ignorada pela publicação', async () => {
+    const analise = await analisar(criar(), {
+      gabarito: projeto([REPETIR, DESCONHECIDO]),
+      objetivos: [usaRepetir],
+    })
+    expect(codigos(analise)).toContain('BLOCO_DESCONHECIDO')
+    expect(analise.gabarito).toEqual([])
   })
 
   test('objetivo obrigatório em que o gabarito não passa é problema; o extra não', async () => {

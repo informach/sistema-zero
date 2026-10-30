@@ -1,5 +1,10 @@
 # Quadros e fase de plataforma do Pico Gelado
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
 Pacote da fase3-10 e complemento L03, formato `arquipelago-desafios` v1, escopo `ilha`.
 Arquivos: [Kids](pico.manifesto.json) e [adulto](pico-adulto.manifesto.json). Plano e decisões:
 [2026-10-29-pico-fase-de-plataforma.md](../../superpowers/plans/2026-10-29-pico-fase-de-plataforma.md).
@@ -19,9 +24,8 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a convenção do
 Bosque, da Vila e do Recife. O quadro deve estar livre quando o pacote for importado. O principal
-dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. `publicar: true` é uma
-instrução dos quatro desafios Kids anteriores, não uma publicação feita por esta entrega.
-Os novos quadros Kids e todos os desafios adultos usam `publicar: false`. Cada complementar
+dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. Todos os itens Kids e
+adultos usam `publicar: false` após C01b1, sem alterar publicações remotas. Cada complementar
 indica a própria atração pelo slug. Público e publicação são separados.
 
 ## Os cinco complementares
