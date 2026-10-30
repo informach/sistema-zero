@@ -1,6 +1,7 @@
 import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
 import { and, eq, sql } from 'drizzle-orm'
 import { CompraPendenteError } from '../../../domain/insumos.port'
+import { mudancasDeAparencia as detectarMudancas } from '../../../domain/mudancas-de-aparencia'
 import type {
   RepositorioDoJogo,
   ResultadoDaGravacao,
@@ -12,6 +13,7 @@ import {
   comprasDeInsumos,
   eventosTempo,
   limitesDaFamilia,
+  mudancasDeAparencia,
   perfisDaConta,
   salvamentos,
   tempoDiario,
@@ -43,8 +45,8 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
       }
       // O comando de compra usa a mesma linha: um PUT não apaga a entrega nem muda a
       // base enquanto a carteira ainda pode ter um débito sem resposta.
-      await tx
-        .select({ id: salvamentos.jogadorId })
+      const [anterior] = await tx
+        .select({ dados: salvamentos.dados })
         .from(salvamentos)
         .where(eq(salvamentos.jogadorId, e.jogadorId))
         .for('update')
@@ -84,6 +86,20 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
               )
               .returning(colunas)
       const [guardado] = gravadas
+      if (guardado && anterior) {
+        const mudancas = detectarMudancas(anterior.dados, e.salvamento)
+        if (mudancas.length > 0) {
+          await tx.insert(mudancasDeAparencia).values(
+            mudancas.map((m) => ({
+              ...m,
+              jogadorId: e.jogadorId,
+              revisao: guardado.revisao,
+              publico: e.publico,
+              registradoEm: e.agora,
+            })),
+          )
+        }
+      }
       if (guardado && e.contaId) {
         // Uma criança nunca muda de conta: a primeira gravação vale.
         await tx

@@ -7,6 +7,7 @@ import { ServicoDaMedicao } from '../../src/application/servico-da-medicao'
 import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleRepositorioDoJogo } from '../../src/infrastructure/persistence/drizzle/repositorio'
 import { DrizzleRepositorioDaMedicao } from '../../src/infrastructure/persistence/drizzle/repositorio-medicao'
 import {
   desafios,
@@ -92,6 +93,19 @@ export async function semearMedicao(db: DbConnection) {
         criadoEm: AGORA_MEDICAO,
         atualizadoEm: AGORA_MEDICAO,
       })
+      // Eventos posteriores ao recebimento, pelo mesmo caminho atômico do serviço.
+      // Em Kids, cinco trocas em outubro. No adulto, nenhuma troca observada.
+      if (publico === 'kids') {
+        const aparencia = { origem: 'molda' as const, id: 'troca-ficticia' }
+        dados.projetos.geladeira = { ganhoEm, aparencia, aparencias: [aparencia] }
+        await new DrizzleRepositorioDoJogo(db.db).gravarSalvamento({
+          jogadorId: idMedicao(i),
+          publico,
+          revisaoBase: 1,
+          salvamento: dados,
+          agora: new Date('2026-10-20T15:00:00Z'),
+        })
+      }
     }
   }
   await db.db.insert(desafios).values({

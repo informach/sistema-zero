@@ -26,7 +26,7 @@ Este lote é documental. Não altera arte, geradores, formato de salvamento ou C
   operacionais separadas. Nenhuma linha fica pronta só porque existe um arquivo.
 - [x] Corrigir resumos atuais dos CLAUDE e das regras e rotular os checkpoints antigos.
 - [x] Conferir links, consistência com fontes e Biome dos relatórios recebidos. Revisar o diff.
-- [ ] Commit e merge no staging local, sem push.
+- [x] Commit `6db264de9`, merge `9b5fcdd01` no staging local, sem push.
 
 ## Pedidos de arte
 

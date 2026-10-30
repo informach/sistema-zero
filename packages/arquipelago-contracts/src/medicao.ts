@@ -49,6 +49,14 @@ export const RelatorioDaMedicaoSchema = z.strictObject({
     criacaoGuardada: NumeroDaMedicaoSchema,
     galeria: NumeroDaMedicaoSchema,
   }),
+  /** Aplicações confirmadas em revisões posteriores à base, sem reconstruir o passado. */
+  mudancasDeAparencia: z
+    .strictObject({
+      pintaMolda: NumeroDaMedicaoSchema,
+      criacaoGuardada: NumeroDaMedicaoSchema,
+      galeria: NumeroDaMedicaoSchema,
+    })
+    .optional(),
   desafiosAprovados: NumeroDaMedicaoSchema,
   /**
    * A volta ao curso (29/10/2026), pela MESMA regra e a mesma rota do Members do cartão dos pais:

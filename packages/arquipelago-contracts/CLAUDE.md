@@ -95,6 +95,13 @@ históricos e o salvamento V17 não recebem campos. Testes em `colheita-especial
 
 ## Medição agregada (28/10/2026)
 
+**A06, 30/10/2026:** `RelatorioDaMedicaoSchema.mudancasDeAparencia` é opcional e separa
+aplicações/trocas registradas no período da fotografia `criacao`. Mesmas três origens e
+supressão de grupos menores que cinco, sem nomes, IDs de criação ou contagens auxiliares.
+Ausência do campo não é zero. Primeiro atualizar Admin, que aceita o serviço antigo, depois
+API: o schema estrito do Admin antigo rejeita o campo novo. Save e versão de Plataforma
+permanecem iguais. A coleta não reconstrói datas de criação nem de compra.
+
 `medicao.ts`: filtro estrito por público e até 90 dias civis, relatório e números discriminados
 entre `disponivel`, `poucos-dados` e `aguardando`. Valores protegidos são `null`, sem campos
 auxiliares com contagens ou pessoas. O relatório enumera fontes ausentes explicitamente.
