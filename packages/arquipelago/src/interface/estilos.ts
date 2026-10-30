@@ -84,6 +84,7 @@ export const ESTILOS = `
 .arq-bicho-fase{font-size:13px;font-weight:700;color:#6b5a48}.arq-bicho-medidas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0}.arq-bicho-medidas dt{font-size:12px;font-weight:800;color:#6b5a48}.arq-bicho-medidas dd{margin:3px 0 0}.arq-bicho-medidas .arq-barra{display:block}.arq-bicho .arq-menu-acoes.arq-bicho-acoes{grid-auto-flow:row;grid-template-columns:repeat(2,1fr)}.arq-bicho-rodape{display:flex;align-items:center;justify-content:space-between;gap:10px}@media (max-width:480px){.arq-bicho-medidas{grid-template-columns:1fr}.arq-bicho .arq-menu-acoes.arq-bicho-acoes{grid-template-columns:1fr}}
 .arq-cronometro{position:absolute;left:50%;top:14px;transform:translateX(-50%);display:flex;gap:6px;align-items:center}
 .arq-cronometro .arq-botao{min-height:36px;padding:6px 12px;border-radius:999px}
+.arq-resumo{text-align:left}.arq-resumo h3{margin:0 0 8px}.arq-resumo ul{margin:0 0 10px;padding-left:20px;display:grid;gap:4px}.arq-resumo-boa-noite{font-weight:700;opacity:.85}
 .arq-chegada{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;width:min(620px,calc(100% - 32px));box-sizing:border-box}.arq-chegada-legenda{flex:1;margin:0;padding:12px 16px;border-radius:16px;font-weight:800;font-size:17px;line-height:1.3}.arq-chegada-pular{min-height:44px;padding:8px 16px;border-radius:999px}
 .arq-cronometro .arq-pilula{font-variant-numeric:tabular-nums}
 .arq-resultado{padding:22px;max-width:380px;width:100%;display:grid;gap:12px;text-align:center}

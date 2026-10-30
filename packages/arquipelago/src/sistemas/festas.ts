@@ -10,9 +10,9 @@ export const CALENDARIO_DAS_FESTAS = {
   },
   junina: { de: '06-01', ate: '06-30', motivo: 'Junho inteiro, como definido na proposta.' },
   'fim-de-ano': {
-    proposta: { de: '12-20', ate: '01-06' },
-    aprovada: false,
-    motivo: 'Proposta para o recesso; aguarda a dona.',
+    de: '12-20',
+    ate: '01-06',
+    motivo: 'De 20 de dezembro a 6 de janeiro (a dona aprovou em 30/10/2026).',
   },
   lanternas: { data: null, motivo: 'A proposta não define a data; aguarda a dona.' },
 } as const
@@ -65,7 +65,10 @@ export function festaDoDia(data: Date): Festa | null {
     mesDia = dia.slice(5)
   if (ano >= 1583 && dia >= sabadoDeCarnaval(ano) && dia <= carnavalDoAno(ano)) return 'carnaval'
   const junina = CALENDARIO_DAS_FESTAS.junina
-  return mesDia >= junina.de && mesDia <= junina.ate ? 'junina' : null
+  if (mesDia >= junina.de && mesDia <= junina.ate) return 'junina'
+  // O fim de ano atravessa a virada: do fim de dezembro ao começo de janeiro.
+  const fim = CALENDARIO_DAS_FESTAS['fim-de-ano']
+  return mesDia >= fim.de || mesDia <= fim.ate ? 'fim-de-ano' : null
 }
 
 export function lerFesta(texto: string | null): Festa | null {
