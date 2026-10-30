@@ -331,8 +331,7 @@ def exportar(pid, nos, ancoras=(), clipes_=None, colisores=(), porto=None):
     if porto:
         rel[pid]['porto'] = porto
     with open(RELATORIO_B, 'w') as f:
-        json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
-        f.write('\n')
+        f.write(json_como_biome(ordenado(rel)) + '\n')
     return path
 
 

@@ -98,6 +98,7 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | A03a | Implementado, revisado, verificado e integrado no staging local | `ebf069fde`, merge `297e95fd1` | 1.297 testes do jogo e 2 do avatar-quarto aprovados, tipagem/Biome aprovados, 22 verificações de pose no navegador; QA em `docs/qa/2026-10-30-quarto-pausa/` |
 | A03b | Implementado, revisado, verificado e integrado no staging local | `f60621b26`, merge `579cb2840` | 1.298 testes aprovados, tipagem/Biome, navegador em dois tamanhos; `docs/qa/2026-10-30-leitura-abertura/` |
 | A03c | Implementado, revisado e verificado | Commit deste lote, merge local em seguida | 1.299 testes aprovados, tipagem/Biome, velocidades básicas e pulo no navegador; `docs/qa/2026-10-30-ritmo-basico/` |
+| A05, parte A9 | Feito pela sessão de arte (30/10) | Commit "relatórios da arte no formato do Biome" | `json_como_biome` em `arte/mundo/lib_mundo.py`; `lib_ilhas`, `lib_ilhas_b` e `nuvens_constelacoes` gravam o relatório já formatado; os dois `relatorio.json` passam no Biome com o mesmo conteúdo |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
 ## Pedidos de arte
