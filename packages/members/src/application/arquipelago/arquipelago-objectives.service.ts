@@ -25,6 +25,7 @@ import {
   StudioProjectSyncingError,
 } from '../../domain/learning/learning.errors'
 import type { SectionProgressionService } from '../learning/section-progression.service'
+import { blocosACompletar } from './blocos-a-completar'
 
 /**
  * Os objetivos dos desafios do Arquipélago (plano `docs/plans/2026-10-27-arquipelago-desafios.md`),
@@ -268,14 +269,27 @@ export class ArquipelagoObjectivesService {
       }
     }
     const doGabarito = tipos(gabarito, 'O gabarito', 'GABARITO_INVALIDO')
-    const doInicial = new Set(tipos(inicial, 'O projeto inicial', 'PROJETO_INICIAL_INVALIDO'))
-    // Moldura (`contract.domain === 'frame'`) está sempre disponível, como no `projectCheckAuthoring`,
-    // e o que já vem no inicial a criança não precisa saber montar.
-    const blocosDoGabarito = doGabarito.filter((tipo) => {
+    const doInicial = tipos(inicial, 'O projeto inicial', 'PROJETO_INICIAL_INVALIDO')
+    let alterados: string[] = []
+    if (inicial && gabarito && podeConferir) {
+      try {
+        alterados = blocosACompletar(inicial.blocksState, gabarito.blocksState)
+      } catch (error) {
+        if (!(error instanceof ProjectDocumentError)) throw error
+        impede('BLOCOS_INVALIDOS', error.message)
+      }
+    }
+    // Apoio intocado não é tarefa. Completar o corpo ou mudar a condição de um tipo já
+    // presente exige sua ferramenta, assim como acrescentar uma nova ocorrência.
+    const blocosDoGabarito = alterados.filter((tipo) => {
       const bloco = CATALOGO.get(tipo)
-      return bloco !== undefined && bloco.contract.domain !== 'frame' && !doInicial.has(tipo)
+      return bloco !== undefined && bloco.contract.domain !== 'frame'
     })
-    const blocosDesconhecidos = doGabarito.filter((tipo) => !CATALOGO.has(tipo))
+    const blocosDesconhecidos = [...new Set([...doInicial, ...doGabarito])]
+      .filter((tipo) => !CATALOGO.has(tipo))
+      .sort()
+    for (const tipo of blocosDesconhecidos)
+      impede('BLOCO_DESCONHECIDO', `O bloco ${tipo} não existe no catálogo do Estúdio.`)
 
     const vista = validos.slice(0, LIMITES_DOS_OBJETIVOS.objetivos).map(projectObjectiveView)
     if (!podeConferir || !inicial || !gabarito)

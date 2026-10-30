@@ -1,0 +1,2816 @@
+[
+  {
+    "slug": "bosque-vagalume-aceso",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Vagalume aceso",
+    "problema": null,
+    "blocosDerivados": ["sz_g2d_on_key", "sz_g2d_restart", "sz_js_var_assign", "sz_val_bool"],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_bool"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-lanche-do-coelho",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "O lanche do coelho",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-trilha-das-pegadas",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Trilha das pegadas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-cuide-dos-quatro",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Cuide dos quatro",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-travessia-tranquila",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Travessia tranquila",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_random_x",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-pedras",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos: pedras",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-noite",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos: noite",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-placar",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos: placar",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-vagalume-aceso-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Vagalume aceso",
+    "problema": null,
+    "blocosDerivados": ["sz_g2d_on_key", "sz_g2d_restart", "sz_js_var_assign", "sz_val_bool"],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_bool"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-lanche-do-coelho-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "O lanche do coelho",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-trilha-das-pegadas-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Trilha das pegadas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-cuide-dos-quatro-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Cuide dos quatro",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-travessia-tranquila-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Travessia tranquila",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_random_x",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-pedras-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos: pedras",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_every_frames",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-noite-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos: noite",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "bosque-corrida-dos-bichos-placar-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Corrida dos bichos: placar",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-forno-da-vez",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "O forno da vez",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-caixa-de-paes",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "A caixa de pães",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-suco-na-ordem",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "Suco na ordem",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-doce-esfriou",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "O doce esfriou",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-bandejas-da-padaria",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "Bandejas da padaria",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "A corrida do entregador",
+    "problema": "Dois blocos usam o mesmo identificador (vila_corrida_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-entregas",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "O entregador: duas entregas",
+    "problema": "Dois blocos usam o mesmo identificador (vila_entregas_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-tempo",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "O entregador: oito segundos",
+    "problema": "Dois blocos usam o mesmo identificador (vila_tempo_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-caixa",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "O entregador: uma caixa nova",
+    "problema": "Dois blocos usam o mesmo identificador (vila_caixa_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-forno-da-vez-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "O forno da vez",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-caixa-de-paes-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "A caixa de pães",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-suco-na-ordem-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "Suco na ordem",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-doce-esfriou-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "O doce esfriou",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-bandejas-da-padaria-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "Bandejas da padaria",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "A corrida do entregador",
+    "problema": "Dois blocos usam o mesmo identificador (vila_corrida_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-entregas-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "O entregador: duas entregas",
+    "problema": "Dois blocos usam o mesmo identificador (vila_entregas_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-tempo-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "O entregador: oito segundos",
+    "problema": "Dois blocos usam o mesmo identificador (vila_tempo_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-caixa-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "O entregador: uma caixa nova",
+    "problema": "Dois blocos usam o mesmo identificador (vila_caixa_events_0_body_1).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "recife-a-corrente-muda",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "A corrente muda",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-conchas-por-viagem",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Conchas por viagem",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_math_arithmetic",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-dois-corais-cuidados",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Dois corais cuidados",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-uma-bolha-por-vez",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Uma bolha por vez",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-a-chave-do-navio",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "A chave do navio",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-mira-de-bolhas",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_arrows_x",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_g2d_sprite_y",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_update_each_frame",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-mira-de-bolhas-rapida",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas: bolha rápida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-mira-de-bolhas-pontos",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas: dois pontos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-mira-de-bolhas-alvo-novo",
+    "publico": "kids",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas: outro alvo",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-a-corrente-muda-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "A corrente muda",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-conchas-por-viagem-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Conchas por viagem",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_math_arithmetic",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-dois-corais-cuidados-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Dois corais cuidados",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-uma-bolha-por-vez-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Uma bolha por vez",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-a-chave-do-navio-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "A chave do navio",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "recife-mira-de-bolhas-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_arrows_x",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_g2d_sprite_y",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_update_each_frame",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-mira-de-bolhas-rapida-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas: bolha rápida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-mira-de-bolhas-pontos-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas: dois pontos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "recife-mira-de-bolhas-alvo-novo-adulto",
+    "publico": "adulto",
+    "ilha": "recife",
+    "titulo": "Mira de bolhas: outro alvo",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_x",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "pico-pulo-com-apoio",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Pulo com apoio",
+    "problema": "Dois blocos usam o mesmo identificador (pico-quadro-1_loops_0_body_2_cond_left).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "pico-freio-no-gelo",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Freio no gelo",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_set_velocity",
+      "sz_js_var_assign",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_g2d_set_velocity", "sz_val_number"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-floco-recolhido",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Floco recolhido",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_g2d_set_opacity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "pico-mochila-de-neve",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Mochila de neve",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-passagem-segura",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Passagem segura",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-fase-de-plataforma",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_gravity",
+      "sz_g2d_apply_velocity",
+      "sz_g2d_arrows_x",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_y",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_math_arithmetic",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
+      "sz_g2d_update_each_frame",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+  },
+  {
+    "slug": "pico-fase-de-plataforma-pulo-alto",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma: pulo alto",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+  },
+  {
+    "slug": "pico-fase-de-plataforma-floco",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma: floco de neve",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "pico-fase-de-plataforma-quedas",
+    "publico": "kids",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma: quedas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-pulo-com-apoio-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Pulo com apoio",
+    "problema": "Dois blocos usam o mesmo identificador (pico-quadro-1_loops_0_body_2_cond_left).",
+    "blocosDerivados": null,
+    "tiposJaPresentesMasAlterados": null,
+    "semFonteLocalNaTrilha": null
+  },
+  {
+    "slug": "pico-freio-no-gelo-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Freio no gelo",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_set_velocity",
+      "sz_js_var_assign",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_g2d_set_velocity", "sz_val_number"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-floco-recolhido-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Floco recolhido",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_g2d_set_opacity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "pico-mochila-de-neve-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Mochila de neve",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-passagem-segura-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Passagem segura",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "pico-fase-de-plataforma-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_gravity",
+      "sz_g2d_apply_velocity",
+      "sz_g2d_arrows_x",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_y",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_math_arithmetic",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
+      "sz_g2d_update_each_frame",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+  },
+  {
+    "slug": "pico-fase-de-plataforma-pulo-alto-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma: pulo alto",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+  },
+  {
+    "slug": "pico-fase-de-plataforma-floco-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma: floco de neve",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "pico-fase-de-plataforma-quedas-adulto",
+    "publico": "adulto",
+    "ilha": "pico",
+    "titulo": "Fase de plataforma: quedas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-contagem-da-lista",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Contagem da lista",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_for_each_in_group", "sz_g2d_on_key", "sz_val_number"],
+    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group"]
+  },
+  {
+    "slug": "vale-cinza-retirada",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Cinza retirada",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_set_opacity",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group", "sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "vale-folhas-bem-usadas",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Folhas bem usadas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-uma-onda-por-vez",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Uma onda por vez",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-rodada-conferida",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Rodada conferida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-proteja-os-ninhos",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_logic",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_logic",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_group_click",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_sprite_data",
+      "sz_val_logic"
+    ]
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-ondas",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos: mais uma onda",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_js_var_create",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_js_var_create",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data"
+    ]
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-pontos",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos: dois pontos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data"
+    ]
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-lista",
+    "publico": "kids",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos: mais um ninho",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_add_to_group",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_add_to_group",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_add_to_group",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data"
+    ]
+  },
+  {
+    "slug": "vale-contagem-da-lista-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Contagem da lista",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_for_each_in_group", "sz_g2d_on_key", "sz_val_number"],
+    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group"]
+  },
+  {
+    "slug": "vale-cinza-retirada-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Cinza retirada",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_set_opacity",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_opacity",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group", "sz_g2d_set_opacity"]
+  },
+  {
+    "slug": "vale-folhas-bem-usadas-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Folhas bem usadas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-uma-onda-por-vez-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Uma onda por vez",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-rodada-conferida-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Rodada conferida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_set_velocity",
+      "sz_g2d_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_logic",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_apply_velocity",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_logic",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_group_click",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_sprite_data",
+      "sz_val_logic"
+    ]
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-ondas-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos: mais uma onda",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_js_var_create",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_js_var_create",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data"
+    ]
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-pontos-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos: dois pontos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data"
+    ]
+  },
+  {
+    "slug": "vale-proteja-os-ninhos-lista-adulto",
+    "publico": "adulto",
+    "ilha": "vale-dos-dinos",
+    "titulo": "Proteja os ninhos: mais um ninho",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_add_to_group",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_add_to_group",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_set_image",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": [
+      "sz_g2d_add_to_group",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_set_opacity",
+      "sz_g2d_set_sprite_data"
+    ]
+  },
+  {
+    "slug": "nuvens-reserva-de-agua",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Reserva de água",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-luz-na-medida",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Luz na medida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-canteiros-livres",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Canteiros livres",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-dois-recursos",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Dois recursos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-colheita-da-lista",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Colheita da lista",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_var_increment"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_for_each_in_group", "sz_g2d_on_key"],
+    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group"]
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_logic",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_val_logic"]
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-rega-forte",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce: rega forte",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-sol-forte",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce: sol forte",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-chuva",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce: chuva",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-reserva-de-agua-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Reserva de água",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-luz-na-medida-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Luz na medida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-canteiros-livres-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Canteiros livres",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-dois-recursos-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Dois recursos",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-colheita-da-lista-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Colheita da lista",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_for_each_in_group",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_var_increment"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_for_each_in_group", "sz_g2d_on_key"],
+    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group"]
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_logic",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click", "sz_val_logic"]
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-rega-forte-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce: rega forte",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_group_click",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": ["sz_g2d_on_group_click"]
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-sol-forte-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce: sol forte",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-jardim-que-floresce-chuva-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Jardim que floresce: chuva",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text"
+    ],
+    "semFonteLocalNaTrilha": []
+  }
+]

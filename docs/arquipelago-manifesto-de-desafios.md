@@ -45,6 +45,14 @@ ensinar o mesmo bloco, mas não podem ser a única opção de quem quer completa
 Uma atividade que depende de Poder escolhido pode ser desafio opcional, com o curso indicado.
 Não use ajustes manuais de blocos para esconder uma lacuna de ensino.
 
+Desde C01c, o Members exige também os tipos de blocos cujo conteúdo, ordem, área de execução
+ou quantidade muda entre inicial e gabarito. Completar o corpo de um laço já preparado conta;
+apoio idêntico e mudanças só de apresentação do editor não. Blocos desconhecidos em qualquer
+dos dois projetos impedem a análise. Essa comparação não substitui as provas de comportamento.
+Para conferir os arquivos locais com a mesma regra, rode
+`bun docs/desafios-do-jogo/regras-a-completar.ts`. O JSON ao lado registra fontes locais e
+recusas do leitor do Estúdio, sem afirmar que cursos estejam publicados ou concluídos.
+
 Chegar ao posto abre a ilha, não concede os blocos de seus cursos. A pessoa continua precisando
 do repertório realmente conquistado para abrir o desafio. A reativação de uma publicação
 arquivada confere sua cobertura atual também. Não remove conquistas anteriores.

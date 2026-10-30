@@ -131,7 +131,7 @@ Não apresentar a substituição de controles como ensino novo.
 - [x] Executor real: inicial, gabarito e defeitos causais. Navegador com teclado e toque,
   escolha, largada, avanço, parada, repetição, luz e placar, sem erros nem rolagem horizontal.
 - [x] Regenerar manifestos e inventário, revisar, testar, tipar e Biome.
-- [ ] Commit e merge local.
+- [x] Commit `0da3ba918` e merge local `4b4b985de`.
 
 ### Provas C01b2a
 
