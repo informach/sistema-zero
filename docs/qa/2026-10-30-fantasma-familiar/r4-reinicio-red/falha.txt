@@ -1,0 +1,2 @@
+AssertionError [ERR_ASSERTION]: O reinício gravou a chegada antiga: [7087,636,-5265,0]
+Arquipélago no ar em http://127.0.0.1:54294

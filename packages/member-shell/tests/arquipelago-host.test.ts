@@ -33,6 +33,31 @@ const plataforma = () =>
     voltarPara: '/',
   })
 
+test('trajetos usam somente os percursos conhecidos e a leitura do irmão fica no Kids', async () => {
+  const id = '11111111-1111-4111-8111-111111111111'
+  const caminho = `/irmaos/${id}/fantasmas/bosque-copas`
+  for (const p of ['/fantasmas', '/fantasmas/nuvens-balao', caminho])
+    expect(caminhoDoJogo(p)).toBe(true)
+  for (const p of [
+    '/fantasmas/outro',
+    `/irmaos/${id}/fantasmas/outro`,
+    '/fantasmas/bosque-copas?perfil=outro',
+    '/irmaos/qualquer/fantasmas/bosque-copas',
+  ])
+    expect(caminhoDoJogo(p)).toBe(false)
+  const pedidos = servir({
+    [`GET /api/arquipelago${caminho}`]: { status: 200, body: { versao: 1, situacao: 'ausente' } },
+  })
+  expect((await plataforma().servico.buscar(caminho)).status).toBe(200)
+  const adulto = criarPlataformaDoArquipelago({
+    publico: 'adulto',
+    perfil: { id: 'adulto', primeiroNome: 'Pessoa' },
+    voltarPara: '/',
+  })
+  expect((await adulto.servico.buscar(caminho)).status).toBe(404)
+  expect(pedidos).toHaveLength(1)
+})
+
 describe('a porta da plataforma para o jogo', () => {
   test('host repassa operações econômicas exatas nos dois públicos e preserva corpo/sinal', async () => {
     for (const publico of ['kids', 'adulto'] as const) {

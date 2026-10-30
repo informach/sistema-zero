@@ -178,7 +178,8 @@ const PERMISSOES: ReadonlyArray<{
   {
     chave: 'visitasDeIrmaos',
     nome: 'Visitas de irmãos',
-    explica: 'Os irmãos desta conta podem visitar a ilha um do outro.',
+    explica:
+      'Permite comparar recordes, seguir trajetos e visitar as casas entre irmãos desta conta.',
   },
   {
     chave: 'visitasDeOutrasCriancas',

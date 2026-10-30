@@ -50,6 +50,7 @@ import { BarraDeConstruir, ModosDoJogo } from './construir'
 import { PainelDosConvidados } from './convidados'
 import { Diario } from './diario'
 import { VisorDasEstrelas } from './estrelas'
+import { EnvioDoFantasma } from './fantasmas'
 import { CorteDoFarol, PainelDaIris, PainelDoFarol } from './farol'
 import { PainelDaFeira } from './feira'
 import { PainelDoFilhote } from './filhote'
@@ -746,6 +747,7 @@ function Resultado() {
         </dl>
         {/* Família e irmãos são do Kids: a comunidade adulta não lê `/irmaos`. */}
         {plataforma.publico === 'kids' ? <RecordesDaFamilia percurso={r.percurso} /> : null}
+        <EnvioDoFantasma />
         <div className="arq-menu-acoes">
           <button
             type="button"

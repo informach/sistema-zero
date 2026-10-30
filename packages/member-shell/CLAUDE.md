@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Trajeto familiar do Arquipélago (L10, 30/10/2026)
+
+O BFF repassa PUT de até 129 KB e GET dos percursos conhecidos com `private, no-store`.
+A leitura de irmão exige também a lista atual do Auth: perfil ausente é 404 e leitura
+indisponível é 502, sem pedir o artefato ao jogo. O serviço reconfirma conta e permissão.
+O host aceita apenas os caminhos de percurso conhecidos e bloqueia família no adulto.
+Os apps têm shims de leitura/escrita própria; só o Kids tem o shim da trajetória do irmão.
+Nenhuma regra de corrida ou armazenamento de amostras mora na plataforma.
+
 ## Cores conquistadas do Arquipélago (A02, 30/10/2026)
 
 O host permite `/desafios/cores` nos dois públicos. `arquipelagoCoresConquistadas.GET` repassa

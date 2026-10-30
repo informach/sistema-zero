@@ -10,6 +10,7 @@ import {
   type MoldeDoVestuario,
   MoldeDoVestuarioSchema,
   type MontagemDoArquipelago,
+  PERCURSOS,
   type PedidoDeFerramenta,
   type Plataforma,
   type PublicoJogo,
@@ -96,10 +97,13 @@ const CAMINHOS_DO_JOGO = new Set([
   '/minijogos',
   '/mural',
   '/irmaos',
+  '/fantasmas',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 /** A casa de um irmão para a visita (fase3-12), só leitura. */
 const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
+const FANTASMA = new RegExp(`^/fantasmas/(${PERCURSOS.join('|')})$`)
+const FANTASMA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/fantasmas/(${PERCURSOS.join('|')})$`)
 /**
  * Os desafios: a lista (com `?ilha=`), o desafio aberto e o prêmio visto. Conferir NÃO está aqui:
  * quem manda o projeto é o Estúdio de desafio da página, nunca o jogo.
@@ -117,13 +121,18 @@ export function soDoKids(caminho: string): boolean {
     caminho === '/tempo/sessao' ||
     caminho === '/tempo/recuperar' ||
     caminho === '/irmaos' ||
-    CASA_DO_IRMAO.test(caminho)
+    CASA_DO_IRMAO.test(caminho) ||
+    FANTASMA_DO_IRMAO.test(caminho)
   )
 }
 
 export function caminhoDoJogo(caminho: string): boolean {
   return (
-    CAMINHOS_DO_JOGO.has(caminho) || DESAFIOS_DO_JOGO.test(caminho) || CASA_DO_IRMAO.test(caminho)
+    CAMINHOS_DO_JOGO.has(caminho) ||
+    DESAFIOS_DO_JOGO.test(caminho) ||
+    CASA_DO_IRMAO.test(caminho) ||
+    FANTASMA.test(caminho) ||
+    FANTASMA_DO_IRMAO.test(caminho)
   )
 }
 

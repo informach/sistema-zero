@@ -13,6 +13,7 @@ import {
   QUARTO_DE_EXEMPLO,
 } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
+import { CHAVE_DOS_FANTASMAS_FALSOS } from '../src/plataforma/fantasmas-falsos'
 import { chaveDaAbertura } from '../src/sistemas/abertura'
 import { chaveDasDicas } from '../src/sistemas/dicas'
 import { lerFesta } from '../src/sistemas/festas'
@@ -76,6 +77,7 @@ function lerFamilia(texto: string | null): FamiliaDoPlayground | undefined {
     : undefined
 }
 if (q.get('novo') === '1') {
+  localStorage.removeItem(CHAVE_DOS_FANTASMAS_FALSOS)
   localStorage.removeItem('arquipelago-playground')
   localStorage.removeItem(CHAVE_DA_GALERIA)
   for (const publico of ['kids', 'adulto']) {
@@ -129,6 +131,10 @@ const plataforma = criarPlataformaFalsa({
         : 'pronto',
   editarObjeto: q.has('aparencias') ? abrirOficinaDeExemplo : undefined,
   familia: lerFamilia(q.get('familia')),
+  fantasma:
+    q.get('fantasma') === '1'
+      ? await (await import('./fantasma-de-exemplo')).fantasmaDeExemplo()
+      : undefined,
   galeria: {
     moedas: q.has('moedas') ? Number(q.get('moedas')) : undefined,
     situacao: q.get('galeria') === 'fora-do-ar' ? 'fora-do-ar' : undefined,

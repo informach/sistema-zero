@@ -14,6 +14,7 @@ const IRMAO = '33333333-3333-4333-8333-333333333333'
 function montar(
   resposta: Resposta,
   perfis: Resposta = { status: 200, body: { profiles: [{ id: PERFIL }, { id: IRMAO }] } },
+  irmaos: Resposta = { status: 200, body: { siblings: [{ id: IRMAO, name: 'Irmão' }] } },
 ) {
   const chamadas: Chamada[] = []
   const routes = createArquipelagoRoutes({
@@ -31,7 +32,7 @@ function montar(
         return resposta
       },
     } as never,
-    profiles: { list: async () => perfis } as never,
+    profiles: { list: async () => perfis, siblings: async () => irmaos } as never,
   })
   return { routes, chamadas }
 }
@@ -40,6 +41,21 @@ const pedido = (corpo: string) =>
   new Request('http://local/api/arquipelago/salvamento', { method: 'PUT', body: corpo })
 
 const fetchOriginal = globalThis.fetch
+
+test('fantasma não usa um perfil removido da lista atual do Auth nem avança sem a leitura', async () => {
+  for (const [lista, status] of [
+    [{ status: 200, body: { siblings: [] } }, 404],
+    [{ status: 502, body: null }, 502],
+  ] as const) {
+    const { routes, chamadas } = montar({ status: 200, body: {} }, undefined, lista)
+    const r = await routes.arquipelagoFantasmaDoIrmao.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: IRMAO, percurso: 'bosque-copas' }),
+    })
+    expect(r.status).toBe(status)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(chamadas).toHaveLength(0)
+  }
+})
 test('cores conquistadas só repassam GET privado sem identidade no corpo ou na consulta', async () => {
   const corpo = { versao: 1, ilhas: [{ id: 'bosque', quadros: [1] }] }
   const { routes, chamadas } = montar({ status: 200, body: corpo })
@@ -53,6 +69,46 @@ test('cores conquistadas só repassam GET privado sem identidade no corpo ou na 
   expect(Object.keys(routes.arquipelagoCoresConquistadas)).toEqual(['GET'])
 })
 
+test('trajetos validam caminho, limitam corpo e não usam cache', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { versao: 1, situacao: 'ausente' } })
+  const r = await routes.arquipelagoFantasma.GET(new Request('http://local'), {
+    params: Promise.resolve({ percurso: 'bosque-copas' }),
+  })
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas[0]?.caminho).toBe('/arquipelago/fantasmas/bosque-copas')
+  expect(
+    (
+      await routes.arquipelagoFantasma.GET(new Request('http://local'), {
+        params: Promise.resolve({ percurso: 'outro' }),
+      })
+    ).status,
+  ).toBe(400)
+  expect(
+    (
+      await routes.arquipelagoFantasmaDoIrmao.GET(new Request('http://local'), {
+        params: Promise.resolve({ id: IRMAO, percurso: 'vila-telhados' }),
+      })
+    ).status,
+  ).toBe(200)
+  expect(chamadas.at(-1)?.caminho).toBe(`/arquipelago/irmaos/${IRMAO}/fantasmas/vila-telhados`)
+  const antes = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoFantasmaDoIrmao.GET(new Request('http://local'), {
+        params: Promise.resolve({ id: 'outro', percurso: 'vila-telhados' }),
+      })
+    ).status,
+  ).toBe(400)
+  expect(
+    (
+      await routes.arquipelagoFantasmas.PUT(
+        new Request('http://local', { method: 'PUT', body: 'x'.repeat(129 * 1024 + 1) }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(antes)
+})
 test('pedidos repassam comando e pendências de forma privada, sem cache e com corpo limitado', async () => {
   const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
   const pendentes = await routes.arquipelagoPedidosPendentes.GET()

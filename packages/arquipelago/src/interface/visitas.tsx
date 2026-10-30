@@ -2,6 +2,7 @@ import type { PercursoId } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaFamilia, useFamilia } from '../estado/familia'
+import { lojaDosFantasmas } from '../estado/fantasmas'
 import { alturaDaIlha } from '../mundo/medidas'
 import {
   CHEGADA_DA_VISITA,
@@ -13,6 +14,7 @@ import {
   TEXTOS_DAS_VISITAS as T,
   visitaDaCasa,
 } from '../sistemas/visitas'
+import { AvisoDoFantasma } from './fantasmas'
 
 /** Leva o personagem à frente da casa, olhando para ela (na ida e na volta da visita). */
 function irParaAFrenteDaCasa(pedidos: ReturnType<typeof useJogo>['pedidos']) {
@@ -28,8 +30,9 @@ const estrelas = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n)
  * (fase3-12). Some sem irmão e com as visitas desligadas; sem a leitura, diz que não carregou.
  */
 export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, fila } = useJogo()
   const familia = lojaDaFamilia(loja, plataforma)
+  const fantasmas = lojaDosFantasmas(loja, plataforma, fila)
   const leitura = useFamilia(familia, (s) => s.leitura)
   const carregando = useFamilia(familia, (s) => s.carregando)
   const meu = useEstado((s) => s.salvamento.percursos[percurso])
@@ -65,9 +68,22 @@ export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
             </span>
             <span className="arq-sr">{`${l.estrelas} de 3 estrelas`}</span>
             <span className="arq-recordes-tempo">{l.tempo ?? T.aindaNaoCorreu}</span>
+            {!l.ehVoce && l.tempo && (
+              <button
+                type="button"
+                className="arq-botao leve"
+                onClick={() => {
+                  const irmao = leitura.irmaos.find((i) => i.perfilId === l.id)
+                  if (irmao) void fantasmas.escolher(irmao, percurso)
+                }}
+              >
+                Seguir trajeto de {l.nome}
+              </button>
+            )}
           </li>
         ))}
       </ol>
+      <AvisoDoFantasma />
     </section>
   )
 }

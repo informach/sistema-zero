@@ -252,7 +252,7 @@ ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são o
   vale `PERMISSOES_PADRAO`.
 - O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
   leitura recebe 403 `SOMENTE_LEITURA`.
-- Quem obedece a "Visitas de irmãos" desde 29/10/2026: os recordes da família e as visitas (§6.20).
+- Quem obedece a "Visitas de irmãos": os recordes da família, as visitas e os trajetos familiares (§6.20).
   As outras duas ainda só se gravam, leem e mostram.
 
 **No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
@@ -1897,7 +1897,7 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
 - **Quem é irmão:** quem guardou o jogo logado na mesma conta (`perfis_da_conta`), não é a própria
   criança e vê o jogo pela mesma decisão de acesso. Irmão que nunca jogou nesta conta não aparece.
   A comunidade adulta não tem família.
-- **A permissão:** "Visitas de irmãos" (`visitasDeIrmaos`, padrão ligada) liga as duas coisas.
+- **A permissão:** "Visitas de irmãos" (`visitasDeIrmaos`, padrão ligada) liga recordes, visitas e trajetos familiares.
   Desligada, a lista vem `desligado` e a casa dá 403 `VISITAS_DESLIGADAS`. As outras duas
   permissões não mudam nada aqui. O jogo relê a lista a cada resultado e a cada abertura do painel.
 - **As rotas** (só leitura, de quem joga, fora de `/arquipelago/familia/`):
@@ -1916,6 +1916,22 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
   correu". No empate, ela vem antes. Sem irmão ou com a permissão desligada, a parte não aparece;
   lendo, "Lendo os recordes da família."; sem resposta, "Os recordes da família não carregaram
   agora."
+- **Seguir o trajeto (L10, 30/10/2026):** os recordes dos irmãos oferecem uma imagem transparente
+  do caminho para a próxima corrida. Ela não tem colisão, não atrapalha e não dá prêmio. Usa
+  avatar padrão, sem foto ou roupa do irmão. Pode retirar com "Correr sem trajeto".
+  - A mesma permissão das visitas decide o acesso. O BFF confere que o perfil continua na lista
+    atual dos irmãos do Auth e o serviço confere a conta e a permissão. Adultos não leem família Kids.
+  - A referência é lida novamente na largada, ao retomar a aba e a cada 15 segundos de aba visível.
+    Uma leitura demora no máximo 5 segundos; indisponibilidade ou recusa retira a referência.
+    Isso não interrompe a corrida. Não há promessa de revogação instantânea por push.
+  - Gravar um caminho não comprova uma corrida sem trapaça. O serviço aceita só o tempo do
+    recorde já salvo, sem conceder moedas, estrelas ou itens. Mudou o recorde, o caminho antigo
+    deixa de ser oferecido. Sem caminho, a corrida continua normal.
+  - Até cinco minutos, com uma posição a cada 0,1 segundo e interpolação entre elas. O relógio
+    ativo da corrida dirige a imagem; menu e pausa não o avançam. A física permanece a 1/60 s.
+  - A trajetória fica fora dos 64 KB da V18. Há no máximo uma por perfil/percurso. Envios sem
+    resposta ficam no diário do próprio aparelho e são retomados sem apagar uma captura melhor.
+    Excluir o salvamento remove seus trajetos. Não são guardados nomes ou sessões antigas.
 - **Visitas:** "🏡 Visitar um irmão" no menu abre o painel (`PAINEL_DAS_VISITAS`) com cada irmão
   ("Já construiu a casa." ou "Ainda mora na casa de antes.") e "Ver a casa".
   - Na visita, o jogo desenha a casa, o quintal e a horta do irmão (os objetos com aparência com o

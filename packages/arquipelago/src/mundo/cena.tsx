@@ -19,6 +19,7 @@ import { Ceu } from './ceu'
 import { ClimaDaIlha } from './clima-da-ilha'
 import { ConvidadosDaCasa } from './convidados'
 import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
+import { FantasmaFamiliar } from './fantasma-familiar'
 import { Farol } from './farol'
 import { CameraDaFoto } from './foto'
 import { GuiaDoZappyNoMundo } from './guia-do-zappy'
@@ -101,6 +102,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Anel />
           <Barcos />
           <Personagem />
+          <FantasmaFamiliar />
           <RetratoDoAvatar />
           <BichoAdotado />
           <Camera />

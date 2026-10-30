@@ -13,6 +13,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import argolaUrl from '../assets/ilhas/nuvens-argola.glb'
 import { lojaDoConforto } from '../estado/conforto'
 import { useJogo } from '../estado/contexto'
+import { lojaDosFantasmas } from '../estado/fantasmas'
 import type { Ponto } from '../sistemas/cipo'
 import {
   ARGOLAS,
@@ -81,10 +82,11 @@ async function carregarArgola(): Promise<ArteDaArgola> {
 /**
  * A corrida de balão das Nuvens (fase4-07, regras em `sistemas/corrida-de-balao.ts`): as seis
  * argolas do arco-íris em volta da ilha, a primeira começa e a sexta chega, com o cronômetro e a
- * tela de resultado do percurso genérico. Sem gravar: o melhor fica na sessão.
+ * tela de resultado do percurso genérico. O melhor fica no salvamento; o trajeto é separado.
  */
 export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
-  const { loja, movimento } = useJogo()
+  const { loja, movimento, rastro, plataforma, fila } = useJogo()
+  const fantasmas = lojaDosFantasmas(loja, plataforma, fila)
   const aparelhoPedeMenos = useReducedMotion()
   const argolas = useMemo<Argola[]>(
     () =>
@@ -149,6 +151,7 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
 
   /** A corrida acabou sem chegar (desceu do balão, "Parar", a ilha saiu). */
   const parar = (fala: string | null) => {
+    fantasmas.cancelar(PERCURSO_DO_BALAO.id)
     if (!estado.corrida) return
     estado.corrida = null
     if (movimento.corrida) movimento.corrida = null
@@ -159,13 +162,14 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
   // Uma corrida não continua numa ilha que não está mais ali.
   useEffect(
     () => () => {
+      fantasmas.cancelar(PERCURSO_DO_BALAO.id)
       if (estado.corrida && movimento.corrida === estado.corrida) {
         movimento.corrida = null
         loja.getState().definirCorrida(null)
       }
       estado.corrida = null
     },
-    [estado, movimento, loja],
+    [estado, movimento, loja, fantasmas],
   )
 
   useFrame((_, dtBruto) => {
@@ -231,9 +235,11 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
     passo.de.x = passo.ate.x
     passo.de.y = passo.ate.y
     passo.de.z = passo.ate.z
+    if (estado.corrida && ev?.tipo !== 'comecou') fantasmas.quadro(estado.corrida.tempoMs, rastro)
     if (!ev || !estado.corrida) return
     const corrida = estado.corrida
     if (ev.tipo === 'comecou') {
+      fantasmas.comecar(PERCURSO_DO_BALAO.id, rastro)
       movimento.corrida = corrida
       s.mostrarResultado(null)
       s.definirCorrida({
@@ -252,6 +258,7 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
       estado.corrida = null
       movimento.corrida = null
       terminarCorrida(loja, PERCURSO_DO_BALAO, corrida)
+      fantasmas.terminar(PERCURSO_DO_BALAO.id, corrida.tempoMs, rastro)
     } else if (ev.tipo === 'desistiu') parar(PERCURSO_DO_BALAO.falaDoFim)
   })
 
