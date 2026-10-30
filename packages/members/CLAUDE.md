@@ -129,9 +129,10 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
     (`sectionProjectChecksEnvironmentIssue`, `projectCheckAuthoring({initialProject}).issues`,
     espera somada acima de `EXECUTION_LIMITS.maxSectionWaitMs`), só extras (`SEM_OBRIGATORIO`) e
     `GABARITO_NAO_PASSA` (obrigatório em que o gabarito falha). Com problema de autoria, nada vai
-    ao executor e `gabarito`/`inicial` saem vazios. `blocosDoGabarito` = `projectBlockTypes` do
-    gabarito no `SERVER_BLOCK_CATALOG`, sem moldura (`contract.domain === 'frame'`) e sem os tipos
-    do inicial; `blocosDesconhecidos` = fora do catálogo. Executor fora → `EXECUTOR_INDISPONIVEL`
+    ao executor e `gabarito`/`inicial` saem vazios. `blocosDoGabarito` = tipos acrescentados,
+    retirados, alterados ou reordenados por `blocosACompletar`, conhecidos no catálogo e sem
+    moldura (`contract.domain === 'frame'`). `blocosDesconhecidos` inclui inicial e gabarito
+    e gera `BLOCO_DESCONHECIDO` impeditivo. Executor fora → `EXECUTOR_INDISPONIVEL`
     (ocupado: `EXECUTOR_OCUPADO`; recusa: `EXECUTOR_RECUSOU`), a estrutura segue conferida e os
     que rodam o jogo saem `passou: false` sem acusar o gabarito. O limite do executor da análise
     é um só (`arquipelago-admin`).
@@ -3261,6 +3262,19 @@ financeiro. Extensão nunca reduz validade já maior nem ressuscita acesso revog
 Sem esse campo, o contrato anterior continua para compras e eventos históricos.
 Na liberação, Members e Funnel precisam aceitar esse contrato ANTES do Payments emitir
 `cycleAccess` ou `payment.subscription_period_confirmed`.
+
+## Repertório dos desafios alterados, C01c (30/10/2026)
+
+`ArquipelagoObjectivesService.analisar` deriva requisitos com `blocosACompletar`: compara
+conteúdo, multiplicidade, ordem e área, incluindo contêineres cujo corpo foi completado.
+Não usar só diferença de tipos: um laço vazio já pede repertório quando a pessoa o completa.
+Apoio intacto, IDs e apresentação do editor não contam. `data`, campos e estado extra contam.
+Travessia iterativa limitada pelo leitor do Estúdio e pelos limites de JSON; ciclos e IDs
+duplicados continuam recusados. Tipos desconhecidos no inicial ou gabarito geram problema
+impeditivo, não apenas uma lista informativa. Sem alteração de contrato ou persistência.
+Testes em `arquipelago-blocos-a-completar`, `arquipelago-objectives.service` e
+`arquipelago-repertorio-local`. O último confere o relatório editorial de 108 entradas,
+sem importar Members no jogo ou nos contratos.
 
 ## Posse compartilhada da galeria, L04 (30/10/2026)
 

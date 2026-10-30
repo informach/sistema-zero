@@ -18,11 +18,14 @@ usar Poderes escolhidos; quem ainda não tem o bloco vê onde aprender. A regra 
 para importar e reativar. Reativar confere a versão publicada; editar o rascunho não altera
 essa versão. Conquistas anteriores continuam válidas. Nada muda na promoção da Jornada.
 
-Limite atual da derivação: o Members exige os tipos acrescentados ao inicial, sem molduras.
-A conferência de publicação trabalha sobre essa lista e os ajustes editoriais existentes.
-Um tipo já presente pode ganhar uma condição ou ação nova; por isso, essa lista sozinha não
-prova todo o repertório pedagógico. O inventário local considera também o apoio preparado,
-e o fechamento do C01 exige rever essa distinção.
+Desde C01c, o Members compara o conteúdo dos blocos, incluindo condições, corpos de laços,
+ordem e área de execução. Completar um tipo já presente exige sua ferramenta; apoio intacto,
+molduras e mudanças só de posição/ID/comentário não. Cópias adicionais e retiradas também
+entram. Bloco desconhecido no inicial ou no gabarito impede publicar. A análise descreve
+ferramentas alteradas, não prova aprendizado: os objetivos continuam conferindo comportamento.
+Ajustes editoriais históricos não devem ocultar requisitos. O relatório local
+`docs/desafios-do-jogo/regras-a-completar.json` usa essa mesma derivação e distingue projetos
+inválidos de projetos sem lacunas; publicação e fontes remotas não são inferidas dele.
 
 No C01b2a, os seis quadros do Bosque, Pedras e Placar passaram a usar apenas fontes locais
 da trilha. A corrida começa por Enter ou + no controle de toque. No extra, as setas escolhem
