@@ -170,6 +170,14 @@ export function arquipelagoGateway(opts: {
         pathPattern,
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       })),
+      // Fotos no Clube (N08b): a criança lê só a permissão da conta dela.
+      {
+        ...jogador,
+        id: 'arquipelago-clube',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/clube',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
       // A galeria (29/10/2026): ler o que ela comprou e o saldo, e comprar uma aparência. Comprar
       // gasta moedas pelo Members: corpo pequeno e um ritmo de quem toca num botão.
       ...(['iniciar', 'concluir'] as const).map<Route>((acao) => ({

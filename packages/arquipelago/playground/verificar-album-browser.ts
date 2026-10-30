@@ -1,9 +1,11 @@
 /**
  * O álbum de coleções e o modo foto no navegador (fase2-09). Só usa a plataforma falsa, sem banco.
  *
- * Abre o álbum pelo menu, confere as seis seções, entra no modo foto (F no computador, o botão do
+ * Abre o álbum pelo menu, confere as oito seções, entra no modo foto (F no computador, o botão do
  * menu no toque), confere que o HUD sumiu, que o personagem fica parado e a câmera gira, tira a
  * foto e confere o PNG baixado (maior que zero e com a assinatura de PNG), e sai (Esc ou "Voltar").
+ * Fotos no Clube (N08b): no computador o Clube está ligado ("Mandar para o Clube" só depois da foto,
+ * e o recado da moderação); no celular está desligado (o botão nunca aparece).
  *
  * No Windows: `bun build playground/verificar-album-browser.ts --target=node --external
  * playwright-core --outfile .cache/verificar-album-browser.mjs && node .cache/verificar-album-browser.mjs`.
@@ -76,12 +78,13 @@ const CASOS = [
     altura: 800,
     toque: false,
     reduzido: false,
-    url: '/?posicao=2',
+    url: '/?posicao=2&clube=ligado',
+    clube: true,
     semeado: true,
     titulos: [
       'Bichos do Bosque: 2 de 4',
       'Achados do Recife: 0 de 3',
-      'Estrelas dos percursos: 2 de 15',
+      'Estrelas dos percursos: 2 de 24',
       'Aparências guardadas: 1 de 9',
       'Lumis presos: 3 de 14',
     ],
@@ -93,12 +96,13 @@ const CASOS = [
     altura: 844,
     toque: true,
     reduzido: true,
-    url: '/?novo=1&persistir=0&posicao=2',
+    url: '/?novo=1&persistir=0&posicao=2&clube=desligado',
+    clube: false,
     semeado: false,
     titulos: [
       'Bichos do Bosque: 0 de 4',
       'Achados do Recife: 0 de 3',
-      'Estrelas dos percursos: 0 de 15',
+      'Estrelas dos percursos: 0 de 24',
       'Aparências guardadas: 0 de 9',
       'Lumis presos: 0 de 14',
     ],
@@ -151,7 +155,7 @@ try {
     const album = pagina.getByRole('dialog', { name: 'Álbum de coleções' })
     await album.waitFor()
     const titulos = await album.locator('h3').allTextContents()
-    assert.equal(titulos.length, 6, `seções: ${titulos.join(' | ')}`)
+    assert.equal(titulos.length, 8, `seções: ${titulos.join(' | ')}`)
     for (const t of caso.titulos)
       assert(titulos.includes(t), `falta "${t}" em ${titulos.join(' | ')}`)
     assert(titulos.some((t) => t.startsWith('Receitas: ')))
@@ -232,6 +236,8 @@ try {
     assert(girou > 0.3, `a câmera não girou (${girou} m)`)
     await pagina.screenshot({ path: path.join(prints, `${caso.nome}-4-modo-foto.png`) })
 
+    const mandar = foto.getByRole('button', { name: 'Mandar para o Clube' })
+    assert.equal(await mandar.count(), 0, 'o Clube aparece antes da foto')
     const baixando = pagina.waitForEvent('download')
     await pagina.getByRole('button', { name: 'Tirar foto', exact: true }).click()
     const download = await baixando
@@ -244,6 +250,26 @@ try {
     await foto.getByText('Foto pronta. Ela ficou só neste aparelho.').waitFor()
     await pagina.screenshot({ path: path.join(prints, `${caso.nome}-6-foto-pronta.png`) })
 
+    // ── Fotos no Clube (N08b) ────────────────────────────────────────────────────────────────
+    if (caso.clube) {
+      await mandar.waitFor()
+      const r = await mandar.boundingBox()
+      assert(r)
+      assert(
+        !(r.x < caso.largura / 2 && r.y + r.height > caso.altura * 0.45),
+        `"Mandar para o Clube" cobre o direcional: ${JSON.stringify(r)}`,
+      )
+      await mandar.click()
+      await foto
+        .getByText('A foto foi para o Clube. Ela aparece lá depois que um adulto da equipe olhar.')
+        .waitFor()
+      assert.equal(await mandar.count(), 0, 'o botão continua depois de mandar')
+      await pagina.screenshot({ path: path.join(prints, `${caso.nome}-7-foto-no-clube.png`) })
+    } else {
+      await pagina.waitForTimeout(500)
+      assert.equal(await mandar.count(), 0, 'o Clube aparece com a permissão desligada')
+    }
+
     // Sair restaura o HUD.
     if (caso.toque) await pagina.getByRole('button', { name: 'Voltar', exact: true }).click()
     else await pagina.keyboard.press('Escape')
@@ -253,7 +279,7 @@ try {
     if (caso.toque) assert.equal(await pagina.locator('.arq-zona-joystick').count(), 1)
     assert.deepEqual(erros, [])
     console.log(
-      `PASS ${caso.nome}: álbum com as seis seções, modo foto sem HUD, PNG de ${png.length} bytes, volta do HUD`,
+      `PASS ${caso.nome}: álbum com as oito seções, modo foto sem HUD, PNG de ${png.length} bytes, Clube ${caso.clube ? 'ligado e foto na moderação' : 'desligado sem botão'}, volta do HUD`,
     )
     await contexto.close()
   }

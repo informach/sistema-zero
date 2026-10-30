@@ -327,3 +327,32 @@ test('casas de amigos (N08a): só no Kids, só leitura e só o id', () => {
   for (const c of ['/amigos/x/casa', `/amigos/${id}`, '/familia/amigos', '/amigos/aceitar'])
     expect(caminhoDoJogo(c)).toBe(false)
 })
+
+test('fotos no Clube: só o Kids monta; resposta fora do contrato vira fora-do-ar ou falhou', async () => {
+  const adulta = criarPlataformaDoArquipelago({
+    publico: 'adulto',
+    perfil: { id: 'a', primeiroNome: 'Pessoa' },
+    voltarPara: '/',
+  })
+  expect(adulta.clube).toBeUndefined()
+  const clube = plataforma().clube
+  if (!clube) throw new Error('o Kids monta o clube')
+  const pedidos = servir({
+    'GET /api/arquipelago/clube': { status: 200, body: { situacao: 'ligado' } },
+    'POST /api/arquipelago/clube/foto': { status: 201, body: { situacao: 'em-moderacao' } },
+  })
+  expect(await clube.situacao()).toBe('ligado')
+  expect(await clube.mandarFoto(new Blob([new Uint8Array(4)], { type: 'image/png' }))).toBe(
+    'em-moderacao',
+  )
+  expect(pedidos.map((p) => `${p.method} ${p.url}`)).toEqual([
+    'GET /api/arquipelago/clube',
+    'POST /api/arquipelago/clube/foto',
+  ])
+  servir({
+    'GET /api/arquipelago/clube': { status: 200, body: { situacao: 'talvez' } },
+    'POST /api/arquipelago/clube/foto': { status: 502, body: null },
+  })
+  expect(await clube.situacao()).toBe('fora-do-ar')
+  expect(await clube.mandarFoto(new Blob([]))).toBe('falhou')
+})

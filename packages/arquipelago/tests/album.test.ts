@@ -343,7 +343,8 @@ test('os textos do álbum e do modo foto não usam travessão nem exclamação',
   const s: Salvamento = { ...inicial(), lumis: { pitanga: 1 } }
   const a = albumDoSalvamento(s)
   const textos = [
-    ...Object.values(TEXTOS_DA_FOTO),
+    ...Object.values(TEXTOS_DA_FOTO).filter((t) => typeof t === 'string'),
+    ...Object.values(TEXTOS_DA_FOTO.envio),
     ...a.percursos.itens.flatMap((p) => [p.nome, ...p.estrelas.map((e) => e.texto)]),
     ...a.aparencias.itens.map((o) => ('dica' in o ? o.dica : o.aparencias.join(', '))),
     ...Object.values(ESPECIES_DE_LUMI).map((e) => e.nome),

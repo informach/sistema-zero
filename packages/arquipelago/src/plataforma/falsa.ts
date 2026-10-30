@@ -3,6 +3,7 @@ import {
   AMIZADE_MAXIMA,
   abrirRotinaNaPlataforma,
   BICHOS_DO_BOSQUE,
+  type ClubeDoJogo,
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
   type ConflitoDeSalvamento,
@@ -26,6 +27,7 @@ import {
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
   type SalvamentoGuardado,
+  type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
 import { lerAparenciaFalsa } from './aparencias-falsas'
@@ -104,6 +106,28 @@ export interface OpcoesDaPlataformaFalsa {
   galeria?: OpcoesDaGaleriaFalsa
   /** Os irmãos (recordes e visitas, fase3-12): `sozinha` (padrão), `irmaos`, `desligada` ou `fora-do-ar`. */
   familia?: FamiliaDoPlayground
+  /**
+   * Fotos no Clube (N08b): sem a opção, a plataforma não monta o Clube (como o adulto). Com ela,
+   * a situação que o Clube responde; `falha-no-envio` diz `ligado` e falha ao mandar.
+   */
+  clube?: ClubeDoPlayground
+}
+
+export type ClubeDoPlayground = SituacaoDoClube | 'falha-no-envio'
+
+/** O Clube de mentira: guarda as fotos mandadas para a conferência. */
+function clubeFalso(clube: ClubeDoPlayground): ClubeDoJogo & { mandadas: Blob[] } {
+  const mandadas: Blob[] = []
+  return {
+    mandadas,
+    situacao: async () => (clube === 'falha-no-envio' ? 'ligado' : clube),
+    async mandarFoto(foto) {
+      if (clube === 'falha-no-envio') return 'falhou'
+      if (clube !== 'ligado') return clube === 'fora-do-ar' ? 'falhou' : clube
+      mandadas.push(foto)
+      return 'em-moderacao'
+    },
+  }
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -635,6 +659,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       }
       return (await desafios.abrir(pedido)) ?? (await abrirNoMolde(pedido))
     },
+    ...(o.clube ? { clube: clubeFalso(o.clube) } : {}),
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,
