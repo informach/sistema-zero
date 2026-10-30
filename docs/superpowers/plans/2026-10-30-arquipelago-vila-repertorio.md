@@ -20,7 +20,10 @@ corrige a dependência, não declara que a Vila já aplica pulo/gravidade do Inv
 - [x] Regenerar os dois manifestos e os relatórios com as fontes locais.
 - [x] Conferir executor real, Blockly, teclado e toque nos quatro projetos.
 - [x] Suítes, tipagem, Biome e revisão completa.
-- [ ] Commit, merge local e push autorizado; depois, pausa dos próximos lotes.
+- [x] Commit `5eeeb0836` e merge local `0ca840100`.
+
+Push de staging autorizado no encerramento deste lote. Implementação dos próximos lotes
+pausada por solicitação da dona; C01f permanece fora do staging e desse envio.
 
 ## Provas e revisão
 
