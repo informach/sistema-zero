@@ -22,7 +22,7 @@ import {
   progressoDoQuadro,
   teclaDoAtalho,
 } from '../sistemas/hud'
-import { ITENS, itensVisiveis, remover } from '../sistemas/itens'
+import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO, podeEntrarNaFoto } from '../sistemas/modo-foto'
 import { comer } from '../sistemas/necessidades'
@@ -40,7 +40,7 @@ import { primeiroPedido } from '../sistemas/primeiro-pedido'
 import { desafioDeHoje, quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { Abertura } from './abertura'
-import { Album } from './album'
+import { Album, PAINEL_DO_ALBUM } from './album'
 import { PainelDoBarco } from './barco'
 import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
@@ -323,80 +323,89 @@ function useLugaresDaMochila(): LugarDaMochila[] {
   const inv = useEstado((s) => s.salvamento.inventario)
   const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
-  return useMemo(
-    () =>
-      itensVisiveis(inv).map(({ item, qtd }): LugarDaMochila => {
-        if (item.comida)
-          return {
-            id: item.id,
-            emoji: item.emoji,
-            rotulo: `Comer ${item.nome.toLowerCase()} (${qtd})`,
-            titulo: `Comer ${item.nome.toLowerCase()}`,
-            qtd,
-            agir: () => {
-              const s = loja.getState()
-              s.mudar((sv) => {
-                const resto = remover(sv.inventario, item.id)
-                const comida = ITENS[item.id]
-                return resto && comida
-                  ? { ...sv, inventario: resto, necessidades: comer(sv.necessidades, comida) }
-                  : sv
-              })
-              s.dizer(`Hum. ${item.nome} deu energia para continuar.`)
-            },
-          }
-        if (item.id === ID_DOS_PATINS) {
-          const nome = patins ? 'Tirar os patins' : 'Calçar os patins'
-          return {
-            id: item.id,
-            emoji: item.emoji,
-            rotulo: nome,
-            titulo: nome,
-            qtd: null,
-            pressionado: patins,
-            agir: () => {
-              const s = loja.getState()
-              s.calcarPatins(!patins)
-              s.dizer(patins ? FALA_DE_DESCALCAR : FALA_DE_CALCAR)
-            },
-          }
-        }
-        if (item.id === ID_DA_LANTERNA) {
-          const nome = lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'
-          return {
-            id: item.id,
-            emoji: item.emoji,
-            rotulo: nome,
-            titulo: nome,
-            qtd: null,
-            pressionado: lanterna,
-            agir: () => {
-              const s = loja.getState()
-              s.acenderLanterna(!lanterna)
-              s.dizer(lanterna ? FALA_DE_APAGAR : FALA_DE_ACENDER)
-            },
-          }
-        }
-        if (item.id === ID_DO_PLANADOR)
-          return {
-            id: item.id,
-            emoji: item.emoji,
-            rotulo: 'Como usar o planador',
-            titulo: 'Como usar o planador',
-            qtd: null,
-            agir: () => loja.getState().dizer(COMO_USAR_O_PLANADOR),
-          }
+  return useMemo(() => {
+    const resumo = itensDaBarra(inv)
+    const lugares = resumo.itens.map(({ item, qtd }): LugarDaMochila => {
+      if (item.comida)
         return {
           id: item.id,
           emoji: item.emoji,
-          rotulo: item.nome,
-          titulo: item.nome,
+          rotulo: `Comer ${item.nome.toLowerCase()} (${qtd})`,
+          titulo: `Comer ${item.nome.toLowerCase()}`,
           qtd,
-          agir: null,
+          agir: () => {
+            const s = loja.getState()
+            s.mudar((sv) => {
+              const resto = remover(sv.inventario, item.id)
+              const comida = ITENS[item.id]
+              return resto && comida
+                ? { ...sv, inventario: resto, necessidades: comer(sv.necessidades, comida) }
+                : sv
+            })
+            s.dizer(`Hum. ${item.nome} deu energia para continuar.`)
+          },
         }
-      }),
-    [inv, patins, lanterna, loja],
-  )
+      if (item.id === ID_DOS_PATINS) {
+        const nome = patins ? 'Tirar os patins' : 'Calçar os patins'
+        return {
+          id: item.id,
+          emoji: item.emoji,
+          rotulo: nome,
+          titulo: nome,
+          qtd: null,
+          pressionado: patins,
+          agir: () => {
+            const s = loja.getState()
+            s.calcarPatins(!patins)
+            s.dizer(patins ? FALA_DE_DESCALCAR : FALA_DE_CALCAR)
+          },
+        }
+      }
+      if (item.id === ID_DA_LANTERNA) {
+        const nome = lanterna ? 'Apagar a lanterna' : 'Acender a lanterna'
+        return {
+          id: item.id,
+          emoji: item.emoji,
+          rotulo: nome,
+          titulo: nome,
+          qtd: null,
+          pressionado: lanterna,
+          agir: () => {
+            const s = loja.getState()
+            s.acenderLanterna(!lanterna)
+            s.dizer(lanterna ? FALA_DE_APAGAR : FALA_DE_ACENDER)
+          },
+        }
+      }
+      if (item.id === ID_DO_PLANADOR)
+        return {
+          id: item.id,
+          emoji: item.emoji,
+          rotulo: 'Como usar o planador',
+          titulo: 'Como usar o planador',
+          qtd: null,
+          agir: () => loja.getState().dizer(COMO_USAR_O_PLANADOR),
+        }
+      return {
+        id: item.id,
+        emoji: item.emoji,
+        rotulo: item.nome,
+        titulo: item.nome,
+        qtd,
+        agir: null,
+      }
+    })
+    if (resumo.descobertasNaPraia > 0)
+      lugares.push({
+        id: 'colecoes-da-praia',
+        emoji: '🐚',
+        rotulo: 'Abrir coleções da praia',
+        titulo: `Coleções da praia: ${resumo.descobertasNaPraia} de ${resumo.totalNaPraia} descobertas`,
+        qtd: null,
+        agir: () => loja.getState().abrirPainel(PAINEL_DO_ALBUM),
+      })
+    return lugares
+  }, [inv, patins, lanterna, loja])
 }
 
 /**
@@ -910,11 +919,12 @@ export function Hud() {
         <BarraDeConstruir />
       ) : (
         <>
+          {/* A zona de gesto fica atrás da HUD visível, sem interceptar seus botões. */}
+          <ControlesDeToque />
           <div className="arq-baixo">
             <Acao />
             {noFarol ? null : <Mochila />}
           </div>
-          <ControlesDeToque />
         </>
       )}
       {!noFarol && !visitando ? (

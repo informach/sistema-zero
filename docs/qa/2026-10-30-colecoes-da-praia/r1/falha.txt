@@ -1,0 +1,5 @@
+TimeoutError: locator.click: Timeout 60000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: 'Voltar ao jogo', exact: true })[22m
+
+Arquipélago no ar em http://127.0.0.1:58775

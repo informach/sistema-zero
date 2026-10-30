@@ -1,0 +1,17 @@
+{
+  "resultados": [
+    {
+      "tipo": "computador",
+      "escopo": "ordem-da-barra",
+      "sementesAntesDasLembrancas": true,
+      "erros": []
+    },
+    {
+      "tipo": "celular",
+      "escopo": "ordem-da-barra",
+      "sementesAntesDasLembrancas": true,
+      "erros": []
+    }
+  ],
+  "visitaSemColeta": null
+}

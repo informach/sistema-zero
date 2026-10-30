@@ -17,6 +17,7 @@ import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
 import { Ceu } from './ceu'
 import { ClimaDaIlha } from './clima-da-ilha'
+import { ColecoesDaPraia } from './colecoes-da-praia'
 import { ConvidadosDaCasa } from './convidados'
 import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
 import { FantasmaFamiliar } from './fantasma-familiar'
@@ -93,6 +94,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <IlhaCentral />
           <DescobertasDaIlhaCentral />
           <HabitantesDaPraia />
+          <ColecoesDaPraia />
           <Casa />
           <ConvidadosDaCasa />
           <Horta />

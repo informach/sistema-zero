@@ -12,6 +12,7 @@ import {
 } from '../sistemas/album'
 import { Bicho, Receita } from './diario'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
+import { MINIATURA_DA_PRAIA } from './miniaturas-da-praia'
 import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 /** O valor de `painelAberto` do álbum. */
@@ -161,6 +162,36 @@ export function Album() {
         <p className="arq-caderno-explica">
           O que falta não se perde: continua esperando por você nas ilhas.
         </p>
+        {(['conchas', 'peixes'] as const).map((grupo) => (
+          <Secao
+            key={grupo}
+            id={grupo}
+            nome={grupo === 'conchas' ? 'Conchas e estrela-do-mar' : 'Peixes da praia'}
+            conta={a[grupo].conta}
+            explica={
+              grupo === 'conchas'
+                ? 'Explore a areia. A estrela-do-mar fica onde vive.'
+                : 'Pesque no píer. Depois do registro, os peixes voltam ao mar.'
+            }
+          >
+            {a[grupo].itens.map((p) => (
+              <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+                <img
+                  className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                  src={MINIATURA_DA_PRAIA[p.id]}
+                  alt=""
+                  draggable={false}
+                />
+                <div className="arq-quadro-corpo">
+                  <b>{p.nome}</b>
+                  <span className="arq-quadro-estado">
+                    {p.encontrado ? 'Descoberta registrada.' : p.dica}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </Secao>
+        ))}
         <Secao
           id="recife"
           nome="Achados do Recife"

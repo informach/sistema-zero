@@ -2897,6 +2897,27 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 
 ⚠️ Até 28/10/2026 os colisores da ilha completa e das pontes vivas iam com `collisionGroups={cond ? GRUPO : undefined}`. O `@react-three/rapier` aplica `undefined` como o grupo 0, então nenhum corpo dinâmico tocava a ilha: o caixote, as peças soltas, o galho, a folha e a pena atravessavam o chão e voltavam ao lugar. Só o personagem, cujo controlador não olha grupos, pisava. Use `gruposDoColisor` (`mundo/grupos.ts`); `tests/grupos-de-colisao.test.ts` recusa o padrão. O plano da física viva registra medições, notas do cartão e a conferência que falta em celular físico.
 
+### Coleções da praia e pesca tranquila (30/10/2026, E01)
+
+- Cinco conchas ficam na areia da ilha central: caracol, vieira, tigre, mexilhão e listrada.
+  A estrela-do-mar é observada e fica no seu lugar. Cada descoberta é registrada uma vez no
+  álbum e na mochila, pelo mesmo inventário. Não se come nem se dá essa lembrança de presente.
+- No píer há uma vara. Perto dela, usar lança a linha. Depois de 3 segundos de jogo ativo,
+  aparece Recolher a linha por 5 segundos. Usar antes da hora apenas orienta a esperar.
+  Se o peixe escapar, basta tentar de novo: não se perdem iscas, moedas ou descobertas.
+- A pausa congela a espera e a janela. Sair do alcance cancela somente a tentativa em curso.
+  A janela é a mesma no teclado e no toque. Não há prêmio financeiro, sorte obrigatória ou
+  cobrança para completar a coleção. As cinco espécies novas aparecem em ordem: sardinha,
+  robalo, garoupa, linguado e peixe-voador. O registro permanece e o peixe volta ao mar.
+- O álbum mostra o que foi descoberto e onde procurar o que falta, nas duas comunidades.
+  A barra da mochila reúne as lembranças em um botão para abrir o álbum, sem cobrir o jogo
+  com onze espaços. Alimentos, sementes e equipamentos conservam seus próprios lugares.
+  As lembranças usam o inventário já existente da V18, sem novo campo, migração ou escrita
+  adicional em localStorage. Visitas e suporte de somente leitura não concedem descobertas.
+- O píer conserva o corredor, o embarque do barco e a luneta. Conchas e vara usam a arte
+  pronta. Seus comandos só aparecem após carregar o modelo e exigem altura e alcance reais.
+  Este recorte não entrega os desafios do Pega-conchas nem uma receita que consuma peixes.
+
 ### Nico, Estrelinha e Búzio na praia (28/10/2026)
 
 - Nico fica na areia da ilha central em `(0, 25)`, olhando para o interior da ilha. Respira

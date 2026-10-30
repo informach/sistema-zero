@@ -1,0 +1,58 @@
+[
+  {
+    "id": "concha-caracol",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/concha-caracol-cqg3408z.png"
+  },
+  {
+    "id": "concha-listrada",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/concha-listrada-qn3bxacj.png"
+  },
+  {
+    "id": "concha-mexilhao",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/concha-mexilhao-hmvdsxn3.png"
+  },
+  {
+    "id": "concha-tigre",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/concha-tigre-c59dn5hs.png"
+  },
+  {
+    "id": "concha-vieira",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/concha-vieira-ytrvzv47.png"
+  },
+  {
+    "id": "estrela-do-mar",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/estrela-do-mar-2y5ra2hg.png"
+  },
+  {
+    "id": "peixe-garoupa",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/peixe-garoupa-asejqwcc.png"
+  },
+  {
+    "id": "peixe-linguado",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/peixe-linguado-1cqbj0vy.png"
+  },
+  {
+    "id": "peixe-robalo",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/peixe-robalo-hgqfgpc6.png"
+  },
+  {
+    "id": "peixe-sardinha",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/peixe-sardinha-jrn1zwgh.png"
+  },
+  {
+    "id": "peixe-voador",
+    "ok": true,
+    "url": "http://127.0.0.1:56666/recursos/peixe-voador-mp4drf65.png"
+  }
+]
+PASS: onze PNGs reais, página aninhada e módulo em outra pasta
