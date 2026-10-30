@@ -3402,6 +3402,14 @@ Os oito projetos são JavaScript em blocos, sem HTML, CSS ou Canvas. As provas u
 
 ## A última página e a volta da Íris (fase4-11, 29/10/2026)
 
+**Prioridade da orientação, 30/10/2026:** na sala, o Agora indica a última página na mesa da
+Íris. Durante a subida, a leitura, os fachos e o corte de volta, os lembretes de plantio,
+desafio diário, rotina, mochila e tutorial cedem esse espaço. Os controles da sala, o menu
+e os avisos necessários continuam disponíveis. O menu não convida a iniciar o tutorial nesse
+momento. Nada é concluído ou apagado: ao descer, voltam as pendências e a mesma fala dos primeiros
+passos. Recados temporários vencem no prazo normal, sem reaparecer vencidos. A regra vale para
+os dois públicos e não altera o acesso ao final.
+
 Na Lenda, posição 8 da jornada, E / Usar oferece **Subir o Farol**. Antes, a porta oferece um recado gentil, com voz própria para o público adulto. Visitas não iniciam esse final. A porta exterior continua com sua malha atual; a passagem para o interior acontece pelo interativo, sem abrir uma dobradiça que o modelo ainda não tem.
 
 O interior é a sala existente em `alto-do-farol.glb`, carregada só ao entrar e descartada ao sair. A sala usa um referencial próprio, 40 m acima do zero do mar, para não sobrepor a torre exterior. Esse número é uma decisão técnica, não uma medida da história. As âncoras `chegada`, `leitura` e `camera-varanda` orientam chegada, leitura e vista. O piso tem raio 4,2 m e topo y 0 no modelo; 16 caixas fecham o anel das paredes, com centro a 4,35 m. A mesa e a base da lente têm formas simples. Nenhuma malha de desenho vira colisor. Os colisores vêm do próprio arquivo (nós `col-*`); a grade do vão da escada também colide, para ninguém cair pela escada. A porta do farol de fora abre na dobradiça quando a criança chega perto e o Farol já pode ser subido.

@@ -33,15 +33,26 @@ export function PainelDoFarol() {
   if (etapa === 'fora' || menu || (painel !== null && painel !== PAINEL_DO_FINAL)) return null
   if (etapa === 'sala')
     return (
-      <div className="arq-farol-voltar">
-        <button
-          ref={principal}
-          type="button"
-          className="arq-botao leve"
-          onClick={() => farol.getState().sair?.()}
-        >
-          Descer do Farol
-        </button>
+      <div className="arq-farol-orientacao">
+        <section className="arq-agora arq-vidro" aria-label="Orientação no Farol">
+          <h2>Agora</h2>
+          <ul>
+            <li>
+              <span className="arq-agora-marca" aria-hidden="true" />
+              Ler a última página na mesa da Íris
+            </li>
+          </ul>
+        </section>
+        <div className="arq-farol-voltar">
+          <button
+            ref={principal}
+            type="button"
+            className="arq-botao leve"
+            onClick={() => farol.getState().sair?.()}
+          >
+            Descer do Farol
+          </button>
+        </div>
       </div>
     )
   const lendo = etapa === 'pagina'

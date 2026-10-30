@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Orientação no final do Farol (30/10/2026, A04)
+
+`Hud` usa o estado do final e do corte para suspender Agora, rotina, mochila e primeiros
+passos. `PainelDoFarol` orienta a mesa na sala e conserva as falas próprias nas etapas seguintes.
+Não concluir ou apagar tarefas para organizar a tela. Ao desmontar `PrimeirosPassos`, limpar
+apenas a guia 3D e `tela`; a loja conserva progresso e fila. O menu do Farol não oferece iniciar
+ou rever o tutorial. `Dica` continua montada e vence no prazo normal enquanto oculta.
+`estado/loja.ts` carimba `dica.expiraEm` na emissão, fora do salvamento. HUD e cartão do
+tutorial usam esse mesmo prazo de sete segundos; remontar não renova recados antigos.
+Provas: `passos-desmontagem.test.ts` e `verificar-final-farol-browser.ts`, incluindo retomada.
+
 ## Pausa do quarto (30/10/2026, A03a)
 
 `Quarto` em `mundo/casa.tsx`, tanto próprio quanto visitado, propaga `jogoPausado` pelo

@@ -339,9 +339,9 @@ function Inicio({
         </p>
       ) : null}
       <ClimaDaSuaIlha />
-      <CartaoDosPassosNoMenu />
+      {noFarol ? null : <CartaoDosPassosNoMenu />}
       {/* A fala dos primeiros passos que mostra o mapa entra no espaço livre do meio. */}
-      <FalaDosPassosNoMenu />
+      {noFarol ? null : <FalaDosPassosNoMenu />}
     </section>
   )
 }

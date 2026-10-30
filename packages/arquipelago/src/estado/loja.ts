@@ -36,6 +36,9 @@ export interface CorridaNaTela {
   totalDeVagalumes: number
 }
 
+/** Recados curtos duram sete segundos desde a emissão, mesmo trocando de cartão. */
+const DURACAO_DO_RECADO_MS = 7000
+
 /** O estado do jogo de UMA montagem (cada `montarArquipelago` cria a sua loja). */
 export interface EstadoDoJogo {
   salvamento: Salvamento
@@ -43,7 +46,7 @@ export interface EstadoDoJogo {
   quarto: QuartoDoJogo
   avatar: AvatarDoJogo
   acesso: Acesso
-  dica: { id: number; texto: string } | null
+  dica: { id: number; texto: string; expiraEm: number } | null
   alvo: { id: string; rotulo: string } | null
   dentroDeCasa: boolean
   nadando: boolean
@@ -159,7 +162,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       d.aoMudar(novo)
     },
     dizer(texto) {
-      set({ dica: { id: proximaDica++, texto } })
+      set({ dica: { id: proximaDica++, texto, expiraEm: Date.now() + DURACAO_DO_RECADO_MS } })
     },
     definirAlvo(alvo) {
       const atual = get().alvo
