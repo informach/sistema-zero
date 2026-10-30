@@ -1,7 +1,24 @@
-import { criarSalvamentoInicial, type SalvamentoV14, type SalvamentoV17 } from '../src/salvamento'
+import {
+  criarSalvamentoInicial,
+  type SalvamentoV14,
+  type SalvamentoV17,
+  type SalvamentoV18,
+} from '../src/salvamento'
+
+/** O salvamento inicial na V18 (sem os campos da V19): base das versões antigas. */
+export function inicialV18(agora: Date): SalvamentoV18 {
+  const {
+    chaves: _chaves,
+    segredos: _segredos,
+    mapa: _mapa,
+    companhia: _companhia,
+    ...atual
+  } = criarSalvamentoInicial(agora)
+  return { ...atual, versao: 18 }
+}
 
 export function inicialV17(agora: Date): SalvamentoV17 {
-  const { ilhasVisitadas: _visitas, ...atual } = criarSalvamentoInicial(agora)
+  const { ilhasVisitadas: _visitas, ...atual } = inicialV18(agora)
   return { ...atual, versao: 17 }
 }
 

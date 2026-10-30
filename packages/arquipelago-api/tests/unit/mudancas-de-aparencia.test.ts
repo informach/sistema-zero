@@ -39,7 +39,14 @@ test('guardar na coleção, retirar, mudar ganhoEm ou outro estado não é aplic
   expect(mudancasDeAparencia(novo, antigo)).toEqual([{ objeto: 'geladeira', origem: 'pinta' }])
 })
 test('uma base anterior ao V18 é migrada antes de comparar', () => {
-  const { ilhasVisitadas: _, ...camposV17 } = com('molda')
+  const {
+    ilhasVisitadas: _,
+    chaves: _chaves,
+    segredos: _segredos,
+    mapa: _mapa,
+    companhia: _companhia,
+    ...camposV17
+  } = com('molda')
   const antigo = { ...camposV17, versao: 17 }
   expect(mudancasDeAparencia(antigo, com('molda'))).toEqual([])
   expect(mudancasDeAparencia(antigo, com('pinta'))).toEqual([

@@ -3,16 +3,28 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { useJogo } from '../estado/contexto'
+import { PERCURSO_DOS_CORAIS } from '../sistemas/percurso'
 import { CoraisDoRecife } from './corais-do-recife'
+import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Mare } from './mare'
-import { giroDaIlha } from './medidas'
+import { giroDaIlha, raioMaximoDaIlha } from './medidas'
 import { MergulhoDoRecife } from './mergulho-do-recife'
 import { MesaDeMapas } from './mesa-de-mapas'
 import { ComReserva } from './modelos'
+import { deslocar, percursoDosCorais } from './percursos-das-ilhas'
 import { aguaDoRecife } from './recife'
 
 /** Só existe com a ilha ativa. Água e conversa são retiradas junto com a ilha. */
+/** As pérolas dos pulos nos corais: brancas com o brilho lilás da lagoa. */
+const CORES_DA_PEROLA: CoresDoColetavel = {
+  nucleo: '#fffaf4',
+  brilho: '#e9d8ff',
+  degrade: ['rgba(255,252,246,1)', 'rgba(225,205,255,0.55)', 'rgba(200,180,255,0)'],
+}
+/** Os pés a menos disto do chão da lagoa, pisando, contam como queda dos corais. */
+const CHAO_DOS_CORAIS = 0.3
+
 export function RecifeVivo({
   ilha,
   centro,
@@ -29,6 +41,10 @@ export function RecifeVivo({
   const meio = useMemo(() => ({ ...centro, y: 0 }), [centro])
   const agua = useMemo(() => aguaDoRecife(preparada.modelo, meio, giro), [preparada, meio, giro])
   const pecas = useRef<Group>(null)
+  const corais = useMemo(() => {
+    const p = percursoDosCorais(preparada.colisores, raioMaximoDaIlha(ilha))
+    return p ? deslocar(p, meio) : null
+  }, [preparada, meio, ilha])
   useEffect(() => {
     if (!agua) return
     movimento.aguas.push(agua)
@@ -48,6 +64,16 @@ export function RecifeVivo({
       <ComReserva reserva={null}>
         <Mare modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
+      {corais ? (
+        <CorridaNaIlha
+          ilhaId={ilha.id}
+          config={PERCURSO_DOS_CORAIS}
+          pontos={corais}
+          largada={corais.largada}
+          alturaDoChao={corais.centro.y + CHAO_DOS_CORAIS}
+          cores={CORES_DA_PEROLA}
+        />
+      ) : null}
     </group>
   )
 }

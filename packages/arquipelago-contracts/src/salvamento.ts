@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BIT_DA_SEGREDO_MAXIMO, COMPANHIAS, MAPAS_DAS_ILHAS, MapaDaIlhaSchema } from './exploracao'
 import { ILHA_IDS } from './ilhas'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
@@ -9,7 +10,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 18
+export const VERSAO_SALVAMENTO = 19
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -45,7 +46,14 @@ export type SalvamentoV1 = z.infer<typeof SalvamentoV1Schema>
  * versão nova: só alargam o que a V2 em diante aceitam.
  */
 const PERCURSOS_ATE_V15 = ['bosque-copas', 'vila-telhados', 'pico-cume'] as const
-export const PERCURSOS = [...PERCURSOS_ATE_V15, 'nuvens-saltos', 'nuvens-balao'] as const
+const PERCURSOS_ATE_V18 = [...PERCURSOS_ATE_V15, 'nuvens-saltos', 'nuvens-balao'] as const
+/** V19 (30/10/2026): os percursos da praia e das pedras, dos corais do Recife e das pegadas do Vale. */
+export const PERCURSOS = [
+  ...PERCURSOS_ATE_V18,
+  'praia-pedras',
+  'recife-corais',
+  'vale-pegadas',
+] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
 /** Uma hora: o jogo desiste da corrida que passa disto (nada acima vai para o salvamento). */
@@ -668,7 +676,7 @@ export const SalvamentoV16Schema = z
     ...SalvamentoV15Schema.shape,
     versao: z.literal(16),
     projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulAtualSchema),
-    percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+    percursos: z.partialRecord(z.enum(PERCURSOS_ATE_V18), ResultadoDoPercursoSchema),
     nuvens: z.strictObject({ constelacoes: z.number().int().min(0).max(63) }),
     farol: z
       .strictObject({ pagina: z.boolean(), concluido: z.boolean() })
@@ -758,15 +766,48 @@ export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
 }
 
 /** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
-export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV18 {
-  return migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV19 {
+  return migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s))))
 }
 
-export const SalvamentoSchema = z.union([
+export const SalvamentoAteV18Schema = z.union([
   SalvamentoV18Schema,
   SalvamentoAteV17Schema.transform(migrarDaV17),
 ])
-export type Salvamento = SalvamentoV18
+
+/**
+ * V19 (30/10/2026, levantamento integrado): três percursos novos, as chaves dos cômodos da casa
+ * da Íris (um bit por cômodo), os segredos que o kit de movimento abre nas ilhas antigas (um bit
+ * por segredo), o mapa que se revela andando (uma grade de 8 × 8 por ilha, em hexadecimal) e
+ * quem acompanha a criança pela ilha. Nada disso consome itens: as conquistas se juntam.
+ */
+export const SalvamentoV19Schema = z
+  .strictObject({
+    ...SalvamentoV18Schema.shape,
+    versao: z.literal(19),
+    percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+    chaves: z.number().int().min(0).max(15),
+    segredos: z
+      .number()
+      .int()
+      .min(0)
+      .max(BIT_DA_SEGREDO_MAXIMO * 2 - 1),
+    mapa: z.partialRecord(z.enum(MAPAS_DAS_ILHAS), MapaDaIlhaSchema),
+    companhia: z.enum(COMPANHIAS),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV19 = z.infer<typeof SalvamentoV19Schema>
+
+/** Nada é presumido: nenhuma chave, segredo ou célula do mapa; o bicho do quarto acompanha. */
+export function migrarDaV18(s: SalvamentoV18): SalvamentoV19 {
+  return { ...s, versao: 19, chaves: 0, segredos: 0, mapa: {}, companhia: 'quarto' }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV19Schema,
+  SalvamentoAteV18Schema.transform(migrarDaV18),
+])
+export type Salvamento = SalvamentoV19
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
@@ -775,6 +816,10 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
     versao: VERSAO_SALVAMENTO,
     ilhasVisitadas: 0,
+    chaves: 0,
+    segredos: 0,
+    mapa: {},
+    companhia: 'quarto',
     nuvens: { constelacoes: 0 },
     farol: { pagina: false, concluido: false },
     clima: 'sol',
