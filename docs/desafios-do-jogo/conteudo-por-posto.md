@@ -90,10 +90,43 @@ laço em grupo seguem sem pedido, porque nesses postos a aplicação de listas �
 fonte continuam visíveis como pendências, sem concessão manual.
 
 A Vila atual retoma eventos, estoque, contagem e estados. Ainda não comprova o conjunto de
-pulo com apoio, colisão e dificuldade do Inventor. Recife e Pico são retomadas em blocos,
-não aplicações dos cursos Python. Vale e Nuvens também não provam trabalhar no ambiente
-textual/Pro. C01b2 e C02 devem resolver essas diferenças, preservando a utilidade das
-retomadas e sem retirar conquistas anteriores.
+pulo com apoio, colisão e dificuldade do Inventor. Os quadros do Recife e do Pico são retomadas
+em blocos e os do Vale e das Nuvens não trabalham no ambiente textual nem no Pro. C02 acrescenta
+uma aplicação na linguagem de cada posto (seção abaixo), sem retirar as retomadas.
+
+## Desafios na linguagem do posto (C02, 30/10/2026)
+
+O contrato do desafio aceita objetivos Python (perfil do ambiente e entradas), e o Members confere
+Python com o mesmo `PythonProjectCheckerService` das aulas, JavaScript em texto pela Ponte (o mesmo
+projeto clássico) e JavaScript Pro com o modelo do projeto inicial. Python Pro continua fora. Plano:
+[C02](../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
+
+| Ilha | Desafio | Linguagem | O que se completa | Pacote |
+| --- | --- | --- | --- | --- |
+| Recife | Mira de bolhas: resgate dos vagalumes | Python, Pygame Zero | clique dentro e fora, sorteio de toca, relógio e fim da rodada; R no extra | [recife-python](recife/recife-python.manifesto.json) |
+| Pico | Subida das fases: o mapa é dado | Python, Pygame Zero | ler a fase (listas), pousar (colisão no eixo y), próxima fase; terceira fase no extra | [pico-python](pico/pico-python.manifesto.json) |
+| Vale | Guardião dos ninhos: ondas e alcance | JavaScript em texto (Ponte) | onda como lista de objetos, alcance pela distância, alvo mais adiantado; R no extra | [vale-texto](vale/vale-texto.manifesto.json) |
+| Nuvens | Jardim das Nuvens: grade, custo e guardar | JavaScript Pro (Vite e TypeScript) | ocupação, custo, produção, salvar e carregar no modelo; remover no extra | [nuvens-pro](nuvens/nuvens-pro.manifesto.json) |
+
+Cada um tem versão Kids e adulta, é desafio do dia (os seis quadros de cada ilha já estão
+ocupados; trocar um quadro é decisão da dona) e vem com `publicar: false`. Inicial, gabarito e
+erros causais foram rodados no executor real (Chrome local para o JavaScript clássico; imagem de
+produção do studio-runtime para Python e Pro), com o julgamento do core; os números estão no
+README de cada ilha.
+
+Lacunas que continuam com a equipe:
+
+- O Estúdio de desafio do jogo abre o JavaScript em texto (na Ponte), mas não abre Python nem
+  Pro: o Python precisa de um contexto de autorização de runtime que hoje só existe em aulas,
+  salas e autoria, e o Pro de um build. A criança vê um recado; o Admin também não edita esses
+  projetos (chegam pelo manifesto).
+- Nenhum ambiente publicado tem uma release Python com Pygame Zero. Os projetos do Recife e do Pico
+  apontam a release da prova local (`ambiente-python.ts`); antes de importar, troque pela release
+  ativa e rode a prova de novo.
+- Python e Pro não têm blocos do catálogo do servidor, então não derivam requisitos: abrem pela
+  ilha. O Vale em texto deriva blocos da Ponte (JavaScript avançado), que só terão fonte quando os
+  cursos do Arquiteto existirem; até lá a barreira C01a recusaria publicar.
+- O inventário C01b1 (`repertorio-local`) segue só com os manifestos de blocos.
 
 Esta matriz orienta L03 da entrega integral. As provas existentes do executor continuam
 associadas aos projetos intactos. O inventário não substitui esses testes nem declara o

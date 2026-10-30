@@ -134,6 +134,11 @@ function JavaScriptGameObjectives({
   function rule(index: number, next: SectionObjectiveRule) {
     update(index, { rule: next })
   }
+  // C02: com o gabarito Pro, a função e o valor conferidos moram num arquivo do projeto.
+  const pro =
+    typeof gabarito === 'object' &&
+    gabarito !== null &&
+    (gabarito as { kind?: unknown }).kind === 'pro'
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
@@ -185,7 +190,7 @@ function JavaScriptGameObjectives({
             <ScriptRuleEditor
               rule={check.rule}
               index={index}
-              isPro={false}
+              isPro={pro}
               isKit={false}
               onChange={(r) => rule(index, r)}
             />
@@ -193,7 +198,7 @@ function JavaScriptGameObjectives({
             <ExecutionRuleEditor
               rule={check.rule}
               index={index}
-              isPro={false}
+              isPro={pro}
               isKit={false}
               onChange={(r) => rule(index, r)}
             />

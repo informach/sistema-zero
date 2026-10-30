@@ -1,0 +1,665 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "nuvens-jardim-em-grade-pro",
+      "publico": "kids",
+      "ilha": "nuvens",
+      "tipo": "desafio-do-dia",
+      "quadro": null,
+      "ordem": 70,
+      "publicar": false,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "Jardim das Nuvens: grade, custo e guardar",
+        "enunciado": "Nas Nuvens, o jardim é uma grade de células. Este desafio é em JavaScript no Pro, com arquivos separados. O src/main.ts desenha a tela e trata cliques e teclas; ele já está pronto. As regras do jardim moram em src/regras.ts, e é lá que você trabalha. podeConstruir diz se dá para plantar numa célula: ela precisa estar dentro da grade, vazia e com moedas suficientes. construir planta e desconta o custo, ou devolve o mesmo jardim quando não pode. colher soma às moedas a produção de cada planta. salvar transforma o jardim em texto e carregar reconstrói o jardim a partir desse texto, com a grade e as moedas. Tirar uma planta e devolver metade do custo fica para o extra.",
+        "dicas": [
+          "Leia CUSTO e PRODUCAO no começo do src/regras.ts: flor custa 3 e produz 1; árvore custa 5 e produz 2.",
+          "Não mude o jardim recebido. Faça uma cópia da grade com map e devolva um objeto novo.",
+          "JSON.stringify transforma um objeto em texto e JSON.parse faz o caminho de volta."
+        ],
+        "projetoInicial": {
+          "id": "nuvens-jardim-pro",
+          "formatVersion": 2,
+          "projectTools": [],
+          "name": "Jardim das Nuvens",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "code",
+          "kind": "pro",
+          "tree": {
+            "package.json": {
+              "kind": "file",
+              "content": "{\n  \"name\": \"sz-app\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --host 0.0.0.0 --strictPort false\",\n    \"build\": \"vite build\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"vite\": \"8.1.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            "vite.config.ts": {
+              "kind": "file",
+              "content": "import { defineConfig } from 'vite'\n\nexport default defineConfig({\n  base: './',\n  server: {\n    host: '0.0.0.0',\n    strictPort: false,\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n})\n"
+            },
+            "tsconfig.json": {
+              "kind": "file",
+              "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"jsx\": \"react-jsx\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\",\n      \"DOM.Iterable\"\n    ],\n    \"skipLibCheck\": true,\n    \"types\": [\n      \"vite/client\"\n    ],\n    \"noEmit\": true\n  },\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+            },
+            "index.html": {
+              "kind": "file",
+              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Jardim das Nuvens</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jardim\" width=\"480\" height=\"320\"></canvas>\n    <p id=\"placar\"></p>\n    <p>Clique para plantar. 1 flor, 2 árvore, C colhe, S guarda, R reabre. Shift e clique tira a planta.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+            },
+            "src": {
+              "kind": "dir"
+            },
+            "src/main.ts": {
+              "kind": "file",
+              "content": "import './style.css'\nimport {\n  carregar,\n  colher,\n  construir,\n  novoJardim,\n  type Planta,\n  remover,\n  salvar,\n} from './regras'\n\nconst LADO = 80\nconst CHAVE = 'jardim-das-nuvens'\n\nexport const jogo: { jardim: ReturnType<typeof novoJardim>; planta: Planta } = {\n  jardim: novoJardim(4, 6, 10),\n  planta: 'flor',\n}\n\nconst tela = document.getElementById('jardim') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst placar = document.getElementById('placar') as HTMLElement\n\nfunction desenhar() {\n  ctx.fillStyle = '#eef6ff'\n  ctx.fillRect(0, 0, tela.width, tela.height)\n  jogo.jardim.grade.forEach((fileira, linha) =>\n    fileira.forEach((celula, coluna) => {\n      const x = coluna * LADO\n      const y = linha * LADO\n      ctx.fillStyle = (linha + coluna) % 2 === 0 ? '#ffffff' : '#f3f8ff'\n      ctx.fillRect(x + 2, y + 2, LADO - 4, LADO - 4)\n      if (celula === 'flor') {\n        ctx.fillStyle = '#f2a0c4'\n        ctx.beginPath()\n        ctx.arc(x + LADO / 2, y + LADO / 2, 16, 0, Math.PI * 2)\n        ctx.fill()\n      }\n      if (celula === 'arvore') {\n        ctx.fillStyle = '#6fbf8f'\n        ctx.beginPath()\n        ctx.arc(x + LADO / 2, y + LADO / 2 - 6, 24, 0, Math.PI * 2)\n        ctx.fill()\n      }\n    }),\n  )\n  placar.textContent = 'Moedas: ' + jogo.jardim.moedas + '   Plantando: ' + jogo.planta\n}\n\ntela.addEventListener('click', (evento) => {\n  const caixa = tela.getBoundingClientRect()\n  const coluna = Math.floor((evento.clientX - caixa.left) / LADO)\n  const linha = Math.floor((evento.clientY - caixa.top) / LADO)\n  if (evento.shiftKey) jogo.jardim = remover(jogo.jardim, linha, coluna)\n  else jogo.jardim = construir(jogo.jardim, linha, coluna, jogo.planta)\n  desenhar()\n})\n\ndocument.addEventListener('keydown', (evento) => {\n  if (evento.key === '1') jogo.planta = 'flor'\n  if (evento.key === '2') jogo.planta = 'arvore'\n  if (evento.key === 'c') jogo.jardim = colher(jogo.jardim)\n  if (evento.key === 's') localStorage.setItem(CHAVE, salvar(jogo.jardim))\n  if (evento.key === 'r') {\n    const guardado = localStorage.getItem(CHAVE)\n    if (guardado) jogo.jardim = carregar(guardado)\n  }\n  desenhar()\n})\n\ndesenhar()\n"
+            },
+            "src/style.css": {
+              "kind": "file",
+              "content": "body { margin: 0; font-family: system-ui; background: #dceefc; }\ncanvas { display: block; }\np { margin: 8px 12px; }\n"
+            },
+            "src/regras.ts": {
+              "kind": "file",
+              "content": "export type Planta = 'flor' | 'arvore'\nexport type Celula = Planta | null\n\nexport interface Jardim {\n  linhas: number\n  colunas: number\n  grade: Celula[][]\n  moedas: number\n}\n\nexport const CUSTO: Record<Planta, number> = { flor: 3, arvore: 5 }\nexport const PRODUCAO: Record<Planta, number> = { flor: 1, arvore: 2 }\n\nexport function novoJardim(linhas: number, colunas: number, moedas: number): Jardim {\n  const grade: Celula[][] = []\n  for (let linha = 0; linha < linhas; linha++) {\n    const fileira: Celula[] = []\n    for (let coluna = 0; coluna < colunas; coluna++) fileira.push(null)\n    grade.push(fileira)\n  }\n  return { linhas, colunas, grade, moedas }\n}\n\nexport function reabrir(jardim: Jardim): Jardim {\n  return carregar(salvar(jardim))\n}\n\nexport function podeConstruir(\n  jardim: Jardim,\n  linha: number,\n  coluna: number,\n  tipo: Planta,\n): boolean {\n  return true\n}\nexport function construir(\n  jardim: Jardim,\n  linha: number,\n  coluna: number,\n  tipo: Planta,\n): Jardim {\n  return jardim\n}\nexport function colher(jardim: Jardim): Jardim {\n  return jardim\n}\nexport function salvar(jardim: Jardim): string {\n  return ''\n}\n\nexport function carregar(texto: string): Jardim {\n  return novoJardim(1, 1, 0)\n}\nexport function remover(jardim: Jardim, linha: number, coluna: number): Jardim {\n  return jardim\n}"
+            }
+          },
+          "proMeta": {
+            "devScript": "dev",
+            "templateId": "vanilla-vite"
+          },
+          "files": {
+            "index.html": "",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "ir": null,
+          "blocksState": null,
+          "installedExtensions": []
+        },
+        "gabarito": {
+          "id": "nuvens-jardim-pro",
+          "formatVersion": 2,
+          "projectTools": [],
+          "name": "Jardim das Nuvens",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "code",
+          "kind": "pro",
+          "tree": {
+            "package.json": {
+              "kind": "file",
+              "content": "{\n  \"name\": \"sz-app\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --host 0.0.0.0 --strictPort false\",\n    \"build\": \"vite build\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"vite\": \"8.1.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            "vite.config.ts": {
+              "kind": "file",
+              "content": "import { defineConfig } from 'vite'\n\nexport default defineConfig({\n  base: './',\n  server: {\n    host: '0.0.0.0',\n    strictPort: false,\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n})\n"
+            },
+            "tsconfig.json": {
+              "kind": "file",
+              "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"jsx\": \"react-jsx\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\",\n      \"DOM.Iterable\"\n    ],\n    \"skipLibCheck\": true,\n    \"types\": [\n      \"vite/client\"\n    ],\n    \"noEmit\": true\n  },\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+            },
+            "index.html": {
+              "kind": "file",
+              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Jardim das Nuvens</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jardim\" width=\"480\" height=\"320\"></canvas>\n    <p id=\"placar\"></p>\n    <p>Clique para plantar. 1 flor, 2 árvore, C colhe, S guarda, R reabre. Shift e clique tira a planta.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+            },
+            "src": {
+              "kind": "dir"
+            },
+            "src/main.ts": {
+              "kind": "file",
+              "content": "import './style.css'\nimport {\n  carregar,\n  colher,\n  construir,\n  novoJardim,\n  type Planta,\n  remover,\n  salvar,\n} from './regras'\n\nconst LADO = 80\nconst CHAVE = 'jardim-das-nuvens'\n\nexport const jogo: { jardim: ReturnType<typeof novoJardim>; planta: Planta } = {\n  jardim: novoJardim(4, 6, 10),\n  planta: 'flor',\n}\n\nconst tela = document.getElementById('jardim') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst placar = document.getElementById('placar') as HTMLElement\n\nfunction desenhar() {\n  ctx.fillStyle = '#eef6ff'\n  ctx.fillRect(0, 0, tela.width, tela.height)\n  jogo.jardim.grade.forEach((fileira, linha) =>\n    fileira.forEach((celula, coluna) => {\n      const x = coluna * LADO\n      const y = linha * LADO\n      ctx.fillStyle = (linha + coluna) % 2 === 0 ? '#ffffff' : '#f3f8ff'\n      ctx.fillRect(x + 2, y + 2, LADO - 4, LADO - 4)\n      if (celula === 'flor') {\n        ctx.fillStyle = '#f2a0c4'\n        ctx.beginPath()\n        ctx.arc(x + LADO / 2, y + LADO / 2, 16, 0, Math.PI * 2)\n        ctx.fill()\n      }\n      if (celula === 'arvore') {\n        ctx.fillStyle = '#6fbf8f'\n        ctx.beginPath()\n        ctx.arc(x + LADO / 2, y + LADO / 2 - 6, 24, 0, Math.PI * 2)\n        ctx.fill()\n      }\n    }),\n  )\n  placar.textContent = 'Moedas: ' + jogo.jardim.moedas + '   Plantando: ' + jogo.planta\n}\n\ntela.addEventListener('click', (evento) => {\n  const caixa = tela.getBoundingClientRect()\n  const coluna = Math.floor((evento.clientX - caixa.left) / LADO)\n  const linha = Math.floor((evento.clientY - caixa.top) / LADO)\n  if (evento.shiftKey) jogo.jardim = remover(jogo.jardim, linha, coluna)\n  else jogo.jardim = construir(jogo.jardim, linha, coluna, jogo.planta)\n  desenhar()\n})\n\ndocument.addEventListener('keydown', (evento) => {\n  if (evento.key === '1') jogo.planta = 'flor'\n  if (evento.key === '2') jogo.planta = 'arvore'\n  if (evento.key === 'c') jogo.jardim = colher(jogo.jardim)\n  if (evento.key === 's') localStorage.setItem(CHAVE, salvar(jogo.jardim))\n  if (evento.key === 'r') {\n    const guardado = localStorage.getItem(CHAVE)\n    if (guardado) jogo.jardim = carregar(guardado)\n  }\n  desenhar()\n})\n\ndesenhar()\n"
+            },
+            "src/style.css": {
+              "kind": "file",
+              "content": "body { margin: 0; font-family: system-ui; background: #dceefc; }\ncanvas { display: block; }\np { margin: 8px 12px; }\n"
+            },
+            "src/regras.ts": {
+              "kind": "file",
+              "content": "export type Planta = 'flor' | 'arvore'\nexport type Celula = Planta | null\n\nexport interface Jardim {\n  linhas: number\n  colunas: number\n  grade: Celula[][]\n  moedas: number\n}\n\nexport const CUSTO: Record<Planta, number> = { flor: 3, arvore: 5 }\nexport const PRODUCAO: Record<Planta, number> = { flor: 1, arvore: 2 }\n\nexport function novoJardim(linhas: number, colunas: number, moedas: number): Jardim {\n  const grade: Celula[][] = []\n  for (let linha = 0; linha < linhas; linha++) {\n    const fileira: Celula[] = []\n    for (let coluna = 0; coluna < colunas; coluna++) fileira.push(null)\n    grade.push(fileira)\n  }\n  return { linhas, colunas, grade, moedas }\n}\n\nexport function reabrir(jardim: Jardim): Jardim {\n  return carregar(salvar(jardim))\n}\n\nexport function podeConstruir(\n  jardim: Jardim,\n  linha: number,\n  coluna: number,\n  tipo: Planta,\n): boolean {\n  const dentro = linha >= 0 && linha < jardim.linhas && coluna >= 0 && coluna < jardim.colunas\n  if (!dentro) return false\n  if (jardim.grade[linha][coluna] !== null) return false\n  return jardim.moedas >= CUSTO[tipo]\n}\nexport function construir(\n  jardim: Jardim,\n  linha: number,\n  coluna: number,\n  tipo: Planta,\n): Jardim {\n  if (!podeConstruir(jardim, linha, coluna, tipo)) return jardim\n  const grade = jardim.grade.map((fileira) => [...fileira])\n  grade[linha][coluna] = tipo\n  return { ...jardim, grade, moedas: jardim.moedas - CUSTO[tipo] }\n}\nexport function colher(jardim: Jardim): Jardim {\n  let ganho = 0\n  for (const fileira of jardim.grade)\n    for (const celula of fileira) if (celula !== null) ganho += PRODUCAO[celula]\n  return { ...jardim, moedas: jardim.moedas + ganho }\n}\nexport function salvar(jardim: Jardim): string {\n  return JSON.stringify({\n    versao: 1,\n    linhas: jardim.linhas,\n    colunas: jardim.colunas,\n    grade: jardim.grade,\n    moedas: jardim.moedas,\n  })\n}\n\nexport function carregar(texto: string): Jardim {\n  const dados = JSON.parse(texto)\n  return {\n    linhas: dados.linhas,\n    colunas: dados.colunas,\n    grade: dados.grade,\n    moedas: dados.moedas,\n  }\n}\nexport function remover(jardim: Jardim, linha: number, coluna: number): Jardim {\n  const planta = jardim.grade[linha]?.[coluna]\n  if (!planta) return jardim\n  const grade = jardim.grade.map((fileira) => [...fileira])\n  grade[linha][coluna] = null\n  return { ...jardim, grade, moedas: jardim.moedas + Math.floor(CUSTO[planta] / 2) }\n}"
+            }
+          },
+          "proMeta": {
+            "devScript": "dev",
+            "templateId": "vanilla-vite"
+          },
+          "files": {
+            "index.html": "",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "ir": null,
+          "blocksState": null,
+          "installedExtensions": []
+        },
+        "objetivos": [
+          {
+            "id": "ocupacao",
+            "label": "podeConstruir recusa célula fora da grade e célula já ocupada.",
+            "hint": "Confira primeiro se linha e coluna estão dentro da grade, depois se a célula está vazia.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "podeConstruir",
+              "module": "src/regras.ts",
+              "cases": [
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          null,
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 10
+                    },
+                    0,
+                    1,
+                    "flor"
+                  ],
+                  "expected": true
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          "flor",
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 10
+                    },
+                    0,
+                    1,
+                    "flor"
+                  ],
+                  "expected": false
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          null,
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 10
+                    },
+                    2,
+                    0,
+                    "flor"
+                  ],
+                  "expected": false
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          null,
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 10
+                    },
+                    0,
+                    -1,
+                    "flor"
+                  ],
+                  "expected": false
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "custo",
+            "label": "construir só planta com moedas suficientes e desconta o custo.",
+            "hint": "Sem moedas ou com a célula ocupada, devolva o mesmo jardim. Ao plantar, crie uma grade nova.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "construir",
+              "module": "src/regras.ts",
+              "cases": [
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          null,
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 10
+                    },
+                    0,
+                    0,
+                    "arvore"
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        "arvore",
+                        null,
+                        null
+                      ],
+                      [
+                        null,
+                        null,
+                        null
+                      ]
+                    ],
+                    "moedas": 5
+                  }
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          null,
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 2
+                    },
+                    0,
+                    0,
+                    "flor"
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        null,
+                        null,
+                        null
+                      ],
+                      [
+                        null,
+                        null,
+                        null
+                      ]
+                    ],
+                    "moedas": 2
+                  }
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          "flor",
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 10
+                    },
+                    0,
+                    1,
+                    "arvore"
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        null,
+                        "flor",
+                        null
+                      ],
+                      [
+                        null,
+                        null,
+                        null
+                      ]
+                    ],
+                    "moedas": 10
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "producao",
+            "label": "colher soma a produção de cada planta às moedas.",
+            "hint": "Percorra a grade e some PRODUCAO de cada planta encontrada.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "colher",
+              "module": "src/regras.ts",
+              "cases": [
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          "flor",
+                          null,
+                          "arvore"
+                        ],
+                        [
+                          null,
+                          "flor",
+                          null
+                        ]
+                      ],
+                      "moedas": 0
+                    }
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        "flor",
+                        null,
+                        "arvore"
+                      ],
+                      [
+                        null,
+                        "flor",
+                        null
+                      ]
+                    ],
+                    "moedas": 4
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "guardar",
+            "label": "Guardar e reabrir devolve o mesmo jardim, com a grade e as moedas.",
+            "hint": "salvar transforma o jardim em texto com JSON.stringify; carregar faz o caminho de volta.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "reabrir",
+              "module": "src/regras.ts",
+              "cases": [
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          "flor",
+                          null,
+                          "arvore"
+                        ],
+                        [
+                          null,
+                          "flor",
+                          null
+                        ]
+                      ],
+                      "moedas": 0
+                    }
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        "flor",
+                        null,
+                        "arvore"
+                      ],
+                      [
+                        null,
+                        "flor",
+                        null
+                      ]
+                    ],
+                    "moedas": 0
+                  }
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          null,
+                          "flor",
+                          null
+                        ],
+                        [
+                          null,
+                          null,
+                          null
+                        ]
+                      ],
+                      "moedas": 7
+                    }
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        null,
+                        "flor",
+                        null
+                      ],
+                      [
+                        null,
+                        null,
+                        null
+                      ]
+                    ],
+                    "moedas": 7
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "tela",
+            "label": "Na tela, clicar numa célula vazia planta uma flor e gasta 3 moedas.",
+            "hint": "O main.ts já chama construir no clique. Ele depende das suas regras.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "click",
+                  "x": 40,
+                  "y": 40
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "moduleValue",
+                  "module": "src/main.ts",
+                  "path": "jogo.jardim.moedas"
+                },
+                "compare": "equals",
+                "value": 7
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "remover",
+            "label": "Extra: remover tira a planta e devolve metade do custo, arredondado para baixo.",
+            "hint": "Célula vazia continua igual. Use Math.floor para a metade do custo.",
+            "optional": true,
+            "rule": {
+              "type": "functionReturns",
+              "name": "remover",
+              "module": "src/regras.ts",
+              "cases": [
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          "flor",
+                          null,
+                          "arvore"
+                        ],
+                        [
+                          null,
+                          "flor",
+                          null
+                        ]
+                      ],
+                      "moedas": 0
+                    },
+                    0,
+                    2
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        "flor",
+                        null,
+                        null
+                      ],
+                      [
+                        null,
+                        "flor",
+                        null
+                      ]
+                    ],
+                    "moedas": 2
+                  }
+                },
+                {
+                  "args": [
+                    {
+                      "linhas": 2,
+                      "colunas": 3,
+                      "grade": [
+                        [
+                          "flor",
+                          null,
+                          "arvore"
+                        ],
+                        [
+                          null,
+                          "flor",
+                          null
+                        ]
+                      ],
+                      "moedas": 0
+                    },
+                    1,
+                    0
+                  ],
+                  "expected": {
+                    "linhas": 2,
+                    "colunas": 3,
+                    "grade": [
+                      [
+                        "flor",
+                        null,
+                        "arvore"
+                      ],
+                      [
+                        null,
+                        "flor",
+                        null
+                      ]
+                    ],
+                    "moedas": 0
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Mais um desafio",
+          "texto": "Complete remover: tire a planta da célula e devolva metade do custo dela, arredondado para baixo. Shift e clique usa essa regra na tela."
+        },
+        "recompensa": {
+          "cor": false,
+          "moedas": 10,
+          "moedasExtra": 5
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}
