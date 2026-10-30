@@ -67,10 +67,6 @@ try {
   )) as Desenho
   console.log(`Clima: escolhido ${d.clima.escolhido}, valendo ${d.clima.efetivo}`)
   if (d.clima.efetivo !== 'chuva') throw new Error('O clima natural do dia 9 não está valendo.')
-  // Posto 2 num jogo novo: a cena da ponte do Bosque começa primeiro; pula para ver a HUD.
-  const pular = page.getByRole('button', { name: 'Pular' })
-  await pular.waitFor({ timeout: 30_000 })
-  await pular.click()
   await page.getByText('Chuva', { exact: false }).first().waitFor({ timeout: 20_000 })
   await page.screenshot({ path: path.join(prints, 'clima-natural-chuva.png') })
   if (await page.getByText('Mudar o clima').count())

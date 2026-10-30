@@ -2,6 +2,12 @@ import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempoDoBicho } from '../sistemas/bichos'
 import { descansar, FALA_DA_SONECA_CHEIA, sonecaAcabou } from '../sistemas/descanso'
+import {
+  acaoEmCurso,
+  encerraOTempo,
+  FALA_DO_TEMPO_ACABANDO,
+  FALA_DO_TEMPO_ACABOU,
+} from '../sistemas/fim-do-tempo'
 import { foraDaPassagemDoFarol } from '../sistemas/final-do-farol'
 import { passarTempo } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
@@ -15,6 +21,26 @@ import { lojaDoFarol } from './farol'
 export function Relogios() {
   const { loja, controle, plataforma, rastro, pedidos, gerenteTempo, movimento } = useJogo()
 
+  // O fim do tempo no fim da ação (N07): avisa uma vez e encerra quando a ação acaba.
+  useEffect(() => {
+    let avisou = false
+    const t = setInterval(() => {
+      const s = loja.getState()
+      if (s.tempoAcabandoDesde === null) {
+        avisou = false
+        return
+      }
+      if (!avisou) {
+        avisou = true
+        s.dizer(FALA_DO_TEMPO_ACABANDO)
+      }
+      if (!encerraOTempo(s.tempoAcabandoDesde, Date.now(), acaoEmCurso(s))) return
+      s.dizer(FALA_DO_TEMPO_ACABOU)
+      loja.setState({ tempoAcabou: true, tempoAcabandoDesde: null, painelAberto: null })
+    }, 500)
+    return () => clearInterval(t)
+  }, [loja])
+
   useEffect(() => {
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
     let segundos = 0
@@ -25,6 +51,7 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
+        s.tempoAcabandoDesde === null &&
         !s.tempoPausado &&
         !salvamentoPausado(s.salvamentoSituacao) &&
         !s.tempoSincronizando
@@ -89,6 +116,7 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
+        s.tempoAcabandoDesde === null &&
         !s.tempoPausado &&
         !salvamentoPausado(s.salvamentoSituacao)
       )

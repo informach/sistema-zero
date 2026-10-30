@@ -19,6 +19,7 @@ import { Relogios } from './estado/relogios'
 import { EfeitoDosFantasmas } from './interface/fantasmas'
 import { Hud } from './interface/hud'
 import { comecarPassosSozinho } from './interface/primeiros-passos'
+import { ListaDoResumo, useFotoDoDia } from './interface/resumo-do-dia'
 import { SalvamentoDoJogo } from './interface/salvamento'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
 import { EfeitoDasVisitasAdultas } from './interface/visitas-adultas'
@@ -331,7 +332,7 @@ function JogoPronto({
       {tempoPausado && !tempoAcabou ? <TelaTempoPausado contexto={contexto} /> : null}
       {tempoAcabou ? (
         <div style={{ position: 'absolute', inset: 0 }}>
-          <TelaDescanso aoVoltar={() => contexto.plataforma.voltarParaPlataforma()} />
+          <DescansoComResumo aoVoltar={() => contexto.plataforma.voltarParaPlataforma()} />
         </div>
       ) : null}
     </Contexto.Provider>
@@ -432,4 +433,14 @@ function JogoNaPele({ plataforma }: { plataforma: Plataforma }) {
     case 'pronto':
       return <JogoPronto contexto={situacao.contexto} fila={situacao.fila} aoFalhar={aoFalhar} />
   }
+}
+
+/** A tela de descanso do fim do tempo, com o resumo do dia (N06). */
+function DescansoComResumo({ aoVoltar }: { aoVoltar: () => void }) {
+  const foto = useFotoDoDia()
+  return (
+    <TelaDescanso aoVoltar={aoVoltar}>
+      <ListaDoResumo foto={foto} />
+    </TelaDescanso>
+  )
 }

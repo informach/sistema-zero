@@ -10,6 +10,8 @@ import {
   diaDeSaoPaulo,
   type Fantasma,
   GravarSalvamentoSchema,
+  ilhaAberta,
+  ilhasDoAnel,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   type LumiId,
   type MoldeDaRotina,
@@ -52,6 +54,8 @@ export interface OpcoesDaPlataformaFalsa {
   publico?: PublicoJogo
   posicao?: number
   limiteDiarioMinutos?: number | null
+  /** Segundos já usados hoje (o playground prova o fim do tempo sem esperar o limite inteiro). */
+  usadoHojeSegundos?: number
   liberado?: boolean
   quarto?: QuartoDoJogo
   persistir?: boolean
@@ -85,6 +89,11 @@ export interface OpcoesDaPlataformaFalsa {
   patins?: boolean
   /** Põe a lanterna na mochila (o presente do Bento, fase2-06). */
   lanterna?: boolean
+  /**
+   * As pontes das ilhas abertas já vistas (o playground começa assim, para a cena da subida de
+   * posto não cobrir as conferências; `?chegada=1` mostra a cena).
+   */
+  pontesVistas?: boolean
   /** A energia de começo (de 0 a 100), para conferir o descanso (fase2-13). */
   energia?: number
   /** Os Lumis já presos (`{ quindim: 2 }`), como se a lanterna já tivesse prendido (fase2-06). */
@@ -180,6 +189,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
+  if (o.usadoHojeSegundos) usado.set(diaDeSaoPaulo(agora()), Math.max(0, o.usadoHojeSegundos))
   const eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
   type Sessao = {
     id: string
@@ -322,6 +332,19 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: { ...atual, necessidades: { ...atual.necessidades, energia } },
       atualizadoEm: agora().toISOString(),
     }
+  }
+  if (o.pontesVistas) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const abertas = ilhasDoAnel()
+      .filter((i) => ilhaAberta(i.id, o.posicao ?? 1))
+      .map((i) => i.id)
+    const faltam = abertas.filter((id) => !atual.pontesVistas.includes(id))
+    if (faltam.length > 0)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, pontesVistas: [...atual.pontesVistas, ...faltam] },
+        atualizadoEm: agora().toISOString(),
+      }
   }
   if (o.lanterna) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())

@@ -72,7 +72,7 @@ test('confirmação mantém a conversa e mostra o recibo durante a retomada do t
   }
 })
 
-test('confirmação pausa mutações; conflito e fim do tempo ainda fecham a conversa', async () => {
+test('confirmação pausa mutações; conflito fecha a conversa; o fim do tempo espera ela (N07)', async () => {
   const c = await montar()
   try {
     c.loja.getState().definirSituacaoSalvamento('confirmando')
@@ -85,6 +85,13 @@ test('confirmação pausa mutações; conflito e fim do tempo ainda fecham a con
     c.loja.getState().definirSituacaoSalvamento('ok')
     c.loja.getState().abrirPainel('bento')
     c.loja.getState().registrarTempo(1800, true)
+    // Com a conversa aberta, o fim do tempo espera ela acabar (no máximo 30 s).
+    expect(c.loja.getState().painelAberto).toBe('bento')
+    expect(c.loja.getState().tempoAcabou).toBe(false)
+    expect(c.loja.getState().tempoAcabandoDesde).not.toBeNull()
+    c.loja.setState({ tempoAcabandoDesde: Date.now() - 31_000 })
+    c.loja.getState().registrarTempo(1800, true)
+    expect(c.loja.getState().tempoAcabou).toBe(true)
     expect(c.loja.getState().painelAberto).toBeNull()
   } finally {
     await c.fila.parar()
@@ -103,8 +110,15 @@ test('resposta tardia não reabre uma conversa fechada nem cobre fim de tempo ou
     try {
       await entregarPedidoPeloPainel(c, 'bento', 'bento', (s) => entregarAoBento(s, '2026-10-30'))
       expect(c.loja.getState().salvamento.moradores.bento.pedido?.entregue).toBe(true)
-      expect(c.loja.getState().painelAberto).toBe(motivo === 'fechar' ? 'diario' : null)
-      expect(lojaDaConversa(c.loja, 'bento').getState().falas).toEqual(['Pedido de hoje.'])
+      // O fim do tempo espera a conversa acabar (N07); o conflito fecha na hora.
+      expect(c.loja.getState().painelAberto).toBe(
+        motivo === 'fechar' ? 'diario' : motivo === 'tempo' ? 'bento' : null,
+      )
+      if (motivo === 'tempo') {
+        expect(c.loja.getState().tempoAcabandoDesde).not.toBeNull()
+        // A conversa continua até acabar: a resposta da entrega aparece nela.
+        expect(lojaDaConversa(c.loja, 'bento').getState().falas.at(-1)).toContain('moedas')
+      } else expect(lojaDaConversa(c.loja, 'bento').getState().falas).toEqual(['Pedido de hoje.'])
     } finally {
       soltar()
       await c.fila.parar()

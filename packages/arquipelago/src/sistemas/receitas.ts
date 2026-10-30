@@ -59,7 +59,9 @@ export function dicaDaReceita(r: Receita, s: Salvamento): string {
   if (o.tipo === 'festa')
     return o.festa === 'junina'
       ? 'Na fogueira da Festa Junina, em junho. O prato pronto fica na mochila depois da festa.'
-      : 'Na bancada durante o Carnaval. Esta receita volta todo ano.'
+      : o.festa === 'fim-de-ano'
+        ? 'Na bancada durante a festa de fim de ano, de 20 de dezembro a 6 de janeiro. Ela volta todo ano.'
+        : 'Na bancada durante o Carnaval. Esta receita volta todo ano.'
   return 'Os ingredientes vêm da horta.'
 }
 

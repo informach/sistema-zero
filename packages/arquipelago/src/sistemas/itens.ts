@@ -34,6 +34,12 @@ export const ITENS: Record<string, Item> = {
     emoji: '🥗',
     comida: { fome: 30, diversao: 20 },
   },
+  'manjar-de-coco': {
+    id: 'manjar-de-coco',
+    nome: 'Manjar de coco',
+    emoji: '🍮',
+    comida: { fome: 30, diversao: 20 },
+  },
   'milho-da-fogueira': {
     id: 'milho-da-fogueira',
     nome: 'Milho da fogueira',

@@ -49,6 +49,29 @@ Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
 
+## Resumo do dia, fim do tempo no fim da ação e festa de fim de ano (N06, N07, 30/10/2026)
+
+- **Resumo do dia** (`sistemas/resumo-do-dia.ts`, `interface/resumo-do-dia.tsx`): no primeiro
+  carregamento de cada dia o jogo fotografa o salvamento no aparelho, por público e perfil
+  (`arquipelago:resumo-do-dia:<público>:<perfil>`). Ao deitar na cama abre "Hoje na sua ilha", só
+  com o que ela fez de bom (Lumis, estrelas, pedidos, corações, projetos azuis, pontes, ilhas,
+  chaves, segredos, constelações) e a boa-noite; "Continuar" volta ainda deitada. A tela de
+  descanso do fim do tempo traz o mesmo resumo. Vale no adulto. Sem campo novo no salvamento.
+- **Fim do tempo no fim da ação** (`sistemas/fim-do-tempo.ts`): se o tempo livre acaba com uma
+  ação em andamento (corrida, balão, montaria, mergulho, barco, cipó, escorregador ou um painel
+  aberto, como a conversa ou a cena da ponte), o jogo espera ela acabar, no máximo 30 s. O Zappy
+  avisa ("O tempo de hoje acabou. Termine o que está fazendo e eu ponho você para dormir.") e,
+  no fim, diz "Hora de descansar" e vem a tela de descanso. Durante a espera o jogo não pede mais
+  tempo ao serviço, que continua sendo quem controla o limite.
+- **Festa de fim de ano**: aprovada pela dona em 30/10/2026, de 20 de dezembro a 6 de janeiro
+  (atravessa a virada). Usa o arranjo e a arte que já existiam na Vila, as ideias de roupa da
+  época e uma receita nova da festa, o manjar de coco (1 leite de coco e 2 leites, na bancada, fome
+  +30 e diversão +20). A Noite das Lanternas continua sem data e desligada.
+- Playground: um jogo novo começa com as pontes das ilhas abertas já vistas (`?chegada=1` mostra a
+  cena); `?usado=SEGUNDOS` simula o tempo já usado hoje. Provas:
+  `tests/resumo-e-fim-do-tempo.test.ts`, `playground/verificar-descanso-browser.ts` e
+  `playground/verificar-fim-do-tempo-browser.ts`.
+
 ## Horta em horas e clima natural (N03 e N04, 30/10/2026)
 
 A horta cresce em horas de verdade (seção 6.3). Antes das Nuvens o tempo da sua ilha muda

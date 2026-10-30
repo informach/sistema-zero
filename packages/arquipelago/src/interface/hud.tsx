@@ -69,6 +69,7 @@ import { PrimeirosPassos, RostoDoZappy, useLinhaDosPassos } from './primeiros-pa
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { PainelDaBancada } from './receitas'
+import { PAINEL_DO_RESUMO, PainelDoResumo, useFotoDoDia } from './resumo-do-dia'
 import { PainelDaRotina, RotinaAndando } from './rotina'
 import { ControlesDeToque } from './toque'
 import { PainelDoTurno } from './turno'
@@ -967,6 +968,7 @@ export function Hud() {
       <PainelDasVisitasAdultas />
       <Album />
       <PainelDoMapa />
+      <ResumoAoDeitar />
       {!noFarol && <AtalhoDaFoto />}
       <CorteDoFarol />
       <Menu />
@@ -974,4 +976,21 @@ export function Hud() {
       <Corte />
     </div>
   )
+}
+
+/**
+ * Ao deitar na cama, o resumo do dia (N06: "decora e dorme"): abre uma vez por deitada, e
+ * "Continuar" volta ao jogo ainda deitada. Na visita não se deita.
+ */
+function ResumoAoDeitar() {
+  const { loja } = useJogo()
+  const foto = useFotoDoDia()
+  const deitada = useEstado((s) => s.descanso === 'deitar')
+  const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_RESUMO)
+  useEffect(() => {
+    if (!deitada) return
+    const s = loja.getState()
+    if (s.painelAberto === null && !s.visita) s.abrirPainel(PAINEL_DO_RESUMO)
+  }, [deitada, loja])
+  return aberto ? <PainelDoResumo foto={foto} /> : null
 }
