@@ -6,7 +6,9 @@ import { Box3, Mesh, type Object3D, type Skeleton, SkinnedMesh, Vector3 } from '
 import { type Movimento, useJogo } from '../estado/contexto'
 import { lojaDosConvidados } from '../estado/convidados'
 import { lojaDoFarol } from '../estado/farol'
+import { climaEfetivo } from '../sistemas/clima'
 import { fachosAcesos } from '../sistemas/final-do-farol'
+import { geladeiraEm } from '../sistemas/horta'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
 import type { ConvidadoNaCasa } from '../sistemas/visitas-dos-moradores'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
@@ -68,7 +70,7 @@ export interface MedidaDoDesenho {
   mira: { naMira: number; posicao: { x: number; y: number; z: number } } | null
   constelacoes: number
   /** O clima da sua ilha (fase4-08): o escolhido, a luz e o cinza que valem aqui e as gotas. */
-  clima: { escolhido: string; luz: number; cinza: number; gotas: boolean }
+  clima: { escolhido: string; efetivo: string; luz: number; cinza: number; gotas: boolean }
   /** A horta: o que está plantado, se foi regado e quanto já cresceu (0 a 1). */
   horta: { semente: string | null; regado: boolean; progresso: number }[]
   balao: {
@@ -376,6 +378,7 @@ export function Medidor() {
       constelacoes: loja.getState().salvamento.nuvens.constelacoes,
       clima: {
         escolhido: loja.getState().salvamento.clima,
+        efetivo: climaEfetivo(loja.getState(), Date.now()),
         luz: ambiente.luzDoClima ?? 1,
         cinza: ambiente.cinzaDoClima ?? 0,
         gotas: cena.getObjectByName('chuva-da-ilha')?.visible === true,
@@ -383,7 +386,7 @@ export function Medidor() {
       horta: loja.getState().salvamento.horta.map((c) => ({
         semente: c.semente,
         regado: c.regadoEm !== null,
-        progresso: progresso(c, Date.now()),
+        progresso: progresso(c, Date.now(), geladeiraEm(loja.getState().salvamento)),
       })),
       balao: movimento.balao
         ? {

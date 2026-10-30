@@ -13,7 +13,7 @@ import { useRetrato } from '../estado/retrato'
 import { PAINEL_DA_ABERTURA } from '../sistemas/abertura'
 import { BALAO } from '../sistemas/balao'
 import { comLanterna, FALA_DE_ACENDER, FALA_DE_APAGAR, ID_DA_LANTERNA } from '../sistemas/borroes'
-import { climaLiberado, NOMES_DOS_CLIMAS } from '../sistemas/clima'
+import { climaEfetivo, NOMES_DOS_CLIMAS } from '../sistemas/clima'
 import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
 import { PAINEL_DO_FINAL } from '../sistemas/final-do-farol'
 import {
@@ -183,11 +183,9 @@ function IlhaAgora() {
 
 function Relogio() {
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
-  // O clima da sua ilha aparece no relógio quando a Iriê já ensinou (fase4-08).
-  const clima = useEstado((s) =>
-    climaLiberado(s.jornada) && !s.visita ? s.salvamento.clima : null,
-  )
   const [agora, setAgora] = useState(() => Date.now())
+  // O clima da sua ilha no relógio: o natural do dia antes das Nuvens, o escolhido depois.
+  const clima = useEstado((s) => (s.visita ? null : climaEfetivo(s, agora)))
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 1000)
     return () => clearInterval(t)
@@ -239,6 +237,7 @@ function Agora() {
     necessidades,
     horta,
     agoraMs: agora,
+    geladeiraEm: projetos.geladeira?.ganhoEm ?? null,
     desafioDeHoje: dados ? desafioDeHoje(dados).estado : null,
     primeiroPedido:
       passos === null

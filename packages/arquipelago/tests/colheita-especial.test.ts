@@ -5,14 +5,20 @@ import {
   ilha,
   type Semente,
 } from '@sistemazero/arquipelago-contracts'
+import { climaNatural } from '../src/sistemas/clima'
 import { contextoDaColheita } from '../src/sistemas/colheita'
 import { mundoDaRotina, rodarRotina } from '../src/sistemas/rotina'
+import { momentoDoDia } from '../src/sistemas/tempo-do-dia'
 
 const agora = new Date('2026-10-29T12:00:00Z')
-test('clima só bonifica depois das Nuvens; necessidades e contexto vêm do estado atual', () => {
+test('antes das Nuvens vale o clima natural do dia; depois, o escolhido', () => {
   const s = criarSalvamentoInicial(agora)
   const abre = ilha('nuvens').posicao
-  expect(contextoDaColheita(s, abre - 1).clima).toBeNull()
+  // Antes das Nuvens, a escolha guardada não vale: vale o clima natural do dia do jogo.
+  s.clima = 'chuva'
+  const dia = momentoDoDia(agora.getTime(), Date.parse(s.criadoEm)).dia
+  expect(contextoDaColheita(s, abre - 1, agora.getTime()).clima).toBe(climaNatural(dia))
+  s.clima = 'sol'
   expect(contextoDaColheita(s, abre).clima).toBe(s.clima)
   expect(mundoDaRotina(s, abre).colheita).toEqual(contextoDaColheita(s, abre))
   const antes = structuredClone(s)
@@ -46,7 +52,11 @@ test('adaptador do jogo aplica o mesmo rendimento da mão e não reaplica a colh
         { c: 'voar-ate' as const, a: 'horta' as const },
         { c: 'colher' as const },
       ]
-      const esperado = colher(s.horta[0]!, agora.getTime(), contextoDaColheita(s, jornada))
+      const esperado = colher(
+        s.horta[0]!,
+        agora.getTime(),
+        contextoDaColheita(s, jornada, agora.getTime()),
+      )
       const r = rodarRotina('pluma', rotina, s, agora, null, jornada)
       expect(r.erro).toBeNull()
       expect(r.salvamento.inventario[semente]).toBe(esperado?.qtd)

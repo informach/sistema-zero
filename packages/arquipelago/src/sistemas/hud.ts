@@ -59,6 +59,8 @@ export function lembretesDeAgora(e: {
   necessidades: Necessidades
   horta: readonly Canteiro[]
   agoraMs: number
+  /** Quando a geladeira foi ganha (`null` com o primeiro pedido aberto), para o tempo da horta. */
+  geladeiraEm?: string | null
   desafioDeHoje: 'pronto' | 'feito' | 'nenhum' | null
   primeiroPedido?: string | null
 }): Lembrete[] {
@@ -73,7 +75,7 @@ export function lembretesDeAgora(e: {
   let semAgua = 0
   let maduros = 0
   for (const c of e.horta) {
-    const fase = estagio(c, e.agoraMs)
+    const fase = estagio(c, e.agoraMs, e.geladeiraEm)
     if (fase === 'semente') semAgua++
     if (fase === 'maduro') maduros++
   }

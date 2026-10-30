@@ -1,10 +1,11 @@
 import { useFrame } from '@react-three/fiber'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { BufferAttribute, BufferGeometry, LineBasicMaterial, type LineSegments } from 'three'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
-import { CLIMA, chuvaNaHorta, climaLiberado } from '../sistemas/clima'
+import { CLIMA, chuvaNaHorta, climaEfetivo } from '../sistemas/clima'
+import { geladeiraEm } from '../sistemas/horta'
 import { jogoPausado } from '../sistemas/pausa'
 import { ALTURA_DA_TERRA, dentroDaCasa } from './medidas'
 import { useQualidade } from './qualidade-da-cena'
@@ -32,7 +33,13 @@ export function ClimaDaIlha() {
   const aparelhoPedeMenos = useReducedMotion()
   const jogoPedeMenos = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
   const menos = aparelhoPedeMenos || jogoPedeMenos
-  const chovendo = useEstado((s) => s.salvamento.clima === 'chuva' && climaLiberado(s.jornada))
+  // O clima natural muda com o dia do jogo: relê a cada segundo.
+  const [agora, setAgora] = useState(() => Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setAgora(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [])
+  const chovendo = useEstado((s) => climaEfetivo(s, agora) === 'chuva')
   const quantas = chovendo && !menos ? CLIMA.gotas[nivel] : 0
   const linhas = useRef<LineSegments>(null)
   const relogio = useRef(0)
@@ -69,9 +76,8 @@ export function ClimaDaIlha() {
   useFrame((_, dtBruto) => {
     const dt = Math.min(dtBruto, 0.1)
     const s = loja.getState()
-    const liberado = climaLiberado(s.jornada)
-    // Numa visita, a ilha é do irmão: o tempo dela não muda.
-    const clima = liberado && !s.visita ? s.salvamento.clima : 'sol'
+    // Numa visita, a ilha é do irmão: o tempo dela não muda (`climaEfetivo` dá sol).
+    const clima = climaEfetivo(s, Date.now())
     const longe = Math.hypot(rastro.x - MEIO.x, rastro.z - MEIO.z) - CLIMA.alcance
     const perto = Math.min(1, Math.max(0, 1 - longe / FAIXA))
     ambiente.luzDoClima = 1 - (1 - CLIMA.luz[clima]) * perto
@@ -90,8 +96,12 @@ export function ClimaDaIlha() {
     relogio.current += dt
     if (clima === 'chuva' && relogio.current >= CLIMA.chuvaACada) {
       relogio.current = 0
-      const horta = chuvaNaHorta(s.salvamento.horta, new Date())
-      if (horta) s.mudar((sv) => ({ ...sv, horta: chuvaNaHorta(sv.horta, new Date()) ?? sv.horta }))
+      const horta = chuvaNaHorta(s.salvamento.horta, new Date(), geladeiraEm(s.salvamento))
+      if (horta)
+        s.mudar((sv) => ({
+          ...sv,
+          horta: chuvaNaHorta(sv.horta, new Date(), geladeiraEm(sv)) ?? sv.horta,
+        }))
     }
 
     // As gotas caem e voltam lá em cima.

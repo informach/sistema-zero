@@ -1,13 +1,17 @@
-import {
-  type ContextoDaColheita,
-  ilhaAberta,
-  type Salvamento,
-} from '@sistemazero/arquipelago-contracts'
+import type { ContextoDaColheita, Salvamento } from '@sistemazero/arquipelago-contracts'
+import { climaEfetivo } from './clima'
 
-/** Só as Nuvens habilitam o clima. A escolha guardada antes disso não concede bônus. */
-export function contextoDaColheita(s: Salvamento, jornada: number): ContextoDaColheita {
+/**
+ * O clima da colheita é o que vale na sua ilha: o natural do dia antes das Nuvens, o escolhido
+ * depois (`climaEfetivo`). A escolha guardada antes das Nuvens não vale: vale o natural.
+ */
+export function contextoDaColheita(
+  s: Salvamento,
+  jornada: number,
+  agoraMs = Date.now(),
+): ContextoDaColheita {
   return {
-    clima: ilhaAberta('nuvens', jornada) ? s.clima : null,
+    clima: climaEfetivo({ jornada, visita: null, salvamento: s }, agoraMs),
     necessidades: s.necessidades,
   }
 }
