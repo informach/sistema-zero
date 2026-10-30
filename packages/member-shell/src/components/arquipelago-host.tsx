@@ -97,6 +97,7 @@ const CAMINHOS_DO_JOGO = new Set([
   '/minijogos',
   '/mural',
   '/irmaos',
+  '/amigos',
   '/fantasmas',
   '/visitas-adultas/convite',
   '/visitas-adultas/abrir',
@@ -105,6 +106,8 @@ const CAMINHOS_DO_JOGO = new Set([
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 /** A casa de um irmão para a visita (fase3-12), só leitura. */
 const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
+/** A casa de um amigo que a família aceitou (N08a), só leitura. */
+const CASA_DE_AMIGO = new RegExp(`^/amigos/${UUID}/casa$`)
 const FANTASMA = new RegExp(`^/fantasmas/(${PERCURSOS.join('|')})$`)
 const FANTASMA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/fantasmas/(${PERCURSOS.join('|')})$`)
 /**
@@ -124,7 +127,9 @@ export function soDoKids(caminho: string): boolean {
     caminho === '/tempo/sessao' ||
     caminho === '/tempo/recuperar' ||
     caminho === '/irmaos' ||
+    caminho === '/amigos' ||
     CASA_DO_IRMAO.test(caminho) ||
+    CASA_DE_AMIGO.test(caminho) ||
     FANTASMA_DO_IRMAO.test(caminho)
   )
 }
@@ -134,6 +139,7 @@ export function caminhoDoJogo(caminho: string): boolean {
     CAMINHOS_DO_JOGO.has(caminho) ||
     DESAFIOS_DO_JOGO.test(caminho) ||
     CASA_DO_IRMAO.test(caminho) ||
+    CASA_DE_AMIGO.test(caminho) ||
     FANTASMA.test(caminho) ||
     FANTASMA_DO_IRMAO.test(caminho)
   )

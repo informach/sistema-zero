@@ -52,6 +52,11 @@ export function kidsMayAccess(
       pathname === '/arquipelago/familia/limite' ||
       pathname === '/arquipelago/familia/permissoes' ||
       (method === 'GET' && pathname === '/arquipelago/familia/semana') ||
+      // Visitas de outras crianças (N08a): o responsável gera o convite e aceita casas de amigos.
+      pathname === '/arquipelago/familia/amigos' ||
+      /^\/arquipelago\/familia\/amigos\/(convite|aceitar|convite\/[0-9a-f-]+|[0-9a-f-]+)$/i.test(
+        pathname,
+      ) ||
       (method === 'GET' &&
         /^\/arquipelago\/familia\/minijogos\/[0-9a-f-]+(?:\/[0-9a-f-]+)?$/i.test(pathname)) ||
       (method === 'GET' &&

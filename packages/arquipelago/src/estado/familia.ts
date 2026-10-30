@@ -3,8 +3,12 @@ import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
   type LeituraDaCasa,
+  type LeituraDaCasaDeAmigo,
+  type LeituraDasCasasDeAmigos,
   type LeituraDosIrmaos,
   leituraDaCasa,
+  leituraDaCasaDeAmigo,
+  leituraDasCasasDeAmigos,
   leituraDosIrmaos,
 } from '../sistemas/visitas'
 import type { LojaDoJogo } from './loja'
@@ -22,6 +26,10 @@ export interface EstadoDaFamilia {
   carregar(): Promise<void>
   /** Pede a casa do irmão (`GET /irmaos/:perfilId/casa`). */
   abrirCasa(irmao: IrmaoParaOJogo): Promise<LeituraDaCasa>
+  /** As casas de amigos que a família aceitou (N08a, `GET /amigos`). */
+  amigos: LeituraDasCasasDeAmigos | null
+  carregarAmigos(): Promise<void>
+  abrirCasaDeAmigo(id: string): Promise<LeituraDaCasaDeAmigo>
 }
 
 export type LojaDaFamilia = StoreApi<EstadoDaFamilia>
@@ -38,7 +46,35 @@ export function lojaDaFamilia(loja: LojaDoJogo, plataforma: Plataforma): LojaDaF
 
 export function criarLojaDaFamilia(plataforma: Plataforma): LojaDaFamilia {
   let pedido = 0
+  let pedidoDosAmigos = 0
   return createStore<EstadoDaFamilia>((set) => ({
+    amigos: null,
+    async carregarAmigos() {
+      const meu = ++pedidoDosAmigos
+      try {
+        const r = await plataforma.servico.buscar('/amigos')
+        if (meu !== pedidoDosAmigos) return
+        set({ amigos: leituraDasCasasDeAmigos(r.status, r.corpo) })
+      } catch (erro) {
+        if (meu !== pedidoDosAmigos) return
+        plataforma.relatarErro(erro, 'amigos')
+        set({ amigos: { tipo: 'fora-do-ar' } })
+      }
+    },
+    async abrirCasaDeAmigo(id) {
+      set({ abrindo: id })
+      try {
+        const r = await plataforma.servico.buscar(`/amigos/${id}/casa`)
+        const lido = leituraDaCasaDeAmigo(r.status, r.corpo, id)
+        if (lido.tipo === 'desligado') set({ amigos: { tipo: 'desligado' } })
+        return lido
+      } catch (erro) {
+        plataforma.relatarErro(erro, 'casa-de-amigo')
+        return { tipo: 'nao-abriu' }
+      } finally {
+        set({ abrindo: null })
+      }
+    },
     leitura: null,
     carregando: false,
     abrindo: null,

@@ -416,9 +416,9 @@ export function Personagem() {
     // Na casa de um irmão (fase3-12) só se olha: nada do mundo oferece ação, e sair da ilha
     // central termina a visita (lá fora o jogo é dela e volta a gravar).
     if (estado.visita && !pedidos.teleporte && saiuDaVisita(prox.x, prox.z)) {
-      const nome = estado.visita.nome
+      const { nome, origem } = estado.visita
       estado.visitar(null)
-      estado.dizer(falaDaSaida(nome))
+      estado.dizer(falaDaSaida(nome, origem))
     }
     estado.definirAlvo(
       v.modo === 'balao'

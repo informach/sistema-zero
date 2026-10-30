@@ -46,6 +46,7 @@ import {
 } from '../../application/servico-das-profissoes'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
+import type { ServicoDasVisitasDeAmigos } from '../../application/servico-das-visitas-de-amigos'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
 import type { ServicoDosFantasmas } from '../../application/servico-dos-fantasmas'
@@ -69,6 +70,11 @@ import {
   SalvamentoDaVisitaNecessarioError,
   VisitaAdultaIndisponivelError,
 } from '../../domain/visitas-adultas.port'
+import {
+  CasaDeAmigoIndisponivelError,
+  LimiteDeCasasError,
+  VisitasDeAmigosDesligadasError,
+} from '../../domain/visitas-de-amigos.port'
 import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
@@ -76,6 +82,7 @@ import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDasProfissoes } from './rotas-das-profissoes'
 import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
+import { rotasDasVisitasDeAmigos } from './rotas-das-visitas-de-amigos'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
@@ -85,6 +92,8 @@ import { rotasDosMinijogos } from './rotas-dos-minijogos'
 import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
+  /** Visitas de outras crianças (N08a); sem ele, as rotas não existem. */
+  amigos?: ServicoDasVisitasDeAmigos
   visitasAdultas?: ServicoDasVisitasAdultas
   fantasmas?: ServicoDosFantasmas
   pedidos?: ServicoDosPedidos
@@ -147,6 +156,18 @@ export function createServer(deps: DependenciasHttp) {
       }
     })
     .onError(({ error, set, code }) => {
+      if (error instanceof CasaDeAmigoIndisponivelError) {
+        set.status = 404
+        return envelope('CASA_DE_AMIGO_INDISPONIVEL', error.message)
+      }
+      if (error instanceof VisitasDeAmigosDesligadasError) {
+        set.status = 403
+        return envelope('VISITAS_DE_AMIGOS_DESLIGADAS', error.message)
+      }
+      if (error instanceof LimiteDeCasasError) {
+        set.status = 409
+        return envelope('LIMITE_DE_CASAS', error.message)
+      }
       if (error instanceof VisitaAdultaIndisponivelError) {
         set.status = 404
         return envelope('VISITA_ADULTA_INDISPONIVEL', error.message)
@@ -345,6 +366,11 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.visitasAdultas
         ? rotasDasVisitasAdultas({ visitas: deps.visitasAdultas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.amigos
+        ? rotasDasVisitasDeAmigos({ amigos: deps.amigos, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .use(

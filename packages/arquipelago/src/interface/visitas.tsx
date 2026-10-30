@@ -12,6 +12,7 @@ import {
   recordesDaFamilia,
   TEXTOS_DAS_VISITAS as T,
   visitaDaCasa,
+  visitaDaCasaDeAmigo,
 } from '../sistemas/visitas'
 import { AvisoDoFantasma } from './fantasmas'
 
@@ -91,11 +92,13 @@ export function PainelDasVisitas() {
   const [recado, setRecado] = useState<string | null>(null)
   const fechar = useRef<HTMLButtonElement>(null)
 
+  const amigos = useFamilia(familia, (s) => s.amigos)
   useEffect(() => {
     if (!aberto) return
     setRecado(null)
     fechar.current?.focus({ preventScroll: true })
     void familia.getState().carregar()
+    void familia.getState().carregarAmigos()
   }, [aberto, familia])
 
   if (!aberto) return null
@@ -168,6 +171,56 @@ export function PainelDasVisitas() {
             ))}
           </ul>
         )}
+        <h3 className="arq-visitas-subtitulo">{T.amigosTitulo}</h3>
+        {amigos === null ? (
+          <p role="status" className="arq-quadro-sub">
+            {T.carregando}
+          </p>
+        ) : amigos.tipo === 'fora-do-ar' ? (
+          <p className="arq-aviso atencao">{T.amigosForaDoAr}</p>
+        ) : amigos.tipo === 'desligado' ? (
+          <p className="arq-quadro-sub">{T.amigosDesligadas}</p>
+        ) : amigos.casas.length === 0 ? (
+          <p className="arq-quadro-sub">{T.amigosNenhuma}</p>
+        ) : (
+          <>
+            <p className="arq-quadro-sub">{T.amigosExplica}</p>
+            <ul className="arq-quadro-lista arq-visitas-lista">
+              {amigos.casas.map((c) => (
+                <li key={c.id} className="arq-quadro-cartao">
+                  <span className="arq-quadro-numero" aria-hidden="true">
+                    🏠
+                  </span>
+                  <div className="arq-quadro-corpo">
+                    <b>{c.apelido}</b>
+                  </div>
+                  <button
+                    type="button"
+                    className="arq-botao"
+                    disabled={abrindo !== null}
+                    aria-label={`${T.verCasa}: ${c.apelido}`}
+                    onClick={async () => {
+                      setRecado(null)
+                      const r = await familia.getState().abrirCasaDeAmigo(c.id)
+                      if (r.tipo !== 'ok') {
+                        setRecado(r.tipo === 'desligado' ? T.amigosDesligadas : T.casaNaoAbriu)
+                        return
+                      }
+                      const s = loja.getState()
+                      const visita = visitaDaCasaDeAmigo(r.casa)
+                      s.visitar(visita)
+                      s.abrirPainel(null)
+                      irParaAFrenteDaCasa(pedidos)
+                      s.dizer(falaDaChegada(visita))
+                    }}
+                  >
+                    {abrindo === c.id ? T.abrindo : T.verCasa}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
         {recado ? (
           <p role="status" className="arq-aviso atencao">
             {recado}
@@ -207,7 +260,7 @@ export function FaixaDaVisita() {
   if (!visita) return null
   return (
     <div className="arq-visita-faixa" role="status">
-      <span className="arq-pilula">🏡 {faixaDaVisita(visita.nome)}</span>
+      <span className="arq-pilula">🏡 {faixaDaVisita(visita.nome, visita.origem)}</span>
       <button type="button" className="arq-botao" onClick={() => voltarDaVisita(loja, pedidos)}>
         {T.voltar}
       </button>
