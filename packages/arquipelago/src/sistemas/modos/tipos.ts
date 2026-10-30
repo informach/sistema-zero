@@ -177,7 +177,7 @@ export interface EntradaDoPasso {
   pulou: boolean
   usou: boolean
   correr: boolean
-  /** O ritmo do humor (`ritmo`, 0,8 a 1,1). */
+  /** O ritmo do humor (`ritmo`, 1 a 1,1): básico ou bônus de cuidado. */
   ritmo: number
   /** De patins calçados (`sistemas/patins.ts`): no chão desliza, nadando não muda nada. */
   patins: boolean

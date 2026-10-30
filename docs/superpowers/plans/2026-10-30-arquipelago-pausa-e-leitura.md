@@ -51,12 +51,18 @@ menos 44 px. Nenhuma alteração no roteiro, nas imagens, no salvamento ou nos p
 
 ## A03c: cuidado beneficia sem reduzir o ritmo básico
 
-- [ ] Preservar o ritmo básico 1 para humor bem ou cansado e o bônus 1,1 para humor ótimo.
+- [x] Preservar o ritmo básico 1 para humor bem ou cansado e o bônus 1,1 para humor ótimo.
   Não alterar quedas das necessidades, comida, descanso ou recompensas neste lote.
-- [ ] Conferir o cálculo do movimento e os percursos com necessidades baixas, sem transformar
+- [x] Conferir o cálculo do movimento e os percursos com necessidades baixas, sem transformar
   o cuidado numa condição oculta para conseguir atravessar ou terminar um percurso.
-- [ ] Atualizar testes e a regra documentada, incluindo a distinção entre ritmo básico e bônus.
-- [ ] Revisão, testes, tipagem, Biome e conferência no playground antes de commit e merge.
+- [x] Atualizar testes e a regra documentada, incluindo a distinção entre ritmo básico e bônus.
+- [x] Revisão, testes, tipagem, Biome e conferência no playground antes de commit e merge.
+
+Evidência: `docs/qa/2026-10-30-ritmo-basico/`. Contraprova com duas falhas antes da mudança;
+44 testes dirigidos aprovados depois. Modos reais preservam base andando, correndo e nadando.
+Suíte com 1.299 testes aprovados, 1 ignorado (Postgres local); tipagem e Biome aprovados.
+Navegador nos dois tamanhos: energia 10, andar 2,2 m/s, correr 4,6 m/s, deslocamento, pulo e
+pouso. A suíte inclui as provas geométricas dos percursos; não houve mudança de arte ou colisão.
 
 ## Limites
 

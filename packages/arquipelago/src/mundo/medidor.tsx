@@ -229,6 +229,7 @@ export function Medidor() {
         y: number
         z: number
         giro: number
+        velocidade: number
         noChao: boolean
         /** O olho da vista pela luneta do mirante, quando aberta (fase4-07). */
         olho: { x: number; y: number; z: number } | null
@@ -251,6 +252,7 @@ export function Medidor() {
       y: rastro.y,
       z: rastro.z,
       giro: rastro.giro,
+      velocidade: rastro.velocidade,
       noChao: movimento.noChao,
       olho: movimento.mira ? { ...movimento.mira.posicao } : null,
     })

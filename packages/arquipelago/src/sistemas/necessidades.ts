@@ -35,8 +35,8 @@ export function comer(n: Necessidades, item: Item): Necessidades {
   }
 }
 
-/** Multiplicador da velocidade pelo humor: o maior é o do humor ótimo. */
-export const RITMO = { otimo: 1.1, bem: 1, cansado: 0.8 } as const satisfies Record<Humor, number>
+/** Cuidar dá 10% de bônus. Necessidade baixa conserva o ritmo básico, sem tornar trajetos mais difíceis. */
+export const RITMO = { otimo: 1.1, bem: 1, cansado: 1 } as const satisfies Record<Humor, number>
 
 export function ritmo(n: Necessidades): number {
   return RITMO[humor(n)]

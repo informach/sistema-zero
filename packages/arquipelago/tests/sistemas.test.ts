@@ -104,10 +104,18 @@ describe('necessidades', () => {
     expect(comer({ fome: 90, energia: 50, diversao: 50 }, salada).fome).toBe(100)
   })
 
-  test('humor bom acelera, cansaço desacelera', () => {
+  test('cuidado dá um bônus, mas cansaço conserva o ritmo básico', () => {
     expect(humor({ fome: 80, energia: 80, diversao: 80 })).toBe('otimo')
     expect(ritmo({ fome: 80, energia: 80, diversao: 80 })).toBeGreaterThan(1)
-    expect(ritmo({ fome: 80, energia: 5, diversao: 80 })).toBeLessThan(1)
+    expect(ritmo({ fome: 80, energia: 5, diversao: 80 })).toBe(1)
+    expect(ritmo({ fome: 5, energia: 80, diversao: 80 })).toBe(1)
+    for (const fome of [0, 14, 15, 69, 70, 100])
+      for (const energia of [0, 14, 15, 69, 70, 100])
+        for (const diversao of [0, 14, 15, 69, 70, 100]) {
+          const velocidade = ritmo({ fome, energia, diversao })
+          expect(velocidade).toBeGreaterThanOrEqual(1)
+          expect(velocidade).toBeLessThanOrEqual(1.1)
+        }
   })
 })
 

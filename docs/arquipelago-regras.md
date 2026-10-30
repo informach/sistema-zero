@@ -524,8 +524,9 @@ Arquivos: `sistemas/necessidades.ts` e `estado/relogios.tsx`.
   - `cansado`: energia ou fome abaixo de 15;
   - `otimo`: fome, energia e diversão acima de 60;
   - `bem`: o resto.
-- **Ritmo:** o humor muda a velocidade de andar (`ritmo`). Ótimo é 1,1 vezes, bem é 1 vez, cansado
-  é 0,8 vez.
+- **Ritmo:** cuidar dá um bônus de velocidade (`ritmo`). Ótimo é 1,1 vezes; bem e cansado
+  conservam 1 vez, o ritmo básico. Necessidades baixas não reduzem a velocidade de andar,
+  correr, nadar ou equilibrar. As regras de comida, gasto de energia e descanso não mudam.
 
 ### 6.3 Horta
 
