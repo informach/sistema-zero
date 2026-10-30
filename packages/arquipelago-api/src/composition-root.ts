@@ -10,6 +10,7 @@ import { ServicoDasProfissoes } from './application/servico-das-profissoes'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
+import { ServicoDosFantasmas } from './application/servico-dos-fantasmas'
 import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import { ServicoDosPedidos } from './application/servico-dos-pedidos'
@@ -25,6 +26,7 @@ import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
 } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
+import { DrizzleRepositorioDosFantasmas } from './infrastructure/persistence/drizzle/repositorio-fantasmas'
 import { DrizzleRepositorioDosInsumos } from './infrastructure/persistence/drizzle/repositorio-insumos'
 import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
 import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/drizzle/repositorio-minijogos'
@@ -98,7 +100,18 @@ export function createApplication(env: Env): Application {
     leituras,
     logger,
   })
+  const visitas = new ServicoDasVisitas({
+    familia: repositorioDaFamilia,
+    politica,
+    membros,
+    logger,
+  })
   const app = createServer({
+    fantasmas: new ServicoDosFantasmas({
+      repo: new DrizzleRepositorioDosFantasmas(connection.db),
+      politica,
+      visitas,
+    }),
     pedidos: new ServicoDosPedidos({
       repo: new DrizzleRepositorioDosPedidos(connection.db),
       moedas,
@@ -132,12 +145,7 @@ export function createApplication(env: Env): Application {
     desafios,
     familia,
     galeria,
-    visitas: new ServicoDasVisitas({
-      familia: repositorioDaFamilia,
-      politica,
-      membros,
-      logger,
-    }),
+    visitas,
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

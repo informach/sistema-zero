@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+## Fantasma V1 (L10, 30/10/2026)
+
+`fantasma.ts`: amostras a 100 ms, coordenadas inteiras em centímetros, giro em 65536 unidades,
+até 5 min, 3001 amostras e 128 KB. `GuardarFantasmaSchema` recebe revisão confirmada e artefato,
+sem identidade, nome, moedas ou recompensa. O envelope admite mais 1 KB. A resposta é
+`disponivel` com artefato ou `ausente` sem campos adicionais. São dados separados do save V18.
+`tests/fantasma.test.ts` cobre percursos reais, limites, último trecho parcial e chaves estritas.
+
 ## Cores conquistadas V1 (A02, 30/10/2026)
 
 `cores-conquistadas.ts`: resposta estrita de leitura, até oito ilhas sem repetição, cada uma com

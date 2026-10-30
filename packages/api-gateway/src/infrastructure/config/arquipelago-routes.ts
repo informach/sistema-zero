@@ -116,6 +116,24 @@ export function arquipelagoGateway(opts: {
       // `/arquipelago/familia/` (a área dos pais); o serviço confere a conta e a permissão.
       {
         ...jogador,
+        id: 'arquipelago-fantasma-guardar',
+        methods: ['PUT'],
+        pathPattern: '/arquipelago/fantasmas',
+        maxBodyBytes: 129 * 1024,
+        rateLimit: { max: 12, windowMs: 60_000, by: 'principal' },
+      },
+      ...[
+        '/arquipelago/fantasmas/:percurso',
+        '/arquipelago/irmaos/:perfilId/fantasmas/:percurso',
+      ].map<Route>((pathPattern, i) => ({
+        ...jogador,
+        id: `arquipelago-fantasma-ler-${i}`,
+        methods: ['GET'],
+        pathPattern,
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      })),
+      {
+        ...jogador,
         id: 'arquipelago-irmaos',
         methods: ['GET'],
         pathPattern: '/arquipelago/irmaos',

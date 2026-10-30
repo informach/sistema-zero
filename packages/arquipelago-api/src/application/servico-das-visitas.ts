@@ -65,13 +65,7 @@ export class ServicoDasVisitas {
 
   /** A casa de UM irmão, só para ver: a obra com o quintal, a horta e os objetos com aparência. */
   async casa(jogador: Jogador, perfilId: string): Promise<CasaDoIrmao> {
-    this.exigirLiberado(jogador)
-    if (jogador.publico !== 'kids' || jogador.contaId === null || perfilId === jogador.id)
-      throw new IrmaoNaoEncontradoError()
-    if (!(await this.permitido(jogador.contaId))) throw new VisitasDesligadasError()
-    const daConta = await this.deps.familia.perfisDaConta(jogador.contaId, [perfilId])
-    if (!daConta.includes(perfilId) || !this.veOJogo(jogador, perfilId))
-      throw new IrmaoNaoEncontradoError()
+    await this.autorizarIrmao(jogador, perfilId)
     const s = migrarSalvamento((await this.deps.familia.salvamentos([perfilId])).get(perfilId))
     if (!s) throw new IrmaoNaoEncontradoError()
     return {
@@ -82,6 +76,17 @@ export class ServicoDasVisitas {
       completos: OBJETOS_DA_CASA.filter((o) => Boolean(s.projetos[o]?.aparencia)),
       quarto: await this.quartoDe(perfilId),
     }
+  }
+
+  /** A mesma fronteira para casa e trajetória, sem consultar o quarto para ler um fantasma. */
+  async autorizarIrmao(jogador: Jogador, perfilId: string): Promise<void> {
+    this.exigirLiberado(jogador)
+    if (jogador.publico !== 'kids' || jogador.contaId === null || perfilId === jogador.id)
+      throw new IrmaoNaoEncontradoError()
+    if (!(await this.permitido(jogador.contaId))) throw new VisitasDesligadasError()
+    const daConta = await this.deps.familia.perfisDaConta(jogador.contaId, [perfilId])
+    if (!daConta.includes(perfilId) || !this.veOJogo(jogador, perfilId))
+      throw new IrmaoNaoEncontradoError()
   }
 
   /** O quarto da plataforma do irmão; o Members fora não fecha a casa, só o quarto (`null`). */

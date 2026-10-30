@@ -24,3 +24,23 @@ export const FantasmaSchema = z
   .refine((r) => r.amostras.length === Math.ceil(r.tempoMs / PASSO_DO_FANTASMA_MS) + 1)
   .refine((r) => new TextEncoder().encode(JSON.stringify(r)).byteLength <= FANTASMA_MAX_BYTES)
 export type Fantasma = z.infer<typeof FantasmaSchema>
+
+/** A revisão confirma que o recorde já chegou ao serviço, antes do artefato separado. */
+export const GuardarFantasmaSchema = z.strictObject({
+  versao: z.literal(1),
+  revisaoBase: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  fantasma: FantasmaSchema,
+})
+export type GuardarFantasma = z.infer<typeof GuardarFantasmaSchema>
+export const CORPO_DO_FANTASMA_MAX_BYTES = FANTASMA_MAX_BYTES + 1024
+
+/** Sem nome, perfil, inventário ou versão inteira do salvamento do outro jogador. */
+export const LeituraDoFantasmaSchema = z.discriminatedUnion('situacao', [
+  z.strictObject({
+    versao: z.literal(1),
+    situacao: z.literal('disponivel'),
+    fantasma: FantasmaSchema,
+  }),
+  z.strictObject({ versao: z.literal(1), situacao: z.literal('ausente') }),
+])
+export type LeituraDoFantasma = z.infer<typeof LeituraDoFantasmaSchema>

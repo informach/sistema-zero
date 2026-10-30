@@ -1,4 +1,11 @@
-import { envelope, ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
+import { CORPO_DO_FANTASMA_MAX_BYTES } from '@sistemazero/arquipelago-contracts'
+import {
+  envelope,
+  ForbiddenError,
+  InvalidJsonBodyError,
+  RequestBodyTooLargeError,
+  UnauthorizedError,
+} from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
@@ -40,9 +47,11 @@ import {
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
+import type { ServicoDosFantasmas } from '../../application/servico-dos-fantasmas'
 import type { ServicoDosInsumos } from '../../application/servico-dos-insumos'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
 import type { ServicoDosPedidos } from '../../application/servico-dos-pedidos'
+import { RecordeDoFantasmaMudouError } from '../../domain/fantasmas.port'
 import {
   CompraDesatualizadaError,
   CompraIncompativelError,
@@ -64,11 +73,13 @@ import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
+import { rotasDosFantasmas } from './rotas-dos-fantasmas'
 import { rotasDosInsumos } from './rotas-dos-insumos'
 import { rotasDosMinijogos } from './rotas-dos-minijogos'
 import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
+  fantasmas?: ServicoDosFantasmas
   pedidos?: ServicoDosPedidos
   insumos?: ServicoDosInsumos
   profissoes?: ServicoDasProfissoes
@@ -105,6 +116,7 @@ const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/verificar$/
 
 /** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
 function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
+  if (caminho === '/arquipelago/fantasmas') return CORPO_DO_FANTASMA_MAX_BYTES
   if (caminho.startsWith('/arquipelago/admin/')) return CORPO_DA_EQUIPE
   if (CONFERIR.test(caminho)) return CORPO_DA_CONFERENCIA
   return tetoDoJogo
@@ -127,6 +139,14 @@ export function createServer(deps: DependenciasHttp) {
       }
     })
     .onError(({ error, set, code }) => {
+      if (error instanceof RequestBodyTooLargeError) {
+        set.status = 413
+        return envelope('CORPO_GRANDE_DEMAIS', 'Requisição grande demais')
+      }
+      if (error instanceof RecordeDoFantasmaMudouError) {
+        set.status = 409
+        return envelope('RECORDE_DO_FANTASMA_MUDOU', error.message)
+      }
       if (error instanceof PedidoRecusadoError) {
         set.status = 409
         return envelope(
@@ -284,6 +304,7 @@ export function createServer(deps: DependenciasHttp) {
       }
       if (
         error instanceof CorpoInvalidoError ||
+        error instanceof InvalidJsonBodyError ||
         error instanceof PeriodoDaMedicaoInvalidoError ||
         code === 'VALIDATION' ||
         code === 'PARSE'
@@ -305,6 +326,11 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.fantasmas
+        ? rotasDosFantasmas({ fantasmas: deps.fantasmas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .use(
       deps.insumos
         ? rotasDosInsumos({ insumos: deps.insumos, tokenInterno: deps.tokenInterno })

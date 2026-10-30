@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Trajetórias de recordes (L10, 30/10/2026)
+
+Migração gerada 0014, `fantasmas`: uma linha por jogador/percurso, FK do save com cascade,
+público e artefato limitado. `DrizzleRepositorioDosFantasmas` trava o save antes de validar
+revisão e melhor tempo. Uma leitura só oferece o trajeto correspondente ao recorde atual.
+Não modifica save, moedas ou estrelas. A exclusão do save elimina a trajetória.
+
+`PUT /arquipelago/fantasmas` recebe `GuardarFantasmaSchema`, recusa suporte e lê no máximo
+129 KB reais do stream, após autenticação. Artefato: 128 KB, V1, até 5 min e 3001 amostras.
+GET próprio `/fantasmas/:percurso` e GET familiar `/irmaos/:perfilId/fantasmas/:percurso`
+respondem `private, no-store`, sem identidade ou nome. Familiar reutiliza `autorizarIrmao`
+das visitas; não consulta o quarto. Falta do trajeto é `ausente`, revisão/recorde divergentes
+são 409. Testes `tests/db/fantasmas.test.ts`, variável local exclusiva
+`ARQUIPELAGO_FANTASMAS_TEST_DATABASE_URL`, Postgres descartável `arquipelago_test*`.
+
 ## Cor conquistada independente do catálogo (A02, 30/10/2026)
 
 `GET /arquipelago/desafios/cores`, antes de `/:id`, usa `ServicoDosDesafios.cores`.
