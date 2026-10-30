@@ -10,6 +10,7 @@ import {
   CHAVE_DA_GALERIA,
   CHAVE_DAS_PROFISSOES,
   criarPlataformaFalsa,
+  QUARTO_DE_EXEMPLO,
 } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { chaveDaAbertura } from '../src/sistemas/abertura'
@@ -29,6 +30,7 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?passos=1` mostra os primeiros passos com o Zappy e `?dicas=1` liga as dicas de primeira vez.
  * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
+ * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
  * `?patins=1` põe um par de patins na mochila (o prêmio da entrega pelos telhados).
@@ -84,6 +86,7 @@ if (q.get('novo') === '1') {
   }
 }
 const plataforma = criarPlataformaFalsa({
+  quarto: q.get('pet') === 'passaro' ? { ...QUARTO_DE_EXEMPLO, pet: 'pet-passaro' } : undefined,
   rotina:
     q.get('rotina') === 'cancelado'
       ? 'cancelado'

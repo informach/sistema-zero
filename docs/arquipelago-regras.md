@@ -1,5 +1,17 @@
 # Arquipélago Vagalume: regras do jogo
 
+## Pausa do quarto e movimento ambiente (30/10/2026, A03a)
+
+Na casa própria e na visita, pets e móveis animados param quando o jogo pausa, inclusive no
+menu, num painel ou numa ferramenta. Retomam do mesmo instante, sem recomeçar o clipe. O
+balanço do passarinho usa apenas o tempo ativo, sem recuperar o tempo passado na pausa.
+
+A preferência de menos movimento, do aparelho ou do Conforto, deixa os modelos em repouso e
+interrompe o passeio do pet. O rótulo do Conforto menciona câmera e ambiente. O quarto da
+plataforma continua usando seu comportamento anterior quando não recebe uma pausa do jogo.
+Regras: `arquipelago/src/mundo/casa.tsx`, `sistemas/pausa.ts` e os componentes compartilhados
+`avatar-quarto/src/quarto/room-glb-model.tsx` e `pet-3d.tsx`. Sem mudança de salvamento ou arte.
+
 ## Ajuste de recursos dos personagens (30/10/2026, A01)
 
 Entrar e sair de uma sala não deve acumular memória dos personagens que reaparecem.

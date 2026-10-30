@@ -1,7 +1,7 @@
 'use client'
 
 import { useFrame } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { COLS, FLOOR_HALF_X, FLOOR_HALF_Z, ROWS } from './coords'
 import { Ball, Box, Cone } from './prims'
@@ -75,20 +75,30 @@ export function Pet3D({
   petId,
   occupied,
   reducedMotion,
+  paused = false,
 }: {
   petId: string | null
   occupied: ReadonlySet<string>
   reducedMotion: boolean
+  paused?: boolean
 }) {
   const ref = useRef<Group>(null)
   const isBird = petId === 'pet-passaro'
+  // Só a montagem define a posição declarativa. Uma nova renderização (pausa, por exemplo)
+  // não deve sobrescrever a altura atual do pássaro com a altura inicial.
+  const initialPosition = useMemo<[number, number, number]>(
+    () => [0, isBird ? 0.7 : 0, FLOOR_HALF_Z - 1.5],
+    [isBird],
+  )
   const pos = useRef({ x: 0, z: FLOOR_HALF_Z - 1.5 })
   const dir = useRef<Dir>({ x: 1, z: 0 })
   const speed = 1.4
+  const time = useRef(0)
 
-  useFrame((s, dt) => {
+  useFrame((_, dt) => {
     const g = ref.current
-    if (!g || reducedMotion) return
+    if (!g || reducedMotion || paused) return
+    time.current += Math.min(dt, 0.25)
     const step = Math.min(0.25, speed * dt)
     const d = dir.current
     // Olha meio passo à frente: bate e vira ANTES de entrar no móvel/parede.
@@ -112,7 +122,7 @@ export function Pet3D({
     }
     g.position.x = pos.current.x
     g.position.z = pos.current.z
-    g.position.y = isBird ? 0.7 + Math.sin(s.clock.elapsedTime * 3) * 0.14 : 0
+    g.position.y = isBird ? 0.7 + Math.sin(time.current * 3) * 0.14 : 0
     // Vira suavemente para a direção do passo (frente da mesh = +Z).
     const target = Math.atan2(dir.current.x, dir.current.z)
     let diff = target - g.rotation.y
@@ -123,7 +133,7 @@ export function Pet3D({
 
   if (!petId) return null
   return (
-    <group ref={ref} position={[pos.current.x, isBird ? 0.7 : 0, pos.current.z]}>
+    <group ref={ref} position={initialPosition}>
       <RoomGlbModel
         itemId={petId}
         fallback={petId === 'pet-gato' ? <Cat /> : petId === 'pet-cachorro' ? <Dog /> : <Bird />}

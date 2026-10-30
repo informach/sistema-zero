@@ -21,6 +21,9 @@ import { roomGlbUrl } from './catalog'
  */
 export const RoomMotionContext = createContext(false)
 
+/** Pausa conserva a pose atual; é independente da preferência por uma cena sem movimento. */
+export const RoomPausedContext = createContext(false)
+
 /**
  * Isola UMA peça: se o GLB não baixa, o `useGLTF` lança para fora do `<Suspense>` e derrubaria o
  * quarto inteiro com o que a criança estava montando. Aqui a peça cai no modelo de reserva (as
@@ -51,8 +54,15 @@ function GlbScene({ url }: { url: string }) {
   // materiais continuam compartilhados com o cache do `useGLTF`.
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene])
   const ref = useRef<Group>(null)
-  const { actions } = useAnimations(gltf.animations, ref)
+  const { actions, mixer } = useAnimations(gltf.animations, ref)
   const motion = useContext(RoomMotionContext)
+  const paused = useContext(RoomPausedContext)
+  useEffect(() => {
+    mixer.timeScale = paused ? 0 : 1
+    return () => {
+      mixer.timeScale = 1
+    }
+  }, [mixer, paused])
   useEffect(() => {
     if (!motion) return
     const playing = Object.values(actions).filter((a) => a != null)
