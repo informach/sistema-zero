@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { BIT_DA_SEGREDO_MAXIMO, COMPANHIAS, MAPAS_DAS_ILHAS, MapaDaIlhaSchema } from './exploracao'
+import {
+  BIT_DA_SEGREDO_MAXIMO,
+  BIT_DO_COMODO,
+  COMPANHIAS,
+  MAPAS_DAS_ILHAS,
+  MapaDaIlhaSchema,
+} from './exploracao'
 import { ILHA_IDS } from './ilhas'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
@@ -798,9 +804,31 @@ export const SalvamentoV19Schema = z
   .superRefine(conferirRotinas)
 export type SalvamentoV19 = z.infer<typeof SalvamentoV19Schema>
 
-/** Nada é presumido: nenhuma chave, segredo ou célula do mapa; o bicho do quarto acompanha. */
+/**
+ * As chaves que uma obra já usa (N11). Antes da V19 o modo construir era todo livre; o que a
+ * criança já pôs continua dela: ladrilho é da cozinha, azulejo do banheiro, as janelas grande e
+ * em arco da sala, e cerca, caminho ou canteiro do quintal.
+ */
+export function chavesUsadasNaObra(obra: Obra | null | undefined): number {
+  if (!obra) return 0
+  let chaves = 0
+  if (obra.pisos.some((p) => p.tipo === 'ladrilho')) chaves |= BIT_DO_COMODO.cozinha
+  if (obra.pisos.some((p) => p.tipo === 'azulejo')) chaves |= BIT_DO_COMODO.banheiro
+  if (obra.aberturas.some((a) => a.tipo === 'janela-grande' || a.tipo === 'janela-arco'))
+    chaves |= BIT_DO_COMODO.sala
+  if (obra.cercas.length > 0 || obra.caminhos.length > 0 || obra.canteiros.length > 0)
+    chaves |= BIT_DO_COMODO.quintal
+  return chaves
+}
+
+/**
+ * Nenhum segredo nem célula do mapa é presumido; o bicho do quarto acompanha. As chaves começam
+ * com o que a obra (a casa e as cabanas) já usa, para nada construído deixar de ser editável.
+ */
 export function migrarDaV18(s: SalvamentoV18): SalvamentoV19 {
-  return { ...s, versao: 19, chaves: 0, segredos: 0, mapa: {}, companhia: 'quarto' }
+  let chaves = chavesUsadasNaObra(s.construcao.casa)
+  for (const cabana of Object.values(s.construcao.cabanas)) chaves |= chavesUsadasNaObra(cabana)
+  return { ...s, versao: 19, chaves, segredos: 0, mapa: {}, companhia: 'quarto' }
 }
 
 export const SalvamentoSchema = z.union([

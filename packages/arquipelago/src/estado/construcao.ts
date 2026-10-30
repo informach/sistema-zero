@@ -1,4 +1,8 @@
 import {
+  BIT_DO_COMODO,
+  COMODOS_DA_IRIS,
+  type ComodoDaIris,
+  chavesUsadasNaObra,
   type ObjetoDaCasa,
   type Obra,
   ObraSchema,
@@ -7,6 +11,13 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import {
+  comodoDaFerramenta,
+  comodoDaJanela,
+  comodoDoPiso,
+  liberado,
+  recadoDaTranca,
+} from '../sistemas/chaves-da-casa'
 import { falaDaRecusa } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 import { type Celula, LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
@@ -160,6 +171,14 @@ function alvoAoAbrir(onde: OndeSeConstroi, cabana: CabanaAoAlcance | null) {
   return { x: (x0 + x1) / 2, z: (z0 + z1) / 2 }
 }
 
+/** A escolha está destrancada? Se não, o Zappy diz qual chave falta (N11). */
+function destrancado(loja: LojaDoJogo, comodo: ComodoDaIris | null): boolean {
+  const jogo = loja.getState()
+  if (liberado(jogo.salvamento.chaves, comodo)) return true
+  if (comodo) jogo.dizer(recadoDaTranca(comodo))
+  return false
+}
+
 export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
   let ultimaObra: Obra | null = null
   return createStore<EstadoDaConstrucao>((set, get) => ({
@@ -168,7 +187,8 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     observarComodo: (celulaObservada) => set({ celulaObservada, aconchegoAberto: true }),
     mostrarAconchego: (aconchegoAberto) => set({ aconchegoAberto }),
     ferramenta: 'parede',
-    janela: 'janela-grande',
+    // A janela redonda é livre; a grande e a em arco esperam a chave da sala (N11).
+    janela: 'janela-redonda',
     piso: 'tabua',
     caminho: 'pedra',
     objeto: null,
@@ -186,9 +206,18 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     definirDentroDaObra: (dentro) => {
       if (get().dentroDaObra !== dentro) set({ dentroDaObra: dentro })
     },
-    escolher: (ferramenta) => set({ ferramenta, aconchegoAberto: false }),
-    escolherJanela: (janela) => set({ janela, ferramenta: 'janela' }),
-    escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),
+    escolher: (ferramenta) => {
+      if (!destrancado(loja, comodoDaFerramenta(ferramenta))) return
+      set({ ferramenta, aconchegoAberto: false })
+    },
+    escolherJanela: (janela) => {
+      if (!destrancado(loja, comodoDaJanela(janela))) return
+      set({ janela, ferramenta: 'janela' })
+    },
+    escolherPiso: (piso) => {
+      if (!destrancado(loja, comodoDoPiso(piso))) return
+      set({ piso, ferramenta: 'piso' })
+    },
     escolherCaminho: (caminho) => set({ caminho, ferramenta: 'caminho' }),
     escolherObjeto: (objeto) => set({ objeto, ferramenta: 'objeto' }),
     girarObjeto: () => set({ giro: (get().giro + 1) % 4 }),
@@ -211,6 +240,14 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       }
       const onde = get().onde
       const atual = obraDe(loja.getState(), onde)
+      // Nada trancado entra na obra (N11): só o que a chave abriu ou o que a obra já usava.
+      const novas =
+        chavesUsadasNaObra(r.obra) & ~chavesUsadasNaObra(atual) & ~jogo.salvamento.chaves
+      const trancado = COMODOS_DA_IRIS.find((c) => (novas & BIT_DO_COMODO[c]) !== 0)
+      if (trancado) {
+        jogo.dizer(recadoDaTranca(trancado))
+        return false
+      }
       const historico = atual === ultimaObra ? get().antes : []
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
       mudarObra(loja, r.obra, onde)
