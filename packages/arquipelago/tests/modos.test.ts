@@ -22,6 +22,7 @@ import {
   superficieDaAgua,
 } from '../src/sistemas/modos/chao'
 import { PASSO_PARA_FORA_DO_TRONCO } from '../src/sistemas/modos/escalada'
+import { ritmo } from '../src/sistemas/necessidades'
 import { pistaDoTreno, TRENO } from '../src/sistemas/treno'
 
 const dt = 1 / 60
@@ -110,6 +111,29 @@ function passo(
 }
 
 describe('os modos de movimento', () => {
+  test('necessidades baixas preservam o passo básico andando, correndo e nadando', () => {
+    for (const jeito of ['andar', 'correr', 'nadar'] as const) {
+      const velocidades = [10, 50, 80].map((energia) => {
+        const c = criarEstadoDoCorpo()
+        c.noChao = true
+        const m = mundo()
+        const e = entrada(
+          { x: 0, y: jeito === 'nadar' ? 0 : 3, z: 0 },
+          {
+            pedidoX: 1,
+            ix: 1,
+            correr: jeito === 'correr',
+            ritmo: ritmo({ fome: 80, energia, diversao: 80 }),
+          },
+        )
+        for (let i = 0; i < 180; i++) passo(c, e, m, true)
+        return c.velDoPasso.x
+      })
+      expect(velocidades[0]).toBeCloseTo(CORPO[jeito], 5)
+      expect(velocidades[0]).toBe(velocidades[1]!)
+      expect(velocidades[2]).toBeGreaterThan(velocidades[1]!)
+    }
+  })
   test('no chão parado, a gravidade puxa e pisar zera a queda', () => {
     const c = criarEstadoDoCorpo()
     const p = { x: 0, y: 3, z: 0 }

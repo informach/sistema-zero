@@ -10,6 +10,15 @@ Prova de mixer real: `tests/quarto-pausa.test.ts`. Prova visual de poses, menu, 
 e visita: `playground/verificar-quarto-pausa-browser.ts`, com `?pet=passaro`. O medidor expõe
 `__arquipelagoLerQuarto()` somente quando habilitado, sem percorrer as poses a cada quadro.
 
+## Ritmo básico e cuidado (30/10/2026, A03c)
+
+`sistemas/necessidades.ts`, `RITMO`: ótimo 1,1; bem e cansado 1. Cuidado oferece bônus, sem
+reduzir o ritmo básico de andar, correr, nadar ou equilibrar quando uma necessidade está baixa.
+Comida, gasto e descanso continuam nas regras existentes. `tests/sistemas.test.ts` cobre os
+limites e `tests/modos.test.ts` passa necessidades reais ao movimento. A prova do navegador
+`verificar-ritmo-browser.ts` observa velocidade, deslocamento, pulo e pouso com energia 10.
+O medidor opcional inclui `velocidade` na leitura sob demanda de `__arquipelagoLerCorpo()`.
+
 ## Primeiros passos com o Zappy e dicas de primeira vez (30/10/2026)
 
 Proposta aprovada no canvas `https://claude.ai/artifact/X1GNotDTxZpdJsNG5QvhW8` (decisões com as
