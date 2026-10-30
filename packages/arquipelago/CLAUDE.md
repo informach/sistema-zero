@@ -16,6 +16,23 @@ ou rever o tutorial. `Dica` continua montada e vence no prazo normal enquanto oc
 tutorial usam esse mesmo prazo de sete segundos; remontar não renova recados antigos.
 Provas: `passos-desmontagem.test.ts` e `verificar-final-farol-browser.ts`, incluindo retomada.
 
+## Visitas adultas por convite (L12, 30/10/2026)
+
+`estado/visitas-adultas.ts` é por montagem. Receber começa desligado, com código revogável
+gerado no serviço. O código só vive na tela e no pedido, nunca em URL, save ou localStorage.
+Resposta de alteração perdida vira estado desconhecido, para reler. Fechar o painel invalida
+operações pendentes; desmontar retira a visita. As recusas Kids e suporte também valem na API.
+
+`interface/visitas-adultas.tsx` usa o tema/painel existente e não aparece no Kids. A visita
+reutiliza `sistemas/visitas.ts`, com origem adulta explícita, sem permissão de mudar o save.
+A cada 15 s visíveis e ao retomar, a confirmação pequena tem prazo de 5 s. Recusa/falha volta
+à casa própria; não prometer push instantâneo. `chegada-da-visita.ts` é comum à família Kids.
+
+Playground: `?publico=adulto&visita-adulta=1`; `visita-adulta=revogar` recusa a próxima
+conferência. O consentimento falso é em memória, sem persistir código de teste. Prova visual:
+`verificar-visitas-adultas-browser.ts`, com contextos novos para massas independentes, sem
+apagar rascunhos para contornar conflito. V18, física e limite de tempo Kids não mudam.
+
 ## Pausa do quarto (30/10/2026, A03a)
 
 `Quarto` em `mundo/casa.tsx`, tanto próprio quanto visitado, propaga `jogoPausado` pelo

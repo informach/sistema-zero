@@ -106,6 +106,14 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | E03 | Implementado por outra sessão e integrado localmente | `bbe7418bf`, `5df394ff3`, merge `ae68922b1` | `docs/qa/2026-10-30-fantasma-familiar/`; migração/adoção e aceite autenticado separados em Q01 |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
+### Lote de visitas adultas da frente de entrega integral
+
+L12/S01 tem implementação local de visita por código revogável, sem diretório ou mudança
+de V18, na frente que também integrou barcos e fantasmas. Plano próprio em
+`docs/superpowers/plans/2026-10-30-arquipelago-visitas-adultas.md`; provas em
+`docs/qa/2026-10-30-visitas-adultas/`. A paridade de conteúdo, companhia e decisões de
+calendário da linha S01 não são concluídas por esse recorte. O aceite hospedado continua Q01.
+
 ## Pedidos de arte
 
 Nenhum pedido no lote A01. Para praia, construção avançada e exposição, conferir primeiro o

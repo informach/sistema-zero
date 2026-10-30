@@ -1,0 +1,133 @@
+{
+  "versao": 1,
+  "dataUtc": "2026-10-30T12:36:03.278Z",
+  "base": "11002f9ff",
+  "backend": "f23eb8f3c",
+  "escopo": "L12: visitas adultas locais; aceite hospedado e aparelhos fisicos em L14",
+  "testes": [
+    {
+      "pacote": "arquipelago-contracts",
+      "aprovados": 203,
+      "ignorados": 0,
+      "arquivo": ".cache/visitas-adultas-conciliado-test-arquipelago-contracts.log",
+      "sha256": "cc69b81438face15a862d69e8c8989000d59ea97f489c9631e33bfe27cd3cada"
+    },
+    {
+      "pacote": "arquipelago-api",
+      "aprovados": 313,
+      "ignorados": 37,
+      "arquivo": ".cache/visitas-adultas-conciliado-test-arquipelago-api.log",
+      "sha256": "23564c439e473609cd0fb6bec8521d692f0e7899d4f2c133f1b6d0e0553185e6"
+    },
+    {
+      "pacote": "api-gateway",
+      "aprovados": 315,
+      "ignorados": 2,
+      "arquivo": ".cache/visitas-adultas-final-test-api-gateway.log",
+      "sha256": "1979c4a29118a47feb378f4a83972b6717b81c2cb81a0f8d3cb627539b459ef5"
+    },
+    {
+      "pacote": "arquipelago",
+      "aprovados": 1317,
+      "ignorados": 0,
+      "arquivo": ".cache/visitas-adultas-integrado-jogo-r2.log",
+      "sha256": "a09e38c81cff43c69f15f55dfb7c898c795c6fda28f578cb2c1f84f10c519496"
+    },
+    {
+      "pacote": "member-shell",
+      "aprovados": 2007,
+      "ignorados": 0,
+      "arquivo": ".cache/visitas-adultas-final-test-member-shell.log",
+      "sha256": "e9802894805595e22bb3bbd74a929fbeb70f768b2d2fb330c12af19552f3fd09"
+    }
+  ],
+  "navegador": {
+    "arquivo": "docs/qa/2026-10-30-visitas-adultas/r4-integrado/resultado.json",
+    "sha256": "0572ff8d27cb2e7136c38b27ae4439695398ea6244f393c06a39315c39de9100",
+    "resultados": [
+      {
+        "tipo": "computador",
+        "geracaoRotacaoRevogacao": true,
+        "codigoForaDoArmazenamento": true,
+        "saveIntactoNaVisita": true,
+        "retornoPorRevogacao": true,
+        "erros": []
+      },
+      {
+        "tipo": "celular",
+        "geracaoRotacaoRevogacao": true,
+        "codigoForaDoArmazenamento": true,
+        "saveIntactoNaVisita": true,
+        "retornoPorRevogacao": true,
+        "erros": []
+      }
+    ],
+    "kidsSeparado": true
+  },
+  "migracoes": {
+    "preservada": "0015_mudancas_de_aparencia",
+    "nova": "0016_convites_adultos",
+    "cadeiaValidadaEmPostgresNovo": true,
+    "hashSql": "d46644fff8bede568b2936b8b4976d49b1ca2ca1254ae9b7a5a97efcc732264e"
+  },
+  "build": {
+    "versao": "20261030123350",
+    "arquivos": 140,
+    "megabytes": 35.9,
+    "sha256": "6646052892768de3eea2db8f332a77e4e9cc7025b802e21fabfa7e7cc79b365e"
+  },
+  "biomeRaiz": {
+    "erros": 0,
+    "avisos": 170,
+    "informacoes": 198,
+    "sha256": "67610c1fdf877a04c7d2a329ea5de8ef409ad35df383c42e465b5c7670f3b7eb"
+  },
+  "negativosPreservados": [
+    "teto real do stream 400 antes de 413",
+    "r1 conflito correto provocado pela massa de QA",
+    "r2 oraculo exigia localStorage antes de gravacao",
+    "duas geometrias excederam 5s em rodada concorrente; mesmas fontes passaram em serie",
+    "destino de banco nao local recusado antes da conexao"
+  ],
+  "fontes": {
+    "packages/api-gateway/src/infrastructure/config/arquipelago-routes.ts": "c9413a80a50dadff076f589e0a47370ad45c2b0ec19ec8ebb216f9fe8f772d89",
+    "packages/api-gateway/tests/unit/arquipelago-config.test.ts": "793e978d2286be8a1912b9ee5a86752104601bc5c8878d9e07e4bc0e1ad7fa48",
+    "packages/arquipelago-api/src/application/servico-das-visitas-adultas.ts": "1eff83b203e429d947b896c7a84a9ab9876ec9676acff987caa212b13c5b6f20",
+    "packages/arquipelago-api/src/composition-root.ts": "f0bf56aa52f899dc8e041f4282478f9118a77c2176dfe785c136ed76b01a7762",
+    "packages/arquipelago-api/src/domain/visitas-adultas.port.ts": "e077247d5c191b2b565fb48f805f5e736c098a5f5a10697e1d35608890b93f5f",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/migrations/0016_convites_adultos.sql": "d46644fff8bede568b2936b8b4976d49b1ca2ca1254ae9b7a5a97efcc732264e",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/migrations/meta/0016_snapshot.json": "907dc8166f1e12627f1d1a3ace9932eadc85e27473e594f075972049929d1a4d",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json": "e8930b1738eaf9da1ec1efdea7c8d78acff52411e8b478a32fdeaf92540943f9",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-visitas-adultas.ts": "8abe71f1799530ec468da263231da845354870099e541f6e30e330acde52f7dc",
+    "packages/arquipelago-api/src/infrastructure/persistence/drizzle/schema.ts": "ddc53dfe8e5a35e7f00bd9090e8970e536b3ae1d1837f79ceecfb152a235c214",
+    "packages/arquipelago-api/src/interfaces/http/rotas-das-visitas-adultas.ts": "78d770b6394122919a4776f3cc15139fc302f6c369d3ca97a41a4042d3dc89a6",
+    "packages/arquipelago-api/src/interfaces/http/server.ts": "f507b5369a9fff9de737646aad9e9d9e9b68343180da1236aa890bf1eb6effd6",
+    "packages/arquipelago-api/tests/db/fantasmas.test.ts": "1c62cfdbf9cd9fa611f552910ea9d0723bf807cc2216c38f8e9dde03f92ef3f8",
+    "packages/arquipelago-api/tests/db/visitas-adultas.test.ts": "d7651f1369060d65a07d9b9cfa680ee0f05ffa5b1cb846eaba3ff109196e56f2",
+    "packages/arquipelago-contracts/src/index.ts": "6d18c5dac3f9daf1a995153191df152b740c758460f97bbb8352a73fed0653f5",
+    "packages/arquipelago-contracts/src/plataforma.ts": "38774e90578963dabdb6ce4cbc514cb27a66b007c504ffa91dd7b77dfb677d89",
+    "packages/arquipelago-contracts/src/visitas-adultas.ts": "8ae430ce41e9d720a75d270c265326485b5f1e41fdde6225e9fa3924a473fc7b",
+    "packages/arquipelago-contracts/tests/visitas-adultas.test.ts": "47d57e192d4894ce07cbe96a27d6439728a19f43a40c1810f4ad0eaeb73125f8",
+    "packages/arquipelago/playground/playground.tsx": "620a9b295c07f2107fcec8712bc5d4865171cc06f117c4aa2a0e23ff606e06f5",
+    "packages/arquipelago/playground/verificar-visitas-adultas-browser.ts": "caee90731efacdfff25a19b6d5657c8b0300f2eae3e808f0cacdc9a28ef8a482",
+    "packages/arquipelago/src/estado/chegada-da-visita.ts": "d7e92a5bb365ccad612cd2358424c3faebdd0f1f8cd9843fe1aab4496ee8ff66",
+    "packages/arquipelago/src/estado/visitas-adultas.ts": "e332bc6cdb777872470b42feed06d6a6ed4f157894fa1957c5e77cc609806555",
+    "packages/arquipelago/src/interface/estilos.ts": "2a5bf8da0ca4d6b4bc3d4077f9dffe861302706ef5b3dd920c6a9290a5d9af5f",
+    "packages/arquipelago/src/interface/hud.tsx": "fa1a9ffed50c536edbf73e9bcaccfefe22325272d052b0873f536a7bcb53aa01",
+    "packages/arquipelago/src/interface/menu.tsx": "6fc896e897e9f577b2527676714a6467f2efae3cab5f9e1db5a0006e35de26db",
+    "packages/arquipelago/src/interface/visitas-adultas.tsx": "dd21fb2129ba43c8f57083891e4bbd4a1fd32135a6578d85dae7c7e874389df9",
+    "packages/arquipelago/src/interface/visitas.tsx": "d833b6e961458e0c37b193e16fc58b73e400f96dd20e9d28d9dfb022ea8645ac",
+    "packages/arquipelago/src/jogo.tsx": "c8fb3de793362c2d802c5e446c0f59a601e99a0e5dbd2b5a5c3a55480659d765",
+    "packages/arquipelago/src/plataforma/falsa.ts": "854c0e5a58bd02cd635f43e83def145ab21211678777783e3cca39fdb19c609e",
+    "packages/arquipelago/src/plataforma/visitas-adultas-falsas.ts": "c73b6ff243d0c7b75d5b7683e27ac5625a1891275221cbcbfdfc7c1228b83c5d",
+    "packages/arquipelago/src/sistemas/visitas.ts": "28569311a714fa5d69e76ea53223fd1859539913f54a29913c218abb4f05c74a",
+    "packages/arquipelago/tests/visitas-adultas.test.ts": "2ca671ad048d9bfa0e3d885eab51ad10c92eb8f8f5f5515e0ce8a581d2cc0b4f",
+    "packages/community/src/app/api/arquipelago/visitas-adultas/abrir/route.ts": "f34c8c52f3a3a2a07d50d1e0988691a1f828ce06dffbfb765b9032987d46bcbc",
+    "packages/community/src/app/api/arquipelago/visitas-adultas/conferir/route.ts": "8766329fc01271c97fb537ac85015a8116ae668178a5c056592c6107cb5eee70",
+    "packages/community/src/app/api/arquipelago/visitas-adultas/convite/route.ts": "bfd3f4da68b61b1662ba9e88da62621b678cbe62e5ba4ec4db52f3cdf0f61450",
+    "packages/member-shell/src/components/arquipelago-host.tsx": "86ef80d216967d90fe9c7aafa20ef812bb66e3ae336d6d0ad9d8c647c663141e",
+    "packages/member-shell/src/routes/arquipelago.ts": "ec492a54c3c8084805aae5280cc2ecb0c2dfa2d6057b7133af831a05ee38f747",
+    "packages/member-shell/tests/arquipelago-host.test.ts": "005ee84fda179affe07be63412a7eac20402aaac57520219157aaa3cb8a3ff0a",
+    "packages/member-shell/tests/arquipelago-routes.test.ts": "a12aecb264d0a13ea427336320452f36a065b209e728173bb895692f3f47c2e7"
+  }
+}

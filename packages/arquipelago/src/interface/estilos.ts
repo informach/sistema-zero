@@ -429,6 +429,7 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-passos-menu-dicas{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)}
 .arq-passos-menu-dicas>span{margin-right:4px;font-size:13px;font-weight:800;color:#c9d1e6}
 .arq-passos-menu-dicas .arq-botao{min-height:36px;padding:4px 12px;font-size:14px}
+.arq-visitas-adultas section,.arq-visitas-adultas form,.arq-convite-codigo{display:grid;gap:10px;min-width:0}.arq-visitas-adultas section,.arq-visitas-adultas form{padding:14px 0;border-top:1px solid #d1d6e5}.arq-visitas-adultas h3,.arq-visitas-adultas p{margin:0}.arq-visitas-adultas input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:10px 12px;border:2px solid #a6aec7;border-radius:10px;background:#fff;color:#1d2340;font:inherit}.arq-visitas-adultas input:focus-visible{outline:3px solid #2f6df6;outline-offset:2px}.arq-convite-codigo input{font-family:monospace;font-size:14px}.arq-visitas-adultas label{font-weight:700}.arq-visitas-adultas small{overflow-wrap:anywhere}.arq-visitas-adultas .arq-menu-acoes{flex-wrap:wrap}
 @media (min-width:641px){.arq-guia{left:16px;bottom:24px}.arq-hud.toque .arq-guia{bottom:auto;top:260px}.arq-hud:has(.arq-obra) .arq-dica{top:136px}}
 .arq-hud:has(.arq-obra) .arq-guia{bottom:auto;top:136px}
 @media (max-width:640px){

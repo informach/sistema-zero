@@ -21,6 +21,7 @@ import { Hud } from './interface/hud'
 import { comecarPassosSozinho } from './interface/primeiros-passos'
 import { SalvamentoDoJogo } from './interface/salvamento'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
+import { EfeitoDasVisitasAdultas } from './interface/visitas-adultas'
 import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
@@ -319,6 +320,7 @@ function JogoPronto({
       </Barreira>
       <Relogios />
       <EfeitoDosFantasmas />
+      <EfeitoDasVisitasAdultas />
       <Hud />
       {fila ? <SalvamentoDoJogo fila={fila} /> : null}
       {tempoSincronizando && !tempoPausado && !tempoAcabou && !naAbertura ? (
