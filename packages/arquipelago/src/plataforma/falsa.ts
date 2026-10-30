@@ -83,6 +83,8 @@ export interface OpcoesDaPlataformaFalsa {
   editarObjeto?: (pedido: PedidoDeFerramenta) => Promise<boolean>
   /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
   obra?: 'exemplo'
+  /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
+  jogos?: 'exemplo'
   /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
   convidados?: boolean
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
@@ -159,6 +161,19 @@ const CHAVE = 'arquipelago-playground'
 /** As compras da galeria de mentira, à parte do salvamento (o `?novo=1` do playground apaga). */
 export const CHAVE_DA_GALERIA = 'arquipelago-playground:galeria'
 export const CHAVE_DAS_PROFISSOES = 'arquipelago-playground:profissoes'
+
+/** Os jogos de `jogos: 'exemplo'`, só do playground. */
+export const MINIJOGO_DE_EXEMPLO = {
+  desafioId: '5b3f0a52-6d1e-4c3a-9a51-0e7f4c2b9d10',
+  titulo: 'Corrida dos bichos da Ana',
+  aprovadoEm: '2026-10-29T15:00:00.000Z',
+  atualizadoEm: '2026-10-29T15:00:00.000Z',
+  capa: null,
+} as const
+export const JOGO_DO_MURAL_DE_EXEMPLO = {
+  playId: '9d2c7e41-3a8b-4f6d-b1c5-2e4a6f8d0b13',
+  titulo: 'Labirinto das conchas',
+} as const
 
 export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataforma & {
   guardado(): SalvamentoGuardado
@@ -509,8 +524,11 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     },
     servico: {
       async buscar(caminho, opcoes) {
-        if (caminho === '/mural') return { status: 200, corpo: { jogos: [] } }
-        if (caminho === '/minijogos') return { status: 200, corpo: { minijogos: [] } }
+        const exemplo = o.jogos === 'exemplo'
+        if (caminho === '/mural')
+          return { status: 200, corpo: { jogos: exemplo ? [JOGO_DO_MURAL_DE_EXEMPLO] : [] } }
+        if (caminho === '/minijogos')
+          return { status: 200, corpo: { minijogos: exemplo ? [MINIJOGO_DE_EXEMPLO] : [] } }
         const metodo = opcoes?.metodo ?? 'GET'
         const daVisitaAdulta = visitasAdultas.buscar(caminho, metodo, opcoes?.corpo)
         if (daVisitaAdulta) return daVisitaAdulta

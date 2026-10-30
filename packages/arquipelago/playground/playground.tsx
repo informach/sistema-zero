@@ -126,6 +126,7 @@ const plataforma = criarPlataformaFalsa({
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   convidados: q.get('convidados') === '1',
   obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
+  jogos: q.get('jogos') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   adotado: q.get('adotado') === '1',
   bento: q.has('bento') ? Number(q.get('bento')) : undefined,

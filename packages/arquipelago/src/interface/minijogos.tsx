@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useJogo } from '../estado/contexto'
-import { lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
+import { abrirJogo, lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
 import { lojaDoMural, useMural } from '../estado/mural'
 
 export function MinijogosDoFliperama() {
@@ -23,19 +23,10 @@ export function MinijogosDoFliperama() {
     abrindo.current = true
     setAviso('')
     setOcupado(true)
-    loja.getState().definirFerramentaAberta(true)
     try {
-      const r = await plataforma.abrirFerramenta({
-        ferramenta: 'estudio',
-        proposito: publicado ? 'jogo-do-mural' : 'minijogo',
-        molde: publicado ? { playId: id } : { desafioId: id },
-      })
-      if (r.situacao === 'indisponivel')
+      if (!(await abrirJogo(loja, plataforma, id, publicado)))
         setAviso('O minijogo não abriu agora. Tente de novo daqui a pouco.')
-    } catch {
-      setAviso('O minijogo não abriu agora. Tente de novo daqui a pouco.')
     } finally {
-      loja.getState().definirFerramentaAberta(false)
       setOcupado(false)
       abrindo.current = false
       if (publicado) void mural.carregar()

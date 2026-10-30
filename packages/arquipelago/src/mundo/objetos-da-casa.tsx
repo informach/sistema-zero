@@ -32,6 +32,7 @@ import museuGlb from '../assets/objetos/museu.glb'
 import plantaInteriorGlb from '../assets/objetos/planta-interior.glb'
 import { lojaDoConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
 import { lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
 import { lojaDosPassos } from '../estado/primeiros-passos'
 import {
@@ -41,6 +42,7 @@ import {
   LUGAR_DO_OBJETO,
 } from '../sistemas/construcao/projeto-azul'
 import { PEIXES_DO_AQUARIO, peixesVisiveis } from '../sistemas/corais-do-recife'
+import { FALA_DO_MODO_LIVRE } from '../sistemas/galeria-do-farol'
 import { jogoPausado } from '../sistemas/pausa'
 import {
   type AparenciaNoMundo,
@@ -89,7 +91,7 @@ const AZUL = new Color('#5fb8ff')
  * `depthWrite`, como a bancada) ou, sem ele, o modelo com todos os materiais trocados por um azul
  * translúcido. Com aparência própria, carrega a criação e mantém o modelo como reserva.
  */
-function ModeloDoObjeto({
+export function ModeloDoObjeto({
   id,
   completo,
   aparencia,
@@ -370,6 +372,7 @@ export function GanharProjetos() {
     })
   }, [loja, plataforma])
   useEffect(() => {
+    let esperando: (() => void) | null = null
     const conferir = () => {
       const s = loja.getState()
       const { salvamento, ganhos } = ganharProjetos(s.salvamento, new Date())
@@ -377,15 +380,35 @@ export function GanharProjetos() {
       s.mudar(() => salvamento)
       const ultimo = ganhos.at(-1)
       if (!ultimo) return
+      // Muitos de uma vez só acontece no modo livre: uma fala só, a do modo livre. Ela chega no
+      // fim dos fachos, com a HUD escondida; a fala espera a descida do Farol para ser vista.
+      if (ganhos.length > 1 && salvamento.farol.concluido) {
+        const farol = lojaDoFarol(loja)
+        if (farol.getState().etapa === 'fora') s.dizer(FALA_DO_MODO_LIVRE)
+        else {
+          esperando?.()
+          esperando = farol.subscribe((f) => {
+            if (f.etapa !== 'fora') return
+            esperando?.()
+            esperando = null
+            loja.getState().dizer(FALA_DO_MODO_LIVRE)
+          })
+        }
+        return
+      }
       // Nos primeiros passos: a geladeira é a fala 16 deles; o resto espera o fim do tutorial.
       const passos = lojaDosPassos(loja, plataforma).getState()
       if (!passos.andando()) s.dizer(falaDoGanho(ultimo))
       else if (ultimo !== 'geladeira') passos.adiar(falaDoGanho(ultimo))
     }
     conferir()
-    return loja.subscribe((s, antes) => {
+    const parar = loja.subscribe((s, antes) => {
       if (s.salvamento !== antes.salvamento) conferir()
     })
+    return () => {
+      parar()
+      esperando?.()
+    }
   }, [loja, plataforma])
   return null
 }

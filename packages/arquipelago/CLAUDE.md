@@ -31,7 +31,7 @@ O ponto do píer é compartilhado em `mundo/lugares-da-praia.ts`, longe do embar
 ## Móveis dos cômodos e salvamento V20 (30/10/2026)
 
 V20 nos contratos: `construcao.casa.moveis` (tuplas `MovelNaObra`, até `MOVEIS_NA_CASA_MAXIMO`;
-`ObraDaCabanaSchema` aceita só a lista vazia) e `farol.galeria` (lote seguinte, fase4-12). O tipo
+`ObraDaCabanaSchema` aceita só a lista vazia) e `farol.galeria` (a galeria do Farol, fase4-12, abaixo). O tipo
 `Obra` é o da V20; `ObraAteV19` e `ObraSchema` ficam para as versões antigas. Valide a obra pelo
 lugar (`ObraDaCasaSchema` ou `ObraDaCabanaSchema`), como `estado/construcao.ts`. A visita aceita a
 obra antiga e completa os móveis vazios (`obraComMoveis`), para serviço e jogo trocarem de versão
@@ -53,6 +53,27 @@ Farol (C03b): `QuadroDoFarol` monta o cavalete em `lugarDoQuadroNoFarol()` só c
 `farol.concluido`, fora dos lotes da casa, e o painel esconde os quadros vazios. Conteúdo em
 `docs/desafios-do-jogo/sua-ilha/`. Prova: `tests/colisao-da-ilha-central.test.ts` (o colisor do
 cavalete entra na busca de caminho) e `playground/verificar-quadro-da-sua-ilha-browser.ts`.
+
+## Modo livre e galeria do Farol (fase4-12, 30/10/2026)
+
+`farol.concluido` liga o modo livre: `ganharProjetos` entrega todos os `OBJETOS_DA_CASA` que faltam
+(`GanharProjetos` diz só `FALA_DO_MODO_LIVRE` quando chegam vários) e a Íris ganha a terceira fala.
+Regras puras em `sistemas/galeria-do-farol.ts`: `VAGAS_DA_GALERIA` (seis pontos no referencial do
+`alto-do-farol.glb`, conferidos contra os colisores reais), `exporNaVaga` (muda de vaga sem repetir,
+guarda só até a última cheia), `tirarDaVaga`, `criacoesParaExpor` (aparências do Pinta/Molda, nunca
+`origem: 'galeria'`, minijogos e Mural das lojas do serviço) e `cameraDaGaleria`. A escolha mora em
+`farol.galeria` (V20); a conciliação trata a galeria inteira como o clima.
+`mundo/galeria-do-farol.tsx` (montado pela `SalaDoFarol`): pedestais com colisor
+`col-cil-pedestal-*` (só para o corpo), `ModeloDoObjeto` (agora exportado) encolhido num cubo de
+0,85 m e quadro com a capa ou o nome para os jogos; interativo na frente de cada vaga. Painel:
+`interface/galeria-do-farol.tsx` (`painelAberto` = `galeria-do-farol:<vaga>`); "Jogar" usa
+`abrirJogo` de `estado/minijogos.ts`, o mesmo do fliperama. ⚠️ A vista da sala é fixa e esconde as
+vagas do lado da porta: com a galeria aberta, `personagem/camera.tsx` usa `cameraDaGaleria` (de lado, abaixo do
+forro do domo a 3,5 m, girando com a criança; o teste confere com raios contra a sala inteira que a
+lente e o forro nunca tapam a criança nem o pedestal dela). Antes do final nada muda. Playground:
+`?jogos=exemplo` põe um minijogo e um jogo do Mural nas listas da plataforma falsa; o `em=` troca o
+salvamento por um novo, então o verificador semeia a posição. Prova:
+`playground/verificar-galeria-farol-browser.ts` e `tests/galeria-do-farol.test.ts`.
 
 ## Coleções do Pico e das Nuvens e iscas da pesca (30/10/2026)
 

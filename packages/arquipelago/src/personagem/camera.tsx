@@ -41,6 +41,7 @@ import {
 } from '../sistemas/conforto'
 import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
 import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
+import { CAMERA_DA_GALERIA, cameraDaGaleria, galeriaAberta } from '../sistemas/galeria-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { MERGULHO } from '../sistemas/mergulho'
 import {
@@ -52,6 +53,7 @@ import {
   passoDosPesos,
   perfilDaVez,
 } from '../sistemas/perfis-de-camera'
+import { suavizarAngulo } from '../sistemas/zappy'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
@@ -119,6 +121,8 @@ export function Camera() {
     giro: new Quaternion(),
     campo: 55,
     giroDoCorpo: 0,
+    /** O giro suavizado da câmera da galeria (`null` até a primeira vista da sala). */
+    galeria: { angulo: null as number | null },
   })
   const antesDaChegada = useRef({
     ativa: false,
@@ -377,6 +381,26 @@ export function Camera() {
         )
         // Mira abaixo do anel para deixar as seis ilhas acima do painel de fala.
         camera.lookAt(0, -55 * k, 0)
+      } else if (galeriaAberta(loja.getState().salvamento) && !loja.getState().visita) {
+        // O modo livre (fase4-12): a câmera da galeria acompanha o lado da sala onde ela está.
+        const lado = Math.atan2(rastro.z - ALTO_DO_FAROL.z, rastro.x - ALTO_DO_FAROL.x)
+        const g = antesF.galeria
+        g.angulo =
+          g.angulo === null || menosMovimento
+            ? lado
+            : suavizarAngulo(g.angulo, lado, CAMERA_DA_GALERIA.rapidez, Math.min(dt, 0.1))
+        const vista = cameraDaGaleria(g.angulo)
+        camera.position.set(
+          ALTO_DO_FAROL.x + vista.posicao.x,
+          ALTO_DO_FAROL.y + vista.posicao.y,
+          ALTO_DO_FAROL.z + vista.posicao.z,
+        )
+        camera.lookAt(
+          ALTO_DO_FAROL.x + vista.alvo.x,
+          ALTO_DO_FAROL.y + vista.alvo.y,
+          ALTO_DO_FAROL.z + vista.alvo.z,
+        )
+        rastro.giro = vista.giro
       } else {
         camera.position.set(ALTO_DO_FAROL.x + 2, ALTO_DO_FAROL.y + 2.8, ALTO_DO_FAROL.z + 2.7)
         camera.lookAt(ALTO_DO_FAROL.x - 0.7, ALTO_DO_FAROL.y + 1.3, ALTO_DO_FAROL.z - 1.2)
@@ -391,6 +415,7 @@ export function Camera() {
     }
     if (antesF.ativa && final.etapa === 'fora' && camera instanceof PerspectiveCamera) {
       antesF.ativa = false
+      antesF.galeria.angulo = null
       camera.position.copy(antesF.posicao)
       camera.quaternion.copy(antesF.giro)
       camera.fov = antesF.campo

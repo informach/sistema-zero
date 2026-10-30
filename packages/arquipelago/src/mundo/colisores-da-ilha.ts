@@ -49,6 +49,8 @@ const SO_PARA_O_CORPO = [
   'col-cil-estaca-',
   'col-cil-perna-',
   'col-cil-vaso-',
+  // Os pedestais da galeria no alto do Farol (fase4-12).
+  'col-cil-pedestal-',
   'col-coluna-',
   'col-floreira-',
   'col-canteiro-',

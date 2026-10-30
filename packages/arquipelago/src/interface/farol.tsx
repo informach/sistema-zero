@@ -10,6 +10,7 @@ import {
   PAINEL_DO_FINAL,
   ULTIMA_PAGINA,
 } from '../sistemas/final-do-farol'
+import { galeriaAberta } from '../sistemas/galeria-do-farol'
 import { PainelDeApresentacao } from './apresentacao'
 
 export function PainelDaIris() {
@@ -26,6 +27,7 @@ export function PainelDoFarol() {
   const quantidade = useFarol(loja, (s) => fachosAcesos(s.tempo, s.menosMovimento))
   const painel = useEstado((s) => s.painelAberto)
   const menu = useEstado((s) => s.menuAberto)
+  const galeria = useEstado((s) => galeriaAberta(s.salvamento) && s.visita === null)
   const principal = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     if (etapa !== 'fora' && etapa !== 'sala' && pagina >= 0) principal.current?.focus()
@@ -37,9 +39,17 @@ export function PainelDoFarol() {
         <section className="arq-agora arq-vidro" aria-label="Orientação no Farol">
           <h2>Agora</h2>
           <ul>
+            {galeria ? (
+              <li>
+                <span className="arq-agora-marca" aria-hidden="true" />
+                Escolher as criações dos pedestais da galeria
+              </li>
+            ) : null}
             <li>
               <span className="arq-agora-marca" aria-hidden="true" />
-              Ler a última página na mesa da Íris
+              {galeria
+                ? 'Reler a última página na mesa da Íris'
+                : 'Ler a última página na mesa da Íris'}
             </li>
           </ul>
         </section>

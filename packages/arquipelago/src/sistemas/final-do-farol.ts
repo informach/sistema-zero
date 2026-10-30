@@ -21,6 +21,7 @@ export const FALA_FINAL_DO_ZAPPY =
 export const VOLTA_DA_IRIS = [
   'Voltei para casa. Obrigada por abrir meus rascunhos.',
   'Agora quero criar junto. Um rascunho pode ser o começo de uma ideia.',
+  'O alto do Farol agora é a sua galeria. Suba lá e escolha as criações que vão ficar em exposição.',
 ] as const
 
 export function podeSubirOFarol(jornada: number, visitando = false): boolean {

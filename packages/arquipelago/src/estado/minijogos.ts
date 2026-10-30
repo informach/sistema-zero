@@ -49,3 +49,28 @@ export function useMinijogos<T>(
 ) {
   return useStore(fonte.estado, seletor)
 }
+
+/**
+ * Abre um minijogo aprovado (ou um jogo publicado no Mural) por cima do jogo, pela plataforma: o
+ * player é dela, e o jogo fica pausado enquanto ele está aberto. Devolve se abriu.
+ */
+export async function abrirJogo(
+  loja: LojaDoJogo,
+  plataforma: Plataforma,
+  id: string,
+  publicado: boolean,
+): Promise<boolean> {
+  loja.getState().definirFerramentaAberta(true)
+  try {
+    const r = await plataforma.abrirFerramenta({
+      ferramenta: 'estudio',
+      proposito: publicado ? 'jogo-do-mural' : 'minijogo',
+      molde: publicado ? { playId: id } : { desafioId: id },
+    })
+    return r.situacao !== 'indisponivel'
+  } catch {
+    return false
+  } finally {
+    loja.getState().definirFerramentaAberta(false)
+  }
+}
