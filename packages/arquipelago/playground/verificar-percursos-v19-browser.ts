@@ -33,7 +33,10 @@ type P = { x: number; y: number; z: number }
 async function cena(...partes: string[]) {
   const bin = readFileSync(path.join(pacote, 'src', 'assets', ...partes))
   return (
-    await new GLTFLoader().parseAsync(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength), '')
+    await new GLTFLoader().parseAsync(
+      bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength),
+      '',
+    )
   ).scene
 }
 
@@ -94,11 +97,18 @@ try {
   const page = await context.newPage()
   page.on('pageerror', (e) => erros.push(e.message))
   const ler = () =>
-    page.evaluate(() => (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho ?? null)
+    page.evaluate(
+      () => (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho ?? null,
+    )
   const levar = (p: P, olhar: number) =>
     page.evaluate(
       ({ x, y, z, g }) =>
-        (globalThis as { __arquipelagoLevar?: (...a: number[]) => void }).__arquipelagoLevar?.(x, y, z, g),
+        (globalThis as { __arquipelagoLevar?: (...a: number[]) => void }).__arquipelagoLevar?.(
+          x,
+          y,
+          z,
+          g,
+        ),
       { x: p.x, y: p.y + 1.2, z: p.z, g: olhar + Math.PI },
     )
   const posicao = async () => (await ler())?.posicao ?? { x: 0, y: 0, z: 0 }
@@ -115,7 +125,12 @@ try {
     return p
   }
   const cronometro = (nome: string) => page.getByRole('timer', { name: nome })
-  const comecar = async (pontos: PontosDoPercurso, rotulo: string, nome: string, simbolo: string) => {
+  const comecar = async (
+    pontos: PontosDoPercurso,
+    rotulo: string,
+    nome: string,
+    simbolo: string,
+  ) => {
     await levar(pontos.largada, pontos.rumoDaLargada)
     await page.waitForTimeout(2500)
     await page.getByText(rotulo).first().waitFor({ timeout: 180_000 })
@@ -145,7 +160,8 @@ try {
   await page.goto(`${baseURL}/?novo=1&posicao=8&em=${em}`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(
     () =>
-      ((globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho?.ilhasCompletas ?? 0) > 0,
+      ((globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho?.ilhasCompletas ??
+        0) > 0,
     undefined,
     { timeout: 180_000 },
   )
@@ -153,7 +169,12 @@ try {
   await page.waitForTimeout(3000)
 
   // 1. Os corais: começa, sobe no primeiro, cai na areia e volta ao coral.
-  const relogioDosCorais = await comecar(corais, 'Começar os pulos nos corais', 'Pulos nos corais', 'Pérolas')
+  const relogioDosCorais = await comecar(
+    corais,
+    'Começar os pulos nos corais',
+    'Pulos nos corais',
+    'Pérolas',
+  )
   await page.screenshot({ path: path.join(prints, 'corais-largada.png') })
   const primeiro = corais.deques[0]
   if (!primeiro) throw new Error('Sem coral.')
@@ -187,7 +208,12 @@ try {
   await relogioDasPedras.waitFor({ state: 'detached' })
 
   // 3. A volta pela praia da sua ilha.
-  const relogioDaPraia = await comecar(praia, 'Começar a volta pela praia', 'Volta pela praia', 'Conchas brilhantes')
+  const relogioDaPraia = await comecar(
+    praia,
+    'Começar a volta pela praia',
+    'Volta pela praia',
+    'Conchas brilhantes',
+  )
   await page.screenshot({ path: path.join(prints, 'praia-largada.png') })
   const resultadoDaPraia = await chegar(praia, 'Volta pela praia')
   await page.screenshot({ path: path.join(prints, 'praia-resultado.png') })
