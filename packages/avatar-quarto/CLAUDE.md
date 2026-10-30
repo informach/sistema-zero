@@ -20,3 +20,12 @@ mudar aqui muda o avatar e o quarto na plataforma E no jogo.
 - Consumido como TS source: os apps Next listam `@sistemazero/avatar-quarto` no
   `transpilePackages`, os `.railway/services` de admin, community e community-kids observam a
   pasta e o CI de staging redeploya os três quando ela muda.
+
+## Pausa compatível do quarto (30/10/2026)
+
+`RoomPausedContext` (padrão `false`, no módulo `room-glb-model`) congela o mixer próprio sem
+reiniciar as ações ao retomar. `RoomMotionContext` continua habilitando animação ou pose neutra.
+`Pet3D.paused` é opcional e congela passeio, giro e fase do pássaro, cujo relógio é local.
+O jogo fornece suas regras de pausa e conforto; nenhuma regra de sessão entra neste pacote.
+Prova com mixer Three real e efeitos React em `arquipelago/tests/quarto-pausa.test.ts`,
+isolada em processo próprio para não contaminar os outros testes.

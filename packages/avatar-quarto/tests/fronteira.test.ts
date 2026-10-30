@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative, sep } from 'node:path'
 import pkg from '../package.json'
 
 /**
@@ -39,7 +39,7 @@ describe('avatar-quarto', () => {
   test('todo arquivo de src tem uma entrada no exports', () => {
     const exportados = new Set(Object.values(pkg.exports))
     const faltando = arquivos(src)
-      .map((f) => `./${f.slice(src.length - 3)}`)
+      .map((f) => `./src/${relative(src, f).split(sep).join('/')}`)
       .filter((f) => !exportados.has(f))
     expect(faltando).toEqual([])
   })

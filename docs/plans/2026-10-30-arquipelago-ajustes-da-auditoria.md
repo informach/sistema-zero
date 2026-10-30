@@ -94,8 +94,9 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | --- | --- | --- | --- |
 | Organização | Registrada no staging local | `1b7a6c4a1` | Auditoria e QA preservados; desenho aceito pela instrução da dona |
 | A01 | Implementado, revisado, verificado e integrado no staging local | `7b1273879`, merge `00adca1df` | 1.223 testes passaram, 1 ignorado; tipagem/Biome aprovados; texturas 53 constantes em computador e celular emulado; 22 testes dirigidos repetidos após integrar |
-| A02 | Implementado, revisado e verificado | Commit deste lote, integração local em seguida | Sete cenários em dois tamanhos; suites, tipagem e Biome aprovados; QA em `docs/qa/2026-10-30-cores-conquistadas/` |
-| A03 | Plano técnico pronto, dividido em três entregas completas | Ainda sem implementação | `docs/superpowers/plans/2026-10-30-arquipelago-pausa-e-leitura.md` |
+| A02 | Implementado, revisado, verificado e integrado no staging local | `5a4c8e042`, merge `165e94c10` | Sete cenários em dois tamanhos; suites, tipagem e Biome aprovados; QA em `docs/qa/2026-10-30-cores-conquistadas/` |
+| A03a | Implementado, revisado e verificado | Commit deste lote, merge local em seguida | 1.297 testes do jogo e 2 do avatar-quarto aprovados, tipagem/Biome aprovados, 22 verificações de pose no navegador; QA em `docs/qa/2026-10-30-quarto-pausa/` |
+| A03b/c | Planos prontos, próximas partes | Ainda sem implementação | `docs/superpowers/plans/2026-10-30-arquipelago-pausa-e-leitura.md` |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
 ## Pedidos de arte

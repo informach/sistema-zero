@@ -11,17 +11,22 @@ O `Quarto` de `mundo/casa.tsx` é compartilhado pela casa própria e pela visita
 ou encerra ações do mixer; apenas desativá-lo durante uma pausa faria o modelo voltar à pose
 inicial. A pausa precisa conservar a pose e retomar o mesmo instante.
 
-- [ ] Propagar `jogoPausado`, a preferência de movimento reduzido do aparelho e a opção do
+- [x] Propagar `jogoPausado`, a preferência de movimento reduzido do aparelho e a opção do
   conforto até o quarto. Movimento reduzido desabilita animações ambientes. Pausa congela.
-- [ ] Acrescentar uma entrada de pausa compatível no módulo compartilhado de modelos do quarto,
+- [x] Acrescentar uma entrada de pausa compatível no módulo compartilhado de modelos do quarto,
   com padrão que conserva o comportamento dos outros consumidores. Controlar o mixer próprio,
   sem alterar a cena original ou o cache. Não recomeçar o clipe ao fechar um menu.
-- [ ] Pet: pausa opcional compatível e relógio local para o balanço do pássaro. Não avançar
+- [x] Pet: pausa opcional compatível e relógio local para o balanço do pássaro. Não avançar
   posição, giro ou fase enquanto parado. Retomar sem recuperar o tempo passado na pausa.
-- [ ] Conferir a mesma regra na casa própria e na visita, incluindo menu, ferramenta e preferência
+- [x] Conferir a mesma regra na casa própria e na visita, incluindo menu, ferramenta e preferência
   do aparelho. Usar os GLBs e a plataforma falsa existentes, sem criar arte substituta.
-- [ ] Testes de comportamento, navegador nos dois tamanhos, suites de jogo/avatar-quarto,
+- [x] Testes de comportamento, navegador nos dois tamanhos, suites de jogo/avatar-quarto,
   tipagem, Biome, documentação e revisão antes do commit e merge.
+
+Evidência: `docs/qa/2026-10-30-quarto-pausa/`. Ferramenta coberta pela regra pura de pausa;
+menu, painel e preferências exercitados no navegador. 1.297 testes do jogo aprovados, 1 de
+Postgres local ignorado; 2 testes do avatar-quarto aprovados; tipagem dos dois pacotes e
+Biome aprovados. Onze cenários por tamanho. Sem pedido de arte, mudança de salvamento ou push.
 
 ## A03b: a abertura espera a leitura
 

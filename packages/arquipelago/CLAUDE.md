@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Pausa do quarto (30/10/2026, A03a)
+
+`Quarto` em `mundo/casa.tsx`, tanto próprio quanto visitado, propaga `jogoPausado` pelo
+`RoomPausedContext`. Não usar `RoomMotionContext` para pausar: ele encerra a ação e restaura
+a pose neutra. Esse contexto continua controlando menos movimento, combinando a preferência
+do aparelho com a do Conforto. `Pet3D.paused` congela passeio e balanço; o relógio é local.
+Prova de mixer real: `tests/quarto-pausa.test.ts`. Prova visual de poses, menu, preferência
+e visita: `playground/verificar-quarto-pausa-browser.ts`, com `?pet=passaro`. O medidor expõe
+`__arquipelagoLerQuarto()` somente quando habilitado, sem percorrer as poses a cada quadro.
+
 ## Primeiros passos com o Zappy e dicas de primeira vez (30/10/2026)
 
 Proposta aprovada no canvas `https://claude.ai/artifact/X1GNotDTxZpdJsNG5QvhW8` (decisões com as

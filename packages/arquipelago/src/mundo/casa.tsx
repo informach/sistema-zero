@@ -6,14 +6,20 @@ import { cellToWorld, effectiveFootprint, type Rot } from '@sistemazero/avatar-q
 import { Floor } from '@sistemazero/avatar-quarto/quarto/floor'
 import { FurniturePiece } from '@sistemazero/avatar-quarto/quarto/furniture-piece'
 import { Pet3D } from '@sistemazero/avatar-quarto/quarto/pet-3d'
-import { RoomMotionContext } from '@sistemazero/avatar-quarto/quarto/room-glb-model'
+import {
+  RoomMotionContext,
+  RoomPausedContext,
+} from '@sistemazero/avatar-quarto/quarto/room-glb-model'
 import { Walls } from '@sistemazero/avatar-quarto/quarto/walls'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
+import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
+import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
@@ -32,6 +38,11 @@ const COR_DE_FORA = '#fbe7d2'
 
 /** O quarto da plataforma, peça por peça, com os mesmos componentes do Meu quarto. */
 function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
+  const { loja } = useJogo()
+  const pausado = useEstado(jogoPausado)
+  const menosNoAparelho = useReducedMotion()
+  const menosNoJogo = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
+  const menosMovimento = menosNoAparelho || menosNoJogo
   const aparencia = resolveRoomAppearance(quarto)
   const ocupadas = useMemo(() => {
     const set = new Set<string>()
@@ -66,34 +77,43 @@ function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
   }, [quarto.placedItems])
 
   return (
-    <RoomMotionContext.Provider value>
-      <Floor floorId={aparencia.floorId} editable={false} painting={false} onDeselect={NADA} />
-      <Walls
-        left={aparencia.left}
-        right={aparencia.right}
-        dark={false}
-        paintColor={null}
-        onPaint={NADA}
-      />
-      {quarto.placedItems.map((p, i) =>
-        p.on ? null : (
-          <FurniturePiece
-            // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens é a identidade (como no Meu quarto).
-            key={i}
-            index={i}
-            itemId={p.itemId}
-            x={p.x}
-            y={p.y}
-            rot={(p.rot ?? 0) as Rot}
-            wall={p.wall}
-            selected={false}
-            editable={false}
-            onStart={NADA}
-            stacked={primeiro.get(p.itemId) === i ? (filhos.get(p.itemId) ?? []) : []}
+    <RoomMotionContext.Provider value={!menosMovimento}>
+      <RoomPausedContext.Provider value={pausado}>
+        <group name="quarto-da-plataforma">
+          <Floor floorId={aparencia.floorId} editable={false} painting={false} onDeselect={NADA} />
+          <Walls
+            left={aparencia.left}
+            right={aparencia.right}
+            dark={false}
+            paintColor={null}
+            onPaint={NADA}
           />
-        ),
-      )}
-      <Pet3D petId={quarto.pet} occupied={ocupadas} reducedMotion={false} />
+          {quarto.placedItems.map((p, i) =>
+            p.on ? null : (
+              <FurniturePiece
+                // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens é a identidade (como no Meu quarto).
+                key={i}
+                index={i}
+                itemId={p.itemId}
+                x={p.x}
+                y={p.y}
+                rot={(p.rot ?? 0) as Rot}
+                wall={p.wall}
+                selected={false}
+                editable={false}
+                onStart={NADA}
+                stacked={primeiro.get(p.itemId) === i ? (filhos.get(p.itemId) ?? []) : []}
+              />
+            ),
+          )}
+          <Pet3D
+            petId={quarto.pet}
+            occupied={ocupadas}
+            reducedMotion={menosMovimento}
+            paused={pausado}
+          />
+        </group>
+      </RoomPausedContext.Provider>
     </RoomMotionContext.Provider>
   )
 }

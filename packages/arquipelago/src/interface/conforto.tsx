@@ -100,7 +100,7 @@ export function PreferenciasDeConforto() {
           checked={atual.menosMovimento}
           onChange={(e) => mudar({ menosMovimento: e.target.checked })}
         />
-        Menos movimento da câmera
+        Menos movimento da câmera e do ambiente
       </label>
       <label className="arq-marcar">
         <input

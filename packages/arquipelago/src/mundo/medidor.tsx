@@ -223,6 +223,7 @@ export function Medidor() {
       __arquipelagoMovimento?: () => Movimento
       __arquipelagoCameraEmVolta?: (desvio: number) => void
       __arquipelagoLevar?: (...a: number[]) => void
+      __arquipelagoLerQuarto?: () => { nome: string; pose: number[] }[]
       __arquipelagoLerCorpo?: () => {
         x: number
         y: number
@@ -232,6 +233,17 @@ export function Medidor() {
         /** O olho da vista pela luneta do mirante, quando aberta (fase4-07). */
         olho: { x: number; y: number; z: number } | null
       }
+    }
+    // Inspeção sob demanda: não percorre móveis nem aloca poses no laço do jogo.
+    g.__arquipelagoLerQuarto = () => {
+      const poses: { nome: string; pose: number[] }[] = []
+      cena.getObjectByName('quarto-da-plataforma')?.traverse((o) => {
+        poses.push({
+          nome: o.name,
+          pose: [...o.position.toArray(), ...o.quaternion.toArray(), ...o.scale.toArray()],
+        })
+      })
+      return poses
     }
     // Leitura sob demanda para conferir pulos sem reduzir o intervalo do medidor pesado.
     g.__arquipelagoLerCorpo = () => ({
@@ -255,11 +267,12 @@ export function Medidor() {
     }
     return () => {
       g.__arquipelagoLevar = undefined
+      g.__arquipelagoLerQuarto = undefined
       g.__arquipelagoLerCorpo = undefined
       g.__arquipelagoMovimento = undefined
       g.__arquipelagoCameraEmVolta = undefined
     }
-  }, [ligado, pedidos, rastro, movimento])
+  }, [ligado, pedidos, rastro, movimento, cena])
   useFrame((_, dt) => {
     if (!ligado) return
     const c = conta.current
