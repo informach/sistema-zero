@@ -90,7 +90,9 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
       [
         point(3, 'bolha.x', 'greaterThan', 150),
         point(3, 'bolha.y', 'lessThan', 320),
-        point(5, 'bolha.y', 'lessThan', 240),
+        // Do primeiro Espaço ao passo 5 passam uns 310 ms: a 5 px por passo (60 por segundo)
+        // a bolha está perto de y 247. Uma bolha relançada pelo segundo Espaço fica perto de 300.
+        point(5, 'bolha.y', 'lessThan', 270),
         point(5, 'bolha.vy', 'lessThan', 0),
         point(5, 'pontos', 'equals', 0),
       ],
