@@ -7,7 +7,7 @@ import { PERCURSO_DOS_TELHADOS } from '../sistemas/percurso'
 import { BalcoesDaVila } from './balcoes-da-vila'
 import { BancosDaVila } from './bancos-da-vila'
 import { Bento } from './bento'
-import { BorroesDaVila } from './borroes-da-vila'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import { FeiraDaVila } from './feira'
@@ -51,6 +51,10 @@ export function VilaViva({
 }) {
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ x: centro.x, y: 0, z: centro.z }), [centro.x, centro.z])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
   const pecas = useRef<Group>(null)
   const telhados = useMemo<PontosDoPercurso | null>(() => {
     const ancoras: Partial<AncorasDosTelhados> = {}
@@ -73,7 +77,7 @@ export function VilaViva({
       <BancosDaVila colisores={preparada.colisores} meio={meio} />
       <FeiraDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <FestaNaVila meio={meio} giro={giro} />
-      <BorroesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
+      <BorroesDaIlha ilha="vila-doce" ancoras={lugaresDosLumis} meio={meio} />
       {telhados ? (
         <CorridaNaIlha
           ilhaId={ilha.id}

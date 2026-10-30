@@ -9,7 +9,7 @@
  * noite não vai para o salvamento: fica no aparelho, por perfil (`lerPresos`, `gravarPresos`), para
  * recarregar a página na mesma noite não trazer de volta os já presos.
  */
-import type { LumiId, Salvamento } from '@sistemazero/arquipelago-contracts'
+import type { IlhaId, LumiId, Salvamento } from '@sistemazero/arquipelago-contracts'
 import { adicionar, type Inventario, quantidade } from './itens'
 import { ESPECIES_DE_LUMI } from './lumis'
 
@@ -21,7 +21,34 @@ export const FAMILIA_DA_VILA = { comum: 'quindim', raro: 'brigadeiro' } as const
   LumiId
 >
 
-/** Quantos borrões saem em cada noite na Vila Doce. */
+/**
+ * As ilhas que têm uma família de Lumis (a praia é a sua ilha) e como o texto diz de onde ela é.
+ * A proposta: "cada ilha tem a sua família de Lumis" e os borrões saem à noite em todas.
+ */
+export type IlhaDosLumis = Exclude<IlhaId, 'farol'>
+export const FAMILIAS_DOS_LUMIS: Readonly<
+  Record<IlhaDosLumis, { comum: LumiId; raro: LumiId; de: string }>
+> = {
+  'sua-ilha': { comum: 'estrelinha', raro: 'buzio', de: 'da praia' },
+  bosque: { comum: 'pitanga', raro: 'ipe', de: 'do Bosque' },
+  'vila-doce': { ...FAMILIA_DA_VILA, de: 'da Vila Doce' },
+  recife: { comum: 'bolha', raro: 'perola', de: 'do Recife' },
+  pico: { comum: 'gelinho', raro: 'cristal', de: 'do Pico' },
+  'vale-dos-dinos': { comum: 'ovinho', raro: 'brotinho', de: 'do Vale' },
+  nuvens: { comum: 'algodao', raro: 'pluma', de: 'das Nuvens' },
+}
+
+/** As espécies de nome feminino levam "uma" e "a rara" nas falas. */
+const FEMININOS: ReadonlySet<LumiId> = new Set([
+  'pitanga',
+  'ipe',
+  'bolha',
+  'perola',
+  'pluma',
+  'estrelinha',
+])
+
+/** Quantos borrões saem em cada noite em cada ilha. */
 export const BORROES_POR_NOITE = 2
 /** Um borrão em cada `RARO_A_CADA` vira o Lumi raro (o primeiro Lumi de todos é sempre o comum). */
 export const RARO_A_CADA = 5
@@ -63,22 +90,42 @@ function sorteio(texto: string): number {
  * Os borrões de uma noite (pelo dia do jogo): em âncoras diferentes, cada um com o Lumi que vira.
  * `lumis` são os já presos: enquanto nenhum Lumi foi preso, todos viram o comum.
  */
-export function borroesDaNoite(dia: number, lumis: Salvamento['lumis']): BorraoDaNoite[] {
-  const primeiraAncora = Math.floor(sorteio(`ancora:${dia}`) * ANCORAS_DOS_LUMIS)
-  const nenhumAinda = Object.keys(lumis).length === 0
+export function borroesDaNoite(
+  dia: number,
+  lumis: Salvamento['lumis'],
+  ilha: IlhaDosLumis = 'vila-doce',
+): BorraoDaNoite[] {
+  const familia = FAMILIAS_DOS_LUMIS[ilha]
+  // A Vila guarda os ids de antes (sem a ilha), para os presos de uma noite continuarem presos.
+  const prefixo = ilha === 'vila-doce' ? '' : `${ilha}:`
+  const primeiraAncora = Math.floor(sorteio(`${prefixo}ancora:${dia}`) * ANCORAS_DOS_LUMIS)
+  // Enquanto nenhum Lumi da família foi preso, todos viram o comum.
+  const nenhumAinda = !lumis[familia.comum] && !lumis[familia.raro]
   return Array.from({ length: BORROES_POR_NOITE }, (_, i) => {
-    const id = `${dia}:${i}`
+    const id = `${prefixo}${dia}:${i}`
     const raro = !nenhumAinda && sorteio(`raro:${id}`) < 1 / RARO_A_CADA
     return {
       id,
       ancora: (primeiraAncora + i * 2) % ANCORAS_DOS_LUMIS,
-      lumi: raro ? FAMILIA_DA_VILA.raro : FAMILIA_DA_VILA.comum,
+      lumi: raro ? familia.raro : familia.comum,
     }
   })
 }
 
 export function falaDoLumiNovo(lumi: LumiId, quantos: number): string {
   const nome = ESPECIES_DE_LUMI[lumi].nome
+  const ilha = ESPECIES_DE_LUMI[lumi].ilha
+  if (ilha !== 'vila-doce' && ilha !== 'farol') {
+    const { de } = FAMILIAS_DOS_LUMIS[ilha]
+    const a = FEMININOS.has(lumi)
+    if (ESPECIES_DE_LUMI[lumi].raro)
+      return quantos === 1
+        ? `${a ? 'Uma' : 'Um'} ${nome}. É ${a ? 'a rara' : 'o raro'} ${de}, e brilha diferente quando comemora.`
+        : `Mais ${a ? 'uma' : 'um'} ${nome}, ${a ? 'a rara' : 'o raro'} ${de}.`
+    return quantos === 1
+      ? `${a ? 'Uma' : 'Um'} ${nome}. O borrão virou um Lumi ${de}, e já quer ajudar.`
+      : `Mais ${a ? 'uma' : 'um'} ${nome} para a turma ${de}.`
+  }
   if (ESPECIES_DE_LUMI[lumi].raro)
     return quantos === 1
       ? `Um ${nome}. É o raro da Vila: quando ele comemora, o granulado acende.`
@@ -106,14 +153,22 @@ export function prenderBorrao(
  * primeiro Brigadeiro e depois mais Quindins, até as quatro âncoras.
  */
 export function lumisNaVila(lumis: Salvamento['lumis']): { ancora: number; lumi: LumiId }[] {
-  const comuns = lumis[FAMILIA_DA_VILA.comum] ?? 0
-  const raros = lumis[FAMILIA_DA_VILA.raro] ?? 0
+  return lumisNaIlha(lumis, 'vila-doce')
+}
+
+/** Os Lumis presos que moram numa ilha, do mesmo jeito que os da Vila. */
+export function lumisNaIlha(
+  lumis: Salvamento['lumis'],
+  ilha: IlhaDosLumis,
+): { ancora: number; lumi: LumiId }[] {
+  const familia = FAMILIAS_DOS_LUMIS[ilha]
+  const comuns = lumis[familia.comum] ?? 0
+  const raros = lumis[familia.raro] ?? 0
   const fila: LumiId[] = []
-  if (comuns > 0) fila.push(FAMILIA_DA_VILA.comum)
-  if (raros > 0) fila.push(FAMILIA_DA_VILA.raro)
-  for (let i = 1; i < comuns && fila.length < ANCORAS_DOS_LUMIS; i++)
-    fila.push(FAMILIA_DA_VILA.comum)
-  for (let i = 1; i < raros && fila.length < ANCORAS_DOS_LUMIS; i++) fila.push(FAMILIA_DA_VILA.raro)
+  if (comuns > 0) fila.push(familia.comum)
+  if (raros > 0) fila.push(familia.raro)
+  for (let i = 1; i < comuns && fila.length < ANCORAS_DOS_LUMIS; i++) fila.push(familia.comum)
+  for (let i = 1; i < raros && fila.length < ANCORAS_DOS_LUMIS; i++) fila.push(familia.raro)
   return fila.slice(0, ANCORAS_DOS_LUMIS).map((lumi, ancora) => ({ ancora, lumi }))
 }
 
@@ -131,6 +186,19 @@ export function temLanterna(inv: Inventario): boolean {
 /** A lanterna vale só acesa e na mochila. */
 export function comLanterna(acesa: boolean, inv: Inventario): boolean {
   return acesa && temLanterna(inv)
+}
+
+/** A fala do Zappy quando ele entrega a lanterna na primeira noite (a da HUD da proposta). */
+export const FALA_DA_LANTERNA_DO_ZAPPY =
+  'Chegou a noite. Os borrões do Cinza saem pelas ilhas, e a luz desta lanterna prende um. Acenda na mochila.'
+
+/** O Zappy dá a lanterna na primeira noite a quem ainda não tem. */
+export function lanternaDoZappy(s: Salvamento): { salvamento: Salvamento; fala: string } | null {
+  if (temLanterna(s.inventario)) return null
+  return {
+    salvamento: { ...s, inventario: adicionar(s.inventario, ID_DA_LANTERNA) },
+    fala: FALA_DA_LANTERNA_DO_ZAPPY,
+  }
 }
 
 /** O Bento dá a lanterna a quem ainda não tem (de novo, se ela sumir da mochila). */

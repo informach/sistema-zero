@@ -49,6 +49,25 @@ Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
 Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
 lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
 
+## Lumis em todas as ilhas (N01, 30/10/2026)
+
+Cada ilha tem a sua família de Lumis, como pede a proposta: praia (Estrelinha e Búzio), Bosque
+(Pitanga e Ipê), Vila (Quindim e Brigadeiro), Recife (Bolha e Pérola), Pico (Gelinho e Cristal),
+Vale (Ovinho e Brotinho) e Nuvens (Algodão e Pluma). À noite saem dois borrões em cada ilha
+aberta, perto das âncoras `lumi-1` a `lumi-4` (na sua ilha, quatro lugares na beira do gramado,
+entre as pontes, `LUGARES_DOS_LUMIS_DA_PRAIA`). Antes do primeiro Lumi da família, todos viram o
+comum; depois, um em cada cinco vira o raro. Os presos moram na ilha deles e ensinam a rotina
+como os da Vila. A Vila mantém os ids e a chave de presos de antes.
+
+A lanterna aparece na HUD da proposta desde o começo: na primeira noite, o Zappy entrega a
+lanterna a quem ainda não tem ("Chegou a noite. Os borrões do Cinza saem pelas ilhas..."). O
+Bento continua repondo se ela sumir. Escolha mínima, avisada à dona: a proposta não diz quem dá.
+
+Regras em `sistemas/borroes.ts` (`FAMILIAS_DOS_LUMIS`, `borroesDaNoite(dia, lumis, ilha)`,
+`lumisNaIlha`, `lanternaDoZappy`); no mundo, `mundo/borroes-da-ilha.tsx`. Sem mudança no
+salvamento: `lumis` já guardava as 14 espécies. Provas: `tests/lumis-das-ilhas.test.ts` e
+`playground/verificar-lumis-das-ilhas-browser.ts`.
+
 ## Salvamento V19 e os percursos novos (levantamento de 30/10/2026)
 
 A V19 acrescenta, sem consumir itens: três percursos (`praia-pedras`, `recife-corais`,
@@ -1451,7 +1470,7 @@ de mentirinha: ela atende o balcão, sem gastar nada do inventário.
 
 ### 6.15.3 Os borrões da noite e os Lumis da Vila Doce (fase2-06)
 
-Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-vila.tsx` (no mundo),
+Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-ilha.tsx` (no mundo, desde 30/10 em todas as ilhas),
 `personagem/lanterna-na-mao.tsx` (a lanterna acesa na mão). Salvamento V9: `lumis`, quantos de
 cada espécie ela já prendeu.
 

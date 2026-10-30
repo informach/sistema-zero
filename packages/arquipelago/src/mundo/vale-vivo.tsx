@@ -3,6 +3,7 @@ import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { PERCURSO_DAS_PEGADAS } from '../sistemas/percurso'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import { DescobertasDoVale } from './descobertas-do-vale'
 import { FilhoteDoVale } from './filhote-do-vale'
@@ -34,6 +35,10 @@ export function ValeVivo({
 }) {
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ ...centro, y: 0 }), [centro])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
   const pecas = useRef<Group>(null)
   const trilha = useMemo(() => {
     const p = percursoDasPedrasDoVulcao(preparada.colisores, raioMaximoDaIlha(ilha))
@@ -44,6 +49,7 @@ export function ValeVivo({
   })
   return (
     <group ref={pecas} visible={false}>
+      <BorroesDaIlha ilha="vale-dos-dinos" ancoras={lugaresDosLumis} meio={meio} />
       <ComReserva reserva={null}>
         <Jade modelo={preparada.modelo} meio={meio} giro={giro} />
         <DescobertasDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />
