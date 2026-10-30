@@ -47,7 +47,7 @@ o histórico. Apenas a próxima implantação inicia a coleta. Nenhuma data de i
 - [x] Navegador com serviço e componente reais, computador e celular emulado.
 - [x] Suítes, tipagem, Biome, revisão e documentação. QA em
   `docs/qa/2026-10-30-medicao-aparencias/README.md`: API 263, contratos 201, Admin 971 aprovados.
-- [ ] Commit e merge local, sem push.
+- [x] Commit `a0ec519a2`, merge `85ee77ecf` no staging local, sem push.
 
 ## Pedidos de arte
 
