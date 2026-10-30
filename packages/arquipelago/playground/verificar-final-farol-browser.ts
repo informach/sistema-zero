@@ -249,7 +249,18 @@ try {
       await page.screenshot({ path: path.join(prints, `fachos-${tipo}.png`) })
       await page.getByRole('button', { name: 'Voltar para casa', exact: true }).click()
       await etapa('fora')
-      await page.waitForTimeout(2000)
+      // O "Agora" só volta quando o corte da descida termina; com o SwiftShader isso passava
+      // dos 2 s fixos de antes e a leitura saía vazia, com a lista já de volta logo depois.
+      await page
+        .waitForFunction(
+          (esperado) =>
+            JSON.stringify(
+              [...document.querySelectorAll('.arq-agora li')].map((li) => li.textContent ?? ''),
+            ) === esperado,
+          JSON.stringify(pendenciasAntes),
+          { timeout: 30_000 },
+        )
+        .catch(() => {})
       const pendenciasDepois = await page.locator('.arq-agora li').allTextContents()
       if (JSON.stringify(pendenciasAntes) !== JSON.stringify(pendenciasDepois))
         throw new Error(
