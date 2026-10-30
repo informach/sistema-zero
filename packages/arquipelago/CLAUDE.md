@@ -48,7 +48,9 @@ contrato e 64.923 com o catálogo inteiro a 999.
 `QuadroDasCores` recebe `preparada` (ilhas do anel, lugar pela chegada da ponte) ou `lugar`
 (`LugarDoQuadro`). A `IlhaCentral` monta o da sua ilha em `lugarDoQuadroNaSuaIlha()`, na grama ao
 lado da trilha do píer. Na sua ilha as manchas seguem os quadros feitos da lista (não há cor da
-ilha), o painel não diz "Cor de volta" e o aviso do desafio do dia não sai. Conteúdo em
+ilha), o painel não diz "Cor de volta" e o aviso do desafio do dia não sai. O mesmo vale para o
+Farol (C03b): `QuadroDoFarol` monta o cavalete em `lugarDoQuadroNoFarol()` só com
+`farol.concluido`, fora dos lotes da casa, e o painel esconde os quadros vazios. Conteúdo em
 `docs/desafios-do-jogo/sua-ilha/`. Prova: `tests/colisao-da-ilha-central.test.ts` (o colisor do
 cavalete entra na busca de caminho) e `playground/verificar-quadro-da-sua-ilha-browser.ts`.
 

@@ -28,8 +28,8 @@ Não pressupor contadores complexos, grupos, prazo, inimigos ou câmera.
 
 ## Fora deste recorte
 
-- Projeto autoral depois do Farol (C03b): precisa de critérios explícitos verificáveis pelo
-  executor sem cobrar uma resposta pronta; fica para o próximo recorte.
+- Projeto autoral depois do Farol (C03b): feito em seguida, em `docs/desafios-do-jogo/farol/`,
+  com critérios de estrutura e um de execução, sem cobrar resposta pronta.
 - Prova no executor real (`studio-runtime/tests/sua-ilha-browser.test.ts`) roda sozinha, depois
   do C02, pela regra de uma coisa pesada por vez.
 

@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
 import { Matrix4, type Mesh, type Object3D, Quaternion, Raycaster, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { LUGAR_DA_IRIS, PORTA_DO_FINAL } from '../src/mundo/alto-do-farol'
 import {
   ALTURA_QUE_SEGURA,
   ARVORES,
@@ -26,6 +27,7 @@ import { lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import {
   colisoresNoLugar,
   lugarDoQuadroNaSuaIlha,
+  lugarDoQuadroNoFarol,
   QUADRO_DA_SUA_ILHA,
 } from '../src/mundo/lugar-do-quadro'
 import {
@@ -40,6 +42,7 @@ import {
   QUARTO,
   trajetoDaPonte,
 } from '../src/mundo/medidas'
+import { LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from '../src/sistemas/construcao/lote'
 
 const MUNDO = join(import.meta.dir, '..', 'src', 'assets', 'mundo')
 
@@ -137,6 +140,7 @@ beforeAll(async () => {
     ...deslocar([...COLISORES_DO_PIER, ...doPier], GRUPOS.pier),
     ...noCataVento(doCataVento),
     ...(colisoresNoLugar(lugarDoQuadroNaSuaIlha()) as Solido[]),
+    ...(colisoresNoLugar(lugarDoQuadroNoFarol()) as Solido[]),
   ]
 })
 
@@ -397,6 +401,35 @@ describe('dá para andar da porta até tudo', () => {
     for (const ilha of ilhasDoAnel())
       for (const p of trajetoDaPonte(ilha))
         expect(Math.hypot(p.x - lugar.x, p.z - lugar.z)).toBeGreaterThan(3)
+  })
+
+  test('o quadro do Farol (C03b): chega pela frente, longe da porta e da Íris, fora das obras', () => {
+    const lugar = lugarDoQuadroNoFarol()
+    const frente = {
+      x: lugar.x + Math.sin(lugar.giro) * 1.6,
+      z: lugar.z + Math.cos(lugar.giro) * 1.6,
+    }
+    expect(chegaPerto(frente.x, frente.z, 0.6)).toBe(true)
+    expect(chegaPerto(PORTA_DO_FINAL.x, PORTA_DO_FINAL.z, 0.6)).toBe(true)
+    // A porta (raio 2) e a Íris (alcance da conversa) não disputam o "Usar" de quem está na frente.
+    for (const outro of [PORTA_DO_FINAL, LUGAR_DA_IRIS])
+      expect(Math.hypot(outro.x - frente.x, outro.z - frente.z)).toBeGreaterThan(3.5)
+    // As quinas do cavalete (1,3 por 0,4) ficam fora dos dois lotes da casa.
+    const c = Math.cos(lugar.giro)
+    const sn = Math.sin(lugar.giro)
+    for (const lote of [LOTE_DA_CASA, LOTE_DA_CASA_GRANDE]) {
+      const a = lote.area
+      for (const [dx, dz] of [
+        [-0.7, -0.4],
+        [0.7, -0.4],
+        [-0.7, 0.3],
+        [0.7, 0.3],
+      ] as const) {
+        const x = lugar.x + dx * c + dz * sn
+        const z = lugar.z - dx * sn + dz * c
+        expect(x >= a.x0 && x <= a.x1 && z >= a.z0 && z <= a.z1, lote.id).toBe(false)
+      }
+    }
   })
 
   test('a cabeça de cada ponte', () => {

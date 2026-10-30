@@ -2669,6 +2669,16 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
   mancha de cada quadro feito, e o painel mostra "Desafio concluído", nunca "Cor de volta".
 - A sua ilha não dá o aviso do desafio do dia: o cavalete dela está sempre montado, e avisar ali
   seria avisar ao abrir o jogo. O aviso continua ao chegar numa ilha do anel.
+- O painel da sua ilha diz "Sua ilha: n de 6 desafios feitos." e o Zappy comemora "Desafio
+  feito. Olhe a mancha nova no quadro da praia."
+- **O projeto autoral do Farol (C03b):** depois do final (`farol.concluido`) aparece um cavalete
+  do lado oeste do Farol, em (-16; -11), fora dos dois lotes da casa e longe da porta e da Íris,
+  olhando para o Farol (`QUADRO_DO_FAROL`). Ele tem um quadro só, "Meu jogo do Arquipélago"
+  (`docs/desafios-do-jogo/farol/`): critérios explícitos (o guia anda, um encontro, uma
+  informação guardada nele, um Se e uma tecla que recomeça), sem resposta pronta. O painel mostra
+  "Um jogo todo seu, com os critérios na lista. Faça quando quiser." e esconde os quadros vazios.
+  Feito, o Zappy diz "Seu jogo ficou pronto. Ele vai para o fliperama da sua casa." Não pinta nada
+  e não dá o aviso do desafio do dia.
 
 ### 7.12 O desafio do dia
 

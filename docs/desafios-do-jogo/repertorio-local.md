@@ -1,6 +1,6 @@
 # Inventário de repertório dos desafios
 
-Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 60 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
+Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 61 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
 
 Tipos já presentes não provam compreensão, e tipos novos não são a única evidência de mudança: alterar um valor ou uma condição pode manter o mesmo tipo. A prova pedagógica continua sendo o executor com inicial, gabarito e negativos.
 
@@ -68,5 +68,6 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | nuvens | Jardim que floresce: rega forte | retomada-em-blocos | Espaço guarda cinco de água de uma vez. | Nenhum neste recorte | não |
 | nuvens | Jardim que floresce: sol forte | retomada-em-blocos | Com o sol forte, de seis para cima, a flor cresce vinte por segundo; com menos, dez. | Nenhum neste recorte | não |
 | nuvens | Jardim que floresce: chuva | retomada-em-blocos | A cada segundo chove um de água, e a flor cresce sem regar enquanto há sol. | Nenhum neste recorte | não |
+| farol | Meu jogo do Arquipélago | projeto-autoral | A seta para a direita leva o guia pelo palco.; Algo acontece quando o guia encontra outro desenho.; No encontro, o jogo guarda uma informação.; Um Se decide o que acontece.; Uma tecla recomeça o jogo. | Nenhum neste recorte | pedida |
 
 Detalhes de cada público e fonte por bloco: [repertorio-local.json](repertorio-local.json). Nenhuma fonte local comprova que o curso esteja publicado ou concluído. Lacunas não são preenchidas por blocos manuais.

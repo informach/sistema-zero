@@ -10,8 +10,8 @@ import { ManifestoDeDesafiosSchema } from '../src/desafios'
 
 const inventario = inventarioDeRepertorio()
 test('inventário reproduz os arquivos locais sem confundir duas versões com atividades distintas', () => {
-  expect(inventario).toHaveLength(120)
-  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(60)
+  expect(inventario).toHaveLength(122)
+  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(61)
   expect(
     JSON.parse(
       readFileSync(
