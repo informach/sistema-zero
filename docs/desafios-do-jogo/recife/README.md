@@ -134,3 +134,43 @@ A apresentação em celular físico continua pendente. Nenhum desafio foi cadast
 progresso foi alterado.
 
 Complemento L03: [conferência dos cinco quadros](../../qa/2026-10-30-quadros-recife/README.md).
+
+## C02: Mira de bolhas em Python (30/10/2026)
+
+Aplicação na linguagem do Explorador: Python com Pygame Zero, no tema da missão "Resgate dos
+Vagalumes". Arquivos: [Kids](recife-python.manifesto.json) e
+[adulto](recife-python-adulto.manifesto.json), um desafio do dia cada (`publicar: false`, ordem
+70, 10 e 5 moedas, sem cor). Fontes: `python-projetos.ts` (o `main.py`), `python-objetivos.ts` e
+`gerar-manifesto-python.ts`; o ambiente fica em `../ambiente-python.ts`. Plano:
+[C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
+
+Repertório do posto, sem listas e sem classes: a bolha é um `Rect` do Pygame Zero, as três tocas
+saem de um `if/elif` com `random.randint(1, 3)` e tudo é desenhado com `screen.draw`, sem
+imagens. O mar, as tocas, a bolha, o placar e o estado inicial estão prontos. A pessoa completa
+`on_mouse_down`, `sortear_toca` e `update`; `on_key_down` (R) é o extra.
+
+| Objetivo | Como confere | Erro causal recusado |
+| --- | --- | --- |
+| Clique na bolha soma, clique na água não | clique na água, clique na bolha, `resgatados` igual a 1 | conta qualquer clique |
+| A bolha vai para uma toca | clique na bolha, `bolha.y` no máximo 120 | a bolha não muda de lugar |
+| O relógio conta | 1,5 s e `tempo` diminui | relógio parado |
+| O tempo acaba e os cliques param | acerto, 9,5 s (a rodada tem 7) e cliques nas três tocas, `resgatados` igual a 1 | rodada sem fim |
+| Extra: R recomeça | acerto, R e clique na areia, `resgatados` igual a 1 | R sem voltar a bolha |
+
+Executor real (`packages/studio-runtime/tests/desafios-python-smoke.ts`): a imagem de produção do
+studio-runtime roda `python-mission.mjs` sem rede, com a distribuição construída do vendor
+verificado; o retrato sai do `preparePythonExecutionSnapshot` e o julgamento é o
+`judgePythonProjectExecution`, os mesmos do `PythonProjectCheckerService`. Em 30/10: 9 execuções e
+25 objetivos, todas com o programa saudável (`status: passed`, sem erros). O gabarito passa nos 5
+(Kids e adulto), o inicial reprova os 5 (Kids e adulto) e cada um dos cinco erros reprova o
+objetivo que quebra.
+
+```powershell
+bun docs/desafios-do-jogo/recife/gerar-manifesto-python.ts
+bun test docs/desafios-do-jogo/recife/recife-python.test.ts
+$env:STUDIO_PYTHON_TEST_IMAGE='<imagem do studio-runtime com o validation-profile atual>'
+bun packages/studio-runtime/tests/desafios-python-smoke.ts --ilha=recife
+```
+
+Limites: a release Python apontada é a da prova (nenhum ambiente publicado tem Pygame Zero); o
+Estúdio de desafio do jogo ainda não abre Python. Ver `../conteudo-por-posto.md`, seção C02.

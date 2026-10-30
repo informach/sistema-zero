@@ -64,9 +64,15 @@ export function ArquipelagoChallengeDialog({
     void (async () => {
       const saved = await adapter.load(scope.projectId)
       const project = saved ?? (await prepareProjectForHost(desafio.projetoInicial))
-      if (!project || project.programmingLanguage === 'python' || project.kind === 'pro') {
+      if (!project)
         throw new Error('O projeto inicial deste desafio não é compatível com o Estúdio em blocos.')
-      }
+      // C02 (30/10/2026): o Members já confere Python e Pro, mas o Python precisa de um contexto
+      // de runtime que só existe em aulas e salas, e o Pro de um build. Até isso existir aqui,
+      // esses desafios não abrem no jogo (e ficam fora da publicação).
+      if (project.programmingLanguage === 'python' || project.kind === 'pro')
+        throw new Error(
+          'Este desafio usa Python ou o Pro, que ainda não abrem dentro do jogo. Seu progresso continua igual.',
+        )
       if (active) {
         setPrepared({ project: { ...project, id: scope.projectId, name: desafio.titulo }, adapter })
         setStale(desafio.ultimosResultados.length > 0)
@@ -188,7 +194,7 @@ export function ArquipelagoChallengeDialog({
             ref={handle}
             initialProject={prepared.project}
             persistence={prepared.adapter}
-            initialMode="blocks"
+            initialMode={prepared.project.mode === 'bridge' ? 'bridge' : 'blocks'}
             allowedModes={['blocks', 'bridge']}
             level="avancado-3d"
             grantedBlockIds={desafio.blocosPermitidos ?? undefined}

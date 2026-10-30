@@ -3,16 +3,123 @@ import {
   isExecutionRule,
   type SectionJavaScriptProjectCheck,
   type SectionObjectiveRule,
+  type SectionProjectCheck,
+  type SectionPythonProjectCheck,
 } from '@sistemazero/core/learning'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
-import { challengeRule } from '@/lib/game-challenge-authoring'
+import { challengeProjectLanguage, challengeRule } from '@/lib/game-challenge-authoring'
 import { ExecutionRuleEditor } from './execution-rule-editor'
 import { ProjectRuleEditor } from './project-rule-editor'
+import { PythonSectionObjectives } from './python-section-objectives'
 import { ScriptRuleEditor } from './script-rule-editor'
 
+/**
+ * Os objetivos do desafio. Com o gabarito Python (C02, 30/10/2026), o mesmo editor dos objetivos
+ * Python das aulas, com o perfil do ambiente do gabarito; senão, o editor JavaScript de sempre.
+ */
 export function GameObjectivesEditor({
+  value,
+  onChange,
+  gabarito,
+}: {
+  value: SectionProjectCheck[]
+  onChange(value: SectionProjectCheck[]): void
+  gabarito: unknown
+}) {
+  if (challengeProjectLanguage(gabarito) === 'python')
+    return <PythonGameObjectives value={value} onChange={onChange} gabarito={gabarito} />
+  const outros = value.filter((c) => c.programmingLanguage === 'python')
+  if (outros.length)
+    return (
+      <OtherEnvironment
+        texto="Os objetivos guardados são Python, mas o gabarito é JavaScript."
+        onClear={() => onChange([])}
+      />
+    )
+  return (
+    <JavaScriptGameObjectives
+      value={value as SectionJavaScriptProjectCheck[]}
+      onChange={onChange}
+      gabarito={gabarito}
+    />
+  )
+}
+
+function OtherEnvironment({ texto, onClear }: { texto: string; onClear(): void }) {
+  return (
+    <div role="alert" className="space-y-2 text-sm">
+      <p>{texto} Limpe-os para configurar os objetivos deste projeto.</p>
+      <Button type="button" variant="outline" onClick={onClear}>
+        Limpar objetivos de outro ambiente
+      </Button>
+    </div>
+  )
+}
+
+function PythonGameObjectives({
+  value,
+  onChange,
+  gabarito,
+}: {
+  value: SectionProjectCheck[]
+  onChange(value: SectionProjectCheck[]): void
+  gabarito: unknown
+}) {
+  const lido = StudioProjectDocumentSchema.safeParse(gabarito)
+  const perfil =
+    lido.success && lido.data.programmingLanguage === 'python'
+      ? lido.data.runtime.profileId
+      : undefined
+  const python = value.filter(
+    (c): c is SectionPythonProjectCheck => c.programmingLanguage === 'python',
+  )
+  if (python.length !== value.length || python.some((c) => c.profileId !== perfil))
+    return (
+      <OtherEnvironment
+        texto="Os objetivos guardados não usam o ambiente Python deste gabarito."
+        onClear={() => onChange([])}
+      />
+    )
+  return (
+    <div className="space-y-4">
+      {!perfil && (
+        <p role="alert" className="text-sm text-destructive">
+          O gabarito Python não é um projeto válido do Estúdio. Troque-o pelo manifesto.
+        </p>
+      )}
+      <PythonSectionObjectives checks={python} project={gabarito} onChange={onChange} />
+      <Button
+        type="button"
+        variant="outline"
+        disabled={!perfil || value.length >= 20}
+        onClick={() =>
+          perfil &&
+          onChange([
+            ...python,
+            {
+              id: crypto.randomUUID(),
+              label: '',
+              programmingLanguage: 'python',
+              profileId: perfil,
+              rule: {
+                type: 'behavior',
+                steps: [],
+                expect: { target: { kind: 'console' }, compare: 'contains', value: 'Olá' },
+              },
+            },
+          ])
+        }
+      >
+        Adicionar objetivo Python
+      </Button>
+    </div>
+  )
+}
+
+function JavaScriptGameObjectives({
   value,
   onChange,
   gabarito,
@@ -27,6 +134,11 @@ export function GameObjectivesEditor({
   function rule(index: number, next: SectionObjectiveRule) {
     update(index, { rule: next })
   }
+  // C02: com o gabarito Pro, a função e o valor conferidos moram num arquivo do projeto.
+  const pro =
+    typeof gabarito === 'object' &&
+    gabarito !== null &&
+    (gabarito as { kind?: unknown }).kind === 'pro'
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
@@ -78,7 +190,7 @@ export function GameObjectivesEditor({
             <ScriptRuleEditor
               rule={check.rule}
               index={index}
-              isPro={false}
+              isPro={pro}
               isKit={false}
               onChange={(r) => rule(index, r)}
             />
@@ -86,7 +198,7 @@ export function GameObjectivesEditor({
             <ExecutionRuleEditor
               rule={check.rule}
               index={index}
-              isPro={false}
+              isPro={pro}
               isKit={false}
               onChange={(r) => rule(index, r)}
             />

@@ -1,4 +1,4 @@
-import { ValidationError } from '@sistemazero/core/errors'
+import { DomainError, ValidationError } from '@sistemazero/core/errors'
 import {
   EXECUTION_LIMITS,
   executionProjectChecks,
@@ -10,8 +10,13 @@ import {
   projectObjectiveView,
   type SectionExecutionRule,
   type SectionJavaScriptProjectCheck,
+  type SectionProjectCheck,
+  type SectionPythonProjectCheck,
   sectionProjectChecksEnvironmentIssue,
 } from '@sistemazero/core/learning'
+import type { StudioProjectCuration } from '@sistemazero/core/studio/project-capabilities'
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { ProjectDocumentError, projectBlockTypes } from '@sistemazero/studio/project-document'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
@@ -24,6 +29,7 @@ import {
   ProjectCheckUnavailableError,
   StudioProjectSyncingError,
 } from '../../domain/learning/learning.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../../domain/studio/python-project-check.errors'
 import type { SectionProgressionService } from '../learning/section-progression.service'
 import { blocosACompletar } from './blocos-a-completar'
 
@@ -33,6 +39,11 @@ import { blocosACompletar } from './blocos-a-completar'
  * estrutura no members, execução no executor, sem captura (o cache do executor vale) e sem guardar
  * nada. Os formatos de resposta são o `AnaliseDosMembrosSchema` e o `VerificacaoDosMembrosSchema`
  * de `arquipelago-contracts/src/membros.ts` (o Members não importa o contrato).
+ *
+ * C02 (30/10/2026): além dos projetos JavaScript em blocos, valem o JavaScript em texto (Ponte,
+ * que é o mesmo projeto clássico), o JavaScript Pro (o executor recebe o modelo do projeto
+ * inicial) e o Python clássico (o `PythonProjectCheckerService` das aulas, por
+ * `evaluatePythonObjectives`). Python Pro continua recusado.
  */
 
 /** Os desafios aceitam até 20 objetivos, e no máximo 8 deles rodam o jogo (o mesmo teto da parte). */
@@ -53,8 +64,19 @@ export interface ObjetivoRecebido {
   hint?: string
   optional?: true
   programmingLanguage?: string
+  /** Só Python: o perfil do ambiente do projeto inicial. */
+  profileId?: string
+  /** Só Python: as linhas de entrada de um objetivo que roda o programa. */
+  stdin?: string[]
   rule: Record<string, unknown>
 }
+
+/**
+ * A curadoria do desafio Python. Na aula ela vem do bloco de Estúdio; o desafio não tem bloco, e
+ * o que a criança alcança já foi decidido pelo jogo (ilha aberta). Vazia = os modos e extensões que
+ * a release aprovada oferece; a política de runtime continua conferindo release, modo e extensões.
+ */
+export const CURADORIA_DO_DESAFIO_PYTHON: StudioProjectCuration = Object.freeze({})
 
 export interface ProblemaDaAnalise {
   codigo: string
@@ -89,6 +111,27 @@ function tipoDoProjeto(projeto: Projeto): 'classic' | 'pro' {
   return projeto.kind === 'pro' ? 'pro' : 'classic'
 }
 
+function linguagemDoProjeto(projeto: Projeto): 'javascript' | 'python' {
+  return projeto.programmingLanguage === 'python' ? 'python' : 'javascript'
+}
+
+function modeloPro(projeto: Projeto): unknown {
+  const meta = projeto.proMeta
+  return meta !== null && typeof meta === 'object'
+    ? (meta as { templateId?: unknown }).templateId
+    : undefined
+}
+
+/** Só o JavaScript clássico tem blocos do catálogo do servidor (Python e Pro não). */
+function temBlocos(projeto: Projeto): boolean {
+  return linguagemDoProjeto(projeto) === 'javascript' && tipoDoProjeto(projeto) === 'classic'
+}
+
+const ehPython = (check: SectionProjectCheck): check is SectionPythonProjectCheck =>
+  check.programmingLanguage === 'python'
+const ehJavaScript = (check: SectionProjectCheck): check is SectionJavaScriptProjectCheck =>
+  check.programmingLanguage !== 'python'
+
 /** Cópia limitada do projeto (a mesma das entregas das aulas); `undefined` = inválido ou grande. */
 function copiarProjeto(valor: unknown): Projeto | undefined {
   let copia: unknown
@@ -104,8 +147,12 @@ function copiarProjeto(valor: unknown): Projeto | undefined {
   return copia as Projeto
 }
 
-/** O objetivo só com os campos do `SectionProjectCheck` JavaScript, se a regra for válida. */
-function objetivoValido(objetivo: ObjetivoRecebido): SectionJavaScriptProjectCheck | undefined {
+/** O objetivo só com os campos do `SectionProjectCheck` (JavaScript ou Python), se for válido. */
+function objetivoValido(objetivo: ObjetivoRecebido): SectionProjectCheck | undefined {
+  const python = objetivo.programmingLanguage === 'python'
+  // Perfil e entradas fora do Python não têm sentido: o objetivo é recusado, não aparado.
+  if (!python && (objetivo.profileId !== undefined || objetivo.stdin !== undefined))
+    return undefined
   const check = {
     id: objetivo.id,
     label: objetivo.label,
@@ -115,11 +162,12 @@ function objetivoValido(objetivo: ObjetivoRecebido): SectionJavaScriptProjectChe
       : { programmingLanguage: objetivo.programmingLanguage }),
     ...(objetivo.hint ? { hint: objetivo.hint } : {}),
     ...(objetivo.optional ? { optional: true as const } : {}),
+    ...(objetivo.profileId === undefined ? {} : { profileId: objetivo.profileId }),
+    ...(objetivo.stdin === undefined ? {} : { stdin: objetivo.stdin }),
   }
   const completion = { version: 1 as const, blockIds: [], projectChecks: [check] }
   if (!isSectionCompletion(completion)) return undefined
-  const [validado] = completion.projectChecks ?? []
-  return validado?.programmingLanguage === 'python' ? undefined : validado
+  return completion.projectChecks?.[0]
 }
 
 function aspas(texto: string) {
@@ -129,7 +177,10 @@ function aspas(texto: string) {
 export class ArquipelagoObjectivesService {
   constructor(
     private readonly deps: {
-      verificador: Pick<SectionProgressionService, 'evaluateObjectives'>
+      verificador: Pick<
+        SectionProgressionService,
+        'evaluateObjectives' | 'evaluatePythonObjectives'
+      >
     },
   ) {}
 
@@ -167,13 +218,15 @@ export class ArquipelagoObjectivesService {
         impede(codigo, `${nome} é inválido ou grande demais.`)
         return undefined
       }
-      if (tipoDoProjeto(projeto) === 'pro')
-        impede('PROJETO_PRO', `${nome} é do Pro: os desafios do jogo usam só projetos de blocos.`)
-      else if (projeto.programmingLanguage === 'python')
-        impede(
-          'PROJETO_PYTHON',
-          `${nome} é Python: os desafios do jogo usam só projetos de blocos (JavaScript).`,
-        )
+      if (linguagemDoProjeto(projeto) === 'python') {
+        if (tipoDoProjeto(projeto) === 'pro')
+          impede(
+            'PROJETO_PYTHON_PRO',
+            `${nome} é Python Pro: os desafios do jogo aceitam Python clássico e JavaScript (blocos, Ponte ou Pro).`,
+          )
+        else if (!StudioProjectDocumentSchema.safeParse(projeto).success)
+          impede(codigo, `${nome} não é um projeto Python válido do Estúdio.`)
+      }
       if (projeto.bridgeCodeAhead)
         impede(
           'PROJETO_SINCRONIZANDO',
@@ -187,6 +240,23 @@ export class ArquipelagoObjectivesService {
       'PROJETO_INICIAL_INVALIDO',
     )
     const gabarito = lerProjeto(input.gabarito, 'O gabarito', 'GABARITO_INVALIDO')
+    const python = inicial !== undefined && linguagemDoProjeto(inicial) === 'python'
+    if (inicial && gabarito) {
+      // O gabarito prova o desafio só no mesmo ambiente que a criança vai receber.
+      const outroTipo =
+        linguagemDoProjeto(inicial) !== linguagemDoProjeto(gabarito) ||
+        tipoDoProjeto(inicial) !== tipoDoProjeto(gabarito)
+      const outroAmbiente =
+        !outroTipo &&
+        (python
+          ? studioProjectContinuityIssue(gabarito, inicial) !== null
+          : tipoDoProjeto(inicial) === 'pro' && modeloPro(inicial) !== modeloPro(gabarito))
+      if (outroTipo || outroAmbiente)
+        impede(
+          'GABARITO_DE_OUTRO_AMBIENTE',
+          'O gabarito usa outra linguagem, outro tipo de projeto, outra release Python ou outro modelo Pro que o projeto inicial.',
+        )
+    }
 
     // ── Os objetivos ──
     if (input.objetivos.length === 0) impede('SEM_OBJETIVOS', 'O desafio precisa de um objetivo.')
@@ -196,7 +266,7 @@ export class ArquipelagoObjectivesService {
         `O desafio tem ${input.objetivos.length} objetivos; o limite é ${LIMITES_DOS_OBJETIVOS.objetivos}.`,
       )
     const vistos = new Set<string>()
-    const validos: SectionJavaScriptProjectCheck[] = []
+    const validos: SectionProjectCheck[] = []
     for (const objetivo of input.objetivos) {
       if (vistos.has(objetivo.id)) {
         impede(
@@ -207,14 +277,6 @@ export class ArquipelagoObjectivesService {
         continue
       }
       vistos.add(objetivo.id)
-      if (objetivo.programmingLanguage === 'python') {
-        impede(
-          'OBJETIVO_PYTHON',
-          `${aspas(objetivo.label)}: objetivos em Python ainda não valem nos desafios do jogo. Use objetivos de blocos (JavaScript).`,
-          objetivo.id,
-        )
-        continue
-      }
       const valido = objetivoValido(objetivo)
       if (!valido) {
         impede(
@@ -242,14 +304,19 @@ export class ArquipelagoObjectivesService {
     if (inicial && validos.length) {
       const ambiente = sectionProjectChecksEnvironmentIssue(validos, inicial)
       if (ambiente) impede('AMBIENTE', ambiente)
+      // A régua de autoria das aulas é do JavaScript; o Python foi conferido acima
+      // (`validateSectionPythonProjectChecks`, dentro da conferência do ambiente).
       const autoria = projectCheckAuthoring({ initialProject: inicial })
       for (const check of validos)
-        for (const mensagem of autoria.issues(check.rule))
-          impede('REGRA_INVALIDA', `${aspas(check.label)}: ${mensagem}`, check.id)
-      const espera = queRodam.reduce(
-        (soma, check) => soma + executionRuleBudgetMs(check.rule as SectionExecutionRule),
-        0,
-      )
+        if (!ehPython(check))
+          for (const mensagem of autoria.issues(check.rule))
+            impede('REGRA_INVALIDA', `${aspas(check.label)}: ${mensagem}`, check.id)
+      const espera = queRodam
+        .filter((check) => !ehPython(check))
+        .reduce(
+          (soma, check) => soma + executionRuleBudgetMs(check.rule as SectionExecutionRule),
+          0,
+        )
       if (espera > EXECUTION_LIMITS.maxSectionWaitMs)
         impede(
           'ESPERA_DEMAIS',
@@ -259,7 +326,7 @@ export class ArquipelagoObjectivesService {
 
     // ── Os blocos do gabarito ──
     const tipos = (projeto: Projeto | undefined, nome: string, codigo: string) => {
-      if (!projeto) return []
+      if (!projeto || !temBlocos(projeto)) return []
       try {
         return projectBlockTypes(projeto.blocksState)
       } catch (error) {
@@ -271,7 +338,7 @@ export class ArquipelagoObjectivesService {
     const doGabarito = tipos(gabarito, 'O gabarito', 'GABARITO_INVALIDO')
     const doInicial = tipos(inicial, 'O projeto inicial', 'PROJETO_INICIAL_INVALIDO')
     let alterados: string[] = []
-    if (inicial && gabarito && podeConferir) {
+    if (inicial && gabarito && podeConferir && temBlocos(inicial) && temBlocos(gabarito)) {
       try {
         alterados = blocosACompletar(inicial.blocksState, gabarito.blocksState)
       } catch (error) {
@@ -298,8 +365,35 @@ export class ArquipelagoObjectivesService {
     // ── O gabarito e o inicial no verificador das aulas ──
     // `null` = não deu para conferir (executor fora): sai como `passou: false`, sem acusar o gabarito.
     let executorFora = false
+    const conferirPython = async (projeto: Projeto): Promise<Map<string, boolean | null>> => {
+      const semResposta = () => new Map<string, boolean | null>(validos.map((c) => [c.id, null]))
+      if (executorFora) return semResposta()
+      try {
+        const avaliado = await this.deps.verificador.evaluatePythonObjectives({
+          checks: validos.filter(ehPython),
+          project: projeto,
+          userId: REQUISITANTE_DA_ANALISE,
+          accountId: REQUISITANTE_DA_ANALISE,
+          curation: CURADORIA_DO_DESAFIO_PYTHON,
+        })
+        return new Map(avaliado.results.map((resultado) => [resultado.id, resultado.passed]))
+      } catch (error) {
+        if (error instanceof StudioPythonProjectCheckUnavailableError) {
+          problema(
+            'EXECUTOR_INDISPONIVEL',
+            'Não consegui rodar o programa Python para conferir os objetivos. Analise de novo em instantes; nada foi aprovado.',
+          )
+          executorFora = true
+        } else if (error instanceof DomainError)
+          problema('PYTHON_RECUSOU', `O ambiente Python recusou o teste: ${error.message}`)
+        else throw error
+        return semResposta()
+      }
+    }
     const conferir = async (projeto: Projeto) => {
-      const estrutura = validos.filter((check) => !isExecutionRule(check.rule))
+      if (python) return conferirPython(projeto)
+      const javascript = validos.filter(ehJavaScript)
+      const estrutura = javascript.filter((check) => !isExecutionRule(check.rule))
       const avaliar = async (checks: SectionJavaScriptProjectCheck[]) =>
         new Map(
           (
@@ -313,10 +407,10 @@ export class ArquipelagoObjectivesService {
           ).results.map((resultado) => [resultado.id, resultado.passed]),
         )
       const comExecucao = async (): Promise<Map<string, boolean | null>> => {
-        if (!queRodam.length) return avaliar(validos)
+        if (!queRodam.length) return avaliar(javascript)
         if (!executorFora) {
           try {
-            return await avaliar(validos)
+            return await avaliar(javascript)
           } catch (error) {
             if (error instanceof ProjectCheckRejectedError)
               problema(
@@ -396,8 +490,6 @@ export class ArquipelagoObjectivesService {
     if (!projeto) throw new ValidationError('Projeto inválido ou muito grande.')
     const inicial = copiarProjeto(input.projetoInicial)
     if (!inicial) throw new ValidationError('O projeto inicial do desafio é inválido.')
-    if (input.objetivos.some((objetivo) => objetivo.programmingLanguage === 'python'))
-      throw new ValidationError('Os desafios do jogo só conferem objetivos de blocos (JavaScript).')
     const checks = input.objetivos.map(objetivoValido)
     const completion = { version: 1 as const, blockIds: [], projectChecks: checks }
     if (
@@ -406,18 +498,50 @@ export class ArquipelagoObjectivesService {
       !isSectionCompletion(completion)
     )
       throw new ValidationError('Os objetivos do desafio têm valores inválidos.')
-    const validos = checks as SectionJavaScriptProjectCheck[]
-    if (tipoDoProjeto(inicial) === 'pro')
-      throw new ValidationError('Os desafios do jogo não conferem projetos Pro.')
-    if (tipoDoProjeto(inicial) !== tipoDoProjeto(projeto))
+    const validos = checks as SectionProjectCheck[]
+    const python = linguagemDoProjeto(inicial) === 'python'
+    if (python && tipoDoProjeto(inicial) === 'pro')
+      throw new ValidationError('Os desafios do jogo não conferem projetos Python Pro.')
+    if (
+      linguagemDoProjeto(inicial) !== linguagemDoProjeto(projeto) ||
+      tipoDoProjeto(inicial) !== tipoDoProjeto(projeto) ||
+      (python && studioProjectContinuityIssue(projeto, inicial) !== null)
+    )
       throw new ValidationError('Este projeto não é do tipo deste desafio.')
+    if (tipoDoProjeto(inicial) === 'pro' && modeloPro(inicial) !== modeloPro(projeto))
+      throw new ValidationError('Este projeto usa outro modelo Pro que o deste desafio.')
     if (projeto.bridgeCodeAhead) throw new StudioProjectSyncingError()
     const ambiente =
       sectionProjectChecksEnvironmentIssue(validos, inicial) ??
       sectionProjectChecksEnvironmentIssue(validos, projeto)
     if (ambiente) throw new ValidationError(ambiente)
+    if (python) {
+      let avaliadoPython: Awaited<ReturnType<SectionProgressionService['evaluatePythonObjectives']>>
+      try {
+        avaliadoPython = await this.deps.verificador.evaluatePythonObjectives({
+          checks: validos.filter(ehPython),
+          project: projeto,
+          userId: input.requester,
+          accountId: input.requester,
+          curation: CURADORIA_DO_DESAFIO_PYTHON,
+        })
+      } catch (error) {
+        // Política de runtime (release, modo, extensão) recusada vira projeto recusado, nunca 5xx.
+        if (
+          error instanceof DomainError &&
+          !(error instanceof StudioPythonProjectCheckUnavailableError) &&
+          !(error instanceof ValidationError)
+        )
+          throw new ValidationError(error.message)
+        throw error
+      }
+      return {
+        passou: avaliadoPython.passed,
+        resultados: avaliadoPython.results.map((r) => ({ id: r.id, passou: r.passed })),
+      }
+    }
     const avaliado = await this.deps.verificador.evaluateObjectives({
-      checks: validos,
+      checks: validos.filter(ehJavaScript),
       project: projeto,
       initialProject: inicial,
       requester: input.requester,

@@ -122,8 +122,9 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   `false`, então o cache de 10 min do executor vale). Nada é guardado. Corpo até 4 MB
   (`ARQUIPELAGO_OBJECTIVES_BODY_BYTES` no `bodyLimitForPath`: são dois projetos).
   - `POST /objetivos/analisar` `{audience, projetoInicial, gabarito, objetivos}` →
-    `AnaliseDosMembrosSchema`. Só corpo malformado é 400; o resto vira `problemas`: Python
-    (`OBJETIVO_PYTHON`/`PROJETO_PYTHON`), Pro (`PROJETO_PRO`), `bridgeCodeAhead`
+    `AnaliseDosMembrosSchema`. Só corpo malformado é 400; o resto vira `problemas`: Python Pro
+    (`PROJETO_PYTHON_PRO`), gabarito em outro ambiente (`GABARITO_DE_OUTRO_AMBIENTE`: outra
+    linguagem ou tipo, outra release Python ou outro modelo Pro), `bridgeCodeAhead`
     (`PROJETO_SINCRONIZANDO`), mais de 20 objetivos ou de 8 que rodam o jogo, regra inválida
     (`isSectionCompletion`), a régua da publicação das aulas com o inicial do desafio
     (`sectionProjectChecksEnvironmentIssue`, `projectCheckAuthoring({initialProject}).issues`,
@@ -138,11 +139,23 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
     é um só (`arquipelago-admin`).
   - `POST /objetivos/verificar` `{requester, audience, objetivos, projetoInicial, projeto}` →
     `{passou, resultados}` (`passou` = todos os obrigatórios; sem obrigatório, `false`). Projeto
-    copiado como nas entregas (`copyStudioProjectJson` + `MAX_STUDIO_PROJECT_CHARS`), tipo igual
-    ao do inicial e nunca Pro (400 `VALIDATION_ERROR`), `bridgeCodeAhead` 409
-    `STUDIO_PROJECT_SYNCING`, recusa do executor 400 `PROJECT_CHECK_REJECTED`, executor fora (ou
-    análise incompleta) 424, ocupado 429 `PROJECT_CHECK_BUSY`. O `requester` (quem joga) é o
-    limite por pessoa do executor.
+    copiado como nas entregas (`copyStudioProjectJson` + `MAX_STUDIO_PROJECT_CHARS`), linguagem e
+    tipo iguais aos do inicial, mesmo modelo Pro e, no Python, mesma continuidade de ambiente
+    (`studioProjectContinuityIssue`); Python Pro recusado (400 `VALIDATION_ERROR`),
+    `bridgeCodeAhead` 409 `STUDIO_PROJECT_SYNCING`, recusa do executor 400
+    `PROJECT_CHECK_REJECTED`, executor fora (ou análise incompleta, ou o Python fora:
+    `STUDIO_PYTHON_PROJECT_CHECK_UNAVAILABLE`) 424, ocupado 429 `PROJECT_CHECK_BUSY`. O
+    `requester` (quem joga) é o limite por pessoa do executor.
+  - **C02 (30/10/2026): Python, JavaScript em texto e Pro.** Python clássico vai ao
+    `SectionProgressionService.evaluatePythonObjectives` (o MESMO `PythonProjectCheckerService.grade`
+    do "Verificar esta parte", sem vínculo de aula) com `CURADORIA_DO_DESAFIO_PYTHON` (vazia: a
+    política de runtime confere release, modo e extensões; o projeto precisa de uma release do
+    catálogo do ambiente). Erro de política vira `PYTHON_RECUSOU` na análise e 400 na
+    verificação. Python e Pro não derivam blocos (o catálogo do servidor não tem blocos Python e o
+    Pro não tem blocos). O JavaScript em texto é o clássico na Ponte, sem mudança. A rota guarda
+    `profileId` e `stdin` do objetivo (o `z.object` os descartava). Testes:
+    `tests/unit/arquipelago-objectives-c02.test.ts` e `tests/unit/arquipelago-c02-pacotes.test.ts`
+    (os quatro pacotes de `docs/desafios-do-jogo` pela análise de verdade).
   - Testes: `tests/unit/arquipelago-objectives.service.test.ts` (verificador de verdade, executor
     falso, saídas conferidas contra o contrato lido PELO CAMINHO) e as rotas em
     `tests/arquipelago-internal.routes.test.ts`.

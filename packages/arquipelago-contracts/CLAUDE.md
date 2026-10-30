@@ -215,7 +215,11 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   visões da pessoa são estritas: gabarito e regra nunca saem. Desafio do dia (28/10/2026):
   `MOEDAS_PADRAO_POR_TIPO` (10 e 5), `corPermitida` (a cor é sempre falsa, obrigada por `refine`
   em `CriarDesafioSchema`, `GravarDesafioSchema` e `DesafioDoManifestoSchema`) e o campo opcional
-  `doDia: { id, dia, feito } | null` em `DesafiosDoJogadorSchema`.
+  `doDia: { id, dia, feito } | null` em `DesafiosDoJogadorSchema`. C02 (30/10/2026):
+  `ObjetivoDoDesafioSchema` é a união de `ObjetivoJavaScriptDoDesafioSchema` (como antes) e
+  `ObjetivoPythonDoDesafioSchema` (`programmingLanguage: 'python'`, `profileId` e `stdin` até 4
+  linhas, o `SectionPythonProjectCheck` das aulas). Perfil e entradas fora do Python são
+  recusados. A regra continua opaca: o Members confere. Teste: `tests/desafios-python.test.ts`.
 - `aprenda.ts`: "Aprenda isso em", blocos exigidos e a cobertura dos blocos pelos cursos.
 - `cartas-lumi.ts`: os 14 cartões da rotina dos Lumis e o bloco que libera cada cartão de controle.
 - `rotinas.ts` (fase2-07): a rotina de um Lumi como árvore de cartões (`CartaoDaRotinaSchema`, o
