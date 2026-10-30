@@ -70,7 +70,7 @@ describe.skipIf(!url)('DrizzleRepositorioDaFamilia (Postgres real)', () => {
     await conexao?.close()
   })
   beforeEach(async () => {
-    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.perfis_da_conta, arquipelago.permissoes_da_familia, arquipelago.sessoes_de_tempo`
+    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.perfis_da_conta, arquipelago.permissoes_da_familia, arquipelago.sessoes_de_tempo cascade`
   })
 
   const guardar = (jogadorId: string, contaId: string | null, revisaoBase = 0) =>
