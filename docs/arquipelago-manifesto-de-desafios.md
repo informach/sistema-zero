@@ -38,6 +38,17 @@ Admin lista os desafios do cadastro que o arquivo não traz. Se quiser tirá-los
 
 ## Publicar
 
+Desde C01a (30/10/2026), a cobertura é requisito de publicação, não só aviso. Cada bloco exigido
+precisa existir e ter curso publicado naquela comunidade até o posto da ilha. No Quadro das
+Cores, ao menos uma fonte deve ser base 2D, base 3D ou missão. Poder, extra e Maestria podem
+ensinar o mesmo bloco, mas não podem ser a única opção de quem quer completar os quadros.
+Uma atividade que depende de Poder escolhido pode ser desafio opcional, com o curso indicado.
+Não use ajustes manuais de blocos para esconder uma lacuna de ensino.
+
+Chegar ao posto abre a ilha, não concede os blocos de seus cursos. A pessoa continua precisando
+do repertório realmente conquistado para abrir o desafio. A reativação de uma publicação
+arquivada confere sua cobertura atual também. Não remove conquistas anteriores.
+
 Com `"publicar": true`, o desafio sai publicado quando a análise não acusa problema. Com problema,
 ele é gravado e fica em rascunho, e a linha mostra o motivo. Sem `publicar` (ou com `false`), o
 desafio fica em rascunho. Um desafio que já estava publicado continua publicado na versão
