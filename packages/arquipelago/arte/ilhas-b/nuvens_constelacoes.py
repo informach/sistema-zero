@@ -253,8 +253,7 @@ def exportar_tudo(pid, nos, filhos, ancoras, colisores):
         rel = {}
     rel[pid] = {'triangulos': tris, 'kb': round(kb, 1), 'nos': por_no, 'ancoras': anc, 'clipes': [], 'colisores': grupos}
     with open(RELATORIO_B, 'w') as f:
-        json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
-        f.write('\n')
+        f.write(json_como_biome(ordenado(rel)) + '\n')
     return path
 
 

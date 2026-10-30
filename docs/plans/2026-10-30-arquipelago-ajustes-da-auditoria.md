@@ -92,6 +92,7 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | --- | --- | --- | --- |
 | Organização | Plano registrado | A registrar no primeiro lote | Auditoria e QA preservados; desenho aceito pela instrução da dona |
 | A01 | Em execução | Ainda sem commit de código | Reprodução da falha já feita durante a auditoria |
+| A05, parte A9 | Feito pela sessão de arte (30/10) | Commit "relatórios da arte no formato do Biome" | `json_como_biome` em `arte/mundo/lib_mundo.py`; `lib_ilhas`, `lib_ilhas_b` e `nuvens_constelacoes` gravam o relatório já formatado; os dois `relatorio.json` passam no Biome com o mesmo conteúdo |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
 ## Pedidos de arte

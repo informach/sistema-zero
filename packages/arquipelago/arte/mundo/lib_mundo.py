@@ -371,6 +371,49 @@ def col_no_chao(base, x, z, r, alto, fundo=0.25):
     return col_cilindro(base, r, alto + fundo, no_chao(x, z, (alto - fundo) / 2))
 
 
+def json_como_biome(v, nivel=0, prefixo=0):
+    """JSON no formato do biome do repositório (2 espaços, listas curtas numa linha só, até 100
+    colunas): o relatório sai já formatado e o lint não acusa diferença a cada exportação. A mesma
+    conta do `lib_itens`; as chaves dos objetos saem na ordem de `v` (ordene antes, se precisar)."""
+    pad = '  ' * nivel
+    if isinstance(v, dict):
+        if not v:
+            return '{}'
+        linhas = []
+        for i, (k, x) in enumerate(v.items()):
+            chave = json.dumps(k, ensure_ascii=False) + ': '
+            fim = ',' if i < len(v) - 1 else ''
+            linhas.append(pad + '  ' + chave + json_como_biome(x, nivel + 1, len(pad) + 2 + len(chave)) + fim)
+        return '{\n' + '\n'.join(linhas) + '\n' + pad + '}'
+    if isinstance(v, list):
+        curta = _numa_linha(v)
+        if curta is not None and prefixo + len(curta) + 1 <= 100:
+            return curta
+        itens = [pad + '  ' + json_como_biome(x, nivel + 1, len(pad) + 2) for x in v]
+        return '[\n' + ',\n'.join(itens) + '\n' + pad + ']'
+    return json.dumps(v, ensure_ascii=False)
+
+
+def _numa_linha(v):
+    """A lista numa linha só, como o biome a escreve quando cabe (listas dentro de listas também);
+    None se ela tem objeto dentro."""
+    if isinstance(v, dict):
+        return None
+    if not isinstance(v, list):
+        return json.dumps(v, ensure_ascii=False)
+    partes = [_numa_linha(x) for x in v]
+    return None if None in partes else '[' + ', '.join(partes) + ']'
+
+
+def ordenado(v):
+    """`v` com as chaves de todos os objetos em ordem (o `sort_keys` do `json.dump`)."""
+    if isinstance(v, dict):
+        return {k: ordenado(v[k]) for k in sorted(v)}
+    if isinstance(v, list):
+        return [ordenado(x) for x in v]
+    return v
+
+
 def grupos_col(objs):
     """{grupo: quantos} dos nós `col-*` (o nome sem o número do fim), para o relatório."""
     g = {}
