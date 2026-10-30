@@ -278,18 +278,23 @@ function Agora() {
  * A fala do Zappy, no cartão de baixo (some depois de 7 s). Com o cartão dos primeiros passos (ou
  * de uma dica) na tela, a fala entra nele (`interface/primeiros-passos.tsx`) e este não aparece.
  */
-function Dica() {
+function Dica({ oculta = false }: { oculta?: boolean }) {
   const { loja, plataforma } = useJogo()
   const cartao = usePassos(lojaDosPassos(loja, plataforma), (s) => s.tela.cartao)
   const dica = useEstado((s) => s.dica)
   const [visivel, setVisivel] = useState<number | null>(null)
   useEffect(() => {
     if (!dica) return
+    const restante = dica.expiraEm - Date.now()
+    if (restante <= 0) {
+      setVisivel(null)
+      return
+    }
     setVisivel(dica.id)
-    const t = setTimeout(() => setVisivel((v) => (v === dica.id ? null : v)), 7000)
+    const t = setTimeout(() => setVisivel((v) => (v === dica.id ? null : v)), restante)
     return () => clearTimeout(t)
   }, [dica])
-  if (!dica || visivel !== dica.id || cartao) return null
+  if (oculta || !dica || visivel !== dica.id || cartao) return null
   return (
     <div className="arq-dica" role="status" aria-live="polite" key={dica.id}>
       <span className="arq-zappy" aria-hidden="true" />
@@ -872,8 +877,8 @@ export function Hud() {
   return (
     <div
       className={classes.join(' ')}
-      data-anel={anel ?? undefined}
-      data-anel-cor={anel && anelDaDica ? 'dica' : undefined}
+      data-anel={noFarol ? undefined : (anel ?? undefined)}
+      data-anel-cor={!noFarol && anel && anelDaDica ? 'dica' : undefined}
     >
       <Soneca />
       <QuemJoga />
@@ -894,11 +899,11 @@ export function Hud() {
       </div>
       <Cronometro />
       <AlturaDoBalao />
-      <RotinaAndando />
+      {noFarol ? null : <RotinaAndando />}
       {/* No Construir o "Agora" sai: a fala do Zappy sobe para o lugar dele (os dois se cobriam). */}
-      {visitando || construindo ? null : <Agora />}
-      <Dica />
-      <PrimeirosPassos />
+      {visitando || construindo || noFarol ? null : <Agora />}
+      <Dica oculta={noFarol} />
+      {noFarol ? null : <PrimeirosPassos />}
       {!noFarol && visitando ? <FaixaDaVisita /> : null}
       {construindo ? (
         <BarraDeConstruir />
@@ -906,7 +911,7 @@ export function Hud() {
         <>
           <div className="arq-baixo">
             <Acao />
-            <Mochila />
+            {noFarol ? null : <Mochila />}
           </div>
           <ControlesDeToque />
         </>

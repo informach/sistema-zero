@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import path from 'node:path'
-import { chromium } from 'playwright-core'
+import { chromium, type Page } from 'playwright-core'
 import type { MedidaDoDesenho } from '../src/mundo/medidor'
 
 const port = process.env.ARQUIPELAGO_TEST_PORT
@@ -32,6 +32,36 @@ server.stdout.on('data', (d) => {
 })
 server.stderr.on('data', (d) => process.stderr.write(d))
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
+async function conferirPrioridade(page: Page, sala: boolean) {
+  if (
+    await page
+      .locator('.arq-dica, .arq-rotina-andando, .arq-inventario, .arq-guia, [data-anel]')
+      .count()
+  )
+    throw new Error('Lembrete periférico apareceu no final')
+  const agora = page.locator('.arq-agora')
+  if ((await agora.count()) !== (sala ? 1 : 0)) throw new Error('Orientação fora de contexto')
+  if (sala && !(await agora.innerText()).includes('Ler a última página na mesa da Íris'))
+    throw new Error('A sala não orientou a leitura')
+  if (sala) {
+    const texto = await agora.locator('li').evaluate((el) => ({
+      cabe: el.scrollWidth <= el.clientWidth + 1,
+      caixa: el.getBoundingClientRect().toJSON(),
+    }))
+    const voltar = await page
+      .getByRole('button', { name: 'Descer do Farol', exact: true })
+      .boundingBox()
+    if (!texto.cabe) throw new Error('A orientação cortou o texto')
+    if (
+      voltar &&
+      texto.caixa.x < voltar.x + voltar.width &&
+      texto.caixa.right > voltar.x &&
+      texto.caixa.y < voltar.y + voltar.height &&
+      texto.caixa.bottom > voltar.y - 8
+    )
+      throw new Error('Descer encostou na orientação da mesa')
+  }
+}
 try {
   const deadline = Date.now() + 30_000
   while (true) {
@@ -52,21 +82,28 @@ try {
 
   for (const celular of [false, true]) {
     const tipo = celular ? 'celular' : 'computador'
-    const context = await browser.newContext({
-      viewport: celular ? { width: 390, height: 844 } : { width: 1280, height: 720 },
-      isMobile: celular,
-      hasTouch: celular,
-    })
-    context.setDefaultTimeout(120_000)
-    await context.addInitScript(() => {
-      localStorage.setItem('arquipelago:medir', '1')
-      localStorage.setItem('arquipelago:camera-dica', '1')
-      localStorage.setItem('arquipelago:conforto', JSON.stringify({ qualidade: 'leve' }))
-    })
-    const page = await context.newPage()
-    await page.emulateMedia({ reducedMotion: celular ? 'reduce' : 'no-preference' })
+    const novoContexto = async () => {
+      const contexto = await browser!.newContext({
+        viewport: celular ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+        isMobile: celular,
+        hasTouch: celular,
+      })
+      contexto.setDefaultTimeout(120_000)
+      await contexto.addInitScript(() => {
+        localStorage.setItem('arquipelago:medir', '1')
+        localStorage.setItem('arquipelago:camera-dica', '1')
+        localStorage.setItem('arquipelago:conforto', JSON.stringify({ qualidade: 'leve' }))
+      })
+      return contexto
+    }
+    let context = await novoContexto()
+    let page = await context.newPage()
     const erros: string[] = []
-    page.on('pageerror', (e) => erros.push(e.message))
+    const prepararPagina = async () => {
+      await page.emulateMedia({ reducedMotion: celular ? 'reduce' : 'no-preference' })
+      page.on('pageerror', (e) => erros.push(e.message))
+    }
+    await prepararPagina()
     const ler = () =>
       page.evaluate(
         () => (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho,
@@ -95,208 +132,288 @@ try {
         },
         { x, y, z },
       )
-    await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2`)
-    await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
-    // Perto da porta, com a Lenda aberta, a porta do farol abre na dobradiça.
-    await page.waitForTimeout(1500)
-    await page.screenshot({ path: path.join(prints, `porta-${tipo}.png`) })
-    const antes = await ler()
-    await usar()
-    await etapa('sala')
-    await page.waitForFunction(() => {
-      const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
-      return d && d.posicao.y > 40 && d.noChao
-    })
-    await page.locator('.arq-corte').waitFor({ state: 'detached' })
-    const voltarBox = await page
-      .getByRole('button', { name: 'Descer do Farol', exact: true })
-      .boundingBox()
-    const menuBox = await page
-      .getByRole('button', { name: 'Abrir o menu', exact: true })
-      .boundingBox()
-    if (
-      voltarBox &&
-      menuBox &&
-      voltarBox.x < menuBox.x + menuBox.width &&
-      voltarBox.x + voltarBox.width > menuBox.x &&
-      voltarBox.y < menuBox.y + menuBox.height &&
-      voltarBox.y + voltarBox.height > menuBox.y
-    )
-      throw new Error('Descer cobre o menu')
-    const sala = await ler()
-    console.log(
-      'chegada',
-      JSON.stringify({
-        posicao: sala?.posicao,
-        noChao: sala?.noChao,
-        final: sala?.finalDoFarol,
-        erros,
-      }),
-    )
-    if (!sala || sala.posicao.y < 40 || !sala.noChao) throw new Error('Chegada sem apoio no alto')
-    await page.screenshot({ path: path.join(prints, `sala-${tipo}.png`) })
-    // Seguir do ponto de entrada para a mesa com o controle, sem teleporte no interior.
-    await page.evaluate(async () => {
-      if (document.activeElement?.tagName === 'BUTTON')
-        throw new Error('Foco da sala capturou o teclado')
-      // Liberar no mesmo processo do jogo evita andar além da mesa se o Node ficar ocupado.
-      const tecla = (tipo: string) =>
-        window.dispatchEvent(new KeyboardEvent(tipo, { code: 'KeyW', key: 'w', bubbles: true }))
-      tecla('keydown')
-      const limite = performance.now() + 30_000
-      try {
-        while (performance.now() < limite) {
-          const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
-          if (d && Math.hypot(d.posicao.x + 12.82277, d.posicao.z + 14.98634) < 1.95) return
-          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
-        }
-        throw new Error('A caminhada não alcançou a mesa')
-      } finally {
-        tecla('keyup')
-      }
-    })
-    await page.locator('.arq-acao').filter({ hasText: 'Ler a última página' }).waitFor()
-    await usar()
-    await etapa('pagina')
-    await page.screenshot({ path: path.join(prints, `pagina-${tipo}.png`) })
-    if (process.env.ARQUIPELAGO_INTERROMPER === '1') {
-      await page.getByRole('button', { name: 'Continuar', exact: true }).click()
-      await page.keyboard.press('Escape')
-      await etapa('fora')
-      await page.waitForFunction(() => {
-        const raw = localStorage.getItem('arquipelago-playground')
-        const f = raw && JSON.parse(raw).salvamento?.farol
-        return f?.pagina === false && f.concluido === false
-      })
-      await page.goto(`${baseURL}/?posicao=8`)
+    if (process.env.ARQUIPELAGO_SO_PRIORIDADE !== '1') {
+      await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2`)
+      await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+      // Perto da porta, com a Lenda aberta, a porta do farol abre na dobradiça.
+      await page.waitForTimeout(1500)
+      const pendenciasAntes = await page.locator('.arq-agora li').allTextContents()
+      if (!pendenciasAntes.length) throw new Error('Cenário sem pendências para provar a retomada')
+      await page.screenshot({ path: path.join(prints, `porta-${tipo}.png`) })
+      const antes = await ler()
+      await usar()
+      await etapa('sala')
       await page.waitForFunction(() => {
         const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
-        return d?.finalDoFarol.etapa === 'fora' && !d.finalDoFarol.leu && !d.finalDoFarol.voltou
+        return d && d.posicao.y > 40 && d.noChao
       })
-      if (erros.length) throw new Error(erros.join('\n'))
-      await page.screenshot({ path: path.join(prints, `interrompido-${tipo}.png`) })
-      writeFileSync(
-        path.join(prints, `interrompido-${tipo}.json`),
-        JSON.stringify(await ler(), null, 2),
+      await page.locator('.arq-corte').waitFor({ state: 'detached' })
+      await conferirPrioridade(page, true)
+      const voltarBox = await page
+        .getByRole('button', { name: 'Descer do Farol', exact: true })
+        .boundingBox()
+      const menuBox = await page
+        .getByRole('button', { name: 'Abrir o menu', exact: true })
+        .boundingBox()
+      if (
+        voltarBox &&
+        menuBox &&
+        voltarBox.x < menuBox.x + menuBox.width &&
+        voltarBox.x + voltarBox.width > menuBox.x &&
+        voltarBox.y < menuBox.y + menuBox.height &&
+        voltarBox.y + voltarBox.height > menuBox.y
       )
-      console.log(`${tipo}: leitura interrompida não concedeu página nem conclusão ao reabrir`)
-      await context.close()
-      continue
-    }
-    for (let i = 0; i < 3; i++)
-      await page.getByRole('button', { name: 'Continuar', exact: true }).click()
-    await page.getByRole('button', { name: 'Ver a luz do Farol', exact: true }).click()
-    await etapa('fachos')
-    await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
-    await page.waitForTimeout(500)
-    const pausado = await ler()
-    await page.waitForTimeout(1000)
-    const depois = await ler()
-    if (pausado?.finalDoFarol.tempo !== depois?.finalDoFarol.tempo)
-      throw new Error('Final correu com o menu aberto')
-    await page.getByRole('button', { name: 'Continuar jogando', exact: true }).click()
-    await etapa('fim')
-    const final = await ler()
-    if (final?.finalDoFarol.fachos !== 6 || !final.finalDoFarol.voltou || !final.finalDoFarol.leu)
-      throw new Error('Final não concluiu')
-    await page.screenshot({ path: path.join(prints, `fachos-${tipo}.png`) })
-    await page.getByRole('button', { name: 'Voltar para casa', exact: true }).click()
-    await etapa('fora')
-    await page.waitForTimeout(2000)
-    const volta = await ler()
-    if (!volta || volta.posicao.y > 4) throw new Error('Corpo não voltou à ilha')
-    await levar(-7.1, 2.2, -8)
-    await page.locator('.arq-acao').filter({ hasText: 'Conversar com a Íris' }).waitFor()
-    await usar()
-    await page
-      .getByText('Voltei para casa. Obrigada por abrir meus rascunhos.', { exact: true })
-      .waitFor()
-    await page.screenshot({ path: path.join(prints, `iris-${tipo}.png`) })
-    await page.keyboard.press('Escape')
-    await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
-    await page.getByRole('button', { name: 'Diário', exact: true }).click()
-    await page
-      .locator('.arq-diario-pagina.aberta')
-      .filter({ hasText: 'Essa faísca é o Zappy.' })
-      .waitFor()
-    await page.keyboard.press('Escape')
-    const memoriaAntes = await ler()
-    // Reentrar e sair com Esc não repete a revelação nem deixa a câmera presa.
-    await levar(-9.2, 2.2, -10.9)
-    await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
-    await usar()
-    await etapa('sala')
-    await page.keyboard.press('Escape')
-    await etapa('fora')
-    await page.waitForTimeout(1500)
-    const memoriaDepois = await ler()
-    if (memoriaAntes && memoriaDepois && memoriaDepois.geometrias > memoriaAntes.geometrias + 2)
-      throw new Error('Geometrias ficaram depois da segunda saída')
-    // Uma primeira volta aquece os personagens que aparecem no final. Reentradas seguintes
-    // não podem acumular suas texturas de ossos, mesmo sem aumentar geometrias.
-    const ciclos = [memoriaDepois]
-    for (let ciclo = 0; ciclo < 3; ciclo++) {
+        throw new Error('Descer cobre o menu')
+      const sala = await ler()
+      console.log(
+        'chegada',
+        JSON.stringify({
+          posicao: sala?.posicao,
+          noChao: sala?.noChao,
+          final: sala?.finalDoFarol,
+          erros,
+        }),
+      )
+      if (!sala || sala.posicao.y < 40 || !sala.noChao) throw new Error('Chegada sem apoio no alto')
+      await page.screenshot({ path: path.join(prints, `sala-${tipo}.png`) })
+      // Seguir do ponto de entrada para a mesa com o controle, sem teleporte no interior.
+      await page.evaluate(async () => {
+        if (document.activeElement?.tagName === 'BUTTON')
+          throw new Error('Foco da sala capturou o teclado')
+        // Liberar no mesmo processo do jogo evita andar além da mesa se o Node ficar ocupado.
+        const tecla = (tipo: string) =>
+          window.dispatchEvent(new KeyboardEvent(tipo, { code: 'KeyW', key: 'w', bubbles: true }))
+        tecla('keydown')
+        const limite = performance.now() + 30_000
+        try {
+          while (performance.now() < limite) {
+            const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho })
+              .__arquipelagoDesenho
+            if (d && Math.hypot(d.posicao.x + 12.82277, d.posicao.z + 14.98634) < 1.95) return
+            await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+          }
+          throw new Error('A caminhada não alcançou a mesa')
+        } finally {
+          tecla('keyup')
+        }
+      })
+      await page.locator('.arq-acao').filter({ hasText: 'Ler a última página' }).waitFor()
+      await usar()
+      await etapa('pagina')
+      await conferirPrioridade(page, false)
+      await page.screenshot({ path: path.join(prints, `pagina-${tipo}.png`) })
+      if (process.env.ARQUIPELAGO_INTERROMPER === '1') {
+        await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+        await page.keyboard.press('Escape')
+        await etapa('fora')
+        await page.waitForFunction(() => {
+          const raw = localStorage.getItem('arquipelago-playground')
+          const f = raw && JSON.parse(raw).salvamento?.farol
+          return f?.pagina === false && f.concluido === false
+        })
+        await page.goto(`${baseURL}/?posicao=8`)
+        await page.waitForFunction(() => {
+          const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
+          return d?.finalDoFarol.etapa === 'fora' && !d.finalDoFarol.leu && !d.finalDoFarol.voltou
+        })
+        if (erros.length) throw new Error(erros.join('\n'))
+        await page.screenshot({ path: path.join(prints, `interrompido-${tipo}.png`) })
+        writeFileSync(
+          path.join(prints, `interrompido-${tipo}.json`),
+          JSON.stringify(await ler(), null, 2),
+        )
+        console.log(`${tipo}: leitura interrompida não concedeu página nem conclusão ao reabrir`)
+        await context.close()
+        continue
+      }
+      for (let i = 0; i < 3; i++)
+        await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+      await page.getByRole('button', { name: 'Ver a luz do Farol', exact: true }).click()
+      await etapa('fachos')
+      await conferirPrioridade(page, false)
+      await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+      await page.waitForTimeout(500)
+      if (await page.locator('.arq-passos-menu, .arq-guia').count())
+        throw new Error('Menu do final ofereceu o tutorial')
+      const pausado = await ler()
+      await page.waitForTimeout(1000)
+      const depois = await ler()
+      if (pausado?.finalDoFarol.tempo !== depois?.finalDoFarol.tempo)
+        throw new Error('Final correu com o menu aberto')
+      await page.getByRole('button', { name: 'Continuar jogando', exact: true }).click()
+      await etapa('fim')
+      await conferirPrioridade(page, false)
+      const final = await ler()
+      if (final?.finalDoFarol.fachos !== 6 || !final.finalDoFarol.voltou || !final.finalDoFarol.leu)
+        throw new Error('Final não concluiu')
+      await page.screenshot({ path: path.join(prints, `fachos-${tipo}.png`) })
+      await page.getByRole('button', { name: 'Voltar para casa', exact: true }).click()
+      await etapa('fora')
+      await page.waitForTimeout(2000)
+      const pendenciasDepois = await page.locator('.arq-agora li').allTextContents()
+      if (JSON.stringify(pendenciasAntes) !== JSON.stringify(pendenciasDepois))
+        throw new Error(
+          `Pendências não voltaram: ${JSON.stringify({ pendenciasAntes, pendenciasDepois })}`,
+        )
+      await page.screenshot({ path: path.join(prints, `retomada-${tipo}.png`) })
+      const volta = await ler()
+      if (!volta || volta.posicao.y > 4) throw new Error('Corpo não voltou à ilha')
+      await levar(-7.1, 2.2, -8)
+      await page.locator('.arq-acao').filter({ hasText: 'Conversar com a Íris' }).waitFor()
+      await usar()
+      await page
+        .getByText('Voltei para casa. Obrigada por abrir meus rascunhos.', { exact: true })
+        .waitFor()
+      await page.screenshot({ path: path.join(prints, `iris-${tipo}.png`) })
+      await page.keyboard.press('Escape')
+      await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+      await page.getByRole('button', { name: 'Diário', exact: true }).click()
+      await page
+        .locator('.arq-diario-pagina.aberta')
+        .filter({ hasText: 'Essa faísca é o Zappy.' })
+        .waitFor()
+      await page.keyboard.press('Escape')
+      const memoriaAntes = await ler()
+      // Reentrar e sair com Esc não repete a revelação nem deixa a câmera presa.
       await levar(-9.2, 2.2, -10.9)
       await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
       await usar()
       await etapa('sala')
-      await page.locator('.arq-corte').waitFor({ state: 'detached' })
-      await page.waitForTimeout(1500)
       await page.keyboard.press('Escape')
       await etapa('fora')
-      await page.locator('.arq-corte').waitFor({ state: 'detached' })
-      await page.waitForTimeout(3000)
-      const medida = await ler()
-      ciclos.push(medida)
-      if (!medida || !memoriaDepois) throw new Error('Medidor ausente na prova de descarte')
-      if (medida.geometrias > memoriaDepois.geometrias + 2)
-        throw new Error('Geometrias acumularam ao reabrir o Farol')
-      if (medida.texturas > memoriaDepois.texturas)
-        throw new Error('Texturas acumularam ao reabrir o Farol')
-    }
-    console.log(
-      `${tipo}: recursos após remontagens`,
-      ciclos.map((d) => ({
-        geometrias: d?.geometrias,
-        texturas: d?.texturas,
-      })),
-    )
-    writeFileSync(path.join(prints, `ciclos-${tipo}.json`), JSON.stringify(ciclos, null, 2))
-    if (!celular) {
-      await page.route('**/*alto-do-farol*.glb', (route) =>
-        route.fulfill({ status: 503, body: '' }),
+      await page.waitForTimeout(1500)
+      const memoriaDepois = await ler()
+      if (memoriaAntes && memoriaDepois && memoriaDepois.geometrias > memoriaAntes.geometrias + 2)
+        throw new Error('Geometrias ficaram depois da segunda saída')
+      // Uma primeira volta aquece os personagens que aparecem no final. Reentradas seguintes
+      // não podem acumular suas texturas de ossos, mesmo sem aumentar geometrias.
+      const ciclos = [memoriaDepois]
+      for (let ciclo = 0; ciclo < 3; ciclo++) {
+        await levar(-9.2, 2.2, -10.9)
+        await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+        await usar()
+        await etapa('sala')
+        await page.locator('.arq-corte').waitFor({ state: 'detached' })
+        await page.waitForTimeout(1500)
+        await page.keyboard.press('Escape')
+        await etapa('fora')
+        await page.locator('.arq-corte').waitFor({ state: 'detached' })
+        await page.waitForTimeout(3000)
+        const medida = await ler()
+        ciclos.push(medida)
+        writeFileSync(path.join(prints, `ciclos-${tipo}.json`), JSON.stringify(ciclos, null, 2))
+        if (!medida || !memoriaDepois) throw new Error('Medidor ausente na prova de descarte')
+        if (medida.geometrias > memoriaDepois.geometrias + 2)
+          throw new Error('Geometrias acumularam ao reabrir o Farol')
+        if (medida.texturas > memoriaDepois.texturas)
+          throw new Error(
+            `Texturas acumularam ao reabrir o Farol: ${memoriaDepois.texturas} para ${medida.texturas}`,
+          )
+      }
+      console.log(
+        `${tipo}: recursos após remontagens`,
+        ciclos.map((d) => ({
+          geometrias: d?.geometrias,
+          texturas: d?.texturas,
+        })),
       )
-      await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
-      await usar()
-      await page
-        .getByText('A sala não abriu agora. Você pode tentar de novo na porta.', { exact: true })
-        .waitFor()
-      await etapa('fora')
-      await page.unroute('**/*alto-do-farol*.glb')
+      writeFileSync(path.join(prints, `ciclos-${tipo}.json`), JSON.stringify(ciclos, null, 2))
+      if (!celular) {
+        await page.route('**/*alto-do-farol*.glb', (route) =>
+          route.fulfill({ status: 503, body: '' }),
+        )
+        await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+        await usar()
+        await page
+          .getByText('A sala não abriu agora. Você pode tentar de novo na porta.', { exact: true })
+          .waitFor()
+        await etapa('fora')
+        await page.unroute('**/*alto-do-farol*.glb')
+      }
+      // Reabrir sem ?novo: comprova a leitura durável, não apenas o estado React desta sessão.
+      await page.waitForFunction(() => {
+        const raw = localStorage.getItem('arquipelago-playground')
+        if (!raw) return false
+        const s = JSON.parse(raw)
+        return s.salvamento?.farol?.concluido === true
+      })
+      await page.goto(`${baseURL}/?posicao=8`)
+      await page.waitForFunction(() => {
+        const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
+        return d?.finalDoFarol.leu && d.finalDoFarol.voltou && d.finalDoFarol.etapa === 'fora'
+      })
+      await levar(-7.1, 2.2, -8)
+      await page.locator('.arq-acao').filter({ hasText: 'Conversar com a Íris' }).waitFor()
+      await page.screenshot({ path: path.join(prints, `reaberto-${tipo}.png`) })
+      if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+        throw new Error('Interface ultrapassou a tela')
+      if (erros.length) throw new Error(erros.join('\n'))
+      writeFileSync(
+        path.join(prints, `medidas-${tipo}.json`),
+        JSON.stringify({ antes, sala, final, volta, memoriaAntes, memoriaDepois }, null, 2),
+      )
+      console.log(`${tipo}: sala, página, pausa, seis ilhas, Íris, reentrada e saída conferidas`)
     }
-    // Reabrir sem ?novo: comprova a leitura durável, não apenas o estado React desta sessão.
-    await page.waitForFunction(() => {
-      const raw = localStorage.getItem('arquipelago-playground')
-      if (!raw) return false
-      const s = JSON.parse(raw)
-      return s.salvamento?.farol?.concluido === true
-    })
-    await page.goto(`${baseURL}/?posicao=8`)
-    await page.waitForFunction(() => {
-      const d = (globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho
-      return d?.finalDoFarol.leu && d.finalDoFarol.voltou && d.finalDoFarol.etapa === 'fora'
-    })
-    await levar(-7.1, 2.2, -8)
-    await page.locator('.arq-acao').filter({ hasText: 'Conversar com a Íris' }).waitFor()
-    await page.screenshot({ path: path.join(prints, `reaberto-${tipo}.png`) })
-    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
-      throw new Error('Interface ultrapassou a tela')
-    if (erros.length) throw new Error(erros.join('\n'))
-    writeFileSync(
-      path.join(prints, `medidas-${tipo}.json`),
-      JSON.stringify({ antes, sala, final, volta, memoriaAntes, memoriaDepois }, null, 2),
+    // Acesso ao final não depende de concluir os primeiros passos. O cartão aberto é suspenso,
+    // sem gravar conclusão, e reaparece na mesma fala ao descer.
+    // Outro jogo novo exige contexto próprio, inclusive o diário IndexedDB de salvamento.
+    await context.close()
+    context = await novoContexto()
+    page = await context.newPage()
+    await prepararPagina()
+    await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2&passos=1&dicas=1`)
+    await page.locator('.arq-guia.passos').waitFor()
+    await page.waitForFunction(
+      () => typeof Reflect.get(globalThis, '__arquipelagoLevar') === 'function',
     )
-    console.log(`${tipo}: sala, página, pausa, seis ilhas, Íris, reentrada e saída conferidas`)
+    await levar(-9.2, 2.2, -10.9)
+    const falaAntes = await page.locator('.arq-guia-fala').innerText()
+    const marcaAntes = await page.evaluate(() =>
+      localStorage.getItem('arquipelago:passos:kids:perfil-de-teste'),
+    )
+    await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+    await usar()
+    await etapa('sala')
+    await page.locator('.arq-corte').waitFor({ state: 'detached' })
+    await conferirPrioridade(page, true)
+    await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+    if (await page.locator('.arq-passos-menu, .arq-guia').count())
+      throw new Error('Tutorial suspenso apareceu no menu do Farol')
+    // Um recado de sete segundos não pode ganhar mais sete ao remontar o cartão.
+    await page.waitForTimeout(8000)
+    await page.getByRole('button', { name: 'Continuar jogando', exact: true }).click()
+    await page.getByRole('button', { name: 'Descer do Farol', exact: true }).click()
+    await etapa('fora')
+    await page.locator('.arq-corte').waitFor({ state: 'detached' })
+    await page.locator('.arq-guia.passos').waitFor()
+    if ((await page.locator('.arq-guia-fala').innerText()) !== falaAntes)
+      throw new Error('Tutorial avançou sem a pessoa concluir a tarefa')
+    const marcaDepois = await page.evaluate(() =>
+      localStorage.getItem('arquipelago:passos:kids:perfil-de-teste'),
+    )
+    if (marcaDepois !== marcaAntes) throw new Error('Farol alterou a marca do tutorial')
+    if (await page.locator('.arq-guia-recado').count())
+      throw new Error('O tutorial reapresentou um recado vencido')
+    await page.screenshot({ path: path.join(prints, `tutorial-retomado-${tipo}.png`) })
+    if (erros.length) throw new Error(erros.join('\n'))
+    console.log(`${tipo}: pendências e tutorial retomados sem conclusão automática`)
+    await context.close()
+    context = await novoContexto()
+    page = await context.newPage()
+    await prepararPagina()
+    await page.goto(`${baseURL}/?novo=1&publico=adulto&posicao=8&em=-9.2,-10.9,2.2`)
+    await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+    await usar()
+    await etapa('sala')
+    await page.locator('.arq-corte').waitFor({ state: 'detached' })
+    await conferirPrioridade(page, true)
+    await page.screenshot({ path: path.join(prints, `sala-adulto-${tipo}.png`) })
+    await page.getByRole('button', { name: 'Descer do Farol', exact: true }).click()
+    await etapa('fora')
+    await page.locator('.arq-corte').waitFor({ state: 'detached' })
+    await page.locator('.arq-agora').waitFor()
+    if (erros.length) throw new Error(erros.join('\n'))
+    console.log(`${tipo}: orientação e retomada na pele adulta conferidas`)
     await context.close()
   }
   // Outro contexto isola a plataforma falsa e sua fila local entre jornadas.

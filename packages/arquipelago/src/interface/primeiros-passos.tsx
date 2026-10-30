@@ -41,8 +41,6 @@ import { useVoz } from './voz'
 const ROSTO_DO_ZAPPY = new URL(zappyNoQuarto, import.meta.url).href
 /** De quanto em quanto tempo o tutorial confere o jogo (andar, porta, horta, menu). */
 const CONFERIR_MS = 250
-/** Quanto uma fala solta do jogo fica dentro do cartão (a mesma duração do cartão de baixo). */
-const RECADO_MS = 7000
 /** Depois de prender o primeiro Lumi, a fala de Lumi novo vem antes da dica. */
 const ESPERA_DA_DICA_DO_LUMI_MS = 4000
 
@@ -353,6 +351,7 @@ export function PrimeirosPassos() {
       clearInterval(t)
       guia.alvo = null
       guia.circulo = null
+      passos.getState().definirTela({ anel: null, dica: false, cartao: false })
     }
   }, [loja, passos, rastro, controle, interativos, ambiente])
 
@@ -561,8 +560,13 @@ function useRecado(passos: ReturnType<typeof lojaDosPassos>): string | null {
   const [recado, setRecado] = useState<{ id: number; texto: string } | null>(null)
   useEffect(() => {
     if (!dica || !passos.getState().tela.cartao) return
+    const restante = dica.expiraEm - Date.now()
+    if (restante <= 0) {
+      setRecado(null)
+      return
+    }
     setRecado(dica)
-    const t = setTimeout(() => setRecado((r) => (r?.id === dica.id ? null : r)), RECADO_MS)
+    const t = setTimeout(() => setRecado((r) => (r?.id === dica.id ? null : r)), restante)
     return () => clearTimeout(t)
   }, [dica, passos])
   return naTela ? (recado?.texto ?? null) : null

@@ -1,0 +1,21 @@
+chegada {"posicao":{"x":-12.90000057220459,"y":40.96010208129883,"z":-12.199999809265137},"noChao":true,"final":{"etapa":"sala","tempo":0,"fachos":0,"leu":false,"voltou":false},"erros":[]}
+computador: recursos após remontagens [
+  { geometrias: 388, texturas: 53 },
+  { geometrias: 388, texturas: 53 },
+  { geometrias: 388, texturas: 53 },
+  { geometrias: 388, texturas: 53 }
+]
+computador: sala, página, pausa, seis ilhas, Íris, reentrada e saída conferidas
+computador: pendências e tutorial retomados sem conclusão automática
+computador: orientação e retomada na pele adulta conferidas
+chegada {"posicao":{"x":-12.90000057220459,"y":40.96010208129883,"z":-12.199999809265137},"noChao":true,"final":{"etapa":"sala","tempo":0,"fachos":1,"leu":false,"voltou":false},"erros":[]}
+celular: recursos após remontagens [
+  { geometrias: 388, texturas: 53 },
+  { geometrias: 388, texturas: 53 },
+  { geometrias: 388, texturas: 53 },
+  { geometrias: 388, texturas: 53 }
+]
+celular: sala, página, pausa, seis ilhas, Íris, reentrada e saída conferidas
+celular: pendências e tutorial retomados sem conclusão automática
+celular: orientação e retomada na pele adulta conferidas
+Antes da Lenda: porta fechada, sem revelar o final
