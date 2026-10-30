@@ -89,7 +89,7 @@ sendo a fonte dos commits. Integrado = merge no staging local.
 | C02 | Em andamento |
 | C03a Pega-conchas da sua ilha | Seis quadros Kids e adulto, executor real aprovado, cavalete na praia (regras §7.11.1) |
 | C03b projeto autoral após o Farol | Um quadro no Farol depois do final, critérios explícitos, executor real aprovado (regras §7.11.1) |
-| Q01 | Não começado |
+| Q01 | Qualificação local e lista para a dona em `docs/qa/2026-10-30-qualificacao-q01/` (implantação, importação, conta real e aparelho ficam com ela) |
 | S01 Companhia | Tratado em 30/10: o bichinho do quarto acompanha; com bicho adotado, a criança escolhe (regras §6.26) |
 
 Orientação vigente da dona (30/10): depois do envio do C01b2b, pausar novos lotes.

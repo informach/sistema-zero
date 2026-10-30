@@ -135,7 +135,11 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | E04, iglu e quintal | Quintal integrado e enviado; iglu adiado | `92aea3551`, merge `74819e31b`; iglu `3751feaaa` retirado na integração `25c225e5c` | O salvamento V20 do remoto não deixou espaço para o iglu; volta num documento próprio do serviço junto com o lote na arte. Segundo andar, terreno e subida final continuam |
 | C01b | Integrado e enviado | `956bcfe5e`, merge `b4ae582b6` | Recife, Pico, Vale e Nuvens só com blocos da trilha; 22 quadros voltam a pedir publicação, a importação é da dona |
 | A05 e N13 (30/10) | Regras §5, §6.9 e §6.27 atualizadas para a V20 | este lote | Decisões N09, N10, N15 e Íris na abertura registradas |
-| C02, C03, resto de E04, Q01 | A executar | Nenhum | C02 em andamento |
+| C03a | Integrado no staging local | `7a95991ea`, merge `3bde22a07` | Pega-conchas da sua ilha; executor real 23 cenários; cavalete na praia |
+| C03b | Integrado no staging local | `ca1ccf83b`, merge `6f2581fbc` | Projeto autoral do Farol depois do final |
+| E04, resto | Pedidos de arte e plano | merge `5a4a5293d` | Segundo andar, terreno e subida final esperam a arte; documento próprio da obra planejado |
+| Q01 | Qualificação local e lista para a dona | este lote | Ciclos de memória das seis ilhas; implantação, importação, conta real e aparelho ficam com a dona |
+| C02 | Em andamento | Nenhum | Python e texto |
 
 ### Lote de visitas adultas da frente de entrega integral
 
