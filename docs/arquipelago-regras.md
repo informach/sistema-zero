@@ -2261,6 +2261,26 @@ Provas: `tests/segredos.test.ts` (colunas livres contra os colisores reais das q
 chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segredos-browser.ts`
 (com `?planador=1`).
 
+### 6.25 O mapa que se revela andando (E02, 30/10/2026)
+
+A proposta: "Mapa que se revela conforme você anda." Cada ilha com mapa (as sete, o Farol fica
+no da sua ilha) tem uma grade de 8 × 8 partes num quadrado em volta dela: 60 m de lado na sua
+ilha e 28 m nas do anel. O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
+por ilha; dois aparelhos juntam as partes, nunca perdem).
+
+- Enquanto a criança está na ilha (andando, nadando ou planando), as partes a até 6 m dela se
+  revelam. Não conta pausado, de visita, em suporte somente leitura nem durante um transporte.
+- Só contam as partes de terra: as que têm o meio dentro da ilha (29 m na sua ilha, 13 m nas do
+  anel), com meia parte de folga.
+- O painel do mapa mostra, embaixo do arquipélago, o mapa da ilha onde a criança está: as partes
+  vistas na cor da ilha, as outras em névoa cinza, e a marca de onde ela está. A legenda conta
+  "Mapa desta ilha: n de m partes descobertas." Na lista, cada ilha visitada diz "Mapa n%
+  descoberto."
+
+Arquivos: `sistemas/mapa-da-ilha.ts`, `estado/exploracao.ts` (`observarMapa`),
+`mundo/descoberta-da-ilha.tsx`, `interface/mapa.tsx`. Provas: `tests/mapa-da-ilha.test.ts` e
+`playground/verificar-mapa-da-ilha-browser.ts`.
+
 ## 7. Desafios
 
 Arquivos principais:
