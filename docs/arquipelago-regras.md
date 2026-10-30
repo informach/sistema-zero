@@ -513,8 +513,12 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoT
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 10` (`SalvamentoV10Schema`, estrito: campo desconhecido é
-  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
+- **Versão:** hoje `VERSAO_SALVAMENTO = 20` (`SalvamentoV20Schema`, estrito: campo desconhecido é
+  recusado; atualizado em 30/10/2026). Da V11 à V20, cada versão está descrita na seção da fase
+  que a criou: os achados do Recife (V11), o Vale (V12), os corais (V13), a banda (V14), o
+  filhote (V15), as constelações, o clima e o Farol (V16), a amizade do anel (V17), as visitas
+  às ilhas (V18), os percursos novos, chaves, segredos, mapa e companhia (V19, seção "Salvamento
+  V19") e os móveis da casa e a galeria do Farol (V20, §6.16.4). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
   a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
   projetos azuis. A V5 acrescenta `presenteDosBichosEntregue`, sem alterar os formatos anteriores.
   A V6 (29/10/2026) guarda as `aparencias` de cada projeto azul (a galeria, §9.9). A V7
@@ -530,8 +534,9 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   - as pontes já vistas;
   - se a porta nova da casa foi aberta;
   - o melhor de cada percurso (`percursos`): as três estrelas, cada uma guardada à parte, e o
-    melhor tempo em milissegundos (de 0 a 1 hora). Hoje o único percurso é `bosque-copas`
-    (`PERCURSOS`);
+    melhor tempo em milissegundos (de 0 a 1 hora). São oito percursos (`PERCURSOS`, desde a V19):
+    `bosque-copas`, `vila-telhados`, `pico-cume`, `nuvens-saltos`, `nuvens-balao`,
+    `praia-pedras`, `recife-corais` e `vale-pegadas`;
   - a Capi (`moradores.capi`): a amizade (de 0 a 500, `AMIZADE_MAXIMA`), o último dia de conversa e
     de presente e o pedido do dia (o dia, qual é e se já foi entregue). Os dias são `AAAA-MM-DD`
     no horário do aparelho;
@@ -569,7 +574,10 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   nenhum projeto azul; `migrarDaV4`: tudo igual e `presenteDosBichosEntregue: false`;
   `migrarDaV5`: a aparência em uso vira a única guardada; `migrarDaV6`: tudo igual e o Bento sem
   amizade, conversa, presente nem pedido, `MORADOR_NOVO`; `migrarDaV7`: nenhum turno feito;
-  `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina montada).
+  `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina montada; da V10 à V20, cada
+  migração na seção da fase que criou a versão; a V18 para a V19 já traz as chaves do que a obra
+  usa e o bicho adotado acompanhando, e a V19 para a V20 acerta as mesmas duas coisas para quem
+  passou pela V19 do staging).
 - **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
   já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
@@ -1023,11 +1031,15 @@ The Sims):
 
 Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medidas.ts`.
 
-- **Duas versões:** cada ilha do anel tem uma versão leve e pode ter uma versão completa, feita
-  no Blender. O Bosque e, desde 29/10/2026, a Vila Doce têm a completa (`ILHAS_COMPLETAS` em
-  `mundo/ilha-completa.tsx`). Na Vila Doce o percurso dos telhados já se pisa (caixotes a 1 m,
-  casinhas a 2,0, 2,8 e 3,6 m, terraço da sorveteria a 4,4 m); o Bento, as lojas e as entregas vêm
-  nas próximas etapas.
+- **Duas versões:** cada ilha do anel tem uma versão leve e uma completa, feita no Blender. As
+  seis têm a completa (`ILHAS_COMPLETAS` em `mundo/ilha-completa.tsx`): Bosque, Vila Doce,
+  Recife, Pico, Vale dos Dinos e Ilha das Nuvens, todas vivas (`ILHAS_VIVAS`). Na Vila Doce o
+  percurso dos telhados se pisa (caixotes a 1 m, casinhas a 2,0, 2,8 e 3,6 m, terraço da
+  sorveteria a 4,4 m).
+- **Decisão (N15, registrada em 30/10/2026):** a proposta fala em três versões (silhueta, média e
+  completa); o jogo usa duas, a leve (que já é a silhueta cinza no anel) e a completa, com a
+  busca começando na faixa da ponte. Ajuste técnico para caber no orçamento de memória (uma
+  ilha completa por vez), sem mudar o que a criança vê de longe.
 - **O ciclo** (`proximoEstadoDaIlha`): `longe` → `carregando` → `pronta` → `ativa` →
   `descarregando` → `longe`.
 - **Quando busca:** a ilha precisa estar aberta. A busca começa quando a pessoa entra na faixa da
@@ -2353,6 +2365,27 @@ um pouco acima do chão. Enquanto ele acompanha, o quarto fica sem ele.
 Arquivos: `sistemas/companhia.ts`, `mundo/pet-que-acompanha.tsx`, `mundo/bicho-adotado.tsx`,
 `mundo/casa.tsx`, `interface/bicho.tsx`. Provas: `tests/companhia.test.ts` e
 `playground/verificar-companhia-browser.ts` (com `?adotado=1`).
+
+### 6.27 Decisões registradas no levantamento de 30/10/2026
+
+Escolhas aprovadas no plano do levantamento integrado (`docs/arquipelago-levantamento-2026-10-30.md`),
+anotadas para não serem refeitas por engano:
+
+- **Duas versões de ilha (N15):** leve e completa, em vez de silhueta, média e completa (§6.9).
+- **A Íris na abertura:** a proposta diz que ela aparece "só pelas páginas"; a abertura "O Cinza"
+  mostra a Íris na sala do Farol numa ilustração do passado. Fica: é memória, não encontro, e o
+  segredo do final continua guardado. Ela só aparece no jogo depois dos seis fachos.
+- **Rótulos dos minijogos (N09):** os minijogos seguem a régua de conteúdo da Jornada
+  (`docs/desafios-do-jogo/conteudo-por-posto.md`), e os nomes da proposta do Arquipélago ficam
+  como estão (Pega-conchas, Corrida dos bichos, Corrida do entregador, Mira de bolhas, Fase de
+  plataforma, Proteja os ninhos, Jardim que floresce). Onde o rótulo e o conteúdo divergem (o
+  entregador da Vila pede gravidade e pulo; os postos 4 a 7 são Python e JavaScript), a aplicação
+  na linguagem do posto vem pelo lote C02, sem trocar o nome.
+- **O posto do Molda (N10):** o Molda abre no Explorador, como a proposta do Arquipélago pede
+  (`POSICAO_DO_MOLDA`). A Jornada põe a primeira peça como extra do Construtor; o extra continua
+  valendo na plataforma, e o jogo não abre antes.
+- **A chave de cada cômodo (N11), os segredos (N12), a companhia (S01), o iglu (adiado) e o
+  quintal grande:** mínimos coerentes descritos nas seções §6.16.2a a §6.16.2c, §6.24 e §6.26.
 
 ## 7. Desafios
 

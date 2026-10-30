@@ -83,8 +83,11 @@ sendo a fonte dos commits. Integrado = merge no staging local.
 | E01 Coleções da praia | Implementado (plano e QA próprios) |
 | E02 Rede do barco | Feito por outra sessão; segredos (§6.24) e mapa detalhado (§6.25) tratados em 30/10 |
 | E03 Fantasma familiar | Integrado (`ae68922b1`) |
-| C01f | Rascunho local fora do staging |
-| C02, C03, E04, Q01 | Não começados |
+| C01f | Integrado com a V19 (`1488f46c7`) |
+| C01b (Recife, Pico, Vale, Nuvens) | Integrado e enviado (`b4ae582b6`) |
+| E04 | Quintal grande do Vale integrado (`74819e31b`); iglu adiado (salvamento cheio na V20); segundo andar, terreno e subida final pendentes |
+| C02 | Em andamento |
+| C03, Q01 | Não começados |
 | S01 Companhia | Tratado em 30/10: o bichinho do quarto acompanha; com bicho adotado, a criança escolhe (regras §6.26) |
 
 Orientação vigente da dona (30/10): depois do envio do C01b2b, pausar novos lotes.
@@ -103,16 +106,17 @@ Não constam da auditoria nem dos três registros. Cada um traz a evidência no 
 | N06 | **(Tratado: resumo ao deitar e na tela de descanso.)** **Não há resumo do dia.** A proposta fecha a sessão com "decora e dorme: resumo do dia" e mantém o resumo no adulto | Nenhuma ocorrência em `src/` fora do fim dos primeiros passos | Médio | L06, L12 |
 | N07 | **(Tratado: espera a ação acabar, até 30 s.)** **O limite corta na hora.** A tela de descanso cobre o jogo quando o tempo acaba; a proposta diz que o Zappy põe o avatar para dormir no fim da ação | `TelaDescanso` em `interface/telas.tsx`, `jogo.tsx` | Baixo | L14 |
 | N08 | **(Tratado: "Visitas de outras crianças" abre as casas de amigos, com convite entre famílias e os dois responsáveis liberando, regras §6.22; "Fotos no Clube" manda a foto do modo foto para a moderação do Clube, regras §6.23. Em produção, falta a equipe criar o canal `fotos-do-arquipelago` com aprovação prévia.)** **Dois interruptores dos pais não fazem nada.** "Visitas de outras crianças" e "Fotos no Clube" gravam, mas o jogo não lê; o texto promete o comportamento. Risco de confiança com os pais | `community-kids/src/app/pais/_components/arquipelago-familia.tsx`; regras §3 ("ainda só se gravam") | Médio | L12 |
-| N09 | **Rótulos dos minijogos divergem da Jornada** (seção 7) | Proposta v3, seção das ilhas | Médio, decisão da dona | L03 |
-| N10 | **Pinta e Molda: as duas propostas não concordam.** O jogo abre o Molda no Explorador, como o Arquipélago pede. A Jornada põe a primeira peça no Molda como extra do Construtor e o primeiro desenho no Pinta como extra do Faísca | `POSICAO_DO_MOLDA` em `sistemas/construcao/projeto-azul.ts` | Baixo, decisão da dona | L04 |
+| N09 | **(Registrado: nomes da proposta mantidos, conteúdo pela régua da Jornada, aplicação na linguagem do posto no C02; regras §6.27.)** **Rótulos dos minijogos divergem da Jornada** (seção 7) | Proposta v3, seção das ilhas | Médio, decisão da dona | L03 |
+| N10 | **(Registrado: o Molda fica no Explorador, regras §6.27.)** **Pinta e Molda: as duas propostas não concordam.** O jogo abre o Molda no Explorador, como o Arquipélago pede. A Jornada põe a primeira peça no Molda como extra do Construtor e o primeiro desenho no Pinta como extra do Faísca | `POSICAO_DO_MOLDA` em `sistemas/construcao/projeto-azul.ts` | Baixo, decisão da dona | L04 |
 | N11 | **(Tratado: quatro chaves na sua ilha, cada uma libera o acabamento do seu cômodo no Construir, regras §6.16.2a; a praia e as pedras ganharam o percurso na V19.)** **A aventura da sua ilha é a mais curta.** Faltam a chave de cada cômodo e os percursos da praia e das pedras, justamente na ilha em que todo mundo começa | Busca por "chave" só acha a abertura | Médio | L02, L10 |
 | N12 | **(Tratado: um baú no alto de um vento nas quatro ilhas antes do Pico, só o planador chega, registrado no álbum, regras §6.24. O conteúdo dos baús, Lumis raros e páginas extras do diário, pede conteúdo novo.)** **Nenhum segredo usa o kit de movimento nas ilhas antigas.** Planador e patins valem em qualquer ilha, mas nenhum baú, caverna ou telhado foi feito para eles. Princípio "segredos para voltar" sem entrega | `sistemas/exploracao.ts` só marca ilha visitada | Médio | L10/E02 |
-| N13 | **Trechos antigos nas regras e no código.** `arquipelago-regras.md` ainda diz V10 na seção 5, "só Bosque e Vila completas" em 6.9 e "único percurso" em 5. O código mantém a fala "Os moradores e os bichos chegam aqui na próxima fase", que nunca aparece porque as seis ilhas são vivas | `docs/arquipelago-regras.md`; `ILHAS_VIVAS` e `useInterativo` em `mundo/anel.tsx` | Baixo | A05 |
-| N14 | **Nenhum desafio está marcado para publicar.** É uma decisão consciente do C01b1, mas deixa Quadro das Cores, desafio do dia e fliperama vazios e impede a cor de voltar por partes | `docs/desafios-do-jogo/conteudo-por-posto.md`; manifestos | Alto, sequência | L03 |
-| N15 | **Duas versões de ilha, não três.** A proposta tem silhueta, versão média e completa; o jogo usa leve e completa, com a busca começando na ponte. Ajuste técnico aceitável, sem registro de escolha | `mundo/ilha-completa.tsx`, regras §6.9 | Baixo, registrar | L14 |
+| N13 | **(Tratado: seções 5 e 6.9 das regras atualizadas para a V20 e as seis ilhas completas; a fala "próxima fase" já não existe no código.)** **Trechos antigos nas regras e no código.** `arquipelago-regras.md` ainda diz V10 na seção 5, "só Bosque e Vila completas" em 6.9 e "único percurso" em 5. O código mantém a fala "Os moradores e os bichos chegam aqui na próxima fase", que nunca aparece porque as seis ilhas são vivas | `docs/arquipelago-regras.md`; `ILHAS_VIVAS` e `useInterativo` em `mundo/anel.tsx` | Baixo | A05 |
+| N14 | **(Tratado em parte, C01b: 22 quadros Kids e adulto voltam a pedir publicação, os de lista esperam o C02; a importação é da dona.)** **Nenhum desafio está marcado para publicar.** É uma decisão consciente do C01b1, mas deixa Quadro das Cores, desafio do dia e fliperama vazios e impede a cor de voltar por partes | `docs/desafios-do-jogo/conteudo-por-posto.md`; manifestos | Alto, sequência | L03 |
+| N15 | **(Registrado como decisão, regras §6.9 e §6.27.)** **Duas versões de ilha, não três.** A proposta tem silhueta, versão média e completa; o jogo usa leve e completa, com a busca começando na ponte. Ajuste técnico aceitável, sem registro de escolha | `mundo/ilha-completa.tsx`, regras §6.9 | Baixo, registrar | L14 |
 
 Também confirmados, já conhecidos: a Íris aparece numa ilustração da abertura (a proposta diz
-"só pelas páginas"); o pet do quarto não segue pela ilha (só o bicho do Bosque, `sistemas/seguir.ts`).
+"só pelas páginas"; registrado como decisão, regras §6.27); o pet do quarto não seguia pela ilha
+(tratado no S01, regras §6.26).
 
 ## 6. O que está excelente
 

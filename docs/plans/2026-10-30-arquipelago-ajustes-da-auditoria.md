@@ -121,7 +121,21 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | C01e2 | Reativação reanalisa a publicação exata, integrada localmente | `32dd5897a`, merge `5e76a14d7` | API 332 testes aprovados, 45 ignorados, Postgres local descartável, tipagem/Biome. Requisitos históricos incompletos exigem nova publicação; rascunho e conquistas preservados |
 | E02, rede do barco | Implementada por outra sessão e presente na base | `f27f31aaf` | `docs/qa/2026-10-30-rede-barco/`; mapa detalhado e conexões entre segredos continuam no restante de E02 |
 | E03 | Implementado por outra sessão e integrado localmente | `bbe7418bf`, `5df394ff3`, merge `ae68922b1` | `docs/qa/2026-10-30-fantasma-familiar/`; migração/adoção e aceite autenticado separados em Q01 |
-| Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
+| S (V19) e N05 | Integrado e enviado ao staging | `1e96a7627`, merge `1488f46c7` | Chaves, segredos, mapa, companhia e três percursos novos num salvamento só; documento cheio conferido |
+| N01 | Integrado e enviado | `43a33bc91`, merge `95a087743` | Borrões e Lumis em todas as ilhas, lanterna pelo Zappy na primeira noite |
+| N02 | Integrado e enviado | `cef00ff9f`, merge `2644215eb` | Cena da subida de posto; a fala "próxima fase" saiu do código |
+| N03 e N04 | Integrado e enviado | `34ff3724a`, merge `ff0a6722e` | Horta em horas, primeiro pedido rápido, clima natural antes das Nuvens |
+| N06, N07 e festa de fim de ano | Integrado e enviado | `761342049`, merge `942594230` | Resumo do dia, fim do tempo no fim da ação, festa de 20/12 a 06/01; Lanternas desligadas |
+| N08a | Integrado e enviado | `6c3447410`, merge `0e765c955` | Visitas de outras crianças só com os dois interruptores ligados; regras §6.22 |
+| N08b | Integrado e enviado | `f58b6c60d`, merge `8ce5acf9a` | Fotos no Clube pela moderação do hub; regras §6.23 |
+| N11 | Integrado e enviado | `32f155177`, merge `7316af613` | Chaves dos cômodos; regras §6.16.2a |
+| N12 | Integrado e enviado | `6238451e1`, merge `fca682da3` | Baús no alto do vento, só com o planador; o conteúdo dos baús fica pendente; regras §6.24 |
+| E02, mapa | Integrado e enviado | `0e7236050`, merge `cc34abc4f` | O mapa de cada ilha se revela andando; regras §6.25 |
+| S01, companhia | Integrado e enviado | `a40283108`, merge `b3798e66f` | O bichinho do quarto acompanha pela ilha; regras §6.26 |
+| E04, iglu e quintal | Quintal integrado e enviado; iglu adiado | `92aea3551`, merge `74819e31b`; iglu `3751feaaa` retirado na integração `25c225e5c` | O salvamento V20 do remoto não deixou espaço para o iglu; volta num documento próprio do serviço junto com o lote na arte. Segundo andar, terreno e subida final continuam |
+| C01b | Integrado e enviado | `956bcfe5e`, merge `b4ae582b6` | Recife, Pico, Vale e Nuvens só com blocos da trilha; 22 quadros voltam a pedir publicação, a importação é da dona |
+| A05 e N13 (30/10) | Regras §5, §6.9 e §6.27 atualizadas para a V20 | este lote | Decisões N09, N10, N15 e Íris na abertura registradas |
+| C02, C03, resto de E04, Q01 | A executar | Nenhum | C02 em andamento |
 
 ### Lote de visitas adultas da frente de entrega integral
 
