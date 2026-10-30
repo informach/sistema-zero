@@ -14,8 +14,10 @@ import { ligarGamepad } from './controles/gamepad'
 import { abrirAbertura, lerAberturaVista } from './estado/abertura'
 import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto'
 import { criarLoja } from './estado/loja'
+import { lojaDosPassos } from './estado/primeiros-passos'
 import { Relogios } from './estado/relogios'
 import { Hud } from './interface/hud'
+import { comecarPassosSozinho } from './interface/primeiros-passos'
 import { SalvamentoDoJogo } from './interface/salvamento'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
 import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
@@ -184,6 +186,8 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     })
   )
     abrirAbertura(loja, 'primeira')
+  // Sem a abertura, os primeiros passos começam já (com ela, começam quando ela fecha).
+  else comecarPassosSozinho(contexto, guardado.revisao === 0)
   return { tipo: 'pronto', contexto, fila }
 }
 
@@ -299,10 +303,12 @@ function JogoPronto({
     }
   }, [fila])
   // A primeira fala do Zappy: depois da abertura (`interface/abertura.tsx`) ou, sem ela, ao abrir.
+  // Com os primeiros passos andando, a boas-vindas é a primeira fala deles.
   useEffect(() => {
     const s = contexto.loja.getState()
-    if (s.painelAberto !== PAINEL_DA_ABERTURA && !s.salvamento.casa.portaNova)
-      s.dizer(boasVindas(contexto.plataforma.perfil.primeiroNome))
+    if (s.painelAberto === PAINEL_DA_ABERTURA) return
+    if (lojaDosPassos(contexto.loja, contexto.plataforma).getState().situacao === 'andando') return
+    if (!s.salvamento.casa.portaNova) s.dizer(boasVindas(contexto.plataforma.perfil.primeiroNome))
   }, [contexto])
 
   return (

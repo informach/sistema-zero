@@ -1,5 +1,6 @@
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useJogo } from '../estado/contexto'
+import { lojaDosPassos, usePassos } from '../estado/primeiros-passos'
 import type { Conforto } from '../sistemas/conforto'
 
 const RAPIDEZ: readonly { valor: Conforto['rapidez']; rotulo: string }[] = [
@@ -24,10 +25,13 @@ const QUALIDADE: readonly { valor: Conforto['qualidade']; rotulo: string }[] = [
  * fica guardado no aparelho.
  */
 export function PreferenciasDeConforto() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const conforto = lojaDoConforto(loja)
   const atual = useConforto(conforto, (s) => s.conforto)
   const mudar = conforto.getState().mudar
+  // As dicas de primeira vez do Zappy são do perfil (`estado/primeiros-passos.ts`).
+  const passos = lojaDosPassos(loja, plataforma)
+  const dicasLigadas = usePassos(passos, (s) => !s.dicas.desligadas)
 
   return (
     <section className="arq-conforto" aria-label="Conforto">
@@ -97,6 +101,14 @@ export function PreferenciasDeConforto() {
           onChange={(e) => mudar({ menosMovimento: e.target.checked })}
         />
         Menos movimento da câmera
+      </label>
+      <label className="arq-marcar">
+        <input
+          type="checkbox"
+          checked={dicasLigadas}
+          onChange={(e) => passos.getState().ligarDicas(e.target.checked)}
+        />
+        Dicas do Zappy na primeira vez de cada coisa
       </label>
     </section>
   )

@@ -7,6 +7,7 @@ import { lojaDoFarol, useFarol } from '../estado/farol'
 import { lojaDaGaleria, useGaleria } from '../estado/galeria'
 import { restanteDeHoje } from '../estado/loja'
 import { useToque } from '../estado/preferencias'
+import { lojaDosPassos, usePassos } from '../estado/primeiros-passos'
 import { useRetrato } from '../estado/retrato'
 import { PAINEL_DA_ABERTURA } from '../sistemas/abertura'
 import { BALAO } from '../sistemas/balao'
@@ -60,6 +61,7 @@ import { VisorDaLuneta } from './luneta'
 import { PainelDoMapa, useIlhaAqui } from './mapa'
 import { PainelDaMare, PainelDoFloco } from './mare'
 import { Menu } from './menu'
+import { PrimeirosPassos, RostoDoZappy, useLinhaDosPassos } from './primeiros-passos'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
 import { PainelDaBancada } from './receitas'
@@ -215,6 +217,8 @@ function Agora() {
   const horta = useEstado((s) => s.salvamento.horta)
   const projetos = useEstado((s) => s.salvamento.projetos)
   const dados = useDesafios(lojaDosDesafios(loja, plataforma), (s) => s.dados)
+  // Com os primeiros passos andando, a linha deles toma o lugar da do primeiro pedido.
+  const passos = useLinhaDosPassos()
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), CONFERIR_O_AGORA_MS)
@@ -226,14 +230,33 @@ function Agora() {
     horta,
     agoraMs: agora,
     desafioDeHoje: dados ? desafioDeHoje(dados).estado : null,
-    primeiroPedido: primeiroPedido({ casa: { portaNova }, horta, projetos }, agora)?.texto,
+    primeiroPedido:
+      passos === null
+        ? primeiroPedido({ casa: { portaNova }, horta, projetos }, agora)?.texto
+        : null,
   })
-  if (lista.length === 0) return null
+  const linha = passos !== null && passos !== 'andando' ? passos : null
+  if (lista.length === 0 && !linha) return null
   return (
     <section className="arq-agora arq-vidro" aria-labelledby="arq-agora-titulo">
       <h2 id="arq-agora-titulo">Agora</h2>
       <ul>
-        {lista.map((l) => (
+        {linha ? (
+          <li className="arq-agora-passos">
+            <button
+              type="button"
+              aria-label={`${linha.texto}. Abrir de novo a fala do Zappy`}
+              onClick={(e) => {
+                e.currentTarget.blur()
+                linha.reabrir()
+              }}
+            >
+              <RostoDoZappy />
+              <span>{linha.texto}</span>
+            </button>
+          </li>
+        ) : null}
+        {lista.slice(0, linha ? 2 : 3).map((l) => (
           <li key={l.id}>
             <span className="arq-agora-marca" aria-hidden="true" />
             {l.texto}
@@ -244,8 +267,13 @@ function Agora() {
   )
 }
 
-/** A fala do Zappy, no cartão de baixo (some depois de 7 s). */
+/**
+ * A fala do Zappy, no cartão de baixo (some depois de 7 s). Com o cartão dos primeiros passos (ou
+ * de uma dica) na tela, a fala entra nele (`interface/primeiros-passos.tsx`) e este não aparece.
+ */
 function Dica() {
+  const { loja, plataforma } = useJogo()
+  const cartao = usePassos(lojaDosPassos(loja, plataforma), (s) => s.tela.cartao)
   const dica = useEstado((s) => s.dica)
   const [visivel, setVisivel] = useState<number | null>(null)
   useEffect(() => {
@@ -254,7 +282,7 @@ function Dica() {
     const t = setTimeout(() => setVisivel((v) => (v === dica.id ? null : v)), 7000)
     return () => clearTimeout(t)
   }, [dica])
-  if (!dica || visivel !== dica.id) return null
+  if (!dica || visivel !== dica.id || cartao) return null
   return (
     <div className="arq-dica" role="status" aria-live="polite" key={dica.id}>
       <span className="arq-zappy" aria-hidden="true" />
@@ -751,7 +779,10 @@ function Corte() {
 const ENTRADA_DO_HUD_MS = 1400
 
 export function Hud() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
+  // O anel dos primeiros passos e das dicas: a parte da HUD que a fala mostra (`estilos.ts`).
+  const anel = usePassos(lojaDosPassos(loja, plataforma), (s) => s.tela.anel)
+  const anelDaDica = usePassos(lojaDosPassos(loja, plataforma), (s) => s.tela.dica)
   const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' || s.corte !== null)
   const naAbertura = useEstado((s) => s.painelAberto === PAINEL_DA_ABERTURA)
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
@@ -831,7 +862,11 @@ export function Hud() {
   if (toque) classes.push('toque')
   if (entrando) classes.push('entrando')
   return (
-    <div className={classes.join(' ')}>
+    <div
+      className={classes.join(' ')}
+      data-anel={anel ?? undefined}
+      data-anel-cor={anel && anelDaDica ? 'dica' : undefined}
+    >
       <Soneca />
       <QuemJoga />
       {/* Na casa do irmão, no lugar da ilha e do "Agora", de quem é a casa e a volta. */}
@@ -841,7 +876,7 @@ export function Hud() {
         <TempoLivre />
         <button
           type="button"
-          className="arq-botao-icone arq-vidro"
+          className="arq-botao-icone arq-vidro arq-botao-menu"
           onClick={() => loja.getState().abrirMenu(true)}
           aria-label="Abrir o menu"
           title="Menu (Esc)"
@@ -852,8 +887,10 @@ export function Hud() {
       <Cronometro />
       <AlturaDoBalao />
       <RotinaAndando />
-      {visitando ? null : <Agora />}
+      {/* No Construir o "Agora" sai: a fala do Zappy sobe para o lugar dele (os dois se cobriam). */}
+      {visitando || construindo ? null : <Agora />}
       <Dica />
+      <PrimeirosPassos />
       {!noFarol && visitando ? <FaixaDaVisita /> : null}
       {construindo ? (
         <BarraDeConstruir />

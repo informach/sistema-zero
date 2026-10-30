@@ -7,6 +7,7 @@ import { criarControle } from '../../src/controles/controle'
 import { abrirAbertura, lerAberturaVista } from '../../src/estado/abertura'
 import { Contexto, type ContextoDoJogo, criarMovimento } from '../../src/estado/contexto'
 import { criarLoja } from '../../src/estado/loja'
+import { lojaDosPassos } from '../../src/estado/primeiros-passos'
 import { Abertura } from '../../src/interface/abertura'
 import { criarRegistro } from '../../src/mundo/interativos'
 import { criarPlataformaFalsa } from '../../src/plataforma/falsa'
@@ -15,6 +16,7 @@ import {
   PAINEL_DA_ABERTURA,
   SAIDA_DA_ABERTURA_MS,
 } from '../../src/sistemas/abertura'
+import { chaveDosPassos } from '../../src/sistemas/primeiros-passos'
 
 GlobalRegistrator.register()
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
@@ -81,7 +83,31 @@ try {
   await act(async () => loja.getState().abrirPainel(null))
   await desmontar()
   assert.equal(lerAberturaVista(plataforma.publico, plataforma.perfil.id), true)
-  assert.ok(loja.getState().dica?.texto.startsWith('Oi,'))
+  // Na primeira vez, os primeiros passos começam: a fala 1 deles é a boas-vindas.
+  assert.equal(lojaDosPassos(loja, plataforma).getState().situacao, 'andando')
+  assert.equal(loja.getState().dica, null)
+
+  // Com os primeiros passos já feitos no aparelho, a boas-vindas de sempre volta.
+  const loja2 = criarLoja({
+    salvamento: criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z')),
+    jornada: 1,
+    quarto: await plataforma.lerQuarto(),
+    avatar: await plataforma.lerAvatar(),
+    acesso: AcessoSchema.parse((await plataforma.servico.buscar('/acesso')).corpo),
+    aoMudar() {},
+  })
+  localStorage.setItem(
+    chaveDosPassos(plataforma.publico, plataforma.perfil.id),
+    JSON.stringify({ situacao: 'feito', passo: 'fim' }),
+  )
+  localStorage.removeItem(chaveDaAbertura(plataforma.publico, plataforma.perfil.id))
+  contexto.loja = loja2
+  abrirAbertura(loja2, 'primeira')
+  await montar()
+  await act(async () => loja2.getState().abrirPainel(null))
+  await desmontar()
+  assert.ok(loja2.getState().dica?.texto.startsWith('Oi,'))
+  contexto.loja = loja
 
   for (const motivo of ['tempoPausado', 'tempoAcabou', 'conflito'] as const) {
     localStorage.removeItem(chaveDaAbertura(plataforma.publico, plataforma.perfil.id))

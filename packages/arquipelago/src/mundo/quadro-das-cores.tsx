@@ -5,6 +5,7 @@ import { type Color, type MeshStandardMaterial, Object3D } from 'three'
 import quadroGlb from '../assets/itens/quadro-das-cores.glb'
 import { useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
+import { lojaDosPassos } from '../estado/primeiros-passos'
 import {
   AVISO_DO_DIA,
   diaParaAvisar,
@@ -122,6 +123,8 @@ export function QuadroDasCores({
     const dia = diaParaAvisar(dados, lerAviso(plataforma.perfil.id))
     if (!dia) return
     gravarAviso(plataforma.perfil.id, dia)
+    // Na primeira vez, a dica do Quadro das Cores toma o lugar do aviso.
+    if (lojaDosPassos(loja, plataforma).getState().pedirDica('quadro')) return
     loja.getState().dizer(AVISO_DO_DIA)
   }, [dados, loja, plataforma])
 

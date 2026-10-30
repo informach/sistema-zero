@@ -6,6 +6,7 @@ import borraoGlb from '../assets/lumis/borrao.glb'
 import brigadeiroGlb from '../assets/lumis/brigadeiro.glb'
 import quindimGlb from '../assets/lumis/quindim.glb'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosPassos } from '../estado/primeiros-passos'
 import { abrirRotina } from '../estado/rotina'
 import {
   type BorraoDaNoite,
@@ -157,6 +158,8 @@ export function BorroesDaVila({
                   aoFugir={() => {
                     if (avisouDaFuga.current) return
                     avisouDaFuga.current = true
+                    // Na primeira vez, a dica dos borrões toma o lugar desta fala.
+                    if (lojaDosPassos(loja, plataforma).getState().pedirDica('borrao')) return
                     loja.getState().dizer(FALA_DO_BORRAO_FUGINDO)
                   }}
                   aoPrender={() => {

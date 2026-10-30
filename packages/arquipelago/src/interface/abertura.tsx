@@ -15,6 +15,7 @@ import {
 } from '../sistemas/abertura'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { PINTURAS } from './abertura-cenas'
+import { comecarPassosSozinho } from './primeiros-passos'
 
 /** Teclas que a abertura toma para si (o personagem por baixo não pula nem anda com elas). */
 const TECLAS_DA_ABERTURA = new Set(['Space', 'Enter', 'NumpadEnter', 'ArrowRight'])
@@ -52,7 +53,7 @@ function engolirEspacoAteSoltar() {
  * tempo, o salvamento parado), ela não conta como vista e volta na próxima vez.
  */
 export function Abertura() {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, rastro, controle } = useJogo()
   const toque = useToque()
   const aparelhoPedeMenos = useReducedMotion()
   const jogoPedeMenos = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
@@ -171,10 +172,12 @@ export function Abertura() {
       const aForca = s.tempoPausado || s.tempoAcabou || salvamentoPausado(s.salvamentoSituacao)
       if (aForca || origem !== 'primeira') return
       marcarAberturaVista(plataforma.publico, plataforma.perfil.id)
+      // Os primeiros passos começam aqui; a fala 1 deles já é a boas-vindas.
+      if (comecarPassosSozinho({ loja, plataforma, rastro, controle }, true)) return
       if (!s.salvamento.casa.portaNova && !s.visita)
         s.dizer(boasVindas(plataforma.perfil.primeiroNome))
     })
-  }, [loja, plataforma])
+  }, [loja, plataforma, rastro, controle])
 
   const cena = CENAS[indice]!
   const fala = cena.falas[Math.max(0, falaDaVez)] ?? cena.falas[0]!

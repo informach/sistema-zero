@@ -3556,3 +3556,65 @@ peça comprada permanece depois da festa. Não há roupa obrigatória nem prêmi
 Carnaval sugere máscara e coroa de flores; Junina, camiseta listrada e laço. Lanternas e fim
 de ano têm sugestões preparadas, mas continuam sem data automática aprovada. O jogo não
 ativa essas festas por conta própria. Kids e adultos usam suas próprias interfaces e contas.
+
+## Primeiros passos com o Zappy (30/10/2026)
+
+Pedido da dona: quando a criança entra pela primeira vez, ela fica perdida. O Zappy ensina o
+começo fazendo, uma coisa por vez. Proposta aprovada no canvas "Primeiros passos com o Zappy".
+
+- **Quem vê sozinho:** quem ainda não tem a geladeira, logo depois da abertura da primeira vez
+  (vista ou pulada) ou, sem abertura, ao abrir o jogo. Quem parou no meio continua de onde estava.
+  Quem pulou ou terminou só vê pelo menu. Nunca na casa do irmão nem no acesso de suporte. A marca
+  fica no aparelho, por público e perfil; o salvamento não muda.
+- **As 23 falas, em 6 capítulos:** oi (com o nome); andar, olhar em volta e pular; chegar na porta
+  nova e abrir; plantar, regar e a planta crescendo (o nome e o tempo vêm da semente: alface três
+  minutos, tomate cinco, milho oito); as barrinhas, a mochila, abrir o menu, o mapa (dentro do
+  menu) e "pode explorar" (só se a planta ainda cresce); colher, a geladeira, a obra e o fim.
+- **O que conta como feito:** andar 2 metros, girar a câmera um quarto de volta, um pulo, o aviso
+  da porta aparecer, a porta aberta, a etapa do primeiro pedido mudar, o menu aberto, a geladeira
+  ganha, o Construir aberto, um cômodo novo, uma porta nova na obra, a geladeira posta e voltar ao
+  Viver. Ler e fechar não conta. Feito, aparece "Isso. Feito." por 1,5 s e a próxima fala chega.
+- **O que o jogo já tem** (a porta aberta antes da hora, a horta já plantada) vira lembrete: a fala
+  aparece com "Você já fez isso." e segue sozinha em 4 s.
+- **A geladeira:** a fala 16 diz que ela precisa de um cômodo novo, fora do quarto, com "Fazer
+  agora" e "Depois". A frente da porta nova é a varanda, então o cômodo vai encostado na casa e
+  ganha uma porta. Saindo do Construir no meio, a fala volta a pedir o Construir. "Depois" vai para
+  o fim; a obra volta, com as mesmas falas, na próxima vez que o Construir da casa abrir.
+- **O X:** fala sem tarefa avança; fala com tarefa recolhe, e a tarefa vira a primeira linha do
+  Agora com o rosto do Zappy (tocar abre de novo). Enter também fecha. Enquanto o tutorial anda,
+  a linha dele toma o lugar da linha do primeiro pedido.
+- **Pular:** "Pular o tutorial" pede confirmação no próprio cartão ("Tudo bem pular. Quando
+  quiser, me chame no menu, em Primeiros passos.") e guarda onde parou.
+- **Rever:** no menu, em Início, o cartão "Primeiros passos" diz o capítulo e tem Continuar e
+  Começar de novo (feito: "Rever os primeiros passos"); no Diário, embaixo de "Rever a abertura".
+  Começar de novo não desfaz nada.
+- **Onde a fala some:** menu (menos as falas do mapa, que moram nele), painéis, ferramentas,
+  corrida, balão, barco, tela do tempo, resultado e modo foto. Volta sozinha depois.
+- **O Zappy mostra o lugar:** voa até a porta, o canteiro, a casa ou a geladeira e fica olhando
+  para a criança; um facho dourado e um anel marcam o alvo; no "andar", um círculo de luz no chão
+  mostra até onde ir. Com menos movimento ele aparece no lugar, e o anel não pulsa. Na HUD, um anel
+  acende na parte que a fala mostra.
+- **O fim:** o cartão "O que você já sabe" (andar e olhar, pular, usar as coisas, plantar e colher,
+  menu e mapa, e Construir se a geladeira foi posta) por cima do jogo parado. Não dá moeda nem
+  prêmio: o prêmio é a geladeira do primeiro pedido.
+- **Textos:** sem travessão, sem exclamação, sem começar com pergunta (teste). A tecla desenhada e
+  o texto mudam com o último jeito de jogar (teclado, toque ou controle). As falas do mapa e do
+  curso vêm da voz do público (o adulto fala da etapa da jornada).
+
+## Dicas de primeira vez (30/10/2026)
+
+- Uma vez só por assunto, por perfil no aparelho. O cartão é o do Zappy, verde-água, com a etiqueta
+  "Primeira vez" e "1 de 2". Explicam e acendem o anel; nunca pedem tarefa. O X passa a fala.
+- **Quadro das Cores:** ao chegar perto do cavalete (ou no aviso do desafio de hoje, que ela
+  substitui na primeira vez): o que é o Quadro, os seis pedaços de cor e o curso que um quadro pode
+  pedir. Na primeira vez que o painel abre: o desafio de hoje, com o anel no cartão dele.
+- **Barco:** no primeiro "Embarcar": para onde ele leva (o Recife ou de volta para casa) e que ele
+  para sozinho no cais; na primeira chegada fora de casa, como voltar.
+- **Lumis:** ao ganhar a lanterna; no primeiro borrão (no lugar de "O borrão fugiu da escuridão");
+  quatro segundos depois de prender o primeiro Lumi (a rotina e o Caderno dos Lumis).
+- **Primeira noite:** quando anoitece com a criança jogando, menos no meio dos primeiros passos
+  (aí espera a próxima noite). Uma fala sempre e mais uma que combine: a cama com a energia baixa,
+  senão a lanterna ou o Bento na Vila aberta.
+- **Uma de cada vez,** e nunca com os primeiros passos andando. Ficam no menu, em "Dicas que você
+  já viu", para ler de novo. "Desligar as dicas" no cartão (com confirmação) e em Conforto e
+  controles, onde religa.

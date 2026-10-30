@@ -52,4 +52,8 @@ export const VOZ_ADULTA: VozDoJogo = {
       ? 'Acende na última etapa da sua jornada.'
       : `Abre na etapa ${ilha.posicao} da sua jornada.`,
   marcoDaJornada: (posicao) => `Etapa ${Math.min(8, Math.max(1, Math.floor(posicao) || 1))}`,
+  passos: {
+    mapa: 'Essas são as ilhas. As cinzas abrem quando você chega a uma nova etapa da sua jornada.',
+    curso: 'Se um quadro pedir um curso, faça as aulas e volte aqui.',
+  },
 }
