@@ -232,6 +232,36 @@ try {
     const memoriaDepois = await ler()
     if (memoriaAntes && memoriaDepois && memoriaDepois.geometrias > memoriaAntes.geometrias + 2)
       throw new Error('Geometrias ficaram depois da segunda saída')
+    // Uma primeira volta aquece os personagens que aparecem no final. Reentradas seguintes
+    // não podem acumular suas texturas de ossos, mesmo sem aumentar geometrias.
+    const ciclos = [memoriaDepois]
+    for (let ciclo = 0; ciclo < 3; ciclo++) {
+      await levar(-9.2, 2.2, -10.9)
+      await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+      await usar()
+      await etapa('sala')
+      await page.locator('.arq-corte').waitFor({ state: 'detached' })
+      await page.waitForTimeout(1500)
+      await page.keyboard.press('Escape')
+      await etapa('fora')
+      await page.locator('.arq-corte').waitFor({ state: 'detached' })
+      await page.waitForTimeout(3000)
+      const medida = await ler()
+      ciclos.push(medida)
+      if (!medida || !memoriaDepois) throw new Error('Medidor ausente na prova de descarte')
+      if (medida.geometrias > memoriaDepois.geometrias + 2)
+        throw new Error('Geometrias acumularam ao reabrir o Farol')
+      if (medida.texturas > memoriaDepois.texturas)
+        throw new Error('Texturas acumularam ao reabrir o Farol')
+    }
+    console.log(
+      `${tipo}: recursos após remontagens`,
+      ciclos.map((d) => ({
+        geometrias: d?.geometrias,
+        texturas: d?.texturas,
+      })),
+    )
+    writeFileSync(path.join(prints, `ciclos-${tipo}.json`), JSON.stringify(ciclos, null, 2))
     if (!celular) {
       await page.route('**/*alto-do-farol*.glb', (route) =>
         route.fulfill({ status: 503, body: '' }),

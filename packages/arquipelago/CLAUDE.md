@@ -40,6 +40,15 @@ menu, o nome "Primeiros passos"). Notas e prints: `docs/qa/2026-10-30-primeiros-
   desligadas. Testes: `tests/primeiros-passos.test.ts` e `tests/primeiros-passos-loja.test.ts`;
   navegador: `playground/verificar-passos-browser.ts` (`ARQUIPELAGO_PARTE=passos|celular|dicas`).
 
+## Descarte das cópias animadas (30/10/2026, A01)
+
+`copiarArteAnimada` é dona dos esqueletos clonados e dos materiais de brilho que duplica.
+`soltar()` descarta cada esqueleto próprio, incluindo sua `boneTexture`, e os materiais próprios.
+Não descartar geometria, textura de material ou material compartilhado com o GLB em cache.
+O descarte continua seguro se chamado de novo, inclusive após realocação da textura por um efeito
+remontado. A prova do Farol repete três entradas/saídas após aquecimento e confere texturas além
+de geometrias. Teste puro: `arte-animada-descarte.test.ts`.
+
 ## Integração dos portos de 30/10/2026
 
 Os cinco GLBs do commit `080b6a3d2` estão integrados. `raioDaEsperaDaIlha` amplia a espera

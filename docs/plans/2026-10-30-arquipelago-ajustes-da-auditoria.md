@@ -72,26 +72,27 @@ Essas dependências não interrompem lotes independentes.
 `luzes` e `soltar()`. A cópia é proprietária dos esqueletos clonados e dos materiais de brilho
 duplicados. Geometrias, texturas de materiais e materiais não alterados continuam compartilhados.
 
-- [ ] Criar uma cena mínima com dois `SkinnedMesh`, esqueleto e geometria compartilhados no
+- [x] Criar uma cena mínima com dois `SkinnedMesh`, esqueleto e geometria compartilhados no
   original. Clonar pelo helper real e alocar `boneTexture` nos esqueletos da cópia. Observar eventos
   `dispose` da cópia, do original e das geometrias/materiais compartilhados.
-- [ ] Demonstrar a falha atual: depois de `soltar()`, os esqueletos próprios ainda têm textura.
-- [ ] Recolher esqueletos únicos durante o percurso já usado pelo helper. Tornar o descarte
+- [x] Demonstrar a falha atual: depois de `soltar()`, os esqueletos próprios ainda têm textura.
+- [x] Recolher esqueletos únicos durante o percurso já usado pelo helper. Tornar o descarte
   idempotente e executar `skeleton.dispose()` apenas nas cópias, além dos materiais já exclusivos.
-- [ ] Testar original intacto, segunda cópia utilizável, descarte repetido e cena sem esqueleto.
-- [ ] Ampliar o verificador do Farol para aquecer uma remontagem e repetir três ciclos, conferindo
+- [x] Testar original intacto, segunda cópia utilizável, descarte repetido e cena sem esqueleto.
+- [x] Ampliar o verificador do Farol para aquecer uma remontagem e repetir três ciclos, conferindo
   texturas e geometrias após a cena estabilizar. Manter os casos de página, pausa, persistência,
   falha de carga e bloqueio antes da Lenda.
-- [ ] Rodar teste dirigido e suíte, tipagem, Biome, navegador nos dois tamanhos. Comparar com a
+- [x] Rodar teste dirigido e suíte, tipagem, Biome, navegador nos dois tamanhos. Comparar com a
   sequência da auditoria: 53, 74, 95, 116 e 137 texturas, com 399 geometrias.
-- [ ] Revisar o diff e a propriedade dos recursos; registrar comandos e resultado; commit e merge.
+- [x] Revisar o diff e a propriedade dos recursos; registrar comandos e resultado; commit e merge.
 
 ## Registro dos lotes
 
 | Lote | Estado | Commit / merge | Evidência e dependências |
 | --- | --- | --- | --- |
-| Organização | Plano registrado | A registrar no primeiro lote | Auditoria e QA preservados; desenho aceito pela instrução da dona |
-| A01 | Em execução | Ainda sem commit de código | Reprodução da falha já feita durante a auditoria |
+| Organização | Registrada no staging local | `1b7a6c4a1` | Auditoria e QA preservados; desenho aceito pela instrução da dona |
+| A01 | Implementado, revisado e verificado | Commit deste lote, seguido de merge local | 1.223 testes passaram, 1 ignorado; tipagem/Biome aprovados; texturas 53 constantes em computador e celular emulado |
+| A02 | Plano técnico pronto | Ainda sem implementação | `docs/superpowers/plans/2026-10-30-arquipelago-cor-conquistada.md` |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
 ## Pedidos de arte

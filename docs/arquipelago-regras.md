@@ -1,5 +1,14 @@
 # Arquipélago Vagalume: regras do jogo
 
+## Ajuste de recursos dos personagens (30/10/2026, A01)
+
+Entrar e sair de uma sala não deve acumular memória dos personagens que reaparecem.
+Cada cópia animada libera os próprios esqueletos e suas texturas de ossos ao sair da cena.
+O modelo original e as outras cópias continuam utilizáveis. Geometrias e materiais
+compartilhados não são descartados por essa cópia. O verificador do Farol acompanha texturas
+e geometrias em três remontagens depois do aquecimento; conferir somente geometrias não basta.
+Regra técnica: `mundo/arte-animada.ts`, `copiarArteAnimada().soltar()`.
+
 Levantamento de 27/10/2026, feito lendo o código. Para a visão geral dos pacotes e de como o jogo
 chega à criança, veja `docs/arquipelago.md`.
 
