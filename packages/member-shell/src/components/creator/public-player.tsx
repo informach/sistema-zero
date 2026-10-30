@@ -97,6 +97,7 @@ export function PublicPlayer({
   id,
   brandLabel = 'Sistema Zero',
   skin = 'kids',
+  embedded = false,
 }: {
   id: string
   brandLabel?: string
@@ -106,21 +107,33 @@ export function PublicPlayer({
    * como jogar e nenhum mascote. O padrão é o Kids de sempre.
    */
   skin?: 'kids' | 'adult'
+  /** Dentro de uma ferramenta, respeita a altura disponível do diálogo. */
+  embedded?: boolean
 }) {
   // `id` identifica todo o recurso assíncrono e todo o estado de execução do
   // jogo. Uma key nova desmonta a instância anterior de forma atômica: autor,
   // projeto, iframe, aspecto, foco e preferências nunca atravessam entre jogos.
-  return <PublicPlayerForProject key={id} id={id} brandLabel={brandLabel} skin={skin} />
+  return (
+    <PublicPlayerForProject
+      key={id}
+      id={id}
+      brandLabel={brandLabel}
+      skin={skin}
+      embedded={embedded}
+    />
+  )
 }
 
 function PublicPlayerForProject({
   id,
   brandLabel,
   skin,
+  embedded,
 }: {
   id: string
   brandLabel: string
   skin: 'kids' | 'adult'
+  embedded: boolean
 }) {
   const adult = skin === 'adult'
   const [Player, setPlayer] = useState<PlayerComponent | null>(null)
@@ -163,6 +176,7 @@ function PublicPlayerForProject({
 
   useEffect(() => {
     let active = true
+    const controller = new AbortController()
     setRuntimeError(null)
     void (async () => {
       try {
@@ -170,6 +184,7 @@ function PublicPlayerForProject({
           import('@sistemazero/studio/player'),
           fetch(`/api/studio/play/${encodeURIComponent(id)}?reload=${reloadKey}`, {
             cache: 'no-store',
+            signal: controller.signal,
           }),
         ])
         if (!active) return
@@ -231,6 +246,7 @@ function PublicPlayerForProject({
     })()
     return () => {
       active = false
+      controller.abort()
     }
   }, [id, reloadKey])
 
@@ -459,7 +475,7 @@ function PublicPlayerForProject({
 
   return (
     <main
-      className={`relative flex h-dvh w-full flex-col overflow-hidden ${
+      className={`relative flex ${embedded ? 'h-full' : 'h-dvh'} w-full flex-col overflow-hidden ${
         adult
           ? 'bg-[color-mix(in_oklab,var(--topo)_78%,black)] text-(--topo-texto)'
           : 'bg-background text-foreground'

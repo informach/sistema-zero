@@ -1,7 +1,13 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
+import { ilha as ilhaDoContrato } from '@sistemazero/arquipelago-contracts'
 import { Matrix4, type Mesh, type Object3D, Quaternion, Raycaster, Vector3 } from 'three'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
-import { ALTURA_DAS_NUVENS } from '../src/mundo/medidas'
+import {
+  ALTURA_DAS_NUVENS,
+  DISTANCIA_DA_TROCA,
+  MARGEM_DA_ESPERA_PELO_CHAO,
+  raioDaEsperaDaIlha,
+} from '../src/mundo/medidas'
 import { CORPO } from '../src/sistemas/corpo'
 import {
   arquivoDaIlha,
@@ -102,6 +108,24 @@ beforeAll(async () => {
 
 describe.each(Object.entries(PORTOS))('o porto do barco: %s', (ilha, porto) => {
   const lido = () => lidos.get(ilha) as Lido
+
+  test('espera o chão em todos os vértices do porto, dentro da distância que ativa a ilha', () => {
+    const definicao = ilhaDoContrato(ilha as Parameters<typeof ilhaDoContrato>[0])
+    let vertices = 0
+    lido().raiz.traverse((no) => {
+      const mesh = no as Mesh
+      if (!mesh.isMesh || !doPortoDoBarco(mesh.name)) return
+      const posicoes = mesh.geometry.getAttribute('position')
+      for (let i = 0; i < posicoes.count; i++) {
+        const p = new Vector3().fromBufferAttribute(posicoes, i).applyMatrix4(mesh.matrixWorld)
+        const espera = raioDaEsperaDaIlha(definicao, p.x, p.z)
+        expect(Math.hypot(p.x, p.z)).toBeLessThanOrEqual(espera)
+        expect(espera + MARGEM_DA_ESPERA_PELO_CHAO).toBeLessThan(DISTANCIA_DA_TROCA)
+        vertices++
+      }
+    })
+    expect(vertices).toBeGreaterThan(0)
+  })
 
   test('a âncora barco fica na linha d’água, com a proa (+x) para o mar e o cais como no Recife', () => {
     const { barco, cais } = lido()

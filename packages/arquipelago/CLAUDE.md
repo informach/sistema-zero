@@ -1,5 +1,149 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Integração dos portos de 30/10/2026
+
+Os cinco GLBs do commit `080b6a3d2` estão integrados. `raioDaEsperaDaIlha` amplia a espera
+somente no setor de 35 graus para cada lado do porto. Limites com folga do corpo: Bosque
+26,7 m, Vila 19,2 m, Pico 19,6 m, Vale 19,1 m e Nuvens 25,9 m. A caverna do Pico conserva
+o limite maior de 28 m. Nenhum desses setores ultrapassa a ativação da ilha, a 30 m.
+`portos-das-ilhas.test.ts` percorre os vértices reais dos novos colisores; os testes do Pico,
+Vale e Nuvens não excluem mais o porto da cobertura. Isso protege a reabertura sobre o deque.
+Os portos já fazem parte das ilhas completas. Rede ampliada do barco, abertura das boias e
+transformação vertical das âncoras das Nuvens ainda pertencem ao restante de L10.
+
+## Receitas sazonais (L09, 30/10/2026)
+
+O vestuário usa a ferramenta `avatar`/`vestir`, molde V1 estrito com a festa. A feira só abre
+durante uma festa atual. Peças, posse, preço e confirmação são do configurador do Members.
+O retorno `avatar-pronto` substitui o avatar da montagem e atualiza o saldo; cancelar não grava
+a prévia. O jogo pausa enquanto a ferramenta abre. V18 não recebe roupa nem preço.
+Na plataforma falsa, o editor ausente responde `playground`; molde inválido e suporte têm
+recusas próprias. A prova visual usa o diálogo real em uma fixture local, descrita no QA.
+
+A Salada do Carnaval usa alface, tomate e milho na bancada; o Milho da fogueira usa milho na
+Junina, junto da pipoca existente. São pratos com ícones do inventário, sem modelo 3D novo.
+`receitaEmEpoca` recebe a festa explicitamente. Diário conserva as receitas; bancada automática
+e painel conferem a época novamente ao agir. `fazerReceita` recusa prato de outra festa e save
+acima de 65.536 bytes sem consumir ingredientes. Pratos prontos não expiram nem somem.
+`festaAtual` aceita override apenas da plataforma falsa; as datas não aprovadas continuam desligadas.
+
+## Compra de insumos (L07, 30/10/2026)
+
+A feira oferece onze sementes/ingredientes do catálogo V1 compartilhado, uma a dez unidades.
+O painel informa quantidade, preço total e fontes gratuitas, com confirmação e cancelamento.
+`FilaDeSalvamento` guarda a base e o comando UUID no mesmo diário IndexedDB, fora de V18,
+antes de chamar o serviço. O estado `confirmando` pausa o mundo e permite retomar na proteção do
+salvamento. A abertura consulta pendência antes de iniciar o jogo. Ao fechar, não inicia novas
+consultas; um comando sem resposta fica disponível para a próxima abertura.
+
+Só reaplicar um comando conhecido ao rascunho em voo se revisão e snapshot inteiro da resposta
+forem exatamente a entrega esperada. Não somar inventários remotos arbitrários. Concorrência
+divergente mantém o conflito e o rascunho. GET/POST de insumos usam apenas a ponte da plataforma.
+O jogo nunca importa o Members. `insumos-falsos.ts` reproduz comandos e recusas no playground;
+a prova de débito único real está nos testes locais do serviço, não no playground.
+
+Evidências em `docs/qa/2026-10-30-insumos/README.md`; implantação em
+`docs/operations/arquipelago-insumos.md`.
+
+## Pedidos remunerados (L07, 30/10/2026)
+
+Os seis moradores usam o catálogo, as receitas e `prepararEntregaDoPedido` dos contratos.
+O dia é o de São Paulo. A conversa só calcula uma prévia das falas: a fila confirma consumo,
+amizade, cesta e três moedas (quatro com humor ótimo) no serviço. Nunca aplicar a prévia ao save.
+O teto semanal de 100 é o mesmo das outras recompensas, na carteira do Members.
+
+O diário IndexedDB guarda `entrega` antes de enviar, fora de V18, mutuamente exclusiva com
+`compra`. `retomarOperacoes` consulta a reserva de insumos e no máximo um crédito pendente.
+Crédito pendente não prende o salvamento, pois o consumo já aconteceu. Resultado de teto é
+terminal e não acumula dívida. Reabrir usa a mesma chave e recebe o save mais recente.
+
+Durante `confirmando`, o modal bloqueia comandos e preserva o painel/câmera da conversa.
+Conflito, recusa e fim do tempo ainda o fecham. O recibo pode aparecer enquanto o relógio
+retoma, mas a interface mantém as ações bloqueadas. Resposta tardia não reabre painel fechado.
+O playground usa a mesma entrega pura; a prova de carteira real usa bancos locais descartáveis.
+
+## Mapa das visitas (L10, 30/10/2026)
+
+O salvamento atual é V18, com `ilhasVisitadas` em oito bits estáveis. `sistemas/exploracao.ts`
+é a regra pura; `estado/exploracao.ts` respeita pausa, modo, suporte, visita e carregamento.
+`mundo/descoberta-da-ilha.tsx` só observa chão disponível: raio 12 no anel, 24 na central e
+4 no Farol aberto. Nas Nuvens, a altura mínima é 8 m. Um bit já marcado não gera nova gravação.
+`conciliar-salvamento.ts` faz união das descobertas, sem mudar a transação de inventário.
+O mapa distingue acesso pela jornada de visita física. O marcador indica a região mais próxima,
+não é prova de presença. `playground/verificar-mapa-browser.ts` confere persistência e interface
+nos dois tamanhos. Não inferir visitas antigas por posto, ponte vista ou posição guardada.
+
+## Feira semanal (L09, 29/10/2026)
+
+`sistemas/semana.ts` é a semana civil compartilhada pelo tema e pela feira. `feira.ts` destaca
+três aparências existentes e conserva o catálogo inteiro. `mundo/feira.tsx` usa `barraca-6`,
+sem geometria ou colisor novo. `interface/feira.tsx` reutiliza `CartaoDaGaleria` e a loja existente:
+mesma confirmação, preço, posse e saldo do serviço, sem segunda carteira. Projeto azul ausente,
+suporte, tempo, visita ou conflito não oferecem compra. Desmontar a ilha fecha o painel.
+`verificar-feira-browser.ts` prova interação, confirmação/cancelamento, compra e reabertura no
+playground local. A unificação da propriedade no Members é L04, ainda não concluída.
+
+## Tema semanal no diário (L09, 29/10/2026)
+
+`sistemas/tema-da-semana.ts` calcula a segunda-feira civil de São Paulo e o índice da lista V1
+(referência 26/10/2026, seis temas). `interface/tema-da-semana.tsx` mantém as outras ideias
+selecionáveis, sem prazo, prêmio, persistência ou alteração de obras. Reabre Construir pela
+loja existente e só na própria casa. Não confundir sugestão criativa com objetivo do Estúdio.
+
+
+## Convidados pelo aconchego (L06, 29/10/2026)
+
+`sistemas/visitas-dos-moradores.ts` calcula visita (12 pontos) ou festa (22) por cômodo,
+com moradores conhecidos de ilhas liberadas. Usa planta, área dos objetos e footprint dos
+móveis; valida a circulação desde a porta antes de ocupar uma célula. Sem prêmio novo ou save.
+`estado/convidados.ts` é por montagem; `mundo/convidados.tsx` só mantém modelos perto da casa.
+O morador original é ocultado enquanto está na casa. Reutilize `MoradorDaIlha`, sem duplicar
+amizade/conversas. A posição memorizada evita fechar a conversa nas atualizações do jogo.
+`Moradores em casa` no menu permite festa, visita e descanso. Suporte, tempo, conflito,
+construção e visita alheia recusam presença. `?convidados=1` prepara somente o playground.
+
+
+## Profissões e entrega inteira (L07, 29/10/2026)
+
+`estado/turno.ts` abre uma sessão do serviço antes do balcão e manda as seis bandejas aceitas.
+`sistemas/profissoes.ts` guarda a confirmação sem resposta por perfil/público/balcão no aparelho;
+limpa só ao receber a mesma sessão concluída. Pendência de pagamento confirmada passa a ser do
+servidor. Fechar/reabrir invalida respostas antigas da UI. Não inventar saldo ou moedas locais.
+Os três balcões ganham 5 moedas/dia cada, dentro das 100 semanais de todo o jogo.
+
+As regras puras dos pedidos estão em `arquipelago-contracts/src/turnos.ts`; o jogo adapta só
+ingredientes e amizade. `adicionarConjunto` recusa uma cesta que não cabe inteira. Bento não
+consome presente/pedido nem cruza a amizade de uma receita enquanto sua cesta não couber.
+O playground simula as mesmas recusas e crédito idempotente, separado do salvamento.
+Testes: `tests/profissoes.test.ts`, `turnos.test.ts`, `receitas-do-bento.test.ts`.
+
+## Receitas por amizade e coleção (L08, 29/10/2026)
+
+`sistemas/receitas.ts` é o catálogo único de receitas e suas origens. `receitaConhecida` recebe
+o salvamento inteiro: não deduzir mais o livro apenas dos corações do Bento. Diário, álbum,
+bancada e forno usam a mesma régua. Maré, Floco, Jade e Iriê ensinam com um coração; os quatro
+bichos do Bosque liberam a salada colorida. Os pedidos dos quatro moradores entregam a cesta
+de ingredientes não cultiváveis, numa operação inteira: se não couber, nada é consumido nem
+marcado como entregue. Não adicionar item de recompensa ao render nem alterar o save histórico.
+
+O catálogo tem 12 receitas e 30 itens de mochila. O cenário combinado de obra, rotinas,
+aparências e amizades, com cada item a 999, usa 63.055 bytes (margem de 2.481). A prova é
+`tests/receitas-do-anel.test.ts`, usando o gerador compartilhado de cenários pesados dos contratos.
+Isso é uma prova do cenário construído, não uma promessa de que qualquer JSON arbitrário cabe.
+O teto continua obrigatório na gravação.
+
+No álbum do Recife, conte apenas baú, página e tesouro por `albumDoSalvamento().recife`.
+`corais` é uma máscara de progresso e nunca é uma quarta descoberta.
+
+## Colheita especial e prévia V2 (29/10/2026)
+
+`sistemas/colheita.ts` monta o contexto da horta: necessidades atuais e clima só após Nuvens.
+`mundo/horta.tsx` e `sistemas/rotina.ts` passam esse contexto para a mesma `colher` dos contratos.
+Clima favorável soma 1 e humor ótimo soma 1; a recusa por carga/mochila deixa a planta madura.
+O mini estúdio recebe uma cópia no molde V2. O mundo relê o contexto ao aplicar o passo, sem
+salvar o resultado da prévia. V1 segue legível sem contexto. Não adicionar outro cálculo no
+editor ou campo nos canteiros. Plano L08 em `docs/superpowers/plans/2026-10-29-arquipelago-lumis-e-colheita.md`.
+
 ## HUD nova, menu de pausa e abertura "O Cinza" (29/10/2026)
 
 - Proposta aprovada no canvas `https://claude.ai/artifact/Mz6AmdkuYdc9jb3mR6yuPd`; notas e prints em
@@ -735,7 +879,13 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `ambiente.noite` põe na fila as rotinas daquele Quando (`quandoDaVirada`, `rotinasDoQuando`);
   um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
   `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
-  de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
+    de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
+  - Perfis dos 14 Lumis em `arquipelago-contracts/src/lumis-trabalho.ts`: voo, trabalho, carga e
+    luz noturna. Prévia e mundo usam o mesmo intérprete com capacidade por espécie. Colheita
+    inteira recusa mochila, semente ou carga sem espaço e mantém a planta madura. A colheita
+    manual usa `cabeColheita`; receitas recusam saída cheia antes de consumir ingredientes.
+    Provas em `tests/lumis-trabalho.test.ts` dos contratos e
+    `playground/verificar-lumis-trabalho-browser.ts` no jogo.
 - ⚠️ O pior caso do salvamento ficava a 29 bytes do teto de 64 KB com as rotinas no teto (era
   290 na V10; o `recife` da V11 custa 54, o percurso `pico-cume` uns 96, o `vale` da V12 80, os
   corais da V13 12 e a banda da V14 19; medido em 29/10/2026, `tests/salvamento-v10.test.ts`):
@@ -1073,6 +1223,13 @@ Fliperama chega ao ler o primeiro minijogo aprovado, pela regra ganharProjetos. 
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
 
+L05 também lista as publicações recentes do próprio perfil no Mural, por `servico.buscar('/mural')`.
+`estado/mural.ts` só guarda a listagem transitória, sem fonte, moeda ou alteração de salvamento.
+O pedido `estudio` / `jogo-do-mural` contém `MoldeDoJogoDoMuralSchema` (apenas `playId` UUID).
+A plataforma abre o player público por cima do jogo, que fica pausado. A publicação é revalidada
+na abertura; sair remove o player e relê a lista. Fonte, moderação e distribuição ficam na
+plataforma, nunca no jogo. Plano: `docs/superpowers/plans/2026-10-29-arquipelago-fliperama-mural.md`.
+
 ## Festas da estação na Vila (fase2-10, 29/10/2026)
 
 `sistemas/festas.ts` concentra o calendário puro pelo dia de São Paulo. Carnaval vai do sábado à
@@ -1372,3 +1529,41 @@ A V16 preserva referências de aparência de até 80 caracteres aceitas nas vers
 sem passar pelo filtro histórico V15. O teto global continua 65.536 bytes UTF-8. Documento
 acima do teto é recusado, sem truncar nem apagar a cópia local. O editor Lumi aceita essas
 referências na geladeira, mantendo o formato da ferramenta V1.
+
+## Amizade no anel e páginas do diário (L02/L06, V17)
+
+`sistemas/moradores-do-anel.ts` concentra gostos, aniversários, pedidos e falas de Maré, Floco,
+Jade e Iriê. `amizade-do-anel.ts` usa as mesmas contas de Capi e Bento: conversa 10, pedido 30,
+presente preferido 20 ou comum 8, um por dia, dobro no aniversário e teto 500. Nenhuma ausência
+tira amizade. `MoradorDaIlha` compõe a atividade antiga e a relação na mesma alteração: planador
+do Floco e ovo da Jade não são substituídos nem duplicados.
+
+O painel comum recusa ações em visita, suporte, conflito, pausa de tempo e sincronização. As
+páginas do Pico, Vale e Nuvens abrem com dois corações (200), derivadas da amizade salva. A
+fala de entrega fica no fim da conversa no cruzamento desse limite. Recife conserva a página
+do navio. Íris conserva a apresentação do final, sem uma amizade inventada.
+
+V17 acrescenta os quatro moradores sem modificar V16. `tests/amizade-do-anel.test.ts` prova
+idempotência, consumo, aniversário, páginas e composição das atividades. O verificador
+`playground/verificar-amizade-browser.ts` conversa, presenteia, entrega, reabre e lê o diário
+pelos controles reais, com plataforma local. Não é prova de desempenho em aparelho físico.
+
+## Galeria canônica no Members (L04, 30/10/2026)
+
+O cartão informa os destinos reais da posse. Aquário, fliperama e planta também
+valem no Meu quarto, com representação própria; os outros seis só têm arte no jogo.
+O cliente continua lendo `/galeria`, sem inventário autoritativo no save. Comprar
+no quarto não concede o projeto azul funcional. A plataforma falsa segue a mesma
+idempotência por item, mesmo quando uma chave do navegador é reutilizada.
+O verificador da feira aceita `ARQUIPELAGO_GALERIA_COMPARTILHADA=1` para a fixture
+local da planta, cujo projeto já existe nesse cenário. Essa prova visual não substitui o banco real nem o fluxo autenticado.
+
+
+## Primeiro pedido da ilha central (L02/L03)
+
+`primeiro-pedido.ts` deriva o próximo gesto da porta, da horta e da posse da geladeira.
+`colherNaIlha` aplica a colheita manual inteira, com o mesmo bônus do contrato, e
+concede o projeto apenas se ele ainda não existe. O mundo chama essa regra pura;
+HUD e Diário só explicam. Visita, suporte e pausa continuam guardados na loja.
+Não há alteração do save V18, migração, saldo ou régua de cursos. A prova de navegador
+usa gestos reais e adianta somente o relógio do navegador depois de regar.

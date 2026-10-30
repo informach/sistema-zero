@@ -59,6 +59,8 @@ nativeTest(
         await writeFile(join(dir, file), source)
       }
       for (const d of manifesto.desafios) {
+        // Os cinco quadros anteriores têm sua matriz causal em quadros-bosque-browser.test.ts.
+        if (!d.slug.startsWith('bosque-corrida-dos-bichos')) continue
         if (process.env.SZ_BOSQUE_SCENARIO && !d.slug.endsWith(process.env.SZ_BOSQUE_SCENARIO))
           continue
         const scenarios: { name: string; project: Project; ids?: string[]; passes: boolean }[] = [

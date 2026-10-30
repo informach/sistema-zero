@@ -827,6 +827,8 @@ export const coinSourceTypeEnum = members.enum('coin_source_type', [
   'studio_publish_day',
   'arquipelago_credit',
   'arquipelago_debit',
+  // Adoção operacional de posse, sempre amount 0. Não é prêmio nem compra nova.
+  'arquipelago_gallery_adoption',
 ])
 
 // Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são

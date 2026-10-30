@@ -148,6 +148,8 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
   test('a coleção mostra as receitas sabidas com o que precisam e as outras com os corações', () => {
     const zero = colecaoDeReceitas(inicial())
     expect(zero.filter((r) => r.sabe).map((r) => r.id)).toEqual([
+      'salada-do-carnaval',
+      'milho-da-fogueira',
       'pipoca-de-festa',
       'salada',
       'pipoca',
@@ -159,7 +161,8 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
     const bolo = zero.find((r) => r.id === 'bolo-de-fuba')
     expect(bolo && !bolo.sabe && bolo.dica).toContain('com 1 coração de amizade (falta 1)')
     const tudo = colecaoDeReceitas(comBento(500))
-    expect(tudo.every((r) => r.sabe)).toBe(true)
+    expect(tudo.filter((r) => r.sabe)).toHaveLength(9)
+    expect(tudo.find((r) => r.id === 'acai-na-tigela')).toMatchObject({ sabe: false })
     expect(tudo.find((r) => r.id === 'bolo-de-fuba')).toMatchObject({
       precisa: '1 fubá, 1 leite, 1 ovo',
       onde: 'No forno da casa',

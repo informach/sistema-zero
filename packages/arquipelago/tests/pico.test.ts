@@ -19,13 +19,7 @@ import {
 import { lugarDoFloco } from '../src/mundo/pico'
 import { BOIAS_DA_ILHA_DO_ANEL } from '../src/sistemas/correnteza'
 import { comecarConversaComOFloco, FLOCO_NO_PICO } from '../src/sistemas/floco'
-import {
-  arquivoDaIlha,
-  carregarGlb,
-  doPortoDoBarco,
-  type Forma,
-  topoDaForma,
-} from './ajuda-colisores'
+import { arquivoDaIlha, carregarGlb, type Forma, topoDaForma } from './ajuda-colisores'
 
 const pico = ilha('pico')
 
@@ -62,7 +56,7 @@ describe('Pico completo', () => {
   test('tudo o que se pisa cabe na espera pelo chão: a de sempre e, para o lado da caverna, até ela', async () => {
     const modelo = await carregarGlb(arquivoDaIlha('pico.glb'))
     const formas = lerColisores(modelo).filter((c): c is Forma => c.forma !== 'malha')
-    for (const c of formas.filter((f) => !doPortoDoBarco(f.nome))) {
+    for (const c of formas) {
       const r = Math.hypot(c.posicao[0], c.posicao[2])
       expect([c.nome, r < raioDaEsperaDaIlha(pico, c.posicao[0], c.posicao[2])]).toEqual([
         c.nome,

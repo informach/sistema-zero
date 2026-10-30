@@ -1,0 +1,32 @@
+[
+  {
+    "nome": "computador",
+    "publico": "kids",
+    "versao": 18,
+    "visitas": 3,
+    "limites": {
+      "largura": 520,
+      "conteudo": 520,
+      "esquerda": 380,
+      "direita": 900,
+      "tela": 1280
+    },
+    "erros": [],
+    "externas": []
+  },
+  {
+    "nome": "celular",
+    "publico": "kids",
+    "versao": 18,
+    "visitas": 3,
+    "limites": {
+      "largura": 350,
+      "conteudo": 350,
+      "esquerda": 20,
+      "direita": 370,
+      "tela": 390
+    },
+    "erros": [],
+    "externas": []
+  }
+]

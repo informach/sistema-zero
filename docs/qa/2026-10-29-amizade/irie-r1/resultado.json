@@ -1,0 +1,38 @@
+[
+  {
+    "publico": "kids",
+    "celular": false,
+    "quem": "irie",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "nuvens"
+  },
+  {
+    "publico": "kids",
+    "celular": true,
+    "quem": "irie",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "nuvens"
+  },
+  {
+    "publico": "adulto",
+    "celular": false,
+    "quem": "irie",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "nuvens"
+  },
+  {
+    "publico": "adulto",
+    "celular": true,
+    "quem": "irie",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "nuvens"
+  }
+]

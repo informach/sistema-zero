@@ -217,7 +217,17 @@ describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
   // O vale como era até a V14, antes do filhote.
   const { filhote: _filhote, ...valeSemFilhote } = salvamento.vale
-  const { nuvens: _nuvens, farol: _farol, clima: _clima, ...ateV15 } = salvamento
+  const {
+    nuvens: _nuvens,
+    farol: _farol,
+    clima: _clima,
+    ilhasVisitadas: _visitas,
+    ...semProgressoV16
+  } = salvamento
+  const ateV15 = {
+    ...semProgressoV16,
+    moradores: { capi: salvamento.moradores.capi, bento: salvamento.moradores.bento },
+  }
   const valeAteV14 = { ...ateV15, percursos: {}, vale: valeSemFilhote }
 
   test('V10 migra na rota e a versão atual preserva as descobertas do Recife por revisão', async () => {
@@ -297,7 +307,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(16)
+    expect(lido.salvamento?.versao).toBe(18)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -325,7 +335,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(16)
+    expect(lido.salvamento?.versao).toBe(18)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -352,7 +362,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(16)
+    expect(lido.salvamento?.versao).toBe(18)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -397,7 +407,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 16, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 18, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
@@ -499,7 +509,7 @@ describe('salvamento', () => {
     expect((await chamar('GET', '/arquipelago/salvamento', crianca())).json).toEqual(antes.json)
   })
 
-  test('V14 preserva referências longas e V16 reabre as conquistas das Nuvens e Farol', async () => {
+  test('V14 preserva referências longas e V18 reabre conquistas, amizades e visitas', async () => {
     const aparencia = { origem: 'criacao' as const, id: 'á'.repeat(80) }
     const antiga = {
       ...valeAteV14,
@@ -516,6 +526,16 @@ describe('salvamento', () => {
     if (!lido.salvamento) throw new Error('A migração não devolveu o salvamento')
     const atual = {
       ...lido.salvamento,
+      ilhasVisitadas: 255,
+      moradores: {
+        ...lido.salvamento.moradores,
+        irie: {
+          amizade: 200,
+          conversaEm: '2026-10-29',
+          presenteEm: null,
+          pedido: { dia: '2026-10-29', id: 'milho-1', entregue: true },
+        },
+      },
       nuvens: { constelacoes: 63 },
       farol: { pagina: true, concluido: true },
       clima: 'chuva' as const,
@@ -546,6 +566,36 @@ describe('salvamento', () => {
     })
     expect(atrasado.status).toBe(409)
     expect(ConflitoDeSalvamentoSchema.parse(atrasado.json).atual.salvamento).toEqual(atual)
+  })
+
+  test('V17 migra na rota, preserva o histórico e não inventa visitas; V18 inválida não substitui', async () => {
+    const { ilhasVisitadas: _visitas, ...anterior } = salvamento
+    const v17 = { ...anterior, versao: 17 }
+    const resposta = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 0,
+      salvamento: v17,
+    })
+    expect(resposta.status).toBe(200)
+    expect(SalvamentoGuardadoSchema.parse(resposta.json).salvamento).toEqual({
+      ...v17,
+      versao: 18,
+      ilhasVisitadas: 0,
+    })
+    for (const ilhasVisitadas of [-1, 256, 1.5, '3']) {
+      expect(
+        (
+          await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+            revisaoBase: 1,
+            salvamento: { ...salvamento, ilhasVisitadas },
+          })
+        ).status,
+      ).toBe(400)
+    }
+    const relido = SalvamentoGuardadoSchema.parse(
+      (await chamar('GET', '/arquipelago/salvamento', crianca())).json,
+    )
+    expect(relido.revisao).toBe(1)
+    expect(relido.salvamento?.ilhasVisitadas).toBe(0)
   })
 
   test('guardado ilegível nunca vira "vazio"', async () => {

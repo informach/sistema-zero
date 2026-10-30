@@ -1,4 +1,7 @@
-import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { type Humor, humor, type Salvamento } from '@sistemazero/arquipelago-contracts'
+
+export { type Humor, humor } from '@sistemazero/arquipelago-contracts'
+
 import type { Item } from './itens'
 
 export type Necessidades = Salvamento['necessidades']
@@ -30,14 +33,6 @@ export function comer(n: Necessidades, item: Item): Necessidades {
     energia: limitar(n.energia + (item.comida.energia ?? 0)),
     diversao: limitar(n.diversao + (item.comida.diversao ?? 0)),
   }
-}
-
-export type Humor = 'otimo' | 'bem' | 'cansado'
-
-export function humor(n: Necessidades): Humor {
-  if (n.energia < 15 || n.fome < 15) return 'cansado'
-  if (n.fome > 60 && n.energia > 60 && n.diversao > 60) return 'otimo'
-  return 'bem'
 }
 
 /** Multiplicador da velocidade pelo humor: o maior é o do humor ótimo. */

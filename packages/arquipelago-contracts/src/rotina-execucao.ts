@@ -1,4 +1,6 @@
-import { colher, estagio, regar } from './horta'
+import { type ContextoDaColheita, fraseDaColheitaEspecial } from './colheita'
+import { cabeColheita, colher, estagio, regar } from './horta'
+import { cargaDoLumi, PERFIS_DOS_LUMIS } from './lumis-trabalho'
 import { adicionarAoInventario, guardarAlimentoNaGeladeira } from './rotina-mundo'
 import { limparRotina, TEXTOS_DA_ROTINA, validarRotina } from './rotina-validacao'
 import {
@@ -16,17 +18,15 @@ export interface MundoDaRotina {
   inventario: Record<string, number>
   geladeira: ProjetoAzul | null
   geladeiraPosta: boolean
+  /** Ausente no molde histórico V1, que conserva a colheita básica. */
+  colheita?: ContextoDaColheita
 }
 
 export const RITMO_DA_ROTINA = {
-  /** Metros por segundo voando de um lugar para outro. */
-  voo: 2,
   /** Acima da terra do canteiro (metros). */
   alturaNaHorta: 0.9,
   /** Acima do topo da geladeira (metros). */
   alturaNaGeladeira: 0.1,
-  /** Segundos de "trabalhar" em cada Regar, Colher e Guardar tudo. */
-  trabalho: 1.2,
   /** Segundos de "feliz" no fim, antes de sumir. */
   festa: 1.6,
 } as const
@@ -354,8 +354,18 @@ export function aplicarPasso(
   }
   if (p.tipo === 'colher') {
     const c = s.horta[p.canteiro]
-    const r = c && colher(c, agora.getTime())
+    const r = c && colher(c, agora.getTime(), s.colheita)
     if (!r) return { salvamento: s, texto: `No canteiro ${numero} não havia nada maduro.` }
+    if (cargaDoLumi(e.carga) + r.qtd > PERFIS_DOS_LUMIS[e.lumi].carga)
+      return {
+        salvamento: s,
+        texto: `A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro ${numero}. Ele continua maduro.`,
+      }
+    if (!cabeColheita(s.inventario, r.item, r.qtd))
+      return {
+        salvamento: s,
+        texto: `A mochila está cheia. Use ou guarde os alimentos e sementes antes de colher o canteiro ${numero}. Ele continua maduro.`,
+      }
     e.carga[r.item] = (e.carga[r.item] ?? 0) + r.qtd
     const horta = s.horta.map((x, i) => (i === p.canteiro ? r.canteiro : x))
     // Como quando a criança colhe: o colhido na mochila e uma semente junto (a horta nunca acaba).
@@ -366,7 +376,7 @@ export function aplicarPasso(
     )
     return {
       salvamento: { ...s, horta, inventario },
-      texto: `Colheu ${nomeDoItem(r.item, r.qtd)} no canteiro ${numero}.`,
+      texto: `Colheu ${nomeDoItem(r.item, r.qtd)} no canteiro ${numero}.${fraseDaColheitaEspecial(r.bonus)}`,
     }
   }
   // Guardar tudo: o que o Lumi colheu sai da mochila para a geladeira, um por um, até onde couber.

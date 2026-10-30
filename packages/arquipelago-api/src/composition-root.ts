@@ -3,27 +3,33 @@ import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
 import { ServicoDaFamilia } from './application/servico-da-familia'
-import { aparenciasPagas, ServicoDaGaleria } from './application/servico-da-galeria'
+import { ServicoDaGaleria } from './application/servico-da-galeria'
 import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDasCartas } from './application/servico-das-cartas'
+import { ServicoDasProfissoes } from './application/servico-das-profissoes'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
+import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
+import { ServicoDosPedidos } from './application/servico-dos-pedidos'
 import type { Env } from './infrastructure/config/env'
 import { MembrosHttp } from './infrastructure/members/membros-http'
 import { MoedasHttp } from './infrastructure/members/moedas-http'
+import { PosseHttp } from './infrastructure/members/posse-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
 import { DrizzleRepositorioDaFamilia } from './infrastructure/persistence/drizzle/repositorio-da-familia'
-import { DrizzleRepositorioDaGaleria } from './infrastructure/persistence/drizzle/repositorio-da-galeria'
 import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
 } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
+import { DrizzleRepositorioDosInsumos } from './infrastructure/persistence/drizzle/repositorio-insumos'
 import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
 import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/drizzle/repositorio-minijogos'
+import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
+import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { createServer } from './interfaces/http/server'
 
@@ -43,13 +49,17 @@ export function createApplication(env: Env): Application {
     publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
     lista: new Set(env.ARQUIPELAGO_LISTA),
   }
-  const comprasDaGaleria = new DrizzleRepositorioDaGaleria(connection.db)
+  const posse =
+    env.MEMBERS_URL && env.ARQUIPELAGO_COINS_TOKEN
+      ? new PosseHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_COINS_TOKEN })
+      : null
+  const galeria = new ServicoDaGaleria({ posse, politica })
   const servico = new ServicoDoJogo(
     new DrizzleRepositorioDoJogo(connection.db),
     politica,
     undefined,
     new RepositorioDeSessoesDeTempo(connection.db),
-    (jogadorId) => aparenciasPagas(comprasDaGaleria, jogadorId),
+    (jogador) => galeria.aparenciasPagas(jogador),
   )
   const membros =
     env.MEMBERS_URL && env.ARQUIPELAGO_MEMBERS_TOKEN
@@ -78,13 +88,6 @@ export function createApplication(env: Env): Application {
     moedas,
     logger,
   })
-  const galeria = new ServicoDaGaleria({
-    galeria: comprasDaGaleria,
-    debito: moedas,
-    leituras,
-    politica,
-    logger,
-  })
   const repositorioDaFamilia = new DrizzleRepositorioDaFamilia(connection.db)
   const familia = new ServicoDaFamilia({
     familia: repositorioDaFamilia,
@@ -96,6 +99,25 @@ export function createApplication(env: Env): Application {
     logger,
   })
   const app = createServer({
+    pedidos: new ServicoDosPedidos({
+      repo: new DrizzleRepositorioDosPedidos(connection.db),
+      moedas,
+      leituras,
+      politica,
+      logger,
+    }),
+    insumos: new ServicoDosInsumos({
+      repo: new DrizzleRepositorioDosInsumos(connection.db),
+      debito: moedas,
+      politica,
+    }),
+    profissoes: new ServicoDasProfissoes({
+      repo: new DrizzleRepositorioDasProfissoes(connection.db),
+      moedas,
+      leituras,
+      politica,
+      logger,
+    }),
     minijogos: new ServicoDosMinijogos(new DrizzleRepositorioDosMinijogos(connection.db), politica),
     medicao: new ServicoDaMedicao(
       new DrizzleRepositorioDaMedicao(connection.db),

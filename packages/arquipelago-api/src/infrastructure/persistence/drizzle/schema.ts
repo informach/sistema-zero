@@ -1,4 +1,13 @@
-import { LIMITES_DO_DESAFIO, type MetadadosDoDesafio } from '@sistemazero/arquipelago-contracts'
+import {
+  type Insumo,
+  LIMITES_DO_DESAFIO,
+  type MetadadosDoDesafio,
+  type MoradorDoPedido,
+  type PagamentoDaProfissao,
+  type PagamentoDoPedido,
+  type PostoDaVila,
+  type PublicoJogo,
+} from '@sistemazero/arquipelago-contracts'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -16,6 +25,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
+import type { SituacaoDaCompra } from '../../../domain/insumos.port'
 
 /**
  * Schema `arquipelago` (Postgres compartilhado, 1 schema por bounded context). Só o serviço do
@@ -329,7 +339,118 @@ export const desafioDoDia = arquipelagoSchema.table(
   (t) => [primaryKey({ columns: [t.jogadorId, t.dia] })],
 )
 
+/** Uma sessão remunerada por balcão/dia. Prêmio e regra são imutáveis depois da reserva. */
+export const turnosRemunerados = arquipelagoSchema.table(
+  'turnos_remunerados',
+  {
+    id: uuid().primaryKey(),
+    jogadorId: uuid().notNull(),
+    contaId: uuid().notNull(),
+    publico: varchar({ length: 8 }).$type<PublicoJogo>().notNull(),
+    posto: varchar({ length: 20 }).$type<PostoDaVila>().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    versao: integer().notNull(),
+    moedas: integer().notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+    concluidoEm: timestamp({ withTimezone: true }),
+    pagamento: varchar({ length: 12 }).$type<PagamentoDaProfissao>().notNull(),
+    tetoSemana: date({ mode: 'string' }),
+  },
+  (t) => [
+    uniqueIndex('turnos_remunerados_dia').on(t.jogadorId, t.publico, t.posto, t.dia),
+    index('turnos_remunerados_pendentes').on(t.jogadorId, t.publico, t.pagamento, t.criadoEm),
+    check('turnos_remunerados_publico', sql`${t.publico} in ('kids','adulto')`),
+    check('turnos_remunerados_posto', sql`${t.posto} in ('padaria','sorveteria','sucos')`),
+    check('turnos_remunerados_valores', sql`${t.versao} = 1 and ${t.moedas} between 1 and 100`),
+    check(
+      'turnos_remunerados_pagamento',
+      sql`(${t.concluidoEm} is null and ${t.pagamento} = 'aguardando' and ${t.tetoSemana} is null) or (${t.concluidoEm} is not null and ((${t.pagamento} in ('pendente','creditado') and ${t.tetoSemana} is null) or (${t.pagamento} = 'teto' and ${t.tetoSemana} is not null)))`,
+    ),
+  ],
+)
+
+/** Comando econômico fora do save. A reserva sobrevive à perda da resposta da carteira. */
+export const comprasDeInsumos = arquipelagoSchema.table(
+  'compras_de_insumos',
+  {
+    chave: uuid().primaryKey(),
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId),
+    contaId: uuid().notNull(),
+    publico: varchar({ length: 8 }).$type<PublicoJogo>().notNull(),
+    versao: integer().notNull(),
+    revisaoBase: integer().notNull(),
+    item: varchar({ length: 40 }).$type<Insumo>().notNull(),
+    quantidade: smallint().notNull(),
+    moedas: smallint().notNull(),
+    situacao: varchar({ length: 20 }).$type<SituacaoDaCompra>().notNull(),
+    saldo: integer(),
+    criadaEm: timestamp({ withTimezone: true }).notNull(),
+    concluidaEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('compras_de_insumos_pendente')
+      .on(t.jogadorId)
+      .where(sql`${t.situacao} = 'pendente'`),
+    index('compras_de_insumos_jogador').on(t.jogadorId, t.publico, t.criadaEm),
+    check('compras_de_insumos_publico', sql`${t.publico} in ('kids','adulto')`),
+    check(
+      'compras_de_insumos_valores',
+      sql`${t.versao} = 1 and ${t.revisaoBase} between 1 and 2147483646 and ${t.quantidade} between 1 and 10 and ${t.moedas} between 1 and 30`,
+    ),
+    check(
+      'compras_de_insumos_estado',
+      sql`(${t.situacao} = 'pendente' and ${t.concluidaEm} is null and ${t.saldo} is null) or (${t.situacao} = 'entregue' and ${t.concluidaEm} is not null and ${t.saldo} is not null and ${t.saldo} >= 0) or (${t.situacao} in ('saldo-insuficiente','recusada') and ${t.concluidaEm} is not null and ${t.saldo} is null)`,
+    ),
+  ],
+)
+
+/** Consumo e cesta já confirmados; crédito retomável com chave financeira gerada no serviço. */
+export const pedidosRemunerados = arquipelagoSchema.table(
+  'pedidos_remunerados',
+  {
+    chave: uuid().primaryKey(),
+    pagamentoId: uuid().notNull().unique(),
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId),
+    contaId: uuid().notNull(),
+    publico: varchar({ length: 8 }).$type<PublicoJogo>().notNull(),
+    versao: integer().notNull(),
+    revisaoBase: integer().notNull(),
+    morador: varchar({ length: 12 }).$type<MoradorDoPedido>().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    pedido: varchar({ length: 40 }).notNull(),
+    moedas: smallint().$type<3 | 4>().notNull(),
+    pagamento: varchar({ length: 12 }).$type<PagamentoDoPedido>().notNull(),
+    entregueEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('pedidos_remunerados_dia').on(t.jogadorId, t.publico, t.morador, t.dia),
+    index('pedidos_remunerados_pendente')
+      .on(t.jogadorId, t.publico, t.entregueEm)
+      .where(sql`${t.pagamento} = 'pendente'`),
+    check('pedidos_remunerados_publico', sql`${t.publico} in ('kids','adulto')`),
+    check(
+      'pedidos_remunerados_morador',
+      sql`${t.morador} in ('capi','bento','mare','floco','jade','irie')`,
+    ),
+    check(
+      'pedidos_remunerados_valores',
+      sql`${t.versao} = 1 and ${t.revisaoBase} between 1 and 2147483646 and ${t.moedas} in (3,4)`,
+    ),
+    check(
+      'pedidos_remunerados_pagamento',
+      sql`${t.pagamento} in ('pendente','creditado','teto','recusado')`,
+    ),
+  ],
+)
+
 export const schema = {
+  pedidosRemunerados,
+  comprasDeInsumos,
+  turnosRemunerados,
   minijogos,
   salvamentos,
   tempoDiario,

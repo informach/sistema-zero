@@ -3,8 +3,11 @@ import type { Salvamento } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { useJogo } from '../estado/contexto'
+import { lojaDosConvidados, useConvidados } from '../estado/convidados'
 import { lojaDaConversa, type QuemConversa } from '../estado/moradores'
+import { conversarComAtividade, temAmizadeDoAnel } from '../sistemas/amizade-do-anel'
 import { diaDe, olharDoMorador } from '../sistemas/moradores'
+import { jogoPausado } from '../sistemas/pausa'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { Colisores } from './colisores'
@@ -43,13 +46,29 @@ export interface MoradorNoMundo {
  * sozinho). Vira para a criança quando ela chega perto, acena, fala enquanto a conversa está
  * aberta e comemora presente e pedido. Perto dele abre a conversa (o painel do morador).
  */
-export function MoradorDaIlha({
+type PropsDoMorador = {
+  morador: MoradorNoMundo
+  lugar: { x: number; y: number; z: number; descanso: number }
+  meio: { x: number; z: number }
+  emCasa?: boolean
+}
+export function MoradorDaIlha(props: PropsDoMorador) {
+  const { loja } = useJogo()
+  const estaEmCasa = useConvidados(lojaDosConvidados(loja), (s) =>
+    s.convidados.some((c) => c.quem === props.morador.quem),
+  )
+  return estaEmCasa && !props.emCasa ? null : <MoradorPresente {...props} />
+}
+
+function MoradorPresente({
   morador,
   lugar,
   meio,
+  emCasa = false,
 }: {
   morador: MoradorNoMundo
   lugar: { x: number; y: number; z: number; descanso: number }
+  emCasa?: boolean
   /** O meio da ilha, para a câmera da conversa fugir dele. */
   meio: { x: number; z: number }
 }) {
@@ -80,18 +99,24 @@ export function MoradorDaIlha({
     [morador.quem, medidas],
   )
 
-  useInterativo(morador.quem, {
+  useInterativo(emCasa ? `casa:${morador.quem}` : morador.quem, {
     x: lugar.x,
     z: lugar.z,
     raio: medidas.alcance,
     rotulo: () => morador.rotulo,
     agir: () => {
       const s = loja.getState()
-      const { salvamento, falas } = morador.comecar(
-        s.salvamento,
-        diaDe(new Date()),
-        plataforma.perfil.id,
-      )
+      if (s.acesso.somenteLeitura || s.visita || jogoPausado(s)) return
+      const dia = diaDe(new Date())
+      const { salvamento, falas } = temAmizadeDoAnel(morador.quem)
+        ? conversarComAtividade(
+            s.salvamento,
+            morador.quem,
+            dia,
+            plataforma.perfil.id,
+            morador.comecar,
+          )
+        : morador.comecar(s.salvamento, dia, plataforma.perfil.id)
       if (salvamento !== s.salvamento) s.mudar(() => salvamento)
       conversa.getState().abrir(falas)
       pedidos.conversa = cabeca

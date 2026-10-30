@@ -7,11 +7,12 @@ import {
   GravarSalvamentoSchema,
   type ProjetoAzul,
   ProjetoAzulSchema,
+  type RespostaDoServico,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { criarLojaDaGaleria } from '../src/estado/galeria'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
-import { MOEDAS_DE_EXEMPLO } from '../src/plataforma/galeria-falsa'
+import { criarGaleriaFalsa, MOEDAS_DE_EXEMPLO } from '../src/plataforma/galeria-falsa'
 import {
   aparenciasQueEleTem,
   estadoDoCartao,
@@ -129,6 +130,34 @@ describe('as recusas da compra', () => {
 })
 
 describe('a loja da galeria com a plataforma de mentira', () => {
+  test('compra encerra a leitura antiga sem perder posse nem deixar a galeria carregando', async () => {
+    const plataforma = criarPlataformaFalsa({ persistir: false })
+    const buscar = plataforma.servico.buscar.bind(plataforma.servico)
+    let responder!: (r: RespostaDoServico) => void
+    const antiga = new Promise<RespostaDoServico>((resolve) => {
+      responder = resolve
+    })
+    plataforma.servico.buscar = (caminho, opcoes) =>
+      caminho === '/galeria' ? antiga : buscar(caminho, opcoes)
+    const loja = criarLojaDaGaleria(plataforma)
+    const leitura = loja.getState().carregar()
+    expect(loja.getState().carregando).toBe(true)
+    expect(await loja.getState().comprar(GELADEIRA.id)).toEqual({ ok: true })
+    expect(loja.getState().carregando).toBe(false)
+    responder({ status: 200, corpo: { possuidas: [], saldo: 80, ilimitado: false } })
+    await leitura
+    expect(loja.getState()).toMatchObject({
+      carregando: false,
+      comprando: null,
+      dados: { possuidas: [GELADEIRA.id], saldo: 20 },
+    })
+    // Um erro novo pode oferecer tentar novamente, sem ressuscitar o carregamento antigo.
+    plataforma.servico.buscar = async () => ({ status: 503, corpo: null })
+    await loja.getState().carregar()
+    expect(loja.getState()).toMatchObject({ carregando: false, fechada: true })
+    expect(loja.getState().dados?.saldo).toBe(20)
+  })
+
   test('lê o saldo, compra uma vez só e o salvamento aceita a aparência paga', async () => {
     const plataforma = criarPlataformaFalsa({ persistir: false, galeria: { moedas: 100 } })
     const loja = criarLojaDaGaleria(plataforma)
@@ -270,4 +299,17 @@ test('os textos da galeria seguem a voz da casa (sem travessão nem exclamação
       expect(t).not.toMatch(/!(?!=)/)
     }
   }
+})
+
+test('playground segue a idempotência por item do Members, não por chave aleatória do navegador', () => {
+  const galeria = criarGaleriaFalsa({ moedas: 200 })
+  const chave = crypto.randomUUID()
+  const comprar = (aparencia: string) =>
+    galeria.buscar('/galeria/compras', 'POST', { aparencia, chave })
+  expect(comprar('aquario-classico')).toMatchObject({ status: 200, corpo: { saldo: 130 } })
+  expect(comprar('aquario-classico')).toMatchObject({ status: 200, corpo: { saldo: 130 } })
+  expect(comprar('fliperama-classico')).toMatchObject({
+    status: 200,
+    corpo: { saldo: 60, possuidas: ['aquario-classico', 'fliperama-classico'] },
+  })
 })

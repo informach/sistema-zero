@@ -1,10 +1,25 @@
+import {
+  AMIZADE_DO_PEDIDO,
+  diaDeSaoPaulo,
+  escolherPedidoDoMorador,
+  type PedidoDaCapi,
+  type PedidoDeMorador,
+  pedidoDoMoradorPeloId,
+} from '@sistemazero/arquipelago-contracts'
+
+export {
+  PEDIDOS_DA_CAPI,
+  type PedidoDaCapi,
+  type PedidoDeMorador,
+} from '@sistemazero/arquipelago-contracts'
+
 import { AMIZADE_MAXIMA, type Capi, type Morador } from '@sistemazero/arquipelago-contracts'
 import { type Inventario, ITENS, quantidade, remover } from './itens'
 
 /**
  * Os moradores (regras puras): a Capi, a capivara do Bosque, e o Bento, o tamanduá da Vila Doce
  * (`bento.ts`). A amizade sobe conversando uma vez por dia, entregando o pedido do dia e dando um
- * presente por dia; ela nunca desce. Tudo conta pelo dia do calendário no horário do aparelho
+ * presente por dia; ela nunca desce. Tudo conta pelo dia do calendário de São Paulo
  * (`diaDe`), não pelo dia e noite do jogo. Cada morador tem os gostos, o aniversário e os pedidos
  * dele; as contas são as mesmas.
  */
@@ -13,7 +28,7 @@ export const AMIZADE = {
   /** A primeira conversa do dia. */
   conversa: 10,
   /** Entregar o pedido do dia. */
-  pedido: 30,
+  pedido: AMIZADE_DO_PEDIDO,
   /** Presente de que ela gosta e presente comum (só o primeiro do dia conta). */
   presenteQueGosta: 20,
   presenteComum: 8,
@@ -35,12 +50,9 @@ export const GOSTOS_DA_CAPI: Readonly<Record<string, 'gosta' | 'comum'>> = {
   tomate: 'comum',
 }
 
-/** O dia do calendário no horário do aparelho, `AAAA-MM-DD`. */
+/** O mesmo dia de São Paulo usado pelo serviço, independentemente do fuso do aparelho. */
 export function diaDe(agora: Date): string {
-  const a = agora.getFullYear()
-  const m = String(agora.getMonth() + 1).padStart(2, '0')
-  const d = String(agora.getDate()).padStart(2, '0')
-  return `${a}-${m}-${d}`
+  return diaDeSaoPaulo(agora)
 }
 
 /** O dia do aniversário de um morador (mês e dia). */
@@ -108,43 +120,14 @@ export function darPresente(
 
 // ── O pedido do dia ─────────────────────────────────────────────────────────────────────────────
 
-export interface PedidoDeMorador {
-  id: string
-  /** O texto curto do que ela pede (na tela). */
-  texto: string
-  /** Itens a entregar; ausente nos pedidos de achar um bicho. */
-  itens?: Readonly<Record<string, number>>
-}
-
-/** O pedido da Capi (o nome de antes; o formato é o de qualquer morador). */
-export type PedidoDaCapi = PedidoDeMorador
-
-/** Os pedidos de itens. O de achar um bicho é montado na hora (`achar-bicho-N`). */
-export const PEDIDOS_DA_CAPI: readonly PedidoDaCapi[] = [
-  { id: 'alface-2', texto: 'Duas alfaces da horta', itens: { alface: 2 } },
-  { id: 'tomate-2', texto: 'Dois tomates da horta', itens: { tomate: 2 } },
-  { id: 'milho-1', texto: 'Um milho da horta', itens: { milho: 1 } },
-  { id: 'salada-1', texto: 'Uma salada da horta', itens: { salada: 1 } },
-  { id: 'pipoca-2', texto: 'Duas pipocas', itens: { pipoca: 2 } },
-]
-
 const ACHAR = 'achar-bicho-'
 
 /** O pedido pelo id guardado (os de achar guardam quantos bichos já tinham sido achados). */
 export function pedidoPeloId(id: string): PedidoDaCapi | null {
-  if (id.startsWith(ACHAR)) return { id, texto: 'Achar mais um bicho escondido' }
-  return PEDIDOS_DA_CAPI.find((p) => p.id === id) ?? null
+  return pedidoDoMoradorPeloId('capi', id)
 }
 
-/** Um número estável a partir de um texto (o mesmo pedido o dia inteiro, em qualquer aparelho). */
-export function sorteio(texto: string): number {
-  let h = 2166136261
-  for (let i = 0; i < texto.length; i++) {
-    h ^= texto.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
-}
+export { numeroEstavel as sorteio } from '@sistemazero/arquipelago-contracts'
 
 /**
  * O pedido de hoje: o guardado, se for de hoje; senão um novo, sorteado pelo dia e pelo perfil.
@@ -158,9 +141,7 @@ export function pedidoDoDia(
   escondidos: number,
 ): Capi {
   if (capi.pedido?.dia === dia) return capi
-  const opcoes = PEDIDOS_DA_CAPI.map((p) => p.id)
-  if (escondidos > 0) opcoes.push(`${ACHAR}${achados}`)
-  const id = opcoes[sorteio(`${perfilId}:${dia}`) % opcoes.length] ?? opcoes[0] ?? 'milho-1'
+  const id = escolherPedidoDoMorador('capi', perfilId, dia, achados, escondidos > 0)
   return { ...capi, pedido: { dia, id, entregue: false } }
 }
 

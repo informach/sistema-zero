@@ -1,0 +1,88 @@
+TimeoutError: locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('dialog', { name: 'Feira da Vila Doce', exact: true }).getByRole('article', { name: 'Aquário do recife', exact: true }).getByText('Você tem 80 moedas.', { exact: true }) to be visible[22m
+
+Lenda
+Fome: 79 de 100
+Energia: 99 de 100
+Diversão: 69 de 100
+80
+moedas
+Vila Doce
+06:38
+Dia 1 · Sol
+Hoje: 30 min
+AGORA
+Fazer o desafio de hoje no Quadro das Cores
+🌱
+Semente de alface
+3
+🌱
+Semente de tomate
+2
+🌱
+Semente de milho
+1
+Feira da Vila Doce
+
+Três aparências ganham destaque a cada semana. As outras continuam aqui pelo mesmo preço. Tudo que você comprou continua seu.
+
+A aparência muda o visual. O projeto azul já funciona sem comprar.
+
+Destaques da semana
+Geladeira clássica
+Da galeria
+Geladeira clássica: 60 moedas
+Esta aparência é usada no Arquipélago.
+Você tem 80 moedas.
+Comprar
+Forno clássico
+
+50 moedas.
+
+Esta aparência pode ser usada quando o projeto azul chegar à sua casa.
+
+Aquário do recife
+
+70 moedas.
+
+Esta aparência pode ser usada quando o projeto azul chegar à sua casa.
+
+Ver todas as outras aparências
+Lareira de pedra
+
+60 moedas.
+
+Esta aparência pode ser usada quando o projeto azul chegar à sua casa.
+
+Instrumentos da banda
+
+70 moedas.
+
+Esta aparência pode ser usada quando o projeto azul chegar à sua casa.
+
+Fliperama clássico
+
+70 moedas.
+
+Esta aparência pode ser usada quando o projeto azul chegar à sua casa.
+
+Museu dos fósseis
+
+70 moedas.
+
+Esta aparência pode ser usada quando o projeto azul chegar à sua casa.
+
+Casinha de madeira
+Da galeria
+Casinha de madeira: 40 moedas
+Esta aparência é usada no Arquipélago.
+Você tem 80 moedas.
+Comprar
+Planta no vaso
+Da galeria
+Planta no vaso: 30 moedas
+A posse também vale no Meu quarto. O visual acompanha cada lugar.
+Você tem 80 moedas.
+Comprar
+Voltar à Vila

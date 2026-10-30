@@ -9,7 +9,11 @@ import { giroDaIlha, ilhasEmVolta, PIER } from '../src/mundo/medidas'
 import { ancorasDoPorto } from '../src/mundo/portos'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
 import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
-import { CHAVE_DA_GALERIA, criarPlataformaFalsa } from '../src/plataforma/falsa'
+import {
+  CHAVE_DA_GALERIA,
+  CHAVE_DAS_PROFISSOES,
+  criarPlataformaFalsa,
+} from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { chaveDaAbertura } from '../src/sistemas/abertura'
 import { lerFesta } from '../src/sistemas/festas'
@@ -21,6 +25,7 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?posicao=2` (posto/etapa), `?publico=adulto`, `?limite=30`, `?liberado=0`, `?novo=1` e
  * `?em=x,z` ou `?em=x,z,y` (começa fora de casa, nesse ponto; o `y` põe em cima de um deque) e `?adiantar=13` (a noite chega aos 12 min).
  * `?abertura=1` mostra a abertura "O Cinza" (sem ele, ela fica marcada como vista).
+ * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
@@ -77,6 +82,11 @@ function lerFamilia(texto: string | null): FamiliaDoPlayground | undefined {
 if (q.get('novo') === '1') {
   localStorage.removeItem('arquipelago-playground')
   localStorage.removeItem(CHAVE_DA_GALERIA)
+  for (const publico of ['kids', 'adulto']) {
+    localStorage.removeItem(`${CHAVE_DAS_PROFISSOES}:${publico}`)
+    for (const posto of ['padaria', 'sorveteria', 'sucos'])
+      localStorage.removeItem(`arquipelago:profissoes:v1:${publico}:perfil-de-teste:${posto}`)
+  }
 }
 const plataforma = criarPlataformaFalsa({
   rotina:
@@ -102,6 +112,7 @@ const plataforma = criarPlataformaFalsa({
   comecarEm: q.has('em') ? lerPonto(q.get('em') ?? '') : partidaDoBarco,
   adiantarMinutos: Number(q.get('adiantar') ?? 0),
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
+  convidados: q.get('convidados') === '1',
   obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   bento: q.has('bento') ? Number(q.get('bento')) : undefined,

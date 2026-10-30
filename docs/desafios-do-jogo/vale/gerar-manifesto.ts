@@ -1,9 +1,11 @@
 import {
   ManifestoDeDesafiosSchema,
   MOEDAS_PADRAO_POR_TIPO,
+  type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
+import { desafiosIniciaisDoVale } from './quadros-iniciais'
 
 const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: string[] }> = {
   ninhos: {
@@ -47,47 +49,55 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
     ],
   },
 }
-export function criarManifesto() {
+export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
     escopo: 'ilha',
-    desafios: VARIACOES.map((variacao, i) => {
-      const tipo = i === 0 ? 'quadro-das-cores' : 'desafio-do-dia'
-      const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-      return {
-        slug: `vale-proteja-os-ninhos${i === 0 ? '' : `-${variacao}`}`,
-        publico: 'kids',
-        ilha: 'vale-dos-dinos',
-        tipo,
-        quadro: i === 0 ? 6 : null,
-        ordem: 60 + i,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[variacao],
-          projetoInicial: montarProjeto(variacao, false),
-          gabarito: montarProjeto(variacao, true),
-          objetivos: objetivos[variacao],
-          desafioExtra: {
-            titulo: 'Mais um desafio',
-            texto:
-              'Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada.',
+    desafios: [
+      ...desafiosIniciaisDoVale(publico),
+      ...VARIACOES.map((variacao, i) => {
+        const tipo = i === 0 ? 'quadro-das-cores' : 'desafio-do-dia'
+        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+        return {
+          slug: `vale-proteja-os-ninhos${i === 0 ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'vale-dos-dinos',
+          tipo,
+          quadro: i === 0 ? 6 : null,
+          ordem: 60 + i,
+          publicar: publico === 'kids',
+          conteudo: {
+            versao: 1,
+            ...textos[variacao],
+            projetoInicial: montarProjeto(variacao, false),
+            gabarito: montarProjeto(variacao, true),
+            objetivos: objetivos[variacao],
+            desafioExtra: {
+              titulo: 'Mais um desafio',
+              texto:
+                'Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada.',
+            },
+            recompensa: {
+              cor: i === 0,
+              atracao: 'proteja-os-ninhos',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          recompensa: {
-            cor: i === 0,
-            atracao: 'proteja-os-ninhos',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-          },
-          blocosManuais: { acrescentar: [], retirar: [] },
-        },
-      }
-    }),
+        }
+      }),
+    ],
   })
 }
-if (import.meta.main)
-  await Bun.write(
-    new URL('./vale.manifesto.json', import.meta.url),
-    `${JSON.stringify(criarManifesto(), null, 2)}\n`,
-  )
+if (import.meta.main) {
+  for (const publico of ['kids', 'adulto'] as const)
+    await Bun.write(
+      new URL(
+        publico === 'kids' ? './vale.manifesto.json' : './vale-adulto.manifesto.json',
+        import.meta.url,
+      ),
+      `${JSON.stringify(criarManifesto(publico), null, 2)}\n`,
+    )
+}

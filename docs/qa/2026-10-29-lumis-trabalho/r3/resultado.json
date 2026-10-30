@@ -1,0 +1,242 @@
+[
+  {
+    "nome": "kids-computador-pluma",
+    "publico": "kids",
+    "jornada": 2,
+    "tomates": 8,
+    "restante": 2,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "kids-computador-buzio",
+    "publico": "kids",
+    "jornada": 7,
+    "tomates": 20,
+    "restante": 0,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "kids-celular-pluma",
+    "publico": "kids",
+    "jornada": 2,
+    "tomates": 8,
+    "restante": 2,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "kids-celular-buzio",
+    "publico": "kids",
+    "jornada": 7,
+    "tomates": 20,
+    "restante": 0,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "adulto-computador-pluma",
+    "publico": "adulto",
+    "jornada": 2,
+    "tomates": 8,
+    "restante": 2,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "adulto-computador-buzio",
+    "publico": "adulto",
+    "jornada": 7,
+    "tomates": 20,
+    "restante": 0,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "adulto-celular-pluma",
+    "publico": "adulto",
+    "jornada": 2,
+    "tomates": 8,
+    "restante": 2,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 4 tomate no canteiro 1. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 4 tomate no canteiro 2. Colheita especial: mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "adulto-celular-buzio",
+    "publico": "adulto",
+    "jornada": 7,
+    "tomates": 20,
+    "restante": 0,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 5 tomate no canteiro 1. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 2.",
+      "Colheu 5 tomate no canteiro 2. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 3.",
+      "Colheu 5 tomate no canteiro 3. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "Voou até o canteiro 4.",
+      "Colheu 5 tomate no canteiro 4. Colheita especial: mais um pelo clima e mais um pelo humor ótimo.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  }
+]

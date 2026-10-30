@@ -20,7 +20,7 @@ import { ILHAS_COMPLETAS, prepararIlha, soltarExtras } from '../src/mundo/ilha-c
 import { raioDaEsperaDaIlha, raioDoChaoDaIlha } from '../src/mundo/medidas'
 import { lugarDaJade } from '../src/mundo/vale'
 import { APRESENTACAO_DA_JADE, comecarConversaComAJade, JADE_NO_VALE } from '../src/sistemas/jade'
-import { arquivoDaIlha, carregarGlb, doPortoDoBarco, pisoEm } from './ajuda-colisores'
+import { arquivoDaIlha, carregarGlb, pisoEm } from './ajuda-colisores'
 
 const vale = ilha('vale-dos-dinos')
 
@@ -67,7 +67,7 @@ describe('Vale completo', () => {
     expect(maximo).toBeCloseTo(15.614, 2)
     expect(raioDaEsperaDaIlha(vale, 1, 0)).toBe(16)
     for (const c of lerColisores(modelo)) {
-      if (c.forma === 'malha' || doPortoDoBarco(c.nome)) continue
+      if (c.forma === 'malha') continue
       if (c.forma === 'cilindro') {
         // Limite conservador, incluindo a borda exterior, não apenas o centro.
         expect(Math.hypot(c.posicao[0], c.posicao[2]) + c.raio).toBeLessThanOrEqual(

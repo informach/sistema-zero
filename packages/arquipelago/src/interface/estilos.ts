@@ -337,4 +337,28 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-abertura.parada .arq-abertura-pintura,.arq-abertura.parada.saindo .arq-abertura-pintura{animation:arq-ab-cena .7s ease both}
 .arq-abertura.parada .arq-ab-raio{opacity:.6}
 @media (max-width:640px){.arq-abertura-pular{right:10px;font-size:13px}.arq-abertura-progresso{top:calc(max(28px,8%) + 62px)}}
+
+/* Convites usam toda a largura do cartão, inclusive no celular. */
+.arq-convidados{box-sizing:border-box;max-width:560px;width:100%}
+.arq-convidados .arq-quadro-lista{grid-template-columns:1fr}
+.arq-convidados .arq-quadro-cartao{grid-template-columns:minmax(0,1fr);align-items:start}
+.arq-convidados .arq-quadro-cartao h3{margin:0 0 6px;font-size:16px}
+.arq-convidados .arq-quadro-cartao p{margin:0;font-size:14px;line-height:1.5}
+.arq-convidados .arq-quadro-cartao .arq-botao{justify-self:stretch}
+
+.arq-tema-semana{padding:14px;border:1px solid #d9cfe8;border-radius:12px;background:#f7f3fc;gap:8px}
+.arq-tema-semana p{margin:0;font-size:14px;line-height:1.5}
+.arq-tema-semana label{font-size:13px;font-weight:700}
+.arq-tema-semana select{box-sizing:border-box;width:100%;min-width:0;max-width:100%;min-height:44px;border:1px solid #8b80a0;border-radius:8px;background:#fff;color:#1d2340;padding:8px;font:inherit}
+.arq-tema-semana select:focus-visible{outline:3px solid var(--arq-acento,#ffc93c);outline-offset:2px}
+
+.arq-feira{box-sizing:border-box;max-width:680px;width:100%}
+.arq-feira-itens{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:12px;margin-top:8px}
+.arq-feira-item{min-width:0;border:1px solid #ddd7e6;border-radius:12px;padding:12px;background:#fff}
+.arq-feira-item h4{margin:0 0 8px;font-size:16px}
+.arq-feira-item>img{width:100%;height:100px;object-fit:contain}
+.arq-feira-item p{font-size:14px;line-height:1.5}
+.arq-feira summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
+.arq-feira summary:focus-visible{outline:3px solid var(--arq-acento,#ffc93c);outline-offset:2px}
+.arq-insumos-campos{display:grid;grid-template-columns:minmax(0,2fr) minmax(90px,1fr);gap:12px}.arq-insumos-campos label{display:grid;gap:6px;font-weight:700;min-width:0}.arq-insumos-campos select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:8px;border:2px solid #e0c48c;border-radius:12px;background:#fff;color:#1d2340;font:inherit}.arq-insumos-campos select:focus-visible{outline:3px solid var(--arq-acento,#ffc93c);outline-offset:2px}
 `

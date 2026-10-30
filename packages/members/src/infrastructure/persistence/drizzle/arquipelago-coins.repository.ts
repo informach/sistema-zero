@@ -15,11 +15,11 @@ export type MovimentoArquipelago = {
 
 /**
  * Teto de moedas que o Arquipélago pode dar por semana (de segunda a domingo, no horário de São
- * Paulo), tudo ou nada. 150 = metade do que uma criança que estuda com regularidade ganha nos
- * cursos (~300 por semana): o curso continua a fonte principal (decisão de 27/10/2026, regras em
- * `docs/arquipelago-regras.md`). Separado do teto diário de 100 dos cursos (`DAILY_COIN_CAP`).
+ * Paulo), tudo ou nada. 100 é o valor escolhido pela dona para o jogo, separado do teto diário
+ * dos cursos (`DAILY_COIN_CAP`). Não desconta créditos antigos que ultrapassem o teto novo:
+ * só recusa novos ganhos até a próxima semana. Compras não reabrem o teto de créditos.
  */
-export const ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150
+export const ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 100
 
 /** Operações serializadas com a mesma trava da carteira e a cerca de exclusão do perfil. */
 export class ArquipelagoCoinsRepository {

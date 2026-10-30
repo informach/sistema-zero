@@ -29,8 +29,9 @@ export const LIMITES_DO_DESAFIO = {
   /** Objetivos que rodam o jogo custam executor: no máximo estes por desafio. */
   objetivosQueRodam: 8,
   /**
-   * Tetos por desafio. O Members dá no máximo 150 moedas do jogo por semana a cada pessoa
-   * (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, tudo ou nada): um prêmio maior nunca seria pago.
+   * Tetos por prêmio. O Members dá no máximo 100 moedas do jogo por semana a cada pessoa.
+   * Principal e extra são créditos separados; se não couberem na mesma semana, o restante
+   * aguarda a seguinte com a mesma chave (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, tudo ou nada).
    */
   moedas: 100,
   moedasExtra: 50,

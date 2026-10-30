@@ -13,7 +13,8 @@ import { cresceu, DIAS_PARA_CRESCER, nasceu } from './filhote-do-vale'
 import { ULTIMA_PAGINA } from './final-do-farol'
 import { ITENS } from './itens'
 import { coracoes } from './moradores'
-import { RECEITAS } from './receitas'
+import { CORACOES_DAS_PAGINAS_DO_ANEL, VIDA_NO_ANEL } from './moradores-do-anel'
+import { dicaDaReceita, RECEITAS, receitaConhecida } from './receitas'
 
 /** O filhote na coleção do Vale: do ovo que a Jade entrega ao tricerátopo crescido. */
 function filhoteNaColecao(s: Salvamento) {
@@ -86,7 +87,10 @@ export type IlhaDoDiario = (typeof ILHAS_DO_DIARIO)[number]
 
 /** O texto de cada página que já chegou ao jogo (o da proposta do jogo, assinado pela Íris). */
 // A página do Recife é narrativa nova da fase3-02.
-export const TEXTO_DA_PAGINA: Readonly<Partial<Record<IlhaDoDiario, string>>> = {
+export const TEXTO_DA_PAGINA: Readonly<Record<IlhaDoDiario, string>> = {
+  pico: VIDA_NO_ANEL.floco.pagina.texto,
+  'vale-dos-dinos': VIDA_NO_ANEL.jade.pagina.texto,
+  nuvens: VIDA_NO_ANEL.irie.pagina.texto,
   farol: ULTIMA_PAGINA.join(' '),
   recife:
     'Desenhei um caminho entre os corais. Na primeira curva me perdi. Voltei, olhei com calma e encontrei outro jeito de passar.',
@@ -120,14 +124,7 @@ export type EstadoDaPagina =
 
 const NOME_DA_ILHA = Object.fromEntries(ILHAS.map((i) => [i.id, i.nome])) as Record<IlhaId, string>
 
-/** Como se diz "fica em" cada ilha: na Vila Doce, no Recife Coral. */
-const NA_ILHA: Readonly<Record<Exclude<IlhaDoDiario, 'bosque' | 'farol'>, 'na' | 'no'>> = {
-  'vila-doce': 'na',
-  recife: 'no',
-  pico: 'no',
-  'vale-dos-dinos': 'no',
-  nuvens: 'na',
-}
+const MORADOR_DA_PAGINA = { pico: 'floco', 'vale-dos-dinos': 'jade', nuvens: 'irie' } as const
 
 /** A página do Bosque já está com a criança. */
 export function temAPaginaDoBosque(capi: Capi): boolean {
@@ -193,7 +190,16 @@ export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
     if (ilha === 'farol' && s.farol.pagina && texto) return { ilha, nome, aberta: true, texto }
     if (ilha === 'farol')
       return { ilha, nome, aberta: false, dica: 'A última página fica no alto do Farol.' }
-    return { ilha, nome, aberta: false, dica: `Fica ${NA_ILHA[ilha]} ${nome}, com quem mora lá.` }
+    const quem = MORADOR_DA_PAGINA[ilha]
+    const amizade = coracoes(s.moradores[quem].amizade)
+    return amizade >= CORACOES_DAS_PAGINAS_DO_ANEL
+      ? { ilha, nome, aberta: true, texto }
+      : {
+          ilha,
+          nome,
+          aberta: false,
+          dica: dicaDoMorador(VIDA_NO_ANEL[quem].nome, CORACOES_DAS_PAGINAS_DO_ANEL, amizade),
+        }
   })
 }
 
@@ -230,7 +236,15 @@ export function colecaoDoBosque(s: Salvamento): EstadoDoBicho[] {
 // ── A coleção de receitas (fase2-12) ────────────────────────────────────────────────────────────
 
 export type EstadoDaReceita =
-  | { id: string; nome: string; emoji: string; sabe: true; precisa: string; onde: string }
+  | {
+      id: string
+      nome: string
+      emoji: string
+      sabe: true
+      precisa: string
+      onde: string
+      fonte: string
+    }
   | { id: string; nome: string; emoji: string; sabe: false; dica: string }
 
 /**
@@ -238,17 +252,15 @@ export type EstadoDaReceita =
  * ainda vai lembrar, com quantos corações faltam.
  */
 export function colecaoDeReceitas(s: Salvamento): EstadoDaReceita[] {
-  const c = coracoes(s.moradores.bento.amizade)
   return RECEITAS.map((r): EstadoDaReceita => {
     const emoji = ITENS[r.faz.id]?.emoji ?? ''
-    if ((r.bento ?? 0) > c) {
-      const faltam = (r.bento ?? 0) - c
+    if (!receitaConhecida(r, s)) {
       return {
         id: r.id,
         nome: r.nome,
         emoji,
         sabe: false,
-        dica: `O Bento lembra esta receita com ${r.bento} ${r.bento === 1 ? 'coração' : 'corações'} de amizade (falta${faltam > 1 ? 'm' : ''} ${faltam}).`,
+        dica: dicaDaReceita(r, s),
       }
     }
     const precisa = Object.entries(r.precisa)
@@ -260,6 +272,7 @@ export function colecaoDeReceitas(s: Salvamento): EstadoDaReceita[] {
       emoji,
       sabe: true,
       precisa,
+      fonte: dicaDaReceita(r, s),
       onde:
         r.onde === 'fogueira'
           ? 'Na fogueira da Festa Junina, em junho'

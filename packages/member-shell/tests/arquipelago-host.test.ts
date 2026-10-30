@@ -34,6 +34,47 @@ const plataforma = () =>
   })
 
 describe('a porta da plataforma para o jogo', () => {
+  test('host repassa operações econômicas exatas nos dois públicos e preserva corpo/sinal', async () => {
+    for (const publico of ['kids', 'adulto'] as const) {
+      const p = criarPlataformaDoArquipelago({
+        publico,
+        perfil: { id: 'p1', primeiroNome: 'Lia' },
+        voltarPara: '/',
+      })
+      for (const [metodo, caminho] of [
+        ['GET', '/insumos/pendente'],
+        ['POST', '/insumos/comprar'],
+        ['GET', '/pedidos/pendentes'],
+        ['POST', '/pedidos/entregar'],
+        ['POST', '/profissoes/iniciar'],
+        ['POST', '/profissoes/concluir'],
+      ] as const) {
+        const chamadas = servir({
+          [`${metodo} /api/arquipelago${caminho}`]: { status: 200, body: { confirmado: true } },
+        })
+        const sinal = new AbortController().signal
+        const r = await p.servico.buscar(caminho, {
+          metodo,
+          sinal,
+          ...(metodo === 'POST' ? { corpo: { chave: 'comando' } } : {}),
+        })
+        expect(r).toEqual({ status: 200, corpo: { confirmado: true } })
+        expect(chamadas).toHaveLength(1)
+        expect(chamadas[0]?.signal).toBe(sinal)
+        if (metodo === 'POST') expect(JSON.parse(chamadas[0]!.body!)).toEqual({ chave: 'comando' })
+      }
+      for (const caminho of [
+        '/pedidos/apagar',
+        '/insumos/comprar/extra',
+        '/profissoes/aprovar',
+        '/pedidos/pendentes?perfil=outro',
+      ]) {
+        const chamadas = servir({})
+        expect((await p.servico.buscar(caminho)).status).toBe(404)
+        expect(chamadas).toHaveLength(0)
+      }
+    }
+  })
   test('troca de perfil impede abrir ferramenta no armazenamento anterior', () => {
     expect(pertenceAoPerfil({ viewerId: 'nova-crianca' }, 'crianca-anterior')).toBe(false)
     expect(pertenceAoPerfil({ viewerId: 'crianca-anterior' }, 'crianca-anterior')).toBe(true)

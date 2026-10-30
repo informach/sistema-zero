@@ -62,12 +62,34 @@ export function naDirecaoDaCavernaDoPico(x: number, z: number): boolean {
   return x < 0 && Math.abs(Math.atan2(z, -x)) < CAVERNA_DO_PICO.meiaAbertura
 }
 
-/** Até onde esperar os colisores ao abrir o jogo, incluindo a caverna fora da ilha leve. */
+/**
+ * Limites dos portos medidos nos GLBs de 30/10, com 0,5 m de folga para o corpo.
+ * Só ampliam a espera no setor do deque, sem transformar o mar dos outros lados em ilha.
+ * Os testes percorrem os vértices reais, incluindo a torre das Nuvens.
+ */
+const ESPERA_DOS_PORTOS: Partial<Record<Ilha['id'], { rumo: number; raio: number }>> = {
+  bosque: { rumo: Math.PI, raio: 26.7 },
+  'vila-doce': { rumo: Math.PI, raio: 19.2 },
+  pico: { rumo: Math.atan2(-15, -5), raio: 19.6 },
+  'vale-dos-dinos': { rumo: Math.PI, raio: 19.1 },
+  nuvens: { rumo: (-3 * Math.PI) / 4, raio: 25.9 },
+}
+const MEIA_ABERTURA_DO_PORTO = (35 * Math.PI) / 180
+
+/** Até onde esperar os colisores ao abrir o jogo, incluindo caverna e portos fora da ilha leve. */
 export function raioDaEsperaDaIlha(ilha: Ilha, x: number, z: number): number {
-  if (ilha.id === 'vale-dos-dinos') return RAIO_VISITAVEL_DO_VALE
-  if (ilha.id === 'nuvens') return RAIO_VISITAVEL_DAS_NUVENS
-  if (ilha.id === 'pico' && naDirecaoDaCavernaDoPico(x, z)) return CAVERNA_DO_PICO.raio
-  return ilha.id === 'recife' ? RAIO_VISITAVEL_DO_RECIFE : raioDoChaoDaIlha(ilha, x, z)
+  let raio = raioDoChaoDaIlha(ilha, x, z)
+  if (ilha.id === 'vale-dos-dinos') raio = RAIO_VISITAVEL_DO_VALE
+  if (ilha.id === 'nuvens') raio = RAIO_VISITAVEL_DAS_NUVENS
+  if (ilha.id === 'pico' && naDirecaoDaCavernaDoPico(x, z)) raio = CAVERNA_DO_PICO.raio
+  if (ilha.id === 'recife') raio = RAIO_VISITAVEL_DO_RECIFE
+  const porto = ESPERA_DOS_PORTOS[ilha.id]
+  if (porto) {
+    const d = Math.atan2(z, x) - porto.rumo
+    if (Math.abs(Math.atan2(Math.sin(d), Math.cos(d))) <= MEIA_ABERTURA_DO_PORTO)
+      raio = Math.max(raio, porto.raio)
+  }
+  return raio
 }
 
 /**

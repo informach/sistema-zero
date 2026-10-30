@@ -31,6 +31,7 @@ function economia(s: Salvamento) {
   const {
     casa: _casa,
     pontesVistas: _pontes,
+    ilhasVisitadas: _ilhas,
     percursos: _percursos,
     posicao: _posicao,
     vale: _vale,
@@ -89,6 +90,7 @@ export function conciliarSalvamento(
     clima,
     casa: { portaNova: local.casa.portaNova || remoto.casa.portaNova },
     pontesVistas: [...new Set([...remoto.pontesVistas, ...local.pontesVistas])],
+    ilhasVisitadas: local.ilhasVisitadas | remoto.ilhasVisitadas,
     percursos,
     // Descobertas não consomem itens nem se desfazem: juntar as conquistas das duas sessões.
     vale: {

@@ -11,6 +11,16 @@ const transforms = [
 ]
 
 describe('Arquipélago Vagalume no gateway', () => {
+  test('Mural próprio exige JWT ativo e limite por identidade', () => {
+    expect(realConfig.routes.find((r) => r.id === 'hub-my-playable-showcase')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/hub/my-playable-showcase',
+      service: 'hub',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    })
+  })
   test('sem ARQUIPELAGO_URL o gateway não ganha serviço nem rota do jogo', () => {
     expect(process.env.ARQUIPELAGO_URL).toBeUndefined()
     expect(realConfig.services.arquipelago).toBeUndefined()
@@ -36,7 +46,38 @@ describe('Arquipélago Vagalume no gateway', () => {
     const registry = new RouteRegistry(
       [...realConfig.routes, ...jogo.routes].map((r) => routeConfigSchema.parse(r)),
     )
+    for (const acao of ['iniciar', 'concluir']) {
+      expect(
+        registry.resolve('POST', `/arquipelago/profissoes/${acao}`, 'v1')?.route,
+      ).toMatchObject({
+        auth: { strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        maxBodyBytes: 4096,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      })
+      expect(registry.resolve('GET', `/arquipelago/profissoes/${acao}`, 'v1')).toBeUndefined()
+    }
     const salvar = registry.resolve('PUT', '/arquipelago/salvamento', 'v1')?.route
+    expect(registry.resolve('POST', '/arquipelago/insumos/comprar', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 1024,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('GET', '/arquipelago/insumos/pendente', 'v1')?.route.id).toBe(
+      'arquipelago-insumos-pendente',
+    )
+    expect(registry.resolve('GET', '/arquipelago/insumos/comprar', 'v1')).toBeUndefined()
+    expect(registry.resolve('POST', '/arquipelago/pedidos/entregar', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 1024,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('GET', '/arquipelago/pedidos/pendentes', 'v1')?.route.id).toBe(
+      'arquipelago-pedidos-pendentes',
+    )
+    expect(registry.resolve('GET', '/arquipelago/pedidos/entregar', 'v1')).toBeUndefined()
     expect(salvar).toMatchObject({
       id: 'arquipelago-salvamento-put',
       service: 'arquipelago',

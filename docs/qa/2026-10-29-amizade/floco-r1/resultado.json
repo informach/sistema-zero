@@ -1,0 +1,20 @@
+[
+  {
+    "publico": "kids",
+    "celular": false,
+    "quem": "floco",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "pico"
+  },
+  {
+    "publico": "kids",
+    "celular": true,
+    "quem": "floco",
+    "amizade": 230,
+    "pedidoEntregue": true,
+    "reabriu": true,
+    "pagina": "pico"
+  }
+]

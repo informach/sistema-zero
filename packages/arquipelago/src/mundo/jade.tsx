@@ -6,7 +6,7 @@ import { comecarConversaComAJade, JADE_NO_VALE } from '../sistemas/jade'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
 import { lugarDaJade } from './vale'
 
-const JADE: MoradorNoMundo = {
+export const JADE: MoradorNoMundo = {
   quem: 'jade',
   url: new URL(jadeGlb, import.meta.url).href,
   painel: PAINEL_DA_JADE,

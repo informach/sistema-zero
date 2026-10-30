@@ -11,6 +11,7 @@ import {
   type PercursoId,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
+import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
 import { rotuloDaAparencia } from './construcao/galeria'
 import {
   colecaoDeReceitas,
@@ -204,7 +205,17 @@ export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiD
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
 
 export function albumDoSalvamento(s: Salvamento) {
+  const achados = (Object.keys(ACHADOS_DO_RECIFE) as AchadoDoRecife[]).map((id) => ({
+    id,
+    nome: ACHADOS_DO_RECIFE[id].nome,
+    dica: ACHADOS_DO_RECIFE[id].dica,
+    achado: s.recife[id],
+  }))
   return {
+    recife: {
+      conta: contar(achados.filter((a) => a.achado).length, achados.length),
+      itens: achados,
+    },
     bichos: bichosDoAlbum(s),
     receitas: receitasDoAlbum(s),
     percursos: percursosDoAlbum(s),

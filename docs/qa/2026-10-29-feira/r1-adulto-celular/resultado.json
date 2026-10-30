@@ -1,0 +1,17 @@
+{
+  "publico": "adulto",
+  "celular": true,
+  "limites": {
+    "largura": 350,
+    "conteudo": 350,
+    "esquerda": 20,
+    "direita": 370,
+    "tela": 390
+  },
+  "carteira": {
+    "pagas": ["geladeira-classica"],
+    "saldo": 20,
+    "creditos": {}
+  },
+  "erros": []
+}

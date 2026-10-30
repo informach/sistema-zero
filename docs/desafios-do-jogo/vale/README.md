@@ -14,6 +14,44 @@ Valores derivados de `MOEDAS_PADRAO_POR_TIPO`; ordens 60 a 63; atração `protej
 A busca nos manifestos locais não encontrou outro quadro do Vale. O Admin deve conferir o
 cadastro de novo na importação. `publicar: true` prepara essa aplicação futura, sem publicá-la aqui.
 
+## Cinco quadros complementares (L03)
+
+Nos quadros 1 e 2, o laço Para cada vem montado com o corpo vazio. No primeiro, falta zerar a contagem antes dele e somar dentro. No segundo, falta esconder a mancha da vez. Os demais quadros aplicam escolha, consumo único, estado de onda e conclusão de rodada.
+
+| Quadro | Atividade | Tipo | Moedas | Extra |
+| --- | --- | --- | --- | --- |
+| 1 | Contagem da lista | Quadro das Cores | 20 | 10 |
+| 2 | Cinza retirada | Quadro das Cores | 20 | 10 |
+| 3 | Folhas bem usadas | Quadro das Cores | 20 | 10 |
+| 4 | Uma onda por vez | Quadro das Cores | 20 | 10 |
+| 5 | Rodada conferida | Quadro das Cores | 20 | 10 |
+
+O [manifesto Kids](vale.manifesto.json) e o [manifesto adulto](vale-adulto.manifesto.json)
+têm seis quadros e três desafios do dia cada. Todos os novos itens ficam em rascunho; o arquivo
+adulto também. Os quatro itens Kids antigos foram comparados com a base Git e preservados
+integralmente. Nenhum conteúdo foi importado ou publicado nesta entrega.
+
+São reaplicações em blocos JavaScript já conhecidos, não antecipam o ensino de uma linguagem
+nova. O Para cada ainda não aparece nas listas atuais dos cursos: fica preparado como estrutura
+do inicial, com grupo/item e corpo vazio conferidos por teste. A pessoa completa apenas as
+ações internas já ensinadas. Não há liberação manual desse bloco nem afirmação de conquista.
+Na publicação, é necessário conferir a mediação e o vínculo com os cursos efetivamente prontos.
+
+A arte é reaproveitada do principal. O texto e os valores do cenário estão prontos. Os objetivos
+observam o comportamento das ações deixadas vazias e aceitam qualquer aparência. Enter é o
+extra para uma nova rodada. A prévia usa controles de teclado e toque do Jogo 2D.
+
+Comandos adicionais, na raiz:
+
+```powershell
+bun test docs/desafios-do-jogo/vale/quadros-iniciais.test.ts
+$env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
+bun test packages/studio-runtime/tests/quadros-vale-browser.test.ts
+bun docs/desafios-do-jogo/vale/conferir-quadros-browser.ts
+```
+
+[Capturas e resultados locais](../../qa/2026-10-30-quadros-vale/README.md).
+
 ## O que a criança completa
 
 O cenário, a arte, a lista de ninhos, o desenho, os contadores e Recomeçar estão prontos.

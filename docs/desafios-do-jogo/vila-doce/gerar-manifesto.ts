@@ -1,9 +1,11 @@
 import {
   ManifestoDeDesafiosSchema,
   MOEDAS_PADRAO_POR_TIPO,
+  type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
+import { desafiosIniciaisDaVila } from './quadros-iniciais'
 
 const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: string[] }> = {
   corrida: {
@@ -47,47 +49,55 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
     ],
   },
 }
-export function criarManifesto() {
+export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
     escopo: 'ilha',
-    desafios: VARIACOES.map((variacao, index) => {
-      const tipo = variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia'
-      const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-      return {
-        slug: `vila-doce-corrida-do-entregador${variacao === 'corrida' ? '' : `-${variacao}`}`,
-        publico: 'kids',
-        ilha: 'vila-doce',
-        tipo,
-        quadro: variacao === 'corrida' ? 6 : null,
-        ordem: 60 + index,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[variacao],
-          projetoInicial: montarProjeto(variacao, false),
-          gabarito: montarProjeto(variacao, true),
-          objetivos: objetivos[variacao],
-          desafioExtra: {
-            titulo: 'Mais um desafio',
-            texto:
-              'Faça Enter iniciar outra corrida, como o botão Largada: volte ao começo, limpe o recado, zere as entregas e recomece o prazo.',
+    desafios: [
+      ...desafiosIniciaisDaVila(publico),
+      ...VARIACOES.map((variacao, index) => {
+        const tipo = variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia'
+        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+        return {
+          slug: `vila-doce-corrida-do-entregador${variacao === 'corrida' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'vila-doce',
+          tipo,
+          quadro: variacao === 'corrida' ? 6 : null,
+          ordem: 60 + index,
+          publicar: publico === 'kids',
+          conteudo: {
+            versao: 1,
+            ...textos[variacao],
+            projetoInicial: montarProjeto(variacao, false),
+            gabarito: montarProjeto(variacao, true),
+            objetivos: objetivos[variacao],
+            desafioExtra: {
+              titulo: 'Mais um desafio',
+              texto:
+                'Faça Enter iniciar outra corrida, como o botão Largada: volte ao começo, limpe o recado, zere as entregas e recomece o prazo.',
+            },
+            recompensa: {
+              cor: variacao === 'corrida',
+              atracao: 'corrida-do-entregador',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          recompensa: {
-            cor: variacao === 'corrida',
-            atracao: 'corrida-do-entregador',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-          },
-          blocosManuais: { acrescentar: [], retirar: [] },
-        },
-      }
-    }),
+        }
+      }),
+    ],
   })
 }
-if (import.meta.main)
-  await Bun.write(
-    new URL('./vila-doce.manifesto.json', import.meta.url),
-    `${JSON.stringify(criarManifesto(), null, 2)}\n`,
-  )
+if (import.meta.main) {
+  for (const publico of ['kids', 'adulto'] as const)
+    await Bun.write(
+      new URL(
+        `./vila-doce${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
+        import.meta.url,
+      ),
+      `${JSON.stringify(criarManifesto(publico), null, 2)}\n`,
+    )
+}

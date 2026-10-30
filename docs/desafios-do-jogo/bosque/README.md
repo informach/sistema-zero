@@ -1,17 +1,23 @@
 # Desafios do Bosque dos Bichos
 
-Arquivo para importar: `bosque.manifesto.json`. Formato `arquipelago-desafios`, versão 1,
-escopo `ilha`, público `kids`. Segue a parte 3 de
+Arquivos para importar: `bosque.manifesto.json` (Kids) e `bosque-adulto.manifesto.json` (adulto).
+Formato `arquipelago-desafios`, versão 1, escopo `ilha`. Segue a parte 3 de
 `docs/plans/2026-10-28-arquipelago-desafio-do-dia-e-manifestos.md`.
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
+| Vagalume aceso | Quadro das Cores | 1 | 20 | 10 |
+| O lanche do coelho | Quadro das Cores | 2 | 20 | 10 |
+| Trilha das pegadas | Quadro das Cores | 3 | 20 | 10 |
+| Cuide dos quatro | Quadro das Cores | 4 | 20 | 10 |
+| Travessia tranquila | Quadro das Cores | 5 | 20 | 10 |
 | Corrida dos bichos | Quadro das Cores | 6 | 20 | 10 |
 | Pedras | Desafio do dia | Nenhum | 10 | 5 |
 | Noite | Desafio do dia | Nenhum | 10 | 5 |
 | Placar | Desafio do dia | Nenhum | 10 | 5 |
 
-Somente a corrida principal pinta a ilha. Cada variação começa com a corrida funcionando.
+Os seis quadros pintam a ilha. As três variações diárias não pintam outro quadro.
+Cada variação começa com a corrida funcionando.
 O extra da corrida permite escolher qualquer um dos quatro bichos, antes da Largada, para
 avançar com espaço. Clicar novamente no mesmo bicho devolve o controle automático.
 Os outros extras são dar a largada com Enter, alternar a luz e zerar o placar.
@@ -23,7 +29,10 @@ O catálogo da jornada indica Iniciante 2D. Porém, pelas regras 7.4 a 7.6 do Ar
 abrir a ilha não concede todos os blocos desse nível: a disponibilidade depende dos blocos
 conquistados nos cursos. A publicação continua passando pela análise do Members.
 
-O teste compara todos os blocos dos oito projetos com a união das listas locais até Construtor:
+O teste compara os blocos dos dezoito projetos por público com as listas locais até Construtor.
+`quadros-iniciais.test.ts` exige uma base menor nos quadros 1 a 3: Farol e Jardim do Faísca.
+Nos quadros 4 e 5, acrescenta somente a Nave. A entrada no posto não substitui a conquista
+real desses blocos. Régua completa em [conteúdo por posto](../conteudo-por-posto.md).
 
 | Fonte | Ferramentas aproveitadas |
 | --- | --- |
@@ -53,7 +62,8 @@ segundo salto tardio, que poderia ser interrompido pela vitória de outro partic
 
 ## Autoria e reprodução
 
-`projetos.ts` monta o IR, os blocos, os arquivos gerados e a arte embutida. Os projetos usam
+`projetos.ts` monta a corrida; `quadros-iniciais.ts` monta os outros cinco jogos, seus objetivos
+e SVGs. Ambos montam IR, blocos, arquivos gerados e arte embutida. Os projetos usam
 somente Programação e Jogo 2D. As listas HTML e CSS do IR são vazias. Os arquivos de execução
 do Estúdio são gerados automaticamente, não são programação direta pedida à criança.
 Gato, coelho e pedras reutilizam a arte de Cadê Todo Mundo. Cachorro e porquinho são SVGs
@@ -69,8 +79,10 @@ também levaria as imagens e poderia exceder o limite de observação do executo
 bun docs/desafios-do-jogo/bosque/gerar-manifesto.ts
 ```
 
-O manifesto pede publicação. Importá-lo ainda exige a conferência normal do Admin, incluindo
-cobertura no currículo publicado e disponibilidade do quadro 6. Esta entrega não consulta nem
+Os quatro desafios Kids anteriores mantêm o pedido de publicação. Os cinco novos e os nove
+adultos chegam como rascunhos para conferir os vínculos com os cursos reais. Não existe
+liberação artificial de blocos. Importar e publicar exige a conferência normal do Admin, incluindo
+cobertura no currículo publicado e disponibilidade dos quadros. Esta entrega não consulta nem
 grava dados de alunos, staging ou produção. Não inclui o brinquedo na ilha ou o rodízio diário,
 que são outras partes do plano.
 
@@ -80,6 +92,8 @@ que são outras partes do plano.
 bun test packages/arquipelago-contracts/tests docs/desafios-do-jogo/bosque/bosque.test.ts packages/studio/src/blockly/__tests__/bosqueManifest.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/bosque-browser.test.ts
+bun test packages/studio-runtime/tests/quadros-bosque-browser.test.ts
+bun docs/desafios-do-jogo/bosque/conferir-quadros-browser.ts
 $env:NODE_OPTIONS='--max-old-space-size=8192'
 node packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/bosque/tsconfig.json
 ```
@@ -90,7 +104,7 @@ e usa seu Chromium local, o runtime oficial do Jogo 2D e o julgador do core. Nen
 é simulada. Sem `SZ_CHECK_CHROMIUM`, esse teste fica explicitamente ignorado.
 
 As verificações cobrem schema, moedas, público, paleta, orçamento dos objetivos, correspondência
-do JSON com as fontes e abertura dos oito projetos no Blockly. Regerar o JavaScript a partir dos
+dos dois JSON com as fontes e abertura dos dezoito projetos no Blockly. Regerar o JavaScript a partir dos
 blocos precisa produzir exatamente o código salvo. O executor aprova o gabarito e reprova o
 inicial em cada objetivo de execução, incluindo extras. O avaliador de estrutura faz o mesmo
 para sorteio, falas e dono dos pontos.
@@ -98,3 +112,9 @@ para sorteio, falas e dono dos pontos.
 Também há casos incorretos: passo fixo, fala trocada, ponto para outro bicho, Largada sem
 reposicionar, corrida que não para, pulo sem descida, luz que não apaga e Largada que zera
 a contagem de corridas. Falha do executor não conta como reprovação pedagógica.
+
+Nos cinco quadros novos, cada objetivo usa execução. Negativos conferem luz que nasce acesa,
+entrega sem alface, alface que pode ser recolhida depois da entrega, trilha fora de ordem,
+visita repetida contada de novo e movimento que continua depois da bandeira. Cada extra
+também reprova quando Enter não reinicia. A revisita sai e volta ao bicho: o evento de
+contato dispara na entrada, portanto apenas ficar parado perto dele não prova essa regra.

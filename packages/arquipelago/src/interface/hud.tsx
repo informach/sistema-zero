@@ -35,6 +35,7 @@ import {
   todasAsColetaveis,
 } from '../sistemas/percurso'
 import { COMO_USAR_O_PLANADOR, ID_DO_PLANADOR } from '../sistemas/planador'
+import { primeiroPedido } from '../sistemas/primeiro-pedido'
 import { desafioDeHoje, quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { Abertura } from './abertura'
@@ -44,9 +45,11 @@ import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
 import { BarraDeConstruir, ModosDoJogo } from './construir'
+import { PainelDosConvidados } from './convidados'
 import { Diario } from './diario'
 import { VisorDasEstrelas } from './estrelas'
 import { CorteDoFarol, PainelDaIris, PainelDoFarol } from './farol'
+import { PainelDaFeira } from './feira'
 import { PainelDoFilhote } from './filhote'
 import { FogueiraDaFesta } from './fogueira-da-festa'
 import { AtalhoDaFoto, ModoFoto } from './foto'
@@ -210,6 +213,7 @@ function Agora() {
   const portaNova = useEstado((s) => s.salvamento.casa.portaNova)
   const necessidades = useEstado((s) => s.salvamento.necessidades)
   const horta = useEstado((s) => s.salvamento.horta)
+  const projetos = useEstado((s) => s.salvamento.projetos)
   const dados = useDesafios(lojaDosDesafios(loja, plataforma), (s) => s.dados)
   const [agora, setAgora] = useState(() => Date.now())
   useEffect(() => {
@@ -222,6 +226,7 @@ function Agora() {
     horta,
     agoraMs: agora,
     desafioDeHoje: dados ? desafioDeHoje(dados).estado : null,
+    primeiroPedido: primeiroPedido({ casa: { portaNova }, horta, projetos }, agora)?.texto,
   })
   if (lista.length === 0) return null
   return (
@@ -868,6 +873,8 @@ export function Hud() {
         </div>
       ) : null}
       <PainelDoQuadro />
+      <PainelDaFeira />
+      <PainelDosConvidados />
       <PainelDaCapi />
       <PainelDoBento />
       <PainelDaMare />

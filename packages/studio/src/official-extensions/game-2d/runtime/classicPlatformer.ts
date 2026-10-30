@@ -24,6 +24,19 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
   var _classicActionHandlers = Object.create(null);
   var _classicActionOrder = [];
   var _classicControlsRoot = null;
+  var CLASSIC_TOUCH_KEY = {
+    left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown',
+    jump: 'Space', action: 'x', select: 'Backspace', start: 'Enter', pause: 'Escape'
+  };
+
+  /** @param {string} action */
+  function _markClassicTouchPressed(action) {
+    var generation = _driverGeneration;
+    _markClassicPressed(action);
+    if (_runGenerationChanged(generation)) return;
+    var key = CLASSIC_TOUCH_KEY[action];
+    if (key) _dispatchGameKeyInput({ key: key, code: key });
+  }
 
   function _knownClassicAction(action) {
     return CLASSIC_ACTIONS.indexOf(String(action || '')) >= 0;
@@ -163,7 +176,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       if (!pointers) pointers = _classicTouchPointers[action] = new Set();
       if (!pointers.has(id)) {
         pointers.add(id);
-        _markClassicPressed(action);
+        _markClassicTouchPressed(action);
       }
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
       if (e && e.pointerId !== undefined && typeof button.setPointerCapture === 'function') {
@@ -206,7 +219,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
         return;
       }
       _classicVirtualHeldStamp[action] = _frameStamp + 1;
-      _markClassicPressed(action);
+      _markClassicTouchPressed(action);
     }
     button.addEventListener('pointerdown', press);
     button.addEventListener('pointerup', release);

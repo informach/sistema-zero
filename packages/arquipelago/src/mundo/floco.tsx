@@ -6,7 +6,7 @@ import { comecarConversaComOFloco, FLOCO_NO_PICO } from '../sistemas/floco'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
 import { lugarDoFloco } from './pico'
 
-const FLOCO: MoradorNoMundo = {
+export const FLOCO: MoradorNoMundo = {
   quem: 'floco',
   url: new URL(flocoGlb, import.meta.url).href,
   painel: PAINEL_DO_FLOCO,

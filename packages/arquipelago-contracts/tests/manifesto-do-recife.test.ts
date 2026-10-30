@@ -32,10 +32,15 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('o Recife Coral é do Explorador e o pacote tem um quadro e três desafios do dia', () => {
+test('o Recife Coral é do Explorador e o pacote tem seis quadros e três desafios do dia', () => {
   expect(ilha('recife').posto).toBe('explorer')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
+    'recife-a-corrente-muda',
+    'recife-conchas-por-viagem',
+    'recife-dois-corais-cuidados',
+    'recife-uma-bolha-por-vez',
+    'recife-a-chave-do-navio',
     'recife-mira-de-bolhas',
     'recife-mira-de-bolhas-rapida',
     'recife-mira-de-bolhas-pontos',
@@ -44,20 +49,20 @@ test('o Recife Coral é do Explorador e o pacote tem um quadro e três desafios 
   for (const [i, d] of manifesto.desafios.entries()) {
     expect(d.ilha).toBe('recife')
     expect(d.publico).toBe('kids')
-    expect(d.tipo).toBe(i === 0 ? 'quadro-das-cores' : 'desafio-do-dia')
-    expect(d.quadro).toBe(i === 0 ? 6 : null)
+    expect(d.tipo).toBe(i < 6 ? 'quadro-das-cores' : 'desafio-do-dia')
+    expect(d.quadro).toBe(i < 6 ? i + 1 : null)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i === 0,
-      atracao: 'mira-de-bolhas',
-      moedas: i === 0 ? 20 : 10,
-      moedasExtra: i === 0 ? 10 : 5,
+      cor: i < 6,
+      atracao: i < 5 ? d.slug : 'mira-de-bolhas',
+      moedas: i < 6 ? 20 : 10,
+      moedasExtra: i < 6 ? 10 : 5,
     })
     expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
     expect(d.conteudo.objetivos.some((o) => !o.optional)).toBe(true)
     expect(d.conteudo.objetivos.some((o) => o.optional)).toBe(true)
   }
 })
-test('os oito projetos só usam blocos ensinados até Explorador e arte embutida', () => {
+test('os dezoito projetos só usam blocos ensinados até Explorador e arte embutida', () => {
   for (const d of manifesto.desafios)
     for (const raw of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
       const p = raw as { blocksState: unknown; assets: { dataUrl: string }[] }

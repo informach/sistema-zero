@@ -9,7 +9,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 16
+export const VERSAO_SALVAMENTO = 18
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -689,7 +689,7 @@ export function migrarDaV15(v15: SalvamentoV15): SalvamentoV16 {
 }
 
 /** Mesmo destino sem descartar referências aceitas nas versões até V14. */
-export function migrarDaV14ParaAtual(v14: SalvamentoV14): SalvamentoV16 {
+export function migrarDaV14ParaV16(v14: SalvamentoV14): SalvamentoV16 {
   return {
     ...v14,
     versao: 16,
@@ -700,12 +700,73 @@ export function migrarDaV14ParaAtual(v14: SalvamentoV14): SalvamentoV16 {
   }
 }
 
-export const SalvamentoSchema = z.union([
+/** Histórico até V16, inclusive o caminho que preserva aparências antigas. */
+export const SalvamentoAteV16Schema = z.union([
   SalvamentoV16Schema,
   SalvamentoV15Schema.transform(migrarDaV15),
-  SalvamentoAteV14Schema.transform(migrarDaV14ParaAtual),
+  SalvamentoAteV14Schema.transform(migrarDaV14ParaV16),
 ])
-export type Salvamento = SalvamentoV16
+
+export const MORADORES_DO_ANEL = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie'] as const
+export const SalvamentoV17Schema = z
+  .strictObject({
+    ...SalvamentoV16Schema.shape,
+    versao: z.literal(17),
+    moradores: z.strictObject({
+      capi: MoradorSchema,
+      bento: MoradorSchema,
+      mare: MoradorSchema,
+      floco: MoradorSchema,
+      jade: MoradorSchema,
+      irie: MoradorSchema,
+    }),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV17 = z.infer<typeof SalvamentoV17Schema>
+
+export function migrarDaV16(s: SalvamentoV16): SalvamentoV17 {
+  return {
+    ...s,
+    versao: 17,
+    moradores: {
+      ...s.moradores,
+      mare: { ...MORADOR_NOVO },
+      floco: { ...MORADOR_NOVO },
+      jade: { ...MORADOR_NOVO },
+      irie: { ...MORADOR_NOVO },
+    },
+  }
+}
+
+export const SalvamentoAteV17Schema = z.union([
+  SalvamentoV17Schema,
+  SalvamentoAteV16Schema.transform(migrarDaV16),
+])
+
+export const SalvamentoV18Schema = z
+  .strictObject({
+    ...SalvamentoV17Schema.shape,
+    versao: z.literal(18),
+    ilhasVisitadas: z.number().int().min(0).max(255),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV18 = z.infer<typeof SalvamentoV18Schema>
+
+/** Não inferir visita a partir de posto, posição ou ponte vista. */
+export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
+  return { ...s, versao: 18, ilhasVisitadas: 0 }
+}
+
+/** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV18 {
+  return migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV18Schema,
+  SalvamentoAteV17Schema.transform(migrarDaV17),
+])
+export type Salvamento = SalvamentoV18
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
@@ -713,6 +774,7 @@ export const SALVAMENTO_MAX_BYTES = 64 * 1024
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
     versao: VERSAO_SALVAMENTO,
+    ilhasVisitadas: 0,
     nuvens: { constelacoes: 0 },
     farol: { pagina: false, concluido: false },
     clima: 'sol',
@@ -733,7 +795,14 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     pontesVistas: [],
     casa: { portaNova: false },
     percursos: {},
-    moradores: { capi: { ...MORADOR_NOVO }, bento: { ...MORADOR_NOVO } },
+    moradores: {
+      capi: { ...MORADOR_NOVO },
+      bento: { ...MORADOR_NOVO },
+      mare: { ...MORADOR_NOVO },
+      floco: { ...MORADOR_NOVO },
+      jade: { ...MORADOR_NOVO },
+      irie: { ...MORADOR_NOVO },
+    },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
     projetos: {},

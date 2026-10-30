@@ -1,3 +1,4 @@
+import { bonusDaColheita, type ContextoDaColheita } from './colheita'
 import type { Canteiro, Semente } from './salvamento'
 
 /**
@@ -11,6 +12,15 @@ export const CRESCIMENTO_MS: Record<Semente, number> = {
 }
 
 export const COLHEITA: Record<Semente, number> = { alface: 2, tomate: 3, milho: 2 }
+
+/** A colheita e sua semente cabem inteiras. Recusar conserva o canteiro maduro. */
+export function cabeColheita(
+  inventario: Readonly<Record<string, number>>,
+  item: Semente,
+  quantidade: number,
+): boolean {
+  return (inventario[item] ?? 0) + quantidade <= 999 && (inventario[`semente-${item}`] ?? 0) < 999
+}
 
 export type Estagio = 'vazio' | 'semente' | 'brotando' | 'crescendo' | 'maduro'
 
@@ -41,11 +51,19 @@ export function regar(c: Canteiro, agora: Date): Canteiro | null {
 export function colher(
   c: Canteiro,
   agoraMs: number,
-): { canteiro: Canteiro; item: Semente; qtd: number } | null {
+  contexto?: ContextoDaColheita,
+): {
+  canteiro: Canteiro
+  item: Semente
+  qtd: number
+  bonus: { clima: number; humor: number }
+} | null {
   if (!c.semente || estagio(c, agoraMs) !== 'maduro') return null
+  const bonus = bonusDaColheita(c.semente, contexto)
   return {
     canteiro: { ...c, semente: null, plantadoEm: null, regadoEm: null },
     item: c.semente,
-    qtd: COLHEITA[c.semente],
+    qtd: COLHEITA[c.semente] + bonus.clima + bonus.humor,
+    bonus,
   }
 }

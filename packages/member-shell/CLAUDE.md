@@ -1,5 +1,34 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Avatar por cima do Arquipélago (L09, 30/10/2026)
+
+`avatar`/`vestir` aceita `MoldeDoVestuarioSchema` V1. O host confere o perfil pela rota de acesso,
+abre `ArquipelagoAvatarDialog` com o configurador existente e relê o avatar confirmado ao voltar.
+O mesmo resolver fica reservado até a leitura terminar; unmount cancela e invalida o retorno.
+O configurador recebe `onReturn` opcional. Sem ele, a navegação completa continua igual.
+Com ele, Voltar cancela a prévia e Salvar retorna após PUT e captura. Saída durante operações
+em voo é bloqueada. A compra é a mesma de antes, sem preço escolhido pelo jogo.
+
+`SeasonalAvatarChoices` usa somente peças do catálogo autenticado, com categoria compatível,
+e preço do serviço. As sugestões recolhem após escolher, para preservar a prévia. No adulto,
+ficam dentro do painel existente para manter as áreas da grade. Kids e adulto mantêm suas peles.
+Prova local e limitações: `docs/qa/2026-10-30-vestuario/README.md`.
+
+O allowlist `CAMINHOS_DO_JOGO` inclui os seis caminhos exatos de insumos, pedidos e profissões.
+Adicionar uma rota no BFF sem esta lista impede a chamada no jogo hospedado. Os testes do host
+cobrem ambos os públicos, corpo, AbortSignal e recusa de caminhos arbitrários.
+
+## Publicações do Mural no fliperama (L05, 29/10/2026)
+
+`arquipelagoJogosDoMural` repassa `GET /hub/my-playable-showcase`, valida `JogosDoMuralSchema`
+e responde `private, no-store`; `/api/arquipelago/mural` existe nos dois apps. Não recebe autor
+ou público do jogo. O Hub deriva ambos da identidade do gateway.
+O host aceita `estudio` / `jogo-do-mural` com UUID estrito e mantém a exclusão mútua das
+ferramentas. `ArquipelagoMuralPlayer` monta o `PublicPlayer` existente em diálogo, com a pele
+do público, devolução de foco e desmontagem ao sair. `embedded` só ajusta a altura ao diálogo;
+a página pública continua com `h-dvh`. A leitura do projeto é abortada ao fechar ou reiniciar.
+Não copiar fonte de publicação para o jogo: isso perderia a revogação e os runtimes Python/Pro.
+
 ## O desenho da criança no jogo: vagas de arte (29/10/2026, etapa 5)
 
 Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. O bloco de Estúdio da
@@ -3720,6 +3749,8 @@ novo exigiria mexer no workflow.
   cancelar. `lerCartas` relê as conquistas; guardar exige uma leitura atual.
 - A prévia usa o `rotina-execucao` do contrato, o mesmo intérprete do jogo, sobre uma cópia do
   mundo recebido; não grava nem chama o serviço para rodar a rotina.
+- A descrição da espécie usa `descricaoDoTrabalhoLumi` do contrato e permanece visível no
+  celular. Capacidade afeta os passos da prévia; o intervalo didático não mede o voo real.
 - Os portais do Blockly ficam no diálogo durante a edição e voltam ao host ao fechar.
 - O jogo não importa o editor: pede `rotina-lumi` pela porta `abrirFerramenta`. O host de QA em
   `tests/fixtures/rotina-lumi-playground.tsx` serve o playground do jogo (o CSS sai de
@@ -3740,3 +3771,10 @@ Recusas, versões futuras, erro e aborto devolvem null para manter o modelo de r
 atual abre modelo clássico e cenário pixel; cenas do Molda e outros formatos ficam na reserva.
 A escala da caixa agora vem do contrato. Testes: `tests/arquipelago-aparencia.test.ts` e
 `tests/arquipelago-objeto.test.ts`. Regras em §6.16 e plano `2026-10-29-arquipelago-molda-no-mundo.md`.
+
+## Contexto da colheita no mini estúdio dos Lumis
+
+`RotinaLumiEditor` recebe os moldes V1 e V2 dos contratos. A resposta conserva a versão do
+pedido. V2 mostra o clima e o humor congelados na abertura e executa o intérprete compartilhado;
+não altera a ilha nem presume que o contexto continuará igual depois de fechar. V1 conserva a
+prévia sem bônus. Nunca duplicar regras de colheita no componente.

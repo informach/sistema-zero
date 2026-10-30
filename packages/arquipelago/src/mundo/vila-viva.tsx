@@ -10,6 +10,7 @@ import { Bento } from './bento'
 import { BorroesDaVila } from './borroes-da-vila'
 import { percursoNoMundo } from './bosque'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { FeiraDaVila } from './feira'
 import { FestaNaVila } from './festa-na-vila'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { giroDaIlha } from './medidas'
@@ -70,6 +71,7 @@ export function VilaViva({
       </ComReserva>
       <BalcoesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <BancosDaVila colisores={preparada.colisores} meio={meio} />
+      <FeiraDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <FestaNaVila meio={meio} giro={giro} />
       <BorroesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       {telhados ? (

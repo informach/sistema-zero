@@ -45,7 +45,13 @@ describe('itens e receitas', () => {
   test('salada gasta alface e tomate e faz uma salada', () => {
     const salada = RECEITAS.find((r) => r.id === 'salada')
     if (!salada) throw new Error('sem salada')
-    expect(receitasPossiveis({ alface: 1 }, 'bancada', receitasConhecidas(0))).toEqual([])
+    expect(
+      receitasPossiveis(
+        { alface: 1 },
+        'bancada',
+        receitasConhecidas(criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))),
+      ),
+    ).toEqual([])
     expect(cozinhar({ alface: 1, tomate: 2 }, salada)).toEqual({ tomate: 1, salada: 1 })
     expect(cozinhar({ alface: 1 }, salada)).toBeNull()
   })

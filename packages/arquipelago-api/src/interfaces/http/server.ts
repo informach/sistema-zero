@@ -32,11 +32,25 @@ import {
   type ServicoDaMedicao,
 } from '../../application/servico-da-medicao'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
+import {
+  BandejasDoTurnoInvalidasError,
+  type ServicoDasProfissoes,
+  TurnoNaoEncontradoError,
+} from '../../application/servico-das-profissoes'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
+import type { ServicoDosInsumos } from '../../application/servico-dos-insumos'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
+import type { ServicoDosPedidos } from '../../application/servico-dos-pedidos'
+import {
+  CompraDesatualizadaError,
+  CompraIncompativelError,
+  CompraPendenteError,
+  CompraSemEspacoError,
+} from '../../domain/insumos.port'
 import { ConferenciaIndisponivelError } from '../../domain/membros.port'
+import { PedidoRecusadoError } from '../../domain/pedidos.port'
 import {
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
@@ -45,13 +59,19 @@ import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
+import { rotasDasProfissoes } from './rotas-das-profissoes'
 import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
+import { rotasDosInsumos } from './rotas-dos-insumos'
 import { rotasDosMinijogos } from './rotas-dos-minijogos'
+import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
+  pedidos?: ServicoDosPedidos
+  insumos?: ServicoDosInsumos
+  profissoes?: ServicoDasProfissoes
   minijogos?: ServicoDosMinijogos
   medicao?: ServicoDaMedicao
   logger: Logger
@@ -107,6 +127,43 @@ export function createServer(deps: DependenciasHttp) {
       }
     })
     .onError(({ error, set, code }) => {
+      if (error instanceof PedidoRecusadoError) {
+        set.status = 409
+        return envelope(
+          error.motivo === 'incompativel' ? 'PEDIDO_INCOMPATIVEL' : 'PEDIDO_BASE_RECUSADO',
+          error.message,
+        )
+      }
+      if (error instanceof CompraPendenteError) {
+        set.status = 423
+        return envelope('COMPRA_PENDENTE', error.message)
+      }
+      if (error instanceof CompraIncompativelError) {
+        set.status = 409
+        return envelope('COMPRA_INCOMPATIVEL', error.message)
+      }
+      if (error instanceof CompraDesatualizadaError) {
+        set.status = 409
+        return envelope(
+          error.reservada ? 'COMPRA_DESATUALIZADA' : 'COMPRA_BASE_DESATUALIZADA',
+          error.message,
+        )
+      }
+      if (error instanceof CompraSemEspacoError) {
+        set.status = 422
+        return envelope(
+          error.reservada ? 'COMPRA_SEM_ESPACO' : 'COMPRA_BASE_SEM_ESPACO',
+          error.message,
+        )
+      }
+      if (error instanceof TurnoNaoEncontradoError) {
+        set.status = 404
+        return envelope('TURNO_NAO_ENCONTRADO', 'Este turno não foi encontrado.')
+      }
+      if (error instanceof BandejasDoTurnoInvalidasError) {
+        set.status = 422
+        return envelope('TURNO_RESPOSTAS_INVALIDAS', 'Confira os seis pedidos deste turno.')
+      }
       if (error instanceof SequenciaDeTempoInvalidaError) {
         set.status = 409
         return envelope('TEMPO_SEQUENCIA_INVALIDA', 'A sessão de tempo precisa ser retomada.')
@@ -248,6 +305,21 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.insumos
+        ? rotasDosInsumos({ insumos: deps.insumos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.pedidos
+        ? rotasDosPedidos({ pedidos: deps.pedidos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.profissoes
+        ? rotasDasProfissoes({ profissoes: deps.profissoes, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .use(
       deps.medicao
         ? rotasDaMedicao({ medicao: deps.medicao, tokenInterno: deps.tokenInterno })

@@ -1,6 +1,11 @@
-import { ManifestoDeDesafiosSchema } from '../../../packages/arquipelago-contracts/src/desafios'
+import {
+  ManifestoDeDesafiosSchema,
+  MOEDAS_PADRAO_POR_TIPO,
+  type PublicoDoDesafio,
+} from '../../../packages/arquipelago-contracts/src/desafios'
 import { objetivos } from './objetivos'
 import { montarProjeto, type Variacao } from './projetos'
+import { desafiosIniciaisDoBosque } from './quadros-iniciais'
 
 const textos: Record<
   Variacao,
@@ -54,40 +59,48 @@ const textos: Record<
   },
 }
 
-export function criarManifesto() {
+export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
+  const corrida = (['corrida', 'pedras', 'noite', 'placar'] as const).map((variacao, index) => ({
+    slug: `bosque-corrida-dos-bichos${variacao === 'corrida' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+    publico,
+    ilha: 'bosque',
+    tipo: variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia',
+    quadro: variacao === 'corrida' ? 6 : null,
+    ordem: 60 + index,
+    publicar: publico === 'kids',
+    conteudo: {
+      versao: 1,
+      titulo: textos[variacao].titulo,
+      enunciado: textos[variacao].enunciado,
+      dicas: textos[variacao].dicas,
+      projetoInicial: montarProjeto(variacao, false),
+      gabarito: montarProjeto(variacao, true),
+      objetivos: objetivos[variacao],
+      desafioExtra: { titulo: 'Mais um desafio', texto: textos[variacao].extra },
+      recompensa: {
+        cor: variacao === 'corrida',
+        atracao: 'corrida-dos-bichos',
+        moedas:
+          MOEDAS_PADRAO_POR_TIPO[variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia']
+            .principal,
+        moedasExtra:
+          MOEDAS_PADRAO_POR_TIPO[variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia']
+            .extra,
+      },
+      blocosManuais: { acrescentar: [], retirar: [] },
+    },
+  }))
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
     escopo: 'ilha',
-    desafios: (['corrida', 'pedras', 'noite', 'placar'] as const).map((variacao, index) => ({
-      slug: `bosque-corrida-dos-bichos${variacao === 'corrida' ? '' : `-${variacao}`}`,
-      publico: 'kids',
-      ilha: 'bosque',
-      tipo: variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia',
-      quadro: variacao === 'corrida' ? 6 : null,
-      ordem: 60 + index,
-      publicar: true,
-      conteudo: {
-        versao: 1,
-        titulo: textos[variacao].titulo,
-        enunciado: textos[variacao].enunciado,
-        dicas: textos[variacao].dicas,
-        projetoInicial: montarProjeto(variacao, false),
-        gabarito: montarProjeto(variacao, true),
-        objetivos: objetivos[variacao],
-        desafioExtra: { titulo: 'Mais um desafio', texto: textos[variacao].extra },
-        recompensa: {
-          cor: variacao === 'corrida',
-          moedas: variacao === 'corrida' ? 20 : 10,
-          moedasExtra: variacao === 'corrida' ? 10 : 5,
-        },
-        blocosManuais: { acrescentar: [], retirar: [] },
-      },
-    })),
+    desafios: [...desafiosIniciaisDoBosque(publico), ...corrida],
   })
 }
-if (import.meta.main)
-  await Bun.write(
-    new URL('./bosque.manifesto.json', import.meta.url),
-    `${JSON.stringify(criarManifesto(), null, 2)}\n`,
-  )
+if (import.meta.main) {
+  for (const publico of ['kids', 'adulto'] as const)
+    await Bun.write(
+      new URL(`./bosque${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`, import.meta.url),
+      `${JSON.stringify(criarManifesto(publico), null, 2)}\n`,
+    )
+}

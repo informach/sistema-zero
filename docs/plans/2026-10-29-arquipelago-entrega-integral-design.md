@@ -1,5 +1,25 @@
 # Entrega integral do Arquipélago Vagalume
 
+## Checkpoint integrado de 30/10/2026
+
+Por solicitação posterior da dona, o trabalho local já implementado entra em commit e merge
+em staging local, junto da arte recebida em `080b6a3d2`. Esta integração não fecha L01 a L14
+nem publica serviços ou conteúdo. Os checkpoints abaixo registram a evolução anterior.
+
+Os cinco portos estão nos modelos e têm a espera de colisores corrigida e testada. Não existe
+mais bloqueio de arte para a rede ampliada do barco, mas suas rotas e as aberturas nas boias
+ainda não foram implementadas. O fantasma familiar tem contrato V1 e gravador/reprodutor
+puros com testes; ainda não tem autorização familiar, persistência, serviço ou interface.
+L11, L12, lacunas de L13 e a qualificação integrada de L14 continuam abertas.
+
+L07 inclui turnos, insumos e pedidos remunerados. L09 inclui tema, feira, receitas e integração
+do vestuário com o configurador existente. Há provas locais, não implantação. A adoção da
+galeria no Members exige o procedimento operacional documentado e não foi feita remotamente.
+Os manifestos dos quadros também não foram importados em staging nem produção.
+
+O registro dos comandos, resultados e limites desta composição fica em
+`docs/qa/2026-10-30-integracao-portos/README.md`.
+
 ## Autorização e objetivo
 
 Em 29/10/2026, a dona autorizou corrigir e completar os itens do levantamento da proposta. Base: [auditoria](../../.audits/architectural-analysis-2026-10-29-arquipelago.md), HTML original identificado por SHA-256 nessa auditoria e decisões posteriores da conversa. A autorização cobre a execução em lotes; não é necessário repetir pedidos genéricos de aprovação.
@@ -64,6 +84,11 @@ A direção é cumprir o inventário único da proposta. Primeiro definir uma id
 
 ### Conteúdo
 
+Referência adicional indicada pela dona: proposta revisada da Jornada do Criador de 25/10.
+Régua resumida, mapa de pré-requisitos e distinção entre entrar no posto e concluir seus cursos
+em [conteúdo por posto](../desafios-do-jogo/conteudo-por-posto.md). Usar para preparar desafios
+mesmo antes da produção dos cursos, sem inventar vínculos nem conceder blocos por posto.
+
 O motor já aceita desafios, mas a entrega exige manifestos completos e acessíveis com blocos da jornada. Objetivos avaliam a ação ensinada; cor, sprite e valores livres não viram igualdade literal sem motivo. Criar por ilhas, com testes negativos e executor real. Importação/publicação só depois da revisão do conteúdo, com leitura do catálogo existente para não sobrescrever trabalho.
 
 ### Sistemas sociais e econômicos
@@ -77,17 +102,41 @@ Testes puros para regras, testes de contrato/rota para autoridade e integração
 ## Decisões de produto ainda necessárias, sem bloquear lotes independentes
 
 - Datas da Noite das Lanternas e janela de fim de ano: continuam desativadas até decisão da dona.
-- Teto econômico: código atual usa 150/semana, conversa antiga menciona 100. Não alterar silenciosamente durante correção de integridade; consolidar antes de L07.
+- Teto econômico resolvido no plano de L07: prevalece a escolha explícita da dona de 100 por semana. Preservar os créditos antigos e provar a concorrência e a virada semanal no Members.
 - Amplitude da terraformação: entregar edição limitada de terreno sem quebrar rotas, colisores, construções ou vizinhos, com prévia e desfazer; arte nova segue com Blender.
 - Satisfação familiar: só medir respostas efetivas a pesquisa, nunca inferir satisfação de minutos jogados.
 
 ## Processo de entrega
 
-Para cada lote: conferir remoto, registrar base, reproduzir problemas, implementar, testes dos pacotes afetados, tipagem, lint, revisão completa e commit descritivo. Pushes em ondas fechadas para não cancelar CI em andamento. Implantar apenas a composição revisada; verificar versão do jogo, host, API, executor, contratos e configuração nos dois ambientes.
+Para cada lote: conferir remoto, registrar base, reproduzir problemas, implementar, testes dos pacotes afetados, tipagem, lint e revisão. Correção da orientação em 29/10: o push de L01 foi antecipado. A dona exige concluir o escopo inteiro, fazer a revisão integrada e corrigir seus achados antes do próximo commit/envio desta sessão. Não publicar lotes intermediários. Implantar apenas a composição revisada; verificar versão do jogo, host, API, executor, contratos e configuração nos dois ambientes.
 
 Ao relatar andamento, informar separadamente: código pronto, teste local, prova de navegador, conteúdo publicado e ambiente implantado. Nenhum lote fica concluído por ter apenas arquivos preparados ou testes descobertos.
 
 ## Estado inicial
+
+### Checkpoint local, base `6461f19c0`
+
+- Remoto conferido novamente durante L05: sem divergência. Alterações locais preservadas.
+- L03: as seis ilhas têm seis quadros, variantes adultas e conferências locais. Permanecem
+  pendentes o conteúdo pós-Farol e o fluxo publicado do
+  Quadro das Cores. O laço preparado de três complementares precisa de mediação na publicação. Os manifestos preparados não foram importados remotamente.
+- L06: amizade dos moradores do anel, visitas e festa por aconchego implementadas e testadas
+  localmente, inclusive em navegador. Falta revisão da composição final.
+- L07: turnos, pedidos remunerados e compra de insumos estão implementados localmente.
+  Serviço e carteira reais passaram nos bancos descartáveis, incluindo resposta perdida,
+  concorrência e teto de 100 por semana. A revisão integrada e implantação permanecem abertas.
+- L08: diferenças de trabalho dos Lumis, colheita especial e receitas do anel implementadas
+  e testadas localmente. Não representam implantação.
+- L09: tema semanal e feira funcionam localmente com compras e reabertura conferidas. Roupas
+  sazonais e migração do inventário único dependem do restante de L04.
+- L05: vínculo das aprovações do Bosque/Vila com o fliperama corrigido; ligação com o Mural
+  conferida localmente nos dois públicos e tamanhos de tela. O player público continua sendo
+  a fonte da execução; a página autenticada completa permanece no aceite integrado.
+- L10: mapa de visitas implementado com V18, migração, união de descobertas, testes de
+  serviço e navegador Kids/adulto. Rotas ampliadas e fantasma familiar continuam pendentes.
+  A rede de barcos depende de cinco portos ainda ausentes nos GLBs, documentados no plano.
+- L04, L10, L11, L12, L13 e L14 não estão fechados. Nenhum commit ou push intermediário foi
+  feito neste checkpoint. A revisão integrada e a entrega completa continuam obrigatórias.
 
 - [x] Proposta e código comparados, auditoria gravada.
 - [x] Remoto conferido: `a3cd791de`, igual ao local em 29/10/2026.
@@ -96,3 +145,50 @@ Ao relatar andamento, informar separadamente: código pronto, teste local, prova
 - [ ] L02 a L14 implementados e revisados.
 - [ ] Revisão integrada final e aceites nos dois públicos.
 - [ ] Implantação final e conferência de versões/configuração.
+
+### Fechamento local dos quadros Vale e Nuvens, 30/10
+
+As duas tipagens finais terminaram com exit 0. Biome passou nos 28 arquivos TS/MJS
+afetados. O conjunto tem 38 testes de fonte, contrato e HTTP (6665 asserções), dois
+testes Blockly (144 asserções, 72 projetos), 42 cenários distintos no executor e
+20 capturas de interação no computador e no celular emulado. Os dois erros iniciais
+de observação foram preservados e corrigidos com oito cenários focados. Não é
+validação autenticada no jogo nem publicação de conteúdo. As três atividades com
+laço de grupo preparado precisam da revisão curricular descrita nos respectivos READMEs.
+
+### Checkpoint de 30/10: posse e primeiro pedido
+
+L04 tem a posse canônica no Members, compra atômica, adoção histórica auditável e
+provas locais de banco, HTTP e interface nos dois públicos. Não foi feita adoção
+remota nem validação autenticada entre jogo e quarto. O Docker do Members inclui
+agora os contratos puros necessários, ainda sem prova de build da imagem.
+
+O primeiro pedido da ilha central está implementado: plantar, regar e colher
+entrega a geladeira uma vez, sem novo campo no save. A prova Kids esperou três
+minutos reais e preservou o controle de tempo. O adulto foi conferido no celular
+emulado. A revisão integrada continua pendente. L07 avança na compra de insumos,
+com contrato e plano de consistência entre carteira e salvamento; o fluxo completo
+ainda está em implementação. Nenhum lote foi publicado neste checkpoint.
+
+### Checkpoint posterior de 30/10: economia e retorno sazonal
+
+L07 tem compra de insumos e pedidos remunerados implementados, além dos turnos. As provas
+locais incluem carteira real em bases descartáveis, idempotência, teto semanal, resposta
+perdida, recuperação, interface e integração dos caminhos permitidos pelo host. A revisão
+do host encontrou e corrigiu os seis caminhos econômicos que faltavam no allowlist.
+
+L09 tem duas receitas sazonais adicionais, preparo somente durante a festa e pratos que
+permanecem guardados depois da época. Junina e Carnaval foram conferidos no navegador.
+O vestuário reutiliza o configurador real e peças existentes do avatar; os quatro fluxos
+visuais passaram nas duas comunidades e tamanhos de tela. As sugestões se recolhem para
+preservar o espaço do personagem. As datas não aprovadas continuam desligadas.
+
+Provas e limitações em `docs/qa/2026-10-30-pedidos/`, `2026-10-30-insumos/`,
+`2026-10-30-receitas-sazonais/` e `2026-10-30-vestuario/`. São provas locais, não publicação.
+O vestuário foi testado com componentes/CSS/modelos reais e conta simulada; o mundo inteiro
+com host autenticado continua em L14. Não transferir o resultado da fixture para esse aceite.
+
+Pedido de arte encaminhável em `docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`:
+cinco portos e acesso caminhável, com particularidade da altura das Nuvens. L10 aguarda essa
+arte para ampliar a rede. Fantasma familiar, L11, social adulto de L12, lacunas de medição de
+L13 e qualificação integrada de L14 permanecem abertos. Não houve commit/push intermediário.

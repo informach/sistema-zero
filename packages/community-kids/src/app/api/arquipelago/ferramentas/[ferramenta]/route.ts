@@ -12,7 +12,7 @@ import { prepareStudioServices } from '@/server/studio-services'
 export async function GET(_request: Request, context: { params: Promise<{ ferramenta: string }> }) {
   const { ferramenta } = await context.params
   const id = ferramenta === 'estudio' ? 'estudio-completo' : ferramenta
-  if (!['pinta', 'molda', 'estudio-completo'].includes(id))
+  if (!['pinta', 'molda', 'estudio-completo', 'avatar'].includes(id))
     return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 })
   const session = await getSession()
   if (!session?.activeProfile || session.kids?.kind === 'parent')
@@ -21,6 +21,11 @@ export async function GET(_request: Request, context: { params: Promise<{ ferram
     return NextResponse.json(
       { situacao: 'bloqueada' },
       { headers: { 'cache-control': 'no-store' } },
+    )
+  if (id === 'avatar')
+    return NextResponse.json(
+      { situacao: 'disponivel', viewerId: session.id },
+      { headers: { 'cache-control': 'private, no-store' } },
     )
   const { tools, journey } = await getCreativeTools()
   const tool = tools.find((item) => item.id === id)

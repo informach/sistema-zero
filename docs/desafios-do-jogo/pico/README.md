@@ -1,12 +1,17 @@
-# Fase de plataforma do Pico Gelado
+# Quadros e fase de plataforma do Pico Gelado
 
-Pacote da fase3-10, formato `arquipelago-desafios` v1, escopo `ilha`, público `kids`.
-O arquivo de entrega é [pico.manifesto.json](pico.manifesto.json). Plano e decisões:
+Pacote da fase3-10 e complemento L03, formato `arquipelago-desafios` v1, escopo `ilha`.
+Arquivos: [Kids](pico.manifesto.json) e [adulto](pico-adulto.manifesto.json). Plano e decisões:
 [2026-10-29-pico-fase-de-plataforma.md](../../superpowers/plans/2026-10-29-pico-fase-de-plataforma.md).
 A importação e a publicação no Admin ficam para outra etapa.
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
+| Pulo com apoio | Quadro das Cores | 1 | 20 | 10 |
+| Freio no gelo | Quadro das Cores | 2 | 20 | 10 |
+| Floco recolhido | Quadro das Cores | 3 | 20 | 10 |
+| Mochila de neve | Quadro das Cores | 4 | 20 | 10 |
+| Passagem segura | Quadro das Cores | 5 | 20 | 10 |
 | Fase de plataforma | Quadro das Cores | 6 | 20 | 10 |
 | Pulo alto | Desafio do dia | Nenhum | 10 | 5 |
 | Floco de neve | Desafio do dia | Nenhum | 10 | 5 |
@@ -15,9 +20,32 @@ A importação e a publicação no Admin ficam para outra etapa.
 Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a convenção do
 Bosque, da Vila e do Recife. O quadro deve estar livre quando o pacote for importado. O principal
 dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. `publicar: true` é uma
-instrução para a futura aplicação do arquivo, não uma publicação feita por esta entrega.
+instrução dos quatro desafios Kids anteriores, não uma publicação feita por esta entrega.
+Os novos quadros Kids e todos os desafios adultos usam `publicar: false`. Cada complementar
+indica a própria atração pelo slug. Público e publicação são separados.
 
-## O que se completa
+## Os cinco complementares
+
+Reaplicam o repertório de blocos já aprendido até Inventor. Não exigem um bloco novo por entrar
+no Mestre e não são uma substituição dos cursos Python. O serviço continua conferindo as
+conquistas individuais. O cenário, a gravidade, o chão e o desenho já vêm prontos; só o evento
+indicado é completado. Enter é o extra de nova rodada.
+
+| Quadro | Evento | Comportamento avaliado |
+| --- | --- | --- |
+| Pulo com apoio | Espaço | Subir, impedir outro pulo no ar e liberar após pousar |
+| Freio no gelo | Espaço | Parar estado e velocidade sem reiniciar nem deslocar |
+| Floco recolhido | Contato | Coletar, esconder e contar uma vez, somente após tocar |
+| Mochila de neve | Esquerda e direita | Aceitar cargas de 1 ou 2 até o peso 4, sem aceitar parte |
+| Passagem segura | Espaço | Esperar a neve ceder e atravessar uma única vez |
+
+A arte reutiliza os SVGs do principal. O pulo ensina -10 como exemplo, mas a verificação não
+exige essa força: um pulo menor coerente também passa. O solo preparado está em y 300 para o
+pinguim, e sua correção usa a diferença até o solo, sem teleporte por borda. O contador de
+neve diminui de 120 a zero por atualização, não representa segundos. O tempo de 2,4 s do
+ensaio dá margem à liberação a 60 atualizações por segundo.
+
+## O que se completa no principal
 
 Cenário de neve, o pinguim, os dois blocos de gelo com o buraco, a água, a bandeira, os botões e
 o Recomeçar estão prontos. No principal, a pessoa completa:
@@ -39,7 +67,7 @@ O extra, separado da regra principal, é a seta para cima também pular, só no 
 ## Blocos e arte
 
 `ilhas.ts` abre o Pico em `elite`, Mestre dos Jogos, cuja recompensa de blocos é
-`intermediario-2d`. O teste do contrato confere os oito projetos contra a união das listas de
+`intermediario-2d`. O teste do contrato confere os dezoito projetos por público contra a união das listas de
 blocos dos cursos dos postos até o Mestre, lidas das pastas de `docs/aulas-interativas`
 (Faísca, Construtor, Inventor, Explorador e Mestre). O teste da pasta confere que nenhum bloco
 passa de `intermediario-2d`; o único acima do `iniciante-2d` é a conta usada no pouso.
@@ -74,8 +102,9 @@ bun test docs/desafios-do-jogo/pico/pico.test.ts packages/arquipelago-contracts/
 cd packages/studio; bun test src/blockly/__tests__/picoManifest.test.ts; cd ../..
 bun test packages/arquipelago-api/tests/integration/manifestos.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
-bun test packages/studio-runtime/tests/pico-browser.test.ts
+bun test packages/studio-runtime/tests/pico-browser.test.ts packages/studio-runtime/tests/quadros-pico-browser.test.ts
 bun docs/desafios-do-jogo/pico/conferir-browser.ts
+bun docs/desafios-do-jogo/pico/conferir-quadros-browser.ts
 node --max-old-space-size=8192 packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/pico/tsconfig.json
 ```
 
@@ -88,3 +117,5 @@ controla o Chrome com Node e SwiftShader, sem servidor da plataforma, credenciai
 
 Relatório e prints: [conferência do Pico](../../qa/2026-10-29-pico-manifesto.md). Celular físico
 continua pendente. Nenhum desafio foi cadastrado e nenhum progresso foi alterado.
+
+Complemento L03: [testes e capturas dos cinco quadros](../../qa/2026-10-30-quadros-pico/README.md).

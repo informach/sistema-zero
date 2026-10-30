@@ -1,0 +1,58 @@
+[
+  {
+    "nome": "computador-pluma",
+    "tomates": 6,
+    "restante": 2,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 3 tomate no canteiro 1.",
+      "Voou até o canteiro 2.",
+      "Colheu 3 tomate no canteiro 2.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 3 tomate no canteiro 1.",
+      "Voou até o canteiro 2.",
+      "Colheu 3 tomate no canteiro 2.",
+      "Voou até o canteiro 3.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 3. Ele continua maduro.",
+      "Voou até o canteiro 4.",
+      "A carga está cheia. Use Voar até a geladeira e Guardar tudo antes de colher o canteiro 4. Ele continua maduro.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  },
+  {
+    "nome": "computador-buzio",
+    "tomates": 12,
+    "restante": 0,
+    "previa": [
+      "Voou até o canteiro 1.",
+      "Colheu 3 tomate no canteiro 1.",
+      "Voou até o canteiro 2.",
+      "Colheu 3 tomate no canteiro 2.",
+      "Voou até o canteiro 3.",
+      "Colheu 3 tomate no canteiro 3.",
+      "Voou até o canteiro 4.",
+      "Colheu 3 tomate no canteiro 4.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "real": [
+      "Voou até o canteiro 1.",
+      "Colheu 3 tomate no canteiro 1.",
+      "Voou até o canteiro 2.",
+      "Colheu 3 tomate no canteiro 2.",
+      "Voou até o canteiro 3.",
+      "Colheu 3 tomate no canteiro 3.",
+      "Voou até o canteiro 4.",
+      "Colheu 3 tomate no canteiro 4.",
+      "O que o Lumi colheu ficou na sua mochila."
+    ],
+    "pausa": true
+  }
+]

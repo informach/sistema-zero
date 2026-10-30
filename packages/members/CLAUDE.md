@@ -79,7 +79,7 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   `JornadaDosMembrosSchema` do contrato do jogo (validado do lado do jogo; o Members não importa o
   contrato). Política do Kids não publicada = versão 0 sem postos; outra falha sobe como erro.
 - **Porta de moedas** (`arquipelago-coins.routes.ts`, token `ARQUIPELAGO_COINS_TOKEN`): teto
-  SEMANAL de **150** moedas do jogo por pessoa (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, segunda a
+  SEMANAL de **100** moedas do jogo por pessoa (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, segunda a
   domingo em São Paulo, tudo ou nada, `WEEKLY_LIMIT`), separado do teto diário dos cursos. A conta
   que levou ao número está em `docs/arquipelago-regras.md`. Teste: `tests/db/arquipelago-coins.test.ts`
   (`ARQUIPELAGO_COINS_TEST_DATABASE_URL`, banco local `kids_journey_*`).
@@ -3261,3 +3261,20 @@ financeiro. Extensão nunca reduz validade já maior nem ressuscita acesso revog
 Sem esse campo, o contrato anterior continua para compras e eventos históricos.
 Na liberação, Members e Funnel precisam aceitar esse contrato ANTES do Payments emitir
 `cycleAccess` ou `payment.subscription_period_confirmed`.
+
+## Posse compartilhada da galeria, L04 (30/10/2026)
+
+`ArquipelagoInventoryRepository` usa `room_inventory`, perfil/público e a transação
+`spendCoinsInTransaction` da loja. Trava da conta antes da carteira. Preço e identidade
+compatível vêm do contrato puro `posse-da-galeria.ts`; nenhuma importação do jogo.
+GET `/internal/arquipelago/galeria` e POST `/galeria/compras` usam o token de MOEDAS,
+nunca o token de leitura. Preço e privilégio público não entram no corpo do navegador.
+A compra atômica e a posse preexistente impedem débito repetido entre os dois destinos.
+
+Adoção é somente operacional, sem rota: `scripts/adopt-arquipelago-gallery.ts`, arquivo
+versionado exportado pelo serviço do jogo e SHA conferido. Confronta o débito histórico
+e a identidade; gratuita exige compra paga e identidade confiável. A migration gerada
+0142 acrescenta `arquipelago_gallery_adoption` (evento de valor zero). Sem moeda/XP novo.
+Ver `docs/operations/arquipelago-galeria-unica.md` antes do corte: pausar e drenar compras
+NOS DOIS destinos, adotar, conferir e só depois reabrir. Testes de banco em
+`tests/db/arquipelago-inventory.test.ts`, somente URL local `kids_journey_*`.

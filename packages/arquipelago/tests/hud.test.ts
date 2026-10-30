@@ -105,6 +105,19 @@ describe('o "Agora"', () => {
     expect(lembretesDeAgora({ ...base, desafioDeHoje: 'nenhum' })).toEqual([])
   })
 
+  test('primeiro pedido precede o desafio sem duplicar a instrução da horta', () => {
+    const lista = lembretesDeAgora({
+      ...base,
+      primeiroPedido: 'Regue o canteiro que você plantou na sua horta.',
+      horta: [canteiro({ semente: 'alface', plantadoEm: new Date(AGORA).toISOString() })],
+      desafioDeHoje: 'pronto',
+    })
+    expect(lista.map((l) => l.id)).toEqual(['primeiro-pedido', 'desafio'])
+    expect(
+      lembretesDeAgora({ ...base, portaNova: false, primeiroPedido: 'Abra a porta.' })[0]?.id,
+    ).toBe('porta')
+  })
+
   test('os textos seguem as regras da casa (sem travessão, sem exclamação, sem pergunta)', () => {
     const tudo = lembretesDeAgora({
       ...base,

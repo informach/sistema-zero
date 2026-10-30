@@ -40,6 +40,129 @@ const pedido = (corpo: string) =>
   new Request('http://local/api/arquipelago/salvamento', { method: 'PUT', body: corpo })
 
 const fetchOriginal = globalThis.fetch
+test('pedidos repassam comando e pendências de forma privada, sem cache e com corpo limitado', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
+  const pendentes = await routes.arquipelagoPedidosPendentes.GET()
+  expect(pendentes.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)?.caminho).toBe('/arquipelago/pedidos/pendentes')
+  const corpo = {
+    versao: 1,
+    chave: PERFIL,
+    revisaoBase: 1,
+    morador: 'bento',
+    dia: '2026-10-30',
+    pedido: 'milho-2',
+  }
+  const r = await routes.arquipelagoPedidosEntregar.POST(
+    new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) }),
+  )
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/pedidos/entregar',
+    metodo: 'POST',
+    corpo,
+  })
+  const n = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoPedidosEntregar.POST(
+        new Request('http://local', {
+          method: 'POST',
+          body: JSON.stringify({ texto: 'a'.repeat(1025) }),
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(n)
+})
+
+test('insumos repassam compra e pendência sem cache e limitam o corpo', async () => {
+  const { routes, chamadas } = montar({ status: 423, body: { error: { code: 'COMPRA_PENDENTE' } } })
+  const pendente = await routes.arquipelagoInsumosPendentes.GET()
+  expect(pendente.status).toBe(423)
+  expect(pendente.headers.get('cache-control')).toBe('private, no-store')
+  const corpo = { versao: 1, chave: PERFIL, revisaoBase: 1, item: 'leite', quantidade: 3 }
+  await routes.arquipelagoInsumosComprar.POST(
+    new Request('http://local', {
+      method: 'POST',
+      body: JSON.stringify(corpo),
+      headers: { 'content-type': 'application/json' },
+    }),
+  )
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/insumos/comprar',
+    metodo: 'POST',
+    corpo,
+  })
+  const n = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoInsumosComprar.POST(
+        new Request('http://local', {
+          method: 'POST',
+          body: JSON.stringify({ texto: 'a'.repeat(1025) }),
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(n)
+})
+test('Mural próprio usa Hub, valida o contrato e não compartilha cache', async () => {
+  const corpo = { jogos: [{ playId: PERFIL, titulo: 'Meu jogo' }] }
+  const { routes, chamadas } = montar({ status: 200, body: corpo })
+  const r = await routes.arquipelagoJogosDoMural.GET()
+  expect(r.status).toBe(200)
+  expect(await r.json()).toEqual(corpo)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toEqual([
+    { caminho: '/hub/my-playable-showcase', metodo: 'GET', corpo: undefined },
+  ])
+  for (const resposta of [
+    { status: 200, body: { jogos: [{ playId: 'invalido' }] } },
+    { status: 401, body: null },
+  ]) {
+    const falha = await montar(resposta).routes.arquipelagoJogosDoMural.GET()
+    expect(falha.status).toBe(resposta.status === 200 ? 502 : 401)
+    expect(falha.headers.get('cache-control')).toBe('private, no-store')
+  }
+})
+describe('profissões no repasse', () => {
+  test('repasse privado, sem mudar o corpo, e recusa corpo grande antes do gateway', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
+    for (const [acao, handler] of [
+      ['iniciar', routes.arquipelagoProfissaoIniciar.POST],
+      ['concluir', routes.arquipelagoProfissaoConcluir.POST],
+    ] as const) {
+      const corpo = acao === 'iniciar' ? { posto: 'padaria' } : { sessao: PERFIL, respostas: [] }
+      const resposta = await handler(
+        new Request(`http://local/api/arquipelago/profissoes/${acao}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(corpo),
+        }),
+      )
+      expect(resposta.headers.get('cache-control')).toBe('private, no-store')
+      expect(chamadas.at(-1)).toMatchObject({
+        caminho: `/arquipelago/profissoes/${acao}`,
+        metodo: 'POST',
+        corpo,
+      })
+      const n = chamadas.length
+      expect(
+        (
+          await handler(
+            new Request('http://local', {
+              method: 'POST',
+              body: JSON.stringify({ texto: 'a'.repeat(4097) }),
+            }),
+          )
+        ).status,
+      ).toBe(400)
+      expect(chamadas).toHaveLength(n)
+    }
+  })
+})
 describe('minijogos aprovados no repasse', () => {
   test('jogador lista e abre só pelo id validado', async () => {
     const { routes, chamadas } = montar({ status: 200, body: { minijogos: [] } })

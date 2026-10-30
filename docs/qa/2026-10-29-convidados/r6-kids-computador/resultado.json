@@ -1,0 +1,49 @@
+{
+  "publico": "kids",
+  "celular": false,
+  "largura": {
+    "tela": 1280,
+    "pagina": 1280
+  },
+  "leitura": {
+    "tituloVisivel": true,
+    "larguraDoTexto": 470,
+    "largura": 560,
+    "dentroDaTela": true
+  },
+  "tema": {
+    "texto": "Uma ideia para continuarIdeias para construirDesta semana: Uma casa com luzUma casa com luzUm caminho para a hortaUm toque da sua corUm cantinho para históriasPerto do lancheEspaço para se encontrarUm caminho para a hortaFaça um caminho da casa até a horta. Deixe espaço para chegar aos canteiros.Use o chão e as peças que já estão disponíveis. Não precisa comprar nada.O tema é um convite. Você pode continuar qualquer ideia depois da troca da semana. Não há nota, prazo ou compra obrigatória.Construir na minha casa",
+    "largura": 576,
+    "cabe": true
+  },
+  "festa": [
+    {
+      "quem": "mare",
+      "x": -3.5,
+      "z": -5.5
+    },
+    {
+      "quem": "floco",
+      "x": -0.5,
+      "z": -5.5
+    },
+    {
+      "quem": "irie",
+      "x": 3.5,
+      "z": -5.5
+    }
+  ],
+  "caminhada": {
+    "antes": {
+      "x": 2.500000238418579,
+      "y": 1.9600869417190552,
+      "z": -1.3000000715255737
+    },
+    "depois": {
+      "x": 2.500234842300415,
+      "y": 1.960096836090088,
+      "z": -2.791743516921997
+    }
+  },
+  "erros": []
+}

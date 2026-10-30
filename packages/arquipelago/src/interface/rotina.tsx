@@ -4,6 +4,7 @@ import {
   type CartaoDaRotina,
   CONDICOES_DA_ROTINA,
   type CondicaoDaRotina,
+  descricaoDoTrabalhoLumi,
   LIMITES_DA_ROTINA,
   LUGARES_DA_ROTINA,
   LUMIS,
@@ -341,6 +342,7 @@ export function PainelDaRotina() {
     try {
       const r = await editarRotinaNaPlataforma({
         plataforma,
+        jornada: loja.getState().jornada,
         lumi,
         rascunho,
         ler: () => loja.getState().salvamento,
@@ -431,6 +433,7 @@ export function PainelDaRotina() {
                 <h3 id="arq-rotina-montada" className="arq-menu-titulo">
                   {`A rotina ${daRotinaDo(lumi)}`}
                 </h3>
+                <p>{descricaoDoTrabalhoLumi(lumi)}</p>
                 <ListaDeCartoes lista={rascunho} alvo={[]} edicao={edicao} rotulo="a rotina" />
               </section>
             ) : null}

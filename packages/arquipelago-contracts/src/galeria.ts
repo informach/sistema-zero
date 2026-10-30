@@ -15,8 +15,8 @@ export const MODELOS_DA_GALERIA = ['objeto'] as const
 export type ModeloDaGaleria = (typeof MODELOS_DA_GALERIA)[number]
 
 /**
- * Faixa de preço. O piso é o prêmio de um desafio principal (20 moedas); o teto é metade do teto
- * semanal de moedas do jogo (150): comprar pede algumas tarefas, nunca uma semana inteira
+ * Faixa de preço. O piso é o prêmio de um desafio principal (20 moedas); o teto é 75, abaixo do teto
+ * semanal de moedas do jogo (100): comprar pede algumas tarefas, nunca uma semana inteira
  * (balanceamento em `docs/arquipelago-regras.md`, seção 9).
  */
 export const PRECO_MINIMO_DA_GALERIA = 20
@@ -137,8 +137,8 @@ export const GaleriaDoJogadorSchema = z.strictObject({
 export type GaleriaDoJogador = z.infer<typeof GaleriaDoJogadorSchema>
 
 /**
- * `POST /arquipelago/galeria/compras`: comprar uma aparência. A `chave` é do pedido: repetir com a
- * mesma chave (ou comprar de novo o que já é dela) nunca cobra duas vezes. Responde a galeria do
+ * `POST /arquipelago/galeria/compras`: comprar uma aparência. A `chave` identifica o pedido no
+ * cliente; a idempotência no Members é por perfil, público e item, mesmo com outra chave. Responde a galeria do
  * jogador atualizada. Saldo curto: 409 `SALDO_INSUFICIENTE` com `preco` e `saldo` junto do erro.
  */
 export const CompraNaGaleriaSchema = z.strictObject({

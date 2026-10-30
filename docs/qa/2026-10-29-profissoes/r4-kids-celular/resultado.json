@@ -1,0 +1,30 @@
+{
+  "publico": "kids",
+  "celular": true,
+  "largura": {
+    "visivel": 350,
+    "conteudo": 350
+  },
+  "saldo": 85,
+  "reaberto": {
+    "carteira": {
+      "pagas": [],
+      "saldo": 85,
+      "creditos": {
+        "bfcae20c-029f-417c-8431-4ac099ccbb5e": {
+          "semana": "2026-10-26",
+          "quantidade": 5
+        }
+      }
+    },
+    "inventario": {
+      "semente-alface": 3,
+      "semente-tomate": 2,
+      "semente-milho": 1,
+      "fuba": 1,
+      "leite": 1,
+      "ovo": 1
+    }
+  },
+  "erros": []
+}

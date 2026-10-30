@@ -6,6 +6,9 @@ import {
   type ModuloDoArquipelago,
   type MoldeDaRotina,
   MoldeDeDesafioSchema,
+  MoldeDoJogoDoMuralSchema,
+  type MoldeDoVestuario,
+  MoldeDoVestuarioSchema,
   type MontagemDoArquipelago,
   type PedidoDeFerramenta,
   type Plataforma,
@@ -35,6 +38,9 @@ import {
 const RotinaDialog = lazy(() =>
   import('./arquipelago-rotina-dialog').then((m) => ({ default: m.ArquipelagoRotinaDialog })),
 )
+const AvatarDialog = lazy(() =>
+  import('./arquipelago-avatar-dialog').then((m) => ({ default: m.ArquipelagoAvatarDialog })),
+)
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
@@ -44,6 +50,9 @@ const ChallengeDialog = lazy(() =>
 )
 const MinijogoPlayer = lazy(() =>
   import('./arquipelago-minijogo-player').then((m) => ({ default: m.ArquipelagoMinijogoPlayer })),
+)
+const MuralPlayer = lazy(() =>
+  import('./arquipelago-mural-player').then((m) => ({ default: m.ArquipelagoMuralPlayer })),
 )
 
 class ToolLoadBoundary extends Component<
@@ -77,7 +86,14 @@ const CAMINHOS_DO_JOGO = new Set([
   '/cartas',
   '/galeria',
   '/galeria/compras',
+  '/insumos/pendente',
+  '/insumos/comprar',
+  '/pedidos/pendentes',
+  '/pedidos/entregar',
+  '/profissoes/iniciar',
+  '/profissoes/concluir',
   '/minijogos',
+  '/mural',
   '/irmaos',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
@@ -276,6 +292,7 @@ export function ArquipelagoHost(props: {
   const [estado, setEstado] = useState<Estado>('carregando')
   const [challenge, setChallenge] = useState<DesafioAberto | null>(null)
   const [minijogo, setMinijogo] = useState<string | null>(null)
+  const [jogoDoMural, setJogoDoMural] = useState<string | null>(null)
   const [creation, setCreation] = useState<{
     ferramenta: 'pinta' | 'molda' | 'estudio'
     studioAvailable: boolean
@@ -285,6 +302,7 @@ export function ArquipelagoHost(props: {
     objeto: PedidoDeObjeto | null
   } | null>(null)
   const [moldeRotina, setMoldeRotina] = useState<MoldeDaRotina | null>(null)
+  const [vestuario, setVestuario] = useState<MoldeDoVestuario | null>(null)
   const fimRotina = useRef<((resultado: ResultadoDaFerramentaRotina | null) => void) | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
@@ -299,6 +317,19 @@ export function ArquipelagoHost(props: {
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.ferramenta === 'avatar') {
+          const molde = MoldeDoVestuarioSchema.safeParse(pedido.molde)
+          if (pedido.proposito !== 'vestir' || !molde.success)
+            return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          const acesso = await json(`${BASE}/ferramentas/avatar`)
+          if (!vivo) return { situacao: 'cancelado' }
+          if (acesso.status !== 200 || !pertenceAoPerfil(acesso.corpo, id))
+            return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setVestuario(molde.data)
+          })
+        }
         if (pedido.ferramenta === 'rotina-lumi') {
           return await abrirRotinaNaPlataforma(
             pedido,
@@ -311,6 +342,14 @@ export function ArquipelagoHost(props: {
               })
             },
           )
+        }
+        if (pedido.ferramenta === 'estudio' && pedido.proposito === 'jogo-do-mural') {
+          const molde = MoldeDoJogoDoMuralSchema.safeParse(pedido.molde)
+          if (!molde.success) return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setJogoDoMural(molde.data.playId)
+          })
         }
         if (pedido.ferramenta === 'estudio' && pedido.proposito === 'minijogo') {
           const idDoJogo = (pedido.molde as { desafioId?: unknown } | undefined)?.desafioId
@@ -416,8 +455,10 @@ export function ArquipelagoHost(props: {
       fimRotina.current?.(null)
       fimRotina.current = null
       setMoldeRotina(null)
+      setVestuario(null)
       setChallenge(null)
       setMinijogo(null)
+      setJogoDoMural(null)
       setCreation(null)
       pendente.current?.({ situacao: 'cancelado' })
       pendente.current = null
@@ -429,6 +470,79 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {vestuario ? (
+        <ToolLoadBoundary
+          Aviso={Aviso}
+          ferramenta="avatar"
+          onCancel={() => {
+            setVestuario(null)
+            pendente.current?.({ situacao: 'cancelado' })
+            pendente.current = null
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="avatar" falhou={false} />}>
+            <AvatarDialog
+              festa={vestuario.festa}
+              publico={publico}
+              onFinish={async (saved) => {
+                const resolve = pendente.current
+                if (!resolve) return
+                setVestuario(null)
+                if (!saved) {
+                  pendente.current = null
+                  resolve({ situacao: 'cancelado' })
+                  return
+                }
+                try {
+                  const acesso = await json(`${BASE}/ferramentas/avatar`)
+                  if (!pertenceAoPerfil(acesso.corpo, id)) throw Error('O perfil ativo mudou')
+                  const p = criarPlataformaDoArquipelago({
+                    publico,
+                    perfil: { id, primeiroNome },
+                    voltarPara,
+                  })
+                  const avatar = await p.lerAvatar()
+                  if (pendente.current !== resolve) return
+                  pendente.current = null
+                  resolve({ situacao: 'avatar-pronto', avatar })
+                } catch (erro) {
+                  console.error('[arquipelago] avatar', erro)
+                  if (pendente.current === resolve) {
+                    pendente.current = null
+                    resolve({ situacao: 'indisponivel', motivo: 'leitura-do-avatar' })
+                  }
+                }
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
+      {jogoDoMural && (
+        <ToolLoadBoundary
+          key={jogoDoMural}
+          Aviso={Aviso}
+          ferramenta="estudio"
+          onCancel={() => {
+            setJogoDoMural(null)
+            const resolve = pendente.current
+            pendente.current = null
+            resolve?.({ situacao: 'cancelado' })
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
+            <MuralPlayer
+              playId={jogoDoMural}
+              publico={publico}
+              onClose={() => {
+                setJogoDoMural(null)
+                const resolve = pendente.current
+                pendente.current = null
+                resolve?.({ situacao: 'cancelado' })
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      )}
       {minijogo && (
         <ToolLoadBoundary
           Aviso={Aviso}

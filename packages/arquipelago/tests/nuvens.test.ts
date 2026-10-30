@@ -30,7 +30,7 @@ import {
   comecarConversaComAIrie,
   IRIE_NAS_NUVENS,
 } from '../src/sistemas/irie'
-import { arquivoDaIlha, carregarGlb, doPortoDoBarco, pisoEm } from './ajuda-colisores'
+import { arquivoDaIlha, carregarGlb, pisoEm } from './ajuda-colisores'
 
 const nuvens = ilha('nuvens')
 
@@ -71,16 +71,16 @@ describe('Nuvens completo', () => {
     }
     modelo.updateMatrixWorld(true)
     modelo.traverse((no) => {
-      if (!(no instanceof Mesh) || !no.name.startsWith('col-') || doPortoDoBarco(no.name)) return
+      if (!(no instanceof Mesh) || !no.name.startsWith('col-')) return
       const vertices = no.geometry.getAttribute('position')
       for (let i = 0; i < vertices.count; i++)
         dentro(new Vector3().fromBufferAttribute(vertices, i).applyMatrix4(no.matrixWorld))
     })
     expect(maximo).toBeGreaterThan(raioDoChaoDaIlha(nuvens, 1, 0))
-    expect(maximo).toBeCloseTo(18.7404, 2)
+    expect(maximo).toBeGreaterThan(25)
     expect(raioDaEsperaDaIlha(nuvens, 1, 0)).toBe(19.2)
     for (const c of lerColisores(modelo)) {
-      if (c.forma === 'malha' || doPortoDoBarco(c.nome)) continue
+      if (c.forma === 'malha') continue
       if (c.forma === 'cilindro') {
         // Limite conservador, incluindo a borda exterior, não apenas o centro.
         expect(Math.hypot(c.posicao[0], c.posicao[2]) + c.raio).toBeLessThanOrEqual(

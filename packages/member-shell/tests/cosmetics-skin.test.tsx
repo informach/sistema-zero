@@ -348,3 +348,18 @@ describe('AdultAvatarConfigurator', () => {
     expect(html).toContain('href="/perfil"')
   })
 })
+
+test('compra compatível informa a posse compartilhada nos dois temas, sem prometer modelos ausentes', () => {
+  for (const View of [RoomBuilderView, AdultRoomBuilderView]) {
+    const props = roomProps()
+    if (!props.scene.data) throw new Error('Fixture do quarto sem catálogo')
+    props.scene.data.items = [
+      { id: 'aquario', category: 'decor', tier: 'coins', price: 70, owned: false, locked: true },
+    ]
+    props.catalog.confirmBuyId = 'aquario'
+    const html = renderToStaticMarkup(<View {...props} />)
+    expect(html).toContain('A posse também vale no Arquipélago, quando você construir esse objeto.')
+    const original = renderToStaticMarkup(<View {...roomProps()} />)
+    expect(original).not.toContain('A posse também vale no Arquipélago')
+  }
+})

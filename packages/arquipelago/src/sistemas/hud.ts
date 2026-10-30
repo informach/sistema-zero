@@ -45,7 +45,7 @@ export const NECESSIDADE_BAIXA = 25
 export const LEMBRETES_NA_TELA = 3
 
 export interface Lembrete {
-  id: 'porta' | 'fome' | 'energia' | 'regar' | 'colher' | 'desafio'
+  id: 'porta' | 'fome' | 'energia' | 'regar' | 'colher' | 'desafio' | 'primeiro-pedido'
   texto: string
 }
 
@@ -59,6 +59,7 @@ export function lembretesDeAgora(e: {
   horta: readonly Canteiro[]
   agoraMs: number
   desafioDeHoje: 'pronto' | 'feito' | 'nenhum' | null
+  primeiroPedido?: string | null
 }): Lembrete[] {
   const lista: Lembrete[] = []
   if (!e.portaNova) lista.push({ id: 'porta', texto: 'Abrir a porta nova do quarto' })
@@ -66,6 +67,8 @@ export function lembretesDeAgora(e: {
     lista.push({ id: 'fome', texto: 'Comer alguma coisa' })
   if (e.necessidades.energia < NECESSIDADE_BAIXA)
     lista.push({ id: 'energia', texto: 'Descansar um pouco na cama' })
+  if (e.portaNova && e.primeiroPedido)
+    lista.push({ id: 'primeiro-pedido', texto: e.primeiroPedido })
   let semAgua = 0
   let maduros = 0
   for (const c of e.horta) {
@@ -73,13 +76,14 @@ export function lembretesDeAgora(e: {
     if (fase === 'semente') semAgua++
     if (fase === 'maduro') maduros++
   }
-  if (semAgua > 0)
+  if (semAgua > 0 && !e.primeiroPedido)
     lista.push({
       id: 'regar',
       texto:
         semAgua === 1 ? 'Regar o canteiro plantado' : `Regar os ${semAgua} canteiros plantados`,
     })
-  if (maduros > 0) lista.push({ id: 'colher', texto: 'Colher o que amadureceu na horta' })
+  if (maduros > 0 && !e.primeiroPedido)
+    lista.push({ id: 'colher', texto: 'Colher o que amadureceu na horta' })
   if (e.desafioDeHoje === 'pronto')
     lista.push({ id: 'desafio', texto: 'Fazer o desafio de hoje no Quadro das Cores' })
   return lista.slice(0, LEMBRETES_NA_TELA)

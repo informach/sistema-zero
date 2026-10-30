@@ -99,7 +99,7 @@ const arte: Record<string, string> = {
     '<rect x="2" y="5" width="176" height="39" rx="13" fill="#316459"/><rect x="2" y="1" width="176" height="39" rx="13" fill="#458b72"/>',
   ),
 }
-const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
+export const assetsDoVale: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
   id: `vale-${name}`,
   name,
   kind: 'image',
@@ -293,7 +293,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: name }),
-    assets,
+    assets: assetsDoVale,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
 }

@@ -7,7 +7,7 @@ import { CAPI_NO_BOSQUE } from '../sistemas/moradores'
 import { paraOMundo } from './bosque'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
 
-const CAPI: MoradorNoMundo = {
+export const CAPI: MoradorNoMundo = {
   quem: 'capi',
   url: new URL(capiGlb, import.meta.url).href,
   painel: PAINEL_DA_CAPI,

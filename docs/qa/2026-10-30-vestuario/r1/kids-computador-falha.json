@@ -1,0 +1,5 @@
+{
+  "erro": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'Failed to load resource: the server responded with a status of 404 (Not Found)'\n+ ]\n- []\n",
+  "erros": ["Failed to load resource: the server responded with a status of 404 (Not Found)"],
+  "texto": "Voltou ao jogo\n\nPrévia cancelada"
+}

@@ -41,7 +41,7 @@ export class ServicoDoJogo {
     private readonly agora: () => Date = () => new Date(),
     private readonly sessoesTempo?: RepositorioSessoesTempo,
     /** As aparências da galeria já pagas (29/10/2026); sem ela, nenhuma da galeria é aceita. */
-    private readonly aparenciasPagas?: (jogadorId: string) => Promise<ReadonlySet<string>>,
+    private readonly aparenciasPagas?: (jogador: Jogador) => Promise<ReadonlySet<string>>,
   ) {}
 
   async acesso(jogador: Jogador): Promise<Acesso> {
@@ -170,7 +170,7 @@ export class ServicoDoJogo {
       }
     }
     if (pedidas.size === 0) return
-    const pagas = this.aparenciasPagas ? await this.aparenciasPagas(jogador.id) : new Set<string>()
+    const pagas = this.aparenciasPagas ? await this.aparenciasPagas(jogador) : new Set<string>()
     for (const id of pedidas) if (!pagas.has(id)) throw new AparenciaNaoCompradaError()
   }
 

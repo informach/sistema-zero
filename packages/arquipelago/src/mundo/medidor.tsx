@@ -4,9 +4,11 @@ import { progresso } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import { Box3, type Mesh, type Object3D, Vector3 } from 'three'
 import { type Movimento, useJogo } from '../estado/contexto'
+import { lojaDosConvidados } from '../estado/convidados'
 import { lojaDoFarol } from '../estado/farol'
 import { fachosAcesos } from '../sistemas/final-do-farol'
 import type { NivelDeQualidade } from '../sistemas/qualidade'
+import type { ConvidadoNaCasa } from '../sistemas/visitas-dos-moradores'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { medirFesta } from './catalogo-da-festa'
 import { esmaecidasAgora } from './copas'
@@ -35,6 +37,7 @@ export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
 
 export interface MedidaDoDesenho {
+  convidados: readonly ConvidadoNaCasa[]
   finalDoFarol: { etapa: string; tempo: number; fachos: number; leu: boolean; voltou: boolean }
   plataformasDasNuvens: {
     numero: number
@@ -285,6 +288,7 @@ export function Medidor() {
     })
     const final = lojaDoFarol(loja).getState()
     const medida: MedidaDoDesenho = {
+      convidados: lojaDosConvidados(loja).getState().convidados,
       finalDoFarol: {
         etapa: final.etapa,
         tempo: final.tempo,

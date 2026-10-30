@@ -1,10 +1,16 @@
 # Desafios da Vila Doce
 
 Importe `vila-doce.manifesto.json` em Jogo → Desafios → Manifesto de desafios.
-Formato `arquipelago-desafios`, versão 1, escopo `ilha`, público `kids`.
+Formato `arquipelago-desafios`, versão 1, escopo `ilha`. O arquivo acima é Kids;
+`vila-doce-adulto.manifesto.json` traz o conteúdo equivalente adulto, todo em rascunho.
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
+| O forno da vez | Quadro das Cores | 1 | 20 | 10 |
+| A caixa de pães | Quadro das Cores | 2 | 20 | 10 |
+| Suco na ordem | Quadro das Cores | 3 | 20 | 10 |
+| O doce esfriou | Quadro das Cores | 4 | 20 | 10 |
+| Bandejas da padaria | Quadro das Cores | 5 | 20 | 10 |
 | A corrida do entregador | Quadro das Cores | 6 | 20 | 10 |
 | Duas entregas | Desafio do dia | Nenhum | 10 | 5 |
 | Oito segundos | Desafio do dia | Nenhum | 10 | 5 |
@@ -13,6 +19,28 @@ Formato `arquipelago-desafios`, versão 1, escopo `ilha`, público `kids`.
 O principal pinta um sexto da Vila, como os demais quadros. Cada projeto aprovado pode virar
 minijogo no fliperama pelo campo `recompensa.atracao`, usando o serviço existente. As variações
 nunca dão cor. O quadro 6 deve estar disponível no cadastro ao publicar.
+
+Os quadros 1 a 5 são novos rascunhos; os quatro desafios anteriores foram preservados
+integralmente. Não publicar automaticamente os complementares. A análise do currículo real
+e a disponibilização do conteúdo no Admin continuam necessárias.
+
+## Quadros complementares
+
+`quadros-iniciais.ts` monta cinco atividades independentes com cenário pronto e ações ausentes:
+escolher o forno certo sem contar duas vezes, consumir estoque sem ficar negativo, seguir a
+receita em ordem, esperar o doce esfriar e conferir a quantidade antes de limpar a bandeja.
+O extra de todos é Enter recomeçar. Os controles de toque usam as mesmas ações do teclado.
+
+Todos os blocos destes cinco projetos já aparecem nas listas do Faísca e da Nave do Construtor.
+O resfriamento é uma animação pronta: 120 unidades de calor, uma a menos por atualização até
+zero, sem prometer duração em segundos. A pessoa completa a condição de entrega, não o laço.
+Não se usa o bloco de relógio do Dino antes de aprendê-lo.
+
+`quadros-iniciais.test.ts` confere repertório, determinismo, orçamento e objetivos dos dois
+públicos. O teste Blockly confere os dezoito projetos. O executor da Vila cobre os cinco novos
+com gabarito, inicial, condições removidas e reinício ausente. O seletor
+`SZ_VILA_QUADROS_NOVOS=1` executa somente esse complemento, sem alegar uma nova prova dos quatro
+desafios preservados. Evidências visuais em `docs/qa/2026-10-29-quadros-vila/`.
 
 ## O que a criança completa
 

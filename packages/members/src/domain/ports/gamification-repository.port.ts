@@ -130,7 +130,7 @@ export type CoinSpendReason = 'spend_cosmetic' | 'spend_room' | 'spend_streak_fr
 export interface SpendCoinsInput {
   userId: string
   audience: CourseAudience
-  /** Valor a debitar (> 0). */
+  /** Valor a debitar; zero somente para uma concessão autorizada da equipe. */
   amount: number
   reason: CoinSpendReason
   /** Chave estável da compra → `coin_event.source_id` (idempotência: duplo-clique não cobra 2×). */
@@ -149,7 +149,7 @@ export interface SpendCoinsInput {
 export type SpendCoinsResult =
   | { ok: true; balanceAfter: number }
   // Gasto sem saldo é erro de negócio (fail-CLOSED). `ALREADY_SPENT` = a MESMA
-  // compra (reason+key) já debitou antes → o caller trata como sucesso idempotente.
+  // compra (reason+key) já debitou, ou o item já é possuído → sucesso idempotente.
   | { ok: false; code: 'INSUFFICIENT_BALANCE' | 'ALREADY_SPENT'; balance: number }
 
 export interface AwardInput {

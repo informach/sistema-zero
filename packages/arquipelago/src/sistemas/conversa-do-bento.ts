@@ -1,4 +1,9 @@
-import { AMIZADE_MAXIMA, type Salvamento } from '@sistemazero/arquipelago-contracts'
+import {
+  AMIZADE_MAXIMA,
+  cestaDiariaDoBento,
+  prepararEntregaDoPedido,
+  type Salvamento,
+} from '@sistemazero/arquipelago-contracts'
 import {
   ANIVERSARIO_DO_BENTO,
   falasDoBento,
@@ -9,20 +14,23 @@ import {
 import { receberLanterna } from './borroes'
 import { escolhaDoDia } from './conversa-da-capi'
 import { FALA_DA_PAGINA_DO_BENTO, ganhouAPaginaDaVila } from './diario'
-import { adicionar, ITENS } from './itens'
+import { adicionarConjunto, ITENS } from './itens'
 import {
   AMIZADE,
   conversar,
   coracoes,
   darPresente,
   ehAniversario,
-  entregarItens,
   oQueFaltaDosItens,
   type ReacaoAoPresente,
-  sorteio,
   temOsItens,
 } from './moradores'
-import { ingredientesPorExtenso, RECEITAS, type Receita } from './receitas'
+import {
+  ingredientesPorExtenso,
+  type Receita,
+  receitasDoMorador,
+  receitasNovasDoMorador,
+} from './receitas'
 
 /**
  * A conversa com o Bento sobre o salvamento inteiro (o que o painel chama): sorteia o pedido de
@@ -50,21 +58,20 @@ export const FALA_DA_RECEITA: Readonly<Record<string, string>> = {
 
 /** As receitas do Bento que se sabe com esta amizade com ele. */
 export function receitasDoBento(amizade: number): Receita[] {
-  const c = coracoes(amizade)
-  return RECEITAS.filter((r) => r.bento !== undefined && r.bento <= c)
+  return receitasDoMorador('bento', amizade)
 }
 
 /** As receitas que ele lembra entre a amizade de antes e a de agora. */
 export function receitasNovasDoBento(antes: number, agora: number): Receita[] {
-  const a = coracoes(antes)
-  const d = coracoes(agora)
-  return RECEITAS.filter((r) => r.bento !== undefined && r.bento > a && r.bento <= d)
+  return receitasNovasDoMorador('bento', antes, agora)
 }
 
-function comOsIngredientes(s: Salvamento, r: Receita): Salvamento {
-  let inventario = s.inventario
-  for (const [id, qtd] of Object.entries(r.precisa)) inventario = adicionar(inventario, id, qtd)
-  return { ...s, inventario }
+export const FALA_DA_CESTA_CHEIA =
+  'A cesta não cabe inteira na mochila. Use alguns ingredientes e volte para receber tudo.'
+
+function comOsIngredientes(s: Salvamento, r: Receita): Salvamento | null {
+  const inventario = adicionarConjunto(s.inventario, r.precisa)
+  return inventario ? { ...s, inventario } : null
 }
 
 /**
@@ -74,12 +81,14 @@ function comOsIngredientes(s: Salvamento, r: Receita): Salvamento {
 function comAsReceitasNovas(
   s: Salvamento,
   amizadeAntes: number,
-): { salvamento: Salvamento; falas: string[]; novas: Receita[] } {
+): { salvamento: Salvamento; falas: string[]; novas: Receita[] } | null {
   const novas = receitasNovasDoBento(amizadeAntes, s.moradores.bento.amizade)
   let salvamento = s
   const falas: string[] = []
   for (const r of novas) {
-    salvamento = comOsIngredientes(salvamento, r)
+    const proximo = comOsIngredientes(salvamento, r)
+    if (!proximo) return null
+    salvamento = proximo
     falas.push(FALA_DA_RECEITA[r.id] ?? `Lembrei a receita: ${r.nome.toLowerCase()}.`)
   }
   if (ganhouAPaginaDaVila(amizadeAntes, s.moradores.bento.amizade))
@@ -89,9 +98,7 @@ function comAsReceitasNovas(
 
 /** Os ingredientes que ele dá da despensa a cada pedido entregue: de uma receita que ele já ensinou. */
 export function cestaDoBento(amizade: number, dia: string): Receita | null {
-  const sabidas = receitasDoBento(amizade)
-  if (sabidas.length === 0) return null
-  return sabidas[sorteio(`cesta:${dia}`) % sabidas.length] ?? null
+  return cestaDiariaDoBento(amizade, dia)
 }
 
 const nomeDoItem = (id: string) => ITENS[id]?.nome.toLowerCase() ?? id
@@ -116,6 +123,7 @@ export function comecarConversaComOBento(
   const antes = s.moradores.bento
   const { capi: bento, primeiraDoDia } = conversar(pedidoDoDiaDoBento(antes, dia, perfilId), dia)
   const receitas = comAsReceitasNovas(comBento(s, bento), antes.amizade)
+  if (!receitas) return { salvamento: s, falas: [FALA_DA_CESTA_CHEIA] }
   const lanterna = antes.conversaEm === null ? null : receberLanterna(receitas.salvamento)
   const salvamento = lanterna?.salvamento ?? receitas.salvamento
   const falas = falasDoBento(
@@ -166,6 +174,7 @@ export function presentearOBento(
     { ...comBento(s, r.capi), inventario: r.inv },
     s.moradores.bento.amizade,
   )
+  if (!receitas) return { salvamento: s, reacao: 'devolveu', falas: [FALA_DA_CESTA_CHEIA] }
   return { salvamento: receitas.salvamento, reacao: r.reacao, falas: [fala, ...receitas.falas] }
 }
 
@@ -181,20 +190,29 @@ export function entregarAoBento(
   entregou: boolean
   falas: string[]
 } {
-  if (s.moradores.bento.pedido?.dia !== dia) return { salvamento: s, entregou: false, falas: [] }
-  const r = entregarItens(s.moradores.bento, s.inventario, pedidoDoBentoPeloId)
-  if (!r.entregou) return { salvamento: s, entregou: false, falas: [] }
-  const receitas = comAsReceitasNovas(
-    { ...comBento(s, r.morador), inventario: r.inv },
-    s.moradores.bento.amizade,
-  )
-  const falas = [FALA_DA_ENTREGA_AO_BENTO, ...receitas.falas]
-  // A cesta da despensa: de uma receita já ensinada (quando lembrou uma agora, os ingredientes dela
-  // já vieram com a fala).
-  const cesta = receitas.novas.length === 0 ? cestaDoBento(r.morador.amizade, dia) : null
-  if (!cesta) return { salvamento: receitas.salvamento, entregou: true, falas }
+  const r = prepararEntregaDoPedido(s, 'bento', dia)
+  if (!r.ok)
+    return {
+      salvamento: s,
+      entregou: false,
+      falas:
+        r.motivo === 'mochila-cheia' || r.motivo === 'salvamento-cheio'
+          ? [FALA_DA_CESTA_CHEIA]
+          : [],
+    }
+  const falas = [
+    FALA_DA_ENTREGA_AO_BENTO,
+    ...r.novas.map(
+      (receita) =>
+        FALA_DA_RECEITA[receita.id] ?? `Lembrei a receita: ${receita.nome.toLowerCase()}.`,
+    ),
+  ]
+  if (ganhouAPaginaDaVila(s.moradores.bento.amizade, r.salvamento.moradores.bento.amizade))
+    falas.push(...FALA_DA_PAGINA_DO_BENTO)
+  const cesta = r.cesta
+  if (!cesta) return { salvamento: r.salvamento, entregou: true, falas }
   return {
-    salvamento: comOsIngredientes(receitas.salvamento, cesta),
+    salvamento: r.salvamento,
     entregou: true,
     falas: [
       ...falas,
@@ -213,11 +231,12 @@ export const FALA_DO_TURNO_NA_PADARIA =
 export function ajudarOBento(
   s: Salvamento,
   dia: string,
-): { salvamento: Salvamento; falas: string[] } {
+): { salvamento: Salvamento; falas: string[] } | null {
   const antes = s.moradores.bento
   if (s.turnos.padaria?.pagoEm !== dia) return { salvamento: s, falas: [] }
   const bento = { ...antes, amizade: Math.min(AMIZADE_MAXIMA, antes.amizade + AMIZADE.turno) }
   const receitas = comAsReceitasNovas(comBento(s, bento), antes.amizade)
+  if (!receitas) return null
   return { salvamento: receitas.salvamento, falas: [FALA_DO_TURNO_NA_PADARIA, ...receitas.falas] }
 }
 

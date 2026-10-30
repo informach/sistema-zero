@@ -1,0 +1,30 @@
+{
+  "publico": "adulto",
+  "celular": false,
+  "largura": {
+    "visivel": 560,
+    "conteudo": 560
+  },
+  "saldo": 85,
+  "reaberto": {
+    "carteira": {
+      "pagas": [],
+      "saldo": 85,
+      "creditos": {
+        "5e8983f4-eed7-40f6-a506-18d54974af1a": {
+          "semana": "2026-10-26",
+          "quantidade": 5
+        }
+      }
+    },
+    "inventario": {
+      "semente-alface": 3,
+      "semente-tomate": 2,
+      "semente-milho": 1,
+      "fuba": 1,
+      "leite": 1,
+      "ovo": 1
+    }
+  },
+  "erros": []
+}

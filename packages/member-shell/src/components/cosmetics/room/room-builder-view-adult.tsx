@@ -1,5 +1,6 @@
 'use client'
 
+import { aparenciaDoItem } from '@sistemazero/arquipelago-contracts'
 import {
   ArrowDownToLine,
   ArrowUpToLine,
@@ -213,6 +214,11 @@ export function AdultRoomBuilderView({
               <p>
                 <strong>{copy.pending(pendingBuy.label, pendingBuy.price).strong}</strong>
                 {copy.pending(pendingBuy.label, pendingBuy.price).text}
+                {aparenciaDoItem(pendingBuy.id) ? (
+                  <small className="block">
+                    A posse também vale no Arquipélago, quando você construir esse objeto.
+                  </small>
+                ) : null}
               </p>
               <div className="sz-cos-buybar-actions">
                 <button

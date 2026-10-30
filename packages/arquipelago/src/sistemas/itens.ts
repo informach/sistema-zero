@@ -25,6 +25,18 @@ export const ITENS: Record<string, Item> = {
   milho: { id: 'milho', nome: 'Milho', emoji: '🌽', comida: { fome: 10 } },
   salada: { id: 'salada', nome: 'Salada da horta', emoji: '🥗', comida: { fome: 40, energia: 5 } },
   pipoca: { id: 'pipoca', nome: 'Pipoca', emoji: '🍿', comida: { fome: 15, diversao: 25 } },
+  'salada-do-carnaval': {
+    id: 'salada-do-carnaval',
+    nome: 'Salada do Carnaval',
+    emoji: '🥗',
+    comida: { fome: 30, diversao: 20 },
+  },
+  'milho-da-fogueira': {
+    id: 'milho-da-fogueira',
+    nome: 'Milho da fogueira',
+    emoji: '🌽',
+    comida: { fome: 20, diversao: 20 },
+  },
   'pipoca-de-festa': {
     id: 'pipoca-de-festa',
     nome: 'Pipoca de festa',
@@ -38,6 +50,33 @@ export const ITENS: Record<string, Item> = {
   polvilho: { id: 'polvilho', nome: 'Polvilho', emoji: '🫙' },
   queijo: { id: 'queijo', nome: 'Queijo', emoji: '🧀' },
   cacau: { id: 'cacau', nome: 'Cacau', emoji: '🫘' },
+  'leite-de-coco': { id: 'leite-de-coco', nome: 'Leite de coco', emoji: '🥥' },
+  'polpa-de-acai': { id: 'polpa-de-acai', nome: 'Polpa de açaí', emoji: '🫐' },
+  'moqueca-de-legumes': {
+    id: 'moqueca-de-legumes',
+    nome: 'Moqueca de legumes',
+    emoji: '🍲',
+    comida: { fome: 55, energia: 10 },
+  },
+  'acai-na-tigela': {
+    id: 'acai-na-tigela',
+    nome: 'Açaí na tigela',
+    emoji: '🥣',
+    comida: { fome: 25, energia: 15 },
+  },
+  'mingau-de-milho': {
+    id: 'mingau-de-milho',
+    nome: 'Mingau de milho',
+    emoji: '🥣',
+    comida: { fome: 35, energia: 10 },
+  },
+  canjica: { id: 'canjica', nome: 'Canjica', emoji: '🥣', comida: { fome: 35, diversao: 10 } },
+  'salada-colorida': {
+    id: 'salada-colorida',
+    nome: 'Salada colorida',
+    emoji: '🥗',
+    comida: { fome: 55, energia: 15 },
+  },
   // O que sai do forno e da bancada com as receitas do Bento.
   'bolo-de-fuba': {
     id: 'bolo-de-fuba',
@@ -88,6 +127,22 @@ export function quantidade(inv: Inventario, id: string): number {
 
 export function adicionar(inv: Inventario, id: string, qtd = 1): Inventario {
   return adicionarAoInventario(inv, id, qtd)
+}
+
+/** Recompensa indivisível: não anunciar nem marcar uma entrega parcialmente truncada. */
+export function adicionarConjunto(
+  inv: Inventario,
+  itens: Readonly<Record<string, number>>,
+): Inventario | null {
+  if (
+    Object.entries(itens).some(
+      ([id, q]) => !Number.isInteger(q) || q < 0 || (inv[id] ?? 0) + q > 999,
+    )
+  )
+    return null
+  let novo = inv
+  for (const [id, q] of Object.entries(itens)) if (q > 0) novo = adicionar(novo, id, q)
+  return novo
 }
 
 /** Tira do inventário; sem o suficiente, devolve `null` (nada muda). */

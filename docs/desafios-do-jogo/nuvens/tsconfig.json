@@ -8,7 +8,8 @@
   "include": [
     "*.ts",
     "../../../packages/studio/src/blockly/__tests__/nuvensManifest.test.ts",
-    "../../../packages/studio-runtime/tests/nuvens-browser.test.ts"
+    "../../../packages/studio-runtime/tests/nuvens-browser.test.ts",
+    "../../../packages/studio-runtime/tests/quadros-nuvens-browser.test.ts"
   ],
   "exclude": ["node_modules"]
 }

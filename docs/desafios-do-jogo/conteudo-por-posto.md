@@ -1,0 +1,78 @@
+# Conteúdo dos desafios por posto
+
+Referência editorial indicada pela dona em 29/10/2026: **Proposta Jornada do Criador, revisão
+aprofundada**, revisão de 25/10/2026. Arquivo HTML original com SHA-256
+`1ae99c86e1aa7311663f1642fded5a895cc289dd88b2304d4555a503608ab88e`.
+Seções lidas: postos, cursos, missões, Poderes, extras, acesso e Maestrias, incluindo o JSON
+`proposal-data` do documento interativo. O currículo versionado no repositório fica em
+`packages/members/src/infrastructure/config/creator-journey-curriculum.json`.
+
+A comparação encontrou atualizações posteriores no Faísca: autoria local da Ilha do Farol
+e do Jardim Secreto e os títulos “O segredo da cabana” e “A ponte apressada”. Elas ficam
+preservadas. Os demais postos mantêm as mesmas competências; contagens auxiliares do HTML
+não substituem os vínculos e as regras da política publicada.
+
+Esta é a régua de autoria dos desafios do Arquipélago, não uma nova política de promoção.
+Podemos preparar conteúdo de cursos futuros. Preparado não significa ensinado, publicado
+ou liberado. O Members continua confirmando os blocos efetivamente conquistados de cada pessoa.
+
+## Repertório que o posto ensina
+
+| Posto | Linguagem e ambiente | Conteúdo central | Pode pedir ao aplicar o conteúdo | Não pressupor |
+| --- | --- | --- | --- | --- |
+| Faísca | Blocos, Jogo 2D e 3D | Evento, ação, informação booleana, se/senão, posição | Coletar algo uma vez, lembrar, decidir com e sem o objeto, reiniciar | Contadores complexos, grupos, prazo, inimigos, câmera programada |
+| Construtor | Blocos, Jogo 2D e 3D | Grupos, criação por relógio, contato e retirada, pontos, vidas, estados | Partida com início/fim, acerto único, derrota/vitória e limpeza ao reiniciar | Escudo, tiro triplo, chefão ou arma de Poder opcional |
+| Inventor | Blocos, Jogo 2D e 3D | Gravidade, pulo com apoio, colisão, sorteio limitado, ritmo e dificuldade | Pular só no chão, variar obstáculos, limitar velocidade e manter travessia possível | Pulo duplo, atração de moedas, balística e física nova |
+| Explorador | Python, Pygame Zero e Raylib 3D | Leitura, nomes, valores, indentação, eventos, clique, estado, sorteio e tempo | Alvo versus vazio, pontos, região válida, fim por tempo, reinício, erro pequeno de código | Classes, dezenas de alvos, shaders, listas ainda não ensinadas ou alvo móvel obrigatório |
+| Mestre | Python, Pygame Zero e Raylib 3D | Funções, parâmetros, listas, fases como dados, colisão por eixo | Plataforma, coleta, saída condicionada, troca de fase e depuração em caso pequeno | Herança, empurrão em grade, chão móvel, checkpoint ou escadas de Poder opcional |
+| Arquiteto | JavaScript, Canvas e three.js | Ponte entre linguagens, objetos/funções, atualização/desenho, ondas, caminho e alcance | Seguir pontos, selecionar alvo dentro do alcance, interação única, contagem e reinício | Pathfinding, shaders, motor próprio, perseguição ou herança não ensinada |
+| Gênio | JavaScript Pro, Canvas e three.js em arquivos | Grade, ocupação, custo, produção, modelo/apresentação, módulos e persistência | Recusar ocupação dupla e saldo insuficiente, produzir, guardar/reabrir, alterar sem quebrar | Terreno procedural, simulação elétrica, rede ou gênero inédito obrigatório |
+| Lenda | Repertório conquistado e Maestrias por área | Autoria, integração, testes, revisão e especialização escolhida | Projeto com critérios explícitos e escopo pequeno, aproveitando aprendizagens anteriores | Uma nova linguagem ou biblioteca só por ter chegado ao posto |
+
+## Quando a ilha abre
+
+A ilha abre ao **entrar** no posto, não ao terminar os cursos desse posto. Portanto não é
+correto exigir imediatamente todos os conteúdos da linha correspondente. A primeira atividade
+de uma ilha reaplica conteúdo anterior. Atividades que usam a matéria nova indicam o curso
+em “Aprenda isso em” e só abrem quando os blocos reais estiverem conquistados.
+
+| Ilha | Posto de entrada | Base segura para começar | Ampliação depois de aprender |
+| --- | --- | --- | --- |
+| Sua ilha | Faísca | Exploração e criação com a orientação inicial | Evento, coleta e decisão após o Farol |
+| Bosque | Construtor | Evento, coleta, informação e decisão do Faísca | Grupos, pontos e estados da Nave |
+| Vila Doce | Inventor | Grupos, relógio, contato, pontos e estados do Construtor | Pulo, gravidade e obstáculos do Dino |
+| Recife | Explorador | Movimento e colisão em blocos já conquistados | Mira em Python após o curso correspondente |
+| Pico | Mestre | Clique, tempo e estados em Python do Explorador | Plataforma e dados de fases do Mestre |
+| Vale dos Dinos | Arquiteto | Funções, listas e fases em Python do Mestre | Caminhos, ondas e alcance em JavaScript |
+| Nuvens | Gênio | Sistemas, caminhos e alcance do Arquiteto | Construção em grade e persistência do Gênio |
+| Farol | Lenda | Repertório efetivamente conquistado | Autoria e Maestria escolhida, sem dívida nova |
+
+## Regras de autoria e verificação
+
+1. Os seis quadros de uma ilha formam uma sequência de ações pequenas e um minijogo integrado.
+   Não são seis repetições cosméticas da mesma igualdade de bloco.
+2. Cada quadro registra intenção, conhecimentos prévios, linguagem, projeto inicial, gabarito,
+   negativos, dicas e curso de referência. O projeto inicial já traz cenário e controles que
+   não fazem parte do objetivo. O teste avalia apenas a ação deixada para completar.
+3. Cor, desenho, nomes livres e valores coerentes não exigem a cópia do gabarito. Movimento,
+   limite, condição, consumo único e reinício são conferidos executando casos relevantes.
+4. Missões da jornada e desafios do jogo são conteúdos diferentes. Os desafios reaplicam o
+   repertório sem conceder posto ou substituir a missão oficial.
+5. Poder e extra são opcionais. Um desafio que os usa declara a dependência e não bloqueia os
+   demais quadros. Não usar a união de todos os extras como prova de que todo aluno os conhece.
+6. Kids e adulto compartilham lógica pedagógica, com metadados, acesso e publicação separados.
+   O tratamento de voz e visual deve respeitar cada comunidade.
+7. Não inventar UUID de curso ainda inexistente nem acrescentar `blocosManuais` para contornar
+   uma falta de ensino. Conteúdo futuro fica validado como artefato e é vinculado ao curso real
+   quando ele existir. Ausência de vínculo publicado deve aparecer como pendência editorial.
+
+## Revisão do conteúdo já existente
+
+Os manifestos das seis ilhas já trazem um principal e três variações. Ainda precisam ser
+comparados com esta matriz. Em especial, a documentação da Vila presume o relógio do Dino
+logo na entrada do Inventor e inclui blocos de extras. Isso não prova que a pessoa tenha
+conquistado esses blocos. A revisão deve corrigir as dependências e o projeto inicial, sem
+liberar blocos artificialmente nem retirar criações já guardadas.
+
+Esta matriz orienta L03 da entrega integral. O inventário por quadro e as provas do executor
+devem acompanhar a implementação; esta documentação não declara esse conteúdo concluído.

@@ -1,0 +1,30 @@
+{
+  "publico": "adulto",
+  "resultados": [
+    {
+      "width": 1280,
+      "errors": [],
+      "bounds": {
+        "x": 25.59375,
+        "y": 16.875,
+        "width": 1228.796875,
+        "height": 810.234375
+      },
+      "iframeDepoisDeFechar": 0,
+      "retiradaRecusada": true
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "bounds": {
+        "x": 7.796875,
+        "y": 16.875,
+        "width": 374.390625,
+        "height": 810.234375
+      },
+      "iframeDepoisDeFechar": 0,
+      "retiradaRecusada": true
+    }
+  ],
+  "escopo": "Publicação JavaScript local, player real; não qualifica Python/Pro ou serviço remoto"
+}

@@ -1,5 +1,15 @@
 # @sistemazero/studio
 
+## Teclas dos controles de toque do Jogo 2D (29/10/2026)
+
+Os botões do pad também entregam a borda à tecla canônica: direções para setas, A para
+Espaço, B para x, selecionar para Backspace, começar para Enter e pausa para Escape.
+`_dispatchGameKeyInput` é compartilhado com o teclado real; não despachar KeyboardEvent
+sintético, que duplicaria a ação semântica. Os atalhos alternativos z/Shift/p continuam
+atalhos físicos, sem disparos extras no toque. `onKey` recebe a borda; `actionDown` continua
+sendo a leitura de ação mantida pelo dedo. Reinício durante a ação cancela o restante da
+geração antiga. Provas em classicPlatformer.test.ts e no navegador dos quadros do Bosque.
+
 ## Revisão imutável de Maestria (25/10/2026)
 
 `mastery-review-runtime` cria um ambiente Python de execução vinculado ao UUID da entrega e à

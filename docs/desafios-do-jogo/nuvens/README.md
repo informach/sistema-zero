@@ -17,6 +17,44 @@ pacotes; o quadro deve estar livre quando o pacote for importado. O principal d�
 não. `recompensa.atracao` é `jardim-que-floresce`. `publicar: true` é uma instrução para a futura
 aplicação do arquivo, não uma publicação feita por esta entrega.
 
+## Cinco quadros complementares (L03)
+
+Os quadros aplicam limites de reserva, faixa de luz, ocupação, consumo de dois recursos e retirada de uma lista. No quinto, o Para cada vem montado com corpo vazio. Falta somar e destruir a flor da vez, sem contar a colheita novamente.
+
+| Quadro | Atividade | Tipo | Moedas | Extra |
+| --- | --- | --- | --- | --- |
+| 1 | Reserva de água | Quadro das Cores | 20 | 10 |
+| 2 | Luz na medida | Quadro das Cores | 20 | 10 |
+| 3 | Canteiros livres | Quadro das Cores | 20 | 10 |
+| 4 | Dois recursos | Quadro das Cores | 20 | 10 |
+| 5 | Colheita da lista | Quadro das Cores | 20 | 10 |
+
+O [manifesto Kids](nuvens.manifesto.json) e o [manifesto adulto](nuvens-adulto.manifesto.json)
+têm seis quadros e três desafios do dia cada. Todos os novos itens ficam em rascunho; o arquivo
+adulto também. Os quatro itens Kids antigos foram comparados com a base Git e preservados
+integralmente. Nenhum conteúdo foi importado ou publicado nesta entrega.
+
+São reaplicações em blocos JavaScript já conhecidos, não antecipam o ensino de uma linguagem
+nova. O Para cada ainda não aparece nas listas atuais dos cursos: fica preparado como estrutura
+do inicial, com grupo/item e corpo vazio conferidos por teste. A pessoa completa apenas as
+ações internas já ensinadas. Não há liberação manual desse bloco nem afirmação de conquista.
+Na publicação, é necessário conferir a mediação e o vínculo com os cursos efetivamente prontos.
+
+A arte é reaproveitada do principal. O texto e os valores do cenário estão prontos. Os objetivos
+observam o comportamento das ações deixadas vazias e aceitam qualquer aparência. Enter é o
+extra para uma nova rodada. A prévia usa controles de teclado e toque do Jogo 2D.
+
+Comandos adicionais, na raiz:
+
+```powershell
+bun test docs/desafios-do-jogo/nuvens/quadros-iniciais.test.ts
+$env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
+bun test packages/studio-runtime/tests/quadros-nuvens-browser.test.ts
+bun docs/desafios-do-jogo/nuvens/conferir-quadros-browser.ts
+```
+
+[Capturas e resultados locais](../../qa/2026-10-30-quadros-nuvens/README.md).
+
 ## Simulação e variáveis
 
 O jardim do céu da Iriê (proposta: "Jardim que floresce: simulação e variáveis") é uma simulação de

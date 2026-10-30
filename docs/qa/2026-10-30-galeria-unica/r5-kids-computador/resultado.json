@@ -1,0 +1,24 @@
+{
+  "publico": "kids",
+  "celular": false,
+  "compartilhada": true,
+  "alvo": {
+    "nome": "Planta no vaso",
+    "objeto": "planta-interior",
+    "id": "planta-interior-classica",
+    "saldo": 50
+  },
+  "limites": {
+    "largura": 680,
+    "conteudo": 680,
+    "esquerda": 300,
+    "direita": 980,
+    "tela": 1280
+  },
+  "carteira": {
+    "pagas": ["planta-interior-classica"],
+    "saldo": 50,
+    "creditos": {}
+  },
+  "erros": []
+}

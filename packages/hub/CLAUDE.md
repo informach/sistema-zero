@@ -29,6 +29,12 @@ vice-versa. Jogo publicado e `/jogar` não dependem do acesso do autor (nos dois
 
 ## O que é
 
+L05 do Arquipélago: `GET /hub/my-playable-showcase`, autenticado pelo gateway e token interno,
+lista as 24 publicações recentes visíveis do próprio ator. A comunidade vem de `kidsContext`,
+nunca da query; reusa `listShowcaseByAuthor`. Resposta sem cache, só `{jogos: [{playId, titulo}]}`,
+sem capa ou dados de identidade. Abertura continua usando `studio-play` e a moderação vigente.
+Testes de isolamento, limite e retirada em `tests/integration/my-playable-showcase.test.ts`.
+
 **Comunidade em FÓRUM** (só back-end/API; os front-ends são o **[@sistemazero/community](../community)**
 e o **[@sistemazero/community-kids](../community-kids)**, que consomem via api-gateway). Modelo de
 fórum (NÃO chat): **servidores (`spaces`) → canais (`channels`) → tópicos (`threads`) →

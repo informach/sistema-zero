@@ -1,24 +1,43 @@
 import { useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
-import { festaAtual } from '../estado/festas'
+import { festaAtual, useFesta } from '../estado/festas'
+import type { Festa } from '../sistemas/festas'
 import { ITENS, quantidade } from '../sistemas/itens'
-import { coracoes } from '../sistemas/moradores'
+import { salvamentoPausado } from '../sistemas/pausa'
 import {
+  dicaDaReceita,
   fazerReceita,
   type LugarDaReceita,
   PAINEL_DA_BANCADA,
+  podeCozinhar,
   RECEITAS,
   type Receita,
+  receitaConhecida,
+  receitaEmEpoca,
   receitasConhecidas,
 } from '../sistemas/receitas'
 
 /** Fazer a receita na loja do jogo (o Zappy conta o que saiu). */
-export function fazerNaLoja(loja: ReturnType<typeof useJogo>['loja'], r: Receita): void {
+export function fazerNaLoja(
+  loja: ReturnType<typeof useJogo>['loja'],
+  r: Receita,
+  festa: Festa | null = null,
+): void {
   const s = loja.getState()
-  const feito = fazerReceita(s.salvamento, r)
+  if (
+    s.acesso.somenteLeitura ||
+    s.visita ||
+    s.tempoAcabou ||
+    s.tempoPausado ||
+    s.tempoSincronizando ||
+    salvamentoPausado(s.salvamentoSituacao) ||
+    !receitaConhecida(r, s.salvamento)
+  )
+    return
+  const feito = fazerReceita(s.salvamento, r, festa)
   if (!feito) return
   s.mudar(() => feito.salvamento)
-  s.dizer(feito.fala)
+  if (loja.getState().salvamento === feito.salvamento) s.dizer(feito.fala)
 }
 
 const nome = (id: string) => ITENS[id]?.nome.toLowerCase() ?? id
@@ -28,7 +47,8 @@ function oQueFalta(inv: Record<string, number>, r: Receita): string | null {
   const faltam = Object.entries(r.precisa)
     .filter(([id, q]) => quantidade(inv, id) < q)
     .map(([id, q]) => `${q - quantidade(inv, id)} ${nome(id)}`)
-  return faltam.length > 0 ? `Falta ${faltam.join(', ')}.` : null
+  if (faltam.length > 0) return `Falta ${faltam.join(', ')}.`
+  return podeCozinhar(inv, r) ? null : 'Use ou guarde alguns pratos para caber a receita inteira.'
 }
 
 /**
@@ -37,21 +57,24 @@ function oQueFalta(inv: Record<string, number>, r: Receita): string | null {
  */
 export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
   const { loja, plataforma } = useJogo()
-  const inventario = useEstado((s) => s.salvamento.inventario)
-  const amizade = useEstado((s) => s.salvamento.moradores.bento.amizade)
-  const sabidas = receitasConhecidas(coracoes(amizade)).filter((r) => r.onde === onde)
-  const faltam = RECEITAS.filter((r) => r.onde === onde).length - sabidas.length
+  const festa = useFesta()
+  const salvamento = useEstado((s) => s.salvamento)
+  const inventario = salvamento.inventario
+  const sabidas = receitasConhecidas(salvamento).filter((r) => r.onde === onde)
+  const faltam = RECEITAS.filter((r) => r.onde === onde && !receitaConhecida(r, salvamento))
   return (
     <section className="arq-receitas" aria-label={onde === 'forno' ? 'Assar no forno' : 'Cozinhar'}>
       <h3 className="arq-menu-titulo">{onde === 'forno' ? 'Assar' : 'Receitas'}</h3>
       {sabidas.length === 0 ? (
         <p className="arq-caderno-explica">
-          O Bento, da padaria da Vila Doce, ainda está lembrando as receitas do forno.
+          Novas receitas chegam com as amizades e as coleções. Veja as pistas abaixo.
         </p>
       ) : (
         <ul className="arq-objeto-itens">
           {sabidas.map((r) => {
-            const falta = oQueFalta(inventario, r)
+            const falta = receitaEmEpoca(r, festa)
+              ? oQueFalta(inventario, r)
+              : 'Esta receita volta com a festa. Seu prato pronto continua guardado.'
             return (
               <li key={r.id}>
                 <button
@@ -59,8 +82,7 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
                   className="arq-botao leve"
                   disabled={falta !== null}
                   onClick={() => {
-                    if (onde === 'fogueira' && festaAtual(plataforma) !== 'junina') return
-                    fazerNaLoja(loja, r)
+                    fazerNaLoja(loja, r, festaAtual(plataforma))
                   }}
                 >
                   {`${ITENS[r.faz.id]?.emoji ?? ''} ${r.nome}: ${Object.entries(r.precisa)
@@ -68,17 +90,26 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
                     .join(', ')}`}
                 </button>
                 {falta ? <small className="arq-receitas-falta">{falta}</small> : null}
+                <small className="arq-caderno-explica">{dicaDaReceita(r, salvamento)}</small>
               </li>
             )
           })}
         </ul>
       )}
-      {faltam > 0 && sabidas.length > 0 ? (
-        <p className="arq-caderno-explica">
-          {faltam === 1
-            ? 'O Bento ainda vai lembrar mais uma receita daqui.'
-            : `O Bento ainda vai lembrar mais ${faltam} receitas daqui.`}
-        </p>
+      {faltam.length > 0 ? (
+        <details className="arq-caderno-explica">
+          <summary>
+            Mais {faltam.length}{' '}
+            {faltam.length === 1 ? 'receita para aprender' : 'receitas para aprender'}
+          </summary>
+          <ul>
+            {faltam.map((r) => (
+              <li key={r.id}>
+                <b>{r.nome}</b>: {dicaDaReceita(r, salvamento)}
+              </li>
+            ))}
+          </ul>
+        </details>
       ) : null}
     </section>
   )

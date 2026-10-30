@@ -46,6 +46,22 @@ import { RECEITAS } from '../src/sistemas/receitas'
 const inicial = () => criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
 
 describe('as contas de cada seção', () => {
+  test('corais musicais não viram achados do mergulho nem produzem contagem negativa', () => {
+    for (let corais = 0; corais < 16; corais++)
+      for (let achados = 0; achados < 8; achados++) {
+        const s = inicial()
+        s.recife = {
+          corais,
+          bau: Boolean(achados & 1),
+          pagina: Boolean(achados & 2),
+          tesouro: Boolean(achados & 4),
+        }
+        const r = albumDoSalvamento(s).recife
+        const tem = Number(s.recife.bau) + Number(s.recife.pagina) + Number(s.recife.tesouro)
+        expect(r.conta).toEqual({ tem, total: 3, faltam: 3 - tem })
+        expect(r.itens.filter((i) => i.achado)).toHaveLength(tem)
+      }
+  })
   test('no começo nada foi achado, e cada seção diz quantos faltam', () => {
     const a = albumDoSalvamento(inicial())
     expect(a.bichos.conta).toEqual({ tem: 0, total: 4, faltam: 4 })

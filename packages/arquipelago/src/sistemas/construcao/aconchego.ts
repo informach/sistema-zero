@@ -26,7 +26,7 @@ export const ESPACO_ACONCHEGANTE = {
   semMobiliarAte: 36, // Até 6 × 6 o espaço sozinho recebe o bônus.
   celulasPorTipo: 12, // Cômodo maior recebe o mesmo bônus se tiver variedade proporcional.
 } as const
-/** Preparados para outra fase. Não chamam moradores nem iniciam festas nesta entrega. */
+/** Limites usados por visitas-dos-moradores; sempre por cômodo, nunca somados entre salas. */
 export const ACONCHEGO_QUE_CHAMA_VISITA = 12
 export const ACONCHEGO_DA_FESTA = 22
 export const NIVEIS_DE_ACONCHEGO = [

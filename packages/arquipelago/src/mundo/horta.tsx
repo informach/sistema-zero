@@ -1,11 +1,17 @@
-import type { Canteiro as DadosDoCanteiro, Semente } from '@sistemazero/arquipelago-contracts'
+import {
+  type Canteiro as DadosDoCanteiro,
+  fraseDaColheitaEspecial,
+  type Semente,
+} from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useState } from 'react'
 import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { type Clima, climaLiberado, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
+import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
-import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
-import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
+import { type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
+import { ITENS, quantidade, remover } from '../sistemas/itens'
+import { colherNaIlha } from '../sistemas/primeiro-pedido'
 import { hortaVisivel } from '../sistemas/visitas'
 import {
   ALTURA_QUE_SEGURA,
@@ -112,13 +118,25 @@ function Canteiro({
           return { ...s, horta }
         }
         if (f === 'maduro') {
-          const r = colher(c, agoraData.getTime())
-          if (!r) return s
-          horta[indice] = r.canteiro
-          // Uma semente volta junto: a horta nunca acaba.
-          const inv = adicionar(adicionar(s.inventario, r.item, r.qtd), `semente-${r.item}`, 1)
-          loja.getState().dizer(`Você colheu ${r.qtd} ${ITENS[r.item]?.nome.toLowerCase()}.`)
-          return { ...s, horta, inventario: inv }
+          const r = colherNaIlha(s, indice, agoraData, loja.getState().jornada)
+          if (!r.ok) {
+            if (r.motivo !== 'mochila') return s
+            loja
+              .getState()
+              .dizer(
+                'A mochila está cheia. Use ou guarde os alimentos e sementes. A colheita continua no canteiro.',
+              )
+            return s
+          }
+          const colheita = r.colheita
+          loja
+            .getState()
+            .dizer(
+              r.ganhouGeladeira
+                ? falaDoGanho('geladeira')
+                : `Você colheu ${colheita.qtd} ${ITENS[colheita.item]?.nome.toLowerCase()}.${fraseDaColheitaEspecial(colheita.bonus)}`,
+            )
+          return r.salvamento
         }
         return s
       })
