@@ -31,6 +31,23 @@ server.stdout.on('data', (d) => {
   if (String(d).includes('Arquipélago no ar')) servidorPronto = true
 })
 server.stderr.on('data', (d) => process.stderr.write(d))
+/**
+ * Num jogo novo na Lenda, cada ponte aberta ganha a cena de chegada (a legenda e o Pular), que
+ * esconde o Agora e segura o E. Pula uma por uma até nenhuma aparecer por 4 s.
+ */
+async function pularChegadas(page: Page) {
+  const pular = page.locator('.arq-chegada-pular')
+  for (let i = 0; i < 12; i++) {
+    try {
+      await pular.waitFor({ state: 'visible', timeout: 4000 })
+    } catch {
+      return
+    }
+    await pular.click()
+    await pular.waitFor({ state: 'detached', timeout: 15_000 }).catch(() => {})
+  }
+  throw new Error('As cenas de chegada não acabaram')
+}
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
 async function conferirPrioridade(page: Page, sala: boolean) {
   if (
@@ -134,6 +151,7 @@ try {
       )
     if (process.env.ARQUIPELAGO_SO_PRIORIDADE !== '1') {
       await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2`)
+      await pularChegadas(page)
       await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
       // Perto da porta, com a Lenda aberta, a porta do farol abre na dobradiça.
       await page.waitForTimeout(1500)
@@ -266,6 +284,8 @@ try {
         throw new Error(
           `Pendências não voltaram: ${JSON.stringify({ pendenciasAntes, pendenciasDepois })}`,
         )
+      // O modo livre (fase4-12) começa com o final; a fala do Zappy espera a descida.
+      await page.getByText('O modo livre começou.', { exact: false }).first().waitFor()
       await page.screenshot({ path: path.join(prints, `retomada-${tipo}.png`) })
       const volta = await ler()
       if (!volta || volta.posicao.y > 4) throw new Error('Corpo não voltou à ilha')
@@ -373,6 +393,7 @@ try {
     page = await context.newPage()
     await prepararPagina()
     await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2&passos=1&dicas=1`)
+    await pularChegadas(page)
     await page.locator('.arq-guia.passos').waitFor()
     await page.waitForFunction(
       () => typeof Reflect.get(globalThis, '__arquipelagoLevar') === 'function',
@@ -413,6 +434,7 @@ try {
     page = await context.newPage()
     await prepararPagina()
     await page.goto(`${baseURL}/?novo=1&publico=adulto&posicao=8&em=-9.2,-10.9,2.2`)
+    await pularChegadas(page)
     await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
     await usar()
     await etapa('sala')
@@ -433,6 +455,7 @@ try {
   const porta = await bloqueado.newPage()
   porta.setDefaultTimeout(120_000)
   await porta.goto(`${baseURL}/?novo=1&posicao=7&em=-9.2,-10.9,2.2`)
+  await pularChegadas(porta)
   await porta.locator('.arq-acao').filter({ hasText: 'Ler o recado do Farol' }).waitFor()
   await porta.keyboard.press('KeyE')
   await porta

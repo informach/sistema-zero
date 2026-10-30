@@ -4,6 +4,7 @@ import {
   guardadosNaGeladeira,
   guardarAlimentoNaGeladeira,
   INSTRUMENTOS_DA_BANDA,
+  OBJETOS_DA_CASA,
   type ObjetoDaCasa,
   type Obra,
   POSTOS_DA_JORNADA,
@@ -142,7 +143,8 @@ export function tirarObjeto(obra: Obra, c: Celula): Resultado {
  * Os projetos que a pessoa ganhou e ainda não estavam guardados: a geladeira vem do primeiro
  * pedido entregue à Capi, o forno da primeira receita do Bento (um coração de amizade), a casinha
  * de adotar um bicho no Bosque, a planta de interior da primeira obra (da casa ou de uma cabana) e
- * o aquário do primeiro coral replantado no Recife (fase3-03).
+ * o aquário do primeiro coral replantado no Recife (fase3-03). No modo livre (o final do Farol
+ * concluído), todos os que faltam.
  * Devolve o mesmo salvamento quando nada mudou.
  */
 export function ganharProjetos(
@@ -163,6 +165,9 @@ export function ganharProjetos(
   if (!s.projetos.banda && s.pico.banda === 2 ** INSTRUMENTOS_DA_BANDA - 1) ganhos.push('banda')
   const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0
   if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')
+  // O modo livre da Lenda (fase4-12): com o final do Farol concluído, todos os que faltam chegam.
+  if (s.farol.concluido)
+    for (const id of OBJETOS_DA_CASA) if (!s.projetos[id] && !ganhos.includes(id)) ganhos.push(id)
   if (ganhos.length === 0) return { salvamento: s, ganhos }
   const projetos = { ...s.projetos }
   for (const id of ganhos)

@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:net'
-import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
-import { chromium } from 'playwright-core'
+import { criarSalvamentoInicial, ILHA_IDS } from '@sistemazero/arquipelago-contracts'
+import { chromium, type Page } from 'playwright-core'
 import { PerspectiveCamera, Vector3 } from 'three'
 import { type AmostraDaPausa, conferirPausaNoAr } from './pausa-observada'
 
@@ -21,6 +21,24 @@ server.stdout.on('data', () => {})
 server.stderr.on('data', (d) => process.stderr.write(d))
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
 const erros: string[] = []
+
+/**
+ * A ponte ainda não vista no salvamento semeado abre a cena de chegada (a legenda e o Pular), que
+ * segura o corpo e a câmera. Pula uma por uma até nenhuma aparecer por 4 s.
+ */
+async function pularChegadas(page: Page) {
+  const pular = page.locator('.arq-chegada-pular')
+  for (let i = 0; i < 12; i++) {
+    try {
+      await pular.waitFor({ state: 'visible', timeout: 4000 })
+    } catch {
+      return
+    }
+    await pular.click()
+    await pular.waitFor({ state: 'detached', timeout: 15_000 }).catch(() => {})
+  }
+  throw new Error('As cenas de chegada não acabaram')
+}
 try {
   const deadline = Date.now() + 30_000
   while (true) {
@@ -50,6 +68,8 @@ try {
   await page.goto(`${baseURL}/preparar-qa`)
   const inicial = criarSalvamentoInicial(new Date('2026-10-28T15:00:00Z'))
   inicial.casa.portaNova = true
+  // As pontes já vistas: a cena de chegada de uma ponte nova seguraria o corpo e a câmera.
+  inicial.pontesVistas = [...ILHA_IDS]
   const base = { revisao: 1, salvamento: inicial, atualizadoEm: inicial.criadoEm }
   const remoto = { ...base, revisao: 2, salvamento: { ...inicial, inventario: { milho: 9 } } }
   const local = { ...inicial, inventario: { milho: 2 } }
@@ -119,6 +139,7 @@ try {
     .waitFor({ timeout: 45_000 })
   if (await reaberto.getByRole('dialog', { name: 'Seu jogo mudou em outro aparelho' }).count())
     throw new Error('Escolha confirmada voltou como conflito.')
+  await pularChegadas(reaberto)
   await reaberto.waitForFunction(
     () => typeof (globalThis as { __arquipelagoLevar?: unknown }).__arquipelagoLevar === 'function',
   )

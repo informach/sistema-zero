@@ -59,6 +59,7 @@ import { PainelDaFeira } from './feira'
 import { PainelDoFilhote } from './filhote'
 import { FogueiraDaFesta } from './fogueira-da-festa'
 import { AtalhoDaFoto, ModoFoto } from './foto'
+import { PainelDaGaleria } from './galeria-do-farol'
 import { Icone } from './icones'
 import { PainelDaIrie } from './irie'
 import { PainelDaJade } from './jade'
@@ -981,6 +982,7 @@ export function Hud() {
       <PainelDaIrie />
       <PainelDaIris />
       <PainelDoFarol />
+      <PainelDaGaleria />
       <PainelDaBancada />
       <FogueiraDaFesta />
       <PainelDoTurno />

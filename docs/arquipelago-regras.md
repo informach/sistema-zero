@@ -3634,6 +3634,41 @@ A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9,
 
 A leitura e a volta da Íris ficam no salvamento V16. Reabrir mantém a página no diário e a Íris em casa. A conclusão só é guardada ao terminar a sequência, nunca apenas por alcançar a Lenda. Sair antes disso permite tentar de novo. A animação recomeça ao entrar no Farol; a conquista não se perde.
 
+## O modo livre e a galeria do Farol (fase4-12, 30/10/2026)
+
+- **Começa com o final.** Quando os seis fachos terminam e o final fica guardado
+  (`farol.concluido`), o modo livre começa. Todos os projetos azuis que ainda faltavam chegam de uma
+  vez (geladeira, forno, casinha, lareira, banda, aquário, fliperama, museu e planta), para montar a
+  casa do jeito dela. O Zappy diz uma fala só: "O modo livre começou. Todos os projetos azuis
+  chegaram para você montar a casa do seu jeito, e o alto do Farol agora é a sua galeria." A Íris,
+  em casa, ganha uma terceira fala que convida a subir. Nada é cobrado e nada some.
+- **A galeria.** A sala do alto do Farol ganha seis pedestais (0,9 m de altura, tampo dourado de
+  0,37 m de raio) em volta da lente, a 3,3 m do meio, longe da varanda, da grade da escada e da mesa
+  da Íris. Cada pedestal é uma vaga. De frente para ele, E / Usar abre o painel da vaga ("Escolher o
+  que expor na vaga N" ou "Ver a criação da vaga N").
+- **O que dá para expor.** Só criações dela, nunca inventadas: as aparências feitas no Pinta e no
+  Molda que os objetos guardam (as compradas na galeria de aparências não entram), os minijogos
+  aprovados no Desafio e os jogos publicados no Mural (as duas listas vêm do serviço; sem elas, só
+  as aparências). A aparência aparece no pedestal como o objeto dela, encolhido para caber num cubo
+  de 0,85 m; o jogo aparece num quadro com a capa do minijogo ou o nome escrito.
+- **Escolher.** O painel mostra o que está exposto (com "Jogar" para os jogos e "Tirar daqui") e as
+  criações em três grupos (Pinta e Molda, Minijogos, Jogos do Mural). "Expor aqui" põe a criação na
+  vaga; se ela já estava em outra, muda de lugar (a mesma criação não fica em duas vagas) e a lista
+  mostra "Na vaga N". Se a aparência deixar de ser guardada pelo objeto, a vaga avisa e fica vazia
+  no mundo até ela escolher outra.
+- **Fica guardado.** A escolha mora no salvamento V20 (`farol.galeria`, até seis vagas, só depois do
+  final). Reabrir o jogo mostra os mesmos pedestais. Se só uma sessão mudou a galeria, vale a dela;
+  mudada nas duas ao mesmo tempo, a criança escolhe qual fica, como no clima.
+- **A câmera da sala.** Antes do final, a vista da sala é fixa (a mesma de sempre). No modo livre,
+  ela anda em volta da lente junto com a criança: fica de lado (50° à frente dela, a 3 m do meio),
+  a 3,25 m do piso (abaixo do forro vermelho do domo, a 3,5 m, e acima da lente, a 3,12 m), mirando
+  o lado da sala onde ela está. De lado, a lente nunca fica no caminho, nem com a criança encostada
+  no vidro, e os pedestais aparecem um por um. Andar para a frente leva em volta da lente. Com menos
+  movimento ela acompanha na hora, sem girar.
+- **Orientação.** No modo livre, o Agora da sala diz "Escolher as criações dos pedestais da galeria"
+  e "Reler a última página na mesa da Íris" (no celular aparece só o primeiro). Visitas não veem a
+  galeria nem mudam vagas.
+
 ## Saltos entre nuvens, corrida de balão e constelações (fase4-07, 29/10/2026)
 
 - **O progresso fica guardado.** A V16 guarda as estrelas e o melhor tempo das duas corridas,

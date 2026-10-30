@@ -40,6 +40,7 @@ import {
 } from './alto-do-farol'
 import { liberarObjeto } from './carregar-ilha'
 import { Colisores } from './colisores'
+import { GaleriaDoFarol } from './galeria-do-farol'
 import { useInterativo } from './interativos'
 import { ComReserva } from './modelos'
 import { MoradorDaIlha, type MoradorNoMundo } from './morador'
@@ -269,6 +270,7 @@ function SalaDoFarol({ gltf: modelo, colisores }: SalaCarregada) {
     <group name="sala-do-final" position={[ALTO_DO_FAROL.x, ALTO_DO_FAROL.y, ALTO_DO_FAROL.z]}>
       <primitive object={modelo.scene} dispose={null} visible={!naVista} />
       <Colisores lista={colisores} />
+      <GaleriaDoFarol visivel={!naVista} />
       <pointLight position={[0, 2.8, 1]} intensity={20} distance={12} color="#fff1d0" />
     </group>
   )
