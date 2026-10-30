@@ -132,6 +132,25 @@ try {
             ?.finalDoFarol.etapa === nome,
         nome,
       )
+    /**
+     * A memória depois que o mundo termina de redesenhar: no navegador emulado a ilha e a Íris
+     * voltam aos poucos depois da descida. Espera três leituras seguidas iguais (até 30 s); um
+     * vazamento cresce a cada ciclo e continua aparecendo.
+     */
+    const lerEstavel = async () => {
+      let anterior = await ler()
+      let iguais = 0
+      for (let i = 0; i < 30 && iguais < 2; i++) {
+        await page.waitForTimeout(1000)
+        const atual = await ler()
+        iguais =
+          atual?.geometrias === anterior?.geometrias && atual?.texturas === anterior?.texturas
+            ? iguais + 1
+            : 0
+        anterior = atual
+      }
+      return anterior
+    }
     const usar = async () => {
       if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
       else await page.keyboard.press('KeyE')
@@ -267,6 +286,12 @@ try {
       await page.screenshot({ path: path.join(prints, `fachos-${tipo}.png`) })
       await page.getByRole('button', { name: 'Voltar para casa', exact: true }).click()
       await etapa('fora')
+      // O modo livre (fase4-12) entrega todos os projetos azuis, e a geladeira encerra o primeiro
+      // pedido da horta (`primeiroPedido`): neste jogo novo já na Lenda, essa linha sai de verdade.
+      // As outras pendências voltam iguais.
+      const pendenciasEsperadas = pendenciasAntes.filter(
+        (t) => !/horta|geladeira|porta nova do quarto|planta está crescendo/.test(t),
+      )
       // O "Agora" só volta quando o corte da descida termina; com o SwiftShader isso passava
       // dos 2 s fixos de antes e a leitura saía vazia, com a lista já de volta logo depois.
       await page
@@ -275,14 +300,14 @@ try {
             JSON.stringify(
               [...document.querySelectorAll('.arq-agora li')].map((li) => li.textContent ?? ''),
             ) === esperado,
-          JSON.stringify(pendenciasAntes),
+          JSON.stringify(pendenciasEsperadas),
           { timeout: 30_000 },
         )
         .catch(() => {})
       const pendenciasDepois = await page.locator('.arq-agora li').allTextContents()
-      if (JSON.stringify(pendenciasAntes) !== JSON.stringify(pendenciasDepois))
+      if (JSON.stringify(pendenciasEsperadas) !== JSON.stringify(pendenciasDepois))
         throw new Error(
-          `Pendências não voltaram: ${JSON.stringify({ pendenciasAntes, pendenciasDepois })}`,
+          `Pendências não voltaram: ${JSON.stringify({ pendenciasEsperadas, pendenciasDepois })}`,
         )
       // O modo livre (fase4-12) começa com o final; a fala do Zappy espera a descida.
       await page.getByText('O modo livre começou.', { exact: false }).first().waitFor()
@@ -304,7 +329,7 @@ try {
         .filter({ hasText: 'Essa faísca é o Zappy.' })
         .waitFor()
       await page.keyboard.press('Escape')
-      const memoriaAntes = await ler()
+      const memoriaAntes = await lerEstavel()
       // Reentrar e sair com Esc não repete a revelação nem deixa a câmera presa.
       await levar(-9.2, 2.2, -10.9)
       await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
@@ -313,7 +338,7 @@ try {
       await page.keyboard.press('Escape')
       await etapa('fora')
       await page.waitForTimeout(1500)
-      const memoriaDepois = await ler()
+      const memoriaDepois = await lerEstavel()
       if (memoriaAntes && memoriaDepois && memoriaDepois.geometrias > memoriaAntes.geometrias + 2)
         throw new Error('Geometrias ficaram depois da segunda saída')
       // Uma primeira volta aquece os personagens que aparecem no final. Reentradas seguintes
@@ -330,7 +355,7 @@ try {
         await etapa('fora')
         await page.locator('.arq-corte').waitFor({ state: 'detached' })
         await page.waitForTimeout(3000)
-        const medida = await ler()
+        const medida = await lerEstavel()
         ciclos.push(medida)
         writeFileSync(path.join(prints, `ciclos-${tipo}.json`), JSON.stringify(ciclos, null, 2))
         if (!medida || !memoriaDepois) throw new Error('Medidor ausente na prova de descarte')
