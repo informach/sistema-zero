@@ -1,4 +1,5 @@
 import { adicionarAoInventario, type Semente } from '@sistemazero/arquipelago-contracts'
+import { LEMBRANCAS_DA_PRAIA } from './colecoes-da-praia'
 
 /** Os itens do jogo. O inventário guarda `id → quantidade`; id desconhecido é ignorado. */
 export interface Item {
@@ -14,6 +15,8 @@ export interface Item {
    * come nem se dá de presente. Dar de presente a devolveria ao lugar dela, para pegar de novo.
    */
   lembranca?: true
+  /** Coleção consultada no álbum, com um único atalho na barra da mochila. */
+  colecao?: 'praia'
 }
 
 export const ITENS: Record<string, Item> = {
@@ -110,6 +113,13 @@ export const ITENS: Record<string, Item> = {
   'cristal-rosa': { id: 'cristal-rosa', nome: 'Cristal rosa', emoji: '💎', lembranca: true },
   // O presente do Floco no festival de inverno (fase3-09, `sistemas/planador.ts`).
   planador: { id: 'planador', nome: 'Planador', emoji: '🪁', equipamento: true },
+  // Preserva a prioridade dos alimentos, sementes e equipamentos na barra existente.
+  ...Object.fromEntries(
+    LEMBRANCAS_DA_PRAIA.map(({ id, nome, emoji }): [string, Item] => [
+      id,
+      { id, nome, emoji, lembranca: true, colecao: 'praia' },
+    ]),
+  ),
 }
 
 export function sementeDoItem(id: string): Semente | null {
@@ -160,6 +170,16 @@ export function itensVisiveis(inv: Inventario): { item: Item; qtd: number }[] {
   return Object.values(ITENS)
     .map((item) => ({ item, qtd: quantidade(inv, item.id) }))
     .filter((x) => x.qtd > 0)
+}
+
+/** A barra é para uso rápido. Onze lembranças não viram onze espaços sobre o jogo. */
+export function itensDaBarra(inv: Inventario) {
+  const visiveis = itensVisiveis(inv)
+  return {
+    itens: visiveis.filter(({ item }) => item.colecao !== 'praia'),
+    descobertasNaPraia: visiveis.filter(({ item }) => item.colecao === 'praia').length,
+    totalNaPraia: LEMBRANCAS_DA_PRAIA.length,
+  }
 }
 
 /** O que dá para dar de presente (tudo da mochila menos os equipamentos e as lembranças). */

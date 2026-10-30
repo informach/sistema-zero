@@ -1,0 +1,25 @@
+{
+  "resultados": [
+    {
+      "tipo": "computador",
+      "publico": "kids",
+      "conchas": 6,
+      "peixes": 5,
+      "pausa": true,
+      "janelaPerdidaSemPerda": true,
+      "reabertura": true,
+      "erros": []
+    },
+    {
+      "tipo": "celular",
+      "publico": "adulto",
+      "conchas": 6,
+      "peixes": 5,
+      "pausa": true,
+      "janelaPerdidaSemPerda": true,
+      "reabertura": true,
+      "erros": []
+    }
+  ],
+  "visitaSemColeta": true
+}

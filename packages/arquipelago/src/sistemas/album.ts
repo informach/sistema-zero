@@ -12,6 +12,7 @@ import {
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
+import { colecaoDaPraia } from './colecoes-da-praia'
 import { rotuloDaAparencia } from './construcao/galeria'
 import {
   colecaoDeReceitas,
@@ -205,6 +206,8 @@ export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiD
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
 
 export function albumDoSalvamento(s: Salvamento) {
+  const conchas = colecaoDaPraia(s, 'conchas')
+  const peixes = colecaoDaPraia(s, 'peixes')
   const achados = (Object.keys(ACHADOS_DO_RECIFE) as AchadoDoRecife[]).map((id) => ({
     id,
     nome: ACHADOS_DO_RECIFE[id].nome,
@@ -212,6 +215,14 @@ export function albumDoSalvamento(s: Salvamento) {
     achado: s.recife[id],
   }))
   return {
+    conchas: {
+      conta: contar(conchas.filter((p) => p.encontrado).length, conchas.length),
+      itens: conchas,
+    },
+    peixes: {
+      conta: contar(peixes.filter((p) => p.encontrado).length, peixes.length),
+      itens: peixes,
+    },
     recife: {
       conta: contar(achados.filter((a) => a.achado).length, achados.length),
       itens: achados,

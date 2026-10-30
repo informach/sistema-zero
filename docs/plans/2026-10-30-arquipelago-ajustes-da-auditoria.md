@@ -120,6 +120,15 @@ calendário da linha S01 não são concluídas por esse recorte. O aceite hosped
 
 ## Pedidos de arte
 
+### Coleções da praia, E01
+
+O recorte de coleta e pesca usa cinco conchas, estrela-do-mar, vara e ícones existentes.
+Regras, interação, álbum e inventário ficam no jogo, sem migração da V18 ou nova porta de
+plataforma. Plano próprio em `docs/superpowers/plans/2026-10-30-arquipelago-colecoes-da-praia.md`.
+Não equivale ao pacote curricular Pega-conchas, a uma receita de peixe ou ao aceite hospedado.
+As provas e os limites do recorte estão em `docs/qa/2026-10-30-colecoes-da-praia/README.md`.
+Nenhum pedido de arte foi necessário.
+
 Nenhum pedido no lote A01. Para praia, construção avançada e exposição, conferir primeiro o
 inventário existente e registrar uma lista única de necessidades concretas por lote, com nó,
 âncora, posição e finalidade. Não pedir modelo baseado apenas em uma hipótese.
