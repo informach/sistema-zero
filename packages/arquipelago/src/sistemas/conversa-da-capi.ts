@@ -165,7 +165,8 @@ export function adotarPelaCapi(
   const bichos = adotar(s.bichos, bicho, nome)
   if (!bichos?.adotado) return { motivo: 'Esse bicho não está no cercadinho.' }
   return {
-    salvamento: { ...s, bichos },
+    // O bicho adotado vira a companhia (S01): ele vai junto, como sempre foi.
+    salvamento: { ...s, bichos, companhia: 'adotado' },
     fala: `${bichos.adotado.nome} já gostou de você e vai junto para casa. Cuide com carinho.`,
   }
 }

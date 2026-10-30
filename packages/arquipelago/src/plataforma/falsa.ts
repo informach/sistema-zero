@@ -30,6 +30,7 @@ import {
   type SalvamentoGuardado,
   type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
+import { adotar } from '../sistemas/bichos'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
 import { lerAparenciaFalsa } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
@@ -86,6 +87,8 @@ export interface OpcoesDaPlataformaFalsa {
   convidados?: boolean
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
   bichos?: 'achados'
+  /** Um gato já adotado, chamado Mingau, como companhia (S01). */
+  adotado?: boolean
   /** A amizade com o Bento (de 0 a 500): com 100 ele já lembrou o bolo de fubá (fase2-04). */
   bento?: number
   /** Põe um par de patins na mochila (o prêmio da entrega pelos telhados, fase2-05). */
@@ -331,6 +334,16 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: { ...atual, bichos: { ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] } },
       atualizadoEm: agora().toISOString(),
     }
+  }
+  if (o.adotado) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const bichos = adotar({ ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] }, 'gato', 'Mingau')
+    if (bichos && !atual.bichos.adotado)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, bichos, companhia: 'adotado' },
+        atualizadoEm: agora().toISOString(),
+      }
   }
   if (o.bento !== undefined && Number.isFinite(o.bento)) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())

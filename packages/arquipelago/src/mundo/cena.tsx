@@ -39,6 +39,7 @@ import {
 } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
+import { PetQueAcompanha } from './pet-que-acompanha'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
@@ -117,6 +118,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <FantasmaFamiliar />
           <RetratoDoAvatar />
           <BichoAdotado />
+          <PetQueAcompanha />
           <Camera />
           <Medidor />
         </Physics>

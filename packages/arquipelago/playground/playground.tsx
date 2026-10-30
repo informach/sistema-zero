@@ -127,6 +127,7 @@ const plataforma = criarPlataformaFalsa({
   convidados: q.get('convidados') === '1',
   obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
+  adotado: q.get('adotado') === '1',
   bento: q.has('bento') ? Number(q.get('bento')) : undefined,
   patins: q.get('patins') === '1',
   planador: q.get('planador') === '1',
