@@ -110,7 +110,8 @@ segredos das ilhas (`segredos`, um bit por segredo, até 24), o mapa que se reve
 `quarto` ou `adotado`). A V18 migra sem segredo nem mapa, com o bicho do quarto acompanhando e
 com as chaves que a obra já usava (casa e cabanas, `chavesUsadasNaObra`). Entre
 duas sessões, chaves, segredos e mapa se juntam; a companhia segue a regra da preferência do
-clima. No teto, o documento cheio fica em 63.954 bytes com o iglu do Pico (teste `salvamento-v10`); com o catálogo inteiro a 999, em 64.782 (folga de 754). A migração
+clima. Na V20 (o iglu do Pico foi adiado, §6.16.2b), o documento cheio fica em 63.989 bytes
+(teste `salvamento-v10`); com o catálogo inteiro a 999, em 64.923 (folga de 613). A migração
 `0017_percursos_da_v19` atualiza a lista de percursos aceita pelos fantasmas.
 
 Os percursos novos usam colisores que as ilhas já têm (`mundo/percursos-das-ilhas.ts`):
@@ -1881,7 +1882,8 @@ atual só tem chão plano e livre na praça de chegada da ponte; pedido em
 e galeria do Farol), o salvamento cheio está a cerca de 600 bytes do teto: o iglu, como o segundo
 andar e o terreno, vai para um documento próprio no serviço. A cabana da ilha já é genérica
 (`CabanaDaIlha`, lote das âncoras `lote-cabana-a` e `-b`, piso na altura da âncora, ferramentas
-conforme os tetos do lote), pronta para receber o iglu.
+conforme os tetos do lote). Os tetos do iglu e o ramo dele no lote saíram do código na
+integração da V20; voltam junto com o documento próprio e o lote na arte.
 
 ### 6.16.2c O quintal grande do Vale (E04, 30/10/2026)
 

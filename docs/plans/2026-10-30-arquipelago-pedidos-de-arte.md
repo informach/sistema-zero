@@ -97,9 +97,9 @@ O fantasma familiar é gravação/reprodução do avatar existente e não exige 
 
 ## Pedido do levantamento de 30/10: o lote do iglu no Pico (E04)
 
-A proposta põe "construir o iglu" no Pico. O código está pronto (`CabanaDaIlha` com
-`ilha="pico"`, tetos do iglu no contrato, `LIMITES_DO_IGLU`) e espera o lote no modelo, como a
-cabana do Bosque. A busca no `pico.glb` atual (chão plano com variação de até 12 cm, nada
+A proposta põe "construir o iglu" no Pico. A cabana da ilha já é genérica (`CabanaDaIlha`, que
+lê o lote das âncoras como a do Bosque). Os tetos do iglu saíram do salvamento na integração da
+V20 (salvamento cheio): voltam num documento próprio do serviço quando este lote chegar. A busca no `pico.glb` atual (chão plano com variação de até 12 cm, nada
 acima até 3 m, dentro do raio de 12 m) só achou a praça de chegada da ponte (x 6 a 11, z -2 a
 3), onde uma construção fecharia a entrada da ilha.
 
@@ -114,4 +114,62 @@ Entregar em `packages/arquipelago/src/assets/ilhas/pico.glb`:
 
 O aceite: `tests/cabana.test.ts` troca o teste "ainda não traz as âncoras" por um que confere o
 lote plano e livre contra os colisores do modelo.
+
+## Pedidos do levantamento de 30/10: o resto da criação avançada e a subida final (E04)
+
+O código do jogo não desenha peça de construção nem colisor que falte na arte. Os três pedidos
+abaixo destravam o que a proposta põe no Pico, nas Nuvens e na Lenda. Plano do lote:
+`docs/superpowers/plans/2026-10-30-arquipelago-e04-criacao-avancada.md`.
+
+### 1. Segundo andar da casa (Pico), no kit `arte/casa`
+
+Entregar em `src/assets/casa/` (novo `casa-andar.glb` ou dentro dos GLBs existentes, uma peça por
+nó, com as mesmas regras do README de `arte/casa`: grade de 1, parede de 4,0, sem faces
+coplanares, sem emenda em T):
+
+1. `piso-andar-*` (tábua, ladrilho e azulejo): 1 × 1, topo em z = 4,10, 10 cm de espessura, com a
+   face de baixo pintada de forro (o teto do térreo). Vai até a linha da grade, por cima das
+   paredes de baixo.
+2. `escada-interna`: 1 de largura por 4 de comprimento, sobe de 0 a 4,10 em 14 degraus de
+   0,293 m (o corpo sobe até 0,45), com corrimão de um lado. Origem no meio do pé da escada,
+   subindo para +Y. Colisores `col-escada-reta` como a escada do Bosque e as âncoras
+   `escada-1-base`, `escada-1-topo` e `escada-1-saida` (o modo `escada` já existe).
+3. `piso-andar-vao`: a peça de piso de cima com o vão da escada (1 × 4), com guarda-corpo
+   (`col-guarda-*`) nos três lados abertos.
+4. `guarda-corpo-andar`: 1 de largura, 1,0 de altura, para a beira do piso de cima sem parede.
+
+As paredes e o telhado do andar de cima reaproveitam as peças atuais deslocadas em 4,10.
+Aceite: `tests/faces-coplanares.test.ts` com as peças novas e um teste do kit que sobe a escada
+com a cápsula real do corpo.
+
+### 2. Moldar o terreno (Nuvens), no `terreno.glb` da sua ilha
+
+O lote grande da casa (x -15 a 16, z -14 a 10) precisa virar um pedaço separado do chão, para o
+jogo trocar só ele por uma grade de alturas da criança (de 0 a 1,5 m, passo de 1 m) sem mexer
+no resto da ilha:
+
+1. Nó `chao-do-lote`: o chão do retângulo acima como malha própria, com o mesmo material e as
+   mesmas UVs da grama vizinha, emendado ao resto sem fresta (vértices iguais na borda).
+2. Capim, flores, moitas e pedras de enfeite fora do retângulo, ou num nó `enfeites-do-lote` à
+   parte (o jogo os esconde onde a criança moldar).
+3. Nenhum colisor `col-*` dentro do retângulo além dos que já existem para a casa e a horta.
+
+Aceite: um teste lê o `terreno.glb`, confere o nó, a emenda e que `alturaDaIlha` continua igual
+fora do retângulo.
+
+### 3. A subida final pelo Farol (Lenda), no `farol.glb`
+
+A proposta põe a subida final como um percurso que usa os movimentos já aprendidos. Entregar, por
+fora da torre, um caminho do pé até a varanda (`camera-varanda`), com:
+
+1. Uma escada reta (`escada-N-base`, `-topo`, `-saida`, colisor `col-escada-reta`).
+2. Duas quinas de agarrar (`borda-N-a`, `-b`, `-fora`), com espaço embaixo, pendurado e em cima.
+3. Um trecho de equilíbrio (`equilibrio-N-a`, `-b`) e um ponto de corrente de ar
+   (`corrente-de-ar`) até a varanda, para o planador.
+4. As âncoras do percurso: `subida-farol-largada`, `subida-farol-1` a `-6` (pontos de volta) e
+   cinco `vagalume-farol-N` no caminho.
+5. Colisores de tudo o que se pisa, com as folgas do pedido dos portos.
+
+Aceite: um teste no molde de `tests/subida-ao-cume.test.ts` (pontos em cima de colisor, vãos
+dentro do pulo, cada trecho com o modo certo).
 
