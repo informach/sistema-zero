@@ -406,8 +406,8 @@ ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são o
 - O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
   leitura recebe 403 `SOMENTE_LEITURA`.
 - Quem obedece a "Visitas de irmãos": os recordes da família, as visitas e os trajetos familiares (§6.20).
-  "Visitas de outras crianças" abre as casas de amigos (§6.22). "Fotos no Clube" ainda só se
-  grava, lê e mostra.
+  "Visitas de outras crianças" abre as casas de amigos (§6.22) e "Fotos no Clube" abre o envio
+  do modo foto para o Clube (§6.23).
 
 **No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
 família esconde o cartão inteiro (e a semana e as permissões nem são pedidas); semana ou
@@ -2175,6 +2175,29 @@ começa desligado e só funciona com "Visitas de outras crianças" ligado nas **
   Suporte somente leitura recebe 403 `SOMENTE_LEITURA`.
 - Sem mudança no salvamento. Banco: migração `0018_visitas_de_amigos` (`convites_de_amigos` e
   `casas_de_amigos`, um aceite por par). Plano: `2026-10-30-arquipelago-visitas-de-amigos.md`.
+
+### 6.23 Fotos no Clube (N08b, 30/10/2026)
+
+Com "Fotos no Clube" ligado pelos responsáveis, o modo foto ganha "Mandar para o Clube" depois
+que a foto fica pronta. A foto vai para a moderação do Clube dos Criadores, nunca direto.
+
+- **Quando aparece:** só no Kids (só o host do Kids monta `plataforma.clube`), com a permissão
+  ligada (`GET /arquipelago/clube`, a criança lê só esta permissão da conta dela) e com o canal
+  `fotos-do-arquipelago` no servidor `clube-dos-criadores`, aberto a membros e com aprovação
+  prévia. Sem o Clube (produto vendido à parte), sem o canal ou com o canal sem aprovação
+  prévia, o botão não aparece e a foto fica só no aparelho, como antes.
+- **O envio** (`POST /api/arquipelago/clube/foto`, no BFF): confere tudo de novo, aceita só o
+  PNG do jogo dentro do limite de imagem do Clube, reencoda pelo mesmo otimizador das imagens do
+  Clube (sem metadados), guarda no R2 de UGC, registra o anexo no hub e abre o tópico "Foto do
+  Arquipélago" no canal. O hub deixa o tópico pendente pela aprovação do canal; aprovar,
+  recusar, esconder e denunciar seguem a moderação do Clube. Sessão de suporte não manda.
+- **Na tela:** "A foto foi para o Clube. Ela aparece lá depois que um adulto da equipe olhar."
+  Uma foto vai uma vez; tirar outra libera o botão de novo. Se o servidor responder que a
+  permissão foi desligada ou que o Clube não recebe fotos, o botão some e o recado diz o motivo.
+- **Para ligar em produção:** a equipe cria o canal `fotos-do-arquipelago` no Clube dos
+  Criadores com "Quem posta: membros" e aprovação prévia. Sem o canal, nada muda para a criança.
+- Sem mudança no salvamento nem no banco do jogo. Plano:
+  `2026-10-30-arquipelago-fotos-no-clube.md`.
 
 ## 7. Desafios
 

@@ -1,7 +1,9 @@
 'use client'
 
 import {
+  type ClubeDoJogo,
   type DesafioAberto,
+  EnvioAoClubeSchema,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
   type MoldeDaRotina,
@@ -18,6 +20,7 @@ import {
   QuartoSchema,
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
+  SituacaoDoClubeSchema,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
@@ -212,6 +215,35 @@ function lerStudioConfig(value: unknown, viewerId: string): ArquipelagoStudioCon
   return c as unknown as ArquipelagoStudioConfig
 }
 
+/**
+ * Fotos no Clube (N08b): a situação (permissão dos responsáveis e o canal das fotos no Clube) e o
+ * envio do PNG do modo foto. Só o Kids monta; qualquer falha vira `fora-do-ar` ou `falhou`.
+ */
+export function clubeDoKids(): ClubeDoJogo {
+  return {
+    async situacao() {
+      try {
+        const r = await json('/api/arquipelago/clube')
+        const lido = SituacaoDoClubeSchema.safeParse(r.corpo)
+        return r.status === 200 && lido.success ? lido.data.situacao : 'fora-do-ar'
+      } catch {
+        return 'fora-do-ar'
+      }
+    },
+    async mandarFoto(foto) {
+      try {
+        const form = new FormData()
+        form.append('file', foto, 'arquipelago.png')
+        const r = await json('/api/arquipelago/clube/foto', { method: 'POST', body: form })
+        const lido = EnvioAoClubeSchema.safeParse(r.corpo)
+        return lido.success ? lido.data.situacao : 'falhou'
+      } catch {
+        return 'falhou'
+      }
+    },
+  }
+}
+
 async function json(url: string, init?: RequestInit): Promise<{ status: number; corpo: unknown }> {
   const resposta = await sessionFetch(url, init)
   return { status: resposta.status, corpo: await resposta.json().catch(() => null) }
@@ -290,6 +322,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     abrirFerramenta:
       opcoes.abrirFerramenta ?? (async () => ({ situacao: 'indisponivel', motivo: 'em-breve' })),
+    ...(opcoes.publico === 'kids' ? { clube: clubeDoKids() } : {}),
     voltarParaPlataforma: () => window.location.assign(opcoes.voltarPara),
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
   }

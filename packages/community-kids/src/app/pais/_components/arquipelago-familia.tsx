@@ -194,7 +194,8 @@ const PERMISSOES: ReadonlyArray<{
   {
     chave: 'fotosNoClube',
     nome: 'Fotos no Clube',
-    explica: 'As fotos tiradas no jogo podem aparecer no Clube dos Criadores.',
+    explica:
+      'A criança pode mandar fotos do jogo para o Clube dos Criadores. Cada foto só aparece depois que a equipe olhar.',
   },
 ]
 

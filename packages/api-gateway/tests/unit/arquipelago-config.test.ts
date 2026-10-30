@@ -211,6 +211,9 @@ describe('Arquipélago Vagalume no gateway', () => {
       registry.resolve('GET', '/arquipelago/amigos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/casa', 'v1')
         ?.route.id,
     ).toBe('arquipelago-amigos-1')
+    // Fotos no Clube (N08b): só leitura.
+    expect(registry.resolve('GET', '/arquipelago/clube', 'v1')?.route.id).toBe('arquipelago-clube')
+    expect(registry.resolve('PUT', '/arquipelago/clube', 'v1')).toBeUndefined()
     for (const metodo of ['GET', 'PUT']) {
       expect(
         registry.resolve(metodo, '/arquipelago/familia/permissoes', 'v1')?.route,

@@ -9,6 +9,7 @@ import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import {
   CHAVE_DA_GALERIA,
   CHAVE_DAS_PROFISSOES,
+  type ClubeDoPlayground,
   criarPlataformaFalsa,
   QUARTO_DE_EXEMPLO,
 } from '../src/plataforma/falsa'
@@ -66,6 +67,16 @@ function lerLumis(texto: string): Partial<Record<LumiId, number>> {
     if ((LUMIS as readonly string[]).includes(id ?? '')) lumis[id as LumiId] = Number(qtd ?? 1)
   }
   return lumis
+}
+/** `?clube=ligado|desligado|sem-clube|fora-do-ar|falha-no-envio`: fotos no Clube (N08b). */
+function lerClube(texto: string | null): ClubeDoPlayground | undefined {
+  return texto === 'ligado' ||
+    texto === 'desligado' ||
+    texto === 'sem-clube' ||
+    texto === 'fora-do-ar' ||
+    texto === 'falha-no-envio'
+    ? texto
+    : undefined
 }
 /** `?familia=irmaos|sozinha|desligada|fora-do-ar`: os irmãos de mentira (recordes e visitas, fase3-12). */
 function lerFamilia(texto: string | null): FamiliaDoPlayground | undefined {
@@ -133,6 +144,7 @@ const plataforma = criarPlataformaFalsa({
         : 'pronto',
   editarObjeto: q.has('aparencias') ? abrirOficinaDeExemplo : undefined,
   familia: lerFamilia(q.get('familia')),
+  clube: lerClube(q.get('clube')),
   visitaAdulta:
     q.get('visita-adulta') === 'revogar'
       ? 'revogar-ao-conferir'
