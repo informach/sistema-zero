@@ -110,3 +110,42 @@ lista ignorada, proteção contada em dobro, cobertura não renovada, onda sobre
 antiga, ponto antigo, quarto ninho fora da lista e Enter sem ação. Nenhum banco é usado.
 
 Plano e resultados: [fase4-05](../../plans/2026-10-29-arquipelago-vale-minijogo.md).
+
+## C02: Guardião dos ninhos em JavaScript textual (30/10/2026)
+
+Aplicação na linguagem do Arquiteto: JavaScript escrito na Ponte (projeto clássico em
+`mode: 'bridge'`). Arquivos: [Kids](vale-texto.manifesto.json) e
+[adulto](vale-texto-adulto.manifesto.json), um desafio do dia cada (`publicar: false`, ordem 70,
+10 e 5 moedas, sem cor). Fontes: `texto-projetos.ts` (o código), `texto-objetivos.ts` e
+`gerar-manifesto-texto.ts`. O IR, os blocos e os arquivos saem do próprio Estúdio (parser da
+Ponte, gerador com o cabeçalho que o Estúdio grava e Blockly): reabrir na Ponte reconhece o código
+como o gerado (`generated-match`). Plano:
+[C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
+
+O vale, o caminho em pontos, a torre, o movimento (`andar`), o laço `atualizar` e o desenho estão
+prontos. A pessoa completa três funções e o extra:
+
+| Objetivo | Como confere | Erro causal recusado |
+| --- | --- | --- |
+| Enter chama a primeira onda com três nuvens | tecla e `cinzas.length` | (inicial) |
+| Cada onda tem uma nuvem a mais | `quantasNaOnda` com 1, 2 e 5 | onda fixa de três |
+| Alcance pela distância, com a borda | `dentroDoAlcance` em quatro casos | `<` em vez de `<=`; só o eixo x |
+| Alvo mais adiantado dentro do alcance | `escolherAlvo` com perto, adiantada e longe | primeira da lista; ignora o alcance |
+| A torre desfaz uma nuvem na primeira onda | 9 s de jogo e `protegidos` | (inicial) |
+| Extra: R recomeça | tecla, `onda` e `cinzas.length` | R sem zerar a onda |
+
+Executor real (`packages/studio-runtime/tests/vale-texto-browser.test.ts`: Chrome local,
+`check-objectives.mjs` e o documento do `prepareClassicCheckDocument`, como no Members): 10
+execuções e 30 objetivos. O gabarito passa nos 6 (Kids e adulto), o inicial reprova os 6 (Kids e
+adulto) e cada um dos seis erros reprova o objetivo que quebra.
+
+```powershell
+bun docs/desafios-do-jogo/vale/gerar-manifesto-texto.ts
+bun test docs/desafios-do-jogo/vale/vale-texto.test.ts
+$env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
+bun test packages/studio-runtime/tests/vale-texto-browser.test.ts
+```
+
+Os blocos derivados pela Ponte (laço `for of`, objetos, `Math.hypot`, Canvas) só terão fonte quando
+os cursos do Arquiteto existirem: até lá a barreira C01a recusaria publicar. O Estúdio de desafio
+do jogo abre este projeto na Ponte.

@@ -2066,7 +2066,6 @@
           {
             "id": "acao",
             "label": "Complete as ações indicadas para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2097,12 +2096,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "alternar",
             "label": "Cada toque muda o sentido uma vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2165,13 +2164,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2207,7 +2206,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -4203,7 +4203,6 @@
           {
             "id": "acao",
             "label": "Complete as ações indicadas para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4249,12 +4248,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "capacidade",
             "label": "A cesta leva até três e descarrega sem duplicar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4353,13 +4352,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4410,7 +4409,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -7183,7 +7183,6 @@
           {
             "id": "acao",
             "label": "Complete as ações indicadas para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -7224,12 +7223,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "uma-vez",
             "label": "Cada coral conta uma vez, também na ordem inversa.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -7318,13 +7317,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -7370,7 +7369,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -9847,7 +9847,6 @@
           {
             "id": "acao",
             "label": "Complete as ações indicadas para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9878,12 +9877,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "esperar",
             "label": "Toques durante o voo esperam pela próxima bolha.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9944,13 +9943,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9986,7 +9985,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -12385,7 +12385,6 @@
           {
             "id": "acao",
             "label": "Complete as ações indicadas para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -12421,12 +12420,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "chave",
             "label": "Sem chave não abre, e abrir usa a chave uma vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -12515,13 +12514,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -12562,7 +12561,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -16291,7 +16291,6 @@
           {
             "id": "mirar",
             "label": "As setas movem a mira para os dois lados, sem sair da tela nem subir.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -16349,12 +16348,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "soltar",
             "label": "Espaço lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -16447,12 +16446,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "prender",
             "label": "Ao tocar o alvo, a bolha para e o alvo fica preso.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -16514,12 +16513,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "contar",
             "label": "Uma bolha que erra não conta pontos; prender o alvo conta uma vez só, mesmo tentando de novo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -16603,13 +16602,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Enter recomeça a rodada, devolve a mira ao início e limpa as capturas e os pontos.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -16720,7 +16719,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -21673,7 +21673,6 @@
           {
             "id": "bolha-rapida",
             "label": "A bolha sobe mais rápido e continua prendendo o alvo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -21759,13 +21758,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Enter recomeça a rodada, devolve a mira ao início e limpa as capturas e os pontos.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -21876,7 +21875,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -26829,7 +26829,6 @@
           {
             "id": "dois-pontos",
             "label": "Cada alvo preso vale dois pontos, sem repetir a contagem ao ficar encostado ou acertar o mesmo alvo de novo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -26893,13 +26892,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Enter recomeça a rodada, devolve a mira ao início e limpa as capturas e os pontos.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -27010,7 +27009,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -32661,7 +32661,6 @@
           {
             "id": "segundo-alvo",
             "label": "O alvo novo também fica preso e vale um ponto, sem prender o outro alvo nem repetir a contagem.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -32747,13 +32746,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Enter recomeça a rodada, devolve a mira ao início e limpa as capturas e os pontos.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -32889,7 +32888,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {

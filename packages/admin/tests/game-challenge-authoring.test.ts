@@ -4,6 +4,8 @@ import { gameAdminRequest } from '../src/lib/arquipelago-admin'
 import {
   challengeDraft,
   challengePayload,
+  challengeProjectEditable,
+  challengeProjectLanguage,
   challengeType,
   newChallenge,
 } from '../src/lib/game-challenge-authoring'
@@ -135,4 +137,49 @@ test('Admin BFF: manifesto de um desafio, exportar com filtro opcional e só con
   expect(() =>
     gameAdminRequest('POST', ['manifestos', 'conferir'], new URLSearchParams(), { manifesto: {} }),
   ).toThrow()
+})
+test('C02: objetivos Python carregam e voltam iguais; projetos Python e Pro não abrem no Estúdio do Admin', () => {
+  const draft = valid()
+  draft.conteudo.objetivos = [
+    {
+      id: 'acertar',
+      label: 'Acertar a bolha soma um ponto',
+      programmingLanguage: 'python',
+      profileId: 'python-browser',
+      stdin: ['7'],
+      rule: {
+        type: 'behavior',
+        steps: [{ action: 'click', x: 320, y: 400 }],
+        expect: { target: { kind: 'value', path: 'pontos' }, compare: 'equals', value: 1 },
+      },
+    },
+  ]
+  const payload = CriarDesafioSchema.parse(challengePayload(draft))
+  expect(payload.conteudo.objetivos[0] as unknown).toEqual(draft.conteudo.objetivos[0])
+  const loaded = challengeDraft({
+    resumo: {
+      id,
+      slug: 'primeira-cor',
+      publico: 'kids',
+      ilha: 'recife',
+      tipo: 'desafio-do-dia',
+      quadro: null,
+      ordem: 70,
+      titulo: 'Mira',
+      situacao: 'rascunho',
+      revisao: 1,
+      revisaoPublicada: null,
+      alteradoDepoisDePublicar: false,
+      atualizadoEm: new Date().toISOString(),
+    },
+    ...payload,
+    metadados: { ...payload.metadados, tipo: 'desafio-do-dia', quadro: null },
+    blocosPublicados: null,
+  })
+  expect(loaded.conteudo.objetivos).toEqual(draft.conteudo.objetivos)
+  expect(challengeProjectLanguage({ programmingLanguage: 'python' })).toBe('python')
+  expect(challengeProjectLanguage(draft.conteudo.gabarito)).toBe('javascript')
+  expect(challengeProjectEditable(draft.conteudo.gabarito)).toBe(true)
+  expect(challengeProjectEditable({ programmingLanguage: 'python', kind: 'classic' })).toBe(false)
+  expect(challengeProjectEditable({ programmingLanguage: 'javascript', kind: 'pro' })).toBe(false)
 })

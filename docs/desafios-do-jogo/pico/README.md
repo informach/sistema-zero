@@ -132,3 +132,42 @@ Relatório e prints: [conferência do Pico](../../qa/2026-10-29-pico-manifesto.m
 continua pendente. Nenhum desafio foi cadastrado e nenhum progresso foi alterado.
 
 Complemento L03: [testes e capturas dos cinco quadros](../../qa/2026-10-30-quadros-pico/README.md).
+
+## C02: Fase de plataforma em Python, com fases como dados (30/10/2026)
+
+Aplicação na linguagem do Mestre: Python com Pygame Zero. Arquivos:
+[Kids](pico-python.manifesto.json) e [adulto](pico-python-adulto.manifesto.json), um desafio do
+dia cada (`publicar: false`, ordem 70, 10 e 5 moedas, sem cor). Fontes: `python-projetos.ts` (o
+`main.py` e as três fases), `python-objetivos.ts` e `gerar-manifesto-python.ts`; o ambiente fica em
+`../ambiente-python.ts`. Plano: [C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
+
+`FASES` é uma lista de fases; cada fase é uma lista de 12 linhas de 16 letras (células de 40
+pontos): `#` plataforma, `C` cristal, `S` saída, `J` começo. O laço do jogo (andar, pular, gravidade,
+empurrão lateral, cristal, saída e troca de fase) e o desenho estão prontos e usam as funções que a
+pessoa completa: `ler_fase` (listas e laços), `pousar` (colisão no eixo y, só caindo e cruzando o
+topo) e `proxima_fase` (saída condicionada ao cristal). O extra é acrescentar a terceira fase, só
+dados. Sem classes. As três fases do gabarito foram vencidas por um robô simples numa simulação em
+CPython com um Pygame Zero de mentira (andar, pular, pegar o cristal e chegar à saída); a fase 3
+foi redesenhada depois que essa simulação mostrou uma plataforma tampando o pulo.
+
+| Objetivo | Como confere | Erro causal recusado |
+| --- | --- | --- |
+| `ler_fase` devolve [coluna, linha] | três casos pequenos | linha e coluna trocadas |
+| `pousar` só ao cair cruzando o topo | quatro casos (pousa, ainda não, já abaixo, subindo) | pousa por baixo; pousa ao subir |
+| A saída exige o cristal | três casos | sai sem o cristal |
+| A fase 1 é montada dos dados | `total_de_plataformas` igual a 29 | (inicial) |
+| Extra: a terceira fase | `total_de_fases` pelo menos 3 | (inicial) |
+
+Executor real (`packages/studio-runtime/tests/desafios-python-smoke.ts`, mesmo caminho do Recife:
+imagem de produção, `python-mission.mjs`, retrato e julgamento do Members). Em 30/10: 8 execuções
+e 24 objetivos, todas com o programa saudável. O gabarito passa nos 5 (Kids e adulto), o inicial
+reprova os 5 (Kids e adulto) e cada um dos quatro erros reprova o objetivo que quebra.
+
+```powershell
+bun docs/desafios-do-jogo/pico/gerar-manifesto-python.ts
+bun test docs/desafios-do-jogo/pico/pico-python.test.ts
+bun packages/studio-runtime/tests/desafios-python-smoke.ts --ilha=pico
+```
+
+Limites: a release Python apontada é a da prova (nenhum ambiente publicado tem Pygame Zero); o
+Estúdio de desafio do jogo ainda não abre Python. Ver `../conteudo-por-posto.md`, seção C02.

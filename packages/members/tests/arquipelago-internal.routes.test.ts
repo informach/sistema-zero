@@ -10,6 +10,7 @@ import {
   ProjectCheckUnavailableError,
   StudioProjectSyncingError,
 } from '../src/domain/learning/learning.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../src/domain/studio/python-project-check.errors'
 import { arquipelagoCoinsRoutes } from '../src/interfaces/http/routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from '../src/interfaces/http/routes/arquipelago-internal.routes'
 
@@ -255,6 +256,51 @@ test('verificar valida o corpo e repassa o pedido', async () => {
   const ok = await app.handle(postar('/objetivos/verificar', pedidoDeVerificacao))
   expect(await ok.json()).toEqual({ passou: true, resultados: [{ id: 'repetir', passou: true }] })
   expect(verificar).toHaveBeenCalledWith(pedidoDeVerificacao)
+})
+
+test('C02: perfil e entradas do objetivo Python chegam inteiros ao serviço; o Python fora é 424', async () => {
+  const python = {
+    id: 'acertar',
+    label: 'Acertar a bolha soma um ponto',
+    programmingLanguage: 'python',
+    profileId: 'python-browser',
+    stdin: ['7', ''],
+    rule: {
+      type: 'behavior',
+      steps: [],
+      expect: { target: { kind: 'console' }, compare: 'truthy' },
+    },
+  }
+  const analisar = mock(async () => analiseVazia)
+  const verificar = mock(async () => ({ passou: true, resultados: [] }))
+  const { app } = criar({ objetivos: { analisar, verificar } })
+  const analise = { ...pedidoDeAnalise, objetivos: [python] }
+  expect((await app.handle(postar('/objetivos/analisar', analise))).status).toBe(200)
+  expect(analisar).toHaveBeenCalledWith(analise)
+  const verificacao = { ...pedidoDeVerificacao, objetivos: [python] }
+  expect((await app.handle(postar('/objetivos/verificar', verificacao))).status).toBe(200)
+  expect(verificar).toHaveBeenCalledWith(verificacao)
+  for (const ruim of [
+    { ...python, stdin: ['1', '2', '3', '4', '5'] },
+    { ...python, profileId: 'x'.repeat(97) },
+  ])
+    expect(
+      (await app.handle(postar('/objetivos/analisar', { ...pedidoDeAnalise, objetivos: [ruim] })))
+        .status,
+    ).toBe(400)
+  const fora = criar({
+    objetivos: {
+      analisar: mock(),
+      verificar: async () => {
+        throw new StudioPythonProjectCheckUnavailableError()
+      },
+    },
+  })
+  const res = await fora.app.handle(postar('/objetivos/verificar', verificacao))
+  expect(res.status).toBe(424)
+  expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+    'STUDIO_PYTHON_PROJECT_CHECK_UNAVAILABLE',
+  )
 })
 
 describe('aulas concluídas (a volta ao curso dos pais, 29/10/2026)', () => {

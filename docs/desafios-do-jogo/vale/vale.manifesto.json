@@ -2153,7 +2153,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2184,12 +2183,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "lista",
             "label": "A contagem acompanha a lista e não acumula o resultado anterior.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2261,13 +2260,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2303,7 +2302,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -4575,7 +4575,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4606,12 +4605,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "todas",
             "label": "Todas as manchas somem, e os ninhos continuam no lugar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4691,13 +4690,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4733,7 +4732,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -8382,7 +8382,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8413,12 +8412,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "estoque",
             "label": "Cada ninho usa uma folha, sem gastar outra no mesmo ninho.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8528,13 +8527,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8570,7 +8569,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -11161,7 +11161,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11192,12 +11191,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "espera",
             "label": "A onda termina antes da próxima começar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11253,13 +11252,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11295,7 +11294,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -13708,7 +13708,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -13754,12 +13753,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "fechamento",
             "label": "Só a conferência completa fecha uma rodada, uma vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -13842,13 +13841,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -13899,7 +13898,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -20109,7 +20109,6 @@
           {
             "id": "cobrir",
             "label": "Tocar num ninho põe a cobertura só nele, sem somar pontos antes da onda.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20162,12 +20161,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "ondas",
             "label": "Próxima onda começa uma passagem da cinza. Tocar de novo durante a passagem não começa outra.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20224,12 +20223,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "lista",
             "label": "Cada onda conta todos os ninhos da lista uma vez, separando os protegidos dos que recebem cinza.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20365,13 +20364,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "enter",
             "label": "Extra: Enter limpa as ondas e as contagens, como Recomeçar.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20469,7 +20468,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -27475,7 +27475,6 @@
           {
             "id": "quatro-ondas",
             "label": "A rodada permite quatro ondas e não começa uma quinta.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -27594,13 +27593,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "enter",
             "label": "Extra: Enter limpa as ondas e as contagens, como Recomeçar.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -27698,7 +27697,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -34704,7 +34704,6 @@
           {
             "id": "dois-pontos",
             "label": "Cada proteção vale dois pontos. Ninho sem cobertura não soma pontos e a contagem não se repete.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -34810,13 +34809,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "enter",
             "label": "Extra: Enter limpa as ondas e as contagens, como Recomeçar.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -34914,7 +34913,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -42282,7 +42282,6 @@
           {
             "id": "quarto-ninho",
             "label": "A onda passa pelos quatro ninhos da lista, incluindo o novo, sem contar nenhum duas vezes.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -42369,13 +42368,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "enter",
             "label": "Extra: Enter limpa as ondas e as contagens, como Recomeçar.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -42473,7 +42472,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {

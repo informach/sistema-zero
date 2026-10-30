@@ -315,20 +315,24 @@ describe('analisar', () => {
     expect(codigos(await analisar(criar(executor)))).toEqual(['EXECUTOR_OCUPADO'])
   })
 
-  test('Python e Pro são recusados como problema, sem rodar nada', async () => {
+  test('objetivo Python sem perfil ou em projeto JavaScript, e tipos diferentes: problema, sem rodar nada', async () => {
     const { executor, chamadas } = executorFalso(() => true)
     const servico = criar(executor)
-    const python = await analisar(servico, {
+    const semPerfil = await analisar(servico, {
       objetivos: [usaRepetir, { ...anda, programmingLanguage: 'python' }],
     })
-    expect(python.problemas).toContainEqual(
-      expect.objectContaining({ codigo: 'OBJETIVO_PYTHON', objetivoId: 'anda' }),
+    expect(semPerfil.problemas).toContainEqual(
+      expect.objectContaining({ codigo: 'OBJETIVO_INVALIDO', objetivoId: 'anda' }),
     )
-    expect(python.gabarito).toEqual([])
+    expect(semPerfil.gabarito).toEqual([])
+    const outraLinguagem = await analisar(servico, {
+      objetivos: [{ ...anda, programmingLanguage: 'python', profileId: 'python-browser' }],
+    })
+    expect(codigos(outraLinguagem)).toContain('AMBIENTE')
     const pro = await analisar(servico, {
       projetoInicial: { kind: 'pro', proMeta: { templateId: 'x' }, tree: {} },
     })
-    expect(codigos(pro)).toContain('PROJETO_PRO')
+    expect(codigos(pro)).toContain('GABARITO_DE_OUTRO_AMBIENTE')
     expect(pro.gabarito).toEqual([])
     const sincronizando = await analisar(servico, {
       gabarito: { ...gabarito, bridgeCodeAhead: true },
@@ -448,7 +452,15 @@ describe('verificar', () => {
     )
     await expect(
       verificar(servico, { objetivos: [{ ...anda, programmingLanguage: 'python' }] }),
-    ).rejects.toThrow('Os desafios do jogo só conferem objetivos de blocos (JavaScript).')
+    ).rejects.toThrow('Os objetivos do desafio têm valores inválidos.')
+    await expect(
+      verificar(servico, {
+        objetivos: [{ ...anda, programmingLanguage: 'python', profileId: 'python-browser' }],
+      }),
+    ).rejects.toThrow('Os objetivos precisam usar a mesma linguagem do projeto inicial do Estúdio.')
+    await expect(
+      verificar(servico, { objetivos: [{ ...anda, profileId: 'python-browser' }] }),
+    ).rejects.toThrow('Os objetivos do desafio têm valores inválidos.')
     await expect(
       verificar(servico, { objetivos: [{ ...anda, rule: { type: 'naoExiste' } }] }),
     ).rejects.toThrow('Os objetivos do desafio têm valores inválidos.')

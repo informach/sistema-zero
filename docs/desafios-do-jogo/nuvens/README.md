@@ -138,3 +138,42 @@ servidor da plataforma, credenciais ou banco.
 
 Relatório e prints: [conferência das Nuvens](../../qa/2026-10-29-nuvens-manifesto.md). Celular
 físico continua pendente. Nenhum desafio foi cadastrado e nenhum progresso foi alterado.
+
+## C02: Jardim em grade no Pro (30/10/2026)
+
+Aplicação na linguagem do Gênio: JavaScript Pro em arquivos, modelo `vanilla-vite` (Vite e
+TypeScript). Arquivos: [Kids](nuvens-pro.manifesto.json) e
+[adulto](nuvens-pro-adulto.manifesto.json), um desafio do dia cada (`publicar: false`, ordem 70,
+10 e 5 moedas, sem cor). Fontes: `pro-projetos.ts` (a árvore do projeto), `pro-objetivos.ts` e
+`gerar-manifesto-pro.ts`. Plano: [C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
+
+O modelo fica separado da apresentação. `src/main.ts` (pronto) desenha a grade de 4 por 6, liga o
+clique a `construir` (Shift e clique a `remover`), as teclas 1 e 2 à planta, C a `colher` e S e R a
+`salvar` e `carregar` com `localStorage`. A pessoa completa o modelo em `src/regras.ts`, só com
+funções puras exportadas: grade, ocupação, custo, produção e guardar e reabrir.
+
+| Objetivo | Como confere | Erro causal recusado |
+| --- | --- | --- |
+| Ocupação e limites | `podeConstruir` em quatro casos | constrói por cima |
+| Custo | `construir` em três casos (planta, sem moedas, ocupada) | constrói sem moedas |
+| Produção | `colher` com flores e árvore | uma moeda por planta |
+| Guardar e reabrir | `reabrir` (`carregar(salvar(j))`) em dois jardins | guarda sem as moedas |
+| A tela usa o modelo | clique na primeira célula, `jogo.jardim.moedas` de `src/main.ts` igual a 7 | (inicial) |
+| Extra: remover | `remover` devolve metade do custo; célula vazia não muda | remove sem devolver |
+
+Executor real (`packages/studio-runtime/tests/desafios-pro-smoke.ts`): a imagem de produção do
+studio-runtime, sem rede, faz o `vite build` offline com o `package.json` e o `vite.config.mjs`
+confiáveis do modelo e roda `check-objectives.mjs`, como o `/v1/check`; os arquivos saem do
+`proCheckSourceFiles`, o mesmo que o Members manda. Em 30/10: 9 execuções e 29 objetivos, todos
+compilados. O gabarito passa nos 6 (Kids e adulto), o inicial reprova os 6 (Kids e adulto) e cada
+um dos cinco erros reprova o objetivo que quebra.
+
+```powershell
+bun docs/desafios-do-jogo/nuvens/gerar-manifesto-pro.ts
+bun test docs/desafios-do-jogo/nuvens/nuvens-pro.test.ts
+bun packages/studio-runtime/tests/desafios-pro-smoke.ts
+```
+
+Limites: o Estúdio de desafio do jogo ainda não abre projetos Pro, nem o Estúdio do Admin. A
+persistência (`localStorage`) é conferida pela ida e volta de `salvar` e `carregar`; recarregar a
+página não é um passo do executor. Ver `../conteudo-por-posto.md`, seção C02.

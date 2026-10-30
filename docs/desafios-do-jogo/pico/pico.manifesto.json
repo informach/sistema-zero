@@ -2235,7 +2235,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2288,12 +2287,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "apoio",
             "label": "O pulo sobe, espera o pouso e pode começar de novo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2375,13 +2374,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2417,7 +2416,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -4282,7 +4282,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4313,12 +4312,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "parada",
             "label": "Frear zera a velocidade e conserva a parada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4399,13 +4398,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4441,7 +4440,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -6490,7 +6490,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6521,12 +6520,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "uma-vez",
             "label": "Só o contato recolhe o floco, uma única vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6593,13 +6592,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6635,7 +6634,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -8607,7 +8607,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8643,12 +8642,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "capacidade",
             "label": "A carga inteira cabe no limite e a mochila pode ser esvaziada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8736,13 +8735,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8783,7 +8782,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -11648,7 +11648,6 @@
           {
             "id": "acao",
             "label": "Complete a ação indicada para esta rodada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11683,12 +11682,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "espera",
             "label": "A travessia espera a passagem e não se repete.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11755,13 +11754,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11801,7 +11800,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -16992,7 +16992,6 @@
           {
             "id": "andar-e-pousar",
             "label": "As setas levam o pinguim para os lados sobre o gelo, sem sair da tela.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -17076,12 +17075,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "pular",
             "label": "Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -17166,12 +17165,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "agua",
             "label": "Cair na água do buraco devolve o pinguim ao começo, de pé no primeiro gelo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -17243,12 +17242,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "bandeira",
             "label": "Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -17324,13 +17323,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "pular-com-seta",
             "label": "Extra: a seta para cima também faz o pinguim pular, só quando ele está no gelo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -17415,7 +17414,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -24106,7 +24106,6 @@
           {
             "id": "pulo-alto",
             "label": "O pulo fica mais alto e o pinguim continua voltando ao gelo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -24171,13 +24170,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "pular-com-seta",
             "label": "Extra: a seta para cima também faz o pinguim pular, só quando ele está no gelo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -24262,7 +24261,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -30626,7 +30626,6 @@
           {
             "id": "floco",
             "label": "Pegar o floco de neve soma um floco uma única vez e o floco some, mesmo pulando de novo no mesmo lugar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -30696,13 +30695,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "pular-com-seta",
             "label": "Extra: a seta para cima também faz o pinguim pular, só quando ele está no gelo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -30787,7 +30786,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -36670,7 +36670,6 @@
           {
             "id": "quedas",
             "label": "Cada queda na água soma uma queda no placar, uma vez só por queda.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -36740,13 +36739,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "pular-com-seta",
             "label": "Extra: a seta para cima também faz o pinguim pular, só quando ele está no gelo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -36831,7 +36830,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
