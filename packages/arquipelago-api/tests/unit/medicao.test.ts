@@ -47,6 +47,32 @@ const dados: AgregadosDaMedicao = {
   criacaoGuardada: contagem,
   desafiosAprovados: contagem,
 }
+test('eventos são opcionais e cada origem protege grupos pequenos independentemente da fotografia', () => {
+  const filtro = { de: '2026-10-01', ate: '2026-10-28', publico: 'kids' as const }
+  const agora = new Date('2026-10-29T12:00:00Z')
+  expect(montarMedicao(filtro, dados, '2026-10-29', agora).mudancasDeAparencia).toBeUndefined()
+  const report = montarMedicao(
+    filtro,
+    {
+      ...dados,
+      mudancasDeAparencia: {
+        pintaMolda: { quantidade: 42, pessoas: 4 },
+        criacaoGuardada: { quantidade: 8, pessoas: 5 },
+        galeria: { quantidade: 0, pessoas: 0 },
+      },
+    },
+    '2026-10-29',
+    agora,
+  )
+  expect(report.mudancasDeAparencia).toEqual({
+    pintaMolda: { situacao: 'poucos-dados', valor: null },
+    criacaoGuardada: { situacao: 'disponivel', valor: 8 },
+    galeria: { situacao: 'poucos-dados', valor: null },
+  })
+  expect(report.criacao.pintaMolda.valor).toBe(10)
+  expect(report.semFonte).toContain('compras')
+  expect(JSON.stringify(report)).not.toContain('42')
+})
 test('minijogos deixam de ser sem fonte e grupos pequenos continuam protegidos', () => {
   const r = montarMedicao(
     { de: '2026-10-01', ate: '2026-10-28', publico: 'kids' },

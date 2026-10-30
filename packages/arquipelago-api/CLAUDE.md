@@ -84,9 +84,23 @@ Teste de HTTP/concorrência em `tests/db/profissoes.test.ts`: variável
 
 ## Medição da equipe (geral-06, 28/10/2026)
 
+**A06, 30/10/2026:** a fotografia abaixo continua em `criacao`. `mudancasDeAparencia`
+conta aplicações/trocas observadas entre revisões aceitas, pela data do servidor, não por
+`ganhoEm`. Migração gerada 0015, tabela separada do save V18, FK cascade e chave
+jogador/revisão/objeto. O CAS grava save e eventos na mesma transação, sob a mesma trava.
+Primeiro save é base; conflito, repetição, retirada e suporte não criam aplicações.
+Não guarda IDs de criação. Origem declarada não prova autoria, aprendizado ou aquisição.
+Não reconstruir eventos anteriores. Grupos menores que cinco continuam suprimidos.
+
+Teste `tests/db/mudancas-de-aparencia.test.ts`, variável exclusiva
+`ARQUIPELAGO_APARENCIAS_TEST_DATABASE_URL`, somente banco local `arquipelago_test*`.
+Implantar migração, Admin novo e depois API: o Admin antigo rejeita campos desconhecidos.
+Rollback API primeiro, conservar a tabela. Plano e limites em
+`docs/superpowers/plans/2026-10-30-arquipelago-medicao-de-aparencias.md`.
+
 `GET /arquipelago/equipe/medicao?de=AAAA-MM-DD&ate=AAAA-MM-DD&publico=kids|adulto`
 usa `lerEquipe` e o token do gateway. `ServicoDaMedicao` limita o período inclusivo a 90 dias,
-recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São quatro consultas
+recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São consultas
 agregadas numa transação somente leitura com snapshot repetível. Nenhum ID de pessoa sai do banco.
 
 `domain/medicao.ts` protege grupos menores que cinco. Na volta, também protege a linha inteira
@@ -111,7 +125,7 @@ coorte (`protegerVoltaAoCurso`). Só Kids.
 Testes: `tests/unit/medicao.test.ts`, `tests/db/medicao.test.ts` (rota real e Postgres).
 `ARQUIPELAGO_MEDICAO_TEST_DATABASE_URL` precisa apontar para localhost e um banco descartável
 com prefixo `arquipelago_test`. Variável própria para não disputar tabelas com os demais testes.
-Não usar banco remoto. Não há migração nem variável nova de produção para este relatório.
+Não usar banco remoto. A versão inicial não exigia migração; A06 adiciona a 0015 descrita acima.
 
 Serviço do jogo **Arquipélago Vagalume**. Porta **3015**, schema Postgres **`arquipelago`**,
 journal `arquipelago_migrations`. Bun + Elysia + Drizzle, no molde do `packages/referrals`

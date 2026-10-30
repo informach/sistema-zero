@@ -20,6 +20,13 @@ aula ganharam campos (`components/editor/art-slot-fields.tsx`, réguas puras em
 
 ## Jogo: Medição (geral-06, 28/10/2026)
 
+**A06, 30/10/2026:** separar três seções: fotografia atual das aparências de projetos recebidos
+no período, mudanças confirmadas na data do servidor e primeiras aprovações. A fotografia não
+mede produção histórica. `mudancasDeAparencia` ausente mostra fonte indisponível, nunca zero.
+Origens declaradas não provam autoria ou compras. As duas comunidades usam a mesma regra.
+Admin novo deve subir antes da API nova, pois o contrato antigo é estrito. QA local com
+Postgres e componente reais em `docs/qa/2026-10-30-medicao-aparencias/`.
+
 A aba `Medição` em `game-admin.tsx` monta `game-measurement.tsx`. Período inclusivo de até
 90 dias e comunidade explícita, seguindo a lente global Kids/Adultos. O componente cancela a
 consulta anterior e não exibe respostas de outra lente. Erro tem nova tentativa; falta de

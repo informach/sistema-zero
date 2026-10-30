@@ -23,6 +23,32 @@ try {
   await page.getByRole('cell', { name: '10', exact: true }).waitFor()
   assert.equal(await page.getByRole('columnheader').count(), 4)
   assert.equal(await page.getByRole('rowheader', { name: '01/10/2026' }).count(), 1)
+  const fotografia = page.getByRole('region', {
+    name: 'Fotografia atual das aparências',
+    exact: true,
+  })
+  const mudancas = page.getByRole('region', {
+    name: 'Mudanças de aparência no período',
+    exact: true,
+  })
+  const numero = (region, titulo) =>
+    region
+      .getByRole('article')
+      .filter({ has: page.getByRole('heading', { name: titulo, exact: true }) })
+      .locator('p')
+  assert.equal(await numero(fotografia, 'Aparências do Pinta e Molda').innerText(), '10')
+  assert.equal(await numero(mudancas, 'Com origem Pinta ou Molda').innerText(), '5')
+  await page.getByLabel('De', { exact: true }).fill('2026-10-20')
+  await page.getByLabel('Até', { exact: true }).fill('2026-10-20')
+  await page.getByRole('button', { name: 'Aplicar período' }).click()
+  await page.getByText('Período: 20/10/2026 a 20/10/2026', { exact: false }).waitFor()
+  assert.equal(await numero(fotografia, 'Aparências do Pinta e Molda').innerText(), 'Poucos dados')
+  assert.equal(await numero(mudancas, 'Com origem Pinta ou Molda').innerText(), '5')
+  await page.screenshot({ path: path.join(output, 'evento-em-outro-dia.png'), fullPage: true })
+  await page.getByLabel('De', { exact: true }).fill('2026-10-01')
+  await page.getByLabel('Até', { exact: true }).fill('2026-10-28')
+  await page.getByRole('button', { name: 'Aplicar período' }).click()
+  await page.getByRole('cell', { name: '10', exact: true }).waitFor()
   await page.screenshot({ path: path.join(output, 'desktop.png'), fullPage: true })
   await page.getByLabel('Comunidade da medição').selectOption('adulto')
   await page
@@ -31,6 +57,7 @@ try {
     })
     .waitFor()
   assert.equal(await page.getByRole('table').count(), 0)
+  assert.equal(await numero(mudancas, 'Com origem Pinta ou Molda').innerText(), 'Poucos dados')
   await page.getByLabel('Comunidade da medição').selectOption('kids')
   await page.getByRole('table').waitFor()
   // Erro recuperável não vira um relatório vazio nem reutiliza o da comunidade anterior.
@@ -52,9 +79,22 @@ try {
   await page.screenshot({ path: path.join(output, 'celular.png'), fullPage: true })
   await page.setViewportSize({ width: 320, height: 740 })
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+  // O Admin novo aceita a resposta do serviço antigo, sem fabricar eventos zero.
+  await page.route('**/api/arquipelago/medicao?*', async (r) => {
+    const response = await r.fetch()
+    const body = await response.json()
+    delete body.mudancasDeAparencia
+    await r.fulfill({ response, json: body })
+  })
+  await page.getByRole('button', { name: 'Aplicar período' }).click()
+  await page
+    .getByText('O histórico de mudanças ainda não está disponível neste serviço.', { exact: true })
+    .waitFor()
+  assert.equal(await mudancas.getByRole('article').count(), 0)
+  await page.screenshot({ path: path.join(output, 'servico-anterior.png'), fullPage: true })
   assert.deepEqual(errors, [])
   console.log(
-    'PASS: filtros Kids/Adultos, Postgres real, recuperação de erro e larguras 1366/390/320 sem rolagem lateral.',
+    'PASS: fotografia e eventos por data própria, proteção por público, serviço anterior, Postgres real, recuperação de erro e larguras 1366/390/320 sem rolagem lateral.',
   )
 } finally {
   await browser.close()

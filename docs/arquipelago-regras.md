@@ -5,6 +5,28 @@ Situação por funcionalidade, com código, conteúdo, provas e implantação se
 o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
 versões anteriores registram a evolução; não substituem o contrato atual.
 
+## Medição: fotografia e mudanças de aparência (A06, 30/10/2026)
+
+A equipe vê três coisas separadas. A fotografia mostra a aparência guardada hoje nos projetos
+azuis recebidos no período. As mudanças contam aplicações e trocas confirmadas pelo salvamento,
+na data em que o servidor as recebeu. As aprovações contam a primeira conclusão do desafio.
+
+Trocar uma aparência não é criar outra obra nem comprar outra peça. Voltar a uma aparência
+anterior conta outra aplicação. Retirar, repetir o mesmo save ou perder uma disputa de revisão
+não conta. O primeiro save recebido é somente a base, inclusive quando vem de outro aparelho.
+O histórico anterior não é reconstruído. Pinta, Molda e criação guardada são origens declaradas,
+não prova de autoria. As datas de criação e de compras ainda não estão integradas ao relatório.
+
+Grupos de menos de cinco pessoas ficam ocultos. Não há lista de pessoas, IDs de criações ou
+total auxiliar que revele o grupo oculto. Sessão de suporte não grava. Apagar o save apaga seus
+eventos. O histórico fica em uma tabela própria, sem aumentar a V18 nem mudar moedas ou acesso.
+O período segue os dias de São Paulo, com até 90 dias. Sem o campo novo, o Admin mostra fonte
+indisponível, nunca zero. A coleta depende da implantação da migração 0015 e do serviço novo;
+esta execução só a testou no Postgres local descartável.
+
+Plano: `docs/superpowers/plans/2026-10-30-arquipelago-medicao-de-aparencias.md`.
+Provas locais: `docs/qa/2026-10-30-medicao-aparencias/`.
+
 ## Pausa do quarto e movimento ambiente (30/10/2026, A03a)
 
 Na casa própria e na visita, pets e móveis animados param quando o jogo pausa, inclusive no
