@@ -2660,6 +2660,16 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
   `fora-do-ar`, `arquivadas`, `desligado` e `antigo` exercitam as reservas no playground. Prova visual em
   `docs/qa/2026-10-30-cores-conquistadas/`. O desafio do dia de mentira está em 7.12.
 
+### 7.11.1 O Quadro das Cores da sua ilha (C03a, 30/10/2026)
+
+- A sua ilha (posto Faísca) tem os seis quadros do Pega-conchas (`docs/desafios-do-jogo/sua-ilha/`).
+  O cavalete fica na grama ao lado da trilha de pedras da porta até o píer, em (-1,5; 18,5),
+  olhando para a trilha (`QUADRO_DA_SUA_ILHA`). Ele é montado pela ilha central, sempre presente.
+- Os quadros da sua ilha não pintam a ilha, que já tem cor (`cor: false`). O cavalete acende a
+  mancha de cada quadro feito, e o painel mostra "Desafio concluído", nunca "Cor de volta".
+- A sua ilha não dá o aviso do desafio do dia: o cavalete dela está sempre montado, e avisar ali
+  seria avisar ao abrir o jogo. O aviso continua ao chegar numa ilha do anel.
+
 ### 7.12 O desafio do dia
 
 Arquivos: `arquipelago-api/src/domain/desafio-do-dia.ts` (regra pura, `escolherDesafioDoDia`),

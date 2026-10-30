@@ -18,6 +18,7 @@ export const FONTES_LOCAIS = [
   { pasta: 'faisca/poder-a-ponte-apressada', posto: 1, papel: 'power' },
 ] as const
 const ILHAS = [
+  ['sua-ilha', 1],
   ['bosque', 2],
   ['vila-doce', 3],
   ['recife', 4],
@@ -44,6 +45,8 @@ function tiposDoProjeto(projeto: unknown): string[] {
   return [...new Set(tipos((projeto as { blocksState: unknown }).blocksState))].sort()
 }
 function classificacao(ilha: string, quadro: number | null) {
+  // A sua ilha aplica o próprio repertório do Faísca, depois dos cursos dele (C03a).
+  if (ilha === 'sua-ilha') return 'aplicacao-em-blocos'
   if (ilha === 'bosque' && [4, 6, null].includes(quadro)) return 'aplicacao-em-blocos'
   if ((ilha === 'vale' && [1, 2, 6, null].includes(quadro)) || (ilha === 'nuvens' && quadro === 5))
     return 'apoio-preparado-em-blocos'

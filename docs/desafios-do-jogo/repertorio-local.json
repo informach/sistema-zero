@@ -604,6 +604,572 @@
   ],
   "desafios": [
     {
+      "slug": "sua-ilha-passos-na-areia",
+      "publico": "kids",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 1,
+      "tipo": "quadro-das-cores",
+      "titulo": "Passos na areia",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "andar",
+          "descricao": "A seta para a direita leva o guia pela areia."
+        },
+        {
+          "id": "na-praia",
+          "descricao": "Segurando a seta, o guia para na borda da tela."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_setup_stage",
+        "sz_g2d_update_each_frame",
+        "sz_val_number",
+        "sz_val_text"
+      ],
+      "tiposAcrescentados": ["sz_g2d_clamp_to_screen", "sz_g2d_restart", "sz_g2d_top_down"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-a-primeira-concha",
+      "publico": "kids",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 2,
+      "tipo": "quadro-das-cores",
+      "titulo": "A primeira concha",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "pegar",
+          "descricao": "No contato, o guia guarda que tem a concha."
+        },
+        {
+          "id": "so-no-contato",
+          "descricao": "Passar por cima da concha não pega; descer até ela pega."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text"
+      ],
+      "tiposAcrescentados": ["sz_g2d_destroy_sprite", "sz_g2d_restart", "sz_js_var_assign"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-o-balde-do-nico",
+      "publico": "kids",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 3,
+      "tipo": "quadro-das-cores",
+      "titulo": "O balde do Nico",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "entregar",
+          "descricao": "Pegue a concha e entregue no balde."
+        },
+        {
+          "id": "sem-concha",
+          "descricao": "Sem a concha, o balde marca que o Nico pediu."
+        },
+        {
+          "id": "buscar-e-voltar",
+          "descricao": "Sem a concha o balde espera; buscar a concha e voltar entrega."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-a-concha-rosa",
+      "publico": "kids",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 4,
+      "tipo": "quadro-das-cores",
+      "titulo": "A concha rosa",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "com-rosa",
+          "descricao": "Pela concha rosa, o balde recebe a entrega."
+        },
+        {
+          "id": "cinza-nao-vale",
+          "descricao": "Só com a cinza, o Nico pede a rosa e nada é entregue."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-a-mare-volta",
+      "publico": "kids",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 5,
+      "tipo": "quadro-das-cores",
+      "titulo": "A maré volta",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "recomecar",
+          "descricao": "Depois da entrega, Enter traz a praia de volta."
+        },
+        {
+          "id": "concha-volta",
+          "descricao": "Enter devolve a concha para a areia."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-pega-conchas",
+      "publico": "kids",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 6,
+      "tipo": "quadro-das-cores",
+      "titulo": "Pega-conchas",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "cheio",
+          "descricao": "Com as três conchas, o balde fica cheio."
+        },
+        {
+          "id": "faltou-uma",
+          "descricao": "Sem a concha do alto, o balde continua esperando."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_destroy_sprite", "sz_g2d_restart", "sz_js_var_assign"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-passos-na-areia-adulto",
+      "publico": "adulto",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 1,
+      "tipo": "quadro-das-cores",
+      "titulo": "Passos na areia",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "andar",
+          "descricao": "A seta para a direita leva o guia pela areia."
+        },
+        {
+          "id": "na-praia",
+          "descricao": "Segurando a seta, o guia para na borda da tela."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_setup_stage",
+        "sz_g2d_update_each_frame",
+        "sz_val_number",
+        "sz_val_text"
+      ],
+      "tiposAcrescentados": ["sz_g2d_clamp_to_screen", "sz_g2d_restart", "sz_g2d_top_down"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-a-primeira-concha-adulto",
+      "publico": "adulto",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 2,
+      "tipo": "quadro-das-cores",
+      "titulo": "A primeira concha",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "pegar",
+          "descricao": "No contato, o guia guarda que tem a concha."
+        },
+        {
+          "id": "so-no-contato",
+          "descricao": "Passar por cima da concha não pega; descer até ela pega."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text"
+      ],
+      "tiposAcrescentados": ["sz_g2d_destroy_sprite", "sz_g2d_restart", "sz_js_var_assign"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-o-balde-do-nico-adulto",
+      "publico": "adulto",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 3,
+      "tipo": "quadro-das-cores",
+      "titulo": "O balde do Nico",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "entregar",
+          "descricao": "Pegue a concha e entregue no balde."
+        },
+        {
+          "id": "sem-concha",
+          "descricao": "Sem a concha, o balde marca que o Nico pediu."
+        },
+        {
+          "id": "buscar-e-voltar",
+          "descricao": "Sem a concha o balde espera; buscar a concha e voltar entrega."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-a-concha-rosa-adulto",
+      "publico": "adulto",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 4,
+      "tipo": "quadro-das-cores",
+      "titulo": "A concha rosa",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "com-rosa",
+          "descricao": "Pela concha rosa, o balde recebe a entrega."
+        },
+        {
+          "id": "cinza-nao-vale",
+          "descricao": "Só com a cinza, o Nico pede a rosa e nada é entregue."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-a-mare-volta-adulto",
+      "publico": "adulto",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 5,
+      "tipo": "quadro-das-cores",
+      "titulo": "A maré volta",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "recomecar",
+          "descricao": "Depois da entrega, Enter traz a praia de volta."
+        },
+        {
+          "id": "concha-volta",
+          "descricao": "Enter devolve a concha para a areia."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "sua-ilha-pega-conchas-adulto",
+      "publico": "adulto",
+      "ilha": "sua-ilha",
+      "posto": 1,
+      "quadro": 6,
+      "tipo": "quadro-das-cores",
+      "titulo": "Pega-conchas",
+      "classificacao": "aplicacao-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "cheio",
+          "descricao": "Com as três conchas, o balde fica cheio."
+        },
+        {
+          "id": "faltou-uma",
+          "descricao": "Sem a concha do alto, o balde continua esperando."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_setup_stage",
+        "sz_g2d_top_down",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_val_bool",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_destroy_sprite", "sz_g2d_restart", "sz_js_var_assign"],
+      "semFonteNaTrilha": []
+    },
+    {
       "slug": "bosque-vagalume-aceso",
       "publico": "kids",
       "ilha": "bosque",

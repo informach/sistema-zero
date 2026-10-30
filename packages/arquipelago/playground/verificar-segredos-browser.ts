@@ -1,8 +1,8 @@
 /**
  * O segredo da sua ilha (N12) no navegador, com a plataforma falsa e sem banco: sem planador, o
  * pé do vento só conta que lá no alto tem um baú; com o planador, a criança cai por cima do vento,
- * abre o planador, o vento a segura lá no alto e ela abre o baú. A estrela cintilante e o bit
- * ficam no salvamento e o vento some.
+ * abre o planador, o vento a segura lá no alto e ela abre o baú. O bit fica no salvamento (o baú
+ * não dá item) e o vento some.
  *
  * No Windows: `bun build playground/verificar-segredos-browser.ts --target=node --external
  * playwright-core --outfile .cache/verificar-segredos-browser.mjs && node .cache/verificar-segredos-browser.mjs`.
@@ -156,7 +156,7 @@ try {
     await page.screenshot({ path: path.join(prints, `${tipo}-3-bau-aberto.png`) })
     await page.waitForFunction(() => {
       const s = JSON.parse(localStorage.getItem('arquipelago-playground') ?? '{}').salvamento
-      return s?.segredos === 1 && s?.inventario?.['estrela-cintilante'] === 1
+      return s?.segredos === 1
     })
     assert.equal(await page.locator('.arq-acao').filter({ hasText: 'Abrir o baú' }).count(), 0)
     assert.deepEqual(erros, [])

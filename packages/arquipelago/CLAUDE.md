@@ -43,6 +43,15 @@ menos tapete e peça de parede; a luminária acende à noite). Miniaturas `movel
 `arte/casa/miniaturas.py` e depois a paleta de 128 cores. Pior caso do salvamento: 63.989 bytes no
 contrato e 64.923 com o catálogo inteiro a 999.
 
+## Quadro das Cores da sua ilha (C03a, 30/10/2026)
+
+`QuadroDasCores` recebe `preparada` (ilhas do anel, lugar pela chegada da ponte) ou `lugar`
+(`LugarDoQuadro`). A `IlhaCentral` monta o da sua ilha em `lugarDoQuadroNaSuaIlha()`, na grama ao
+lado da trilha do píer. Na sua ilha as manchas seguem os quadros feitos da lista (não há cor da
+ilha), o painel não diz "Cor de volta" e o aviso do desafio do dia não sai. Conteúdo em
+`docs/desafios-do-jogo/sua-ilha/`. Prova: `tests/colisao-da-ilha-central.test.ts` (o colisor do
+cavalete entra na busca de caminho) e `playground/verificar-quadro-da-sua-ilha-browser.ts`.
+
 ## Coleções do Pico e das Nuvens e iscas da pesca (30/10/2026)
 
 `sistemas/colecoes-das-ilhas.ts`: quatro notas e quatro cristais do Pico e quatro estrelas das

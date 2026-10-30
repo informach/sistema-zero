@@ -24,6 +24,11 @@ import {
 } from '../src/mundo/colisao-da-ilha-central'
 import { lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import {
+  colisoresNoLugar,
+  lugarDoQuadroNaSuaIlha,
+  QUADRO_DA_SUA_ILHA,
+} from '../src/mundo/lugar-do-quadro'
+import {
   alturaDaIlha,
   BANCADA,
   CATA_VENTO,
@@ -131,6 +136,7 @@ beforeAll(async () => {
     ...deslocar([...COLISORES_DO_FAROL, ...doFarol], GRUPOS.farol),
     ...deslocar([...COLISORES_DO_PIER, ...doPier], GRUPOS.pier),
     ...noCataVento(doCataVento),
+    ...(colisoresNoLugar(lugarDoQuadroNaSuaIlha()) as Solido[]),
   ]
 })
 
@@ -371,6 +377,26 @@ describe('dá para andar da porta até tudo', () => {
     expect(chegaPerto(BANCADA.x, BANCADA.z, 2)).toBe(true)
     expect(chegaPerto(FAROL.x, FAROL.z, 3.4)).toBe(true)
     expect(chegaPerto(PIER.x, PIER.z - 0.5, 0.6)).toBe(true)
+  })
+
+  test('o Quadro das Cores da sua ilha (C03a): chega pela frente, sem tapar trilha nem ponte', () => {
+    const lugar = lugarDoQuadroNaSuaIlha()
+    const frente = {
+      x: lugar.x + Math.sin(lugar.giro) * 1.6,
+      z: lugar.z + Math.cos(lugar.giro) * 1.6,
+    }
+    expect(chegaPerto(frente.x, frente.z, 0.6)).toBe(true)
+    expect(quemSegura(lugar.x, lugar.z - 0.14)).toBe('col-quadro-das-cores')
+    // Olha para a trilha do píer e fica fora dela.
+    expect(
+      Math.hypot(
+        QUADRO_DA_SUA_ILHA.olharPara.x - lugar.x,
+        QUADRO_DA_SUA_ILHA.olharPara.z - lugar.z,
+      ),
+    ).toBeGreaterThan(2)
+    for (const ilha of ilhasDoAnel())
+      for (const p of trajetoDaPonte(ilha))
+        expect(Math.hypot(p.x - lugar.x, p.z - lugar.z)).toBeGreaterThan(3)
   })
 
   test('a cabeça de cada ponte', () => {

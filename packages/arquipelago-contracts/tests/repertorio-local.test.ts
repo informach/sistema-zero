@@ -10,8 +10,8 @@ import { ManifestoDeDesafiosSchema } from '../src/desafios'
 
 const inventario = inventarioDeRepertorio()
 test('inventário reproduz os arquivos locais sem confundir duas versões com atividades distintas', () => {
-  expect(inventario).toHaveLength(108)
-  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(54)
+  expect(inventario).toHaveLength(120)
+  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(60)
   expect(
     JSON.parse(
       readFileSync(
@@ -104,5 +104,15 @@ test('públicos têm o mesmo repertório e nenhum manifesto força concessão ma
       for (const d of m.desafios)
         expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
     }
+  }
+})
+test('o Pega-conchas da sua ilha usa só a trilha do Faísca e pede publicação (C03a)', () => {
+  const daSuaIlha = inventario.filter((d) => d.ilha === 'sua-ilha')
+  expect(daSuaIlha).toHaveLength(12)
+  for (const d of daSuaIlha) {
+    expect(d.posto, d.slug).toBe(1)
+    expect(d.semFonteNaTrilha, d.slug).toEqual([])
+    expect(d.publicarAutomaticamente, d.slug).toBe(true)
+    for (const c of d.cobertura) expect(c.trilha.length, `${d.slug}/${c.bloco}`).toBeGreaterThan(0)
   }
 })

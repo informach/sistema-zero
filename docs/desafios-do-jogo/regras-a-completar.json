@@ -1,5 +1,247 @@
 [
   {
+    "slug": "sua-ilha-passos-na-areia",
+    "publico": "kids",
+    "ilha": "sua-ilha",
+    "titulo": "Passos na areia",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_top_down",
+      "sz_g2d_update_each_frame",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_g2d_update_each_frame", "sz_val_number"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-a-primeira-concha",
+    "publico": "kids",
+    "ilha": "sua-ilha",
+    "titulo": "A primeira concha",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_var_assign",
+      "sz_val_bool"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_g2d_on_overlap", "sz_val_bool"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-o-balde-do-nico",
+    "publico": "kids",
+    "ilha": "sua-ilha",
+    "titulo": "O balde do Nico",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-a-concha-rosa",
+    "publico": "kids",
+    "ilha": "sua-ilha",
+    "titulo": "A concha rosa",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-a-mare-volta",
+    "publico": "kids",
+    "ilha": "sua-ilha",
+    "titulo": "A maré volta",
+    "problema": null,
+    "blocosDerivados": ["sz_g2d_on_key", "sz_g2d_restart"],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-pega-conchas",
+    "publico": "kids",
+    "ilha": "sua-ilha",
+    "titulo": "Pega-conchas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-passos-na-areia-adulto",
+    "publico": "adulto",
+    "ilha": "sua-ilha",
+    "titulo": "Passos na areia",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_clamp_to_screen",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_top_down",
+      "sz_g2d_update_each_frame",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_g2d_update_each_frame", "sz_val_number"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-a-primeira-concha-adulto",
+    "publico": "adulto",
+    "ilha": "sua-ilha",
+    "titulo": "A primeira concha",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_var_assign",
+      "sz_val_bool"
+    ],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_g2d_on_overlap", "sz_val_bool"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-o-balde-do-nico-adulto",
+    "publico": "adulto",
+    "ilha": "sua-ilha",
+    "titulo": "O balde do Nico",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-a-concha-rosa-adulto",
+    "publico": "adulto",
+    "ilha": "sua-ilha",
+    "titulo": "A concha rosa",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-a-mare-volta-adulto",
+    "publico": "adulto",
+    "ilha": "sua-ilha",
+    "titulo": "A maré volta",
+    "problema": null,
+    "blocosDerivados": ["sz_g2d_on_key", "sz_g2d_restart"],
+    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key"],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "sua-ilha-pega-conchas-adulto",
+    "publico": "adulto",
+    "ilha": "sua-ilha",
+    "titulo": "Pega-conchas",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_destroy_sprite",
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_overlap",
+      "sz_js_if_else",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
     "slug": "bosque-vagalume-aceso",
     "publico": "kids",
     "ilha": "bosque",
