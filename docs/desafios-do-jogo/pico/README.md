@@ -1,5 +1,10 @@
 # Quadros e fase de plataforma do Pico Gelado
 
+C01d corrigiu as ocorrências compartilhadas de posição e movimento em Pulo com apoio.
+Cada peça tem ID próprio no inicial e no gabarito. Código, comportamento e recompensas
+não mudaram. O teste `../projetos-validos.test.ts` confere o leitor canônico do Members
+nos dois públicos; a importação Blockly é uma prova complementar.
+
 Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
 [fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
 blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como

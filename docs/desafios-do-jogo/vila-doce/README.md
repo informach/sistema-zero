@@ -5,6 +5,11 @@ Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md
 blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
 repertório universal nem contar estruturas prontas como aprendizagem.
 
+C01d corrigiu as ocorrências compartilhadas de instruções na largada. Cada peça agora tem
+ID próprio, aceito pelo leitor do Members. Código, comportamento e recompensas não mudaram.
+O teste `../projetos-validos.test.ts` confere os dois públicos de todos os pacotes; Blockly
+sozinho não basta, pois pode normalizar um ID repetido ao carregar o projeto.
+
 Importe `vila-doce.manifesto.json` em Jogo → Desafios → Manifesto de desafios.
 Formato `arquipelago-desafios`, versão 1, escopo `ilha`. O arquivo acima é Kids;
 `vila-doce-adulto.manifesto.json` traz o conteúdo equivalente adulto, todo em rascunho.

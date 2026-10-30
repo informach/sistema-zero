@@ -32,7 +32,7 @@ vale na análise de nova publicação, sem alterar promoção, carteira, contrat
 - [x] Reanalisar os pacotes locais para distinguir ferramentas realmente cobradas do apoio
   inalterado. Fonte ausente continua pendência, sem bloco manual ou curso fictício.
 - [x] Testes dos pacotes envolvidos, tipagem, Biome, revisão completa e documentação.
-- [ ] Commit e merge local.
+- [x] Commit `6547f2417` e merge local `27cd2b91d`.
 
 ## Limites
 

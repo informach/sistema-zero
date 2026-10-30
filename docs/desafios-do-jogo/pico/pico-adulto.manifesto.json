@@ -208,7 +208,7 @@
                             "right": {
                               "type": "g2d:spriteY",
                               "spriteVar": "pinguim",
-                              "__id": "pico-quadro-1_loops_0_body_2_cond_left"
+                              "__id": "pico-quadro-1_loops_0_body_2_then_0_vy_right"
                             },
                             "__id": "pico-quadro-1_loops_0_body_2_then_0_vy"
                           },
@@ -217,7 +217,7 @@
                         {
                           "type": "g2d:applyVelocity",
                           "spriteVar": "pinguim",
-                          "__id": "pico-quadro-1_loops_0_body_1"
+                          "__id": "pico-quadro-1_loops_0_body_2_then_1"
                         },
                         {
                           "type": "g2d:setVelocity",
@@ -617,7 +617,7 @@
                                                         "fields": {
                                                           "SPRITE": "pinguim"
                                                         },
-                                                        "id": "pico-quadro-1_loops_0_body_2_cond_left"
+                                                        "id": "pico-quadro-1_loops_0_body_2_then_0_vy_right"
                                                       }
                                                     }
                                                   },
@@ -628,7 +628,7 @@
                                             "next": {
                                               "block": {
                                                 "type": "sz_g2d_apply_velocity",
-                                                "id": "pico-quadro-1_loops_0_body_1",
+                                                "id": "pico-quadro-1_loops_0_body_2_then_1",
                                                 "fields": {
                                                   "SPRITE": "pinguim"
                                                 },
@@ -1303,7 +1303,7 @@
                             "right": {
                               "type": "g2d:spriteY",
                               "spriteVar": "pinguim",
-                              "__id": "pico-quadro-1_loops_0_body_2_cond_left"
+                              "__id": "pico-quadro-1_loops_0_body_2_then_0_vy_right"
                             },
                             "__id": "pico-quadro-1_loops_0_body_2_then_0_vy"
                           },
@@ -1312,7 +1312,7 @@
                         {
                           "type": "g2d:applyVelocity",
                           "spriteVar": "pinguim",
-                          "__id": "pico-quadro-1_loops_0_body_1"
+                          "__id": "pico-quadro-1_loops_0_body_2_then_1"
                         },
                         {
                           "type": "g2d:setVelocity",
@@ -1821,7 +1821,7 @@
                                                         "fields": {
                                                           "SPRITE": "pinguim"
                                                         },
-                                                        "id": "pico-quadro-1_loops_0_body_2_cond_left"
+                                                        "id": "pico-quadro-1_loops_0_body_2_then_0_vy_right"
                                                       }
                                                     }
                                                   },
@@ -1832,7 +1832,7 @@
                                             "next": {
                                               "block": {
                                                 "type": "sz_g2d_apply_velocity",
-                                                "id": "pico-quadro-1_loops_0_body_1",
+                                                "id": "pico-quadro-1_loops_0_body_2_then_1",
                                                 "fields": {
                                                   "SPRITE": "pinguim"
                                                 },

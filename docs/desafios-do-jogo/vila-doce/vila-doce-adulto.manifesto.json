@@ -12802,7 +12802,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_corrida_events_0_body_1"
+                      "__id": "vila_corrida_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -12894,7 +12894,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_corrida_events_0_body_1"
+                      "__id": "vila_corrida_events_1_body_1"
                     },
                     {
                       "type": "g2d:clampToScreen",
@@ -12920,7 +12920,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_corrida_events_0_body_1"
+                      "__id": "vila_corrida_events_1_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -13795,7 +13795,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_corrida_events_0_body_1",
+                                              "id": "vila_corrida_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -13977,7 +13977,7 @@
                                   "next": {
                                     "block": {
                                       "type": "sz_g2d_apply_velocity",
-                                      "id": "vila_corrida_events_0_body_1",
+                                      "id": "vila_corrida_events_1_body_1",
                                       "fields": {
                                         "SPRITE": "entregador"
                                       },
@@ -14018,7 +14018,7 @@
                                               "next": {
                                                 "block": {
                                                   "type": "sz_g2d_apply_velocity",
-                                                  "id": "vila_corrida_events_0_body_1",
+                                                  "id": "vila_corrida_events_1_body_4",
                                                   "fields": {
                                                     "SPRITE": "entregador"
                                                   },
@@ -15766,7 +15766,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_entregas_events_0_body_1"
+                      "__id": "vila_entregas_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -16715,7 +16715,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_entregas_events_0_body_1",
+                                              "id": "vila_entregas_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -17990,7 +17990,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_entregas_events_0_body_1"
+                      "__id": "vila_entregas_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -18082,7 +18082,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_entregas_events_0_body_1"
+                      "__id": "vila_entregas_events_1_body_1"
                     },
                     {
                       "type": "g2d:clampToScreen",
@@ -18108,7 +18108,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_entregas_events_0_body_1"
+                      "__id": "vila_entregas_events_1_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -19159,7 +19159,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_entregas_events_0_body_1",
+                                              "id": "vila_entregas_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -19341,7 +19341,7 @@
                                   "next": {
                                     "block": {
                                       "type": "sz_g2d_apply_velocity",
-                                      "id": "vila_entregas_events_0_body_1",
+                                      "id": "vila_entregas_events_1_body_1",
                                       "fields": {
                                         "SPRITE": "entregador"
                                       },
@@ -19382,7 +19382,7 @@
                                               "next": {
                                                 "block": {
                                                   "type": "sz_g2d_apply_velocity",
-                                                  "id": "vila_entregas_events_0_body_1",
+                                                  "id": "vila_entregas_events_1_body_4",
                                                   "fields": {
                                                     "SPRITE": "entregador"
                                                   },
@@ -21140,7 +21140,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_tempo_events_0_body_1"
+                      "__id": "vila_tempo_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -22021,7 +22021,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_tempo_events_0_body_1",
+                                              "id": "vila_tempo_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -23223,7 +23223,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_tempo_events_0_body_1"
+                      "__id": "vila_tempo_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -23315,7 +23315,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_tempo_events_0_body_1"
+                      "__id": "vila_tempo_events_1_body_1"
                     },
                     {
                       "type": "g2d:clampToScreen",
@@ -23341,7 +23341,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_tempo_events_0_body_1"
+                      "__id": "vila_tempo_events_1_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -24216,7 +24216,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_tempo_events_0_body_1",
+                                              "id": "vila_tempo_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -24398,7 +24398,7 @@
                                   "next": {
                                     "block": {
                                       "type": "sz_g2d_apply_velocity",
-                                      "id": "vila_tempo_events_0_body_1",
+                                      "id": "vila_tempo_events_1_body_1",
                                       "fields": {
                                         "SPRITE": "entregador"
                                       },
@@ -24439,7 +24439,7 @@
                                               "next": {
                                                 "block": {
                                                   "type": "sz_g2d_apply_velocity",
-                                                  "id": "vila_tempo_events_0_body_1",
+                                                  "id": "vila_tempo_events_1_body_4",
                                                   "fields": {
                                                     "SPRITE": "entregador"
                                                   },
@@ -25875,7 +25875,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_caixa_events_0_body_1"
+                      "__id": "vila_caixa_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -26824,7 +26824,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_caixa_events_0_body_1",
+                                              "id": "vila_caixa_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -28099,7 +28099,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_caixa_events_0_body_1"
+                      "__id": "vila_caixa_events_0_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -28191,7 +28191,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_caixa_events_0_body_1"
+                      "__id": "vila_caixa_events_1_body_1"
                     },
                     {
                       "type": "g2d:clampToScreen",
@@ -28217,7 +28217,7 @@
                     {
                       "type": "g2d:applyVelocity",
                       "spriteVar": "entregador",
-                      "__id": "vila_caixa_events_0_body_1"
+                      "__id": "vila_caixa_events_1_body_4"
                     },
                     {
                       "type": "g2d:setVelocity",
@@ -29208,7 +29208,7 @@
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_apply_velocity",
-                                              "id": "vila_caixa_events_0_body_1",
+                                              "id": "vila_caixa_events_0_body_4",
                                               "fields": {
                                                 "SPRITE": "entregador"
                                               },
@@ -29390,7 +29390,7 @@
                                   "next": {
                                     "block": {
                                       "type": "sz_g2d_apply_velocity",
-                                      "id": "vila_caixa_events_0_body_1",
+                                      "id": "vila_caixa_events_1_body_1",
                                       "fields": {
                                         "SPRITE": "entregador"
                                       },
@@ -29431,7 +29431,7 @@
                                               "next": {
                                                 "block": {
                                                   "type": "sz_g2d_apply_velocity",
-                                                  "id": "vila_caixa_events_0_body_1",
+                                                  "id": "vila_caixa_events_1_body_4",
                                                   "fields": {
                                                     "SPRITE": "entregador"
                                                   },

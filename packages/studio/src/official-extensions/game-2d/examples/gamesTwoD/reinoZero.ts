@@ -16,6 +16,10 @@ const DEFAULT_COLS = 72
 const ROWS = 15
 const LAST_LEVEL = 32
 
+// Tipar cada instrução antes de formar a lista evita inferir uma união enorme entre
+// todas as combinações dos literais. O contrato de cada nó continua sendo JSStatement.
+const statements = (...items: JSStatement[]): JSStatement[] => items
+
 /**
  * ⭐ O tema é do TIPO da fase, não do mundo.
  *
@@ -1977,7 +1981,7 @@ function worldStartPhase(phase: JSExpr): JSExpr {
   return binary('-', phase, binary('%', binary('-', phase, n(1)), n(4)))
 }
 
-const playingBody: JSStatement[] = [
+const playingBody = statements(
   {
     type: 'assign',
     name: 'passoLumi',
@@ -2496,7 +2500,7 @@ const playingBody: JSStatement[] = [
       },
     ],
   },
-]
+)
 
 export const reinoZeroExample: ExtensionExample = beginnerGameExample({
   name: 'Reino Zero',
@@ -2526,7 +2530,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         enemyType('investidas', 'arrancada', 'investida', 1, 0.8, 16, 16),
         { type: 'g2d:allEnemiesGroup', varName: 'todosInimigos' },
       ],
-      start: [
+      start: statements(
         {
           type: 'g2d:setupStage',
           width: 256,
@@ -2687,7 +2691,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         loadActiveLevel(),
         { type: 'g2d:setScene', name: 'titulo' },
         { type: 'g2d:playMusic', tune: 'happy' },
-      ],
+      ),
       events: [
         {
           type: 'g2d:onActionPressed',
