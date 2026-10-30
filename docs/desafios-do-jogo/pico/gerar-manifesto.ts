@@ -67,7 +67,7 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
           tipo,
           quadro: principal ? 6 : null,
           ordem: 60 + index,
-          publicar: publico === 'kids',
+          publicar: false,
           conteudo: {
             versao: 1,
             ...textos[variacao],

@@ -1,0 +1,10 @@
+{
+  "extends": "../../packages/studio/tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": ["bun"],
+    "typeRoots": ["../../node_modules/@types", "../../packages/studio/node_modules/@types"]
+  },
+  "include": ["repertorio-local.ts", "*/gerar-manifesto.ts"],
+  "exclude": ["node_modules"]
+}

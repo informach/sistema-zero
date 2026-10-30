@@ -68,11 +68,23 @@ em “Aprenda isso em” e só abrem quando os blocos reais estiverem conquistad
 
 ## Revisão do conteúdo já existente
 
-Os manifestos das seis ilhas já trazem um principal e três variações. Ainda precisam ser
-comparados com esta matriz. Em especial, a documentação da Vila presume o relógio do Dino
-logo na entrada do Inventor e inclui blocos de extras. Isso não prova que a pessoa tenha
-conquistado esses blocos. A revisão deve corrigir as dependências e o projeto inicial, sem
-liberar blocos artificialmente nem retirar criações já guardadas.
+O [inventário C01b1](repertorio-local.md), gerado de todos os arquivos, identifica cada uma
+das 54 atividades e seus dois públicos, objetivos, linguagem, apoio pronto e fontes por
+bloco. A [versão estruturada](repertorio-local.json) distingue fontes da trilha e opcionais.
+As exceções de lista preparada não comprovam construir a lista ou o laço. Comparar apenas
+tipos novos não equivale à análise do Members, que deriva o gabarito inteiro.
 
-Esta matriz orienta L03 da entrega integral. O inventário por quadro e as provas do executor
-devem acompanhar a implementação; esta documentação não declara esse conteúdo concluído.
+Todos os itens agora usam `publicar: false`. Isso retira 24 pedidos automáticos Kids antes
+da conferência de fontes reais, sem alterar projetos, objetivos, recompensas ou publicações
+remotas. C01a impede publicar cobertura impossível. Os blocos de extras e os apoios sem
+fonte continuam visíveis como pendências, sem concessão manual.
+
+A Vila atual retoma eventos, estoque, contagem e estados. Ainda não comprova o conjunto de
+pulo com apoio, colisão e dificuldade do Inventor. Recife e Pico são retomadas em blocos,
+não aplicações dos cursos Python. Vale e Nuvens também não provam trabalhar no ambiente
+textual/Pro. C01b2 e C02 devem resolver essas diferenças, preservando a utilidade das
+retomadas e sem retirar conquistas anteriores.
+
+Esta matriz orienta L03 da entrega integral. As provas existentes do executor continuam
+associadas aos projetos intactos. O inventário não substitui esses testes nem declara o
+currículo avançado concluído. Gerar de novo com `bun docs/desafios-do-jogo/repertorio-local.ts`.

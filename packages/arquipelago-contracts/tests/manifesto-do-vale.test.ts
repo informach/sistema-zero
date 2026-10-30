@@ -82,7 +82,8 @@ test('os blocos a acrescentar já aparecem nas listas locais e toda arte é embu
       })
       expect(JSON.stringify(p).length).toBeLessThanOrEqual(LIMITES_DO_DESAFIO.projetoCaracteres)
       const usados = [...new Set(tipos(p.blocksState))]
-      // O Members exige apenas tipos acrescentados ao inicial. Lista e desenho já vêm nele.
+      // Esta prova confere só os tipos novos, não a publicação. O Members deriva todos os
+      // tipos do gabarito. A cobertura integral e suas lacunas estão em repertorio-local.test.ts.
       const iniciais = new Set(
         tipos((d.conteudo.projetoInicial as { blocksState: unknown }).blocksState),
       )

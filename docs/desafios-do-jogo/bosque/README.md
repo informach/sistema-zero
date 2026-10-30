@@ -1,5 +1,10 @@
 # Desafios do Bosque dos Bichos
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
 Arquivos para importar: `bosque.manifesto.json` (Kids) e `bosque-adulto.manifesto.json` (adulto).
 Formato `arquipelago-desafios`, versão 1, escopo `ilha`. Segue a parte 3 de
 `docs/plans/2026-10-28-arquipelago-desafio-do-dia-e-manifestos.md`.
@@ -79,8 +84,8 @@ também levaria as imagens e poderia exceder o limite de observação do executo
 bun docs/desafios-do-jogo/bosque/gerar-manifesto.ts
 ```
 
-Os quatro desafios Kids anteriores mantêm o pedido de publicação. Os cinco novos e os nove
-adultos chegam como rascunhos para conferir os vínculos com os cursos reais. Não existe
+Todos os itens Kids e adultos usam `publicar: false`, incluindo os quatro principais anteriores,
+para conferir os vínculos reais antes da publicação. Não existe
 liberação artificial de blocos. Importar e publicar exige a conferência normal do Admin, incluindo
 cobertura no currículo publicado e disponibilidade dos quadros. Esta entrega não consulta nem
 grava dados de alunos, staging ou produção. Não inclui o brinquedo na ilha ou o rodízio diário,
