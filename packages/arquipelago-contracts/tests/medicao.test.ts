@@ -33,3 +33,19 @@ test('número oculto não aceita valor, identificador ou contagem auxiliar', () 
   ).toBe(false)
   expect(RelatorioDaMedicaoSchema.safeParse({ pessoaId: 'nao-permitido' }).success).toBe(false)
 })
+
+test('histórico de mudanças é opcional, com as mesmas proteções e sem detalhes individuais', () => {
+  const schema = RelatorioDaMedicaoSchema.shape.mudancasDeAparencia
+  const oculto = { situacao: 'poucos-dados', valor: null }
+  const historico = { pintaMolda: oculto, criacaoGuardada: oculto, galeria: oculto }
+  expect(schema.safeParse(undefined).success).toBe(true)
+  expect(schema.safeParse(historico).success).toBe(true)
+  expect(schema.safeParse({ ...historico, pessoas: 4 }).success).toBe(false)
+  expect(schema.safeParse({ ...historico, pintaMolda: { ...oculto, valor: 3 } }).success).toBe(
+    false,
+  )
+  expect(
+    schema.safeParse({ ...historico, criacaoGuardada: { situacao: 'disponivel', valor: -1 } })
+      .success,
+  ).toBe(false)
+})

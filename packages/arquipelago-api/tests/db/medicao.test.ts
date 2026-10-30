@@ -46,6 +46,7 @@ describe.skipIf(!url)('medição no Postgres local e na rota real', () => {
     )
     expect(kids.coortes[0]).toEqual({ dia: '2026-10-01', pessoas: 10, seguinte: 5, dia7: 5 })
     expect(kids.pintaMolda).toEqual({ quantidade: 10, pessoas: 5 })
+    expect(kids.mudancasDeAparencia?.pintaMolda).toEqual({ quantidade: 5, pessoas: 5 })
     expect(kids.galeria.quantidade).toBe(0)
     const adulto = await repo.agregar(
       { de: '2026-10-01', ate: '2026-10-28', publico: 'adulto' },
@@ -54,6 +55,7 @@ describe.skipIf(!url)('medição no Postgres local e na rota real', () => {
     expect(adulto.coortes).toEqual([])
     expect(adulto.galeria).toEqual({ quantidade: 5, pessoas: 5 })
     expect(adulto.desafiosAprovados.quantidade).toBe(0)
+    expect(adulto.mudancasDeAparencia?.pintaMolda.quantidade).toBe(0)
   })
   test('fins de sessão: só as que contaram tempo, no intervalo pedido', async () => {
     const repo = new DrizzleRepositorioDaMedicao(db.db)
@@ -93,6 +95,7 @@ describe.skipIf(!url)('medição no Postgres local e na rota real', () => {
     expect(report.volta.coortes[1]?.dia1).toEqual({ situacao: 'poucos-dados', valor: null })
     expect(report.volta.coortes[2]?.diaSeguinte.situacao).toBe('aguardando')
     expect(report.desafiosAprovados.valor).toBe(5)
+    expect(report.mudancasDeAparencia?.pintaMolda.valor).toBe(5)
     // Volta ao curso: 10 pessoas jogaram em 01/10, 5 concluíram aula depois (a sessão só
     // aberta da pessoa 11 não conta).
     expect(report.voltaAoCurso).toEqual({

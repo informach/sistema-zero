@@ -75,6 +75,31 @@ export const salvamentos = arquipelagoSchema.table(
   ],
 )
 
+/** Mudança confirmada por revisão. Não contém identidade da criação nem prova de autoria. */
+export const mudancasDeAparencia = arquipelagoSchema.table(
+  'mudancas_de_aparencia',
+  {
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    revisao: integer().notNull(),
+    objeto: varchar({ length: 40 }).notNull(),
+    publico: varchar({ length: 8 }).notNull(),
+    origem: varchar({ length: 10 }).notNull(),
+    registradoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.revisao, t.objeto] }),
+    check('mudancas_aparencia_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'mudancas_aparencia_origem_check',
+      sql`${t.origem} in ('pinta', 'molda', 'criacao', 'galeria')`,
+    ),
+    check('mudancas_aparencia_revisao_check', sql`${t.revisao} >= 2`),
+    index('mudancas_aparencia_periodo_idx').on(t.publico, t.registradoEm),
+  ],
+)
+
 /** Um melhor trajeto por percurso. Nenhum nome nem sessão histórica é guardado. */
 export const fantasmas = arquipelagoSchema.table(
   'fantasmas',
@@ -483,6 +508,7 @@ export const pedidosRemunerados = arquipelagoSchema.table(
 )
 
 export const schema = {
+  mudancasDeAparencia,
   fantasmas,
   pedidosRemunerados,
   comprasDeInsumos,
