@@ -62,7 +62,10 @@ serviço, que confere de novo os blocos pelos cursos da comunidade:
 - `sua-ilha/` (Pega-conchas, seis quadros) e `farol/` (projeto autoral), Kids e adulto;
 - os quadros revisados no C01b de `recife/`, `pico/`, `vale/` e `nuvens/`.
 
-O C02 (Python e texto) está em andamento e traz os próprios manifestos.
+O C02 (Python, texto e Pro) traz os próprios pacotes em `recife-python/`, `pico-python/`,
+`vale-texto/` e `nuvens-pro/`. Antes de importar o Recife e o Pico, publicar uma versão do
+ambiente Python com o Pygame Zero e gerar os dois manifestos de novo; o Vale espera os cursos do
+Arquiteto. O jogo ainda não abre projetos em Python nem Pro (mostra um recado).
 
 ### Com conta real e aparelho físico
 

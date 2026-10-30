@@ -11,8 +11,8 @@ integração da V20: o iglu do Pico. Este plano cobre o que falta e por que espe
 | Segundo andar | Pico: segundo andar da casa | Escada, piso de cima e guarda-corpo no kit da casa | Pedidos de arte, E04 item 1 |
 | Moldar o terreno | Nuvens: moldar o terreno | O chão do lote separado no `terreno.glb` | Pedidos de arte, E04 item 2 |
 | Subida final | Lenda: subida pelo Farol | Caminho por fora da torre no `farol.glb` | Pedidos de arte, E04 item 3 |
-| Farol como galeria | Lenda: criações favoritas | Lote da outra sessão (fase4-12, `farol.galeria`) | Não duplicar |
-| Modo livre | Lenda: construção sem limite de posto | Junto com o documento próprio | Este plano |
+| Farol como galeria | Lenda: criações favoritas | Feito pela outra sessão (fase4-12, `20b312aa1`) | Nenhum |
+| Modo livre | Lenda: construção sem limite de posto | Feito pela outra sessão (fase4-12, `20b312aa1`) | Nenhum |
 
 Nenhuma dessas partes desenha peça que falte na arte (regra do lote: falta de arte vira pedido).
 
