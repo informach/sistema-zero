@@ -1,11 +1,11 @@
-import type { Plataforma } from '@sistemazero/arquipelago-contracts'
+import type { IlhaId, Plataforma } from '@sistemazero/arquipelago-contracts'
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
 import type { VistaDaLuneta } from '../mundo/vista-da-luneta'
 import type { Voo } from '../sistemas/balao'
-import type { Travessia } from '../sistemas/barco'
+import type { PortoId, RotaDoBarco, Travessia } from '../sistemas/barco'
 import type { Ponto } from '../sistemas/cipo'
 import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
@@ -188,6 +188,9 @@ export interface LugarDeDescanso {
 export interface Movimento {
   mergulhos: VolumeDeMergulho[]
   barco: Travessia | null
+  caisProntos: Set<IlhaId>
+  rotasDoBarco: readonly RotaDoBarco[]
+  embarcarPara: ((origem: PortoId, destino: PortoId) => boolean) | null
   /** O balão das Nuvens (fase4-09), registrado pelo desenho dele enquanto a ilha está ativa. */
   balao: Voo | null
   cipos: CipoVivo[]
@@ -247,6 +250,9 @@ export interface Movimento {
 export function criarMovimento(): Movimento {
   return {
     barco: null,
+    caisProntos: new Set(),
+    rotasDoBarco: [],
+    embarcarPara: null,
     balao: null,
     cipos: [],
     troncos: [],

@@ -74,7 +74,8 @@ export interface MedidaDoDesenho {
     fase: string
     distancia: number
     comprimento: number
-    recifePronto: boolean
+    prontos: readonly boolean[]
+    itinerario: readonly string[]
     devolvendo: boolean
     visual: { x: number; y: number; z: number }
     pose: { x: number; y: number; z: number }
@@ -340,7 +341,8 @@ export function Medidor() {
             fase: movimento.barco.fase,
             distancia: movimento.barco.distancia,
             comprimento: movimento.barco.rota.comprimento,
-            recifePronto: movimento.barco.recifePronto,
+            prontos: [...movimento.barco.prontos],
+            itinerario: [...movimento.barco.itinerario],
             devolvendo: movimento.barco.devolvendo,
             visual: { ...movimento.barco.visual },
             pose: { ...movimento.barco.pose },

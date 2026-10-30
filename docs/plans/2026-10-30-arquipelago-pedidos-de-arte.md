@@ -6,7 +6,8 @@ O commit remoto `080b6a3d2` entregou os cinco modelos, relatórios e provas da a
 integrados ao trabalho local em 30/10/2026, sem regeneração de GLB. A espera pelo chão foi
 ampliada na direção dos deques e conferida contra todos os seus vértices. O pedido abaixo
 fica preservado como especificação da entrega. Não resta pedido de arte destes cinco portos.
-A rede ampliada do barco e a abertura das boias ainda precisam da implementação de L10.
+A rede ampliada e as boias estão implementadas no recorte L10 de 30/10, com plano e provas
+em `docs/superpowers/plans/2026-10-30-arquipelago-rede-do-barco.md`.
 
 Base conferida: staging `6461f19c0`, em 30/10/2026. Pedido derivado da leitura dos GLBs e do
 plano `docs/superpowers/plans/2026-10-30-arquipelago-mapa-descoberto.md`. Esta sessão não altera

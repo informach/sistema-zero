@@ -48,8 +48,8 @@ somente no setor de 35 graus para cada lado do porto. Limites com folga do corpo
 o limite maior de 28 m. Nenhum desses setores ultrapassa a ativação da ilha, a 30 m.
 `portos-das-ilhas.test.ts` percorre os vértices reais dos novos colisores; os testes do Pico,
 Vale e Nuvens não excluem mais o porto da cobertura. Isso protege a reabertura sobre o deque.
-Os portos já fazem parte das ilhas completas. Rede ampliada do barco, abertura das boias e
-transformação vertical das âncoras das Nuvens ainda pertencem ao restante de L10.
+Os portos fazem parte das ilhas completas. A rede e a transformação das âncoras estão
+implementadas no recorte L10 descrito na seção do barco abaixo. O fantasma familiar continua separado.
 
 ## Receitas sazonais (L09, 30/10/2026)
 
@@ -1294,28 +1294,37 @@ Testes: `tests/festas.test.ts` e `playground/verificar-festa-browser.ts`. O brow
 plataforma falsa, verifica os fluxos em 1280 e 390 pixels e aceita `ARQUIPELAGO_CHROMIUM`.
 Relatório, prints e decisões pendentes em `docs/qa/2026-10-29-primeira-festa-da-estacao.md`.
 
-## Barco entre as ilhas (fase3-04)
+## Rede do barco (fase3-04 ampliada, L10)
 
-- `sistemas/barco.ts` prepara a rota entre os portos e avança a travessia guiada em passo fixo.
-  `modos/barco.ts` usa o mesmo corpo e o controlador livre com colisões; não libera nado nem
-  pulo no mar. A resposta opcional `obstruido` mantém o apoio e permite devolver ao cais.
-- `mundo/barcos.tsx` usa as âncoras dos GLBs, `useCopiaAnimada` e `trocarClipe`. O mixer do
-  barco viajante é manual: `avancar` e leitura da âncora na prioridade menos 0,5, depois da
-  física (menos 1) e antes do personagem (0). Não ler a âncora só depois do personagem:
-  isso deixa o avatar um quadro atrás, principalmente em aparelhos lentos.
-- `mundo/portos.ts` lê só os metadados dos GLBs. Não manter uma segunda cópia completa do
-  Recife para ler âncoras. `RecifeVivo` informa colisores prontos e opacidade de 0,99; sair da
-  ilha limpa o sinal. Espera a 27 m, retorno automático após 20 s sem carga.
-- O barco aparece só com o Recife aberto. Substitui nó e colisor do barquinho decorativo.
-  Boias abrem corredor visual de 5 m de meia largura; a correnteza não muda. Rota externa a
-  120 m, velocidade 12 m/s reduzida a 2 m/s nos cais. Regras completas em
-  `docs/arquipelago-regras.md`, seção fase3-04.
-- Não guardar posição no mar nem estado do barco. Pausa congela clipe e travessia. A câmera
-  acompanha o corpo estável, sem giro automático ou balanço, inclusive com movimento reduzido.
-- Playground `?barco=central|recife`, medidor `.barco`, testes `barco.test.ts` e
-  `barco-colisao.test.ts`. `playground/verificar-barco-browser.ts` confere os dois sentidos,
-  pausa, controles, espera por carga, ilha fechada e toque, com SwiftShader e
-  `ARQUIPELAGO_CHROMIUM`. Prints em `docs/qa/2026-10-29-barco/`. Nenhum GLB gerado nesta tarefa.
+- `sistemas/rede-do-barco.ts` deriva seis ligações de vizinhança dos ângulos das ilhas e mantém
+  central a Recife. `ligacaoAberta` exige Recife, origem e destino abertos pela jornada.
+- `scripts/gerar-portos.ts` extrai as sete âncoras para `mundo/portos-da-arte.json`. Build e
+  playground conferem o arquivo; os testes comparam a fonte determinística aos GLBs reais.
+  Não editar coordenadas à mão. O navegador não baixa ilhas para ler âncoras. Nas Nuvens,
+  a transformação soma `ALTURA_DAS_NUVENS`, deixando o barco em y=0 e o cais em y=0,89.
+- `useIlhaCompleta` publica a proteção do chão na prioridade -2, antes da física a -1,
+  incluindo a primeira transição para carregando. Publica/remove `movimento.caisProntos`
+  pelos colisores e opacidade de 0,99. Não atribuir esse sinal só ao Recife.
+- `mundo/barcos.tsx` tem um viajante e monta barcos atracados só a menos de 43 m, com chão
+  pronto. Mantém o teto de uma ilha completa na memória. Cache de curvas pertence à montagem.
+  `movimento.embarcarPara` revalida painel, visita, pausa, jornada, modo, chão, alcance e altura.
+- `interface/barco.tsx` oferece destinos por E ou Usar, foco inicial, ciclo de Tab e Escape.
+  Fechar não embarca. O painel usa as classes do jogo nas duas comunidades e no celular.
+- Arco externo de 150 m. Cinco portos novos usam 25 m pela proa; central usa setor 110 e
+  Recife usa setor -70, fora das áreas de mergulho. Velocidade 12 m/s e 2 m/s perto do cais.
+  Manobra começa a 25 m e termina antes dos últimos 10 m. Giro é interpolado entre amostras;
+  a mistura não extrapola e a meia volta tem lado definido. Não escolher o cais de chegada
+  para alinhar a saída. Pausa congela a viagem e a animação. O mixer permanece na prioridade -0,5.
+- A travessia conhece origem/destino e os dois sinais de prontidão. Espera a 29 m do centro,
+  dentro da ativação de 30 m. Após 20 s sem destino, retorna à origem. Se o retorno também
+  não carregar, permanece segura no barco, sem alternar destinos nem largar o corpo na água.
+- As boias retiram só os corredores das ligações abertas, de 5 m de meia largura. A correnteza
+  de quem nada não muda. Nenhuma versão nova de save, prêmio ou visita automática.
+- `playground/verificar-rede-barco-browser.ts` é o operador atual. O nome antigo do verificador
+  do barco delega a ele. `?barco=central|bosque|vila-doce|recife|pico|vale-dos-dinos|nuvens` começa
+  no cais; `posicao=8` abre a rede inteira. Use uma pasta nova em `ARQUIPELAGO_PRINTS`.
+  Plano e provas: `docs/superpowers/plans/2026-10-30-arquipelago-rede-do-barco.md` e
+  `docs/qa/2026-10-30-rede-barco/README.md`. Nenhum GLB ou gerador de arte alterado.
 
 ## Mergulho do Recife (fase3-02, 29/10/2026)
 

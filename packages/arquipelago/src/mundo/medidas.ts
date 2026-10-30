@@ -12,6 +12,7 @@ export const NIVEL_DA_AGUA = 0
  * O movimento do personagem e do bicho é calculado em cada passo (`useBeforePhysicsStep`).
  */
 export const PASSO_DA_FISICA = 1 / 60
+export const PRIORIDADE_DA_FISICA = -1
 /** A gravidade do jogo (m/s², para baixo): mais forte que a de verdade, para o pulo ser ágil. */
 export const GRAVIDADE = 24
 export const ALTURA_DA_TERRA = 1

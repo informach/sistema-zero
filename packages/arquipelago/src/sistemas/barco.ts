@@ -1,4 +1,7 @@
+import type { IlhaId } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
+
+export type PortoId = Exclude<IlhaId, 'farol'>
 
 /** Propostas da fase3-04, em metros e segundos. Sem gravar a viagem. */
 export const BARCO = {
@@ -9,14 +12,15 @@ export const BARCO = {
   velocidade: 12, // Travessia curta, reduzida automaticamente perto dos cais.
   pertoDoCais: 10, // Faixa de aproximação a 2 m/s.
   velocidadeNoCais: 2,
+  manobra: 25, // Completa a meia volta em água livre, antes dos últimos 10 m ao deque.
   embarque: 1.5, // Tempo para passar do cais ao convés.
   passoAlto: 0.6, // Eleva os pés acima da amurada durante a passagem.
   alcance: 1.25, // Só embarca junto da âncora, fora da luneta.
-  raioExterno: 120, // Fora do anel de 82 m e das rodas de nado.
+  raioExterno: 150, // Fora do anel de 82 m e das rodas de nado.
   setorDeSaida: 110, // Entre Nuvens (80°) e Vale dos Dinos (140°).
-  setorDeChegada: -70, // Aproxima o cais do Recife pelo mar a leste.
+  canalDoRecife: -70, // Entrada já medida pelo sudeste, fora do navio e do labirinto.
   corredor: 5, // Meia largura livre nas boias, incluindo casco e pneus.
-  esperaDaIlha: 27, // Dentro da troca (30 m), fora da espera pelo chão (25 m).
+  esperaDaIlha: 29, // Dentro da ativação de 30 m, antes dos novos deques e sua espera pelo chão.
   esperaMaxima: 20, // Falha de carga devolve ao porto de origem, sem deixar no mar.
 } as const
 
@@ -27,6 +31,7 @@ export interface Porto {
 }
 export interface AmostraDaRota extends Ponto {
   distancia: number
+  giro: number
 }
 export interface RotaDoBarco {
   pontos: AmostraDaRota[]
@@ -34,10 +39,11 @@ export interface RotaDoBarco {
 }
 export type FaseDoBarco = 'atracado' | 'embarque' | 'viagem' | 'espera' | 'desembarque'
 export interface Travessia {
+  itinerario: readonly [PortoId, PortoId]
   portos: readonly [Porto, Porto]
   rota: RotaDoBarco
   passageiro: Ponto
-  centroDoRecife: { x: number; z: number }
+  centros: readonly [Ponto | null, Ponto | null]
   fase: FaseDoBarco
   origem: 0 | 1
   destino: 0 | 1
@@ -51,7 +57,7 @@ export interface Travessia {
   }
   tempo: number
   espera: number
-  recifePronto: boolean
+  prontos: [boolean, boolean]
   inicio: Ponto
   pose: Ponto & { giro: number }
   pe: Ponto
@@ -66,23 +72,54 @@ const polar = (r: number, graus: number): Ponto => ({
   y: 0,
   z: r * Math.sin(rad(graus)),
 })
-const suave = (t: number) => t * t * (3 - 2 * t)
+const suave = (t: number) => {
+  const x = Math.max(0, Math.min(1, t))
+  return x * x * (3 - 2 * x)
+}
 
 /** Curva amostrada uma vez. O laço só consulta números e escreve na saída recebida. */
-export function criarRotaDoBarco(a: Porto, b: Porto): RotaDoBarco {
-  const guias: Ponto[] = [
-    a.barco,
-    { x: a.barco.x, y: 0, z: a.barco.z + BARCO.avancoDaProa },
-    polar(BARCO.raioDeSaida, BARCO.setorDeSaida),
-    polar(BARCO.raioExterno, BARCO.setorDeSaida),
-  ]
-  for (
-    let angulo = BARCO.setorDeSaida - BARCO.passoDoArco;
-    angulo >= BARCO.setorDeChegada;
-    angulo -= BARCO.passoDoArco
+export function criarRotaDoBarco(
+  a: Porto,
+  b: Porto,
+  itinerario: readonly [PortoId, PortoId],
+): RotaDoBarco {
+  const sair = (porto: Porto, id: PortoId): Ponto[] => {
+    const p = porto.barco
+    const ux = Math.cos(porto.giro),
+      uz = -Math.sin(porto.giro)
+    if (id === 'sua-ilha')
+      return [
+        p,
+        { x: p.x + ux * BARCO.avancoDaProa, y: 0, z: p.z + uz * BARCO.avancoDaProa },
+        polar(BARCO.raioDeSaida, BARCO.setorDeSaida),
+        polar(BARCO.raioExterno, BARCO.setorDeSaida),
+      ]
+    // O Recife já tinha um canal de acesso pelo sudeste. Sair reto pela proa atravessaria
+    // a faixa de segurança da área do navio, que não existe nos cinco portos novos.
+    if (id === 'recife') return [p, polar(BARCO.raioExterno, BARCO.canalDoRecife)]
+    const projecao = p.x * ux + p.z * uz
+    const t = -projecao + Math.sqrt(projecao ** 2 + BARCO.raioExterno ** 2 - p.x ** 2 - p.z ** 2)
+    return [
+      p,
+      ...[BARCO.avancoDaProa, 25, t].map((d) => ({ x: p.x + ux * d, y: 0, z: p.z + uz * d })),
+    ]
+  }
+  const ida = sair(a, itinerario[0]),
+    volta = sair(b, itinerario[1])
+  const foraA = ida.at(-1)!,
+    foraB = volta.at(-1)!
+  const angulo = Math.atan2(foraA.z, foraA.x)
+  const diferenca = Math.atan2(
+    Math.sin(Math.atan2(foraB.z, foraB.x) - angulo),
+    Math.cos(Math.atan2(foraB.z, foraB.x) - angulo),
   )
-    guias.push(polar(BARCO.raioExterno, angulo))
-  guias.push(b.barco)
+  const trechos = Math.ceil(Math.abs(diferenca) / rad(BARCO.passoDoArco))
+  const guias = [...ida]
+  for (let i = 1; i < trechos; i++) {
+    const a = angulo + (diferenca * i) / trechos
+    guias.push({ x: BARCO.raioExterno * Math.cos(a), y: 0, z: BARCO.raioExterno * Math.sin(a) })
+  }
+  guias.push(...volta.reverse())
   const pontos: AmostraDaRota[] = []
   let comprimento = 0
   for (let i = 0; i < guias.length - 1; i++) {
@@ -104,6 +141,7 @@ export function criarRotaDoBarco(a: Porto, b: Porto): RotaDoBarco {
         y: 0,
         z: eixo(p0.z, p1.z, p2.z, p3.z),
         distancia: 0,
+        giro: 0,
       }
       const anterior = pontos.at(-1)
       if (anterior) comprimento += Math.hypot(p.x - anterior.x, p.z - anterior.z)
@@ -113,7 +151,12 @@ export function criarRotaDoBarco(a: Porto, b: Porto): RotaDoBarco {
   }
   const ultimo = pontos.at(-1)!
   comprimento += Math.hypot(b.barco.x - ultimo.x, b.barco.z - ultimo.z)
-  pontos.push({ ...b.barco, distancia: comprimento })
+  pontos.push({ ...b.barco, distancia: comprimento, giro: 0 })
+  for (let i = 0; i < pontos.length; i++) {
+    const a = pontos[Math.max(0, i - 1)]!,
+      b = pontos[Math.min(pontos.length - 1, i + 1)]!
+    pontos[i]!.giro = Math.atan2(-(b.z - a.z), b.x - a.x)
+  }
   return { pontos, comprimento }
 }
 
@@ -136,19 +179,23 @@ export function amostrarRota(
   saida.x = a.x + (b.x - a.x) * t
   saida.y = a.y + (b.y - a.y) * t
   saida.z = a.z + (b.z - a.z) * t
-  saida.giro = Math.atan2(-(b.z - a.z), b.x - a.x)
+  const giro = b.giro - a.giro
+  saida.giro = a.giro + Math.atan2(Math.sin(giro), Math.cos(giro)) * t
 }
 
 export function criarTravessia(
   portos: readonly [Porto, Porto],
   passageiro: Ponto,
-  centroDoRecife: { x: number; z: number },
+  centros: readonly [Ponto | null, Ponto | null],
+  itinerario: readonly [PortoId, PortoId],
+  rota = criarRotaDoBarco(...portos, itinerario),
 ): Travessia {
   return {
+    itinerario,
     portos,
     passageiro,
-    centroDoRecife,
-    rota: criarRotaDoBarco(...portos),
+    centros,
+    rota,
     fase: 'atracado',
     origem: 0,
     destino: 1,
@@ -162,7 +209,7 @@ export function criarTravessia(
     },
     tempo: 0,
     espera: 0,
-    recifePronto: false,
+    prontos: [true, false],
     inicio: { x: 0, y: 0, z: 0 },
     pose: { ...portos[0].barco, giro: portos[0].giro },
     pe: { ...portos[0].embarque },
@@ -183,7 +230,7 @@ export function podeEmbarcar(
     aberta &&
     noChao &&
     v.fase === 'atracado' &&
-    (porto === 0 || v.recifePronto) &&
+    v.prontos[porto] &&
     Math.hypot(p.x - e.x, p.z - e.z) <= BARCO.alcance &&
     Math.abs(p.y - e.y) < 0.5
   )
@@ -232,13 +279,13 @@ export function passoDaTravessia(v: Travessia, dt: number, pausado: boolean): vo
     }
     return
   }
-  const perto =
-    Math.hypot(v.pose.x - v.centroDoRecife.x, v.pose.z - v.centroDoRecife.z) < BARCO.esperaDaIlha
-  if (v.destino === 1 && perto && !v.recifePronto) {
+  const centro = v.centros[v.destino]
+  const perto = centro && Math.hypot(v.pose.x - centro.x, v.pose.z - centro.z) < BARCO.esperaDaIlha
+  if (perto && !v.prontos[v.destino]) {
     v.fase = 'espera'
     v.espera += dt
-    if (v.espera >= BARCO.esperaMaxima) {
-      v.destino = 0
+    if (!v.devolvendo && v.espera >= BARCO.esperaMaxima) {
+      v.destino = v.origem
       v.devolvendo = true
       v.fase = 'viagem'
     }
@@ -256,12 +303,26 @@ export function passoDaTravessia(v: Travessia, dt: number, pausado: boolean): vo
   amostrarRota(v.rota, v.distancia, v.pose)
   if (v.destino === 0) v.pose.giro += Math.PI
   // Mantém o giro da arte no cais, misturando pela menor volta nos últimos metros.
-  const porto = v.distancia < BARCO.pertoDoCais ? v.portos[0] : v.portos[1]
+  const indiceDoPorto = v.distancia < v.rota.comprimento / 2 ? 0 : 1
+  const porto = v.portos[indiceDoPorto]
   const peso =
     1 -
-    suave(Math.min(1, Math.min(v.distancia, v.rota.comprimento - v.distancia) / BARCO.pertoDoCais))
-  v.pose.giro +=
-    Math.atan2(Math.sin(porto.giro - v.pose.giro), Math.cos(porto.giro - v.pose.giro)) * peso
+    suave(
+      Math.max(
+        0,
+        (Math.min(v.distancia, v.rota.comprimento - v.distancia) - BARCO.pertoDoCais) /
+          (BARCO.manobra - BARCO.pertoDoCais),
+      ),
+    )
+  const diferenca = porto.giro - v.pose.giro
+  // Ao entrar de ré, a meia volta tem lado definido. ±pi é o mesmo rumo, mas alternar o sinal
+  // por arredondamento faria o barco virar de um lado para o outro durante a aproximação.
+  const volta = Math.PI * 2
+  const giro =
+    indiceDoPorto === v.destino
+      ? ((diferenca % volta) + volta) % volta
+      : Math.atan2(Math.sin(diferenca), Math.cos(diferenca))
+  v.pose.giro += giro * peso
   peNoConves(v)
   if (v.distancia === (v.destino === 1 ? v.rota.comprimento : 0)) {
     v.fase = 'desembarque'

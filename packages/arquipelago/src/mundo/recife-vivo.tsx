@@ -37,15 +37,7 @@ export function RecifeVivo({
       if (i >= 0) movimento.aguas.splice(i, 1)
     }
   }, [agua, movimento])
-  useEffect(
-    () => () => {
-      if (movimento.barco) movimento.barco.recifePronto = false
-    },
-    [movimento],
-  )
   useFrame(() => {
-    if (movimento.barco)
-      movimento.barco.recifePronto = troca.colisoresNaCena === true && troca.opacidade >= 0.99
     if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
   })
   return (

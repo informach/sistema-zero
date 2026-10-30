@@ -136,7 +136,7 @@ test('Rapier real leva o corpo dos dois cais ao convés e de volta ao chão', as
     registrar([...lerColisores(pier), ...COLISORES_DO_PIER], PIER.x, PIER.z, 0)
     registrar(lerColisores(ilha), recife.centro.x, recife.centro.z, giroDaIlha(recife.ilha))
     const viagem = viagemReal()
-    viagem.recifePronto = true
+    viagem.prontos[1] = true
     const inicio = viagem.portos[0].embarque
     const corpo = world.createRigidBody(
       R.RigidBodyDesc.kinematicPositionBased().setTranslation(
