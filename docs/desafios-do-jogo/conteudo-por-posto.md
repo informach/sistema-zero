@@ -69,7 +69,7 @@ em “Aprenda isso em” e só abrem quando os blocos reais estiverem conquistad
 ## Revisão do conteúdo já existente
 
 O [inventário C01b1](repertorio-local.md), gerado de todos os arquivos, identifica cada uma
-das 54 atividades e seus dois públicos, objetivos, linguagem, apoio pronto e fontes por
+das 54 atividades da época (60 desde o C03a, com os seis quadros da sua ilha) e seus dois públicos, objetivos, linguagem, apoio pronto e fontes por
 bloco. A [versão estruturada](repertorio-local.json) distingue fontes da trilha e opcionais.
 As exceções de lista preparada não comprovam construir a lista ou o laço. Comparar apenas
 tipos novos era a regra anterior do Members. Desde C01c, a derivação compara também o

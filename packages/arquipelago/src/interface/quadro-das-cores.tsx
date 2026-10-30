@@ -228,8 +228,10 @@ export function PainelDoQuadro() {
               <CartaoDoQuadro
                 key={q.numero}
                 q={q}
+                // A sua ilha já tem cor (C03a): o quadro feito é só "Desafio concluído".
                 corConquistada={
-                  cores.ilhas.find((i) => i.id === ilhaId)?.quadros.includes(q.numero) ?? false
+                  ilhaId !== 'sua-ilha' &&
+                  (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.includes(q.numero) ?? false)
                 }
                 ocupado={ferramentaAberta || carregando}
                 aoJogar={(x) => void jogar(x.desafio)}

@@ -1,5 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, TrimeshCollider } from '@react-three/rapier'
+import { ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useJogo } from '../estado/contexto'
@@ -19,11 +20,13 @@ import {
 import { Colisores } from './colisores'
 import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { lugarDoQuadroNaSuaIlha } from './lugar-do-quadro'
 import { DISTANCIA_DOS_LUMIS_DA_PRAIA, LUGARES_DOS_LUMIS_DA_PRAIA } from './lugares-da-praia'
 import { LunetaDoPier } from './luneta'
 import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 import { percursoDaPraia } from './percursos-das-ilhas'
+import { QuadroDasCores } from './quadro-das-cores'
 
 const CORES = {
   grama: [new Color('#7dbb5a'), new Color('#6fae4f')],
@@ -301,6 +304,13 @@ export function IlhaCentral() {
       <Pier />
       <LunetaDoPier />
       <CataVento />
+      <ComReserva reserva={null}>
+        <QuadroDasCores ilha={SUA_ILHA} centro={CENTRO} lugar={LUGAR_DO_QUADRO} />
+      </ComReserva>
     </>
   )
 }
+
+const SUA_ILHA = ilha('sua-ilha')
+const CENTRO = { x: 0, z: 0 } as const
+const LUGAR_DO_QUADRO = lugarDoQuadroNaSuaIlha()

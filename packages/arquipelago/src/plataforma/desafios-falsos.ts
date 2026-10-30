@@ -14,8 +14,9 @@ import { coresDoCatalogo } from '../sistemas/cores-conquistadas'
 
 /**
  * Desafios de mentira para o playground: três quadros cadastrados no Bosque (um pronto para fazer,
- * um que pede um bloco de curso e um feito), o resto vazio, e o desafio do dia nos três estados
- * (`DiaDoPlayground`). Abrir um desafio "resolve" na hora.
+ * um que pede um bloco de curso e um feito), o resto vazio, dois da sua ilha (C03a: um feito e um
+ * pronto, sem pintar a ilha) e o desafio do dia nos três estados (`DiaDoPlayground`). Abrir um
+ * desafio "resolve" na hora.
  */
 export type DiaDoPlayground = 'pronto' | 'feito' | 'nenhum'
 
@@ -33,11 +34,12 @@ function desafio(
   quadro: number,
   titulo: string,
   situacao: DesafioNaLista['situacao'],
+  ilha: IlhaId = 'bosque',
 ): DesafioNaLista {
   return {
     id,
     revisao: 1,
-    ilha: 'bosque',
+    ilha,
     tipo: 'quadro-das-cores',
     quadro,
     ordem: quadro,
@@ -47,7 +49,7 @@ function desafio(
       situacao === 'faltam-blocos'
         ? [{ bloco: 'sz_js_repeat', rotulo: 'Repetir vezes', cursos: [CURSO] }]
         : [],
-    recompensa: { cor: true, moedas: 20, moedasExtra: 10 },
+    recompensa: { cor: ilha !== 'sua-ilha', moedas: 20, moedasExtra: 10 },
     recompensaVista: situacao === 'concluido',
   }
 }
@@ -75,6 +77,14 @@ export function criarDesafiosFalsos(
       situacao('faltam-blocos'),
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
+    desafio('00000000-0000-4000-8000-0000000000b1', 1, 'Passos na areia', 'concluido', 'sua-ilha'),
+    desafio(
+      '00000000-0000-4000-8000-0000000000b2',
+      2,
+      'A primeira concha',
+      'disponivel',
+      'sua-ilha',
+    ),
   ]
   if (o.quadrosFeitos) {
     for (let quadro = 4; quadro <= QUADROS_POR_ILHA; quadro++) {

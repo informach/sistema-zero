@@ -87,7 +87,8 @@ sendo a fonte dos commits. Integrado = merge no staging local.
 | C01b (Recife, Pico, Vale, Nuvens) | Integrado e enviado (`b4ae582b6`) |
 | E04 | Quintal grande do Vale integrado (`74819e31b`); iglu adiado (salvamento cheio na V20); segundo andar, terreno e subida final pendentes |
 | C02 | Em andamento |
-| C03, Q01 | Não começados |
+| C03a Pega-conchas da sua ilha | Seis quadros Kids e adulto, executor real aprovado, cavalete na praia (regras §7.11.1) |
+| C03b projeto autoral após o Farol, Q01 | Não começados |
 | S01 Companhia | Tratado em 30/10: o bichinho do quarto acompanha; com bicho adotado, a criança escolhe (regras §6.26) |
 
 Orientação vigente da dona (30/10): depois do envio do C01b2b, pausar novos lotes.

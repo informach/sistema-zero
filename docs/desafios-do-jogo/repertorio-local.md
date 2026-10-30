@@ -1,6 +1,6 @@
 # Inventário de repertório dos desafios
 
-Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 54 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
+Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 60 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
 
 Tipos já presentes não provam compreensão, e tipos novos não são a única evidência de mudança: alterar um valor ou uma condição pode manter o mesmo tipo. A prova pedagógica continua sendo o executor com inicial, gabarito e negativos.
 
@@ -8,6 +8,12 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 
 | Ilha | Atividade | Intenção | Objetivos obrigatórios atuais | Tipos sem fonte local na trilha | Publicação |
 | --- | --- | --- | --- | --- | --- |
+| sua-ilha | Passos na areia | aplicacao-em-blocos | A seta para a direita leva o guia pela areia.; Segurando a seta, o guia para na borda da tela. | Nenhum neste recorte | pedida |
+| sua-ilha | A primeira concha | aplicacao-em-blocos | No contato, o guia guarda que tem a concha.; Passar por cima da concha não pega; descer até ela pega. | Nenhum neste recorte | pedida |
+| sua-ilha | O balde do Nico | aplicacao-em-blocos | Pegue a concha e entregue no balde.; Sem a concha, o balde marca que o Nico pediu.; Sem a concha o balde espera; buscar a concha e voltar entrega. | Nenhum neste recorte | pedida |
+| sua-ilha | A concha rosa | aplicacao-em-blocos | Pela concha rosa, o balde recebe a entrega.; Só com a cinza, o Nico pede a rosa e nada é entregue. | Nenhum neste recorte | pedida |
+| sua-ilha | A maré volta | aplicacao-em-blocos | Depois da entrega, Enter traz a praia de volta.; Enter devolve a concha para a areia. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas | aplicacao-em-blocos | Com as três conchas, o balde fica cheio.; Sem a concha do alto, o balde continua esperando. | Nenhum neste recorte | pedida |
 | bosque | Vagalume aceso | retomada-em-blocos | Espaço acende o vagalume e mantém a luz acesa. | Nenhum neste recorte | não |
 | bosque | O lanche do coelho | retomada-em-blocos | Pegue a alface e entregue ao coelho.; Chegar ao coelho sem alface espera; buscar e voltar entrega.; A alface entregue não pode ser recolhida de novo. | Nenhum neste recorte | não |
 | bosque | Trilha das pegadas | retomada-em-blocos | Visite as três pegadas na ordem para terminar.; A última pegada só termina depois das anteriores. | Nenhum neste recorte | não |

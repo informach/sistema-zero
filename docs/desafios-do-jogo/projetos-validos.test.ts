@@ -4,7 +4,7 @@ import { projectBlockTypes } from '../../packages/studio/src/core/projectDocumen
 
 // O schema do manifesto não inspeciona o documento do Estúdio. A importação Blockly
 // pode normalizar IDs repetidos, mas a análise do Members precisa recusar o documento.
-for (const pasta of ['bosque', 'vila-doce', 'recife', 'pico', 'vale', 'nuvens'])
+for (const pasta of ['sua-ilha', 'bosque', 'vila-doce', 'recife', 'pico', 'vale', 'nuvens'])
   for (const publico of ['kids', 'adulto']) {
     const manifesto = ManifestoDeDesafiosSchema.parse(
       await Bun.file(

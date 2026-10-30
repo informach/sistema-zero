@@ -1,5 +1,26 @@
 import { type Object3D, Quaternion, Vector3 } from 'three'
 import type { ColisorDaIlha } from './colisores-da-ilha'
+import { alturaDaIlha } from './medidas'
+
+/** Onde o cavalete fica e para onde olha, no espaço do grupo que o monta. */
+export interface LugarDoQuadro {
+  x: number
+  y: number
+  z: number
+  giro: number
+}
+
+/**
+ * O Quadro das Cores da sua ilha (C03a, 30/10/2026): os desafios do Faísca, com o Pega-conchas no
+ * sexto quadro. Fica na grama, ao lado da trilha de pedras da porta até o píer, olhando para ela.
+ * A sua ilha já tem cor: o cavalete acende as manchas, a ilha não muda.
+ */
+export const QUADRO_DA_SUA_ILHA = { x: -1.5, z: 18.5, olharPara: { x: -4, z: 18 } } as const
+
+export function lugarDoQuadroNaSuaIlha(): LugarDoQuadro {
+  const { x, z, olharPara } = QUADRO_DA_SUA_ILHA
+  return { x, y: alturaDaIlha(x, z), z, giro: Math.atan2(olharPara.x - x, olharPara.z - z) }
+}
 
 /**
  * Onde o quadro fica: perto da chegada da ponte (a primeira coisa que a pessoa vê ao entrar na
@@ -8,12 +29,7 @@ import type { ColisorDaIlha } from './colisores-da-ilha'
 export const LUGAR_DO_QUADRO = { paraDentro: 3.2, paraOLado: 2.4 } as const
 
 /** Onde o quadro fica, no espaço do grupo da ilha (o giro da ilha já aplicado). */
-export function posicaoDoQuadro(modelo: Object3D): {
-  x: number
-  y: number
-  z: number
-  giro: number
-} {
+export function posicaoDoQuadro(modelo: Object3D): LugarDoQuadro {
   const chegada = modelo.getObjectByName('chegada')
   const local = chegada ? chegada.position : { x: 11.6, y: 1, z: 0 }
   // No chão do modelo a chegada fica no +x: o quadro vem para dentro (−x) e para o lado (+z).
@@ -46,7 +62,11 @@ export const COLISORES_DO_QUADRO: ColisorDaIlha[] = [
 
 /** O mesmo colisor usado no mundo, no referencial da raiz preparada da ilha. */
 export function colisoresDoQuadro(modelo: Object3D): ColisorDaIlha[] {
-  const lugar = posicaoDoQuadro(modelo)
+  return colisoresNoLugar(posicaoDoQuadro(modelo))
+}
+
+/** O colisor do cavalete posto num lugar (o da sua ilha, nos testes da ilha central). */
+export function colisoresNoLugar(lugar: LugarDoQuadro): ColisorDaIlha[] {
   const giro = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), lugar.giro)
   return COLISORES_DO_QUADRO.map((c) => {
     if (c.forma === 'malha') return c
