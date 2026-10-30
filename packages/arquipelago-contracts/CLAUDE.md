@@ -5,6 +5,14 @@ Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-es
 Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
 explicam sua introdução, não a versão atual da resposta.
 
+## Visitas adultas V1 (L12, 30/10/2026)
+
+`visitas-adultas.ts` define o código base64url de 32 caracteres, comando de geração vazio,
+comando `{ codigo }`, estado sem código e projeção visual sem identidade. O quarto e seus
+itens removem campos não desenhados; o quarto próprio continua com seu contrato aberto.
+Os métodos da porta do serviço agora incluem DELETE, de forma aditiva. Sem alteração da V18,
+do teto do save ou do formato histórico de visitas Kids. Não usar código em URL ou save.
+
 ## Fantasma V1 (L10, 30/10/2026)
 
 `fantasma.ts`: amostras a 100 ms, coordenadas inteiras em centímetros, giro em 65536 unidades,

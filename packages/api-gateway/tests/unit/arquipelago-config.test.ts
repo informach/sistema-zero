@@ -11,6 +11,29 @@ const transforms = [
 ]
 
 describe('Arquipélago Vagalume no gateway', () => {
+  test('convites adultos exigem JWT, não usam código na URL e têm corpo e frequência limitados', () => {
+    const jogo = arquipelagoGateway({
+      url: 'http://jogo.local',
+      transforms,
+      resilience: { timeoutMs: 15000 },
+    })
+    const r = jogo.routes.filter(
+      (r) => r.id.startsWith('arquipelago-visita-adulta-') || r.id === 'arquipelago-convite-adulto',
+    )
+    expect(r).toHaveLength(3)
+    for (const rota of r) {
+      expect(rota.maxBodyBytes).toBe(1024)
+      expect(rota.auth).toMatchObject({ required: true, strategies: ['jwt'] })
+      expect(rota.rateLimit?.by).toBe('principal')
+      expect(rota.pathPattern).not.toContain(':')
+    }
+    expect(r.find((r) => r.id === 'arquipelago-convite-adulto')?.methods).toEqual([
+      'GET',
+      'POST',
+      'DELETE',
+    ])
+    expect(r.find((r) => r.id === 'arquipelago-visita-adulta-abrir')?.methods).toEqual(['POST'])
+  })
   test('Mural próprio exige JWT ativo e limite por identidade', () => {
     expect(realConfig.routes.find((r) => r.id === 'hub-my-playable-showcase')).toMatchObject({
       methods: ['GET'],

@@ -133,6 +133,19 @@ export const fantasmas = arquipelagoSchema.table(
   ],
 )
 
+/** Consentimento adulto revogável. O código em claro não é persistido. */
+export const convitesAdultos = arquipelagoSchema.table(
+  'convites_adultos',
+  {
+    jogadorId: uuid()
+      .primaryKey()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    hash: varchar({ length: 64 }).notNull().unique(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [check('convites_adultos_hash_check', sql`${t.hash} ~ '^[0-9a-f]{64}$'`)],
+)
+
 /** Segundos de tempo livre por jogador e dia civil de São Paulo. */
 export const tempoDiario = arquipelagoSchema.table(
   'tempo_diario',
@@ -509,6 +522,7 @@ export const pedidosRemunerados = arquipelagoSchema.table(
 
 export const schema = {
   mudancasDeAparencia,
+  convitesAdultos,
   fantasmas,
   pedidosRemunerados,
   comprasDeInsumos,
