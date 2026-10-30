@@ -342,6 +342,48 @@ try {
     console.log(`PASS recusa ${familia}`)
     await contexto.close()
   }
+  // ── 4. A casa de um amigo (N08a): os responsáveis aceitaram a Casa da Lua ────────────────────
+  {
+    const contexto = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    contexto.setDefaultTimeout(120_000)
+    const pagina = await contexto.newPage()
+    const erros: string[] = []
+    pagina.on('pageerror', (e) => erros.push(e.message))
+    const { x, z } = CHEGADA_DA_VISITA
+    await pagina.goto(`${base}/?novo=1&persistir=0&familia=irmaos&em=${x},${z}`, {
+      waitUntil: 'networkidle',
+    })
+    const painel = await abrirVisitas(pagina)
+    await painel.getByRole('heading', { name: 'Casas de amigos' }).waitFor()
+    await painel.getByText('Casa da Lua').waitFor()
+    await pagina.screenshot({ path: path.join(prints, 'amigos-1-painel.png') })
+    await painel.getByRole('button', { name: 'Ver a casa: Casa da Lua' }).click()
+    await painel.waitFor({ state: 'hidden' })
+    const faixa = pagina.locator('.arq-visita-faixa')
+    await faixa.getByText('Você está visitando Casa da Lua. Aqui você só olha.').waitFor()
+    assert.equal(await pagina.locator('.arq-modos').count(), 0, 'o Construir continua na visita')
+    await pagina.waitForTimeout(2000)
+    await pagina.screenshot({ path: path.join(prints, 'amigos-2-casa-da-lua.png') })
+    await voltar(pagina, faixa)
+    assert.deepEqual(erros, [])
+    console.log('PASS casa de amigo: lista, visita só de olhar e volta')
+    await contexto.close()
+  }
+  {
+    const contexto = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    contexto.setDefaultTimeout(120_000)
+    const pagina = await contexto.newPage()
+    const { x, z } = CHEGADA_DA_VISITA
+    await pagina.goto(`${base}/?novo=1&persistir=0&familia=desligada&em=${x},${z}`, {
+      waitUntil: 'networkidle',
+    })
+    const painel = await abrirVisitas(pagina)
+    await painel
+      .getByText('As visitas de outras crianças estão desligadas. Quem decide são os responsáveis.')
+      .waitFor()
+    console.log('PASS casas de amigos desligadas pelos responsáveis')
+    await contexto.close()
+  }
   console.log(`Prints: ${prints}`)
 } finally {
   await browser?.close()

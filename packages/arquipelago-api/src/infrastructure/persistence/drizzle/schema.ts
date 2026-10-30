@@ -146,6 +146,41 @@ export const convitesAdultos = arquipelagoSchema.table(
   (t) => [check('convites_adultos_hash_check', sql`${t.hash} ~ '^[0-9a-f]{64}$'`)],
 )
 
+/**
+ * Visitas de outras crianças (N08a, 30/10/2026): o convite de cada criança anfitriã, só o hash do
+ * código, gerado pelo responsável da conta dela. Apagar o salvamento apaga o convite.
+ */
+export const convitesDeAmigos = arquipelagoSchema.table(
+  'convites_de_amigos',
+  {
+    perfilId: uuid()
+      .primaryKey()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    contaId: uuid().notNull(),
+    hash: varchar({ length: 64 }).notNull().unique(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [check('convites_de_amigos_hash_check', sql`${t.hash} ~ '^[0-9a-f]{64}$'`)],
+)
+
+/** As casas de amigos que cada família aceitou, com o apelido que ela deu (N08a). */
+export const casasDeAmigos = arquipelagoSchema.table(
+  'casas_de_amigos',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    contaVisitante: uuid().notNull(),
+    perfilAnfitriao: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    apelido: varchar({ length: 24 }).notNull(),
+    criadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('casas_de_amigos_par').on(t.contaVisitante, t.perfilAnfitriao),
+    check('casas_de_amigos_apelido_check', sql`char_length(${t.apelido}) between 1 and 24`),
+  ],
+)
+
 /** Segundos de tempo livre por jogador e dia civil de São Paulo. */
 export const tempoDiario = arquipelagoSchema.table(
   'tempo_diario',
@@ -523,6 +558,8 @@ export const pedidosRemunerados = arquipelagoSchema.table(
 export const schema = {
   mudancasDeAparencia,
   convitesAdultos,
+  convitesDeAmigos,
+  casasDeAmigos,
   fantasmas,
   pedidosRemunerados,
   comprasDeInsumos,

@@ -1,6 +1,11 @@
 /** Contratos do Arquipélago usados pelas comunidades. */
 export {
   AcessoSchema,
+  type AmigosDaFamiliaParaOsPais,
+  AmigosDaFamiliaParaOsPaisSchema,
+  ApelidoDeCasaSchema,
+  CasaAceitaSchema,
+  ConviteDeAmigoGeradoSchema,
   HORAS_DA_VOLTA_AO_CURSO,
   LeituraDoLimiteDaFamiliaSchema,
   LIMITE_DIARIO_MAXIMO_MINUTOS,

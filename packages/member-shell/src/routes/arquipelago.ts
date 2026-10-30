@@ -1,5 +1,7 @@
 import 'server-only'
 import {
+  type AmigosDaFamiliaParaOsPais,
+  AmigosDaFamiliaSchema,
   CORPO_DO_FANTASMA_MAX_BYTES,
   IrmaosDoJogadorSchema,
   type IrmaosParaOJogo,
@@ -105,6 +107,8 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/pedidos/') ||
           caminho.startsWith('/familia/minijogos') ||
           caminho.startsWith('/irmaos') ||
+          caminho.startsWith('/amigos') ||
+          caminho.startsWith('/familia/amigos') ||
           caminho === '/desafios/cores' ||
           caminho.startsWith('/fantasmas') ||
           caminho.startsWith('/visitas-adultas/')
@@ -375,7 +379,62 @@ export function createArquipelagoRoutes(deps: {
         return NextResponse.json(paraOsPais)
       },
     },
-    /** As permissões de visita da família (só gravar e ler por enquanto: Fase 3 do jogo). */
+    /**
+     * Visitas de outras crianças (N08a, 30/10/2026), na área dos pais: os convites de cada criança
+     * (com o nome da grade do Auth, nunca do serviço) e as casas que a família aceitou. Resposta
+     * fora do contrato vira 502.
+     */
+    arquipelagoAmigosDaFamilia: {
+      GET: async () => {
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        const r = await gateway.gatewayFetch('/arquipelago/familia/amigos', {
+          method: 'GET',
+          query: { perfis: lista.perfis.map((p) => p.id).join(',') },
+        })
+        if (r.status !== 200) return repasse(r)
+        const lido = AmigosDaFamiliaSchema.safeParse(r.body)
+        if (!lido.success) return repasse({ ...r, body: null })
+        const nomes = new Map(lista.perfis.map((p) => [p.id.toLowerCase(), nomeDoPerfil(p)]))
+        const paraOsPais: AmigosDaFamiliaParaOsPais = {
+          ...lido.data,
+          convites: lido.data.convites.flatMap((c) => {
+            const nome = nomes.get(c.perfilId.toLowerCase())
+            return nome ? [{ ...c, nome }] : []
+          }),
+        }
+        const resposta = NextResponse.json(paraOsPais)
+        resposta.headers.set('cache-control', 'private, no-store')
+        return resposta
+      },
+    },
+    arquipelagoConviteDeAmigo: {
+      POST: comCorpo('/familia/amigos/convite', 'POST', CORPO_PEQUENO),
+      DELETE: async (req: Request) => {
+        const perfil = new URL(req.url).searchParams.get('perfil') ?? ''
+        return UUID.test(perfil)
+          ? chamar(`/familia/amigos/convite/${perfil}`, 'DELETE')
+          : invalido()
+      },
+    },
+    arquipelagoAceitarAmigo: {
+      POST: comCorpo('/familia/amigos/aceitar', 'POST', CORPO_PEQUENO),
+    },
+    arquipelagoRemoverAmigo: {
+      DELETE: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/familia/amigos/${id}`, 'DELETE') : invalido()
+      },
+    },
+    /** A criança: as casas de amigos que a família aceitou e a casa de uma delas, só leitura. */
+    arquipelagoCasasDeAmigos: { GET: () => chamar('/amigos', 'GET') },
+    arquipelagoCasaDeAmigo: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/amigos/${id}/casa`, 'GET') : invalido()
+      },
+    },
+    /** As permissões de visita da família. */
     arquipelagoPermissoesDaFamilia: {
       GET: () => chamar('/familia/permissoes', 'GET'),
       PUT: comCorpo('/familia/permissoes', 'PUT', CORPO_PEQUENO),

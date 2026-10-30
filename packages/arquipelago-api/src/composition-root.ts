@@ -9,6 +9,7 @@ import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDasProfissoes } from './application/servico-das-profissoes'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDasVisitasAdultas } from './application/servico-das-visitas-adultas'
+import { ServicoDasVisitasDeAmigos } from './application/servico-das-visitas-de-amigos'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
 import { ServicoDosFantasmas } from './application/servico-dos-fantasmas'
@@ -35,6 +36,7 @@ import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizz
 import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { DrizzleRepositorioDasVisitasAdultas } from './infrastructure/persistence/drizzle/repositorio-visitas-adultas'
+import { DrizzleRepositorioDasVisitasDeAmigos } from './infrastructure/persistence/drizzle/repositorio-visitas-de-amigos'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -109,6 +111,13 @@ export function createApplication(env: Env): Application {
     logger,
   })
   const app = createServer({
+    amigos: new ServicoDasVisitasDeAmigos({
+      repo: new DrizzleRepositorioDasVisitasDeAmigos(connection.db),
+      familia: repositorioDaFamilia,
+      politica,
+      membros,
+      logger,
+    }),
     visitasAdultas: new ServicoDasVisitasAdultas({
       repo: new DrizzleRepositorioDasVisitasAdultas(connection.db),
       politica,

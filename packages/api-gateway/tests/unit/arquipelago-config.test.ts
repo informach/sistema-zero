@@ -193,6 +193,24 @@ describe('Arquipélago Vagalume no gateway', () => {
       'arquipelago-familia-semana',
     )
     expect(registry.resolve('PUT', '/arquipelago/familia/semana', 'v1')).toBeUndefined()
+    // Visitas de outras crianças (N08a).
+    expect(registry.resolve('GET', '/arquipelago/familia/amigos', 'v1')?.route.id).toBe(
+      'arquipelago-familia-amigos',
+    )
+    expect(
+      registry.resolve('POST', '/arquipelago/familia/amigos/aceitar', 'v1')?.route,
+    ).toMatchObject({ id: 'arquipelago-familia-amigos-aceitar', maxBodyBytes: 1024 })
+    expect(
+      registry.resolve(
+        'DELETE',
+        '/arquipelago/familia/amigos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        'v1',
+      )?.route.id,
+    ).toBe('arquipelago-familia-amigos-apagar-1')
+    expect(
+      registry.resolve('GET', '/arquipelago/amigos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/casa', 'v1')
+        ?.route.id,
+    ).toBe('arquipelago-amigos-1')
     for (const metodo of ['GET', 'PUT']) {
       expect(
         registry.resolve(metodo, '/arquipelago/familia/permissoes', 'v1')?.route,

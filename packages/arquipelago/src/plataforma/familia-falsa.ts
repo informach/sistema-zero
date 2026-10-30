@@ -1,10 +1,13 @@
 import {
   type Canteiro,
+  type CasaDeAmigo,
   type CasaDoIrmao,
+  type CasasDeAmigos,
   criarSalvamentoInicial,
   type IrmaosParaOJogo,
   type QuartoDoJogo,
   VERSAO_DAS_VISITAS,
+  VERSAO_DAS_VISITAS_DE_AMIGOS,
 } from '@sistemazero/arquipelago-contracts'
 import { obraDeExemplo } from './obra-de-exemplo'
 
@@ -106,9 +109,49 @@ function casaDe(perfilId: string): CasaDoIrmao | null {
 
 const CASA = /^\/irmaos\/([0-9a-f-]{36})\/casa$/
 
+/** A casa de amigo de mentira (N08a): com `irmaos`, os responsáveis já aceitaram a Casa da Lua. */
+export const CASA_DA_LUA = 'cccccccc-0000-4000-8000-00000000000c'
+const CASA_DE_AMIGO = /^\/amigos\/([0-9a-f-]{36})\/casa$/
+const CASAS_DE_AMIGOS: CasasDeAmigos['casas'] = [{ id: CASA_DA_LUA, apelido: 'Casa da Lua' }]
+
+function amigos(
+  situacao: FamiliaDoPlayground,
+  caminho: string,
+): { status: number; corpo: unknown } {
+  if (situacao === 'fora-do-ar')
+    return { status: 502, corpo: { error: { code: 'ARQUIPELAGO_INDISPONIVEL' } } }
+  const casa = CASA_DE_AMIGO.exec(caminho)
+  if (!casa) {
+    const corpo: CasasDeAmigos = {
+      versao: VERSAO_DAS_VISITAS_DE_AMIGOS,
+      situacao: situacao === 'desligada' ? 'desligado' : 'ok',
+      casas: situacao === 'irmaos' ? CASAS_DE_AMIGOS : [],
+    }
+    return { status: 200, corpo }
+  }
+  if (situacao === 'desligada')
+    return { status: 403, corpo: { error: { code: 'VISITAS_DE_AMIGOS_DESLIGADAS' } } }
+  if (situacao !== 'irmaos' || casa[1] !== CASA_DA_LUA)
+    return { status: 404, corpo: { error: { code: 'CASA_DE_AMIGO_INDISPONIVEL' } } }
+  const corpo: CasaDeAmigo = {
+    versao: VERSAO_DAS_VISITAS_DE_AMIGOS,
+    id: CASA_DA_LUA,
+    apelido: 'Casa da Lua',
+    obra: obraDeExemplo(),
+    horta: horta({ 0: { semente: 'milho', regadoEm: MUITO_ANTES } }),
+    completos: [],
+    quarto: null,
+  }
+  return { status: 200, corpo }
+}
+
 export function criarFamiliaFalsa(situacao: FamiliaDoPlayground = 'sozinha') {
   return {
     buscar(caminho: string, metodo: string): { status: number; corpo: unknown } | null {
+      if (caminho === '/amigos' || CASA_DE_AMIGO.test(caminho))
+        return metodo === 'GET'
+          ? amigos(situacao, caminho)
+          : { status: 404, corpo: { error: { code: 'NOT_FOUND' } } }
       const casa = CASA.exec(caminho)
       if (caminho !== '/irmaos' && !casa) return null
       if (metodo !== 'GET') return { status: 404, corpo: { error: { code: 'NOT_FOUND' } } }

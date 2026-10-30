@@ -406,7 +406,8 @@ ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são o
 - O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
   leitura recebe 403 `SOMENTE_LEITURA`.
 - Quem obedece a "Visitas de irmãos": os recordes da família, as visitas e os trajetos familiares (§6.20).
-  As outras duas ainda só se gravam, leem e mostram.
+  "Visitas de outras crianças" abre as casas de amigos (§6.22). "Fotos no Clube" ainda só se
+  grava, lê e mostra.
 
 **No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
 família esconde o cartão inteiro (e a semana e as permissões nem são pedidas); semana ou
@@ -2144,6 +2145,36 @@ promessa de revogação instantânea por push. Suporte pode consultar, mas não 
 As trajetórias familiares não se tornam públicas por esse convite. Não existe ranking,
 chat, publicação, recompensa ou concessão de blocos por visitar. V18 continua com o mesmo teto.
 Plano e provas locais: `2026-10-30-arquipelago-visitas-adultas.md` e `docs/qa/2026-10-30-visitas-adultas/`.
+
+### 6.22 Visitas de outras crianças (N08a, 30/10/2026)
+
+A proposta diz "No Kids, só família, a menos que os pais liberem" (ECA Digital, art. 21). Tudo
+começa desligado e só funciona com "Visitas de outras crianças" ligado nas **duas** contas.
+
+- **Convite:** na área dos pais, o responsável gera o convite de uma criança. O código (32
+  caracteres, 192 bits) aparece uma vez e é mandado de família para família, fora da plataforma.
+  O serviço guarda só o SHA-256, um convite por criança. Gerar outro código invalida o anterior
+  para aceites novos; as casas já aceitas continuam. "Desligar convite" fecha a casa para todas
+  as famílias que a aceitaram.
+- **Aceite:** o responsável da outra família digita o código e dá um apelido à casa (1 a 24
+  letras, números, espaço, ponto, apóstrofo ou hífen). O aceite vale para as crianças daquela
+  conta, até 20 casas (409 `LIMITE_DE_CASAS`). Código da própria família não vale (404
+  `CASA_DE_AMIGO_INDISPONIVEL`): irmãos já se visitam pela §6.20.
+- **Nomes não atravessam:** o serviço não conhece nomes. O apelido é escrito pela família que
+  visita e fica na conta dela. Não existe diretório, busca ou lista de outras crianças, e a
+  criança nunca digita código.
+- **Na criança:** o painel de visitas mostra "Casas de amigos" embaixo dos irmãos
+  (`GET /amigos`). A visita (`GET /amigos/:id/casa`) é a mesma projeção da casa do irmão (obra,
+  horta, objetos completos e quarto), só de olhar, sem o id de quem mora. A cada leitura o
+  serviço confere de novo: interruptor ligado nas duas contas, convite ativo, criança anfitriã
+  ainda vendo o jogo. Se desligaram, a resposta é 403 `VISITAS_DE_AMIGOS_DESLIGADAS` e o painel
+  diz que quem decide são os responsáveis.
+- **Rotas dos pais** (`/arquipelago/familia/amigos*`, só a sessão da conta com o portão de
+  senha): `GET` (convites por criança, com o nome posto pelo BFF a partir da grade do Auth, e as
+  casas aceitas), `POST convite`, `DELETE convite/:perfilId`, `POST aceitar`, `DELETE :id`.
+  Suporte somente leitura recebe 403 `SOMENTE_LEITURA`.
+- Sem mudança no salvamento. Banco: migração `0018_visitas_de_amigos` (`convites_de_amigos` e
+  `casas_de_amigos`, um aceite por par). Plano: `2026-10-30-arquipelago-visitas-de-amigos.md`.
 
 ## 7. Desafios
 

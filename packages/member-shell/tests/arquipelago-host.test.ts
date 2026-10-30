@@ -4,6 +4,7 @@ import {
   criarPlataformaDoArquipelago,
   lerFerramentasMolda,
   pertenceAoPerfil,
+  soDoKids,
 } from '../src/components/arquipelago-host'
 
 const fetchOriginal = globalThis.fetch
@@ -315,4 +316,14 @@ describe('a porta da plataforma para o jogo', () => {
       expect((await adulto.servico.buscar(caminho)).status).toBe(404)
     expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/irmaos'])
   })
+})
+
+test('casas de amigos (N08a): só no Kids, só leitura e só o id', () => {
+  const id = '88888888-8888-4888-8888-888888888888'
+  for (const c of ['/amigos', `/amigos/${id}/casa`]) {
+    expect(caminhoDoJogo(c)).toBe(true)
+    expect(soDoKids(c)).toBe(true)
+  }
+  for (const c of ['/amigos/x/casa', `/amigos/${id}`, '/familia/amigos', '/amigos/aceitar'])
+    expect(caminhoDoJogo(c)).toBe(false)
 })

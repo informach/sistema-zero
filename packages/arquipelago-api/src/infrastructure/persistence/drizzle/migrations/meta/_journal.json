@@ -127,6 +127,13 @@
       "when": 1793374450692,
       "tag": "0017_percursos_da_v19",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793379687389,
+      "tag": "0018_visitas_de_amigos",
+      "breakpoints": true
     }
   ]
 }
