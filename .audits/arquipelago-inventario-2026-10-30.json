@@ -1,0 +1,5685 @@
+{
+  "base": "f7bee3d3a",
+  "arquivos": [
+    {
+      "arquivo": "packages/arquipelago/src/entrada.tsx",
+      "linhas": 37,
+      "sha256": "b9152c9853f2163cbcabe7e0b8a13bba0d4d8b5acc1b8c7edae3d7c428ad0cc7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react-dom/client",
+        "./interface/estilos",
+        "./jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/jogo.tsx",
+      "linhas": 425,
+      "sha256": "5287205640389f4b602cceb167223cfb21a164e44e334c4da3ae668903e3cf1d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "zustand",
+        "./controles/controle",
+        "./controles/gamepad",
+        "./estado/abertura",
+        "./estado/contexto",
+        "./estado/loja",
+        "./estado/relogios",
+        "./interface/hud",
+        "./interface/salvamento",
+        "./interface/telas",
+        "./interface/voz",
+        "./mundo/cena",
+        "./mundo/interativos",
+        "./sistemas/abertura",
+        "./sistemas/armazem-salvamento",
+        "./sistemas/fila-tempo",
+        "./sistemas/gerente-tempo",
+        "./sistemas/pausa",
+        "./sistemas/salvar",
+        "./sistemas/sessao-tempo",
+        "./adulto/pele-adulta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/adulto/estilos-adultos.ts",
+      "linhas": 111,
+      "sha256": "1799224aaa257156d780474084e44dfe44d15e772f08dba32f93736188523500",
+      "imports": [
+        "../interface/estilos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/adulto/pele-adulta.ts",
+      "linhas": 8,
+      "sha256": "69118cad5fc175224ed0f5e4c53d73379c45c4bf713982c9c710d22d3cc27511",
+      "imports": [
+        "./estilos-adultos",
+        "./voz-adulta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/adulto/voz-adulta.ts",
+      "linhas": 55,
+      "sha256": "c866ce15eb3839dacac33f52704436351c738d4a03a32ad6dd0c4593d4d3ffb6",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../interface/voz",
+        "../sistemas/construcao/projeto-azul",
+        "../sistemas/luneta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/assets/glb.d.ts",
+      "linhas": 5,
+      "sha256": "cc822a53c477d005da0184a2c5b034dd99638ff0d4853208f9b230de2253db9b",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/assets/imagens.d.ts",
+      "linhas": 9,
+      "sha256": "ac349aed29926320cfcf0a4cc4829cd1b84753332b3ecdcaa21d5c82dba6500f",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/controles/controle.ts",
+      "linhas": 157,
+      "sha256": "9f15fc838e28eee89804b134af809daffbdbf1793b76b1beb3b805a4b08ce36d",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/controles/gamepad.ts",
+      "linhas": 147,
+      "sha256": "8ded6af62be46432ed09388ad14f5273673cbd5917ecbf8f86d764c780ce4aca",
+      "imports": [
+        "./controle"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/abertura.ts",
+      "linhas": 68,
+      "sha256": "d5f79eb0ce132c3101a39162bbc01ea9c0fa9fb144c862db0cc5884e096ed673",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/abertura",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/bicho.ts",
+      "linhas": 59,
+      "sha256": "a8d54afa8370afb6ef0e3223b6fdc103af8dbd5f2099434d77ae22c81dfdf1b6",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/cuidar",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/cartas.ts",
+      "linhas": 86,
+      "sha256": "4ee9e0db0979b6d534ef98fbf0f2cb15e03557de562cc4c9c8a229b0d8f699d8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/caderno-dos-lumis",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/conforto.ts",
+      "linhas": 53,
+      "sha256": "2a0f20db2df6a738d046755312523ad9f20e5f67be978c9f7b5f94699706a785",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/conforto",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/construcao.ts",
+      "linhas": 266,
+      "sha256": "0c36a0bdcc0491adbbb00a91825d1523760c45b6337b8e98112a32efd2c563bb",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/construcao/falas",
+        "../sistemas/construcao/ferramentas",
+        "../sistemas/construcao/lote",
+        "../sistemas/construcao/obra",
+        "../sistemas/construcao/quintal",
+        "../sistemas/pausa",
+        "./loja",
+        "../sistemas/construcao/ferramentas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/contexto.tsx",
+      "linhas": 297,
+      "sha256": "72f778e158e34f75ba45238b742b2ec1783043100f02b30bf046d3e583efe7b9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "zustand",
+        "../controles/controle",
+        "../mundo/interativos",
+        "../mundo/vista-da-luneta",
+        "../sistemas/balao",
+        "../sistemas/barco",
+        "../sistemas/cipo",
+        "../sistemas/cordas",
+        "../sistemas/correnteza",
+        "../sistemas/escalada",
+        "../sistemas/gerente-tempo",
+        "../sistemas/percurso",
+        "../sistemas/salvar",
+        "./loja",
+        "../sistemas/mergulho",
+        "../sistemas/montaria",
+        "../sistemas/planador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/convidados.ts",
+      "linhas": 66,
+      "sha256": "2b4cbedea05c714d35e85d0ba8f6702aea6635e4faa4fa98a8ed2be536237aa3",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/moradores",
+        "../sistemas/pausa",
+        "../sistemas/visitas-dos-moradores",
+        "./construcao",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/desafios.ts",
+      "linhas": 144,
+      "sha256": "a012d6ffae7ce52b018bdf7c8d87bfd0f6d69ed0d4725473c46303f77455649a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/quadro-das-cores",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/exploracao.ts",
+      "linhas": 30,
+      "sha256": "5f3fb5a9f3e995320a03ffcab87aaa142701e64501bff3f89f36ce3bfd7e302a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/exploracao",
+        "../sistemas/pausa",
+        "./contexto",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/familia.ts",
+      "linhas": 78,
+      "sha256": "6a6a6612aac2219248fb71af221e48ea10b76ce81acd5cd6d27b0634706e86ba",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/visitas",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/farol.ts",
+      "linhas": 40,
+      "sha256": "00a2bba4b4fd494181a8297b734dc0146e48174bc7e74e65a2a670baa7f76442",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/festas.ts",
+      "linhas": 29,
+      "sha256": "a0d5359b27e77e7e6a2f213ff969ce005d69e620190321da71aa78c3ec8c3a1a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../sistemas/festas",
+        "./contexto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/filhote.ts",
+      "linhas": 43,
+      "sha256": "ebd9ad0adc776813114743b4933aa9dbabbe8a4e7538c9f4f6fc0d6bf57bbce0",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/foto.ts",
+      "linhas": 20,
+      "sha256": "7f844da251cc8b9a67e35f9ce4f00e8095dcc711688d460428147e73f3aa94c5",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/galeria.ts",
+      "linhas": 95,
+      "sha256": "e8758724b0c44ec851347a844da56e113a4f26bc60c7aa15a7d3ae47a763e6fc",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/construcao/galeria",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/loja.ts",
+      "linhas": 257,
+      "sha256": "3ebdd166b0e0948fe691938d10e9d067f34119c822388ebffb654e5a7a904849",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand/vanilla",
+        "../sistemas/clima",
+        "../sistemas/pausa",
+        "../sistemas/percurso",
+        "../sistemas/salvar",
+        "../sistemas/tempo-livre",
+        "../sistemas/visitas",
+        "./contexto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/minijogos.ts",
+      "linhas": 51,
+      "sha256": "3c3cc292121c913be05020322d150da16b4c319515eb4f7a1aa09f770225aa3e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/construcao/projeto-azul",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/moradores.ts",
+      "linhas": 91,
+      "sha256": "94e3256bd3d9acafd5c6a22d14c92c58c150d159855f67c9b470a831607b6b18",
+      "imports": [
+        "zustand",
+        "zustand/vanilla",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/mural.ts",
+      "linhas": 52,
+      "sha256": "0c3e97e8d2e23ffe3ded9f715bf356f8e4e19f25747c8b41e744dea61091a61d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/preferencias.ts",
+      "linhas": 22,
+      "sha256": "2f34bd05f54e38ebf78e0a653060789f495552fb8fef6d9e141aa04b8a780637",
+      "imports": [
+        "react"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/relogios.tsx",
+      "linhas": 115,
+      "sha256": "b82d29a27887c5e606be0fba0330e2cf3756bd5cccb85a4facd12b9e619415d2",
+      "imports": [
+        "react",
+        "../mundo/medidas",
+        "../sistemas/bichos",
+        "../sistemas/descanso",
+        "../sistemas/final-do-farol",
+        "../sistemas/necessidades",
+        "../sistemas/pausa",
+        "./contexto",
+        "./farol"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/retrato.ts",
+      "linhas": 27,
+      "sha256": "ded7433ad292580b779c6ebe937e76ad910e2119bb0fbd02aa45574924677ac6",
+      "imports": [
+        "zustand",
+        "zustand/vanilla"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/rotina.ts",
+      "linhas": 100,
+      "sha256": "3188e079797a3fb2087d4b818e385706e7a1261816ede06036847e1f687c10d7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/estado/turno.ts",
+      "linhas": 213,
+      "sha256": "9701c26b0eebfe8cdf27adac008cf75175dceb8af206381d9258f422f8e055a9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "zustand",
+        "zustand/vanilla",
+        "../sistemas/pausa",
+        "../sistemas/profissoes",
+        "../sistemas/turnos",
+        "./galeria",
+        "./loja"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/abertura-cenas.tsx",
+      "linhas": 108,
+      "sha256": "af0fc207892c37ce2c78c7470c12f267e5d00481c601b73fe045e375a866bd3e",
+      "imports": [
+        "react",
+        "../assets/abertura/arquipelago.webp",
+        "../assets/abertura/carta.webp",
+        "../assets/abertura/casa.webp",
+        "../assets/abertura/cinza.webp",
+        "../assets/abertura/iris.webp",
+        "../assets/abertura/sumiu.webp",
+        "../assets/abertura/tempestade.webp",
+        "../assets/abertura/zappy.webp",
+        "../sistemas/abertura"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/abertura.tsx",
+      "linhas": 251,
+      "sha256": "024dadd23af88272ec57dc1ae4ea65ec1db330364dd93eac93d9287eed16b00e",
+      "imports": [
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "../estado/abertura",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../estado/preferencias",
+        "../sistemas/abertura",
+        "../sistemas/pausa",
+        "./abertura-cenas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/aconchego.tsx",
+      "linhas": 103,
+      "sha256": "4821dfba30f2f962b4d2f4753546c39dcaa8e03e1138959dbf3a6eec77ea8253",
+      "imports": [
+        "react",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../sistemas/construcao/aconchego",
+        "../sistemas/construcao/lote"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/album.tsx",
+      "linhas": 244,
+      "sha256": "5c1f7f67d03b7a089f8de1bcc6d049f53f075562de4971604c990a3eb5b0e3d7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../sistemas/album",
+        "./diario",
+        "./miniaturas",
+        "./miniaturas-dos-lumis"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/amizade-do-anel.tsx",
+      "linhas": 146,
+      "sha256": "d4768d6772f026f6e11b7442861bccb8503f212e5a1dcf808db487bb09367b31",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/moradores",
+        "../sistemas/amizade-do-anel",
+        "../sistemas/moradores",
+        "../sistemas/moradores-do-anel",
+        "../sistemas/pausa",
+        "./capi",
+        "./entrega-do-pedido"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/apresentacao.tsx",
+      "linhas": 56,
+      "sha256": "20453e0573222257d7d70587885cba53c4032d922c25f10744f69dfbacfe583c",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/aquario.tsx",
+      "linhas": 21,
+      "sha256": "4d31dbaec06a38feaf437c2918bddb3076534a6ec4175731212d1fd48bb0c0c8",
+      "imports": [
+        "../estado/contexto",
+        "../sistemas/corais-do-recife"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/bento.tsx",
+      "linhas": 137,
+      "sha256": "f70c03cbf5650c0205a0465b296371f231058a012740252509024e511ec4b1cd",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/moradores",
+        "../estado/turno",
+        "../sistemas/conversa-do-bento",
+        "../sistemas/moradores",
+        "./capi",
+        "./entrega-do-pedido"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/bicho.tsx",
+      "linhas": 206,
+      "sha256": "33372aa86b8f6bf4cec048638d380c9d289117b0237651f6f57f615ab9003238",
+      "imports": [
+        "react",
+        "../estado/bicho",
+        "../estado/contexto",
+        "../sistemas/bichos",
+        "../sistemas/cuidar",
+        "../sistemas/itens",
+        "../sistemas/moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/caderno-dos-lumis.tsx",
+      "linhas": 129,
+      "sha256": "8d130760e27c4ba7d7acb6ce4cdc1ff8c7fe2527bc8f9591b0b5009dd7d9996c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/cartas",
+        "../estado/contexto",
+        "../estado/rotina",
+        "../sistemas/caderno-dos-lumis"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/capi.tsx",
+      "linhas": 298,
+      "sha256": "7cfcf1e256038ab78e081ca58ddac18c4d3a0e1f42c124e08ff90c9254086c9d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/moradores",
+        "../sistemas/bichos",
+        "../sistemas/conversa-da-capi",
+        "../sistemas/itens",
+        "../sistemas/moradores",
+        "./entrega-do-pedido"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/clima.tsx",
+      "linhas": 44,
+      "sha256": "bac5c79b11a22d55285f22548218cea399c951ed7e0c7dc793215f7950db86e9",
+      "imports": [
+        "../estado/contexto",
+        "../sistemas/clima"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/conforto.tsx",
+      "linhas": 103,
+      "sha256": "084072b469d256cd7856d068250d91d37130ee3e99aa18fb52a05aef0dc140ca",
+      "imports": [
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/conforto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/construir.tsx",
+      "linhas": 342,
+      "sha256": "545070d00fb4551439c520d5a69289e7974d5a5f1aa254b53790eb3cf6725e62",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../estado/construcao",
+        "../estado/contexto",
+        "./aconchego",
+        "./icones",
+        "./miniaturas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/convidados.tsx",
+      "linhas": 118,
+      "sha256": "31a7dd7a6be3ef5475967c7341cdb3b2eb2dedf774a9e2c0daa19dd7d6426159",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/convidados",
+        "../sistemas/moradores",
+        "../sistemas/visitas-dos-moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/diario.tsx",
+      "linhas": 214,
+      "sha256": "78eac4a191c3539e05a43d51d2781beba43e1e4e4ba54cde8d479f9a7acb19d7",
+      "imports": [
+        "react",
+        "../estado/abertura",
+        "../estado/contexto",
+        "../sistemas/bichos",
+        "../sistemas/diario",
+        "./pegadas",
+        "./primeiro-pedido",
+        "./tema-da-semana"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/entrega-do-pedido.ts",
+      "linhas": 61,
+      "sha256": "4c594f5733bd88f9c663c3182ca3211219198d768ec04ad4e7f916860433d066",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../estado/contexto",
+        "../estado/galeria",
+        "../estado/moradores",
+        "../sistemas/pausa"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/estilos.ts",
+      "linhas": 364,
+      "sha256": "df7dc1992cd8448d1b4c02cb484bb96468f49e947bf22f4e1f0f562bcef78e4d",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/estrelas.tsx",
+      "linhas": 90,
+      "sha256": "94b10767c40689d95b19197c7fdb47f4f5c79d2dda0e7b6b12a79faf4e47ae5c",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../sistemas/constelacoes"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/farol.tsx",
+      "linhas": 118,
+      "sha256": "189ccf3651dd89fe409cedbec257086805cee87cf86d688b4ceae8d19c9a3c02",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/farol",
+        "../mundo/alto-do-farol",
+        "../sistemas/final-do-farol",
+        "./apresentacao"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/feira.tsx",
+      "linhas": 135,
+      "sha256": "1bee64a01de0cc129804dbf84ae175bb8caad751930be271b3f2a1a3de2302c2",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/galeria",
+        "../sistemas/feira",
+        "../sistemas/pausa",
+        "./galeria",
+        "./insumos",
+        "./miniaturas",
+        "./vestuario"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/filhote.tsx",
+      "linhas": 171,
+      "sha256": "8cf00aecf5640b07e272e5ed8883c6e6b85962ec938d092f7c8b7c435766abd7",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/filhote",
+        "../sistemas/filhote-do-vale",
+        "../sistemas/moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/fogueira-da-festa.tsx",
+      "linhas": 45,
+      "sha256": "5cabe44b65f2dc54753a5b0a80bf11c935bc8e2bb3e7c7684d42fe5e70c2fe0a",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/festas",
+        "../sistemas/festas",
+        "./receitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/foto.tsx",
+      "linhas": 133,
+      "sha256": "96a4c39f4737cc9bdf91fe55e37ea7b925be0108904125910894737a76383eec",
+      "imports": [
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../estado/foto",
+        "../sistemas/modo-foto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/galeria.tsx",
+      "linhas": 210,
+      "sha256": "041237ff4178464bc0ee94ce34e3e37facc23a3d8bc2cf03d54e40f9963d1ffa",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/galeria",
+        "../sistemas/construcao/galeria",
+        "./miniaturas",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/hud.tsx",
+      "linhas": 905,
+      "sha256": "ee15ba46ec1a3031a8a7a256ae3bdb7c5e24adaf380a23b82e72d4f183fb00e8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../estado/desafios",
+        "../estado/farol",
+        "../estado/galeria",
+        "../estado/loja",
+        "../estado/preferencias",
+        "../estado/retrato",
+        "../sistemas/abertura",
+        "../sistemas/balao",
+        "../sistemas/borroes",
+        "../sistemas/clima",
+        "../sistemas/constelacoes",
+        "../sistemas/final-do-farol",
+        "../sistemas/hud",
+        "../sistemas/itens",
+        "../sistemas/luneta",
+        "../sistemas/modo-foto",
+        "../sistemas/necessidades",
+        "../sistemas/patins",
+        "../sistemas/pausa",
+        "../sistemas/percurso",
+        "../sistemas/planador",
+        "../sistemas/primeiro-pedido",
+        "../sistemas/quadro-das-cores",
+        "../sistemas/tempo-do-dia",
+        "./abertura",
+        "./album",
+        "./bento",
+        "./bicho",
+        "./caderno-dos-lumis",
+        "./capi",
+        "./construir",
+        "./convidados",
+        "./diario",
+        "./estrelas",
+        "./farol",
+        "./feira",
+        "./filhote",
+        "./fogueira-da-festa",
+        "./foto",
+        "./icones",
+        "./irie",
+        "./jade",
+        "./luneta",
+        "./mapa",
+        "./mare",
+        "./menu",
+        "./projeto-azul",
+        "./quadro-das-cores",
+        "./receitas",
+        "./rotina",
+        "./toque",
+        "./turno",
+        "./visitas",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/icones.tsx",
+      "linhas": 61,
+      "sha256": "0e2935f26a733e98a2fea1efb161e0c1d166a3e1d322cdf4dc03e5905ca2fae1",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/insumos.tsx",
+      "linhas": 137,
+      "sha256": "cdc636e07c6d0f3347ed525fa8d5fe447847e9deefc78ec826a6a672209ec87c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/galeria",
+        "../sistemas/itens",
+        "../sistemas/pausa"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/irie.tsx",
+      "linhas": 6,
+      "sha256": "f46faf1256468b135659116a70dfd67fe5c63042bfd45c3e04544f0dd243680f",
+      "imports": [
+        "../estado/moradores",
+        "./amizade-do-anel"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/jade.tsx",
+      "linhas": 6,
+      "sha256": "64244df40dc888a22240dfc160f74839146706f67ab48c7391e45b53a36eb2ea",
+      "imports": [
+        "../estado/moradores",
+        "./amizade-do-anel"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/luneta.tsx",
+      "linhas": 42,
+      "sha256": "51698a5ed1d9d59ad206b7e4f6b804411cafcecf75e08db12431e3882f9b2ab2",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../sistemas/luneta",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/mapa.tsx",
+      "linhas": 153,
+      "sha256": "1545300ec9653a0dafcd83c7d13a7c655804f72f1d979f4d402c48008bff4ead",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../mundo/medidas",
+        "../sistemas/hud",
+        "../sistemas/mapa",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/mare.tsx",
+      "linhas": 12,
+      "sha256": "26a9f92fe8ca3e170c0bcb3509c48d25c3cba91b16ed3bd2760ed2dcba37d270",
+      "imports": [
+        "../estado/moradores",
+        "./amizade-do-anel"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/menu.tsx",
+      "linhas": 342,
+      "sha256": "1c0f7284118efd1d4c0baceb8639a805b733cf0fb0db126e756326b9b91850d9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/cartas",
+        "../estado/contexto",
+        "../estado/farol",
+        "../sistemas/album",
+        "../sistemas/diario",
+        "../sistemas/mapa",
+        "../sistemas/modo-foto",
+        "../sistemas/visitas",
+        "../sistemas/visitas-dos-moradores",
+        "./album",
+        "./clima",
+        "./conforto",
+        "./diario",
+        "./icones",
+        "./mapa",
+        "./visitas",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/miniaturas-dos-lumis.ts",
+      "linhas": 39,
+      "sha256": "bf57b5038d7f65b9748d62e918ad290ea72f4bb5c235df16d4d4b43e38dd0665",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../assets/lumis/miniaturas/algodao.png",
+        "../assets/lumis/miniaturas/bolha.png",
+        "../assets/lumis/miniaturas/brigadeiro.png",
+        "../assets/lumis/miniaturas/brotinho.png",
+        "../assets/lumis/miniaturas/buzio.png",
+        "../assets/lumis/miniaturas/cristal.png",
+        "../assets/lumis/miniaturas/estrelinha.png",
+        "../assets/lumis/miniaturas/gelinho.png",
+        "../assets/lumis/miniaturas/ipe.png",
+        "../assets/lumis/miniaturas/ovinho.png",
+        "../assets/lumis/miniaturas/perola.png",
+        "../assets/lumis/miniaturas/pitanga.png",
+        "../assets/lumis/miniaturas/pluma.png",
+        "../assets/lumis/miniaturas/quindim.png"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/miniaturas.ts",
+      "linhas": 54,
+      "sha256": "1dcf95e3f3596fc2456f0e31b3297ce95fadb08e37eb6335087e11c3710cde3b",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../assets/casa/miniaturas/caminho-grama.png",
+        "../assets/casa/miniaturas/caminho-pedra.png",
+        "../assets/casa/miniaturas/janela-arco.png",
+        "../assets/casa/miniaturas/janela-grande.png",
+        "../assets/casa/miniaturas/janela-redonda.png",
+        "../assets/casa/miniaturas/objeto-aquario.png",
+        "../assets/casa/miniaturas/objeto-banda.png",
+        "../assets/casa/miniaturas/objeto-casinha.png",
+        "../assets/casa/miniaturas/objeto-fliperama.png",
+        "../assets/casa/miniaturas/objeto-forno.png",
+        "../assets/casa/miniaturas/objeto-geladeira.png",
+        "../assets/casa/miniaturas/objeto-lareira.png",
+        "../assets/casa/miniaturas/objeto-museu.png",
+        "../assets/casa/miniaturas/objeto-planta-interior.png",
+        "../assets/casa/miniaturas/piso-azulejo.png",
+        "../assets/casa/miniaturas/piso-ladrilho.png",
+        "../assets/casa/miniaturas/piso-tabua.png",
+        "../sistemas/construcao/ferramentas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/minijogos.tsx",
+      "linhas": 114,
+      "sha256": "1e365a0478e4c53260ff28d1c6b65646548372e4a7be7d6e3097eafa2ba29e63",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/minijogos",
+        "../estado/mural"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/museu.tsx",
+      "linhas": 26,
+      "sha256": "1aeb5a931b1f93448c20a61ea35f33e2ba51f72d8ba684b26cf249beeb49b197",
+      "imports": [
+        "../estado/contexto",
+        "../sistemas/diario",
+        "./diario"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/pegadas.tsx",
+      "linhas": 22,
+      "sha256": "92835af52d4d84933123fa6bb736a3a8c51170b6b37d21a6d19f5342de11c2be",
+      "imports": [
+        "../sistemas/pegadas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/primeiro-pedido.tsx",
+      "linhas": 32,
+      "sha256": "aacccbe49b2ea6858aa0f2763d478a4a6f306bcc5c67b04faba41ed066b48c76",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../sistemas/primeiro-pedido"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/projeto-azul.tsx",
+      "linhas": 244,
+      "sha256": "4a852d86a9f65bd644d587d226904260e946bdd43098f13633412ccbe8726184",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/galeria",
+        "../sistemas/construcao/galeria",
+        "../sistemas/construcao/projeto-azul",
+        "../sistemas/itens",
+        "./aquario",
+        "./galeria",
+        "./minijogos",
+        "./museu",
+        "./receitas",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/quadro-das-cores.tsx",
+      "linhas": 266,
+      "sha256": "9360fdaee9bd29f75dd80cc7a437b49abf9be057edb9c0b9fdfb40a371aacc4d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/desafios",
+        "../sistemas/quadro-das-cores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/receitas.tsx",
+      "linhas": 151,
+      "sha256": "751009b058a34082d3f183590199e2415f738db37ca7c59c85eecf1574de2891",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/festas",
+        "../sistemas/festas",
+        "../sistemas/itens",
+        "../sistemas/pausa",
+        "../sistemas/receitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/rotina.tsx",
+      "linhas": 561,
+      "sha256": "ae2f033cb514101e16b5e0857f128c7885cd23ed924e65551230558f02de2a2e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/cartas",
+        "../estado/contexto",
+        "../estado/rotina",
+        "../sistemas/album",
+        "../sistemas/ferramenta-da-rotina",
+        "../sistemas/rotina",
+        "./miniaturas-dos-lumis"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/salvamento.tsx",
+      "linhas": 118,
+      "sha256": "67374e66272bd3185dbc6d27672a553e88df59b60e7f48dec4a0c83423b81c4b",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../sistemas/pausa",
+        "../sistemas/salvar"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/telas.tsx",
+      "linhas": 82,
+      "sha256": "ac39dbbe6790761154bff560ff95a97cb3ed717276dc7f957cb912c3c38f78fb",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./voz"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/tema-da-semana.tsx",
+      "linhas": 71,
+      "sha256": "b58840a0be83f7e2a850659d09db82ff8fd7395dc7a4d59801fe3004428780fc",
+      "imports": [
+        "react",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../sistemas/tema-da-semana"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/toque.tsx",
+      "linhas": 163,
+      "sha256": "f90567de901a2869c839dfb25c7b96ad0bc044b67e2366f5dc529c9b5dec4fdf",
+      "imports": [
+        "react",
+        "../controles/controle",
+        "../estado/contexto",
+        "../estado/preferencias"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/turno.tsx",
+      "linhas": 238,
+      "sha256": "b6ab72718f0153b4688ecff98cb362b3ad06f80b2e69a0f552a070945c012eee",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/turno",
+        "../sistemas/moradores",
+        "../sistemas/profissoes",
+        "../sistemas/turnos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/vestuario.tsx",
+      "linhas": 62,
+      "sha256": "e56a32f82fc2a6ea42d991e6be77ba66d9df3cc2837a0b0a8b4128338dc8b4ad",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../estado/festas",
+        "../estado/galeria",
+        "../sistemas/pausa"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/visitas.tsx",
+      "linhas": 208,
+      "sha256": "a02ab86157d3e8fac62610561d71a34dcdea6d1027b5cea8d57890a0ddef8c49",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../estado/contexto",
+        "../estado/familia",
+        "../mundo/medidas",
+        "../sistemas/visitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/interface/voz.ts",
+      "linhas": 85,
+      "sha256": "90c9a838e5892eb5a19b3eadd7b4eecdc74a810246cd8765048043e88540193d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../sistemas/construcao/galeria",
+        "../sistemas/luneta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/agua.tsx",
+      "linhas": 30,
+      "sha256": "2bc1b20fd35d96c7a39413a93c1693d9753239e5592f85efef709960867d37d9",
+      "imports": [
+        "@react-three/rapier",
+        "three",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/alto-do-farol.ts",
+      "linhas": 63,
+      "sha256": "238747ecabc82f4be6e20de057fa007ca99ca6434a3fa29e3093359bce6c77b0",
+      "imports": [
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "./colisores-da-ilha",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/anel.tsx",
+      "linhas": 735,
+      "sha256": "427d08e1a9de07369847ec5ab3287631dbd80936fe064fd24ff53e2ee739654c",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/desafios",
+        "../sistemas/cor-da-ilha",
+        "../sistemas/correnteza",
+        "../sistemas/ilhas-completas",
+        "../sistemas/luneta",
+        "../sistemas/quadro-das-cores",
+        "./boias",
+        "./bosque-vivo",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./descoberta-da-ilha",
+        "./ilha-completa",
+        "./interativos",
+        "./medidas",
+        "./modelos",
+        "./nuvens-vivo",
+        "./pico-vivo",
+        "./pintura-da-ilha",
+        "./placa-da-ponte",
+        "./quadro-das-cores",
+        "./recife-vivo",
+        "./vale-vivo",
+        "./vila-viva"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/animado.ts",
+      "linhas": 128,
+      "sha256": "ed61ae0340c4f4e0f68a0fb74a88c8b47330641f868da02cd4db639ecb061a42",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/contexto",
+        "./arte-animada"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/arranjo-da-festa.ts",
+      "linhas": 109,
+      "sha256": "6a3feb075ff7735120f68f6d9dbaa3c5aec5f2ceef04b885598656a2156f3c55",
+      "imports": [
+        "../sistemas/festas",
+        "./colisores-da-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/arte-animada.ts",
+      "linhas": 93,
+      "sha256": "a5849ba13d487434e5f2adea58aafa322c0f5d21e8ab1777e227094c39ba0911",
+      "imports": [
+        "three",
+        "three/examples/jsm/utils/SkeletonUtils.js",
+        "../sistemas/ajustes-da-arte"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/balao-das-nuvens.tsx",
+      "linhas": 226,
+      "sha256": "f06e7bda64cbccf6ad8287ed7406a461192458654d3b72576937306da60b4dd3",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/ilhas/nuvens-balao.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../estado/preferencias",
+        "../sistemas/balao",
+        "../sistemas/corpo",
+        "../sistemas/pausa",
+        "./bosque",
+        "./carregar-ilha",
+        "./grupos",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/balcoes-da-vila.tsx",
+      "linhas": 69,
+      "sha256": "59ef327a220c8937397d19881ab978621df0d913105d34d4d1c92d916a2ae09c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/turno",
+        "./bosque",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bancada.tsx",
+      "linhas": 119,
+      "sha256": "cc0ce8b51337998f09ac026ade446baca927c395d050f8c0a66a7e2a1235d050",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/festas",
+        "../sistemas/receitas",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./interativos",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bancos-da-vila.tsx",
+      "linhas": 90,
+      "sha256": "08ce107387f1f09cc8e1ad31f5e7074280505cd6f7914853c48e61b73627df02",
+      "imports": [
+        "react",
+        "../estado/contexto",
+        "../sistemas/descanso",
+        "./colisores-da-ilha",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/banda-do-pico.tsx",
+      "linhas": 322,
+      "sha256": "1b6ad06ec9657650a28f419f1d369e6b3a4a3ea0dd8dc8a809a75bd98c5f495e",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../assets/bichos/pinguim.glb",
+        "../assets/objetos/banda.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/banda",
+        "../sistemas/cipo",
+        "../sistemas/pausa",
+        "./animado",
+        "./bosque",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./ilha-completa",
+        "./interativos",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/barcos.tsx",
+      "linhas": 208,
+      "sha256": "49112aec8c921d0c3bf7dd11134f2bfb7cf5b211b8de197402440f45916fade7",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/ilhas/barco.glb",
+        "../assets/ilhas/recife.glb",
+        "../estado/contexto",
+        "../sistemas/barco",
+        "../sistemas/corpo",
+        "../sistemas/pausa",
+        "./animado",
+        "./grupos",
+        "./interativos",
+        "./medidas",
+        "./modelos",
+        "./portos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bento.tsx",
+      "linhas": 42,
+      "sha256": "6c308fc03a1d0957f2c6145e1418ec7f3cc5c497cbe7323cbea36bc92ea24ddb",
+      "imports": [
+        "react",
+        "three",
+        "../assets/personagens/bento.glb",
+        "../estado/moradores",
+        "../sistemas/bento",
+        "../sistemas/conversa-do-bento",
+        "./bosque",
+        "./morador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bicho-adotado.tsx",
+      "linhas": 244,
+      "sha256": "6afc92ad9d657e11536355cc9b659451d12e48175a0908fa704329f8e211ff29",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/bichos/cachorro.glb",
+        "../assets/bichos/coelho.glb",
+        "../assets/bichos/gato.glb",
+        "../assets/bichos/porquinho.glb",
+        "../estado/bicho",
+        "../estado/contexto",
+        "../sistemas/pausa",
+        "../sistemas/seguir",
+        "../sistemas/zappy",
+        "./animado",
+        "./bichos-do-bosque",
+        "./interativos",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bichos-do-bosque.tsx",
+      "linhas": 365,
+      "sha256": "9ffaa4e85387349b678a7e1f3f9e9b13ab98fa41af3fbca2325ee7098aca8ca8",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/bichos/cachorro-filhote.glb",
+        "../assets/bichos/coelho-filhote.glb",
+        "../assets/bichos/gato-filhote.glb",
+        "../assets/bichos/porquinho-filhote.glb",
+        "../estado/contexto",
+        "../sistemas/bichos",
+        "../sistemas/caminho",
+        "../sistemas/esconde",
+        "../sistemas/pegadas",
+        "../sistemas/zappy",
+        "./animado",
+        "./bosque",
+        "./chao-livre",
+        "./colisores-da-ilha",
+        "./interativos",
+        "./modelos",
+        "./rastro-de-pegadas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/boias.tsx",
+      "linhas": 193,
+      "sha256": "548b7e4f7b5581c9efb3ceccd0d60562e4c81ca5f041c8d966c11200e91410bc",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/barco",
+        "../sistemas/correnteza",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/borroes-da-vila.tsx",
+      "linhas": 382,
+      "sha256": "2266abf0e2daaa9809f975389dc4a6a32bd4c06d76e3898128a53bdf72a4045c",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/lumis/borrao.glb",
+        "../assets/lumis/brigadeiro.glb",
+        "../assets/lumis/quindim.glb",
+        "../estado/contexto",
+        "../estado/rotina",
+        "../sistemas/borroes",
+        "../sistemas/pausa",
+        "../sistemas/tempo-do-dia",
+        "../sistemas/zappy",
+        "./animado",
+        "./bosque",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./interativos",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bosque-vivo.tsx",
+      "linhas": 560,
+      "sha256": "3c52f4ceb9c67c67349101719bea7dc41fd88ddb6f0079c90a836740c376bc5f",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/cipo",
+        "../sistemas/cordas",
+        "../sistemas/corpo",
+        "../sistemas/percurso",
+        "../sistemas/tempo-do-dia",
+        "../sistemas/vento",
+        "./bichos-do-bosque",
+        "./bosque",
+        "./cabana-do-bosque",
+        "./capi",
+        "./cipo-desenhado",
+        "./copas",
+        "./corrida-na-ilha",
+        "./fogueira-viva",
+        "./folhas-ao-vento",
+        "./ilha-completa",
+        "./interativos",
+        "./mecanismos",
+        "./medidas",
+        "./modelos",
+        "./objetos-reativos",
+        "./ondinhas",
+        "./tronco-no-lago",
+        "./vegetacao-ao-vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/bosque.ts",
+      "linhas": 253,
+      "sha256": "2a43b75a0b850a9fed3568b45e3fb086d097b8f969cbb54b8975654e4d51f2e3",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "three",
+        "../sistemas/cipo",
+        "../sistemas/escalada",
+        "../sistemas/percurso",
+        "./medidas",
+        "../sistemas/agua"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/cabana-do-bosque.tsx",
+      "linhas": 104,
+      "sha256": "66ff231914c54aceb4cc1182941db65c08a4a659b746f222055d9afa86c695f9",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../sistemas/construcao/lote",
+        "./construir",
+        "./medidas",
+        "./obra"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/capi.tsx",
+      "linhas": 43,
+      "sha256": "c6fc0e210e661ba967ece7520f89a6ea9d8f7d447deb7d57f7f064adc688e14c",
+      "imports": [
+        "react",
+        "three",
+        "../assets/personagens/capi.glb",
+        "../estado/moradores",
+        "../sistemas/conversa-da-capi",
+        "../sistemas/moradores",
+        "./bosque",
+        "./morador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/carregar-aparencia.ts",
+      "linhas": 196,
+      "sha256": "7ce8df4cdf55fb367c9711434b537a7ff186729ea074b455a89a9a5f67553f5b",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "./carregar-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/carregar-ilha.ts",
+      "linhas": 126,
+      "sha256": "57cc2d4e24c490b347f481cd8034445fcacff2faa033f7a9dc3776f3ed4aa3b6",
+      "imports": [
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/casa.tsx",
+      "linhas": 410,
+      "sha256": "51027e4b1562731c18bb2a6bce4108f4ed66ff95547c7f81b98954c5b9e80bba",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/quarto/catalog",
+        "@sistemazero/avatar-quarto/quarto/coords",
+        "@sistemazero/avatar-quarto/quarto/floor",
+        "@sistemazero/avatar-quarto/quarto/furniture-piece",
+        "@sistemazero/avatar-quarto/quarto/pet-3d",
+        "@sistemazero/avatar-quarto/quarto/room-glb-model",
+        "@sistemazero/avatar-quarto/quarto/walls",
+        "react",
+        "three",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../sistemas/construcao/lote",
+        "../sistemas/descanso",
+        "../sistemas/visitas",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./construir",
+        "./interativos",
+        "./medidas",
+        "./modelos",
+        "./objetos-da-casa",
+        "./obra"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/cata-vento.tsx",
+      "linhas": 92,
+      "sha256": "5dc9a7122f24cf61c49e1618ad6acdc5b21190e402a4e7fb8aa5767fc083b931",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../assets/mundo/cata-vento.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/clima",
+        "../sistemas/pausa",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./interativos",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/catalogo-da-festa.ts",
+      "linhas": 133,
+      "sha256": "72c9ddf451f12cbdcd91b6cbb6ad42b45458bf940e8555bfe713c92bab4249d7",
+      "imports": [
+        "three",
+        "./arranjo-da-festa",
+        "./arte-animada",
+        "three",
+        "three",
+        "three"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/cena.tsx",
+      "linhas": 107,
+      "sha256": "ecdbc43ce7515219cad2bc82292fc62d8ab4575ede67b894d6048c7043da5655",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "react",
+        "../estado/abertura",
+        "../estado/contexto",
+        "../personagem/camera",
+        "../personagem/personagem",
+        "../personagem/zappy",
+        "../sistemas/abertura",
+        "../sistemas/pausa",
+        "../sistemas/qualidade",
+        "./agua",
+        "./anel",
+        "./bancada",
+        "./barcos",
+        "./bicho-adotado",
+        "./casa",
+        "./ceu",
+        "./clima-da-ilha",
+        "./convidados",
+        "./descoberta-da-ilha",
+        "./farol",
+        "./foto",
+        "./habitantes-da-praia",
+        "./horta",
+        "./ilha-central",
+        "./medidas",
+        "./medidor",
+        "./modelos",
+        "./qualidade-da-cena",
+        "./retrato-do-avatar",
+        "./rotina-dos-lumis"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/ceu.tsx",
+      "linhas": 108,
+      "sha256": "782cb6bd367070e28e84526e453200941365272be2fd9c684419aec79fa62c9d",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/farol",
+        "../sistemas/qualidade",
+        "../sistemas/tempo-do-dia",
+        "./medidas",
+        "./qualidade-da-cena"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/chao-livre.ts",
+      "linhas": 74,
+      "sha256": "c7ea6e464c394a85baf975e1aaeb5c00178b62292d4da2eb8028ddde7c8a4a31",
+      "imports": [
+        "three",
+        "../sistemas/caminho",
+        "./colisores-da-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/cipo-desenhado.ts",
+      "linhas": 277,
+      "sha256": "ffd669d07162690495c2f8200f76f81daa5bce3180bceab97ddcf19d55c9a6dc",
+      "imports": [
+        "three",
+        "../sistemas/cipo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/clima-da-ilha.tsx",
+      "linhas": 122,
+      "sha256": "c1d68ae3c30afa1fb2de4a568102721478b56136c9889c806ecc473c17f51843",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/clima",
+        "../sistemas/pausa",
+        "./medidas",
+        "./qualidade-da-cena"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/colisao-da-ilha-central.ts",
+      "linhas": 334,
+      "sha256": "2f7e5417fcae23c022e6ad1daf2073eb8f66d48f838d1502bee5a9c866cc658f",
+      "imports": [
+        "three",
+        "./colisores-da-ilha",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/colisores-da-ilha.ts",
+      "linhas": 187,
+      "sha256": "fa44bdf1be6c95f8311b74a755d92f2767f54650a791e1ca59c7a90164740fe1",
+      "imports": [
+        "three",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/colisores.tsx",
+      "linhas": 49,
+      "sha256": "4abfb8e6f896561550032220588b01c0164fa7bee7de295b7ce0a45714ec7151",
+      "imports": [
+        "@react-three/rapier",
+        "./colisores-da-ilha",
+        "./grupos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/constelacoes-das-nuvens.tsx",
+      "linhas": 382,
+      "sha256": "3a170a70e90330e87972c208dda3b779f163dd51c8d746826c59b1d8c8100d5b",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/ilhas/nuvens-constelacoes.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/cipo",
+        "../sistemas/constelacoes",
+        "../sistemas/corpo",
+        "../sistemas/pausa",
+        "./arte-animada",
+        "./bosque",
+        "./carregar-ilha",
+        "./colisores-da-ilha",
+        "./ilha-completa",
+        "./interativos",
+        "./modelos",
+        "./nuvens",
+        "./vista-da-luneta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/construir.tsx",
+      "linhas": 479,
+      "sha256": "21fd3918fa645bbc47346a371765b2f1a4e74ee62450c45e7ae5f685f6d99a24",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../sistemas/construcao/comodos",
+        "../sistemas/construcao/ferramentas",
+        "../sistemas/construcao/grade",
+        "../sistemas/construcao/lote",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/convidados.tsx",
+      "linhas": 93,
+      "sha256": "b1acd28975e8b222a34ee709b92a684aafa8c20cdc1a129f2cd20730e1b8734a",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "../estado/contexto",
+        "../estado/convidados",
+        "../sistemas/moradores",
+        "../sistemas/visitas-dos-moradores",
+        "./bento",
+        "./capi",
+        "./floco",
+        "./irie",
+        "./jade",
+        "./mare",
+        "./medidas",
+        "./morador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/copas.ts",
+      "linhas": 155,
+      "sha256": "728739b4f8a2973aaf94a262e9ea7601ea089f837cb9e9c820c330be2bae37ff",
+      "imports": [
+        "three"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/corais-do-recife.tsx",
+      "linhas": 186,
+      "sha256": "fbd68ed7b8b0e508a77865f79990395b363ef9d9678ea8df4598f6f575a52d16",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/ilhas/recife-props.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/corais-do-recife",
+        "../sistemas/pausa",
+        "./bosque",
+        "./carregar-ilha",
+        "./ilha-completa",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/corrente-de-ar.tsx",
+      "linhas": 95,
+      "sha256": "211d6833a9a573a1197e1a034968744a0c5886780dc197a58c9ff4b2a76267b5",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/cipo",
+        "../sistemas/pausa",
+        "../sistemas/planador",
+        "./bosque"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/corrida-de-balao.tsx",
+      "linhas": 288,
+      "sha256": "49133f9ee88ca958ac11453ee67edfb0a40147212b91c9355ac2a97029e97d6f",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/ilhas/nuvens-argola.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/cipo",
+        "../sistemas/corrida-de-balao",
+        "../sistemas/pausa",
+        "../sistemas/percurso",
+        "./bosque",
+        "./carregar-ilha",
+        "./corrida-na-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/corrida-na-ilha.tsx",
+      "linhas": 332,
+      "sha256": "3583328494d013dcebe56003a09e5f8f87eae9d7d3146a15a2ddd6c067d442e9",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/loja",
+        "../sistemas/cipo",
+        "../sistemas/corpo",
+        "../sistemas/pausa",
+        "../sistemas/percurso",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/cristal-do-pico.tsx",
+      "linhas": 62,
+      "sha256": "cc38d7653cc4c901baecf70c4db9789ac2e58b9c401554cf26a0e545a821afe5",
+      "imports": [
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/cipo",
+        "../sistemas/corpo",
+        "../sistemas/cristal-raro",
+        "./bosque",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/descoberta-da-ilha.tsx",
+      "linhas": 35,
+      "sha256": "e336e6e659cac3ad5d1bd1c5be91763e40a6a5d93c80ce53c95a5ae5d55e4f36",
+      "imports": [
+        "@react-three/fiber",
+        "../estado/contexto",
+        "../estado/exploracao",
+        "../sistemas/exploracao",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/descobertas-do-vale.tsx",
+      "linhas": 183,
+      "sha256": "18cf86f1173aa685c79090e6ded6a2e1dc8fac8d163ab3e5bc16f484a30640f2",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "../assets/ilhas/vale-dos-dinos-props.glb",
+        "../estado/contexto",
+        "../sistemas/corpo",
+        "../sistemas/pausa",
+        "../sistemas/vale",
+        "./bosque",
+        "./exploracao-do-vale",
+        "./ilha-completa",
+        "./interativos",
+        "./modelos",
+        "./rastro-de-pegadas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/exploracao-do-vale.ts",
+      "linhas": 100,
+      "sha256": "dd16bd2bb1da2f73ff21fd646db03b979c7c5b61ba649877954a2e4b46d72b75",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "three",
+        "../sistemas/caminho",
+        "../sistemas/corpo",
+        "../sistemas/pegadas",
+        "../sistemas/vale",
+        "./chao-livre",
+        "./colisores-da-ilha",
+        "./lugar-do-quadro"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/farol.tsx",
+      "linhas": 230,
+      "sha256": "879660815acaa11ac5be879b8cf0f981594187dcd0a0e57acee1717f09c9cf8e",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../estado/farol",
+        "../sistemas/final-do-farol",
+        "../sistemas/pausa",
+        "./alto-do-farol",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./final-do-farol",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/feira.tsx",
+      "linhas": 54,
+      "sha256": "88224d90a3b9e9860413c9a9e569a1594efd1b81d01941f1e3928b8d2b51d4f6",
+      "imports": [
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/feira",
+        "../sistemas/pausa",
+        "./bosque",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/festa-na-vila.tsx",
+      "linhas": 168,
+      "sha256": "19b8fe15ffef82bf6a1ec4db4ac49e3222666c9c385513d03f4fcf129cc5d4a9",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/festas/carnaval.glb",
+        "../assets/festas/fim-de-ano.glb",
+        "../assets/festas/junina.glb",
+        "../assets/festas/lanternas.glb",
+        "../estado/contexto",
+        "../estado/festas",
+        "../sistemas/festas",
+        "../sistemas/pausa",
+        "./arranjo-da-festa",
+        "./arte-animada",
+        "./bosque",
+        "./catalogo-da-festa",
+        "./colisores",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/filhote-do-vale.tsx",
+      "linhas": 224,
+      "sha256": "1c47b4014c41e965e22d77b3a7794c53679936820592f80fb906cfc824a8b89f",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../assets/bichos/triceratops-filhote.glb",
+        "../assets/ilhas/vale-dos-dinos-props.glb",
+        "../estado/contexto",
+        "../estado/filhote",
+        "../sistemas/filhote-do-vale",
+        "../sistemas/moradores",
+        "../sistemas/pausa",
+        "../sistemas/zappy",
+        "./animado",
+        "./bosque",
+        "./ilha-completa",
+        "./interativos",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/final-do-farol.tsx",
+      "linhas": 313,
+      "sha256": "a6eeb40f78bea438826515209bd49639b869e33668e8ef42e0c5364a68e9f5b5",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/ilhas/alto-do-farol.glb",
+        "../assets/personagens/iris.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../estado/farol",
+        "../interface/voz",
+        "../sistemas/final-do-farol",
+        "./alto-do-farol",
+        "./carregar-ilha",
+        "./colisores",
+        "./interativos",
+        "./modelos",
+        "./morador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/floco.tsx",
+      "linhas": 30,
+      "sha256": "a20850ef38b3dac466aa604846624103de4e5348048a40e7a12c80a4ac9e43aa",
+      "imports": [
+        "react",
+        "three",
+        "../assets/personagens/floco.glb",
+        "../estado/moradores",
+        "../sistemas/floco",
+        "./morador",
+        "./pico"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/fogueira-viva.tsx",
+      "linhas": 219,
+      "sha256": "b703346c167291031e8404f8cac7098dfedf2376755059006ce992f1b9b9275d",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/estados-dos-materiais",
+        "../sistemas/vento",
+        "./interativos",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/folhas-ao-vento.tsx",
+      "linhas": 90,
+      "sha256": "8d0945a41916bfcc5dc5ef1827f3900100c828b580343f16e4cc712a47475722",
+      "imports": [
+        "@react-three/rapier",
+        "react",
+        "../sistemas/vento",
+        "./grupos",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/foto.tsx",
+      "linhas": 25,
+      "sha256": "e08c2a9eba1460f0b9c104a5e9a7cd5d7a59108fc60ebfaa5fcaf6556e0a14a1",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "../estado/contexto",
+        "../estado/foto",
+        "../sistemas/modo-foto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/grupos.ts",
+      "linhas": 25,
+      "sha256": "9cd8317f10e7b67457722c2afdadebffc84208ba4612a030642e177a4474d80f",
+      "imports": [
+        "@react-three/rapier"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/habitantes-da-praia-colisao.ts",
+      "linhas": 17,
+      "sha256": "a1614e68c43af6e46ab4f4e4f328723996cdd0a2acd3248a5f6e726c637dd7f5",
+      "imports": [
+        "../sistemas/habitantes-da-praia",
+        "./colisores-da-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/habitantes-da-praia.tsx",
+      "linhas": 102,
+      "sha256": "ad220d4b7c9f79e8175e1d557fe5b4ed47248a86e0e1af26300eff16ed220ca9",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../assets/lumis/buzio.glb",
+        "../assets/lumis/estrelinha.glb",
+        "../assets/personagens/nico.glb",
+        "../estado/contexto",
+        "../sistemas/habitantes-da-praia",
+        "../sistemas/pausa",
+        "../sistemas/zappy",
+        "./animado",
+        "./colisores",
+        "./habitantes-da-praia-colisao",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/horta.tsx",
+      "linhas": 353,
+      "sha256": "f98edfad8c0467ef6bc1847ca88439e0de568810cc802bdeae211f0d04d47d22",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/clima",
+        "../sistemas/construcao/projeto-azul",
+        "../sistemas/construcao/quintal",
+        "../sistemas/horta",
+        "../sistemas/itens",
+        "../sistemas/primeiro-pedido",
+        "../sistemas/visitas",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./interativos",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/ilha-central.tsx",
+      "linhas": 239,
+      "sha256": "e005861420319b924ff55cc7eee383111abd2ccee33477f9ef89459dddf83598",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../estado/contexto",
+        "./cata-vento",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./luneta",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/ilha-completa.tsx",
+      "linhas": 522,
+      "sha256": "9882ceb90c09bd797a661aa6309903640b324feb48a57029036671f48006977b",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/ilhas/bosque.glb",
+        "../assets/ilhas/nuvens.glb",
+        "../assets/ilhas/pico.glb",
+        "../assets/ilhas/recife.glb",
+        "../assets/ilhas/vale-dos-dinos.glb",
+        "../assets/ilhas/vila-doce.glb",
+        "../estado/contexto",
+        "../sistemas/ilhas-completas",
+        "../sistemas/mergulho",
+        "./arte-animada",
+        "./carregar-ilha",
+        "./colisores-da-ilha",
+        "./copas",
+        "./grupos",
+        "./medidas",
+        "./modelos",
+        "./pintura-da-ilha",
+        "./plataformas-das-nuvens",
+        "./pontes-vivas",
+        "./vegetacao-ao-vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/interativos.ts",
+      "linhas": 81,
+      "sha256": "0aced06f8bd59a1dc7f037084afeb444c8f03ccfc33c11700bdd46184845d415",
+      "imports": [
+        "react",
+        "../estado/contexto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/irie.tsx",
+      "linhas": 30,
+      "sha256": "176e5c4d46ed788d646462c74b2a30d7788144abec3e79c25186516264f0ff11",
+      "imports": [
+        "react",
+        "three",
+        "../assets/personagens/irie.glb",
+        "../estado/moradores",
+        "../sistemas/irie",
+        "./morador",
+        "./nuvens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/jade.tsx",
+      "linhas": 30,
+      "sha256": "4164e65bd890945f2d68e270068fb8e44704def1607e802b982f6b28fbf3c482",
+      "imports": [
+        "react",
+        "three",
+        "../assets/personagens/jade.glb",
+        "../estado/moradores",
+        "../sistemas/jade",
+        "./morador",
+        "./vale"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/lugar-do-quadro.ts",
+      "linhas": 59,
+      "sha256": "f840ae7fdc9c1c057b3229ce04cee20c07d4c72de069bca5baa0dcc5fe8c3ea3",
+      "imports": [
+        "three",
+        "./colisores-da-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/luneta-medidas.ts",
+      "linhas": 49,
+      "sha256": "a0c0452636a7a09491b7758a406106579c1f2187c00125f10c18a59474db83bb",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/perfis-de-camera",
+        "./colisao-da-ilha-central",
+        "./colisores-da-ilha",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/luneta.tsx",
+      "linhas": 116,
+      "sha256": "52fca514bae1b529fd6cdb76290b106e673257ddd3ae37f4c6b96a23b3c44f58",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../assets/itens/luneta.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../interface/voz",
+        "../sistemas/luneta",
+        "./colisores",
+        "./interativos",
+        "./luneta-medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/mare.tsx",
+      "linhas": 30,
+      "sha256": "6b88b399252f9fc5d037ea91f72ac262bf004b42e4f22a1cfd19976e965efaa8",
+      "imports": [
+        "react",
+        "three",
+        "../assets/personagens/mare.glb",
+        "../estado/moradores",
+        "../sistemas/mare",
+        "./morador",
+        "./recife"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/mecanismos.tsx",
+      "linhas": 217,
+      "sha256": "13391f6ace52856af14501ce89c863f3e46c8cd903e57dfed6eeb8f6d2ae7fd9",
+      "imports": [
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../sistemas/mecanismos",
+        "./grupos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/medidas.ts",
+      "linhas": 487,
+      "sha256": "c4731fd6ea2908df0dc24e7662c8a5bf21d5829301277557d2cc1691f584fc8d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/mergulho"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/medidor.tsx",
+      "linhas": 397,
+      "sha256": "16d75500d5f0b9f3495d5f1854cd2bc707be0dd4dd4ed87fa95fe13257fcd290",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/convidados",
+        "../estado/farol",
+        "../sistemas/final-do-farol",
+        "../sistemas/qualidade",
+        "../sistemas/visitas-dos-moradores",
+        "./carregar-ilha",
+        "./catalogo-da-festa",
+        "./copas",
+        "./fogueira-viva",
+        "./folhas-ao-vento",
+        "./mecanismos",
+        "./modelos",
+        "./objetos-reativos",
+        "./ondinhas",
+        "./palco-de-print",
+        "./pontes-vivas",
+        "./qualidade-da-cena",
+        "./tronco-no-lago",
+        "./vegetacao-ao-vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/mergulho-do-recife.tsx",
+      "linhas": 293,
+      "sha256": "a0b7976939b8040f4a73191214ce3418e4ef054799d8eade05e62767d456967b",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "../assets/ilhas/recife-labirinto.glb",
+        "../assets/ilhas/recife-navio.glb",
+        "../assets/itens/bau.glb",
+        "../assets/itens/pagina-diario.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/achados-do-recife",
+        "../sistemas/mergulho",
+        "../sistemas/pausa",
+        "./carregar-ilha",
+        "./colisores-da-ilha",
+        "./ilha-completa",
+        "./interativos",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/mesa-de-mapas.tsx",
+      "linhas": 38,
+      "sha256": "21b84179a5b0ed323ab61e132045cf25428a26e019e56be1eb346b599a70f438",
+      "imports": [
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/mapa",
+        "./bosque",
+        "./ilha-completa",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/modelos.tsx",
+      "linhas": 138,
+      "sha256": "b0c8fe868529f0ef3901ddf7c0901a1820cb55d33e55e6255a109ffe781d2021",
+      "imports": [
+        "@react-three/drei",
+        "react",
+        "three",
+        "../assets/mundo/arvores.glb",
+        "../assets/mundo/bancada.glb",
+        "../assets/mundo/boias.glb",
+        "../assets/mundo/casa.glb",
+        "../assets/mundo/farol.glb",
+        "../assets/mundo/horta.glb",
+        "../assets/mundo/ilhas-do-anel.glb",
+        "../assets/mundo/pier.glb",
+        "../assets/mundo/ponte.glb",
+        "../assets/mundo/terreno.glb"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/montaria-do-vale.tsx",
+      "linhas": 202,
+      "sha256": "ebac8feba90eb12fa7ef11822bb70c2cf299b58bff902d35ff92b2a032b4649e",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../assets/bichos/dino-montaria.glb",
+        "../estado/contexto",
+        "../sistemas/corpo",
+        "../sistemas/montaria",
+        "../sistemas/pausa",
+        "../sistemas/zappy",
+        "./animado",
+        "./bosque",
+        "./grupos",
+        "./ilha-completa",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/morador.tsx",
+      "linhas": 226,
+      "sha256": "4659b97850a65b610e027f5bf30872b56c0eb862d4cf2ce76fd02e23aceb950e",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/convidados",
+        "../estado/moradores",
+        "../sistemas/amizade-do-anel",
+        "../sistemas/moradores",
+        "../sistemas/pausa",
+        "../sistemas/zappy",
+        "./animado",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/nuvens-vivo.tsx",
+      "linhas": 81,
+      "sha256": "98eafcec554d7ef278a780a32e86422bd1228b2a222767800e092705dd9d2336",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../sistemas/percurso",
+        "./balao-das-nuvens",
+        "./bosque",
+        "./constelacoes-das-nuvens",
+        "./corrida-de-balao",
+        "./corrida-na-ilha",
+        "./ilha-completa",
+        "./irie",
+        "./medidas",
+        "./modelos",
+        "./saltos-das-nuvens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/nuvens.ts",
+      "linhas": 27,
+      "sha256": "8a89a5812a0e1cbc5c24513fe452c15f924340016d2a5aa70e0e212e95299c5a",
+      "imports": [
+        "three",
+        "./bosque"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/objetos-da-casa.tsx",
+      "linhas": 386,
+      "sha256": "c18b6b9ccf8bb6b1245935c341bd98bd65f59502232a95416ce332eb4575ebc2",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../assets/objetos/aquario.glb",
+        "../assets/objetos/banda.glb",
+        "../assets/objetos/casinha.glb",
+        "../assets/objetos/fliperama.glb",
+        "../assets/objetos/forno.glb",
+        "../assets/objetos/geladeira.glb",
+        "../assets/objetos/geladeira-holograma.glb",
+        "../assets/objetos/lareira.glb",
+        "../assets/objetos/museu.glb",
+        "../assets/objetos/planta-interior.glb",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../estado/minijogos",
+        "../sistemas/construcao/projeto-azul",
+        "../sistemas/corais-do-recife",
+        "../sistemas/pausa",
+        "./carregar-aparencia",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./interativos",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/objetos-reativos.tsx",
+      "linhas": 237,
+      "sha256": "3f171cf0e43708e15769e131bd114db91e9a6e17657de1aa550b3fc904ce1e5e",
+      "imports": [
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../assets/ilhas/bosque-props.glb",
+        "../estado/contexto",
+        "../sistemas/corpo",
+        "../sistemas/materiais-fisicos",
+        "../sistemas/mundo-reativo",
+        "./grupos",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/obra.tsx",
+      "linhas": 310,
+      "sha256": "24c0102dc6260dafa51c7bed25509d54f1c203ba1f8273b6405cd476233eb2a6",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/casa/casa-paredes.glb",
+        "../assets/casa/casa-pisos.glb",
+        "../assets/casa/casa-portas.glb",
+        "../assets/casa/casa-telhado.glb",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../sistemas/construcao/comodos",
+        "../sistemas/construcao/grade",
+        "../sistemas/construcao/lote",
+        "../sistemas/construcao/pecas",
+        "../sistemas/construcao/quintal",
+        "../sistemas/construcao/telhado",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/ondinhas.tsx",
+      "linhas": 126,
+      "sha256": "f8ef515b1255b6ccc883ec61b6dfa9fdf99df401e1aed647ae25b19070ff7b86",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/mundo-reativo",
+        "../sistemas/qualidade",
+        "./bosque",
+        "./medidas",
+        "./qualidade-da-cena",
+        "./tronco-no-lago"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/palco-de-print.tsx",
+      "linhas": 166,
+      "sha256": "840ee2228e653454143c4a8d02b76ef0c3649d3f115ceed414672c9b2b6f9426",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "three/examples/jsm/loaders/GLTFLoader.js",
+        "three/examples/jsm/utils/SkeletonUtils.js",
+        "./carregar-ilha"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/peca-da-arte.tsx",
+      "linhas": 88,
+      "sha256": "aad7deb9d0d1c13a03b9d6b69aeeecb1c932339df43c4cdebb84947560929e48",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/ajustes-da-arte",
+        "../sistemas/pausa",
+        "./animado",
+        "./arte-animada"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/pico-vivo.tsx",
+      "linhas": 81,
+      "sha256": "e2103fed54ee76c8bb8d97e511ab637d377db9b1f0fb4d514373d3d3486f889c",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../sistemas/percurso",
+        "./bancos-da-vila",
+        "./banda-do-pico",
+        "./bosque",
+        "./corrente-de-ar",
+        "./corrida-na-ilha",
+        "./cristal-do-pico",
+        "./floco",
+        "./ilha-completa",
+        "./medidas",
+        "./modelos",
+        "./subida",
+        "./treno-do-pico"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/pico.ts",
+      "linhas": 20,
+      "sha256": "a0285c65a1f0fb592fe7e4e554cb128a4fa16276710ec8a0f8d27939af41c98b",
+      "imports": [
+        "three",
+        "./bosque"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/pintura-da-ilha.ts",
+      "linhas": 131,
+      "sha256": "60ff6d729c88bf596734bee77311d6fb5c02c9ec05a1b6dfa839cdd73c807157",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "three",
+        "../sistemas/cor-da-ilha",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/placa-da-ponte.tsx",
+      "linhas": 110,
+      "sha256": "e40c1de547419ad9b71a5ab76a62a097cdedb04fefbcd1556f6f5ee8e98de4eb",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/itens/placa-quadro.glb",
+        "../estado/contexto",
+        "../interface/voz",
+        "./colisao-da-ilha-central",
+        "./colisores",
+        "./colisores-da-ilha",
+        "./interativos",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/plataformas-das-nuvens.tsx",
+      "linhas": 156,
+      "sha256": "798477adc7323fcfa035ac450e0acc2614c5c891f225ffa31b0b06a45226a6b9",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/pausa",
+        "../sistemas/plataformas-das-nuvens",
+        "./colisores-da-ilha",
+        "./grupos",
+        "./ilha-completa",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/pontes-vivas.tsx",
+      "linhas": 232,
+      "sha256": "c379218d44c386fe0ce43cc26e036248cc41b23de2b80b140882be2cd57e3366",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/corpo",
+        "../sistemas/pontes-vivas",
+        "./bosque",
+        "./colisores-da-ilha",
+        "./grupos",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/portos.ts",
+      "linhas": 51,
+      "sha256": "1a8d6d42ed06cdbb8123d043a7841098fa5ad0151e326567927dcb52e96d3fba",
+      "imports": [
+        "three",
+        "../sistemas/barco"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/quadro-das-cores.tsx",
+      "linhas": 145,
+      "sha256": "0f338e23119488809fdb3e0f11fbe239282b013c2d85001c1b56d45259844388",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/itens/quadro-das-cores.glb",
+        "../estado/contexto",
+        "../estado/desafios",
+        "../sistemas/quadro-das-cores",
+        "./colisores",
+        "./ilha-completa",
+        "./interativos",
+        "./lugar-do-quadro",
+        "./lugar-do-quadro",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/qualidade-da-cena.tsx",
+      "linhas": 96,
+      "sha256": "d5f962940c11bd8a100397934e7e14d8bb7748504ac9294949bc48096109a304",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "../estado/conforto",
+        "../estado/contexto",
+        "../sistemas/pausa",
+        "../sistemas/qualidade",
+        "./vegetacao-ao-vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/rastro-de-pegadas.tsx",
+      "linhas": 88,
+      "sha256": "799ec1636ea5c310ad6b22f71413917b77387b1fdb17801708ed5198f113cede",
+      "imports": [
+        "react",
+        "three",
+        "three/examples/jsm/utils/BufferGeometryUtils.js",
+        "../sistemas/pegadas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/recife-vivo.tsx",
+      "linhas": 61,
+      "sha256": "a0f6fb4baca2e4ddd99f66d62415417298d5b241d6293156c801b0fd8d5d76fa",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "./corais-do-recife",
+        "./ilha-completa",
+        "./mare",
+        "./medidas",
+        "./mergulho-do-recife",
+        "./mesa-de-mapas",
+        "./modelos",
+        "./recife"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/recife.ts",
+      "linhas": 41,
+      "sha256": "c7f2d7d89970b9afeef982901f2a9d5a78865228440a624a68f1a9f1d61294b9",
+      "imports": [
+        "three",
+        "../estado/contexto",
+        "./bosque"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/retrato-do-avatar.tsx",
+      "linhas": 157,
+      "sha256": "1ffdba7c36ae54685343c65373ba428a76cd213724e00a32f6b29cf463c92cca",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/retrato",
+        "../sistemas/retrato"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/rotina-dos-lumis.tsx",
+      "linhas": 314,
+      "sha256": "7a48bb6ee67832b8e6aeab32af5b482b2abc4267bbe7e2817ff7037ebd5464ac",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../assets/lumis/algodao.glb",
+        "../assets/lumis/bolha.glb",
+        "../assets/lumis/brigadeiro.glb",
+        "../assets/lumis/brotinho.glb",
+        "../assets/lumis/buzio.glb",
+        "../assets/lumis/cristal.glb",
+        "../assets/lumis/estrelinha.glb",
+        "../assets/lumis/gelinho.glb",
+        "../assets/lumis/ipe.glb",
+        "../assets/lumis/ovinho.glb",
+        "../assets/lumis/perola.glb",
+        "../assets/lumis/pitanga.glb",
+        "../assets/lumis/pluma.glb",
+        "../assets/lumis/quindim.glb",
+        "../estado/cartas",
+        "../estado/contexto",
+        "../estado/rotina",
+        "../sistemas/pausa",
+        "../sistemas/rotina",
+        "../sistemas/zappy",
+        "./animado",
+        "./borroes-da-vila",
+        "./horta",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/saltos-das-nuvens.ts",
+      "linhas": 123,
+      "sha256": "567a065c43842788797a7dce7cfbfc86e0b90486243aa3a66ee5f450081a784b",
+      "imports": [
+        "../sistemas/cipo",
+        "../sistemas/corpo",
+        "../sistemas/percurso",
+        "../sistemas/plataformas-das-nuvens",
+        "./colisores-da-ilha",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/subida.ts",
+      "linhas": 100,
+      "sha256": "c6ae7c40bebc5cb24d9655925a74bbef24a06f16f7f595b7e4514e7181e5b8a7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/cipo",
+        "../sistemas/corpo",
+        "../sistemas/percurso",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/telhados.ts",
+      "linhas": 82,
+      "sha256": "551066b76d5f2ef3534370c20873fc88fdf9231e82d956bd484f045158882ab9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/cipo",
+        "../sistemas/corpo",
+        "../sistemas/percurso",
+        "./medidas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/treno-do-pico.tsx",
+      "linhas": 107,
+      "sha256": "29c7f5231f0213924b949351132d38d8b95ac89283a18334d01d75aeb5f3f067",
+      "imports": [
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../sistemas/cipo",
+        "../sistemas/corpo",
+        "../sistemas/treno",
+        "./bosque",
+        "./interativos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/tronco-no-lago.tsx",
+      "linhas": 164,
+      "sha256": "fa3573d2b069b12357c9f313f6f95a3694640533c79224e6ff71cf8119adc9f4",
+      "imports": [
+        "@react-three/rapier",
+        "react",
+        "../assets/ilhas/bosque-props.glb",
+        "../estado/contexto",
+        "../sistemas/empuxo",
+        "../sistemas/materiais-fisicos",
+        "../sistemas/vento",
+        "./bosque",
+        "./medidas",
+        "./modelos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/vale-vivo.tsx",
+      "linhas": 43,
+      "sha256": "f3c699e93d96ea0f7380ac4710ad34313408e529721a84c5098790a61ff4675d",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "./descobertas-do-vale",
+        "./filhote-do-vale",
+        "./ilha-completa",
+        "./jade",
+        "./medidas",
+        "./modelos",
+        "./montaria-do-vale"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/vale.ts",
+      "linhas": 18,
+      "sha256": "d582e8e02c8d053e9b46b5d87318626952051619fb3307c0573feacb28d896f4",
+      "imports": [
+        "three",
+        "./bosque"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/vegetacao-ao-vento.ts",
+      "linhas": 66,
+      "sha256": "357a6ec7ad3d84bc9281e2e84211564af6273d72ed4154e81fd6f1d5221a976e",
+      "imports": [
+        "three",
+        "../sistemas/vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/vila-viva.tsx",
+      "linhas": 89,
+      "sha256": "73d8c16429efa2cdc0e91f9c79c777126ab8b939705788514fc318ba8e05672b",
+      "imports": [
+        "@react-three/fiber",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../sistemas/percurso",
+        "../sistemas/percurso",
+        "./balcoes-da-vila",
+        "./bancos-da-vila",
+        "./bento",
+        "./borroes-da-vila",
+        "./bosque",
+        "./corrida-na-ilha",
+        "./feira",
+        "./festa-na-vila",
+        "./ilha-completa",
+        "./medidas",
+        "./modelos",
+        "./telhados"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/mundo/vista-da-luneta.ts",
+      "linhas": 27,
+      "sha256": "1f6749370848e65674b3cbddfac5d353731025fd9a3bb02cf97ec645c012f064",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/avatar-do-jogo.tsx",
+      "linhas": 145,
+      "sha256": "586b2ad9ea0ede6e47f5a6827b6d6bcf5824079486734d6846568c78f73d8541",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/avatar/avatar-rig",
+        "@sistemazero/avatar-quarto/avatar/catalog",
+        "react",
+        "three",
+        "../assets/avatar/locomocao.glb",
+        "../estado/contexto",
+        "../sistemas/ajustes-da-arte",
+        "../sistemas/locomocao",
+        "../sistemas/pausa",
+        "./lanterna-na-mao",
+        "./patins-nos-pes"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/bracos.ts",
+      "linhas": 123,
+      "sha256": "e807796f3aa49173c2b7cba2032adb4903e27a1969fc29d84ba6c1a832b8a969",
+      "imports": [
+        "three",
+        "../sistemas/cipo",
+        "../sistemas/corpo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/camera.tsx",
+      "linhas": 644,
+      "sha256": "f54616bc99f4b4a11170aaf46a63bcfa09083fefe48286b796c3d640f2d27764",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../estado/conforto",
+        "../estado/construcao",
+        "../estado/contexto",
+        "../estado/farol",
+        "../estado/preferencias",
+        "../mundo/alto-do-farol",
+        "../mundo/grupos",
+        "../mundo/luneta-medidas",
+        "../mundo/medidas",
+        "../sistemas/camera",
+        "../sistemas/conforto",
+        "../sistemas/constelacoes",
+        "../sistemas/final-do-farol",
+        "../sistemas/luneta",
+        "../sistemas/mergulho",
+        "../sistemas/perfis-de-camera"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/lanterna-na-mao.tsx",
+      "linhas": 75,
+      "sha256": "1ff8fd9f9c15ac36feaa3e4e075e53f11845d78a6cde0bc1617126d5debebff6",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "react",
+        "three",
+        "../assets/itens/lanterna.glb"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/patins-nos-pes.tsx",
+      "linhas": 187,
+      "sha256": "e350e84a16f4f3cb65f11aba8f603d9d21582deaf213503ac8b8c200b1fb6ed0",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/avatar/catalog",
+        "react",
+        "three",
+        "../assets/movimento/patins.glb"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/personagem.tsx",
+      "linhas": 601,
+      "sha256": "eb2a482388862ae2e19cdc1d49e7faa0b7ffe81145a7050487299f9750f449a0",
+      "imports": [
+        "@react-three/fiber",
+        "@react-three/rapier",
+        "@sistemazero/arquipelago-contracts",
+        "react",
+        "three",
+        "../estado/contexto",
+        "../estado/farol",
+        "../mundo/grupos",
+        "../mundo/interativos",
+        "../mundo/medidas",
+        "../sistemas/balao",
+        "../sistemas/borroes",
+        "../sistemas/cipo",
+        "../sistemas/cordas",
+        "../sistemas/corpo",
+        "../sistemas/correnteza",
+        "../sistemas/descanso",
+        "../sistemas/locomocao",
+        "../sistemas/mergulho",
+        "../sistemas/modos",
+        "../sistemas/modos/colisao",
+        "../sistemas/modos/equilibrio",
+        "../sistemas/montaria",
+        "../sistemas/necessidades",
+        "../sistemas/patins",
+        "../sistemas/pausa",
+        "../sistemas/planador",
+        "../sistemas/ponto-de-partida",
+        "../sistemas/visitas",
+        "./avatar-do-jogo",
+        "./bracos",
+        "./planador-aberto"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/planador-aberto.tsx",
+      "linhas": 48,
+      "sha256": "19138b28153d4b40166681f6b64e8dfcb2571ee25fcbcbb256c707263e8ca1b6",
+      "imports": [
+        "react",
+        "three",
+        "../assets/movimento/planador.glb",
+        "../estado/contexto",
+        "../mundo/animado",
+        "../sistemas/pausa"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/personagem/zappy.tsx",
+      "linhas": 220,
+      "sha256": "ec454f7e4b5fe14d3cef6078d3971ddba501110741a0915ae4a598d628b76775",
+      "imports": [
+        "@react-three/drei",
+        "@react-three/fiber",
+        "@sistemazero/avatar-quarto/use-reduced-motion",
+        "react",
+        "three",
+        "../assets/zappy.glb",
+        "../estado/contexto",
+        "../estado/farol",
+        "../sistemas/zappy"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/aparencias-falsas.ts",
+      "linhas": 59,
+      "sha256": "19735d872ca38051aca5a15005af1f320c38450b08dd654a3004fc4e775fe3ee",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../assets/objetos/planta-interior.glb"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/cartas-falsas.ts",
+      "linhas": 68,
+      "sha256": "34e665dd153d6037a33026a6afd543e43e571aff80b100fd647039fa6cba9a91",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/desafios-falsos.ts",
+      "linhas": 123,
+      "sha256": "03321daf6e4683e3366fb1f55bbd0b4211fa8be4e5bdc80379e21a7280e0bfe9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/falsa.ts",
+      "linhas": 590,
+      "sha256": "25f7292019c0b3735b36f5848070a995e8785adaf51de7ca0d9916e15b0e41e2",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/visitas-dos-moradores",
+        "./aparencias-falsas",
+        "./cartas-falsas",
+        "./desafios-falsos",
+        "./familia-falsa",
+        "./galeria-falsa",
+        "./insumos-falsos",
+        "./obra-de-exemplo",
+        "./pedidos-falsos",
+        "./profissoes-falsas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/familia-falsa.ts",
+      "linhas": 133,
+      "sha256": "a5001b49d0f32608bfc166104ccfcaa1c0b3ee6b082d5c4747a69d4b0b63a62e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./obra-de-exemplo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/galeria-falsa.ts",
+      "linhas": 150,
+      "sha256": "efd2f47335d39075cc744a1575843bfad3bdff7b41a3c29200483839517099f7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/insumos-falsos.ts",
+      "linhas": 74,
+      "sha256": "da49ce89d3fbaf6ba351e5e6531a53d9d740dcdf852806df744ee9fe519e5d7f",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/conciliar-salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/obra-de-exemplo.ts",
+      "linhas": 50,
+      "sha256": "584b37829b531cd4f94a5bf9a47bbeca6c7151babb17baa1dda402f7ba017449",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/construcao/lote",
+        "../sistemas/construcao/obra",
+        "../sistemas/construcao/projeto-azul"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/pedidos-falsos.ts",
+      "linhas": 100,
+      "sha256": "c6abe3795b684e1608f022f71cd0b16235f5a423dca62acc6e1888f8c50faf3f",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../sistemas/conciliar-salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/plataforma/profissoes-falsas.ts",
+      "linhas": 78,
+      "sha256": "71ced44aa1048076aa34e26a067505f8ccdff2550e894a1aa07d0338b640683e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/abertura.ts",
+      "linhas": 181,
+      "sha256": "907cdffa1d87bc9fa6935ebd0bee02f4125497bf663ff394d0090e46c789b292",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/achados-do-recife.ts",
+      "linhas": 38,
+      "sha256": "a4658affab339107fec649e433a1fdd38e6b99fd7754adbe2c5cf5ece694fd75",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/agua.ts",
+      "linhas": 17,
+      "sha256": "c8135dee17dad14c68bcfd0ecf04609410c14f387455de6cb0022a32ba6d7751",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/ajustes-da-arte.ts",
+      "linhas": 71,
+      "sha256": "27e5f57af93338dbaaa3b2c92c0d47f31e2ae395ad3e1d6124448c7bc45d17e7",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/album.ts",
+      "linhas": 226,
+      "sha256": "c8a2f07ec4ec8c3519689e4d56857e8515de696eebc84661c98673b1b06927b6",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./achados-do-recife",
+        "./construcao/galeria",
+        "./diario",
+        "./lumis",
+        "./percurso",
+        "./lumis"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/amizade-do-anel.ts",
+      "linhas": 145,
+      "sha256": "b726e9062dc90c41c8e68b721a7ce90a360197c51211694afc227b701e4e1ce0",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./moradores",
+        "./moradores-do-anel",
+        "./receitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/armazem-salvamento.ts",
+      "linhas": 143,
+      "sha256": "a613b30e9ec2fd7dfce829830a680a531099a706dc029c16a7ee2f76bee94469",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/armazem-tempo.ts",
+      "linhas": 104,
+      "sha256": "b0bc406758fed6a036eabd5fdfa56a382d99f7a42768787ee0bdca0cfa866b4f",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/balao.ts",
+      "linhas": 288,
+      "sha256": "72d6c70dd9b23628f662467b1c8f711c9cc697ce1b7bdcd1487405eb6dcf6154",
+      "imports": [
+        "./cipo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/banda.ts",
+      "linhas": 124,
+      "sha256": "655b0dcb2eb1e2d61e6cdf491ef263311b1d7ae5a4d5f4ee4cf31e77077a730a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./construcao/projeto-azul",
+        "./itens",
+        "./receitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/barco.ts",
+      "linhas": 287,
+      "sha256": "03867265e513ea7a115a24df9fe7fe23810ed5942aa8f1cb202b941f525d9f5d",
+      "imports": [
+        "./cipo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/bento.ts",
+      "linhas": 125,
+      "sha256": "2738155350e6643db8fb82a0d34e8a8678af1e632fd902d8c00ce01c569cb97a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "./moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/bichos.ts",
+      "linhas": 202,
+      "sha256": "9a4c0df27773e9efe6a69afa8b9134d3632d9fc87e075163e5d19b6c099ae2ef",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./esconde",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/borroes.ts",
+      "linhas": 275,
+      "sha256": "60f046b1792e0b6f3cfc9dc5fe828fa7a39e05791803492f11fb45878a440ab0",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./itens",
+        "./lumis"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/caderno-dos-lumis.ts",
+      "linhas": 60,
+      "sha256": "ce5c316cce580d99fd87896ae285d8d33414fa8582faba62a8e42ecbabdb3196",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/camera.ts",
+      "linhas": 102,
+      "sha256": "7114d871a894ab1c48b36e1e0fea35b2fb5f5d788f91d523e206aaa2cd62fa45",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/caminho.ts",
+      "linhas": 226,
+      "sha256": "b616ff92917bd4de6ef8267e62b81903cb00b7f6c7499f7f9eae46b177d8711b",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/cipo.ts",
+      "linhas": 211,
+      "sha256": "9a76d32fed7a445d7c5253bcef1ae99e614efb99bd5f18ab00f67859fcf15ba7",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/clima.ts",
+      "linhas": 139,
+      "sha256": "5fa6eb78920d74f763ebeba3d220e8477776015ae5849d9d66037d4c086aba43",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/colheita.ts",
+      "linhas": 13,
+      "sha256": "129fd442ac1b5245fd72575a276ccf762ddc8abdaf341ed276c8ac11ddef7bae",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/conciliar-salvamento.ts",
+      "linhas": 112,
+      "sha256": "9ad2221907454af1199d53a80baa1c8170f5a79fbec552af18aa81d0f6b4d0f5",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./filhote-do-vale"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/conforto.ts",
+      "linhas": 99,
+      "sha256": "5a11c6588af664c1d8de4d32ce88c88dcb19ae76bdd0aa4f5883a7574cbd44b2",
+      "imports": [
+        "./qualidade"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/constelacoes.ts",
+      "linhas": 133,
+      "sha256": "62a355f67c3646259abdeada6aa92157f95f5cfce91a56ec6cd18f734a6caac9",
+      "imports": [
+        "./cipo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/conversa-da-capi.ts",
+      "linhas": 171,
+      "sha256": "e7d4c83a6e53791762ec952dc5eb495a6c8da09df2260f40d67afe48004a72d1",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./bichos",
+        "./diario",
+        "./esconde",
+        "./falas-da-capi",
+        "./itens",
+        "./moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/conversa-do-bento.ts",
+      "linhas": 256,
+      "sha256": "52faef65dc88108b8824f6e9705c3ebeed2ff306dd8c061661b0c29a3d62b4bb",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./bento",
+        "./borroes",
+        "./conversa-da-capi",
+        "./diario",
+        "./itens",
+        "./moradores",
+        "./receitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/cor-da-ilha.ts",
+      "linhas": 73,
+      "sha256": "0818dafed3478b4e32ce241c46f27b1b46a2bfa74ce00799bc41e635e4f32024",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./quadro-das-cores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/corais-do-recife.ts",
+      "linhas": 110,
+      "sha256": "9643aaebea37e4c994589127d41bf74f87bb048f07d63c1b039c2a5df59e5e46",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/cordas.ts",
+      "linhas": 453,
+      "sha256": "ad2091bbe35c6628511c6c6642bf94e1bea9eef86602f3f7b8a46e1b7d23a23f",
+      "imports": [
+        "./cipo",
+        "./escalada",
+        "./vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/corpo.ts",
+      "linhas": 66,
+      "sha256": "a6fa1f85d79e4a195d66e0d416b9f1bb50822ba40663584c38999e109a8623fb",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/correnteza.ts",
+      "linhas": 93,
+      "sha256": "8d02042c1a4a0b04cadb8768839581822b5e7520b25fe4c97692af872dc038f5",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/corrida-de-balao.ts",
+      "linhas": 155,
+      "sha256": "9507a72e1f51a344dcda86565d4146f595b16569fc15152147ac964fb7028f15",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./cipo",
+        "./percurso"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/cristal-raro.ts",
+      "linhas": 39,
+      "sha256": "6788bbecf09a4cfd398cfca767abe233c61896d0943bab3c4d8224d3e9eebd21",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/cuidar.ts",
+      "linhas": 121,
+      "sha256": "c176ca76e88c3140441d38761cd139c7793689b340c9da0ed7fdeb33c8549599",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./bichos",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/descanso.ts",
+      "linhas": 116,
+      "sha256": "809e84d6414350aa416241a8153380e893396419f0a1850982bac2f84c1a7d83",
+      "imports": [
+        "../estado/contexto",
+        "./corpo",
+        "./necessidades"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/diario.ts",
+      "linhas": 284,
+      "sha256": "dbcea7d88690c3a8377cd395be53119ff9f160c09885d853387fe3625e6626ac",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./bichos",
+        "./filhote-do-vale",
+        "./final-do-farol",
+        "./itens",
+        "./moradores",
+        "./moradores-do-anel",
+        "./receitas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/empuxo.ts",
+      "linhas": 75,
+      "sha256": "5fb75a859066b222bd568b87e7c358ea19186cca8baa098677e822307f5aa4c3",
+      "imports": [
+        "./materiais-fisicos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/escalada.ts",
+      "linhas": 170,
+      "sha256": "4682213bbbbed91373e66936f37f18baee30874fbfe78e1f371195945f871df5",
+      "imports": [
+        "./cipo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/esconde.ts",
+      "linhas": 96,
+      "sha256": "1b1f9392d83debe5bd31d42db39e5c0b3902d9113e18da25c172a1deab4a3a80",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/estados-dos-materiais.ts",
+      "linhas": 87,
+      "sha256": "9843230583bf2fb38440654acab5bdbc6e9bb0f923ae01a9ee9c50d31301b876",
+      "imports": [
+        "./materiais-fisicos",
+        "./vento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/exploracao.ts",
+      "linhas": 36,
+      "sha256": "16baf5dd6a0faf820fbcc6147256103fe8687c227fbc55050a641ead7643d847",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/falas-da-capi.ts",
+      "linhas": 102,
+      "sha256": "a83af7b5a8184380a4c74c67b3f599c1eb40081e2de74ac1f07a716a2ce79f1f",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/fantasma.ts",
+      "linhas": 129,
+      "sha256": "96140f15027c1762f2e4e36178faf2d0ba7ea3a89b0c4644cb77940e9780970e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/feira.ts",
+      "linhas": 29,
+      "sha256": "c30a71e63fb25968cdaa894d3dd05b30d8febd9fa1c12023e9928c2956677630",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./semana"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/ferramenta-da-rotina.ts",
+      "linhas": 79,
+      "sha256": "fad6674d395835591d123825ac675828b3f7fdbc75a6e74dd9438779c0a99d21",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./rotina"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/festas.ts",
+      "linhas": 79,
+      "sha256": "0b5ebcb37b4b34afec66efa3ac7dee3861e6302c1b580f686686476ea2431293",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/fila-tempo.ts",
+      "linhas": 101,
+      "sha256": "41b60b53c0ef9a861fd4805ab711f2cc0ff40bfe2448f87f62470e4533f5d434",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./armazem-tempo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/filhote-do-vale.ts",
+      "linhas": 233,
+      "sha256": "cc24ba1a248299ac702cdc8d0dca87326a6ce52669b31774ed038df0084720b1",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/final-do-farol.ts",
+      "linhas": 83,
+      "sha256": "6f62f8ebbb1dd6d1712f4f1ee8be6782e4651a8add4833e6616b6958c5ae9821",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./pausa"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/floco.ts",
+      "linhas": 32,
+      "sha256": "62d2957139c8e19a4bd29e29c7408586836f98a2f12e8567b4899f4f59b23e43",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./banda",
+        "./planador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/gerente-tempo.ts",
+      "linhas": 82,
+      "sha256": "85352ab351959569819e2cbf45f1c8fa0a8c8a97f92660e8dcc8c7905767d157",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./sessao-tempo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/habitantes-da-praia.ts",
+      "linhas": 62,
+      "sha256": "11e96d70961a81fbc44dbf1aac61e1dddb8c8004ebef869d030ddc6395c66eb9",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/horta.ts",
+      "linhas": 11,
+      "sha256": "c2fe73e3631c5ac9cfb8c447423e4193ab2b36b79d635c2f1fe3c774487fe44f",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/hud.ts",
+      "linhas": 114,
+      "sha256": "b12b8d1532eca63076c59059fd700149ccb4ec108d533e1b7bdec74daf225f61",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./horta",
+        "./necessidades",
+        "./quadro-das-cores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/ilhas-completas.ts",
+      "linhas": 91,
+      "sha256": "81e091e620b4220563e4de04ab36d9f5886053fbcdad993b264ca0587d328816",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/irie.ts",
+      "linhas": 24,
+      "sha256": "52833061b38289e3c77e98bff49e71cb22567919f8b548d72450a7de3fa22a25",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/itens.ts",
+      "linhas": 168,
+      "sha256": "baf9492b1ce274f02d0dc32ec8c6c48206e3209fea687ed5fcaaa61685e3dcff",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/jade.ts",
+      "linhas": 48,
+      "sha256": "ae8172bfe781db88d0a81e48a4379999f60676780f31dc37021010c1f9a47ec3",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./filhote-do-vale",
+        "./vale"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/locomocao.ts",
+      "linhas": 301,
+      "sha256": "91b22128473725fc57817f4f5cda7a42d0bb554aed717d9683a8179454d68a89",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/lumis.ts",
+      "linhas": 37,
+      "sha256": "94bcc98754cdd624f9172eeb2951fdc936940faaa7598c69f2326ccc4fe99e46",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/luneta.ts",
+      "linhas": 48,
+      "sha256": "296fee5bc6e843aed9e9cd67324a301e37c3382a229a205f63bde9a140a1da7f",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/mapa.ts",
+      "linhas": 62,
+      "sha256": "fbe41dc5303a593ff34a74dba9dba3605fdbc4440d591e739526b7a1c3e526fe",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/mare.ts",
+      "linhas": 25,
+      "sha256": "c163863e7741be1dd2fea4b4672776ac556fd3e7c776457e927f41fcc96a8101",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/materiais-fisicos.ts",
+      "linhas": 54,
+      "sha256": "0feaaedc81b7f402966493a7d86bb6bacd39d5e3ed25a15d46030e2b55be7e1b",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/mecanismos.ts",
+      "linhas": 26,
+      "sha256": "92bcc75d5c052cfe02ec06b3f407eb35e572fcf30006b714b645cec6998b1330",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/mergulho.ts",
+      "linhas": 78,
+      "sha256": "4392505601ec5eca49efde04738fa2bdffc544f4d7069b6d63b9a6eda04e291b",
+      "imports": [
+        "./cipo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modo-foto.ts",
+      "linhas": 74,
+      "sha256": "600463a70f1c4d8712f7bedd9f370e11dd9d1a0b7083e5bf476eaaa7f5512329",
+      "imports": [
+        "./pausa"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/montaria.ts",
+      "linhas": 89,
+      "sha256": "070989891c1fdd52c1538811faab9d656918b2a9c25093faba16465d09412378",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./vale"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/moradores-do-anel.ts",
+      "linhas": 97,
+      "sha256": "8d650099348a8713bf893aa5b813d608c3b4ed42049bbc3a20dc8bdd87a7bfb9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/moradores.ts",
+      "linhas": 257,
+      "sha256": "d1760d996b0382d38aa7366f8dc60320f5844581bb78ee3c056cac411d3a1c6d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "./itens",
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/movimento.ts",
+      "linhas": 99,
+      "sha256": "3d39c2dfe95e85d16b57fb7c1069669b447ca4daa7ff63206a44ff77ebbc1351",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/mundo-reativo.ts",
+      "linhas": 81,
+      "sha256": "2632211283fda5404570d65c6966db4d9621fbd4a40f98afcadbcab2fe404dbf",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/necessidades.ts",
+      "linhas": 43,
+      "sha256": "da3db68eef2a22e89d74e281951f6717c11869fc5beaa2d0a76f1f4348cf96f9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/patins.ts",
+      "linhas": 40,
+      "sha256": "51fd4bf1e6e77c6f7ec18cc28e7ef8b30b7da327bc26c75c1b26404c0b51485b",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/pausa.ts",
+      "linhas": 33,
+      "sha256": "a69e0da7af1276008c792181b546cb6673366ac58f0658527830f7a1fc91254a",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/pegadas.ts",
+      "linhas": 151,
+      "sha256": "563b93f7aef2e4a3b0a9af25d7ac76968b35d9cf651fb292d57b5767ab3e845a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./caminho"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/percurso.ts",
+      "linhas": 407,
+      "sha256": "5cf9084f3d94d361f001a8552b459489519c7e0fe6a4e44aec3060587d9bef45",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./cipo",
+        "./patins"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/perfis-de-camera.ts",
+      "linhas": 188,
+      "sha256": "09c19b1f98cba7d54d1e2a1dd34c1283e4c042f5e5b504ba090485cfbbc75267",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/planador.ts",
+      "linhas": 102,
+      "sha256": "81b7b3a6778c0acf4888ad204eb9608a96c62e65b6795139edcc432bff7320a5",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/plataformas-das-nuvens.ts",
+      "linhas": 20,
+      "sha256": "f463e89f34fc841a642adad0838bd47225f7004a1c2438aa1444553ebc0153b6",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/pontes-vivas.ts",
+      "linhas": 33,
+      "sha256": "df1c6aef76a83022ab8347ccfdf5e3f6b0f169dfb444ac5e4bf431d8e4592340",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/ponto-de-partida.ts",
+      "linhas": 82,
+      "sha256": "47f13a0ae4ab128cba2d886c0e9f48b64cdf91a775d042890990f8d81b8f04de",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/quarto/catalog",
+        "@sistemazero/avatar-quarto/quarto/coords"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/primeiro-pedido.ts",
+      "linhas": 54,
+      "sha256": "34ee195707b14b0719bef26c7ad7bae48bda30af786afd481bb24a3db74e84e2",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./colheita",
+        "./construcao/projeto-azul",
+        "./itens"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/profissoes.ts",
+      "linhas": 73,
+      "sha256": "d9232467588e3eb906521604665b74ae06919f49d321b51394129bbf6ef3fdbc",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/quadro-das-cores.ts",
+      "linhas": 105,
+      "sha256": "db912a91fec3c8cc1552077e1690d4aec9cc860745d6bf56618e18408d82bd5c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/qualidade.ts",
+      "linhas": 77,
+      "sha256": "2c869ef0c6ec82b51c3093b0dbc5d4655e6b28700ced52e14a899b55133d0fc9",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/receitas.ts",
+      "linhas": 116,
+      "sha256": "78775c531dd4b492ffca18d7747f1bcfc15b7cd845c9395af53988e1b5048863",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "./festas",
+        "./itens",
+        "./moradores",
+        "./moradores-do-anel"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/retrato.ts",
+      "linhas": 26,
+      "sha256": "693d8bd861ee884a76269268246f8d86d371871feb34b1468237a58a2918df87",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/rotina.ts",
+      "linhas": 333,
+      "sha256": "0b0a6eeb8acbb734e96f113f6ccaaca9571b32630043d6040cf4c07826be3f58",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/arquipelago-contracts",
+        "./album",
+        "./colheita",
+        "./construcao/projeto-azul",
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/salvar.ts",
+      "linhas": 584,
+      "sha256": "aef8465264a560eb7402247246cd7f037ba9591ec310f9d18a826705e4ea79f4",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./armazem-salvamento",
+        "./conciliar-salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/seguir.ts",
+      "linhas": 118,
+      "sha256": "cf68c2f29346165922f45e5dd635e19fa859267271907a9d65447308264e41f9",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/semana.ts",
+      "linhas": 16,
+      "sha256": "4624fd6c99ac747cfe5927dc68054a69c446025caebdd10dfb83dbbef5504192",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/sessao-tempo.ts",
+      "linhas": 127,
+      "sha256": "7e4284d6198d0421e06b6107e79e47d3e8b40a04940125a0107cad1a81b2d2b2",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/tema-da-semana.ts",
+      "linhas": 57,
+      "sha256": "dbccf76c112a4263ee567fc51142fe1248d15dc6b0baec6ebb68dff903a78b11",
+      "imports": [
+        "./semana"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/tempo-do-dia.ts",
+      "linhas": 50,
+      "sha256": "d1c6fc4f0ad946774cef482777ef63bdd766698e465c9e71c905220255efdd94",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/tempo-livre.ts",
+      "linhas": 7,
+      "sha256": "0605ffe53504efd8016033aa9595e876ed845c7be895806d419671894ee428ef",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/treno.ts",
+      "linhas": 41,
+      "sha256": "e7d3f0f3d4ff01bdc6a7efb78568b27709e9ee17b284c2cb3c3487c1659449ad",
+      "imports": [
+        "../estado/contexto",
+        "./cipo",
+        "./materiais-fisicos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/turnos.ts",
+      "linhas": 94,
+      "sha256": "2f881df3a0c6c134b93f93d7009b5d538e4f39a0fdbf735eee5ba2d325285cc8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./conversa-do-bento",
+        "./itens",
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/vale.ts",
+      "linhas": 73,
+      "sha256": "920c4f6b56e32a529eab7b41b27d61e0ce83dd7cd2e1fcf69a668fba66bda41d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./caminho"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/vento.ts",
+      "linhas": 28,
+      "sha256": "72e475169041de8f4ed89b8f42d862e57c85f2d4dc9a22a2bf5f58bc3681c244",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/visitas-dos-moradores.ts",
+      "linhas": 148,
+      "sha256": "032d4555396bb7676ef81ea2bd6bff472f176fc3fbc9991818354ba3743cee30",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/quarto/catalog",
+        "@sistemazero/avatar-quarto/quarto/coords",
+        "./construcao/aconchego",
+        "./construcao/comodos",
+        "./construcao/grade",
+        "./construcao/lote",
+        "./construcao/projeto-azul",
+        "./moradores"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/visitas.ts",
+      "linhas": 234,
+      "sha256": "6cae63918903d33e3192497073d1e81d8725266979eb8da67f24fdc0da81b982",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./percurso"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/zappy.ts",
+      "linhas": 84,
+      "sha256": "3857bb9910206946102ee744eb91a6f548b4252b5b385f81e8edb7cfbd17aaf0",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/aconchego.ts",
+      "linhas": 186,
+      "sha256": "3d6a740480875022f7da78ceb02e5076cd8d3758e9d59d13b9f28a6d157246b3",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/avatar-quarto/quarto/catalog",
+        "./comodos",
+        "./grade",
+        "./lote"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/comodos.ts",
+      "linhas": 149,
+      "sha256": "220bc3f2e69a1313592b7bf2a061bda39a655972dfe1f7fb56d99179e429b943",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./grade",
+        "./lote"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/falas.ts",
+      "linhas": 49,
+      "sha256": "ef530c6d1074094f848e3263cf4414fb25a909256f95712ede9099ee90bff6c5",
+      "imports": [
+        "./obra"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/ferramentas.ts",
+      "linhas": 206,
+      "sha256": "63a3e3c422846b8f9c2627b0d5092e253ce9d7a6619ab2d3f33b060c21a058e8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./comodos",
+        "./grade",
+        "./lote",
+        "./obra",
+        "./projeto-azul",
+        "./quintal"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/galeria.ts",
+      "linhas": 137,
+      "sha256": "9931a9b54b790f1b6f66c9c29875e5958d84b45b689d42b7e904c846d51846a8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/grade.ts",
+      "linhas": 158,
+      "sha256": "3bc31e520e8a17c18a66c5e4fcb2f4a47444cb537069ae80e4007ddf693ab08a",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./lote"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/lote.ts",
+      "linhas": 172,
+      "sha256": "842982075fbbf13459994cfa8d72da7224921b1acb577fc5e37663ab00ae48e8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/obra.ts",
+      "linhas": 239,
+      "sha256": "5977aea3a82df24fb593695e9f799e02c664b80732f964be5124624e6c8284a5",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./comodos",
+        "./grade",
+        "./lote",
+        "./projeto-azul"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/pecas.ts",
+      "linhas": 285,
+      "sha256": "7b32faf5c1ca0e2d1d6a84e30f9f3dfe872a988ba46ed21ddbc67a4e7e02e65c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./comodos",
+        "./grade"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/projeto-azul.ts",
+      "linhas": 269,
+      "sha256": "eee18d11b985a41bacc8a83e4c60a6807c033c425a498d2f8cbfe2b5474f0637",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../itens",
+        "../moradores",
+        "./comodos",
+        "./grade",
+        "./lote",
+        "./obra"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/quintal.ts",
+      "linhas": 236,
+      "sha256": "ba70384656e62455efaffdf73c5fabd3069f0c0b0ef6d858c6c1fcc1a5367d24",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./comodos",
+        "./grade",
+        "./lote",
+        "./obra",
+        "./projeto-azul"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/construcao/telhado.ts",
+      "linhas": 157,
+      "sha256": "1724f325b2ee682b04e4fdb1cac392da0f0b8a864b2e45e0c902a490083b51d6",
+      "imports": [
+        "./comodos",
+        "./grade",
+        "./lote",
+        "./pecas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/balao.ts",
+      "linhas": 67,
+      "sha256": "0bfd45b6b9ea9f4d89cbf397b4b2e5a648bdefc0f0fac20196402cc7efe13b15",
+      "imports": [
+        "../balao",
+        "../corpo",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/barco.ts",
+      "linhas": 48,
+      "sha256": "d6c5de98554e2136ed7bd3cc9cebb694bf5ce4c9f426c832ad3ee33eb6e62bb5",
+      "imports": [
+        "../barco",
+        "../corpo",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/borda.ts",
+      "linhas": 219,
+      "sha256": "b3a4c47bda95791e5a841c7b3cf33d86b20e6a60a544632f4716a24e5f6aa0d7",
+      "imports": [
+        "../../estado/contexto",
+        "../cipo",
+        "../corpo",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/chao.ts",
+      "linhas": 185,
+      "sha256": "40226b208eafc3bcb447c197defc075597c739c84b7a05b4c8fd3502888cee77",
+      "imports": [
+        "../agua",
+        "../corpo",
+        "../correnteza",
+        "../escalada",
+        "../movimento",
+        "../patins",
+        "./borda",
+        "./cipo",
+        "./equilibrio",
+        "./escada",
+        "./escalada",
+        "./escorregar",
+        "./planar",
+        "./tipos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/cipo.ts",
+      "linhas": 127,
+      "sha256": "6a0ea66511b6ea44944fea03abee4c7afbfc62d8f52b9128b198ed5dc1b2be83",
+      "imports": [
+        "../../estado/contexto",
+        "../cipo",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/colisao.ts",
+      "linhas": 99,
+      "sha256": "f604cc43a24ec8d4a0da8bba032271fba2e6b52a77017e0ba27e535e789ce1e2",
+      "imports": [
+        "../cipo",
+        "../corpo",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/descanso.ts",
+      "linhas": 75,
+      "sha256": "c5159113ccd49f3b05422c5529caf10fb593887f0b1aaf00ab529da255a4a893",
+      "imports": [
+        "../../estado/contexto",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/equilibrio.ts",
+      "linhas": 200,
+      "sha256": "bd008570684c178f631fe81a5fb58f9ab85b79e3b6e0ce5a3c93da355674cf52",
+      "imports": [
+        "../../estado/contexto",
+        "../cipo",
+        "../corpo",
+        "../movimento",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/escada.ts",
+      "linhas": 205,
+      "sha256": "31497deffef475a87466649b66aac02b40cd1d85a1c965bada8820b29f8a8a5a",
+      "imports": [
+        "../../estado/contexto",
+        "../cipo",
+        "../corpo",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/escalada.ts",
+      "linhas": 121,
+      "sha256": "dd8939f290c1bc573c4938d4e7bfc0ace3d175101d1e10273935669a81642431",
+      "imports": [
+        "../../estado/contexto",
+        "../cipo",
+        "../corpo",
+        "../escalada",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/escorregar.ts",
+      "linhas": 205,
+      "sha256": "ffb1f6d80d768152cfa497e8f326ae8d6be9500b9cf43e37213b6c735fc5b144",
+      "imports": [
+        "../../estado/contexto",
+        "../cipo",
+        "../corpo",
+        "../materiais-fisicos",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/index.ts",
+      "linhas": 149,
+      "sha256": "925d32a84178691f4cf7b8605eca3a16dbe8b0fc059151aa05619eee32002868",
+      "imports": [
+        "../../estado/contexto",
+        "../balao",
+        "../barco",
+        "../cipo",
+        "../corpo",
+        "../mergulho",
+        "../treno",
+        "./balao",
+        "./barco",
+        "./borda",
+        "./chao",
+        "./cipo",
+        "./descanso",
+        "./equilibrio",
+        "./escada",
+        "./escalada",
+        "./escorregar",
+        "./mergulho",
+        "./montar",
+        "./planar",
+        "./tipos",
+        "./trocas",
+        "./borda",
+        "./chao",
+        "./cipo",
+        "./descanso",
+        "./equilibrio",
+        "./escada",
+        "./escalada",
+        "./escorregar",
+        "./montar",
+        "./planar",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/mergulho.ts",
+      "linhas": 52,
+      "sha256": "61918bc879e646403490e3df02797668f6918f1fcd9a0ad963072a9680cf21bb",
+      "imports": [
+        "../corpo",
+        "../mergulho",
+        "../movimento",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/montar.ts",
+      "linhas": 111,
+      "sha256": "5727010c17a458878d25e832be44f9c40b5475e4c9308c4c07b8a8dab43ba1b6",
+      "imports": [
+        "../corpo",
+        "../montaria",
+        "../movimento",
+        "./chao",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/planar.ts",
+      "linhas": 98,
+      "sha256": "10677802564e09e6447404f0c15d9041c1fdf8014afdb27abd1bb15eb7e8ad29",
+      "imports": [
+        "../corpo",
+        "../movimento",
+        "../planador",
+        "./chao",
+        "./tipos",
+        "./trocas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/tipos.ts",
+      "linhas": 241,
+      "sha256": "c0a3bb73432d3c29b6f131fe89d0d419ede5dc8187a649fdb319eb2144b1fa28",
+      "imports": [
+        "../../estado/contexto",
+        "../balao",
+        "../barco",
+        "../cipo",
+        "../correnteza",
+        "../escalada",
+        "../mergulho",
+        "../montaria",
+        "../movimento",
+        "../planador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago/src/sistemas/modos/trocas.ts",
+      "linhas": 71,
+      "sha256": "fa0785910b198fc9c4e411543444de20b831d4340694e83c029eeeff6e8c9016",
+      "imports": [
+        "../../estado/contexto",
+        "../balao",
+        "../cordas",
+        "../corpo",
+        "./tipos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/adocao-da-galeria.ts",
+      "linhas": 38,
+      "sha256": "9a86608ff8e82e1dcd8c078acbe05c3d9269fb0ddbc1d796662d0f9d19c4e163",
+      "imports": [
+        "zod",
+        "./galeria"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/aparencias.ts",
+      "linhas": 196,
+      "sha256": "0e1422224a4f4b2e2e3b6d89a7017247a8c952c9e72197843117e6bd578c473d",
+      "imports": [
+        "zod",
+        "./objetos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/api.ts",
+      "linhas": 147,
+      "sha256": "78fe4c700450d191e97789e2ab5cbbda162e0deeadf3948f3c9d7477892748bf",
+      "imports": [
+        "zod",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/aprenda.ts",
+      "linhas": 72,
+      "sha256": "276e79c6e9501e01c800c9c21fdcc3c0a8d062ba7497cee22d37ce5ee5c582b1",
+      "imports": [
+        "./ilhas",
+        "./membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/cartas-lumi.ts",
+      "linhas": 128,
+      "sha256": "506bd226c8dae3d993b553a904109898a4f6c33b5569b1c3fb4d600f38bbcd8e",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/colheita.ts",
+      "linhas": 38,
+      "sha256": "46c932ccfd3d05d6cb5a7e87f6f7c617a3b8fdf11b9989bfd0201aa60e1a1d3c",
+      "imports": [
+        "zod",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/desafios.ts",
+      "linhas": 520,
+      "sha256": "4b1415b6491d0b75479df31723afe37c38e13303bca4f4726e2bcf100288c650",
+      "imports": [
+        "zod",
+        "./ilhas",
+        "./membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/exploracao.ts",
+      "linhas": 17,
+      "sha256": "73f709fee2d07eaa42364906929078da9cae9f38bb1d608234d6d036ae072b0e",
+      "imports": [
+        "./ilhas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/familia.ts",
+      "linhas": 155,
+      "sha256": "610ec643f9b2144278ecc78c57183efdb72f5cec3c399fba31528f32db668a49",
+      "imports": [
+        "zod",
+        "./api",
+        "./objetos",
+        "./plataforma",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/fantasma.ts",
+      "linhas": 26,
+      "sha256": "5a64947e0ee22809d4fe04a8d569b5f3bb885345dad921c080884e887805aa7d",
+      "imports": [
+        "zod",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/galeria.ts",
+      "linhas": 155,
+      "sha256": "d4703b85f33aabb8584692ae8c2f59ea6317c95e5974fd4ac9bb90cb046a9eca",
+      "imports": [
+        "zod",
+        "./objetos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/horta.ts",
+      "linhas": 69,
+      "sha256": "a56d3b4f132e9b19d3d675ec1d9deb8d4d846f06376219f67c12be507d1a0765",
+      "imports": [
+        "./colheita",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/ilhas.ts",
+      "linhas": 97,
+      "sha256": "a61ea8b6e0238aed90260f19e3bd0dccdd125e4d7031e4a5fe2b2f4429a1314e",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/index.ts",
+      "linhas": 37,
+      "sha256": "eade5982dea92bc73e4c170db9fbc5d8d73b203326fd285d080220279c77de7f",
+      "imports": [
+        "./adocao-da-galeria",
+        "./aparencias",
+        "./api",
+        "./aprenda",
+        "./cartas-lumi",
+        "./colheita",
+        "./desafios",
+        "./exploracao",
+        "./familia",
+        "./fantasma",
+        "./galeria",
+        "./horta",
+        "./ilhas",
+        "./insumos",
+        "./limites",
+        "./lumis-trabalho",
+        "./medicao",
+        "./membros",
+        "./minijogos",
+        "./numero-estavel",
+        "./objetos",
+        "./pedidos-catalogo",
+        "./pedidos-entrega",
+        "./pedidos-remunerados",
+        "./plataforma",
+        "./posse-da-galeria",
+        "./profissoes",
+        "./receitas-moradores",
+        "./rotina-execucao",
+        "./rotina-ferramenta",
+        "./rotina-mundo",
+        "./rotina-ponte",
+        "./rotina-validacao",
+        "./rotinas",
+        "./salvamento",
+        "./turnos",
+        "./vestuario-festas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/insumos.ts",
+      "linhas": 76,
+      "sha256": "50ec6d42336999937a174b771d2133950f7286201a2be54d8e9a24b11ea30022",
+      "imports": [
+        "zod",
+        "./api",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/limites.ts",
+      "linhas": 26,
+      "sha256": "6ab8539b1925ae8d1c08f9f6e01b9ff696eabcb7c745be84c7e233dd5e048abe",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/lumis-trabalho.ts",
+      "linhas": 51,
+      "sha256": "59d52b29711b027a03c50b85592ee4ccf9139a53415062caa7e27f171c344cd5",
+      "imports": [
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/medicao.ts",
+      "linhas": 71,
+      "sha256": "7bee5a0440903884471cdb5456ceae9956d8a3c21fee8190a0210361d7395800",
+      "imports": [
+        "zod"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/membros.ts",
+      "linhas": 214,
+      "sha256": "78c75fadbf62caff2f81c5d549d862f82aaec2d1e7a5eb136bccb7c887b38e35",
+      "imports": [
+        "zod",
+        "./api",
+        "./ilhas",
+        "./plataforma"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/minijogos.ts",
+      "linhas": 53,
+      "sha256": "a9431fc3c578038c95dcdb2495653db140ba170cc1ea4fb8e38cc29f79a4c557",
+      "imports": [
+        "zod",
+        "./desafios"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/numero-estavel.ts",
+      "linhas": 9,
+      "sha256": "c492c02b02b90382932e9cac61ec718815f73c49ae9746f558c7bda0726c4523",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/objetos.ts",
+      "linhas": 290,
+      "sha256": "aea6386ec4e3c981c508304dcad8e3ffa10ab5c84ddecb7cc6f96b3b06d5cefa",
+      "imports": [
+        "zod"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/pedidos-catalogo.ts",
+      "linhas": 49,
+      "sha256": "bd97fc7adc0633e8a48a28f3c5ca2f193605dfe310606d7e760f35774cc095b1",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/pedidos-entrega.ts",
+      "linhas": 146,
+      "sha256": "30d9fd5046e4c70eec3a7f0a0be34f0e2958fc89573bbbbd81a13b8166cb56ff",
+      "imports": [
+        "zod",
+        "./colheita",
+        "./ilhas",
+        "./numero-estavel",
+        "./pedidos-catalogo",
+        "./receitas-moradores",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/pedidos-remunerados.ts",
+      "linhas": 34,
+      "sha256": "3b899f887e1cc56be2cdc5ba091fe86d6bb96c82f23fc1a60173185f1db70a89",
+      "imports": [
+        "zod",
+        "./api",
+        "./pedidos-entrega"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/plataforma.ts",
+      "linhas": 157,
+      "sha256": "56ef8457aae7daefccda109683ba1c35d3183dcc519c26bef45bc41b54190de9",
+      "imports": [
+        "zod",
+        "./aparencias",
+        "./rotina-ferramenta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/posse-da-galeria.ts",
+      "linhas": 66,
+      "sha256": "477829ae794c091d59720ffcdb8f1f885e02cbc9de722bcac3c0843eaeaa9430",
+      "imports": [
+        "zod",
+        "./galeria"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/profissoes.ts",
+      "linhas": 61,
+      "sha256": "aef80602d1d87a79e3cbfdcda23cd9ef3f326151588b6cdc3fe7fc874a37c8c4",
+      "imports": [
+        "zod",
+        "./salvamento",
+        "./turnos"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/receitas-moradores.ts",
+      "linhas": 169,
+      "sha256": "c8e821dbec2076400531e5e1cd697ad5848b48bd100a7ff76f00b79d3c38d3cb",
+      "imports": [
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/rotina-execucao.ts",
+      "linhas": 490,
+      "sha256": "6c2c6020f7186d07bd0986f8b1dfd90863915c624f4dc79a300f1b891b0f3171",
+      "imports": [
+        "./colheita",
+        "./horta",
+        "./lumis-trabalho",
+        "./rotina-mundo",
+        "./rotina-validacao",
+        "./rotinas",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/rotina-ferramenta.ts",
+      "linhas": 75,
+      "sha256": "f3e38cc57a09cc1fae4b56217300496e3bb1127413d249da5939c54d3b5a012a",
+      "imports": [
+        "zod",
+        "./api",
+        "./colheita",
+        "./rotina-validacao",
+        "./rotinas",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/rotina-mundo.ts",
+      "linhas": 30,
+      "sha256": "3727e076fff0949b292fed38d4ed8fc0c75def775201a1e26089a50311087780",
+      "imports": [
+        "./objetos",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/rotina-ponte.ts",
+      "linhas": 38,
+      "sha256": "d071e18e8691bab477e184c3ec09d3e07f8fe22db23f1d2cdc4cab5092d894f3",
+      "imports": [
+        "./api",
+        "./plataforma",
+        "./rotina-ferramenta"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/rotina-validacao.ts",
+      "linhas": 130,
+      "sha256": "336d50a93ffd599a3593a06561e04db2f7172ac4d49cd8e733cdf8a4f5135c58",
+      "imports": [
+        "./cartas-lumi",
+        "./rotinas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/rotinas.ts",
+      "linhas": 160,
+      "sha256": "9996d0a3909b0cbff20a8e982aa3eced6d7c59f527a2f6073f9e5864fae9f9cf",
+      "imports": [
+        "zod"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/salvamento.ts",
+      "linhas": 822,
+      "sha256": "28d963af235be5739800e105bdff74d9c2090c5ed6e9aebea826c39db6456801",
+      "imports": [
+        "zod",
+        "./ilhas",
+        "./objetos",
+        "./rotinas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/turnos.ts",
+      "linhas": 303,
+      "sha256": "cb60983f51cf035f35c1e740191171c874f50b3a72ace542797fb23b195674f2",
+      "imports": [
+        "./numero-estavel",
+        "./salvamento"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-contracts/src/vestuario-festas.ts",
+      "linhas": 15,
+      "sha256": "04aafe6a82373c1afc46f6df328e21cdbc260d9d714f9ce29cd65e280e8c8e94",
+      "imports": [
+        "zod"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/composition-root.ts",
+      "linhas": 172,
+      "sha256": "8c5a4f96cfc33aceaaeac16c8723aeeaf336c64886f00f03e7bdb9ddc0d10867",
+      "imports": [
+        "@sistemazero/core/logging",
+        "./application/leituras-dos-membros",
+        "./application/mapa-das-ilhas",
+        "./application/servico-da-equipe",
+        "./application/servico-da-familia",
+        "./application/servico-da-galeria",
+        "./application/servico-da-medicao",
+        "./application/servico-das-cartas",
+        "./application/servico-das-profissoes",
+        "./application/servico-das-visitas",
+        "./application/servico-do-jogo",
+        "./application/servico-dos-desafios",
+        "./application/servico-dos-insumos",
+        "./application/servico-dos-minijogos",
+        "./application/servico-dos-pedidos",
+        "./infrastructure/config/env",
+        "./infrastructure/members/membros-http",
+        "./infrastructure/members/moedas-http",
+        "./infrastructure/members/posse-http",
+        "./infrastructure/observability/sentry",
+        "./infrastructure/persistence/drizzle/db",
+        "./infrastructure/persistence/drizzle/repositorio",
+        "./infrastructure/persistence/drizzle/repositorio-da-familia",
+        "./infrastructure/persistence/drizzle/repositorio-de-desafios",
+        "./infrastructure/persistence/drizzle/repositorio-insumos",
+        "./infrastructure/persistence/drizzle/repositorio-medicao",
+        "./infrastructure/persistence/drizzle/repositorio-minijogos",
+        "./infrastructure/persistence/drizzle/repositorio-pedidos",
+        "./infrastructure/persistence/drizzle/repositorio-profissoes",
+        "./infrastructure/persistence/drizzle/repositorio-sessoes-tempo",
+        "./interfaces/http/server"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/index.ts",
+      "linhas": 61,
+      "sha256": "84be4f806acf07e539bc384c60205ca51570c000e5eef4bd93344d8cf03ccd49",
+      "imports": [
+        "@sentry/bun",
+        "@sistemazero/core/logging",
+        "./composition-root",
+        "./infrastructure/config/env",
+        "./infrastructure/observability/sentry"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/erros.ts",
+      "linhas": 143,
+      "sha256": "4a79a08241a274d6479611cf7c1c63ab7fe2720a2e7b9e73c04a8597b0ea6df4",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/leituras-dos-membros.ts",
+      "linhas": 119,
+      "sha256": "797bf5f128e5f4f5ecf2c5af84f769737366ac8ab31e05210ea11bb9395801a0",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../domain/jogador",
+        "../domain/membros.port",
+        "./erros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/mapa-das-ilhas.ts",
+      "linhas": 51,
+      "sha256": "677b4d42a4c2108dc4104ff5111f64bcc348b0413e9597a768f9abc6268b922c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/membros.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-da-equipe.ts",
+      "linhas": 501,
+      "sha256": "671f0a98279d88262a4b661ce7bcc708b5c4277d25263187bb7307c3bad352c9",
+      "imports": [
+        "node:crypto",
+        "@sistemazero/arquipelago-contracts",
+        "../domain/desafios.port",
+        "../domain/jogador",
+        "../domain/manifestos",
+        "../domain/membros.port",
+        "./erros",
+        "./leituras-dos-membros",
+        "./mapa-das-ilhas"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-da-familia.ts",
+      "linhas": 165,
+      "sha256": "298d9d5ec7cbd07c42189cfcb6f1cf4afef98df6092ca483c137211404e6c116",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/acesso",
+        "../domain/desafios.port",
+        "../domain/familia.port",
+        "../domain/jogador",
+        "../domain/repositorio.port",
+        "../domain/semana-da-familia",
+        "./erros",
+        "./leituras-dos-membros",
+        "./servico-dos-desafios"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-da-galeria.ts",
+      "linhas": 76,
+      "sha256": "536ea8025cdfd82e9e3fee040bd87276b0e91461770935bb60e76663ad898ecb",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../domain/acesso",
+        "../domain/jogador",
+        "../domain/posse.port",
+        "./erros",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-da-medicao.ts",
+      "linhas": 144,
+      "sha256": "7602cf4435db767df9353b6c7d5caffc26711e29d02f48bb9455dcf95ed9f5c8",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/medicao",
+        "../domain/semana-da-familia",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-das-cartas.ts",
+      "linhas": 44,
+      "sha256": "3682a0105c259a3ccbdd6fc9bbb594444ed6e3a13b3b352ee2938410aef7b4d3",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../domain/acesso",
+        "../domain/jogador",
+        "./erros",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-das-profissoes.ts",
+      "linhas": 153,
+      "sha256": "c5bbbe5a5cb7ab96a368db880b1867ba35150af945ddecdee3f47ac02d64d986",
+      "imports": [
+        "node:crypto",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/acesso",
+        "../domain/desafios",
+        "../domain/jogador",
+        "../domain/moedas.port",
+        "../domain/profissoes.port",
+        "./erros",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-das-visitas.ts",
+      "linhas": 122,
+      "sha256": "8056e130300cac152b5afd8d6c3af988733162c3d8441090851164444bd2739f",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/acesso",
+        "../domain/familia.port",
+        "../domain/jogador",
+        "../domain/membros.port",
+        "./erros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-do-jogo.ts",
+      "linhas": 193,
+      "sha256": "2aaa3b529d33f3df22742b9bfcc5b91d9e32d18eb0154a7e6e28bc92ce0cd0c6",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../domain/acesso",
+        "../domain/jogador",
+        "../domain/repositorio.port",
+        "../domain/repositorio-sessoes-tempo.port",
+        "./erros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-dos-desafios.ts",
+      "linhas": 430,
+      "sha256": "e6167a1fe01c564d2bc296c8fcfc82d5c291585ee34233c7b810e6f3497388bf",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/acesso",
+        "../domain/desafio-do-dia",
+        "../domain/desafios",
+        "../domain/desafios.port",
+        "../domain/jogador",
+        "../domain/membros.port",
+        "../domain/minijogos.port",
+        "../domain/moedas.port",
+        "./erros",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-dos-insumos.ts",
+      "linhas": 82,
+      "sha256": "7abdd348f0f0045c793737ce0472ceb7ac575602563f067f6de278af737ed0f6",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../domain/acesso",
+        "../domain/insumos.port",
+        "../domain/jogador",
+        "../domain/moedas.port",
+        "./erros",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-dos-minijogos.ts",
+      "linhas": 41,
+      "sha256": "62bdba56ddbdb25230210bd3c4388072d35946f6e338c37f6728eb2f41793039",
+      "imports": [
+        "@sistemazero/core/http",
+        "../domain/acesso",
+        "../domain/jogador",
+        "../domain/minijogos.port",
+        "./erros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/application/servico-dos-pedidos.ts",
+      "linhas": 100,
+      "sha256": "1ea9e1a68e2ad39148341f451c5b00b09445fd38799e2c827e26b838c33e7786",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/logging",
+        "../domain/acesso",
+        "../domain/jogador",
+        "../domain/moedas.port",
+        "../domain/pedidos.port",
+        "./erros",
+        "./leituras-dos-membros"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/acesso.ts",
+      "linhas": 55,
+      "sha256": "1435e6175e19d2a57930c35d3ba94dd253fe61d09b3386dcd89902201ae4aa4e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./jogador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/desafio-do-dia.ts",
+      "linhas": 54,
+      "sha256": "3223d7d91c4a56c0b6f568b7a1b4ce75c52922947a581193cba589222f214ace",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/desafios.port.ts",
+      "linhas": 209,
+      "sha256": "17a97473c7e35f14a3f6fa091082069175869f71f707da4334af5f2fd3b25da5",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/desafios.ts",
+      "linhas": 67,
+      "sha256": "9f7281d5e290eaac8abd5c1e14ddcd2adf8304f8b584ceb2223a444a46bb89ba",
+      "imports": [
+        "node:crypto",
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/familia.port.ts",
+      "linhas": 40,
+      "sha256": "ed4b95d607327fd8ee84baf9d81d20a1ccf3f663b6f8160acc21fe1a12c75907",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/insumos.port.ts",
+      "linhas": 60,
+      "sha256": "5ea8c024459f4c8d99c0cab9d38cade2aafc15f5b4a4b1c352c6cfbe066ba5e9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./moedas.port",
+        "./repositorio.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/intervalo-de-tempo.ts",
+      "linhas": 38,
+      "sha256": "79e2f93ce91701b0af89d2128edb5376fb1b9e57ec1fb0e3e2a84d63c6039ba7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/jogador.ts",
+      "linhas": 32,
+      "sha256": "f91e93c3b3512298835fecd1d563e6b8a1685a3f063ab8a2d879e46895de6c2e",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/manifestos.ts",
+      "linhas": 278,
+      "sha256": "b1362cabd17efe0e47a88a8cb608cf1160a6c90dd9a6ba3fd9f0ab50415fb015",
+      "imports": [
+        "node:crypto",
+        "@sistemazero/arquipelago-contracts",
+        "./desafios.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/medicao.ts",
+      "linhas": 113,
+      "sha256": "baed274e5926b99547e8501202d7bf8779bf806b3535ffda01c341fbedf59f05",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/membros.port.ts",
+      "linhas": 73,
+      "sha256": "7df11b01fb07cf10bbaa75dccb6528507149e00441988e1da9883cd15b2d761c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/minijogos.port.ts",
+      "linhas": 15,
+      "sha256": "87865fa904c1ae80c1f59435ef8a679b7cbee3431e5422e062ece218137e59d9",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./jogador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/moedas.port.ts",
+      "linhas": 50,
+      "sha256": "f28236d1af7589ecc12dd8c694b347723bba75978747af5009376b996c6c954a",
+      "imports": [
+        "./membros.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/pedidos.port.ts",
+      "linhas": 31,
+      "sha256": "1d99e659b1948bc45f43ed1bf2b37cf4208813792e4e2fefb8beab8f9e9ede03",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "./insumos.port",
+        "./repositorio.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/posse.port.ts",
+      "linhas": 18,
+      "sha256": "9bf8bade70f687c1c4a2cb4f229d640505b63bbe89e6d4b6a472fa71c996eaf4",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/profissoes.port.ts",
+      "linhas": 36,
+      "sha256": "7b0bb6e0d04164ec729c1d3ead7c4f1f3724bed38a10939fc1d907a1c01bdfb4",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/repositorio-sessoes-tempo.port.ts",
+      "linhas": 23,
+      "sha256": "99fee832e5b41cd7b605f2ee8076a3ca1a0e7a9384108331be4b92bd49aad15d",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/repositorio.port.ts",
+      "linhas": 43,
+      "sha256": "a355f5ee279ae13c59895c9d9dcd0501eac9d6245e9f7aec8ca181477b1427d5",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/semana-da-familia.ts",
+      "linhas": 97,
+      "sha256": "6851ce361ce8dcd2a82d68f197739ec957ca562c2a5e5a12feee6af74709b4b6",
+      "imports": [
+        "@sistemazero/arquipelago-contracts"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/sessao-de-tempo.ts",
+      "linhas": 49,
+      "sha256": "66243ce7e4afcf282aa4bb52a376150a19e5dea3b925c292801098572078dd76",
+      "imports": [
+        "./intervalo-de-tempo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/domain/tempo-erros.ts",
+      "linhas": 11,
+      "sha256": "a7351fd756a74c64ce1c0f3f7c9a9bfc8509800b87a98ed4f8917ea02655d92a",
+      "imports": []
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/config/env.ts",
+      "linhas": 105,
+      "sha256": "51800c96c4e7a9062207dc0664520b1673196019642b4c686273380b9cc124f4",
+      "imports": [
+        "node:path",
+        "zod"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/members/membros-http.ts",
+      "linhas": 175,
+      "sha256": "8f0b34991cbd1de83b6cda0d1567d7c563e278b44d27a313e5933a99833d1f5c",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "../../domain/membros.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/members/moedas-http.ts",
+      "linhas": 72,
+      "sha256": "e89eb48e3dbe1334ad202a263a73de78f0abb13a8f28cf477c3575a0a44982d4",
+      "imports": [
+        "zod",
+        "../../domain/moedas.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/members/posse-http.ts",
+      "linhas": 50,
+      "sha256": "e3e5363d2198e35f16050bff85010e4abdb3ebed47f632ee6b2bf32d0785fd4d",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/http",
+        "../../domain/posse.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/observability/sentry.ts",
+      "linhas": 86,
+      "sha256": "06a76c571889973e8049893ec3b726d2a16149d297ec19cdba83c1a100ea3c46",
+      "imports": [
+        "@sentry/bun",
+        "@sistemazero/core/logging"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/db.ts",
+      "linhas": 42,
+      "sha256": "cf9fc296a0052a11d90ec414e67fcb7fbdcaf42b975152f0a9d25a60bb78cde4",
+      "imports": [
+        "drizzle-orm/postgres-js",
+        "postgres",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-da-familia.ts",
+      "linhas": 126,
+      "sha256": "38180cfb570db09a6c4a1447495361fc6e366cd5e95a3ba870e2b2c31bfddb58",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/familia.port",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-de-desafios.ts",
+      "linhas": 531,
+      "sha256": "1e6d9dc9dfa922613b4564feb46a9c884c2c7276a9442eb3cb21936d14e91906",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/creations",
+        "drizzle-orm",
+        "../../../domain/desafios.port",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-insumos.ts",
+      "linhas": 152,
+      "sha256": "523251dc007a3cd9480bf3e6c641c033ddcd753fb200c770768ad35a6e598862",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/insumos.port",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-medicao.ts",
+      "linhas": 103,
+      "sha256": "0fd4ef8a6e93bfe30c616d76991d61cfdb0f9c1bb64618c796ca7b8723a44b03",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/medicao",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-minijogos.ts",
+      "linhas": 82,
+      "sha256": "84e010da9123b1a8cc5d57cb3553ff02e6f9b92a544f9a646ae428bc945393d7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/minijogos.port",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-pedidos.ts",
+      "linhas": 173,
+      "sha256": "3c18b761e9604b0c3766909585284257b2922a1f87474321840e41da1b46f65c",
+      "imports": [
+        "node:crypto",
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/insumos.port",
+        "../../../domain/pedidos.port",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-profissoes.ts",
+      "linhas": 77,
+      "sha256": "02825c724d8bc801a4e726cd7066448bb101c7854286b068536ec04a70c253dc",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/profissoes.port",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio-sessoes-tempo.ts",
+      "linhas": 256,
+      "sha256": "bc1ac0f9cbf470273bb391349ddeea79353f31dcc40d34e4789b1eb9836745fd",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/repositorio-sessoes-tempo.port",
+        "../../../domain/sessao-de-tempo",
+        "../../../domain/tempo-erros",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts",
+      "linhas": 185,
+      "sha256": "9a277e5e20a901e5b18776adb5cc89d2cb5a35b301970adf5f8d7bf74de05cb0",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "../../../domain/insumos.port",
+        "../../../domain/repositorio.port",
+        "../../../domain/tempo-erros",
+        "./db",
+        "./schema"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/infrastructure/persistence/drizzle/schema.ts",
+      "linhas": 469,
+      "sha256": "d0797f8161d6dceb242fdbbb2f18000821df553acc35c003eaf7fb77fba251c1",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "drizzle-orm",
+        "drizzle-orm/pg-core",
+        "../../../domain/insumos.port"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/identidade.ts",
+      "linhas": 86,
+      "sha256": "c2929620489af2a03b3fd39beeeead760eb5d9427c8c4fc60439337fe6eecf2a",
+      "imports": [
+        "@sistemazero/core/http",
+        "@sistemazero/core/identity",
+        "@sistemazero/core/security",
+        "../../domain/jogador"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-da-equipe.ts",
+      "linhas": 118,
+      "sha256": "3f412b40e1addac62da5b46b13f7b4cc4be2948329928bf5d1362fc349dab9ed",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/http",
+        "@sistemazero/core/identity",
+        "elysia",
+        "zod",
+        "../../application/servico-da-equipe",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-da-familia.ts",
+      "linhas": 34,
+      "sha256": "3ef7dc631e58ef4c9274aa31b8660c4aded19bd4bd6dea824157d407607162ff",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "elysia",
+        "../../application/servico-da-familia",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-da-galeria.ts",
+      "linhas": 22,
+      "sha256": "575de04b34ce91dd519e1e42e83b80df995c394977dac13ad9e0d0ccad6ad914",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "elysia",
+        "../../application/servico-da-galeria",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-da-medicao.ts",
+      "linhas": 15,
+      "sha256": "f229a809b1185bf070907dc5709666b72ea59d31495c48c3fe46dbe420f97ac0",
+      "imports": [
+        "elysia",
+        "../../application/servico-da-medicao",
+        "./identidade"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-das-profissoes.ts",
+      "linhas": 23,
+      "sha256": "320ff4c4de91bc854a03f90138757b674a2d41d8f8a8d59c489b3e5c45cb05c7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "elysia",
+        "../../application/servico-das-profissoes",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-das-visitas.ts",
+      "linhas": 23,
+      "sha256": "09d0b988fa742d4cd03f9297175aa211a28360c04006fca0844d062d03bbc6a6",
+      "imports": [
+        "elysia",
+        "../../application/erros",
+        "../../application/servico-das-visitas",
+        "./identidade"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-do-cliente.ts",
+      "linhas": 49,
+      "sha256": "194a524c15334f63bdd022c643eab607985fba53f49141ae759f973068a1b8a8",
+      "imports": [
+        "node:path",
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/http",
+        "elysia",
+        "./identidade"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-do-jogo.ts",
+      "linhas": 86,
+      "sha256": "bfd4631e919bca9634382ebfc5b9d8214ff8ce4e47c9044f9d17e48300d31cb1",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "elysia",
+        "../../application/servico-das-cartas",
+        "../../application/servico-do-jogo",
+        "./identidade"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-dos-desafios.ts",
+      "linhas": 40,
+      "sha256": "6a0ec6c2d1acfc46a3a7415b79c67275b536b07a4f57aa782b93ccf3b8288686",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "@sistemazero/core/identity",
+        "elysia",
+        "zod",
+        "../../application/servico-dos-desafios",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-dos-insumos.ts",
+      "linhas": 16,
+      "sha256": "cd69ccf93c1e4d3bf56d2604da1825175a950bb4becc97964904198339e6f50b",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "elysia",
+        "../../application/servico-dos-insumos",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-dos-minijogos.ts",
+      "linhas": 27,
+      "sha256": "2e52b50a820029da733b91a07990f1f2f9efa9d57c64a27193c65b7889ccfc8f",
+      "imports": [
+        "@sistemazero/core/identity",
+        "elysia",
+        "../../application/servico-dos-minijogos",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/rotas-dos-pedidos.ts",
+      "linhas": 16,
+      "sha256": "d5faa72c410339656b34cc49a84a5c6d46986cb87b5341080923b08df4e326c7",
+      "imports": [
+        "@sistemazero/arquipelago-contracts",
+        "elysia",
+        "../../application/servico-dos-pedidos",
+        "./identidade",
+        "./rotas-do-jogo"
+      ]
+    },
+    {
+      "arquivo": "packages/arquipelago-api/src/interfaces/http/server.ts",
+      "linhas": 359,
+      "sha256": "c350e0966a0dd47dbb4c85c394bdc0198debe1dc5e524be448c616bc2f69e11e",
+      "imports": [
+        "@sistemazero/core/http",
+        "@sistemazero/core/logging",
+        "@sistemazero/core/logging",
+        "elysia",
+        "../../application/erros",
+        "../../application/servico-da-equipe",
+        "../../application/servico-da-familia",
+        "../../application/servico-da-galeria",
+        "../../application/servico-da-medicao",
+        "../../application/servico-das-cartas",
+        "../../application/servico-das-profissoes",
+        "../../application/servico-das-visitas",
+        "../../application/servico-do-jogo",
+        "../../application/servico-dos-desafios",
+        "../../application/servico-dos-insumos",
+        "../../application/servico-dos-minijogos",
+        "../../application/servico-dos-pedidos",
+        "../../domain/insumos.port",
+        "../../domain/membros.port",
+        "../../domain/pedidos.port",
+        "../../domain/tempo-erros",
+        "./rotas-da-equipe",
+        "./rotas-da-familia",
+        "./rotas-da-galeria",
+        "./rotas-da-medicao",
+        "./rotas-das-profissoes",
+        "./rotas-das-visitas",
+        "./rotas-do-cliente",
+        "./rotas-do-jogo",
+        "./rotas-dos-desafios",
+        "./rotas-dos-insumos",
+        "./rotas-dos-minijogos",
+        "./rotas-dos-pedidos"
+      ]
+    }
+  ]
+}
