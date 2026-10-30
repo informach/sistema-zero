@@ -983,7 +983,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Borrões da noite e Lumis da Vila (fase2-06, salvamento V9 `lumis`): regras puras em
   `sistemas/borroes.ts` (`borroesDaNoite` pelo dia do jogo, `passoDoBorrao` sem alocar, `prender`,
   `prenderBorrao`, `lumisNaVila`, `receberLanterna`, `lerPresos`/`gravarPresos`); no mundo,
-  `mundo/borroes-da-vila.tsx` (montado pelo `VilaViva`: borrões à noite perto das âncoras `lumi-N`,
+  `mundo/borroes-da-ilha.tsx` (desde 30/10 `BorroesDaIlha`, montado em cada ilha viva e na praia; antes só pelo `VilaViva`: borrões à noite perto das âncoras `lumi-N`,
   Lumis morando nelas). A lanterna é item (`ITENS.lanterna`, equipamento) que o Bento dá do segundo
   encontro em diante; `loja.lanterna` (transitório) acende pelo botão da mochila e
   `personagem/lanterna-na-mao.tsx` a pendura na ponta dos dedos (sem luz de verdade: uma luz a mais
@@ -1032,7 +1032,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Loja à parte em `estado/rotina.ts` (`lojaDaRotina`: o Lumi escolhido, a fila, o que ele faz agora
   e a última vez; `abrirRotina`). Painel `interface/rotina.tsx` (`PAINEL_DA_ROTINA`), aberto pelo
   caderno ("Montar a rotina de um Lumi") e perto de um Lumi da Vila ("Ensinar a rotina", de fundo,
-  em `mundo/borroes-da-vila.tsx`); o aviso `RotinaAndando` fica no HUD, no alto à direita (no
+  em `mundo/borroes-da-ilha.tsx`); o aviso `RotinaAndando` fica no HUD, no alto à direita (no
   celular, 154 px do topo).
 - No mundo: `mundo/rotina-dos-lumis.tsx` (`RotinaDosLumis`, na `Cena`): a virada de
   `ambiente.noite` põe na fila as rotinas daquele Quando (`quandoDaVirada`, `rotinasDoQuando`);

@@ -31,6 +31,7 @@ import { PERCURSO_DAS_COPAS, type PontosDoPercurso } from '../sistemas/percurso'
 import { DURACAO_DO_DIA_MS, PARTE_CLARA } from '../sistemas/tempo-do-dia'
 import { forcaPorHora } from '../sistemas/vento'
 import { BichosDoBosque } from './bichos-do-bosque'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
@@ -106,6 +107,10 @@ export function BosqueVivo({
   const comeco = useMemo(() => Date.parse(loja.getState().salvamento.criadoEm), [loja])
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ x: centro.x, y: 0, z: centro.z }), [centro.x, centro.z])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
 
   // Os nós dos cipós (o pivô é a posição do nó: ele fica direto na raiz do modelo).
   const cipos = useMemo(() => {
@@ -389,6 +394,7 @@ export function BosqueVivo({
 
   return (
     <group ref={pecas} visible={false}>
+      <BorroesDaIlha ilha="bosque" ancoras={lugaresDosLumis} meio={meio} />
       <ComReserva reserva={null}>
         <ObjetosReativos pecas={pecasSoltas} galho={galhoSeco} />
       </ComReserva>

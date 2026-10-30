@@ -2,8 +2,20 @@ import { useFrame } from '@react-three/fiber'
 import type { LumiId } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Group, Object3D } from 'three'
+import algodaoGlb from '../assets/lumis/algodao.glb'
+import bolhaGlb from '../assets/lumis/bolha.glb'
 import borraoGlb from '../assets/lumis/borrao.glb'
 import brigadeiroGlb from '../assets/lumis/brigadeiro.glb'
+import brotinhoGlb from '../assets/lumis/brotinho.glb'
+import buzioGlb from '../assets/lumis/buzio.glb'
+import cristalGlb from '../assets/lumis/cristal.glb'
+import estrelinhaGlb from '../assets/lumis/estrelinha.glb'
+import gelinhoGlb from '../assets/lumis/gelinho.glb'
+import ipeGlb from '../assets/lumis/ipe.glb'
+import ovinhoGlb from '../assets/lumis/ovinho.glb'
+import perolaGlb from '../assets/lumis/perola.glb'
+import pitangaGlb from '../assets/lumis/pitanga.glb'
+import plumaGlb from '../assets/lumis/pluma.glb'
 import quindimGlb from '../assets/lumis/quindim.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosPassos } from '../estado/primeiros-passos'
@@ -15,8 +27,9 @@ import {
   criarBorrao,
   FALA_DO_BORRAO_FUGINDO,
   gravarPresos,
+  type IlhaDosLumis,
   lerPresos,
-  lumisNaVila,
+  lumisNaIlha,
   PRENDE_A,
   passoDoBorrao,
   podePrender,
@@ -34,9 +47,22 @@ import { useInterativo } from './interativos'
 import { ComReserva } from './modelos'
 
 const BORRAO = new URL(borraoGlb, import.meta.url).href
-const MODELOS_DOS_LUMIS: Readonly<Partial<Record<LumiId, string>>> = {
-  quindim: new URL(quindimGlb, import.meta.url).href,
-  brigadeiro: new URL(brigadeiroGlb, import.meta.url).href,
+const url = (arquivo: string) => new URL(arquivo, import.meta.url).href
+const MODELOS_DOS_LUMIS: Readonly<Record<LumiId, string>> = {
+  estrelinha: url(estrelinhaGlb),
+  buzio: url(buzioGlb),
+  pitanga: url(pitangaGlb),
+  ipe: url(ipeGlb),
+  quindim: url(quindimGlb),
+  brigadeiro: url(brigadeiroGlb),
+  bolha: url(bolhaGlb),
+  perola: url(perolaGlb),
+  gelinho: url(gelinhoGlb),
+  cristal: url(cristalGlb),
+  ovinho: url(ovinhoGlb),
+  brotinho: url(brotinhoGlb),
+  algodao: url(algodaoGlb),
+  pluma: url(plumaGlb),
 }
 
 /** O borrão do arquivo tem 1,33 m; na Vila ele flutua com 1 m, para ser visto de longe à noite. */
@@ -44,31 +70,37 @@ export const ESCALA_DO_BORRAO = 0.75
 /** Quanto ele flutua acima do chão, e quanto sobe e desce no balanço. */
 const ALTURA_DO_BORRAO = 0.25
 const BALANCO_DO_BORRAO = 0.08
-/** Os Lumis da Vila no mesmo tamanho dos da praia (uns 0,5 m). */
+/** Os Lumis das ilhas no mesmo tamanho dos da praia (uns 0,5 m). */
 export const ESCALA_DOS_LUMIS_DA_VILA = 0.5
 /** O lugar do borrão fica a isto da âncora `lumi-N`, puxado para o meio da praça. */
 const BORRAO_PARA_DENTRO = 1.5
-/** De que distância o Lumi da Vila vira para a criança. */
+/** De que distância o Lumi da ilha vira para a criança. */
 const LUMI_OLHA_DE = 4
-/** De que distância aparece "Ensinar a rotina" perto do Lumi da Vila (fase2-07). */
+/** De que distância aparece "Ensinar a rotina" perto do Lumi da ilha (fase2-07). */
 const LUMI_ENSINA_A = 1.6
 
 const CLIPES_DE_UMA_VEZ = ['virar', 'feliz'] as const
 
-/** Os presos da noite ficam no aparelho, por perfil, para recarregar não trazer o borrão de volta. */
-const chaveDosPresos = (perfil: string) => `arquipelago:borroes-presos:${perfil}`
+/**
+ * Os presos da noite ficam no aparelho, por perfil e ilha, para recarregar não trazer o borrão de
+ * volta. A Vila guarda na chave de antes.
+ */
+const chaveDosPresos = (perfil: string, ilha: IlhaDosLumis) =>
+  ilha === 'vila-doce'
+    ? `arquipelago:borroes-presos:${perfil}`
+    : `arquipelago:borroes-presos:${ilha}:${perfil}`
 
-function lerDoAparelho(perfil: string, dia: number): string[] {
+function lerDoAparelho(perfil: string, ilha: IlhaDosLumis, dia: number): string[] {
   try {
-    return lerPresos(localStorage.getItem(chaveDosPresos(perfil)), dia)
+    return lerPresos(localStorage.getItem(chaveDosPresos(perfil, ilha)), dia)
   } catch {
     return []
   }
 }
 
-function gravarNoAparelho(perfil: string, dia: number, ids: readonly string[]) {
+function gravarNoAparelho(perfil: string, ilha: IlhaDosLumis, dia: number, ids: readonly string[]) {
   try {
-    localStorage.setItem(chaveDosPresos(perfil), gravarPresos(dia, ids))
+    localStorage.setItem(chaveDosPresos(perfil, ilha), gravarPresos(dia, ids))
   } catch {
     // Sem armazenamento (aba anônima): recarregar a página traz os borrões da noite de volta.
   }
@@ -81,7 +113,7 @@ interface Ponto {
 }
 
 /** As âncoras `lumi-1` a `lumi-4` do modelo, no mundo. */
-function ancorasNoMundo(modelo: Object3D, meio: Ponto, giro: number): (Ponto | null)[] {
+export function ancorasDosLumis(modelo: Object3D, meio: Ponto, giro: number): (Ponto | null)[] {
   return [1, 2, 3, 4].map((n) => {
     const no = modelo.getObjectByName(`lumi-${n}`)
     return no ? paraOMundo(no.position, meio, giro, { x: 0, y: 0, z: 0 }) : null
@@ -89,23 +121,24 @@ function ancorasNoMundo(modelo: Object3D, meio: Ponto, giro: number): (Ponto | n
 }
 
 /**
- * Os borrões do Cinza e os Lumis da Vila Doce (fase2-06), montados pelo `VilaViva`. Os Lumis presos
- * moram nas âncoras `lumi-N`, de dia e de noite; à noite saem os borrões da noite (os mesmos em
- * qualquer aparelho, pelo dia do jogo), menos os já presos nela. Regras em `sistemas/borroes.ts`.
+ * Os borrões do Cinza e os Lumis de uma ilha (fase2-06 na Vila; todas as ilhas desde 30/10). Os
+ * Lumis presos da família moram nas âncoras `lumi-N`, de dia e de noite; à noite saem os borrões
+ * da noite (os mesmos em qualquer aparelho, pelo dia do jogo), menos os já presos nela. Regras em
+ * `sistemas/borroes.ts`.
  */
-export function BorroesDaVila({
-  modelo,
+export function BorroesDaIlha({
+  ilha,
+  ancoras,
   meio,
-  giro,
 }: {
-  modelo: Object3D
+  ilha: IlhaDosLumis
+  /** Os quatro lugares dos Lumis da ilha, no mundo (as âncoras `lumi-N`, ou os da praia). */
+  ancoras: readonly (Ponto | null)[]
   meio: Ponto
-  giro: number
 }) {
   const { loja, ambiente, plataforma } = useJogo()
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   const lumis = useEstado((s) => s.salvamento.lumis)
-  const ancoras = useMemo(() => ancorasNoMundo(modelo, meio, giro), [modelo, meio, giro])
   // A noite de agora (o dia do jogo) ou `null` de dia; muda só na troca.
   const [noite, setNoite] = useState<number | null>(null)
   useFrame(() => {
@@ -115,29 +148,28 @@ export function BorroesDaVila({
   // Os borrões da noite saem com os Lumis do começo dela: prender um não troca os outros.
   const [presos, setPresos] = useState<string[]>([])
   const daNoite = useMemo<BorraoDaNoite[]>(
-    () => (noite === null ? [] : borroesDaNoite(noite, loja.getState().salvamento.lumis)),
-    [noite, loja],
+    () => (noite === null ? [] : borroesDaNoite(noite, loja.getState().salvamento.lumis, ilha)),
+    [noite, loja, ilha],
   )
   useEffect(() => {
-    setPresos(noite === null ? [] : lerDoAparelho(plataforma.perfil.id, noite))
-  }, [noite, plataforma])
+    setPresos(noite === null ? [] : lerDoAparelho(plataforma.perfil.id, ilha, noite))
+  }, [noite, plataforma, ilha])
   const avisouDaFuga = useRef(false)
   useEffect(() => {
     avisouDaFuga.current = noite === null
   }, [noite])
 
-  const moradores = lumisNaVila(lumis)
+  const moradores = lumisNaIlha(lumis, ilha)
   return (
-    <group name="borroes-da-vila">
+    <group name={`borroes-${ilha}`}>
       {moradores.map((m) => {
         const lugar = ancoras[m.ancora]
-        const url = MODELOS_DOS_LUMIS[m.lumi]
-        return lugar && url ? (
+        return lugar ? (
           <ComReserva key={`${m.ancora}-${m.lumi}`} reserva={null}>
-            <LumiDaVila
-              id={`${m.ancora}-${m.lumi}`}
+            <LumiDaIlha
+              id={`${ilha}-${m.ancora}-${m.lumi}`}
               lumi={m.lumi}
-              url={url}
+              url={MODELOS_DOS_LUMIS[m.lumi]}
               lugar={lugar}
               meio={meio}
             />
@@ -169,8 +201,8 @@ export function BorroesDaVila({
                     // Sem gravar (só leitura, salvamento pausado), o borrão continua solto.
                     if (loja.getState().salvamento !== r.salvamento) return false
                     s.dizer(r.fala)
-                    const ids = [...lerDoAparelho(plataforma.perfil.id, noite), b.id]
-                    gravarNoAparelho(plataforma.perfil.id, noite, ids)
+                    const ids = [...lerDoAparelho(plataforma.perfil.id, ilha, noite), b.id]
+                    gravarNoAparelho(plataforma.perfil.id, ilha, noite, ids)
                     return true
                   }}
                 />
@@ -319,7 +351,7 @@ function colisorDoLumi(id: string): ColisorDaIlha[] {
   ]
 }
 
-function LumiDaVila({
+function LumiDaIlha({
   id,
   lumi,
   url,
@@ -338,7 +370,7 @@ function LumiDaVila({
   const { cena, actions, olhos } = useCopiaAnimada(url, raiz, CLIPES_DE_UMA_VEZ, pausado)
   const colisores = useMemo(() => colisorDoLumi(id), [id])
   // Perto do Lumi preso, o painel da rotina dele (fase2-07). De fundo: nunca toma o E do borrão.
-  useInterativo(`lumi-da-vila-${id}`, {
+  useInterativo(`lumi-da-ilha-${id}`, {
     x: lugar.x,
     z: lugar.z,
     raio: LUMI_ENSINA_A,
@@ -375,7 +407,7 @@ function LumiDaVila({
   })
 
   return (
-    <group name={`lumi-da-vila-${id}`} position={[lugar.x, lugar.y, lugar.z]}>
+    <group name={`lumi-da-ilha-${id}`} position={[lugar.x, lugar.y, lugar.z]}>
       <group ref={raiz} rotation={[0, descanso, 0]} scale={ESCALA_DOS_LUMIS_DA_VILA} dispose={null}>
         <primitive object={cena} />
       </group>

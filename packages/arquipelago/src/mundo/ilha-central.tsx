@@ -1,9 +1,13 @@
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, TrimeshCollider } from '@react-three/rapier'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useJogo } from '../estado/contexto'
+import { lanternaDoZappy } from '../sistemas/borroes'
+import { jogoPausado } from '../sistemas/pausa'
 import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
+import { momentoDoDia } from '../sistemas/tempo-do-dia'
+import { BorroesDaIlha } from './borroes-da-ilha'
 import { CataVento } from './cata-vento'
 import {
   ALTURA_DO_PIER,
@@ -15,6 +19,7 @@ import {
 import { Colisores } from './colisores'
 import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { DISTANCIA_DOS_LUMIS_DA_PRAIA, LUGARES_DOS_LUMIS_DA_PRAIA } from './lugares-da-praia'
 import { LunetaDoPier } from './luneta'
 import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -109,8 +114,42 @@ function ChaoDoModelo() {
       <primitive object={espuma} />
       <Colisores lista={colisores} />
       <CorridaDaPraia colisores={colisores} />
+      <BorroesDaIlha ilha="sua-ilha" ancoras={LUMIS_DA_PRAIA} meio={MEIO_DA_ILHA} />
+      <LanternaDoZappy />
     </>
   )
+}
+
+const MEIO_DA_ILHA = { x: 0, y: 0, z: 0 }
+/** Os lugares dos Lumis da praia no mundo (a altura do chão em cada um). */
+const LUMIS_DA_PRAIA = LUGARES_DOS_LUMIS_DA_PRAIA.map(({ angulo }) => {
+  const a = (angulo * Math.PI) / 180
+  const x = Math.cos(a) * DISTANCIA_DOS_LUMIS_DA_PRAIA
+  const z = Math.sin(a) * DISTANCIA_DOS_LUMIS_DA_PRAIA
+  return { x, y: alturaDaIlha(x, z), z }
+})
+
+/**
+ * A lanterna da HUD da proposta: na primeira noite, quem ainda não tem ganha a lanterna do Zappy
+ * (uma tentativa por noite; sem gravar, como na visita ou no suporte, nada muda). O Bento continua
+ * dando outra se ela sumir da mochila.
+ */
+function LanternaDoZappy() {
+  const { loja, ambiente } = useJogo()
+  const tentou = useRef<number | null>(null)
+  useFrame(() => {
+    if (!ambiente.noite) return
+    const s = loja.getState()
+    if (jogoPausado(s) || s.visita) return
+    const noite = momentoDoDia(Date.now(), Date.parse(s.salvamento.criadoEm)).dia
+    if (tentou.current === noite) return
+    tentou.current = noite
+    const r = lanternaDoZappy(s.salvamento)
+    if (!r) return
+    s.mudar(() => r.salvamento)
+    if (loja.getState().salvamento === r.salvamento) s.dizer(r.fala)
+  })
+  return null
 }
 
 /** A conchinha da volta pela praia: madrepérola com brilho de areia. */

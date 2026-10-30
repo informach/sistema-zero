@@ -43,7 +43,7 @@ import {
 } from '../sistemas/rotina'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { trocarClipe, useCopiaAnimada } from './animado'
-import { ESCALA_DOS_LUMIS_DA_VILA } from './borroes-da-vila'
+import { ESCALA_DOS_LUMIS_DA_VILA } from './borroes-da-ilha'
 import { lugarDoCanteiro } from './horta'
 import { ALTURA_DA_TERRA } from './medidas'
 import { ComReserva } from './modelos'

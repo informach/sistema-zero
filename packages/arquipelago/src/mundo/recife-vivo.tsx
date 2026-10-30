@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { useJogo } from '../estado/contexto'
 import { PERCURSO_DOS_CORAIS } from '../sistemas/percurso'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { CoraisDoRecife } from './corais-do-recife'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import type { IlhaPreparada, Troca } from './ilha-completa'
@@ -39,6 +40,10 @@ export function RecifeVivo({
   const { movimento } = useJogo()
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ ...centro, y: 0 }), [centro])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
   const agua = useMemo(() => aguaDoRecife(preparada.modelo, meio, giro), [preparada, meio, giro])
   const pecas = useRef<Group>(null)
   const corais = useMemo(() => {
@@ -58,6 +63,7 @@ export function RecifeVivo({
   })
   return (
     <group ref={pecas} visible={false}>
+      <BorroesDaIlha ilha="recife" ancoras={lugaresDosLumis} meio={meio} />
       <MergulhoDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <CoraisDoRecife modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />
       <MesaDeMapas modelo={preparada.modelo} centro={meio} giro={giro} troca={troca} />

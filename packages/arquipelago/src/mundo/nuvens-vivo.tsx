@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { PERCURSO_DOS_SALTOS, type PontosDoPercurso } from '../sistemas/percurso'
 import { BalaoDasNuvens } from './balao-das-nuvens'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
 import { ConstelacoesDasNuvens } from './constelacoes-das-nuvens'
 import { CorridaDeBalao } from './corrida-de-balao'
@@ -41,6 +42,10 @@ export function NuvensVivo({
 }) {
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ ...centro, y: ALTURA_DAS_NUVENS }), [centro])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
   const pecas = useRef<Group>(null)
   const tampos = useMemo(() => tamposDosSaltos(preparada.colisores, giro), [preparada, giro])
   const saltos = useMemo<PontosDoPercurso | null>(
@@ -60,6 +65,7 @@ export function NuvensVivo({
   })
   return (
     <group ref={pecas} visible={false}>
+      <BorroesDaIlha ilha="nuvens" ancoras={lugaresDosLumis} meio={meio} />
       <ComReserva reserva={null}>
         <Irie modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>

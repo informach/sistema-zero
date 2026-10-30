@@ -5,6 +5,7 @@ import type { Group } from 'three'
 import { PERCURSO_DO_CUME, type PontosDoPercurso } from '../sistemas/percurso'
 import { BancosDaVila } from './bancos-da-vila'
 import { BandaDoPico } from './banda-do-pico'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
 import { CorrenteDoPico } from './corrente-de-ar'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
@@ -45,6 +46,10 @@ export function PicoVivo({
 }) {
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ ...centro, y: 0 }), [centro])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
   const pecas = useRef<Group>(null)
   const subida = useMemo<PontosDoPercurso | null>(() => {
     const ancoras = lerAncorasDaSubida((nome) => {
@@ -58,6 +63,7 @@ export function PicoVivo({
   })
   return (
     <group ref={pecas} visible={false}>
+      <BorroesDaIlha ilha="pico" ancoras={lugaresDosLumis} meio={meio} />
       <ComReserva reserva={null}>
         <Floco modelo={preparada.modelo} meio={meio} giro={giro} />
       </ComReserva>
