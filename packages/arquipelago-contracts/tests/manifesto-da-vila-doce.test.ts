@@ -51,7 +51,7 @@ test('a Vila Doce é do Inventor e o pacote tem seis quadros e três desafios do
     expect(d.publico).toBe('kids')
     expect(d.tipo).toBe(i <= 5 ? 'quadro-das-cores' : 'desafio-do-dia')
     expect(d.quadro).toBe(i <= 5 ? i + 1 : null)
-    expect(d.publicar).toBe(i >= 5)
+    expect(d.publicar).toBe(false)
     expect(d.conteudo.recompensa).toEqual({
       cor: i <= 5,
       atracao: i >= 5 ? 'corrida-do-entregador' : d.slug,

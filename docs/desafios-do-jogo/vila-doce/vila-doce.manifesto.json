@@ -11418,7 +11418,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "A corrida do entregador",
@@ -15518,7 +15518,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "O entregador: duas entregas",
@@ -20902,7 +20902,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "O entregador: oito segundos",
@@ -25627,7 +25627,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "O entregador: uma caixa nova",

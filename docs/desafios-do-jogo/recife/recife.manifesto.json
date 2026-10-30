@@ -12562,7 +12562,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas",
@@ -18306,7 +18306,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: bolha rápida",
@@ -25035,7 +25035,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: dois pontos",
@@ -31742,7 +31742,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: outro alvo",

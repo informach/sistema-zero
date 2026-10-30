@@ -1,5 +1,10 @@
 # Desafios da Vila Doce
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
 Importe `vila-doce.manifesto.json` em Jogo → Desafios → Manifesto de desafios.
 Formato `arquipelago-desafios`, versão 1, escopo `ilha`. O arquivo acima é Kids;
 `vila-doce-adulto.manifesto.json` traz o conteúdo equivalente adulto, todo em rascunho.
@@ -20,9 +25,9 @@ O principal pinta um sexto da Vila, como os demais quadros. Cada projeto aprovad
 minijogo no fliperama pelo campo `recompensa.atracao`, usando o serviço existente. As variações
 nunca dão cor. O quadro 6 deve estar disponível no cadastro ao publicar.
 
-Os quadros 1 a 5 são novos rascunhos; os quatro desafios anteriores foram preservados
-integralmente. Não publicar automaticamente os complementares. A análise do currículo real
-e a disponibilização do conteúdo no Admin continuam necessárias.
+Todos os itens usam `publicar: false` após C01b1. Projetos, objetivos e recompensas foram
+preservados; somente o pedido de publicação automática dos quatro anteriores foi retirado.
+A análise do currículo real e a disponibilização do conteúdo no Admin continuam necessárias.
 
 ## Quadros complementares
 

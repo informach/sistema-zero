@@ -9818,7 +9818,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos",
@@ -20140,7 +20140,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos: pedras",
@@ -35330,7 +35330,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos: noite",
@@ -47117,7 +47117,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": true,
+      "publicar": false,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos: placar",

@@ -1,5 +1,10 @@
 # Jardim que floresce, minijogo da Ilha das Nuvens
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
 Pacote da fase4-10, formato `arquipelago-desafios` v1, escopo `ilha`, público `kids`.
 O arquivo de entrega é [nuvens.manifesto.json](nuvens.manifesto.json). Plano e decisões:
 [2026-10-29-arquipelago-jardim-que-floresce.md](../../plans/2026-10-29-arquipelago-jardim-que-floresce.md).
@@ -14,8 +19,8 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a convenção dos outros
 pacotes; o quadro deve estar livre quando o pacote for importado. O principal dá cor, as variações
-não. `recompensa.atracao` é `jardim-que-floresce`. `publicar: true` é uma instrução para a futura
-aplicação do arquivo, não uma publicação feita por esta entrega.
+não. `recompensa.atracao` é `jardim-que-floresce`. Todos os itens usam `publicar: false` após
+C01b1; não houve publicação remota.
 
 ## Cinco quadros complementares (L03)
 
@@ -30,11 +35,11 @@ Os quadros aplicam limites de reserva, faixa de luz, ocupação, consumo de dois
 | 5 | Colheita da lista | Quadro das Cores | 20 | 10 |
 
 O [manifesto Kids](nuvens.manifesto.json) e o [manifesto adulto](nuvens-adulto.manifesto.json)
-têm seis quadros e três desafios do dia cada. Todos os novos itens ficam em rascunho; o arquivo
-adulto também. Os quatro itens Kids antigos foram comparados com a base Git e preservados
-integralmente. Nenhum conteúdo foi importado ou publicado nesta entrega.
+têm seis quadros e três desafios do dia cada, todos em rascunho. C01b1 preservou projetos,
+objetivos e recompensas e retirou o pedido automático de publicação dos quatro itens Kids
+anteriores. Nenhum conteúdo foi importado ou publicado nesta entrega.
 
-São reaplicações em blocos JavaScript já conhecidos, não antecipam o ensino de uma linguagem
+São atividades em blocos JavaScript, com lacunas de fonte registradas no inventário, sem uma linguagem
 nova. O Para cada ainda não aparece nas listas atuais dos cursos: fica preparado como estrutura
 do inicial, com grupo/item e corpo vazio conferidos por teste. A pessoa completa apenas as
 ações internas já ensinadas. Não há liberação manual desse bloco nem afirmação de conquista.

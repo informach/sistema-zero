@@ -1,5 +1,10 @@
 # Proteja os ninhos do Vale dos Dinos
 
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
 Pacote fase4-05, JavaScript em blocos, formato `arquipelago-desafios` v1, público Kids.
 Arquivo: [vale.manifesto.json](vale.manifesto.json). Importação e publicação ficam para outra etapa.
 
@@ -12,7 +17,7 @@ Arquivo: [vale.manifesto.json](vale.manifesto.json). Importação e publicação
 
 Valores derivados de `MOEDAS_PADRAO_POR_TIPO`; ordens 60 a 63; atração `proteja-os-ninhos`.
 A busca nos manifestos locais não encontrou outro quadro do Vale. O Admin deve conferir o
-cadastro de novo na importação. `publicar: true` prepara essa aplicação futura, sem publicá-la aqui.
+cadastro de novo na importação. Todos os itens usam `publicar: false` após C01b1.
 
 ## Cinco quadros complementares (L03)
 
@@ -27,11 +32,11 @@ Nos quadros 1 e 2, o laço Para cada vem montado com o corpo vazio. No primeiro,
 | 5 | Rodada conferida | Quadro das Cores | 20 | 10 |
 
 O [manifesto Kids](vale.manifesto.json) e o [manifesto adulto](vale-adulto.manifesto.json)
-têm seis quadros e três desafios do dia cada. Todos os novos itens ficam em rascunho; o arquivo
-adulto também. Os quatro itens Kids antigos foram comparados com a base Git e preservados
-integralmente. Nenhum conteúdo foi importado ou publicado nesta entrega.
+têm seis quadros e três desafios do dia cada, todos em rascunho. C01b1 preservou projetos,
+objetivos e recompensas e retirou o pedido automático de publicação dos quatro itens Kids
+anteriores. Nenhum conteúdo foi importado ou publicado nesta entrega.
 
-São reaplicações em blocos JavaScript já conhecidos, não antecipam o ensino de uma linguagem
+São atividades em blocos JavaScript, com lacunas de fonte registradas no inventário, sem uma linguagem
 nova. O Para cada ainda não aparece nas listas atuais dos cursos: fica preparado como estrutura
 do inicial, com grupo/item e corpo vazio conferidos por teste. A pessoa completa apenas as
 ações internas já ensinadas. Não há liberação manual desse bloco nem afirmação de conquista.
@@ -72,9 +77,9 @@ variação não copia regras: o mesmo evento de toque e o mesmo laço atendem ao
 
 O Vale abre em Arquiteto (`architect`, posição 6), perfil `intermediario-3d`. O pacote usa
 somente Jogo 2D e lógica até `intermediario-2d`, sem HTML, CSS, Canvas ou código livre.
-A preparação da lista vem no inicial. Como no Members, a prova de currículo compara os tipos
-acrescentados pelo gabarito com as listas locais dos postos até Arquiteto. Não há liberação
-manual nem afirmação de que todos os conceitos novos já tenham um curso publicado.
+A preparação da lista vem no inicial. A prova antiga dos tipos acrescentados é parcial: o
+Members deriva todos os tipos do gabarito. A cobertura integral e as lacunas aparecem no
+inventário C01b1. Não há liberação manual nem prova de que o laço preparado foi aprendido.
 
 SVGs embutidos desenham o vulcão, cinza, ninhos com ovos, folhas e botões. Nenhum arquivo
 externo ou Blender. Palco de 640 × 480; ninhos 96 × 96; a cinza começa em y 140 e termina
