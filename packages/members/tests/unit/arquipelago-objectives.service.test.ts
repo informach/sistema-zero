@@ -155,11 +155,15 @@ const codigos = (analise: { problemas: { codigo: string }[] }) =>
 describe('analisar', () => {
   test('apoio pronto: objetivo obrigatório já cumprido pelo inicial impede publicar', async () => {
     const analise = await analisar(criar(), {
-      projetoInicial: gabarito, objetivos: [usaRepetir],
+      projetoInicial: gabarito,
+      objetivos: [usaRepetir],
     })
-    expect(analise.problemas).toContainEqual(expect.objectContaining({
-      codigo: 'INICIAL_JA_CUMPRE_OBJETIVO', objetivoId: 'repetir',
-    }))
+    expect(analise.problemas).toContainEqual(
+      expect.objectContaining({
+        codigo: 'INICIAL_JA_CUMPRE_OBJETIVO',
+        objetivoId: 'repetir',
+      }),
+    )
   })
 
   test('apoio pronto: extra já cumprido pelo inicial também não é tarefa', async () => {
@@ -168,16 +172,22 @@ describe('analisar', () => {
       gabarito: projeto([ESCREVER, ESCREVER, REPETIR]),
       objetivos: [usaRepetir, extra],
     })
-    expect(analise.problemas).toContainEqual(expect.objectContaining({
-      codigo: 'INICIAL_JA_CUMPRE_OBJETIVO', objetivoId: 'extra',
-    }))
+    expect(analise.problemas).toContainEqual(
+      expect.objectContaining({
+        codigo: 'INICIAL_JA_CUMPRE_OBJETIVO',
+        objetivoId: 'extra',
+      }),
+    )
   })
 
   test('apoio pronto: o extra oferecido precisa passar no gabarito', async () => {
     const analise = await analisar(criar(), { gabarito, objetivos: [usaRepetir, extra] })
-    expect(analise.problemas).toContainEqual(expect.objectContaining({
-      codigo: 'GABARITO_NAO_PASSA', objetivoId: 'extra',
-    }))
+    expect(analise.problemas).toContainEqual(
+      expect.objectContaining({
+        codigo: 'GABARITO_NAO_PASSA',
+        objetivoId: 'extra',
+      }),
+    )
   })
 
   test('completar o corpo de um bloco já presente também exige o seu repertório', async () => {
@@ -208,7 +218,9 @@ describe('analisar', () => {
     expect(analise.blocosDoGabarito).toContain('sz_js_console_log_value')
   })
   test('blocos alterados sem moldura ou apoio intacto; desconhecidos à parte; vista sem regra', async () => {
-    const { executor, chamadas } = executorFalso((input) => isDeepStrictEqual(input.project, gabaritoCompleto))
+    const { executor, chamadas } = executorFalso((input) =>
+      isDeepStrictEqual(input.project, gabaritoCompleto),
+    )
     const analise = await analisar(criar(executor))
     expect(AnaliseDosMembrosSchema.parse(analise)).toEqual(analise)
     // `sz_frame_start` é moldura e `sz_js_console_log_value` já vem no inicial.
