@@ -17,6 +17,7 @@ import type { MeshStandardMaterial } from 'three'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { quemAcompanha } from '../sistemas/companhia'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
@@ -38,6 +39,9 @@ const COR_DE_FORA = '#fbe7d2'
 
 /** O quarto da plataforma, peça por peça, com os mesmos componentes do Meu quarto. */
 function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
+  // O bichinho sai do quarto quando é ele quem acompanha (S01).
+  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) === 'quarto')
+  const petNoQuarto = acompanha ? null : quarto.pet
   const { loja } = useJogo()
   const pausado = useEstado(jogoPausado)
   const menosNoAparelho = useReducedMotion()
@@ -107,7 +111,7 @@ function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
             ),
           )}
           <Pet3D
-            petId={quarto.pet}
+            petId={petNoQuarto}
             occupied={ocupadas}
             reducedMotion={menosMovimento}
             paused={pausado}

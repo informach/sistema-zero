@@ -822,13 +822,15 @@ export function chavesUsadasNaObra(obra: Obra | null | undefined): number {
 }
 
 /**
- * Nenhum segredo nem célula do mapa é presumido; o bicho do quarto acompanha. As chaves começam
- * com o que a obra (a casa e as cabanas) já usa, para nada construído deixar de ser editável.
+ * Nenhum segredo nem célula do mapa é presumido. As chaves começam com o que a obra (a casa e as
+ * cabanas) já usa, para nada construído deixar de ser editável. Quem já tinha bicho adotado
+ * continua com ele acompanhando; sem ele, o bichinho do quarto acompanha.
  */
 export function migrarDaV18(s: SalvamentoV18): SalvamentoV19 {
   let chaves = chavesUsadasNaObra(s.construcao.casa)
   for (const cabana of Object.values(s.construcao.cabanas)) chaves |= chavesUsadasNaObra(cabana)
-  return { ...s, versao: 19, chaves, segredos: 0, mapa: {}, companhia: 'quarto' }
+  const companhia = s.bichos.adotado ? 'adotado' : 'quarto'
+  return { ...s, versao: 19, chaves, segredos: 0, mapa: {}, companhia }
 }
 
 export const SalvamentoSchema = z.union([

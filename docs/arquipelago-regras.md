@@ -2281,6 +2281,27 @@ Arquivos: `sistemas/mapa-da-ilha.ts`, `estado/exploracao.ts` (`observarMapa`),
 `mundo/descoberta-da-ilha.tsx`, `interface/mapa.tsx`. Provas: `tests/mapa-da-ilha.test.ts` e
 `playground/verificar-mapa-da-ilha-browser.ts`.
 
+### 6.26 Quem acompanha pela ilha (S01, 30/10/2026)
+
+A proposta traz "os bichinhos reais da plataforma" para o jogo. O bichinho do quarto
+(`quarto.pet`: gato, cachorro ou passarinho) sai do quarto e acompanha a criança pela ilha, com o
+mesmo seguir do bicho adotado (`sistemas/seguir.ts`): anda atrás dela, corre quando ela se
+afasta, espera no cipó, no tronco e na água e reaparece atrás dela quando fica longe. Ele não tem
+corpo de física (é pequeno); a altura acompanha o pé da criança quando ela pisa. O passarinho voa
+um pouco acima do chão. Enquanto ele acompanha, o quarto fica sem ele.
+
+- Com um bicho adotado no Bosque, a criança escolhe quem vai com ela, no painel do bicho ("Quem vai
+  com você pela ilha": o nome dele ou "Gato do quarto"). O outro espera: o bichinho no quarto, o
+  bicho adotado no gramado em frente à varanda, onde continua dando para cuidar dele.
+- Adotar faz do bicho a companhia (como sempre foi). A V18 migra com o bicho adotado acompanhando,
+  se houver; sem ele, o bichinho do quarto.
+- Escolha guardada em `companhia` (V19); entre dois aparelhos vale a mesma regra da preferência do
+  clima. Sem o escolhido (o quarto ficou sem bichinho), vai quem houver.
+
+Arquivos: `sistemas/companhia.ts`, `mundo/pet-que-acompanha.tsx`, `mundo/bicho-adotado.tsx`,
+`mundo/casa.tsx`, `interface/bicho.tsx`. Provas: `tests/companhia.test.ts` e
+`playground/verificar-companhia-browser.ts` (com `?adotado=1`).
+
 ## 7. Desafios
 
 Arquivos principais:

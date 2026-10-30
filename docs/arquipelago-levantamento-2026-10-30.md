@@ -84,7 +84,8 @@ sendo a fonte dos commits. Integrado = merge no staging local.
 | E02 Rede do barco | Feito por outra sessão; segredos (§6.24) e mapa detalhado (§6.25) tratados em 30/10 |
 | E03 Fantasma familiar | Integrado (`ae68922b1`) |
 | C01f | Rascunho local fora do staging |
-| C02, C03, E04, S01, Q01 | Não começados |
+| C02, C03, E04, Q01 | Não começados |
+| S01 Companhia | Tratado em 30/10: o bichinho do quarto acompanha; com bicho adotado, a criança escolhe (regras §6.26) |
 
 Orientação vigente da dona (30/10): depois do envio do C01b2b, pausar novos lotes.
 

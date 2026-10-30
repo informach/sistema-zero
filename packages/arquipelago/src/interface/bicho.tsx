@@ -2,6 +2,13 @@ import { useEffect, useRef } from 'react'
 import { lojaDoBicho, PAINEL_DO_BICHO, useBicho } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
 import { CUIDADO, EMOJI_DO_BICHO, NOME_DO_BICHO, TRUQUE, tristinho } from '../sistemas/bichos'
+import {
+  escolherCompanhia,
+  falaDaCompanhia,
+  podeEscolherCompanhia,
+  quemAcompanha,
+  rotuloDoPet,
+} from '../sistemas/companhia'
 import { type Cuidado, cuidar } from '../sistemas/cuidar'
 import { ITENS, itensVisiveis } from '../sistemas/itens'
 import { diaDe } from '../sistemas/moradores'
@@ -27,6 +34,9 @@ export function PainelDoBicho() {
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_BICHO)
   const adotado = useEstado((s) => s.salvamento.bichos.adotado)
   const dentroDeCasa = useEstado((s) => s.dentroDeCasa)
+  const pet = useEstado((s) => s.quarto.pet)
+  const escolhe = useEstado((s) => podeEscolherCompanhia(s.salvamento, s.quarto.pet))
+  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet))
   const falas = useBicho(bicho, (s) => s.falas)
   const tela = useBicho(bicho, (s) => s.tela)
   const principal = useRef<HTMLButtonElement>(null)
@@ -146,6 +156,26 @@ export function PainelDoBicho() {
               O banho é perto do lago do Bosque ou dentro de casa.
             </p>
           )}
+          {escolhe && pet ? (
+            <fieldset className="arq-bicho-companhia">
+              <legend>Quem vai com você pela ilha</legend>
+              {(['adotado', 'quarto'] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className="arq-botao leve"
+                  aria-pressed={acompanha === c}
+                  onClick={() => {
+                    const s = loja.getState()
+                    if (s.salvamento.companhia !== c) s.mudar((v) => escolherCompanhia(v, c))
+                    bicho.getState().responder([falaDaCompanhia(c, nome, pet)], null)
+                  }}
+                >
+                  {c === 'adotado' ? nome : rotuloDoPet(pet)}
+                </button>
+              ))}
+            </fieldset>
+          ) : null}
           <div className="arq-bicho-rodape">
             {aulas ? <span className="arq-bicho-fase">{`Truque: ${aulas}`}</span> : <span />}
             <button type="button" className="arq-botao leve" onClick={fechar}>
