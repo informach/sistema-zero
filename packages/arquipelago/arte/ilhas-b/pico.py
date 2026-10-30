@@ -13,6 +13,13 @@ Gera três arquivos em `src/assets/ilhas/`:
 """
 from lib_ilhas_b import *
 from pico_caverna import montar_caverna
+import lib_cais
+
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): o −x é da caverna de cristal, então o
+# deque sai no rumo de 250° (o lado de fora, entre a caverna e o palco), longe da trilha e do iglu.
+# A beira do tampo (13,3 do meio) e o degrau (0,4 depois) foram medidos no `col-terreno`; a ponta
+# fica 3,3 além do barranco (15,5).
+PORTO = dict(terra=(-4.549, -12.498), rumo=250, degrau=0.4, comprimento=5.5, lado=1)
 
 MONTANHA = dict(x=-4.5, z=-1.5, r=6.6, h=12.0)
 # A trilha (para o jogo, fase3-07): um corte em espiral na encosta, 1,25 volta no sentido horário
@@ -679,9 +686,14 @@ def ilha():
         + extras_do_jogo + ancoras_da_banda(giro_iglu, giro_palco, (cx, cy, zc), a_boca))
     # O desenho do trenó num nó próprio, com a origem na base dele: o jogo o leva debaixo de quem
     # desce de trenó (o nome `treno` é da âncora; dois nós com o mesmo nome viravam `treno.001`).
-    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen, 'telhado-iglu': telhado_iglu,
-                      'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_,
-                      'caverna-joia': joia_}, ancoras, colisores=col)
+    nos = {'chao': chao, 'montanha': mont, 'cenario': cen, 'telhado-iglu': telhado_iglu,
+           'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_, 'caverna-joia': joia_}
+    porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
+    ancoras += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('pico', nos, ancoras, colisores=col, porto=dados_porto)
 
 
 def props():

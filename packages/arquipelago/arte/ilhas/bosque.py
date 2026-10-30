@@ -19,8 +19,15 @@ pouco menor que o desenho). Copas, raízes, flores, capim, taboas e vitórias-r�
 personagem passa por eles sem tropeçar.
 """
 from lib_ilhas import *
+import lib_cais
 
 SEMENTE = 1.0 * 1.7 * 2  # a mesma da versão leve
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): o deque sai da ponta de campo (−x),
+# atrás do lote da cabana, e o barco atraca do lado +z dele. A beira do tampo e o degrau foram
+# medidos no `col-terreno` (o tampo plano dos dois lados do deque até x −19,3; o chão desce abaixo
+# das tábuas 0,4 depois); a ponta fica 3,3 além do fim do barranco (x −22,6): a popa do barco passa
+# 0,8 dele.
+PORTO = dict(terra=(-19.3, 0.0), rumo=180, degrau=0.4, comprimento=6.6, lado=-1)
 
 # Árvores do percurso: (x, z, escala, variante, altura do deque, raio do deque)
 T1 = (-2.0, -3.0, 1.35, 'a', 4.0, 2.9)   # casa na árvore (começo)
@@ -730,7 +737,12 @@ def construir():
     nos_copa.update({f'tronco-{i + 1}': t for i, t in enumerate(troncos)})
     nos = {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos, **nos_copa,
            'telhado-casa-na-arvore': telhado}
-    exportar('bosque', nos, anc, colisores=col)
+    porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
+    anc += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('bosque', nos, anc, colisores=col, porto=dados_porto)
 
 
 def props():

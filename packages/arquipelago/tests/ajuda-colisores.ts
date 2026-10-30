@@ -31,6 +31,14 @@ export function jsonDoGlb(arquivo: string): {
   return JSON.parse(buf.subarray(20, 20 + n).toString('utf8'))
 }
 
+/**
+ * Os colisores do ponto de embarque do barco (`arte/mundo/lib_cais.py`, 30/10/2026): o deque, as
+ * estacas e, nas Nuvens, a torre de escada. Ficam fora do raio de espera pelo chão até a rede do
+ * barco recalcular a espera com o porto (o relatório de cada ilha traz o raio do porto).
+ */
+export const doPortoDoBarco = (nome: string) =>
+  /^col-(cais|guarda-cais|cil-estaca-cais)-/.test(nome)
+
 /** O nome do grupo: sem o número do fim (`col-cil-poste-3` → `col-cil-poste`). */
 export function grupo(nome: string): string {
   const partes = nome.split('-')

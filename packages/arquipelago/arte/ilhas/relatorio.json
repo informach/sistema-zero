@@ -16,6 +16,11 @@
   },
   "bosque": {
     "ancoras": {
+      "barco": {
+        "x": -25.9,
+        "y": 0.0,
+        "z": 2.2
+      },
       "borda-1-a": {
         "x": -7.25,
         "y": 3.1,
@@ -80,6 +85,11 @@
         "x": 5.11,
         "y": 1.0,
         "z": -4.65
+      },
+      "cais": {
+        "x": -24.7,
+        "y": 0.89,
+        "z": 0.0
       },
       "casa-na-arvore": {
         "x": -3.08,
@@ -310,6 +320,8 @@
     "clipes": "",
     "colisores": {
       "col-cabana": 1,
+      "col-cais-beira": 1,
+      "col-cais-deque": 1,
       "col-caixote": 1,
       "col-casa-na-arvore": 6,
       "col-casinha": 1,
@@ -317,6 +329,7 @@
       "col-cil-barril": 1,
       "col-cil-cogumelo": 18,
       "col-cil-deque": 4,
+      "col-cil-estaca-cais": 6,
       "col-cil-feno": 1,
       "col-cil-moita": 12,
       "col-cil-pedra": 5,
@@ -340,7 +353,7 @@
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1117.6,
+    "kb": 1205.7,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
@@ -360,6 +373,7 @@
       "copa-7": 210,
       "copa-8": 210,
       "copa-9": 210,
+      "porto": 1886,
       "telhado-casa-na-arvore": 94,
       "terreno": 1590,
       "tronco-1": 96,
@@ -369,7 +383,99 @@
       "tronco-5": 96,
       "vegetacao": 10920
     },
-    "triangulos": 30814
+    "porto": {
+      "acesso": {
+        "altura_livre": "céu aberto",
+        "degrau_tabuas_para_deque": 0.23,
+        "degrau_tampo_para_tabuas": 0.12,
+        "largura_livre": 1.58,
+        "rampa_graus": 0
+      },
+      "barco": {
+        "giro_graus": 180,
+        "x": -25.9,
+        "y": 0.0,
+        "z": 2.2
+      },
+      "cais": {
+        "x": -24.7,
+        "y": 0.89,
+        "z": 0.0
+      },
+      "caixa_da_ilha": {
+        "canto_mais_longe_com": 30.37,
+        "canto_mais_longe_sem": 27.3,
+        "com_o_porto": {
+          "max": [
+            14.34,
+            14.44,
+            14.17
+          ],
+          "min": [
+            -26.17,
+            -2.5,
+            -15.41
+          ]
+        },
+        "raio_do_porto_no_chao": 26.19,
+        "sem_o_porto": {
+          "max": [
+            14.34,
+            14.44,
+            14.17
+          ],
+          "min": [
+            -22.54,
+            -1.0,
+            -15.41
+          ]
+        }
+      },
+      "caixa_do_deque": {
+        "max": [
+          -18.12,
+          3.02,
+          1.05
+        ],
+        "min": [
+          -26.17,
+          -2.5,
+          -1.29
+        ]
+      },
+      "corredor_do_casco": {
+        "ate_s": 34.1,
+        "cantos": [
+          [
+            -28.4,
+            7.2
+          ],
+          [
+            -28.4,
+            -2.8
+          ],
+          [
+            -53.4,
+            -2.8
+          ],
+          [
+            -53.4,
+            7.2
+          ]
+        ],
+        "de_s": 9.1,
+        "meia_largura": 5.0
+      },
+      "rumo_graus": 180,
+      "terra": {
+        "nota": "beira do tampo; as tábuas da beira entram 1,2 m no tampo (y = 1)",
+        "x": -19.3,
+        "y": 1.12,
+        "z": 0.0
+      },
+      "tipo": "deque de praia"
+    },
+    "triangulos": 32700
   },
   "bosque-props": {
     "ancoras": {},
@@ -654,6 +760,11 @@
   },
   "vila-doce": {
     "ancoras": {
+      "barco": {
+        "x": -18.4,
+        "y": 0.0,
+        "z": 4.25
+      },
       "barraca-1": {
         "x": 5.18,
         "y": 1.0,
@@ -683,6 +794,11 @@
         "x": 1.66,
         "y": 1.0,
         "z": -6.18
+      },
+      "cais": {
+        "x": -17.2,
+        "y": 0.89,
+        "z": 2.05
       },
       "chegada": {
         "x": 11.6,
@@ -760,11 +876,14 @@
       "col-balcao": 1,
       "col-banco": 3,
       "col-barraca": 6,
+      "col-cais-beira": 1,
+      "col-cais-deque": 1,
       "col-caixote": 2,
       "col-casinha": 3,
       "col-chamine": 1,
       "col-cil-banquinho": 2,
       "col-cil-casquinha": 1,
+      "col-cil-estaca-cais": 5,
       "col-cil-fonte": 3,
       "col-cil-jujuba": 6,
       "col-cil-mesa": 1,
@@ -779,16 +898,109 @@
       "col-telhado-padaria": 2,
       "col-terreno": 1
     },
-    "kb": 960.6,
+    "kb": 1039.4,
     "nos": {
       "construcoes": 6216,
       "enfeites": 4166,
       "feira": 7630,
       "fonte": 1996,
+      "porto": 1698,
       "telhados": 6200,
       "terreno": 1398
     },
-    "triangulos": 27606
+    "porto": {
+      "acesso": {
+        "altura_livre": "céu aberto",
+        "degrau_tabuas_para_deque": 0.23,
+        "degrau_tampo_para_tabuas": 0.12,
+        "largura_livre": 1.58,
+        "rampa_graus": 0
+      },
+      "barco": {
+        "giro_graus": 180,
+        "x": -18.4,
+        "y": 0.0,
+        "z": 4.25
+      },
+      "cais": {
+        "x": -17.2,
+        "y": 0.89,
+        "z": 2.05
+      },
+      "caixa_da_ilha": {
+        "canto_mais_longe_com": 23.96,
+        "canto_mais_longe_sem": 21.53,
+        "com_o_porto": {
+          "max": [
+            13.82,
+            10.55,
+            15.01
+          ],
+          "min": [
+            -18.67,
+            -2.5,
+            -13.79
+          ]
+        },
+        "raio_do_porto_no_chao": 18.7,
+        "sem_o_porto": {
+          "max": [
+            13.82,
+            10.55,
+            15.01
+          ],
+          "min": [
+            -15.44,
+            -1.0,
+            -13.79
+          ]
+        }
+      },
+      "caixa_do_deque": {
+        "max": [
+          -11.54,
+          3.02,
+          3.1
+        ],
+        "min": [
+          -18.67,
+          -2.5,
+          0.76
+        ]
+      },
+      "corredor_do_casco": {
+        "ate_s": 33.2,
+        "cantos": [
+          [
+            -20.9,
+            9.25
+          ],
+          [
+            -20.9,
+            -0.75
+          ],
+          [
+            -45.9,
+            -0.75
+          ],
+          [
+            -45.9,
+            9.25
+          ]
+        ],
+        "de_s": 8.2,
+        "meia_largura": 5.0
+      },
+      "rumo_graus": 180,
+      "terra": {
+        "nota": "beira do tampo; as tábuas da beira entram 1,2 m no tampo (y = 1)",
+        "x": -12.7,
+        "y": 1.12,
+        "z": 2.05
+      },
+      "tipo": "deque de praia"
+    },
+    "triangulos": 29304
   },
   "vila-doce-props": {
     "ancoras": {},

@@ -14,6 +14,7 @@ Gera dois arquivos em `src/assets/ilhas/`:
   laço: sobe, desce e balança um pouco).
 """
 from lib_ilhas_b import *
+import lib_cais
 
 FIOS = ['fio1', 'fio2', 'fio3', 'fio4', 'fio5', 'fio6']
 TEAR = dict(x=-4.2, z=-3.6)
@@ -159,6 +160,13 @@ def balao():
 
 
 # ------------------------------------------------------------------ a ilha
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): no jogo a ilha fica a y = 7, então o
+# mar é y = −7 no arquivo. O deque fica no mar e a torre de escada sobe ao tampo no rumo de 215°, do
+# lado de fora, entre a plataforma 1 (−x) e o mirante (−z); a torre fica do lado −z do eixo, longe
+# das plataformas. A beira do tampo nesse rumo (12,5 do meio) foi medida no `col-terreno`.
+MAR = -7.0
+PORTO = dict(beira=(-10.239, -7.17), rumo=215, lado=1)
+
 PLATAFORMAS = [  # (x, z, altura acima do tampo, raio): sobem em degraus do lado de trás (−x)
     (-15.5, -3.0, 2.2, 1.9),
     (-17.0, 2.8, 4.0, 1.7),
@@ -264,7 +272,18 @@ def ilha():
     for k, f in enumerate(fios, 1):
         nos[f'fio-{k}'] = f
     nos.update(plataformas)
-    exportar('nuvens', nos, ancoras, colisores=col)
+    porto, _, dados_porto = lib_cais.torre_de_escada(**PORTO, y_mar=MAR, y_tampo=TOPO, col=col, col_caixa=col_caixa,
+                                                     col_cilindro=col_cilindro)
+    # Nuvens em dois cantos do alto do miolo, como as que se agarram às plataformas (longe dos degraus e
+    # do farolete).
+    for i, (u, v, y, s) in enumerate(((2.3, 5.3, TOPO + 1.55, 0.5), (5.3, 2.3, TOPO + 1.5, 0.42))):
+        x, z = lib_cais.Eixo(*PORTO['beira'], PORTO['rumo']).jogo(0.9 + u, v * PORTO['lado'])
+        porto += nuvem_fofa(x, -z, y, s, 90 + i, 'nuvem', 'nuvemAzulada', 4)
+    ancoras += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('nuvens', nos, ancoras, colisores=col, porto=dados_porto)
 
 
 # Onde a criança fica no balão (fase4-09): no piso do cesto (a base dele tem 10 cm de fundo),

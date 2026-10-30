@@ -19,7 +19,13 @@ import {
 import { lugarDoFloco } from '../src/mundo/pico'
 import { BOIAS_DA_ILHA_DO_ANEL } from '../src/sistemas/correnteza'
 import { comecarConversaComOFloco, FLOCO_NO_PICO } from '../src/sistemas/floco'
-import { arquivoDaIlha, carregarGlb, type Forma, topoDaForma } from './ajuda-colisores'
+import {
+  arquivoDaIlha,
+  carregarGlb,
+  doPortoDoBarco,
+  type Forma,
+  topoDaForma,
+} from './ajuda-colisores'
 
 const pico = ilha('pico')
 
@@ -35,7 +41,8 @@ describe('Pico completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('pico.glb')))
     const preparada = prepararIlha(cena, pico)
-    expect(preparada.colisores.length).toBe(173)
+    // 173 da ilha e 7 do porto do barco (deque, tábuas da beira e estacas).
+    expect(preparada.colisores.length).toBe(180)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, pico)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -55,7 +62,7 @@ describe('Pico completo', () => {
   test('tudo o que se pisa cabe na espera pelo chão: a de sempre e, para o lado da caverna, até ela', async () => {
     const modelo = await carregarGlb(arquivoDaIlha('pico.glb'))
     const formas = lerColisores(modelo).filter((c): c is Forma => c.forma !== 'malha')
-    for (const c of formas) {
+    for (const c of formas.filter((f) => !doPortoDoBarco(f.nome))) {
       const r = Math.hypot(c.posicao[0], c.posicao[2])
       expect([c.nome, r < raioDaEsperaDaIlha(pico, c.posicao[0], c.posicao[2])]).toEqual([
         c.nome,

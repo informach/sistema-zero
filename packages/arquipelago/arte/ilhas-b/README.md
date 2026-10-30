@@ -48,12 +48,12 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
 
 | Arquivo | Nós | Âncoras próprias | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario`, `treno-desenho` (o trenó no platô, origem na base dele), `telhado-iglu` (a cúpula oca do iglu com o vestíbulo, que o jogo esmaece, fase3-08), `caverna` e `caverna-joia` (a caverna de cristal, fase3-07) e 172 `col-*` mais o `col-terreno` (os da caverna com `caverna` no nome) | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` (o trenó no platô), `treno-curva-1` a `-26` (a descida, do trenó ao começo da trilha, no chão dela), `subida-1` a `-4` (as paradas da subida ao cume), `floco-1` a `-5` (os flocos, no chão da trilha), `caverna-entrada`, `caverna-galeria`, `caverna-laguinho`, `caverna-degrau-1` a `-4`, `cristal-raro`, `iglu-dentro`, `fogareiro`, `instrumento-xilofone`/`-violao`/`-bateria` (onde cada um se perdeu), `banda-*` e `musico-*` (o lugar do instrumento e do pinguim no palco) | | 30.547 | 1.168 KB |
+| `pico.glb` | `chao`, `montanha` (com a trilha cavada e o platô do cume), `cenario`, `treno-desenho` (o trenó no platô, origem na base dele), `telhado-iglu` (a cúpula oca do iglu com o vestíbulo, que o jogo esmaece, fase3-08), `caverna` e `caverna-joia` (a caverna de cristal, fase3-07) `porto` (o deque do barco) e 179 `col-*` mais o `col-terreno` (os da caverna com `caverna` no nome) | `palco` (no tablado), `iglu` (na porta), `trilha-inicio`, `trilha-fim`, `cume` (meio do platô), `parede-de-gelo` (no pé), `topo-da-parede`, `lago-congelado`, `treno` (o trenó no platô), `treno-curva-1` a `-26` (a descida, do trenó ao começo da trilha, no chão dela), `subida-1` a `-4` (as paradas da subida ao cume), `floco-1` a `-5` (os flocos, no chão da trilha), `caverna-entrada`, `caverna-galeria`, `caverna-laguinho`, `caverna-degrau-1` a `-4`, `cristal-raro`, `iglu-dentro`, `fogareiro`, `instrumento-xilofone`/`-violao`/`-bateria` (onde cada um se perdeu), `banda-*` e `musico-*` (o lugar do instrumento e do pinguim no palco), `barco` e `cais` (o porto do barco) | | 32.245 | 1.247 KB |
 | `pico-props.glb` | `pinheiro-nevado-a`, `pinheiro-nevado-b`, `bloco-de-gelo`, `boneco-de-neve`, `painel-de-gelo` (base em y = 0) | | | 3.300 | 96 KB |
 | `pico-treno.glb` | `treno` (frente para −z do jogo) | | | 668 | 33 KB |
-| `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario` e 61 `col-*` mais o `col-terreno` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao` | | 22.500 | 626 KB |
+| `vale-dos-dinos.glb` | `chao`, `vulcao`, `lava` (cratera, rios e poças), `cenario`, `porto` (o deque do barco) e 69 `col-*` mais o `col-terreno` | `observatorio` (na porta), `varanda` (do observatório), `escavacao`, `ninho-1` a `ninho-3`, `cratera`, `pe-do-vulcao`, `barco` e `cais` (o porto do barco) | | 24.298 | 710 KB |
 | `vale-dos-dinos-props.glb` | `samambaia-gigante`, `cavalinha`, `ninho`, `ovo-dino`, `osso`, `cranio-fossil` | | | 4.278 | 100 KB |
-| `nuvens.glb` | `chao`, `cenario`, `fio-1` a `fio-6`, `plataforma-1` a `plataforma-4` e 49 `col-*` mais o `col-terreno` | `tear`, `ninho` (dentro do ninho, no alto da árvore), `pe-da-arvore`, `balao` (a 1,9 m do poste da corda), `arco-iris`, `mirante` (no deque da luneta), `topo-plataforma-1` a `-4` | | 19.560 | 471 KB |
+| `nuvens.glb` | `chao`, `cenario`, `fio-1` a `fio-6`, `plataforma-1` a `plataforma-4`, `porto` (a torre de escada e o deque do mar) e 109 `col-*` mais o `col-terreno` | `tear`, `ninho` (dentro do ninho, no alto da árvore), `pe-da-arvore`, `balao` (a 1,9 m do poste da corda), `arco-iris`, `mirante` (no deque da luneta), `topo-plataforma-1` a `-4`, `barco` e `cais` (o porto do barco, y −7 e −6,11 no arquivo) | | 26.096 | 812 KB |
 | `nuvens-balao.glb` | `balao` (base do cesto em y = 0) | `passageiro` (piso do cesto, filha de `balao`; o jogo desenha a criança nela no voo) | `flutuar` (3 s, laço) | 848 | 36 KB |
 | `nuvens-argola.glb` | `nuvem` (os tufos, por fora da faixa) e `faixa` (raio 4,2, material `argolaFaixa`, que o jogo troca pela cor de cada argola); de pé, de frente para o +z | | | 3.200 | 60 KB |
 | `alto-do-farol.glb` | `sala`, `escada`, `mesa-da-iris`, `vidros`, `lente` (pivô no centro da lâmpada) | `entrada` (onde a escada chega), `lanterna`, `mesa`, `rascunhos`, `quadro`, `janela`, `varanda` e as do jogo: `chegada`, `leitura`, `camera-varanda` (de frente para o mar); colisores `col-cil-piso-sala-1`, `col-parede-sala-1..16`, `col-cil-grade-escada-1`, `col-mesa-iris-1`, `col-cil-base-lente-1` | `girar` (4 s, uma volta, laço) | 14.436 | 486 KB |
@@ -115,6 +115,25 @@ borda do +x), `morador` e `lumi-1` a `lumi-4`.
   - a `lente` gira com `girar`, e a `luz` é a lâmpada;
   - os `vidros` estão separados para o jogo poder trocar a transparência;
   - o vão da escada é um furo de verdade no piso, com o poço descendo 3,2 m.
+
+## O porto do barco (30/10/2026)
+
+Pedido de arte da rede do barco, com o mesmo arranjo do cais do Recife (o barco a 2,2 m do eixo do
+deque, ao lado da ponta, proa no +x da âncora `barco`; os pés na âncora `cais`, 1,2 m antes da
+ponta). Tudo sai de `arte/mundo/lib_cais.py`, com o lugar no `PORTO` de cada script:
+
+- Pico e Vale: o deque de praia (`deque_de_praia`), nó `porto`, `col-cais-beira`, `col-cais-deque` e
+  as estacas `col-cil-estaca-cais-*`. O Pico fica no rumo de 250° (o −x é da caverna).
+- Nuvens: a ilha flutua (no jogo, y = 7), então o mar é y = −7 no arquivo. O deque fica no mar e a
+  torre de escada (`torre_de_escada`, rumo de 215°, entre a plataforma 1 e o mirante) sobe ao tampo:
+  três lances de 10, 10 e 9 espelhos de 0,249 m em volta de um miolo fechado (`col-cais-torre`, com
+  o farolete e as escotilhas que acendem à noite), patamares `col-cais-patamar`, degraus
+  `col-cais-degrau`, guarda-corpo `col-guarda-cais` e a ponte `col-cais-ponte`, que entra 0,8 m no
+  tampo. Na ponta do deque, a escadinha de sair do mar (7 degraus até 0,85 m debaixo d'água).
+
+O relatório traz o bloco `porto` de cada ilha. Conferência: `tests/portos-das-ilhas.test.ts`; prints
+em `docs/qa/2026-10-30-portos-do-barco/`; a entrega completa em
+`docs/plans/2026-10-30-arquipelago-portos-do-barco.md`.
 
 ## Lugares de exploração
 

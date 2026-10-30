@@ -271,13 +271,14 @@ def contar(o):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
-def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
+def exportar(pid, nos, ancoras=(), clipes_=None, colisores=(), porto=None):
     """Grava `SAIDA_ILHAS/pid.glb`: um nó por chave de `nos` ({nome: objs} ou {nome: (objs, pivô)}),
     as âncoras (nós vazios), os nós de colisão `col-*` (cada um com o seu TRS, sem juntar; ajudantes
     `col_caixa` e `col_cilindro` do `lib_mundo`, `col_terreno` e `col_entre` aqui) e, com `clipes_`,
     as animações.
 
-    `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}."""
+    `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}. `porto` (os
+    dados do ponto de embarque do barco, `lib_cais`) vai para o relatório."""
     juntos = {}
     for nome, val in nos.items():
         objs, pivo = (val if isinstance(val, tuple) else (val, None))
@@ -327,6 +328,8 @@ def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
                 'clipes': sorted(chaves)}
     if colisores:
         rel[pid]['colisores'] = grupos_col(colisores)
+    if porto:
+        rel[pid]['porto'] = porto
     with open(RELATORIO_B, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')

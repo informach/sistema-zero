@@ -30,7 +30,7 @@ import {
   comecarConversaComAIrie,
   IRIE_NAS_NUVENS,
 } from '../src/sistemas/irie'
-import { arquivoDaIlha, carregarGlb, pisoEm } from './ajuda-colisores'
+import { arquivoDaIlha, carregarGlb, doPortoDoBarco, pisoEm } from './ajuda-colisores'
 
 const nuvens = ilha('nuvens')
 
@@ -44,7 +44,8 @@ describe('Nuvens completo', () => {
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('nuvens.glb')))
     const preparada = prepararIlha(cena, nuvens)
     expect(preparada.plataformas).toHaveLength(4)
-    expect(preparada.colisores.length).toBe(50)
+    // 50 da ilha e 60 do porto do barco (a torre de escada, o deque e a escadinha do mar).
+    expect(preparada.colisores.length).toBe(110)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, nuvens)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -70,7 +71,7 @@ describe('Nuvens completo', () => {
     }
     modelo.updateMatrixWorld(true)
     modelo.traverse((no) => {
-      if (!(no instanceof Mesh) || !no.name.startsWith('col-')) return
+      if (!(no instanceof Mesh) || !no.name.startsWith('col-') || doPortoDoBarco(no.name)) return
       const vertices = no.geometry.getAttribute('position')
       for (let i = 0; i < vertices.count; i++)
         dentro(new Vector3().fromBufferAttribute(vertices, i).applyMatrix4(no.matrixWorld))
@@ -79,7 +80,7 @@ describe('Nuvens completo', () => {
     expect(maximo).toBeCloseTo(18.7404, 2)
     expect(raioDaEsperaDaIlha(nuvens, 1, 0)).toBe(19.2)
     for (const c of lerColisores(modelo)) {
-      if (c.forma === 'malha') continue
+      if (c.forma === 'malha' || doPortoDoBarco(c.nome)) continue
       if (c.forma === 'cilindro') {
         // Limite conservador, incluindo a borda exterior, não apenas o centro.
         expect(Math.hypot(c.posicao[0], c.posicao[2]) + c.raio).toBeLessThanOrEqual(

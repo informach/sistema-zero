@@ -714,12 +714,13 @@ def conferir_corredor(objs, rotulo=''):
         raise RuntimeError(f'corredor da chegada ocupado ({rotulo}): ' + '; '.join(ruins[:8]))
 
 
-def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
+def exportar(pid, nos, ancoras=(), clipes_=None, colisores=(), porto=None):
     """Grava `ILHAS_OUT/pid.glb`: um nó por chave de `nos` ({nome: objs} ou {nome: (objs, pivô)}),
     as âncoras (nós vazios), os nós de colisão `col-*` (cada um com o seu TRS, sem juntar) e, com
     `clipes_`, as animações.
 
-    `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}."""
+    `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}. `porto` (os
+    dados do ponto de embarque do barco, `lib_cais`) vai para o relatório."""
     juntos = {}
     for nome, val in nos.items():
         objs, pivo = (val if isinstance(val, tuple) else (val, None))
@@ -773,6 +774,8 @@ def exportar(pid, nos, ancoras=(), clipes_=None, colisores=()):
                 'clipes': ', '.join(sorted(chaves)) if clipes_ else ''}
     if grupos:
         rel[pid]['colisores'] = grupos
+    if porto:
+        rel[pid]['porto'] = porto
     with open(RELATORIO_ILHAS, 'w') as f:
         json.dump(rel, f, indent=2, ensure_ascii=False, sort_keys=True)
         f.write('\n')

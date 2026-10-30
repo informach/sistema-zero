@@ -20,7 +20,7 @@ import { ILHAS_COMPLETAS, prepararIlha, soltarExtras } from '../src/mundo/ilha-c
 import { raioDaEsperaDaIlha, raioDoChaoDaIlha } from '../src/mundo/medidas'
 import { lugarDaJade } from '../src/mundo/vale'
 import { APRESENTACAO_DA_JADE, comecarConversaComAJade, JADE_NO_VALE } from '../src/sistemas/jade'
-import { arquivoDaIlha, carregarGlb, pisoEm } from './ajuda-colisores'
+import { arquivoDaIlha, carregarGlb, doPortoDoBarco, pisoEm } from './ajuda-colisores'
 
 const vale = ilha('vale-dos-dinos')
 
@@ -33,7 +33,8 @@ describe('Vale completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('vale-dos-dinos.glb')))
     const preparada = prepararIlha(cena, vale)
-    expect(preparada.colisores.length).toBe(62)
+    // 62 da ilha e 8 do porto do barco (deque, tábuas da beira e estacas).
+    expect(preparada.colisores.length).toBe(70)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, vale)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -66,7 +67,7 @@ describe('Vale completo', () => {
     expect(maximo).toBeCloseTo(15.614, 2)
     expect(raioDaEsperaDaIlha(vale, 1, 0)).toBe(16)
     for (const c of lerColisores(modelo)) {
-      if (c.forma === 'malha') continue
+      if (c.forma === 'malha' || doPortoDoBarco(c.nome)) continue
       if (c.forma === 'cilindro') {
         // Limite conservador, incluindo a borda exterior, não apenas o centro.
         expect(Math.hypot(c.posicao[0], c.posicao[2]) + c.raio).toBeLessThanOrEqual(

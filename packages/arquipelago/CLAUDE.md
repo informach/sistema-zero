@@ -50,6 +50,23 @@
   `playground/verificar-hud-browser.ts` (computador, notebook e celular; abertura, sobreposição das
   partes, tecla 1, menu, diário, noite e corrida). Testes: `tests/hud.test.ts`, `tests/abertura.test.ts`.
 
+## Portos do barco: a arte (30/10/2026)
+
+- Pedido de arte da rede do barco: Bosque, Vila Doce, Pico, Vale e Nuvens ganharam o nó `porto`, as
+  âncoras `barco` (linha d'água, proa no +x da âncora) e `cais` (os pés no tampo do deque) e os
+  colisores `col-cais-*` (o que se pisa), `col-guarda-cais-*`, `col-cil-estaca-cais-*` e, nas Nuvens,
+  `col-cais-torre`. O mesmo arranjo do cais do Recife (barco a 2,2 m do eixo, ao lado da ponta; `cais`
+  1,2 m antes dela). Gerador comum: `arte/mundo/lib_cais.py`; lugar no `PORTO` de cada script.
+- ⚠️ Nas Nuvens o mar é y = −7 no arquivo (a ilha fica a y = 7): o porto é um deque no mar e uma torre
+  de escada até o tampo (29 espelhos de 0,249, sem elevador nem peça que se mexe), com a escadinha de
+  sair do mar. `ancorasDoPorto` (`mundo/portos.ts`) monta com y = 0: some `ALTURA_DAS_NUVENS` ali.
+- A rede ainda não está ligada. O porto passa da espera pelo chão (os testes de espera do Vale, Pico e
+  Nuvens deixam `doPortoDoBarco` de fora até ela ser recalculada) e cruza a roda de boias de 19 m.
+- Números de cada ilha, percurso das Nuvens e limites dos colisores:
+  `docs/plans/2026-10-30-arquipelago-portos-do-barco.md` (e o bloco `porto` dos relatórios de arte).
+  Testes: `tests/portos-das-ilhas.test.ts` (âncoras, pés no deque, caminhada do cais ao tampo, casco
+  e corredor do casco livres). Prints: `docs/qa/2026-10-30-portos-do-barco/`.
+
 ## Ajustes da arte aj-ligar-02 a 09 (29/10/2026)
 
 - `sistemas/ajustes-da-arte.ts`: fase FNV-1a por id e clipe, patins +0,089 m só no desenho (`ELEVACAO_DOS_PATINS`),
