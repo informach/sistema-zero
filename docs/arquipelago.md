@@ -1,5 +1,8 @@
 # Arquipélago Vagalume
 
+Situação atual por funcionalidade: [estado atual](arquipelago-estado-atual.md), com fontes,
+provas locais e dependências de implantação. Os registros datados abaixo preservam a evolução.
+
 ## Rede do barco pela borda, L10
 
 A rede usa os sete cais da arte, seis ligações entre vizinhas e central a Recife, apenas
@@ -32,7 +35,8 @@ Provas adicionais em `docs/qa/2026-10-30-pedidos/`, `2026-10-30-receitas-sazonai
 ### Base do jogo
 
 - Nome: **Arquipélago Vagalume**. A ilha da criança fica no **centro**, com a casa e o farol; as
-  outras seis ilhas ficam em volta, cinza até a jornada colorir. Robôs não entram (os Lumis
+  outras seis ilhas ficam em volta. A jornada abre a ponte e a cor-base; as conquistas dos
+  Quadros das Cores ampliam a cor sem apagar conquistas anteriores. Robôs não entram (os Lumis
   fazem esse papel). Física com **Rapier** (WASM liberado na página do jogo).
 - **Tudo separado:** pastas e pacotes próprios. Mudar o jogo não pode afetar a plataforma, e mudar
   a plataforma não pode afetar o jogo. Só o **avatar** e o **quarto** são divididos, nos dois
@@ -151,7 +155,11 @@ mesma ilha. Mudam a voz e o desenho do que fala com quem joga:
 Plano, levantamento e a lista de lançamento (variáveis, ordem, o que conferir em staging):
 [plans/2026-10-29-arquipelago-lancamento-adulto.md](plans/2026-10-29-arquipelago-lancamento-adulto.md).
 
-## Ligado e pendente (27/10/2026)
+## Registro histórico: ligado e pendente em 27/10/2026
+
+Este registro não é uma lista de pendências atuais. Desde então, o teto semanal voltou a
+100, pedidos remunerados foram ligados no serviço e outras integrações receberam provas
+locais. A situação vigente está no índice acima; nenhum deploy é presumido deste histórico.
 
 Ligado no código: serviço registrado em `.railway/`, rotas do gateway, menu nas duas comunidades,
 cartão do limite na área dos pais, ferramentas de verdade por cima do jogo (inclusive o Pinta e o
@@ -199,9 +207,9 @@ A implementação e os testes locais não indicam implantação em staging ou pr
 O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).
 
 
-## Continuidade do progresso (L01)
+## Continuidade do progresso (L01, introduzida na V16)
 
-O salvamento V16 guarda os dois percursos das Nuvens, suas seis constelações, a página e a
+A V16 introduziu no salvamento os dois percursos das Nuvens, suas seis constelações, a página e a
 conclusão do Farol e a escolha do clima. Conserva referências de aparência antigas, sem
 truncamento. Não exige alteração nas tabelas. As provas e limitações do lote ficam em
 `docs/qa/2026-10-29-continuidade/README.md`; o restante da proposta segue os 14 lotes do plano.

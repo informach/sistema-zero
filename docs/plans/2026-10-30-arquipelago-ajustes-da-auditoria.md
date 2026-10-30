@@ -98,8 +98,11 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | A03a | Implementado, revisado, verificado e integrado no staging local | `ebf069fde`, merge `297e95fd1` | 1.297 testes do jogo e 2 do avatar-quarto aprovados, tipagem/Biome aprovados, 22 verificações de pose no navegador; QA em `docs/qa/2026-10-30-quarto-pausa/` |
 | A03b | Implementado, revisado, verificado e integrado no staging local | `f60621b26`, merge `579cb2840` | 1.298 testes aprovados, tipagem/Biome, navegador em dois tamanhos; `docs/qa/2026-10-30-leitura-abertura/` |
 | A03c | Implementado, revisado, verificado e integrado no staging local | `48714b12b`, merge `9af68cb3e` | 1.299 testes aprovados, tipagem/Biome, velocidades básicas e pulo no navegador; `docs/qa/2026-10-30-ritmo-basico/` |
-| A05, parte A9 | Feito pela sessão de arte (30/10) | Commit "relatórios da arte no formato do Biome" | `json_como_biome` em `arte/mundo/lib_mundo.py`; `lib_ilhas`, `lib_ilhas_b` e `nuvens_constelacoes` gravam o relatório já formatado; os dois `relatorio.json` passam no Biome com o mesmo conteúdo |
-| A04 | Implementado, revisado e verificado | Commit deste lote, merge local em seguida | 1.308 testes aprovados, tipagem/Biome, Farol nos dois tamanhos e públicos; pendências e tutorial retomados sem recado vencido; `docs/qa/2026-10-30-prioridade-farol/` |
+| A04 | Implementado, revisado, verificado e integrado no staging local | `012281a29`, merge `16345a590` | 1.308 testes aprovados, tipagem/Biome, Farol nos dois tamanhos e públicos; pendências e tutorial retomados sem recado vencido; `docs/qa/2026-10-30-prioridade-farol/` |
+| A05, parte A9 | Feito pela sessão de arte e conferido nesta auditoria | `f72f3cce7`, integrado em `8c89b2565` | Geradores gravam no formato do Biome; os nove `relatorio.json` existentes passaram sem edição ou regeneração |
+| A05 | Índice canônico e resumos revisados | Commit deste lote, merge local em seguida | Matriz de código/conteúdo/provas/implantação, histórico identificado, versões e teto conferidos, pedido de arte do Farol marcado como atendido |
+| E02, rede do barco | Implementada por outra sessão e presente na base | `f27f31aaf` | `docs/qa/2026-10-30-rede-barco/`; mapa detalhado e conexões entre segredos continuam no restante de E02 |
+| E03 | Implementado por outra sessão e integrado localmente | `bbe7418bf`, `5df394ff3`, merge `ae68922b1` | `docs/qa/2026-10-30-fantasma-familiar/`; migração/adoção e aceite autenticado separados em Q01 |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
 ## Pedidos de arte

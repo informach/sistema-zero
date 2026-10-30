@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
+código, conteúdo, prova local e implantação separados. Salvamento atual V18, teto de
+65.536 bytes UTF-8, moedas do jogo até 100 por semana. Seções datadas preservam o histórico;
+consultar o contrato e o teste de documento cheio antes de acrescentar campos.
+
 ## Orientação no final do Farol (30/10/2026, A04)
 
 `Hud` usa o estado do final e do corte para suspender Agora, rotina, mochila e primeiros

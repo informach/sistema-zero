@@ -1,6 +1,19 @@
 # Final no alto do Farol (fase4-11)
 
-## Decisões propostas
+## Situação vigente em 30/10/2026
+
+O final usa as âncoras `chegada`, `leitura` e `camera-varanda` e os colisores do GLB, em
+`mundo/alto-do-farol.ts`. A porta exterior já abre na dobradiça, em `mundo/farol.tsx`.
+A V16 passou a guardar `farol.pagina` e `farol.concluido`; a V18 atual mantém essas marcas.
+Não há pedido aberto de arte ou de campo de salvamento para este recorte.
+
+O lote A04 (`012281a29`, merge local `16345a590`) prioriza a última página, retoma o tutorial
+sem recados vencidos e dispõe orientação e botão em coluna no celular. Provas recentes em
+`docs/qa/2026-10-30-prioridade-farol/`. A qualificação em aparelho físico permanece separada.
+As decisões e medidas abaixo registram a entrega inicial e os pedidos que foram atendidos.
+Para a situação geral, consultar [estado atual](../arquipelago-estado-atual.md).
+
+## Decisões propostas na entrega inicial
 
 - Entrada na Lenda, posição 8. Antes, um recado gentil pela voz adequada ao público. Sem custo, missão adicional ou prazo.
 - O interior existente é uma sala separada, montada sobre o referencial do Farol a 40 m de altura. Esse afastamento é uma decisão de implementação, não a altura narrativa da torre. A passagem usa um corte, sem escada artificial nem carregamento das seis ilhas completas.
@@ -9,11 +22,11 @@
 - Só ao concluir a sequência a Íris aparece perto da casa. O morador genérico cuida de olhar, aceno, fala e piscar. As medidas saem do corpo e da cabeça do modelo, excluindo chapéu e braços estendidos.
 - O progresso pertence à montagem do jogo, separado do salvamento. Reabrir a sala permite reler e rever. Visitas não iniciam o final. Nenhum estado externo ou banco é alterado.
 
-## Pedido de salvamento futuro
+## Pedido histórico de salvamento, atendido pela V16
 
 Um booleano `finalDoFarol`, inicialmente `false`, registra a conclusão. O acréscimo JSON `,"finalDoFarol":false` ocupa 21 bytes UTF-8, ou 20 quando verdadeiro. Não foi acrescentado agora. A sessão responsável pela próxima versão deve confirmar o teto com o pior caso completo antes da migração. A leitura da página e a presença da Íris permanecem apenas nesta sessão.
 
-## Pedidos de arte
+## Pedidos históricos de arte, atendidos em 29/10
 
 - Em `alto-do-farol.glb`, acrescentar `col-piso-sala` (piso circular, raio 4,2, topo y 0), `col-parede-sala-*` (anel na parede existente, interior livre), `col-mesa-iris` (mesa no setor x negativo, z negativo), `col-base-lente` e `col-guarda-varanda-*` conforme as malhas existentes. Manter passagem livre entre `entrada` e `mesa`. Os colisores temporários de código serão substituídos numa tarefa posterior.
 - Acrescentar `chegada` no piso livre junto de `entrada` (-0,95; 0; 0,85), `leitura` junto de `mesa` (-0,82; 0; -1,99), e `camera-varanda` junto de `varanda` (5,2; 0; 0), com orientação voltada para fora. As âncoras atuais permitem a implementação sem regenerar agora.
@@ -38,7 +51,7 @@ Atendido em 29/10: `alto-do-farol.glb` traz os colisores (`col-cil-piso-sala-1`,
 - Visitas e foto ficam indisponíveis no interior. A posição da sala e o cochilo automático não atravessam a passagem. O limite de tempo da plataforma continua funcionando.
 - A primeira execução geral com o navegador simultâneo teve dois estouros de 5 s em testes de colisão da Vila e do Recife. Sem essa concorrência, a suíte passou: 973 testes, um pulado, nenhuma falha. Nenhum teste existente foi alterado para aumentar esse limite.
 - A conferência inicial passou em computador e celular emulado: sala, página, pausa, seis ilhas, Íris, reentrada e saída. A rodada final acrescenta diário, porta antes da Lenda, falha de carregamento e memória, além dos prints sem névoa.
-- Nenhum pedido de arte bloqueia este final: os colisores temporários foram autorizados na tarefa, e as âncoras existentes são suficientes. A abertura física animada da porta exterior fica para quando houver um nó separado.
+- Na entrega inicial, colisores temporários permitiram implementar o final enquanto a porta exterior ainda esperava um nó separado. Esses pedidos foram atendidos, como registrado acima; os temporários foram substituídos.
 
 Os resultados finais dos comandos e do navegador ficam também no README de `docs/qa/2026-10-29-final-farol/`.
 
@@ -50,7 +63,7 @@ Os resultados finais dos comandos e do navegador ficam também no README de `doc
 - A gravação de posição e o cochilo só voltam depois de terminar o corte e de o pedido de teleporte ser atendido pela física. O instante entre mudar a etapa e mover o corpo também fica protegido.
 - A câmera guarda a pose anterior no começo do carregamento, antes de qualquer mudança na direção do corpo, e a restaura ao sair.
 
-### Resultado da entrega
+### Resultado da entrega inicial
 
 Entrada na Lenda, sala explorável, última página, seis fachos e volta da Íris implementados. Revisão completa concluída, com os problemas encontrados corrigidos. `bun test`: 975 passaram, 1 integração opcional com banco local pulada, nenhuma falha. `NODE_OPTIONS=--max-old-space-size=8192 bunx tsc --noEmit`: passou. Biome: 24 arquivos conferidos, sem correções pendentes. `git diff --check`: passou.
 

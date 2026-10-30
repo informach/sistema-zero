@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md).
+`SalvamentoSchema` recebe versões anteriores e devolve V18; teto de 65.536 bytes UTF-8.
+Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
+explicam sua introdução, não a versão atual da resposta.
+
 ## Fantasma V1 (L10, 30/10/2026)
 
 `fantasma.ts`: amostras a 100 ms, coordenadas inteiras em centímetros, giro em 65536 unidades,
@@ -137,7 +142,9 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV11` estrito (fase3-02: V10 mais as três marcas de `recife`).
+- `salvamento.ts`: formato atual `SalvamentoV18Schema`, estrito. `SalvamentoSchema` aceita
+  versões anteriores e migra para V18. O teto é medido em bytes UTF-8.
+  Histórico: a V11 acrescentou as três marcas de `recife` à V10 (fase3-02).
   A V10 (29/10/2026, fase2-07) é a V9 mais `rotinas`, a rotina
   de cada Lumi preso, só das espécies em `lumis`, com o teto somando todas; `migrarDaV9` começa
   sem nenhuma; testes em `tests/salvamento-v10.test.ts`, com o pior caso de 64 KB com tudo no teto,
@@ -156,7 +163,7 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   mais `presenteDosBichosEntregue`; a V4 é a V3
   mais `construcao` e `projetos`, 28/10/2026, o
   modo construção; a V3 é a V2 mais `moradores.capi` e `bichos`; a V2 é a V1 mais `percursos`;
-  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV9`;
+  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV17`;
   `SalvamentoSchema` aceita as anteriores e já devolve migradas; uma aba antiga não lê a resposta
   atual). A migração da V4 preserva o progresso e inicia a marca do presente como `false`.
   Os schemas V1 a V4 continuam imutáveis; os testes `salvamento-v5.test.ts` conferem a cadeia.
@@ -213,8 +220,8 @@ Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/p
 ## Salvamento V11: descobertas do Recife (29/10/2026)
 
 `SalvamentoV11Schema` acrescenta somente `recife: { bau, pagina, tesouro }`, três booleanos.
-`migrarDaV10` preserva o documento e começa as marcas em false. A união pública aceita V1 a V11
-e, na época da V11, devolvia V11. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
+`migrarDaV10` preserva o documento e começa as marcas em false. Na época da V11, a união pública
+aceitava V1 a V11 e devolvia V11; atualmente recebe até V18. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
 rotinas é compartilhada sem mudar a régua da V10. O pior caso completo continua limitado a 64 KB.
 Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 
