@@ -1,0 +1,49 @@
+{
+  "versao": 1,
+  "dataUtc": "2026-10-30T12:41:27.41473Z",
+  "composicao": "2c621bf1676899fef11109bd73a185b12381c0af",
+  "publicacao": "796c2ae89bf2a9d93793d56f3ae6c2cea2aed478",
+  "fontesDoLoteConferidas": 39,
+  "navegadorPreservado": true,
+  "api": {
+    "avisosAnteriores": 1,
+    "assercoes": 1350,
+    "ignorados": 37,
+    "aprovados": 326,
+    "typecheckExit": 0,
+    "checkExit": 0,
+    "falhas": 0
+  },
+  "tentativaAnterior": {
+    "motivo": "porta efemera anterior reutilizada apos reinicio do Postgres local",
+    "resultado": "ECONNREFUSED antes de consultas",
+    "alteracaoNoProduto": false
+  },
+  "banco": {
+    "descartavel": true,
+    "local": true,
+    "estadoFinal": "false"
+  },
+  "artefatos": [
+    {
+      "arquivo": ".cache/visitas-adultas-publicacao-test-api.log",
+      "sha256": "44a0b5d721e661b49c03e7b2275275138bbeb72b704eb7f7e72234dab57014a8"
+    },
+    {
+      "arquivo": ".cache/visitas-adultas-publicacao-r2-test-api.log",
+      "sha256": "83f43871322a64f53d217b84b2778b3b53a8ac78d4c7de7c79a5e99a990f6115"
+    },
+    {
+      "arquivo": ".cache/visitas-adultas-publicacao-r2-types-api.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "arquivo": ".cache/visitas-adultas-publicacao-r2-check-api.log",
+      "sha256": "f20827a5f485a923b2c909d93ea95903f4f3b989400e773987fabc4291d9a678"
+    },
+    {
+      "arquivo": ".cache/visitas-adultas-publicacao-r2-db.json",
+      "sha256": "d3704725eada967160cc09242a78cc867aced6dbcc357b993beb07942a86ec5a"
+    }
+  ]
+}

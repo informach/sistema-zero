@@ -92,6 +92,20 @@ Os testes completos dos apps Next e a imagem Docker do Members não foram repeti
 sessão. As correções remotas do smoke foram preservadas; não equivalem a uma nova prova da
 imagem. O aceite hospedado e aparelhos físicos continuam em L14.
 
+## Conciliação com a publicação curricular
+
+Após os commits do lote, a composição `2c621bf16` incorporou a regra de publicação
+`796c2ae89`, já presente em staging local. A API completa passou novamente: 326 testes,
+37 ignorados, zero falhas e 1.350 asserções. Tipagem aprovada; check sem erros e com o mesmo
+aviso anterior. As fontes do lote e o resultado do navegador foram reconferidos por hash.
+Essa integração altera a publicação na API, sem alterar as fontes visuais qualificadas.
+O recibo complementar é [integracao-publicacao.json](integracao-publicacao.json).
+
+A tentativa imediatamente anterior foi interrompida por conexão recusada: o comando de QA
+reutilizou a porta efêmera anterior depois de reiniciar o container. O operador passou a
+consultar o bind local atual e aguardar a prontidão do Postgres antes dos testes. O negativo
+foi preservado, nenhuma fonte do produto precisou mudar e o container foi parado ao terminar.
+
 ## Reproduzir
 
 No pacote do jogo, depois de criar a pasta pai de saída:
