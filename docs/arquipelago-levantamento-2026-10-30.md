@@ -86,7 +86,7 @@ sendo a fonte dos commits. Integrado = merge no staging local.
 | C01f | Integrado com a V19 (`1488f46c7`) |
 | C01b (Recife, Pico, Vale, Nuvens) | Integrado e enviado (`b4ae582b6`) |
 | E04 | Quintal grande do Vale integrado (`74819e31b`); iglu adiado (salvamento cheio na V20); segundo andar, terreno e subida final esperam a arte (pedidos de arte, seção E04; plano em `docs/superpowers/plans/2026-10-30-arquipelago-e04-criacao-avancada.md`) |
-| C02 | Em andamento |
+| C02 | Integrado no staging local: objetivos Python e projetos Pro no contrato, Members e Admin; quatro desafios do dia (Recife Pygame Zero, Pico Python, Vale texto na Ponte, Nuvens Pro) com executor real. O jogo ainda não abre Python nem Pro; a release Python com Pygame Zero precisa ser publicada antes de importar |
 | C03a Pega-conchas da sua ilha | Seis quadros Kids e adulto, executor real aprovado, cavalete na praia (regras §7.11.1) |
 | C03b projeto autoral após o Farol | Um quadro no Farol depois do final, critérios explícitos, executor real aprovado (regras §7.11.1) |
 | Q01 | Qualificação local e lista para a dona em `docs/qa/2026-10-30-qualificacao-q01/` (implantação, importação, conta real e aparelho ficam com ela) |
