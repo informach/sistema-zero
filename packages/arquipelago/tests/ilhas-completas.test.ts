@@ -9,6 +9,7 @@ import {
   DISTANCIA_DA_TROCA,
   naPonteDa,
   nivelDeDetalhe,
+  PRIORIDADE_DA_FISICA,
   RAIO_DA_ILHA_DO_ANEL,
   trajetoDaPonte,
 } from '../src/mundo/medidas'
@@ -17,7 +18,9 @@ import {
   completaNaCena,
   type EstadoDaIlha,
   esmaecer,
+  esperandoPeloChao,
   opacidadeAlvo,
+  PRIORIDADE_DA_CARGA_DA_ILHA,
   proximoEstadoDaIlha,
   type SinaisDaIlha,
 } from '../src/sistemas/ilhas-completas'
@@ -220,4 +223,18 @@ describe('o esmaecer dos materiais', () => {
     expect(chao.version).toBeGreaterThan(versao)
     expect(agua.opacity).toBeCloseTo(0.25)
   })
+})
+
+test('reabrir no deque protege o primeiro quadro antes da física, até o colisor entrar', () => {
+  expect(PRIORIDADE_DA_CARGA_DA_ILHA).toBeLessThan(PRIORIDADE_DA_FISICA)
+  const sinais = { perto: true, naTroca: true, carregada: false, falhou: false, saiuDeVista: true }
+  let estado: EstadoDaIlha = 'longe'
+  estado = proximoEstadoDaIlha(estado, sinais)
+  expect(esperandoPeloChao(estado, false)).toBe(true)
+  estado = proximoEstadoDaIlha(estado, { ...sinais, carregada: true })
+  expect(esperandoPeloChao(estado, false)).toBe(true)
+  estado = proximoEstadoDaIlha(estado, { ...sinais, carregada: true })
+  expect(estado).toBe('ativa')
+  expect(esperandoPeloChao(estado, false)).toBe(true)
+  expect(esperandoPeloChao(estado, true)).toBe(false)
 })

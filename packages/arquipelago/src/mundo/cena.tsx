@@ -25,7 +25,13 @@ import { GuiaDoZappyNoMundo } from './guia-do-zappy'
 import { HabitantesDaPraia } from './habitantes-da-praia'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
-import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
+import {
+  GRAVIDADE,
+  LONGE_DA_CAMERA,
+  PASSO_DA_FISICA,
+  PERTO_DA_CAMERA,
+  PRIORIDADE_DA_FISICA,
+} from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
@@ -80,7 +86,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           gravity={[0, -GRAVIDADE, 0]}
           timeStep={PASSO_DA_FISICA}
           interpolate
-          updatePriority={-1}
+          updatePriority={PRIORIDADE_DA_FISICA}
         >
           <Agua />
           <IlhaCentral />

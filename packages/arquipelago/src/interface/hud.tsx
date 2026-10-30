@@ -41,6 +41,7 @@ import { desafioDeHoje, quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { momentoDoDia, relogio } from '../sistemas/tempo-do-dia'
 import { Abertura } from './abertura'
 import { Album } from './album'
+import { PainelDoBarco } from './barco'
 import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
 import { CadernoDosLumis } from './caderno-dos-lumis'
@@ -909,6 +910,7 @@ export function Hud() {
           <ModosDoJogo />
         </div>
       ) : null}
+      <PainelDoBarco />
       <PainelDoQuadro />
       <PainelDaFeira />
       <PainelDosConvidados />

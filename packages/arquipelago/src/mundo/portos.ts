@@ -5,7 +5,7 @@ import type { Porto } from '../sistemas/barco'
 export function ancorasDoPorto(
   bytes: ArrayBuffer,
   embarque: string,
-  meio: { x: number; z: number },
+  meio: { x: number; y?: number; z: number },
   giro: number,
 ): Porto {
   const view = new DataView(bytes)
@@ -35,7 +35,7 @@ export function ancorasDoPorto(
     const pai = json.nodes.findIndex((p) => p.children?.includes(i))
     return pai < 0 ? m : m.premultiply(matriz(pai))
   }
-  const mundo = new Matrix4().makeRotationY(giro).setPosition(meio.x, 0, meio.z)
+  const mundo = new Matrix4().makeRotationY(giro).setPosition(meio.x, meio.y ?? 0, meio.z)
   const ler = (nome: string) => {
     const i = json.nodes.findIndex((n) => n.name === nome)
     if (i < 0) throw new Error(`Porto sem âncora ${nome}`)

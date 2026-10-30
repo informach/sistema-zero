@@ -1,4 +1,7 @@
 import { basename, resolve } from 'node:path'
+import { conferirPortosDaArte } from '../scripts/gerar-portos'
+
+await conferirPortosDaArte()
 
 /**
  * Servidor do playground: compila o jogo com o Bun a cada pedido e serve os modelos do avatar

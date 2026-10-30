@@ -7,8 +7,8 @@ em staging local, junto da arte recebida em `080b6a3d2`. Esta integração não 
 nem publica serviços ou conteúdo. Os checkpoints abaixo registram a evolução anterior.
 
 Os cinco portos estão nos modelos e têm a espera de colisores corrigida e testada. Não existe
-mais bloqueio de arte para a rede ampliada do barco, mas suas rotas e as aberturas nas boias
-ainda não foram implementadas. O fantasma familiar tem contrato V1 e gravador/reprodutor
+mais bloqueio de arte para a rede ampliada do barco, e a rede ampliada, o painel e as aberturas nas boias estão implementados
+no recorte de 30/10. As provas são locais, descritas no plano da rede. O fantasma familiar tem contrato V1 e gravador/reprodutor
 puros com testes; ainda não tem autorização familiar, persistência, serviço ou interface.
 L11, L12, lacunas de L13 e a qualificação integrada de L14 continuam abertas.
 

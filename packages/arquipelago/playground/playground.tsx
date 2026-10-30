@@ -1,12 +1,9 @@
 import { LUMIS, type LumiId, type PublicoJogo } from '@sistemazero/arquipelago-contracts'
-import recifeGlb from '../src/assets/ilhas/recife.glb'
-import pierGlb from '../src/assets/mundo/pier.glb'
 import { montarArquipelago } from '../src/entrada'
 import { marcarAberturaVista } from '../src/estado/abertura'
 import { definirFestaDoPlayground } from '../src/estado/festas'
 import { medicaoDasAparencias } from '../src/mundo/carregar-aparencia'
-import { giroDaIlha, ilhasEmVolta, PIER } from '../src/mundo/medidas'
-import { ancorasDoPorto } from '../src/mundo/portos'
+import { PORTOS_DA_ARTE } from '../src/mundo/portos-da-arte'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
 import type { DiaDoPlayground } from '../src/plataforma/desafios-falsos'
 import {
@@ -19,11 +16,12 @@ import { chaveDaAbertura } from '../src/sistemas/abertura'
 import { chaveDasDicas } from '../src/sistemas/dicas'
 import { lerFesta } from '../src/sistemas/festas'
 import { chaveDosPassos } from '../src/sistemas/primeiros-passos'
+import { ehPorto } from '../src/sistemas/rede-do-barco'
 import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
 
 /**
  * O jogo sozinho, com a plataforma de mentira. Parâmetros na URL:
- * `?barco=central` ou `?barco=recife` começa no embarque com o Recife aberto.
+ * `?barco=central|bosque|vila-doce|recife|pico|vale-dos-dinos|nuvens` começa no cais. Use `?posicao=8` para toda a rede.
  * `?posicao=2` (posto/etapa), `?publico=adulto`, `?limite=30`, `?liberado=0`, `?novo=1` e
  * `?em=x,z` ou `?em=x,z,y` (começa fora de casa, nesse ponto; o `y` põe em cima de um deque) e `?adiantar=13` (a noite chega aos 12 min).
  * `?abertura=1` mostra a abertura "O Cinza" (sem ele, ela fica marcada como vista).
@@ -47,17 +45,9 @@ Object.assign(window, { __arquipelagoAparencias: medicaoDasAparencias })
 // Conferência do barco usa as mesmas âncoras da produção, sem coordenadas de teste no jogo.
 const portoDeTeste = q.get('barco')
 let partidaDoBarco: { x: number; y: number; z: number } | undefined
-if (portoDeTeste === 'central' || portoDeTeste === 'recife') {
-  const recife = ilhasEmVolta().find((i) => i.ilha.id === 'recife')!
-  const central = portoDeTeste === 'central'
-  const resposta = await fetch(new URL(central ? pierGlb : recifeGlb, import.meta.url).href)
-  if (!resposta.ok) throw new Error('Sem âncoras para conferir o barco')
-  const p = ancorasDoPorto(
-    await resposta.arrayBuffer(),
-    central ? 'embarque' : 'cais',
-    central ? PIER : recife.centro,
-    central ? 0 : giroDaIlha(recife.ilha),
-  ).embarque
+const idDoPorto = portoDeTeste === 'central' ? 'sua-ilha' : portoDeTeste
+if (idDoPorto && ehPorto(idDoPorto)) {
+  const p = PORTOS_DA_ARTE[idDoPorto].embarque
   partidaDoBarco = { ...p, y: p.y + 1.2 }
 }
 

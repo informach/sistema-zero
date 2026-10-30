@@ -172,7 +172,8 @@ describe.each(Object.entries(PORTOS))('o porto do barco: %s', (ilha, porto) => {
       return Math.hypot(c.x - tx, c.z - tz) < 0.8
     })
     expect(noTampo.some((i) => Math.abs((grade.celulas[i]?.y ?? 0) - TAMPO) < 0.05)).toBe(true)
-  })
+    // Busca off-line com milhares de raios contra o GLB, não uma medição de FPS.
+  }, 15_000)
 
   test('o casco atracado não encosta em colisor nem no chão da ilha', () => {
     const { formas, terreno, barco } = lido()

@@ -1,5 +1,14 @@
 # Arquipélago Vagalume
 
+## Rede do barco pela borda, L10
+
+A rede usa os sete cais da arte, seis ligações entre vizinhas e central a Recife, apenas
+para ilhas abertas pela jornada. Painel de destinos, prontidão compartilhada, espera,
+retorno seguro e corredores das boias estão no jogo. A proteção do chão começa antes da
+física ao reabrir num deque. Não altera V18 nem concede progresso. Provas e limites em
+`docs/qa/2026-10-30-rede-barco/README.md`; implantação e fantasma familiar continuam separados.
+
+
 O jogo 3D das comunidades Kids e adulta. Proposta e decisões da dona no Canvas
 <https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W>. Este documento descreve o que existe no
 código e as entregas registradas até 30/10/2026. O levantamento completo e os critérios de
