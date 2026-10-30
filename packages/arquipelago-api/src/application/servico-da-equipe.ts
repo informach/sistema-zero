@@ -421,13 +421,36 @@ export class ServicoDaEquipe {
         throw new PlataformaIndisponivelError(erro)
       throw erro
     }
-    const exigidos = blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais)
+    const derivados = new Set(membros.blocosDoGabarito)
+    const retirados = new Set(conteudo.blocosManuais.retirar)
+    // A edição manual não pode ocultar as ferramentas necessárias para completar as regras.
+    const exigidos = [
+      ...new Set([
+        ...derivados,
+        ...blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais),
+      ]),
+    ].sort()
     const repertorio = analisarRepertorio(exigidos, curriculo, metadados)
     const problemas: ProblemaDoDesafio[] = [
       ...membros.problemas,
+      ...[...derivados]
+        .filter((b) => retirados.has(b))
+        .map((bloco) => ({
+          codigo: 'BLOCO_DERIVADO_RETIRADO',
+          mensagem: `O bloco ${bloco} participa das regras a completar. Remova sua retirada manual ou revise o projeto inicial e o gabarito.`,
+        })),
       ...problemasLocais(conteudo),
       ...repertorio.problemas,
     ]
+    // Respostas anteriores do Members informavam desconhecidos sem um problema impeditivo.
+    if (
+      membros.blocosDesconhecidos.length &&
+      !problemas.some((p) => p.codigo === 'BLOCO_DESCONHECIDO')
+    )
+      problemas.push({
+        codigo: 'BLOCO_DESCONHECIDO',
+        mensagem: `O bloco ${membros.blocosDesconhecidos[0]} não existe no catálogo do Estúdio. Revise os projetos antes de publicar.`,
+      })
     return {
       conteudo,
       vista: membros.vista,

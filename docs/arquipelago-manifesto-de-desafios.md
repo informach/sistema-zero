@@ -44,6 +44,9 @@ Cores, ao menos uma fonte deve ser base 2D, base 3D ou missão. Poder, extra e M
 ensinar o mesmo bloco, mas não podem ser a única opção de quem quer completar os quadros.
 Uma atividade que depende de Poder escolhido pode ser desafio opcional, com o curso indicado.
 Não use ajustes manuais de blocos para esconder uma lacuna de ensino.
+Desde C01e, retirar um bloco derivado impede publicar e não o remove da cobertura mostrada.
+Retiradas só podem cancelar acréscimos manuais que não participam das regras a completar.
+Respostas antigas do Members que apenas listem blocos desconhecidos também impedem publicar.
 
 Desde C01c, o Members exige também os tipos de blocos cujo conteúdo, ordem, área de execução
 ou quantidade muda entre inicial e gabarito. Completar o corpo de um laço já preparado conta;

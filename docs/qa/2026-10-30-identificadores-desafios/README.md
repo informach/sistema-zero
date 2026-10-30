@@ -56,3 +56,10 @@ não avaliação de legibilidade ou de celular físico.
 Nenhum banco, publicação, arte ou salvamento alterado. Os projetos continuam em rascunho.
 As lacunas curriculares do relatório `regras-a-completar.json` permanecem para os próximos
 lotes; validade do documento não é prova de cobertura de ensino.
+
+## Integração local
+
+Commit `e801f3545`, conciliação com a praia `cc6a8c620`, merge no staging `0285b4284`.
+Código e artefatos de `packages/arquipelago` idênticos ao staging da sessão da praia.
+Na árvore conciliada: 109 testes do leitor/relatório aprovados, 330 asserções; 28 testes
+de itens/coleções da praia aprovados, 626 asserções. Sem conflito ou push.

@@ -1,5 +1,12 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Requisitos dos desafios do jogo (C01e, 30/10/2026)
+
+A orientação de `GameAdmin` distingue as regras comparadas entre inicial/gabarito dos
+acréscimos manuais. Um requisito derivado não pode ser retirado; a API devolve o problema
+na análise e impede publicar, inclusive por manifesto. Campos históricos permanecem
+editáveis para a equipe corrigir retiradas antigas. Não limpar o rascunho automaticamente.
+
 ## O desenho da criança no jogo: os campos de vaga (29/10/2026, etapa 6)
 
 Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. Os dois blocos do editor de

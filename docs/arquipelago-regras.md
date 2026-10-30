@@ -23,7 +23,8 @@ ordem e área de execução. Completar um tipo já presente exige sua ferramenta
 molduras e mudanças só de posição/ID/comentário não. Cópias adicionais e retiradas também
 entram. Bloco desconhecido no inicial ou no gabarito impede publicar. A análise descreve
 ferramentas alteradas, não prova aprendizado: os objetivos continuam conferindo comportamento.
-Ajustes editoriais históricos não devem ocultar requisitos. O relatório local
+Desde C01e, retirar manualmente um requisito derivado impede publicar e não o esconde da
+cobertura. Retiradas de acréscimos não derivados continuam válidas. O relatório local
 `docs/desafios-do-jogo/regras-a-completar.json` usa essa mesma derivação e distingue projetos
 inválidos de projetos sem lacunas; publicação e fontes remotas não são inferidas dele.
 

@@ -139,6 +139,21 @@ async function subir(m: ManifestoDeDesafios) {
 }
 
 describe('manifesto de desafios', () => {
+  test('retirada manual não publica um bloco derivado sem fonte pelo manifesto', async () => {
+    analisar.mockImplementation(async () => ({ ...analiseOk, blocosDoGabarito: ['sz_js_if_else'] }))
+    const desafio = item('sem-esconder-requisito')
+    desafio.conteudo.blocosManuais.retirar = ['sz_js_if_else']
+    const { conferencia, aplicacao } = await subir(manifesto([desafio]))
+    expect(conferencia.contagem.publica).toBe(0)
+    expect(conferencia.itens[0]?.analise?.blocosExigidos).toContain('sz_js_if_else')
+    expect(conferencia.itens[0]?.analise?.problemas.map((p) => p.codigo)).toContain(
+      'BLOCO_DERIVADO_RETIRADO',
+    )
+    expect(aplicacao.itens[0]?.publicado).toBe(false)
+    expect(aplicacao.itens[0]?.problemas.map((p) => p.codigo)).toContain('BLOCO_DERIVADO_RETIRADO')
+    expect([...desafios.linhas.values()][0]?.situacao).toBe('rascunho')
+  })
+
   test('gabarito aprovado sem curso fica em rascunho ao importar, com motivo na prévia e no resultado', async () => {
     analisar.mockImplementation(async () => ({ ...analiseOk, blocosDoGabarito: ['sz_js_if_else'] }))
     const m = manifesto([item('sem-fonte-de-ensino')])

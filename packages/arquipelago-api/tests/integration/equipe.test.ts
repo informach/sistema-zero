@@ -67,7 +67,7 @@ const curriculo: CurriculoDeBlocos = {
   ],
 }
 const analiseOk: AnaliseDosMembros = {
-  blocosDoGabarito: ['mover_dir', 'mover_esq'],
+  blocosDoGabarito: ['mover_dir'],
   blocosDesconhecidos: [],
   vista: [{ id: 'o1', label: 'Chega na flor', kind: 'game' }],
   problemas: [],
@@ -201,6 +201,75 @@ describe('análise e publicação', () => {
     return DesafioDaEquipeSchema.parse(r.json)
   }
 
+  test('retirar manualmente um bloco derivado não esconde sua cobertura nem permite publicar', async () => {
+    analisar.mockImplementation(async () => ({
+      ...analiseOk,
+      blocosDoGabarito: ['mover_dir', 'mover_esq'],
+    }))
+    const d = await criar()
+    const previa = await chamar('POST', `/desafios/${d.resumo.id}/analisar`, equipe(), {
+      revisaoBase: 1,
+    })
+    const analise = AnaliseDoDesafioSchema.parse(previa.json)
+    expect(analise.blocosExigidos).toContain('mover_esq')
+    expect(analise.problemas.map((p) => p.codigo)).toContain('BLOCO_DERIVADO_RETIRADO')
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), {
+      revisaoBase: 1,
+    })
+    expect(r.status).toBe(422)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
+  })
+
+  test('uma resposta antiga do Members com desconhecidos também impede publicar', async () => {
+    analisar.mockImplementation(async () => ({
+      ...analiseOk,
+      blocosDoGabarito: [],
+      blocosDesconhecidos: ['bloco_fantasma'],
+      problemas: [],
+    }))
+    const d = await criar()
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), {
+      revisaoBase: 1,
+    })
+    expect(r.status).toBe(422)
+    expect(ProblemasDePublicacaoSchema.parse(r.json).problemas.map((p) => p.codigo)).toContain(
+      'BLOCO_DESCONHECIDO',
+    )
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
+  })
+
+  test('retirar um acréscimo manual antigo continua válido quando ele não é derivado', async () => {
+    const entrada = pedido()
+    entrada.conteudo.blocosManuais = {
+      acrescentar: ['sz_js_repeat', 'requisito_antigo'],
+      retirar: ['requisito_antigo'],
+    }
+    const criado = await chamar('POST', '/desafios', equipe(), entrada)
+    const d = DesafioDaEquipeSchema.parse(criado.json)
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), {
+      revisaoBase: 1,
+    })
+    expect(r.status).toBe(200)
+    expect(desafios.linhas.get(d.resumo.id)?.blocosPublicados).toEqual([
+      'mover_dir',
+      'sz_js_repeat',
+    ])
+  })
+
+  test('o problema de bloco desconhecido do Members não é duplicado pela API', async () => {
+    analisar.mockImplementation(async () => ({
+      ...analiseOk,
+      blocosDesconhecidos: ['bloco_fantasma'],
+      problemas: [{ codigo: 'BLOCO_DESCONHECIDO', mensagem: 'O bloco não existe.' }],
+    }))
+    const d = await criar()
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/analisar`, equipe(), {
+      revisaoBase: 1,
+    })
+    const analise = AnaliseDoDesafioSchema.parse(r.json)
+    expect(analise.problemas.filter((p) => p.codigo === 'BLOCO_DESCONHECIDO')).toHaveLength(1)
+  })
+
   test('cobertura sem curso impede publicar mesmo com gabarito correto', async () => {
     membros = membrosDeMentira({
       analisarObjetivos: async () => analiseOk,
@@ -312,7 +381,7 @@ describe('análise e publicação', () => {
     expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
   })
 
-  test('analisa: blocos do gabarito + acrescentados − retirados, com a cobertura de cada um', async () => {
+  test('analisa: preserva os derivados e os acréscimos, com a cobertura de cada um', async () => {
     const d = await criar()
     const r = await chamar('POST', `/desafios/${d.resumo.id}/analisar`, equipe('staff'), {
       revisaoBase: 1,

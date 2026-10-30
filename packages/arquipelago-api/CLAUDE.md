@@ -190,6 +190,13 @@ seus cursos. Mesma análise na importação; reativação confere metadados/bloc
 publicação, nunca o rascunho posterior. Sem mudança de formato, conquistas ou salvamento.
 Testes `repertorio-do-desafio.test.ts`, `equipe.test.ts` e `manifestos.test.ts`.
 
+**C01e, 30/10/2026:** a análise sempre preserva os blocos derivados pelo Members na cobertura.
+Retirada manual de um derivado produz `BLOCO_DERIVADO_RETIRADO`; publicação e importação
+mantêm o rascunho. Cancelar acréscimos não derivados continua válido. Desconhecidos da
+resposta do Members também impedem publicar, inclusive no formato anterior que só os
+listava, sem duplicar um problema já informado. Não altera snapshots publicados nem o
+helper histórico `blocosExigidos` do contrato. Reativação da lista histórica é recorte separado.
+
 Tabelas da migration gerada `0002_desafios`: `desafios` (cadastro, `revisao` é a trava; índice
 único de `slug` e de quadro por público e ilha fora os arquivados, nos dois casos traduzidos em
 409 `SLUG_EM_USO`/`QUADRO_OCUPADO`), `desafio_publicacoes` (cópia imutável de cada publicação:

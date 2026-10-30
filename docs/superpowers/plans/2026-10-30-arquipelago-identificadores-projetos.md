@@ -20,7 +20,7 @@ compartilhado de autores para estes projetos. Regras, textos, arte e moedas perm
 - [x] Comparar antes/depois sem IDs, inclusive código gerado, regras e arte.
 - [x] Importação Blockly, executor real da Vila e do quadro de pulo, testes, tipagem e Biome.
 - [x] Revisão completa e documentação.
-- [ ] Commit e merge no staging local. Sem push.
+- [x] Commit `e801f3545`, conciliação `cc6a8c620` e merge local `0285b4284`. Sem push.
 
 ## Limites e pedidos de arte
 

@@ -751,8 +751,9 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
             <details className="rounded-lg border border-border p-4">
               <summary className="cursor-pointer font-medium">Ajustar blocos exigidos</summary>
               <p className="my-2 text-sm text-muted-foreground">
-                A análise deriva os blocos do gabarito. Use um identificador por linha apenas para
-                ajustes necessários.
+                A análise compara as regras do projeto inicial e do gabarito. Os blocos dessas
+                regras não podem ser retirados. Use um identificador por linha para requisitos
+                adicionais ou para retirar apenas acréscimos manuais antigos.
               </p>
               {(['acrescentar', 'retirar'] as const).map((key) => (
                 <label key={key} className="mt-3 block text-sm">
