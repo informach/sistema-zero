@@ -128,6 +128,32 @@ export const LOTE_DA_CASA: Lote = {
   },
 }
 
+/** A posição da jornada do Vale dos Dinos (Arquiteto): daí em diante, o quintal grande (E04). */
+export const POSICAO_DO_QUINTAL_GRANDE = 6
+
+/**
+ * O quintal grande (E04, levantamento de 30/10): a proposta põe o "quintal grande" no Vale. O
+ * lote da casa cresce 2 m para cada lado, no gramado da mesma altura do lote de antes (a variação
+ * do chão fica na mesma faixa, teste). O que está no anel novo (árvore, pinheiros e o farol) fica
+ * ocupado. A obra de antes continua igual: o lote grande contém o pequeno.
+ */
+export const LOTE_DA_CASA_GRANDE: Lote = {
+  ...LOTE_DA_CASA,
+  area: { x0: -15, z0: -14, x1: 16, z1: 10 },
+  ocupadas: [
+    ...LOTE_DA_CASA.ocupadas,
+    { nome: 'a árvore', ret: { x0: -15, z0: -5, x1: -12, z1: -1 } },
+    { nome: 'o pinheiro', ret: { x0: -15, z0: 4, x1: -14, z1: 8 } },
+    { nome: 'o farol', ret: { x0: -15, z0: -14, x1: -9, z1: -9 } },
+    { nome: 'o pinheiro', ret: { x0: 13, z0: 8, x1: 16, z1: 10 } },
+  ],
+}
+
+/** O lote da casa onde se constrói agora: o grande do Vale em diante. */
+export function loteDaCasa(jornada: number): Lote {
+  return jornada >= POSICAO_DO_QUINTAL_GRANDE ? LOTE_DA_CASA_GRANDE : LOTE_DA_CASA
+}
+
 /**
  * O lote de uma cabana: um terreno livre na ilha, sem quarto e sem nada que ocupe (a arte deixa o
  * lote limpo, `tests/bosque-crescido.test.ts`), começando vazio. As coordenadas são as do modelo da

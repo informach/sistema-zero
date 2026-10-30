@@ -1842,7 +1842,7 @@ que é daquele cômodo. Escolha mínima, registrada como decisão:
 |---|---|---|
 | Cozinha | piso de ladrilho | (20,5; -3,6), a leste da horta |
 | Sala | janelas grande e em arco | (6,8; -18,8), ao sul |
-| Banheiro | piso de azulejo | (-14,9; 2,1), a oeste da casa |
+| Banheiro | piso de azulejo | (-16,5; 2,1), a oeste da casa |
 | Quintal | cerca, caminho e canteiro | (-6; 14,8), ao norte |
 
 - Sem chave nenhuma a casa já cresce: parede, porta, janela redonda, piso de tábua, objetos dos
@@ -1850,7 +1850,7 @@ que é daquele cômodo. Escolha mínima, registrada como decisão:
 - Trancado aparece em cinza com 🔑 e o nome da chave. Tocar mostra o recado "Precisa da chave da
   cozinha. Ela está escondida em algum canto da sua ilha." A loja recusa a escolha e recusa a
   obra que traga um acabamento trancado novo; o que a obra já usava continua editável.
-- As chaves ficam no gramado, fora do lote da casa, a mais de 4 m da linha de cada ponte e a
+- As chaves ficam no gramado, fora do lote da casa (também do quintal grande do Vale), a mais de 4 m da linha de cada ponte e a
   mais de 3 m das conchas e dos Lumis (teste contra os colisores reais da casa, do farol, do
   píer, das árvores e do `terreno.glb`). "Pegar a chave da cozinha" guarda o bit em `chaves`; o
   Zappy diz o que ela abre e quantas faltam. A chave achada some do mundo.
@@ -1873,6 +1873,17 @@ Com o iglu cheio, o salvamento cheio fica em 63.954 bytes (folga de 1.582; com o
 a 999, 754). O próximo dado grande vai para documento próprio no serviço. O `pico.glb` atual
 não tem o lote: o único chão plano e livre é a praça de chegada da ponte. Pedido de arte em
 `docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`; até lá, nada aparece no Pico.
+
+### 6.16.2c O quintal grande do Vale (E04, 30/10/2026)
+
+A proposta põe o "quintal grande" no Vale. Do posto do Vale em diante (posição 6, Arquiteto), o
+lote da casa cresce 2 m para cada lado: de x -13 a 14 e z -12 a 8 para x -15 a 16 e z -14 a 10
+(`LOTE_DA_CASA_GRANDE`, `loteDaCasa(jornada)`). O chão do anel novo fica na faixa de altura do
+lote de antes (variação até 0,4 m, como o resto do gramado sob a obra). O que está no anel novo
+fica ocupado: a árvore do oeste, os dois pinheiros e o farol. A planta, o aconchego e as visitas
+dos moradores sempre leem o lote grande, que contém o pequeno: a obra de antes dá o mesmo
+resultado. As chaves e o vento do segredo da sua ilha ficam fora dele (a do banheiro foi para
+x -16,5). Provas: `tests/quintal-grande.test.ts`.
 
 ### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
 

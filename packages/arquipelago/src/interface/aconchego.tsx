@@ -6,7 +6,7 @@ import {
   aconchegoNaCelula,
   NIVEIS_DE_ACONCHEGO,
 } from '../sistemas/construcao/aconchego'
-import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
+import { loteDaCasa } from '../sistemas/construcao/lote'
 
 /** Inspeção calculada por edição, sem relógio, escrita no jogo ou leitura da plataforma. */
 export function PainelDeAconchego() {
@@ -18,7 +18,8 @@ export function PainelDeAconchego() {
   const obra = useEstado((s) => obraDe(s, onde))
   const projetos = useEstado((s) => s.salvamento.projetos)
   const quarto = useEstado((s) => s.quarto)
-  const lote = onde === 'casa' ? LOTE_DA_CASA : cabana?.lote
+  const jornada = useEstado((s) => s.jornada)
+  const lote = onde === 'casa' ? loteDaCasa(jornada) : cabana?.lote
   const comodos = useMemo(
     () =>
       obra && lote
