@@ -4,6 +4,8 @@ Leitura local de 30/10/2026, base de conciliação `11002f9ff` e lote de visitas
 operacional. A [auditoria](../.audits/architectural-analysis-2026-10-30-arquipelago.md) registra
 os achados na base anterior; o [programa de ajustes](plans/2026-10-30-arquipelago-ajustes-da-auditoria.md)
 registra cada commit e merge posterior. Os checkpoints dos planos antigos são históricos.
+O [levantamento integrado de 30/10](arquipelago-levantamento-2026-10-30.md) junta estas fontes,
+compara ilha por ilha com a proposta e lista achados novos (N01 a N15) ligados aos lotes.
 
 ## Fontes vigentes
 

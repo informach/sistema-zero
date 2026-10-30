@@ -7,6 +7,9 @@ commit e merge no staging local. Não fazer push. Referência: a auditoria
 `.audits/architectural-analysis-2026-10-30-arquipelago.md`, a proposta do Arquipélago e a revisão
 da Jornada do Criador de 25/10/2026 identificadas pelos hashes no relatório.
 
+Achados posteriores à auditoria, N01 a N15, estão no
+[levantamento integrado de 30/10](../arquipelago-levantamento-2026-10-30.md), cada um ligado a um lote.
+
 Este plano complementa `2026-10-29-arquipelago-entrega-integral-design.md`. Não declara os lotes
 antigos encerrados nem repete funcionalidades já implementadas. Cada fechamento distingue
 implementação, provas locais, arte/conteúdo e implantação.

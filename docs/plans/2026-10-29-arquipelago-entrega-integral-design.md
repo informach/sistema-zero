@@ -1,7 +1,8 @@
 # Entrega integral do Arquipélago Vagalume
 
 Leitura vigente: [estado atual](../arquipelago-estado-atual.md) e
-[lotes da auditoria](2026-10-30-arquipelago-ajustes-da-auditoria.md). Os checkpoints deste
+[lotes da auditoria](2026-10-30-arquipelago-ajustes-da-auditoria.md). Achados N01 a N15 por lote
+no [levantamento integrado de 30/10](../arquipelago-levantamento-2026-10-30.md). Os checkpoints deste
 documento registram bases anteriores. A autorização posterior de 30/10 permite review,
 commit e merge por lote no staging local, sem push.
 
