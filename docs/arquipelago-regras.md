@@ -3470,8 +3470,13 @@ máxima de todos os campos caiba no teto.
 ## HUD, menu de pausa e abertura "O Cinza" (29/10/2026)
 
 - **A abertura** aparece sozinha uma vez por perfil em cada aparelho (a marca fica no aparelho; sem
-  armazenamento, só num jogo novo) e nunca no acesso de suporte. Ela tem 8 cenas e 73 segundos. Um
-  toque, Enter ou a seta passam a cena; segurar Espaço ou o botão por 1 segundo pula tudo; Esc fecha.
+  armazenamento, só num jogo novo) e nunca no acesso de suporte. Ela tem 8 cenas e 9 falas.
+  A leitura começa manual, sem prazo. Anterior e Próxima percorrem cada fala, inclusive as duas
+  da última cena. Na última fala, Começar entra no jogo. Um toque no palco ou Enter também avança;
+  as setas para esquerda e direita voltam e avançam. Nos botões, Enter e Espaço acionam o botão.
+  Passar sozinho liga a sequência de 73 segundos de tempo ativo; Pausar leitura conserva a fala.
+  Navegar manualmente volta ao modo manual. Aba escondida não consome tempo de leitura.
+  Segurar Espaço no palco ou o botão por 1 segundo pula tudo; Esc fecha.
   A primeira fala do Zappy vem quando ela fecha. Fechada pela tela do tempo ou pelo salvamento, ela
   não conta como vista. Dá para rever no Diário ("Rever a abertura: O Cinza"), sem a fala nem a marca.
   Enquanto ela cobre a tela, o mundo 3D não é desenhado; na saída (1,2 s) ele volta.

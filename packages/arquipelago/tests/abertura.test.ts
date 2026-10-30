@@ -6,8 +6,10 @@ import {
   DURACAO_DA_ABERTURA_MS,
   deveMostrarAbertura,
   inicioDaCena,
+  LEITURAS_DA_ABERTURA,
   LINHAS_DA_CARTA,
   momentoDaAbertura,
+  navegarLeitura,
 } from '../src/sistemas/abertura'
 
 describe('o roteiro da abertura', () => {
@@ -52,6 +54,21 @@ describe('o roteiro da abertura', () => {
 })
 
 describe('onde a abertura está', () => {
+  test('avança por todas as falas, incluindo a apresentação do Zappy, e permite voltar', () => {
+    let tempo: number | null = 0
+    const falas: string[] = []
+    while (tempo !== null) {
+      falas.push(momentoDaAbertura(tempo).fala.texto)
+      tempo = navegarLeitura(tempo, 1)
+    }
+    expect(falas).toEqual(CENAS.flatMap((c) => c.falas.map((f) => f.texto)))
+    expect(LEITURAS_DA_ABERTURA).toHaveLength(9)
+    expect(navegarLeitura(0, -1)).toBe(0)
+    expect(navegarLeitura(-10, -1)).toBe(0)
+    expect(navegarLeitura(64_500, -1)).toBe(61_000)
+    expect(navegarLeitura(62_000, 1)).toBe(64_500)
+    expect(navegarLeitura(70_000, 1)).toBeNull()
+  })
   test('cada instante cai numa cena, com a fala da vez', () => {
     expect(momentoDaAbertura(0).indice).toBe(0)
     expect(momentoDaAbertura(7999).indice).toBe(0)

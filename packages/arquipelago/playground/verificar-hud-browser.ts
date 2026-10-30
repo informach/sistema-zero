@@ -205,7 +205,7 @@ try {
     await page.screenshot({ path: path.join(prints, `${tipo}-abertura-1.png`) })
     if (!celular) {
       // Enter passa a cena; o personagem por baixo não recebe a tecla.
-      // O print do 3D por baixo é lento: a cena pode andar sozinha, então segue a da tela.
+      // A leitura espera Enter, mesmo que o print do 3D demore.
       const cenaNaTela = () =>
         page
           .locator('.arq-abertura-progresso i')
@@ -227,6 +227,7 @@ try {
       // Na última cena, primeiro a luz pisca; depois o Zappy se apresenta.
       await legenda.filter({ hasText: 'E nele, uma luz piscava.' }).waitFor()
       await page.screenshot({ path: path.join(prints, `${tipo}-abertura-8.png`) })
+      await page.keyboard.press('Enter')
       await page.locator('.arq-abertura-quem').filter({ hasText: 'Zappy' }).waitFor()
       await page.screenshot({ path: path.join(prints, `${tipo}-abertura-8-zappy.png`) })
       // Segurar Espaço pula.

@@ -33,15 +33,21 @@ Biome aprovados. Onze cenários por tamanho. Sem pedido de arte, mudança de sal
 Conservar as oito pinturas, a história e o encerramento que abre os primeiros passos do Zappy.
 O avanço deve ser por fala, inclusive as duas falas da última pintura.
 
-- [ ] Regra pura de navegação entre falas, com limites, anterior e próxima. Leitura manual como
+- [x] Regra pura de navegação entre falas, com limites, anterior e próxima. Leitura manual como
   padrão; opção explícita para reprodução automática e pausa dessa reprodução.
-- [ ] Botões visíveis para anterior/próxima e estado da reprodução, no estilo da abertura.
+- [x] Botões visíveis para anterior/próxima e estado da reprodução, no estilo da abertura.
   Teclado não deve transformar a ativação de um desses botões em avanço do palco.
-- [ ] Conservar pular, Esc, leitor de tela, aba escondida, interrupção pelo salvamento e limpeza
+- [x] Conservar pular, Esc, leitor de tela, aba escondida, interrupção pelo salvamento e limpeza
   dos listeners/timers. Desmontar não conta como abertura vista. Menos movimento continua valendo.
-- [ ] Testar primeira vez e rever pelo diário, última fala, tempo parado, voltar e retomar.
+- [x] Testar primeira vez e rever pelo diário, última fala, tempo parado, voltar e retomar.
   Conferir 390 px e computador; preservar os testes de ciclo de vida e os primeiros passos.
-- [ ] Revisão, suites, tipagem, Biome, docs, commit e merge local próprios.
+- [x] Revisão, suites, tipagem, Biome e docs; commit e merge local no fechamento deste lote.
+
+Evidência: `docs/qa/2026-10-30-leitura-abertura/`. A suíte completa teve 1.298 testes aprovados,
+1 ignorado (Postgres local), tipagem e Biome aprovados. Os 50 testes dirigidos foram repetidos
+após a revisão. Navegador nos dois tamanhos: espera manual, pausa, automático, nove falas,
+teclado dos controles, voltar, concluir e rever. Legenda separada dos botões e botões com pelo
+menos 44 px. Nenhuma alteração no roteiro, nas imagens, no salvamento ou nos primeiros passos.
 
 ## A03c: cuidado beneficia sem reduzir o ritmo básico
 
