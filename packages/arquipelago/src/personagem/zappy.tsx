@@ -1,5 +1,6 @@
 import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
+import { ILHAS, type IlhaId } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { Component, type ReactNode, Suspense, useEffect, useMemo, useRef } from 'react'
 import {
@@ -11,9 +12,11 @@ import {
   type PointLight,
 } from 'three'
 import zappyGlb from '../assets/zappy.glb'
+import { lojaDaChegada } from '../estado/chegada'
 import { useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
 import { guiaDoZappy } from '../estado/primeiros-passos'
+import { type PalcoDaChegada, palcoDaChegada, zappyNaChegada } from '../mundo/chegada-da-ponte'
 import { ALCANCE_DO_GUIA } from '../mundo/guia-do-zappy'
 import { CORPO } from '../sistemas/corpo'
 import {
@@ -65,6 +68,11 @@ export function Zappy() {
   const luz = useRef<PointLight>(null)
   const brilho = useRef({ forca: 1 })
   const voando = useRef(false)
+  const chegada = useRef<{
+    ilha: IlhaId | null
+    palco: PalcoDaChegada | null
+    origem: { x: number; y: number; z: number }
+  }>({ ilha: null, palco: null, origem: { x: 0, y: 0, z: 0 } })
   const voo = useRef({
     emVolta: rastro.direcao,
     parado: 0,
@@ -78,6 +86,30 @@ export function Zappy() {
     const dt = Math.min(dtBruto, 0.1)
     const t = clock.elapsedTime
     const v = voo.current
+    // A cena da subida de posto (N02): ele voa da criança até a ilha cinza e fica sobre ela.
+    const cena = lojaDaChegada(loja).getState()
+    if (cena.ilha !== null && !cena.menosMovimento) {
+      if (chegada.current.ilha !== cena.ilha) {
+        const ilha = ILHAS.find((i) => i.id === cena.ilha)
+        chegada.current = {
+          ilha: cena.ilha,
+          palco: ilha ? palcoDaChegada(ilha) : null,
+          origem: { x: g.position.x, y: g.position.y, z: g.position.z },
+        }
+      }
+      const palco = chegada.current.palco
+      if (palco) {
+        const p = zappyNaChegada(palco, cena.tempo, chegada.current.origem)
+        g.position.set(p.x, p.y, p.z)
+        g.rotation.y = giroPara({ x: g.position.x, z: g.position.z }, palco.ilha)
+        voando.current = true
+        return
+      }
+    } else if (chegada.current.ilha !== null) {
+      // Acabou a cena: ele volta para o lado dela de uma vez (como depois de um corte).
+      chegada.current = { ilha: null, palco: null, origem: { x: 0, y: 0, z: 0 } }
+      v.iniciado = false
+    }
     const ela = { x: rastro.x, z: rastro.z }
     // O lugar dele acompanha a direção dela pelo caminho mais curto, girando em volta do corpo.
     v.emVolta = suavizarAngulo(v.emVolta, rastro.direcao, RAPIDEZ_EM_VOLTA, dt)
