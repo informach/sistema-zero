@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import {
   type ConteudoDoDesafio,
+  CoresConquistadasSchema,
   type CurriculoDeBlocos,
   DesafioAbertoSchema,
   DesafiosDoJogadorSchema,
@@ -226,6 +227,66 @@ async function chamar(
 
 const conferir = (id = BORBOLETA, revisao = 1, headers = crianca()) =>
   chamar('POST', `/${id}/verificar`, headers, { revisao, projeto })
+
+describe('cores conquistadas', () => {
+  test('suporte lê a cor sem gravar conclusão nem recompensa', async () => {
+    await conferir()
+    const antes = structuredClone([...repo.concluidos.entries()])
+    creditar.mockClear()
+    const r = await chamar('GET', '/cores', crianca({ 'x-auth-impersonator-id': EQUIPE }))
+    expect(r.status).toBe(200)
+    expect(
+      CoresConquistadasSchema.parse(r.corpo).ilhas.find((i) => i.id === 'bosque')?.quadros,
+    ).toEqual([1])
+    expect([...repo.concluidos.entries()]).toEqual(antes)
+    expect(creditar).not.toHaveBeenCalled()
+  })
+  test('arquivar e mover o cadastro preserva a posição ganha, mesmo com catálogo e Members desligados', async () => {
+    expect((await conferir()).status).toBe(200)
+    const d = repo.desafios.get(BORBOLETA)!
+    d.situacao = 'arquivado'
+    d.metadados = { ...d.metadados, ilha: 'vila-doce', quadro: 5 }
+    modo = 'desligado'
+    membros = null
+    montar()
+    creditar.mockClear()
+    const antes = [...repo.concluidos.entries()]
+    const r = await chamar('GET', '/cores', crianca())
+    expect(r.status).toBe(200)
+    const cores = CoresConquistadasSchema.parse(r.corpo)
+    expect(cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([1])
+    expect(cores.ilhas.find((i) => i.id === 'vila-doce')?.quadros).toEqual([])
+    expect([...repo.concluidos.entries()]).toEqual(antes)
+    expect(creditar).not.toHaveBeenCalled()
+    expect((await chamar('GET', '', crianca())).status).toBe(403)
+  })
+
+  test('não revela conquista de outra pessoa ou de outro público', async () => {
+    await conferir()
+    for (const h of [
+      adulto,
+      crianca({ 'x-auth-user-id': ADULTO }),
+      { ...adulto, 'x-auth-user-id': PERFIL },
+    ]) {
+      const r = await chamar('GET', '/cores', h)
+      expect(r.status).toBe(200)
+      expect(
+        CoresConquistadasSchema.parse(r.corpo).ilhas.every((i) => i.quadros.length === 0),
+      ).toBe(true)
+    }
+  })
+
+  test('sem acesso ao jogo não lê cores; rota não oferece escrita', async () => {
+    expect(
+      (await chamar('GET', '/cores', crianca({ 'x-internal-token': 'invalido' }))).status,
+    ).toBe(401)
+    politica.modo = 'desligado'
+    montar()
+    expect((await chamar('GET', '/cores', crianca())).status).toBe(403)
+    expect((await chamar('POST', '/cores', crianca(), {})).status).not.toBe(200)
+    expect(repo.concluidos.size).toBe(0)
+  })
+})
 
 describe('liga e desliga', () => {
   test('desligado: 403 DESAFIOS_DESLIGADOS, inclusive para a equipe', async () => {

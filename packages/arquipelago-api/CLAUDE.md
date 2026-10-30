@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Cor conquistada independente do catálogo (A02, 30/10/2026)
+
+`GET /arquipelago/desafios/cores`, antes de `/:id`, usa `ServicoDosDesafios.cores`.
+Exige `decidirAcesso` e a identidade/público autenticados. Lê `repo.conclusoes`, cuja consulta
+liga a conclusão à revisão publicada histórica, não ao cadastro atual. Filtra posições inteiras
+de 1 a 6, únicas e ordenadas por ilha. Arquivar ou mover a publicação não move a conquista.
+Não depende de Members, catálogo ligado, carteira ou escolha do dia. Não grava, inclusive no
+suporte. Resposta `CoresConquistadasSchema`, sem dados pessoais, gabarito ou carteira.
+Testes HTTP reais com repositório em memória em `desafios-do-jogador.test.ts`; regra em
+`tests/unit/desafios.test.ts`. Sem migração, escrita remota ou mudança nas respostas anteriores.
+
 ## Pedidos dos moradores (L07, 30/10/2026)
 
 `GET /pedidos/pendentes` e `POST /pedidos/entregar` usam identidade confiável e recusam suporte.

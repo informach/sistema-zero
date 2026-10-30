@@ -43,7 +43,12 @@ describe('o Quadro das Cores no alto', () => {
 
   test('conta os feitos dos seis', () => {
     const q = ['feito', 'feito', 'disponivel', 'trancado', 'feito', 'vazio'] as const
-    expect(progressoDoQuadro(q.map((e, i) => quadro(e, i + 1)))).toEqual({
+    expect(
+      progressoDoQuadro(
+        q.map((e, i) => quadro(e, i + 1)),
+        [1, 2, 5],
+      ),
+    ).toEqual({
       feitos: 3,
       total: 6,
       acesos: [true, true, false, false, true, false],
@@ -51,9 +56,28 @@ describe('o Quadro das Cores no alto', () => {
   })
 
   test('ilha sem nenhum desafio não mostra o quadro', () => {
-    expect(progressoDoQuadro(Array.from({ length: 6 }, (_, i) => quadro('vazio', i + 1)))).toBe(
-      null,
-    )
+    expect(
+      progressoDoQuadro(
+        Array.from({ length: 6 }, (_, i) => quadro('vazio', i + 1)),
+        [],
+      ),
+    ).toBe(null)
+  })
+
+  test('sem catálogo ainda mostra conquistas; posição nova do cadastro não entra', () => {
+    expect(progressoDoQuadro([], [1, 3])).toEqual({
+      feitos: 2,
+      total: 6,
+      acesos: [true, false, true, false, false, false],
+    })
+    expect(progressoDoQuadro([quadro('feito', 5)], [3])?.acesos).toEqual([
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+    ])
   })
 })
 

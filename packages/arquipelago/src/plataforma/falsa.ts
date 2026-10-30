@@ -424,7 +424,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         const daFamilia = familia.buscar(caminho, metodo)
         if (daFamilia) return daFamilia
         if (caminho.startsWith('/desafios')) {
-          if (o.desafios === 'desligados')
+          if (o.desafios === 'desligados' && caminho !== '/desafios/cores')
             return { status: 403, corpo: { error: { code: 'DESAFIOS_DESLIGADOS' } } }
           const r = desafios.buscar(caminho, metodo)
           if (r) return r

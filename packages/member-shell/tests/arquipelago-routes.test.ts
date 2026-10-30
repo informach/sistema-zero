@@ -40,6 +40,19 @@ const pedido = (corpo: string) =>
   new Request('http://local/api/arquipelago/salvamento', { method: 'PUT', body: corpo })
 
 const fetchOriginal = globalThis.fetch
+test('cores conquistadas só repassam GET privado sem identidade no corpo ou na consulta', async () => {
+  const corpo = { versao: 1, ilhas: [{ id: 'bosque', quadros: [1] }] }
+  const { routes, chamadas } = montar({ status: 200, body: corpo })
+  const resposta = await routes.arquipelagoCoresConquistadas.GET()
+  expect(resposta.status).toBe(200)
+  expect(await resposta.json()).toEqual(corpo)
+  expect(resposta.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toEqual([
+    { caminho: '/arquipelago/desafios/cores', metodo: 'GET', corpo: undefined },
+  ])
+  expect(Object.keys(routes.arquipelagoCoresConquistadas)).toEqual(['GET'])
+})
+
 test('pedidos repassam comando e pendências de forma privada, sem cache e com corpo limitado', async () => {
   const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
   const pendentes = await routes.arquipelagoPedidosPendentes.GET()

@@ -1,6 +1,7 @@
 import {
   aprendaIssoEm,
   type ConteudoDoDesafio,
+  type CoresConquistadas,
   type DesafioAberto,
   type DesafiosDoJogador,
   diaDeSaoPaulo,
@@ -71,6 +72,17 @@ export class ServicoDosDesafios {
       agora?: () => Date
     },
   ) {}
+
+  /** Só leitura: conquistas não dependem de publicação, carteira ou Members disponíveis. */
+  async cores(jogador: Jogador): Promise<CoresConquistadas> {
+    const decisao = decidirAcesso(this.deps.politica, jogador)
+    if (!decisao.liberado) throw new AcessoBloqueadoError(decisao.motivo)
+    const conclusoes = await this.deps.repo.conclusoes(jogador.id, jogador.publico)
+    return {
+      versao: 1,
+      ilhas: ILHAS.map((i) => ({ id: i.id, quadros: posicoesConquistadas(conclusoes, i.id) })),
+    }
+  }
 
   async listar(jogador: Jogador, ilha?: IlhaId): Promise<DesafiosDoJogador> {
     this.exigirLigado(jogador)
@@ -407,12 +419,23 @@ export class ServicoDosDesafios {
 
 /** Quadros do Quadro das Cores feitos na ilha (um por número, arquivados inclusive). */
 export function quadrosFeitos(conclusoes: readonly ConclusaoGuardada[], ilha: IlhaId): number {
-  const quadros = new Set(
-    conclusoes
-      .filter((c) => c.tipo === 'quadro-das-cores' && c.ilha === ilha && c.quadro !== null)
-      .map((c) => c.quadro),
-  )
-  return Math.min(quadros.size, QUADROS_POR_ILHA)
+  return posicoesConquistadas(conclusoes, ilha).length
+}
+
+export function posicoesConquistadas(
+  conclusoes: readonly ConclusaoGuardada[],
+  ilha: IlhaId,
+): number[] {
+  return [
+    ...new Set(
+      conclusoes
+        .filter((c) => c.tipo === 'quadro-das-cores' && c.ilha === ilha && c.quadro !== null)
+        .map((c) => c.quadro)
+        .filter(
+          (q): q is number => q !== null && Number.isInteger(q) && q >= 1 && q <= QUADROS_POR_ILHA,
+        ),
+    ),
+  ].sort((a, b) => a - b)
 }
 
 function conteudoDe(

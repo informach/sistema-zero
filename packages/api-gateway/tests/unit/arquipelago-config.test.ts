@@ -103,6 +103,13 @@ describe('Arquipélago Vagalume no gateway', () => {
       'arquipelago-cartas',
     )
     // Desafios de quem joga: o literal `desafios` e o `:id`; conferir com corpo e prazo das aulas.
+    expect(registry.resolve('GET', '/arquipelago/desafios/cores', 'v1')?.route).toMatchObject({
+      id: 'arquipelago-cores-conquistadas',
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('POST', '/arquipelago/desafios/cores', 'v1')).toBeUndefined()
     const desafio = '22222222-2222-4222-8222-222222222222'
     expect(registry.resolve('GET', '/arquipelago/desafios', 'v1')?.route.id).toBe(
       'arquipelago-desafios',

@@ -194,6 +194,13 @@ export function arquipelagoGateway(opts: {
       },
       {
         ...jogador,
+        id: 'arquipelago-cores-conquistadas',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/desafios/cores',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
         id: 'arquipelago-desafio-abrir',
         methods: ['GET'],
         pathPattern: '/arquipelago/desafios/:id',

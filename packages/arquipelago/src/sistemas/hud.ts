@@ -1,4 +1,4 @@
-import type { Canteiro, IlhaId } from '@sistemazero/arquipelago-contracts'
+import { type Canteiro, type IlhaId, QUADROS_POR_ILHA } from '@sistemazero/arquipelago-contracts'
 import { estagio } from './horta'
 import type { Necessidades } from './necessidades'
 import type { Quadro } from './quadro-das-cores'
@@ -29,13 +29,14 @@ export function ilhaMaisPerto(
   return escolhida
 }
 
-/** Quanto do Quadro das Cores da ilha acendeu; `null` quando a ilha não tem nenhum desafio. */
+/** Conquistas da ilha; só some quando não há catálogo nem posição confirmada. */
 export function progressoDoQuadro(
   quadros: readonly Quadro[],
+  conquistados: readonly number[],
 ): { feitos: number; total: number; acesos: boolean[] } | null {
-  if (quadros.every((q) => q.estado === 'vazio')) return null
-  const acesos = quadros.map((q) => q.estado === 'feito')
-  return { feitos: acesos.filter(Boolean).length, total: quadros.length, acesos }
+  if (quadros.every((q) => q.estado === 'vazio') && conquistados.length === 0) return null
+  const acesos = Array.from({ length: QUADROS_POR_ILHA }, (_, i) => conquistados.includes(i + 1))
+  return { feitos: acesos.filter(Boolean).length, total: QUADROS_POR_ILHA, acesos }
 }
 
 /** Abaixo disto, a necessidade vira lembrete no "Agora" (a mesma faixa da barra que avermelha). */

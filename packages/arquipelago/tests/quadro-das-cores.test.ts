@@ -159,24 +159,103 @@ describe('loja dos desafios com a plataforma de mentira', () => {
     expect(desafios.getState()).toMatchObject({ dados: null, festa: null, carregando: false })
   })
 
+  test('conquista histórica permanece com catálogo desligado e não cria festa ou prêmio', async () => {
+    const { desafios } = montar('desligados')
+    await desafios.getState().carregar()
+    expect(desafios.getState().cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([3])
+    expect(desafios.getState()).toMatchObject({ dados: null, festa: null, fechado: 'desligado' })
+  })
+
+  test('host antigo usa só conclusões do catálogo e conserva a cor durante uma falha', async () => {
+    const { desafios, plataforma } = montar()
+    const buscar = plataforma.servico.buscar
+    plataforma.servico.buscar = async (caminho, opcoes) =>
+      caminho === '/desafios/cores' ? { status: 404, corpo: {} } : buscar(caminho, opcoes)
+    await desafios.getState().carregar()
+    expect(desafios.getState().cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([3])
+    plataforma.relatarErro = () => {}
+    plataforma.servico.buscar = async () => {
+      throw new Error('offline')
+    }
+    await desafios.getState().carregar()
+    expect(desafios.getState().cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([3])
+    expect(desafios.getState().fechado).toBe('fora-do-ar')
+    expect(desafios.getState().festa).toBeNull()
+  })
+
+  test('mover um desafio concluído não pinta o novo lugar quando existe histórico', async () => {
+    const { desafios, plataforma } = montar()
+    await desafios.getState().carregar()
+    const buscar = plataforma.servico.buscar
+    plataforma.servico.buscar = async (caminho, opcoes) => {
+      const r = await buscar(caminho, opcoes)
+      if (caminho !== '/desafios') return r
+      const dados = lerDesafios(r.corpo)!
+      dados.desafios = dados.desafios.map((d) => (d.quadro === 3 ? { ...d, quadro: 5 } : d))
+      return { status: 200, corpo: dados }
+    }
+    await desafios.getState().carregar()
+    expect(desafios.getState().cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([3])
+    expect(desafios.getState().festa).toBeNull()
+  })
+
+  test('suporte lê a fotografia mas nunca grava o cache de conquistas', async () => {
+    const anterior = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    const gravados: string[] = []
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: () => null,
+        setItem: (chave: string) => gravados.push(chave),
+        removeItem: () => {},
+      },
+    })
+    try {
+      const { desafios, loja } = montar()
+      gravados.length = 0
+      loja.setState({ acesso: { ...loja.getState().acesso, somenteLeitura: true } })
+      await desafios.getState().carregar()
+      expect(desafios.getState().cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([3])
+      expect(gravados.filter((k) => k.startsWith('arquipelago:cores:'))).toEqual([])
+      loja.setState({ acesso: { ...loja.getState().acesso, somenteLeitura: false } })
+      await desafios.getState().carregar()
+      expect(gravados.filter((k) => k.startsWith('arquipelago:cores:'))).toHaveLength(1)
+    } finally {
+      if (anterior) Object.defineProperty(globalThis, 'localStorage', anterior)
+      else Reflect.deleteProperty(globalThis, 'localStorage')
+    }
+  })
+
+  test('primeiro acesso offline não ganha cor; recuperação lê as conquistas', async () => {
+    const { desafios, plataforma } = montar()
+    const buscar = plataforma.servico.buscar
+    plataforma.servico.buscar = async () => ({ status: 503, corpo: {} })
+    await desafios.getState().carregar()
+    expect(desafios.getState().cores.ilhas.every((i) => i.quadros.length === 0)).toBe(true)
+    plataforma.servico.buscar = buscar
+    await desafios.getState().carregar()
+    expect(desafios.getState().cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([3])
+  })
+
   test('desmontagem aborta leitura e uma resposta tardia não repõe os desafios', async () => {
     const { desafios, plataforma } = montar()
     const buscar = plataforma.servico.buscar
     let sinal: AbortSignal | undefined
-    let responder!: () => void
+    const respostas: (() => void)[] = []
     plataforma.servico.buscar = async (caminho, opcoes) => {
       sinal = opcoes?.sinal
       await new Promise<void>((r) => {
-        responder = r
+        respostas.push(r)
       })
       return buscar(caminho, opcoes)
     }
     const leitura = desafios.getState().carregar()
     desafios.getState().cancelar()
     expect(sinal?.aborted).toBe(true)
-    responder()
+    for (const responder of respostas) responder()
     await leitura
     expect(desafios.getState()).toMatchObject({ dados: null, carregando: false })
+    expect(desafios.getState().cores.ilhas.every((i) => i.quadros.length === 0)).toBe(true)
   })
 
   test('carrega, joga o desafio disponível, a lista volta com o quadro feito e a festa', async () => {

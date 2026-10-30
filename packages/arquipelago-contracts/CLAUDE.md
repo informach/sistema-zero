@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+## Cores conquistadas V1 (A02, 30/10/2026)
+
+`cores-conquistadas.ts`: resposta estrita de leitura, até oito ilhas sem repetição, cada uma com
+posições únicas de 1 a 6. Não recebe pessoa, público, saldo ou aprovação. O serviço obtém as
+posições da publicação histórica de cada conclusão autenticada. A cor independe do catálogo
+atual. Acréscimo compatível pela porta genérica de serviço, sem mudar `Plataforma` ou salvamento.
+`tests/cores-conquistadas.test.ts` cobre versão, limites, duplicatas e campos desconhecidos.
+
 ## Vestuário sazonal V1 (L09, 30/10/2026)
 
 `vestuario-festas.ts` contém sugestões de peças já existentes e o molde estrito da ferramenta

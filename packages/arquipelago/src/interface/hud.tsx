@@ -149,9 +149,14 @@ function IlhaAgora() {
   const { loja, plataforma } = useJogo()
   const aqui = useIlhaAqui()
   const dados = useDesafios(lojaDosDesafios(loja, plataforma), (s) => s.dados)
+  const cores = useDesafios(lojaDosDesafios(loja, plataforma), (s) => s.cores)
   const progresso = useMemo(
-    () => (dados ? progressoDoQuadro(quadrosDaIlha(dados.desafios, aqui)) : null),
-    [dados, aqui],
+    () =>
+      progressoDoQuadro(
+        dados ? quadrosDaIlha(dados.desafios, aqui) : [],
+        cores.ilhas.find((i) => i.id === aqui)?.quadros ?? [],
+      ),
+    [dados, cores, aqui],
   )
   const nome = ILHAS.find((i) => i.id === aqui)?.nome ?? 'Arquipélago'
   return (

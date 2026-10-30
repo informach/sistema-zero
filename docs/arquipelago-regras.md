@@ -2180,15 +2180,31 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
     o ... ficou pronta. A cor começou a voltar para lá.";
   - quadro feito: o pedaço dele ganha a cor inteira. Na festa, a cor escorre em 2,4 s
     (`DURACAO_DA_TINTA_S`);
-  - quadro sem desafio publicado: o pedaço já vem colorido, para a criança nunca ficar presa num
-    cinza sem ter o que fazer. Ilha sem nenhum desafio fica toda colorida;
-  - desafios desligados ou serviço fora do ar: a ilha toda colorida (como antes dos desafios);
+  - quadro sem desafio publicado: conserva os 30% da ponte, ou a cor inteira já conquistada;
+  - desafios desligados ou serviço fora do ar: usa as posições confirmadas anteriormente. Sem
+    nenhuma leitura confirmada, conserva a base da ponte. Uma falha nunca restaura a ilha inteira;
+  - arquivar, mover ou substituir uma publicação não apaga a cor conquistada. A posição vem da
+    revisão guardada na conclusão. Mover um desafio já feito não pinta também o lugar novo;
   - entre dois pedaços a cor se mistura numa faixa (`BORDA_DOS_PEDACOS`), e bem no meio da ilha
     vale a média dos seis.
-  A mesma tinta vale para a versão leve, a completa e as copas que esmaecem.
+  A mesma tinta vale para a versão leve, a completa e as copas que esmaecem. As manchas do quadro
+  e o contador também usam as conquistas confirmadas, mesmo quando o desafio saiu do catálogo.
+  `GET /arquipelago/desafios/cores` lê as posições históricas da pessoa e do público autenticados,
+  sem depender do catálogo ligado, do Members ou da carteira. Exige acesso ao jogo e não escreve
+  nem cobra prêmios. A resposta V1 aceita até oito ilhas e seis posições únicas por ilha.
+  O aparelho guarda uma fotografia visual de até 2.048 caracteres, separada por perfil e público.
+  Ela não libera ilha, curso, botão de recompensa, aprovação nem moedas. Suporte não a grava.
+  Armazenamento bloqueado não impede jogar. Uma primeira montagem reinicia os uniforms, para não
+  herdar a tinta de outra pessoa. Sem a rota nova, usa apenas conclusões conhecidas no catálogo
+  e a fotografia anterior, nunca transforma o contador agregado em posições inventadas.
+  Na implantação, serviço, gateway e portas Kids/adulto precisam oferecer a rota para recuperar
+  posições arquivadas no primeiro acesso de outro aparelho. Sem mudança de salvamento.
 - **Plataforma de mentira** (`src/plataforma/desafios-falsos.ts`): no playground, o Bosque tem o
   quadro 1 pronto, o 2 esperando o curso Repetições e o 3 feito. "Fazer o desafio" conclui em
-  0,4 s. Com `desafios: 'desligados'`, responde 403. O desafio do dia de mentira está em 7.12.
+  0,4 s. Com `desafios: 'desligados'`, o catálogo responde 403 e a leitura histórica continua.
+  `?quadros=feitos` fornece seis conquistas reais na fixture do Bosque. `?cores=sem-conquistas`,
+  `fora-do-ar`, `arquivadas`, `desligado` e `antigo` exercitam as reservas no playground. Prova visual em
+  `docs/qa/2026-10-30-cores-conquistadas/`. O desafio do dia de mentira está em 7.12.
 
 ### 7.12 O desafio do dia
 

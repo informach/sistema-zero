@@ -17,6 +17,7 @@ import { chaveDasDicas } from '../src/sistemas/dicas'
 import { lerFesta } from '../src/sistemas/festas'
 import { chaveDosPassos } from '../src/sistemas/primeiros-passos'
 import { ehPorto } from '../src/sistemas/rede-do-barco'
+import { configurarCoresDoPlayground } from './cores'
 import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
 
 /**
@@ -77,6 +78,7 @@ if (q.get('novo') === '1') {
   localStorage.removeItem(CHAVE_DA_GALERIA)
   for (const publico of ['kids', 'adulto']) {
     localStorage.removeItem(`${CHAVE_DAS_PROFISSOES}:${publico}`)
+    localStorage.removeItem(`arquipelago:cores:v1:${publico}:perfil-de-teste`)
     for (const posto of ['padaria', 'sorveteria', 'sucos'])
       localStorage.removeItem(`arquipelago:profissoes:v1:${publico}:perfil-de-teste:${posto}`)
   }
@@ -129,6 +131,8 @@ const plataforma = criarPlataformaFalsa({
     situacao: q.get('galeria') === 'fora-do-ar' ? 'fora-do-ar' : undefined,
   },
 })
+// `?cores=sem-conquistas|fora-do-ar|arquivadas|desligado|antigo` confere a reserva da pintura.
+if (q.has('cores')) configurarCoresDoPlayground(plataforma, q.get('cores') ?? '')
 const festa = lerFesta(q.get('festa'))
 if (festa) definirFestaDoPlayground(plataforma, festa)
 if (q.get('perder-pulso') === '1') {

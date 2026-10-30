@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Cores conquistadas do Arquipélago (A02, 30/10/2026)
+
+O host permite `/desafios/cores` nos dois públicos. `arquipelagoCoresConquistadas.GET` repassa
+para o gateway com `private, no-store`; os apps Kids e adulto expõem seus próprios route shims.
+Identidade vem da sessão, nunca de query/corpo fornecidos pelo jogo. Sem método de escrita.
+A porta genérica `servico.buscar` continua na mesma versão. Servidor ou host antigo pode recusar
+o caminho: o jogo preserva a última cor confirmada e usa conclusões disponíveis no catálogo.
+Testes: `arquipelago-host.test.ts` e `arquipelago-routes.test.ts`.
+
 ## Avatar por cima do Arquipélago (L09, 30/10/2026)
 
 `avatar`/`vestir` aceita `MoldeDoVestuarioSchema` V1. O host confere o perfil pela rota de acesso,

@@ -84,15 +84,18 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
   falha de carga e bloqueio antes da Lenda.
 - [x] Rodar teste dirigido e suíte, tipagem, Biome, navegador nos dois tamanhos. Comparar com a
   sequência da auditoria: 53, 74, 95, 116 e 137 texturas, com 399 geometrias.
-- [x] Revisar o diff e a propriedade dos recursos; registrar comandos e resultado; commit e merge.
+- [x] Revisar o diff e a propriedade dos recursos; registrar comandos e resultado; commit.
+- [x] Merge local do A01: `00adca1df`. As duas seções novas do CLAUDE foram preservadas ao
+  resolver o conflito documental. A suíte dirigida passou novamente na árvore integrada.
 
 ## Registro dos lotes
 
 | Lote | Estado | Commit / merge | Evidência e dependências |
 | --- | --- | --- | --- |
 | Organização | Registrada no staging local | `1b7a6c4a1` | Auditoria e QA preservados; desenho aceito pela instrução da dona |
-| A01 | Implementado, revisado e verificado | Commit deste lote, seguido de merge local | 1.223 testes passaram, 1 ignorado; tipagem/Biome aprovados; texturas 53 constantes em computador e celular emulado |
-| A02 | Plano técnico pronto | Ainda sem implementação | `docs/superpowers/plans/2026-10-30-arquipelago-cor-conquistada.md` |
+| A01 | Implementado, revisado, verificado e integrado no staging local | `7b1273879`, merge `00adca1df` | 1.223 testes passaram, 1 ignorado; tipagem/Biome aprovados; texturas 53 constantes em computador e celular emulado; 22 testes dirigidos repetidos após integrar |
+| A02 | Implementado, revisado e verificado | Commit deste lote, integração local em seguida | Sete cenários em dois tamanhos; suites, tipagem e Biome aprovados; QA em `docs/qa/2026-10-30-cores-conquistadas/` |
+| A03 | Plano técnico pronto, dividido em três entregas completas | Ainda sem implementação | `docs/superpowers/plans/2026-10-30-arquipelago-pausa-e-leitura.md` |
 | Demais lotes | A executar em ordem de dependência | Nenhum | Detalhar o plano do subsistema antes da sua implementação |
 
 ## Pedidos de arte

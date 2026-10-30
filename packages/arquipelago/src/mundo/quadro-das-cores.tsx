@@ -6,12 +6,8 @@ import quadroGlb from '../assets/itens/quadro-das-cores.glb'
 import { useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { lojaDosPassos } from '../estado/primeiros-passos'
-import {
-  AVISO_DO_DIA,
-  diaParaAvisar,
-  manchasAcesas,
-  quadrosDaIlha,
-} from '../sistemas/quadro-das-cores'
+import { pedacosPintados } from '../sistemas/cor-da-ilha'
+import { AVISO_DO_DIA, diaParaAvisar } from '../sistemas/quadro-das-cores'
 import { Colisores } from './colisores'
 import type { IlhaPreparada } from './ilha-completa'
 import { useInterativo } from './interativos'
@@ -62,6 +58,7 @@ export function QuadroDasCores({
   const { loja, plataforma } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
   const dados = useDesafios(desafios, (s) => s.dados)
+  const cores = useDesafios(desafios, (s) => s.cores)
   const festa = useDesafios(desafios, (s) => s.festa)
   const raiz = useModelo(QUADRO_URL)
   const lugar = useMemo(() => posicaoDoQuadro(preparada.modelo), [preparada])
@@ -80,14 +77,10 @@ export function QuadroDasCores({
   }, [raiz])
 
   // A cor de cada mancha: 0 (cinza) a 1 (a cor da tinta). Feito acende; a festa anima.
-  const quadros = useMemo(
-    () => (dados ? quadrosDaIlha(dados.desafios, ilha.id) : []),
-    [dados, ilha.id],
+  const alvo = useMemo(
+    () => pedacosPintados(null, cores.ilhas.find((i) => i.id === ilha.id)?.quadros),
+    [cores, ilha.id],
   )
-  const alvo = useMemo(() => {
-    const acesas = quadros.length > 0 ? manchasAcesas(quadros) : []
-    return Array.from({ length: 6 }, (_, i) => (acesas[i] ? 1 : 0))
-  }, [quadros])
   const atual = useRef<number[]>([0, 0, 0, 0, 0, 0])
   const pintados = useRef(false)
 
