@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { isDeepStrictEqual } from 'node:util'
 import {
   AnaliseDosMembrosSchema,
   VerificacaoDosMembrosSchema,
@@ -78,6 +79,7 @@ const DESCONHECIDO = { type: 'sz_bloco_que_nao_existe' }
 
 const inicial = projeto([ESCREVER])
 const gabarito = projeto([ESCREVER, REPETIR])
+const gabaritoCompleto = projeto([ESCREVER, REPETIR, ESCREVER])
 
 const usaRepetir: ObjetivoRecebido = {
   id: 'repetir',
@@ -142,7 +144,7 @@ const analisar = (
   servico.analisar({
     audience: 'kids',
     projetoInicial: inicial,
-    gabarito,
+    gabarito: gabaritoCompleto,
     objetivos: [usaRepetir, anda, extra],
     ...over,
   })
@@ -151,6 +153,33 @@ const codigos = (analise: { problemas: { codigo: string }[] }) =>
   analise.problemas.map((p) => p.codigo)
 
 describe('analisar', () => {
+  test('apoio pronto: objetivo obrigatório já cumprido pelo inicial impede publicar', async () => {
+    const analise = await analisar(criar(), {
+      projetoInicial: gabarito, objetivos: [usaRepetir],
+    })
+    expect(analise.problemas).toContainEqual(expect.objectContaining({
+      codigo: 'INICIAL_JA_CUMPRE_OBJETIVO', objetivoId: 'repetir',
+    }))
+  })
+
+  test('apoio pronto: extra já cumprido pelo inicial também não é tarefa', async () => {
+    const analise = await analisar(criar(), {
+      projetoInicial: projeto([ESCREVER, ESCREVER]),
+      gabarito: projeto([ESCREVER, ESCREVER, REPETIR]),
+      objetivos: [usaRepetir, extra],
+    })
+    expect(analise.problemas).toContainEqual(expect.objectContaining({
+      codigo: 'INICIAL_JA_CUMPRE_OBJETIVO', objetivoId: 'extra',
+    }))
+  })
+
+  test('apoio pronto: o extra oferecido precisa passar no gabarito', async () => {
+    const analise = await analisar(criar(), { gabarito, objetivos: [usaRepetir, extra] })
+    expect(analise.problemas).toContainEqual(expect.objectContaining({
+      codigo: 'GABARITO_NAO_PASSA', objetivoId: 'extra',
+    }))
+  })
+
   test('completar o corpo de um bloco já presente também exige o seu repertório', async () => {
     const antes = projeto([])
     antes.blocksState.blocks.blocks[0] = {
@@ -179,11 +208,11 @@ describe('analisar', () => {
     expect(analise.blocosDoGabarito).toContain('sz_js_console_log_value')
   })
   test('blocos alterados sem moldura ou apoio intacto; desconhecidos à parte; vista sem regra', async () => {
-    const { executor, chamadas } = executorFalso(() => true)
+    const { executor, chamadas } = executorFalso((input) => isDeepStrictEqual(input.project, gabaritoCompleto))
     const analise = await analisar(criar(executor))
     expect(AnaliseDosMembrosSchema.parse(analise)).toEqual(analise)
     // `sz_frame_start` é moldura e `sz_js_console_log_value` já vem no inicial.
-    expect(analise.blocosDoGabarito).toEqual(['sz_js_repeat'])
+    expect(analise.blocosDoGabarito).toEqual(['sz_js_console_log_value', 'sz_js_repeat'])
     expect(analise.blocosDesconhecidos).toEqual([])
     expect(analise.vista).toEqual([
       {
@@ -200,11 +229,11 @@ describe('analisar', () => {
     expect(analise.gabarito).toEqual([
       { id: 'repetir', passou: true },
       { id: 'anda', passou: true },
-      { id: 'extra', passou: false },
+      { id: 'extra', passou: true },
     ])
     expect(analise.inicial).toEqual([
       { id: 'repetir', passou: false },
-      { id: 'anda', passou: true },
+      { id: 'anda', passou: false },
       { id: 'extra', passou: false },
     ])
     // Sem captura (o cache do executor vale), só os objetivos que rodam, tipo do inicial.
@@ -238,7 +267,7 @@ describe('analisar', () => {
     expect(analise.gabarito).toEqual([])
   })
 
-  test('objetivo obrigatório em que o gabarito não passa é problema; o extra não', async () => {
+  test('objetivo obrigatório em que o gabarito não passa é problema', async () => {
     const { executor } = executorFalso(() => false)
     const analise = await analisar(criar(executor))
     expect(analise.problemas).toEqual([
@@ -258,7 +287,7 @@ describe('analisar', () => {
     expect(analise.gabarito).toEqual([
       { id: 'repetir', passou: true },
       { id: 'anda', passou: false },
-      { id: 'extra', passou: false },
+      { id: 'extra', passou: true },
     ])
     expect(analise.inicial.find((r) => r.id === 'anda')?.passou).toBe(false)
     // Depois da primeira queda, o inicial não espera o executor de novo.

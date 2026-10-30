@@ -354,13 +354,20 @@ export class ArquipelagoObjectivesService {
     }
     const doGabaritoConferido = await conferir(gabarito)
     const doInicialConferido = await conferir(inicial)
-    for (const check of validos)
-      if (!check.optional && doGabaritoConferido.get(check.id) === false)
+    for (const check of validos) {
+      if (doGabaritoConferido.get(check.id) === false)
         problema(
           'GABARITO_NAO_PASSA',
-          `O gabarito não cumpre o objetivo obrigatório ${aspas(check.label)}. Ajuste o gabarito ou o objetivo.`,
+          `O gabarito não cumpre o objetivo ${check.optional ? 'extra' : 'obrigatório'} ${aspas(check.label)}. Ajuste o gabarito ou o objetivo.`,
           check.id,
         )
+      if (doInicialConferido.get(check.id) === true)
+        problema(
+          'INICIAL_JA_CUMPRE_OBJETIVO',
+          `O projeto inicial já cumpre ${aspas(check.label)}. Avalie uma regra que falta completar, não o apoio pronto.`,
+          check.id,
+        )
+    }
     const resultados = (conferido: Map<string, boolean | null>) =>
       validos.map((check) => ({ id: check.id, passou: conferido.get(check.id) === true }))
     return {
