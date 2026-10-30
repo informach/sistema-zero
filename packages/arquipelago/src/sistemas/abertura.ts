@@ -156,6 +156,25 @@ export function inicioDaCena(indice: number): number {
   return t
 }
 
+/** Cada fala é uma leitura, mesmo quando divide a pintura com outra fala. */
+export const LEITURAS_DA_ABERTURA = CENAS.flatMap((cena, indice) =>
+  cena.falas.map((_, fala) => ({
+    indice,
+    fala,
+    inicioMs: inicioDaCena(indice) + (fala > 0 ? (cena.falas[fala - 1]?.ateMs ?? 0) : 0),
+  })),
+)
+
+/** Voltar nunca sai do livro. Só avançar depois da última fala devolve `null` (começar o jogo). */
+export function navegarLeitura(ms: number, direcao: -1 | 1): number | null {
+  let atual = 0
+  for (let i = 0; i < LEITURAS_DA_ABERTURA.length; i++) {
+    if (LEITURAS_DA_ABERTURA[i]!.inicioMs <= Math.max(0, ms)) atual = i
+  }
+  const destino = Math.max(0, atual + direcao)
+  return LEITURAS_DA_ABERTURA[destino]?.inicioMs ?? null
+}
+
 /**
  * A abertura aparece sozinha uma vez por perfil em cada aparelho (a marca fica no aparelho, como
  * as preferências de conforto: o salvamento não muda). Sem armazenamento (aba anônima,

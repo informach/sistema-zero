@@ -230,8 +230,14 @@ editor ou campo nos canteiros. Plano L08 em `docs/superpowers/plans/2026-10-29-a
   sem armazenamento; nunca no suporte. O `carregar()` do `jogo.tsx` já a abre antes do primeiro
   quadro. Abra sempre por `abrirAbertura(loja, 'primeira' | 'rever')`: a `lojaDaAbertura` guarda a
   origem e o `saindo`. Só a `primeira` marca como vista e termina com a primeira fala do Zappy
-  (`boasVindas`); fechada à força (tempo pausado ou acabado, salvamento parado) não marca. A abertura toma Espaço, Enter e a seta
-  para a direita na captura da janela (o personagem não pula por baixo). O texto segue a história da
+  (`boasVindas` ou os primeiros passos); fechada à força (tempo pausado ou acabado, salvamento parado) não marca.
+  A leitura começa manual, sem prazo, por `LEITURAS_DA_ABERTURA` e `navegarLeitura`: nove falas
+  nas oito cenas. Anterior/Próxima interrompem o automático; Começar só aparece na última fala.
+  Passar sozinho e Pausar leitura controlam o tempo ativo, preservando o instante na pausa e
+  descontando abas escondidas. Enter/Espaço mantêm a ativação nativa dos controles visíveis;
+  no palco, Enter avança e Espaço segurado pula. As setas navegam por fala. Blur cancela o
+  gesto de pular. Prova: `playground/verificar-leitura-browser.ts` e os testes de abertura.
+  O texto segue a história da
   proposta e NÃO conta o segredo do Farol.
 - **Cenas da abertura são o jogo de verdade** (pedido dela, 29/10/2026): `interface/abertura-cenas.tsx`
   mostra as imagens de `src/assets/abertura/*.webp` (o arquipélago colorido e cinza de cima, a Íris na

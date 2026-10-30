@@ -7,8 +7,9 @@ import { useToque } from '../estado/preferencias'
 import {
   boasVindas,
   CENAS,
-  inicioDaCena,
+  LEITURAS_DA_ABERTURA,
   momentoDaAbertura,
+  navegarLeitura,
   PAINEL_DA_ABERTURA,
   SAIDA_DA_ABERTURA_MS,
   SEGURAR_PARA_PULAR_MS,
@@ -18,7 +19,7 @@ import { PINTURAS } from './abertura-cenas'
 import { comecarPassosSozinho } from './primeiros-passos'
 
 /** Teclas que a abertura toma para si (o personagem por baixo não pula nem anda com elas). */
-const TECLAS_DA_ABERTURA = new Set(['Space', 'Enter', 'NumpadEnter', 'ArrowRight'])
+const TECLAS_DA_ABERTURA = new Set(['Space', 'Enter', 'NumpadEnter', 'ArrowRight', 'ArrowLeft'])
 
 /** Uma pausa maior que esta no relógio (aba escondida) não conta: a abertura espera. */
 const PAUSA_DO_RELOGIO_MS = 500
@@ -62,8 +63,9 @@ export function Abertura() {
   const [falaDaVez, setFalaDaVez] = useState(0)
   const [saindo, setSaindo] = useState(false)
   const [segurando, setSegurando] = useState(false)
-  /** O instante (relógio da página) em que a abertura "começou", contando os saltos de cena. */
-  const comeco = useRef(performance.now())
+  const [automatico, setAutomatico] = useState(false)
+  /** Só o modo automático soma tempo. Na leitura manual, a fala espera sem prazo. */
+  const tempo = useRef(0)
   const segurouEm = useRef<number | null>(null)
   const espacoApertado = useRef(false)
   const saiu = useRef(false)
@@ -87,15 +89,24 @@ export function Abertura() {
     }, SAIDA_DA_ABERTURA_MS)
   }, [loja])
 
-  const proxima = useCallback(() => {
-    if (saiu.current) return
-    const agora = momentoDaAbertura(performance.now() - comeco.current)
-    if (agora.indice >= CENAS.length - 1) {
-      sair()
-      return
-    }
-    comeco.current = performance.now() - inicioDaCena(agora.indice + 1)
-  }, [sair])
+  const navegar = useCallback(
+    (direcao: -1 | 1) => {
+      if (saiu.current) return
+      const destino = navegarLeitura(tempo.current, direcao)
+      if (destino === null) {
+        sair()
+        return
+      }
+      tempo.current = destino
+      const m = momentoDaAbertura(destino)
+      setIndice(m.indice)
+      setFalaDaVez(CENAS[m.indice]!.falas.indexOf(m.fala))
+      // Voltar ou avançar é uma escolha de leitura manual, sem um prazo oculto na fala nova.
+      setAutomatico(false)
+    },
+    [sair],
+  )
+  const proxima = useCallback(() => navegar(1), [navegar])
 
   // O relógio da abertura: só muda o React quando a cena ou a fala mudam.
   useEffect(() => {
@@ -103,10 +114,11 @@ export function Abertura() {
     let antes = performance.now()
     const passo = () => {
       const agora = performance.now()
-      // Aba escondida (sem quadros): o tempo parado não conta, a cena continua de onde estava.
-      if (agora - antes > PAUSA_DO_RELOGIO_MS) comeco.current += agora - antes
+      // Aba escondida ou quadros interrompidos não consomem o tempo para ler.
+      const delta = agora - antes
+      if (automatico && !document.hidden && delta <= PAUSA_DO_RELOGIO_MS) tempo.current += delta
       antes = agora
-      const m = momentoDaAbertura(agora - comeco.current)
+      const m = momentoDaAbertura(tempo.current)
       setIndice(m.indice)
       setFalaDaVez(CENAS[m.indice]!.falas.indexOf(m.fala))
       if (m.acabou) sair()
@@ -117,14 +129,31 @@ export function Abertura() {
       }
       quadro = requestAnimationFrame(passo)
     }
+    // Também desconta uma troca de aba curta, menor que o limite de interrupção do relógio.
+    const mudarVisibilidade = () => {
+      antes = performance.now()
+    }
+    document.addEventListener('visibilitychange', mudarVisibilidade)
     passo()
-    return () => cancelAnimationFrame(quadro)
-  }, [sair])
+    return () => {
+      cancelAnimationFrame(quadro)
+      document.removeEventListener('visibilitychange', mudarVisibilidade)
+    }
+  }, [sair, automatico])
 
-  // Segurar Espaço pula; Enter e a seta passam a cena. Pega antes do teclado do personagem.
+  // No palco, Espaço segurado pula e Enter avança. Setas navegam por fala.
   useEffect(() => {
     const desce = (e: KeyboardEvent) => {
       if (!TECLAS_DA_ABERTURA.has(e.code)) return
+      // Os controles visíveis mantêm sua ativação nativa por Enter/Espaço.
+      if (
+        (e.code === 'Space' || e.code === 'Enter' || e.code === 'NumpadEnter') &&
+        e.target instanceof Element &&
+        e.target.closest('.arq-abertura-controles')
+      ) {
+        e.stopImmediatePropagation()
+        return
+      }
       e.preventDefault()
       e.stopImmediatePropagation()
       if (e.code === 'Space') espacoApertado.current = true
@@ -132,26 +161,40 @@ export function Abertura() {
       if (e.code === 'Space') {
         segurouEm.current = performance.now()
         setSegurando(true)
-      } else if (e.target === pular.current) sair()
-      else proxima()
+      } else if (e.target === pular.current && (e.code === 'Enter' || e.code === 'NumpadEnter'))
+        sair()
+      else navegar(e.code === 'ArrowLeft' ? -1 : 1)
     }
     const sobe = (e: KeyboardEvent) => {
       if (!TECLAS_DA_ABERTURA.has(e.code)) return
-      e.preventDefault()
-      e.stopImmediatePropagation()
       if (e.code === 'Space') {
         espacoApertado.current = false
         segurouEm.current = null
         setSegurando(false)
       }
+      if (e.target instanceof Element && e.target.closest('.arq-abertura-controles')) {
+        e.stopImmediatePropagation()
+        return
+      }
+      e.preventDefault()
+      e.stopImmediatePropagation()
+    }
+    const cancelarEspera = () => {
+      segurouEm.current = null
+      espacoApertado.current = false
+      setSegurando(false)
     }
     window.addEventListener('keydown', desce, { capture: true })
     window.addEventListener('keyup', sobe, { capture: true })
+    window.addEventListener('blur', cancelarEspera)
+    document.addEventListener('visibilitychange', cancelarEspera)
     return () => {
       window.removeEventListener('keydown', desce, { capture: true })
       window.removeEventListener('keyup', sobe, { capture: true })
+      window.removeEventListener('blur', cancelarEspera)
+      document.removeEventListener('visibilitychange', cancelarEspera)
     }
-  }, [proxima, sair])
+  }, [navegar, sair])
 
   // Só uma transição real do painel conta como fechamento. Desmontar a página, trocar perfil
   // ou o ciclo de efeitos do StrictMode não equivale a terminar/pular a história.
@@ -181,6 +224,8 @@ export function Abertura() {
 
   const cena = CENAS[indice]!
   const fala = cena.falas[Math.max(0, falaDaVez)] ?? cena.falas[0]!
+  const leitura = LEITURAS_DA_ABERTURA.findIndex((l) => l.indice === indice && l.fala === falaDaVez)
+  const ultimaLeitura = leitura === LEITURAS_DA_ABERTURA.length - 1
   const Pintura = PINTURAS[cena.id]
   const soltar = () => {
     segurouEm.current = null
@@ -201,7 +246,11 @@ export function Abertura() {
         ref={palco}
         type="button"
         className="arq-abertura-palco"
-        aria-label={`Próxima cena (${indice + 1} de ${CENAS.length})`}
+        aria-label={
+          ultimaLeitura
+            ? 'Começar o jogo'
+            : `Próxima fala (${leitura + 1} de ${LEITURAS_DA_ABERTURA.length})`
+        }
         onClick={proxima}
       >
         <svg
@@ -227,6 +276,31 @@ export function Abertura() {
           <i key={c.id} className={i < indice ? 'vista' : i === indice ? 'agora' : undefined} />
         ))}
       </div>
+      <fieldset className="arq-abertura-controles" aria-label="Controles da leitura">
+        <button
+          type="button"
+          className="arq-botao leve"
+          disabled={leitura === 0 || saindo}
+          onClick={() => navegar(-1)}
+        >
+          Anterior
+        </button>
+        <span>
+          {leitura + 1} de {LEITURAS_DA_ABERTURA.length}
+        </span>
+        <button type="button" className="arq-botao" disabled={saindo} onClick={proxima}>
+          {ultimaLeitura ? 'Começar' : 'Próxima'}
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve arq-abertura-auto"
+          disabled={saindo}
+          aria-pressed={automatico}
+          onClick={() => setAutomatico((v) => !v)}
+        >
+          {automatico ? 'Pausar leitura' : 'Passar sozinho'}
+        </button>
+      </fieldset>
       <button
         ref={pular}
         type="button"

@@ -315,9 +315,13 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 @keyframes arq-ab-pisca{50%{opacity:.5}}
 .arq-abertura-faixa{position:absolute;left:0;right:0;height:max(28px,8%);background:#000;pointer-events:none}
 .arq-abertura-faixa.cima{top:0}.arq-abertura-faixa.baixo{bottom:0}
-.arq-abertura-legenda{position:absolute;left:50%;bottom:calc(max(28px,8%) + 18px);transform:translateX(-50%);width:min(880px,calc(100% - 32px));display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;pointer-events:none}
+.arq-abertura-legenda{position:absolute;left:50%;bottom:calc(max(16px,3%) + 112px);transform:translateX(-50%);width:min(880px,calc(100% - 32px));display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;pointer-events:none}
 .arq-abertura-legenda p{margin:0;padding:8px 16px;border-radius:14px;background:rgba(5,6,20,.74);font-size:clamp(17px,2.3vw,26px);font-weight:800;line-height:1.35;text-shadow:0 2px 6px rgba(0,0,0,.6);animation:arq-ab-cena .5s ease both}
 .arq-abertura-quem{padding:3px 12px;border-radius:999px;background:#ffc93c;color:#2a1b00;font:800 14px/1.35 var(--arq-titulo)}
+.arq-abertura-controles{position:absolute;bottom:max(16px,3%);left:50%;transform:translateX(-50%);width:min(420px,calc(100% - 32px));min-width:0;margin:0;padding:0;border:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px 12px;text-align:center}
+.arq-abertura-controles .arq-botao{min-height:44px;justify-content:center;padding:8px 12px}
+.arq-abertura-controles span{font-weight:800;font-size:14px;text-shadow:0 1px 4px #000}
+.arq-abertura-auto{grid-column:1/-1;justify-self:center}
 .arq-abertura-progresso{position:absolute;left:50%;top:calc(max(28px,8%) + 16px);transform:translateX(-50%);display:flex;gap:6px;pointer-events:none}
 .arq-abertura-progresso i{width:22px;height:4px;border-radius:4px;background:rgba(255,255,255,.3)}
 .arq-abertura-progresso i.vista{background:rgba(255,255,255,.8)}
@@ -330,7 +334,7 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 @keyframes arq-ab-segura{to{transform:scale(1)}}
 .arq-abertura.saindo{animation:arq-ab-sai var(--arq-ab-saida) ease-in forwards;pointer-events:none}
 .arq-abertura.saindo .arq-abertura-pintura{animation:arq-ab-mergulha var(--arq-ab-saida) ease-in forwards}
-.arq-abertura.saindo :is(.arq-abertura-legenda,.arq-abertura-progresso,.arq-abertura-pular){opacity:0;transition:opacity .3s}
+.arq-abertura.saindo :is(.arq-abertura-legenda,.arq-abertura-progresso,.arq-abertura-pular,.arq-abertura-controles){opacity:0;transition:opacity .3s}
 @keyframes arq-ab-sai{60%{opacity:1}to{opacity:0}}
 @keyframes arq-ab-mergulha{from{transform:scale(1.06)}to{transform:scale(2.2)}}
 .arq-abertura.parada :is(.arq-ab-fundo,.arq-ab-frente,.arq-ab-pulsa,.arq-ab-cai,.arq-ab-nevoa,.arq-ab-raio,.arq-ab-chuva,.arq-ab-balanca,.arq-ab-sobe,.arq-ab-vagalume,.arq-ab-pisca){animation:none}
