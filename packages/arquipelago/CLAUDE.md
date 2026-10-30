@@ -1,5 +1,45 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Primeiros passos com o Zappy e dicas de primeira vez (30/10/2026)
+
+Proposta aprovada no canvas `https://claude.ai/artifact/X1GNotDTxZpdJsNG5QvhW8` (decisões com as
+sugestões do canvas: marca no aparelho, o X recolhe a tarefa, quem já tem a geladeira só vê pelo
+menu, o nome "Primeiros passos"). Notas e prints: `docs/qa/2026-10-30-primeiros-passos.md`.
+
+- Regras puras: `sistemas/primeiros-passos.ts` (`PASSOS`: 6 capítulos e 23 falas; `feito`,
+  `jaFeito` vira lembrete, `pular`, `esperar`; `passoQueVale`, `voltarAoConstruir`,
+  `deveComecarSozinho`, `lerMarca`) e `sistemas/dicas.ts` (`DICAS`: Quadro, painel do Quadro,
+  barco, chegada de barco, lanterna, borrão, primeiro Lumi e primeira noite). Ler e fechar nunca
+  conta: a tarefa só se cumpre pelo jogo mudando (andar 2 m, girar a câmera, pular, a porta, a
+  etapa do primeiro pedido, o menu, a obra). O passo da horta segue `primeiroPedido`.
+- ⚠️ A geladeira não vai no quarto (`objeto-no-quarto`) e a frente da porta nova é a varanda
+  (ocupada no lote): a obra do capítulo 6 é Construir, Parede (cômodo encostado na casa), Porta
+  do cômodo, Objetos e Pronto. "Depois" deixa `obraPendente` e a obra volta (falas 18 a 22) quando
+  o Construir da casa abre.
+- Loja: `estado/primeiros-passos.ts` (`lojaDosPassos(loja, plataforma)`, uma por montagem: o
+  passo, a fase fala/isso/lembrete, a fila das dicas, `tela` com o anel e o cartão) e
+  `guiaDoZappy(loja)` (mutável, lido a cada quadro pelo Zappy e pelo facho). Marcas no aparelho:
+  `arquipelago:passos:<publico>:<perfil>` e `arquipelago:dicas:<publico>:<perfil>`; o salvamento
+  não muda.
+- Tela: `interface/primeiros-passos.tsx` (`PrimeirosPassos` na HUD confere o jogo a cada 250 ms,
+  dispara as dicas e mostra o `CartaoDoZappy`; `CartaoDosPassosNoMenu`, `FalaDosPassosNoMenu`,
+  `ReverOsPrimeirosPassos` no Diário, a linha no Agora por `useLinhaDosPassos`). O cartão nunca
+  toma o foco e solta o foco depois do clique: com um botão focado, o teclado não anda
+  (`controles/controle.ts`). Com o cartão na tela, a fala solta do jogo entra nele (recado) e o
+  `.arq-dica` não aparece. O anel é `data-anel` na raiz da HUD (`estilos.ts`).
+- Mundo: `mundo/guia-do-zappy.tsx` (facho e anel no alvo, círculo do "andar") e o Zappy voando
+  até o alvo (`personagem/zappy.tsx`; com menos movimento ele aparece lá).
+- Começa sozinho ao abrir o jogo sem abertura (`jogo.tsx`) ou quando a abertura da primeira vez
+  fecha (`interface/abertura.tsx`), no lugar da boas-vindas. Falas trocadas: a geladeira ganha
+  (horta), a planta de interior espera o fim (`GanharProjetos`), o aviso do desafio de hoje e o
+  borrão fugindo viram dica na primeira vez. As falas que tocam na jornada vêm da voz
+  (`VozDoJogo.passos`).
+- Conserto da HUD junto: no Construir o "Agora" sai e o cartão do Zappy vai para `top:136px` (no
+  computador ele cobria o Agora e encostava no cartão de quem joga).
+- Playground: `?passos=1` (do zero), `?passos=manter`, `?dicas=1`; sem eles, passos feitos e dicas
+  desligadas. Testes: `tests/primeiros-passos.test.ts` e `tests/primeiros-passos-loja.test.ts`;
+  navegador: `playground/verificar-passos-browser.ts` (`ARQUIPELAGO_PARTE=passos|celular|dicas`).
+
 ## Integração dos portos de 30/10/2026
 
 Os cinco GLBs do commit `080b6a3d2` estão integrados. `raioDaEsperaDaIlha` amplia a espera

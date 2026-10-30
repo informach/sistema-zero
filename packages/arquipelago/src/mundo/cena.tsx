@@ -21,6 +21,7 @@ import { ConvidadosDaCasa } from './convidados'
 import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
 import { Farol } from './farol'
 import { CameraDaFoto } from './foto'
+import { GuiaDoZappyNoMundo } from './guia-do-zappy'
 import { HabitantesDaPraia } from './habitantes-da-praia'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
@@ -100,6 +101,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Medidor />
         </Physics>
         <Zappy />
+        <GuiaDoZappyNoMundo />
         <RotinaDosLumis />
       </Suspense>
     </Canvas>

@@ -16,7 +16,9 @@ import {
 } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { chaveDaAbertura } from '../src/sistemas/abertura'
+import { chaveDasDicas } from '../src/sistemas/dicas'
 import { lerFesta } from '../src/sistemas/festas'
+import { chaveDosPassos } from '../src/sistemas/primeiros-passos'
 import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
 
 /**
@@ -25,6 +27,7 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?posicao=2` (posto/etapa), `?publico=adulto`, `?limite=30`, `?liberado=0`, `?novo=1` e
  * `?em=x,z` ou `?em=x,z,y` (começa fora de casa, nesse ponto; o `y` põe em cima de um deque) e `?adiantar=13` (a noite chega aos 12 min).
  * `?abertura=1` mostra a abertura "O Cinza" (sem ele, ela fica marcada como vista).
+ * `?passos=1` mostra os primeiros passos com o Zappy e `?dicas=1` liga as dicas de primeira vez.
  * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
@@ -166,5 +169,21 @@ if (q.get('abertura') === '1') {
     // Sem armazenamento: o jogo mostra a abertura só num jogo novo.
   }
 } else marcarAberturaVista(plataforma.publico, plataforma.perfil.id)
+// Os primeiros passos e as dicas de primeira vez também só aparecem quando a URL pede:
+// `?passos=1` começa do zero, `?passos=manter` continua de onde parou (recarregando a página);
+// `?dicas=1` liga as dicas sem nenhuma vista. Sem eles, os passos ficam feitos e as dicas
+// desligadas, e os verificadores de antes abrem o jogo como sempre.
+try {
+  const chavePassos = chaveDosPassos(plataforma.publico, plataforma.perfil.id)
+  if (q.get('passos') === '1') localStorage.removeItem(chavePassos)
+  else if (q.get('passos') !== 'manter')
+    localStorage.setItem(chavePassos, JSON.stringify({ situacao: 'feito', passo: 'fim' }))
+  const chaveDicas = chaveDasDicas(plataforma.publico, plataforma.perfil.id)
+  if (q.get('dicas') === '1') localStorage.removeItem(chaveDicas)
+  else if (q.get('dicas') !== 'manter')
+    localStorage.setItem(chaveDicas, JSON.stringify({ vistas: [], desligadas: true }))
+} catch {
+  // Sem armazenamento: os passos começam só num jogo novo, como a abertura.
+}
 const el = document.getElementById('jogo')
 if (el) montarArquipelago(el, plataforma)

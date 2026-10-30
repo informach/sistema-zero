@@ -361,4 +361,88 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-feira summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
 .arq-feira summary:focus-visible{outline:3px solid var(--arq-acento,#ffc93c);outline-offset:2px}
 .arq-insumos-campos{display:grid;grid-template-columns:minmax(0,2fr) minmax(90px,1fr);gap:12px}.arq-insumos-campos label{display:grid;gap:6px;font-weight:700;min-width:0}.arq-insumos-campos select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:8px;border:2px solid #e0c48c;border-radius:12px;background:#fff;color:#1d2340;font:inherit}.arq-insumos-campos select:focus-visible{outline:3px solid var(--arq-acento,#ffc93c);outline-offset:2px}
+/* Primeiros passos com o Zappy e dicas de primeira vez (30/10/2026). O cartão fica no lugar da
+   fala do Zappy (em cima dos painéis: a dica do Quadro aparece com ele aberto) e o anel acende na
+   parte da HUD que a fala mostra ("data-anel" na raiz da HUD). */
+.arq-guia{position:absolute;left:14px;bottom:90px;z-index:4;box-sizing:border-box;width:min(448px,calc(100% - 28px));display:grid;gap:10px;padding:14px 14px 12px;border-radius:20px;background:rgba(20,26,58,.96);border:1.5px solid rgba(255,201,60,.55);box-shadow:0 14px 36px rgba(8,10,30,.5),0 0 0 4px rgba(255,201,60,.1);color:#fff8e7;text-align:left;pointer-events:auto;animation:arq-entra .35s ease}
+.arq-guia.dica{border-color:rgba(127,214,198,.75);box-shadow:0 14px 36px rgba(8,10,30,.5),0 0 0 4px rgba(127,214,198,.14)}
+.arq-guia.no-menu{position:static;width:auto;max-width:560px;animation:none}
+.arq-guia-topo{display:flex;gap:12px;align-items:flex-start}
+.arq-guia-rosto{--d:56px;position:relative;flex:none;display:block;width:var(--d);height:var(--d);box-sizing:border-box;border-radius:50%;overflow:hidden;border:2px solid #ffc93c;box-shadow:0 0 18px rgba(255,216,79,.55);background:#3b2f3a}
+.arq-guia-rosto img{position:absolute;width:calc(var(--d) * 7.111);max-width:none;left:calc(var(--d) * -3.056);top:calc(var(--d) * -1.456);pointer-events:none;user-select:none}
+.arq-guia-rosto.mini{--d:24px;border-width:1.5px;box-shadow:none}
+.arq-guia-rosto.grande{--d:64px}
+.arq-guia-meio{flex:1;min-width:0}
+.arq-guia-quem{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.arq-guia-quem b{font:800 13px/1 var(--arq-titulo);letter-spacing:.1em;text-transform:uppercase;color:#ffc93c}
+.arq-guia-capitulos{display:flex;gap:4px;align-items:center}
+.arq-guia-capitulos i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.22)}
+.arq-guia-capitulos i.feito{background:#5fd39a}
+.arq-guia-capitulos i.agora{width:18px;border-radius:4px;background:#ffc93c}
+.arq-guia-capitulos.largos i{width:22px;height:7px;border-radius:4px}
+.arq-guia-selo{padding:3px 8px;border-radius:999px;background:#7fd6c6;color:#0d3a33;font:800 11px/1.2 var(--arq-titulo);letter-spacing:.04em;text-transform:uppercase}
+.arq-guia-fala{margin:6px 0 0;font-size:18px;line-height:1.35;font-weight:800}
+.arq-guia-x{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:-6px -6px 0 0;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff8e7;cursor:pointer}
+.arq-guia-x:hover{background:rgba(255,255,255,.2)}
+.arq-guia-x:focus-visible,.arq-guia-link:focus-visible,.arq-agora-passos button:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
+.arq-guia-tarefa{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.06)}
+.arq-guia-tarefa kbd{display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 8px;box-sizing:border-box;border-radius:8px;background:#fff8e7;color:#1d2340;font:800 14px/1 var(--arq-titulo);box-shadow:0 3px 0 #aeb5d6}
+.arq-guia-extra{font-size:14px;font-weight:700;color:#c9d1e6}
+.arq-guia-tarefa b{margin-left:auto;font-size:13px;font-weight:800;color:#ffd866}
+.arq-guia-isso{margin:0;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;background:rgba(95,211,154,.16);color:#9ff0c6;font-size:15px;font-weight:800}
+.arq-guia-isso::before{content:"✓";font-size:18px;color:#5fd39a}
+.arq-guia-isso.lembrete{background:rgba(127,214,198,.14);color:#c7f2ea}
+.arq-guia-botoes{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.arq-guia-botoes .arq-botao{min-height:44px}
+.arq-guia-rodape{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.arq-guia-rodape small{font-size:12px;font-weight:700;color:#8f98c6}
+.arq-guia-link{min-height:32px;padding:4px 2px;border:0;background:none;color:#c9d1e6;font-family:inherit;font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.arq-guia-conta{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:#b9c0e0}
+.arq-guia-pontos{display:flex;gap:4px}
+.arq-guia-pontos i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
+.arq-guia-pontos i.vista{background:rgba(127,214,198,.55)}
+.arq-guia-pontos i.agora{width:16px;border-radius:3px;background:#7fd6c6}
+.arq-guia-recado{margin:0;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.08);font-size:14px;font-weight:700;line-height:1.35;color:#e6e9f8}
+.arq-agora li.arq-agora-passos{display:block}
+.arq-agora-passos button{display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:4px 8px 4px 4px;box-sizing:border-box;border:1.5px solid rgba(255,201,60,.6);border-radius:12px;background:rgba(255,201,60,.12);color:#fff8e7;font-family:inherit;font-size:14px;font-weight:800;line-height:1.25;text-align:left;cursor:pointer}
+.arq-hud{--arq-anel:rgba(255,201,60,.95)}
+.arq-hud[data-anel-cor=dica]{--arq-anel:rgba(127,214,198,.95)}
+.arq-hud[data-anel=necessidades] .arq-quem .arq-necessidades,.arq-hud[data-anel=mochila] .arq-inventario,.arq-hud[data-anel=menu] .arq-botao-menu,.arq-hud[data-anel=acao] .arq-acao,.arq-hud[data-anel=acao] .arq-toque-usar,.arq-hud[data-anel=pular] .arq-toque-pular,.arq-hud[data-anel=construir] [data-modo=construir],.arq-hud[data-anel=parede] [data-ferramenta=parede],.arq-hud[data-anel=porta] [data-ferramenta=porta],.arq-hud[data-anel=objetos] [data-ferramenta=objeto],.arq-hud[data-anel=pronto] .arq-obra-pronto,.arq-hud[data-anel=relogio] .arq-relogio,.arq-hud[data-anel=quadro] .arq-ilha-quadro,.arq-hud[data-anel=desafio-de-hoje] .arq-quadro-hoje,.arq-hud[data-anel=mapa] .arq-pausa-mapa .arq-mapa-papel,.arq-hud[data-anel=mapa] .arq-pausa-lugar[data-lugar=mapa]{outline:4px solid var(--arq-anel);outline-offset:3px}
+@media (prefers-reduced-motion:no-preference){.arq-hud[data-anel=necessidades] .arq-quem .arq-necessidades,.arq-hud[data-anel=mochila] .arq-inventario,.arq-hud[data-anel=menu] .arq-botao-menu,.arq-hud[data-anel=acao] .arq-acao,.arq-hud[data-anel=acao] .arq-toque-usar,.arq-hud[data-anel=pular] .arq-toque-pular,.arq-hud[data-anel=construir] [data-modo=construir],.arq-hud[data-anel=parede] [data-ferramenta=parede],.arq-hud[data-anel=porta] [data-ferramenta=porta],.arq-hud[data-anel=objetos] [data-ferramenta=objeto],.arq-hud[data-anel=pronto] .arq-obra-pronto,.arq-hud[data-anel=relogio] .arq-relogio,.arq-hud[data-anel=quadro] .arq-ilha-quadro,.arq-hud[data-anel=desafio-de-hoje] .arq-quadro-hoje,.arq-hud[data-anel=mapa] .arq-pausa-mapa .arq-mapa-papel,.arq-hud[data-anel=mapa] .arq-pausa-lugar[data-lugar=mapa]{animation:arq-anel 1.4s ease-in-out infinite}}
+@keyframes arq-anel{50%{outline-offset:7px}}
+.arq-passos-fim{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:20px;background:rgba(12,15,40,.55);pointer-events:none}
+.arq-passos-fim-cartao{display:grid;justify-items:center;gap:10px;width:min(560px,100%);box-sizing:border-box;margin-bottom:180px;padding:26px 28px;border-radius:26px;background:rgba(20,26,58,.97);border:1.5px solid rgba(255,201,60,.6);box-shadow:0 20px 60px rgba(0,0,0,.5);color:#fff8e7;text-align:center}
+.arq-passos-fim-cartao small{font:800 13px/1 var(--arq-titulo);letter-spacing:.12em;text-transform:uppercase;color:#ffc93c}
+.arq-passos-fim-cartao h2{margin:0;font:800 30px/1.1 var(--arq-titulo)}
+.arq-passos-fim-cartao ul{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
+.arq-passos-fim-cartao li{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:rgba(95,211,154,.12);border:1px solid rgba(95,211,154,.35);font-size:15px;font-weight:800;text-align:left}
+.arq-passos-fim-cartao li svg{flex:none;color:#5fd39a}
+.arq-passos-fim-cartao p{margin:4px 0 0;font-size:15px;line-height:1.5;font-weight:700;color:#c9d1e6}
+.arq-passos-menu{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:rgba(255,201,60,.08);border:1.5px solid rgba(255,201,60,.45)}
+.arq-passos-menu-texto{display:grid;gap:6px;min-width:0}
+.arq-passos-menu-texto b{font:800 19px/1.15 var(--arq-titulo)}
+.arq-passos-menu-acoes{display:flex;flex-direction:column;gap:8px}
+.arq-passos-menu-dicas{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)}
+.arq-passos-menu-dicas>span{margin-right:4px;font-size:13px;font-weight:800;color:#c9d1e6}
+.arq-passos-menu-dicas .arq-botao{min-height:36px;padding:4px 12px;font-size:14px}
+@media (min-width:641px){.arq-guia{left:16px;bottom:24px}.arq-hud.toque .arq-guia{bottom:auto;top:260px}.arq-hud:has(.arq-obra) .arq-dica{top:136px}}
+.arq-hud:has(.arq-obra) .arq-guia{bottom:auto;top:136px}
+@media (max-width:640px){
+.arq-guia{left:10px;bottom:236px;width:calc(100% - 112px);gap:8px;padding:11px 10px 9px 11px;border-radius:18px}
+.arq-guia-rosto{--d:42px}
+.arq-guia-fala{font-size:16px;line-height:1.3}
+.arq-guia-quem b{font-size:11px}
+.arq-guia-capitulos i{width:6px;height:6px}
+.arq-guia-capitulos i.agora{width:14px}
+.arq-guia-rodape small{display:none}
+.arq-guia-tarefa{padding:6px 8px}
+.arq-guia-tarefa kbd{min-width:26px;height:26px;font-size:12px}
+.arq-hud:has(.arq-obra) .arq-guia{top:186px;width:calc(100% - 20px)}
+.arq-agora-passos button{min-height:28px;padding:2px 8px 2px 2px;font-size:13px}
+.arq-passos-fim{place-items:start center;padding-top:70px}
+.arq-passos-fim-cartao{margin-bottom:0;padding:18px}
+.arq-passos-fim-cartao h2{font-size:24px}
+.arq-passos-menu{grid-template-columns:auto minmax(0,1fr)}
+.arq-passos-menu-acoes{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
+}
 `

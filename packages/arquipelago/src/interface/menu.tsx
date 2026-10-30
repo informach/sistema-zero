@@ -15,6 +15,7 @@ import { PreferenciasDeConforto } from './conforto'
 import { PAINEL_DO_DIARIO } from './diario'
 import { Icone, type NomeDoIcone } from './icones'
 import { MapaPequeno, useIlhaAqui } from './mapa'
+import { CartaoDosPassosNoMenu, FalaDosPassosNoMenu } from './primeiros-passos'
 import { voltarDaVisita } from './visitas'
 import { useVoz } from './voz'
 
@@ -147,6 +148,7 @@ export function Menu() {
               key={l.nome}
               type="button"
               className="arq-pausa-lugar"
+              data-lugar={l.icone}
               disabled={ferramentaAberta || l.fora}
               onClick={l.ir}
             >
@@ -337,6 +339,9 @@ function Inicio({
         </p>
       ) : null}
       <ClimaDaSuaIlha />
+      <CartaoDosPassosNoMenu />
+      {/* A fala dos primeiros passos que mostra o mapa entra no espaço livre do meio. */}
+      <FalaDosPassosNoMenu />
     </section>
   )
 }

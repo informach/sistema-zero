@@ -33,6 +33,7 @@ import plantaInteriorGlb from '../assets/objetos/planta-interior.glb'
 import { lojaDoConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosMinijogos, useMinijogos } from '../estado/minijogos'
+import { lojaDosPassos } from '../estado/primeiros-passos'
 import {
   areaComGiro,
   falaDoGanho,
@@ -375,12 +376,16 @@ export function GanharProjetos() {
       if (ganhos.length === 0) return
       s.mudar(() => salvamento)
       const ultimo = ganhos.at(-1)
-      if (ultimo) s.dizer(falaDoGanho(ultimo))
+      if (!ultimo) return
+      // Nos primeiros passos: a geladeira é a fala 16 deles; o resto espera o fim do tutorial.
+      const passos = lojaDosPassos(loja, plataforma).getState()
+      if (!passos.andando()) s.dizer(falaDoGanho(ultimo))
+      else if (ultimo !== 'geladeira') passos.adiar(falaDoGanho(ultimo))
     }
     conferir()
     return loja.subscribe((s, antes) => {
       if (s.salvamento !== antes.salvamento) conferir()
     })
-  }, [loja])
+  }, [loja, plataforma])
   return null
 }

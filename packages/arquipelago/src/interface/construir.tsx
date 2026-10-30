@@ -147,6 +147,7 @@ export function ModosDoJogo() {
         type="button"
         className="arq-botao leve"
         aria-pressed={construindo}
+        data-modo="construir"
         onClick={() => {
           if (!construindo) construcao.getState().abrir()
         }}
@@ -262,6 +263,7 @@ export function BarraDeConstruir() {
             key={f.id}
             type="button"
             className="arq-ferramenta"
+            data-ferramenta={f.id}
             aria-pressed={atual === f.id}
             onClick={() => s().escolher(f.id)}
           >
@@ -333,7 +335,7 @@ export function BarraDeConstruir() {
         >
           －
         </button>
-        <button type="button" className="arq-botao" onClick={() => s().fechar()}>
+        <button type="button" className="arq-botao arq-obra-pronto" onClick={() => s().fechar()}>
           Pronto
         </button>
       </div>

@@ -12,6 +12,7 @@ import {
 } from '../sistemas/diario'
 import { Pegada } from './pegadas'
 import { PedidoDaIlha } from './primeiro-pedido'
+import { ReverOsPrimeirosPassos } from './primeiros-passos'
 import { ConviteDaSemana } from './tema-da-semana'
 
 export const ICONE_DO_VALE: Record<string, string> = { pegadas: '🐾', fossil: '🦴', filhote: '🦕' }
@@ -129,6 +130,7 @@ export function Diario() {
           >
             Rever a abertura: O Cinza
           </button>
+          <ReverOsPrimeirosPassos />
           <ol className="arq-diario-paginas">
             {paginas.map((p) =>
               p.aberta ? (

@@ -35,6 +35,11 @@ export interface VozDoJogo {
   ilhaFechadaNoMapa: (ilha: Ilha) => string
   /** O marco da jornada no cartão de quem joga, no alto do HUD (a posição vai de 1 a 8). */
   marcoDaJornada: (posicao: number) => string
+  /**
+   * As falas dos primeiros passos e das dicas que tocam na jornada: o mapa das ilhas cinzas e o
+   * quadro que pede um curso (as outras são do Zappy e iguais nos dois públicos).
+   */
+  passos: { mapa: string; curso: string }
 }
 
 export const VOZ_KIDS: VozDoJogo = {
@@ -74,6 +79,10 @@ export const VOZ_KIDS: VozDoJogo = {
   marcoDaJornada: (posicao) => {
     const i = Math.min(POSTOS_DA_JORNADA.length, Math.max(1, Math.floor(posicao) || 1)) - 1
     return NOMES_DOS_POSTOS[POSTOS_DA_JORNADA[i]!]
+  },
+  passos: {
+    mapa: 'Essas são as ilhas. As cinzas abrem quando você chega a um posto novo nos cursos.',
+    curso: 'Se um quadro pedir um curso, faça as aulas e volte aqui.',
   },
 }
 

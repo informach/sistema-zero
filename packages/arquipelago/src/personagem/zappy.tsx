@@ -13,6 +13,9 @@ import {
 import zappyGlb from '../assets/zappy.glb'
 import { useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
+import { guiaDoZappy } from '../estado/primeiros-passos'
+import { ALCANCE_DO_GUIA } from '../mundo/guia-do-zappy'
+import { CORPO } from '../sistemas/corpo'
 import {
   ALTURA_DO_ZAPPY,
   diferencaDeAngulo,
@@ -42,6 +45,11 @@ const VELOCIDADE_DO_MERGULHO_MAXIMO = 7
 const LONGE_DO_LUGAR = 0.35
 /** Mais longe que isso (m) foi um salto (início do jogo, teleporte): ele aparece no lugar, sem cruzar o mapa. */
 const SALTO = 8
+/** Mostrando um lugar (os primeiros passos): a altura acima do chão e a rapidez do voo até lá. */
+const ALTURA_NO_GUIA = 2.1
+const RAPIDEZ_NO_GUIA = 2.2
+/** Depois de mostrar um lugar, por quanto tempo (s) a volta é voando, nunca um salto. */
+const VOLTA_DO_GUIA = 5
 
 /**
  * O Zappy, o vagalume guia, voando no ombro do personagem e virando junto com ele: andando, olha
@@ -57,7 +65,13 @@ export function Zappy() {
   const luz = useRef<PointLight>(null)
   const brilho = useRef({ forca: 1 })
   const voando = useRef(false)
-  const voo = useRef({ emVolta: rastro.direcao, parado: 0, inclinacao: 0, iniciado: false })
+  const voo = useRef({
+    emVolta: rastro.direcao,
+    parado: 0,
+    inclinacao: 0,
+    iniciado: false,
+    guiouAte: -Infinity,
+  })
   useFrame(({ clock }, dtBruto) => {
     const g = grupo.current
     if (!g) return
@@ -69,17 +83,31 @@ export function Zappy() {
     v.emVolta = suavizarAngulo(v.emVolta, rastro.direcao, RAPIDEZ_EM_VOLTA, dt)
     const lugar = lugarAoLado(ela, v.emVolta)
     const balanco = reduzido ? 0.3 : 1
-    const alvoX = lugar.x + Math.sin(t * 1.3) * 0.12 * balanco
-    const alvoZ = lugar.z + Math.cos(t * 1.1) * 0.12 * balanco
-    const alvoY = rastro.y + ALTURA_DO_ZAPPY + Math.sin(t * 2.4) * 0.1 * balanco
+    // Nos primeiros passos ele voa na frente até o lugar que a fala mostra e fica piscando lá.
+    const guia = guiaDoZappy(loja).alvo
+    const mostrando =
+      guia !== null && Math.hypot(guia.x - rastro.x, guia.z - rastro.z) < ALCANCE_DO_GUIA
+        ? guia
+        : null
+    if (mostrando) v.guiouAte = t + VOLTA_DO_GUIA
+    const perto = mostrando ?? lugar
+    const alvoX = perto.x + Math.sin(t * 1.3) * 0.12 * balanco
+    const alvoZ = perto.z + Math.cos(t * 1.1) * 0.12 * balanco
+    const alvoY =
+      (mostrando ? rastro.y - CORPO.doCentroAoPe + ALTURA_NO_GUIA : rastro.y + ALTURA_DO_ZAPPY) +
+      Math.sin(t * 2.4) * 0.1 * balanco
     if (!v.iniciado) g.rotation.order = 'YXZ'
-    if (!v.iniciado || Math.hypot(alvoX - g.position.x, alvoZ - g.position.z) > SALTO) {
+    const saltou = t > v.guiouAte && Math.hypot(alvoX - g.position.x, alvoZ - g.position.z) > SALTO
+    // Com menos movimento ele não atravessa a tela voando: aparece no lugar que mostra.
+    if (!v.iniciado || saltou || (mostrando && reduzido)) {
       g.position.set(alvoX, alvoY, alvoZ)
-      g.rotation.y = rastro.direcao
-      v.emVolta = rastro.direcao
+      if (!v.iniciado || saltou) {
+        g.rotation.y = rastro.direcao
+        v.emVolta = rastro.direcao
+      }
       v.iniciado = true
     }
-    const k = 1 - Math.exp(-dt * 5)
+    const k = 1 - Math.exp(-dt * (mostrando ? RAPIDEZ_NO_GUIA : 5))
     g.position.x += (alvoX - g.position.x) * k
     g.position.y += (alvoY - g.position.y) * k
     g.position.z += (alvoZ - g.position.z) * k
@@ -91,8 +119,10 @@ export function Zappy() {
     v.parado = rastro.velocidade > VELOCIDADE_DE_ANDAR ? 0 : v.parado + dt
     const olhar = paraOndeOlhar(rastro.velocidade, v.parado)
     const daqui = { x: g.position.x, z: g.position.z }
-    const alvoGiro =
-      olhar === 'caminho'
+    // Mostrando um lugar, ele olha para ela (chamando para perto).
+    const alvoGiro = mostrando
+      ? giroPara(daqui, ela)
+      : olhar === 'caminho'
         ? rastro.direcao
         : olhar === 'ela'
           ? giroPara(daqui, ela)

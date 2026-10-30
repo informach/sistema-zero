@@ -6,6 +6,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosPassos } from '../estado/primeiros-passos'
 import { type Clima, climaLiberado, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
 import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
@@ -57,7 +58,7 @@ function Canteiro({
   canteiro: DadosDoCanteiro
   agora: number
 }) {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const { x, z, escala } = lugarDoCanteiro(canteiro.id, indice)
   const fase = estagio(canteiro, agora)
   const p = progresso(canteiro, agora)
@@ -129,13 +130,15 @@ function Canteiro({
             return s
           }
           const colheita = r.colheita
-          loja
-            .getState()
-            .dizer(
-              r.ganhouGeladeira
-                ? falaDoGanho('geladeira')
-                : `Você colheu ${colheita.qtd} ${ITENS[colheita.item]?.nome.toLowerCase()}.${fraseDaColheitaEspecial(colheita.bonus)}`,
-            )
+          // Nos primeiros passos, a geladeira ganha é a fala 16 deles (no lugar desta).
+          if (!(r.ganhouGeladeira && lojaDosPassos(loja, plataforma).getState().andando()))
+            loja
+              .getState()
+              .dizer(
+                r.ganhouGeladeira
+                  ? falaDoGanho('geladeira')
+                  : `Você colheu ${colheita.qtd} ${ITENS[colheita.item]?.nome.toLowerCase()}.${fraseDaColheitaEspecial(colheita.bonus)}`,
+              )
           return r.salvamento
         }
         return s
