@@ -181,6 +181,15 @@ dois, o serviço sobe igual e as leituras ficam desligadas.
 
 ## Seção Jogo do Admin: cadastro dos desafios (27/10/2026)
 
+**C01a, 30/10/2026:** `domain/repertorio-do-desafio.ts` transforma cobertura impossível em
+problema de publicação: bloco desconhecido, sem curso publicado da comunidade ou só ensinado
+depois da ilha. Quadro das Cores exige fonte em base2d, base3d ou mission até o posto; Poder,
+extra ou Maestria não podem ser a única fonte. Desafios opcionais podem usar Poder do posto,
+sempre sujeitos aos blocos conquistados pela pessoa. Não confundir chegar à ilha com concluir
+seus cursos. Mesma análise na importação; reativação confere metadados/blocos congelados da
+publicação, nunca o rascunho posterior. Sem mudança de formato, conquistas ou salvamento.
+Testes `repertorio-do-desafio.test.ts`, `equipe.test.ts` e `manifestos.test.ts`.
+
 Tabelas da migration gerada `0002_desafios`: `desafios` (cadastro, `revisao` é a trava; índice
 único de `slug` e de quadro por público e ilha fora os arquivados, nos dois casos traduzidos em
 409 `SLUG_EM_USO`/`QUADRO_OCUPADO`), `desafio_publicacoes` (cópia imutável de cada publicação:

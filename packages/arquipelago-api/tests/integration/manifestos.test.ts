@@ -139,6 +139,20 @@ async function subir(m: ManifestoDeDesafios) {
 }
 
 describe('manifesto de desafios', () => {
+  test('gabarito aprovado sem curso fica em rascunho ao importar, com motivo na prévia e no resultado', async () => {
+    analisar.mockImplementation(async () => ({ ...analiseOk, blocosDoGabarito: ['sz_js_if_else'] }))
+    const m = manifesto([item('sem-fonte-de-ensino')])
+    const { conferencia, aplicacao } = await subir(m)
+    expect(conferencia.contagem.publica).toBe(0)
+    expect(conferencia.contagem.comProblema).toBe(1)
+    expect(conferencia.itens[0]?.analise?.problemas.map((p) => p.codigo)).toContain(
+      'BLOCO_SEM_CURSO',
+    )
+    expect(aplicacao.itens[0]?.publicado).toBe(false)
+    expect(aplicacao.itens[0]?.problemas.map((p) => p.codigo)).toContain('BLOCO_SEM_CURSO')
+    expect([...desafios.linhas.values()][0]?.situacao).toBe('rascunho')
+  })
+
   for (const ilhaCompleta of ['bosque', 'vila-doce', 'recife', 'pico', 'vale', 'nuvens'])
     test(`${ilhaCompleta} preserva os dois públicos ao importar, exportar e reimportar`, async () => {
       // A rota e o repositório são reais/em memória; a execução pedagógica tem sua prova no studio-runtime.

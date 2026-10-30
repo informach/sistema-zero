@@ -5,6 +5,23 @@ Situação por funcionalidade, com código, conteúdo, provas e implantação se
 o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
 versões anteriores registram a evolução; não substituem o contrato atual.
 
+## Repertório antes de publicar desafios (C01a, 30/10/2026)
+
+Chegar a um posto abre a ilha, mas não ensina os cursos daquele posto. Cada desafio continua
+pedindo os blocos que a pessoa realmente conquistou. Antes de publicar, a equipe precisa
+ter uma fonte de ensino publicada na mesma comunidade, naquele posto ou antes. Bloco sem
+curso, inexistente ou de posto futuro impede publicar, mesmo com gabarito aprovado.
+
+Um Quadro das Cores não pode obrigar toda a comunidade a escolher um Poder específico.
+Seu repertório precisa aparecer em uma base 2D, base 3D ou missão. Desafios opcionais podem
+usar Poderes escolhidos; quem ainda não tem o bloco vê onde aprender. A regra vale também
+para importar e reativar. Reativar confere a versão publicada; editar o rascunho não altera
+essa versão. Conquistas anteriores continuam válidas. Nada muda na promoção da Jornada.
+
+Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
+Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
+lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
+
 ## Medição: fotografia e mudanças de aparência (A06, 30/10/2026)
 
 A equipe vê três coisas separadas. A fotografia mostra a aparência guardada hoje nos projetos

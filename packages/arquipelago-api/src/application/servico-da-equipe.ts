@@ -12,7 +12,6 @@ import {
   type DesafioDaEquipe,
   type GravarDesafio,
   type ItemDaConferencia,
-  ilha as ilhaDoContrato,
   LIMITES_DO_DESAFIO,
   LIMITES_DO_MANIFESTO,
   type ManifestoDeDesafios,
@@ -37,6 +36,7 @@ import {
   ordemDeGravacao,
 } from '../domain/manifestos'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
+import { analisarRepertorio } from '../domain/repertorio-do-desafio'
 import {
   ConflitoDoCadastroError,
   DesafioComProblemasError,
@@ -359,6 +359,30 @@ export class ServicoDaEquipe {
     situacao: 'arquivado' | 'ativo',
   ): Promise<DesafioDaEquipe> {
     this.exigirEscrita(equipe)
+    if (situacao === 'ativo') {
+      const atual = await this.exigirRevisao(id, revisaoBase)
+      if (atual.revisaoPublicada !== null) {
+        // Reativar recupera a publicação congelada, não publica o rascunho atual.
+        if (!atual.metadadosPublicados || !atual.blocosPublicados) {
+          throw new DesafioComProblemasError([
+            {
+              codigo: 'PUBLICACAO_SEM_REPERTORIO',
+              mensagem:
+                'A publicação anterior não tem repertório conferível. Revise e publique novamente.',
+            },
+          ])
+        }
+        const curriculo = await this.leituras.curriculo(
+          atual.metadadosPublicados.publico === 'kids' ? 'kids' : 'adult',
+        )
+        const { problemas } = analisarRepertorio(
+          atual.blocosPublicados,
+          curriculo,
+          atual.metadadosPublicados,
+        )
+        if (problemas.length > 0) throw new DesafioComProblemasError(problemas)
+      }
+    }
     return paraEquipe(
       resolver(
         await this.repo.mudarSituacao({
@@ -398,15 +422,19 @@ export class ServicoDaEquipe {
       throw erro
     }
     const exigidos = blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais)
-    const cobertura = coberturaDosBlocos(exigidos, curriculo, ilhaDoContrato(metadados.ilha).posto)
-    const problemas: ProblemaDoDesafio[] = [...membros.problemas, ...problemasLocais(conteudo)]
+    const repertorio = analisarRepertorio(exigidos, curriculo, metadados)
+    const problemas: ProblemaDoDesafio[] = [
+      ...membros.problemas,
+      ...problemasLocais(conteudo),
+      ...repertorio.problemas,
+    ]
     return {
       conteudo,
       vista: membros.vista,
       analise: {
         blocosDerivados: [...membros.blocosDoGabarito].sort(),
         blocosExigidos: exigidos,
-        cobertura,
+        cobertura: repertorio.cobertura,
         problemas,
         gabarito: membros.gabarito,
         inicial: membros.inicial,

@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import {
+  AnaliseDoDesafioSchema,
   type AnaliseDosMembros,
   type CriarDesafio,
   type CurriculoDeBlocos,
   DesafioDaEquipeSchema,
   POSTOS_DA_JORNADA,
+  ProblemasDePublicacaoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
 import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
@@ -198,6 +200,117 @@ describe('análise e publicação', () => {
     const r = await chamar('POST', '/desafios', equipe(), pedido())
     return DesafioDaEquipeSchema.parse(r.json)
   }
+
+  test('cobertura sem curso impede publicar mesmo com gabarito correto', async () => {
+    membros = membrosDeMentira({
+      analisarObjetivos: async () => analiseOk,
+      lerCurriculo: async () => ({ ...curriculo, cursos: [] }),
+    })
+    montar()
+    const d = await criar()
+    const previa = await chamar('POST', `/desafios/${d.resumo.id}/analisar`, equipe(), {
+      revisaoBase: 1,
+    })
+    expect(
+      AnaliseDoDesafioSchema.parse(previa.json).problemas.some(
+        (p) => p.codigo === 'BLOCO_SEM_CURSO',
+      ),
+    ).toBe(true)
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), {
+      revisaoBase: 1,
+    })
+    expect(r.status).toBe(422)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
+  })
+
+  test('reativar confere a cobertura da publicação anterior sem confiar no rascunho', async () => {
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    membros = membrosDeMentira({
+      analisarObjetivos: async () => analiseOk,
+      lerCurriculo: async () => ({ ...curriculo, cursos: [] }),
+    })
+    montar()
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(r.status).toBe(422)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
+  })
+
+  test('quadro não exige Poder específico; desafio opcional pode usá-lo', async () => {
+    membros = membrosDeMentira({
+      analisarObjetivos: async () => analiseOk,
+      lerCurriculo: async () => ({
+        ...curriculo,
+        cursos: curriculo.cursos.map((c) => ({ ...c, papel: 'power' })),
+      }),
+    })
+    montar()
+    const d = await criar()
+    const recusado = await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), {
+      revisaoBase: 1,
+    })
+    expect(recusado.status).toBe(422)
+    expect(ProblemasDePublicacaoSchema.parse(recusado.json).problemas[0]?.codigo).toBe(
+      'QUADRO_DEPENDE_DE_OPCIONAL',
+    )
+    const g = await chamar('PUT', `/desafios/${d.resumo.id}`, equipe(), {
+      revisaoBase: 1,
+      metadados: { ...d.metadados, tipo: 'desafio-do-dia', quadro: null },
+      conteudo: { ...d.conteudo, recompensa: { ...d.conteudo.recompensa, cor: false } },
+    })
+    expect(g.status).toBe(200)
+    expect(
+      (await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 2 }))
+        .status,
+    ).toBe(200)
+  })
+
+  test('reativação usa público, ilha e blocos congelados, não uma alteração do rascunho', async () => {
+    const d = await criar()
+    await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
+    await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
+    await chamar('PUT', `/desafios/${d.resumo.id}`, equipe(), {
+      revisaoBase: 2,
+      metadados: { ...d.metadados, publico: 'adulto', ilha: 'sua-ilha' },
+      conteudo: { ...d.conteudo, blocosManuais: { acrescentar: ['futuro'], retirar: [] } },
+    })
+    const publicos: string[] = []
+    membros = membrosDeMentira({
+      analisarObjetivos: async () => analiseOk,
+      lerCurriculo: async (publico) => {
+        publicos.push(publico)
+        return curriculo
+      },
+    })
+    montar()
+    const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 3,
+    })
+    expect(r.status).toBe(200)
+    expect(publicos).toEqual(['kids'])
+    expect(desafios.linhas.get(d.resumo.id)?.blocosPublicados).toEqual([
+      'mover_dir',
+      'sz_js_repeat',
+    ])
+  })
+
+  test('arquivar e reativar rascunho sem publicação não exigem Members', async () => {
+    const d = await criar()
+    membros = null
+    montar()
+    expect(
+      (await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 }))
+        .status,
+    ).toBe(200)
+    expect(
+      (await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), { revisaoBase: 2 }))
+        .status,
+    ).toBe(200)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
+  })
 
   test('analisa: blocos do gabarito + acrescentados − retirados, com a cobertura de cada um', async () => {
     const d = await criar()
