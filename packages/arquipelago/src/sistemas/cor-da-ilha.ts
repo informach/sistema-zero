@@ -8,8 +8,8 @@ import type { Quadro } from './quadro-das-cores'
  * - ponte fechada: tudo cinza;
  * - ponte aberta: um pouco de cor na ilha inteira (`COR_AO_ABRIR`);
  * - quadro feito: o pedaço dele com a cor inteira;
- * - quadro sem desafio publicado: o pedaço já vem colorido (a criança nunca fica presa num cinza
- *   sem ter o que fazer). Ilha sem nenhum desafio, ou com os desafios desligados, fica toda colorida.
+ * - quadro sem desafio publicado ou leitura desconhecida: conserva a cor-base da ponte;
+ * - conclusão histórica: o pedaço continua colorido, mesmo com a publicação arquivada.
  */
 
 /** Quanto de cor a ilha ganha quando a ponte abre, antes de qualquer quadro (0 a 1). */
@@ -21,13 +21,15 @@ export const BORDA_DOS_PEDACOS = 0.18
 
 /**
  * Quais pedaços estão pintados (1) e quais esperam o desafio (0), na ordem dos quadros.
- * `null` = sem a lista dos desafios (desligados ou fora do ar): a ilha toda colorida.
+ * `null` = sem a lista: só as posições anteriormente confirmadas recebem a cor inteira.
  */
-export function pedacosPintados(quadros: readonly Quadro[] | null): number[] {
-  if (!quadros) return Array.from({ length: QUADROS_POR_ILHA }, () => 1)
+export function pedacosPintados(
+  quadros: readonly Quadro[] | null,
+  conquistados: readonly number[] = [],
+): number[] {
   return Array.from({ length: QUADROS_POR_ILHA }, (_, i) => {
-    const q = quadros[i]
-    return !q || q.estado === 'feito' || q.estado === 'vazio' ? 1 : 0
+    const q = quadros?.find((q) => q.numero === i + 1)
+    return conquistados.includes(i + 1) || q?.estado === 'feito' ? 1 : 0
   })
 }
 
@@ -57,7 +59,8 @@ export function pedacoDoPonto(x: number, z: number): { pedaco: number; dentro: n
 
 /**
  * Anda os pedaços até o alvo: o que acabou de ser pintado escorre em `DURACAO_DA_TINTA_S`; o que
- * perde a cor (um desafio novo publicado) ou a primeira leitura vão na hora. Muda `atual`.
+ * já foi confirmado não perde a cor numa atualização. A primeira leitura de uma montagem
+ * substitui tudo, para não carregar pintura de outro perfil. Muda `atual`.
  */
 export function andarPedacos(
   atual: number[],
@@ -68,6 +71,6 @@ export function andarPedacos(
   for (let i = 0; i < atual.length; i++) {
     const a = atual[i] ?? 0
     const b = alvo[i] ?? 0
-    atual[i] = naHora || b < a ? b : Math.min(b, a + dt / DURACAO_DA_TINTA_S)
+    atual[i] = naHora ? b : Math.max(a, Math.min(b, a + dt / DURACAO_DA_TINTA_S))
   }
 }

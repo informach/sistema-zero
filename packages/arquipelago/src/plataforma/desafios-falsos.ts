@@ -10,6 +10,7 @@ import {
   type RespostaDoServico,
   type ResultadoDeFerramenta,
 } from '@sistemazero/arquipelago-contracts'
+import { coresDoCatalogo } from '../sistemas/cores-conquistadas'
 
 /**
  * Desafios de mentira para o playground: três quadros cadastrados no Bosque (um pronto para fazer,
@@ -56,7 +57,7 @@ export function criarDesafiosFalsos(
   o: { dia?: DiaDoPlayground; agora?: () => Date; quadrosFeitos?: boolean } = {},
 ) {
   const dia = o.dia ?? 'pronto'
-  // Com `quadrosFeitos`, os três do Bosque já vêm feitos (a ilha inteira colorida, para prints).
+  // Com `quadrosFeitos`, as seis posições do Bosque têm conquistas confirmadas para prints.
   const situacao = (s: DesafioNaLista['situacao']) => (o.quadrosFeitos ? 'concluido' : s)
   const agora = o.agora ?? (() => new Date())
   let feitoHoje = dia === 'feito'
@@ -75,6 +76,18 @@ export function criarDesafiosFalsos(
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
   ]
+  if (o.quadrosFeitos) {
+    for (let quadro = 4; quadro <= QUADROS_POR_ILHA; quadro++) {
+      lista.push(
+        desafio(
+          `00000000-0000-4000-8000-0000000000a${quadro}`,
+          quadro,
+          `Quadro ${quadro}`,
+          'concluido',
+        ),
+      )
+    }
+  }
   if (dia !== 'nenhum')
     lista.push({
       ...desafio(DO_DIA, 0, 'A corrida das pedras', dia === 'feito' ? 'concluido' : 'disponivel'),
@@ -98,6 +111,8 @@ export function criarDesafiosFalsos(
   })
   return {
     buscar(caminho: string, metodo: string): RespostaDoServico | null {
+      if (metodo === 'GET' && caminho === '/desafios/cores')
+        return { status: 200, corpo: coresDoCatalogo(lista) }
       if (metodo === 'GET' && (caminho === '/desafios' || caminho.startsWith('/desafios?')))
         return { status: 200, corpo: resposta() }
       const vista = caminho.match(/^\/desafios\/([^/]+)\/recompensa-vista$/)

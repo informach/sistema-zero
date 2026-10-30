@@ -30,6 +30,7 @@ export function rotasDosDesafios(deps: { desafios: ServicoDosDesafios; tokenInte
     .get('', ({ headers, query }) =>
       desafios.listar(lerJogador(headers), validar(FiltroDaIlha, query).ilha),
     )
+    .get('/cores', ({ headers }) => desafios.cores(lerJogador(headers)))
     .get('/:id', ({ headers, params }) => desafios.abrir(lerJogador(headers), idDe(params)))
     .post('/:id/verificar', ({ headers, params, body }) =>
       desafios.verificar(lerJogador(headers), idDe(params), validar(VerificarDesafioSchema, body)),

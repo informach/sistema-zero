@@ -21,7 +21,6 @@ import { andarPedacos, corMedia, pedacosPintados } from '../sistemas/cor-da-ilha
 import { BOIAS_DA_ILHA_DO_ANEL, RODA_DA_ILHA_CENTRAL } from '../sistemas/correnteza'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
 import { artigoDaIlha } from '../sistemas/luneta'
-import { quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { Boias } from './boias'
 import { BosqueVivo } from './bosque-vivo'
 import {
@@ -591,27 +590,20 @@ function PonteDoModelo({
 function usePinturaDaIlha(ilha: Ilha, chegada: number): number {
   const { loja, plataforma } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
-  const dados = useDesafios(desafios, (s) => s.dados)
-  const fechado = useDesafios(desafios, (s) => s.fechado)
+  const cores = useDesafios(desafios, (s) => s.cores)
   const pintura = pinturaDaIlha(ilha)
-  // Sem lista ainda (carregando): espera, sem mexer; fechada (desligada ou fora): toda colorida.
+  // O catálogo pode faltar; a pintura usa somente posições confirmadas desta pessoa.
   const alvo = useMemo(
-    () =>
-      dados
-        ? pedacosPintados(quadrosDaIlha(dados.desafios, ilha.id))
-        : fechado
-          ? pedacosPintados(null)
-          : null,
-    [dados, fechado, ilha.id],
+    () => pedacosPintados(null, cores.ilhas.find((i) => i.id === ilha.id)?.quadros),
+    [cores, ilha.id],
   )
   const primeira = useRef(true)
   useFrame((_, dt) => {
     pintura.uniforms.uArqChegada.value = chegada
-    if (!alvo) return
     andarPedacos(pintura.uniforms.uArqPedacos.value, alvo, Math.min(dt, 0.1), primeira.current)
     primeira.current = false
   })
-  return corMedia(chegada, alvo ?? pedacosPintados(null))
+  return corMedia(chegada, alvo)
 }
 
 /** Quando a ponte acabou de abrir: a cor escorre pela ilha e as tábuas aparecem uma a uma. */

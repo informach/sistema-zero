@@ -567,8 +567,16 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   ponte), regra em `sistemas/cor-da-ilha.ts` e tinta no shader em `mundo/pintura-da-ilha.ts`
   (`pinturaDaIlha(ilha)`: uniforms divididos por todos os materiais da ilha, leve, completa e as
   cópias das copas; `pintarMateriais` liga o `onBeforeCompile` uma vez por material). O `Anel` lê
-  a lista dos desafios ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Testes:
-  `tests/cor-da-ilha.test.ts`.
+  catálogo e conquistas ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Sem publicação ou
+  leitura, fica a base de 30% da ponte ou a última cor confirmada, nunca cor inteira por falha.
+  `estado/desafios.ts` lê `/desafios/cores` independentemente do catálogo. A posição histórica
+  prevalece sobre o lugar atual de um desafio movido. Reserva para host antigo: conclusões do
+  catálogo. `sistemas/cores-conquistadas.ts` une a fotografia visual por perfil/público, até 2 KB
+  no localStorage, sem escrita de suporte e sem autoridade para acesso ou recompensa. Quadro,
+  contador e ilha usam essa mesma fotografia. Uniforms reiniciam na primeira renderização de
+  cada montagem; publicação não tira tinta. Sem campo novo no salvamento.
+  Testes: `cor-da-ilha.test.ts`, `cores-conquistadas.test.ts`, `quadro-das-cores.test.ts`.
+  Navegador: `playground/verificar-cores-browser.ts`; QA em `docs/qa/2026-10-30-cores-conquistadas/`.
 
 ## Caderno dos Lumis (28/10/2026)
 

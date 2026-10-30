@@ -42,6 +42,7 @@ describe('a porta da plataforma para o jogo', () => {
         voltarPara: '/',
       })
       for (const [metodo, caminho] of [
+        ['GET', '/desafios/cores'],
         ['GET', '/insumos/pendente'],
         ['POST', '/insumos/comprar'],
         ['GET', '/pedidos/pendentes'],
@@ -183,6 +184,7 @@ describe('a porta da plataforma para o jogo', () => {
     const id = '22222222-2222-4222-8222-222222222222'
     for (const ok of [
       '/desafios',
+      '/desafios/cores',
       '/desafios?ilha=bosque',
       `/desafios/${id}`,
       `/desafios/${id}/recompensa-vista`,
@@ -191,6 +193,8 @@ describe('a porta da plataforma para o jogo', () => {
     for (const nao of [
       `/desafios/${id}/verificar`,
       '/desafios/nao-uuid',
+      '/desafios/cores?perfil=outra-pessoa',
+      '/desafios/cores/../admin',
       '/desafios?ilha=../admin',
       '/desafios?ilha=bosque&x=1',
       '/admin/desafios',

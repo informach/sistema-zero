@@ -84,6 +84,7 @@ const CAMINHOS_DO_JOGO = new Set([
   '/tempo/recuperar',
   '/tempo/sessao',
   '/cartas',
+  '/desafios/cores',
   '/galeria',
   '/galeria/compras',
   '/insumos/pendente',

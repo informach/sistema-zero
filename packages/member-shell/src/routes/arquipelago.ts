@@ -97,7 +97,8 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/insumos/') ||
           caminho.startsWith('/pedidos/') ||
           caminho.startsWith('/familia/minijogos') ||
-          caminho.startsWith('/irmaos')
+          caminho.startsWith('/irmaos') ||
+          caminho === '/desafios/cores'
         )
           resposta.headers.set('cache-control', 'private, no-store')
         return resposta
@@ -245,6 +246,7 @@ export function createArquipelagoRoutes(deps: {
     arquipelagoGaleria: { GET: () => chamar('/galeria', 'GET') },
     arquipelagoGaleriaCompras: { POST: comCorpo('/galeria/compras', 'POST', CORPO_PEQUENO) },
     /** Desafios da ilha (`?ilha=`): situação, o que falta e de onde se aprende. */
+    arquipelagoCoresConquistadas: { GET: () => chamar('/desafios/cores', 'GET') },
     arquipelagoDesafios: {
       GET: (req: Request) => {
         const ilha = new URL(req.url).searchParams.get('ilha')
