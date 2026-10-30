@@ -126,10 +126,12 @@ for (const d of desafiosIniciaisDoPico('kids'))
               passes: true,
             })
           }
+          // C01b: esconder o floco é do cenário; o erro causal é contar sem a marca.
           if (d.quadro === 3)
-            wrong('floco-continua-visivel', ['uma-vez'], (b) =>
+            wrong('floco-sem-marca', ['uma-vez'], (b) =>
               visit(b.events, (s) => {
-                if (s.type === 'g2d:setOpacity') s.percent = 100
+                if (s.type === 'if' && s.cond.type === 'binop' && s.cond.left.type === 'var')
+                  if (s.cond.left.name === 'pegou') s.cond = { type: 'bool', value: true }
               }),
             )
           for (const scenario of scenarios) {

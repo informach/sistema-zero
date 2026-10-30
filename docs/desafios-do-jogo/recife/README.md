@@ -25,8 +25,10 @@ Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a 
 do Bosque e da Vila. O quadro deve estar livre quando o pacote for importado. O principal
 dá cor, as variações não. `recompensa.atracao` identifica `mira-de-bolhas`, como nos outros
 minijogos. Os complementares usam a própria atração por slug e `publicar: false`.
-Todos os itens Kids e adultos usam `publicar: false`. O pedido automático anterior foi
-retirado na revisão C01b1. Nenhum deles foi importado nesta entrega.
+Revisão C01b de 30/10: sem opacidade nem clique em grupo (só apareciam em cursos extras), os
+seis quadros, Kids e adulto, têm todas as fontes na trilha e voltam a pedir publicação
+(`publicar: true`); as três variações continuam com `publicar: false`. A importação e a
+barreira C01a ficam com a equipe. Nenhum deles foi importado nesta entrega.
 
 ## Os cinco complementares
 
@@ -48,17 +50,19 @@ entre x 40 e 500 com velocidade horizontal de módulo 1. A bolha sobe de y 320 a
 y 120 e volta com velocidade de módulo 2, usando posição observada, velocidade e movimento
 já ensinados. Esses valores pertencem ao cenário pronto; não são exigências do objetivo.
 A espera de 4,5 s no ensaio deixa margem para a viagem de cerca de 3,4 s a 60 atualizações.
-Não se concede nenhum bloco novo. Opacidade vem do Cadê Todo Mundo e a aritmética do Dino.
+Não se concede nenhum bloco novo. A aritmética vem do Dino. Desde C01b, o coral cuidado troca
+a imagem cinza pela colorida e a chave só é desenhada enquanto está na mão (sem opacidade).
 
 ## O que se completa no principal
 
-Cenário, imagens, textos, placar, botões e reinício por clique estão prontos. No principal,
-a pessoa completa quatro regras: mover a mira horizontalmente, soltar uma bolha para cima,
+Cenário, imagens, textos e placar estão prontos. No principal, a pessoa completa quatro
+regras: mover a mira horizontalmente, soltar uma bolha para cima com Espaço (A no toque),
 prender o alvo no contato e contar uma vez. A bolha que erra não pontua; ao sair pelo alto,
-libera outra tentativa. Enquanto uma bolha sobe, o botão não pode lançar outra.
+libera outra tentativa. Enquanto uma bolha sobe, Espaço não lança outra.
 
-O alvo preso fica marcado e a bolha é encaixada ao redor dele. Acertar o mesmo alvo de novo
-não aumenta os pontos. O botão Recomeçar permite repetir a rodada.
+O alvo preso troca de imagem (o alvo dentro da bolha) e a bolha é encaixada ao redor dele.
+Acertar o mesmo alvo de novo não aumenta os pontos. A bolha só é desenhada em jogo
+(`bolhaVisivel`).
 
 As variações começam com o jogo funcionando e mudam somente uma regra principal:
 
@@ -66,7 +70,7 @@ As variações começam com o jogo funcionando e mudam somente uma regra princip
 - Dois pontos: cada captura passa a somar 2, preservando a contagem única.
 - Outro alvo: completar o contato com `alvoNovo`, já desenhado, usando `novoPreso`.
 
-O extra, separado da regra principal, é Enter recomeçar como o botão já pronto. É uma
+O extra, separado da regra principal, é Enter (+ no toque) recomeçar a rodada. É uma
 aplicação do evento de teclado conhecido. Os objetivos observam o comportamento das regras
 que faltam completar. Não premiam a montagem do cenário nem exigem trocar a arte.
 
@@ -83,14 +87,14 @@ O teste de cobertura usa as listas versionadas, não concede conquistas. Na impo
 a análise do Members continua conferindo o currículo publicado e os blocos de cada pessoa.
 Os arquivos de execução são gerados pelo Estúdio a partir do IR e são iguais aos regenerados
 pelo Blockly. SVGs em `projetos.ts` desenham água, corais, lançador, bolha, estrela, concha e
-botões. Não há imagem externa, modelo novo ou dependência do Blender.
+os dois alvos presos na bolha. Não há imagem externa, modelo novo ou dependência do Blender.
 
 ## Medidas e verificações
 
 Palco de 640 × 480, mira inicial em (72, 360), velocidade horizontal 3. A bolha começa
 em y 340, alinhada à mira, e sobe com velocidade -5 ou -8. O alvo principal está em
 (430, 120); o novo, em (190, 120). Ambos medem 56 × 56, dentro da bolha de 64 × 64.
-Os botões ficam à direita da área reservada aos controles de toque.
+As instruções ficam embaixo, fora da área dos controles de toque.
 
 O teste de lançamento usa uma faixa sem alvo. O teste de captura usa outra tentativa,
 evitando exigir que a bolha continue em voo depois de já acertar. A variação rápida observa

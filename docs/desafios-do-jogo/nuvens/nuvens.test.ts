@@ -74,8 +74,10 @@ test('cada variação mantém o cenário e muda uma regra só, além do extra', 
     const b = SZIRV2Schema.parse(gabarito.ir).behavior
     expect(inicial.assets).toEqual(gabarito.assets)
     expect(semantic(a.start)).toBe(semantic(b.start))
-    const principais = a.events.filter((s) => s.type !== 'g2d:onKey')
-    const completos = b.events.filter((s) => s.type !== 'g2d:onKey')
+    // O extra é o Enter; Espaço (regar) e a seta para cima (sol) são principais desde C01b.
+    const extra = (s: (typeof a.events)[number]) => s.type === 'g2d:onKey' && s.key === 'Enter'
+    const principais = a.events.filter((s) => !extra(s))
+    const completos = b.events.filter((s) => !extra(s))
     const eventosMudados = principais.filter((s, i) => semantic(s) !== semantic(completos[i]))
     // O laço só pode mudar na simulação; fora dela, é o mesmo desenho.
     expect(semSimulacao(a.loops)).toBe(semSimulacao(b.loops))
@@ -86,7 +88,7 @@ test('cada variação mantém o cenário e muda uma regra só, além do extra', 
   }
 })
 
-test('o principal deixa incompletos só os botões e a simulação; a flor já troca de desenho', () => {
+test('o principal deixa incompletas só as teclas e a simulação; a flor já troca de desenho', () => {
   const inicial = SZIRV2Schema.parse(montarProjeto('jardim', false).ir).behavior
   const gabarito = SZIRV2Schema.parse(montarProjeto('jardim', true).ir).behavior
   expect(semantic(inicial.start)).toBe(semantic(gabarito.start))

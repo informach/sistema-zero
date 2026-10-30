@@ -80,11 +80,9 @@ nativeTest(
           if (s?.type !== 'g2d:everySeconds') throw Error('Simulação ausente')
           return s
         }
-        const botao = (behavior: SZIRV2['behavior'], grupo: string) => {
-          const c = eventos(behavior).find(
-            (s) => s.type === 'g2d:onGroupClick' && s.groupVar === grupo,
-          )
-          if (c?.type !== 'g2d:onGroupClick') throw Error(`Botão ${grupo} ausente`)
+        const tecla = (behavior: SZIRV2['behavior'], key: string) => {
+          const c = eventos(behavior).find((s) => s.type === 'g2d:onKey' && s.key === key)
+          if (c?.type !== 'g2d:onKey') throw Error(`Tecla ${key} ausente`)
           return c
         }
         /** Troca o número somado numa variável (dentro de `statements`). */
@@ -105,10 +103,10 @@ nativeTest(
             s.body = s.body.filter((x) => !(x.type === 'assign' && x.name === 'tempo'))
           })
           wrong('cresce-sem-agua', ['sem-agua'], (behavior) => {
+            // O se de fora confere a água (C01b: um se dentro do outro, sem o "e").
             const crescer = simulacao(behavior).body.find((x) => x.type === 'if')
-            if (crescer?.type !== 'if' || crescer.cond.type !== 'logical')
-              throw Error('Condição do crescimento ausente')
-            crescer.cond = crescer.cond.right
+            if (crescer?.type !== 'if') throw Error('Condição do crescimento ausente')
+            crescer.cond = { type: 'bool', value: true }
           })
           wrong('nao-gasta-agua', ['crescer'], (behavior) => {
             visit(simulacao(behavior).body, (s) => {
@@ -120,7 +118,7 @@ nativeTest(
             })
           })
           wrong('rega-pouca', ['botoes'], (behavior) =>
-            somaDe(botao(behavior, 'botoesRegar').body, 'agua', 3, 1),
+            somaDe(tecla(behavior, 'Space').body, 'agua', 3, 1),
           )
           wrong('nunca-floresce', ['florescer'], (behavior) => {
             const s = simulacao(behavior)
@@ -130,7 +128,7 @@ nativeTest(
           })
         } else if (d.slug.endsWith('rega-forte')) {
           wrong('rega-antiga', ['rega-forte'], (behavior) =>
-            somaDe(botao(behavior, 'botoesRegar').body, 'agua', 5, 3),
+            somaDe(tecla(behavior, 'Space').body, 'agua', 5, 3),
           )
         } else if (d.slug.endsWith('sol-forte')) {
           wrong('sol-forte-sempre', ['sol-forte'], (behavior) =>

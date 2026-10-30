@@ -130,6 +130,12 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
     start.push({ type: 'g2d:createImageSprite', varName, image, x, y, w, h })
     draw.push({ type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: varName })
   }
+  const soDesenharSe = (spriteVar: string, cond: JSExpr) => {
+    const i = draw.findIndex((d) => d.type === 'g2d:drawSprite' && d.spriteVar === spriteVar)
+    const desenho = draw[i]
+    if (!desenho) throw new Error(`desenho de ${spriteVar} ausente`)
+    draw[i] = iff(cond, [desenho])
+  }
   const value = (text: string, name: string, y: number) =>
     draw.push(label(text, 24, y), label(v(name), 320, y))
   if (quadro === 1) {
@@ -174,20 +180,14 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
       type: 'g2d:onOverlap',
       aVar: 'pinguim',
       bVar: 'floco',
-      body: pronto
-        ? [
-            iff(eq('pegou', 0), [
-              set('pegou', 1),
-              { type: 'g2d:setOpacity', spriteVar: 'floco', percent: 0 },
-              add('flocos', 1),
-            ]),
-          ]
-        : [],
+      body: pronto ? [iff(eq('pegou', 0), [set('pegou', 1), add('flocos', 1)])] : [],
     })
     update.push(
       { type: 'g2d:arrowsX', spriteVar: 'pinguim', speed: 3 },
       { type: 'g2d:clampToScreen', spriteVar: 'pinguim', ctxVar: 'ctx' },
     )
+    // O floco só é desenhado até ser recolhido (pronto no cenário; sem opacidade, C01b).
+    soDesenharSe('floco', eq('pegou', 0))
     value('Flocos:', 'flocos', 420)
   } else if (quadro === 4) {
     vars({ peso: 0 })
@@ -205,6 +205,7 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
     image('pinguim', 'pinguim', 160, 260, 44, 48)
     image('barreira', 'gelo', 320, 240, 60, 100)
     image('bandeira', 'bandeira', 500, 228, 40, 80)
+    soDesenharSe('barreira', bin('>', v('faltam'), n(0)))
     events.push(
       key(
         'Space',
@@ -218,11 +219,7 @@ export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean
       ),
     )
     update.push(
-      iff(
-        bin('>', v('faltam'), n(0)),
-        [add('faltam', -1)],
-        [{ type: 'g2d:setOpacity', spriteVar: 'barreira', percent: 0 }],
-      ),
+      iff(bin('>', v('faltam'), n(0)), [add('faltam', -1)]),
       iff(eq('atravessou', 1), [
         iff(bin('<', { type: 'g2d:spriteX', spriteVar: 'pinguim' }, n(500)), [
           velocity(0, 2),
@@ -357,7 +354,7 @@ export function objetivosDoQuadroPico(
         [wait(300), press('ArrowRight', 1000), press('ArrowLeft', 1000), press('ArrowRight', 1000)],
         'flocos',
         1,
-        [at(1, 'flocos', 0), at(2, 'pegou', 1), at(2, 'floco.opacity', 0), at(3, 'flocos', 1)],
+        [at(1, 'flocos', 0), at(2, 'pegou', 1), at(3, 'flocos', 1)],
       ),
     )
   if (quadro === 4)
@@ -416,7 +413,8 @@ export function desafiosIniciaisDoPico(publico: PublicoDoDesafio) {
       tipo: 'quadro-das-cores',
       quadro,
       ordem: quadro * 10,
-      publicar: false,
+      // C01b: todas as fontes na trilha; a importação continua com a equipe.
+      publicar: true,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,

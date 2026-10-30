@@ -100,6 +100,16 @@ export function baseDoQuadro(input: {
     placar(text: string, name: string, y = 390) {
       draw.push(label(text, 24, y), label(v(name), 350, y))
     },
+    /**
+     * Desenha o sprite só com a condição (C01b): o que antes era opacidade, sem bloco de curso
+     * extra. Pronto no cenário; não faz parte do objetivo.
+     */
+    soDesenharSe(varName: string, cond: JSExpr) {
+      const i = draw.findIndex((d) => d.type === 'g2d:drawSprite' && d.spriteVar === varName)
+      const desenho = draw[i]
+      if (!desenho) throw new Error(`desenho de ${varName} ausente`)
+      draw[i] = iff(cond, [desenho])
+    },
     finish(pronto: boolean): Project {
       const ir = assignStableIdsToIR(
         {

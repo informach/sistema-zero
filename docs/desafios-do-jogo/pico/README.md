@@ -29,9 +29,11 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a convenção do
 Bosque, da Vila e do Recife. O quadro deve estar livre quando o pacote for importado. O principal
-dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. Todos os itens Kids e
-adultos usam `publicar: false` após C01b1, sem alterar publicações remotas. Cada complementar
-indica a própria atração pelo slug. Público e publicação são separados.
+dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. Revisão C01b de 30/10:
+sem grupo com sprites avulsos, clique em grupo nem opacidade (só apareciam em cursos extras), os
+seis quadros, Kids e adulto, têm todas as fontes na trilha e voltam a pedir publicação
+(`publicar: true`); as três variações seguem com `publicar: false`. A importação e a barreira
+C01a ficam com a equipe. Cada complementar indica a própria atração pelo slug.
 
 ## Os cinco complementares
 
@@ -56,19 +58,21 @@ ensaio dá margem à liberação a 60 atualizações por segundo.
 
 ## O que se completa no principal
 
-Cenário de neve, o pinguim, os dois blocos de gelo com o buraco, a água, a bandeira, os botões e
-o Recomeçar estão prontos. No principal, a pessoa completa:
+Cenário de neve, o pinguim, os dois blocos de gelo com o buraco, a água, a bandeira, a
+gravidade, o pouso no gelo e Enter (+ no toque) para recomeçar estão prontos. O pouso compara a
+posição do pinguim com a faixa e o topo de cada gelo, com blocos da trilha; a colisão por eixo
+em código é matéria do Mestre, em Python. No principal, a pessoa completa:
 
-- o laço: aplicar a gravidade, andar com as setas, aplicar a velocidade, manter na tela e, para
-  cada gelo que o pinguim encostar vindo de cima, colocá-lo de pé no topo e marcar `noChao`;
-- o Pular: velocidade y -12, só com `noChao` verdadeiro (nada de pular no ar);
+- o laço: andar com as setas antes de aplicar a velocidade e manter na tela depois;
+- o pulo com Espaço (A no toque): velocidade y -12, só com `noChao` verdadeiro;
 - a água: cair nela devolve o pinguim ao começo;
 - a bandeira: encostar nela marca `chegou` e mostra o recado de fim, uma vez só.
 
 As variações começam com o jogo funcionando e mudam somente uma regra principal:
 
-- Pulo alto: um gelo flutuante com a bandeira em cima; o Pular passa de -9 para -13.
-- Floco de neve: completar o contato com o floco já desenhado (`pegouFloco`, esconder, somar um).
+- Pulo alto: um gelo flutuante com a bandeira em cima; o pulo passa de -9 para -13.
+- Floco de neve: completar o contato com o floco já desenhado (`pegouFloco` e somar um; o
+  floco só é desenhado enquanto `pegouFloco` é falso).
 - Quedas: somar um em `quedas` no contato com a água, que já devolve ao começo.
 
 O extra, separado da regra principal, é a seta para cima também pular, só no gelo.
@@ -86,7 +90,7 @@ O pulo não usa o kit do dino: ele pousa só no chão do palco e desenharia um d
 pinguim. Pousar no gelo é a regra que a criança monta, e vale também para o gelo flutuante.
 
 Os SVGs em `projetos.ts` desenham o céu com as montanhas, a água, o pinguim de gorro, o gelo,
-a bandeira, o floco e os botões. Não há imagem externa, modelo novo ou dependência do Blender.
+a bandeira e o floco. Não há imagem externa, modelo novo ou dependência do Blender.
 
 ## Medidas
 

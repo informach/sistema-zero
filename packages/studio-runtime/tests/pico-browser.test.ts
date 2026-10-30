@@ -81,11 +81,8 @@ nativeTest(
           return c
         }
         const botaoPular = (behavior: SZIRV2['behavior']) => {
-          const c = eventos(behavior).find(
-            (s) => s.type === 'g2d:onGroupClick' && s.groupVar === 'botoesPular',
-          )
-          if (c?.type !== 'g2d:onGroupClick' || c.body[0]?.type !== 'if')
-            throw Error('Botão Pular ausente')
+          const c = eventos(behavior).find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
+          if (c?.type !== 'g2d:onKey' || c.body[0]?.type !== 'if') throw Error('Pulo ausente')
           return c.body[0]
         }
         const forcaDoPulo = (behavior: SZIRV2['behavior'], de: number, para: number) =>
@@ -108,12 +105,12 @@ nativeTest(
             const l = laco(behavior)
             l.body = l.body.filter((s) => s.type !== 'g2d:applyGravity')
           })
-          wrong('sem-pouso', ['andar-e-pousar'], (behavior) =>
-            visit(behavior.loops, (s) => {
-              if (s.type === 'g2d:onSpriteGroupOverlap' && s.body[0]?.type === 'if')
-                s.body[0].cond = { type: 'bool', value: false }
-            }),
-          )
+          wrong('sem-pouso', ['andar-e-pousar'], (behavior) => {
+            // O pouso pronto: os ifs do laço que olham a faixa x de cada gelo.
+            for (const s of laco(behavior).body)
+              if (s.type === 'if' && s.cond.type === 'binop' && s.cond.left.type === 'g2d:spriteX')
+                s.cond = { type: 'bool', value: false }
+          })
           wrong('setas-paradas', ['andar-e-pousar'], (behavior) =>
             visit(behavior.loops, (s) => {
               if (s.type === 'g2d:arrowsX') s.speed = 0

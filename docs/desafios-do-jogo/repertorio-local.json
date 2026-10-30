@@ -2524,7 +2524,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -2571,7 +2571,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -2620,7 +2620,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -2641,23 +2641,19 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
-        "sz_math_arithmetic",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_restart",
-        "sz_js_if_else",
-        "sz_js_var_increment",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-uma-bolha-por-vez",
@@ -2670,7 +2666,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -2718,7 +2714,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -2739,20 +2735,18 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
-        "sz_math_arithmetic",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas",
@@ -2765,7 +2759,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "mirar",
@@ -2773,7 +2767,7 @@
         },
         {
           "id": "soltar",
-          "descricao": "Soltar bolha lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe."
+          "descricao": "Espaço lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe."
         },
         {
           "id": "prender",
@@ -2788,25 +2782,18 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
-        "sz_g2d_apply_velocity",
-        "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
-        "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
-        "sz_js_var_assign",
+        "sz_js_if_else",
         "sz_js_var_create",
         "sz_val_bool",
         "sz_val_number",
@@ -2814,14 +2801,18 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [
+        "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_set_image",
+        "sz_g2d_set_velocity",
         "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
-        "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_increment",
         "sz_val_compare"
       ],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-rapida",
@@ -2845,22 +2836,19 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -2877,7 +2865,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-pontos",
@@ -2901,22 +2889,19 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -2933,7 +2918,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-alvo-novo",
@@ -2957,22 +2942,19 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -2989,7 +2971,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-a-corrente-muda-adulto",
@@ -3002,7 +2984,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3049,7 +3031,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3098,7 +3080,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3119,23 +3101,19 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
-        "sz_math_arithmetic",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_restart",
-        "sz_js_if_else",
-        "sz_js_var_increment",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-uma-bolha-por-vez-adulto",
@@ -3148,7 +3126,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3196,7 +3174,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3217,20 +3195,18 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
-        "sz_math_arithmetic",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-adulto",
@@ -3243,7 +3219,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "mirar",
@@ -3251,7 +3227,7 @@
         },
         {
           "id": "soltar",
-          "descricao": "Soltar bolha lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe."
+          "descricao": "Espaço lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe."
         },
         {
           "id": "prender",
@@ -3266,25 +3242,18 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
-        "sz_g2d_apply_velocity",
-        "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
-        "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
-        "sz_js_var_assign",
+        "sz_js_if_else",
         "sz_js_var_create",
         "sz_val_bool",
         "sz_val_number",
@@ -3292,14 +3261,18 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [
+        "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_set_image",
+        "sz_g2d_set_velocity",
         "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
-        "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_increment",
         "sz_val_compare"
       ],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-rapida-adulto",
@@ -3323,22 +3296,19 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -3355,7 +3325,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-pontos-adulto",
@@ -3379,22 +3349,19 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -3411,7 +3378,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "recife-mira-de-bolhas-alvo-novo-adulto",
@@ -3435,22 +3402,19 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -3467,7 +3431,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-pulo-com-apoio",
@@ -3480,7 +3444,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3531,7 +3495,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3579,7 +3543,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3606,20 +3570,15 @@
         "sz_g2d_on_overlap",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
         "sz_js_var_create",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_restart",
-        "sz_g2d_set_opacity",
-        "sz_js_if_else",
-        "sz_js_var_assign",
-        "sz_js_var_increment",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-mochila-de-neve",
@@ -3632,7 +3591,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3681,7 +3640,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -3704,7 +3663,6 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -3718,7 +3676,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma",
@@ -3731,15 +3689,15 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "andar-e-pousar",
-          "descricao": "O pinguim cai até o gelo e fica de pé nele, e as setas o levam para os lados sem sair da tela."
+          "descricao": "As setas levam o pinguim para os lados sobre o gelo, sem sair da tela."
         },
         {
           "id": "pular",
-          "descricao": "Pular faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar."
+          "descricao": "Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar."
         },
         {
           "id": "agua",
@@ -3754,39 +3712,34 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
+        "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_math_arithmetic",
         "sz_val_bool",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_apply_gravity",
-        "sz_g2d_arrows_x",
-        "sz_g2d_on_sprite_group_overlap",
-        "sz_g2d_sprite_y",
-        "sz_js_if_else",
-        "sz_math_arithmetic",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "tiposAcrescentados": ["sz_g2d_arrows_x"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-pulo-alto",
@@ -3810,24 +3763,21 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -3841,7 +3791,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-floco",
@@ -3865,26 +3815,22 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
-        "sz_g2d_set_opacity",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -3898,7 +3844,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-quedas",
@@ -3922,25 +3868,22 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -3954,7 +3897,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-pulo-com-apoio-adulto",
@@ -3967,7 +3910,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4018,7 +3961,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4066,7 +4009,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4093,20 +4036,15 @@
         "sz_g2d_on_overlap",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
         "sz_js_var_create",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_restart",
-        "sz_g2d_set_opacity",
-        "sz_js_if_else",
-        "sz_js_var_assign",
-        "sz_js_var_increment",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-mochila-de-neve-adulto",
@@ -4119,7 +4057,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4168,7 +4106,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4191,7 +4129,6 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -4205,7 +4142,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-adulto",
@@ -4218,15 +4155,15 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "andar-e-pousar",
-          "descricao": "O pinguim cai até o gelo e fica de pé nele, e as setas o levam para os lados sem sair da tela."
+          "descricao": "As setas levam o pinguim para os lados sobre o gelo, sem sair da tela."
         },
         {
           "id": "pular",
-          "descricao": "Pular faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar."
+          "descricao": "Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar."
         },
         {
           "id": "agua",
@@ -4241,39 +4178,34 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
+        "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_math_arithmetic",
         "sz_val_bool",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_apply_gravity",
-        "sz_g2d_arrows_x",
-        "sz_g2d_on_sprite_group_overlap",
-        "sz_g2d_sprite_y",
-        "sz_js_if_else",
-        "sz_math_arithmetic",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "tiposAcrescentados": ["sz_g2d_arrows_x"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-pulo-alto-adulto",
@@ -4297,24 +4229,21 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -4328,7 +4257,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-floco-adulto",
@@ -4352,26 +4281,22 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
-        "sz_g2d_set_opacity",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -4385,7 +4310,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "pico-fase-de-plataforma-quedas-adulto",
@@ -4409,25 +4334,22 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_gravity",
         "sz_g2d_apply_velocity",
         "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -4441,7 +4363,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-contagem-da-lista",
@@ -4547,7 +4469,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4570,7 +4492,6 @@
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -4582,7 +4503,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-uma-onda-por-vez",
@@ -4595,7 +4516,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4617,7 +4538,6 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -4630,7 +4550,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-rodada-conferida",
@@ -4643,7 +4563,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -4665,7 +4585,6 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -4677,7 +4596,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-proteja-os-ninhos",
@@ -5056,7 +4975,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5079,7 +4998,6 @@
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -5091,7 +5009,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-uma-onda-por-vez-adulto",
@@ -5104,7 +5022,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5126,7 +5044,6 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -5139,7 +5056,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-rodada-conferida-adulto",
@@ -5152,7 +5069,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5174,7 +5091,6 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -5186,7 +5102,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-proteja-os-ninhos-adulto",
@@ -5472,7 +5388,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5494,7 +5410,7 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -5505,7 +5421,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-luz-na-medida",
@@ -5518,7 +5434,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5565,7 +5481,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5587,7 +5503,7 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -5599,7 +5515,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-dois-recursos",
@@ -5612,7 +5528,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5705,7 +5621,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "tempo",
@@ -5713,7 +5629,7 @@
         },
         {
           "id": "botoes",
-          "descricao": "Regar guarda três de água e Sol guarda três de sol."
+          "descricao": "Espaço guarda três de água e a seta para cima guarda três de sol."
         },
         {
           "id": "sem-agua",
@@ -5732,16 +5648,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -5754,8 +5668,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_js_var_assign", "sz_js_var_increment", "sz_val_logic"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "tiposAcrescentados": ["sz_js_var_assign", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-rega-forte",
@@ -5772,23 +5686,21 @@
       "objetivosObrigatorios": [
         {
           "id": "rega-forte",
-          "descricao": "Regar guarda cinco de água de uma vez."
+          "descricao": "Espaço guarda cinco de água de uma vez."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -5799,13 +5711,12 @@
         "sz_js_var_increment",
         "sz_val_bool",
         "sz_val_compare",
-        "sz_val_logic",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-sol-forte",
@@ -5829,16 +5740,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -5849,13 +5758,12 @@
         "sz_js_var_increment",
         "sz_val_bool",
         "sz_val_compare",
-        "sz_val_logic",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-chuva",
@@ -5879,16 +5787,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -5899,13 +5805,12 @@
         "sz_js_var_increment",
         "sz_val_bool",
         "sz_val_compare",
-        "sz_val_logic",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-reserva-de-agua-adulto",
@@ -5918,7 +5823,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5940,7 +5845,7 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -5951,7 +5856,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-luz-na-medida-adulto",
@@ -5964,7 +5869,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -6011,7 +5916,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -6033,7 +5938,7 @@
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
-        "sz_g2d_set_opacity",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
@@ -6045,7 +5950,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-dois-recursos-adulto",
@@ -6058,7 +5963,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -6151,7 +6056,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "tempo",
@@ -6159,7 +6064,7 @@
         },
         {
           "id": "botoes",
-          "descricao": "Regar guarda três de água e Sol guarda três de sol."
+          "descricao": "Espaço guarda três de água e a seta para cima guarda três de sol."
         },
         {
           "id": "sem-agua",
@@ -6178,16 +6083,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -6200,8 +6103,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_js_var_assign", "sz_js_var_increment", "sz_val_logic"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "tiposAcrescentados": ["sz_js_var_assign", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-rega-forte-adulto",
@@ -6218,23 +6121,21 @@
       "objetivosObrigatorios": [
         {
           "id": "rega-forte",
-          "descricao": "Regar guarda cinco de água de uma vez."
+          "descricao": "Espaço guarda cinco de água de uma vez."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -6245,13 +6146,12 @@
         "sz_js_var_increment",
         "sz_val_bool",
         "sz_val_compare",
-        "sz_val_logic",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-sol-forte-adulto",
@@ -6275,16 +6175,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -6295,13 +6193,12 @@
         "sz_js_var_increment",
         "sz_val_bool",
         "sz_val_compare",
-        "sz_val_logic",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-chuva-adulto",
@@ -6325,16 +6222,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_seconds",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_set_image",
         "sz_g2d_setup_stage",
@@ -6345,13 +6240,12 @@
         "sz_js_var_increment",
         "sz_val_bool",
         "sz_val_compare",
-        "sz_val_logic",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_val_logic"]
+      "semFonteNaTrilha": []
     }
   ]
 }
