@@ -889,16 +889,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_setup_stage",
@@ -919,7 +917,7 @@
         "sz_js_var_assign",
         "sz_val_compare"
       ],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-pedras",
@@ -947,19 +945,17 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_random_x",
@@ -977,7 +973,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-noite",
@@ -994,25 +990,24 @@
       "objetivosObrigatorios": [
         {
           "id": "acender",
-          "descricao": "O botão do Zappy ilumina a pista sem tirar os bichos do lugar."
+          "descricao": "Espaço ou A ilumina a pista sem tirar os bichos do lugar."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
+        "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_random_x",
         "sz_g2d_set_opacity",
@@ -1030,7 +1025,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-placar",
@@ -1074,19 +1069,18 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
+        "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_random_x",
         "sz_g2d_set_velocity",
@@ -1103,7 +1097,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-vagalume-aceso-adulto",
@@ -1391,16 +1385,14 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_setup_stage",
@@ -1421,7 +1413,7 @@
         "sz_js_var_assign",
         "sz_val_compare"
       ],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-pedras-adulto",
@@ -1449,19 +1441,17 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_random_x",
@@ -1479,7 +1469,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-noite-adulto",
@@ -1496,25 +1486,24 @@
       "objetivosObrigatorios": [
         {
           "id": "acender",
-          "descricao": "O botão do Zappy ilumina a pista sem tirar os bichos do lugar."
+          "descricao": "Espaço ou A ilumina a pista sem tirar os bichos do lugar."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
+        "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_random_x",
         "sz_g2d_set_opacity",
@@ -1532,7 +1521,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-placar-adulto",
@@ -1576,19 +1565,18 @@
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
         "sz_g2d_every_frames",
-        "sz_g2d_on_group_click",
+        "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_random_x",
         "sz_g2d_set_velocity",
@@ -1605,7 +1593,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_on_group_click"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vila-doce-forno-da-vez",

@@ -38,15 +38,22 @@ test('fontes opcionais não comprovam repertório universal e cursos futuros nã
     'construtor/nave-contra-asteroides',
     'inventor/corre-dino',
   ])
-  const bosque = inventario.find((d) => d.slug === 'bosque-corrida-dos-bichos')!
-  const click = bosque.cobertura.find((c) => c.bloco === 'sz_g2d_on_group_click')!
+  const vila = inventario.find((d) => d.slug === 'vila-doce-corrida-do-entregador')!
+  const click = vila.cobertura.find((c) => c.bloco === 'sz_g2d_on_group_click')!
   expect(click.trilha).toEqual([])
   expect(click.opcionais).toContain('faisca/cade-todo-mundo')
-  expect(bosque.semFonteNaTrilha).toContain(click.bloco)
+  expect(vila.semFonteNaTrilha).toContain(click.bloco)
   const lista = inventario.find((d) => d.slug === 'vale-contagem-da-lista')!
   expect(lista.classificacao).toBe('apoio-preparado-em-blocos')
   expect(lista.tiposJaPresentes).toContain('sz_g2d_for_each_in_group')
   expect(lista.semFonteNaTrilha).toContain('sz_g2d_for_each_in_group')
+})
+test('os quadros do Bosque não exigem extra, e só Noite usa opacidade de fonte opcional', () => {
+  for (const d of inventario.filter((d) => d.ilha === 'bosque')) {
+    expect(d.semFonteNaTrilha, d.slug).toEqual(
+      d.slug.includes('-noite') ? ['sz_g2d_set_opacity'] : [],
+    )
+  }
 })
 test('classificação não chama blocos JavaScript de Python ou Pro', () => {
   for (const d of inventario) {

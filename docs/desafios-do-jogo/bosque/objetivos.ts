@@ -6,11 +6,8 @@ import type {
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import { bichos, type Variacao } from './projetos'
 
-const click = (path: string, groupPath: string): ExecutionStep => ({
-  action: 'clickTarget',
-  target: { kind: 'sprite', path, groupPath },
-})
-const largada = click('largada', 'botoesLargada')
+const tecla = (key: string): ExecutionStep => ({ action: 'press', key, holdMs: 30 })
+const largada = tecla('Enter')
 const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
 const val = (
   path: string,
@@ -108,12 +105,7 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     behavior(
       'espaco',
       'Extra: o bicho escolhido fica parado e anda quando você aperta espaço.',
-      [
-        click('cachorro', 'selecao_cachorro'),
-        largada,
-        wait(500),
-        { action: 'press', key: 'Space', holdMs: 30 },
-      ],
+      [tecla('ArrowUp'), largada, wait(500), { action: 'press', key: 'Space', holdMs: 30 }],
       val('cachorro.x', 'greaterThan', 0),
       [point(3, 'cachorro.x', 'equals', 0)],
       true,
@@ -142,8 +134,8 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'largada-enter',
-      'Extra: Enter também traz os quatro bichos ao começo e inicia outra corrida.',
-      [largada, wait(900), { action: 'press', key: 'Enter', holdMs: 30 }],
+      'Extra: Espaço ou A também traz os quatro bichos ao começo e inicia outra corrida.',
+      [largada, wait(900), tecla('Space')],
       val('correndo', 'equals', true),
       bichos.flatMap((b) => [
         point(2, `${b}.x`, 'greaterThan', 20),
@@ -155,8 +147,8 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
   noite: [
     behavior(
       'acender',
-      'O botão do Zappy ilumina a pista sem tirar os bichos do lugar.',
-      [click('zappy', 'botoesZappy')],
+      'Espaço ou A ilumina a pista sem tirar os bichos do lugar.',
+      [tecla('Space')],
       val('noite.opacity', 'atMost', 0.2),
       [
         point(0, 'noite.opacity', 'atLeast', 0.9),
@@ -165,8 +157,8 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'apagar',
-      'Extra: outro clique apaga a luz, e mais um acende de novo.',
-      Array.from({ length: 3 }, () => click('zappy', 'botoesZappy')),
+      'Extra: aperte Espaço ou A de novo para apagar, e outra vez para acender.',
+      Array.from({ length: 3 }, () => tecla('Space')),
       val('noite.opacity', 'atMost', 0.2),
       [point(1, 'noite.opacity', 'atMost', 0.2), point(2, 'noite.opacity', 'atLeast', 0.9)],
       true,
@@ -212,8 +204,8 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'zerar',
-      'Extra: Zerar placar deixa todas as vitórias em zero.',
-      [largada, wait(8000), click('zerar', 'botoesZerar')],
+      'Extra: Espaço ou A deixa todas as vitórias em zero.',
+      [largada, wait(8000), tecla('Space')],
       val('corridas', 'equals', 0),
       [
         point(2, 'corridas', 'equals', 1),
