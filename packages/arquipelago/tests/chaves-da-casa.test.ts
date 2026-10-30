@@ -37,7 +37,7 @@ import {
   recadoDaTranca,
 } from '../src/sistemas/chaves-da-casa'
 import { CONCHAS_DA_PRAIA } from '../src/sistemas/colecoes-da-praia'
-import { LOTE_DA_CASA, OBRA_VAZIA } from '../src/sistemas/construcao/lote'
+import { LOTE_DA_CASA_GRANDE, OBRA_VAZIA } from '../src/sistemas/construcao/lote'
 import { bate, carregarGlb, type Forma } from './ajuda-colisores'
 
 const AGORA = new Date('2026-10-30T12:00:00Z')
@@ -90,7 +90,8 @@ describe('onde ficam as chaves (N11)', () => {
   })
 
   test('fora do lote da casa, longe das pontes, das conchas e dos Lumis', () => {
-    const { x0, z0, x1, z1 } = LOTE_DA_CASA.area
+    // Fora também do quintal grande do Vale (E04).
+    const { x0, z0, x1, z1 } = LOTE_DA_CASA_GRANDE.area
     const lumis = LUGARES_DOS_LUMIS_DA_PRAIA.map(({ angulo }) => {
       const a = (angulo * Math.PI) / 180
       return {
