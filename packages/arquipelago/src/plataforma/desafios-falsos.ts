@@ -15,7 +15,7 @@ import { coresDoCatalogo } from '../sistemas/cores-conquistadas'
 /**
  * Desafios de mentira para o playground: três quadros cadastrados no Bosque (um pronto para fazer,
  * um que pede um bloco de curso e um feito), o resto vazio, dois da sua ilha (C03a: um feito e um
- * pronto, sem pintar a ilha) e o desafio do dia nos três estados (`DiaDoPlayground`). Abrir um
+ * pronto, sem pintar a ilha), o projeto autoral do Farol (C03b) e o desafio do dia nos três estados (`DiaDoPlayground`). Abrir um
  * desafio "resolve" na hora.
  */
 export type DiaDoPlayground = 'pronto' | 'feito' | 'nenhum'
@@ -49,7 +49,7 @@ function desafio(
       situacao === 'faltam-blocos'
         ? [{ bloco: 'sz_js_repeat', rotulo: 'Repetir vezes', cursos: [CURSO] }]
         : [],
-    recompensa: { cor: ilha !== 'sua-ilha', moedas: 20, moedasExtra: 10 },
+    recompensa: { cor: ilha !== 'sua-ilha' && ilha !== 'farol', moedas: 20, moedasExtra: 10 },
     recompensaVista: situacao === 'concluido',
   }
 }
@@ -84,6 +84,13 @@ export function criarDesafiosFalsos(
       'A primeira concha',
       'disponivel',
       'sua-ilha',
+    ),
+    desafio(
+      '00000000-0000-4000-8000-0000000000c1',
+      1,
+      'Meu jogo do Arquipélago',
+      'disponivel',
+      'farol',
     ),
   ]
   if (o.quadrosFeitos) {

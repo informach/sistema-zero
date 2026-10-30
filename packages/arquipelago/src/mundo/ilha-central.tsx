@@ -3,7 +3,7 @@ import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { ilha } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
-import { useJogo } from '../estado/contexto'
+import { useEstado, useJogo } from '../estado/contexto'
 import { lanternaDoZappy } from '../sistemas/borroes'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
@@ -20,7 +20,7 @@ import {
 import { Colisores } from './colisores'
 import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
-import { lugarDoQuadroNaSuaIlha } from './lugar-do-quadro'
+import { lugarDoQuadroNaSuaIlha, lugarDoQuadroNoFarol } from './lugar-do-quadro'
 import { DISTANCIA_DOS_LUMIS_DA_PRAIA, LUGARES_DOS_LUMIS_DA_PRAIA } from './lugares-da-praia'
 import { LunetaDoPier } from './luneta'
 import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
@@ -307,10 +307,24 @@ export function IlhaCentral() {
       <ComReserva reserva={null}>
         <QuadroDasCores ilha={SUA_ILHA} centro={CENTRO} lugar={LUGAR_DO_QUADRO} />
       </ComReserva>
+      <QuadroDoFarol />
     </>
+  )
+}
+
+/** O projeto autoral (C03b): o cavalete do Farol só depois do final. */
+function QuadroDoFarol() {
+  const concluido = useEstado((s) => s.salvamento.farol.concluido)
+  if (!concluido) return null
+  return (
+    <ComReserva reserva={null}>
+      <QuadroDasCores ilha={FAROL_DA_ILHA} centro={CENTRO} lugar={LUGAR_DO_FAROL} />
+    </ComReserva>
   )
 }
 
 const SUA_ILHA = ilha('sua-ilha')
 const CENTRO = { x: 0, z: 0 } as const
 const LUGAR_DO_QUADRO = lugarDoQuadroNaSuaIlha()
+const FAROL_DA_ILHA = ilha('farol')
+const LUGAR_DO_FAROL = lugarDoQuadroNoFarol()

@@ -81,14 +81,15 @@ export function QuadroDasCores({
   }, [raiz])
 
   // A cor de cada mancha: 0 (cinza) a 1 (a cor da tinta). Feito acende; a festa anima.
-  // Na sua ilha os quadros não pintam a ilha (`cor: false`): as manchas seguem os feitos da lista.
+  // Na sua ilha e no Farol os quadros não pintam (`cor: false`): as manchas seguem os feitos.
+  const semCor = ilha.id === 'sua-ilha' || ilha.id === 'farol'
   const alvo = useMemo(
     () =>
       pedacosPintados(
-        ilha.id === 'sua-ilha' && dados ? quadrosDaIlha(dados.desafios, ilha.id) : null,
+        semCor && dados ? quadrosDaIlha(dados.desafios, ilha.id) : null,
         cores.ilhas.find((i) => i.id === ilha.id)?.quadros,
       ),
-    [cores, dados, ilha.id],
+    [cores, dados, ilha.id, semCor],
   )
   const atual = useRef<number[]>([0, 0, 0, 0, 0, 0])
   const pintados = useRef(false)
@@ -120,8 +121,8 @@ export function QuadroDasCores({
   }, [desafios])
 
   // Desafio do dia por fazer: o Zappy avisa uma vez por dia, ao chegar numa ilha completa. A sua
-  // ilha está sempre montada: avisar ali seria avisar ao abrir o jogo, então ela não avisa.
-  const avisa = ilha.id !== 'sua-ilha'
+  // ilha e o Farol ficam sempre montados: avisar ali seria avisar ao abrir o jogo.
+  const avisa = !semCor
   useEffect(() => {
     if (!dados || !avisa) return
     const dia = diaParaAvisar(dados, lerAviso(plataforma.perfil.id))

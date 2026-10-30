@@ -25,6 +25,7 @@ const ILHAS = [
   ['pico', 5],
   ['vale', 6],
   ['nuvens', 7],
+  ['farol', 8],
 ] as const
 const ler = (caminho: string): unknown =>
   JSON.parse(readFileSync(new URL(caminho, import.meta.url), 'utf8'))
@@ -47,6 +48,8 @@ function tiposDoProjeto(projeto: unknown): string[] {
 function classificacao(ilha: string, quadro: number | null) {
   // A sua ilha aplica o próprio repertório do Faísca, depois dos cursos dele (C03a).
   if (ilha === 'sua-ilha') return 'aplicacao-em-blocos'
+  // O Farol (C03b) pede um projeto da pessoa, com critérios e sem resposta pronta.
+  if (ilha === 'farol') return 'projeto-autoral'
   if (ilha === 'bosque' && [4, 6, null].includes(quadro)) return 'aplicacao-em-blocos'
   if ((ilha === 'vale' && [1, 2, 6, null].includes(quadro)) || (ilha === 'nuvens' && quadro === 5))
     return 'apoio-preparado-em-blocos'

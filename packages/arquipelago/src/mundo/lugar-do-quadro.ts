@@ -18,7 +18,26 @@ export interface LugarDoQuadro {
 export const QUADRO_DA_SUA_ILHA = { x: -1.5, z: 18.5, olharPara: { x: -4, z: 18 } } as const
 
 export function lugarDoQuadroNaSuaIlha(): LugarDoQuadro {
-  const { x, z, olharPara } = QUADRO_DA_SUA_ILHA
+  return lugarNaIlhaCentral(QUADRO_DA_SUA_ILHA)
+}
+
+/**
+ * O quadro do projeto autoral (C03b, 30/10/2026): do lado oeste do Farol, fora dos dois lotes da
+ * casa (nenhuma obra chega ali) e longe da porta e da Íris, para o "Usar" não disputar com elas.
+ * Olha para o Farol. Só aparece depois do final (`farol.concluido`).
+ */
+export const QUADRO_DO_FAROL = { x: -16, z: -11, olharPara: { x: -12, z: -11 } } as const
+
+export function lugarDoQuadroNoFarol(): LugarDoQuadro {
+  return lugarNaIlhaCentral(QUADRO_DO_FAROL)
+}
+
+function lugarNaIlhaCentral(q: {
+  x: number
+  z: number
+  olharPara: { x: number; z: number }
+}): LugarDoQuadro {
+  const { x, z, olharPara } = q
   return { x, y: alturaDaIlha(x, z), z, giro: Math.atan2(olharPara.x - x, olharPara.z - z) }
 }
 

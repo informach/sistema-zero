@@ -3,7 +3,7 @@ import { relatorioDasRegras } from '../../../../docs/desafios-do-jogo/regras-a-c
 
 test('repertório local usa a derivação do Members, preserva públicos e expõe apoio alterado', async () => {
   const linhas = relatorioDasRegras()
-  expect(linhas).toHaveLength(120)
+  expect(linhas).toHaveLength(122)
   expect(
     await Bun.file(
       new URL('../../../../docs/desafios-do-jogo/regras-a-completar.json', import.meta.url),

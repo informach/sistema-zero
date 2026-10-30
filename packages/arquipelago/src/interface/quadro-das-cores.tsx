@@ -175,12 +175,17 @@ export function PainelDoQuadro() {
   useEffect(() => {
     if (!festa) return
     const nome = ilhaDoContrato(festa.ilha).nome
+    // A sua ilha e o Farol não pintam (C03): a festa é do desafio, não da cor.
     loja
       .getState()
       .dizer(
-        festa.quadros.length > 1
-          ? `Mais cores voltaram para o ${nome}.`
-          : `Mais uma cor voltou para o ${nome}. Olhe o quadro.`,
+        festa.ilha === 'farol'
+          ? 'Seu jogo ficou pronto. Ele vai para o fliperama da sua casa.'
+          : festa.ilha === 'sua-ilha'
+            ? 'Desafio feito. Olhe a mancha nova no quadro da praia.'
+            : festa.quadros.length > 1
+              ? `Mais cores voltaram para o ${nome}.`
+              : `Mais uma cor voltou para o ${nome}. Olhe o quadro.`,
       )
     const t = setTimeout(() => desafios.getState().festaVista(), FESTA_MS)
     return () => clearTimeout(t)
@@ -189,7 +194,10 @@ export function PainelDoQuadro() {
   if (!ilhaId) return null
   const nome = ilhaDoContrato(ilhaId).nome
   const quadros = dados ? quadrosDaIlha(dados.desafios, ilhaId) : null
-  const feitos = cores.ilhas.find((i) => i.id === ilhaId)?.quadros.length ?? 0
+  const feitos =
+    ilhaId === 'sua-ilha'
+      ? (quadros?.filter((q) => q.estado === 'feito').length ?? 0)
+      : (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.length ?? 0)
 
   async function jogar(d: DesafioNaLista | null) {
     if (!d) return
@@ -211,9 +219,13 @@ export function PainelDoQuadro() {
       >
         <h2 id="arq-quadro-titulo">Quadro das Cores</h2>
         <p className="arq-quadro-sub">
-          {quadros || feitos > 0
-            ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} cores de volta.`
-            : `Cada desafio feito devolve um pedaço da cor do ${nome}.`}
+          {ilhaId === 'farol'
+            ? 'Um jogo todo seu, com os critérios na lista. Faça quando quiser.'
+            : ilhaId === 'sua-ilha'
+              ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} desafios feitos.`
+              : quadros || feitos > 0
+                ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} cores de volta.`
+                : `Cada desafio feito devolve um pedaço da cor do ${nome}.`}
         </p>
         {dados && quadros ? (
           <CartaoDeHoje
@@ -224,19 +236,23 @@ export function PainelDoQuadro() {
         ) : null}
         {quadros ? (
           <ol className="arq-quadro-lista">
-            {quadros.map((q) => (
-              <CartaoDoQuadro
-                key={q.numero}
-                q={q}
-                // A sua ilha já tem cor (C03a): o quadro feito é só "Desafio concluído".
-                corConquistada={
-                  ilhaId !== 'sua-ilha' &&
-                  (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.includes(q.numero) ?? false)
-                }
-                ocupado={ferramentaAberta || carregando}
-                aoJogar={(x) => void jogar(x.desafio)}
-              />
-            ))}
+            {/* O Farol tem um projeto autoral só (C03b): os quadros vazios não aparecem. */}
+            {quadros
+              .filter((q) => ilhaId !== 'farol' || q.estado !== 'vazio')
+              .map((q) => (
+                <CartaoDoQuadro
+                  key={q.numero}
+                  q={q}
+                  // A sua ilha e o Farol não pintam (C03): o quadro feito é só "Desafio concluído".
+                  corConquistada={
+                    ilhaId !== 'sua-ilha' &&
+                    ilhaId !== 'farol' &&
+                    (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.includes(q.numero) ?? false)
+                  }
+                  ocupado={ferramentaAberta || carregando}
+                  aoJogar={(x) => void jogar(x.desafio)}
+                />
+              ))}
           </ol>
         ) : fechado === 'desligado' ? (
           <p className="arq-aviso atencao">
