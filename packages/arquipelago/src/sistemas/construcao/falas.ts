@@ -41,6 +41,16 @@ export function falaDaRecusa(r: Recusa): string | null {
       return 'Esse objeto vai dentro de um cômodo novo, inteiro no mesmo cômodo.'
     case 'objeto-no-quarto':
       return 'O quarto é o da plataforma. Ponha o objeto num cômodo novo.'
+    case 'tem-movel':
+      return 'Ali já tem um móvel. Escolha outro lugar ou apague ele primeiro.'
+    case 'movel-fora-de-comodo':
+      return 'O móvel vai dentro de um cômodo novo, inteiro no mesmo cômodo.'
+    case 'movel-no-quarto':
+      return 'O quarto é o da plataforma. Ponha o móvel num cômodo novo.'
+    case 'sem-parede-atras':
+      return 'Quadro, espelho, prateleira e toalheiro vão numa parede. Toque perto de uma.'
+    case 'movel-na-parede':
+      return 'Nessa parede tem uma peça pendurada. Apague a peça primeiro.'
     case 'canteiro-com-planta':
       return 'Esse canteiro tem planta. Colha primeiro e depois apague.'
     case 'nada':

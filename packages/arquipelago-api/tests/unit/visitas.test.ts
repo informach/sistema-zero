@@ -81,6 +81,7 @@ describe('ServicoDasVisitas', () => {
       cercas: [],
       caminhos: [],
       canteiros: [],
+      moveis: [],
     }
     const comCasa = { ...tom, construcao: { casa: obra, cabanas: {} } }
     const f = familia({ [LIA]: criarSalvamentoInicial(AGORA), [TOM]: comCasa })

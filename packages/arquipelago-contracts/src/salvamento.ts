@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { BIT_DA_SEGREDO_MAXIMO, COMPANHIAS, MAPAS_DAS_ILHAS, MapaDaIlhaSchema } from './exploracao'
 import { ILHA_IDS } from './ilhas'
+import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
 
@@ -10,7 +11,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 19
+export const VERSAO_SALVAMENTO = 20
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -246,7 +247,25 @@ export const ObraSchema = z.strictObject({
     .max(18)
     .refine((lista) => semRepetir(lista.map(naCelula)), 'canteiro repetido'),
 })
-export type Obra = z.infer<typeof ObraSchema>
+/** A obra das versões 4 a 19 (sem os móveis). */
+export type ObraAteV19 = z.infer<typeof ObraSchema>
+
+/**
+ * A obra da casa na V20 (30/10/2026): a de antes mais os móveis da cozinha, da sala e do banheiro
+ * (`moveis.ts`). A cabana tem o mesmo formato, mas sem móvel: eles são da casa, como os objetos.
+ */
+export const ObraDaCasaSchema = ObraSchema.extend({
+  moveis: z.array(MovelNaObraSchema).max(MOVEIS_NA_CASA_MAXIMO),
+})
+export const ObraDaCabanaSchema = ObraSchema.extend({
+  moveis: z.array(MovelNaObraSchema).max(0),
+})
+export type Obra = z.infer<typeof ObraDaCasaSchema>
+
+/** Uma obra das versões até a 19 com a lista de móveis vazia. */
+export function obraComMoveis(obra: ObraAteV19): Obra {
+  return { ...obra, moveis: [] }
+}
 
 /** As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). */
 export const ILHAS_COM_CABANA = ['bosque'] as const
@@ -766,8 +785,8 @@ export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
 }
 
 /** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
-export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV19 {
-  return migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s))))
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV20 {
+  return migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))
 }
 
 export const SalvamentoAteV18Schema = z.union([
@@ -803,11 +822,83 @@ export function migrarDaV18(s: SalvamentoV18): SalvamentoV19 {
   return { ...s, versao: 19, chaves: 0, segredos: 0, mapa: {}, companhia: 'quarto' }
 }
 
-export const SalvamentoSchema = z.union([
+export const SalvamentoAteV19Schema = z.union([
   SalvamentoV19Schema,
   SalvamentoAteV18Schema.transform(migrarDaV18),
 ])
-export type Salvamento = SalvamentoV19
+
+/** Quantas criações o alto do Farol expõe no modo livre (fase4-12). */
+export const VAGAS_DA_GALERIA_DO_FAROL = 6
+
+/**
+ * Uma criação exposta no Farol, em tupla curta: `a` é uma aparência que um objeto guarda (o id da
+ * criação do Pinta, do Molda ou guardada, lida em `projetos[objeto].aparencias`), `j` um jogo
+ * publicado no Mural (o `playId`) e `d` um minijogo aprovado no Desafio (o `desafioId`).
+ */
+export const ExposicaoDoFarolSchema = z.union([
+  z.tuple([z.literal('a'), z.enum(OBJETOS_DA_CASA), z.string().min(1).max(ID_DA_APARENCIA_MAXIMO)]),
+  z.tuple([z.literal('j'), z.uuid()]),
+  z.tuple([z.literal('d'), z.uuid()]),
+])
+export type ExposicaoDoFarol = z.infer<typeof ExposicaoDoFarolSchema>
+
+/** A mesma criação nunca fica em duas vagas. */
+export function chaveDaExposicao(e: ExposicaoDoFarol): string {
+  return e.join(':')
+}
+
+/**
+ * V20 (30/10/2026): os móveis da casa (`construcao.casa.moveis`) e a galeria do Farol (`farol.galeria`,
+ * uma vaga por posição, `null` vazia). A galeria só se enche com o final concluído: é o modo livre.
+ */
+export const SalvamentoV20Schema = z
+  .strictObject({
+    ...SalvamentoV19Schema.shape,
+    versao: z.literal(20),
+    construcao: z.strictObject({
+      casa: ObraDaCasaSchema.nullable(),
+      cabanas: z.partialRecord(z.enum(ILHAS_COM_CABANA), ObraDaCabanaSchema),
+    }),
+    farol: z
+      .strictObject({
+        pagina: z.boolean(),
+        concluido: z.boolean(),
+        galeria: z.array(ExposicaoDoFarolSchema.nullable()).max(VAGAS_DA_GALERIA_DO_FAROL),
+      })
+      .refine((f) => !f.concluido || f.pagina, 'O final concluído tem a página lida.')
+      .refine(
+        (f) => f.concluido || f.galeria.every((e) => e === null),
+        'A galeria abre com o final concluído.',
+      )
+      .refine((f) => {
+        const chaves = f.galeria.flatMap((e) => (e ? [chaveDaExposicao(e)] : []))
+        return new Set(chaves).size === chaves.length
+      }, 'A mesma criação em duas vagas.'),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV20 = z.infer<typeof SalvamentoV20Schema>
+
+/** Nenhum móvel posto e a galeria vazia: nada é presumido. */
+export function migrarDaV19(s: SalvamentoV19): SalvamentoV20 {
+  const { casa, cabanas } = s.construcao
+  return {
+    ...s,
+    versao: 20,
+    construcao: {
+      casa: casa ? obraComMoveis(casa) : null,
+      cabanas: Object.fromEntries(
+        Object.entries(cabanas).map(([ilha, obra]) => [ilha, obraComMoveis(obra)]),
+      ),
+    },
+    farol: { ...s.farol, galeria: [] },
+  }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV20Schema,
+  SalvamentoAteV19Schema.transform(migrarDaV19),
+])
+export type Salvamento = SalvamentoV20
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
@@ -821,7 +912,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     mapa: {},
     companhia: 'quarto',
     nuvens: { constelacoes: 0 },
-    farol: { pagina: false, concluido: false },
+    farol: { pagina: false, concluido: false, galeria: [] },
     clima: 'sol',
     pico: { banda: 0 },
     vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },

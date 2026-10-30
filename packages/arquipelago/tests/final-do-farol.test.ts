@@ -43,7 +43,7 @@ test('a página fica escondida até a leitura guardada, e consultar não altera 
   const antes = JSON.stringify(s)
   expect(paginasDoDiario(s).find((p) => p.ilha === 'farol')?.aberta).toBe(false)
   expect(
-    paginasDoDiario({ ...s, farol: { pagina: true, concluido: false } }).find(
+    paginasDoDiario({ ...s, farol: { pagina: true, concluido: false, galeria: [] } }).find(
       (p) => p.ilha === 'farol',
     ),
   ).toMatchObject({

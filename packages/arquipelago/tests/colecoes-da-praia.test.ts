@@ -85,7 +85,8 @@ describe('coleções da praia', () => {
       maior = Math.max(maior, Buffer.byteLength(JSON.stringify(cenario)))
     }
     expect(maior).toBeLessThan(SALVAMENTO_MAX_BYTES)
-    expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(1000)
+    // V20 no teto (móveis da casa e galeria do Farol, 30/10/2026): 64.929 bytes.
+    expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(550)
   })
 
   test('ponto de pesca fica no tampo, fora das estacas e do embarque', async () => {

@@ -32,9 +32,9 @@ test('catálogo inteiro a 999 cabe junto da obra, amizades e rotinas no teto', (
     return new TextEncoder().encode(JSON.stringify(completo)).byteLength
   })
   expect(Math.max(...tamanhos)).toBeLessThan(SALVAMENTO_MAX_BYTES)
-  // V19 no teto com o catálogo a 999, já com as coleções do Pico e das Nuvens e as duas iscas
-  // (30/10/2026): 64.128 bytes.
-  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(1300)
+  // V20 no teto com o catálogo a 999, com as coleções do Pico e das Nuvens, as duas iscas, os 24
+  // móveis da casa e as seis vagas da galeria do Farol (30/10/2026): 64.923 bytes.
+  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(550)
 })
 
 for (const [quem, receitaId, cesta] of pares) {

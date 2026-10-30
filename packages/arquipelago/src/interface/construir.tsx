@@ -1,9 +1,11 @@
 import {
   CATALOGO_DE_OBJETOS,
+  MOVEIS,
   OBJETOS_DA_CASA,
   type PisoDaCasa,
   type PisoDoQuintal,
 } from '@sistemazero/arquipelago-contracts'
+import { useState } from 'react'
 import {
   CAMERA_DE_OBRA,
   type Ferramenta,
@@ -14,11 +16,18 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import {
+  CATEGORIAS_DOS_MOVEIS,
+  type CategoriaDoMovel,
+  DADOS_DO_MOVEL,
+  ehDeParede,
+} from '../sistemas/construcao/moveis'
 import { PainelDeAconchego } from './aconchego'
 import { Icone } from './icones'
 import {
   MINIATURA_DA_JANELA,
   MINIATURA_DO_CAMINHO,
+  MINIATURA_DO_MOVEL,
   MINIATURA_DO_OBJETO,
   MINIATURA_DO_PISO,
 } from './miniaturas'
@@ -52,6 +61,12 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     dica: 'Escolha um objeto e toque onde ele vai. A geladeira fica num cômodo; a casinha, no quintal.',
   },
   {
+    id: 'movel',
+    nome: 'Móveis',
+    emoji: '🛋️',
+    dica: 'Escolha um móvel e toque num cômodo novo. Os de parede vão na parede mais perto do toque.',
+  },
+  {
     id: 'canteiro',
     nome: 'Canteiro',
     emoji: '🌱',
@@ -61,7 +76,7 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     id: 'apagar',
     nome: 'Apagar',
     emoji: '🧽',
-    dica: 'Arraste por cima de paredes e cercas para apagar. Um toque tira a porta, a janela, o caminho ou o canteiro vazio.',
+    dica: 'Arraste por cima de paredes e cercas para apagar. Um toque tira o objeto, o móvel, a porta, a janela, o caminho ou o canteiro vazio.',
   },
   {
     id: 'olhar',
@@ -84,6 +99,12 @@ const CAMINHOS: ReadonlyArray<{ id: PisoDoQuintal; nome: string }> = [
   { id: 'pedra', nome: 'Pedra' },
   { id: 'grama', nome: 'Grama' },
 ]
+
+const NOME_DA_CATEGORIA: Readonly<Record<CategoriaDoMovel, string>> = {
+  cozinha: 'Cozinha',
+  sala: 'Sala',
+  banheiro: 'Banheiro',
+}
 
 const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
   { id: 'tabua', nome: 'Tábua' },
@@ -170,14 +191,16 @@ export function BarraDeConstruir() {
   const piso = useConstrucao(construcao, (s) => s.piso)
   const caminho = useConstrucao(construcao, (s) => s.caminho)
   const objeto = useConstrucao(construcao, (s) => s.objeto)
+  const movel = useConstrucao(construcao, (s) => s.movel)
+  const [categoria, setCategoria] = useState<CategoriaDoMovel>('cozinha')
   const projetos = useEstado((s) => s.salvamento.projetos)
   const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
   const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
-  // Na cabana não vão canteiro nem objeto: a horta e os projetos azuis são da casa.
+  // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
   const ferramentas = naCabana
-    ? FERRAMENTAS.filter((f) => f.id !== 'canteiro' && f.id !== 'objeto')
+    ? FERRAMENTAS.filter((f) => f.id !== 'canteiro' && f.id !== 'objeto' && f.id !== 'movel')
     : FERRAMENTAS
   if (!aberto) return null
   const s = () => construcao.getState()
@@ -241,6 +264,45 @@ export function BarraDeConstruir() {
             </button>
           ) : null}
         </fieldset>
+      ) : null}
+      {atual === 'movel' ? (
+        <>
+          <fieldset className="arq-obra-escolhas arq-obra-categorias">
+            <legend className="arq-sr">Cômodo dos móveis</legend>
+            {CATEGORIAS_DOS_MOVEIS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                className="arq-botao leve"
+                aria-pressed={categoria === c}
+                onClick={() => setCategoria(c)}
+              >
+                {NOME_DA_CATEGORIA[c]}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="arq-botao leve arq-obra-girar"
+              onClick={() => s().girarObjeto()}
+            >
+              ⟳ Girar
+            </button>
+          </fieldset>
+          {/* Uma fileira só, que rola para o lado: a barra não cobre o cômodo (no celular, a tela). */}
+          <fieldset className="arq-obra-escolhas rolar">
+            <legend className="arq-sr">Móvel</legend>
+            {MOVEIS.filter((id) => DADOS_DO_MOVEL[id].categoria === categoria).map((id) => (
+              <Escolha
+                key={id}
+                nome={DADOS_DO_MOVEL[id].nome}
+                imagem={MINIATURA_DO_MOVEL[id]}
+                escolhida={movel === id}
+                nota={ehDeParede(id) ? 'na parede' : undefined}
+                aoEscolher={() => s().escolherMovel(id)}
+              />
+            ))}
+          </fieldset>
+        </>
       ) : null}
       {atual === 'caminho' ? (
         <fieldset className="arq-obra-escolhas">

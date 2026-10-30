@@ -1806,6 +1806,37 @@ Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posica
 Verificador: `playground/verificar-convidados-browser.ts`; evidências em
 `docs/qa/2026-10-29-convidados/`.
 
+### 6.16.4 Móveis da cozinha, da sala e do banheiro (salvamento V20, 30/10/2026)
+
+A ferramenta **Móveis** do Construir põe os 21 móveis da arte `arte/casa/comodos.py` nos cômodos
+novos da casa, separados nas abas Cozinha, Sala e Banheiro (com a miniatura de cada um). O catálogo
+é livre: não precisa ganhar nem comprar, e apagar não guarda nada. Na cabana não vão móveis.
+
+| Cômodo | Móveis |
+|---|---|
+| Cozinha | balcão com pia (2 × 1), balcão, armário alto, mesa (2 × 1), cadeira, prateleira de potes (parede) |
+| Sala | sofá (3 × 1), poltrona, mesinha de centro (2 × 1), tapete (3 × 2), estante baixa (2 × 1), luminária de pé, planta, quadro (parede) |
+| Banheiro | banheira (2 × 1), pia, espelho (parede), vaso sanitário, chuveiro com box, tapetinho, toalheiro (parede) |
+
+- De chão: inteiro num cômodo novo (o quarto é o da plataforma), sem parede no meio, sem ficar em
+  cima de objeto nem de outro móvel. O tapete e o tapetinho ficam por baixo: móvel e objeto podem ir
+  em cima deles, mas um tapete não vai em cima de outro. Girar vira o móvel de quarto em quarto.
+- De parede (quadro, espelho, prateleira e toalheiro): na parede mais perto do toque, sem porta nem
+  janela ali, uma peça por lado de parede. Não ocupa o chão (o espelho fica em cima da pia).
+- A obra se arruma sozinha: abrir o cômodo, apagar a parede de trás ou levar a casa para o quintal
+  tira o móvel. A parede não corta um móvel ao meio e a porta não abre em cima de uma peça pendurada
+  (o Zappy explica). O apagar tira primeiro o móvel de chão, depois a peça do lado mais perto e o
+  tapete por último.
+- No aconchego, cada tipo de móvel soma variedade como um objeto; a luminária de pé conta como luz e
+  a planta como planta. As visitas dos moradores não ficam em cima de móvel (só do tapete).
+- O salvamento guarda até 24 móveis na casa (`MOVEIS_NA_CASA_MAXIMO`), cada um em tupla
+  `[índice em MOVEIS, x, z, giro]`. A lista `MOVEIS` dos contratos só cresce no fim.
+
+Onde mudar: catálogo e regras em `sistemas/construcao/moveis.ts`; desenho e colisão em
+`mundo/moveis-da-obra.tsx`. Testes: `tests/moveis.test.ts` (inclui os nós e as medidas dos GLBs) e
+`arquipelago-contracts/tests/salvamento-v20.test.ts`. Navegador:
+`playground/verificar-moveis-browser.ts`.
+
 ### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
 
 O diário mostra uma sugestão nova a cada segunda-feira, pelo dia civil de São Paulo. A lista

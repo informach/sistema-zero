@@ -1,4 +1,4 @@
-import type { Obra, Trecho } from '@sistemazero/arquipelago-contracts'
+import { MOVEIS_NA_CASA_MAXIMO, type Obra, type Trecho } from '@sistemazero/arquipelago-contracts'
 
 /**
  * O lote de uma obra (modo construção): a grade de 1 célula por unidade onde se constrói, o que já
@@ -44,6 +44,8 @@ export interface Lote {
     trechosDeCerca: number
     caminhos: number
     canteiros: number
+    /** Móveis da cozinha, da sala e do banheiro (`moveis.ts`): só na casa. */
+    moveis: number
   }
 }
 
@@ -55,6 +57,7 @@ export const OBRA_VAZIA: Obra = {
   cercas: [],
   caminhos: [],
   canteiros: [],
+  moveis: [],
 }
 
 /** O quarto da plataforma na grade do mundo (o mesmo `QUARTO` de `mundo/medidas.ts`). */
@@ -110,6 +113,7 @@ export const LOTE_DA_CASA: Lote = {
     cercas: [],
     caminhos: [],
     canteiros: [],
+    moveis: [],
   },
   limites: {
     arestasDeParede: 320,
@@ -120,6 +124,7 @@ export const LOTE_DA_CASA: Lote = {
     trechosDeCerca: 120,
     caminhos: 240,
     canteiros: 18,
+    moveis: MOVEIS_NA_CASA_MAXIMO,
   },
 }
 
@@ -146,8 +151,9 @@ export function loteDaCabana(id: Exclude<Lote['id'], 'casa'>, area: Retangulo): 
       arestasDeCerca: 60,
       trechosDeCerca: 30,
       caminhos: 48,
-      // Canteiro e objeto ficam no quintal e na casa (a horta é uma só).
+      // Canteiro, objeto e móvel ficam no quintal e na casa (a horta é uma só).
       canteiros: 0,
+      moveis: 0,
     },
   }
 }

@@ -27,6 +27,7 @@ import { ModoConstruir } from './construir'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
+import { MoveisDaObra } from './moveis-da-obra'
 import { GanharProjetos, ObjetosDaObra } from './objetos-da-casa'
 import { ObraNoMundo } from './obra'
 
@@ -423,6 +424,7 @@ export function Casa() {
         />
       ) : null}
       {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
+      {obra ? <MoveisDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
       {obra && construindo ? <ModoConstruir lote={LOTE_DA_CASA} obra={obra} base={BASE} /> : null}
       <GanharProjetos />
     </>

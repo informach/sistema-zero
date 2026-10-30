@@ -45,7 +45,7 @@ test('constelações e clima passam pela fila e voltam numa nova loja', () => {
     ...salvo,
     clima: 'nublado' as const,
     nuvens: { constelacoes: 63 },
-    farol: { pagina: true, concluido: true },
+    farol: { pagina: true, concluido: true, galeria: [] },
   }
   reaberta.getState().adotar({ salvamento: remoto, revisao: 3, atualizadoEm: salvo.criadoEm })
   expect(reaberta.getState().salvamento).toEqual(remoto)
@@ -76,7 +76,7 @@ test('duas sessões unem descobertas e estrelas das Nuvens, sem perder o melhor 
   const local = {
     ...base,
     nuvens: { constelacoes: 1 },
-    farol: { pagina: true, concluido: false },
+    farol: { pagina: true, concluido: false, galeria: [] },
     percursos: {
       'nuvens-balao': {
         estrelas: { chegada: true, tempo: false, vagalumes: true },
@@ -87,7 +87,7 @@ test('duas sessões unem descobertas e estrelas das Nuvens, sem perder o melhor 
   const remoto = {
     ...base,
     nuvens: { constelacoes: 2 },
-    farol: { pagina: true, concluido: true },
+    farol: { pagina: true, concluido: true, galeria: [] },
     percursos: {
       'nuvens-balao': {
         estrelas: { chegada: true, tempo: true, vagalumes: false },
@@ -97,7 +97,7 @@ test('duas sessões unem descobertas e estrelas das Nuvens, sem perder o melhor 
   }
   const combinado = conciliarSalvamento(base, local, remoto)
   expect(combinado?.nuvens.constelacoes).toBe(3)
-  expect(combinado?.farol).toEqual({ pagina: true, concluido: true })
+  expect(combinado?.farol).toEqual({ pagina: true, concluido: true, galeria: [] })
   expect(combinado?.percursos['nuvens-balao']).toEqual({
     estrelas: { chegada: true, tempo: true, vagalumes: true },
     melhorTempoMs: 50000,

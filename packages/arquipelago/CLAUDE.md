@@ -28,6 +28,21 @@ O ponto do píer é compartilhado em `mundo/lugares-da-praia.ts`, longe do embar
 `tests/colecoes-da-praia.test.ts` confere catálogo, GLBs/ícones, espaço do corpo e save cheio.
 `playground/verificar-praia-browser.ts` usa modelos reais e plataforma falsa, sem dados remotos.
 
+## Móveis dos cômodos e salvamento V20 (30/10/2026)
+
+V20 nos contratos: `construcao.casa.moveis` (tuplas `MovelNaObra`, até `MOVEIS_NA_CASA_MAXIMO`;
+`ObraDaCabanaSchema` aceita só a lista vazia) e `farol.galeria` (lote seguinte, fase4-12). O tipo
+`Obra` é o da V20; `ObraAteV19` e `ObraSchema` ficam para as versões antigas. Valide a obra pelo
+lugar (`ObraDaCasaSchema` ou `ObraDaCabanaSchema`), como `estado/construcao.ts`. A visita aceita a
+obra antiga e completa os móveis vazios (`obraComMoveis`), para serviço e jogo trocarem de versão
+sem quebrar. `sistemas/construcao/moveis.ts` tem o catálogo (`DADOS_DO_MOVEL`), `porMovel`,
+`tirarMovel`, `giroDaParedeNoToque` e `movelNoLugar` (usado por `arrumar`). Os móveis entram em
+`esticarParede`, `porAbertura`, `porObjeto`, aconchego e visitas dos moradores. Desenho em
+`mundo/moveis-da-obra.tsx` (cópia do nó do GLB do cômodo, colisão pela caixa do próprio modelo,
+menos tapete e peça de parede; a luminária acende à noite). Miniaturas `movel-<id>.png` pela
+`arte/casa/miniaturas.py` e depois a paleta de 128 cores. Pior caso do salvamento: 63.989 bytes no
+contrato e 64.923 com o catálogo inteiro a 999.
+
 ## Coleções do Pico e das Nuvens e iscas da pesca (30/10/2026)
 
 `sistemas/colecoes-das-ilhas.ts`: quatro notas e quatro cristais do Pico e quatro estrelas das

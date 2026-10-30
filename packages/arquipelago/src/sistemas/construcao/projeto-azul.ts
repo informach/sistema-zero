@@ -15,6 +15,7 @@ import { coracoes } from '../moradores'
 import { planta } from './comodos'
 import { chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
+import { celulasDosMoveisAltos } from './moveis'
 import type { Resultado } from './obra'
 
 /**
@@ -89,6 +90,8 @@ export function porObjeto(
   const usadas = new Set(outros.flatMap(celulasDoObjeto).map(chaveDaCelula))
   const caminhos = new Set(obra.caminhos.map((c) => chaveDaCelula(c)))
   const canteiros = new Set(obra.canteiros.map((c) => chaveDaCelula(c)))
+  // Em cima do tapete pode; de outro móvel, não.
+  const moveis = celulasDosMoveisAltos(obra)
   const comodos = new Set<number>()
   for (const c of celulas) {
     if (!naArea(lote.area, c)) return { ok: false, motivo: 'fora-do-lote' }
@@ -97,6 +100,7 @@ export function porObjeto(
     if (noFixo(lote, c)) return { ok: false, motivo: 'objeto-no-quarto' }
     const k = chaveDaCelula(c)
     if (usadas.has(k)) return { ok: false, motivo: 'tem-objeto' }
+    if (moveis.has(k)) return { ok: false, motivo: 'tem-movel' }
     const i = p.comodoDe.get(k)
     if (LUGAR_DO_OBJETO[id] === 'dentro') {
       if (i === undefined) return { ok: false, motivo: 'objeto-fora-de-comodo' }

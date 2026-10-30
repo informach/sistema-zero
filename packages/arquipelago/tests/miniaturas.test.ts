@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { OBJETOS_DA_CASA } from '@sistemazero/arquipelago-contracts'
+import { MOVEIS, OBJETOS_DA_CASA } from '@sistemazero/arquipelago-contracts'
 
 /**
  * As miniaturas das escolhas do Construir (`arte/casa/miniaturas.py`): uma por janela, piso,
- * caminho e objeto da casa, em 160 px e leves (paleta de 128 cores).
+ * caminho, objeto e móvel da casa, em 160 px e leves (paleta de 128 cores).
  */
 const PASTA = join(import.meta.dir, '..', 'src', 'assets', 'casa', 'miniaturas')
 const ESPERADAS = [
@@ -18,6 +18,7 @@ const ESPERADAS = [
   'caminho-pedra',
   'caminho-grama',
   ...OBJETOS_DA_CASA.map((id) => `objeto-${id}`),
+  ...MOVEIS.map((id) => `movel-${id}`),
 ]
 
 describe('as miniaturas do Construir', () => {

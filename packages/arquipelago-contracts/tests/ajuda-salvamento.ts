@@ -3,7 +3,15 @@ import {
   type SalvamentoV14,
   type SalvamentoV17,
   type SalvamentoV18,
+  type SalvamentoV19,
 } from '../src/salvamento'
+
+/** O salvamento inicial na V19 (sem a galeria do Farol nem os móveis da V20). */
+export function inicialV19(agora: Date): SalvamentoV19 {
+  const atual = criarSalvamentoInicial(agora)
+  const { galeria: _galeria, ...farol } = atual.farol
+  return { ...atual, versao: 19, farol, construcao: { casa: null, cabanas: {} } }
+}
 
 /** O salvamento inicial na V18 (sem os campos da V19): base das versões antigas. */
 export function inicialV18(agora: Date): SalvamentoV18 {
@@ -13,7 +21,7 @@ export function inicialV18(agora: Date): SalvamentoV18 {
     mapa: _mapa,
     companhia: _companhia,
     ...atual
-  } = criarSalvamentoInicial(agora)
+  } = inicialV19(agora)
   return { ...atual, versao: 18 }
 }
 

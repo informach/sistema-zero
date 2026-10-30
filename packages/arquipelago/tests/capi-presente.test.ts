@@ -126,7 +126,7 @@ test('playground prepara os quatro, mas só a conversa entrega o presente', asyn
   const r = await p.servico.buscar('/salvamento')
   expect(r.corpo).toMatchObject({
     salvamento: {
-      versao: 19,
+      versao: 20,
       bichos: { achados: [...BICHOS_DO_BOSQUE] },
       presenteDosBichosEntregue: false,
     },

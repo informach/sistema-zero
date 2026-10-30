@@ -204,7 +204,14 @@ export function ModoConstruir({
     }
     const escolhas = () => {
       const s = construcao.getState()
-      return { janela: s.janela, piso: s.piso, caminho: s.caminho, objeto: s.objeto, giro: s.giro }
+      return {
+        janela: s.janela,
+        piso: s.piso,
+        caminho: s.caminho,
+        objeto: s.objeto,
+        movel: s.movel,
+        giro: s.giro,
+      }
     }
     const horta = () => loja.getState().salvamento.horta
     const projetos = () => loja.getState().salvamento.projetos
