@@ -3,9 +3,11 @@ import {
   COMODOS_DA_IRIS,
   type ComodoDaIris,
   chavesUsadasNaObra,
+  type Movel,
   type ObjetoDaCasa,
   type Obra,
-  ObraSchema,
+  ObraDaCabanaSchema,
+  ObraDaCasaSchema,
   type PisoDaCasa,
   type PisoDoQuintal,
 } from '@sistemazero/arquipelago-contracts'
@@ -102,6 +104,8 @@ export interface EstadoDaConstrucao {
   caminho: PisoDoQuintal
   /** O objeto escolhido na ferramenta Objeto e o giro dele (quartos de volta). */
   objeto: ObjetoDaCasa | null
+  /** O móvel escolhido na ferramenta Móveis (o giro é o mesmo do objeto). */
+  movel: Movel | null
   giro: number
   camera: CameraDeObra
   /** As obras de antes (para desfazer), da mais antiga para a mais nova. */
@@ -120,6 +124,7 @@ export interface EstadoDaConstrucao {
   escolherPiso(p: PisoDaCasa): void
   escolherCaminho(c: PisoDoQuintal): void
   escolherObjeto(o: ObjetoDaCasa): void
+  escolherMovel(m: Movel): void
   girarObjeto(): void
   moverCamera(c: Partial<CameraDeObra>): void
   /** Grava o resultado de uma mudança na obra da casa (ou faz o Zappy explicar a recusa). */
@@ -192,6 +197,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     piso: 'tabua',
     caminho: 'pedra',
     objeto: null,
+    movel: null,
     giro: 0,
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
@@ -220,6 +226,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     },
     escolherCaminho: (caminho) => set({ caminho, ferramenta: 'caminho' }),
     escolherObjeto: (objeto) => set({ objeto, ferramenta: 'objeto' }),
+    escolherMovel: (movel) => set({ movel, ferramenta: 'movel' }),
     girarObjeto: () => set({ giro: (get().giro + 1) % 4 }),
     moverCamera: (c) => set({ camera: { ...get().camera, ...c } }),
     aplicar(r) {
@@ -233,7 +240,8 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       // Os limites de células/arestas do lote não são os limites de trechos serializados.
       // Validar na confirmação (não a cada movimento da prévia) evita gravar algo que o
       // serviço recusaria, inclusive quando novas ferramentas forem acrescentadas.
-      if (!ObraSchema.safeParse(r.obra).success) {
+      const esquema = get().onde === 'casa' ? ObraDaCasaSchema : ObraDaCabanaSchema
+      if (!esquema.safeParse(r.obra).success) {
         const fala = falaDaRecusa({ motivo: 'limite' })
         if (fala) jogo.dizer(fala)
         return false

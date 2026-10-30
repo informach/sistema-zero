@@ -78,6 +78,15 @@ export function conciliarSalvamento(
         ? remoto.companhia
         : null
   if (companhia === null) return null
+  // A galeria do Farol (V20) é escolha, como o clima: vale a sessão que mudou; as duas, pergunta.
+  const galeria =
+    mesmosDados(local.farol.galeria, remoto.farol.galeria) ||
+    mesmosDados(base.farol.galeria, remoto.farol.galeria)
+      ? local.farol.galeria
+      : mesmosDados(base.farol.galeria, local.farol.galeria)
+        ? remoto.farol.galeria
+        : null
+  if (galeria === null) return null
   const mapa: Salvamento['mapa'] = { ...remoto.mapa }
   for (const [id, celulas] of Object.entries(local.mapa)) {
     const ilha = id as keyof Salvamento['mapa']
@@ -127,6 +136,7 @@ export function conciliarSalvamento(
     farol: {
       pagina: local.farol.pagina || remoto.farol.pagina,
       concluido: local.farol.concluido || remoto.farol.concluido,
+      galeria,
     },
     posicao: mesmosDados(base.posicao, local.posicao) ? remoto.posicao : local.posicao,
   }

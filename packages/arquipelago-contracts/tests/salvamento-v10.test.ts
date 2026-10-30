@@ -176,8 +176,8 @@ test('construção e rotinas no teto com IDs canônicos cabem nos 64 KB', () => 
     maior = Math.max(maior, new TextEncoder().encode(JSON.stringify(s)).byteLength)
   }
   expect(maior).toBeLessThan(SALVAMENTO_MAX_BYTES)
-  // V19 no teto (visitas, chaves, segredos, mapa das sete ilhas, oito percursos e o iglu do Pico,
-  // E04): 63.954 bytes. Folga de 1.582 bytes: o que vier de grande vai para documento próprio.
+  // V20 no teto (os 24 móveis da casa e as seis vagas da galeria do Farol somam 795 bytes aos
+  // 63.194 da V19): 63.989 bytes.
   expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(1500)
 })
 

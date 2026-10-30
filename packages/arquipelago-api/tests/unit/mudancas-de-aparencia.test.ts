@@ -47,7 +47,8 @@ test('uma base anterior ao V18 é migrada antes de comparar', () => {
     companhia: _companhia,
     ...camposV17
   } = com('molda')
-  const antigo = { ...camposV17, versao: 17 }
+  const { galeria: _galeria, ...farol } = camposV17.farol
+  const antigo = { ...camposV17, farol, versao: 17 }
   expect(mudancasDeAparencia(antigo, com('molda'))).toEqual([])
   expect(mudancasDeAparencia(antigo, com('pinta'))).toEqual([
     { objeto: 'geladeira', origem: 'pinta' },

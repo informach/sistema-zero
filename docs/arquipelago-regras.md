@@ -1861,18 +1861,15 @@ Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/cons
 `interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
 `playground/verificar-chaves-browser.ts`.
 
-### 6.16.2b O iglu do Pico (E04, 30/10/2026)
+### 6.16.2b O iglu do Pico (E04, adiado)
 
-A proposta põe "construir o iglu" no Pico. O iglu é uma cabana (`ILHAS_COM_CABANA` passa a ter
-`pico`), com o lote lido das âncoras `lote-cabana-a` e `-b` do modelo, como no Bosque, e o piso
-na altura da âncora. Ele é pequeno: até 12 trechos de parede, 3 aberturas e 2 pisos, sem cerca,
-caminho, canteiro nem objeto (`LIMITES_DO_IGLU`, conferidos no contrato por `CabanasSchema`). No
-Construir do iglu, cerca e caminho não aparecem.
-
-Com o iglu cheio, o salvamento cheio fica em 63.954 bytes (folga de 1.582; com o catálogo inteiro
-a 999, 754). O próximo dado grande vai para documento próprio no serviço. O `pico.glb` atual
-não tem o lote: o único chão plano e livre é a praça de chegada da ponte. Pedido de arte em
-`docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`; até lá, nada aparece no Pico.
+A proposta põe "construir o iglu" no Pico. Ele espera duas coisas: o lote na arte (o `pico.glb`
+atual só tem chão plano e livre na praça de chegada da ponte; pedido em
+`docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`) e espaço para guardar. Com a V20 (móveis
+e galeria do Farol), o salvamento cheio está a cerca de 600 bytes do teto: o iglu, como o segundo
+andar e o terreno, vai para um documento próprio no serviço. A cabana da ilha já é genérica
+(`CabanaDaIlha`, lote das âncoras `lote-cabana-a` e `-b`, piso na altura da âncora, ferramentas
+conforme os tetos do lote), pronta para receber o iglu.
 
 ### 6.16.2c O quintal grande do Vale (E04, 30/10/2026)
 
@@ -1884,6 +1881,36 @@ fica ocupado: a árvore do oeste, os dois pinheiros e o farol. A planta, o aconc
 dos moradores sempre leem o lote grande, que contém o pequeno: a obra de antes dá o mesmo
 resultado. As chaves e o vento do segredo da sua ilha ficam fora dele (a do banheiro foi para
 x -16,5). Provas: `tests/quintal-grande.test.ts`.
+### 6.16.4 Móveis da cozinha, da sala e do banheiro (salvamento V20, 30/10/2026)
+
+A ferramenta **Móveis** do Construir põe os 21 móveis da arte `arte/casa/comodos.py` nos cômodos
+novos da casa, separados nas abas Cozinha, Sala e Banheiro (com a miniatura de cada um). O catálogo
+é livre: não precisa ganhar nem comprar, e apagar não guarda nada. Na cabana não vão móveis.
+
+| Cômodo | Móveis |
+|---|---|
+| Cozinha | balcão com pia (2 × 1), balcão, armário alto, mesa (2 × 1), cadeira, prateleira de potes (parede) |
+| Sala | sofá (3 × 1), poltrona, mesinha de centro (2 × 1), tapete (3 × 2), estante baixa (2 × 1), luminária de pé, planta, quadro (parede) |
+| Banheiro | banheira (2 × 1), pia, espelho (parede), vaso sanitário, chuveiro com box, tapetinho, toalheiro (parede) |
+
+- De chão: inteiro num cômodo novo (o quarto é o da plataforma), sem parede no meio, sem ficar em
+  cima de objeto nem de outro móvel. O tapete e o tapetinho ficam por baixo: móvel e objeto podem ir
+  em cima deles, mas um tapete não vai em cima de outro. Girar vira o móvel de quarto em quarto.
+- De parede (quadro, espelho, prateleira e toalheiro): na parede mais perto do toque, sem porta nem
+  janela ali, uma peça por lado de parede. Não ocupa o chão (o espelho fica em cima da pia).
+- A obra se arruma sozinha: abrir o cômodo, apagar a parede de trás ou levar a casa para o quintal
+  tira o móvel. A parede não corta um móvel ao meio e a porta não abre em cima de uma peça pendurada
+  (o Zappy explica). O apagar tira primeiro o móvel de chão, depois a peça do lado mais perto e o
+  tapete por último.
+- No aconchego, cada tipo de móvel soma variedade como um objeto; a luminária de pé conta como luz e
+  a planta como planta. As visitas dos moradores não ficam em cima de móvel (só do tapete).
+- O salvamento guarda até 24 móveis na casa (`MOVEIS_NA_CASA_MAXIMO`), cada um em tupla
+  `[índice em MOVEIS, x, z, giro]`. A lista `MOVEIS` dos contratos só cresce no fim.
+
+Onde mudar: catálogo e regras em `sistemas/construcao/moveis.ts`; desenho e colisão em
+`mundo/moveis-da-obra.tsx`. Testes: `tests/moveis.test.ts` (inclui os nós e as medidas dos GLBs) e
+`arquipelago-contracts/tests/salvamento-v20.test.ts`. Navegador:
+`playground/verificar-moveis-browser.ts`.
 
 ### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
 
@@ -2262,24 +2289,25 @@ registrada como decisão: nas quatro ilhas antes do Pico, um baú da Íris flutu
 vento que sobe, o mesmo do Pico (`CorrenteDeAr`), com flocos dourados. Sem o planador o vento não
 leva ninguém; com ele, a criança pula dentro do vento, abre o planador e sobe até o baú.
 
-| Segredo | Ilha | Pé do vento | Dentro do baú |
-|---|---|---|---|
-| bit 1 | Sua ilha | (10,3; 12,3) no mundo | Estrela cintilante |
-| bit 2 | Bosque dos Bichos | (7; 0) no modelo | Cristal verde |
-| bit 4 | Vila Doce | (0; 6) no modelo | Cristal roxo |
-| bit 8 | Recife | (-8; -2) no modelo | Cristal azul |
+| Segredo | Ilha | Pé do vento |
+|---|---|---|
+| bit 1 | Sua ilha | (10,3; 12,3) no mundo |
+| bit 2 | Bosque dos Bichos | (7; 0) no modelo |
+| bit 4 | Vila Doce | (0; 6) no modelo |
+| bit 8 | Recife | (-8; -2) no modelo |
 
 - O vento tem 1,1 m de raio e 6,5 m de altura; o baú fica 1,3 m ao lado do alto. O pulo sem
   planador chega a mais de 3 m dele; no alto do vento ele fica ao alcance (2,2 m).
 - Ao pé do vento, "Olhar o vento": sem planador, "Lá no alto tem um baú, e o vento sobe até ele.
   Só que ele só leva quem plana. O planador vem do Pico Gelado."; com ele, como subir.
 - Planando, só valem as ações marcadas `noAr` (por ora, o baú); a HUD do planador mostra a ação
-  ao lado de "Fechar o planador". "Abrir o baú" guarda o bit em `segredos` e a lembrança na
-  mochila, uma vez só. Achado, o vento e o baú somem.
-- O álbum ganha "Segredos das ilhas: n de 4". As quatro lembranças usam a arte que já existia
-  sem uso (`cristal-*.glb`, `estrela-cintilante.glb`); o baú é o `bau.glb`.
-- Lumis raros e páginas extras do diário ficam de fora: pediriam espécies e texto novos da
-  história. Ficam como pendência de conteúdo.
+  ao lado de "Fechar o planador". "Abrir o baú" guarda o bit em `segredos`, uma vez só. Achado,
+  o vento e o baú somem.
+- O álbum ganha "Segredos das ilhas: n de 4". O baú é o `bau.glb`. Ele não dá item: os cristais e
+  a estrela que estavam sem uso viraram as coleções do Pico e das Nuvens (30/10), e um baú não
+  pode marcar peça de outra coleção.
+- O que vai dentro dos baús pela proposta (Lumis raros e páginas extras do diário) pede espécies
+  e texto novos da história. Fica como pendência de conteúdo.
 
 Provas: `tests/segredos.test.ts` (colunas livres contra os colisores reais das quatro ilhas,
 chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segredos-browser.ts`
@@ -4065,3 +4093,36 @@ começo fazendo, uma coisa por vez. Proposta aprovada no canvas "Primeiros passo
 - **Uma de cada vez,** e nunca com os primeiros passos andando. Ficam no menu, em "Dicas que você
   já viu", para ler de novo. "Desligar as dicas" no cartão (com confirmação) e em Conforto e
   controles, onde religa.
+
+## Coleções do Pico e das Nuvens (30/10/2026)
+
+Doze peças novas no álbum, em três grupos de quatro. Cada peça se pega uma vez, com E ou Usar,
+e vai para a mochila como lembrança (quantidade 1, igual às conchas). Não se come, não se dá de
+presente e não ocupa espaço na barra: as lembranças de todas as coleções viram um botão só, que
+abre o álbum. Nada novo no salvamento.
+
+- **Notas musicais do Pico:** semínima perto do lago congelado, colcheia do lado da caverna, duas
+  colcheias perto do iglu e a clave de sol no alto da parede de gelo (chega-se pelo vento, com o
+  planador). As notas flutuam girando devagar; com menos movimento, ficam paradas.
+- **Cristais do Pico:** três no chão da caverna de cristal (ponta de gelo azul, ametista e geodo
+  verde) e o cristal rosa, o de sempre, no alto das pedras do fundo.
+- **Estrelas das Nuvens:** quatro estrelas caídas que só aparecem, e só se pegam, à noite.
+
+Quando a última peça de um grupo entra, o Zappy diz "Coleção completa". Onde mudar: lugares e
+textos em `sistemas/colecoes-das-ilhas.ts` (os lugares são do referencial do GLB da ilha e o teste
+`colecoes-das-ilhas.test.ts` confere chão, caminho a pé e distância de 2 m dos outros interativos).
+
+## Iscas da pesca (30/10/2026)
+
+Duas iscas ajudam a pescar, sem sorte e sem perda:
+
+| Isca | O que muda | De graça | Na feira |
+|---|---|---|---|
+| Minhoca | o peixe chega em 1 s (sem isca, 3 s) | latinha no canto da horta, do lado do cata-vento | 2 moedas |
+| Isca de penas | 10 s para recolher (sem isca, 5 s) | no tampo do píer, mais perto da praia | 2 moedas |
+
+A de graça só aparece quando a mochila não tem nenhuma daquele tipo. A criança escolhe a isca pela
+mochila ("Usar a minhoca na pesca"); o recado do píer passa a dizer "Lançar a linha com a minhoca".
+A isca só é gasta quando o peixe vem: perder a janela, sair do píer ou pausar não gasta nada.
+Trocar de isca com a linha na água não muda o lançamento em curso. Iscas não viram presente.
+Onde mudar: `PESCA_COM_ISCA` em `sistemas/iscas.ts`; preço em `INSUMOS` dos contratos.

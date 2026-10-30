@@ -1,6 +1,6 @@
 import {
   type IlhaComCabana,
-  LIMITES_DO_IGLU,
+  MOVEIS_NA_CASA_MAXIMO,
   type Obra,
   type Trecho,
 } from '@sistemazero/arquipelago-contracts'
@@ -49,6 +49,8 @@ export interface Lote {
     trechosDeCerca: number
     caminhos: number
     canteiros: number
+    /** Móveis da cozinha, da sala e do banheiro (`moveis.ts`): só na casa. */
+    moveis: number
   }
 }
 
@@ -60,6 +62,7 @@ export const OBRA_VAZIA: Obra = {
   cercas: [],
   caminhos: [],
   canteiros: [],
+  moveis: [],
 }
 
 /** O quarto da plataforma na grade do mundo (o mesmo `QUARTO` de `mundo/medidas.ts`). */
@@ -115,6 +118,7 @@ export const LOTE_DA_CASA: Lote = {
     cercas: [],
     caminhos: [],
     canteiros: [],
+    moveis: [],
   },
   limites: {
     arestasDeParede: 320,
@@ -125,6 +129,7 @@ export const LOTE_DA_CASA: Lote = {
     trechosDeCerca: 120,
     caminhos: 240,
     canteiros: 18,
+    moveis: MOVEIS_NA_CASA_MAXIMO,
   },
 }
 
@@ -170,21 +175,6 @@ export function loteDaCabana(id: Exclude<Lote['id'], 'casa'>, area: Retangulo): 
     paredesTravadas: [],
     obraInicial: OBRA_VAZIA,
   }
-  // O iglu do Pico (E04): só paredes, aberturas e piso, nos tetos do contrato.
-  if (id === 'pico')
-    return {
-      ...base,
-      limites: {
-        arestasDeParede: 40,
-        trechosDeParede: LIMITES_DO_IGLU.paredes,
-        aberturas: LIMITES_DO_IGLU.aberturas,
-        pisos: LIMITES_DO_IGLU.pisos,
-        arestasDeCerca: 0,
-        trechosDeCerca: LIMITES_DO_IGLU.cercas,
-        caminhos: LIMITES_DO_IGLU.caminhos,
-        canteiros: LIMITES_DO_IGLU.canteiros,
-      },
-    }
   return {
     ...base,
     limites: {
@@ -195,8 +185,9 @@ export function loteDaCabana(id: Exclude<Lote['id'], 'casa'>, area: Retangulo): 
       arestasDeCerca: 60,
       trechosDeCerca: 30,
       caminhos: 48,
-      // Canteiro e objeto ficam no quintal e na casa (a horta é uma só).
+      // Canteiro, objeto e móvel ficam no quintal e na casa (a horta é uma só).
       canteiros: 0,
+      moveis: 0,
     },
   }
 }

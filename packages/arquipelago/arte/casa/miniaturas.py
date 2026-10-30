@@ -121,6 +121,25 @@ MINIATURAS = {
         DE_FRENTE,
     ),
 }
+# Os móveis dos cômodos (`comodos.py`), cada um sozinho, como os objetos da casa.
+MOVEIS = {
+    'cozinha': ['balcao-pia', 'balcao', 'armario-alto', 'mesa-cozinha', 'cadeira-cozinha', 'prateleira-potes'],
+    'sala': ['sofa', 'poltrona', 'mesinha-centro', 'tapete', 'estante-baixa', 'luminaria-pe', 'planta', 'quadro'],
+    'banheiro': ['banheira', 'pia-banheiro', 'espelho', 'vaso-sanitario', 'box-chuveiro', 'tapetinho', 'toalheiro'],
+}
+
+
+def so_o_movel(no):
+    def preparar():
+        so(no)
+        return None
+
+    return preparar
+
+
+for comodo, nos in MOVEIS.items():
+    for no in nos:
+        MINIATURAS[f'movel-{no}'] = (f'casa/casa-{comodo}.glb', so_o_movel(no), DO_OBJETO)
 for nome in sorted(os.listdir(os.path.join(ASSETS, 'objetos'))):
     if nome.endswith('.glb') and 'holograma' not in nome:
         MINIATURAS[f'objeto-{nome[:-4]}'] = (f'objetos/{nome}', None, DO_OBJETO)

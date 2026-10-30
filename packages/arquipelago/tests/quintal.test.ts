@@ -27,6 +27,7 @@ const ESCOLHAS: Escolhas = {
   piso: 'tabua',
   caminho: 'pedra',
   objeto: null,
+  movel: null,
   giro: 0,
 }
 

@@ -1,9 +1,35 @@
-import type { ObjetoDaCasa, PisoDaCasa, PisoDoQuintal } from '@sistemazero/arquipelago-contracts'
+import type {
+  Movel,
+  ObjetoDaCasa,
+  PisoDaCasa,
+  PisoDoQuintal,
+} from '@sistemazero/arquipelago-contracts'
 import caminhoGrama from '../assets/casa/miniaturas/caminho-grama.png'
 import caminhoPedra from '../assets/casa/miniaturas/caminho-pedra.png'
 import janelaArco from '../assets/casa/miniaturas/janela-arco.png'
 import janelaGrande from '../assets/casa/miniaturas/janela-grande.png'
 import janelaRedonda from '../assets/casa/miniaturas/janela-redonda.png'
+import movelArmarioAlto from '../assets/casa/miniaturas/movel-armario-alto.png'
+import movelBalcao from '../assets/casa/miniaturas/movel-balcao.png'
+import movelBalcaoPia from '../assets/casa/miniaturas/movel-balcao-pia.png'
+import movelBanheira from '../assets/casa/miniaturas/movel-banheira.png'
+import movelBoxChuveiro from '../assets/casa/miniaturas/movel-box-chuveiro.png'
+import movelCadeiraCozinha from '../assets/casa/miniaturas/movel-cadeira-cozinha.png'
+import movelEspelho from '../assets/casa/miniaturas/movel-espelho.png'
+import movelEstanteBaixa from '../assets/casa/miniaturas/movel-estante-baixa.png'
+import movelLuminariaPe from '../assets/casa/miniaturas/movel-luminaria-pe.png'
+import movelMesaCozinha from '../assets/casa/miniaturas/movel-mesa-cozinha.png'
+import movelMesinhaCentro from '../assets/casa/miniaturas/movel-mesinha-centro.png'
+import movelPiaBanheiro from '../assets/casa/miniaturas/movel-pia-banheiro.png'
+import movelPlanta from '../assets/casa/miniaturas/movel-planta.png'
+import movelPoltrona from '../assets/casa/miniaturas/movel-poltrona.png'
+import movelPrateleiraPotes from '../assets/casa/miniaturas/movel-prateleira-potes.png'
+import movelQuadro from '../assets/casa/miniaturas/movel-quadro.png'
+import movelSofa from '../assets/casa/miniaturas/movel-sofa.png'
+import movelTapete from '../assets/casa/miniaturas/movel-tapete.png'
+import movelTapetinho from '../assets/casa/miniaturas/movel-tapetinho.png'
+import movelToalheiro from '../assets/casa/miniaturas/movel-toalheiro.png'
+import movelVasoSanitario from '../assets/casa/miniaturas/movel-vaso-sanitario.png'
 import objetoAquario from '../assets/casa/miniaturas/objeto-aquario.png'
 import objetoBanda from '../assets/casa/miniaturas/objeto-banda.png'
 import objetoCasinha from '../assets/casa/miniaturas/objeto-casinha.png'
@@ -51,4 +77,28 @@ export const MINIATURA_DO_OBJETO: Record<ObjetoDaCasa, string> = {
   museu: url(objetoMuseu),
   casinha: url(objetoCasinha),
   'planta-interior': url(objetoPlantaInterior),
+}
+
+export const MINIATURA_DO_MOVEL: Record<Movel, string> = {
+  'balcao-pia': url(movelBalcaoPia),
+  balcao: url(movelBalcao),
+  'armario-alto': url(movelArmarioAlto),
+  'mesa-cozinha': url(movelMesaCozinha),
+  'cadeira-cozinha': url(movelCadeiraCozinha),
+  'prateleira-potes': url(movelPrateleiraPotes),
+  sofa: url(movelSofa),
+  poltrona: url(movelPoltrona),
+  'mesinha-centro': url(movelMesinhaCentro),
+  tapete: url(movelTapete),
+  'estante-baixa': url(movelEstanteBaixa),
+  'luminaria-pe': url(movelLuminariaPe),
+  planta: url(movelPlanta),
+  quadro: url(movelQuadro),
+  banheira: url(movelBanheira),
+  'pia-banheiro': url(movelPiaBanheiro),
+  espelho: url(movelEspelho),
+  'vaso-sanitario': url(movelVasoSanitario),
+  'box-chuveiro': url(movelBoxChuveiro),
+  tapetinho: url(movelTapetinho),
+  toalheiro: url(movelToalheiro),
 }

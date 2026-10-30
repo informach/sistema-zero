@@ -311,7 +311,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(19)
+    expect(lido.salvamento?.versao).toBe(20)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -339,7 +339,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(19)
+    expect(lido.salvamento?.versao).toBe(20)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -366,7 +366,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(19)
+    expect(lido.salvamento?.versao).toBe(20)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -411,7 +411,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 19, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 20, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
@@ -541,7 +541,7 @@ describe('salvamento', () => {
         },
       },
       nuvens: { constelacoes: 63 },
-      farol: { pagina: true, concluido: true },
+      farol: { pagina: true, concluido: true, galeria: [] },
       clima: 'chuva' as const,
       percursos: {
         'nuvens-saltos': {
@@ -581,7 +581,8 @@ describe('salvamento', () => {
       companhia: _companhia,
       ...anterior
     } = salvamento
-    const v17 = { ...anterior, versao: 17 }
+    const { galeria: _galeria, ...farolDaV19 } = anterior.farol
+    const v17 = { ...anterior, farol: farolDaV19, versao: 17 }
     const resposta = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
       salvamento: v17,
@@ -589,7 +590,8 @@ describe('salvamento', () => {
     expect(resposta.status).toBe(200)
     expect(SalvamentoGuardadoSchema.parse(resposta.json).salvamento).toEqual({
       ...v17,
-      versao: 19,
+      versao: 20,
+      farol: { ...v17.farol, galeria: [] },
       ilhasVisitadas: 0,
       chaves: 0,
       segredos: 0,

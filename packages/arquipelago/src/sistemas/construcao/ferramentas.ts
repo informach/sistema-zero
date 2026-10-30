@@ -1,5 +1,6 @@
 import type {
   Canteiro,
+  Movel,
   ObjetoDaCasa,
   Obra,
   PisoDaCasa,
@@ -20,6 +21,17 @@ import {
   pontoMaisPerto,
 } from './grade'
 import { type Celula, chaveDaCelula, type Lote } from './lote'
+import {
+  arestaAtras,
+  cantoDoMovelNoToque,
+  celulasDoMovel,
+  ehDeParede,
+  giroDaParedeNoToque,
+  lerMovel,
+  movelNoToque,
+  porMovel,
+  tirarMovel,
+} from './moveis'
 import {
   aberturaEm,
   apagarParede,
@@ -54,6 +66,7 @@ export type Ferramenta =
   | 'caminho'
   | 'canteiro'
   | 'objeto'
+  | 'movel'
   | 'apagar'
 
 export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
@@ -64,6 +77,8 @@ export interface Escolhas {
   caminho: PisoDoQuintal
   /** O objeto escolhido na ferramenta Objeto (um dos ganhos) e o giro dele. */
   objeto: ObjetoDaCasa | null
+  /** O móvel escolhido na ferramenta Móveis (o giro é o mesmo; a peça de parede acha a parede). */
+  movel: Movel | null
   giro: number
 }
 
@@ -155,6 +170,23 @@ export function toque(
     const celulas = celulasDoObjeto({ id: escolhas.objeto, ...canto, giro: escolhas.giro })
     return { resultado: r, previa: { tipo: 'celulas', celulas, ok: r.ok } }
   }
+  if (f === 'movel') {
+    if (!escolhas.movel)
+      return { resultado: null, previa: { tipo: 'celulas', celulas: [celula], ok: false } }
+    if (ehDeParede(escolhas.movel)) {
+      // A peça de parede vai na parede mais perto do dedo, sem a criança precisar girar.
+      const giro = giroDaParedeNoToque(obra, lote, onde) ?? escolhas.giro
+      const r = porMovel(obra, lote, escolhas.movel, celula, giro)
+      return {
+        resultado: r,
+        previa: { tipo: 'arestas', arestas: [arestaAtras(celula, giro)], ok: r.ok },
+      }
+    }
+    const canto = cantoDoMovelNoToque(escolhas.movel, escolhas.giro, celula)
+    const r = porMovel(obra, lote, escolhas.movel, canto, escolhas.giro)
+    const celulas = celulasDoMovel({ id: escolhas.movel, ...canto, giro: escolhas.giro })
+    return { resultado: r, previa: { tipo: 'celulas', celulas, ok: r.ok } }
+  }
   const aresta = arestaMaisPerto(onde.x, onde.z)
   if (f === 'porta' || f === 'janela') {
     const tipo = f === 'porta' ? 'porta' : escolhas.janela
@@ -176,6 +208,16 @@ export function toque(
       return {
         resultado: tirarObjeto(obra, celula),
         previa: { tipo: 'celulas', celulas: celulasDoObjeto(obj), ok: true },
+      }
+    // Depois o móvel: o de chão, a peça de parede do lado mais perto, o tapete por último.
+    const tupla = obra.moveis[movelNoToque(obra, onde)]
+    const movel = tupla ? lerMovel(tupla) : null
+    if (movel)
+      return {
+        resultado: tirarMovel(obra, onde),
+        previa: ehDeParede(movel.id)
+          ? { tipo: 'arestas', arestas: [arestaAtras(movel, movel.giro)], ok: true }
+          : { tipo: 'celulas', celulas: celulasDoMovel(movel), ok: true },
       }
     // Perto de uma aresta com algo (porta, janela, parede, cerca): tira isso. Senão, a célula.
     const i = aberturaEm(obra, aresta)

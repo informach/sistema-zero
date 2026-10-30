@@ -154,7 +154,7 @@ try {
   await page.screenshot({ path: path.join(prints, '00-entrada.png') })
   if (insumos) {
     await feira.getByText('Você tem 80 moedas.', { exact: true }).first().waitFor()
-    const bloco = feira.getByRole('region', { name: 'Sementes e ingredientes' })
+    const bloco = feira.getByRole('region', { name: 'Sementes, ingredientes e iscas' })
     await bloco.getByLabel('Item', { exact: true }).selectOption('leite')
     await bloco.getByLabel('Quantidade', { exact: true }).selectOption('3')
     await bloco.getByRole('button', { name: 'Comprar ingredientes', exact: true }).click()
@@ -207,7 +207,9 @@ try {
     await page.getByText('Ver a feira da semana', { exact: false }).first().waitFor()
     await abrir()
     await feira.waitFor()
-    await feira.getByRole('region', { name: 'Sementes e ingredientes' }).scrollIntoViewIfNeeded()
+    await feira
+      .getByRole('region', { name: 'Sementes, ingredientes e iscas' })
+      .scrollIntoViewIfNeeded()
     const limites = await feira.evaluate((el) => ({
       largura: el.clientWidth,
       conteudo: el.scrollWidth,

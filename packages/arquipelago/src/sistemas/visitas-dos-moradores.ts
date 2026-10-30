@@ -9,6 +9,7 @@ import {
 import { planta } from './construcao/comodos'
 import { arestasDaAbertura, chaveDaAresta } from './construcao/grade'
 import { type Celula, chaveDaCelula, LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from './construcao/lote'
+import { celulasDosMoveisAltos } from './construcao/moveis'
 import { celulasDoObjeto } from './construcao/projeto-azul'
 import { sorteio } from './moradores'
 
@@ -80,6 +81,8 @@ export function encontroNaCasa(
   for (const c of p.comodos)
     for (const celula of c.celulas) livres.set(chaveDaCelula(celula), celula)
   for (const o of obra.objetos) for (const c of celulasDoObjeto(o)) livres.delete(chaveDaCelula(c))
+  // Os móveis de chão também (o tapete não: dá para ficar em cima dele).
+  for (const k of celulasDosMoveisAltos(obra)) livres.delete(k)
   for (const item of quarto.placedItems) {
     const info = ROOM_ITEM_INFO[item.itemId]
     if (!info || info.mount === 'wall' || item.on) continue

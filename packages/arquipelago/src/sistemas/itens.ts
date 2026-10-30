@@ -1,5 +1,6 @@
 import { adicionarAoInventario, type Semente } from '@sistemazero/arquipelago-contracts'
 import { LEMBRANCAS_DA_PRAIA } from './colecoes-da-praia'
+import { LEMBRANCAS_DAS_ILHAS } from './colecoes-das-ilhas'
 
 /** Os itens do jogo. O inventário guarda `id → quantidade`; id desconhecido é ignorado. */
 export interface Item {
@@ -15,8 +16,10 @@ export interface Item {
    * come nem se dá de presente. Dar de presente a devolveria ao lugar dela, para pegar de novo.
    */
   lembranca?: true
+  /** Isca de pesca (`iscas.ts`): escolhida na mochila, gasta só quando um peixe vem. */
+  isca?: true
   /** Coleção consultada no álbum, com um único atalho na barra da mochila. */
-  colecao?: 'praia'
+  colecao?: 'praia' | 'pico' | 'nuvens'
 }
 
 export const ITENS: Record<string, Item> = {
@@ -116,25 +119,34 @@ export const ITENS: Record<string, Item> = {
   // O presente do Bento para prender os borrões (fase2-06, `sistemas/borroes.ts`).
   lanterna: { id: 'lanterna', nome: 'Lanterna', emoji: '🏮', equipamento: true },
   // O cristal raro da caverna do Pico (fase3-07, `sistemas/cristal-raro.ts`).
-  'cristal-rosa': { id: 'cristal-rosa', nome: 'Cristal rosa', emoji: '💎', lembranca: true },
+  // Desde 30/10/2026 é também uma das quatro peças da coleção de cristais do Pico.
+  'cristal-rosa': {
+    id: 'cristal-rosa',
+    nome: 'Cristal rosa',
+    emoji: '💎',
+    lembranca: true,
+    colecao: 'pico',
+  },
+  // As iscas da pesca (30/10/2026, `sistemas/iscas.ts`).
+  'isca-minhoca': { id: 'isca-minhoca', nome: 'Minhoca', emoji: '🪱', isca: true },
+  'isca-pena': { id: 'isca-pena', nome: 'Isca de penas', emoji: '🪶', isca: true },
   // O presente do Floco no festival de inverno (fase3-09, `sistemas/planador.ts`).
   planador: { id: 'planador', nome: 'Planador', emoji: '🪁', equipamento: true },
-  // As lembranças dos baús no alto do vento (N12, `sistemas/segredos.ts`).
-  'estrela-cintilante': {
-    id: 'estrela-cintilante',
-    nome: 'Estrela cintilante',
-    emoji: '🌟',
-    lembranca: true,
-  },
-  'cristal-verde': { id: 'cristal-verde', nome: 'Cristal verde', emoji: '💎', lembranca: true },
-  'cristal-roxo': { id: 'cristal-roxo', nome: 'Cristal roxo', emoji: '💎', lembranca: true },
-  'cristal-azul': { id: 'cristal-azul', nome: 'Cristal azul', emoji: '💎', lembranca: true },
   // Preserva a prioridade dos alimentos, sementes e equipamentos na barra existente.
   ...Object.fromEntries(
     LEMBRANCAS_DA_PRAIA.map(({ id, nome, emoji }): [string, Item] => [
       id,
       { id, nome, emoji, lembranca: true, colecao: 'praia' },
     ]),
+  ),
+  // As notas e os cristais do Pico e as estrelas das Nuvens (`colecoes-das-ilhas.ts`).
+  ...Object.fromEntries(
+    LEMBRANCAS_DAS_ILHAS.filter(({ id }) => id !== 'cristal-rosa').map(
+      ({ id, nome, emoji, ilha }): [string, Item] => [
+        id,
+        { id, nome, emoji, lembranca: true, colecao: ilha },
+      ],
+    ),
   ),
 }
 
@@ -188,17 +200,23 @@ export function itensVisiveis(inv: Inventario): { item: Item; qtd: number }[] {
     .filter((x) => x.qtd > 0)
 }
 
-/** A barra é para uso rápido. Onze lembranças não viram onze espaços sobre o jogo. */
+/** Quantas descobertas as coleções têm ao todo (praia, Pico e Nuvens). */
+export const TOTAL_DE_DESCOBERTAS = Object.values(ITENS).filter((i) => i.colecao).length
+
+/**
+ * A barra é para uso rápido. As lembranças das coleções (as da praia, as do Pico e as das Nuvens)
+ * não viram um espaço cada sobre o jogo: viram um botão só, que abre o álbum.
+ */
 export function itensDaBarra(inv: Inventario) {
   const visiveis = itensVisiveis(inv)
   return {
-    itens: visiveis.filter(({ item }) => item.colecao !== 'praia'),
-    descobertasNaPraia: visiveis.filter(({ item }) => item.colecao === 'praia').length,
-    totalNaPraia: LEMBRANCAS_DA_PRAIA.length,
+    itens: visiveis.filter(({ item }) => !item.colecao),
+    descobertas: visiveis.filter(({ item }) => item.colecao).length,
+    totalDeDescobertas: TOTAL_DE_DESCOBERTAS,
   }
 }
 
-/** O que dá para dar de presente (tudo da mochila menos os equipamentos e as lembranças). */
+/** O que dá para dar de presente (tudo da mochila menos equipamentos, iscas e lembranças). */
 export function itensParaDar(inv: Inventario): { item: Item; qtd: number }[] {
-  return itensVisiveis(inv).filter(({ item }) => !item.equipamento && !item.lembranca)
+  return itensVisiveis(inv).filter(({ item }) => !item.equipamento && !item.lembranca && !item.isca)
 }

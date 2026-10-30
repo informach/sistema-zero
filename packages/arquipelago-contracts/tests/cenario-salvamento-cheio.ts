@@ -5,17 +5,21 @@ import {
   criarSalvamentoInicial,
   DIAS_CUIDADOS_MAXIMO,
   DIAS_PARA_CHOCAR,
+  type ExposicaoDoFarol,
   ID_DA_APARENCIA_MAXIMO,
   LIMITES_DA_ROTINA,
-  LIMITES_DO_IGLU,
   LUMIS,
   type LumiId,
   MAPAS_DAS_ILHAS,
   MORADORES_DO_ANEL,
+  MOVEIS,
+  MOVEIS_NA_CASA_MAXIMO,
+  type MovelNaObra,
   OBJETOS_DA_CASA,
   type Obra,
   PERCURSOS,
   POSTOS_DA_VILA,
+  VAGAS_DA_GALERIA_DO_FAROL,
 } from '../src'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
@@ -54,24 +58,22 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     cercas: Array.from({ length: 120 }, (_, i) => trecho(i)),
     caminhos: Array.from({ length: 240 }, (_, i) => ({ ...ponto(i), tipo: 'grama' as const })),
     canteiros: Array.from({ length: 18 }, (_, i) => ponto(i)),
+    moveis: [],
   })
-  /** O iglu do Pico no teto dele (E04). */
-  const igluCheio = (): Obra => ({
-    paredes: Array.from({ length: LIMITES_DO_IGLU.paredes }, (_, i) => trecho(i)),
-    aberturas: Array.from({ length: LIMITES_DO_IGLU.aberturas }, (_, i) => ({
-      ...ponto(i),
-      eixo: 'z' as const,
-      tipo: 'janela-redonda' as const,
-    })),
-    pisos: Array.from({ length: LIMITES_DO_IGLU.pisos }, (_, i) => ({
-      ...ponto(i),
-      tipo: 'azulejo' as const,
-    })),
-    objetos: [],
-    cercas: [],
-    caminhos: [],
-    canteiros: [],
+  // V20: os móveis da casa no teto, cada um no formato mais pesado (índice de dois dígitos, as duas
+  // coordenadas negativas de três caracteres). A cabana não guarda móvel.
+  const movelPesado: MovelNaObra = [MOVEIS.length - 1, -60, -60, 3]
+  const casaCheia = (): Obra => ({
+    ...cheia(),
+    moveis: Array.from({ length: MOVEIS_NA_CASA_MAXIMO }, () => movelPesado),
   })
+  // A galeria do Farol: as seis vagas com a exposição mais pesada (a aparência do objeto de nome
+  // mais comprido, com o id no teto), cada uma de uma criação diferente.
+  const maisComprido = [...OBJETOS_DA_CASA].sort((a, b) => b.length - a.length)[0]!
+  const galeria = Array.from(
+    { length: VAGAS_DA_GALERIA_DO_FAROL },
+    (_, i): ExposicaoDoFarol => ['a', maisComprido, `${i}`.padStart(ID_DA_APARENCIA_MAXIMO, 'x')],
+  )
   const aparencias = Array.from({ length: APARENCIAS_GUARDADAS_MAXIMO }, (_, i) => ({
     origem: 'criacao' as const,
     id: `${i}`.padStart(ID_DA_APARENCIA_MAXIMO, 'x'),
@@ -109,7 +111,8 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     clima: 'nublado' as const,
     // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
     vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'], filhote },
-    construcao: { casa: cheia(), cabanas: { bosque: cheia(), pico: igluCheio() } },
+    construcao: { casa: casaCheia(), cabanas: { bosque: cheia() } },
+    farol: { pagina: true, concluido: true, galeria },
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
     percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),

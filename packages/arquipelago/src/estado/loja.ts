@@ -9,6 +9,7 @@ import type {
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { Clima } from '../sistemas/clima'
 import { acaoEmCurso, encerraOTempo } from '../sistemas/fim-do-tempo'
+import type { Isca } from '../sistemas/iscas'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { IdDoPercurso } from '../sistemas/percurso'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
@@ -73,6 +74,8 @@ export interface EstadoDoJogo {
   patins: boolean
   /** A lanterna acesa (`sistemas/borroes.ts`; vale só se ainda está na mochila, não é salva). */
   lanterna: boolean
+  /** A isca escolhida para a próxima pesca (`sistemas/iscas.ts`; vale só se está na mochila). */
+  isca: Isca | null
   /** Sentada no banco ou deitada na cama (`sistemas/descanso.ts`), escrito pelo personagem. */
   descanso: 'sentar' | 'deitar' | null
   /**
@@ -101,6 +104,7 @@ export interface EstadoDoJogo {
   cortar(): void
   calcarPatins(calcados: boolean): void
   acenderLanterna(acesa: boolean): void
+  escolherIsca(isca: Isca | null): void
   definirDescanso(jeito: 'sentar' | 'deitar' | null): void
   /** Começa (com a casa do irmão) ou termina (`null`) a visita. */
   visitar(visita: Visita | null): void
@@ -154,6 +158,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     corte: 0,
     patins: false,
     lanterna: false,
+    isca: null,
     descanso: null,
     visita: null,
     mudar(fn) {
@@ -258,6 +263,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     acenderLanterna(lanterna) {
       if (get().lanterna !== lanterna) set({ lanterna })
+    },
+    escolherIsca(isca) {
+      if (get().isca !== isca) set({ isca })
     },
     visitar(visita) {
       set({ visita })

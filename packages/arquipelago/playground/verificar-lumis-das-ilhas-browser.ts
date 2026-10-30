@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { chromium } from 'playwright-core'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
@@ -75,16 +76,31 @@ try {
   })
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } })
   context.setDefaultTimeout(120_000)
-  await context.addInitScript((origem) => {
-    if (location.origin === origem) localStorage.setItem('arquipelago:medir', '1')
-  }, baseURL)
+  // As sete pontes já vistas: sem isso a cena da subida de posto (N02) roda uma vez por ilha antes
+  // da primeira noite, e no navegador emulado as sete passam dos minutos que o roteiro espera.
+  const chegada = ancora('chegada')
+  // O `em=` do playground começa um salvamento novo: a posição vai no próprio salvamento semeado.
+  // Nascido 12 minutos antes, como o `?adiantar=12` faz com um jogo novo: já é noite.
+  const salvo = criarSalvamentoInicial(new Date(Date.now() - 12 * 60_000))
+  salvo.pontesVistas = ilhasEmVolta().map((i) => i.ilha.id)
+  salvo.casa = { portaNova: true }
+  salvo.posicao = { x: chegada.x, y: chegada.y + 1.2, z: chegada.z }
+  await context.addInitScript(
+    ({ origem, s }) => {
+      if (location.origin !== origem) return
+      localStorage.setItem('arquipelago:medir', '1')
+      localStorage.setItem(
+        'arquipelago-playground',
+        JSON.stringify({ revisao: 1, salvamento: s, atualizadoEm: new Date().toISOString() }),
+      )
+    },
+    { origem: baseURL, s: salvo },
+  )
   const page = await context.newPage()
   page.on('pageerror', (e) => erros.push(e.message))
 
-  const chegada = ancora('chegada')
-  const em = `${chegada.x.toFixed(2)},${chegada.z.toFixed(2)},${(chegada.y + 1.2).toFixed(2)}`
   // Sem `lanterna=1`: quem dá é o Zappy, na primeira noite.
-  await page.goto(`${baseURL}/?novo=1&persistir=0&posicao=8&adiantar=12&em=${em}`, {
+  await page.goto(`${baseURL}/?posicao=8`, {
     waitUntil: 'domcontentloaded',
   })
   const ler = async () =>
@@ -115,7 +131,19 @@ try {
     Math.hypot(a.x - b.x, a.z - b.z)
 
   // 1. A lanterna do Zappy.
-  await page.getByText('Chegou a noite.', { exact: false }).first().waitFor({ timeout: 180_000 })
+  try {
+    await page.getByText('Chegou a noite.', { exact: false }).first().waitFor({ timeout: 180_000 })
+  } catch (e) {
+    // O que estava na tela quando o recado não veio: o print e o texto da HUD.
+    await page.screenshot({ path: path.join(prints, 'falha-sem-recado-da-noite.png') })
+    console.error(
+      await page
+        .locator('.arq-hud')
+        .innerText()
+        .catch(() => '(sem HUD)'),
+    )
+    throw e
+  }
   await page.getByRole('button', { name: 'Acender a lanterna' }).waitFor({ timeout: 30_000 })
   console.log('O Zappy deu a lanterna na primeira noite.')
   await page.screenshot({ path: path.join(prints, 'lanterna-do-zappy.png') })

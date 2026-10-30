@@ -17,7 +17,9 @@ import {
   LIMITE_DIARIO_MINIMO_MINUTOS,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   ManifestoDoClienteSchema,
+  MOVEIS_NA_CASA_MAXIMO,
   MoldeDeObjetoSchema,
+  type MovelNaObra,
   migrarDaV1,
   migrarDaV2,
   migrarDaV3,
@@ -43,7 +45,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV19Schema,
+  SalvamentoV20Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 import {
@@ -204,7 +206,7 @@ describe('salvamento V2 (percursos)', () => {
     mapa: {},
     companhia: 'quarto' as const,
     nuvens: { constelacoes: 0 },
-    farol: { pagina: false, concluido: false },
+    farol: { pagina: false, concluido: false, galeria: [] },
     clima: 'sol' as const,
     pico: { banda: 0 },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
@@ -230,19 +232,19 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV19Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV20Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 19, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 20, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(19)
+    expect(r.salvamento.versao).toBe(20)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
@@ -386,7 +388,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
     } = inicial()
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(19)
+    expect(v3?.versao).toBe(20)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -487,6 +489,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
     cercas: [{ x: -12, z: 2, eixo: 'z', n: 5 }],
     caminhos: [{ x: 2, z: 3, tipo: 'pedra' }],
     canteiros: [{ x: -10, z: 5 }],
+    moveis: [],
   })
 
   test('a V3 migra para a V4 com a casa de antes e nenhum projeto azul', () => {
@@ -517,7 +520,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(19)
+    expect(v4?.versao).toBe(20)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})
@@ -594,6 +597,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       cercas: Array.from({ length: 120 }, (_, i) => trecho(i)),
       caminhos: Array.from({ length: 240 }, (_, i) => ({ ...ponto(i), tipo: 'grama' as const })),
       canteiros: Array.from({ length: 18 }, (_, i) => ponto(i)),
+      moveis: [],
     })
     // IDs canônicos dos produtores (até 40). Referências antigas de 80 têm teste separado.
     const aparencias = Array.from({ length: APARENCIAS_GUARDADAS_MAXIMO }, (_, i) => ({
@@ -607,7 +611,16 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
     }
     const s = {
       ...inicial(),
-      construcao: { casa: cheia(), cabanas: { bosque: cheia() } },
+      construcao: {
+        casa: {
+          ...cheia(),
+          moveis: Array.from(
+            { length: MOVEIS_NA_CASA_MAXIMO },
+            (): MovelNaObra => [20, -60, -60, 3],
+          ),
+        },
+        cabanas: { bosque: cheia() },
+      },
       projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     }
     expect(migrarSalvamento(s)).not.toBeNull()

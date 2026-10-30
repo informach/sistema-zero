@@ -213,7 +213,7 @@ export function FinalDoFarol() {
         .mudar((salvo) =>
           salvo.farol.concluido || !salvo.farol.pagina
             ? salvo
-            : { ...salvo, farol: { pagina: true, concluido: true } },
+            : { ...salvo, farol: { ...salvo.farol, pagina: true, concluido: true } },
         )
       farol.setState({ tempo, etapa: 'fim' })
     } else farol.setState({ tempo })

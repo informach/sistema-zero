@@ -1,5 +1,11 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Salvamento V20 (30/10/2026)
+
+Leitura e PUT normalizam até V20 pelo contrato (móveis da casa e galeria do Farol, listas vazias na
+migração). Mesmo JSONB, revisão CAS e teto de 64 KB; sem coluna nem migração SQL. A visita de irmão
+e a adulta devolvem a obra V20 (com `moveis`). Testes HTTP e de banco seguem só em Postgres local.
+
 ## Visitas adultas consentidas (L12, 30/10/2026)
 
 `ServicoDasVisitasAdultas` exige adulto e acesso ao jogo em todas as leituras, e recusa

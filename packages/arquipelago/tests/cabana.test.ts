@@ -3,8 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   criarSalvamentoInicial,
-  LIMITES_DO_IGLU,
-  ObraSchema,
+  ObraDaCabanaSchema,
   SalvamentoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import type { Object3D } from 'three'
@@ -99,7 +98,7 @@ describe('a cabana no Bosque', () => {
 
   test('as regras valem no lote: quatro paredes fecham um cômodo, e a porta entra numa delas', () => {
     const obra = cabanaDeQuatro(lote)
-    expect(ObraSchema.safeParse(obra).success).toBe(true)
+    expect(ObraDaCabanaSchema.safeParse(obra).success).toBe(true)
     const p = planta(obra, lote)
     expect(p.comodos).toHaveLength(1)
     expect(p.dentro.size).toBe(16)
@@ -147,28 +146,4 @@ describe('a cabana no Bosque', () => {
     expect(loja.getState().salvamento.construcao.casa).toEqual(LOTE_DA_CASA.obraInicial)
     expect(loja.getState().salvamento.construcao.cabanas.bosque).toBeUndefined()
   })
-})
-
-describe('o iglu do Pico (E04)', () => {
-  test('com as âncoras, o lote do iglu tem os tetos do contrato e nada de quintal', () => {
-    const iglu = loteDoModelo(modelo, 'pico')
-    if (!iglu) throw new Error('sem lote')
-    expect(iglu.id).toBe('pico')
-    expect(iglu.limites).toMatchObject({
-      trechosDeParede: LIMITES_DO_IGLU.paredes,
-      aberturas: LIMITES_DO_IGLU.aberturas,
-      pisos: LIMITES_DO_IGLU.pisos,
-      trechosDeCerca: 0,
-      caminhos: 0,
-      canteiros: 0,
-    })
-  })
-
-  test('o pico.glb ainda não traz as âncoras do lote: o iglu espera a arte', async () => {
-    const buf = readFileSync(join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'pico.glb'))
-    const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
-    const pico = (await new GLTFLoader().parseAsync(ab, '')).scene
-    // Quando a arte chegar, este teste muda para conferir o lote plano e livre.
-    expect(loteDoModelo(pico, 'pico')).toBeNull()
-  }, 120_000)
 })

@@ -52,10 +52,11 @@ export function InsumosDaFeira() {
   return (
     <section aria-labelledby="arq-insumos-titulo">
       <h3 id="arq-insumos-titulo" className="arq-menu-titulo">
-        Sementes e ingredientes
+        Sementes, ingredientes e iscas
       </h3>
       <p className="arq-caderno-explica">
-        Comprar é opcional. A colheita devolve sementes e os pedidos dos moradores dão ingredientes.
+        Comprar é opcional. A colheita devolve sementes, os pedidos dos moradores dão ingredientes e
+        as iscas aparecem na horta e no píer.
       </p>
       <div className="arq-insumos-campos">
         <div>

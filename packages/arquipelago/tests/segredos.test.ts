@@ -25,7 +25,6 @@ import { GRAVIDADE, ilhasEmVolta, NIVEL_DA_AGUA } from '../src/mundo/medidas'
 import { segredosDoAlbum } from '../src/sistemas/album'
 import { CHAVES_DA_CASA } from '../src/sistemas/chaves-da-casa'
 import { alturaDoPulo, CORPO } from '../src/sistemas/corpo'
-import { ITENS } from '../src/sistemas/itens'
 import { naColunaDaCorrente, subidaDaCorrente } from '../src/sistemas/planador'
 import {
   ALCANCE_DO_BAU,
@@ -63,26 +62,25 @@ function colunaLivre(pe: { x: number; y: number; z: number }, solidos: readonly 
 }
 
 describe('os segredos das ilhas (N12)', () => {
-  test('um por ilha antes do Pico, com bit próprio e uma lembrança que existe', () => {
+  test('um por ilha antes do Pico, com bit próprio', () => {
     const postoDoPico = ILHAS.find((i) => i.id === 'pico')?.posto
     const ordem = (posto: string | undefined) =>
       (POSTOS_DA_JORNADA as readonly string[]).indexOf(posto ?? '')
     expect(new Set(SEGREDOS.map((s) => s.bit)).size).toBe(SEGREDOS.length)
     for (const s of SEGREDOS) {
       expect(s.bit).toBeLessThanOrEqual(BIT_DA_SEGREDO_MAXIMO)
-      expect(ITENS[s.item]?.lembranca).toBe(true)
       const posto = ILHAS.find((i) => i.id === s.ilha)?.posto
       expect(ordem(posto)).toBeLessThan(ordem(postoDoPico))
     }
     expect(SEGREDOS.map((s) => s.ilha)).toEqual(['sua-ilha', 'bosque', 'vila-doce', 'recife'])
   })
 
-  test('abrir o baú guarda o bit e a lembrança uma vez só', () => {
+  test('abrir o baú guarda o bit uma vez só, sem item de coleção', () => {
     const s = criarSalvamentoInicial(AGORA)
     const g = SEGREDOS[1]!
     const um = abrirSegredo(s, g)
     expect(segredoAchado(um.segredos, g)).toBe(true)
-    expect(um.inventario[g.item]).toBe(1)
+    expect(um.inventario).toEqual(s.inventario)
     expect(abrirSegredo(um, g)).toBe(um)
     expect(segredosDoAlbum(um).conta).toMatchObject({ tem: 1, total: 4 })
   })

@@ -5,6 +5,17 @@ Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-es
 Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
 explicam sua introdução, não a versão atual da resposta.
 
+## Salvamento V20: móveis da casa e galeria do Farol (30/10/2026)
+
+`moveis.ts`: `MOVEIS` (21 ids, só cresce no fim; o salvamento guarda o índice), `MovelNaObraSchema`
+(tupla `[índice, x, z, giro]`) e `MOVEIS_NA_CASA_MAXIMO` (24). `ObraDaCasaSchema` = obra antiga +
+`moveis`; `ObraDaCabanaSchema` aceita só `moveis: []`. `Obra` é o tipo da V20; `ObraAteV19` o de
+antes. `farol.galeria`: até `VAGAS_DA_GALERIA_DO_FAROL` (6) vagas, cada uma `null` ou
+`ExposicaoDoFarol` (`['a', objeto, idDaAparencia]`, `['j', playId]`, `['d', desafioId]`), só com o
+final concluído e sem repetir criação (`chaveDaExposicao`). `migrarDaV19` põe listas vazias.
+`CasaDoIrmaoSchema.obra` aceita a obra V20 ou a antiga (completada por `obraComMoveis`). Pior caso:
+63.989 bytes (folga 1.547). Testes: `tests/salvamento-v20.test.ts`, cenário cheio atualizado.
+
 ## Visitas adultas V1 (L12, 30/10/2026)
 
 `visitas-adultas.ts` define o código base64url de 32 caracteres, comando de geração vazio,
@@ -52,7 +63,7 @@ comandos antigos quando mudar a economia; versionar a regra. O prêmio financeir
 
 ## Insumos V1 (L07, 30/10/2026)
 
-`insumos.ts` contém onze sementes/ingredientes existentes, preço de duas ou três moedas e
+`insumos.ts` contém onze sementes/ingredientes e duas iscas (30/10/2026), de duas ou três moedas, e
 compra de uma a dez unidades. Comando estrito com UUID e revisão confirmada. Não recebe preço,
 público ou identidade do navegador. `prepararEntregaDeInsumos` preserva a entrada e só aceita
 entrega inteira, até 999 por item e 65.536 bytes UTF-8. Resultado valida preço, revisão e saldo
