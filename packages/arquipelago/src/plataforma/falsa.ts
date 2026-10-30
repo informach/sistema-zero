@@ -7,6 +7,7 @@ import {
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
   type ConflitoDeSalvamento,
+  chavesUsadasNaObra,
   criarSalvamentoInicial,
   diaDeSaoPaulo,
   type Fantasma,
@@ -292,6 +293,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ...atual,
         casa: { portaNova: true },
         construcao: { ...atual.construcao, casa: obraDeExemplo() },
+        // A obra de exemplo usa acabamentos dos cômodos: as chaves vêm com ela (N11).
+        chaves: atual.chaves | chavesUsadasNaObra(obraDeExemplo()),
         projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
       atualizadoEm: agora().toISOString(),

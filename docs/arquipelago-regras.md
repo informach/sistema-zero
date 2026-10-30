@@ -107,7 +107,8 @@ A V19 acrescenta, sem consumir itens: três percursos (`praia-pedras`, `recife-c
 `vale-pegadas`), as chaves dos cômodos da casa da Íris (`chaves`, um bit por cômodo), os
 segredos das ilhas (`segredos`, um bit por segredo, até 24), o mapa que se revela andando
 (`mapa`, uma grade de 8 × 8 por ilha em hexadecimal) e quem acompanha pela ilha (`companhia`:
-`quarto` ou `adotado`). A V18 migra sem nada achado e com o bicho do quarto acompanhando. Entre
+`quarto` ou `adotado`). A V18 migra sem segredo nem mapa, com o bicho do quarto acompanhando e
+com as chaves que a obra já usava (casa e cabanas, `chavesUsadasNaObra`). Entre
 duas sessões, chaves, segredos e mapa se juntam; a companhia segue a regra da preferência do
 clima. No teto, o documento cheio fica em 63.194 bytes (teste `salvamento-v10`). A migração
 `0017_percursos_da_v19` atualiza a lista de percursos aceita pelos fantasmas.
@@ -1829,6 +1830,36 @@ de salas diferentes. A casa original usa as medidas da mesma planta do modo Cons
 Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posicao=8`.
 Verificador: `playground/verificar-convidados-browser.ts`; evidências em
 `docs/qa/2026-10-29-convidados/`.
+
+### 6.16.2a As chaves dos cômodos (N11, 30/10/2026)
+
+A proposta põe como aventura da sua ilha "achar a chave de cada cômodo": a casa da Íris só tem
+cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Como o Construir
+não tem cômodo com tipo (a criança fecha paredes onde quiser), a chave dá cor pelo acabamento
+que é daquele cômodo. Escolha mínima, registrada como decisão:
+
+| Chave | Libera no Construir | Onde fica (x, z) |
+|---|---|---|
+| Cozinha | piso de ladrilho | (20,5; -3,6), a leste da horta |
+| Sala | janelas grande e em arco | (6,8; -18,8), ao sul |
+| Banheiro | piso de azulejo | (-14,9; 2,1), a oeste da casa |
+| Quintal | cerca, caminho e canteiro | (-6; 14,8), ao norte |
+
+- Sem chave nenhuma a casa já cresce: parede, porta, janela redonda, piso de tábua, objetos dos
+  pedidos, apagar e olhar. A janela começa na redonda.
+- Trancado aparece em cinza com 🔑 e o nome da chave. Tocar mostra o recado "Precisa da chave da
+  cozinha. Ela está escondida em algum canto da sua ilha." A loja recusa a escolha e recusa a
+  obra que traga um acabamento trancado novo; o que a obra já usava continua editável.
+- As chaves ficam no gramado, fora do lote da casa, a mais de 4 m da linha de cada ponte e a
+  mais de 3 m das conchas e dos Lumis (teste contra os colisores reais da casa, do farol, do
+  píer, das árvores e do `terreno.glb`). "Pegar a chave da cozinha" guarda o bit em `chaves`; o
+  Zappy diz o que ela abre e quantas faltam. A chave achada some do mundo.
+- O painel do Construir mostra "Chaves da casa: n de 4" até a quarta.
+- Visita e suporte somente leitura não pegam chave.
+
+Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/construcao.ts`,
+`interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
+`playground/verificar-chaves-browser.ts`.
 
 ### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
 
