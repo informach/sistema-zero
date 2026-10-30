@@ -71,6 +71,7 @@ import { PainelDaRotina, RotinaAndando } from './rotina'
 import { ControlesDeToque } from './toque'
 import { PainelDoTurno } from './turno'
 import { FaixaDaVisita, PainelDasVisitas, RecordesDaFamilia } from './visitas'
+import { PainelDasVisitasAdultas } from './visitas-adultas'
 import { useVoz } from './voz'
 
 /** As três necessidades, com o ícone e a cor fixa de cada uma (cor nunca é o único sinal). */
@@ -944,6 +945,7 @@ export function Hud() {
       <PainelDoObjeto />
       <Diario />
       <PainelDasVisitas />
+      <PainelDasVisitasAdultas />
       <Album />
       <PainelDoMapa />
       {!noFarol && <AtalhoDaFoto />}

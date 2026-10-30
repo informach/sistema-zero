@@ -45,6 +45,7 @@ import {
   TurnoNaoEncontradoError,
 } from '../../application/servico-das-profissoes'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
+import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
 import type { ServicoDosFantasmas } from '../../application/servico-dos-fantasmas'
@@ -64,12 +65,17 @@ import {
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
+import {
+  SalvamentoDaVisitaNecessarioError,
+  VisitaAdultaIndisponivelError,
+} from '../../domain/visitas-adultas.port'
 import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDasProfissoes } from './rotas-das-profissoes'
 import { rotasDasVisitas } from './rotas-das-visitas'
+import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
@@ -79,6 +85,7 @@ import { rotasDosMinijogos } from './rotas-dos-minijogos'
 import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
+  visitasAdultas?: ServicoDasVisitasAdultas
   fantasmas?: ServicoDosFantasmas
   pedidos?: ServicoDosPedidos
   insumos?: ServicoDosInsumos
@@ -116,6 +123,7 @@ const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/verificar$/
 
 /** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
 function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
+  if (caminho.startsWith('/arquipelago/visitas-adultas/')) return 1024
   if (caminho === '/arquipelago/fantasmas') return CORPO_DO_FANTASMA_MAX_BYTES
   if (caminho.startsWith('/arquipelago/admin/')) return CORPO_DA_EQUIPE
   if (CONFERIR.test(caminho)) return CORPO_DA_CONFERENCIA
@@ -139,6 +147,14 @@ export function createServer(deps: DependenciasHttp) {
       }
     })
     .onError(({ error, set, code }) => {
+      if (error instanceof VisitaAdultaIndisponivelError) {
+        set.status = 404
+        return envelope('VISITA_ADULTA_INDISPONIVEL', error.message)
+      }
+      if (error instanceof SalvamentoDaVisitaNecessarioError) {
+        set.status = 409
+        return envelope('SALVAMENTO_NECESSARIO', error.message)
+      }
       if (error instanceof RequestBodyTooLargeError) {
         set.status = 413
         return envelope('CORPO_GRANDE_DEMAIS', 'Requisição grande demais')
@@ -326,6 +342,11 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.visitasAdultas
+        ? rotasDasVisitasAdultas({ visitas: deps.visitasAdultas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .use(
       deps.fantasmas
         ? rotasDosFantasmas({ fantasmas: deps.fantasmas, tokenInterno: deps.tokenInterno })

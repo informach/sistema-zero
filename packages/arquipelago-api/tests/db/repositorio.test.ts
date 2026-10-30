@@ -64,7 +64,7 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogo (Postgres real)', () => {
     await conexao?.close()
   })
   beforeEach(async () => {
-    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.eventos_tempo, arquipelago.limites_da_familia`
+    await conexao.sql`truncate arquipelago.salvamentos, arquipelago.tempo_diario, arquipelago.eventos_tempo, arquipelago.limites_da_familia cascade`
   })
 
   test('repetição do mesmo evento de tempo não conta duas vezes', async () => {

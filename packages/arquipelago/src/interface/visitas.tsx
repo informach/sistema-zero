@@ -1,11 +1,10 @@
 import type { PercursoId } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
+import { irParaAFrenteDaCasa } from '../estado/chegada-da-visita'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaFamilia, useFamilia } from '../estado/familia'
 import { lojaDosFantasmas } from '../estado/fantasmas'
-import { alturaDaIlha } from '../mundo/medidas'
 import {
-  CHEGADA_DA_VISITA,
   FALA_DA_VOLTA,
   faixaDaVisita,
   falaDaChegada,
@@ -15,13 +14,6 @@ import {
   visitaDaCasa,
 } from '../sistemas/visitas'
 import { AvisoDoFantasma } from './fantasmas'
-
-/** Leva o personagem à frente da casa, olhando para ela (na ida e na volta da visita). */
-function irParaAFrenteDaCasa(pedidos: ReturnType<typeof useJogo>['pedidos']) {
-  const { x, z, olhar } = CHEGADA_DA_VISITA
-  pedidos.teleporte = { x, y: alturaDaIlha(x, z) + 1.2, z }
-  pedidos.olharPara = olhar
-}
 
 const estrelas = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n)
 

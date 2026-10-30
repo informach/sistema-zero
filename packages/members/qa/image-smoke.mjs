@@ -7,7 +7,7 @@ assert.equal(process.cwd(), '/app')
 assert.equal(process.getuid(), 1000)
 assert.equal(Bun.version, '1.4.4')
 assert.equal(process.env.NODE_ENV, 'production')
-const workspaces = ['core', 'members', 'pinta', 'studio', 'ui']
+const workspaces = ['arquipelago-contracts', 'core', 'members', 'pinta', 'studio', 'ui']
 assert.deepEqual(readdirSync('/app/packages').sort(), workspaces)
 for (const path of [
   '/root/.bun/install/cache',
@@ -29,6 +29,7 @@ const manifest = JSON.parse(readFileSync('/app/packages/members/package.json', '
 assert.equal(manifest.dependencies['drizzle-kit'], '^0.31.5')
 assert.equal(manifest.devDependencies['drizzle-kit'], undefined)
 for (const [consumer, workspace] of [
+  ['members', 'arquipelago-contracts'],
   ['members', 'core'],
   ['members', 'pinta'],
   ['members', 'studio'],

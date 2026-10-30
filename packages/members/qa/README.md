@@ -3,8 +3,8 @@
 O Dockerfile recebe o contexto da raiz e usa a mesma base Bun **1.4.4 com digest**
 do Auth. Os manifests completos, lock e patches ficam no estágio de instalação;
 o filtro `@sistemazero/members...` instala Members e suas dependências workspace:
-Core, Studio, Pinta e UI. Os fontes chegam depois da instalação para permitir o
-reuso dessa camada quando apenas código muda.
+Core, Studio, Pinta, UI e os contratos do Arquipélago. Os fontes chegam depois da
+instalação para permitir o reuso dessa camada quando apenas código muda.
 
 `drizzle-kit` passa a dependência de produção, com o mesmo spec `^0.31.5` e a mesma
 resolução **0.31.10**. O pre-deploy continua sendo
@@ -13,7 +13,7 @@ usuário `bun` não mudam. São preservados schema, SQL/journal, scripts de boot
 Schema A, Pensa, seeds, backfills e restauração. O teste de banco e o conversor
 editorial local não integram a imagem.
 
-O estágio final recebe a store `node_modules/.bun` e os links dos cinco workspaces.
+O estágio final recebe a store `node_modules/.bun` e os links dos seis workspaces.
 O cache global criado pelo instalador fica no estágio anterior. Não há remoção
 manual de arquivos de dependências, nem supressão de scripts de instalação.
 Studio continua necessário: Members usa seus validadores/AST, checks e exports;

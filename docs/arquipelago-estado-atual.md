@@ -1,6 +1,6 @@
 # Estado atual do Arquipélago Vagalume
 
-Leitura local de 30/10/2026, base `16345a590`. Este índice separa implementação de entrega
+Leitura local de 30/10/2026, base de conciliação `11002f9ff` e lote de visitas adultas. Este índice separa implementação de entrega
 operacional. A [auditoria](../.audits/architectural-analysis-2026-10-30-arquipelago.md) registra
 os achados na base anterior; o [programa de ajustes](plans/2026-10-30-arquipelago-ajustes-da-auditoria.md)
 registra cada commit e merge posterior. Os checkpoints dos planos antigos são históricos.
@@ -42,7 +42,8 @@ uso por uma conta real ou celular físico. Nenhum estado remoto foi inferido de 
 | Moradores, aconchego e Lumis | Cuidado, rotinas e consequências no mundo implementados conforme regras | [Regras](arquipelago-regras.md), seções de moradores, construção e Lumis | Não confundir rotinas de Lumi com todo o currículo dos cursos; qualificação integrada em Q01 |
 | Insumos e pedidos remunerados | Compras e entregas com revisão, idempotência e carteira implementadas | [Insumos](qa/2026-10-30-insumos/README.md), [operação](operations/arquipelago-insumos.md) | Conferência operacional de API, Members e fluxo autenticado; nenhum crédito remoto foi emitido neste lote |
 | Feira, receitas e roupas | Tema semanal e integrações existentes; calendário não equivale a datas aprovadas | [Vestuário sazonal](superpowers/plans/2026-10-30-arquipelago-vestuario-sazonal.md), [receitas](superpowers/plans/2026-10-30-arquipelago-receitas-sazonais.md) | Noite das Lanternas e janela de fim de ano dependem de datas aprovadas; permanecer desativadas até lá |
-| Pele adulta | Tema e voz específicos implementados | [CLAUDE do jogo](../packages/arquipelago/CLAUDE.md), seção Pele adulta | Paridade de conteúdo publicado e visitas consentidas ainda são aceites próprios; não chamar toda a versão adulta de pendente |
+| Pele adulta | Tema e voz específicos implementados | [CLAUDE do jogo](../packages/arquipelago/CLAUDE.md), seção Pele adulta | Paridade de conteúdo publicado continua ligada a C01/C03; não chamar toda a versão adulta de pendente |
+| Visitas adultas consentidas | Convite opaco revogável, casa somente de leitura, isolamento do Kids e confirmação durante a visita implementados | [L12](qa/2026-10-30-visitas-adultas/README.md), banco e HTTP reais locais; navegador com plataforma falsa | Aceite autenticado hospedado em Q01/L14 e implantação da migração 0016, API/gateway/BFF/cliente juntos; não executados |
 | Medição | Fotografia, mudanças de aparência por data do servidor e aprovações separadas; grupos pequenos protegidos | [QA A06](qa/2026-10-30-medicao-aparencias/README.md) | Migração 0015 e implantação ordenada ainda locais. Datas de criação e compra não integradas. Aplicar aparência não prova autoria nem aprendizado |
 | Praia, segredos e mapa detalhado | Exploração existente não prova todas as coleções e conexões previstas | [Lacunas da auditoria](../.audits/architectural-analysis-2026-10-30-arquipelago.md), lotes E01/E02 | Conferir arte disponível e completar ciclos; pedidos de arte agrupados depois do levantamento |
 | Construção avançada e Lenda | Construção atual e final existem; não equivalem a segundo andar, terraformação e exposição | [Programa E04](plans/2026-10-30-arquipelago-ajustes-da-auditoria.md) | Planos próprios com orçamento, colisão, desfazer e retomada antes de implementar |

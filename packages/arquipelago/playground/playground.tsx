@@ -131,6 +131,12 @@ const plataforma = criarPlataformaFalsa({
         : 'pronto',
   editarObjeto: q.has('aparencias') ? abrirOficinaDeExemplo : undefined,
   familia: lerFamilia(q.get('familia')),
+  visitaAdulta:
+    q.get('visita-adulta') === 'revogar'
+      ? 'revogar-ao-conferir'
+      : q.get('visita-adulta') === '1'
+        ? 'ligado'
+        : undefined,
   fantasma:
     q.get('fantasma') === '1'
       ? await (await import('./fantasma-de-exemplo')).fantasmaDeExemplo()

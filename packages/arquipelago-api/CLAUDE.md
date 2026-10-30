@@ -1,5 +1,21 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Visitas adultas consentidas (L12, 30/10/2026)
+
+`ServicoDasVisitasAdultas` exige adulto e acesso ao jogo em todas as leituras, e recusa
+alterações no suporte. `convites_adultos`, migração gerada 0016, tem uma linha por save adulto,
+FK com cascade e índice único de hash. O código tem 24 bytes aleatórios em base64url, só fica
+em claro na resposta de geração e não é parâmetro de rota. Não alterar V18 nem tabelas antigas.
+
+GET/POST/DELETE `visitas-adultas/convite` consultam, giram e revogam. POST `abrir` e `conferir`
+recebem `{ codigo }`. O corpo real é limitado a 1024 bytes mesmo sem Content-Length. Tudo
+tem no-store. `conferir` não lê JSONB nem o Members. `abrir` projeta a casa, filtra campos extras
+do quarto e revalida depois de esperar o Members, para recusar revogação concorrente.
+Não há nome, id ou progresso do dono na resposta. A audiência do quarto é `adult`.
+
+Testes de DB/HTTP: `tests/db/visitas-adultas.test.ts`, somente com
+`ARQUIPELAGO_VISITAS_ADULTAS_TEST_DATABASE_URL` ou `TEST_DATABASE_URL` do CI em localhost e banco arquipelago_test*.
+
 ## Trajetórias de recordes (L10, 30/10/2026)
 
 Migração gerada 0014, `fantasmas`: uma linha por jogador/percurso, FK do save com cascade,
@@ -13,7 +29,7 @@ GET próprio `/fantasmas/:percurso` e GET familiar `/irmaos/:perfilId/fantasmas/
 respondem `private, no-store`, sem identidade ou nome. Familiar reutiliza `autorizarIrmao`
 das visitas; não consulta o quarto. Falta do trajeto é `ausente`, revisão/recorde divergentes
 são 409. Testes `tests/db/fantasmas.test.ts`, variável local exclusiva
-`ARQUIPELAGO_FANTASMAS_TEST_DATABASE_URL`, Postgres descartável `arquipelago_test*`.
+`ARQUIPELAGO_FANTASMAS_TEST_DATABASE_URL` ou `TEST_DATABASE_URL` do CI, Postgres descartável `arquipelago_test*`.
 
 ## Cor conquistada independente do catálogo (A02, 30/10/2026)
 

@@ -1725,19 +1725,11 @@
               "name": "parado",
               "fps": 8,
               "loop": true,
-              "frames": [
-                []
-              ]
+              "frames": [[]]
             }
           ]
         },
-        "allowTools": [
-          "select",
-          "ellipse",
-          "rect",
-          "brush",
-          "fit"
-        ],
+        "allowTools": ["select", "ellipse", "rect", "brush", "fit"],
         "artSlot": {
           "name": "minha-chave",
           "replaces": "chave-dourada"
@@ -1750,9 +1742,7 @@
         "kind": "studio",
         "purpose": "submission",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -6616,20 +6606,13 @@
       "title": "Uma chave desenhada por você",
       "intent": "explanation",
       "objective": "Uma chave desenhada por você.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -6637,19 +6620,13 @@
       "title": "O seu Passo a passo do projeto",
       "intent": "material",
       "objective": "O seu Passo a passo do projeto.",
-      "blockKeys": [
-        "video-material",
-        "ponte-material",
-        "materiais"
-      ],
+      "blockKeys": ["video-material", "ponte-material", "materiais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-material"
-        ]
+        "blockIds": ["video-material"]
       }
     },
     {
@@ -6657,20 +6634,13 @@
       "title": "Desenhe a sua chave",
       "intent": "delivery",
       "objective": "Desenhe a sua chave.",
-      "blockKeys": [
-        "video-desenhar",
-        "ponte-desenhar",
-        "desenho"
-      ],
+      "blockKeys": ["video-desenhar", "ponte-desenhar", "desenho"],
       "workspaceKey": "desenho",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-desenhar",
-          "desenho"
-        ],
+        "blockIds": ["video-desenhar", "desenho"],
         "submissionUpToDate": true
       }
     },
@@ -6679,20 +6649,13 @@
       "title": "A sua chave no jogo",
       "intent": "closing",
       "objective": "A sua chave no jogo.",
-      "blockKeys": [
-        "video-trocar",
-        "ponte-trocar",
-        "projeto"
-      ],
+      "blockKeys": ["video-trocar", "ponte-trocar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-trocar",
-          "projeto"
-        ],
+        "blockIds": ["video-trocar", "projeto"],
         "projectChecks": [
           {
             "id": "minha-chave-em-execucao",

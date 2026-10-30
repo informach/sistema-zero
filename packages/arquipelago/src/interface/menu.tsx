@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { PAINEL_DO_CADERNO } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
+import { PAINEL_DAS_VISITAS_ADULTAS } from '../estado/visitas-adultas'
 import { albumDoSalvamento } from '../sistemas/album'
 import { paginasDoDiario } from '../sistemas/diario'
 import { PAINEL_DO_MAPA } from '../sistemas/mapa'
@@ -127,7 +128,18 @@ export function Menu() {
             },
           },
         ]
-      : []),
+      : [
+          {
+            nome: visitando ? 'Voltar para a minha casa' : 'Visitas da comunidade',
+            icone: 'familia' as const,
+            fora: noFarol,
+            ir: () => {
+              loja.getState().abrirMenu(false)
+              if (loja.getState().visita) voltarDaVisita(loja, pedidos)
+              else loja.getState().abrirPainel(PAINEL_DAS_VISITAS_ADULTAS)
+            },
+          },
+        ]),
   ]
   return (
     <div className="arq-sobre arq-pausa-fundo">

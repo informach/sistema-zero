@@ -1,0 +1,2 @@
+AssertionError [ERR_ASSERTION]: O save próprio precisa existir antes de conferir a visita
+Arquipélago no ar em http://127.0.0.1:61262

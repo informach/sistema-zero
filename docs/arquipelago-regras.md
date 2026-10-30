@@ -2006,6 +2006,33 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
   `desligada` e `fora-do-ar`.
 - **Moedas:** nada disto paga moedas. O salvamento não mudou (continua na V10).
 
+### 6.21 Visitas adultas consentidas (L12, 30/10/2026)
+
+Na comunidade adulta, receber visita começa desligado. No menu, Visitas da comunidade permite
+ativar e gerar um código para compartilhar por escolha própria. Não há lista pública de
+pessoas. Qualquer pessoa adulta com acesso ao jogo e ao código pode ver a casa compartilhada;
+por isso ele deve ser enviado somente a quem se quer receber. Não há limite parental.
+
+Gerar outro código invalida o anterior. Desligar visitas revoga o convite. A consulta da escolha
+nunca devolve o código, e fechar o painel o oculta. Ele não vai para URL, armazenamento do
+aparelho ou salvamento. O serviço guarda somente seu hash, um por save adulto. A exclusão do
+save elimina o convite. Uma resposta de alteração perdida exige reler a escolha, sem fingir
+que a alteração foi recusada ou confirmada.
+
+Quem visita só olha a casa, o quintal e o quarto. Não recebe nome, identidade, moedas, progresso
+ou os projetos privados de quem convidou. Campos extras do quarto não são compartilhados.
+O próprio save fica intacto enquanto a visita está aberta. Sair volta à casa própria. O Kids
+continua com os irmãos autorizados pelos responsáveis, sem nenhum caminho de convite adulto.
+
+A autorização é conferida ao abrir e novamente depois da leitura do quarto. Durante a visita,
+uma confirmação pequena roda a cada 15 segundos com a aba visível e ao retomá-la. Ela tem
+prazo de 5 segundos. Recusa, revogação ou falha devolvem a pessoa à própria casa; não há
+promessa de revogação instantânea por push. Suporte pode consultar, mas não mudar consentimento.
+
+As trajetórias familiares não se tornam públicas por esse convite. Não existe ranking,
+chat, publicação, recompensa ou concessão de blocos por visitar. V18 continua com o mesmo teto.
+Plano e provas locais: `2026-10-30-arquipelago-visitas-adultas.md` e `docs/qa/2026-10-30-visitas-adultas/`.
+
 ## 7. Desafios
 
 Arquivos principais:

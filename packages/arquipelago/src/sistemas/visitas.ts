@@ -26,6 +26,7 @@ export const PAINEL_DAS_VISITAS = 'visitas'
 
 /** A visita em andamento: o irmão e o que a casa dele mostra (nada mais do salvamento dele). */
 export interface Visita {
+  origem?: 'adulto'
   perfilId: string
   nome: string
   obra: Obra | null
