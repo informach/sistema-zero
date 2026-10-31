@@ -342,8 +342,11 @@ def join(objs, name='peca'):
     return o
 
 
-def export(pid, objs=None, animated=False):
-    """Exporta a cena (ou só `objs`) como GLB. Peça parada vira UMA malha (menos desenhos)."""
+def export(pid, objs=None, animated=False, clipes=False):
+    """Exporta a cena (ou só `objs`) como GLB. Peça parada vira UMA malha (menos desenhos).
+    `clipes`: cada faixa do NLA vira um clipe do glTF com o nome da faixa, juntando as partes (os
+    bichinhos com parado, andar e correr); sem isso, cada parte animada vira um clipe com o nome
+    dela, na faixa de quadros da cena."""
     if objs is None:
         objs = [o for o in bpy.data.objects if o.type == 'MESH']
     if not animated:
@@ -357,7 +360,10 @@ def export(pid, objs=None, animated=False):
     path = os.path.join(OUT, f'{pid}.glb')
     kw = dict(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
               export_yup=True, export_texcoords=False, export_animations=animated)
-    if animated:
+    if animated and clipes:
+        kw.update(export_animation_mode='NLA_TRACKS', export_merge_animation='NLA_TRACK',
+                  export_force_sampling=True)
+    elif animated:
         kw.update(export_animation_mode='SCENE', export_force_sampling=True, export_frame_range=True)
     bpy.ops.export_scene.gltf(**kw)
     tris = sum(len(p.vertices) - 2 for o in objs for p in o.data.polygons)
