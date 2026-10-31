@@ -1,22 +1,22 @@
 import { useFrame } from '@react-three/fiber'
 import { RoomGlbModel } from '@sistemazero/avatar-quarto/quarto/room-glb-model'
+import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useRef } from 'react'
 import type { Group } from 'three'
+import { lojaDoConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
-import { quemAcompanha } from '../sistemas/companhia'
+import { alturaDoPet, quemAcompanha } from '../sistemas/companhia'
 import { CORPO } from '../sistemas/corpo'
 import { jogoPausado } from '../sistemas/pausa'
 import { atrasDela, criarSeguir, passoDoSeguir } from '../sistemas/seguir'
 import { suavizarAngulo } from '../sistemas/zappy'
 
-/** O passarinho voa um pouco acima do chão; o gato e o cachorro andam nele. */
-const ALTURA_DO_VOO = 0.9
-
 /**
  * O bichinho do quarto acompanhando (S01): o mesmo seguir do bicho adotado (`sistemas/seguir.ts`),
  * sem corpo de física (é pequeno e anda atrás dela; atravessar um canto não atrapalha ninguém). A
  * altura segue o pé da criança quando ela pisa, então ele sobe e desce com o chão sem cair do
- * mapa. No cipó, no tronco e na água ele espera parado e alcança depois.
+ * mapa. No cipó, no tronco e na água ele espera parado e alcança depois. Na pausa nada se mexe,
+ * nem o giro; com menos movimento o passarinho não balança (`alturaDoPet`).
  */
 export function PetQueAcompanha() {
   const pet = useEstado((s) => s.quarto.pet)
@@ -33,7 +33,7 @@ function Pet({ petId }: { petId: string }) {
   const pos = useRef({ x: rastro.x, y: rastro.y - CORPO.doCentroAoPe, z: rastro.z })
   const olhar = useRef(rastro.direcao)
   const tempo = useRef(0)
-  const passaro = petId === 'pet-passaro'
+  const aparelhoPedeMenos = useReducedMotion()
 
   useFrame((_, dtBruto) => {
     const g = raiz.current
@@ -55,22 +55,26 @@ function Pet({ petId }: { petId: string }) {
       espera,
       dt,
     )
-    if (passo.reaparecer) {
-      const p = atrasDela(rastro)
-      pos.current = { x: p.x, y: pe, z: p.z }
-    } else if (!pausado) {
-      pos.current.x += seguir.current.vx * dt
-      pos.current.z += seguir.current.vz * dt
-      // Com ela no chão, a altura vai para a do pé dela, devagar (sem degrau duro).
-      if (movimento.noChao) pos.current.y += (pe - pos.current.y) * (1 - Math.exp(-8 * dt))
-      tempo.current += dt
+    // Na pausa nada muda: nem o lugar, nem o giro, nem o reaparecer depois de um teletransporte.
+    if (!pausado) {
+      if (passo.reaparecer) {
+        const p = atrasDela(rastro)
+        pos.current = { x: p.x, y: pe, z: p.z }
+      } else {
+        pos.current.x += seguir.current.vx * dt
+        pos.current.z += seguir.current.vz * dt
+        // Com ela no chão, a altura vai para a do pé dela, devagar (sem degrau duro).
+        if (movimento.noChao) pos.current.y += (pe - pos.current.y) * (1 - Math.exp(-8 * dt))
+        tempo.current += dt
+      }
+      const rapidez = Math.hypot(seguir.current.vx, seguir.current.vz)
+      if (rapidez > 0.2) olhar.current = Math.atan2(seguir.current.vx, seguir.current.vz)
+      g.rotation.y = suavizarAngulo(g.rotation.y, olhar.current, 10, dt)
     }
-    const rapidez = Math.hypot(seguir.current.vx, seguir.current.vz)
-    if (rapidez > 0.2) olhar.current = Math.atan2(seguir.current.vx, seguir.current.vz)
-    g.rotation.y = suavizarAngulo(g.rotation.y, olhar.current, 10, dt)
+    const menos = aparelhoPedeMenos || lojaDoConforto(loja).getState().conforto.menosMovimento
     g.position.set(
       pos.current.x,
-      pos.current.y + (passaro ? ALTURA_DO_VOO + Math.sin(tempo.current * 3) * 0.12 : 0),
+      pos.current.y + alturaDoPet(petId, tempo.current, menos),
       pos.current.z,
     )
   })

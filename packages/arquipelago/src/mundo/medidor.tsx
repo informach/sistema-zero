@@ -146,8 +146,8 @@ export interface MedidaDoDesenho {
   descanso: 'sentar' | 'deitar' | null
   energia: number
   avatar: { x: number; y: number; z: number; deitado: number } | null
-  /** O bichinho do quarto acompanhando (S01), onde está, ou `null`. */
-  petQueAcompanha: { x: number; y: number; z: number } | null
+  /** O bichinho do quarto acompanhando (S01), onde está e para onde olha, ou `null`. */
+  petQueAcompanha: { x: number; y: number; z: number; giro: number } | null
 }
 
 function medirLigado(): boolean {
@@ -456,7 +456,7 @@ export function Medidor() {
         const o = cena.getObjectByName('pet-que-acompanha')
         if (!o) return null
         const p = o.getWorldPosition(new Vector3())
-        return { x: p.x, y: p.y, z: p.z }
+        return { x: p.x, y: p.y, z: p.z, giro: o.rotation.y }
       })(),
     }
     ;(globalThis as { __arquipelagoDesenho?: MedidaDoDesenho }).__arquipelagoDesenho = medida

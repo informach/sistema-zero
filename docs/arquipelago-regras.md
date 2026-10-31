@@ -2354,7 +2354,12 @@ A proposta traz "os bichinhos reais da plataforma" para o jogo. O bichinho do qu
 mesmo seguir do bicho adotado (`sistemas/seguir.ts`): anda atrás dela, corre quando ela se
 afasta, espera no cipó, no tronco e na água e reaparece atrás dela quando fica longe. Ele não tem
 corpo de física (é pequeno); a altura acompanha o pé da criança quando ela pisa. O passarinho voa
-um pouco acima do chão. Enquanto ele acompanha, o quarto fica sem ele.
+0,9 m acima do chão, balançando 0,12 m para cima e para baixo. Enquanto ele acompanha, o quarto
+fica sem ele.
+
+- Pausa: nada se mexe, nem o giro nem o balanço (revisão de 30/10/2026; antes o giro continuava).
+- Menos movimento (no aparelho ou no menu do jogo): o passarinho voa reto, sem balanço, e continua
+  seguindo a criança (`alturaDoPet`).
 
 - Com um bicho adotado no Bosque, a criança escolhe quem vai com ela, no painel do bicho ("Quem vai
   com você pela ilha": o nome dele ou "Gato do quarto"). O outro espera: o bichinho no quarto, o
@@ -2365,8 +2370,10 @@ um pouco acima do chão. Enquanto ele acompanha, o quarto fica sem ele.
   clima. Sem o escolhido (o quarto ficou sem bichinho), vai quem houver.
 
 Arquivos: `sistemas/companhia.ts`, `mundo/pet-que-acompanha.tsx`, `mundo/bicho-adotado.tsx`,
-`mundo/casa.tsx`, `interface/bicho.tsx`. Provas: `tests/companhia.test.ts` e
-`playground/verificar-companhia-browser.ts` (com `?adotado=1`).
+`mundo/casa.tsx`, `interface/bicho.tsx`. Provas: `tests/companhia.test.ts`,
+`tests/pet-que-acompanha.test.ts` e `playground/verificar-companhia-browser.ts` (com `?adotado=1`
+e o passarinho, `?pet=passaro`: pausa no computador e no celular, balanço só sem movimento
+reduzido; provado por mutação).
 
 ### 6.27 Decisões registradas no levantamento de 30/10/2026
 

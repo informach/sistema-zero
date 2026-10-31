@@ -49,3 +49,18 @@ export function falaDaCompanhia(c: Companhia, nomeDoAdotado: string, petDoQuarto
 function maiuscula(t: string): string {
   return t.charAt(0).toLocaleUpperCase('pt-BR') + t.slice(1)
 }
+
+/** O passarinho voa um pouco acima do chão; o gato e o cachorro andam nele. */
+export const ALTURA_DO_VOO = 0.9
+/** O balanço do voo do passarinho, em metros para cima e para baixo. */
+export const BALANCO_DO_VOO = 0.12
+
+/**
+ * Quanto o bichinho que acompanha fica acima do pé (S01). O balanço do passarinho é enfeite:
+ * com menos movimento (no aparelho ou no menu do jogo) ele voa reto, na mesma altura, e continua
+ * seguindo a criança. O relógio do balanço para na pausa porque quem chama não o avança.
+ */
+export function alturaDoPet(petDoQuarto: string, tempo: number, menosMovimento: boolean): number {
+  if (petDoQuarto !== 'pet-passaro') return 0
+  return menosMovimento ? ALTURA_DO_VOO : ALTURA_DO_VOO + Math.sin(tempo * 3) * BALANCO_DO_VOO
+}
