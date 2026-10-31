@@ -1,6 +1,7 @@
 # Arquipélago: o que falta do plano depois da revisão de 30/10
 
-Base: `staging` local `4f8a041d2` (revisão dos lotes com R1, R3, R4 e R5 integrados; sem push).
+Base: `staging` com a revisão dos lotes (R1, R3, R4 e R5) e o C02b integrados, enviada ao
+remoto em 30/10 (`273b85a2f`).
 Este documento é a passagem para quem continua. Ele não repete as especificações: aponta para
 elas e diz em que ordem fazer, o que é de Blender, o que é de código e o que é decisão da dona.
 
@@ -103,10 +104,11 @@ partida no código e na proposta:
 
 ## 3a. Código fora do E04
 
-- **Python e Pro pelo desafio do jogo:** hoje o diálogo recusa com recado explícito
-  (`member-shell/src/components/arquipelago-challenge-dialog.tsx`). Inclui autorização de
-  execução, curadoria, rascunho, verificação e fechamento, mais a release Python com Pygame Zero
-  e os manifestos do Recife e do Pico regerados contra ela. Em andamento na outra sessão (item 4).
+- **Python e Pro pelo desafio do jogo:** feito pela outra sessão (item 4). O que ainda falta
+  desse assunto: a elegibilidade pelas aprendizagens (hoje o desafio abre com a ilha aberta, e a
+  revisão pede ligar às competências que ele cobra; é uma escolha pedagógica a registrar), as
+  fontes curriculares do Vale textual, a prova no navegador com o runtime publicado e a pilha
+  inteira, e a publicação dos quatro desafios, que seguem `publicar: false`.
 - **O arrasto do "Olhar" no Construir:** a Q01 registrou falha na base limpa no verificador de
   móveis (`playground/verificar-moveis-browser.ts`). As duas revisões de 30/10 não reproduziram;
   a causa não está provada e não quer dizer que os móveis estejam quebrados. Investigar antes de
@@ -118,18 +120,21 @@ partida no código e na proposta:
   ficam em `recife`, `pico`, `vale` e `nuvens`). Os dois estão sendo editados pela outra sessão.
 
 
-## 4. Em andamento em outra sessão
+## 4. Feito em outra sessão: Python e Pro no jogo
 
-O R2 (Python e Pro abrindo pelo jogo, elegibilidade e a release Python) está com a sessão
-`implementar-levantamento-arquipelago`, no ramo `arquipelago/levantamento-c02-ambiente`. Não
-mexer no diálogo do desafio, nas rotas dos desafios nem na autorização de execução enquanto ele
-não for integrado.
+O R2 foi feito pela sessão `implementar-levantamento-arquipelago` e está em `origin/staging`
+(push de 30/10, `273b85a2f`): release Python ativa no Recife e no Pico (`d1a14b2ce`) e o C02b
+(`42a908ffa`, [plano](../superpowers/plans/2026-10-30-arquipelago-c02b-python-e-pro-no-jogo.md)).
+O Python usa um contexto de execução próprio do desafio (`arquipelago`, conferido contra o projeto
+inicial no Members); o Pro compila pelo BFF com o modelo do projeto inicial. Zappy, exportação e
+REPL ficam fora do desafio. As pendências que sobraram estão no item 3a.
 
 ## 5. Antes de começar
 
 - Conferir `git worktree list` e o `git status` de cada worktree: várias sessões trabalham no
   Arquipélago ao mesmo tempo.
-- Esta base não foi enviada ao remoto. Uma sessão em outra máquina só a recebe depois do push.
-- Ordem sugerida pelas duas revisões: visitas (item 0), Python e Pro no jogo, o "Olhar" do
-  Construir, as entregas de Blender e o E04 no código, conteúdo dos baús, e por fim publicação,
+- A base foi enviada ao remoto em 30/10 (`origin/staging` = `273b85a2f`); confira se algo
+  novo chegou antes de começar.
+- Ordem sugerida pelas duas revisões: visitas (item 0), as pendências de Python e Pro (item
+  3a), o "Olhar" do Construir, as entregas de Blender e o E04 no código, conteúdo dos baús, e por fim publicação,
   validação autenticada e aparelhos reais. Não anunciar o programa como concluído antes disso.
