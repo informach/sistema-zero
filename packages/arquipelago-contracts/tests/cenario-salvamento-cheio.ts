@@ -170,6 +170,18 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
         diaCuidadoEm: '2026-10-29',
         truque: { sessoes: 99, ultimaEm: '2026-10-29', aprendido: false },
       },
+      // V23: os outros dois bichos adotados, no mesmo formato mais pesado.
+      outros: BICHOS_DO_BOSQUE.slice(0, 2).map((id) => ({
+        id,
+        nome: 'Á'.repeat(16),
+        fase: 'filhote' as const,
+        fome: DIZIMA,
+        limpeza: DIZIMA,
+        carinho: DIZIMA,
+        diasCuidados: 999,
+        diaCuidadoEm: '2026-10-29',
+        truque: { sessoes: 99, ultimaEm: '2026-10-29', aprendido: false },
+      })),
     },
     posicao: { x: -123.45678901234567, y: 12.345678901234567, z: -98.76543210987654 },
     necessidades: { fome: DIZIMA, energia: DIZIMA, diversao: DIZIMA },

@@ -93,8 +93,13 @@ export function Relogios() {
         s.mudar((sv) => ({
           ...sv,
           necessidades: passarTempo(sv.necessidades, 2, controle.correr),
+          // Os outros adotados (V23), esperando no Bosque, também.
           bichos: sv.bichos.adotado
-            ? { ...sv.bichos, adotado: passarTempoDoBicho(sv.bichos.adotado, 2) }
+            ? {
+                ...sv.bichos,
+                adotado: passarTempoDoBicho(sv.bichos.adotado, 2),
+                outros: sv.bichos.outros.map((b) => passarTempoDoBicho(b, 2)),
+              }
             : sv.bichos,
         }))
         // Sentada no banco ou deitada na cama, a energia volta aos poucos (`sistemas/descanso.ts`);

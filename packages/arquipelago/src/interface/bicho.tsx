@@ -2,7 +2,15 @@ import type { Companhia } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef } from 'react'
 import { lojaDoBicho, PAINEL_DO_BICHO, useBicho } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
-import { CUIDADO, EMOJI_DO_BICHO, NOME_DO_BICHO, TRUQUE, tristinho } from '../sistemas/bichos'
+import {
+  CUIDADO,
+  EMOJI_DO_BICHO,
+  falaDaTroca,
+  NOME_DO_BICHO,
+  TRUQUE,
+  tristinho,
+  trocarBicho,
+} from '../sistemas/bichos'
 import {
   escolherCompanhia,
   falaDaCompanhia,
@@ -35,6 +43,7 @@ export function PainelDoBicho() {
   const bicho = lojaDoBicho(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_BICHO)
   const adotado = useEstado((s) => s.salvamento.bichos.adotado)
+  const outros = useEstado((s) => s.salvamento.bichos.outros)
   const dentroDeCasa = useEstado((s) => s.dentroDeCasa)
   const pet = useEstado((s) => s.quarto.pet)
   const escolhe = useEstado((s) => podeEscolherCompanhia(s.salvamento, s.quarto.pet))
@@ -104,6 +113,31 @@ export function PainelDoBicho() {
           )
         })}
       </dl>
+
+      {outros.length > 0 ? (
+        <section className="arq-bicho-outros" aria-label="Os outros bichos adotados">
+          <p className="arq-quadro-sub">
+            {outros.map((b) => b.nome).join(' e ')} {outros.length > 1 ? 'esperam' : 'espera'} no
+            cercadinho do Bosque.
+          </p>
+          <div className="arq-menu-acoes">
+            {outros.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                className="arq-botao leve"
+                onClick={() => {
+                  const s = loja.getState()
+                  s.mudar((sv) => ({ ...sv, bichos: trocarBicho(sv.bichos, b.id) }))
+                  s.dizer(falaDaTroca(b.nome, nome))
+                }}
+              >
+                Levar {b.nome}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <p className="arq-capi-fala" aria-live="polite">
         {falas.length > 0

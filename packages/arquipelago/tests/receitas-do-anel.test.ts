@@ -38,8 +38,8 @@ test('catálogo inteiro a 999 cabe junto da obra, amizades e rotinas no teto', (
   // (A19): uns 311 bytes de folga. V22 (31/10/2026, lista B: fósseis, florada e jardim do céu): uns
   // 192 bytes. 01/11/2026: com a horta cheia, os bichos, a posição e as pontes, que o cenário
   // deixava de fora, o pior caso foi a 67.588 bytes, acima dos 64 KB de antes. Com o teto em 80 KB,
-  // sobram uns 14,3 KB.
-  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(14_000)
+  // sobram uns 14,3 KB. V23 (01/11/2026): os dois outros bichos adotados somam uns 640 bytes.
+  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(13_000)
 })
 
 for (const [quem, receitaId, cesta] of pares) {
