@@ -6,11 +6,19 @@ import {
   type SalvamentoV19,
   type SalvamentoV20,
   type SalvamentoV21,
+  type SalvamentoV22,
 } from '../src/salvamento'
+
+/** O salvamento inicial na V22 (sem os outros bichos adotados da V23). */
+export function inicialV22(agora: Date): SalvamentoV22 {
+  const atual = criarSalvamentoInicial(agora)
+  const { outros: _outros, ...bichos } = atual.bichos
+  return { ...atual, versao: 22, bichos }
+}
 
 /** O salvamento inicial na V21 (sem os fósseis do museu e a florada da V22). */
 export function inicialV21(agora: Date): SalvamentoV21 {
-  const { florada: _florada, ceu: _ceu, ...atual } = criarSalvamentoInicial(agora)
+  const { florada: _florada, ceu: _ceu, ...atual } = inicialV22(agora)
   const { fosseis: _fosseis, ...vale } = atual.vale
   return { ...atual, versao: 21, vale, percursos: {} }
 }

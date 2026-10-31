@@ -64,6 +64,8 @@ export interface Travessia {
   /** Âncora animada em coordenadas do mundo, atualizada pelo desenho. */
   visual: Ponto
   devolvendo: boolean
+  /** Na volta das boias, o lado e o remo de agora; `undefined` nas viagens entre ilhas. */
+  regata?: Regata
 }
 
 const rad = (graus: number) => (graus * Math.PI) / 180
@@ -120,6 +122,12 @@ export function criarRotaDoBarco(
     guias.push({ x: BARCO.raioExterno * Math.cos(a), y: 0, z: BARCO.raioExterno * Math.sin(a) })
   }
   guias.push(...volta.reverse())
+  return rotaDasGuias(guias, b)
+}
+
+/** A rota amostrada por Catmull-Rom a partir das guias, terminando no barco do cais `fim`. */
+function rotaDasGuias(guias: readonly Ponto[], fim: Porto): RotaDoBarco {
+  const b = fim
   const pontos: AmostraDaRota[] = []
   let comprimento = 0
   for (let i = 0; i < guias.length - 1; i++) {
@@ -159,6 +167,46 @@ export function criarRotaDoBarco(
   }
   return { pontos, comprimento }
 }
+
+/**
+ * A volta das boias (lacunas, 01/11/2026; a proposta: o barco é "um minijogo e um jeito de chegar"):
+ * a regata do píer da sua ilha em volta dela, por fora das pontes e do anel (o mesmo canal de
+ * saída das viagens, `setorDeSaida`, e a volta inteira no `raioExterno`), de volta ao mesmo píer.
+ */
+export function criarRotaDaRegata(porto: Porto): RotaDoBarco {
+  const p = porto.barco
+  const ux = Math.cos(porto.giro),
+    uz = -Math.sin(porto.giro)
+  const ida: Ponto[] = [
+    p,
+    { x: p.x + ux * BARCO.avancoDaProa, y: 0, z: p.z + uz * BARCO.avancoDaProa },
+    polar(BARCO.raioDeSaida, BARCO.setorDeSaida),
+    polar(BARCO.raioExterno, BARCO.setorDeSaida),
+  ]
+  const guias = [...ida]
+  const inicio = rad(BARCO.setorDeSaida)
+  const trechos = Math.ceil(360 / BARCO.passoDoArco)
+  for (let i = 1; i < trechos; i++) {
+    const a = inicio + (Math.PI * 2 * i) / trechos
+    guias.push({ x: BARCO.raioExterno * Math.cos(a), y: 0, z: BARCO.raioExterno * Math.sin(a) })
+  }
+  guias.push(...[...ida].reverse())
+  return rotaDasGuias(guias, porto)
+}
+
+/** A regata: quanto o barco vai para o lado da rota e quanto se rema (de -1 a 1 e de 0 a 1). */
+export interface Regata {
+  lado: number
+  remo: number
+}
+export const REGATA = {
+  /** Até onde o barco vai para cada lado da linha da rota (o corredor livre tem 5 m de meia largura). */
+  lado: 3,
+  /** Quão rápido o barco vai para o lado (m/s). */
+  rapidezDoLado: 2.5,
+  /** Remando, o barco vai até isto mais rápido. */
+  remo: 0.4,
+} as const
 
 export function amostrarRota(
   rota: RotaDoBarco,
@@ -255,8 +303,17 @@ function peNoConves(v: Travessia): void {
   v.pe.z = v.pose.z - v.passageiro.x * sin + v.passageiro.z * cos
 }
 
-/** Pausa não altera nem o tempo. Destino indisponível devolve pelo mesmo caminho. */
-export function passoDaTravessia(v: Travessia, dt: number, pausado: boolean): void {
+/**
+ * Pausa não altera nem o tempo. Destino indisponível devolve pelo mesmo caminho. Na volta das
+ * boias, `pedidoX`/`pedidoZ` (o direcional no mundo) guiam o barco para os lados e remam.
+ */
+export function passoDaTravessia(
+  v: Travessia,
+  dt: number,
+  pausado: boolean,
+  pedidoX = 0,
+  pedidoZ = 0,
+): void {
   if (pausado || v.fase === 'atracado') return
   v.anterior.distancia = v.distancia
   v.anterior.tempo = v.tempo
@@ -293,9 +350,23 @@ export function passoDaTravessia(v: Travessia, dt: number, pausado: boolean): vo
   }
   v.fase = 'viagem'
   const cais = Math.min(v.distancia, v.rota.comprimento - v.distancia)
+  // Na regata: o direcional para a frente rema, para o lado leva o barco (longe dos cais).
+  const regata = v.regata
+  const livre = suave(Math.min(1, Math.max(0, (cais - BARCO.manobra) / BARCO.pertoDoCais)))
+  if (regata) {
+    const frente = v.destino === 1 ? 1 : -1
+    const gx = Math.cos(v.pose.giro) * frente,
+      gz = -Math.sin(v.pose.giro) * frente
+    regata.remo = Math.max(0, Math.min(1, pedidoX * gx + pedidoZ * gz))
+    const pedidoDoLado = Math.max(-1, Math.min(1, pedidoX * -gz + pedidoZ * gx)) * REGATA.lado
+    const alvo = pedidoDoLado * livre
+    const passo = REGATA.rapidezDoLado * dt
+    regata.lado += Math.max(-passo, Math.min(passo, alvo - regata.lado))
+  }
   const velocidade =
-    BARCO.velocidadeNoCais +
-    (BARCO.velocidade - BARCO.velocidadeNoCais) * suave(Math.min(1, cais / BARCO.pertoDoCais))
+    (BARCO.velocidadeNoCais +
+      (BARCO.velocidade - BARCO.velocidadeNoCais) * suave(Math.min(1, cais / BARCO.pertoDoCais))) *
+    (1 + (regata ? REGATA.remo * regata.remo * livre : 0))
   v.distancia = Math.max(
     0,
     Math.min(v.rota.comprimento, v.distancia + (v.destino === 1 ? 1 : -1) * velocidade * dt),
@@ -323,6 +394,11 @@ export function passoDaTravessia(v: Travessia, dt: number, pausado: boolean): vo
       ? ((diferenca % volta) + volta) % volta
       : Math.atan2(Math.sin(diferenca), Math.cos(diferenca))
   v.pose.giro += giro * peso
+  if (v.regata) {
+    // De lado da rota: a normal da direção (`(cos g, -sen g)` vira `(sen g, cos g)`).
+    v.pose.x += Math.sin(v.pose.giro) * v.regata.lado
+    v.pose.z += Math.cos(v.pose.giro) * v.regata.lado
+  }
   peNoConves(v)
   if (v.distancia === (v.destino === 1 ? v.rota.comprimento : 0)) {
     v.fase = 'desembarque'

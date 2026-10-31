@@ -1,4 +1,4 @@
-import type { BichoDoBosque, SalvamentoV3 } from '@sistemazero/arquipelago-contracts'
+import type { BichoDoBosque, Salvamento } from '@sistemazero/arquipelago-contracts'
 import { BICHOS_DO_BOSQUE } from '@sistemazero/arquipelago-contracts'
 
 /**
@@ -8,7 +8,8 @@ import { BICHOS_DO_BOSQUE } from '@sistemazero/arquipelago-contracts'
  * perto do escondido mais próximo) e quando a pista aparece.
  */
 
-export type Bichos = SalvamentoV3['bichos']
+/** Os bichos do Bosque no salvamento: os achados, o adotado que vai junto e os outros (V23). */
+export type Bichos = Salvamento['bichos']
 
 /** O nó de cada esconderijo no `bosque.glb` e a pista que aparece perto dele. */
 export const ESCONDERIJOS: Readonly<

@@ -1271,6 +1271,32 @@ do percurso nas copas (§6.13); muda só o que está aqui.
   `bun playground/verificar-percursos-browser.ts` (a entrega, o par na mochila e o percurso nas
   copas).
 
+### 6.13.1a Os brinquedos de ilha viram minijogo (lacunas, 01/11/2026)
+
+A proposta: "Trenó no Pico, montaria no Vale, balão nas Nuvens, barco entre ilhas. Cada um é um
+minijogo e um jeito de chegar." Além da corrida de balão (fase4-07), duas corridas de portões no
+mesmo molde (`sistemas/corrida-de-portoes.ts`, `mundo/corrida-de-portoes.tsx`): portões de
+bandeira em ordem, o primeiro começa e o último chega, coisas para pegar no caminho com uma
+escondida (a terceira estrela), cronômetro, resultado, fantasma e o melhor no salvamento
+(`PERCURSOS` ganhou `pico-treno` e `vale-montaria`, sem versão nova).
+
+- **Descida de trenó** (`pico-treno`): seis portões pela pista em espiral do Pico (os pontos
+  `treno-curva-N` do `pico.glb`, a cada cinco) e cinco bandeirinhas. Começa ao passar de trenó pelo
+  primeiro; sair do trenó no meio para a corrida. Estrela do tempo: 10 s.
+- **Corrida da montaria** (`vale-montaria`): montada no dino, seis portões de osso pela praia do
+  Vale, de 0° a 105° em volta da ilha (o trecho de areia sem nada no caminho; o teste confere cada
+  trecho contra os colisores e o chão), e cinco fósseis brilhantes. Descer do dino no meio para a
+  corrida. Estrela do tempo: 8 s.
+- **Volta das boias** (`barco-regata`, `sistemas/regata.ts`, `mundo/regata-das-boias.tsx`): no cais
+  da sua ilha (com a rede do barco aberta), o painel do barco oferece "Volta das boias". O barco
+  sai pelo canal de sempre, dá a volta inteira em volta do arquipélago por fora do anel
+  (`criarRotaDaRegata`, uns 1.200 m) e volta ao mesmo cais. Na viagem da regata, o direcional
+  para a frente rema (até 40% mais rápido) e para os lados leva o barco até 3 m da linha da rota,
+  longe dos cais (perto deles a manobra de atracar continua a mesma). Oito boias de presente
+  ficam alternando para os lados, longe da linha (reto pelo meio não pega nenhuma), uma
+  escondida. Estrela do tempo: 90 s (sem remar são uns 100 s). "Parar" termina a regata e o barco
+  volta ao cais.
+
 ### 6.13.2 Os patins (fase2-05)
 
 Arquivos: `sistemas/patins.ts`, o perfil `PERFIS.patins` em `sistemas/movimento.ts`, o modo chão
@@ -1421,7 +1447,11 @@ adotado já estão no jogo. O plano da parte que falta:
 - **Adotar** (`adotar`, `nomeValido`, `motivoDoNome`, `adotarPelaCapi`): depois do primeiro bicho
   achado, a conversa com a Capi ganha "Adotar um bicho". A criança escolhe um dos achados e dá um
   nome de 1 a 16 caracteres, só letras, espaço e hífen, começando por letra; nome que não serve
-  mostra o motivo embaixo do campo. Um bicho por vez nesta fase. O nome fica só no salvamento da
+  mostra o motivo embaixo do campo. Até três bichos adotados (lacunas, 01/11/2026, salvamento V23;
+  a proposta: "No Bosque dá para adotar mais"): enquanto houver achado livre, a Capi oferece de
+  novo. O último adotado vai junto (`bichos.adotado`); os outros esperam no cercadinho do Bosque
+  (`bichos.outros`, até dois), sentem o tempo jogado como ele e, no painel do bicho, "Levar Nome"
+  troca quem vai junto (`trocarBicho`; o de antes volta ao cercadinho). O nome fica só no salvamento da
   criança e ninguém mais vê. O bicho chega com 80 em cada medida e sai do cercadinho para andar
   com ela. As falas usam o nome e nenhum pronome: é a criança quem decide quem o bicho é.
 - **Seguir** (`sistemas/seguir.ts`, `mundo/bicho-adotado.tsx`): o bicho anda atrás da criança pela

@@ -5,7 +5,7 @@ import {
   prepararEntregaDoPedido,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
-import { adotar, motivoDoNome, receberPresenteDosBichos } from './bichos'
+import { adotar, motivoDoNome, podeAdotarMais, receberPresenteDosBichos } from './bichos'
 import { FALA_DA_PAGINA, ganhouAPagina } from './diario'
 import { escondidos } from './esconde'
 import {
@@ -146,9 +146,12 @@ export function oQueFaltaNoPedido(s: Salvamento): string | null {
     .join('. ')
 }
 
-/** A Capi oferece adotar depois do primeiro bicho achado, enquanto nenhum foi adotado. */
+/**
+ * A Capi oferece adotar depois do primeiro bicho achado, enquanto houver achado livre e menos de
+ * três adotados (V23).
+ */
 export function podeAdotar(s: Salvamento): boolean {
-  return s.bichos.achados.length > 0 && s.bichos.adotado === null
+  return podeAdotarMais(s.bichos)
 }
 
 /**

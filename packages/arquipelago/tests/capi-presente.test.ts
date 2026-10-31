@@ -5,6 +5,7 @@ import {
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   SalvamentoSchema,
+  VERSAO_SALVAMENTO,
 } from '@sistemazero/arquipelago-contracts'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
 import { receberPresenteDosBichos } from '../src/sistemas/bichos'
@@ -15,7 +16,10 @@ import { CORACOES_DA_PAGINA, FALA_DA_PAGINA } from '../src/sistemas/diario'
 const AGORA = new Date('2026-10-28T12:00:00Z')
 const HOJE = '2026-10-28'
 const inicial = () => criarSalvamentoInicial(AGORA)
-const todos = () => ({ ...inicial(), bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null } })
+const todos = () => ({
+  ...inicial(),
+  bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null, outros: [] },
+})
 
 test('quatro achados entregam uma salada e a marca no mesmo salvamento, sem mutar a entrada', () => {
   const s = todos()
@@ -30,7 +34,10 @@ test('quatro achados entregam uma salada e a marca no mesmo salvamento, sem muta
 
 test('zero a três achados não ganham presente', () => {
   for (let n = 0; n < 4; n++) {
-    const s = { ...inicial(), bichos: { achados: BICHOS_DO_BOSQUE.slice(0, n), adotado: null } }
+    const s = {
+      ...inicial(),
+      bichos: { achados: BICHOS_DO_BOSQUE.slice(0, n), adotado: null, outros: [] },
+    }
     const r = comecarConversa(s, HOJE, 'p1')
     expect(r.salvamento.inventario.salada).toBeUndefined()
     expect(r.salvamento.presenteDosBichosEntregue).toBe(false)
@@ -126,7 +133,7 @@ test('playground prepara os quatro, mas só a conversa entrega o presente', asyn
   const r = await p.servico.buscar('/salvamento')
   expect(r.corpo).toMatchObject({
     salvamento: {
-      versao: 22,
+      versao: VERSAO_SALVAMENTO,
       bichos: { achados: [...BICHOS_DO_BOSQUE] },
       presenteDosBichosEntregue: false,
     },

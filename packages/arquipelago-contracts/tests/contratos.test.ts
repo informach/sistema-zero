@@ -45,7 +45,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV22Schema,
+  SalvamentoV23Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 import {
@@ -236,21 +236,27 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV22Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV23Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 22, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({
+      ...antiga,
+      versao: 23,
+      percursos: {},
+      ...semMoradores,
+      bichos: { ...semMoradores.bichos, outros: [] },
+    })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(22)
+    expect(r.salvamento.versao).toBe(23)
     expect(r.salvamento.percursos).toEqual({})
-    expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
+    expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null, outros: [] })
   })
 
   test('guarda as três estrelas e o melhor tempo de cada percurso', () => {
@@ -386,7 +392,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
     } = inicialV21(agora)
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(22)
+    expect(v3?.versao).toBe(23)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -425,7 +431,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
           pedido: { dia: '2026-10-28', id: 'alface-2', entregue: false },
         },
       },
-      bichos: { achados: ['gato' as const, 'coelho' as const], adotado },
+      bichos: { achados: ['gato' as const, 'coelho' as const], adotado, outros: [] },
     }
     expect(migrarSalvamento(s)).toEqual(s)
   })
@@ -454,7 +460,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
   test('o nome do bicho tem de 1 a 16 letras e as medidas ficam de 0 a 100', () => {
     const base = inicial()
     const com = (a: object) =>
-      migrarSalvamento({ ...base, bichos: { achados: ['gato'], adotado: a } })
+      migrarSalvamento({ ...base, bichos: { achados: ['gato'], adotado: a, outros: [] } })
     expect(com({ ...adotado, nome: '' })).toBeNull()
     expect(com({ ...adotado, nome: 'Um nome comprido demais' })).toBeNull()
     expect(com({ ...adotado, fome: 101 })).toBeNull()
@@ -468,6 +474,7 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       bichos: {
         achados: ['cachorro' as const, 'gato' as const, 'coelho' as const, 'porquinho' as const],
         adotado,
+        outros: [],
       },
     }
     expect(new TextEncoder().encode(JSON.stringify(s)).byteLength).toBeLessThan(
@@ -518,7 +525,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(22)
+    expect(v4?.versao).toBe(23)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})

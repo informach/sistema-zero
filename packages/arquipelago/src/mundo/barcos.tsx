@@ -32,6 +32,7 @@ import { useInterativo } from './interativos'
 import { centroNoAnel } from './medidas'
 import { ComReserva } from './modelos'
 import { PORTOS_DA_ARTE } from './portos-da-arte'
+import { FALA_DA_REGATA, RegataDasBoias, rotaDaRegata } from './regata-das-boias'
 
 const URL_BARCO = new URL(barcoGlb, import.meta.url).href
 const UMA_VEZ: readonly string[] = []
@@ -155,10 +156,47 @@ function PortosDoBarco() {
       return true
     }
     movimento.embarcarPara = embarcarPara
+    // A volta das boias (lacunas, 01/11/2026): do cais da sua ilha, em volta dela, e de volta.
+    const embarcarNaRegata = () => {
+      const s = loja.getState(),
+        v = atual.current
+      if (
+        s.painelAberto !== `${PAINEL_DO_BARCO}sua-ilha` ||
+        s.visita ||
+        jogoPausado({ ...s, painelAberto: null }) ||
+        movimento.modo !== 'chao' ||
+        destinosDoPorto('sua-ilha', s.jornada).length === 0 ||
+        !caisPronto('sua-ilha', movimento.caisProntos) ||
+        v.fase !== 'atracado'
+      )
+        return false
+      const porto = PORTOS_DA_ARTE['sua-ilha']
+      const proxima = criarTravessia(
+        [porto, porto],
+        { x: passageiro.position.x, y: passageiro.position.y, z: passageiro.position.z },
+        [null, null],
+        ['sua-ilha', 'sua-ilha'],
+        rotaDaRegata(),
+      )
+      proxima.regata = { lado: 0, remo: 0 }
+      proxima.prontos = [true, true]
+      const p = { x: rastro.x, y: rastro.y - CORPO.doCentroAoPe - CORPO.folga, z: rastro.z }
+      if (!podeEmbarcar(proxima, 0, true, movimento.noChao, p)) return false
+      embarcar(proxima, 0, p)
+      atual.current = proxima
+      movimento.barco = proxima
+      movimento.pedido = { tipo: 'barco', viagem: proxima }
+      definirViagem(proxima)
+      s.abrirPainel(null)
+      s.dizer(FALA_DA_REGATA)
+      return true
+    }
+    movimento.embarcarNaRegata = embarcarNaRegata
     return () => {
       if (movimento.embarcarPara === embarcarPara) movimento.embarcarPara = null
+      if (movimento.embarcarNaRegata === embarcarNaRegata) movimento.embarcarNaRegata = null
     }
-  }, [movimento, loja, rastro, criar])
+  }, [movimento, loja, rastro, criar, passageiro])
   useEffect(() => trocarClipe(actions, null, 'balancar', 0, 'barco-viagem'), [actions])
   useFrame((_, dt) => {
     const v = atual.current
@@ -223,6 +261,7 @@ function PortosDoBarco() {
           </group>
         ) : null,
       )}
+      <RegataDasBoias />
       <group ref={grupo} name="barco-da-viagem" visible={false}>
         <group ref={animado}>
           <primitive object={cena} />

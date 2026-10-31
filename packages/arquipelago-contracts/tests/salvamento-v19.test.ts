@@ -15,6 +15,7 @@ import {
   migrarDaV19,
   migrarDaV20,
   migrarDaV21,
+  migrarDaV22,
   migrarSalvamento,
   PERCURSOS,
   SalvamentoV18Schema,
@@ -38,7 +39,7 @@ test('V18 continua estrita e migra sem presumir chave, segredo, mapa ou companhi
     companhia: 'quarto',
   })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV21(migrarDaV20(migrarDaV19(migrarDaV18(antiga)))),
+    migrarDaV22(migrarDaV21(migrarDaV20(migrarDaV19(migrarDaV18(antiga))))),
   )
   expect(antiga).toEqual(antes)
   for (const campo of [{ chaves: 0 }, { segredos: 0 }, { mapa: {} }, { companhia: 'quarto' }])
@@ -78,7 +79,7 @@ test('valores fora da régua são recusados', () => {
   ]
   for (const ruim of ruins)
     expect(SalvamentoV20Schema.safeParse({ ...s, ...ruim }).success).toBe(false)
-  expect(migrarSalvamento({ ...s, versao: 23 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 24 })).toBeNull()
 })
 
 test('cada cômodo tem um bit fixo e o mapa junta as células das duas sessões', () => {
