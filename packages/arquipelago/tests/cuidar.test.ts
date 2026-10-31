@@ -9,7 +9,11 @@ const dia = (n: number) => `2026-11-${String(n).padStart(2, '0')}`
 
 function comGato(medidas: Partial<NonNullable<Salvamento['bichos']['adotado']>> = {}): Salvamento {
   const base = criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z'))
-  const r = adotarPelaCapi({ ...base, bichos: { achados: ['gato'], adotado: null } }, 'gato', 'Mia')
+  const r = adotarPelaCapi(
+    { ...base, bichos: { achados: ['gato'], adotado: null, outros: [] } },
+    'gato',
+    'Mia',
+  )
   if (!('salvamento' in r) || !r.salvamento.bichos.adotado) throw new Error('não adotou')
   const s = r.salvamento
   return { ...s, bichos: { ...s.bichos, adotado: { ...r.salvamento.bichos.adotado, ...medidas } } }
@@ -21,7 +25,9 @@ describe('adotar pela conversa com a Capi', () => {
   test('a Capi só oferece depois do primeiro achado e enquanto ninguém foi adotado', () => {
     const base = criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z'))
     expect(podeAdotar(base)).toBe(false)
-    expect(podeAdotar({ ...base, bichos: { achados: ['coelho'], adotado: null } })).toBe(true)
+    expect(
+      podeAdotar({ ...base, bichos: { achados: ['coelho'], adotado: null, outros: [] } }),
+    ).toBe(true)
     expect(podeAdotar(comGato())).toBe(false)
   })
 
@@ -33,7 +39,11 @@ describe('adotar pela conversa com a Capi', () => {
     expect(motivoDoNome('Pé de-Moleque')).toBeNull()
     const base = criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z'))
     expect(
-      adotarPelaCapi({ ...base, bichos: { achados: ['gato'], adotado: null } }, 'gato', ''),
+      adotarPelaCapi(
+        { ...base, bichos: { achados: ['gato'], adotado: null, outros: [] } },
+        'gato',
+        '',
+      ),
     ).toEqual({
       motivo: 'Escreva um nome.',
     })
@@ -44,7 +54,7 @@ describe('adotar pela conversa com a Capi', () => {
     expect(s.bichos.adotado).toMatchObject({ id: 'gato', nome: 'Mia', fase: 'filhote' })
     const base = criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z'))
     const r = adotarPelaCapi(
-      { ...base, bichos: { achados: ['gato'], adotado: null } },
+      { ...base, bichos: { achados: ['gato'], adotado: null, outros: [] } },
       'gato',
       'Mia',
     )

@@ -234,6 +234,8 @@ describe('salvamento', () => {
   } = salvamento
   const ateV15 = {
     ...semProgressoV16,
+    // Os outros bichos adotados são da V23.
+    bichos: { achados: salvamento.bichos.achados, adotado: salvamento.bichos.adotado },
     moradores: { capi: salvamento.moradores.capi, bento: salvamento.moradores.bento },
   }
   const valeAteV14 = { ...ateV15, percursos: {}, vale: valeSemFilhote }
@@ -322,7 +324,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(22)
+    expect(lido.salvamento?.versao).toBe(23)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -350,7 +352,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(22)
+    expect(lido.salvamento?.versao).toBe(23)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -377,7 +379,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(22)
+    expect(lido.salvamento?.versao).toBe(23)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -422,11 +424,11 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 22, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 23, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
-      bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null },
+      bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null, outros: [] },
       inventario: { salada: 1 },
       presenteDosBichosEntregue: true,
     }
@@ -601,6 +603,8 @@ describe('salvamento', () => {
     const { nico: _nico, ...moradoresDaV17 } = anterior.moradores
     const v17 = {
       ...anterior,
+      // Os outros bichos adotados são da V23.
+      bichos: { achados: anterior.bichos.achados, adotado: anterior.bichos.adotado },
       farol: farolDaV19,
       moradores: moradoresDaV17,
       vale: valeDaV17,
@@ -613,7 +617,8 @@ describe('salvamento', () => {
     expect(resposta.status).toBe(200)
     expect(SalvamentoGuardadoSchema.parse(resposta.json).salvamento).toEqual({
       ...v17,
-      versao: 22,
+      versao: 23,
+      bichos: { ...v17.bichos, outros: [] },
       moradores: { ...v17.moradores, nico: { ...MORADOR_NOVO } },
       vale: { ...v17.vale, fosseis: 0 },
       florada: 0,

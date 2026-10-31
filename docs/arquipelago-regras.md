@@ -1447,7 +1447,11 @@ adotado já estão no jogo. O plano da parte que falta:
 - **Adotar** (`adotar`, `nomeValido`, `motivoDoNome`, `adotarPelaCapi`): depois do primeiro bicho
   achado, a conversa com a Capi ganha "Adotar um bicho". A criança escolhe um dos achados e dá um
   nome de 1 a 16 caracteres, só letras, espaço e hífen, começando por letra; nome que não serve
-  mostra o motivo embaixo do campo. Um bicho por vez nesta fase. O nome fica só no salvamento da
+  mostra o motivo embaixo do campo. Até três bichos adotados (lacunas, 01/11/2026, salvamento V23;
+  a proposta: "No Bosque dá para adotar mais"): enquanto houver achado livre, a Capi oferece de
+  novo. O último adotado vai junto (`bichos.adotado`); os outros esperam no cercadinho do Bosque
+  (`bichos.outros`, até dois), sentem o tempo jogado como ele e, no painel do bicho, "Levar Nome"
+  troca quem vai junto (`trocarBicho`; o de antes volta ao cercadinho). O nome fica só no salvamento da
   criança e ninguém mais vê. O bicho chega com 80 em cada medida e sai do cercadinho para andar
   com ela. As falas usam o nome e nenhum pronome: é a criança quem decide quem o bicho é.
 - **Seguir** (`sistemas/seguir.ts`, `mundo/bicho-adotado.tsx`): o bicho anda atrás da criança pela

@@ -19,7 +19,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 22
+export const VERSAO_SALVAMENTO = 23
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -903,9 +903,11 @@ export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
 }
 
 /** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
-export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV22 {
-  return migrarDaV21(
-    migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))),
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV23 {
+  return migrarDaV22(
+    migrarDaV21(
+      migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))),
+    ),
   )
 }
 
@@ -1135,11 +1137,49 @@ export function migrarDaV21(s: SalvamentoV21): SalvamentoV22 {
   return { ...s, versao: 22, percursos, vale: { ...s.vale, fosseis: 0 }, florada: 0, ceu: [] }
 }
 
-export const SalvamentoSchema = z.union([
+export const SalvamentoAteV22Schema = z.union([
   SalvamentoV22Schema,
   SalvamentoAteV21Schema.transform(migrarDaV21),
 ])
-export type Salvamento = SalvamentoV22
+
+/** Quantos bichos do Bosque a criança adota de uma vez (o que vai junto e os outros). */
+export const BICHOS_ADOTADOS_MAXIMO = 3
+
+/**
+ * V23 (01/11/2026, lacunas; a proposta: "No Bosque dá para adotar mais"): além do bicho adotado que
+ * vai junto (`adotado`), até dois outros esperam no Bosque (`outros`), sem repetir bicho.
+ */
+export const SalvamentoV23Schema = z
+  .strictObject({
+    ...SalvamentoV22Schema.shape,
+    versao: z.literal(23),
+    bichos: z
+      .strictObject({
+        achados: z
+          .array(z.enum(BICHOS_DO_BOSQUE))
+          .max(BICHOS_DO_BOSQUE.length)
+          .refine((lista) => new Set(lista).size === lista.length, 'bicho achado repetido'),
+        adotado: BichoAdotadoSchema.nullable(),
+        outros: z.array(BichoAdotadoSchema).max(BICHOS_ADOTADOS_MAXIMO - 1),
+      })
+      .refine((b) => {
+        const ids = [...(b.adotado ? [b.adotado.id] : []), ...b.outros.map((o) => o.id)]
+        return new Set(ids).size === ids.length && (b.adotado !== null || b.outros.length === 0)
+      }, 'bicho adotado repetido'),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV23 = z.infer<typeof SalvamentoV23Schema>
+
+/** Da V22 para a V23: o mesmo bicho adotado e nenhum outro ainda. */
+export function migrarDaV22(s: SalvamentoV22): SalvamentoV23 {
+  return { ...s, versao: 23, bichos: { ...s.bichos, outros: [] } }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV23Schema,
+  SalvamentoAteV22Schema.transform(migrarDaV22),
+])
+export type Salvamento = SalvamentoV23
 
 /**
  * Teto do documento serializado (o serviço recusa acima disto). 80 KB desde 01/11/2026: o pior caso
@@ -1188,7 +1228,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
       irie: { ...MORADOR_NOVO },
       nico: { ...MORADOR_NOVO },
     },
-    bichos: { achados: [], adotado: null },
+    bichos: { achados: [], adotado: null, outros: [] },
     construcao: { casa: null, cabanas: {} },
     projetos: {},
     turnos: {},

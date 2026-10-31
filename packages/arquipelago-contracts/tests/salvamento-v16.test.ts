@@ -23,7 +23,7 @@ test('a migração atual preserva a aparência de 80 caracteres aceita pela V14'
   const atual = migrarSalvamento(antiga)
   expect(atual?.projetos.geladeira).toEqual(antiga.projetos.geladeira)
   expect(antiga).toEqual(antes)
-  expect(atual?.versao).toBe(22)
+  expect(atual?.versao).toBe(23)
   const mundo = {
     horta: [],
     inventario: {},
@@ -47,7 +47,7 @@ test('V15 mantém o filhote e recebe progresso novo sem inventar conquistas', ()
   const atual = migrarSalvamento(antiga)
   expect(atual?.vale).toEqual({ ...antiga.vale, fosseis: 0 })
   expect(atual).toMatchObject({
-    versao: 22,
+    versao: 23,
     nuvens: { constelacoes: 0 },
     farol: { pagina: false, concluido: false },
     clima: 'sol',
@@ -75,5 +75,5 @@ test('progresso impossível, clima desconhecido e versão futura são recusados'
     expect(migrarSalvamento({ ...s, nuvens: { constelacoes } })).toBeNull()
   expect(migrarSalvamento({ ...s, farol: { pagina: false, concluido: true } })).toBeNull()
   expect(migrarSalvamento({ ...s, clima: 'neve' })).toBeNull()
-  expect(migrarSalvamento({ ...s, versao: 23 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 24 })).toBeNull()
 })

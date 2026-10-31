@@ -79,6 +79,7 @@ describe('ganhar o projeto azul', () => {
           diaCuidadoEm: null,
           truque: { sessoes: 0, ultimaEm: null, aprendido: false },
         },
+        outros: [],
       },
     }
     expect(ganharProjetos(adotou, agora).ganhos).toEqual(['casinha'])
