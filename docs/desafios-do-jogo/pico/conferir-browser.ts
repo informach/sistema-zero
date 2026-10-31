@@ -14,7 +14,9 @@ const driver = Bun.resolveSync(
   'playwright-core',
   dirname(Bun.resolveSync('@playwright/test', studio)),
 )
-const out = fileURLToPath(new URL('../../qa/', import.meta.url))
+const out =
+  process.env.ARQUIPELAGO_PRINTS ??
+  fileURLToPath(new URL('../../qa/2026-10-31-revisao-dos-lotes/pico-fases/', import.meta.url))
 const scope = '__sz0123456789abcdef01234567'
 const project = montarProjeto('plataforma', true)
 const html = buildPreviewDoc({
