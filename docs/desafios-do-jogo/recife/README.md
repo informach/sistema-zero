@@ -168,9 +168,11 @@ objetivo que quebra.
 ```powershell
 bun docs/desafios-do-jogo/recife/gerar-manifesto-python.ts
 bun test docs/desafios-do-jogo/recife/recife-python.test.ts
-$env:STUDIO_PYTHON_TEST_IMAGE='<imagem do studio-runtime com o validation-profile atual>'
+$env:STUDIO_PYTHON_TEST_IMAGE='<imagem publicada do studio-runtime>'
 bun packages/studio-runtime/tests/desafios-python-smoke.ts --ilha=recife
 ```
 
-Limites: a release Python apontada é a da prova (nenhum ambiente publicado tem Pygame Zero); o
-Estúdio de desafio do jogo ainda não abre Python. Ver `../conteudo-por-posto.md`, seção C02.
+A prova roda na release Python ativa em staging e produção (`2026-10-25-integrated-games-2`),
+com a distribuição baixada do runtime de staging (`STUDIO_PYTHON_RUNTIME_HOST` troca o host) e a
+imagem publicada do executor em `STUDIO_PYTHON_TEST_IMAGE` (a tag local do deploy de staging, por
+exemplo). Ver `../conteudo-por-posto.md`, seção C02.

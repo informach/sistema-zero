@@ -63,8 +63,9 @@ serviço, que confere de novo os blocos pelos cursos da comunidade:
 - os quadros revisados no C01b de `recife/`, `pico/`, `vale/` e `nuvens/`.
 
 O C02 (Python, texto e Pro) traz os próprios pacotes em `recife-python/`, `pico-python/`,
-`vale-texto/` e `nuvens-pro/`. Antes de importar o Recife e o Pico, publicar uma versão do
-ambiente Python com o Pygame Zero e gerar os dois manifestos de novo; o Vale espera os cursos do
+`vale-texto/` e `nuvens-pro/`. O Recife e o Pico apontam a release Python ativa em staging e
+produção (`2026-10-25-integrated-games-2`, com Pygame Zero) e passaram na distribuição publicada
+com a imagem publicada do executor (17 execuções, 49 conferências); o Vale espera os cursos do
 Arquiteto. O jogo ainda não abre projetos em Python nem Pro (mostra um recado).
 
 ### Com conta real e aparelho físico

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import {
@@ -7,9 +8,13 @@ import {
   preparePythonProjectExecution,
 } from '@sistemazero/core/learning'
 import { pythonMissionRequest } from '@sistemazero/core/studio/python-mission-execution'
-import { studioPythonLogicalFiles } from '@sistemazero/core/studio/python-runtime-distribution'
+import {
+  studioPythonDeploymentRoute,
+  studioPythonLogicalFiles,
+  studioPythonRuntimeRoute,
+  verifyStudioPythonDeployment,
+} from '@sistemazero/core/studio/python-runtime-distribution'
 import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
-import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import {
   AMBIENTE_PYTHON_C02,
   EXTENSOES_DA_RELEASE_C02,
@@ -17,22 +22,23 @@ import {
 import { CENARIOS_DO_PICO } from '../../../docs/desafios-do-jogo/pico/python-projetos'
 import { CENARIOS_DO_RECIFE } from '../../../docs/desafios-do-jogo/recife/python-projetos'
 import { ManifestoDeDesafiosSchema } from '../../arquipelago-contracts/src/desafios'
-import { buildPythonRuntimeDistribution } from '../../studio/scripts/build-python-runtime'
 import { preparePythonExecutionSnapshot } from '../../studio/src/runtime/python/snapshot'
 
 /**
  * C02 (30/10/2026): os desafios Python do Recife e do Pico no executor Python REAL: a imagem de
  * produção do studio-runtime (Chromium e Pyodide, sem rede) roda `python-mission.mjs` com a
- * distribuição construída do vendor verificado, e o julgamento é o `judgePythonProjectExecution`
+ * distribuição PUBLICADA da release ativa (baixada do host do runtime, cada arquivo conferido
+ * contra o manifesto por `verifyStudioPythonDeployment`), e o julgamento é o `judgePythonProjectExecution`
  * do core, o mesmo do `PythonProjectCheckerService`. O retrato do projeto sai do
  * `preparePythonExecutionSnapshot`, o mesmo que o Members usa. Mesmo molde do
  * `python-mission-smoke.ts`.
  *
- *   bun packages/studio-runtime/tests/desafios-python-smoke.ts [--release] [--ilha=recife|pico]
+ *   bun packages/studio-runtime/tests/desafios-python-smoke.ts [--ilha=recife|pico]
  *     [--cenario=<nome>]
  *
- * `--release` só constrói a distribuição e imprime a release (para `ambiente-python.ts`).
- * Variáveis: `STUDIO_PYTHON_TEST_CACHE` (vendor e distribuições) e `STUDIO_PYTHON_TEST_IMAGE`.
+ * Variáveis: `STUDIO_PYTHON_TEST_CACHE` (distribuições baixadas e evidências),
+ * `STUDIO_PYTHON_RUNTIME_HOST` (padrão: o runtime de staging) e `STUDIO_PYTHON_TEST_IMAGE` (a
+ * imagem publicada do executor, por exemplo a tag local do deploy de staging).
  */
 const root = path.resolve(import.meta.dirname, '../../..')
 const cache =
@@ -40,46 +46,52 @@ const cache =
 const argumento = (nome: string) =>
   process.argv.find((arg) => arg.startsWith(`--${nome}=`))?.slice(nome.length + 3)
 
-const build = await buildPythonRuntimeDistribution({
-  vendorDirectory: path.join(cache, 'vendor'),
-  outputDirectory: path.join(cache, 'distributions'),
-})
-const release = await createStudioRuntimeRelease({
-  manifestVersion: 1,
-  profileId: AMBIENTE_PYTHON_C02.profileId,
-  releaseId: AMBIENTE_PYTHON_C02.releaseId,
-  programmingLanguage: 'python',
-  kinds: ['classic', 'pro'],
-  modes: ['blocks', 'bridge', 'code'],
-  capabilities: ['execute'],
-  extensions: EXTENSOES_DA_RELEASE_C02.map(({ id, versions }) => ({ id, versions: [...versions] })),
-  sourceTargets: ['browser', 'desktop'],
-  requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
-  artifacts: build.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
-  python: {
-    version: build.manifest.pythonVersion,
-    packages: [],
-    providedModules: build.manifest.providedModules,
-    features: build.manifest.features,
+// A distribuição PUBLICADA da release ativa, pelas rotas públicas do runtime (só leitura).
+const host =
+  process.env.STUDIO_PYTHON_RUNTIME_HOST ??
+  'https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev'
+const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
+const metadados = await fetch(
+  host + studioPythonDeploymentRoute(AMBIENTE_PYTHON_C02.manifestSha256),
+  {
+    signal: AbortSignal.timeout(30_000),
   },
-})
-if (process.argv.includes('--release')) {
-  console.log(
-    JSON.stringify({
-      manifestSha256: release.manifestSha256,
-      pythonVersion: build.manifest.pythonVersion,
-      features: build.manifest.features,
-      distribution: build.directory,
-    }),
-  )
-  process.exit(0)
-}
-assert.equal(
-  release.manifestSha256,
-  AMBIENTE_PYTHON_C02.manifestSha256,
-  'A release da prova mudou: atualize ambiente-python.ts e regenere os manifestos.',
 )
-assert.equal(build.manifest.pythonVersion, AMBIENTE_PYTHON_C02.pythonVersion)
+assert.equal(metadados.status, 200, `A release ${AMBIENTE_PYTHON_C02.releaseId} não está publicada`)
+const { release, distribution } = await verifyStudioPythonDeployment(await metadados.json())
+assert.equal(release.manifestSha256, AMBIENTE_PYTHON_C02.manifestSha256)
+assert.equal(release.profileId, AMBIENTE_PYTHON_C02.profileId)
+assert.equal(release.releaseId, AMBIENTE_PYTHON_C02.releaseId)
+assert.equal(distribution.pythonVersion, AMBIENTE_PYTHON_C02.pythonVersion)
+assert.deepEqual(release.manifest.extensions, EXTENSOES_DA_RELEASE_C02)
+const distribuicao = path.join(cache, 'publicadas', release.manifestSha256)
+// O host não serve `_http/gzip/*` pelo caminho: é a representação gzip do arquivo lógico, entregue
+// a quem aceita gzip. Pede assim e guarda os bytes comprimidos, sem descomprimir.
+const comprimido = new Map(
+  distribution.httpRepresentations?.map((item) => [item.artifactPath, item.path]),
+)
+for (const file of distribution.files) {
+  const target = path.join(distribuicao, file.path)
+  const guardado = await readFile(target).catch(() => null)
+  if (guardado && sha256(guardado) === file.sha256) continue
+  const logico = comprimido.get(file.path)
+  const resposta = await fetch(
+    `${host}${studioPythonRuntimeRoute(release.manifestSha256)}${logico ?? file.path}`,
+    {
+      signal: AbortSignal.timeout(120_000),
+      ...(logico ? { headers: { 'Accept-Encoding': 'gzip' }, decompress: false } : {}),
+    },
+  )
+  assert.equal(resposta.status, 200, file.path)
+  const bytes = new Uint8Array(await resposta.arrayBuffer())
+  assert.equal(sha256(bytes), file.sha256, `${file.path} difere da release`)
+  await mkdir(path.dirname(target), { recursive: true })
+  await writeFile(target, bytes)
+}
+await writeFile(
+  path.join(distribuicao, 'distribution.json'),
+  `${JSON.stringify(distribution, null, 2)}\n`,
+)
 
 const imageTag = process.env.STUDIO_PYTHON_TEST_IMAGE ?? 'sistemazero-studio-runtime:verify'
 async function docker(args: string[]) {
@@ -158,8 +170,8 @@ async function rodar(slug: string, cenario: Cenario, objetivos: PythonProjectExe
     JSON.stringify({
       version: 1,
       runtimeManifestSha256: release.manifestSha256,
-      runtimeFiles: studioPythonLogicalFiles(build.manifest),
-      runtimeDeployment: { release, distribution: build.manifest },
+      runtimeFiles: studioPythonLogicalFiles(distribution),
+      runtimeDeployment: { release, distribution },
       runtimeContentSecurityPolicy: pythonFrameContentSecurityPolicy(
         `https://studio-python-runtime.invalid/v1/runtimes/${release.manifestSha256}/`,
       ),
@@ -192,7 +204,7 @@ async function rodar(slug: string, cenario: Cenario, objetivos: PythonProjectExe
     '--mount',
     `type=bind,source=${directory},target=/workspace/mission`,
     '--mount',
-    `type=bind,source=${build.directory},target=/workspace/mission/runtime,readonly`,
+    `type=bind,source=${distribuicao},target=/workspace/mission/runtime,readonly`,
     '--workdir',
     '/workspace/mission',
     '--entrypoint',

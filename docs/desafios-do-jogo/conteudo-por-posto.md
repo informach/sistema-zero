@@ -120,9 +120,12 @@ Lacunas que continuam com a equipe:
   Pro: o Python precisa de um contexto de autorização de runtime que hoje só existe em aulas,
   salas e autoria, e o Pro de um build. A criança vê um recado; o Admin também não edita esses
   projetos (chegam pelo manifesto).
-- Nenhum ambiente publicado tem uma release Python com Pygame Zero. Os projetos do Recife e do Pico
-  apontam a release da prova local (`ambiente-python.ts`); antes de importar, troque pela release
-  ativa e rode a prova de novo.
+- Os projetos do Recife e do Pico apontam a release Python ATIVA em staging e produção,
+  `2026-10-25-integrated-games-2` (Turtle, Pygame Zero, Pygame-ce e Raylib; `ambiente-python.ts`).
+  A prova baixa a distribuição publicada, confere cada arquivo e roda na imagem do executor
+  publicada; o Members confere o ambiente contra o catálogo publicado
+  (`members/tests/unit/arquipelago-c02-ambiente.test.ts`). Quando a release ativa mudar, troque,
+  regenere e rode de novo.
 - Python e Pro não têm blocos do catálogo do servidor, então não derivam requisitos: abrem pela
   ilha. O Vale em texto deriva blocos da Ponte (JavaScript avançado), que só terão fonte quando os
   cursos do Arquiteto existirem; até lá a barreira C01a recusaria publicar.
