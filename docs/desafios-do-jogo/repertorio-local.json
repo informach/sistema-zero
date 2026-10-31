@@ -3828,153 +3828,11 @@
       "semFonteNaTrilha": []
     },
     {
-      "slug": "recife-a-corrente-muda",
-      "publico": "kids",
-      "ilha": "recife",
-      "posto": 4,
-      "quadro": 1,
-      "tipo": "quadro-das-cores",
-      "titulo": "A corrente muda",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "Cada toque no espaço vira o sentido da corrente."
-        },
-        {
-          "id": "alternar",
-          "descricao": "Cada toque muda o sentido uma vez."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_apply_velocity",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_velocity",
-        "sz_g2d_setup_stage",
-        "sz_g2d_sprite_x",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_create",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign"],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "recife-conchas-por-viagem",
-      "publico": "kids",
-      "ilha": "recife",
-      "posto": 4,
-      "quadro": 2,
-      "tipo": "quadro-das-cores",
-      "titulo": "Conchas por viagem",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar."
-        },
-        {
-          "id": "capacidade",
-          "descricao": "A cesta leva até três e descarrega sem duplicar."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_var_create",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": [
-        "sz_g2d_restart",
-        "sz_js_if_else",
-        "sz_js_var_assign",
-        "sz_js_var_increment",
-        "sz_math_arithmetic",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "recife-dois-corais-cuidados",
-      "publico": "kids",
-      "ilha": "recife",
-      "posto": 4,
-      "quadro": 3,
-      "tipo": "quadro-das-cores",
-      "titulo": "Dois corais cuidados",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "Cada coral escolhido é cuidado e contado uma vez só."
-        },
-        {
-          "id": "uma-vez",
-          "descricao": "Cada coral conta uma vez, também na ordem inversa."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_image",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_assign",
-        "sz_js_var_create",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": []
-    },
-    {
       "slug": "recife-uma-bolha-por-vez",
       "publico": "kids",
       "ilha": "recife",
       "posto": 4,
-      "quadro": 4,
+      "quadro": 1,
       "tipo": "quadro-das-cores",
       "titulo": "Uma bolha por vez",
       "classificacao": "retomada-em-blocos",
@@ -3983,12 +3841,12 @@
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "Só sai uma bolha nova quando a anterior já voltou."
+          "id": "soltar",
+          "descricao": "Espaço solta uma bolha."
         },
         {
-          "id": "esperar",
-          "descricao": "Toques durante o voo esperam pela próxima bolha."
+          "id": "uma-por-vez",
+          "descricao": "Com uma bolha subindo, outro toque espera; depois que ela sai, sai outra."
         }
       ],
       "tiposJaPresentes": [
@@ -3996,12 +3854,17 @@
         "sz_frame_loops",
         "sz_frame_start",
         "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_y",
@@ -4009,57 +3872,237 @@
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_sprite_x", "sz_js_var_increment"],
       "semFonteNaTrilha": []
     },
     {
-      "slug": "recife-a-chave-do-navio",
+      "slug": "recife-alvo-preso",
       "publico": "kids",
       "ilha": "recife",
       "posto": 4,
-      "quadro": 5,
+      "quadro": 2,
       "tipo": "quadro-das-cores",
-      "titulo": "A chave do navio",
+      "titulo": "Alvo preso conta ponto",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "O baú abre só com a chave, uma vez, e a chave fica usada."
+          "id": "prender",
+          "descricao": "A bolha que encosta no alvo conta um ponto."
         },
         {
-          "id": "chave",
-          "descricao": "Sem chave não abre, e abrir usa a chave uma vez."
+          "id": "outra-bolha",
+          "descricao": "Uma bolha conta uma vez; a próxima bolha conta de novo."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "recife-alvo-em-outro-lugar",
+      "publico": "kids",
+      "ilha": "recife",
+      "posto": 4,
+      "quadro": 3,
+      "tipo": "quadro-das-cores",
+      "titulo": "O alvo muda de lugar",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "outro-lugar",
+          "descricao": "Preso o alvo, ele volta num lugar sorteado no alto."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_set_velocity",
+        "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_random_between", "sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "recife-tempo-de-partida",
+      "publico": "kids",
+      "ilha": "recife",
+      "posto": 4,
+      "quadro": 4,
+      "tipo": "quadro-das-cores",
+      "titulo": "Tempo de partida",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "acabar",
+          "descricao": "O relógio tira um segundo de cada vez e a partida acaba no zero."
+        },
+        {
+          "id": "sem-bolha-no-fim",
+          "descricao": "Depois do fim, Espaço não solta bolha."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_random_between",
+        "sz_g2d_set_velocity",
+        "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "recife-nova-partida",
+      "publico": "kids",
+      "ilha": "recife",
+      "posto": 4,
+      "quadro": 5,
+      "tipo": "quadro-das-cores",
+      "titulo": "Nova partida",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "nova-partida",
+          "descricao": "Depois do fim, Enter começa outra partida com o tempo cheio."
+        },
+        {
+          "id": "pontos-zerados",
+          "descricao": "A nova partida começa sem pontos e já solta bolha."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_random_between",
+        "sz_g2d_set_velocity",
+        "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": [],
       "semFonteNaTrilha": []
     },
     {
@@ -4288,153 +4331,11 @@
       "semFonteNaTrilha": []
     },
     {
-      "slug": "recife-a-corrente-muda-adulto",
-      "publico": "adulto",
-      "ilha": "recife",
-      "posto": 4,
-      "quadro": 1,
-      "tipo": "quadro-das-cores",
-      "titulo": "A corrente muda",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "Cada toque no espaço vira o sentido da corrente."
-        },
-        {
-          "id": "alternar",
-          "descricao": "Cada toque muda o sentido uma vez."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_apply_velocity",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_velocity",
-        "sz_g2d_setup_stage",
-        "sz_g2d_sprite_x",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_create",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_assign"],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "recife-conchas-por-viagem-adulto",
-      "publico": "adulto",
-      "ilha": "recife",
-      "posto": 4,
-      "quadro": 2,
-      "tipo": "quadro-das-cores",
-      "titulo": "Conchas por viagem",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar."
-        },
-        {
-          "id": "capacidade",
-          "descricao": "A cesta leva até três e descarrega sem duplicar."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_var_create",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": [
-        "sz_g2d_restart",
-        "sz_js_if_else",
-        "sz_js_var_assign",
-        "sz_js_var_increment",
-        "sz_math_arithmetic",
-        "sz_val_compare"
-      ],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "recife-dois-corais-cuidados-adulto",
-      "publico": "adulto",
-      "ilha": "recife",
-      "posto": 4,
-      "quadro": 3,
-      "tipo": "quadro-das-cores",
-      "titulo": "Dois corais cuidados",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "Cada coral escolhido é cuidado e contado uma vez só."
-        },
-        {
-          "id": "uma-vez",
-          "descricao": "Cada coral conta uma vez, também na ordem inversa."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_image",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_assign",
-        "sz_js_var_create",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": []
-    },
-    {
       "slug": "recife-uma-bolha-por-vez-adulto",
       "publico": "adulto",
       "ilha": "recife",
       "posto": 4,
-      "quadro": 4,
+      "quadro": 1,
       "tipo": "quadro-das-cores",
       "titulo": "Uma bolha por vez",
       "classificacao": "retomada-em-blocos",
@@ -4443,12 +4344,12 @@
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "Só sai uma bolha nova quando a anterior já voltou."
+          "id": "soltar",
+          "descricao": "Espaço solta uma bolha."
         },
         {
-          "id": "esperar",
-          "descricao": "Toques durante o voo esperam pela próxima bolha."
+          "id": "uma-por-vez",
+          "descricao": "Com uma bolha subindo, outro toque espera; depois que ela sai, sai outra."
         }
       ],
       "tiposJaPresentes": [
@@ -4456,12 +4357,17 @@
         "sz_frame_loops",
         "sz_frame_start",
         "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_y",
@@ -4469,57 +4375,237 @@
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_sprite_x", "sz_js_var_increment"],
       "semFonteNaTrilha": []
     },
     {
-      "slug": "recife-a-chave-do-navio-adulto",
+      "slug": "recife-alvo-preso-adulto",
       "publico": "adulto",
       "ilha": "recife",
       "posto": 4,
-      "quadro": 5,
+      "quadro": 2,
       "tipo": "quadro-das-cores",
-      "titulo": "A chave do navio",
+      "titulo": "Alvo preso conta ponto",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "O baú abre só com a chave, uma vez, e a chave fica usada."
+          "id": "prender",
+          "descricao": "A bolha que encosta no alvo conta um ponto."
         },
         {
-          "id": "chave",
-          "descricao": "Sem chave não abre, e abrir usa a chave uma vez."
+          "id": "outra-bolha",
+          "descricao": "Uma bolha conta uma vez; a próxima bolha conta de novo."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "recife-alvo-em-outro-lugar-adulto",
+      "publico": "adulto",
+      "ilha": "recife",
+      "posto": 4,
+      "quadro": 3,
+      "tipo": "quadro-das-cores",
+      "titulo": "O alvo muda de lugar",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "outro-lugar",
+          "descricao": "Preso o alvo, ele volta num lugar sorteado no alto."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_set_velocity",
+        "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_random_between", "sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "recife-tempo-de-partida-adulto",
+      "publico": "adulto",
+      "ilha": "recife",
+      "posto": 4,
+      "quadro": 4,
+      "tipo": "quadro-das-cores",
+      "titulo": "Tempo de partida",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "acabar",
+          "descricao": "O relógio tira um segundo de cada vez e a partida acaba no zero."
+        },
+        {
+          "id": "sem-bolha-no-fim",
+          "descricao": "Depois do fim, Espaço não solta bolha."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_random_between",
+        "sz_g2d_set_velocity",
+        "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "recife-nova-partida-adulto",
+      "publico": "adulto",
+      "ilha": "recife",
+      "posto": 4,
+      "quadro": 5,
+      "tipo": "quadro-das-cores",
+      "titulo": "Nova partida",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "nova-partida",
+          "descricao": "Depois do fim, Enter começa outra partida com o tempo cheio."
+        },
+        {
+          "id": "pontos-zerados",
+          "descricao": "A nova partida começa sem pontos e já solta bolha."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_apply_velocity",
+        "sz_g2d_arrows_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_on_overlap",
+        "sz_g2d_random_between",
+        "sz_g2d_set_velocity",
+        "sz_g2d_setup_stage",
+        "sz_g2d_sprite_x",
+        "sz_g2d_sprite_y",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": [],
       "semFonteNaTrilha": []
     },
     {

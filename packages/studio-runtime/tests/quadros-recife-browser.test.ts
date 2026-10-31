@@ -68,51 +68,56 @@ for (const d of desafiosIniciaisDoRecife('kids'))
             change((p.ir as SZIRV2).behavior)
             scenarios.push({ name, ids, project: p, passes: false })
           }
-          wrong('sem-reinicio', ['recomecar'], (b) => {
-            const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
-            if (e?.type !== 'g2d:onKey') throw Error('Evento Enter ausente')
-            e.body = []
-          })
+          const evento = (b: SZIRV2['behavior'], tipo: string, chave?: string) => {
+            const e = b.events.find(
+              (s) => s.type === tipo && (chave === undefined || ('key' in s && s.key === chave)),
+            )
+            if (!e || !('body' in e) || !Array.isArray(e.body)) throw Error(`${tipo} ausente`)
+            return e as { body: JSStatement[] }
+          }
+          // A Mira do Recife (lacunas, 01/11/2026): cada erro tira a regra que o quadro ensina.
+          wrong(
+            'sem-enter',
+            d.quadro === 5 ? ['nova-partida', 'pontos-zerados', 'recorde'] : ['recomecar'],
+            (b) => {
+              evento(b, 'g2d:onKey', 'Enter').body = []
+            },
+          )
           if (d.quadro === 1)
-            wrong('sempre-esquerda', ['alternar'], (b) => {
-              const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
-              if (e?.type !== 'g2d:onKey') throw Error('Evento Espaço ausente')
-              e.body = [{ type: 'assign', name: 'direita', value: { type: 'num', value: 0 } }]
-            })
-          if (d.quadro === 2 || d.quadro === 3 || d.quadro === 4)
-            wrong(
-              'ignora-condicao',
-              [d.quadro === 2 ? 'capacidade' : d.quadro === 3 ? 'uma-vez' : 'esperar'],
-              (b) =>
-                visit(b.events, (s) => {
-                  if (s.type === 'if') s.cond = { type: 'bool', value: true }
-                }),
-            )
-          if (d.quadro === 2)
-            wrong('cesta-nao-esvazia', ['capacidade'], (b) => {
-              const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'ArrowRight')
-              if (e?.type !== 'g2d:onKey') throw Error('Entrega ausente')
-              e.body = e.body.filter((s) => s.type !== 'assign' || s.name !== 'cesta')
-            })
-          if (d.quadro === 3)
-            wrong('conta-duas-vezes', ['uma-vez'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'assign' && (s.name === 'cuidado1' || s.name === 'cuidado2'))
-                  s.value = { type: 'num', value: 0 }
-              }),
-            )
-          if (d.quadro === 5) {
-            wrong('chave-nao-consumida', ['chave'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'assign' && s.name === 'chave') s.value = { type: 'num', value: 1 }
-              }),
-            )
-            wrong('abre-sem-chave', ['chave'], (b) =>
+            wrong('sem-esperar', ['uma-por-vez'], (b) =>
               visit(b.events, (s) => {
                 if (s.type === 'if') s.cond = { type: 'bool', value: true }
               }),
             )
-          }
+          if (d.quadro === 2)
+            wrong('conta-sempre', ['outra-bolha'], (b) => {
+              const e = evento(b, 'g2d:onOverlap')
+              const dentro = e.body[0]
+              if (dentro?.type !== 'if') throw Error('Se do encontro ausente')
+              e.body = dentro.then.filter((s) => s.type !== 'assign' || s.name !== 'emVoo')
+            })
+          if (d.quadro === 3)
+            wrong('mesmo-lugar', ['outro-lugar'], (b) =>
+              visit(b.events, (s) => {
+                if (s.type === 'if')
+                  // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+                  s.then = s.then.filter(
+                    (x) => !('spriteVar' in x) || (x as { spriteVar: string }).spriteVar !== 'alvo',
+                  )
+              }),
+            )
+          if (d.quadro === 4)
+            wrong('solta-depois-do-fim', ['sem-bolha-no-fim'], (b) => {
+              const e = evento(b, 'g2d:onKey', 'Space')
+              const fim = e.body[0]
+              if (fim?.type !== 'if') throw Error('Se do fim ausente')
+              e.body = fim.then
+            })
+          if (d.quadro === 5)
+            wrong('esquece-o-tempo', ['nova-partida'], (b) => {
+              const e = evento(b, 'g2d:onKey', 'Enter')
+              e.body = e.body.filter((s) => s.type !== 'assign' || s.name !== 'tempo')
+            })
           for (const scenario of scenarios) {
             const objectives = d.conteudo.objetivos
               .filter((o) => !scenario.ids || scenario.ids.includes(o.id))

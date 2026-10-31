@@ -36,11 +36,12 @@ test('o Recife Coral é do Explorador e o pacote em blocos tem cinco quadros e q
   expect(ilha('recife').posto).toBe('explorer')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
-    'recife-a-corrente-muda',
-    'recife-conchas-por-viagem',
-    'recife-dois-corais-cuidados',
+    // A Mira do Recife, no gênero do posto (lacunas, 01/11/2026).
     'recife-uma-bolha-por-vez',
-    'recife-a-chave-do-navio',
+    'recife-alvo-preso',
+    'recife-alvo-em-outro-lugar',
+    'recife-tempo-de-partida',
+    'recife-nova-partida',
     'recife-mira-de-bolhas',
     'recife-mira-de-bolhas-rapida',
     'recife-mira-de-bolhas-pontos',
