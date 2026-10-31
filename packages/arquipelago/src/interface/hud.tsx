@@ -65,7 +65,7 @@ import { PainelDaIrie } from './irie'
 import { PainelDaJade } from './jade'
 import { VisorDaLuneta } from './luneta'
 import { PainelDoMapa, useIlhaAqui } from './mapa'
-import { PainelDaMare, PainelDoFloco } from './mare'
+import { PainelDaMare, PainelDoFloco, PainelDoNico } from './mare'
 import { Menu } from './menu'
 import { PrimeirosPassos, RostoDoZappy, useLinhaDosPassos } from './primeiros-passos'
 import { PainelDoObjeto } from './projeto-azul'
@@ -1008,6 +1008,7 @@ export function Hud() {
       <PainelDaCapi />
       <PainelDoBento />
       <PainelDaMare />
+      <PainelDoNico />
       <PainelDoFloco />
       <PainelDaJade />
       <PainelDaIrie />

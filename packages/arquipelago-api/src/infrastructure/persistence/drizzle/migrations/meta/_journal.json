@@ -141,6 +141,13 @@
       "when": 1793420328805,
       "tag": "0019_vendas_na_feira",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793421902265,
+      "tag": "0020_nico_nos_pedidos",
+      "breakpoints": true
     }
   ]
 }

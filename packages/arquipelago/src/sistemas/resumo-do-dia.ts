@@ -11,7 +11,10 @@ import {
   OBJETOS_DA_CASA,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
-import { NOMES_DOS_CONVIDADOS as NOMES_DOS_MORADORES } from './visitas-dos-moradores'
+import { NOMES_DOS_CONVIDADOS } from './visitas-dos-moradores'
+
+/** Os nomes no resumo: os convidáveis e o Nico, que já mora na sua ilha (A19). */
+const NOMES_DOS_MORADORES = { ...NOMES_DOS_CONVIDADOS, nico: 'Nico' } as const
 
 /** O que a foto guarda: só números e listas pequenas (cabe no armazenamento do aparelho). */
 export interface FotoDoDia {

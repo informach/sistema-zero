@@ -84,7 +84,7 @@ test('as versões antigas chegam até a V9', () => {
       migrarDaV13(migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(v7))))))),
     ),
   )
-  expect(migrarSalvamento(v7)?.versao).toBe(20)
+  expect(migrarSalvamento(v7)?.versao).toBe(21)
 })
 
 test('os 14 Lumis no máximo cabem no teto do salvamento', () => {

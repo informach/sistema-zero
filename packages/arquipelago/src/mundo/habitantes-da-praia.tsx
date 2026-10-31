@@ -28,7 +28,8 @@ const MODELOS = {
 }
 const UMA_VEZ = ['acenar', 'feliz'] as const
 const EM_LACO: readonly string[] = []
-const NOMES = ['nico', 'estrelinha', 'buzio'] as const
+// O Nico virou morador (conversa, amizade e o correio do dia, §6.28 A19): `mundo/nico.tsx`.
+const NOMES = ['estrelinha', 'buzio'] as const
 const COLISORES = {
   nico: colisoresDoHabitante('nico'),
   estrelinha: colisoresDoHabitante('estrelinha'),

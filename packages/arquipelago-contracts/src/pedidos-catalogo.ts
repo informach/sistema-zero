@@ -60,6 +60,12 @@ export const PEDIDOS_DO_ANEL = {
     { id: 'alface-2', texto: 'Duas alfaces para o almoço no Vale', itens: { alface: 2 } },
     { id: 'tomate-2', texto: 'Dois tomates para levar na caminhada', itens: { tomate: 2 } },
   ],
+  // O Nico, carteiro da praia da sua ilha (§6.28, A19): o lanche entre uma entrega e outra.
+  nico: [
+    { id: 'alface-1', texto: 'Uma alface para o lanche do correio', itens: { alface: 1 } },
+    { id: 'milho-1', texto: 'Um milho para a volta pela praia', itens: { milho: 1 } },
+    { id: 'salada-1', texto: 'Uma salada para o almoço da agência', itens: { salada: 1 } },
+  ],
   irie: [
     { id: 'tomate-2', texto: 'Dois tomates para o lanche perto do tear', itens: { tomate: 2 } },
     { id: 'milho-1', texto: 'Um milho para o intervalo da tecelagem', itens: { milho: 1 } },

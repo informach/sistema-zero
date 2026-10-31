@@ -21,7 +21,15 @@ import {
   type Salvamento,
 } from './salvamento'
 
-export const MORADORES_DOS_PEDIDOS = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie'] as const
+export const MORADORES_DOS_PEDIDOS = [
+  'capi',
+  'bento',
+  'mare',
+  'floco',
+  'jade',
+  'irie',
+  'nico',
+] as const
 export const MoradorDoPedidoSchema = z.enum(MORADORES_DOS_PEDIDOS)
 export type MoradorDoPedido = z.infer<typeof MoradorDoPedidoSchema>
 export const ILHA_DO_PEDIDO = {
@@ -31,6 +39,7 @@ export const ILHA_DO_PEDIDO = {
   floco: 'pico',
   jade: 'vale-dos-dinos',
   irie: 'nuvens',
+  nico: 'sua-ilha',
 } as const satisfies Record<MoradorDoPedido, IlhaId>
 export const AMIZADE_DO_PEDIDO = 30
 export const MOEDAS_DO_PEDIDO = 3

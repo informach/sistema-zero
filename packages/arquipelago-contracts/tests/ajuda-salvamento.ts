@@ -4,11 +4,19 @@ import {
   type SalvamentoV17,
   type SalvamentoV18,
   type SalvamentoV19,
+  type SalvamentoV20,
 } from '../src/salvamento'
+
+/** O salvamento inicial na V20 (sem o Nico entre os moradores, da V21). */
+export function inicialV20(agora: Date): SalvamentoV20 {
+  const atual = criarSalvamentoInicial(agora)
+  const { nico: _nico, ...moradores } = atual.moradores
+  return { ...atual, versao: 20, moradores, companhia: 'quarto' }
+}
 
 /** O salvamento inicial na V19 (sem a galeria do Farol nem os móveis da V20). */
 export function inicialV19(agora: Date): SalvamentoV19 {
-  const atual = criarSalvamentoInicial(agora)
+  const atual = inicialV20(agora)
   const { galeria: _galeria, ...farol } = atual.farol
   return { ...atual, versao: 19, farol, construcao: { casa: null, cabanas: {} } }
 }

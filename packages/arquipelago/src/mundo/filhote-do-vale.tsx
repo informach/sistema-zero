@@ -6,6 +6,7 @@ import filhoteGlb from '../assets/bichos/triceratops-filhote.glb'
 import propsGlb from '../assets/ilhas/vale-dos-dinos-props.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFilhote, PAINEL_DO_FILHOTE } from '../estado/filhote'
+import { quemAcompanha } from '../sistemas/companhia'
 import {
   aquecerOOvo,
   comecarPasseio,
@@ -44,6 +45,8 @@ export function FilhoteDoVale({
 }) {
   const { loja, movimento } = useJogo()
   const filhote = useEstado((s) => s.salvamento.vale.filhote)
+  // Com o filhote acompanhando a criança (A7), ele não fica passeando no Vale ao mesmo tempo.
+  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) === 'filhote')
   const lugares = useMemo(() => {
     const pe = preparada.modelo.getObjectByName('pe-do-vulcao')?.position
     if (!pe) return null
@@ -61,7 +64,7 @@ export function FilhoteDoVale({
       movimento.modo === 'chao'
     )
   }
-  if (!lugares || !filhote) return null
+  if (!lugares || !filhote || acompanha) return null
   return (
     <ComReserva reserva={null}>
       {nasceu(filhote) ? (

@@ -1,0 +1,2 @@
+ALTER TABLE "arquipelago"."pedidos_remunerados" DROP CONSTRAINT "pedidos_remunerados_morador";--> statement-breakpoint
+ALTER TABLE "arquipelago"."pedidos_remunerados" ADD CONSTRAINT "pedidos_remunerados_morador" CHECK ("arquipelago"."pedidos_remunerados"."morador" in ('capi','bento','mare','floco','jade','irie','nico'));

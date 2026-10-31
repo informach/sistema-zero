@@ -5,6 +5,14 @@ Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-es
 Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
 explicam sua introdução, não a versão atual da resposta.
 
+## Salvamento V21: o Nico morador e o filhote como companhia (31/10/2026)
+
+`moradores.nico` (o carteiro da sua ilha, §6.28 A19) entra com `MORADOR_NOVO` na migração da V20,
+e `companhia` aceita `filhote` (A7); a V20 continua com `COMPANHIAS_ATE_V20`. `MORADORES_DOS_PEDIDOS`
+e `ILHA_DO_PEDIDO` ganham o Nico (`sua-ilha`); o serviço precisa da migração 0020 antes. Folga do
+pior caso: uns 305 bytes no catálogo a 999; um campo novo pede compactar antes. `inicialV20` está
+em `tests/ajuda-salvamento.ts`.
+
 ## Salvamento V20: móveis da casa e galeria do Farol (30/10/2026)
 
 `moveis.ts`: `MOVEIS` (21 ids, só cresce no fim; o salvamento guarda o índice), `MovelNaObraSchema`
