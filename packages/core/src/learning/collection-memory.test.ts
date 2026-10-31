@@ -53,6 +53,43 @@ function fixture(name = 'lembrete', invert = false) {
   }
 }
 describe('memória ligada à coleta e à decisão', () => {
+  test('a decisão atrás de uma guarda que nunca abre (podeAgir sempre falso) não conta (N3)', () => {
+    const f = fixture('pegou')
+    const guarda = (cond: unknown) => ({
+      type: 'if',
+      cond,
+      // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+      then: [f.decision],
+      else: [],
+    })
+    const projeto = (cond: unknown, extra: unknown[] = []) => ({
+      ir: {
+        behavior: {
+          start: [
+            f.start,
+            { type: 'var', name: 'podeAgir', value: { type: 'bool', value: false } },
+          ],
+          events: [
+            f.collection,
+            { type: 'g2d:onOverlap', aVar: 'p', bVar: 'destino', body: [guarda(cond)] },
+            ...extra,
+          ],
+        },
+      },
+    })
+    expect(evaluatesCollectionMemory(rule, projeto({ type: 'var', name: 'podeAgir' }))).toBe(false)
+    expect(evaluatesCollectionMemory(rule, projeto({ type: 'bool', value: false }))).toBe(false)
+    // Controle: a guarda que pode abrir (podeAgir muda numa tecla) continua valendo.
+    const liga = {
+      type: 'g2d:onKey',
+      key: 'Space',
+      body: [{ type: 'assign', name: 'podeAgir', value: { type: 'bool', value: true } }],
+    }
+    expect(
+      evaluatesCollectionMemory(rule, projeto({ type: 'var', name: 'podeAgir' }, [liga])),
+    ).toBe(true)
+  })
+
   test('aceita nome alternativo e condição invertida com os ramos trocados', () => {
     expect(evaluatesCollectionMemory(rule, fixture('pegou').project)).toBe(true)
     expect(evaluatesCollectionMemory(rule, fixture('pegou', true).project)).toBe(true)

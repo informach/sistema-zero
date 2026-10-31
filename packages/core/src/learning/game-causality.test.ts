@@ -189,4 +189,121 @@ describe('gameCausality', () => {
     ).toBe(true)
     expect(isSectionCompletion(completion({ type: 'gameCausality', actor: 'guia' }))).toBe(false)
   })
+
+  describe('variável que nunca muda é constante (N3)', () => {
+    const PASSOS = ['encounter', 'memory', 'decision', 'restart', 'removal'] as const
+    const var0 = (name: string, value: unknown) => ({ type: 'var', name, value })
+    const travado = (cond: unknown, extraStart: unknown[] = []) =>
+      projeto(
+        [
+          encontro('chave', [
+            se(cond, [
+              assign('pegou', bool(true)),
+              { type: 'g2d:destroySprite', spriteVar: 'chave' },
+            ]),
+          ]),
+          encontro('porta', [se(cond, [se(v('pegou'), [desenhar])])]),
+          { type: 'g2d:onKey', key: 'Enter', body: [se(cond, [{ type: 'g2d:restart' }])] },
+        ],
+        [var0('pegou', bool(false)), ...extraStart],
+      )
+    const todos = (p: unknown) => PASSOS.map((step) => confere(step, p))
+
+    test('Se podeAgir, com podeAgir sempre falso, reprova os cinco', () => {
+      expect(todos(travado(v('podeAgir'), [var0('podeAgir', bool(false))]))).toEqual([
+        false,
+        false,
+        false,
+        false,
+        false,
+      ])
+    })
+
+    test('as outras formas da mesma condição impossível também reprovam', () => {
+      const formas = [
+        { type: 'binop', op: '==', left: v('podeAgir'), right: bool(true) },
+        { type: 'logicalNot', value: v('ligado') },
+        { type: 'ternary', condition: v('podeAgir'), whenTrue: bool(true), whenFalse: bool(false) },
+        { type: 'binop', op: '>', left: v('limite'), right: num(10) },
+      ]
+      for (const cond of formas)
+        expect(
+          todos(
+            travado(cond, [
+              var0('podeAgir', bool(false)),
+              var0('ligado', bool(true)),
+              var0('limite', num(5)),
+            ]),
+          ),
+          JSON.stringify(cond),
+        ).toEqual([false, false, false, false, false])
+    })
+
+    test('atribuição em código morto, no ciclo dela mesma ou com o mesmo valor não solta a variável', () => {
+      const morto = {
+        type: 'g2d:onKey',
+        key: 'a',
+        body: [se(bool(false), [assign('podeAgir', bool(true))])],
+      }
+      const ciclo = {
+        type: 'g2d:onKey',
+        key: 'b',
+        body: [se(v('podeAgir'), [assign('podeAgir', bool(true))])],
+      }
+      const igual = { type: 'g2d:onKey', key: 'c', body: [assign('podeAgir', bool(false))] }
+      for (const extra of [morto, ciclo, igual]) {
+        const p = travado(v('podeAgir'), [var0('podeAgir', bool(false))]) as {
+          ir: { behavior: { events: unknown[] } }
+        }
+        p.ir.behavior.events.push(extra)
+        expect(todos(p)).toEqual([false, false, false, false, false])
+      }
+    })
+
+    test('apelido de uma constante, laço com vezes 0 e enquanto podeAgir também ficam mortos', () => {
+      expect(
+        todos(travado(v('b'), [var0('podeAgir', bool(false)), var0('b', v('podeAgir'))])),
+      ).toEqual([false, false, false, false, false])
+      const zero = projeto(
+        [
+          encontro('chave', [
+            { type: 'repeat', times: v('vezes'), body: [assign('pegou', bool(true))] },
+          ]),
+        ],
+        [var0('pegou', bool(false)), var0('vezes', num(0))],
+      )
+      expect(confere('memory', zero)).toBe(false)
+      const enquanto = projeto(
+        [
+          encontro('chave', [
+            { type: 'while', cond: v('podeAgir'), body: [assign('pegou', bool(true))] },
+          ]),
+        ],
+        [var0('pegou', bool(false)), var0('podeAgir', bool(false))],
+      )
+      expect(confere('memory', enquanto)).toBe(false)
+    })
+
+    test('controles: a variável que muda numa tecla, o sorteio e o nome escondido continuam valendo', () => {
+      const liga = travado(v('podeAgir'), [var0('podeAgir', bool(false))]) as {
+        ir: { behavior: { events: unknown[] } }
+      }
+      liga.ir.behavior.events.push({
+        type: 'g2d:onKey',
+        key: 'Space',
+        body: [assign('podeAgir', bool(true))],
+      })
+      expect(todos(liga)).toEqual([true, true, true, true, true])
+      const sorteio = travado(v('podeAgir'), [
+        var0('podeAgir', { type: 'g2d:randomBetween', min: num(0), max: num(1) }),
+      ])
+      expect(todos(sorteio)).toEqual([true, true, true, true, true])
+      // Um laço que dá o mesmo nome a outra coisa: fora da conta (pode ser verdadeiro lá dentro).
+      const escondido = travado(v('podeAgir'), [var0('podeAgir', bool(false))]) as {
+        ir: { behavior: { events: unknown[] } }
+      }
+      escondido.ir.behavior.events.push({ type: 'forOf', itemName: 'podeAgir', body: [] })
+      expect(todos(escondido)).toEqual([true, true, true, true, true])
+    })
+  })
 })
