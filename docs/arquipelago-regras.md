@@ -2537,6 +2537,10 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   para subir) e a nuvem do balão nas Nuvens. Montaria e balão ficam nas próprias ilhas, por serem
   brinquedos de lá: ajuste técnico da proposta ("segredos nas ilhas antigas"). Os Lumis de luz
   entram nos baús quando a arte chegar (B12).
+- **Atalhos da entrega pelos telhados (A41):** a prancha da casinha 1 para a 3 e a escada de
+  caixotes até a casinha 2 (arte de 31/10). A entrega não pede as paradas em ordem: pelo atalho se
+  chega mais rápido, e os confeitos do trecho pulado ficam para trás (a terceira estrela pede o
+  confeito escondido). "Olhar o atalho" explica cada um.
 - **A subida por fora do Farol** chegou na arte de 31/10 e fica escondida, sem colisão, até virar
   o percurso da Lenda (B7).
 

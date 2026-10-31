@@ -5,6 +5,7 @@ import type { Group } from 'three'
 import type { PontosDoPercurso } from '../sistemas/percurso'
 import { PERCURSO_DOS_TELHADOS } from '../sistemas/percurso'
 import { segredoObrigatorio } from '../sistemas/segredos'
+import { AtalhosDosTelhados } from './atalhos-dos-telhados'
 import { BalcoesDaVila } from './balcoes-da-vila'
 import { BancosDaVila } from './bancos-da-vila'
 import { Bento } from './bento'
@@ -83,6 +84,7 @@ export function VilaViva({
       <BancosDaVila colisores={preparada.colisores} meio={meio} />
       <FeiraDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <BrinquedoDeMinijogo ilha="vila-doce" modelo={preparada.modelo} meio={meio} giro={giro} />
+      <AtalhosDosTelhados modelo={preparada.modelo} meio={meio} giro={giro} />
       <FestaNaVila meio={meio} giro={giro} />
       <BorroesDaIlha ilha="vila-doce" ancoras={lugaresDosLumis} meio={meio} />
       <SegredoNoAlto segredo={SEGREDO_VILA_DOCE} meio={meio} giro={giro} />
