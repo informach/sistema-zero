@@ -13,12 +13,12 @@ const valor = (path: string) => ({ kind: 'value' as const, path })
 const rotulos: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
   kids: {
     acertar: [
-      'Clicar na bolha solta o vagalume e soma um resgate; clicar na água não soma.',
+      'Clicar na bolha planta a muda de coral e soma uma; clicar na água não soma.',
       'Use bolha.collidepoint(pos) para saber se o clique foi dentro da bolha.',
     ],
     sortear: [
-      'Depois do resgate, a bolha aparece numa das três tocas de coral.',
-      'random.randint(1, 3) sorteia o número da toca; cada número muda bolha.topleft.',
+      'Depois de plantar, a bolha seguinte sobe de um dos três corais.',
+      'random.randint(1, 3) sorteia o número do coral; cada número muda bolha.topleft.',
     ],
     relogio: [
       'O relógio conta o tempo da rodada.',
@@ -39,7 +39,7 @@ const rotulos: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
       'Rect.collidepoint(pos) separa o acerto do clique na água.',
     ],
     sortear: [
-      'Após o acerto, sortear_toca move a bolha para uma das três tocas.',
+      'Após o acerto, sortear_coral move a bolha para um dos três corais.',
       'Sorteie com random.randint(1, 3) e posicione bolha.topleft.',
     ],
     relogio: ['update(dt) desconta o tempo da rodada.', 'Use o dt recebido por update.'],
@@ -75,7 +75,7 @@ export function objetivosDoRecifePython(publico: PublicoDoDesafio): SectionPytho
   }
   return [
     objetivo('acertar', [clicar(CLIQUES.agua), clicar(CLIQUES.inicio)], {
-      target: valor('resgatados'),
+      target: valor('plantadas'),
       compare: 'equals',
       value: 1,
     }),
@@ -85,8 +85,8 @@ export function objetivosDoRecifePython(publico: PublicoDoDesafio): SectionPytho
       value: 120,
     }),
     objetivo('relogio', [esperar(1500)], { target: valor('tempo'), compare: 'decreased' }),
-    objetivo('fim', [clicar(CLIQUES.inicio), esperar(9500), ...CLIQUES.tocas.map(clicar)], {
-      target: valor('resgatados'),
+    objetivo('fim', [clicar(CLIQUES.inicio), esperar(9500), ...CLIQUES.corais.map(clicar)], {
+      target: valor('plantadas'),
       compare: 'equals',
       value: 1,
     }),
@@ -98,7 +98,7 @@ export function objetivosDoRecifePython(publico: PublicoDoDesafio): SectionPytho
         { action: 'press', key: 'r', holdMs: 80 },
         clicar(CLIQUES.inicio),
       ],
-      { target: valor('resgatados'), compare: 'equals', value: 1 },
+      { target: valor('plantadas'), compare: 'equals', value: 1 },
       true,
     ),
   ]

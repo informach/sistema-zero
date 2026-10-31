@@ -14,7 +14,7 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas em Python",
-        "enunciado": "Projeto Python com Pygame Zero. O cenário, o desenho e o estado inicial estão prontos em main.py. Implemente os eventos: on_mouse_down(pos) conta um acerto só quando o clique cai dentro de bolha (um Rect) e então chama sortear_toca(); sortear_toca() usa random.randint(1, 3) para posicionar a bolha numa das três tocas, (80, 120), (280, 80) ou (480, 120); update(dt) desconta o tempo e encerra a rodada (jogando = False) ao chegar a zero, sem aceitar novos acertos. Como extra, R reinicia a rodada e devolve a bolha a (280, 360).",
+        "enunciado": "Projeto Python com Pygame Zero. O cenário, o desenho e o estado inicial estão prontos em main.py. Implemente os eventos: on_mouse_down(pos) conta um acerto só quando o clique cai dentro de bolha (um Rect) e então chama sortear_coral(); sortear_coral() usa random.randint(1, 3) para posicionar a bolha num dos três corais, (80, 120), (280, 80) ou (480, 120); update(dt) desconta o tempo e encerra a rodada (jogando = False) ao chegar a zero, sem aceitar novos acertos. Como extra, R reinicia a rodada e devolve a bolha a (280, 360).",
         "dicas": [
           "As variáveis do módulo alteradas dentro das funções precisam de global.",
           "Rect.collidepoint(pos) devolve True quando o ponto está dentro do retângulo.",
@@ -23,7 +23,7 @@
         "projetoInicial": {
           "formatVersion": 3,
           "id": "recife-mira-python",
-          "name": "Resgate dos vagalumes",
+          "name": "Bolhas da lagoa",
           "createdAt": 0,
           "updatedAt": 0,
           "programmingLanguage": "python",
@@ -57,14 +57,14 @@
           "ir": null,
           "blocksState": null,
           "files": {
-            "main.py": "import random\n\nWIDTH = 640\nHEIGHT = 480\nTITLE = \"Resgate dos vagalumes\"\n\nDURACAO = 7\nbolha = Rect((280, 360), (80, 80))\nresgatados = 0\ntempo = DURACAO\njogando = True\n\n\ndef sortear_toca():\n    pass\n\n\ndef on_mouse_down(pos):\n    pass\n\n\ndef update(dt):\n    pass\n\n\ndef on_key_down(key):\n    pass\n\n\ndef draw():\n    screen.fill((18, 72, 110))\n    screen.draw.filled_rect(Rect((0, 440), (640, 40)), (214, 190, 140))\n    screen.draw.filled_circle((120, 160), 52, (232, 120, 120))\n    screen.draw.filled_circle((320, 120), 52, (240, 160, 96))\n    screen.draw.filled_circle((520, 160), 52, (196, 120, 200))\n    screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))\n    screen.draw.circle(bolha.center, 40, (255, 255, 255))\n    screen.draw.filled_circle(bolha.center, 10, (255, 230, 90))\n    screen.draw.text(\"Vagalumes resgatados: \" + str(resgatados), (20, 16), fontsize=32)\n    screen.draw.text(\"Tempo: \" + str(int(tempo)), (500, 16), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"A maré virou. Aperte R para recomeçar.\", center=(320, 280), fontsize=36)\n",
+            "main.py": "import random\n\nWIDTH = 640\nHEIGHT = 480\nTITLE = \"Bolhas da lagoa\"\n\nDURACAO = 7\nbolha = Rect((280, 360), (80, 80))\nplantadas = 0\ntempo = DURACAO\njogando = True\n\n\ndef sortear_coral():\n    pass\n\n\ndef on_mouse_down(pos):\n    pass\n\n\ndef update(dt):\n    pass\n\n\ndef on_key_down(key):\n    pass\n\n\ndef draw():\n    screen.fill((18, 72, 110))\n    screen.draw.filled_rect(Rect((0, 440), (640, 40)), (214, 190, 140))\n    screen.draw.filled_circle((120, 160), 52, (232, 120, 120))\n    screen.draw.filled_circle((320, 120), 52, (240, 160, 96))\n    screen.draw.filled_circle((520, 160), 52, (196, 120, 200))\n    screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))\n    screen.draw.circle(bolha.center, 40, (255, 255, 255))\n    screen.draw.filled_circle(bolha.center, 12, (120, 210, 150))\n    screen.draw.text(\"Mudas plantadas: \" + str(plantadas), (20, 16), fontsize=32)\n    screen.draw.text(\"Tempo: \" + str(int(tempo)), (500, 16), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"A maré virou. Aperte R para recomeçar.\", center=(320, 280), fontsize=36)\n",
             "requirements.txt": ""
           }
         },
         "gabarito": {
           "formatVersion": 3,
           "id": "recife-mira-python",
-          "name": "Resgate dos vagalumes",
+          "name": "Bolhas da lagoa",
           "createdAt": 0,
           "updatedAt": 0,
           "programmingLanguage": "python",
@@ -98,7 +98,7 @@
           "ir": null,
           "blocksState": null,
           "files": {
-            "main.py": "import random\n\nWIDTH = 640\nHEIGHT = 480\nTITLE = \"Resgate dos vagalumes\"\n\nDURACAO = 7\nbolha = Rect((280, 360), (80, 80))\nresgatados = 0\ntempo = DURACAO\njogando = True\n\n\ndef sortear_toca():\n    numero = random.randint(1, 3)\n    if numero == 1:\n        bolha.topleft = (80, 120)\n    elif numero == 2:\n        bolha.topleft = (280, 80)\n    else:\n        bolha.topleft = (480, 120)\n\n\ndef on_mouse_down(pos):\n    global resgatados\n    if jogando and bolha.collidepoint(pos):\n        resgatados = resgatados + 1\n        sortear_toca()\n\n\ndef update(dt):\n    global tempo, jogando\n    if jogando:\n        tempo = tempo - dt\n        if tempo <= 0:\n            tempo = 0\n            jogando = False\n\n\ndef on_key_down(key):\n    global resgatados, tempo, jogando\n    if key == keys.R:\n        resgatados = 0\n        tempo = DURACAO\n        jogando = True\n        bolha.topleft = (280, 360)\n\n\ndef draw():\n    screen.fill((18, 72, 110))\n    screen.draw.filled_rect(Rect((0, 440), (640, 40)), (214, 190, 140))\n    screen.draw.filled_circle((120, 160), 52, (232, 120, 120))\n    screen.draw.filled_circle((320, 120), 52, (240, 160, 96))\n    screen.draw.filled_circle((520, 160), 52, (196, 120, 200))\n    screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))\n    screen.draw.circle(bolha.center, 40, (255, 255, 255))\n    screen.draw.filled_circle(bolha.center, 10, (255, 230, 90))\n    screen.draw.text(\"Vagalumes resgatados: \" + str(resgatados), (20, 16), fontsize=32)\n    screen.draw.text(\"Tempo: \" + str(int(tempo)), (500, 16), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"A maré virou. Aperte R para recomeçar.\", center=(320, 280), fontsize=36)\n",
+            "main.py": "import random\n\nWIDTH = 640\nHEIGHT = 480\nTITLE = \"Bolhas da lagoa\"\n\nDURACAO = 7\nbolha = Rect((280, 360), (80, 80))\nplantadas = 0\ntempo = DURACAO\njogando = True\n\n\ndef sortear_coral():\n    numero = random.randint(1, 3)\n    if numero == 1:\n        bolha.topleft = (80, 120)\n    elif numero == 2:\n        bolha.topleft = (280, 80)\n    else:\n        bolha.topleft = (480, 120)\n\n\ndef on_mouse_down(pos):\n    global plantadas\n    if jogando and bolha.collidepoint(pos):\n        plantadas = plantadas + 1\n        sortear_coral()\n\n\ndef update(dt):\n    global tempo, jogando\n    if jogando:\n        tempo = tempo - dt\n        if tempo <= 0:\n            tempo = 0\n            jogando = False\n\n\ndef on_key_down(key):\n    global plantadas, tempo, jogando\n    if key == keys.R:\n        plantadas = 0\n        tempo = DURACAO\n        jogando = True\n        bolha.topleft = (280, 360)\n\n\ndef draw():\n    screen.fill((18, 72, 110))\n    screen.draw.filled_rect(Rect((0, 440), (640, 40)), (214, 190, 140))\n    screen.draw.filled_circle((120, 160), 52, (232, 120, 120))\n    screen.draw.filled_circle((320, 120), 52, (240, 160, 96))\n    screen.draw.filled_circle((520, 160), 52, (196, 120, 200))\n    screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))\n    screen.draw.circle(bolha.center, 40, (255, 255, 255))\n    screen.draw.filled_circle(bolha.center, 12, (120, 210, 150))\n    screen.draw.text(\"Mudas plantadas: \" + str(plantadas), (20, 16), fontsize=32)\n    screen.draw.text(\"Tempo: \" + str(int(tempo)), (500, 16), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"A maré virou. Aperte R para recomeçar.\", center=(320, 280), fontsize=36)\n",
             "requirements.txt": ""
           }
         },
@@ -124,7 +124,7 @@
               "expect": {
                 "target": {
                   "kind": "value",
-                  "path": "resgatados"
+                  "path": "plantadas"
                 },
                 "compare": "equals",
                 "value": 1
@@ -135,7 +135,7 @@
           },
           {
             "id": "sortear",
-            "label": "Após o acerto, sortear_toca move a bolha para uma das três tocas.",
+            "label": "Após o acerto, sortear_coral move a bolha para um dos três corais.",
             "hint": "Sorteie com random.randint(1, 3) e posicione bolha.topleft.",
             "rule": {
               "type": "behavior",
@@ -216,7 +216,7 @@
               "expect": {
                 "target": {
                   "kind": "value",
-                  "path": "resgatados"
+                  "path": "plantadas"
                 },
                 "compare": "equals",
                 "value": 1
@@ -256,7 +256,7 @@
               "expect": {
                 "target": {
                   "kind": "value",
-                  "path": "resgatados"
+                  "path": "plantadas"
                 },
                 "compare": "equals",
                 "value": 1

@@ -50,8 +50,8 @@ test('repertório do Explorador: sem listas, sem classes; o apoio fica igual no 
   // O desenho e o estado inicial não mudam: só as quatro funções.
   const fora = (codigo: string) => codigo.slice(codigo.indexOf('def draw'))
   expect(fora(inicial)).toBe(fora(gabarito))
-  expect(inicial.slice(0, inicial.indexOf('def sortear_toca'))).toBe(
-    gabarito.slice(0, gabarito.indexOf('def sortear_toca')),
+  expect(inicial.slice(0, inicial.indexOf('def sortear_coral'))).toBe(
+    gabarito.slice(0, gabarito.indexOf('def sortear_coral')),
   )
   for (const erro of Object.keys(ERROS_DO_RECIFE_PYTHON) as ErroDoRecifePython[])
     expect(codigoDoRecife(erro)).not.toBe(gabarito)

@@ -135,7 +135,9 @@ Complemento L03: [testes e capturas dos cinco quadros](../../qa/2026-10-30-quadr
 
 ## C02: Fase de plataforma em Python, com fases como dados (30/10/2026)
 
-Aplicação na linguagem do Mestre: Python com Pygame Zero. Arquivos:
+Aplicação na linguagem do Mestre: Python com Pygame Zero. Desde a revisão de 31/10/2026 (A45) o
+tema é da ilha, e não da missão do posto: "A subida do Floco", em que o Floco (`floco` no código)
+sobe a montanha um trecho por fase e precisa do cristal de cada trecho. Arquivos:
 [Kids](pico-python.manifesto.json) e [adulto](pico-python-adulto.manifesto.json), um desafio do
 dia cada (`publicar: false`, ordem 70, 10 e 5 moedas, sem cor). Fontes: `python-projetos.ts` (o
 `main.py` e as três fases), `python-objetivos.ts` e `gerar-manifesto-python.ts`; o ambiente fica em
