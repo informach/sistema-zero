@@ -6,10 +6,13 @@ import {
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import {
+  objetivosDaVariacao,
   objetivosDoQuadro,
+  projetoDaVariacao,
   projetoDoQuadro,
   QUADROS_DA_SUA_ILHA,
   type QuadroDaSuaIlha,
+  VARIACOES_DA_SUA_ILHA,
 } from './projetos'
 
 /** O que o extra pede em cada quadro (o quadro 5 ensina o Enter; o extra dele é a barra de espaço). */
@@ -57,12 +60,45 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
       },
     })
   })
+  // O desafio do dia da sua ilha (lacunas, 01/11/2026): três variações do Pega-conchas, sem cor.
+  const doDia = MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']
+  const doDiaDaSuaIlha = VARIACOES_DA_SUA_ILHA.map((meta, i) =>
+    DesafioDoManifestoSchema.parse({
+      slug: `sua-ilha-${meta.slug}${publico === 'adulto' ? '-adulto' : ''}`,
+      publico,
+      ilha: 'sua-ilha',
+      tipo: 'desafio-do-dia',
+      quadro: null,
+      ordem: 61 + i,
+      publicar: true,
+      conteudo: {
+        versao: 1,
+        titulo: meta.titulo,
+        enunciado: meta.texto,
+        dicas: [meta.dica, 'O Pega-conchas já está pronto. Mude somente a regra indicada.'],
+        projetoInicial: projetoDaVariacao(meta.slug, false),
+        gabarito: projetoDaVariacao(meta.slug, true),
+        objetivos: objetivosDaVariacao(meta.slug),
+        desafioExtra: {
+          titulo: 'Mais um desafio',
+          texto: 'Complete o evento Enter para recomeçar a praia do início.',
+        },
+        recompensa: {
+          cor: false,
+          atracao: 'pega-conchas',
+          moedas: doDia.principal,
+          moedasExtra: doDia.extra,
+        },
+        blocosManuais: { acrescentar: [], retirar: [] },
+      },
+    }),
+  )
   return comPedidosDosMoradores(
     ManifestoDeDesafiosSchema.parse({
       formato: 'arquipelago-desafios',
       versao: 1,
       escopo: 'ilha',
-      desafios,
+      desafios: [...desafios, ...doDiaDaSuaIlha],
     }),
   )
 }

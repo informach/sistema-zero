@@ -148,6 +148,16 @@ export type QuadroDaSuaIlha = 1 | 2 | 3 | 4 | 5 | 6
 
 export function projetoDoQuadro(quadro: QuadroDaSuaIlha, pronto: boolean): Project {
   const meta = QUADROS_DA_SUA_ILHA[quadro - 1]!
+  return projetoDaFonte(
+    fonteDoQuadro(quadro, pronto),
+    `sua-ilha-${meta.slug}`,
+    meta.titulo,
+    `sua-ilha-quadro-${quadro}`,
+  )
+}
+
+function fonteDoQuadro(quadro: QuadroDaSuaIlha, pronto: boolean): SZIRV2 {
+  const meta = QUADROS_DA_SUA_ILHA[quadro - 1]!
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: 640, height: 480, bg: '#f6e7c1' },
     { type: 'g2d:enableClassicControls', mode: 'always' },
@@ -263,16 +273,20 @@ export function projetoDoQuadro(quadro: QuadroDaSuaIlha, pronto: boolean): Proje
       ],
     },
   }
-  const ir = assignStableIdsToIR(source, `sua-ilha-quadro-${quadro}`)
+  return source
+}
+
+function projetoDaFonte(source: SZIRV2, id: string, titulo: string, semente: string): Project {
+  const ir = assignStableIdsToIR(source, semente)
   return {
-    ...createEmptyProject(`sua-ilha-${meta.slug}`, meta.titulo),
+    ...createEmptyProject(id, titulo),
     programmingLanguage: 'javascript',
     mode: 'blocks',
     createdAt: 0,
     updatedAt: 0,
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
-    files: generateProjectFiles({ ir, projectName: meta.titulo }),
+    files: generateProjectFiles({ ir, projectName: titulo }),
     assets,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
@@ -428,6 +442,149 @@ export function objetivosDoQuadro(quadro: QuadroDaSuaIlha): SectionJavaScriptPro
       RETA,
       val('cheio', false),
       [{ afterStep: 2, expect: val('pegou3', true) }],
+    ),
+    recomecar(tres, val('cheio', true), val('cheio', false)),
+  ]
+}
+
+/**
+ * O desafio do dia da sua ilha (lacunas, 01/11/2026; a proposta põe o desafio do dia em todas as
+ * ilhas): três variações do Pega-conchas pronto, cada uma mudando uma regra, como as do Bosque e
+ * do Vale. Só os blocos do Faísca (se/senão, informação verdadeira ou falsa, tecla e contato).
+ */
+export const VARIACOES_DA_SUA_ILHA = [
+  {
+    slug: 'pega-conchas-aviso',
+    titulo: 'Pega-conchas: o aviso do Nico',
+    instrucao: 'Com conchas faltando, o Nico avisa.',
+    texto:
+      'O Pega-conchas já funciona. Complete o balde: quando faltar alguma das três conchas, guarde verdadeiro em falta. Com as três, o balde continua enchendo como antes.',
+    dica: 'Cada Se que confere uma concha ganha um senão. Em cada senão, guarde verdadeiro em falta.',
+  },
+  {
+    slug: 'pega-conchas-rosa',
+    titulo: 'Pega-conchas: só a rosa',
+    instrucao: 'Leve a concha rosa ao balde.',
+    texto:
+      'O Pega-conchas já funciona com as três conchas. Mude o balde para encher só com a concha rosa, a do alto: confira apenas pegou2. As conchas da areia não enchem o balde sozinhas.',
+    dica: 'Tire do balde os Se de pegou1 e de pegou3 e deixe só o de pegou2.',
+  },
+  {
+    slug: 'pega-conchas-esvaziar',
+    titulo: 'Pega-conchas: esvaziar o balde',
+    instrucao: 'A barra de espaço esvazia o balde.',
+    texto:
+      'O Pega-conchas já funciona. Complete a barra de espaço: ela guarda falso em cheio, e o aviso do balde cheio some. No controle da tela, use A.',
+    dica: 'O evento da barra de espaço já está no espaço de blocos. Dentro dele vai uma ação só.',
+  },
+] as const
+export type VariacaoDaSuaIlha = (typeof VARIACOES_DA_SUA_ILHA)[number]['slug']
+
+export function projetoDaVariacao(variacao: VariacaoDaSuaIlha, pronto: boolean): Project {
+  const meta = VARIACOES_DA_SUA_ILHA.find((v) => v.slug === variacao)!
+  const source = fonteDoQuadro(6, true)
+  const b = source.behavior
+  const desenho = b.loops[0]
+  if (desenho?.type !== 'g2d:updateEachFrame') throw new Error('Pega-conchas sem o laço')
+  // O título e a instrução da tela são os da variação (os dois primeiros textos do desenho).
+  const textos = [meta.titulo, meta.instrucao]
+  desenho.body = desenho.body.map((s) =>
+    s.type === 'g2d:drawLabel' && typeof s.text === 'string' && textos.length > 0
+      ? { ...s, text: textos.shift()! }
+      : s,
+  )
+  // O Enter que recomeça é o extra, como nos quadros: no inicial ele vem vazio.
+  const enter = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
+  if (enter?.type !== 'g2d:onKey') throw new Error('Pega-conchas sem o Enter')
+  if (!pronto) enter.body = []
+  const balde = b.events.find((s) => s.type === 'g2d:onOverlap' && s.bVar === 'balde')
+  if (balde?.type !== 'g2d:onOverlap') throw new Error('Pega-conchas sem o contato do balde')
+  if (variacao === 'pega-conchas-aviso') {
+    b.start.push({ type: 'var', name: 'falta', value: bool(false) })
+    // Um bloco novo em cada senão (o mesmo objeto em dois lugares repetiria o identificador).
+    const avisa = () => (pronto ? [assign('falta', true)] : [])
+    balde.body = [
+      iff(
+        'pegou1',
+        [iff('pegou2', [iff('pegou3', [assign('cheio', true)], avisa())], avisa())],
+        avisa(),
+      ),
+    ]
+    desenho.body.splice(
+      desenho.body.length - 1,
+      0,
+      iff('falta', [label('Ainda faltam conchas.', 20, 150)]),
+    )
+  }
+  if (variacao === 'pega-conchas-rosa' && pronto)
+    balde.body = [iff('pegou2', [assign('cheio', true)])]
+  if (variacao === 'pega-conchas-esvaziar')
+    b.events.push(key('Space', pronto ? [assign('cheio', false)] : []))
+  return projetoDaFonte(source, `sua-ilha-${meta.slug}`, meta.titulo, `sua-ilha-${meta.slug}`)
+}
+
+/** Pela concha rosa, no alto, até o balde (x 560), sem passar pelas conchas da areia. */
+const SO_A_ROSA = [press('ArrowUp', 400), right(2150), press('ArrowDown', 400)]
+
+export function objetivosDaVariacao(variacao: VariacaoDaSuaIlha): SectionJavaScriptProjectCheck[] {
+  const tres = [right(650), press('ArrowUp', 400), right(600), press('ArrowDown', 400), right(1700)]
+  const recomecar = (
+    passos: ExecutionStep[],
+    final: ExecutionExpectation,
+    inicio: ExecutionExpectation,
+  ) =>
+    check(
+      'recomecar',
+      'Extra: Enter recomeça a praia.',
+      [...passos, press('Enter')],
+      inicio,
+      [{ afterStep: passos.length, expect: final }],
+      true,
+    )
+  // Cada objetivo falha no projeto inicial (o executor real confere): o que já funcionava antes
+  // entra como etapa do mesmo caminho, não como objetivo à parte.
+  if (variacao === 'pega-conchas-aviso')
+    return [
+      check(
+        'avisa',
+        'Sem a concha do alto o Nico avisa; buscando a do alto, o balde enche.',
+        // A reta até o balde, e depois a volta pelo alto até a concha rosa e de novo ao balde.
+        [
+          ...RETA,
+          press('ArrowUp', 400),
+          press('ArrowLeft', 1125),
+          right(1300),
+          press('ArrowDown', 400),
+        ],
+        val('cheio', true),
+        [
+          { afterStep: 0, expect: val('falta', false) },
+          { afterStep: 2, expect: val('falta', true) },
+        ],
+      ),
+      recomecar(RETA, val('falta', true), val('falta', false)),
+    ]
+  if (variacao === 'pega-conchas-rosa')
+    return [
+      check(
+        'so-a-rosa',
+        'Só com a concha rosa, o balde fica cheio.',
+        SO_A_ROSA,
+        val('cheio', true),
+        [
+          { afterStep: 1, expect: val('cheio', false) },
+          { afterStep: 3, expect: val('pegou1', false) },
+        ],
+      ),
+      recomecar(SO_A_ROSA, val('cheio', true), val('cheio', false)),
+    ]
+  return [
+    check(
+      'esvaziar',
+      'Com o balde cheio, a barra de espaço esvazia.',
+      [...tres, press('Space')],
+      val('cheio', false),
+      [{ afterStep: 5, expect: val('cheio', true) }],
     ),
     recomecar(tres, val('cheio', true), val('cheio', false)),
   ]
