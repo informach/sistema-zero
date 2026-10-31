@@ -6,6 +6,7 @@ import {
   executionObservationUnavailableReason,
   judgeExecutionObservation,
 } from '@sistemazero/core/learning'
+import { CENARIOS_DO_FAROL_PRO } from '../../../docs/desafios-do-jogo/farol/linguagens'
 import { CENARIOS_DAS_NUVENS } from '../../../docs/desafios-do-jogo/nuvens/pro-projetos'
 import { ManifestoDeDesafiosSchema } from '../../arquipelago-contracts/src/desafios'
 import { createCheckScope, proCheckSourceFiles } from '../../studio/src/check/serverCheck'
@@ -26,13 +27,14 @@ import { trustedPackageJson, trustedViteConfig } from '../src/contracts'
  * arquivos saem do `proCheckSourceFiles`, o mesmo que o Members manda. Julgamento do core.
  * Mesmo molde do `three-objectives-smoke.ts`.
  *
- *   bun packages/studio-runtime/tests/desafios-pro-smoke.ts [--cenario=<nome>]
+ *   bun packages/studio-runtime/tests/desafios-pro-smoke.ts [--ilha=nuvens|farol] [--cenario=<nome>]
  */
 const root = path.resolve(import.meta.dirname, '../../..')
 const cache =
   process.env.STUDIO_PYTHON_TEST_CACHE ?? path.join(root, '.cache/studio-python-runtime')
 const tag = process.env.STUDIO_PYTHON_TEST_IMAGE ?? 'sistemazero-studio-runtime:verify'
 const somente = process.argv.find((arg) => arg.startsWith('--cenario='))?.slice(10)
+const soIlha = process.argv.find((arg) => arg.startsWith('--ilha='))?.slice(7)
 async function docker(args: string[], stdin?: string) {
   const child = Bun.spawn(['docker', ...args], {
     windowsHide: true,
@@ -172,36 +174,42 @@ async function rodar(
   }
 }
 
-for (const publico of ['', '-adulto']) {
-  const manifesto = ManifestoDeDesafiosSchema.parse(
-    JSON.parse(
-      await readFile(
-        path.join(root, `docs/desafios-do-jogo/nuvens/nuvens-pro${publico}.manifesto.json`),
-        'utf8',
+// A29: o projeto autoral do Farol no Pro roda junto com o Jardim das Nuvens.
+const pacotes = [
+  { ilha: 'nuvens', arquivo: 'nuvens/nuvens-pro', erros: CENARIOS_DAS_NUVENS },
+  { ilha: 'farol', arquivo: 'farol/farol-pro', erros: CENARIOS_DO_FAROL_PRO },
+].filter((p) => !soIlha || p.ilha === soIlha)
+for (const { arquivo, erros } of pacotes)
+  for (const publico of ['', '-adulto']) {
+    const manifesto = ManifestoDeDesafiosSchema.parse(
+      JSON.parse(
+        await readFile(
+          path.join(root, `docs/desafios-do-jogo/${arquivo}${publico}.manifesto.json`),
+          'utf8',
+        ),
       ),
-    ),
-  )
-  for (const d of manifesto.desafios) {
-    const objetivos = d.conteudo.objetivos.map((o) => ({
-      id: o.id,
-      rule: o.rule as ExecutionObjectiveRequest['rule'],
-    }))
-    const cenarios = [
-      { nome: 'gabarito', projeto: d.conteudo.gabarito as Project, passa: true },
-      { nome: 'inicial', projeto: d.conteudo.projetoInicial as Project, passa: false },
-      ...(publico ? [] : CENARIOS_DAS_NUVENS()),
-    ] as { nome: string; projeto: Project; ids?: readonly string[]; passa: boolean }[]
-    for (const cenario of cenarios) {
-      if (somente && somente !== cenario.nome) continue
-      await rodar(
-        d.slug,
-        cenario.nome,
-        cenario.projeto,
-        objetivos.filter((o) => !cenario.ids || cenario.ids.includes(o.id)),
-        cenario.passa,
-      )
+    )
+    for (const d of manifesto.desafios) {
+      const objetivos = d.conteudo.objetivos.map((o) => ({
+        id: o.id,
+        rule: o.rule as ExecutionObjectiveRequest['rule'],
+      }))
+      const cenarios = [
+        { nome: 'gabarito', projeto: d.conteudo.gabarito as Project, passa: true },
+        { nome: 'inicial', projeto: d.conteudo.projetoInicial as Project, passa: false },
+        ...(publico ? [] : erros()),
+      ] as { nome: string; projeto: Project; ids?: readonly string[]; passa: boolean }[]
+      for (const cenario of cenarios) {
+        if (somente && somente !== cenario.nome) continue
+        await rodar(
+          d.slug,
+          cenario.nome,
+          cenario.projeto,
+          objetivos.filter((o) => !cenario.ids || cenario.ids.includes(o.id)),
+          cenario.passa,
+        )
+      }
     }
   }
-}
 console.log(JSON.stringify({ placar, evidencia }))
 assert.deepEqual(placar.falhas, [])

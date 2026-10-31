@@ -4,6 +4,7 @@ import {
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { gravarManifesto } from '../gravar-manifesto'
+import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivosDasNuvensPro } from './pro-objetivos'
 import { montarProjetoPro } from './pro-projetos'
 
@@ -37,40 +38,42 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 
 export function criarManifestoPro(publico: PublicoDoDesafio = 'kids') {
   const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      {
-        slug: `nuvens-jardim-em-grade-pro${publico === 'adulto' ? '-adulto' : ''}`,
-        publico,
-        ilha: 'nuvens',
-        // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
-        // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
-        tipo: 'quadro-das-cores',
-        quadro: 6,
-        ordem: 60,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[publico],
-          projetoInicial: montarProjetoPro('inicial'),
-          gabarito: montarProjetoPro('gabarito'),
-          objetivos: objetivosDasNuvensPro(publico),
-          desafioExtra: {
-            titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
-            texto:
-              publico === 'kids'
-                ? 'Complete remover: tire a planta da célula e devolva metade do custo dela, arredondado para baixo. Shift e clique usa essa regra na tela.'
-                : 'Implemente remover: libera a célula e devolve Math.floor(CUSTO / 2); célula vazia não muda. Shift e clique usa a regra.',
+  return comPedidosDosMoradores(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        {
+          slug: `nuvens-jardim-em-grade-pro${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'nuvens',
+          // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+          // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
+          tipo: 'quadro-das-cores',
+          quadro: 6,
+          ordem: 60,
+          publicar: true,
+          conteudo: {
+            versao: 1,
+            ...textos[publico],
+            projetoInicial: montarProjetoPro('inicial'),
+            gabarito: montarProjetoPro('gabarito'),
+            objetivos: objetivosDasNuvensPro(publico),
+            desafioExtra: {
+              titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
+              texto:
+                publico === 'kids'
+                  ? 'Complete remover: tire a planta da célula e devolva metade do custo dela, arredondado para baixo. Shift e clique usa essa regra na tela.'
+                  : 'Implemente remover: libera a célula e devolve Math.floor(CUSTO / 2); célula vazia não muda. Shift e clique usa a regra.',
+            },
+            recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
-          blocosManuais: { acrescentar: [], retirar: [] },
         },
-      },
-    ],
-  })
+      ],
+    }),
+  )
 }
 
 if (import.meta.main)

@@ -14,8 +14,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Reserva de água",
-        "enunciado": "Complete a seta esquerda para guardar uma água se agua for menor que 3. Complete Espaço para gastar uma se agua for maior que zero. A reserva não transborda e não fica negativa. O desenho já acompanha o que está guardado.",
+        "enunciado": "A Iriê guarda água de chuva numa reserva que leva até três. Ela quer guardar e gastar água sem a reserva transbordar e sem ficar abaixo de zero.",
         "dicas": [
+          "Complete a seta esquerda para guardar uma água se agua for menor que 3. Complete Espaço para gastar uma se agua for maior que zero. A reserva não transborda e não fica negativa. O desenho já acompanha o que está guardado.",
           "Conferir antes de somar ou gastar conserva os dois limites.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -2429,7 +2430,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "A reserva guarda até três de água e nunca fica negativa.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2662,8 +2663,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Luz na medida",
-        "enunciado": "As setas já diminuem e aumentam luz. Complete Espaço para somar um em crescimento apenas quando luz for maior que zero e menor que 4. Não cresça com luz zero nem com luz acima da faixa. São os limites desta brincadeira, não uma regra de cultivo real.",
+        "enunciado": "A flor do jardim da Iriê cresce com a luz certa, nem pouca nem demais. Ela quer que a flor só cresça quando a luz está entre 1 e 3.",
         "dicas": [
+          "As setas já diminuem e aumentam luz. Complete Espaço para somar um em crescimento apenas quando luz for maior que zero e menor que 4. Não cresça com luz zero nem com luz acima da faixa. São os limites desta brincadeira, não uma regra de cultivo real.",
           "Uma condição confere o mínimo e a outra confere o máximo.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -4806,7 +4808,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "A flor cresce só com a luz entre 1 e 3.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -5023,8 +5025,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Canteiros livres",
-        "enunciado": "As setas escolhem um dos três canteiros. Complete Espaço para mudar a marca plantado do escolhido de zero para 1 e somar um em plantas, somente quando ele estiver vazio. Plantar de novo no mesmo lugar não cria outra planta nem muda os outros canteiros.",
+        "enunciado": "A Iriê tem três canteiros no céu. Ela quer plantar só no canteiro que está vazio, sem plantar duas vezes no mesmo lugar nem mexer nos outros.",
         "dicas": [
+          "As setas escolhem um dos três canteiros. Complete Espaço para mudar a marca plantado do escolhido de zero para 1 e somar um em plantas, somente quando ele estiver vazio. Plantar de novo no mesmo lugar não cria outra planta nem muda os outros canteiros.",
           "Cada canteiro conserva a própria marca de ocupação.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -8301,7 +8304,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "Planta só no canteiro escolhido que está vazio.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8504,8 +8507,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Dois recursos",
-        "enunciado": "As setas já abastecem agua e adubo. Complete Espaço: quando os dois forem maiores que zero, gaste um de cada e some um em producao. Sem um dos recursos, espere sem consumir o outro. Cada toque simula um passo desta pequena produção.",
+        "enunciado": "O jardim da Iriê produz com água e adubo juntos. Ela quer que cada produção use um de cada, e que, faltando um deles, nada seja gasto.",
         "dicas": [
+          "As setas já abastecem agua e adubo. Complete Espaço: quando os dois forem maiores que zero, gaste um de cada e some um em producao. Sem um dos recursos, espere sem consumir o outro. Cada toque simula um passo desta pequena produção.",
           "Os dois recursos são usados juntos. Só comece quando ambos estiverem disponíveis.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -10998,7 +11002,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "Cada produção usa uma água e um adubo, e sem um deles nada é gasto.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11228,12 +11232,13 @@
       "tipo": "quadro-das-cores",
       "quadro": 5,
       "ordem": 50,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Colheita da lista",
-        "enunciado": "A lista flores já tem três plantas prontas. O Para cada está montado em Espaço. Dentro dele, some um em colhidas e destrua a flor da vez. O motor retira a flor do grupo. Apertar novamente não soma flores que já saíram da lista.",
+        "enunciado": "Três flores estão prontas para colher. A Iriê quer colher todas de uma vez com o espaço, e uma flor colhida não pode ser contada de novo.",
         "dicas": [
+          "A lista flores já tem três plantas prontas. O Para cada está montado em Espaço. Dentro dele, some um em colhidas e destrua a flor da vez. O motor retira a flor do grupo. Apertar novamente não soma flores que já saíram da lista.",
           "Percorra a lista e use a flor da vez nas duas ações.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -13068,7 +13073,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "O espaço colhe todas as flores da lista, sem contar uma colhida de novo.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -13213,8 +13218,10 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce",
-        "enunciado": "O jardim do céu da Iriê cresce com água, sol e tempo. Complete as teclas e a simulação. Espaço (A no toque) guarda três de água e a seta para cima guarda três de sol. A cada segundo, o tempo aumenta um; se houver água e sol, a flor cresce dez e gasta um de água e um de sol. Quando o crescimento chegar a cem, marque o jardim como florido uma vez só e troque o recado. Sem água ou sem sol, a flor espera, sem perder nada.",
+        "enunciado": "O jardim do céu da Iriê cresce com água, sol e tempo. Ela quer guardar água e sol, ver a flor crescer a cada segundo só quando há os dois, e saber quando o jardim floresceu, uma vez só.",
         "dicas": [
+          "O jardim do céu da Iriê cresce com água, sol e tempo. Complete as teclas e a simulação. Espaço (A no toque) guarda três de água e a seta para cima guarda três de sol. A cada segundo, o tempo aumenta um; se houver água e sol, a flor cresce dez e gasta um de água e um de sol.",
+          "Quando o crescimento chegar a cem, marque o jardim como florido uma vez só e troque o recado. Sem água ou sem sol, a flor espera, sem perder nada.",
           "O cenário, a flor e o placar estão prontos. A flor já troca de desenho conforme o crescimento.",
           "Use as variáveis agua, sol, tempo e crescimento. Some e tire um com o bloco de mudar variável.",
           "Dentro de a cada 1 segundo, confira as duas condições, um se dentro do outro: agua maior que zero e sol maior que zero."
@@ -16453,8 +16460,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: rega forte",
-        "enunciado": "O jardim já funciona. Mude apenas a rega na tecla Espaço: ela passa a guardar cinco de água de uma vez, em vez de três. O sol, o tempo e o crescimento continuam iguais. Regue e veja quanta água sobra depois que o sol acaba.",
+        "enunciado": "A Iriê quer regar menos vezes: cada rega passa a guardar cinco de água, e o resto do jardim continua igual.",
         "dicas": [
+          "O jardim já funciona. Mude apenas a rega na tecla Espaço: ela passa a guardar cinco de água de uma vez, em vez de três. O sol, o tempo e o crescimento continuam iguais. Regue e veja quanta água sobra depois que o sol acaba.",
           "Procure o evento da tecla Espaço.",
           "Troque só o número somado em agua.",
           "Com três de sol, a flor gasta três de água: dos cinco, sobram dois."
@@ -20005,8 +20013,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: sol forte",
-        "enunciado": "O jardim já funciona. Mude apenas o crescimento: quando o sol estiver forte, com seis ou mais, a flor cresce vinte em vez de dez. Com menos sol, ela continua crescendo dez. A água e o sol gastos continuam os mesmos.",
+        "enunciado": "Nos dias de muito sol, a Iriê quer que a flor cresça mais depressa: com sol forte, ela cresce o dobro.",
         "dicas": [
+          "O jardim já funciona. Mude apenas o crescimento: quando o sol estiver forte, com seis ou mais, a flor cresce vinte em vez de dez. Com menos sol, ela continua crescendo dez. A água e o sol gastos continuam os mesmos.",
           "O crescimento fica dentro de a cada 1 segundo.",
           "Use um se e senão: se sol maior ou igual a seis, some vinte; senão, some dez.",
           "Confira o sol antes de tirar um dele."
@@ -23680,8 +23689,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: chuva",
-        "enunciado": "O jardim já funciona. Faça chover: a cada segundo, antes de a flor crescer, cai um de água no jardim. Com sol, a flor cresce mesmo sem regar. A rega pela tecla Espaço continua igual.",
+        "enunciado": "A Iriê quer chuva no jardim do céu: um pouco de água cai sozinho a cada segundo, e com sol a flor cresce mesmo sem regar.",
         "dicas": [
+          "O jardim já funciona. Faça chover: a cada segundo, antes de a flor crescer, cai um de água no jardim. Com sol, a flor cresce mesmo sem regar. A rega pela tecla Espaço continua igual.",
           "A chuva entra em a cada 1 segundo, antes da condição da água e do sol.",
           "Some um em agua a cada passo.",
           "Sem regar, observe o crescimento parar quando o sol acaba."

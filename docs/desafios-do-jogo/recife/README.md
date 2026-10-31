@@ -137,25 +137,27 @@ Complemento L03: [conferência dos cinco quadros](../../qa/2026-10-30-quadros-re
 
 ## C02: Mira de bolhas em Python (30/10/2026)
 
-Aplicação na linguagem do Explorador: Python com Pygame Zero, no tema da missão "Resgate dos
-Vagalumes". Arquivos: [Kids](recife-python.manifesto.json) e
+Aplicação na linguagem do Explorador: Python com Pygame Zero. Desde a revisão de 31/10/2026 (A45)
+o tema é da ilha, e não da missão do posto: a Maré solta bolhas com mudas de coral na lagoa, cada
+clique na bolha planta a muda (`plantadas`) e a bolha seguinte sobe de um dos três corais
+(`sortear_coral`). Arquivos: [Kids](recife-python.manifesto.json) e
 [adulto](recife-python-adulto.manifesto.json), um desafio do dia cada (`publicar: false`, ordem
 70, 10 e 5 moedas, sem cor). Fontes: `python-projetos.ts` (o `main.py`), `python-objetivos.ts` e
 `gerar-manifesto-python.ts`; o ambiente fica em `../ambiente-python.ts`. Plano:
 [C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
 
-Repertório do posto, sem listas e sem classes: a bolha é um `Rect` do Pygame Zero, as três tocas
+Repertório do posto, sem listas e sem classes: a bolha é um `Rect` do Pygame Zero, os três corais
 saem de um `if/elif` com `random.randint(1, 3)` e tudo é desenhado com `screen.draw`, sem
-imagens. O mar, as tocas, a bolha, o placar e o estado inicial estão prontos. A pessoa completa
-`on_mouse_down`, `sortear_toca` e `update`; `on_key_down` (R) é o extra.
+imagens. O mar, os corais, a bolha, o placar e o estado inicial estão prontos. A pessoa completa
+`on_mouse_down`, `sortear_coral` e `update`; `on_key_down` (R) é o extra.
 
 | Objetivo | Como confere | Erro causal recusado |
 | --- | --- | --- |
-| Clique na bolha soma, clique na água não | clique na água, clique na bolha, `resgatados` igual a 1 | conta qualquer clique |
-| A bolha vai para uma toca | clique na bolha, `bolha.y` no máximo 120 | a bolha não muda de lugar |
+| Clique na bolha soma, clique na água não | clique na água, clique na bolha, `plantadas` igual a 1 | conta qualquer clique |
+| A bolha vai para um coral | clique na bolha, `bolha.y` no máximo 120 | a bolha não muda de lugar |
 | O relógio conta | 1,5 s e `tempo` diminui | relógio parado |
-| O tempo acaba e os cliques param | acerto, 9,5 s (a rodada tem 7) e cliques nas três tocas, `resgatados` igual a 1 | rodada sem fim |
-| Extra: R recomeça | acerto, R e clique na areia, `resgatados` igual a 1 | R sem voltar a bolha |
+| O tempo acaba e os cliques param | acerto, 9,5 s (a rodada tem 7) e cliques nos três corais, `plantadas` igual a 1 | rodada sem fim |
+| Extra: R recomeça | acerto, R e clique na areia, `plantadas` igual a 1 | R sem voltar a bolha |
 
 Executor real (`packages/studio-runtime/tests/desafios-python-smoke.ts`): a imagem de produção do
 studio-runtime roda `python-mission.mjs` sem rede, com a distribuição construída do vendor

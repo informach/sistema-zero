@@ -43,3 +43,35 @@ bun test docs/desafios-do-jogo/farol
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 cd packages/studio-runtime; bun test tests/farol-autoral-browser.test.ts --timeout 900000
 ```
+
+## Em cada linguagem conquistada (A29, revisão de 31/10/2026)
+
+Na Lenda, o projeto autoral vem em quatro variantes, uma por linguagem, e a pessoa escolhe entre
+as que já abriram. Todas são quadros do Farol, nenhuma pinta e todas vão para o fliperama:
+
+| Quadro | Linguagem | Arquivo | Abre com o curso-base de |
+| --- | --- | --- | --- |
+| 1 | Blocos | `farol.manifesto.json` | (nenhum, só os blocos) |
+| 2 | Python (Pygame Zero) | `farol-python.manifesto.json` | Explorador |
+| 3 | JavaScript na Ponte | `farol-ponte.manifesto.json` | Arquiteto |
+| 4 | Pro (TypeScript e Vite) | `farol-pro.manifesto.json` | Gênio |
+
+O curso-base vem de `postoDoCursoBase` (contrato): nas outras ilhas é o posto da ilha; no Farol, o
+posto onde a linguagem começa. O painel do Farol mostra as quatro e marca a da linguagem mais nova
+já aberta (`quadroSugeridoNoFarol`), enquanto nenhuma foi feita. O enunciado é o pedido da Íris.
+
+A Ponte é o mesmo projeto dos blocos, lido do JavaScript, com os mesmos critérios causais. No
+Python e no Pro, a cena vem pronta (o guia à esquerda, andando com as setas, e a estrela no caminho
+dele) e o jogo é da pessoa; os critérios rodam o jogo de verdade: passar pela estrela soma um ponto
+uma vez só, R leva o guia ao começo e, depois do R, a estrela pode ser pega de novo com os pontos
+do zero. O andar vem pronto porque é ele que separa recomeçar de nunca ter saído do lugar. O
+executor real recusa contar sem lembrar, não recomeçar e recomeçar sem esquecer a estrela.
+
+```powershell
+bun docs/desafios-do-jogo/farol/gerar-manifesto-linguagens.ts
+bun test docs/desafios-do-jogo/farol
+bun packages/studio-runtime/tests/desafios-python-smoke.ts --ilha=farol
+bun packages/studio-runtime/tests/desafios-pro-smoke.ts --ilha=farol
+```
+
+Importar o `farol.manifesto.json` (quadro 1) e depois os três das linguagens.

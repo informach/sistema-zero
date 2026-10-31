@@ -5,6 +5,7 @@ import {
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import type { JSStatement } from '../../../packages/studio/src/ir/schema'
+import { PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
 import {
   at,
   baseDoQuadro,
@@ -219,9 +220,14 @@ export function objetivosDoQuadroNuvens(
             : 'colhidas'
   const final = quadro === 5 ? 3 : 1
   const checks = [
-    check('acao', 'Complete a ação indicada para esta rodada.', steps, path, final, [
-      at(0, path, 0),
-    ]),
+    check(
+      'acao',
+      PEDIDOS_DOS_MORADORES[QUADROS_INICIAIS_DAS_NUVENS[quadro - 1]!.slug]!.objetivo,
+      steps,
+      path,
+      final,
+      [at(0, path, 0)],
+    ),
   ]
   if (quadro === 1)
     checks.push(
@@ -300,12 +306,16 @@ export function desafiosIniciaisDasNuvens(publico: PublicoDoDesafio) {
       ordem: quadro * 10,
       // C01b: os quadros sem lista têm todas as fontes na trilha; a Colheita da lista (5) espera o
       // ensino de listas e laço, que nas Nuvens é em JavaScript (C02).
-      publicar: quadro <= 4,
+      // A43 (decisão da dona, 31/10/2026): publica como está; os cursos do Gênio chegam antes do
+      // lançamento. A barreira C01a continua valendo na importação.
+      publicar: true,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
-        enunciado: meta.texto,
+        // A44: o pedido do morador; o texto técnico de antes vira a primeira dica.
+        enunciado: PEDIDOS_DOS_MORADORES[meta.slug]!.pedido,
         dicas: [
+          meta.texto,
           meta.dica,
           'Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas.',
         ],

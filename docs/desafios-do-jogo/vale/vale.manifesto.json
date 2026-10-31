@@ -10,12 +10,13 @@
       "tipo": "quadro-das-cores",
       "quadro": 1,
       "ordem": 10,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Contagem da lista",
-        "enunciado": "A lista ninhos e o Para cada já estão prontos em Espaço. Antes dele, zere contados. Dentro dele, some um para cada ninho. A contagem precisa acompanhar a retirada e a volta do terceiro ninho. Contar outra vez não acumula o resultado anterior.",
+        "enunciado": "A Jade precisa saber quantos ninhos há no Vale agora, mesmo quando um ninho sai ou volta para a lista. Ela quer recontar do zero a cada vez que apertar o espaço.",
         "dicas": [
+          "A lista ninhos e o Para cada já estão prontos em Espaço. Antes dele, zere contados. Dentro dele, some um para cada ninho. A contagem precisa acompanhar a retirada e a volta do terceiro ninho. Contar outra vez não acumula o resultado anterior.",
           "Zere antes do Para cada, não dentro dele.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -2152,7 +2153,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "O espaço reconta do zero os ninhos que estão na lista.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2329,12 +2330,13 @@
       "tipo": "quadro-das-cores",
       "quadro": 2,
       "ordem": 20,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Cinza retirada",
-        "enunciado": "As três manchas estão na lista manchas. O Para cada já está pronto em Espaço. Dentro dele, deixe a opacidade da mancha da vez em zero. Os ninhos continuam visíveis. A lista pronta permite cuidar das três sem copiar a mesma ação.",
+        "enunciado": "A cinza do vulcão sujou os três ninhos. A Jade quer limpar todos de uma vez com o espaço, sem precisar repetir a mesma ação para cada um.",
         "dicas": [
+          "As três manchas estão na lista manchas. O Para cada já está pronto em Espaço. Dentro dele, deixe a opacidade da mancha da vez em zero. Os ninhos continuam visíveis. A lista pronta permite cuidar das três sem copiar a mesma ação.",
           "Dentro do Para cada, use a mancha da vez, não um nome fixo.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -4574,7 +4576,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "O espaço tira a cinza de todos os ninhos da lista.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4763,8 +4765,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Folhas bem usadas",
-        "enunciado": "As setas escolhem o ninho 1, 2 ou 3. Complete Espaço: se ainda houver folhas, confira a marca do ninho escolhido. Quando ela for zero, marque 1, desconte uma folha e some um em cobertos. Cobrir o mesmo ninho de novo não gasta outra folha.",
+        "enunciado": "A Jade tem poucas folhas para cobrir os ninhos. Ela quer escolher um ninho e cobri-lo com uma folha, sem gastar folha num ninho que já está coberto.",
         "dicas": [
+          "As setas escolhem o ninho 1, 2 ou 3. Complete Espaço: se ainda houver folhas, confira a marca do ninho escolhido. Quando ela for zero, marque 1, desconte uma folha e some um em cobertos. Cobrir o mesmo ninho de novo não gasta outra folha.",
           "Escolha, marca e estoque precisam concordar antes de consumir a folha.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -8381,7 +8384,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "Cada ninho coberto gasta uma folha, e só uma vez.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8600,8 +8603,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Uma onda por vez",
-        "enunciado": "A animação da onda já está pronta. Complete Espaço: somente quando emOnda for zero, marque emOnda como 1 e some um em ondas. O laço libera outra onda ao terminar. Vários toques durante a passagem não devem criar outras ondas.",
+        "enunciado": "A Jade quer treinar a proteção dos ninhos com uma onda de cinza de cada vez. Enquanto uma onda passa, apertar o espaço de novo não começa outra.",
         "dicas": [
+          "A animação da onda já está pronta. Complete Espaço: somente quando emOnda for zero, marque emOnda como 1 e some um em ondas. O laço libera outra onda ao terminar. Vários toques durante a passagem não devem criar outras ondas.",
           "A marca emOnda protege a passagem que ainda está acontecendo.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -11160,7 +11164,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "Só começa uma onda nova quando a anterior terminou.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11325,8 +11329,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Rodada conferida",
-        "enunciado": "A seta esquerda já confere os ninhos e diminui restantes, sem passar de zero. Complete Espaço para fechar apenas quando restantes for zero e fechada também for zero. Marque fechada como 1 e some um em rodadas. Fechar outra vez não conta uma rodada nova.",
+        "enunciado": "A Jade confere os três ninhos, um de cada vez. Ela quer fechar a rodada só depois de conferir todos, e contar cada rodada uma vez.",
         "dicas": [
+          "A seta esquerda já confere os ninhos e diminui restantes, sem passar de zero. Complete Espaço para fechar apenas quando restantes for zero e fechada também for zero. Marque fechada como 1 e some um em rodadas. Fechar outra vez não conta uma rodada nova.",
           "Terminou de conferir e ainda não fechou são duas condições diferentes.",
           "Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas."
         ],
@@ -13707,7 +13712,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "A rodada fecha só com os três ninhos conferidos, e conta uma vez.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -13925,12 +13930,14 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 60,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos",
-        "enunciado": "A cinza do vulcão chega em ondas. Complete três regras: tocar num ninho põe uma cobertura de folhas; Próxima onda começa uma passagem da cinza; quando ela passa, percorra a lista de ninhos e conte os protegidos e os que receberam cinza. Cada proteção vale um ponto e dura uma onda. Cada ninho conta uma vez por onda. Durante a passagem, não mude coberturas nem comece outra onda. A rodada tem três ondas. Recomeçar já está pronto.",
+        "enunciado": "A cinza do vulcão chega em ondas, e a Jade precisa proteger os ninhos. Ela quer cobrir ninhos com folhas, chamar uma onda de cada vez e, quando a onda passar, contar os ninhos protegidos e os que receberam cinza, numa rodada de três ondas.",
         "dicas": [
+          "A cinza do vulcão chega em ondas. Complete três regras: tocar num ninho põe uma cobertura de folhas; Próxima onda começa uma passagem da cinza; quando ela passa, percorra a lista de ninhos e conte os protegidos e os que receberam cinza. Cada proteção vale um ponto e dura uma onda.",
+          "Cada ninho conta uma vez por onda. Durante a passagem, não mude coberturas nem comece outra onda. A rodada tem três ondas. Recomeçar já está pronto.",
           "Cenário, lista de ninhos, desenho e reinício já estão montados. Complete os espaços dos eventos e do laço.",
           "Guarde protegido no ninho tocado. Use emOnda para impedir novos cliques durante a passagem.",
           "Em Para cada ninho no grupo ninhos, confira protegido. Some nas contagens certas e tire a marca para a próxima onda."
@@ -20495,12 +20502,13 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos: mais uma onda",
-        "enunciado": "O jogo já funciona com três ondas. Mude somente totalDeOndas para quatro. A quarta onda também precisa passar pela lista inteira. Depois dela, Próxima onda não começa outra passagem.",
+        "enunciado": "A Jade quer uma rodada mais longa, com quatro ondas de cinza em vez de três, e nenhuma onda depois da última.",
         "dicas": [
+          "O jogo já funciona com três ondas. Mude somente totalDeOndas para quatro. A quarta onda também precisa passar pela lista inteira. Depois dela, Próxima onda não começa outra passagem.",
           "Procure totalDeOndas em Ao iniciar.",
           "As regras do botão e do fim da rodada já consultam essa variável.",
           "Teste quatro passagens e tente começar uma quinta."
@@ -27724,12 +27732,13 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos: dois pontos",
-        "enunciado": "O jogo já funciona. Mude apenas os pontos por proteção para dois. Continue contando um ninho protegido por vez. Ninhos sem cobertura não dão pontos.",
+        "enunciado": "A Jade quer premiar quem protege bem: cada ninho protegido passa a valer dois pontos.",
         "dicas": [
+          "O jogo já funciona. Mude apenas os pontos por proteção para dois. Continue contando um ninho protegido por vez. Ninhos sem cobertura não dão pontos.",
           "Procure a soma dos pontos dentro da passagem pela lista.",
           "Mude o valor dos pontos, sem mudar as contagens de ninhos.",
           "Cubra um ninho e deixe os outros sem cobertura para comparar."
@@ -34940,12 +34949,13 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos: mais um ninho",
-        "enunciado": "O jogo já funciona e ninho4 já aparece. Ele ainda está fora da lista ninhos. Inclua esse ninho no grupo ao iniciar. As mesmas regras da lista devem cuidar dos quatro, sem copiar o laço.",
+        "enunciado": "Um quarto ninho apareceu no Vale, mas a contagem não olha para ele. A Jade quer que as mesmas regras cuidem dos quatro ninhos.",
         "dicas": [
+          "O jogo já funciona e ninho4 já aparece. Ele ainda está fora da lista ninhos. Inclua esse ninho no grupo ao iniciar. As mesmas regras da lista devem cuidar dos quatro, sem copiar o laço.",
           "Procure os blocos que acrescentam ninho1, ninho2 e ninho3 ao grupo ninhos.",
           "Acrescente ninho4 à mesma lista. Ele já tem imagem e marca de proteção.",
           "Teste a passagem da cinza e o toque no novo ninho."

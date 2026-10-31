@@ -50,7 +50,7 @@ export function SeasonalAvatarChoices({
             className="min-h-11 rounded-xl border border-border px-3 text-sm disabled:opacity-50"
           >
             {AVATAR_PART_INFO[p.id]?.labelPt ?? p.id}
-            {p.owned ? '' : ` · ${p.price} moedas`}
+            {p.owned ? '' : p.tier === 'festa' ? ' · vem da festa' : ` · ${p.price} moedas`}
           </button>
         ))}
       </div>

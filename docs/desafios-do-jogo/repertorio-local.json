@@ -3572,7 +3572,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "Cada toque no espaço vira o sentido da corrente."
         },
         {
           "id": "alternar",
@@ -3619,7 +3619,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar."
         },
         {
           "id": "capacidade",
@@ -3668,7 +3668,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "Cada coral escolhido é cuidado e contado uma vez só."
         },
         {
           "id": "uma-vez",
@@ -3714,7 +3714,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "Só sai uma bolha nova quando a anterior já voltou."
         },
         {
           "id": "esperar",
@@ -3762,7 +3762,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "O baú abre só com a chave, uma vez, e a chave fica usada."
         },
         {
           "id": "chave",
@@ -4032,7 +4032,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "Cada toque no espaço vira o sentido da corrente."
         },
         {
           "id": "alternar",
@@ -4079,7 +4079,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar."
         },
         {
           "id": "capacidade",
@@ -4128,7 +4128,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "Cada coral escolhido é cuidado e contado uma vez só."
         },
         {
           "id": "uma-vez",
@@ -4174,7 +4174,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "Só sai uma bolha nova quando a anterior já voltou."
         },
         {
           "id": "esperar",
@@ -4222,7 +4222,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete as ações indicadas para esta rodada."
+          "descricao": "O baú abre só com a chave, uma vez, e a chave fica usada."
         },
         {
           "id": "chave",
@@ -4492,7 +4492,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço faz o pinguim pular só quando ele está no chão, e conta cada pulo."
         },
         {
           "id": "apoio",
@@ -4543,7 +4543,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço faz o pinguim parar e ficar no lugar."
         },
         {
           "id": "parada",
@@ -4591,7 +4591,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Encostar no floco recolhe e conta o floco uma vez só, e ele some."
         },
         {
           "id": "uma-vez",
@@ -4639,7 +4639,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Cada carga entra inteira só se couber no peso 4 da mochila."
         },
         {
           "id": "capacidade",
@@ -4688,7 +4688,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O pinguim atravessa só com a neve firme, e uma vez só."
         },
         {
           "id": "espera",
@@ -4749,7 +4749,11 @@
         },
         {
           "id": "bandeira",
-          "descricao": "Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou."
+          "descricao": "Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo."
+        },
+        {
+          "id": "fase-2",
+          "descricao": "Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo."
         }
       ],
       "tiposJaPresentes": [
@@ -4763,6 +4767,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -4958,7 +4963,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço faz o pinguim pular só quando ele está no chão, e conta cada pulo."
         },
         {
           "id": "apoio",
@@ -5009,7 +5014,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço faz o pinguim parar e ficar no lugar."
         },
         {
           "id": "parada",
@@ -5057,7 +5062,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Encostar no floco recolhe e conta o floco uma vez só, e ele some."
         },
         {
           "id": "uma-vez",
@@ -5105,7 +5110,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Cada carga entra inteira só se couber no peso 4 da mochila."
         },
         {
           "id": "capacidade",
@@ -5154,7 +5159,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O pinguim atravessa só com a neve firme, e uma vez só."
         },
         {
           "id": "espera",
@@ -5215,7 +5220,11 @@
         },
         {
           "id": "bandeira",
-          "descricao": "Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou."
+          "descricao": "Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo."
+        },
+        {
+          "id": "fase-2",
+          "descricao": "Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo."
         }
       ],
       "tiposJaPresentes": [
@@ -5229,6 +5238,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -5420,11 +5430,11 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço reconta do zero os ninhos que estão na lista."
         },
         {
           "id": "lista",
@@ -5468,11 +5478,11 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço tira a cinza de todos os ninhos da lista."
         },
         {
           "id": "todas",
@@ -5517,7 +5527,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Cada ninho coberto gasta uma folha, e só uma vez."
         },
         {
           "id": "estoque",
@@ -5564,7 +5574,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Só começa uma onda nova quando a anterior terminou."
         },
         {
           "id": "espera",
@@ -5611,7 +5621,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "A rodada fecha só com os três ninhos conferidos, e conta uma vez."
         },
         {
           "id": "fechamento",
@@ -5653,7 +5663,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "cobrir",
@@ -5728,7 +5738,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quatro-ondas",
@@ -5794,7 +5804,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "dois-pontos",
@@ -5860,7 +5870,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quarto-ninho",
@@ -5926,11 +5936,11 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço reconta do zero os ninhos que estão na lista."
         },
         {
           "id": "lista",
@@ -5974,11 +5984,11 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço tira a cinza de todos os ninhos da lista."
         },
         {
           "id": "todas",
@@ -6023,7 +6033,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Cada ninho coberto gasta uma folha, e só uma vez."
         },
         {
           "id": "estoque",
@@ -6070,7 +6080,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Só começa uma onda nova quando a anterior terminou."
         },
         {
           "id": "espera",
@@ -6117,7 +6127,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "A rodada fecha só com os três ninhos conferidos, e conta uma vez."
         },
         {
           "id": "fechamento",
@@ -6159,7 +6169,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "cobrir",
@@ -6234,7 +6244,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quatro-ondas",
@@ -6300,7 +6310,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "dois-pontos",
@@ -6366,7 +6376,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quarto-ninho",
@@ -6436,7 +6446,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "A reserva guarda até três de água e nunca fica negativa."
         },
         {
           "id": "limites",
@@ -6482,7 +6492,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "A flor cresce só com a luz entre 1 e 3."
         },
         {
           "id": "faixa",
@@ -6529,7 +6539,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Planta só no canteiro escolhido que está vazio."
         },
         {
           "id": "ocupacao",
@@ -6576,7 +6586,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Cada produção usa uma água e um adubo, e sem um deles nada é gasto."
         },
         {
           "id": "recursos",
@@ -6619,11 +6629,11 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço colhe todas as flores da lista, sem contar uma colhida de novo."
         },
         {
           "id": "retirada",
@@ -6871,7 +6881,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "A reserva guarda até três de água e nunca fica negativa."
         },
         {
           "id": "limites",
@@ -6917,7 +6927,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "A flor cresce só com a luz entre 1 e 3."
         },
         {
           "id": "faixa",
@@ -6964,7 +6974,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Planta só no canteiro escolhido que está vazio."
         },
         {
           "id": "ocupacao",
@@ -7011,7 +7021,7 @@
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "Cada produção usa uma água e um adubo, e sem um deles nada é gasto."
         },
         {
           "id": "recursos",
@@ -7054,11 +7064,11 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
-          "descricao": "Complete a ação indicada para esta rodada."
+          "descricao": "O espaço colhe todas as flores da lista, sem contar uma colhida de novo."
         },
         {
           "id": "retirada",

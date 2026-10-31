@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
 import { desafiosIniciaisDoPico } from './quadros-iniciais'
@@ -11,11 +12,12 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   plataforma: {
     titulo: 'Fase de plataforma',
     enunciado:
-      'O Pico Gelado tem uma fase de neve esperando o pinguim. A gravidade e o pouso no gelo já estão prontos. Complete as regras do jogo: as setas levam o pinguim para os lados sem sair da tela, e Espaço (A no toque) faz ele subir, só quando está no gelo. Cair na água do buraco devolve o pinguim ao começo. Ao encostar na bandeira, marque que a fase terminou uma vez só. Enter (+ no toque) já devolve tudo ao começo.',
+      'O Floco quer um jogo de neve com mais de uma fase para o pinguim treinar a subida do Pico. A gravidade e o pouso no gelo já estão prontos. Complete as regras do jogo: as setas levam o pinguim para os lados sem sair da tela, e Espaço (A no toque) faz ele subir, só quando está no gelo. Cair na água do buraco devolve o pinguim ao começo. O jogo tem duas fases, guardadas na variável fase. Ao encostar na bandeira da fase 1, passe para a fase 2: o pinguim volta ao começo e a bandeira sobe para o gelo do alto. Ao encostar na bandeira da fase 2, marque que o jogo terminou, uma vez só. Enter (+ no toque) já devolve tudo à fase 1.',
     dicas: [
       'Cenário, imagens, gravidade, pouso no gelo e Enter para recomeçar estão prontos. Complete os eventos e o laço do jogo.',
       'No laço, entre a gravidade e o aplicar velocidade, mova com as setas; depois de aplicar, mantenha o pinguim na tela. O pouso em cada gelo já vem pronto.',
       'O laço já guarda noChao: começa cada volta com falso e muda para verdadeiro ao pousar. Espaço só pula com noChao verdadeiro.',
+      'Na bandeira, um Se com Senão separa a fase 1 (trocar de fase) da fase 2 (terminar o jogo).',
     ],
   },
   'pulo-alto': {
@@ -50,49 +52,51 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   },
 }
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      ...desafiosIniciaisDoPico(publico),
-      ...VARIACOES.map((variacao, index) => {
-        const principal = variacao === 'plataforma'
-        const tipo = 'desafio-do-dia' as const
-        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-        return {
-          slug: `pico-fase-de-plataforma${principal ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
-          publico,
-          ilha: 'pico',
-          tipo,
-          quadro: null,
-          ordem: 60 + index,
-          // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
-          // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
-          publicar: true,
-          conteudo: {
-            versao: 1,
-            ...textos[variacao],
-            projetoInicial: montarProjeto(variacao, false),
-            gabarito: montarProjeto(variacao, true),
-            objetivos: objetivos[variacao],
-            desafioExtra: {
-              titulo: 'Mais um desafio',
-              texto:
-                'Faça a seta para cima também pular, como Espaço: só quando o pinguim está no gelo.',
+  return comPedidosDosMoradores(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        ...desafiosIniciaisDoPico(publico),
+        ...VARIACOES.map((variacao, index) => {
+          const principal = variacao === 'plataforma'
+          const tipo = 'desafio-do-dia' as const
+          const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+          return {
+            slug: `pico-fase-de-plataforma${principal ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+            publico,
+            ilha: 'pico',
+            tipo,
+            quadro: null,
+            ordem: 60 + index,
+            // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
+            // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
+            publicar: true,
+            conteudo: {
+              versao: 1,
+              ...textos[variacao],
+              projetoInicial: montarProjeto(variacao, false),
+              gabarito: montarProjeto(variacao, true),
+              objetivos: objetivos[variacao],
+              desafioExtra: {
+                titulo: 'Mais um desafio',
+                texto:
+                  'Faça a seta para cima também pular, como Espaço: só quando o pinguim está no gelo.',
+              },
+              recompensa: {
+                cor: false,
+                atracao: 'fase-de-plataforma',
+                moedas: moedas.principal,
+                moedasExtra: moedas.extra,
+              },
+              blocosManuais: { acrescentar: [], retirar: [] },
             },
-            recompensa: {
-              cor: false,
-              atracao: 'fase-de-plataforma',
-              moedas: moedas.principal,
-              moedasExtra: moedas.extra,
-            },
-            blocosManuais: { acrescentar: [], retirar: [] },
-          },
-        }
-      }),
-    ],
-  })
+          }
+        }),
+      ],
+    }),
+  )
 }
 if (import.meta.main) {
   for (const publico of ['kids', 'adulto'] as const)

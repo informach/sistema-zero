@@ -1,5 +1,9 @@
 import type { PermissoesDaFamilia } from '@sistemazero/arquipelago-contracts'
-import type { RepositorioDaFamilia, TempoNaJanela } from '../../src/domain/familia.port'
+import type {
+  AparenciaAplicada,
+  RepositorioDaFamilia,
+  TempoNaJanela,
+} from '../../src/domain/familia.port'
 import type { RepositorioEmMemoria } from './memoria'
 
 /** A família em memória, lendo o mesmo repositório do jogo em memória (salvamento, tempo, conta). */
@@ -39,6 +43,15 @@ export class FamiliaEmMemoria implements RepositorioDaFamilia {
       if (dentro.length > 0) fins.set(id, dentro)
     }
     return fins
+  }
+
+  async aparenciasNaJanela(perfis: readonly string[], de: Date, ate: Date) {
+    const mapa = new Map<string, AparenciaAplicada[]>()
+    for (const { jogadorId, ...a } of this.jogo.aparencias) {
+      if (!perfis.includes(jogadorId) || a.registradoEm < de || a.registradoEm > ate) continue
+      mapa.set(jogadorId, [...(mapa.get(jogadorId) ?? []), a])
+    }
+    return mapa
   }
 
   async salvamentos(perfis: readonly string[]) {

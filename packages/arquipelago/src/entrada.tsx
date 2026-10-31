@@ -1,6 +1,7 @@
 import {
   type MontarArquipelago,
   VERSAO_CONTRATO_PLATAFORMA,
+  versaoCompativel,
 } from '@sistemazero/arquipelago-contracts'
 import { createRoot } from 'react-dom/client'
 import { ESTILOS } from './interface/estilos'
@@ -14,7 +15,8 @@ import { Jogo } from './jogo'
 export const versaoContrato = VERSAO_CONTRATO_PLATAFORMA
 
 export const montarArquipelago: MontarArquipelago = (elemento, plataforma) => {
-  if (plataforma.versaoContrato !== VERSAO_CONTRATO_PLATAFORMA) {
+  // A atual e a anterior valem (A35): o jogo e a plataforma podem subir em dias diferentes.
+  if (!versaoCompativel(plataforma.versaoContrato)) {
     throw new Error(
       `Contrato da plataforma ${plataforma.versaoContrato} não é o deste jogo (${VERSAO_CONTRATO_PLATAFORMA})`,
     )

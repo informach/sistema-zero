@@ -80,7 +80,12 @@ export const salvamentos = arquipelagoSchema.table(
   ],
 )
 
-/** Mudança confirmada por revisão. Não contém identidade da criação nem prova de autoria. */
+/**
+ * Mudança confirmada por revisão. Não contém identidade da criação nem prova de autoria. Desde a
+ * 0024 (A33, 31/10/2026) guarda a MARCA da aparência aplicada (`criacao`, `marcaDaCriacao`: um
+ * resumo do id com o jogador, nunca o id), para o cartão dos pais contar as criações distintas da
+ * semana; as linhas de antes ficam sem ela.
+ */
 export const mudancasDeAparencia = arquipelagoSchema.table(
   'mudancas_de_aparencia',
   {
@@ -91,6 +96,7 @@ export const mudancasDeAparencia = arquipelagoSchema.table(
     objeto: varchar({ length: 40 }).notNull(),
     publico: varchar({ length: 8 }).notNull(),
     origem: varchar({ length: 10 }).notNull(),
+    criacao: varchar({ length: 80 }),
     registradoEm: timestamp({ withTimezone: true }).notNull(),
   },
   (t) => [
@@ -102,6 +108,7 @@ export const mudancasDeAparencia = arquipelagoSchema.table(
     ),
     check('mudancas_aparencia_revisao_check', sql`${t.revisao} >= 2`),
     index('mudancas_aparencia_periodo_idx').on(t.publico, t.registradoEm),
+    index('mudancas_aparencia_jogador_idx').on(t.jogadorId, t.registradoEm),
   ],
 )
 
@@ -302,7 +309,7 @@ export const perfisDaConta = arquipelagoSchema.table(
 
 /**
  * As permissões de visita da família (ECA Digital, art. 21; sem linha = o padrão restrito do
- * contrato, `PERMISSOES_PADRAO`). As visitas são da Fase 3: hoje só se grava e se lê.
+ * contrato, `PERMISSOES_PADRAO`). Conferidas nas visitas de irmãos e de amigos e nas fotos.
  */
 export const permissoesDaFamilia = arquipelagoSchema.table('permissoes_da_familia', {
   contaId: uuid().primaryKey(),

@@ -72,6 +72,15 @@ const proCsp = csp
     "frame-src 'self' blob: https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com",
   )
 
+// Arquipélago Vagalume (A27, revisão de 31/10/2026): a regra própria da página do jogo, como no
+// Kids. O Estúdio completo abre por cima do jogo e pode abrir o projeto Pro com o terminal
+// (`'unsafe-eval'`, `blob:` e os quadros do WebContainer); os vídeos das aulas ficam de fora,
+// porque a página não tem aula e a COEP `credentialless` já os impediria.
+const arquipelagoCsp = proCsp.replace(
+  ' https://www.youtube-nocookie.com https://player.vimeo.com',
+  '',
+)
+
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -130,10 +139,11 @@ const nextConfig: NextConfig = {
         source: '/((?!estudio/pro/).*)',
         headers: [{ key: 'Content-Security-Policy', value: csp }],
       },
+      // `:path*` também casa com `/arquipelago` sozinho.
       {
-        source: '/arquipelago',
+        source: '/arquipelago/:path*',
         headers: [
-          { key: 'Content-Security-Policy', value: proCsp },
+          { key: 'Content-Security-Policy', value: arquipelagoCsp },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
         ],
       },

@@ -1,4 +1,8 @@
-import { AvatarPartFreeError, AvatarPartNotFoundError } from '../../domain/avatar/avatar.errors'
+import {
+  AvatarPartFestaError,
+  AvatarPartFreeError,
+  AvatarPartNotFoundError,
+} from '../../domain/avatar/avatar.errors'
 import { AVATAR3D_PARTS_BY_ID } from '../../domain/avatar/avatar3d-catalog'
 import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
@@ -38,6 +42,8 @@ export class BuyAvatarPartService {
     const part = AVATAR3D_PARTS_BY_ID.get(partId)
     if (!part) throw new AvatarPartNotFoundError()
     if (part.tier === 'free') throw new AvatarPartFreeError()
+    // Roupa da festa (B16): só a festa do Arquipélago concede; não há compra.
+    if (part.tier === 'festa') throw new AvatarPartFestaError()
 
     // Já possui? → no-op, sem cobrar (a corrida de 2 compras converge no ledger abaixo).
     const owned = await this.avatar.listInventory(userId, audience)

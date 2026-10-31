@@ -20,8 +20,10 @@ A busca nos manifestos locais não encontrou outro quadro do Vale. O Admin deve 
 cadastro de novo na importação. Revisão C01b de 30/10: os quadros 3 a 5 deixaram a opacidade
 (desenho condicionado) e pedem publicação (`publicar: true`). Os quadros 1 e 2 e o Proteja os
 ninhos com as variações dependem de lista e laço em grupo, dados do sprite, clique em grupo e
-"e" lógico, que nenhum curso em blocos da trilha ensina; no Vale isso vem em JavaScript (C02).
-Seguem com `publicar: false` até lá.
+"e" lógico, que nenhum curso em blocos da trilha ensina ainda. Decisão da dona (A43, 31/10/2026):
+publicam como estão (`publicar: true`), porque os cursos do Arquiteto chegam antes do lançamento
+oficial; o desafio em texto (C02) também. O que cada um espera está em `../publicacao.test.ts`, e a
+barreira C01a continua conferindo na importação.
 
 ## Cinco quadros complementares (L03)
 

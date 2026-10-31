@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ILHA_IDS } from './ilhas'
+import { ILHA_IDS, ilha, type PostoDaJornada } from './ilhas'
 import { ProblemaDoMapaSchema } from './membros'
 import { RECEITAS } from './receitas-moradores'
 
@@ -464,6 +464,25 @@ export function linguagemDoProjeto(projeto: unknown): LinguagemDoDesafio {
   if (p.kind === 'pro') return 'pro'
   if (p.mode === 'bridge') return 'texto'
   return 'blocos'
+}
+
+/**
+ * O posto do curso-base que o desafio pede (A3 e A29). Nas ilhas, é o posto da ilha. No Farol (a
+ * Lenda), o projeto autoral vem em cada linguagem conquistada, e cada variante pede o curso-base
+ * do posto onde essa linguagem começa: Python no Explorador, a Ponte no Arquiteto e o Pro no
+ * Gênio. Em blocos, nenhum (os blocos seguem só pelos blocos).
+ */
+export const POSTO_DA_LINGUAGEM = {
+  python: 'explorer',
+  texto: 'architect',
+  pro: 'champion',
+} as const satisfies Record<Exclude<LinguagemDoDesafio, 'blocos'>, PostoDaJornada>
+export function postoDoCursoBase(
+  linguagem: LinguagemDoDesafio,
+  ilhaId: (typeof ILHA_IDS)[number],
+): PostoDaJornada | null {
+  if (linguagem === 'blocos') return null
+  return ilhaId === 'farol' ? POSTO_DA_LINGUAGEM[linguagem] : ilha(ilhaId).posto
 }
 
 /**

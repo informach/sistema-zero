@@ -38,6 +38,18 @@ export function quadrosDaIlha(desafios: readonly DesafioNaLista[], ilha: IlhaId)
   })
 }
 
+/**
+ * No Farol, o projeto autoral vem em cada linguagem conquistada (A29): blocos no quadro 1, Python
+ * no 2, a Ponte no 3 e o Pro no 4, na ordem em que as linguagens chegam. O jogo sugere a variante
+ * da linguagem mais nova que já abriu (o maior quadro disponível), enquanto nenhuma foi feita; a
+ * pessoa escolhe entre as abertas.
+ */
+export function quadroSugeridoNoFarol(quadros: readonly Quadro[]): number | null {
+  if (quadros.some((q) => q.estado === 'feito')) return null
+  const abertos = quadros.filter((q) => q.estado === 'disponivel')
+  return abertos.length > 1 ? (abertos.at(-1)?.numero ?? null) : null
+}
+
 /** Quais das seis manchas de tinta acendem (a mancha `cor-N` é o quadro N). */
 export function manchasAcesas(quadros: readonly Quadro[]): boolean[] {
   return quadros.map((q) => q.estado === 'feito')
