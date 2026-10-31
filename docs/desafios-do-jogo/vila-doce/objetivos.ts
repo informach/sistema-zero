@@ -84,6 +84,19 @@ const EXTRAS: Record<(typeof EXTRA)[Variacao], SectionJavaScriptProjectCheck> = 
     },
     true,
   ),
+  boloDourado: estrutura(
+    'bolo-dourado',
+    'Extra: pegar o bolo dourado soma 2 metros, o dobro de um segundo de corrida.',
+    {
+      blockType: 'sz_g2d_on_overlap',
+      area: 'events',
+      fields: { A: 'entregador', B: 'bolo' },
+      inputBlocks: {
+        BODY: { blockType: 'sz_js_var_increment', fields: { NAME: 'metros' } },
+      },
+    },
+    true,
+  ),
   telaComMetros: estrutura(
     'metros-no-fim',
     'Extra: a tela de fim mostra quantos metros o entregador correu.',

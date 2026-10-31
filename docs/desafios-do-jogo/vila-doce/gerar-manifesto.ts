@@ -102,6 +102,8 @@ const EXTRAS = {
   efeitos:
     'Quando o entregador bater, faça a pedra explodir e a tela tremer antes de mostrar o fim.',
   telaComMetros: 'Mostre na tela de fim quantos metros o entregador correu.',
+  boloDourado:
+    'Um bolo dourado passa pela rua. Faça o entregador pegar o bolo: ele vale o dobro, 2 metros de uma vez, e volta para o começo da rua.',
 } as const
 
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
