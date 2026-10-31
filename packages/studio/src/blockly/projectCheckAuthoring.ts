@@ -74,7 +74,11 @@ export function evaluateStudioProjectStructure(
 ) {
   // O que o jogo FAZ não se lê na estrutura: quem responde é o executor (`executed`, abaixo).
   if (isExecutionRule(rule)) return false
-  if (rule.type === 'collectionMemory' || rule.type === 'changedGamePosition')
+  if (
+    rule.type === 'collectionMemory' ||
+    rule.type === 'changedGamePosition' ||
+    rule.type === 'gameCausality'
+  )
     return evaluateProjectStructure(rule, project)
   if (
     rule.type !== 'usesBlock' &&
@@ -513,6 +517,10 @@ export function projectCheckAuthoring(workspace: unknown) {
       return project.kind !== 'pro' && blocksEnabled && extensions.has(`game-${rule.dimension}`)
         ? []
         : ['Este objetivo precisa de um projeto com blocos e a extensão da dimensão escolhida.']
+    if (rule.type === 'gameCausality')
+      return project.kind !== 'pro' && blocksEnabled && extensions.has('game-2d')
+        ? []
+        : ['Este objetivo precisa de um projeto com blocos e a extensão Jogo 2D.']
     // Etapa 2 (18/10/2026): as ideias de programação também são lidas no CÓDIGO. No Pro elas
     // sempre valem (e "usar um bloco" nunca: não há blocos); com a Ponte a criança pode digitá-las.
     if (project.kind === 'pro')

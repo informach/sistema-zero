@@ -37,6 +37,7 @@ import {
 } from '@/lib/objectives-test'
 import type { StudioAuthoringRuntimeScope } from '../studio/use-studio-authoring-runtime'
 import { ExecutionRuleEditor } from './execution-rule-editor'
+import { describeGameCausality, GameCausalityRuleEditor } from './game-causality-rule-editor'
 import { ObjectiveTools } from './objective-tools'
 import { ProjectRuleEditor } from './project-rule-editor'
 import { PythonSectionObjectives } from './python-section-objectives'
@@ -48,6 +49,8 @@ function newRule(type: string, isPro: boolean, isKit: boolean): SectionObjective
       return { type, dimension: '2d', actor: 'personagem', item: 'regador', destination: 'flor' }
     case 'changedGamePosition':
       return { type, dimension: '2d', object: 'regador', initial: [0, 0] }
+    case 'gameCausality':
+      return { type, actor: 'personagem', step: 'encounter' }
     case 'behavior':
     case 'functionReturns':
     case 'script':
@@ -459,11 +462,13 @@ export function SectionCompletionEditor({
                       ? `Mudar a posição de ${check.rule.object} no chão ${check.rule.dimension}`
                       : check.rule.type === 'collectionMemory'
                         ? `Guardar a coleta de ${check.rule.item} e consultar na decisão de ${check.rule.destination}`
-                        : check.rule.type === 'usesBlock'
-                          ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
-                          : check.rule.type === 'usesLoop'
-                            ? 'Usar repetição'
-                            : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
+                        : check.rule.type === 'gameCausality'
+                          ? describeGameCausality(check.rule)
+                          : check.rule.type === 'usesBlock'
+                            ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
+                            : check.rule.type === 'usesLoop'
+                              ? 'Usar repetição'
+                              : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
                 </p>
               </div>
               <Button
@@ -550,6 +555,9 @@ export function SectionCompletionEditor({
                 <option value="changedGamePosition" disabled={isPro}>
                   Editar posição no chão
                 </option>
+                <option value="gameCausality" disabled={isPro}>
+                  Encontro, memória e decisão que rodam
+                </option>
                 <option value="declaresVariable">Criar variável</option>
                 <option value="definesFunction">Definir função</option>
                 <option value="callsFunction">Chamar função</option>
@@ -596,6 +604,12 @@ export function SectionCompletionEditor({
                     </label>
                   ))}
                 </div>
+              )}
+              {check.rule.type === 'gameCausality' && (
+                <GameCausalityRuleEditor
+                  rule={check.rule}
+                  onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
+                />
               )}
               {check.rule.type === 'changedGamePosition' && (
                 <div className="grid gap-2">

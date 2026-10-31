@@ -126,6 +126,8 @@ export function challengeRule(type: string): SectionObjectiveRule {
       return newExecutionRule(type, false, false)
     case 'usesLoop':
       return { type }
+    case 'gameCausality':
+      return { type, actor: 'guia', step: 'encounter' }
     case 'declaresVariable':
     case 'definesFunction':
     case 'callsFunction':

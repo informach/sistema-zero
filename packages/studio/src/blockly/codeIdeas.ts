@@ -13,7 +13,7 @@ import {
  */
 export type CodeIdeaRule = Exclude<
   SectionStructureRule,
-  { type: 'usesBlock' | 'collectionMemory' | 'changedGamePosition' }
+  { type: 'usesBlock' | 'collectionMemory' | 'changedGamePosition' | 'gameCausality' }
 >
 
 /** Quantas vezes cada ideia aparece. Contar (e não só saber se tem) é o que deixa comparar com o
