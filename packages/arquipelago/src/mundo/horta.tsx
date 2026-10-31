@@ -10,6 +10,7 @@ import { lojaDosPassos } from '../estado/primeiros-passos'
 import { type Clima, climaEfetivo, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
 import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
+import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { type Estagio, estagio, geladeiraEm, plantar, progresso, regar } from '../sistemas/horta'
 import { ITENS, quantidade, remover } from '../sistemas/itens'
 import { colherNaIlha } from '../sistemas/primeiro-pedido'
@@ -21,6 +22,7 @@ import {
   type Solido,
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { useDesbotado } from './desbotado'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -224,11 +226,18 @@ function CanteiroDoModelo({
   indice: number
 }) {
   const raiz = useModelo(MODELOS.horta)
-  const { caixa, terra } = useMemo(() => {
+  const { caixa, terra, madeira } = useMemo(() => {
     const copia = copiarNo(raiz, 'canteiro', true)
     const [t] = materiaisDe(copia, 'terra')
-    return { caixa: copia, terra: t ? { material: t, cor: t.color.clone() } : null }
+    return {
+      caixa: copia,
+      terra: t ? { material: t, cor: t.color.clone() } : null,
+      madeira: materiaisDe(copia).filter((m) => m.name !== 'terra'),
+    }
   }, [raiz])
+  // A horta começa desbotada e ganha cor na primeira colheita (§6.28, A17).
+  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).horta)
+  useDesbotado(madeira, !comCor)
   useEffect(() => {
     if (terra) terra.material.color.copy(regado ? TERRA_REGADA : terra.cor)
   }, [regado, terra])

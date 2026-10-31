@@ -19,12 +19,14 @@ import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/
 import { useEstado, useJogo } from '../estado/contexto'
 import { quemAcompanha } from '../sistemas/companhia'
 import { loteDaCasa } from '../sistemas/construcao/lote'
+import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
+import { useDesbotado } from './desbotado'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -284,7 +286,7 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
     const janelas = copiarNo(raiz, 'janelas', true)
     const telhado = copiarNo(raiz, 'telhado', true)
     const varanda = copiarNo(raiz, 'varanda', true)
-    const revestimento = copiarNo(raiz, 'revestimento')
+    const revestimento = copiarNo(raiz, 'revestimento', true)
     return {
       paredes,
       janelas,
@@ -294,8 +296,12 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
       translucidos: [...materiaisDe(paredes), ...materiaisDe(janelas)],
       vidros: [...materiaisDe(janelas, 'vidroJanela'), ...materiaisDe(telhado, 'vidroJanela')],
       lampioes: materiaisDe(varanda, 'lampiao'),
+      todos: [paredes, janelas, telhado, varanda, revestimento].flatMap((o) => materiaisDe(o)),
     }
   }, [raiz])
+  // Só o quarto tem cor na chegada: a casca ganha cor quando a porta nova abre (§6.28, A17).
+  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).casa)
+  useDesbotado(partes.todos, !comCor)
   useEffect(() => {
     for (const m of partes.translucidos) {
       m.transparent = dentro

@@ -10,6 +10,7 @@ import {
   type EstadoDoBicho,
   paginasDoDiario,
 } from '../sistemas/diario'
+import { paginasExtras } from '../sistemas/segredos'
 import { Pegada } from './pegadas'
 import { PedidoDaIlha } from './primeiro-pedido'
 import { ReverOsPrimeirosPassos } from './primeiros-passos'
@@ -150,6 +151,7 @@ export function Diario() {
               ),
             )}
           </ol>
+          <PaginasExtras segredos={salvamento.segredos} />
         </section>
         <section className="arq-caderno-secao" aria-labelledby="arq-diario-bichos">
           <h3 id="arq-diario-bichos" className="arq-menu-titulo">
@@ -212,5 +214,34 @@ export function Diario() {
         </div>
       </div>
     </div>
+  )
+}
+
+/** As páginas extras dos baús no alto do vento (§6.28 A39): só as achadas mostram o texto. */
+function PaginasExtras({ segredos }: { segredos: number }) {
+  const extras = paginasExtras(segredos)
+  const achadas = extras.filter((p) => p.achada)
+  return (
+    <>
+      <h4 className="arq-menu-titulo">{`Páginas extras: ${achadas.length} de ${extras.length}`}</h4>
+      {achadas.length < extras.length && (
+        <p className="arq-caderno-explica">
+          A Íris escondeu outras páginas em baús, no alto do vento das ilhas.
+        </p>
+      )}
+      {achadas.length > 0 && (
+        <ol className="arq-diario-paginas">
+          {achadas.map((p) => (
+            <li key={p.id} className="arq-diario-pagina aberta">
+              <b>{p.nome}</b>
+              <p>{p.texto}</p>
+              <span className="arq-diario-assinatura" aria-hidden="true">
+                Í.
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </>
   )
 }

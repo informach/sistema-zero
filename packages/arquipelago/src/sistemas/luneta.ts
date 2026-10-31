@@ -46,3 +46,35 @@ export function passoDaPrevia(
   saida.x = Math.sin(fase) * SINAIS_DA_LUNETA.percurso
   saida.brilho = SINAIS_DA_LUNETA.brilhoMinimo + (Math.cos(fase) + 1) * 0.175
 }
+
+/** Quem acena pela luneta em cada ilha do anel (o morador da ilha, §6.28 A18). */
+export const MORADOR_DA_LUNETA = {
+  bosque: 'capi',
+  'vila-doce': 'bento',
+  recife: 'mare',
+  pico: 'floco',
+  'vale-dos-dinos': 'jade',
+  nuvens: 'irie',
+} as const
+
+export type MoradorDaLuneta = (typeof MORADOR_DA_LUNETA)[keyof typeof MORADOR_DA_LUNETA]
+
+/** O morador da ilha vista, ou nenhum (o Farol não tem ponte nem morador do anel). */
+export function moradorDaLuneta(ilha: Pick<Ilha, 'id'>): MoradorDaLuneta | null {
+  return ilha.id in MORADOR_DA_LUNETA
+    ? MORADOR_DA_LUNETA[ilha.id as keyof typeof MORADOR_DA_LUNETA]
+    : null
+}
+
+/** O morador acena de tanto em tanto tempo (s); com menos movimento, fica parado olhando. */
+export const ACENO_DA_LUNETA = { aCada: 4.5 } as const
+
+export function deveAcenar(
+  tempo: number,
+  ultimoAceno: number,
+  duracaoDoAceno: number,
+  menosMovimento: boolean,
+): boolean {
+  if (menosMovimento) return false
+  return tempo - ultimoAceno >= Math.max(ACENO_DA_LUNETA.aCada, duracaoDoAceno)
+}

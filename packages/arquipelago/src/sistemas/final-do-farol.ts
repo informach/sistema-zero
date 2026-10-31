@@ -24,6 +24,14 @@ export const VOLTA_DA_IRIS = [
   'O alto do Farol agora é a sua galeria. Suba lá e escolha as criações que vão ficar em exposição.',
 ] as const
 
+/**
+ * O Farol só se acende com o final (§6.28, A13): a última página diz que ele "se acende" depois
+ * da subida. Chegar à Lenda abre a porta; a luz vem nos fachos e fica para sempre depois.
+ */
+export function farolAceso(concluido: boolean, etapa: string): boolean {
+  return concluido || etapa === 'fachos' || etapa === 'fim'
+}
+
 export function podeSubirOFarol(jornada: number, visitando = false): boolean {
   return Number.isFinite(jornada) && jornada >= POSICAO_DO_FINAL && !visitando
 }

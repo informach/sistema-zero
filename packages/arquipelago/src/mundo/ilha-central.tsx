@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react'
 import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lanternaDoZappy } from '../sistemas/borroes'
+import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
@@ -20,6 +21,7 @@ import {
 import { Colisores } from './colisores'
 import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { useDesbotado } from './desbotado'
 import { lugarDoQuadroNaSuaIlha, lugarDoQuadroNoFarol } from './lugar-do-quadro'
 import { DISTANCIA_DOS_LUMIS_DA_PRAIA, LUGARES_DOS_LUMIS_DA_PRAIA } from './lugares-da-praia'
 import { LunetaDoPier } from './luneta'
@@ -262,15 +264,19 @@ function PierDoModelo() {
   const { ambiente, movimento } = useJogo()
   const [viagemDisponivel, definirDisponivel] = useState(false)
   const raiz = useModelo(MODELOS.pier)
-  const { pier, barquinho, lanternas, colisores } = useMemo(() => {
+  const { pier, barquinho, lanternas, colisores, madeira } = useMemo(() => {
     const copia = copiarNo(raiz, 'pier', true)
     return {
       pier: copia,
+      madeira: materiaisDe(copia).filter((m) => m.name !== 'lanterna'),
       barquinho: copiarNo(raiz, 'barquinho-decorativo'),
       lanternas: materiaisDe(copia, 'lanterna'),
       colisores: lerColisores(raiz),
     }
   }, [raiz])
+  // O píer começa desbotado e ganha cor no primeiro peixe pescado (§6.28, A17).
+  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).pier)
+  useDesbotado(madeira, !comCor)
   useFrame(() => {
     if (viagemDisponivel !== (movimento.barco !== null)) definirDisponivel(movimento.barco !== null)
     for (const m of lanternas) m.emissiveIntensity = ambiente.noite ? 2.2 : 0

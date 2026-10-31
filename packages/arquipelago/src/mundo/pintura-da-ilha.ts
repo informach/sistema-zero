@@ -101,6 +101,25 @@ const COR = /* glsl */ `
 diffuseColor.rgb = mix(uArqCinza, diffuseColor.rgb, arqPinta());
 `
 
+/**
+ * A névoa por cima da ilha que ainda espera o posto (a proposta: "cinza antes do posto, colorida
+ * depois. Névoa por cima"; §6.28 A37). Some junto com a chegada da cor, quando a ponte abre. Usa
+ * a cor da névoa da cena (a hora do dia) e, sem névoa na cena, um cinza claro.
+ */
+export const NEVOA_DA_ILHA_FECHADA = 0.35
+
+const NEVOA = /* glsl */ `
+#include <fog_fragment>
+{
+  #ifdef USE_FOG
+    vec3 arqNevoa = fogColor;
+  #else
+    vec3 arqNevoa = vec3(0.86, 0.88, 0.91);
+  #endif
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, arqNevoa, (1.0 - uArqChegada) * ${NEVOA_DA_ILHA_FECHADA.toFixed(2)});
+}
+`
+
 const BRILHO = /* glsl */ `
 #include <emissivemap_fragment>
 totalEmissiveRadiance *= arqPinta();
@@ -124,8 +143,9 @@ export function pintarMateriais(materiais: readonly Material[], pintura: Pintura
       shader.fragmentShader = (CABECALHO_DO_FRAGMENTO + shader.fragmentShader)
         .replace('#include <color_fragment>', COR)
         .replace('#include <emissivemap_fragment>', BRILHO)
+        .replace('#include <fog_fragment>', NEVOA)
     }
-    m.customProgramCacheKey = () => 'arq-pintura-1'
+    m.customProgramCacheKey = () => 'arq-pintura-2'
     m.needsUpdate = true
   }
 }

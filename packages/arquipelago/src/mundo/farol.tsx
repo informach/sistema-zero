@@ -14,7 +14,7 @@ import {
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
-import { podeSubirOFarol } from '../sistemas/final-do-farol'
+import { farolAceso, podeSubirOFarol } from '../sistemas/final-do-farol'
 import { jogoPausado } from '../sistemas/pausa'
 import { PORTA_DO_FINAL } from './alto-do-farol'
 import { COLISORES_DO_FAROL } from './colisao-da-ilha-central'
@@ -40,11 +40,13 @@ const COMPRIMENTO_DO_FACHO = 26
 const PORTA_ABERTA = -1.75
 const PERTO_DA_PORTA = 3
 
-/** O Farol fica na sua ilha, ao lado da casa. Apagado até a Lenda (posição 8). */
+/** O Farol fica na sua ilha, ao lado da casa. Apagado até o final da Lenda (os fachos). */
 export function Farol() {
   const { loja } = useJogo()
   const mostrarFacho = useFarol(loja, (s) => s.etapa !== 'fachos' && s.etapa !== 'fim')
-  const aceso = useEstado((s) => s.jornada >= 8)
+  const etapa = useFarol(loja, (s) => s.etapa)
+  const concluido = useEstado((s) => s.salvamento.farol.concluido)
+  const aceso = farolAceso(concluido, etapa)
   return (
     <>
       <FinalDoFarol />
