@@ -12,6 +12,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
 import { receberPatins } from './patins'
+import { temPlanador } from './planador'
 
 /** Todos os percursos atuais têm progresso durável, incluindo as corridas das Nuvens. */
 export type IdDoPercurso = PercursoId
@@ -52,6 +53,11 @@ export interface ConfigDoPercurso {
   corteVoltaMs: number
   /** O que a chegada dá (os patins da entrega), com a fala; `null` quando não há nada a dar. */
   premio?: (s: Salvamento) => { salvamento: Salvamento; fala: string } | null
+  /**
+   * O que falta para largar (a fala do Zappy), ou `null` quando dá para começar. A subida do Farol
+   * pede o planador: sem ele o vento do alto não leva ninguém, e a criança ficaria presa no meio.
+   */
+  exige?: (s: Salvamento) => string | null
   /**
    * As paradas só contam na ordem (percursos no chão, em que dava para cortar caminho até a
    * última). Nos percursos do alto, pular uma parada já é chegar mais longe.
@@ -315,6 +321,9 @@ export const PERCURSO_DAS_PEGADAS = {
  * viga de equilíbrio e o vento até o mirante, com o planador, até a varanda. Usa os movimentos já
  * aprendidos. As paradas vão na ordem (cada trecho pede o movimento dele).
  */
+export const FALTA_O_PLANADOR_NO_FAROL =
+  'O último trecho da subida é o vento, e só quem plana chega lá em cima. O Floco dá o planador no festival do Pico, quando a banda volta inteira. Até lá, a escada de dentro leva à sala do alto.'
+
 export const PERCURSO_DO_FAROL = {
   id: 'farol-subida',
   nome: 'Subida do Farol',
@@ -339,6 +348,7 @@ export const PERCURSO_DO_FAROL = {
   corteSaiMs: 260,
   corteVoltaMs: 340,
   emOrdem: true,
+  exige: (s) => (temPlanador(s) ? null : FALTA_O_PLANADOR_NO_FAROL),
 } as const satisfies ConfigDoPercurso
 
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */

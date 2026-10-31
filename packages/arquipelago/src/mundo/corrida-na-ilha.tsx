@@ -113,8 +113,15 @@ export function CorridaNaIlha({
     q.corte.comecar = comecar
     loja.getState().cortar()
   }
+  /** A fala do que falta para largar (o planador na subida do Farol), ou `null`. */
+  const falta = () => config.exige?.(loja.getState().salvamento) ?? null
   const comecar = () => {
     if (!pontos) return
+    const motivo = falta()
+    if (motivo) {
+      loja.getState().dizer(motivo)
+      return
+    }
     movimento.corrida = criarCorrida(
       pontos.vagalumes.length,
       indiceDoSegredo(pontos.largada, pontos.chegada, pontos.vagalumes),
@@ -166,7 +173,10 @@ export function CorridaNaIlha({
     if (pedido) movimento.pedidoDoPercurso = null
     if (pedido === 'recomecar' && pontos && corte.fase === 'nada') {
       loja.getState().mostrarResultado(null)
-      cortarPara(pontos.largada, pontos.rumoDaLargada, true)
+      // O que falta para largar é dito antes do corte (sem levar a criança de volta à toa).
+      const motivo = falta()
+      if (motivo) loja.getState().dizer(motivo)
+      else cortarPara(pontos.largada, pontos.rumoDaLargada, true)
     } else if (pedido === 'parar' && movimento.corrida) {
       fantasmas.cancelar(config.id)
       movimento.corrida = null

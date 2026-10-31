@@ -10,7 +10,12 @@ import { ALTURA_DA_TERRA, FAROL } from '../src/mundo/medidas'
 import { PARADAS_DO_FAROL, subidaDoFarolNoMundo } from '../src/mundo/subida-do-farol'
 import { percursosDoAlbum } from '../src/sistemas/album'
 import { podeSubirOFarol } from '../src/sistemas/final-do-farol'
-import { PERCURSO_DO_FAROL, PERCURSOS_DO_JOGO } from '../src/sistemas/percurso'
+import {
+  FALTA_O_PLANADOR_NO_FAROL,
+  PERCURSO_DO_FAROL,
+  PERCURSOS_DO_JOGO,
+} from '../src/sistemas/percurso'
+import { pegarPlanador } from '../src/sistemas/planador'
 import { carregarGlb } from './ajuda-colisores'
 
 /**
@@ -59,5 +64,24 @@ describe('a subida do Farol no jogo', () => {
     const doFarol = percursosDoAlbum(s).itens.find((p) => p.id === 'farol-subida')
     expect(doFarol?.estrelas.map((e) => e.ganhou)).toEqual([true, false, true])
     expect(PERCURSO_DO_FAROL.falaDoComeco).not.toMatch(/[—–!]/)
+  })
+})
+
+describe('o que a subida do Farol pede antes da largada (lacunas, 01/11/2026)', () => {
+  test('sem o planador, a largada diz o que falta e aponta a escada de dentro', () => {
+    const sem = criarSalvamentoInicial(new Date())
+    const fala = PERCURSO_DO_FAROL.exige(sem)
+    expect(fala).toBe(FALTA_O_PLANADOR_NO_FAROL)
+    expect(fala).toContain('planador')
+    expect(fala).toContain('escada de dentro')
+    // Fala de criança: sem travessão, sem exclamação e sem abrir com pergunta.
+    expect(fala).not.toMatch(/[—–!?]/)
+    expect(PERCURSO_DO_FAROL.exige(pegarPlanador(sem))).toBeNull()
+  })
+
+  test('os outros percursos largam sem pedir nada', () => {
+    const sem = criarSalvamentoInicial(new Date())
+    for (const config of Object.values(PERCURSOS_DO_JOGO))
+      if (config.id !== 'farol-subida') expect(config.exige?.(sem) ?? null).toBeNull()
   })
 })
