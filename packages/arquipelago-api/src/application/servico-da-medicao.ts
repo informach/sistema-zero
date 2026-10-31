@@ -8,6 +8,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import type { Logger } from '@sistemazero/core/logging'
 import {
+  contarRotinas,
   montarMedicao,
   type RepositorioDaMedicao,
   type VoltaAoCursoDaMedicao,
@@ -28,7 +29,8 @@ export const DIAS_POR_BLOCO_DA_VOLTA = 8
 export const PEDIDOS_DA_VOLTA_MAXIMO = 200
 const PEDIDOS_AO_MESMO_TEMPO = 4
 
-type Leituras = Pick<LeiturasDosMembros, 'ligadas' | 'aulasConcluidas'>
+type Leituras = Pick<LeiturasDosMembros, 'ligadas' | 'aulasConcluidas'> &
+  Partial<Pick<LeiturasDosMembros, 'compras'>>
 
 export class ServicoDaMedicao {
   constructor(
@@ -43,11 +45,18 @@ export class ServicoDaMedicao {
     const agora = this.agora()
     const hoje = diaDeSaoPaulo(agora)
     if (!filtro.success || filtro.data.ate > hoje) throw new PeriodoDaMedicaoInvalidoError()
-    const [dados, volta] = await Promise.all([
+    const [dados, volta, comRotina, compras] = await Promise.all([
       this.repo.agregar(filtro.data, hoje),
       filtro.data.publico === 'kids' ? this.voltaAoCurso(filtro.data, agora) : null,
+      this.repo.salvamentosComRotina?.(filtro.data.publico) ?? null,
+      this.leituras?.ligadas()
+        ? (this.leituras.compras?.(filtro.data.publico, filtro.data.de, filtro.data.ate) ?? null)
+        : null,
     ])
-    return montarMedicao(filtro.data, dados, hoje, agora, volta)
+    return montarMedicao(filtro.data, dados, hoje, agora, volta, {
+      rotinas: comRotina ? contarRotinas(comRotina, agora) : null,
+      compras,
+    })
   }
 
   /**

@@ -5,8 +5,11 @@ import { ServicoDaEquipe } from './application/servico-da-equipe'
 import { ServicoDaFamilia } from './application/servico-da-familia'
 import { ServicoDaGaleria } from './application/servico-da-galeria'
 import { ServicoDaMedicao } from './application/servico-da-medicao'
+import { ServicoDaObraEstendida } from './application/servico-da-obra-estendida'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDasProfissoes } from './application/servico-das-profissoes'
+import { ServicoDasRoupas } from './application/servico-das-roupas'
+import { ServicoDasVendas } from './application/servico-das-vendas'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDasVisitasAdultas } from './application/servico-das-visitas-adultas'
 import { ServicoDasVisitasDeAmigos } from './application/servico-das-visitas-de-amigos'
@@ -17,6 +20,7 @@ import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import { ServicoDosPedidos } from './application/servico-dos-pedidos'
 import type { Env } from './infrastructure/config/env'
+import { AvatarHttp } from './infrastructure/members/avatar-http'
 import { MembrosHttp, TEMPO_DA_CONFERENCIA_MS } from './infrastructure/members/membros-http'
 import { MoedasHttp } from './infrastructure/members/moedas-http'
 import { PosseHttp } from './infrastructure/members/posse-http'
@@ -32,9 +36,11 @@ import { DrizzleRepositorioDosFantasmas } from './infrastructure/persistence/dri
 import { DrizzleRepositorioDosInsumos } from './infrastructure/persistence/drizzle/repositorio-insumos'
 import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
 import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/drizzle/repositorio-minijogos'
+import { DrizzleRepositorioDaObraEstendida } from './infrastructure/persistence/drizzle/repositorio-obra-estendida'
 import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
 import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
+import { DrizzleRepositorioDasVendas } from './infrastructure/persistence/drizzle/repositorio-vendas'
 import { DrizzleRepositorioDasVisitasAdultas } from './infrastructure/persistence/drizzle/repositorio-visitas-adultas'
 import { DrizzleRepositorioDasVisitasDeAmigos } from './infrastructure/persistence/drizzle/repositorio-visitas-de-amigos'
 import { createServer } from './interfaces/http/server'
@@ -129,8 +135,28 @@ export function createApplication(env: Env): Application {
       politica,
       visitas,
     }),
+    obraEstendida: new ServicoDaObraEstendida({
+      repo: new DrizzleRepositorioDaObraEstendida(connection.db),
+      politica,
+    }),
     pedidos: new ServicoDosPedidos({
       repo: new DrizzleRepositorioDosPedidos(connection.db),
+      moedas,
+      leituras,
+      politica,
+      logger,
+    }),
+    roupas: new ServicoDasRoupas({
+      jogo: new DrizzleRepositorioDoJogo(connection.db),
+      avatar:
+        env.MEMBERS_URL && env.ARQUIPELAGO_COINS_TOKEN
+          ? new AvatarHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_COINS_TOKEN })
+          : null,
+      politica,
+      logger,
+    }),
+    vendas: new ServicoDasVendas({
+      repo: new DrizzleRepositorioDasVendas(connection.db),
       moedas,
       leituras,
       politica,

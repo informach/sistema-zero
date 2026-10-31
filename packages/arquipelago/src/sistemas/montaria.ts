@@ -44,8 +44,9 @@ export const MONTARIA = {
 /**
  * Onde o dino espera no Vale, no referencial do `vale-dos-dinos.glb`: chão plano e largo entre o
  * vulcão e a chegada (o teste confere o corpo inteiro dele livre), olhando para quem vem da ponte.
+ * Fica ao lado da trilha das pegadas, nunca em cima dela: quem segue as pegadas passa por ele.
  */
-export const MONTARIA_NO_VALE = { x: 8, z: 1.2, giro: Math.PI / 2 } as const
+export const MONTARIA_NO_VALE = { x: 7.25, z: -1.5, giro: Math.PI / 2 } as const
 
 export const FALAS_DA_MONTARIA = {
   antes: 'O dino ainda não conhece você. Cuide dos três ninhos do Vale e ele vai confiar.',

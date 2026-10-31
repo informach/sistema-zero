@@ -100,3 +100,20 @@ test('bicho posterior comprova pedido da Capi, amizade respeita teto e UTF-8 tam
   })
   expect(s).toEqual(antes)
 })
+
+test('pedido de prato do Bento: só com a receita sabida e entregue como qualquer pedido (A22)', () => {
+  const pratos = ['bolo-de-fuba-1', 'pao-de-queijo-3']
+  // Sem amizade (o serviço e versões antigas), nenhum prato no sorteio.
+  for (let i = 0; i < 100; i++)
+    expect(pratos).not.toContain(escolherPedidoDoMorador('bento', `perfil-${i}`, dia, 0))
+  const s = inicial()
+  s.moradores.bento.amizade = 120
+  s.moradores.bento.pedido = { dia, id: 'bolo-de-fuba-1', entregue: false }
+  expect(prepararEntregaDoPedido(s, 'bento', dia)).toEqual({ ok: false, motivo: 'faltam-itens' })
+  s.inventario = { 'bolo-de-fuba': 2 }
+  const r = prepararEntregaDoPedido(s, 'bento', dia)
+  expect(r.ok).toBe(true)
+  if (!r.ok) throw Error('Entrega recusada')
+  expect(r.salvamento.inventario['bolo-de-fuba']).toBe(1)
+  expect(r.salvamento.moradores.bento.pedido?.entregue).toBe(true)
+})

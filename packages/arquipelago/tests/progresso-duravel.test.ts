@@ -78,10 +78,7 @@ test('duas sessões unem descobertas e estrelas das Nuvens, sem perder o melhor 
     nuvens: { constelacoes: 1 },
     farol: { pagina: true, concluido: false, galeria: [] },
     percursos: {
-      'nuvens-balao': {
-        estrelas: { chegada: true, tempo: false, vagalumes: true },
-        melhorTempoMs: 60000,
-      },
+      'nuvens-balao': [5, 60000] as [number, number],
     },
   }
   const remoto = {
@@ -89,19 +86,13 @@ test('duas sessões unem descobertas e estrelas das Nuvens, sem perder o melhor 
     nuvens: { constelacoes: 2 },
     farol: { pagina: true, concluido: true, galeria: [] },
     percursos: {
-      'nuvens-balao': {
-        estrelas: { chegada: true, tempo: true, vagalumes: false },
-        melhorTempoMs: 50000,
-      },
+      'nuvens-balao': [3, 50000] as [number, number],
     },
   }
   const combinado = conciliarSalvamento(base, local, remoto)
   expect(combinado?.nuvens.constelacoes).toBe(3)
   expect(combinado?.farol).toEqual({ pagina: true, concluido: true, galeria: [] })
-  expect(combinado?.percursos['nuvens-balao']).toEqual({
-    estrelas: { chegada: true, tempo: true, vagalumes: true },
-    melhorTempoMs: 50000,
-  })
+  expect(combinado?.percursos['nuvens-balao']).toEqual([7, 50000] as [number, number])
   expect(migrarSalvamento(combinado)).toEqual(combinado)
   const comClima = conciliarSalvamento(
     base,

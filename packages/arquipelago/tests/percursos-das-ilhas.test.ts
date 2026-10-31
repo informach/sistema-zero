@@ -5,6 +5,7 @@ import { type Mesh, type Object3D, Vector3 } from 'three'
 import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE, NIVEL_DA_AGUA, RAIO_DO_RASO, raioMaximoDaIlha } from '../src/mundo/medidas'
 import {
+  LARGADA_LONGE_DA_MORADORA,
   percursoDaPraia,
   percursoDasPedrasDoVulcao,
   percursoDosCorais,
@@ -128,10 +129,16 @@ describe('as pedras do vulcão do Vale', () => {
   let p: PontosDoPercurso
   let colisores: ColisorDaIlha[]
   let grade: ReturnType<typeof gradeDeAndar>
+  let moradora: Vector3
   beforeAll(async () => {
     const lido = await colisoresDe(arquivoDaIlha('vale-dos-dinos.glb'))
     colisores = lido.colisores
-    const r = percursoDasPedrasDoVulcao(colisores, raioMaximoDaIlha(ilha('vale-dos-dinos')))
+    moradora = lido.raiz.getObjectByName('morador')!.position.clone()
+    const r = percursoDasPedrasDoVulcao(
+      colisores,
+      raioMaximoDaIlha(ilha('vale-dos-dinos')),
+      moradora,
+    )
     if (!r) throw new Error('faltam pedras do vulcão no vale-dos-dinos.glb')
     p = r
     grade = gradeDeAndar(lido.raiz.getObjectByName('col-terreno') as Mesh, formas(colisores))
@@ -153,6 +160,18 @@ describe('as pedras do vulcão do Vale', () => {
     for (const q of pontos) {
       const centro = new Vector3(q.x, q.y, q.z)
       for (const f of formas(colisores)) expect([f.nome, bate(f, centro)]).toEqual([f.nome, false])
+    }
+  })
+
+  test('quem para para conversar com a Jade fica mais perto dela que do Começar', () => {
+    expect(Math.hypot(p.largada.x - moradora.x, p.largada.z - moradora.z)).toBeGreaterThanOrEqual(
+      LARGADA_LONGE_DA_MORADORA,
+    )
+    for (let i = 0; i < 16; i++) {
+      const a = (i * Math.PI) / 8
+      const x = moradora.x + Math.sin(a) * 1.6,
+        z = moradora.z + Math.cos(a) * 1.6
+      expect(Math.hypot(p.largada.x - x, p.largada.z - z)).toBeGreaterThan(1.6)
     }
   })
 

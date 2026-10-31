@@ -18,7 +18,8 @@ import type { RegistroDeInterativos } from '../mundo/interativos'
 import { ilhasEmVolta } from '../mundo/medidas'
 import { ID_DA_LANTERNA } from '../sistemas/borroes'
 import { planta } from '../sistemas/construcao/comodos'
-import { LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
+import { entradaDaObra, frenteDaEntrada } from '../sistemas/construcao/entrada'
+import { LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
 import { type ContextoDaDica, DICAS, type Dica, type Fala } from '../sistemas/dicas'
 import { ilhaMaisPerto, NECESSIDADE_BAIXA } from '../sistemas/hud'
 import { quantidade } from '../sistemas/itens'
@@ -89,14 +90,13 @@ function lerJogo(
       precisaDaPlanta && obra
         ? planta(obra, LOTE_DA_CASA_GRANDE).comodos.some((c) => !c.quarto)
         : false,
+    // Uma porta além da porta de entrada (a entrada pode ter mudado de lugar, 31/10/2026).
     portaNoComodo:
-      obra?.aberturas.some(
-        (a) =>
-          a.tipo === 'porta' &&
-          !LOTE_DA_CASA.obraInicial.aberturas.some(
-            (b) => b.tipo === 'porta' && b.x === a.x && b.z === a.z && b.eixo === a.eixo,
-          ),
-      ) ?? false,
+      precisaDaPlanta && obra
+        ? obra.aberturas.some(
+            (a, i) => a.tipo === 'porta' && i !== entradaDaObra(obra, LOTE_DA_CASA_GRANDE)?.indice,
+          )
+        : false,
     construindo,
     menuAberto: s.menuAberto,
     alvo: s.alvo?.id ?? null,
@@ -118,7 +118,12 @@ function pontoDoGuia(
     const it = interativos.get(id)
     return it ? { x: it.x, z: it.z } : null
   }
-  if (guia === 'porta' || guia === 'casa') return de('porta-nova')
+  if (guia === 'porta' || guia === 'casa') {
+    // Na casa construída a porta nova sai de cena: o Zappy aponta a porta de entrada da obra.
+    const obra = s.salvamento.construcao.casa
+    const e = obra ? entradaDaObra(obra, LOTE_DA_CASA_GRANDE) : null
+    return e ? frenteDaEntrada(e, 0.6) : de('porta-nova')
+  }
   if (guia === 'geladeira') return de('objeto-geladeira')
   for (const c of s.salvamento.horta) {
     const f = estagio(c, agora, s.salvamento.projetos.geladeira?.ganhoEm ?? null)

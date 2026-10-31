@@ -1,4 +1,5 @@
 import { useFrame } from '@react-three/fiber'
+import { compactarResultado, resultadoDoPercurso } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import {
@@ -22,10 +23,12 @@ import {
   criarCorrida,
   estrelasDaCorrida,
   formatarTempo,
+  indiceDoSegredo,
   juntarResultado,
   type PontosDoPercurso,
   passoDaCorrida,
   quantasEstrelas,
+  segredoAparece,
   vagalumesPegos,
 } from '../sistemas/percurso'
 import { useInterativo } from './interativos'
@@ -112,7 +115,10 @@ export function CorridaNaIlha({
   }
   const comecar = () => {
     if (!pontos) return
-    movimento.corrida = criarCorrida(pontos.vagalumes.length)
+    movimento.corrida = criarCorrida(
+      pontos.vagalumes.length,
+      indiceDoSegredo(pontos.largada, pontos.chegada, pontos.vagalumes),
+    )
     const s = loja.getState()
     s.mostrarResultado(null)
     s.definirCorrida({
@@ -175,7 +181,8 @@ export function CorridaNaIlha({
       const g = coletaveis.current[i]
       const p = pontos?.vagalumes[i]
       if (!g || !p) continue
-      g.visible = mostrar && !c?.pegos[i]
+      // O segredo (a terceira estrela, A9) só aparece de perto.
+      g.visible = mostrar && !c?.pegos[i] && (i !== c?.segredo || segredoAparece(p, rastro))
       if (!g.visible) continue
       const sobe = menosMovimento ? 0 : Math.sin(tempo.current * 2.2 + i * 1.7) * 0.12
       g.position.set(p.x, p.y + sobe, p.z)
@@ -248,13 +255,16 @@ export function CorridaNaIlha({
 export function terminarCorrida(loja: LojaDoJogo, config: ConfigDoPercurso, c: Corrida): void {
   const s = loja.getState()
   const id = config.id
-  const antes = s.salvamento.percursos[id]
+  const antes = resultadoDoPercurso(s.salvamento.percursos, id)
   const melhor = juntarResultado(antes, c, config)
   if (!melhor) return
   /** A fala do prêmio, se a chegada trouxe um (escrita dentro do `mudar`). */
   const premio = { fala: '' }
   s.mudar((sv) => {
-    const comResultado = { ...sv, percursos: { ...sv.percursos, [id]: melhor } }
+    const comResultado = {
+      ...sv,
+      percursos: { ...sv.percursos, [id]: compactarResultado(melhor) },
+    }
     const p = config.premio?.(comResultado)
     if (!p) return comResultado
     premio.fala = p.fala

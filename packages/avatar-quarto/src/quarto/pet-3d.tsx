@@ -3,9 +3,18 @@
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
-import { COLS, FLOOR_HALF_X, FLOOR_HALF_Z, ROWS } from './coords'
+import { FLOOR_HALF_Z } from './coords'
+import {
+  createPetWalk,
+  type PetAvoid,
+  type PetWalkState,
+  petAvoidStep,
+  petWalkStep,
+} from './pet-walk'
 import { Ball, Box, Cone } from './prims'
 import { RoomGlbModel } from './room-glb-model'
+
+export type { PetAvoid } from './pet-walk'
 
 /**
  * Reserva em primitivas dos bichinhos (gato/cachorro/passarinho), frente em +Z, centrados, base
@@ -47,40 +56,30 @@ function Bird() {
   )
 }
 
-type Dir = { x: number; z: number }
-const DIRS: Dir[] = [
-  { x: 1, z: 0 },
-  { x: -1, z: 0 },
-  { x: 0, z: 1 },
-  { x: 0, z: -1 },
-]
-const MARGIN = 0.45
-
-/** A posição (x,z) do mundo está fora do chão OU numa célula ocupada por móvel? */
-function blocked(x: number, z: number, occ: ReadonlySet<string>): boolean {
-  if (x < -FLOOR_HALF_X + MARGIN || x > FLOOR_HALF_X - MARGIN) return true
-  if (z < -FLOOR_HALF_Z + MARGIN || z > FLOOR_HALF_Z - MARGIN) return true
-  const cx = Math.floor(x + COLS / 2)
-  const cz = Math.floor(z + ROWS / 2)
-  return occ.has(`${cx},${cz}`)
-}
-
 /**
  * Pet ativo ANDANDO pelo chão com COLISÃO: caminha em linha reta (4 direções) e, ao
  * encontrar um móvel ou parede logo à frente, vira para uma direção livre (sem atravessar).
  * O passarinho flutua (bob em Y). Gateado por `prefers-reduced-motion` (pose neutra parada).
  * O `frameloop` da cena vira "always" quando há pet e o movimento é permitido.
+ *
+ * Opcionais, só do jogo (31/10/2026): `onPosition` recebe a posição (coordenadas do quarto) e o
+ * rumo a cada quadro; `avoid` é um ponto a evitar (a criança), lido a cada quadro, com o
+ * passinho e a subida do passarinho (`pet-walk.ts`). Sem eles o passeio é o de sempre.
  */
 export function Pet3D({
   petId,
   occupied,
   reducedMotion,
   paused = false,
+  onPosition,
+  avoid,
 }: {
   petId: string | null
   occupied: ReadonlySet<string>
   reducedMotion: boolean
   paused?: boolean
+  onPosition?: (x: number, z: number, heading: number) => void
+  avoid?: { readonly current: PetAvoid | null }
 }) {
   const ref = useRef<Group>(null)
   const isBird = petId === 'pet-passaro'
@@ -90,45 +89,36 @@ export function Pet3D({
     () => [0, isBird ? 0.7 : 0, FLOOR_HALF_Z - 1.5],
     [isBird],
   )
-  const pos = useRef({ x: 0, z: FLOOR_HALF_Z - 1.5 })
-  const dir = useRef<Dir>({ x: 1, z: 0 })
-  const speed = 1.4
+  const walk = useRef<PetWalkState>(createPetWalk(0, FLOOR_HALF_Z - 1.5))
   const time = useRef(0)
 
   useFrame((_, dt) => {
     const g = ref.current
-    if (!g || reducedMotion || paused) return
-    time.current += Math.min(dt, 0.25)
-    const step = Math.min(0.25, speed * dt)
-    const d = dir.current
-    // Olha meio passo à frente: bate e vira ANTES de entrar no móvel/parede.
-    if (blocked(pos.current.x + d.x * 0.5, pos.current.z + d.z * 0.5, occupied)) {
-      let picked: Dir | null = null
-      const start = Math.floor(Math.random() * 4)
-      for (let i = 0; i < 4; i++) {
-        const cand = DIRS[(start + i) % 4]
-        if (
-          cand &&
-          !blocked(pos.current.x + cand.x * 0.6, pos.current.z + cand.z * 0.6, occupied)
-        ) {
-          picked = cand
-          break
-        }
+    if (!g) return
+    const s = walk.current
+    const a = avoid?.current ?? null
+    if (!paused && reducedMotion) {
+      // Parado (menos movimento): só o que o jogo pede para dar passagem.
+      if (a) {
+        petAvoidStep(s, occupied, dt, a)
+        g.position.x = s.x
+        g.position.z = s.z
+        if (isBird) g.position.y = 0.7 + s.lift
       }
-      dir.current = picked ?? { x: -d.x, z: -d.z } // sem saída → dá meia-volta
-    } else {
-      pos.current.x += d.x * step
-      pos.current.z += d.z * step
+    } else if (!paused) {
+      time.current += Math.min(dt, 0.25)
+      petWalkStep(s, occupied, dt, a)
+      g.position.x = s.x
+      g.position.z = s.z
+      g.position.y = isBird ? 0.7 + s.lift + Math.sin(time.current * 3) * 0.14 : 0
+      // Vira suavemente para a direção do passo (frente da mesh = +Z).
+      const target = Math.atan2(s.dir.x, s.dir.z)
+      let diff = target - g.rotation.y
+      while (diff > Math.PI) diff -= Math.PI * 2
+      while (diff < -Math.PI) diff += Math.PI * 2
+      g.rotation.y += diff * Math.min(1, dt * 10)
     }
-    g.position.x = pos.current.x
-    g.position.z = pos.current.z
-    g.position.y = isBird ? 0.7 + Math.sin(time.current * 3) * 0.14 : 0
-    // Vira suavemente para a direção do passo (frente da mesh = +Z).
-    const target = Math.atan2(dir.current.x, dir.current.z)
-    let diff = target - g.rotation.y
-    while (diff > Math.PI) diff -= Math.PI * 2
-    while (diff < -Math.PI) diff += Math.PI * 2
-    g.rotation.y += diff * Math.min(1, dt * 10)
+    onPosition?.(s.x, s.z, Math.atan2(s.dir.x, s.dir.z))
   })
 
   if (!petId) return null

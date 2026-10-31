@@ -68,7 +68,7 @@ function salvamentoDoFinal() {
 const URL_DO_FAROL = `${base}/?posicao=8&jogos=exemplo`
 
 async function subir(p: Page, celular: boolean) {
-  await p.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+  await p.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
   await usar(p, celular)
   await p.waitForFunction(() => {
     const d = (globalThis as Janela).__arquipelagoDesenho

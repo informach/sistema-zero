@@ -1,30 +1,47 @@
 import type { Companhia, Salvamento } from '@sistemazero/arquipelago-contracts'
+import { nasceu } from './filhote-do-vale'
 
 /**
  * Quem acompanha a criança pela ilha (S01, levantamento de 30/10). A proposta põe a casa e "os
  * bichinhos reais da plataforma" no jogo; o bichinho do quarto (`quarto.pet`) sai do quarto e anda
  * junto. Com um bicho adotado no Bosque, a criança escolhe quem acompanha; o outro espera em casa.
- * Adotar um bicho faz dele a companhia (como sempre foi: ele vai junto para casa).
+ * Adotar um bicho faz dele a companhia (como sempre foi: ele vai junto para casa). Desde a V21
+ * (§6.28, A7), o filhote do Vale que já nasceu e ganhou nome também pode ir junto: o dino de
+ * estimação deixa o Vale e passa a acompanhar.
  */
 export type QuemAcompanha = Companhia | null
 
-/** Quem acompanha agora: a escolha, se ela existe; senão quem houver; senão ninguém. */
-export function quemAcompanha(s: Salvamento, petDoQuarto: string | null): QuemAcompanha {
-  const temAdotado = s.bichos.adotado !== null
-  const temPet = !!petDoQuarto
-  if (s.companhia === 'adotado' && temAdotado) return 'adotado'
-  if (s.companhia === 'quarto' && temPet) return 'quarto'
-  if (temAdotado) return 'adotado'
-  return temPet ? 'quarto' : null
+/** Quem pode acompanhar agora, na ordem dos botões. */
+export function opcoesDeCompanhia(s: Salvamento, petDoQuarto: string | null): Companhia[] {
+  const opcoes: Companhia[] = []
+  if (s.bichos.adotado !== null) opcoes.push('adotado')
+  if (petDoQuarto) opcoes.push('quarto')
+  const filhote = s.vale.filhote
+  if (nasceu(filhote) && filhote?.nome) opcoes.push('filhote')
+  return opcoes
 }
 
-/** Dá para escolher só com os dois. */
+/** Quem acompanha agora: a escolha, se ela existe; senão o adotado ou o do quarto; senão ninguém. */
+export function quemAcompanha(s: Salvamento, petDoQuarto: string | null): QuemAcompanha {
+  const opcoes = opcoesDeCompanhia(s, petDoQuarto)
+  if (opcoes.includes(s.companhia)) return s.companhia
+  if (opcoes.includes('adotado')) return 'adotado'
+  return opcoes.includes('quarto') ? 'quarto' : null
+}
+
+/** Dá para escolher com pelo menos dois. */
 export function podeEscolherCompanhia(s: Salvamento, petDoQuarto: string | null): boolean {
-  return s.bichos.adotado !== null && !!petDoQuarto
+  return opcoesDeCompanhia(s, petDoQuarto).length >= 2
 }
 
 export function escolherCompanhia(s: Salvamento, c: Companhia): Salvamento {
   return s.companhia === c ? s : { ...s, companhia: c }
+}
+
+/** Deixar o filhote no Vale: volta a companhia de antes (o adotado, se houver; senão o do quarto). */
+export function deixarOFilhoteNoVale(s: Salvamento): Salvamento {
+  if (s.companhia !== 'filhote') return s
+  return { ...s, companhia: s.bichos.adotado ? 'adotado' : 'quarto' }
 }
 
 /** O nome do bichinho do quarto (o catálogo do quarto chama de gato, cachorro e passarinho). */
@@ -40,10 +57,33 @@ export function rotuloDoPet(petDoQuarto: string): string {
   return maiuscula(nomeDoPet(petDoQuarto).replace(/^o /, ''))
 }
 
-export function falaDaCompanhia(c: Companhia, nomeDoAdotado: string, petDoQuarto: string): string {
-  return c === 'adotado'
-    ? `${nomeDoAdotado} vai com você. ${maiuscula(nomeDoPet(petDoQuarto))} espera no quarto.`
-    : `${maiuscula(nomeDoPet(petDoQuarto))} vai com você. ${nomeDoAdotado} espera em casa.`
+/** Os nomes de quem pode acompanhar, para os botões e as falas. */
+export interface NomesDaCompanhia {
+  adotado: string | null
+  pet: string | null
+  filhote: string | null
+}
+
+export function rotuloDaCompanhia(c: Companhia, nomes: NomesDaCompanhia): string {
+  if (c === 'adotado') return nomes.adotado ?? 'Bicho adotado'
+  if (c === 'filhote') return nomes.filhote ?? 'Filhote do Vale'
+  return nomes.pet ? rotuloDoPet(nomes.pet) : 'Bichinho do quarto'
+}
+
+/** "Rex vai com você. O gato do quarto espera no quarto." (quem fica, cada um no seu lugar). */
+export function falaDaCompanhia(c: Companhia, nomes: NomesDaCompanhia): string {
+  const vai =
+    c === 'quarto' && nomes.pet
+      ? maiuscula(nomeDoPet(nomes.pet))
+      : c === 'filhote'
+        ? (nomes.filhote ?? 'O filhote')
+        : (nomes.adotado ?? 'O bicho')
+  const ficam: string[] = []
+  if (c !== 'adotado' && nomes.adotado) ficam.push(`${nomes.adotado} espera em casa.`)
+  if (c !== 'quarto' && nomes.pet)
+    ficam.push(`${maiuscula(nomeDoPet(nomes.pet))} espera no quarto.`)
+  if (c !== 'filhote' && nomes.filhote) ficam.push(`${nomes.filhote} brinca no Vale.`)
+  return [`${vai} vai com você.`, ...ficam].join(' ')
 }
 
 function maiuscula(t: string): string {

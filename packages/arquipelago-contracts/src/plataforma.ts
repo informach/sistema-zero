@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { AparenciaLida } from './aparencias'
+import type { MoldeDeObjeto } from './objetos'
 import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
 
 /**
@@ -73,7 +74,14 @@ export interface ServicoDoJogo {
 }
 
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */
-export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi' | 'avatar'
+/** `quarto` (§6.28, A10): o editor do Meu Quarto da plataforma; ao fechar, o jogo recebe o quarto. */
+export type FerramentaDaPlataforma =
+  | 'pinta'
+  | 'molda'
+  | 'estudio'
+  | 'rotina-lumi'
+  | 'avatar'
+  | 'quarto'
 export interface PedidoDeFerramenta {
   ferramenta: FerramentaDaPlataforma
   /** Identifica o que o jogo quer de volta (o objeto, o desafio). */
@@ -85,6 +93,7 @@ export type ResultadoDeFerramenta =
   | { situacao: 'pronto'; criacaoId: string }
   | { situacao: 'rotina-pronta'; resultado: ResultadoDaFerramentaRotina }
   | { situacao: 'avatar-pronto'; avatar: AvatarDoJogo }
+  | { situacao: 'quarto-pronto'; quarto: QuartoDoJogo }
   | { situacao: 'cancelado' }
   | { situacao: 'indisponivel'; motivo: string }
 
@@ -111,6 +120,19 @@ export interface ClubeDoJogo {
   mandarFoto(foto: Blob): Promise<EnvioAoClube>
 }
 
+/**
+ * "Usar uma criação minha que cabe neste molde" (§6.28, A30): uma criação da conta, do Pinta (a
+ * planificação no tamanho do molde) ou do Molda (um modelo dentro do teto de triângulos). A
+ * miniatura é a da biblioteca da conta, quando ela tem.
+ */
+export const CriacaoQueCabeSchema = z.strictObject({
+  ferramenta: z.enum(['pinta', 'molda']),
+  id: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+  nome: z.string().min(1).max(120),
+  miniatura: z.string().max(16_000).startsWith('data:image/').nullable(),
+})
+export type CriacaoQueCabe = z.infer<typeof CriacaoQueCabeSchema>
+
 export interface Plataforma {
   versaoContrato: typeof VERSAO_CONTRATO_PLATAFORMA
   publico: PublicoJogo
@@ -123,6 +145,8 @@ export interface Plataforma {
   abrirFerramenta(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta>
   /** Só criações da pessoa desta montagem. Bytes próprios, sem URL autenticada no jogo. */
   lerAparencia?(criacaoId: string, sinal?: AbortSignal): Promise<AparenciaLida | null>
+  /** As criações da conta que cabem no molde (A30), da mais nova à mais antiga. */
+  listarCriacoesQueCabem?(molde: MoldeDeObjeto, sinal?: AbortSignal): Promise<CriacaoQueCabe[]>
   /** Fotos no Clube (N08b): só o Kids monta. Sem ele, a foto fica só no aparelho. */
   clube?: ClubeDoJogo
   /** Sai do jogo e volta para a plataforma (a página decide para onde). */

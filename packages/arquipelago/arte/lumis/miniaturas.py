@@ -1,8 +1,9 @@
-"""Miniaturas dos 14 Lumis para o álbum e a rotina (Cycles na CPU, sem tela), feitas dos próprios
+"""Miniaturas dos 14 Lumis (e dos 7 Lumis de luz) para o álbum e a rotina (Cycles na CPU, sem tela), feitas dos próprios
 modelos do jogo, de frente e um pouco de lado, para a criança reconhecer cada espécie pelo desenho.
 
   /tmp/claude-0/blender-venv/bin/python -B arte/lumis/miniaturas.py           # todas
   ITEM=pitanga,ipe /tmp/claude-0/blender-venv/bin/python -B arte/lumis/miniaturas.py
+  ITEM=ipe-de-luz /tmp/claude-0/blender-venv/bin/python -B arte/lumis/miniaturas.py   # um de luz
   PASTA=src/assets/lumis/miniaturas python3 -I arte/itens/icones_paleta.py   # paleta de 128 cores
 
 Saem em `src/assets/lumis/miniaturas/<id>.png`, 160 px com fundo transparente. O enquadramento e
@@ -20,13 +21,15 @@ SAIDA = os.path.join(LUMIS, 'miniaturas')
 # Os mesmos de `LUMIS` (arquipelago-contracts): o borrão não é espécie do álbum.
 ESPECIES = ('estrelinha', 'buzio', 'pitanga', 'ipe', 'quindim', 'brigadeiro', 'bolha', 'perola', 'gelinho',
             'cristal', 'ovinho', 'brotinho', 'algodao', 'pluma')
+# Os Lumis de luz (`luz.py`), um por família: a rara de cada uma com `-de-luz`.
+DE_LUZ = tuple(f'{r}-de-luz' for r in ('buzio', 'ipe', 'brigadeiro', 'perola', 'cristal', 'brotinho', 'pluma'))
 # De onde a câmera olha (no Blender: a frente do Lumi é o −Y).
 DE_FRENTE = (0.45, -1, 0.35)
 
 if __name__ == '__main__':
     os.makedirs(SAIDA, exist_ok=True)
     so = set((os.environ.get('ITEM') or '').split(',')) - {''}
-    for id_ in ESPECIES:
+    for id_ in ESPECIES + DE_LUZ:
         if so and id_ not in so:
             continue
         sc = cena(os.path.join(LUMIS, f'{id_}.glb'), None, None, DE_FRENTE)

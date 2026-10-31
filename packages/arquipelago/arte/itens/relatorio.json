@@ -47,6 +47,28 @@
     "materiais": ["alga", "algaEscura", "corda"],
     "tamanho": [0.08, 0.286, 0.085]
   },
+  "arco-iris-de-petala": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 208,
+    "kb": 10.9,
+    "nos": {
+      "arco-iris-de-petala": 208
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "arcoMiolo",
+      "cauleCeu",
+      "folhaCeuEscura",
+      "petalaAmarela",
+      "petalaAzul",
+      "petalaLaranja",
+      "petalaRoxa",
+      "petalaVerde",
+      "petalaVermelha"
+    ],
+    "tamanho": [0.17, 0.12, 0.147]
+  },
   "batata-doce": {
     "grupo": "colheita",
     "triangulos": 366,
@@ -348,6 +370,18 @@
     "materiais": ["bochechaRosa", "estrelaBordaRosa", "luz", "olhoBrilho", "olhoPreto"],
     "tamanho": [0.109, 0.104, 0.055]
   },
+  "estrela-trepadeira": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 142,
+    "kb": 7.2,
+    "nos": {
+      "estrela-trepadeira": 142
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cauleCeu", "florEstrela", "florEstrelaMiolo", "folhaCeuEscura"],
+    "tamanho": [0.124, 0.152, 0.118]
+  },
   "estrela-trio": {
     "grupo": "colecoes",
     "triangulos": 2456,
@@ -371,6 +405,18 @@
     "clipes": [],
     "materiais": ["algodao", "algodaoSombra", "cabinho", "casulo"],
     "tamanho": [0.15, 0.182, 0.153]
+  },
+  "flor-de-nuvem": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 560,
+    "kb": 14.7,
+    "nos": {
+      "flor-de-nuvem": 560
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cauleCeu", "florNuvem", "florNuvemMiolo", "florNuvemSombra", "folhaCeu"],
+    "tamanho": [0.164, 0.19, 0.152]
   },
   "fogao": {
     "grupo": "cozinha",
@@ -396,6 +442,78 @@
       "metalEscuro"
     ],
     "tamanho": [1.185, 1.602, 0.685]
+  },
+  "fossil-chifre-triceratopo": {
+    "grupo": "fosseis",
+    "triangulos": 660,
+    "kb": 14.4,
+    "nos": {
+      "fossil-chifre-triceratopo": 660
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ossoFossil", "ossoFossilEscuro", "pedraFossilEscura"],
+    "tamanho": [0.553, 0.294, 0.22]
+  },
+  "fossil-cranio-rex": {
+    "grupo": "fosseis",
+    "triangulos": 988,
+    "kb": 24.4,
+    "nos": {
+      "fossil-cranio-rex": 988
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ossoFossil", "ossoFossilClaro", "ossoFossilEscuro", "pedraFossilEscura"],
+    "tamanho": [0.507, 0.261, 0.258]
+  },
+  "fossil-dente": {
+    "grupo": "fosseis",
+    "triangulos": 392,
+    "kb": 9.8,
+    "nos": {
+      "fossil-dente": 392
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ossoFossil", "ossoFossilClaro", "ossoFossilEscuro"],
+    "tamanho": [0.363, 0.061, 0.125]
+  },
+  "fossil-garra": {
+    "grupo": "fosseis",
+    "triangulos": 520,
+    "kb": 12.4,
+    "nos": {
+      "fossil-garra": 520
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ossoFossil", "ossoFossilClaro", "ossoFossilEscuro"],
+    "tamanho": [0.459, 0.203, 0.093]
+  },
+  "fossil-ovo": {
+    "grupo": "fosseis",
+    "triangulos": 446,
+    "kb": 11.0,
+    "nos": {
+      "fossil-ovo": 446
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["pedraFossil", "pedraFossilEscura"],
+    "tamanho": [0.332, 0.222, 0.289]
+  },
+  "fossil-vertebra": {
+    "grupo": "fosseis",
+    "triangulos": 704,
+    "kb": 16.5,
+    "nos": {
+      "fossil-vertebra": 704
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ossoFossil", "ossoFossilEscuro", "pedraFossilEscura"],
+    "tamanho": [0.186, 0.43, 0.376]
   },
   "frigideira": {
     "grupo": "cozinha",
@@ -693,6 +811,54 @@
     "materiais": ["loucaBranca", "paoDeQueijo", "paoDeQueijoTopo"],
     "tamanho": [0.32, 0.089, 0.32]
   },
+  "pegada-capivara": {
+    "grupo": "pegadas",
+    "triangulos": 1168,
+    "kb": 62.0,
+    "nos": {
+      "pegada-capivara": 1168
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["barroFundo", "barroPegada"],
+    "tamanho": [0.206, 0.02, 0.218]
+  },
+  "pegada-passaro": {
+    "grupo": "pegadas",
+    "triangulos": 1004,
+    "kb": 53.2,
+    "nos": {
+      "pegada-passaro": 1004
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["barroFundo", "barroPegada"],
+    "tamanho": [0.234, 0.02, 0.269]
+  },
+  "pegada-rex": {
+    "grupo": "pegadas",
+    "triangulos": 1086,
+    "kb": 59.4,
+    "nos": {
+      "pegada-rex": 1086
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["barroFundo", "barroPegada"],
+    "tamanho": [0.879, 0.05, 0.886]
+  },
+  "pegada-triceratopo": {
+    "grupo": "pegadas",
+    "triangulos": 954,
+    "kb": 52.0,
+    "nos": {
+      "pegada-triceratopo": 954
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["barroFundo", "barroPegada"],
+    "tamanho": [0.766, 0.05, 0.678]
+  },
   "peixe": {
     "grupo": "ingredientes",
     "triangulos": 1280,
@@ -903,6 +1069,46 @@
     "materiais": ["corda", "madeiraEscura", "placa", "placaFace"],
     "tamanho": [0.622, 1.35, 0.085]
   },
+  "plantas-do-ceu": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 2860,
+    "kb": 82.8,
+    "nos": {
+      "flor-de-nuvem-broto": 128,
+      "flor-de-nuvem-crescendo": 352,
+      "flor-de-nuvem-maduro": 640,
+      "estrela-trepadeira-broto": 120,
+      "estrela-trepadeira-crescendo": 298,
+      "estrela-trepadeira-maduro": 694,
+      "arco-iris-de-petala-broto": 128,
+      "arco-iris-de-petala-crescendo": 212,
+      "arco-iris-de-petala-maduro": 288
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "arcoMiolo",
+      "botaoArco",
+      "botaoEstrela",
+      "botaoNuvem",
+      "cauleCeu",
+      "estacaCeu",
+      "florEstrela",
+      "florEstrelaMiolo",
+      "florNuvem",
+      "florNuvemMiolo",
+      "florNuvemSombra",
+      "folhaCeu",
+      "folhaCeuEscura",
+      "petalaAmarela",
+      "petalaAzul",
+      "petalaLaranja",
+      "petalaRoxa",
+      "petalaVerde",
+      "petalaVermelha"
+    ],
+    "tamanho": [0.287, 0.605, 0.287]
+  },
   "polvilho": {
     "grupo": "ingredientes",
     "triangulos": 1464,
@@ -1035,6 +1241,30 @@
     "materiais": ["alga", "algaEscura", "corda", "etiqueta", "pacoteAlga"],
     "tamanho": [0.14, 0.208, 0.068]
   },
+  "semente-arco-iris-de-petala": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 792,
+    "kb": 26.7,
+    "nos": {
+      "semente-arco-iris-de-petala": 792
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "arcoMiolo",
+      "cauleCeu",
+      "etiqueta",
+      "folhaCeuEscura",
+      "pacoteArcoIris",
+      "petalaAmarela",
+      "petalaAzul",
+      "petalaLaranja",
+      "petalaRoxa",
+      "petalaVerde",
+      "petalaVermelha"
+    ],
+    "tamanho": [0.14, 0.208, 0.075]
+  },
   "semente-batata-doce": {
     "grupo": "sementes",
     "triangulos": 806,
@@ -1054,6 +1284,25 @@
     ],
     "tamanho": [0.14, 0.208, 0.071]
   },
+  "semente-estrela-trepadeira": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 726,
+    "kb": 23.0,
+    "nos": {
+      "semente-estrela-trepadeira": 726
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "cauleCeu",
+      "etiqueta",
+      "florEstrela",
+      "florEstrelaMiolo",
+      "folhaCeuEscura",
+      "pacoteEstrelaTrepadeira"
+    ],
+    "tamanho": [0.14, 0.208, 0.074]
+  },
   "semente-flor-de-algodao": {
     "grupo": "sementes",
     "triangulos": 1204,
@@ -1065,6 +1314,26 @@
     "clipes": [],
     "materiais": ["algodao", "algodaoSombra", "cabinho", "casulo", "etiqueta", "pacoteAlgodao"],
     "tamanho": [0.14, 0.208, 0.075]
+  },
+  "semente-flor-de-nuvem": {
+    "grupo": "plantas-do-ceu",
+    "triangulos": 1144,
+    "kb": 30.6,
+    "nos": {
+      "semente-flor-de-nuvem": 1144
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "cauleCeu",
+      "etiqueta",
+      "florNuvem",
+      "florNuvemMiolo",
+      "florNuvemSombra",
+      "folhaCeu",
+      "pacoteFlorDeNuvem"
+    ],
+    "tamanho": [0.14, 0.208, 0.074]
   },
   "semente-milho": {
     "grupo": "sementes",

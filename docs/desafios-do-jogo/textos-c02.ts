@@ -13,13 +13,15 @@ import {
 /**
  * As réguas comuns dos pacotes C02 (30/10/2026): textos da criança sem travessão, sem
  * exclamação e sem abrir com pergunta; objetivos válidos para o core, todos rodando o projeto, e
- * dentro do orçamento do executor; desafio do dia sem cor e sem pedido de publicação.
+ * dentro do orçamento do executor. Desde §6.28 A2, cada um é o sexto quadro da ilha: pinta e pede
+ * publicação, menos o do Vale (abre só com o curso-base do posto, A3).
  */
 export function conferirDesafioC02(d: DesafioDoManifesto) {
-  expect(d.tipo).toBe('desafio-do-dia')
-  expect(d.quadro).toBeNull()
-  expect(d.publicar).toBe(false)
-  expect(d.conteudo.recompensa.cor).toBe(false)
+  expect(d.tipo).toBe('quadro-das-cores')
+  expect(d.quadro).toBe(6)
+  // O Vale em texto espera os cursos do Arquiteto (a Ponte não tem fonte ainda; A1).
+  expect(d.publicar).toBe(d.ilha !== 'vale-dos-dinos')
+  expect(d.conteudo.recompensa.cor).toBe(true)
   expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
   const textos = [
     d.conteudo.titulo,

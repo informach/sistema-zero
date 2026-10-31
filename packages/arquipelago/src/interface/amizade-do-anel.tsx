@@ -7,6 +7,7 @@ import { type MoradorDoAnel, VIDA_NO_ANEL } from '../sistemas/moradores-do-anel'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { Coracoes, Presentes } from './capi'
 import { entregarPedidoPeloPainel } from './entrega-do-pedido'
+import { PedidoDoEstudio } from './pedido-do-estudio'
 
 /** Mesma conversa do mundo, agora com amizade, presentes e pedidos reais. */
 export function PainelDeAmizadeDoAnel({ quem, painel }: { quem: MoradorDoAnel; painel: string }) {
@@ -98,10 +99,11 @@ export function PainelDeAmizadeDoAnel({ quem, painel }: { quem: MoradorDoAnel; p
             salvamento.moradores[quem].pedido?.dia === diaDe(new Date()) && (
               <div className="arq-capi-pedido feito">
                 <b>Pedido de hoje entregue</b>
-                <span>Outro pedido chega na próxima visita em um novo dia.</span>
+                <span>Outro pedido chega amanhã.</span>
               </div>
             )
           )}
+          <PedidoDoEstudio quem={quem} />
           <div className="arq-menu-acoes">
             {pedido && !falta && (
               <button

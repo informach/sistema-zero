@@ -1,4 +1,5 @@
 import {
+  type AndarDeCima,
   BIT_DO_COMODO,
   COMODOS_DA_IRIS,
   type ComodoDaIris,
@@ -10,6 +11,7 @@ import {
   ObraDaCasaSchema,
   type PisoDaCasa,
   type PisoDoQuintal,
+  type Terreno,
 } from '@sistemazero/arquipelago-contracts'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
@@ -20,11 +22,28 @@ import {
   liberado,
   recadoDaTranca,
 } from '../sistemas/chaves-da-casa'
-import { falaDaRecusa } from '../sistemas/construcao/falas'
+import {
+  andarDaObra,
+  conferirAndar,
+  FALA_DO_ANDAR,
+  obraDeCima,
+  podeTerAndar,
+  porEscada,
+  type RecusaDoAndar,
+  tirarEscada,
+} from '../sistemas/construcao/andar'
+import { falaDaRecusa, falaDoAviso } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
-import { type Celula, LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
+import {
+  type Celula,
+  LOTE_DA_CASA,
+  type Lote,
+  loteDaCasa,
+  OBRA_VAZIA,
+} from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
 import { hortaComOQuintal } from '../sistemas/construcao/quintal'
+import { FALA_DO_TERRENO, moldarCelulas, podeMoldarOTerreno } from '../sistemas/construcao/terreno'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
@@ -79,17 +98,66 @@ export const CAMERA_DE_OBRA = {
 /** Onde está a obra que o Construir mexe: a casa, ou a cabana de uma ilha. */
 export type OndeSeConstroi = Lote['id']
 
+/**
+ * Onde mora a obra de uma cabana que não está no salvamento (o iglu do Pico, no documento à parte
+ * do serviço): ler e gravar passam por ela.
+ */
+export interface FonteDaObra {
+  ler(): Obra | null
+  gravar(obra: Obra): void
+}
+
+/** Onde mora o terreno moldado do lote da casa (o documento à parte do serviço). */
+export interface FonteDoTerreno {
+  ler(): Terreno | null
+  gravar(terreno: Terreno | null): void
+}
+
+/** Onde mora o andar de cima da casa (o documento à parte do serviço). */
+export interface FonteDoAndar {
+  ler(): AndarDeCima | null
+  gravar(andar: AndarDeCima | null): void
+}
+
+/** Em que andar da casa o Construir mexe. */
+export type CamadaDaObra = 'chao' | 'cima'
+
+/** A fala de uma recusa do andar quando é o térreo que mudou (a obra de baixo quebraria a de cima). */
+function falaDoTerreoNoAndar(r: RecusaDoAndar): string {
+  return FALA_DO_ANDAR[r === 'com-coisa' || r === 'parede-no-meio' ? r : 'quebra-o-andar']
+}
+
+/** As ferramentas que valem lá em cima. */
+const FERRAMENTAS_DE_CIMA: readonly Ferramenta[] = [
+  'olhar',
+  'parede',
+  'porta',
+  'janela',
+  'piso',
+  'movel',
+  'apagar',
+]
+
 /** A cabana da ilha ativa (registrada por ela) e se a pessoa está no lote ou perto dele. */
 export interface CabanaAoAlcance {
   lote: Lote
   perto: boolean
+  /** A obra fora do salvamento (o iglu); sem ela, a cabana é a de `construcao.cabanas`. */
+  fonte?: FonteDaObra
 }
 
-/** A obra de cada lugar no salvamento (a casa, ou a cabana da ilha). */
-export function obraDe(s: EstadoDoJogo, onde: OndeSeConstroi): Obra | null {
-  return onde === 'casa'
-    ? s.salvamento.construcao.casa
-    : (s.salvamento.construcao.cabanas[onde] ?? null)
+/**
+ * A obra de cada lugar: a casa e as cabanas do salvamento, ou a da cabana registrada com fonte
+ * própria (o iglu).
+ */
+export function obraDe(
+  s: EstadoDoJogo,
+  onde: OndeSeConstroi,
+  cabana?: CabanaAoAlcance | null,
+): Obra | null {
+  if (onde === 'casa') return s.salvamento.construcao.casa
+  if (cabana?.fonte && cabana.lote.id === onde) return cabana.fonte.ler()
+  return onde === 'pico' ? null : (s.salvamento.construcao.cabanas[onde] ?? null)
 }
 
 export interface EstadoDaConstrucao {
@@ -112,11 +180,45 @@ export interface EstadoDaConstrucao {
   antes: Obra[]
   /** A pessoa está num cômodo da obra (o telhado sai e as paredes da frente são cortadas). */
   dentroDaObra: boolean
+  /**
+   * Por que não dá, enquanto o dedo ou o mouse passa por cima (a prévia vermelha): a linha de baixo
+   * do Construir mostra isso no lugar da dica da ferramenta. `null` volta a dica.
+   */
+  motivoDaPrevia: string | null
+  mostrarMotivo(motivo: string | null): void
+  /**
+   * A porta de entrada escolhida com a Porta (31/10/2026): o próximo toque numa parede de fora leva
+   * a entrada e a varanda para lá. Solta ao trocar de ferramenta, ao desfazer e ao fechar.
+   */
+  entradaSelecionada: boolean
+  selecionarEntrada(sim: boolean): void
   /** A obra que o Construir aberto mexe (escolhida ao abrir: a cabana, se a pessoa está nela). */
   onde: OndeSeConstroi
   cabana: CabanaAoAlcance | null
   /** A ilha ativa registra a cabana dela (e solta, com `null`, ao sair). */
   registrarCabana(c: CabanaAoAlcance | null): void
+  /** O Terreno sobe (`1`) ou desce (`-1`) o chão. */
+  moldar: 1 | -1
+  escolherMoldar(passo: 1 | -1): void
+  /** A casa registra onde mora o terreno (e solta, com `null`). */
+  fonteDoTerreno: FonteDoTerreno | null
+  registrarTerreno(f: FonteDoTerreno | null): void
+  /** O térreo ou o andar de cima (Pico em diante, com a escada posta). */
+  camada: CamadaDaObra
+  escolherCamada(c: CamadaDaObra): void
+  /** A casa registra onde mora o andar de cima (e solta, com `null`). */
+  fonteDoAndar: FonteDoAndar | null
+  registrarAndar(f: FonteDoAndar | null): void
+  /** Os andares de antes (o Desfazer lá em cima e o da Escada). */
+  antesDoAndar: (AndarDeCima | null)[]
+  /** Põe a escada com o pé na célula (o giro é o do Girar). */
+  porAEscada(pe: Celula): boolean
+  /** Tira a escada (e o andar, que fica vazio). */
+  tirarAEscada(): boolean
+  /** Os terrenos de antes (o Desfazer do Terreno, à parte do da obra). */
+  antesDoTerreno: (Terreno | null)[]
+  /** Sobe ou desce as células no lote da casa (ou faz o Zappy explicar por que não dá). */
+  moldarTerreno(celulas: readonly Celula[]): boolean
   definirPertoDaCabana(perto: boolean): void
   definirDentroDaObra(dentro: boolean): void
   escolher(f: Ferramenta): void
@@ -154,7 +256,17 @@ export function lojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
  * Grava a obra de um lugar. Na casa, a horta segue os canteiros do quintal (`hortaComOQuintal`); a
  * cabana não tem canteiro.
  */
-function mudarObra(loja: LojaDoJogo, obra: Obra, onde: OndeSeConstroi) {
+function mudarObra(
+  loja: LojaDoJogo,
+  obra: Obra,
+  onde: OndeSeConstroi,
+  cabana?: CabanaAoAlcance | null,
+) {
+  if (onde !== 'casa' && cabana?.fonte && cabana.lote.id === onde) {
+    cabana.fonte.gravar(obra)
+    return
+  }
+  if (onde === 'pico') return
   loja.getState().mudar((s) =>
     onde === 'casa'
       ? {
@@ -202,9 +314,85 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
     dentroDaObra: false,
+    motivoDaPrevia: null,
+    mostrarMotivo: (motivoDaPrevia) => {
+      if (get().motivoDaPrevia !== motivoDaPrevia) set({ motivoDaPrevia })
+    },
+    entradaSelecionada: false,
+    selecionarEntrada: (entradaSelecionada) => {
+      if (get().entradaSelecionada !== entradaSelecionada) set({ entradaSelecionada })
+    },
     onde: 'casa',
     cabana: null,
     registrarCabana: (cabana) => set({ cabana }),
+    moldar: 1,
+    escolherMoldar: (moldar) => set({ moldar, ferramenta: 'terreno', aconchegoAberto: false }),
+    fonteDoTerreno: null,
+    registrarTerreno: (fonteDoTerreno) => set({ fonteDoTerreno }),
+    camada: 'chao',
+    escolherCamada: (camada) => {
+      if (get().camada === camada) return
+      // Lá em cima não há quintal, objeto, móvel, terreno nem escada: a ferramenta volta à Parede.
+      const f = get().ferramenta
+      set({
+        camada,
+        ferramenta: camada === 'cima' && !FERRAMENTAS_DE_CIMA.includes(f) ? 'parede' : f,
+        aconchegoAberto: false,
+        motivoDaPrevia: null,
+        entradaSelecionada: false,
+      })
+    },
+    fonteDoAndar: null,
+    registrarAndar: (fonteDoAndar) => set({ fonteDoAndar }),
+    antesDoAndar: [],
+    porAEscada(pe) {
+      const jogo = loja.getState()
+      const fonte = get().fonteDoAndar
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return false
+      if (!fonte || get().onde !== 'casa' || !podeTerAndar(jogo.jornada)) return false
+      const obra = jogo.salvamento.construcao.casa
+      if (!obra) return false
+      const antes = fonte.ler()
+      const r = porEscada(antes, obra, loteDaCasa(jogo.jornada), pe, get().giro)
+      if (!r.ok) {
+        jogo.dizer(FALA_DO_ANDAR[r.motivo])
+        return false
+      }
+      set({ antesDoAndar: [...get().antesDoAndar, antes].slice(-LEMBRA_PARA_TRAS) })
+      fonte.gravar(r.andar)
+      return true
+    },
+    tirarAEscada() {
+      const jogo = loja.getState()
+      const fonte = get().fonteDoAndar
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR || !fonte) return false
+      const antes = fonte.ler()
+      const r = tirarEscada(antes)
+      if (!r.ok) {
+        jogo.dizer(FALA_DO_ANDAR[r.motivo])
+        return false
+      }
+      set({ antesDoAndar: [...get().antesDoAndar, antes].slice(-LEMBRA_PARA_TRAS) })
+      fonte.gravar(r.andar)
+      return true
+    },
+    antesDoTerreno: [],
+    moldarTerreno(celulas) {
+      const jogo = loja.getState()
+      const fonte = get().fonteDoTerreno
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return false
+      if (!fonte || get().onde !== 'casa' || !podeMoldarOTerreno(jogo.jornada)) return false
+      const antes = fonte.ler()
+      const obra = jogo.salvamento.construcao.casa
+      const r = moldarCelulas(antes, obra, loteDaCasa(jogo.jornada), celulas, get().moldar)
+      if (!r.ok) {
+        jogo.dizer(FALA_DO_TERRENO[r.motivo])
+        return false
+      }
+      set({ antesDoTerreno: [...get().antesDoTerreno, antes].slice(-LEMBRA_PARA_TRAS) })
+      fonte.gravar(r.terreno)
+      return true
+    },
     definirPertoDaCabana: (perto) => {
       const c = get().cabana
       if (c && c.perto !== perto) set({ cabana: { ...c, perto } })
@@ -214,7 +402,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     },
     escolher: (ferramenta) => {
       if (!destrancado(loja, comodoDaFerramenta(ferramenta))) return
-      set({ ferramenta, aconchegoAberto: false })
+      set({ ferramenta, aconchegoAberto: false, motivoDaPrevia: null, entradaSelecionada: false })
     },
     escolherJanela: (janela) => {
       if (!destrancado(loja, comodoDaJanela(janela))) return
@@ -247,7 +435,44 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         return false
       }
       const onde = get().onde
-      const atual = obraDe(loja.getState(), onde)
+      const cabana = get().cabana
+      const fonteDoAndar = onde === 'casa' ? get().fonteDoAndar : null
+      if (get().camada === 'cima' && onde === 'casa') {
+        // Lá em cima: a obra que chega é a de cima (`obraDeCima`), gravada no andar.
+        const antesDoAndar = fonteDoAndar?.ler() ?? null
+        const casa = jogo.salvamento.construcao.casa
+        if (!fonteDoAndar || !antesDoAndar?.escada || !casa) {
+          jogo.dizer(FALA_DO_ANDAR['sem-escada'])
+          return false
+        }
+        const novasEmCima =
+          chavesUsadasNaObra(r.obra) &
+          ~chavesUsadasNaObra(obraDeCima(antesDoAndar)) &
+          ~jogo.salvamento.chaves
+        const trancadoEmCima = COMODOS_DA_IRIS.find((c) => (novasEmCima & BIT_DO_COMODO[c]) !== 0)
+        if (trancadoEmCima) {
+          jogo.dizer(recadoDaTranca(trancadoEmCima))
+          return false
+        }
+        const novo = andarDaObra(r.obra, antesDoAndar.escada)
+        const recusa = conferirAndar(novo, casa, loteDaCasa(jogo.jornada))
+        if (recusa) {
+          jogo.dizer(FALA_DO_ANDAR[recusa])
+          return false
+        }
+        set({ antesDoAndar: [...get().antesDoAndar, antesDoAndar].slice(-LEMBRA_PARA_TRAS) })
+        fonteDoAndar.gravar(novo)
+        if (r.aviso) jogo.dizer(falaDoAviso(r.aviso))
+        return true
+      }
+      // No térreo, a mudança não pode tirar o chão do andar de cima.
+      const andar = fonteDoAndar?.ler() ?? null
+      const quebra = andar?.escada ? conferirAndar(andar, r.obra, loteDaCasa(jogo.jornada)) : null
+      if (quebra) {
+        jogo.dizer(falaDoTerreoNoAndar(quebra))
+        return false
+      }
+      const atual = obraDe(loja.getState(), onde, cabana)
       // Nada trancado entra na obra (N11): só o que a chave abriu ou o que a obra já usava.
       const novas =
         chavesUsadasNaObra(r.obra) & ~chavesUsadasNaObra(atual) & ~jogo.salvamento.chaves
@@ -258,24 +483,62 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       }
       const historico = atual === ultimaObra ? get().antes : []
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
-      mudarObra(loja, r.obra, onde)
+      mudarObra(loja, r.obra, onde, cabana)
       ultimaObra = r.obra
+      if (r.aviso) jogo.dizer(falaDoAviso(r.aviso))
       return true
     },
     desfazer() {
       const jogo = loja.getState()
       if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return
+      // Com o Terreno na mão, o Desfazer volta o chão (a obra tem o histórico dela).
+      if (get().ferramenta === 'terreno') {
+        const lista = get().antesDoTerreno
+        const fonte = get().fonteDoTerreno
+        if (!fonte || lista.length === 0) return
+        set({ antesDoTerreno: lista.slice(0, -1) })
+        fonte.gravar(lista.at(-1) ?? null)
+        return
+      }
+      // Lá em cima e com a Escada na mão, o Desfazer volta o andar.
+      if (get().camada === 'cima' || get().ferramenta === 'escada') {
+        const lista = get().antesDoAndar
+        const fonte = get().fonteDoAndar
+        if (!fonte || lista.length === 0) return
+        const anteriorDeCima = lista.at(-1) ?? null
+        // O andar de antes precisa caber no térreo de agora (ele pode ter mudado depois).
+        const casa = jogo.salvamento.construcao.casa
+        const naoCabe =
+          anteriorDeCima?.escada && casa
+            ? conferirAndar(anteriorDeCima, casa, loteDaCasa(jogo.jornada))
+            : null
+        if (naoCabe) {
+          jogo.dizer(FALA_DO_ANDAR[naoCabe])
+          return
+        }
+        set({ antesDoAndar: lista.slice(0, -1) })
+        fonte.gravar(anteriorDeCima)
+        return
+      }
       const onde = get().onde
-      if (obraDe(jogo, onde) !== ultimaObra) {
+      const cabana = get().cabana
+      if (obraDe(jogo, onde, cabana) !== ultimaObra) {
         set({ antes: [] })
-        ultimaObra = obraDe(jogo, onde)
+        ultimaObra = obraDe(jogo, onde, cabana)
         return
       }
       const antes = get().antes
       const anterior = antes.at(-1)
       if (!anterior) return
-      set({ antes: antes.slice(0, -1) })
-      mudarObra(loja, anterior, onde)
+      // Voltar o térreo não pode tirar o chão do andar de cima (N2): o mesmo cuidado do aplicar.
+      const andar = onde === 'casa' ? (get().fonteDoAndar?.ler() ?? null) : null
+      const quebra = andar?.escada ? conferirAndar(andar, anterior, loteDaCasa(jogo.jornada)) : null
+      if (quebra) {
+        jogo.dizer(falaDoTerreoNoAndar(quebra))
+        return
+      }
+      set({ antes: antes.slice(0, -1), entradaSelecionada: false })
+      mudarObra(loja, anterior, onde, cabana)
       ultimaObra = anterior
     },
     abrir() {
@@ -283,23 +546,35 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       if (!podeConstruir(s)) return
       const cabana = get().cabana
       const onde: OndeSeConstroi = cabana?.perto ? cabana.lote.id : 'casa'
-      if (!obraDe(s, onde)) {
+      if (!obraDe(s, onde, cabana)) {
         const inicial = onde === 'casa' ? LOTE_DA_CASA.obraInicial : OBRA_VAZIA
-        mudarObra(loja, structuredClone(inicial), onde)
+        mudarObra(loja, structuredClone(inicial), onde, cabana)
       }
-      ultimaObra = obraDe(loja.getState(), onde)
+      ultimaObra = obraDe(loja.getState(), onde, cabana)
       set({
         onde,
         aconchegoAberto: false,
         celulaObservada: null,
+        motivoDaPrevia: null,
+        entradaSelecionada: false,
         antes: [],
+        antesDoTerreno: [],
+        antesDoAndar: [],
+        camada: 'chao',
         camera: { ...get().camera, alvo: alvoAoAbrir(onde, cabana), giro: 0 },
       })
       s.abrirMenu(false)
       s.abrirPainel(PAINEL_DE_CONSTRUIR)
     },
     fechar() {
-      set({ antes: [] })
+      set({
+        antes: [],
+        antesDoTerreno: [],
+        antesDoAndar: [],
+        camada: 'chao',
+        motivoDaPrevia: null,
+        entradaSelecionada: false,
+      })
       ultimaObra = null
       if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) loja.getState().abrirPainel(null)
     },

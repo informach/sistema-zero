@@ -7,7 +7,7 @@ import {
   useBeforePhysicsStep,
   useRapier,
 } from '@react-three/rapier'
-import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
+import type { Obra, QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
@@ -28,10 +28,13 @@ import {
 import { DESCER_DO_BALAO, podeDescerDoBalao } from '../sistemas/balao'
 import { comLanterna } from '../sistemas/borroes'
 import { CIPO, type Ponto } from '../sistemas/cipo'
+import { entradaDaObra, frenteDaEntrada } from '../sistemas/construcao/entrada'
+import { LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { BANCO } from '../sistemas/descanso'
+import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
 import type { EntradaDaLocomocao } from '../sistemas/locomocao'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
@@ -50,7 +53,7 @@ import { comPatins, RAPIDEZ_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado } from '../sistemas/pausa'
 import { temPlanador } from '../sistemas/planador'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
-import { falaDaSaida, saiuDaVisita } from '../sistemas/visitas'
+import { falaDaSaida, obraVisivel, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
 import {
   acharBracos,
@@ -94,17 +97,23 @@ const INCLINACAO_NO_PLANADOR = 0.25
 const MASSA_DA_CRIANCA = 30
 /**
  * Para onde ir quando o ponto pedido, dentro de casa, cai em cima de um móvel: o lugar livre mais
- * perto dele (ou a porta, com o quarto todo tomado). `null` quando o ponto já está livre.
+ * perto dele (ou a frente da porta, com o quarto todo tomado: na casa construída, a da porta de
+ * entrada, que pode ter mudado de lugar). `null` quando o ponto já está livre.
  */
 function lugarSeguro(
   quarto: QuartoDoJogo,
   pedido: { x: number; z: number },
+  obra: Obra | null,
 ): { x: number; y: number; z: number } | null {
   const noQuarto = { x: pedido.x - CENTRO_DA_CASA.x, z: pedido.z - CENTRO_DA_CASA.z }
   const livre = lugarLivreNoQuarto(quarto, noQuarto, QUARTO)
   if (livre === noQuarto) return null
-  const x = livre ? CENTRO_DA_CASA.x + livre.x : CENTRO_DA_CASA.x + PORTA.x
-  const z = livre ? CENTRO_DA_CASA.z + livre.z : CENTRO_DA_CASA.z + QUARTO.fundo / 2 + 1.2
+  const entrada = obra && !livre ? entradaDaObra(obra, LOTE_DA_CASA_GRANDE) : null
+  const fora = entrada
+    ? frenteDaEntrada(entrada, 1.2)
+    : { x: CENTRO_DA_CASA.x + PORTA.x, z: CENTRO_DA_CASA.z + QUARTO.fundo / 2 + 1.2 }
+  const x = livre ? CENTRO_DA_CASA.x + livre.x : fora.x
+  const z = livre ? CENTRO_DA_CASA.z + livre.z : fora.z
   return { x, y: alturaDaIlha(x, z) + DO_CENTRO_AO_PE + 0.2, z }
 }
 
@@ -148,7 +157,8 @@ export function Personagem() {
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
 
   const inicial = useMemo(() => {
-    const { salvamento, quarto } = loja.getState()
+    const estado = loja.getState()
+    const { salvamento, quarto } = estado
     const p = salvamento.posicao
     if (p && !dentroDaCasa(p.x, p.z)) return p
     // Dentro de casa (o começo de sempre ou uma posição salva): os móveis podem ter mudado.
@@ -157,7 +167,7 @@ export function Personagem() {
       y: alturaDaIlha(INICIO.x, INICIO.z) + DO_CENTRO_AO_PE + 0.2,
       z: INICIO.z,
     }
-    return lugarSeguro(quarto, pedido) ?? pedido
+    return lugarSeguro(quarto, pedido, obraVisivel(estado)) ?? pedido
   }, [loja])
 
   // A criança mudou o quarto com o jogo aberto: se um móvel caiu em cima dela, ela sai para o lado.
@@ -165,13 +175,13 @@ export function Personagem() {
     () =>
       loja.subscribe((s, antes) => {
         if (s.quarto === antes.quarto || !dentroDaCasa(rastro.x, rastro.z)) return
-        const seguro = lugarSeguro(s.quarto, rastro)
+        const seguro = lugarSeguro(s.quarto, rastro, obraVisivel(s))
         if (seguro) pedidos.teleporte = seguro
       }),
     [loja, rastro, pedidos],
   )
 
-  // Plataformas cinemáticas carregam o corpo. O bicho continua fora do caminho.
+  // Plataformas cinemáticas carregam o corpo; os bichos seguram o corpo dela (espaço dos bichos).
   const aceitaColisorDoMundo = useMemo(
     () => (colisor: RapierCollider) => {
       const corpo = colisor.parent()
@@ -185,10 +195,9 @@ export function Personagem() {
       // Sentado no trenó, o colisor dele (que fica no platô) não segura quem desce.
       if (v.modo === 'escorregar' && (corpo?.userData as { peca?: string })?.peca === 'treno')
         return false
-      return (
-        !corpo?.isKinematic() ||
-        (corpo.userData as { plataformaDoMundo?: boolean } | undefined)?.plataformaDoMundo === true
-      )
+      // Plataformas e pontes cinemáticas carregam; os bichos seguram só no modo chão. ⚠️ Nada de
+      // `corpo.isKinematic()` aqui: dentro da consulta ele lança e o Rapier conta como sólido.
+      return corpoQueSegura(corpo?.userData, v.modo)
     },
     [v.modo],
   )

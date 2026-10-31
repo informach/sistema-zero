@@ -96,7 +96,9 @@ try {
   })
   for (const publico of ['kids', 'adulto'] as const)
     for (const celular of [false, true]) {
-      for (const quem of publico === 'adulto' ? (['irie'] as const) : MORADORES_COM_NOVA_AMIZADE) {
+      // O Nico (sua ilha) tem o verificador próprio, `verificar-nico-browser.ts`.
+      const doAnel = MORADORES_COM_NOVA_AMIZADE.filter((m) => m !== 'nico')
+      for (const quem of publico === 'adulto' ? (['irie'] as const) : doAnel) {
         if (process.env.ARQUIPELAGO_PUBLICO && process.env.ARQUIPELAGO_PUBLICO !== publico) continue
         if (
           process.env.ARQUIPELAGO_CELULAR &&

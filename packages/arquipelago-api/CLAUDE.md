@@ -1,5 +1,75 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Obra estendida (E04 e B14, 31/10/2026)
+
+O iglu do Pico, o andar de cima da casa e o terreno moldado não cabem no salvamento: moram num
+documento à parte (`ObraEstendidaSchema` do contrato, até 32 KB), um por jogador e público, com
+revisão própria. Migração gerada 0023 `obra_estendida`, tabela `obras_estendidas` (chave
+jogador + público, FK do save com cascade, revisão >= 1, `documento` JSONB com versão 1 e teto de
+64 KB no texto do JSONB, que põe espaço depois de `:` e `,`). A mesma 0023 traz a restrição dos
+percursos dos `fantasmas` com o `farol-subida` da V22.
+
+`GET /arquipelago/obra-estendida` devolve `{revisao, obra}` (0 e `null` antes da primeira).
+`PUT` recebe `{revisaoBase, obra}` (`GravarObraEstendidaSchema`, corpo real até 33 KB) e grava
+numa instrução só, como o salvamento: base velha → 409 `OBRA_ESTENDIDA_DESATUALIZADA` com
+`atual: {revisao, obra}`; sem salvamento do mesmo público → 409 `SALVAMENTO_NECESSARIO`; guardado
+ilegível → 409 `OBRA_ESTENDIDA_ILEGIVEL`; suporte → 403 `SOMENTE_LEITURA`. Tudo `private,
+no-store`. `ServicoDaObraEstendida`, `DrizzleRepositorioDaObraEstendida`, rotas em
+`interfaces/http/rotas-da-obra-estendida.ts` (só com a dependência `obraEstendida`). Gateway: rota
+`arquipelago-obra-estendida` (GET e PUT, 33 KB, 120 por minuto). Testes
+`tests/unit/obra-estendida.test.ts` e `tests/db/obra-estendida.test.ts`, variável local exclusiva
+`ARQUIPELAGO_OBRA_ESTENDIDA_TEST_DATABASE_URL` ou `TEST_DATABASE_URL` do CI, Postgres descartável
+`arquipelago_test*`.
+
+**Ordem de implantação:** a migração e a API primeiro, depois o gateway (a rota nova), depois o
+member-shell e os dois apps (o repasse `/api/arquipelago/obra-estendida`), e só então o jogo que
+chama. Antes disso o jogo recebe 404 na leitura e não constrói nada da obra estendida.
+
+## A ilha do minijogo (B10, 31/10/2026)
+
+- `GET /minijogos` (e a lista da família) traz `ilha` em cada minijogo quando o desafio existe no
+  banco: a ilha publicada (`metadados_publicados->>'ilha'`), senão a do rascunho. Sem migração (é
+  uma junção com `desafios`). A barraca da Vila Doce e o quiosque do Pico mostram os da ilha.
+- **Ordem de implantação:** o member-shell (e o Kids) antes do serviço, porque a lista dos
+  minijogos da família é conferida com o esquema estrito lá; o campo novo é opcional no contrato.
+
+## Desafios na plataforma: curso, "Aprenda isso em", medição e pedido de morador (lote 8, 31/10/2026)
+
+- **A3:** `situacaoDoDesafio` ganhou `falta-curso` (depois da ilha, antes dos blocos): o desafio
+  fora dos blocos (Python, Ponte, Pro, por `linguagemDoProjeto` do projeto inicial) pede o
+  curso-base do posto da ilha entre os `cursosBase` que o Members devolve no jogador. A equipe vê
+  tudo. Members anterior (sem o campo) = nenhum curso-base.
+- **A24:** a lista traz `aprenda` em todo desafio (`aprendaODesafio`): o curso-base do posto na
+  linguagem do posto, ou o curso mais adiantado entre os blocos exigidos.
+- **A26:** `POST .../verificar` aceita `dicas` (opcional, até o teto de dicas). A migração 0022
+  `medicao_da_aprendizagem` conta `tentativas` e guarda a maior quantidade de `dicas` em
+  `desafio_progresso`, grava as duas na conclusão (`desafios_concluidos`, nulas antes) e conta
+  `envios` nos `minijogos`. A medição ganhou `aprendizagem` (conclusões medidas, acerto na
+  primeira, tentativas, sem dica, dicas, rotinas guardadas e as que rodam até o fim sem erro,
+  reenvios e, pelo Members `GET /members/internal/arquipelago/compras`, compras e moedas). Cada
+  número com a régua do grupo mínimo; compras sem o Members ficam em `semFonte`.
+- **Ordem de implantação:** os contratos são estritos. Primeiro a migração e a API (aceitam os
+  campos novos como opcionais), depois o Members (manda `cursosBase` e responde `/compras`), o
+  Admin e o member-shell (manda `dicas`).
+
+## Teto semanal com uma regra só e salvamento sem Members (A32 e A16, 31/10/2026)
+
+O que passa do teto semanal espera a semana seguinte e nunca se perde, em tudo o que paga moedas.
+Desafios e turnos já faziam assim; pedidos e vendas passaram a fazer. A migração gerada 0021,
+`teto_espera_a_semana`, acrescenta `teto_semana` a `pedidos_remunerados` e `vendas_na_feira`
+(obrigatória só com `teto`, índice parcial `*_teto_espera`) e marca com a semana de São Paulo os
+que já tinham batido no teto, para eles também voltarem. `GET /pedidos/pendentes` e
+`GET /feira/vendas/pendentes` (o jogo chama na abertura) creditam de novo um teto de semana
+anterior por abertura, com a mesma chave; carteira fora só registra aviso. Na mesma semana nem a
+retomada nem a abertura chamam a carteira. Testes em `tests/db/pedidos.test.ts`,
+`tests/db/vendas.test.ts` e `pedidos-members.test.ts` (carteira real: o Members não grava a chave
+recusada pelo teto, então a tentativa seguinte pode pagar).
+
+O salvamento só consulta a posse da galeria no Members para as aparências da galeria que ainda não
+estavam no salvamento guardado (A16): as que já estavam foram conferidas quando entraram. O save de
+todo dia não depende do Members; uma aparência nova com o Members fora continua recusada (424).
+Teste em `tests/integration/galeria.test.ts`. Implantar a migração e a API antes do jogo.
+
 ## Visitas entre amigos: revogação, troca e teto (N08a, R01 a R03, 31/10/2026)
 
 O aceite vale para o convite que o originou. `apagarConvite` e `gerarConvite` (troca de código)
@@ -9,6 +79,12 @@ apagam, na mesma transação, as `casas_de_amigos` daquela criança: código nov
 de contar o teto (`ResultadoDoAceite`: `ok`, `limite`, `sem-convite`). `casa` confere tudo de
 novo depois de ler o salvamento e o quarto, como as visitas adultas. Sem migração nova. Testes no
 bloco "revogação, troca de código e teto" de `tests/db/visitas-de-amigos.test.ts`.
+
+## Salvamento V21 e o Nico nos pedidos (31/10/2026)
+
+A V21 traz `moradores.nico` e a companhia `filhote`. Migração gerada 0020 troca a restrição
+`pedidos_remunerados_morador` para aceitar `nico`. Implantar a migração e a API antes do jogo novo:
+um jogo V21 diante da API anterior teria o salvamento recusado como versão futura.
 
 ## Salvamento V20 (30/10/2026)
 
@@ -58,6 +134,28 @@ suporte. Resposta `CoresConquistadasSchema`, sem dados pessoais, gabarito ou car
 Testes HTTP reais com repositório em memória em `desafios-do-jogador.test.ts`; regra em
 `tests/unit/desafios.test.ts`. Sem migração, escrita remota ou mudança nas respostas anteriores.
 
+## Roupas conquistadas (§6.28 A21, 31/10/2026)
+
+`POST /roupas/sincronizar`: o serviço lê o salvamento guardado, calcula as roupas conquistadas
+(`roupasConquistadas` do contrato: três corações com um morador e a festa do dia em São Paulo) e
+pede ao Members pela porta das moedas (`AvatarHttp`, `POST /members/internal/arquipelago/avatar/pecas`).
+Idempotente, sem tabela nem migração. Members fora do ar devolve indisponível e o jogo tenta de
+novo na próxima abertura. Implantar o Members antes da API.
+
+## Banca da feira (§6.28 A22, 31/10/2026)
+
+`GET /feira/vendas/pendentes` e `POST /feira/vender`, o mesmo desenho dos pedidos: identidade
+confiável, recusa suporte, primeira venda exige a Vila Doce na jornada. Migração gerada 0019,
+`vendas_na_feira`: uma venda por perfil/público/dia (até cinco pratos, 1 moeda cada, pão de queijo
+2; teto 10), chave financeira gerada no servidor, consumo dos pratos atômico sob a trava do save e
+crédito fora dela. Recusa compra de insumos pendente. Erros 409 `VENDA_BASE_RECUSADA`,
+`VENDA_REPETIDA` e `VENDA_INCOMPATIVEL`. Teste `tests/db/vendas.test.ts`, variável exclusiva
+`ARQUIPELAGO_VENDAS_TEST_DATABASE_URL`. O jogo trata 404 nas pendências como "sem venda", para
+o cliente novo não travar diante do serviço anterior. Implantar migração e API antes do jogo.
+
+O prêmio-objeto do extra (A25) acrescentou `recompensa.receitaDoExtra` e `extraFeito` na lista.
+O Admin valida o desafio com esquema estrito: implantar o Admin novo junto com a API.
+
 ## Pedidos dos moradores (L07, 30/10/2026)
 
 `GET /pedidos/pendentes` e `POST /pedidos/entregar` usam identidade confiável e recusam suporte.
@@ -68,7 +166,7 @@ o direito adquirido sem exigir novamente a ilha, a data atual ou a revisão anti
 Consumo, amizade, cesta e crédito pendente são atômicos sob a trava do save. A entrega recusa
 compra de insumos pendente. Depois, só a linha do crédito fica travada durante o S2S de cinco
 segundos. Crédito pendente permite PUT normal. O Members confirma idempotência e teto semanal.
-Teto confirmado é terminal; resposta perdida conserva a chave. Replay devolve o save atual.
+Teto espera a semana seguinte (A32, abaixo); resposta perdida conserva a chave. Replay devolve o save atual.
 Catálogo e itens persistidos são conferidos pelo serviço, mas save do cliente não prova a origem
 histórica de cada item. Nenhuma alteração de V18 ou variável nova.
 

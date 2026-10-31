@@ -2,6 +2,7 @@ import {
   type Fantasma,
   FantasmaSchema,
   type GuardarFantasma,
+  melhorTempoDoPercurso,
   migrarSalvamento,
   type PercursoId,
   type PublicoJogo,
@@ -31,7 +32,7 @@ export class DrizzleRepositorioDosFantasmas implements RepositorioDosFantasmas {
         !save ||
         !linha ||
         linha.revisao !== pedido.revisaoBase ||
-        save.percursos[pedido.fantasma.percurso]?.melhorTempoMs !== pedido.fantasma.tempoMs
+        melhorTempoDoPercurso(save.percursos, pedido.fantasma.percurso) !== pedido.fantasma.tempoMs
       )
         return false
       await tx
@@ -73,7 +74,7 @@ export class DrizzleRepositorioDosFantasmas implements RepositorioDosFantasmas {
     if (
       !f.success ||
       f.data.percurso !== percurso ||
-      migrarSalvamento(linha.save)?.percursos[percurso]?.melhorTempoMs !== f.data.tempoMs
+      melhorTempoDoPercurso(migrarSalvamento(linha.save)?.percursos, percurso) !== f.data.tempoMs
     )
       return null
     return f.data

@@ -162,13 +162,15 @@ export interface RepositorioDoJogadorNosDesafios {
     jogadorId: string,
     desafioId: string,
   ): Promise<{ revisao: number; ultimosResultados: { id: string; passou: boolean }[] } | null>
+  /** Guarda a conferência e conta mais uma tentativa; devolve o total e as dicas (A26). */
   guardarTentativa(e: {
     jogadorId: string
     desafioId: string
     revisao: number
     resultados: { id: string; passou: boolean }[]
+    dicas: number
     agora: Date
-  }): Promise<void>
+  }): Promise<{ tentativas: number; dicas: number }>
   /** Grava a conclusão uma vez só; devolve `true` só para quem gravou. */
   concluir(e: {
     jogadorId: string
@@ -177,6 +179,9 @@ export interface RepositorioDoJogadorNosDesafios {
     revisao: number
     moedas: number
     moedasExtra: number
+    /** Tentativas e dicas até concluir (A26). */
+    tentativas: number
+    dicas: number
     agora: Date
   }): Promise<boolean>
   /** Marca o desafio extra feito uma vez só; devolve `true` só na primeira. */

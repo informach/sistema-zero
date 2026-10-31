@@ -3,10 +3,12 @@ import {
   BIT_DA_SEGREDO_MAXIMO,
   BIT_DO_COMODO,
   COMPANHIAS,
+  COMPANHIAS_ATE_V20,
   MAPAS_DAS_ILHAS,
   MapaDaIlhaSchema,
 } from './exploracao'
 import { ILHA_IDS } from './ilhas'
+import { ehLumiDeLuz, temOLumi } from './lumis-de-luz'
 import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
@@ -17,13 +19,24 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 20
+export const VERSAO_SALVAMENTO = 22
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
 
 export const SEMENTES = ['alface', 'tomate', 'milho'] as const
 export type Semente = (typeof SEMENTES)[number]
+
+/**
+ * As plantas do jardim do céu, nas Nuvens (V22, 31/10/2026, B6): a arte de
+ * `arte/itens/plantas_do_ceu.py`. Crescem nos seis canteiros do terraço (`ceu-1` a `ceu-6`).
+ */
+export const SEMENTES_DO_CEU = [
+  'flor-de-nuvem',
+  'estrela-trepadeira',
+  'arco-iris-de-petala',
+] as const
+export type SementeDoCeu = (typeof SEMENTES_DO_CEU)[number]
 
 export const CanteiroSchema = z.strictObject({
   id: z.string().min(1).max(20),
@@ -32,6 +45,27 @@ export const CanteiroSchema = z.strictObject({
   regadoEm: iso.nullable(),
 })
 export type Canteiro = z.infer<typeof CanteiroSchema>
+
+/** Os seis canteiros do terraço do céu (`canteiro-ceu-1` a `-6` no `nuvens.glb`). */
+export const CANTEIROS_DO_CEU = 6
+/** Os minutos do jardim do céu contam a partir daqui (números curtos no salvamento). */
+export const MINUTO_ZERO_DO_CEU = Date.UTC(2026, 0, 1)
+/**
+ * Um canteiro plantado no jardim do céu, em tupla para pesar pouco: o canteiro (1 a 6), a planta
+ * (o índice em `SEMENTES_DO_CEU`) e o minuto em que foi plantada, contado de `MINUTO_ZERO_DO_CEU`.
+ * Lá em cima a chuva das nuvens rega: plantar já começa a crescer.
+ */
+export const PlantaDoCeuSchema = z.tuple([
+  z.number().int().min(1).max(CANTEIROS_DO_CEU),
+  z
+    .number()
+    .int()
+    .min(0)
+    .max(SEMENTES_DO_CEU.length - 1),
+  // Sete dígitos dão uns 19 anos de minutos.
+  z.number().int().min(0).max(9_999_999),
+])
+export type PlantaDoCeu = z.infer<typeof PlantaDoCeuSchema>
 
 export const SalvamentoV1Schema = z.strictObject({
   versao: z.literal(1),
@@ -60,6 +94,8 @@ export const PERCURSOS = [
   'praia-pedras',
   'recife-corais',
   'vale-pegadas',
+  // V22 (31/10/2026, E04): a subida final por fora do Farol, na Lenda.
+  'farol-subida',
 ] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
@@ -76,6 +112,58 @@ export const ResultadoDoPercursoSchema = z.strictObject({
   melhorTempoMs: z.number().int().min(0).max(MELHOR_TEMPO_MAXIMO_MS),
 })
 export type ResultadoDoPercurso = z.infer<typeof ResultadoDoPercursoSchema>
+
+/**
+ * O resultado guardado na V22 (31/10/2026): a mesma coisa em tupla, para pesar pouco no salvamento
+ * (de uns 95 para uns 25 bytes por percurso): as estrelas em bits (1 a chegada, 2 o tempo, 4 a
+ * terceira) e o melhor tempo. O jogo lê e grava pelo `resultadoDoPercurso` e o `compactarResultado`.
+ */
+export const ResultadoCompactoSchema = z.tuple([
+  z.number().int().min(0).max(7),
+  z.number().int().min(0).max(MELHOR_TEMPO_MAXIMO_MS),
+])
+export type ResultadoCompacto = z.infer<typeof ResultadoCompactoSchema>
+
+export function compactarResultado(r: ResultadoDoPercurso): ResultadoCompacto {
+  const { chegada, tempo, vagalumes } = r.estrelas
+  return [(chegada ? 1 : 0) | (tempo ? 2 : 0) | (vagalumes ? 4 : 0), r.melhorTempoMs]
+}
+
+export function expandirResultado([bits, melhorTempoMs]: ResultadoCompacto): ResultadoDoPercurso {
+  return {
+    estrelas: { chegada: (bits & 1) !== 0, tempo: (bits & 2) !== 0, vagalumes: (bits & 4) !== 0 },
+    melhorTempoMs,
+  }
+}
+
+export type PercursosGuardados = Partial<Record<PercursoId, ResultadoCompacto>>
+
+/** O resultado de um percurso no salvamento atual, por extenso (ou `undefined`). */
+export function resultadoDoPercurso(
+  p: PercursosGuardados,
+  id: PercursoId,
+): ResultadoDoPercurso | undefined {
+  const t = p[id]
+  return t ? expandirResultado(t) : undefined
+}
+
+/** O melhor tempo guardado de um percurso (ou `undefined`). */
+export function melhorTempoDoPercurso(
+  p: PercursosGuardados | undefined,
+  id: PercursoId,
+): number | undefined {
+  return p?.[id]?.[1]
+}
+
+/** Todos os resultados por extenso (para quem lê o formato de antes, como as visitas). */
+export function percursosPorExtenso(
+  p: PercursosGuardados,
+): Partial<Record<PercursoId, ResultadoDoPercurso>> {
+  const fora: Partial<Record<PercursoId, ResultadoDoPercurso>> = {}
+  for (const [id, t] of Object.entries(p) as [PercursoId, ResultadoCompacto][])
+    fora[id] = expandirResultado(t)
+  return fora
+}
 
 /** V2 (27/10/2026): a V1 mais o melhor resultado de cada percurso. */
 export const SalvamentoV2Schema = SalvamentoV1Schema.extend({
@@ -443,6 +531,16 @@ export const LUMIS = [
   'brotinho',
   'algodao',
   'pluma',
+  // Os Lumis de luz (B12, 31/10/2026): a terceira versão de cada família, que só sai dos baús
+  // dos segredos (nunca sorteada nem vendida). Entram no fim, sem versão nova: só alargam o que
+  // a V9 em diante aceitam, como os percursos novos.
+  'buzio-de-luz',
+  'ipe-de-luz',
+  'brigadeiro-de-luz',
+  'perola-de-luz',
+  'cristal-de-luz',
+  'brotinho-de-luz',
+  'pluma-de-luz',
 ] as const
 export type LumiId = (typeof LUMIS)[number]
 
@@ -471,11 +569,16 @@ function conferirRotinas(
   s: {
     lumis: Partial<Record<LumiId, number>>
     rotinas: Partial<Record<LumiId, z.infer<typeof RotinaSchema>>>
+    segredos?: number
   },
   ctx: z.RefinementCtx,
 ) {
+  // Os Lumis de luz (B12) não têm contador: vêm do baú aberto (`lumis-de-luz.ts`).
+  for (const lumi of Object.keys(s.lumis) as LumiId[])
+    if (ehLumiDeLuz(lumi))
+      ctx.addIssue({ code: 'custom', message: `Lumi de luz não se prende: ${lumi}` })
   for (const lumi of Object.keys(s.rotinas) as LumiId[])
-    if (!s.lumis[lumi])
+    if (!temOLumi(s, lumi))
       ctx.addIssue({ code: 'custom', message: `rotina de um Lumi que ela não tem: ${lumi}` })
   const total = Object.values(s.rotinas).reduce((n, r) => n + (r ? contarCartoes(r) : 0), 0)
   if (total > LIMITES_DA_ROTINA.cartoesNasRotinas)
@@ -743,7 +846,8 @@ export const SalvamentoAteV16Schema = z.union([
   SalvamentoAteV14Schema.transform(migrarDaV14ParaV16),
 ])
 
-export const MORADORES_DO_ANEL = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie'] as const
+/** Os moradores do salvamento atual (o Nico, carteiro da sua ilha, desde a V21). */
+export const MORADORES_DO_ANEL = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie', 'nico'] as const
 export const SalvamentoV17Schema = z
   .strictObject({
     ...SalvamentoV16Schema.shape,
@@ -794,8 +898,10 @@ export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
 }
 
 /** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
-export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV20 {
-  return migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV22 {
+  return migrarDaV21(
+    migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))),
+  )
 }
 
 export const SalvamentoAteV18Schema = z.union([
@@ -821,7 +927,7 @@ export const SalvamentoV19Schema = z
       .min(0)
       .max(BIT_DA_SEGREDO_MAXIMO * 2 - 1),
     mapa: z.partialRecord(z.enum(MAPAS_DAS_ILHAS), MapaDaIlhaSchema),
-    companhia: z.enum(COMPANHIAS),
+    companhia: z.enum(COMPANHIAS_ATE_V20),
   })
   .superRefine(conferirRotinas)
 export type SalvamentoV19 = z.infer<typeof SalvamentoV19Schema>
@@ -934,11 +1040,101 @@ export function migrarDaV19(s: SalvamentoV19): SalvamentoV20 {
   }
 }
 
-export const SalvamentoSchema = z.union([
+export const SalvamentoAteV20Schema = z.union([
   SalvamentoV20Schema,
   SalvamentoAteV19Schema.transform(migrarDaV19),
 ])
-export type Salvamento = SalvamentoV20
+
+/**
+ * V21 (31/10/2026, §6.28): o Nico, carteiro da sua ilha, vira morador com amizade e pedidos (A19),
+ * e o filhote do Vale pode ser a companhia (A7).
+ */
+export const SalvamentoV21Schema = z
+  .strictObject({
+    ...SalvamentoV20Schema.shape,
+    versao: z.literal(21),
+    moradores: z.strictObject({
+      capi: MoradorSchema,
+      bento: MoradorSchema,
+      mare: MoradorSchema,
+      floco: MoradorSchema,
+      jade: MoradorSchema,
+      irie: MoradorSchema,
+      nico: MoradorSchema,
+    }),
+    companhia: z.enum(COMPANHIAS),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV21 = z.infer<typeof SalvamentoV21Schema>
+
+/** O Nico começa sem amizade, como os outros moradores chegaram; a companhia continua a mesma. */
+export function migrarDaV20(s: SalvamentoV20): SalvamentoV21 {
+  return { ...s, versao: 21, moradores: { ...s.moradores, nico: { ...MORADOR_NOVO } } }
+}
+
+export const SalvamentoAteV21Schema = z.union([
+  SalvamentoV21Schema,
+  SalvamentoAteV20Schema.transform(migrarDaV20),
+])
+
+/** Os fósseis do museu (B4): cada um é um bit de `vale.fosseis`, nesta ordem, que nunca muda. */
+export const FOSSEIS_DO_VALE = [
+  'fossil-dente',
+  'fossil-garra',
+  'fossil-vertebra',
+  'fossil-ovo',
+  'fossil-chifre-triceratopo',
+  'fossil-cranio-rex',
+] as const
+export type FossilDoVale = (typeof FOSSEIS_DO_VALE)[number]
+export const BIT_DO_FOSSIL: Readonly<Record<FossilDoVale, number>> = Object.fromEntries(
+  FOSSEIS_DO_VALE.map((id, i) => [id, 1 << i]),
+) as Record<FossilDoVale, number>
+
+/** Quantas flores do céu a florada da sua ilha conta (B6). */
+export const FLORADA_MAXIMA = 999
+
+/**
+ * V22 (31/10/2026, lista B da proposta v3): os percursos em tupla (`ResultadoCompacto`, com a subida
+ * do Farol), os seis fósseis do museu achados no Vale (`vale.fosseis`,
+ * um bit por fóssil, B4), as plantas do jardim do céu (`ceu`, B6) e as flores do céu que a criança
+ * já mandou para a sua ilha florescer (`florada`). O jardim do céu não entra na `horta`: os 24
+ * canteiros dela podem estar todos no quintal.
+ */
+export const SalvamentoV22Schema = z
+  .strictObject({
+    ...SalvamentoV21Schema.shape,
+    versao: z.literal(22),
+    percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoCompactoSchema),
+    ceu: z
+      .array(PlantaDoCeuSchema)
+      .max(CANTEIROS_DO_CEU)
+      .refine((l) => new Set(l.map((p) => p[0])).size === l.length, 'canteiro do céu repetido'),
+    vale: ValeV15Schema.extend({
+      fosseis: z
+        .number()
+        .int()
+        .min(0)
+        .max(2 ** FOSSEIS_DO_VALE.length - 1),
+    }),
+    florada: z.number().int().min(0).max(FLORADA_MAXIMA),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV22 = z.infer<typeof SalvamentoV22Schema>
+
+/** Nenhum fóssil novo e nenhuma flor do céu ainda; o osso da escavação continua contado. */
+export function migrarDaV21(s: SalvamentoV21): SalvamentoV22 {
+  const percursos: PercursosGuardados = {}
+  for (const [id, r] of Object.entries(s.percursos) as [PercursoId, ResultadoDoPercurso][])
+    percursos[id] = compactarResultado(r)
+  return { ...s, versao: 22, percursos, vale: { ...s.vale, fosseis: 0 }, florada: 0, ceu: [] }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV22Schema,
+  SalvamentoAteV21Schema.transform(migrarDaV21),
+])
+export type Salvamento = SalvamentoV22
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
@@ -955,7 +1151,9 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     farol: { pagina: false, concluido: false, galeria: [] },
     clima: 'sol',
     pico: { banda: 0 },
-    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
+    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null, fosseis: 0 },
+    florada: 0,
+    ceu: [],
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
@@ -978,6 +1176,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
       floco: { ...MORADOR_NOVO },
       jade: { ...MORADOR_NOVO },
       irie: { ...MORADOR_NOVO },
+      nico: { ...MORADOR_NOVO },
     },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },

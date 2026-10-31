@@ -14,6 +14,7 @@ import {
 import { ITENS } from '../itens'
 import { coracoes } from '../moradores'
 import { planta } from './comodos'
+import { loteDaObra } from './entrada'
 import { chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
 import { celulasDosMoveisAltos } from './moveis'
@@ -77,12 +78,14 @@ export function cantoNoToque(id: ObjetoDaCasa, giro: number, c: Celula): Celula 
  */
 export function porObjeto(
   obra: Obra,
-  lote: Lote,
+  loteDoLugar: Lote,
   projetos: Salvamento['projetos'],
   id: ObjetoDaCasa,
   canto: Celula,
   giro: number,
 ): Resultado {
+  // A varanda da entrada ocupa o lugar (ela segue a porta de entrada da obra).
+  const lote = loteDaObra(loteDoLugar, obra)
   if (!projetos[id]) return { ok: false, motivo: 'sem-projeto' }
   const novo = { id, x: canto.x, z: canto.z, giro }
   const celulas = celulasDoObjeto(novo)
@@ -222,6 +225,44 @@ export function guardarNaGeladeira(
   return ehAlimento(item) ? guardarAlimentoNaGeladeira(p, inventario, item) : null
 }
 
+/**
+ * A geladeira completa conserva (a proposta: "guarda 12 e conserva", "mantém fresco"; §6.28, A31):
+ * comido direto dela, o alimento vem fresquinho e sacia um quarto a mais. Nada estraga fora dela,
+ * e o holograma continua guardando e devolvendo do mesmo jeito.
+ */
+export const FRESQUINHO = 1.25
+
+export const FALA_DO_FRESQUINHO = 'Fresquinho da geladeira. Matou a fome mais um pouco.'
+
+/** Pode comer fresquinho este alimento: a geladeira tem aparência e ele está guardado nela. */
+export function podeComerFresquinho(p: ProjetoAzul, item: string): boolean {
+  return Boolean(p.aparencia) && (p.guardado?.[item] ?? 0) > 0 && ehAlimento(item)
+}
+
+/** Comer direto da geladeira completa: tira um da geladeira e sacia com o bônus de fresquinho. */
+export function comerDaGeladeira(
+  p: ProjetoAzul,
+  necessidades: Salvamento['necessidades'],
+  item: string,
+): { projeto: ProjetoAzul; necessidades: Salvamento['necessidades'] } | null {
+  const comida = ITENS[item]?.comida
+  if (!comida || !podeComerFresquinho(p, item)) return null
+  const tem = p.guardado?.[item] ?? 0
+  const guardado = { ...(p.guardado ?? {}) }
+  if (tem > 1) guardado[item] = tem - 1
+  else delete guardado[item]
+  const mais = (v = 0) => Math.round(v * FRESQUINHO)
+  const limitar = (v: number) => Math.max(0, Math.min(100, v))
+  return {
+    projeto: { ...p, guardado },
+    necessidades: {
+      fome: limitar(necessidades.fome + mais(comida.fome)),
+      energia: limitar(necessidades.energia + mais(comida.energia)),
+      diversao: limitar(necessidades.diversao + mais(comida.diversao)),
+    },
+  }
+}
+
 /** Tirar um alimento da geladeira para a mochila. */
 export function tirarDaGeladeira(
   p: ProjetoAzul,
@@ -268,6 +309,16 @@ export function recadoDaFerramentaFechada(ferramenta: 'pinta' | 'molda', motivo:
   if (motivo === 'acesso-necessario') return `${nome} ainda não está liberado para você.`
   if (motivo === 'sem-faces') return 'Este objeto ainda não tem as faces para pintar.'
   return 'O molde não abriu agora. Tente de novo daqui a pouco.'
+}
+
+/**
+ * A posição da jornada em que o Pinta abre no molde: o posto Construtor(a), como na proposta e no
+ * Estúdio livre da plataforma (§6.28, A5). Na Faísca, a aparência vem pronta da galeria.
+ */
+export const POSICAO_DO_PINTA = POSTOS_DA_JORNADA.indexOf('coder') + 1
+
+export function pintaAberto(jornada: number): boolean {
+  return jornada >= POSICAO_DO_PINTA
 }
 
 /** A posição da jornada em que o Molda abre no molde (o posto Explorador(a) de Mundos). */

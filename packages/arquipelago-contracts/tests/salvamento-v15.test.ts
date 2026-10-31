@@ -9,6 +9,8 @@ import {
   migrarDaV17,
   migrarDaV18,
   migrarDaV19,
+  migrarDaV20,
+  migrarDaV21,
   migrarSalvamento,
   SalvamentoV14Schema,
   SalvamentoV15Schema,
@@ -36,10 +38,12 @@ test('V14 migra para V15 sem tocar no resto, com o filhote ainda por vir', () =>
   })
   const copia = structuredClone(antiga)
   const atual = migrarDaV14(antiga)
-  expect(VERSAO_SALVAMENTO).toBe(20)
+  expect(VERSAO_SALVAMENTO).toBe(22)
   expect(atual).toEqual({ ...antiga, versao: 15, vale: { ...antiga.vale, filhote: null } })
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV15(atual))))),
+    migrarDaV21(
+      migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV15(atual)))))),
+    ),
   )
   expect(antiga).toEqual(copia)
   // A V14 continua estrita: o filhote só existe da V15 em diante.
@@ -81,7 +85,7 @@ test('o filhote atravessa o JSON, e nada fora da régua', () => {
   }
   const com = { ...s, vale: { ...s.vale, filhote } }
   expect(migrarSalvamento(JSON.parse(JSON.stringify(com)))).toEqual(
-    migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV15(com))))),
+    migrarDaV21(migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV15(com))))))),
   )
   const ruins: Record<string, unknown>[] = [
     { ovo: -1 },

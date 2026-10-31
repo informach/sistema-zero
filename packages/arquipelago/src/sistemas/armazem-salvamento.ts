@@ -7,6 +7,8 @@ import {
   type SalvamentoGuardado,
   SalvamentoGuardadoSchema,
   SalvamentoSchema,
+  type VenderNaFeira,
+  VenderNaFeiraSchema,
 } from '@sistemazero/arquipelago-contracts'
 
 export interface RascunhoDoJogo {
@@ -18,6 +20,8 @@ export interface RascunhoDoJogo {
   compra?: CompraDeInsumos | null
   /** Entrega do morador, mutuamente exclusiva com a compra. Não pertence ao save V18. */
   entrega?: EntregarPedido | null
+  /** Venda na banca da feira (A22), exclusiva com a compra e a entrega. Fora do save. */
+  venda?: VenderNaFeira | null
 }
 
 export interface ArmazemDeSalvamento {
@@ -113,7 +117,12 @@ export async function criarArmazemDeSalvamento(
         !('enviado' in dado)
       )
         throw new Error('O salvamento local não pôde ser lido. Ele foi preservado neste aparelho.')
-      if ('compra' in dado && dado.compra && 'entrega' in dado && dado.entrega)
+      const comandos = [
+        'compra' in dado && dado.compra,
+        'entrega' in dado && dado.entrega,
+        'venda' in dado && dado.venda,
+      ].filter(Boolean)
+      if (comandos.length > 1)
         throw new Error('Há dois comandos locais incompatíveis. A cópia foi preservada.')
       return {
         base: SalvamentoGuardadoSchema.parse(dado.base),
@@ -124,6 +133,9 @@ export async function criarArmazemDeSalvamento(
           : {}),
         ...('entrega' in dado
           ? { entrega: dado.entrega === null ? null : EntregarPedidoSchema.parse(dado.entrega) }
+          : {}),
+        ...('venda' in dado
+          ? { venda: dado.venda === null ? null : VenderNaFeiraSchema.parse(dado.venda) }
           : {}),
       }
     },

@@ -1,22 +1,8 @@
 import { useFrame } from '@react-three/fiber'
 import type { LumiId } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Group, Object3D } from 'three'
-import algodaoGlb from '../assets/lumis/algodao.glb'
-import bolhaGlb from '../assets/lumis/bolha.glb'
+import type { Group, Mesh, MeshBasicMaterial, Object3D } from 'three'
 import borraoGlb from '../assets/lumis/borrao.glb'
-import brigadeiroGlb from '../assets/lumis/brigadeiro.glb'
-import brotinhoGlb from '../assets/lumis/brotinho.glb'
-import buzioGlb from '../assets/lumis/buzio.glb'
-import cristalGlb from '../assets/lumis/cristal.glb'
-import estrelinhaGlb from '../assets/lumis/estrelinha.glb'
-import gelinhoGlb from '../assets/lumis/gelinho.glb'
-import ipeGlb from '../assets/lumis/ipe.glb'
-import ovinhoGlb from '../assets/lumis/ovinho.glb'
-import perolaGlb from '../assets/lumis/perola.glb'
-import pitangaGlb from '../assets/lumis/pitanga.glb'
-import plumaGlb from '../assets/lumis/pluma.glb'
-import quindimGlb from '../assets/lumis/quindim.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosPassos } from '../estado/primeiros-passos'
 import { abrirRotina } from '../estado/rotina'
@@ -30,6 +16,8 @@ import {
   type IlhaDosLumis,
   lerPresos,
   lumisNaIlha,
+  MANCHA_DO_BORRAO,
+  opacidadeDaMancha,
   PRENDE_A,
   passoDoBorrao,
   podePrender,
@@ -45,25 +33,9 @@ import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import { useInterativo } from './interativos'
 import { ComReserva } from './modelos'
+import { MODELO_DO_LUMI } from './modelos-dos-lumis'
 
 const BORRAO = new URL(borraoGlb, import.meta.url).href
-const url = (arquivo: string) => new URL(arquivo, import.meta.url).href
-const MODELOS_DOS_LUMIS: Readonly<Record<LumiId, string>> = {
-  estrelinha: url(estrelinhaGlb),
-  buzio: url(buzioGlb),
-  pitanga: url(pitangaGlb),
-  ipe: url(ipeGlb),
-  quindim: url(quindimGlb),
-  brigadeiro: url(brigadeiroGlb),
-  bolha: url(bolhaGlb),
-  perola: url(perolaGlb),
-  gelinho: url(gelinhoGlb),
-  cristal: url(cristalGlb),
-  ovinho: url(ovinhoGlb),
-  brotinho: url(brotinhoGlb),
-  algodao: url(algodaoGlb),
-  pluma: url(plumaGlb),
-}
 
 /** O borrão do arquivo tem 1,33 m; na Vila ele flutua com 1 m, para ser visto de longe à noite. */
 export const ESCALA_DO_BORRAO = 0.75
@@ -139,6 +111,7 @@ export function BorroesDaIlha({
   const { loja, ambiente, plataforma } = useJogo()
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   const lumis = useEstado((s) => s.salvamento.lumis)
+  const segredos = useEstado((s) => s.salvamento.segredos)
   // A noite de agora (o dia do jogo) ou `null` de dia; muda só na troca.
   const [noite, setNoite] = useState<number | null>(null)
   useFrame(() => {
@@ -159,7 +132,7 @@ export function BorroesDaIlha({
     avisouDaFuga.current = noite === null
   }, [noite])
 
-  const moradores = lumisNaIlha(lumis, ilha)
+  const moradores = lumisNaIlha(lumis, ilha, segredos)
   return (
     <group name={`borroes-${ilha}`}>
       {moradores.map((m) => {
@@ -169,7 +142,7 @@ export function BorroesDaIlha({
             <LumiDaIlha
               id={`${ilha}-${m.ancora}-${m.lumi}`}
               lumi={m.lumi}
-              url={MODELOS_DOS_LUMIS[m.lumi]}
+              url={MODELO_DO_LUMI[m.lumi]}
               lugar={lugar}
               meio={meio}
             />
@@ -250,6 +223,7 @@ function Borrao({
   )
   const tocando = useRef<string | null>(null)
   const tempo = useRef(0)
+  const mancha = useRef<Mesh>(null)
 
   useEffect(() => {
     if (jaPreso) estado.current.fase = 'pronto'
@@ -320,18 +294,44 @@ function Borrao({
       const rumo = Math.atan2(rastro.x - b.x, rastro.z - b.z) + (b.fugindo ? Math.PI : 0)
       corpo.current.rotation.y = suavizarAngulo(corpo.current.rotation.y, rumo, 4, dt)
     }
+    // O chão desbotado em volta do borrão (§6.28 A38): cresce solto, some quando vira Lumi.
+    if (mancha.current) {
+      const opacidade = opacidadeDaMancha(b)
+      mancha.current.visible = opacidade > 0.01
+      mancha.current.position.set(b.x, lugar.y + 0.04, b.z)
+      ;(mancha.current.material as MeshBasicMaterial).opacity = opacidade
+    }
   })
 
   return (
-    <group
-      ref={corpo}
-      name={`borrao-${borrao.id}`}
-      position={[estado.current.x, lugar.y + ALTURA_DO_BORRAO, estado.current.z]}
-    >
-      <group ref={raiz} scale={ESCALA_DO_BORRAO} dispose={null}>
-        <primitive object={cena} />
+    <>
+      <group
+        ref={corpo}
+        name={`borrao-${borrao.id}`}
+        position={[estado.current.x, lugar.y + ALTURA_DO_BORRAO, estado.current.z]}
+      >
+        <group ref={raiz} scale={ESCALA_DO_BORRAO} dispose={null}>
+          <primitive object={cena} />
+        </group>
       </group>
-    </group>
+      <mesh
+        ref={mancha}
+        name={`mancha-do-borrao-${borrao.id}`}
+        rotation={[-Math.PI / 2, 0, 0]}
+        visible={false}
+        renderOrder={1}
+      >
+        <circleGeometry args={[MANCHA_DO_BORRAO.raio, 28]} />
+        <meshBasicMaterial
+          color="#8f949e"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-2}
+        />
+      </mesh>
+    </>
   )
 }
 

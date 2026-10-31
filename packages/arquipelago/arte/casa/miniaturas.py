@@ -7,7 +7,12 @@ células), as janelas (no meio de uma parede de lambri, de fora) e os objetos da
   PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py    # paleta de 128 cores
 
 Saem em `src/assets/casa/miniaturas/<id>.png`, 160 px com fundo transparente. O enquadramento e a
-luz são os dos ícones dos itens (`arte/itens/render.py`).
+luz são os dos ícones dos itens (`arte/itens/render.py`). Os móveis dos cômodos, do café e as
+decorações de festa saem como `movel-<nó>.png`; cada GLB de `src/assets/objetos` (menos o
+holograma), inclusive as versões `<id>-retro` e `<id>-moderna` da galeria, como `objeto-<arquivo>.png`.
+Para gerar só algumas sem regravar as outras, use ITEM (por exemplo
+`ITEM=objeto-forno-retro,objeto-forno-moderna`) e depois a paleta, que só reduz as que ainda não
+foram reduzidas.
 """
 import os
 import sys
@@ -126,15 +131,32 @@ MOVEIS = {
     'cozinha': ['balcao-pia', 'balcao', 'armario-alto', 'mesa-cozinha', 'cadeira-cozinha', 'prateleira-potes'],
     'sala': ['sofa', 'poltrona', 'mesinha-centro', 'tapete', 'estante-baixa', 'luminaria-pe', 'planta', 'quadro'],
     'banheiro': ['banheira', 'pia-banheiro', 'espelho', 'vaso-sanitario', 'box-chuveiro', 'tapetinho', 'toalheiro'],
+    # Café e banca de feira (`cafe.py`) e decoração de festa (`festas.py`), 31/10/2026.
+    'cafe': ['cafe-mesa-redonda', 'cafe-cadeira', 'cafe-balcao', 'cafe-vitrine-doces', 'cafe-lousa-cardapio',
+             'cafe-banca-feira', 'cafe-caixote'],
+    'festas': ['festa-junina-bandeirinhas', 'festa-junina-lanterna-papel', 'festa-junina-fogueira',
+               'festa-carnaval-serpentina', 'festa-carnaval-mascara', 'festa-carnaval-confete',
+               'festa-fim-de-ano-arvore', 'festa-fim-de-ano-guirlanda', 'festa-fim-de-ano-estrela-janela',
+               'festa-lanternas-lanterna-chao', 'festa-lanternas-varal-de-luz'],
 }
 
 
 def so_o_movel(no):
     def preparar():
         so(no)
+        if no == 'cafe-vitrine-doces':
+            vidro_mais_claro()
         return None
 
     return preparar
+
+
+def vidro_mais_claro():
+    """Na miniatura da vitrine, o vidro deixa ver melhor os doces (no jogo ele fica com o alfa de sempre)."""
+    m = bpy.data.materials.get('vidroArmario')
+    b = m.node_tree.nodes.get('Principled BSDF') if m and m.use_nodes else None
+    if b:
+        b.inputs['Alpha'].default_value = 0.12
 
 
 for comodo, nos in MOVEIS.items():

@@ -32,6 +32,12 @@ CAIS_INI = (2.8, -9.4)
 CAIS_FIM = (4.4, -15.6)
 CAVERNA = (-17.6, -2.0)   # centro do salão (fora do contorno da ilha, encostada na praia)
 FUNDO_CAVERNA = -1.3
+# Os marcos do Recife (31/10/2026, as ilhas mais altas nos postos mais altos): três pináculos de coral no
+# mar do noroeste, além do barranco (17 m do meio) e longe do cais, do barco, da caverna, da chegada e do
+# labirinto, o mais alto até 9 m acima do mar. Cada um tem o colisor do tronco (`col-cil-pinaculo-N`, do
+# fundo até o alto: quem nada não atravessa e ninguém pisa lá em cima).
+PINACULOS = [(-12.6, 11.6, 8.7, 1.25), (-9.6, 13.9, 7.4, 1.0), (-15.1, 8.4, 6.2, 0.9)]
+FUNDO_DO_MAR = -3.5
 ALGAS = [(-2.6, -1.6, TOPO), (1.4, 1.0, TOPO), (-1.8, 1.8, TOPO), (2.0, -2.4, TOPO), (-3.6, 0.6, TOPO),
          (0.6, -3.4, TOPO), (-18.4, -1.0, FUNDO_CAVERNA), (-17.0, -3.4, FUNDO_CAVERNA),
          (-19.6, -2.6, FUNDO_CAVERNA - 0.4), (5.4, -12.8, -1.2)]
@@ -615,6 +621,36 @@ def clipe_algas(juntos):
 
 
 # ------------------------------------------------------------------ montagem
+def pinaculos(col):
+    """Os pináculos de coral: um tronco de pedra de coral afinando para cima, com anéis de coral de
+    cores diferentes, bolotas e galhinhos, do fundo do mar até `alto` (x, z do jogo)."""
+    p = []
+    cores = ('coral', 'coralLaranja', 'coralLilas', 'coralAmarelo')
+    for i, (x, z, alto, r) in enumerate(PINACULOS):
+        bx, by = x, -z
+        rnd = random.Random(70 + i)
+        h = alto - FUNDO_DO_MAR
+        n = 5
+        for k in range(n):
+            z0 = FUNDO_DO_MAR + h * k / n
+            z1 = FUNDO_DO_MAR + h * (k + 1) / n
+            r0 = r * (1 - 0.75 * k / n)
+            r1 = r * (1 - 0.75 * (k + 1) / n)
+            ox, oy = rnd.uniform(-0.08, 0.08), rnd.uniform(-0.08, 0.08)
+            # Cada pedaço girado 20° do de baixo: no trecho em que se encaixam, as faces não ficam no mesmo plano.
+            p.append(cyl(r0, z1 - z0 + 0.04, (bx + ox, by + oy, (z0 + z1) / 2), 'rochaRecife' if k < 2 else cores[(i + k) % 4],
+                         verts=9, r2=r1, rot=(0, 0, R(20 * k))))
+            if k >= 1:
+                for j in range(3):
+                    a = rnd.uniform(0, 2 * math.pi)
+                    rr = (r0 + r1) / 2
+                    p.append(uvball(rr * 0.42, (bx + math.cos(a) * rr * 0.92, by + math.sin(a) * rr * 0.92,
+                                                z0 + rnd.uniform(0.2, 0.8) * (z1 - z0)), cores[(i + j + k) % 4], seg=8, ring=5))
+        p.append(uvball(r * 0.32, (bx, by, alto - 0.12), cores[(i + 2) % 4], seg=8, ring=5, scale=(1, 1, 1.3)))
+        col.append(col_cilindro('pinaculo', r * 0.85, h - 0.6, (bx, by, FUNDO_DO_MAR + (h - 0.6) / 2)))
+    return p
+
+
 def frente(x, z, d, tx, tz):
     dx, dz = tx - x, tz - z
     n = math.hypot(dx, dz)
@@ -643,7 +679,8 @@ def construir():
     cor = corais(col)
     enf = enfeites(col) + miolo
     cav = caverna(col)
-    conferir_corredor(obras + cor + enf, 'recife')
+    marco = pinaculos(col)
+    conferir_corredor(obras + cor + enf + marco, 'recife')
     algas = {}
     for i, (x, z, y) in enumerate(ALGAS):
         objs, pivo = alga(x, z, y, seed=i, s=1.2 if y < 0 else 1.0)
@@ -661,7 +698,7 @@ def construir():
     # A âncora do barco também diz para onde ele aponta (giro em y, no jogo).
     anc[10].rotation_euler = (0, 0, lugar_barco[2])
     exportar('recife', {'terreno': chao, 'agua': agua, 'construcoes': obras, 'corais': cor, 'enfeites': enf,
-                        'caverna': cav, **algas}, anc, clipes_=clipe_algas, colisores=col)
+                        'caverna': cav, 'marco-pinaculos': marco, **algas}, anc, clipes_=clipe_algas, colisores=col)
 
 
 def props():

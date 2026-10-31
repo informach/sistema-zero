@@ -247,6 +247,77 @@ triângulos. Do museu: redoma 1824, vitrine 2556, crânio 2608, pegada 934, plac
 | `lib_objetos.py` | ajudantes (acima) |
 | `build_all.py` | gera tudo e confere: nós, clipes (duração no GLB), materiais, coordenadas de textura, tetos (10.000 triângulos e 450 KB por arquivo) e faces coplanares |
 
+## Versões retro e moderna da galeria (31/10/2026)
+
+Cada um dos nove objetos à venda na galeria (os `*-classica`/`*-classico` de
+`arquipelago-contracts/src/galeria.ts`) ganhou duas versões além da clássica, em
+`src/assets/objetos/<objeto>-retro.glb` e `<objeto>-moderna.glb` (o holograma da geladeira não tem):
+
+- **retro**: formas arredondadas e cores pastéis. É a versão da Faísca: TODAS as cores (de base e de
+  emissão) são da paleta "Doces" do Pinta (`PASTEL` em `packages/pinta/src/core/palette.ts`, 15 cores).
+  Os materiais novos têm o nome da cor (`docesBranco`, `docesRosa`, `docesRosaClaro`, `docesPessego`,
+  `docesAmarelo`, `docesMenta`, `docesVerde`, `docesAzul`, `docesCeu`, `docesLilas`, `docesLavanda`,
+  `docesRoxo`, `docesCreme`, `docesCastanho`, `docesNoite`); os que o jogo procura pelo nome (`luz`,
+  `tela`, `agua`, `vidro`, `vidroForno`, `fogo`, `brasa`, `chama`, `placaFace`, `bolha`, `pinta*`) e
+  os translúcidos (`prateleira`, `gaveta`, `garrafa`, `gelatina`) guardam o nome e só trocam a cor por
+  uma da paleta (`FUNCIONAIS_DOCES` em `lib_estilos.py`).
+- **moderna**: linhas retas (quina viva ou chanfro de uma faceta), uma cor forte por objeto
+  (`modernaAzul` na geladeira, `modernaVermelho` no forno e na casinha, `modernaVerde` no aquário,
+  `modernaLaranja` na lareira, `modernaAmarelo` na banda, `modernaRoxo` no fliperama, `modernaPetroleo`
+  no museu, `modernaRosa` na planta) e madeira clara (`modernaMadeira`), com `modernaBranco`,
+  `modernaGrafite` e `modernaAco` de apoio. O miolo que funciona (comida, peixes, fósseis, fogo) fica
+  com as cores da clássica.
+
+As duas têm a mesma caixa da clássica (±2 cm), os mesmos nós com o mesmo pivô (porta da geladeira e
+do forno, peixes e bolhas, fogo e chamas, as peças soltas da banda e do museu, `tela`, `placa` e
+`texto`), os mesmos clipes (`abrir`, `nadar`, `crepitar`, com a mesma duração e os mesmos canais), os
+mesmos materiais funcionais e as faces do Pinta do mesmo tamanho (o molde do catálogo é do objeto,
+não da aparência). Onde a moderna tem quina viva e a parede ficou maior que a face do Pinta, a face é
+uma placa lisa de quina viva encostada na parede (`placa_pintavel`: a frente do tamanho exato sai 6 mm
+para fora, o resto entra na parede).
+
+Scripts: `<objeto>_estilos.py` (um por objeto) com os ajudantes em `lib_estilos.py`. Cada um importa
+o script clássico e reaproveita as funções dele (o miolo da geladeira, a porta com as garrafas, o
+miolo do forno, o aquário inteiro menos o móvel, o fogo e os enfeites da lareira, os instrumentos, a
+tela e o painel do fliperama, os fósseis, a placa, os potes da casinha, a terra e as folhas); só o
+corpo muda. Os clássicos NÃO são regravados (o exportador não sai byte a byte igual de uma vez para
+outra):
+
+```sh
+# as 18 versões, com o contrato, a caixa contra a clássica, os tetos e as faces coplanares
+/tmp/claude-0/blender-venv/bin/python -B arte/objetos/build_all.py --estilos
+# um objeto, ou uma versão só dele
+/tmp/claude-0/blender-venv/bin/python -B arte/objetos/geladeira_estilos.py
+ESTILO=retro /tmp/claude-0/blender-venv/bin/python -B arte/objetos/forno_estilos.py
+```
+
+| Arquivo | Tamanho | Triângulos | GLB |
+|---|---|---|---|
+| `geladeira-retro.glb` | 0.82 × 1.745 × 0.834 | 8090 | 379 KB |
+| `geladeira-moderna.glb` | 0.832 × 1.751 × 0.826 | 4682 | 230 KB |
+| `forno-retro.glb` | 0.76 × 1.06 × 0.744 | 9544 | 376 KB |
+| `forno-moderna.glb` | 0.772 × 1.06 × 0.735 | 3444 | 125 KB |
+| `aquario-retro.glb` | 1.53 × 1.388 × 0.683 | 8862 | 412 KB |
+| `aquario-moderna.glb` | 1.53 × 1.388 × 0.671 | 6338 | 295 KB |
+| `lareira-retro.glb` | 1.846 × 1.474 × 0.88 | 5052 | 214 KB |
+| `lareira-moderna.glb` | 1.846 × 1.474 × 0.88 | 2268 | 101 KB |
+| `banda-retro.glb` | 2.855 × 1.283 × 1.56 | 9992 | 369 KB |
+| `banda-moderna.glb` | 2.86 × 1.27 × 1.56 | 9432 | 356 KB |
+| `fliperama-retro.glb` | 0.84 × 1.8 × 0.805 | 5306 | 229 KB |
+| `fliperama-moderna.glb` | 0.84 × 1.8 × 0.805 | 1298 | 55 KB |
+| `museu-retro.glb` | 2.63 × 1.274 × 1.485 | 9054 | 304 KB |
+| `museu-moderna.glb` | 2.62 × 1.27 × 1.487 | 5294 | 164 KB |
+| `casinha-retro.glb` | 1.799 × 1.197 × 1.7 | 5232 | 183 KB |
+| `casinha-moderna.glb` | 1.785 × 1.194 × 1.699 | 3336 | 122 KB |
+| `planta-interior-retro.glb` | 0.784 × 1.279 × 0.876 | 5168 | 148 KB |
+| `planta-interior-moderna.glb` | 0.784 × 1.279 × 0.876 | 4092 | 108 KB |
+
+⚠️ A `banda-retro` fica rente ao teto (9992 de 10 mil triângulos): peça nova nela precisa tirar
+triângulos de outra. Conferência: `tests/galeria-variantes.test.ts` (caixa, nós, pivôs, clipes,
+materiais funcionais e o que acende, tetos, e a paleta Doces na retro), `tests/faces-dos-objetos.test.ts`
+(as faces do Pinta das três versões) e `tests/faces-coplanares.test.ts`. O jogo e o catálogo da galeria
+ainda não usam estas versões (cada uma vira uma entrada nova da galeria com o `modelo` dela).
+
 ### `planta-interior.glb` (footprint 1 × 1, 29/10/2026)
 
 - `vaso`: o vaso redondo de cerâmica creme (`vasoCeramica`) com a faixa e a borda terracota

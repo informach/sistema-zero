@@ -159,6 +159,7 @@ import { DrizzleAdultJourneyRepository } from './infrastructure/persistence/driz
 import { DrizzleAdultProfileRepository } from './infrastructure/persistence/drizzle/adult-profile.repository'
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
+import { ArquipelagoAvatarRepository } from './infrastructure/persistence/drizzle/arquipelago-avatar.repository'
 import { ArquipelagoCoinsRepository } from './infrastructure/persistence/drizzle/arquipelago-coins.repository'
 import { ArquipelagoCourseActivityRepository } from './infrastructure/persistence/drizzle/arquipelago-course-activity.repository'
 import { ArquipelagoInventoryRepository } from './infrastructure/persistence/drizzle/arquipelago-inventory.repository'
@@ -1171,6 +1172,7 @@ export async function createApplication(env: Env): Promise<Application> {
     arquipelagoCoins: {
       repository: new ArquipelagoCoinsRepository(db),
       inventory: new ArquipelagoInventoryRepository(db),
+      avatar: new ArquipelagoAvatarRepository(db),
       token: env.ARQUIPELAGO_COINS_TOKEN,
     },
     arquipelagoInternal: {
@@ -1185,6 +1187,7 @@ export async function createApplication(env: Env): Promise<Application> {
       objetivos: new ArquipelagoObjectivesService({ verificador: sectionProgression }),
       aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
       saldo: gamificationRepo,
+      compras: new ArquipelagoCoinsRepository(db),
       quartos: new ArquipelagoRoomService(roomRepo),
       ambiente: studioRuntimePolicy
         ? new ArquipelagoRuntimeService(studioRuntimePolicy)

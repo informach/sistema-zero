@@ -1,4 +1,8 @@
-import { adicionarAoInventario, type Semente } from '@sistemazero/arquipelago-contracts'
+import {
+  adicionarAoInventario,
+  type Salvamento,
+  type Semente,
+} from '@sistemazero/arquipelago-contracts'
 import { LEMBRANCAS_DA_PRAIA } from './colecoes-da-praia'
 import { LEMBRANCAS_DAS_ILHAS } from './colecoes-das-ilhas'
 
@@ -43,6 +47,7 @@ export const ITENS: Record<string, Item> = {
     emoji: '🍮',
     comida: { fome: 30, diversao: 20 },
   },
+  cocada: { id: 'cocada', nome: 'Cocada', emoji: '🍬', comida: { fome: 25, diversao: 25 } },
   'milho-da-fogueira': {
     id: 'milho-da-fogueira',
     nome: 'Milho da fogueira',
@@ -64,11 +69,15 @@ export const ITENS: Record<string, Item> = {
   cacau: { id: 'cacau', nome: 'Cacau', emoji: '🫘' },
   'leite-de-coco': { id: 'leite-de-coco', nome: 'Leite de coco', emoji: '🥥' },
   'polpa-de-acai': { id: 'polpa-de-acai', nome: 'Polpa de açaí', emoji: '🫐' },
-  'moqueca-de-legumes': {
-    id: 'moqueca-de-legumes',
-    nome: 'Moqueca de legumes',
-    emoji: '🍲',
-    comida: { fome: 55, energia: 10 },
+  // Os ingredientes do peixe com coco, da cesta da Maré (§6.28, A6).
+  peixe: { id: 'peixe', nome: 'Peixe', emoji: '🐟' },
+  coco: { id: 'coco', nome: 'Coco', emoji: '🥥' },
+  limao: { id: 'limao', nome: 'Limão', emoji: '🍋' },
+  'peixe-com-coco': {
+    id: 'peixe-com-coco',
+    nome: 'Peixe com coco',
+    emoji: '🥘',
+    comida: { fome: 70, energia: 10 },
   },
   'acai-na-tigela': {
     id: 'acai-na-tigela',
@@ -219,4 +228,37 @@ export function itensDaBarra(inv: Inventario) {
 /** O que dá para dar de presente (tudo da mochila menos equipamentos, iscas e lembranças). */
 export function itensParaDar(inv: Inventario): { item: Item; qtd: number }[] {
   return itensVisiveis(inv).filter(({ item }) => !item.equipamento && !item.lembranca && !item.isca)
+}
+
+/**
+ * Itens que trocaram de id: o antigo vira o novo ao carregar, na mochila e na geladeira (nada se
+ * perde). A moqueca de legumes da Maré virou o peixe com coco da proposta (§6.28, A6).
+ */
+export const ITENS_RENOMEADOS: Readonly<Record<string, string>> = {
+  'moqueca-de-legumes': 'peixe-com-coco',
+}
+
+function renomear(guardado: Readonly<Record<string, number>>): Record<string, number> | null {
+  if (!Object.keys(ITENS_RENOMEADOS).some((antigo) => Object.hasOwn(guardado, antigo))) return null
+  const novo: Record<string, number> = { ...guardado }
+  for (const [antigo, atual] of Object.entries(ITENS_RENOMEADOS)) {
+    const qtd = novo[antigo]
+    if (qtd === undefined) continue
+    delete novo[antigo]
+    if (qtd > 0) novo[atual] = Math.min(999, (novo[atual] ?? 0) + qtd)
+  }
+  return novo
+}
+
+export function trocarItensAntigos(s: Salvamento): Salvamento {
+  const inventario = renomear(s.inventario)
+  const geladeira = s.projetos.geladeira
+  const guardado = geladeira?.guardado ? renomear(geladeira.guardado) : null
+  if (!inventario && !guardado) return s
+  return {
+    ...s,
+    inventario: inventario ?? s.inventario,
+    projetos:
+      geladeira && guardado ? { ...s.projetos, geladeira: { ...geladeira, guardado } } : s.projetos,
+  }
 }

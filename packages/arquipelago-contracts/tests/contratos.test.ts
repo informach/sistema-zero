@@ -45,7 +45,7 @@ import {
   type SalvamentoV1,
   type SalvamentoV2,
   type SalvamentoV3,
-  SalvamentoV20Schema,
+  SalvamentoV22Schema,
   VERSAO_SALVAMENTO,
 } from '../src'
 import {
@@ -55,6 +55,7 @@ import {
   migrarDaV13,
   migrarDaV14ParaAtual,
 } from '../src/salvamento'
+import { inicialV21 } from './ajuda-salvamento'
 
 describe('ilhas', () => {
   test('oito ilhas, uma por posição da jornada, ids únicos', () => {
@@ -192,7 +193,7 @@ describe('salvamento V2 (percursos)', () => {
       mapa: _mapa,
       companhia: _companhia,
       ...resto
-    } = criarSalvamentoInicial(agora)
+    } = inicialV21(agora)
     return { ...resto, percursos: {}, versao: 2 }
   }
   const v1 = (): SalvamentoV1 => {
@@ -210,7 +211,9 @@ describe('salvamento V2 (percursos)', () => {
     clima: 'sol' as const,
     pico: { banda: 0 },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
-    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
+    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null, fosseis: 0 },
+    florada: 0,
+    ceu: [],
     presenteDosBichosEntregue: false,
     moradores: {
       capi: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
@@ -219,6 +222,7 @@ describe('salvamento V2 (percursos)', () => {
       floco: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
       jade: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
       irie: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
+      nico: { amizade: 0, conversaEm: null, presenteEm: null, pedido: null },
     },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
@@ -232,57 +236,51 @@ describe('salvamento V2 (percursos)', () => {
     const s = criarSalvamentoInicial(agora)
     expect(s.versao).toBe(VERSAO_SALVAMENTO)
     expect(s.percursos).toEqual({})
-    expect(SalvamentoV20Schema.parse(s)).toEqual(s)
+    expect(SalvamentoV22Schema.parse(s)).toEqual(s)
   })
 
   test('a V1 migra até a atual sem perder nada', () => {
     const antiga = { ...v1(), inventario: { alface: 7 }, casa: { portaNova: true } }
     const migrada = migrarSalvamento(antiga)
-    expect(migrada).toEqual({ ...antiga, versao: 20, percursos: {}, ...semMoradores })
+    expect(migrada).toEqual({ ...antiga, versao: 22, percursos: {}, ...semMoradores })
     expect(migrarDaV1(antiga)).toEqual({ ...antiga, versao: 2, percursos: {} })
   })
 
   test('gravar aceita a V1 de uma aba antiga e guarda já migrada', () => {
     const r = GravarSalvamentoSchema.parse({ revisaoBase: 3, salvamento: v1() })
-    expect(r.salvamento.versao).toBe(20)
+    expect(r.salvamento.versao).toBe(22)
     expect(r.salvamento.percursos).toEqual({})
     expect(r.salvamento.bichos).toEqual({ achados: [], adotado: null })
   })
 
   test('guarda as três estrelas e o melhor tempo de cada percurso', () => {
+    // Na V22 em tupla: a chegada (1) e a terceira (4), e o tempo.
     const s = {
       ...criarSalvamentoInicial(agora),
-      percursos: {
-        'bosque-copas': {
-          estrelas: { chegada: true, tempo: false, vagalumes: true },
-          melhorTempoMs: 41_250,
-        },
-      },
+      percursos: { 'bosque-copas': [5, 41_250] as [number, number] },
     }
     expect(migrarSalvamento(s)).toEqual(s)
   })
 
   test('percurso desconhecido, estrela a mais ou tempo inválido são recusados', () => {
     const base = criarSalvamentoInicial(agora)
-    const resultado = {
-      estrelas: { chegada: true, tempo: true, vagalumes: true },
-      melhorTempoMs: 30_000,
-    }
-    expect(migrarSalvamento({ ...base, percursos: { 'pico-trilha': resultado } })).toBeNull()
+    expect(migrarSalvamento({ ...base, percursos: { 'pico-trilha': [7, 30_000] } })).toBeNull()
+    // Uma estrela a mais (o bit 8) ou o formato de antes, por extenso, na V22.
+    expect(migrarSalvamento({ ...base, percursos: { 'bosque-copas': [15, 30_000] } })).toBeNull()
     expect(
       migrarSalvamento({
         ...base,
         percursos: {
-          'bosque-copas': { ...resultado, estrelas: { ...resultado.estrelas, quarta: true } },
+          'bosque-copas': {
+            estrelas: { chegada: true, tempo: true, vagalumes: true },
+            melhorTempoMs: 30_000,
+          },
         },
       }),
     ).toBeNull()
     for (const melhorTempoMs of [-1, 1.5, 60 * 60 * 1000 + 1]) {
       expect(
-        migrarSalvamento({
-          ...base,
-          percursos: { 'bosque-copas': { ...resultado, melhorTempoMs } },
-        }),
+        migrarSalvamento({ ...base, percursos: { 'bosque-copas': [7, melhorTempoMs] } }),
       ).toBeNull()
     }
   })
@@ -385,10 +383,10 @@ describe('salvamento V3 (a Capi e os bichos do Bosque)', () => {
       mapa: _mapa,
       companhia: _companhia,
       ...resto
-    } = inicial()
+    } = inicialV21(agora)
     const v2: SalvamentoV2 = { ...resto, versao: 2, inventario: { milho: 3 } }
     const v3 = migrarSalvamento(v2)
-    expect(v3?.versao).toBe(20)
+    expect(v3?.versao).toBe(22)
     expect(v3?.inventario).toEqual({ milho: 3 })
     expect(v3?.moradores.capi).toEqual({
       amizade: 0,
@@ -512,7 +510,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       mapa: _mapa,
       companhia: _companhia,
       ...resto
-    } = inicial()
+    } = inicialV21(agora)
     const v3: SalvamentoV3 = {
       ...resto,
       versao: 3,
@@ -520,7 +518,7 @@ describe('salvamento V4 (o modo construção e os projetos azuis)', () => {
       moradores: { capi: resto.moradores.capi },
     }
     const v4 = migrarSalvamento(v3)
-    expect(v4?.versao).toBe(20)
+    expect(v4?.versao).toBe(22)
     expect(v4?.casa).toEqual({ portaNova: true })
     expect(v4?.construcao).toEqual({ casa: null, cabanas: {} })
     expect(v4?.projetos).toEqual({})

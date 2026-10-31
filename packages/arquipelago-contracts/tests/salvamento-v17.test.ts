@@ -16,7 +16,7 @@ test('V16 migra sem perder moradores, inventário ou final', () => {
   })
   const copia = structuredClone(antiga)
   const atual = migrarSalvamento(antiga)
-  expect(atual?.versao).toBe(20)
+  expect(atual?.versao).toBe(22)
   expect(atual?.moradores.capi).toEqual(antiga.moradores.capi)
   expect(atual?.moradores.bento).toEqual(antiga.moradores.bento)
   expect(atual?.inventario).toEqual(antiga.inventario)
@@ -55,5 +55,5 @@ test('amizade nova atravessa JSON e continua estrita', () => {
     ).toBeNull()
   }
   expect(SalvamentoV16Schema.safeParse(s).success).toBe(false)
-  expect(migrarSalvamento({ ...s, versao: 21 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 23 })).toBeNull()
 })

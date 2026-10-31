@@ -2,6 +2,7 @@ import 'server-only'
 import {
   type AmigosDaFamiliaParaOsPais,
   AmigosDaFamiliaSchema,
+  CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES,
   CORPO_DO_FANTASMA_MAX_BYTES,
   DesafioAbertoSchema,
   IrmaosDoJogadorSchema,
@@ -129,12 +130,15 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/profissoes/') ||
           caminho.startsWith('/insumos/') ||
           caminho.startsWith('/pedidos/') ||
+          caminho.startsWith('/feira/') ||
+          caminho.startsWith('/roupas/') ||
           caminho.startsWith('/familia/minijogos') ||
           caminho.startsWith('/irmaos') ||
           caminho.startsWith('/amigos') ||
           caminho.startsWith('/familia/amigos') ||
           caminho === '/desafios/cores' ||
           caminho.startsWith('/fantasmas') ||
+          caminho === '/obra-estendida' ||
           caminho.startsWith('/visitas-adultas/')
         )
           resposta.headers.set('cache-control', 'private, no-store')
@@ -303,6 +307,11 @@ export function createArquipelagoRoutes(deps: {
         return chamar(`/irmaos/${id}/fantasmas/${nome}`, 'GET')
       },
     },
+    /** A obra estendida (E04 e B14): o iglu, o andar de cima e o terreno, com revisão própria. */
+    arquipelagoObraEstendida: {
+      GET: () => chamar('/obra-estendida', 'GET'),
+      PUT: comCorpo('/obra-estendida', 'PUT', CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES),
+    },
     arquipelagoSalvamento: {
       GET: () => chamar('/salvamento', 'GET'),
       PUT: comCorpo('/salvamento', 'PUT', CORPO_DO_SALVAMENTO),
@@ -316,6 +325,11 @@ export function createArquipelagoRoutes(deps: {
     arquipelagoInsumosComprar: { POST: comCorpo('/insumos/comprar', 'POST', 1024) },
     arquipelagoPedidosPendentes: { GET: () => chamar('/pedidos/pendentes', 'GET') },
     arquipelagoPedidosEntregar: { POST: comCorpo('/pedidos/entregar', 'POST', 1024) },
+    /** A banca da feira (A22): vender os pratos prontos, com o crédito pelo serviço do jogo. */
+    arquipelagoFeiraVendasPendentes: { GET: () => chamar('/feira/vendas/pendentes', 'GET') },
+    arquipelagoFeiraVender: { POST: comCorpo('/feira/vender', 'POST', 1024) },
+    /** As roupas conquistadas (A21): o serviço do jogo confere e pede ao Members. */
+    arquipelagoRoupasSincronizar: { POST: () => chamar('/roupas/sincronizar', 'POST', {}) },
     arquipelagoProfissaoIniciar: { POST: comCorpo('/profissoes/iniciar', 'POST', 4096) },
     arquipelagoProfissaoConcluir: { POST: comCorpo('/profissoes/concluir', 'POST', 4096) },
     /** A galeria do Arquipélago (29/10/2026): o que ela comprou, o saldo e comprar. */

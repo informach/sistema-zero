@@ -21,7 +21,15 @@ import {
   type Salvamento,
 } from './salvamento'
 
-export const MORADORES_DOS_PEDIDOS = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie'] as const
+export const MORADORES_DOS_PEDIDOS = [
+  'capi',
+  'bento',
+  'mare',
+  'floco',
+  'jade',
+  'irie',
+  'nico',
+] as const
 export const MoradorDoPedidoSchema = z.enum(MORADORES_DOS_PEDIDOS)
 export type MoradorDoPedido = z.infer<typeof MoradorDoPedidoSchema>
 export const ILHA_DO_PEDIDO = {
@@ -31,6 +39,7 @@ export const ILHA_DO_PEDIDO = {
   floco: 'pico',
   jade: 'vale-dos-dinos',
   irie: 'nuvens',
+  nico: 'sua-ilha',
 } as const satisfies Record<MoradorDoPedido, IlhaId>
 export const AMIZADE_DO_PEDIDO = 30
 export const MOEDAS_DO_PEDIDO = 3
@@ -46,17 +55,25 @@ export function pedidoDoMoradorPeloId(quem: MoradorDoPedido, id: string): Pedido
   return lista.find((p) => p.id === id) ?? null
 }
 
-/** Mantém o sorteio e a identidade dos pedidos já usados nas conversas. */
+/**
+ * Mantém o sorteio e a identidade dos pedidos já usados nas conversas. Os pedidos de prato só
+ * entram com a receita sabida (pela `amizade` com quem ensina); sem a amizade, ficam de fora.
+ */
 export function escolherPedidoDoMorador(
   quem: MoradorDoPedido,
   perfil: string,
   dia: string,
   achados: number,
   haBichoEscondido = achados < BICHOS_DO_BOSQUE.length,
+  amizade?: number,
 ): string {
   const lista: readonly PedidoDeMorador[] =
     quem === 'capi' ? PEDIDOS_DA_CAPI : quem === 'bento' ? PEDIDOS_DO_BENTO : PEDIDOS_DO_ANEL[quem]
-  const opcoes = lista.map((p) => p.id)
+  const sabidas =
+    quem === 'capi' || amizade === undefined
+      ? new Set<string>()
+      : new Set(receitasDoMorador(quem, amizade).map((r) => r.id))
+  const opcoes = lista.filter((p) => !p.receita || sabidas.has(p.receita)).map((p) => p.id)
   if (
     quem === 'capi' &&
     haBichoEscondido &&

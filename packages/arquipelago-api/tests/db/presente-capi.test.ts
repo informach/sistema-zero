@@ -75,6 +75,8 @@ describe.skipIf(!url)('presente da Capi no Postgres local', () => {
         segredos: _segredos,
         mapa: _mapa,
         companhia: _companhia,
+        florada: _florada,
+        ceu: _ceu,
         ...anterior
       } = inicial
       const v4 = {

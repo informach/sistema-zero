@@ -12,6 +12,7 @@ export {
 
 import {
   BICHOS_DO_BOSQUE,
+  type DesafioNaLista,
   SALVAMENTO_MAX_BYTES,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
@@ -27,7 +28,60 @@ export function receitaPeloId(id: string): Receita | null {
   return RECEITAS.find((r) => r.id === id) ?? null
 }
 
-export function receitaConhecida(r: Receita, s: Salvamento): boolean {
+/**
+ * As receitas que vieram de desafios extras (§6.28, A25: "★ extra: receita de brigadeiro"): o
+ * prêmio-objeto do extra, pela lista dos desafios do serviço. Somam-se às outras origens; nada
+ * que já se sabia deixa de valer.
+ */
+export interface ReceitasDosExtras {
+  ganhas: ReadonlySet<string>
+  /** O título do desafio cujo extra ensina cada receita (para a pista). */
+  ensina: ReadonlyMap<string, string>
+}
+
+export const SEM_RECEITAS_DOS_EXTRAS: ReceitasDosExtras = { ganhas: new Set(), ensina: new Map() }
+
+export function receitasDosExtras(
+  dados: { desafios: readonly DesafioNaLista[] } | null,
+): ReceitasDosExtras {
+  const ganhas = new Set<string>()
+  const ensina = new Map<string, string>()
+  for (const d of dados?.desafios ?? []) {
+    const id = d.recompensa.receitaDoExtra
+    if (!id) continue
+    if (d.extraFeito) ganhas.add(id)
+    if (!ensina.has(id)) ensina.set(id, d.titulo)
+  }
+  return ganhas.size === 0 && ensina.size === 0 ? SEM_RECEITAS_DOS_EXTRAS : { ganhas, ensina }
+}
+
+/**
+ * A receita que um extra acabou de dar, entre duas leituras da lista (a primeira leitura não fala:
+ * ela só conta o que já estava feito).
+ */
+export function falaDaReceitaDoExtra(
+  antes: { desafios: readonly DesafioNaLista[] } | null,
+  depois: { desafios: readonly DesafioNaLista[] },
+): string | null {
+  if (!antes) return null
+  const feitosAntes = new Set(antes.desafios.filter((d) => d.extraFeito).map((d) => d.id))
+  const nova = depois.desafios.find(
+    (d) => d.extraFeito && d.recompensa.receitaDoExtra && !feitosAntes.has(d.id),
+  )
+  const receita = nova?.recompensa.receitaDoExtra
+    ? receitaPeloId(nova.recompensa.receitaDoExtra)
+    : null
+  return receita
+    ? `Receita nova no caderno: ${receita.nome.toLowerCase()}. É o prêmio do desafio extra.`
+    : null
+}
+
+export function receitaConhecida(
+  r: Receita,
+  s: Salvamento,
+  extras: ReceitasDosExtras = SEM_RECEITAS_DOS_EXTRAS,
+): boolean {
+  if (extras.ganhas.has(r.id)) return true
   if (r.origem.tipo === 'amizade')
     return coracoes(s.moradores[r.origem.morador].amizade) >= r.origem.coracoes
   if (r.origem.tipo === 'colecao')
@@ -40,12 +94,26 @@ export function receitaEmEpoca(r: Receita, festa: Festa | null): boolean {
   return r.origem.tipo !== 'festa' || r.origem.festa === festa
 }
 
-export function receitasConhecidas(s: Salvamento): Receita[] {
-  return RECEITAS.filter((r) => receitaConhecida(r, s))
+export function receitasConhecidas(
+  s: Salvamento,
+  extras: ReceitasDosExtras = SEM_RECEITAS_DOS_EXTRAS,
+): Receita[] {
+  return RECEITAS.filter((r) => receitaConhecida(r, s, extras))
 }
 
 /** Mesma pista no diário e na bancada; nunca oferece um curso ou ingrediente inexistente. */
-export function dicaDaReceita(r: Receita, s: Salvamento): string {
+export function dicaDaReceita(
+  r: Receita,
+  s: Salvamento,
+  extras: ReceitasDosExtras = SEM_RECEITAS_DOS_EXTRAS,
+): string {
+  if (extras.ganhas.has(r.id)) return 'Prêmio do desafio extra. Os ingredientes vêm da feira.'
+  const desafio = extras.ensina.get(r.id)
+  const tambem = desafio ? ` Ou faça o desafio extra de ${desafio}.` : ''
+  return dicaPelaOrigem(r, s) + (receitaConhecida(r, s) ? '' : tambem)
+}
+
+function dicaPelaOrigem(r: Receita, s: Salvamento): string {
   const o = r.origem
   if (o.tipo === 'amizade') {
     const nome = o.morador === 'bento' ? 'Bento' : VIDA_NO_ANEL[o.morador].nome
@@ -61,7 +129,9 @@ export function dicaDaReceita(r: Receita, s: Salvamento): string {
       ? 'Na fogueira da Festa Junina, em junho. O prato pronto fica na mochila depois da festa.'
       : o.festa === 'fim-de-ano'
         ? 'Na bancada durante a festa de fim de ano, de 20 de dezembro a 6 de janeiro. Ela volta todo ano.'
-        : 'Na bancada durante o Carnaval. Esta receita volta todo ano.'
+        : o.festa === 'lanternas'
+          ? 'Na bancada durante a Noite das Lanternas, de 1 a 12 de outubro. Ela volta todo ano.'
+          : 'Na bancada durante o Carnaval. Esta receita volta todo ano.'
   return 'Os ingredientes vêm da horta.'
 }
 

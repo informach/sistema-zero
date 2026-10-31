@@ -75,6 +75,20 @@ CERCADO = (2.4, -9.2)
 # sem nada que colida, de céu aberto (longe dos deques: o telhado do kit começa a 4 m). Células de
 # x0 a x1 - 1 e de z0 a z1 - 1, no chão do jogo; as âncoras `lote-cabana-a` e `-b` ficam nos cantos.
 LOTE_DA_CABANA = {'x0': -18, 'z0': -4, 'x1': -12, 'z1': 4}
+# O segredo dos patins (31/10/2026, pedido dela): na ponta de campo, ao norte do lote da cabana, uma pista
+# suspensa de tábuas (6,6 m retos, 1,2 de largura, com corrimão de corda dos lados) a 4,5 m do chão e, depois
+# de um vão de 3,8 m, o toco alto do segredo, 0,45 m mais alto que a pista (`acima`, ajuste aprovado em
+# 31/10/2026), com a âncora `segredo-patins` em cima. Pela trajetória do corpo (`CORPO.pulo`, a gravidade
+# 24), para chegar 0,45 m acima: a pé, correndo (4,6 m/s), o meio do corpo anda 2,98 m, 3,68 m com o pé
+# redondo pegando as duas bordas (`alcanceMaximoDoPulo`); de patins (5,98 m/s), 3,88 m só com o meio do
+# corpo. Com as bordas na mesma altura, 3,8 m ficava abaixo dos 3,95 do pulo a pé com a ajuda do corpo. Sobe-se à pista pela escada de mão (`escada-2-*`, modo
+# escada) no lado de cá. Do chão, das moitas e dos deques ninguém chega pulando. O planador (o modo
+# planar: abre no alto do pulo, ainda sobe uns 4 cm e só depois desce a 1,8 m/s) chega da própria pista
+# (qualquer beirada que o pulo alcança, ele também) e do deque da T3 e da ponte ao lado (a 6,5 e 8,7 m;
+# o voo de lá vai a uns 8,7 m). O toco foi 1 m para o norte (menos voo da ponte) com a pista girada para
+# a ponta de cá continuar no mesmo lugar; `tests/segredo-dos-patins.test.ts` registra o limite.
+SEGREDO_DOS_PATINS = dict(toco=(-17.0, 6.2), raio=1.0, rumo=(0.931, 0.365), vao=3.8, pista=6.6, largura=1.2,
+                          altura=4.5, acima=0.45, escada_de_ponta=0.6)
 # A casa na árvore no deque da T1 (física viva, etapa 5). `lado` é o ângulo (chão do Blender) do
 # tronco para o meio da casa; `largura` vai na direção do tronco para fora, `fundo` em volta do
 # tronco. A porta fica na parede de +y local (a do lado da escada), com o meio em `porta_x`: a parede
@@ -518,7 +532,8 @@ def enfeites_do_lobo(col, copas):
     """A ponta de campo do lado de fora, em volta do lote da cabana (que fica livre): duas árvores
     médias nos cantos, moitas na beira, flores e tufos."""
     p = []
-    for i, (x, z, s, c) in enumerate([(-16.6, -6.8, 0.8, 'copaFunda'), (-16.4, 6.9, 0.85, 'copa')]):
+    # A segunda saiu de (−16,4; 6,9), onde fica o toco do segredo dos patins (31/10/2026).
+    for i, (x, z, s, c) in enumerate([(-16.6, -6.8, 0.8, 'copaFunda'), (-12.6, 10.0, 0.85, 'copa')]):
         copa = []
         copas.append(copa)
         p += arvore_media(x, z, s, c, seed=120 + i, col=col, folhas=copa)
@@ -531,6 +546,89 @@ def enfeites_do_lobo(col, copas):
                                       (-18.9, 2.6, 0.8, 4))):
         p += tufos(x, z, r, n, seed=240 + i)
     return p
+
+
+def segredo_dos_patins(col):
+    """A pista suspensa, o toco do segredo e a escada de mão (pontos do jogo). Devolve (desenho, âncoras)."""
+    sp = SEGREDO_DOS_PATINS
+    tx, tz = sp['toco']
+    ux, uz = sp['rumo']
+    n = math.hypot(ux, uz)
+    ux, uz = ux / n, uz / n
+    nx, nz = -uz, ux                       # o lado da pista (para o norte)
+    h = TOPO + sp['altura']
+    # A ponta da pista do lado do vão e a outra ponta.
+    ex, ez = tx + ux * (sp['raio'] + sp['vao']), tz + uz * (sp['raio'] + sp['vao'])
+    fx, fz = ex + ux * sp['pista'], ez + uz * sp['pista']
+    mx, mz = (ex + fx) / 2, (ez + fz) / 2
+    rumo = math.atan2(-uz, ux)            # no chão do Blender
+    L, W = sp['pista'], sp['largura']
+    p = [box((L, W, 0.12), (mx, -mz, h - 0.06), 'tabua', bevel=0.02, segs=1, rot=(0, 0, rumo))]
+    col.append(col_caixa('pista-segredo', (L, W, 0.3), (mx, -mz, h - 0.15), (0, 0, rumo)))
+    # As tábuas de cima (frisos, 1 cm acima) e as vigas de baixo.
+    for k in range(11):
+        f = -L / 2 + (k + 0.5) * L / 11
+        p.append(box((0.04, W - 0.08, 0.012), (mx + ux * f, -(mz + uz * f), h + 0.004), 'troncoClaro', bevel=0.0,
+                     rot=(0, 0, rumo)))
+    for sgn in (-1, 1):
+        p.append(box((L, 0.1, 0.16), (mx + nx * sgn * (W / 2 - 0.05), -(mz + nz * sgn * (W / 2 - 0.05)), h - 0.2), 'poste',
+                     bevel=0.02, segs=1, rot=(0, 0, rumo)))
+    # As pernas (quatro pares), em pé no tampo. A ponta da escada fica em balanço (1,6 m): ali perto ficam a
+    # árvore e a moita do esconderijo do cachorro.
+    for k in range(4):
+        f = -L / 2 + 0.3 + k * (L - 1.9) / 3
+        for sgn in (-1, 1):
+            x, z = mx + ux * f + nx * sgn * (W / 2 - 0.08), mz + uz * f + nz * sgn * (W / 2 - 0.08)
+            p.append(cyl(0.09, h - 0.12 - TOPO, (x, -z, TOPO + (h - 0.12 - TOPO) / 2), 'poste', verts=7))
+            col.append(col_cilindro('poste-pista-segredo', 0.11, h - 0.3 - TOPO, (x, -z, TOPO + (h - 0.3 - TOPO) / 2)))
+    # O corrimão de corda dos dois lados (aberto na ponta do vão e onde chega a escada), com o guarda-corpo
+    # invisível (`col-guarda-pista-segredo-*`).
+    lado_da_escada = 1
+    for sgn in (-1, 1):
+        pts = []
+        trechos = [(-L / 2, L / 2)] if sgn != lado_da_escada else [(-L / 2, L / 2 - sp['escada_de_ponta'] - 0.45),
+                                                                   (L / 2 - sp['escada_de_ponta'] + 0.45, L / 2)]
+        for a, b in trechos:
+            for f in (a, b):
+                x, z = mx + ux * f + nx * sgn * (W / 2 - 0.05), mz + uz * f + nz * sgn * (W / 2 - 0.05)
+                p.append(cyl(0.04, 0.9, (x, -z, h + 0.45), 'poste', verts=6))
+                pts.append((x, -z, h + 0.85))
+            p.append(tube(pts[-2:], [0.025, 0.025], 'corda', seg=4, cap=False))
+            ca, cb = (mx + ux * a, mz + uz * a), (mx + ux * b, mz + uz * b)
+            cx, cz = (ca[0] + cb[0]) / 2 + nx * sgn * (W / 2 - 0.05), (ca[1] + cb[1]) / 2 + nz * sgn * (W / 2 - 0.05)
+            col.append(col_caixa('guarda-pista-segredo', (b - a, 0.1, 1.0), (cx, -cz, h + 0.5), (0, 0, rumo)))
+    # A escada de mão (modo escada) no lado norte da ponta de lá da pista.
+    ef = L / 2 - sp['escada_de_ponta']
+    lx, lz = mx + ux * ef + nx * (W / 2 + 0.06), mz + uz * ef + nz * (W / 2 + 0.06)
+    larg = ESCADA_RETA['largura']
+    for sgn in (-1, 1):
+        x, z = lx + ux * sgn * larg / 2, lz + uz * sgn * larg / 2
+        p.append(box((0.07, 0.07, h - TOPO + 0.9), (x, -z, TOPO + (h - TOPO + 0.9) / 2), 'poste', bevel=0.01,
+                     rot=(0, 0, rumo)))
+    for k in range(1, int((h - TOPO) / ESCADA_RETA['degrau']) + 1):
+        p.append(cyl(0.03, larg, (lx, -lz, TOPO + k * ESCADA_RETA['degrau']), 'tabua', verts=6, rot=(R(90), 0, rumo + R(90))))
+    col.append(col_caixa('escada-reta', (larg + 0.1, 0.1, h - TOPO), (lx, -lz, TOPO + (h - TOPO) / 2), (0, 0, rumo)))
+    dentro = (lx - nx * (0.7 + 0.06), lz - nz * (0.7 + 0.06))
+    anc = [ancora('escada-2-base', lx - nx * 0.0, lz - nz * 0.0, TOPO), ancora('escada-2-topo', lx, lz, h),
+           ancora('escada-2-saida', dentro[0], dentro[1], h)]
+    # O toco alto do segredo (0,45 m acima da pista): casca de árvore, o tampo de anéis e musgo, e a
+    # bandeirinha com a estrela.
+    r = sp['raio']
+    h = h + sp['acima']
+    # O pé desce 0,6 abaixo do tampo: o lado de fora fica em cima da praia.
+    p.append(cyl(r, h - TOPO + 0.52, (tx, -tz, TOPO - 0.6 + (h - TOPO + 0.52) / 2), 'tronco', verts=14, r2=r * 0.94))
+    p.append(cyl(r * 0.96, 0.08, (tx, -tz, h - 0.04), 'troncoClaro', verts=14))
+    p.append(torus(r * 0.6, 0.025, (tx, -tz, h + 0.005), 'tronco', seg=14, rseg=3))
+    for k in range(5):
+        a = 2 * math.pi * k / 5 + 0.3
+        p.append(uvball(0.32, (tx + math.cos(a) * r * 0.95, -tz + math.sin(a) * r * 0.95, TOPO + 0.15 + 0.05 * k), 'musgo',
+                        seg=8, ring=4, scale=(1, 1, 0.5)))
+    p.append(cyl(0.03, 1.0, (tx - 0.5, -tz, h + 0.5), 'poste', verts=6))
+    p.append(prism(star_pts(0.18, 0.08), 0.03, (tx - 0.5, -tz, h + 1.05), 'lampiao'))
+    col.append(col_cilindro('toco-segredo', r, h - TOPO, (tx, -tz, TOPO + (h - TOPO) / 2)))
+    anc.append(ancora('segredo-patins', tx, tz, h))
+    print(f'SEGREDO dos patins: pista de ({fx:.2f}, {fz:.2f}) a ({ex:.2f}, {ez:.2f}), toco em ({tx}, {tz}), h {h}')
+    return p, anc
 
 
 def terreno(col):
@@ -727,12 +825,14 @@ def construir():
     veg = vegetacao(col, copas, troncos) + enfeite_lago + galho_dos_cipos(col, copas, troncos)
     veg += tronco_caido(col)
     obras += pedra_de_agarrar(col)
+    segredo, ancoras_do_segredo = segredo_dos_patins(col)
+    obras += segredo
     conferir_corredor(obras + veg + telhado + [o for c in copas + troncos for o in c], 'bosque')
     cipos = {}
     for i in range(len(CIPOS)):
         objs, pivo = cipo(i)
         cipos[f'cipo-{i + 1}'] = (objs, pivo)
-    anc = ancoras(pista) + [tronco_de_escalar()]
+    anc = ancoras(pista) + ancoras_do_segredo + [tronco_de_escalar()]
     nos_copa = {f'copa-{i + 1}': c for i, c in enumerate(copas)}
     nos_copa.update({f'tronco-{i + 1}': t for i, t in enumerate(troncos)})
     nos = {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos, **nos_copa,

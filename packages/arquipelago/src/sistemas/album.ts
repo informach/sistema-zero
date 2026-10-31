@@ -1,29 +1,46 @@
 import {
   type AparenciaDoObjeto,
+  BIT_DO_LUMI_DE_LUZ,
   CATALOGO_DE_OBJETOS,
+  ehLumiDeLuz,
+  FOSSEIS_DO_VALE,
+  type FossilDoVale,
   ILHAS,
   type IlhaId,
+  ilhaVisitada,
   LUMIS,
+  LUMIS_DE_LUZ,
   type LumiId,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
   PERCURSOS,
   type PercursoId,
+  resultadoDoPercurso,
   type Salvamento,
+  temOLumi,
 } from '@sistemazero/arquipelago-contracts'
 import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
 import { colecaoDaPraia } from './colecoes-da-praia'
 import { colecaoDaIlha } from './colecoes-das-ilhas'
 import { rotuloDaAparencia } from './construcao/galeria'
+import { coralReplantado, PONTOS_DOS_CORAIS } from './corais-do-recife'
 import {
   colecaoDeReceitas,
   colecaoDoBosque,
   type EstadoDaReceita,
   type EstadoDoBicho,
 } from './diario'
+import { cresceu } from './filhote-do-vale'
+import { achouFossil, NOME_DO_FOSSIL, TEXTOS_DOS_FOSSEIS } from './fosseis'
 import { ESPECIES_DE_LUMI } from './lumis'
-import { formatarTempo, PERCURSOS_DO_JOGO, todasAsColetaveis } from './percurso'
-import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS } from './segredos'
+import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
+import {
+  ondeAcharOLumiDeLuz,
+  SEGREDOS,
+  segredoAchado,
+  TEXTOS_DOS_SEGREDOS,
+  TODOS_OS_SEGREDOS,
+} from './segredos'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
 
@@ -85,6 +102,7 @@ export const ILHA_DO_PERCURSO: Readonly<Record<PercursoId, IlhaId>> = {
   'praia-pedras': 'sua-ilha',
   'recife-corais': 'recife',
   'vale-pegadas': 'vale-dos-dinos',
+  'farol-subida': 'farol',
 }
 
 export interface EstrelaDoPercurso {
@@ -109,7 +127,7 @@ export function percursosDoAlbum(s: Salvamento): {
 } {
   const itens = PERCURSOS.map((id): PercursoDoAlbum => {
     const config = PERCURSOS_DO_JOGO[id]
-    const r = s.percursos[id]
+    const r = resultadoDoPercurso(s.percursos, id)
     return {
       id,
       nome: config.nome,
@@ -122,7 +140,8 @@ export function percursosDoAlbum(s: Salvamento): {
         },
         {
           ganhou: r?.estrelas.vagalumes ?? false,
-          texto: todasAsColetaveis(config, config.vagalumes),
+          // A terceira estrela é o segredo do percurso (§6.28, A9).
+          texto: `Achar ${config.escondido}`,
         },
       ],
       melhorTempo: r ? formatarTempo(r.melhorTempoMs) : null,
@@ -190,20 +209,59 @@ export type LumiDoAlbum =
       nome: string
       ilha: string
       raro: boolean
+      luz: boolean
       cor: string
       quantos: number
     }
-  | { id: LumiId; estado: 'nao-encontrado'; ilha: string; raro: boolean }
+  | { id: LumiId; estado: 'nao-encontrado'; ilha: string; raro: boolean; luz: boolean }
 
-/** As 14 espécies de `LUMIS`: as que ela prendeu com quantos, as outras como silhueta. */
+/** As 14 espécies que a lanterna prende: as que ela prendeu com quantos, as outras como silhueta. */
 export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiDoAlbum[] } {
-  const itens = LUMIS.map((id): LumiDoAlbum => {
+  const itens = LUMIS.filter((id) => !ehLumiDeLuz(id)).map((id): LumiDoAlbum => {
     const e = ESPECIES_DE_LUMI[id]
     const ilha = NOME_DA_ILHA[e.ilha]
     const quantos = s.lumis[id] ?? 0
     if (quantos > 0)
-      return { id, estado: 'preso', nome: e.nome, ilha, raro: e.raro, cor: e.cor, quantos }
-    return { id, estado: 'nao-encontrado', ilha, raro: e.raro }
+      return {
+        id,
+        estado: 'preso',
+        nome: e.nome,
+        ilha,
+        raro: e.raro,
+        luz: false,
+        cor: e.cor,
+        quantos,
+      }
+    return { id, estado: 'nao-encontrado', ilha, raro: e.raro, luz: false }
+  })
+  return { conta: contar(itens.filter((l) => l.estado === 'preso').length, itens.length), itens }
+}
+
+/**
+ * Os sete Lumis de luz (B12), dos baús dos segredos: o achado com a ilha da família, o que falta
+ * com onde fica o baú (sem o caminho).
+ */
+export function lumisDeLuzDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiDoAlbum[] } {
+  const itens = LUMIS_DE_LUZ.map((id): LumiDoAlbum => {
+    const e = ESPECIES_DE_LUMI[id]
+    if (temOLumi(s, id))
+      return {
+        id,
+        estado: 'preso',
+        nome: e.nome,
+        ilha: NOME_DA_ILHA[e.ilha],
+        raro: true,
+        luz: true,
+        cor: e.cor,
+        quantos: 1,
+      }
+    return {
+      id,
+      estado: 'nao-encontrado',
+      ilha: ondeAcharOLumiDeLuz(BIT_DO_LUMI_DE_LUZ[id]) ?? NOME_DA_ILHA[e.ilha],
+      raro: true,
+      luz: true,
+    }
   })
   return { conta: contar(itens.filter((l) => l.estado === 'preso').length, itens.length), itens }
 }
@@ -218,16 +276,126 @@ export interface SegredoDoAlbum {
 }
 
 export function segredosDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: SegredoDoAlbum[] } {
-  const itens = SEGREDOS.map((g) => {
+  const itens = TODOS_OS_SEGREDOS.map((g) => {
     const achado = segredoAchado(s.segredos, g)
+    const doVento = SEGREDOS.some((v) => v.id === g.id)
     return {
       id: g.id,
       ilha: ILHAS.find((i) => i.id === g.ilha)?.nome ?? g.ilha,
       achado,
-      texto: achado ? 'Baú da Íris achado no alto do vento.' : TEXTOS_DOS_SEGREDOS.dica,
+      texto: achado
+        ? doVento
+          ? 'Baú da Íris achado no alto do vento.'
+          : 'Baú da Íris achado.'
+        : 'dica' in g
+          ? g.dica
+          : TEXTOS_DOS_SEGREDOS.dica,
     }
   })
   return { conta: contar(itens.filter((i) => i.achado).length, itens.length), itens }
+}
+
+// ── Os peixes do Recife (§6.28, A40) ────────────────────────────────────────────────────────────
+
+export interface PeixeDoRecifeDoAlbum {
+  id: string
+  nome: string
+  encontrado: boolean
+  dica: string
+}
+
+/** Um peixe por coral replantado na lagoa do Recife: os mesmos do aquário de casa. */
+export function peixesDoRecifeDoAlbum(s: Salvamento): {
+  conta: ContaDaSecao
+  itens: PeixeDoRecifeDoAlbum[]
+} {
+  const itens = PONTOS_DOS_CORAIS.map((p, i) => ({
+    id: `peixe-do-${p.tipo}`,
+    nome: `Peixe do ${p.nome}`,
+    encontrado: coralReplantado(s.recife.corais, i),
+    dica: `Replante o ${p.nome} na lagoa do Recife.`,
+  }))
+  return { conta: contar(itens.filter((p) => p.encontrado).length, itens.length), itens }
+}
+
+// ── Os fósseis do museu e as pegadas (B4 e B5, 31/10/2026) ──────────────────────────────────────
+
+export interface FossilDoAlbum {
+  id: FossilDoVale
+  nome: string
+  encontrado: boolean
+  dica: string
+}
+
+/** Os seis fósseis do museu de casa, achados um por dia na escavação do Vale. */
+export function fosseisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: FossilDoAlbum[] } {
+  const itens = FOSSEIS_DO_VALE.map((id) => ({
+    id,
+    nome: NOME_DO_FOSSIL[id],
+    encontrado: achouFossil(s, id),
+    dica: TEXTOS_DOS_FOSSEIS.naAreia,
+  }))
+  return { conta: contar(itens.filter((f) => f.encontrado).length, itens.length), itens }
+}
+
+export const PEGADAS_DO_ALBUM = [
+  'pegada-rex',
+  'pegada-triceratopo',
+  'pegada-capivara',
+  'pegada-passaro',
+] as const
+export type PegadaDoAlbum = (typeof PEGADAS_DO_ALBUM)[number]
+
+export interface PegadaNoAlbum {
+  id: PegadaDoAlbum
+  nome: string
+  encontrado: boolean
+  texto: string
+}
+
+/**
+ * As pegadas do álbum: o rastro de três dedos do Vale, a do tricerátopo que ela criou, a da Capi
+ * no Bosque e a dos pássaros que pousam nas Nuvens. Tudo sai do que o salvamento já guarda.
+ */
+export function pegadasDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: PegadaNoAlbum[] } {
+  const tricera = cresceu(s.vale.filhote)
+  const capi = s.moradores.capi.amizade > 0
+  const nuvens = ilhaVisitada(s.ilhasVisitadas, 'nuvens')
+  const itens: PegadaNoAlbum[] = [
+    {
+      id: 'pegada-rex',
+      nome: 'Pegada de três dedos',
+      encontrado: s.vale.pegadas,
+      texto: s.vale.pegadas
+        ? 'Você seguiu o rastro até a escavação do Vale.'
+        : 'Siga o rastro perto da chegada do Vale dos Dinos.',
+    },
+    {
+      id: 'pegada-triceratopo',
+      nome: 'Pegada de tricerátopo',
+      encontrado: tricera,
+      texto: tricera
+        ? 'O tricerátopo que você criou já deixa pegadas grandes.'
+        : 'Cuide do ovo da Jade até o filhote crescer.',
+    },
+    {
+      id: 'pegada-capivara',
+      nome: 'Pegada de capivara',
+      encontrado: capi,
+      texto: capi
+        ? 'A Capi deixa pegadas na beira do lago do Bosque.'
+        : 'Converse com a Capi no Bosque dos Bichos.',
+    },
+    {
+      id: 'pegada-passaro',
+      nome: 'Pegada de pássaro',
+      encontrado: nuvens,
+      texto: nuvens
+        ? 'Os pássaros pousam nas nuvens e deixam pegadas leves.'
+        : 'Visite a Ilha das Nuvens.',
+    },
+  ]
+  return { conta: contar(itens.filter((p) => p.encontrado).length, itens.length), itens }
 }
 
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
@@ -266,12 +434,16 @@ export function albumDoSalvamento(s: Salvamento) {
       conta: contar(achados.filter((a) => a.achado).length, achados.length),
       itens: achados,
     },
+    peixesDoRecife: peixesDoRecifeDoAlbum(s),
     segredos: segredosDoAlbum(s),
+    fosseis: fosseisDoAlbum(s),
+    pegadas: pegadasDoAlbum(s),
     bichos: bichosDoAlbum(s),
     receitas: receitasDoAlbum(s),
     percursos: percursosDoAlbum(s),
     aparencias: aparenciasDoAlbum(s),
     lumis: lumisDoAlbum(s),
+    lumisDeLuz: lumisDeLuzDoAlbum(s),
   }
 }
 export type Album = ReturnType<typeof albumDoSalvamento>

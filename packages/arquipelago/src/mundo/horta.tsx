@@ -10,7 +10,16 @@ import { lojaDosPassos } from '../estado/primeiros-passos'
 import { type Clima, climaEfetivo, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
 import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
-import { type Estagio, estagio, geladeiraEm, plantar, progresso, regar } from '../sistemas/horta'
+import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
+import {
+  type Estagio,
+  estagio,
+  falaDeQuandoColhe,
+  geladeiraEm,
+  plantar,
+  progresso,
+  regar,
+} from '../sistemas/horta'
 import { ITENS, quantidade, remover } from '../sistemas/itens'
 import { colherNaIlha } from '../sistemas/primeiro-pedido'
 import { hortaVisivel } from '../sistemas/visitas'
@@ -21,6 +30,7 @@ import {
   type Solido,
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { useDesbotado } from './desbotado'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -108,7 +118,9 @@ function Canteiro({
           const novo = regar(c, agoraData)
           if (!novo) return s
           horta[indice] = novo
-          loja.getState().dizer('Regado. Daqui a pouco começa a crescer.')
+          loja
+            .getState()
+            .dizer(`Regado. ${falaDeQuandoColhe(novo, agoraData.getTime(), geladeiraEm(s)) ?? ''}`)
           return { ...s, horta }
         }
         // Crescendo, ela pode estar pedindo água (fase4-08): regar adianta o crescimento.
@@ -146,6 +158,28 @@ function Canteiro({
       })
     },
   )
+
+  // Crescendo: quanto falta, no tempo de verdade (A14, o relógio da horta). De fundo, para não
+  // tomar o Plantar, o Regar ou o Colher do canteiro do lado.
+  useInterativo(`canteiro-${canteiro.id}:quando-colhe`, {
+    x,
+    z,
+    raio: 1.8,
+    deFundo: true,
+    rotulo: () => {
+      const s = loja.getState()
+      const c = s.salvamento.horta[indice]
+      if (s.visita || !c) return null
+      const f = estagio(c, Date.now(), geladeiraEm(s.salvamento))
+      return f === 'brotando' || f === 'crescendo' ? 'Ver quando colhe' : null
+    },
+    agir: () => {
+      const s = loja.getState()
+      const c = s.salvamento.horta[indice]
+      const fala = c && falaDeQuandoColhe(c, Date.now(), geladeiraEm(s.salvamento))
+      if (fala) s.dizer(fala)
+    },
+  })
 
   return (
     <group position={[x, ALTURA_DA_TERRA, z]} scale={escala}>
@@ -224,11 +258,18 @@ function CanteiroDoModelo({
   indice: number
 }) {
   const raiz = useModelo(MODELOS.horta)
-  const { caixa, terra } = useMemo(() => {
+  const { caixa, terra, madeira } = useMemo(() => {
     const copia = copiarNo(raiz, 'canteiro', true)
     const [t] = materiaisDe(copia, 'terra')
-    return { caixa: copia, terra: t ? { material: t, cor: t.color.clone() } : null }
+    return {
+      caixa: copia,
+      terra: t ? { material: t, cor: t.color.clone() } : null,
+      madeira: materiaisDe(copia).filter((m) => m.name !== 'terra'),
+    }
   }, [raiz])
+  // A horta começa desbotada e ganha cor na primeira colheita (§6.28, A17).
+  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).horta)
+  useDesbotado(madeira, !comCor)
   useEffect(() => {
     if (terra) terra.material.color.copy(regado ? TERRA_REGADA : terra.cor)
   }, [regado, terra])

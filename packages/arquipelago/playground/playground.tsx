@@ -2,6 +2,7 @@ import { LUMIS, type LumiId, type PublicoJogo } from '@sistemazero/arquipelago-c
 import { montarArquipelago } from '../src/entrada'
 import { marcarAberturaVista } from '../src/estado/abertura'
 import { definirFestaDoPlayground } from '../src/estado/festas'
+import { chaveDaObraEstendida } from '../src/estado/obra-estendida'
 import { medicaoDasAparencias } from '../src/mundo/carregar-aparencia'
 import { PORTOS_DA_ARTE } from '../src/mundo/portos-da-arte'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
@@ -15,6 +16,7 @@ import {
 } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { CHAVE_DOS_FANTASMAS_FALSOS } from '../src/plataforma/fantasmas-falsos'
+import { CHAVE_DA_OBRA_ESTENDIDA_FALSA } from '../src/plataforma/obra-estendida-falsa'
 import { chaveDaAbertura } from '../src/sistemas/abertura'
 import { chaveDasDicas } from '../src/sistemas/dicas'
 import { lerFesta } from '../src/sistemas/festas'
@@ -31,8 +33,13 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?abertura=1` mostra a abertura "O Cinza" (sem ele, ela fica marcada como vista).
  * `?passos=1` mostra os primeiros passos com o Zappy e `?dicas=1` liga as dicas de primeira vez.
  * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
- * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
- * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa.
+ * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção; `?obra=fundo`, a mesma com
+ * um cômodo atrás do quarto e a porta no fundo dele; `?obra=entrada`, a mesma com a porta de entrada
+ * (e a varanda) na frente do cômodo da frente do quarto; `?obra=andar`, a mesma com uma sala à
+ * esquerda do quarto, o andar de cima com a escada nela e um morrinho no quintal (E04; com
+ * `?posicao=7` aparecem os dois).
+ * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa
+ * (`?pet=cachorro`, o cachorro: o espaço dos bichos, 31/10/2026).
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
  * `?patins=1` põe um par de patins na mochila (o prêmio da entrega pelos telhados).
@@ -91,7 +98,9 @@ if (q.get('novo') === '1') {
   localStorage.removeItem(CHAVE_DOS_FANTASMAS_FALSOS)
   localStorage.removeItem('arquipelago-playground')
   localStorage.removeItem(CHAVE_DA_GALERIA)
+  localStorage.removeItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA)
   for (const publico of ['kids', 'adulto']) {
+    localStorage.removeItem(chaveDaObraEstendida(publico, 'perfil-de-teste'))
     localStorage.removeItem(`${CHAVE_DAS_PROFISSOES}:${publico}`)
     localStorage.removeItem(`arquipelago:cores:v1:${publico}:perfil-de-teste`)
     for (const posto of ['padaria', 'sorveteria', 'sucos'])
@@ -99,7 +108,10 @@ if (q.get('novo') === '1') {
   }
 }
 const plataforma = criarPlataformaFalsa({
-  quarto: q.get('pet') === 'passaro' ? { ...QUARTO_DE_EXEMPLO, pet: 'pet-passaro' } : undefined,
+  quarto:
+    q.get('pet') === 'passaro' || q.get('pet') === 'cachorro'
+      ? { ...QUARTO_DE_EXEMPLO, pet: `pet-${q.get('pet')}` }
+      : undefined,
   rotina:
     q.get('rotina') === 'cancelado'
       ? 'cancelado'
@@ -125,7 +137,7 @@ const plataforma = criarPlataformaFalsa({
   adiantarMinutos: Number(q.get('adiantar') ?? 0),
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   convidados: q.get('convidados') === '1',
-  obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
+  obra: (['exemplo', 'fundo', 'entrada', 'andar'] as const).find((v) => v === q.get('obra')),
   jogos: q.get('jogos') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   adotado: q.get('adotado') === '1',

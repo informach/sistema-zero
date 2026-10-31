@@ -66,7 +66,11 @@ lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou pu
 - **Festa de fim de ano**: aprovada pela dona em 30/10/2026, de 20 de dezembro a 6 de janeiro
   (atravessa a virada). Usa o arranjo e a arte que já existiam na Vila, as ideias de roupa da
   época e uma receita nova da festa, o manjar de coco (1 leite de coco e 2 leites, na bancada, fome
-  +30 e diversão +20). A Noite das Lanternas continua sem data e desligada.
+  +30 e diversão +20).
+- **Noite das Lanternas**: aprovada pela dona em 31/10/2026, de 1 a 12 de outubro, terminando no
+  Dia das Crianças. Usa o arranjo e a arte que já existiam na Vila, as peças da aba Festa (lanterna
+  de chão e varal de luz), as roupas da época e uma receita nova da festa, a cocada (2 cocos e
+  1 leite, na bancada, fome +25 e diversão +25).
 - Playground: um jogo novo começa com as pontes das ilhas abertas já vistas (`?chegada=1` mostra a
   cena); `?usado=SEGUNDOS` simula o tempo já usado hoje. Provas:
   `tests/resumo-e-fim-do-tempo.test.ts`, `playground/verificar-descanso-browser.ts` e
@@ -1580,11 +1584,62 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   beira do lote para o píer e outra para o cata-vento e a horta. A latinha de minhocas fica ao
   lado da horta (3 m para o oeste e 2 m para a casa).
 - **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): só a varanda e o pé
-  do farol. Um teste confere que todo colisor do lote cai numa célula ocupada.
-- **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. As paredes da esquerda e do
-  fundo são da plataforma (fixas: sem porta nem janela). As da frente e da direita viram paredes
-  do kit na primeira obra (travadas: aceitam porta e janela, mas não se apagam), com a porta nova e
-  as duas janelas no lugar das do `casa.glb`.
+  do farol. A varanda segue a porta de entrada (abaixo): na obra inicial fica onde sempre esteve
+  (x 0 a 5, z 0 a 2). Um teste confere que todo colisor do lote cai numa célula ocupada.
+- **A porta de entrada** (31/10/2026, pedido dela: a porta de entrada muda de lugar no Construir, e
+  a varanda vai junto; `sistemas/construcao/entrada.ts`): a casa construída sempre tem UMA entrada,
+  a primeira porta de fora na ordem das portas e janelas da obra. Porta de fora é a que tem, em toda
+  a largura, um lado dentro de casa e o outro fora (porta entre dois cômodos ou numa parede solta
+  não conta). O salvamento não mudou: nas obras já salvas a entrada é a porta nova, a primeira da
+  obra inicial. Uma obra antiga sem porta de fora fica sem varanda até ganhar uma; a primeira porta
+  de fora posta vira a entrada, se a varanda dela couber.
+- **A varanda** é uma peça do kit (`casa-varanda.glb`, o mesmo desenho e os mesmos materiais da
+  varanda da casa de antes: deque de tábuas com vigas, degrau, colunas, toldo, vasinhos e o lampião
+  que acende à noite), posta do lado de fora da entrada com a posição e o giro da parede dela. Ocupa
+  5 células ao longo da parede (a porta e uma de cada lado) e 2 de fundo. Ela encosta na parede em
+  toda a largura: as 5 arestas da linha da porta precisam ser parede (a varanda não dobra uma
+  quina). Colide no tampo do deque, no degrau, nas colunas e nos vasinhos, só para o corpo (a câmera
+  passa). O toldo sai junto com o telhado (no Construir e com a pessoa dentro de casa). Na casa
+  construída a varanda e o toldo da casa de antes saem de cena.
+- **Mudar a entrada de lugar:** com a ferramenta Porta, tocar na porta de entrada a escolhe (a porta
+  e a varanda ficam amarelas e a linha de baixo diz "Toque numa parede de fora para levar a entrada e
+  a varanda."); o toque seguinte numa parede de fora leva a porta e a varanda para lá, e a parede de
+  antes fica inteira, sem porta. A prévia mostra a porta e a varanda novas em azul (ou vermelho, com
+  o motivo na linha de baixo). Tocar na entrada de novo, trocar de ferramenta, desfazer ou fechar
+  solta a escolha. Uma janela no caminho vira porta ("A janela virou porta."); uma porta de fora no
+  mesmo lugar vira a entrada. Recusas: a parede não dá para fora ("A entrada vai numa parede que dá
+  para fora."); a varanda não cabe (uma das células fora do lote, dentro de casa, no pé do farol, num
+  canteiro, num caminho ou num objeto, uma parede ou cerca encostando nela, ou a parede não segue de
+  um dos lados da porta: "A varanda não cabe aí. Escolha outra parede de fora."); e as da porta de
+  sempre (sem parede, parede chegando no meio, quadro do Meu quarto, peça pendurada). O Desfazer
+  volta a entrada.
+- **A entrada não se apaga:** o Apagar na porta de entrada, na parede dela ou numa parede que abriria
+  o cômodo dela para fora é recusado: "A casa precisa de uma porta de entrada. Toque nela com a Porta
+  para mudar de lugar.". As outras portas de fora são portas comuns (saem com o Apagar).
+- **O que segue a entrada:** as portas do kit abrem sozinhas perto da criança (a entrada também); o
+  Zappy dos primeiros passos aponta a frente da entrada na casa construída; com o quarto todo tomado
+  por móveis, a criança aparece na frente da entrada. A chegada das visitas continua na frente do
+  lote (x 2,5 e z 11, olhando para a casa) e a trilha de pedra do lote até o píer continua a mesma
+  (são do chão da ilha).
+- **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. Na casa construída as quatro
+  paredes dele são do kit (31/10/2026, pedido dela: todas aceitam porta e janela) e são travadas:
+  aceitam porta e janela, mas não se apagam. A frente e a direita entram na obra inicial, com a
+  porta nova e as duas janelas no lugar das do `casa.glb`; o fundo e a esquerda o jogo põe sozinho
+  na planta (`paredesTravadas` do lote), sem gravar no salvamento, então valem também para as casas
+  construídas antes. Dentro do quarto continua não indo parede e o piso continua o da plataforma.
+- **Cor de dentro do quarto:** o lado das paredes do quarto que dá para dentro dele usa a cor que a
+  criança escolheu no Meu quarto (`resolveRoomAppearance`): a esquerda (x -6) e a direita (x 6)
+  com a cor da parede da esquerda do Meu quarto; o fundo (z -8) e a frente (z 0) com a do fundo
+  (paredes opostas com a mesma cor, porque o Meu quarto só mostra duas). Decisão de 31/10/2026: com
+  o fundo e a esquerda coloridos e a frente e a direita na cor do kit, o quarto ficava com duas
+  cores sem motivo. O lado de fora e os cômodos novos ficam na cor do kit; cada casa usa uma cópia
+  própria do material, solta quando sai de cena.
+- **Quadros do Meu quarto:** os quadros, prateleiras e outros itens pendurados (`mount: 'wall'`)
+  continuam no lugar, na esquerda e no fundo. Porta ou janela que passe por uma aresta onde há um
+  item pendurado é recusada: "Nessa parede tem um quadro do seu quarto. Ponha a porta mais para o
+  lado." (ou "Ponha a janela mais para o lado."). No Construir as paredes ficam cortadas e os itens
+  pendurados saem de cena; uma faixa vermelha em cima da parede cortada marca onde eles ficam. No
+  Viver, a esquerda e o fundo do quarto nunca são cortados (os quadros estão neles).
 - **Parede:** fica nas linhas da grade. Arrastar estica a parede reto, pelo eixo em que o dedo
   andou mais. Não dá em cima do que está ocupado, dentro do quarto nem fora do lote, e não dá para
   fechar algo ocupado dentro de casa. Tetos do jogo: 320 arestas e 200 trechos de parede por lote
@@ -1599,43 +1654,60 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   lado só, lambri, com a fachada para fora.
 - **Porta e janela** (`LARGURA_DA_ABERTURA`): porta e janela grande ocupam 3 células, a janela em
   arco 2 e a redonda 1. Entram com o meio na aresta tocada e precisam caber inteiras numa parede
-  do kit, sem outra abertura no caminho e sem parede chegando no meio delas. Teto: 48 por lote.
+  do kit, sem outra abertura no caminho, sem parede chegando no meio delas e sem peça pendurada
+  (móvel de parede ou quadro do Meu quarto). Teto: 48 por lote.
+- **A janela vira porta** (31/10/2026): a porta posta em cima de uma janela (pegando a janela
+  inteira ou só uma parte) tira a janela e entra no lugar dela, e o Zappy diz "A janela virou
+  porta.". O Desfazer volta a janela. Porta em cima de porta e janela em cima de porta ou de janela
+  continuam recusadas ("Ali já tem porta ou janela.").
 - **Quinas:** em toda ponta solta de parede, em toda dobra em L e onde uma parede em pé encontra
   uma cortada na mesma linha; nada no T, no cruzamento e na emenda reta.
 - **Colisão:** as paredes em pé (sempre altas, o corte é só desenho), com o vão de 2,2 por 3 de
-  cada porta livre, e as quinas. As paredes fixas colidem pela casa de antes.
+  cada porta livre, e as quinas. As quatro paredes do quarto colidem pelo kit (uma porta no fundo
+  ou na esquerda deixa o vão livre); a varanda colide pelo kit, na entrada, e da casa de antes nada
+  colide.
 - **A casa construída** (`mundo/obra.tsx`, montada pela `Casa`): enquanto
   `salvamento.construcao.casa` é `null`, a casa é a de antes (`casa.glb`). Com obra, o kit desenha as
-  paredes, as quinas, as portas, as janelas e os pisos dos cômodos novos, e do `casa.glb` ficam o
-  revestimento de fora das paredes da plataforma, o telhado do quarto e a varanda (a porta nova
-  vira a porta do kit, no mesmo lugar). As janelas do kit acendem à noite.
+  paredes (as quatro do quarto inclusive), as quinas, as portas, as janelas e os pisos dos cômodos
+  novos, e do `casa.glb` fica só o telhado do quarto (a porta nova vira a porta do kit, no mesmo
+  lugar, e a varanda é a do kit, na porta de entrada). O `revestimento` (lado de fora da esquerda e do fundo, quinas, alicerce e
+  soleira) e as paredes do Meu quarto (`Walls`) saem de cena: o kit já tem tudo isso, e junto eles
+  teriam faces no mesmo plano (teste "a casa construída" em `tests/faces-coplanares.test.ts`, com
+  as paredes em pé e cortadas). As janelas do kit acendem à noite.
 - **Porta do kit:** abre sozinha quando a pessoa chega a 2,2 do meio do vão (`PERTO_DA_PORTA`) e
   fecha quando ela se afasta; a de fora (lambri) abre para fora. O vão nunca colide.
 - **Playground:** `?obra=exemplo` começa a casa com a obra de exemplo
   (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
-  nova saindo do quarto).
+  nova saindo do quarto). `?obra=fundo` é a mesma com um cômodo atrás do quarto (x 1 a 6, z -12 a
+  -8), ligado por uma porta no fundo. `?obra=entrada` é a de exemplo com a porta de entrada na frente
+  do cômodo da frente do quarto (a janela em arco virou porta e a frente do quarto ficou sem porta).
 - **Viver e Construir** (`interface/construir.tsx`, loja `estado/construcao.ts`): os dois botões no
   alto da tela aparecem depois que a porta nova abriu, quando nada mais está por cima do jogo.
   Construir para o personagem (`PAINEL_DE_CONSTRUIR` em `painelAberto`); "Pronto", "Viver" ou Esc
   voltam. Na primeira vez, a casa de antes vira a obra inicial do lote (na hora de abrir, para a
   criança já ver as paredes do quarto como peças do kit).
 - **No Construir** (`mundo/construir.tsx`): todas as paredes ficam cortadas, o telhado do quarto
-  sai e a grade do lote aparece no chão, com o que está ocupado tingido de vermelho. A câmera de
+  sai e a grade do lote aparece no chão, com o que está ocupado tingido de vermelho. Na parede
+  cortada a porta fica com o batente e a janela aparece inteira, na altura da parede cortada (a
+  peça `-baixa` de cada janela, 31/10/2026). A câmera de
   obra (`CAMERA_DE_OBRA`) abre sempre de frente para a casa, a 24 de distância e 0,95 de
   inclinação, olhando para (0, -3); os botões giram um oitavo de volta e aproximam ou afastam 4
   (de 8 a 40); a roda aproxima; setas e W A S D andam; Q e E giram; arrastar com o botão direito
   gira e inclina. Ela toma o lugar da câmera do jogo só enquanto o Construir está aberto.
-- **Ferramentas:** Parede (arrastar estica), Porta, Janela (grande, em arco ou redonda), Piso (do
+- **Ferramentas:** Parede (arrastar estica), Porta (e mudar a porta de entrada de lugar), Janela (grande, em arco ou redonda), Piso (do
   cômodo inteiro: tábua, ladrilho ou azulejo), Apagar (arrastar apaga paredes; um toque tira a
   porta ou a janela, e sem ela a parede) e Olhar (arrastar anda pela obra). A prévia mostra em
   verde o que dá (em azul para porta e janela) e em vermelho o que não dá; o Zappy explica a
-  recusa (`sistemas/construcao/falas.ts`). "Desfazer" volta até 30 mudanças
+  recusa (`sistemas/construcao/falas.ts`). Enquanto o mouse (ou o dedo, arrastando) passa por cima
+  de onde não dá, a linha de baixo da barra troca a dica da ferramenta pelo motivo, em vermelho
+  (o mesmo texto que o Zappy diria no toque, `motivoDaPrevia`), e volta à dica quando a prévia dá
+  ou some. No celular, sem passar por cima, fica como era: o toque mostra a fala. "Desfazer" volta até 30 mudanças
   (`LEMBRA_PARA_TRAS`), só enquanto o Construir está aberto.
 - **Corte das paredes** (`sistemas/construcao/telhado.ts`, `paredesCortadasNoViver`): no
   Construir, todas as paredes do kit ficam cortadas. No Viver, com a pessoa numa célula de dentro
   de casa (o quarto ou um cômodo novo), fica cortada toda parede cuja linha separa a câmera da
-  pessoa; fora de casa, nenhuma. O jogo confere a cada 0,12 s. As paredes fixas da plataforma
-  nunca são cortadas. A parede cortada continua segurando o corpo, mas a câmera passa por ela
+  pessoa; fora de casa, nenhuma. O jogo confere a cada 0,12 s. A esquerda e o fundo do quarto
+  nunca são cortados no Viver (os quadros do Meu quarto ficam neles). A parede cortada continua segurando o corpo, mas a câmera passa por ela
   (`col-obra-cortada-*`, como o guarda-corpo dos deques).
 - **Telhado** (`telhadoDoComodo`): cada cômodo novo retangular ganha o telhado de duas águas do kit,
   com a cumeeira correndo em x, beirais, águas (meia água no meio quando o fundo é ímpar),
@@ -1692,7 +1764,13 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
     lareira e a banda não têm faces) e "Modelar no
     Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
     `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
-    a origem e o id da criação). "Usar uma criação minha" entra com o cartão dele.
+    a origem e o id da criação). "Usar uma criação minha" (A30, `interface/criacoes-que-cabem.tsx`):
+    "Ver as que cabem neste molde" pede à plataforma (`listarCriacoesQueCabem`, opcional no
+    contrato) as criações da conta, das ferramentas que o posto já abriu, que o jogo aceitaria: o
+    desenho do Pinta no tamanho exato da planificação e o modelo do Molda dentro do teto de
+    triângulos (as 12 mais novas de cada ferramenta são conferidas). A escolhida vira a aparência
+    em uso, como a feita agora; as que já estão em "Suas aparências" não se repetem, e duas do
+    mesmo tipo ali ganham número ("Pintada no Pinta 2").
   - **Da galeria** (fase1-13, 29/10/2026; o terceiro cartão, ao lado do Pinta e do Molda): a
     aparência pronta, comprada com moedas Zappy. Regras na seção 9.9.
     - O cartão mostra a miniatura (`MINIATURA_DO_OBJETO`), o nome, o preço e o saldo ("Você tem
@@ -2113,8 +2191,9 @@ O calendário usa o dia real de São Paulo, separado do relógio acelerado do jo
 
 - Carnaval: de sábado à terça-feira de Carnaval (a terça é 47 dias antes da Páscoa gregoriana; `sabadoDeCarnaval` volta três dias). Janela aprovada pela dona em 29/10/2026.
 - Festa Junina: de 1 a 30 de junho, inclusive.
-- Fim de ano: **proposta de 20/12 a 06/01, ainda desativada**. A dona precisa aprovar a janela.
-- Noite das Lanternas: **sem data e fora do calendário**, aguardando decisão da dona.
+- Fim de ano: de 20/12 a 06/01, atravessando a virada. Janela aprovada pela dona em 30/10/2026.
+- Noite das Lanternas: de 1 a 12 de outubro, terminando no Dia das Crianças. Janela aprovada pela
+  dona em 31/10/2026.
 
 A data é relida a cada 30 segundos e ao voltar à aba. Abrir a fogueira e fazer a receita
 também conferem a festa atual, sem esperar essa atualização visual.
@@ -2407,6 +2486,156 @@ anotadas para não serem refeitas por engano:
 - **A chave de cada cômodo (N11), os segredos (N12), a companhia (S01), o iglu (adiado) e o
   quintal grande:** mínimos coerentes descritos nas seções §6.16.2a a §6.16.2c, §6.24 e §6.26.
 
+### 6.28 Decisões da revisão da proposta v3 (30/10/2026)
+
+A dona aprovou em 30/10/2026 as 16 recomendações do levantamento
+`docs/arquipelago-levantamento-proposta-v3-2026-10-30.md` (seções 9 e 10; os números A e B são de
+lá). Regra geral: seguir a proposta como está escrita; registrar a diferença só quando ela é
+técnica ou quando a proposta não impõe uma forma. Até cada item ser implementado, o código ainda
+faz o que as seções acima descrevem.
+
+**Conteúdo e pedagogia**
+
+1. **Publicação (A1):** os seis quadros do Bosque são publicados como estão (todos os blocos têm
+   fonte nos cursos). A Vila Doce só depois de a corrida do entregador ganhar pulo, gravidade,
+   obstáculos sorteados e dificuldade com teto (A15). Os desafios do dia em blocos que passam na
+   barreira C01a também são marcados para publicar. Feito (lote 8): os seis quadros do Bosque e
+   os desafios do dia do Bosque (menos a noite, que pede um bloco de curso opcional), do Recife,
+   do Pico e das Nuvens pedem publicação; Vila Doce, Vale e a noite do Bosque, não. A importação
+   continua com a equipe. Feito (lote 9a, 31/10): a Vila Doce virou a corrida do entregador sobre o
+   Corre, Dino! (pulo com gravidade, pedras sorteadas com limites, dificuldade com teto, um passo
+   por quadro) e os nove desafios pedem publicação (`docs/desafios-do-jogo/vila-doce/README.md`).
+2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
+   cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
+   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos. Feito
+   (lote 8): os desafios C02 viraram o quadro 6 (pintam) e o minijogo em blocos que estava no
+   quadro 6 virou desafio do dia. Importar o arquivo em blocos antes do da linguagem.
+3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a
+   pessoa concluiu o curso do posto que ensina essa linguagem (a mesma regra "o desafio só usa o
+   que a pessoa já conquistou" dos blocos). Feito (lote 8): o curso é o curso-base (2D) do posto
+   da ilha; o Members informa os concluídos (`cursosBase` do jogador) e o de cada posto
+   (`cursosBase` do currículo). Sem ele, a situação é `falta-curso`: o quadro aparece trancado com
+   "Abre depois do curso" e o nome dele. A linguagem sai do projeto inicial
+   (`linguagemDoProjeto`).
+
+**História e ilhas (seguir a proposta)**
+
+4. **Página do Recife (A4):** volta à frase da ficha, "Mapas sem fim não levam ninguém a lugar
+   nenhum." A narrativa nova da fase3-02 sai: ela resolvia o medo da Íris antes do final.
+5. **Pinta (A5):** no jogo, abre no Construtor, como na proposta e no Estúdio livre da plataforma.
+   Na Faísca, a aparência vem pronta da galeria.
+6. **Peixe com coco (A6):** a receita do Maré volta a ser peixe com coco (peixe, coco e limão, no
+   fogão), no lugar da moqueca de legumes. O modelo `peixe-com-coco` já existe.
+7. **Dino de estimação em casa (A7):** o filhote do Vale pode ir para casa e acompanhar a criança,
+   como companhia.
+8. **Ninhos do Vale (A8):** as ondas de cinza do vulcão chegam aos ninhos e a criança as afasta com
+   a lanterna, sem dano (a mesma tensão boa da noite). Efeito no código, sem arte nova.
+9. **Terceira estrela (A9):** "achar o segredo" do percurso, no lugar de "pegar todos os itens".
+10. **Quarto (A10):** "mudou no jogo, muda na plataforma, e o contrário". Primeiro o jogo relê o
+    quarto quando a criança volta para ele; depois, mexer nos móveis do quarto no jogo grava pela
+    mesma rota da plataforma. Feito (lote 7): ao entrar em casa o jogo relê o quarto (no máximo a
+    cada 15 s, `estado/quarto.ts`), e "🛏️ Meu quarto" no modo construir abre o editor do Meu Quarto
+    da plataforma por cima do jogo (ferramenta `quarto`); ao voltar, o jogo recebe o quarto relido.
+
+**Regras e técnica (registrado)**
+
+11. **Admin e publicação (A11):** o Admin do jogo fica em `packages/admin` e o jogo é publicado
+    dentro da imagem do `arquipelago-api`; voltar uma versão é reimplantar o serviço. Diferença
+    técnica da proposta, aceita.
+12. **Teto semanal (A32):** uma regra só para tudo o que passa do teto: espera a semana seguinte e
+    nunca se perde (os pedidos deixam de perder o excedente). Feito (lote 7): pedidos e vendas
+    guardam a semana do teto e o serviço credita de novo, com a mesma chave, quando o jogo abre numa
+    semana seguinte (inclusive os que já tinham batido no teto antes); a fala é uma só
+    (`sistemas/teto-semanal.ts`). O salvamento só consulta o Members pelas aparências da galeria
+    novas (A16).
+
+**Arte**
+
+13. **Ilhas de posto alto (B2):** mais altas pelo posto, nas duas versões, por marcos que não se
+    pisam (torre de doces, coral, ponta de gelo, vulcão, torres de nuvem); a largura e tudo o que se
+    pisa não mudam, e a silhueta copia a ilha completa. Revisto em 30/10/2026 depois de medir: só na
+    silhueta, a ilha encolheria na troca da ponte. Alvos no documento de pedidos de arte.
+14. **Lumis raros (B12):** revisto em 31/10/2026: com arte, os Lumis de luz, uma terceira versão de
+    cada família (a forma da rara, coroa de luz e brilho), que só se acha nos baús dos segredos.
+    Nunca sorteados em troca de moeda. Pedido no documento de pedidos de arte.
+15. **Bolsa do Nico (B15):** a bolsa a tiracolo já existe no `nico.glb`; nada a pedir.
+16. **Roupas de festa (B16):** revisto em 31/10/2026: uma peça de cabeça e uma de corpo por festa,
+    novas, conquistadas na própria festa (A21), além das sugestões de peças existentes. Pedido no
+    documento de pedidos de arte.
+
+### 6.29 A lista B da proposta v3: a arte de 31/10 ligada no jogo
+
+Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-lista-b.md`.
+
+- **O pet que acompanha anda (B3):** o gato e o cachorro do quarto tocam `andar` e `correr` no
+  ritmo da velocidade de verdade (o clipe foi feito para 1,5 e 3,5 m/s; a 2,2 m/s ele toca 1,47
+  vez mais rápido, `ritmoDoPasso`), para os pés não escorregarem. Parados, tocam o parado do
+  quarto, que o menos movimento desliga; na pausa o modelo congela.
+- **Silhuetas e marcos (B1 e B2):** a arte carrega pelo código de sempre; os colisores dos marcos
+  que ficam dentro do teto do balão vêm do GLB (`col-*`).
+- **O minijogo fica na ilha (B10):** a proposta diz "o minijogo aprovado vira barraca na feira,
+  fliperama em casa ou brinquedo no festival" e "quando passa, o minijogo fica na ilha". A barraca
+  do jogo na feira da Vila Doce e o quiosque do festival no Pico mostram na tela a capa do minijogo
+  mais recente da própria ilha e abrem a lista dos minijogos aprovados da ilha. O fliperama de casa
+  continua com todos. A ilha vem do serviço (a ilha publicada do desafio). Na visita, só enfeite.
+- **Café, banca de feira e festa no Construir (B7 e B9):** a aba "Café e feira" abre com a Vila
+  Doce; a aba "Festa" só aparece durante uma festa, com as peças dela. Fora da festa, a decoração
+  posta continua guardada, sem aparecer nem colidir, e volta na festa seguinte. O que acende
+  (luzes, lanternas, fogueira, estrela) brilha à noite. As peças da Noite das Lanternas aparecem
+  de 1 a 12 de outubro.
+- **Três aparências por objeto na galeria (B8):** a clássica, a retrô e a moderna, com o preço da
+  clássica. A retrô usa só as cores da paleta "Doces" do Pinta: é a da Faísca, que ainda não pinta
+  no jogo ("prontos da galeria com as cores da paleta"). As versões são posses só do Arquipélago;
+  o quarto da plataforma continua só com as clássicas que já dividia (aquário, fliperama, planta).
+- **Fósseis do museu (B4, V22):** depois do primeiro osso, a escavação do Vale mostra um fóssil novo
+  por dia, contando do dia em que o museu chegou ("tempo real, algo novo todo dia"). Quem demora
+  não perde: os que ficaram para trás esperam na areia, um de cada vez. Cada um vai para a vitrine do
+  museu de casa. Escolha mínima, registrada.
+- **Pegadas no álbum (B5):** rex pelo rastro do Vale, tricerátopo pelo filhote crescido, capivara
+  pela conversa com a Capi e pássaro pela visita às Nuvens, tudo do que o salvamento já guarda.
+  Escolha mínima, registrada (a proposta só diz "bichos e pegadas" e "seguir pegadas").
+- **Jardim do céu e a ilha que floresce (B6, V22):** seis canteiros no terraço das Nuvens; as
+  sementes do céu vêm do jardim (não da mochila) e a chuva das nuvens rega. A flor colhida vai para
+  a sua ilha (`florada`), que floresce em três níveis com 1, 6 e 15 flores. O jardim fica no campo
+  `ceu` do salvamento, fora da horta.
+- **Os painéis do menu abrem dentro dele (pedido da dona, 31/10/2026):** diário, álbum, caderno dos
+  Lumis, mapa, moradores em casa e visitas são seções do menu de pausa, no estilo dele (fundo
+  escuro, títulos amarelos, cartões translúcidos), com a lista de lugares à vista o tempo todo e a
+  barra de rolagem sólida no meio. Pedidos vindos do mundo (a mesa de mapas, o álbum da casa) abrem
+  o menu nessa seção (`PAINEIS_DO_MENU`, `secaoDoMenu` na loja). "Voltar ao jogo" fecha o menu.
+  Painel novo que nasce do menu entra como seção dele (`JanelaDoPainel`), nunca como janela à parte.
+- **Segredos dos outros movimentos (B11):** além dos quatro baús no alto do vento (planador), cinco
+  lugares que só um movimento alcança, cada um com um baú da Íris e uma página extra do diário:
+  o deque do cipó na sua ilha (o cipó balança depois de visitar o Bosque), a gruta debaixo do píer
+  (mergulha-se depois de visitar o Recife; o baú abre nadando), o vão dos patins no Bosque, o
+  terraço da montaria no Vale (a cinza quente empurra quem vai a pé, sem dano; montado no dino, dá
+  para subir) e a nuvem do balão nas Nuvens. Montaria e balão ficam nas próprias ilhas, por serem
+  brinquedos de lá: ajuste técnico da proposta ("segredos nas ilhas antigas"). Os Lumis de luz
+  entram nos baús quando a arte chegar (B12).
+- **Atalhos da entrega pelos telhados (A41):** a prancha da casinha 1 para a 3 e a escada de
+  caixotes até a casinha 2 (arte de 31/10). A entrega não pede as paradas em ordem: pelo atalho se
+  chega mais rápido, e os confeitos do trecho pulado ficam para trás (a terceira estrela pede o
+  confeito escondido). "Olhar o atalho" explica cada um.
+- **A subida por fora do Farol** chegou na arte de 31/10 e fica escondida, sem colisão, até virar
+  o percurso da Lenda (B7).
+- **Os Lumis de luz (B12):** sete espécies novas, uma por família (Búzio, Ipê, Brigadeiro, Pérola,
+  Cristal, Brotinho e Pluma de Luz), com a forma da rara, a coroa acesa e o rastro de faíscas.
+  Nunca saem de um borrão e nunca se compram: cada um mora num baú da Íris. Os quatro do vento
+  (sua ilha, Bosque, Vila Doce, Recife) dão o da ilha; a montaria dá o Brotinho e o balão a Pluma;
+  o Pico não tem baú, e o Cristal de Luz fica na gruta debaixo do píer (a caverna da sua ilha). Os
+  baús do cipó e dos patins dão só a página. Ter o Lumi de luz é ter aberto o baú: o salvamento
+  não guarda contador (`lumis` recusa estas espécies; `temOLumi` e `BIT_DO_LUMI_DE_LUZ` em
+  `arquipelago-contracts/src/lumis-de-luz.ts`). Ele mora com a família na ilha dela, no primeiro
+  lugar, ganha rotina como os outros (trabalha como a rara) e tem seção própria no álbum ("Lumis
+  de luz", com a ilha do baú para os que faltam). Entraram no fim de `LUMIS`, sem versão nova.
+- **As roupas das festas (B16):** uma peça de cabeça e uma de corpo novas por festa, conquistadas
+  na festa em vigor (o serviço concede no avatar, como as da amizade): Carnaval, cartolinha
+  (`hat-08`) e colete de franjas (`top-07`); Festa Junina, chapéu de palha (`hat-09`) e vestido de
+  chita (`outfit-07`); Noite das Lanternas, tiara de lanterninhas (`enfeite-06`) e capa de estrelas
+  (`top-08`); fim de ano, gorro (`hat-10`) e suéter de estrela (`top-09`). As peças de antes
+  continuam como sugestões no vestuário da festa (`VESTUARIO_DAS_FESTAS`: `conquista` e `pecas`).
+  No catálogo do Members elas são pagas (como as da amizade): fora da festa, quem quiser compra.
+
 ## 7. Desafios
 
 Arquivos principais:
@@ -2424,7 +2653,9 @@ abaixo são as do serviço.
 
 - **Tipos** (`TIPOS_DE_DESAFIO`): `quadro-das-cores`, `desafio-do-dia`, `pedido-de-morador`. O
   Quadro das Cores tem um número de quadro. O desafio do dia tem a escolha de cada dia e nunca
-  pinta a ilha (7.12). Regra própria para o pedido de morador não encontrada no código.
+  pinta a ilha (7.12). O pedido de morador (§6.28, A23) também não pinta nem entra no desafio do
+  dia: o morador da ilha oferece na conversa ("Pedido no Estúdio") e, feito, a placa ao lado dele
+  acende à noite. Conteúdo em `docs/desafios-do-jogo/moradores/`.
 - **Seis quadros por ilha** (`QUADROS_POR_ILHA = 6`).
   - Só o Quadro das Cores tem número de quadro, de 1 a 6, e ele sempre tem
     (`MetadadosDoDesafioSchema`).
@@ -2518,6 +2749,9 @@ Arquivo: `arquipelago-contracts/src/aprenda.ts`, função `aprendaIssoEm`.
   último. No mesmo posto, a ordem é pelo título.
 - **De onde vêm os cursos:** do currículo do Members (`GET /curriculo-de-blocos`). Só entram cursos
   publicados que liberam algum bloco.
+- **No desafio que já se pode fazer (A24, 31/10/2026):** a lista traz `aprenda`
+  (`aprendaODesafio`), e o quadro mostra "Aprenda isso em" com o curso: na linguagem do posto, o
+  curso-base do posto; em blocos, o curso mais adiantado entre os blocos exigidos.
 
 Para a equipe, `coberturaDosBlocos` dá três avisos por bloco exigido:
 
@@ -4139,8 +4373,7 @@ são os mesmos do configurador do avatar. Cancelar descarta a prévia não salva
 peça comprada permanece depois da festa. Não há roupa obrigatória nem prêmio por comprar.
 
 Carnaval sugere máscara e coroa de flores; Junina, camiseta listrada e laço. Lanternas e fim
-de ano têm sugestões preparadas, mas continuam sem data automática aprovada. O jogo não
-ativa essas festas por conta própria. Kids e adultos usam suas próprias interfaces e contas.
+de ano têm as sugestões delas, nas janelas aprovadas (1 a 12 de outubro e 20/12 a 06/01). Kids e adultos usam suas próprias interfaces e contas.
 
 ## Primeiros passos com o Zappy (30/10/2026)
 

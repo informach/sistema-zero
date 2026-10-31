@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
+import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { Group, type Object3D } from 'three'
 import {
   CADA_NO_SOZINHO,
@@ -26,6 +27,35 @@ import {
   RAIO_DAS_ESTRELAS,
   RAIO_DO_ANEL,
 } from '../src/mundo/medidas'
+import { planta } from '../src/sistemas/construcao/comodos'
+import { entradaDaObra } from '../src/sistemas/construcao/entrada'
+import type { Aresta } from '../src/sistemas/construcao/grade'
+import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
+import { esticarParede, moverEntrada, type Resultado } from '../src/sistemas/construcao/obra'
+import {
+  NADA_CORTADO,
+  pecasDaObra,
+  pecasDaVaranda,
+  TUDO_CORTADO,
+} from '../src/sistemas/construcao/pecas'
+import { telhadosDaObra } from '../src/sistemas/construcao/telhado'
+
+function semRecusa(r: Resultado): Obra {
+  if (!r.ok) throw new Error(`recusado: ${r.motivo}`)
+  return r.obra
+}
+
+function moverOuFalhar(obra: Obra, a: Aresta): Obra {
+  return semRecusa(moverEntrada(obra, LOTE_DA_CASA, a))
+}
+
+/** O cômodo na frente do quarto (x -6 a -1, z 0 a 3), como o da obra de exemplo. */
+function obraComComodoNaFrente(): Obra {
+  let o: Obra = LOTE_DA_CASA.obraInicial
+  o = semRecusa(esticarParede(o, LOTE_DA_CASA, { x: -6, z: 0 }, { x: -6, z: 3 }))
+  o = semRecusa(esticarParede(o, LOTE_DA_CASA, { x: -6, z: 3 }, { x: -1, z: 3 }))
+  return semRecusa(esticarParede(o, LOTE_DA_CASA, { x: -1, z: 3 }, { x: -1, z: 0 }))
+}
 
 /**
  * Nenhuma face coplanar de materiais diferentes se sobrepõe e nenhuma superfície tem emenda em T:
@@ -61,6 +91,9 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'mundo/ponte.glb', juntos: TODOS_JUNTOS },
   { caminho: 'mundo/ilhas-do-anel.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'mundo/boias.glb', juntos: CADA_NO_SOZINHO },
+  // A florada (cada nível é um canteirinho sozinho) e o segredo do cipó da sua ilha (31/10/2026).
+  { caminho: 'mundo/florada.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'mundo/segredos-da-ilha.glb', juntos: TODOS_JUNTOS },
   { caminho: 'itens/quadro-das-cores.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vila-doce.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vila-doce-props.glb', juntos: CADA_NO_SOZINHO },
@@ -70,6 +103,57 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'ilhas/pico.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vale-dos-dinos.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/nuvens.glb', juntos: TODOS_JUNTOS },
+  // Os fósseis do Vale (nós soltos do catálogo de props e itens do museu), as pegadas e as plantas
+  // do céu (um estágio por vez, como a horta), 31/10/2026.
+  { caminho: 'ilhas/vale-dos-dinos-props.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'itens/plantas-do-ceu.glb', juntos: CADA_NO_SOZINHO },
+  ...[
+    'fossil-cranio-rex',
+    'fossil-dente',
+    'fossil-garra',
+    'fossil-vertebra',
+    'fossil-chifre-triceratopo',
+    'fossil-ovo',
+    'pegada-rex',
+    'pegada-triceratopo',
+    'pegada-passaro',
+    'pegada-capivara',
+    'flor-de-nuvem',
+    'estrela-trepadeira',
+    'arco-iris-de-petala',
+    'semente-flor-de-nuvem',
+    'semente-estrela-trepadeira',
+    'semente-arco-iris-de-petala',
+  ].map((id) => ({ caminho: `itens/${id}.glb`, juntos: TODOS_JUNTOS })),
+  // Casa (31/10/2026): o segundo andar, o café e a decoração de festa, uma peça por nó.
+  { caminho: 'casa/casa-andar.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-cafe.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-festas.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-paredes-andar.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-paredes.glb', juntos: CADA_NO_SOZINHO },
+  // As versões retro e moderna da galeria (31/10/2026; na banda e no museu cada nó é uma peça solta).
+  ...[
+    'geladeira',
+    'forno',
+    'aquario',
+    'lareira',
+    'banda',
+    'fliperama',
+    'museu',
+    'casinha',
+    'planta-interior',
+  ]
+    .flatMap((objeto) => [`${objeto}-retro`, `${objeto}-moderna`])
+    .map((id) => ({
+      caminho: `objetos/${id}.glb`,
+      juntos: /^(banda|museu)-/.test(id) ? CADA_NO_SOZINHO : TODOS_JUNTOS,
+    })),
+  // Os Lumis de luz (B12, `arte/lumis/luz.py`, 31/10/2026): as pinturas ficam a mais de 3 mm da
+  // camada de baixo (`ALTO_DE_LUZ`), então nenhuma pisca.
+  ...['buzio', 'ipe', 'brigadeiro', 'perola', 'cristal', 'brotinho', 'pluma'].map((id) => ({
+    caminho: `lumis/${id}-de-luz.glb`,
+    juntos: TODOS_JUNTOS,
+  })),
 ]
 
 /**
@@ -135,6 +219,7 @@ describe('faces coplanares e emendas abertas', () => {
       ilha.add(g)
     }
     por('terreno', 'mundo/terreno.glb', 0, 0, 0)
+    por('segredos', 'mundo/segredos-da-ilha.glb', 0, 0, 0)
     por('casa', 'mundo/casa.glb', CENTRO_DA_CASA.x, ALTURA_DA_TERRA + 0.02, CENTRO_DA_CASA.z)
     por('bancada', 'mundo/bancada.glb', BANCADA.x, ALTURA_DA_TERRA, BANCADA.z, ['projetor'])
     por('farol', 'mundo/farol.glb', FAROL.x, ALTURA_DA_TERRA, FAROL.z)
@@ -156,6 +241,82 @@ describe('faces coplanares e emendas abertas', () => {
     expect(lista(sobreposicoes(ilha, outras))).toEqual([])
     expect(lista(emendasAbertas(ilha, outras))).toEqual([])
   })
+
+  // Na casa construída (`Casa` em `mundo/casa.tsx`), as quatro paredes do quarto são do kit (desde
+  // 31/10/2026 também o fundo e a esquerda, com as quinas, o alicerce e a soleira) e da casa de
+  // antes fica o telhado; no Construir (paredes cortadas) o telhado sai. A varanda é a do kit
+  // (`casa-varanda.glb`, 31/10/2026), na porta de entrada, que muda de lugar: conferida em várias
+  // entradas (a de sempre, o lado direito, o fundo e um cômodo novo na frente), com o chão da ilha.
+  // Pedido dela (31/10/2026): a porta principal piscava embaixo, onde o degrau de pedra do kit
+  // encontrava o tampo do deque.
+  const ENTRADAS: [string, () => Obra][] = [
+    ['na frente', () => LOTE_DA_CASA.obraInicial],
+    ['no lado direito', () => moverOuFalhar(LOTE_DA_CASA.obraInicial, { eixo: 'z', x: 6, z: -5 })],
+    ['no fundo', () => moverOuFalhar(LOTE_DA_CASA.obraInicial, { eixo: 'x', x: -2, z: -8 })],
+    ['num cômodo novo', () => moverOuFalhar(obraComComodoNaFrente(), { eixo: 'x', x: -4, z: 3 })],
+  ]
+  for (const [nome, corte, daCasa] of [
+    ['a casa construída', NADA_CORTADO, ['telhado']],
+    ['a casa construída no Construir', TUDO_CORTADO, []],
+  ] as const)
+    for (const [onde, obraDaEntrada] of ENTRADAS)
+      test(`${nome}, entrada ${onde}: o kit, a varanda do kit, o telhado da casa de antes e o chão`, async () => {
+        const kit = {
+          paredes: await carregarGlb(join(ASSETS, 'casa/casa-paredes.glb')),
+          portas: await carregarGlb(join(ASSETS, 'casa/casa-portas.glb')),
+          pisos: await carregarGlb(join(ASSETS, 'casa/casa-pisos.glb')),
+          varanda: await carregarGlb(join(ASSETS, 'casa/casa-varanda.glb')),
+          telhado: await carregarGlb(join(ASSETS, 'casa/casa-telhado.glb')),
+        }
+        const cena = new Group()
+        const base = ALTURA_DA_TERRA + 0.02
+        const casa = new Group()
+        casa.name = 'casa'
+        casa.position.set(CENTRO_DA_CASA.x, base, CENTRO_DA_CASA.z)
+        for (const filho of (cenas.get('mundo/casa.glb') as Object3D).children)
+          if ((daCasa as readonly string[]).includes(filho.name)) casa.add(filho.clone())
+        cena.add(casa)
+        const terreno = (cenas.get('mundo/terreno.glb') as Object3D).clone()
+        terreno.name = 'terreno'
+        cena.add(terreno)
+        const obra = obraDaEntrada()
+        const p = planta(obra, LOTE_DA_CASA)
+        const pecas = pecasDaObra(obra, p, corte)
+        // As quatro paredes do quarto são do kit.
+        expect(pecas.paredes.filter((x) => x.quarto).length).toBeGreaterThan(30)
+        const entrada = entradaDaObra(obra, LOTE_DA_CASA, p)
+        expect(entrada).not.toBeNull()
+        const varanda = pecasDaVaranda(entrada)
+        const comTelhado = corte === NADA_CORTADO
+        for (const x of [
+          ...pecas.paredes,
+          ...pecas.quinas,
+          ...pecas.folhas,
+          ...pecas.pisos,
+          ...varanda.varanda,
+          // O toldo e os telhados dos cômodos novos saem juntos no Construir.
+          ...(comTelhado ? [...varanda.toldo, ...telhadosDaObra(p)] : []),
+        ]) {
+          const raiz = kit[x.arquivo as keyof typeof kit]
+          const no = raiz?.getObjectByName(x.no)
+          if (!no) throw new Error(`sem o nó ${x.no}`)
+          const g = new Group()
+          g.name = `kit-${x.chave}`
+          g.position.set(x.x, base + (x.y ?? 0), x.z)
+          g.rotation.y = x.giro
+          const copia = no.clone()
+          copia.position.set(0, 0, 0)
+          copia.quaternion.identity()
+          g.add(copia)
+          cena.add(g)
+        }
+        // Só entre grupos diferentes: a varanda contra o resto do kit, o kit contra a casa de antes
+        // e tudo contra o chão (dentro de cada arquivo os testes de cima já conferem).
+        const grupo = (n: string) =>
+          n.startsWith('kit-varanda') ? 'varanda' : n.startsWith('kit-') ? 'kit' : n
+        const entreGrupos: Juntos = (a, b) => grupo(a) !== grupo(b)
+        expect(lista(sobreposicoes(cena, entreGrupos))).toEqual([])
+      })
 })
 
 describe('planos de corte da câmera', () => {

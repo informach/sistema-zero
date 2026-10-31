@@ -11,11 +11,12 @@ test('manifesto do Bosque tem seis quadros e três desafios do dia para kids', (
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios).toHaveLength(9)
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
-    'bosque-vagalume-aceso',
-    'bosque-lanche-do-coelho',
-    'bosque-trilha-das-pegadas',
-    'bosque-cuide-dos-quatro',
-    'bosque-travessia-tranquila',
+    // A42 (31/10/2026): a chuva de pinhas com o repertório da Nave, em cinco passos.
+    'bosque-chuva-de-pinhas',
+    'bosque-bolotas-para-o-alto',
+    'bosque-quebrar-as-pinhas',
+    'bosque-tres-vidas',
+    'bosque-fim-e-outra-partida',
     'bosque-corrida-dos-bichos',
     'bosque-corrida-dos-bichos-pedras',
     'bosque-corrida-dos-bichos-noite',
@@ -28,7 +29,7 @@ test('manifesto do Bosque tem seis quadros e três desafios do dia para kids', (
     expect(desafio.quadro).toBe(index < 6 ? index + 1 : null)
     expect(desafio.conteudo.recompensa).toEqual({
       cor: index < 6,
-      atracao: index < 5 ? desafio.slug : 'corrida-dos-bichos',
+      atracao: index < 5 ? 'chuva-de-pinhas' : 'corrida-dos-bichos',
       moedas: MOEDAS_PADRAO_POR_TIPO[desafio.tipo].principal,
       moedasExtra: MOEDAS_PADRAO_POR_TIPO[desafio.tipo].extra,
     })
@@ -53,7 +54,7 @@ test('manifesto do Bosque tem seis quadros e três desafios do dia para kids', (
   }
 })
 
-test('adulto tem os mesmos exercícios, slugs próprios e publicação pendente', async () => {
+test('adulto tem os mesmos exercícios, slugs próprios e a mesma publicação', async () => {
   const adulto = ManifestoDeDesafiosSchema.parse(
     await Bun.file(
       new URL(
@@ -67,7 +68,7 @@ test('adulto tem os mesmos exercícios, slugs próprios e publicação pendente'
     const kids = manifesto.desafios[i]!
     expect(d.publico).toBe('adulto')
     expect(d.slug).toBe(`${kids.slug}-adulto`)
-    expect(d.publicar).toBe(false)
+    expect(d.publicar).toBe(kids.publicar)
     expect(d.quadro).toBe(kids.quadro)
     expect(d.conteudo).toEqual(kids.conteudo)
   }

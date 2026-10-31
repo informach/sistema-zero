@@ -7,10 +7,10 @@
       "slug": "nuvens-jardim-em-grade-pro",
       "publico": "kids",
       "ilha": "nuvens",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
-      "publicar": false,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim das Nuvens: grade, custo e guardar",
@@ -431,9 +431,9 @@
           "texto": "Complete remover: tire a planta da célula e devolva metade do custo dela, arredondado para baixo. Shift e clique usa essa regra na tela."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

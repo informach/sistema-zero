@@ -35,8 +35,9 @@ describe('Pico completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('pico.glb')))
     const preparada = prepararIlha(cena, pico)
-    // 173 da ilha e 7 do porto do barco (deque, tábuas da beira e estacas).
-    expect(preparada.colisores.length).toBe(180)
+    // 173 da ilha, 7 do porto do barco (deque, tábuas da beira e estacas) e o quiosque do minijogo do
+    // festival (31/10/2026).
+    expect(preparada.colisores.length).toBe(181)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, pico)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()

@@ -2,7 +2,7 @@
 GLB temporário (para o `faces-coplanares.ts` sem `--separados` conferir as emendas entre vizinhas) e
 renderiza prévias em Cycles. Nada daqui vai para o jogo.
 
-  python -B cenas.py kit [cozinha sala banheiro]      # todas as cenas pedidas
+  python -B cenas.py kit [cozinha sala banheiro moveis andar andar-porta cafe-festas janela-baixa varanda]   # as cenas pedidas
 
 Variáveis: DIR_PREVIAS (pasta das imagens e dos GLBs temporários; padrão: `arte-casa` no diretório
 temporário), RES (padrão 560), AMOSTRAS (padrão 28),
@@ -371,7 +371,229 @@ def cena_moveis():
     return c
 
 
-CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro}
+def cena_andar():
+    """Segundo andar (31/10/2026): sala 4 × 6 com a escada no meio da coluna x = 1..2 (pé em y = 1,
+    chegada em y = 5), o piso de cima de tábua em volta do vão, o pé-direito duplo na coluna
+    x = 3..4 com o guarda-corpo na beira (linha x = 3) e as paredes de lambri dos dois andares."""
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb'])
+    w, d, h = 4, 6, 4.1
+    c.piso('piso-tabua', 0, 0, w, d)
+    # O fundo e a esquerda em pé; a frente e a direita cortadas (o corte para ver dentro), nos dois
+    # andares, com as quinas do `sala_de`.
+    # Em cima, as paredes do andar (`-andar`, já com o pé em 4,10: z = 0).
+    for sufixo in ('', '-andar'):
+        for i in range(w):
+            c.por(f'parede-lambri-baixa{sufixo}', i + 0.5, 0, 0, 0)
+            c.por(f'parede-lambri{sufixo}', i + 0.5, d, 0, 180)
+        for j in range(d):
+            c.por(f'parede-lambri{sufixo}', 0, j + 0.5, 0, -90)
+            c.por(f'parede-lambri-baixa{sufixo}', w, j + 0.5, 0, 90)
+        for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri-baixa'), (0, d, 'quina-lambri'),
+                        (w, d, 'quina-lambri')):
+            c.por(q + sufixo, x, y)
+    for i in range(3):
+        for j in range(d):
+            if i == 1 and 1 <= j < 5:
+                continue
+            c.por('piso-andar-tabua', i + 0.5, j + 0.5)
+    c.por('escada-interna', 1.5, 1.0)
+    c.por('piso-andar-vao', 1.5, 1.0)
+    # O guarda-corpo na beira do piso de cima (o piso fica em -x: giro +90).
+    for j in range(d):
+        c.por('guarda-corpo-andar', 3.0, j + 0.5, 0, 90)
+    return c
+
+
+def andar_na_parede(c):
+    """A escada encostada na parede (`piso-andar-vao-parede`): sala 3 × 6 com a escada na coluna
+    x = 2..3, pé em y = 1, e a parede da direita (x = 3) em pé nos dois andares, do lado +x do vão.
+    As paredes de cima não repetem as de baixo (janela sobre parede lisa, parede sobre porta): a
+    linha entre as duas é a mesma para qualquer par."""
+    w, d = 3, 6
+    c.piso('piso-tabua', 0, 0, w, d)
+    baixo = {'fundo': [('parede-janela-grande-lambri', 3)],
+             'esquerda': [('parede-lambri', 1), ('parede-porta-lambri', 3), ('parede-lambri', 1), ('parede-lambri', 1)],
+             'direita': [('parede-lambri', 1)] * 6, 'frente': [('parede-lambri-baixa', 1)] * 3}
+    cima = {'fundo': [('parede-janela-arco-lambri-andar', 2), ('parede-janela-redonda-lambri-andar', 1)],
+            'esquerda': [('parede-janela-grande-lambri-andar', 3)] + [('parede-lambri-andar', 1)] * 3,
+            'direita': [('parede-lambri-andar', 1)] * 6, 'frente': [('parede-lambri-baixa-andar', 1)] * 3}
+    for paredes, sufixo in ((baixo, ''), (cima, '-andar')):
+        c.corrida('x', d, 0, paredes['fundo'], -1)
+        c.corrida('y', 0, 0, paredes['esquerda'], +1)
+        c.corrida('y', w, 0, paredes['direita'], -1)
+        c.corrida('x', 0, 0, paredes['frente'], +1)
+        for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri-baixa'), (0, d, 'quina-lambri'),
+                        (w, d, 'quina-lambri')):
+            c.por(q + sufixo, x, y)
+    for i in range(w):
+        for j in range(d):
+            if i == 2 and 1 <= j < 5:
+                continue
+            c.por('piso-andar-tabua', i + 0.5, j + 0.5)
+    c.por('escada-interna', 2.5, 1.0)
+    c.por('piso-andar-vao-parede', 2.5, 1.0)
+    return c
+
+
+def cena_andar_parede():
+    return andar_na_parede(Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb']))
+
+
+def andar_porta(c, x0, cortada=False):
+    """A porta de lambri do andar (B7c): casa 4 × 6 de dois andares e, em cima, um cômodo de y = 3 a 6
+    com a parede da frente dele (linha y = 3) dando para o piso aberto: a `parede-porta-lambri-andar`
+    (células x = 0..3, a folha `porta` com z = 4,10) e uma `parede-lambri-andar`, com o lambri (-Y)
+    para o piso aberto e o verso para o cômodo, as pontas em T nas paredes de fora (sem quina, como
+    o jogo). Embaixo dela, no térreo, uma parede lisa (a cinta passa por cima do topo dela). Com
+    `cortada`, as do cômodo de cima são as cortadas (`-baixa-andar`, sem a folha, como no Construir)
+    e o térreo fica sem a parede do meio."""
+    w, d = 4, 6
+    c.piso('piso-tabua', x0, 0, w, d)
+    fora = {'fundo': [('parede-lambri', 1)] * w, 'esquerda': [('parede-lambri', 1)] * d,
+            'direita': [('parede-lambri', 1)] * d, 'frente': [('parede-lambri-baixa', 1)] * w}
+    for sufixo in ('', '-andar'):
+        f = {k: [(n + sufixo, n_) for n, n_ in v] for k, v in fora.items()}
+        c.corrida('x', d, x0, f['fundo'], -1)
+        c.corrida('y', x0, 0, f['esquerda'], +1)
+        c.corrida('y', x0 + w, 0, f['direita'], -1)
+        c.corrida('x', 0, x0, f['frente'], +1)
+        for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri'), (0, d, 'quina-lambri'),
+                        (w, d, 'quina-lambri')):
+            c.por(q + sufixo, x0 + x, y)
+    for i in range(w):
+        for j in range(d):
+            c.por('piso-andar-tabua', x0 + i + 0.5, j + 0.5)
+    baixa = '-baixa' if cortada else ''
+    c.corrida('x', 3, x0, [(f'parede-porta-lambri{baixa}-andar', 3), (f'parede-lambri{baixa}-andar', 1)], +1)
+    if not cortada:
+        c.por('porta', x0 + 1.5, 3, 4.1, 0)
+        c.corrida('x', 3, x0, [('parede-lisa', 1)] * w, +1)
+    return c
+
+
+def cena_andar_porta():
+    """A porta de lambri do andar em pé (x 0) e cortada (x 8)."""
+    c = Cena(['casa-paredes.glb', 'casa-portas.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb'])
+    andar_porta(c, 0.0)
+    andar_porta(c, 8.0, cortada=True)
+    return c
+
+
+def cena_fachada_andar():
+    """Só para a prévia (não entra na conferência das emendas): duas fachadas de lambri de 3 células
+    com dois andares lado a lado. À esquerda, como era antes (a parede de baixo subida 4,10, com o
+    alicerce no meio da fachada); à direita, a parede do andar (`-andar`, sem alicerce, com a cinta)."""
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb'])
+    for x0, de_cima, z in ((0.0, 'parede-lambri', 4.1), (4.0, 'parede-lambri-andar', 0.0)):
+        for i in range(3):
+            c.por('parede-lambri', x0 + i + 0.5, 0, 0, 0)
+            c.por(de_cima, x0 + i + 0.5, 0, z, 0)
+            c.por('piso-tabua', x0 + i + 0.5, 0.5)
+            c.por('piso-andar-tabua', x0 + i + 0.5, 0.5)
+        quina_cima = ('quina-lambri', 4.1) if z else ('quina-lambri-andar', 0.0)
+        for x in (x0, x0 + 3):
+            c.por('quina-lambri', x, 0)
+            c.por(quina_cima[0], x, 0, quina_cima[1])
+    return c
+
+
+def cena_cafe_festas():
+    """Vitrine do café e das festas: as peças de chão no piso de tábua e as de parede numa parede
+    lisa (a 0,20 da linha, como a prateleira), as que se emendam lado a lado."""
+    c = Cena(KIT + ['casa-cafe.glb', 'casa-festas.glb'])
+    c.piso('piso-tabua', 0, 0, 12, 4)
+    c.corrida('x', 4, 0, [('parede-lisa', 1)] * 12, -1)
+    c.por('quina-lisa', 0, 4)
+    c.por('quina-lisa', 12, 4)
+    for nome, x in (('cafe-vitrine-doces', 0.5), ('cafe-balcao', 2.0), ('cafe-banca-feira', 4.0),
+                    ('festa-fim-de-ano-arvore', 5.5), ('festa-lanternas-lanterna-chao', 6.5)):
+        c.por(nome, x, 3.5)
+    for nome, x, z in (('cafe-lousa-cardapio', 1.0, 1.7), ('festa-junina-lanterna-papel', 6.0, 2.0),
+                       ('festa-carnaval-mascara', 7.5, 1.6), ('festa-fim-de-ano-guirlanda', 8.5, 1.6),
+                       ('festa-fim-de-ano-estrela-janela', 11.0, 1.8)):
+        c.por(nome, x, 3.8, z)
+    # As que se emendam: dois trechos de cada, ponta com ponta (longe do canto: na célula do canto a
+    # quina passa na frente da ponta do fio).
+    for nome, z in (('festa-junina-bandeirinhas', 3.2), ('festa-lanternas-varal-de-luz', 2.7),
+                    ('festa-carnaval-serpentina', 2.3)):
+        for x in (9.5, 10.5):
+            c.por(nome, x, 3.8, z)
+    for nome, x, y in (('cafe-mesa-redonda', 1.5, 1.5), ('cafe-cadeira', 0.5, 1.5), ('cafe-caixote', 3.5, 1.5),
+                       ('festa-junina-fogueira', 5.5, 1.5), ('festa-carnaval-confete', 7.5, 1.5)):
+        c.por(nome, x, y)
+    # Dois caixotes empilhados (0,32 um do outro).
+    c.por('cafe-caixote', 3.5, 0.5)
+    c.por('cafe-caixote', 3.5, 0.5, 0.32)
+    return c
+
+
+def janelas_baixas(c, x0, fam):
+    """As janelas na parede cortada (31/10/2026) da família `fam`, como o Construir monta: um cômodo
+    10 × 3 em x0 com a frente cortada (as três janelas baixas entre paredes baixas), a direita
+    cortada e depois em pé, e o fundo e a esquerda em pé com as janelas altas; à frente (y = -6), uma
+    fileira com cada janela alta ao lado da baixa e de uma parede em pé, com as quinas onde a
+    altura muda."""
+    q = 'lambri' if fam == 'lambri' else 'lisa'
+    B, P = f'parede-{fam}-baixa', f'parede-{fam}'
+    JG, JA, JR = (f'parede-janela-{t}-{fam}' for t in ('grande', 'arco', 'redonda'))
+    c.piso('piso-tabua', x0, 0, 10, 3)
+    c.corrida('x', 0, x0, [(B, 1), (JG + '-baixa', 3), (B, 1), (JA + '-baixa', 2), (B, 1), (JR + '-baixa', 1),
+                           (B, 1)], +1)
+    c.corrida('x', 3, x0, [(JG, 3), (P, 1), (JA, 2), (P, 1), (JR, 1), (P, 1), (P, 1)], -1)
+    c.corrida('y', x0, 0, [(P, 1)] * 3, +1)
+    c.corrida('y', x0 + 10, 0, [(B, 1), (B, 1), (P, 1)], -1)
+    for x, y, alta in ((0, 0, True), (10, 0, False), (10, 2, True), (0, 3, True), (10, 3, True)):
+        c.por(f'quina-{q}' + ('' if alta else '-baixa'), x0 + x, y)
+    c.corrida('x', -6, x0, [(JG, 3), (JG + '-baixa', 3), (P, 1), (JA, 2), (JA + '-baixa', 2), (P, 1), (JR, 1),
+                            (JR + '-baixa', 1), (P, 1)], +1)
+    for x in (0, 3, 6, 9, 11, 13, 14, 15):
+        c.por(f'quina-{q}', x0 + x, -6)
+
+
+def cena_janela_baixa():
+    """As seis janelas baixas: o lambri em x = 0 e a lisa em x = 20 (`janelas_baixas`)."""
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb'])
+    janelas_baixas(c, 0, 'lambri')
+    janelas_baixas(c, 20, 'lisa')
+    return c
+
+
+def com_varanda(c, x0, y0, cortada=False):
+    """Cômodo 7 × 4 de lambri com a porta de entrada no meio da frente e a varanda do kit
+    (`casa-varanda.glb`, 31/10/2026) com a MESMA posição e giro da parede da porta, como o jogo põe; à
+    direita (x0 + 7) uma segunda porta de fora com a varanda, girada (a entrada que mudou de lugar).
+    Cortada: as paredes da frente e da direita baixas, sem folha e sem toldo (o Construir)."""
+    b = '-baixa' if cortada else ''
+    c.piso('piso-tabua', x0, y0, 7, 5)
+    c.corrida('x', y0, x0, [(f'parede-lambri{b}', 1)] * 2 + [(f'parede-porta-lambri{b}', 3)] +
+              [(f'parede-lambri{b}', 1)] * 2, +1)
+    c.corrida('y', x0 + 7, y0, [(f'parede-lambri{b}', 1)] + [(f'parede-porta-lambri{b}', 3)] +
+              [(f'parede-lambri{b}', 1)], -1)
+    c.corrida('x', y0 + 5, x0, [('parede-lambri', 1)] * 7, -1)
+    c.corrida('y', x0, y0, [('parede-lambri', 1)] * 5, +1)
+    for x, y in ((x0, y0), (x0 + 7, y0), (x0, y0 + 5), (x0 + 7, y0 + 5)):
+        alta = not cortada or (x, y) == (x0, y0 + 5)
+        c.por('quina-lambri' + ('' if alta else '-baixa'), x, y)
+    # A frente (giro 0) e a direita (o giro da parede de lado, 90°).
+    for x, y, giro in ((x0 + 3.5, y0, 0), (x0 + 7, y0 + 2.5, 90)):
+        c.por('varanda', x, y, 0, giro)
+        if not cortada:
+            c.por('varanda-toldo', x, y, 0, giro)
+            c.por('porta', x, y, 0, giro)
+
+
+def cena_varanda():
+    """A varanda da porta de entrada: em pé (x 0) e no Construir, com as paredes cortadas (x 14)."""
+    c = Cena(['casa-paredes.glb', 'casa-portas.glb', 'casa-pisos.glb', 'casa-varanda.glb'])
+    com_varanda(c, 0.0, 0.0)
+    com_varanda(c, 14.0, 0.0, cortada=True)
+    return c
+
+
+CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro,
+         'andar': cena_andar, 'andar-parede': cena_andar_parede, 'andar-porta': cena_andar_porta,
+         'cafe-festas': cena_cafe_festas,
+         'fachada-andar': cena_fachada_andar, 'janela-baixa': cena_janela_baixa, 'varanda': cena_varanda}
 
 
 def main():
@@ -406,12 +628,30 @@ VISTAS = {
     'banheiro': [((2.0, 2.0, 1.0), (0.75, -1.0, 0.95), 7.6), ((2.0, 2.2, 0.9), (0.12, -1.0, 0.62), 6.8)],
     'moveis': [((6.0, 2.2, 0.9), (0.35, -1.0, 0.55), 12.5), ((3.0, 2.4, 0.9), (0.2, -1.0, 0.5), 6.2),
                ((9.5, 2.4, 0.9), (-0.2, -1.0, 0.5), 6.2)],
+    'andar': [((2.0, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((1.6, 3.0, 2.6), (0.9, -0.35, 0.45), 7.0)],
+    'andar-parede': [((1.5, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((2.0, 3.0, 4.0), (-0.6, -1.0, 0.5), 8.0),
+                     ((2.4, 3.0, 4.1), (-0.6, -0.4, 1.0), 5.5)],
+    # De frente para o piso aberto de cima (a porta de lambri do andar), em pé e cortada, e de cima.
+    'andar-porta': [((1.5, 3.0, 5.9), (0.3, -1.0, 0.9), 7.0), ((10.0, 3.0, 4.6), (0.0, -0.6, 1.0), 6.0),
+                    ((0.25, 3.0, 4.35), (0.6, -1.0, 0.55), 1.6)],
+    'fachada-andar': [((3.5, 0.0, 4.0), (0.35, -1.0, 0.25), 9.0), ((1.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2),
+                      ((5.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2)],
+    # De cima e um pouco de lado, como a câmera do Construir: os cômodos e as fileiras de comparar.
+    'janela-baixa': [((5.0, 1.2, 0.6), (0.3, -1.0, 1.35), 11.5), ((25.0, 1.2, 0.6), (0.3, -1.0, 1.35), 11.5),
+                     ((7.5, -6.0, 1.6), (0.3, -1.0, 0.9), 16.0), ((27.5, -6.0, 1.6), (0.3, -1.0, 0.9), 16.0),
+                     ((5.4, 0.3, 0.7), (0.3, -1.0, 1.35), 8.8), ((25.4, 0.3, 0.7), (0.3, -1.0, 1.35), 8.8)],
+    # De frente e de lado, como quem chega na casa; e o Construir de cima.
+    'varanda': [((4.5, 0.5, 1.8), (0.55, -1.0, 0.45), 13.0), ((8.0, 2.5, 1.8), (1.0, -0.45, 0.4), 12.0),
+                ((18.5, 1.0, 0.6), (0.35, -1.0, 1.3), 13.0)],
+    'cafe-festas': [((6.0, 2.2, 1.0), (0.35, -1.0, 0.55), 12.5), ((2.5, 2.4, 1.0), (0.2, -1.0, 0.5), 5.5),
+                    ((9.5, 2.6, 1.6), (-0.2, -1.0, 0.4), 5.5)],
 }
 # Na prévia, cada cômodo ganha a cor de parede que o jogo daria (no GLB a `paredeDentro` é creme).
 PINTURA = {
     'cozinha': {'paredeDentro': '#fff1cf', 'paredeVerso': '#fff1cf'},
     'sala': {'paredeDentro': '#ffe2d4', 'paredeVerso': '#ffe2d4'},
     'banheiro': {'paredeDentro': '#dcf2f4', 'paredeVerso': '#dcf2f4'},
+    'janela-baixa': {'paredeDentro': '#fff1cf', 'paredeVerso': '#ffe2d4'},
 }
 
 if __name__ == '__main__':

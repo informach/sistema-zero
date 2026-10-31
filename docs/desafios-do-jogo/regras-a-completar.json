@@ -242,111 +242,141 @@
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-vagalume-aceso",
+    "slug": "bosque-chuva-de-pinhas",
     "publico": "kids",
     "ilha": "bosque",
-    "titulo": "Vagalume aceso",
-    "problema": null,
-    "blocosDerivados": ["sz_g2d_on_key", "sz_g2d_restart", "sz_js_var_assign", "sz_val_bool"],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_bool"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "bosque-lanche-do-coelho",
-    "publico": "kids",
-    "ilha": "bosque",
-    "titulo": "O lanche do coelho",
+    "titulo": "Pinhas caindo",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_destroy_sprite",
+      "sz_g2d_center_x",
+      "sz_g2d_every_frames",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_play_fx",
+      "sz_g2d_spawn_asteroid",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
+      "sz_g2d_center_x",
+      "sz_g2d_every_frames",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
       "sz_js_if_else",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-trilha-das-pegadas",
+    "slug": "bosque-bolotas-para-o-alto",
     "publico": "kids",
     "ilha": "bosque",
-    "titulo": "Trilha das pegadas",
+    "titulo": "Bolotas para o alto",
     "problema": null,
     "blocosDerivados": [
+      "sz_g2d_center_x",
+      "sz_g2d_explode",
+      "sz_g2d_on_group_overlap",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_play_fx",
+      "sz_g2d_scene_is",
+      "sz_g2d_spawn_bullet",
+      "sz_g2d_sprite_y",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
+      "sz_g2d_center_x",
+      "sz_g2d_on_group_overlap",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
+      "sz_g2d_scene_is",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-cuide-dos-quatro",
+    "slug": "bosque-quebrar-as-pinhas",
     "publico": "kids",
     "ilha": "bosque",
-    "titulo": "Cuide dos quatro",
+    "titulo": "Quebrar as pinhas",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_explode",
+      "sz_g2d_on_group_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_remove_from_group",
+      "sz_g2d_shake",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
       "sz_js_var_increment",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_g2d_on_group_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_remove_from_group",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-travessia-tranquila",
+    "slug": "bosque-tres-vidas",
     "publico": "kids",
     "ilha": "bosque",
-    "titulo": "Travessia tranquila",
+    "titulo": "Três vidas",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_velocity",
+      "sz_g2d_damage_sprite",
+      "sz_g2d_draw_sprite_health",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
+      "sz_g2d_set_health",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-fim-e-outra-partida",
+    "publico": "kids",
+    "ilha": "bosque",
+    "titulo": "Fim e outra partida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_health_depleted",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_show_screen",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_show_screen",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
@@ -473,111 +503,141 @@
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-vagalume-aceso-adulto",
+    "slug": "bosque-chuva-de-pinhas-adulto",
     "publico": "adulto",
     "ilha": "bosque",
-    "titulo": "Vagalume aceso",
-    "problema": null,
-    "blocosDerivados": ["sz_g2d_on_key", "sz_g2d_restart", "sz_js_var_assign", "sz_val_bool"],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_bool"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "bosque-lanche-do-coelho-adulto",
-    "publico": "adulto",
-    "ilha": "bosque",
-    "titulo": "O lanche do coelho",
+    "titulo": "Pinhas caindo",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_destroy_sprite",
+      "sz_g2d_center_x",
+      "sz_g2d_every_frames",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_play_fx",
+      "sz_g2d_spawn_asteroid",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
+      "sz_g2d_center_x",
+      "sz_g2d_every_frames",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
       "sz_js_if_else",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-trilha-das-pegadas-adulto",
+    "slug": "bosque-bolotas-para-o-alto-adulto",
     "publico": "adulto",
     "ilha": "bosque",
-    "titulo": "Trilha das pegadas",
+    "titulo": "Bolotas para o alto",
     "problema": null,
     "blocosDerivados": [
+      "sz_g2d_center_x",
+      "sz_g2d_explode",
+      "sz_g2d_on_group_overlap",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_play_fx",
+      "sz_g2d_scene_is",
+      "sz_g2d_spawn_bullet",
+      "sz_g2d_sprite_y",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
+      "sz_g2d_center_x",
+      "sz_g2d_on_group_overlap",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
+      "sz_g2d_scene_is",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-cuide-dos-quatro-adulto",
+    "slug": "bosque-quebrar-as-pinhas-adulto",
     "publico": "adulto",
     "ilha": "bosque",
-    "titulo": "Cuide dos quatro",
+    "titulo": "Quebrar as pinhas",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_explode",
+      "sz_g2d_on_group_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_remove_from_group",
+      "sz_g2d_shake",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
       "sz_js_var_increment",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_val_bool",
-      "sz_val_variable"
+      "sz_g2d_on_group_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_remove_from_group",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "bosque-travessia-tranquila-adulto",
+    "slug": "bosque-tres-vidas-adulto",
     "publico": "adulto",
     "ilha": "bosque",
-    "titulo": "Travessia tranquila",
+    "titulo": "Três vidas",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_velocity",
+      "sz_g2d_damage_sprite",
+      "sz_g2d_draw_sprite_health",
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_restart",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
+      "sz_g2d_set_health",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "bosque-fim-e-outra-partida-adulto",
+    "publico": "adulto",
+    "ilha": "bosque",
+    "titulo": "Fim e outra partida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_health_depleted",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_show_screen",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_show_screen",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_val_bool",
+      "sz_val_number",
+      "sz_val_text",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
@@ -704,108 +764,133 @@
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "vila-doce-forno-da-vez",
+    "slug": "vila-doce-corrida-do-entregador-pulo",
     "publico": "kids",
     "ilha": "vila-doce",
-    "titulo": "O forno da vez",
+    "titulo": "O entregador pula",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
+      "sz_g2d_apply_gravity",
+      "sz_g2d_control_dino",
+      "sz_g2d_on_jump",
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
+      "sz_val_number"
     ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "vila-doce-caixa-de-paes",
+    "slug": "vila-doce-corrida-do-entregador-pedras",
     "publico": "kids",
     "ilha": "vila-doce",
-    "titulo": "A caixa de pães",
+    "titulo": "Pedras na rua",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
+      "sz_g2d_every_seconds",
+      "sz_g2d_explode",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_random_between",
+      "sz_g2d_shake",
+      "sz_g2d_spawn_obstacle",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-suco-na-ordem",
-    "publico": "kids",
-    "ilha": "vila-doce",
-    "titulo": "Suco na ordem",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-doce-esfriou",
-    "publico": "kids",
-    "ilha": "vila-doce",
-    "titulo": "O doce esfriou",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "vila-doce-bandejas-da-padaria",
+    "slug": "vila-doce-corrida-do-entregador-partida",
     "publico": "kids",
     "ilha": "vila-doce",
-    "titulo": "Bandejas da padaria",
+    "titulo": "Começar e recomeçar",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
+      "sz_g2d_draw_score",
+      "sz_g2d_on_any_input",
       "sz_g2d_restart",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
+      "sz_g2d_draw_score",
+      "sz_g2d_on_any_input",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-batida",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "A batida",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_explode",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
+      "sz_g2d_set_hitbox_scale",
+      "sz_g2d_set_scene",
+      "sz_g2d_shake",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
+      "sz_g2d_set_scene",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-sorteio",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "Cada pedra num lugar",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_jump",
+      "sz_g2d_play_fx",
+      "sz_g2d_random_between",
+      "sz_g2d_spawn_obstacle",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_play_fx",
+      "sz_g2d_spawn_obstacle",
+      "sz_js_if_else",
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
@@ -816,238 +901,227 @@
     "titulo": "A corrida do entregador",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
+      "sz_g2d_draw_score",
       "sz_g2d_every_seconds",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_g2d_top_down",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
       "sz_js_var_increment",
-      "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
-      "sz_val_text",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_draw_score",
+      "sz_g2d_every_seconds",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-pulo-alto",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "Pedras maiores",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_control_dino",
+      "sz_g2d_on_jump",
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_control_dino",
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-pombos",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "Pombos na praça",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_explode",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_shake",
+      "sz_g2d_spawn_obstacle",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_spawn_obstacle",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-descricao",
+    "publico": "kids",
+    "ilha": "vila-doce",
+    "titulo": "Quem não vê a tela",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_draw_score",
+      "sz_g2d_set_stage_description",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_draw_score",
+      "sz_g2d_set_stage_description",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-pulo-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "O entregador pula",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_apply_gravity",
+      "sz_g2d_control_dino",
+      "sz_g2d_on_jump",
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-pedras-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "Pedras na rua",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_explode",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_random_between",
+      "sz_g2d_shake",
+      "sz_g2d_spawn_obstacle",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_every_seconds",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
+      "sz_g2d_on_sprite_group_overlap",
       "sz_g2d_update_each_frame",
-      "sz_val_bool",
+      "sz_js_if_else",
       "sz_val_number",
-      "sz_val_text",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "vila-doce-corrida-do-entregador-entregas",
-    "publico": "kids",
-    "ilha": "vila-doce",
-    "titulo": "O entregador: duas entregas",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_bool",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_bool",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-corrida-do-entregador-tempo",
-    "publico": "kids",
-    "ilha": "vila-doce",
-    "titulo": "O entregador: oito segundos",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_set_velocity",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_set_velocity",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-corrida-do-entregador-caixa",
-    "publico": "kids",
-    "ilha": "vila-doce",
-    "titulo": "O entregador: uma caixa nova",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-forno-da-vez-adulto",
+    "slug": "vila-doce-corrida-do-entregador-partida-adulto",
     "publico": "adulto",
     "ilha": "vila-doce",
-    "titulo": "O forno da vez",
+    "titulo": "Começar e recomeçar",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
+      "sz_g2d_draw_score",
+      "sz_g2d_on_any_input",
       "sz_g2d_restart",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-caixa-de-paes-adulto",
-    "publico": "adulto",
-    "ilha": "vila-doce",
-    "titulo": "A caixa de pães",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-suco-na-ordem-adulto",
-    "publico": "adulto",
-    "ilha": "vila-doce",
-    "titulo": "Suco na ordem",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_on_key", "sz_val_number", "sz_val_variable"],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-doce-esfriou-adulto",
-    "publico": "adulto",
-    "ilha": "vila-doce",
-    "titulo": "O doce esfriou",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
+      "sz_g2d_draw_score",
+      "sz_g2d_on_any_input",
+      "sz_g2d_scene_is",
+      "sz_g2d_set_scene",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "vila-doce-bandejas-da-padaria-adulto",
+    "slug": "vila-doce-corrida-do-entregador-batida-adulto",
     "publico": "adulto",
     "ilha": "vila-doce",
-    "titulo": "Bandejas da padaria",
+    "titulo": "A batida",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
+      "sz_g2d_explode",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
+      "sz_g2d_set_hitbox_scale",
+      "sz_g2d_set_scene",
+      "sz_g2d_shake",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
+      "sz_g2d_set_scene",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-sorteio-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "Cada pedra num lugar",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_jump",
+      "sz_g2d_play_fx",
+      "sz_g2d_random_between",
+      "sz_g2d_spawn_obstacle",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_play_fx",
+      "sz_g2d_spawn_obstacle",
+      "sz_js_if_else",
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
@@ -1058,131 +1132,95 @@
     "titulo": "A corrida do entregador",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
+      "sz_g2d_draw_score",
       "sz_g2d_every_seconds",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_g2d_top_down",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
       "sz_js_var_increment",
-      "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
-      "sz_val_text",
       "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_draw_score",
+      "sz_g2d_every_seconds",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-pulo-alto-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "Pedras maiores",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_control_dino",
+      "sz_g2d_on_jump",
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_control_dino",
+      "sz_g2d_play_fx",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "vila-doce-corrida-do-entregador-pombos-adulto",
+    "publico": "adulto",
+    "ilha": "vila-doce",
+    "titulo": "Pombos na praça",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_explode",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_shake",
+      "sz_g2d_spawn_obstacle",
+      "sz_g2d_update_each_frame",
+      "sz_js_if_else",
+      "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_every_seconds",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
+      "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_spawn_obstacle",
       "sz_g2d_update_each_frame",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
+      "sz_js_if_else",
+      "sz_val_number"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "vila-doce-corrida-do-entregador-entregas-adulto",
+    "slug": "vila-doce-corrida-do-entregador-descricao-adulto",
     "publico": "adulto",
     "ilha": "vila-doce",
-    "titulo": "O entregador: duas entregas",
+    "titulo": "Quem não vê a tela",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
+      "sz_g2d_draw_score",
+      "sz_g2d_set_stage_description",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_bool",
-      "sz_val_compare",
       "sz_val_number",
-      "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
+      "sz_g2d_draw_score",
+      "sz_g2d_set_stage_description",
+      "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_js_var_increment",
-      "sz_val_bool",
-      "sz_val_compare",
       "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-corrida-do-entregador-tempo-adulto",
-    "publico": "adulto",
-    "ilha": "vila-doce",
-    "titulo": "O entregador: oito segundos",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_set_velocity",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_set_velocity",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "vila-doce-corrida-do-entregador-caixa-adulto",
-    "publico": "adulto",
-    "ilha": "vila-doce",
-    "titulo": "O entregador: uma caixa nova",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_apply_velocity",
-      "sz_g2d_clamp_to_screen",
-      "sz_g2d_on_key",
-      "sz_g2d_on_overlap",
-      "sz_g2d_set_velocity",
-      "sz_js_if_else",
-      "sz_js_var_assign",
-      "sz_val_bool",
-      "sz_val_number",
-      "sz_val_text",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []

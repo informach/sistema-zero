@@ -146,6 +146,7 @@ export interface BordaViva {
   fora: Ponto
 }
 
+import type { AreaQueEmpurra } from '../sistemas/cinza-quente'
 import type { VolumeDeMergulho } from '../sistemas/mergulho'
 import type { BeiraDaMontaria, MontariaViva } from '../sistemas/montaria'
 import type { CorrenteDeAr } from '../sistemas/planador'
@@ -187,6 +188,8 @@ export interface LugarDeDescanso {
  */
 export interface Movimento {
   mergulhos: VolumeDeMergulho[]
+  /** As áreas que empurram quem vai a pé (a cinza quente do Vale, B11). */
+  empurroes: AreaQueEmpurra[]
   barco: Travessia | null
   caisProntos: Set<IlhaId>
   rotasDoBarco: readonly RotaDoBarco[]
@@ -263,6 +266,7 @@ export function criarMovimento(): Movimento {
     escorregadores: [],
     bordas: [],
     rodasDeNado: [RODA_DA_ILHA_CENTRAL],
+    empurroes: [],
     correntes: [],
     montaria: null,
     beira: null,

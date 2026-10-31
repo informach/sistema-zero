@@ -1,4 +1,7 @@
-import { CORPO_DO_FANTASMA_MAX_BYTES } from '@sistemazero/arquipelago-contracts'
+import {
+  CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES,
+  CORPO_DO_FANTASMA_MAX_BYTES,
+} from '@sistemazero/arquipelago-contracts'
 import {
   envelope,
   ForbiddenError,
@@ -38,12 +41,15 @@ import {
   PeriodoDaMedicaoInvalidoError,
   type ServicoDaMedicao,
 } from '../../application/servico-da-medicao'
+import type { ServicoDaObraEstendida } from '../../application/servico-da-obra-estendida'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import {
   BandejasDoTurnoInvalidasError,
   type ServicoDasProfissoes,
   TurnoNaoEncontradoError,
 } from '../../application/servico-das-profissoes'
+import type { ServicoDasRoupas } from '../../application/servico-das-roupas'
+import type { ServicoDasVendas } from '../../application/servico-das-vendas'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
 import type { ServicoDasVisitasDeAmigos } from '../../application/servico-das-visitas-de-amigos'
@@ -61,11 +67,17 @@ import {
   CompraSemEspacoError,
 } from '../../domain/insumos.port'
 import { AmbienteRecusadoError, ConferenciaIndisponivelError } from '../../domain/membros.port'
+import {
+  ObraEstendidaDesatualizadaError,
+  ObraEstendidaIlegivelError,
+  ObraSemSalvamentoError,
+} from '../../domain/obra-estendida.port'
 import { PedidoRecusadoError } from '../../domain/pedidos.port'
 import {
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
+import { VendaRecusadaError } from '../../domain/vendas.port'
 import {
   SalvamentoDaVisitaNecessarioError,
   VisitaAdultaIndisponivelError,
@@ -79,7 +91,10 @@ import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
+import { rotasDaObraEstendida } from './rotas-da-obra-estendida'
 import { rotasDasProfissoes } from './rotas-das-profissoes'
+import { rotasDasRoupas } from './rotas-das-roupas'
+import { rotasDasVendas } from './rotas-das-vendas'
 import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
 import { rotasDasVisitasDeAmigos } from './rotas-das-visitas-de-amigos'
@@ -96,7 +111,13 @@ export interface DependenciasHttp {
   amigos?: ServicoDasVisitasDeAmigos
   visitasAdultas?: ServicoDasVisitasAdultas
   fantasmas?: ServicoDosFantasmas
+  /** A obra estendida (E04 e B14); sem ela, as rotas não existem. */
+  obraEstendida?: ServicoDaObraEstendida
   pedidos?: ServicoDosPedidos
+  /** A banca da feira (A22); sem ele, as rotas não existem. */
+  vendas?: ServicoDasVendas
+  /** As roupas conquistadas (A21); sem ele, a rota não existe. */
+  roupas?: ServicoDasRoupas
   insumos?: ServicoDosInsumos
   profissoes?: ServicoDasProfissoes
   minijogos?: ServicoDosMinijogos
@@ -134,6 +155,7 @@ const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/(verificar|ambiente)$/
 function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
   if (caminho.startsWith('/arquipelago/visitas-adultas/')) return 1024
   if (caminho === '/arquipelago/fantasmas') return CORPO_DO_FANTASMA_MAX_BYTES
+  if (caminho === '/arquipelago/obra-estendida') return CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES
   if (caminho.startsWith('/arquipelago/admin/')) return CORPO_DA_EQUIPE
   if (CONFERIR.test(caminho)) return CORPO_DA_CONFERENCIA
   return tetoDoJogo
@@ -184,10 +206,35 @@ export function createServer(deps: DependenciasHttp) {
         set.status = 409
         return envelope('RECORDE_DO_FANTASMA_MUDOU', error.message)
       }
+      if (error instanceof ObraEstendidaDesatualizadaError) {
+        set.status = 409
+        return { ...envelope('OBRA_ESTENDIDA_DESATUALIZADA', error.message), atual: error.atual }
+      }
+      if (error instanceof ObraSemSalvamentoError) {
+        set.status = 409
+        return envelope('SALVAMENTO_NECESSARIO', error.message)
+      }
+      if (error instanceof ObraEstendidaIlegivelError) {
+        // 409, não 5xx (disjuntor do gateway); o jogo não grava por cima.
+        deps.logger.error('arquipelago.obra_estendida_ilegivel', {})
+        set.status = 409
+        return envelope('OBRA_ESTENDIDA_ILEGIVEL', error.message)
+      }
       if (error instanceof PedidoRecusadoError) {
         set.status = 409
         return envelope(
           error.motivo === 'incompativel' ? 'PEDIDO_INCOMPATIVEL' : 'PEDIDO_BASE_RECUSADO',
+          error.message,
+        )
+      }
+      if (error instanceof VendaRecusadaError) {
+        set.status = 409
+        return envelope(
+          error.motivo === 'incompativel'
+            ? 'VENDA_INCOMPATIVEL'
+            : error.motivo === 'repetida'
+              ? 'VENDA_REPETIDA'
+              : 'VENDA_BASE_RECUSADA',
           error.message,
         )
       }
@@ -383,6 +430,14 @@ export function createServer(deps: DependenciasHttp) {
         : new Elysia(),
     )
     .use(
+      deps.obraEstendida
+        ? rotasDaObraEstendida({
+            obraEstendida: deps.obraEstendida,
+            tokenInterno: deps.tokenInterno,
+          })
+        : new Elysia(),
+    )
+    .use(
       deps.insumos
         ? rotasDosInsumos({ insumos: deps.insumos, tokenInterno: deps.tokenInterno })
         : new Elysia(),
@@ -390,6 +445,16 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.pedidos
         ? rotasDosPedidos({ pedidos: deps.pedidos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.vendas
+        ? rotasDasVendas({ vendas: deps.vendas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.roupas
+        ? rotasDasRoupas({ roupas: deps.roupas, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .use(

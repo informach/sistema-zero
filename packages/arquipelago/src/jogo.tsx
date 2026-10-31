@@ -30,6 +30,7 @@ import { boasVindas, deveMostrarAbertura, PAINEL_DA_ABERTURA } from './sistemas/
 import { criarArmazemDeSalvamento, JogoAbertoEmOutraAbaError } from './sistemas/armazem-salvamento'
 import { criarFilaDeTempo } from './sistemas/fila-tempo'
 import { criarGerenteTempo } from './sistemas/gerente-tempo'
+import { trocarItensAntigos } from './sistemas/itens'
 import { salvamentoPausado } from './sistemas/pausa'
 import { criarFilaDeSalvamento, type FilaDeSalvamento } from './sistemas/salvar'
 import { criarSessaoTempo } from './sistemas/sessao-tempo'
@@ -71,7 +72,10 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
   ])
   if (salvo.status !== 200) throw new Error(`salvamento ${salvo.status}`)
   const guardado = SalvamentoGuardadoSchema.parse(salvo.corpo)
-  const salvamento = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(new Date())
+  // Itens que trocaram de id (a moqueca virou o peixe com coco, A6) chegam já com o id novo.
+  const salvamento = trocarItensAntigos(
+    migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(new Date()),
+  )
 
   let fila: FilaDeSalvamento | null = null
   const loja = criarLoja({
@@ -80,6 +84,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     quarto: QuartoSchema.safeParse(quarto).success ? quarto : QUARTO_VAZIO,
     avatar,
     acesso,
+    fechadoDesde: guardado.atualizadoEm ? Date.parse(guardado.atualizadoEm) : null,
     aoMudar: (s) => fila?.guardar(s),
   })
   if (!acesso.somenteLeitura) {

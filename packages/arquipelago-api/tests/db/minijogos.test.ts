@@ -123,6 +123,19 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
     expect(salvo?.atualizadoEm).toBe(relogio.toISOString())
     expect(JSON.stringify(salvo)).not.toContain('nao-copiar')
   })
+  test('a lista diz a ilha publicada do desafio (B10); sem o desafio no banco, fica sem ilha', async () => {
+    await servico.verificar(jogador, desafioId, { revisao: 1, projeto: {} })
+    expect((await repo.listar(perfil))[0]?.ilha).toBeUndefined()
+    await conexao.sql`
+      insert into arquipelago.desafios
+        (id, slug, publico, ilha, tipo, quadro, ordem, situacao, revisao, revisao_publicada,
+         metadados_publicados, conteudo, criado_em, atualizado_em, atualizado_por)
+      values (${desafioId}, 'corrida-b10', 'kids', 'bosque', 'quadro-das-cores', 1, 0, 'publicado',
+        2, 1, ${JSON.stringify({ ilha: 'vila-doce' })}::jsonb, ${JSON.stringify(c)}::jsonb, now(), now(), ${perfil})`
+    // A ilha publicada vale sobre a do rascunho.
+    expect((await repo.listar(perfil))[0]?.ilha).toBe('vila-doce')
+    await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
+  })
   test('reprovado, sem atração e suporte não guardam cópia', async () => {
     passar = false
     await servico.verificar(jogador, desafioId, { revisao: 1, projeto: {} })

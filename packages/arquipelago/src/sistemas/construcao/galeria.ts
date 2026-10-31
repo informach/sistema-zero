@@ -59,11 +59,18 @@ export function aparenciasQueEleTem(
     const a = { origem: 'galeria' as const, id: item.id }
     if (possuidas.includes(item.id) && !todas.some((b) => mesmaAparencia(a, b))) todas.push(a)
   }
-  return todas.map((a) => ({
-    aparencia: a,
-    rotulo: rotuloDaAparencia(a),
-    emUso: p.aparencia !== null && mesmaAparencia(a, p.aparencia),
-  }))
+  // Duas pinturas (ou dois modelos) não ganham o mesmo nome: a segunda vira "Pintada no Pinta 2".
+  const vistos = new Map<string, number>()
+  return todas.map((a) => {
+    const base = rotuloDaAparencia(a)
+    const n = (vistos.get(base) ?? 0) + 1
+    vistos.set(base, n)
+    return {
+      aparencia: a,
+      rotulo: n === 1 ? base : `${base} ${n}`,
+      emUso: p.aparencia !== null && mesmaAparencia(a, p.aparencia),
+    }
+  })
 }
 
 /** O que o cartão da galeria mostra para uma aparência do catálogo. */

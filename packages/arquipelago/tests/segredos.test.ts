@@ -31,8 +31,11 @@ import {
   abrirSegredo,
   falaDoSegredo,
   falaDoVento,
+  PAGINA_EXTRA,
+  paginasExtras,
   SEGREDOS,
   segredoAchado,
+  TODOS_OS_SEGREDOS,
   VENTO_DO_SEGREDO,
 } from '../src/sistemas/segredos'
 import { arquivoDaIlha, bate, carregarGlb, type Forma } from './ajuda-colisores'
@@ -82,7 +85,8 @@ describe('os segredos das ilhas (N12)', () => {
     expect(segredoAchado(um.segredos, g)).toBe(true)
     expect(um.inventario).toEqual(s.inventario)
     expect(abrirSegredo(um, g)).toBe(um)
-    expect(segredosDoAlbum(um).conta).toMatchObject({ tem: 1, total: 4 })
+    // Os quatro do vento e, desde 31/10/2026 (B11), os cinco dos outros movimentos.
+    expect(segredosDoAlbum(um).conta).toMatchObject({ tem: 1, total: 9 })
   })
 
   test('sem planador o pulo não chega; com ele, o vento leva até o baú', () => {
@@ -153,4 +157,24 @@ describe('os segredos das ilhas (N12)', () => {
       expect(VENTO_DO_SEGREDO.altura).toBeGreaterThan(5)
     }, 120_000)
   }
+})
+
+describe('as páginas extras dos baús (§6.28, A39)', () => {
+  test('cada baú guarda uma página, que aparece só depois de aberto', () => {
+    const fechadas = paginasExtras(0)
+    expect(fechadas.map((p) => p.id)).toEqual(TODOS_OS_SEGREDOS.map((s) => s.id))
+    expect(fechadas.every((p) => !p.achada && p.texto === null)).toBe(true)
+    const umaAberta = paginasExtras(SEGREDOS[1]?.bit ?? 0)
+    expect(umaAberta.filter((p) => p.achada).map((p) => p.id)).toEqual(['bosque'])
+    expect(umaAberta[1]?.texto).toBe(PAGINA_EXTRA.bosque)
+  })
+
+  test('os textos seguem as regras da criança e não contam o final', () => {
+    for (const texto of [...Object.values(PAGINA_EXTRA), ...SEGREDOS.map(falaDoSegredo)]) {
+      expect(texto).not.toMatch(/[—!]/)
+      expect(texto.trim()[0]).not.toBe('¿')
+      expect(texto).not.toMatch(/^\s*(Por que|Como|Onde|Quando|Quem|O que)\b/)
+      expect(texto).not.toMatch(/Cinza|faísca/i)
+    }
+  })
 })

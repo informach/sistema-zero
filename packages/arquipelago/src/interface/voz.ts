@@ -29,6 +29,7 @@ export interface VozDoJogo {
   recadoDaIris: (ilha: Ilha) => string
   /** O Molda ainda fechado no painel do projeto azul. */
   moldaFechado: string
+  pintaFechado: string
   /** A compra da galeria recusada porque a sessão é de suporte (só leitura). */
   compraSomenteLeitura: string
   /** O que abre uma ilha ainda fechada, no mapa do arquipélago (fase3-03). */
@@ -71,6 +72,7 @@ export const VOZ_KIDS: VozDoJogo = {
   placaDaPonte: (ilha) => ({ antes: 'A ponte abre em', marco: NOMES_DOS_POSTOS[ilha.posto] }),
   recadoDaIris,
   moldaFechado: 'Abre no posto Explorador(a) de Mundos',
+  pintaFechado: 'Abre no posto Construtor(a). Por enquanto, a aparência vem pronta da galeria.',
   compraSomenteLeitura: recadoDaCompra({ ok: false, motivo: 'somente-leitura' }),
   ilhaFechadaNoMapa: (ilha) =>
     ilha.id === 'farol'

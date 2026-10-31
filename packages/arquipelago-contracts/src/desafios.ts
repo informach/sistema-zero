@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { ILHA_IDS } from './ilhas'
 import { ProblemaDoMapaSchema } from './membros'
+import { RECEITAS } from './receitas-moradores'
 
 /**
  * Os desafios do jogo (decisão de 27/10/2026, plano em `docs/plans/2026-10-27-arquipelago-desafios.md`):
@@ -143,6 +144,14 @@ export const RecompensaDoDesafioSchema = z.strictObject({
   atracao: z.string().min(1).max(80).optional(),
   moedas: z.number().int().min(0).max(LIMITES_DO_DESAFIO.moedas),
   moedasExtra: z.number().int().min(0).max(LIMITES_DO_DESAFIO.moedasExtra),
+  /**
+   * O prêmio-objeto do desafio extra (§6.28, A25): uma receita do caderno, como na proposta
+   * ("★ extra: receita de brigadeiro"). Opcional: os conteúdos de antes continuam valendo.
+   */
+  receitaDoExtra: z
+    .string()
+    .refine((id) => RECEITAS.some((r) => r.id === id), 'Receita desconhecida')
+    .optional(),
 })
 export type RecompensaDoDesafio = z.infer<typeof RecompensaDoDesafioSchema>
 
@@ -440,8 +449,30 @@ export type AplicacaoDoManifesto = z.infer<typeof AplicacaoDoManifestoSchema>
 
 // ── O que a pessoa recebe (sem gabarito, sem regras) ─────────────────────────────────────────
 
+/**
+ * A linguagem do desafio, pelo projeto inicial (§6.28, A2 e A3): blocos, Python, JavaScript na
+ * Ponte (texto) ou Pro. Fora dos blocos, o desafio pede o curso-base do posto da ilha.
+ */
+export type LinguagemDoDesafio = 'blocos' | 'python' | 'texto' | 'pro'
+export function linguagemDoProjeto(projeto: unknown): LinguagemDoDesafio {
+  const p = (projeto !== null && typeof projeto === 'object' ? projeto : {}) as {
+    mode?: unknown
+    kind?: unknown
+    programmingLanguage?: unknown
+  }
+  if (p.programmingLanguage === 'python') return 'python'
+  if (p.kind === 'pro') return 'pro'
+  if (p.mode === 'bridge') return 'texto'
+  return 'blocos'
+}
+
+/**
+ * `falta-curso` (A3): o desafio na linguagem do posto espera o curso-base do posto concluído (a
+ * mesma regra "o desafio só usa o que a pessoa já conquistou" dos blocos).
+ */
 export const SITUACOES_PARA_A_PESSOA = [
   'ilha-fechada',
+  'falta-curso',
   'faltam-blocos',
   'disponivel',
   'concluido',
@@ -481,8 +512,26 @@ export const DesafioNaListaSchema = z.strictObject({
       ),
     }),
   ),
+  /**
+   * "Aprenda isso em" (A24), também no desafio disponível: o curso que ensina o que o desafio
+   * pede (o mais adiantado entre os blocos dele, ou o curso-base do posto na linguagem do posto).
+   * Vazio quando nenhum curso publicado ensina. Opcional para o serviço anterior.
+   */
+  aprenda: z
+    .array(
+      z.strictObject({
+        courseId: z.uuid(),
+        titulo: z.string(),
+        slug: z.string(),
+        posto: z.string().nullable(),
+      }),
+    )
+    .max(3)
+    .optional(),
   recompensa: RecompensaDoDesafioSchema,
   recompensaVista: z.boolean(),
+  /** O desafio extra já foi feito (A25: o prêmio-objeto vale). Opcional para o serviço anterior. */
+  extraFeito: z.boolean().optional(),
 })
 export type DesafioNaLista = z.infer<typeof DesafioNaListaSchema>
 
@@ -535,6 +584,8 @@ export type DesafioAberto = z.infer<typeof DesafioAbertoSchema>
 export const VerificarDesafioSchema = z.strictObject({
   revisao: z.number().int().min(1),
   projeto: ProjetoSchema,
+  /** Quantas dicas a pessoa abriu até esta conferência (A26, a medição). Opcional. */
+  dicas: z.number().int().min(0).max(LIMITES_DO_DESAFIO.dicas).optional(),
 })
 export type VerificarDesafio = z.infer<typeof VerificarDesafioSchema>
 

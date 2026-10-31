@@ -2,6 +2,7 @@ import {
   CATALOGO_DE_OBJETOS,
   type FerramentaDaPlataforma,
   GELADEIRA_GUARDA,
+  galeriaDoObjeto,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
   ProjetoAzulAtualSchema,
@@ -12,16 +13,21 @@ import { lojaDaGaleria } from '../estado/galeria'
 import { usarAparencia } from '../sistemas/construcao/galeria'
 import {
   capacidade,
+  comerDaGeladeira,
   ehAlimento,
+  FALA_DO_FRESQUINHO,
   guardados,
   guardarNaGeladeira,
   moldaAberto,
   oQueOPintaPinta,
+  pintaAberto,
+  podeComerFresquinho,
   recadoDaFerramentaFechada,
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
 import { ITENS } from '../sistemas/itens'
 import { Aquario } from './aquario'
+import { CriacoesQueCabem } from './criacoes-que-cabem'
 import { CartaoDaGaleria, SuasAparencias } from './galeria'
 import { MinijogosDoFliperama } from './minijogos'
 import { Museu } from './museu'
@@ -52,9 +58,30 @@ function Geladeira() {
         ? { ...s, projetos: { ...s.projetos, geladeira: r.projeto }, inventario: r.inventario }
         : s
     })
+  const comerFresquinho = (item: string) => {
+    let comeu = false
+    loja.getState().mudar((s) => {
+      const p = s.projetos.geladeira
+      const r = p && comerDaGeladeira(p, s.necessidades, item)
+      if (!r) return s
+      comeu = true
+      return {
+        ...s,
+        projetos: { ...s.projetos, geladeira: r.projeto },
+        necessidades: r.necessidades,
+      }
+    })
+    if (comeu) loja.getState().dizer(FALA_DO_FRESQUINHO)
+  }
   return (
     <section className="arq-objeto-geladeira" aria-label="O que está na geladeira">
       <p className="arq-quadro-sub">{`Guardados: ${tem} de ${cabe}.`}</p>
+      {projeto.aparencia ? (
+        <p className="arq-caderno-explica">
+          Com aparência, a geladeira conserva: comido daqui, o alimento vem fresquinho e mata mais a
+          fome.
+        </p>
+      ) : null}
       <h3 className="arq-menu-titulo">Na geladeira</h3>
       {dentro.length === 0 ? (
         <p className="arq-caderno-explica">Ainda vazia.</p>
@@ -75,6 +102,15 @@ function Geladeira() {
               >
                 {`${ITENS[id]?.emoji ?? ''} ${ITENS[id]?.nome ?? id} × ${q}: tirar`}
               </button>
+              {podeComerFresquinho(projeto, id) ? (
+                <button
+                  type="button"
+                  className="arq-botao leve"
+                  onClick={() => comerFresquinho(id)}
+                >
+                  {`Comer ${ITENS[id]?.nome.toLowerCase() ?? id} fresquinho`}
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -136,25 +172,30 @@ export function PainelDoObjeto() {
   if (!id || !projeto) return null
   const { molde, origem } = CATALOGO_DE_OBJETOS[id]
 
+  /** A criação (feita agora ou escolhida entre as da conta) vira a aparência em uso. */
+  function guardarAparencia(origem: 'pinta' | 'molda', criacaoId: string) {
+    if (!id) return
+    const atual = loja.getState().salvamento.projetos[id]
+    // A que ela fez vira a em uso e fica guardada (trocar de volta não cobra nada).
+    const novo = atual && usarAparencia(atual, { origem, id: criacaoId })
+    // Um id fora do contrato faria o serviço recusar o salvamento: ele não entra.
+    if (!novo || !ProjetoAzulAtualSchema.safeParse(novo).success) {
+      setAviso({ tom: 'atencao', texto: 'Não deu para guardar a aparência. Tente de novo.' })
+      return
+    }
+    loja.getState().mudar((s) => ({ ...s, projetos: { ...s.projetos, [id]: novo } }))
+    setAviso({ tom: 'ok', texto: 'A aparência ficou guardada na sua conta.' })
+  }
+
   async function fazerAparencia(ferramenta: FerramentaDaPlataforma) {
     if (!id || loja.getState().ferramentaAberta) return
     setAviso(null)
     loja.getState().definirFerramentaAberta(true)
     try {
       const r = await plataforma.abrirFerramenta({ ferramenta, proposito: 'objeto', molde })
-      if (r.situacao === 'pronto') {
-        const origemDaAparencia = ferramenta === 'molda' ? 'molda' : 'pinta'
-        const atual = loja.getState().salvamento.projetos[id]
-        // A que ela fez vira a em uso e fica guardada (trocar de volta não cobra nada).
-        const novo = atual && usarAparencia(atual, { origem: origemDaAparencia, id: r.criacaoId })
-        // Um id fora do contrato faria o serviço recusar o salvamento: ele não entra.
-        if (!novo || !ProjetoAzulAtualSchema.safeParse(novo).success) {
-          setAviso({ tom: 'atencao', texto: 'Não deu para guardar a aparência. Tente de novo.' })
-          return
-        }
-        loja.getState().mudar((s) => ({ ...s, projetos: { ...s.projetos, [id]: novo } }))
-        setAviso({ tom: 'ok', texto: 'A aparência ficou guardada na sua conta.' })
-      } else if (r.situacao === 'indisponivel')
+      if (r.situacao === 'pronto')
+        guardarAparencia(ferramenta === 'molda' ? 'molda' : 'pinta', r.criacaoId)
+      else if (r.situacao === 'indisponivel')
         setAviso({
           tom: 'atencao',
           texto: recadoDaFerramentaFechada(ferramenta === 'molda' ? 'molda' : 'pinta', r.motivo),
@@ -170,6 +211,7 @@ export function PainelDoObjeto() {
   const pinta = oQueOPintaPinta(molde.faces)
   const temFaces = pinta !== null
   const molda = moldaAberto(jornada)
+  const pintaLiberado = pintaAberto(jornada)
   return (
     <div className="arq-sobre">
       <div
@@ -197,14 +239,16 @@ export function PainelDoObjeto() {
           <button
             type="button"
             className="arq-ferramenta"
-            disabled={ferramentaAberta || !temFaces}
+            disabled={ferramentaAberta || !temFaces || !pintaLiberado}
             onClick={() => void fazerAparencia('pinta')}
           >
             <span className="arq-ferramenta-icone" aria-hidden="true">
-              🎨
+              {pintaLiberado ? '🎨' : '🔒'}
             </span>
             <b>Pintar no Pinta</b>
-            <small>{pinta ?? 'O molde do Pinta chega com o modelo'}</small>
+            <small>
+              {pintaLiberado ? (pinta ?? 'O molde do Pinta chega com o modelo') : voz.pintaFechado}
+            </small>
           </button>
           <button
             type="button"
@@ -218,9 +262,20 @@ export function PainelDoObjeto() {
             <b>Modelar no Molda</b>
             <small>{molda ? 'A forma inteira dentro do molde' : voz.moldaFechado}</small>
           </button>
-          <CartaoDaGaleria objeto={id} avisar={setAviso} />
+          {galeriaDoObjeto(id).map((item) => (
+            <CartaoDaGaleria key={item.id} objeto={id} id={item.id} avisar={setAviso} />
+          ))}
         </div>
         <p className="arq-caderno-explica">Feito por você não custa moeda.</p>
+        <CriacoesQueCabem
+          objeto={id}
+          molde={molde}
+          ferramentas={[
+            ...(temFaces && pintaLiberado ? (['pinta'] as const) : []),
+            ...(molda ? (['molda'] as const) : []),
+          ]}
+          usar={(c) => guardarAparencia(c.ferramenta, c.id)}
+        />
         <SuasAparencias objeto={id} avisar={setAviso} />
         {aviso ? (
           <p role="status" className={`arq-aviso ${aviso.tom}`}>

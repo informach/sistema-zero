@@ -12585,8 +12585,8 @@
       "slug": "recife-mira-de-bolhas",
       "publico": "kids",
       "ilha": "recife",
-      "tipo": "quadro-das-cores",
-      "quadro": 6,
+      "tipo": "desafio-do-dia",
+      "quadro": null,
       "ordem": 60,
       "publicar": true,
       "conteudo": {
@@ -16728,10 +16728,10 @@
           "texto": "Faça Enter (+ no toque) recomeçar a rodada: devolva a mira ao início, solte os alvos, esconda a bolha e zere os pontos."
         },
         "recompensa": {
-          "cor": true,
+          "cor": false,
           "atracao": "mira-de-bolhas",
-          "moedas": 20,
-          "moedasExtra": 10
+          "moedas": 10,
+          "moedasExtra": 5
         },
         "blocosManuais": {
           "acrescentar": [],
@@ -16746,7 +16746,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: bolha rápida",
@@ -21902,7 +21902,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: dois pontos",
@@ -27036,7 +27036,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: outro alvo",

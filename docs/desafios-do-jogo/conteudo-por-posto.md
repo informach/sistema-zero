@@ -89,8 +89,10 @@ laço em grupo seguem sem pedido, porque nesses postos a aplicação de listas �
 (C02). A importação e a barreira C01a continuam com a equipe. C01a impede publicar cobertura impossível. Os blocos de extras e os apoios sem
 fonte continuam visíveis como pendências, sem concessão manual.
 
-A Vila atual retoma eventos, estoque, contagem e estados. Ainda não comprova o conjunto de
-pulo com apoio, colisão e dificuldade do Inventor. Os quadros do Recife e do Pico são retomadas
+O Bosque (A42, 31/10/2026) tem nos quadros 1 a 5 a chuva de pinhas com o repertório da Nave:
+grupos, encontro de grupos, vidas, derrota e partida que recomeça. A Vila (A15, 31/10/2026) é a corrida do entregador sobre o Corre, Dino!: pulo com gravidade e só
+no chão, pedras num relógio, começar e recomeçar, a batida com área justa, o sorteio com limites e
+a dificuldade com teto, um passo por quadro, todos pedindo publicação. Os quadros do Recife e do Pico são retomadas
 em blocos e os do Vale e das Nuvens não trabalham no ambiente textual nem no Pro. C02 acrescenta
 uma aplicação na linguagem de cada posto (seção abaixo), sem retirar as retomadas.
 
@@ -128,9 +130,13 @@ Lacunas que continuam com a equipe:
   publicada; o Members confere o ambiente contra o catálogo publicado
   (`members/tests/unit/arquipelago-c02-ambiente.test.ts`). Quando a release ativa mudar, troque,
   regenere e rode de novo.
-- Python e Pro não têm blocos do catálogo do servidor, então não derivam requisitos: abrem pela
-  ilha. O Vale em texto deriva blocos da Ponte (JavaScript avançado), que só terão fonte quando os
-  cursos do Arquiteto existirem; até lá a barreira C01a recusaria publicar.
+- Desde 31/10/2026 (§6.28, A2 e A3), cada um destes é o sexto quadro da ilha e devolve a cor; o
+  minijogo em blocos que ocupava o quadro 6 virou desafio do dia. Python, Ponte e Pro não têm
+  blocos do catálogo do servidor: o requisito é o curso-base (2D) do posto concluído, que o
+  Members informa; sem ele o desafio aparece trancado com "Aprenda isso em" e o curso. Importe o
+  arquivo em blocos da ilha antes do arquivo da linguagem (o quadro 6 precisa ficar livre). O
+  Vale em texto deriva blocos da Ponte (JavaScript avançado), que só terão fonte quando os cursos
+  do Arquiteto existirem; até lá ele fica sem pedido de publicação.
 - O inventário C01b1 (`repertorio-local`) segue só com os manifestos de blocos.
 
 Esta matriz orienta L03 da entrega integral. As provas existentes do executor continuam

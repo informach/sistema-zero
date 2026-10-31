@@ -9,9 +9,13 @@ import {
   type IlhaId,
   MORADORES_DO_ANEL,
   OBJETOS_DA_CASA,
+  percursosPorExtenso,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
-import { NOMES_DOS_CONVIDADOS as NOMES_DOS_MORADORES } from './visitas-dos-moradores'
+import { NOMES_DOS_CONVIDADOS } from './visitas-dos-moradores'
+
+/** Os nomes no resumo: os convidáveis e o Nico, que já mora na sua ilha (A19). */
+const NOMES_DOS_MORADORES = { ...NOMES_DOS_CONVIDADOS, nico: 'Nico' } as const
 
 /** O que a foto guarda: só números e listas pequenas (cabe no armazenamento do aparelho). */
 export interface FotoDoDia {
@@ -35,7 +39,7 @@ const contarBits = (n: number) => {
 
 export function fotoDoDia(s: Salvamento, dia: string): FotoDoDia {
   let estrelas = 0
-  for (const r of Object.values(s.percursos))
+  for (const r of Object.values(percursosPorExtenso(s.percursos)))
     if (r)
       estrelas +=
         Number(r.estrelas.chegada) + Number(r.estrelas.tempo) + Number(r.estrelas.vagalumes)
@@ -129,4 +133,9 @@ export function resumoDoDia(antes: FotoDoDia, s: Salvamento, hoje: string): stri
   return linhas
 }
 
-export const BOA_NOITE = 'A horta continua crescendo enquanto você dorme. Nada se perde.'
+/**
+ * A horta cresce no tempo de verdade (horas), não no dia do jogo: dormir na cama não adianta a
+ * colheita, fechar o jogo também não atrasa (A14).
+ */
+export const BOA_NOITE =
+  'A horta cresce no tempo de verdade, mesmo com o jogo fechado. Nada se perde.'

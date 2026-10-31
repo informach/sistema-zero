@@ -137,7 +137,7 @@ export class DesafioMudouError extends Error {
 
 /** Ilha fechada ou faltam blocos: o desafio não abre nem confere. */
 export class DesafioBloqueadoError extends Error {
-  constructor(readonly situacao: 'ilha-fechada' | 'faltam-blocos') {
+  constructor(readonly situacao: 'ilha-fechada' | 'falta-curso' | 'faltam-blocos') {
     super('Este desafio ainda não está liberado')
   }
 }

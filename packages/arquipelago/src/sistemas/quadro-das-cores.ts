@@ -93,13 +93,32 @@ export function motivoDoErro(status: number, corpo: unknown): MotivoDoQuadroFech
   return 'fora-do-ar'
 }
 
-/** O que o quadro diz sobre um desafio trancado (o que falta e onde aprender). */
-export function oQueFalta(d: DesafioNaLista): { ilhaFechada: boolean; cursos: string[] } {
-  if (d.situacao === 'ilha-fechada') return { ilhaFechada: true, cursos: [] }
+/**
+ * O que o quadro diz sobre um desafio trancado (o que falta e onde aprender). `faltaCurso`: o
+ * desafio na linguagem do posto espera o curso-base do posto (§6.28, A3).
+ */
+export function oQueFalta(d: DesafioNaLista): {
+  ilhaFechada: boolean
+  faltaCurso: boolean
+  cursos: string[]
+} {
+  if (d.situacao === 'ilha-fechada') return { ilhaFechada: true, faltaCurso: false, cursos: [] }
+  if (d.situacao === 'falta-curso')
+    return {
+      ilhaFechada: false,
+      faltaCurso: true,
+      cursos: [...new Set((d.aprenda ?? []).map((c) => c.titulo))],
+    }
   const cursos: string[] = []
   for (const falta of d.faltam) {
     const primeiro = falta.cursos[0]
     if (primeiro && !cursos.includes(primeiro.titulo)) cursos.push(primeiro.titulo)
   }
-  return { ilhaFechada: false, cursos }
+  return { ilhaFechada: false, faltaCurso: false, cursos }
+}
+
+/** "Aprenda isso em" do desafio que já se pode fazer (A24): o curso que ele retoma, se houver. */
+export function ondeAprender(d: DesafioNaLista): string | null {
+  const curso = d.aprenda?.[0]
+  return curso ? `Aprenda isso em: ${curso.titulo}` : null
 }

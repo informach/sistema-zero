@@ -53,11 +53,60 @@
       "pupila"
     ]
   },
+  "brigadeiro-de-luz": {
+    "familia": "vila-doce",
+    "raridade": "luz",
+    "rara": "brigadeiro",
+    "reducao": 2,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 2956,
+    "kb": 120.5,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "detalhe3",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
   "brotinho": {
     "familia": "dinos",
     "raridade": "raro",
     "triangulos": 2962,
     "kb": 119.5,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "faisca",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "brotinho-de-luz": {
+    "familia": "dinos",
+    "raridade": "luz",
+    "rara": "brotinho",
+    "reducao": 2,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 2946,
+    "kb": 122.7,
     "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
     "materiais": [
       "boca",
@@ -91,11 +140,59 @@
       "pupila"
     ]
   },
+  "buzio-de-luz": {
+    "familia": "praia",
+    "raridade": "luz",
+    "rara": "buzio",
+    "reducao": 2,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 2954,
+    "kb": 125.8,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
   "cristal": {
     "familia": "pico",
     "raridade": "raro",
     "triangulos": 1470,
     "kb": 96.8,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "cristal-de-luz": {
+    "familia": "pico",
+    "raridade": "luz",
+    "rara": "cristal",
+    "reducao": 0,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 1638,
+    "kb": 103.0,
     "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
     "materiais": [
       "boca",
@@ -165,6 +262,31 @@
       "pupila"
     ]
   },
+  "ipe-de-luz": {
+    "familia": "bosque",
+    "raridade": "luz",
+    "rara": "ipe",
+    "reducao": 1,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 2986,
+    "kb": 127.4,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "barriga",
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "faisca",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
   "ovinho": {
     "familia": "dinos",
     "raridade": "comum",
@@ -203,6 +325,30 @@
       "pupila"
     ]
   },
+  "perola-de-luz": {
+    "familia": "recife",
+    "raridade": "luz",
+    "rara": "perola",
+    "reducao": 0,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 2976,
+    "kb": 115.3,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
   "pitanga": {
     "familia": "bosque",
     "raridade": "comum",
@@ -227,6 +373,31 @@
     "raridade": "raro",
     "triangulos": 2626,
     "kb": 114.3,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "faisca",
+      "luz",
+      "olho",
+      "pena1",
+      "pena2",
+      "pena3",
+      "pupila"
+    ]
+  },
+  "pluma-de-luz": {
+    "familia": "nuvens",
+    "raridade": "luz",
+    "rara": "pluma",
+    "reducao": 0,
+    "coroa": ["luz"],
+    "rastro": ["luz"],
+    "emissao_do_corpo": 0.3,
+    "triangulos": 2794,
+    "kb": 120.7,
     "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
     "materiais": [
       "bochecha",

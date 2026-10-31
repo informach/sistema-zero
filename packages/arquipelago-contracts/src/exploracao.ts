@@ -63,6 +63,8 @@ export function juntarMapas(a: string | undefined, b: string | undefined): strin
   return x.toString(16).padStart(16, '0')
 }
 
-/** Quem acompanha a criança pela ilha: os bichinhos do quarto ou o bicho adotado no Bosque. */
-export const COMPANHIAS = ['quarto', 'adotado'] as const
+/** Quem acompanha a criança pela ilha até a V20: os bichinhos do quarto ou o bicho adotado. */
+export const COMPANHIAS_ATE_V20 = ['quarto', 'adotado'] as const
+/** Desde a V21 (§6.28, A7), também o filhote do Vale, o dino de estimação. */
+export const COMPANHIAS = [...COMPANHIAS_ATE_V20, 'filhote'] as const
 export type Companhia = (typeof COMPANHIAS)[number]

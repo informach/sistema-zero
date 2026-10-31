@@ -115,6 +115,17 @@ function erroDaVerificacao(error: unknown): { status: number; code: string; mess
   throw error
 }
 
+const PerguntaDasCompras = z
+  .strictObject({
+    audience: z.enum(['kids', 'adult']),
+    de: z.iso.date(),
+    ate: z.iso.date(),
+  })
+  .refine((p) => {
+    const dias = (Date.parse(p.ate) - Date.parse(p.de)) / 86_400_000
+    return dias >= 0 && dias < 90
+  })
+
 export function arquipelagoInternalRoutes(deps: {
   kidsJourney: Pick<KidsJourneyQueryService, 'staffPreview'>
   adultJourney: Pick<AdultJourneyService, 'policy'>
@@ -122,6 +133,14 @@ export function arquipelagoInternalRoutes(deps: {
   objetivos: Pick<ArquipelagoObjectivesService, 'analisar' | 'verificar'>
   /** A hora das aulas concluídas (a "volta ao curso" da área dos pais); ausente, 424. */
   aulas?: Pick<ArquipelagoCourseActivityService, 'concluidas'>
+  /** As compras do jogo somadas no período (a medição da equipe, A26); ausente, 424. */
+  compras?: {
+    resumoDasCompras(input: {
+      audience: 'kids' | 'adult'
+      de: string
+      ate: string
+    }): Promise<{ quantidade: number; pessoas: number; moedas: number }>
+  }
   /** O saldo de moedas Zappy de quem joga (o cartão da galeria); ausente, 424. */
   saldo?: { getBalance(userId: string, audience: 'kids' | 'adult'): Promise<number> }
   /** O quarto de um perfil (a visita de um irmão no jogo); ausente, 424. */
@@ -203,6 +222,22 @@ export function arquipelagoInternalRoutes(deps: {
        * O saldo de moedas Zappy de quem joga (29/10/2026, a galeria do Arquipélago), no formato
        * `SaldoDosMembrosSchema`. Só leitura: gastar é pela porta de moedas, com o token dela.
        */
+      /**
+       * As compras pagas com moedas no jogo, somadas entre `de` e `ate` (dias de São Paulo, até 90),
+       * no formato `ComprasDosMembrosSchema`. Só agregados.
+       */
+      .get('/compras', async ({ query, set }) => {
+        const pergunta = PerguntaDasCompras.safeParse(query)
+        if (!pergunta.success) {
+          set.status = 400
+          return { error: { code: 'INVALID_QUERY' } }
+        }
+        if (!deps.compras) {
+          set.status = 424
+          return { error: { code: 'COMPRAS_INDISPONIVEIS' } }
+        }
+        return await deps.compras.resumoDasCompras(pergunta.data)
+      })
       .get('/saldo', async ({ query, set }) => {
         const pergunta = PerguntaDoJogador.safeParse(query)
         if (!pergunta.success) {

@@ -130,6 +130,9 @@ lib_q.PALETTE.update({
     'livro1': ('#3fb27f', 0.8, None, 0),
     'livro2': ('#e0584f', 0.8, None, 0),
     'livro3': ('#5b8fd6', 0.8, None, 0),
+    # A tela dos brinquedos de minijogo (31/10/2026): a mesma do fliperama (`arte/objetos`), acesa de leve;
+    # o jogo põe nela a capa do minijogo (coordenadas de textura de 0 a 1).
+    'tela': ('#1f3550', 0.25, '#3a86c8', 0.6),
 })
 lib_q.ALPHA.update({'janelaFarol': 0.3, 'lenteFarol': 0.55, 'gelo': 0.85, 'geloClaro': 0.9})
 
@@ -271,14 +274,32 @@ def contar(o):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
-def exportar(pid, nos, ancoras=(), clipes_=None, colisores=(), porto=None):
+def tela_com_uv(larg, alto, m='tela'):
+    """A tela de um brinquedo de minijogo: um retângulo `larg` × `alto` de pé, no meio da origem, de
+    frente para −Y (como as peças), com as coordenadas de textura de 0 a 1 (u para a direita e v para
+    cima de quem olha de frente, como a `tela` do fliperama). Vai num nó próprio: só ele tem a camada de
+    coordenadas, e `exportar(..., uv=True)` a grava."""
+    w, h = larg / 2, alto / 2
+    q = malha('tela', [(-w, 0, -h), (w, 0, -h), (w, 0, h), (-w, 0, h)], [(0, 1, 2, 3)], m, cima=False)
+    q.data.update()
+    if q.data.polygons[0].normal.y > 0:
+        q.data.polygons[0].flip()
+    uv = q.data.uv_layers.new(name='UVMap').data
+    for li, lp in enumerate(q.data.loops):
+        v = q.data.vertices[lp.vertex_index].co
+        uv[li].uv = ((v.x + w) / (2 * w), (v.z + h) / (2 * h))
+    return q
+
+
+def exportar(pid, nos, ancoras=(), clipes_=None, colisores=(), porto=None, uv=False):
     """Grava `SAIDA_ILHAS/pid.glb`: um nó por chave de `nos` ({nome: objs} ou {nome: (objs, pivô)}),
     as âncoras (nós vazios), os nós de colisão `col-*` (cada um com o seu TRS, sem juntar; ajudantes
     `col_caixa` e `col_cilindro` do `lib_mundo`, `col_terreno` e `col_entre` aqui) e, com `clipes_`,
     as animações.
 
     `clipes_(juntos)` recebe {nome do nó: objeto} e devolve {clipe: {objeto: {prop: chaves}}}. `porto` (os
-    dados do ponto de embarque do barco, `lib_cais`) vai para o relatório."""
+    dados do ponto de embarque do barco, `lib_cais`) vai para o relatório. `uv=True` grava as coordenadas
+    de textura (só os nós que têm a camada, como a `tela` de `tela_com_uv`)."""
     juntos = {}
     for nome, val in nos.items():
         objs, pivo = (val if isinstance(val, tuple) else (val, None))
@@ -303,7 +324,7 @@ def exportar(pid, nos, ancoras=(), clipes_=None, colisores=(), porto=None):
         o.select_set(True)
     path = os.path.join(SAIDA_ILHAS, f'{pid}.glb')
     kw = dict(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True,
-              export_texcoords=False, export_extras=False)
+              export_texcoords=uv, export_extras=False)
     if chaves:
         bpy.context.scene.frame_current = -50
         kw.update(export_animations=True, export_animation_mode='NLA_TRACKS', export_anim_slide_to_zero=True,

@@ -15,6 +15,10 @@ export const INSUMOS = {
   cacau: { preco: 3, fonte: 'moradores' },
   'leite-de-coco': { preco: 3, fonte: 'moradores' },
   'polpa-de-acai': { preco: 3, fonte: 'moradores' },
+  // O peixe com coco da Maré (§6.28, A6): a cesta dela dá de graça; a feira também vende.
+  peixe: { preco: 3, fonte: 'moradores' },
+  coco: { preco: 3, fonte: 'moradores' },
+  limao: { preco: 2, fonte: 'moradores' },
   // As iscas da pesca (30/10/2026): a de graça aparece na horta e no píer quando a mochila não tem.
   'isca-minhoca': { preco: 2, fonte: 'praia' },
   'isca-pena': { preco: 2, fonte: 'praia' },

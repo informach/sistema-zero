@@ -1,7 +1,7 @@
 import { PEDIDOS_DO_ANEL } from '@sistemazero/arquipelago-contracts'
 import type { Aniversario, Gostos, PedidoDeMorador } from './moradores'
 
-export const MORADORES_COM_NOVA_AMIZADE = ['mare', 'floco', 'jade', 'irie'] as const
+export const MORADORES_COM_NOVA_AMIZADE = ['mare', 'floco', 'jade', 'irie', 'nico'] as const
 export type MoradorDoAnel = (typeof MORADORES_COM_NOVA_AMIZADE)[number]
 
 interface VidaDoMorador {
@@ -91,6 +91,23 @@ export const VIDA_NO_ANEL = {
       texto: 'Deixei a faísca para quem vier depois.',
       entrega: 'Achei uma página da Íris junto dos fios. Ela agora faz parte do seu diário.',
     },
+  },
+  // O caranguejo Nico, carteiro da praia da sua ilha (§6.28, A19). Aniversário no Dia do Carteiro.
+  nico: {
+    nome: 'Nico',
+    aniversario: { mes: 1, dia: 25 },
+    gostos: { alface: 'gosta', salada: 'gosta' },
+    convite: 'Nico gosta de alface e salada. Escolha um presente da mochila.',
+    pedidos: PEDIDOS_DO_ANEL.nico,
+    amizade: [
+      'Cada carta chega no seu tempo.',
+      'Hoje a areia está boa para andar de lado.',
+      'A Íris escrevia cartas para quem ainda ia chegar.',
+      'Uma carta curta também carrega muita coisa.',
+      'Com você, o correio da praia voltou a ter cor.',
+      'Se um dia faltar carta, a gente escreve uma nova.',
+    ],
+    pagina: null,
   },
 } as const satisfies Readonly<Record<MoradorDoAnel, VidaDoMorador>>
 

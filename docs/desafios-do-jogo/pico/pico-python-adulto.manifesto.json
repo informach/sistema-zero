@@ -7,10 +7,10 @@
       "slug": "pico-fase-de-plataforma-python-adulto",
       "publico": "adulto",
       "ilha": "pico",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
-      "publicar": false,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Plataforma com fases como dados",
@@ -237,9 +237,9 @@
           "texto": "Acrescente uma terceira fase jogável a FASES (início, cristal, saída e plataformas alcançáveis)."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

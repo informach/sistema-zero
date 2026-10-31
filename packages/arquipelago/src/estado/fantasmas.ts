@@ -3,6 +3,7 @@ import {
   type IrmaoParaOJogo,
   IrmaosParaOJogoSchema,
   LeituraDoFantasmaSchema,
+  melhorTempoDoPercurso,
   type PercursoId,
   type Plataforma,
   SalvamentoGuardadoSchema,
@@ -89,7 +90,7 @@ export function criarLojaDosFantasmas(
         controller.signal.throwIfAborted()
         if (r.status !== 200) throw new Error(`Recorde indisponível (${r.status}).`)
         const salvo = SalvamentoGuardadoSchema.parse(r.corpo)
-        const tempo = salvo.salvamento?.percursos[f.percurso]?.melhorTempoMs
+        const tempo = melhorTempoDoPercurso(salvo.salvamento?.percursos, f.percurso)
         if (tempo !== undefined && tempo < f.tempoMs) {
           await a.remover(f.percurso, f.tempoMs)
           continue
@@ -285,7 +286,8 @@ export function criarLojaDosFantasmas(
       if (capturando !== percurso) return
       capturando = null
       const f = gravador.terminar(percurso, tempoMs, p.x, p.y, p.z, p.direcao)
-      if (!f || loja.getState().salvamento.percursos[percurso]?.melhorTempoMs !== tempoMs) return
+      if (!f || melhorTempoDoPercurso(loja.getState().salvamento.percursos, percurso) !== tempoMs)
+        return
       const g = geracao
       return arquivo()
         .then(async (a) => {

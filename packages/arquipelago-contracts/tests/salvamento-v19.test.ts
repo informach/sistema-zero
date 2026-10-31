@@ -9,9 +9,12 @@ import {
   MAPAS_DAS_ILHAS,
 } from '../src/exploracao'
 import {
+  compactarResultado,
   criarSalvamentoInicial,
   migrarDaV18,
   migrarDaV19,
+  migrarDaV20,
+  migrarDaV21,
   migrarSalvamento,
   PERCURSOS,
   SalvamentoV18Schema,
@@ -34,7 +37,9 @@ test('V18 continua estrita e migra sem presumir chave, segredo, mapa ou companhi
     mapa: {},
     companhia: 'quarto',
   })
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV19(migrarDaV18(antiga)))
+  expect(migrarSalvamento(antiga)).toEqual(
+    migrarDaV21(migrarDaV20(migrarDaV19(migrarDaV18(antiga)))),
+  )
   expect(antiga).toEqual(antes)
   for (const campo of [{ chaves: 0 }, { segredos: 0 }, { mapa: {} }, { companhia: 'quarto' }])
     expect(SalvamentoV18Schema.safeParse({ ...antiga, ...campo }).success).toBe(false)
@@ -48,7 +53,8 @@ test('os campos novos da V19 atravessam JSON', () => {
   const s = criarSalvamentoInicial(AGORA)
   const cheio = {
     ...s,
-    percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),
+    // Na V22 os percursos vão em tupla (`compactarResultado`).
+    percursos: Object.fromEntries(PERCURSOS.map((p) => [p, compactarResultado(percurso)])),
     chaves: 15,
     segredos: BIT_DA_SEGREDO_MAXIMO * 2 - 1,
     mapa: Object.fromEntries(MAPAS_DAS_ILHAS.map((id) => [id, '0123456789abcdef'])),
@@ -72,7 +78,7 @@ test('valores fora da régua são recusados', () => {
   ]
   for (const ruim of ruins)
     expect(SalvamentoV20Schema.safeParse({ ...s, ...ruim }).success).toBe(false)
-  expect(migrarSalvamento({ ...s, versao: 21 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 23 })).toBeNull()
 })
 
 test('cada cômodo tem um bit fixo e o mapa junta as células das duas sessões', () => {

@@ -7,10 +7,10 @@
       "slug": "pico-fase-de-plataforma-python",
       "publico": "kids",
       "ilha": "pico",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
-      "publicar": false,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Subida das fases: o mapa é dado",
@@ -237,9 +237,9 @@
           "texto": "Acrescente uma terceira fase à lista FASES, com J, C, S e plataformas que levem até a saída."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

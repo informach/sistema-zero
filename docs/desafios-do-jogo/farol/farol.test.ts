@@ -14,6 +14,7 @@ import { criarManifesto } from './gerar-manifesto'
 const manifesto = criarManifesto()
 const [desafio] = manifesto.desafios
 if (!desafio) throw new Error('sem desafio')
+const GABARITO = desafio.conteudo.gabarito
 const checks = desafio.conteudo.objetivos as SectionJavaScriptProjectCheck[]
 const raiz = new URL('../../aulas-interativas/', import.meta.url)
 const blocosDoFaisca = new Set(
@@ -80,8 +81,10 @@ test('outra ideia, com outros nomes e desenhos, também cumpre: nada de resposta
 })
 
 /** O gabarito com uma mudança na IR, como a criança faria nos blocos. */
-function variante(mudar: (ir: { behavior: { events: any[]; loops: any[] } }) => void): Project {
-  const projeto = structuredClone(desafio.conteudo.gabarito) as Project
+function variante(
+  mudar: (ir: { behavior: { start: any[]; events: any[]; loops: any[] } }) => void,
+): Project {
+  const projeto = structuredClone(GABARITO) as Project
   mudar(projeto.ir as never)
   expect(SZIRV2Schema.safeParse(projeto.ir).success).toBe(true)
   return { ...projeto, blocksState: buildWorkspaceStateFromIR(projeto.ir as never) }
@@ -112,6 +115,37 @@ test('a reprodução da revisão: tudo dentro de "Se falso" não cumpre nada al�
     recomeca: false,
     some: false,
   })
+})
+
+test('N3: tudo dentro de "Se podeAgir", com podeAgir sempre falso, também não cumpre nada', () => {
+  const pode = { type: 'var', name: 'podeAgir' }
+  const projeto = variante((ir) => {
+    ir.behavior.start.unshift({ type: 'var', name: 'podeAgir', value: falso })
+    for (const evento of ir.behavior.events) evento.body = [se(pode, evento.body)]
+  })
+  expect(passa(projeto)).toEqual({
+    encontro: false,
+    lembra: false,
+    decide: false,
+    recomeca: false,
+    some: false,
+  })
+})
+
+test('N3: a única atribuição de podeAgir está em código morto, e continua sem cumprir nada', () => {
+  const pode = { type: 'var', name: 'podeAgir' }
+  const projeto = variante((ir) => {
+    ir.behavior.start.unshift({ type: 'var', name: 'podeAgir', value: falso })
+    for (const evento of ir.behavior.events) evento.body = [se(pode, evento.body)]
+    ir.behavior.events.push({
+      type: 'g2d:onKey',
+      key: 'p',
+      body: [
+        se(falso, [{ type: 'assign', name: 'podeAgir', value: { type: 'bool', value: true } }]),
+      ],
+    })
+  })
+  expect(Object.values(passa(projeto)).some(Boolean)).toBe(false)
 })
 
 test('encontro sem efeito: o corpo vazio ou morto não conta', () => {

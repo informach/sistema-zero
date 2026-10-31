@@ -20,6 +20,19 @@ describe('situacaoDoDesafio', () => {
       'ilha-fechada',
     )
   })
+  test('A3: sem o curso-base, a linguagem do posto espera; depois da ilha e antes dos blocos', () => {
+    expect(
+      situacaoDoDesafio({ ...base, blocos: new Set(), faltaCurso: true, ilhaAberta: false })
+        .situacao,
+    ).toBe('ilha-fechada')
+    expect(situacaoDoDesafio({ ...base, blocos: new Set(), faltaCurso: true })).toEqual({
+      situacao: 'falta-curso',
+      faltam: [],
+    })
+    expect(
+      situacaoDoDesafio({ ...base, blocos: 'todos', faltaCurso: true, concluido: true }).situacao,
+    ).toBe('concluido')
+  })
   test('faltam só os blocos que a pessoa não tem; "todos" libera', () => {
     expect(situacaoDoDesafio({ ...base, blocos: new Set(['a']) })).toEqual({
       situacao: 'faltam-blocos',

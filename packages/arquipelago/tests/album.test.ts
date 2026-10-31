@@ -123,10 +123,7 @@ describe('as contas de cada seção', () => {
     const s: Salvamento = {
       ...inicial(),
       percursos: {
-        'bosque-copas': {
-          estrelas: { chegada: true, tempo: false, vagalumes: true },
-          melhorTempoMs: 62_300,
-        },
+        'bosque-copas': [5, 62_300] as [number, number],
       },
     }
     const p = percursosDoAlbum(s)
@@ -193,7 +190,7 @@ describe('as contas de cada seção', () => {
   test('Lumis: as 14 espécies, as presas com quantos e as outras como silhueta', () => {
     const s: Salvamento = { ...inicial(), lumis: { pitanga: 3, brigadeiro: 1 } }
     const l = lumisDoAlbum(s)
-    expect(l.itens.map((i) => i.id)).toEqual([...LUMIS])
+    expect(l.itens.map((i) => i.id)).toEqual(LUMIS.filter((id) => !id.endsWith('-de-luz')))
     expect(l.conta).toEqual({ tem: 2, total: 14, faltam: 12 })
     expect(l.itens.find((i) => i.id === 'pitanga')).toEqual({
       id: 'pitanga',
@@ -201,6 +198,7 @@ describe('as contas de cada seção', () => {
       nome: 'Pitanga',
       ilha: 'Bosque dos Bichos',
       raro: false,
+      luz: false,
       cor: '#f2401f',
       quantos: 3,
     })
@@ -210,15 +208,17 @@ describe('as contas de cada seção', () => {
       estado: 'nao-encontrado',
       ilha: 'Ilha das Nuvens',
       raro: true,
+      luz: false,
     })
     // A silhueta não conta o nome da espécie antes de ela achar.
     expect(naoAchado && 'nome' in naoAchado).toBe(false)
   })
 
-  test('duas espécies por ilha, uma comum e uma rara', () => {
+  test('duas espécies por ilha, uma comum e uma rara (mais o Lumi de luz do baú)', () => {
     const porIlha = new Map<string, boolean[]>()
     for (const id of LUMIS) {
       const e = ESPECIES_DE_LUMI[id]
+      if (e.luz) continue
       porIlha.set(e.ilha, [...(porIlha.get(e.ilha) ?? []), e.raro])
     }
     expect(porIlha.size).toBe(7)
@@ -353,4 +353,18 @@ test('os textos do álbum e do modo foto não usam travessão nem exclamação',
     expect(t).not.toContain('—')
     expect(t).not.toContain('!')
   }
+})
+
+describe('os peixes do Recife no álbum (§6.28, A40)', () => {
+  test('um peixe por coral replantado, os mesmos do aquário', async () => {
+    const { peixesDoRecifeDoAlbum } = await import('../src/sistemas/album')
+    const { criarSalvamentoInicial: criar } = await import('@sistemazero/arquipelago-contracts')
+    const s = criar(new Date('2026-10-31T12:00:00Z'))
+    expect(peixesDoRecifeDoAlbum(s).conta).toEqual({ tem: 0, total: 4, faltam: 4 })
+    const comDois = { ...s, recife: { ...s.recife, corais: 0b0101 } }
+    const r = peixesDoRecifeDoAlbum(comDois)
+    expect(r.conta).toEqual({ tem: 2, total: 4, faltam: 2 })
+    expect(r.itens.map((p) => p.encontrado)).toEqual([true, false, true, false])
+    expect(r.itens[1]?.dica).toBe('Replante o coral cérebro na lagoa do Recife.')
+  })
 })

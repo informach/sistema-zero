@@ -1,11 +1,14 @@
 import {
   APARENCIAS_GUARDADAS_MAXIMO,
   BIT_DA_SEGREDO_MAXIMO,
+  CANTEIROS_DO_CEU,
   type CartaoDaRotina,
   criarSalvamentoInicial,
   DIAS_CUIDADOS_MAXIMO,
   DIAS_PARA_CHOCAR,
   type ExposicaoDoFarol,
+  FLORADA_MAXIMA,
+  FOSSEIS_DO_VALE,
   ID_DA_APARENCIA_MAXIMO,
   LIMITES_DA_ROTINA,
   LUMIS,
@@ -18,9 +21,13 @@ import {
   OBJETOS_DA_CASA,
   type Obra,
   PERCURSOS,
+  type PlantaDoCeu,
   POSTOS_DA_VILA,
+  type ResultadoCompacto,
+  SEMENTES_DO_CEU,
   VAGAS_DA_GALERIA_DO_FAROL,
 } from '../src'
+import { ehLumiDeLuz } from '../src/lumis-de-luz'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 
@@ -80,10 +87,8 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
   }))
   const projeto = { ganhoEm: AGORA.toISOString(), aparencia: aparencias[0], aparencias }
   const turno = { pagoEm: '2026-10-29', melhor: 3, vezes: 9999 }
-  const percurso = {
-    estrelas: { chegada: true, tempo: true, vagalumes: true },
-    melhorTempoMs: 3_599_999,
-  }
+  // V22: o percurso em tupla, com as três estrelas e o maior tempo que se guarda.
+  const percurso: ResultadoCompacto = [7, 3_599_999]
   // O filhote do Vale mais pesado (V15): nome de 16 letras, as três datas e dois dígitos nos dias.
   const filhote = {
     ovo: DIAS_PARA_CHOCAR,
@@ -110,13 +115,28 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     nuvens: { constelacoes: 63 },
     clima: 'nublado' as const,
     // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
-    vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'], filhote },
+    vale: {
+      pegadas: false,
+      escavacao: 3,
+      ninhos: ['ninho-1', 'ninho-2', 'ninho-3'],
+      filhote,
+      // V22: todos os fósseis do museu (dois dígitos).
+      fosseis: 2 ** FOSSEIS_DO_VALE.length - 1,
+    },
+    // V22: a florada no teto e os seis canteiros do céu plantados, cada um com o minuto de sete
+    // dígitos.
+    florada: FLORADA_MAXIMA,
+    ceu: Array.from(
+      { length: CANTEIROS_DO_CEU },
+      (_, i): PlantaDoCeu => [i + 1, SEMENTES_DO_CEU.length - 1, 9_999_999],
+    ),
     construcao: { casa: casaCheia(), cabanas: { bosque: cheia() } },
     farol: { pagina: true, concluido: true, galeria },
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
     percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),
-    lumis: Object.fromEntries(LUMIS.map((id) => [id, 999])),
+    // Os Lumis de luz não têm contador (vêm dos baús, `segredos`).
+    lumis: Object.fromEntries(LUMIS.filter((id) => !ehLumiDeLuz(id)).map((id) => [id, 999])),
     // V19 no teto: todas as visitas, chaves, segredos e células do mapa; "adotado" pesa mais.
     ilhasVisitadas: 255,
     chaves: 15,
@@ -133,7 +153,9 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
       ids.map((id) => [id, rotinaPesada(Math.min(cada, L.cartoesPorRotina))]),
     )
   }
-  return Array.from({ length: LUMIS.length - 1 }, (_, i) => ({
+  // Toda rotina tem pelo menos dois cartões (um QUANDO e uma ação): até 16 rotinas.
+  const maisRotinas = Math.min(LUMIS.length, Math.floor(L.cartoesNasRotinas / 2))
+  return Array.from({ length: maisRotinas - 1 }, (_, i) => ({
     ...base,
     rotinas: porRotina(i + 2),
     recife: { bau: false, pagina: false, tesouro: false, corais: 15 },

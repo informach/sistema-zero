@@ -83,6 +83,10 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   domingo em São Paulo, tudo ou nada, `WEEKLY_LIMIT`), separado do teto diário dos cursos. A conta
   que levou ao número está em `docs/arquipelago-regras.md`. Teste: `tests/db/arquipelago-coins.test.ts`
   (`ARQUIPELAGO_COINS_TEST_DATABASE_URL`, banco local `kids_journey_*`).
+- **Roupas do jogo** (31/10/2026, §6.28 A21): `POST /members/internal/arquipelago/avatar/pecas` na
+  mesma porta e token das moedas. Concede peças PAGAS do catálogo do avatar no `avatar_inventory`
+  (idempotente pela chave única), confere o dono como nas moedas, nunca cobra. Quem decide o que foi
+  conquistado é o serviço do jogo. Teste: `tests/db/arquipelago-avatar.test.ts` (mesma variável).
 - ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
   antes de entrar no `.railway/variables.ts`.
 - `GET /jogador?userId&accountId&audience` (`ArquipelagoReadsService.jogador`): posição na jornada

@@ -23,6 +23,7 @@ import {
   falaDoLumiNovo,
   ID_DA_LANTERNA,
   type IlhaDosLumis,
+  LUZ_DA_FAMILIA,
   lanternaDoZappy,
   lumisNaIlha,
   receberLanterna,
@@ -41,9 +42,13 @@ function segueAsRegras(t: string) {
 }
 
 describe('uma família de Lumis em cada ilha', () => {
-  test('as sete famílias cobrem as 14 espécies, cada uma na ilha dela', () => {
+  test('as sete famílias cobrem as 21 espécies (com o Lumi de luz), cada uma na ilha dela', () => {
     expect(ILHAS).toHaveLength(7)
-    const todas = ILHAS.flatMap((i) => [FAMILIAS_DOS_LUMIS[i].comum, FAMILIAS_DOS_LUMIS[i].raro])
+    const todas = ILHAS.flatMap((i) => [
+      FAMILIAS_DOS_LUMIS[i].comum,
+      FAMILIAS_DOS_LUMIS[i].raro,
+      LUZ_DA_FAMILIA[i],
+    ])
     expect(new Set(todas)).toEqual(new Set(LUMIS))
     for (const i of ILHAS) {
       const f = FAMILIAS_DOS_LUMIS[i]

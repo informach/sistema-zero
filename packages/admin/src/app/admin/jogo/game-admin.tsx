@@ -14,6 +14,7 @@ import {
   type IlhaId,
   ilha,
   ManifestoDeDesafiosSchema,
+  RECEITAS,
   type ResumoDoDesafio,
   TIPOS_DE_DESAFIO,
 } from '@sistemazero/arquipelago-contracts'
@@ -749,6 +750,27 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
                       })
                     }
                   />
+                </label>
+                <label className="text-sm">
+                  Receita do extra (opcional)
+                  <Select
+                    value={draft.conteudo.recompensa.receitaDoExtra ?? ''}
+                    onChange={(e) =>
+                      patch({
+                        recompensa: {
+                          ...draft.conteudo.recompensa,
+                          receitaDoExtra: e.target.value || undefined,
+                        },
+                      })
+                    }
+                  >
+                    <option value="">Sem receita</option>
+                    {RECEITAS.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.nome}
+                      </option>
+                    ))}
+                  </Select>
                 </label>
               </div>
             </fieldset>

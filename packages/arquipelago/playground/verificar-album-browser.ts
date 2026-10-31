@@ -155,7 +155,8 @@ try {
     const album = pagina.getByRole('dialog', { name: 'Álbum de coleções' })
     await album.waitFor()
     const titulos = await album.locator('h3').allTextContents()
-    assert.equal(titulos.length, 12, `seções: ${titulos.join(' | ')}`)
+    // 13 com os peixes do Recife (§6.28, A40).
+    assert.equal(titulos.length, 13, `seções: ${titulos.join(' | ')}`)
     for (const t of caso.titulos)
       assert(titulos.includes(t), `falta "${t}" em ${titulos.join(' | ')}`)
     assert(titulos.some((t) => t.startsWith('Receitas: ')))
@@ -279,7 +280,7 @@ try {
     if (caso.toque) assert.equal(await pagina.locator('.arq-zona-joystick').count(), 1)
     assert.deepEqual(erros, [])
     console.log(
-      `PASS ${caso.nome}: álbum com as doze seções, modo foto sem HUD, PNG de ${png.length} bytes, Clube ${caso.clube ? 'ligado e foto na moderação' : 'desligado sem botão'}, volta do HUD`,
+      `PASS ${caso.nome}: álbum com as treze seções, modo foto sem HUD, PNG de ${png.length} bytes, Clube ${caso.clube ? 'ligado e foto na moderação' : 'desligado sem botão'}, volta do HUD`,
     )
     await contexto.close()
   }

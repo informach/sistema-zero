@@ -42,9 +42,11 @@ const nuvens = ILHAS.find((i) => i.id === 'nuvens')
 if (!nuvens) throw new Error('Sem as Nuvens no contrato')
 const PE = CORPO.doCentroAoPe + CORPO.folga
 /** Em pé a oeste do canteiro (−x), virado para ele. */
+// Por fora da horta (ao norte da fila de cima, ao sul da de baixo): a oeste ficam o cata-vento e a
+// latinha de minhocas de graça, que ganhariam o botão. Daqui o canteiro é o mais perto de tudo.
 const juntoDo = (i: number): P => {
   const c = posicaoDoCanteiro(i)
-  return { x: c.x - 1.3, y: ALTURA_DA_TERRA, z: c.z }
+  return { x: c.x + 0.5, y: ALTURA_DA_TERRA, z: c.z + (i < 3 ? -1.2 : 1.2) }
 }
 
 const server = spawn('bun', ['playground/servidor.ts'], {
@@ -198,7 +200,8 @@ try {
     await page.locator('.arq-relogio').filter({ hasText: 'Chuva' }).waitFor()
     // O print da chuva de um lugar aberto, a leste da horta, olhando para o mar.
     const aberto = posicaoDoCanteiro(2)
-    await dePe({ x: aberto.x + 3, y: ALTURA_DA_TERRA, z: aberto.z })
+    // Ao norte da bancada da cozinha (15; 14), que fica bem a leste da horta.
+    await dePe({ x: aberto.x + 3, y: ALTURA_DA_TERRA, z: aberto.z - 3 })
     await page.waitForTimeout(800)
     await page.screenshot({ scale: 'css', path: path.join(prints, `clima-${tipo}-chuva.png`) })
     console.log(`${tipo}: a chuva caiu e regou o canteiro plantado`)

@@ -5,7 +5,7 @@ import {
   prepararEntregaDoPedido,
   SalvamentoSchema,
 } from '@sistemazero/arquipelago-contracts'
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, eq, ne } from 'drizzle-orm'
 import { CompraPendenteError, type DonoDaCompra } from '../../../domain/insumos.port'
 import {
   type PedidoEntregue,
@@ -36,6 +36,7 @@ function ler(r: Linha, dono: DonoDaCompra): PedidoEntregue {
     }),
     pagamentoId: r.pagamentoId,
     pagamento: r.pagamento,
+    tetoSemana: r.tetoSemana,
     moedas: r.moedas,
   }
 }
@@ -157,17 +158,42 @@ export class DrizzleRepositorioDosPedidos implements RepositorioDosPedidos {
   async confirmarPagamento(
     dono: DonoDaCompra,
     chave: string,
-    creditar: Parameters<RepositorioDosPedidos['confirmarPagamento']>[2],
+    semana: string,
+    creditar: Parameters<RepositorioDosPedidos['confirmarPagamento']>[3],
   ) {
     await this.db.transaction(async (tx) => {
       const [linha] = await tx.select().from(pedidos).where(eq(pedidos.chave, chave)).for('update')
       if (!linha) throw new PedidoRecusadoError('incompativel')
       const pedido = ler(linha, dono)
-      if (pedido.pagamento !== 'pendente') return
+      const espera =
+        pedido.pagamento === 'pendente' ||
+        (pedido.pagamento === 'teto' && pedido.tetoSemana !== null && pedido.tetoSemana < semana)
+      if (!espera) return
       // Prazo S2S de cinco segundos. Só a linha deste crédito fica retida, não o save.
       // Serializar evita respostas de teto/crédito fora de ordem na virada semanal.
       const pagamento = await creditar(pedido)
-      await tx.update(pedidos).set({ pagamento }).where(eq(pedidos.chave, chave))
+      await tx
+        .update(pedidos)
+        .set({ pagamento, tetoSemana: pagamento === 'teto' ? semana : null })
+        .where(eq(pedidos.chave, chave))
     })
+  }
+  async esperandoOTeto(dono: DonoDaCompra, semana: string, limite: number) {
+    const linhas = await this.db
+      .select()
+      .from(pedidos)
+      .where(
+        and(
+          eq(pedidos.jogadorId, dono.jogadorId),
+          eq(pedidos.publico, dono.publico),
+          eq(pedidos.pagamento, 'teto'),
+          ne(pedidos.tetoSemana, semana),
+        ),
+      )
+      .orderBy(asc(pedidos.entregueEm), asc(pedidos.chave))
+      .limit(limite)
+    return linhas
+      .filter((r) => r.tetoSemana !== null && r.tetoSemana < semana)
+      .map((r) => ler(r, dono))
   }
 }

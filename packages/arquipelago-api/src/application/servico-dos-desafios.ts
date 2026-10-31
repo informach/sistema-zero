@@ -1,5 +1,6 @@
 import {
   aprendaIssoEm,
+  aprendaODesafio,
   type ConteudoDoDesafio,
   type CoresConquistadas,
   type DesafioAberto,
@@ -9,6 +10,8 @@ import {
   type IlhaId,
   ilha,
   ilhaAberta,
+  type LinguagemDoDesafio,
+  linguagemDoProjeto,
   migrarConteudoDoDesafio,
   type PedirAmbienteDoDesafio,
   POSICOES_DA_JORNADA,
@@ -103,11 +106,13 @@ export class ServicoDosDesafios {
         const conteudo = conteudoDe(d, this.deps.logger)
         if (!conteudo) return []
         const feito = feitos.get(d.id)
+        const linguagem = linguagemDoProjeto(conteudo.projetoInicial)
         const { situacao, faltam } = situacaoDoDesafio({
           concluido: feito !== undefined,
           ilhaAberta: ilhaAberta(d.metadados.ilha, regua.posicao),
           blocosExigidos: d.publicacao.blocosExigidos,
           blocos: regua.blocos,
+          faltaCurso: faltaCursoBase(linguagem, d.metadados.ilha, regua.cursosBase),
         })
         return [
           {
@@ -124,8 +129,17 @@ export class ServicoDosDesafios {
               rotulo: rotulos.get(bloco) ?? null,
               cursos: aprendaIssoEm(bloco, curriculo),
             })),
+            aprenda: aprendaODesafio(
+              {
+                linguagem,
+                posto: postoDaIlha(d.metadados.ilha),
+                blocos: d.publicacao.blocosExigidos,
+              },
+              curriculo,
+            ),
             recompensa: conteudo.recompensa,
             recompensaVista: feito?.recompensaVistaEm != null,
+            extraFeito: feito?.extraConcluidoEm != null,
           },
         ]
       })
@@ -153,7 +167,7 @@ export class ServicoDosDesafios {
     jogador: Jogador,
     publicados: readonly DesafioPublicado[],
     feitos: ReadonlyMap<string, ConclusaoGuardada>,
-    regua: { posicao: number; blocos: ReadonlySet<string> | 'todos' },
+    regua: Regua,
   ): Promise<DesafiosDoJogador['doDia']> {
     const dia = diaDeSaoPaulo(this.agora())
     const guardado = await this.deps.repo.desafioDoDia(jogador.id, dia)
@@ -171,6 +185,13 @@ export class ServicoDosDesafios {
         ilhaAberta: aberta,
         blocosExigidos: d.publicacao.blocosExigidos,
         blocos: regua.blocos,
+        faltaCurso: faltaCursoBase(
+          linguagemDoProjeto(
+            (d.publicacao.conteudo as { projetoInicial?: unknown } | null)?.projetoInicial,
+          ),
+          d.metadados.ilha,
+          regua.cursosBase,
+        ),
       })
       if (situacao !== 'disponivel') return []
       return [
@@ -301,11 +322,12 @@ export class ServicoDosDesafios {
         projeto: copia,
         agora,
       })
-    await this.deps.repo.guardarTentativa({
+    const medida = await this.deps.repo.guardarTentativa({
       jogadorId: jogador.id,
       desafioId: id,
       revisao: pedido.revisao,
       resultados,
+      dicas: pedido.dicas ?? 0,
       agora,
     })
     const concluidoAgora = passou.principal
@@ -316,6 +338,8 @@ export class ServicoDosDesafios {
           revisao: pedido.revisao,
           moedas: conteudo.recompensa.moedas,
           moedasExtra: conteudo.recompensa.moedasExtra,
+          tentativas: medida.tentativas,
+          dicas: medida.dicas,
           agora,
         })
       : false
@@ -356,13 +380,17 @@ export class ServicoDosDesafios {
     if (!this.deps.leituras.ligadas()) throw new PlataformaIndisponivelError()
   }
 
-  /** Posição na jornada e blocos conquistados; a equipe tem tudo aberto. */
-  private async regua(
-    jogador: Jogador,
-  ): Promise<{ posicao: number; blocos: ReadonlySet<string> | 'todos' }> {
-    if (jogador.equipe) return { posicao: POSICOES_DA_JORNADA, blocos: 'todos' }
+  /** Posição na jornada, blocos e cursos-base conquistados; a equipe tem tudo aberto. */
+  private async regua(jogador: Jogador): Promise<Regua> {
+    if (jogador.equipe)
+      return { posicao: POSICOES_DA_JORNADA, blocos: 'todos', cursosBase: 'todos' }
     const dados = await this.deps.leituras.jogador(jogador)
-    return { posicao: dados.posicao, blocos: new Set(dados.blocos) }
+    return {
+      posicao: dados.posicao,
+      blocos: new Set(dados.blocos),
+      // Members anterior, sem o campo: nenhum curso-base, então a linguagem do posto espera.
+      cursosBase: new Set(dados.cursosBase ?? []),
+    }
   }
 
   private async feito(jogador: Jogador, id: string): Promise<ConclusaoGuardada | undefined> {
@@ -373,7 +401,7 @@ export class ServicoDosDesafios {
   private async exigirDisponivel(
     jogador: Jogador,
     ilha: IlhaId,
-    publicacao: { blocosExigidos: string[] },
+    publicacao: { blocosExigidos: string[]; conteudo?: unknown },
   ): Promise<void> {
     const regua = await this.regua(jogador)
     const { situacao } = situacaoDoDesafio({
@@ -381,8 +409,15 @@ export class ServicoDosDesafios {
       ilhaAberta: ilhaAberta(ilha, regua.posicao),
       blocosExigidos: publicacao.blocosExigidos,
       blocos: regua.blocos,
+      faltaCurso: faltaCursoBase(
+        linguagemDoProjeto(
+          (publicacao.conteudo as { projetoInicial?: unknown } | null)?.projetoInicial,
+        ),
+        ilha,
+        regua.cursosBase,
+      ),
     })
-    if (situacao === 'ilha-fechada' || situacao === 'faltam-blocos')
+    if (situacao === 'ilha-fechada' || situacao === 'falta-curso' || situacao === 'faltam-blocos')
       throw new DesafioBloqueadoError(situacao)
   }
 
@@ -467,6 +502,26 @@ export function posicoesConquistadas(
         ),
     ),
   ].sort((a, b) => a - b)
+}
+
+interface Regua {
+  posicao: number
+  blocos: ReadonlySet<string> | 'todos'
+  cursosBase: ReadonlySet<string> | 'todos'
+}
+
+/** A linguagem do posto pede o curso-base do posto da ilha (A3); blocos seguem só pelos blocos. */
+function faltaCursoBase(
+  linguagem: LinguagemDoDesafio,
+  id: IlhaId,
+  cursosBase: Regua['cursosBase'],
+): boolean {
+  if (linguagem === 'blocos' || cursosBase === 'todos') return false
+  return !cursosBase.has(postoDaIlha(id))
+}
+
+function postoDaIlha(id: IlhaId): string {
+  return ilha(id).posto
 }
 
 function conteudoDe(

@@ -24,7 +24,7 @@ import {
   passoDaCorridaDeBalao,
 } from '../sistemas/corrida-de-balao'
 import { jogoPausado } from '../sistemas/pausa'
-import { PERCURSO_DO_BALAO, vagalumesPegos } from '../sistemas/percurso'
+import { PERCURSO_DO_BALAO, segredoAparece, vagalumesPegos } from '../sistemas/percurso'
 import { paraOMundo, rumoNoMundo } from './bosque'
 import { liberarObjeto } from './carregar-ilha'
 import { Coletavel, type CoresDoColetavel, terminarCorrida } from './corrida-na-ilha'
@@ -202,7 +202,13 @@ export function CorridaDeBalao({ meio, giro }: { meio: Ponto; giro: number }) {
     const c = estado.corrida
     for (let i = 0; i < marcas.current.length; i++) {
       const g = marcas.current[i]
-      if (g) g.visible = c?.situacao === 'correndo' && !c.pegos[i]
+      const f = fitas[i]
+      // A fita escondida (o segredo, A9) só aparece de perto.
+      if (g)
+        g.visible =
+          c?.situacao === 'correndo' &&
+          !c.pegos[i] &&
+          (i !== c.segredo || (f !== undefined && segredoAparece(f, rastro)))
     }
 
     // Só no voo: descer do balão (ou a ilha sair) termina a corrida sem chegar.

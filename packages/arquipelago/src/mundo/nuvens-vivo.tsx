@@ -12,9 +12,11 @@ import { CorridaDeBalao } from './corrida-de-balao'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { Irie } from './irie'
+import { JardimDoCeu } from './jardim-do-ceu'
 import { ALTURA_DAS_NUVENS, giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 import { FOLGA_DA_VOLTA, saltosNoModelo, tamposDosSaltos } from './saltos-das-nuvens'
+import { SegredoNaIlha } from './segredos-dos-movimentos'
 
 /** Os pés a menos disto do chão das Nuvens, pisando, contam como queda dos saltos. */
 const CHAO_DAS_NUVENS = 0.3
@@ -28,7 +30,8 @@ const CORES_DA_FITA: CoresDoColetavel = {
 
 /**
  * As Nuvens (fase4-06): a Iriê, o balão (fase4-09), os saltos entre nuvens, a corrida de balão e
- * o mirante das constelações (fase4-07) só existem com a ilha completa ativa.
+ * o mirante das constelações (fase4-07) só existem com a ilha completa ativa. O jardim do céu
+ * (B6) também.
  */
 export function NuvensVivo({
   ilha,
@@ -74,6 +77,8 @@ export function NuvensVivo({
       <BalaoDasNuvens modelo={preparada.modelo} meio={meio} giro={giro} />
       <CorridaDeBalao meio={meio} giro={giro} />
       <ConstelacoesDasNuvens meio={meio} giro={giro} />
+      <JardimDoCeu modelo={preparada.modelo} meio={meio} giro={giro} />
+      <SegredoNaIlha id="balao" modelo={preparada.modelo} meio={meio} giro={giro} />
       {saltos ? (
         <CorridaNaIlha
           ilhaId={ilha.id}

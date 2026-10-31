@@ -1,6 +1,7 @@
 import type {
   AnaliseDosMembros,
   AulasConcluidasDosMembros,
+  ComprasDosMembros,
   CurriculoDeBlocos,
   JogadorDosMembros,
   JornadaDosMembros,
@@ -31,6 +32,12 @@ export interface PortaDosMembros {
     pergunta: { userId: string; audience: PublicoDosMembros },
     signal?: AbortSignal,
   ): Promise<QuartoDosMembros>
+  /** As compras do jogo somadas entre dois dias de São Paulo (a medição da equipe, A26). */
+  lerCompras(pergunta: {
+    audience: 'kids' | 'adult'
+    de: string
+    ate: string
+  }): Promise<ComprasDosMembros>
   /** A hora das aulas concluídas destas pessoas entre `de` e `ate` (a volta ao curso dos pais). */
   lerAulasConcluidas(
     pergunta: { usuarios: string[]; de: Date; ate: Date },

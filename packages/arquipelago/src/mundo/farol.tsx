@@ -14,7 +14,7 @@ import {
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
-import { podeSubirOFarol } from '../sistemas/final-do-farol'
+import { farolAceso, podeSubirOFarol } from '../sistemas/final-do-farol'
 import { jogoPausado } from '../sistemas/pausa'
 import { PORTA_DO_FINAL } from './alto-do-farol'
 import { COLISORES_DO_FAROL } from './colisao-da-ilha-central'
@@ -31,6 +31,7 @@ import {
   materiaisDe,
   useModelo,
 } from './modelos'
+import { SubidaDoFarol } from './subida-do-farol'
 
 /** Altura do centro da lâmpada no modelo do Blender (`arte/mundo/farol.py`, YL). */
 const ALTURA_DA_LAMPADA = 9.4
@@ -40,14 +41,17 @@ const COMPRIMENTO_DO_FACHO = 26
 const PORTA_ABERTA = -1.75
 const PERTO_DA_PORTA = 3
 
-/** O Farol fica na sua ilha, ao lado da casa. Apagado até a Lenda (posição 8). */
+/** O Farol fica na sua ilha, ao lado da casa. Apagado até o final da Lenda (os fachos). */
 export function Farol() {
   const { loja } = useJogo()
   const mostrarFacho = useFarol(loja, (s) => s.etapa !== 'fachos' && s.etapa !== 'fim')
-  const aceso = useEstado((s) => s.jornada >= 8)
+  const etapa = useFarol(loja, (s) => s.etapa)
+  const concluido = useEstado((s) => s.salvamento.farol.concluido)
+  const aceso = farolAceso(concluido, etapa)
   return (
     <>
       <FinalDoFarol />
+      <SubidaDoFarol />
       <group position={[FAROL.x, ALTURA_DA_TERRA, FAROL.z]}>
         <ComReserva reserva={<FarolDeAntes aceso={aceso} mostrarFacho={mostrarFacho} />}>
           <FarolDoModelo aceso={aceso} mostrarFacho={mostrarFacho} />
@@ -62,6 +66,13 @@ export function Farol() {
  * O farol do Blender. Apagado: as cores desbotam para o cinza e a lanterna fica escura. Aceso:
  * vermelho e branco, a lâmpada e o vidro brilham, a luz alcança longe e os dois fachos giram.
  */
+/** Os colisores da subida por fora da torre (a escada, os deques, os postes, a viga e a lanterna). */
+export function ehDaSubidaDoFarol(nome: string): boolean {
+  return /^col-(cil-poste-subida|deque-subida|escada-reta|viga-subida|cil-lanterna-farol)-/.test(
+    nome,
+  )
+}
+
 function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: boolean }) {
   const { loja, rastro } = useJogo()
   const aparelho = useReducedMotion()
@@ -71,6 +82,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
   const luz = useRef<PointLight>(null)
   const partes = useMemo(() => {
     const corpo = copiarNo(raiz, 'farol', true)
+    const subida = corpo.getObjectByName('subida') ?? null
     const vidro = copiarNo(raiz, 'vidro', true)
     const lampada = copiarNo(raiz, 'lampada', true)
     const porta = copiarNo(raiz, 'porta', true)
@@ -110,13 +122,27 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
       fechada: porta.rotation.y,
       facho,
       // As pedras do pé e os degraus da porta (nós `col-*` do arquivo); a torre é do código.
-      colisores: lerColisores(raiz),
+      subida,
+      todosOsColisores: lerColisores(raiz),
       cores: [...coresOriginais(corpo), ...coresOriginais(lampada), ...coresOriginais(porta)],
       janelas: materiaisDe(corpo, 'vidroJanela'),
       vidros: materiaisDe(vidro),
       lampadas: materiaisDe(lampada, 'lampadaFarol'),
     }
   }, [raiz])
+  // A subida por fora da torre (E04, arte de 31/10/2026) só vale na Lenda, com o percurso dela
+  // (`subida-do-farol.tsx`): antes não aparece nem colide (`ehDaSubidaDoFarol`).
+  const lenda = useEstado((s) => podeSubirOFarol(s.jornada, s.visita !== null))
+  const colisores = useMemo(
+    () =>
+      lenda
+        ? partes.todosOsColisores
+        : partes.todosOsColisores.filter((c) => !ehDaSubidaDoFarol(c.nome)),
+    [lenda, partes],
+  )
+  useEffect(() => {
+    if (partes.subida) partes.subida.visible = lenda
+  }, [lenda, partes])
   useEffect(() => {
     desbotar(partes.cores, aceso ? 0 : 0.92)
     partes.facho.visible = aceso && mostrarFacho
@@ -129,7 +155,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
   useFrame((_, dt) => {
     const s = loja.getState()
     if (!jogoPausado(s) && document.visibilityState === 'visible') {
-      // Com a Lenda aberta, a porta abre quando a criança chega perto (o "Subir o Farol" está ali).
+      // Com a Lenda aberta, a porta abre quando a criança chega perto (o "Subir pela escada de dentro" está ali).
       const perto =
         podeSubirOFarol(s.jornada, s.visita !== null) &&
         Math.hypot(rastro.x - PORTA_DO_FINAL.x, rastro.z - PORTA_DO_FINAL.z) < PERTO_DA_PORTA
@@ -160,7 +186,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
       <primitive object={partes.lampada} />
       <primitive object={partes.porta} />
       <primitive object={partes.facho} />
-      <Colisores lista={partes.colisores} />
+      <Colisores lista={colisores} />
       {aceso ? (
         <pointLight
           ref={luz}

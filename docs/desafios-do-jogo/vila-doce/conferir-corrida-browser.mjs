@@ -13,7 +13,7 @@ const browser = await chromium.launch({
 const resultados = []
 try {
   for (const mobile of [false, true])
-    for (const variacao of ['corrida', 'entregas', 'tempo', 'caixa']) {
+    for (const variacao of ['corrida', 'pulo-alto', 'pombos']) {
       const tela = mobile ? 'celular' : 'computador'
       const context = await browser.newContext({
         viewport: { width: mobile ? 390 : 1280, height: 844 },
@@ -38,102 +38,90 @@ try {
           if (m.type() === 'error') errors.push(m.text())
         })
         await page.goto('https://vila.invalid/')
-        const wait = (field, value) =>
-          page.waitForFunction(
-            ({ scope, field, value }) => {
+        const ler = (field) =>
+          page.evaluate(
+            ({ scope, field }) => {
               const [root, ...path] = field.split('.')
               let current = globalThis[scope]?.get(root)?.v
               for (const key of path) current = current?.[key]
-              return current === value
+              return current
             },
-            { scope, field, value },
+            { scope, field },
+          )
+        const esperar = (field, teste, valor) =>
+          page.waitForFunction(
+            ({ scope, field, teste, valor }) => {
+              const [root, ...path] = field.split('.')
+              let current = globalThis[scope]?.get(root)?.v
+              for (const key of path) current = current?.[key]
+              return teste === 'igual'
+                ? current === valor
+                : teste === 'menor'
+                  ? current < valor
+                  : current >= valor
+            },
+            { scope, field, teste, valor },
             { timeout: 15000 },
           )
-        const input = async (action, key) => {
-          if (mobile) await page.locator(`[data-sz-g2d-action="${action}"]`).tap()
-          else await page.keyboard.press(key)
-        }
+        const canvas = page.locator('canvas[data-sz-game-2d-stage]')
+        // Entrada real: tecla no computador, toque na metade de cima do palco no celular (o
+        // toque em cima é o pulo do dinossauro, e qualquer toque começa e recomeça).
         const cdp = mobile ? await context.newCDPSession(page) : undefined
-        // Entrada real e espera por posição observada; nunca altera o estado do jogo pelo teste.
-        const andar = async (action, key, eixo, alvo, sinal) => {
-          if (cdp) {
-            const box = await page.locator(`[data-sz-g2d-action="${action}"]`).boundingBox()
-            assert(box, 'Controle de toque ausente')
-            await cdp.send('Input.dispatchTouchEvent', {
-              type: 'touchStart',
-              touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }],
-            })
-          } else await page.keyboard.down(key)
-          try {
-            await page.waitForFunction(
-              ({ scope, eixo, alvo, sinal }) => {
-                const estado = globalThis[scope]
-                return (
-                  !estado.get('correndo')?.v ||
-                  (estado.get('entregador')?.v?.[eixo] - alvo) * sinal >= 0
-                )
-              },
-              { scope, eixo, alvo, sinal },
-              { timeout: 5000 },
-            )
-          } finally {
-            if (cdp)
-              await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-            else await page.keyboard.up(key)
+        // O jogo lê as teclas e o dedo a cada quadro: a entrada fica apertada por 80 ms, como a
+        // de uma pessoa (um aperto mais curto que um quadro passa sem ser visto).
+        const tocar = async (key) => {
+          if (!cdp) {
+            await page.keyboard.down(key)
+            await page.waitForTimeout(80)
+            return page.keyboard.up(key)
           }
+          const box = await canvas.boundingBox()
+          assert(box, 'Palco ausente')
+          const ponto = { x: box.x + box.width / 2, y: box.y + box.height * 0.3 }
+          await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [ponto] })
+          await page.waitForTimeout(80)
+          await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
         }
-        await wait('correndo', false)
-        await input('start', 'Enter')
-        await wait('correndo', true)
-        await wait('entregador.x', 48)
-        if (variacao === 'caixa') await andar('down', 'ArrowDown', 'y', 360, 1)
-        else await andar('up', 'ArrowUp', 'y', 165, -1)
-        if (variacao === 'entregas') {
-          await andar('right', 'ArrowRight', 'x', 210, 1)
-          await wait('entregas', 1)
-          await page.waitForTimeout(300)
-          await wait('entregas', 1)
+        await esperar('metros', 'igual', 0)
+        await page.screenshot({ path: join(out, `${variacao}-abertura-${tela}.png`) })
+        await tocar('Enter')
+        // O pulo vem logo depois da largada, antes da primeira pedra chegar (uma tecla na tela
+        // de fim recomeçaria a corrida).
+        await esperar('entregador.y', 'maior', 168)
+        await tocar('Space')
+        await esperar('entregador.y', 'menor', 140)
+        await page.screenshot({ path: join(out, `${variacao}-pulo-${tela}.png`) })
+        // Sem pular de novo, uma pedra alcança o entregador e a corrida acaba.
+        let antes = await ler('metros')
+        for (let i = 0; i < 30; i++) {
+          await page.waitForTimeout(1200)
+          const agora = await ler('metros')
+          if (agora === antes) break
+          antes = agora
         }
-        await andar('right', 'ArrowRight', 'x', 550, 1)
-        if (variacao === 'caixa') await andar('up', 'ArrowUp', 'y', 270, -1)
-        else await andar('down', 'ArrowDown', 'y', 270, 1)
-        await wait('correndo', false)
-        await wait('entregas', variacao === 'entregas' ? 2 : 1)
-        await wait('recado', 'Entrega feita. Os doces chegaram.')
+        await page.screenshot({ path: join(out, `${variacao}-fim-${tela}.png`) })
+        const velocidade = await ler('velocidade')
+        assert(velocidade <= -5 && velocidade >= -9, `velocidade fora do limite: ${velocidade}`)
+        await tocar('Enter')
+        await esperar('metros', 'igual', 0)
         assert(
           await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
           'Rolagem horizontal',
         )
-        const canvas = await page.locator('canvas[data-sz-game-2d-stage]').boundingBox()
+        const box = await canvas.boundingBox()
         assert(
-          canvas &&
-            canvas.width > 200 &&
-            canvas.x >= 0 &&
-            canvas.x + canvas.width <= page.viewportSize().width + 1,
+          box &&
+            box.width > 200 &&
+            box.x >= 0 &&
+            box.x + box.width <= page.viewportSize().width + 1,
         )
-        const print = `${variacao}-${tela}.png`
-        await page.screenshot({ path: join(out, print), fullPage: true })
-        await input('jump', 'Space')
-        await wait('correndo', true)
-        await wait('entregador.x', 48)
-        await wait('entregador.y', 270)
-        await wait('entregas', 0)
-        await wait('recado', '')
-        if (variacao === 'tempo') {
-          await wait('correndo', false)
-          await wait('tempo', 0)
-          await wait('entregas', 0)
-          await input('start', 'Enter')
-          await wait('correndo', true)
-        }
         assert.deepEqual(errors, [])
         resultados.push({
           variacao,
           tela,
-          entrada: mobile ? 'toque real CDP' : 'teclado',
-          entrega: true,
-          reinicioExtra: true,
-          print,
+          entrada: mobile ? 'toque' : 'teclado',
+          metrosAntesDoTombo: antes,
+          velocidadeNoFim: velocidade,
         })
         console.log(`PASS ${variacao} ${tela}`)
       } finally {

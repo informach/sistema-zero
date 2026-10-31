@@ -27,13 +27,14 @@
     "triangulos": 1208
   },
   "casa": {
-    "kb": 352.5,
+    "kb": 353.8,
     "nos": {
       "janelas": 1700,
       "paredes": 936,
       "porta": 596,
       "revestimento": 784,
-      "telhado": 1876,
+      "telhado": 1716,
+      "toldo": 160,
       "varanda": 982
     },
     "triangulos": 6874
@@ -50,19 +51,283 @@
     "triangulos": 662
   },
   "farol": {
-    "colisores": {
-      "col-cil-pedra-farol": 8,
-      "col-degrau-farol": 3
+    "ancoras": {
+      "borda-1-a": {
+        "x": -1.8,
+        "y": 4.6,
+        "z": -2.8
+      },
+      "borda-1-b": {
+        "x": -1.8,
+        "y": 4.6,
+        "z": -1.5
+      },
+      "borda-1-fora": {
+        "x": -2.4,
+        "y": 4.6,
+        "z": -2.15
+      },
+      "borda-2-a": {
+        "x": 0.6,
+        "y": 6.8,
+        "z": -3.1
+      },
+      "borda-2-b": {
+        "x": 0.6,
+        "y": 6.8,
+        "z": -2.0
+      },
+      "borda-2-fora": {
+        "x": 0.0,
+        "y": 6.8,
+        "z": -2.55
+      },
+      "corrente-de-ar": {
+        "x": -4.6,
+        "y": 6.8,
+        "z": -4.6
+      },
+      "corrente-de-ar-topo": {
+        "x": -4.6,
+        "y": 10.5,
+        "z": -4.6
+      },
+      "equilibrio-1-a": {
+        "x": 0.6,
+        "y": 6.8,
+        "z": -4.6
+      },
+      "equilibrio-1-b": {
+        "x": -3.8,
+        "y": 6.8,
+        "z": -4.6
+      },
+      "escada-1-base": {
+        "x": -4.25,
+        "y": -0.04,
+        "z": -2.0
+      },
+      "escada-1-saida": {
+        "x": -3.65,
+        "y": 2.4,
+        "z": -2.0
+      },
+      "escada-1-topo": {
+        "x": -4.25,
+        "y": 2.4,
+        "z": -2.0
+      },
+      "subida-farol-1": {
+        "x": -3.0,
+        "y": 2.4,
+        "z": -2.0
+      },
+      "subida-farol-2": {
+        "x": -0.6,
+        "y": 4.6,
+        "z": -2.4
+      },
+      "subida-farol-3": {
+        "x": 1.4,
+        "y": 6.8,
+        "z": -2.0
+      },
+      "subida-farol-4": {
+        "x": -4.6,
+        "y": 6.8,
+        "z": -4.6
+      },
+      "subida-farol-5": {
+        "x": -1.84,
+        "y": 9.0,
+        "z": -1.84
+      },
+      "subida-farol-6": {
+        "x": -0.95,
+        "y": 9.0,
+        "z": -0.95
+      },
+      "subida-farol-largada": {
+        "x": -5.4,
+        "y": -0.15,
+        "z": -1.0
+      },
+      "vagalume-farol-1": {
+        "x": -4.72,
+        "y": 2.26,
+        "z": -2.0
+      },
+      "vagalume-farol-2": {
+        "x": 0.0,
+        "y": 5.7,
+        "z": -2.6
+      },
+      "vagalume-farol-3": {
+        "x": 1.4,
+        "y": 7.9,
+        "z": -3.6
+      },
+      "vagalume-farol-4": {
+        "x": -1.6,
+        "y": 7.9,
+        "z": -4.6
+      },
+      "vagalume-farol-5": {
+        "x": -4.6,
+        "y": 9.75,
+        "z": -4.6
+      }
     },
-    "kb": 206.8,
+    "colisores": {
+      "col-cil-lanterna-farol": 1,
+      "col-cil-pedra-farol": 8,
+      "col-cil-poste-subida": 6,
+      "col-degrau-farol": 3,
+      "col-deque-subida": 5,
+      "col-escada-reta": 1,
+      "col-viga-subida": 1
+    },
+    "kb": 262.4,
     "nos": {
       "facho": 80,
-      "farol": 5084,
+      "farol": 4946,
       "lampada": 516,
       "porta": 64,
+      "subida": 1124,
       "vidro": 108
     },
-    "triangulos": 5852
+    "triangulos": 6838
+  },
+  "florada": {
+    "ancoras": {
+      "ponto-florada-1": {
+        "x": -8.5,
+        "y": 1.24,
+        "z": -20.5
+      },
+      "ponto-florada-10": {
+        "x": 5.0,
+        "y": 0.78,
+        "z": -16.5
+      },
+      "ponto-florada-11": {
+        "x": -20.5,
+        "y": 0.98,
+        "z": 8.5
+      },
+      "ponto-florada-12": {
+        "x": -7.0,
+        "y": 1.34,
+        "z": -18.0
+      },
+      "ponto-florada-13": {
+        "x": 0.5,
+        "y": 0.96,
+        "z": 15.0
+      },
+      "ponto-florada-14": {
+        "x": -3.5,
+        "y": 1.2,
+        "z": 13.5
+      },
+      "ponto-florada-15": {
+        "x": -6.5,
+        "y": 1.34,
+        "z": 18.0
+      },
+      "ponto-florada-16": {
+        "x": 9.0,
+        "y": 0.8,
+        "z": -16.4
+      },
+      "ponto-florada-17": {
+        "x": -18.0,
+        "y": 1.06,
+        "z": 7.0
+      },
+      "ponto-florada-18": {
+        "x": 18.0,
+        "y": 1.0,
+        "z": 12.5
+      },
+      "ponto-florada-19": {
+        "x": -20.0,
+        "y": 0.8,
+        "z": 11.5
+      },
+      "ponto-florada-2": {
+        "x": -9.0,
+        "y": 1.26,
+        "z": 19.5
+      },
+      "ponto-florada-20": {
+        "x": 4.5,
+        "y": 0.76,
+        "z": -20.0
+      },
+      "ponto-florada-21": {
+        "x": 0.5,
+        "y": 0.98,
+        "z": -16.0
+      },
+      "ponto-florada-22": {
+        "x": -10.0,
+        "y": 1.17,
+        "z": 13.0
+      },
+      "ponto-florada-23": {
+        "x": 9.5,
+        "y": 0.74,
+        "z": -19.0
+      },
+      "ponto-florada-24": {
+        "x": 6.5,
+        "y": 1.0,
+        "z": 17.5
+      },
+      "ponto-florada-3": {
+        "x": 18.0,
+        "y": 0.94,
+        "z": -6.0
+      },
+      "ponto-florada-4": {
+        "x": 17.5,
+        "y": 0.92,
+        "z": -1.0
+      },
+      "ponto-florada-5": {
+        "x": 0.0,
+        "y": 1.0,
+        "z": -21.5
+      },
+      "ponto-florada-6": {
+        "x": -2.0,
+        "y": 1.09,
+        "z": 21.5
+      },
+      "ponto-florada-7": {
+        "x": 22.0,
+        "y": 0.76,
+        "z": 4.0
+      },
+      "ponto-florada-8": {
+        "x": 22.0,
+        "y": 0.68,
+        "z": -1.0
+      },
+      "ponto-florada-9": {
+        "x": -18.5,
+        "y": 1.28,
+        "z": -2.0
+      }
+    },
+    "kb": 68.7,
+    "nos": {
+      "florada-1": 384,
+      "florada-2": 368,
+      "florada-3": 672
+    },
+    "triangulos": 1424
   },
   "horta": {
     "kb": 111.1,
@@ -82,19 +347,24 @@
     "triangulos": 3010
   },
   "ilhas-do-anel": {
-    "kb": 548.2,
+    "kb": 549.2,
     "nos": {
-      "bosque": 4062,
-      "nuvens": 4012,
-      "pico": 1688,
-      "recife": 3064,
-      "vale-dos-dinos": 3014,
-      "vila-doce": 4440
+      "bosque": 2927,
+      "nuvens": 2998,
+      "pico": 2866,
+      "recife": 2874,
+      "vale-dos-dinos": 2884,
+      "vila-doce": 2885
     },
-    "triangulos": 20280
+    "triangulos": 17434
   },
   "pier": {
     "ancoras": {
+      "area-mergulho-gruta": {
+        "x": -2.95,
+        "y": -3.5,
+        "z": 9.85
+      },
       "barco": {
         "x": 2.6,
         "y": 0.0,
@@ -104,20 +374,33 @@
         "x": 0.45,
         "y": 0.61,
         "z": 6.6
+      },
+      "mergulho-gruta": {
+        "x": -1.7,
+        "y": 0.0,
+        "z": 9.2
+      },
+      "segredo-mergulho": {
+        "x": -4.2,
+        "y": -3.35,
+        "z": 10.5
       }
     },
     "colisores": {
       "col-barco": 1,
       "col-cil-estaca": 8,
       "col-cil-poste-lampiao": 1,
-      "col-cil-poste-lanterna": 1
+      "col-cil-poste-lanterna": 1,
+      "col-cil-rocha-gruta": 5,
+      "col-gruta": 7
     },
-    "kb": 150.2,
+    "kb": 169.7,
     "nos": {
       "barquinho-decorativo": 762,
+      "gruta": 328,
       "pier": 2842
     },
-    "triangulos": 3604
+    "triangulos": 3932
   },
   "ponte": {
     "kb": 8.6,
@@ -128,17 +411,40 @@
     },
     "triangulos": 192
   },
+  "segredos-da-ilha": {
+    "ancoras": {
+      "segredo-cipo": {
+        "x": 25.0,
+        "y": 3.5,
+        "z": -4.3
+      }
+    },
+    "colisores": {
+      "col-cil-poste-segredo": 4,
+      "col-cil-tronco-cipo": 1,
+      "col-deque-segredo": 1
+    },
+    "kb": 46.0,
+    "nos": {
+      "arvore-do-cipo": 236,
+      "cipo-1": 268,
+      "copa-cipo": 664,
+      "deque-do-cipo": 272
+    },
+    "triangulos": 1440
+  },
   "terreno": {
     "colisores": {
       "col-cil-moita": 10,
       "col-cil-pedra": 12
     },
-    "kb": 439.0,
+    "kb": 447.0,
     "nos": {
-      "chao": 7680,
-      "enfeites": 5352,
+      "chao": 6240,
+      "chao-do-lote": 1782,
+      "enfeites": 5232,
       "espuma": 720
     },
-    "triangulos": 13752
+    "triangulos": 13974
   }
 }

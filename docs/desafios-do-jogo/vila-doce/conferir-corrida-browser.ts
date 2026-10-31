@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { instrumentCheckScript } from '../../../packages/studio/src/check/instrumentCheckScript'
 import { gameTwoDRuntime } from '../../../packages/studio/src/official-extensions/game-2d/runtime'
 import { buildPreviewDoc } from '../../../packages/studio/src/preview/bootstrap'
-import { montarProjeto, VARIACOES } from './projetos'
+import { montarProjeto } from './projetos'
 
 if (!process.env.SZ_CHECK_CHROMIUM) throw Error('Defina SZ_CHECK_CHROMIUM para a prova local.')
 const studio = fileURLToPath(new URL('../../../packages/studio/', import.meta.url))
@@ -15,12 +15,12 @@ const driver = Bun.resolveSync(
 )
 const out =
   process.env.ARQUIPELAGO_PRINTS ??
-  fileURLToPath(new URL('../../qa/2026-10-30-vila-repertorio/', import.meta.url))
+  fileURLToPath(new URL('../../qa/2026-10-31-revisao-dos-lotes/vila-corrida/', import.meta.url))
 const dir = await mkdtemp(join(tmpdir(), 'sz-vila-corrida-'))
 const base = resolve(tmpdir()) + sep
 if (!resolve(dir).startsWith(base)) throw Error('Diretório de ensaio inválido')
 try {
-  for (const variacao of VARIACOES) {
+  for (const variacao of ['corrida', 'pulo-alto', 'pombos'] as const) {
     const p = montarProjeto(variacao, true)
     await writeFile(
       join(dir, `${variacao}.html`),

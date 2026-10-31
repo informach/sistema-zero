@@ -17,7 +17,8 @@ export function SeasonalAvatarChoices({
   onSelect(part: AvatarPartView): void
 }) {
   const colecao = VESTUARIO_DAS_FESTAS[festa]
-  const sugestoes = colecao.pecas.flatMap((id) => {
+  // As da festa (conquistadas no jogo) primeiro, depois as sugestões de peças que já existiam.
+  const sugestoes = [...colecao.conquista, ...colecao.pecas].flatMap((id) => {
     const part = parts.find((p) => p.id === id)
     return part && AVATAR_PART_INFO[id]?.category === part.category ? [part] : []
   })

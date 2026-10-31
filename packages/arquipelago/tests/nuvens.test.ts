@@ -44,8 +44,10 @@ describe('Nuvens completo', () => {
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('nuvens.glb')))
     const preparada = prepararIlha(cena, nuvens)
     expect(preparada.plataformas).toHaveLength(4)
-    // 50 da ilha e 60 do porto do barco (a torre de escada, o deque e a escadinha do mar).
-    expect(preparada.colisores.length).toBe(110)
+    // 50 da ilha, 60 do porto do barco (a torre de escada, o deque e a escadinha do mar) e 14 de
+    // 31/10/2026: os seis canteiros do jardim do céu, a nuvem do segredo do balão, a torre de nuvem e as
+    // seis caixas do arco-íris dela.
+    expect(preparada.colisores.length).toBe(124)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, nuvens)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()

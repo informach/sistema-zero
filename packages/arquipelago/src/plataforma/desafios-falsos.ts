@@ -29,6 +29,13 @@ const CURSO = {
   posto: 'coder',
 }
 
+const CURSO_DO_EXPLORADOR = {
+  courseId: '00000000-0000-4000-8000-000000000004',
+  titulo: 'Acerte o Alvo',
+  slug: 'acerte-o-alvo',
+  posto: 'explorer',
+}
+
 function desafio(
   id: string,
   quadro: number,
@@ -49,6 +56,7 @@ function desafio(
       situacao === 'faltam-blocos'
         ? [{ bloco: 'sz_js_repeat', rotulo: 'Repetir vezes', cursos: [CURSO] }]
         : [],
+    aprenda: situacao === 'disponivel' && ilha === 'bosque' ? [CURSO] : [],
     recompensa: { cor: ilha !== 'sua-ilha' && ilha !== 'farol', moedas: 20, moedasExtra: 10 },
     recompensaVista: situacao === 'concluido',
   }
@@ -92,6 +100,31 @@ export function criarDesafiosFalsos(
       'disponivel',
       'farol',
     ),
+    // O pedido do Nico no Estúdio (A23): curto, sem cor; feito, a placa dele acende à noite.
+    {
+      ...desafio(
+        '00000000-0000-4000-8000-0000000000f1',
+        0,
+        'A placa da noite',
+        situacao('disponivel'),
+        'sua-ilha',
+      ),
+      tipo: 'pedido-de-morador',
+      quadro: null,
+      ordem: 80,
+      recompensa: { cor: false, moedas: 20, moedasExtra: 10 },
+    },
+    // O sexto quadro do Recife, em Python (A2), espera o curso-base do Explorador (A3).
+    {
+      ...desafio(
+        '00000000-0000-4000-8000-0000000000e6',
+        6,
+        'Mira de bolhas: resgate dos vagalumes',
+        situacao('falta-curso'),
+        'recife',
+      ),
+      aprenda: [CURSO_DO_EXPLORADOR],
+    },
   ]
   if (o.quadrosFeitos) {
     for (let quadro = 4; quadro <= QUADROS_POR_ILHA; quadro++) {

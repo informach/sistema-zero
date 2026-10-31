@@ -8,7 +8,9 @@ import {
   CartasDoJogadorSchema,
   ConflitoDeSalvamentoSchema,
   type CurriculoDeBlocos,
+  compactarResultado,
   criarSalvamentoInicial,
+  MORADOR_NOVO,
   NINHOS_DO_VALE,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
@@ -215,8 +217,8 @@ describe('acesso', () => {
 
 describe('salvamento', () => {
   const salvamento = criarSalvamentoInicial(AGORA)
-  // O vale como era até a V14, antes do filhote.
-  const { filhote: _filhote, ...valeSemFilhote } = salvamento.vale
+  // O vale como era até a V14, antes do filhote (e dos fósseis do museu, da V22).
+  const { filhote: _filhote, fosseis: _fosseis, ...valeSemFilhote } = salvamento.vale
   const {
     nuvens: _nuvens,
     farol: _farol,
@@ -226,6 +228,8 @@ describe('salvamento', () => {
     segredos: _segredos,
     mapa: _mapa,
     companhia: _companhia,
+    florada: _florada,
+    ceu: _ceu,
     ...semProgressoV16
   } = salvamento
   const ateV15 = {
@@ -281,10 +285,17 @@ describe('salvamento', () => {
       escavacao: 0,
       ninhos: [],
       filhote: null,
+      fosseis: 0,
     })
     const atual = {
       ...lido.salvamento!,
-      vale: { pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE], filhote: null },
+      vale: {
+        pegadas: true,
+        escavacao: 3,
+        ninhos: [...NINHOS_DO_VALE],
+        filhote: null,
+        fosseis: 0,
+      },
     }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: lido.revisao,
@@ -311,7 +322,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(20)
+    expect(lido.salvamento?.versao).toBe(22)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -339,7 +350,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(20)
+    expect(lido.salvamento?.versao).toBe(22)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -366,7 +377,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(20)
+    expect(lido.salvamento?.versao).toBe(22)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -411,7 +422,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 20, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 22, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
@@ -544,10 +555,10 @@ describe('salvamento', () => {
       farol: { pagina: true, concluido: true, galeria: [] },
       clima: 'chuva' as const,
       percursos: {
-        'nuvens-saltos': {
+        'nuvens-saltos': compactarResultado({
           estrelas: { chegada: true, tempo: true, vagalumes: true },
           melhorTempoMs: 45000,
-        },
+        }),
       },
     }
     expect(
@@ -579,10 +590,22 @@ describe('salvamento', () => {
       segredos: _segredos,
       mapa: _mapa,
       companhia: _companhia,
+      florada: _florada,
+      ceu: _ceu,
       ...anterior
     } = salvamento
     const { galeria: _galeria, ...farolDaV19 } = anterior.farol
-    const v17 = { ...anterior, farol: farolDaV19, versao: 17 }
+    // Nem os fósseis do museu (da V22).
+    const { fosseis: _fosseis, ...valeDaV17 } = anterior.vale
+    // A V17 não conhece o Nico (morador desde a V21).
+    const { nico: _nico, ...moradoresDaV17 } = anterior.moradores
+    const v17 = {
+      ...anterior,
+      farol: farolDaV19,
+      moradores: moradoresDaV17,
+      vale: valeDaV17,
+      versao: 17,
+    }
     const resposta = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
       revisaoBase: 0,
       salvamento: v17,
@@ -590,7 +613,11 @@ describe('salvamento', () => {
     expect(resposta.status).toBe(200)
     expect(SalvamentoGuardadoSchema.parse(resposta.json).salvamento).toEqual({
       ...v17,
-      versao: 20,
+      versao: 22,
+      moradores: { ...v17.moradores, nico: { ...MORADOR_NOVO } },
+      vale: { ...v17.vale, fosseis: 0 },
+      florada: 0,
+      ceu: [],
       farol: { ...v17.farol, galeria: [] },
       ilhasVisitadas: 0,
       chaves: 0,

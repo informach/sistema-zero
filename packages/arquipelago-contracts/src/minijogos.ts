@@ -21,6 +21,11 @@ export const MinijogoSchema = z.strictObject({
   aprovadoEm: z.iso.datetime(),
   atualizadoEm: z.iso.datetime(),
   capa: z.string().max(CAPA_DO_MINIJOGO_CARACTERES).nullable(),
+  /**
+   * A ilha do desafio que virou o minijogo (B10, 31/10/2026): "o minijogo fica na ilha", na barraca
+   * da feira da Vila Doce ou no quiosque do festival do Pico. Só na lista; sem ela, só o fliperama.
+   */
+  ilha: z.string().min(1).max(40).optional(),
 })
 export const MinijogosSchema = z.strictObject({ minijogos: z.array(MinijogoSchema) })
 export const MinijogoAbertoSchema = MinijogoSchema.extend({ projeto: ProjetoDoMinijogoSchema })

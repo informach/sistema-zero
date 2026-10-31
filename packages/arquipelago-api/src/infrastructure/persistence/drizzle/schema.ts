@@ -1,10 +1,13 @@
 import {
   FANTASMA_MAX_BYTES,
   type Insumo,
+  type ItensDaVenda,
   LIMITES_DO_DESAFIO,
   type MetadadosDoDesafio,
   type MoradorDoPedido,
+  OBRA_ESTENDIDA_MAX_BYTES,
   type PagamentoDaProfissao,
+  type PagamentoDaVenda,
   type PagamentoDoPedido,
   PERCURSOS,
   type PostoDaVila,
@@ -47,6 +50,8 @@ export const minijogos = arquipelagoSchema.table(
     capa: text(),
     aprovadoEm: timestamp({ withTimezone: true }).notNull(),
     atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+    /** Quantas vezes o minijogo foi aprovado e guardado (o primeiro envio conta 1; A26). */
+    envios: integer().notNull().default(1),
   },
   (t) => [
     primaryKey({ columns: [t.jogadorId, t.desafioId] }),
@@ -130,6 +135,35 @@ export const fantasmas = arquipelagoSchema.table(
       'fantasmas_versao_check',
       sql`${t.dados}->>'versao' = '1' and ${t.dados}->>'percurso' = ${t.percurso}`,
     ),
+  ],
+)
+
+/**
+ * A obra estendida (E04 e B14, 31/10/2026): o iglu, o andar de cima e o terreno moldado, num
+ * documento por jogador e público, fora do salvamento, com revisão própria (a trava). Apagar o
+ * salvamento apaga a obra. O teto é o dobro do contrato porque o texto do JSONB põe um espaço
+ * depois de cada `:` e `,`.
+ */
+export const obrasEstendidas = arquipelagoSchema.table(
+  'obras_estendidas',
+  {
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    publico: varchar({ length: 8 }).notNull(),
+    revisao: integer().notNull(),
+    documento: jsonb().notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.publico] }),
+    check('obras_estendidas_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check('obras_estendidas_revisao_check', sql`${t.revisao} >= 1`),
+    check(
+      'obras_estendidas_tamanho_check',
+      sql`octet_length(${t.documento}::text) <= ${sql.raw(String(2 * OBRA_ESTENDIDA_MAX_BYTES))}`,
+    ),
+    check('obras_estendidas_versao_check', sql`${t.documento}->>'versao' = '1'`),
   ],
 )
 
@@ -385,6 +419,10 @@ export const desafioProgresso = arquipelagoSchema.table(
       .references(() => desafios.id, { onDelete: 'cascade' }),
     revisao: integer().notNull(),
     ultimosResultados: jsonb().notNull(),
+    /** Conferências feitas (A26); a primeira já conta 1. */
+    tentativas: integer().notNull().default(0),
+    /** A maior quantidade de dicas abertas numa conferência (A26). */
+    dicas: smallint().notNull().default(0),
     atualizadoEm: timestamp({ withTimezone: true }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.jogadorId, t.desafioId] })],
@@ -416,6 +454,9 @@ export const desafiosConcluidos = arquipelagoSchema.table(
     /** Semana (segunda, em São Paulo, `AAAA-MM-DD`) em que o prêmio bateu no teto semanal. */
     moedasTetoSemana: varchar({ length: 10 }),
     moedasExtraTetoSemana: varchar({ length: 10 }),
+    /** Tentativas e dicas até concluir (A26); `null` nas conclusões de antes da medição. */
+    tentativas: integer(),
+    dicas: smallint(),
   },
   (t) => [
     primaryKey({ columns: [t.jogadorId, t.desafioId] }),
@@ -532,6 +573,8 @@ export const pedidosRemunerados = arquipelagoSchema.table(
     pedido: varchar({ length: 40 }).notNull(),
     moedas: smallint().$type<3 | 4>().notNull(),
     pagamento: varchar({ length: 12 }).$type<PagamentoDoPedido>().notNull(),
+    /** Com `teto`: a semana em que bateu; o crédito volta numa semana seguinte (§6.28, A32). */
+    tetoSemana: date({ mode: 'string' }),
     entregueEm: timestamp({ withTimezone: true }).notNull(),
   },
   (t) => [
@@ -542,7 +585,7 @@ export const pedidosRemunerados = arquipelagoSchema.table(
     check('pedidos_remunerados_publico', sql`${t.publico} in ('kids','adulto')`),
     check(
       'pedidos_remunerados_morador',
-      sql`${t.morador} in ('capi','bento','mare','floco','jade','irie')`,
+      sql`${t.morador} in ('capi','bento','mare','floco','jade','irie','nico')`,
     ),
     check(
       'pedidos_remunerados_valores',
@@ -552,6 +595,58 @@ export const pedidosRemunerados = arquipelagoSchema.table(
       'pedidos_remunerados_pagamento',
       sql`${t.pagamento} in ('pendente','creditado','teto','recusado')`,
     ),
+    check(
+      'pedidos_remunerados_teto',
+      sql`(${t.pagamento} = 'teto') = (${t.tetoSemana} is not null)`,
+    ),
+    index('pedidos_remunerados_teto_espera')
+      .on(t.jogadorId, t.publico, t.entregueEm)
+      .where(sql`${t.pagamento} = 'teto'`),
+  ],
+)
+
+/**
+ * A banca da feira (§6.28, A22): uma venda por perfil e dia, até cinco pratos, com a chave
+ * financeira gerada no servidor e o pagamento. O consumo dos pratos acontece sob a trava do save.
+ */
+export const vendasNaFeira = arquipelagoSchema.table(
+  'vendas_na_feira',
+  {
+    chave: uuid().primaryKey(),
+    pagamentoId: uuid().notNull().unique(),
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId),
+    contaId: uuid().notNull(),
+    publico: varchar({ length: 8 }).$type<PublicoJogo>().notNull(),
+    versao: integer().notNull(),
+    revisaoBase: integer().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    itens: jsonb().$type<ItensDaVenda>().notNull(),
+    moedas: smallint().notNull(),
+    pagamento: varchar({ length: 12 }).$type<PagamentoDaVenda>().notNull(),
+    /** Com `teto`: a semana em que bateu; o crédito volta numa semana seguinte (§6.28, A32). */
+    tetoSemana: date({ mode: 'string' }),
+    vendidaEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('vendas_na_feira_dia').on(t.jogadorId, t.publico, t.dia),
+    index('vendas_na_feira_pendente')
+      .on(t.jogadorId, t.publico, t.vendidaEm)
+      .where(sql`${t.pagamento} = 'pendente'`),
+    check('vendas_na_feira_publico', sql`${t.publico} in ('kids','adulto')`),
+    check(
+      'vendas_na_feira_valores',
+      sql`${t.versao} = 1 and ${t.revisaoBase} between 1 and 2147483646 and ${t.moedas} between 1 and 10`,
+    ),
+    check(
+      'vendas_na_feira_pagamento',
+      sql`${t.pagamento} in ('pendente','creditado','teto','recusado')`,
+    ),
+    check('vendas_na_feira_teto', sql`(${t.pagamento} = 'teto') = (${t.tetoSemana} is not null)`),
+    index('vendas_na_feira_teto_espera')
+      .on(t.jogadorId, t.publico, t.vendidaEm)
+      .where(sql`${t.pagamento} = 'teto'`),
   ],
 )
 
@@ -561,7 +656,9 @@ export const schema = {
   convitesDeAmigos,
   casasDeAmigos,
   fantasmas,
+  obrasEstendidas,
   pedidosRemunerados,
+  vendasNaFeira,
   comprasDeInsumos,
   turnosRemunerados,
   minijogos,

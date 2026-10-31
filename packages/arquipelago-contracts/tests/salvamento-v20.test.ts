@@ -5,10 +5,12 @@ import {
   criarSalvamentoInicial,
   type ExposicaoDoFarol,
   migrarDaV19,
+  migrarDaV20,
+  migrarDaV21,
   migrarSalvamento,
   type ObraAteV19,
   SalvamentoV19Schema,
-  SalvamentoV20Schema,
+  SalvamentoV22Schema,
   VAGAS_DA_GALERIA_DO_FAROL,
   VERSAO_SALVAMENTO,
 } from '../src/salvamento'
@@ -29,8 +31,9 @@ const obraAntiga = (): ObraAteV19 => ({
 })
 
 test('a lista dos móveis só cresce no fim: a ordem dos 21 primeiros nunca muda', () => {
-  expect(VERSAO_SALVAMENTO).toBe(20)
-  expect(MOVEIS).toEqual([
+  expect(VERSAO_SALVAMENTO).toBe(22)
+  // Desde 31/10/2026 o café, a banca e a festa vêm depois deles (B7 e B9).
+  expect(MOVEIS.slice(0, 21)).toEqual([
     'balcao-pia',
     'balcao',
     'armario-alto',
@@ -64,8 +67,8 @@ test('a V19 continua estrita e migra sem móvel nem exposição, com casa e caba
   const antes = structuredClone(antiga)
   expect(SalvamentoV19Schema.parse(antiga)).toEqual(antiga)
   const atual = migrarSalvamento(antiga)
-  expect(atual).toEqual(migrarDaV19(antiga))
-  expect(atual?.versao).toBe(20)
+  expect(atual).toEqual(migrarDaV21(migrarDaV20(migrarDaV19(antiga))))
+  expect(atual?.versao).toBe(22)
   expect(atual?.construcao.casa).toEqual({ ...obraAntiga(), moveis: [] })
   expect(atual?.construcao.cabanas.bosque).toEqual({ ...obraAntiga(), objetos: [], moveis: [] })
   expect(atual?.farol).toEqual({ pagina: true, concluido: true, galeria: [] })
@@ -107,7 +110,7 @@ test('móveis e galeria atravessam o JSON, com as vagas vazias no lugar', () => 
 test('fora da régua: móvel desconhecido, giro ou célula, móvel na cabana e casa cheia demais', () => {
   const s = criarSalvamentoInicial(AGORA)
   const comCasa = (moveis: unknown[]) =>
-    SalvamentoV20Schema.safeParse({
+    SalvamentoV22Schema.safeParse({
       ...s,
       construcao: { casa: { ...obraAntiga(), moveis }, cabanas: {} },
     }).success
@@ -127,7 +130,7 @@ test('fora da régua: móvel desconhecido, giro ou célula, móvel na cabana e c
   expect(comCasa([...cheia, [0, 0, 0, 0]])).toBe(false)
   // Os móveis são da casa: a cabana guarda a lista vazia.
   const naCabana = (moveis: unknown[]) =>
-    SalvamentoV20Schema.safeParse({
+    SalvamentoV22Schema.safeParse({
       ...s,
       construcao: { casa: null, cabanas: { bosque: { ...obraAntiga(), objetos: [], moveis } } },
     }).success
@@ -137,7 +140,7 @@ test('fora da régua: móvel desconhecido, giro ou célula, móvel na cabana e c
 
 test('a galeria só se enche com o final concluído, sem repetir criação e com seis vagas', () => {
   const s = criarSalvamentoInicial(AGORA)
-  const com = (farol: object) => SalvamentoV20Schema.safeParse({ ...s, farol }).success
+  const com = (farol: object) => SalvamentoV22Schema.safeParse({ ...s, farol }).success
   const fim = { pagina: true, concluido: true }
   expect(com({ ...fim, galeria: [['j', UUID]] })).toBe(true)
   expect(com({ pagina: true, concluido: false, galeria: [['j', UUID]] })).toBe(false)
@@ -210,15 +213,17 @@ test('a V19 do staging chega à V20 com as chaves da obra e o bicho adotado acom
     diaCuidadoEm: null,
     truque: { sessoes: 0, ultimaEm: null, aprendido: false },
   }
-  const v20 = migrarDaV19({
-    ...v19,
-    chaves: BIT_DO_COMODO.sala,
-    companhia: 'quarto',
-    construcao: { casa: obra, cabanas: {} },
-    bichos: { ...v19.bichos, adotado },
-  })
+  const v20 = migrarDaV20(
+    migrarDaV19({
+      ...v19,
+      chaves: BIT_DO_COMODO.sala,
+      companhia: 'quarto',
+      construcao: { casa: obra, cabanas: {} },
+      bichos: { ...v19.bichos, adotado },
+    }),
+  )
   expect(v20.chaves).toBe(BIT_DO_COMODO.sala | BIT_DO_COMODO.cozinha)
   expect(v20.companhia).toBe('adotado')
   // Sem bicho adotado, a companhia fica como estava.
-  expect(migrarDaV19({ ...v19, companhia: 'quarto' }).companhia).toBe('quarto')
+  expect(migrarDaV20(migrarDaV19({ ...v19, companhia: 'quarto' })).companhia).toBe('quarto')
 })

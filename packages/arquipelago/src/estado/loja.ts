@@ -10,6 +10,8 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { Clima } from '../sistemas/clima'
 import { acaoEmCurso, encerraOTempo } from '../sistemas/fim-do-tempo'
 import type { Isca } from '../sistemas/iscas'
+import { trocarItensAntigos } from '../sistemas/itens'
+import { PAINEIS_DO_MENU } from '../sistemas/paineis-do-menu'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { IdDoPercurso } from '../sistemas/percurso'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
@@ -53,6 +55,11 @@ export interface EstadoDoJogo {
   dentroDeCasa: boolean
   nadando: boolean
   menuAberto: boolean
+  /**
+   * A seção do menu aberta (`null` é o começo). Diário, álbum, caderno, mapa, moradores em casa e
+   * visitas abrem dentro do menu (`PAINEIS_DO_MENU`), não por cima do jogo.
+   */
+  secaoDoMenu: string | null
   /** Um painel do mundo aberto por cima do jogo (o Quadro das Cores); o personagem para. */
   painelAberto: string | null
   ferramentaAberta: boolean
@@ -83,12 +90,19 @@ export interface EstadoDoJogo {
    * horta dele, e NADA é gravado (o `mudar` não faz nada). Não é salvo: recarregar volta para casa.
    */
   visita: Visita | null
+  /**
+   * Quando o jogo foi salvo pela última vez antes desta abertura (ms), para o que acontece com ele
+   * fechado (`sistemas/jogo-fechado.ts`); `null` depois de usado ou num jogo novo.
+   */
+  fechadoDesde: number | null
+  esquecerFechado(): void
   /** Muda o salvamento (a fila de salvamento grava depois). Na visita, não muda nada. */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
   definirAlvo(alvo: { id: string; rotulo: string } | null): void
   definirLugar(lugar: { dentroDeCasa: boolean; nadando: boolean }): void
   abrirMenu(aberto: boolean): void
+  escolherSecaoDoMenu(secao: string | null): void
   abrirPainel(painel: string | null): void
   definirFerramentaAberta(aberta: boolean): void
   definirTempoPausado(pausado: boolean): void
@@ -97,6 +111,8 @@ export interface EstadoDoJogo {
   adotar(guardado: SalvamentoGuardado): void
   definirModo(modo: EstadoDoJogo['modo']): void
   definirAvatar(avatar: AvatarDoJogo): void
+  /** O quarto da plataforma, relido (§6.28, A10): mudou lá, muda aqui. */
+  definirQuarto(quarto: QuartoDoJogo): void
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
   acharConstelacao(indice: number): void
@@ -116,6 +132,8 @@ export interface DadosIniciais {
   quarto: QuartoDoJogo
   avatar: AvatarDoJogo
   acesso: Acesso
+  /** O `atualizadoEm` do salvamento lido do serviço, em ms. */
+  fechadoDesde?: number | null
   aoMudar(s: Salvamento): void
 }
 
@@ -134,6 +152,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     dentroDeCasa: true,
     nadando: false,
     menuAberto: false,
+    secaoDoMenu: null,
     painelAberto: null,
     ferramentaAberta: false,
     tempoAcabou: false,
@@ -161,6 +180,10 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     isca: null,
     descanso: null,
     visita: null,
+    fechadoDesde: d.fechadoDesde ?? null,
+    esquecerFechado() {
+      set({ fechadoDesde: null })
+    },
     mudar(fn) {
       if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
       // Na casa do irmão só se olha: nada do jogo dela muda (e nada do dele, que nem está aqui).
@@ -184,10 +207,16 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       set(lugar)
     },
     abrirMenu(aberto) {
-      set({ menuAberto: aberto })
+      set(aberto ? { menuAberto: true } : { menuAberto: false, secaoDoMenu: null })
+    },
+    escolherSecaoDoMenu(secao) {
+      set({ secaoDoMenu: secao })
     },
     abrirPainel(painel) {
-      set({ painelAberto: painel })
+      // Os painéis do menu (31/10/2026) abrem como seção dele, de onde quer que venham.
+      if (painel !== null && PAINEIS_DO_MENU.has(painel))
+        set({ menuAberto: true, secaoDoMenu: painel, painelAberto: null })
+      else set({ painelAberto: painel })
     },
     definirFerramentaAberta(aberta) {
       set({ ferramentaAberta: aberta })
@@ -221,13 +250,16 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       })
     },
     adotar(guardado) {
-      if (guardado.salvamento) set({ salvamento: guardado.salvamento })
+      if (guardado.salvamento) set({ salvamento: trocarItensAntigos(guardado.salvamento) })
     },
     definirModo(modo) {
       if (get().modo !== modo) set({ modo })
     },
     definirAvatar(avatar) {
       set({ avatar })
+    },
+    definirQuarto(quarto) {
+      set({ quarto })
     },
     definirCorrida(corrida) {
       const atual = get().corrida

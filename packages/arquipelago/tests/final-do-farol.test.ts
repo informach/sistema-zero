@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
@@ -20,6 +20,7 @@ import {
   conversarComAIris,
   FALA_FINAL_DO_ZAPPY,
   fachosAcesos,
+  farolAceso,
   finalPausado,
   finalTerminou,
   foraDaPassagemDoFarol,
@@ -198,4 +199,15 @@ test('posição e cochilo esperam o corte e o teleporte da saída terminarem', (
   expect(foraDaPassagemDoFarol({ etapa: 'fora', corte: 0.4 }, false)).toBe(false)
   expect(foraDaPassagemDoFarol({ etapa: 'fora', corte: null }, true)).toBe(false)
   expect(foraDaPassagemDoFarol({ etapa: 'fora', corte: null }, false)).toBe(true)
+})
+
+describe('o Farol acende com o final (§6.28, A13)', () => {
+  test('chegar à Lenda não acende: só os fachos e o final concluído', () => {
+    expect(farolAceso(false, 'fora')).toBe(false)
+    expect(farolAceso(false, 'sala')).toBe(false)
+    expect(farolAceso(false, 'pagina')).toBe(false)
+    expect(farolAceso(false, 'fachos')).toBe(true)
+    expect(farolAceso(false, 'fim')).toBe(true)
+    expect(farolAceso(true, 'fora')).toBe(true)
+  })
 })

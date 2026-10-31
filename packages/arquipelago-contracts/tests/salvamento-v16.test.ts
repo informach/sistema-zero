@@ -23,7 +23,7 @@ test('a migração atual preserva a aparência de 80 caracteres aceita pela V14'
   const atual = migrarSalvamento(antiga)
   expect(atual?.projetos.geladeira).toEqual(antiga.projetos.geladeira)
   expect(antiga).toEqual(antes)
-  expect(atual?.versao).toBe(20)
+  expect(atual?.versao).toBe(22)
   const mundo = {
     horta: [],
     inventario: {},
@@ -45,9 +45,9 @@ test('V15 mantém o filhote e recebe progresso novo sem inventar conquistas', ()
   }
   expect(SalvamentoV15Schema.safeParse(antiga).success).toBe(true)
   const atual = migrarSalvamento(antiga)
-  expect(atual?.vale).toEqual(antiga.vale)
+  expect(atual?.vale).toEqual({ ...antiga.vale, fosseis: 0 })
   expect(atual).toMatchObject({
-    versao: 20,
+    versao: 22,
     nuvens: { constelacoes: 0 },
     farol: { pagina: false, concluido: false },
     clima: 'sol',
@@ -61,14 +61,8 @@ test('recordes das Nuvens, constelações, final e clima atravessam JSON', () =>
     farol: { pagina: true, concluido: true, galeria: [] },
     clima: 'chuva' as const,
     percursos: {
-      'nuvens-saltos': {
-        estrelas: { chegada: true, tempo: false, vagalumes: true },
-        melhorTempoMs: 60001,
-      },
-      'nuvens-balao': {
-        estrelas: { chegada: true, tempo: true, vagalumes: false },
-        melhorTempoMs: 42000,
-      },
+      'nuvens-saltos': [5, 60001] as [number, number],
+      'nuvens-balao': [3, 42000] as [number, number],
     },
   }
   expect(migrarSalvamento(JSON.parse(JSON.stringify(salvo)))).toEqual(salvo)
@@ -81,5 +75,5 @@ test('progresso impossível, clima desconhecido e versão futura são recusados'
     expect(migrarSalvamento({ ...s, nuvens: { constelacoes } })).toBeNull()
   expect(migrarSalvamento({ ...s, farol: { pagina: false, concluido: true } })).toBeNull()
   expect(migrarSalvamento({ ...s, clima: 'neve' })).toBeNull()
-  expect(migrarSalvamento({ ...s, versao: 21 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 23 })).toBeNull()
 })

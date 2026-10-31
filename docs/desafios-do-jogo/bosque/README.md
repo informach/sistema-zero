@@ -12,17 +12,33 @@ Formato `arquipelago-desafios`, versão 1, escopo `ilha`. Segue a parte 3 de
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
-| Vagalume aceso | Quadro das Cores | 1 | 20 | 10 |
-| O lanche do coelho | Quadro das Cores | 2 | 20 | 10 |
-| Trilha das pegadas | Quadro das Cores | 3 | 20 | 10 |
-| Cuide dos quatro | Quadro das Cores | 4 | 20 | 10 |
-| Travessia tranquila | Quadro das Cores | 5 | 20 | 10 |
+| Pinhas caindo | Quadro das Cores | 1 | 20 | 10 |
+| Bolotas para o alto | Quadro das Cores | 2 | 20 | 10 |
+| Quebrar as pinhas | Quadro das Cores | 3 | 20 | 10 |
+| Três vidas | Quadro das Cores | 4 | 20 | 10 |
+| Fim e outra partida | Quadro das Cores | 5 | 20 | 10 |
 | Corrida dos bichos | Quadro das Cores | 6 | 20 | 10 |
 | Pedras | Desafio do dia | Nenhum | 10 | 5 |
 | Noite | Desafio do dia | Nenhum | 10 | 5 |
 | Placar | Desafio do dia | Nenhum | 10 | 5 |
 
 Os seis quadros pintam a ilha. As três variações diárias não pintam outro quadro.
+
+## A chuva de pinhas (quadros 1 a 5, A42, 31/10/2026)
+
+Os quadros 1 a 5 trabalham o centro do Construtor com o repertório da Nave Contra Asteroides: o
+vento derruba pinhas bem em cima de onde o coelho está, ele joga bolotas para quebrá-las, tem três
+vidas, perde quando elas acabam e começa outra partida do zero. Cada quadro deixa uma parte para
+completar, como pedido da Capi (A44): o grupo das pinhas que nasce no relógio (1), as bolotas no
+espaço (2), o encontro dos dois grupos que tira os dois e soma o ponto (3), as três vidas que caem
+com cada pinha (4) e a derrota com o recomeço pelo Enter (5). O gabarito dos cinco é o mesmo jogo,
+com a atração `chuva-de-pinhas`. As pinhas nascem na coluna do coelho, o que deixa o executor
+conferir sem depender de sorte. O pad da extensão vale no celular (setas, A para a bolota e + para
+o Enter). Cada quadro tem um extra opcional: som da bolota, a pinha que explode, a tela que treme
+ou a tela de vitória com dez pinhas. Os quadros de antes (vagalume, lanche, pegadas, os quatro
+bichos e a travessia) retomavam o Faísca e saíram nesta revisão.
+
+A corrida dos bichos (quadro 6, o minijogo da proposta) e os três do dia continuam abaixo.
 Cada variação começa com a corrida funcionando.
 O extra da corrida permite escolher qualquer um dos quatro bichos, antes da Largada, para
 avançar com Espaço ou A. A seta ao lado do nome escolhe o bicho; repetir a mesma seta antes
@@ -121,8 +137,8 @@ Também há casos incorretos: passo fixo, fala trocada, ponto para outro bicho, 
 reposicionar, corrida que não para, pulo sem descida, luz que não apaga e Largada que zera
 a contagem de corridas. Falha do executor não conta como reprovação pedagógica.
 
-Nos cinco quadros novos, cada objetivo usa execução. Negativos conferem luz que nasce acesa,
-entrega sem alface, alface que pode ser recolhida depois da entrega, trilha fora de ordem,
-visita repetida contada de novo e movimento que continua depois da bandeira. Cada extra
-também reprova quando Enter não reinicia. A revisita sai e volta ao bicho: o evento de
-contato dispara na entrada, portanto apenas ficar parado perto dele não prova essa regra.
+Na chuva de pinhas, cada quadro tem uma regra que roda o jogo e uma de estrutura (que passa no
+gabarito e reprova no inicial). O executor real reprova também a bolota que atravessa a pinha, a
+pinha que não tira vida e o fim sem recomeço. `conferir-quadros-browser.ts` joga a partida inteira
+no computador e no celular com o pad, com os prints em
+`docs/qa/2026-10-31-revisao-dos-lotes/bosque-pinhas/`.

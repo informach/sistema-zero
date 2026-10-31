@@ -135,6 +135,34 @@ test('trajetos validam caminho, limitam corpo e não usam cache', async () => {
   ).toBe(400)
   expect(chamadas).toHaveLength(antes)
 })
+test('obra estendida repassa GET e PUT sem cache, com o 409 inteiro e o corpo limitado', async () => {
+  const atual = { revisao: 2, obra: null }
+  const conflito = {
+    error: { code: 'OBRA_ESTENDIDA_DESATUALIZADA', message: 'A obra mudou em outro aparelho' },
+    atual,
+  }
+  const { routes, chamadas } = montar({ status: 409, body: conflito })
+  const lida = await routes.arquipelagoObraEstendida.GET()
+  expect(lida.headers.get('cache-control')).toBe('private, no-store')
+  const corpo = { revisaoBase: 1, obra: { versao: 1, iglu: null, andar: null, terreno: null } }
+  const r = await routes.arquipelagoObraEstendida.PUT(
+    new Request('http://local', { method: 'PUT', body: JSON.stringify(corpo) }),
+  )
+  expect(r.status).toBe(409)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(await r.json()).toEqual(conflito)
+  expect(chamadas).toEqual([
+    { caminho: '/arquipelago/obra-estendida', metodo: 'GET', corpo: undefined },
+    { caminho: '/arquipelago/obra-estendida', metodo: 'PUT', corpo },
+  ])
+  const grande = await routes.arquipelagoObraEstendida.PUT(
+    new Request('http://local', { method: 'PUT', body: 'x'.repeat(33 * 1024 + 1) }),
+  )
+  expect(grande.status).toBe(400)
+  expect(chamadas).toHaveLength(2)
+  expect(Object.keys(routes.arquipelagoObraEstendida)).toEqual(['GET', 'PUT'])
+})
+
 test('pedidos repassam comando e pendências de forma privada, sem cache e com corpo limitado', async () => {
   const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
   const pendentes = await routes.arquipelagoPedidosPendentes.GET()
@@ -170,6 +198,54 @@ test('pedidos repassam comando e pendências de forma privada, sem cache e com c
     ).status,
   ).toBe(400)
   expect(chamadas).toHaveLength(n)
+})
+
+test('vendas da feira repassam comando e pendências sem cache e com corpo limitado', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
+  const pendentes = await routes.arquipelagoFeiraVendasPendentes.GET()
+  expect(pendentes.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)?.caminho).toBe('/arquipelago/feira/vendas/pendentes')
+  const corpo = {
+    versao: 1,
+    chave: PERFIL,
+    revisaoBase: 1,
+    dia: '2026-10-31',
+    itens: { 'pao-de-queijo': 2 },
+  }
+  const r = await routes.arquipelagoFeiraVender.POST(
+    new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) }),
+  )
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/feira/vender',
+    metodo: 'POST',
+    corpo,
+  })
+  const n = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoFeiraVender.POST(
+        new Request('http://local', {
+          method: 'POST',
+          body: JSON.stringify({ texto: 'a'.repeat(1025) }),
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(n)
+})
+
+test('as roupas conquistadas repassam sem corpo do navegador e sem cache (A21)', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { versao: 1, novas: [] } })
+  const r = await routes.arquipelagoRoupasSincronizar.POST()
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/roupas/sincronizar',
+    metodo: 'POST',
+    corpo: {},
+  })
 })
 
 test('insumos repassam compra e pendência sem cache e limitam o corpo', async () => {

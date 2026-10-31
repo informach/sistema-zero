@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import {
   CORPO_DO_FANTASMA_MAX_BYTES,
+  compactarResultado,
   criarSalvamentoInicial,
   type Fantasma,
   LeituraDoFantasmaSchema,
@@ -70,10 +71,10 @@ afterAll(async () => {
 async function perfil(publico: PublicoJogo = 'kids', contaId = crypto.randomUUID()) {
   const id = crypto.randomUUID()
   const save = criarSalvamentoInicial(agora)
-  save.percursos['bosque-copas'] = {
+  save.percursos['bosque-copas'] = compactarResultado({
     melhorTempoMs: 100,
     estrelas: { chegada: true, tempo: true, vagalumes: false },
-  }
+  })
   await saves.gravarSalvamento({
     jogadorId: id,
     publico,
@@ -143,7 +144,7 @@ describe.skipIf(!url)('fantasmas no Postgres e HTTP reais', () => {
   test('novo recorde esconde a trajetória antiga; a nova substitui e a exclusão do save remove o artefato', async () => {
     const p = await perfil()
     await repo.guardar(p.id, p.publico, { versao: 1, revisaoBase: 1, fantasma: artefato() }, agora)
-    p.save.percursos['bosque-copas']!.melhorTempoMs = 50
+    p.save.percursos['bosque-copas']![1] = 50
     await saves.gravarSalvamento({
       jogadorId: p.id,
       publico: p.publico,
@@ -184,7 +185,7 @@ describe.skipIf(!url)('fantasmas no Postgres e HTTP reais', () => {
       tempoMs: 300000,
       amostras: Array.from({ length: 3001 }, () => [-50000, -50000, -50000, 65535]),
     }
-    p.save.percursos['bosque-copas']!.melhorTempoMs = f.tempoMs
+    p.save.percursos['bosque-copas']![1] = f.tempoMs
     await saves.gravarSalvamento({
       jogadorId: p.id,
       publico: p.publico,

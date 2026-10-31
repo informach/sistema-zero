@@ -2,7 +2,6 @@ import {
   CATALOGO_DE_OBJETOS,
   COMODOS_DA_IRIS,
   type ComodoDaIris,
-  MOVEIS,
   OBJETOS_DA_CASA,
   type PisoDaCasa,
   type PisoDoQuintal,
@@ -18,6 +17,9 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { useFesta } from '../estado/festas'
+import { lojaDaObraEstendida, useObraEstendida } from '../estado/obra-estendida'
+import { arrumarOQuarto } from '../estado/quarto'
 import {
   chaveDoComodo,
   comodoDaFerramenta,
@@ -27,12 +29,15 @@ import {
   quantasChaves,
   TEXTOS_DAS_CHAVES,
 } from '../sistemas/chaves-da-casa'
+import { podeTerAndar } from '../sistemas/construcao/andar'
 import {
-  CATEGORIAS_DOS_MOVEIS,
   type CategoriaDoMovel,
+  categoriasDisponiveis,
   DADOS_DO_MOVEL,
   ehDeParede,
+  moveisDoCatalogo,
 } from '../sistemas/construcao/moveis'
+import { podeMoldarOTerreno } from '../sistemas/construcao/terreno'
 import { PainelDeAconchego } from './aconchego'
 import { Icone } from './icones'
 import {
@@ -50,7 +55,12 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     emoji: '🧱',
     dica: 'Arraste no chão para esticar a parede. Paredes fechadas viram um cômodo.',
   },
-  { id: 'porta', nome: 'Porta', emoji: '🚪', dica: 'Toque numa parede para pôr a porta.' },
+  {
+    id: 'porta',
+    nome: 'Porta',
+    emoji: '🚪',
+    dica: 'Toque numa parede para pôr a porta. Toque na entrada para levar ela a outro lugar.',
+  },
   { id: 'janela', nome: 'Janela', emoji: '🪟', dica: 'Toque numa parede para pôr a janela.' },
   { id: 'piso', nome: 'Piso', emoji: '🟫', dica: 'Toque num cômodo para trocar o piso dele.' },
   {
@@ -84,6 +94,18 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     dica: 'Toque no quintal para pôr um canteiro. Ele planta e rega como a horta.',
   },
   {
+    id: 'terreno',
+    nome: 'Terreno',
+    emoji: '⛰️',
+    dica: 'Toque ou arraste no quintal para subir ou descer o chão, meio metro por vez. A casa, os caminhos e o que está posto ficam no plano.',
+  },
+  {
+    id: 'escada',
+    nome: 'Escada',
+    emoji: '🪜',
+    dica: 'Toque num cômodo onde vai o pé da escada do andar de cima. O Girar muda para onde ela sobe.',
+  },
+  {
     id: 'apagar',
     nome: 'Apagar',
     emoji: '🧽',
@@ -96,6 +118,17 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     dica: 'Toque num cômodo para ver o aconchego. Arraste para andar pela obra; Q e E giram.',
   },
 ]
+
+/** O que vale lá em cima (o resto é do térreo e do quintal). */
+const FERRAMENTAS_DE_CIMA: ReadonlySet<Ferramenta> = new Set([
+  'parede',
+  'porta',
+  'janela',
+  'piso',
+  'movel',
+  'apagar',
+  'olhar',
+])
 
 const JANELAS: ReadonlyArray<{ id: TipoDeJanela; nome: string }> = [
   { id: 'janela-grande', nome: 'Grande' },
@@ -115,6 +148,8 @@ const NOME_DA_CATEGORIA: Readonly<Record<CategoriaDoMovel, string>> = {
   cozinha: 'Cozinha',
   sala: 'Sala',
   banheiro: 'Banheiro',
+  cafe: 'Café e feira',
+  festa: 'Festa',
 }
 
 const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
@@ -195,23 +230,53 @@ export function ModosDoJogo() {
   )
 }
 
+/** A dica da Porta com a entrada escolhida (31/10/2026). */
+export const DICA_DA_ENTRADA_ESCOLHIDA =
+  'Toque numa parede de fora para levar a entrada e a varanda.'
+
 /** A barra do Construir: as ferramentas, as escolhas de janela e piso, a câmera e o Desfazer. */
 export function BarraDeConstruir() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
+  const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
   const construcao = lojaDaConstrucao(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const atual = useConstrucao(construcao, (s) => s.ferramenta)
   const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
+  // Passando por cima de onde não dá, a linha de baixo diz por quê (no toque, o Zappy já diz).
+  const motivo = useConstrucao(construcao, (s) => s.motivoDaPrevia)
+  // Com a porta de entrada escolhida, a dica diz o próximo passo.
+  const entradaEscolhida = useConstrucao(
+    construcao,
+    (s) => s.entradaSelecionada && s.ferramenta === 'porta',
+  )
   const janela = useConstrucao(construcao, (s) => s.janela)
   const piso = useConstrucao(construcao, (s) => s.piso)
   const caminho = useConstrucao(construcao, (s) => s.caminho)
   const objeto = useConstrucao(construcao, (s) => s.objeto)
   const movel = useConstrucao(construcao, (s) => s.movel)
-  const [categoria, setCategoria] = useState<CategoriaDoMovel>('cozinha')
+  const [escolhida, setCategoria] = useState<CategoriaDoMovel>('cozinha')
+  const jornada = useEstado((s) => s.jornada)
+  const festa = useFesta()
+  const categorias = categoriasDisponiveis(jornada, festa)
+  // A festa acabou com a aba dela aberta: volta para a cozinha.
+  const categoria = categorias.includes(escolhida) ? escolhida : 'cozinha'
   const projetos = useEstado((s) => s.salvamento.projetos)
   const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
-  const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
+  // O Terreno e o andar de cima têm o Desfazer deles (não são a obra do salvamento).
+  const podeDesfazer = useConstrucao(construcao, (s) =>
+    s.ferramenta === 'terreno'
+      ? s.antesDoTerreno.length > 0
+      : s.camada === 'cima' || s.ferramenta === 'escada'
+        ? s.antesDoAndar.length > 0
+        : s.antes.length > 0,
+  )
+  const camada = useConstrucao(construcao, (s) => s.camada)
+  const extensa = lojaDaObraEstendida(loja, plataforma)
+  const temEscada = useObraEstendida(extensa, (o) => !!o.obra?.andar?.escada)
+  // A obra deste aparelho que perdeu para outro aparelho fica guardada (N1): voltar ou descartar.
+  const temCopia = useObraEstendida(extensa, (o) => o.recuperacao !== null)
+  const moldar = useConstrucao(construcao, (s) => s.moldar)
   // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
   // O iglu do Pico (E04) não tem cerca nem caminho: o lote dele diz o que cabe.
@@ -230,15 +295,25 @@ export function BarraDeConstruir() {
           !(f.id === 'cerca' && limitesDaCabana?.trechosDeCerca === 0) &&
           !(f.id === 'caminho' && limitesDaCabana?.caminhos === 0),
       )
-    : FERRAMENTAS
+    : camada === 'cima'
+      ? FERRAMENTAS.filter((f) => FERRAMENTAS_DE_CIMA.has(f.id))
+      : FERRAMENTAS.filter(
+          (f) =>
+            (f.id !== 'terreno' || podeMoldarOTerreno(jornada)) &&
+            (f.id !== 'escada' || podeTerAndar(jornada)),
+        )
+  // A troca de andar aparece com a escada posta (na casa).
+  const comAndar = !naCabana && temEscada && podeTerAndar(jornada)
   if (!aberto) return null
   const s = () => construcao.getState()
-  const dica = FERRAMENTAS.find((f) => f.id === atual)?.dica
+  const dica =
+    motivo ??
+    (entradaEscolhida ? DICA_DA_ENTRADA_ESCOLHIDA : FERRAMENTAS.find((f) => f.id === atual)?.dica)
   return (
     <section className="arq-obra" aria-label="Ferramentas de construir">
       {aconchegoAberto && <PainelDeAconchego />}
       <div className="arq-obra-dica-linha">
-        <p className="arq-obra-dica" aria-live="polite">
+        <p className={`arq-obra-dica${motivo ? ' recusa' : ''}`} aria-live="polite">
           {dica}
         </p>
         {/* Na mesma linha da dica, para a barra não crescer (N11). */}
@@ -246,6 +321,57 @@ export function BarraDeConstruir() {
           <p className="arq-obra-chaves">{TEXTOS_DAS_CHAVES.contagem(quantasChaves(chaves))}</p>
         ) : null}
       </div>
+      {temCopia ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">A obra deste aparelho</legend>
+          <p className="arq-obra-dica">
+            A obra mudou em outro aparelho. A deste aparelho ficou guardada.
+          </p>
+          <button
+            type="button"
+            className="arq-botao leve"
+            onClick={() => extensa.getState().recuperar()}
+          >
+            Voltar à deste aparelho
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            onClick={() => extensa.getState().descartarRecuperacao()}
+          >
+            Ficar com a nova
+          </button>
+        </fieldset>
+      ) : null}
+      {comAndar ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Andar da casa</legend>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={camada === 'chao'}
+            onClick={() => s().escolherCamada('chao')}
+          >
+            Térreo
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={camada === 'cima'}
+            onClick={() => s().escolherCamada('cima')}
+          >
+            Andar de cima
+          </button>
+        </fieldset>
+      ) : null}
+      {atual === 'escada' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Rumo da escada</legend>
+          <button type="button" className="arq-botao leve" onClick={() => s().girarObjeto()}>
+            ⟳ Girar
+          </button>
+        </fieldset>
+      ) : null}
       {atual === 'janela' ? (
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Tipo de janela</legend>
@@ -308,7 +434,7 @@ export function BarraDeConstruir() {
         <>
           <fieldset className="arq-obra-escolhas arq-obra-categorias">
             <legend className="arq-sr">Cômodo dos móveis</legend>
-            {CATEGORIAS_DOS_MOVEIS.map((c) => (
+            {categorias.map((c) => (
               <button
                 key={c}
                 type="button"
@@ -326,11 +452,22 @@ export function BarraDeConstruir() {
             >
               ⟳ Girar
             </button>
+            {/* O quarto é o da plataforma (A10): arrumar abre o editor do Meu Quarto. Fica no térreo. */}
+            {camada === 'cima' ? null : (
+              <button
+                type="button"
+                className="arq-botao leve"
+                disabled={ferramentaAberta}
+                onClick={() => void arrumarOQuarto(loja, plataforma)}
+              >
+                🛏️ Meu quarto
+              </button>
+            )}
           </fieldset>
           {/* Uma fileira só, que rola para o lado: a barra não cobre o cômodo (no celular, a tela). */}
           <fieldset className="arq-obra-escolhas rolar">
             <legend className="arq-sr">Móvel</legend>
-            {MOVEIS.filter((id) => DADOS_DO_MOVEL[id].categoria === categoria).map((id) => (
+            {moveisDoCatalogo(categoria, festa).map((id) => (
               <Escolha
                 key={id}
                 nome={DADOS_DO_MOVEL[id].nome}
@@ -342,6 +479,27 @@ export function BarraDeConstruir() {
             ))}
           </fieldset>
         </>
+      ) : null}
+      {atual === 'terreno' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Subir ou descer o chão</legend>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={moldar === 1}
+            onClick={() => s().escolherMoldar(1)}
+          >
+            ⬆ Subir
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={moldar === -1}
+            onClick={() => s().escolherMoldar(-1)}
+          >
+            ⬇ Descer
+          </button>
+        </fieldset>
       ) : null}
       {atual === 'caminho' ? (
         <fieldset className="arq-obra-escolhas">

@@ -15,7 +15,8 @@ export interface PedidoDeRotina {
 
 /** Como foi a última vez de cada Lumi (o painel mostra, com o motivo se parou no meio). */
 export interface UltimaVez {
-  origem: PedidoDeRotina['origem']
+  /** `fechado`: rodou ao abrir, pela virada que passou com o jogo fechado (A12). */
+  origem: PedidoDeRotina['origem'] | 'fechado'
   registro: string[]
   erro: string | null
 }

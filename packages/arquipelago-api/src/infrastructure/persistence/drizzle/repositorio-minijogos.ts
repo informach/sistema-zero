@@ -4,10 +4,10 @@ import {
   MinijogoAbertoSchema,
   ProjetoDoMinijogoSchema,
 } from '@sistemazero/arquipelago-contracts'
-import { and, desc, eq, lte } from 'drizzle-orm'
+import { and, desc, eq, lte, sql } from 'drizzle-orm'
 import type { RepositorioDosMinijogos } from '../../../domain/minijogos.port'
 import type { Database } from './db'
-import { minijogos, perfisDaConta } from './schema'
+import { desafios, minijogos, perfisDaConta } from './schema'
 
 export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
   constructor(private readonly db: Database) {}
@@ -30,7 +30,14 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
       })
       .onConflictDoUpdate({
         target: [minijogos.jogadorId, minijogos.desafioId],
-        set: { projeto, capa, titulo: e.titulo, atualizadoEm: e.agora },
+        set: {
+          projeto,
+          capa,
+          titulo: e.titulo,
+          atualizadoEm: e.agora,
+          // Mais um envio do mesmo minijogo (A26, os reenvios na medição).
+          envios: sql`${minijogos.envios} + 1`,
+        },
         setWhere: lte(minijogos.atualizadoEm, e.agora),
       })
   }
@@ -42,12 +49,18 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
         aprovadoEm: minijogos.aprovadoEm,
         atualizadoEm: minijogos.atualizadoEm,
         capa: minijogos.capa,
+        // A ilha publicada do desafio (B10): a barraca e o quiosque mostram os da própria ilha.
+        ilha: sql<
+          string | null
+        >`coalesce(${desafios.metadadosPublicados}->>'ilha', ${desafios.ilha})`,
       })
       .from(minijogos)
+      .leftJoin(desafios, eq(desafios.id, minijogos.desafioId))
       .where(eq(minijogos.jogadorId, jogadorId))
       .orderBy(desc(minijogos.atualizadoEm), minijogos.desafioId)
-    return linhas.map((v) => ({
+    return linhas.map(({ ilha, ...v }) => ({
       ...v,
+      ...(ilha ? { ilha } : {}),
       capa: capaQueCabe(v.capa),
       aprovadoEm: v.aprovadoEm.toISOString(),
       atualizadoEm: v.atualizadoEm.toISOString(),

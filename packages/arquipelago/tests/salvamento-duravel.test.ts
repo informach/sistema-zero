@@ -118,6 +118,8 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     segredos: _segredos,
     mapa: _mapa,
     companhia: _companhia,
+    florada: _florada,
+    ceu: _ceu,
     ...v3
   } = inicial()
   const antigo = {
@@ -148,13 +150,13 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     })
     const lido = await armazem.ler()
     expect(lido?.base.salvamento).toMatchObject({
-      versao: 20,
+      versao: 22,
       inventario: { milho: 4 },
       projetos: {},
     })
-    expect(lido?.enviado).toMatchObject({ versao: 20, inventario: { milho: 3 } })
+    expect(lido?.enviado).toMatchObject({ versao: 22, inventario: { milho: 3 } })
     expect(lido?.local).toMatchObject({
-      versao: 20,
+      versao: 22,
       inventario: { milho: 2 },
       construcao: { casa: null, cabanas: {} },
     })
@@ -175,10 +177,7 @@ test('fechar sem PUT e reabrir recupera o diário, isolado por perfil', async ()
     farol: { pagina: true, concluido: true, galeria: [] },
     clima: 'chuva' as const,
     percursos: {
-      'nuvens-balao': {
-        estrelas: { chegada: true, tempo: false, vagalumes: true },
-        melhorTempoMs: 41000,
-      },
+      'nuvens-balao': [5, 41000] as [number, number],
     },
   }
   primeira.f.guardar(local)

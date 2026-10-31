@@ -7,10 +7,10 @@
       "slug": "recife-mira-de-bolhas-python-adulto",
       "publico": "adulto",
       "ilha": "recife",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
-      "publicar": false,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas em Python",
@@ -271,9 +271,9 @@
           "texto": "R reinicia a rodada: contagem zerada, tempo cheio, jogando ativo e a bolha em (280, 360)."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

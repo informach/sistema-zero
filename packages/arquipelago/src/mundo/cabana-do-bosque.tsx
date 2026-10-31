@@ -1,10 +1,21 @@
 import { useFrame } from '@react-three/fiber'
-import type { IlhaComCabana } from '@sistemazero/arquipelago-contracts'
+import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Object3D } from 'three'
-import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
+import {
+  type FonteDaObra,
+  lojaDaConstrucao,
+  PAINEL_DE_CONSTRUIR,
+  useConstrucao,
+} from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
-import { type Lote, loteDaCabana, naArea, type Retangulo } from '../sistemas/construcao/lote'
+import {
+  type IdDoLote,
+  type Lote,
+  loteDaCabana,
+  naArea,
+  type Retangulo,
+} from '../sistemas/construcao/lote'
 import { ModoConstruir, type ReferencialDaObra } from './construir'
 import { noModelo } from './medidas'
 import { ObraNoMundo } from './obra'
@@ -17,7 +28,10 @@ export const PERTO_DO_LOTE = 3
 const CONFERIR_O_LOTE = 0.25
 
 /** O lote da cabana lido das âncoras `lote-cabana-a` e `-b` do modelo (ou `null` sem elas). */
-export function loteDoModelo(modelo: Object3D, ilha: IlhaComCabana = 'bosque'): Lote | null {
+export function loteDoModelo(
+  modelo: Object3D,
+  ilha: Exclude<IdDoLote, 'casa'> = 'bosque',
+): Lote | null {
   const a = modelo.getObjectByName('lote-cabana-a')?.position
   const b = modelo.getObjectByName('lote-cabana-b')?.position
   if (!a || !b) return null
@@ -61,19 +75,30 @@ export function CabanaDoBosque(props: PropsDaCabana) {
 /**
  * A cabana que a criança constrói numa ilha (montada pela ilha ativa): registra o lote no
  * Construir, diz se a pessoa está perto dele (aí o Construir abre a cabana) e desenha a obra de
- * `construcao.cabanas[ilha]` girada com a ilha. O Bosque e o iglu do Pico (E04); sem as âncoras
- * do lote no modelo, nada aparece.
+ * `construcao.cabanas[ilha]` girada com a ilha. O Bosque e o iglu do Pico (E04), cuja obra mora no
+ * documento à parte do serviço (`fonte` e `obraDeFora`); sem as âncoras do lote no modelo, nada
+ * aparece.
  */
 export function CabanaDaIlha({
   ilha,
   modelo,
   meio,
   giro,
-}: PropsDaCabana & { ilha: IlhaComCabana }) {
+  fonte,
+  obraDeFora = null,
+}: PropsDaCabana & {
+  ilha: Exclude<IdDoLote, 'casa'>
+  /** A obra fora do salvamento (o iglu) e onde gravar. */
+  fonte?: FonteDaObra
+  obraDeFora?: Obra | null
+}) {
   const { loja, rastro } = useJogo()
   const construcao = lojaDaConstrucao(loja)
   const lote = useMemo(() => loteDoModelo(modelo, ilha), [modelo, ilha])
-  const obra = useEstado((s) => s.salvamento.construcao.cabanas[ilha] ?? null)
+  const doSalvamento = useEstado((s) =>
+    ilha === 'pico' ? null : (s.salvamento.construcao.cabanas[ilha] ?? null),
+  )
+  const obra = fonte ? obraDeFora : doSalvamento
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const aqui = useConstrucao(construcao, (s) => s.onde === ilha)
   const altura = useMemo(() => alturaDoLote(modelo), [modelo])
@@ -88,14 +113,14 @@ export function CabanaDaIlha({
 
   useEffect(() => {
     if (!lote) return
-    construcao.getState().registrarCabana({ lote, perto: false })
+    construcao.getState().registrarCabana({ lote, perto: false, ...(fonte ? { fonte } : {}) })
     return () => {
       const s = construcao.getState()
       if (s.cabana?.lote === lote) s.registrarCabana(null)
       // A ilha saiu com o Construir da cabana aberto: ele fecha.
       if (s.onde === ilha && loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) s.fechar()
     }
-  }, [lote, construcao, loja, ilha])
+  }, [lote, construcao, loja, ilha, fonte])
 
   const espera = useRef(0)
   useFrame((_, dt) => {

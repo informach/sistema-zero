@@ -13,9 +13,11 @@ export const PAINEL_DO_FLOCO = 'floco'
 /** A apresentação da Jade no Vale dos Dinos (fase4-01). */
 export const PAINEL_DA_JADE = 'jade'
 export const PAINEL_DA_IRIE = 'irie'
+/** O Nico, carteiro da praia da sua ilha (§6.28, A19). */
+export const PAINEL_DO_NICO = 'nico'
 
 /** Quem conversa: cada morador tem a loja da conversa dele (a comemoração de um não mexe no outro). */
-export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade' | 'irie' | 'iris'
+export type QuemConversa = 'capi' | 'bento' | 'mare' | 'floco' | 'jade' | 'irie' | 'nico' | 'iris'
 
 /**
  * A conversa com um morador (uma loja por montagem e por morador, como a dos desafios). O painel

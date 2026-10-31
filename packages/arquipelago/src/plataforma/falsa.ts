@@ -11,6 +11,7 @@ import {
   criarSalvamentoInicial,
   diaDeSaoPaulo,
   type Fantasma,
+  festaDoDia,
   GravarSalvamentoSchema,
   ilhaAberta,
   ilhasDoAnel,
@@ -27,21 +28,31 @@ import {
   RegistrarTempoSchema,
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
+  roupasConquistadas,
   type SalvamentoGuardado,
   type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
 import { adotar } from '../sistemas/bichos'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
-import { lerAparenciaFalsa } from './aparencias-falsas'
+import { lerAparenciaFalsa, listarCriacoesQueCabemFalsas } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
 import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
 import { CHAVE_DOS_FANTASMAS_FALSOS, criarFantasmasFalsos } from './fantasmas-falsos'
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
-import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
+import {
+  obraDeExemplo,
+  obraDeExemploComAndar,
+  obraDeExemploComEntrada,
+  obraDeExemploComFundo,
+  obraEstendidaDeExemplo,
+  PROJETOS_DE_EXEMPLO,
+} from './obra-de-exemplo'
+import { CHAVE_DA_OBRA_ESTENDIDA_FALSA, criarObraEstendidaFalsa } from './obra-estendida-falsa'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
+import { criarVendasFalsas, type RegistroDeVendaFalsa } from './vendas-falsas'
 import { criarVisitasAdultasFalsas } from './visitas-adultas-falsas'
 
 /**
@@ -81,8 +92,12 @@ export interface OpcoesDaPlataformaFalsa {
   objetos?: 'pronto' | 'sem-acesso'
   aparencias?: 'pronto' | 'falha' | 'sem-metodo'
   editarObjeto?: (pedido: PedidoDeFerramenta) => Promise<boolean>
-  /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
-  obra?: 'exemplo'
+  /**
+   * `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`);
+   * `fundo`: a mesma, com um cômodo atrás do quarto e a porta no fundo dele; `entrada`: a mesma, com a
+   * porta de entrada (e a varanda) na frente do cômodo da frente do quarto.
+   */
+  obra?: 'exemplo' | 'fundo' | 'entrada' | 'andar'
   /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
   jogos?: 'exemplo'
   /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
@@ -161,6 +176,8 @@ const CHAVE = 'arquipelago-playground'
 /** As compras da galeria de mentira, à parte do salvamento (o `?novo=1` do playground apaga). */
 export const CHAVE_DA_GALERIA = 'arquipelago-playground:galeria'
 export const CHAVE_DAS_PROFISSOES = 'arquipelago-playground:profissoes'
+/** As roupas que o playground já deu ao avatar (A21). */
+export const CHAVE_DAS_ROUPAS = 'arquipelago-playground:roupas'
 
 /** Os jogos de `jogos: 'exemplo'`, só do playground. */
 export const MINIJOGO_DE_EXEMPLO = {
@@ -169,7 +186,27 @@ export const MINIJOGO_DE_EXEMPLO = {
   aprovadoEm: '2026-10-29T15:00:00.000Z',
   atualizadoEm: '2026-10-29T15:00:00.000Z',
   capa: null,
+  ilha: 'bosque',
 } as const
+/** Os da Vila Doce e do Pico, para a barraca da feira e o quiosque do festival (B10). */
+export const MINIJOGOS_DAS_ILHAS_DE_EXEMPLO = [
+  {
+    desafioId: '7c1e2a40-8b5d-4f1e-9a2c-3d4e5f6a7b81',
+    titulo: 'Corrida do entregador',
+    aprovadoEm: '2026-10-30T15:00:00.000Z',
+    atualizadoEm: '2026-10-30T15:00:00.000Z',
+    capa: null,
+    ilha: 'vila-doce',
+  },
+  {
+    desafioId: '8d2f3b51-9c6e-4a2f-8b3d-4e5f6a7b8c92',
+    titulo: 'Fase de plataforma',
+    aprovadoEm: '2026-10-30T14:00:00.000Z',
+    atualizadoEm: '2026-10-30T14:00:00.000Z',
+    capa: null,
+    ilha: 'pico',
+  },
+] as const
 export const JOGO_DO_MURAL_DE_EXEMPLO = {
   playId: '9d2c7e41-3a8b-4f6d-b1c5-2e4a6f8d0b13',
   titulo: 'Labirinto das conchas',
@@ -216,6 +253,17 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
           }
         : undefined,
   })
+  const obraEstendida = criarObraEstendidaFalsa({
+    somenteLeitura: () => o.somenteLeitura === true,
+    inicial: o.obra === 'andar' ? obraEstendidaDeExemplo() : undefined,
+    persistencia:
+      o.persistir && typeof localStorage !== 'undefined'
+        ? {
+            ler: () => localStorage.getItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA),
+            gravar: (dado) => localStorage.setItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA, dado),
+          }
+        : undefined,
+  })
   const profissoes = criarProfissoesFalsas({
     agora,
     posicao: o.posicao ?? 2,
@@ -231,6 +279,18 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   })
   let registrosDeInsumos: RegistroDeInsumosFalso[] = []
   let registrosDePedidos: RegistroDePedidoFalso[] = []
+  let registrosDeVendas: RegistroDeVendaFalsa[] = []
+  const roupasDadas = new Set<string>(
+    (() => {
+      if (!o.persistir || typeof localStorage === 'undefined') return []
+      try {
+        const lido: unknown = JSON.parse(localStorage.getItem(CHAVE_DAS_ROUPAS) ?? '[]')
+        return Array.isArray(lido) ? lido.filter((p): p is string => typeof p === 'string') : []
+      } catch {
+        return []
+      }
+    })(),
+  )
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
@@ -295,15 +355,29 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     try {
       const bruto = localStorage.getItem(CHAVE)
       if (bruto) {
-        const { comprasDeInsumos: registros, pedidosRemunerados, ...salvo } = JSON.parse(bruto)
+        const {
+          comprasDeInsumos: registros,
+          pedidosRemunerados,
+          vendasNaFeira,
+          ...salvo
+        } = JSON.parse(bruto)
         guardado = salvo as SalvamentoGuardado
         registrosDeInsumos = registros ?? []
         registrosDePedidos = pedidosRemunerados ?? []
+        registrosDeVendas = vendasNaFeira ?? []
       }
     } catch {}
     galeria.lembrarCompras(migrarSalvamento(guardado.salvamento))
   }
-  if (o.obra === 'exemplo') {
+  if (o.obra) {
+    const obra =
+      o.obra === 'fundo'
+        ? obraDeExemploComFundo()
+        : o.obra === 'entrada'
+          ? obraDeExemploComEntrada()
+          : o.obra === 'andar'
+            ? obraDeExemploComAndar()
+            : obraDeExemplo()
     const atual =
       migrarSalvamento(guardado.salvamento) ??
       criarSalvamentoInicial(new Date(agora().getTime() - (o.adiantarMinutos ?? 0) * 60_000))
@@ -312,9 +386,9 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: {
         ...atual,
         casa: { portaNova: true },
-        construcao: { ...atual.construcao, casa: obraDeExemplo() },
+        construcao: { ...atual.construcao, casa: obra },
         // A obra de exemplo usa acabamentos dos cômodos: as chaves vêm com ela (N11).
-        chaves: atual.chaves | chavesUsadasNaObra(obraDeExemplo()),
+        chaves: atual.chaves | chavesUsadasNaObra(obra),
         projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
       atualizadoEm: agora().toISOString(),
@@ -438,6 +512,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
           ...guardado,
           comprasDeInsumos: registrosDeInsumos,
           pedidosRemunerados: registrosDePedidos,
+          vendasNaFeira: registrosDeVendas,
         }),
       )
     } catch {}
@@ -457,6 +532,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
             ...salvo,
             comprasDeInsumos: registros,
             pedidosRemunerados: registrosDePedidos,
+            vendasNaFeira: registrosDeVendas,
           }),
         )
       guardado = salvo
@@ -480,10 +556,35 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
             ...salvo,
             comprasDeInsumos: registrosDeInsumos,
             pedidosRemunerados: registros,
+            vendasNaFeira: registrosDeVendas,
           }),
         )
       guardado = salvo
       registrosDePedidos = registros
+    },
+  })
+
+  const vendas = criarVendasFalsas({
+    somenteLeitura: o.somenteLeitura ?? false,
+    posicao: o.posicao ?? 2,
+    ler: () => guardado,
+    registros: registrosDeVendas,
+    compraPendente: insumos.pendente,
+    creditar: galeria.creditar,
+    agora,
+    gravar: (salvo, registros) => {
+      if (o.persistir && typeof localStorage !== 'undefined')
+        localStorage.setItem(
+          CHAVE,
+          JSON.stringify({
+            ...salvo,
+            comprasDeInsumos: registrosDeInsumos,
+            pedidosRemunerados: registrosDePedidos,
+            vendasNaFeira: registros,
+          }),
+        )
+      guardado = salvo
+      registrosDeVendas = registros
     },
   })
 
@@ -502,6 +603,12 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       ? {}
       : {
           lerAparencia: o.aparencias === 'falha' ? async () => null : lerAparenciaFalsa,
+          listarCriacoesQueCabem:
+            o.aparencias === 'falha'
+              ? async () => {
+                  throw new Error('As criações não responderam.')
+                }
+              : listarCriacoesQueCabemFalsas,
         }),
     publico,
     perfil: { id: 'perfil-de-teste', primeiroNome: 'Lia' },
@@ -528,16 +635,40 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/mural')
           return { status: 200, corpo: { jogos: exemplo ? [JOGO_DO_MURAL_DE_EXEMPLO] : [] } }
         if (caminho === '/minijogos')
-          return { status: 200, corpo: { minijogos: exemplo ? [MINIJOGO_DE_EXEMPLO] : [] } }
+          return {
+            status: 200,
+            corpo: {
+              minijogos: exemplo ? [MINIJOGO_DE_EXEMPLO, ...MINIJOGOS_DAS_ILHAS_DE_EXEMPLO] : [],
+            },
+          }
         const metodo = opcoes?.metodo ?? 'GET'
         const daVisitaAdulta = visitasAdultas.buscar(caminho, metodo, opcoes?.corpo)
         if (daVisitaAdulta) return daVisitaAdulta
         const doFantasma = fantasmas.buscar(caminho, metodo, opcoes?.corpo)
         if (doFantasma) return doFantasma
+        const daObraEstendida = obraEstendida.buscar(caminho, metodo, opcoes?.corpo)
+        if (daObraEstendida) return daObraEstendida
         const dosInsumos = insumos.buscar(caminho, metodo, opcoes?.corpo)
         if (dosInsumos) return dosInsumos
         const dosPedidos = pedidos.buscar(caminho, metodo, opcoes?.corpo)
         if (dosPedidos) return dosPedidos
+        const daFeira = vendas.buscar(caminho, metodo, opcoes?.corpo)
+        if (daFeira) return daFeira
+        // As roupas conquistadas (A21): o que o salvamento guardado conquistou e ainda não chegou.
+        if (caminho === '/roupas/sincronizar' && metodo === 'POST') {
+          if (o.somenteLeitura)
+            return { status: 403, corpo: { error: { code: 'SOMENTE_LEITURA' } } }
+          const salvo = migrarSalvamento(guardado.salvamento)
+          const novas = salvo
+            ? roupasConquistadas(salvo, festaDoDia(agora())).filter((p) => !roupasDadas.has(p))
+            : []
+          for (const p of novas) roupasDadas.add(p)
+          if (novas.length > 0 && o.persistir && typeof localStorage !== 'undefined')
+            try {
+              localStorage.setItem(CHAVE_DAS_ROUPAS, JSON.stringify([...roupasDadas]))
+            } catch {}
+          return { status: 200, corpo: { versao: 1, novas } }
+        }
         const daProfissao = profissoes.buscar(caminho, metodo, opcoes?.corpo)
         if (daProfissao) return daProfissao
         const daGaleria = galeria.buscar(caminho, metodo, opcoes?.corpo)
@@ -683,6 +814,26 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       },
     },
     abrirFerramenta: async (pedido) => {
+      // O editor do Meu Quarto (A10): no playground não há editor; devolve o quarto como está,
+      // com um móvel girado para a mudança aparecer na casa.
+      if (pedido.ferramenta === 'quarto') {
+        if (o.somenteLeitura) return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+        if (pedido.proposito !== 'arrumar')
+          return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+        const [primeiro, ...resto] = quarto.placedItems
+        if (primeiro)
+          quarto = {
+            ...quarto,
+            placedItems: [
+              {
+                ...primeiro,
+                rot: (((primeiro.rot ?? 0) + 1) % 4) as 0 | 1 | 2 | 3,
+              },
+              ...resto,
+            ],
+          }
+        return { situacao: 'quarto-pronto', quarto: structuredClone(quarto) }
+      }
       if (pedido.ferramenta === 'avatar') {
         if (o.somenteLeitura) return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
         if (

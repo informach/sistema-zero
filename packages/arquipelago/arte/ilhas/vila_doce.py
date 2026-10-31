@@ -21,6 +21,11 @@ moitas). Toldos, flores, tufos e o miúdo das construções não colidem.
 """
 from lib_ilhas import *
 import lib_cais
+import lib_ilhas
+from mathutils import Matrix
+
+# A tela do brinquedo de minijogo (31/10/2026): a mesma do fliperama (`arte/objetos`), acesa de leve.
+lib_q.PALETTE.update({'tela': ('#1f3550', 0.25, '#3a86c8', 0.6)})
 
 # O ponto de embarque do barco (pedido de arte de 30/10/2026): o deque sai do −x da ilha 2 m para o
 # +z do eixo, entre o poste da esquina e a casinha de telhado marrom (na linha do meio a casinha 3
@@ -42,16 +47,34 @@ RAIO_FEIRA = 7.8
 ANGULOS_FEIRA = (36, 57, 78, -33, -54, -75)
 PRODUTOS = ('frutas', 'doces', 'flores', 'verduras', 'sucos', 'brinquedos')
 TOLDOS = ('toldoRosa', 'toldoAmarelo', 'toldoVerde', 'toldoAzul', 'toldoLaranja', 'toldoLilas')
+# A barraca do minijogo (31/10/2026): 2 × 1,5 m, rosa e creme, atrás das barracas 5 e 6 da feira (o chão
+# livre entre elas e a beira), virada para o oeste, para quem contorna a barraca 6 vindo da praça. A
+# âncora `jogar` fica na frente da tela, a 1,65 m do meio (0,9 m depois do balcão).
+BARRACA_DO_JOGO = dict(x=3.5, z=-9.75, olha=(0.5, -9.75), jogar=1.65)
+# Os atalhos pelos telhados (31/10/2026, pedido dela): a prancha que sobe da casinha 1 (2,0) para a 3
+# (3,6), pela frente da casinha 2 (a beira dela passa a uns 0,1 m da quina, e o morango da casinha 1 foi
+# para o canto de trás), mais curta que ir pela casinha 2, e a escada de caixotes até a casinha
+# 2, encostada na parede do lado da casinha 1 (seis degraus de 0,4 m e 0,45 m de piso, longe do caminho
+# do porto, entre a 2 e a 3). Os pontos do percurso e os confeitos não mudam.
+PRANCHA = dict(de=(-5.5, 5.4), ate=(-8.0, -0.4), largura=0.7, espessura=0.08, sobre=0.25)
+ESCADA_DE_CAIXOTES = dict(casinha=1, degraus=6, espelho=0.4, piso=0.45, largura=0.8, folga=0.05, antes=0.7)
+# O marco da Vila (31/10/2026, as ilhas mais altas nos postos mais altos): a torre de doces da sorveteria
+# (a casquinha gigante) ganha a bengala de açúcar e a estrela no alto, até 12 m acima do mar. Fica em cima
+# da casquinha (o colisor dela já para em 10 m, onde ninguém chega); só desenho.
+MARCO_DA_VILA = dict(topo=12.15)
 
 
 # ------------------------------------------------------------------ casinhas (montadas na origem)
-def casinha(variante, w=3.0, d=3.0, h=2.0, col=None):
-    """Casinha doce de telhado PLANO (dá para andar em cima): a cobertura escorre pelas bordas."""
+def casinha(variante, w=3.0, d=3.0, h=2.0, col=None, morango_atras=False):
+    """Casinha doce de telhado PLANO (dá para andar em cima): a cobertura escorre pelas bordas.
+    `morango_atras` põe o morango da casinha rosa no canto de trás, do outro lado (na Vila, o canto da
+    frente fica onde sai a prancha do atalho)."""
+    mx, my = (-w / 2 - 0.05, d / 2 + 0.05) if morango_atras else (w / 2 + 0.05, -d / 2 - 0.05)
     if col is not None:
         # Uma caixa até o topo plano (a cobertura passa 0,16 de cada lado): o telhado se pisa.
         col.append(col_caixa('casinha', (w + 0.32, d + 0.32, h), (0, 0, TOPO + h / 2)))
         if variante == 'a':
-            col.append(col_cilindro('morango', 0.28, 0.65, (w / 2 + 0.05, -d / 2 - 0.05, TOPO + h + 0.3)))
+            col.append(col_cilindro('morango', 0.28, 0.65, (mx, my, TOPO + h + 0.3)))
     parede, cobertura, detalhe = {'a': ('casinhaRosa', 'morango', 'doceBranco'),
                                   'b': ('casinhaCreme', 'chocolate', 'chocolateClaro'),
                                   'c': ('casinhaAzul', 'menta', 'doceBranco')}[variante]
@@ -86,11 +109,11 @@ def casinha(variante, w=3.0, d=3.0, h=2.0, col=None):
         p += janela(sx * (w / 2 + 0.02), 0, TOPO + 1.15, 0.6, 0.6, 0 if sx > 0 else math.pi, m_moldura=detalhe)
     if variante == 'a':
         # Morango gordo num canto e coraçãozinho em cima da porta.
-        p.append(uvball(0.32, (w / 2 + 0.05, -d / 2 - 0.05, TOPO + h + 0.25), 'morango', seg=10, ring=6,
+        p.append(uvball(0.32, (mx, my, TOPO + h + 0.25), 'morango', seg=10, ring=6,
                         scale=(1, 1, 1.15)))
         for k in range(5):
             a = 2 * math.pi * k / 5
-            p.append(leaf((w / 2 + 0.05, -d / 2 - 0.05, TOPO + h + 0.55), a, 0.22, 0.09, 'doceVerde', lift=0.05,
+            p.append(leaf((mx, my, TOPO + h + 0.55), a, 0.22, 0.09, 'doceVerde', lift=0.05,
                           droop=0.1, n=4))
         p.append(prism(heart_pts(0.28), 0.06, (0, -d / 2 - 0.1, TOPO + 1.98), 'morango'))
     elif variante == 'b':
@@ -435,6 +458,195 @@ def enfeites(col):
     return p
 
 
+# ------------------------------------------------------------------ brinquedo, atalhos e marco (31/10/2026)
+def tela_com_uv(larg, alto, m='tela'):
+    """A tela de um brinquedo de minijogo: um retângulo de pé, no meio da origem, de frente para −Y, com
+    as coordenadas de textura de 0 a 1 (u para a direita e v para cima de quem olha de frente). O mesmo
+    ajudante de `arte/ilhas-b/lib_ilhas_b.py`; vai num nó próprio, o único com a camada de coordenadas."""
+    w, h = larg / 2, alto / 2
+    q = malha('tela', [(-w, 0, -h), (w, 0, -h), (w, 0, h), (-w, 0, h)], [(0, 1, 2, 3)], m, cima=False)
+    q.data.update()
+    if q.data.polygons[0].normal.y > 0:
+        q.data.polygons[0].flip()
+    uv = q.data.uv_layers.new(name='UVMap').data
+    for li, lp in enumerate(q.data.loops):
+        v = q.data.vertices[lp.vertex_index].co
+        uv[li].uv = ((v.x + w) / (2 * w), (v.z + h) / (2 * h))
+    return q
+
+
+class _BpyComUV:
+    """O `bpy` visto pelo `exportar` do `lib_ilhas` enquanto a Vila exporta: igual ao de verdade, mas o
+    glTF grava as coordenadas de textura (só a `tela` tem a camada). O mesmo jeito do `lib_objetos`."""
+
+    class _Ops:
+        class _Cena:
+            def __getattr__(self, n):
+                if n == 'gltf':
+                    return lambda **kw: bpy.ops.export_scene.gltf(**{**kw, 'export_texcoords': True})
+                return getattr(bpy.ops.export_scene, n)
+
+        def __getattr__(self, n):
+            return self._Cena() if n == 'export_scene' else getattr(bpy.ops, n)
+
+    def __getattr__(self, n):
+        return self._Ops() if n == 'ops' else getattr(bpy, n)
+
+
+def exportar_com_uv(*args, **kw):
+    antes = lib_ilhas.bpy
+    lib_ilhas.bpy = _BpyComUV()
+    try:
+        return exportar(*args, **kw)
+    finally:
+        lib_ilhas.bpy = antes
+
+
+def barraca_do_jogo(col=None):
+    """A barraca do minijogo (2 × 1,5 m, o balcão para −Y): o armário creme com a tela na frente, a
+    moldura de confeito, o balcão rosa com a alavanca e os botões, o toldo listrado rosa e creme com os
+    pingos e a placa que acende. Devolve (desenho, [tela])."""
+    W, D = 2.0, 1.5
+    if col is not None:
+        # Uma caixa só, do chão ao beiral (o toldo fica acima da cabeça).
+        col.append(col_caixa('barraca-do-jogo', (W, D, 2.3), (0, 0, TOPO + 1.15)))
+    # O armário começa 2 cm acima do chão: o fundo dele e o do rodapé no mesmo plano piscariam.
+    p = [box((1.9, 0.75, 2.13), (0, 0.33, TOPO + 1.085), 'casinhaCreme', bevel=0.06, segs=1),
+         box((1.96, 0.81, 0.14), (0, 0.33, TOPO + 0.07), 'casquinha', bevel=0.03, segs=1)]
+    # O balcão rosa na frente, com o tampo creme e as bolinhas de confeito.
+    p.append(box((1.9, 0.6, 0.9), (0, -0.42, TOPO + 0.45), 'casinhaRosa', bevel=0.05, segs=1))
+    p.append(box((2.0, 0.7, 0.06), (0, -0.42, TOPO + 0.935), 'casinhaCreme', bevel=0.02, segs=1))
+    for k in range(5):
+        p.append(uvball(0.06, (-0.7 + k * 0.35, -0.735, TOPO + 0.55), ('morango', 'toldoAmarelo', 'menta')[k % 3],
+                        seg=8, ring=4, scale=(1, 0.5, 1)))
+    p.append(cyl(0.07, 0.02, (-0.5, -0.42, TOPO + 0.97), 'chocolate', verts=10))
+    p.append(cyl(0.015, 0.16, (-0.5, -0.42, TOPO + 1.05), 'chocolate', verts=6))
+    p.append(uvball(0.045, (-0.5, -0.42, TOPO + 1.14), 'morango', seg=8, ring=5))
+    for k, m in enumerate(('morango', 'menta', 'toldoAmarelo')):
+        p.append(cyl(0.05, 0.03, (0.05 + k * 0.2, -0.42, TOPO + 0.975), m, verts=10))
+    # A moldura de confeito (rosa) em volta da tela e o fundo escuro atrás dela.
+    yf = -0.05
+    for (sx, sz, cx, cz) in ((1.0, 0.1, 0, 1.92), (1.0, 0.1, 0, 1.18), (0.1, 0.84, -0.45, 1.55), (0.1, 0.84, 0.45, 1.55)):
+        p.append(box((sx, 0.08, sz), (cx, yf - 0.04, TOPO + cz), 'morango', bevel=0.02, segs=1))
+    p.append(box((0.82, 0.02, 0.62), (0, yf - 0.01, TOPO + 1.55), 'chocolate', bevel=0.0))
+    tela = tela_com_uv(0.8, 0.6)
+    tela.location = (0, yf - 0.03, TOPO + 1.55)
+    # Os postes da frente e o toldo de duas águas listrado (rosa e creme), com os pingos de cobertura.
+    for sx in (-1, 1):
+        p.append(cyl(0.05, 1.4, (sx * 0.92, -0.68, TOPO + 1.62), 'doceBranco', verts=6))
+    cores = ['toldoRosa', 'casinhaCreme']
+    alto = TOPO + 2.42
+    for sy in (-1, 1):
+        for k in range(6):
+            x = -1.05 + (k + 0.5) * 2.1 / 6
+            p.append(box((2.1 / 6 * 1.01, D / 2 + 0.25 + 0.012 * (k % 2), 0.05 + 0.016 * (k % 2)),
+                         (x, sy * (D / 4 + 0.08), alto), cores[k % 2], bevel=0.0, rot=(-sy * R(18), 0, 0)))
+    for k in range(7):
+        x = -1.05 + k * 2.1 / 6
+        p.append(uvball(0.11, (x, -D / 2 - 0.25, alto - 0.18), cores[k % 2], seg=8, ring=4, scale=(1, 0.4, 0.8)))
+    # A placa que acende, com o coração.
+    p.append(box((1.0, 0.06, 0.32), (0, -D / 2 - 0.3, alto + 0.17), 'lampiao', bevel=0.03, segs=1))
+    p.append(prism(heart_pts(0.18), 0.04, (0, -D / 2 - 0.35, alto + 0.17), 'morango'))
+    return p, [tela]
+
+
+def _casinha(k):
+    """O centro (x, z do jogo), a frente e o lado (vetores do jogo) e a meia largura do colisor da casinha
+    `k` do percurso (0, 1, 2). A frente olha para o meio da praça, como no `construir`."""
+    x, z, h, _ = CASINHAS[k]
+    n = math.hypot(x, z)
+    f = (-x / n, -z / n)
+    lado = (-f[1], f[0])
+    return (x, z), f, lado, (3.0 + 0.32) / 2, TOPO + h
+
+
+def _dentro(k, x, z, folga=0.0):
+    (cx, cz), f, lado, meia, _ = _casinha(k)
+    dx, dz = x - cx, z - cz
+    return abs(dx * f[0] + dz * f[1]) < meia - folga and abs(dx * lado[0] + dz * lado[1]) < meia - folga
+
+
+def prancha(col):
+    """A prancha de madeira da casinha 1 para a 3: o tampo de tábuas com as travessas, apoiado nos dois
+    telhados (entra `sobre` em cada um), com o colisor do tampo (`col-prancha-1`)."""
+    pr = PRANCHA
+    (ax, az), (bx, bz) = pr['de'], pr['ate']
+    L = math.hypot(bx - ax, bz - az)
+    ux, uz = (bx - ax) / L, (bz - az) / L
+    # Onde a linha sai do telhado da casinha 1 e entra no da 3.
+    t1 = next(t / 100 for t in range(0, int(L * 100)) if not _dentro(0, ax + ux * t / 100, az + uz * t / 100))
+    t3 = next(t / 100 for t in range(int(L * 100), 0, -1) if not _dentro(2, ax + ux * t / 100, az + uz * t / 100))
+    a = (ax + ux * (t1 - pr['sobre']), az + uz * (t1 - pr['sobre']), _casinha(0)[4] + pr['espessura'])
+    b = (ax + ux * (t3 + pr['sobre']), az + uz * (t3 + pr['sobre']), _casinha(2)[4] + pr['espessura'])
+    comp = math.dist(a, b)
+    horiz = math.hypot(b[0] - a[0], b[1] - a[1])
+    incl = math.atan2(b[2] - a[2], horiz)
+    rumo = math.atan2(-(b[1] - a[1]), b[0] - a[0])  # no chão do Blender
+    meio = ((a[0] + b[0]) / 2, -(a[1] + b[1]) / 2, (a[2] + b[2]) / 2 - pr['espessura'] / 2)
+    giro = Matrix.Rotation(rumo, 4, 'Z') @ Matrix.Rotation(-incl, 4, 'Y')
+    rot = tuple(giro.to_euler('XYZ'))
+    print(f'PRANCHA da Vila: {comp:.2f} m, inclinação {math.degrees(incl):.1f}°, de {a} a {b}')
+    p = [box((comp, pr['largura'], pr['espessura']), meio, 'madeiraDoce', bevel=0.02, segs=1, rot=rot)]
+    # As travessas de baixo e as tiras claras de cima (enfeite; a de cima sobe 1 cm).
+    n = int(comp / 0.6)
+    for k in range(n):
+        f = (k + 0.5) / n - 0.5
+        c = (meio[0] + math.cos(rumo) * math.cos(incl) * comp * f, meio[1] + math.sin(rumo) * math.cos(incl) * comp * f,
+             meio[2] + math.sin(incl) * comp * f)
+        p.append(box((0.06, pr['largura'] + 0.08, 0.06), (c[0], c[1], c[2] - 0.05), 'chocolate', bevel=0.0, rot=rot))
+    for sgn in (-1, 1):
+        off = (-math.sin(rumo) * sgn * (pr['largura'] / 2 - 0.06), math.cos(rumo) * sgn * (pr['largura'] / 2 - 0.06))
+        p.append(box((comp - 0.1, 0.06, 0.012), (meio[0] + off[0], meio[1] + off[1], meio[2] + pr['espessura'] / 2 + 0.004),
+                     'toldoRosa', bevel=0.0, rot=rot))
+    col.append(col_caixa('prancha', (comp, pr['largura'], pr['espessura']), meio, rot))
+    return p, a, b
+
+
+def escada_de_caixotes(col):
+    """A escada de caixotes até a casinha 2, encostada na parede dela do lado da casinha 1 (o lado +lado
+    da casinha), subindo de trás para a frente: cada degrau é uma pilha de caixotes até a altura dele, com
+    o colisor do degrau inteiro (`col-escada-caixote-N`). O último fica 0,4 abaixo do telhado."""
+    e = ESCADA_DE_CAIXOTES
+    (cx, cz), f, lado, meia, topo = _casinha(e['casinha'])
+    p = []
+    pes = []
+    for k in range(e['degraus']):
+        t = -meia - e['antes'] + e['piso'] * (k + 0.5)
+        d = meia + e['folga'] + e['largura'] / 2
+        x, z = cx + f[0] * t + lado[0] * d, cz + f[1] * t + lado[1] * d
+        h = e['espelho'] * (k + 1)
+        rumo = math.atan2(-f[1], f[0])
+        col.append(col_caixa('escada-caixote', (e['piso'], e['largura'], h), (x, -z, TOPO + h / 2), (0, 0, rumo)))
+        # A pilha: um caixote de 0,4 por andar (dois lado a lado), o de cima com as tábuas claras.
+        for andar in range(k + 1):
+            for sgn in (-1, 1):
+                ox, oz = lado[0] * sgn * e['largura'] / 4, lado[1] * sgn * e['largura'] / 4
+                p.append(box((e['piso'] - 0.02, e['largura'] / 2 - 0.02, e['espelho'] - 0.01),
+                             (x + ox, -(z + oz), TOPO + e['espelho'] * (andar + 0.5)), 'madeiraDoce', bevel=0.03, segs=1,
+                             rot=(0, 0, rumo)))
+                p.append(box((e['piso'] * 1.02 - 0.02, e['largura'] / 2 * 1.02 - 0.02, 0.05),
+                             (x + ox, -(z + oz), TOPO + e['espelho'] * (andar + 0.5)), 'paoEscuro', bevel=0.0,
+                             rot=(0, 0, rumo)))
+        pes.append((x, z, TOPO + h))
+    print(f'ESCADA da Vila: degraus {[(round(a, 2), round(b, 2), round(c, 2)) for a, b, c in pes]}, telhado {topo}')
+    return p, pes
+
+
+def marco_da_vila():
+    """A bengala de açúcar e a estrela que acende, em cima da cereja da casquinha gigante (no referencial
+    da sorveteria, montada na origem; a casquinha fica em (0,2; 0,75) do terraço)."""
+    base = (0.2, 0.75, TOPO + ALTURA_SORVETERIA + 4.72)
+    topo = MARCO_DA_VILA['topo']
+    h = topo - 0.32 - base[2]
+    # O miolo branco inteiro e as listras vermelhas por fora (um pouco mais grossas: sem faces no mesmo plano).
+    p = [cyl(0.08, h, (base[0], base[1], base[2] + h / 2), 'doceBranco', verts=8)]
+    n = 4
+    for k in range(n):
+        p.append(cyl(0.088, h / (2 * n), (base[0], base[1], base[2] + h * (k + 0.5) / n), 'morango', verts=8))
+    p.append(prism(star_pts(0.3, 0.13), 0.08, (base[0], base[1], topo - 0.3), 'lampiao'))
+    return p
+
+
 # ------------------------------------------------------------------ montagem
 def frente(x, z, d, tx=0.0, tz=0.0):
     dx, dz = tx - x, tz - z
@@ -467,7 +679,8 @@ def construir():
     telhados = montar(caixotes, CAIXOTES[0], CAIXOTES[1], olhar_para(CAIXOTES[0], CAIXOTES[1], 0.0, 0.0))
     for x, z, h, v in CASINHAS:
         c = []
-        telhados += colocar(casinha(v, h=h, col=c), x, z, olhar_para(x, z, 0.0, 0.0))
+        # O morango da casinha 1 vai para o canto de trás: o da frente é onde sai a prancha (31/10/2026).
+        telhados += colocar(casinha(v, h=h, col=c, morango_atras=(v == 'a')), x, z, olhar_para(x, z, 0.0, 0.0))
         col.extend(colocar(c, x, z, olhar_para(x, z, 0.0, 0.0)))
     feira = []
     ancoras_feira = []
@@ -478,7 +691,22 @@ def construir():
         fx, fz = frente(x, z, 1.4)
         ancoras_feira.append(ancora(f'barraca-{i + 1}', fx, fz))
     enf = enfeites(col)
-    conferir_corredor(obras + telhados + feira + enf + agua_fonte, 'vila-doce')
+    # A barraca do minijogo (nó `barraca-do-jogo`, a tela no nó `tela`) e a âncora `jogar` na frente dela.
+    bj = BARRACA_DO_JOGO
+    frente_bj = olhar_para(bj['x'], bj['z'], *bj['olha'])
+    c_bj = []
+    desenho_bj, tela_bj = barraca_do_jogo(c_bj)
+    brinquedo = colocar(desenho_bj, bj['x'], bj['z'], frente_bj)
+    tela_bj = colocar(tela_bj, bj['x'], bj['z'], frente_bj)
+    col.extend(colocar(c_bj, bj['x'], bj['z'], frente_bj))
+    jogar = frente(bj['x'], bj['z'], bj['jogar'], *bj['olha'])
+    # Os atalhos pelos telhados e o marco em cima da casquinha.
+    atalho, _, _ = prancha(col)
+    caixotes_da_escada, _ = escada_de_caixotes(col)
+    atalho += caixotes_da_escada
+    marco = colocar(marco_da_vila(), SORVETERIA[0], SORVETERIA[1],
+                    olhar_para(SORVETERIA[0], SORVETERIA[1], -3.4, -3.0))
+    conferir_corredor(obras + telhados + feira + enf + agua_fonte + brinquedo + tela_bj + atalho + marco, 'vila-doce')
     anc = [ancora('chegada', 11.6, 0.0), ancora('morador', *frente(PADARIA[0], PADARIA[1], 3.4, -1.0, -3.0)),
            ancora('lumi-1', 2.4, 2.2), ancora('lumi-2', -3.2, -1.6), ancora('lumi-3', 3.6, -5.0),
            ancora('lumi-4', -4.2, 4.0), ancora('fonte', 0.0, 0.0),
@@ -488,14 +716,16 @@ def construir():
     for k, (x, z, h, _) in enumerate(CASINHAS):
         anc.append(ancora(f'telhados-{k + 1}', x, z, TOPO + h))
     anc.append(ancora('telhados-fim', *frente(SORVETERIA[0], SORVETERIA[1], 0.6, -3.4, -3.0), TOPO + ALTURA_SORVETERIA))
+    anc.append(ancora('jogar', *jogar))
     nos = {'terreno': chao, 'fonte': agua_fonte, 'construcoes': obras, 'telhados': telhados, 'feira': feira,
-           'enfeites': enf}
+           'enfeites': enf, 'barraca-do-jogo': (brinquedo, (bj['x'], -bj['z'], TOPO)), 'tela': tela_bj,
+           'atalhos': atalho, 'marco-torre-de-doces': marco}
     porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
     anc += lib_cais.ancoras_do_porto(ancora, dados_porto)
     dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
     dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
     nos['porto'] = porto
-    exportar('vila-doce', nos, anc + ancoras_feira, colisores=col, porto=dados_porto)
+    exportar_com_uv('vila-doce', nos, anc + ancoras_feira, colisores=col, porto=dados_porto)
 
 
 def props():

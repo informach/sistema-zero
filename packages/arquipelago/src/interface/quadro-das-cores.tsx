@@ -9,7 +9,14 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
-import { desafioDeHoje, oQueFalta, type Quadro, quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import {
+  desafioDeHoje,
+  ondeAprender,
+  oQueFalta,
+  type Quadro,
+  quadrosDaIlha,
+} from '../sistemas/quadro-das-cores'
+import { receitaPeloId } from '../sistemas/receitas'
 
 /** Quanto tempo a festa da cor fica na tela antes de o serviço guardar que foi vista. */
 const FESTA_MS = 4000
@@ -29,7 +36,13 @@ function Premio({ d }: { d: DesafioNaLista | null }) {
   ]
     .filter(Boolean)
     .join(' e ')
-  const extra = r.moedasExtra > 0 ? ` O desafio extra vale mais ${r.moedasExtra}.` : ''
+  // O prêmio-objeto do extra (A25) vem junto das moedas do extra.
+  const receita = r.receitaDoExtra ? receitaPeloId(r.receitaDoExtra)?.nome.toLowerCase() : null
+  const doExtra = [
+    r.moedasExtra > 0 ? `mais ${r.moedasExtra}` : null,
+    receita ? `a receita de ${receita}` : null,
+  ].filter(Boolean)
+  const extra = doExtra.length > 0 ? ` O desafio extra vale ${doExtra.join(' e ')}.` : ''
   return partes ? <p className="arq-quadro-premio">{`Prêmio: ${partes}.${extra}`}</p> : null
 }
 
@@ -59,6 +72,9 @@ function CartaoDoQuadro({
         ) : null}
         {q.estado === 'disponivel' ? (
           <span className="arq-quadro-estado">Pronto para fazer</span>
+        ) : null}
+        {q.estado === 'disponivel' && d && ondeAprender(d) ? (
+          <span className="arq-quadro-aprenda">{ondeAprender(d)}</span>
         ) : null}
         {q.estado === 'vazio' ? (
           <span className="arq-quadro-estado">
@@ -141,6 +157,14 @@ function CartaoDeHoje({
 function Falta({ d }: { d: NonNullable<Quadro['desafio']> }) {
   const falta = oQueFalta(d)
   if (falta.ilhaFechada) return <span className="arq-quadro-estado">Abre quando a ilha abrir</span>
+  if (falta.faltaCurso)
+    return (
+      <span className="arq-quadro-estado">
+        {falta.cursos.length > 0
+          ? `Abre depois do curso ${falta.cursos.join(', ')}`
+          : 'Abre depois do curso deste posto'}
+      </span>
+    )
   if (falta.cursos.length === 0)
     return <span className="arq-quadro-estado">Faltam blocos que você ainda vai aprender</span>
   return (

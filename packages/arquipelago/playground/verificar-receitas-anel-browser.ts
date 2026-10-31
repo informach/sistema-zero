@@ -8,7 +8,7 @@ import { BICHOS_DO_BOSQUE, criarSalvamentoInicial } from '@sistemazero/arquipela
 import { chromium } from 'playwright-core'
 import { BANCADA } from '../src/mundo/medidas'
 import { MORADORES_COM_NOVA_AMIZADE } from '../src/sistemas/moradores-do-anel'
-import { RECEITAS } from '../src/sistemas/receitas'
+import { RECEITAS, receitasConhecidas } from '../src/sistemas/receitas'
 
 const prints =
   process.env.ARQUIPELAGO_PRINTS ?? path.resolve('../../docs/qa/2026-10-29-receitas-anel')
@@ -127,7 +127,11 @@ try {
         await p.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
         await p.getByRole('button', { name: 'Diário', exact: true }).click()
         const diario = p.getByRole('dialog', { name: 'Diário', exact: true })
-        const titulo = diario.getByText('Receitas: 8 de 12', { exact: true })
+        // O caderno cresce com as receitas de festa; o esperado sai das mesmas regras do diário.
+        const titulo = diario.getByText(
+          `Receitas: ${receitasConhecidas(s).length} de ${RECEITAS.length}`,
+          { exact: true },
+        )
         await titulo.scrollIntoViewIfNeeded()
         for (const r of novas) await diario.getByText(r.nome, { exact: true }).waitFor()
         await p.screenshot({ path: path.join(prints, `${nome}-diario.png`) })

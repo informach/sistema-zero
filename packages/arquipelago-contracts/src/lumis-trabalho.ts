@@ -37,6 +37,50 @@ export const PERFIS_DOS_LUMIS = {
   },
   algodao: { voo: 2, carga: 12, trabalho: 1.2, brilho: 1.5, jeito: 'Brilha mais à noite.' },
   pluma: { voo: 3, carga: 8, trabalho: 1, brilho: 1, jeito: 'Voa rápido com uma carga pequena.' },
+  // Os Lumis de luz (B12) trabalham como a rara da família (a forma é a dela).
+  'buzio-de-luz': {
+    voo: 2,
+    carga: 24,
+    trabalho: 1.2,
+    brilho: 1,
+    jeito: 'Leva mais alimentos por viagem.',
+  },
+  'ipe-de-luz': {
+    voo: 2,
+    carga: 24,
+    trabalho: 1.2,
+    brilho: 1,
+    jeito: 'Leva mais alimentos por viagem.',
+  },
+  'brigadeiro-de-luz': {
+    voo: 2,
+    carga: 24,
+    trabalho: 1.2,
+    brilho: 1,
+    jeito: 'Leva mais alimentos por viagem.',
+  },
+  'perola-de-luz': { voo: 2, carga: 12, trabalho: 1.2, brilho: 1.5, jeito: 'Brilha mais à noite.' },
+  'cristal-de-luz': {
+    voo: 2,
+    carga: 12,
+    trabalho: 1.2,
+    brilho: 1.5,
+    jeito: 'Brilha mais à noite.',
+  },
+  'brotinho-de-luz': {
+    voo: 2,
+    carga: 12,
+    trabalho: 0.9,
+    brilho: 1,
+    jeito: 'Trabalha com cuidado e rapidez.',
+  },
+  'pluma-de-luz': {
+    voo: 3,
+    carga: 8,
+    trabalho: 1,
+    brilho: 1,
+    jeito: 'Voa rápido com uma carga pequena.',
+  },
 } as const satisfies Readonly<Record<LumiId, PerfilDeTrabalhoLumi>>
 
 export function cargaDoLumi(carga: Readonly<Record<string, number>>): number {

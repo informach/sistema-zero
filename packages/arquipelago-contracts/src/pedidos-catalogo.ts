@@ -4,6 +4,11 @@ export interface PedidoDeMorador {
   texto: string
   /** Itens a entregar; ausente nos pedidos de achar um bicho. */
   itens?: Readonly<Record<string, number>>
+  /**
+   * Um prato pronto (§6.28, A22): o pedido só é sorteado depois que a criança sabe esta receita
+   * (o morador ensinou). A entrega é a mesma de qualquer pedido.
+   */
+  receita?: string
 }
 
 /** O pedido da Capi (o nome de antes; o formato é o de qualquer morador). */
@@ -23,6 +28,20 @@ export const PEDIDOS_DO_BENTO: readonly PedidoDeMorador[] = [
   { id: 'pipoca-2', texto: 'Duas pipocas para a feira', itens: { pipoca: 2 } },
   { id: 'salada-1', texto: 'Uma salada para o almoço da padaria', itens: { salada: 1 } },
   { id: 'tomate-2', texto: 'Dois tomates para o molho do pão', itens: { tomate: 2 } },
+  // Os pratos que ele ensinou (a proposta: "Pedido do Bento: bolo de fubá"; o pão de queijo "vende
+  // bem na feira"). Só entram no sorteio depois da receita.
+  {
+    id: 'bolo-de-fuba-1',
+    texto: 'Um bolo de fubá para a vitrine da padaria',
+    itens: { 'bolo-de-fuba': 1 },
+    receita: 'bolo-de-fuba',
+  },
+  {
+    id: 'pao-de-queijo-3',
+    texto: 'Três pães de queijo para o café da feira',
+    itens: { 'pao-de-queijo': 3 },
+    receita: 'pao-de-queijo',
+  },
 ]
 
 export const PEDIDOS_DO_ANEL = {
@@ -40,6 +59,12 @@ export const PEDIDOS_DO_ANEL = {
     { id: 'milho-1', texto: 'Um milho para o intervalo da pesquisa', itens: { milho: 1 } },
     { id: 'alface-2', texto: 'Duas alfaces para o almoço no Vale', itens: { alface: 2 } },
     { id: 'tomate-2', texto: 'Dois tomates para levar na caminhada', itens: { tomate: 2 } },
+  ],
+  // O Nico, carteiro da praia da sua ilha (§6.28, A19): o lanche entre uma entrega e outra.
+  nico: [
+    { id: 'alface-1', texto: 'Uma alface para o lanche do correio', itens: { alface: 1 } },
+    { id: 'milho-1', texto: 'Um milho para a volta pela praia', itens: { milho: 1 } },
+    { id: 'salada-1', texto: 'Uma salada para o almoço da agência', itens: { salada: 1 } },
   ],
   irie: [
     { id: 'tomate-2', texto: 'Dois tomates para o lanche perto do tear', itens: { tomate: 2 } },

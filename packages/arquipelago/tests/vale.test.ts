@@ -33,8 +33,9 @@ describe('Vale completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('vale-dos-dinos.glb')))
     const preparada = prepararIlha(cena, vale)
-    // 62 da ilha e 8 do porto do barco (deque, tábuas da beira e estacas).
-    expect(preparada.colisores.length).toBe(70)
+    // 62 da ilha, 8 do porto do barco (deque, tábuas da beira e estacas) e 3 do segredo da
+    // montaria (os dois lances da rampa de cinza quente e o terraço).
+    expect(preparada.colisores.length).toBe(73)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, vale)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()

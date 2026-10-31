@@ -30,7 +30,8 @@ PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
 /tmp/claude-0/blender-venv/bin/python -B arte/itens/render.py previa /tmp/fogao.png src/assets/itens/fogao.glb
 ```
 
-`ITENS_OUT=/outra/pasta` grava os GLBs em outro lugar.
+`ITENS_OUT=/outra/pasta` grava os GLBs em outro lugar. O `plantas-do-ceu.glb` (os estágios) não é
+item da mochila e não tem ícone (`SEM_ICONE` em `render.py` e no `build_all.py`).
 
 ## Ajudantes
 
@@ -70,6 +71,15 @@ um bloco só).
   - `bau`: o clipe `abrir` gira a `tampa` na dobradiça, atrás em cima. Dura 0,75 s e toca uma vez
     (`LoopOnce` com `clampWhenFinished`). No fim, a tampa fica em −104°;
   - `moeda`: o clipe `girar` dá uma volta em 1 s, em laço.
+- **Fósseis:** cor de osso e de pedra pelo nome do material (`ossoFossil`, `ossoFossilClaro`,
+  `ossoFossilEscuro`, `pedraFossil`, `pedraFossilEscura`), deitados no chão, 0,3 a 0,6 m na maior
+  dimensão. O ovo fóssil chama `fossil-ovo` (o `ovo-dino` do Vale é o do filhote).
+- **Plantas do céu:** os estágios seguem a horta (`noDaPlanta` em `src/mundo/horta.tsx`):
+  `<planta>-broto`, `<planta>-crescendo` e `<planta>-maduro`, todos com a base na origem. Só a flor
+  aberta brilha, de leve (`florNuvem*`, `florEstrela*`, `petala*` e `arcoMiolo`, força 0,2 a 0,4); os
+  botões fechados não brilham. A flor colhida brilha igual.
+- **Pegadas:** marcas afundadas numa placa de barro (o fundo em `barroFundo`), vistas mais de cima no
+  ícone (`DIRECAO_NO_ICONE` em `render.py`).
 - **Nós com mais de um material:** viram um grupo com uma malha por material no three.js. O nome
   do grupo é o nome do nó.
 
@@ -158,9 +168,26 @@ Tamanho = largura × altura × fundo, em unidades do jogo.
 | `peixe-robalo.glb` | colecoes | `peixe-robalo` | 0.27 × 0.09 × 0.05 | 2062 | 61 KB |
 | `peixe-sardinha.glb` | colecoes | `peixe-sardinha` | 0.17 × 0.06 × 0.04 | 2350 | 60 KB |
 | `peixe-voador.glb` | colecoes | `peixe-voador` | 0.23 × 0.07 × 0.23 | 1826 | 54 KB |
-| **total (79)** | | | | **110.632** | **2,98 MB** |
+| `fossil-cranio-rex.glb` | fosseis | `fossil-cranio-rex` | 0.51 × 0.26 × 0.26 | 988 | 24 KB |
+| `fossil-dente.glb` | fosseis | `fossil-dente` | 0.36 × 0.06 × 0.12 | 392 | 10 KB |
+| `fossil-garra.glb` | fosseis | `fossil-garra` | 0.46 × 0.20 × 0.09 | 520 | 12 KB |
+| `fossil-vertebra.glb` | fosseis | `fossil-vertebra` | 0.19 × 0.43 × 0.38 | 704 | 16 KB |
+| `fossil-chifre-triceratopo.glb` | fosseis | `fossil-chifre-triceratopo` | 0.55 × 0.29 × 0.22 | 660 | 14 KB |
+| `fossil-ovo.glb` | fosseis | `fossil-ovo` | 0.33 × 0.22 × 0.29 | 446 | 11 KB |
+| `pegada-rex.glb` | pegadas | `pegada-rex`; materiais `barroPegada`, `barroFundo` | 0.88 × 0.05 × 0.89 | 1086 | 59 KB |
+| `pegada-triceratopo.glb` | pegadas | `pegada-triceratopo` | 0.77 × 0.05 × 0.68 | 954 | 52 KB |
+| `pegada-passaro.glb` | pegadas | `pegada-passaro` | 0.23 × 0.02 × 0.27 | 1004 | 53 KB |
+| `pegada-capivara.glb` | pegadas | `pegada-capivara` | 0.21 × 0.02 × 0.22 | 1168 | 62 KB |
+| `plantas-do-ceu.glb` | plantas-do-ceu | `<planta>-broto`, `<planta>-crescendo`, `<planta>-maduro` das três (9 nós, até 694 cada); sem ícone | 0.29 × 0.60 × 0.29 | 2860 | 83 KB |
+| `flor-de-nuvem.glb` | plantas-do-ceu | `flor-de-nuvem`; brilho leve | 0.16 × 0.19 × 0.15 | 560 | 15 KB |
+| `estrela-trepadeira.glb` | plantas-do-ceu | `estrela-trepadeira`; brilho leve | 0.12 × 0.15 × 0.12 | 142 | 7 KB |
+| `arco-iris-de-petala.glb` | plantas-do-ceu | `arco-iris-de-petala`; brilho leve | 0.17 × 0.12 × 0.15 | 208 | 11 KB |
+| `semente-flor-de-nuvem.glb` | plantas-do-ceu | `semente-flor-de-nuvem` | 0.14 × 0.21 × 0.07 | 1144 | 31 KB |
+| `semente-estrela-trepadeira.glb` | plantas-do-ceu | `semente-estrela-trepadeira` | 0.14 × 0.21 × 0.07 | 726 | 23 KB |
+| `semente-arco-iris-de-petala.glb` | plantas-do-ceu | `semente-arco-iris-de-petala` | 0.14 × 0.21 × 0.07 | 792 | 27 KB |
+| **total (96)** | | | | **124.986** | **3,48 MB** |
 
-Os ícones somam 328 KB (128 cores com alfa, o maior tem 7,8 KB).
+Os ícones somam 392 KB (95 ícones, 128 cores com alfa, o maior tem 7,8 KB).
 
 ## Scripts
 
@@ -175,4 +202,7 @@ Os ícones somam 328 KB (128 cores com alfa, o maior tem 7,8 KB).
 | `cozinha.py` | fogão a lenha, panela, frigideira, colher de pau, tábua de corte |
 | `ingredientes.py` | fubá (saco de pano com a conchinha), leite (garrafinha), ovo (caixinha de meia dúzia), polvilho (saquinho de papel), queijo minas sem uma fatia, peixe cru na folha de bananeira, coco seco e a metade partida, limão e a metade cortada, cacau inteiro e aberto |
 | `iscas.py` | latinha de minhocas, isca colorida de penas (anzol de ponta redonda) |
+| `fosseis.py` | os seis fósseis do Vale (crânio de rex, dente, garra, vértebra, chifre de tricerátopo, ovo). O desenho mora só aqui: `arte/ilhas-b/vale.py` importa o módulo e põe os mesmos fósseis como nós do `vale-dos-dinos-props.glb` |
+| `pegadas.py` | as marcas no barro do rex, do tricerátopo, do pássaro e da capivara (corte booleano na placa, emendas costuradas), para os ícones do diário |
+| `plantas_do_ceu.py` | o jardim do céu das Nuvens: flor de nuvem, estrela trepadeira e arco-íris de pétala, os três estágios de cada uma (um GLB, como a horta), a flor colhida e o pacotinho de semente (o mesmo `sementes.pacote`) |
 | `colecoes.py` | conchas da praia (caracol, vieira, tigre (um cauri pintado), mexilhão, conchinha listrada (uma valva com uma costela de cada cor), estrela-do-mar), peixes da praia (sardinha, robalo, garoupa, linguado, peixe-voador), notas do Pico Gelado (semínima, colcheia, duas colcheias, clave de sol), cristais do Pico (ponta de gelo azul, pedra lapidada rosa, ametista na pedra, geodo verde), estrelas da Ilha das Nuvens (cadente, sorriso, cintilante, trio) |

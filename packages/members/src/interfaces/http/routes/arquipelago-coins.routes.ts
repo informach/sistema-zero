@@ -1,11 +1,13 @@
 import {
   DonoDaGaleriaSchema,
   PedidoDePosseDaGaleriaSchema,
+  PedidoDeRoupasSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { UnauthorizedError } from '@sistemazero/core/http'
 import { safeEqual } from '@sistemazero/core/security'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
+import type { ArquipelagoAvatarRepository } from '../../../infrastructure/persistence/drizzle/arquipelago-avatar.repository'
 import type { ArquipelagoCoinsRepository } from '../../../infrastructure/persistence/drizzle/arquipelago-coins.repository'
 import type { ArquipelagoInventoryRepository } from '../../../infrastructure/persistence/drizzle/arquipelago-inventory.repository'
 
@@ -22,6 +24,8 @@ const Movimento = z.strictObject({
 export function arquipelagoCoinsRoutes(deps: {
   repository: Pick<ArquipelagoCoinsRepository, 'movimentar'>
   inventory?: Pick<ArquipelagoInventoryRepository, 'ler' | 'comprar'>
+  /** As roupas do jogo (§6.28, A21): amizade e festa concedem peças do avatar. */
+  avatar?: Pick<ArquipelagoAvatarRepository, 'conceder'>
   token?: string
 }) {
   return new Elysia({ prefix: '/members/internal/arquipelago' })
@@ -62,6 +66,20 @@ export function arquipelagoCoinsRoutes(deps: {
       }
       const result = await deps.inventory.comprar(parsed.data)
       if (!result.ok) set.status = result.codigo === 'DONO_DIFERENTE' ? 403 : 409
+      return result
+    })
+    .post('/avatar/pecas', async ({ body, set }) => {
+      const parsed = PedidoDeRoupasSchema.safeParse(body)
+      if (!parsed.success) {
+        set.status = 400
+        return { error: { code: 'INVALID_PARTS' } }
+      }
+      if (!deps.avatar) {
+        set.status = 424
+        return { error: { code: 'AVATAR_UNAVAILABLE' } }
+      }
+      const result = await deps.avatar.conceder(parsed.data)
+      if (!result.ok) set.status = result.code === 'OWNER_MISMATCH' ? 403 : 409
       return result
     })
     .post('/coins', async ({ body, set }) => {

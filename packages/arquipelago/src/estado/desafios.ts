@@ -16,6 +16,7 @@ import {
   unirCores,
 } from '../sistemas/cores-conquistadas'
 import { lerDesafios, type MotivoDoQuadroFechado, motivoDoErro } from '../sistemas/quadro-das-cores'
+import { falaDaReceitaDoExtra } from '../sistemas/receitas'
 import type { LojaDoJogo } from './loja'
 
 /**
@@ -71,6 +72,7 @@ export function criarLojaDosDesafios(loja: LojaDoJogo, plataforma: Plataforma): 
       requisicao = controller
       const prazo = setTimeout(() => controller.abort(), 15_000)
       const tinhaLeitura = get().dados !== null
+      const anteriores = get().dados
       set({ carregando: true })
       let reservaDoCatalogo: CoresConquistadas | null = null
       const confirmarCores = (leitura: CoresConquistadas) => {
@@ -117,6 +119,9 @@ export function criarLojaDosDesafios(loja: LojaDoJogo, plataforma: Plataforma): 
         }
         reservaDoCatalogo = coresDoCatalogo(dados.desafios)
         set({ dados, carregando: false, fechado: null })
+        // O extra acabou de dar uma receita (A25): o Zappy conta que ela entrou no caderno.
+        const fala = falaDaReceitaDoExtra(anteriores, dados)
+        if (fala) loja.getState().dizer(fala)
       } catch (erro) {
         if (meu !== pedido) return
         plataforma.relatarErro(erro, 'desafios')

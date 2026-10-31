@@ -37,7 +37,8 @@ export const lerAparenciaFalsa: NonNullable<Plataforma['lerAparencia']> = async 
     return { tipo: 'molda', bytes: naGradeDoMolda(new Uint8Array(await r.arrayBuffer())) }
   }
   if (!id.endsWith('-pinta')) return null
-  const objeto = id.slice('molde-'.length, -'-pinta'.length) as ObjetoDaCasa
+  // `molde-<objeto>-pinta` (feita agora) ou `conta-<objeto>-pinta` (uma das criações da conta).
+  const objeto = id.replace(/^(?:molde|conta)-/, '').slice(0, -'-pinta'.length) as ObjetoDaCasa
   const molde = CATALOGO_DE_OBJETOS[objeto]?.molde
   const plan = molde && planificacaoDoMolde(molde)
   if (!plan) return null
@@ -56,4 +57,32 @@ export const lerAparenciaFalsa: NonNullable<Plataforma['lerAparencia']> = async 
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'))
   signal?.throwIfAborted()
   return blob ? { tipo: 'pinta', bytes: new Uint8Array(await blob.arrayBuffer()) } : null
+}
+
+/**
+ * As criações da conta que cabem no molde (A30), no playground: uma do Pinta quando o molde tem
+ * faces e uma do Molda, com ids que `lerAparenciaFalsa` desenha.
+ */
+export const listarCriacoesQueCabemFalsas: NonNullable<
+  Plataforma['listarCriacoesQueCabem']
+> = async (molde, signal) => {
+  signal?.throwIfAborted()
+  return [
+    ...(planificacaoDoMolde(molde)
+      ? [
+          {
+            ferramenta: 'pinta' as const,
+            id: `conta-${molde.objeto}-pinta`,
+            nome: `${molde.nome} de listras`,
+            miniatura: null,
+          },
+        ]
+      : []),
+    {
+      ferramenta: 'molda' as const,
+      id: `conta-${molde.objeto}-molda`,
+      nome: `${molde.nome} redonda`,
+      miniatura: null,
+    },
+  ]
 }

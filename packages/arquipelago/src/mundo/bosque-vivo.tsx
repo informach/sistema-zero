@@ -69,6 +69,7 @@ import { ComReserva } from './modelos'
 import { ObjetosReativos } from './objetos-reativos'
 import { Ondinhas } from './ondinhas'
 import { SegredoNoAlto } from './segredos-das-ilhas'
+import { SegredoNaIlha } from './segredos-dos-movimentos'
 import { TroncoNoLago } from './tronco-no-lago'
 import { ventoAgora } from './vegetacao-ao-vento'
 
@@ -401,6 +402,7 @@ export function BosqueVivo({
     <group ref={pecas} visible={false}>
       <BorroesDaIlha ilha="bosque" ancoras={lugaresDosLumis} meio={meio} />
       <SegredoNoAlto segredo={SEGREDO_BOSQUE} meio={meio} giro={giro} />
+      <SegredoNaIlha id="patins" modelo={preparada.modelo} meio={meio} giro={giro} />
       <ComReserva reserva={null}>
         <ObjetosReativos pecas={pecasSoltas} galho={galhoSeco} />
       </ComReserva>

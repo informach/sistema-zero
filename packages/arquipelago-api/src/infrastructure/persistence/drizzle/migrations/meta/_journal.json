@@ -134,6 +134,41 @@
       "when": 1793379687389,
       "tag": "0018_visitas_de_amigos",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793420328805,
+      "tag": "0019_vendas_na_feira",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793421902265,
+      "tag": "0020_nico_nos_pedidos",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793425824051,
+      "tag": "0021_teto_espera_a_semana",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793427712162,
+      "tag": "0022_medicao_da_aprendizagem",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793442889186,
+      "tag": "0023_obra_estendida",
+      "breakpoints": true
     }
   ]
 }

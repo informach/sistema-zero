@@ -2,6 +2,7 @@ import {
   type Fantasma,
   FantasmaSchema,
   GuardarFantasmaSchema,
+  melhorTempoDoPercurso,
   PERCURSOS,
   type RespostaDoServico,
   type SalvamentoGuardado,
@@ -33,7 +34,7 @@ export function criarFantasmasFalsos(deps: {
           f = p.data.fantasma
         if (
           salvo.revisao !== p.data.revisaoBase ||
-          salvo.salvamento?.percursos[f.percurso]?.melhorTempoMs !== f.tempoMs
+          melhorTempoDoPercurso(salvo.salvamento?.percursos, f.percurso) !== f.tempoMs
         )
           return { status: 409, corpo: { error: { code: 'RECORDE_DO_FANTASMA_MUDOU' } } }
         meus.set(f.percurso, structuredClone(f))
@@ -62,7 +63,7 @@ export function criarFantasmasFalsos(deps: {
         }
       }
       const f = meus.get(id),
-        tempo = deps.salvo().salvamento?.percursos[id]?.melhorTempoMs
+        tempo = melhorTempoDoPercurso(deps.salvo().salvamento?.percursos, id)
       return {
         status: 200,
         corpo:

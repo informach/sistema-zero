@@ -1,6 +1,6 @@
 import { AMIZADE_MAXIMA } from './salvamento'
 
-export type MoradorDoAnel = 'mare' | 'floco' | 'jade' | 'irie'
+export type MoradorDoAnel = 'mare' | 'floco' | 'jade' | 'irie' | 'nico'
 const coracoes = (amizade: number) => Math.min(AMIZADE_MAXIMA / 100, Math.floor(amizade / 100))
 
 /** Onde a receita se faz: a bancada da ilha (fogão e pia) ou o forno da casa (projeto azul). */
@@ -9,7 +9,7 @@ export type OrigemDaReceita =
   | { tipo: 'inicio' }
   | { tipo: 'amizade'; morador: 'bento' | MoradorDoAnel; coracoes: number }
   | { tipo: 'colecao'; colecao: 'bichos-do-bosque' }
-  | { tipo: 'festa'; festa: 'junina' | 'carnaval' | 'fim-de-ano' }
+  | { tipo: 'festa'; festa: 'junina' | 'carnaval' | 'lanternas' | 'fim-de-ano' }
 
 export interface Receita {
   id: string
@@ -60,6 +60,15 @@ export const RECEITAS: Receita[] = [
     origem: { tipo: 'festa', festa: 'fim-de-ano' },
   },
   {
+    // O doce da Noite das Lanternas (aprovada pela dona em 31/10/2026: 1 a 12 de outubro).
+    id: 'cocada',
+    nome: 'Cocada',
+    precisa: { coco: 2, leite: 1 },
+    faz: { id: 'cocada', qtd: 1 },
+    onde: 'bancada',
+    origem: { tipo: 'festa', festa: 'lanternas' },
+  },
+  {
     id: 'salada',
     nome: 'Salada da horta',
     precisa: { alface: 1, tomate: 1 },
@@ -108,10 +117,12 @@ export const RECEITAS: Receita[] = [
     origem: { tipo: 'amizade', morador: 'bento', coracoes: 4 },
   },
   {
-    id: 'moqueca-de-legumes',
-    nome: 'Moqueca de legumes',
-    precisa: { tomate: 2, milho: 1, 'leite-de-coco': 1 },
-    faz: { id: 'moqueca-de-legumes', qtd: 1 },
+    // A receita da Maré é a da proposta (§6.28, A6): peixe, coco e limão, no fogão da bancada. A
+    // cesta dela traz os três; a pesca continua devolvendo o peixe ao mar.
+    id: 'peixe-com-coco',
+    nome: 'Peixe com coco',
+    precisa: { peixe: 1, coco: 1, limao: 1 },
+    faz: { id: 'peixe-com-coco', qtd: 1 },
     onde: 'bancada',
     origem: { tipo: 'amizade', morador: 'mare', coracoes: 1 },
   },

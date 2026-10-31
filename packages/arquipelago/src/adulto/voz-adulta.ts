@@ -1,6 +1,6 @@
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import type { VozDoJogo } from '../interface/voz'
-import { POSICAO_DO_MOLDA } from '../sistemas/construcao/projeto-azul'
+import { POSICAO_DO_MOLDA, POSICAO_DO_PINTA } from '../sistemas/construcao/projeto-azul'
 import { artigoDaIlha } from '../sistemas/luneta'
 
 /**
@@ -46,6 +46,7 @@ export const VOZ_ADULTA: VozDoJogo = {
   recadoDaIris: (ilha) =>
     `Tem mais para descobrir. A ponte abre na etapa ${ilha.posicao} da sua jornada. Íris.`,
   moldaFechado: `Abre na etapa ${POSICAO_DO_MOLDA} da sua jornada`,
+  pintaFechado: `Abre na etapa ${POSICAO_DO_PINTA} da sua jornada`,
   compraSomenteLeitura: 'No acesso de suporte o jogo só mostra. A compra fica com a pessoa.',
   ilhaFechadaNoMapa: (ilha) =>
     ilha.id === 'farol'

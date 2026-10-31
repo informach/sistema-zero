@@ -26,7 +26,7 @@ import {
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
-import { lerAparenciaDaConta } from '../lib/arquipelago-aparencia'
+import { lerAparenciaDaConta, listarCriacoesQueCabem } from '../lib/arquipelago-aparencia'
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
 import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
 import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-rotina'
@@ -44,6 +44,9 @@ const RotinaDialog = lazy(() =>
 )
 const AvatarDialog = lazy(() =>
   import('./arquipelago-avatar-dialog').then((m) => ({ default: m.ArquipelagoAvatarDialog })),
+)
+const QuartoDialog = lazy(() =>
+  import('./arquipelago-quarto-dialog').then((m) => ({ default: m.ArquipelagoQuartoDialog })),
 )
 
 const CreationDialog = lazy(() =>
@@ -102,6 +105,7 @@ const CAMINHOS_DO_JOGO = new Set([
   '/irmaos',
   '/amigos',
   '/fantasmas',
+  '/obra-estendida',
   '/visitas-adultas/convite',
   '/visitas-adultas/abrir',
   '/visitas-adultas/conferir',
@@ -275,6 +279,8 @@ export function criarPlataformaDoArquipelago(opcoes: {
     publico: opcoes.publico,
     perfil: opcoes.perfil,
     lerAparencia: (id, sinal) => lerAparenciaDaConta(opcoes.perfil.id, id, sinal),
+    listarCriacoesQueCabem: (molde, sinal) =>
+      listarCriacoesQueCabem(opcoes.perfil.id, molde, sinal),
     async lerJornada() {
       const r = await json('/api/members/gamification/me')
       const dados =
@@ -359,6 +365,8 @@ export function ArquipelagoHost(props: {
   } | null>(null)
   const [moldeRotina, setMoldeRotina] = useState<MoldeDaRotina | null>(null)
   const [vestuario, setVestuario] = useState<MoldeDoVestuario | null>(null)
+  // O editor do Meu Quarto por cima do jogo (§6.28, A10).
+  const [quartoAberto, setQuartoAberto] = useState(false)
   const fimRotina = useRef<((resultado: ResultadoDaFerramentaRotina | null) => void) | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
@@ -373,6 +381,14 @@ export function ArquipelagoHost(props: {
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.ferramenta === 'quarto') {
+          if (pedido.proposito !== 'arrumar')
+            return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setQuartoAberto(true)
+          })
+        }
         if (pedido.ferramenta === 'avatar') {
           const molde = MoldeDoVestuarioSchema.safeParse(pedido.molde)
           if (pedido.proposito !== 'vestir' || !molde.success)
@@ -526,6 +542,46 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {quartoAberto ? (
+        <ToolLoadBoundary
+          Aviso={Aviso}
+          ferramenta="quarto"
+          onCancel={() => {
+            setQuartoAberto(false)
+            pendente.current?.({ situacao: 'cancelado' })
+            pendente.current = null
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="quarto" falhou={false} />}>
+            <QuartoDialog
+              publico={publico}
+              onFinish={async () => {
+                const resolve = pendente.current
+                if (!resolve) return
+                setQuartoAberto(false)
+                try {
+                  // O editor grava pela rota do quarto; o jogo recebe o quarto relido.
+                  const p = criarPlataformaDoArquipelago({
+                    publico,
+                    perfil: { id, primeiroNome },
+                    voltarPara,
+                  })
+                  const quarto = await p.lerQuarto()
+                  if (pendente.current !== resolve) return
+                  pendente.current = null
+                  resolve({ situacao: 'quarto-pronto', quarto })
+                } catch (erro) {
+                  console.error('[arquipelago] quarto', erro)
+                  if (pendente.current === resolve) {
+                    pendente.current = null
+                    resolve({ situacao: 'indisponivel', motivo: 'leitura-do-quarto' })
+                  }
+                }
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
       {vestuario ? (
         <ToolLoadBoundary
           Aviso={Aviso}

@@ -26,20 +26,26 @@ const comAmizade = (amizade: number) => {
 const pontosDaPagina = CORACOES_DA_PAGINA * AMIZADE.porCoracao
 
 describe('as páginas do diário da Íris', () => {
-  test('uma por ilha do anel e a última no Farol, todas guardadas no começo', () => {
+  test('a carta da sua ilha, uma por ilha do anel e a última no Farol; só a carta aberta no começo', () => {
     const paginas = paginasDoDiario(inicial())
     expect(paginas.map((p) => p.ilha)).toEqual([...ILHAS_DO_DIARIO])
-    expect(paginas.every((p) => !p.aberta)).toBe(true)
-    expect(paginas[0]).toMatchObject({ nome: 'Bosque dos Bichos' })
+    expect(paginas[0]).toEqual({
+      ilha: 'sua-ilha',
+      nome: 'A carta de boas-vindas',
+      aberta: true,
+      texto: 'A casa é sua. Acenda as cores.',
+    })
+    expect(paginas.slice(1).every((p) => !p.aberta)).toBe(true)
+    expect(paginas[1]).toMatchObject({ nome: 'Bosque dos Bichos' })
     expect(paginas.at(-1)).toMatchObject({ dica: 'A última página fica no alto do Farol.' })
   })
 
   test('a do Bosque abre com os corações de amizade da Capi e diz quantos faltam antes', () => {
-    const quase = paginasDoDiario(comAmizade(pontosDaPagina - 1))[0]
+    const quase = paginasDoDiario(comAmizade(pontosDaPagina - 1))[1]
     expect(quase?.aberta).toBe(false)
     expect(quase && !quase.aberta && quase.dica).toContain('(falta 1)')
-    expect(paginasDoDiario(inicial())[0]).toMatchObject({ aberta: false })
-    const aberta = paginasDoDiario(comAmizade(pontosDaPagina))[0]
+    expect(paginasDoDiario(inicial())[1]).toMatchObject({ aberta: false })
+    const aberta = paginasDoDiario(comAmizade(pontosDaPagina))[1]
     expect(aberta).toEqual({
       ilha: 'bosque',
       nome: 'Bosque dos Bichos',
@@ -152,6 +158,7 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
       'milho-da-fogueira',
       'pipoca-de-festa',
       'manjar-de-coco',
+      'cocada',
       'salada',
       'pipoca',
     ])
@@ -162,7 +169,7 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
     const bolo = zero.find((r) => r.id === 'bolo-de-fuba')
     expect(bolo && !bolo.sabe && bolo.dica).toContain('com 1 coração de amizade (falta 1)')
     const tudo = colecaoDeReceitas(comBento(500))
-    expect(tudo.filter((r) => r.sabe)).toHaveLength(10)
+    expect(tudo.filter((r) => r.sabe)).toHaveLength(11)
     expect(tudo.find((r) => r.id === 'acai-na-tigela')).toMatchObject({ sabe: false })
     expect(tudo.find((r) => r.id === 'bolo-de-fuba')).toMatchObject({
       precisa: '1 fubá, 1 leite, 1 ovo',

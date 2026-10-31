@@ -23,8 +23,11 @@ import { ClimaDaIlha } from './clima-da-ilha'
 import { ColecoesDaPraia } from './colecoes-da-praia'
 import { ConvidadosDaCasa } from './convidados'
 import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
+import { EnquantoFechado } from './enquanto-fechado'
 import { FantasmaFamiliar } from './fantasma-familiar'
 import { Farol } from './farol'
+import { FilhoteQueAcompanha } from './filhote-que-acompanha'
+import { FloradaDaIlha } from './florada'
 import { CameraDaFoto } from './foto'
 import { GuiaDoZappyNoMundo } from './guia-do-zappy'
 import { HabitantesDaPraia } from './habitantes-da-praia'
@@ -39,10 +42,15 @@ import {
 } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
+import { Nico } from './nico'
 import { PetQueAcompanha } from './pet-que-acompanha'
+import { PlacaDoPedido } from './placa-do-pedido'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
+import { QuartoRelido } from './quarto-relido'
 import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
+import { RoupasConquistadas } from './roupas-conquistadas'
+import { MergulhoDaGruta, SegredoDoCipo } from './segredos-da-sua-ilha'
 import { SegredoNoAlto } from './segredos-das-ilhas'
 
 /** O segredo da sua ilha (N12): o baú no alto do vento. */
@@ -102,12 +110,17 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <IlhaCentral />
           <DescobertasDaIlhaCentral />
           <HabitantesDaPraia />
+          <Nico />
+          <PlacaDoPedido />
           <ColecoesDaPraia />
           <ChavesDaCasa />
           <SegredoNoAlto segredo={SEGREDO_DA_SUA_ILHA} />
+          <SegredoDoCipo />
+          <MergulhoDaGruta />
           <Casa />
           <ConvidadosDaCasa />
           <Horta />
+          <FloradaDaIlha />
           <ClimaDaIlha />
           <Bancada />
           <Farol />
@@ -119,12 +132,16 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <RetratoDoAvatar />
           <BichoAdotado />
           <PetQueAcompanha />
+          <FilhoteQueAcompanha />
           <Camera />
           <Medidor />
         </Physics>
         <Zappy />
         <GuiaDoZappyNoMundo />
         <RotinaDosLumis />
+        <EnquantoFechado />
+        <RoupasConquistadas />
+        <QuartoRelido />
       </Suspense>
     </Canvas>
   )

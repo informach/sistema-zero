@@ -7,18 +7,25 @@ import {
   type EntregarPedido,
   EntregarPedidoSchema,
   type Insumo,
+  type ItensDaVenda,
   type MoradorDoPedido,
   PedidosPendentesSchema,
   prepararEntregaDeInsumos,
   prepararEntregaDoPedido,
+  prepararVendaNaFeira,
   type ResultadoDaCompraDeInsumos,
   ResultadoDaCompraDeInsumosSchema,
+  type ResultadoDaVenda,
+  ResultadoDaVendaSchema,
   type ResultadoDoPedido,
   ResultadoDoPedidoSchema,
   type Salvamento,
   type SalvamentoGuardado,
   SalvamentoGuardadoSchema,
   type ServicoDoJogo,
+  VendasPendentesSchema,
+  type VenderNaFeira,
+  VenderNaFeiraSchema,
 } from '@sistemazero/arquipelago-contracts'
 import type { ArmazemDeSalvamento, RascunhoDoJogo } from './armazem-salvamento'
 import { conciliarSalvamento, mesmosDados } from './conciliar-salvamento'
@@ -36,6 +43,18 @@ class RespostaDeSalvamentoError extends Error {
     super(`Salvamento recusado (${status})`)
   }
 }
+
+/** A banca recusou a venda sem consumir nada (`VENDA_REPETIDA`: já vendeu hoje). */
+export class VendaRecusadaNoServicoError extends RespostaDeSalvamentoError {
+  constructor(
+    status: number,
+    readonly codigo: string | null,
+  ) {
+    super(status)
+  }
+}
+
+type ResultadoDaOperacao = ResultadoDaCompraDeInsumos | ResultadoDoPedido | ResultadoDaVenda
 export interface FilaDeSalvamento {
   guardar(salvamento: Salvamento): void
   salvarAgora(): Promise<void>
@@ -45,6 +64,8 @@ export interface FilaDeSalvamento {
   copiaLocal(): string
   comprarInsumos(item: Insumo, quantidade: number): Promise<ResultadoDaCompraDeInsumos>
   entregarPedido(morador: MoradorDoPedido): Promise<ResultadoDoPedido>
+  /** Vender pratos na banca da feira (A22): uma venda por dia, pelo serviço. */
+  venderNaFeira(itens: ItensDaVenda): Promise<ResultadoDaVenda>
   retomarOperacoes(): Promise<void>
 }
 export interface OpcoesDaFila {
@@ -85,8 +106,9 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
   let requisicao: AbortController | null = null
   let compra = o.rascunhoInicial?.compra ?? null
   let entrega = o.rascunhoInicial?.entrega ?? null
+  let venda = o.rascunhoInicial?.venda ?? null
   let operacoesProntas = !o.conferirOperacoes
-  let operacaoEmVoo: Promise<ResultadoDaCompraDeInsumos | ResultadoDoPedido | null> | null = null
+  let operacaoEmVoo: Promise<ResultadoDaOperacao | null> | null = null
   let requisicaoOperacao: AbortController | null = null
   let ultimaSituacao: SituacaoDoSalvamento = 'ok'
 
@@ -97,13 +119,14 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
   const pendente = () => local !== null && !mesmosDados(base.salvamento, local)
   function persistir(): Promise<void> {
     const dado =
-      local && (pendente() || remotoEmConflito || enviado || compra || entrega)
+      local && (pendente() || remotoEmConflito || enviado || compra || entrega || venda)
         ? structuredClone({
             base,
             local,
             enviado,
             ...(compra ? { compra } : {}),
             ...(entrega ? { entrega } : {}),
+            ...(venda ? { venda } : {}),
           })
         : null
     gravacao = gravacao.then(async () => {
@@ -129,6 +152,7 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       !operacoesProntas ||
       compra ||
       entrega ||
+      venda ||
       operacaoEmVoo
     )
       return
@@ -159,7 +183,8 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
     avisar('ok')
   }
   async function enviar(): Promise<void> {
-    if (!local || remotoEmConflito || parado || compra || entrega || !operacoesProntas) return
+    if (!local || remotoEmConflito || parado || compra || entrega || venda || !operacoesProntas)
+      return
     const controller = new AbortController()
     requisicao = controller
     const prazo = setTimeout(() => controller.abort(), 15_000)
@@ -227,7 +252,7 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       timer = null
     }
     if (emVoo) return emVoo
-    if (compra || entrega || !operacoesProntas) return retomarOperacoes()
+    if (compra || entrega || venda || !operacoesProntas) return retomarOperacoes()
     if (!parado && falhaLocal)
       return persistir().then(async () => {
         if (falhaLocal) return
@@ -359,9 +384,54 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
     }
   }
 
+  async function enviarVenda(c: VenderNaFeira): Promise<ResultadoDaVenda> {
+    if (parado) throw new Error('Esta sessão já foi encerrada.')
+    const controller = new AbortController()
+    requisicaoOperacao = controller
+    const prazo = setTimeout(() => controller.abort(), 15_000)
+    try {
+      const r = await o.servico.buscar('/feira/vender', {
+        metodo: 'POST',
+        corpo: c,
+        sinal: controller.signal,
+      })
+      if (r.status !== 200) {
+        const erro = r.corpo as { error?: { code?: unknown } } | null
+        const codigo = typeof erro?.error?.code === 'string' ? erro.error.code : null
+        if (
+          (r.status === 409 && (codigo === 'VENDA_BASE_RECUSADA' || codigo === 'VENDA_REPETIDA')) ||
+          (r.status === 423 && codigo === 'COMPRA_PENDENTE')
+        ) {
+          // Estes códigos provam que esta chave não consumiu os pratos nem foi à carteira.
+          venda = null
+          operacoesProntas = false
+          await persistir()
+        }
+        throw new VendaRecusadaNoServicoError(r.status, codigo)
+      }
+      const resultado = ResultadoDaVendaSchema.parse(r.corpo)
+      if (!mesmosDados(resultado.venda, c) || resultado.guardado.revisao < base.revisao)
+        throw new Error('A confirmação não corresponde à venda na feira.')
+      adotarConfirmacao(resultado.guardado, c.revisaoBase, (s) => {
+        const r = prepararVendaNaFeira(s, c.itens)
+        return r.ok ? r.salvamento : null
+      })
+      venda = null
+      await persistir()
+      if (falhaLocal) throw new Error('Não foi possível guardar a confirmação neste aparelho.')
+      return resultado
+    } finally {
+      clearTimeout(prazo)
+      requisicaoOperacao = null
+    }
+  }
+
   function executarOperacao(
-    nova?: { item: Insumo; quantidade: number } | { morador: MoradorDoPedido },
-  ): Promise<ResultadoDaCompraDeInsumos | ResultadoDoPedido | null> {
+    nova?:
+      | { item: Insumo; quantidade: number }
+      | { morador: MoradorDoPedido }
+      | { venda: ItensDaVenda },
+  ): Promise<ResultadoDaOperacao | null> {
     if (operacaoEmVoo) {
       if (nova) return Promise.reject(new Error('Aguarde a confirmação anterior.'))
       return operacaoEmVoo
@@ -371,7 +441,15 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       if (parado) throw new Error('Esta sessão já foi encerrada.')
       avisar('confirmando')
       if (nova) {
-        if (!operacoesProntas || compra || entrega || remotoEmConflito || falhaLocal || recusado)
+        if (
+          !operacoesProntas ||
+          compra ||
+          entrega ||
+          venda ||
+          remotoEmConflito ||
+          falhaLocal ||
+          recusado
+        )
           throw new Error('Confirme seu progresso antes de continuar.')
         // O estado da loja já está pausado. Uma gravação anterior pode estar em voo.
         await salvarAgora()
@@ -387,6 +465,21 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
           remotoEmConflito
         )
           throw new Error('Seu progresso precisa chegar ao serviço antes de continuar.')
+        if ('venda' in nova) {
+          if (!prepararVendaNaFeira(local, nova.venda).ok)
+            throw new Error('Confira os pratos da mochila antes de vender.')
+          venda = VenderNaFeiraSchema.parse({
+            versao: 1,
+            chave: crypto.randomUUID(),
+            revisaoBase: base.revisao,
+            dia: diaDeSaoPaulo(o.agora?.() ?? new Date()),
+            itens: nova.venda,
+          })
+          await persistir()
+          if (falhaLocal || parado)
+            throw new Error('Não foi possível guardar a venda neste aparelho.')
+          return enviarVenda(venda)
+        }
         if ('morador' in nova) {
           const dia = diaDeSaoPaulo(o.agora?.() ?? new Date())
           const p = local.moradores[nova.morador].pedido
@@ -421,9 +514,10 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       }
       // Resolve primeiro a confirmação que este aparelho pode ter perdido. Em seguida,
       // procura a reserva feita em outro aparelho antes de permitir novas alterações.
-      let resultado: ResultadoDaCompraDeInsumos | ResultadoDoPedido | null = null
+      let resultado: ResultadoDaOperacao | null = null
       if (compra) resultado = await enviarCompra(compra)
       if (entrega) resultado = await enviarEntrega(entrega)
+      if (venda) resultado = await enviarVenda(venda)
       if (parado) throw new Error('Esta sessão já foi encerrada.')
       const controller = new AbortController()
       requisicaoOperacao = controller
@@ -467,11 +561,42 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
         clearTimeout(prazoPedido)
         requisicaoOperacao = null
       }
-      if (pendenteDoMorador && pendenteDoMorador.chave !== resultado?.pedido.chave) {
+      if (
+        pendenteDoMorador &&
+        !(resultado && 'pedido' in resultado && resultado.pedido.chave === pendenteDoMorador.chave)
+      ) {
         entrega = pendenteDoMorador
         await persistir()
         if (falhaLocal) throw new Error('Não foi possível guardar a retomada neste aparelho.')
         resultado = await enviarEntrega(pendenteDoMorador)
+      }
+      // O mesmo para a venda na feira (A22). Um serviço anterior, sem a rota, responde 404:
+      // não há venda a retomar, e o salvamento segue normalmente.
+      const controllerVenda = new AbortController()
+      requisicaoOperacao = controllerVenda
+      const prazoVenda = setTimeout(() => controllerVenda.abort(), 15_000)
+      let vendaPendente: VenderNaFeira | undefined
+      try {
+        if (parado) throw new Error('Esta sessão já foi encerrada.')
+        const r = await o.servico.buscar('/feira/vendas/pendentes', {
+          sinal: controllerVenda.signal,
+        })
+        if (parado) throw new Error('Esta sessão já foi encerrada.')
+        if (r.status !== 200 && r.status !== 404) throw new RespostaDeSalvamentoError(r.status)
+        vendaPendente =
+          r.status === 200 ? VendasPendentesSchema.parse(r.corpo).vendas[0] : undefined
+      } finally {
+        clearTimeout(prazoVenda)
+        requisicaoOperacao = null
+      }
+      if (
+        vendaPendente &&
+        !(resultado && 'venda' in resultado && resultado.venda.chave === vendaPendente.chave)
+      ) {
+        venda = vendaPendente
+        await persistir()
+        if (falhaLocal) throw new Error('Não foi possível guardar a retomada neste aparelho.')
+        resultado = await enviarVenda(vendaPendente)
       }
       operacoesProntas = true
       recusado = false
@@ -492,7 +617,7 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
               ? 'erro-local'
               : remotoEmConflito
                 ? 'conflito'
-                : compra || entrega || !operacoesProntas
+                : compra || entrega || venda || !operacoesProntas
                   ? 'confirmando'
                   : recusado
                     ? 'recusado'
@@ -529,7 +654,13 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
     },
     async entregarPedido(morador) {
       const resultado = await executarOperacao({ morador })
-      if (!resultado || !('pagamento' in resultado)) throw new Error('Pedido sem confirmação.')
+      if (!resultado || !('pedido' in resultado) || !('pagamento' in resultado))
+        throw new Error('Pedido sem confirmação.')
+      return resultado
+    },
+    async venderNaFeira(itens) {
+      const resultado = await executarOperacao({ venda: itens })
+      if (!resultado || !('venda' in resultado)) throw new Error('Venda sem confirmação.')
       return resultado
     },
     retomarOperacoes,
@@ -552,7 +683,7 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       })()
       return encerramento
     },
-    temPendente: () => pendente() || compra !== null || entrega !== null,
+    temPendente: () => pendente() || compra !== null || entrega !== null || venda !== null,
     async resolver(escolha) {
       if (!remotoEmConflito || parado) return
       // Se outro aparelho avançar de novo, o CAS produzirá outro conflito; escolher a cópia

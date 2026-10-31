@@ -1,10 +1,11 @@
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { ilha } from '@sistemazero/arquipelago-contracts'
-import { useMemo, useRef, useState } from 'react'
-import { BufferAttribute, type BufferGeometry, Color, PlaneGeometry } from 'three'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { BufferAttribute, type BufferGeometry, Color, type Mesh, PlaneGeometry } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lanternaDoZappy } from '../sistemas/borroes'
+import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
@@ -20,6 +21,7 @@ import {
 import { Colisores } from './colisores'
 import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { useDesbotado } from './desbotado'
 import { lugarDoQuadroNaSuaIlha, lugarDoQuadroNoFarol } from './lugar-do-quadro'
 import { DISTANCIA_DOS_LUMIS_DA_PRAIA, LUGARES_DOS_LUMIS_DA_PRAIA } from './lugares-da-praia'
 import { LunetaDoPier } from './luneta'
@@ -27,6 +29,12 @@ import { alturaDaIlha, chaoEm, PIER, RAIO_DO_RASO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 import { percursoDaPraia } from './percursos-das-ilhas'
 import { QuadroDasCores } from './quadro-das-cores'
+import {
+  moldarMalhas,
+  TerrenoMoldado,
+  useAlturaDoTerreno,
+  verticesMoldados,
+} from './terreno-moldado'
 
 const CORES = {
   grama: [new Color('#7dbb5a'), new Color('#6fae4f')],
@@ -56,21 +64,24 @@ function geometriaDoChao(): BufferGeometry {
 
 /**
  * O chão da sua ilha. A colisão continua saindo de `alturaDaIlha` (trimesh); o desenho é o do
- * Blender (`terreno.glb`, mesma altura, com capim, flores, moitas, pedras e a espuma).
+ * Blender (`terreno.glb`, mesma altura, com capim, flores, moitas, pedras e a espuma). O terreno
+ * moldado do lote (Nuvens em diante) sobe os cantos da grade nos dois.
  */
 function Terreno() {
   const geometria = useMemo(geometriaDoChao, [])
+  const altura = useAlturaDoTerreno()
   const colisao = useMemo(() => {
-    const pos = geometria.attributes.position as BufferAttribute
     const indice = geometria.index
     return {
-      vertices: new Float32Array(pos.array),
+      vertices: verticesMoldados(geometria, altura),
       indices: new Uint32Array(indice ? indice.array : []),
     }
-  }, [geometria])
+  }, [geometria, altura])
   return (
     <>
+      <TerrenoMoldado />
       <RigidBody type="fixed" colliders={false}>
+        {/* Os `args` novos (chão moldado) refazem o trimesh no rapier. */}
         <TrimeshCollider args={[colisao.vertices, colisao.indices]} />
       </RigidBody>
       <ComReserva
@@ -93,18 +104,30 @@ function Terreno() {
  */
 function ChaoDoModelo() {
   const raiz = useModelo(MODELOS.terreno)
-  const { chao, enfeites, espuma, colisores } = useMemo(() => {
+  const { chao, doLote, enfeites, espuma, colisores } = useMemo(() => {
+    const chao = copiarNo(raiz, 'chao')
+    // O chão do lote ganha geometria própria: moldar não pode mexer no arquivo em cache.
+    const doLote = chao.getObjectByName('chao-do-lote') ?? null
+    doLote?.traverse((o) => {
+      const m = o as Mesh
+      if (m.isMesh) m.geometry = m.geometry.clone()
+    })
     const espuma = copiarNo(raiz, 'espuma', true)
     // A espuma é desenhada depois do mar (os dois são translúcidos).
     espuma.renderOrder = 2
     for (const m of materiaisDe(espuma)) m.depthWrite = false
     return {
-      chao: copiarNo(raiz, 'chao'),
+      chao,
+      doLote,
       enfeites: copiarNo(raiz, 'enfeites'),
       espuma,
       colisores: lerColisores(raiz),
     }
   }, [raiz])
+  const altura = useAlturaDoTerreno()
+  useEffect(() => {
+    if (doLote) moldarMalhas(doLote, altura)
+  }, [doLote, altura])
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
     espuma.position.y = Math.sin(t * 0.8) * 0.025
@@ -262,15 +285,19 @@ function PierDoModelo() {
   const { ambiente, movimento } = useJogo()
   const [viagemDisponivel, definirDisponivel] = useState(false)
   const raiz = useModelo(MODELOS.pier)
-  const { pier, barquinho, lanternas, colisores } = useMemo(() => {
+  const { pier, barquinho, lanternas, colisores, madeira } = useMemo(() => {
     const copia = copiarNo(raiz, 'pier', true)
     return {
       pier: copia,
+      madeira: materiaisDe(copia).filter((m) => m.name !== 'lanterna'),
       barquinho: copiarNo(raiz, 'barquinho-decorativo'),
       lanternas: materiaisDe(copia, 'lanterna'),
       colisores: lerColisores(raiz),
     }
   }, [raiz])
+  // O píer começa desbotado e ganha cor no primeiro peixe pescado (§6.28, A17).
+  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).pier)
+  useDesbotado(madeira, !comCor)
   useFrame(() => {
     if (viagemDisponivel !== (movimento.barco !== null)) definirDisponivel(movimento.barco !== null)
     for (const m of lanternas) m.emissiveIntensity = ambiente.noite ? 2.2 : 0

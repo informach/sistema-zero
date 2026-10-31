@@ -6,6 +6,7 @@ import {
   pertenceAoPerfil,
   soDoKids,
 } from '../src/components/arquipelago-host'
+import { NOME_DA_FERRAMENTA } from '../src/components/arquipelago-porta'
 
 const fetchOriginal = globalThis.fetch
 afterEach(() => {
@@ -88,6 +89,29 @@ test('trajetos usam somente os percursos conhecidos e a leitura do irmão fica n
   })
   expect((await adulto.servico.buscar(caminho)).status).toBe(404)
   expect(pedidos).toHaveLength(1)
+})
+
+test('a obra estendida é do jogo nos dois públicos, só no caminho exato', async () => {
+  expect(caminhoDoJogo('/obra-estendida')).toBe(true)
+  expect(soDoKids('/obra-estendida')).toBe(false)
+  for (const p of ['/obra-estendida/1', '/obra-estendida?perfil=outro', '/obra-estendidas'])
+    expect(caminhoDoJogo(p)).toBe(false)
+  const corpo = { revisaoBase: 0, obra: { versao: 1, iglu: null, andar: null, terreno: null } }
+  const pedidos = servir({
+    'PUT /api/arquipelago/obra-estendida': { status: 200, body: { revisao: 1, obra: corpo.obra } },
+  })
+  for (const publico of ['kids', 'adulto'] as const) {
+    const p = criarPlataformaDoArquipelago({
+      publico,
+      perfil: { id: 'p1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    expect((await p.servico.buscar('/obra-estendida', { metodo: 'PUT', corpo })).status).toBe(200)
+  }
+  expect(pedidos.map((p) => [p.method, p.body])).toEqual([
+    ['PUT', JSON.stringify(corpo)],
+    ['PUT', JSON.stringify(corpo)],
+  ])
 })
 
 describe('a porta da plataforma para o jogo', () => {
@@ -211,6 +235,10 @@ describe('a porta da plataforma para o jogo', () => {
     expect(await p.lerQuarto()).toEqual(state)
     expect(await p.salvarQuarto(state)).toEqual(state)
     expect(pedidos.at(-1)).toMatchObject({ method: 'PUT', body: JSON.stringify(state) })
+  })
+
+  test('arrumar o quarto no jogo usa o editor da plataforma, com nome na porta (A10)', () => {
+    expect(NOME_DA_FERRAMENTA.quarto).toBe('o seu quarto')
   })
 
   test('o serviço só alcança as rotas do jogo', async () => {

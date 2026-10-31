@@ -399,19 +399,29 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
   }
 
   async guardarTentativa(e: Parameters<RepositorioDoJogadorNosDesafios['guardarTentativa']>[0]) {
-    await this.db
+    const [linha] = await this.db
       .insert(desafioProgresso)
       .values({
         jogadorId: e.jogadorId,
         desafioId: e.desafioId,
         revisao: e.revisao,
         ultimosResultados: e.resultados,
+        tentativas: 1,
+        dicas: e.dicas,
         atualizadoEm: e.agora,
       })
       .onConflictDoUpdate({
         target: [desafioProgresso.jogadorId, desafioProgresso.desafioId],
-        set: { revisao: e.revisao, ultimosResultados: e.resultados, atualizadoEm: e.agora },
+        set: {
+          revisao: e.revisao,
+          ultimosResultados: e.resultados,
+          tentativas: sql`${desafioProgresso.tentativas} + 1`,
+          dicas: sql`greatest(${desafioProgresso.dicas}, ${e.dicas})`,
+          atualizadoEm: e.agora,
+        },
       })
+      .returning({ tentativas: desafioProgresso.tentativas, dicas: desafioProgresso.dicas })
+    return { tentativas: linha?.tentativas ?? 1, dicas: linha?.dicas ?? e.dicas }
   }
 
   async concluir(e: Parameters<RepositorioDoJogadorNosDesafios['concluir']>[0]): Promise<boolean> {
@@ -427,6 +437,8 @@ export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJoga
         moedasSituacao: e.moedas > 0 ? 'pendente' : 'nenhuma',
         moedasExtra: e.moedasExtra,
         moedasExtraSituacao: 'nenhuma',
+        tentativas: e.tentativas,
+        dicas: e.dicas,
       })
       .onConflictDoNothing({ target: [desafiosConcluidos.jogadorId, desafiosConcluidos.desafioId] })
       .returning({ desafioId: desafiosConcluidos.desafioId })

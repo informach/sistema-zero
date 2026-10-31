@@ -1,6 +1,8 @@
 """Gera todos os objetos com função da casa em `src/assets/objetos/` e confere o contrato.
 
   /tmp/claude-0/blender-venv/bin/python -B arte/objetos/build_all.py
+  # só as versões retro e moderna da galeria (`*_estilos.py`), sem regravar os clássicos
+  /tmp/claude-0/blender-venv/bin/python -B arte/objetos/build_all.py --estilos
 
 Cada grupo roda num processo próprio. As conferências leem o `relatorio.json` que cada exportação
 grava (nós, clipes, materiais, triângulos, tamanho) e o próprio GLB (duração dos clipes e as
@@ -17,6 +19,8 @@ import sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PACOTE = os.path.abspath(os.path.join(AQUI, '..', '..'))
 GRUPOS = ['geladeira', 'forno', 'aquario', 'lareira', 'banda', 'fliperama', 'museu', 'casinha', 'planta_interior']
+# As versões retro e moderna da galeria (31/10/2026): um script por objeto, que usa o clássico.
+ESTILOS = [f'{g}_estilos' for g in GRUPOS]
 SAIDA = os.path.join(PACOTE, 'src', 'assets', 'objetos')
 TETO_TRIS, TETO_KB = 10000, 450
 # Arquivos em que cada nó é uma peça solta (a busca de faces compara só dentro do mesmo nó).
@@ -48,6 +52,10 @@ CONTRATO = {
                 'uv': ['pintaFrente', 'pintaLadoEsq', 'pintaLadoDir']},
     'planta-interior': {'nos': ['vaso', 'terra', 'folhas'], 'materiais': ['pintaFrente'], 'uv': ['pintaFrente']},
 }
+# A retro e a moderna têm o mesmo contrato do clássico (e a mesma caixa, conferida abaixo).
+for _pid in [p for p in CONTRATO if p != 'geladeira-holograma']:
+    for _versao in ('retro', 'moderna'):
+        CONTRATO[f'{_pid}-{_versao}'] = CONTRATO[_pid]
 
 
 def ler_glb(caminho):
@@ -79,21 +87,28 @@ def faces_coplanares(pid, erros):
     if not bun:
         print('bun não encontrado: a busca de faces coplanares ficou de fora')
         return
-    args = [bun, 'scripts/faces-coplanares.ts'] + (['--separados'] if pid in SEPARADOS else [])
+    args = [bun, 'scripts/faces-coplanares.ts'] + (['--separados'] if pid.split('-')[0] in SEPARADOS else [])
     r = subprocess.run(args + [os.path.join(SAIDA, f'{pid}.glb')], cwd=PACOTE, capture_output=True, text=True)
     linha = (r.stdout.strip().splitlines() or [''])[0]
     if r.returncode != 0 or '0 sobreposições, 0 emendas abertas' not in linha:
         erros.append(f'{pid}: faces coplanares\n{r.stdout}{r.stderr[-800:]}')
 
 
+def eh_estilo(pid):
+    return pid.endswith('-retro') or pid.endswith('-moderna')
+
+
 def main():
+    so_estilos = '--estilos' in sys.argv
     rel = os.path.join(AQUI, 'relatorio.json')
-    if os.path.exists(rel):
+    # Só os estilos: os clássicos ficam como estão (o exportador não sai byte a byte igual).
+    if os.path.exists(rel) and not so_estilos:
         os.remove(rel)
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
     env.pop('ITEM', None)
     env.pop('POSE', None)
-    for grupo in GRUPOS:
+    env.pop('ESTILO', None)
+    for grupo in (ESTILOS if so_estilos else GRUPOS + ESTILOS):
         r = subprocess.run([sys.executable, '-B', os.path.join(AQUI, f'{grupo}.py')], cwd=AQUI, capture_output=True,
                            text=True, env=env)
         linhas = [l for l in r.stdout.splitlines() if l.startswith('EXPORTADO')]
@@ -107,6 +122,13 @@ def main():
         dados = json.load(f)
     erros = []
     for pid, d in dados.items():
+        if so_estilos and not eh_estilo(pid):
+            continue
+        if eh_estilo(pid):
+            base = pid.rsplit('-', 1)[0]
+            dif = [abs(a - b) for a, b in zip(d['tamanho'], dados.get(base, d)['tamanho'])]
+            if max(dif) > 0.02:
+                erros.append(f'{pid}: caixa {d["tamanho"]} longe da do clássico {dados[base]["tamanho"]}')
         if d['triangulos'] > TETO_TRIS:
             erros.append(f'{pid}: {d["triangulos"]} triângulos (teto {TETO_TRIS})')
         if d['kb'] > TETO_KB:
@@ -125,6 +147,8 @@ def main():
         conferir_glb(pid, regra, erros)
         faces_coplanares(pid, erros)
     for pid in CONTRATO:
+        if so_estilos and not eh_estilo(pid):
+            continue
         if pid not in dados:
             erros.append(f'{pid}: não foi exportado')
 

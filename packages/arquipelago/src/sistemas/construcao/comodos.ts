@@ -1,9 +1,9 @@
 import type { Obra, PisoDaCasa } from '@sistemazero/arquipelago-contracts'
 import { arestaDaChave, chaveDaAresta, chavesDosTrechos, ladosDaAresta } from './grade'
-import { type Celula, chaveDaCelula, type Lote, noFixo } from './lote'
+import { type Celula, chaveDaCelula, type Lote, noFixo, type ParedeDoMeuQuarto } from './lote'
 
 /**
- * A planta de uma obra: as paredes de pé (as da obra e as fixas do lote), as células de dentro de
+ * A planta de uma obra: as paredes de pé (as da obra e as travadas do lote), as células de dentro de
  * casa e os cômodos. De dentro é o que a parede fecha: o que não se alcança andando pela grade a
  * partir da borda do lote sem atravessar parede. Porta e janela não abrem a parede para isso.
  */
@@ -23,12 +23,15 @@ export interface LadoDaParede {
 }
 
 export interface Planta {
-  /** Todas as paredes de pé (chaves de aresta), as fixas inclusive. */
+  /** Todas as paredes de pé (chaves de aresta), as travadas inclusive. */
   paredes: Set<string>
-  /** As fixas (as do quarto que a plataforma desenha). */
-  fixas: Set<string>
-  /** As travadas (do quarto, desenhadas pelo kit): abrem, mas não se apagam. */
+  /** As travadas (as quatro do quarto, desenhadas pelo kit): abrem, mas não se apagam. */
   travadas: Set<string>
+  /**
+   * As da esquerda e do fundo do quarto, que o Meu quarto também tem: a cor de dentro vem de lá e
+   * elas não se cortam no Viver (os quadros dela ficam pendurados nelas).
+   */
+  doMeuQuarto: Map<string, ParedeDoMeuQuarto>
   dentro: Set<string>
   comodos: Comodo[]
   /** Índice do cômodo de cada célula de dentro. */
@@ -38,10 +41,16 @@ export interface Planta {
 export const PISO_PADRAO: PisoDaCasa = 'tabua'
 
 export function planta(obra: Obra, lote: Lote): Planta {
-  const fixas = chavesDosTrechos(lote.paredesFixas)
   const travadas = chavesDosTrechos(lote.paredesTravadas)
+  // As travadas ficam de pé mesmo fora de `obra.paredes` (as obras salvas antes não têm o fundo e a
+  // esquerda do quarto): o salvamento não muda.
   const paredes = chavesDosTrechos(obra.paredes)
-  for (const k of fixas) paredes.add(k)
+  for (const k of travadas) paredes.add(k)
+  const doMeuQuarto = new Map<string, ParedeDoMeuQuarto>()
+  const meuQuarto = lote.paredesDoMeuQuarto
+  if (meuQuarto)
+    for (const lado of ['esquerda', 'fundo'] as const)
+      for (const k of chavesDosTrechos([meuQuarto[lado]])) doMeuQuarto.set(k, lado)
   const { x0, z0, x1, z1 } = lote.area
   // Uma volta de células em torno do lote é o "lá fora" de onde a busca sai.
   const fora = new Set<string>()
@@ -122,7 +131,7 @@ export function planta(obra: Obra, lote: Lote): Planta {
     comodo.piso = p.tipo
     comPiso.add(i)
   }
-  return { paredes, fixas, travadas, dentro, comodos, comodoDe }
+  return { paredes, travadas, doMeuQuarto, dentro, comodos, comodoDe }
 }
 
 /**

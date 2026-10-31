@@ -29,6 +29,7 @@ const AGORA = new Date('2026-10-29T15:00:00Z')
 const CHAVE = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 const OUTRA_CHAVE = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
 const FORNO = GALERIA['forno-classico']
+const GALERIA_DA_GELADEIRA = GALERIA['geladeira-classica']
 let politica: PoliticaDeAcesso
 let posse: PortaDaPosse | null
 let resposta: PosseDaGaleria
@@ -253,6 +254,39 @@ describe('aparência no salvamento', () => {
     posse = null
     montar()
     expect((await gravar(criarSalvamentoInicial(AGORA))).status).toBe(200)
+  })
+  test('a aparência já guardada não volta ao Members a cada salvamento (A16)', async () => {
+    resposta.possuidas = [FORNO.id]
+    const s = comForno(criarSalvamentoInicial(AGORA))
+    expect((await gravar(s)).status).toBe(200)
+    expect(leiturasFeitas).toHaveLength(1)
+    // O Members cai: o salvamento seguinte, com o mesmo forno, entra do mesmo jeito.
+    posse!.ler = async () => {
+      throw new PosseIndisponivelError()
+    }
+    const deNovo = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 1,
+      salvamento: s,
+    })
+    expect(deNovo.status).toBe(200)
+    expect(leiturasFeitas).toHaveLength(1)
+    // Uma aparência nova continua indo ao Members (e, fora, o save espera).
+    const comGeladeira = {
+      ...s,
+      projetos: {
+        ...s.projetos,
+        geladeira: {
+          ganhoEm: AGORA.toISOString(),
+          aparencia: { origem: 'galeria' as const, id: GALERIA_DA_GELADEIRA.id },
+          aparencias: [{ origem: 'galeria' as const, id: GALERIA_DA_GELADEIRA.id }],
+        },
+      },
+    }
+    const nova = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
+      revisaoBase: 2,
+      salvamento: comGeladeira,
+    })
+    expect(nova.status).toBe(424)
   })
   test('porta fora recusa o save sem substituir a posse por vazia', async () => {
     posse = null

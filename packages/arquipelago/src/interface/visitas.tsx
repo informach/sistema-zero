@@ -1,4 +1,5 @@
 import type { PercursoId } from '@sistemazero/arquipelago-contracts'
+import { expandirResultado } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { irParaAFrenteDaCasa } from '../estado/chegada-da-visita'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -15,6 +16,7 @@ import {
   visitaDaCasaDeAmigo,
 } from '../sistemas/visitas'
 import { AvisoDoFantasma } from './fantasmas'
+import { JanelaDoPainel, useFecharPainel, useNoMenu } from './janela-do-painel'
 
 const estrelas = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n)
 
@@ -29,6 +31,7 @@ export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
   const leitura = useFamilia(familia, (s) => s.leitura)
   const carregando = useFamilia(familia, (s) => s.carregando)
   const meu = useEstado((s) => s.salvamento.percursos[percurso])
+  const meuResultado = meu ? expandirResultado(meu) : undefined
   // Cada resultado relê: os responsáveis podem ter desligado as visitas.
   useEffect(() => {
     void familia.getState().carregar()
@@ -46,7 +49,7 @@ export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
       </p>
     )
   if (leitura.tipo === 'desligado' || leitura.irmaos.length === 0) return null
-  const linhas = recordesDaFamilia(percurso, meu, leitura.irmaos)
+  const linhas = recordesDaFamilia(percurso, meuResultado, leitura.irmaos)
   return (
     <section className="arq-recordes" aria-labelledby="arq-recordes-titulo">
       <h3 id="arq-recordes-titulo" className="arq-menu-titulo">
@@ -84,8 +87,10 @@ export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
 /** O painel das visitas (pelo menu): os irmãos e "Ver a casa". */
 export function PainelDasVisitas() {
   const { loja, plataforma, pedidos } = useJogo()
+  const fecharPainel = useFecharPainel()
   const familia = lojaDaFamilia(loja, plataforma)
-  const aberto = useEstado((s) => s.painelAberto === PAINEL_DAS_VISITAS)
+  const noMenu = useNoMenu()
+  const aberto = useEstado((s) => s.painelAberto === PAINEL_DAS_VISITAS) || noMenu
   const leitura = useFamilia(familia, (s) => s.leitura)
   const carregando = useFamilia(familia, (s) => s.carregando)
   const abrindo = useFamilia(familia, (s) => s.abrindo)
@@ -103,141 +108,127 @@ export function PainelDasVisitas() {
 
   if (!aberto) return null
   return (
-    <div className="arq-sobre">
-      <div
-        className="arq-menu arq-cartao arq-quadro arq-caderno arq-visitas"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="arq-visitas-titulo"
-      >
-        <h2 id="arq-visitas-titulo">{T.titulo}</h2>
-        <p className="arq-quadro-sub">{T.explica}</p>
-        {leitura === null || (carregando && leitura.tipo !== 'ok') ? (
-          <p role="status" className="arq-quadro-sub">
-            {T.carregando}
-          </p>
-        ) : leitura.tipo === 'fora-do-ar' ? (
-          <div className="arq-quadro-erro">
-            <p className="arq-aviso atencao">{T.foraDoAr}</p>
-            <button
-              type="button"
-              className="arq-botao leve"
-              disabled={carregando}
-              onClick={() => void familia.getState().carregar()}
-            >
-              {T.tentarDeNovo}
-            </button>
-          </div>
-        ) : leitura.tipo === 'desligado' ? (
-          <p className="arq-aviso atencao">{T.desligadas}</p>
-        ) : leitura.irmaos.length === 0 ? (
-          <p className="arq-quadro-sub">{T.ninguem}</p>
-        ) : (
+    <JanelaDoPainel classes="arq-quadro arq-caderno arq-visitas" rotulo="arq-visitas-titulo">
+      <h2 id="arq-visitas-titulo">{T.titulo}</h2>
+      <p className="arq-quadro-sub">{T.explica}</p>
+      {leitura === null || (carregando && leitura.tipo !== 'ok') ? (
+        <p role="status" className="arq-quadro-sub">
+          {T.carregando}
+        </p>
+      ) : leitura.tipo === 'fora-do-ar' ? (
+        <div className="arq-quadro-erro">
+          <p className="arq-aviso atencao">{T.foraDoAr}</p>
+          <button
+            type="button"
+            className="arq-botao leve"
+            disabled={carregando}
+            onClick={() => void familia.getState().carregar()}
+          >
+            {T.tentarDeNovo}
+          </button>
+        </div>
+      ) : leitura.tipo === 'desligado' ? (
+        <p className="arq-aviso atencao">{T.desligadas}</p>
+      ) : leitura.irmaos.length === 0 ? (
+        <p className="arq-quadro-sub">{T.ninguem}</p>
+      ) : (
+        <ul className="arq-quadro-lista arq-visitas-lista">
+          {leitura.irmaos.map((i) => (
+            <li key={i.perfilId} className="arq-quadro-cartao">
+              <span className="arq-quadro-numero" aria-hidden="true">
+                🏡
+              </span>
+              <div className="arq-quadro-corpo">
+                <b>{i.nome}</b>
+                <span className="arq-quadro-estado">{i.temCasa ? T.comCasa : T.semCasaAinda}</span>
+              </div>
+              <button
+                type="button"
+                className="arq-botao"
+                disabled={abrindo !== null}
+                aria-label={`${T.verCasa} de ${i.nome}`}
+                onClick={async () => {
+                  setRecado(null)
+                  const r = await familia.getState().abrirCasa(i)
+                  if (r.tipo !== 'ok') {
+                    setRecado(r.tipo === 'desligado' ? T.desligadas : T.casaNaoAbriu)
+                    return
+                  }
+                  const s = loja.getState()
+                  const visita = visitaDaCasa(i, r.casa)
+                  s.visitar(visita)
+                  s.abrirPainel(null)
+                  irParaAFrenteDaCasa(pedidos)
+                  s.dizer(falaDaChegada(visita))
+                }}
+              >
+                {abrindo === i.perfilId ? T.abrindo : T.verCasa}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h3 className="arq-visitas-subtitulo">{T.amigosTitulo}</h3>
+      {amigos === null ? (
+        <p role="status" className="arq-quadro-sub">
+          {T.carregando}
+        </p>
+      ) : amigos.tipo === 'fora-do-ar' ? (
+        <p className="arq-aviso atencao">{T.amigosForaDoAr}</p>
+      ) : amigos.tipo === 'desligado' ? (
+        <p className="arq-quadro-sub">{T.amigosDesligadas}</p>
+      ) : amigos.casas.length === 0 ? (
+        <p className="arq-quadro-sub">{T.amigosNenhuma}</p>
+      ) : (
+        <>
+          <p className="arq-quadro-sub">{T.amigosExplica}</p>
           <ul className="arq-quadro-lista arq-visitas-lista">
-            {leitura.irmaos.map((i) => (
-              <li key={i.perfilId} className="arq-quadro-cartao">
+            {amigos.casas.map((c) => (
+              <li key={c.id} className="arq-quadro-cartao">
                 <span className="arq-quadro-numero" aria-hidden="true">
-                  🏡
+                  🏠
                 </span>
                 <div className="arq-quadro-corpo">
-                  <b>{i.nome}</b>
-                  <span className="arq-quadro-estado">
-                    {i.temCasa ? T.comCasa : T.semCasaAinda}
-                  </span>
+                  <b>{c.apelido}</b>
                 </div>
                 <button
                   type="button"
                   className="arq-botao"
                   disabled={abrindo !== null}
-                  aria-label={`${T.verCasa} de ${i.nome}`}
+                  aria-label={`${T.verCasa}: ${c.apelido}`}
                   onClick={async () => {
                     setRecado(null)
-                    const r = await familia.getState().abrirCasa(i)
+                    const r = await familia.getState().abrirCasaDeAmigo(c.id)
                     if (r.tipo !== 'ok') {
-                      setRecado(r.tipo === 'desligado' ? T.desligadas : T.casaNaoAbriu)
+                      setRecado(r.tipo === 'desligado' ? T.amigosDesligadas : T.casaNaoAbriu)
                       return
                     }
                     const s = loja.getState()
-                    const visita = visitaDaCasa(i, r.casa)
+                    const visita = visitaDaCasaDeAmigo(r.casa)
                     s.visitar(visita)
                     s.abrirPainel(null)
                     irParaAFrenteDaCasa(pedidos)
                     s.dizer(falaDaChegada(visita))
                   }}
                 >
-                  {abrindo === i.perfilId ? T.abrindo : T.verCasa}
+                  {abrindo === c.id ? T.abrindo : T.verCasa}
                 </button>
               </li>
             ))}
           </ul>
-        )}
-        <h3 className="arq-visitas-subtitulo">{T.amigosTitulo}</h3>
-        {amigos === null ? (
-          <p role="status" className="arq-quadro-sub">
-            {T.carregando}
-          </p>
-        ) : amigos.tipo === 'fora-do-ar' ? (
-          <p className="arq-aviso atencao">{T.amigosForaDoAr}</p>
-        ) : amigos.tipo === 'desligado' ? (
-          <p className="arq-quadro-sub">{T.amigosDesligadas}</p>
-        ) : amigos.casas.length === 0 ? (
-          <p className="arq-quadro-sub">{T.amigosNenhuma}</p>
-        ) : (
-          <>
-            <p className="arq-quadro-sub">{T.amigosExplica}</p>
-            <ul className="arq-quadro-lista arq-visitas-lista">
-              {amigos.casas.map((c) => (
-                <li key={c.id} className="arq-quadro-cartao">
-                  <span className="arq-quadro-numero" aria-hidden="true">
-                    🏠
-                  </span>
-                  <div className="arq-quadro-corpo">
-                    <b>{c.apelido}</b>
-                  </div>
-                  <button
-                    type="button"
-                    className="arq-botao"
-                    disabled={abrindo !== null}
-                    aria-label={`${T.verCasa}: ${c.apelido}`}
-                    onClick={async () => {
-                      setRecado(null)
-                      const r = await familia.getState().abrirCasaDeAmigo(c.id)
-                      if (r.tipo !== 'ok') {
-                        setRecado(r.tipo === 'desligado' ? T.amigosDesligadas : T.casaNaoAbriu)
-                        return
-                      }
-                      const s = loja.getState()
-                      const visita = visitaDaCasaDeAmigo(r.casa)
-                      s.visitar(visita)
-                      s.abrirPainel(null)
-                      irParaAFrenteDaCasa(pedidos)
-                      s.dizer(falaDaChegada(visita))
-                    }}
-                  >
-                    {abrindo === c.id ? T.abrindo : T.verCasa}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        {recado ? (
-          <p role="status" className="arq-aviso atencao">
-            {recado}
-          </p>
-        ) : null}
-        <div className="arq-menu-acoes">
-          <button
-            ref={fechar}
-            type="button"
-            className="arq-botao leve"
-            onClick={() => loja.getState().abrirPainel(null)}
-          >
-            Voltar ao jogo
-          </button>
-        </div>
+        </>
+      )}
+      {recado ? (
+        <p role="status" className="arq-aviso atencao">
+          {recado}
+        </p>
+      ) : null}
+      <div className="arq-menu-acoes">
+        <button ref={fechar} type="button" className="arq-botao leve" onClick={fecharPainel}>
+          Voltar ao jogo
+        </button>
       </div>
-    </div>
+    </JanelaDoPainel>
   )
 }
 

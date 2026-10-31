@@ -1,25 +1,40 @@
 import { useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
-import type { Obra as DadosDaObra } from '@sistemazero/arquipelago-contracts'
+import type { AndarDeCima, Obra as DadosDaObra } from '@sistemazero/arquipelago-contracts'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import type { Object3D } from 'three'
+import type { Material, Object3D } from 'three'
+import andarGlb from '../assets/casa/casa-andar.glb'
 import paredesGlb from '../assets/casa/casa-paredes.glb'
+import paredesAndarGlb from '../assets/casa/casa-paredes-andar.glb'
 import pisosGlb from '../assets/casa/casa-pisos.glb'
 import portasGlb from '../assets/casa/casa-portas.glb'
 import telhadoGlb from '../assets/casa/casa-telhado.glb'
+import varandaGlb from '../assets/casa/casa-varanda.glb'
 import { lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
+import {
+  ALTURA_DO_ANDAR,
+  caixaDeAntesDoAndar,
+  obraDeCima,
+  pecasDoAndar,
+  pecasVisiveisDoAndar,
+  plantaDeCima,
+} from '../sistemas/construcao/andar'
 import { type Planta, planta } from '../sistemas/construcao/comodos'
+import { type Entrada, entradaDaObra } from '../sistemas/construcao/entrada'
 import { arestaDaChave, chavesDosTrechos } from '../sistemas/construcao/grade'
 import { chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
 import {
   type ArquivoDoKit,
+  type CaixaDaObra,
   type Corte,
   colisoresDaObra,
+  colisoresDaVaranda,
   type FolhaDaPorta,
   NADA_CORTADO,
   type PecaDoKit,
   pecasDaObra,
+  pecasDaVaranda,
   TUDO_CORTADO,
 } from '../sistemas/construcao/pecas'
 import { CERCA, colisoresDaCerca, postesDaCerca } from '../sistemas/construcao/quintal'
@@ -28,17 +43,32 @@ import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { noModelo } from './medidas'
 import { ComReserva, copiarNo, materiaisDe, useModelo } from './modelos'
+import { MoveisDaObra } from './moveis-da-obra'
+import {
+  type CoresDoMeuQuarto,
+  MATERIAL_DE_DENTRO,
+  materiaisDoMeuQuarto,
+  pintarLado,
+} from './quarto-na-obra'
 
-/** O kit da casa (`arte/casa`): paredes, portas, pisos e telhado, um nó por peça. */
+/**
+ * O kit da casa (`arte/casa`): paredes, portas, pisos, telhado e a varanda da porta de entrada, um nó
+ * por peça.
+ */
 export const KIT_DA_CASA: Readonly<Record<ArquivoDoKit, string>> = {
   paredes: new URL(paredesGlb, import.meta.url).href,
   portas: new URL(portasGlb, import.meta.url).href,
   pisos: new URL(pisosGlb, import.meta.url).href,
   telhado: new URL(telhadoGlb, import.meta.url).href,
+  varanda: new URL(varandaGlb, import.meta.url).href,
+  andar: new URL(andarGlb, import.meta.url).href,
+  'paredes-andar': new URL(paredesAndarGlb, import.meta.url).href,
 }
 
 export function carregarKitDaCasa() {
-  for (const url of Object.values(KIT_DA_CASA)) useGLTF.preload(url, false, false)
+  // O andar de cima só baixa quando existe (casa com escada).
+  for (const [arquivo, url] of Object.entries(KIT_DA_CASA))
+    if (arquivo !== 'andar' && arquivo !== 'paredes-andar') useGLTF.preload(url, false, false)
 }
 
 /** Quanto a folha gira para abrir (o clipe `abrir` do kit vai até -100°). */
@@ -46,21 +76,66 @@ export const GIRO_DA_FOLHA_ABERTA = -1.75
 /** A folha abre quando a pessoa chega a esta distância do meio do vão (e fecha quando se afasta). */
 export const PERTO_DA_PORTA = 2.2
 
-/** Uma peça do kit: a cópia do nó, com os materiais do arquivo (as janelas acendem juntas). */
-const Peca = memo(function Peca({ peca }: { peca: PecaDoKit }) {
+/**
+ * Uma peça do kit: a cópia do nó, com os materiais do arquivo (as janelas acendem juntas). Com
+ * `dentro`, o lado que dá para o quarto usa esse material (a cor do Meu quarto, cópia desta
+ * montagem).
+ */
+const Peca = memo(function Peca({ peca, dentro }: { peca: PecaDoKit; dentro?: Material }) {
   const raiz = useModelo(KIT_DA_CASA[peca.arquivo])
-  const no = useMemo(() => copiarNo(raiz, peca.no), [raiz, peca.no])
+  const lado = peca.quarto?.material
+  const no = useMemo(() => {
+    const copia = copiarNo(raiz, peca.no)
+    if (dentro && lado) pintarLado(copia, lado, dentro)
+    return copia
+  }, [raiz, peca.no, dentro, lado])
   return <primitive object={no} position={[peca.x, peca.y ?? 0, peca.z]} rotation-y={peca.giro} />
 })
+
+/**
+ * As peças do kit; as das paredes do quarto com a cor do Meu quarto do lado de dentro (uma cópia do
+ * material por montagem, descartada ao sair ou ao trocar a cor).
+ */
+function PecasDoKit({ pecas, cores }: { pecas: PecaDoKit[]; cores?: CoresDoMeuQuarto }) {
+  const raiz = useModelo(KIT_DA_CASA.paredes)
+  const esquerda = cores?.esquerda
+  const fundo = cores?.fundo
+  const materiais = useMemo(() => {
+    const base = materiaisDe(raiz, MATERIAL_DE_DENTRO)[0]
+    if (!base || esquerda === undefined || fundo === undefined) return null
+    return materiaisDoMeuQuarto(base, { esquerda, fundo })
+  }, [raiz, esquerda, fundo])
+  useEffect(
+    () => () => {
+      materiais?.esquerda.dispose()
+      materiais?.fundo.dispose()
+    },
+    [materiais],
+  )
+  return (
+    <>
+      {pecas.map((x) => (
+        <Peca
+          key={x.chave}
+          peca={x}
+          dentro={x.quarto && materiais ? materiais[x.quarto.cor] : undefined}
+        />
+      ))}
+    </>
+  )
+}
 
 /** A folha da porta: abre sozinha quando a pessoa chega perto, para o lado de fora. */
 const Folha = memo(function Folha({
   folha,
   base,
+  y0,
   giro,
 }: {
   folha: FolhaDaPorta
   base: [number, number]
+  /** A altura do piso de baixo no mundo (a folha de cima só abre com a pessoa lá em cima). */
+  y0: number
   giro: number
 }) {
   const { rastro } = useJogo()
@@ -68,12 +143,14 @@ const Folha = memo(function Folha({
   const no = useMemo(() => copiarNo(raiz, folha.no), [raiz, folha.no])
   useFrame((_, dt) => {
     const pessoa = noModelo(rastro.x - base[0], rastro.z - base[1], giro)
-    const perto = Math.hypot(pessoa.x - folha.meio.x, pessoa.z - folha.meio.z) < PERTO_DA_PORTA
+    const mesmoAndar = Math.abs(rastro.y - y0 - (folha.y ?? 0)) < ALTURA_DO_ANDAR / 2
+    const perto =
+      mesmoAndar && Math.hypot(pessoa.x - folha.meio.x, pessoa.z - folha.meio.z) < PERTO_DA_PORTA
     const alvo = perto ? GIRO_DA_FOLHA_ABERTA : 0
     no.rotation.y += (alvo - no.rotation.y) * (1 - Math.exp(-dt * 6))
   })
   return (
-    <group position={[folha.x, 0, folha.z]} rotation-y={folha.giro}>
+    <group position={[folha.x, folha.y ?? 0, folha.z]} rotation-y={folha.giro}>
       <primitive object={no} />
     </group>
   )
@@ -94,8 +171,40 @@ function LuzDasJanelas() {
   return null
 }
 
-function colisoresNoMundo(obra: DadosDaObra, p: Planta, cortada: Corte, y: number): Solido[] {
-  return [...colisoresDaObra(obra, p, cortada), ...colisoresDaCerca(obra)].map((c) => ({
+/** O lampião da varanda acende à noite, como o da casa de antes (`lampiao`). */
+function LuzDoLampiao() {
+  const { ambiente } = useJogo()
+  const varanda = useModelo(KIT_DA_CASA.varanda)
+  const lampioes = useMemo(() => materiaisDe(varanda, 'lampiao'), [varanda])
+  useFrame(() => {
+    for (const m of lampioes) m.emissiveIntensity = ambiente.noite ? 2.4 : 0.15
+  })
+  return null
+}
+
+/** Caixas da obra (y a partir do piso de baixo) no referencial do mundo da obra. */
+function caixasNoMundo(caixas: readonly CaixaDaObra[], y: number): Solido[] {
+  return caixas.map((c) => ({
+    forma: 'caixa',
+    nome: c.nome,
+    posicao: [c.posicao[0], c.posicao[1] + y, c.posicao[2]],
+    meio: c.meio,
+    rotacao: giroEmY(0),
+  }))
+}
+
+function colisoresNoMundo(
+  obra: DadosDaObra,
+  p: Planta,
+  cortada: Corte,
+  y: number,
+  entrada: Entrada | null,
+): Solido[] {
+  return [
+    ...colisoresDaObra(obra, p, cortada),
+    ...colisoresDaCerca(obra),
+    ...colisoresDaVaranda(entrada),
+  ].map((c) => ({
     forma: 'caixa',
     nome: c.nome,
     posicao: [c.posicao[0], c.posicao[1] + y, c.posicao[2]],
@@ -153,11 +262,60 @@ function useCorte(
   }, [construindo, cortadas])
 }
 
+/** Acima disto (do piso de baixo), a pessoa está no andar de cima. */
+const NO_ANDAR_DE_CIMA = ALTURA_DO_ANDAR - 1.5
+
 /**
- * Uma obra no mundo: as paredes, quinas, portas, janelas, pisos e telhados do kit, e a colisão.
+ * O andar de cima no Viver: a pessoa está lá em cima? E, lá em cima, as paredes de cima entre a
+ * câmera e ela (o corte de cima) e se ela está num cômodo de cima (o telhado de cima sai).
+ */
+function useNivel(
+  pc: Planta | null,
+  base: [number, number, number],
+  giro: number,
+): { emCima: boolean; corte: Set<string>; dentroDeCima: boolean } {
+  const { rastro } = useJogo()
+  const camera = useThree((s) => s.camera)
+  const [nivel, setNivel] = useState({
+    emCima: false,
+    chave: '',
+    corte: new Set<string>(),
+    dentro: false,
+  })
+  const espera = useRef(0)
+  useFrame((_, dt) => {
+    if (!pc) return
+    espera.current -= dt
+    if (espera.current > 0) return
+    espera.current = CONFERIR_O_CORTE
+    const emCima = rastro.y - base[1] > NO_ANDAR_DE_CIMA
+    const pessoa = noModelo(rastro.x - base[0], rastro.z - base[2], giro)
+    const corte = emCima
+      ? paredesCortadasNoViver(
+          pc,
+          pessoa,
+          noModelo(camera.position.x - base[0], camera.position.z - base[2], giro),
+        )
+      : new Set<string>()
+    const dentro =
+      emCima && pc.dentro.has(chaveDaCelula({ x: Math.floor(pessoa.x), z: Math.floor(pessoa.z) }))
+    const chave = `${emCima}${dentro}${[...corte].sort().join(';')}`
+    if (chave !== nivel.chave) setNivel({ emCima, chave, corte, dentro })
+  })
+  return { emCima: nivel.emCima, corte: nivel.corte, dentroDeCima: nivel.dentro }
+}
+
+/**
+ * Uma obra no mundo: as paredes, quinas, portas, janelas, pisos e telhados do kit, a varanda da porta
+ * de entrada (na casa: `entradaDaObra`, ela segue a entrada) e a colisão.
  * `base` é onde fica o ponto (0, 0) da grade (y: o topo do piso) e `giro` o giro da grade em volta
  * do y (a da casa é a do mundo; a de uma cabana gira com a ilha). O telhado sai no Construir e com
  * a pessoa dentro da obra.
+ *
+ * Com o andar de cima (E04, `andar`): os telhados do térreo saem (o piso de cima é o teto); com a
+ * pessoa dentro de casa no térreo o andar de cima some (e a câmera passa por ele); lá em cima as
+ * paredes de cima se cortam como as de baixo. No Construir, o andar de cima aparece só na camada
+ * dele, com as paredes de cima cortadas e as de baixo inteiras.
  */
 export function ObraNoMundo({
   obra,
@@ -165,50 +323,102 @@ export function ObraNoMundo({
   base,
   giro = 0,
   construindo,
+  coresDoMeuQuarto,
+  andar = null,
 }: {
   obra: DadosDaObra
   lote: Lote
   base: [number, number, number]
   giro?: number
   construindo: boolean
+  /** Na casa, a cor de dentro das paredes da esquerda e do fundo do quarto (a do Meu quarto). */
+  coresDoMeuQuarto?: CoresDoMeuQuarto
+  /** O andar de cima da casa, já conferido (`useAndarDaCasa`). */
+  andar?: AndarDeCima | null
 }) {
   const { loja } = useJogo()
   const construcao = lojaDaConstrucao(loja)
   const p = useMemo(() => planta(obra, lote), [obra, lote])
-  const cortada = useCorte(p, base, giro, construindo)
+  const pc = useMemo(() => (andar ? plantaDeCima(andar, lote) : null), [andar, lote])
+  const camada = useConstrucao(construcao, (x) => x.camada)
+  const emCimaNoConstruir = construindo && camada === 'cima' && pc !== null
+  const corteDoViver = useCorte(p, base, giro, construindo)
+  const nivel = useNivel(pc, base, giro)
+  // Lá em cima (no Viver e no Construir) as paredes de baixo ficam inteiras.
+  const cortada =
+    emCimaNoConstruir || (pc && nivel.emCima && !construindo) ? NADA_CORTADO : corteDoViver
   const dentro = useConstrucao(construcao, (x) => x.dentroDaObra)
   const pecas = useMemo(() => pecasDaObra(obra, p, cortada), [obra, p, cortada])
-  const telhados = useMemo(() => telhadosDaObra(p), [p])
+  const telhados = useMemo(() => (pc ? [] : telhadosDaObra(p)), [p, pc])
+  const entrada = useMemo(() => entradaDaObra(obra, lote, p), [obra, lote, p])
+  const varanda = useMemo(() => pecasDaVaranda(entrada), [entrada])
+  // O andar de cima aparece no Construir na camada dele, e no Viver com a pessoa lá em cima ou
+  // fora de casa.
+  const comAndar = pc !== null && (construindo ? emCimaNoConstruir : nivel.emCima || !dentro)
+  const corteDeCima = useMemo<Corte>(() => {
+    if (emCimaNoConstruir) return TUDO_CORTADO
+    // Escondido: tudo cortado para a câmera passar.
+    if (!comAndar) return TUDO_CORTADO
+    if (nivel.corte.size === 0) return NADA_CORTADO
+    const corte = nivel.corte
+    return (k) => corte.has(k)
+  }, [emCimaNoConstruir, comAndar, nivel.corte])
+  const deCima = useMemo(
+    () => (andar && pc ? pecasDoAndar(andar, p, pc, corteDeCima) : null),
+    [andar, p, pc, corteDeCima],
+  )
   const colisores = useMemo(
-    () => colisoresNoMundo(obra, p, cortada, base[1]),
-    [obra, p, cortada, base],
+    () => [
+      ...colisoresNoMundo(obra, p, cortada, base[1], entrada),
+      ...(deCima ? caixasNoMundo(deCima.colisores, base[1]) : []),
+    ],
+    [obra, p, cortada, base, entrada, deCima],
   )
   const comTelhado = !construindo && !dentro
+  const comTelhadoDeCima = !construindo && !nivel.dentroDeCima
   const caminhos = useMemo(() => caminhosDaObra(obra), [obra])
   const todas: PecaDoKit[] = [
     ...pecas.paredes,
     ...pecas.quinas,
     ...pecas.pisos,
     ...caminhos,
-    ...(comTelhado ? telhados : []),
+    ...varanda.varanda,
+    // O toldo sai com o telhado (senão tapa a vista de dentro e do Construir).
+    ...(comTelhado ? [...telhados, ...varanda.toldo] : []),
+    // A escada fica de pé no térreo: aparece mesmo com o resto do andar escondido.
+    ...(deCima ? pecasVisiveisDoAndar(deCima, comAndar) : []),
+    ...(comAndar && deCima && comTelhadoDeCima ? deCima.telhados : []),
   ]
+  const folhas = [...pecas.folhas, ...(comAndar && deCima ? deCima.folhas : [])]
+  // Os móveis dos cômodos de cima, na altura do piso de cima, com o andar (somem e deixam de
+  // colidir quando ele some).
+  const obraDeCimaComMoveis = useMemo(
+    () => (andar?.moveis?.length ? obraDeCima(andar) : null),
+    [andar],
+  )
+  const baseDeCima = useMemo<[number, number, number]>(
+    () => [base[0], base[1] + ALTURA_DO_ANDAR, base[2]],
+    [base],
+  )
   return (
     <>
       <group position={base} rotation-y={giro}>
         <ComReserva reserva={<ObraDeAntes pecas={todas} />}>
-          {todas.map((x) => (
-            <Peca key={x.chave} peca={x} />
-          ))}
-          {pecas.folhas.map((f) => (
-            <Folha key={f.chave} folha={f} base={[base[0], base[2]]} giro={giro} />
+          <PecasDoKit pecas={todas} cores={coresDoMeuQuarto} />
+          {folhas.map((f) => (
+            <Folha key={f.chave} folha={f} base={[base[0], base[2]]} y0={base[1]} giro={giro} />
           ))}
           <LuzDasJanelas />
+          {entrada ? <LuzDoLampiao /> : null}
         </ComReserva>
         <Cerca obra={obra} />
       </group>
       <group position={[base[0], 0, base[2]]} rotation-y={giro}>
         <Colisores lista={colisores} />
       </group>
+      {comAndar && obraDeCimaComMoveis ? (
+        <MoveisDaObra obra={obraDeCimaComMoveis} base={baseDeCima} />
+      ) : null}
     </>
   )
 }
@@ -280,6 +490,32 @@ function ObraDeAntes({ pecas }: { pecas: PecaDoKit[] }) {
 
 function FormaDeAntes({ peca }: { peca: PecaDoKit }) {
   const ref = useRef<Object3D>(null)
+  if (peca.arquivo === 'varanda') {
+    // O deque (o toldo espera o arquivo).
+    if (peca.no !== 'varanda') return null
+    return (
+      <group position={[peca.x, 0, peca.z]} rotation-y={peca.giro}>
+        <mesh position={[0, 0, 0.975]}>
+          <boxGeometry args={[4.2, 0.1, 1.55]} />
+          <meshStandardMaterial color="#c08a5a" />
+        </mesh>
+      </group>
+    )
+  }
+  if (peca.arquivo === 'andar' || peca.arquivo === 'paredes-andar') {
+    const c = caixaDeAntesDoAndar(peca)
+    if (!c) return null
+    const cor =
+      peca.arquivo === 'andar' ? '#c9a87a' : peca.no.includes('lambri') ? '#fbe7d2' : '#f1ece2'
+    return (
+      <group position={[peca.x, 0, peca.z]} rotation-y={peca.giro}>
+        <mesh position={[0, c.y, 0]}>
+          <boxGeometry args={[c.largura, c.altura, c.fundo]} />
+          <meshStandardMaterial color={cor} />
+        </mesh>
+      </group>
+    )
+  }
   if (peca.arquivo === 'pisos')
     return (
       <mesh position={[peca.x, -0.05, peca.z]}>

@@ -34,7 +34,7 @@ export function pedidoDoBentoPeloId(id: string): PedidoDeMorador | null {
  */
 export function pedidoDoDiaDoBento(bento: Morador, dia: string, perfilId: string): Morador {
   if (bento.pedido?.dia === dia) return bento
-  const id = escolherPedidoDoMorador('bento', perfilId, dia, 0)
+  const id = escolherPedidoDoMorador('bento', perfilId, dia, 0, false, bento.amizade)
   return { ...bento, pedido: { dia, id, entregue: false } }
 }
 

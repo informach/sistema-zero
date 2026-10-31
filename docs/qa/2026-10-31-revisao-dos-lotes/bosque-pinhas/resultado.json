@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "tela": "computador",
+      "entrada": "teclado",
+      "recomeco": true
+    },
+    {
+      "tela": "celular",
+      "entrada": "pad de toque",
+      "recomeco": true
+    }
+  ],
+  "navegadorFechado": true
+}

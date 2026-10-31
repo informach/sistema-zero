@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFilhote, PAINEL_DO_FILHOTE, useFilhote } from '../estado/filhote'
+import { deixarOFilhoteNoVale, escolherCompanhia } from '../sistemas/companhia'
 import {
   alimentarOFilhote,
   carinhoNoFilhote,
@@ -21,6 +22,7 @@ export function PainelDoFilhote() {
   const painel = lojaDoFilhote(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_FILHOTE)
   const filhote = useEstado((s) => s.salvamento.vale.filhote)
+  const acompanha = useEstado((s) => s.salvamento.companhia === 'filhote')
   const fala = useFilhote(painel, (s) => s.fala)
   const principal = useRef<HTMLButtonElement>(null)
   const temNome = filhote?.nome != null
@@ -90,6 +92,28 @@ export function PainelDoFilhote() {
               onClick={() => aoCuidar(carinhoNoFilhote(loja.getState().salvamento, hoje))}
             >
               Fazer carinho
+            </button>
+            {/* O dino de estimação (§6.28, A7): vai junto pela ilha e para casa, ou fica no Vale. */}
+            <button
+              type="button"
+              className="arq-botao leve"
+              aria-pressed={acompanha}
+              onClick={() => {
+                const s = loja.getState()
+                s.mudar((v) =>
+                  acompanha ? deixarOFilhoteNoVale(v) : escolherCompanhia(v, 'filhote'),
+                )
+                painel
+                  .getState()
+                  .responder(
+                    acompanha
+                      ? `${nome} volta a brincar no Vale. Você pode buscar quando quiser.`
+                      : `${nome} vai com você pela ilha e para casa.`,
+                    !acompanha,
+                  )
+              }}
+            >
+              {acompanha ? `Deixar ${nome} no Vale` : `Levar ${nome} para casa`}
             </button>
             <button type="button" className="arq-botao leve" onClick={fechar}>
               Voltar ao jogo
