@@ -6,6 +6,16 @@ export interface TempoNaJanela {
   dias: number
 }
 
+/** Uma aparência aplicada a um objeto, como o serviço registrou (A33, 31/10/2026). */
+export interface AparenciaAplicada {
+  objeto: string
+  revisao: number
+  origem: string
+  /** A marca da aparência (`marcaDaCriacao`); `null` nas linhas de antes da migração 0024. */
+  criacao: string | null
+  registradoEm: Date
+}
+
 /**
  * O que a área dos pais lê e grava no serviço do jogo (28/10/2026, fase1-18). Só lê perfis que o
  * próprio serviço viu jogar nesta conta (`perfisDaConta`).
@@ -29,6 +39,15 @@ export interface RepositorioDaFamilia {
    * (quem não jogou fica de fora do mapa). É de onde sai a "volta ao curso" (29/10/2026).
    */
   sessoesNaJanela(perfis: readonly string[], de: Date, ate: Date): Promise<Map<string, Date[]>>
+  /**
+   * As aparências aplicadas a objetos entre `de` e `ate`, por perfil (quem não aplicou nada fica
+   * de fora do mapa). É de onde sai "criações desta semana" no cartão dos pais (A33).
+   */
+  aparenciasNaJanela(
+    perfis: readonly string[],
+    de: Date,
+    ate: Date,
+  ): Promise<Map<string, AparenciaAplicada[]>>
   /** O salvamento cru de cada perfil (quem não tem fica de fora do mapa). */
   salvamentos(perfis: readonly string[]): Promise<Map<string, unknown>>
   lerPermissoes(contaId: string): Promise<PermissoesDaFamilia | null>

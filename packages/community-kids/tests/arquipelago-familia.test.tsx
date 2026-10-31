@@ -42,8 +42,8 @@ test('cada número da semana só aparece quando o serviço o tem', () => {
     {
       chave: 'objetos',
       valor: '3',
-      rotulo: 'objetos com a aparência criada por Lia',
-      detalhe: '2 no Pinta e 1 no Molda, desde o começo',
+      rotulo: 'criações de Lia nos objetos do jogo',
+      detalhe: '2 do Pinta e 1 do Molda, esta semana',
     },
     {
       chave: 'tempo',
@@ -76,7 +76,7 @@ test('cada número da semana só aparece quando o serviço o tem', () => {
     rotulo: 'desafio do Estúdio aprovado',
     detalhe: undefined,
   })
-  expect(semAnteriores[1]?.rotulo).toBe('objeto com a aparência criada por Lia')
+  expect(semAnteriores[1]?.rotulo).toBe('criação de Lia nos objetos do jogo')
   expect(semAnteriores[2]).toEqual({
     chave: 'tempo',
     valor: '0 min',
