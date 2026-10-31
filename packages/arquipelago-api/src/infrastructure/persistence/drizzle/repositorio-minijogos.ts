@@ -74,15 +74,21 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
       .where(and(eq(minijogos.jogadorId, jogadorId), eq(minijogos.desafioId, desafioId)))
     if (!linha) return null
     const v = linha.minijogo
+    const projeto: unknown = JSON.parse(v.projeto)
+    const python =
+      projeto !== null &&
+      typeof projeto === 'object' &&
+      'programmingLanguage' in projeto &&
+      projeto.programmingLanguage === 'python'
     return MinijogoAbertoSchema.parse({
       desafioId: v.desafioId,
       titulo: v.titulo,
-      projeto: JSON.parse(v.projeto),
+      projeto,
       aprovadoEm: v.aprovadoEm.toISOString(),
       atualizadoEm: v.atualizadoEm.toISOString(),
       capa: capaQueCabe(v.capa),
       // O minijogo em Python pede o ambiente do desafio com a revisão publicada (lacunas).
-      ...(linha.revisao ? { revisao: linha.revisao } : {}),
+      ...(python && linha.revisao ? { revisao: linha.revisao } : {}),
     })
   }
   async pertenceAConta(jogadorId: string, contaId: string) {

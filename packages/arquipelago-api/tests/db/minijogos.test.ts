@@ -71,6 +71,7 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
   })
   beforeEach(async () => {
     await conexao.sql`truncate arquipelago.minijogos, arquipelago.perfis_da_conta`
+    await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
     c = structuredClone(conteudo)
     passar = true
     relogio = agora
@@ -135,8 +136,14 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
         2, 1, ${JSON.stringify({ ilha: 'vila-doce' })}::jsonb, ${JSON.stringify(c)}::jsonb, now(), now(), ${perfil})`
     // A ilha publicada vale sobre a do rascunho.
     expect((await repo.listar(perfil))[0]?.ilha).toBe('vila-doce')
-    // A abertura leva a revisão publicada: o minijogo em Python pede o ambiente com ela (lacunas).
+    // JavaScript mantém a resposta sem revisão, inclusive durante a troca dos apps.
+    const javascript = await repo.abrir(perfil, desafioId)
+    expect(javascript).not.toHaveProperty('revisao')
+    const python = { programmingLanguage: 'python', files: { 'main.py': 'print(1)' } }
+    await repo.guardar({ jogador, desafioId, titulo: c.titulo, projeto: python, agora })
+    // Só Python precisa da revisão para pedir o ambiente de execução do desafio.
     expect((await repo.abrir(perfil, desafioId))?.revisao).toBe(1)
+    expect((await repo.abrir(perfil, desafioId))?.projeto).toEqual(python)
     await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
   })
   test('reprovado, sem atração e suporte não guardam cópia', async () => {
