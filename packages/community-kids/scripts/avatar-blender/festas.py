@@ -34,7 +34,7 @@ FORA_TIARA = {'hair-15'}
 Q_OVAL, P_OVAL = 1.13, 2.25
 # Altura (no eixo da cabeça) do centro da boca de cada chapéu; ver a régua em conferir_festas.py.
 Z_CARTOLA, Z_PALHA, Z_GORRO = 2.05, 1.90, 1.88
-AFUNDA_CARTOLA = 0.055  # a cartolinha desce do alto da cabeça até a aba ficar no alto da testa
+AFUNDA_CARTOLA = 0.085  # a cartolinha desce do alto da cabeça até a aba ficar no alto da testa
 
 
 # ── ajudantes ───────────────────────────────────────────────────────────────────────────────

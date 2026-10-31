@@ -64,9 +64,11 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
   (`Z_CARTOLA`, `Z_PALHA`, `Z_GORRO`) seguem a régua dos chapéus antigos: a palha e o gorro descem
   até a testa, acima das sobrancelhas, como o boné `hat-02` e o pirata `hat-07`. A cartolinha tira o
   tamanho da boca no alto da cabeça, como a cartola `hat-04`, e depois afunda `AFUNDA_CARTOLA`
-  (5,5 cm, pedido da dona) até a aba ficar no alto da testa, a 13 cm das sobrancelhas; para não
-  crescer inteira, só a boca se abre no formato do crânio (`menor_boca`: a planta alarga 1,17 vez na
-  aba e volta ao normal no alto da copa).
+  (8,5 cm, pedido da dona) até a aba ficar na altura da aba da cartola `hat-04` ajustada (ou abaixo
+  dela: z 2,00 na frente, 1,89 dos lados e atrás, contra 2,02, 1,95 e 1,90), a 10 cm das
+  sobrancelhas; para não crescer inteira, só a boca se abre no formato do crânio (`menor_boca`: a
+  planta alarga 1,22 vez na aba e volta ao normal no alto da copa). Mais funda, a boca aberta passa
+  da folga no oco dos chapéus antigos (10,3 cm).
 - **A régua dos chapéus.** `conferir_festas.py` mede, em cada uma das seis cabeças, os chapéus
   antigos que ficam na cabeça (`hat-01` a `hat-04`, `hat-06`, `hat-07`; a auréola `hat-05` flutua) e
   os novos: a menor distância até a cabeça (`folga_min`), a folga do topo do crânio até o chapéu
@@ -82,7 +84,7 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
 
   | Chapéu | Escala | `folga_min` | `topo` | Frente | Lado | Nuca | `folga_oco` |
   | --- | --- | --- | --- | --- | --- | --- | --- |
-  | `hat-08` cartolinha | 0,783 (boca 1,17) | 1,5 cm | 18,9 cm | 17,6 cm | 27,1 cm | 25,1 cm | 9,8 cm |
+  | `hat-08` cartolinha | 0,783 (boca 1,22) | 1,2 cm | 15,9 cm | 17,6 cm | 27,1 cm | 28,9 cm | 9,7 cm |
   | `hat-09` palha | 0,797 | 1,0 cm | 5,6 cm | 23,9 cm | 28,9 cm | 32,4 cm | 7,8 cm |
   | `hat-10` gorro | 0,642 (altura 0,511) | 1,0 cm | 8,8 cm | 17,6 cm | 28,9 cm | 35,1 cm | 8,5 cm |
   | `hat-04` cartola (ajustada) | boca 1,55 | 0,8 cm | 48,3 cm | 17,6 cm | 23,6 cm | 28,2 cm | 8,7 cm |

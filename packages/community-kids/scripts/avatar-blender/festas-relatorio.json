@@ -3,7 +3,7 @@
   "pecas": {
     "hat-08": {
       "triangulos": 3600,
-      "kb": 173.4,
+      "kb": 173.9,
       "materiais": ["Color_", "Fita", "Pluma", "Serpentina", "Serpentina.001"],
       "ossos": ["Head"],
       "cabecas": {
@@ -40,64 +40,64 @@
       },
       "encaixe": {
         "head-01": {
-          "folga_min": 0.015,
-          "topo": 0.189,
+          "folga_min": 0.012,
+          "topo": 0.159,
           "frente": 0.176,
           "lado": 0.271,
-          "nuca": 0.251,
-          "folga_oco": 0.098
+          "nuca": 0.289,
+          "folga_oco": 0.097
         },
         "head-02": {
-          "folga_min": 0.015,
-          "topo": 0.189,
+          "folga_min": 0.012,
+          "topo": 0.159,
           "frente": 0.176,
           "lado": 0.271,
-          "nuca": 0.251,
-          "folga_oco": 0.098
+          "nuca": 0.289,
+          "folga_oco": 0.097
         },
         "head-03": {
-          "folga_min": 0.015,
-          "topo": 0.189,
+          "folga_min": 0.012,
+          "topo": 0.159,
           "frente": 0.176,
           "lado": 0.271,
-          "nuca": 0.251,
-          "folga_oco": 0.098
+          "nuca": 0.289,
+          "folga_oco": 0.097
         },
         "head-04": {
-          "folga_min": 0.015,
-          "topo": 0.189,
+          "folga_min": 0.012,
+          "topo": 0.159,
           "frente": 0.176,
           "lado": 0.271,
-          "nuca": 0.251,
-          "folga_oco": 0.098
+          "nuca": 0.289,
+          "folga_oco": 0.097
         },
         "head-05": {
-          "folga_min": 0.015,
-          "topo": 0.189,
+          "folga_min": 0.012,
+          "topo": 0.159,
           "frente": 0.176,
           "lado": 0.271,
-          "nuca": 0.251,
-          "folga_oco": 0.098
+          "nuca": 0.289,
+          "folga_oco": 0.097
         },
         "head-06": {
-          "folga_min": 0.015,
-          "topo": 0.189,
+          "folga_min": 0.012,
+          "topo": 0.159,
           "frente": 0.176,
           "lado": 0.271,
-          "nuca": 0.251,
-          "folga_oco": 0.098
+          "nuca": 0.289,
+          "folga_oco": 0.097
         }
       },
       "pior": {
-        "folga_min": 0.015,
-        "topo": 0.189,
+        "folga_min": 0.012,
+        "topo": 0.159,
         "frente": 0.176,
         "lado": 0.271,
-        "nuca": 0.251,
-        "folga_oco": 0.098
+        "nuca": 0.289,
+        "folga_oco": 0.097
       },
       "rosto": {
-        "distancia": 0.132,
+        "distancia": 0.104,
         "mais_perto": "eyebrow-05"
       },
       "reprovados": []
