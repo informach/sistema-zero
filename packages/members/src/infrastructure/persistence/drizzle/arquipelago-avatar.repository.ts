@@ -6,9 +6,12 @@ import type { Database } from './db'
 import { lockLearningOwner } from './learning-owner-lock'
 import { avatarInventory, gamificationProfiles } from './schema'
 
-/** Só peças pagas vão ao inventário; as grátis já são de todo mundo. */
+/**
+ * Só peças que alguém precisa TER vão ao inventário: as pagas (a amizade) e as da festa (B16, que
+ * só o jogo concede). As grátis já são de todo mundo.
+ */
 const PECAS_PAGAS: ReadonlySet<string> = new Set(
-  AVATAR3D_PARTS.filter((p) => p.tier === 'coins').map((p) => p.id),
+  AVATAR3D_PARTS.filter((p) => p.tier !== 'free').map((p) => p.id),
 )
 
 /**

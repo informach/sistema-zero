@@ -50,12 +50,14 @@ function ItemTile({
   const isNone = part.id.endsWith('-none')
   const info = AVATAR_PART_INFO[part.id]
   const label = info?.labelPt ?? part.id
+  // Roupa da festa (B16): diz de onde vem, sem preço.
+  const daFesta = part.locked && part.tier === 'festa'
   return (
     <button
       type="button"
       onClick={onSelect}
       disabled={disabled}
-      aria-label={label}
+      aria-label={daFesta ? `${label}, vem da festa do Arquipélago` : label}
       title={label}
       aria-pressed={selected}
       className={cn(
@@ -80,7 +82,8 @@ function ItemTile({
             confirming ? 'bg-primary text-primary-foreground' : 'bg-(--kids-lime-tint)',
           )}
         >
-          <Lock className="size-3" /> {confirming ? `Comprar? ${part.price}` : part.price}
+          <Lock className="size-3" />{' '}
+          {daFesta ? 'Da festa' : confirming ? `Comprar? ${part.price}` : part.price}
         </span>
       ) : null}
     </button>
@@ -218,6 +221,8 @@ export function AvatarConfigurator({
   function selectPart(part: AvatarPartView) {
     if (!part.owned) {
       if (pendingBuy?.part.id === part.id) {
+        // A roupa da festa não se compra (B16): o segundo toque só mantém a prévia.
+        if (part.tier === 'festa') return
         // O `buy` só desarma a confirmação no SUCESSO — falhou (ex.: sem moedas), a barra
         // fica de pé com o "Deixar para depois" (que desveste a prévia).
         void buy(part)
@@ -708,7 +713,9 @@ export function AvatarConfigurator({
                     className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
                   >
                     <p className="font-semibold text-sm">
-                      Gostou? Está vestido de prévia!{' '}
+                      {pendingBuy.part.tier === 'festa'
+                        ? 'Esta peça vem da festa do Arquipélago. Na época da festa, ela chega pelo jogo.'
+                        : 'Gostou? Está vestido de prévia!'}{' '}
                       <span className="text-muted-foreground">
                         ({AVATAR_PART_INFO[pendingBuy.part.id]?.labelPt ?? pendingBuy.part.id})
                       </span>
@@ -722,14 +729,16 @@ export function AvatarConfigurator({
                       >
                         Deixar para depois
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => selectPart(pendingBuy.part)}
-                        disabled={!!busy}
-                        className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
-                      >
-                        <ZappyCoin className="size-4" /> Comprar por {pendingBuy.part.price}
-                      </button>
+                      {pendingBuy.part.tier === 'festa' ? null : (
+                        <button
+                          type="button"
+                          onClick={() => selectPart(pendingBuy.part)}
+                          disabled={!!busy}
+                          className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+                        >
+                          <ZappyCoin className="size-4" /> Comprar por {pendingBuy.part.price}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : null}

@@ -298,7 +298,8 @@ export interface AdminRankingPageView {
 export interface AvatarPartView {
   id: string
   category: AvatarCategory
-  tier: 'free' | 'coins'
+  /** `festa` (B16): só a festa do Arquipélago concede; a loja mostra de onde vem, sem preço. */
+  tier: 'free' | 'coins' | 'festa'
   price: number
   /** Possui (grátis OU comprada). */
   owned: boolean

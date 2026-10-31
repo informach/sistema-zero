@@ -206,3 +206,35 @@ describe('Avatar 3D — foto (snapshot)', () => {
     expect(bad.status).toBe(400)
   })
 })
+
+describe('Avatar 3D — roupas da festa (B16, só conquistadas na festa)', () => {
+  test('aparecem trancadas, sem preço, e não se compram', async () => {
+    const { app, gamification } = buildApp()
+    await seedCoins(gamification, 100)
+    const body = await readJson(await getAvatar(app))
+    expect(body.parts.find((p: { id: string }) => p.id === 'hat-08')).toMatchObject({
+      tier: 'festa',
+      price: 0,
+      owned: false,
+      locked: true,
+    })
+    const res = await buyPart(app, 'hat-08')
+    expect(res.status).toBe(409)
+    expect((await readJson(res)).error.code).toBe('AVATAR_PART_FESTA')
+    // Nada foi cobrado nem entregue.
+    const depois = await readJson(await getAvatar(app))
+    expect(depois.balance).toBe(100)
+    expect(depois.parts.find((p: { id: string }) => p.id === 'hat-08').owned).toBe(false)
+  })
+
+  test('vestir a roupa da festa sem tê-la é recusado', async () => {
+    const { app } = buildApp()
+    const atual = await readJson(await getAvatar(app))
+    const res = await putAvatar(app, {
+      style: atual.style,
+      slots: { ...atual.equipped, hat: { asset: 'hat-08' } },
+    })
+    expect(res.status).toBe(403)
+    expect((await readJson(res)).error.code).toBe('AVATAR_PART_NOT_OWNED')
+  })
+})

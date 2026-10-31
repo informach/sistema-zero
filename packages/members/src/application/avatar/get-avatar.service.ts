@@ -44,7 +44,8 @@ export class GetAvatarService {
       tier: p.tier,
       price: p.price,
       owned: p.tier === 'free' || ownedSet.has(p.id),
-      locked: p.tier === 'coins' && !ownedSet.has(p.id),
+      // Paga ainda não comprada, ou da festa ainda não ganha (B16).
+      locked: p.tier !== 'free' && !ownedSet.has(p.id),
     }))
     const palettes: Partial<Record<AvatarCategory, string[]>> = {}
     for (const category of AVATAR_CATEGORIES) {
