@@ -14,6 +14,7 @@ import {
   ondeAprender,
   oQueFalta,
   type Quadro,
+  quadroSugeridoNoFarol,
   quadrosDaIlha,
 } from '../sistemas/quadro-das-cores'
 import { receitaPeloId } from '../sistemas/receitas'
@@ -49,11 +50,14 @@ function Premio({ d }: { d: DesafioNaLista | null }) {
 function CartaoDoQuadro({
   q,
   corConquistada,
+  sugerido = false,
   ocupado,
   aoJogar,
 }: {
   q: Quadro
   corConquistada: boolean
+  /** No Farol, a variante da linguagem mais nova que já abriu (A29). */
+  sugerido?: boolean
   ocupado: boolean
   aoJogar: (q: Quadro) => void
 }) {
@@ -65,6 +69,9 @@ function CartaoDoQuadro({
         {corConquistada ? '✓' : q.numero}
       </span>
       <div className="arq-quadro-corpo">
+        {sugerido ? (
+          <span className="arq-quadro-hoje-selo">Na linguagem que você aprendeu por último</span>
+        ) : null}
         <b>{titulo}</b>
         {corConquistada ? <span className="arq-quadro-estado">Cor de volta</span> : null}
         {q.estado === 'feito' && !corConquistada ? (
@@ -218,6 +225,7 @@ export function PainelDoQuadro() {
   if (!ilhaId) return null
   const nome = ilhaDoContrato(ilhaId).nome
   const quadros = dados ? quadrosDaIlha(dados.desafios, ilhaId) : null
+  const sugerido = quadros && ilhaId === 'farol' ? quadroSugeridoNoFarol(quadros) : null
   const feitos =
     ilhaId === 'sua-ilha'
       ? (quadros?.filter((q) => q.estado === 'feito').length ?? 0)
@@ -244,7 +252,7 @@ export function PainelDoQuadro() {
         <h2 id="arq-quadro-titulo">Quadro das Cores</h2>
         <p className="arq-quadro-sub">
           {ilhaId === 'farol'
-            ? 'Um jogo todo seu, com os critérios na lista. Faça quando quiser.'
+            ? 'Um jogo todo seu, com os critérios na lista. Escolha a linguagem entre as que você já aprendeu e faça quando quiser.'
             : ilhaId === 'sua-ilha'
               ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} desafios feitos.`
               : quadros || feitos > 0
@@ -273,6 +281,7 @@ export function PainelDoQuadro() {
                     ilhaId !== 'farol' &&
                     (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.includes(q.numero) ?? false)
                   }
+                  sugerido={ilhaId === 'farol' && q.numero === sugerido}
                   ocupado={ferramentaAberta || carregando}
                   aoJogar={(x) => void jogar(x.desafio)}
                 />

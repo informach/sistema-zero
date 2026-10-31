@@ -16,6 +16,7 @@ import {
   type PedirAmbienteDoDesafio,
   POSICOES_DA_JORNADA,
   ProjetoDoMinijogoSchema,
+  postoDoCursoBase,
   QUADROS_POR_ILHA,
   type ResultadoDaVerificacao,
   type VerificarDesafio,
@@ -132,7 +133,8 @@ export class ServicoDosDesafios {
             aprenda: aprendaODesafio(
               {
                 linguagem,
-                posto: postoDaIlha(d.metadados.ilha),
+                posto:
+                  postoDoCursoBase(linguagem, d.metadados.ilha) ?? postoDaIlha(d.metadados.ilha),
                 blocos: d.publicacao.blocosExigidos,
               },
               curriculo,
@@ -516,8 +518,10 @@ function faltaCursoBase(
   id: IlhaId,
   cursosBase: Regua['cursosBase'],
 ): boolean {
-  if (linguagem === 'blocos' || cursosBase === 'todos') return false
-  return !cursosBase.has(postoDaIlha(id))
+  // No Farol, a variante de cada linguagem pede o curso-base de onde a linguagem começa (A29).
+  const posto = postoDoCursoBase(linguagem, id)
+  if (posto === null || cursosBase === 'todos') return false
+  return !cursosBase.has(posto)
 }
 
 function postoDaIlha(id: IlhaId): string {
