@@ -157,7 +157,7 @@ await writeFile(
         class_name: 'ProBuildSandbox',
         image: path.join(root, 'packages/studio-runtime/Dockerfile'),
         image_build_context: path.join(root, 'packages/studio-runtime'),
-        instance_type: 'standard-1',
+        instance_type: 'standard-2',
         max_instances: 1,
       },
     ],

@@ -26,7 +26,19 @@ Staging usa `bun run deploy:staging`, Worker `sistemazero-studio-runtime-staging
 
 A configuração principal é a de produção, com Worker `sistemazero-studio-runtime` e bucket `sistemazero-studio-artifacts`. Promova o runtime junto da aplicação que entende artefatos; a aplicação anterior espera HTML inline. Preparar o bucket e as variáveis não exige substituir o runtime ativo antes dessa promoção.
 
-A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na validação remota de 15/10/2026, `lite` falhou ao descompactar a imagem no disco de 2 GB. O limite de 50 instâncias permanece. A regra existente expira `previews/` após dois dias. Antes de ativar os inputs Python, configure também as duas regras de um dia descritas abaixo. `published/`, `publications/`, `runtimes/` e `runtime-configs/` não têm expiração por idade.
+A imagem com Chromium precisa de pelo menos 8 GB de disco. O executor usa `standard-2`
+(1 vCPU, 6 GiB de memória e 12 GB de disco) em staging, produção e na prova SDK,
+alinhado à CPU usada na qualificação real da imagem. `standard-1` oferecia apenas
+0,5 vCPU: na conferência completa do Pico em produção, o gabarito passou, mas o
+programa inicial consumiu o prazo de 140 s durante a missão, depois da preparação
+e da inspeção. O ajuste de capacidade conserva os prazos e o isolamento de cada
+programa. `ThreeDCheckSandbox` mantém `standard-4` e o limite de 50 instâncias do
+executor geral permanece. Na validação remota de 15/10/2026, `lite` falhou ao
+descompactar a imagem no disco de 2 GB.
+
+A regra existente expira `previews/` após dois dias. Antes de ativar os inputs
+Python, configure também as duas regras de um dia descritas abaixo. `published/`,
+`publications/`, `runtimes/` e `runtime-configs/` não têm expiração por idade.
 
 Depois do deploy, aguarde o provisionamento dos contêineres e valide uma compilação com `validate: true`; `/healthz` sozinho não comprova que a imagem está pronta.
 
