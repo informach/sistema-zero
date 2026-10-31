@@ -27,7 +27,7 @@ import { ehIsca, falaDaIscaEscolhida, iscaValendo, NOME_NA_FALA } from '../siste
 import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO, podeEntrarNaFoto } from '../sistemas/modo-foto'
-import { comer, deveFalarDoHumor, HUMOR_OTIMO, humor } from '../sistemas/necessidades'
+import { comer, deveFalarDoHumor, falaDeComer, HUMOR_OTIMO, humor } from '../sistemas/necessidades'
 import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado, salvamentoPausado } from '../sistemas/pausa'
 import {
@@ -348,6 +348,7 @@ interface LugarDaMochila {
 
 function useLugaresDaMochila(): LugarDaMochila[] {
   const { loja } = useJogo()
+  const ilhaAqui = useIlhaAqui()
   const inv = useEstado((s) => s.salvamento.inventario)
   const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
@@ -368,10 +369,14 @@ function useLugaresDaMochila(): LugarDaMochila[] {
               const resto = remover(sv.inventario, item.id)
               const comida = ITENS[item.id]
               return resto && comida
-                ? { ...sv, inventario: resto, necessidades: comer(sv.necessidades, comida) }
+                ? {
+                    ...sv,
+                    inventario: resto,
+                    necessidades: comer(sv.necessidades, comida, ilhaAqui),
+                  }
                 : sv
             })
-            s.dizer(`Hum. ${item.nome} deu energia para continuar.`)
+            s.dizer(falaDeComer(item, ilhaAqui))
           },
         }
       if (item.id === ID_DOS_PATINS) {
@@ -455,7 +460,7 @@ function useLugaresDaMochila(): LugarDaMochila[] {
         agir: () => loja.getState().abrirPainel(PAINEL_DO_ALBUM),
       })
     return lugares
-  }, [inv, patins, lanterna, isca, loja])
+  }, [inv, patins, lanterna, isca, loja, ilhaAqui])
 }
 
 /**

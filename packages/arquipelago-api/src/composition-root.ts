@@ -110,10 +110,13 @@ export function createApplication(env: Env): Application {
     leituras,
     logger,
   })
+  // O andar de cima e o terreno de quem é visitado (lacunas, 01/11/2026), só para ver.
+  const obrasEstendidas = new DrizzleRepositorioDaObraEstendida(connection.db)
   const visitas = new ServicoDasVisitas({
     familia: repositorioDaFamilia,
     politica,
     membros,
+    obras: obrasEstendidas,
     logger,
   })
   const app = createServer({
@@ -122,12 +125,14 @@ export function createApplication(env: Env): Application {
       familia: repositorioDaFamilia,
       politica,
       membros,
+      obras: obrasEstendidas,
       logger,
     }),
     visitasAdultas: new ServicoDasVisitasAdultas({
       repo: new DrizzleRepositorioDasVisitasAdultas(connection.db),
       politica,
       membros,
+      obras: obrasEstendidas,
       logger,
     }),
     fantasmas: new ServicoDosFantasmas({
@@ -136,7 +141,7 @@ export function createApplication(env: Env): Application {
       visitas,
     }),
     obraEstendida: new ServicoDaObraEstendida({
-      repo: new DrizzleRepositorioDaObraEstendida(connection.db),
+      repo: obrasEstendidas,
       politica,
     }),
     pedidos: new ServicoDosPedidos({

@@ -13,6 +13,11 @@ export interface Item {
   emoji: string
   /** Se dá para comer: quanto repõe de cada necessidade. */
   comida?: { fome: number; diversao?: number; energia?: number }
+  /**
+   * Um efeito a mais numa ilha (o chocolate quente aquece no Pico, como a tabela de receitas da
+   * proposta diz): soma às necessidades e troca a fala. Sem castigo fora dela.
+   */
+  naIlha?: { ilha: 'pico'; energia?: number; diversao?: number; fala: string }
   /** Se é coisa de usar (os patins): não se come nem se dá de presente. */
   equipamento?: true
   /**
@@ -122,6 +127,11 @@ export const ITENS: Record<string, Item> = {
     nome: 'Chocolate quente',
     emoji: '☕',
     comida: { fome: 15, energia: 15 },
+    naIlha: {
+      ilha: 'pico',
+      energia: 20,
+      fala: 'O chocolate quente aqueceu do frio do Pico. Deu energia de sobra.',
+    },
   },
   // O prêmio da entrega pelos telhados (fase2-05, `sistemas/patins.ts`).
   patins: { id: 'patins', nome: 'Patins', emoji: '🛼', equipamento: true },

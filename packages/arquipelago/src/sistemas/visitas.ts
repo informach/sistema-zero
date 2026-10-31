@@ -1,4 +1,5 @@
 import {
+  type AndarDeCima,
   type Canteiro,
   type CasaDeAmigo,
   CasaDeAmigoSchema,
@@ -15,6 +16,7 @@ import {
   type QuartoDoJogo,
   type ResultadoDoPercurso,
   type Salvamento,
+  type Terreno,
 } from '@sistemazero/arquipelago-contracts'
 import { formatarTempo } from './percurso'
 
@@ -39,6 +41,9 @@ export interface Visita {
   completos: readonly ObjetoDaCasa[]
   /** O quarto da plataforma do irmão (29/10/2026); `null` quando não abriu. */
   quarto: QuartoDoJogo | null
+  /** O andar de cima e o terreno moldado dele (lacunas, 01/11/2026); `null` quando não tem. */
+  andar?: AndarDeCima | null
+  terreno?: Terreno | null
 }
 
 /**
@@ -202,6 +207,8 @@ export function visitaDaCasaDeAmigo(casa: CasaDeAmigo): Visita {
     horta: casa.horta,
     completos: casa.completos,
     quarto: casa.quarto,
+    andar: casa.andar ?? null,
+    terreno: casa.terreno ?? null,
   }
 }
 
@@ -217,6 +224,8 @@ export function visitaDaCasa(
     horta: casa.horta,
     completos: casa.completos,
     quarto: casa.quarto,
+    andar: casa.andar ?? null,
+    terreno: casa.terreno ?? null,
   }
 }
 

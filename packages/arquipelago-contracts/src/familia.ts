@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 import { OBJETOS_DA_CASA } from './objetos'
+import { AndarDeCimaSchema, TerrenoSchema } from './obra-estendida'
 import { QuartoSchema } from './plataforma'
 import {
   CanteiroSchema,
@@ -172,5 +173,12 @@ export const CasaDoIrmaoSchema = z.strictObject({
   horta: z.array(CanteiroSchema).max(24),
   completos: z.array(z.enum(OBJETOS_DA_CASA)).max(OBJETOS_DA_CASA.length),
   quarto: QuartoSchema.nullable(),
+  /**
+   * O andar de cima e o terreno moldado do lote, da obra estendida dele (lacunas, 01/11/2026: a
+   * visita mostrava a casa sem eles). Opcionais: o serviço de antes não os manda, e `null` quando
+   * ele não construiu.
+   */
+  andar: AndarDeCimaSchema.nullable().optional(),
+  terreno: TerrenoSchema.nullable().optional(),
 })
 export type CasaDoIrmao = z.infer<typeof CasaDoIrmaoSchema>

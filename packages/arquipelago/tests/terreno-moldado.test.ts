@@ -133,7 +133,8 @@ describe('moldar o terreno do lote (E04, Nuvens)', () => {
     const montar = (jornada: number) => {
       const falas: string[] = []
       const loja = criarLoja({
-        salvamento: { ...criarSalvamentoInicial(AGORA), casa: { portaNova: true } },
+        // Com as quatro chaves: o caminho do fim do teste não esbarra na tranca do quintal.
+        salvamento: { ...criarSalvamentoInicial(AGORA), casa: { portaNova: true }, chaves: 15 },
         jornada,
         quarto: QUARTO_DE_EXEMPLO,
         avatar: {} as never,
@@ -188,6 +189,19 @@ describe('moldar o terreno do lote (E04, Nuvens)', () => {
     expect(m.terreno()).toBeNull()
     expect(s().moldarTerreno([{ x: 0, z: -4 }])).toBe(false)
     expect(m.falas).toContain(FALA_DO_TERRENO['com-obra'])
+
+    // Lacunas de 01/11/2026: um caminho por cima do morrinho achata o chão também no documento.
+    s().escolherMoldar(1)
+    expect(s().moldarTerreno([c])).toBe(true)
+    expect(alturaDaCelula(m.terreno(), c)).toBe(1)
+    const atual = structuredClone(OBRA)
+    expect(
+      s().aplicar({
+        ok: true,
+        obra: { ...atual, caminhos: [...atual.caminhos, { ...c, tipo: 'grama' }] },
+      }),
+    ).toBe(true)
+    expect(alturaDaCelula(m.terreno(), c)).toBe(0)
   })
 
   test('o chão do lote e a colisão sobem pelos cantos', () => {

@@ -43,7 +43,12 @@ import {
 } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
 import { hortaComOQuintal } from '../sistemas/construcao/quintal'
-import { FALA_DO_TERRENO, moldarCelulas, podeMoldarOTerreno } from '../sistemas/construcao/terreno'
+import {
+  FALA_DO_TERRENO,
+  moldarCelulas,
+  podeMoldarOTerreno,
+  terrenoComAObra,
+} from '../sistemas/construcao/terreno'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
@@ -485,6 +490,14 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
       mudarObra(loja, r.obra, onde, cabana)
       ultimaObra = r.obra
+      // O chão debaixo do que entrou na obra volta ao plano também no documento (lacunas,
+      // 01/11/2026): antes ele só ficava plano no desenho, e o morrinho voltava se a obra saísse.
+      if (onde === 'casa') {
+        const fonte = get().fonteDoTerreno
+        const terreno = fonte?.ler() ?? null
+        const plano = terrenoComAObra(terreno, r.obra, loteDaCasa(jogo.jornada))
+        if (fonte && plano !== terreno) fonte.gravar(plano)
+      }
       if (r.aviso) jogo.dizer(falaDoAviso(r.aviso))
       return true
     },
