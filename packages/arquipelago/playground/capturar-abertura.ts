@@ -82,24 +82,17 @@ export const TOMADAS: Tomada[] = [
     espera: 25_000,
   },
   {
+    // A Íris aparece só pelas páginas do diário até o final (proposta; lacunas de 01/11/2026): a
+    // cena dela mostra o Farol de pé, ao lado da casa, com a ilha colorida em volta.
     id: 'iris',
-    url: 'novo=1&persistir=0&posicao=8&adiantar=3&em=-9.2,-10.9',
-    preparar: subirOFarol,
-    pecas: [
-      {
-        url: '/modelos/personagens/iris.glb',
-        em: naSala(-0.95, 0, -2.15),
-        giro: 2.6,
-        clipe: 'parado',
-      },
-    ],
+    url: 'novo=1&persistir=0&posicao=8&quadros=feitos&adiantar=3&em=-20,4',
     palco: {
-      posicao: naSala(3.0, 2.0, -1.8),
-      alvo: naSala(-0.9, 0.95, -2.45),
-      campo: 50,
+      posicao: [-23, 3.2, 6],
+      alvo: [-12, 10, -13],
+      campo: 55,
       esconder: ESCONDER_TODOS,
     },
-    espera: 15_000,
+    espera: 20_000,
   },
   {
     id: 'sumiu',

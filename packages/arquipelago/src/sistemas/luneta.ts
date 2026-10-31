@@ -30,8 +30,12 @@ export function falaDaLuneta(ilha: Ilha): string {
   return `Lá é ${artigoDaIlha(ilha)} ${ilha.nome}. A ponte abre quando você chegar a ${NOMES_DOS_POSTOS[ilha.posto]}.`
 }
 
-export function recadoDaIris(ilha: Ilha): string {
-  return `Tem mais para descobrir. A ponte abre em ${NOMES_DOS_POSTOS[ilha.posto]}. Íris.`
+/**
+ * O recado da placa na ponte quebrada. Sem assinatura: a Íris aparece só pelas páginas do diário
+ * até o final (proposta; lacunas de 01/11/2026).
+ */
+export function recadoDaPlaca(ilha: Ilha): string {
+  return `Tem mais para descobrir. A ponte abre em ${NOMES_DOS_POSTOS[ilha.posto]}.`
 }
 
 export const SINAIS_DA_LUNETA = { periodo: 6, percurso: 2.6, brilhoMinimo: 0.65 } as const

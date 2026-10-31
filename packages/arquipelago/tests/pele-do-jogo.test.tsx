@@ -65,7 +65,7 @@ describe('a pele do Kids não mudou (fase3-13)', () => {
     }
   })
 
-  test('a fala da luneta, a placa da ponte e o recado da Íris do Kids são os de sempre', () => {
+  test('a fala da luneta, a placa da ponte e o recado dela do Kids, sem a assinatura da Íris', () => {
     for (const ilha of ILHAS) {
       if (ilha.id !== 'farol')
         expect(VOZ_KIDS.falaDaLuneta(ilha)).toContain(NOMES_DOS_POSTOS[ilha.posto])
@@ -73,8 +73,8 @@ describe('a pele do Kids não mudou (fase3-13)', () => {
         antes: 'A ponte abre em',
         marco: NOMES_DOS_POSTOS[ilha.posto],
       })
-      expect(VOZ_KIDS.recadoDaIris(ilha)).toBe(
-        `Tem mais para descobrir. A ponte abre em ${NOMES_DOS_POSTOS[ilha.posto]}. Íris.`,
+      expect(VOZ_KIDS.recadoDaPlaca(ilha)).toBe(
+        `Tem mais para descobrir. A ponte abre em ${NOMES_DOS_POSTOS[ilha.posto]}.`,
       )
     }
   })
@@ -104,8 +104,8 @@ describe('a voz adulta', () => {
       antes: 'A ponte abre na',
       marco: 'etapa 3 da jornada',
     })
-    expect(VOZ_ADULTA.recadoDaIris(vila)).toBe(
-      'Tem mais para descobrir. A ponte abre na etapa 3 da sua jornada. Íris.',
+    expect(VOZ_ADULTA.recadoDaPlaca(vila)).toBe(
+      'Tem mais para descobrir. A ponte abre na etapa 3 da sua jornada.',
     )
   })
 

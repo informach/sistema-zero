@@ -61,7 +61,7 @@ export const CENAS: readonly Cena[] = [
           'A Íris, a faroleira, era quem mais criava. O Farol juntava a luz de tudo e espalhava cor pelas ilhas.',
       },
     ],
-    descricao: 'A Íris desenha na sala do Farol, cercada de desenhos coloridos presos na parede.',
+    descricao: 'O Farol de pé ao lado da casa, com a ilha colorida em volta.',
   },
   {
     id: 'sumiu',

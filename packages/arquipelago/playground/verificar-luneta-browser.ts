@@ -69,6 +69,18 @@ try {
       waitUntil: 'networkidle',
     })
     await pagina.waitForFunction(() => (globalThis as Janela).__arquipelagoLevar)
+    // As cenas de chegada das pontes (N02, depois deste verificador) seguram os comandos num jogo
+    // novo: pula uma por uma.
+    const pular = pagina.locator('.arq-chegada-pular')
+    for (let i = 0; i < 12; i++) {
+      try {
+        await pular.waitFor({ state: 'visible', timeout: 4000 })
+      } catch {
+        break
+      }
+      await pular.click()
+      await pular.waitFor({ state: 'detached', timeout: 15_000 }).catch(() => {})
+    }
     await pagina.evaluate(
       (x) => (globalThis as Janela).__arquipelagoLevar?.(x, 1.6, 28, Math.PI),
       LUNETA.x,
@@ -148,7 +160,7 @@ try {
         t,
       )
       await pagina.waitForTimeout(1000)
-      await pagina.locator('.arq-acao').filter({ hasText: 'Ler recado da Íris' }).waitFor()
+      await pagina.locator('.arq-acao').filter({ hasText: 'Ler a placa da ponte' }).waitFor()
       await pagina.keyboard.press('e')
       await pagina.locator('.arq-dica').filter({ hasText: 'Tem mais para descobrir.' }).waitFor()
       await pagina.waitForTimeout(500)
