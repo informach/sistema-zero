@@ -408,11 +408,19 @@ function jogo(variacao: Variacao, liga: (p: Parte | Extra) => boolean): SZIRV2 {
   }
 }
 
+/**
+ * O quadro 6 segue a ficha da proposta (lacunas, 01/11/2026): "cada vez mais rápido" e "encostar
+ * numa chaminé encerra a corrida e mostra os pontos". Por isso, na corrida do entregador, a tela
+ * do fim com os metros também falta no inicial; o teto da velocidade fica pronto (é a missão).
+ */
+const FALTA_TAMBEM: Partial<Record<Variacao, Parte | Extra>> = { corrida: 'telaComMetros' }
+
 export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const falta = PARTE[variacao]
   const extra = EXTRA[variacao]
+  const tambem = FALTA_TAMBEM[variacao]
   const ir = assignStableIdsToIR(
-    jogo(variacao, (p) => pronto || (p !== falta && p !== extra)),
+    jogo(variacao, (p) => pronto || (p !== falta && p !== extra && p !== tambem)),
     `vila_${variacao.replace('-', '_')}`,
   )
   const name = 'A corrida do entregador'

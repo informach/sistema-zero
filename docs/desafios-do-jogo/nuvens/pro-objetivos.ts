@@ -19,7 +19,7 @@ const vazio = (moedas: number) =>
     ],
     moedas,
   )
-const ocupado = jardim(
+const _ocupado = jardim(
   [
     [null, 'flor', null],
     [null, null, null],
@@ -34,54 +34,57 @@ const plantado = jardim(
   0,
 )
 
+const juntas = jardim(
+  [
+    ['flor', 'flor', null],
+    [null, null, null],
+  ],
+  0,
+)
+
 const rotulos: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
   kids: {
-    ocupacao: [
-      'podeConstruir recusa célula fora da grade e célula já ocupada.',
-      'Confira primeiro se linha e coluna estão dentro da grade, depois se a célula está vazia.',
-    ],
-    custo: [
-      'construir só planta com moedas suficientes e desconta o custo.',
-      'Sem moedas ou com a célula ocupada, devolva o mesmo jardim. Ao plantar, crie uma grade nova.',
+    vizinhas: [
+      'vizinhas conta as plantas nas quatro células em volta, só dentro da grade.',
+      'Olhe em cima, embaixo, à esquerda e à direita. Confira se cada uma está dentro da grade antes de olhar.',
     ],
     producao: [
-      'colher soma a produção de cada planta às moedas.',
-      'Percorra a grade e some PRODUCAO de cada planta encontrada.',
+      'colher soma a produção de cada planta, e a planta com vizinha rende 1 a mais.',
+      'Percorra a grade e, para cada planta, use vizinhas para saber se ela tem companhia.',
     ],
-    guardar: [
-      'Guardar e reabrir devolve o mesmo jardim, com a grade e as moedas.',
-      'salvar transforma o jardim em texto com JSON.stringify; carregar faz o caminho de volta.',
+    expandir: [
+      'expandir acrescenta uma coluna vazia por 4 moedas; sem moedas, nada muda.',
+      'Crie uma grade nova com uma célula vazia no fim de cada fileira.',
     ],
     tela: [
-      'Na tela, clicar numa célula vazia planta uma flor e gasta 3 moedas.',
-      'O main.ts já chama construir no clique. Ele depende das suas regras.',
+      'Na tela, a tecla E aumenta o jardim em uma coluna.',
+      'O main.ts já chama expandir na tecla E. Ele depende das suas regras.',
     ],
-    remover: [
-      'Extra: remover tira a planta e devolve metade do custo, arredondado para baixo.',
-      'Célula vazia continua igual. Use Math.floor para a metade do custo.',
+    'por-tipo': [
+      'Extra: plantasPorTipo conta quantas flores e quantas árvores o jardim tem.',
+      'Comece com zero de cada e some ao passar por cada planta.',
     ],
   },
   adulto: {
-    ocupacao: [
-      'podeConstruir rejeita coordenadas fora da grade e células ocupadas.',
-      'Valide limites antes de indexar a grade.',
+    vizinhas: [
+      'vizinhas(jardim, linha, coluna) conta plantas nas 4 vizinhas ortogonais dentro da grade.',
+      'Valide limites antes de indexar.',
     ],
-    custo: [
-      'construir valida o saldo, desconta o custo e não altera o jardim recebido.',
-      'Retorne um novo objeto com uma cópia da grade.',
+    producao: [
+      'colher soma PRODUCAO por planta mais 1 para cada planta com vizinha.',
+      'Reaproveite vizinhas no laço da grade.',
     ],
-    producao: ['colher acrescenta a produção de todas as plantas.', 'Use PRODUCAO por tipo.'],
-    guardar: [
-      'salvar e carregar fazem a ida e a volta sem perder grade nem saldo.',
-      'Serialize os dados necessários para reconstruir o estado.',
+    expandir: [
+      'expandir adiciona uma coluna vazia por CUSTO_DA_COLUNA, só com saldo, sem mutar o jardim.',
+      'Retorne um novo objeto com uma cópia estendida da grade.',
     ],
     tela: [
-      'A apresentação usa o modelo: o clique numa célula vazia planta e cobra.',
-      'main.ts já liga o clique a construir().',
+      'A apresentação usa o modelo: a tecla E expande o jardim.',
+      'main.ts já liga a tecla E a expandir().',
     ],
-    remover: [
-      'Extra: remover libera a célula e devolve metade do custo (arredondado para baixo).',
-      'Célula vazia retorna o jardim sem mudança.',
+    'por-tipo': [
+      'Extra: plantasPorTipo retorna a contagem por tipo de planta.',
+      'Um objeto com flor e arvore, começando em zero.',
     ],
   },
 }
@@ -107,74 +110,52 @@ export function objetivosDasNuvensPro(publico: PublicoDoDesafio): SectionJavaScr
   }
   return [
     objetivo(
-      'ocupacao',
-      funcao('podeConstruir', [
-        { args: [vazio(10), 0, 1, 'flor'], expected: true },
-        { args: [ocupado, 0, 1, 'flor'], expected: false },
-        { args: [vazio(10), 2, 0, 'flor'], expected: false },
-        { args: [vazio(10), 0, -1, 'flor'], expected: false },
-      ]),
-    ),
-    objetivo(
-      'custo',
-      funcao('construir', [
-        {
-          args: [vazio(10), 0, 0, 'arvore'],
-          expected: jardim(
-            [
-              ['arvore', null, null],
-              [null, null, null],
-            ],
-            5,
-          ),
-        },
-        { args: [vazio(2), 0, 0, 'flor'], expected: vazio(2) },
-        { args: [ocupado, 0, 1, 'arvore'], expected: ocupado },
+      'vizinhas',
+      funcao('vizinhas', [
+        { args: [plantado, 0, 1], expected: 3 },
+        { args: [plantado, 1, 2], expected: 2 },
+        { args: [plantado, 1, 0], expected: 2 },
+        { args: [plantado, 0, 0], expected: 0 },
       ]),
     ),
     objetivo(
       'producao',
       funcao('colher', [
-        {
-          args: [plantado],
-          expected: { ...plantado, moedas: 4 },
-        },
+        { args: [plantado], expected: { ...plantado, moedas: 4 } },
+        { args: [juntas], expected: { ...juntas, moedas: 4 } },
       ]),
     ),
     objetivo(
-      'guardar',
-      funcao('reabrir', [
-        { args: [plantado], expected: plantado },
-        { args: [{ ...ocupado, moedas: 7 }], expected: { ...ocupado, moedas: 7 } },
+      'expandir',
+      funcao('expandir', [
+        {
+          args: [vazio(10)],
+          expected: jardim(
+            [
+              [null, null, null, null],
+              [null, null, null, null],
+            ],
+            6,
+          ),
+        },
+        { args: [vazio(2)], expected: vazio(2) },
       ]),
     ),
     objetivo('tela', {
       type: 'behavior',
       steps: [
         { action: 'wait', ms: 300 },
-        { action: 'click', x: NUVENS_PRO.lado / 2, y: NUVENS_PRO.lado / 2 },
+        { action: 'press', key: 'e', holdMs: 30 },
       ],
       expect: {
-        target: { kind: 'moduleValue', module: 'src/main.ts', path: 'jogo.jardim.moedas' },
+        target: { kind: 'moduleValue', module: 'src/main.ts', path: 'jogo.jardim.colunas' },
         compare: 'equals',
-        value: NUVENS_PRO.moedas - 3,
+        value: NUVENS_PRO.colunas + 1,
       },
     }),
     objetivo(
-      'remover',
-      funcao('remover', [
-        {
-          args: [plantado, 0, 2],
-          expected: jardim(
-            [
-              ['flor', null, null],
-              [null, 'flor', null],
-            ],
-            2,
-          ),
-        },
-        { args: [plantado, 1, 0], expected: plantado },
-      ]),
+      'por-tipo',
+      funcao('plantasPorTipo', [{ args: [plantado], expected: { flor: 2, arvore: 1 } }]),
       true,
     ),
   ]

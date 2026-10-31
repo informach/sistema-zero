@@ -41,8 +41,7 @@ const bin = (op: '===' | '+' | '-' | '>=', left: JSExpr, right: JSExpr): JSExpr 
   right,
 })
 /** `x = x + d` (ou `x - d`, como os blocos escrevem a subtração). */
-const mais = (name: string, d: number) =>
-  set(name, bin(d < 0 ? '-' : '+', v(name), n(Math.abs(d))))
+const mais = (name: string, d: number) => set(name, bin(d < 0 ? '-' : '+', v(name), n(Math.abs(d))))
 const iff = (cond: JSExpr, then: JSStatement[], otherwise: JSStatement[] = []): JSStatement => ({
   type: 'if',
   cond,
