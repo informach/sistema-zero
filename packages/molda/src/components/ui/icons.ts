@@ -71,6 +71,7 @@ export {
   PanelLeftOpen,
   Pause,
   Pencil,
+  PersonStanding,
   Pipette,
   Play,
   Plus,

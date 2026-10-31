@@ -79,7 +79,7 @@ export function useSceneGlbExport(
     }
   }, [editor, cancel, copy.changed, copy.interrupted])
 
-  async function prepare(animatedPaint: boolean, format?: SceneFileFormat) {
+  async function prepare(animatedPaint: boolean, format?: SceneFileFormat, standardBones = false) {
     if (activeEditor.current !== editor) return
     cancel()
     if (document.hidden) {
@@ -93,6 +93,7 @@ export function useSceneGlbExport(
       revision: source.contentRevision,
       animatedPaint,
       ...(format === undefined ? {} : { format }),
+      ...(standardBones ? { standardBones } : {}),
       name: source.asset.name,
       controller: new AbortController(),
     }
@@ -107,6 +108,7 @@ export function useSceneGlbExport(
           revision: owner.revision,
           animatedPaint: owner.animatedPaint,
           ...(owner.format === undefined ? {} : { format: owner.format }),
+          ...(owner.standardBones ? { standardBones: true } : {}),
         },
         {
           signal: owner.controller.signal,

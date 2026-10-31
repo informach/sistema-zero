@@ -50,6 +50,14 @@ async function load(page: Page, source: MoldaSceneDocument, edit = true) {
   await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
   if (edit) await page.getByRole('button', { name: COPY.scene.editFaces, exact: true }).click()
 }
+/** Estes testes contam a geometria em blocos inteiros; o padrão da oficina é o passo fino. */
+async function blockStep(page: Page) {
+  const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
+  await settings.click()
+  await page.getByLabel('Passo ao mover e redimensionar').selectOption('1')
+  await settings.click()
+}
+
 async function view(
   page: Page,
   source: MoldaSceneDocument,
@@ -113,7 +121,7 @@ test('the stage opens edge picking directly and selects a knife loop through tri
   await page.screenshot({ path: '.cache/loop-faca-isometrico.png' })
   const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await settings.click()
-  await page.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
+  await page.getByLabel('Passo ao mover e redimensionar').selectOption('0.01')
   await settings.click()
   await page
     .getByRole('button', { name: 'Mover', exact: true })
@@ -243,7 +251,7 @@ test('the panel selects the whole loop from an existing segment and subsequent s
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await settings.click()
-  await page.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
+  await page.getByLabel('Passo ao mover e redimensionar').selectOption('0.01')
   await settings.click()
   await page.getByRole('button', { name: 'Mover no eixo Y', exact: true }).press('ArrowUp')
   const changed = await snapshot(page)
@@ -269,6 +277,7 @@ test('pulling a face with the real Move handles cancels and applies one extrusio
 }) => {
   const source = model('Puxar pelas alças')
   await load(page, source)
+  await blockStep(page)
   const project = await view(page, source, 'free')
   const local = sceneLocalBounds(source, source.nodes[0]!.id)!
   const top = project([local.center[0], local.max[1], local.center[2]])
@@ -462,6 +471,7 @@ test('Move handles extrude a face on a large mesh through the surface worker', a
   let source = model('Puxar malha grande')
   source = editSceneMesh(source, source.nodes[0]!.id, (mesh) => makeSceneGridGeometry(33, mesh.id))
   await load(page, source)
+  await blockStep(page)
   const project = await view(page, source, 'free')
   const p = project([4.125, 4.125, 0])
   await page.mouse.click(p.x, p.y)
@@ -578,6 +588,7 @@ for (const mode of ['edge', 'vertex'] as const) {
     const source = model(`Puxar ${mode}`, 'front')
     const original = sceneGeometryMesh(source.geometries[0]!)
     await load(page, source)
+    await blockStep(page)
     const project = await view(page, source)
     const local = sceneLocalBounds(source, source.nodes[0]!.id)!
     const modes = page.getByRole('group', { name: 'Escolher', exact: true })
@@ -622,7 +633,7 @@ for (const mode of ['edge', 'vertex'] as const) {
     if (mode === 'vertex') {
       const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
       await settings.click()
-      await page.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
+      await page.getByLabel('Passo ao mover e redimensionar').selectOption('0.01')
       await settings.click()
     }
     await panel.getByRole('button', { name: label, exact: true }).click()

@@ -103,6 +103,32 @@ async function setup() {
   return { editor, source, view, port, ports, sample, factory }
 }
 
+test('o modo Suavizar do pincel aplica um traço que mistura com os vizinhos', async () => {
+  const { editor, source, view, port, sample } = await setup(),
+    copy = COPY.scene.skinPaint
+  try {
+    fireEvent.click(screen.getByRole('button', { name: copy.smooth }))
+    expect(screen.getByRole('button', { name: copy.smooth }).getAttribute('aria-pressed')).toBe(
+      'true',
+    )
+    expect(screen.getByText(copy.smoothHint)).not.toBeNull()
+    expect(port.enabled).toBe(true)
+    act(() => {
+      expect(port.callbacks.skinPaint!.begin(sample)).toBe(true)
+      port.callbacks.skinPaint!.move(sample)
+    })
+    act(() => port.callbacks.skinPaint!.end(true))
+    expect(screen.getByText(copy.applied(1))).not.toBeNull()
+    expect(editor.getState().asset.skins![0]!.weights.v_0_0).not.toEqual(
+      source.skins![0]!.weights.v_0_0,
+    )
+    expect(editor.getState().canUndo).toBe(true)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 test('workshop brush controls preview without document renders, preserve thumbnails and apply one undo in StrictMode', async () => {
   const { editor, source, view, port, ports, sample } = await setup(),
     copy = COPY.scene.skinPaint

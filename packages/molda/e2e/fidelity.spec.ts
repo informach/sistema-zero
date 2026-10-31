@@ -172,7 +172,10 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     )
     await expect(page.getByText('Pose em 0,5 s', { exact: true })).toBeVisible()
     await expect(
-      page.getByRole('button', { name: 'Experimentar um movimento pronto', exact: true }),
+      page.getByRole('button', {
+        name: 'Movimentos de uma peça (pular, balançar, girar)',
+        exact: true,
+      }),
     ).toBeInViewport()
     await page.mouse.move(1100, 65)
     await shot('05-animar')

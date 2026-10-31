@@ -45,7 +45,7 @@ import { prepareMeshWeld } from '../../../scene/meshWeld'
 import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { createScenePath, type ScenePathSettings } from '../../../scene/pathCommands'
 import type { SceneSkinInfluence } from '../../../scene/skin'
-import { setSceneSkinWeights } from '../../../scene/skinCommands'
+import { setSceneSkinWeights, smoothSceneSkinWeightsCommand } from '../../../scene/skinCommands'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneTransformIntent } from '../../../viewport/sceneViewportTypes'
@@ -575,6 +575,28 @@ export function useSceneComponents({
                   )
                 }) !== null
               )
+            },
+            onSmooth: () => {
+              if (
+                !editable ||
+                blocked ||
+                activeWeights.current !== weightOwner ||
+                editor.getState().contentRevision !== revision
+              )
+                return null
+              const result = { changed: 0, precision: 0 }
+              const next = run((source) => {
+                if (
+                  editor.getState().contentRevision !== revision ||
+                  source.skins?.find((entry) => entry.id === skin.id) !== skin
+                )
+                  throw new SceneValidationError('weights', COPY.scene.skinWeights.changed)
+                const smoothed = smoothSceneSkinWeightsCommand(source, skin.id, weightVertices)
+                result.changed = smoothed.changed
+                result.precision = smoothed.precision
+                return smoothed.document
+              })
+              return next === null ? null : result
             },
           }
         : null,

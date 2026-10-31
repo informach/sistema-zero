@@ -22,6 +22,8 @@ export interface SceneGuideInput {
     enabled: boolean
     plane: MeshCutPlane
     mark(point: Vec3): void
+    /** Dica do palco no lugar da dica da montagem de uma peça. */
+    hint?: string
   }
   knife?: {
     nodeId: string

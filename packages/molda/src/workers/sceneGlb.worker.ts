@@ -17,6 +17,7 @@ self.onmessage = async (event: MessageEvent<unknown>) => {
       allowLosses: true,
       format: request.format,
       animatedPaint: request.animatedPaint,
+      standardBones: request.standardBones,
     })
     self.postMessage(sceneGlbReply(token, result), [result.bytes.buffer])
   } catch (error) {

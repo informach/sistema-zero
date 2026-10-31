@@ -69,9 +69,10 @@ export function SceneAnimationTimeline({
   }, [clip, document, workshop.index])
   // Selection can change during pointer-down. Keep channel arrays stable so that
   // selecting a key does not invalidate the drag that selected it.
-  const visibleRows = rows.filter(
-    (row) => row.kind === 'mesh' || row.keys.times.length || selected.includes(row.id),
-  )
+  // Quem tem pose vem primeiro: num personagem, os ossos animados não ficam abaixo das peças vazias.
+  const visibleRows = rows
+    .filter((row) => row.kind === 'mesh' || row.keys.times.length || selected.includes(row.id))
+    .sort((a, b) => Number(!!b.keys.times.length) - Number(!!a.keys.times.length))
   const copyingNode = workshop.poseCopy?.ref.nodeId
   useEffect(() => {
     if (copyingNode) setExpanded((before) => new Set([...before, copyingNode]))
