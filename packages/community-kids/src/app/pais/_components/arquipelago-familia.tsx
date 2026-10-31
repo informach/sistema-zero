@@ -7,6 +7,7 @@ import {
   CasaAceitaSchema,
   ConviteDeAmigoGeradoSchema,
   HORAS_DA_VOLTA_AO_CURSO,
+  PERMISSOES_PADRAO,
   type PermissoesDaFamilia,
   PermissoesDaFamiliaSchema,
   type SemanaDaFamiliaParaOsPais,
@@ -175,6 +176,32 @@ export function SemanaDasCriancas({
   )
 }
 
+/**
+ * Como cada permissão começa (A34, revisão de 31/10/2026), dito a partir do padrão do contrato:
+ * as visitas de irmãos começam ligadas; as outras, desligadas. Antes a frase dizia "Tudo começa
+ * desligado", o que não era verdade para os irmãos.
+ */
+export function comoComecam(padrao: Readonly<PermissoesDaFamilia> = PERMISSOES_PADRAO): string {
+  const nomes = (ligada: boolean) =>
+    PERMISSOES.filter((p) => padrao[p.chave] === ligada).map(
+      (p) => p.nome.charAt(0).toLowerCase() + p.nome.slice(1),
+    )
+  const lista = (itens: string[]) =>
+    itens.length > 1 ? `${itens.slice(0, -1).join(', ')} e ${itens.at(-1)}` : (itens[0] ?? '')
+  const ligadas = nomes(true)
+  const desligadas = nomes(false)
+  const partes = [
+    ligadas.length
+      ? `${lista(ligadas)} ${ligadas.length > 1 ? 'começam ligadas' : 'começa ligada'}`
+      : '',
+    desligadas.length
+      ? `${lista(desligadas)} ${desligadas.length > 1 ? 'começam desligadas' : 'começa desligada'}`
+      : '',
+  ].filter(Boolean)
+  const frase = partes.join('; ')
+  return `${frase.charAt(0).toUpperCase()}${frase.slice(1)}.`
+}
+
 const PERMISSOES: ReadonlyArray<{
   chave: keyof PermissoesDaFamilia
   nome: string
@@ -246,7 +273,7 @@ export function PermissoesDeVisita({ inicial }: { inicial: PermissoesDaFamilia }
           Com quem pode interagir
         </h3>
         <p id={ajuda} className="max-w-2xl text-muted-foreground text-xs">
-          A escolha de vocês vale para todas as crianças da conta. Tudo começa desligado.
+          A escolha de vocês vale para todas as crianças da conta. {comoComecam()}
         </p>
       </div>
       <ul className="flex flex-col gap-2" aria-describedby={ajuda}>

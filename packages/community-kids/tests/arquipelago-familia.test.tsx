@@ -1,6 +1,10 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { ladrilhosDaSemana, tempoPorExtenso } from '../src/app/pais/_components/arquipelago-familia'
+import {
+  comoComecam,
+  ladrilhosDaSemana,
+  tempoPorExtenso,
+} from '../src/app/pais/_components/arquipelago-familia'
 import { ArquipelagoLimitCard } from '../src/app/pais/_components/arquipelago-limit-card'
 
 const LIA = '11111111-1111-4111-8111-111111111111'
@@ -229,4 +233,14 @@ test('jogo fechado para a família: nem a semana nem as permissões são pedidas
   await new Promise((r) => setTimeout(r, 0))
   expect(calls.length).toBe(1)
   expect(container.textContent).toBe('')
+})
+
+test('a frase de como as permissões começam segue o padrão do contrato (A34)', () => {
+  expect(comoComecam()).toBe(
+    'Visitas de irmãos começa ligada; visitas de outras crianças e fotos no Clube começam desligadas.',
+  )
+  expect(comoComecam()).not.toContain('Tudo começa desligado')
+  expect(
+    comoComecam({ visitasDeIrmaos: false, visitasDeOutrasCriancas: false, fotosNoClube: false }),
+  ).toBe('Visitas de irmãos, visitas de outras crianças e fotos no Clube começam desligadas.')
 })
