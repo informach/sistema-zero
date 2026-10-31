@@ -6804,25 +6804,25 @@
       "semFonteNaTrilha": []
     },
     {
-      "slug": "nuvens-reserva-de-agua",
+      "slug": "nuvens-plantar-com-moedas",
       "publico": "kids",
       "ilha": "nuvens",
       "posto": 7,
       "quadro": 1,
       "tipo": "quadro-das-cores",
-      "titulo": "Reserva de água",
+      "titulo": "Plantar com moedas",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "A reserva guarda até três de água e nunca fica negativa."
+          "id": "plantar",
+          "descricao": "Espaço planta no canteiro escolhido e paga 2 moedas."
         },
         {
-          "id": "limites",
-          "descricao": "A reserva não transborda nem fica negativa."
+          "id": "sem-moedas",
+          "descricao": "Sem moedas bastantes, não planta e as moedas não ficam negativas."
         }
       ],
       "tiposJaPresentes": [
@@ -6833,99 +6833,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_image",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_create",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "nuvens-luz-na-medida",
-      "publico": "kids",
-      "ilha": "nuvens",
-      "posto": 7,
-      "quadro": 2,
-      "tipo": "quadro-das-cores",
-      "titulo": "Luz na medida",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "A flor cresce só com a luz entre 1 e 3."
-        },
-        {
-          "id": "faixa",
-          "descricao": "Só a faixa de luz de 1 a 3 permite crescer."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_backdrop",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_image",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_create",
-        "sz_js_var_increment",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "nuvens-canteiros-livres",
-      "publico": "kids",
-      "ilha": "nuvens",
-      "posto": 7,
-      "quadro": 3,
-      "tipo": "quadro-das-cores",
-      "titulo": "Canteiros livres",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "Planta só no canteiro escolhido que está vazio."
-        },
-        {
-          "id": "ocupacao",
-          "descricao": "O plantio ocupa só o escolhido e não duplica plantas."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_backdrop",
-        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -6935,34 +6843,30 @@
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
-        "sz_val_compare",
+        "sz_val_bool",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment", "sz_val_compare"],
       "semFonteNaTrilha": []
     },
     {
-      "slug": "nuvens-dois-recursos",
+      "slug": "nuvens-canteiro-ocupado",
       "publico": "kids",
       "ilha": "nuvens",
       "posto": 7,
-      "quadro": 4,
+      "quadro": 2,
       "tipo": "quadro-das-cores",
-      "titulo": "Dois recursos",
+      "titulo": "Canteiro ocupado",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "Cada produção usa uma água e um adubo, e sem um deles nada é gasto."
-        },
-        {
-          "id": "recursos",
-          "descricao": "Produzir usa os dois recursos e não gasta nada se falta um."
+          "id": "ocupado",
+          "descricao": "Um canteiro ocupado não recebe outra planta nem cobra de novo."
         }
       ],
       "tiposJaPresentes": [
@@ -6973,6 +6877,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -6980,8 +6885,10 @@
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_create",
         "sz_js_var_increment",
+        "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
@@ -6991,50 +6898,149 @@
       "semFonteNaTrilha": []
     },
     {
-      "slug": "nuvens-colheita-da-lista",
+      "slug": "nuvens-producao",
       "publico": "kids",
       "ilha": "nuvens",
       "posto": 7,
-      "quadro": 5,
+      "quadro": 3,
       "tipo": "quadro-das-cores",
-      "titulo": "Colheita da lista",
-      "classificacao": "apoio-preparado-em-blocos",
+      "titulo": "A produção do jardim",
+      "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "O espaço colhe todas as flores da lista, sem contar uma colhida de novo."
-        },
-        {
-          "id": "retirada",
-          "descricao": "A lista fica vazia e não permite colher de novo."
+          "id": "producao",
+          "descricao": "Cada canteiro plantado rende moedas a cada segundo."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_for_each_in_group",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_destroy_sprite", "sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_for_each_in_group"]
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "nuvens-colher-os-canteiros",
+      "publico": "kids",
+      "ilha": "nuvens",
+      "posto": 7,
+      "quadro": 4,
+      "tipo": "quadro-das-cores",
+      "titulo": "Colher os canteiros",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "colher",
+          "descricao": "C colhe os canteiros plantados e conta cada um."
+        },
+        {
+          "id": "canteiro-livre",
+          "descricao": "Colhido, o canteiro fica vazio e pode ser plantado de novo."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_set_image",
+        "sz_g2d_setup_stage",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "nuvens-meta-do-jardim",
+      "publico": "kids",
+      "ilha": "nuvens",
+      "posto": 7,
+      "quadro": 5,
+      "tipo": "quadro-das-cores",
+      "titulo": "A meta do jardim",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "meta",
+          "descricao": "Com 20 moedas, o jardim chega à meta."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_set_image",
+        "sz_g2d_setup_stage",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce",
@@ -7239,25 +7245,25 @@
       "semFonteNaTrilha": []
     },
     {
-      "slug": "nuvens-reserva-de-agua-adulto",
+      "slug": "nuvens-plantar-com-moedas-adulto",
       "publico": "adulto",
       "ilha": "nuvens",
       "posto": 7,
       "quadro": 1,
       "tipo": "quadro-das-cores",
-      "titulo": "Reserva de água",
+      "titulo": "Plantar com moedas",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "A reserva guarda até três de água e nunca fica negativa."
+          "id": "plantar",
+          "descricao": "Espaço planta no canteiro escolhido e paga 2 moedas."
         },
         {
-          "id": "limites",
-          "descricao": "A reserva não transborda nem fica negativa."
+          "id": "sem-moedas",
+          "descricao": "Sem moedas bastantes, não planta e as moedas não ficam negativas."
         }
       ],
       "tiposJaPresentes": [
@@ -7268,99 +7274,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_image",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_create",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "nuvens-luz-na-medida-adulto",
-      "publico": "adulto",
-      "ilha": "nuvens",
-      "posto": 7,
-      "quadro": 2,
-      "tipo": "quadro-das-cores",
-      "titulo": "Luz na medida",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "A flor cresce só com a luz entre 1 e 3."
-        },
-        {
-          "id": "faixa",
-          "descricao": "Só a faixa de luz de 1 a 3 permite crescer."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_backdrop",
-        "sz_g2d_draw_label",
-        "sz_g2d_draw_sprite",
-        "sz_g2d_enable_classic_controls",
-        "sz_g2d_on_key",
-        "sz_g2d_set_image",
-        "sz_g2d_setup_stage",
-        "sz_g2d_update_each_frame",
-        "sz_js_if_else",
-        "sz_js_var_create",
-        "sz_js_var_increment",
-        "sz_val_compare",
-        "sz_val_number",
-        "sz_val_text",
-        "sz_val_variable"
-      ],
-      "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
-    },
-    {
-      "slug": "nuvens-canteiros-livres-adulto",
-      "publico": "adulto",
-      "ilha": "nuvens",
-      "posto": 7,
-      "quadro": 3,
-      "tipo": "quadro-das-cores",
-      "titulo": "Canteiros livres",
-      "classificacao": "retomada-em-blocos",
-      "linguagem": "javascript",
-      "modo": "blocks",
-      "publicarAutomaticamente": true,
-      "objetivosObrigatorios": [
-        {
-          "id": "acao",
-          "descricao": "Planta só no canteiro escolhido que está vazio."
-        },
-        {
-          "id": "ocupacao",
-          "descricao": "O plantio ocupa só o escolhido e não duplica plantas."
-        }
-      ],
-      "tiposJaPresentes": [
-        "sz_frame_events",
-        "sz_frame_loops",
-        "sz_frame_start",
-        "sz_g2d_clear",
-        "sz_g2d_create_image_sprite",
-        "sz_g2d_draw_backdrop",
-        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -7370,34 +7284,30 @@
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
-        "sz_val_compare",
+        "sz_val_bool",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment"],
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_js_var_increment", "sz_val_compare"],
       "semFonteNaTrilha": []
     },
     {
-      "slug": "nuvens-dois-recursos-adulto",
+      "slug": "nuvens-canteiro-ocupado-adulto",
       "publico": "adulto",
       "ilha": "nuvens",
       "posto": 7,
-      "quadro": 4,
+      "quadro": 2,
       "tipo": "quadro-das-cores",
-      "titulo": "Dois recursos",
+      "titulo": "Canteiro ocupado",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "Cada produção usa uma água e um adubo, e sem um deles nada é gasto."
-        },
-        {
-          "id": "recursos",
-          "descricao": "Produzir usa os dois recursos e não gasta nada se falta um."
+          "id": "ocupado",
+          "descricao": "Um canteiro ocupado não recebe outra planta nem cobra de novo."
         }
       ],
       "tiposJaPresentes": [
@@ -7408,6 +7318,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -7415,8 +7326,10 @@
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
         "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_create",
         "sz_js_var_increment",
+        "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
@@ -7426,50 +7339,149 @@
       "semFonteNaTrilha": []
     },
     {
-      "slug": "nuvens-colheita-da-lista-adulto",
+      "slug": "nuvens-producao-adulto",
       "publico": "adulto",
       "ilha": "nuvens",
       "posto": 7,
-      "quadro": 5,
+      "quadro": 3,
       "tipo": "quadro-das-cores",
-      "titulo": "Colheita da lista",
-      "classificacao": "apoio-preparado-em-blocos",
+      "titulo": "A produção do jardim",
+      "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
       "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
-          "id": "acao",
-          "descricao": "O espaço colhe todas as flores da lista, sem contar uma colhida de novo."
-        },
-        {
-          "id": "retirada",
-          "descricao": "A lista fica vazia e não permite colher de novo."
+          "id": "producao",
+          "descricao": "Cada canteiro plantado rende moedas a cada segundo."
         }
       ],
       "tiposJaPresentes": [
         "sz_frame_events",
         "sz_frame_loops",
         "sz_frame_start",
-        "sz_g2d_add_to_group",
         "sz_g2d_clear",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_for_each_in_group",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
+        "sz_g2d_set_image",
         "sz_g2d_setup_stage",
         "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
         "sz_val_number",
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_destroy_sprite", "sz_g2d_restart", "sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_add_to_group", "sz_g2d_for_each_in_group"]
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "nuvens-colher-os-canteiros-adulto",
+      "publico": "adulto",
+      "ilha": "nuvens",
+      "posto": 7,
+      "quadro": 4,
+      "tipo": "quadro-das-cores",
+      "titulo": "Colher os canteiros",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "colher",
+          "descricao": "C colhe os canteiros plantados e conta cada um."
+        },
+        {
+          "id": "canteiro-livre",
+          "descricao": "Colhido, o canteiro fica vazio e pode ser plantado de novo."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_set_image",
+        "sz_g2d_setup_stage",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
+    },
+    {
+      "slug": "nuvens-meta-do-jardim-adulto",
+      "publico": "adulto",
+      "ilha": "nuvens",
+      "posto": 7,
+      "quadro": 5,
+      "tipo": "quadro-das-cores",
+      "titulo": "A meta do jardim",
+      "classificacao": "retomada-em-blocos",
+      "linguagem": "javascript",
+      "modo": "blocks",
+      "publicarAutomaticamente": true,
+      "objetivosObrigatorios": [
+        {
+          "id": "meta",
+          "descricao": "Com 20 moedas, o jardim chega à meta."
+        }
+      ],
+      "tiposJaPresentes": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_clear",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_draw_backdrop",
+        "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_enable_classic_controls",
+        "sz_g2d_every_seconds",
+        "sz_g2d_on_key",
+        "sz_g2d_set_image",
+        "sz_g2d_setup_stage",
+        "sz_g2d_update_each_frame",
+        "sz_js_if_else",
+        "sz_js_var_assign",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_bool",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "tiposAcrescentados": ["sz_g2d_restart"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-jardim-que-floresce-adulto",

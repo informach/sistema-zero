@@ -49,11 +49,12 @@ test('a Ilha das Nuvens é do Gênio e o pacote em blocos tem cinco quadros e qu
   expect(ilha('nuvens').posto).toBe('champion')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
-    'nuvens-reserva-de-agua',
-    'nuvens-luz-na-medida',
-    'nuvens-canteiros-livres',
-    'nuvens-dois-recursos',
-    'nuvens-colheita-da-lista',
+    // O Jardim em grade, construção e gestão do Gênio em blocos da trilha (lacunas, 01/11/2026).
+    'nuvens-plantar-com-moedas',
+    'nuvens-canteiro-ocupado',
+    'nuvens-producao',
+    'nuvens-colher-os-canteiros',
+    'nuvens-meta-do-jardim',
     'nuvens-jardim-que-floresce',
     'nuvens-jardim-que-floresce-rega-forte',
     'nuvens-jardim-que-floresce-sol-forte',
@@ -77,7 +78,7 @@ test('a Ilha das Nuvens é do Gênio e o pacote em blocos tem cinco quadros e qu
     expect(d.conteudo.objetivos.some((o) => o.optional)).toBe(true)
   }
 })
-test('os projetos usam ações ensinadas, laço preparado da colheita e arte embutida', () => {
+test('os projetos usam só ações ensinadas, sem lista, e arte embutida', () => {
   // As listas que valem hoje: os cursos principais e os Poderes do Faísca (o Arquiteto e o Gênio
   // ainda não têm cursos autorados).
   expect(cursos.length).toBeGreaterThanOrEqual(9)
@@ -91,18 +92,9 @@ test('os projetos usam ações ensinadas, laço preparado da colheita e arte emb
       })
       expect(JSON.stringify(p).length).toBeLessThanOrEqual(LIMITES_DO_DESAFIO.projetoCaracteres)
       const usados = [...new Set(tipos(p.blocksState))]
-      const lacoPreparado = d.quadro === 5
-      if (lacoPreparado) {
-        const inicial = d.conteudo.projetoInicial as { blocksState: unknown }
-        expect(
-          tipos(inicial.blocksState).filter((t) => t === 'sz_g2d_for_each_in_group'),
-        ).toHaveLength(1)
-        expect(tipos(p.blocksState).filter((t) => t === 'sz_g2d_for_each_in_group')).toHaveLength(1)
-      }
+      // Lacunas (01/11/2026): o quinto quadro não pede mais lista nem laço em grupo.
       expect(
-        usados.filter(
-          (t) => !blocos.has(t) && !(lacoPreparado && t === 'sz_g2d_for_each_in_group'),
-        ),
+        usados.filter((t) => !blocos.has(t)),
         d.slug,
       ).toEqual([])
       expect(usados.filter((t) => /sz_(?:html|css|canvas|adv_raw|js_object)/.test(t))).toEqual([])

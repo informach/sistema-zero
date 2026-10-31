@@ -91,31 +91,31 @@ export const PEDIDOS_DOS_MORADORES: Record<string, PedidoDoMorador> = {
       'O vulcão está cada vez mais bravo. A Jade quer que cada onda traga uma cinza a mais que a anterior.',
     objetivo: 'Cada onda nova tem uma cinza a mais.',
   },
-  // Nuvens: a Iriê.
-  'reserva-de-agua': {
+  // Nuvens: a Iriê (lacunas, 01/11/2026: o Jardim em grade, construção e gestão do Gênio).
+  'plantar-com-moedas': {
     pedido:
-      'A Iriê guarda água de chuva numa reserva que leva até três. Ela quer guardar e gastar água sem a reserva transbordar e sem ficar abaixo de zero.',
-    objetivo: 'A reserva guarda até três de água e nunca fica negativa.',
+      'A Iriê tem três canteiros no céu e algumas moedas. Ela quer plantar no canteiro escolhido pagando duas moedas, e não plantar quando as moedas não bastam.',
+    objetivo: 'Plantar no canteiro escolhido custa duas moedas, e sem moedas não planta.',
   },
-  'luz-na-medida': {
+  'canteiro-ocupado': {
     pedido:
-      'A flor do jardim da Iriê cresce com a luz certa, nem pouca nem demais. Ela quer que a flor só cresça quando a luz está entre 1 e 3.',
-    objetivo: 'A flor cresce só com a luz entre 1 e 3.',
+      'A Iriê plantou duas vezes no mesmo canteiro e pagou à toa. Ela quer que um canteiro ocupado recuse outra planta, sem cobrar.',
+    objetivo: 'Um canteiro ocupado não recebe outra planta nem cobra de novo.',
   },
-  'canteiros-livres': {
+  producao: {
     pedido:
-      'A Iriê tem três canteiros no céu. Ela quer plantar só no canteiro que está vazio, sem plantar duas vezes no mesmo lugar nem mexer nos outros.',
-    objetivo: 'Planta só no canteiro escolhido que está vazio.',
+      'O jardim do céu dá frutos. A Iriê quer que cada canteiro plantado renda uma moeda a cada segundo.',
+    objetivo: 'Cada canteiro plantado rende uma moeda por segundo.',
   },
-  'dois-recursos': {
+  'colher-os-canteiros': {
     pedido:
-      'O jardim da Iriê produz com água e adubo juntos. Ela quer que cada produção use um de cada, e que, faltando um deles, nada seja gasto.',
-    objetivo: 'Cada produção usa uma água e um adubo, e sem um deles nada é gasto.',
+      'Chegou a hora da colheita. A Iriê quer colher todos os canteiros plantados de uma vez, contando cada colheita, e deixar os canteiros prontos para plantar de novo.',
+    objetivo: 'A colheita esvazia os canteiros plantados e conta cada um.',
   },
-  'colheita-da-lista': {
+  'meta-do-jardim': {
     pedido:
-      'Três flores estão prontas para colher. A Iriê quer colher todas de uma vez com o espaço, e uma flor colhida não pode ser contada de novo.',
-    objetivo: 'O espaço colhe todas as flores da lista, sem contar uma colhida de novo.',
+      'A Iriê quer saber quando o jardim fica rico. Quando as moedas chegarem a vinte, ela quer marcar que o jardim chegou à meta, uma vez só.',
+    objetivo: 'Com vinte moedas o jardim chega à meta, uma vez.',
   },
 }
 

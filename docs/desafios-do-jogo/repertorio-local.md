@@ -62,11 +62,11 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | vale-dos-dinos | Guardião dos ninhos: dois pontos | retomada-em-blocos | Cada cinza limpa pela torre vale dois pontos. | Nenhum neste recorte | pedida |
 | vale-dos-dinos | Guardião dos ninhos: três ondas | retomada-em-blocos | Depois da terceira onda, Espaço não começa outra. | Nenhum neste recorte | pedida |
 | vale-dos-dinos | Guardião dos ninhos: onda limpa | retomada-em-blocos | Uma onda sem cinza no ninho ganha 5 pontos de bônus. | Nenhum neste recorte | pedida |
-| nuvens | Reserva de água | retomada-em-blocos | A reserva guarda até três de água e nunca fica negativa.; A reserva não transborda nem fica negativa. | Nenhum neste recorte | pedida |
-| nuvens | Luz na medida | retomada-em-blocos | A flor cresce só com a luz entre 1 e 3.; Só a faixa de luz de 1 a 3 permite crescer. | Nenhum neste recorte | pedida |
-| nuvens | Canteiros livres | retomada-em-blocos | Planta só no canteiro escolhido que está vazio.; O plantio ocupa só o escolhido e não duplica plantas. | Nenhum neste recorte | pedida |
-| nuvens | Dois recursos | retomada-em-blocos | Cada produção usa uma água e um adubo, e sem um deles nada é gasto.; Produzir usa os dois recursos e não gasta nada se falta um. | Nenhum neste recorte | pedida |
-| nuvens | Colheita da lista | apoio-preparado-em-blocos | O espaço colhe todas as flores da lista, sem contar uma colhida de novo.; A lista fica vazia e não permite colher de novo. | sz_g2d_add_to_group, sz_g2d_for_each_in_group | pedida |
+| nuvens | Plantar com moedas | retomada-em-blocos | Espaço planta no canteiro escolhido e paga 2 moedas.; Sem moedas bastantes, não planta e as moedas não ficam negativas. | Nenhum neste recorte | pedida |
+| nuvens | Canteiro ocupado | retomada-em-blocos | Um canteiro ocupado não recebe outra planta nem cobra de novo. | Nenhum neste recorte | pedida |
+| nuvens | A produção do jardim | retomada-em-blocos | Cada canteiro plantado rende moedas a cada segundo. | Nenhum neste recorte | pedida |
+| nuvens | Colher os canteiros | retomada-em-blocos | C colhe os canteiros plantados e conta cada um.; Colhido, o canteiro fica vazio e pode ser plantado de novo. | Nenhum neste recorte | pedida |
+| nuvens | A meta do jardim | retomada-em-blocos | Com 20 moedas, o jardim chega à meta. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce | retomada-em-blocos | A cada segundo, o tempo do jardim aumenta um.; Espaço guarda três de água e a seta para cima guarda três de sol.; Sem água a flor não cresce, mesmo com sol e com o tempo passando.; Com água e sol, a flor cresce dez por segundo e gasta um de água e um de sol.; Com água e sol de sobra, a flor chega a cem e o jardim floresce. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce: rega forte | retomada-em-blocos | Espaço guarda cinco de água de uma vez. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce: sol forte | retomada-em-blocos | Com o sol forte, de seis para cima, a flor cresce vinte por segundo; com menos, dez. | Nenhum neste recorte | pedida |

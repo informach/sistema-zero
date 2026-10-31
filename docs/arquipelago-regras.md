@@ -2581,7 +2581,7 @@ faz o que as seções acima descrevem.
    Feito (lote 9f, 31/10, decisão da dona A43): Vale e Nuvens publicavam como estavam, esperando
    os cursos do Arquiteto e do Gênio. Desfeito nas lacunas de 01/11/2026: pela Jornada, esses
    cursos são em JavaScript e não ensinam esses blocos, então os desafios em blocos usam só a
-   trilha dos postos 1 a 3 (o Vale já refeito; as Nuvens no lote seguinte).
+   trilha dos postos 1 a 3 (o Vale e as Nuvens refeitos; a lista "esperam os cursos" ficou vazia).
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
    Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 ficam em blocos, e desde as lacunas de
@@ -2589,7 +2589,8 @@ faz o que as seções acima descrevem.
    com bolha, alvo sorteado, tempo de partida e nova partida; Pico: a Fase do Pico, com pulo
    com apoio, água que devolve ao começo, próxima fase, fim do jogo e volta à fase 1; Vale: o
    Guardião dos ninhos, defesa de torre com ondas, relógio, ninho, alcance e ondas que crescem,
-   e os desafios do dia variando o Guardião). Feito
+   e os desafios do dia variando o Guardião; Nuvens: o Jardim em grade, com plantar com moedas,
+   canteiro ocupado, produção, colheita e meta). Feito
    (lote 8): os desafios C02 viraram o quadro 6 (pintam) e o minijogo em blocos que estava no
    quadro 6 virou desafio do dia. Importar o arquivo em blocos antes do da linguagem.
 3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a
