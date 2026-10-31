@@ -2960,59 +2960,10 @@
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "nuvens-reserva-de-agua",
+    "slug": "nuvens-plantar-com-moedas",
     "publico": "kids",
     "ilha": "nuvens",
-    "titulo": "Reserva de água",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
-      "sz_js_if_else",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "nuvens-luz-na-medida",
-    "publico": "kids",
-    "ilha": "nuvens",
-    "titulo": "Luz na medida",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "nuvens-canteiros-livres",
-    "publico": "kids",
-    "ilha": "nuvens",
-    "titulo": "Canteiros livres",
+    "titulo": "Plantar com moedas",
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_on_key",
@@ -3020,6 +2971,7 @@
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
+      "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
@@ -3028,52 +2980,111 @@
       "sz_g2d_on_key",
       "sz_js_if_else",
       "sz_js_var_assign",
-      "sz_val_compare",
+      "sz_val_bool",
       "sz_val_number",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "nuvens-dois-recursos",
+    "slug": "nuvens-canteiro-ocupado",
     "publico": "kids",
     "ilha": "nuvens",
-    "titulo": "Dois recursos",
+    "titulo": "Canteiro ocupado",
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_on_key",
       "sz_g2d_restart",
       "sz_js_if_else",
-      "sz_js_var_increment",
+      "sz_val_bool",
       "sz_val_compare",
-      "sz_val_number",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_js_if_else",
-      "sz_js_var_increment",
+      "sz_val_bool",
       "sz_val_compare",
-      "sz_val_number",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "nuvens-colheita-da-lista",
+    "slug": "nuvens-producao",
     "publico": "kids",
     "ilha": "nuvens",
-    "titulo": "Colheita da lista",
+    "titulo": "A produção do jardim",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_destroy_sprite",
-      "sz_g2d_for_each_in_group",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_restart",
-      "sz_js_var_increment"
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_variable"
     ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_for_each_in_group", "sz_g2d_on_key"],
-    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group"]
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-colher-os-canteiros",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "Colher os canteiros",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-meta-do-jardim",
+    "publico": "kids",
+    "ilha": "nuvens",
+    "titulo": "A meta do jardim",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "nuvens-jardim-que-floresce",
@@ -3188,59 +3199,10 @@
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "nuvens-reserva-de-agua-adulto",
+    "slug": "nuvens-plantar-com-moedas-adulto",
     "publico": "adulto",
     "ilha": "nuvens",
-    "titulo": "Reserva de água",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
-      "sz_js_if_else",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "nuvens-luz-na-medida-adulto",
-    "publico": "adulto",
-    "ilha": "nuvens",
-    "titulo": "Luz na medida",
-    "problema": null,
-    "blocosDerivados": [
-      "sz_g2d_on_key",
-      "sz_g2d_restart",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "tiposJaPresentesMasAlterados": [
-      "sz_g2d_on_key",
-      "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_compare",
-      "sz_val_number",
-      "sz_val_variable"
-    ],
-    "semFonteLocalNaTrilha": []
-  },
-  {
-    "slug": "nuvens-canteiros-livres-adulto",
-    "publico": "adulto",
-    "ilha": "nuvens",
-    "titulo": "Canteiros livres",
+    "titulo": "Plantar com moedas",
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_on_key",
@@ -3248,6 +3210,7 @@
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
+      "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
@@ -3256,52 +3219,111 @@
       "sz_g2d_on_key",
       "sz_js_if_else",
       "sz_js_var_assign",
-      "sz_val_compare",
+      "sz_val_bool",
       "sz_val_number",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "nuvens-dois-recursos-adulto",
+    "slug": "nuvens-canteiro-ocupado-adulto",
     "publico": "adulto",
     "ilha": "nuvens",
-    "titulo": "Dois recursos",
+    "titulo": "Canteiro ocupado",
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_on_key",
       "sz_g2d_restart",
       "sz_js_if_else",
-      "sz_js_var_increment",
+      "sz_val_bool",
       "sz_val_compare",
-      "sz_val_number",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_js_if_else",
-      "sz_js_var_increment",
+      "sz_val_bool",
       "sz_val_compare",
-      "sz_val_number",
       "sz_val_variable"
     ],
     "semFonteLocalNaTrilha": []
   },
   {
-    "slug": "nuvens-colheita-da-lista-adulto",
+    "slug": "nuvens-producao-adulto",
     "publico": "adulto",
     "ilha": "nuvens",
-    "titulo": "Colheita da lista",
+    "titulo": "A produção do jardim",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_destroy_sprite",
-      "sz_g2d_for_each_in_group",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_restart",
-      "sz_js_var_increment"
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_variable"
     ],
-    "tiposJaPresentesMasAlterados": ["sz_g2d_for_each_in_group", "sz_g2d_on_key"],
-    "semFonteLocalNaTrilha": ["sz_g2d_for_each_in_group"]
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_increment",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-colher-os-canteiros-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "Colher os canteiros",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_js_var_increment",
+      "sz_val_bool",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
+  },
+  {
+    "slug": "nuvens-meta-do-jardim-adulto",
+    "publico": "adulto",
+    "ilha": "nuvens",
+    "titulo": "A meta do jardim",
+    "problema": null,
+    "blocosDerivados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_g2d_restart",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "tiposJaPresentesMasAlterados": [
+      "sz_g2d_every_seconds",
+      "sz_g2d_on_key",
+      "sz_js_if_else",
+      "sz_js_var_assign",
+      "sz_val_bool",
+      "sz_val_compare",
+      "sz_val_number",
+      "sz_val_variable"
+    ],
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "nuvens-jardim-que-floresce-adulto",

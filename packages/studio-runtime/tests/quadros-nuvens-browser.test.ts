@@ -69,40 +69,51 @@ for (const d of desafiosIniciaisDasNuvens('kids'))
             change((p.ir as SZIRV2).behavior)
             scenarios.push({ name, ids, project: p, passes: false })
           }
+          // O Jardim em grade (lacunas, 01/11/2026): cada erro tira a regra do quadro.
           wrong('sem-reinicio', ['recomecar'], (b) => {
             const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
             if (e?.type !== 'g2d:onKey') throw Error('Evento Enter ausente')
             e.body = []
           })
-          if (d.quadro < 5)
-            wrong(
-              'ignora-condicao',
-              [
-                d.quadro === 1
-                  ? 'limites'
-                  : d.quadro === 2
-                    ? 'faixa'
-                    : d.quadro === 3
-                      ? 'ocupacao'
-                      : 'recursos',
-              ],
-              (b) =>
-                visit(b.events, (s) => {
-                  if (s.type === 'if') s.cond = { type: 'bool', value: true }
-                }),
+          if (d.quadro === 1)
+            wrong('planta-sem-moedas', ['sem-moedas'], (b) => {
+              const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
+              if (e?.type !== 'g2d:onKey') throw Error('Evento Espaço ausente')
+              const moedas = e.body[0]
+              if (moedas?.type !== 'if') throw Error('Se das moedas ausente')
+              e.body = moedas.then
+            })
+          if (d.quadro === 2)
+            wrong('ignora-ocupado', ['ocupado'], (b) =>
+              visit(b.events, (s) => {
+                if (
+                  s.type === 'if' &&
+                  s.cond.type === 'binop' &&
+                  s.cond.left.type === 'var' &&
+                  s.cond.left.name.startsWith('plantado')
+                )
+                  s.cond = { type: 'bool', value: true }
+              }),
+            )
+          if (d.quadro === 3)
+            wrong('sem-producao', ['producao'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'assign' && s.name === 'moedas')
+                  s.value = { type: 'var', name: 'moedas' }
+              }),
             )
           if (d.quadro === 4)
-            wrong('adubo-nao-gasta', ['recursos'], (b) =>
+            wrong('colhe-sem-esvaziar', ['canteiro-livre'], (b) =>
               visit(b.events, (s) => {
-                if (s.type === 'assign' && s.name === 'adubo')
-                  s.value = { type: 'var', name: 'adubo' }
+                if (s.type === 'assign' && s.name.startsWith('plantado') && s.value.type === 'bool')
+                  s.value = { type: 'bool', value: true }
               }),
             )
           if (d.quadro === 5)
-            wrong('flores-nao-saem', ['retirada'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'g2d:forEachInGroup')
-                  s.body = s.body.filter((s) => s.type !== 'g2d:destroySprite')
+            wrong('meta-nunca', ['meta'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'assign' && s.name === 'meta')
+                  s.value = { type: 'bool', value: false }
               }),
             )
           for (const scenario of scenarios) {

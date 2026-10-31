@@ -51,8 +51,6 @@ function classificacao(ilha: string, quadro: number | null) {
   // O Farol (C03b) pede um projeto da pessoa, com critérios e sem resposta pronta.
   if (ilha === 'farol') return 'projeto-autoral'
   if (ilha === 'bosque' && [4, 6, null].includes(quadro)) return 'aplicacao-em-blocos'
-  if (ilha === 'nuvens' && quadro === 5)
-    return 'apoio-preparado-em-blocos'
   return 'retomada-em-blocos'
 }
 export function inventarioDeRepertorio() {

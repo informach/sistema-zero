@@ -3,296 +3,171 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import type {
+  ExecutionExpectation,
+  ExecutionStep,
+} from '../../../packages/core/src/learning/project-execution'
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
-import type { JSStatement } from '../../../packages/studio/src/ir/schema'
+import type { Project } from '../../../packages/studio/src/core/project'
 import { dicasNaOrdemDaJornada, PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
-import {
-  at,
-  baseDoQuadro,
-  bin,
-  check,
-  each,
-  eq,
-  iff,
-  inc,
-  key,
-  left,
-  n,
-  restart,
-  right,
-  set,
-  space,
-  up,
-  v,
-} from '../quadros-compartilhados'
-import { assetsDoNuvens } from './projetos'
+import { GRADE, projetoDoJardimEmPassos } from './jardim-em-grade'
 
+/**
+ * Os quadros 1 a 5 da Ilha das Nuvens (lacunas, 01/11/2026; refeitos no gênero do posto): a
+ * proposta e a Jornada põem nas Nuvens a construção e gestão de um mundo do Gênio (grade,
+ * ocupação, custo e produção). Os cinco quadros montam o Jardim em grade um passo de cada vez:
+ * plantar com moedas, o canteiro ocupado que recusa, a produção pelo relógio, colher os canteiros e
+ * a meta do jardim. Só blocos da trilha (Faísca, Construtor e Inventor): antes, o quadro 5 pedia
+ * lista e laço em grupo, que nenhum posto ensina em blocos. O Pro fica no quadro 6.
+ */
 export const QUADROS_INICIAIS_DAS_NUVENS = [
   {
-    slug: 'reserva-de-agua',
-    titulo: 'Reserva de água',
-    linhas: ['Esquerda guarda uma água. Espaço gasta uma.', 'A reserva comporta até três.'],
+    slug: 'plantar-com-moedas',
+    titulo: 'Plantar com moedas',
     texto:
-      'Complete a seta esquerda para guardar uma água se agua for menor que 3. Complete Espaço para gastar uma se agua for maior que zero. A reserva não transborda e não fica negativa. O desenho já acompanha o que está guardado.',
-    dica: 'Conferir antes de somar ou gastar conserva os dois limites.',
+      'As teclas 1, 2 e 3 já escolhem o canteiro. Complete Espaço: se moedas for pelo menos 2, plante no canteiro escolhido (marque plantado1, plantado2 ou plantado3 como verdadeiro) e tire 2 de moedas. Sem moedas bastantes, nada acontece.',
+    dica: 'Um Se para as moedas por fora, e dentro dele um Se para cada canteiro, conferindo escolhido.',
   },
   {
-    slug: 'luz-na-medida',
-    titulo: 'Luz na medida',
-    linhas: ['As setas mudam a luz. Espaço tenta crescer.', 'A flor cresce com luz entre 1 e 3.'],
+    slug: 'canteiro-ocupado',
+    titulo: 'Canteiro ocupado',
     texto:
-      'As setas já diminuem e aumentam luz. Complete Espaço para somar um em crescimento apenas quando luz for maior que zero e menor que 4. Não cresça com luz zero nem com luz acima da faixa. São os limites desta brincadeira, não uma regra de cultivo real.',
-    dica: 'Uma condição confere o mínimo e a outra confere o máximo.',
+      'Plantar já funciona. Complete cada canteiro: só plante e pague quando o canteiro escolhido ainda estiver vazio (plantado for falso). Um canteiro ocupado não recebe outra planta nem cobra de novo.',
+    dica: 'Dentro do Se de cada canteiro, mais um Se que confere se ele está vazio.',
   },
   {
-    slug: 'canteiros-livres',
-    titulo: 'Canteiros livres',
-    linhas: [
-      'Esquerda, cima e direita escolhem o canteiro.',
-      'Espaço planta somente no canteiro vazio.',
-    ],
+    slug: 'producao',
+    titulo: 'A produção do jardim',
     texto:
-      'As setas escolhem um dos três canteiros. Complete Espaço para mudar a marca plantado do escolhido de zero para 1 e somar um em plantas, somente quando ele estiver vazio. Plantar de novo no mesmo lugar não cria outra planta nem muda os outros canteiros.',
-    dica: 'Cada canteiro conserva a própria marca de ocupação.',
+      'Plantar e a ocupação já funcionam. Complete o relógio de cada segundo: cada canteiro plantado rende 1 moeda.',
+    dica: 'Três Se no relógio, um para cada canteiro, cada um somando 1 em moedas.',
   },
   {
-    slug: 'dois-recursos',
-    titulo: 'Dois recursos',
-    linhas: ['Esquerda traz água. Direita traz adubo.', 'Espaço usa um de cada para produzir.'],
+    slug: 'colher-os-canteiros',
+    titulo: 'Colher os canteiros',
     texto:
-      'As setas já abastecem agua e adubo. Complete Espaço: quando os dois forem maiores que zero, gaste um de cada e some um em producao. Sem um dos recursos, espere sem consumir o outro. Cada toque simula um passo desta pequena produção.',
-    dica: 'Os dois recursos são usados juntos. Só comece quando ambos estiverem disponíveis.',
+      'O jardim já planta e produz. Complete a tecla C: cada canteiro plantado é colhido, fica vazio de novo e some um em colhidas.',
+    dica: 'Sem lista: um Se para cada canteiro, do mesmo jeito do relógio.',
   },
   {
-    slug: 'colheita-da-lista',
-    titulo: 'Colheita da lista',
-    linhas: [
-      'Espaço colhe as três flores da lista.',
-      'Uma flor colhida sai da lista e não conta de novo.',
-    ],
+    slug: 'meta-do-jardim',
+    titulo: 'A meta do jardim',
     texto:
-      'A lista flores já tem três plantas prontas. O Para cada está montado em Espaço. Dentro dele, some um em colhidas e destrua a flor da vez. O motor retira a flor do grupo. Apertar novamente não soma flores que já saíram da lista.',
-    dica: 'Percorra a lista e use a flor da vez nas duas ações.',
+      'O jardim já funciona inteiro. Complete o relógio: depois da produção, quando moedas chegar a 20, marque meta como verdadeiro, uma vez só.',
+    dica: 'Um Se que confere moedas, e dentro dele outro que confere se a meta ainda não foi marcada.',
   },
 ] as const
 export type QuadroInicialDasNuvens = 1 | 2 | 3 | 4 | 5
-export function projetoDoQuadroNuvens(quadro: QuadroInicialDasNuvens, pronto: boolean) {
-  const meta = QUADROS_INICIAIS_DAS_NUVENS[quadro - 1]!
-  const q = baseDoQuadro({
-    id: `nuvens-${meta.slug}`,
-    titulo: meta.titulo,
-    linhas: meta.linhas,
-    assets: assetsDoNuvens,
-    fundo: 'jardim',
-    cor: '#392b64',
-  })
-  if (quadro === 1) {
-    q.vars({ agua: 0 })
-    for (let i = 1; i <= 3; i++) {
-      q.image(`reserva${i}`, 'muda', 70 + (i - 1) * 200)
-      q.update.push(
-        iff(
-          bin('>', v('agua'), n(i - 1)),
-          [{ type: 'g2d:setImage', spriteVar: `reserva${i}`, image: 'muda' }],
-          [{ type: 'g2d:setImage', spriteVar: `reserva${i}`, image: 'muda-cinza' }],
-        ),
-      )
-    }
-    q.events.push(
-      key('ArrowLeft', pronto ? [iff(bin('<', v('agua'), n(3)), [inc('agua')])] : []),
-      key('Space', pronto ? [iff(bin('>', v('agua'), n(0)), [inc('agua', -1)])] : []),
-    )
-    q.placar('Água na reserva:', 'agua')
-  } else if (quadro === 2) {
-    q.vars({ luz: 0, crescimento: 0 })
-    q.image('planta', 'muda', 270, 210, 96, 120)
-    q.events.push(
-      key('ArrowLeft', [inc('luz', -1)]),
-      key('ArrowRight', [inc('luz')]),
-      key(
-        'Space',
-        pronto
-          ? [iff(bin('>', v('luz'), n(0)), [iff(bin('<', v('luz'), n(4)), [inc('crescimento')])])]
-          : [],
-      ),
-    )
-    q.update.push(
-      iff(bin('>', v('crescimento'), n(0)), [
-        { type: 'g2d:setImage', spriteVar: 'planta', image: 'flor' },
-      ]),
-    )
-    q.placar('Luz:', 'luz', 390)
-    q.placar('Crescimento:', 'crescimento', 425)
-  } else if (quadro === 3) {
-    q.vars({ escolhido: 1, plantas: 0, plantado1: 0, plantado2: 0, plantado3: 0 })
-    q.events.push(
-      key('ArrowLeft', [set('escolhido', 1)]),
-      key('ArrowUp', [set('escolhido', 2)]),
-      key('ArrowRight', [set('escolhido', 3)]),
-    )
-    const body: JSStatement[] = []
-    for (let i = 1; i <= 3; i++) {
-      q.image(`planta${i}`, 'muda', 70 + (i - 1) * 200)
-      q.update.push(
-        iff(
-          eq(`plantado${i}`, 1),
-          [{ type: 'g2d:setImage', spriteVar: `planta${i}`, image: 'muda' }],
-          [{ type: 'g2d:setImage', spriteVar: `planta${i}`, image: 'muda-cinza' }],
-        ),
-      )
-      body.push(
-        iff(eq('escolhido', i), [
-          iff(eq(`plantado${i}`, 0), [set(`plantado${i}`, 1), inc('plantas')]),
-        ]),
-      )
-    }
-    q.events.push(key('Space', pronto ? body : []))
-    q.placar('Plantas:', 'plantas')
-  } else if (quadro === 4) {
-    q.vars({ agua: 0, adubo: 0, producao: 0 })
-    q.image('planta', 'muda', 270, 210, 96, 120)
-    q.events.push(
-      key('ArrowLeft', [inc('agua')]),
-      key('ArrowRight', [inc('adubo')]),
-      key(
-        'Space',
-        pronto
-          ? [
-              iff(bin('>', v('agua'), n(0)), [
-                iff(bin('>', v('adubo'), n(0)), [
-                  inc('agua', -1),
-                  inc('adubo', -1),
-                  inc('producao'),
-                ]),
-              ]),
-            ]
-          : [],
-      ),
-    )
-    q.update.push(
-      iff(bin('>', v('producao'), n(0)), [
-        { type: 'g2d:setImage', spriteVar: 'planta', image: 'flor' },
-      ]),
-    )
-    q.placar('Água:', 'agua', 355)
-    q.placar('Adubo:', 'adubo', 390)
-    q.placar('Produção:', 'producao', 425)
-  } else {
-    q.vars({ colhidas: 0 })
-    q.start.push({ type: 'g2d:createGroup', varName: 'flores' })
-    for (let i = 1; i <= 3; i++) {
-      q.image(`flor${i}`, 'flor', 70 + (i - 1) * 200, 210, 96, 120)
-      q.start.push({ type: 'g2d:addToGroup', spriteVar: `flor${i}`, groupVar: 'flores' })
-    }
-    q.events.push(
-      key('Space', [
-        each(
-          'flores',
-          'flor',
-          pronto ? [inc('colhidas'), { type: 'g2d:destroySprite', spriteVar: 'flor' }] : [],
-        ),
-      ]),
-    )
-    q.placar('Flores colhidas:', 'colhidas')
-  }
-  return q.finish(pronto)
+
+export function projetoDoQuadroNuvens(quadro: QuadroInicialDasNuvens, pronto: boolean): Project {
+  return projetoDoJardimEmPassos(quadro, pronto, QUADROS_INICIAIS_DAS_NUVENS[quadro - 1]!.titulo)
 }
+
+const press = (k: string, holdMs = 30): ExecutionStep => ({ action: 'press', key: k, holdMs })
+const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
+const val = (
+  path: string,
+  value: number | boolean,
+  compare: ExecutionExpectation['compare'] = 'equals',
+): ExecutionExpectation => ({ target: { kind: 'value', path }, compare, value })
+const check = (
+  id: string,
+  label: string,
+  steps: ExecutionStep[],
+  expect: ExecutionExpectation,
+  checkpoints: { afterStep: number; expect: ExecutionExpectation }[] = [],
+  optional = false,
+): SectionJavaScriptProjectCheck => ({
+  id,
+  label,
+  programmingLanguage: 'javascript',
+  ...(optional ? { optional: true } : {}),
+  rule: { type: 'behavior', steps, expect, ...(checkpoints.length ? { checkpoints } : {}) },
+})
+const recomecar = check(
+  'recomecar',
+  'Extra: Enter recomeça o jardim.',
+  [press('Space'), press('Enter')],
+  val('moedas', GRADE.moedas),
+  [{ afterStep: 1, expect: val('plantado1', true) }],
+  true,
+)
+/** Os três canteiros plantados: 6 moedas viram 0. */
+const PLANTAR_OS_TRES = [press('Space'), press('2'), press('Space'), press('3'), press('Space')]
+
 export function objetivosDoQuadroNuvens(
   quadro: QuadroInicialDasNuvens,
 ): SectionJavaScriptProjectCheck[] {
-  const steps =
-    quadro === 1
-      ? [left(), left(), space()]
-      : quadro === 2
-        ? [right(), space()]
-        : quadro === 4
-          ? [left(), right(), space()]
-          : [space()]
-  const path =
-    quadro === 1
-      ? 'agua'
-      : quadro === 2
-        ? 'crescimento'
-        : quadro === 3
-          ? 'plantas'
-          : quadro === 4
-            ? 'producao'
-            : 'colhidas'
-  const final = quadro === 5 ? 3 : 1
-  const checks = [
-    check(
-      'acao',
-      PEDIDOS_DOS_MORADORES[QUADROS_INICIAIS_DAS_NUVENS[quadro - 1]!.slug]!.objetivo,
-      steps,
-      path,
-      final,
-      [at(0, path, 0)],
-    ),
-  ]
   if (quadro === 1)
-    checks.push(
+    return [
       check(
-        'limites',
-        'A reserva não transborda nem fica negativa.',
-        [space(), left(), left(), left(), left(), space(), space(), space(), space()],
-        'agua',
-        0,
-        [at(1, 'agua', 0), at(5, 'agua', 3), at(6, 'agua', 2), at(8, 'agua', 0)],
+        'plantar',
+        'Espaço planta no canteiro escolhido e paga 2 moedas.',
+        [press('2'), press('Space')],
+        val('moedas', GRADE.moedas - GRADE.custo),
+        [{ afterStep: 2, expect: val('plantado2', true) }],
       ),
-    )
+      check(
+        'sem-moedas',
+        'Sem moedas bastantes, não planta e as moedas não ficam negativas.',
+        [press('Space'), press('Space'), press('Space'), press('Space')],
+        val('moedas', 0),
+        [{ afterStep: 3, expect: val('moedas', 0) }],
+      ),
+      recomecar,
+    ]
   if (quadro === 2)
-    checks.push(
+    return [
       check(
-        'faixa',
-        'Só a faixa de luz de 1 a 3 permite crescer.',
-        [space(), right(), space(), right(), right(), space(), right(), space(), left(), space()],
-        'crescimento',
-        3,
-        [at(1, 'crescimento', 0), at(6, 'crescimento', 2), at(8, 'crescimento', 2)],
+        'ocupado',
+        'Um canteiro ocupado não recebe outra planta nem cobra de novo.',
+        [press('Space'), press('Space')],
+        val('moedas', GRADE.moedas - GRADE.custo),
+        [{ afterStep: 1, expect: val('plantado1', true) }],
       ),
-    )
+      recomecar,
+    ]
   if (quadro === 3)
-    checks.push(
+    return [
       check(
-        'ocupacao',
-        'O plantio ocupa só o escolhido e não duplica plantas.',
-        [right(), space(), space(), up(), space(), left(), space()],
-        'plantas',
-        3,
-        [at(2, 'plantado3', 1), at(2, 'plantado1', 0), at(3, 'plantas', 1), at(5, 'plantado2', 1)],
-      ),
-    )
-  if (quadro === 4)
-    checks.push(
-      check(
-        'recursos',
-        'Produzir usa os dois recursos e não gasta nada se falta um.',
-        [left(), space(), right(), space(), space(), right(), space()],
         'producao',
-        1,
-        [
-          at(2, 'agua', 1),
-          at(2, 'producao', 0),
-          at(4, 'agua', 0),
-          at(4, 'adubo', 0),
-          at(7, 'adubo', 1),
-        ],
+        'Cada canteiro plantado rende moedas a cada segundo.',
+        [press('Space'), wait(2600)],
+        val('moedas', GRADE.moedas, 'atLeast'),
+        [{ afterStep: 1, expect: val('moedas', GRADE.moedas - GRADE.custo) }],
       ),
-    )
-  if (quadro === 5)
-    checks.push(
+      recomecar,
+    ]
+  if (quadro === 4)
+    return [
       check(
-        'retirada',
-        'A lista fica vazia e não permite colher de novo.',
-        [space(), space()],
-        'colhidas',
-        3,
-        [at(1, 'flores.items.length', 0)],
+        'colher',
+        'C colhe os canteiros plantados e conta cada um.',
+        [press('Space'), press('2'), press('Space'), press('c')],
+        val('colhidas', 2),
+        [{ afterStep: 3, expect: val('plantado2', true) }],
       ),
-    )
-  checks.push(restart(steps, path, final))
-  return checks
+      check(
+        'canteiro-livre',
+        'Colhido, o canteiro fica vazio e pode ser plantado de novo.',
+        [press('Space'), press('c'), press('Space')],
+        val('plantado1', true),
+        [{ afterStep: 2, expect: val('plantado1', false) }],
+      ),
+      recomecar,
+    ]
+  return [
+    check(
+      'meta',
+      'Com 20 moedas, o jardim chega à meta.',
+      [...PLANTAR_OS_TRES, wait(7800)],
+      val('meta', true),
+      [{ afterStep: 5, expect: val('meta', false) }],
+    ),
+    recomecar,
+  ]
 }
+
 export function desafiosIniciaisDasNuvens(publico: PublicoDoDesafio) {
   return QUADROS_INICIAIS_DAS_NUVENS.map((meta, i) => {
     const quadro = (i + 1) as QuadroInicialDasNuvens
@@ -304,22 +179,18 @@ export function desafiosIniciaisDasNuvens(publico: PublicoDoDesafio) {
       tipo: 'quadro-das-cores',
       quadro,
       ordem: quadro * 10,
-      // C01b: os quadros sem lista têm todas as fontes na trilha; a Colheita da lista (5) espera o
-      // ensino de listas e laço, que nas Nuvens é em JavaScript (C02).
-      // A43 (decisão da dona, 31/10/2026): publica como está; os cursos do Gênio chegam antes do
-      // lançamento. A barreira C01a continua valendo na importação.
+      // Todas as fontes na trilha (lacunas, 01/11/2026); a importação continua com a equipe.
       publicar: true,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
-        // A44: o pedido do morador. As dicas na ordem da Jornada (lacunas, 01/11/2026): o objetivo,
-        // a pista, a estrutura e, por último, o texto técnico de antes.
+        // A44: o pedido do morador, e as dicas na ordem da Jornada (lacunas, 01/11/2026).
         enunciado: PEDIDOS_DOS_MORADORES[meta.slug]!.pedido,
         dicas: dicasNaOrdemDaJornada(
           PEDIDOS_DOS_MORADORES[meta.slug]!.objetivo,
           [
             meta.dica,
-            'Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas.',
+            'Os canteiros, a escolha e o desenho já estão prontos. Complete apenas o passo deste quadro.',
           ],
           meta.texto,
         ),
@@ -328,7 +199,7 @@ export function desafiosIniciaisDasNuvens(publico: PublicoDoDesafio) {
         objetivos: objetivosDoQuadroNuvens(quadro),
         desafioExtra: {
           titulo: 'Mais um desafio',
-          texto: 'Complete Enter para começar uma nova rodada do início.',
+          texto: 'Complete Enter para recomeçar o jardim.',
         },
         recompensa: {
           cor: true,
