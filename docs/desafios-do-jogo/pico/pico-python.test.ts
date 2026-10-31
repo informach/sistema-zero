@@ -9,7 +9,7 @@ import {
   codigoDoPico,
   ERROS_DO_PICO_PYTHON,
   type ErroDoPicoPython,
-  PLATAFORMAS_DA_FASE_1,
+  FLOCOS_DA_FASE_1,
 } from './python-projetos'
 
 test('C02 Pico em Python: JSON corresponde à fonte e cumpre as réguas comuns', async () => {
@@ -38,11 +38,18 @@ test('C02 Pico em Python: JSON corresponde à fonte e cumpre as réguas comuns',
   }
 })
 
-test('as fases são dados: o gabarito só acrescenta a terceira fase e completa três funções', () => {
-  expect(PLATAFORMAS_DA_FASE_1).toBe(29)
+test('as fases são dados: o gabarito completa as funções próprias, sem copiar a missão', () => {
+  expect(FLOCOS_DA_FASE_1).toBe(3)
   const gabarito = codigoDoPico('gabarito')
   const inicial = codigoDoPico('inicial')
   expect(gabarito).not.toMatch(/^\s*class\s/m)
+  // Lacunas (01/11/2026): ler a fase e pousar vêm prontas; os critérios são outros que os da missão.
+  const funcao = (codigo: string, nome: string) => {
+    const inicio = codigo.indexOf(`def ${nome}`)
+    return codigo.slice(inicio, codigo.indexOf('\n\n\n', inicio))
+  }
+  for (const pronta of ['ler_fase', 'pousar'])
+    expect(funcao(inicial, pronta)).toBe(funcao(gabarito, pronta))
   // O laço do jogo, a montagem e o desenho são o apoio: iguais no inicial e no gabarito.
   const apoio = (codigo: string) => codigo.slice(codigo.indexOf('def montar'))
   expect(apoio(inicial)).toBe(apoio(gabarito))
@@ -50,8 +57,8 @@ test('as fases são dados: o gabarito só acrescenta a terceira fase e completa 
     for (const bloco of fase.matchAll(/\[\n((?: {8}"[^"]*",\n)+) {4}\]/g)) {
       const linhas = bloco[1]!.trim().split('\n')
       expect(linhas).toHaveLength(12)
-      for (const linha of linhas) expect(linha.trim()).toMatch(/^"[.#CSJ]{16}",$/)
-      for (const letra of ['J', 'C', 'S']) expect(bloco[1]!.split(letra).length - 1).toBe(1)
+      for (const linha of linhas) expect(linha.trim()).toMatch(/^"[.#*SJ]{16}",$/)
+      for (const letra of ['J', 'S']) expect(bloco[1]!.split(letra).length - 1).toBe(1)
     }
   for (const erro of Object.keys(ERROS_DO_PICO_PYTHON) as ErroDoPicoPython[])
     expect(codigoDoPico(erro)).not.toBe(gabarito)

@@ -2,15 +2,18 @@ import { projetoPythonClassico } from '../ambiente-python'
 
 /**
  * C02 (30/10/2026): a Mira de bolhas na linguagem do Explorador, Python com Pygame Zero. Desde a
- * revisão de 31/10/2026 (A45) o tema é da própria ilha, e não da missão do posto: na lagoa do
- * Recife, a Maré solta bolhas com mudas de coral; clicar na bolha planta a muda e a bolha seguinte
- * sobe de um dos três corais. Repertório do posto: leitura, nomes, valores,
- * indentação, eventos, clique dentro e fora, estado, sorteio e tempo. Sem listas e sem classes:
- * a bolha é um `Rect` do Pygame Zero (ponto e área), e as corais saem de um `if/elif` com
- * `random.randint`. O desenho é feito com `screen.draw`, sem imagens.
+ * revisão de 31/10/2026 (A45) o tema é da própria ilha: na lagoa do Recife, a Maré solta bolhas
+ * com mudas de coral. Desde as lacunas de 01/11/2026 os critérios também são próprios, e não a
+ * lista da missão do posto (o Resgate dos Vagalumes pede clique no alvo, clique fora, nova
+ * posição, tempo, fim e reinício): aqui a muda vai para o coral de onde a bolha subiu (estado por
+ * coral), a bolha que ninguém clica estoura e conta como perdida (tempo de cada bolha) e a maré
+ * vira com três perdidas (fim por falhas, não por tempo). Mesmo repertório do posto: leitura,
+ * nomes, valores, indentação, eventos, clique, estado, sorteio e tempo. Sem listas e sem classes.
+ * O sorteio usa uma semente fixa (a lagoa começa sempre igual), para o executor saber de onde cada
+ * bolha sobe: com a semente 7, a primeira sobe do coral 2, depois do 1, depois do 2.
  */
 
-/** Medidas do jogo. A bolha começa na areia e as corais ficam no alto. */
+/** Medidas do jogo. A bolha começa na areia e os corais ficam no alto. */
 export const RECIFE_PYTHON = {
   inicio: [280, 360],
   corais: [
@@ -19,7 +22,9 @@ export const RECIFE_PYTHON = {
     [480, 120],
   ],
   lado: 80,
-  duracao: 7,
+  /** Quanto tempo (s) a bolha espera um clique antes de estourar. */
+  vida: 2,
+  semente: 7,
 } as const
 
 const centro = ([x, y]: readonly [number, number]) =>
@@ -36,42 +41,41 @@ const PARTES = {
     inicial: `def on_mouse_down(pos):
     pass`,
     gabarito: `def on_mouse_down(pos):
-    global plantadas
+    global mudas1, mudas2, mudas3
     if jogando and bolha.collidepoint(pos):
-        plantadas = plantadas + 1
+        if coral == 1:
+            mudas1 = mudas1 + 1
+        elif coral == 2:
+            mudas2 = mudas2 + 1
+        elif coral == 3:
+            mudas3 = mudas3 + 1
         sortear_coral()`,
-  },
-  sorteio: {
-    inicial: `def sortear_coral():
-    pass`,
-    gabarito: `def sortear_coral():
-    numero = random.randint(1, 3)
-    if numero == 1:
-        bolha.topleft = (80, 120)
-    elif numero == 2:
-        bolha.topleft = (280, 80)
-    else:
-        bolha.topleft = (480, 120)`,
   },
   relogio: {
     inicial: `def update(dt):
     pass`,
     gabarito: `def update(dt):
-    global tempo, jogando
-    if jogando:
-        tempo = tempo - dt
-        if tempo <= 0:
-            tempo = 0
-            jogando = False`,
+    global vida, perdidas, jogando
+    if jogando and coral > 0:
+        vida = vida - dt
+        if vida <= 0:
+            perdidas = perdidas + 1
+            if perdidas >= 3:
+                jogando = False
+            else:
+                sortear_coral()`,
   },
   recomecar: {
     inicial: `def on_key_down(key):
     pass`,
     gabarito: `def on_key_down(key):
-    global plantadas, tempo, jogando
+    global coral, mudas1, mudas2, mudas3, perdidas, jogando
     if key == keys.R:
-        plantadas = 0
-        tempo = DURACAO
+        coral = 0
+        mudas1 = 0
+        mudas2 = 0
+        mudas3 = 0
+        perdidas = 0
         jogando = True
         bolha.topleft = (280, 360)`,
   },
@@ -80,42 +84,39 @@ type Parte = keyof typeof PARTES
 
 /** Programas errados que o executor precisa recusar, cada um trocando uma parte do gabarito. */
 export const ERROS_DO_RECIFE_PYTHON = {
-  'conta-qualquer-clique': {
+  'muda-sempre-no-primeiro': {
     parte: 'clique',
-    quebra: ['acertar'],
+    quebra: ['plantar', 'coral-certo'],
     codigo: `def on_mouse_down(pos):
-    global plantadas
-    if jogando:
-        plantadas = plantadas + 1
+    global mudas1
+    if jogando and bolha.collidepoint(pos):
+        if coral > 0:
+            mudas1 = mudas1 + 1
         sortear_coral()`,
   },
-  'bolha-nao-muda-de-lugar': {
-    parte: 'sorteio',
-    quebra: ['sortear'],
-    codigo: `def sortear_coral():
-    bolha.topleft = (280, 360)`,
-  },
-  'relogio-parado': {
+  'bolha-nao-estoura': {
     parte: 'relogio',
-    quebra: ['relogio'],
+    quebra: ['estoura', 'fim'],
     codigo: `def update(dt):
     pass`,
   },
-  'rodada-sem-fim': {
+  'mare-nao-vira': {
     parte: 'relogio',
     quebra: ['fim'],
     codigo: `def update(dt):
-    global tempo
-    tempo = tempo - dt`,
+    global vida, perdidas
+    if jogando and coral > 0:
+        vida = vida - dt
+        if vida <= 0:
+            perdidas = perdidas + 1
+            sortear_coral()`,
   },
-  'r-sem-voltar-a-bolha': {
+  'r-nao-zera': {
     parte: 'recomecar',
     quebra: ['recomecar'],
     codigo: `def on_key_down(key):
-    global plantadas, tempo, jogando
+    global jogando
     if key == keys.R:
-        plantadas = 0
-        tempo = DURACAO
         jogando = True`,
   },
 } as const satisfies Record<string, { parte: Parte; quebra: readonly string[]; codigo: string }>
@@ -136,14 +137,30 @@ WIDTH = 640
 HEIGHT = 480
 TITLE = "Bolhas da lagoa"
 
-DURACAO = ${RECIFE_PYTHON.duracao}
+# A lagoa começa sempre do mesmo jeito.
+random.seed(${RECIFE_PYTHON.semente})
+
+VIDA = ${RECIFE_PYTHON.vida}
 bolha = Rect((280, 360), (80, 80))
-plantadas = 0
-tempo = DURACAO
+coral = 0
+mudas1 = 0
+mudas2 = 0
+mudas3 = 0
+perdidas = 0
+vida = VIDA
 jogando = True
 
 
-${trecho('sorteio', versao)}
+def sortear_coral():
+    global coral, vida
+    coral = random.randint(1, 3)
+    vida = VIDA
+    if coral == 1:
+        bolha.topleft = (80, 120)
+    elif coral == 2:
+        bolha.topleft = (280, 80)
+    else:
+        bolha.topleft = (480, 120)
 
 
 ${trecho('clique', versao)}
@@ -161,11 +178,13 @@ def draw():
     screen.draw.filled_circle((120, 160), 52, (232, 120, 120))
     screen.draw.filled_circle((320, 120), 52, (240, 160, 96))
     screen.draw.filled_circle((520, 160), 52, (196, 120, 200))
+    screen.draw.text(str(mudas1), center=(120, 230), fontsize=32)
+    screen.draw.text(str(mudas2), center=(320, 190), fontsize=32)
+    screen.draw.text(str(mudas3), center=(520, 230), fontsize=32)
     screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))
     screen.draw.circle(bolha.center, 40, (255, 255, 255))
     screen.draw.filled_circle(bolha.center, 12, (120, 210, 150))
-    screen.draw.text("Mudas plantadas: " + str(plantadas), (20, 16), fontsize=32)
-    screen.draw.text("Tempo: " + str(int(tempo)), (500, 16), fontsize=32)
+    screen.draw.text("Perdidas: " + str(perdidas), (470, 16), fontsize=32)
     if not jogando:
         screen.draw.text("A maré virou. Aperte R para recomeçar.", center=(320, 280), fontsize=36)
 `
