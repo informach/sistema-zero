@@ -129,6 +129,7 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/profissoes/') ||
           caminho.startsWith('/insumos/') ||
           caminho.startsWith('/pedidos/') ||
+          caminho.startsWith('/feira/') ||
           caminho.startsWith('/familia/minijogos') ||
           caminho.startsWith('/irmaos') ||
           caminho.startsWith('/amigos') ||
@@ -316,6 +317,9 @@ export function createArquipelagoRoutes(deps: {
     arquipelagoInsumosComprar: { POST: comCorpo('/insumos/comprar', 'POST', 1024) },
     arquipelagoPedidosPendentes: { GET: () => chamar('/pedidos/pendentes', 'GET') },
     arquipelagoPedidosEntregar: { POST: comCorpo('/pedidos/entregar', 'POST', 1024) },
+    /** A banca da feira (A22): vender os pratos prontos, com o crédito pelo serviço do jogo. */
+    arquipelagoFeiraVendasPendentes: { GET: () => chamar('/feira/vendas/pendentes', 'GET') },
+    arquipelagoFeiraVender: { POST: comCorpo('/feira/vender', 'POST', 1024) },
     arquipelagoProfissaoIniciar: { POST: comCorpo('/profissoes/iniciar', 'POST', 4096) },
     arquipelagoProfissaoConcluir: { POST: comCorpo('/profissoes/concluir', 'POST', 4096) },
     /** A galeria do Arquipélago (29/10/2026): o que ela comprou, o saldo e comprar. */

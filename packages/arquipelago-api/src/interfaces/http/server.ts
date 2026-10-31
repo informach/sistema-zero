@@ -44,6 +44,7 @@ import {
   type ServicoDasProfissoes,
   TurnoNaoEncontradoError,
 } from '../../application/servico-das-profissoes'
+import type { ServicoDasVendas } from '../../application/servico-das-vendas'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
 import type { ServicoDasVisitasDeAmigos } from '../../application/servico-das-visitas-de-amigos'
@@ -66,6 +67,7 @@ import {
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
+import { VendaRecusadaError } from '../../domain/vendas.port'
 import {
   SalvamentoDaVisitaNecessarioError,
   VisitaAdultaIndisponivelError,
@@ -80,6 +82,7 @@ import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDasProfissoes } from './rotas-das-profissoes'
+import { rotasDasVendas } from './rotas-das-vendas'
 import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
 import { rotasDasVisitasDeAmigos } from './rotas-das-visitas-de-amigos'
@@ -97,6 +100,8 @@ export interface DependenciasHttp {
   visitasAdultas?: ServicoDasVisitasAdultas
   fantasmas?: ServicoDosFantasmas
   pedidos?: ServicoDosPedidos
+  /** A banca da feira (A22); sem ele, as rotas não existem. */
+  vendas?: ServicoDasVendas
   insumos?: ServicoDosInsumos
   profissoes?: ServicoDasProfissoes
   minijogos?: ServicoDosMinijogos
@@ -188,6 +193,17 @@ export function createServer(deps: DependenciasHttp) {
         set.status = 409
         return envelope(
           error.motivo === 'incompativel' ? 'PEDIDO_INCOMPATIVEL' : 'PEDIDO_BASE_RECUSADO',
+          error.message,
+        )
+      }
+      if (error instanceof VendaRecusadaError) {
+        set.status = 409
+        return envelope(
+          error.motivo === 'incompativel'
+            ? 'VENDA_INCOMPATIVEL'
+            : error.motivo === 'repetida'
+              ? 'VENDA_REPETIDA'
+              : 'VENDA_BASE_RECUSADA',
           error.message,
         )
       }
@@ -390,6 +406,11 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.pedidos
         ? rotasDosPedidos({ pedidos: deps.pedidos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.vendas
+        ? rotasDasVendas({ vendas: deps.vendas, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .use(

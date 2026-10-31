@@ -42,6 +42,7 @@ import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falso
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
+import { criarVendasFalsas, type RegistroDeVendaFalsa } from './vendas-falsas'
 import { criarVisitasAdultasFalsas } from './visitas-adultas-falsas'
 
 /**
@@ -231,6 +232,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   })
   let registrosDeInsumos: RegistroDeInsumosFalso[] = []
   let registrosDePedidos: RegistroDePedidoFalso[] = []
+  let registrosDeVendas: RegistroDeVendaFalsa[] = []
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
@@ -295,10 +297,16 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     try {
       const bruto = localStorage.getItem(CHAVE)
       if (bruto) {
-        const { comprasDeInsumos: registros, pedidosRemunerados, ...salvo } = JSON.parse(bruto)
+        const {
+          comprasDeInsumos: registros,
+          pedidosRemunerados,
+          vendasNaFeira,
+          ...salvo
+        } = JSON.parse(bruto)
         guardado = salvo as SalvamentoGuardado
         registrosDeInsumos = registros ?? []
         registrosDePedidos = pedidosRemunerados ?? []
+        registrosDeVendas = vendasNaFeira ?? []
       }
     } catch {}
     galeria.lembrarCompras(migrarSalvamento(guardado.salvamento))
@@ -438,6 +446,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
           ...guardado,
           comprasDeInsumos: registrosDeInsumos,
           pedidosRemunerados: registrosDePedidos,
+          vendasNaFeira: registrosDeVendas,
         }),
       )
     } catch {}
@@ -457,6 +466,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
             ...salvo,
             comprasDeInsumos: registros,
             pedidosRemunerados: registrosDePedidos,
+            vendasNaFeira: registrosDeVendas,
           }),
         )
       guardado = salvo
@@ -480,10 +490,35 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
             ...salvo,
             comprasDeInsumos: registrosDeInsumos,
             pedidosRemunerados: registros,
+            vendasNaFeira: registrosDeVendas,
           }),
         )
       guardado = salvo
       registrosDePedidos = registros
+    },
+  })
+
+  const vendas = criarVendasFalsas({
+    somenteLeitura: o.somenteLeitura ?? false,
+    posicao: o.posicao ?? 2,
+    ler: () => guardado,
+    registros: registrosDeVendas,
+    compraPendente: insumos.pendente,
+    creditar: galeria.creditar,
+    agora,
+    gravar: (salvo, registros) => {
+      if (o.persistir && typeof localStorage !== 'undefined')
+        localStorage.setItem(
+          CHAVE,
+          JSON.stringify({
+            ...salvo,
+            comprasDeInsumos: registrosDeInsumos,
+            pedidosRemunerados: registrosDePedidos,
+            vendasNaFeira: registros,
+          }),
+        )
+      guardado = salvo
+      registrosDeVendas = registros
     },
   })
 
@@ -538,6 +573,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (dosInsumos) return dosInsumos
         const dosPedidos = pedidos.buscar(caminho, metodo, opcoes?.corpo)
         if (dosPedidos) return dosPedidos
+        const daFeira = vendas.buscar(caminho, metodo, opcoes?.corpo)
+        if (daFeira) return daFeira
         const daProfissao = profissoes.buscar(caminho, metodo, opcoes?.corpo)
         if (daProfissao) return daProfissao
         const daGaleria = galeria.buscar(caminho, metodo, opcoes?.corpo)

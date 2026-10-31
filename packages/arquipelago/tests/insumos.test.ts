@@ -71,6 +71,8 @@ test('aparelho sem recibo retoma reserva do serviço e grava a chave antes de co
       if (path === '/salvamento' && (!o?.metodo || o.metodo === 'GET'))
         return { status: 200, corpo: guardado }
       if (path === '/pedidos/pendentes') return { status: 200, corpo: { versao: 1, pedidos: [] } }
+      if (path === '/feira/vendas/pendentes')
+        return { status: 200, corpo: { versao: 1, vendas: [] } }
       throw Error('A retomada não pode fazer PUT')
     },
   }
