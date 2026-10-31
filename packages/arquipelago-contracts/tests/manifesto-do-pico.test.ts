@@ -41,11 +41,12 @@ test('o Pico Gelado é do Mestre e o pacote em blocos tem cinco quadros e quatro
   expect(ilha('pico').posto).toBe('elite')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
+    // A Fase do Pico, no gênero do posto (lacunas, 01/11/2026).
     'pico-pulo-com-apoio',
-    'pico-freio-no-gelo',
-    'pico-floco-recolhido',
-    'pico-mochila-de-neve',
-    'pico-passagem-segura',
+    'pico-agua-volta-ao-comeco',
+    'pico-proxima-fase',
+    'pico-fim-do-jogo',
+    'pico-de-volta-a-fase-1',
     'pico-fase-de-plataforma',
     'pico-fase-de-plataforma-pulo-alto',
     'pico-fase-de-plataforma-floco',

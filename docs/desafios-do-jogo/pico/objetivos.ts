@@ -53,7 +53,7 @@ export const cairNoBuraco: ExecutionStep[] = [press('ArrowRight', 950), wait(130
  * pinguim para em x 184, ainda no gelo; pula o buraco e anda até a bandeira. A última seta dura
  * pouco depois de encostar na bandeira, para o pinguim recomeçar a fase 2 longe do buraco.
  */
-const ateABandeira: ExecutionStep[] = [
+export const ateABandeira: ExecutionStep[] = [
   press('ArrowRight', 500),
   pular,
   press('ArrowRight', 700),

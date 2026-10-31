@@ -18,10 +18,10 @@ A importação e a publicação no Admin ficam para outra etapa.
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
 | Pulo com apoio | Quadro das Cores | 1 | 20 | 10 |
-| Freio no gelo | Quadro das Cores | 2 | 20 | 10 |
-| Floco recolhido | Quadro das Cores | 3 | 20 | 10 |
-| Mochila de neve | Quadro das Cores | 4 | 20 | 10 |
-| Passagem segura | Quadro das Cores | 5 | 20 | 10 |
+| A água volta ao começo | Quadro das Cores | 2 | 20 | 10 |
+| A próxima fase | Quadro das Cores | 3 | 20 | 10 |
+| Fim do jogo | Quadro das Cores | 4 | 20 | 10 |
+| De volta à fase 1 | Quadro das Cores | 5 | 20 | 10 |
 | Fase de plataforma | Quadro das Cores | 6 | 20 | 10 |
 | Pulo alto | Desafio do dia | Nenhum | 10 | 5 |
 | Floco de neve | Desafio do dia | Nenhum | 10 | 5 |
@@ -35,26 +35,27 @@ seis quadros, Kids e adulto, têm todas as fontes na trilha e voltam a pedir pub
 (`publicar: true`); as três variações seguem com `publicar: false`. A importação e a barreira
 C01a ficam com a equipe. Cada complementar indica a própria atração pelo slug.
 
-## Os cinco complementares
+## Os quadros 1 a 5: a Fase do Pico (lacunas, 01/11/2026)
 
-Reaplicam o repertório de blocos já aprendido até Inventor. Não exigem um bloco novo por entrar
-no Mestre e não são uma substituição dos cursos Python. O serviço continua conferindo as
-conquistas individuais. O cenário, a gravidade, o chão e o desenho já vêm prontos; só o evento
-indicado é completado. Enter é o extra de nova rodada.
+A proposta põe no Pico a plataforma com fases do Mestre. Os cinco quadros montam essa fase um
+passo de cada vez (`projetoDaFaseEmPassos` em `projetos.ts`, `quadros-iniciais.ts`); cada quadro
+traz pronto o que os anteriores fizeram e deixa vazio só o passo dele. Antes eram cinco retomadas
+soltas (freio, floco, mochila, passagem), sem o gênero do posto. Só blocos da trilha (Faísca,
+Construtor e Inventor); o Python do Mestre fica no quadro 6.
 
-| Quadro | Evento | Comportamento avaliado |
-| --- | --- | --- |
-| Pulo com apoio | Espaço | Subir, impedir outro pulo no ar e liberar após pousar |
-| Freio no gelo | Espaço | Parar estado e velocidade sem reiniciar nem deslocar |
-| Floco recolhido | Contato | Coletar, esconder e contar uma vez, somente após tocar |
-| Mochila de neve | Esquerda e direita | Aceitar cargas de 1 ou 2 até o peso 4, sem aceitar parte |
-| Passagem segura | Espaço | Esperar a neve ceder e atravessar uma única vez |
+| Quadro | O passo | Conhecimento aplicado | Recusa causal (executor real) |
+| --- | --- | --- | --- |
+| 1 | Espaço pula só no gelo | Estado de apoio e condição | Pular no ar |
+| 2 | A água devolve ao começo e conta a queda | Encontro, reposição e soma | Não contar a queda |
+| 3 | A bandeira leva à fase 2 | Dados de fase (onde começa, onde fica a bandeira) | Não mudar de fase |
+| 4 | A bandeira da fase 2 termina o jogo | Senão do Se da fase e cena do fim | Terminar já na fase 1 |
+| 5 | Enter volta à fase 1 | Restaurar os dados do começo | Esquecer a fase |
 
-A arte reutiliza os SVGs do principal. O pulo ensina -10 como exemplo, mas a verificação não
-exige essa força: um pulo menor coerente também passa. O solo preparado está em y 300 para o
-pinguim, e sua correção usa a diferença até o solo, sem teleporte por borda. O contador de
-neve diminui de 120 a zero por atualização, não representa segundos. O tempo de 2,4 s do
-ensaio dá margem à liberação a 60 atualizações por segundo.
+Os caminhos dos objetivos (pousar, cair no buraco, chegar à bandeira) são os já medidos no
+minijogo da plataforma (`objetivos.ts`). O extra dos quadros 1 a 4 é o Enter recomeçar o jogo; o
+do quinto, a seta para cima também pular. Prova:
+`packages/studio-runtime/tests/quadros-pico-browser.test.ts` (com `SZ_CHECK_CHROMIUM` apontando
+para o Chrome), os cinco quadros com gabarito, inicial e erros.
 
 ## O que se completa no principal
 
