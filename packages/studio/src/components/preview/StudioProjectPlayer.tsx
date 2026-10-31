@@ -1,5 +1,6 @@
 import { forwardRef, lazy, Suspense } from 'react'
-import type { EditableStudioProject } from '../../core/editableProject'
+import type { EditableStudioProject, PythonProjectDocument } from '../../core/editableProject'
+import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import type { StudioProjectPlayerProps as JavaScriptPlayerProps } from './JavaScriptProjectPlayer'
 
 export type { StudioPlayerOriginAdapter, StudioPlayerOriginRequest } from './playerOriginAdapter'
@@ -23,6 +24,15 @@ export interface StudioProjectPlayerProps
   published?:
     | JavaScriptPlayerProps['published']
     | { programmingLanguage: 'python'; playId: string; revision: string }
+  /**
+   * A host-built Python environment for a project that is not a community publication (the
+   * Arquipélago minigame plays the approved challenge solution under the challenge's own runtime
+   * authorization). When present, `published` and `pythonRuntimeRequest` are not used.
+   */
+  pythonRuntimeEnvironment?(
+    project: PythonProjectDocument,
+    signal: AbortSignal,
+  ): Promise<StudioRuntimeEnvironment>
   /** Same-origin host callback; no subject/source/capabilities are sent by the player. */
   pythonRuntimeRequest?(
     input: { playId: string; publicationRevision: string },

@@ -2661,6 +2661,14 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   do jogo na feira da Vila Doce e o quiosque do festival no Pico mostram na tela a capa do minijogo
   mais recente da própria ilha e abrem a lista dos minijogos aprovados da ilha. O fliperama de casa
   continua com todos. A ilha vem do serviço (a ilha publicada do desafio). Na visita, só enfeite.
+- **O quadro 6 em Python vira atração (lacunas, 01/11/2026):** o quadro 6 do Recife (Bolhas da
+  lagoa, `bolhas-da-lagoa`) e do Pico (A subida do Floco, `subida-do-floco`) têm atração, e o
+  player do minijogo roda o Python no ambiente do próprio desafio: a abertura do minijogo traz a
+  revisão publicada, o player pede o ambiente a `POST /desafios/:id/ambiente` (o serviço confere que
+  a pessoa concluiu o desafio) e o Members confere o projeto contra o inicial, só com execução
+  (`pythonRuntimeEnvironment` no player do Estúdio, `arquipelago-minijogo-player.tsx`). O quadro 6
+  no Pro (Nuvens) ainda não vira atração: o player do Pro só toca uma revisão publicada (build no
+  host isolado), que chega com a publicação do lote L9.
 - **Café, banca de feira e festa no Construir (B7 e B9):** a aba "Café e feira" abre com a Vila
   Doce; a aba "Festa" só aparece durante uma festa, com as peças dela. Fora da festa, a decoração
   posta continua guardada, sem aparecer nem colidir, e volta na festa seguinte. O que acende
