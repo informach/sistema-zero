@@ -2,7 +2,7 @@
 GLB temporário (para o `faces-coplanares.ts` sem `--separados` conferir as emendas entre vizinhas) e
 renderiza prévias em Cycles. Nada daqui vai para o jogo.
 
-  python -B cenas.py kit [cozinha sala banheiro moveis andar cafe-festas]      # as cenas pedidas
+  python -B cenas.py kit [cozinha sala banheiro moveis andar cafe-festas janela-baixa]      # as cenas pedidas
 
 Variáveis: DIR_PREVIAS (pasta das imagens e dos GLBs temporários; padrão: `arte-casa` no diretório
 temporário), RES (padrão 560), AMOSTRAS (padrão 28),
@@ -487,9 +487,40 @@ def cena_cafe_festas():
     return c
 
 
+def janelas_baixas(c, x0, fam):
+    """As janelas na parede cortada (31/10/2026) da família `fam`, como o Construir monta: um cômodo
+    10 × 3 em x0 com a frente cortada (as três janelas baixas entre paredes baixas), a direita
+    cortada e depois em pé, e o fundo e a esquerda em pé com as janelas altas; à frente (y = -6), uma
+    fileira com cada janela alta ao lado da baixa e de uma parede em pé, com as quinas onde a
+    altura muda."""
+    q = 'lambri' if fam == 'lambri' else 'lisa'
+    B, P = f'parede-{fam}-baixa', f'parede-{fam}'
+    JG, JA, JR = (f'parede-janela-{t}-{fam}' for t in ('grande', 'arco', 'redonda'))
+    c.piso('piso-tabua', x0, 0, 10, 3)
+    c.corrida('x', 0, x0, [(B, 1), (JG + '-baixa', 3), (B, 1), (JA + '-baixa', 2), (B, 1), (JR + '-baixa', 1),
+                           (B, 1)], +1)
+    c.corrida('x', 3, x0, [(JG, 3), (P, 1), (JA, 2), (P, 1), (JR, 1), (P, 1), (P, 1)], -1)
+    c.corrida('y', x0, 0, [(P, 1)] * 3, +1)
+    c.corrida('y', x0 + 10, 0, [(B, 1), (B, 1), (P, 1)], -1)
+    for x, y, alta in ((0, 0, True), (10, 0, False), (10, 2, True), (0, 3, True), (10, 3, True)):
+        c.por(f'quina-{q}' + ('' if alta else '-baixa'), x0 + x, y)
+    c.corrida('x', -6, x0, [(JG, 3), (JG + '-baixa', 3), (P, 1), (JA, 2), (JA + '-baixa', 2), (P, 1), (JR, 1),
+                            (JR + '-baixa', 1), (P, 1)], +1)
+    for x in (0, 3, 6, 9, 11, 13, 14, 15):
+        c.por(f'quina-{q}', x0 + x, -6)
+
+
+def cena_janela_baixa():
+    """As seis janelas baixas: o lambri em x = 0 e a lisa em x = 20 (`janelas_baixas`)."""
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb'])
+    janelas_baixas(c, 0, 'lambri')
+    janelas_baixas(c, 20, 'lisa')
+    return c
+
+
 CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro,
          'andar': cena_andar, 'andar-parede': cena_andar_parede, 'cafe-festas': cena_cafe_festas,
-         'fachada-andar': cena_fachada_andar}
+         'fachada-andar': cena_fachada_andar, 'janela-baixa': cena_janela_baixa}
 
 
 def main():
@@ -529,6 +560,10 @@ VISTAS = {
                      ((2.4, 3.0, 4.1), (-0.6, -0.4, 1.0), 5.5)],
     'fachada-andar': [((3.5, 0.0, 4.0), (0.35, -1.0, 0.25), 9.0), ((1.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2),
                       ((5.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2)],
+    # De cima e um pouco de lado, como a câmera do Construir: os cômodos e as fileiras de comparar.
+    'janela-baixa': [((5.0, 1.2, 0.6), (0.3, -1.0, 1.35), 11.5), ((25.0, 1.2, 0.6), (0.3, -1.0, 1.35), 11.5),
+                     ((7.5, -6.0, 1.6), (0.3, -1.0, 0.9), 16.0), ((27.5, -6.0, 1.6), (0.3, -1.0, 0.9), 16.0),
+                     ((5.4, 0.3, 0.7), (0.3, -1.0, 1.35), 8.8), ((25.4, 0.3, 0.7), (0.3, -1.0, 1.35), 8.8)],
     'cafe-festas': [((6.0, 2.2, 1.0), (0.35, -1.0, 0.55), 12.5), ((2.5, 2.4, 1.0), (0.2, -1.0, 0.5), 5.5),
                     ((9.5, 2.6, 1.6), (-0.2, -1.0, 0.4), 5.5)],
 }
@@ -537,6 +572,7 @@ PINTURA = {
     'cozinha': {'paredeDentro': '#fff1cf', 'paredeVerso': '#fff1cf'},
     'sala': {'paredeDentro': '#ffe2d4', 'paredeVerso': '#ffe2d4'},
     'banheiro': {'paredeDentro': '#dcf2f4', 'paredeVerso': '#dcf2f4'},
+    'janela-baixa': {'paredeDentro': '#fff1cf', 'paredeVerso': '#ffe2d4'},
 }
 
 if __name__ == '__main__':

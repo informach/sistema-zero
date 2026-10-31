@@ -37,6 +37,8 @@ TETO_TRIS_FESTA_PADRAO = 1500
 PAREDES = [f'{t}-{f}' for f in ('lambri', 'lisa') for t in (
     'parede', 'parede-porta', 'parede-janela-grande', 'parede-janela-arco', 'parede-janela-redonda', 'quina')]
 PAREDES += [f'{t}-{f}-baixa' for f in ('lambri', 'lisa') for t in ('parede', 'parede-porta', 'quina')]
+# As janelas na parede cortada (31/10/2026): no Construir a janela vira a janela baixa da família.
+PAREDES += [f'parede-janela-{t}-{f}-baixa' for f in ('lambri', 'lisa') for t in ('grande', 'arco', 'redonda')]
 CONTRATO = {
     'casa-paredes': {'nos': PAREDES, 'materiais': ['vidroJanela', 'parede', 'paredeDentro', 'paredeVerso',
                                                    'paredeTopo']},
@@ -148,13 +150,15 @@ else:
 if os.environ.get('CENAS'):
     pasta = os.environ.get('DIR_PREVIAS') or os.path.join(tempfile.gettempdir(), 'arte-casa')
     r = subprocess.run([sys.executable, '-B', os.path.join(AQUI, 'cenas.py'), 'kit', 'cozinha', 'sala', 'banheiro',
-                        'moveis', 'andar', 'andar-parede', 'cafe-festas'], cwd=AQUI, capture_output=True, text=True,
+                        'moveis', 'andar', 'andar-parede', 'cafe-festas', 'janela-baixa'], cwd=AQUI,
+                       capture_output=True, text=True,
                        env=dict(env, DIR_PREVIAS=pasta, SO_GLB=os.environ.get('SO_GLB', '1')))
     if r.returncode != 0:
         print(r.stderr[-3000:])
         sys.exit('falhou: cenas')
     if bun:
-        for nome in ('kit', 'cozinha', 'sala', 'banheiro', 'moveis', 'andar', 'andar-parede', 'cafe-festas'):
+        for nome in ('kit', 'cozinha', 'sala', 'banheiro', 'moveis', 'andar', 'andar-parede', 'cafe-festas',
+                     'janela-baixa'):
             r = subprocess.run([bun, 'scripts/faces-coplanares.ts', os.path.join(pasta, f'cena-{nome}.glb')],
                                cwd=PACOTE, capture_output=True, text=True)
             # O fogão a lenha da cena da cozinha vem de arte/itens: os pares só dele não contam aqui.

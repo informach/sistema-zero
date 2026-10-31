@@ -46,7 +46,7 @@ mesmo): depois do `build_all.py`, volte com `git checkout` os GLBs que você nã
 | `cafe.py` | `casa-cafe.glb` (café e banca de feira; importa os ajudantes e a paleta de `comodos.py`) |
 | `festas.py` | `casa-festas.glb` (decoração de festa; importa a `lib_festas` e os modelos da fogueira, da lanterna e da máscara de `arte/festas`) |
 | `miniaturas.py` | `src/assets/casa/miniaturas/<id>.png` (160 px, fundo transparente): cada janela no meio de uma parede de lambri, cada piso e caminho numa grade, cada objeto de `src/assets/objetos` e cada móvel dos cômodos (`movel-<nó>.png`, 30/10/2026) e, desde 31/10/2026, cada peça do café e da decoração de festa (também `movel-<nó>.png`), com o enquadramento e a luz dos ícones dos itens (`arte/itens/render.py`). Refaça depois de mudar uma dessas peças; `tests/miniaturas.test.ts` confere que há uma por escolha |
-| `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis, segundo andar `andar`, a escada encostada na parede `andar-parede`, vitrine do café e das festas `cafe-festas`): GLB temporário e prévias |
+| `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis, segundo andar `andar`, a escada encostada na parede `andar-parede`, vitrine do café e das festas `cafe-festas`, as janelas na parede cortada `janela-baixa`): GLB temporário e prévias |
 | `build_all.py` | roda tudo e confere |
 
 ## Medidas que o modo construir usa
@@ -81,7 +81,27 @@ mesmo): depois do `build_all.py`, volte com `git checkout` os GLBs que você nã
 - **Janelas:** grande com venezianas e floreira (vão 1,5 × 1,2, de 1,6 a 2,8); em arco (vão 1,0 ×
   1,2, arco de raio 0,5 a partir de 2,3); redonda (vidro de raio 0,18 com centro em 2,55). Todas as
   vergas ficam em 2,8. Na família `lisa` saem sem venezianas e sem floreira (janela entre cômodos).
-  Com as paredes cortadas, use a parede cortada da mesma família no lugar da janela.
+  Com as paredes cortadas, use a janela baixa da mesma família e tipo (abaixo) no lugar da janela.
+- **Janelas na parede cortada** (31/10/2026, pedido dela): no modo Construir todas as paredes viram
+  as cortadas (`-baixa`), e a janela virava parede lisa baixa (a criança não via a janela nem
+  conseguia apagá-la). Agora a janela vira a **janela baixa**: `parede-janela-grande-<família>-baixa`,
+  `parede-janela-arco-<família>-baixa` e `parede-janela-redonda-<família>-baixa` (`lambri` e `lisa`).
+  Cada uma tem a MESMA largura (3, 2 e 1), origem (o meio do vão, no meio da base), giro e colunas
+  da janela alta, e a altura da parede cortada da família: a parede tem só as linhas
+  `CORTES_Y_BAIXA` nas pontas, então emenda vértice a vértice com as vizinhas baixas e altas (e,
+  onde a altura muda, vai a quina de sempre). No alto da parede cortada ela mostra o pé da janela:
+  - grande e em arco: o vão de 0,70 até o topo, a moldura em U com os lados subindo até 1,02 (2 cm
+    acima do topo, como o batente da porta cortada), o peitoril de fora e o de dentro (sem chanfro),
+    o montante do meio e o vidro (`vidroJanela`, 14 cm de espessura, topo em 0,99), que de cima é
+    a faixa azul entre as molduras. No pé a janela em arco é reta, como a alta (o arco fica no alto
+    dela): ela se distingue pela largura (1,0 contra 1,5) e por não ter venezianas;
+  - grande no lambri: também o pé das venezianas (até 1,01, com duas ripas) e a floreira com flores
+    por fora (a 0,50 abaixo do peitoril, como na alta, com as bolinhas mais leves). A em arco e a
+    redonda altas não têm floreira, e as baixas seguem as altas; a lisa (entre cômodos) nunca tem;
+  - redonda: a metade de baixo da vigia, com o centro no topo da parede cortada (o corte passa pelo
+    meio dela): o vão quadrado de 0,75 ao topo com o tampão nos cantos de baixo, a metade do aro
+    (que sobe até 1,02) e a metade do vidro, sem peitoril (a alta também não tem).
+  O friso de 0,75 do lambri para embaixo da moldura (ou do aro), com a ponta escondida nela.
 - **Pisos:** 1 × 1, origem no meio da célula. Os da casa (`piso-tabua`, `piso-ladrilho`,
   `piso-azulejo`) têm o topo em z = 0 (a altura do piso do quarto) e 10 cm de espessura, sem a face
   de baixo; vão até a linha da grade, por baixo das paredes. A grama do quintal (`piso-grama`,
@@ -263,8 +283,8 @@ As regras do README de `arte/mundo` valem aqui, e mais as das peças que se repe
 
 Conferir: `bun scripts/faces-coplanares.ts --separados src/assets/casa/<arquivo>.glb` em cada GLB
 (o `build_all.py` já roda; `tests/faces-coplanares.test.ts` cobre `casa-andar`, `casa-cafe` e
-`casa-festas`, `casa-paredes-andar`) e, nas cenas montadas, o mesmo sem `--separados` (`CENAS=1`,
-com as cenas `andar`, `andar-parede` e `cafe-festas`). Na cena da cozinha, o fogão a lenha de `arte/itens` acusa pares só dele (lenha,
+`casa-festas`, `casa-paredes-andar` e `casa-paredes`) e, nas cenas montadas, o mesmo sem `--separados` (`CENAS=1`,
+com as cenas `andar`, `andar-parede`, `cafe-festas` e `janela-baixa`). Na cena da cozinha, o fogão a lenha de `arte/itens` acusa pares só dele (lenha,
 fogo e chapa); as peças daqui não acusam nada.
 
 ## O que o jogo ainda desenha no código (falta no kit)
@@ -298,6 +318,11 @@ simples no código:
   raios de fora na linha do piso batem na cinta (sem fresta). As paredes do andar sem alicerce.
 - `tests/casa-cafe-e-festas.test.ts`: nós, medidas pedidas (±5 cm), contrato de chão e de parede,
   triângulos, 450 KB, emissão do que acende, o vidro da vitrine, a placa da banca e as miniaturas.
+- `tests/janela-baixa.test.ts` (31/10/2026): lê o `casa-paredes.glb` e confere os seis nós das
+  janelas baixas, a altura (a da parede cortada da família, ± 2 cm, sem contar a floreira), a
+  largura e a origem da janela alta, o vidro no alto, a floreira por fora no lambri onde a alta tem,
+  as pontas só com os vértices da parede cortada vizinha e, montadas como a cena `janela-baixa`, ao
+  lado de paredes baixas, altas, janelas altas e quinas, nenhuma face coplanar nem emenda em T.
 - `tests/miniaturas.test.ts` e `tests/faces-coplanares.test.ts` (os arquivos de 31/10/2026). As
   peças do andar não têm miniatura: não aparecem como escolha no Construir (o jogo põe sozinho).
 
@@ -306,7 +331,7 @@ simples no código:
 Tamanho = largura × altura × fundo, em unidades do jogo. Triângulos por nó; o tamanho em KB é do
 arquivo inteiro.
 
-### `casa-paredes.glb` (7.756 triângulos, 337 KB)
+### `casa-paredes.glb` (10.076 triângulos, 446 KB)
 
 | Nó | Células | Tamanho | Triângulos |
 |---|---|---|---|
@@ -328,6 +353,12 @@ arquivo inteiro.
 | `parede-janela-redonda-lisa` | 1 | 1,00 × 4,10 × 0,30 | 632 |
 | `quina-lisa` | ponto | 0,30 × 4,13 × 0,30 | 106 |
 | `quina-lisa-baixa` | ponto | 0,30 × 1,13 × 0,30 | 106 |
+| `parede-janela-grande-lambri-baixa` | 3 | 3,00 × 1,32 × 0,70 | 1.160 |
+| `parede-janela-arco-lambri-baixa` | 2 | 2,00 × 1,32 × 0,49 | 160 |
+| `parede-janela-redonda-lambri-baixa` | 1 | 1,00 × 1,32 × 0,33 | 360 |
+| `parede-janela-grande-lisa-baixa` | 3 | 3,00 × 1,12 × 0,49 | 168 |
+| `parede-janela-arco-lisa-baixa` | 2 | 2,00 × 1,12 × 0,49 | 136 |
+| `parede-janela-redonda-lisa-baixa` | 1 | 1,00 × 1,12 × 0,30 | 336 |
 
 A altura do lambri conta o alicerce, que desce até -0,30 (dentro do chão da ilha).
 

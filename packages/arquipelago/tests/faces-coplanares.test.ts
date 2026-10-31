@@ -103,6 +103,7 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'casa/casa-cafe.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'casa/casa-festas.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'casa/casa-paredes-andar.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-paredes.glb', juntos: CADA_NO_SOZINHO },
   // As versões retro e moderna da galeria (31/10/2026; na banda e no museu cada nó é uma peça solta).
   ...[
     'geladeira',

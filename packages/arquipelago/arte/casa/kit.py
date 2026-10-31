@@ -5,7 +5,9 @@ Tudo casa com a grade do quarto (1 unidade por célula, paredes de 4) e com a ca
 Contrato de cada nó, medidas e regras de montagem no README desta pasta.
 
 - `casa-paredes.glb`: paredes de 1, 2 e 3 células nas famílias `lambri` (lado de fora da casa,
-  -Y) e `lisa` (entre dois cômodos), em pé (altura 4) e cortadas (altura 1), e as quinas.
+  -Y) e `lisa` (entre dois cômodos), em pé (altura 4) e cortadas (altura 1), e as quinas. Desde
+  31/10/2026, as janelas na parede cortada (`parede-janela-<tipo>-<família>-baixa`): no Construir a
+  janela vira a janela baixa, e a criança continua vendo (e podendo apagar) a janela.
 - `casa-portas.glb`: as folhas `porta` e `porta-interna`, com o pivô na dobradiça e os clipes
   `abrir` e `abrir-interna`.
 - `casa-pisos.glb`: pisos de 1 × 1 (tábua, ladrilho, azulejo, grama e grama com pedras).
@@ -167,14 +169,19 @@ def vidro_e_cruz(w, b, t, cruz=True):
     return p
 
 
-def peitoris(w):
-    """Peitoril de fora e o de dentro, embaixo da moldura."""
-    return [caixa(-w / 2 - 0.2, w / 2 + 0.2, -0.27, -0.08, JAN_B - 0.17, JAN_B - 0.1, 'acabamento', bevel=0.015),
-            caixa(-w / 2 - 0.1, w / 2 + 0.1, 0.08, 0.22, JAN_B - 0.15, JAN_B - 0.09, 'acabamento', bevel=0.012)]
+def peitoris(w, zb=JAN_B, chanfro=True):
+    """Peitoril de fora e o de dentro, embaixo da moldura (o vão começa em `zb`). Sem `chanfro`, caixas
+    retas (as da janela baixa, vistas de longe, para o arquivo das paredes caber no teto)."""
+    return [caixa(-w / 2 - 0.2, w / 2 + 0.2, -0.27, -0.08, zb - 0.17, zb - 0.1, 'acabamento',
+                  bevel=0.015 if chanfro else 0.0),
+            caixa(-w / 2 - 0.1, w / 2 + 0.1, 0.08, 0.22, zb - 0.15, zb - 0.09, 'acabamento',
+                  bevel=0.012 if chanfro else 0.0)]
 
 
-def floreira(w, z0, seed):
-    """Floreira azul com terra, folhagem e flores, presa na parede por duas mãos-francesas."""
+def floreira(w, z0, seed, seg=8, aneis=5):
+    """Floreira azul com terra, folhagem e flores, presa na parede por duas mãos-francesas. `seg` e
+    `aneis` dão a resolução das bolinhas da folhagem e das flores (a da janela baixa é mais leve,
+    para o arquivo das paredes caber no teto)."""
     p = []
     zt = z0 + 0.26
     p.append(loft_ret([(0, 0), (0, 0.26), (0.03, 0.26), (0.03, 0.21), (0.031, 0.21)], w, 0.28, 0.05,
@@ -190,10 +197,10 @@ def floreira(w, z0, seed):
     n = max(3, int(w / 0.3))
     for k in range(n):
         x = (k - (n - 1) / 2) * (w - 0.12) / n
-        p.append(uvball(0.12, (x, -0.34, zt - 0.02), 'copa' if k % 2 else 'copaClara', seg=8, ring=5,
+        p.append(uvball(0.12, (x, -0.34, zt - 0.02), 'copa' if k % 2 else 'copaClara', seg=seg, ring=aneis,
                         scale=(1.1, 0.9, 0.75)))
         p += florzinha((x + rnd.uniform(-0.04, 0.04), -0.36 + rnd.uniform(-0.04, 0.04), zt + 0.08), cores[k % 6],
-                       r=0.07, seed=k)
+                       r=0.07, seed=k, seg=seg, aneis=aneis)
     return p
 
 
@@ -356,6 +363,99 @@ def janela_redonda(familia):
     return p
 
 
+# ---------------------------------------------------------------- janelas na parede cortada (31/10/2026)
+# No Construir as paredes viram as cortadas (`-baixa`, de 1,0). A janela não some: vira a janela baixa,
+# com a MESMA largura, origem e colunas da janela alta e as linhas da parede cortada (CORTES_Y_BAIXA),
+# então emenda vértice a vértice com as vizinhas baixas e altas. No alto da parede cortada ficam o pé
+# da moldura (os lados sobem até 2 cm acima do topo, como o batente da porta cortada), o peitoril e o
+# vidro, que aparece de cima como uma faixa azul entre as molduras.
+JAN_BAIXA_B = 0.7        # base do vão da janela grande e da em arco na parede cortada
+TOPO_BAIXA = HB + 0.02   # as molduras passam 2 cm do topo da parede cortada (nunca no plano dele)
+
+
+def _sem_linha_nas_pontas(o, u0, u1, z):
+    """Tira a linha do vão (altura `z`) das colunas das pontas da parede: a vizinha cortada só tem
+    vértices no pé e no topo, e um vértice no meio da ponta seria emenda em T. As duas faces da
+    coluna da ponta viram uma só (o vértice da coluna de dentro continua, sem T)."""
+    bm = bmesh.new()
+    bm.from_mesh(o.data)
+    fora = [v for v in bm.verts if min(abs(v.co.x - u0), abs(v.co.x - u1)) < 1e-6 and abs(v.co.z - z) < 1e-6]
+    bmesh.ops.dissolve_verts(bm, verts=fora)
+    bm.to_mesh(o.data)
+    bm.free()
+
+
+def parede_da_janela_baixa(largura, familia, vao, paradas_friso):
+    """A parede cortada com o vão da janela aberto até o topo; o friso do lambri para em `paradas_friso`."""
+    p = parede(largura, familia, HB, [vao], paradas_frisos=lambda z: paradas_friso)
+    _sem_linha_nas_pontas(p[0], -largura / 2, largura / 2, vao[2])
+    return p
+
+
+def janela_baixa_reta(w, zb):
+    """O pé da janela reta (grande e em arco): moldura em U subindo até 2 cm acima do topo, o vidro
+    (14 cm de espessura, para a faixa azul aparecer de cima), o montante do meio e os peitoris."""
+    p = [varrer([(-w / 2, TOPO_BAIXA), (-w / 2, zb), (w / 2, zb), (w / 2, TOPO_BAIXA)], False, MOLDURA,
+                'acabamento')]
+    p.append(caixa(-w / 2 + 0.04, w / 2 - 0.04, -0.07, 0.07, zb + 0.04, HB - 0.01, 'vidroJanela'))
+    p.append(caixa(-0.025, 0.025, -0.08, 0.08, zb + 0.05, HB + 0.005, 'acabamento'))
+    p += peitoris(w, zb, chanfro=False)
+    return p
+
+
+def janela_grande_baixa(familia, seed=1):
+    """A janela grande na parede cortada: três células, vão de 1,5 de 0,7 até o topo. No lambri, o pé
+    das venezianas (com as ripas) e a floreira com flores por fora, como na janela alta."""
+    w, zb = 1.5, JAN_BAIXA_B
+    p = parede_da_janela_baixa(3, familia, (0.0, w, zb, HB), [(-1.05, 1.05)])
+    p += janela_baixa_reta(w, zb)
+    if familia == 'lambri':
+        for s in (-1, 1):
+            x0, x1 = sorted((s * (w / 2 + 0.13), s * (w / 2 + 0.53)))
+            p.append(caixa(x0, x1, -0.165, -0.115, zb - 0.06, HB + 0.01, 'floreira', bevel=0.012))
+            for z in (HB - 0.07, HB - 0.275):
+                p.append(caixa(x0 + 0.04, x1 - 0.04, -0.195, -0.16, z, z + 0.05, 'ripa'))
+        p += floreira(w + 0.1, zb - 0.5, seed, seg=5, aneis=3)
+    return p
+
+
+def janela_arco_baixa(familia):
+    """A janela em arco na parede cortada: duas células, vão de 1,0 de 0,7 até o topo (o arco fica no
+    alto da janela; no pé ela é reta, como na alta), sem venezianas nem floreira, como a alta."""
+    w, zb = 1.0, JAN_BAIXA_B
+    # O friso para dentro da moldura do lado (de 0,44 a 0,62 do meio): a ponta fica escondida nela.
+    p = parede_da_janela_baixa(2, familia, (0.0, w, zb, HB), [(-0.56, 0.56)])
+    p += janela_baixa_reta(w, zb)
+    return p
+
+
+def janela_redonda_baixa(familia):
+    """A vigia na parede cortada: uma célula, a metade de baixo do aro e do vidro, com o centro no topo
+    da parede cortada (o corte passa pelo meio da vigia). O vão quadrado de 0,5 fica de 0,75 ao topo,
+    com o tampão rente à parede nos dois cantos de baixo; o aro sobe 2 cm acima do topo."""
+    lambri = familia == 'lambri'
+    frente = 'parede' if lambri else 'paredeVerso'
+    cz, h, rf = HB, 0.25, 0.2
+    # O friso do lambri (0,725 a 0,775) passa embaixo do aro (raio de fora 0,29): para onde o aro o cobre.
+    p = parede_da_janela_baixa(1, familia, (0.0, 2 * h, cz - h, HB), [(-0.09, 0.09)])
+    meia = _arco(0, cz, rf, 180, 360)   # 13 pontos, de 15 em 15°, pelo pé
+    TE, BE, BD, TD, M = (-h, cz), (-h, cz - h), (h, cz - h), (h, cz), (0.0, cz - h)
+    # O canto de cima passa para o de baixo em 210° (em 225° o canto, o ponto de 210° e o de 225°
+    # ficam numa reta: triângulo achatado e emenda em T).
+    tris = [(TE, meia[k], meia[k + 1]) for k in range(2)] + [(TE, meia[2], BE)]
+    tris += [(BE, meia[k], meia[k + 1]) for k in range(2, 6)]
+    # Embaixo a parede tem a coluna do meio da célula (x = 0): o tampão divide o vértice com ela.
+    tris += [(BE, meia[6], M), (M, meia[6], BD)]
+    tris += [(BD, meia[k], meia[k + 1]) for k in range(6, 10)] + [(BD, meia[10], TD)]
+    tris += [(TD, meia[k], meia[k + 1]) for k in range(10, 12)]
+    p.append(tampao((tris, [meia]), -T / 2, T / 2, frente, 'paredeDentro', frente, 'tampao'))
+    perfil = [(-0.04, -0.16), (0.07, -0.16), (0.09, -0.14), (0.09, 0.12), (0.07, 0.14), (-0.04, 0.14)]
+    p.append(varrer([(-rf, TOPO_BAIXA)] + meia + [(rf, TOPO_BAIXA)], False, perfil, 'acabamento'))
+    p.append(prism(_arco(0, HB - 0.01, rf - 0.02, 180, 360), 0.14, (0, 0, 0), 'vidroJanela'))
+    p.append(caixa(-0.02, 0.02, -0.08, 0.08, cz - rf + 0.03, HB + 0.005, 'acabamento'))
+    return p
+
+
 def quina(familia, altura=H):
     """Peça do canto, centrada no ponto da grade: vai em toda ponta de parede e em toda dobra em L.
     Lambri: pilar branco de 0,34 (os da casa) num bloco de alicerce de 0,44. Lisa: pilar arredondado
@@ -379,6 +479,11 @@ def paredes():
         nos[f'parede-janela-redonda-{fam}'] = janela_redonda(fam)
         nos[f'quina-{fam}'] = quina(fam)
         nos[f'quina-{fam}-baixa'] = quina(fam, HB)
+    # As janelas na parede cortada (31/10/2026), no fim para não mexer na ordem dos nós de antes.
+    for fam in ('lambri', 'lisa'):
+        nos[f'parede-janela-grande-{fam}-baixa'] = janela_grande_baixa(fam)
+        nos[f'parede-janela-arco-{fam}-baixa'] = janela_arco_baixa(fam)
+        nos[f'parede-janela-redonda-{fam}-baixa'] = janela_redonda_baixa(fam)
     for nome in nos:
         if nome.startswith('parede-'):
             larg = 3 if ('porta' in nome or 'grande' in nome) else 2 if 'arco' in nome else 1
