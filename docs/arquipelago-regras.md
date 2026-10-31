@@ -1561,6 +1561,13 @@ cada espécie ela já prendeu.
   Usar): ele chacoalha na luz (`PRESO_POR`, 1,2 s), se desfaz em faíscas (`VIRANDO_POR`, 1,5 s,
   clipe `virar`) e o Lumi entra no salvamento na hora (`prenderBorrao`, até 999 de cada), com a
   fala do Zappy (`falaDoLumiNovo`). Tensão boa, sem dano: deixar um borrão para trás não custa nada.
+- **O Cinza em volta (lacunas, 01/11/2026; a proposta: "borrões de névoa saem para desbotar o que
+  está do lado de fora"):** além da mancha no chão (`MANCHA_DO_BORRAO`), cada borrão solto tira a
+  cor do que está perto dele, no shader (`mundo/cinza-dos-borroes.ts`): o chão, as árvores, os
+  enfeites, a casa e o píer da sua ilha e as peças das ilhas do anel. No meio fica 15% da cor
+  (`FORCA_DO_CINZA` 0,85), que volta aos poucos até `RAIO_DO_CINZA` (4,56 m), crescendo junto com
+  a mancha. Preso, o Cinza some com ele. No máximo quatro de uma vez (dois na sua ilha e dois na
+  ilha aberta). Prova: `tests/cinza-dos-borroes.test.ts` e `playground/verificar-borroes-browser.ts`.
 - **Os já presos na noite:** ficam no aparelho, por perfil (`arquipelago:borroes-presos:<perfil>`),
   para recarregar a página na mesma noite não trazer de volta os já presos. Na noite seguinte saem
   outros dois.

@@ -13,6 +13,7 @@ import type { NivelDeQualidade } from '../sistemas/qualidade'
 import type { ConvidadoNaCasa } from '../sistemas/visitas-dos-moradores'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { medirFesta } from './catalogo-da-festa'
+import { corQueSobra } from './cinza-dos-borroes'
 import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
 import { folhasAgora } from './folhas-ao-vento'
@@ -134,7 +135,7 @@ export interface MedidaDoDesenho {
   /** Cada patim calçado: quantas malhas e a altura mais baixa das rodinhas (vazio: descalço). */
   patins: { peca: string; malhas: number; rodas: number }[]
   /** Os borrões à vista (com onde estão), os Lumis da Vila e se a lanterna está na mão (fase2-06). */
-  borroes: { id: string; x: number; z: number }[]
+  borroes: { id: string; x: number; z: number; corQueSobra: number }[]
   lumisDaVila: string[]
   /** Os Lumis que moram nas ilhas (`ilha-âncora-espécie`), a Vila inclusive. */
   lumisDasIlhas: string[]
@@ -186,7 +187,13 @@ function medirBorroes(raiz: Object3D) {
   let lumiDaRotina: MedidaDoDesenho['lumiDaRotina'] = null
   raiz.traverse((o) => {
     if (/^borrao-(?:[a-z-]+:)?\d+:\d+$/.test(o.name) && o.visible)
-      borroes.push({ id: o.name.slice(7), x: o.position.x, z: o.position.z })
+      borroes.push({
+        id: o.name.slice(7),
+        x: o.position.x,
+        z: o.position.z,
+        // Quanto de cor sobra no lugar dele (o Cinza em volta, `cinza-dos-borroes.ts`).
+        corQueSobra: corQueSobra(o.position.x, o.position.z),
+      })
     else if (o.name.startsWith('lumi-da-ilha-')) {
       const id = o.name.slice(13)
       lumisDasIlhas.push(id)

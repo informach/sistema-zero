@@ -2,6 +2,7 @@ import type { Ilha, IlhaId } from '@sistemazero/arquipelago-contracts'
 import { QUADROS_POR_ILHA } from '@sistemazero/arquipelago-contracts'
 import { type Color, type Material, Vector2 } from 'three'
 import { BORDA_DOS_PEDACOS, COR_AO_ABRIR } from '../sistemas/cor-da-ilha'
+import { desbotarPelosBorroes } from './cinza-dos-borroes'
 import { centroNoAnel, giroDaIlha } from './medidas'
 import { CINZA } from './modelos'
 
@@ -147,5 +148,7 @@ export function pintarMateriais(materiais: readonly Material[], pintura: Pintura
     }
     m.customProgramCacheKey = () => 'arq-pintura-2'
     m.needsUpdate = true
+    // Os borrões da noite desbotam em volta deles, por cima da tinta (encadeado).
+    desbotarPelosBorroes([m])
   }
 }

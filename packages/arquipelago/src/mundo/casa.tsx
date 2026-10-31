@@ -30,6 +30,7 @@ import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
 import { AndarNoConstruir, EscadaDaCasa, useAndarDaCasa } from './andar-de-cima'
+import { desbotarPelosBorroes } from './cinza-dos-borroes'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
@@ -328,6 +329,7 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
       todos: [paredes, janelas, telhado, varanda, revestimento].flatMap((o) => materiaisDe(o)),
     }
   }, [raiz])
+  useEffect(() => desbotarPelosBorroes(partes.todos), [partes])
   // Só o quarto tem cor na chegada: a casca ganha cor quando a porta nova abre (§6.28, A17).
   const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).casa)
   useDesbotado(partes.todos, !comCor)

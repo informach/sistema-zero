@@ -11,6 +11,7 @@ import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
 import { BorroesDaIlha } from './borroes-da-ilha'
 import { CataVento } from './cata-vento'
+import { desbotarPelosBorroes } from './cinza-dos-borroes'
 import {
   ALTURA_DO_PIER,
   ARVORES,
@@ -116,10 +117,13 @@ function ChaoDoModelo() {
     // A espuma é desenhada depois do mar (os dois são translúcidos).
     espuma.renderOrder = 2
     for (const m of materiaisDe(espuma)) m.depthWrite = false
+    const enfeites = copiarNo(raiz, 'enfeites')
+    // À noite, os borrões soltos desbotam o chão e os enfeites em volta deles.
+    desbotarPelosBorroes([...materiaisDe(chao), ...materiaisDe(enfeites)])
     return {
       chao,
       doLote,
-      enfeites: copiarNo(raiz, 'enfeites'),
+      enfeites,
       espuma,
       colisores: lerColisores(raiz),
     }
@@ -226,7 +230,11 @@ function ArvoreDeAntes({ i }: { i: number }) {
 
 function ArvoreDoModelo({ nome, giro }: { nome: string; giro: number }) {
   const raiz = useModelo(MODELOS.arvores)
-  const arvore = useMemo(() => copiarNo(raiz, nome), [raiz, nome])
+  const arvore = useMemo(() => {
+    const copia = copiarNo(raiz, nome)
+    desbotarPelosBorroes(materiaisDe(copia))
+    return copia
+  }, [raiz, nome])
   return <primitive object={arvore} rotation-y={giro} />
 }
 
@@ -287,6 +295,7 @@ function PierDoModelo() {
   const raiz = useModelo(MODELOS.pier)
   const { pier, barquinho, lanternas, colisores, madeira } = useMemo(() => {
     const copia = copiarNo(raiz, 'pier', true)
+    desbotarPelosBorroes(materiaisDe(copia))
     return {
       pier: copia,
       madeira: materiaisDe(copia).filter((m) => m.name !== 'lanterna'),
