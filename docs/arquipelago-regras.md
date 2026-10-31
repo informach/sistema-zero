@@ -2523,6 +2523,12 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   sementes do céu vêm do jardim (não da mochila) e a chuva das nuvens rega. A flor colhida vai para
   a sua ilha (`florada`), que floresce em três níveis com 1, 6 e 15 flores. O jardim fica no campo
   `ceu` do salvamento, fora da horta.
+- **Os painéis do menu abrem dentro dele (pedido da dona, 31/10/2026):** diário, álbum, caderno dos
+  Lumis, mapa, moradores em casa e visitas são seções do menu de pausa, no estilo dele (fundo
+  escuro, títulos amarelos, cartões translúcidos), com a lista de lugares à vista o tempo todo e a
+  barra de rolagem sólida no meio. Pedidos vindos do mundo (a mesa de mapas, o álbum da casa) abrem
+  o menu nessa seção (`PAINEIS_DO_MENU`, `secaoDoMenu` na loja). "Voltar ao jogo" fecha o menu.
+  Painel novo que nasce do menu entra como seção dele (`JanelaDoPainel`), nunca como janela à parte.
 
 ## 7. Desafios
 

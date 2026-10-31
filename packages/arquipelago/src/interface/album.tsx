@@ -1,7 +1,7 @@
 import { descricaoDoTrabalhoLumi } from '@sistemazero/arquipelago-contracts'
 import { type ReactNode, useEffect, useRef } from 'react'
 import iconeDoPeixe from '../assets/icones/peixe.png'
-import { useEstado, useJogo } from '../estado/contexto'
+import { useEstado } from '../estado/contexto'
 import {
   albumDoSalvamento,
   type ContaDaSecao,
@@ -26,6 +26,7 @@ const EXPLICA_DO_GRUPO = {
   estrelas: 'À noite, quatro estrelas caem na Ilha das Nuvens.',
 } as const
 
+import { JanelaDoPainel, useFecharPainel, useNoMenu } from './janela-do-painel'
 import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 /** O valor de `painelAberto` do álbum. */
@@ -154,8 +155,9 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
 const MINIATURA_DO_PEIXE = new URL(iconeDoPeixe, import.meta.url).href
 
 export function Album() {
-  const { loja } = useJogo()
-  const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_ALBUM)
+  const fecharPainel = useFecharPainel()
+  const noMenu = useNoMenu()
+  const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_ALBUM) || noMenu
   const salvamento = useEstado((s) => s.salvamento)
   const fechar = useRef<HTMLButtonElement>(null)
 
@@ -167,231 +169,219 @@ export function Album() {
   const a = albumDoSalvamento(salvamento)
 
   return (
-    <div className="arq-sobre">
-      <div
-        className="arq-menu arq-cartao arq-quadro arq-caderno arq-diario arq-album"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="arq-album-titulo"
+    <JanelaDoPainel classes="arq-quadro arq-caderno arq-diario arq-album" rotulo="arq-album-titulo">
+      <h2 id="arq-album-titulo">Álbum de coleções</h2>
+      <p className="arq-caderno-explica">
+        O que falta não se perde: continua esperando por você nas ilhas.
+      </p>
+      {(['conchas', 'peixes'] as const).map((grupo) => (
+        <Secao
+          key={grupo}
+          id={grupo}
+          nome={grupo === 'conchas' ? 'Conchas e estrela-do-mar' : 'Peixes da praia'}
+          conta={a[grupo].conta}
+          explica={
+            grupo === 'conchas'
+              ? 'Explore a areia. A estrela-do-mar fica onde vive.'
+              : 'Pesque no píer. Depois do registro, os peixes voltam ao mar.'
+          }
+        >
+          {a[grupo].itens.map((p) => (
+            <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+              <img
+                className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                src={MINIATURA_DA_PRAIA[p.id]}
+                alt=""
+                draggable={false}
+              />
+              <div className="arq-quadro-corpo">
+                <b>{p.nome}</b>
+                <span className="arq-quadro-estado">
+                  {p.encontrado ? 'Descoberta registrada.' : p.dica}
+                </span>
+              </div>
+            </li>
+          ))}
+        </Secao>
+      ))}
+      {(['notas', 'cristais', 'estrelas'] as const).map((grupo) => (
+        <Secao
+          key={grupo}
+          id={grupo}
+          nome={NOME_DO_GRUPO[grupo]}
+          conta={a[grupo].conta}
+          explica={EXPLICA_DO_GRUPO[grupo]}
+        >
+          {a[grupo].itens.map((p) => (
+            <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+              <img
+                className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                src={MINIATURA_DAS_ILHAS[p.id as LembrancaDasIlhas]}
+                alt=""
+                draggable={false}
+              />
+              <div className="arq-quadro-corpo">
+                <b>{p.nome}</b>
+                <span className="arq-quadro-estado">
+                  {p.encontrado ? 'Descoberta registrada.' : p.dica}
+                </span>
+              </div>
+            </li>
+          ))}
+        </Secao>
+      ))}
+      <Secao
+        id="recife"
+        nome="Achados do Recife"
+        conta={a.recife.conta}
+        explica="Os achados do mergulho ficam guardados aqui."
       >
-        <h2 id="arq-album-titulo">Álbum de coleções</h2>
-        <p className="arq-caderno-explica">
-          O que falta não se perde: continua esperando por você nas ilhas.
-        </p>
-        {(['conchas', 'peixes'] as const).map((grupo) => (
-          <Secao
-            key={grupo}
-            id={grupo}
-            nome={grupo === 'conchas' ? 'Conchas e estrela-do-mar' : 'Peixes da praia'}
-            conta={a[grupo].conta}
-            explica={
-              grupo === 'conchas'
-                ? 'Explore a areia. A estrela-do-mar fica onde vive.'
-                : 'Pesque no píer. Depois do registro, os peixes voltam ao mar.'
-            }
-          >
-            {a[grupo].itens.map((p) => (
-              <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
-                <img
-                  className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
-                  src={MINIATURA_DA_PRAIA[p.id]}
-                  alt=""
-                  draggable={false}
-                />
-                <div className="arq-quadro-corpo">
-                  <b>{p.nome}</b>
-                  <span className="arq-quadro-estado">
-                    {p.encontrado ? 'Descoberta registrada.' : p.dica}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </Secao>
+        {a.recife.itens.map((item) => (
+          <li key={item.id} className="arq-quadro-corpo">
+            <b>{item.nome}</b>
+            <span>{item.achado ? 'Encontrado.' : item.dica}</span>
+          </li>
         ))}
-        {(['notas', 'cristais', 'estrelas'] as const).map((grupo) => (
-          <Secao
-            key={grupo}
-            id={grupo}
-            nome={NOME_DO_GRUPO[grupo]}
-            conta={a[grupo].conta}
-            explica={EXPLICA_DO_GRUPO[grupo]}
-          >
-            {a[grupo].itens.map((p) => (
-              <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
-                <img
-                  className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
-                  src={MINIATURA_DAS_ILHAS[p.id as LembrancaDasIlhas]}
-                  alt=""
-                  draggable={false}
-                />
-                <div className="arq-quadro-corpo">
-                  <b>{p.nome}</b>
-                  <span className="arq-quadro-estado">
-                    {p.encontrado ? 'Descoberta registrada.' : p.dica}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </Secao>
+      </Secao>
+      <Secao
+        id="peixes-do-recife"
+        nome="Peixes do Recife"
+        conta={a.peixesDoRecife.conta}
+        explica="Cada coral replantado na lagoa traz um peixe ao aquário de casa."
+      >
+        {a.peixesDoRecife.itens.map((p) => (
+          <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+            <img
+              className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+              src={MINIATURA_DO_PEIXE}
+              alt=""
+              draggable={false}
+            />
+            <div className="arq-quadro-corpo">
+              <b>{p.nome}</b>
+              <span className="arq-quadro-estado">
+                {p.encontrado ? 'Mora no seu aquário.' : p.dica}
+              </span>
+            </div>
+          </li>
         ))}
-        <Secao
-          id="recife"
-          nome="Achados do Recife"
-          conta={a.recife.conta}
-          explica="Os achados do mergulho ficam guardados aqui."
-        >
-          {a.recife.itens.map((item) => (
-            <li key={item.id} className="arq-quadro-corpo">
-              <b>{item.nome}</b>
-              <span>{item.achado ? 'Encontrado.' : item.dica}</span>
-            </li>
-          ))}
-        </Secao>
-        <Secao
-          id="peixes-do-recife"
-          nome="Peixes do Recife"
-          conta={a.peixesDoRecife.conta}
-          explica="Cada coral replantado na lagoa traz um peixe ao aquário de casa."
-        >
-          {a.peixesDoRecife.itens.map((p) => (
-            <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
-              <img
-                className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
-                src={MINIATURA_DO_PEIXE}
-                alt=""
-                draggable={false}
-              />
-              <div className="arq-quadro-corpo">
-                <b>{p.nome}</b>
-                <span className="arq-quadro-estado">
-                  {p.encontrado ? 'Mora no seu aquário.' : p.dica}
-                </span>
-              </div>
-            </li>
-          ))}
-        </Secao>
-        <Secao
-          id="fosseis"
-          nome="Fósseis do museu"
-          conta={a.fosseis.conta}
-          explica="Depois do primeiro osso, a escavação do Vale mostra um fóssil novo por dia."
-        >
-          {a.fosseis.itens.map((f) => (
-            <li key={f.id} className={`arq-diario-bicho${f.encontrado ? '' : ' escondido'}`}>
-              <img
-                className={`arq-album-miniatura${f.encontrado ? '' : ' silhueta'}`}
-                src={MINIATURA_DO_FOSSIL[f.id]}
-                alt=""
-                draggable={false}
-              />
-              <div className="arq-quadro-corpo">
-                <b>{f.nome}</b>
-                <span className="arq-quadro-estado">
-                  {f.encontrado ? TEXTOS_DOS_FOSSEIS.noMuseu : f.dica}
-                </span>
-              </div>
-            </li>
-          ))}
-        </Secao>
-        <Secao
-          id="pegadas"
-          nome="Pegadas"
-          conta={a.pegadas.conta}
-          explica="As pegadas que você já viu pelas ilhas."
-        >
-          {a.pegadas.itens.map((p) => (
-            <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
-              <img
-                className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
-                src={MINIATURA_DA_PEGADA[p.id]}
-                alt=""
-                draggable={false}
-              />
-              <div className="arq-quadro-corpo">
-                <b>{p.nome}</b>
-                <span className="arq-quadro-estado">{p.texto}</span>
-              </div>
-            </li>
-          ))}
-        </Secao>
-        <Secao
-          id="segredos"
-          nome="Segredos das ilhas"
-          conta={a.segredos.conta}
-          explica="Baús da Íris no alto do vento, nas ilhas antes do Pico Gelado."
-        >
-          {a.segredos.itens.map((g) => (
-            <li key={g.id} className="arq-quadro-corpo">
-              <b>{g.ilha}</b>
-              <span>{g.texto}</span>
-            </li>
-          ))}
-        </Secao>
-        <Secao
-          id="bichos"
-          nome="Bichos do Bosque"
-          conta={a.bichos.conta}
-          explica="Cada bicho que você acha no esconde-esconde entra aqui."
-        >
-          {a.bichos.itens.map((b) => (
-            <Bicho key={b.bicho} b={b} />
-          ))}
-        </Secao>
-        <Secao
-          id="receitas"
-          nome="Receitas"
-          conta={a.receitas.conta}
-          explica="Novas receitas chegam com amizades, coleções e festas. Cada pista mostra onde aprender."
-        >
-          {a.receitas.itens.map((r) => (
-            <Receita key={r.id} r={r} />
-          ))}
-        </Secao>
-        <Secao
-          id="percursos"
-          nome="Estrelas dos percursos"
-          conta={a.percursos.conta}
-          explica="Cada percurso tem três estrelas, e cada estrela ganha fica para sempre."
-        >
-          {a.percursos.itens.map((p) => (
-            <Percurso key={p.id} p={p} />
-          ))}
-        </Secao>
-        <Secao
-          id="aparencias"
-          nome="Aparências guardadas"
-          conta={a.aparencias.conta}
-          grade
-          explica={`Os objetos da casa com aparência. Você guarda ${
-            a.aparencias.guardadas === 1 ? '1 aparência' : `${a.aparencias.guardadas} aparências`
-          }.`}
-        >
-          {a.aparencias.itens.map((o) => (
-            <Objeto key={o.objeto} o={o} />
-          ))}
-        </Secao>
-        <Secao
-          id="lumis"
-          nome="Lumis presos"
-          conta={a.lumis.conta}
-          grade
-          explica="À noite, a lanterna prende um borrão de névoa e ele vira um Lumi. Cada ilha tem uma espécie comum e uma rara."
-        >
-          {a.lumis.itens.map((l) => (
-            <Lumi key={l.id} l={l} />
-          ))}
-        </Secao>
-        <div className="arq-menu-acoes">
-          <button
-            ref={fechar}
-            type="button"
-            className="arq-botao leve"
-            onClick={() => loja.getState().abrirPainel(null)}
-          >
-            Voltar ao jogo
-          </button>
-        </div>
+      </Secao>
+      <Secao
+        id="fosseis"
+        nome="Fósseis do museu"
+        conta={a.fosseis.conta}
+        explica="Depois do primeiro osso, a escavação do Vale mostra um fóssil novo por dia."
+      >
+        {a.fosseis.itens.map((f) => (
+          <li key={f.id} className={`arq-diario-bicho${f.encontrado ? '' : ' escondido'}`}>
+            <img
+              className={`arq-album-miniatura${f.encontrado ? '' : ' silhueta'}`}
+              src={MINIATURA_DO_FOSSIL[f.id]}
+              alt=""
+              draggable={false}
+            />
+            <div className="arq-quadro-corpo">
+              <b>{f.nome}</b>
+              <span className="arq-quadro-estado">
+                {f.encontrado ? TEXTOS_DOS_FOSSEIS.noMuseu : f.dica}
+              </span>
+            </div>
+          </li>
+        ))}
+      </Secao>
+      <Secao
+        id="pegadas"
+        nome="Pegadas"
+        conta={a.pegadas.conta}
+        explica="As pegadas que você já viu pelas ilhas."
+      >
+        {a.pegadas.itens.map((p) => (
+          <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+            <img
+              className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+              src={MINIATURA_DA_PEGADA[p.id]}
+              alt=""
+              draggable={false}
+            />
+            <div className="arq-quadro-corpo">
+              <b>{p.nome}</b>
+              <span className="arq-quadro-estado">{p.texto}</span>
+            </div>
+          </li>
+        ))}
+      </Secao>
+      <Secao
+        id="segredos"
+        nome="Segredos das ilhas"
+        conta={a.segredos.conta}
+        explica="Baús da Íris no alto do vento, nas ilhas antes do Pico Gelado."
+      >
+        {a.segredos.itens.map((g) => (
+          <li key={g.id} className="arq-quadro-corpo">
+            <b>{g.ilha}</b>
+            <span>{g.texto}</span>
+          </li>
+        ))}
+      </Secao>
+      <Secao
+        id="bichos"
+        nome="Bichos do Bosque"
+        conta={a.bichos.conta}
+        explica="Cada bicho que você acha no esconde-esconde entra aqui."
+      >
+        {a.bichos.itens.map((b) => (
+          <Bicho key={b.bicho} b={b} />
+        ))}
+      </Secao>
+      <Secao
+        id="receitas"
+        nome="Receitas"
+        conta={a.receitas.conta}
+        explica="Novas receitas chegam com amizades, coleções e festas. Cada pista mostra onde aprender."
+      >
+        {a.receitas.itens.map((r) => (
+          <Receita key={r.id} r={r} />
+        ))}
+      </Secao>
+      <Secao
+        id="percursos"
+        nome="Estrelas dos percursos"
+        conta={a.percursos.conta}
+        explica="Cada percurso tem três estrelas, e cada estrela ganha fica para sempre."
+      >
+        {a.percursos.itens.map((p) => (
+          <Percurso key={p.id} p={p} />
+        ))}
+      </Secao>
+      <Secao
+        id="aparencias"
+        nome="Aparências guardadas"
+        conta={a.aparencias.conta}
+        grade
+        explica={`Os objetos da casa com aparência. Você guarda ${
+          a.aparencias.guardadas === 1 ? '1 aparência' : `${a.aparencias.guardadas} aparências`
+        }.`}
+      >
+        {a.aparencias.itens.map((o) => (
+          <Objeto key={o.objeto} o={o} />
+        ))}
+      </Secao>
+      <Secao
+        id="lumis"
+        nome="Lumis presos"
+        conta={a.lumis.conta}
+        grade
+        explica="À noite, a lanterna prende um borrão de névoa e ele vira um Lumi. Cada ilha tem uma espécie comum e uma rara."
+      >
+        {a.lumis.itens.map((l) => (
+          <Lumi key={l.id} l={l} />
+        ))}
+      </Secao>
+      <div className="arq-menu-acoes">
+        <button ref={fechar} type="button" className="arq-botao leve" onClick={fecharPainel}>
+          Voltar ao jogo
+        </button>
       </div>
-    </div>
+    </JanelaDoPainel>
   )
 }

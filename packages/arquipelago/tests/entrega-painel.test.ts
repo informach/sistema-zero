@@ -103,7 +103,8 @@ test('resposta tardia não reabre uma conversa fechada nem cobre fim de tempo ou
     const c = await montar()
     const soltar = c.loja.subscribe((s, antes) => {
       if (antes.salvamentoSituacao !== 'confirmando' || s.salvamentoSituacao !== 'ok') return
-      if (motivo === 'fechar') s.abrirPainel('diario')
+      // Outro painel por cima do jogo (o diário agora abre dentro do menu).
+      if (motivo === 'fechar') s.abrirPainel('feira-da-vila')
       else if (motivo === 'tempo') s.registrarTempo(1800, true)
       else s.definirSituacaoSalvamento('conflito')
     })
@@ -112,7 +113,7 @@ test('resposta tardia não reabre uma conversa fechada nem cobre fim de tempo ou
       expect(c.loja.getState().salvamento.moradores.bento.pedido?.entregue).toBe(true)
       // O fim do tempo espera a conversa acabar (N07); o conflito fecha na hora.
       expect(c.loja.getState().painelAberto).toBe(
-        motivo === 'fechar' ? 'diario' : motivo === 'tempo' ? 'bento' : null,
+        motivo === 'fechar' ? 'feira-da-vila' : motivo === 'tempo' ? 'bento' : null,
       )
       if (motivo === 'tempo') {
         expect(c.loja.getState().tempoAcabandoDesde).not.toBeNull()
