@@ -1,9 +1,8 @@
 /** Autoria de documentos. Não é runtime, currículo, nem parte importada pelo jogo. */
+
+import type { GameCausalityStep } from '../../../packages/core/src/learning/game-causality'
 import type { ExecutionStep } from '../../../packages/core/src/learning/project-execution'
-import type {
-  SectionJavaScriptProjectCheck,
-  SectionStructureRule,
-} from '../../../packages/core/src/learning/section-progression'
+import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
 import {
   createEmptyProject,
@@ -17,9 +16,10 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
 /**
  * O projeto autoral depois do Farol (C03b, 30/10/2026). A régua do posto Lenda pede um projeto
  * com critérios explícitos e escopo pequeno, aproveitando o que já foi aprendido, sem linguagem
- * nova. Os critérios são de estrutura (o projeto tem um encontro, uma informação que muda nele,
- * uma decisão e um recomeço) e um de execução (o guia anda): nenhum pede um nome de variável,
- * uma imagem ou uma regra pronta. O gabarito é só um exemplo de como cumprir.
+ * nova. Os critérios são causais (um encontro com efeito, uma informação que muda nele, uma
+ * decisão que usa essa informação e um recomeço, todos em código que pode rodar) e um de
+ * execução (o guia anda): nenhum pede um nome de variável, uma imagem ou uma regra pronta. O
+ * gabarito é só um exemplo de como cumprir.
  */
 const bool = (value: boolean): JSExpr => ({ type: 'bool', value })
 const v = (name: string): JSExpr => ({ type: 'var', name })
@@ -36,6 +36,14 @@ const image = (varName: string, asset: string, x: number, y: number): JSStatemen
   y,
   w: 48,
   h: 48,
+})
+/** Um Se sem senão. `then` é o campo da IR, não uma promessa. */
+const se = (cond: JSExpr, corpo: JSStatement[]): JSStatement => ({
+  type: 'if',
+  cond,
+  // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+  then: corpo,
+  else: [],
 })
 const draw = (spriteVar: string): JSStatement => ({
   type: 'g2d:drawSprite',
@@ -124,16 +132,15 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
         type: 'g2d:onOverlap',
         aVar: 'guia',
         bVar: 'farol',
-        body: [{ type: 'if', cond: v('temEstrela'), then: [assign('aceso', true)], else: [] }],
+        body: [se(v('temEstrela'), [assign('aceso', true)])],
       },
       { type: 'g2d:onKey', key: 'Enter', body: [{ type: 'g2d:restart' }] },
     )
-    drawing.push(draw('estrela'), draw('farol'), {
-      type: 'if',
-      cond: v('aceso'),
-      then: [label('O farol acendeu.', 20, 70)],
-      else: [],
-    })
+    drawing.push(
+      draw('estrela'),
+      draw('farol'),
+      se(v('aceso'), [label('O farol acendeu.', 20, 70)]),
+    )
   }
   drawing.push(draw('guia'))
   const source: SZIRV2 = {
@@ -164,17 +171,22 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
   }
 }
 
-const estrutura = (
+/**
+ * Encontro, lembrança, decisão e recomeço pela regra causal (`gameCausality`, revisão de
+ * 30/10/2026): os nomes e os desenhos continuam livres, mas só conta o que pode rodar. Contar
+ * blocos aprovava o projeto com cada evento dentro de um `Se falso`.
+ */
+const causal = (
   id: string,
   label: string,
-  rule: SectionStructureRule,
+  step: GameCausalityStep,
   optional = false,
 ): SectionJavaScriptProjectCheck => ({
   id,
   label,
   programmingLanguage: 'javascript',
   ...(optional ? { optional: true } : {}),
-  rule,
+  rule: { type: 'gameCausality', actor: 'guia', step },
 })
 const right = (ms: number): ExecutionStep => ({ action: 'press', key: 'ArrowRight', holdMs: ms })
 
@@ -190,31 +202,10 @@ export function objetivosDoMeuJogo(): SectionJavaScriptProjectCheck[] {
         expect: { target: { kind: 'value', path: 'guia.x' }, compare: 'greaterThan', value: 100 },
       },
     },
-    estrutura('encontro', 'Algo acontece quando o guia encontra outro desenho.', {
-      type: 'usesBlock',
-      blockType: 'sz_g2d_on_overlap',
-      area: 'events',
-    }),
-    estrutura('lembra', 'No encontro, o jogo guarda uma informação.', {
-      type: 'usesBlock',
-      blockType: 'sz_js_var_assign',
-      withinBlock: 'sz_g2d_on_overlap',
-    }),
-    estrutura('decide', 'Um Se decide o que acontece.', {
-      type: 'usesBlock',
-      blockType: 'sz_js_if_else',
-      area: 'events',
-    }),
-    estrutura('recomeca', 'Uma tecla recomeça o jogo.', {
-      type: 'usesBlock',
-      blockType: 'sz_g2d_restart',
-      withinBlock: 'sz_g2d_on_key',
-    }),
-    estrutura(
-      'some',
-      'Extra: algo sai da tela quando é pego no encontro.',
-      { type: 'usesBlock', blockType: 'sz_g2d_destroy_sprite', withinBlock: 'sz_g2d_on_overlap' },
-      true,
-    ),
+    causal('encontro', 'Algo acontece quando o guia encontra outro desenho.', 'encounter'),
+    causal('lembra', 'No encontro, o jogo guarda uma informação.', 'memory'),
+    causal('decide', 'Um Se usa essa informação para decidir o que acontece.', 'decision'),
+    causal('recomeca', 'Uma tecla recomeça o jogo.', 'restart'),
+    causal('some', 'Extra: algo sai da tela quando é pego no encontro.', 'removal', true),
   ]
 }

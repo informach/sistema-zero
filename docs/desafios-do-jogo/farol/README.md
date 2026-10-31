@@ -15,11 +15,18 @@ critérios são a lista de objetivos:
 | Critério | Como é conferido |
 | --- | --- |
 | A seta para a direita leva o guia pelo palco | Executor real: o guia passa de x 100 |
-| Algo acontece quando o guia encontra outro desenho | Estrutura: um encontro nos eventos |
-| No encontro, o jogo guarda uma informação | Estrutura: guardar um valor dentro do encontro |
-| Um Se decide o que acontece | Estrutura: um Se nos eventos |
-| Uma tecla recomeça o jogo | Estrutura: recomeçar dentro de uma tecla |
-| Extra: algo sai da tela quando é pego | Estrutura: tirar um desenho dentro do encontro |
+| Algo acontece quando o guia encontra outro desenho | Causal: um encontro do guia com efeito que roda |
+| No encontro, o jogo guarda uma informação | Causal: uma variável do início recebe outro valor no encontro |
+| Um Se usa essa informação para decidir o que acontece | Causal: depois da lembrança, o Se escolhe um ramo que age e antes não agia |
+| Uma tecla recomeça o jogo | Causal: recomeçar que roda dentro de uma tecla |
+| Extra: algo sai da tela quando é pego | Causal: tirar um desenho, em código que roda, dentro do encontro |
+
+"Causal" é a regra `gameCausality` do core (`packages/core/src/learning/game-causality.ts`, revisão
+de 30/10/2026). Antes eram regras de presença de bloco, e um projeto com cada evento dentro de um
+`Se falso` passava em todas. Agora o código atrás de condição constante (`Se falso`, `Se x e
+falso`), num laço que repete zero vezes ou desativado não conta; o teste traz esses negativos:
+tudo em `Se falso`, encontro morto, condição que nunca produz a consequência, Se ao contrário da
+lembrança e tecla que não reinicia.
 
 Nenhum critério pede nome de variável, desenho ou regra pronta. O gabarito (levar a estrela até
 o farol para acender) é só um exemplo; o teste confere que outra ideia, com outros nomes e

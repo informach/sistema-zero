@@ -2677,7 +2677,9 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
   do lado oeste do Farol, em (-16; -11), fora dos dois lotes da casa e longe da porta e da Íris,
   olhando para o Farol (`QUADRO_DO_FAROL`). Ele tem um quadro só, "Meu jogo do Arquipélago"
   (`docs/desafios-do-jogo/farol/`): critérios explícitos (o guia anda, um encontro, uma
-  informação guardada nele, um Se e uma tecla que recomeça), sem resposta pronta. O painel mostra
+  informação guardada nele, um Se que a usa e uma tecla que recomeça), sem resposta pronta. Os
+  quatro últimos usam a regra causal `gameCausality` do core: só conta código que pode rodar
+  (revisão de 30/10/2026; um `Se falso` em volta de tudo passava na conferência por blocos). O painel mostra
   "Um jogo todo seu, com os critérios na lista. Faça quando quiser." e esconde os quadros vazios.
   Feito, o Zappy diz "Seu jogo ficou pronto. Ele vai para o fliperama da sua casa." Não pinta nada
   e não dá o aviso do desafio do dia.

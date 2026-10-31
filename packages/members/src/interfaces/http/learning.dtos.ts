@@ -5,6 +5,7 @@ import {
   EXECUTION_KEYS,
   EXECUTION_LIMITS,
   type ExecutionStepValidationContext,
+  GAME_CAUSALITY_STEPS,
   isExecutionJson,
   isExecutionStep,
   isSectionExecutionRule,
@@ -901,6 +902,11 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
       actor: t.String({ maxLength: 100 }),
       item: t.String({ maxLength: 100 }),
       destination: t.String({ maxLength: 100 }),
+    }),
+    t.Object({
+      type: t.Literal('gameCausality'),
+      actor: t.String({ maxLength: 100 }),
+      step: t.Union(GAME_CAUSALITY_STEPS.map((step) => t.Literal(step))),
     }),
     t.Object({
       type: t.Literal('changedGamePosition'),

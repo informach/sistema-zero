@@ -1118,7 +1118,6 @@
           {
             "id": "anda",
             "label": "A seta para a direita leva o guia pelo palco.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -1136,58 +1135,59 @@
                 "compare": "greaterThan",
                 "value": 100
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "encontro",
             "label": "Algo acontece quando o guia encontra outro desenho.",
-            "programmingLanguage": "javascript",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_overlap",
-              "area": "events"
-            }
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "encounter"
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "lembra",
             "label": "No encontro, o jogo guarda uma informação.",
-            "programmingLanguage": "javascript",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_js_var_assign",
-              "withinBlock": "sz_g2d_on_overlap"
-            }
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "memory"
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "decide",
-            "label": "Um Se decide o que acontece.",
-            "programmingLanguage": "javascript",
+            "label": "Um Se usa essa informação para decidir o que acontece.",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_js_if_else",
-              "area": "events"
-            }
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "decision"
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomeca",
             "label": "Uma tecla recomeça o jogo.",
-            "programmingLanguage": "javascript",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_restart",
-              "withinBlock": "sz_g2d_on_key"
-            }
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "restart"
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "some",
             "label": "Extra: algo sai da tela quando é pego no encontro.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_destroy_sprite",
-              "withinBlock": "sz_g2d_on_overlap"
-            }
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "removal"
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {

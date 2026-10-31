@@ -12,6 +12,7 @@ import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { challengeProjectLanguage, challengeRule } from '@/lib/game-challenge-authoring'
 import { ExecutionRuleEditor } from './execution-rule-editor'
+import { GameCausalityRuleEditor } from './game-causality-rule-editor'
 import { ProjectRuleEditor } from './project-rule-editor'
 import { PythonSectionObjectives } from './python-section-objectives'
 import { ScriptRuleEditor } from './script-rule-editor'
@@ -175,6 +176,7 @@ function JavaScriptGameObjectives({
               <option value="functionReturns">Resultado de uma função</option>
               <option value="script">Regra em JavaScript</option>
               <option value="usesLoop">Usa repetição</option>
+              <option value="gameCausality">Encontro, memória e decisão que rodam</option>
               <option value="declaresVariable">Declara variável</option>
               <option value="definesFunction">Define função</option>
               <option value="callsFunction">Chama função</option>
@@ -186,6 +188,8 @@ function JavaScriptGameObjectives({
               workspace={{ initialProject: gabarito }}
               onChange={(r) => rule(index, r)}
             />
+          ) : check.rule.type === 'gameCausality' ? (
+            <GameCausalityRuleEditor rule={check.rule} onChange={(r) => rule(index, r)} />
           ) : check.rule.type === 'script' ? (
             <ScriptRuleEditor
               rule={check.rule}
