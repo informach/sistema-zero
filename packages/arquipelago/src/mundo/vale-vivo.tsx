@@ -13,6 +13,7 @@ import { giroDaIlha, raioMaximoDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 import { MontariaDoVale } from './montaria-do-vale'
 import { deslocar, percursoDasPedrasDoVulcao } from './percursos-das-ilhas'
+import { lugarDaJade } from './vale'
 
 /** O fóssil da trilha: osso claro com o brilho laranja do vulcão. */
 const CORES_DO_FOSSIL: CoresDoColetavel = {
@@ -41,9 +42,15 @@ export function ValeVivo({
   )
   const pecas = useRef<Group>(null)
   const trilha = useMemo(() => {
-    const p = percursoDasPedrasDoVulcao(preparada.colisores, raioMaximoDaIlha(ilha))
+    // Os colisores já vêm girados em volta do meio da ilha: a Jade vai no mesmo referencial.
+    const jade = lugarDaJade(preparada.modelo, { x: 0, y: 0, z: 0 }, giro)
+    const p = percursoDasPedrasDoVulcao(
+      preparada.colisores,
+      raioMaximoDaIlha(ilha),
+      jade ?? undefined,
+    )
     return p ? deslocar(p, meio) : null
-  }, [preparada, meio, ilha])
+  }, [preparada, meio, ilha, giro])
   useFrame(() => {
     if (pecas.current) pecas.current.visible = troca.opacidade >= 0.99
   })

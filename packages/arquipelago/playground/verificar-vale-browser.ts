@@ -138,9 +138,12 @@ try {
     const ponte = trajetoDaPonte(vale.ilha)
     const inicio = ponte[ponte.length - 5]
     if (!inicio) throw new Error('Ponte sem começo')
-    await page.goto(`${baseURL}/?novo=1&posicao=6&em=${inicio.x},${inicio.z},${inicio.y + 1.2}`, {
-      waitUntil: 'domcontentloaded',
-    })
+    await page.goto(
+      `${baseURL}/?novo=1&posicao=6&lanterna=1&em=${inicio.x},${inicio.z},${inicio.y + 1.2}`,
+      {
+        waitUntil: 'domcontentloaded',
+      },
+    )
     const ler = () =>
       page.evaluate(() => (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho)
     const levar = (p: P, olhar: number) =>
@@ -326,39 +329,48 @@ try {
     await page.screenshot({ path: path.join(prints, `vale-${tipo}-fossil.png`) })
     await conferirDiario(2)
 
+    // As ondas de cinza do vulcão (§6.28 A8): sem a luz, a cinza passa e dá para tentar de novo;
+    // com a lanterna acesa perto do ninho, a luz espanta as três ondas e o ninho fica cuidado.
+    let primeiraTentativa = true
     for (const ninho of exploracao.ninhos) {
-      // Um raio livre a partir do ninho permite observar e se afastar sem tocar no colisor.
-      let perto: P | null = null,
-        longe: P | null = null
+      let perto: P | null = null
       for (let i = 0; i < 32 && !perto; i++) {
         const a = (i * Math.PI * 2) / 32
         let cabe = true
-        for (let d = 1.9; d <= V.afastamento + 0.4; d += 0.05)
+        for (let d = 1.6; d <= 2.2; d += 0.05)
           if (!livre(ninho.x + Math.sin(a) * d, ninho.z + Math.cos(a) * d)) {
             cabe = false
             break
           }
-        if (cabe) {
+        if (cabe)
           perto = mundo({
             x: ninho.x + Math.sin(a) * 1.9,
             y: ninho.y,
             z: ninho.z + Math.cos(a) * 1.9,
           })
-          longe = mundo({
-            x: ninho.x + Math.sin(a) * (V.afastamento + 0.4),
-            y: ninho.y,
-            z: ninho.z + Math.cos(a) * (V.afastamento + 0.4),
-          })
-        }
       }
-      if (!perto || !longe) throw new Error(`Sem passagem para cuidar de ${ninho.id}`)
+      if (!perto) throw new Error(`Sem lugar para proteger ${ninho.id}`)
       await dePe(perto, rumo(perto, mundo(ninho)), ninho.id)
-      await acao(`Observar os ovos do ninho ${ninho.id.slice(-1)}`).waitFor()
+      const proteger = `Proteger o ninho ${ninho.id.slice(-1)} da cinza`
+      if (primeiraTentativa) {
+        primeiraTentativa = false
+        await acao(proteger).waitFor()
+        await usar()
+        // O passo das ondas tem teto de 0,1 s por quadro: no navegador lento do teste, os 11,5 s
+        // de jogo das três ondas levam bem mais de relógio.
+        await page.waitForTimeout(6500)
+        await page.screenshot({ path: path.join(prints, `vale-${tipo}-onda-sem-luz.png`) })
+        await page.getByText('Tente de novo quando quiser').waitFor({ timeout: 90_000 })
+        await page.getByRole('button', { name: 'Acender a lanterna' }).click()
+        console.log(`${tipo}: sem a luz, a cinza passou e o ninho continua para cuidar`)
+      }
+      await acao(proteger).waitFor()
       await usar()
-      await page.waitForTimeout(350)
+      await page.waitForTimeout(4000)
       await page.screenshot({ path: path.join(prints, `vale-${tipo}-${ninho.id}.png`) })
-      await andar([longe])
-      await page.getByText(new RegExp(`${ninho.id.slice(-1)} de 3 ninhos cuidados`)).waitFor()
+      await page
+        .getByText(new RegExp(`${ninho.id.slice(-1)} de 3 ninhos cuidados`))
+        .waitFor({ timeout: 90_000 })
     }
     await conferirDiario(5)
     console.log(`${tipo}: escavou, cuidou dos três ninhos e conferiu os cinco registros`)
@@ -368,7 +380,15 @@ try {
     const direcao = local('chegada').sub(local('morador')).setY(0).normalize()
     const encontro = mundo(local('morador').addScaledVector(direcao, 1.6))
     await dePe(encontro, rumo(encontro, jade), 'diante da Jade')
-    await page.locator('.arq-acao').filter({ hasText: 'Conversar com a Jade' }).waitFor()
+    await page
+      .locator('.arq-acao')
+      .filter({ hasText: 'Conversar com a Jade' })
+      .waitFor()
+      .catch(async (erro: unknown) => {
+        console.log('Ação na tela:', await page.locator('.arq-acao').allInnerTexts(), await ler())
+        await page.screenshot({ path: path.join(prints, `vale-${tipo}-falha-jade.png`) })
+        throw erro
+      })
     if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
     else await page.keyboard.press('KeyE')
     const conversa = page.getByRole('dialog', { name: 'Jade', exact: true })
@@ -380,7 +400,16 @@ try {
       await conversa.getByRole('button', { name: 'Continuar' }).click()
       await conversa.getByText(fala).waitFor()
     }
-    await conversa.getByRole('button', { name: 'Tchau, Jade' }).click()
+    // Depois das falas do ovo, a amizade ainda fala um pouco e mostra as escolhas (pedido,
+    // presente e tchau).
+    const tchau = conversa.getByRole('button', { name: 'Tchau, Jade' })
+    for (let i = 0; i < 8 && !(await tchau.isVisible()); i++)
+      await conversa.getByRole('button', { name: 'Continuar' }).click()
+    await tchau.click({ timeout: 30_000 }).catch(async (erro: unknown) => {
+      console.log('Conversa na tela:', await conversa.innerText().catch(() => '(fechada)'))
+      await page.screenshot({ path: path.join(prints, `vale-${tipo}-falha-tchau.png`) })
+      throw erro
+    })
     await conversa.waitFor({ state: 'detached' })
     await conferirDiario(5)
     console.log(`${tipo}: conversa abriu, avançou e fechou`)

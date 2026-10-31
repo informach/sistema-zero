@@ -18,6 +18,8 @@ import {
   ID_DA_LANTERNA,
   lerPresos,
   lumisNaVila,
+  MANCHA_DO_BORRAO,
+  opacidadeDaMancha,
   PRENDE_A,
   PRESO_POR,
   passoDoBorrao,
@@ -232,5 +234,24 @@ describe('o borrão no mundo', () => {
     expect(lerPresos(null, 4)).toEqual([])
     expect(lerPresos('{', 4)).toEqual([])
     expect(lerPresos('{"dia":4,"ids":[1,"4:1"]}', 4)).toEqual(['4:1'])
+  })
+})
+
+describe('o chão desbotado em volta do borrão (§6.28, A38)', () => {
+  test('cresce enquanto ele está solto, diminui preso e some quando vira Lumi', () => {
+    const b = criarBorrao({ x: 0, z: 0 })
+    expect(opacidadeDaMancha(b)).toBe(0)
+    passoDoBorrao(b, MANCHA_DO_BORRAO.cresceEm / 2, 50, 50, false)
+    expect(opacidadeDaMancha(b)).toBeCloseTo(MANCHA_DO_BORRAO.opacidade / 2, 5)
+    passoDoBorrao(b, MANCHA_DO_BORRAO.cresceEm, 50, 50, false)
+    expect(opacidadeDaMancha(b)).toBeCloseTo(MANCHA_DO_BORRAO.opacidade, 5)
+    prender(b)
+    expect(opacidadeDaMancha(b)).toBeCloseTo(MANCHA_DO_BORRAO.opacidade, 5)
+    passoDoBorrao(b, PRESO_POR, 0, 0, true)
+    expect(b.fase).toBe('virando')
+    expect(opacidadeDaMancha(b)).toBeCloseTo(MANCHA_DO_BORRAO.opacidade / 2, 5)
+    passoDoBorrao(b, VIRANDO_POR, 0, 0, true)
+    expect(b.fase).toBe('pronto')
+    expect(opacidadeDaMancha(b)).toBe(0)
   })
 })

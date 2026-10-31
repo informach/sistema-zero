@@ -4,6 +4,7 @@ import type { Mesh } from 'three'
 import type { ModoDoCorpo } from '../src/estado/contexto'
 import { chaoLivre } from '../src/mundo/chao-livre'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
+import { explorarVale } from '../src/mundo/exploracao-do-vale'
 import type { Ponto } from '../src/sistemas/cipo'
 import { CORPO } from '../src/sistemas/corpo'
 import {
@@ -246,5 +247,26 @@ describe('a montaria do Vale (fase4-04)', () => {
       const a = raiz.getObjectByName(nome)!.position
       expect([nome, Math.hypot(a.x - x, a.z - z) > 3]).toEqual([nome, true])
     }
+    // O corpo parado dele fica fora da trilha das pegadas, com folga para a criança passar.
+    const { caminho } = explorarVale(raiz, colisores)
+    const { giro } = MONTARIA_NO_VALE
+    let folga = Number.POSITIVE_INFINITY
+    for (let u = -0.55; u <= 0.55; u += 0.11)
+      for (let w = -1.6; w <= 1.6; w += 0.2) {
+        const px = x + u * Math.cos(giro) + w * Math.sin(giro)
+        const pz = z - u * Math.sin(giro) + w * Math.cos(giro)
+        for (let i = 0; i + 1 < caminho.length; i++) {
+          const a = caminho[i]!,
+            b = caminho[i + 1]!
+          const vx = b.x - a.x,
+            vz = b.z - a.z
+          const t = Math.max(
+            0,
+            Math.min(1, ((px - a.x) * vx + (pz - a.z) * vz) / (vx * vx + vz * vz)),
+          )
+          folga = Math.min(folga, Math.hypot(px - a.x - vx * t, pz - a.z - vz * t))
+        }
+      }
+    expect(folga).toBeGreaterThan(CORPO.raio * 2 + 0.5)
   }, 120_000)
 })

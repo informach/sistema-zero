@@ -9,10 +9,10 @@ import { conciliarSalvamento } from '../src/sistemas/conciliar-salvamento'
 import { CORPO } from '../src/sistemas/corpo'
 import { colecaoDoVale } from '../src/sistemas/diario'
 import { comecarConversaComAJade } from '../src/sistemas/jade'
+import { ONDAS_DE_CINZA } from '../src/sistemas/ondas-de-cinza'
 import {
   ACOES_DA_ESCAVACAO,
   cuidarDoNinho,
-  deuEspacoAoNinho,
   escavarNoVale,
   FALA_DE_REVER_O_FOSSIL,
   FALAS_DA_ESCAVACAO,
@@ -54,11 +54,7 @@ test('escavação em três ações, sem prazo, sem mutar e sem repetir conquista
   expect(atual.recife).toBe(s.recife)
   expect(colecaoDoVale(atual).find((i) => i.id === 'fossil')?.feito).toBe(true)
 })
-test('ninho exige observar no mundo e dar espaço; pausa não conclui e a conquista não se perde', () => {
-  const ninho = { x: 1, z: 2 }
-  expect(deuEspacoAoNinho(ninho, { x: 2, z: 2 }, true)).toBe(false)
-  expect(deuEspacoAoNinho(ninho, { x: 5, z: 2 }, false)).toBe(false)
-  expect(deuEspacoAoNinho(ninho, { x: 5, z: 2 }, true)).toBe(true)
+test('ninho cuidado só com a ação permitida; pausa não conclui e a conquista não se perde', () => {
   let s = novo()
   for (const id of NINHOS_DO_VALE) {
     expect(cuidarDoNinho(s, id, false)).toBe(s)
@@ -129,17 +125,11 @@ test('o caminho da ilha preparada e girada coincide com o do GLB local', async (
     expect(preparado.caminho[i]!.z).toBeCloseTo(lugares.caminho[i]!.z, 4)
   }
 })
-test('a criança alcança os três ninhos e consegue se afastar a pé', () => {
+test('a criança alcança os três ninhos a pé e fica perto deles para a luz proteger (A8)', () => {
   const andou = grade.alcance(lugares.chegada.x, lugares.chegada.z)
   for (const ninho of lugares.ninhos) {
     expect(grade.chegaPerto(andou, ninho.x, ninho.z, V.alcance)).toBe(true)
-    expect(
-      [...andou].some((i) => {
-        const p = grade.centro(i)
-        const d = Math.hypot(p.x - ninho.x, p.z - ninho.z)
-        return d >= V.afastamento && d < V.afastamento + 0.5
-      }),
-    ).toBe(true)
+    expect(grade.chegaPerto(andou, ninho.x, ninho.z, ONDAS_DE_CINZA.protegeA)).toBe(true)
   }
 })
 test('a arte reaproveitada tem osso miúdo separado e cabe na folga reservada', async () => {

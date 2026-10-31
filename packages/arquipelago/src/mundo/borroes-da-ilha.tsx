@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import type { LumiId } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Group, Object3D } from 'three'
+import type { Group, Mesh, MeshBasicMaterial, Object3D } from 'three'
 import algodaoGlb from '../assets/lumis/algodao.glb'
 import bolhaGlb from '../assets/lumis/bolha.glb'
 import borraoGlb from '../assets/lumis/borrao.glb'
@@ -30,6 +30,8 @@ import {
   type IlhaDosLumis,
   lerPresos,
   lumisNaIlha,
+  MANCHA_DO_BORRAO,
+  opacidadeDaMancha,
   PRENDE_A,
   passoDoBorrao,
   podePrender,
@@ -250,6 +252,7 @@ function Borrao({
   )
   const tocando = useRef<string | null>(null)
   const tempo = useRef(0)
+  const mancha = useRef<Mesh>(null)
 
   useEffect(() => {
     if (jaPreso) estado.current.fase = 'pronto'
@@ -320,18 +323,44 @@ function Borrao({
       const rumo = Math.atan2(rastro.x - b.x, rastro.z - b.z) + (b.fugindo ? Math.PI : 0)
       corpo.current.rotation.y = suavizarAngulo(corpo.current.rotation.y, rumo, 4, dt)
     }
+    // O chão desbotado em volta do borrão (§6.28 A38): cresce solto, some quando vira Lumi.
+    if (mancha.current) {
+      const opacidade = opacidadeDaMancha(b)
+      mancha.current.visible = opacidade > 0.01
+      mancha.current.position.set(b.x, lugar.y + 0.04, b.z)
+      ;(mancha.current.material as MeshBasicMaterial).opacity = opacidade
+    }
   })
 
   return (
-    <group
-      ref={corpo}
-      name={`borrao-${borrao.id}`}
-      position={[estado.current.x, lugar.y + ALTURA_DO_BORRAO, estado.current.z]}
-    >
-      <group ref={raiz} scale={ESCALA_DO_BORRAO} dispose={null}>
-        <primitive object={cena} />
+    <>
+      <group
+        ref={corpo}
+        name={`borrao-${borrao.id}`}
+        position={[estado.current.x, lugar.y + ALTURA_DO_BORRAO, estado.current.z]}
+      >
+        <group ref={raiz} scale={ESCALA_DO_BORRAO} dispose={null}>
+          <primitive object={cena} />
+        </group>
       </group>
-    </group>
+      <mesh
+        ref={mancha}
+        name={`mancha-do-borrao-${borrao.id}`}
+        rotation={[-Math.PI / 2, 0, 0]}
+        visible={false}
+        renderOrder={1}
+      >
+        <circleGeometry args={[MANCHA_DO_BORRAO.raio, 28]} />
+        <meshBasicMaterial
+          color="#8f949e"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-2}
+        />
+      </mesh>
+    </>
   )
 }
 
