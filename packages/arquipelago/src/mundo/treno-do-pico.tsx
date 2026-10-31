@@ -4,9 +4,22 @@ import { type Object3D, Vector3 } from 'three'
 import { useJogo } from '../estado/contexto'
 import type { Ponto } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
+import { corridaDoTreno } from '../sistemas/corrida-de-portoes'
+import { PERCURSO_DO_TRENO } from '../sistemas/percurso'
 import { pistaDoTreno, TRENO } from '../sistemas/treno'
 import { paraOMundo } from './bosque'
+import { CorridaDePortoes } from './corrida-de-portoes'
+import type { CoresDoColetavel } from './corrida-na-ilha'
 import { useInterativo } from './interativos'
+
+/** As bandeirinhas da descida de trenó (lacunas, 01/11/2026). */
+const CORES_DA_BANDEIRINHA: CoresDoColetavel = {
+  nucleo: '#ff6b6b',
+  brilho: '#fff1a8',
+  degrade: ['rgba(255,245,245,1)', 'rgba(255,120,120,0.55)', 'rgba(255,220,120,0)'],
+}
+export const FALA_DO_PRIMEIRO_PORTAO_DO_TRENO =
+  'Desça de trenó pelo primeiro portão de bandeira para começar a corrida.'
 
 const tmpV = new Vector3()
 /** O desenho do trenó tem a origem 2 cm acima do chão do platô (os patins encostam no chão). */
@@ -103,5 +116,19 @@ export function TrenoDoPico({
     no.rotation.y = treno.giro + rastro.direcao - treno.olhaPara
   })
 
-  return null
+  // A descida como minijogo: os portões de bandeira pela pista (no Pico, o único escorregador é o
+  // trenó, então descendo é estar no trenó).
+  const corrida = useMemo(() => (pista ? corridaDoTreno(pista.pontos) : null), [pista])
+  if (!corrida) return null
+  return (
+    <CorridaDePortoes
+      config={PERCURSO_DO_TRENO}
+      portoes={corrida.portoes}
+      coisas={corrida.coisas}
+      ponto={(m, r) => (m.modo === 'escorregar' ? r : null)}
+      cor="#e8414b"
+      coresDaCoisa={CORES_DA_BANDEIRINHA}
+      falaDoPrimeiro={FALA_DO_PRIMEIRO_PORTAO_DO_TRENO}
+    />
+  )
 }

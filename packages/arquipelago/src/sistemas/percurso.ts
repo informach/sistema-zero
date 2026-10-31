@@ -351,6 +351,57 @@ export const PERCURSO_DO_FAROL = {
   exige: (s) => (temPlanador(s) ? null : FALTA_O_PLANADOR_NO_FAROL),
 } as const satisfies ConfigDoPercurso
 
+/**
+ * A descida de trenó do Pico como minijogo (lacunas, 01/11/2026, `sistemas/corrida-de-portoes.ts`):
+ * seis portões de bandeira pela pista em espiral, do platô ao pé, e cinco bandeirinhas no caminho,
+ * uma escondida. Passar de trenó pelo primeiro portão começa.
+ */
+export const PERCURSO_DO_TRENO = {
+  id: 'pico-treno',
+  nome: 'Descida de trenó',
+  rotuloDaLargada: 'Desça de trenó pelo primeiro portão',
+  falaDoComeco: 'Valendo. Desça pelos portões de bandeira e pegue as bandeirinhas no caminho.',
+  falaDoFim: 'A descida parou. O trenó no platô começa de novo quando você quiser.',
+  falaDasTresEstrelas:
+    'Três estrelas. Você desceu a montanha inteira e achou a bandeirinha escondida.',
+  escondido: 'a bandeirinha escondida',
+  /** A pista tem uns 28 m e o trenó vai a até 4,5 m/s: uns 7 s sem parar. 10 s dá a estrela. */
+  tempoAlvoMs: 10_000,
+  vagalumes: 5,
+  coletavel: { varios: 'bandeirinhas', Varios: 'Bandeirinhas', simbolo: '🚩', feminino: true },
+  /** Pela linha do meio a bandeirinha fica a 0,55 m: só pega quem guia o trenó para o lado dela. */
+  raioDoVagalume: 0.45,
+  raioDaChegada: 1.4,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A corrida da montaria pela praia do Vale (lacunas, 01/11/2026): montada no dino, seis portões de
+ * osso pela areia, de 0° a 105° em volta da ilha, e cinco fósseis brilhantes, um escondido.
+ */
+export const PERCURSO_DA_MONTARIA = {
+  id: 'vale-montaria',
+  nome: 'Corrida da montaria',
+  rotuloDaLargada: 'Passe montado pelo primeiro portão',
+  falaDoComeco: 'Valendo. Galope pela praia pelos portões de osso e pegue os fósseis brilhantes.',
+  falaDoFim: 'A corrida parou. O primeiro portão começa de novo quando você passar montado.',
+  falaDasTresEstrelas: 'Três estrelas. Você galopou a praia inteira e achou o fóssil escondido.',
+  escondido: 'o fóssil escondido',
+  /** Uns 24 m pela areia, e o dino corre a 6 m/s: uns 4 s sem errar. 8 s dá a estrela. */
+  tempoAlvoMs: 8_000,
+  vagalumes: 5,
+  coletavel: { varios: 'fósseis', Varios: 'Fósseis', simbolo: '🦴' },
+  raioDoVagalume: 1.6,
+  raioDaChegada: 2,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
 export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
@@ -362,6 +413,8 @@ export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>>
   'recife-corais': PERCURSO_DOS_CORAIS,
   'vale-pegadas': PERCURSO_DAS_PEGADAS,
   'farol-subida': PERCURSO_DO_FAROL,
+  'pico-treno': PERCURSO_DO_TRENO,
+  'vale-montaria': PERCURSO_DA_MONTARIA,
 }
 
 /** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */
