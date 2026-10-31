@@ -665,7 +665,9 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
             return { status: 403, corpo: { error: { code: 'SOMENTE_LEITURA' } } }
           const salvo = migrarSalvamento(guardado.salvamento)
           const novas = salvo
-            ? roupasConquistadas(salvo, o.festa ?? festaDoDia(agora())).filter((p) => !roupasDadas.has(p))
+            ? roupasConquistadas(salvo, o.festa ?? festaDoDia(agora())).filter(
+                (p) => !roupasDadas.has(p),
+              )
             : []
           for (const p of novas) roupasDadas.add(p)
           if (novas.length > 0 && o.persistir && typeof localStorage !== 'undefined')
