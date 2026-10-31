@@ -102,11 +102,19 @@ function buildCsp({ pro }: { pro: boolean }): string {
 
 const strictCsp = buildCsp({ pro: false })
 const proCsp = buildCsp({ pro: true })
-// Arquipélago Vagalume: a física (Rapier) é WebAssembly. A página do jogo tem a SUA regra, que
-// garante o `'wasm-unsafe-eval'` mesmo se a política do resto do app um dia fechar o WASM.
-// O Estúdio Pro pode abrir sobre o jogo: precisa da mesma CSP e do mesmo isolamento
-// da rota Pro, sem afrouxar as demais páginas da comunidade.
-const arquipelagoCsp = proCsp
+// Arquipélago Vagalume (A27, revisão de 31/10/2026): a página do jogo tem a SUA regra, montada
+// pelo que roda nela, e não a cópia da rota Pro.
+// - `'wasm-unsafe-eval'`: a física (Rapier) e o Molda são WebAssembly.
+// - `'unsafe-eval'`, `blob:` e os quadros do WebContainer: o Estúdio completo abre por cima do
+//   jogo e, para quem já tem o modo Código, abre o projeto Pro com o terminal, que exige essas
+//   três coisas (`packages/studio/docs/embedding.md`). Tirar quebra o Pro dentro do jogo.
+// - Sem os vídeos das aulas (YouTube e Vimeo): a página do jogo não tem aula, e a COEP
+//   `credentialless` daqui já os impediria de carregar.
+// O executor do Python e o do Pro publicado entram pelos mesmos `withStudio*Csp` do resto.
+const arquipelagoCsp = proCsp.replace(
+  ' https://www.youtube-nocookie.com https://player.vimeo.com',
+  '',
+)
 
 // Headers de segurança comuns a TODAS as rotas — SEM a CSP (aplicada por-rota em
 // `headers()`: estrita em tudo, relaxada só em `/estudio/pro`). COOP fica aqui (vale
@@ -226,8 +234,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // `:path*` também casa com `/arquipelago` sozinho: a regra vale para a página e para o que
+      // vier abaixo dela.
       {
-        source: '/arquipelago',
+        source: '/arquipelago/:path*',
         headers: [
           { key: 'Content-Security-Policy', value: arquipelagoCsp },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
