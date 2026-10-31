@@ -7,20 +7,6 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { type Group, Vector3 } from 'three'
-import algodaoGlb from '../assets/lumis/algodao.glb'
-import bolhaGlb from '../assets/lumis/bolha.glb'
-import brigadeiroGlb from '../assets/lumis/brigadeiro.glb'
-import brotinhoGlb from '../assets/lumis/brotinho.glb'
-import buzioGlb from '../assets/lumis/buzio.glb'
-import cristalGlb from '../assets/lumis/cristal.glb'
-import estrelinhaGlb from '../assets/lumis/estrelinha.glb'
-import gelinhoGlb from '../assets/lumis/gelinho.glb'
-import ipeGlb from '../assets/lumis/ipe.glb'
-import ovinhoGlb from '../assets/lumis/ovinho.glb'
-import perolaGlb from '../assets/lumis/perola.glb'
-import pitangaGlb from '../assets/lumis/pitanga.glb'
-import plumaGlb from '../assets/lumis/pluma.glb'
-import quindimGlb from '../assets/lumis/quindim.glb'
 import { lojaDasCartas } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaRotina, type PedidoDeRotina } from '../estado/rotina'
@@ -47,24 +33,7 @@ import { ESCALA_DOS_LUMIS_DA_VILA } from './borroes-da-ilha'
 import { lugarDoCanteiro } from './horta'
 import { ALTURA_DA_TERRA } from './medidas'
 import { ComReserva } from './modelos'
-
-const url = (arquivo: string) => new URL(arquivo, import.meta.url).href
-const MODELOS: Readonly<Record<LumiId, string>> = {
-  estrelinha: url(estrelinhaGlb),
-  buzio: url(buzioGlb),
-  pitanga: url(pitangaGlb),
-  ipe: url(ipeGlb),
-  quindim: url(quindimGlb),
-  brigadeiro: url(brigadeiroGlb),
-  bolha: url(bolhaGlb),
-  perola: url(perolaGlb),
-  gelinho: url(gelinhoGlb),
-  cristal: url(cristalGlb),
-  ovinho: url(ovinhoGlb),
-  brotinho: url(brotinhoGlb),
-  algodao: url(algodaoGlb),
-  pluma: url(plumaGlb),
-}
+import { MODELO_DO_LUMI } from './modelos-dos-lumis'
 
 const CLIPES_DE_UMA_VEZ = ['feliz'] as const
 /** A base da obra da casa (a mesma do `casa.tsx`): o chão onde a geladeira fica. */
@@ -149,7 +118,7 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
   const raiz = useRef<Group>(null)
   const corpo = useRef<Group>(null)
   const { cena, actions } = useCopiaAnimada(
-    MODELOS[pedido.lumi],
+    MODELO_DO_LUMI[pedido.lumi],
     raiz,
     CLIPES_DE_UMA_VEZ,
     pausado,

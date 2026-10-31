@@ -155,7 +155,7 @@ export function BauDoSegredo({
       if (!podeMexer(s) || segredoAchado(s.salvamento.segredos, segredo) || !perto()) return
       s.mudar((v) => abrirSegredo(v, segredo))
       if (segredoAchado(loja.getState().salvamento.segredos, segredo))
-        s.dizer(falaDoSegredoDoMovimento())
+        s.dizer(falaDoSegredoDoMovimento(segredo))
     },
   })
   if (achado) return null

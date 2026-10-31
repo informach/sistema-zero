@@ -160,6 +160,10 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'hat-05': { category: 'hat', labelPt: 'Chapéu 5' },
   'hat-06': { category: 'hat', labelPt: 'Chapéu 6' },
   'hat-07': { category: 'hat', labelPt: 'Chapéu 7' },
+  // As roupas das festas (B16, 31/10/2026): conquistadas na festa do Arquipélago.
+  'hat-08': { category: 'hat', labelPt: 'Cartolinha de Carnaval' },
+  'hat-09': { category: 'hat', labelPt: 'Chapéu de palha junino' },
+  'hat-10': { category: 'hat', labelPt: 'Gorro de fim de ano' },
   // Enfeite de cabelo (aparece junto com o cabelo; o chapéu esconde)
   'enfeite-none': { category: 'hairAccessory', labelPt: 'Nenhum' },
   'enfeite-01': { category: 'hairAccessory', labelPt: 'Laço' },
@@ -167,6 +171,7 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'enfeite-03': { category: 'hairAccessory', labelPt: 'Coroa de flores' },
   'enfeite-04': { category: 'hairAccessory', labelPt: 'Presilhas de estrela' },
   'enfeite-05': { category: 'hairAccessory', labelPt: 'Orelhinhas de gato' },
+  'enfeite-06': { category: 'hairAccessory', labelPt: 'Tiara de lanterninhas' },
   // Blusa
   'top-01': { category: 'top', labelPt: 'Blusa 1' },
   'top-02': { category: 'top', labelPt: 'Blusa 2' },
@@ -174,6 +179,9 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'top-04': { category: 'top', labelPt: 'Manga longa' },
   'top-05': { category: 'top', labelPt: 'Moletom com capuz' },
   'top-06': { category: 'top', labelPt: 'Camiseta listrada' },
+  'top-07': { category: 'top', labelPt: 'Colete de franjas' },
+  'top-08': { category: 'top', labelPt: 'Capa de estrelas' },
+  'top-09': { category: 'top', labelPt: 'Suéter de estrela' },
   // Calça
   'bottom-01': { category: 'bottom', labelPt: 'Calça 1' },
   'bottom-02': { category: 'bottom', labelPt: 'Calça 2' },
@@ -188,6 +196,7 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'outfit-04': { category: 'outfit', labelPt: 'Look 3' },
   'outfit-05': { category: 'outfit', labelPt: 'Look 4' },
   'outfit-06': { category: 'outfit', labelPt: 'Vestido longo' },
+  'outfit-07': { category: 'outfit', labelPt: 'Vestido de chita' },
   // Calçado
   'shoes-01': { category: 'shoes', labelPt: 'Calçado 1' },
   'shoes-02': { category: 'shoes', labelPt: 'Calçado 2' },

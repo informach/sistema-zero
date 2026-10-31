@@ -57,7 +57,7 @@ test('pede ao Members só o que o salvamento guardado conquistou, com a festa do
       userId: jogador.id,
       accountId: jogador.contaId,
       audience: 'kids',
-      pecas: [ROUPAS_DA_AMIZADE.jade, ...VESTUARIO_DAS_FESTAS.junina.pecas].sort(),
+      pecas: [ROUPAS_DA_AMIZADE.jade, ...VESTUARIO_DAS_FESTAS.junina.conquista].sort(),
     },
   ])
   expect(r.novas).toHaveLength(1)

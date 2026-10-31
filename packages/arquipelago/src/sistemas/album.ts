@@ -1,12 +1,15 @@
 import {
   type AparenciaDoObjeto,
+  BIT_DO_LUMI_DE_LUZ,
   CATALOGO_DE_OBJETOS,
+  ehLumiDeLuz,
   FOSSEIS_DO_VALE,
   type FossilDoVale,
   ILHAS,
   type IlhaId,
   ilhaVisitada,
   LUMIS,
+  LUMIS_DE_LUZ,
   type LumiId,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
@@ -14,6 +17,7 @@ import {
   type PercursoId,
   resultadoDoPercurso,
   type Salvamento,
+  temOLumi,
 } from '@sistemazero/arquipelago-contracts'
 import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
 import { colecaoDaPraia } from './colecoes-da-praia'
@@ -30,7 +34,13 @@ import { cresceu } from './filhote-do-vale'
 import { achouFossil, NOME_DO_FOSSIL, TEXTOS_DOS_FOSSEIS } from './fosseis'
 import { ESPECIES_DE_LUMI } from './lumis'
 import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
-import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS, TODOS_OS_SEGREDOS } from './segredos'
+import {
+  ondeAcharOLumiDeLuz,
+  SEGREDOS,
+  segredoAchado,
+  TEXTOS_DOS_SEGREDOS,
+  TODOS_OS_SEGREDOS,
+} from './segredos'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
 
@@ -199,20 +209,59 @@ export type LumiDoAlbum =
       nome: string
       ilha: string
       raro: boolean
+      luz: boolean
       cor: string
       quantos: number
     }
-  | { id: LumiId; estado: 'nao-encontrado'; ilha: string; raro: boolean }
+  | { id: LumiId; estado: 'nao-encontrado'; ilha: string; raro: boolean; luz: boolean }
 
-/** As 14 espécies de `LUMIS`: as que ela prendeu com quantos, as outras como silhueta. */
+/** As 14 espécies que a lanterna prende: as que ela prendeu com quantos, as outras como silhueta. */
 export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiDoAlbum[] } {
-  const itens = LUMIS.map((id): LumiDoAlbum => {
+  const itens = LUMIS.filter((id) => !ehLumiDeLuz(id)).map((id): LumiDoAlbum => {
     const e = ESPECIES_DE_LUMI[id]
     const ilha = NOME_DA_ILHA[e.ilha]
     const quantos = s.lumis[id] ?? 0
     if (quantos > 0)
-      return { id, estado: 'preso', nome: e.nome, ilha, raro: e.raro, cor: e.cor, quantos }
-    return { id, estado: 'nao-encontrado', ilha, raro: e.raro }
+      return {
+        id,
+        estado: 'preso',
+        nome: e.nome,
+        ilha,
+        raro: e.raro,
+        luz: false,
+        cor: e.cor,
+        quantos,
+      }
+    return { id, estado: 'nao-encontrado', ilha, raro: e.raro, luz: false }
+  })
+  return { conta: contar(itens.filter((l) => l.estado === 'preso').length, itens.length), itens }
+}
+
+/**
+ * Os sete Lumis de luz (B12), dos baús dos segredos: o achado com a ilha da família, o que falta
+ * com onde fica o baú (sem o caminho).
+ */
+export function lumisDeLuzDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiDoAlbum[] } {
+  const itens = LUMIS_DE_LUZ.map((id): LumiDoAlbum => {
+    const e = ESPECIES_DE_LUMI[id]
+    if (temOLumi(s, id))
+      return {
+        id,
+        estado: 'preso',
+        nome: e.nome,
+        ilha: NOME_DA_ILHA[e.ilha],
+        raro: true,
+        luz: true,
+        cor: e.cor,
+        quantos: 1,
+      }
+    return {
+      id,
+      estado: 'nao-encontrado',
+      ilha: ondeAcharOLumiDeLuz(BIT_DO_LUMI_DE_LUZ[id]) ?? NOME_DA_ILHA[e.ilha],
+      raro: true,
+      luz: true,
+    }
   })
   return { conta: contar(itens.filter((l) => l.estado === 'preso').length, itens.length), itens }
 }
@@ -394,6 +443,7 @@ export function albumDoSalvamento(s: Salvamento) {
     percursos: percursosDoAlbum(s),
     aparencias: aparenciasDoAlbum(s),
     lumis: lumisDoAlbum(s),
+    lumisDeLuz: lumisDeLuzDoAlbum(s),
   }
 }
 export type Album = ReturnType<typeof albumDoSalvamento>

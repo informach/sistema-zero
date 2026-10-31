@@ -1,4 +1,11 @@
-import { ILHAS, type IlhaId, type Salvamento } from '@sistemazero/arquipelago-contracts'
+import {
+  ILHAS,
+  type IlhaId,
+  lumiDeLuzDoSegredo,
+  type Salvamento,
+} from '@sistemazero/arquipelago-contracts'
+import { FAMILIAS_DOS_LUMIS } from './borroes'
+import { ESPECIES_DE_LUMI } from './lumis'
 
 const NOME_DA_ILHA = Object.fromEntries(ILHAS.map((i) => [i.id, i.nome])) as Record<IlhaId, string>
 
@@ -9,7 +16,8 @@ const NOME_DA_ILHA = Object.fromEntries(ILHAS.map((i) => [i.id, i.nome])) as Rec
  * baú da Íris flutua no alto de uma corrente de vento (a mesma do Pico, `sistemas/planador.ts`).
  * Sem o planador o vento não leva ninguém; com ele, a criança pula, abre o planador dentro do
  * vento e sobe até o baú, que fica registrado no álbum. Dentro de cada baú há uma página extra do
- * diário da Íris (§6.28 A39, `PAGINA_EXTRA`); os Lumis raros vêm depois. Cada segredo tem um bit fixo em
+ * diário da Íris (§6.28 A39, `PAGINA_EXTRA`) e, em sete deles, um Lumi de luz (B12,
+ * `lumis-de-luz.ts` dos contratos: abrir o baú é ter o Lumi). Cada segredo tem um bit fixo em
  * `salvamento.segredos` (nunca reordenar nem reutilizar).
  */
 export interface Segredo {
@@ -190,7 +198,22 @@ export function paginasExtras(segredos: number): PaginaExtra[] {
 }
 
 export function falaDoSegredo(segredo: Segredo): string {
-  return `No alto do vento tinha um baú da Íris, com uma página extra do diário dela. A página está no diário, e o baú no álbum, em Segredos das ilhas, junto com ${NOME_DA_ILHA[segredo.ilha]}.`
+  return `No alto do vento tinha um baú da Íris, com uma página extra do diário dela. A página está no diário, e o baú no álbum, em Segredos das ilhas, junto com ${NOME_DA_ILHA[segredo.ilha]}.${falaDoLumiDeLuz(segredo)}`
+}
+
+/** Do baú com um Lumi de luz (B12), ele sai junto e vai morar com a família dele. */
+export function falaDoLumiDeLuz(segredo: SegredoQualquer): string {
+  const lumi = lumiDeLuzDoSegredo(segredo.bit)
+  if (!lumi) return ''
+  const e = ESPECIES_DE_LUMI[lumi]
+  const familia = FAMILIAS_DOS_LUMIS[e.ilha as keyof typeof FAMILIAS_DOS_LUMIS]
+  return ` Do baú também saiu um Lumi de luz, o ${e.nome}. Ele foi morar com a família dele ${familia.de}.`
+}
+
+/** Onde se acha cada Lumi de luz, para o álbum (sem contar o caminho). */
+export function ondeAcharOLumiDeLuz(bit: number): string | null {
+  const s = TODOS_OS_SEGREDOS.find((x) => x.bit === bit)
+  return s ? `Num baú da Íris, em ${NOME_DA_ILHA[s.ilha]}` : null
 }
 
 /** O recado ao pé do vento: sem planador, a curiosidade; com ele, como subir. */
@@ -201,8 +224,8 @@ export function falaDoVento(temPlanador: boolean): string {
 }
 
 /** A fala do baú dos movimentos (B11), aberto no chão, na água ou no balão. */
-export function falaDoSegredoDoMovimento(): string {
-  return 'Dentro do baú da Íris tinha uma página extra do diário dela. A página está no diário, e o baú no álbum, em Segredos das ilhas.'
+export function falaDoSegredoDoMovimento(segredo?: SegredoDoMovimento): string {
+  return `Dentro do baú da Íris tinha uma página extra do diário dela. A página está no diário, e o baú no álbum, em Segredos das ilhas.${segredo ? falaDoLumiDeLuz(segredo) : ''}`
 }
 
 export const TEXTOS_DOS_SEGREDOS = {

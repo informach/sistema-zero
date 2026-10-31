@@ -27,6 +27,7 @@ import {
   SEMENTES_DO_CEU,
   VAGAS_DA_GALERIA_DO_FAROL,
 } from '../src'
+import { ehLumiDeLuz } from '../src/lumis-de-luz'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 
@@ -134,7 +135,8 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),
     turnos: Object.fromEntries(POSTOS_DA_VILA.map((p) => [p, turno])),
     percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),
-    lumis: Object.fromEntries(LUMIS.map((id) => [id, 999])),
+    // Os Lumis de luz não têm contador (vêm dos baús, `segredos`).
+    lumis: Object.fromEntries(LUMIS.filter((id) => !ehLumiDeLuz(id)).map((id) => [id, 999])),
     // V19 no teto: todas as visitas, chaves, segredos e células do mapa; "adotado" pesa mais.
     ilhasVisitadas: 255,
     chaves: 15,
@@ -151,7 +153,9 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
       ids.map((id) => [id, rotinaPesada(Math.min(cada, L.cartoesPorRotina))]),
     )
   }
-  return Array.from({ length: LUMIS.length - 1 }, (_, i) => ({
+  // Toda rotina tem pelo menos dois cartões (um QUANDO e uma ação): até 16 rotinas.
+  const maisRotinas = Math.min(LUMIS.length, Math.floor(L.cartoesNasRotinas / 2))
+  return Array.from({ length: maisRotinas - 1 }, (_, i) => ({
     ...base,
     rotinas: porRotina(i + 2),
     recife: { bau: false, pagina: false, tesouro: false, corais: 15 },
