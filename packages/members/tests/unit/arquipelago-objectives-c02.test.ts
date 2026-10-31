@@ -184,9 +184,7 @@ function criar(
     undefined,
     opcoes.executor,
     undefined,
-    opcoes.python
-      ? { checker: opcoes.python, bindings: { find: async () => null } }
-      : undefined,
+    opcoes.python ? { checker: opcoes.python, bindings: { find: async () => null } } : undefined,
   )
   return new ArquipelagoObjectivesService({ verificador })
 }

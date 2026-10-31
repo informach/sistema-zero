@@ -147,18 +147,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          null,
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, null, null], [null, null, null]],
                       "moedas": 10
                     },
                     0,
@@ -172,18 +161,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          "flor",
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, "flor", null], [null, null, null]],
                       "moedas": 10
                     },
                     0,
@@ -197,18 +175,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          null,
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, null, null], [null, null, null]],
                       "moedas": 10
                     },
                     2,
@@ -222,18 +189,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          null,
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, null, null], [null, null, null]],
                       "moedas": 10
                     },
                     0,
@@ -260,18 +216,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          null,
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, null, null], [null, null, null]],
                       "moedas": 10
                     },
                     0,
@@ -281,18 +226,7 @@
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        "arvore",
-                        null,
-                        null
-                      ],
-                      [
-                        null,
-                        null,
-                        null
-                      ]
-                    ],
+                    "grade": [["arvore", null, null], [null, null, null]],
                     "moedas": 5
                   }
                 },
@@ -301,18 +235,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          null,
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, null, null], [null, null, null]],
                       "moedas": 2
                     },
                     0,
@@ -322,18 +245,7 @@
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        null,
-                        null,
-                        null
-                      ],
-                      [
-                        null,
-                        null,
-                        null
-                      ]
-                    ],
+                    "grade": [[null, null, null], [null, null, null]],
                     "moedas": 2
                   }
                 },
@@ -342,18 +254,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          "flor",
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, "flor", null], [null, null, null]],
                       "moedas": 10
                     },
                     0,
@@ -363,18 +264,7 @@
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        null,
-                        "flor",
-                        null
-                      ],
-                      [
-                        null,
-                        null,
-                        null
-                      ]
-                    ],
+                    "grade": [[null, "flor", null], [null, null, null]],
                     "moedas": 10
                   }
                 }
@@ -396,36 +286,14 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          "flor",
-                          null,
-                          "arvore"
-                        ],
-                        [
-                          null,
-                          "flor",
-                          null
-                        ]
-                      ],
+                      "grade": [["flor", null, "arvore"], [null, "flor", null]],
                       "moedas": 0
                     }
                   ],
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        "flor",
-                        null,
-                        "arvore"
-                      ],
-                      [
-                        null,
-                        "flor",
-                        null
-                      ]
-                    ],
+                    "grade": [["flor", null, "arvore"], [null, "flor", null]],
                     "moedas": 4
                   }
                 }
@@ -447,36 +315,14 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          "flor",
-                          null,
-                          "arvore"
-                        ],
-                        [
-                          null,
-                          "flor",
-                          null
-                        ]
-                      ],
+                      "grade": [["flor", null, "arvore"], [null, "flor", null]],
                       "moedas": 0
                     }
                   ],
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        "flor",
-                        null,
-                        "arvore"
-                      ],
-                      [
-                        null,
-                        "flor",
-                        null
-                      ]
-                    ],
+                    "grade": [["flor", null, "arvore"], [null, "flor", null]],
                     "moedas": 0
                   }
                 },
@@ -485,36 +331,14 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          null,
-                          "flor",
-                          null
-                        ],
-                        [
-                          null,
-                          null,
-                          null
-                        ]
-                      ],
+                      "grade": [[null, "flor", null], [null, null, null]],
                       "moedas": 7
                     }
                   ],
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        null,
-                        "flor",
-                        null
-                      ],
-                      [
-                        null,
-                        null,
-                        null
-                      ]
-                    ],
+                    "grade": [[null, "flor", null], [null, null, null]],
                     "moedas": 7
                   }
                 }
@@ -566,18 +390,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          "flor",
-                          null,
-                          "arvore"
-                        ],
-                        [
-                          null,
-                          "flor",
-                          null
-                        ]
-                      ],
+                      "grade": [["flor", null, "arvore"], [null, "flor", null]],
                       "moedas": 0
                     },
                     0,
@@ -586,18 +399,7 @@
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        "flor",
-                        null,
-                        null
-                      ],
-                      [
-                        null,
-                        "flor",
-                        null
-                      ]
-                    ],
+                    "grade": [["flor", null, null], [null, "flor", null]],
                     "moedas": 2
                   }
                 },
@@ -606,18 +408,7 @@
                     {
                       "linhas": 2,
                       "colunas": 3,
-                      "grade": [
-                        [
-                          "flor",
-                          null,
-                          "arvore"
-                        ],
-                        [
-                          null,
-                          "flor",
-                          null
-                        ]
-                      ],
+                      "grade": [["flor", null, "arvore"], [null, "flor", null]],
                       "moedas": 0
                     },
                     1,
@@ -626,18 +417,7 @@
                   "expected": {
                     "linhas": 2,
                     "colunas": 3,
-                    "grade": [
-                      [
-                        "flor",
-                        null,
-                        "arvore"
-                      ],
-                      [
-                        null,
-                        "flor",
-                        null
-                      ]
-                    ],
+                    "grade": [["flor", null, "arvore"], [null, "flor", null]],
                     "moedas": 0
                   }
                 }
