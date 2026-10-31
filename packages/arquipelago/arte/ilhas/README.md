@@ -37,8 +37,10 @@ chegada (`conferir_corredor`).
 
 - **Referencial:** cada ilha fica no centro dela, com y = 0 no mar e o tampo plano em y = 1.
 - **Mesmo chão da leve:** o contorno, a praia e o barranco saem de `ilhas_anel.base` com a mesma
-  semente, então a completa ocupa o mesmo lugar da leve. O jogo troca uma pela outra no mesmo grupo
-  e com o mesmo giro.
+  semente. Desde 31/10/2026 a leve (a silhueta) é feita a partir do GLB da completa
+  (`arte/mundo/ilhas_anel.py`): ao regerar uma completa, rode o `ilhas_anel.py` de novo para a
+  silhueta acompanhar (`tests/silhuetas-das-ilhas.test.ts` confere altura e largura). O jogo troca
+  uma pela outra no mesmo grupo e com o mesmo giro.
 - **Chegada da ponte:** é o +x do modelo, como na versão leve; o jogo gira a ilha para esse lado
   olhar a ilha central.
 - **Corredor livre:** em x > 5,5 e |z| < 2,5 só há chão e trilha, e copa de árvore apenas acima de
@@ -56,9 +58,9 @@ chegada (`conferir_corredor`).
 
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore`, `porto` (o deque do barco) e 282 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4`, `barco` e `cais` (o porto do barco) | não tem | 32.700 | 1.206 KB |
-| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites`, `porto` (o deque do barco) e 93 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6`, `barco` e `cais` (o porto do barco) | não tem | 29.304 | 1.039 KB |
-| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho`, `coral-muda-1`…`coral-muda-4` | `balancar` (2 s, as algas) | 17.484 | 615 KB |
+| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-13`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore`, `porto` (o deque do barco) e 295 `col-*` mais o `col-terreno` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4`, `barco` e `cais` (o porto do barco), `escada-2-base`/`-topo`/`-saida` e `segredo-patins` (a pista suspensa do segredo dos patins, 31/10/2026) | não tem | 34.300 | 1.269 KB |
+| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites`, `porto` (o deque do barco), `barraca-do-jogo` (a barraca do minijogo, atrás das barracas 5 e 6) com a `tela`, `atalhos` (a prancha e a escada de caixotes dos telhados), `marco-torre-de-doces` (topo a 12,15 m, 31/10/2026) e 100 `col-*` mais o `col-terreno` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6`, `barco` e `cais` (o porto do barco), `jogar` (na frente da tela) | não tem | 33.514 | 1.253 KB |
+| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10`, `marco-pinaculos` (os pináculos de coral no mar, topo a 9,1 m, 31/10/2026) e 73 `col-*` mais o `col-terreno` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho`, `coral-muda-1`…`coral-muda-4` | `balancar` (2 s, as algas) | 20.460 | 679 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
 | `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, os quatro `coral-<tipo>-desbotado`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 2.488 | 81 KB |

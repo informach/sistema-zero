@@ -88,12 +88,12 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 | `farol.glb` | `farol.py` | grupo `Farol` | `farol` (com o filho `subida`), `porta` (folha e maçaneta, pivô na dobradiça; y negativo abre para fora), `vidro`, `lampada`, `facho`, os `col-cil-pedra-farol-*`, `col-degrau-farol-*`, `col-cil-lanterna-farol-1` e os da subida (abaixo), com as âncoras dela | 6.838 | 262 KB |
 | `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier` (com o filho `gruta`), `barquinho-decorativo` (o barquinho a remo e a corda até ele, com o casco no `col-barco-1`), os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1`, os `col-gruta-*` e `col-cil-rocha-gruta-*` e as âncoras `barco` (o barco da viagem atracado na linha d'água, giro com a proa para o mar), `embarque` (no tampo, longe da luneta; também o desembarque), `segredo-mergulho`, `mergulho-gruta` e `area-mergulho-gruta` | 3.932 | 170 KB |
 | `ponte.glb` | `ponte.py` | uma peça na origem (instanciada) | `tabua`, `poste`, `corda` | 192 | 9 KB |
-| `ilhas-do-anel.glb` | `ilhas_anel.py` | centro de cada ilha, y = 0 no mar | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` | 19.336 | 527 KB |
+| `ilhas-do-anel.glb` | `ilhas_anel.py` | o mesmo de cada ilha completa (centro dela, y = 0 no mar; nas Nuvens o mar fica em −7) | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` (uma malha cada, materiais `ilha` e, no Vale, `lava`) | 17.434 | 549 KB |
 | `boias.glb` | `boias.py` | uma peça na linha d'água (instanciada) | `boia`, `corda`, `flutuador` | 1.208 | 28 KB |
 | `cata-vento.glb` | `cata_vento.py` | base do poste (`CATA_VENTO` em `medidas.ts`, ao lado da horta) | `poste`, `helice` (pivô no cubo, gira em volta do z do three) e o `col-cil-poste-cata-vento-1` | 662 | 42 KB |
 | `florada.glb` | `florada.py` | cada nível no meio de um canteirinho (y = 0 no chão); os pontos no mundo | `florada-1`, `-2`, `-3` e os Empty `ponto-florada-1` a `-24` | 1.424 | 69 KB |
 | `segredos-da-ilha.glb` | `segredos_ilha.py` | mundo (ilha central na origem) | `cipo-1` (pivô no galho), `arvore-do-cipo`, `copa-cipo`, `deque-do-cipo`, a âncora `segredo-cipo` e os `col-cil-tronco-cipo-1`, `col-deque-segredo-1`, `col-cil-poste-segredo-*` | 1.440 | 46 KB |
-| **total** | | | | **66.028** | **2,21 MB** |
+| **total** | | | | **63.182** | **2,21 MB** |
 
 ### O que o código liga, desliga e mexe
 
@@ -144,11 +144,20 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
   - `tabua`, `poste` (um par a cada 6 tábuas) e `corda` são malhas instanciadas;
   - quebrada, a ponte fica cinza e sem corda. Na chegada, tábuas, postes e corda aparecem junto com a
     animação de antes.
-- **Ilhas do anel**:
-  - o código gira cada ilha para o +x do modelo, o lado da chegada, sem enfeites num corredor,
-    ficar virado para a ilha central;
-  - cada material vai do cinza `#b3b8c1` para a cor de verdade conforme a ponte abre, e a lava do
-    Vale acende junto.
+- **Ilhas do anel** (a silhueta, refeita em 31/10/2026):
+  - sai da ilha completa (`src/assets/ilhas/<ilha>.glb`, com os marcos): o script junta as malhas
+    que desenham (sem `col-*` e `escalada-*`), tira as peças menores que 0,5 m, decima cada peça
+    pela área até uns 2.900 triângulos por ilha (a lava e as peças na beira da caixa sempre ficam) e
+    passa a cor de cada material para a cor por vértice (`COLOR_0`, material `ilha`). Fica com a
+    altura e a largura da completa, no mesmo referencial, para a troca na ponte não mudar o tamanho;
+    ao regerar uma ilha completa, rode o `ilhas_anel.py` de novo;
+  - o código gira cada ilha (a leve e a completa, com `giroDaIlha`) para o +x do modelo, o lado da
+    chegada, ficar virado para a ilha central;
+  - a tinta da ilha (`pintura-da-ilha.ts`) vai do cinza `#b3b8c1` para a cor de cada vértice conforme
+    a ponte abre, e a lava do Vale (material `lava`) acende junto. Quem colide é o
+    `apoiosDaIlhaLeve` (topo em y = 1, onde fica o tampo da silhueta), não a malha;
+  - teste: `tests/silhuetas-das-ilhas.test.ts` (alvos de altura nas duas versões, uma malha de até 3
+    mil triângulos, cor por vértice, altura e largura a menos de 5% da completa, contorno de cima).
 - **Boias** (`src/mundo/boias.tsx`): a linha que marca até onde se nada, em volta da sua ilha
   (42 m do centro, depois da parte rasa) e de cada ilha do anel aberta (19 m do centro dela, menos a
   Ilha das Nuvens, que fica no alto). `boia`, `corda` e `flutuador` são malhas instanciadas; a corda

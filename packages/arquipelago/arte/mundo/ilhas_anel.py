@@ -1,16 +1,22 @@
-"""As seis ilhas do anel, versão leve (a silhueta que você vê de longe e que ganha cor quando a
-ponte abre).
+"""As seis ilhas do anel, versão leve: a silhueta que você vê de longe e que ganha cor quando a
+ponte abre.
 
-Referencial: o centro de cada ilha, com y = 0 no nível do mar (a Ilha das Nuvens fica num grupo
-a y = 7 no jogo). O tampo é plano em y = 1 até ~12,5 de raio, em cima do colisor de antes
-(cilindro de raio 12,5 com o topo em y = 1), e a ponte chega na borda a 12 do centro.
+Desde 31/10/2026 a silhueta sai das ilhas completas (`src/assets/ilhas/<ilha>.glb`), com os marcos:
+o mesmo contorno, a mesma altura e a mesma largura, para a troca na ponte não mudar o tamanho. Cada
+ilha vira UMA malha de até `TETO` triângulos, com a cor de cada material passada para a cor por
+vértice (`COLOR_0`) num material só, `ilha`; a lava do Vale fica no material `lava`, que brilha.
+
+Referencial: o mesmo do arquivo da ilha completa (o jogo põe a leve e a completa no mesmo grupo,
+`centroNoAnel`, e gira as duas com `giroDaIlha`). O centro da ilha na origem, y = 0 no mar, o tampo
+em y = 1 (em cima do colisor da leve, `apoiosDaIlhaLeve`) e a chegada da ponte no +x. Nas Nuvens o
+grupo fica a y = 7 (`ALTURA_DAS_NUVENS`): no arquivo o tampo continua em y = 1 e o mar fica em -7.
 
 Um nó por ilha, com o `id` do contrato: `bosque`, `vila-doce`, `recife`, `pico`,
-`vale-dos-dinos`, `nuvens`. As cores são as de verdade: o jogo puxa cada material para o cinza
-antes do posto e devolve a cor conforme a ponte abre (a lava do Vale acende junto).
+`vale-dos-dinos`, `nuvens`. O jogo puxa as cores para o cinza antes do posto e as devolve
+conforme a ponte abre (a lava acende junto).
 
-A CHEGADA da ponte é o +x de cada ilha (no jogo): o jogo gira o nó para o +x olhar para a ilha
-central, e aqui nada fica num corredor de ~5 de largura do meio da ilha até a borda nesse lado.
+Os ajudantes de cima (`base`, `contorno`, `coral`, `pirulito`…) desenham o chão e algumas peças das
+ilhas completas (`arte/ilhas`, `arte/ilhas-b`), que os importam daqui.
 """
 from lib_mundo import *
 
@@ -89,77 +95,9 @@ def arvore_leve(x, z, s=1.0, copa='copa', seed=0, y=TOPO):
     return p
 
 
-def pinheiro_leve(x, z, s=1.0, neve=False, y=TOPO):
-    bx, by = g(x, z)
-    p = [cyl(0.16 * s, 0.8 * s, (bx, by, y + 0.4 * s), 'tronco', verts=6)]
-    for k, (z0, r, h) in enumerate(((0.6, 1.2, 1.6), (1.5, 0.9, 1.4), (2.3, 0.6, 1.2))):
-        p.append(cone(r * s, h * s, (bx, by, y + (z0 + h / 2) * s), 'pinheiro', verts=7))
-        if neve:
-            p.append(cone(r * s * 0.45, h * s * 0.4, (bx, by, y + (z0 + h * 0.8) * s), 'neve', verts=7))
-    return p
-
-
-def moita_leve(x, z, s=1.0, m='copaEscura', y=TOPO):
-    bx, by = g(x, z)
-    return [superellipsoid((1.4 * s, 1.3 * s, 0.9 * s), (bx, by, y + 0.35 * s), m, e1=0.8, e2=0.9, seg=8, ring=5)]
-
-
 def pedra_leve(x, z, s, m='pedra', seed=0, y=TOPO):
     bx, by = g(x, z)
     return [rock((bx, by, y - 0.15), (1.4 * s, 1.2 * s, 0.9 * s), m, seed=seed, subdiv=1, rough=0.2)]
-
-
-# ------------------------------------------------------------------ as ilhas
-def bosque():
-    p = base(1.0 * 1.7 * 2, lobo=LOBO_DO_BOSQUE)
-    for i, (x, z, s, c) in enumerate([(-6, 3, 1.1, 'copa'), (4, 6, 1.3, 'copaEscura'), (0, -7, 1.0, 'copaFunda'),
-                                      (7, -3, 1.2, 'copa'), (-7, -4, 1.25, 'copaEscura'), (-2, 8, 0.95, 'copa'),
-                                      (8.5, 3.5, 0.9, 'copaFunda'), (-9, 0.5, 0.85, 'copaFunda'), (3, -9.5, 0.9, 'copa')]):
-        p += arvore_leve(x, z, s, c, seed=i)
-    # Casa na árvore no meio: tronco grosso, deque, casinha com telhado rosa e escada.
-    p.append(cyl(0.55, 3.2, (0, 0, TOPO + 1.6), 'tronco', verts=8, r2=0.42))
-    p.append(cyl(1.9, 0.22, (0, 0, TOPO + 3.2), 'troncoClaro', verts=12, bevel=0.05))
-    p.append(box((2.4, 2.2, 1.5), (0, 0, TOPO + 4.05), 'casaArvore', bevel=0.06, segs=1))
-    p.append(cone(2.0, 1.3, (0, 0, TOPO + 5.45), 'telhadoArvore', verts=4, rot=(0, 0, R(45))))
-    p.append(box((0.6, 0.06, 0.95), (0, -1.12, TOPO + 3.85), 'tronco', bevel=0.02, segs=1))
-    p.append(cyl(0.28, 0.06, (0.9, -1.12, TOPO + 4.2), 'cupulaAzul', verts=10, rot=(R(90), 0, 0)))
-    for k in range(6):
-        p.append(box((0.7, 0.08, 0.06), (0, -1.9, TOPO + 0.35 + k * 0.5), 'troncoClaro', bevel=0.0))
-    for x in (-0.36, 0.36):
-        p.append(box((0.07, 0.07, 3.2), (x, -1.9, TOPO + 1.6), 'tronco', bevel=0.0))
-    # Toquinhas de bicho e cogumelos.
-    for x, z in ((5, -7), (-4.5, 7.5)):
-        bx, by = g(x, z)
-        p.append(uvball(0.9, (bx, by, TOPO - 0.2), 'terraIlha', seg=10, ring=5, scale=(1, 1, 0.75)))
-        p.append(cyl(0.38, 0.12, (bx, by - 0.62, TOPO + 0.25), 'black', verts=10, rot=(R(80), 0, 0)))
-    for i, (x, z) in enumerate(((2, 3), (-3.2, -2), (5.5, 1), (-1, -4.5), (1.5, 9))):
-        bx, by = g(x, z)
-        p.append(cyl(0.12, 0.4, (bx, by, TOPO + 0.2), 'white', verts=6))
-        p.append(uvball(0.32, (bx, by, TOPO + 0.42), 'red', seg=8, ring=4, scale=(1, 1, 0.6)))
-    for x, z in ((-10, -5), (10, -6), (6.5, 9.5)):
-        p += moita_leve(x, z, 1.1)
-    # A ponta de campo do lado de fora (`LOBO_DO_BOSQUE`), com o lote da cabana livre no meio.
-    p += arvore_leve(-16.6, -6.8, 0.85, 'copaFunda', seed=20)
-    p += arvore_leve(-16.4, 6.9, 0.85, 'copa', seed=21)
-    for x, z in ((-13.8, -6.4), (-13.4, 6.6)):
-        p += moita_leve(x, z, 0.9)
-    return p
-
-
-def casinha_doce(x, z, parede, cupula, rot=0.0):
-    bx, by = g(x, z)
-    p = [box((2.4, 2.2, 1.9), (bx, by, TOPO + 0.95), parede, bevel=0.2, segs=1)]
-    p.append(uvball(1.45, (bx, by, TOPO + 1.85), cupula, seg=10, ring=6, scale=(1, 1, 0.8)))
-    # Cobertura que escorre (bolinhas brancas na borda da cúpula) e a cereja.
-    for k in range(7):
-        a = 2 * math.pi * k / 7
-        p.append(uvball(0.27, (bx + math.cos(a) * 1.3, by + math.sin(a) * 1.3, TOPO + 1.8), 'doceBranco', seg=5, ring=3))
-    p.append(uvball(0.28, (bx, by, TOPO + 3.05), 'doceVermelho', seg=6, ring=4))
-    da, db = math.cos(rot - math.pi / 2), math.sin(rot - math.pi / 2)
-    # A porta afunda 2 cm no chão: a base dela não fica no plano da base da casinha.
-    p.append(box((0.7, 0.1, 1.12), (bx + da * 1.12, by + db * 1.12, TOPO + 0.54), 'doceBranco', bevel=0.04, segs=1,
-                 rot=(0, 0, rot)))
-    return p
 
 
 def pirulito(x, z, cor, s=1.0):
@@ -184,31 +122,6 @@ def bengala(x, z):
     p = [tube(pts, [0.09] * len(pts), 'doceBranco', seg=6)]
     for k in range(4):
         p.append(torus(0.095, 0.03, (bx, by, TOPO + 0.25 + k * 0.38), 'doceVermelho', seg=6, rseg=3))
-    return p
-
-
-def vila_doce():
-    p = base(3 * 1.7, topo='gramaClara', borda_topo='doceBranco')
-    cores = [('casinhaRosa', 'cupulaRosa'), ('casinhaCreme', 'cupulaLaranja'), ('casinhaAzul', 'cupulaAzul')]
-    for i, (x, z, r) in enumerate([(-3, 2, 0.4), (2, -3, 2.6), (3.5, 2.5, -0.6), (-2, -3.5, 3.4), (0, 0, 0.0),
-                                   (-6.5, -1, 1.5), (6.5, -1.5, -1.2)]):
-        if (x, z) == (0, 0):
-            continue
-        par, cup = cores[i % 3]
-        p += casinha_doce(x, z, par, cup, r)
-    # Praça no meio: fonte de chocolate (pires e gota).
-    p.append(cyl(1.4, 0.4, (0, 0, TOPO + 0.2), 'doceBranco', verts=16, bevel=0.06))
-    p.append(cyl(1.15, 0.12, (0, 0, TOPO + 0.42), 'terraIlha', verts=16))
-    p.append(cyl(0.18, 1.1, (0, 0, TOPO + 0.9), 'doceBranco', verts=8))
-    p.append(uvball(0.5, (0, 0, TOPO + 1.55), 'terraIlha', seg=10, ring=6, scale=(1, 1, 0.6)))
-    for i, (x, z, c) in enumerate([(-8, 5, 'doceVermelho'), (7, 6, 'doceVerde'), (0, 8.5, 'cupulaRosa'),
-                                   (-1, -8.5, 'cupulaAzul'), (9, -6, 'doceVermelho'), (-8.5, -6.5, 'cupulaLaranja')]):
-        p += pirulito(x, z, c, 1.0 + 0.2 * (i % 2))
-    for x, z, c in ((5, 8, 'doceVerde'), (-5, 8, 'cupulaLaranja'), (9.5, 1.5, 'cupulaRosa'), (-10, 1.5, 'doceVerde'),
-                    (4, -8, 'cupulaAzul'), (-4.5, -8, 'doceVermelho')):
-        p += jujuba(x, z, c)
-    for x, z in ((1.6, 5.5), (-1.6, 5.5)):
-        p += bengala(x, z)
     return p
 
 
@@ -237,212 +150,258 @@ def coqueiro_leve(x, z, s=1.0, y=TOPO, incl=(0.6, 0.0)):
     return p
 
 
-def recife():
-    p = base(4 * 1.7, topo='areia', praia='areiaMolhada')
-    # Lagoa no meio: água rasa num anel de areia molhada.
-    p.append(slab(blob(0, 0, 5.8, 5.3, seed=2, n=32, wob=0.06), TOPO - 0.05, TOPO + 0.02, 'areiaMolhada', bevel=0.0,
-                  name='beiraLagoa', fundo=False))
-    p.append(slab(blob(0, 0, 5.2, 4.7, seed=2, n=32, wob=0.06), TOPO - 0.04, TOPO + 0.04, 'lagoa', bevel=0.0,
-                  name='lagoa', fundo=False))
-    p.append(slab(blob(0.4, 0.2, 2.6, 2.2, seed=5, n=24, wob=0.08), TOPO - 0.03, TOPO + 0.05, 'lagoaFunda', bevel=0.0,
-                  name='funda', fundo=False))
-    # Corais em volta da lagoa e dentro dela.
-    cores = ['coral', 'coralRosa', 'coralLilas']
-    for i in range(9):
-        a = i * 0.7
-        p += coral(math.cos(a) * 7.2, math.sin(a) * 7.2, cores[i % 3], 0.9 + 0.25 * (i % 3), seed=i)
-    for i, (x, z) in enumerate(((1.5, -1.5), (-2, 1.2), (2.5, 2))):
-        p += coral(x, z, cores[(i + 1) % 3], 0.6, seed=20 + i, y=TOPO - 0.05)
-    # Conchas, estrelas do mar, coqueiros e pedras.
-    for i, (x, z) in enumerate(((9.5, 3), (-9, -4), (3, 10), (-5, -9.5), (10, -5))):
-        bx, by = g(x, z)
-        o = uvball(0.35, (bx, by, TOPO + 0.05), 'concha', seg=8, ring=4, scale=(1, 0.8, 0.45))
-        p.append(o)
-        p.append(prism(star_pts(0.4, 0.17, 5, i * 20), 0.06, (bx + 0.8, by + 0.4, TOPO + 0.04), 'coral',
-                       rot=(R(90), 0, 0)))
-    for x, z, s in ((-8.5, 4.5, 1.0), (8, 7, 0.9), (0.5, -10, 1.1)):
-        p += coqueiro_leve(x, z, s)
-    for i, (x, z, s) in enumerate(((10, 1, 1.0), (-10.5, -1, 0.9), (6, -9, 0.8))):
-        p += pedra_leve(x, z, s, 'pedraClara', seed=i)
-    return p
 
 
-def montanha(cx, cz, r, h, semente, picos=7):
-    """Montanha facetada: anéis irregulares subindo até o cume, rocha embaixo e neve em cima."""
-    rnd = random.Random(semente)
-    verts, faces = [], []
-    aneis = [(0.0, 1.0), (0.3, 0.78), (0.58, 0.52), (0.8, 0.28)]
-    n = picos * 2
-    bx, by = g(cx, cz)
-    for k, (t, kr) in enumerate(aneis):
-        for i in range(n):
-            a = 2 * math.pi * i / n + k * 0.25
-            rr = r * kr * (1 + rnd.uniform(-0.12, 0.12))
-            verts.append((bx + math.cos(a) * rr, by + math.sin(a) * rr, TOPO - 0.3 + h * t + rnd.uniform(-0.25, 0.25)))
-    verts.append((bx + r * 0.05, by, TOPO - 0.3 + h))
-    for k in range(len(aneis) - 1):
-        for i in range(n):
-            a0, a1 = k * n + i, k * n + (i + 1) % n
-            b0, b1 = (k + 1) * n + i, (k + 1) * n + (i + 1) % n
-            faces += [(a0, a1, b1), (a0, b1, b0)]
-    topo = len(verts) - 1
-    k = len(aneis) - 1
-    for i in range(n):
-        faces.append((k * n + i, k * n + (i + 1) % n, topo))
-    o = malha('montanha', verts, faces, 'rochaMontanha', cima=False)
+# ------------------------------------------------------------------ a silhueta
+ILHAS_COMPLETAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src', 'assets', 'ilhas')
+ILHAS = ['bosque', 'vila-doce', 'recife', 'pico', 'vale-dos-dinos', 'nuvens']
+
+TETO = 3000            # triângulos por ilha (o pedido)
+ALVO = 2900            # o que se pede ao decimar (sobra para o arredondamento)
+MIUDO = 0.5            # peça menor que isto (m, a maior medida) não se vê de longe
+PLANO = math.radians(2)  # faces quase no mesmo plano e da mesma cor viram uma
+POTENCIA = 0.3         # quanto a área pesa na parte de cada peça (abaixo de 1: as pequenas ganham)
+LINEAR = 0.02          # e o pedaço que cresce com a área (o chão e as montanhas)
+ESTREITO = 0.5         # peça comprida e fina (poste, mastro) conta como uma faixa desta largura
+PISO = 6               # menos triângulos que isto não desenham a peça: ela sai
+PESO_DO_MARCO = 3.0    # o marco da ilha (`marco-*`), o que se reconhece de longe
+BEIRA = 0.25           # peça a menos disto da caixa da ilha fica (a altura e a largura não mudam)
+
+
+def _nao_desenha(o):
+    """Colisores (`col-*`) e formas de escalar (`escalada-*`) não aparecem no jogo."""
+    while o:
+        if o.name.startswith(('col-', 'escalada-')):
+            return True
+        o = o.parent
+    return False
+
+
+def _cor(m):
+    return tuple(m.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value)[:3]
+
+
+def _partes(bm):
+    """As peças soltas (vértices ligados por arestas)."""
+    vistos, partes = set(), []
+    for v in bm.verts:
+        if v in vistos:
+            continue
+        pilha, parte = [v], []
+        vistos.add(v)
+        while pilha:
+            a = pilha.pop()
+            parte.append(a)
+            for e in a.link_edges:
+                b = e.other_vert(a)
+                if b not in vistos:
+                    vistos.add(b)
+                    pilha.append(b)
+        partes.append(parte)
+    return partes
+
+
+def _caixa(vs):
+    return [min(v.co[i] for v in vs) for i in range(3)], [max(v.co[i] for v in vs) for i in range(3)]
+
+
+def _ler(nome):
+    """O desenho da ilha completa num bmesh só, no referencial do arquivo, com o material de cada face
+    e uma camada `no` com o nó de onde a face veio."""
+    antes = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(ILHAS_COMPLETAS, f'{nome}.glb'))
+    novos = [o for o in bpy.data.objects if o not in antes]
+    bpy.context.view_layer.update()
     bm = bmesh.new()
-    bm.from_mesh(o.data)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    bm.to_mesh(o.data)
+    camada = bm.faces.layers.int.new('no')
+    mats, nos = [], []
+    for o in novos:
+        if o.type != 'MESH' or _nao_desenha(o):
+            continue
+        me = o.data.copy()
+        me.transform(o.matrix_world)
+        idx = []
+        for m in me.materials:
+            if m not in mats:
+                mats.append(m)
+            idx.append(mats.index(m))
+        nos.append(o.name)
+        n0 = len(bm.faces)
+        bm.from_mesh(me)
+        bm.faces.ensure_lookup_table()
+        for f in bm.faces[n0:]:
+            f.material_index = idx[f.material_index] if idx else 0
+            f[camada] = len(nos) - 1
+        bpy.data.meshes.remove(me)
+    for o in novos:
+        bpy.data.objects.remove(o)
+    return bm, mats, nos
+
+
+def _decimar(bm, razao):
+    me = bpy.data.meshes.new('decimar')
+    bm.to_mesh(me)
+    o = bpy.data.objects.new('decimar', me)
+    bpy.context.collection.objects.link(o)
+    d = o.modifiers.new('d', 'DECIMATE')
+    d.ratio = razao
+    d.use_collapse_triangulate = True
+    novo = bpy.data.meshes.new_from_object(o.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+    bpy.data.objects.remove(o)
+    bpy.data.meshes.remove(me)
+    return novo
+
+
+def _material_da_ilha():
+    """`ilha`: branco que multiplica a cor de cada vértice (o glTF leva como COLOR_0)."""
+    m = bpy.data.materials.get('ilha')
+    if m:
+        return m
+    m = bpy.data.materials.new('ilha')
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes['Principled BSDF']
+    b.inputs['Roughness'].default_value = 0.9
+    at = nt.nodes.new('ShaderNodeVertexColor')
+    at.layer_name = 'Col'
+    nt.links.new(at.outputs['Color'], b.inputs['Base Color'])
+    return m
+
+
+def silhueta(nome):
+    """A versão leve de uma ilha, feita da completa:
+
+    1. junta as malhas que desenham (sem `col-*` e `escalada-*`) e solda os vértices encostados;
+    2. tira as peças miúdas e junta as faces quase no mesmo plano (não muda a forma);
+    3. reparte os triângulos entre as peças pela área (as pequenas ganham mais que a conta direta, o
+       marco ganha mais) e decima cada uma; a que fica com menos de `PISO` sai. A lava e as peças na
+       beira da caixa (o topo, as pontas) sempre ficam;
+    4. pinta cada canto com a cor do material da face e deixa só os materiais `ilha` e `lava`."""
+    bm, mats, nos = _ler(nome)
+    camada = bm.faces.layers.int['no']
+    lava = {i for i, m in enumerate(mats) if m.name.split('.')[0] == 'lava'}
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
+    c0, c1 = _caixa(bm.verts)
+
+    def na_beira(vs):
+        a, b = _caixa(vs)
+        return (b[2] > c1[2] - BEIRA or a[0] < c0[0] + BEIRA or b[0] > c1[0] - BEIRA or a[1] < c0[1] + BEIRA
+                or b[1] > c1[1] - BEIRA)
+
+    tirar = []
+    for parte in _partes(bm):
+        a, b = _caixa(parte)
+        if max(b[i] - a[i] for i in range(3)) < MIUDO and not na_beira(parte):
+            tirar += parte
+    bmesh.ops.delete(bm, geom=tirar, context='VERTS')
+    bmesh.ops.dissolve_limit(bm, angle_limit=PLANO, verts=bm.verts, edges=bm.edges, delimit={'MATERIAL'})
+    bmesh.ops.triangulate(bm, faces=bm.faces)
+
+    pecas = []
+    for parte in _partes(bm):
+        faces = {f for v in parte for f in v.link_faces}
+        a, b = _caixa(parte)
+        area = max(sum(f.calc_area() for f in faces), ESTREITO * max(b[i] - a[i] for i in range(3)))
+        peso = area ** POTENCIA + LINEAR * area
+        if any(nos[f[camada]].startswith('marco-') for f in faces):
+            peso *= PESO_DO_MARCO
+        fica = na_beira(parte) or any(f.material_index in lava for f in faces)
+        pecas.append((parte, faces, len(faces), peso, fica))
+
+    def quantos(t, peso, fica, k):
+        n = min(t, k * peso)
+        if n >= min(t, PISO):
+            return n
+        return min(t, PISO) if fica else 0
+
+    def montar(k):
+        saida = bmesh.new()
+        for parte, faces, t, peso, fica in pecas:
+            n = quantos(t, peso, fica, k)
+            if n == 0:
+                continue
+            sub = bmesh.new()
+            novo = {v: sub.verts.new(v.co) for v in parte}
+            for f in faces:
+                sub.faces.new([novo[v] for v in f.verts]).material_index = f.material_index
+            if n >= t - 0.5 or any(f.material_index in lava for f in faces):
+                me = bpy.data.meshes.new('peca')
+                sub.to_mesh(me)
+            else:
+                me = _decimar(sub, n / t)
+            sub.free()
+            saida.from_mesh(me)
+            bpy.data.meshes.remove(me)
+        # A decimação deixa faces repetidas (o `validate` tira).
+        me = bpy.data.meshes.new(nome)
+        saida.to_mesh(me)
+        saida.free()
+        me.validate()
+        return me
+
+    # O k que reparte `ALVO` triângulos pela conta, para começar.
+    lo, hi = 0.0, 1e4
+    for _ in range(60):
+        k = (lo + hi) / 2
+        if sum(quantos(t, p, f, k) for _, _, t, p, f in pecas) > ALVO:
+            hi = k
+        else:
+            lo = k
+    # A decimação não acerta a conta (e peças saem de uma vez): busca o k pelo medido, entre dois.
+    k, me, abaixo, acima = lo, None, 0.0, None
+    for _ in range(10):
+        feita = montar(k)
+        n = len(feita.polygons)
+        if n <= TETO and (me is None or n > len(me.polygons)):
+            if me:
+                bpy.data.meshes.remove(me)
+            me = feita
+        else:
+            bpy.data.meshes.remove(feita)
+        if abs(n - ALVO) <= 40:
+            break
+        if n < ALVO:
+            abaixo = k
+        else:
+            acima = k
+        k = (abaixo + acima) / 2 if acima is not None else k * 1.25
     bm.free()
-    corte = TOPO - 0.3 + h * 0.55
-    pintar_por(o, lambda c, nn: 'neve' if c.z > corte else ('rochaMontanhaEscura' if nn.z < 0.35 else None))
-    lib_q.flat(o)
+    me.name = nome
+    for m in mats:
+        me.materials.append(m)
+    _pintar(me, lava)
+    o = bpy.data.objects.new(nome, me)
+    bpy.context.collection.objects.link(o)
+    assert len(me.polygons) <= TETO, f'{nome}: {len(me.polygons)} triângulos'
     return o
 
 
-def pico():
-    p = base(5 * 1.7, topo='neveSombra', praia='neve', fundo='rochaMontanhaEscura')
-    p.append(montanha(0, -1, 8.0, 10.5, semente=3, picos=7))
-    p.append(montanha(4.5, 3.5, 4.0, 5.5, semente=8, picos=5))
-    for i, (x, z, s) in enumerate(((-8, 4, 1.1), (-6, 7.5, 0.9), (8.5, -5, 1.0), (-9, -5, 1.2), (2, 9.5, 0.9),
-                                   (9.5, 3, 0.8), (-3, 9, 1.0))):
-        p += pinheiro_leve(x, z, s, neve=True)
-    # Bonecos de neve e blocos de gelo.
-    bx, by = g(6, 8)
-    p.append(uvball(0.6, (bx, by, TOPO + 0.5), 'neve', seg=10, ring=6))
-    p.append(uvball(0.42, (bx, by, TOPO + 1.3), 'neve', seg=10, ring=6))
-    p.append(cone(0.08, 0.35, (bx, by - 0.45, TOPO + 1.32), 'orange', verts=6, rot=(R(90), 0, 0)))
-    for k in (-1, 1):
-        p.append(uvball(0.05, (bx + k * 0.15, by - 0.36, TOPO + 1.45), 'black', seg=6, ring=4))
-    for i, (x, z) in enumerate(((-5, -8), (7, -8.5), (-10, 0))):
-        bx, by = g(x, z)
-        p.append(box((1.2, 1.0, 0.9), (bx, by, TOPO + 0.4), 'cupulaAzul', bevel=0.12, segs=1, rot=(0, 0, i)))
-    return p
-
-
-def vulcao(cx, cz):
-    bx, by = g(cx, cz)
-    p = []
-    o = cyl(5.5, 6.0, (bx, by, TOPO - 0.2 + 3.0), 'rochaVulcao', verts=10, r2=1.9, smooth_sides=False)
-    rnd = random.Random(4)
-    for v in o.data.vertices:
-        if v.co.z < 2.9:
-            v.co.x *= 1 + rnd.uniform(-0.08, 0.08)
-            v.co.y *= 1 + rnd.uniform(-0.08, 0.08)
-    p.append(o)
-    p.append(cyl(2.0, 0.5, (bx, by, TOPO + 5.9), 'rochaVulcaoEscura', verts=10, r2=1.85, smooth_sides=False))
-    p.append(cyl(1.55, 0.12, (bx, by, TOPO + 6.05), 'lava', verts=10))
-    # Rios de lava descendo pelas encostas.
-    for k, a in enumerate((-1.2, -0.3, 0.9)):
-        pts = []
-        for t in (0.0, 0.3, 0.6, 0.9):
-            rr = 1.6 + (5.2 - 1.6) * t
-            pts.append((bx + math.cos(a + 0.15 * t) * rr, by + math.sin(a + 0.15 * t) * rr,
-                        TOPO - 0.2 + 6.05 - 6.0 * t + 0.08))
-        p.append(tube(pts, [0.28, 0.32, 0.36, 0.3], 'lava', seg=5))
-    # Fumacinha.
-    for k, (dx, dz, r) in enumerate(((0, 0, 0.9), (0.5, 0.6, 0.7), (-0.3, 1.3, 0.55))):
-        p.append(uvball(r, (bx + dx, by + dz * 0.3, TOPO + 6.8 + dz), 'nuvemSombra', seg=8, ring=5))
-    return p
-
-
-def samambaia(x, z, s=1.0, y=TOPO):
-    bx, by = g(x, z)
-    return [leaf((bx, by, y), 2 * math.pi * k / 6 + 0.3, 1.1 * s, 0.25 * s, 'samambaia', lift=0.7 * s, droop=0.75 * s,
-                 fold=0.2, teeth=6, n=6) for k in range(6)]
-
-
-def vale_dos_dinos():
-    p = base(6 * 1.7, topo='gramaEscura')
-    p += vulcao(0, -2)
-    for i, (x, z, s) in enumerate(((-7, 4, 1.0), (6, 5.5, 1.2), (-4, 8, 0.8), (8.5, -1, 0.9), (-9, -2, 1.1),
-                                   (3, 9, 0.9), (-6.5, -7.5, 1.0))):
-        p += samambaia(x, z, s)
-    for x, z, s in ((-9.5, 5.5, 1.1), (9, 6.5, 1.0)):
-        p += coqueiro_leve(x, z, s, incl=(-0.5, 0.3))
-    # Ninho com ovos de dino pintados.
-    bx, by = g(2.5, 5.5)
-    p.append(torus(0.9, 0.3, (bx, by, TOPO + 0.15), 'palha', seg=12, rseg=5))
-    for k, (dx, dy) in enumerate(((0, 0), (0.42, 0.2), (-0.38, 0.25))):
-        o = uvball(0.36, (bx + dx, by + dy, TOPO + 0.45), 'ovoDino', seg=10, ring=6, scale=(0.8, 0.8, 1.1))
-        p.append(o)
-        p.append(uvball(0.09, (bx + dx + 0.2, by + dy - 0.15, TOPO + 0.58), 'pintaDino', seg=6, ring=4))
-    # Ossada e pegadas.
-    bx, by = g(-3, 6)
-    p.append(cyl(0.12, 2.4, (bx, by, TOPO + 0.12), 'osso', verts=6, rot=(0, R(90), 0.4)))
-    for k in range(4):
-        p.append(torus(0.4, 0.08, (bx - 0.8 + k * 0.5, by + 0.2 * k, TOPO + 0.2), 'osso', seg=10, rseg=4,
-                       rot=(R(90), 0, 0.4), arc=180))
-    for k in range(5):
-        bx, by = g(5.5 + k * 0.9, -6 + (k % 2) * 0.6)
-        p.append(cyl(0.3, 0.03, (bx, by, TOPO + 0.005), 'terraIlhaEscura', verts=7))
-    for i, (x, z, s) in enumerate(((7, -6.5, 1.0), (-8.5, 1.5, 0.8), (-2, -9.5, 1.1))):
-        p += pedra_leve(x, z, s, 'rochaVulcaoEscura', seed=i + 5)
-    return p
-
-
-def nuvem(x, y, z, s, seed):
-    rnd = random.Random(seed)
-    bx, by = g(x, z)
-    p = []
-    for k, (dx, dz, dy, r) in enumerate(((0, 0, 0, 1.2), (1.1, 0.2, -0.15, 0.9), (-1.05, -0.1, -0.2, 0.85),
-                                         (0.2, -0.6, 0.25, 0.75))):
-        p.append(uvball(r * s, (bx + dx * s, by - dz * s, y + dy * s), 'nuvem' if k % 2 == 0 else 'nuvemSombra',
-                        seg=8, ring=5, scale=(1, 1, 0.8)))
-    return p
-
-
-def nuvens():
-    p = base(7 * 1.7, topo='gramaClara', praia='terraIlha', flutua=True)
-    for i, (x, y, z, s) in enumerate(((3, 1.8, 3, 1.0), (-4, 1.4, -2, 1.3), (1, 2.6, -5, 0.9), (-6, 2.2, 5, 0.8),
-                                      (7, 2.0, -4, 0.85))):
-        p += nuvem(x, TOPO + y, z, s, i)
-    # Arco-íris saindo de uma nuvem para outra.
-    cores = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
-    for k, c in enumerate(cores):
-        p.append(torus(4.6 - k * 0.32, 0.17, (0, -0.5, TOPO + 0.4), c, seg=16, rseg=4, rot=(R(90), 0, R(15)),
-                       arc=180))
-    for i, (x, z, s) in enumerate(((-8, -5, 0.9), (8.5, 5, 1.0), (-2, 9, 0.85))):
-        p += arvore_leve(x, z, s, 'copaClara', seed=40 + i)
-    for x, z in ((5, 9), (-9.5, 2), (9.5, -0.5)):
-        p += moita_leve(x, z, 0.9, 'copa')
-    return p
-
-
-BASE = {'topo', 'borda', 'praia', 'barranco', 'beira', 'raiz'}
-
-
-def abrir_chegada(objs):
-    """Tira do corredor da chegada (+x do jogo = +x do Blender) o que não é chão."""
-    bpy.context.view_layer.update()
-    ficam = []
-    for o in objs:
-        if o.name.split('.')[0] in BASE:
-            ficam.append(o)
-            continue
-        cantos = [o.matrix_world @ Vector(c) for c in o.bound_box]
-        c = sum(cantos, Vector()) / 8
-        if c.x > 5.0 and abs(c.y) < 2.6 and c.z > TOPO - 0.5:
-            bpy.data.objects.remove(o)
-        else:
-            ficam.append(o)
-    return ficam
-
-
-ILHAS = {
-    'bosque': bosque,
-    'vila-doce': vila_doce,
-    'recife': recife,
-    'pico': pico,
-    'vale-dos-dinos': vale_dos_dinos,
-    'nuvens': nuvens,
-}
+def _pintar(me, lava):
+    """A cor de cada face vai para os cantos (`Col`); fica o material `ilha` e, no Vale, o `lava`.
+    Sombreado liso: os vértices se dividem só onde a cor muda (o arquivo fica leve)."""
+    cores = [_cor(m) for m in me.materials]
+    attr = me.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
+    for p in me.polygons:
+        c = cores[p.material_index]
+        for li in p.loop_indices:
+            attr.data[li].color = (c[0], c[1], c[2], 1)
+    materiais = [_material_da_ilha()]
+    if lava:
+        m = me.materials[min(lava)]
+        m.name = 'lava'
+        materiais.append(m)
+    eh_lava = [p.material_index in lava for p in me.polygons]
+    me.materials.clear()
+    for m in materiais:
+        me.materials.append(m)
+    for p, lv in zip(me.polygons, eh_lava):
+        p.material_index = 1 if lv else 0
+        p.use_smooth = True
 
 
 def main():
     lib_q.reset()
-    exportar('ilhas-do-anel', {nome: abrir_chegada(f()) for nome, f in ILHAS.items()})
+    exportar('ilhas-do-anel', {nome: [silhueta(nome)] for nome in ILHAS})
 
 
 if __name__ == '__main__':

@@ -24,21 +24,27 @@ COL_PRAIA = ('col-cais-beira', 'col-cais-deque', 'col-cil-estaca-cais')
 COL_TORRE = ('col-cais-deque', 'col-cais-degrau', 'col-cais-patamar', 'col-cais-ponte', 'col-cais-torre',
              'col-guarda-cais', 'col-cil-estaca-cais')
 ESPERADO = {
-    'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu', 'porto'),
+    'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu', 'porto', 'brinquedo-do-festival', 'tela',
+                     'marco-do-cume'),
              'ancoras': ILHA + ('palco', 'iglu', 'cume', 'parede-de-gelo', 'iglu-dentro', 'fogareiro')
              + tuple(f'{p}-{i}' for p in ('instrumento', 'banda', 'musico') for i in ('xilofone', 'violao', 'bateria'))
-             + PORTO,
-             'colisores': COL_PRAIA},
+             + PORTO + ('jogar', 'lote-cabana-a', 'lote-cabana-b'),
+             'colisores': COL_PRAIA + ('col-quiosque',)},
     'pico-props': {'nos': ('pinheiro-nevado-a', 'pinheiro-nevado-b', 'bloco-de-gelo', 'boneco-de-neve', 'painel-de-gelo')},
     'pico-treno': {'nos': ('treno',)},
-    'vale-dos-dinos': {'nos': ('chao', 'vulcao', 'lava', 'cenario', 'porto'),
-                       'ancoras': ILHA + ('observatorio', 'escavacao', 'ninho-1', 'cratera') + PORTO,
-                       'colisores': COL_PRAIA},
-    'vale-dos-dinos-props': {'nos': ('samambaia-gigante', 'cavalinha', 'ninho', 'ovo-dino', 'osso', 'cranio-fossil')},
+    'vale-dos-dinos': {'nos': ('chao', 'vulcao', 'lava', 'cenario', 'porto', 'cinza-quente'),
+                       'ancoras': ILHA + ('observatorio', 'escavacao', 'ninho-1', 'cratera') + PORTO
+                       + ('cinza-quente-area', 'segredo-montaria'),
+                       'colisores': COL_PRAIA + ('col-rampa-cinza', 'col-terraco-segredo')},
+    'vale-dos-dinos-props': {'nos': ('samambaia-gigante', 'cavalinha', 'ninho', 'ovo-dino', 'osso', 'cranio-fossil')
+                             + tuple(f'fossil-{f}' for f in ('cranio-rex', 'dente', 'garra', 'vertebra',
+                                                             'chifre-triceratopo', 'ovo'))},
     'nuvens': {'nos': ('chao', 'cenario') + tuple(f'fio-{k}' for k in range(1, 7)) + tuple(f'plataforma-{k}' for k in range(1, 5))
-               + ('porto',),
-               'ancoras': ILHA + ('tear', 'ninho', 'balao', 'topo-plataforma-4') + PORTO,
-               'colisores': COL_TORRE},
+               + ('porto', 'marco-torre-de-nuvem'),
+               'ancoras': ILHA + ('tear', 'ninho', 'balao', 'topo-plataforma-4') + PORTO
+               + tuple(f'canteiro-ceu-{k}' for k in range(1, 7)) + ('segredo-balao',),
+               'colisores': COL_TORRE + ('col-canteiro-ceu', 'col-cil-nuvem-segredo', 'col-cil-torre-nuvem',
+                                         'col-arco-marco')},
     'nuvens-balao': {'nos': ('balao',), 'clipes': ('flutuar',)},
     'alto-do-farol': {'nos': ('sala', 'escada', 'mesa-da-iris', 'vidros', 'lente'),
                       'ancoras': ('entrada', 'lanterna', 'mesa', 'chegada', 'leitura', 'camera-varanda'),
