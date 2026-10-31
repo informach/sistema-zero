@@ -13,8 +13,8 @@ import {
 
 /**
  * A família no Arquipélago (28/10/2026, fase1-18): o resumo da semana de cada criança e as
- * permissões de visita que os pais escolhem. Lido pela área dos pais do Kids; as permissões são
- * lidas pelo jogo quando as visitas chegarem (Fase 3).
+ * permissões de visita que os pais escolhem. Lido pela área dos pais do Kids; o serviço confere as
+ * permissões nas visitas de irmãos e de amigos e nas fotos no Clube.
  */
 
 /** Quantos dias o resumo cobre: hoje e os 6 anteriores, no dia de São Paulo. */
@@ -91,7 +91,7 @@ export type SemanaDaFamiliaParaOsPais = z.infer<typeof SemanaDaFamiliaParaOsPais
 
 /**
  * As permissões de visita da família (ECA Digital, Lei 15.211/2025, art. 21: interação restrita
- * por padrão, os pais liberam). As visitas são da Fase 3: por enquanto só se grava e se lê.
+ * por padrão, os pais liberam). O serviço confere estas permissões nas visitas e nas fotos.
  */
 export const PermissoesDaFamiliaSchema = z.strictObject({
   visitasDeIrmaos: z.boolean(),

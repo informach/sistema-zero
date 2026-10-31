@@ -1,9 +1,40 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
 Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
-código, conteúdo, prova local e implantação separados. Salvamento atual V20, teto de
-65.536 bytes UTF-8, moedas do jogo até 100 por semana. Seções datadas preservam o histórico;
+código, conteúdo, prova local e implantação separados. Salvamento atual V22, teto de
+65.536 bytes UTF-8, moedas do jogo até 100 por semana. Seções datadas preservam o histórico
+(as menções a V12, V18 e V20 nelas dizem quando um campo entrou, não a versão atual);
 consultar o contrato e o teste de documento cheio antes de acrescentar campos.
+
+## Revisão dos lotes de 31/10/2026: obra estendida, V22 e o que mudou
+
+Auditoria em `.audits/architectural-analysis-2026-10-31-arquipelago-revisao-dos-lotes.md`; os merges
+de cada item estão no índice `docs/arquipelago-estado-atual.md`.
+
+- **Salvamento V22** (contrato): percursos em tupla (`ResultadoCompacto`, com a subida do Farol),
+  `vale.fosseis` (B4), `ceu` (o jardim do céu, B6) e `florada`. A V21 trouxe o Nico morador e o
+  filhote como companhia.
+- **Obra estendida** (`estado/obra-estendida.ts`, documento próprio do serviço, migração 0023):
+  iglu, terreno e andar de cima. ⚠️ A guarda do aparelho tem o `enviado {revisaoBase, obra}`: uma
+  resposta perdida com o serviço já gravado (revisão = base + 1 e a mesma obra) é reconhecida como
+  confirmada e só o resto pendente sobe de novo, sem recado de "outro aparelho"; um conflito de
+  verdade guarda a cópia daqui na chave `...:recuperacao` antes de adotar (C1/N1). O Desfazer dos
+  dois andares confere o outro andar antes de voltar (`conferirAndar`; no térreo, a fala
+  `falaDoTerreoNoAndar`), e `aplicar`, `desfazer` e `useAndarDaCasa` usam o mesmo lote, com os
+  pendurados do quarto (C1/N2). Testes: `tests/obra-estendida.test.ts`, `tests/andar-de-cima.test.ts`.
+- **Móveis no andar de cima** (C3): `AndarDeCima.moveis` (até 24) só dentro dos cômodos, fora do vão
+  e da chegada da escada; a escada não sai com móvel; "Meu quarto" e os objetos com função ficam no
+  térreo (decisão da dona). Desenho: um segundo `MoveisDaObra` a `ALTURA_DO_ANDAR`, que sai com o
+  andar escondido. Navegador: `playground/verificar-andar-e-terreno-browser.ts`.
+- **A subida por fora leva ao final** (N4): `CorridaNaIlha` tem `aoChegar`; no resultado do
+  `farol-subida` o botão principal é "Entrar na sala do alto" (o mesmo `entrar` da porta, na loja do
+  Farol). Navegador: `playground/verificar-final-farol-browser.ts`, percurso completo.
+- **Quadro do Farol** (9g): `quadroSugeridoNoFarol` e o selo "Na linguagem que você aprendeu por
+  último" no painel (`interface/quadro-das-cores.tsx`).
+- **Contrato da plataforma** (A35): a entrada aceita `versaoCompativel` (a atual e a anterior).
+- **Fronteira** (A36, `tests/fronteira.test.ts`): o leitor pega `import`, `export ... from`,
+  `import()` e `require()` com qualquer aspa, e confere também o avatar-quarto (nada da
+  plataforma) e o contrato (nada do jogo, React ou three).
 
 ## Coleções da praia e pesca (E01, 30/10/2026)
 
@@ -302,7 +333,7 @@ O playground usa a mesma entrega pura; a prova de carteira real usa bancos locai
 
 ## Mapa das visitas (L10, 30/10/2026)
 
-O salvamento atual é V18, com `ilhasVisitadas` em oito bits estáveis. `sistemas/exploracao.ts`
+O salvamento da época (L10) era V18; `ilhasVisitadas` (oito bits estáveis) vem dela. `sistemas/exploracao.ts`
 é a regra pura; `estado/exploracao.ts` respeita pausa, modo, suporte, visita e carregamento.
 `mundo/descoberta-da-ilha.tsx` só observa chão disponível: raio 12 no anel, 24 na central e
 4 no Farol aberto. Nas Nuvens, a altura mínima é 8 m. Um bit já marcado não gera nova gravação.
@@ -1271,7 +1302,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 
 ## Salvamento e tempo
 
-- `SalvamentoV12` (contrato) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
+- O salvamento do contrato (hoje V22; esta lista é de quando era a V12) com versão; as anteriores migram sozinhas (`migrarDaV1`: nenhum
   percurso corrido; `migrarDaV2`: a Capi sem amizade e nenhum bicho; `migrarDaV3`: a casa de antes
   e nenhum projeto azul; `migrarDaV4`: presente dos bichos ainda não entregue; `migrarDaV5`: a
   aparência em uso guardada; `migrarDaV6`: o Bento novo; `migrarDaV7`: nenhum turno feito; `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina; `migrarDaV10`: nenhum achado do Recife; `migrarDaV11`: nenhuma descoberta do Vale).

@@ -84,9 +84,14 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   que levou ao número está em `docs/arquipelago-regras.md`. Teste: `tests/db/arquipelago-coins.test.ts`
   (`ARQUIPELAGO_COINS_TEST_DATABASE_URL`, banco local `kids_journey_*`).
 - **Roupas do jogo** (31/10/2026, §6.28 A21): `POST /members/internal/arquipelago/avatar/pecas` na
-  mesma porta e token das moedas. Concede peças PAGAS do catálogo do avatar no `avatar_inventory`
+  mesma porta e token das moedas. Concede peças não grátis (pagas e da faixa `festa`) do catálogo do
+  avatar no `avatar_inventory`
   (idempotente pela chave única), confere o dono como nas moedas, nunca cobra. Quem decide o que foi
   conquistado é o serviço do jogo. Teste: `tests/db/arquipelago-avatar.test.ts` (mesma variável).
+  **B16 (31/10/2026):** as oito roupas das festas são da faixa `festa` do `avatar3d-catalog.ts`
+  (preço 0): comprar dá 409 `AVATAR_PART_FESTA`, a leitura as marca trancadas e vestir exige a
+  posse. Só esta porta as entrega. `tests/unit/avatar-festa-conformance.test.ts` lê o
+  `vestuario-festas.ts` do contrato pelo caminho e confere que a faixa é a `conquista` das festas.
 - ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
   antes de entrar no `.railway/variables.ts`.
 - `GET /jogador?userId&accountId&audience` (`ArquipelagoReadsService.jogador`): posição na jornada

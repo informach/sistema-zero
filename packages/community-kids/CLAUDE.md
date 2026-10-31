@@ -35,7 +35,8 @@ Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o
   `algumaCriancaVe` (28/10/2026); sem resposta do serviço ou com resposta estranha, ele não aparece.
   **Fase1-18 (28/10/2026):** o cartão virou "Arquipélago Vagalume", com três partes: "A semana no
   jogo" (`_components/arquipelago-familia.tsx`, `SemanaDasCriancas`: desafios aprovados, objetos
-  do Pinta e do Molda desde o começo, o tempo livre ao lado do limite e, desde 29/10/2026, em
+  do Pinta e do Molda (desde 31/10/2026, A33: as criações postas no jogo NA SEMANA, cada uma uma
+  vez; antes, desde o começo), o tempo livre ao lado do limite e, desde 29/10/2026, em
   quantos dias de jogo ela concluiu aula do curso até 24 h depois de jogar; em ladrilhos `StatTile`
   de `ladrilhosDaSemana`, cada um só com o número que o serviço tem, um cartão por criança na
   largura toda), "Tempo livre no Arquipélago" (o formulário de antes) e "Com quem pode
@@ -49,8 +50,11 @@ Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o
   `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`
   fica FORA do matcher do proxy (o navegador importa o módulo sem `x-sz-session`).
 - `/arquipelago` nos `protectedPrefixes`; `next.config.ts`: `@sistemazero/arquipelago-contracts`
-  no `transpilePackages` e uma CSP própria da página que garante `'wasm-unsafe-eval'` (Rapier)
-  mesmo se a CSP estrita um dia fechar o WASM.
+  no `transpilePackages` e uma CSP própria da página (A27, 31/10/2026, `arquipelagoCsp`, regra
+  `/arquipelago/:path*`): a do Pro sem os vídeos das aulas. Mantém `'wasm-unsafe-eval'` (Rapier e
+  Molda) e `'unsafe-eval'`, `blob:` e os quadros do WebContainer, porque o Estúdio completo aberto
+  por cima do jogo abre o projeto Pro com o terminal. A frase das permissões vem de `comoComecam()`
+  (A34), que lê `PERMISSOES_PADRAO`.
 
 
 ## Peças do quarto feitas no Blender (27/10/2026)

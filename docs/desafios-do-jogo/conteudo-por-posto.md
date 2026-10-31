@@ -96,6 +96,14 @@ a dificuldade com teto, um passo por quadro, todos pedindo publicação. Os quad
 em blocos e os do Vale e das Nuvens não trabalham no ambiente textual nem no Pro. C02 acrescenta
 uma aplicação na linguagem de cada posto (seção abaixo), sem retirar as retomadas.
 
+**Revisão de 31/10/2026 (lote 9 da lista A v3).** O Pico em blocos ganhou duas fases no último
+quadro (A46). Os enunciados de todas as ilhas viraram o pedido do morador, que diz o que ele
+precisa e não o bloco (A44, `pedidos-dos-moradores.ts`). **Vale e Nuvens publicam (A43, decisão da
+dona):** os quadros ficam como estão, porque no lançamento oficial já existirão os cursos do
+Arquiteto e do Gênio que ensinam esses blocos; `publicacao.test.ts` guarda a lista "espera os
+cursos" e a barreira C01a do serviço continua (só publica com os cursos gravados). Nos JSON
+locais, 136 de 138 entradas pedem publicação; ficam de fora as duas corridas noturnas do Bosque.
+
 ## Desafios na linguagem do posto (C02, 30/10/2026)
 
 O contrato do desafio aceita objetivos Python (perfil do ambiente e entradas), e o Members confere
@@ -105,13 +113,17 @@ projeto clássico) e JavaScript Pro com o modelo do projeto inicial. Python Pro 
 
 | Ilha | Desafio | Linguagem | O que se completa | Pacote |
 | --- | --- | --- | --- | --- |
-| Recife | Mira de bolhas: resgate dos vagalumes | Python, Pygame Zero | clique dentro e fora, sorteio de toca, relógio e fim da rodada; R no extra | [recife-python](recife/recife-python.manifesto.json) |
-| Pico | Subida das fases: o mapa é dado | Python, Pygame Zero | ler a fase (listas), pousar (colisão no eixo y), próxima fase; terceira fase no extra | [pico-python](pico/pico-python.manifesto.json) |
+| Recife | Mira de bolhas: mudas da lagoa | Python, Pygame Zero | clique dentro e fora, sorteio do coral, relógio e fim da rodada; R no extra | [recife-python](recife/recife-python.manifesto.json) |
+| Pico | A subida do Floco: o mapa é dado | Python, Pygame Zero | ler a fase (listas), pousar (colisão no eixo y), próxima fase; terceira fase no extra | [pico-python](pico/pico-python.manifesto.json) |
 | Vale | Guardião dos ninhos: ondas e alcance | JavaScript em texto (Ponte) | onda como lista de objetos, alcance pela distância, alvo mais adiantado; R no extra | [vale-texto](vale/vale-texto.manifesto.json) |
 | Nuvens | Jardim das Nuvens: grade, custo e guardar | JavaScript Pro (Vite e TypeScript) | ocupação, custo, produção, salvar e carregar no modelo; remover no extra | [nuvens-pro](nuvens/nuvens-pro.manifesto.json) |
 
-Cada um tem versão Kids e adulta, é desafio do dia (os seis quadros de cada ilha já estão
-ocupados; trocar um quadro é decisão da dona) e vem com `publicar: false`. Inicial, gabarito e
+Cada um tem versão Kids e adulta. Nasceram como desafio do dia com `publicar: false`; desde a
+lista A v3 são o sexto quadro de cada ilha, na linguagem do posto, e pedem publicação. Desde a
+revisão de 31/10 (A45) o Recife e o Pico têm tema da ilha (as mudas de coral da Maré e a subida do
+Floco), sem repetir o "Resgate dos Vagalumes" das missões. O Farol (A29) tem uma variante do
+projeto autoral em cada linguagem (quadros 2 a 4: Python, Ponte e Pro, além dos blocos), com o
+curso-base da linguagem (`postoDoCursoBase`) e a sugestão da última linguagem aprendida. Inicial, gabarito e
 erros causais foram rodados no executor real (Chrome local para o JavaScript clássico; imagem de
 produção do studio-runtime para Python e Pro), com o julgamento do core; os números estão no
 README de cada ilha.
