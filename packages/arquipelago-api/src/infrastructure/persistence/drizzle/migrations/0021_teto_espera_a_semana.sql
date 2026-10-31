@@ -1,0 +1,9 @@
+ALTER TABLE "arquipelago"."pedidos_remunerados" ADD COLUMN "teto_semana" date;--> statement-breakpoint
+ALTER TABLE "arquipelago"."vendas_na_feira" ADD COLUMN "teto_semana" date;--> statement-breakpoint
+-- §6.28, A32: o que já bateu no teto passa a esperar a semana seguinte (a semana em que bateu, em São Paulo, de segunda a domingo, como o teto do Members).
+UPDATE "arquipelago"."pedidos_remunerados" SET "teto_semana" = date_trunc('week', "entregue_em" AT TIME ZONE 'America/Sao_Paulo')::date WHERE "pagamento" = 'teto';--> statement-breakpoint
+UPDATE "arquipelago"."vendas_na_feira" SET "teto_semana" = date_trunc('week', "vendida_em" AT TIME ZONE 'America/Sao_Paulo')::date WHERE "pagamento" = 'teto';--> statement-breakpoint
+CREATE INDEX "pedidos_remunerados_teto_espera" ON "arquipelago"."pedidos_remunerados" USING btree ("jogador_id","publico","entregue_em") WHERE "arquipelago"."pedidos_remunerados"."pagamento" = 'teto';--> statement-breakpoint
+CREATE INDEX "vendas_na_feira_teto_espera" ON "arquipelago"."vendas_na_feira" USING btree ("jogador_id","publico","vendida_em") WHERE "arquipelago"."vendas_na_feira"."pagamento" = 'teto';--> statement-breakpoint
+ALTER TABLE "arquipelago"."pedidos_remunerados" ADD CONSTRAINT "pedidos_remunerados_teto" CHECK (("arquipelago"."pedidos_remunerados"."pagamento" = 'teto') = ("arquipelago"."pedidos_remunerados"."teto_semana" is not null));--> statement-breakpoint
+ALTER TABLE "arquipelago"."vendas_na_feira" ADD CONSTRAINT "vendas_na_feira_teto" CHECK (("arquipelago"."vendas_na_feira"."pagamento" = 'teto') = ("arquipelago"."vendas_na_feira"."teto_semana" is not null));

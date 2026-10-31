@@ -3,6 +3,7 @@ import type { ContextoDoJogo } from '../estado/contexto'
 import { lojaDaGaleria } from '../estado/galeria'
 import { lojaDaConversa } from '../estado/moradores'
 import { salvamentoPausado } from '../sistemas/pausa'
+import { FALA_DO_TETO } from '../sistemas/teto-semanal'
 
 /** Prévia só produz falas. Quem consome e concede amizade/cesta é o serviço pela fila. */
 export async function entregarPedidoPeloPainel(
@@ -46,7 +47,7 @@ export async function entregarPedidoPeloPainel(
       confirmado.pagamento === 'creditado'
         ? `Você ganhou ${confirmado.moedas} moedas por ajudar.`
         : confirmado.pagamento === 'teto'
-          ? 'O limite de moedas desta semana foi alcançado. Sua ajuda e seus ingredientes continuam guardados.'
+          ? FALA_DO_TETO
           : confirmado.pagamento === 'recusado'
             ? 'Seu pedido foi entregue, mas não foi possível confirmar as moedas. Peça ajuda à equipe.'
             : 'Seu pedido foi entregue. As moedas ainda aguardam confirmação.'

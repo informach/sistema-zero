@@ -148,6 +148,13 @@
       "when": 1793421902265,
       "tag": "0020_nico_nos_pedidos",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793425824051,
+      "tag": "0021_teto_espera_a_semana",
+      "breakpoints": true
     }
   ]
 }

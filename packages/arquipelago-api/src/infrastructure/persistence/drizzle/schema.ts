@@ -534,6 +534,8 @@ export const pedidosRemunerados = arquipelagoSchema.table(
     pedido: varchar({ length: 40 }).notNull(),
     moedas: smallint().$type<3 | 4>().notNull(),
     pagamento: varchar({ length: 12 }).$type<PagamentoDoPedido>().notNull(),
+    /** Com `teto`: a semana em que bateu; o crédito volta numa semana seguinte (§6.28, A32). */
+    tetoSemana: date({ mode: 'string' }),
     entregueEm: timestamp({ withTimezone: true }).notNull(),
   },
   (t) => [
@@ -554,6 +556,13 @@ export const pedidosRemunerados = arquipelagoSchema.table(
       'pedidos_remunerados_pagamento',
       sql`${t.pagamento} in ('pendente','creditado','teto','recusado')`,
     ),
+    check(
+      'pedidos_remunerados_teto',
+      sql`(${t.pagamento} = 'teto') = (${t.tetoSemana} is not null)`,
+    ),
+    index('pedidos_remunerados_teto_espera')
+      .on(t.jogadorId, t.publico, t.entregueEm)
+      .where(sql`${t.pagamento} = 'teto'`),
   ],
 )
 
@@ -577,6 +586,8 @@ export const vendasNaFeira = arquipelagoSchema.table(
     itens: jsonb().$type<ItensDaVenda>().notNull(),
     moedas: smallint().notNull(),
     pagamento: varchar({ length: 12 }).$type<PagamentoDaVenda>().notNull(),
+    /** Com `teto`: a semana em que bateu; o crédito volta numa semana seguinte (§6.28, A32). */
+    tetoSemana: date({ mode: 'string' }),
     vendidaEm: timestamp({ withTimezone: true }).notNull(),
   },
   (t) => [
@@ -593,6 +604,10 @@ export const vendasNaFeira = arquipelagoSchema.table(
       'vendas_na_feira_pagamento',
       sql`${t.pagamento} in ('pendente','creditado','teto','recusado')`,
     ),
+    check('vendas_na_feira_teto', sql`(${t.pagamento} = 'teto') = (${t.tetoSemana} is not null)`),
+    index('vendas_na_feira_teto_espera')
+      .on(t.jogadorId, t.publico, t.vendidaEm)
+      .where(sql`${t.pagamento} = 'teto'`),
   ],
 )
 

@@ -8,9 +8,14 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import type { Logger } from '@sistemazero/core/logging'
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
+import { semanaDeSaoPaulo } from '../domain/desafios'
 import type { Jogador } from '../domain/jogador'
 import { MoedasIndisponiveisError, type PortaDasMoedas } from '../domain/moedas.port'
-import { PedidoRecusadoError, type RepositorioDosPedidos } from '../domain/pedidos.port'
+import {
+  type PedidoEntregue,
+  PedidoRecusadoError,
+  type RepositorioDosPedidos,
+} from '../domain/pedidos.port'
 import {
   AcessoBloqueadoError,
   DesafioBloqueadoError,
@@ -33,6 +38,7 @@ export class ServicoDosPedidos {
 
   async pendentes(jogador: Jogador) {
     this.exigirEscrita(jogador)
+    await this.cobrarOTeto(jogador)
     const r = await this.deps.repo.pendente(this.dono(jogador))
     return { versao: 1 as const, pedidos: r ? [r.comando] : [] }
   }
@@ -57,18 +63,9 @@ export class ServicoDosPedidos {
     const moedas = this.deps.moedas
     if (moedas) {
       try {
-        await this.deps.repo.confirmarPagamento(dono, comando.chave, async (r) => {
-          const pago = await moedas.creditar({
-            userId: dono.jogadorId,
-            accountId: dono.contaId,
-            audience: publicoDosMembros(jogador),
-            key: r.pagamentoId,
-            amount: r.moedas,
-          })
-          if (pago.situacao === 'recusado')
-            this.deps.logger.error('arquipelago.pedido.credito_recusado', { codigo: pago.codigo })
-          return pago.situacao
-        })
+        await this.deps.repo.confirmarPagamento(dono, comando.chave, this.semana(), (r) =>
+          this.creditar(jogador, moedas, r),
+        )
       } catch (erro) {
         if (!(erro instanceof MoedasIndisponiveisError)) throw erro
         // A entrega já foi confirmada antes da carteira. Nunca voltar a consumir os itens.
@@ -88,6 +85,44 @@ export class ServicoDosPedidos {
         atualizadoEm: r.guardado.atualizadoEm.toISOString(),
       },
     })
+  }
+
+  /**
+   * O que bateu no teto numa semana anterior volta a ser creditado (§6.28, A32), um por abertura,
+   * com a mesma chave: repetir é seguro. Falha não atrapalha a pessoa; tenta de novo na próxima.
+   */
+  private async cobrarOTeto(jogador: Jogador) {
+    const moedas = this.deps.moedas
+    if (!moedas) return
+    const dono = this.dono(jogador)
+    const semana = this.semana()
+    for (const r of await this.deps.repo.esperandoOTeto(dono, semana, 1)) {
+      try {
+        await this.deps.repo.confirmarPagamento(dono, r.comando.chave, semana, (x) =>
+          this.creditar(jogador, moedas, x),
+        )
+      } catch (erro) {
+        this.deps.logger.warn('arquipelago.pedido.teto_pendente', {
+          erro: erro instanceof Error ? erro.name : 'desconhecido',
+        })
+        return
+      }
+    }
+  }
+  private async creditar(jogador: Jogador, moedas: PortaDasMoedas, r: PedidoEntregue) {
+    const pago = await moedas.creditar({
+      userId: r.dono.jogadorId,
+      accountId: r.dono.contaId,
+      audience: publicoDosMembros(jogador),
+      key: r.pagamentoId,
+      amount: r.moedas,
+    })
+    if (pago.situacao === 'recusado')
+      this.deps.logger.error('arquipelago.pedido.credito_recusado', { codigo: pago.codigo })
+    return pago.situacao
+  }
+  private semana() {
+    return semanaDeSaoPaulo(this.deps.agora?.() ?? new Date())
   }
   private exigirEscrita(jogador: Jogador) {
     const d = decidirAcesso(this.deps.politica, jogador)

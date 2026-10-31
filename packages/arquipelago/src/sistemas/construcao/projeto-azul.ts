@@ -308,6 +308,16 @@ export function recadoDaFerramentaFechada(ferramenta: 'pinta' | 'molda', motivo:
   return 'O molde não abriu agora. Tente de novo daqui a pouco.'
 }
 
+/**
+ * A posição da jornada em que o Pinta abre no molde: o posto Construtor(a), como na proposta e no
+ * Estúdio livre da plataforma (§6.28, A5). Na Faísca, a aparência vem pronta da galeria.
+ */
+export const POSICAO_DO_PINTA = POSTOS_DA_JORNADA.indexOf('coder') + 1
+
+export function pintaAberto(jornada: number): boolean {
+  return jornada >= POSICAO_DO_PINTA
+}
+
 /** A posição da jornada em que o Molda abre no molde (o posto Explorador(a) de Mundos). */
 export const POSICAO_DO_MOLDA = POSTOS_DA_JORNADA.indexOf('explorer') + 1
 
