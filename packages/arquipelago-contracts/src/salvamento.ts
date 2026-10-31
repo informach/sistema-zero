@@ -96,6 +96,10 @@ export const PERCURSOS = [
   'vale-pegadas',
   // V22 (31/10/2026, E04): a subida final por fora do Farol, na Lenda.
   'farol-subida',
+  // Lacunas (01/11/2026): os brinquedos de ilha viram minijogo (a descida de trenó do Pico e a
+  // corrida da montaria pela praia do Vale). Sem versão nova: o registro é parcial.
+  'pico-treno',
+  'vale-montaria',
 ] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
