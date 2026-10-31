@@ -504,8 +504,19 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         const lista = get().antesDoAndar
         const fonte = get().fonteDoAndar
         if (!fonte || lista.length === 0) return
+        const anteriorDeCima = lista.at(-1) ?? null
+        // O andar de antes precisa caber no térreo de agora (ele pode ter mudado depois).
+        const casa = jogo.salvamento.construcao.casa
+        const naoCabe =
+          anteriorDeCima?.escada && casa
+            ? conferirAndar(anteriorDeCima, casa, loteDaCasa(jogo.jornada))
+            : null
+        if (naoCabe) {
+          jogo.dizer(FALA_DO_ANDAR[naoCabe])
+          return
+        }
         set({ antesDoAndar: lista.slice(0, -1) })
-        fonte.gravar(lista.at(-1) ?? null)
+        fonte.gravar(anteriorDeCima)
         return
       }
       const onde = get().onde
@@ -518,6 +529,13 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       const antes = get().antes
       const anterior = antes.at(-1)
       if (!anterior) return
+      // Voltar o térreo não pode tirar o chão do andar de cima (N2): o mesmo cuidado do aplicar.
+      const andar = onde === 'casa' ? (get().fonteDoAndar?.ler() ?? null) : null
+      const quebra = andar?.escada ? conferirAndar(andar, anterior, loteDaCasa(jogo.jornada)) : null
+      if (quebra) {
+        jogo.dizer(falaDoTerreoNoAndar(quebra))
+        return
+      }
       set({ antes: antes.slice(0, -1), entradaSelecionada: false })
       mudarObra(loja, anterior, onde, cabana)
       ultimaObra = anterior

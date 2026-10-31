@@ -435,4 +435,73 @@ describe('o andar de cima da casa (E04, Pico)', () => {
     expect(s().tirarAEscada()).toBe(true)
     expect(caixa.andar).toEqual({ escada: null, paredes: [], aberturas: [], pisos: [] })
   })
+
+  test('Desfazer no térreo não tira o chão do andar de cima (N2)', () => {
+    const falas: string[] = []
+    const inicial = criarSalvamentoInicial(new Date('2026-10-31T12:00:00Z'))
+    const loja = criarLoja({
+      salvamento: {
+        ...inicial,
+        casa: { portaNova: true },
+        construcao: { ...inicial.construcao, casa: structuredClone(LOTE.obraInicial) as Obra },
+      },
+      jornada: POSICAO_DO_ANDAR,
+      quarto: QUARTO_DE_EXEMPLO,
+      avatar: {} as never,
+      acesso: {
+        liberado: true,
+        motivo: null,
+        limiteDiarioMinutos: null,
+        usadoHojeSegundos: 0,
+        contabilizaTempo: false,
+      },
+      aoMudar: () => {},
+    })
+    const dizer = loja.getState().dizer
+    loja.setState({
+      dizer: (f: string) => {
+        falas.push(f)
+        dizer(f)
+      },
+    } as never)
+    const caixa: { andar: AndarDeCima | null } = { andar: null }
+    const construcao = criarLojaDaConstrucao(loja)
+    const s = () => construcao.getState()
+    s().registrarAndar({
+      ler: () => caixa.andar,
+      gravar: (a) => {
+        caixa.andar = a
+      },
+    })
+    s().abrir()
+    // A sala à esquerda do quarto, parede por parede, pelo Construir (o Desfazer lembra cada uma).
+    for (const [a, b] of [
+      [
+        { x: -12, z: -8 },
+        { x: -12, z: 0 },
+      ],
+      [
+        { x: -12, z: -8 },
+        { x: -6, z: -8 },
+      ],
+      [
+        { x: -12, z: 0 },
+        { x: -6, z: 0 },
+      ],
+    ] as const) {
+      const obra = loja.getState().salvamento.construcao.casa as Obra
+      expect(s().aplicar(esticarParede(obra, LOTE, a, b))).toBe(true)
+    }
+    s().escolher('escada')
+    expect(s().porAEscada(PE)).toBe(true)
+    const casa = () => loja.getState().salvamento.construcao.casa as Obra
+    expect(conferirAndar(caixa.andar, casa(), LOTE)).toBeNull()
+    // De volta à Parede, no térreo: desfazer a última parede abriria a sala da escada.
+    s().escolher('parede')
+    const antes = casa()
+    s().desfazer()
+    expect(casa()).toBe(antes)
+    expect(conferirAndar(caixa.andar, casa(), LOTE)).toBeNull()
+    expect(falas).toContain(FALA_DO_ANDAR['quebra-o-andar'])
+  })
 })

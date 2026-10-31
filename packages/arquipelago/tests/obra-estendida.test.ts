@@ -40,6 +40,7 @@ function plataformaEspiada(o: { somenteLeitura?: boolean } = {}) {
   const pedidos: { caminho: string; metodo: string }[] = []
   const erros: string[] = []
   let caiNoPut = 0
+  let perdeNoPut = 0
   const plataforma: Plataforma = {
     ...base,
     relatarErro: (_erro, contexto) => void erros.push(contexto),
@@ -49,6 +50,12 @@ function plataformaEspiada(o: { somenteLeitura?: boolean } = {}) {
         pedidos.push({ caminho, metodo })
         if (metodo === 'PUT' && caiNoPut > 0) {
           caiNoPut--
+          throw new TypeError('Failed to fetch')
+        }
+        if (metodo === 'PUT' && perdeNoPut > 0) {
+          // O serviço grava, mas a resposta não chega.
+          perdeNoPut--
+          await base.servico.buscar(caminho, opcoes)
           throw new TypeError('Failed to fetch')
         }
         return base.servico.buscar(caminho, opcoes)
@@ -61,6 +68,9 @@ function plataformaEspiada(o: { somenteLeitura?: boolean } = {}) {
     erros,
     cair(vezes = 1) {
       caiNoPut = vezes
+    },
+    perderResposta(vezes = 1) {
+      perdeNoPut = vezes
     },
     /** Outro aparelho grava direto no serviço. */
     outroAparelho: (revisaoBase: number, obra: ObraEstendida): Promise<RespostaDoServico> =>
@@ -231,6 +241,73 @@ describe('obra estendida', () => {
     await crianca.obra.getState().carregar()
     expect(crianca.obra.getState().mudar(comTerreno([2, 2, 2]))).toBe(false)
     expect([...espiada.pedidos, ...crianca.pedidos].filter((p) => p.metodo === 'PUT')).toEqual([])
+  })
+
+  test('o serviço gravou e a resposta se perdeu: reabrir reconhece a gravação e não perde o que veio depois (N1)', async () => {
+    const espiada = plataformaEspiada()
+    const guarda = guardaEmMemoria()
+    const primeira = montar(espiada, guarda)
+    await primeira.obra.getState().carregar()
+    espiada.perderResposta()
+    primeira.obra.getState().mudar(comTerreno([1, 1, 1]))
+    await primeira.obra.getState().gravarAgora()
+    expect(primeira.obra.getState().situacao).toBe('erro')
+    // Depois da falha, mais uma mudança (A+B no aparelho).
+    espiada.cair()
+    primeira.obra.getState().mudar(comTerreno([2, 1, 1]))
+    await primeira.obra.getState().gravarAgora()
+    expect(JSON.parse(guarda.dados.get(chave) ?? 'null').obra.terreno.alturas).toHaveLength(2)
+    // Reabriu: o serviço está com A na revisão 1, e A é a gravação que foi daqui.
+    const segunda = montar(espiada, guarda)
+    await segunda.obra.getState().carregar()
+    expect(segunda.obra.getState()).toMatchObject({ revisao: 2, situacao: 'pronta' })
+    expect(segunda.obra.getState().obra?.terreno?.alturas).toEqual([
+      [1, 1, 1],
+      [2, 1, 1],
+    ])
+    expect(segunda.loja.getState().dica?.texto).not.toBe(AVISO_DA_OBRA_DE_OUTRO_APARELHO)
+    expect(segunda.obra.getState().recuperacao).toBeNull()
+    expect(guarda.dados.has(chave)).toBe(false)
+  })
+
+  test('resposta perdida e edição durante o envio, sem reabrir: o 409 da própria gravação não apaga nada', async () => {
+    const { obra, loja, perderResposta } = montar()
+    await obra.getState().carregar()
+    perderResposta()
+    obra.getState().mudar(comTerreno([1, 1, 1]))
+    const envio = obra.getState().gravarAgora()
+    // Mudou enquanto ia.
+    obra.getState().mudar(comTerreno([2, 1, 1]))
+    await envio
+    // O próximo envio vai sobre a revisão 0, o serviço responde 409 com a gravação daqui.
+    await obra.getState().gravarAgora()
+    await pausa()
+    await obra.getState().gravarAgora()
+    expect(obra.getState()).toMatchObject({ revisao: 2, situacao: 'pronta' })
+    expect(obra.getState().obra?.terreno?.alturas).toEqual([
+      [1, 1, 1],
+      [2, 1, 1],
+    ])
+    expect(loja.getState().dica?.texto).not.toBe(AVISO_DA_OBRA_DE_OUTRO_APARELHO)
+  })
+
+  test('conflito de verdade: fica a de lá e a daqui fica guardada para voltar a ela', async () => {
+    const { obra, outroAparelho, guarda } = montar()
+    await obra.getState().carregar()
+    const deLa = comTerreno([9, 9, 3])({ versao: 1, iglu: null, andar: null, terreno: null })
+    expect((await outroAparelho(0, deLa)).status).toBe(200)
+    obra.getState().mudar(comTerreno([1, 1, 1]))
+    await obra.getState().gravarAgora()
+    expect(obra.getState().obra).toEqual(deLa)
+    const daqui = obra.getState().recuperacao
+    expect(daqui?.terreno?.alturas).toEqual([[1, 1, 1]])
+    expect(guarda.dados.has(`${chave}:recuperacao`)).toBe(true)
+    // Voltar à daqui: vira a mudança nova, gravada sobre a de lá.
+    expect(obra.getState().recuperar()).toBe(true)
+    await obra.getState().gravarAgora()
+    expect(obra.getState()).toMatchObject({ revisao: 2, situacao: 'pronta', recuperacao: null })
+    expect(obra.getState().obra?.terreno?.alturas).toEqual([[1, 1, 1]])
+    expect(guarda.dados.has(`${chave}:recuperacao`)).toBe(false)
   })
 
   test('obra fora do contrato não entra', async () => {
