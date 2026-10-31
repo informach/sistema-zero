@@ -28,7 +28,7 @@ const EnvSchema = z
     APP_ENV: z.enum(['staging', 'production']).optional(),
     PORT: z.coerce.number().int().positive().default(3015),
     HOST: z.string().min(1).default('::'),
-    /** O salvamento tem teto de 64 KB; o corpo inteiro (com a revisão) fica abaixo disto. */
+    /** O salvamento tem teto de 80 KB; o corpo inteiro (com a revisão) fica abaixo disto. */
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
       .int()

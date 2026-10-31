@@ -348,7 +348,7 @@ const ObjetoNaObra = memo(function ObjetoNaObra({
   completo: boolean
   aparencia: AparenciaDoObjeto | null
 }) {
-  const { loja } = useJogo()
+  const { loja, rastro } = useJogo()
   const { largura, fundo } = areaComGiro(obj.id, obj.giro)
   const x = obj.x + largura / 2
   const z = obj.z + fundo / 2
@@ -360,9 +360,9 @@ const ObjetoNaObra = memo(function ObjetoNaObra({
     x: base[0] + x,
     z: base[2] + z,
     raio: Math.max(largura, fundo) / 2 + 1.4,
-    // Na casa do irmão só se olha: nenhum objeto abre.
+    // Na casa do irmão só se olha: nenhum objeto abre. E só no andar dele (o de cima fica 4 m acima).
     rotulo: () =>
-      loja.getState().visita
+      loja.getState().visita || Math.abs(rastro.y - base[1] - 1) > 2
         ? null
         : obj.id === 'geladeira'
           ? 'Abrir a geladeira'

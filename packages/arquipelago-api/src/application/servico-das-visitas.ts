@@ -15,7 +15,9 @@ import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { RepositorioDaFamilia } from '../domain/familia.port'
 import type { Jogador } from '../domain/jogador'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
+import type { RepositorioDaObraEstendida } from '../domain/obra-estendida.port'
 import { AcessoBloqueadoError, IrmaoNaoEncontradoError, VisitasDesligadasError } from './erros'
+import { obraEstendidaNaVisita } from './obra-na-visita'
 
 /**
  * Os recordes da família e as visitas (fase3-12, 29/10/2026), só leitura, de quem joga. Irmão é
@@ -35,6 +37,8 @@ export class ServicoDasVisitas {
       politica: PoliticaDeAcesso
       /** O quarto do irmão; sem o Members (dev), a casa vem com `quarto: null`. */
       membros?: Pick<PortaDosMembros, 'lerQuarto'> | null
+      /** O andar de cima e o terreno dele (obra estendida); sem o repositório, a casa vem sem. */
+      obras?: Pick<RepositorioDaObraEstendida, 'ler'> | null
       logger?: Logger
     },
   ) {}
@@ -75,6 +79,12 @@ export class ServicoDasVisitas {
     await this.autorizarIrmao(jogador, perfilId)
     const s = migrarSalvamento((await this.deps.familia.salvamentos([perfilId])).get(perfilId))
     if (!s) throw new IrmaoNaoEncontradoError()
+    const estendida = await obraEstendidaNaVisita(
+      this.deps.obras,
+      perfilId,
+      'kids',
+      this.deps.logger,
+    )
     return {
       versao: VERSAO_DAS_VISITAS,
       perfilId,
@@ -82,6 +92,7 @@ export class ServicoDasVisitas {
       horta: s.horta,
       completos: OBJETOS_DA_CASA.filter((o) => Boolean(s.projetos[o]?.aparencia)),
       quarto: await this.quartoDe(perfilId),
+      ...estendida,
     }
   }
 

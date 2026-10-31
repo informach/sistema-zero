@@ -1,8 +1,6 @@
-import {
-  type MontarArquipelago,
-  VERSAO_CONTRATO_PLATAFORMA,
-} from '@sistemazero/arquipelago-contracts'
+import type { MontarArquipelago } from '@sistemazero/arquipelago-contracts'
 import { createRoot } from 'react-dom/client'
+import { conferirContrato } from './contrato-da-entrada'
 import { ESTILOS } from './interface/estilos'
 import { Jogo } from './jogo'
 
@@ -11,14 +9,11 @@ import { Jogo } from './jogo'
  * chama `montarArquipelago(elemento, plataforma)`. O jogo roda na própria raiz React, com o
  * próprio CSS dentro do elemento; `desmontar` limpa tudo e guarda o que estiver pendente.
  */
-export const versaoContrato = VERSAO_CONTRATO_PLATAFORMA
+export { versaoContrato } from './contrato-da-entrada'
 
 export const montarArquipelago: MontarArquipelago = (elemento, plataforma) => {
-  if (plataforma.versaoContrato !== VERSAO_CONTRATO_PLATAFORMA) {
-    throw new Error(
-      `Contrato da plataforma ${plataforma.versaoContrato} não é o deste jogo (${VERSAO_CONTRATO_PLATAFORMA})`,
-    )
-  }
+  // A atual e a anterior valem (A35); a recusa vem antes de tocar no elemento.
+  conferirContrato(plataforma)
   const estilo = document.createElement('style')
   estilo.textContent = ESTILOS
   const raiz = document.createElement('div')

@@ -1,6 +1,6 @@
-// Garante e prova o CORS do bucket R2 PÚBLICO usado pelas animações Rive.
+// Garante e prova o CORS do bucket R2 PÚBLICO usado pelas animações ediSVG.
 //
-// O runtime do Rive lê o `.riv` por `fetch(url).arrayBuffer()`. O Admin usa uma
+// O player ediSVG lê o JSON declarativo por fetch. O Admin usa uma
 // rota-proxy de mesma origem para a prévia, então só uma prova no endereço
 // público detecta o defeito que faria a animação sumir no navegador da criança.
 //
@@ -79,7 +79,7 @@ const delay = (milliseconds: number) =>
 async function provePublicCors(): Promise<void> {
   const key = installProbe
     ? PUBLIC_CORS_PROBE_KEY
-    : `admin/module-rive/cors-probes/${crypto.randomUUID()}.riv`
+    : `admin/media/cors-probes/${crypto.randomUUID()}.txt`
   const body = installProbe
     ? PUBLIC_CORS_PROBE_BODY
     : `sistema-zero-cors-probe:${crypto.randomUUID()}`

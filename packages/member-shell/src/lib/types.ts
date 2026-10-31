@@ -1,3 +1,4 @@
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type {
   LessonLearningProgress,
   LessonRequirement,
@@ -340,8 +341,7 @@ export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
-  /** Animação Rive (.riv) da trilha, enviada no Admin; APIs antigas omitem o campo. */
-  riveUrl?: string | null
+  animation?: ModuleAnimation | null
   sortOrder: number
   lessons: LessonOutlineView[]
   chest: ModuleChestView | null
@@ -1110,7 +1110,8 @@ export interface AvatarConfigInput {
 export interface AvatarPartView {
   id: string
   category: string
-  tier: 'free' | 'coins'
+  /** `festa` (B16, 31/10/2026): só a festa do Arquipélago concede; sem preço nem compra. */
+  tier: 'free' | 'coins' | 'festa'
   price: number
   owned: boolean
   locked: boolean

@@ -8,6 +8,7 @@ import {
   lerCartas,
   motivoDoCadernoFechado,
   ondeAprender,
+  quandoChega,
   secoesDoCaderno,
 } from '../src/sistemas/caderno-dos-lumis'
 
@@ -122,17 +123,19 @@ describe('loja das cartas com a plataforma de mentira', () => {
     expect(por('regar')?.conquistada).toBe(true)
     expect(por('quando-amanhecer')?.conquistada).toBe(true)
     expect(por('repetir')?.conquistada).toBe(true)
-    expect(por('para-cada')).toMatchObject({ conquistada: false })
-    expect(ondeAprender(por('para-cada') as CartaDoCaderno)).toBe('Repetições')
-    // Esperar não tem curso no currículo de mentira.
-    expect(por('esperar')).toMatchObject({ conquistada: false, aprendaEm: [] })
+    // O exemplo está no quarto posto: Para cada e Se já chegaram; Escolha chega no quinto.
+    expect(por('para-cada')?.conquistada).toBe(true)
+    expect(por('se')?.conquistada).toBe(true)
+    expect(por('escolha')).toMatchObject({ conquistada: false, posto: 5 })
+    expect(ondeAprender(por('escolha') as CartaDoCaderno)).toBe('Decisões')
+    expect(quandoChega(por('escolha') as CartaDoCaderno)).toBe('Chega quando Pico Gelado abrir.')
   })
 
   test('adulto: o caderno mostra os cursos do currículo adulto', async () => {
     const loja = criarLojaDasCartas(criarPlataformaFalsa({ persistir: false, publico: 'adulto' }))
     await loja.getState().carregar()
-    const paraCada = loja.getState().dados?.cartas.find((c) => c.id === 'para-cada')
-    expect(ondeAprender(paraCada as CartaDoCaderno)).toBe('Repetições (adulto)')
+    const escolha = loja.getState().dados?.cartas.find((c) => c.id === 'escolha')
+    expect(ondeAprender(escolha as CartaDoCaderno)).toBe('Decisões (adulto)')
   })
 
   test('equipe tem todos; desligado e fora do ar fecham com o motivo', async () => {

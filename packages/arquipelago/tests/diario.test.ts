@@ -80,7 +80,11 @@ describe('a coleção de bichos e pegadas do Bosque', () => {
 
   test('achado mostra o bicho e a pegada; adotado mostra também o nome que a criança deu', () => {
     const s = inicial()
-    const comNome = adotar({ achados: ['gato', 'coelho'], adotado: null }, 'coelho', 'Pipoca')
+    const comNome = adotar(
+      { achados: ['gato', 'coelho'], adotado: null, outros: [] },
+      'coelho',
+      'Pipoca',
+    )
     if (!comNome) throw new Error('não adotou')
     const c = colecaoDoBosque({ ...s, bichos: comNome })
     expect(c.find((b) => b.bicho === 'gato')).toMatchObject({

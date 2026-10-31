@@ -1,7 +1,16 @@
 import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempoDoBicho } from '../sistemas/bichos'
-import { descansar, FALA_DA_SONECA_CHEIA, sonecaAcabou } from '../sistemas/descanso'
+import {
+  descansar,
+  ENERGIA_AO_ACORDAR,
+  FALA_DA_SONECA_CHEIA,
+  FALA_DE_ACORDAR_EM_CASA,
+  FALA_DO_COCHILO,
+  podeCochilar,
+  SEGUNDOS_DE_COCHILO,
+  sonecaAcabou,
+} from '../sistemas/descanso'
 import {
   acaoEmCurso,
   encerraOTempo,
@@ -44,6 +53,7 @@ export function Relogios() {
   useEffect(() => {
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
     let segundos = 0
+    let cochiloFalta = 0
     const t = setInterval(() => {
       const s = loja.getState()
       const ativo =
@@ -59,13 +69,37 @@ export function Relogios() {
       if (gerenteTempo && !gerenteTempo.verificar()) return
       segundos++
 
+      // Cochilando no lugar: depois de uns segundos, acorda em casa com a energia de volta.
+      if (s.cochilando) {
+        cochiloFalta--
+        if (cochiloFalta <= 0) {
+          pedidos.teleporte = {
+            x: CENTRO_DA_CASA.x,
+            y: ALTURA_DA_TERRA + 1.2,
+            z: CENTRO_DA_CASA.z + 1.5,
+          }
+          s.mudar((sv) => ({
+            ...sv,
+            necessidades: { ...sv.necessidades, energia: ENERGIA_AO_ACORDAR },
+          }))
+          loja.setState({ cochilando: false })
+          s.dizer(FALA_DE_ACORDAR_EM_CASA)
+        }
+        return
+      }
+
       if (segundos % 2 === 0) {
         // O bicho adotado também sente o tempo jogado (fome, limpeza e carinho caem devagar).
         s.mudar((sv) => ({
           ...sv,
           necessidades: passarTempo(sv.necessidades, 2, controle.correr),
+          // Os outros adotados (V23), esperando no Bosque, também.
           bichos: sv.bichos.adotado
-            ? { ...sv.bichos, adotado: passarTempoDoBicho(sv.bichos.adotado, 2) }
+            ? {
+                ...sv.bichos,
+                adotado: passarTempoDoBicho(sv.bichos.adotado, 2),
+                outros: sv.bichos.outros.map((b) => passarTempoDoBicho(b, 2)),
+              }
             : sv.bichos,
         }))
         // Sentada no banco ou deitada na cama, a energia volta aos poucos (`sistemas/descanso.ts`);
@@ -78,20 +112,21 @@ export function Relogios() {
             s.dizer(FALA_DA_SONECA_CHEIA)
           }
         }
-        // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
+        // A energia no zero: espera o painel fechar e a ação em andamento acabar (a corrida, o barco,
+        // o balão...), cochila ali mesmo e, uns segundos depois, acorda em casa (acima).
         const agora = loja.getState()
         if (
-          agora.salvamento.necessidades.energia <= 0 &&
-          agora.painelAberto === null &&
+          podeCochilar({
+            energia: agora.salvamento.necessidades.energia,
+            corrida: agora.corrida,
+            modo: agora.modo,
+            painelAberto: agora.painelAberto,
+          }) &&
           foraDaPassagemDoFarol(lojaDoFarol(loja).getState(), pedidos.teleporte !== null)
         ) {
-          pedidos.teleporte = {
-            x: CENTRO_DA_CASA.x,
-            y: ALTURA_DA_TERRA + 1.2,
-            z: CENTRO_DA_CASA.z + 1.5,
-          }
-          s.mudar((sv) => ({ ...sv, necessidades: { ...sv.necessidades, energia: 60 } }))
-          s.dizer('Você cansou e tirou um cochilo em casa. Nada se perdeu.')
+          cochiloFalta = SEGUNDOS_DE_COCHILO
+          loja.setState({ cochilando: true })
+          s.dizer(FALA_DO_COCHILO)
         }
       }
 

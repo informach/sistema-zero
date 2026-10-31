@@ -48,6 +48,17 @@ export const pousarNoComeco: ExecutionStep = wait(700)
  * se ele está PERTO do começo, e não numa posição exata.
  */
 export const cairNoBuraco: ExecutionStep[] = [press('ArrowRight', 950), wait(1300)]
+/**
+ * Do começo até a bandeira da fase 1 (medido no executor: cerca de 0,29 px por ms). Com 500 ms o
+ * pinguim para em x 184, ainda no gelo; pula o buraco e anda até a bandeira. A última seta dura
+ * pouco depois de encostar na bandeira, para o pinguim recomeçar a fase 2 longe do buraco.
+ */
+export const ateABandeira: ExecutionStep[] = [
+  press('ArrowRight', 500),
+  pular,
+  press('ArrowRight', 700),
+  press('ArrowRight', 900),
+]
 
 const extra = behavior(
   'pular-com-seta',
@@ -104,22 +115,31 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'bandeira',
-      'Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou.',
+      'Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo.',
+      [pousarNoComeco, ...ateABandeira, wait(600)],
+      val('fase', 'equals', 2),
+      [
+        point(2, 'fase', 'equals', 1),
+        point(4, 'pinguim.x', 'greaterThan', 300),
+        point(4, 'noChao', 'equals', true),
+        point(5, 'pinguim.x', 'lessThan', 300),
+        point(5, 'chegou', 'equals', false),
+      ],
+    ),
+    behavior(
+      'fase-2',
+      'Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo.',
       [
         pousarNoComeco,
-        // Medido no executor: ~0,29 px por ms. Com 500 ms o pinguim para em x 184, ainda no gelo.
-        press('ArrowRight', 500),
+        ...ateABandeira,
+        wait(1500),
         pular,
-        press('ArrowRight', 700),
-        press('ArrowRight', 1300),
+        wait(900),
+        press('ArrowRight', 250),
         wait(300),
       ],
       val('chegou', 'equals', true),
-      [
-        point(2, 'chegou', 'equals', false),
-        point(4, 'pinguim.x', 'greaterThan', 300),
-        point(4, 'noChao', 'equals', true),
-      ],
+      [point(5, 'fase', 'equals', 2), point(5, 'chegou', 'equals', false)],
     ),
     extra,
   ],

@@ -5,7 +5,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { createContext, useContext } from 'react'
 import { recadoDaCompra } from '../sistemas/construcao/galeria'
-import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta'
+import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaPlaca } from '../sistemas/luneta'
 
 /**
  * A voz das telas do jogo que falam com quem joga sobre a plataforma (abrir, voltar, a jornada,
@@ -26,7 +26,7 @@ export interface VozDoJogo {
   /** A face da placa 3D da ponte fechada: a linha de antes e o marco em destaque. */
   placaDaPonte: (ilha: Ilha) => { antes: string; marco: string }
   /** O recado da Íris ao ler a placa da ponte fechada. */
-  recadoDaIris: (ilha: Ilha) => string
+  recadoDaPlaca: (ilha: Ilha) => string
   /** O Molda ainda fechado no painel do projeto azul. */
   moldaFechado: string
   pintaFechado: string
@@ -70,7 +70,7 @@ export const VOZ_KIDS: VozDoJogo = {
   voltar: 'Voltar para a plataforma',
   falaDaLuneta,
   placaDaPonte: (ilha) => ({ antes: 'A ponte abre em', marco: NOMES_DOS_POSTOS[ilha.posto] }),
-  recadoDaIris,
+  recadoDaPlaca,
   moldaFechado: 'Abre no posto Explorador(a) de Mundos',
   pintaFechado: 'Abre no posto Construtor(a). Por enquanto, a aparência vem pronta da galeria.',
   compraSomenteLeitura: recadoDaCompra({ ok: false, motivo: 'somente-leitura' }),

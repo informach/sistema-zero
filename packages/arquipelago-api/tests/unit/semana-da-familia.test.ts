@@ -1,10 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import {
+  criacoesDaSemana,
   desafiosDaSemana,
   diasDeVoltaAoCurso,
   janelaDaSemana,
-  objetosCriados,
   posicaoDaIlhaMaisNova,
 } from '../../src/domain/semana-da-familia'
 
@@ -61,38 +60,60 @@ describe('os desafios da semana', () => {
   })
 })
 
-describe('os objetos criados por ela', () => {
-  const inicial = criarSalvamentoInicial(new Date('2026-10-20T15:00:00Z'))
-  const ganho = '2026-10-21T15:00:00.000Z'
+describe('as criações da semana (A33)', () => {
+  const janela = { inicio: '2026-10-22', fim: '2026-10-28' }
+  const em = (dia: string) => new Date(`${dia}T15:00:00Z`)
+  const aplicada = (
+    origem: string,
+    criacao: string | null,
+    registradoEm: Date,
+    objeto = 'geladeira',
+    revisao = 2,
+  ) => ({ objeto, revisao, origem, criacao, registradoEm })
 
-  test('projetos azuis com aparência do Pinta e do Molda; galeria e sem aparência não contam', () => {
-    const pinta = { origem: 'pinta' as const, id: 'a' }
-    const galeria = { origem: 'galeria' as const, id: 'lareira-classica' }
-    const salvamento = {
-      ...inicial,
-      projetos: {
-        geladeira: { ganhoEm: ganho, aparencia: pinta, aparencias: [pinta] },
-        casinha: {
-          ganhoEm: ganho,
-          aparencia: { origem: 'molda' as const, id: 'b' },
-          aparencias: [{ origem: 'molda' as const, id: 'b' }],
-        },
-        forno: {
-          ganhoEm: ganho,
-          aparencia: { origem: 'galeria' as const, id: 'forno-classico' },
-          aparencias: [{ origem: 'galeria' as const, id: 'forno-classico' }],
-        },
-        aquario: { ganhoEm: ganho, aparencia: null, aparencias: [] },
-        // Pintou a lareira e hoje usa a da galeria: o que ela fez continua contando.
-        lareira: { ganhoEm: ganho, aparencia: galeria, aparencias: [pinta, galeria] },
-      },
-    }
-    expect(objetosCriados(salvamento)).toEqual({ pinta: 2, molda: 1 })
-    expect(objetosCriados(inicial)).toEqual({ pinta: 0, molda: 0 })
+  test('cada criação conta uma vez, mesmo em dois objetos ou posta de novo', () => {
+    expect(
+      criacoesDaSemana(
+        [
+          aplicada('pinta', 'a', em('2026-10-23')),
+          aplicada('pinta', 'a', em('2026-10-24'), 'forno', 3),
+          aplicada('pinta', 'b', em('2026-10-25')),
+          aplicada('molda', 'm', em('2026-10-26'), 'casinha', 4),
+          // Galeria e criação guardada não são feitas no Pinta nem no Molda.
+          aplicada('galeria', 'forno-classico', em('2026-10-26')),
+          aplicada('criacao', 'c', em('2026-10-26')),
+        ],
+        janela,
+      ),
+    ).toEqual({ pinta: 2, molda: 1 })
   })
 
-  test('salvamento ilegível: sem número', () => {
-    expect(objetosCriados({ versao: 99 })).toBeNull()
+  test('só a janela, pelo dia de São Paulo', () => {
+    expect(
+      criacoesDaSemana(
+        [
+          // 22/10 às 02h59 UTC ainda é 21/10 em São Paulo: fica de fora.
+          aplicada('pinta', 'velha', new Date('2026-10-22T02:59:00Z')),
+          aplicada('pinta', 'nova', new Date('2026-10-22T03:00:00Z')),
+          aplicada('molda', 'depois', em('2026-10-29')),
+        ],
+        janela,
+      ),
+    ).toEqual({ pinta: 1, molda: 0 })
+    expect(criacoesDaSemana([], janela)).toEqual({ pinta: 0, molda: 0 })
+  })
+
+  test('linhas de antes da 0024 (sem o id) contam por objeto e revisão', () => {
+    expect(
+      criacoesDaSemana(
+        [
+          aplicada('pinta', null, em('2026-10-23'), 'geladeira', 2),
+          aplicada('pinta', null, em('2026-10-23'), 'forno', 2),
+          aplicada('pinta', null, em('2026-10-24'), 'geladeira', 5),
+        ],
+        janela,
+      ),
+    ).toEqual({ pinta: 3, molda: 0 })
   })
 })
 

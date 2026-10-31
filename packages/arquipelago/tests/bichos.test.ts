@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { BICHOS_DO_BOSQUE, type BichoAdotado } from '@sistemazero/arquipelago-contracts'
 import {
+  BICHOS_ADOTADOS_MAXIMO,
+  BICHOS_DO_BOSQUE,
+  type BichoAdotado,
+} from '@sistemazero/arquipelago-contracts'
+import {
+  adotados,
   adotar,
   alimentar,
   CUIDADO,
@@ -8,15 +13,18 @@ import {
   crescer,
   darBanho,
   ensinar,
+  falaDaTroca,
   fazerCarinho,
   fazTruque,
   NOME_DO_BICHO,
   nomeValido,
   passarTempoDoBicho,
+  podeAdotarMais,
   podeCrescer,
   QUEDA_DO_BICHO_POR_MINUTO,
   TRUQUE,
   tristinho,
+  trocarBicho,
 } from '../src/sistemas/bichos'
 import {
   achar,
@@ -32,10 +40,10 @@ import {
   RAIO_DE_ACHAR,
 } from '../src/sistemas/esconde'
 
-const nenhum = (): Bichos => ({ achados: [], adotado: null })
+const nenhum = (): Bichos => ({ achados: [], adotado: null, outros: [] })
 
 function filhote(medidas: Partial<BichoAdotado> = {}): BichoAdotado {
-  const b = adotar({ achados: ['gato'], adotado: null }, 'gato', 'Frida')?.adotado
+  const b = adotar({ achados: ['gato'], adotado: null, outros: [] }, 'gato', 'Frida')?.adotado
   if (!b) throw new Error('não adotou')
   return { ...b, ...medidas }
 }
@@ -66,11 +74,19 @@ describe('esconde-esconde', () => {
   test('acha o bicho escondido mais perto, sem contar os já achados', () => {
     const onde = { cachorro: { x: 0, z: 0 }, gato: { x: 10, z: 0 }, coelho: { x: 0, z: 30 } }
     expect(maisPertoEscondido(nenhum(), { x: 1, z: 0 }, onde)?.bicho).toBe('cachorro')
-    const r = maisPertoEscondido({ achados: ['cachorro'], adotado: null }, { x: 1, z: 0 }, onde)
+    const r = maisPertoEscondido(
+      { achados: ['cachorro'], adotado: null, outros: [] },
+      { x: 1, z: 0 },
+      onde,
+    )
     expect(r?.bicho).toBe('gato')
     expect(r?.distancia).toBeCloseTo(9)
     expect(
-      maisPertoEscondido({ achados: [...BICHOS_DO_BOSQUE], adotado: null }, { x: 0, z: 0 }, onde),
+      maisPertoEscondido(
+        { achados: [...BICHOS_DO_BOSQUE], adotado: null, outros: [] },
+        { x: 0, z: 0 },
+        onde,
+      ),
     ).toBeNull()
   })
 
@@ -110,17 +126,20 @@ describe('adotar', () => {
     expect(nomeValido('<b>')).toBeNull()
   })
 
-  test('só adota um bicho achado, com nome válido, e só um', () => {
+  test('só adota um bicho achado, com nome válido, e o segundo vai junto (V23)', () => {
     expect(adotar(nenhum(), 'gato', 'Frida')).toBeNull()
-    expect(adotar({ achados: ['gato'], adotado: null }, 'gato', '1')).toBeNull()
-    const b = adotar({ achados: ['gato', 'coelho'], adotado: null }, 'gato', 'Frida')
+    expect(adotar({ achados: ['gato'], adotado: null, outros: [] }, 'gato', '1')).toBeNull()
+    const b = adotar({ achados: ['gato', 'coelho'], adotado: null, outros: [] }, 'gato', 'Frida')
     expect(b?.adotado).toMatchObject({
       id: 'gato',
       nome: 'Frida',
       fase: 'filhote',
       diasCuidados: 0,
     })
-    expect(b && adotar(b, 'coelho', 'Tito')).toBeNull()
+    // Desde a V23 dá para adotar mais: o coelho vai junto e a Frida espera no Bosque.
+    const c = b && adotar(b, 'coelho', 'Tito')
+    expect(c?.adotado?.nome).toBe('Tito')
+    expect(c?.outros.map((o) => o.nome)).toEqual(['Frida'])
   })
 
   test('todo bicho tem truque e nome', () => {
@@ -200,5 +219,35 @@ describe('crescer e aprender o truque', () => {
     expect(fazTruque(ultima.bicho)).toBe(true)
     expect(ensinar(ultima.bicho, dia(9)).resultado).toBe('ja-sabe')
     expect(fazTruque({ ...ultima.bicho, fome: 10 })).toBe(false)
+  })
+})
+
+describe('adotar mais de um bicho (lacunas, 01/11/2026, V23)', () => {
+  const vazio = { achados: [...BICHOS_DO_BOSQUE], adotado: null, outros: [] }
+  test('até três adotados: o novo vai junto e o de antes espera no Bosque', () => {
+    const um = adotar(vazio, 'gato', 'Mia')
+    if (!um) throw new Error('não adotou')
+    expect(um.adotado?.nome).toBe('Mia')
+    const dois = adotar(um, 'cachorro', 'Rex')
+    if (!dois) throw new Error('não adotou o segundo')
+    expect(dois.adotado?.nome).toBe('Rex')
+    expect(dois.outros.map((b) => b.nome)).toEqual(['Mia'])
+    const tres = adotar(dois, 'coelho', 'Bolinha')
+    if (!tres) throw new Error('não adotou o terceiro')
+    expect(adotados(tres)).toHaveLength(BICHOS_ADOTADOS_MAXIMO)
+    expect(podeAdotarMais(tres)).toBe(false)
+    expect(adotar(tres, 'porquinho', 'Rosinha')).toBeNull()
+    // O mesmo bicho não se adota duas vezes.
+    expect(adotar(dois, 'gato', 'Outra')).toBeNull()
+  })
+
+  test('trocar quem vai junto devolve o de antes ao Bosque', () => {
+    const dois = adotar(adotar(vazio, 'gato', 'Mia') ?? vazio, 'cachorro', 'Rex')
+    if (!dois) throw new Error('não adotou')
+    const trocado = trocarBicho(dois, 'gato')
+    expect(trocado.adotado?.nome).toBe('Mia')
+    expect(trocado.outros.map((b) => b.nome)).toEqual(['Rex'])
+    expect(trocarBicho(trocado, 'gato')).toBe(trocado)
+    expect(falaDaTroca('Mia', 'Rex')).not.toMatch(/[—–!?]/)
   })
 })

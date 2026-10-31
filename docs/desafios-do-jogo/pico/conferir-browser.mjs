@@ -91,35 +91,56 @@ try {
       }
       assert((await ler(page, 'pinguim.x')) < 230, 'o pinguim passou da beira antes do pulo')
       await input('jump', 'Space')
+      // A bandeira da fase 1 leva à fase 2 (A46): o pinguim volta ao começo.
+      const esperar = (fn, ms = 8000) =>
+        page.waitForFunction(fn, scope, { timeout: ms, polling: 'raf' })
       await segurarDireita()
       try {
-        await page.waitForFunction((scope) => globalThis[scope]?.get('chegou')?.v === true, scope, {
-          timeout: 8000,
-          polling: 'raf',
-        })
+        await esperar((scope) => globalThis[scope]?.get('fase')?.v === 2)
       } finally {
         await soltarDireita()
       }
-      assert.equal(await ler(page, 'recado'), 'O pinguim chegou à bandeira. A fase terminou.')
+      await esperar((scope) => globalThis[scope]?.get('noChao')?.v === true)
+      await page.screenshot({
+        path: resolve(out, `2026-10-31-pico-fase-2-${nome}.png`),
+        fullPage: true,
+      })
+      // Na fase 2, pula para o gelo do alto e anda até a bandeira.
+      await input('jump', 'Space')
+      await esperar((scope) => (globalThis[scope]?.get('pinguim')?.v.y ?? 999) < 260)
+      await segurarDireita()
+      try {
+        await esperar((scope) => globalThis[scope]?.get('chegou')?.v === true)
+      } finally {
+        await soltarDireita()
+      }
+      assert.equal(
+        await ler(page, 'recado'),
+        'O pinguim chegou à bandeira da fase 2. O jogo terminou.',
+      )
       assert(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
         'Rolagem horizontal',
       )
-      const filename = `2026-10-30-pico-desafio-${nome}.png`
+      const filename = `2026-10-31-pico-desafio-${nome}.png`
       await page.screenshot({ path: resolve(out, filename), fullPage: true })
-      // Recomeçar devolve o pinguim ao começo e limpa a chegada.
+      // Recomeçar devolve o pinguim ao começo da fase 1 e limpa a chegada.
       await input('start', 'Enter')
       await page.waitForFunction(
         (scope) => {
           const reader = globalThis[scope]
-          return reader?.get('chegou')?.v === false && reader.get('pinguim')?.v.x === 40
+          return (
+            reader?.get('chegou')?.v === false &&
+            reader.get('fase')?.v === 1 &&
+            reader.get('pinguim')?.v.x === 40
+          )
         },
         scope,
         { timeout: 5000 },
       )
       assert.deepEqual(errors, [])
       console.log(
-        `${mobile ? 'Celular emulado, toque' : 'Computador, teclado'} (${width} x ${height}): andar, pular o buraco, chegar à bandeira e recomeçar aprovados; ${filename}`,
+        `${mobile ? 'Celular emulado, toque' : 'Computador, teclado'} (${width} x ${height}): andar, pular o buraco, as duas fases e recomeçar aprovados; ${filename}`,
       )
     } finally {
       await context.close()

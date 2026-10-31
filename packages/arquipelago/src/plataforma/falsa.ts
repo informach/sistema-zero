@@ -75,6 +75,11 @@ export interface OpcoesDaPlataformaFalsa {
   quarto?: QuartoDoJogo
   persistir?: boolean
   agora?: () => Date
+  /**
+   * A festa do ensaio (`?festa=` do playground): a conferência das roupas a usa no lugar da data de
+   * hoje, como o jogo usa `definirFestaDoPlayground`. O serviço de verdade só olha a data.
+   */
+  festa?: ReturnType<typeof festaDoDia>
   /** Começa fora de casa, com a porta já aberta, neste ponto (para testar a ilha). `y` padrão 6. */
   comecarEm?: { x: number; z: number; y?: number }
   /** Volta o começo do jogo N minutos (para ver a noite: 13). */
@@ -660,7 +665,9 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
             return { status: 403, corpo: { error: { code: 'SOMENTE_LEITURA' } } }
           const salvo = migrarSalvamento(guardado.salvamento)
           const novas = salvo
-            ? roupasConquistadas(salvo, festaDoDia(agora())).filter((p) => !roupasDadas.has(p))
+            ? roupasConquistadas(salvo, o.festa ?? festaDoDia(agora())).filter(
+                (p) => !roupasDadas.has(p),
+              )
             : []
           for (const p of novas) roupasDadas.add(p)
           if (novas.length > 0 && o.persistir && typeof localStorage !== 'undefined')

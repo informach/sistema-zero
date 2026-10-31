@@ -26,13 +26,21 @@ export function passarTempo(n: Necessidades, segundos: number, correndo: boolean
   }
 }
 
-export function comer(n: Necessidades, item: Item): Necessidades {
+/** Comer um item; `ilha` é onde a criança está (o chocolate quente rende mais no Pico). */
+export function comer(n: Necessidades, item: Item, ilha?: string): Necessidades {
   if (!item.comida) return n
+  const extra = item.naIlha && item.naIlha.ilha === ilha ? item.naIlha : null
   return {
     fome: limitar(n.fome + item.comida.fome),
-    energia: limitar(n.energia + (item.comida.energia ?? 0)),
-    diversao: limitar(n.diversao + (item.comida.diversao ?? 0)),
+    energia: limitar(n.energia + (item.comida.energia ?? 0) + (extra?.energia ?? 0)),
+    diversao: limitar(n.diversao + (item.comida.diversao ?? 0) + (extra?.diversao ?? 0)),
   }
+}
+
+/** O que o Zappy diz ao comer (a fala da ilha quando o item rende mais nela). */
+export function falaDeComer(item: Item, ilha?: string): string {
+  if (item.naIlha && item.naIlha.ilha === ilha) return item.naIlha.fala
+  return `Hum. ${item.nome} deu energia para continuar.`
 }
 
 /** Cuidar dá 10% de bônus. Necessidade baixa conserva o ritmo básico, sem tornar trajetos mais difíceis. */

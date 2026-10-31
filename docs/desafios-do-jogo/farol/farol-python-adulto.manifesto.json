@@ -1,0 +1,260 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "farol-meu-jogo-do-arquipelago-python-adulto",
+      "publico": "adulto",
+      "ilha": "farol",
+      "tipo": "quadro-das-cores",
+      "quadro": 2,
+      "ordem": 20,
+      "publicar": true,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "Projeto autoral em Python",
+        "enunciado": "Projeto livre em Python com Pygame Zero. A cena traz guia, estrela e pontos. Critérios: a colisão com a estrela pontua uma única vez (mantenha uma flag); R reinicia a partida, inclusive o guia e a flag. O movimento já vem pronto. O restante do jogo é seu.",
+        "dicas": [
+          "keyboard.right indica a seta pressionada no quadro.",
+          "Rect.colliderect detecta a colisão.",
+          "on_key_down recebe key; compare com keys.R."
+        ],
+        "projetoInicial": {
+          "formatVersion": 3,
+          "id": "farol-meu-jogo-python",
+          "name": "Meu jogo do Arquipélago",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "programmingLanguage": "python",
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-25-integrated-games-2",
+            "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+          },
+          "kind": "classic",
+          "mode": "bridge",
+          "projectTools": [],
+          "installedExtensions": [
+            {
+              "id": "python-pgzero",
+              "version": "1.0.0",
+              "installedAt": 0
+            }
+          ],
+          "assets": [],
+          "python": {
+            "entrypoint": "main.py",
+            "dependencyLock": {
+              "lockVersion": 1,
+              "target": "browser",
+              "pythonVersion": "3.14.2",
+              "runtimeManifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+              "requirementsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "packages": []
+            }
+          },
+          "ir": null,
+          "blocksState": null,
+          "files": {
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Meu jogo do Arquipélago\"\n\nguia = Rect((60, 220), (40, 40))\nestrela = Rect((420, 220), (40, 40))\npontos = 0\n\n\ndef update():\n    if keyboard.right:\n        guia.x = guia.x + 4\n    if keyboard.left:\n        guia.x = guia.x - 4\n\n\ndef on_key_down(key):\n    pass\n\n\ndef draw():\n    screen.fill((26, 40, 84))\n    screen.draw.filled_circle(estrela.center, 18, (255, 220, 90))\n    screen.draw.filled_rect(guia, (120, 220, 200))\n    screen.draw.text(\"Pontos: \" + str(pontos), (16, 12), fontsize=32)\n",
+            "requirements.txt": ""
+          }
+        },
+        "gabarito": {
+          "formatVersion": 3,
+          "id": "farol-meu-jogo-python",
+          "name": "Meu jogo do Arquipélago",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "programmingLanguage": "python",
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-25-integrated-games-2",
+            "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+          },
+          "kind": "classic",
+          "mode": "bridge",
+          "projectTools": [],
+          "installedExtensions": [
+            {
+              "id": "python-pgzero",
+              "version": "1.0.0",
+              "installedAt": 0
+            }
+          ],
+          "assets": [],
+          "python": {
+            "entrypoint": "main.py",
+            "dependencyLock": {
+              "lockVersion": 1,
+              "target": "browser",
+              "pythonVersion": "3.14.2",
+              "runtimeManifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+              "requirementsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "packages": []
+            }
+          },
+          "ir": null,
+          "blocksState": null,
+          "files": {
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Meu jogo do Arquipélago\"\n\nguia = Rect((60, 220), (40, 40))\nestrela = Rect((420, 220), (40, 40))\npontos = 0\n\n\npegou = False\n\n\ndef update():\n    global pontos, pegou\n    if keyboard.right:\n        guia.x = guia.x + 4\n    if keyboard.left:\n        guia.x = guia.x - 4\n    if guia.colliderect(estrela) and not pegou:\n        pegou = True\n        pontos = pontos + 1\n        estrela.x = 700\n\n\ndef on_key_down(key):\n    global pontos, pegou\n    if key == keys.R:\n        pontos = 0\n        pegou = False\n        guia.x = 60\n        estrela.x = 420\n\n\ndef draw():\n    screen.fill((26, 40, 84))\n    screen.draw.filled_circle(estrela.center, 18, (255, 220, 90))\n    screen.draw.filled_rect(guia, (120, 220, 200))\n    screen.draw.text(\"Pontos: \" + str(pontos), (16, 12), fontsize=32)\n",
+            "requirements.txt": ""
+          }
+        },
+        "objetivos": [
+          {
+            "id": "encontro",
+            "label": "A colisão com a estrela soma um ponto uma única vez.",
+            "hint": "Mantenha uma flag de coleta e teste-a antes de pontuar.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "pontos"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "recomeca",
+            "label": "R devolve o guia à posição inicial.",
+            "hint": "Restaure guia.x em R.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "press",
+                  "key": "r",
+                  "holdMs": 80
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "guia.x"
+                },
+                "compare": "lessThan",
+                "value": 100
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "outra-partida",
+            "label": "Após R, a estrela pode ser coletada de novo, com a pontuação recomeçando em zero.",
+            "hint": "Reinicie pontos, a flag de coleta e a posição da estrela.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "press",
+                  "key": "r",
+                  "holdMs": 80
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "pontos"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "some",
+            "label": "Extra: a estrela sai da área visível quando é coletada.",
+            "hint": "Mova a estrela para fora da tela (x 700).",
+            "optional": true,
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "estrela.x"
+                },
+                "compare": "atLeast",
+                "value": 640
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Mais um desafio",
+          "texto": "Ao coletar, mova a estrela para fora da tela."
+        },
+        "recompensa": {
+          "cor": false,
+          "atracao": "meu-jogo-do-arquipelago",
+          "moedas": 20,
+          "moedasExtra": 10
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

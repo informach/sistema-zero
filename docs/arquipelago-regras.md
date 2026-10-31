@@ -2,7 +2,7 @@
 
 Situação por funcionalidade, com código, conteúdo, provas e implantação separados:
 [estado atual](arquipelago-estado-atual.md). Nesta base de 30/10/2026, o formato vigente é V19,
-o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
+o teto é 81.920 bytes UTF-8 (80 KB desde 01/11/2026; antes 65.536) e o limite semanal de moedas do jogo é 100. Seções datadas sobre
 versões anteriores registram a evolução; não substituem o contrato atual.
 
 ## Repertório antes de publicar desafios (C01a, 30/10/2026)
@@ -568,7 +568,8 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
     guardado (alimento → quantidade, no máximo 12 no total, `GELADEIRA_GUARDA`);
   - as rotinas dos Lumis (`rotinas`, desde a V10): uma por espécie, só das que ela já prendeu, com
     os cartões no formato de `arquipelago-contracts/src/rotinas.ts` e os tetos de §8.2.
-- **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
+- **Teto:** `SALVAMENTO_MAX_BYTES = 80 * 1024` (80 KB do documento em JSON, desde 01/11/2026: o pior
+  caso com a horta cheia, os bichos, a posição e as pontes já passava dos 64 KB de antes). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
@@ -671,8 +672,13 @@ Arquivos: `sistemas/necessidades.ts` e `estado/relogios.tsx`.
 - **Atualização:** a cada 2 segundos de jogo ativo. As regras de "ativo" são as do tempo livre
   (seção 4).
 - **Faixa:** cada necessidade fica entre 0 e 100.
-- **Cochilo:** com a energia em 0, o personagem volta para casa e a energia vai para 60. O Zappy
-  diz: "Você cansou e tirou um cochilo em casa. Nada se perdeu." Nada é castigado.
+- **Cochilo (lacunas, 01/11/2026, pela proposta: "o avatar cochila onde está e acorda em casa"):**
+  com a energia em 0, o jogo espera o painel fechar e a ação em andamento acabar (corrida, barco,
+  balão, mergulho, montaria, trenó e escorregador, cipó, planador, escalada, borda, escada e
+  equilíbrio; `podeCochilar` em `sistemas/descanso.ts`). Então ela cochila ali mesmo: a tela
+  escurece com "Cochilando" e o Zzz, os comandos esperam, e o Zappy diz "Você cansou e cochilou
+  aqui mesmo." Depois de `SEGUNDOS_DE_COCHILO` (4) segundos de jogo ativo ela acorda em casa com a
+  energia em 60: "Você acordou em casa, descansada. Nada se perdeu." Nada é castigado.
 - **Descansar (fase2-13, combinado com a dona em 29/10/2026):** sentar num banco ou deitar na cama
   devolve a energia aos poucos (`sistemas/descanso.ts`, `ENERGIA_POR_SEGUNDO`):
   - **banco:** 0,55 por segundo (de vazia a cheia em uns 3 minutos). Hoje são os três bancos da
@@ -748,7 +754,7 @@ Arquivo: `sistemas/itens.ts`, constante `ITENS`.
 | Bolo de fubá | fome +50 |
 | Pão de queijo | fome +30 |
 | Brigadeiro | fome +10, diversão +20 |
-| Chocolate quente | fome +15, energia +15 |
+| Chocolate quente | fome +15, energia +15; no Pico, energia +20 a mais e "O chocolate quente aqueceu do frio do Pico." (a proposta: "aquece no Pico Gelado"; `naIlha` em `sistemas/itens.ts`, lacunas de 01/11/2026) |
 
 - **Teto por item:** 999 (`adicionar`). Também é o teto do salvamento.
 - **Item desconhecido** (de uma versão futura) é ignorado pelo jogo.
@@ -1265,6 +1271,32 @@ do percurso nas copas (§6.13); muda só o que está aqui.
   `bun playground/verificar-percursos-browser.ts` (a entrega, o par na mochila e o percurso nas
   copas).
 
+### 6.13.1a Os brinquedos de ilha viram minijogo (lacunas, 01/11/2026)
+
+A proposta: "Trenó no Pico, montaria no Vale, balão nas Nuvens, barco entre ilhas. Cada um é um
+minijogo e um jeito de chegar." Além da corrida de balão (fase4-07), duas corridas de portões no
+mesmo molde (`sistemas/corrida-de-portoes.ts`, `mundo/corrida-de-portoes.tsx`): portões de
+bandeira em ordem, o primeiro começa e o último chega, coisas para pegar no caminho com uma
+escondida (a terceira estrela), cronômetro, resultado, fantasma e o melhor no salvamento
+(`PERCURSOS` ganhou `pico-treno` e `vale-montaria`, sem versão nova).
+
+- **Descida de trenó** (`pico-treno`): seis portões pela pista em espiral do Pico (os pontos
+  `treno-curva-N` do `pico.glb`, a cada cinco) e cinco bandeirinhas. Começa ao passar de trenó pelo
+  primeiro; sair do trenó no meio para a corrida. Estrela do tempo: 10 s.
+- **Corrida da montaria** (`vale-montaria`): montada no dino, seis portões de osso pela praia do
+  Vale, de 0° a 105° em volta da ilha (o trecho de areia sem nada no caminho; o teste confere cada
+  trecho contra os colisores e o chão), e cinco fósseis brilhantes. Descer do dino no meio para a
+  corrida. Estrela do tempo: 8 s.
+- **Volta das boias** (`barco-regata`, `sistemas/regata.ts`, `mundo/regata-das-boias.tsx`): no cais
+  da sua ilha (com a rede do barco aberta), o painel do barco oferece "Volta das boias". O barco
+  sai pelo canal de sempre, dá a volta inteira em volta do arquipélago por fora do anel
+  (`criarRotaDaRegata`, uns 1.200 m) e volta ao mesmo cais. Na viagem da regata, o direcional
+  para a frente rema (até 40% mais rápido) e para os lados leva o barco até 3 m da linha da rota,
+  longe dos cais (perto deles a manobra de atracar continua a mesma). Oito boias de presente
+  ficam alternando para os lados, longe da linha (reto pelo meio não pega nenhuma), uma
+  escondida. Estrela do tempo: 90 s (sem remar são uns 100 s). "Parar" termina a regata e o barco
+  volta ao cais.
+
 ### 6.13.2 Os patins (fase2-05)
 
 Arquivos: `sistemas/patins.ts`, o perfil `PERFIS.patins` em `sistemas/movimento.ts`, o modo chão
@@ -1415,7 +1447,11 @@ adotado já estão no jogo. O plano da parte que falta:
 - **Adotar** (`adotar`, `nomeValido`, `motivoDoNome`, `adotarPelaCapi`): depois do primeiro bicho
   achado, a conversa com a Capi ganha "Adotar um bicho". A criança escolhe um dos achados e dá um
   nome de 1 a 16 caracteres, só letras, espaço e hífen, começando por letra; nome que não serve
-  mostra o motivo embaixo do campo. Um bicho por vez nesta fase. O nome fica só no salvamento da
+  mostra o motivo embaixo do campo. Até três bichos adotados (lacunas, 01/11/2026, salvamento V23;
+  a proposta: "No Bosque dá para adotar mais"): enquanto houver achado livre, a Capi oferece de
+  novo. O último adotado vai junto (`bichos.adotado`); os outros esperam no cercadinho do Bosque
+  (`bichos.outros`, até dois), sentem o tempo jogado como ele e, no painel do bicho, "Levar Nome"
+  troca quem vai junto (`trocarBicho`; o de antes volta ao cercadinho). O nome fica só no salvamento da
   criança e ninguém mais vê. O bicho chega com 80 em cada medida e sai do cercadinho para andar
   com ela. As falas usam o nome e nenhum pronome: é a criança quem decide quem o bicho é.
 - **Seguir** (`sistemas/seguir.ts`, `mundo/bicho-adotado.tsx`): o bicho anda atrás da criança pela
@@ -1535,9 +1571,10 @@ Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-ilha
 `personagem/lanterna-na-mao.tsx` (a lanterna acesa na mão). Salvamento V9: `lumis`, quantos de
 cada espécie ela já prendeu.
 
-- **A lanterna:** o Bento dá do segundo encontro em diante, por último na conversa
-  (`receberLanterna`; o primeiro encontro fica só com a apresentação e o pedido). Se ela sumir da
-  mochila, ele dá de novo. Na mochila é um equipamento (não se come nem se dá de presente); o botão
+- **A lanterna:** desde a lista A v3 (30/10/2026) quem dá é o Zappy, na primeira noite, a quem
+  ainda não tem (`lanternaDoZappy`, `FALA_DA_LANTERNA_DO_ZAPPY`). O Bento ficou como a reposição: do
+  segundo encontro em diante, por último na conversa, ele dá de novo a quem não tem
+  (`receberLanterna`), por exemplo se ela sumir da mochila. Na mochila é um equipamento (não se come nem se dá de presente); o botão
   dela acende e apaga (`FALA_DE_ACENDER`, `FALA_DE_APAGAR`). Acesa, ela aparece pendurada na mão
   direita, com o papel brilhando (sem luz de verdade na cena). Acesa não é salvo: ao abrir o jogo
   ela começa apagada.
@@ -1554,6 +1591,13 @@ cada espécie ela já prendeu.
   Usar): ele chacoalha na luz (`PRESO_POR`, 1,2 s), se desfaz em faíscas (`VIRANDO_POR`, 1,5 s,
   clipe `virar`) e o Lumi entra no salvamento na hora (`prenderBorrao`, até 999 de cada), com a
   fala do Zappy (`falaDoLumiNovo`). Tensão boa, sem dano: deixar um borrão para trás não custa nada.
+- **O Cinza em volta (lacunas, 01/11/2026; a proposta: "borrões de névoa saem para desbotar o que
+  está do lado de fora"):** além da mancha no chão (`MANCHA_DO_BORRAO`), cada borrão solto tira a
+  cor do que está perto dele, no shader (`mundo/cinza-dos-borroes.ts`): o chão, as árvores, os
+  enfeites, a casa e o píer da sua ilha e as peças das ilhas do anel. No meio fica 15% da cor
+  (`FORCA_DO_CINZA` 0,85), que volta aos poucos até `RAIO_DO_CINZA` (4,56 m), crescendo junto com
+  a mancha. Preso, o Cinza some com ele. No máximo quatro de uma vez (dois na sua ilha e dois na
+  ilha aberta). Prova: `tests/cinza-dos-borroes.test.ts` e `playground/verificar-borroes-browser.ts`.
 - **Os já presos na noite:** ficam no aparelho, por perfil (`arquipelago:borroes-presos:<perfil>`),
   para recarregar a página na mesma noite não trazer de volta os já presos. Na noite seguinte saem
   outros dois.
@@ -1928,35 +1972,51 @@ Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posica
 Verificador: `playground/verificar-convidados-browser.ts`; evidências em
 `docs/qa/2026-10-29-convidados/`.
 
-### 6.16.2a As chaves dos cômodos (N11, 30/10/2026)
+### 6.16.2a As chaves dos cômodos (N11, 30/10/2026; refeita pela proposta em 01/11/2026)
 
 A proposta põe como aventura da sua ilha "achar a chave de cada cômodo": a casa da Íris só tem
-cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Como o Construir
-não tem cômodo com tipo (a criança fecha paredes onde quiser), a chave dá cor pelo acabamento
-que é daquele cômodo. Escolha mínima, registrada como decisão:
+cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Até 31/10 a chave
+liberava um acabamento (ladrilho, azulejo, janelas grande e em arco). Desde as lacunas de
+01/11/2026 a chave abre o cômodo, como a proposta diz:
 
-| Chave | Libera no Construir | Onde fica (x, z) |
+| Chave | Abre no Construir | Onde fica (x, z) |
 |---|---|---|
-| Cozinha | piso de ladrilho | (20,5; -3,6), a leste da horta |
-| Sala | janelas grande e em arco | (6,8; -18,8), ao sul |
-| Banheiro | piso de azulejo | (-16,5; 2,1), a oeste da casa |
+| Cozinha | mais um cômodo | (20,5; -3,6), a leste da horta |
+| Sala | mais um cômodo | (6,8; -18,8), ao sul |
+| Banheiro | mais um cômodo | (-11,5; 17,2), a noroeste da casa |
 | Quintal | cerca, caminho e canteiro | (-6; 14,8), ao norte |
 
-- Sem chave nenhuma a casa já cresce: parede, porta, janela redonda, piso de tábua, objetos dos
-  pedidos, apagar e olhar. A janela começa na redonda.
-- Trancado aparece em cinza com 🔑 e o nome da chave. Tocar mostra o recado "Precisa da chave da
-  cozinha. Ela está escondida em algum canto da sua ilha." A loja recusa a escolha e recusa a
-  obra que traga um acabamento trancado novo; o que a obra já usava continua editável.
+- O Construir não tem cômodo com tipo (a criança fecha paredes onde quiser), então a conta é por
+  número: a casa fecha o quarto e mais um cômodo por chave da cozinha, da sala ou do banheiro
+  (`comodosAbertos`, contando os cômodos da planta que não são o quarto). Fechar um cômodo a
+  mais recusa a obra com o recado "Para fechar mais um cômodo, precisa da chave da cozinha. Ela
+  está escondida em algum canto da sua ilha." (a primeira chave de cômodo que falta).
+- Só subir a conta pede chave: quem já tinha mais cômodos que chaves não perde nenhum e continua
+  editando. Sem bytes novos e sem migração: as chaves já estão no salvamento.
+- Pisos e janelas ficam livres para todos. Sem chave nenhuma a casa já cresce: parede, porta,
+  janelas, pisos, objetos dos pedidos, apagar e olhar, com o quarto e nenhum cômodo além dele.
+- O quintal continua por ferramenta: cerca, caminho e canteiro aparecem em cinza com 🔑 até a
+  chave do quintal, e a loja recusa a obra (térreo ou andar de cima) que traga um deles novo.
 - As chaves ficam no gramado, fora do lote da casa (também do quintal grande do Vale), a mais de 4 m da linha de cada ponte e a
   mais de 3 m das conchas e dos Lumis (teste contra os colisores reais da casa, do farol, do
   píer, das árvores e do `terreno.glb`). "Pegar a chave da cozinha" guarda o bit em `chaves`; o
-  Zappy diz o que ela abre e quantas faltam. A chave achada some do mundo.
+  Zappy diz o que ela abre ("a casa já pode ganhar mais um cômodo") e quantas faltam. A chave
+  achada some do mundo.
 - O painel do Construir mostra "Chaves da casa: n de 4" até a quarta.
 - Visita e suporte somente leitura não pegam chave.
 
+**Objetos com função no andar de cima (lacunas, 01/11/2026).** A ferramenta Objetos também vale lá
+em cima: `objetos` opcional no andar (`AndarDeCimaSchema`, sem repetir), guardado por
+`andarDaObra` só quando há objeto. `conferirAndar` recusa objeto fora de cômodo, no vão da escada
+ou na célula de chegada. Um objeto fica num andar só: pôr no térreo o que já está em cima (ou o
+contrário) recusa com "Já tem geladeira lá em cima. Tire de lá com o Apagar antes de pôr aqui." Lá
+em cima o objeto funciona como no térreo (o ponto de uso confere a altura do avatar). "Meu
+quarto" continua só no térreo.
+
 Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/construcao.ts`,
-`interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
-`playground/verificar-chaves-browser.ts`.
+`interface/construir.tsx`, `sistemas/construcao/andar.ts`, `mundo/casa.tsx`,
+`mundo/objetos-da-casa.tsx`. Provas: `tests/chaves-da-casa.test.ts`, `tests/andar-de-cima.test.ts`,
+`arquipelago-contracts/tests/obra-estendida.test.ts` e `playground/verificar-chaves-browser.ts`.
 
 ### 6.16.2b O iglu do Pico (E04, adiado)
 
@@ -2039,8 +2099,8 @@ Uma aparência comprada não é cobrada novamente. O projeto azul precisa estar 
 de oferecer sua aparência; o projeto já funciona sem comprar. Visita, suporte, tempo bloqueado
 ou conflito de salvamento não permitem compra. Sair da ilha fecha a feira.
 
-A vitrine não cria carteira, inventário ou prêmio. A unificação da propriedade com o inventário
-do Members continua em L04. Insumos e peças sazonais são entregas distintas, ainda abertas.
+A vitrine não cria carteira, inventário ou prêmio. A posse única com o inventário do Members
+(L04), os insumos (L07) e as roupas das festas (B16) entraram depois; ver §9.9 e §6.29.
 
 ### 6.17 O diário e as pegadas
 
@@ -2183,8 +2243,9 @@ prolongada em celular, tablet e Chromebook reais, incluindo aquecimento e bateri
 ### 6.19 Festas da estação na Vila Doce (fase2-10, 29/10/2026)
 
 As festas voltam todo ano. Faltar não tira itens, progresso ou oportunidades futuras.
-A pipoca já feita continua no inventário depois da festa. Esta entrega liga decoração
-e receita; não acrescenta roupas nem prêmios de presença.
+A pipoca já feita continua no inventário depois da festa. Esta entrega (29/10/2026) ligou
+decoração e receita; as roupas de cada festa vieram no B8 e são exclusivas dela desde o B16
+(§6.29). Prêmio de presença continua não existindo.
 
 O calendário usa o dia real de São Paulo, separado do relógio acelerado do jogo.
 `CALENDARIO_DAS_FESTAS` concentra as datas e seus motivos:
@@ -2193,7 +2254,9 @@ O calendário usa o dia real de São Paulo, separado do relógio acelerado do jo
 - Festa Junina: de 1 a 30 de junho, inclusive.
 - Fim de ano: de 20/12 a 06/01, atravessando a virada. Janela aprovada pela dona em 30/10/2026.
 - Noite das Lanternas: de 1 a 12 de outubro, terminando no Dia das Crianças. Janela aprovada pela
-  dona em 31/10/2026.
+  dona em 31/10/2026, com a cocada na bancada (receita da festa).
+
+Todas as quatro janelas estão aprovadas; nenhuma data de festa está pendente.
 
 A data é relida a cada 30 segundos e ao voltar à aba. Abrir a fogueira e fazer a receita
 também conferem a festa atual, sem esperar essa atualização visual.
@@ -2278,7 +2341,10 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
 - **Visitas:** "🏡 Visitar um irmão" no menu abre o painel (`PAINEL_DAS_VISITAS`) com cada irmão
   ("Já construiu a casa." ou "Ainda mora na casa de antes.") e "Ver a casa".
   - Na visita, o jogo desenha a casa, o quintal e a horta do irmão (os objetos com aparência com o
-    modelo). O personagem vai para a frente da casa (`CHEGADA_DA_VISITA`) e o Zappy diz "Você está
+    modelo). Desde 01/11/2026 (lacunas), também o andar de cima e o terreno moldado dele: o serviço
+    lê a obra estendida de quem é visitado (`obraEstendidaNaVisita`, a mesma nas visitas de amigos
+    e de adultos, antes da conferência final) e manda `andar` e `terreno` com a casa. Sem eles (o
+    serviço de antes, ou falha na leitura), a casa aparece sem. O personagem vai para a frente da casa (`CHEGADA_DA_VISITA`) e o Zappy diz "Você está
     na casa de Ana. Aqui você só olha.".
   - No lugar de Viver e Construir, a faixa no alto: "🏡 Você está na casa de Ana. Aqui você só
     olha." com "Voltar para a minha casa" (no celular, abaixo das necessidades, longe do
@@ -2421,13 +2487,18 @@ chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segr
 
 A proposta: "Mapa que se revela conforme você anda." Cada ilha com mapa (as sete, o Farol fica
 no da sua ilha) tem uma grade de 8 × 8 partes num quadrado em volta dela: 60 m de lado na sua
-ilha e 28 m nas do anel. O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
+ilha e, nas do anel, o dobro do alcance de cada uma (lacunas, 01/11/2026: antes eram 28 m em
+todas, e o navio do Recife, a cabana do Bosque e a caverna do Pico ficavam fora do mapa). O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
 por ilha; dois aparelhos juntam as partes, nunca perdem).
 
 - Enquanto a criança está na ilha (andando, nadando ou planando), as partes a até 6 m dela se
   revelam. Não conta pausado, de visita, em suporte somente leitura nem durante um transporte.
-- Só contam as partes de terra: as que têm o meio dentro da ilha (29 m na sua ilha, 13 m nas do
-  anel), com meia parte de folga.
+- Só contam as partes de terra. Na sua ilha, as que têm o meio a até 29 m, com meia parte de
+  folga. Nas do anel, as que têm algum ponto dentro do alcance da ilha naquele rumo
+  (`alcanceNoRumo`, o mesmo `raioDaEsperaDaIlha` que o jogo usa ao abrir a ilha: o lóbulo da
+  cabana, a caverna do Pico, o Recife até 24 m, as Nuvens e os portos). Com a grade nova, as
+  partes já vistas antes de 01/11 continuam guardadas, mas podem corresponder a outro pedaço da
+  ilha; o mapa só ganha partes, nunca perde.
 - O painel do mapa mostra, embaixo do arquipélago, o mapa da ilha onde a criança está: as partes
   vistas na cor da ilha, as outras em névoa cinza, e a marca de onde ela está. A legenda conta
   "Mapa desta ilha: n de m partes descobertas." Na lista, cada ilha visitada diz "Mapa n%
@@ -2471,9 +2542,11 @@ Escolhas aprovadas no plano do levantamento integrado (`docs/arquipelago-levanta
 anotadas para não serem refeitas por engano:
 
 - **Duas versões de ilha (N15):** leve e completa, em vez de silhueta, média e completa (§6.9).
-- **A Íris na abertura:** a proposta diz que ela aparece "só pelas páginas"; a abertura "O Cinza"
-  mostra a Íris na sala do Farol numa ilustração do passado. Fica: é memória, não encontro, e o
-  segredo do final continua guardado. Ela só aparece no jogo depois dos seis fachos.
+- **A Íris só pelas páginas (desfeita em 01/11/2026, pela proposta):** a cena `iris` da abertura
+  "O Cinza" não mostra mais a Íris: a imagem é o Farol de pé ao lado da casa, com a ilha colorida
+  (`playground/capturar-abertura.ts`, `src/assets/abertura/iris.webp`). A placa da ponte quebrada
+  também perdeu a assinatura dela (`recadoDaPlaca`, "Ler a placa da ponte"). Ela só aparece no jogo
+  depois dos seis fachos.
 - **Rótulos dos minijogos (N09):** os minijogos seguem a régua de conteúdo da Jornada
   (`docs/desafios-do-jogo/conteudo-por-posto.md`), e os nomes da proposta do Arquipélago ficam
   como estão (Pega-conchas, Corrida dos bichos, Corrida do entregador, Mira de bolhas, Fase de
@@ -2505,9 +2578,19 @@ faz o que as seções acima descrevem.
    continua com a equipe. Feito (lote 9a, 31/10): a Vila Doce virou a corrida do entregador sobre o
    Corre, Dino! (pulo com gravidade, pedras sorteadas com limites, dificuldade com teto, um passo
    por quadro) e os nove desafios pedem publicação (`docs/desafios-do-jogo/vila-doce/README.md`).
+   Feito (lote 9f, 31/10, decisão da dona A43): Vale e Nuvens publicavam como estavam, esperando
+   os cursos do Arquiteto e do Gênio. Desfeito nas lacunas de 01/11/2026: pela Jornada, esses
+   cursos são em JavaScript e não ensinam esses blocos, então os desafios em blocos usam só a
+   trilha dos postos 1 a 3 (o Vale e as Nuvens refeitos; a lista "esperam os cursos" ficou vazia).
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
-   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos. Feito
+   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 ficam em blocos, e desde as lacunas de
+   01/11/2026 montam o jogo do gênero do posto, um passo por quadro (Recife: a Mira do Recife,
+   com bolha, alvo sorteado, tempo de partida e nova partida; Pico: a Fase do Pico, com pulo
+   com apoio, água que devolve ao começo, próxima fase, fim do jogo e volta à fase 1; Vale: o
+   Guardião dos ninhos, defesa de torre com ondas, relógio, ninho, alcance e ondas que crescem,
+   e os desafios do dia variando o Guardião; Nuvens: o Jardim em grade, com plantar com moedas,
+   canteiro ocupado, produção, colheita e meta). Feito
    (lote 8): os desafios C02 viraram o quadro 6 (pintam) e o minijogo em blocos que estava no
    quadro 6 virou desafio do dia. Importar o arquivo em blocos antes do da linguagem.
 3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a
@@ -2616,8 +2699,11 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   caixotes até a casinha 2 (arte de 31/10). A entrega não pede as paradas em ordem: pelo atalho se
   chega mais rápido, e os confeitos do trecho pulado ficam para trás (a terceira estrela pede o
   confeito escondido). "Olhar o atalho" explica cada um.
-- **A subida por fora do Farol** chegou na arte de 31/10 e fica escondida, sem colisão, até virar
-  o percurso da Lenda (B7).
+- **A subida por fora do Farol** chegou na arte de 31/10 e virou o percurso da Lenda no B7
+  (`6ee28cb35`): escada, quinas, equilíbrio, vento e varanda. Desde a revisão de 31/10 (N4,
+  `c94c34139`) ela leva ao final: no resultado, "Entrar na sala do alto" abre a sala com a mesa da
+  última página; depois do final, a chegada é a galeria. A porta de baixo continua como a
+  alternativa direta ("Subir pela escada de dentro").
 - **Os Lumis de luz (B12):** sete espécies novas, uma por família (Búzio, Ipê, Brigadeiro, Pérola,
   Cristal, Brotinho e Pluma de Luz), com a forma da rara, a coroa acesa e o rastro de faíscas.
   Nunca saem de um borrão e nunca se compram: cada um mora num baú da Íris. Os quatro do vento
@@ -2628,13 +2714,24 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   `arquipelago-contracts/src/lumis-de-luz.ts`). Ele mora com a família na ilha dela, no primeiro
   lugar, ganha rotina como os outros (trabalha como a rara) e tem seção própria no álbum ("Lumis
   de luz", com a ilha do baú para os que faltam). Entraram no fim de `LUMIS`, sem versão nova.
+  Quem abriu um baú antes do B8 já tem o Lumi dele (decisão da dona, 31/10/2026): é retroativo
+  sozinho, porque ter o Lumi é ter o bit do baú. Nenhum Lumi de luz aparece num catálogo com preço,
+  e nada pago é sorteado (A28, `tests/nada-pago-e-sorteado.test.ts` dos contratos).
 - **As roupas das festas (B16):** uma peça de cabeça e uma de corpo novas por festa, conquistadas
   na festa em vigor (o serviço concede no avatar, como as da amizade): Carnaval, cartolinha
   (`hat-08`) e colete de franjas (`top-07`); Festa Junina, chapéu de palha (`hat-09`) e vestido de
   chita (`outfit-07`); Noite das Lanternas, tiara de lanterninhas (`enfeite-06`) e capa de estrelas
   (`top-08`); fim de ano, gorro (`hat-10`) e suéter de estrela (`top-09`). As peças de antes
   continuam como sugestões no vestuário da festa (`VESTUARIO_DAS_FESTAS`: `conquista` e `pecas`).
-  No catálogo do Members elas são pagas (como as da amizade): fora da festa, quem quiser compra.
+  **Só conquistadas na festa (decisão da dona, 31/10/2026):** no catálogo do Members elas são da
+  faixa `festa` (preço 0), não se compram (409 `AVATAR_PART_FESTA`) e só a concessão do jogo as
+  entrega. Na loja do avatar, trancadas, dizem "Da festa" sem preço, e a prévia explica de onde
+  vêm. Quem já tinha comprado alguma antes continua com ela. Um teste do Members confere que a
+  faixa é exatamente a `conquista` das quatro festas.
+- **Móveis no andar de cima (C3, revisão de 31/10):** a ferramenta Móveis também vale lá em cima,
+  só dentro dos cômodos (como no térreo), até 24, fora do vão e da chegada da escada; a escada não
+  sai com móvel em cima. "Meu quarto" e os objetos com função (geladeira, aquário etc.) ficam no
+  térreo: escopo reduzido por decisão da dona. O aconchego de cima conta os móveis de cima.
 
 ## 7. Desafios
 
@@ -2655,7 +2752,15 @@ abaixo são as do serviço.
   Quadro das Cores tem um número de quadro. O desafio do dia tem a escolha de cada dia e nunca
   pinta a ilha (7.12). O pedido de morador (§6.28, A23) também não pinta nem entra no desafio do
   dia: o morador da ilha oferece na conversa ("Pedido no Estúdio") e, feito, a placa ao lado dele
-  acende à noite. Conteúdo em `docs/desafios-do-jogo/moradores/`.
+  acende à noite. Conteúdo em `docs/desafios-do-jogo/moradores/`. Desde as lacunas de 01/11/2026
+  há um pedido em cada ilha (a proposta: "pedidos curtos, como uma placa que acende à noite"): o
+  Nico na sua ilha, e a Capi, o Bento, a Maré, o Floco, a Jade e a Iriê nas ilhas do anel, cada
+  um com uma luz que acende por uma regra do jeito da ilha (liga e desliga, terceiro bolo, maré
+  baixa, lenha, as duas lenhas, energia com custo), só com teclas e só com os blocos de antes da
+  ilha (o Bosque, só o Faísca; as outras, o Faísca e o Construtor). Um manifesto por ilha e
+  público (`<ilha>-moradores.manifesto.json`). O cartão "Pedido no Estúdio" aparece também nas
+  conversas da Capi e do Bento; a placa (`PlacaDoPedido`) fica à frente e ao lado de cada morador
+  do anel (`placaAoLadoDoMorador`). Valem 5 e 2 moedas.
 - **Seis quadros por ilha** (`QUADROS_POR_ILHA = 6`).
   - Só o Quadro das Cores tem número de quadro, de 1 a 6, e ele sempre tem
     (`MetadadosDoDesafioSchema`).
@@ -2704,11 +2809,22 @@ O Members confere de novo os 20 objetivos e os 8 que rodam o jogo
 `core/src/learning/project-execution.ts`). As esperas somadas dos objetivos que rodam o jogo vão
 até 40 segundos (`maxSectionWaitMs`).
 
-### 7.3 Só JavaScript
+### 7.3 As linguagens: blocos, Python, Ponte e Pro
 
-O objetivo aceita só `programmingLanguage: 'javascript'` (`ObjetivoDoDesafioSchema`). A análise
-do Members recusa projeto ou objetivo em Python (`PROJETO_PYTHON`, `OBJETIVO_PYTHON`) e projeto do
-Pro (`PROJETO_PRO`).
+Até o C02 (30/10/2026) o objetivo aceitava só JavaScript. Hoje:
+
+- **Objetivo** (`ObjetivoDoDesafioSchema`): a união do JavaScript de sempre e do Python
+  (`programmingLanguage: 'python'`, `profileId` e até 4 linhas de `stdin`, o mesmo das aulas).
+  Python Pro é recusado (`PROJETO_PYTHON_PRO`). O Members confere com o mesmo verificador das aulas.
+- **No jogo** (C02b): Python e Pro abrem no diálogo do desafio, com o ambiente autorizado pelo
+  próprio desafio (Python) e a compilação Pro pelo executor; nenhum depende do Estúdio Completo.
+- **Curso-base** (`e99575ab2`, `postoDoCursoBase` em `desafios.ts`): o desafio fora dos blocos pede
+  o curso-base do posto da ilha. No Farol, cada linguagem pede o curso-base de onde ela começa
+  (`POSTO_DA_LINGUAGEM`: Python no Explorador de Mundos, texto no Arquiteto de Mundos, Pro no Gênio
+  da Criação; revisão de 31/10, 9g).
+- **Farol** (9g): o projeto autoral tem uma variante por linguagem (quadros 2 a 4 em Python, na
+  Ponte e no Pro, além dos blocos) com os mesmos critérios de encontro, recomeço e outra partida; o
+  Quadro das Cores sugere a da linguagem aprendida por último.
 
 ### 7.4 Blocos exigidos
 
@@ -2914,24 +3030,43 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
   `fora-do-ar`, `arquivadas`, `desligado` e `antigo` exercitam as reservas no playground. Prova visual em
   `docs/qa/2026-10-30-cores-conquistadas/`. O desafio do dia de mentira está em 7.12.
 
-### 7.11.1 O Quadro das Cores da sua ilha (C03a, 30/10/2026)
+### 7.11.1 O Quadro das Cores da sua ilha (C03a, 30/10/2026; cor por quadro desde 01/11/2026)
 
 - A sua ilha (posto Faísca) tem os seis quadros do Pega-conchas (`docs/desafios-do-jogo/sua-ilha/`).
   O cavalete fica na grama ao lado da trilha de pedras da porta até o píer, em (-1,5; 18,5),
   olhando para a trilha (`QUADRO_DA_SUA_ILHA`). Ele é montado pela ilha central, sempre presente.
-- Os quadros da sua ilha não pintam a ilha, que já tem cor (`cor: false`). O cavalete acende a
-  mancha de cada quadro feito, e o painel mostra "Desafio concluído", nunca "Cor de volta".
+- **Cada quadro devolve a cor de uma parte da sua ilha** (`cor: true`; lacunas de 01/11/2026,
+  pela proposta, que põe a cor como o prêmio principal; desfaz o "não pinta" de 30/10). Na ordem
+  dos quadros (`PARTES_DA_SUA_ILHA`): 1 a casa, 2 a horta, 3 o píer, 4 a praia, 5 o gramado e 6 a
+  trilha das pedras. A cor do quadro soma com a das ações de A17 (a porta nova, a primeira
+  colheita, o primeiro peixe): o que vier primeiro pinta. Os quadros feitos vêm do serviço
+  (`/desafios/cores`), como nas ilhas do anel; o salvamento não ganha nada. O cavalete acende a
+  mancha do quadro e o painel mostra "Cor de volta", como no anel.
+- O chão da sua ilha tem a cor nos vértices: o gramado e a praia desbotam no shader dos borrões
+  (`desbotadoDoMaterial`, um `vec2` por material: o que é verde e o resto), e a trilha das pedras
+  ganha materiais próprios. A cor volta escorrendo em 1,6 s (na hora com menos movimento).
+- **O desafio do dia da sua ilha (lacunas, 01/11/2026):** três variações do Pega-conchas pronto,
+  cada uma mudando uma regra, como no Bosque e no Vale (`VARIACOES_DA_SUA_ILHA`, ordens 61 a 63,
+  10 e 5 moedas, sem cor, atração `pega-conchas`): "o aviso do Nico" (faltando concha, o balde
+  guarda `falta`), "só a rosa" (o balde enche só com a concha do alto) e "esvaziar o balde" (a
+  barra de espaço). O Enter que recomeça é o extra. Só blocos do Faísca. Entram no banco do
+  desafio do dia como os das outras ilhas (a sua ilha está sempre aberta).
 - A sua ilha não dá o aviso do desafio do dia: o cavalete dela está sempre montado, e avisar ali
   seria avisar ao abrir o jogo. O aviso continua ao chegar numa ilha do anel.
-- O painel da sua ilha diz "Sua ilha: n de 6 desafios feitos." e o Zappy comemora "Desafio
-  feito. Olhe a mancha nova no quadro da praia."
+- O painel da sua ilha diz "Sua ilha: n de 6 cores de volta." e o Zappy diz qual parte ganhou
+  cor: "Desafio feito. A cor voltou para a praia da sua ilha." (`falaDaCorDaSuaIlha`).
 - **O projeto autoral do Farol (C03b):** depois do final (`farol.concluido`) aparece um cavalete
   do lado oeste do Farol, em (-16; -11), fora dos dois lotes da casa e longe da porta e da Íris,
   olhando para o Farol (`QUADRO_DO_FAROL`). Ele tem um quadro só, "Meu jogo do Arquipélago"
   (`docs/desafios-do-jogo/farol/`): critérios explícitos (o guia anda, um encontro, uma
   informação guardada nele, um Se que a usa e uma tecla que recomeça), sem resposta pronta. Os
   quatro últimos usam a regra causal `gameCausality` do core: só conta código que pode rodar
-  (revisão de 30/10/2026; um `Se falso` em volta de tudo passava na conferência por blocos). O painel mostra
+  (revisão de 30/10/2026; um `Se falso` em volta de tudo passava na conferência por blocos). Desde
+  as lacunas de 01/11/2026 ela fecha mais quatro brechas: o encontro só conta com um desenho ou
+  grupo criado por código que roda (o grupo, com alguém dentro); uma contagem de passo literal só
+  decide se algum valor que ela alcança vira a condição (`Se pontos < 0` não decide); um texto
+  com o nome de uma constante não a solta (só os campos que nomeiam variável); e `x = x` não é
+  efeito. O painel mostra
   "Um jogo todo seu, com os critérios na lista. Faça quando quiser." e esconde os quadros vazios.
   Feito, o Zappy diz "Seu jogo ficou pronto. Ele vai para o fliperama da sua casa." Não pinta nada
   e não dá o aviso do desafio do dia.
@@ -2993,28 +3128,31 @@ Arquivos: `arquipelago-api/src/domain/desafio-do-dia.ts` (regra pura, `escolherD
 Arquivo: `arquipelago-contracts/src/cartas-lumi.ts`, constante `CARTAS_LUMI`. O catálogo fica no
 código, não no Admin, porque o que cada cartão faz na rotina é código do jogo.
 
-| Cartão | Tipo | Bloco do Estúdio que libera |
-|---|---|---|
-| Quando amanhecer | quando | nenhum, sempre disponível |
-| Quando anoitecer | quando | nenhum, sempre disponível |
-| Voar até | ação | nenhum, sempre disponível |
-| Regar | ação | nenhum, sempre disponível |
-| Colher | ação | nenhum, sempre disponível |
-| Guardar tudo | ação | nenhum, sempre disponível |
-| Repetir | controle | `sz_js_repeat` |
-| Para cada | controle | `sz_js_for_each` |
-| Enquanto | controle | `sz_js_while` |
-| Se | controle | `sz_js_if_else` |
-| Escolha | controle | `sz_js_switch` |
-| Esperar | controle | `sz_js_set_timeout_seconds` |
-| Guardar na memória | controle | `sz_js_var_create` |
-| Contar mais um | controle | `sz_js_var_increment` |
+Desde as lacunas de 01/11/2026 os cartões chegam pelo POSTO da Jornada, como a proposta diz
+("Mais postos, mais cartões: repetição no começo, condições e variáveis depois"); isso desfaz a
+decisão de 27/10, que liberava cada cartão pelo bloco conquistado num curso. O bloco continua
+dizendo qual bloco do Estúdio o cartão veste (o "Aprenda isso em" e o teste do Members usam).
 
-- **Quem tem cada cartão** (`cartaConquistada`):
-  - cartões sem bloco ficam com todos;
-  - cartões de controle ficam com quem conquistou o bloco num curso, com a mesma fonte dos
-    desafios;
-  - a equipe tem todos.
+| Cartão | Tipo | Posto em que chega | Bloco do Estúdio que veste |
+|---|---|---|---|
+| Quando amanhecer | quando | 1 (Faísca) | nenhum |
+| Quando anoitecer | quando | 1 | nenhum |
+| Voar até | ação | 1 | nenhum |
+| Regar | ação | 1 | nenhum |
+| Colher | ação | 1 | nenhum |
+| Guardar tudo | ação | 1 | nenhum |
+| Repetir | controle | 1 | `sz_js_repeat` |
+| Para cada | controle | 2 | `sz_js_for_each` |
+| Esperar | controle | 2 | `sz_js_set_timeout_seconds` |
+| Enquanto | controle | 3 | `sz_js_while` |
+| Se | controle | 4 | `sz_js_if_else` |
+| Escolha | controle | 5 | `sz_js_switch` |
+| Guardar na memória | controle | 6 | `sz_js_var_create` |
+| Contar mais um | controle | 6 | `sz_js_var_increment` |
+
+- **Quem tem cada cartão** (`cartaConquistada`): quem está na posição do posto do cartão ou
+  depois (a posição vem do Members, como a das ilhas); a equipe tem todos. A resposta traz o
+  `posto` de cada cartão.
 - **A rota** é `GET /arquipelago/cartas` (`arquipelago-api/src/application/servico-das-cartas.ts`).
   Ela exige a política de acesso liberada. Para os cartões que faltam, ela traz o "Aprenda isso
   em".
@@ -3041,16 +3179,16 @@ Arquivos: `arquipelago/src/sistemas/caderno-dos-lumis.ts` (regra pura),
 
 - **Abrir:** no menu do jogo, "📒 Caderno dos Lumis". O menu fecha e o caderno abre por cima; o
   personagem fica parado (`painelAberto`). Esc ou "Voltar ao jogo" fecha.
-- **Cada abertura lê `GET /cartas` de novo**, porque um curso concluído no meio do jogo libera
+- **Cada abertura lê `GET /cartas` de novo**, porque um posto novo no meio do jogo libera
   cartões novos. Quem tem cada cartão vem sempre do serviço; o jogo só arruma para a tela.
 - **Três seções, nesta ordem:** Quando ("A hora em que a rotina começa."), Ação ("O que o Lumi faz
-  na ilha.") e Controle ("Os mesmos blocos do Estúdio. Cada um chega quando você aprende o bloco
-  num curso."). Cada seção mostra quantos cartões estão prontos ("Controle: 2 de 8"), e o topo
+  na ilha.") e Controle ("Os mesmos blocos do Estúdio. Cada um chega num posto da Jornada."). Cada seção mostra quantos cartões estão prontos ("Controle: 2 de 8"), e o topo
   diz "Você tem 8 de 14 cartões. Com eles você vai montar as rotinas dos Lumis.".
 - **Cada cartão:** nome, o que faz e a situação:
   - na mão: "Pronto para usar";
-  - faltando, com curso: "Aprenda isso em:" e o primeiro curso da lista do serviço (o do posto
-    mais cedo);
+  - faltando: "Chega quando Pico Gelado abrir." (a ilha do posto do cartão) e, com curso, "O
+    bloco dele está em:" e o primeiro curso da lista do serviço; sem o `posto` (serviço de
+    antes), "Aprenda isso em:" e o curso;
   - faltando, sem curso publicado que ensine o bloco: "Nenhum curso ensina este cartão por
     enquanto.".
 - **Fechado:** 403 (jogo bloqueado para a pessoa) diz "O caderno ainda não abriu para você.".
@@ -3185,6 +3323,8 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
 | Padrão do prêmio principal | 20 moedas | `arquipelago-contracts/src/desafios.ts`, `MOEDAS_PADRAO.principal` |
 | Padrão do extra | 10 moedas | `MOEDAS_PADRAO.extra` |
 | Padrão do desafio do dia | 10 moedas e mais 5 no extra | `MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']` |
+| Padrão do pedido de morador no Estúdio | 5 moedas e mais 2 no extra (fonte baixa da proposta; lacunas, 01/11/2026) | `MOEDAS_PADRAO_POR_TIPO['pedido-de-morador']` |
+| Ordem das dicas | lembrar o objetivo, pistas e, por último, o texto técnico (Jornada; lacunas, 01/11/2026) | `docs/desafios-do-jogo/pedidos-dos-moradores.ts`, `dicasNaOrdemDaJornada` |
 | Máximo do principal | 100 moedas | `LIMITES_DO_DESAFIO.moedas` |
 | Máximo do extra | 50 moedas | `LIMITES_DO_DESAFIO.moedasExtra` |
 
@@ -3299,8 +3439,8 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 
 ### 9.9 Gastar na galeria (fase1-13, 29/10/2026)
 
-O único gasto de moedas do jogo. A função do objeto já vale no projeto azul; a galeria só compra o
-visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
+O primeiro gasto de moedas do jogo (hoje não é o único: abaixo, "Os outros gastos"). A função do
+objeto já vale no projeto azul; a galeria só compra o visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 
 | Aparência | Objeto | Preço |
 |---|---|---|
@@ -3351,6 +3491,19 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 - **O saldo** vem do Members pela leitura interna `GET /members/internal/arquipelago/saldo` (token
   de leitura do jogo); fora do ar, o cartão diz que o saldo não carregou e a compra segue (quem
   confere é o débito).
+- **Três versões por objeto (B8):** a clássica, a retrô e a moderna, com o preço da clássica (27
+  aparências ao todo; §6.29).
+- **Posse única (L04):** a compra da galeria e o inventário do Members são uma posse só
+  (`posse-da-galeria.ts`). Aquário, fliperama e planta valem no quarto e no jogo; os outros seis só
+  no jogo. Compras antigas passam pela adoção operacional (`adocao-da-galeria.ts`,
+  `docs/operations/arquipelago-galeria-unica.md`).
+- **Os outros gastos**, todos pela mesma porta de moedas, com chave e preço do catálogo (nunca do
+  corpo), e nada pago é sorteado (A28):
+  - **Insumos** (L07, `insumos.ts`): onze sementes e ingredientes e duas iscas, de duas ou três
+    moedas, de 1 a 10 unidades por compra, entregues inteiras no salvamento.
+  - **Roupas no vestuário da festa** (L09): o configurador do avatar do Members, com o preço dele;
+    as roupas de cada festa não se vendem (§6.29).
+  Vender pratos na feira e os pedidos remunerados são ganhos, contados no teto semanal de 100.
 
 ## 10. Onde mudar cada número
 
@@ -3379,7 +3532,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |
-| Teto do salvamento | 64 KB | `arquipelago-contracts/src/salvamento.ts`, `SALVAMENTO_MAX_BYTES` |
+| Teto do salvamento | 80 KB (64 KB até 31/10/2026) | `arquipelago-contracts/src/salvamento.ts`, `SALVAMENTO_MAX_BYTES` |
 | Corpo das chamadas do jogo | 96 KB | `env.ts`, `MAX_REQUEST_BODY_BYTES` |
 | Intervalo do salvamento | 20 s | `arquipelago/src/sistemas/salvar.ts`, `intervaloMs` |
 | Salvamento inicial | tabela da seção 5 | `salvamento.ts`, `criarSalvamentoInicial` |
@@ -3387,7 +3540,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Parte clara do dia | 75% | `tempo-do-dia.ts`, `PARTE_CLARA` |
 | Queda das necessidades | fome 2, energia 1,2, diversão 1 por minuto | `arquipelago/src/sistemas/necessidades.ts`, `QUEDA_POR_MINUTO` |
 | Energia descansando | banco 0,55 e cama 1,7 por segundo | `arquipelago/src/sistemas/descanso.ts`, `ENERGIA_POR_SEGUNDO` |
-| Energia depois do cochilo | 60 | `arquipelago/src/estado/relogios.tsx` |
+| Energia depois do cochilo | 60 | `ENERGIA_AO_ACORDAR`, `arquipelago/src/sistemas/descanso.ts` |
 | Humor e ritmo | 15 e 60; 1,1, 1, 0,8 | `necessidades.ts`, `humor` e `ritmo` |
 | Crescimento da horta | 3, 5 e 8 min | `arquipelago/src/sistemas/horta.ts`, `CRESCIMENTO_MS` |
 | Colheita | 2, 3 e 2 | `horta.ts`, `COLHEITA` |
@@ -3430,7 +3583,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Pedaços da ilha | 30% ao abrir a ponte; 2,4 s de tinta; borda de 18% | `arquipelago/src/sistemas/cor-da-ilha.ts`, `COR_AO_ABRIR`, `DURACAO_DA_TINTA_S`, `BORDA_DOS_PEDACOS` |
 | Festa da cor | 1,6 s na mancha; 4 s até avisar o serviço | `quadro-das-cores.tsx`, `DURACAO_DA_COR_S`; `arquipelago/src/interface/quadro-das-cores.tsx`, `FESTA_MS` |
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
-| Moedas padrão | 20 e 10; desafio do dia 10 e 5 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
+| Moedas padrão | 20 e 10; desafio do dia 10 e 5; pedido de morador 5 e 2 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
 | Teto semanal de moedas do jogo | 100 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
 | Preços da galeria | 30 a 70 (seção 9.9) | `arquipelago-contracts/src/galeria.ts`, `GALERIA` |
@@ -3553,11 +3706,13 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 - Nico fica na areia da ilha central em `(0, 25)`, olhando para o interior da ilha. Respira
   parado e acena quando a criança chega a menos de quatro metros. Não repete enquanto ela
   permanece perto e espera pelo menos oito segundos entre acenos. A até seis metros ele vira
-  para a criança e, longe, volta a olhar para o interior da ilha. Ainda não entrega cartas
-  nem abre conversa.
-- Estrelinha, comum, fica em `(2, 25)`; Búzio, raro, em `(3, 26)`. Usam escala 0,5 (uns 37 cm, para
-  aparecerem na areia vistos da câmera) e a animação de descanso, em fases diferentes. São presenças visuais: não geram conchas nem recompensas
-  e não são adicionados à coleção da pessoa. Captura e rotinas continuam para a etapa dos Lumis.
+  para a criança e, longe, volta a olhar para o interior da ilha. Desde a §6.28 (A19) ele
+  conversa e é o carteiro da praia (`mundo/nico.tsx`).
+- Estrelinha e Búzio **não ficam mais fixos na areia** (lacunas, 01/11/2026): pela proposta, o
+  Zappy é a última luz do arquipélago e os Lumis nascem do Cinza. Eles aparecem na praia só
+  depois de presos com a lanterna, pelos `BorroesDaIlha` da sua ilha, nos lugares
+  `LUGARES_DOS_LUMIS_DA_PRAIA`, como os das outras ilhas. As posições `(2, 25)` e `(3, 26)` de
+  `HABITANTES_DA_PRAIA` ficam só como referência das áreas livres da coleta.
 - Os três têm um cilindro arredondado menor que o desenho. A câmera atravessa esse colisor.
   Os Lumis mantêm colisores pequenos, que o personagem pode transpor como um pequeno degrau.
 - As animações param com a pausa do jogo e ficam mais lentas com movimento reduzido.

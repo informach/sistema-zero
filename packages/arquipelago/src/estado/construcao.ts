@@ -1,7 +1,7 @@
 import {
   type AndarDeCima,
   BIT_DO_COMODO,
-  COMODOS_DA_IRIS,
+  CATALOGO_DE_OBJETOS,
   type ComodoDaIris,
   chavesUsadasNaObra,
   type Movel,
@@ -16,11 +16,13 @@ import {
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
+  chaveQueFaltaParaOComodo,
   comodoDaFerramenta,
   comodoDaJanela,
   comodoDoPiso,
   liberado,
   recadoDaTranca,
+  recadoDoComodoTrancado,
 } from '../sistemas/chaves-da-casa'
 import {
   andarDaObra,
@@ -32,6 +34,7 @@ import {
   type RecusaDoAndar,
   tirarEscada,
 } from '../sistemas/construcao/andar'
+import { planta } from '../sistemas/construcao/comodos'
 import { falaDaRecusa, falaDoAviso } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 import {
@@ -43,9 +46,31 @@ import {
 } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
 import { hortaComOQuintal } from '../sistemas/construcao/quintal'
-import { FALA_DO_TERRENO, moldarCelulas, podeMoldarOTerreno } from '../sistemas/construcao/terreno'
+import {
+  FALA_DO_TERRENO,
+  moldarCelulas,
+  podeMoldarOTerreno,
+  terrenoComAObra,
+} from '../sistemas/construcao/terreno'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
+
+/** O primeiro objeto da obra nova que já está na outra (o outro andar), ou `null`. */
+function objetoEmOutroAndar(nova: Obra, outra: Obra | null): ObjetoDaCasa | null {
+  if (!outra) return null
+  const la = new Set(outra.objetos.map((o) => o.id))
+  return nova.objetos.find((o) => la.has(o.id))?.id ?? null
+}
+
+function falaDoObjetoEmOutroAndar(id: ObjetoDaCasa, onde: string): string {
+  const nome = CATALOGO_DE_OBJETOS[id].molde.nome.toLowerCase()
+  return `Já tem ${nome} ${onde}. Tire de lá com o Apagar antes de pôr aqui.`
+}
+
+/** Os cômodos da casa além do quarto (o que a chave abre, lacunas de 01/11/2026). */
+function comodosDaCasa(obra: Obra, lote: Lote): number {
+  return planta(obra, lote).comodos.filter((c) => !c.quarto).length
+}
 
 /** O valor de `painelAberto` do modo Construir (o personagem para; Esc volta ao Viver). */
 export const PAINEL_DE_CONSTRUIR = 'construir'
@@ -135,6 +160,8 @@ const FERRAMENTAS_DE_CIMA: readonly Ferramenta[] = [
   'janela',
   'piso',
   'movel',
+  // Os objetos com função também vão lá em cima (lacunas, 01/11/2026).
+  'objeto',
   'apagar',
 ]
 
@@ -449,9 +476,14 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
           chavesUsadasNaObra(r.obra) &
           ~chavesUsadasNaObra(obraDeCima(antesDoAndar)) &
           ~jogo.salvamento.chaves
-        const trancadoEmCima = COMODOS_DA_IRIS.find((c) => (novasEmCima & BIT_DO_COMODO[c]) !== 0)
-        if (trancadoEmCima) {
-          jogo.dizer(recadoDaTranca(trancadoEmCima))
+        if ((novasEmCima & BIT_DO_COMODO.quintal) !== 0) {
+          jogo.dizer(recadoDaTranca('quintal'))
+          return false
+        }
+        // Um objeto com função fica num andar só: o que já está no térreo não sobe junto.
+        const noTerreo = objetoEmOutroAndar(r.obra, casa)
+        if (noTerreo) {
+          jogo.dizer(falaDoObjetoEmOutroAndar(noTerreo, 'no térreo'))
           return false
         }
         const novo = andarDaObra(r.obra, antesDoAndar.escada)
@@ -473,18 +505,47 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         return false
       }
       const atual = obraDe(loja.getState(), onde, cabana)
-      // Nada trancado entra na obra (N11): só o que a chave abriu ou o que a obra já usava.
+      // Nada trancado entra na obra (N11): a cerca, o caminho e o canteiro pedem a chave do
+      // quintal (pisos e janelas são livres desde 01/11/2026).
       const novas =
         chavesUsadasNaObra(r.obra) & ~chavesUsadasNaObra(atual) & ~jogo.salvamento.chaves
-      const trancado = COMODOS_DA_IRIS.find((c) => (novas & BIT_DO_COMODO[c]) !== 0)
-      if (trancado) {
-        jogo.dizer(recadoDaTranca(trancado))
+      if ((novas & BIT_DO_COMODO.quintal) !== 0) {
+        jogo.dizer(recadoDaTranca('quintal'))
         return false
+      }
+      // O que já está lá em cima não desce junto (um objeto com função fica num andar só).
+      if (onde === 'casa' && andar) {
+        const emCima = objetoEmOutroAndar(r.obra, obraDeCima(andar))
+        if (emCima) {
+          jogo.dizer(falaDoObjetoEmOutroAndar(emCima, 'lá em cima'))
+          return false
+        }
+      }
+      // A chave abre o cômodo (lacunas, 01/11/2026): fechar um cômodo novo da casa pede a chave.
+      if (onde === 'casa') {
+        const lote = loteDaCasa(jogo.jornada)
+        const falta = chaveQueFaltaParaOComodo(
+          jogo.salvamento.chaves,
+          atual ? comodosDaCasa(atual, lote) : 0,
+          comodosDaCasa(r.obra, lote),
+        )
+        if (falta) {
+          jogo.dizer(recadoDoComodoTrancado(falta))
+          return false
+        }
       }
       const historico = atual === ultimaObra ? get().antes : []
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
       mudarObra(loja, r.obra, onde, cabana)
       ultimaObra = r.obra
+      // O chão debaixo do que entrou na obra volta ao plano também no documento (lacunas,
+      // 01/11/2026): antes ele só ficava plano no desenho, e o morrinho voltava se a obra saísse.
+      if (onde === 'casa') {
+        const fonte = get().fonteDoTerreno
+        const terreno = fonte?.ler() ?? null
+        const plano = terrenoComAObra(terreno, r.obra, loteDaCasa(jogo.jornada))
+        if (fonte && plano !== terreno) fonte.gravar(plano)
+      }
       if (r.aviso) jogo.dizer(falaDoAviso(r.aviso))
       return true
     },

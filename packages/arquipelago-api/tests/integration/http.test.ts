@@ -234,6 +234,8 @@ describe('salvamento', () => {
   } = salvamento
   const ateV15 = {
     ...semProgressoV16,
+    // Os outros bichos adotados são da V23.
+    bichos: { achados: salvamento.bichos.achados, adotado: salvamento.bichos.adotado },
     moradores: { capi: salvamento.moradores.capi, bento: salvamento.moradores.bento },
   }
   const valeAteV14 = { ...ateV15, percursos: {}, vale: valeSemFilhote }
@@ -322,7 +324,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(22)
+    expect(lido.salvamento?.versao).toBe(23)
     expect(lido.salvamento?.recife).toEqual({ ...v12.recife, corais: 0 })
     const atual = { ...lido.salvamento!, recife: { ...v12.recife, corais: 15 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -350,7 +352,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(22)
+    expect(lido.salvamento?.versao).toBe(23)
     expect(lido.salvamento?.pico).toEqual({ banda: 0 })
     const atual = { ...lido.salvamento!, pico: { banda: 7 } }
     const segunda = await chamar('PUT', '/arquipelago/salvamento', crianca(), {
@@ -377,7 +379,7 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const lido = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(lido.salvamento?.versao).toBe(22)
+    expect(lido.salvamento?.versao).toBe(23)
     expect(lido.salvamento?.vale.filhote).toBeNull()
     const filhote = {
       ovo: 3,
@@ -422,11 +424,11 @@ describe('salvamento', () => {
     })
     expect(primeira.status).toBe(200)
     const migrado = SalvamentoGuardadoSchema.parse(primeira.json)
-    expect(migrado.salvamento).toMatchObject({ versao: 22, presenteDosBichosEntregue: false })
+    expect(migrado.salvamento).toMatchObject({ versao: 23, presenteDosBichosEntregue: false })
     if (!migrado.salvamento) throw new Error('A gravação V4 não devolveu o salvamento')
     const entregue = {
       ...migrado.salvamento,
-      bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null },
+      bichos: { achados: [...BICHOS_DO_BOSQUE], adotado: null, outros: [] },
       inventario: { salada: 1 },
       presenteDosBichosEntregue: true,
     }
@@ -601,6 +603,8 @@ describe('salvamento', () => {
     const { nico: _nico, ...moradoresDaV17 } = anterior.moradores
     const v17 = {
       ...anterior,
+      // Os outros bichos adotados são da V23.
+      bichos: { achados: anterior.bichos.achados, adotado: anterior.bichos.adotado },
       farol: farolDaV19,
       moradores: moradoresDaV17,
       vale: valeDaV17,
@@ -613,7 +617,8 @@ describe('salvamento', () => {
     expect(resposta.status).toBe(200)
     expect(SalvamentoGuardadoSchema.parse(resposta.json).salvamento).toEqual({
       ...v17,
-      versao: 22,
+      versao: 23,
+      bichos: { ...v17.bichos, outros: [] },
       moradores: { ...v17.moradores, nico: { ...MORADOR_NOVO } },
       vale: { ...v17.vale, fosseis: 0 },
       florada: 0,
@@ -837,17 +842,18 @@ describe('cliente do jogo', () => {
 })
 
 describe('cartões dos Lumis', () => {
-  test('os do jogo sempre; os de controle pelos blocos; os que faltam dizem onde aprender', async () => {
+  test('os cartões chegam pelo posto da Jornada (L7b), com o posto de cada um', async () => {
+    // A criança da mentira está no posto 2: chegam os do posto 1 e 2, os de depois esperam.
     const r = await chamar('GET', '/arquipelago/cartas', crianca())
     expect(r.status).toBe(200)
     const { cartas } = CartasDoJogadorSchema.parse(r.json)
     const por = (id: string) => cartas.find((c) => c.id === id)
     expect(por('regar')).toMatchObject({ conquistada: true, aprendaEm: [] })
-    expect(por('se')).toMatchObject({ conquistada: true, aprendaEm: [] })
-    expect(por('repetir')).toMatchObject({
-      conquistada: false,
-      aprendaEm: [{ courseId: CURSO, titulo: 'Repetições', slug: 'repeticoes', posto: 'coder' }],
-    })
+    expect(por('repetir')).toMatchObject({ conquistada: true, posto: 1, aprendaEm: [] })
+    expect(por('para-cada')).toMatchObject({ conquistada: true, posto: 2, aprendaEm: [] })
+    expect(por('enquanto')).toMatchObject({ conquistada: false, posto: 3 })
+    // Nenhum curso do currículo de mentira ensina o Se: trancado sem "Aprenda isso em".
+    expect(por('se')).toMatchObject({ conquistada: false, posto: 4, aprendaEm: [] })
   })
 
   test('equipe vê todos os cartões', async () => {
@@ -902,7 +908,7 @@ describe('cartões dos Lumis na comunidade adulta', () => {
     },
     adult: {
       versao: 1,
-      cursos: [curso(CURSO_ADULTO, 'Laços adultos', ['sz_js_repeat'])],
+      cursos: [curso(CURSO_ADULTO, 'Laços adultos', ['sz_js_repeat', 'sz_js_if_else'])],
       catalogo: [],
     },
   } satisfies Record<string, CurriculoDeBlocos>
@@ -950,32 +956,38 @@ describe('cartões dos Lumis na comunidade adulta', () => {
     expect(perguntas).not.toContain('kids')
   })
 
-  test('com o bloco de um curso adulto, o cartão está na mão', async () => {
-    comBlocosDoAdulto(['sz_js_repeat'])
+  test('o cartão chega pelo posto, sem depender dos blocos (L7b)', async () => {
+    comBlocosDoAdulto([])
     const por = await cartasDoAdulto()
     expect(por('repetir')).toMatchObject({ conquistada: true, aprendaEm: [] })
     expect(por('regar')).toMatchObject({ conquistada: true, aprendaEm: [] })
   })
 
-  test('sem o bloco, trancado com o curso adulto que ensina', async () => {
+  test('acima do posto, trancado com o curso adulto que ensina', async () => {
     comBlocosDoAdulto([])
     const por = await cartasDoAdulto()
-    expect(por('repetir')).toMatchObject({
+    expect(por('se')).toMatchObject({
       conquistada: false,
+      posto: 4,
       aprendaEm: [
         { courseId: CURSO_ADULTO, titulo: 'Laços adultos', slug: 'laços-adultos', posto: 'coder' },
       ],
     })
   })
 
-  test('um bloco que só existe em curso Kids não conta nem é sugerido ao adulto', async () => {
+  test('um bloco que só existe em curso Kids não é sugerido ao adulto', async () => {
     comBlocosDoAdulto([])
     const por = await cartasDoAdulto()
-    // A criança da mentira tem `sz_js_while`; o adulto não, e nenhum curso adulto ensina.
+    // Nenhum curso adulto ensina o `sz_js_while`; o Kids sim (Laços Kids).
     expect(por('enquanto')).toMatchObject({ conquistada: false, aprendaEm: [] })
     const kids = CartasDoJogadorSchema.parse(
       (await chamar('GET', '/arquipelago/cartas', crianca())).json,
     )
-    expect(kids.cartas.find((c) => c.id === 'enquanto')).toMatchObject({ conquistada: true })
+    expect(kids.cartas.find((c) => c.id === 'enquanto')).toMatchObject({
+      conquistada: false,
+      aprendaEm: [
+        { courseId: CURSO_KIDS, titulo: 'Laços Kids', slug: 'laços-kids', posto: 'coder' },
+      ],
+    })
   })
 })

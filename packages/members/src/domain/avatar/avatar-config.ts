@@ -67,7 +67,8 @@ export function assertEquippableConfig(
     if (part.category !== category) {
       throw new AvatarInvalidError(`Peça ${slot.asset} não pertence à categoria ${category}`)
     }
-    if (part.tier === 'coins' && !ownedPartIds.has(slot.asset)) {
+    // Paga ou da festa (B16): só vestida por quem tem.
+    if (part.tier !== 'free' && !ownedPartIds.has(slot.asset)) {
       throw new AvatarPartNotOwnedError()
     }
     if (slot.color !== undefined) {

@@ -14,6 +14,7 @@ import {
 import { itensParaDar } from '../sistemas/itens'
 import { AMIZADE, coracoes, diaDe } from '../sistemas/moradores'
 import { entregarPedidoPeloPainel } from './entrega-do-pedido'
+import { PedidoDoEstudio } from './pedido-do-estudio'
 
 const CORACOES = 5
 
@@ -122,6 +123,8 @@ export function PainelDaCapi() {
               <span>Amanhã ela pede outra coisa.</span>
             </div>
           ) : null}
+          {/* O pedido no Estúdio (§6.28, A23; lacunas de 01/11/2026 em toda ilha). */}
+          <PedidoDoEstudio quem="capi" />
           <div className="arq-menu-acoes">
             {pedido && !falta ? (
               <button ref={principal} type="button" className="arq-botao" onClick={aoEntregar}>

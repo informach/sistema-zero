@@ -7,7 +7,6 @@ import {
   criarSalvamentoInicial,
   migrarDaV18,
   type Obra,
-  type Salvamento,
   type SalvamentoV18,
 } from '@sistemazero/arquipelago-contracts'
 import { Vector3 } from 'three'
@@ -30,11 +29,14 @@ import { alturaDaIlha, ilhasEmVolta, NIVEL_DA_AGUA } from '../src/mundo/medidas'
 import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
 import {
   CHAVES_DA_CASA,
+  chaveQueFaltaParaOComodo,
+  comodosAbertos,
   falaDaChave,
   guardarChave,
   liberado,
   quantasChaves,
   recadoDaTranca,
+  recadoDoComodoTrancado,
 } from '../src/sistemas/chaves-da-casa'
 import { CONCHAS_DA_PRAIA } from '../src/sistemas/colecoes-da-praia'
 import { LOTE_DA_CASA_GRANDE, OBRA_VAZIA } from '../src/sistemas/construcao/lote'
@@ -127,7 +129,10 @@ describe('as regras das chaves', () => {
     expect(guardarChave(um, 'sala')).toBe(um)
     expect(quantasChaves(um.chaves)).toBe(1)
     expect(falaDaChave('sala', um.chaves)).toBe(
-      'Você achou a chave da sala. No Construir, as janelas grande e em arco já podem ir para a casa. Ainda faltam 3 chaves pela ilha.',
+      'Você achou a chave da sala. No Construir, a casa já pode ganhar mais um cômodo. Ainda faltam 3 chaves pela ilha.',
+    )
+    expect(falaDaChave('quintal', BIT_DO_COMODO.quintal)).toContain(
+      'a cerca, o caminho e o canteiro já podem ir para a casa',
     )
     expect(falaDaChave('quintal', 15)).toContain('Agora a casa da Íris tem todas as chaves.')
     expect(falaDaChave('cozinha', BIT_DO_COMODO.cozinha | 7)).toContain('Ainda falta uma chave')
@@ -179,31 +184,30 @@ describe('a migração não tranca o que já foi construído', () => {
 })
 
 describe('o Construir obedece às chaves', () => {
-  test('piso, janela e ferramenta trancados não são escolhidos e o Zappy diz qual chave falta', () => {
+  test('pisos e janelas são livres; a cerca pede a chave do quintal', () => {
     const { loja, construcao } = lojaCom(0)
     const c = construcao.getState()
-    expect(construcao.getState().janela).toBe('janela-redonda')
     c.escolherPiso('ladrilho')
-    expect(construcao.getState().piso).toBe('tabua')
-    expect(loja.getState().dica?.texto ?? '').toContain('chave da cozinha')
+    expect(construcao.getState().piso).toBe('ladrilho')
     c.escolherJanela('janela-grande')
-    expect(construcao.getState().janela).toBe('janela-redonda')
+    expect(construcao.getState().janela).toBe('janela-grande')
     c.escolher('cerca')
     expect(construcao.getState().ferramenta).not.toBe('cerca')
+    expect(loja.getState().dica?.texto ?? '').toContain('chave do quintal')
     c.escolher('parede')
     expect(construcao.getState().ferramenta).toBe('parede')
   })
 
-  test('com a chave, a escolha vale; obra que traz algo trancado é recusada', () => {
-    const { loja, construcao } = lojaCom(BIT_DO_COMODO.cozinha)
-    construcao.getState().escolherPiso('ladrilho')
-    expect(construcao.getState().piso).toBe('ladrilho')
-    const atual: Obra = loja.getState().salvamento.construcao.casa ?? OBRA_VAZIA
-    const comAzulejo: Obra = { ...atual, pisos: [{ x: 0, z: -4, tipo: 'azulejo' }] }
-    expect(construcao.getState().aplicar({ ok: true, obra: comAzulejo })).toBe(false)
-    const comLadrilho: Obra = { ...atual, pisos: [{ x: 0, z: -4, tipo: 'ladrilho' }] }
-    expect(construcao.getState().aplicar({ ok: true, obra: comLadrilho })).toBe(true)
-    const s: Salvamento = loja.getState().salvamento
-    expect(s.construcao.casa?.pisos[0]?.tipo).toBe('ladrilho')
+  test('a chave abre o cômodo: fechar um cômodo novo pede uma chave de cômodo', () => {
+    expect(comodosAbertos(0)).toBe(0)
+    expect(comodosAbertos(BIT_DO_COMODO.cozinha | BIT_DO_COMODO.quintal)).toBe(1)
+    expect(chaveQueFaltaParaOComodo(0, 0, 1)).toBe('cozinha')
+    expect(chaveQueFaltaParaOComodo(BIT_DO_COMODO.cozinha, 0, 1)).toBeNull()
+    expect(chaveQueFaltaParaOComodo(BIT_DO_COMODO.cozinha, 1, 2)).toBe('sala')
+    // Quem já tinha mais cômodos que chaves não perde nenhum, e pode mexer sem fechar um novo.
+    expect(chaveQueFaltaParaOComodo(0, 3, 3)).toBeNull()
+    expect(chaveQueFaltaParaOComodo(0, 3, 2)).toBeNull()
+    expect(recadoDoComodoTrancado('sala')).toContain('chave da sala')
+    expect(recadoDoComodoTrancado('sala')).not.toMatch(/[—–!?]/)
   })
 })

@@ -1,5 +1,7 @@
 'use client'
 
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
+
 import type { ComponentType, ReactNode } from 'react'
 
 /**
@@ -173,7 +175,7 @@ export function Paisagem() {
 function Zappy({ expressao }: { expressao: 'happy' | 'sleeping' | 'thinking' }) {
   return (
     <img
-      src={`/zappy/${expressao}.webp`}
+      src={BUILTIN_ART[expressao].poster.url}
       alt=""
       width={112}
       height={112}

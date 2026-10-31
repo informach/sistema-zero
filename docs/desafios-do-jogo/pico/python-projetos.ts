@@ -2,11 +2,15 @@ import { projetoPythonClassico } from '../ambiente-python'
 
 /**
  * C02 (30/10/2026): a Fase de plataforma do Pico na linguagem do Mestre, Python com Pygame Zero.
- * As fases são DADOS (listas de linhas de texto, uma letra por célula de 40 pontos) e o jogo
- * pronto anda, pula, cai e troca de fase usando quatro funções que a pessoa completa: ler a fase,
- * resolver a queda num eixo, decidir a próxima fase e, no extra, acrescentar uma terceira fase.
- * Repertório do posto: funções, parâmetros, listas, fase como dados, colisão por eixo e depuração
- * com casos pequenos. Sem classes e sem herança.
+ * Desde a revisão de 31/10/2026 (A45) o tema é da ilha: o Floco sobe a montanha, um trecho da
+ * trilha por fase. As fases são DADOS (listas de linhas de texto, uma letra por célula de 40
+ * pontos), lidas por `ler_fase`, e a queda é resolvida por `pousar`, as duas prontas. Desde as
+ * lacunas de 01/11/2026 os critérios são próprios, e não a lista da missão do posto (a Entrega
+ * pelos Telhados pede pousar, fase vinda de dados e saída só com a encomenda): aqui a pessoa
+ * completa `contar` (quantos flocos a fase tem, com laços sobre os dados), `escorregar` (o atrito
+ * do gelo, uma função que recebe informações) e `trecho_completo` (o trecho só termina com todos
+ * os flocos); no extra, `melhor` (o menor tempo de uma lista). Mesmo repertório do posto:
+ * funções, parâmetros, listas, fase como dados e depuração com casos pequenos. Sem classes.
  */
 
 const FASE_1 = [
@@ -15,121 +19,112 @@ const FASE_1 = [
   '................',
   '..............S.',
   '...........#####',
-  '................',
+  '.........*......',
   '......####......',
-  '.C..............',
+  '.*..............',
   '####............',
   '................',
-  '.J..............',
+  '.J..*...........',
   '################',
 ]
 const FASE_2 = [
   '................',
   '..S.............',
   '#####...........',
-  '................',
+  '..........*.....',
   '.......####.....',
   '................',
   '............####',
-  '..........C.....',
+  '..........*.....',
   '......#####.....',
   '................',
   '.J..............',
   '################',
 ]
-const FASE_3 = [
-  '................',
-  '......S.........',
-  '.....####.......',
-  '................',
-  '####............',
-  '................',
-  '.....####.......',
-  '............C...',
-  '..........####..',
-  '................',
-  '.J..............',
-  '################',
-]
-/** Quantas plataformas (`#`) a fase 1 tem: o jogo monta exatamente essas. */
-export const PLATAFORMAS_DA_FASE_1 = FASE_1.join('')
+/** Quantos flocos (`*`) a fase 1 tem: o jogo conta com `contar`. */
+export const FLOCOS_DA_FASE_1 = FASE_1.join('')
   .split('')
-  .filter((c) => c === '#').length
+  .filter((c) => c === '*').length
 
 const fase = (linhas: readonly string[]) =>
   `    [\n${linhas.map((linha) => `        "${linha}",`).join('\n')}\n    ],`
 
 const PARTES = {
-  ler: {
-    inicial: `def ler_fase(linhas, letra):
-    return []`,
-    gabarito: `def ler_fase(linhas, letra):
-    achados = []
-    for linha, texto in enumerate(linhas):
-        for coluna, celula in enumerate(texto):
+  contar: {
+    inicial: `def contar(linhas, letra):
+    return 0`,
+    gabarito: `def contar(linhas, letra):
+    total = 0
+    for texto in linhas:
+        for celula in texto:
             if celula == letra:
-                achados.append([coluna, linha])
-    return achados`,
+                total = total + 1
+    return total`,
   },
-  pousar: {
-    inicial: `def pousar(pe_antes, pe_depois, vy, topo):
-    return [pe_depois, vy]`,
-    gabarito: `def pousar(pe_antes, pe_depois, vy, topo):
-    if vy > 0 and pe_antes <= topo and pe_depois >= topo:
-        return [topo, 0]
-    return [pe_depois, vy]`,
+  escorregar: {
+    inicial: `def escorregar(vx, no_gelo):
+    return vx`,
+    gabarito: `def escorregar(vx, no_gelo):
+    if not no_gelo:
+        return 0
+    if vx > 0:
+        return vx - 1
+    if vx < 0:
+        return vx + 1
+    return 0`,
   },
-  proxima: {
-    inicial: `def proxima_fase(numero, tem_cristal, na_saida):
-    return numero`,
-    gabarito: `def proxima_fase(numero, tem_cristal, na_saida):
-    if tem_cristal and na_saida:
-        return numero + 1
-    return numero`,
+  trecho: {
+    inicial: `def trecho_completo(pegos, total):
+    return False`,
+    gabarito: `def trecho_completo(pegos, total):
+    return pegos >= total`,
   },
-  fases: {
-    inicial: [fase(FASE_1), fase(FASE_2)].join('\n'),
-    gabarito: [fase(FASE_1), fase(FASE_2), fase(FASE_3)].join('\n'),
+  melhor: {
+    inicial: `def melhor(tempos):
+    return 0`,
+    gabarito: `def melhor(tempos):
+    menor = tempos[0]
+    for tempo in tempos:
+        if tempo < menor:
+            menor = tempo
+    return menor`,
   },
 } as const
 type Parte = keyof typeof PARTES
 
 /** Programas errados que o executor precisa recusar, cada um trocando uma parte do gabarito. */
 export const ERROS_DO_PICO_PYTHON = {
-  'linha-e-coluna-trocadas': {
-    parte: 'ler',
-    quebra: ['ler'],
-    codigo: `def ler_fase(linhas, letra):
-    achados = []
-    for linha, texto in enumerate(linhas):
-        for coluna, celula in enumerate(texto):
-            if celula == letra:
-                achados.append([linha, coluna])
-    return achados`,
+  'conta-so-a-primeira-linha': {
+    parte: 'contar',
+    quebra: ['contar', 'flocos-da-fase'],
+    codigo: `def contar(linhas, letra):
+    total = 0
+    for celula in linhas[0]:
+        if celula == letra:
+            total = total + 1
+    return total`,
   },
-  'pousa-por-baixo': {
-    parte: 'pousar',
-    quebra: ['pousar'],
-    codigo: `def pousar(pe_antes, pe_depois, vy, topo):
-    if vy > 0 and pe_depois >= topo:
-        return [topo, 0]
-    return [pe_depois, vy]`,
+  'para-de-uma-vez': {
+    parte: 'escorregar',
+    quebra: ['escorregar'],
+    codigo: `def escorregar(vx, no_gelo):
+    return 0`,
   },
-  'pousa-ao-subir': {
-    parte: 'pousar',
-    quebra: ['pousar'],
-    codigo: `def pousar(pe_antes, pe_depois, vy, topo):
-    if min(pe_antes, pe_depois) <= topo <= max(pe_antes, pe_depois):
-        return [topo, 0]
-    return [pe_depois, vy]`,
+  'escorrega-fora-do-gelo': {
+    parte: 'escorregar',
+    quebra: ['escorregar'],
+    codigo: `def escorregar(vx, no_gelo):
+    if vx > 0:
+        return vx - 1
+    if vx < 0:
+        return vx + 1
+    return 0`,
   },
-  'saida-sem-cristal': {
-    parte: 'proxima',
-    quebra: ['proxima'],
-    codigo: `def proxima_fase(numero, tem_cristal, na_saida):
-    if na_saida:
-        return numero + 1
-    return numero`,
+  'basta-um-floco': {
+    parte: 'trecho',
+    quebra: ['trecho'],
+    codigo: `def trecho_completo(pegos, total):
+    return pegos >= 1`,
   },
 } as const satisfies Record<string, { parte: Parte; quebra: readonly string[]; codigo: string }>
 export type ErroDoPicoPython = keyof typeof ERROS_DO_PICO_PYTHON
@@ -145,7 +140,7 @@ function trecho(parte: Parte, versao: VersaoDoPicoPython): string {
 export function codigoDoPico(versao: VersaoDoPicoPython): string {
   return `WIDTH = 640
 HEIGHT = 480
-TITLE = "Subida das fases"
+TITLE = "A subida do Floco"
 
 LADO = 40
 GRAVIDADE = 0.5
@@ -153,48 +148,71 @@ PULO = -12
 PASSO = 4
 
 FASES = [
-${trecho('fases', versao)}
+${[fase(FASE_1), fase(FASE_2)].join('\n')}
 ]
 
 
-${trecho('ler', versao)}
+def ler_fase(linhas, letra):
+    achados = []
+    for linha, texto in enumerate(linhas):
+        for coluna, celula in enumerate(texto):
+            if celula == letra:
+                achados.append([coluna, linha])
+    return achados
 
 
-${trecho('pousar', versao)}
+def pousar(pe_antes, pe_depois, vy, topo):
+    if vy > 0 and pe_antes <= topo and pe_depois >= topo:
+        return [topo, 0]
+    return [pe_depois, vy]
 
 
-${trecho('proxima', versao)}
+${trecho('contar', versao)}
+
+
+${trecho('escorregar', versao)}
+
+
+${trecho('trecho', versao)}
+
+
+${trecho('melhor', versao)}
 
 
 def montar(numero):
-    global plataformas, cristais, saida, tem_cristal, vy, no_chao
+    global plataformas, flocos, saida, pegos, total, vy, vx, no_chao, tempo
     linhas = FASES[numero]
     plataformas = []
     for coluna, linha in ler_fase(linhas, "#"):
         plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))
-    cristais = ler_fase(linhas, "C")
+    flocos = ler_fase(linhas, "*")
+    total = contar(linhas, "*")
+    pegos = 0
     saidas = ler_fase(linhas, "S")
     saida = saidas[0] if saidas else [15, 10]
     inicio = ler_fase(linhas, "J")
     comeco = inicio[0] if inicio else [1, 10]
-    heroi.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)
-    tem_cristal = False
+    floco.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)
     vy = 0
+    vx = 0
     no_chao = False
+    tempo = 0
 
 
-heroi = Rect((48, 408), (24, 32))
+floco = Rect((48, 408), (24, 32))
 fase_atual = 0
 venceu = False
 plataformas = []
-cristais = []
+flocos = []
 saida = [15, 10]
-tem_cristal = False
+pegos = 0
+total = 0
 vy = 0
+vx = 0
 no_chao = False
-total_de_fases = len(FASES)
+tempo = 0
+tempos = []
 montar(fase_atual)
-total_de_plataformas = len(plataformas)
 
 
 def celula(rect):
@@ -202,46 +220,50 @@ def celula(rect):
 
 
 def update():
-    global vy, no_chao, tem_cristal, fase_atual, venceu
+    global vy, vx, no_chao, pegos, fase_atual, venceu, tempo
     if venceu:
         return
+    tempo = tempo + 1 / 60
     if keyboard.left:
-        heroi.x = heroi.x - PASSO
-    if keyboard.right:
-        heroi.x = heroi.x + PASSO
+        vx = -PASSO
+    elif keyboard.right:
+        vx = PASSO
+    else:
+        vx = escorregar(vx, no_chao)
+    floco.x = floco.x + vx
     for plataforma in plataformas:
-        if heroi.colliderect(plataforma):
-            if heroi.centerx < plataforma.centerx:
-                heroi.right = plataforma.left
+        if floco.colliderect(plataforma):
+            if floco.centerx < plataforma.centerx:
+                floco.right = plataforma.left
             else:
-                heroi.left = plataforma.right
-    heroi.x = max(0, min(WIDTH - heroi.width, heroi.x))
+                floco.left = plataforma.right
+    floco.x = max(0, min(WIDTH - floco.width, floco.x))
     if keyboard.space and no_chao:
         vy = PULO
     vy = vy + GRAVIDADE
-    pe_antes = heroi.bottom
+    pe_antes = floco.bottom
     pe_depois = pe_antes + vy
     no_chao = False
     for plataforma in plataformas:
-        if heroi.right > plataforma.left and heroi.left < plataforma.right:
+        if floco.right > plataforma.left and floco.left < plataforma.right:
             pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)
             if nova_vy == 0 and vy > 0:
                 pe_depois = pe
                 no_chao = True
     vy = 0 if no_chao else vy
-    heroi.bottom = int(pe_depois)
-    if heroi.bottom > HEIGHT:
+    floco.bottom = int(pe_depois)
+    if floco.bottom > HEIGHT:
         montar(fase_atual)
-    if celula(heroi) in cristais:
-        tem_cristal = True
-    if celula(heroi) == saida:
-        nova = proxima_fase(fase_atual, tem_cristal, True)
-        if nova != fase_atual:
-            if nova >= len(FASES):
-                venceu = True
-            else:
-                fase_atual = nova
-                montar(fase_atual)
+    if celula(floco) in flocos:
+        flocos.remove(celula(floco))
+        pegos = pegos + 1
+    if celula(floco) == saida and trecho_completo(pegos, total):
+        tempos.append(int(tempo))
+        if fase_atual + 1 >= len(FASES):
+            venceu = True
+        else:
+            fase_atual = fase_atual + 1
+            montar(fase_atual)
 
 
 def draw():
@@ -249,21 +271,24 @@ def draw():
     for plataforma in plataformas:
         screen.draw.filled_rect(plataforma, (236, 244, 250))
         screen.draw.rect(plataforma, (120, 160, 190))
-    if not tem_cristal:
-        for coluna, linha in cristais:
-            screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 10, (110, 200, 255))
+    for coluna, linha in flocos:
+        screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 9, (255, 255, 255))
+        screen.draw.circle((coluna * LADO + 20, linha * LADO + 20), 9, (110, 160, 210))
     screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))
-    screen.draw.filled_rect(heroi, (70, 90, 160))
-    screen.draw.text("Fase " + str(fase_atual + 1) + " de " + str(len(FASES)), (16, 12), fontsize=30)
+    screen.draw.filled_rect(floco, (245, 250, 255))
+    screen.draw.rect(floco, (60, 90, 140))
+    screen.draw.text("Trecho " + str(fase_atual + 1) + " de " + str(len(FASES)), (16, 12), fontsize=30)
+    screen.draw.text("Flocos: " + str(pegos) + " de " + str(total), (420, 12), fontsize=30)
     if venceu:
-        screen.draw.text("Você chegou ao cume.", center=(320, 240), fontsize=44)
+        screen.draw.text("O Floco chegou ao cume.", center=(320, 220), fontsize=44)
+        screen.draw.text("Melhor trecho: " + str(melhor(tempos)) + " s", center=(320, 270), fontsize=32)
 `
 }
 
 export function montarProjetoPython(versao: VersaoDoPicoPython) {
   return projetoPythonClassico({
     id: 'pico-fases-python',
-    nome: 'Subida das fases',
+    nome: 'A subida do Floco',
     fonte: codigoDoPico(versao),
     extensao: 'python-pgzero',
   })

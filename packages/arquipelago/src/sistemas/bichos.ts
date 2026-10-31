@@ -1,4 +1,5 @@
 import {
+  BICHOS_ADOTADOS_MAXIMO,
   BICHOS_DO_BOSQUE,
   type BichoAdotado,
   type BichoDoBosque,
@@ -101,12 +102,34 @@ export function motivoDoNome(nome: string): string | null {
   return null
 }
 
-/** Adotar um bicho achado, com o nome. Só um bicho adotado nesta fase. */
+/** Os bichos adotados (o que vai junto primeiro, depois os outros, na ordem). */
+export function adotados(bichos: Bichos): BichoAdotado[] {
+  return bichos.adotado ? [bichos.adotado, ...bichos.outros] : []
+}
+
+/** Os achados que ainda não foram adotados. */
+export function achadosParaAdotar(bichos: Bichos): BichoDoBosque[] {
+  const ja = new Set(adotados(bichos).map((b) => b.id))
+  return bichos.achados.filter((b) => !ja.has(b))
+}
+
+/** Ainda dá para adotar mais um? (até `BICHOS_ADOTADOS_MAXIMO`, com achado livre) */
+export function podeAdotarMais(bichos: Bichos): boolean {
+  return adotados(bichos).length < BICHOS_ADOTADOS_MAXIMO && achadosParaAdotar(bichos).length > 0
+}
+
+/**
+ * Adotar um bicho achado, com o nome (a proposta: "No Bosque dá para adotar mais"; V23, até três).
+ * O novo vai junto com a criança; o que ia antes passa a esperar no Bosque com os outros.
+ */
 export function adotar(bichos: Bichos, bicho: BichoDoBosque, nome: string): Bichos | null {
   const limpo = nomeValido(nome)
-  if (!limpo || bichos.adotado || !bichos.achados.includes(bicho)) return null
+  if (!limpo || !bichos.achados.includes(bicho) || !achadosParaAdotar(bichos).includes(bicho))
+    return null
+  if (adotados(bichos).length >= BICHOS_ADOTADOS_MAXIMO) return null
   return {
     ...bichos,
+    outros: bichos.adotado ? [bichos.adotado, ...bichos.outros] : bichos.outros,
     adotado: {
       id: bicho,
       nome: limpo,
@@ -119,6 +142,24 @@ export function adotar(bichos: Bichos, bicho: BichoDoBosque, nome: string): Bich
       truque: { sessoes: 0, ultimaEm: null, aprendido: false },
     },
   }
+}
+
+/**
+ * Trocar o bicho que vai junto por um dos que esperam no Bosque. O mesmo objeto quando o bicho já
+ * é o que vai junto ou não foi adotado.
+ */
+export function trocarBicho(bichos: Bichos, bicho: BichoDoBosque): Bichos {
+  const i = bichos.outros.findIndex((b) => b.id === bicho)
+  const novo = bichos.outros[i]
+  if (!novo || !bichos.adotado) return bichos
+  const outros = [...bichos.outros]
+  outros[i] = bichos.adotado
+  return { ...bichos, adotado: novo, outros }
+}
+
+/** O que o Zappy diz quando outro bicho passa a ir junto. */
+export function falaDaTroca(vem: string, fica: string): string {
+  return `${vem} vai junto com você agora. ${fica} espera no cercadinho do Bosque, com a Capi.`
 }
 
 /** O tempo jogado passando. */

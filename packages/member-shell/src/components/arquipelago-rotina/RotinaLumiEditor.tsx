@@ -10,6 +10,7 @@ import {
   type Execucao,
   estagio,
   humor,
+  ILHAS,
   type MoldeDaRotina,
   type MundoDaRotina,
   proximoPasso,
@@ -237,21 +238,25 @@ export function RotinaLumiEditor({ molde, lerCartas, onFinish }: RotinaLumiEdito
         <section className="sz-lumi-blocos" aria-label="Blocos da rotina">
           <div ref={host} className="sz-lumi-workspace" />
           <details className="sz-lumi-aprender">
-            <summary>Mais blocos nos cursos</summary>
+            {/* Os cartões chegam pelo posto da Jornada (lacunas, 01/11/2026). */}
+            <summary>Mais cartões pela Jornada</summary>
             {CARTAS_LUMI.filter(
               (c) =>
                 c.tipo === 'controle' &&
                 !cartas?.cartas.some((x) => x.id === c.id && x.conquistada),
             ).map((c) => {
               const cursos = cartas?.cartas.find((x) => x.id === c.id)?.aprendaEm ?? []
+              const ilhaDoPosto = ILHAS.find((i) => i.posicao === c.posto)?.nome
               return (
                 <p key={c.id}>
                   <strong>{c.nome}</strong>:{' '}
-                  {cursos.length
-                    ? `Aprenda em ${cursos.map((x) => x.titulo).join(', ')}.`
-                    : cartas
-                      ? 'Nenhum curso ensina este bloco por enquanto.'
-                      : 'Não deu para conferir seus cursos agora.'}
+                  {cartas
+                    ? `Chega quando ${ilhaDoPosto ?? 'a próxima ilha'} abrir.${
+                        cursos.length
+                          ? ` O bloco dele está em ${cursos.map((x) => x.titulo).join(', ')}.`
+                          : ''
+                      }`
+                    : 'Não deu para conferir seus cartões agora.'}
                 </p>
               )
             })}

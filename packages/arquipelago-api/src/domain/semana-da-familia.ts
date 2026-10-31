@@ -6,9 +6,9 @@ import {
   type IlhaId,
   ilha,
   ilhaAberta,
-  migrarSalvamento,
   type SemanaDaCrianca,
 } from '@sistemazero/arquipelago-contracts'
+import type { AparenciaAplicada } from './familia.port'
 
 /**
  * A semana de cada criança para a área dos pais (28/10/2026, fase1-18), regra pura. A janela é
@@ -80,18 +80,21 @@ export function diasDeVoltaAoCurso(
 }
 
 /**
- * Projetos azuis com aparência feita no Pinta e no Molda, pelas aparências que ela guarda (a em
- * uso pode ser a da galeria: o que ela fez continua contando); `null` se o salvamento não abre.
+ * As criações do Pinta e do Molda que ela pôs em objetos do jogo NA JANELA (A33, 31/10/2026),
+ * cada uma contada uma vez: a mesma criação em dois objetos, ou tirada e posta de novo, é uma só.
+ * O dia é o de São Paulo. As linhas de antes da migração 0024 não têm o id; ali cada aplicação
+ * conta por si (objeto e revisão). Antes o cartão contava os objetos desde o começo, pelo
+ * salvamento, que não guarda data.
  */
-export function objetosCriados(dados: unknown): SemanaDaCrianca['objetos'] {
-  const salvamento = migrarSalvamento(dados)
-  if (!salvamento) return null
-  let pinta = 0
-  let molda = 0
-  for (const projeto of Object.values(salvamento.projetos)) {
-    const origens = new Set(projeto?.aparencias.map((a) => a.origem))
-    if (origens.has('pinta')) pinta += 1
-    if (origens.has('molda')) molda += 1
+export function criacoesDaSemana(
+  aplicadas: readonly AparenciaAplicada[],
+  janela: Janela,
+): NonNullable<SemanaDaCrianca['objetos']> {
+  const vistas = { pinta: new Set<string>(), molda: new Set<string>() }
+  for (const a of aplicadas) {
+    if (a.origem !== 'pinta' && a.origem !== 'molda') continue
+    if (!dentroDaJanela(diaDeSaoPaulo(a.registradoEm), janela)) continue
+    vistas[a.origem].add(a.criacao ?? `${a.objeto}#${a.revisao}`)
   }
-  return { pinta, molda }
+  return { pinta: vistas.pinta.size, molda: vistas.molda.size }
 }

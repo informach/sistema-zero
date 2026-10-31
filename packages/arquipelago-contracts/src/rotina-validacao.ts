@@ -57,7 +57,7 @@ export const TEXTOS_DA_ROTINA = {
 const dentroDe = (nome: string) => `Ponha pelo menos um cartão dentro do ${nome}.`
 const umCaso = 'No Escolha, ponha um cartão em pelo menos um caso.'
 const naoTem = (nome: string) =>
-  `O cartão ${nome} ainda não está com você. Ele chega quando você aprende o bloco num curso.`
+  `O cartão ${nome} ainda não está com você. Ele chega num posto mais adiante da Jornada.`
 
 /** Uma recusa da rotina, com o motivo para a criança (nunca castigo: nada muda no jogo). */
 export interface Recusa {

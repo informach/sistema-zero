@@ -1,10 +1,13 @@
 import { expect, test } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { COPY } from '../../../core/copy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import { addScenePrimitive } from '../../../scene/commands'
 import { createSceneProject } from '../../../scene/createProject'
+import { SCENE_MEASUREMENT_STEP_STORAGE } from '../../../scene/measurementStep'
 import { scenePieceCoordinates, setScenePieceCoordinates } from '../../../scene/pieceCoordinates'
 import { createDocumentEditorStore } from '../../../state/editorStore'
+import { moldaPreferenceKey } from '../../../state/interfacePreferences'
 import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
 import { SceneWorkshop } from './SceneWorkshop'
 
@@ -39,14 +42,14 @@ test('dimensions and position show two decimals and accept hundredths independen
     expect(scenePieceCoordinates(editor.getState().content, nodeId).position[0]).toBe(-2.73)
     const before = editor.getState().content
     fireEvent.click(screen.getByText('Mais ajustes do palco', { exact: true }))
-    const fractions = screen.getByRole('checkbox', {
-      name: 'Passos de 0,01 ao mover e redimensionar',
-    })
-    if (!(fractions instanceof HTMLInputElement)) throw new Error('Missing precision checkbox')
-    expect(fractions.checked).toBe(false)
-    fireEvent.click(fractions)
+    const step = screen.getByRole('combobox', {
+      name: 'Passo ao mover e redimensionar',
+    }) as HTMLSelectElement
+    expect(step.value).toBe('0.1')
+    fireEvent.change(step, { target: { value: '0.01' } })
     expect(editor.getState().content).toBe(before)
-    expect(screen.getByText('Passo das medidas: 0,01')).toBeDefined()
+    expect(step.value).toBe('0.01')
+    expect(screen.getByText(COPY.scene.movementSteps[0.01].hint)).toBeDefined()
     expect(size().getAttribute('step')).toBe('0.01')
     fireEvent.change(size(), { target: { value: '3.256' } })
     fireEvent.blur(size())
@@ -55,13 +58,24 @@ test('dimensions and position show two decimals and accept hundredths independen
       12,
     )
     const fractional = editor.getState().content
-    fireEvent.click(fractions)
+    fireEvent.change(step, { target: { value: '1' } })
+    expect(step.value).toBe('1')
     expect(editor.getState().content).toBe(fractional)
     fireEvent.blur(size())
     expect(editor.getState().content).toBe(fractional)
     expect(size().getAttribute('step')).toBe('0.01')
+    view.unmount()
+    // A escolha fica no perfil: a oficina reaberta continua no Bloco.
+    const again = render(<SceneWorkshop editor={editor} viewportFactory={probe.factory} />)
+    fireEvent.click(again.getByText('Mais ajustes do palco', { exact: true }))
+    expect(
+      (again.getByRole('combobox', { name: 'Passo ao mover e redimensionar' }) as HTMLSelectElement)
+        .value,
+    ).toBe('1')
+    again.unmount()
   } finally {
     view.unmount()
+    localStorage.removeItem(moldaPreferenceKey(SCENE_MEASUREMENT_STEP_STORAGE))
     editor.getState().dispose()
   }
 })

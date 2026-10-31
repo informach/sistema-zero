@@ -39,7 +39,8 @@ describe('avatar3d — catálogo', () => {
     }
     for (const p of AVATAR3D_PARTS) {
       expect(AVATAR_CATEGORIES).toContain(p.category)
-      expect(p.tier === 'free' ? p.price === 0 : p.price > 0).toBe(true)
+      // Grátis e da festa (B16, só a festa concede) não têm preço; as pagas têm.
+      expect(p.tier === 'coins' ? p.price > 0 : p.price === 0).toBe(true)
     }
   })
 

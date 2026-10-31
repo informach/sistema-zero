@@ -69,37 +69,44 @@ for (const d of desafiosIniciaisDoVale('kids'))
             change((p.ir as SZIRV2).behavior)
             scenarios.push({ name, ids, project: p, passes: false })
           }
+          // O Guardião dos ninhos (lacunas, 01/11/2026): cada erro tira a regra do quadro.
           wrong('sem-reinicio', ['recomecar'], (b) => {
             const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
             if (e?.type !== 'g2d:onKey') throw Error('Evento Enter ausente')
             e.body = []
           })
           if (d.quadro === 1)
-            wrong('contagem-fixa', ['lista'], (b) => {
-              const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
-              if (e?.type !== 'g2d:onKey') throw Error('Contagem ausente')
-              e.body = [{ type: 'assign', name: 'contados', value: { type: 'num', value: 3 } }]
-            })
-          if (d.quadro === 2)
-            wrong('limpa-so-primeira', ['todas'], (b) =>
+            wrong('sem-esperar', ['uma-por-vez'], (b) =>
               visit(b.events, (s) => {
-                if (s.type === 'g2d:setOpacity') s.spriteVar = 'mancha1'
+                if (s.type === 'if') s.cond = { type: 'bool', value: true }
               }),
             )
-          if (d.quadro >= 3)
-            wrong(
-              'ignora-condicao',
-              [d.quadro === 3 ? 'estoque' : d.quadro === 4 ? 'espera' : 'fechamento'],
-              (b) =>
-                visit(b.events, (s) => {
-                  if (s.type === 'if') s.cond = { type: 'bool', value: true }
-                }),
+          if (d.quadro === 2)
+            wrong('onda-sem-fim', ['onda-acaba'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'assign' && s.name === 'emOnda')
+                  s.value = { type: 'bool', value: true }
+              }),
             )
           if (d.quadro === 3)
-            wrong('folha-nao-gasta', ['estoque'], (b) =>
+            wrong('nao-conta', ['ninho'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'assign' && s.name === 'atingidos')
+                  s.value = { type: 'var', name: 'atingidos' }
+              }),
+            )
+          if (d.quadro === 4)
+            wrong('torre-nao-limpa', ['ninho-salvo'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'g2d:onSpriteGroupOverlap' && s.spriteVar === 'alcance')
+                  s.body = s.body.filter((x) => x.type !== 'g2d:removeFromGroup')
+              }),
+            )
+          if (d.quadro === 5)
+            wrong('onda-fixa', ['ondas-crescem'], (b) =>
               visit(b.events, (s) => {
-                if (s.type === 'assign' && s.name === 'folhas')
-                  s.value = { type: 'var', name: 'folhas' }
+                if (s.type === 'assign' && s.name === 'tamanhoDaOnda')
+                  s.value = { type: 'num', value: 3 }
               }),
             )
           for (const scenario of scenarios) {

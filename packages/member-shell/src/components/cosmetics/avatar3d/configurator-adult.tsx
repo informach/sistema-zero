@@ -363,11 +363,14 @@ function ItemTile({
   const isNone = part.id.endsWith('-none')
   const info = AVATAR_PART_INFO[part.id]
   const label = info?.labelPt ?? part.id
-  const name = part.locked
-    ? confirming
-      ? copy.previewTile(label, part.price)
-      : copy.lockedTile(label, part.price)
-    : label
+  const daFesta = part.locked && part.tier === 'festa'
+  const name = daFesta
+    ? copy.festaTile(label)
+    : part.locked
+      ? confirming
+        ? copy.previewTile(label, part.price)
+        : copy.lockedTile(label, part.price)
+      : label
   return (
     <button
       type="button"
@@ -392,8 +395,8 @@ function ItemTile({
       )}
       {part.locked ? (
         <span className="sz-cos-av-tile-price" aria-hidden="true">
-          {confirming ? <LockOpen /> : <Lock />}
-          {part.price}
+          {confirming && !daFesta ? <LockOpen /> : <Lock />}
+          {daFesta ? copy.festaBadge : part.price}
         </span>
       ) : null}
     </button>
@@ -412,7 +415,10 @@ function PendingBar({
   onCancel: () => void
   onBuy: () => void
 }) {
-  const text = copy.preview(AVATAR_PART_INFO[part.id]?.labelPt ?? part.id)
+  const label = AVATAR_PART_INFO[part.id]?.labelPt ?? part.id
+  // Roupa da festa (B16): a prévia diz de onde ela vem e não oferece compra.
+  const daFesta = part.tier === 'festa'
+  const text = daFesta ? copy.previewFesta(label) : copy.preview(label)
   return (
     <div role="status" className="sz-cos-buybar">
       <p>
@@ -423,9 +429,11 @@ function PendingBar({
         <button type="button" onClick={onCancel} disabled={busy} className="sz-cos-buybar-quiet">
           {copy.notNow}
         </button>
-        <button type="button" onClick={onBuy} disabled={busy} className="sz-cos-buybar-main">
-          {adultUnlock(part.price)}
-        </button>
+        {daFesta ? null : (
+          <button type="button" onClick={onBuy} disabled={busy} className="sz-cos-buybar-main">
+            {adultUnlock(part.price)}
+          </button>
+        )}
       </div>
     </div>
   )

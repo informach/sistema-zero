@@ -103,6 +103,9 @@ export const ILHA_DO_PERCURSO: Readonly<Record<PercursoId, IlhaId>> = {
   'recife-corais': 'recife',
   'vale-pegadas': 'vale-dos-dinos',
   'farol-subida': 'farol',
+  'pico-treno': 'pico',
+  'vale-montaria': 'vale-dos-dinos',
+  'barco-regata': 'sua-ilha',
 }
 
 export interface EstrelaDoPercurso {

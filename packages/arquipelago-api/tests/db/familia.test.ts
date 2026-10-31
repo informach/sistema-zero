@@ -3,6 +3,7 @@ import path from 'node:path'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import { marcaDaCriacao } from '../../src/domain/mudancas-de-aparencia'
 import {
   createDbConnection,
   type DbConnection,
@@ -132,6 +133,45 @@ describe.skipIf(!url)('DrizzleRepositorioDaFamilia (Postgres real)', () => {
     const fins = await familia.sessoesNaJanela([LIA], new Date('2026-10-22T00:00:00Z'), AGORA)
     expect([...fins]).toEqual([[LIA, [new Date('2026-10-26T20:00:00Z')]]])
     expect(await familia.sessoesNaJanela([], new Date(0), AGORA)).toEqual(new Map())
+  })
+
+  test('aparências da janela (A33): a marca de cada aplicação de quem foi pedido', async () => {
+    expect((await guardar(LIA, CONTA)).ok).toBe(true)
+    expect((await guardar(TOM, CONTA)).ok).toBe(true)
+    const pinta = { origem: 'pinta' as const, id: 'p1' }
+    const comPintura = {
+      ...criarSalvamentoInicial(AGORA),
+      projetos: {
+        geladeira: { ganhoEm: AGORA.toISOString(), aparencia: pinta, aparencias: [pinta] },
+      },
+    }
+    const aplicar = (jogadorId: string, agora: Date) =>
+      jogo.gravarSalvamento({
+        jogadorId,
+        publico: 'kids',
+        revisaoBase: 1,
+        salvamento: comPintura,
+        agora,
+        contaId: CONTA,
+      })
+    expect((await aplicar(LIA, AGORA)).ok).toBe(true)
+    expect((await aplicar(TOM, new Date('2026-10-01T15:00:00Z'))).ok).toBe(true)
+    const janela = await familia.aparenciasNaJanela(
+      [LIA, TOM],
+      new Date('2026-10-22T00:00:00Z'),
+      AGORA,
+    )
+    expect([...janela.keys()]).toEqual([LIA])
+    expect(janela.get(LIA)).toEqual([
+      {
+        objeto: 'geladeira',
+        revisao: 2,
+        origem: 'pinta',
+        criacao: marcaDaCriacao(LIA, 'p1'),
+        registradoEm: AGORA,
+      },
+    ])
+    expect(await familia.aparenciasNaJanela([], new Date(0), AGORA)).toEqual(new Map())
   })
 
   test('salvamentos e permissões (uma linha por conta, a última escolha vale)', async () => {

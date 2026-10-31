@@ -255,6 +255,13 @@ export const ADULT_AVATAR_COPY = {
   emptyItems: 'Nenhum modelo nesta parte ainda.',
   /** Peça travada: o motivo e o preço entram no nome do botão (o cadeado é só desenho). */
   lockedTile: (label: string, price: number) => `${label}, bloqueado, ${adultPrice(price)}`,
+  /** Roupa da festa (B16): vem da festa do Arquipélago, sem preço nem compra. */
+  festaTile: (label: string) => `${label}, vem da festa do Arquipélago`,
+  festaBadge: 'Da festa',
+  previewFesta: (label: string) => ({
+    strong: `Prévia: ${label}.`,
+    text: ' Esta peça vem da festa do Arquipélago e chega pelo jogo, na época da festa.',
+  }),
   previewTile: (label: string, price: number) =>
     `${label}, em prévia. Selecione de novo para desbloquear por ${adultPrice(price)}`,
   preview: (label: string) => ({

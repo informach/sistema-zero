@@ -1,4 +1,6 @@
 import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
+import type { AparenciaAplicada } from '../../src/domain/familia.port'
+import { marcaDaCriacao, mudancasDeAparencia } from '../../src/domain/mudancas-de-aparencia'
 import type {
   RepositorioDoJogo,
   ResultadoDaGravacao,
@@ -14,6 +16,8 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
   /** De que conta é cada criança (gravado com o salvamento aceito, como no Drizzle). */
   readonly contas = new Map<string, string>()
   readonly eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
+  /** As aparências aplicadas a cada gravação aceita, como o Drizzle registra (A33). */
+  readonly aparencias: (AparenciaAplicada & { jogadorId: string })[] = []
 
   async lerSalvamento(jogadorId: string) {
     return this.salvamentos.get(jogadorId) ?? null
@@ -30,6 +34,16 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
       atualizadoEm: e.agora,
     }
     this.salvamentos.set(e.jogadorId, guardado)
+    if (atual)
+      for (const m of mudancasDeAparencia(atual.dados, e.salvamento))
+        this.aparencias.push({
+          jogadorId: e.jogadorId,
+          objeto: m.objeto,
+          revisao: guardado.revisao,
+          origem: m.origem,
+          criacao: marcaDaCriacao(e.jogadorId, m.criacao),
+          registradoEm: e.agora,
+        })
     if (e.contaId && !this.contas.has(e.jogadorId)) this.contas.set(e.jogadorId, e.contaId)
     return { ok: true, guardado }
   }

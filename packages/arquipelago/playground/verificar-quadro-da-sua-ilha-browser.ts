@@ -1,7 +1,7 @@
 /**
  * O Quadro das Cores da sua ilha (C03a) no navegador, com a plataforma falsa e sem banco: o
  * cavalete fica na grama ao lado da trilha do píer, "Ver o Quadro das Cores" abre o painel com os
- * quadros da sua ilha (um feito, um pronto), e nada fala em pintar a ilha. Depois, o projeto
+ * quadros da sua ilha (um feito, com a cor de volta, e um pronto). Depois, o projeto
  * autoral (C03b): sem o final do Farol o cavalete dele não existe; com o final, ele aparece ao lado
  * do Farol com um quadro só.
  *
@@ -96,12 +96,11 @@ try {
     await page.screenshot({ path: path.join(prints, `${tipo}-1-cavalete.png`) })
     if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
     else await page.keyboard.press('e')
-    await page.getByText('Passos na areia').first().waitFor()
+    await page.getByText('A concha rosa').first().waitFor()
     await page.getByText('A primeira concha').first().waitFor()
-    assert.equal(await page.getByText('pinta um pedaço da ilha').count(), 0)
-    assert.equal(await page.getByText('Cor de volta').count(), 0)
-    await page.getByText('Desafio concluído').first().waitFor()
-    await page.getByText('Sua ilha: 1 de 6 desafios feitos.').first().waitFor()
+    // Desde as lacunas de 01/11/2026 cada quadro da sua ilha devolve a cor de uma parte dela.
+    await page.getByText('Cor de volta').first().waitFor()
+    await page.getByText('Sua ilha: 1 de 6 cores de volta.').first().waitFor()
     await page.screenshot({ path: path.join(prints, `${tipo}-2-painel.png`) })
     assert.deepEqual(erros, [])
     console.log(`PASS ${tipo}: o cavalete da praia abre os quadros da sua ilha`)

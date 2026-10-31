@@ -1,39 +1,27 @@
-# Proteja os ninhos do Vale dos Dinos
+# O Guardião dos ninhos do Vale dos Dinos
 
-Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
-[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
-blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
-repertório universal nem contar estruturas prontas como aprendizagem.
+Lacunas de 01/11/2026 (pela proposta e pela Jornada): o Vale é a defesa de torre do Arquiteto
+(ondas, caminho e alcance). Os desafios em blocos foram refeitos como o **Guardião dos ninhos**
+(`projetos.ts`), só com blocos da trilha (Faísca, Construtor e Inventor): a cinza do vulcão
+desce pelo caminho em ondas (grupo e relógio), a torre limpa a cinza que entra no alcance dela
+(encontro do alcance com o grupo) e a que passa atinge o ninho. Saíram o "Proteja os ninhos" e
+os quadros de lista, que pediam lista, laço em grupo, clique em grupo, dados no sprite,
+opacidade e "e" lógico, blocos que nenhum posto ensina (a decisão A43 deixou de valer). O
+JavaScript do Arquiteto fica no quadro 6 (`gerar-manifesto-texto.ts`).
 
-Pacote fase4-05, JavaScript em blocos, formato `arquipelago-desafios` v1, público Kids.
-Arquivo: [vale.manifesto.json](vale.manifesto.json). Importação e publicação ficam para outra etapa.
+| Quadro | Atividade | O passo | Recusa causal (executor real) |
+| --- | --- | --- | --- |
+| 1 | Uma onda de cada vez | Espaço começa uma onda por vez | Começar outra durante a onda |
+| 2 | O relógio da onda | O relógio solta a cinza e a onda acaba | Onda que nunca acaba |
+| 3 | A cinza no ninho | A cinza que chega ao ninho sai e é contada | Não contar |
+| 4 | O alcance da torre | A torre limpa a cinza do alcance e conta o ponto | Cinza que passa pela torre |
+| 5 | Ondas que crescem | Cada onda tem uma cinza a mais | Onda de tamanho fixo |
 
-| Desafio | Tipo | Quadro | Moedas | Extra |
-| --- | --- | --- | --- | --- |
-| Proteja os ninhos | Quadro das Cores | 6 | 20 | 10 |
-| Mais uma onda | Desafio do dia | Nenhum | 10 | 5 |
-| Dois pontos | Desafio do dia | Nenhum | 10 | 5 |
-| Mais um ninho | Desafio do dia | Nenhum | 10 | 5 |
-
-Valores derivados de `MOEDAS_PADRAO_POR_TIPO`; ordens 60 a 63; atração `proteja-os-ninhos`.
-A busca nos manifestos locais não encontrou outro quadro do Vale. O Admin deve conferir o
-cadastro de novo na importação. Revisão C01b de 30/10: os quadros 3 a 5 deixaram a opacidade
-(desenho condicionado) e pedem publicação (`publicar: true`). Os quadros 1 e 2 e o Proteja os
-ninhos com as variações dependem de lista e laço em grupo, dados do sprite, clique em grupo e
-"e" lógico, que nenhum curso em blocos da trilha ensina; no Vale isso vem em JavaScript (C02).
-Seguem com `publicar: false` até lá.
-
-## Cinco quadros complementares (L03)
-
-Nos quadros 1 e 2, o laço Para cada vem montado com o corpo vazio. No primeiro, falta zerar a contagem antes dele e somar dentro. No segundo, falta esconder a mancha da vez. Os demais quadros aplicam escolha, consumo único, estado de onda e conclusão de rodada.
-
-| Quadro | Atividade | Tipo | Moedas | Extra |
-| --- | --- | --- | --- | --- |
-| 1 | Contagem da lista | Quadro das Cores | 20 | 10 |
-| 2 | Cinza retirada | Quadro das Cores | 20 | 10 |
-| 3 | Folhas bem usadas | Quadro das Cores | 20 | 10 |
-| 4 | Uma onda por vez | Quadro das Cores | 20 | 10 |
-| 5 | Rodada conferida | Quadro das Cores | 20 | 10 |
+Desafios do dia (ordens 60 a 63, 10 e 5 moedas, sem cor, atração `guardiao-dos-ninhos`), cada um
+mudando uma regra do Guardião pronto: ondas maiores, dois pontos por cinza, só três ondas e
+bônus de onda limpa. O extra de todos é o Enter recomeçar a defesa. Provas:
+`packages/studio-runtime/tests/quadros-vale-browser.test.ts` e `vale-browser.test.ts` (com
+`SZ_CHECK_CHROMIUM` apontando para o Chrome).
 
 O [manifesto Kids](vale.manifesto.json) e o [manifesto adulto](vale-adulto.manifesto.json)
 têm seis quadros e três desafios do dia cada, todos em rascunho. C01b1 preservou projetos,
@@ -56,7 +44,6 @@ Comandos adicionais, na raiz:
 bun test docs/desafios-do-jogo/vale/quadros-iniciais.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/quadros-vale-browser.test.ts
-bun docs/desafios-do-jogo/vale/conferir-quadros-browser.ts
 ```
 
 [Capturas e resultados locais](../../qa/2026-10-30-quadros-vale/README.md).
@@ -100,7 +87,6 @@ bun test src/blockly/__tests__/valeManifest.test.ts
 # Na raiz:
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/vale-browser.test.ts
-bun docs/desafios-do-jogo/vale/conferir-browser.ts
 node --max-old-space-size=8192 packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/vale/tsconfig.json
 ```
 

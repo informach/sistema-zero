@@ -1,5 +1,6 @@
 import {
   APARENCIAS_GUARDADAS_MAXIMO,
+  BICHOS_DO_BOSQUE,
   BIT_DA_SEGREDO_MAXIMO,
   CANTEIROS_DO_CEU,
   type CartaoDaRotina,
@@ -10,6 +11,7 @@ import {
   FLORADA_MAXIMA,
   FOSSEIS_DO_VALE,
   ID_DA_APARENCIA_MAXIMO,
+  ILHA_IDS,
   LIMITES_DA_ROTINA,
   LUMIS,
   type LumiId,
@@ -30,6 +32,8 @@ import {
 import { ehLumiDeLuz } from '../src/lumis-de-luz'
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
+/** Uma medida de 0 a 100 com dízima (as medidas caem aos poucos e não são inteiras). */
+const DIZIMA = 57.333333333333336
 
 /** O cartão mais pesado em bytes de cada tipo, com os de dentro no nível de baixo. */
 function pesado(nivel: number): CartaoDaRotina {
@@ -143,6 +147,46 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     segredos: BIT_DA_SEGREDO_MAXIMO * 2 - 1,
     mapa: Object.fromEntries(MAPAS_DAS_ILHAS.map((id) => [id, 'f'.repeat(16)])),
     companhia: 'adotado' as const,
+    // 01/11/2026: o que o cenário deixava de fora. A horta com os 24 canteiros plantados e regados
+    // (as datas com milissegundos), todos os bichos achados e o adotado mais pesado (nome de 16
+    // letras acentuadas, medidas com dízima), a posição e as necessidades com dízima e todas as
+    // pontes vistas. Juntos pesam uns 2,8 KB.
+    horta: Array.from({ length: 24 }, (_, i) => ({
+      id: `c${i + 1}`,
+      semente: 'tomate' as const,
+      plantadoEm: '2026-10-29T12:00:00.000Z',
+      regadoEm: '2026-10-29T12:00:00.000Z',
+    })),
+    bichos: {
+      achados: [...BICHOS_DO_BOSQUE],
+      adotado: {
+        id: BICHOS_DO_BOSQUE[BICHOS_DO_BOSQUE.length - 1]!,
+        nome: 'Á'.repeat(16),
+        fase: 'filhote' as const,
+        fome: DIZIMA,
+        limpeza: DIZIMA,
+        carinho: DIZIMA,
+        diasCuidados: 999,
+        diaCuidadoEm: '2026-10-29',
+        truque: { sessoes: 99, ultimaEm: '2026-10-29', aprendido: false },
+      },
+      // V23: os outros dois bichos adotados, no mesmo formato mais pesado.
+      outros: BICHOS_DO_BOSQUE.slice(0, 2).map((id) => ({
+        id,
+        nome: 'Á'.repeat(16),
+        fase: 'filhote' as const,
+        fome: DIZIMA,
+        limpeza: DIZIMA,
+        carinho: DIZIMA,
+        diasCuidados: 999,
+        diaCuidadoEm: '2026-10-29',
+        truque: { sessoes: 99, ultimaEm: '2026-10-29', aprendido: false },
+      })),
+    },
+    posicao: { x: -123.45678901234567, y: 12.345678901234567, z: -98.76543210987654 },
+    necessidades: { fome: DIZIMA, energia: DIZIMA, diversao: DIZIMA },
+    pontesVistas: [...ILHA_IDS],
+    casa: { portaNova: false },
   }
   const L = LIMITES_DA_ROTINA
   // Os jeitos de gastar o teto somando as rotinas: poucas rotinas cheias ou muitas curtas.

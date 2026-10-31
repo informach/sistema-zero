@@ -35,7 +35,8 @@ Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o
   `algumaCriancaVe` (28/10/2026); sem resposta do serviço ou com resposta estranha, ele não aparece.
   **Fase1-18 (28/10/2026):** o cartão virou "Arquipélago Vagalume", com três partes: "A semana no
   jogo" (`_components/arquipelago-familia.tsx`, `SemanaDasCriancas`: desafios aprovados, objetos
-  do Pinta e do Molda desde o começo, o tempo livre ao lado do limite e, desde 29/10/2026, em
+  do Pinta e do Molda (desde 31/10/2026, A33: as criações postas no jogo NA SEMANA, cada uma uma
+  vez; antes, desde o começo), o tempo livre ao lado do limite e, desde 29/10/2026, em
   quantos dias de jogo ela concluiu aula do curso até 24 h depois de jogar; em ladrilhos `StatTile`
   de `ladrilhosDaSemana`, cada um só com o número que o serviço tem, um cartão por criança na
   largura toda), "Tempo livre no Arquipélago" (o formulário de antes) e "Com quem pode
@@ -49,8 +50,11 @@ Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o
   `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`
   fica FORA do matcher do proxy (o navegador importa o módulo sem `x-sz-session`).
 - `/arquipelago` nos `protectedPrefixes`; `next.config.ts`: `@sistemazero/arquipelago-contracts`
-  no `transpilePackages` e uma CSP própria da página que garante `'wasm-unsafe-eval'` (Rapier)
-  mesmo se a CSP estrita um dia fechar o WASM.
+  no `transpilePackages` e uma CSP própria da página (A27, 31/10/2026, `arquipelagoCsp`, regra
+  `/arquipelago/:path*`): a do Pro sem os vídeos das aulas. Mantém `'wasm-unsafe-eval'` (Rapier e
+  Molda) e `'unsafe-eval'`, `blob:` e os quadros do WebContainer, porque o Estúdio completo aberto
+  por cima do jogo abre o projeto Pro com o terminal. A frase das permissões vem de `comoComecam()`
+  (A34), que lê `PERMISSOES_PADRAO`.
 
 
 ## Peças do quarto feitas no Blender (27/10/2026)
@@ -3541,219 +3545,40 @@ auditados e **de pé**. Achados corrigidos; verde no typecheck+test+check (membe
 - **Literais soltos (BAIXO):** `course-trail.tsx` tirou o "+25 XP" hardcoded do baú ("Baú aberto!");
   `kids-quiz.tsx` trocou o fallback `?? 100` da nota mínima por `null` (nunca há caminho real sem valor).
 
-## O Zappy animado (Rive) — 15/09/2026
+## Artes ediSVG, voz e trilha, 31/10/2026
 
-O mascote ganhou ONZE pontos ANIMADOS, com som sincronizado ao keyframe, a partir de um lote de
-`.riv` dela. O `<img>` NÃO foi substituído: das 47 aparições do Zappy no app, 38 seguem estáticas
-de propósito, e o WebP é o chão de queda dos outros 11 (e foi ele que segurou o app durante as duas voltas de arquivo).
+`@sistemazero/edisvg` é o único player de arte vetorial desta interface. O motor DOM e o parser
+vêm do mesmo build do ediSVG, com origem e hashes em `packages/edisvg/vendor/manifest.json`.
+Não importar o editor nem manter um segundo renderer. Exportações são dados declarativos.
 
-⚠️⚠️ **TOCAMOS A TIMELINE, NÃO A STATE MACHINE — e foi o erro que custou uma volta inteira.** Os
-`.riv` trazem a `State Machine 1` com ZERO inputs e um estado que não entra na timeline: montar
-por ela deixa o Zappy PARADO, com o runtime a 60 fps desenhando sempre o mesmo quadro (medido: 242
-quadros seguidos idênticos, `ultimaMudanca=-1`). A primeira leitura disso foi "os arquivos não têm
-animação", e estava ERRADA — a dona disse que no editor animava, e animava mesmo: pela
-**`Timeline 1`** as cinco poses se mexem (`happy`/`celebrating`/`thinking` em laço,
-`sleeping`/`speaking` tocam uma vez e assentam). ⚠️ O `animations` do runtime é deprecated em favor
-de `stateMachine`; sair do deprecated depende do EDITOR (a SM ganhar um estado que toque a
-timeline), não daqui — trocar antes disso volta a congelar o mascote. ⚠️ **Lição de método:**
-nenhum teste do pacote pega isso (happy-dom não tem WebGL, e o guarda de bytes só vê NOMES), e o
-`toDataURL()` MENTIU nas primeiras medições — devolveu quadros idênticos onde havia animação. O que
-vale é `getImageData` dentro de `requestAnimationFrame`, com `useOffscreenRenderer: false`.
-
-⚠️⚠️ **O SOM não sai dos `.riv`, e o `KidsConfetti` continua sendo a fonte.** O áudio está EMBUTIDO
-(dá para ler o nome do asset nos bytes) e mesmo assim o pico na saída é ZERO: pendurei um analisador
-em tudo que conecta ao `destination` e o runtime cria o AudioContext mas **nunca conecta nada**,
-nem por timeline nem por state machine. Falta o evento de áudio na timeline. Por isso o
-`ZAPPY_RIVE_COM_SOM` está TODO `false` e as quatro celebrações grandes voltaram a `<KidsConfetti />`
-COM som — eu tinha tirado apostando no `.riv`, o que as deixaria MUDAS. Quando o evento de áudio
-existir, vire `celebrating` no mapa e ponha `sound={false}` no confete NA MESMA PASSADA.
-
-**A régua: som quando o Zappy REAGE, silêncio quando ele só está PRESENTE.** O mesmo `.riv` serve
-os dois casos — quem cala é o `volume` da instância (`ZAPPY_RIVE_COM_SOM` em `mascot.tsx`), nunca
-o arquivo. Hoje só `celebrating` toca: a varredura dos call sites mostrou que **nenhum** uso de
-`speaking`/`thinking`/`sleeping` é evento (são todos balão de aula, tela vazia ou cadeado, que
-repetem a cada navegação; um chime ali vira tortura por repetição).
-
-- **Onde anima:** as 7 celebrações (`chest-reward`, `lesson-celebration`, `level-up-celebration`,
-  `mural-celebration`, `tools-celebration`, `course-rating-flow` passo 4 e o quiz aprovado), o
-  balão de fala da aula (`kids-lesson-blocks` bloco `dialogue` + o `renderInstruction` do
-  `lesson-player-client`) e dois pontos de presença (a saudação da home e o estado vazio do Mural).
-- ⚠️ **No quiz, só quem ACABOU de passar.** Aquela tela é também o que a criança vê ao reabrir uma
-  aula aprovada semanas atrás (`result` nulo) — ali o Zappy comemoraria do nada uma conquista
-  velha. O `result` decide entre `KidsMascotAnimated` e `KidsMascot`.
-- ⚠️ **O confete das 4 celebrações grandes perdeu o som** (`<KidsConfetti sound={false} />`): o
-  áudio agora vem do `.riv`, no keyframe. Dois ao mesmo tempo seria chime por cima de chime. O
-  `tools-celebration` já era mudo (vem atrás da `MuralCelebration`) e o Rive dele também é.
-
-⭐⭐ **A BOCA obedece ao "Ouvir" (17/09/2026).** O balão de fala ganhou um `.riv` PRÓPRIO
-(`/zappy/fala.riv`, 42 KB) e um regime novo: montado com `autoplay: false`, ele fica PARADO no
-primeiro quadro (boca fechada) e só anda enquanto o áudio da voz do Zappy toca — fim do MP3 ou
-"Parar" e ele volta à mesma pose. O estado vem do member-shell pelo contexto
-`components/zappy-fala-context` (`{podeFalar, falando}`), provido em DOIS lugares — o
-`DialogueBlockView` (em volta do slot `mascot`) e a faixa da instrução do `scene-activity` (em
-volta do `renderInstruction`) —, e a régua que o traduz em "toca ou não" é o `tocandoDoZappy` do
-`mascot.tsx`. ⚠️ Vale para a voz do NAVEGADOR também: para a criança, alguém está falando.
-- ⚠️⚠️ **A régua é a POSE, não o balão:** só `speaking` obedece. A autora escolhe a cara do Zappy
-  em cada bloco (`DIALOGUE_POSES`), e `happy`/`thinking`/`celebrating` animam em laço por desenho
-  — congelá-las porque o balão tem áudio tiraria movimento que ninguém pediu para tirar.
-- ⚠️⚠️ **Balão SEM botão "Ouvir" continua animando sozinho** (`podeFalar` falso → `tocando`
-  `undefined` → autoplay de sempre). É a maioria: a instrução de cena sem dicionário, a pista, o
-  retorno da resposta. Decisão dela, e o `zappy-fala.test.tsx` a guarda.
-- ⚠️⚠️ **PARAR é `stop` + `pause` + `drawFrame`**, nessa ordem: `pause` sozinho não rebobina nem
-  repinta e a boca ficaria congelada ABERTA no meio de um viseme. Medido: volta ao quadro inicial
-  com 0,00% de pixels diferentes (o `reset()` rebobina também, mas destrói o artboard e deu 1,3%).
-- ⚠️ **A `key` do canvas carrega a EXPRESSÃO e o REGIME** (`speaking:voz`): o `useRive` lê os
-  parâmetros uma vez, então um canvas montado solto que depois passe a ser regido seguiria rodando
-  sozinho, sem erro nenhum. Na cena isso acontece — o `temVoz` do navegador só liga depois do
-  `voiceschanged`.
-- **Medições que decidiram o código** (harness `tmp/zappy/`, `getImageData` dentro do
-  `requestAnimationFrame`, `useOffscreenRenderer: false`): a `State Machine 1` do arquivo novo
-  segue CONGELADA (1 quadro distinto em 240, mesmo com a camada `Mouth` que ela ganhou), a
-  `Timeline 1` anima (240/240) e **repete sozinha** (6 `Loop` em 12 s, zero `Stop`) — por isso não
-  existe rede de religar. **Correção de 08/10/2026:** o resize padrão do hook desenhava antes de
-  atualizar o enquadramento. Se a carga terminasse antes da primeira observação do canvas, o
-  Zappy parado podia ficar completamente fora da área visível; a otimização do runtime pulava
-  o redesenho até a criança apertar "Ouvir". `MascotRiveCanvas` usa `useResizeCanvas` com
-  `resizeDrawingSurfaceToCanvas()` para ajustar tamanho/enquadramento e invalidar a pintura
-  nessa ordem. O WebP sai após o ajuste e o próximo quadro, não no `onLoad`. O item do grid
-  tem `min-w-0 min-h-0` para o canvas anterior não impedir a redução de tamanho no celular.
-  `e2e-scenes/mascot-idle.spec.ts` reproduz a ordem de carga com o Rive real e mede pixels;
-  cobre também resize, fala/parada e fallback de rede.
-- ⚠️ **O nome do arquivo mudou de propósito** (`speaking.riv` → `fala.riv`): `/zappy/*` tem
-  `Cache-Control` de um dia, e sobrescrever serviria o arquivo VELHO com o código novo pelas 24 h
-  seguintes — em staging isso lê como "a animação não funcionou". O `tests/mascot-assets.test.ts`
-  passou a derivar o nome do arquivo da URL do mapa, nunca da chave da pose.
-- ⭐ O `fala.riv` é o `speaking` PADRONIZADO: trouxe `SMLipSync`/`Viseme` (a infraestrutura de lip
-  sync que faltava só nele) e veio SEM o MP3 inerte — 42 KB contra 54 KB. Some uma pendência de
-  editor; sobram `thinking`/`sleeping` (~131 KB) para reexportar sem áudio.
-
-**Quatro caminhos voltam ao WebP, todos calados:** SSR, `prefers-reduced-motion`, a economia de
-dados do aparelho (`navigator.connection.saveData`) e qualquer falha do Rive. A pose nunca some da
-tela. ⚠️ Isso é uma faca de dois gumes: **a quebra também é silenciosa**, e foi para isso que
-nasceram os guardas do `tests/mascot-assets.test.ts` (o `.riv` e o `.webp` de cada pose no disco,
-e os nomes `Artboard 1`/`State Machine 1` DENTRO dos bytes) e a asserção nova no
-`tests/csp-media-data.test.ts`.
-
-- ⚠️⚠️ **`'wasm-unsafe-eval'` entrou na CSP ESTRITA** (`next.config.ts`). É keyword à parte: nem
-  `https:` nem `'unsafe-inline'` liberam a compilação de WASM, e a recusa do Chrome é silenciosa.
-  O `iframe srcDoc` dos blocos interativos HERDA a CSP, então o conteúdo autoral ganhou WASM
-  junto — aceito porque a fronteira real do embed é o sandbox SEM allow-same-origin.
-- ⚠️⚠️ **O WASM é servido da NOSSA origem.** Por padrão o `@rive-app/canvas` baixa o binário de
-  `unpkg.com` (fallback no jsdelivr): código executável de host de terceiro no caminho de render,
-  numa área infantil. `scripts/sync-rive-wasm.ts` copia de `node_modules` para `public/rive/` no
-  `dev` e no `build` (arquivo DERIVADO, no `.gitignore`), e o `mascot-rive-canvas` faz
-  `setWasmUrl` + `setWasmFallbackUrl(null)` + `enableRiveAssetCDN: false`.
-- ⚠️ **`useRive` lê os parâmetros UMA vez** (deps: canvas, "tem params", instância — o `src` não
-  está lá). Trocar de pose no mesmo componente montado NÃO troca o arquivo: por isso a
-  `key={expression}` no canvas, e por isso o estado de carga anda junto com a pose.
-- **Peso e cache:** runtime 676 KB comprimidos (81 de JS + 595 de WASM) contra 120 KB do lote
-  inteiro de WebP. Por isso `/rive/*` e `/zappy/*` ganharam `Cache-Control` (1 dia, como o
-  `/avatar3d/*`) e o player de aula chama `prefetchZappyRive()` ao montar. ⚠️ O `import()` sozinho
-  adianta só o JS — o `aquecerRuntimeRive()` é que puxa os sete oitavos restantes.
-- ⚠️ O `test-setup.ts` neutraliza o `mascot-rive-canvas`: sem isso toda suíte que monta uma
-  celebração tenta buscar o WASM e cospe `Aborted(both async and sync fetching of the wasm failed)`.
-  O WRAPPER segue testado de verdade em `tests/mascot-rive.test.tsx`; o desenho é e2e.
-
-**Pendências no editor (dela), todas registradas em `mascot.tsx`:** o fundo do artboard (acima, a
-que BLOQUEIA); renomear `Artboard 1`/
-`State Machine 1` para nomes estáveis (um reexport que os mude derruba tudo no WebP sem avisar);
-~~padronizar o `speaking.riv`~~ (FEITO: o `fala.riv` de 17/09 trouxe `SMLipSync`/`Viseme`/camada
-`Mouth` e nenhum áudio); e reexportar `thinking`/`sleeping` SEM áudio (~131 KB de MP3 que hoje
-atravessam a rede e nunca tocam). O `alivio.riv` ("Magical Heart UI Chime") ficou FORA do `public/`: não tem tela de destino
-nem WebP de queda — o candidato natural é o quiz reprovado, hoje com o Zappy dormindo.
-
-⭐ Os arquivos trazem `mouth_open`/`mouth_state` + a state machine `SMLipSync` com `Viseme`: é
-infraestrutura de LIP SYNC. Nada disso é consumido ainda, e é o que torna o Rive a escolha certa
-aqui em vez de um WebM com alpha (que faria as poses por um décimo do peso, mas nunca o Zappy
-falando o texto do balão com a boca sincronizada).
-
-⭐ **O Zappy da pergunta do quiz (07/10/2026).** Desde que a pergunta virou fala do Zappy (balão com
-"Ouvir"), o Zappy aparece ao lado de cada pergunta. Num navegador de captura do staging ele saiu
-desenhado fora do centro, metade cortada na borda do quadrado, enquanto o Zappy da fala logo acima
-saía inteiro. Isso não se reproduziu com as peças reais, nem no celular e no computador, em 1x e 2x,
-nem com a densidade trocada com a página aberta, nem na parte montada como a página de fase. A guarda
-ficou em `e2e-scenes/quiz-zappy.spec.ts` (página `/quiz-zappy` do ensaio, com fala, vídeo e quiz pelo
-`KidsLessonBlocks`): ela lê os PIXELS dos dois canvas e exige o desenho inteiro e centrado, e reprova
-com o enquadramento do Rive estragado de propósito (`Fit.None` + `TopLeft`).
-
-## A arte da trilha virou Rive — 21/09/2026
-
-O SVG animado por módulo (`illustration`, de 20/09) durou um dia. Saiu inteiro:
-upload, as 3 artes de exemplo, o `<img>` e o validador de 249 linhas do Admin. No
-lugar entrou um **`.riv` por módulo** (`ModuleOutlineView.riveUrl`), tocando em laço
-no mesmo lugar da trilha. O runtime já estava aqui por causa do Zappy — o que esta
-entrega acrescentou foi o caminho do arquivo ENVIADO, que é outro problema.
-
-**O que muda quando o arquivo não é nosso.** Para o Zappy dá para cravar
-`animations: 'Timeline 1'`; para um `.riv` que alguém sobe, não. O
-`trail-rive-canvas.tsx` descobre em runtime: `autoplay: false` (um decisor só, o
-nosso) e depois `rive.play(rive.animationNames[0])` — **a primeira timeline linear,
-nunca a state machine**, pela razão medida na seção do Zappy acima. E, diferente de
-lá, existe **rede de religar** no `EventType.Stop`: a timeline do Zappy repete
-sozinha, mas um arquivo exportado como "one shot" para no fim. A rede tem teto (60
-religadas/s) porque uma animação de duração zero viraria ventoinha ligada no tablet.
-
-⚠️⚠️ **CORS no bucket PÚBLICO — o furo que quase passou.** `<img src>` não faz CORS;
-o runtime do Rive lê por `fetch().arrayBuffer()`, que faz. Os buckets públicos nunca
-tiveram regra de CORS porque nada nunca os buscou cross-origin. Sem a regra, o
-`onLoadError` dispara, o `TrailRive` não renderiza nada e fica **indistinguível de
-"ninguém subiu animação"**. Nasceram daí o `packages/admin/scripts/r2-cors-public.ts`
-(rode ANTES de subir este app) e o `console.warn('[trilha-rive] não carregou')` — é o
-que troca uma tarde de investigação por cinco segundos.
-
-⚠️ O `.kids-trail-art` ganhou `aspect-ratio: 9 / 8` e perdeu a regra de `img`: o
-`<canvas>` **não tem proporção intrínseca** e cairia nos 150px de fábrica. O 9/8 é o
-`180x160` do `<Image>` que saiu. A largura mudou em 03/10/2026, conforme abaixo.
-
-Os quatro desvios calados (SSR/primeiro quadro, `saveData`, fora da viewport, falha
-do Rive) não deixam buraco: a arte é absoluta e qualquer altura adicional só é
-reservada depois da carga; uma falha retira essa reserva.
-`prefers-reduced-motion` é o único que NÃO some: monta com `autoplay: false`, que
-pinta o primeiro quadro. O canvas monta na primeira interseção e depois só pausa,
-nunca desmonta (desmontar reiniciaria do quadro 0 a cada rolagem).
-
-⚠️ `RuntimeLoader.setWasmUrl` + `setWasmFallbackUrl(null)` saíram do
-`mascot-rive-canvas.tsx` para o `rive-runtime.ts`, e o `saveData` para
-`lib/economia-de-dados.ts`: são dois consumidores agora, e duas cópias de uma decisão
-de segurança é como uma delas apodrece.
-
-⚠️ **Teste:** o `IntersectionObserver` do happy-dom EXISTE mas nunca chama o callback
-(medido) — sem o falso, o canvas nunca monta e o teste mediria o contrário do que a
-criança vê. E, como sempre com Rive aqui, **nenhum teste prova que anima**: quem
-verifica é a prévia no Admin. O ensaio Chromium abaixo também carrega um `.riv` real.
-
-### Tamanho e posição responsivos — 03/10/2026
-
-A caixa do Rive tem **250 px no desktop** e, até 640 px de viewport, **45% da
-coluna, limitados a 130–160 px**. `aspect-ratio: 9 / 8` e `Fit.Contain` preservam
-o arquivo inteiro; margens internas do artboard continuam fazendo parte da arte.
-
-`CourseTrail` ainda renderiza os nós no servidor e os passa como `children` para
-`TrailUnitBody`. Essa ilha mede os limites reais das aulas, legendas, balão e baú
-(`data-trail-obstacle` e `.kids-balloon`). `trailArtPlacement` encontra uma caixa
-lateral livre com 12 px de margem; prefere a maior folga e, no empate, o centro
-vertical e o lado alternado do módulo. O cálculo antigo pela soma de offsets saiu.
-`ResizeObserver` acompanha largura e texto, incluindo o carregamento de fontes.
-
-Quando a unidade é curta ou estreita demais, a arte fica abaixo dos nós e o corpo
-reserva a altura necessária. `onReady`/`onFailed` do canvas controlam essa reserva:
-carregamento, `saveData`, arquivo ausente ou falha não deixam espaço vazio. O Rive
-só aparece depois da primeira medição e da carga. Pausa fora da tela, carregamento
-sob demanda e movimento reduzido mantêm o comportamento anterior.
-
-Verificação: `tests/trail-art-layout.test.ts` cobre colisões e 288 combinações de
-largura/curva/comprimento; `tests/course-trail.test.tsx` confere a estrutura inicial.
-`e2e-scenes/trail-rive.spec.ts` usa os componentes e CSS reais com dados locais e
-`/zappy/happy.riv`: 320, 390, 430, 768 e 1440 px, resize, arquivo inválido e recuperação,
-movimento reduzido e economia de dados. Não depende dos uploads nem do login de alunos.
-
-Revisão de 03/10: o estado de carga reinicia em **toda troca de `src`**, inclusive
-remoção e retorno à mesma URL; o reset não remonta as aulas nem o baú. Uma URL que
-carregou antes não comprova que a nova instância está pronta. Enquanto oculta, a
-caixa fica em `top: 0`: `visibility: hidden` preserva o overflow rolável, portanto
-deixá-la na posição de reserva criava um vão no fim da página mesmo com padding zero.
-O e2e também cobre esses dois casos, além da troca dos obstáculos e do resize apenas
-da coluna. A regressão de espaço vazio compara o `scrollHeight` com o módulo sem arte.
+- `mascot.tsx`: cinco reservas estáticas em `BUILTIN_ART`, geradas das artes editáveis.
+  `mascot-animated.tsx`: mesmo conjunto com carga perto da tela, reserva e descarte.
+  O import do runtime é compartilhado; cada desenho tem sessão própria. Nenhum estado React por quadro.
+- `tocandoDoZappy` mantém a régua existente. Só speaking acompanha `{podeFalar, falando}` do
+  `ZappyFalaProvider`, incluindo voz do navegador. A entrada oficial da arte derivada é `falando`.
+  false fecha a boca por setInputs+advance(0) e pausa; true retoma. As outras expressões mantêm
+  seu laço. Um balão sem botão Ouvir continua autônomo. O contexto existe no diálogo e na instrução.
+- A variante editável da boca está em `art/edisvg/derived/zappy-falando.edisvg`, com proveniência.
+  Não é sincronização fonética. A reserva e o estado de repouso são coerentes com a mesma arte.
+- Movimento reduzido e economia de dados mostram apenas a reserva. Fora da tela/aba oculta o
+  runtime pausa. Trocar arte ou desmontar cancela a carga e descarta a sessão e seus recursos.
+  Áudio de celebração continua em KidsConfetti, fora da arte vetorial.
+- `CourseTrail` aceita a referência canônica `ModuleAnimation` do Members. `TrailUnitBody` mede os
+  obstáculos e reposiciona a arte após mudanças de coluna/aulas. O player fica absoluto na caixa
+  9/8, sem impor a proporção intrínseca da reserva. A reserva continua visível se o JSON falha.
+  Aula atual, cadeados, balões e baú preservam sua autoridade e navegação.
+- `TrailChest` chama o servidor antes de abrir. `ChestAnimation` usa a máquina Baú, a entrada
+  aberto e o estado terminal Aberto da camada Tampa. Um evento gráfico nunca concede XP/moedas.
+  Clique duplo usa um pedido; resposta sem prêmio abre sem festa; falha permite tentar novamente.
+  Os estados estáticos fechado/aberto são exportados do mesmo projeto. A reserva aberta vem do
+  estado Aberto, não de uma ilustração antiga. Movimento reduzido termina sem esperar animação.
+- Dev/build executam `../edisvg/scripts/sync-assets.ts public`: manifest/hashes, 14 arquivos
+  necessários, URLs imutáveis. Projetos editáveis e exportações completas ficam em art/edisvg,
+  no Git e fora do Docker. A antiga variável NEXT_PUBLIC_KIDS_CHEST_RIVE_URL deixou de ser lida.
+- Ensaios: `tests/e2e/verify-edisvg.ts` usa Node e Chrome reais com StrictMode, voz nativa, ledger
+  HTTP local e limpeza de quadros; não usa banco remoto. Os e2e-scenes de mascot-idle, quiz-zappy
+  e trail-animation usam o CSS real. `animation-pixels.ts` rasteriza o SVG em superfície
+  transparente para medir desenho, sem confundir o fundo do tema com pixels do Zappy.
 
 ## Comandos
 

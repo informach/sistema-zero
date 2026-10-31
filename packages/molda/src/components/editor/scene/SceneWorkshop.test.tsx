@@ -10,11 +10,19 @@ import {
   captureSceneAnimationPoseSet,
   pasteSceneAnimationPoseSet,
 } from '../../../scene/animationPoseSet'
+import { createCharacterMotion } from '../../../scene/characterMotions'
+import {
+  buildCharacterRig,
+  findCharacterRigs,
+  layoutCharacterSkeleton,
+} from '../../../scene/characterRig'
 import {
   addScenePrimitive,
   convertSceneNodesToMesh,
   transformSceneNodes,
 } from '../../../scene/commands'
+import { createSceneProject } from '../../../scene/createProject'
+import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneFlipbookRegion } from '../../../scene/imageFlipbook'
 import { setSceneImageFlipbook } from '../../../scene/imageFlipbookCommands'
 import { paintSceneImageGradient } from '../../../scene/imageGradient'
@@ -44,6 +52,7 @@ import { moldaPreferenceKey } from '../../../state/interfacePreferences'
 import { setMoldaGenerationStoreFactory } from '../../../state/persistence'
 import { createSceneEditorStore, type SceneEditorStore } from '../../../state/sceneEditorStore'
 import { createScenePersistence } from '../../../state/scenePersistence'
+import { makeCharacterFixture } from '../../../testing/characterFixture'
 import { makeModel } from '../../../testing/fixtures'
 import { nativeDatabase } from '../../../testing/nativeDatabase'
 import { animatedScene } from '../../../testing/sceneAnimation'
@@ -1387,6 +1396,338 @@ describe('scene workshop integration', () => {
     }
   })
 
+  test('esqueleto de personagem: 5 pontos de frente, um passo de desfazer e movimentos prontos', async () => {
+    const { document: source, marks } = makeCharacterFixture()
+    const { editor, view, ports, openInspector } = setup(source)
+    const copy = COPY.scene.characterRig
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(
+        within(screen.getByRole('navigation', { name: 'Áreas da oficina' })).getByRole('button', {
+          name: 'Ossos e pesos',
+        }),
+      )
+      const area = within(screen.getByRole('region', { name: copy.title }))
+      fireEvent.click(area.getByRole('button', { name: copy.start }))
+      expect(area.getByRole('status').textContent).toBe(copy.marks.chin)
+      const guide = () => ports.at(-1)!.callbacks.guideInput!()!.rig!
+      expect(guide().plane.normal).toEqual([0, 0, 1])
+      for (const point of marks.slice(0, 4)) act(() => guide().mark(point))
+      expect(area.getByRole('status').textContent).toBe(copy.marks.knee)
+      // Voltar um ponto e marcar de novo.
+      fireEvent.click(area.getByRole('button', { name: copy.back }))
+      expect(area.getByRole('status').textContent).toBe(copy.marks.wrist)
+      for (const point of marks.slice(3)) act(() => guide().mark(point))
+      expect(area.getByRole('status').textContent).toBe(copy.preview)
+      expect(guide().enabled).toBe(false)
+      // A miniatura refeita durante a marcação não impede de montar.
+      act(() => editor.getState().setThumb('data:image/png;base64,novo'))
+      const before = editor.getState().content
+      fireEvent.click(area.getByRole('button', { name: copy.confirm }))
+      const rigged = editor.getState().asset
+      expect(findCharacterRigs(rigged)).toHaveLength(1)
+      expect(rigged.skins).toHaveLength(9)
+      expect(screen.getByText(copy.done(9))).toBeDefined()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.nodes).toEqual(before.nodes)
+      expect(editor.getState().asset.skins ?? []).toEqual([])
+      expect(editor.getState().canUndo).toBe(false)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(1)
+
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+      const motions = COPY.scene.characterMotions
+      // A galeria fica sempre à mostra: nada para abrir antes.
+      const presets = within(
+        await screen.findByRole('region', { name: COPY.scene.animationPresetTitle }),
+      )
+      const pressed = (name: string) =>
+        presets.getByRole('button', { name }).getAttribute('aria-pressed')
+      const names = (document: MoldaSceneDocument) =>
+        (document.animations ?? []).map((clip) => clip.name)
+      fireEvent.click(presets.getByRole('button', { name: 'Andando' }))
+      // Como no Mixamo: o clique já põe o movimento no personagem, sem prévia nem diálogo.
+      const walk = editor.getState().asset.animations!.at(-1)!
+      expect(walk.name).toBe('Andando')
+      expect(walk.loop).toBe(true)
+      expect(walk.duration).toBe(1)
+      expect(presets.getByText(motions.applied('Andando'))).toBeDefined()
+      expect(pressed('Andando')).toBe('true')
+      expect(
+        presets.getByRole('button', { name: 'Andando' }).getAttribute('aria-describedby'),
+      ).toBeTruthy()
+      fireEvent.click(presets.getByRole('button', { name: 'Correndo' }))
+      expect(screen.queryByRole('dialog')).toBeNull()
+      expect(pressed('Correndo')).toBe('true')
+      expect(pressed('Andando')).toBe('false')
+      expect(names(editor.getState().asset)).toEqual([...names(rigged), 'Andando', 'Correndo'])
+      // Voltar para um movimento guardado não o refaz: só volta para a linha do tempo.
+      const withBoth = editor.getState().asset
+      fireEvent.click(presets.getByRole('button', { name: 'Andando' }))
+      expect(editor.getState().asset).toBe(withBoth)
+      expect(pressed('Andando')).toBe('true')
+      // Os sliders refazem o Andando no lugar, num passo de desfazer só.
+      fireEvent.change(presets.getByRole('slider', { name: motions.strength }), {
+        target: { value: '1.25' },
+      })
+      fireEvent.change(presets.getByRole('slider', { name: motions.speed }), {
+        target: { value: '2' },
+      })
+      // Ajustes no mesmo quadro saem juntos no quadro seguinte (arrastar não refaz a cada evento).
+      await waitFor(() =>
+        expect(
+          editor.getState().asset.animations!.find((clip) => clip.id === walk.id)!.duration,
+        ).toBe(0.5),
+      )
+      const tuned = editor.getState().asset.animations!
+      expect(tuned.map((clip) => clip.id)).toEqual(withBoth.animations!.map((clip) => clip.id))
+      expect(presets.getByRole('slider', { name: motions.speed })).toHaveProperty('value', '2')
+      expect(presets.getByRole('slider', { name: motions.strength })).toHaveProperty(
+        'value',
+        '1.25',
+      )
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.animations).toEqual(withBoth.animations)
+      // O desfazer devolve o clipe de antes, e a intensidade mostrada volta junto.
+      expect(presets.getByRole('slider', { name: motions.strength })).toHaveProperty('value', '1')
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('sem esqueleto, clicar em Andando põe os ossos sozinho e o movimento num passo de desfazer', async () => {
+    const { document: source, marks } = makeCharacterFixture()
+    const { editor, view, ports, openInspector } = setup(source)
+    const copy = COPY.scene
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      await screen.findByRole('region', { name: copy.animationPresetTitle })
+      const details = () => screen.getByRole('region', { name: copy.animationPresetTitle })
+      expect(within(details()).getByText(copy.characterMotions.missing)).toBeDefined()
+      // Como no Mixamo: os ossos entram sozinhos, sem marcar nada, e o movimento já toca.
+      fireEvent.click(within(details()).getByRole('button', { name: 'Andando' }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(1)
+      expect(editor.getState().asset.animations?.map((clip) => clip.name)).toEqual(['Andando'])
+      expect(within(details()).getByText(copy.characterMotions.applied('Andando'))).toBeDefined()
+      expect(within(details()).getByText(copy.characterMotions.autoRigged)).toBeDefined()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(0)
+      expect(editor.getState().asset.animations ?? []).toEqual([])
+      fireEvent.click(within(details()).getByRole('button', { name: 'Andando' }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(1)
+      // Ajustar: os pontos achados já vêm marcados; é só corrigir o que ficou torto.
+      fireEvent.click(within(details()).getByRole('button', { name: copy.characterMotions.adjust }))
+      const area = within(
+        await within(details()).findByRole('region', { name: copy.characterRig.title }),
+      )
+      expect(area.getByRole('status').textContent).toBe(copy.characterRig.preview)
+      // O aviso de troca aparece já com os pontos marcados: os movimentos dos ossos saem junto.
+      expect(area.getByRole('note').textContent).toContain('saem junto')
+      // Trocar de movimento no meio do ajuste só troca o que vem depois: nada é gravado agora.
+      const adjusting = editor.getState().asset
+      fireEvent.click(within(details()).getByRole('button', { name: 'Correndo' }))
+      expect(editor.getState().asset).toBe(adjusting)
+      expect(area.getByText(copy.characterRig.thenMotion('Correndo'))).toBeDefined()
+      expect(area.getByRole('status').textContent).toBe(copy.characterRig.preview)
+      fireEvent.click(within(details()).getByRole('button', { name: 'Andando' }))
+      fireEvent.click(area.getByRole('button', { name: copy.characterRig.back }))
+      expect(area.getByRole('status').textContent).toBe(copy.characterRig.marks.knee)
+      const guide = () => ports.at(-1)!.callbacks.guideInput!()!.rig!
+      act(() => guide().mark(marks[4]!))
+      fireEvent.click(area.getByRole('button', { name: copy.characterRig.confirm }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(1)
+      await waitFor(() =>
+        expect(screen.queryByText(copy.characterMotions.applied('Andando'))).not.toBeNull(),
+      )
+      expect(
+        within(details()).getByRole('button', { name: 'Andando' }).getAttribute('aria-pressed'),
+      ).toBe('true')
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('sem um corpo que a silhueta reconheça, o movimento pede os 5 pontos ali mesmo', async () => {
+    const source = addScenePrimitive(
+      createSceneProject({ kind: 'empty', name: 'Cubo' }),
+      'box',
+      'cubo',
+    )
+    const { editor, view, ports, openInspector } = setup(source)
+    const copy = COPY.scene
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      await screen.findByRole('region', { name: copy.animationPresetTitle })
+      const details = () => screen.getByRole('region', { name: copy.animationPresetTitle })
+      fireEvent.click(within(details()).getByRole('button', { name: 'Andando' }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(0)
+      const area = within(
+        await within(details()).findByRole('region', { name: copy.characterRig.title }),
+      )
+      expect(area.getByText(copy.characterMotions.autoFailed)).toBeDefined()
+      expect(area.getByRole('status').textContent).toBe(copy.characterRig.marks.chin)
+      expect(area.getByText(copy.characterRig.thenMotion('Andando'))).toBeDefined()
+      fireEvent.click(within(details()).getByRole('button', { name: 'Correndo' }))
+      expect(area.getByText(copy.characterRig.thenMotion('Correndo'))).toBeDefined()
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('galeria por categorias, No lugar, Braços e Meus movimentos', async () => {
+    localStorage.clear()
+    const { document: source, group, marks } = makeCharacterFixture()
+    const { document: rigged } = buildCharacterRig(
+      source,
+      [group],
+      layoutCharacterSkeleton(source, [group], marks, true),
+    )
+    // Um movimento que não é dos prontos (como um feito à mão): pode virar movimento pronto.
+    const handmade = createCharacterMotion(rigged, [], {
+      kind: 'dance',
+      name: 'Minha dança',
+      duration: 2,
+      amount: 1,
+    })
+    const { editor, view, ports, openInspector } = setup(handmade)
+    const copy = COPY.scene
+    const motions = copy.characterMotions
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      const presets = within(await screen.findByRole('region', { name: copy.animationPresetTitle }))
+      for (const category of ['mover', 'brincar', 'dancar', 'emocoes'] as const)
+        expect(presets.getByRole('group', { name: motions.categories[category] })).toBeDefined()
+      const brincar = within(presets.getByRole('group', { name: motions.categories.brincar }))
+      expect(brincar.getByRole('button', { name: 'Acenar' })).toBeDefined()
+
+      // No lugar: só em Andando e Correndo; desligado, o quadril termina o ciclo à frente.
+      fireEvent.click(presets.getByRole('button', { name: 'Andando' }))
+      const walk = () =>
+        editor.getState().asset.animations!.find((clip) => clip.name === 'Andando')!
+      const travel = () => {
+        const track = walk().tracks.find((item) => item.channel === 'translation')!
+        return Math.hypot(
+          ...track.keys.at(-1)!.value.map((value, axis) => value - track.keys[0]!.value[axis]!),
+        )
+      }
+      const inPlace = presets.getByRole('checkbox', { name: new RegExp(motions.inPlace) })
+      expect(inPlace).toHaveProperty('checked', true)
+      expect(travel()).toBeLessThan(1e-6)
+      fireEvent.click(inPlace)
+      expect(travel()).toBeGreaterThan(0.3)
+      expect(presets.getByRole('checkbox', { name: new RegExp(motions.inPlace) })).toHaveProperty(
+        'checked',
+        false,
+      )
+      // Braços: refaz o mesmo movimento, no mesmo passo de desfazer.
+      const before = JSON.stringify(walk().tracks)
+      fireEvent.change(presets.getByRole('slider', { name: motions.arms }), {
+        target: { value: '20' },
+      })
+      await waitFor(() => expect(JSON.stringify(walk().tracks)).not.toBe(before))
+      expect(presets.getByRole('slider', { name: motions.arms })).toHaveProperty('value', '20')
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.animations!.map((clip) => clip.name)).toEqual(['Minha dança'])
+      // Acenar não tem No lugar.
+      fireEvent.click(presets.getByRole('button', { name: 'Acenar' }))
+      expect(presets.queryByRole('checkbox', { name: new RegExp(motions.inPlace) })).toBeNull()
+
+      // Meus movimentos: o movimento feito à mão vira movimento pronto.
+      fireEvent.click(screen.getByRole('button', { name: 'Escolher movimento Minha dança' }))
+      fireEvent.click(presets.getByRole('button', { name: motions.saveMine }))
+      expect(presets.getByText(motions.mineSaved('Minha dança'))).toBeDefined()
+      const mine = within(presets.getByRole('group', { name: motions.categories.meus }))
+      expect(mine.getByRole('button', { name: 'Minha dança' }).getAttribute('aria-pressed')).toBe(
+        'true',
+      )
+      // Já guardado: o botão de guardar sai e ficam os controles dele.
+      expect(presets.queryByRole('button', { name: motions.saveMine })).toBeNull()
+      expect(presets.getByText(motions.applied('Minha dança'))).toBeDefined()
+      fireEvent.click(mine.getByRole('button', { name: motions.mineRemove('Minha dança') }))
+      expect(presets.queryByRole('group', { name: motions.categories.meus })).toBeNull()
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+      localStorage.clear()
+    }
+  })
+
+  test('remover ossos do modelo deixa as peças e pode ser desfeito', async () => {
+    const { document: source, group, marks } = makeCharacterFixture()
+    const { document: rigged } = buildCharacterRig(
+      source,
+      [group],
+      layoutCharacterSkeleton(source, [group], marks, true),
+    )
+    const { editor, view, ports, openInspector } = setup(rigged)
+    const copy = COPY.scene.characterRig
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(
+        within(screen.getByRole('navigation', { name: 'Áreas da oficina' })).getByRole('button', {
+          name: 'Ossos e pesos',
+        }),
+      )
+      const area = within(screen.getByRole('region', { name: copy.title }))
+      fireEvent.click(area.getByRole('button', { name: copy.remove }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(0)
+      expect(editor.getState().asset.skins).toEqual([])
+      expect(area.getByText(copy.removed)).toBeDefined()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(1)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('Suavizar forças mistura os pontos escolhidos com os vizinhos num passo de desfazer', async () => {
+    const fixture = makeSceneSkinFixture(),
+      { id, ...input } = fixture.input,
+      source = createSceneSkin(fixture.document, input, () => id),
+      { editor, view, ports, openInspector } = setup(source),
+      copy = COPY.scene.skinWeights
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() => ports.at(-1)!.callbacks.select('part-0', false))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editSkinBase }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.vertex }))
+      act(() => ports.at(-1)!.callbacks.selectComponent!('v_0_0', false))
+      openInspector()
+      openComponentWeights()
+      const details = screen.getByText(copy.title).closest('details')!,
+        panel = within(details)
+      act(() => {
+        details.open = true
+        fireEvent(details, new Event('toggle'))
+      })
+      fireEvent.click(await panel.findByRole('button', { name: copy.smooth }))
+      expect(panel.getByText(copy.smoothed(1))).not.toBeNull()
+      const after = editor.getState().asset.skins![0]!.weights
+      expect(after.v_0_0).not.toEqual(source.skins![0]!.weights.v_0_0)
+      expect(after.v_1_0).toEqual(source.skins![0]!.weights.v_1_0!)
+      expect(editor.getState().canUndo).toBe(true)
+      act(() => editor.getState().undo())
+      expect(editor.getState().asset.skins![0]!.weights.v_0_0).toEqual(
+        source.skins![0]!.weights.v_0_0!,
+      )
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('weight drafts need explicit normalization and are revoked by selection, revision, close, blur and context loss', async () => {
     const fixture = makeSceneSkinFixture(),
       { id, ...input } = fixture.input,
@@ -1682,7 +2023,11 @@ describe('scene workshop integration', () => {
       const empty = within(screen.getByRole('region', { name: 'Área Ossos e pesos' }))
       openRigAdvanced()
       await waitFor(() => expect(empty.queryByText(copy.noJoints)).not.toBeNull())
-      expect(empty.queryAllByRole('checkbox')).toHaveLength(0)
+      // Nenhum osso para escolher; a caixinha de espelho é do esqueleto de personagem.
+      const character = empty.getByRole('region', { name: COPY.scene.characterRig.title })
+      expect(
+        empty.queryAllByRole('checkbox').filter((box) => !character.contains(box)),
+      ).toHaveLength(0)
       expect(
         (empty.getByRole('button', { name: copy.prepare }) as HTMLButtonElement).disabled,
       ).toBe(true)
@@ -1969,13 +2314,15 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
-      await waitFor(() => expect(screen.queryByText(copy.animationPresetTitle) !== null).toBe(true))
+      await waitFor(() =>
+        expect(screen.queryByText(copy.characterMotions.simple) !== null).toBe(true),
+      )
       fireEvent.click(screen.getByRole('button', { name: copy.animationNext }))
       const before = editor.getState().asset,
         port = ports.at(-1)!,
         updates = port.documentUpdates
-      const details = screen.getByText(copy.animationPresetTitle).closest('section')!
-      fireEvent.click(within(details).getByRole('button', { name: copy.animationPresetTitle }))
+      const details = screen.getByText(copy.characterMotions.simple).closest('section')!
+      fireEvent.click(within(details).getByRole('button', { name: copy.characterMotions.simple }))
       const presets = within(details)
       fireEvent.change(presets.getByLabelText(copy.animationPresetKind), {
         target: { value: 'spin' },
@@ -2038,7 +2385,7 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
-      const summary = await screen.findByText(copy.animationPresetTitle)
+      const summary = await screen.findByText(copy.characterMotions.simple)
       fireEvent.click(summary)
       const presets = within(summary.closest('section')!)
       fireEvent.change(presets.getByLabelText(copy.animationPresetDistance), {
@@ -2087,13 +2434,13 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
-      fireEvent.click(await screen.findByText(copy.animationPresetTitle))
+      fireEvent.click(await screen.findByText(copy.characterMotions.simple))
       fireEvent.click(screen.getByRole('button', { name: 'Modelo inteiro' }))
       fireEvent.click(screen.getByRole('button', { name: copy.animationPresetNames.bounce }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
       const decision = screen.getByRole('dialog', { name: 'Este movimento ainda está em prévia' })
       fireEvent.click(within(decision).getByRole('button', { name: 'Guardar este movimento' }))
-      const clip = editor.getState().content.animations!.at(-1)!
+      const clip = editor.getState().asset.animations!.at(-1)!
       expect(ports.at(-1)!.selected).toEqual([clip.tracks[0]!.nodeId])
       expect(
         editor.getState().content.nodes.find((node) => node.id === clip.tracks[0]!.nodeId)?.kind,
@@ -2115,9 +2462,11 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
-      await waitFor(() => expect(screen.queryByText(copy.animationPresetTitle) !== null).toBe(true))
-      const details = screen.getByText(copy.animationPresetTitle).closest('section')!
-      fireEvent.click(within(details).getByRole('button', { name: copy.animationPresetTitle }))
+      await waitFor(() =>
+        expect(screen.queryByText(copy.characterMotions.simple) !== null).toBe(true),
+      )
+      const details = screen.getByText(copy.characterMotions.simple).closest('section')!
+      fireEvent.click(within(details).getByRole('button', { name: copy.characterMotions.simple }))
       const presets = within(details)
       const before = editor.getState().asset
       for (const cancel of [

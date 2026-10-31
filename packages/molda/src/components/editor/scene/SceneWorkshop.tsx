@@ -6,6 +6,7 @@ import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import { triggerDownload } from '../../../export/download'
 import { exportLoadedSceneForStudio, sameSceneStudioContent } from '../../../export/studioLibrary'
 import { booleanSceneSolids, type SceneBooleanOperation } from '../../../scene/booleanSolids'
+import { characterSkeletonSegments } from '../../../scene/characterRig'
 import { deleteSceneNodes } from '../../../scene/commands'
 import { scenePalette } from '../../../scene/composite'
 import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
@@ -181,7 +182,22 @@ export function SceneWorkshop({
     [workshop.document, workshop.selected, workshop.previousPose],
   )
   const displayedPose = workshop.animation.getSnapshot().pose
+  const characterDraft = workshop.characterRig.draft
   const rigGuide = useMemo(() => {
+    if (characterDraft) {
+      const layout = characterDraft.layout
+      return {
+        size: 1,
+        rig: layout
+          ? {
+              points: Object.values(layout),
+              active: null,
+              segments: characterSkeletonSegments(layout),
+              numbered: false,
+            }
+          : { points: characterDraft.points, active: null, segments: [] },
+      }
+    }
     const draft = workshop.rigDraft
     if (!draft) return null
     return {
@@ -193,7 +209,7 @@ export function SceneWorkshop({
           (draft.prepared && draft.jointId ? draft.prepared.jointIds.indexOf(draft.jointId) : null),
       },
     }
-  }, [workshop.rig, workshop.rigDraft])
+  }, [workshop.rig, workshop.rigDraft, characterDraft])
   const pivotGuide = useMemo(() => {
     const node = workshop.primary
     if (workshop.tool !== 'pivot' || !node) return null
@@ -454,6 +470,14 @@ export function SceneWorkshop({
         if (event.key === 'Escape' && workshop.tool === 'pivot' && workshop.pivotSnap) {
           event.preventDefault()
           workshop.setPivotSnap(false)
+          return
+        }
+        if (workshop.characterRig.draft) {
+          if (event.key === 'Escape') workshop.characterRig.cancel()
+          else if (event.key === 'Backspace') workshop.characterRig.back()
+          else return
+          event.stopPropagation()
+          event.preventDefault()
           return
         }
         if (workshop.rigDraft) {
@@ -857,64 +881,80 @@ export function SceneWorkshop({
                   measurementStep={workshop.measurementStep}
                   onMeasurementStepChange={workshop.setMeasurementStep}
                   guideInput={
-                    workshop.rigDraft
+                    workshop.characterRig.draft
                       ? {
                           rig: {
-                            nodeId: workshop.rigDraft.nodeId,
-                            enabled: workshop.rigDraft.phase === 'mark',
+                            nodeId: 'character-rig',
+                            enabled: !workshop.characterRig.draft.layout,
                             plane: {
-                              origin:
-                                workshop.rigDraft.editing === null
-                                  ? workshop.rigDraft.center
-                                  : workshop.rigDraft.points[workshop.rigDraft.editing]!,
-                              normal: SCENE_RIG_NORMALS[workshop.rigDraft.view],
+                              origin: workshop.characterRig.draft.center,
+                              normal: [0, 0, 1],
                             },
-                            mark: (point) => workshop.rig.mark(point, workshop.measurementStep),
+                            mark: (point) =>
+                              workshop.characterRig.mark(point, workshop.measurementStep),
+                            hint: workshop.characterRig.draft.layout
+                              ? COPY.scene.characterRig.stagePreview
+                              : COPY.scene.characterRig.stageMark,
                           },
                         }
-                      : workshop.tool === 'pivot' && workshop.primary
+                      : workshop.rigDraft
                         ? {
-                            pivot: {
-                              nodeId: workshop.primary.id,
-                              vertical: workshop.pivotVertical,
-                              snapVertex: workshop.pivotSnap,
-                              markVertex: (_vertexId, point) => {
-                                if (
-                                  workshop.run((source) =>
-                                    setSceneAuthoringPivot(source, workshop.primary!.id, point),
-                                  )
-                                )
-                                  workshop.setPivotSnap(false)
+                            rig: {
+                              nodeId: workshop.rigDraft.nodeId,
+                              enabled: workshop.rigDraft.phase === 'mark',
+                              plane: {
+                                origin:
+                                  workshop.rigDraft.editing === null
+                                    ? workshop.rigDraft.center
+                                    : workshop.rigDraft.points[workshop.rigDraft.editing]!,
+                                normal: SCENE_RIG_NORMALS[workshop.rigDraft.view],
                               },
-                              begin: (world) =>
-                                workshop.pivotGesture.begin(workshop.primary!.id, world),
-                              preview: workshop.pivotGesture.preview,
-                              end: workshop.pivotGesture.end,
+                              mark: (point) => workshop.rig.mark(point, workshop.measurementStep),
                             },
                           }
-                        : workshop.knife.owner
+                        : workshop.tool === 'pivot' && workshop.primary
                           ? {
-                              knife: {
-                                nodeId: workshop.knife.owner.nodeId,
-                                midpoint: workshop.knife.midpoint,
-                                edgesOnly: workshop.knife.mode === 'loop',
-                                closePoint: workshop.knife.closePoint,
-                                mark: workshop.knife.mark,
-                                hover: workshop.knife.hover,
+                              pivot: {
+                                nodeId: workshop.primary.id,
+                                vertical: workshop.pivotVertical,
+                                snapVertex: workshop.pivotSnap,
+                                markVertex: (_vertexId, point) => {
+                                  if (
+                                    workshop.run((source) =>
+                                      setSceneAuthoringPivot(source, workshop.primary!.id, point),
+                                    )
+                                  )
+                                    workshop.setPivotSnap(false)
+                                },
+                                begin: (world) =>
+                                  workshop.pivotGesture.begin(workshop.primary!.id, world),
+                                preview: workshop.pivotGesture.preview,
+                                end: workshop.pivotGesture.end,
                               },
                             }
-                          : workshop.solidCut.owner
+                          : workshop.knife.owner
                             ? {
-                                cut: {
-                                  nodeId: workshop.solidCut.owner.nodeId,
-                                  midpoint: workshop.solidCut.midpoint,
-                                  mark: workshop.solidCut.point,
-                                  hover: workshop.solidCut.hover,
+                                knife: {
+                                  nodeId: workshop.knife.owner.nodeId,
+                                  midpoint: workshop.knife.midpoint,
+                                  edgesOnly: workshop.knife.mode === 'loop',
+                                  closePoint: workshop.knife.closePoint,
+                                  mark: workshop.knife.mark,
+                                  hover: workshop.knife.hover,
                                 },
                               }
-                            : workshop.modelGuides.owner
-                              ? (workshop.modelGuides.input ?? {})
-                              : null
+                            : workshop.solidCut.owner
+                              ? {
+                                  cut: {
+                                    nodeId: workshop.solidCut.owner.nodeId,
+                                    midpoint: workshop.solidCut.midpoint,
+                                    mark: workshop.solidCut.point,
+                                    hover: workshop.solidCut.hover,
+                                  },
+                                }
+                              : workshop.modelGuides.owner
+                                ? (workshop.modelGuides.input ?? {})
+                                : null
                   }
                   guidePoint={workshop.modelGuides.point}
                   previewGuide={
@@ -927,12 +967,18 @@ export function SceneWorkshop({
                     previousPoseGuide
                   }
                   cameraRequest={
-                    workshop.rigDraft?.cameraRequest ?? workshop.modelGuides.cameraRequest
+                    workshop.characterRig.draft?.cameraRequest ??
+                    workshop.rigDraft?.cameraRequest ??
+                    workshop.modelGuides.cameraRequest
                   }
                   reveal={workshop.reveal}
                   onViewport={setExportViewport}
                   mode={workshop.area === 'uv' ? 'model' : mode}
-                  showBones={workshop.area === 'skin' && Boolean(document.skins?.length)}
+                  showBones={
+                    workshop.area === 'skin' &&
+                    !workshop.characterRig.draft &&
+                    Boolean(document.skins?.length)
+                  }
                   tool={workshop.tool}
                   onToolChange={workshop.setTool}
                   looking={workshop.looking}

@@ -3,13 +3,19 @@ import { useEffect, useRef } from 'react'
 import { lojaDasCartas, PAINEL_DO_CADERNO, useCartas } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
 import { abrirRotina } from '../estado/rotina'
-import { type CartaDoCaderno, ondeAprender, secoesDoCaderno } from '../sistemas/caderno-dos-lumis'
+import {
+  type CartaDoCaderno,
+  ondeAprender,
+  quandoChega,
+  secoesDoCaderno,
+} from '../sistemas/caderno-dos-lumis'
 import { JanelaDoPainel, useFecharPainel, useNoMenu } from './janela-do-painel'
 
 const ICONE: Record<TipoDeCarta, string> = { quando: '🌅', acao: '✨', controle: '🔁' }
 
 function Carta({ carta }: { carta: CartaDoCaderno }) {
   const curso = ondeAprender(carta)
+  const chega = quandoChega(carta)
   return (
     <li className={`arq-caderno-carta ${carta.conquistada ? 'pronta' : 'trancada'}`}>
       <span className="arq-caderno-icone" aria-hidden="true">
@@ -21,9 +27,11 @@ function Carta({ carta }: { carta: CartaDoCaderno }) {
         <span className="arq-quadro-estado">
           {carta.conquistada
             ? 'Pronto para usar'
-            : curso
-              ? `Aprenda isso em: ${curso}`
-              : 'Nenhum curso ensina este cartão por enquanto.'}
+            : chega
+              ? `${chega}${curso ? ` O bloco dele está em: ${curso}` : ''}`
+              : curso
+                ? `Aprenda isso em: ${curso}`
+                : 'Nenhum curso ensina este cartão por enquanto.'}
         </span>
       </div>
     </li>
@@ -32,7 +40,7 @@ function Carta({ carta }: { carta: CartaDoCaderno }) {
 
 /**
  * O caderno dos Lumis: a coleção de cartões da rotina por tipo, os que a pessoa já tem prontos
- * para usar e os que faltam com o curso que ensina o bloco. Só mostra; a rotina se monta no painel
+ * para usar e os que faltam com a ilha do posto em que chegam (e o curso do bloco). Só mostra; a rotina se monta no painel
  * "Rotina" (fase2-07), aberto pelo botão daqui.
  */
 export function CadernoDosLumis() {

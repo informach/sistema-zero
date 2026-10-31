@@ -1,0 +1,12 @@
+{
+  "source": "saudacao.edisvg",
+  "sourceProjectId": "project-796239bb-fe00-42d0-b2df-865d5c496d5e",
+  "sourceSha256": "54957d1e3b451afd6d7e8b7f5e3554ee12f224ba2db0530a17d0c019c7065a15",
+  "passed": true,
+  "limitation": "Native file selection is deterministic. The renderer, IPC, payload validation and atomic file writer are real.",
+  "artSha256": "6a643ace9b34a8a7d4b3db7d0fda6c224b42dd13274751868befb15a6d8af7f5",
+  "playerSha256": "c54ae5b82d6816a2823c97c806f6e03c8b793f72640f25c7a3fb0fc64c253004",
+  "title": "Sem título",
+  "closeElapsedMs": 232.561099999999,
+  "cleanupFailures": []
+}

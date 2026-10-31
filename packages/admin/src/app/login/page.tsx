@@ -1,3 +1,4 @@
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
@@ -27,7 +28,7 @@ export default async function LoginPage({
         <BrandLogo fundo="escuro" label="Sistema Zero" className="block h-auto w-[190px]" />
         <div className="flex max-w-lg flex-col gap-5">
           <Image
-            src="/zappy/happy.webp"
+            src={BUILTIN_ART.happy.poster.url}
             alt=""
             width={180}
             height={180}

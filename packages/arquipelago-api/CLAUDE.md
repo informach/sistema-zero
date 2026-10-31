@@ -219,7 +219,9 @@ conta aplicações/trocas observadas entre revisões aceitas, pela data do servi
 `ganhoEm`. Migração gerada 0015, tabela separada do save V18, FK cascade e chave
 jogador/revisão/objeto. O CAS grava save e eventos na mesma transação, sob a mesma trava.
 Primeiro save é base; conflito, repetição, retirada e suporte não criam aplicações.
-Não guarda IDs de criação. Origem declarada não prova autoria, aprendizado ou aquisição.
+Não guarda IDs de criação: desde a migração gerada 0024 (A33, 31/10/2026) guarda só a marca
+(`marcaDaCriacao`, resumo SHA-256 do id com o jogador) em `criacao`, mais o índice
+`(jogador_id, registrado_em)` para o cartão dos pais; a medição não a lê. Origem declarada não prova autoria, aprendizado ou aquisição.
 Não reconstruir eventos anteriores. Grupos menores que cinco continuam suprimidos.
 
 Teste `tests/db/mudancas-de-aparencia.test.ts`, variável exclusiva
@@ -438,7 +440,7 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `POST /tempo` | cliente antigo | 410 `ATUALIZACAO_NECESSARIA`; não registra novos lotes |
 | `POST /tempo/recuperar` | jogador liberado | entrega idempotente dos lotes legados já persistidos; suporte não soma |
 | `POST /tempo/sessao` | perfil Kids liberado, sem suporte | `{sessaoId, sequencia, acao}`; início/pulso/pausa com concessão de até 20 s, contagem e virada de dia pelo servidor |
-| `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis: os do jogo sempre, os de controle pelos blocos conquistados (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
+| `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis pelo posto da Jornada (L7b, 01/11/2026; até então pelos blocos), com o `posto` de cada um (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
 | `GET /desafios`, `GET /desafios/:id`, `POST /desafios/:id/verificar`, `POST /desafios/:id/recompensa-vista` | jogador liberado (com `ARQUIPELAGO_DESAFIOS`) | ver "Jogar os desafios" |
 | `GET /familia/limite?perfis=` | responsável do Kids | o limite diário da família e `algumaCriancaVe` (algum dos perfis da conta, mandados pelo BFF dos pais, vê o jogo pela política de acesso); perfis fora do formato → 400 |
 | `PUT /familia/limite` | responsável do Kids | muda o limite diário da família (padrão 30, de 10 a 240, passo 5) |
@@ -474,8 +476,10 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   conta em `perfis_da_conta` (migração 0008), gravada pela PRIMEIRA gravação aceita do salvamento
   com a conta do login da própria criança (`gravarSalvamento` recebe `contaId`, só do Kids).
   Desafios: `null` com `ARQUIPELAGO_DESAFIOS` desligado (ou `equipe` fora da equipe); "de ilhas
-  anteriores" `null` sem a jornada do Members. Objetos: total desde o começo (o salvamento não
-  data a aparência). Volta ao curso (29/10/2026): o fim de cada sessão com tempo contado
+  anteriores" `null` sem a jornada do Members. Objetos (A33, 31/10/2026): as criações do Pinta e
+  do Molda postas em objetos NA SEMANA, cada uma uma vez (`criacoesDaSemana` sobre
+  `aparenciasNaJanela`, a tabela `mudancas_de_aparencia`; linha sem marca, de antes da 0024, conta
+  por objeto e revisão). Até 30/10 era o total desde o começo, pelo salvamento. Volta ao curso (29/10/2026): o fim de cada sessão com tempo contado
   (`sessoesNaJanela`, o `cursor` de `sessoes_de_tempo`) cruzado com a hora das aulas concluídas
   (`LeiturasDosMembros.aulasConcluidas`, porta `lerAulasConcluidas`, uma ida por família, sem
   cache); Members desligado ou fora = `voltaAoCurso: null`. Permissões em `permissoes_da_familia`, por conta. Testes:

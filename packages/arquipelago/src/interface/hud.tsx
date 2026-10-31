@@ -27,7 +27,7 @@ import { ehIsca, falaDaIscaEscolhida, iscaValendo, NOME_NA_FALA } from '../siste
 import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO, podeEntrarNaFoto } from '../sistemas/modo-foto'
-import { comer, deveFalarDoHumor, HUMOR_OTIMO, humor } from '../sistemas/necessidades'
+import { comer, deveFalarDoHumor, falaDeComer, HUMOR_OTIMO, humor } from '../sistemas/necessidades'
 import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado, salvamentoPausado } from '../sistemas/pausa'
 import {
@@ -348,6 +348,7 @@ interface LugarDaMochila {
 
 function useLugaresDaMochila(): LugarDaMochila[] {
   const { loja } = useJogo()
+  const ilhaAqui = useIlhaAqui()
   const inv = useEstado((s) => s.salvamento.inventario)
   const patins = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
@@ -368,10 +369,14 @@ function useLugaresDaMochila(): LugarDaMochila[] {
               const resto = remover(sv.inventario, item.id)
               const comida = ITENS[item.id]
               return resto && comida
-                ? { ...sv, inventario: resto, necessidades: comer(sv.necessidades, comida) }
+                ? {
+                    ...sv,
+                    inventario: resto,
+                    necessidades: comer(sv.necessidades, comida, ilhaAqui),
+                  }
                 : sv
             })
-            s.dizer(`Hum. ${item.nome} deu energia para continuar.`)
+            s.dizer(falaDeComer(item, ilhaAqui))
           },
         }
       if (item.id === ID_DOS_PATINS) {
@@ -455,7 +460,7 @@ function useLugaresDaMochila(): LugarDaMochila[] {
         agir: () => loja.getState().abrirPainel(PAINEL_DO_ALBUM),
       })
     return lugares
-  }, [inv, patins, lanterna, isca, loja])
+  }, [inv, patins, lanterna, isca, loja, ilhaAqui])
 }
 
 /**
@@ -601,6 +606,23 @@ function Soneca() {
         >
           <i style={{ width: `${energia}%` }} />
         </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Cochilando no lugar com a energia no zero (lacunas, 01/11/2026): a tela escurece ali mesmo, com o
+ * Zzz, e ela acorda em casa. Não pega toque nem clique.
+ */
+function Cochilo() {
+  const cochilando = useEstado((s) => s.cochilando)
+  if (!cochilando) return null
+  return (
+    <div className="arq-soneca arq-cochilo" role="status">
+      <div className="arq-soneca-cartao arq-cartao">
+        <b>Cochilando</b>
+        <span aria-hidden="true">Zzz</span>
       </div>
     </div>
   )
@@ -758,11 +780,14 @@ function Resultado() {
   // Antes do `return` sem resultado: os hooks rodam sempre na mesma ordem.
   const entrarNaSala = useFarol(loja, (f) => f.entrar)
   const continuar = useRef<HTMLButtonElement>(null)
+  const entrar = useRef<HTMLButtonElement>(null)
+  // No alto da subida por fora, o passo seguinte é a sala do alto: o foco vai para ele (N4).
   useEffect(() => {
-    if (r) continuar.current?.focus()
+    if (r) (entrar.current ?? continuar.current)?.focus()
   }, [r])
   if (!r) return null
   const config = PERCURSOS_DO_JOGO[r.percurso]
+  const salaAFrente = r.percurso === 'farol-subida' && r.estrelas.chegada && entrarNaSala
   const estrelas = [
     { ganhou: r.estrelas.chegada, texto: 'Chegou ao fim' },
     {
@@ -828,8 +853,9 @@ function Resultado() {
         <EnvioDoFantasma />
         <div className="arq-menu-acoes">
           {/* No alto da subida por fora, o caminho segue para a sala do Farol (N4). */}
-          {r.percurso === 'farol-subida' && entrarNaSala ? (
+          {salaAFrente ? (
             <button
+              ref={entrar}
               type="button"
               className="arq-botao"
               onClick={() => {
@@ -842,9 +868,7 @@ function Resultado() {
           ) : null}
           <button
             type="button"
-            className={
-              r.percurso === 'farol-subida' && entrarNaSala ? 'arq-botao leve' : 'arq-botao'
-            }
+            className={salaAFrente ? 'arq-botao leve' : 'arq-botao'}
             onClick={() => {
               movimento.pedidoDoPercurso = { acao: 'recomecar', percurso: r.percurso }
             }}
@@ -977,6 +1001,7 @@ export function Hud() {
       data-anel-cor={!noFarol && anel && anelDaDica ? 'dica' : undefined}
     >
       <Soneca />
+      <Cochilo />
       <QuemJoga />
       {/* Na casa do irmão, no lugar da ilha e do "Agora", de quem é a casa e a volta. */}
       {visitando || noFarol ? null : <IlhaAgora />}

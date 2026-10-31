@@ -29,7 +29,14 @@ import { compileSceneSkinGeometry, deformSceneSkin } from '../scene/skinPose'
 import { guideLine, guidePoints } from './sceneGuideDrawing'
 
 export interface ScenePreviewGuideState {
-  rig?: { points: readonly Vec3[]; active: number | null }
+  rig?: {
+    points: readonly Vec3[]
+    active: number | null
+    /** Esqueleto com galhos: os ossos a desenhar no lugar da corrente que liga os pontos em ordem. */
+    segments?: readonly (readonly [Vec3, Vec3])[]
+    /** Números ao lado dos pontos (a ordem de marcar); o esqueleto inteiro dispensa. */
+    numbered?: boolean
+  }
   points?: readonly Vec3[]
   snapPoints?: readonly Vec3[]
   path?: readonly Vec3[]
@@ -114,7 +121,8 @@ export class ScenePreviewGuide {
     const size = Math.max(state.size, 0.2)
     if (state.rig?.points.length) {
       const points = state.rig.points
-      const segments = points.slice(1).map((point, i) => [points[i]!, point] as const)
+      const segments =
+        state.rig.segments ?? points.slice(1).map((point, i) => [points[i]!, point] as const)
       if (segments.length) {
         this.root.add(
           guideLine(segments, 0xffffff, 7, false),

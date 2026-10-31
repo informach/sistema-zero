@@ -22,6 +22,7 @@ import {
   type ResultadoDeFerramenta,
   SituacaoDoClubeSchema,
   VERSAO_CONTRATO_PLATAFORMA,
+  versaoCompativel,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
@@ -495,7 +496,8 @@ export function ArquipelagoHost(props: {
       const manifesto = resposta.ok
         ? ManifestoDoClienteSchema.safeParse(await resposta.json().catch(() => null))
         : null
-      if (!manifesto?.success || manifesto.data.versaoContrato !== VERSAO_CONTRATO_PLATAFORMA) {
+      // A atual e a anterior valem (A35): o jogo e a plataforma sobem em dias diferentes.
+      if (!manifesto?.success || !versaoCompativel(manifesto.data.versaoContrato)) {
         if (vivo) setEstado('indisponivel')
         return
       }
@@ -504,7 +506,7 @@ export function ArquipelagoHost(props: {
         /* webpackIgnore: true */ /* turbopackIgnore: true */ url
       )) as ModuloDoArquipelago
       if (!vivo || !elemento.current) return
-      if (modulo.versaoContrato !== VERSAO_CONTRATO_PLATAFORMA) {
+      if (!versaoCompativel(modulo.versaoContrato)) {
         setEstado('indisponivel')
         return
       }

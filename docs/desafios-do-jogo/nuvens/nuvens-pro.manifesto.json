@@ -14,11 +14,13 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim das Nuvens: grade, custo e guardar",
-        "enunciado": "Nas Nuvens, o jardim é uma grade de células. Este desafio é em JavaScript no Pro, com arquivos separados. O src/main.ts desenha a tela e trata cliques e teclas; ele já está pronto. As regras do jardim moram em src/regras.ts, e é lá que você trabalha. podeConstruir diz se dá para plantar numa célula: ela precisa estar dentro da grade, vazia e com moedas suficientes. construir planta e desconta o custo, ou devolve o mesmo jardim quando não pode. colher soma às moedas a produção de cada planta. salvar transforma o jardim em texto e carregar reconstrói o jardim a partir desse texto, com a grade e as moedas. Tirar uma planta e devolver metade do custo fica para o extra.",
+        "enunciado": "A Iriê quer planejar o jardim do céu numa grade, plantar onde cabe e houver moedas, colher a produção e guardar o jardim para continuar depois.",
         "dicas": [
+          "Lembre o objetivo: podeConstruir recusa célula fora da grade e célula já ocupada.",
           "Leia CUSTO e PRODUCAO no começo do src/regras.ts: flor custa 3 e produz 1; árvore custa 5 e produz 2.",
-          "Não mude o jardim recebido. Faça uma cópia da grade com map e devolva um objeto novo.",
-          "JSON.stringify transforma um objeto em texto e JSON.parse faz o caminho de volta."
+          "Nas Nuvens, o jardim é uma grade de células. Este desafio é em JavaScript no Pro, com arquivos separados. O src/main. ts desenha a tela e trata cliques e teclas; ele já está pronto. As regras do jardim moram em src/regras. ts, e é lá que você trabalha.",
+          "podeConstruir diz se dá para plantar numa célula: ela precisa estar dentro da grade, vazia e com moedas suficientes. construir planta e desconta o custo, ou devolve o mesmo jardim quando não pode. colher soma às moedas a produção de cada planta.",
+          "salvar transforma o jardim em texto e carregar reconstrói o jardim a partir desse texto, com a grade e as moedas. Tirar uma planta e devolver metade do custo fica para o extra."
         ],
         "projetoInicial": {
           "id": "nuvens-jardim-pro",

@@ -29,6 +29,8 @@ import { createSceneRigBuilder } from '../../../state/sceneRigBuilder'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
 import type { SceneTransformIntent, SceneTransformTool } from '../../../viewport/sceneViewportTypes'
 import { useMoldaToolAccess, useMoldaToolGate } from '../../toolAccess'
+import { useCharacterRigBuilder } from './useCharacterRigBuilder'
+import { useMeasurementStep } from './useMeasurementStep'
 import { useSceneAnimationEditPreview } from './useSceneAnimationEditPreview'
 import { useSceneAnimationPlayer } from './useSceneAnimationPlayer'
 import { useSceneAnimationPoseGesture } from './useSceneAnimationPoseGesture'
@@ -90,7 +92,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const [paintFace, setPaintFace] = useState<{ nodeId: string; faceId: string } | null>(null)
   const [tool, setTool] = useState<SceneWorkshopTool>(() => (fresh ? 'move' : 'select'))
   const [looking, setLooking] = useState(false)
-  const [measurementStep, setMeasurementStep] = useState<SceneMeasurementStep>(1)
+  const [measurementStep, setMeasurementStep] = useMeasurementStep()
   const [placing, setPlacing] = useState(false)
   const [pivotVertical, setPivotVertical] = useState(false)
   const [pivotSnap, setPivotSnap] = useState(false)
@@ -454,14 +456,16 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     function execute(
       command: (source: MoldaSceneDocument) => MoldaSceneDocument,
       selection?: 'created' | 'clear',
+      /** Emenda o último passo de desfazer em vez de abrir outro (ajuste ao vivo do mesmo comando). */
+      amend = false,
     ): MoldaSceneDocument | null {
       if (
         queueTransition(() => {
-          execute(command, selection)
+          execute(command, selection, amend)
         })
       )
         return null
-      if (queueContext(() => execute(command, selection))) return null
+      if (queueContext(() => execute(command, selection, amend))) return null
       cancelModelGuide.current()
       skinPaint.cancel()
       animationPose.interrupt()
@@ -474,7 +478,10 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       const before = editor.getState().asset
       try {
         const next = command(before)
-        if (next !== before) editor.getState().commit(next)
+        if (next !== before) {
+          if (amend) editor.getState().amend(next)
+          else editor.getState().commit(next)
+        }
         setMessage(null)
         if (selection === 'clear') setChosen([])
         if (selection === 'created') {
@@ -617,6 +624,12 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         }
       }),
     [rig, registerContext],
+  )
+  const characterRig = useCharacterRigBuilder(
+    editor,
+    run,
+    // Montar o esqueleto vale em Ossos e pesos e também direto em Animar, pelos movimentos.
+    rigAllowed && (mode === 'animation' || (mode === 'model' && area === 'skin')),
   )
   const solidCut = useSceneSolidCut(editor, (next) => !!run(() => next))
   const knife = useSceneKnife(editor, (next) => !!run(() => next))
@@ -898,6 +911,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     modelGuides,
     rig,
+    characterRig,
     rigDraft: rigSnapshot.draft,
     rigError: rigSnapshot.error,
     pivotGesture,
@@ -1247,11 +1261,15 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       }
       if (!queueContext(choose)) choose()
     },
-    run: (command: Parameters<typeof run>[0], selection?: Parameters<typeof run>[1]) => {
-      if (queueContext(() => run(command, selection))) return null
+    run: (
+      command: Parameters<typeof run>[0],
+      selection?: Parameters<typeof run>[1],
+      amend?: Parameters<typeof run>[2],
+    ) => {
+      if (queueContext(() => run(command, selection, amend))) return null
       flipbook.pause()
       components.close()
-      return run(command, selection)
+      return run(command, selection, amend)
     },
     components: {
       ...components,

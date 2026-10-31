@@ -3,7 +3,8 @@
  *
  * Um jogo com três corações de amizade com a Jade: ao abrir, o jogo salva, pede a conferência e o
  * Zappy conta o chapéu que chegou ao avatar. Reabrir não repete o recado. No computador e no
- * celular.
+ * celular. Depois, na Festa Junina do ensaio (`?festa=junina`), as duas roupas da festa (B16: só
+ * conquistadas na festa) chegam junto, com o recado da festa.
  *
  * No Windows: `bun build playground/verificar-roupas-browser.ts --target=node --external
  * playwright-core --outfile .cache/verificar-roupas-browser.mjs && node
@@ -13,7 +14,11 @@ import { spawn } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { createServer } from 'node:net'
 import path from 'node:path'
-import { criarSalvamentoInicial, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
+import {
+  criarSalvamentoInicial,
+  ilhasDoAnel,
+  VESTUARIO_DAS_FESTAS,
+} from '@sistemazero/arquipelago-contracts'
 import { chromium } from 'playwright-core'
 import { falaDasRoupasNovas, ROUPAS_DA_AMIZADE } from '../src/sistemas/roupas'
 
@@ -29,6 +34,8 @@ const baseURL = `http://127.0.0.1:${port}`
 const prints = process.env.ARQUIPELAGO_PRINTS ?? path.resolve('.cache/roupas')
 mkdirSync(prints, { recursive: true })
 const fala = falaDasRoupasNovas([ROUPAS_DA_AMIZADE.jade], null)!
+const daJunina = [...VESTUARIO_DAS_FESTAS.junina.conquista]
+const falaDaFesta = falaDasRoupasNovas(daJunina, 'junina')!
 
 function semente() {
   const agora = new Date()
@@ -107,6 +114,19 @@ try {
     if (await page.getByText(fala).count()) throw Error('O recado da roupa se repetiu')
     if (erros.length) throw Error(erros.join('\n'))
     console.log(`PASS ${nome}: o chapéu da Jade chegou uma vez ao avatar`)
+    // Na Festa Junina do ensaio, as roupas da festa chegam (e só elas: a da Jade já foi dada).
+    await page.goto(`${baseURL}/?posicao=8&qualidade=leve&festa=junina`, {
+      waitUntil: 'domcontentloaded',
+    })
+    await page.getByText(falaDaFesta).first().waitFor({ timeout: 180_000 })
+    await page.screenshot({ path: path.join(prints, `${nome}-roupas-da-festa.png`) })
+    const comAFesta = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('arquipelago-playground:roupas') ?? '[]'),
+    )
+    if (JSON.stringify(comAFesta) !== JSON.stringify([ROUPAS_DA_AMIZADE.jade, ...daJunina]))
+      throw Error(`Roupas da festa: ${JSON.stringify(comAFesta)}`)
+    if (erros.length) throw Error(erros.join('\n'))
+    console.log(`PASS ${nome}: as roupas da Festa Junina chegaram ao avatar na festa`)
     await context.close()
   }
   console.log(`Prints: ${prints}`)

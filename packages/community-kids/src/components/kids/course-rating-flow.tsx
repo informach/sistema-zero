@@ -19,7 +19,7 @@ import type {
   CourseRatingView,
 } from '@/lib/types'
 import { KidsMascot } from './mascot'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 
 /**
  * Dados da CRIANÇA exibidos no passo de agradecimento (avatar + nome + idade).

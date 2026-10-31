@@ -25,14 +25,15 @@ import {
   vaoNaParede,
 } from '../sistemas/construcao/andar'
 import { comPenduradosDoQuarto, loteDaCasa } from '../sistemas/construcao/lote'
-import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
 import { AndarNoConstruir, EscadaDaCasa, useAndarDaCasa } from './andar-de-cima'
+import { desbotarPelosBorroes } from './cinza-dos-borroes'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
+import { useCorDaParte } from './cor-da-sua-ilha'
 import { useDesbotado } from './desbotado'
 import { PetDoQuartoComEspaco } from './espaco-dos-bichos'
 import { useInterativo } from './interativos'
@@ -328,8 +329,9 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
       todos: [paredes, janelas, telhado, varanda, revestimento].flatMap((o) => materiaisDe(o)),
     }
   }, [raiz])
+  useEffect(() => desbotarPelosBorroes(partes.todos), [partes])
   // Só o quarto tem cor na chegada: a casca ganha cor quando a porta nova abre (§6.28, A17).
-  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).casa)
+  const comCor = useCorDaParte('casa')
   useDesbotado(partes.todos, !comCor)
   useEffect(() => {
     for (const m of partes.translucidos) {
@@ -436,6 +438,8 @@ function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boo
 
 /** Onde fica o ponto (0, 0) da grade da casa: o mundo, na altura do topo do piso. */
 const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
+/** O piso do andar de cima, para os objetos com função de lá. */
+const BASE_DO_ANDAR: [number, number, number] = [0, BASE + ALTURA_DO_ANDAR, 0]
 
 export function Casa() {
   const { loja } = useJogo()
@@ -496,6 +500,10 @@ export function Casa() {
         </ComReserva>
       ) : null}
       {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
+      {/* Os objetos com função de cima (lacunas, 01/11/2026), no piso do andar. */}
+      {obra && andar?.objetos?.length ? (
+        <ObjetosDaObra obra={obraDeCima(andar)} base={BASE_DO_ANDAR} />
+      ) : null}
       {obra ? <MoveisDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
       {obra && construindo && !(emCima && doAndar) ? (
         <ModoConstruir lote={lote} obra={obra} base={BASE} />

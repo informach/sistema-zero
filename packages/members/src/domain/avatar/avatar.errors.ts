@@ -24,6 +24,14 @@ export class AvatarPartNotFoundError extends DomainError {
   }
 }
 
+/** Tentou COMPRAR uma roupa da festa (B16): só a festa do Arquipélago concede. → 409. */
+export class AvatarPartFestaError extends DomainError {
+  readonly code = 'AVATAR_PART_FESTA'
+  constructor(message = 'Esta peça vem da festa do Arquipélago e não está à venda') {
+    super(message)
+  }
+}
+
 /** Tentou COMPRAR uma peça que já é grátis (não há o que comprar). → 400. */
 export class AvatarPartFreeError extends DomainError {
   readonly code = 'AVATAR_PART_FREE'

@@ -83,7 +83,7 @@ test('os schemas V1 a V4 continuam aceitando apenas seu formato original', () =>
   ] as const) {
     expect(schema.safeParse(versao).success).toBe(true)
     expect(schema.safeParse({ ...versao, presenteDosBichosEntregue: true }).success).toBe(false)
-    expect(migrarSalvamento(versao)).toMatchObject({ versao: 22, presenteDosBichosEntregue: false })
+    expect(migrarSalvamento(versao)).toMatchObject({ versao: 23, presenteDosBichosEntregue: false })
   }
 })
 
@@ -94,5 +94,5 @@ test('V5 exige marca booleana e preserva entrega após serializar', () => {
     expect(migrarSalvamento({ ...s, presenteDosBichosEntregue: valor })).toBeNull()
   // Versão futura (ainda não existe) volta nula.
   expect(migrarSalvamento({ ...s, versao: 17 })).toBeNull()
-  expect(SALVAMENTO_MAX_BYTES).toBe(64 * 1024)
+  expect(SALVAMENTO_MAX_BYTES).toBe(80 * 1024)
 })

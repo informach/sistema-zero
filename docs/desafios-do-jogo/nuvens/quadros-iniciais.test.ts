@@ -37,7 +37,7 @@ const construtor = new Set([
 ])
 const inventor = new Set([...construtor, ...blocos('inventor/corre-dino')])
 
-test('os cinco quadros são determinísticos, por público, e preservam o laço preparado e só pedem ações do repertório declarado', () => {
+test('os cinco quadros são determinísticos, por público, e só usam blocos da trilha (lacunas, 01/11/2026)', () => {
   for (const publico of ['kids', 'adulto'] as const) {
     const desafios = desafiosIniciaisDasNuvens(publico)
     expect(desafios).toEqual(desafiosIniciaisDasNuvens(publico))
@@ -52,38 +52,15 @@ test('os cinco quadros são determinísticos, por público, e preservam o laço 
     expect(desafios.map((d) => d.quadro)).toEqual([1, 2, 3, 4, 5])
     for (const d of desafios) {
       expect(d.publico).toBe(publico)
-      // C01b: só os quadros sem lista pedem publicação.
-      expect(d.publicar).toBe(d.quadro !== null && d.quadro <= 4)
+      // O Jardim em grade: todas as fontes na trilha, sem lista nem laço preparado.
+      expect(d.publicar).toBe(true)
       expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
-      const temLacoPreparado = d.quadro === 5
-      const loops = (raw: unknown) => {
-        const ir = SZIRV2Schema.parse((raw as { ir: unknown }).ir)
-        return ir.behavior.events.flatMap((e) =>
-          e.type === 'g2d:onKey' && e.key === 'Space'
-            ? e.body.filter((s) => s.type === 'g2d:forEachInGroup')
-            : [],
-        )
-      }
-      const iniciais = loops(d.conteudo.projetoInicial)
-      const completos = loops(d.conteudo.gabarito)
-      expect(iniciais).toHaveLength(temLacoPreparado ? 1 : 0)
-      expect(completos).toHaveLength(iniciais.length)
-      expect(iniciais.every((s) => s.type === 'g2d:forEachInGroup' && s.body.length === 0)).toBe(
-        true,
-      )
-      expect(
-        completos.map((s) => (s.type === 'g2d:forEachInGroup' ? [s.groupVar, s.itemName] : null)),
-      ).toEqual(
-        iniciais.map((s) => (s.type === 'g2d:forEachInGroup' ? [s.groupVar, s.itemName] : null)),
-      )
       for (const raw of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
         const p = raw as { ir: unknown; blocksState: unknown }
         expect(SZIRV2Schema.safeParse(p.ir).success, d.slug).toBe(true)
         const repertorio = inventor
         expect(
-          [...new Set(tipos(p.blocksState))].filter(
-            (t) => !repertorio.has(t) && !(temLacoPreparado && t === 'sz_g2d_for_each_in_group'),
-          ),
+          [...new Set(tipos(p.blocksState))].filter((t) => !repertorio.has(t)),
           d.slug,
         ).toEqual([])
         expect(

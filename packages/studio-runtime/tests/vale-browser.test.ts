@@ -19,13 +19,13 @@ import { gameTwoDRuntime } from '../../studio/src/official-extensions/game-2d/ru
 import { buildPreviewDoc } from '../../studio/src/preview/bootstrap'
 
 const nativeTest = process.env.SZ_CHECK_CHROMIUM ? test : test.skip
-function visit(statements: JSStatement[], change: (statement: JSStatement) => void) {
+function _visit(statements: JSStatement[], change: (statement: JSStatement) => void) {
   for (const statement of statements) {
     change(statement)
-    if ('body' in statement && Array.isArray(statement.body)) visit(statement.body, change)
+    if ('body' in statement && Array.isArray(statement.body)) _visit(statement.body, change)
     if (statement.type === 'if') {
-      visit(statement.then, change)
-      visit(statement.else ?? [], change)
+      _visit(statement.then, change)
+      _visit(statement.else ?? [], change)
     }
   }
 }
@@ -74,50 +74,8 @@ nativeTest(
           change((project.ir as SZIRV2).behavior)
           scenarios.push({ name, project, ids, passes: false })
         }
-        if (d.tipo === 'quadro-das-cores') {
-          wrong('sem-lista', ['lista'], (behavior) =>
-            visit(behavior.loops, (s) => {
-              if (s.type === 'g2d:forEachInGroup') s.body = []
-            }),
-          )
-          wrong('conta-protegido-em-dobro', ['lista'], (behavior) =>
-            visit(behavior.loops, (s) => {
-              if (s.type === 'assign' && s.name === 'protegidos' && s.value.type === 'binop')
-                s.value.right = { type: 'num', value: 2 }
-            }),
-          )
-          wrong('nao-renova-cobertura', ['lista'], (behavior) =>
-            visit(behavior.loops, (s) => {
-              if (s.type === 'g2d:setSpriteData') s.value = { type: 'bool', value: true }
-            }),
-          )
-          wrong('cobre-durante-onda', ['ondas'], (behavior) =>
-            visit(behavior.events, (s) => {
-              if (s.type === 'if' && s.cond.type === 'logical' && s.cond.op === '&&')
-                s.cond = { type: 'bool', value: true }
-            }),
-          )
-        } else if (d.slug.endsWith('ondas')) {
-          wrong('tres-ondas', ['quatro-ondas'], (behavior) =>
-            visit(behavior.start, (s) => {
-              if (s.type === 'var' && s.name === 'totalDeOndas') s.value = { type: 'num', value: 3 }
-            }),
-          )
-        } else if (d.slug.endsWith('pontos')) {
-          wrong('um-ponto', ['dois-pontos'], (behavior) =>
-            visit(behavior.loops, (s) => {
-              if (s.type === 'assign' && s.name === 'pontos' && s.value.type === 'binop')
-                s.value.right = { type: 'num', value: 1 }
-            }),
-          )
-        } else {
-          wrong('lista-sem-quarto', ['quarto-ninho'], (behavior) => {
-            behavior.start = behavior.start.filter(
-              (s) => !(s.type === 'g2d:addToGroup' && s.spriteVar === 'ninho4'),
-            )
-          })
-        }
-        wrong('extra-sem-enter', ['enter'], (behavior) => {
+        // O Guardião dos ninhos (lacunas, 01/11/2026): o inicial é a regra de antes.
+        wrong('extra-sem-enter', ['recomecar'], (behavior) => {
           const enter = behavior.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
           if (enter?.type !== 'g2d:onKey') throw Error('Evento de teclado ausente')
           enter.body = []

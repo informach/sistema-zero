@@ -8,7 +8,7 @@ import { levelInfo } from '@/lib/level-info'
 import { type ToolsGain, toolsGainInline } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 
 /**
  * Comemoração de SUBIU DE NÍVEL (Faísca até Lenda) — overlay com o Zappy, confete e a

@@ -21,6 +21,9 @@ describe('dependências embarcadas no deploy', () => {
     ['community', 'molda'],
     ['community', 'pensa'],
     ['members', 'studio'],
+    ['admin', 'edisvg'],
+    ['community', 'edisvg'],
+    ['community-kids', 'edisvg'],
   ])('%s acompanha mudanças do pacote %s', (service, dependency) => {
     const config = JSON.parse(
       readFileSync(new URL(`../../.railway/services/${service}.json`, import.meta.url), 'utf8'),

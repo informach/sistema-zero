@@ -1,5 +1,6 @@
 'use client'
 
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
 import { VoiceInputButton } from '@sistemazero/member-shell/components/voice-input/voice-input-button'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
@@ -118,11 +119,11 @@ export function PensaClient({
       mascotImages:
         audience === 'kids'
           ? {
-              happy: '/zappy/happy.webp',
-              thinking: '/zappy/thinking.webp',
-              celebrating: '/zappy/celebrating.webp',
-              sleeping: '/zappy/sleeping.webp',
-              speaking: '/zappy/speaking.webp',
+              happy: BUILTIN_ART.happy.poster.url,
+              thinking: BUILTIN_ART.thinking.poster.url,
+              celebrating: BUILTIN_ART.celebrating.poster.url,
+              sleeping: BUILTIN_ART.sleeping.poster.url,
+              speaking: BUILTIN_ART.speaking.poster.url,
             }
           : undefined,
       onOpenMission: (mission) =>
@@ -172,7 +173,13 @@ function PensaLoadError({ kids, onRetry }: { kids: boolean; onRetry(): void }) {
         className="flex w-full max-w-lg flex-col items-center gap-3 rounded-3xl bg-card p-7 text-center"
       >
         {kids ? (
-          <img src="/zappy/thinking.webp" alt="" width={96} height={96} className="size-24" />
+          <img
+            src={BUILTIN_ART.thinking.poster.url}
+            alt=""
+            width={96}
+            height={96}
+            className="size-24"
+          />
         ) : null}
         <h2 id="pensa-load-error" className="font-extrabold text-2xl">
           O Pensa não abriu agora

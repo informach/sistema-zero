@@ -1,5 +1,11 @@
 # Arquipélago: o que falta do plano depois da revisão de 30/10
 
+> **Histórico (31/10/2026).** Esta passagem foi cumprida: as visitas (item 0) em `83a9dfbab`, a
+> criação avançada no B7, e o resto nas listas A e B da proposta v3 e na revisão de 31/10
+> (`.audits/architectural-analysis-2026-10-31-arquipelago-revisao-dos-lotes.md`). O que segue com a
+> dona (validação no ambiente publicado, celular físico e importação dos desafios) está no
+> [estado atual](../arquipelago-estado-atual.md).
+
 Base: `staging` com a revisão dos lotes (R1, R3, R4 e R5) e o C02b integrados, enviada ao
 remoto em 30/10 (`273b85a2f`).
 Este documento é a passagem para quem continua. Ele não repete as especificações: aponta para

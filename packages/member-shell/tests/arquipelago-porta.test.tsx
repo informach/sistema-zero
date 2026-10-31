@@ -1,15 +1,23 @@
 import { describe, expect, test } from 'bun:test'
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AvisoDaFerramenta, PortaDoArquipelago } from '../src/components/arquipelago-porta'
 
 const porta = (estado: 'carregando' | 'indisponivel' | 'erro') =>
   renderToStaticMarkup(<PortaDoArquipelago estado={estado} voltarPara="/inicio" />)
 
-const sha = (html: string) => new Bun.CryptoHasher('sha256').update(html).digest('hex')
+const sha = (html: string) => {
+  const normalized = (['happy', 'sleeping', 'thinking'] as const).reduce(
+    (result, expression) =>
+      result.replaceAll(BUILTIN_ART[expression].poster.url, `/zappy/${expression}.webp`),
+    html,
+  )
+  return new Bun.CryptoHasher('sha256').update(normalized).digest('hex')
+}
 
 describe('a porta do Arquipélago no Kids', () => {
   test('o Zappy acende o caminho', () => {
-    expect(porta('carregando')).toContain('/zappy/happy.webp')
+    expect(porta('carregando')).toContain(BUILTIN_ART.happy.poster.url)
     expect(porta('carregando')).toContain('O Zappy está acendendo')
   })
 
@@ -21,8 +29,8 @@ describe('a porta do Arquipélago no Kids', () => {
     expect(porta('erro')).toContain('href="/inicio"')
   })
 
-  test('a pele adulta (fase3-13) não mudou um byte da porta do Kids', () => {
-    // Os hashes do HTML de antes da entrada adulta. Mudou a porta do Kids de propósito? Atualize.
+  test('a troca da arte preserva a estrutura e os textos da porta', () => {
+    // Compare a estrutura histórica, normalizando apenas a URL da reserva substituída.
     expect(sha(porta('carregando'))).toBe(
       '7f0a02f66a807e938e00885aafe4bc527af12ee4b04a604cdf6c2de63d7ef2eb',
     )

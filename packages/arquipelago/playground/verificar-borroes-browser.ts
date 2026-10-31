@@ -4,7 +4,9 @@
  * chegando perto sem a lanterna acesa o borrão foge; com ela acesa (o botão da mochila) ela aparece
  * na mão, o borrão não foge e o E prende: ele some e um Quindim passa a morar na Vila.
  *
- * `bun playground/verificar-borroes-browser.ts` (navegador: `ARQUIPELAGO_CHROMIUM` com o caminho do
+ * `bun build playground/verificar-borroes-browser.ts --target=node --external playwright-core
+ * --outdir .cache/borroes-build && node .cache/borroes-build/verificar-borroes-browser.js` (no
+ * Windows o Chrome não abre rodando pelo bun; navegador: `ARQUIPELAGO_CHROMIUM` com o caminho do
  * executável, ou o canal `ARQUIPELAGO_BROWSER_CHANNEL`, padrão `chrome`). Os prints vão para
  * `ARQUIPELAGO_PRINTS` (padrão: a pasta temporária). A noite dura 4 minutos de relógio: com o
  * SwiftShader a ilha leva um tempo para chegar, e as esperas leem o estado, nunca um tempo fixo.
@@ -24,9 +26,7 @@ const prints = process.env.ARQUIPELAGO_PRINTS ?? tmpdir()
 const vila = ilhasEmVolta().find((i) => i.ilha.id === 'vila-doce')
 if (!vila) throw new Error('Sem a Vila Doce no anel.')
 const giroIlha = giroDaIlha(vila.ilha)
-const glb = readFileSync(
-  path.join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'vila-doce.glb'),
-)
+const glb = readFileSync(path.join(process.cwd(), 'src', 'assets', 'ilhas', 'vila-doce.glb'))
 const modelo = (
   await new GLTFLoader().parseAsync(
     glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength),
@@ -48,7 +48,7 @@ type Desenho = {
   posicao: P
   ilhasCompletas: number
   noChao: boolean
-  borroes: { id: string; x: number; z: number }[]
+  borroes: { id: string; x: number; z: number; corQueSobra: number }[]
   lumisDaVila: string[]
   lanternaNaMao: P | null
 }
@@ -117,25 +117,40 @@ try {
   }
   const plano = (a: { x: number; z: number }, b: { x: number; z: number }) =>
     Math.hypot(a.x - b.x, a.z - b.z)
+  // Desde 30/10 todas as ilhas têm borrões (N01): a sua ilha também. Aqui contam só os da Vila,
+  // que guardam os ids de antes, sem a ilha na frente (`borroesDaNoite`).
+  const daVila = (d: Desenho) => d.borroes.filter((b) => /^\d+:\d+$/.test(b.id))
 
   const inicio = Date.now()
   const noite = await esperar(
     'a Vila de noite com os dois borrões',
-    (d) => d.ilhasCompletas > 0 && d.borroes.length === 2,
+    (d) => d.ilhasCompletas > 0 && daVila(d).length === 2,
     180_000,
   )
   // Os borrões ficam perto das âncoras `lumi-N`, a uns metros do meio da Vila.
-  for (const b of noite.borroes)
+  for (const b of daVila(noite))
     if (plano(b, vila.centro) < 1 || plano(b, vila.centro) > 30)
       throw new Error(`O borrão ${b.id} está fora da Vila: (${b.x}, ${b.z}).`)
   console.log(
-    `Vila de noite em ${((Date.now() - inicio) / 1000).toFixed(0)} s: ${noite.borroes.map((b) => b.id).join(', ')}`,
+    `Vila de noite em ${((Date.now() - inicio) / 1000).toFixed(0)} s: ${daVila(noite)
+      .map((b) => b.id)
+      .join(', ')}`,
   )
   if (noite.lumisDaVila.length !== 0) throw new Error('Já havia Lumi na Vila sem nenhum preso.')
+  // Lacunas de 01/11/2026: soltos há uns segundos, eles desbotam o que está em volta.
+  const cinza = await esperar('os borrões desbotarem em volta', (d) =>
+    daVila(d).every((b) => b.corQueSobra < 0.5),
+  )
+  console.log(
+    `Cinza em volta: ${daVila(cinza)
+      .map((b) => `${b.id} ${(b.corQueSobra * 100).toFixed(0)}% de cor`)
+      .join(', ')}`,
+  )
+  await page.screenshot({ path: path.join(prints, 'borroes-desbotando.png') })
   await page.locator('canvas').click()
 
   // Sem a lanterna acesa: chegar a 2 m faz o borrão fugir.
-  const alvo = noite.borroes[0]
+  const alvo = daVila(noite)[0]
   if (!alvo) throw new Error('Sem borrão.')
   const casa = { x: alvo.x, z: alvo.z }
   const dePerto = (b: { x: number; z: number }, m: number) => {

@@ -1,4 +1,5 @@
 import type { CourseModality } from '@sistemazero/core/course/modality'
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
 import type {
   QuizQuestionSpeech,
@@ -469,8 +470,7 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
-  /** Animação Rive (.riv) da trilha Kids enviada no módulo. */
-  riveUrl?: string | null
+  animation?: ModuleAnimation | null
   sortOrder: number
 }
 

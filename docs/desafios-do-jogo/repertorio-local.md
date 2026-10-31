@@ -1,6 +1,6 @@
 # Inventário de repertório dos desafios
 
-Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 61 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
+Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 64 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
 
 Tipos já presentes não provam compreensão, e tipos novos não são a única evidência de mudança: alterar um valor ou uma condição pode manter o mesmo tipo. A prova pedagógica continua sendo o executor com inicial, gabarito e negativos.
 
@@ -14,6 +14,9 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | sua-ilha | A concha rosa | aplicacao-em-blocos | Pela concha rosa, o balde recebe a entrega.; Só com a cinza, o Nico pede a rosa e nada é entregue. | Nenhum neste recorte | pedida |
 | sua-ilha | A maré volta | aplicacao-em-blocos | Depois da entrega, Enter traz a praia de volta.; Enter devolve a concha para a areia. | Nenhum neste recorte | pedida |
 | sua-ilha | Pega-conchas | aplicacao-em-blocos | Com as três conchas, o balde fica cheio.; Sem a concha do alto, o balde continua esperando. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas: o aviso do Nico | aplicacao-em-blocos | Sem a concha do alto o Nico avisa; buscando a do alto, o balde enche. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas: só a rosa | aplicacao-em-blocos | Só com a concha rosa, o balde fica cheio. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas: esvaziar o balde | aplicacao-em-blocos | Com o balde cheio, a barra de espaço esvazia. | Nenhum neste recorte | pedida |
 | bosque | Pinhas caindo | retomada-em-blocos | Depois da largada, pinhas caem no grupo das pinhas.; As pinhas nascem no relógio da partida, no grupo pinhas. | Nenhum neste recorte | pedida |
 | bosque | Bolotas para o alto | retomada-em-blocos | Na partida, espaço joga uma bolota no grupo das bolotas.; A bolota só sai durante a partida. | Nenhum neste recorte | pedida |
 | bosque | Quebrar as pinhas | retomada-em-blocos | Uma bolota que encontra uma pinha soma um ponto.; No encontro, a bolota e a pinha saem dos grupos delas. | Nenhum neste recorte | pedida |
@@ -32,38 +35,38 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | vila-doce | Pedras maiores | retomada-em-blocos | Com o pulo novo, o entregador sobe mais alto que as pedras grandes.; A força do pulo fica entre 12 e 16. | Nenhum neste recorte | pedida |
 | vila-doce | Pombos na praça | retomada-em-blocos | A rua sorteia o que aparece: pedras, vasos e pombos voando baixo. | Nenhum neste recorte | pedida |
 | vila-doce | Quem não vê a tela | retomada-em-blocos | A descrição da corrida diz o objetivo e os três jeitos de pular. | Nenhum neste recorte | pedida |
-| recife | A corrente muda | retomada-em-blocos | Complete as ações indicadas para esta rodada.; Cada toque muda o sentido uma vez. | Nenhum neste recorte | pedida |
-| recife | Conchas por viagem | retomada-em-blocos | Complete as ações indicadas para esta rodada.; A cesta leva até três e descarrega sem duplicar. | Nenhum neste recorte | pedida |
-| recife | Dois corais cuidados | retomada-em-blocos | Complete as ações indicadas para esta rodada.; Cada coral conta uma vez, também na ordem inversa. | Nenhum neste recorte | pedida |
-| recife | Uma bolha por vez | retomada-em-blocos | Complete as ações indicadas para esta rodada.; Toques durante o voo esperam pela próxima bolha. | Nenhum neste recorte | pedida |
-| recife | A chave do navio | retomada-em-blocos | Complete as ações indicadas para esta rodada.; Sem chave não abre, e abrir usa a chave uma vez. | Nenhum neste recorte | pedida |
+| recife | Uma bolha por vez | retomada-em-blocos | Espaço solta uma bolha.; Com uma bolha subindo, outro toque espera; depois que ela sai, sai outra. | Nenhum neste recorte | pedida |
+| recife | Alvo preso conta ponto | retomada-em-blocos | A bolha que encosta no alvo conta um ponto.; Uma bolha conta uma vez; a próxima bolha conta de novo. | Nenhum neste recorte | pedida |
+| recife | O alvo muda de lugar | retomada-em-blocos | Preso o alvo, ele volta num lugar sorteado no alto. | Nenhum neste recorte | pedida |
+| recife | Tempo de partida | retomada-em-blocos | O relógio tira um segundo de cada vez e a partida acaba no zero.; Depois do fim, Espaço não solta bolha. | Nenhum neste recorte | pedida |
+| recife | Nova partida | retomada-em-blocos | Depois do fim, Enter começa outra partida com o tempo cheio.; A nova partida começa sem pontos e já solta bolha. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas | retomada-em-blocos | As setas movem a mira para os dois lados, sem sair da tela nem subir.; Espaço lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe.; Ao tocar o alvo, a bolha para e o alvo fica preso.; Uma bolha que erra não conta pontos; prender o alvo conta uma vez só, mesmo tentando de novo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: bolha rápida | retomada-em-blocos | A bolha sobe mais rápido e continua prendendo o alvo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: dois pontos | retomada-em-blocos | Cada alvo preso vale dois pontos, sem repetir a contagem ao ficar encostado ou acertar o mesmo alvo de novo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: outro alvo | retomada-em-blocos | O alvo novo também fica preso e vale um ponto, sem prender o outro alvo nem repetir a contagem. | Nenhum neste recorte | pedida |
-| pico | Pulo com apoio | retomada-em-blocos | Complete a ação indicada para esta rodada.; O pulo sobe, espera o pouso e pode começar de novo. | Nenhum neste recorte | pedida |
-| pico | Freio no gelo | retomada-em-blocos | Complete a ação indicada para esta rodada.; Frear zera a velocidade e conserva a parada. | Nenhum neste recorte | pedida |
-| pico | Floco recolhido | retomada-em-blocos | Complete a ação indicada para esta rodada.; Só o contato recolhe o floco, uma única vez. | Nenhum neste recorte | pedida |
-| pico | Mochila de neve | retomada-em-blocos | Complete a ação indicada para esta rodada.; A carga inteira cabe no limite e a mochila pode ser esvaziada. | Nenhum neste recorte | pedida |
-| pico | Passagem segura | retomada-em-blocos | Complete a ação indicada para esta rodada.; A travessia espera a passagem e não se repete. | Nenhum neste recorte | pedida |
-| pico | Fase de plataforma | retomada-em-blocos | As setas levam o pinguim para os lados sobre o gelo, sem sair da tela.; Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar.; Cair na água do buraco devolve o pinguim ao começo, de pé no primeiro gelo.; Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou. | Nenhum neste recorte | pedida |
+| pico | Pulo com apoio | retomada-em-blocos | Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo no ar. | Nenhum neste recorte | pedida |
+| pico | A água volta ao começo | retomada-em-blocos | Cair na água devolve o pinguim ao começo e conta uma queda. | Nenhum neste recorte | pedida |
+| pico | A próxima fase | retomada-em-blocos | Chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo. | Nenhum neste recorte | pedida |
+| pico | Fim do jogo | retomada-em-blocos | Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo. | Nenhum neste recorte | pedida |
+| pico | De volta à fase 1 | retomada-em-blocos | Na fase 2, Enter volta à fase 1 com o pinguim no começo.; A volta à fase 1 também zera as quedas. | Nenhum neste recorte | pedida |
+| pico | Fase de plataforma | retomada-em-blocos | As setas levam o pinguim para os lados sobre o gelo, sem sair da tela.; Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar.; Cair na água do buraco devolve o pinguim ao começo, de pé no primeiro gelo.; Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo.; Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo. | Nenhum neste recorte | pedida |
 | pico | Fase de plataforma: pulo alto | retomada-em-blocos | O pulo fica mais alto e o pinguim continua voltando ao gelo. | Nenhum neste recorte | pedida |
 | pico | Fase de plataforma: floco de neve | retomada-em-blocos | Pegar o floco de neve soma um floco uma única vez e o floco some, mesmo pulando de novo no mesmo lugar. | Nenhum neste recorte | pedida |
 | pico | Fase de plataforma: quedas | retomada-em-blocos | Cada queda na água soma uma queda no placar, uma vez só por queda. | Nenhum neste recorte | pedida |
-| vale-dos-dinos | Contagem da lista | apoio-preparado-em-blocos | Complete a ação indicada para esta rodada.; A contagem acompanha a lista e não acumula o resultado anterior. | sz_g2d_add_to_group, sz_g2d_for_each_in_group, sz_g2d_set_opacity | não |
-| vale-dos-dinos | Cinza retirada | apoio-preparado-em-blocos | Complete a ação indicada para esta rodada.; Todas as manchas somem, e os ninhos continuam no lugar. | sz_g2d_add_to_group, sz_g2d_for_each_in_group, sz_g2d_set_opacity | não |
-| vale-dos-dinos | Folhas bem usadas | retomada-em-blocos | Complete a ação indicada para esta rodada.; Cada ninho usa uma folha, sem gastar outra no mesmo ninho. | Nenhum neste recorte | pedida |
-| vale-dos-dinos | Uma onda por vez | retomada-em-blocos | Complete a ação indicada para esta rodada.; A onda termina antes da próxima começar. | Nenhum neste recorte | pedida |
-| vale-dos-dinos | Rodada conferida | retomada-em-blocos | Complete a ação indicada para esta rodada.; Só a conferência completa fecha uma rodada, uma vez. | Nenhum neste recorte | pedida |
-| vale-dos-dinos | Proteja os ninhos | apoio-preparado-em-blocos | Tocar num ninho põe a cobertura só nele, sem somar pontos antes da onda.; Próxima onda começa uma passagem da cinza. Tocar de novo durante a passagem não começa outra.; Cada onda conta todos os ninhos da lista uma vez, separando os protegidos dos que recebem cinza. | sz_g2d_add_to_group, sz_g2d_for_each_in_group, sz_g2d_on_group_click, sz_g2d_set_opacity, sz_g2d_set_sprite_data, sz_g2d_sprite_data, sz_val_logic | não |
-| vale-dos-dinos | Proteja os ninhos: mais uma onda | apoio-preparado-em-blocos | A rodada permite quatro ondas e não começa uma quinta. | sz_g2d_add_to_group, sz_g2d_for_each_in_group, sz_g2d_on_group_click, sz_g2d_set_opacity, sz_g2d_set_sprite_data, sz_g2d_sprite_data, sz_val_logic | não |
-| vale-dos-dinos | Proteja os ninhos: dois pontos | apoio-preparado-em-blocos | Cada proteção vale dois pontos. Ninho sem cobertura não soma pontos e a contagem não se repete. | sz_g2d_add_to_group, sz_g2d_for_each_in_group, sz_g2d_on_group_click, sz_g2d_set_opacity, sz_g2d_set_sprite_data, sz_g2d_sprite_data, sz_val_logic | não |
-| vale-dos-dinos | Proteja os ninhos: mais um ninho | apoio-preparado-em-blocos | A onda passa pelos quatro ninhos da lista, incluindo o novo, sem contar nenhum duas vezes. | sz_g2d_add_to_group, sz_g2d_for_each_in_group, sz_g2d_on_group_click, sz_g2d_set_opacity, sz_g2d_set_sprite_data, sz_g2d_sprite_data, sz_val_logic | não |
-| nuvens | Reserva de água | retomada-em-blocos | Complete a ação indicada para esta rodada.; A reserva não transborda nem fica negativa. | Nenhum neste recorte | pedida |
-| nuvens | Luz na medida | retomada-em-blocos | Complete a ação indicada para esta rodada.; Só a faixa de luz de 1 a 3 permite crescer. | Nenhum neste recorte | pedida |
-| nuvens | Canteiros livres | retomada-em-blocos | Complete a ação indicada para esta rodada.; O plantio ocupa só o escolhido e não duplica plantas. | Nenhum neste recorte | pedida |
-| nuvens | Dois recursos | retomada-em-blocos | Complete a ação indicada para esta rodada.; Produzir usa os dois recursos e não gasta nada se falta um. | Nenhum neste recorte | pedida |
-| nuvens | Colheita da lista | apoio-preparado-em-blocos | Complete a ação indicada para esta rodada.; A lista fica vazia e não permite colher de novo. | sz_g2d_add_to_group, sz_g2d_for_each_in_group | não |
+| vale-dos-dinos | Uma onda de cada vez | retomada-em-blocos | Espaço começa a primeira onda.; Durante uma onda, outro toque não começa outra. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | O relógio da onda | retomada-em-blocos | O relógio solta as três cinzas da onda, uma por segundo.; Depois da última cinza a onda acaba, e Espaço começa a próxima. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | A cinza no ninho | retomada-em-blocos | A cinza que chega ao ninho é contada e sai do caminho. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | O alcance da torre | retomada-em-blocos | A torre limpa a cinza que entra no alcance e conta o ponto.; Com a torre limpando, nenhuma cinza chega ao ninho. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | Ondas que crescem | retomada-em-blocos | A segunda onda tem uma cinza a mais que a primeira. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | Guardião dos ninhos: ondas maiores | retomada-em-blocos | Cada onda traz uma cinza a mais: a primeira tem 4. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | Guardião dos ninhos: dois pontos | retomada-em-blocos | Cada cinza limpa pela torre vale dois pontos. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | Guardião dos ninhos: três ondas | retomada-em-blocos | Depois da terceira onda, Espaço não começa outra. | Nenhum neste recorte | pedida |
+| vale-dos-dinos | Guardião dos ninhos: onda limpa | retomada-em-blocos | Uma onda sem cinza no ninho ganha 5 pontos de bônus. | Nenhum neste recorte | pedida |
+| nuvens | Plantar com moedas | retomada-em-blocos | Espaço planta no canteiro escolhido e paga 2 moedas.; Sem moedas bastantes, não planta e as moedas não ficam negativas. | Nenhum neste recorte | pedida |
+| nuvens | Canteiro ocupado | retomada-em-blocos | Um canteiro ocupado não recebe outra planta nem cobra de novo. | Nenhum neste recorte | pedida |
+| nuvens | A produção do jardim | retomada-em-blocos | Cada canteiro plantado rende moedas a cada segundo. | Nenhum neste recorte | pedida |
+| nuvens | Colher os canteiros | retomada-em-blocos | C colhe os canteiros plantados e conta cada um.; Colhido, o canteiro fica vazio e pode ser plantado de novo. | Nenhum neste recorte | pedida |
+| nuvens | A meta do jardim | retomada-em-blocos | Com 20 moedas, o jardim chega à meta. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce | retomada-em-blocos | A cada segundo, o tempo do jardim aumenta um.; Espaço guarda três de água e a seta para cima guarda três de sol.; Sem água a flor não cresce, mesmo com sol e com o tempo passando.; Com água e sol, a flor cresce dez por segundo e gasta um de água e um de sol.; Com água e sol de sobra, a flor chega a cem e o jardim floresce. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce: rega forte | retomada-em-blocos | Espaço guarda cinco de água de uma vez. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce: sol forte | retomada-em-blocos | Com o sol forte, de seis para cima, a flor cresce vinte por segundo; com menos, dez. | Nenhum neste recorte | pedida |

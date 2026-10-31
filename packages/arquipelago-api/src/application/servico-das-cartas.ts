@@ -10,8 +10,8 @@ import { AcessoBloqueadoError } from './erros'
 import { type LeiturasDosMembros, publicoDosMembros } from './leituras-dos-membros'
 
 /**
- * Os cartões da rotina dos Lumis de quem joga: os do jogo sempre, os de controle pelos blocos que a
- * pessoa conquistou nos cursos (a mesma régua dos desafios). Equipe vê todos.
+ * Os cartões da rotina dos Lumis de quem joga, pelo posto da Jornada (a proposta: "mais postos,
+ * mais cartões"; lacunas de 01/11/2026). Equipe vê todos.
  */
 export class ServicoDasCartas {
   constructor(
@@ -26,16 +26,17 @@ export class ServicoDasCartas {
       jogador.equipe ? null : this.leituras.jogador(jogador),
       this.leituras.curriculo(publicoDosMembros(jogador)),
     ])
-    const blocos = dados ? new Set(dados.blocos) : 'todos'
+    const posicao = dados ? dados.posicao : 'todos'
     return {
       cartas: CARTAS_LUMI.map((carta) => {
-        const conquistada = cartaConquistada(carta, blocos)
+        const conquistada = cartaConquistada(carta, posicao)
         return {
           id: carta.id,
           nome: carta.nome,
           tipo: carta.tipo,
           efeito: carta.efeito,
           conquistada,
+          posto: carta.posto,
           aprendaEm: conquistada || !carta.bloco ? [] : aprendaIssoEm(carta.bloco, curriculo),
         }
       }),

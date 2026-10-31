@@ -44,14 +44,7 @@ const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAM
  * mantém a CSP estrita e SEM WASM. `connect-src https:`/`worker-src blob:` já cobrem.
  */
 function buildCsp({ pro }: { pro: boolean }): string {
-  // ⚠️ `'wasm-unsafe-eval'` também na CSP ESTRITA (09/2026): o mascote Zappy animado
-  // (Rive) é WebAssembly, e sem esta keyword o Chrome recusa a COMPILAÇÃO do módulo —
-  // `https:` no script-src não cobre WASM, é keyword à parte. A recusa é SILENCIOSA:
-  // sem ela o Zappy simplesmente nunca sai do WebP e nada acusa no lugar. É o
-  // afrouxamento mais barato que existe (deixa compilar WASM, NÃO libera `eval` de
-  // JS), mas o `iframe srcDoc` dos blocos interativos HERDA a CSP: o conteúdo autoral
-  // ganha WASM junto. Aceito porque a fronteira real do embed é o sandbox SEM
-  // allow-same-origin, e o script-src já carrega `'unsafe-inline'` + `https:`.
+  // The shared ediSVG layout engine uses bundled Yoga WASM; authored frames stay sandboxed.
   const scriptSrc = pro
     ? "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:"
     : `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`
@@ -102,11 +95,19 @@ function buildCsp({ pro }: { pro: boolean }): string {
 
 const strictCsp = buildCsp({ pro: false })
 const proCsp = buildCsp({ pro: true })
-// Arquipélago Vagalume: a física (Rapier) é WebAssembly. A página do jogo tem a SUA regra, que
-// garante o `'wasm-unsafe-eval'` mesmo se a política do resto do app um dia fechar o WASM.
-// O Estúdio Pro pode abrir sobre o jogo: precisa da mesma CSP e do mesmo isolamento
-// da rota Pro, sem afrouxar as demais páginas da comunidade.
-const arquipelagoCsp = proCsp
+// Arquipélago Vagalume (A27, revisão de 31/10/2026): a página do jogo tem a SUA regra, montada
+// pelo que roda nela, e não a cópia da rota Pro.
+// - `'wasm-unsafe-eval'`: a física (Rapier) e o Molda são WebAssembly.
+// - `'unsafe-eval'`, `blob:` e os quadros do WebContainer: o Estúdio completo abre por cima do
+//   jogo e, para quem já tem o modo Código, abre o projeto Pro com o terminal, que exige essas
+//   três coisas (`packages/studio/docs/embedding.md`). Tirar quebra o Pro dentro do jogo.
+// - Sem os vídeos das aulas (YouTube e Vimeo): a página do jogo não tem aula, e a COEP
+//   `credentialless` daqui já os impediria de carregar.
+// O executor do Python e o do Pro publicado entram pelos mesmos `withStudio*Csp` do resto.
+const arquipelagoCsp = proCsp.replace(
+  ' https://www.youtube-nocookie.com https://player.vimeo.com',
+  '',
+)
 
 // Headers de segurança comuns a TODAS as rotas — SEM a CSP (aplicada por-rota em
 // `headers()`: estrita em tudo, relaxada só em `/estudio/pro`). COOP fica aqui (vale
@@ -226,8 +227,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // `:path*` também casa com `/arquipelago` sozinho: a regra vale para a página e para o que
+      // vier abaixo dela.
       {
-        source: '/arquipelago',
+        source: '/arquipelago/:path*',
         headers: [
           { key: 'Content-Security-Policy', value: arquipelagoCsp },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
@@ -266,17 +269,12 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
       },
       {
-        // ⚠️ O WASM do Rive (mascote Zappy animado) tem 1,8 MB. Sem esta linha o Next
-        // serve `public/` sem cache útil e a criança rebaixa tudo A CADA VISITA — o
-        // que anularia o prefetch ocioso do player de aula, que existe justamente
-        // para o download não atrasar a celebração. Nome estável e não hashado, então
-        // o TTL é o mesmo dia do avatar 3D, pelo mesmo motivo: um bump do pacote
-        // reescreve o arquivo no lugar, e um ano de cache prenderia a versão velha.
-        source: '/rive/:path*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+        // Every generated artwork URL includes its content hash.
+        source: '/edisvg/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {
-        // As poses do Zappy (WebP + os `.riv`, que carregam o áudio embutido) mudam
+        // Áudios e moeda da pasta pública mudam
         // de conteúdo sem mudar de nome quando ela reexporta do editor — mesmo TTL.
         source: '/zappy/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],

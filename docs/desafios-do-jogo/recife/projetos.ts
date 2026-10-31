@@ -108,7 +108,8 @@ const arte: Record<string, string> = {
     '<g opacity=".55"><path d="M28 51C5 40 3 19 14 9c8-6 15 0 14 4 2-6 12-9 18-1 10 14-2 29-18 39Z" fill="#eaa6bd" stroke="#a85b82" stroke-width="3"/></g><circle cx="28" cy="28" r="25" fill="#d9fbff" fill-opacity=".35" stroke="#5eaece" stroke-width="3"/>',
   ),
 }
-const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
+/** As imagens do Recife (também dos quadros 1 a 5, lacunas de 01/11/2026). */
+export const ASSETS_DO_RECIFE: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
   id: `recife-${name}`,
   name,
   kind: 'image',
@@ -282,7 +283,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: name }),
-    assets,
+    assets: ASSETS_DO_RECIFE,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
 }

@@ -14,16 +14,16 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Plataforma com fases como dados",
-        "enunciado": "Projeto Python com Pygame Zero. FASES é uma lista de fases e cada fase é uma lista de strings: # plataforma, C cristal, S saída e J início, em células de 40 px. O laço de jogo, a física e o desenho estão prontos e dependem de três funções. ler_fase(linhas, letra) retorna [coluna, linha] de cada ocorrência, em ordem de leitura. pousar(pe_antes, pe_depois, vy, topo) resolve a colisão vertical: retorna [topo, 0] apenas quando o herói está caindo (vy > 0) e cruza o topo; senão, [pe_depois, vy]. proxima_fase(numero, tem_cristal, na_saida) retorna numero + 1 apenas com o cristal coletado e na saída. Como extra, acrescente uma terceira fase.",
+        "enunciado": "Projeto Python com Pygame Zero. FASES é uma lista de trechos e cada trecho é uma lista de strings: # plataforma, * floco, S saída e J início, em células de 40 px. ler_fase, pousar, o laço de jogo e o desenho estão prontos e dependem de três funções. contar(linhas, letra) retorna o número de ocorrências da letra. escorregar(vx, no_gelo) aplica o atrito do gelo: com no_gelo, aproxima vx de zero em 1; sem gelo, retorna 0. trecho_completo(pegos, total) retorna True só com todos os flocos coletados. Como extra, melhor(tempos) retorna o menor tempo da lista.",
         "dicas": [
-          "Dois enumerate aninhados percorrem linhas e colunas.",
-          "A colisão por eixo depende do movimento: compare pe_antes e pe_depois com o topo.",
+          "Dois laços aninhados percorrem linhas e células.",
+          "Trate vx positivo, negativo e zero, e o caso fora do gelo.",
           "Cada objetivo de função roda casos pequenos e independentes."
         ],
         "projetoInicial": {
           "formatVersion": 3,
           "id": "pico-fases-python",
-          "name": "Subida das fases",
+          "name": "A subida do Floco",
           "createdAt": 0,
           "updatedAt": 0,
           "programmingLanguage": "python",
@@ -57,14 +57,14 @@
           "ir": null,
           "blocksState": null,
           "files": {
-            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Subida das fases\"\n\nLADO = 40\nGRAVIDADE = 0.5\nPULO = -12\nPASSO = 4\n\nFASES = [\n    [\n        \"................\",\n        \"................\",\n        \"................\",\n        \"..............S.\",\n        \"...........#####\",\n        \"................\",\n        \"......####......\",\n        \".C..............\",\n        \"####............\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"..S.............\",\n        \"#####...........\",\n        \"................\",\n        \".......####.....\",\n        \"................\",\n        \"............####\",\n        \"..........C.....\",\n        \"......#####.....\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n]\n\n\ndef ler_fase(linhas, letra):\n    return []\n\n\ndef pousar(pe_antes, pe_depois, vy, topo):\n    return [pe_depois, vy]\n\n\ndef proxima_fase(numero, tem_cristal, na_saida):\n    return numero\n\n\ndef montar(numero):\n    global plataformas, cristais, saida, tem_cristal, vy, no_chao\n    linhas = FASES[numero]\n    plataformas = []\n    for coluna, linha in ler_fase(linhas, \"#\"):\n        plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))\n    cristais = ler_fase(linhas, \"C\")\n    saidas = ler_fase(linhas, \"S\")\n    saida = saidas[0] if saidas else [15, 10]\n    inicio = ler_fase(linhas, \"J\")\n    comeco = inicio[0] if inicio else [1, 10]\n    heroi.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)\n    tem_cristal = False\n    vy = 0\n    no_chao = False\n\n\nheroi = Rect((48, 408), (24, 32))\nfase_atual = 0\nvenceu = False\nplataformas = []\ncristais = []\nsaida = [15, 10]\ntem_cristal = False\nvy = 0\nno_chao = False\ntotal_de_fases = len(FASES)\nmontar(fase_atual)\ntotal_de_plataformas = len(plataformas)\n\n\ndef celula(rect):\n    return [int(rect.centerx // LADO), int(rect.centery // LADO)]\n\n\ndef update():\n    global vy, no_chao, tem_cristal, fase_atual, venceu\n    if venceu:\n        return\n    if keyboard.left:\n        heroi.x = heroi.x - PASSO\n    if keyboard.right:\n        heroi.x = heroi.x + PASSO\n    for plataforma in plataformas:\n        if heroi.colliderect(plataforma):\n            if heroi.centerx < plataforma.centerx:\n                heroi.right = plataforma.left\n            else:\n                heroi.left = plataforma.right\n    heroi.x = max(0, min(WIDTH - heroi.width, heroi.x))\n    if keyboard.space and no_chao:\n        vy = PULO\n    vy = vy + GRAVIDADE\n    pe_antes = heroi.bottom\n    pe_depois = pe_antes + vy\n    no_chao = False\n    for plataforma in plataformas:\n        if heroi.right > plataforma.left and heroi.left < plataforma.right:\n            pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)\n            if nova_vy == 0 and vy > 0:\n                pe_depois = pe\n                no_chao = True\n    vy = 0 if no_chao else vy\n    heroi.bottom = int(pe_depois)\n    if heroi.bottom > HEIGHT:\n        montar(fase_atual)\n    if celula(heroi) in cristais:\n        tem_cristal = True\n    if celula(heroi) == saida:\n        nova = proxima_fase(fase_atual, tem_cristal, True)\n        if nova != fase_atual:\n            if nova >= len(FASES):\n                venceu = True\n            else:\n                fase_atual = nova\n                montar(fase_atual)\n\n\ndef draw():\n    screen.fill((200, 226, 245))\n    for plataforma in plataformas:\n        screen.draw.filled_rect(plataforma, (236, 244, 250))\n        screen.draw.rect(plataforma, (120, 160, 190))\n    if not tem_cristal:\n        for coluna, linha in cristais:\n            screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 10, (110, 200, 255))\n    screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))\n    screen.draw.filled_rect(heroi, (70, 90, 160))\n    screen.draw.text(\"Fase \" + str(fase_atual + 1) + \" de \" + str(len(FASES)), (16, 12), fontsize=30)\n    if venceu:\n        screen.draw.text(\"Você chegou ao cume.\", center=(320, 240), fontsize=44)\n",
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"A subida do Floco\"\n\nLADO = 40\nGRAVIDADE = 0.5\nPULO = -12\nPASSO = 4\n\nFASES = [\n    [\n        \"................\",\n        \"................\",\n        \"................\",\n        \"..............S.\",\n        \"...........#####\",\n        \".........*......\",\n        \"......####......\",\n        \".*..............\",\n        \"####............\",\n        \"................\",\n        \".J..*...........\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"..S.............\",\n        \"#####...........\",\n        \"..........*.....\",\n        \".......####.....\",\n        \"................\",\n        \"............####\",\n        \"..........*.....\",\n        \"......#####.....\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n]\n\n\ndef ler_fase(linhas, letra):\n    achados = []\n    for linha, texto in enumerate(linhas):\n        for coluna, celula in enumerate(texto):\n            if celula == letra:\n                achados.append([coluna, linha])\n    return achados\n\n\ndef pousar(pe_antes, pe_depois, vy, topo):\n    if vy > 0 and pe_antes <= topo and pe_depois >= topo:\n        return [topo, 0]\n    return [pe_depois, vy]\n\n\ndef contar(linhas, letra):\n    return 0\n\n\ndef escorregar(vx, no_gelo):\n    return vx\n\n\ndef trecho_completo(pegos, total):\n    return False\n\n\ndef melhor(tempos):\n    return 0\n\n\ndef montar(numero):\n    global plataformas, flocos, saida, pegos, total, vy, vx, no_chao, tempo\n    linhas = FASES[numero]\n    plataformas = []\n    for coluna, linha in ler_fase(linhas, \"#\"):\n        plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))\n    flocos = ler_fase(linhas, \"*\")\n    total = contar(linhas, \"*\")\n    pegos = 0\n    saidas = ler_fase(linhas, \"S\")\n    saida = saidas[0] if saidas else [15, 10]\n    inicio = ler_fase(linhas, \"J\")\n    comeco = inicio[0] if inicio else [1, 10]\n    floco.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)\n    vy = 0\n    vx = 0\n    no_chao = False\n    tempo = 0\n\n\nfloco = Rect((48, 408), (24, 32))\nfase_atual = 0\nvenceu = False\nplataformas = []\nflocos = []\nsaida = [15, 10]\npegos = 0\ntotal = 0\nvy = 0\nvx = 0\nno_chao = False\ntempo = 0\ntempos = []\nmontar(fase_atual)\n\n\ndef celula(rect):\n    return [int(rect.centerx // LADO), int(rect.centery // LADO)]\n\n\ndef update():\n    global vy, vx, no_chao, pegos, fase_atual, venceu, tempo\n    if venceu:\n        return\n    tempo = tempo + 1 / 60\n    if keyboard.left:\n        vx = -PASSO\n    elif keyboard.right:\n        vx = PASSO\n    else:\n        vx = escorregar(vx, no_chao)\n    floco.x = floco.x + vx\n    for plataforma in plataformas:\n        if floco.colliderect(plataforma):\n            if floco.centerx < plataforma.centerx:\n                floco.right = plataforma.left\n            else:\n                floco.left = plataforma.right\n    floco.x = max(0, min(WIDTH - floco.width, floco.x))\n    if keyboard.space and no_chao:\n        vy = PULO\n    vy = vy + GRAVIDADE\n    pe_antes = floco.bottom\n    pe_depois = pe_antes + vy\n    no_chao = False\n    for plataforma in plataformas:\n        if floco.right > plataforma.left and floco.left < plataforma.right:\n            pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)\n            if nova_vy == 0 and vy > 0:\n                pe_depois = pe\n                no_chao = True\n    vy = 0 if no_chao else vy\n    floco.bottom = int(pe_depois)\n    if floco.bottom > HEIGHT:\n        montar(fase_atual)\n    if celula(floco) in flocos:\n        flocos.remove(celula(floco))\n        pegos = pegos + 1\n    if celula(floco) == saida and trecho_completo(pegos, total):\n        tempos.append(int(tempo))\n        if fase_atual + 1 >= len(FASES):\n            venceu = True\n        else:\n            fase_atual = fase_atual + 1\n            montar(fase_atual)\n\n\ndef draw():\n    screen.fill((200, 226, 245))\n    for plataforma in plataformas:\n        screen.draw.filled_rect(plataforma, (236, 244, 250))\n        screen.draw.rect(plataforma, (120, 160, 190))\n    for coluna, linha in flocos:\n        screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 9, (255, 255, 255))\n        screen.draw.circle((coluna * LADO + 20, linha * LADO + 20), 9, (110, 160, 210))\n    screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))\n    screen.draw.filled_rect(floco, (245, 250, 255))\n    screen.draw.rect(floco, (60, 90, 140))\n    screen.draw.text(\"Trecho \" + str(fase_atual + 1) + \" de \" + str(len(FASES)), (16, 12), fontsize=30)\n    screen.draw.text(\"Flocos: \" + str(pegos) + \" de \" + str(total), (420, 12), fontsize=30)\n    if venceu:\n        screen.draw.text(\"O Floco chegou ao cume.\", center=(320, 220), fontsize=44)\n        screen.draw.text(\"Melhor trecho: \" + str(melhor(tempos)) + \" s\", center=(320, 270), fontsize=32)\n",
             "requirements.txt": ""
           }
         },
         "gabarito": {
           "formatVersion": 3,
           "id": "pico-fases-python",
-          "name": "Subida das fases",
+          "name": "A subida do Floco",
           "createdAt": 0,
           "updatedAt": 0,
           "programmingLanguage": "python",
@@ -98,84 +98,30 @@
           "ir": null,
           "blocksState": null,
           "files": {
-            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Subida das fases\"\n\nLADO = 40\nGRAVIDADE = 0.5\nPULO = -12\nPASSO = 4\n\nFASES = [\n    [\n        \"................\",\n        \"................\",\n        \"................\",\n        \"..............S.\",\n        \"...........#####\",\n        \"................\",\n        \"......####......\",\n        \".C..............\",\n        \"####............\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"..S.............\",\n        \"#####...........\",\n        \"................\",\n        \".......####.....\",\n        \"................\",\n        \"............####\",\n        \"..........C.....\",\n        \"......#####.....\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"......S.........\",\n        \".....####.......\",\n        \"................\",\n        \"####............\",\n        \"................\",\n        \".....####.......\",\n        \"............C...\",\n        \"..........####..\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n]\n\n\ndef ler_fase(linhas, letra):\n    achados = []\n    for linha, texto in enumerate(linhas):\n        for coluna, celula in enumerate(texto):\n            if celula == letra:\n                achados.append([coluna, linha])\n    return achados\n\n\ndef pousar(pe_antes, pe_depois, vy, topo):\n    if vy > 0 and pe_antes <= topo and pe_depois >= topo:\n        return [topo, 0]\n    return [pe_depois, vy]\n\n\ndef proxima_fase(numero, tem_cristal, na_saida):\n    if tem_cristal and na_saida:\n        return numero + 1\n    return numero\n\n\ndef montar(numero):\n    global plataformas, cristais, saida, tem_cristal, vy, no_chao\n    linhas = FASES[numero]\n    plataformas = []\n    for coluna, linha in ler_fase(linhas, \"#\"):\n        plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))\n    cristais = ler_fase(linhas, \"C\")\n    saidas = ler_fase(linhas, \"S\")\n    saida = saidas[0] if saidas else [15, 10]\n    inicio = ler_fase(linhas, \"J\")\n    comeco = inicio[0] if inicio else [1, 10]\n    heroi.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)\n    tem_cristal = False\n    vy = 0\n    no_chao = False\n\n\nheroi = Rect((48, 408), (24, 32))\nfase_atual = 0\nvenceu = False\nplataformas = []\ncristais = []\nsaida = [15, 10]\ntem_cristal = False\nvy = 0\nno_chao = False\ntotal_de_fases = len(FASES)\nmontar(fase_atual)\ntotal_de_plataformas = len(plataformas)\n\n\ndef celula(rect):\n    return [int(rect.centerx // LADO), int(rect.centery // LADO)]\n\n\ndef update():\n    global vy, no_chao, tem_cristal, fase_atual, venceu\n    if venceu:\n        return\n    if keyboard.left:\n        heroi.x = heroi.x - PASSO\n    if keyboard.right:\n        heroi.x = heroi.x + PASSO\n    for plataforma in plataformas:\n        if heroi.colliderect(plataforma):\n            if heroi.centerx < plataforma.centerx:\n                heroi.right = plataforma.left\n            else:\n                heroi.left = plataforma.right\n    heroi.x = max(0, min(WIDTH - heroi.width, heroi.x))\n    if keyboard.space and no_chao:\n        vy = PULO\n    vy = vy + GRAVIDADE\n    pe_antes = heroi.bottom\n    pe_depois = pe_antes + vy\n    no_chao = False\n    for plataforma in plataformas:\n        if heroi.right > plataforma.left and heroi.left < plataforma.right:\n            pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)\n            if nova_vy == 0 and vy > 0:\n                pe_depois = pe\n                no_chao = True\n    vy = 0 if no_chao else vy\n    heroi.bottom = int(pe_depois)\n    if heroi.bottom > HEIGHT:\n        montar(fase_atual)\n    if celula(heroi) in cristais:\n        tem_cristal = True\n    if celula(heroi) == saida:\n        nova = proxima_fase(fase_atual, tem_cristal, True)\n        if nova != fase_atual:\n            if nova >= len(FASES):\n                venceu = True\n            else:\n                fase_atual = nova\n                montar(fase_atual)\n\n\ndef draw():\n    screen.fill((200, 226, 245))\n    for plataforma in plataformas:\n        screen.draw.filled_rect(plataforma, (236, 244, 250))\n        screen.draw.rect(plataforma, (120, 160, 190))\n    if not tem_cristal:\n        for coluna, linha in cristais:\n            screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 10, (110, 200, 255))\n    screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))\n    screen.draw.filled_rect(heroi, (70, 90, 160))\n    screen.draw.text(\"Fase \" + str(fase_atual + 1) + \" de \" + str(len(FASES)), (16, 12), fontsize=30)\n    if venceu:\n        screen.draw.text(\"Você chegou ao cume.\", center=(320, 240), fontsize=44)\n",
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"A subida do Floco\"\n\nLADO = 40\nGRAVIDADE = 0.5\nPULO = -12\nPASSO = 4\n\nFASES = [\n    [\n        \"................\",\n        \"................\",\n        \"................\",\n        \"..............S.\",\n        \"...........#####\",\n        \".........*......\",\n        \"......####......\",\n        \".*..............\",\n        \"####............\",\n        \"................\",\n        \".J..*...........\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"..S.............\",\n        \"#####...........\",\n        \"..........*.....\",\n        \".......####.....\",\n        \"................\",\n        \"............####\",\n        \"..........*.....\",\n        \"......#####.....\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n]\n\n\ndef ler_fase(linhas, letra):\n    achados = []\n    for linha, texto in enumerate(linhas):\n        for coluna, celula in enumerate(texto):\n            if celula == letra:\n                achados.append([coluna, linha])\n    return achados\n\n\ndef pousar(pe_antes, pe_depois, vy, topo):\n    if vy > 0 and pe_antes <= topo and pe_depois >= topo:\n        return [topo, 0]\n    return [pe_depois, vy]\n\n\ndef contar(linhas, letra):\n    total = 0\n    for texto in linhas:\n        for celula in texto:\n            if celula == letra:\n                total = total + 1\n    return total\n\n\ndef escorregar(vx, no_gelo):\n    if not no_gelo:\n        return 0\n    if vx > 0:\n        return vx - 1\n    if vx < 0:\n        return vx + 1\n    return 0\n\n\ndef trecho_completo(pegos, total):\n    return pegos >= total\n\n\ndef melhor(tempos):\n    menor = tempos[0]\n    for tempo in tempos:\n        if tempo < menor:\n            menor = tempo\n    return menor\n\n\ndef montar(numero):\n    global plataformas, flocos, saida, pegos, total, vy, vx, no_chao, tempo\n    linhas = FASES[numero]\n    plataformas = []\n    for coluna, linha in ler_fase(linhas, \"#\"):\n        plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))\n    flocos = ler_fase(linhas, \"*\")\n    total = contar(linhas, \"*\")\n    pegos = 0\n    saidas = ler_fase(linhas, \"S\")\n    saida = saidas[0] if saidas else [15, 10]\n    inicio = ler_fase(linhas, \"J\")\n    comeco = inicio[0] if inicio else [1, 10]\n    floco.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)\n    vy = 0\n    vx = 0\n    no_chao = False\n    tempo = 0\n\n\nfloco = Rect((48, 408), (24, 32))\nfase_atual = 0\nvenceu = False\nplataformas = []\nflocos = []\nsaida = [15, 10]\npegos = 0\ntotal = 0\nvy = 0\nvx = 0\nno_chao = False\ntempo = 0\ntempos = []\nmontar(fase_atual)\n\n\ndef celula(rect):\n    return [int(rect.centerx // LADO), int(rect.centery // LADO)]\n\n\ndef update():\n    global vy, vx, no_chao, pegos, fase_atual, venceu, tempo\n    if venceu:\n        return\n    tempo = tempo + 1 / 60\n    if keyboard.left:\n        vx = -PASSO\n    elif keyboard.right:\n        vx = PASSO\n    else:\n        vx = escorregar(vx, no_chao)\n    floco.x = floco.x + vx\n    for plataforma in plataformas:\n        if floco.colliderect(plataforma):\n            if floco.centerx < plataforma.centerx:\n                floco.right = plataforma.left\n            else:\n                floco.left = plataforma.right\n    floco.x = max(0, min(WIDTH - floco.width, floco.x))\n    if keyboard.space and no_chao:\n        vy = PULO\n    vy = vy + GRAVIDADE\n    pe_antes = floco.bottom\n    pe_depois = pe_antes + vy\n    no_chao = False\n    for plataforma in plataformas:\n        if floco.right > plataforma.left and floco.left < plataforma.right:\n            pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)\n            if nova_vy == 0 and vy > 0:\n                pe_depois = pe\n                no_chao = True\n    vy = 0 if no_chao else vy\n    floco.bottom = int(pe_depois)\n    if floco.bottom > HEIGHT:\n        montar(fase_atual)\n    if celula(floco) in flocos:\n        flocos.remove(celula(floco))\n        pegos = pegos + 1\n    if celula(floco) == saida and trecho_completo(pegos, total):\n        tempos.append(int(tempo))\n        if fase_atual + 1 >= len(FASES):\n            venceu = True\n        else:\n            fase_atual = fase_atual + 1\n            montar(fase_atual)\n\n\ndef draw():\n    screen.fill((200, 226, 245))\n    for plataforma in plataformas:\n        screen.draw.filled_rect(plataforma, (236, 244, 250))\n        screen.draw.rect(plataforma, (120, 160, 190))\n    for coluna, linha in flocos:\n        screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 9, (255, 255, 255))\n        screen.draw.circle((coluna * LADO + 20, linha * LADO + 20), 9, (110, 160, 210))\n    screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))\n    screen.draw.filled_rect(floco, (245, 250, 255))\n    screen.draw.rect(floco, (60, 90, 140))\n    screen.draw.text(\"Trecho \" + str(fase_atual + 1) + \" de \" + str(len(FASES)), (16, 12), fontsize=30)\n    screen.draw.text(\"Flocos: \" + str(pegos) + \" de \" + str(total), (420, 12), fontsize=30)\n    if venceu:\n        screen.draw.text(\"O Floco chegou ao cume.\", center=(320, 220), fontsize=44)\n        screen.draw.text(\"Melhor trecho: \" + str(melhor(tempos)) + \" s\", center=(320, 270), fontsize=32)\n",
             "requirements.txt": ""
           }
         },
         "objetivos": [
           {
-            "id": "ler",
-            "label": "ler_fase(linhas, letra) devolve [coluna, linha] de cada ocorrência, em ordem de leitura.",
-            "hint": "Dois laços com enumerate resolvem.",
+            "id": "contar",
+            "label": "contar(linhas, letra) devolve o número de ocorrências da letra.",
+            "hint": "Dois laços aninhados resolvem.",
             "rule": {
               "type": "functionReturns",
-              "name": "ler_fase",
+              "name": "contar",
               "cases": [
                 {
-                  "args": [["##.", "..#"], "#"],
-                  "expected": [[0, 0], [1, 0], [2, 1]]
+                  "args": [["..*..", "*...."], "*"],
+                  "expected": 2
                 },
                 {
-                  "args": [["..C", "C.."], "C"],
-                  "expected": [[2, 0], [0, 1]]
+                  "args": [["*#*", "#*#"], "#"],
+                  "expected": 3
                 },
                 {
-                  "args": [["...."], "#"],
-                  "expected": []
-                }
-              ]
-            },
-            "programmingLanguage": "python",
-            "profileId": "python-browser"
-          },
-          {
-            "id": "pousar",
-            "label": "pousar resolve a colisão vertical: pousa só ao cair cruzando o topo.",
-            "hint": "Considere pe_antes, pe_depois e o sinal de vy.",
-            "rule": {
-              "type": "functionReturns",
-              "name": "pousar",
-              "cases": [
-                {
-                  "args": [100, 112, 5, 110],
-                  "expected": [110, 0]
-                },
-                {
-                  "args": [100, 105, 5, 110],
-                  "expected": [105, 5]
-                },
-                {
-                  "args": [115, 120, 5, 110],
-                  "expected": [120, 5]
-                },
-                {
-                  "args": [112, 108, -4, 110],
-                  "expected": [108, -4]
-                }
-              ]
-            },
-            "programmingLanguage": "python",
-            "profileId": "python-browser"
-          },
-          {
-            "id": "proxima",
-            "label": "proxima_fase avança só com o cristal coletado e na saída.",
-            "hint": "Retorne numero + 1 apenas com as duas condições.",
-            "rule": {
-              "type": "functionReturns",
-              "name": "proxima_fase",
-              "cases": [
-                {
-                  "args": [0, true, true],
-                  "expected": 1
-                },
-                {
-                  "args": [0, false, true],
+                  "args": [["...."], "*"],
                   "expected": 0
-                },
-                {
-                  "args": [1, true, false],
-                  "expected": 1
                 }
               ]
             },
@@ -183,9 +129,9 @@
             "profileId": "python-browser"
           },
           {
-            "id": "montada",
-            "label": "A fase 1 é construída a partir dos dados (todas as plataformas).",
-            "hint": "montar() cria um Rect por célula \"#\" retornada por ler_fase.",
+            "id": "flocos-da-fase",
+            "label": "montar usa contar para o total de flocos do trecho.",
+            "hint": "O primeiro trecho tem o total calculado pelos dados.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -197,36 +143,87 @@
               "expect": {
                 "target": {
                   "kind": "value",
-                  "path": "total_de_plataformas"
+                  "path": "total"
                 },
                 "compare": "equals",
-                "value": 29
+                "value": 3
               }
             },
             "programmingLanguage": "python",
             "profileId": "python-browser"
           },
           {
-            "id": "terceira",
-            "label": "Extra: inclua uma terceira fase em FASES.",
-            "hint": "A fase é só dado: uma lista de strings.",
+            "id": "escorregar",
+            "label": "escorregar(vx, no_gelo) aplica o atrito do gelo, de 1 em 1, e para fora dele.",
+            "hint": "Trate vx positivo, negativo, zero e no_gelo falso.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "escorregar",
+              "cases": [
+                {
+                  "args": [4, true],
+                  "expected": 3
+                },
+                {
+                  "args": [-4, true],
+                  "expected": -3
+                },
+                {
+                  "args": [0, true],
+                  "expected": 0
+                },
+                {
+                  "args": [4, false],
+                  "expected": 0
+                }
+              ]
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "trecho",
+            "label": "trecho_completo exige todos os flocos coletados.",
+            "hint": "Retorne a comparação entre pegos e total.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "trecho_completo",
+              "cases": [
+                {
+                  "args": [3, 3],
+                  "expected": true
+                },
+                {
+                  "args": [1, 3],
+                  "expected": false
+                },
+                {
+                  "args": [0, 2],
+                  "expected": false
+                }
+              ]
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "melhor",
+            "label": "Extra: melhor(tempos) devolve o menor valor da lista.",
+            "hint": "Percorra a lista guardando o menor.",
             "optional": true,
             "rule": {
-              "type": "behavior",
-              "steps": [
+              "type": "functionReturns",
+              "name": "melhor",
+              "cases": [
                 {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "total_de_fases"
+                  "args": [[30, 25, 40]],
+                  "expected": 25
                 },
-                "compare": "atLeast",
-                "value": 3
-              }
+                {
+                  "args": [[12]],
+                  "expected": 12
+                }
+              ]
             },
             "programmingLanguage": "python",
             "profileId": "python-browser"
@@ -234,7 +231,7 @@
         ],
         "desafioExtra": {
           "titulo": "Extra",
-          "texto": "Acrescente uma terceira fase jogável a FASES (início, cristal, saída e plataformas alcançáveis)."
+          "texto": "Implemente melhor(tempos), que retorna o menor valor da lista de tempos dos trechos."
         },
         "recompensa": {
           "cor": true,

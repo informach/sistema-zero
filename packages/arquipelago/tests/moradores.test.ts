@@ -320,7 +320,9 @@ describe('a conversa com a Capi no salvamento', () => {
       },
     }
     expect(oQueFaltaNoPedido(s)).toContain('Ache mais um bicho')
-    expect(oQueFaltaNoPedido({ ...s, bichos: { achados: ['gato'], adotado: null } })).toBeNull()
+    expect(
+      oQueFaltaNoPedido({ ...s, bichos: { achados: ['gato'], adotado: null, outros: [] } }),
+    ).toBeNull()
   })
 
   test('as falas das reações seguem as regras de texto', () => {

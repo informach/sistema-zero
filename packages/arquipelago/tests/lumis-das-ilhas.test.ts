@@ -174,3 +174,20 @@ describe('os lugares dos Lumis da praia', () => {
     }
   })
 })
+
+describe('os Lumis da praia nascem do Cinza (lacunas, 01/11/2026)', () => {
+  test('sem nenhum preso, a praia não tem Lumi; preso, ele aparece no lugar dele', () => {
+    const s = criarSalvamentoInicial(new Date('2026-11-01T12:00:00Z'))
+    expect(lumisNaIlha(s.lumis, 'sua-ilha')).toEqual([])
+    expect(lumisNaIlha({ estrelinha: 1 }, 'sua-ilha')).toEqual([{ ancora: 0, lumi: 'estrelinha' }])
+    expect(lumisNaIlha({ estrelinha: 1, buzio: 1 }, 'sua-ilha').map((m) => m.lumi)).toEqual([
+      'estrelinha',
+      'buzio',
+    ])
+  })
+
+  test('a cena não monta mais a Estrelinha e o Búzio fixos na areia', async () => {
+    const cena = await Bun.file(new URL('../src/mundo/cena.tsx', import.meta.url)).text()
+    expect(cena).not.toContain('HabitantesDaPraia')
+  })
+})

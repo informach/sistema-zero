@@ -26,7 +26,7 @@ import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
 import { useLessonCompletionRefresh } from '@/components/kids/lesson-completion-refresh'
-import { KidsMascotAnimated, prefetchZappyRive } from '@/components/kids/mascot-rive'
+import { KidsMascotAnimated, prefetchZappyAnimation } from '@/components/kids/mascot-animated'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { apiSend } from '@/lib/api'
@@ -96,7 +96,7 @@ export function LessonPlayer({
   // criança esperou a aula inteira para ver. Puxamos ocioso, agora que ela acabou
   // de entrar e vai passar minutos aqui. Best-effort — falhar só devolve o WebP.
   useEffect(() => {
-    prefetchZappyRive()
+    prefetchZappyAnimation()
   }, [])
 
   const requirements = lessonCompletionRequirements({
@@ -235,9 +235,7 @@ export function LessonPlayer({
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
       // O Zappy do aviso "Primeiro, assista ao vídeo" (curso com a opção ligada). Mudo: é um
       // estado que fica na tela, não um acontecimento.
-      videoGateMascot: (
-        <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" sound={false} />
-      ),
+      videoGateMascot: <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" />,
       videoGateAudioUrl: videoGateVoice.url,
       renderInstruction: (text, pose = 'speaking', speech) => (
         <DialogueBlockView
@@ -246,7 +244,7 @@ export function LessonPlayer({
           mascot={
             /* Mudo pelo mesmo motivo do bloco `dialogue` (ver kids-lesson-blocks):
                instrução de seção é estado, e há uma por seção. */
-            <KidsMascotAnimated expression={pose} className="size-16 sm:size-20" sound={false} />
+            <KidsMascotAnimated expression={pose} className="size-16 sm:size-20" />
           }
         />
       ),

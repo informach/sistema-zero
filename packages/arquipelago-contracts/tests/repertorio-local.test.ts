@@ -10,8 +10,9 @@ import { ManifestoDeDesafiosSchema } from '../src/desafios'
 
 const inventario = inventarioDeRepertorio()
 test('inventário reproduz os arquivos locais sem confundir duas versões com atividades distintas', () => {
-  expect(inventario).toHaveLength(122)
-  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(61)
+  // 128 desde as lacunas de 01/11/2026: o desafio do dia da sua ilha (três, nos dois públicos).
+  expect(inventario).toHaveLength(128)
+  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(64)
   expect(
     JSON.parse(
       readFileSync(
@@ -26,8 +27,12 @@ test('inventário reproduz os arquivos locais sem confundir duas versões com at
       'utf8',
     ),
   ).toBe(relatorioDeRepertorio())
-  // C01b: só pede publicação o que tem todas as fontes na trilha.
-  for (const d of inventario.filter((d) => d.publicarAutomaticamente))
+  // C01b: só pede publicação o que tem todas as fontes na trilha. A43 (decisão da dona,
+  // 31/10/2026): o Vale e as Nuvens publicam esperando os cursos do Arquiteto e do Gênio; a lista
+  // exata do que cada um espera fica em `docs/desafios-do-jogo/publicacao.test.ts`.
+  for (const d of inventario.filter(
+    (d) => d.publicarAutomaticamente && d.ilha !== 'vale-dos-dinos' && d.ilha !== 'nuvens',
+  ))
     expect(d.semFonteNaTrilha, d.slug).toEqual([])
 })
 test('fontes opcionais não comprovam repertório universal e cursos futuros não são inventados', () => {
@@ -40,20 +45,10 @@ test('fontes opcionais não comprovam repertório universal e cursos futuros nã
     'construtor/nave-contra-asteroides',
     'inventor/corre-dino',
   ])
-  // Desde C01b o Recife não usa clique em grupo; o Proteja os ninhos do Vale ainda usa.
-  const vale = inventario.find(
-    (d) =>
-      d.ilha === 'vale-dos-dinos' && d.cobertura.some((c) => c.bloco === 'sz_g2d_on_group_click'),
-  )!
-  const click = vale.cobertura.find((c) => c.bloco === 'sz_g2d_on_group_click')!
-  expect(click.trilha).toEqual([])
-  expect(click.opcionais).toContain('faisca/cade-todo-mundo')
-  expect(vale.semFonteNaTrilha).toContain(click.bloco)
-  expect(vale.publicarAutomaticamente).toBe(false)
-  const lista = inventario.find((d) => d.slug === 'vale-contagem-da-lista')!
-  expect(lista.classificacao).toBe('apoio-preparado-em-blocos')
-  expect(lista.tiposJaPresentes).toContain('sz_g2d_for_each_in_group')
-  expect(lista.semFonteNaTrilha).toContain('sz_g2d_for_each_in_group')
+  // Lacunas (01/11/2026, pela Jornada): o Vale usa só blocos da trilha, sem clique em grupo nem
+  // lista; nenhum posto ensina esses blocos.
+  for (const d of inventario.filter((d) => d.ilha === 'vale-dos-dinos'))
+    expect(d.semFonteNaTrilha, d.slug).toEqual([])
 })
 test('os quadros do Bosque não exigem extra, e só Noite usa opacidade de fonte opcional', () => {
   for (const d of inventario.filter((d) => d.ilha === 'bosque')) {
@@ -108,7 +103,8 @@ test('públicos têm o mesmo repertório e nenhum manifesto força concessão ma
 })
 test('o Pega-conchas da sua ilha usa só a trilha do Faísca e pede publicação (C03a)', () => {
   const daSuaIlha = inventario.filter((d) => d.ilha === 'sua-ilha')
-  expect(daSuaIlha).toHaveLength(12)
+  // Os seis quadros e as três variações do desafio do dia (lacunas, 01/11/2026), nos dois públicos.
+  expect(daSuaIlha).toHaveLength(18)
   for (const d of daSuaIlha) {
     expect(d.posto, d.slug).toBe(1)
     expect(d.semFonteNaTrilha, d.slug).toEqual([])

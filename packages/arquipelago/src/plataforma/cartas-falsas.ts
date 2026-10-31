@@ -10,13 +10,15 @@ import {
 
 /**
  * Os cartões dos Lumis de mentira para o playground, com a MESMA régua do serviço
- * (`cartaConquistada` e `aprendaIssoEm` do contrato): `algumas` tem Repetir e Se; `todas` é a
+ * (`cartaConquistada` e `aprendaIssoEm` do contrato): `algumas` é quem está no quarto posto (o
+ * Recife), com Repetir, Para cada, Esperar, Enquanto e Se; `todas` é a
  * visão da equipe; `desligadas` responde 403 e `fora-do-ar` 424. O currículo é de mentira e
  * muda com o público, para conferir que o adulto vê os cursos adultos. Esperar não tem curso.
  */
 export type CartasDoPlayground = 'algumas' | 'todas' | 'desligadas' | 'fora-do-ar'
 
-const BLOCOS_DE_EXEMPLO = ['sz_js_repeat', 'sz_js_if_else']
+/** O posto de exemplo: os cartões chegam pelo posto (lacunas, 01/11/2026). */
+const POSICAO_DE_EXEMPLO = 4
 
 function curso(n: number, titulo: string, posto: string, blocos: string[]) {
   return {
@@ -49,17 +51,18 @@ export function respostaDasCartas(
   if (modo === 'desligadas') return { status: 403, corpo: { error: { code: 'ACESSO_BLOQUEADO' } } }
   if (modo === 'fora-do-ar')
     return { status: 424, corpo: { error: { code: 'PLATAFORMA_INDISPONIVEL' } } }
-  const blocos = modo === 'todas' ? 'todos' : new Set(BLOCOS_DE_EXEMPLO)
+  const posicao = modo === 'todas' ? 'todos' : POSICAO_DE_EXEMPLO
   const doPublico = curriculo(publico)
   const corpo: CartasDoJogador = {
     cartas: CARTAS_LUMI.map((carta) => {
-      const conquistada = cartaConquistada(carta, blocos)
+      const conquistada = cartaConquistada(carta, posicao)
       return {
         id: carta.id,
         nome: carta.nome,
         tipo: carta.tipo,
         efeito: carta.efeito,
         conquistada,
+        posto: carta.posto,
         aprendaEm: conquistada || !carta.bloco ? [] : aprendaIssoEm(carta.bloco, doPublico),
       }
     }),

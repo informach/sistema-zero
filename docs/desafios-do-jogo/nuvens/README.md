@@ -21,36 +21,31 @@ Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a 
 pacotes; o quadro deve estar livre quando o pacote for importado. O principal dá cor, as variações
 não. `recompensa.atracao` é `jardim-que-floresce`. Revisão C01b de 30/10: sem botões em grupo,
 "e" lógico nem opacidade (só apareciam em cursos extras ou fora da trilha), o Jardim e os quadros
-1 a 4 pedem publicação (`publicar: true`). A Colheita da lista (quadro 5) depende de lista e laço
-em grupo, que nenhum curso em blocos da trilha ensina; nas Nuvens isso vem em JavaScript (C02),
-então ela segue com `publicar: false`, como as três variações. Não houve publicação remota.
+1 a 4 pedem publicação (`publicar: true`). Lacunas de 01/11/2026 (pela proposta e pela Jornada):
+os quadros 1 a 5 foram refeitos como o Jardim em grade, só com blocos da trilha, e nada mais espera
+curso que não ensina o bloco (a decisão A43 deixou de valer). Não houve publicação remota.
 
-## Cinco quadros complementares (L03)
+## Os quadros 1 a 5: o Jardim em grade (lacunas, 01/11/2026)
 
-Os quadros aplicam limites de reserva, faixa de luz, ocupação, consumo de dois recursos e retirada de uma lista. No quinto, o Para cada vem montado com corpo vazio. Falta somar e destruir a flor da vez, sem contar a colheita novamente.
+A proposta e a Jornada põem nas Nuvens a construção e gestão de um mundo do Gênio (grade,
+ocupação, custo e produção). Os cinco quadros montam o Jardim em grade (`jardim-em-grade.ts`)
+um passo de cada vez: três canteiros lado a lado, as teclas 1, 2 e 3 escolhem o canteiro (pronto
+no cenário) e cada quadro traz pronto o que os anteriores fizeram. Sem lista: um Se por canteiro.
+Antes eram retomadas soltas (reserva, luz, canteiros, recursos) e uma colheita com lista e laço em
+grupo, que nenhum posto ensina em blocos. A grade em arquivos e o salvar o jardim ficam no Pro
+(quadro 6).
 
-| Quadro | Atividade | Tipo | Moedas | Extra |
-| --- | --- | --- | --- | --- |
-| 1 | Reserva de água | Quadro das Cores | 20 | 10 |
-| 2 | Luz na medida | Quadro das Cores | 20 | 10 |
-| 3 | Canteiros livres | Quadro das Cores | 20 | 10 |
-| 4 | Dois recursos | Quadro das Cores | 20 | 10 |
-| 5 | Colheita da lista | Quadro das Cores | 20 | 10 |
+| Quadro | Atividade | O passo | Recusa causal (executor real) |
+| --- | --- | --- | --- |
+| 1 | Plantar com moedas | Plantar custa 2 moedas; sem saldo, não planta | Plantar sem moedas |
+| 2 | Canteiro ocupado | Canteiro com planta recusa outra e não cobra | Plantar por cima |
+| 3 | A produção do jardim | Cada canteiro plantado rende 1 moeda por segundo | Sem produção |
+| 4 | Colher os canteiros | C colhe os plantados, conta e esvazia | Colher sem esvaziar |
+| 5 | A meta do jardim | Com 20 moedas, a meta, uma vez | Meta que nunca chega |
 
-O [manifesto Kids](nuvens.manifesto.json) e o [manifesto adulto](nuvens-adulto.manifesto.json)
-têm seis quadros e três desafios do dia cada, todos em rascunho. C01b1 preservou projetos,
-objetivos e recompensas e retirou o pedido automático de publicação dos quatro itens Kids
-anteriores. Nenhum conteúdo foi importado ou publicado nesta entrega.
-
-São atividades em blocos JavaScript, com lacunas de fonte registradas no inventário, sem uma linguagem
-nova. O Para cada ainda não aparece nas listas atuais dos cursos: fica preparado como estrutura
-do inicial, com grupo/item e corpo vazio conferidos por teste. A pessoa completa apenas as
-ações internas já ensinadas. Não há liberação manual desse bloco nem afirmação de conquista.
-Na publicação, é necessário conferir a mediação e o vínculo com os cursos efetivamente prontos.
-
-A arte é reaproveitada do principal. O texto e os valores do cenário estão prontos. Os objetivos
-observam o comportamento das ações deixadas vazias e aceitam qualquer aparência. Enter é o
-extra para uma nova rodada. A prévia usa controles de teclado e toque do Jogo 2D.
+O extra de todos é o Enter recomeçar o jardim. Prova:
+`packages/studio-runtime/tests/quadros-nuvens-browser.test.ts` (com `SZ_CHECK_CHROMIUM` apontando
+para o Chrome), os cinco quadros com gabarito, inicial e erros.
 
 Comandos adicionais, na raiz:
 
@@ -58,7 +53,6 @@ Comandos adicionais, na raiz:
 bun test docs/desafios-do-jogo/nuvens/quadros-iniciais.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/quadros-nuvens-browser.test.ts
-bun docs/desafios-do-jogo/nuvens/conferir-quadros-browser.ts
 ```
 
 [Capturas e resultados locais](../../qa/2026-10-30-quadros-nuvens/README.md).

@@ -1,8 +1,13 @@
 import type { PermissoesDaFamilia } from '@sistemazero/arquipelago-contracts'
-import { and, asc, between, eq, gt, inArray, ne } from 'drizzle-orm'
-import type { RepositorioDaFamilia, TempoNaJanela } from '../../../domain/familia.port'
+import { and, asc, between, eq, gt, gte, inArray, lte, ne } from 'drizzle-orm'
+import type {
+  AparenciaAplicada,
+  RepositorioDaFamilia,
+  TempoNaJanela,
+} from '../../../domain/familia.port'
 import type { Database } from './db'
 import {
+  mudancasDeAparencia,
   perfisDaConta,
   permissoesDaFamilia,
   salvamentos,
@@ -76,6 +81,39 @@ export class DrizzleRepositorioDaFamilia implements RepositorioDaFamilia {
       )
     for (const l of linhas) fins.set(l.jogadorId, [...(fins.get(l.jogadorId) ?? []), l.fim])
     return fins
+  }
+
+  async aparenciasNaJanela(
+    perfis: readonly string[],
+    de: Date,
+    ate: Date,
+  ): Promise<Map<string, AparenciaAplicada[]>> {
+    const mapa = new Map<string, AparenciaAplicada[]>()
+    if (perfis.length === 0) return mapa
+    // O índice (jogador_id, registrado_em) da 0024 atende esta leitura.
+    const linhas = await this.db
+      .select({
+        jogadorId: mudancasDeAparencia.jogadorId,
+        objeto: mudancasDeAparencia.objeto,
+        revisao: mudancasDeAparencia.revisao,
+        origem: mudancasDeAparencia.origem,
+        criacao: mudancasDeAparencia.criacao,
+        registradoEm: mudancasDeAparencia.registradoEm,
+      })
+      .from(mudancasDeAparencia)
+      .where(
+        and(
+          inArray(mudancasDeAparencia.jogadorId, [...perfis]),
+          gte(mudancasDeAparencia.registradoEm, de),
+          lte(mudancasDeAparencia.registradoEm, ate),
+        ),
+      )
+    for (const { jogadorId, ...linha } of linhas) {
+      const lista = mapa.get(jogadorId) ?? []
+      lista.push(linha)
+      mapa.set(jogadorId, lista)
+    }
+    return mapa
   }
 
   async salvamentos(perfis: readonly string[]): Promise<Map<string, unknown>> {

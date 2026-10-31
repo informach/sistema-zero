@@ -29,6 +29,12 @@ export const PICO = {
   pulo: 12,
   puloBaixo: 9,
   puloAlto: 13,
+  /**
+   * A fase 2 da fase de plataforma (A46, revisão de 31/10/2026): um gelo no alto, em cima do
+   * começo (x 20 a 200, topo em y 300), com a bandeira nele. Do gelo do começo, o pulo de -12 chega
+   * lá (sobe 120 e pousa no topo, a 68 do gelo de baixo).
+   */
+  fase2: { inicio: 20, fim: 200, topo: 300, bandeiraX: 130, bandeiraY: 220, pinguimY: 330 },
 } as const
 const n = (value: number): JSExpr => ({ type: 'num', value })
 const s = (value: string): JSExpr => ({ type: 'str', value })
@@ -46,6 +52,13 @@ const iff = (cond: JSExpr, then: JSStatement[]): JSStatement => ({
   cond,
   then,
   else: [],
+})
+/** Se com Senão: a troca de fase não pode cair no mesmo contato que termina a fase 2. */
+const seSenao = (cond: JSExpr, then: JSStatement[], otherwise: JSStatement[]): JSStatement => ({
+  type: 'if',
+  cond,
+  then,
+  else: otherwise,
 })
 const y = (spriteVar: string): JSExpr => ({ type: 'g2d:spriteY', spriteVar })
 const x = (spriteVar: string): JSExpr => ({ type: 'g2d:spriteX', spriteVar })
@@ -128,6 +141,7 @@ function colocar(sprite: string, x: number, yAlvo: number): JSStatement[] {
 function recomecar(variacao: Variacao): JSStatement[] {
   return [
     ...colocar('pinguim', PICO.inicioX, PICO.inicioY),
+    ...(variacao === 'plataforma' ? [set('fase', n(1)), ...colocar('bandeira', 572, 336)] : []),
     set('noChao', b(false)),
     set('chegou', b(false)),
     ...(variacao === 'floco' ? [set('pegouFloco', b(false))] : []),
@@ -165,17 +179,45 @@ function pousarEm(inicio: number, fim: number, topo: number): JSStatement {
     ]),
   ])
 }
-function pousar(alto: boolean): JSStatement[] {
+function pousar(alto: boolean, fases: boolean): JSStatement[] {
+  const f = PICO.fase2
   return [
     pousarEm(0, PICO.fimDoGelo1, PICO.topoDoGelo),
     pousarEm(PICO.inicioDoGelo2, 640, PICO.topoDoGelo),
     ...(alto ? [pousarEm(380, 530, 270)] : []),
+    ...(fases ? [iff(bin('===', v('fase'), n(2)), [pousarEm(f.inicio, f.fim, f.topo)])] : []),
+  ]
+}
+/**
+ * A bandeira com fases (A46): na fase 1, leva à fase 2 (o pinguim volta ao começo e a bandeira
+ * sobe para o gelo do alto); na fase 2, termina o jogo, uma vez só.
+ */
+function bandeiraComFases(): JSStatement[] {
+  const f = PICO.fase2
+  return [
+    seSenao(
+      bin('===', v('fase'), n(1)),
+      [
+        set('fase', n(2)),
+        ...colocar('pinguim', PICO.inicioX, f.pinguimY),
+        set('noChao', b(false)),
+        ...colocar('bandeira', f.bandeiraX, f.bandeiraY),
+        set('recado', s('Fase 2: suba no gelo do alto e chegue à bandeira.')),
+      ],
+      [
+        iff(bin('===', v('chegou'), b(false)), [
+          set('chegou', b(true)),
+          set('recado', s('O pinguim chegou à bandeira da fase 2. O jogo terminou.')),
+        ]),
+      ],
+    ),
   ]
 }
 
 export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const basePronta = variacao !== 'plataforma' || pronto
   const alto = variacao === 'pulo-alto'
+  const fases = variacao === 'plataforma'
   const forca = alto ? (pronto ? PICO.puloAlto : PICO.puloBaixo) : PICO.pulo
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: 640, height: 480, bg: '#dcebf7' },
@@ -186,6 +228,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     ),
     { type: 'var', name: 'flocos', value: n(0) },
     { type: 'var', name: 'quedas', value: n(0) },
+    ...(fases ? [{ type: 'var', name: 'fase', value: n(1) } as JSStatement] : []),
     {
       type: 'var',
       name: 'recado',
@@ -195,6 +238,18 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     image('gelo1', 'gelo', 0, PICO.topoDoGelo, PICO.fimDoGelo1, 64),
     image('gelo2', 'gelo', PICO.inicioDoGelo2, PICO.topoDoGelo, 640 - PICO.inicioDoGelo2, 64),
     ...(alto ? [image('geloAlto', 'gelo', 380, 270, 150, 24)] : []),
+    ...(fases
+      ? [
+          image(
+            'geloDaFase2',
+            'gelo',
+            PICO.fase2.inicio,
+            PICO.fase2.topo,
+            PICO.fase2.fim - PICO.fase2.inicio,
+            24,
+          ),
+        ]
+      : []),
     image('mar', 'mar', 0, PICO.mar, 640, 18),
     image('bandeira', 'bandeira', alto ? 470 : 572, alto ? 190 : 336, 40, 80),
     ...(variacao === 'floco' ? [image('floco', 'floco', 46, 236, 32, 32)] : []),
@@ -223,14 +278,16 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
       type: 'g2d:onOverlap',
       aVar: 'pinguim',
       bVar: 'bandeira',
-      body: basePronta
-        ? [
-            iff(bin('===', v('chegou'), b(false)), [
-              set('chegou', b(true)),
-              set('recado', s('O pinguim chegou à bandeira. A fase terminou.')),
-            ]),
-          ]
-        : [],
+      body: !basePronta
+        ? []
+        : fases
+          ? bandeiraComFases()
+          : [
+              iff(bin('===', v('chegou'), b(false)), [
+                set('chegou', b(true)),
+                set('recado', s('O pinguim chegou à bandeira. A fase terminou.')),
+              ]),
+            ],
     },
     ...(variacao === 'floco'
       ? [
@@ -273,7 +330,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             ...(basePronta
               ? [{ type: 'g2d:clampToScreen', spriteVar: 'pinguim', ctxVar: 'ctx' } as JSStatement]
               : []),
-            ...pousar(alto),
+            ...pousar(alto, fases),
             { type: 'g2d:clear' },
             { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'pico' },
             label('Fase do Pico Gelado', 18, 32, 25),
@@ -282,6 +339,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             draw('gelo1'),
             draw('gelo2'),
             ...(alto ? [draw('geloAlto')] : []),
+            ...(fases ? [iff(bin('===', v('fase'), n(2)), [draw('geloDaFase2')])] : []),
             draw('bandeira'),
             ...(variacao === 'floco'
               ? [iff(bin('===', v('pegouFloco'), b(false)), [draw('floco')])]
@@ -289,6 +347,20 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             draw('pinguim'),
             label(v('recado'), 18, 92, 15),
             label('Enter ou +: recomeçar a fase.', 400, 32, 15),
+            ...(fases
+              ? [
+                  {
+                    type: 'g2d:drawScore',
+                    ctxVar: 'ctx',
+                    label: 'Fase: ',
+                    value: v('fase'),
+                    x: 18,
+                    y: 122,
+                    size: 18,
+                    color: '#1d3b5c',
+                  } as JSStatement,
+                ]
+              : []),
             ...(variacao === 'floco' || variacao === 'quedas'
               ? [
                   {
@@ -319,6 +391,168 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: name }),
+    assets: assetsDoPico,
+    installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
+  }
+}
+
+/**
+ * A Fase do Pico em passos (lacunas, 01/11/2026; os quadros 1 a 5 no gênero do posto, plataforma
+ * com fases): 1 o pulo com apoio, 2 a água devolve ao começo e conta a queda, 3 a bandeira leva à
+ * fase 2 (os dados da fase), 4 a bandeira da fase 2 termina o jogo (a cena do fim), 5 o Enter volta
+ * à fase 1. Cada quadro traz prontos os passos anteriores; o do quadro só vem no gabarito.
+ */
+export function projetoDaFaseEmPassos(
+  quadro: 1 | 2 | 3 | 4 | 5,
+  pronto: boolean,
+  titulo: string,
+): Project {
+  const tem = (passo: number) => passo < quadro || (pronto && passo === quadro)
+  const f = PICO.fase2
+  const voltarAFase1: JSStatement[] = [
+    ...colocar('pinguim', PICO.inicioX, PICO.inicioY),
+    set('fase', n(1)),
+    ...colocar('bandeira', 572, 336),
+    set('noChao', b(false)),
+    set('chegou', b(false)),
+    set('quedas', n(0)),
+    { type: 'g2d:setScene', name: 'jogo' },
+    set('recado', s('Fase 1: passe o buraco e chegue à bandeira.')),
+  ]
+  const start: JSStatement[] = [
+    { type: 'g2d:setupStage', width: 640, height: 480, bg: '#dcebf7' },
+    { type: 'g2d:enableClassicControls', mode: 'auto' },
+    ...['noChao', 'chegou'].map((name): JSStatement => ({ type: 'var', name, value: b(false) })),
+    { type: 'var', name: 'quedas', value: n(0) },
+    { type: 'var', name: 'fase', value: n(1) },
+    { type: 'var', name: 'recado', value: s('Fase 1: passe o buraco e chegue à bandeira.') },
+    image('pinguim', 'pinguim', PICO.inicioX, PICO.inicioY, 44, 48),
+    image('gelo1', 'gelo', 0, PICO.topoDoGelo, PICO.fimDoGelo1, 64),
+    image('gelo2', 'gelo', PICO.inicioDoGelo2, PICO.topoDoGelo, 640 - PICO.inicioDoGelo2, 64),
+    image('geloDaFase2', 'gelo', f.inicio, f.topo, f.fim - f.inicio, 24),
+    image('mar', 'mar', 0, PICO.mar, 640, 18),
+    image('bandeira', 'bandeira', 572, 336, 40, 80),
+  ]
+  const fimDoJogo: JSStatement[] = tem(4)
+    ? [
+        iff(bin('===', v('chegou'), b(false)), [
+          set('chegou', b(true)),
+          { type: 'g2d:setScene', name: 'fim' },
+          set('recado', s('O pinguim chegou à bandeira da fase 2. O jogo terminou.')),
+        ]),
+      ]
+    : []
+  const events: JSStatement[] = [
+    { type: 'g2d:onKey', key: 'Space', body: tem(1) ? pular(PICO.pulo) : [] },
+    {
+      type: 'g2d:onKey',
+      key: 'Enter',
+      // O passo 5 é o Enter; nos quadros 1 a 4 o extra é recomeçar o jogo inteiro.
+      body: quadro === 5 ? (tem(5) ? voltarAFase1 : []) : pronto ? [{ type: 'g2d:restart' }] : [],
+    },
+    // O extra do quinto quadro: a seta para cima também pula.
+    { type: 'g2d:onKey', key: 'ArrowUp', body: quadro === 5 && pronto ? pular(PICO.pulo) : [] },
+    {
+      type: 'g2d:onOverlap',
+      aVar: 'pinguim',
+      bVar: 'mar',
+      body: tem(2)
+        ? [
+            ...colocar('pinguim', PICO.inicioX, PICO.inicioY),
+            set('noChao', b(false)),
+            set('quedas', bin('+', v('quedas'), n(1))),
+            set('recado', s('O pinguim caiu na água e voltou ao começo.')),
+          ]
+        : [],
+    },
+    {
+      type: 'g2d:onOverlap',
+      aVar: 'pinguim',
+      bVar: 'bandeira',
+      body: tem(3)
+        ? [
+            seSenao(
+              bin('===', v('fase'), n(1)),
+              [
+                set('fase', n(2)),
+                ...colocar('pinguim', PICO.inicioX, f.pinguimY),
+                set('noChao', b(false)),
+                ...colocar('bandeira', f.bandeiraX, f.bandeiraY),
+                set('recado', s('Fase 2: suba no gelo do alto e chegue à bandeira.')),
+              ],
+              fimDoJogo,
+            ),
+          ]
+        : [],
+    },
+  ]
+  const source: SZIRV2 = {
+    version: 2,
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-2d' }],
+    behavior: {
+      start,
+      events,
+      loops: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            set('noChao', b(false)),
+            { type: 'g2d:applyGravity', spriteVar: 'pinguim' } as JSStatement,
+            { type: 'g2d:arrowsX', spriteVar: 'pinguim', speed: PICO.passo } as JSStatement,
+            apply('pinguim'),
+            { type: 'g2d:clampToScreen', spriteVar: 'pinguim', ctxVar: 'ctx' } as JSStatement,
+            ...pousar(false, true),
+            { type: 'g2d:clear' },
+            { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'pico' },
+            label(titulo, 18, 32, 25),
+            label('Setas andam, Espaço ou A pula. Chegue à bandeira.', 18, 61, 16),
+            draw('mar'),
+            draw('gelo1'),
+            draw('gelo2'),
+            iff(bin('===', v('fase'), n(2)), [draw('geloDaFase2')]),
+            draw('bandeira'),
+            draw('pinguim'),
+            label(v('recado'), 18, 92, 15),
+            {
+              type: 'g2d:drawScore',
+              ctxVar: 'ctx',
+              label: 'Fase: ',
+              value: v('fase'),
+              x: 18,
+              y: 122,
+              size: 18,
+              color: '#1d3b5c',
+            } as JSStatement,
+            {
+              type: 'g2d:drawScore',
+              ctxVar: 'ctx',
+              label: 'Quedas: ',
+              value: v('quedas'),
+              x: 120,
+              y: 122,
+              size: 18,
+              color: '#1d3b5c',
+            } as JSStatement,
+            iff({ type: 'g2d:sceneIs', name: 'fim' }, [
+              label('Fim de jogo. Enter começa de novo.', 180, 200, 20),
+            ]),
+          ],
+        },
+      ],
+    },
+  }
+  const ir = assignStableIdsToIR(source, `pico_quadro_${quadro}`)
+  return {
+    ...createEmptyProject(`pico-quadro-${quadro}`, titulo),
+    programmingLanguage: 'javascript',
+    mode: 'blocks',
+    createdAt: 0,
+    updatedAt: 0,
+    ir,
+    blocksState: buildWorkspaceStateFromIR(ir),
+    files: generateProjectFiles({ ir, projectName: titulo }),
     assets: assetsDoPico,
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }

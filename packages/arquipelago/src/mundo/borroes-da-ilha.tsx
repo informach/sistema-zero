@@ -29,6 +29,7 @@ import { momentoDoDia } from '../sistemas/tempo-do-dia'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { paraOMundo } from './bosque'
+import { marcarBorrao, soltarBorrao } from './cinza-dos-borroes'
 import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import { useInterativo } from './interativos'
@@ -228,6 +229,8 @@ function Borrao({
   useEffect(() => {
     if (jaPreso) estado.current.fase = 'pronto'
   }, [jaPreso])
+  // Amanheceu, a ilha saiu ou o borrão virou Lumi: o Cinza em volta dele some junto.
+  useEffect(() => () => soltarBorrao(borrao.id), [borrao.id])
 
   useInterativo(`borrao-${borrao.id}`, {
     get x() {
@@ -294,7 +297,9 @@ function Borrao({
       const rumo = Math.atan2(rastro.x - b.x, rastro.z - b.z) + (b.fugindo ? Math.PI : 0)
       corpo.current.rotation.y = suavizarAngulo(corpo.current.rotation.y, rumo, 4, dt)
     }
-    // O chão desbotado em volta do borrão (§6.28 A38): cresce solto, some quando vira Lumi.
+    // O chão desbotado em volta do borrão (§6.28 A38): cresce solto, some quando vira Lumi. Em
+    // volta dele, o Cinza tira a cor do que está perto (`cinza-dos-borroes.ts`), na mesma medida.
+    marcarBorrao(borrao.id, b.x, b.z, opacidadeDaMancha(b) / MANCHA_DO_BORRAO.opacidade)
     if (mancha.current) {
       const opacidade = opacidadeDaMancha(b)
       mancha.current.visible = opacidade > 0.01

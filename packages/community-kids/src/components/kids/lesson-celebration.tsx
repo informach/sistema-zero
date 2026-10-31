@@ -10,7 +10,7 @@ import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { CourseProgressView, GamificationDelta } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 import { ZappyCoin } from './zappy-coin'
 
 interface LessonCelebrationProps {

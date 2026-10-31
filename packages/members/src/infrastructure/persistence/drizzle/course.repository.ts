@@ -59,7 +59,7 @@ function toModule(row: typeof modules.$inferSelect): Module {
     courseId: row.courseId,
     title: row.title,
     summary: row.summary,
-    riveUrl: row.riveUrl,
+    animation: row.animation,
     sortOrder: row.sortOrder,
   }
 }

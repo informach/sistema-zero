@@ -1,0 +1,126 @@
+{
+  "cases": [
+    {
+      "mode": "performance",
+      "claims": 1,
+      "errors": [],
+      "measurement": {
+        "active": {
+          "elapsedSeconds": 2.012178,
+          "samples": 119,
+          "frameMsP50": 16.699999999999818,
+          "frameMsP95": 16.799999999999955,
+          "frameMsMax": 16.800000000000182,
+          "taskSeconds": 0.309882,
+          "jsHeapBytes": 19052112,
+          "domNodes": 662
+        },
+        "paused": {
+          "elapsedSeconds": 2.0036258,
+          "samples": 120,
+          "frameMsP50": 16.699999999999818,
+          "frameMsP95": 16.800000000000182,
+          "frameMsMax": 18,
+          "taskSeconds": 0.021290999999999997,
+          "jsHeapBytes": 20598216,
+          "domNodes": 663
+        },
+        "description": "Voice and closed chest are paused. One happy artwork animates in the active sample."
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "requests": [
+    {
+      "scenario": "performance",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/chunk-a7e7xhhg.js",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "performance",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    }
+  ]
+}

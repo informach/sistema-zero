@@ -42,7 +42,7 @@ import type {
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
 import { KidsMascot } from './mascot'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 import { MuralCelebration } from './mural-celebration'
 
 /**
@@ -117,7 +117,6 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
               <KidsMascotAnimated
                 expression={content.pose ?? 'speaking'}
                 className="size-16 sm:size-24"
-                sound={false}
               />
             }
           />

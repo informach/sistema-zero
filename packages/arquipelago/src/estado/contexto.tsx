@@ -194,6 +194,8 @@ export interface Movimento {
   caisProntos: Set<IlhaId>
   rotasDoBarco: readonly RotaDoBarco[]
   embarcarPara: ((origem: PortoId, destino: PortoId) => boolean) | null
+  /** A volta das boias (a regata do barco, lacunas de 01/11/2026), do cais da sua ilha. */
+  embarcarNaRegata: (() => boolean) | null
   /** O balão das Nuvens (fase4-09), registrado pelo desenho dele enquanto a ilha está ativa. */
   balao: Voo | null
   cipos: CipoVivo[]
@@ -256,6 +258,7 @@ export function criarMovimento(): Movimento {
     caisProntos: new Set(),
     rotasDoBarco: [],
     embarcarPara: null,
+    embarcarNaRegata: null,
     balao: null,
     cipos: [],
     troncos: [],

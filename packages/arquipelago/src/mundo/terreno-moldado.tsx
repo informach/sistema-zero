@@ -12,21 +12,23 @@ export type AlturaDoCanto = (x: number, z: number) => number
 
 /**
  * O terreno moldado do lote da casa (E04, "Nuvens: moldar o terreno"), lido do documento à parte
- * do serviço. `null` quando não há nada moldado (e na visita: o documento não viaja com ela).
+ * do serviço. Na visita, o de quem é visitado, que vem com a casa dele (lacunas, 01/11/2026).
+ * `null` quando não há nada moldado.
  */
 export function useAlturaDoTerreno(): AlturaDoCanto | null {
   const { loja, plataforma } = useJogo()
   const extensa = lojaDaObraEstendida(loja, plataforma)
-  const terreno = useObraEstendida(extensa, (s) => s.obra?.terreno ?? null)
-  const visita = useEstado((s) => s.visita !== null)
-  const obra = useEstado((s) => s.salvamento.construcao.casa)
+  const proprio = useObraEstendida(extensa, (s) => s.obra?.terreno ?? null)
+  const visita = useEstado((s) => s.visita)
+  const terreno = visita ? (visita.terreno ?? null) : proprio
+  const obra = useEstado((s) => (s.visita ? s.visita.obra : s.salvamento.construcao.casa))
   const jornada = useEstado((s) => s.jornada)
   return useMemo(() => {
-    if (visita || !terreno || terreno.alturas.length === 0) return null
+    if (!terreno || terreno.alturas.length === 0) return null
     const lote = loteDaCasa(jornada)
     const planas = celulasPlanas(obra, lote)
     return (x: number, z: number) => alturaDoCanto(terreno, lote, planas, x, z)
-  }, [terreno, visita, obra, jornada])
+  }, [terreno, obra, jornada])
 }
 
 /**

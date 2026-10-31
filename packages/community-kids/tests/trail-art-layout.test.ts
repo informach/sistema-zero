@@ -21,7 +21,7 @@ function expectFree(area: TrailArtArea) {
   return result
 }
 
-describe('posição do Rive com tamanho real', () => {
+describe('posição do ediSVG com tamanho real', () => {
   test('250 px cabem ao lado de uma unidade curta no desktop, sem aumentar a trilha', () => {
     const area = {
       width: 640,

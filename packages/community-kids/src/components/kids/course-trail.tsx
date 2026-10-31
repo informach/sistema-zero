@@ -1,9 +1,8 @@
-import { moduleRiveSrc } from '@sistemazero/core/course/module-rive'
+import { moduleAnimation } from '@sistemazero/core/course/module-animation'
 import { Check, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
-import { chestRiveSrc } from './chest-rive-src'
 import { KidsMascot } from './mascot'
 import { TrailChest } from './trail-chest'
 import { balloonLabel, buildTrail, type TrailArtSide, type TrailNode } from './trail-layout'
@@ -48,7 +47,6 @@ function nodeAria(node: TrailNode): string {
 export function CourseTrail({ course }: { course: CourseDetailView }) {
   const units = buildTrail(course)
   const label = balloonLabel(course)
-  const chestRive = chestRiveSrc()
   const lessonHref = (id: string) =>
     `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(id)}`
 
@@ -73,7 +71,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
     <div className="mx-auto flex w-full max-w-[40rem] flex-col gap-10">
       {units.map((unit, unitIndex) => {
         const doneCount = unit.module.lessons.filter((l) => l.completed).length
-        const art = moduleRiveSrc(unit.module.riveUrl)
+        const art = moduleAnimation(unit.module.animation)
         const preferredSide: TrailArtSide = unitIndex % 2 === 0 ? 'left' : 'right'
         return (
           <section key={unit.module.id} className={UNIT_THEME_CLASS[unit.theme]}>
@@ -177,7 +175,6 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                     // num botão seria pior que não ter botão.
                     chest={unit.module.chest}
                     offset={unit.chest.offset}
-                    riveSrc={chestRive}
                   />
                 </li>
               </ol>

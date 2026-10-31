@@ -8,7 +8,8 @@ import type { Necessidades } from './necessidades'
  * hora sem perder o que já voltou. Regras puras, sem three nem React; o modo do corpo fica em
  * `modos/descanso.ts` e o mundo diz onde ficam os bancos e a cama.
  *
- * O cochilo automático (a energia no zero leva para casa com 60) continua em `estado/relogios.tsx`.
+ * O cochilo automático continua em `estado/relogios.tsx`, com as regras abaixo: a energia no zero
+ * espera a ação em andamento acabar, cochila ali mesmo uns segundos e acorda em casa com 60.
  */
 
 /** Quanto de energia volta por segundo descansando (de 0 a 100). */
@@ -36,6 +37,47 @@ export function sonecaAcabou(n: Necessidades, jeito: LugarDeDescanso['jeito']): 
 export const FALA_DE_SENTAR = 'Que bom sentar um pouco. A energia volta devagar.'
 export const FALA_DE_DEITAR = 'Hora de uma soneca. A energia vai voltando.'
 export const FALA_DA_SONECA_CHEIA = 'Que soneca boa. A energia voltou toda.'
+
+/**
+ * O cochilo da energia no zero (proposta: "o avatar cochila onde está e acorda em casa, sem perder
+ * nada"; lacunas de 01/11/2026). Ele espera o fim do que está em andamento: corrida, barco, balão,
+ * mergulho, montaria, trenó e escorregador, cipó, planador, escalada, borda, escada e equilíbrio.
+ */
+const MODOS_SEM_COCHILO = new Set([
+  'balao',
+  'montar',
+  'mergulho',
+  'barco',
+  'cipo',
+  'escorregar',
+  'planar',
+  'escalada',
+  'borda',
+  'escada',
+  'equilibrio',
+])
+
+/** Dá para cochilar agora? (energia no zero, sem painel aberto e sem nada em andamento) */
+export function podeCochilar(s: {
+  energia: number
+  corrida: unknown
+  modo: string
+  painelAberto: string | null
+}): boolean {
+  return (
+    s.energia <= 0 &&
+    s.corrida === null &&
+    s.painelAberto === null &&
+    !MODOS_SEM_COCHILO.has(s.modo)
+  )
+}
+
+/** Quantos segundos ela fica cochilando no lugar antes de acordar em casa. */
+export const SEGUNDOS_DE_COCHILO = 4
+/** A energia com que acorda. */
+export const ENERGIA_AO_ACORDAR = 60
+export const FALA_DO_COCHILO = 'Você cansou e cochilou aqui mesmo.'
+export const FALA_DE_ACORDAR_EM_CASA = 'Você acordou em casa, descansada. Nada se perdeu.'
 
 // ── Os bancos ──────────────────────────────────────────────────────────────────────────────────
 

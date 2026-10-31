@@ -59,7 +59,7 @@ type Parte =
   | 'pombos'
   | 'descricao'
 /** O extra opcional de cada variação, que o inicial também não tem. */
-type Extra = 'somDoPulo' | 'efeitos' | 'telaComMetros'
+type Extra = 'somDoPulo' | 'efeitos' | 'telaComMetros' | 'boloDourado'
 
 export const PARTE: Record<Variacao, Parte> = {
   pulo: 'gravidade',
@@ -78,7 +78,8 @@ export const EXTRA: Record<Variacao, Extra> = {
   partida: 'telaComMetros',
   batida: 'efeitos',
   sorteio: 'somDoPulo',
-  corrida: 'telaComMetros',
+  // A proposta: "★ Desafio extra: um bolo dourado que vale o dobro" (lacunas, 01/11/2026).
+  corrida: 'boloDourado',
   'pulo-alto': 'somDoPulo',
   pombos: 'efeitos',
   descricao: 'telaComMetros',
@@ -126,6 +127,12 @@ const VILA = svg(
   270,
   `<rect width="480" height="270" fill="#bfe6f2"/><g fill="#fff" opacity=".8"><ellipse cx="80" cy="40" rx="34" ry="11"/><ellipse cx="330" cy="30" rx="42" ry="12"/></g>${loja(14, '#f2b56a', 'BENTO')}${loja(176, '#ca9acb', 'DOCES')}${loja(338, '#8fc7a4', 'SUCOS')}<rect y="227" width="480" height="43" fill="#d8c3a5"/><path d="M0 227h480" stroke="#9c7b5f" stroke-width="3"/><g fill="#c7ad8c"><rect x="20" y="240" width="38" height="10" rx="3"/><rect x="110" y="252" width="38" height="10" rx="3"/><rect x="200" y="240" width="38" height="10" rx="3"/><rect x="290" y="252" width="38" height="10" rx="3"/><rect x="380" y="240" width="38" height="10" rx="3"/></g>`,
 )
+/** O bolo dourado do extra da corrida (a arte dos telhados e das chaminés vem do L11). */
+const BOLO = svg(
+  32,
+  32,
+  '<ellipse cx="16" cy="25" rx="14" ry="5" fill="#c99a2e"/><rect x="4" y="12" width="24" height="13" rx="4" fill="#f5c542" stroke="#a87a1c" stroke-width="2"/><path d="M4 16q6 4 12 0t12 0" fill="none" stroke="#fff2c2" stroke-width="3"/><circle cx="16" cy="8" r="4" fill="#e85d5d"/>',
+)
 const assets: ProjectAsset[] = [
   {
     id: 'vila-rua',
@@ -134,7 +141,34 @@ const assets: ProjectAsset[] = [
     source: 'library',
     dataUrl: `data:image/svg+xml;base64,${Buffer.from(VILA).toString('base64')}`,
   },
+  {
+    id: 'vila-bolo-dourado',
+    name: 'bolo',
+    kind: 'image',
+    source: 'library',
+    dataUrl: `data:image/svg+xml;base64,${Buffer.from(BOLO).toString('base64')}`,
+  },
 ]
+
+/** O bolo dourado anda pela rua na altura do entregador e volta ao começo (blocos do Faísca). */
+const BOLO_DOURADO = { x: 560, y: 175, tamanho: 28, passo: -4 } as const
+const velocidadeDo = (vx: number, vy: number): JSStatement => ({
+  type: 'g2d:setVelocity',
+  spriteVar: 'bolo',
+  vx: n(vx),
+  vy: n(vy),
+})
+/** Leva o bolo ao começo da rua, com velocidade e borda, e deixa ele andando de novo. */
+function boloAoComeco(): JSStatement[] {
+  return [
+    velocidadeDo(-640, -480),
+    { type: 'g2d:applyVelocity', spriteVar: 'bolo' },
+    { type: 'g2d:clampToScreen', spriteVar: 'bolo', ctxVar: 'ctx' },
+    velocidadeDo(BOLO_DOURADO.x, BOLO_DOURADO.y),
+    { type: 'g2d:applyVelocity', spriteVar: 'bolo' },
+    velocidadeDo(BOLO_DOURADO.passo, 0),
+  ]
+}
 
 const DESCRICAO_COMPLETA =
   'Leve os doces do Bento pela rua: pule as pedras com Espaço, com a seta para cima ou com um toque na tela.'
@@ -186,6 +220,21 @@ function jogo(variacao: Variacao, liga: (p: Parte | Extra) => boolean): SZIRV2 {
       : []),
     { type: 'var', name: 'metros', value: n(0) },
     { type: 'var', name: 'velocidade', value: n(PISTA.velocidade) },
+    // O bolo dourado só aparece na corrida do entregador (o quadro 6), pronto no cenário.
+    ...(variacao === 'corrida'
+      ? [
+          {
+            type: 'g2d:createImageSprite',
+            varName: 'bolo',
+            image: 'bolo',
+            x: BOLO_DOURADO.x,
+            y: BOLO_DOURADO.y,
+            w: BOLO_DOURADO.tamanho,
+            h: BOLO_DOURADO.tamanho,
+          } as JSStatement,
+          velocidadeDo(BOLO_DOURADO.passo, 0),
+        ]
+      : []),
   ]
   const events: JSStatement[] = [
     ...(liga('somDoPulo')
@@ -210,6 +259,14 @@ function jogo(variacao: Variacao, liga: (p: Parte | Extra) => boolean): SZIRV2 {
         : [],
     },
   ]
+  // O extra da corrida: pegar o bolo dourado vale 2 metros de uma vez, o dobro de um segundo.
+  if (variacao === 'corrida')
+    events.push({
+      type: 'g2d:onOverlap',
+      aVar: 'entregador',
+      bVar: 'bolo',
+      body: liga('boloDourado') ? [somar('metros', 2), ...boloAoComeco()] : [],
+    })
   const batida: JSStatement[] = liga('batida')
     ? [
         ...(liga('efeitos')
@@ -243,6 +300,21 @@ function jogo(variacao: Variacao, liga: (p: Parte | Extra) => boolean): SZIRV2 {
                 ]
               : []),
             { type: 'g2d:drawSprite', spriteVar: 'entregador', ctxVar: 'ctx' },
+            ...(variacao === 'corrida'
+              ? [
+                  { type: 'g2d:applyVelocity', spriteVar: 'bolo' } as JSStatement,
+                  se(
+                    {
+                      type: 'binop',
+                      op: '<',
+                      left: { type: 'g2d:spriteX', spriteVar: 'bolo' },
+                      right: n(-40),
+                    },
+                    boloAoComeco(),
+                  ),
+                  { type: 'g2d:drawSprite', spriteVar: 'bolo', ctxVar: 'ctx' } as JSStatement,
+                ]
+              : []),
             { type: 'g2d:updateGroup', groupVar: 'pedras' },
             { type: 'g2d:drawGroup', groupVar: 'pedras', ctxVar: 'ctx' },
             {

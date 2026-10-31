@@ -7,6 +7,7 @@ import {
   useEstado,
   useJogo,
 } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
 import type { Ponto } from '../sistemas/cipo'
 import { podeSubirOFarol } from '../sistemas/final-do-farol'
 import {
@@ -17,6 +18,7 @@ import {
 import { CORRENTE_DO_PICO, type CorrenteDeAr } from '../sistemas/planador'
 import { VentoQueSobe } from './corrente-de-ar'
 import { CORES_DO_VAGALUME, CorridaNaIlha } from './corrida-na-ilha'
+import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, alturaDaIlha, FAROL } from './medidas'
 import { ComReserva, MODELOS, useModelo } from './modelos'
 
@@ -29,6 +31,11 @@ const LARGURA_DA_ESCADA = 0.6
 const RAIO_DA_PARADA = 0.9
 /** Os pés a menos disto do chão da ilha, pisando, contam como queda da subida. */
 const CHAO_DO_FAROL = 0.3
+/** O rótulo da entrada da sala pela varanda, no alto da subida por fora. */
+export const ROTULO_DA_VARANDA = 'Entrar na sala do alto'
+/** A varanda conta a esta distância no chão e a esta altura dela. */
+const RAIO_DA_VARANDA = 2.2
+const ALTURA_DA_VARANDA = 1.5
 
 /** Uma âncora do `farol.glb` no mundo (o grupo do Farol fica no pé da torre, sem giro). */
 function noMundo(p: Ponto): Ponto {
@@ -134,7 +141,7 @@ export function SubidaDoFarol() {
 }
 
 function SubidaCarregada() {
-  const { movimento } = useJogo()
+  const { movimento, loja, rastro } = useJogo()
   const raiz = useModelo(MODELOS.farol)
   const subida = useMemo(() => subidaDoFarolNoMundo(raiz), [raiz])
   useEffect(() => {
@@ -152,6 +159,21 @@ function SubidaCarregada() {
       for (const e of subida.equilibrios) tirar(movimento.equilibrios, e)
     }
   }, [movimento, subida])
+  // Da varanda, a sala do alto fica a um passo (N4): o mesmo `entrar` da porta de baixo, sem
+  // depender de a criança ter deixado aberto o resultado da subida.
+  const varanda = subida?.pontos.chegada ?? null
+  useInterativo('varanda-do-farol', {
+    x: varanda?.x ?? 0,
+    z: varanda?.z ?? 0,
+    raio: varanda ? RAIO_DA_VARANDA : 0,
+    rotulo: () => {
+      if (!varanda || loja.getState().visita) return null
+      const farol = lojaDoFarol(loja).getState()
+      if (farol.etapa !== 'fora' || farol.corte !== null || !farol.entrar) return null
+      return Math.abs(rastro.y - varanda.y) < ALTURA_DA_VARANDA ? ROTULO_DA_VARANDA : null
+    },
+    agir: () => void lojaDoFarol(loja).getState().entrar?.(),
+  })
   if (!subida) return null
   return (
     <>

@@ -1,6 +1,10 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { ladrilhosDaSemana, tempoPorExtenso } from '../src/app/pais/_components/arquipelago-familia'
+import {
+  comoComecam,
+  ladrilhosDaSemana,
+  tempoPorExtenso,
+} from '../src/app/pais/_components/arquipelago-familia'
 import { ArquipelagoLimitCard } from '../src/app/pais/_components/arquipelago-limit-card'
 
 const LIA = '11111111-1111-4111-8111-111111111111'
@@ -38,8 +42,8 @@ test('cada número da semana só aparece quando o serviço o tem', () => {
     {
       chave: 'objetos',
       valor: '3',
-      rotulo: 'objetos com a aparência criada por Lia',
-      detalhe: '2 no Pinta e 1 no Molda, desde o começo',
+      rotulo: 'criações de Lia nos objetos do jogo',
+      detalhe: '2 do Pinta e 1 do Molda, esta semana',
     },
     {
       chave: 'tempo',
@@ -72,7 +76,7 @@ test('cada número da semana só aparece quando o serviço o tem', () => {
     rotulo: 'desafio do Estúdio aprovado',
     detalhe: undefined,
   })
-  expect(semAnteriores[1]?.rotulo).toBe('objeto com a aparência criada por Lia')
+  expect(semAnteriores[1]?.rotulo).toBe('criação de Lia nos objetos do jogo')
   expect(semAnteriores[2]).toEqual({
     chave: 'tempo',
     valor: '0 min',
@@ -229,4 +233,14 @@ test('jogo fechado para a família: nem a semana nem as permissões são pedidas
   await new Promise((r) => setTimeout(r, 0))
   expect(calls.length).toBe(1)
   expect(container.textContent).toBe('')
+})
+
+test('a frase de como as permissões começam segue o padrão do contrato (A34)', () => {
+  expect(comoComecam()).toBe(
+    'Visitas de irmãos começa ligada; visitas de outras crianças e fotos no Clube começam desligadas.',
+  )
+  expect(comoComecam()).not.toContain('Tudo começa desligado')
+  expect(
+    comoComecam({ visitasDeIrmaos: false, visitasDeOutrasCriancas: false, fotosNoClube: false }),
+  ).toBe('Visitas de irmãos, visitas de outras crianças e fotos no Clube começam desligadas.')
 })

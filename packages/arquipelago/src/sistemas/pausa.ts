@@ -8,6 +8,8 @@ export interface SinaisDePausa {
   tempoSincronizando: boolean
   resultado: object | null
   salvamentoSituacao?: string
+  /** Cochilando no lugar (a energia no zero): os comandos esperam ela acordar em casa. */
+  cochilando?: boolean
 }
 
 export function salvamentoPausado(situacao?: string): boolean {
@@ -28,6 +30,7 @@ export function jogoPausado(s: SinaisDePausa): boolean {
     s.tempoPausado ||
     s.tempoSincronizando ||
     salvamentoPausado(s.salvamentoSituacao) ||
-    s.resultado !== null
+    s.resultado !== null ||
+    s.cochilando === true
   )
 }

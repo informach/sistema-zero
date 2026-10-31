@@ -10,12 +10,14 @@ import type { Logger } from '@sistemazero/core/logging'
 import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { Jogador } from '../domain/jogador'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
+import type { RepositorioDaObraEstendida } from '../domain/obra-estendida.port'
 import {
   type RepositorioDasVisitasAdultas,
   SalvamentoDaVisitaNecessarioError,
   VisitaAdultaIndisponivelError,
 } from '../domain/visitas-adultas.port'
 import { AcessoBloqueadoError, SomenteLeituraError } from './erros'
+import { obraEstendidaNaVisita } from './obra-na-visita'
 
 const hashDoCodigo = (codigo: string) => createHash('sha256').update(codigo).digest('hex')
 
@@ -25,6 +27,8 @@ export class ServicoDasVisitasAdultas {
       repo: RepositorioDasVisitasAdultas
       politica: PoliticaDeAcesso
       membros?: Pick<PortaDosMembros, 'lerQuarto'> | null
+      /** O andar de cima e o terreno de quem é visitado; sem o repositório, a casa vem sem. */
+      obras?: Pick<RepositorioDaObraEstendida, 'ler'> | null
       logger?: Logger
       agora?: () => Date
     },
@@ -90,7 +94,13 @@ export class ServicoDasVisitasAdultas {
         })
       }
     }
-    // Uma revogação durante a leitura do quarto impede devolver a projeção.
+    const estendida = await obraEstendidaNaVisita(
+      this.deps.obras,
+      alvo.jogadorId,
+      'adulto',
+      this.deps.logger,
+    )
+    // Uma revogação durante as leituras (o quarto e a obra) impede devolver a projeção.
     if (!(await this.deps.repo.confirmar(alvo.hash, alvo.jogadorId)))
       throw new VisitaAdultaIndisponivelError()
     return {
@@ -99,6 +109,7 @@ export class ServicoDasVisitasAdultas {
       horta: s.horta,
       completos: OBJETOS_DA_CASA.filter((id) => Boolean(s.projetos[id]?.aparencia)),
       quarto,
+      ...estendida,
     }
   }
 }

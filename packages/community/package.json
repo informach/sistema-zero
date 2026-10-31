@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3007",
-    "build": "next build",
+    "dev": "bun ../edisvg/scripts/sync-assets.ts public && next dev -p 3007",
+    "build": "bun ../edisvg/scripts/sync-assets.ts public && next build",
     "start": "next start -p 3007",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
@@ -20,6 +20,7 @@
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@sistemazero/core": "workspace:*",
+    "@sistemazero/edisvg": "workspace:*",
     "@sistemazero/member-shell": "workspace:*",
     "@sistemazero/ui": "workspace:*",
     "@vimeo/player": "^2.30.4",

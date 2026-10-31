@@ -13,6 +13,7 @@ import type { NivelDeQualidade } from '../sistemas/qualidade'
 import type { ConvidadoNaCasa } from '../sistemas/visitas-dos-moradores'
 import { ilhasNaMemoria, ultimaLiberacao } from './carregar-ilha'
 import { medirFesta } from './catalogo-da-festa'
+import { corQueSobra } from './cinza-dos-borroes'
 import { esmaecidasAgora } from './copas'
 import { fogoAgora } from './fogueira-viva'
 import { folhasAgora } from './folhas-ao-vento'
@@ -33,7 +34,9 @@ import { qualidadeDaVegetacao, ventoAgora } from './vegetacao-ao-vento'
  * `globalThis.__arquipelagoLevar(x, y, z, giro)` leva o personagem a um ponto (para medir a memória
  * na mesma pose antes e depois de uma visita) e `globalThis.__arquipelagoMovimento()` dá o que a
  * ilha registrou para os modos; `globalThis.__arquipelagoCameraEmVolta(desvio)` gira a câmera em
- * volta do avatar (para os prints das poses). Desligado, não faz nada.
+ * volta do avatar (para os prints das poses); `globalThis.__arquipelagoAcharNos(nome)` dá onde
+ * ficam no mundo os nós com esse nome e se aparecem (um móvel desenhado onde colide). Desligado,
+ * não faz nada.
  */
 export const CHAVE_DE_MEDIR = 'arquipelago:medir'
 const INTERVALO_DE_MEDIDA = 0.25
@@ -134,7 +137,7 @@ export interface MedidaDoDesenho {
   /** Cada patim calçado: quantas malhas e a altura mais baixa das rodinhas (vazio: descalço). */
   patins: { peca: string; malhas: number; rodas: number }[]
   /** Os borrões à vista (com onde estão), os Lumis da Vila e se a lanterna está na mão (fase2-06). */
-  borroes: { id: string; x: number; z: number }[]
+  borroes: { id: string; x: number; z: number; corQueSobra: number }[]
   lumisDaVila: string[]
   /** Os Lumis que moram nas ilhas (`ilha-âncora-espécie`), a Vila inclusive. */
   lumisDasIlhas: string[]
@@ -186,7 +189,13 @@ function medirBorroes(raiz: Object3D) {
   let lumiDaRotina: MedidaDoDesenho['lumiDaRotina'] = null
   raiz.traverse((o) => {
     if (/^borrao-(?:[a-z-]+:)?\d+:\d+$/.test(o.name) && o.visible)
-      borroes.push({ id: o.name.slice(7), x: o.position.x, z: o.position.z })
+      borroes.push({
+        id: o.name.slice(7),
+        x: o.position.x,
+        z: o.position.z,
+        // Quanto de cor sobra no lugar dele (o Cinza em volta, `cinza-dos-borroes.ts`).
+        corQueSobra: corQueSobra(o.position.x, o.position.z),
+      })
     else if (o.name.startsWith('lumi-da-ilha-')) {
       const id = o.name.slice(13)
       lumisDasIlhas.push(id)
@@ -245,6 +254,14 @@ function medirFantasma(raiz: Object3D): MedidaDoDesenho['fantasma'] {
   }
 }
 
+/** Um nó da cena achado pelo nome (`__arquipelagoAcharNos`): o lugar no mundo e se aparece. */
+interface NoNaCena {
+  x: number
+  y: number
+  z: number
+  visivel: boolean
+}
+
 export function Medidor() {
   const qualidade = useQualidade()
   const ligado = useMemo(medirLigado, [])
@@ -271,6 +288,7 @@ export function Medidor() {
       __arquipelagoCameraEmVolta?: (desvio: number) => void
       __arquipelagoLevar?: (...a: number[]) => void
       __arquipelagoLerQuarto?: () => { nome: string; pose: number[] }[]
+      __arquipelagoAcharNos?: (nome: string) => NoNaCena[]
       __arquipelagoLerCorpo?: () => {
         x: number
         y: number
@@ -292,6 +310,20 @@ export function Medidor() {
         })
       })
       return poses
+    }
+    // Os nós com esse nome na cena, onde estão no mundo e se aparecem (eles e todos os pais
+    // visíveis): para conferir que um móvel está desenhado onde colide.
+    g.__arquipelagoAcharNos = (nome: string) => {
+      const achados: NoNaCena[] = []
+      cena.updateMatrixWorld()
+      cena.traverse((o) => {
+        if (o.name !== nome) return
+        let visivel = true
+        for (let a: Object3D | null = o; a; a = a.parent) visivel &&= a.visible
+        const p = o.getWorldPosition(new Vector3())
+        achados.push({ x: p.x, y: p.y, z: p.z, visivel })
+      })
+      return achados
     }
     // Leitura sob demanda para conferir pulos sem reduzir o intervalo do medidor pesado.
     g.__arquipelagoLerCorpo = () => ({
@@ -317,6 +349,7 @@ export function Medidor() {
     return () => {
       g.__arquipelagoLevar = undefined
       g.__arquipelagoLerQuarto = undefined
+      g.__arquipelagoAcharNos = undefined
       g.__arquipelagoLerCorpo = undefined
       g.__arquipelagoMovimento = undefined
       g.__arquipelagoCameraEmVolta = undefined

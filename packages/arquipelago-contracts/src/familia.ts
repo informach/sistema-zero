@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 import { OBJETOS_DA_CASA } from './objetos'
+import { AndarDeCimaSchema, TerrenoSchema } from './obra-estendida'
 import { QuartoSchema } from './plataforma'
 import {
   CanteiroSchema,
@@ -13,8 +14,8 @@ import {
 
 /**
  * A família no Arquipélago (28/10/2026, fase1-18): o resumo da semana de cada criança e as
- * permissões de visita que os pais escolhem. Lido pela área dos pais do Kids; as permissões são
- * lidas pelo jogo quando as visitas chegarem (Fase 3).
+ * permissões de visita que os pais escolhem. Lido pela área dos pais do Kids; o serviço confere as
+ * permissões nas visitas de irmãos e de amigos e nas fotos no Clube.
  */
 
 /** Quantos dias o resumo cobre: hoje e os 6 anteriores, no dia de São Paulo. */
@@ -41,8 +42,9 @@ export const SemanaDaCriancaSchema = z.strictObject({
     })
     .nullable(),
   /**
-   * Projetos azuis com a aparência feita por ela, desde sempre (o salvamento não guarda a data);
-   * `null` = o salvamento não pôde ser lido.
+   * As criações do Pinta e do Molda que ela pôs em objetos do jogo na janela, cada uma contada
+   * uma vez (A33, 31/10/2026; antes eram os objetos desde o começo, pelo salvamento). `null` = o
+   * serviço não tem o número.
    */
   objetos: z.strictObject({ pinta: QUANTOS, molda: QUANTOS }).nullable(),
   /** Tempo livre no jogo na janela, em segundos, e em quantos dias ela jogou. */
@@ -90,7 +92,7 @@ export type SemanaDaFamiliaParaOsPais = z.infer<typeof SemanaDaFamiliaParaOsPais
 
 /**
  * As permissões de visita da família (ECA Digital, Lei 15.211/2025, art. 21: interação restrita
- * por padrão, os pais liberam). As visitas são da Fase 3: por enquanto só se grava e se lê.
+ * por padrão, os pais liberam). O serviço confere estas permissões nas visitas e nas fotos.
  */
 export const PermissoesDaFamiliaSchema = z.strictObject({
   visitasDeIrmaos: z.boolean(),
@@ -171,5 +173,12 @@ export const CasaDoIrmaoSchema = z.strictObject({
   horta: z.array(CanteiroSchema).max(24),
   completos: z.array(z.enum(OBJETOS_DA_CASA)).max(OBJETOS_DA_CASA.length),
   quarto: QuartoSchema.nullable(),
+  /**
+   * O andar de cima e o terreno moldado do lote, da obra estendida dele (lacunas, 01/11/2026: a
+   * visita mostrava a casa sem eles). Opcionais: o serviço de antes não os manda, e `null` quando
+   * ele não construiu.
+   */
+  andar: AndarDeCimaSchema.nullable().optional(),
+  terreno: TerrenoSchema.nullable().optional(),
 })
 export type CasaDoIrmao = z.infer<typeof CasaDoIrmaoSchema>

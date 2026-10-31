@@ -76,6 +76,7 @@
     "@sistemazero/arquipelago-contracts": "workspace:*",
     "@sistemazero/avatar-quarto": "workspace:*",
     "@sistemazero/core": "workspace:*",
+    "@sistemazero/edisvg": "workspace:*",
     "@sistemazero/helpdesk-contracts": "workspace:*",
     "@sistemazero/molda": "workspace:*",
     "@sistemazero/pinta": "workspace:*",

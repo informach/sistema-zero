@@ -9,28 +9,29 @@ import { montarProjetoPython } from './python-projetos'
 
 /**
  * C02 (30/10/2026): a Fase de plataforma do Pico em Python (Pygame Zero), com as fases como
- * dados, Kids e adulto. O sexto quadro da ilha
+ * dados, Kids e adulto. Desde a revisão de 31/10/2026 (A45), no tema da ilha: a subida do Floco; desde
+ * as lacunas de 01/11/2026, com critérios próprios (e não a lista da missão do posto). O sexto quadro da ilha
  * (§6.28, A2): devolve a cor e abre só com o curso-base do posto concluído (A3). Publica ao importar;
  * importar depois do manifesto em blocos da ilha, que tira o minijogo do quadro 6.
  */
 const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dicas: string[] }> = {
   kids: {
-    titulo: 'Subida das fases: o mapa é dado',
+    titulo: 'A subida do Floco: flocos no gelo',
     enunciado:
-      'No Pico, cada fase é uma lista de linhas de texto. Cada letra é uma célula de 40 pontos: # é plataforma, C é o cristal, S é a saída e J é onde o herói começa. Este desafio é em Python, com Pygame Zero. O jogo já anda, pula e desenha usando quatro funções; complete três delas. ler_fase(linhas, letra) devolve uma lista com [coluna, linha] de cada lugar onde a letra aparece. pousar(pe_antes, pe_depois, vy, topo) faz o herói parar em cima da plataforma quando ele está caindo e cruza o topo; nos outros casos, nada muda. proxima_fase(numero, tem_cristal, na_saida) avança para a fase seguinte só com o cristal e na saída. Setas andam e Espaço pula. Criar uma terceira fase fica para o extra.',
+      'O Floco quer subir a montanha até o cume, um trecho da trilha de cada vez, pegando todos os flocos de neve de cada trecho. No Pico, cada trecho é uma lista de linhas de texto. Cada letra é uma célula de 40 pontos: # é plataforma, * é um floco, S é a saída e J é onde o Floco começa. Este desafio é em Python, com Pygame Zero. O jogo já lê o mapa, pula, cai e desenha; complete três funções. contar(linhas, letra) diz quantas vezes a letra aparece no trecho. escorregar(vx, no_gelo) faz o Floco deslizar no gelo: no gelo, a velocidade diminui de 1 em 1 até parar; fora do gelo, ele para na hora. trecho_completo(pegos, total) só deixa seguir pela saída com todos os flocos pegos. Setas andam e Espaço pula. A função melhor fica para o extra.',
     dicas: [
-      'enumerate(lista) dá a posição e o valor de cada item. Use um enumerate para as linhas e outro para as letras de cada linha.',
-      'pousar devolve uma lista com dois valores: o pé novo e a velocidade nova. Pousar é devolver [topo, 0].',
-      'Teste uma função de cada vez com casos pequenos, como uma fase de duas linhas.',
+      'Para contar, use um laço pelas linhas e, dentro dele, outro pelas letras de cada linha.',
+      'escorregar tem quatro casos: indo para a direita, para a esquerda, parado e fora do gelo.',
+      'Teste uma função de cada vez com casos pequenos, como um trecho de duas linhas.',
     ],
   },
   adulto: {
     titulo: 'Plataforma com fases como dados',
     enunciado:
-      'Projeto Python com Pygame Zero. FASES é uma lista de fases e cada fase é uma lista de strings: # plataforma, C cristal, S saída e J início, em células de 40 px. O laço de jogo, a física e o desenho estão prontos e dependem de três funções. ler_fase(linhas, letra) retorna [coluna, linha] de cada ocorrência, em ordem de leitura. pousar(pe_antes, pe_depois, vy, topo) resolve a colisão vertical: retorna [topo, 0] apenas quando o herói está caindo (vy > 0) e cruza o topo; senão, [pe_depois, vy]. proxima_fase(numero, tem_cristal, na_saida) retorna numero + 1 apenas com o cristal coletado e na saída. Como extra, acrescente uma terceira fase.',
+      'Projeto Python com Pygame Zero. FASES é uma lista de trechos e cada trecho é uma lista de strings: # plataforma, * floco, S saída e J início, em células de 40 px. ler_fase, pousar, o laço de jogo e o desenho estão prontos e dependem de três funções. contar(linhas, letra) retorna o número de ocorrências da letra. escorregar(vx, no_gelo) aplica o atrito do gelo: com no_gelo, aproxima vx de zero em 1; sem gelo, retorna 0. trecho_completo(pegos, total) retorna True só com todos os flocos coletados. Como extra, melhor(tempos) retorna o menor tempo da lista.',
     dicas: [
-      'Dois enumerate aninhados percorrem linhas e colunas.',
-      'A colisão por eixo depende do movimento: compare pe_antes e pe_depois com o topo.',
+      'Dois laços aninhados percorrem linhas e células.',
+      'Trate vx positivo, negativo e zero, e o caso fora do gelo.',
       'Cada objetivo de função roda casos pequenos e independentes.',
     ],
   },
@@ -63,8 +64,8 @@ export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
             titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
             texto:
               publico === 'kids'
-                ? 'Acrescente uma terceira fase à lista FASES, com J, C, S e plataformas que levem até a saída.'
-                : 'Acrescente uma terceira fase jogável a FASES (início, cristal, saída e plataformas alcançáveis).',
+                ? 'Complete melhor(tempos): ela devolve o menor tempo da lista, para o fim do jogo mostrar o trecho mais rápido.'
+                : 'Implemente melhor(tempos), que retorna o menor valor da lista de tempos dos trechos.',
           },
           recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
           blocosManuais: { acrescentar: [], retirar: [] },

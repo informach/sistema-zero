@@ -9,6 +9,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -35,7 +36,7 @@ import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { statusLabel } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
-import { ModuleRiveUploader } from '@/components/media/module-rive-uploader'
+import { ModuleAnimationUploader } from '@/components/media/module-animation-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { isLiveCourse } from '@/lib/course-modality'
@@ -83,8 +84,12 @@ export function CourseEditorClient({
 
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
-  const [moduleForm, setModuleForm] = useState({ title: '', summary: '', riveUrl: '' })
-  const [moduleRiveUploading, setModuleRiveUploading] = useState(false)
+  const [moduleForm, setModuleForm] = useState<{
+    title: string
+    summary: string
+    animation: ModuleAnimation | null
+  }>({ title: '', summary: '', animation: null })
+  const [moduleAnimationUploading, setModuleAnimationUploading] = useState(false)
 
   const [lessonOpen, setLessonOpen] = useState(false)
   const [lessonModuleId, setLessonModuleId] = useState<string>('')
@@ -188,12 +193,12 @@ export function CourseEditorClient({
   // ── Módulos ──
   function openCreateModule() {
     setEditingModule(null)
-    setModuleForm({ title: '', summary: '', riveUrl: '' })
+    setModuleForm({ title: '', summary: '', animation: null })
     setModuleOpen(true)
   }
   function openEditModule(m: ModuleView) {
     setEditingModule(m)
-    setModuleForm({ title: m.title, summary: m.summary ?? '', riveUrl: m.riveUrl ?? '' })
+    setModuleForm({ title: m.title, summary: m.summary ?? '', animation: m.animation ?? null })
     setModuleOpen(true)
   }
   async function saveModule() {
@@ -204,7 +209,7 @@ export function CourseEditorClient({
     const payload = {
       title: moduleForm.title.trim(),
       summary: moduleForm.summary.trim() || null,
-      riveUrl: moduleForm.riveUrl || null,
+      animation: moduleForm.animation,
     }
     await run(async () => {
       if (editingModule) await apiSend(`/api/members/modules/${editingModule.id}`, 'PATCH', payload)
@@ -452,7 +457,7 @@ export function CourseEditorClient({
       <Dialog
         open={moduleOpen}
         onClose={() => {
-          if (!moduleRiveUploading) setModuleOpen(false)
+          if (!moduleAnimationUploading) setModuleOpen(false)
         }}
         title={editingModule ? 'Editar módulo' : 'Novo módulo'}
         footer={
@@ -460,11 +465,11 @@ export function CourseEditorClient({
             <Button
               variant="outline"
               onClick={() => setModuleOpen(false)}
-              disabled={busy || moduleRiveUploading}
+              disabled={busy || moduleAnimationUploading}
             >
               Cancelar
             </Button>
-            <Button onClick={saveModule} disabled={busy || moduleRiveUploading}>
+            <Button onClick={saveModule} disabled={busy || moduleAnimationUploading}>
               {busy ? <Spinner /> : null}
               Salvar
             </Button>
@@ -489,13 +494,14 @@ export function CourseEditorClient({
           {tree?.audience === 'kids' ? (
             <Field
               label="Animação da trilha"
-              htmlFor="mrive-file"
+              htmlFor="manimation-file"
               hint="Opcional. A animação aparece ao lado das aulas deste módulo."
             >
-              <ModuleRiveUploader
-                value={moduleForm.riveUrl}
-                onChange={(riveUrl) => setModuleForm((f) => ({ ...f, riveUrl }))}
-                onUploadingChange={setModuleRiveUploading}
+              <ModuleAnimationUploader
+                inputId="manimation-file"
+                value={moduleForm.animation}
+                onChange={(animation) => setModuleForm((f) => ({ ...f, animation }))}
+                onUploadingChange={setModuleAnimationUploading}
               />
             </Field>
           ) : null}
@@ -628,7 +634,7 @@ function SortableModuleItem({
             {mod.summary ? (
               <div className="text-sm text-muted-foreground">{mod.summary}</div>
             ) : null}
-            {mod.riveUrl ? (
+            {mod.animation ? (
               <div className="text-xs text-muted-foreground">Com animação da trilha</div>
             ) : null}
             <div className="mt-0.5 text-xs text-muted-foreground">

@@ -41,10 +41,24 @@ test('os arquivos importáveis correspondem à fonte e só usam blocos da trilha
   expect(
     await Bun.file(new URL('./sua-ilha-adulto.manifesto.json', import.meta.url)).json(),
   ).toEqual(criarManifesto('adulto'))
-  expect(manifesto.desafios.map((d) => d.quadro)).toEqual([1, 2, 3, 4, 5, 6])
-  for (const d of manifesto.desafios) {
-    expect(d.ilha).toBe('sua-ilha')
+  const quadros = manifesto.desafios.filter((d) => d.tipo === 'quadro-das-cores')
+  expect(quadros.map((d) => d.quadro)).toEqual([1, 2, 3, 4, 5, 6])
+  // O desafio do dia da sua ilha (lacunas, 01/11/2026): três variações do Pega-conchas, sem cor.
+  const doDia = manifesto.desafios.filter((d) => d.tipo === 'desafio-do-dia')
+  expect(doDia.map((d) => d.slug)).toEqual([
+    'sua-ilha-pega-conchas-aviso',
+    'sua-ilha-pega-conchas-rosa',
+    'sua-ilha-pega-conchas-esvaziar',
+  ])
+  for (const d of doDia) {
+    expect(d.quadro).toBeNull()
     expect(d.conteudo.recompensa.cor).toBe(false)
+    expect(d.conteudo.recompensa.moedas).toBe(10)
+  }
+  for (const d of quadros) {
+    expect(d.ilha).toBe('sua-ilha')
+    // Cada quadro devolve a cor de uma parte da sua ilha (lacunas, 01/11/2026).
+    expect(d.conteudo.recompensa.cor).toBe(true)
     for (const p of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
       const project = p as { ir: unknown; blocksState: unknown }
       expect(SZIRV2Schema.safeParse(project.ir).success, d.slug).toBe(true)

@@ -12,6 +12,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
 import { receberPatins } from './patins'
+import { temPlanador } from './planador'
 
 /** Todos os percursos atuais têm progresso durável, incluindo as corridas das Nuvens. */
 export type IdDoPercurso = PercursoId
@@ -52,6 +53,11 @@ export interface ConfigDoPercurso {
   corteVoltaMs: number
   /** O que a chegada dá (os patins da entrega), com a fala; `null` quando não há nada a dar. */
   premio?: (s: Salvamento) => { salvamento: Salvamento; fala: string } | null
+  /**
+   * O que falta para largar (a fala do Zappy), ou `null` quando dá para começar. A subida do Farol
+   * pede o planador: sem ele o vento do alto não leva ninguém, e a criança ficaria presa no meio.
+   */
+  exige?: (s: Salvamento) => string | null
   /**
    * As paradas só contam na ordem (percursos no chão, em que dava para cortar caminho até a
    * última). Nos percursos do alto, pular uma parada já é chegar mais longe.
@@ -315,6 +321,9 @@ export const PERCURSO_DAS_PEGADAS = {
  * viga de equilíbrio e o vento até o mirante, com o planador, até a varanda. Usa os movimentos já
  * aprendidos. As paradas vão na ordem (cada trecho pede o movimento dele).
  */
+export const FALTA_O_PLANADOR_NO_FAROL =
+  'O último trecho da subida é o vento, e só quem plana chega lá em cima. O Floco dá o planador no festival do Pico, quando a banda volta inteira. Até lá, a escada de dentro leva à sala do alto.'
+
 export const PERCURSO_DO_FAROL = {
   id: 'farol-subida',
   nome: 'Subida do Farol',
@@ -339,6 +348,86 @@ export const PERCURSO_DO_FAROL = {
   corteSaiMs: 260,
   corteVoltaMs: 340,
   emOrdem: true,
+  exige: (s) => (temPlanador(s) ? null : FALTA_O_PLANADOR_NO_FAROL),
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A descida de trenó do Pico como minijogo (lacunas, 01/11/2026, `sistemas/corrida-de-portoes.ts`):
+ * seis portões de bandeira pela pista em espiral, do platô ao pé, e cinco bandeirinhas no caminho,
+ * uma escondida. Passar de trenó pelo primeiro portão começa.
+ */
+export const PERCURSO_DO_TRENO = {
+  id: 'pico-treno',
+  nome: 'Descida de trenó',
+  rotuloDaLargada: 'Desça de trenó pelo primeiro portão',
+  falaDoComeco: 'Valendo. Desça pelos portões de bandeira e pegue as bandeirinhas no caminho.',
+  falaDoFim: 'A descida parou. O trenó no platô começa de novo quando você quiser.',
+  falaDasTresEstrelas:
+    'Três estrelas. Você desceu a montanha inteira e achou a bandeirinha escondida.',
+  escondido: 'a bandeirinha escondida',
+  /** A pista tem uns 28 m e o trenó vai a até 4,5 m/s: uns 7 s sem parar. 10 s dá a estrela. */
+  tempoAlvoMs: 10_000,
+  vagalumes: 5,
+  coletavel: { varios: 'bandeirinhas', Varios: 'Bandeirinhas', simbolo: '🚩', feminino: true },
+  /** Pela linha do meio a bandeirinha fica a 0,55 m: só pega quem guia o trenó para o lado dela. */
+  raioDoVagalume: 0.45,
+  raioDaChegada: 1.4,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A corrida da montaria pela praia do Vale (lacunas, 01/11/2026): montada no dino, seis portões de
+ * osso pela areia, de 0° a 105° em volta da ilha, e cinco fósseis brilhantes, um escondido.
+ */
+export const PERCURSO_DA_MONTARIA = {
+  id: 'vale-montaria',
+  nome: 'Corrida da montaria',
+  rotuloDaLargada: 'Passe montado pelo primeiro portão',
+  falaDoComeco: 'Valendo. Galope pela praia pelos portões de osso e pegue os fósseis brilhantes.',
+  falaDoFim: 'A corrida parou. O primeiro portão começa de novo quando você passar montado.',
+  falaDasTresEstrelas: 'Três estrelas. Você galopou a praia inteira e achou o fóssil escondido.',
+  escondido: 'o fóssil escondido',
+  /** Uns 24 m pela areia, e o dino corre a 6 m/s: uns 4 s sem errar. 8 s dá a estrela. */
+  tempoAlvoMs: 8_000,
+  vagalumes: 5,
+  coletavel: { varios: 'fósseis', Varios: 'Fósseis', simbolo: '🦴' },
+  raioDoVagalume: 1.6,
+  raioDaChegada: 2,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A volta das boias (lacunas, 01/11/2026, `sistemas/regata.ts`): a regata do barco do cais da sua
+ * ilha em volta dela e de volta, remando e guiando para os lados para pegar oito boias de presente,
+ * uma escondida.
+ */
+export const PERCURSO_DA_REGATA = {
+  id: 'barco-regata',
+  nome: 'Volta das boias',
+  rotuloDaLargada: 'Volta das boias, no cais da sua ilha',
+  falaDoComeco: 'Valendo. Reme e guie o barco para pegar as boias de presente.',
+  falaDoFim: 'A regata parou. O cais da sua ilha começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você deu a volta remando e achou a boia escondida.',
+  escondido: 'a boia escondida',
+  /**
+   * Uns 1.200 m: sem remar, a 12 m/s, uns 100 s; remando o tempo todo, uns 75 s. 90 s dá a estrela
+   * a quem rema boa parte da volta.
+   */
+  tempoAlvoMs: 90_000,
+  vagalumes: 8,
+  coletavel: { varios: 'boias', Varios: 'Boias', simbolo: '🛟', feminino: true },
+  raioDoVagalume: 1.6,
+  raioDaChegada: 2,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
 } as const satisfies ConfigDoPercurso
 
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
@@ -352,6 +441,9 @@ export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>>
   'recife-corais': PERCURSO_DOS_CORAIS,
   'vale-pegadas': PERCURSO_DAS_PEGADAS,
   'farol-subida': PERCURSO_DO_FAROL,
+  'pico-treno': PERCURSO_DO_TRENO,
+  'vale-montaria': PERCURSO_DA_MONTARIA,
+  'barco-regata': PERCURSO_DA_REGATA,
 }
 
 /** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */

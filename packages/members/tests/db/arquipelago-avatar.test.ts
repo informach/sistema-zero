@@ -34,6 +34,11 @@ test.skipIf(!url)(
     const linhas =
       await connection.sql`select part_id from members.avatar_inventory where user_id = ${userId} order by part_id`
     expect(linhas.map((l) => l.part_id)).toEqual(['acc-09', 'hat-04'])
+    // A roupa da festa (B16) só chega por aqui: a concessão aceita.
+    expect(await repo.conceder({ ...base, pecas: ['hat-08'] })).toEqual({
+      ok: true,
+      concedidas: ['hat-08'],
+    })
     expect(await repo.conceder({ ...base, pecas: ['head-01'] })).toEqual({
       ok: false,
       code: 'UNKNOWN_PART',

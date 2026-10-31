@@ -13,6 +13,7 @@ import {
   RotateCcw,
   X,
 } from '../../ui/icons'
+import { SceneCharacterRigSection } from './SceneCharacterRigSection'
 import { SceneSkinWeightTools } from './SceneSkinWeightTools'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -50,7 +51,8 @@ export function SceneRigPanel({ workshop }: { workshop: ReturnType<typeof useSce
           <X aria-hidden="true" />
         </button>
       </div>
-      {!node ? (
+      {!draft && <SceneCharacterRigSection workshop={workshop} />}
+      {workshop.characterRig.draft ? null : !node ? (
         selectedBone ? (
           <div className="space-y-3">
             <p className="text-sm font-bold">{primary!.name}</p>

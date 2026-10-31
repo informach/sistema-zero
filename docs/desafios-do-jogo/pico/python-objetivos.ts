@@ -2,51 +2,48 @@ import type { PublicoDoDesafio } from '../../../packages/arquipelago-contracts/s
 import type { FunctionCase } from '../../../packages/core/src/learning/project-execution'
 import type { SectionPythonProjectCheck } from '../../../packages/core/src/learning/python-project-checks'
 import { AMBIENTE_PYTHON_C02 } from '../ambiente-python'
-import { PLATAFORMAS_DA_FASE_1 } from './python-projetos'
+import { FLOCOS_DA_FASE_1 } from './python-projetos'
 
 const rotulos: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
   kids: {
-    ler: [
-      'ler_fase devolve a coluna e a linha de cada letra procurada.',
-      'Percorra as linhas e, dentro de cada linha, as colunas. Guarde [coluna, linha] numa lista.',
+    contar: [
+      'contar diz quantas vezes uma letra aparece nos dados da fase.',
+      'Um laço pelas linhas e, dentro dele, outro pelas letras de cada linha.',
     ],
-    pousar: [
-      'pousar faz o herói parar em cima da plataforma só quando ele cai e cruza o topo.',
-      'Teste os casos pequenos: caindo e cruzando, caindo sem chegar, já abaixo do topo e subindo.',
+    'flocos-da-fase': [
+      'O jogo mostra quantos flocos o primeiro trecho tem.',
+      'O jogo chama contar(linhas, "*") ao montar cada trecho.',
     ],
-    proxima: [
-      'A saída leva para a próxima fase só com o cristal na mochila.',
-      'Os dois precisam ser verdade ao mesmo tempo: tem_cristal e na_saida.',
+    escorregar: [
+      'No gelo, o Floco perde velocidade de 1 em 1 até parar; fora do gelo, ele para na hora.',
+      'Teste os casos pequenos: indo para a direita, para a esquerda, parado e fora do gelo.',
     ],
-    montada: [
-      'A fase 1 é montada com todas as plataformas que os dados descrevem.',
-      'O jogo chama ler_fase(linhas, "#") para criar uma plataforma em cada célula.',
-    ],
-    terceira: [
-      'Extra: acrescente uma terceira fase à lista FASES.',
-      'Uma fase nova é só mais uma lista de linhas, com J, C, S e plataformas que levem à saída.',
+    trecho: ['O trecho só termina quando todos os flocos foram pegos.', 'Compare pegos com total.'],
+    melhor: [
+      'Extra: melhor devolve o menor tempo da lista de tempos dos trechos.',
+      'Comece com o primeiro tempo e troque quando achar um menor.',
     ],
   },
   adulto: {
-    ler: [
-      'ler_fase(linhas, letra) devolve [coluna, linha] de cada ocorrência, em ordem de leitura.',
-      'Dois laços com enumerate resolvem.',
+    contar: [
+      'contar(linhas, letra) devolve o número de ocorrências da letra.',
+      'Dois laços aninhados resolvem.',
     ],
-    pousar: [
-      'pousar resolve a colisão vertical: pousa só ao cair cruzando o topo.',
-      'Considere pe_antes, pe_depois e o sinal de vy.',
+    'flocos-da-fase': [
+      'montar usa contar para o total de flocos do trecho.',
+      'O primeiro trecho tem o total calculado pelos dados.',
     ],
-    proxima: [
-      'proxima_fase avança só com o cristal coletado e na saída.',
-      'Retorne numero + 1 apenas com as duas condições.',
+    escorregar: [
+      'escorregar(vx, no_gelo) aplica o atrito do gelo, de 1 em 1, e para fora dele.',
+      'Trate vx positivo, negativo, zero e no_gelo falso.',
     ],
-    montada: [
-      'A fase 1 é construída a partir dos dados (todas as plataformas).',
-      'montar() cria um Rect por célula "#" retornada por ler_fase.',
+    trecho: [
+      'trecho_completo exige todos os flocos coletados.',
+      'Retorne a comparação entre pegos e total.',
     ],
-    terceira: [
-      'Extra: inclua uma terceira fase em FASES.',
-      'A fase é só dado: uma lista de strings.',
+    melhor: [
+      'Extra: melhor(tempos) devolve o menor valor da lista.',
+      'Percorra a lista guardando o menor.',
     ],
   },
 }
@@ -73,59 +70,45 @@ export function objetivosDoPicoPython(publico: PublicoDoDesafio): SectionPythonP
   }
   return [
     objetivo(
-      'ler',
-      funcao('ler_fase', [
-        {
-          args: [['##.', '..#'], '#'],
-          expected: [
-            [0, 0],
-            [1, 0],
-            [2, 1],
-          ],
-        },
-        {
-          args: [['..C', 'C..'], 'C'],
-          expected: [
-            [2, 0],
-            [0, 1],
-          ],
-        },
-        { args: [['....'], '#'], expected: [] },
+      'contar',
+      funcao('contar', [
+        { args: [['..*..', '*....'], '*'], expected: 2 },
+        { args: [['*#*', '#*#'], '#'], expected: 3 },
+        { args: [['....'], '*'], expected: 0 },
       ]),
     ),
-    objetivo(
-      'pousar',
-      funcao('pousar', [
-        { args: [100, 112, 5, 110], expected: [110, 0] },
-        { args: [100, 105, 5, 110], expected: [105, 5] },
-        { args: [115, 120, 5, 110], expected: [120, 5] },
-        { args: [112, 108, -4, 110], expected: [108, -4] },
-      ]),
-    ),
-    objetivo(
-      'proxima',
-      funcao('proxima_fase', [
-        { args: [0, true, true], expected: 1 },
-        { args: [0, false, true], expected: 0 },
-        { args: [1, true, false], expected: 1 },
-      ]),
-    ),
-    objetivo('montada', {
+    objetivo('flocos-da-fase', {
       type: 'behavior',
       steps: [{ action: 'wait', ms: 500 }],
       expect: {
-        target: { kind: 'value', path: 'total_de_plataformas' },
+        target: { kind: 'value', path: 'total' },
         compare: 'equals',
-        value: PLATAFORMAS_DA_FASE_1,
+        value: FLOCOS_DA_FASE_1,
       },
     }),
     objetivo(
-      'terceira',
-      {
-        type: 'behavior',
-        steps: [{ action: 'wait', ms: 300 }],
-        expect: { target: { kind: 'value', path: 'total_de_fases' }, compare: 'atLeast', value: 3 },
-      },
+      'escorregar',
+      funcao('escorregar', [
+        { args: [4, true], expected: 3 },
+        { args: [-4, true], expected: -3 },
+        { args: [0, true], expected: 0 },
+        { args: [4, false], expected: 0 },
+      ]),
+    ),
+    objetivo(
+      'trecho',
+      funcao('trecho_completo', [
+        { args: [3, 3], expected: true },
+        { args: [1, 3], expected: false },
+        { args: [0, 2], expected: false },
+      ]),
+    ),
+    objetivo(
+      'melhor',
+      funcao('melhor', [
+        { args: [[30, 25, 40]], expected: 25 },
+        { args: [[12]], expected: 12 },
+      ]),
       true,
     ),
   ]

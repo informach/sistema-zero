@@ -27,7 +27,7 @@ import {
   MuralClosing,
   MuralHeader,
 } from './kids-space-sections'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 import type { MuralSort } from './mural-sort'
 import { AuthorBadge, type AuthorItem, authorText } from './space-author'
 

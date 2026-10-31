@@ -52,8 +52,6 @@ function PlacaCarregada({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
     ctx.fillText(antes, 384, 155)
     ctx.font = 'bold 38px sans-serif'
     ctx.fillText(marco, 384, 219, 720)
-    ctx.font = 'italic 38px sans-serif'
-    ctx.fillText('Íris', 384, 315)
     const textura = new CanvasTexture(tela)
     textura.colorSpace = SRGBColorSpace
     const material = new MeshBasicMaterial({ map: textura })
@@ -93,8 +91,8 @@ function PlacaCarregada({ ilha, tabua }: { ilha: Ilha; tabua: Tabua }) {
     x,
     z,
     raio: 2.3,
-    rotulo: () => (Math.abs(rastro.y - tabua.y - 0.9) < 1.3 ? 'Ler recado da Íris' : null),
-    agir: () => loja.getState().dizer(voz.recadoDaIris(ilha)),
+    rotulo: () => (Math.abs(rastro.y - tabua.y - 0.9) < 1.3 ? 'Ler a placa da ponte' : null),
+    agir: () => loja.getState().dizer(voz.recadoDaPlaca(ilha)),
   })
   return (
     <group

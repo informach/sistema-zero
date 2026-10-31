@@ -169,6 +169,13 @@
       "when": 1793442889186,
       "tag": "0023_obra_estendida",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793464031411,
+      "tag": "0024_cartao_dos_pais_por_criacao",
+      "breakpoints": true
     }
   ]
 }

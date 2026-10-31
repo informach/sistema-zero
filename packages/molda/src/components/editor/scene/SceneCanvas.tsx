@@ -5,7 +5,12 @@ import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintRgba, ScenePaintTarget } from '../../../scene/imagePaint'
-import type { SceneMeasurementStep } from '../../../scene/measurementStep'
+import {
+  readSceneMeasurementStep,
+  SCENE_MEASUREMENT_STEP_DEFAULT,
+  SCENE_MEASUREMENT_STEPS,
+  type SceneMeasurementStep,
+} from '../../../scene/measurementStep'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import type { SceneAnimationPlayer } from '../../../state/SceneAnimationPlayer'
@@ -92,7 +97,8 @@ interface Props {
   guideInput?: SceneGuideInput | null
   guidePoint?(point: import('../../../core/model').Vec3): void
   previewGuide?: import('../../../viewport/ScenePreviewGuide').ScenePreviewGuideState | null
-  cameraRequest?: { view: CameraView } | null
+  /** `frame`: enquadra o modelo inteiro depois de virar a câmera. */
+  cameraRequest?: { view: CameraView; frame?: boolean } | null
   reveal?: readonly string[]
   tool?: SceneWorkshopTool
   onToolChange?(tool: SceneWorkshopTool): void
@@ -395,7 +401,9 @@ function SceneCanvasAttempt({
     view.viewport?.cancelGesture()
   }
   const [gridVisible, setGridVisible] = useState(true)
-  const [localMovementStep, setLocalMovementStep] = useState<SceneMeasurementStep>(1)
+  const [localMovementStep, setLocalMovementStep] = useState<SceneMeasurementStep>(
+    SCENE_MEASUREMENT_STEP_DEFAULT,
+  )
   const movementStep = measurementStep === undefined ? localMovementStep : measurementStep
   const setMovementStep = onMeasurementStepChange ?? setLocalMovementStep
   const [transformSpace, setTransformSpace] = useState<'world' | 'local' | 'pivot'>('world')
@@ -429,6 +437,7 @@ function SceneCanvasAttempt({
   useEffect(() => {
     if (cameraRequest) {
       view.viewport?.setView(cameraRequest.view)
+      if (cameraRequest.frame) view.viewport?.frame()
       setCamera(cameraRequest.view)
     }
   }, [view.viewport, cameraRequest])
@@ -534,9 +543,11 @@ function SceneCanvasAttempt({
 
   // ── a dica do momento ───────────────────────────────────────────────────────────────────
   const hint = guideInput?.rig
-    ? guideInput.rig.enabled
-      ? 'Toque para marcar as articulações. Arraste no fundo para olhar.'
-      : 'Experimente a dobra pelo painel. Sua criação só muda ao usar a montagem.'
+    ? guideInput.rig.hint
+      ? guideInput.rig.hint
+      : guideInput.rig.enabled
+        ? 'Toque para marcar as articulações. Arraste no fundo para olhar.'
+        : 'Experimente a dobra pelo painel. Sua criação só muda ao usar a montagem.'
     : tool === 'pivot'
       ? guideInput?.pivot?.snapVertex
         ? 'Toque em um ponto destacado para escolher onde a peça gira.'
@@ -846,18 +857,21 @@ function SceneCanvasAttempt({
           </Button>
         )}
         <label className="flex min-h-11 items-center gap-2 px-1 text-sm">
-          <input
-            type="checkbox"
-            name="molda-fractional-measurements"
-            className="size-5 accent-mld-accent"
-            checked={movementStep !== 1}
-            onChange={(event) => setMovementStep(event.target.checked ? 0.01 : 1)}
-          />
-          Passos de 0,01 ao mover e redimensionar
+          <span>{copy.movementStepChoice}</span>
+          <select
+            name="molda-movement-step"
+            value={movementStep}
+            onChange={(event) => setMovementStep(readSceneMeasurementStep(event.target.value))}
+            className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
+          >
+            {SCENE_MEASUREMENT_STEPS.map((step) => (
+              <option key={step} value={step}>
+                {copy.movementSteps[step].label} ({step.toLocaleString('pt-BR')})
+              </option>
+            ))}
+          </select>
         </label>
-        <p className="flex min-h-11 items-center gap-2 px-1 text-sm">
-          {copy.movementStep}: {movementStep.toLocaleString('pt-BR')}
-        </p>
+        <p className="px-1 text-xs text-mld-muted">{copy.movementSteps[movementStep].hint}</p>
       </SceneStageDropdown>
     </details>
   )
@@ -953,6 +967,7 @@ function SceneCanvasAttempt({
             <span role={mode === 'animation' && pendingPose ? 'status' : undefined}>
               {mode === 'model' &&
                 tool !== 'pivot' &&
+                !guideInput?.rig &&
                 !!document.animations?.length &&
                 'Editando a forma inicial. '}
               {mode === 'animation' && pendingPose ? copy.animationPosePending : hint}

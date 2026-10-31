@@ -97,6 +97,10 @@ O fantasma familiar é gravação/reprodução do avatar existente e não exige 
 
 ## Pedido do levantamento de 30/10: o lote do iglu no Pico (E04)
 
+> **Histórico (31/10/2026):** entregue. O iglu, o andar de cima, o terreno e a subida do Farol
+> entraram no B7 (`6ee28cb35`, `9e114f324`, merge `9511bac57`, sobras em `f2f441cf6`), com a obra
+> estendida em documento próprio (migração 0023). Os pedidos abaixo ficam como registro.
+
 A proposta põe "construir o iglu" no Pico. A cabana da ilha já é genérica (`CabanaDaIlha`, que
 lê o lote das âncoras como a do Bosque). Os tetos do iglu saíram do salvamento na integração da
 V20 (salvamento cheio): voltam num documento próprio do serviço quando este lote chegar. A busca no `pico.glb` atual (chão plano com variação de até 12 cm, nada
@@ -116,6 +120,10 @@ O aceite: um teste novo em `tests/cabana.test.ts` que confere o lote plano e liv
 colisores do modelo (o teste do Pico que esperava as âncoras saiu junto com o iglu na V20).
 
 ## Pedidos do levantamento de 30/10: o resto da criação avançada e a subida final (E04)
+
+> **Histórico (31/10/2026):** entregue no B7 (ver a nota da seção anterior). A subida por fora
+> leva ao final desde a revisão de 31/10 (N4, `c94c34139`), e os móveis valem no andar de cima
+> (C3, `e2f151602`).
 
 O código do jogo não desenha peça de construção nem colisor que falte na arte. Os três pedidos
 abaixo destravam o que a proposta põe no Pico, nas Nuvens e na Lenda. Plano do lote:

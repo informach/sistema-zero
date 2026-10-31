@@ -15,6 +15,20 @@ import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
  */
 export const VERSAO_CONTRATO_PLATAFORMA = 1
 
+/**
+ * As versões do contrato que os dois lados aceitam (A35, revisão de 31/10/2026): a atual e a
+ * anterior, para o jogo e a plataforma poderem subir em dias diferentes. Ao subir a versão, o lado
+ * novo continua aceitando o antigo por uma rodada de implantação; a versão anterior só deixa de
+ * valer quando a seguinte chegar. Hoje só existe a 1.
+ */
+export const VERSOES_COMPATIVEIS_DA_PLATAFORMA: readonly number[] =
+  VERSAO_CONTRATO_PLATAFORMA > 1
+    ? [VERSAO_CONTRATO_PLATAFORMA, VERSAO_CONTRATO_PLATAFORMA - 1]
+    : [VERSAO_CONTRATO_PLATAFORMA]
+export function versaoCompativel(versao: unknown): boolean {
+  return typeof versao === 'number' && VERSOES_COMPATIVEIS_DA_PLATAFORMA.includes(versao)
+}
+
 export type PublicoJogo = 'kids' | 'adulto'
 
 export interface PerfilDoJogo {

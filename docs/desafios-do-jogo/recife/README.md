@@ -11,11 +11,11 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
-| A corrente muda | Quadro das Cores | 1 | 20 | 10 |
-| Conchas por viagem | Quadro das Cores | 2 | 20 | 10 |
-| Dois corais cuidados | Quadro das Cores | 3 | 20 | 10 |
-| Uma bolha por vez | Quadro das Cores | 4 | 20 | 10 |
-| A chave do navio | Quadro das Cores | 5 | 20 | 10 |
+| Uma bolha por vez | Quadro das Cores | 1 | 20 | 10 |
+| Alvo preso conta ponto | Quadro das Cores | 2 | 20 | 10 |
+| O alvo muda de lugar | Quadro das Cores | 3 | 20 | 10 |
+| Tempo de partida | Quadro das Cores | 4 | 20 | 10 |
+| Nova partida | Quadro das Cores | 5 | 20 | 10 |
 | Mira de bolhas | Quadro das Cores | 6 | 20 | 10 |
 | Bolha rápida | Desafio do dia | Nenhum | 10 | 5 |
 | Dois pontos | Desafio do dia | Nenhum | 10 | 5 |
@@ -30,28 +30,26 @@ seis quadros, Kids e adulto, têm todas as fontes na trilha e voltam a pedir pub
 (`publicar: true`); as três variações continuam com `publicar: false`. A importação e a
 barreira C01a ficam com a equipe. Nenhum deles foi importado nesta entrega.
 
-## Os cinco complementares
+## Os quadros 1 a 5: a Mira do Recife (lacunas, 01/11/2026)
 
-Cenário, SVGs, controles de toque e laço de desenho estão prontos nos dois projetos. Só os
-quatro tipos de evento indicados mudam: Espaço, esquerda, direita e o extra Enter. O inicial
-não aprova nenhum dos seus objetivos. Os objetivos verificam ações e estados, sem exigir
-cor, desenho ou os parâmetros do movimento fornecido.
+A proposta põe no Recife o jogo de mira e alvos do Explorador, com sorteio de lugar, tempo de
+partida e pontos. Os cinco quadros montam esse jogo um passo de cada vez
+(`quadros-iniciais.ts`); cada quadro traz pronto o que os anteriores fizeram e deixa vazio só o
+passo dele. Antes eram cinco retomadas soltas (corrente, cesta, corais, bolha e chave), sem o
+gênero do posto. Só blocos da trilha (Faísca, Construtor e Inventor).
 
-| Quadro | Ação | Conhecimento aplicado | Recusa causal |
+| Quadro | O passo | Conhecimento aplicado | Recusa causal (executor real) |
 | --- | --- | --- | --- |
-| 1 | Alternar o sentido da corrente | Se/senão e informação | Ficar sempre para a esquerda |
-| 2 | Recolher até três e descarregar | Condição e soma | Cesta acima do limite ou entrega duplicada |
-| 3 | Cuidar de dois corais uma vez | Escolha e marca individual | Contar o mesmo cuidado ou os dois juntos |
-| 4 | Soltar uma bolha e esperar a volta | Estado de voo | Relançar enquanto ela se move |
-| 5 | Pegar e consumir a chave | Duas condições e uso único | Abrir sem chave, guardar a chave usada ou repetir |
+| 1 | Espaço solta uma bolha por vez | Estado de voo e condição | Soltar com outra subindo |
+| 2 | A bolha presa no alvo conta um ponto | Encontro, estado e soma | Não liberar a próxima bolha |
+| 3 | O alvo volta num lugar sorteado | Sorteio e reposição | O alvo fica no mesmo lugar |
+| 4 | O relógio acaba a partida | Relógio, contagem regressiva e fim | Soltar bolha depois do fim |
+| 5 | Enter começa outra partida | Restaurar o estado do começo | Esquecer de encher o tempo |
 
-Cada quadro tem ação principal, condição adicional e extra de reinício. A corrente anda
-entre x 40 e 500 com velocidade horizontal de módulo 1. A bolha sobe de y 320 até passar
-y 120 e volta com velocidade de módulo 2, usando posição observada, velocidade e movimento
-já ensinados. Esses valores pertencem ao cenário pronto; não são exigências do objetivo.
-A espera de 4,5 s no ensaio deixa margem para a viagem de cerca de 3,4 s a 60 atualizações.
-Não se concede nenhum bloco novo. A aritmética vem do Dino. Desde C01b, o coral cuidado troca
-a imagem cinza pela colorida e a chave só é desenhada enquanto está na mão (sem opacidade).
+A partida dura 8 s (`TEMPO_DA_PARTIDA`), para caber nas esperas do executor (até 10 s por
+passo). O extra dos quadros 1 a 4 é o Enter recomeçar o jogo; o do quinto, o recorde guardar a
+melhor partida antes de zerar. Prova: `packages/studio-runtime/tests/quadros-recife-browser.test.ts`
+(com `SZ_CHECK_CHROMIUM` apontando para o Chrome), os cinco quadros com gabarito, inicial e erros.
 
 ## O que se completa no principal
 
@@ -113,7 +111,6 @@ bun test packages/arquipelago-api/tests/integration/manifestos.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/recife-browser.test.ts packages/studio-runtime/tests/quadros-recife-browser.test.ts
 bun docs/desafios-do-jogo/recife/conferir-browser.ts
-bun docs/desafios-do-jogo/recife/conferir-quadros-browser.ts
 node --max-old-space-size=8192 packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/recife/tsconfig.json
 ```
 
@@ -137,25 +134,27 @@ Complemento L03: [conferência dos cinco quadros](../../qa/2026-10-30-quadros-re
 
 ## C02: Mira de bolhas em Python (30/10/2026)
 
-Aplicação na linguagem do Explorador: Python com Pygame Zero, no tema da missão "Resgate dos
-Vagalumes". Arquivos: [Kids](recife-python.manifesto.json) e
+Aplicação na linguagem do Explorador: Python com Pygame Zero. Desde a revisão de 31/10/2026 (A45)
+o tema é da ilha, e não da missão do posto: a Maré solta bolhas com mudas de coral na lagoa, cada
+clique na bolha planta a muda (`plantadas`) e a bolha seguinte sobe de um dos três corais
+(`sortear_coral`). Arquivos: [Kids](recife-python.manifesto.json) e
 [adulto](recife-python-adulto.manifesto.json), um desafio do dia cada (`publicar: false`, ordem
 70, 10 e 5 moedas, sem cor). Fontes: `python-projetos.ts` (o `main.py`), `python-objetivos.ts` e
 `gerar-manifesto-python.ts`; o ambiente fica em `../ambiente-python.ts`. Plano:
 [C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
 
-Repertório do posto, sem listas e sem classes: a bolha é um `Rect` do Pygame Zero, as três tocas
+Repertório do posto, sem listas e sem classes: a bolha é um `Rect` do Pygame Zero, os três corais
 saem de um `if/elif` com `random.randint(1, 3)` e tudo é desenhado com `screen.draw`, sem
-imagens. O mar, as tocas, a bolha, o placar e o estado inicial estão prontos. A pessoa completa
-`on_mouse_down`, `sortear_toca` e `update`; `on_key_down` (R) é o extra.
+imagens. O mar, os corais, a bolha, o placar e o estado inicial estão prontos. A pessoa completa
+`on_mouse_down`, `sortear_coral` e `update`; `on_key_down` (R) é o extra.
 
 | Objetivo | Como confere | Erro causal recusado |
 | --- | --- | --- |
-| Clique na bolha soma, clique na água não | clique na água, clique na bolha, `resgatados` igual a 1 | conta qualquer clique |
-| A bolha vai para uma toca | clique na bolha, `bolha.y` no máximo 120 | a bolha não muda de lugar |
+| Clique na bolha soma, clique na água não | clique na água, clique na bolha, `plantadas` igual a 1 | conta qualquer clique |
+| A bolha vai para um coral | clique na bolha, `bolha.y` no máximo 120 | a bolha não muda de lugar |
 | O relógio conta | 1,5 s e `tempo` diminui | relógio parado |
-| O tempo acaba e os cliques param | acerto, 9,5 s (a rodada tem 7) e cliques nas três tocas, `resgatados` igual a 1 | rodada sem fim |
-| Extra: R recomeça | acerto, R e clique na areia, `resgatados` igual a 1 | R sem voltar a bolha |
+| O tempo acaba e os cliques param | acerto, 9,5 s (a rodada tem 7) e cliques nos três corais, `plantadas` igual a 1 | rodada sem fim |
+| Extra: R recomeça | acerto, R e clique na areia, `plantadas` igual a 1 | R sem voltar a bolha |
 
 Executor real (`packages/studio-runtime/tests/desafios-python-smoke.ts`): a imagem de produção do
 studio-runtime roda `python-mission.mjs` sem rede, com a distribuição construída do vendor

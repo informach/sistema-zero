@@ -25,7 +25,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
-import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
+import { KidsMascotAnimated } from '@/components/kids/mascot-animated'
 import { apiSend } from '@/lib/api'
 import { conclusaoRecusada } from '@/lib/lesson-copy'
 import { lessonDraftCloudFor } from '@/lib/lesson-draft-cloud'
@@ -164,17 +164,13 @@ function KidsLiveLessonPlayer({
       // ⭐ O bloco Estúdio é o projeto AO VIVO (com a ajuda da professora) e publica no Mural.
       liveWorkspace: slot.liveWorkspace ? { ...slot.liveWorkspace, publishToMural: true } : null,
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
-      videoGateMascot: (
-        <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" sound={false} />
-      ),
+      videoGateMascot: <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" />,
       videoGateAudioUrl: videoGateVoice.url,
       renderInstruction: (text, pose = 'speaking', speech) => (
         <DialogueBlockView
           content={{ kind: 'dialogue', text, pose }}
           speech={speech}
-          mascot={
-            <KidsMascotAnimated expression={pose} className="size-16 sm:size-20" sound={false} />
-          }
+          mascot={<KidsMascotAnimated expression={pose} className="size-16 sm:size-20" />}
         />
       ),
     }),

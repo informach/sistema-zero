@@ -195,3 +195,49 @@ describe('o quarto do irmão na visita (29/10/2026)', () => {
     )
   })
 })
+
+describe('o andar de cima e o terreno na visita (lacunas, 01/11/2026)', () => {
+  const andar = { escada: { x: 1, z: 2, giro: 0 }, paredes: [], aberturas: [], pisos: [] }
+  const terreno = { alturas: [[3, 4, 2]] as [number, number, number][] }
+  const f = () =>
+    familia({ [LIA]: criarSalvamentoInicial(AGORA), [TOM]: criarSalvamentoInicial(AGORA) })
+
+  test('a casa do irmão vem com o andar e o terreno dele, lidos como kids', async () => {
+    const lidos: string[] = []
+    const obras = {
+      ler: async (id: string, publico: 'kids' | 'adulto') => {
+        lidos.push(`${id}:${publico}`)
+        return {
+          revisao: 3,
+          obra: { versao: 1 as const, iglu: null, andar, terreno },
+        }
+      },
+    }
+    const casa = await new ServicoDasVisitas({ familia: f(), politica: aberto, obras }).casa(
+      lia(),
+      TOM,
+    )
+    expect(casa.andar).toEqual(andar)
+    expect(casa.terreno).toEqual(terreno)
+    expect(lidos).toEqual([`${TOM}:kids`])
+  })
+
+  test('sem o repositório ou com falha na leitura, a casa vem sem eles', async () => {
+    const sem = await new ServicoDasVisitas({ familia: f(), politica: aberto }).casa(lia(), TOM)
+    expect(sem.andar).toBeNull()
+    expect(sem.terreno).toBeNull()
+    const avisos: string[] = []
+    const comFalha = await new ServicoDasVisitas({
+      familia: f(),
+      politica: aberto,
+      obras: {
+        ler: async () => {
+          throw new Error('banco fora')
+        },
+      },
+      logger: { warn: (m: string) => avisos.push(m) } as never,
+    }).casa(lia(), TOM)
+    expect(comFalha.andar).toBeNull()
+    expect(avisos).toEqual(['arquipelago.visitas.obra_estendida_indisponivel'])
+  })
+})

@@ -158,7 +158,18 @@ describe.skipIf(!url)('convites adultos em banco e HTTP reais', () => {
     expect(chamadas).toEqual([{ userId: dono, audience: 'adult' }])
     expect(JSON.stringify(corpo)).not.toContain(dono)
     expect(JSON.stringify(corpo)).not.toContain('privado')
-    expect(Object.keys(corpo).sort()).toEqual(['completos', 'horta', 'obra', 'quarto', 'versao'])
+    // L2e: o andar de cima e o terreno da obra estendida vão junto (nulos: o dono não construiu).
+    expect(Object.keys(corpo).sort()).toEqual([
+      'andar',
+      'completos',
+      'horta',
+      'obra',
+      'quarto',
+      'terreno',
+      'versao',
+    ])
+    expect(corpo.andar).toBeNull()
+    expect(corpo.terreno).toBeNull()
     expect(await saves.lerSalvamento(visita)).toEqual(antes)
   })
   test('rotação e revogação invalidam imediatamente a próxima leitura; DELETE é idempotente', async () => {

@@ -1,5 +1,12 @@
 # E04: criação avançada e Lenda (plano, 30/10/2026)
 
+> **Histórico (31/10/2026).** Tudo o que este plano esperava foi entregue: iglu, andar de cima,
+> terreno e subida do Farol no B7 da proposta v3 (`6ee28cb35`, `9e114f324`, merge `9511bac57`,
+> sobras `f2f441cf6`), obra estendida em documento próprio (migração 0023). A revisão de 31/10
+> corrigiu a resposta perdida e o Desfazer (C1, `2c2c9b515`), ligou a subida ao final (N4,
+> `c94c34139`) e pôs móveis no andar de cima (C3, `e2f151602`). Objetos com função ficam no
+> térreo, por decisão da dona. O texto abaixo é o plano de 30/10, mantido como registro.
+
 Lote do levantamento de 30/10. Feito: o quintal grande do Vale (`74819e31b`). Adiado na
 integração da V20: o iglu do Pico. Este plano cobre o que falta e por que espera.
 
