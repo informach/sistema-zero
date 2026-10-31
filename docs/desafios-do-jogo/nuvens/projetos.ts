@@ -105,7 +105,7 @@ const arte: Record<string, string> = {
     120,
     '<path d="M48 118V70" stroke="#b9b6c2" stroke-width="7" stroke-linecap="round"/><path d="M48 86Q26 76 22 58Q42 58 48 78Z" fill="#dcdae2" stroke="#a9a6b3" stroke-width="3"/><path d="M48 80Q70 70 74 52Q54 52 48 72Z" fill="#dcdae2" stroke="#a9a6b3" stroke-width="3"/>',
   ),
-  botaoFlor: svg(
+  botaoflor: svg(
     96,
     120,
     '<path d="M48 118V46" stroke="#4f9a4a" stroke-width="7" stroke-linecap="round"/><path d="M48 92Q24 84 20 64Q42 64 48 86Z" fill="#6cd06a" stroke="#3f7f3a" stroke-width="3"/><path d="M48 78Q72 70 76 50Q54 50 48 72Z" fill="#6cd06a" stroke="#3f7f3a" stroke-width="3"/><path d="M48 18Q34 30 38 46Q48 52 58 46Q62 30 48 18Z" fill="#b07cff" stroke="#6a45b5" stroke-width="3"/>',
@@ -222,7 +222,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
               [
                 iff(
                   bin('>=', v('crescimento'), n(JARDIM.botaoFlor)),
-                  [{ type: 'g2d:setImage', spriteVar: 'flor', image: 'botaoFlor' }],
+                  [{ type: 'g2d:setImage', spriteVar: 'flor', image: 'botaoflor' }],
                   [{ type: 'g2d:setImage', spriteVar: 'flor', image: 'muda' }],
                 ),
               ],

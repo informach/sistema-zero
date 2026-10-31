@@ -197,6 +197,10 @@ dois, o serviço sobe igual e as leituras ficam desligadas.
 
 ## Seção Jogo do Admin: cadastro dos desafios (27/10/2026)
 
+O servidor mantém a conexão ociosa por 170 s para acomodar a conferência de objetivos
+do Members, limitada a 160 s. Esse prazo de transporte não amplia o orçamento do executor
+nem permite publicar um desafio sem análise válida.
+
 **C01a, 30/10/2026:** `domain/repertorio-do-desafio.ts` transforma cobertura impossível em
 problema de publicação: bloco desconhecido, sem curso publicado da comunidade ou só ensinado
 depois da ilha. Quadro das Cores exige fonte em base2d, base3d ou mission até o posto; Poder,

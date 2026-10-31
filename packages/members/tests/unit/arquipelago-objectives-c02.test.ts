@@ -125,13 +125,15 @@ const reiniciar: ObjetivoRecebido = {
 }
 
 type Grade = PythonProjectCheckerService['grade']
-function verificadorPythonFalso(resposta: (input: Parameters<Grade>[0]) => boolean | Error) {
+function verificadorPythonFalso(
+  resposta: (input: Parameters<Grade>[0]) => boolean | Error | Promise<boolean | Error>,
+) {
   const chamadas: { input: Parameters<Grade>[0]; curadoria: StudioProjectCuration }[] = []
   const checker: Pick<PythonProjectCheckerService, 'grade'> = {
     async grade(input) {
       const curadoria = await input.authorize(new AbortController().signal)
       chamadas.push({ input, curadoria })
-      const passou = resposta(input)
+      const passou = await resposta(input)
       if (passou instanceof Error) throw passou
       return {
         passed: passou,
@@ -195,6 +197,64 @@ const passaNoGabarito = (input: Parameters<Grade>[0]) =>
   JSON.stringify(input.project).includes('on_mouse_down')
 
 describe('Python clássico', () => {
+  test('gabarito e inicial começam juntos para caber na janela de uma conferência', async () => {
+    const liberar = Promise.withResolvers<void>()
+    const iniciados: string[] = []
+    const { checker } = verificadorPythonFalso(async (input) => {
+      iniciados.push(passaNoGabarito(input) ? 'gabarito' : 'inicial')
+      await liberar.promise
+      return passaNoGabarito(input)
+    })
+    const pendente = criar({ python: checker }).analisar({
+      audience: 'kids',
+      projetoInicial: inicialPy,
+      gabarito: gabaritoPy,
+      objetivos: [acertar],
+    })
+    await new Promise<void>((resolve) => setImmediate(resolve))
+    const ambosIniciaram = iniciados.length === 2
+    liberar.resolve()
+    const analise = await pendente
+    expect(ambosIniciaram).toBe(true)
+    expect(iniciados).toEqual(['gabarito', 'inicial'])
+    expect(analise.problemas).toEqual([])
+    expect(analise.gabarito).toEqual([{ id: 'acertar', passou: true }])
+    expect(analise.inicial).toEqual([{ id: 'acertar', passou: false }])
+  })
+
+  test('aguarda a outra avaliação terminar mesmo quando uma falha inesperadamente', async () => {
+    const liberar = Promise.withResolvers<void>()
+    const falha = new Error('Falha interna de teste')
+    let iniciouInicial = false
+    const { checker } = verificadorPythonFalso(async (input) => {
+      if (passaNoGabarito(input)) return falha
+      iniciouInicial = true
+      await liberar.promise
+      return false
+    })
+    let terminou = false
+    const pendente = criar({ python: checker }).analisar({
+      audience: 'adult',
+      projetoInicial: inicialPy,
+      gabarito: gabaritoPy,
+      objetivos: [acertar],
+    })
+    // O observador também evita uma rejeição sem consumidor durante a conferência.
+    void pendente.then(
+      () => {
+        terminou = true
+      },
+      () => {
+        terminou = true
+      },
+    )
+    await new Promise<void>((resolve) => setImmediate(resolve))
+    const aguardou = iniciouInicial && !terminou
+    liberar.resolve()
+    await expect(pendente).rejects.toBe(falha)
+    expect(aguardou).toBe(true)
+  })
+
   test('analisar roda gabarito e inicial no verificador Python das aulas, com a curadoria do desafio', async () => {
     const { checker, chamadas } = verificadorPythonFalso(passaNoGabarito)
     const analise = await criar({ python: checker }).analisar({

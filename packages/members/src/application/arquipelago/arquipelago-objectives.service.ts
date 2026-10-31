@@ -379,10 +379,11 @@ export class ArquipelagoObjectivesService {
         return new Map(avaliado.results.map((resultado) => [resultado.id, resultado.passed]))
       } catch (error) {
         if (error instanceof StudioPythonProjectCheckUnavailableError) {
-          problema(
-            'EXECUTOR_INDISPONIVEL',
-            'Não consegui rodar o programa Python para conferir os objetivos. Analise de novo em instantes; nada foi aprovado.',
-          )
+          if (!executorFora)
+            problema(
+              'EXECUTOR_INDISPONIVEL',
+              'Não consegui rodar o programa Python para conferir os objetivos. Analise de novo em instantes; nada foi aprovado.',
+            )
           executorFora = true
         } else if (error instanceof DomainError)
           problema('PYTHON_RECUSOU', `O ambiente Python recusou o teste: ${error.message}`)
@@ -427,7 +428,10 @@ export class ArquipelagoObjectivesService {
                 'EXECUTOR_INDISPONIVEL',
                 'Não consegui rodar o jogo para conferir os objetivos que rodam o jogo. Analise de novo em instantes; nada foi aprovado.',
               )
-            else throw error
+            else if (error instanceof ValidationError) {
+              problema('PROJETO_INVALIDO', error.message)
+              return new Map<string, boolean | null>(javascript.map((check) => [check.id, null]))
+            } else throw error
             executorFora = true
           }
         }
@@ -446,8 +450,21 @@ export class ArquipelagoObjectivesService {
         return new Map<string, boolean | null>(validos.map((check) => [check.id, null]))
       }
     }
-    const doGabaritoConferido = await conferir(gabarito)
-    const doInicialConferido = await conferir(inicial)
+    const conferirParPython = async (
+      resposta: Projeto,
+      partida: Projeto,
+    ): Promise<readonly [Map<string, boolean | null>, Map<string, boolean | null>]> => {
+      // Each checker owns a separate immutable input and sandbox. Their existing 150 s
+      // deadlines share this request's 160 s window instead of adding up to 300 s.
+      const [g, i] = await Promise.allSettled([conferir(resposta), conferir(partida)])
+      // Settle both owners even if one has an unexpected failure.
+      if (g.status === 'rejected') throw g.reason
+      if (i.status === 'rejected') throw i.reason
+      return [g.value, i.value]
+    }
+    const [doGabaritoConferido, doInicialConferido] = python
+      ? await conferirParPython(gabarito, inicial)
+      : [await conferir(gabarito), await conferir(inicial)]
     for (const check of validos) {
       if (doGabaritoConferido.get(check.id) === false)
         problema(
