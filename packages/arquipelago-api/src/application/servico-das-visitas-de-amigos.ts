@@ -105,18 +105,20 @@ export class ServicoDasVisitasDeAmigos {
   async aceitar(r: Responsavel, codigo: string, apelido: string) {
     if (r.somenteLeitura) throw new SomenteLeituraError()
     if (!(await this.ligado(r.contaId))) throw new VisitasDeAmigosDesligadasError()
-    const convite = await this.deps.repo.conviteDoCodigo(hashDoCodigo(codigo))
+    const hash = hashDoCodigo(codigo)
+    const convite = await this.deps.repo.conviteDoCodigo(hash)
     // O código da própria família não vira "casa de amigo": irmãos já se visitam.
     if (!convite || convite.contaId === r.contaId) throw new CasaDeAmigoIndisponivelError()
-    const id = await this.deps.repo.aceitar(
+    const aceite = await this.deps.repo.aceitar(
       r.contaId,
-      convite.perfilId,
+      { perfilId: convite.perfilId, hash },
       apelido.trim(),
       this.agora(),
       CASAS_DE_AMIGOS_MAXIMO,
     )
-    if (!id) throw new LimiteDeCasasError()
-    return { versao: VERSAO_DAS_VISITAS_DE_AMIGOS, id, apelido: apelido.trim() }
+    if (aceite.situacao === 'sem-convite') throw new CasaDeAmigoIndisponivelError()
+    if (aceite.situacao === 'limite') throw new LimiteDeCasasError()
+    return { versao: VERSAO_DAS_VISITAS_DE_AMIGOS, id: aceite.id, apelido: apelido.trim() }
   }
 
   async remover(r: Responsavel, id: string) {
@@ -170,6 +172,12 @@ export class ServicoDasVisitasDeAmigos {
       (await this.deps.familia.salvamentos([c.perfilAnfitriao])).get(c.perfilAnfitriao),
     )
     if (!s) throw new CasaDeAmigoIndisponivelError()
+    const quarto = await this.quartoDe(c.perfilAnfitriao)
+    // Depois das esperas (salvamento e Members), a mesma conferência de novo: um convite apagado,
+    // um interruptor desligado ou um aceite removido no meio do caminho não deixa a casa sair.
+    if (!(await this.ligado(contaId))) throw new VisitasDeAmigosDesligadasError()
+    if (!(await this.validas(jogador, contaId)).some((k) => k.id === c.id))
+      throw new CasaDeAmigoIndisponivelError()
     return {
       versao: VERSAO_DAS_VISITAS_DE_AMIGOS,
       id: c.id,
@@ -177,7 +185,7 @@ export class ServicoDasVisitasDeAmigos {
       obra: s.construcao.casa,
       horta: s.horta,
       completos: OBJETOS_DA_CASA.filter((o) => Boolean(s.projetos[o]?.aparencia)),
-      quarto: await this.quartoDe(c.perfilAnfitriao),
+      quarto,
     }
   }
 

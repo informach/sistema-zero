@@ -14,6 +14,7 @@ import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
 import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDasVisitasDeAmigos } from '../../src/application/servico-das-visitas-de-amigos'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
+import { CasaDeAmigoIndisponivelError } from '../../src/domain/visitas-de-amigos.port'
 import {
   createDbConnection,
   type DbConnection,
@@ -286,5 +287,159 @@ describe.skipIf(!url)('visitas de outras crianças em banco e HTTP reais (N08a)'
       { perfilId: a.crianca },
     )
     expect(r.status).toBe(403)
+  })
+})
+
+/**
+ * Regressões da revisão dos lotes recebidos (R01 a R03, 30/10/2026): o aceite vale para o convite
+ * que o originou, a casa é conferida de novo depois das esperas, e o teto vale com aceites
+ * simultâneos.
+ */
+describe.skipIf(!url)('visitas de outras crianças: revogação, troca de código e teto', () => {
+  const hash = (codigo: string) => createHash('sha256').update(codigo).digest('hex')
+  const responsavel = (contaId: string) => ({ contaId, equipe: false, somenteLeitura: false })
+  const crianca = (contaId: string, id: string) => ({
+    id,
+    publico: 'kids' as const,
+    contaId,
+    equipe: false,
+    somenteLeitura: false,
+  })
+  const servico = (
+    membros?: ConstructorParameters<typeof ServicoDasVisitasDeAmigos>[0]['membros'],
+  ) => new ServicoDasVisitasDeAmigos({ repo, familia, politica, membros, agora: () => agora })
+
+  test('apagar o convite e gerar outro não devolve a casa a quem foi revogado (R01)', async () => {
+    const s = servico()
+    const anfitria = await familiaCom(true)
+    const visitante = await familiaCom(true)
+    const { codigo } = await s.gerarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    await s.aceitar(responsavel(visitante.conta), codigo, 'Ana')
+    expect((await s.casas(crianca(visitante.conta, visitante.crianca))).casas).toHaveLength(1)
+    await s.apagarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    await s.gerarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    expect((await s.casas(crianca(visitante.conta, visitante.crianca))).casas).toEqual([])
+    const pais = await s.daFamilia(responsavel(visitante.conta), [visitante.crianca])
+    expect(pais.casas).toEqual([])
+  })
+
+  test('trocar o código sem apagar pede aceite novo e o código antigo não vale mais (R01)', async () => {
+    const s = servico()
+    const anfitria = await familiaCom(true)
+    const visitante = await familiaCom(true)
+    const antigo = await s.gerarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    await s.aceitar(responsavel(visitante.conta), antigo.codigo, 'Ana')
+    const novo = await s.gerarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    expect((await s.casas(crianca(visitante.conta, visitante.crianca))).casas).toEqual([])
+    let recusado: unknown = null
+    try {
+      await s.aceitar(responsavel(visitante.conta), antigo.codigo, 'Ana')
+    } catch (erro) {
+      recusado = erro
+    }
+    expect(recusado).toBeInstanceOf(CasaDeAmigoIndisponivelError)
+    await s.aceitar(responsavel(visitante.conta), novo.codigo, 'Ana')
+    expect((await s.casas(crianca(visitante.conta, visitante.crianca))).casas).toHaveLength(1)
+  })
+
+  test('o aceite confere o código na transação: trocado no meio do caminho, recusa (R01)', async () => {
+    const anfitria = await familiaCom(true)
+    const visitante = await familiaCom(true)
+    await repo.gerarConvite(
+      anfitria.crianca,
+      anfitria.conta,
+      hash(`primeiro-${anfitria.crianca}`),
+      agora,
+    )
+    // Quem leu o convite com o código antigo chega depois da troca.
+    await repo.gerarConvite(
+      anfitria.crianca,
+      anfitria.conta,
+      hash(`segundo-${anfitria.crianca}`),
+      agora,
+    )
+    const r = await repo.aceitar(
+      visitante.conta,
+      { perfilId: anfitria.crianca, hash: hash(`primeiro-${anfitria.crianca}`) },
+      'Ana',
+      agora,
+      20,
+    )
+    expect(r).toEqual({ situacao: 'sem-convite' })
+    expect(await repo.casasDaConta(visitante.conta)).toEqual([])
+  })
+
+  test('revogar enquanto o Members responde não deixa a casa sair (R02)', async () => {
+    let soltar: () => void = () => {}
+    const esperando = new Promise<void>((r) => {
+      soltar = r
+    })
+    let chegou: () => void = () => {}
+    const pediu = new Promise<void>((r) => {
+      chegou = r
+    })
+    const s = servico({
+      lerQuarto: async () => {
+        chegou()
+        await esperando
+        return { quarto: null }
+      },
+    } as never)
+    const anfitria = await familiaCom(true)
+    const visitante = await familiaCom(true)
+    const { codigo } = await s.gerarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    const { id } = await s.aceitar(responsavel(visitante.conta), codigo, 'Ana')
+    const casa = s.casa(crianca(visitante.conta, visitante.crianca), id).then(
+      () => 'devolveu',
+      (erro) => erro,
+    )
+    await pediu
+    await s.apagarConvite(responsavel(anfitria.conta), anfitria.crianca)
+    soltar()
+    expect(await casa).toBeInstanceOf(CasaDeAmigoIndisponivelError)
+  })
+
+  test('aceites simultâneos não passam do teto, e o mesmo par repetido fica numa casa só (R03)', async () => {
+    const visitante = await familiaCom(true)
+    const anfitrias = []
+    for (let i = 0; i < 21; i++) {
+      const a = await familiaCom(true)
+      await repo.gerarConvite(a.crianca, a.conta, hash(`teto-${a.crianca}`), agora)
+      anfitrias.push(a)
+    }
+    const aceitar = (a: { crianca: string }) =>
+      repo.aceitar(
+        visitante.conta,
+        { perfilId: a.crianca, hash: hash(`teto-${a.crianca}`) },
+        'Casa',
+        agora,
+        20,
+      )
+    for (const a of anfitrias.slice(0, 19)) expect((await aceitar(a)).situacao).toBe('ok')
+    const [x, y] = await Promise.all([aceitar(anfitrias[19]!), aceitar(anfitrias[20]!)])
+    expect([x.situacao, y.situacao].sort()).toEqual(['limite', 'ok'])
+    expect(await repo.casasDaConta(visitante.conta)).toHaveLength(20)
+
+    const outra = await familiaCom(true)
+    const par = anfitrias[0]!
+    const [p, q] = await Promise.all([
+      repo.aceitar(
+        outra.conta,
+        { perfilId: par.crianca, hash: hash(`teto-${par.crianca}`) },
+        'A',
+        agora,
+        20,
+      ),
+      repo.aceitar(
+        outra.conta,
+        { perfilId: par.crianca, hash: hash(`teto-${par.crianca}`) },
+        'B',
+        agora,
+        20,
+      ),
+    ])
+    expect(p.situacao).toBe('ok')
+    expect(q.situacao).toBe('ok')
+    expect(await repo.casasDaConta(outra.conta)).toHaveLength(1)
   })
 })

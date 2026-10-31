@@ -12,6 +12,9 @@ e [plano do E04](../superpowers/plans/2026-10-30-arquipelago-e04-criacao-avancad
 
 ## 0. Primeiro: três defeitos das visitas entre amigos (N08a)
 
+**Corrigido em 31/10/2026** (serviço e repositório, sem migração; regressões em
+`tests/db/visitas-de-amigos.test.ts` e o reprodutor atualizado mostra zero, recusa e 20).
+
 A revisão dos lotes recebidos reproduziu, com serviço e repositório reais num Postgres local,
 três defeitos que as suítes não cobriam. Eles continuam na `staging` (a API de visitas não mudou
 desde a base revisada, `f62ab0807`). Corrigir antes de dar N08a por encerrado e antes de abrir as

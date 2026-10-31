@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Visitas entre amigos: revogação, troca e teto (N08a, R01 a R03, 31/10/2026)
+
+O aceite vale para o convite que o originou. `apagarConvite` e `gerarConvite` (troca de código)
+apagam, na mesma transação, as `casas_de_amigos` daquela criança: código novo pede aceite novo.
+`aceitar` recebe o convite (`{perfilId, hash}`), trava a família visitante com
+`pg_advisory_xact_lock` e confere, com a linha do convite travada, que o código ainda vale, antes
+de contar o teto (`ResultadoDoAceite`: `ok`, `limite`, `sem-convite`). `casa` confere tudo de
+novo depois de ler o salvamento e o quarto, como as visitas adultas. Sem migração nova. Testes no
+bloco "revogação, troca de código e teto" de `tests/db/visitas-de-amigos.test.ts`.
+
 ## Salvamento V20 (30/10/2026)
 
 Leitura e PUT normalizam até V20 pelo contrato (móveis da casa e galeria do Farol, listas vazias na

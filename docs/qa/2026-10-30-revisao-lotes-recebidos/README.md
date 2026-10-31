@@ -43,3 +43,21 @@ recusa da leitura revogada e no máximo 20 casas.
 Nenhum banco remoto, `.env`, workflow, GLB ou gerador de arte foi modificado. Não há prints
 novos porque esta rodada não executou navegador. Evidências gráficas anteriores continuam
 com seus escopos e bases originais, sem transferência automática de aceite.
+
+## Depois da correção (31/10/2026)
+
+Os três defeitos foram corrigidos no serviço e no repositório, sem migração nova: apagar ou trocar
+o código apaga, na mesma transação, as casas aceitas daquela criança; o aceite confere o código
+dentro da transação; a família visitante passa por uma trava transacional para a contagem do teto;
+e a casa é conferida de novo depois das esperas. O reprodutor foi ajustado ao comportamento novo
+(o código novo pede aceite novo; o aceite recebe o convite vigente) e, num banco novo, mostra:
+
+```json
+{"caso":"revogar-e-gerar-outro","antes":1,"revogado":0,"novoSemAceite":0}
+{"caso":"revogar-durante-members","devolveuCasa":false,"casasAtuais":0}
+{"caso":"limite-concorrente","maximo":20,"aceites":1,"casas":20}
+```
+
+As regressões ficam em `packages/arquipelago-api/tests/db/visitas-de-amigos.test.ts` (bloco
+"revogação, troca de código e teto"); sem a correção, as cinco falham.
+

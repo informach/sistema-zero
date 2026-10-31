@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { ServicoDasVisitasDeAmigos } from '../../../packages/arquipelago-api/src/application/servico-das-visitas-de-amigos'
 import { createDbConnection } from '../../../packages/arquipelago-api/src/infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from '../../../packages/arquipelago-api/src/infrastructure/persistence/drizzle/repositorio'
@@ -64,9 +65,11 @@ try {
   const antes = (await svc.casas(visitante.jogador)).casas.length
   await svc.apagarConvite(anfitria.pais, anfitria.jogador.id)
   const revogado = (await svc.casas(visitante.jogador)).casas.length
-  await svc.gerarConvite(anfitria.pais, anfitria.jogador.id)
+  const novo = await svc.gerarConvite(anfitria.pais, anfitria.jogador.id)
   const novoSemAceite = (await svc.casas(visitante.jogador)).casas.length
   console.log(JSON.stringify({ caso: 'revogar-e-gerar-outro', antes, revogado, novoSemAceite }))
+  // Depois da correção, o código novo pede aceite novo: a família visitante aceita de novo.
+  await svc.aceitar(visitante.pais, novo.codigo, 'Casa da Lua')
 
   const entrou = Promise.withResolvers<void>(),
     sair = Promise.withResolvers<void>()
@@ -91,7 +94,7 @@ try {
   await entrou.promise
   await svc.apagarConvite(anfitria.pais, anfitria.jogador.id)
   sair.resolve()
-  const resposta = await leitura
+  const resposta = await leitura.catch(() => null)
   console.log(
     JSON.stringify({
       caso: 'revogar-durante-members',
@@ -102,11 +105,17 @@ try {
 
   // A espera no INSERT só força a intercalação concorrente, sem alterar a regra testada.
   const conta = crypto.randomUUID()
-  for (let i = 0; i < CASAS_DE_AMIGOS_MAXIMO - 1; i++) {
-    const existente = await criar()
-    await repo.aceitar(conta, existente.jogador.id, 'Casa', agora, CASAS_DE_AMIGOS_MAXIMO)
+  // Cada aceite vale para um convite vigente (o código é conferido na transação).
+  const comConvite = async () => {
+    const c = await criar()
+    const hash = createHash('sha256').update(c.jogador.id).digest('hex')
+    await repo.gerarConvite(c.jogador.id, c.pais.contaId, hash, agora)
+    return { perfilId: c.jogador.id, hash }
   }
-  const outra = await criar()
+  for (let i = 0; i < CASAS_DE_AMIGOS_MAXIMO - 1; i++)
+    await repo.aceitar(conta, await comConvite(), 'Casa', agora, CASAS_DE_AMIGOS_MAXIMO)
+  const lua = await comConvite()
+  const sol = await comConvite()
   await db.sql.unsafe(
     `CREATE FUNCTION arquipelago.review_slow_insert() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_sleep(0.5); RETURN NEW; END $$`,
   )
@@ -114,14 +123,14 @@ try {
     `CREATE TRIGGER review_slow_insert BEFORE INSERT ON arquipelago.casas_de_amigos FOR EACH ROW EXECUTE FUNCTION arquipelago.review_slow_insert()`,
   )
   const aceites = await Promise.all([
-    repo.aceitar(conta, anfitria.jogador.id, 'Lua', agora, CASAS_DE_AMIGOS_MAXIMO),
-    repo.aceitar(conta, outra.jogador.id, 'Sol', agora, CASAS_DE_AMIGOS_MAXIMO),
+    repo.aceitar(conta, lua, 'Lua', agora, CASAS_DE_AMIGOS_MAXIMO),
+    repo.aceitar(conta, sol, 'Sol', agora, CASAS_DE_AMIGOS_MAXIMO),
   ])
   console.log(
     JSON.stringify({
       caso: 'limite-concorrente',
       maximo: CASAS_DE_AMIGOS_MAXIMO,
-      aceites: aceites.filter(Boolean).length,
+      aceites: aceites.filter((a) => a.situacao === 'ok').length,
       casas: (await repo.casasDaConta(conta)).length,
     }),
   )
