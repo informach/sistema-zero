@@ -78,7 +78,7 @@ function lerGlb(id: string) {
   return { json, bytes, kb: statSync(caminho).size / 1024 }
 }
 
-async function cena(bytes: Buffer): Promise<Object3D> {
+async function cena(bytes: Buffer<ArrayBuffer>): Promise<Object3D> {
   const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
   const raiz = (await new GLTFLoader().parseAsync(ab, '')).scene
   raiz.updateMatrixWorld(true)
@@ -146,7 +146,7 @@ describe('as versões retro e moderna da galeria', () => {
         const classico = lerGlb(objeto)
         const variante = lerGlb(id)
 
-        const caixa = async (b: Buffer) =>
+        const caixa = async (b: Buffer<ArrayBuffer>) =>
           new Box3().setFromObject(await cena(b)).getSize(new Vector3())
         const [c, v] = [await caixa(classico.bytes), await caixa(variante.bytes)]
         for (const eixo of ['x', 'y', 'z'] as const)
