@@ -15,6 +15,7 @@ import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import type { RepositorioDaFamilia } from '../domain/familia.port'
 import type { Jogador, Responsavel } from '../domain/jogador'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
+import type { RepositorioDaObraEstendida } from '../domain/obra-estendida.port'
 import { SalvamentoDaVisitaNecessarioError } from '../domain/visitas-adultas.port'
 import {
   CasaDeAmigoIndisponivelError,
@@ -23,6 +24,7 @@ import {
   VisitasDeAmigosDesligadasError,
 } from '../domain/visitas-de-amigos.port'
 import { AcessoBloqueadoError, IrmaoNaoEncontradoError, SomenteLeituraError } from './erros'
+import { obraEstendidaNaVisita } from './obra-na-visita'
 
 const hashDoCodigo = (codigo: string) => createHash('sha256').update(codigo).digest('hex')
 
@@ -39,6 +41,8 @@ export class ServicoDasVisitasDeAmigos {
       familia: Pick<RepositorioDaFamilia, 'perfisDaConta' | 'salvamentos' | 'lerPermissoes'>
       politica: PoliticaDeAcesso
       membros?: Pick<PortaDosMembros, 'lerQuarto'> | null
+      /** O andar de cima e o terreno de quem é visitado; sem o repositório, a casa vem sem. */
+      obras?: Pick<RepositorioDaObraEstendida, 'ler'> | null
       logger?: Logger
       agora?: () => Date
     },
@@ -173,6 +177,12 @@ export class ServicoDasVisitasDeAmigos {
     )
     if (!s) throw new CasaDeAmigoIndisponivelError()
     const quarto = await this.quartoDe(c.perfilAnfitriao)
+    const estendida = await obraEstendidaNaVisita(
+      this.deps.obras,
+      c.perfilAnfitriao,
+      'kids',
+      this.deps.logger,
+    )
     // Depois das esperas (salvamento e Members), a mesma conferência de novo: um convite apagado,
     // um interruptor desligado ou um aceite removido no meio do caminho não deixa a casa sair.
     if (!(await this.ligado(contaId))) throw new VisitasDeAmigosDesligadasError()
@@ -186,6 +196,7 @@ export class ServicoDasVisitasDeAmigos {
       horta: s.horta,
       completos: OBJETOS_DA_CASA.filter((o) => Boolean(s.projetos[o]?.aparencia)),
       quarto,
+      ...estendida,
     }
   }
 

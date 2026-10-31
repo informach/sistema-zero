@@ -192,6 +192,9 @@ describe('a visita', () => {
       perfilId: ANA,
       nome: 'Ana',
       obra: null,
+      // O serviço de antes não manda o andar nem o terreno: a visita fica sem eles.
+      andar: null,
+      terreno: null,
       horta: [],
       completos: ['forno'],
       quarto: null,

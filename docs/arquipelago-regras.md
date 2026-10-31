@@ -754,7 +754,7 @@ Arquivo: `sistemas/itens.ts`, constante `ITENS`.
 | Bolo de fubá | fome +50 |
 | Pão de queijo | fome +30 |
 | Brigadeiro | fome +10, diversão +20 |
-| Chocolate quente | fome +15, energia +15 |
+| Chocolate quente | fome +15, energia +15; no Pico, energia +20 a mais e "O chocolate quente aqueceu do frio do Pico." (a proposta: "aquece no Pico Gelado"; `naIlha` em `sistemas/itens.ts`, lacunas de 01/11/2026) |
 
 - **Teto por item:** 999 (`adicionar`). Também é o teto do salvamento.
 - **Item desconhecido** (de uma versão futura) é ignorado pelo jogo.
@@ -2295,7 +2295,10 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
 - **Visitas:** "🏡 Visitar um irmão" no menu abre o painel (`PAINEL_DAS_VISITAS`) com cada irmão
   ("Já construiu a casa." ou "Ainda mora na casa de antes.") e "Ver a casa".
   - Na visita, o jogo desenha a casa, o quintal e a horta do irmão (os objetos com aparência com o
-    modelo). O personagem vai para a frente da casa (`CHEGADA_DA_VISITA`) e o Zappy diz "Você está
+    modelo). Desde 01/11/2026 (lacunas), também o andar de cima e o terreno moldado dele: o serviço
+    lê a obra estendida de quem é visitado (`obraEstendidaNaVisita`, a mesma nas visitas de amigos
+    e de adultos, antes da conferência final) e manda `andar` e `terreno` com a casa. Sem eles (o
+    serviço de antes, ou falha na leitura), a casa aparece sem. O personagem vai para a frente da casa (`CHEGADA_DA_VISITA`) e o Zappy diz "Você está
     na casa de Ana. Aqui você só olha.".
   - No lugar de Viver e Construir, a faixa no alto: "🏡 Você está na casa de Ana. Aqui você só
     olha." com "Voltar para a minha casa" (no celular, abaixo das necessidades, longe do

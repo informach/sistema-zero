@@ -16,20 +16,22 @@ import { useModelo } from './modelos'
 import { KIT_DA_CASA } from './obra'
 
 /**
- * O andar de cima da casa no mundo (E04): lido do documento à parte do serviço. `null` sem escada,
- * antes do Pico, na visita (o documento não viaja com ela) e se a obra do térreo não o segura mais
- * (o andar só aparece inteiro).
+ * O andar de cima da casa no mundo (E04): lido do documento à parte do serviço. Na visita, o de
+ * quem é visitado, que vem com a casa dele (lacunas, 01/11/2026). `null` sem escada, antes do Pico
+ * (fora da visita) e se a obra do térreo não o segura mais (o andar só aparece inteiro).
  */
 export function useAndarDaCasa(lote: Lote): AndarDeCima | null {
   const { loja, plataforma } = useJogo()
   const extensa = lojaDaObraEstendida(loja, plataforma)
-  const andar = useObraEstendida(extensa, (s) => s.obra?.andar ?? null)
-  const obra = useEstado((s) => s.salvamento.construcao.casa)
-  const vale = useEstado((s) => podeTerAndar(s.jornada) && s.visita === null)
+  const proprio = useObraEstendida(extensa, (s) => s.obra?.andar ?? null)
+  const visita = useEstado((s) => s.visita)
+  const obra = useEstado((s) => (s.visita ? s.visita.obra : s.salvamento.construcao.casa))
+  const pode = useEstado((s) => podeTerAndar(s.jornada))
+  const andar = visita ? (visita.andar ?? null) : pode ? proprio : null
   return useMemo(() => {
-    if (!vale || !andar?.escada || !obra) return null
+    if (!andar?.escada || !obra) return null
     return conferirAndar(andar, obra, lote) === null ? andar : null
-  }, [vale, andar, obra, lote])
+  }, [andar, obra, lote])
 }
 
 /**
