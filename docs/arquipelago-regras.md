@@ -2444,8 +2444,10 @@ faz o que as seções acima descrevem.
 
 **Arte**
 
-13. **Ilhas de posto alto (B2):** maiores e mais altas só na silhueta (Vale e Nuvens), junto com o
-    ajuste das silhuetas (B1). A ilha completa não muda de tamanho.
+13. **Ilhas de posto alto (B2):** mais altas pelo posto, nas duas versões, por marcos que não se
+    pisam (torre de doces, coral, ponta de gelo, vulcão, torres de nuvem); a largura e tudo o que se
+    pisa não mudam, e a silhueta copia a ilha completa. Revisto em 30/10/2026 depois de medir: só na
+    silhueta, a ilha encolheria na troca da ponte. Alvos no documento de pedidos de arte.
 14. **Lumis raros (B12):** primeiro como variação de cor e brilho no código, sem modelo novo.
     Nunca sorteados em troca de moeda.
 15. **Bolsa do Nico (B15):** não por enquanto; a conversa e os pedidos (A19) dão o papel de carteiro.

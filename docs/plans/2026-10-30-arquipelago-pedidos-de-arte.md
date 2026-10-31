@@ -185,9 +185,9 @@ Ordem de produção:
 
 1. **B3. Bichinho do quarto andando:** clipes `andar` e `correr` em `pet-cachorro.glb` e
    `pet-gato.glb`, nas duas comunidades, sem mexer nos clipes de parado.
-2. **B1 e B2. Silhuetas das ilhas** (`mundo/ilhas-do-anel.glb`): uma malha por ilha, até 3 mil
-   triângulos, cor por vértice. Decisão B2: o Vale e as Nuvens ficam maiores e mais altos só na
-   silhueta (régua sugerida: +20%; Recife e Pico +10%); a ilha completa não muda.
+2. **B1 e B2. Silhuetas das ilhas e a altura pelo posto:** ver "As ilhas mais altas nos postos mais
+   altos (B1 e B2)" abaixo. Revisto em 30/10/2026 depois de medir os modelos: a altura vai nas duas
+   versões, por marcos que não se pisam, e a silhueta copia o contorno da ilha completa.
 3. **B10. Barraca do minijogo** (`ilhas/vila-doce-props.glb`, `barraca-do-jogo`) e **brinquedo do
    festival** (`ilhas/pico-props.glb`, `brinquedo-do-festival`), cada um com o nó `tela` e a âncora
    `jogar`.
@@ -207,6 +207,40 @@ Ordem de produção:
 
 Não pedidos por decisão da dona: Lumis raros com modelo próprio (B12, primeiro como variação de cor
 no código), bolsa de carteiro do Nico (B15) e roupas de festa novas (B16).
+
+### As ilhas mais altas nos postos mais altos (B1 e B2)
+
+Medido nos GLBs em 30/10/2026 (altura do topo acima do mar, em metros; as Nuvens flutuam mais 7 m,
+`ALTURA_DAS_NUVENS`):
+
+| Ilha (posto) | Ilha completa | Silhueta hoje | Alvo nas duas versões |
+| --- | --- | --- | --- |
+| Bosque (2) | 14,4 (árvores) | 7,1 | 14 (como está) |
+| Vila Doce (3) | 10,6 | 4,9 | 12 |
+| Recife (4) | 6,1, mas a mais larga (37 m) | 4,8 | 9, e continua a mais larga |
+| Pico (5) | 11,3 | 11,2 | 18 |
+| Vale (6) | 11,6 | 9,7 | 20 |
+| Nuvens (7) | 10,2 + 7 = 17,2 | 6,2 + 7 = 13,2 | 24 |
+
+Dois problemas da decisão anterior ("maior só na silhueta"): a silhueta é trocada pela ilha
+completa ao atravessar a ponte, e uma silhueta maior que a ilha encolheria na frente da criança; e
+hoje a altura não acompanha o posto (o Bosque é a ilha mais alta no chão). Pedido revisto:
+
+1. **A altura vem de marcos que não se pisam, nas duas versões:** a torre de doces da Vila mais alta;
+   pináculos de coral e o mastro do navio no Recife; uma ponta de gelo acima do platô do cume no
+   Pico (acima da bandeira, fora do caminho); o cone do vulcão mais alto no Vale (acima do pé do
+   vulcão, fora da escavação e dos ninhos); torres de nuvem e o arco-íris nas Nuvens. Nenhum marco
+   toca o chão pisável, os percursos, o cais ou a ponte; os colisores e as âncoras existentes não
+   mudam. Nas Nuvens, o marco que estiver dentro do teto do balão (18 m acima do chão da ilha) ganha
+   colisor.
+2. **A silhueta copia o contorno da ilha completa**, com os marcos: uma malha, até 3 mil triângulos,
+   cor por vértice, o mesmo nome de nó de hoje, e a mesma altura e largura da ilha completa (com
+   tolerância de 5%), para a troca na ponte não mudar o tamanho.
+3. **A largura da ilha completa não muda** (o raio de 13 m e tudo o que se pisa ficam iguais).
+
+Aceite: um teste que lê os GLBs e confere os alvos de altura (com 1 m de tolerância), a silhueta
+com uma malha e até 3 mil triângulos, e a diferença de altura e largura entre a silhueta e a ilha
+completa abaixo de 5%.
 
 ### As medidas dos movimentos para os segredos (B11)
 
