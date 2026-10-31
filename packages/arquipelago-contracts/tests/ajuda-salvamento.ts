@@ -12,7 +12,7 @@ import {
 export function inicialV21(agora: Date): SalvamentoV21 {
   const { florada: _florada, ceu: _ceu, ...atual } = criarSalvamentoInicial(agora)
   const { fosseis: _fosseis, ...vale } = atual.vale
-  return { ...atual, versao: 21, vale }
+  return { ...atual, versao: 21, vale, percursos: {} }
 }
 
 /** O salvamento inicial na V20 (sem o Nico entre os moradores, da V21). */

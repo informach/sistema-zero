@@ -18,6 +18,7 @@ import {
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useFesta } from '../estado/festas'
+import { lojaDaObraEstendida, useObraEstendida } from '../estado/obra-estendida'
 import { arrumarOQuarto } from '../estado/quarto'
 import {
   chaveDoComodo,
@@ -28,6 +29,7 @@ import {
   quantasChaves,
   TEXTOS_DAS_CHAVES,
 } from '../sistemas/chaves-da-casa'
+import { podeTerAndar } from '../sistemas/construcao/andar'
 import {
   type CategoriaDoMovel,
   categoriasDisponiveis,
@@ -35,6 +37,7 @@ import {
   ehDeParede,
   moveisDoCatalogo,
 } from '../sistemas/construcao/moveis'
+import { podeMoldarOTerreno } from '../sistemas/construcao/terreno'
 import { PainelDeAconchego } from './aconchego'
 import { Icone } from './icones'
 import {
@@ -91,6 +94,18 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     dica: 'Toque no quintal para pôr um canteiro. Ele planta e rega como a horta.',
   },
   {
+    id: 'terreno',
+    nome: 'Terreno',
+    emoji: '⛰️',
+    dica: 'Toque ou arraste no quintal para subir ou descer o chão, meio metro por vez. A casa, os caminhos e o que está posto ficam no plano.',
+  },
+  {
+    id: 'escada',
+    nome: 'Escada',
+    emoji: '🪜',
+    dica: 'Toque num cômodo onde vai o pé da escada do andar de cima. O Girar muda para onde ela sobe.',
+  },
+  {
     id: 'apagar',
     nome: 'Apagar',
     emoji: '🧽',
@@ -103,6 +118,16 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     dica: 'Toque num cômodo para ver o aconchego. Arraste para andar pela obra; Q e E giram.',
   },
 ]
+
+/** O que vale lá em cima (o resto é do térreo e do quintal). */
+const FERRAMENTAS_DE_CIMA: ReadonlySet<Ferramenta> = new Set([
+  'parede',
+  'porta',
+  'janela',
+  'piso',
+  'apagar',
+  'olhar',
+])
 
 const JANELAS: ReadonlyArray<{ id: TipoDeJanela; nome: string }> = [
   { id: 'janela-grande', nome: 'Grande' },
@@ -237,7 +262,20 @@ export function BarraDeConstruir() {
   const projetos = useEstado((s) => s.salvamento.projetos)
   const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
-  const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
+  // O Terreno e o andar de cima têm o Desfazer deles (não são a obra do salvamento).
+  const podeDesfazer = useConstrucao(construcao, (s) =>
+    s.ferramenta === 'terreno'
+      ? s.antesDoTerreno.length > 0
+      : s.camada === 'cima' || s.ferramenta === 'escada'
+        ? s.antesDoAndar.length > 0
+        : s.antes.length > 0,
+  )
+  const camada = useConstrucao(construcao, (s) => s.camada)
+  const temEscada = useObraEstendida(
+    lojaDaObraEstendida(loja, plataforma),
+    (o) => !!o.obra?.andar?.escada,
+  )
+  const moldar = useConstrucao(construcao, (s) => s.moldar)
   // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
   // O iglu do Pico (E04) não tem cerca nem caminho: o lote dele diz o que cabe.
@@ -256,7 +294,15 @@ export function BarraDeConstruir() {
           !(f.id === 'cerca' && limitesDaCabana?.trechosDeCerca === 0) &&
           !(f.id === 'caminho' && limitesDaCabana?.caminhos === 0),
       )
-    : FERRAMENTAS
+    : camada === 'cima'
+      ? FERRAMENTAS.filter((f) => FERRAMENTAS_DE_CIMA.has(f.id))
+      : FERRAMENTAS.filter(
+          (f) =>
+            (f.id !== 'terreno' || podeMoldarOTerreno(jornada)) &&
+            (f.id !== 'escada' || podeTerAndar(jornada)),
+        )
+  // A troca de andar aparece com a escada posta (na casa).
+  const comAndar = !naCabana && temEscada && podeTerAndar(jornada)
   if (!aberto) return null
   const s = () => construcao.getState()
   const dica =
@@ -274,6 +320,35 @@ export function BarraDeConstruir() {
           <p className="arq-obra-chaves">{TEXTOS_DAS_CHAVES.contagem(quantasChaves(chaves))}</p>
         ) : null}
       </div>
+      {comAndar ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Andar da casa</legend>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={camada === 'chao'}
+            onClick={() => s().escolherCamada('chao')}
+          >
+            Térreo
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={camada === 'cima'}
+            onClick={() => s().escolherCamada('cima')}
+          >
+            Andar de cima
+          </button>
+        </fieldset>
+      ) : null}
+      {atual === 'escada' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Rumo da escada</legend>
+          <button type="button" className="arq-botao leve" onClick={() => s().girarObjeto()}>
+            ⟳ Girar
+          </button>
+        </fieldset>
+      ) : null}
       {atual === 'janela' ? (
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Tipo de janela</legend>
@@ -379,6 +454,27 @@ export function BarraDeConstruir() {
             ))}
           </fieldset>
         </>
+      ) : null}
+      {atual === 'terreno' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Subir ou descer o chão</legend>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={moldar === 1}
+            onClick={() => s().escolherMoldar(1)}
+          >
+            ⬆ Subir
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={moldar === -1}
+            onClick={() => s().escolherMoldar(-1)}
+          >
+            ⬇ Descer
+          </button>
+        </fieldset>
       ) : null}
       {atual === 'caminho' ? (
         <fieldset className="arq-obra-escolhas">

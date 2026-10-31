@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import {
   CasaDoIrmaoSchema,
+  compactarResultado,
   criarSalvamentoInicial,
   IrmaosDoJogadorSchema,
   type Salvamento,
@@ -128,7 +129,7 @@ const RECORDE = {
 /** O Tom com um recorde nas copas, uma alface plantada e a geladeira com aparência. */
 const comoOTom = (s: Salvamento): Salvamento => ({
   ...s,
-  percursos: { 'bosque-copas': RECORDE },
+  percursos: { 'bosque-copas': compactarResultado(RECORDE) },
   horta: s.horta.map((c, i) =>
     i === 0 ? { ...c, semente: 'alface', plantadoEm: AGORA.toISOString() } : c,
   ),

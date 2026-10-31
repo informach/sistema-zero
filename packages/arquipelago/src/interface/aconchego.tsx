@@ -15,7 +15,7 @@ export function PainelDeAconchego() {
   const onde = useConstrucao(construcao, (s) => s.onde)
   const cabana = useConstrucao(construcao, (s) => s.cabana)
   const celula = useConstrucao(construcao, (s) => s.celulaObservada)
-  const obra = useEstado((s) => obraDe(s, onde))
+  const obra = useEstado((s) => obraDe(s, onde, cabana))
   const projetos = useEstado((s) => s.salvamento.projetos)
   const quarto = useEstado((s) => s.quarto)
   const jornada = useEstado((s) => s.jornada)

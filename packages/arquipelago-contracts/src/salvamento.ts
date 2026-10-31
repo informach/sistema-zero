@@ -93,6 +93,8 @@ export const PERCURSOS = [
   'praia-pedras',
   'recife-corais',
   'vale-pegadas',
+  // V22 (31/10/2026, E04): a subida final por fora do Farol, na Lenda.
+  'farol-subida',
 ] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
@@ -109,6 +111,58 @@ export const ResultadoDoPercursoSchema = z.strictObject({
   melhorTempoMs: z.number().int().min(0).max(MELHOR_TEMPO_MAXIMO_MS),
 })
 export type ResultadoDoPercurso = z.infer<typeof ResultadoDoPercursoSchema>
+
+/**
+ * O resultado guardado na V22 (31/10/2026): a mesma coisa em tupla, para pesar pouco no salvamento
+ * (de uns 95 para uns 25 bytes por percurso): as estrelas em bits (1 a chegada, 2 o tempo, 4 a
+ * terceira) e o melhor tempo. O jogo lê e grava pelo `resultadoDoPercurso` e o `compactarResultado`.
+ */
+export const ResultadoCompactoSchema = z.tuple([
+  z.number().int().min(0).max(7),
+  z.number().int().min(0).max(MELHOR_TEMPO_MAXIMO_MS),
+])
+export type ResultadoCompacto = z.infer<typeof ResultadoCompactoSchema>
+
+export function compactarResultado(r: ResultadoDoPercurso): ResultadoCompacto {
+  const { chegada, tempo, vagalumes } = r.estrelas
+  return [(chegada ? 1 : 0) | (tempo ? 2 : 0) | (vagalumes ? 4 : 0), r.melhorTempoMs]
+}
+
+export function expandirResultado([bits, melhorTempoMs]: ResultadoCompacto): ResultadoDoPercurso {
+  return {
+    estrelas: { chegada: (bits & 1) !== 0, tempo: (bits & 2) !== 0, vagalumes: (bits & 4) !== 0 },
+    melhorTempoMs,
+  }
+}
+
+export type PercursosGuardados = Partial<Record<PercursoId, ResultadoCompacto>>
+
+/** O resultado de um percurso no salvamento atual, por extenso (ou `undefined`). */
+export function resultadoDoPercurso(
+  p: PercursosGuardados,
+  id: PercursoId,
+): ResultadoDoPercurso | undefined {
+  const t = p[id]
+  return t ? expandirResultado(t) : undefined
+}
+
+/** O melhor tempo guardado de um percurso (ou `undefined`). */
+export function melhorTempoDoPercurso(
+  p: PercursosGuardados | undefined,
+  id: PercursoId,
+): number | undefined {
+  return p?.[id]?.[1]
+}
+
+/** Todos os resultados por extenso (para quem lê o formato de antes, como as visitas). */
+export function percursosPorExtenso(
+  p: PercursosGuardados,
+): Partial<Record<PercursoId, ResultadoDoPercurso>> {
+  const fora: Partial<Record<PercursoId, ResultadoDoPercurso>> = {}
+  for (const [id, t] of Object.entries(p) as [PercursoId, ResultadoCompacto][])
+    fora[id] = expandirResultado(t)
+  return fora
+}
 
 /** V2 (27/10/2026): a V1 mais o melhor resultado de cada percurso. */
 export const SalvamentoV2Schema = SalvamentoV1Schema.extend({
@@ -1025,7 +1079,8 @@ export const BIT_DO_FOSSIL: Readonly<Record<FossilDoVale, number>> = Object.from
 export const FLORADA_MAXIMA = 999
 
 /**
- * V22 (31/10/2026, lista B da proposta v3): os seis fósseis do museu achados no Vale (`vale.fosseis`,
+ * V22 (31/10/2026, lista B da proposta v3): os percursos em tupla (`ResultadoCompacto`, com a subida
+ * do Farol), os seis fósseis do museu achados no Vale (`vale.fosseis`,
  * um bit por fóssil, B4), as plantas do jardim do céu (`ceu`, B6) e as flores do céu que a criança
  * já mandou para a sua ilha florescer (`florada`). O jardim do céu não entra na `horta`: os 24
  * canteiros dela podem estar todos no quintal.
@@ -1034,6 +1089,7 @@ export const SalvamentoV22Schema = z
   .strictObject({
     ...SalvamentoV21Schema.shape,
     versao: z.literal(22),
+    percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoCompactoSchema),
     ceu: z
       .array(PlantaDoCeuSchema)
       .max(CANTEIROS_DO_CEU)
@@ -1052,7 +1108,10 @@ export type SalvamentoV22 = z.infer<typeof SalvamentoV22Schema>
 
 /** Nenhum fóssil novo e nenhuma flor do céu ainda; o osso da escavação continua contado. */
 export function migrarDaV21(s: SalvamentoV21): SalvamentoV22 {
-  return { ...s, versao: 22, vale: { ...s.vale, fosseis: 0 }, florada: 0, ceu: [] }
+  const percursos: PercursosGuardados = {}
+  for (const [id, r] of Object.entries(s.percursos) as [PercursoId, ResultadoDoPercurso][])
+    percursos[id] = compactarResultado(r)
+  return { ...s, versao: 22, percursos, vale: { ...s.vale, fosseis: 0 }, florada: 0, ceu: [] }
 }
 
 export const SalvamentoSchema = z.union([

@@ -9,6 +9,7 @@ import {
   type IlhaId,
   MORADORES_DO_ANEL,
   OBJETOS_DA_CASA,
+  percursosPorExtenso,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { NOMES_DOS_CONVIDADOS } from './visitas-dos-moradores'
@@ -38,7 +39,7 @@ const contarBits = (n: number) => {
 
 export function fotoDoDia(s: Salvamento, dia: string): FotoDoDia {
   let estrelas = 0
-  for (const r of Object.values(s.percursos))
+  for (const r of Object.values(percursosPorExtenso(s.percursos)))
     if (r)
       estrelas +=
         Number(r.estrelas.chegada) + Number(r.estrelas.tempo) + Number(r.estrelas.vagalumes)

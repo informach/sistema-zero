@@ -93,20 +93,14 @@ export function conciliarSalvamento(
     mapa[ilha] = juntarMapas(celulas, remoto.mapa[ilha])
   }
 
+  // Cada estrela fica para sempre e vale o menor tempo (na V22, em tupla: os bits se juntam).
   const percursos = { ...remoto.percursos }
   for (const [id, resultado] of Object.entries(local.percursos)) {
     const chave = id as keyof Salvamento['percursos']
     const outro = remoto.percursos[chave]
     if (!resultado) continue
     percursos[chave] = outro
-      ? {
-          estrelas: {
-            chegada: resultado.estrelas.chegada || outro.estrelas.chegada,
-            tempo: resultado.estrelas.tempo || outro.estrelas.tempo,
-            vagalumes: resultado.estrelas.vagalumes || outro.estrelas.vagalumes,
-          },
-          melhorTempoMs: Math.min(resultado.melhorTempoMs, outro.melhorTempoMs),
-        }
+      ? [resultado[0] | outro[0], Math.min(resultado[1], outro[1])]
       : resultado
   }
   return {

@@ -1,4 +1,9 @@
-import type { Obra } from '@sistemazero/arquipelago-contracts'
+import {
+  type Obra,
+  type ObraEstendida,
+  obraEstendidaVazia,
+} from '@sistemazero/arquipelago-contracts'
+import { andarDaObra, loteDeCima, obraDeCima, porEscada } from '../sistemas/construcao/andar'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import {
   esticarParede,
@@ -75,6 +80,63 @@ export function obraDeExemploComEntrada(): Obra {
   const r = moverEntrada(obraDeExemplo(), LOTE_DA_CASA, { eixo: 'x', x: -4, z: 3 })
   if (!r.ok) throw new Error(`obra de exemplo recusada: ${r.motivo}`)
   return r.obra
+}
+
+/**
+ * A obra de exemplo com uma sala à esquerda do quarto (x -12 a -6, z -8 a 0), ligada a ele por uma
+ * porta (`?obra=andar`, E04): cabe a escada do andar de cima (`OBRA_ESTENDIDA_DE_EXEMPLO`).
+ */
+export function obraDeExemploComAndar(): Obra {
+  const L = LOTE_DA_CASA
+  let o = obraDeExemplo()
+  const passo = (r: Resultado) => {
+    if (!r.ok) throw new Error(`obra de exemplo recusada: ${r.motivo}`)
+    o = r.obra
+  }
+  passo(esticarParede(o, L, { x: -12, z: -8 }, { x: -12, z: 0 }))
+  passo(esticarParede(o, L, { x: -12, z: -8 }, { x: -6, z: -8 }))
+  passo(esticarParede(o, L, { x: -12, z: 0 }, { x: -6, z: 0 }))
+  passo(porAbertura(o, L, 'porta', { eixo: 'z', x: -6, z: -4 }))
+  passo(porAbertura(o, L, 'janela-grande', { eixo: 'z', x: -12, z: -6 }))
+  return o
+}
+
+/**
+ * O andar de cima e o terreno do exemplo (`?obra=andar`): a escada na sala, subindo para o fundo,
+ * dois cômodos em cima do quarto com a porta entre eles e janelas, o resto do piso aberto com o
+ * guarda-corpo; um morrinho no quintal (de meio metro a 1,5 m).
+ */
+export function obraEstendidaDeExemplo(): ObraEstendida {
+  const obra = obraDeExemploComAndar()
+  const r = porEscada(null, obra, LOTE_DA_CASA, { x: -10, z: -2 }, 0)
+  if (!r.ok) throw new Error(`escada de exemplo recusada: ${r.motivo}`)
+  const lote = loteDeCima(LOTE_DA_CASA)
+  let cima = obraDeCima(r.andar)
+  const passo = (x: Resultado) => {
+    if (!x.ok) throw new Error(`andar de exemplo recusado: ${x.motivo}`)
+    cima = x.obra
+  }
+  passo(esticarParede(cima, lote, { x: -6, z: -8 }, { x: 6, z: -8 }))
+  passo(esticarParede(cima, lote, { x: -6, z: 0 }, { x: 6, z: 0 }))
+  passo(esticarParede(cima, lote, { x: -6, z: -8 }, { x: -6, z: 0 }))
+  passo(esticarParede(cima, lote, { x: 6, z: -8 }, { x: 6, z: 0 }))
+  passo(esticarParede(cima, lote, { x: 0, z: -8 }, { x: 0, z: 0 }))
+  passo(porAbertura(cima, lote, 'porta', { eixo: 'z', x: 0, z: -4 }))
+  passo(porAbertura(cima, lote, 'porta', { eixo: 'z', x: -6, z: -4 }))
+  passo(porAbertura(cima, lote, 'janela-arco', { eixo: 'x', x: -4, z: 0 }))
+  passo(porAbertura(cima, lote, 'janela-redonda', { eixo: 'z', x: 6, z: -4 }))
+  passo(trocarPiso(cima, lote, { x: 3, z: -4 }, 'ladrilho'))
+  const alturas: [number, number, number][] = []
+  for (let x = 8; x <= 12; x++)
+    for (let z = 4; z <= 8; z++) {
+      const h = 3 - Math.max(Math.abs(x - 10), Math.abs(z - 6))
+      if (h > 0) alturas.push([x, z, h])
+    }
+  return {
+    ...obraEstendidaVazia(),
+    andar: andarDaObra(cima, r.andar.escada),
+    terreno: { alturas },
+  }
 }
 
 const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null, aparencias: [] }

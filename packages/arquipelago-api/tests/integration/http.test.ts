@@ -8,6 +8,7 @@ import {
   CartasDoJogadorSchema,
   ConflitoDeSalvamentoSchema,
   type CurriculoDeBlocos,
+  compactarResultado,
   criarSalvamentoInicial,
   MORADOR_NOVO,
   NINHOS_DO_VALE,
@@ -554,10 +555,10 @@ describe('salvamento', () => {
       farol: { pagina: true, concluido: true, galeria: [] },
       clima: 'chuva' as const,
       percursos: {
-        'nuvens-saltos': {
+        'nuvens-saltos': compactarResultado({
           estrelas: { chegada: true, tempo: true, vagalumes: true },
           melhorTempoMs: 45000,
-        },
+        }),
       },
     }
     expect(
