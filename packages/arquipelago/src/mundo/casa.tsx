@@ -455,7 +455,8 @@ export function Casa() {
   const aqui = useConstrucao(lojaDaConstrucao(loja), (s) => s.onde === 'casa')
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR) && aqui
   // O andar de cima (E04, Pico em diante), do documento à parte do serviço.
-  const andar = useAndarDaCasa(lote)
+  // O mesmo lote que a loja do Construir confere (os pendurados do quarto não mudam o andar).
+  const andar = useAndarDaCasa(loteDaJornada)
   const emCima = useConstrucao(lojaDaConstrucao(loja), (s) => s.camada === 'cima') && !!andar
   const doAndar = useMemo(
     () =>

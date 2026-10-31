@@ -271,10 +271,10 @@ export function BarraDeConstruir() {
         : s.antes.length > 0,
   )
   const camada = useConstrucao(construcao, (s) => s.camada)
-  const temEscada = useObraEstendida(
-    lojaDaObraEstendida(loja, plataforma),
-    (o) => !!o.obra?.andar?.escada,
-  )
+  const extensa = lojaDaObraEstendida(loja, plataforma)
+  const temEscada = useObraEstendida(extensa, (o) => !!o.obra?.andar?.escada)
+  // A obra deste aparelho que perdeu para outro aparelho fica guardada (N1): voltar ou descartar.
+  const temCopia = useObraEstendida(extensa, (o) => o.recuperacao !== null)
   const moldar = useConstrucao(construcao, (s) => s.moldar)
   // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
@@ -320,6 +320,28 @@ export function BarraDeConstruir() {
           <p className="arq-obra-chaves">{TEXTOS_DAS_CHAVES.contagem(quantasChaves(chaves))}</p>
         ) : null}
       </div>
+      {temCopia ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">A obra deste aparelho</legend>
+          <p className="arq-obra-dica">
+            A obra mudou em outro aparelho. A deste aparelho ficou guardada.
+          </p>
+          <button
+            type="button"
+            className="arq-botao leve"
+            onClick={() => extensa.getState().recuperar()}
+          >
+            Voltar à deste aparelho
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            onClick={() => extensa.getState().descartarRecuperacao()}
+          >
+            Ficar com a nova
+          </button>
+        </fieldset>
+      ) : null}
       {comAndar ? (
         <fieldset className="arq-obra-escolhas">
           <legend className="arq-sr">Andar da casa</legend>
