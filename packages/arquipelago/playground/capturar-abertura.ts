@@ -53,7 +53,7 @@ const naSala = (x: number, y: number, z: number): V3 => [SALA[0] + x, SALA[1] + 
 
 async function subirOFarol(page: Page) {
   await page.locator('canvas').first().click()
-  await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+  await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
   await page.keyboard.press('KeyE')
   await page.waitForFunction(() => {
     const d = (
