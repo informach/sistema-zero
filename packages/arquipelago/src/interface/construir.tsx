@@ -202,6 +202,8 @@ export function BarraDeConstruir() {
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const atual = useConstrucao(construcao, (s) => s.ferramenta)
   const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
+  // Passando por cima de onde não dá, a linha de baixo diz por quê (no toque, o Zappy já diz).
+  const motivo = useConstrucao(construcao, (s) => s.motivoDaPrevia)
   const janela = useConstrucao(construcao, (s) => s.janela)
   const piso = useConstrucao(construcao, (s) => s.piso)
   const caminho = useConstrucao(construcao, (s) => s.caminho)
@@ -233,12 +235,12 @@ export function BarraDeConstruir() {
     : FERRAMENTAS
   if (!aberto) return null
   const s = () => construcao.getState()
-  const dica = FERRAMENTAS.find((f) => f.id === atual)?.dica
+  const dica = motivo ?? FERRAMENTAS.find((f) => f.id === atual)?.dica
   return (
     <section className="arq-obra" aria-label="Ferramentas de construir">
       {aconchegoAberto && <PainelDeAconchego />}
       <div className="arq-obra-dica-linha">
-        <p className="arq-obra-dica" aria-live="polite">
+        <p className={`arq-obra-dica${motivo ? ' recusa' : ''}`} aria-live="polite">
           {dica}
         </p>
         {/* Na mesma linha da dica, para a barra não crescer (N11). */}

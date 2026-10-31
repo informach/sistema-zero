@@ -5,6 +5,7 @@ import { BufferGeometry, Float32BufferAttribute, Plane, Raycaster, Vector2, Vect
 import { CAMERA_DE_OBRA, lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
 import { planta } from '../sistemas/construcao/comodos'
+import { motivoDaPrevia } from '../sistemas/construcao/falas'
 import {
   arrasta,
   arrasto,
@@ -12,8 +13,9 @@ import {
   type Previa as PreviaDaRegra,
   toque,
 } from '../sistemas/construcao/ferramentas'
-import { type Aresta, celulaEm, type Ponto } from '../sistemas/construcao/grade'
+import { type Aresta, arestaDaChave, celulaEm, type Ponto } from '../sistemas/construcao/grade'
 import { type Celula, chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
+import type { Resultado } from '../sistemas/construcao/obra'
 import { noModelo } from './medidas'
 
 const VERDE = '#3ccf7a'
@@ -92,12 +94,26 @@ export function ModoConstruir({
   const obraAtual = useRef(obra)
   obraAtual.current = obra
 
-  const mostrar = useCallback((p: Previa) => {
-    const k = chaveDaPrevia(p)
-    if (k === ultimaPrevia.current) return
-    ultimaPrevia.current = k
-    setPrevia(p)
-  }, [])
+  const mostrar = useCallback(
+    (p: Previa) => {
+      // Sem prévia, a linha de baixo volta à dica da ferramenta.
+      if (!p) construcao.getState().mostrarMotivo(null)
+      const k = chaveDaPrevia(p)
+      if (k === ultimaPrevia.current) return
+      ultimaPrevia.current = k
+      setPrevia(p)
+    },
+    [construcao],
+  )
+  // A prévia e o motivo dela, juntos: vermelha, a linha de baixo diz por que não dá (o mesmo texto
+  // que o Zappy diria no toque), antes de a criança tocar.
+  const mostrarComMotivo = useCallback(
+    (f: Ferramenta, r: { resultado: Resultado | null; previa: PreviaDaRegra }) => {
+      mostrar(comCor(f, r.previa))
+      construcao.getState().mostrarMotivo(motivoDaPrevia(r.resultado))
+    },
+    [construcao, mostrar],
+  )
 
   // ------------------------------------------------------------ câmera de obra
   const teclas = useRef(new Set<string>())
@@ -276,19 +292,18 @@ export function ModoConstruir({
       if (gesto?.tipo === 'arrasto' && gesto.id === e.pointerId) {
         gesto.fim = onde
         if (Math.hypot(onde.x - gesto.inicio.x, onde.z - gesto.inicio.z) > 0.35) gesto.andou = true
-        mostrar(
-          comCor(ferramenta, arrasto(ferramenta, o, lote, gesto.inicio, onde, escolhas()).previa),
-        )
+        mostrarComMotivo(ferramenta, arrasto(ferramenta, o, lote, gesto.inicio, onde, escolhas()))
         return
       }
       if (!gesto && ferramenta !== 'olhar') {
         // Antes de arrastar, a prévia é a do toque (no apagar, o que um toque tiraria).
         const f = ferramenta
-        const previa =
+        mostrarComMotivo(
+          f,
           arrasta(f) && f !== 'apagar'
-            ? arrasto(f, o, lote, onde, onde, escolhas()).previa
-            : toque(f, o, lote, onde, escolhas(), horta(), projetos()).previa
-        mostrar(comCor(f, previa))
+            ? arrasto(f, o, lote, onde, onde, escolhas())
+            : toque(f, o, lote, onde, escolhas(), horta(), projetos()),
+        )
       }
     }
     const sobe = (e: PointerEvent) => {
@@ -353,7 +368,7 @@ export function ModoConstruir({
       el.removeEventListener('contextmenu', semMenu, opcoes)
       cancelar()
     }
-  }, [gl, camera, base, lote, construcao, mostrar, loja, ferramenta, referencial])
+  }, [gl, camera, base, lote, construcao, mostrar, mostrarComMotivo, loja, ferramenta, referencial])
 
   // A prévia some quando a ferramenta muda.
   // biome-ignore lint/correctness/useExhaustiveDependencies: limpar a prévia a cada troca de ferramenta.
@@ -361,6 +376,8 @@ export function ModoConstruir({
     ultimaPrevia.current = ''
     setPrevia(null)
   }, [ferramenta])
+  // Fechando o Construir, a linha de baixo não guarda o motivo da última prévia.
+  useEffect(() => () => construcao.getState().mostrarMotivo(null), [construcao])
 
   return (
     <group position={[referencial.x, base, referencial.z]} rotation-y={referencial.giro}>
@@ -416,8 +433,19 @@ function limitarAlvo(lote: Lote, a: { x: number; z: number }) {
   }
 }
 
-/** As linhas da grade do lote e o que já está ocupado (tingido). */
+/** Um pouco acima do topo da parede cortada (1 de altura): a marca do quadro do Meu quarto. */
+const ACIMA_DA_PAREDE_CORTADA = 1.03
+
+/**
+ * As linhas da grade do lote e o que já está ocupado (tingido). Os quadros e as prateleiras do Meu
+ * quarto saem com as paredes cortadas: uma faixa tingida em cima da parede marca onde eles ficam
+ * (porta e janela não vão ali).
+ */
 function Grade({ lote }: { lote: Lote }) {
+  const pendurados = useMemo(
+    () => [...(lote.penduradosDoQuarto ?? [])].map(arestaDaChave),
+    [lote.penduradosDoQuarto],
+  )
   const linhas = useMemo(() => {
     const { x0, z0, x1, z1 } = lote.area
     const v: number[] = []
@@ -440,6 +468,20 @@ function Grade({ lote }: { lote: Lote }) {
         >
           <planeGeometry args={[o.ret.x1 - o.ret.x0, o.ret.z1 - o.ret.z0]} />
           <meshBasicMaterial color="#e2475f" transparent opacity={0.18} depthWrite={false} />
+        </mesh>
+      ))}
+      {pendurados.map((a) => (
+        <mesh
+          key={`${a.eixo}${a.x},${a.z}`}
+          position={
+            a.eixo === 'x'
+              ? [a.x + 0.5, ACIMA_DA_PAREDE_CORTADA, a.z]
+              : [a.x, ACIMA_DA_PAREDE_CORTADA, a.z + 0.5]
+          }
+          rotation-x={-Math.PI / 2}
+        >
+          <planeGeometry args={a.eixo === 'x' ? [0.9, 0.3] : [0.3, 0.9]} />
+          <meshBasicMaterial color="#e2475f" transparent opacity={0.55} depthWrite={false} />
         </mesh>
       ))}
     </>

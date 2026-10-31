@@ -114,9 +114,9 @@ const DOBRADICA = { x: PORTA.x - PORTA.largura / 2, z: MZ + 0.03 }
  * quarto ficam em `casa.tsx` (dependem do quarto salvo). Medidas da casca do `casa.py`: paredes,
  * revestimento de fora, quinas, alicerce, floreiras das janelas, vasinhos e colunas da varanda.
  *
- * `construida`: a casa já tem obra (modo construção). A frente e a direita do quarto, com a porta,
- * as janelas, as quinas e o alicerce delas, passam a ser do kit (`sistemas/construcao/pecas.ts`);
- * aqui ficam a esquerda, o fundo, a quina entre os dois e a varanda.
+ * `construida`: a casa já tem obra (modo construção). As quatro paredes do quarto, com a porta, as
+ * janelas, as quinas e o alicerce, passam a ser do kit (`sistemas/construcao/pecas.ts`, com o vão de
+ * cada porta livre, inclusive no fundo e na esquerda); aqui fica só a varanda.
  */
 export function colisoresDaCasa(portaAberta: boolean, construida = false): Solido[] {
   const esq = PORTA.x - PORTA.largura / 2
@@ -140,8 +140,8 @@ export function colisoresDaCasa(portaAberta: boolean, construida = false): Solid
     [MX + 0.17, MZ + 0.17],
   ]
   quinas.forEach(([x, z], i) => {
-    // Na casa construída só a quina do fundo à esquerda é da casa de antes.
-    if (construida && i > 0) return
+    // Na casa construída as quatro quinas são do kit.
+    if (construida) return
     const meio = (H + 0.05) / 2
     lista.push(caixa(`col-quina-${i + 1}`, [x, meio, z], [0.17, meio, 0.17]))
   })
@@ -161,9 +161,13 @@ export function colisoresDaCasa(portaAberta: boolean, construida = false): Solid
       'col-parede-frente-1',
       'col-parede-frente-2',
       'col-parede-direita',
+      'col-parede-esquerda',
+      'col-parede-fundo',
       'col-alicerce-frente-1',
       'col-alicerce-frente-2',
       'col-alicerce-direita',
+      'col-alicerce-esquerda',
+      'col-alicerce-fundo',
       'col-floreira-frente',
       'col-floreira-lado',
     ])

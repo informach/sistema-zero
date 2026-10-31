@@ -18,7 +18,7 @@ import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { quemAcompanha } from '../sistemas/companhia'
-import { loteDaCasa } from '../sistemas/construcao/lote'
+import { comPenduradosDoQuarto, loteDaCasa } from '../sistemas/construcao/lote'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
@@ -31,6 +31,7 @@ import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos
 import { MoveisDaObra } from './moveis-da-obra'
 import { GanharProjetos, ObjetosDaObra } from './objetos-da-casa'
 import { ObraNoMundo } from './obra'
+import { coresDoMeuQuarto, penduradosDoQuarto } from './quarto-na-obra'
 
 const NADA = () => {}
 const BASE = ALTURA_DA_TERRA + 0.02
@@ -38,8 +39,21 @@ const MEIO_X = QUARTO.largura / 2
 const MEIO_Z = QUARTO.fundo / 2
 const COR_DE_FORA = '#fbe7d2'
 
-/** O quarto da plataforma, peça por peça, com os mesmos componentes do Meu quarto. */
-function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
+/**
+ * O quarto da plataforma, peça por peça, com os mesmos componentes do Meu quarto. Na casa construída
+ * (`construida`) as paredes da esquerda e do fundo são do kit, com a cor do Meu quarto por dentro
+ * (`ObraNoMundo`), e o `Walls` da plataforma sai. Com o Construir aberto (`construindo`) as paredes
+ * ficam cortadas: os quadros e as prateleiras do quarto saem junto e voltam no Viver.
+ */
+function Quarto({
+  quarto,
+  construida,
+  construindo,
+}: {
+  quarto: QuartoDoJogo
+  construida: boolean
+  construindo: boolean
+}) {
   // O bichinho sai do quarto quando é ele quem acompanha (S01).
   const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) === 'quarto')
   const petNoQuarto = acompanha ? null : quarto.pet
@@ -86,15 +100,17 @@ function Quarto({ quarto }: { quarto: QuartoDoJogo }) {
       <RoomPausedContext.Provider value={pausado}>
         <group name="quarto-da-plataforma">
           <Floor floorId={aparencia.floorId} editable={false} painting={false} onDeselect={NADA} />
-          <Walls
-            left={aparencia.left}
-            right={aparencia.right}
-            dark={false}
-            paintColor={null}
-            onPaint={NADA}
-          />
+          {construida ? null : (
+            <Walls
+              left={aparencia.left}
+              right={aparencia.right}
+              dark={false}
+              paintColor={null}
+              onPaint={NADA}
+            />
+          )}
           {quarto.placedItems.map((p, i) =>
-            p.on ? null : (
+            p.on || (construindo && ROOM_ITEM_INFO[p.itemId]?.mount === 'wall') ? null : (
               <FurniturePiece
                 // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens é a identidade (como no Meu quarto).
                 key={i}
@@ -250,8 +266,9 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
 /**
  * Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. A casca
  * inteira colide (paredes, quinas, alicerce, floreiras, vasinhos, colunas e a porta nova, fechada
- * no vão ou aberta para fora): `colisoresDaCasa`. Na casa construída, a frente e a direita são do
- * kit (`ObraNoMundo`) e daqui ficam o revestimento, o telhado e a varanda.
+ * no vão ou aberta para fora): `colisoresDaCasa`. Na casa construída, as quatro paredes do quarto
+ * são do kit (`ObraNoMundo`), com as quinas, o alicerce e a soleira, e daqui ficam o telhado e a
+ * varanda.
  */
 function Casca({ construida }: { construida: boolean }) {
   // No Construir e com a pessoa num cômodo da obra o telhado do quarto sai, como no quarto.
@@ -311,7 +328,7 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
   })
   return (
     <>
-      <primitive object={partes.revestimento} />
+      {construida ? null : <primitive object={partes.revestimento} />}
       {construida ? null : <primitive object={partes.paredes} />}
       {construida ? null : <primitive object={partes.janelas} />}
       <primitive object={partes.telhado} />
@@ -400,11 +417,17 @@ function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boo
 const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
 
 export function Casa() {
-  // O quintal grande do Vale em diante (E04).
-  const lote = loteDaCasa(useEstado((s) => s.jornada))
   const { loja } = useJogo()
   // Na visita (fase3-12), o quarto e a obra são os do irmão.
   const quarto = useEstado(quartoVisivel)
+  // O quintal grande do Vale em diante (E04), com os quadros do Meu quarto nas paredes dele: porta
+  // e janela não vão em cima deles.
+  const loteDaJornada = loteDaCasa(useEstado((s) => s.jornada))
+  const lote = useMemo(
+    () => comPenduradosDoQuarto(loteDaJornada, penduradosDoQuarto(quarto)),
+    [loteDaJornada, quarto],
+  )
+  const cores = useMemo(() => coresDoMeuQuarto(quarto), [quarto])
   // A casa de antes (`casa.glb`) vale até a primeira obra (modo construção).
   const obra = useEstado(obraVisivel)
   // O Construir aberto mexe na casa ou na cabana da ilha (`onde`).
@@ -413,7 +436,7 @@ export function Casa() {
   return (
     <>
       <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
-        <Quarto quarto={quarto} />
+        <Quarto quarto={quarto} construida={obra !== null} construindo={construindo} />
         <Casca construida={obra !== null} />
         {obra ? null : <Porta />}
         <Cama quarto={quarto} />
@@ -422,7 +445,13 @@ export function Casa() {
         </RigidBody>
       </group>
       {obra ? (
-        <ObraNoMundo obra={obra} lote={lote} base={BASE_DA_OBRA} construindo={construindo} />
+        <ObraNoMundo
+          obra={obra}
+          lote={lote}
+          base={BASE_DA_OBRA}
+          construindo={construindo}
+          coresDoMeuQuarto={cores}
+        />
       ) : null}
       {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
       {obra ? <MoveisDaObra obra={obra} base={BASE_DA_OBRA} /> : null}

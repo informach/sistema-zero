@@ -802,7 +802,36 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.
   A `Casa` troca a casa de antes pela construída quando há obra (`colisoresDaCasa(aberta, true)`
-  tira a frente e a direita do quarto, que passam a ser do kit).
+  tira as quatro paredes do quarto, as quinas e o alicerce, que passam a ser do kit; fica a
+  varanda).
+- **As quatro paredes do quarto (31/10/2026):** o lote da casa tem as quatro em `paredesTravadas`
+  (aceitam porta e janela, não se apagam) e a `planta` as põe de pé mesmo fora de `obra.paredes`
+  (as obras salvas só têm a frente e a direita: o salvamento não mudou). Não há mais parede fixa
+  (`paredesFixas`, `p.fixas` e a recusa `parede-fixa` saíram). `paredesDoMeuQuarto` (esquerda e
+  fundo) diz quais não se cortam no Viver (`p.doMeuQuarto`). Na casa construída o `Quarto` não
+  desenha o `<Walls>` da plataforma (o componente do `avatar-quarto` não mudou) e a `CascaDoModelo`
+  tira o `revestimento` do `casa.glb`; o teste "a casa construída" de `faces-coplanares.test.ts`
+  monta o kit da obra inicial (em pé e cortado) com o telhado e a varanda.
+- **A cor e os quadros do Meu quarto:** `mundo/quarto-na-obra.ts` lê o quarto da plataforma (o
+  sistema puro não importa o `avatar-quarto`): `coresDoMeuQuarto` (esquerda e fundo, de
+  `resolveRoomAppearance`) e `penduradosDoQuarto` (itens `mount: 'wall'`, `wall` ausente = fundo).
+  A `Casa` faz `comPenduradosDoQuarto(lote, ...)` (campo `penduradosDoQuarto` do lote, chaves de
+  aresta) e passa esse lote ao `ObraNoMundo` e ao `ModoConstruir`; `porAbertura` recusa com
+  `quadro-do-quarto`. A cor: `pecasDaObra` marca `quarto` (`ladoDoQuarto`: a cor, esquerda para as
+  linhas em z e fundo para as em x, e o material do lado do quarto, `paredeDentro` ou, na lisa com
+  o quarto no -Y, `paredeVerso`); `PecasDoKit` em `mundo/obra.tsx` clona o `paredeDentro` do kit uma
+  vez por cor (`materiaisDoMeuQuarto`), troca nas cópias (`pintarLado`) e descarta ao sair. Com o
+  Construir aberto o `Quarto` esconde os itens pendurados (as paredes ficam cortadas) e a `Grade`
+  marca as arestas deles em cima da parede.
+- **Porta em cima de janela:** `porAbertura` troca a(s) janela(s) no caminho pela porta e devolve
+  `aviso: 'janela-virou-porta'`; `aplicar` diz `falaDoAviso` depois de gravar (o `Resultado` ok
+  ganhou `aviso`). O Desfazer de sempre volta.
+- **Motivo na linha de baixo:** a prévia do `ModoConstruir` (passar por cima e arrastar) grava
+  `motivoDaPrevia` na loja do Construir (`mostrarMotivo`, a partir de `motivoDaPrevia(resultado)`
+  de `falas.ts`); a `BarraDeConstruir` mostra esse texto no lugar da dica (classe `recusa`).
+  Limpa ao trocar de ferramenta, sem prévia, ao fechar e ao desmontar.
+- **Janela na parede cortada:** `${NO_DA_JANELA[tipo]}-${fam}-baixa`, uma peça no meio da abertura
+  (nós da arte de 31/10/2026; `tests/construcao.test.ts` confere que todo nó pedido existe).
 - Modo Construir: botões Viver e Construir e a barra de ferramentas em `interface/construir.tsx`;
   loja `estado/construcao.ts` (ferramenta, câmera de obra, Desfazer, `aplicar` com a fala da
   recusa); `mundo/construir.tsx` (montado pela `Casa` com o Construir aberto): câmera de obra, grade,
@@ -822,7 +851,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   (`Escolha` em `interface/construir.tsx`, mapas em `interface/miniaturas.ts`). As imagens saem
   dos próprios modelos por `arte/casa/miniaturas.py` (`src/assets/casa/miniaturas/`); escolha
   nova pede miniatura nova (`tests/miniaturas.test.ts`).
-- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`). Conferir no navegador: a
+- Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`; `?obra=fundo` com um cômodo
+  atrás do quarto e a porta no fundo). Conferir no navegador: a
   câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 
 ## A galeria de aparências (fase1-13, 29/10/2026)

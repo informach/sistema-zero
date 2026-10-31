@@ -20,7 +20,7 @@ import {
   liberado,
   recadoDaTranca,
 } from '../sistemas/chaves-da-casa'
-import { falaDaRecusa } from '../sistemas/construcao/falas'
+import { falaDaRecusa, falaDoAviso } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 import { type Celula, LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
@@ -112,6 +112,12 @@ export interface EstadoDaConstrucao {
   antes: Obra[]
   /** A pessoa está num cômodo da obra (o telhado sai e as paredes da frente são cortadas). */
   dentroDaObra: boolean
+  /**
+   * Por que não dá, enquanto o dedo ou o mouse passa por cima (a prévia vermelha): a linha de baixo
+   * do Construir mostra isso no lugar da dica da ferramenta. `null` volta a dica.
+   */
+  motivoDaPrevia: string | null
+  mostrarMotivo(motivo: string | null): void
   /** A obra que o Construir aberto mexe (escolhida ao abrir: a cabana, se a pessoa está nela). */
   onde: OndeSeConstroi
   cabana: CabanaAoAlcance | null
@@ -202,6 +208,10 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
     dentroDaObra: false,
+    motivoDaPrevia: null,
+    mostrarMotivo: (motivoDaPrevia) => {
+      if (get().motivoDaPrevia !== motivoDaPrevia) set({ motivoDaPrevia })
+    },
     onde: 'casa',
     cabana: null,
     registrarCabana: (cabana) => set({ cabana }),
@@ -214,7 +224,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     },
     escolher: (ferramenta) => {
       if (!destrancado(loja, comodoDaFerramenta(ferramenta))) return
-      set({ ferramenta, aconchegoAberto: false })
+      set({ ferramenta, aconchegoAberto: false, motivoDaPrevia: null })
     },
     escolherJanela: (janela) => {
       if (!destrancado(loja, comodoDaJanela(janela))) return
@@ -260,6 +270,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
       mudarObra(loja, r.obra, onde)
       ultimaObra = r.obra
+      if (r.aviso) jogo.dizer(falaDoAviso(r.aviso))
       return true
     },
     desfazer() {
@@ -292,6 +303,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         onde,
         aconchegoAberto: false,
         celulaObservada: null,
+        motivoDaPrevia: null,
         antes: [],
         camera: { ...get().camera, alvo: alvoAoAbrir(onde, cabana), giro: 0 },
       })
@@ -299,7 +311,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       s.abrirPainel(PAINEL_DE_CONSTRUIR)
     },
     fechar() {
-      set({ antes: [] })
+      set({ antes: [], motivoDaPrevia: null })
       ultimaObra = null
       if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) loja.getState().abrirPainel(null)
     },

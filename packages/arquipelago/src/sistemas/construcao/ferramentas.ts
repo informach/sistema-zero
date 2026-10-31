@@ -229,7 +229,11 @@ export function toque(
       }
     const k = chaveDaAresta(aresta)
     const perto = distanciaAteAAresta(onde, aresta) <= PERTO_DA_ARESTA
-    const temAlgo = chavesDosTrechos(obra.paredes).has(k) || chavesDosTrechos(obra.cercas).has(k)
+    // As paredes do quarto contam (o apagar recusa e o Zappy diz por quê).
+    const temAlgo =
+      chavesDosTrechos(obra.paredes).has(k) ||
+      chavesDosTrechos(lote.paredesTravadas).has(k) ||
+      chavesDosTrechos(obra.cercas).has(k)
     if (perto && temAlgo)
       return {
         resultado: apagarNaLinha(obra, lote, [aresta]),

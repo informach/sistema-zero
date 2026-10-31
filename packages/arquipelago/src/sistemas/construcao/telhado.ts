@@ -18,7 +18,8 @@ export function paredesCortadasNoViver(
   if (!p.dentro.has(chaveDaCelula({ x: Math.floor(pessoa.x), z: Math.floor(pessoa.z) })))
     return cortadas
   for (const k of p.paredes) {
-    if (p.fixas.has(k)) continue
+    // A esquerda e o fundo do quarto seguram os quadros do Meu quarto: ficam de pé no Viver.
+    if (p.doMeuQuarto.has(k)) continue
     const a = arestaDaChave(k)
     const linha = a.eixo === 'x' ? a.z : a.x
     const ladoDaPessoa = Math.sign((a.eixo === 'x' ? pessoa.z : pessoa.x) - linha)

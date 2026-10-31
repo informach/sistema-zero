@@ -28,7 +28,7 @@ import {
 } from '../src/mundo/medidas'
 import { planta } from '../src/sistemas/construcao/comodos'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
-import { NADA_CORTADO, pecasDaObra } from '../src/sistemas/construcao/pecas'
+import { NADA_CORTADO, pecasDaObra, TUDO_CORTADO } from '../src/sistemas/construcao/pecas'
 
 /**
  * Nenhuma face coplanar de materiais diferentes se sobrepõe e nenhuma superfície tem emenda em T:
@@ -215,44 +215,53 @@ describe('faces coplanares e emendas abertas', () => {
     expect(lista(emendasAbertas(ilha, outras))).toEqual([])
   })
 
-  test('a casa construída: o kit da obra inicial junto com o que fica da casa de antes', async () => {
-    // Na casa construída (`Casa` em `mundo/casa.tsx`), a frente e a direita são do kit e da casa de
-    // antes ficam o revestimento, o telhado e a varanda. Pedido dela (31/10/2026): a porta
-    // principal piscava embaixo, onde o degrau de pedra do kit encontrava o tampo do deque.
-    const kit = {
-      paredes: await carregarGlb(join(ASSETS, 'casa/casa-paredes.glb')),
-      portas: await carregarGlb(join(ASSETS, 'casa/casa-portas.glb')),
-    }
-    const cena = new Group()
-    const base = ALTURA_DA_TERRA + 0.02
-    const casa = new Group()
-    casa.name = 'casa'
-    casa.position.set(CENTRO_DA_CASA.x, base, CENTRO_DA_CASA.z)
-    for (const filho of (cenas.get('mundo/casa.glb') as Object3D).children)
-      if (['revestimento', 'telhado', 'varanda'].includes(filho.name)) casa.add(filho.clone())
-    cena.add(casa)
-    const obra = LOTE_DA_CASA.obraInicial
-    const pecas = pecasDaObra(obra, planta(obra, LOTE_DA_CASA), NADA_CORTADO)
-    for (const p of [...pecas.paredes, ...pecas.quinas, ...pecas.folhas]) {
-      const raiz = p.arquivo === 'portas' ? kit.portas : kit.paredes
-      const no = raiz.getObjectByName(p.no)
-      if (!no) throw new Error(`sem o nó ${p.no}`)
-      const g = new Group()
-      g.name = `kit-${p.chave}`
-      g.position.set(p.x, base + (p.y ?? 0), p.z)
-      g.rotation.y = p.giro
-      const copia = no.clone()
-      copia.position.set(0, 0, 0)
-      copia.quaternion.identity()
-      g.add(copia)
-      cena.add(g)
-    }
-    expect(pecas.folhas.length).toBe(1)
-    // Só entre a casa de antes e o kit: dentro de cada arquivo os testes de cima já conferem.
-    const doKit = (n: string) => n.startsWith('kit-')
-    const entreOsDois: Juntos = (a, b) => doKit(a) !== doKit(b)
-    expect(lista(sobreposicoes(cena, entreOsDois))).toEqual([])
-  })
+  // Na casa construída (`Casa` em `mundo/casa.tsx`), as quatro paredes do quarto são do kit (desde
+  // 31/10/2026 também o fundo e a esquerda, com as quinas, o alicerce e a soleira) e da casa de
+  // antes ficam o telhado e a varanda; no Construir (paredes cortadas) o telhado sai. Pedido dela
+  // (31/10/2026): a porta principal piscava embaixo, onde o degrau de pedra do kit encontrava o
+  // tampo do deque.
+  for (const [nome, corte, daCasa] of [
+    ['a casa construída', NADA_CORTADO, ['telhado', 'varanda']],
+    ['a casa construída no Construir', TUDO_CORTADO, ['varanda']],
+  ] as const)
+    test(`${nome}: o kit das quatro paredes do quarto junto com o que fica da casa de antes`, async () => {
+      const kit = {
+        paredes: await carregarGlb(join(ASSETS, 'casa/casa-paredes.glb')),
+        portas: await carregarGlb(join(ASSETS, 'casa/casa-portas.glb')),
+      }
+      const cena = new Group()
+      const base = ALTURA_DA_TERRA + 0.02
+      const casa = new Group()
+      casa.name = 'casa'
+      casa.position.set(CENTRO_DA_CASA.x, base, CENTRO_DA_CASA.z)
+      for (const filho of (cenas.get('mundo/casa.glb') as Object3D).children)
+        if ((daCasa as readonly string[]).includes(filho.name)) casa.add(filho.clone())
+      cena.add(casa)
+      const obra = LOTE_DA_CASA.obraInicial
+      const pecas = pecasDaObra(obra, planta(obra, LOTE_DA_CASA), corte)
+      // As quatro paredes e as quatro quinas do quarto são do kit.
+      expect(pecas.quinas).toHaveLength(4)
+      expect(pecas.paredes.filter((p) => p.quarto).length).toBe(31 + 3)
+      for (const p of [...pecas.paredes, ...pecas.quinas, ...pecas.folhas]) {
+        const raiz = p.arquivo === 'portas' ? kit.portas : kit.paredes
+        const no = raiz.getObjectByName(p.no)
+        if (!no) throw new Error(`sem o nó ${p.no}`)
+        const g = new Group()
+        g.name = `kit-${p.chave}`
+        g.position.set(p.x, base + (p.y ?? 0), p.z)
+        g.rotation.y = p.giro
+        const copia = no.clone()
+        copia.position.set(0, 0, 0)
+        copia.quaternion.identity()
+        g.add(copia)
+        cena.add(g)
+      }
+      expect(pecas.folhas.length).toBe(corte === NADA_CORTADO ? 1 : 0)
+      // Só entre a casa de antes e o kit: dentro de cada arquivo os testes de cima já conferem.
+      const doKit = (n: string) => n.startsWith('kit-')
+      const entreOsDois: Juntos = (a, b) => doKit(a) !== doKit(b)
+      expect(lista(sobreposicoes(cena, entreOsDois))).toEqual([])
+    })
 })
 
 describe('planos de corte da câmera', () => {

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Obra } from '@sistemazero/arquipelago-contracts'
-import type { Object3D } from 'three'
+import { BoxGeometry, Color, Group, Mesh, MeshStandardMaterial, type Object3D } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   COLISORES_DA_BANCADA,
@@ -22,7 +22,18 @@ import {
   PORTA,
   QUARTO,
 } from '../src/mundo/medidas'
+import {
+  coresDoMeuQuarto,
+  MATERIAL_DE_DENTRO,
+  materiaisDoMeuQuarto,
+  penduradosDoQuarto,
+  pintarLado,
+} from '../src/mundo/quarto-na-obra'
+import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
+import { obraDeExemploComFundo } from '../src/plataforma/obra-de-exemplo'
 import { ladoDaParede, planta } from '../src/sistemas/construcao/comodos'
+import { falaDaRecusa, falaDoAviso, motivoDaPrevia } from '../src/sistemas/construcao/falas'
+import { type Escolhas, toque } from '../src/sistemas/construcao/ferramentas'
 import {
   aberturaNaAresta,
   arestaMaisPerto,
@@ -32,6 +43,7 @@ import {
   trechosDasChaves,
 } from '../src/sistemas/construcao/grade'
 import {
+  comPenduradosDoQuarto,
   LOTE_DA_CASA,
   naArea,
   noFixo,
@@ -42,6 +54,7 @@ import {
   apagarParede,
   esticarParede,
   porAbertura,
+  type Recusa,
   type Resultado,
   tirarAbertura,
   trocarPiso,
@@ -50,6 +63,7 @@ import {
   COLISOR_DA_PAREDE_CORTADA,
   colisoresDaObra,
   NADA_CORTADO,
+  NO_DA_JANELA,
   pecasDaObra,
   TUDO_CORTADO,
 } from '../src/sistemas/construcao/pecas'
@@ -61,6 +75,14 @@ import {
 } from '../src/sistemas/construcao/telhado'
 
 const L = LOTE_DA_CASA
+const ESCOLHAS: Escolhas = {
+  janela: 'janela-redonda',
+  piso: 'tabua',
+  caminho: 'pedra',
+  objeto: null,
+  movel: null,
+  giro: 0,
+}
 const inicial = (): Obra => structuredClone(L.obraInicial)
 
 function ok(r: Resultado): Obra {
@@ -82,6 +104,14 @@ function comComodoADireita(): Obra {
   o = ok(esticarParede(o, L, { x: 6, z: -6 }, { x: 8, z: -6 }))
   o = ok(esticarParede(o, L, { x: 8, z: -6 }, { x: 8, z: -2 }))
   return ok(esticarParede(o, L, { x: 8, z: -2 }, { x: 6, z: -2 }))
+}
+
+/** Um cômodo atrás do quarto, fechado pelo fundo dele (x 1 a 6, z -12 a -8). */
+function comComodoAtras(): Obra {
+  let o = inicial()
+  o = ok(esticarParede(o, L, { x: 1, z: -8 }, { x: 1, z: -12 }))
+  o = ok(esticarParede(o, L, { x: 1, z: -12 }, { x: 6, z: -12 }))
+  return ok(esticarParede(o, L, { x: 6, z: -12 }, { x: 6, z: -8 }))
 }
 
 describe('o lote da casa', () => {
@@ -286,11 +316,8 @@ describe('portas e janelas', () => {
     expect(o.aberturas.at(-1)).toEqual({ tipo: 'porta', eixo: 'z', x: 6, z: -5 })
   })
 
-  test('na parede fixa, sem parede, em emenda e em cima de outra: não', () => {
+  test('sem parede, em emenda e em cima de outra: não', () => {
     const o = comComodoADireita()
-    expect(porAbertura(o, L, 'porta', { eixo: 'z', x: -6, z: -4 })).toMatchObject({
-      motivo: 'parede-fixa',
-    })
     expect(porAbertura(o, L, 'porta', { eixo: 'x', x: 10, z: 5 })).toMatchObject({
       motivo: 'sem-parede',
     })
@@ -303,6 +330,130 @@ describe('portas e janelas', () => {
     })
   })
 
+  test('as quatro paredes do quarto aceitam porta e janela; o fundo e a esquerda não se apagam', () => {
+    const atras = comComodoAtras()
+    const noFundo = ok(porAbertura(atras, L, 'porta', { eixo: 'x', x: 3, z: -8 }))
+    expect(noFundo.aberturas.at(-1)).toEqual({ tipo: 'porta', eixo: 'x', x: 2, z: -8 })
+    // O salvamento não ganha as paredes do quarto: só a porta.
+    expect(noFundo.paredes).toEqual(atras.paredes)
+    const naEsquerda = ok(porAbertura(inicial(), L, 'porta', { eixo: 'z', x: -6, z: -4 }))
+    expect(naEsquerda.aberturas.at(-1)).toEqual({ tipo: 'porta', eixo: 'z', x: -6, z: -5 })
+    expect(porAbertura(inicial(), L, 'janela-arco', { eixo: 'x', x: -3, z: -8 }).ok).toBe(true)
+    // Apagar não tira o fundo nem a esquerda (nem arrastando, nem num toque).
+    expect(
+      apagarParede(noFundo, L, arestasDoArrasto({ x: -6, z: -8 }, { x: 6, z: -8 })),
+    ).toMatchObject({
+      ok: false,
+      motivo: 'parede-do-quarto',
+    })
+    expect(
+      toque('apagar', inicial(), L, { x: -6.1, z: -3.5 }, ESCOLHAS, []).resultado,
+    ).toMatchObject({ ok: false, motivo: 'parede-do-quarto' })
+    // Apagar uma parede do cômodo de trás abre o cômodo, mas a porta do fundo fica.
+    const aberto = ok(
+      apagarParede(noFundo, L, arestasDoArrasto({ x: 1, z: -12 }, { x: 6, z: -12 })),
+    )
+    expect(aberto.aberturas).toContainEqual({ tipo: 'porta', eixo: 'x', x: 2, z: -8 })
+    // Dentro do quarto continua não indo parede.
+    expect(esticarParede(inicial(), L, { x: 0, z: -4 }, { x: 3, z: -4 })).toMatchObject({
+      motivo: 'dentro-do-quarto',
+    })
+  })
+
+  test('nas arestas de um quadro do Meu quarto, porta e janela vão mais para o lado', () => {
+    // O letreiro do quarto de exemplo (fundo, u 4, 2 de largura) e a janela pendurada (esquerda, u 2).
+    const comQuadros = comPenduradosDoQuarto(L, penduradosDoQuarto(QUARTO_DE_EXEMPLO))
+    expect([...(comQuadros.penduradosDoQuarto ?? [])].sort()).toEqual(
+      [
+        chaveDaAresta({ eixo: 'x', x: -2, z: -8 }),
+        chaveDaAresta({ eixo: 'x', x: -1, z: -8 }),
+        chaveDaAresta({ eixo: 'z', x: -6, z: -6 }),
+        chaveDaAresta({ eixo: 'z', x: -6, z: -5 }),
+      ].sort(),
+    )
+    const porta = porAbertura(inicial(), comQuadros, 'porta', { eixo: 'x', x: 0, z: -8 })
+    expect(porta).toMatchObject({ ok: false, motivo: 'quadro-do-quarto', abertura: 'porta' })
+    expect(falaDaRecusa(porta as Recusa)).toBe(
+      'Nessa parede tem um quadro do seu quarto. Ponha a porta mais para o lado.',
+    )
+    const janela = porAbertura(inicial(), comQuadros, 'janela-redonda', { eixo: 'z', x: -6, z: -6 })
+    expect(falaDaRecusa(janela as Recusa)).toBe(
+      'Nessa parede tem um quadro do seu quarto. Ponha a janela mais para o lado.',
+    )
+    // Mais para o lado, dá.
+    expect(porAbertura(inicial(), comQuadros, 'porta', { eixo: 'x', x: 2, z: -8 }).ok).toBe(true)
+    expect(porAbertura(inicial(), comQuadros, 'porta', { eixo: 'z', x: -6, z: -2 }).ok).toBe(true)
+    // Sem `wall`, o item fica no fundo (a direita do Meu quarto); item de chão não conta.
+    expect(
+      penduradosDoQuarto({
+        ...QUARTO_DE_EXEMPLO,
+        placedItems: [
+          { itemId: 'quadro', x: 0, y: 1 },
+          { itemId: 'cama', x: 0, y: 1 },
+        ],
+      }),
+    ).toEqual([{ parede: 'fundo', u: 0, largura: 2 }])
+  })
+
+  test('a porta em cima de uma janela troca a janela; o resto continua como era', () => {
+    const o = inicial()
+    const r = porAbertura(o, L, 'porta', { eixo: 'x', x: -4, z: 0 })
+    expect(r).toMatchObject({ ok: true, aviso: 'janela-virou-porta' })
+    const nova = ok(r)
+    expect(nova.aberturas.filter((a) => a.tipo === 'janela-grande')).toHaveLength(1)
+    expect(nova.aberturas).toContainEqual({ tipo: 'porta', eixo: 'x', x: -5, z: 0 })
+    expect(falaDoAviso('janela-virou-porta')).toBe('A janela virou porta.')
+    // A janela do lado também, mesmo pegando só uma parte dela.
+    expect(porAbertura(o, L, 'porta', { eixo: 'z', x: 6, z: -3 })).toMatchObject({
+      ok: true,
+      aviso: 'janela-virou-porta',
+    })
+    // Porta em cima de porta e janela em cima de porta ou janela: como antes.
+    expect(porAbertura(o, L, 'porta', { eixo: 'x', x: 3, z: 0 })).toMatchObject({
+      motivo: 'ja-tem-abertura',
+    })
+    expect(porAbertura(o, L, 'porta', { eixo: 'x', x: 2, z: 0 })).toMatchObject({ motivo: 'nada' })
+    expect(porAbertura(o, L, 'janela-arco', { eixo: 'x', x: -4, z: 0 })).toMatchObject({
+      motivo: 'ja-tem-abertura',
+    })
+    expect(porAbertura(o, L, 'janela-redonda', { eixo: 'x', x: 2, z: 0 })).toMatchObject({
+      motivo: 'ja-tem-abertura',
+    })
+    // A porta que pegaria a janela e a porta ao mesmo tempo, não.
+    const juntas = ok(tirarAbertura(o, { eixo: 'x', x: -4, z: 0 }))
+    const comJanela = ok(porAbertura(juntas, L, 'janela-redonda', { eixo: 'x', x: 0, z: 0 }))
+    expect(porAbertura(comJanela, L, 'porta', { eixo: 'x', x: 0, z: 0 })).toMatchObject({
+      motivo: 'ja-tem-abertura',
+    })
+    // A regra de antes vale primeiro: com quadro do Meu quarto ou parede chegando no meio, não troca.
+    const comQuadro = comPenduradosDoQuarto(L, [{ parede: 'fundo', u: 2, largura: 1 }])
+    const janelaNoFundo = ok(porAbertura(o, L, 'janela-grande', { eixo: 'x', x: -3, z: -8 }))
+    expect(
+      porAbertura(janelaNoFundo, comQuadro, 'porta', { eixo: 'x', x: -3, z: -8 }),
+    ).toMatchObject({ motivo: 'quadro-do-quarto' })
+  })
+
+  test('a dica mostra o motivo da prévia vermelha e volta quando dá', () => {
+    const comQuadros = comPenduradosDoQuarto(L, penduradosDoQuarto(QUARTO_DE_EXEMPLO))
+    const vermelha = toque('porta', inicial(), comQuadros, { x: -1.5, z: -7.95 }, ESCOLHAS, [])
+    expect(vermelha.previa).toMatchObject({ tipo: 'arestas', ok: false })
+    expect(motivoDaPrevia(vermelha.resultado)).toBe(
+      'Nessa parede tem um quadro do seu quarto. Ponha a porta mais para o lado.',
+    )
+    // Passando pela grama (sem parede ali) a dica normal fica: o vermelho ali é só "não é parede".
+    const longe = toque('porta', inicial(), comQuadros, { x: 10.5, z: 5.05 }, ESCOLHAS, [])
+    expect(longe.resultado).toMatchObject({ ok: false, motivo: 'sem-parede' })
+    expect(motivoDaPrevia(longe.resultado)).toBeNull()
+    const certa = toque('porta', inicial(), comQuadros, { x: 3.5, z: -7.95 }, ESCOLHAS, [])
+    expect(certa.previa).toMatchObject({ ok: true })
+    expect(motivoDaPrevia(certa.resultado)).toBeNull()
+    expect(motivoDaPrevia(null)).toBeNull()
+    // O "nada" (a mesma porta de novo) não tem fala: volta a dica.
+    expect(
+      motivoDaPrevia(toque('porta', inicial(), L, { x: 2.5, z: 0.05 }, ESCOLHAS, []).resultado),
+    ).toBeNull()
+  })
+
   test('tirar a abertura deixa a parede', () => {
     const o = ok(tirarAbertura(inicial(), { eixo: 'x', x: 2, z: 0 }))
     expect(o.aberturas.some((a) => a.tipo === 'porta')).toBe(false)
@@ -311,13 +462,14 @@ describe('portas e janelas', () => {
 })
 
 describe('as peças do kit', () => {
-  test('a obra inicial: paredes de lambri do quarto com a porta e as janelas, e três quinas', () => {
+  test('a obra inicial: as quatro paredes de lambri do quarto com a porta e as janelas, e as quatro quinas', () => {
     const p = planta(inicial(), L)
     const { paredes, quinas, folhas, pisos } = pecasDaObra(inicial(), p, NADA_CORTADO)
     const nos = paredes.map((x) => x.no)
     expect(nos.filter((n) => n === 'parede-porta-lambri')).toHaveLength(1)
     expect(nos.filter((n) => n === 'parede-janela-grande-lambri')).toHaveLength(2)
-    expect(nos.filter((n) => n === 'parede-lambri')).toHaveLength(6 + 5)
+    // Frente (12 menos a porta e a janela), direita (8 menos a janela), fundo (12) e esquerda (8).
+    expect(nos.filter((n) => n === 'parede-lambri')).toHaveLength(6 + 5 + 12 + 8)
     const porta = paredes.find((x) => x.no === 'parede-porta-lambri')
     expect(porta).toMatchObject({ x: 2.5, z: 0, giro: 0 })
     // A parede da direita tem o quarto em -x: gira +90°.
@@ -326,23 +478,74 @@ describe('as peças do kit', () => {
     expect(janelaDoLado?.z).toBe(-4.5)
     expect(folhas).toEqual([expect.objectContaining({ no: 'porta', x: 2.5, z: 0 })])
     expect(quinas.map((q) => `${q.no} ${q.x},${q.z}`).sort()).toEqual([
+      'quina-lambri -6,-8',
       'quina-lambri -6,0',
       'quina-lambri 6,-8',
       'quina-lambri 6,0',
     ])
+    // O fundo e a esquerda: lambri com a fachada para fora (o quarto em +z e em +x).
+    expect(paredes.find((x) => x.x === 0.5 && x.z === -8)).toMatchObject({
+      no: 'parede-lambri',
+      giro: Math.PI,
+    })
+    expect(paredes.find((x) => x.x === -6 && x.z === -3.5)?.giro).toBeCloseTo(-Math.PI / 2)
     expect(pisos).toEqual([])
   })
 
-  test('cortadas: as peças baixas, a porta sem folha e a janela vira parede baixa', () => {
+  test('cortadas: as peças baixas, a porta sem folha e a janela baixa no meio da abertura', () => {
     const p = planta(inicial(), L)
     const { paredes, folhas, quinas } = pecasDaObra(inicial(), p, TUDO_CORTADO)
     expect(folhas).toEqual([])
     expect(paredes.some((x) => x.no === 'parede-porta-lambri-baixa')).toBe(true)
-    expect(paredes.some((x) => x.no.startsWith('parede-janela'))).toBe(false)
-    expect(paredes.filter((x) => x.no === 'parede-lambri-baixa')).toHaveLength(6 + 5 + 6)
-    // Encontro com a parede fixa (em pé): a quina fica alta.
-    expect(quinas.find((q) => q.x === -6)?.no).toBe('quina-lambri')
-    expect(quinas.find((q) => q.x === 6 && q.z === 0)?.no).toBe('quina-lambri-baixa')
+    // A janela aparece no Construir: uma peça só, a janela vista na parede cortada.
+    const janelas = paredes.filter((x) => x.no.startsWith('parede-janela'))
+    expect(janelas.map((x) => `${x.no} ${x.x},${x.z}`).sort()).toEqual([
+      'parede-janela-grande-lambri-baixa -2.5,0',
+      'parede-janela-grande-lambri-baixa 6,-4.5',
+    ])
+    expect(paredes.filter((x) => x.no === 'parede-lambri-baixa')).toHaveLength(6 + 5 + 12 + 8)
+    expect(quinas.every((q) => q.no === 'quina-lambri-baixa')).toBe(true)
+    expect(quinas).toHaveLength(4)
+  })
+
+  test('cada janela cortada usa o nó baixo do tipo dela, na família da parede', () => {
+    let o = comComodoADireita()
+    o = ok(porAbertura(o, L, 'janela-arco', { eixo: 'x', x: 6, z: -6 }))
+    o = ok(porAbertura(o, L, 'janela-redonda', { eixo: 'z', x: 8, z: -4 }))
+    const { paredes } = pecasDaObra(o, planta(o, L), TUDO_CORTADO)
+    const nos = paredes.map((x) => x.no).filter((n) => n.startsWith('parede-janela'))
+    expect(nos.sort()).toEqual([
+      'parede-janela-arco-lambri-baixa',
+      'parede-janela-grande-lambri-baixa',
+      // A janela do lado do quarto, entre ele e o cômodo novo.
+      'parede-janela-grande-lisa-baixa',
+      'parede-janela-redonda-lambri-baixa',
+    ])
+    expect(paredes.find((x) => x.no === 'parede-janela-arco-lambri-baixa')).toMatchObject({
+      x: 7,
+      z: -6,
+    })
+  })
+
+  test('todo nó de parede que as peças pedem existe no kit (as janelas baixas inclusive)', async () => {
+    const buf = readFileSync(
+      join(import.meta.dir, '..', 'src', 'assets', 'casa', 'casa-paredes.glb'),
+    )
+    const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+    const kit = (await new GLTFLoader().parseAsync(ab, '')).scene
+    const nos: string[] = []
+    for (const fam of ['lambri', 'lisa'])
+      for (const baixa of ['', '-baixa']) {
+        nos.push(`parede-${fam}${baixa}`, `parede-porta-${fam}${baixa}`, `quina-${fam}${baixa}`)
+        for (const janela of Object.values(NO_DA_JANELA)) nos.push(`${janela}-${fam}${baixa}`)
+      }
+    expect(nos.filter((n) => !kit.getObjectByName(n))).toEqual([])
+    // E a obra de exemplo com o fundo, cortada ou não, só pede nós desses.
+    const o = obraDeExemploComFundo()
+    for (const corte of [NADA_CORTADO, TUDO_CORTADO]) {
+      const { paredes, quinas } = pecasDaObra(o, planta(o, L), corte)
+      for (const x of [...paredes, ...quinas]) expect(nos).toContain(x.no)
+    }
   })
 
   test('cômodo novo: piso em todas as células e parede lisa entre os dois', () => {
@@ -369,24 +572,142 @@ describe('as peças do kit', () => {
     expect(dentro(2.5, 3.5, 0)).toBe(true)
     expect(dentro(-5, 1, 0)).toBe(true)
     expect(dentro(6, 1, -7)).toBe(true)
-    // A parede fixa do quarto colide pela casa de antes.
-    expect(dentro(-6, 1, -4)).toBe(false)
+    // O fundo e a esquerda do quarto colidem pelo kit (na casa construída não há casa de antes ali).
+    expect(dentro(-6, 1, -4)).toBe(true)
+    expect(dentro(0, 1, -8)).toBe(true)
+    expect(dentro(-6, 1, -8)).toBe(true)
   })
 })
 
 describe('a casa construída', () => {
-  test('a frente e a direita do quarto colidem pelo kit; a esquerda, o fundo e a varanda ficam', () => {
+  test('as quatro paredes do quarto colidem pelo kit; da casa de antes só a varanda', () => {
     const nomes = colisoresDaCasa(true, true).map((c) => c.nome)
     for (const n of [
       'col-parede-frente-1',
       'col-parede-direita',
+      'col-parede-esquerda',
+      'col-parede-fundo',
+      'col-quina-1',
+      'col-alicerce-fundo',
       'col-porta-aberta',
       'col-floreira-lado',
     ])
       expect(nomes).not.toContain(n)
-    for (const n of ['col-parede-esquerda', 'col-parede-fundo', 'col-quina-1', 'col-coluna-1'])
-      expect(nomes).toContain(n)
-    expect(colisoresDaCasa(true).map((c) => c.nome)).toContain('col-parede-frente-1')
+    for (const n of ['col-coluna-1', 'col-coluna-2', 'col-cil-vaso-1']) expect(nomes).toContain(n)
+    const deAntes = colisoresDaCasa(true).map((c) => c.nome)
+    for (const n of ['col-parede-frente-1', 'col-parede-esquerda', 'col-parede-fundo'])
+      expect(deAntes).toContain(n)
+  })
+
+  test('a obra salva antes (sem o fundo e a esquerda em obra.paredes) ganha as quatro paredes', () => {
+    // A obra inicial de antes de 31/10/2026 é a mesma de hoje: o salvamento não muda.
+    const antiga: Obra = {
+      ...inicial(),
+      paredes: [
+        { x: -6, z: 0, eixo: 'x', n: 12 },
+        { x: 6, z: -8, eixo: 'z', n: 8 },
+      ],
+    }
+    expect(L.obraInicial.paredes).toEqual(antiga.paredes)
+    const p = planta(antiga, L)
+    for (const k of [
+      chaveDaAresta({ eixo: 'x', x: -6, z: -8 }),
+      chaveDaAresta({ eixo: 'x', x: 5, z: -8 }),
+      chaveDaAresta({ eixo: 'z', x: -6, z: -8 }),
+      chaveDaAresta({ eixo: 'z', x: -6, z: -1 }),
+    ]) {
+      expect(p.paredes.has(k)).toBe(true)
+      expect(p.travadas.has(k)).toBe(true)
+    }
+    const { paredes } = pecasDaObra(antiga, p, NADA_CORTADO)
+    const naLinha = (f: (x: { x: number; z: number }) => boolean) => paredes.filter(f).length
+    expect(naLinha((x) => x.z === -8)).toBe(12)
+    expect(naLinha((x) => x.x === -6)).toBe(8)
+    // Nenhuma mudança no Construir grava essas paredes na obra.
+    const r = esticarParede(antiga, L, { x: -6, z: -8 }, { x: 6, z: -8 })
+    expect(r).toMatchObject({ ok: false, motivo: 'nada' })
+  })
+
+  test('a colisão do fundo do quarto deixa o vão da porta livre', () => {
+    const atras = comComodoAtras()
+    const o = ok(porAbertura(atras, L, 'porta', { eixo: 'x', x: 3, z: -8 }))
+    const caixas = colisoresDaObra(o, planta(o, L))
+    const dentro = (x: number, y: number, z: number) =>
+      caixas.some(
+        (c) =>
+          Math.abs(x - c.posicao[0]) <= c.meio[0] &&
+          Math.abs(y - c.posicao[1]) <= c.meio[1] &&
+          Math.abs(z - c.posicao[2]) <= c.meio[2],
+      )
+    expect(dentro(3.5, 1, -8)).toBe(false)
+    expect(dentro(3.5, 3.5, -8)).toBe(true)
+    expect(dentro(0.5, 1, -8)).toBe(true)
+    expect(dentro(5.5, 1, -8)).toBe(true)
+    // E a porta do kit aparece no fundo, com a folha.
+    const { paredes, folhas } = pecasDaObra(o, planta(o, L), NADA_CORTADO)
+    expect(paredes.find((x) => x.no.startsWith('parede-porta') && x.z === -8)).toMatchObject({
+      no: 'parede-porta-lisa',
+      x: 3.5,
+      z: -8,
+    })
+    expect(folhas.map((f) => `${f.no} ${f.x},${f.z}`)).toContain('porta-interna 3.5,-8')
+  })
+
+  test('a cor do Meu quarto vai só no lado de dentro do quarto das quatro paredes dele', () => {
+    // Um cômodo atrás (com porta no fundo) e um à direita: o fundo e a direita ficam lisos.
+    let o = ok(porAbertura(comComodoAtras(), L, 'porta', { eixo: 'x', x: 3, z: -8 }))
+    o = ok(esticarParede(o, L, { x: 6, z: -6 }, { x: 8, z: -6 }))
+    o = ok(esticarParede(o, L, { x: 8, z: -6 }, { x: 8, z: -2 }))
+    o = ok(esticarParede(o, L, { x: 8, z: -2 }, { x: 6, z: -2 }))
+    const p = planta(o, L)
+    for (const corte of [NADA_CORTADO, TUDO_CORTADO]) {
+      const { paredes, quinas } = pecasDaObra(o, p, corte)
+      for (const x of paredes) {
+        const noFundoOuFrente = (x.z === -8 || x.z === 0) && x.x > -6 && x.x < 6
+        const naEsquerdaOuDireita = (x.x === -6 || x.x === 6) && x.z > -8 && x.z < 0
+        const cor = noFundoOuFrente ? 'fundo' : naEsquerdaOuDireita ? 'esquerda' : undefined
+        expect(`${x.chave} ${x.quarto?.cor}`).toBe(`${x.chave} ${cor}`)
+      }
+      const lado = (f: (x: { x: number; z: number; no: string }) => boolean) =>
+        paredes.find(f)?.quarto?.material
+      // Lambri: o lado de dentro (+Y) é o do quarto.
+      expect(lado((x) => x.z === -8 && x.x === -4.5)).toBe('paredeDentro')
+      expect(lado((x) => x.x === -6 && x.z === -3.5)).toBe('paredeDentro')
+      expect(lado((x) => x.z === 0 && x.x === -5.5)).toBe('paredeDentro')
+      expect(lado((x) => x.x === 6 && x.z === -7.5)).toBe('paredeDentro')
+      // Lisa com o quarto no +z ou +x (o fundo, e a porta nele): ainda o +Y.
+      expect(lado((x) => x.no.startsWith('parede-porta') && x.z === -8)).toBe('paredeDentro')
+      // Lisa com o quarto no -x (a direita, com o cômodo novo do outro lado): o verso.
+      expect(lado((x) => x.x === 6 && x.z === -2.5)).toBe('paredeVerso')
+      // As paredes dos cômodos novos e as quinas ficam como o kit fez.
+      expect(paredes.filter((x) => x.x === 8 || x.z === -12).some((x) => x.quarto)).toBe(false)
+      expect(quinas.some((q) => q.quarto)).toBe(false)
+    }
+  })
+
+  test('a cor de dentro é uma cópia do material: o do kit e os outros lados não mudam', () => {
+    const cores = coresDoMeuQuarto({
+      ...QUARTO_DE_EXEMPLO,
+      wallColors: { left: '#ff0000', right: '#0000ff' },
+    })
+    expect(cores).toEqual({ esquerda: '#ff0000', fundo: '#0000ff' })
+    // Sem cor escolhida, a do tema (a mesma que o Meu quarto usa).
+    expect(coresDoMeuQuarto({ ...QUARTO_DE_EXEMPLO, wallColors: undefined }).esquerda).toMatch(/^#/)
+    const dentro = new MeshStandardMaterial({ name: MATERIAL_DE_DENTRO, color: '#f4ecdf' })
+    const fora = new MeshStandardMaterial({ name: 'parede', color: '#fbe7d2' })
+    const materiais = materiaisDoMeuQuarto(dentro, cores)
+    expect(materiais.esquerda).not.toBe(dentro)
+    expect(materiais.esquerda.color.getHexString()).toBe('ff0000')
+    expect(materiais.fundo.color.getHexString()).toBe('0000ff')
+    expect(dentro.color.getHexString()).toBe(new Color('#f4ecdf').getHexString())
+    const geo = new BoxGeometry()
+    const peca = new Group()
+    peca.add(new Mesh(geo, [fora, dentro]), new Mesh(geo, dentro))
+    const outra = new Mesh(geo, dentro)
+    pintarLado(peca, MATERIAL_DE_DENTRO, materiais.fundo)
+    const usados = peca.children.flatMap((m) => [(m as Mesh).material].flat())
+    expect(usados).toEqual([fora, materiais.fundo, materiais.fundo])
+    expect(outra.material).toBe(dentro)
   })
 })
 
@@ -397,8 +718,10 @@ describe('o corte no Viver e o telhado', () => {
     expect(dentro.has(chaveDaAresta({ eixo: 'x', x: 0, z: 0 }))).toBe(true)
     // A parede da direita não separa os dois: fica em pé.
     expect(dentro.has(chaveDaAresta({ eixo: 'z', x: 6, z: -4 }))).toBe(false)
-    // As fixas (da plataforma) nunca.
-    expect([...dentro].some((k) => p.fixas.has(k))).toBe(false)
+    // A esquerda e o fundo (com os quadros do Meu quarto) nunca.
+    const deCostas = paredesCortadasNoViver(p, { x: 0.5, z: -3.5 }, { x: -12, z: -14 })
+    expect(deCostas.size).toBe(0)
+    expect([...dentro].some((k) => p.doMeuQuarto.has(k))).toBe(false)
     expect(paredesCortadasNoViver(p, { x: 0.5, z: 5.5 }, { x: 0.5, z: 12 }).size).toBe(0)
   })
 

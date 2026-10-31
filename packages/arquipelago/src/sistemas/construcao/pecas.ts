@@ -7,8 +7,10 @@ import {
   arestasDaAbertura,
   chaveDaAresta,
   LARGURA_DA_ABERTURA,
+  ladosDaAresta,
   type Ponto,
 } from './grade'
+import { type Celula, chaveDaCelula, type ParedeDoMeuQuarto } from './lote'
 
 /**
  * As peças do kit da casa (`src/assets/casa`, contrato no README de `arte/casa`) que desenham uma
@@ -31,6 +33,21 @@ export interface PecaDoKit {
   giro: number
   /** A altura da origem (o telhado); sem ela, 0 (o topo do piso). */
   y?: number
+  /** Numa parede do quarto, o lado que fica para dentro dele (leva a cor do Meu quarto). */
+  quarto?: LadoDoQuarto
+}
+
+/**
+ * O lado de uma peça que fica para dentro do quarto (31/10/2026, pedido dela: por dentro, as paredes
+ * do quarto usam a cor que a criança escolheu no Meu quarto). `cor`: a esquerda e a direita do
+ * quarto usam a cor da parede da esquerda do Meu quarto; o fundo e a frente, a do fundo (paredes
+ * opostas com a mesma cor; o Meu quarto só mostra a esquerda e o fundo). `material`: o nome do
+ * material desse lado no kit (`paredeDentro` no +Y local; numa parede lisa com o quarto no -Y,
+ * `paredeVerso`).
+ */
+export interface LadoDoQuarto {
+  cor: ParedeDoMeuQuarto
+  material: 'paredeDentro' | 'paredeVerso'
 }
 
 export interface FolhaDaPorta extends PecaDoKit {
@@ -65,7 +82,7 @@ function peca(arquivo: ArquivoDoKit, no: string, p: Ponto, giro: number): PecaDo
   return { chave: `${no}@${p.x},${p.z},${giro.toFixed(3)}`, arquivo, no, x: p.x, z: p.z, giro }
 }
 
-const NO_DA_JANELA = {
+export const NO_DA_JANELA = {
   'janela-grande': 'parede-janela-grande',
   'janela-arco': 'parede-janela-arco',
   'janela-redonda': 'parede-janela-redonda',
@@ -84,15 +101,19 @@ export function pecasDaObra(obra: Obra, p: Planta, cortada: Corte): PecasDaObra 
     for (const a of arestas.slice(1)) dentroDeAbertura.add(chaveDaAresta(a))
   }
   for (const k of p.paredes) {
-    if (p.fixas.has(k) || dentroDeAbertura.has(k)) continue
+    if (dentroDeAbertura.has(k)) continue
     const a = arestaDaChave(k)
     const lado = ladoDaParede(p, k)
     const giro = giroDaParede(a.eixo, lado)
     const fam = lado.familia
     const ab = inicioDe.get(k)
+    const quarto = ladoDoQuarto(p, a, lado)
+    const parede = (no: string, onde: Ponto) => {
+      const x = peca('paredes', no, onde, giro)
+      paredes.push(quarto ? { ...x, quarto } : x)
+    }
     if (!ab) {
-      const no = cortada(k) ? `parede-${fam}-baixa` : `parede-${fam}`
-      paredes.push(peca('paredes', no, meioDoTrecho(a, 1), giro))
+      parede(cortada(k) ? `parede-${fam}-baixa` : `parede-${fam}`, meioDoTrecho(a, 1))
       continue
     }
     const largura = LARGURA_DA_ABERTURA[ab.tipo]
@@ -100,7 +121,7 @@ export function pecasDaObra(obra: Obra, p: Planta, cortada: Corte): PecasDaObra 
     const cortadaAqui = arestas.some((x) => cortada(chaveDaAresta(x)))
     const meio = meioDoTrecho(a, largura)
     if (ab.tipo === 'porta') {
-      paredes.push(peca('paredes', `parede-porta-${fam}${cortadaAqui ? '-baixa' : ''}`, meio, giro))
+      parede(`parede-porta-${fam}${cortadaAqui ? '-baixa' : ''}`, meio)
       // Na parede cortada fica só o batente: a folha some (README do kit).
       if (!cortadaAqui) {
         const no = fam === 'lambri' ? 'porta' : 'porta-interna'
@@ -108,23 +129,36 @@ export function pecasDaObra(obra: Obra, p: Planta, cortada: Corte): PecasDaObra 
       }
       continue
     }
-    if (cortadaAqui) {
-      // Com a parede cortada, a janela vira a parede cortada da mesma família.
-      for (const x of arestas)
-        paredes.push(peca('paredes', `parede-${fam}-baixa`, meioDoTrecho(x, 1), giro))
-      continue
-    }
-    paredes.push(peca('paredes', `${NO_DA_JANELA[ab.tipo]}-${fam}`, meio, giro))
+    // Com a parede cortada, a janela vista na parede cortada (31/10/2026, pedido dela: as portas e
+    // as janelas aparecem no Construir), no meio da abertura como a alta.
+    parede(`${NO_DA_JANELA[ab.tipo]}-${fam}${cortadaAqui ? '-baixa' : ''}`, meio)
   }
   paredes.sort((a, b) => a.chave.localeCompare(b.chave))
   return { paredes, quinas: quinasDaObra(p, cortada), folhas, pisos: pisosDaObra(p) }
 }
 
+/** O lado da parede que dá para o quarto da plataforma, se ela for do quarto. */
+export function ladoDoQuarto(p: Planta, a: Aresta, lado: LadoDaParede): LadoDoQuarto | undefined {
+  const doQuarto = (c: Celula) => {
+    const i = p.comodoDe.get(chaveDaCelula(c))
+    return i !== undefined && p.comodos[i]?.quarto === true
+  }
+  const [menos, mais] = ladosDaAresta(a)
+  const noMenos = doQuarto(menos)
+  const noMais = doQuarto(mais)
+  if (!noMenos && !noMais) return undefined
+  const dentroNoQuarto = lado.dentro === 1 ? noMais : noMenos
+  return {
+    cor: a.eixo === 'x' ? 'fundo' : 'esquerda',
+    material: dentroNoQuarto ? 'paredeDentro' : 'paredeVerso',
+  }
+}
+
 /**
  * As quinas: em toda ponta solta de parede, em toda dobra em L e onde uma parede em pé encontra
  * uma cortada na mesma linha. No T, no cruzamento e na emenda reta da mesma altura não vai nada (a
- * ponta fica dentro da outra parede). Onde só há paredes fixas do quarto, quem desenha é a casa de
- * antes. Lambri se alguma parede do ponto é lambri; em pé se alguma está em pé.
+ * ponta fica dentro da outra parede). As quatro quinas do quarto também são do kit. Lambri se alguma
+ * parede do ponto é lambri; em pé se alguma está em pé.
  */
 export function quinasDaObra(p: Planta, cortada: Corte): PecaDoKit[] {
   const pontos = new Map<string, Ponto>()
@@ -148,8 +182,7 @@ export function quinasDaObra(p: Planta, cortada: Corte): PecaDoKit[] {
       menosZ: p.paredes.has(em.menosZ),
     }
     const chaves = (Object.keys(em) as (keyof typeof em)[]).filter((d) => tem[d]).map((d) => em[d])
-    if (chaves.every((k) => p.fixas.has(k))) continue
-    const emPe = (k: string) => p.fixas.has(k) || !cortada(k)
+    const emPe = (k: string) => !cortada(k)
     let vai = false
     if (chaves.length === 1) vai = true
     else if (chaves.length === 2) {
@@ -158,7 +191,7 @@ export function quinasDaObra(p: Planta, cortada: Corte): PecaDoKit[] {
       vai = !reta || emPe(a) !== emPe(b)
     }
     if (!vai) continue
-    const lambri = chaves.some((k) => p.fixas.has(k) || ladoDaParede(p, k).familia === 'lambri')
+    const lambri = chaves.some((k) => ladoDaParede(p, k).familia === 'lambri')
     const alta = chaves.some(emPe)
     quinas.push(
       peca('paredes', `quina-${lambri ? 'lambri' : 'lisa'}${alta ? '' : '-baixa'}`, pt, 0),
@@ -199,7 +232,7 @@ export const MEDIDAS_DO_KIT = {
 /**
  * Os colisores da obra: as paredes em pé (sempre altas para o corpo: o corte é desenho), com o vão
  * de cada porta livre, e as quinas. Arestas vizinhas na mesma linha (e no mesmo corte) viram uma
- * caixa só. As paredes fixas colidem pela casa de antes. A parede cortada ganha o nome
+ * caixa só. As quatro paredes do quarto colidem por aqui. A parede cortada ganha o nome
  * `col-obra-cortada-*`: só segura o corpo, e a câmera passa por ela para ver dentro de casa.
  */
 export const COLISOR_DA_PAREDE_CORTADA = 'col-obra-cortada-'
@@ -248,7 +281,7 @@ export function colisoresDaObra(
   }
   // As outras arestas em pé, juntadas por linha.
   const solidas = [...p.paredes]
-    .filter((k) => !p.fixas.has(k) && !deporta.has(k))
+    .filter((k) => !deporta.has(k))
     .map(arestaDaChave)
     .sort(
       (a, b) =>

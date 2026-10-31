@@ -39,7 +39,7 @@ import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
 import { CHAVE_DOS_FANTASMAS_FALSOS, criarFantasmasFalsos } from './fantasmas-falsos'
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
-import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
+import { obraDeExemplo, obraDeExemploComFundo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
 import { criarVisitasAdultasFalsas } from './visitas-adultas-falsas'
@@ -81,8 +81,11 @@ export interface OpcoesDaPlataformaFalsa {
   objetos?: 'pronto' | 'sem-acesso'
   aparencias?: 'pronto' | 'falha' | 'sem-metodo'
   editarObjeto?: (pedido: PedidoDeFerramenta) => Promise<boolean>
-  /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
-  obra?: 'exemplo'
+  /**
+   * `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`);
+   * `fundo`: a mesma, com um cômodo atrás do quarto e a porta no fundo dele.
+   */
+  obra?: 'exemplo' | 'fundo'
   /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
   jogos?: 'exemplo'
   /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
@@ -303,7 +306,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     } catch {}
     galeria.lembrarCompras(migrarSalvamento(guardado.salvamento))
   }
-  if (o.obra === 'exemplo') {
+  if (o.obra) {
+    const obra = o.obra === 'fundo' ? obraDeExemploComFundo() : obraDeExemplo()
     const atual =
       migrarSalvamento(guardado.salvamento) ??
       criarSalvamentoInicial(new Date(agora().getTime() - (o.adiantarMinutos ?? 0) * 60_000))
@@ -312,9 +316,9 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: {
         ...atual,
         casa: { portaNova: true },
-        construcao: { ...atual.construcao, casa: obraDeExemplo() },
+        construcao: { ...atual.construcao, casa: obra },
         // A obra de exemplo usa acabamentos dos cômodos: as chaves vêm com ela (N11).
-        chaves: atual.chaves | chavesUsadasNaObra(obraDeExemplo()),
+        chaves: atual.chaves | chavesUsadasNaObra(obra),
         projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
       atualizadoEm: agora().toISOString(),

@@ -9,7 +9,7 @@ import { criarLoja } from '../src/estado/loja'
 import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
 import { falaDaRecusa } from '../src/sistemas/construcao/falas'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
-import { esticarParede, type Recusa } from '../src/sistemas/construcao/obra'
+import { esticarParede, porAbertura, type Recusa } from '../src/sistemas/construcao/obra'
 
 function montar() {
   const gravados: unknown[] = []
@@ -130,6 +130,38 @@ describe('o modo Construir', () => {
     expect(construcao.getState().antes).toEqual([])
   })
 
+  test('a janela vira porta, o Zappy avisa e o Desfazer volta a janela', () => {
+    const { loja, construcao } = montar()
+    construcao.getState().abrir()
+    const antes = loja.getState().salvamento.construcao.casa ?? LOTE_DA_CASA.obraInicial
+    const r = porAbertura(antes, LOTE_DA_CASA, 'porta', { eixo: 'z', x: 6, z: -4 })
+    expect(construcao.getState().aplicar(r)).toBe(true)
+    expect(loja.getState().dica?.texto).toBe('A janela virou porta.')
+    const depois = loja.getState().salvamento.construcao.casa
+    expect(depois?.aberturas).toContainEqual({ tipo: 'porta', eixo: 'z', x: 6, z: -5 })
+    expect(depois?.aberturas).not.toContainEqual({ tipo: 'janela-grande', x: 6, z: -6, eixo: 'z' })
+    construcao.getState().desfazer()
+    expect(loja.getState().salvamento.construcao.casa).toEqual(antes)
+    expect(loja.getState().salvamento.construcao.casa?.aberturas).toContainEqual({
+      tipo: 'janela-grande',
+      x: 6,
+      z: -6,
+      eixo: 'z',
+    })
+  })
+
+  test('o motivo da prévia some ao trocar de ferramenta e ao fechar', () => {
+    const { construcao } = montar()
+    construcao.getState().abrir()
+    construcao.getState().mostrarMotivo('Ali já tem porta ou janela.')
+    expect(construcao.getState().motivoDaPrevia).toBe('Ali já tem porta ou janela.')
+    construcao.getState().escolher('parede')
+    expect(construcao.getState().motivoDaPrevia).toBeNull()
+    construcao.getState().mostrarMotivo('Ali já é fora do terreno.')
+    construcao.getState().fechar()
+    expect(construcao.getState().motivoDaPrevia).toBeNull()
+  })
+
   test('recusa não grava nada e o Zappy explica', () => {
     const { loja, construcao } = montar()
     construcao.getState().abrir()
@@ -166,7 +198,8 @@ describe('o modo Construir', () => {
       { motivo: 'fecha-ocupado', nome: 'a horta' },
       { motivo: 'parede-do-quarto' },
       { motivo: 'sem-parede' },
-      { motivo: 'parede-fixa' },
+      { motivo: 'quadro-do-quarto', abertura: 'porta' },
+      { motivo: 'quadro-do-quarto', abertura: 'janela' },
       { motivo: 'encontro-de-paredes' },
       { motivo: 'ja-tem-abertura' },
       { motivo: 'fora-de-comodo' },

@@ -35,7 +35,7 @@ export type Recusa =
   | { motivo: 'fecha-ocupado'; nome: string }
   | { motivo: 'parede-do-quarto' }
   | { motivo: 'sem-parede' }
-  | { motivo: 'parede-fixa' }
+  | { motivo: 'quadro-do-quarto'; abertura: 'porta' | 'janela' }
   | { motivo: 'encontro-de-paredes' }
   | { motivo: 'ja-tem-abertura' }
   | { motivo: 'fora-de-comodo' }
@@ -56,7 +56,10 @@ export type Recusa =
   | { motivo: 'movel-na-parede' }
   | { motivo: 'nada' }
 
-export type Resultado = { ok: true; obra: Obra } | ({ ok: false } & Recusa)
+/** O que deu certo e merece uma palavra do Zappy (`falaDoAviso`). */
+export type Aviso = 'janela-virou-porta'
+
+export type Resultado = { ok: true; obra: Obra; aviso?: Aviso } | ({ ok: false } & Recusa)
 
 const recusa = (r: Recusa): Resultado => ({ ok: false, ...r })
 
@@ -87,7 +90,8 @@ function conferirFechamento(obra: Obra, lote: Lote): Recusa | null {
 export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resultado {
   const arestas = arestasDoArrasto(a, b)
   if (arestas.length === 0) return recusa({ motivo: 'nada' })
-  const fixas = chavesDosTrechos(lote.paredesFixas)
+  // As do quarto já estão de pé (o fundo e a esquerda nem precisam estar na obra salva).
+  const travadas = chavesDosTrechos(lote.paredesTravadas)
   const chaves = chavesDosTrechos(obra.paredes)
   const canteiros = new Set(obra.canteiros.map(chaveDaCelula))
   const moveisDeChao = moveisDaObra(obra)
@@ -96,7 +100,7 @@ export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resul
   const antes = chaves.size
   for (const aresta of arestas) {
     const k = chaveDaAresta(aresta)
-    if (chaves.has(k) || fixas.has(k)) continue
+    if (chaves.has(k) || travadas.has(k)) continue
     const r = arestaLivre(lote, aresta)
     if (r) return recusa(r)
     if (ladosDaAresta(aresta).some((c) => canteiros.has(chaveDaCelula(c))))
@@ -130,17 +134,20 @@ export function apagarParede(obra: Obra, lote: Lote, arestas: readonly Aresta[])
   let doQuarto = 0
   for (const a of arestas) {
     const k = chaveDaAresta(a)
-    if (!chaves.has(k)) continue
     if (travadas.has(k)) {
       doQuarto++
       continue
     }
+    if (!chaves.has(k)) continue
     chaves.delete(k)
     tirou++
   }
   if (tirou === 0) return recusa({ motivo: doQuarto > 0 ? 'parede-do-quarto' : 'nada' })
+  // A porta e a janela das paredes do quarto ficam (o fundo e a esquerda não estão na obra salva).
   const aberturas = obra.aberturas.filter((ab) =>
-    arestasDaAbertura(ab).every((a) => chaves.has(chaveDaAresta(a))),
+    arestasDaAbertura(ab).every(
+      (a) => chaves.has(chaveDaAresta(a)) || travadas.has(chaveDaAresta(a)),
+    ),
   )
   return {
     ok: true,
@@ -156,18 +163,16 @@ export function aberturaEm(obra: Obra, a: Aresta): number {
 
 /**
  * Pôr uma porta ou janela com o meio na aresta tocada. Ela precisa caber inteira numa parede do
- * kit (nas fixas do quarto não dá), sem outra abertura no caminho e sem parede chegando no meio
- * dela (a porta não abre numa emenda em T).
+ * kit (as quatro do quarto inclusive), sem parede chegando no meio dela (a porta não abre numa
+ * emenda em T), sem peça pendurada no caminho (nem um quadro do Meu quarto) e sem outra abertura no
+ * caminho. A porta em cima de uma janela troca a janela (31/10/2026, pedido dela).
  */
 export function porAbertura(obra: Obra, lote: Lote, tipo: TipoDeAbertura, a: Aresta): Resultado {
   const nova = aberturaNaAresta(tipo, a)
   const p = planta(obra, lote)
   const arestas = arestasDaAbertura(nova)
-  for (const x of arestas) {
-    const k = chaveDaAresta(x)
-    if (p.fixas.has(k)) return recusa({ motivo: 'parede-fixa' })
-    if (!p.paredes.has(k)) return recusa({ motivo: 'sem-parede' })
-  }
+  for (const x of arestas)
+    if (!p.paredes.has(chaveDaAresta(x))) return recusa({ motivo: 'sem-parede' })
   // Os pontos de dentro da abertura (entre a primeira e a última aresta) não podem ter parede
   // chegando de lado.
   for (let i = 1; i < arestas.length; i++) {
@@ -188,13 +193,28 @@ export function porAbertura(obra: Obra, lote: Lote, tipo: TipoDeAbertura, a: Are
   // A porta não abre no quadro: a peça de parede sai primeiro (de qualquer lado da parede).
   if (arestas.some((x) => pecasNaAresta(obra, x).length > 0))
     return recusa({ motivo: 'movel-na-parede' })
+  // O quadro e a prateleira do Meu quarto ficam onde a criança pôs: a abertura vai do lado.
+  const pendurados = lote.penduradosDoQuarto
+  if (pendurados && arestas.some((x) => pendurados.has(chaveDaAresta(x))))
+    return recusa({ motivo: 'quadro-do-quarto', abertura: tipo === 'porta' ? 'porta' : 'janela' })
   const minhas = new Set(arestas.map(chaveDaAresta))
   const iguais = (x: typeof nova) =>
     x.tipo === nova.tipo && x.eixo === nova.eixo && x.x === nova.x && x.z === nova.z
   if (obra.aberturas.some(iguais)) return recusa({ motivo: 'nada' })
-  for (const ab of obra.aberturas)
-    if (arestasDaAbertura(ab).some((x) => minhas.has(chaveDaAresta(x))))
+  const noCaminho = obra.aberturas.filter((ab) =>
+    arestasDaAbertura(ab).some((x) => minhas.has(chaveDaAresta(x))),
+  )
+  if (noCaminho.length > 0) {
+    // Só a porta troca, e só janela: porta em cima de porta e janela em cima de qualquer uma, não.
+    if (tipo !== 'porta' || noCaminho.some((ab) => ab.tipo === 'porta'))
       return recusa({ motivo: 'ja-tem-abertura' })
+    const outras = obra.aberturas.filter((ab) => !noCaminho.includes(ab))
+    return {
+      ok: true,
+      obra: { ...obra, aberturas: [...outras, nova] },
+      aviso: 'janela-virou-porta',
+    }
+  }
   if (obra.aberturas.length >= lote.limites.aberturas) return recusa({ motivo: 'limite' })
   return { ok: true, obra: { ...obra, aberturas: [...obra.aberturas, nova] } }
 }

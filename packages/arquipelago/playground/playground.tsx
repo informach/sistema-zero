@@ -31,7 +31,8 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?abertura=1` mostra a abertura "O Cinza" (sem ele, ela fica marcada como vista).
  * `?passos=1` mostra os primeiros passos com o Zappy e `?dicas=1` liga as dicas de primeira vez.
  * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
- * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção.
+ * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção; `?obra=fundo`, a mesma com
+ * um cômodo atrás do quarto e a porta no fundo dele.
  * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa.
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
@@ -125,7 +126,7 @@ const plataforma = criarPlataformaFalsa({
   adiantarMinutos: Number(q.get('adiantar') ?? 0),
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   convidados: q.get('convidados') === '1',
-  obra: q.get('obra') === 'exemplo' ? 'exemplo' : undefined,
+  obra: (['exemplo', 'fundo'] as const).find((v) => v === q.get('obra')),
   jogos: q.get('jogos') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   adotado: q.get('adotado') === '1',

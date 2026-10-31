@@ -45,6 +45,26 @@ export function obraDeExemplo(): Obra {
   return o
 }
 
+/**
+ * A obra de exemplo com um cômodo atrás do quarto (x 1 a 6, z -12 a -8), ligado a ele por uma porta
+ * no fundo (`?obra=fundo`): para conferir o fundo do quarto desenhado pelo kit e a porta nele.
+ */
+export function obraDeExemploComFundo(): Obra {
+  const L = LOTE_DA_CASA
+  let o = obraDeExemplo()
+  const passo = (r: Resultado) => {
+    if (!r.ok) throw new Error(`obra de exemplo recusada: ${r.motivo}`)
+    o = r.obra
+  }
+  passo(esticarParede(o, L, { x: 1, z: -8 }, { x: 1, z: -12 }))
+  passo(esticarParede(o, L, { x: 1, z: -12 }, { x: 6, z: -12 }))
+  passo(esticarParede(o, L, { x: 6, z: -12 }, { x: 6, z: -8 }))
+  passo(porAbertura(o, L, 'porta', { eixo: 'x', x: 3, z: -8 }))
+  passo(porAbertura(o, L, 'janela-grande', { eixo: 'x', x: 3, z: -12 }))
+  passo(trocarPiso(o, L, { x: 3, z: -10 }, 'ladrilho'))
+  return o
+}
+
 const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null, aparencias: [] }
 /** Os projetos azuis que a obra de exemplo já ganhou (geladeira, planta e casinha). */
 export const PROJETOS_DE_EXEMPLO = { geladeira: GANHO, 'planta-interior': GANHO, casinha: GANHO }
