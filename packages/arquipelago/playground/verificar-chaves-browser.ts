@@ -1,7 +1,8 @@
 /**
  * As chaves dos cômodos (N11) no navegador, com a plataforma falsa e sem banco: o Construir começa
- * com ladrilho, azulejo, janelas grande e em arco, cerca, caminho e canteiro trancados; a criança
- * pega as quatro chaves pela sua ilha (o Zappy diz o que cada uma abre) e tudo destranca.
+ * com cerca, caminho e canteiro trancados (pisos e janelas são livres desde 01/11/2026; a chave
+ * de cômodo abre mais um cômodo, conferido em `tests/chaves-da-casa.test.ts`); a criança pega as
+ * quatro chaves pela sua ilha (o Zappy diz o que cada uma abre) e tudo destranca.
  *
  * No Windows: `bun build playground/verificar-chaves-browser.ts --target=node --external
  * playwright-core --outfile .cache/verificar-chaves-browser.mjs && node .cache/verificar-chaves-browser.mjs`.
@@ -96,24 +97,15 @@ try {
       () => (globalThis as { __arquipelagoDesenho?: unknown }).__arquipelagoDesenho,
     )
 
-    // ── Antes das chaves: tudo o que é de um cômodo está trancado ─────────────────────────────
+    // ── Antes das chaves: só o quintal está trancado; pisos e janelas são livres ──────────────
     const antes = await trancados(page)
-    assert.deepEqual(antes.sort(), [
-      'Caminho',
-      'Canteiro',
-      'Cerca',
-      'Janela Em arco',
-      'Janela Grande',
-      'Piso Azulejo',
-      'Piso Ladrilho',
-    ])
+    assert.deepEqual(antes.sort(), ['Caminho', 'Canteiro', 'Cerca'])
     await page.getByText('Chaves da casa: 0 de 4').waitFor()
     await page
       .getByRole('region', { name: 'Ferramentas de construir' })
-      .locator('.arq-ferramenta[data-ferramenta=piso]')
-      .click()
-    await page.locator('.arq-obra-escolha', { hasText: 'Ladrilho' }).click({ force: true })
-    await page.getByText('Precisa da chave da cozinha.').first().waitFor()
+      .locator('.arq-ferramenta[data-ferramenta=cerca]')
+      .click({ force: true })
+    await page.getByText('Precisa da chave do quintal.').first().waitFor()
     await page.screenshot({ path: path.join(prints, `${tipo}-1-construir-trancado.png`) })
     await page.keyboard.press('Escape')
     await page
@@ -147,7 +139,9 @@ try {
     await page.locator('.arq-obra-escolha', { hasText: 'Grande' }).click()
     await page.screenshot({ path: path.join(prints, `${tipo}-3-construir-destrancado.png`) })
     assert.deepEqual(erros, [])
-    console.log(`PASS ${tipo}: sete trancas sem chave, quatro chaves pegas, Construir destrancado`)
+    console.log(
+      `PASS ${tipo}: três trancas do quintal sem chave, quatro chaves pegas, Construir destrancado`,
+    )
     await ctx.close()
   }
   console.log(`Prints: ${prints}`)

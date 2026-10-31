@@ -1972,35 +1972,51 @@ Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posica
 Verificador: `playground/verificar-convidados-browser.ts`; evidências em
 `docs/qa/2026-10-29-convidados/`.
 
-### 6.16.2a As chaves dos cômodos (N11, 30/10/2026)
+### 6.16.2a As chaves dos cômodos (N11, 30/10/2026; refeita pela proposta em 01/11/2026)
 
 A proposta põe como aventura da sua ilha "achar a chave de cada cômodo": a casa da Íris só tem
-cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Como o Construir
-não tem cômodo com tipo (a criança fecha paredes onde quiser), a chave dá cor pelo acabamento
-que é daquele cômodo. Escolha mínima, registrada como decisão:
+cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Até 31/10 a chave
+liberava um acabamento (ladrilho, azulejo, janelas grande e em arco). Desde as lacunas de
+01/11/2026 a chave abre o cômodo, como a proposta diz:
 
-| Chave | Libera no Construir | Onde fica (x, z) |
+| Chave | Abre no Construir | Onde fica (x, z) |
 |---|---|---|
-| Cozinha | piso de ladrilho | (20,5; -3,6), a leste da horta |
-| Sala | janelas grande e em arco | (6,8; -18,8), ao sul |
-| Banheiro | piso de azulejo | (-16,5; 2,1), a oeste da casa |
+| Cozinha | mais um cômodo | (20,5; -3,6), a leste da horta |
+| Sala | mais um cômodo | (6,8; -18,8), ao sul |
+| Banheiro | mais um cômodo | (-11,5; 17,2), a noroeste da casa |
 | Quintal | cerca, caminho e canteiro | (-6; 14,8), ao norte |
 
-- Sem chave nenhuma a casa já cresce: parede, porta, janela redonda, piso de tábua, objetos dos
-  pedidos, apagar e olhar. A janela começa na redonda.
-- Trancado aparece em cinza com 🔑 e o nome da chave. Tocar mostra o recado "Precisa da chave da
-  cozinha. Ela está escondida em algum canto da sua ilha." A loja recusa a escolha e recusa a
-  obra que traga um acabamento trancado novo; o que a obra já usava continua editável.
+- O Construir não tem cômodo com tipo (a criança fecha paredes onde quiser), então a conta é por
+  número: a casa fecha o quarto e mais um cômodo por chave da cozinha, da sala ou do banheiro
+  (`comodosAbertos`, contando os cômodos da planta que não são o quarto). Fechar um cômodo a
+  mais recusa a obra com o recado "Para fechar mais um cômodo, precisa da chave da cozinha. Ela
+  está escondida em algum canto da sua ilha." (a primeira chave de cômodo que falta).
+- Só subir a conta pede chave: quem já tinha mais cômodos que chaves não perde nenhum e continua
+  editando. Sem bytes novos e sem migração: as chaves já estão no salvamento.
+- Pisos e janelas ficam livres para todos. Sem chave nenhuma a casa já cresce: parede, porta,
+  janelas, pisos, objetos dos pedidos, apagar e olhar, com o quarto e nenhum cômodo além dele.
+- O quintal continua por ferramenta: cerca, caminho e canteiro aparecem em cinza com 🔑 até a
+  chave do quintal, e a loja recusa a obra (térreo ou andar de cima) que traga um deles novo.
 - As chaves ficam no gramado, fora do lote da casa (também do quintal grande do Vale), a mais de 4 m da linha de cada ponte e a
   mais de 3 m das conchas e dos Lumis (teste contra os colisores reais da casa, do farol, do
   píer, das árvores e do `terreno.glb`). "Pegar a chave da cozinha" guarda o bit em `chaves`; o
-  Zappy diz o que ela abre e quantas faltam. A chave achada some do mundo.
+  Zappy diz o que ela abre ("a casa já pode ganhar mais um cômodo") e quantas faltam. A chave
+  achada some do mundo.
 - O painel do Construir mostra "Chaves da casa: n de 4" até a quarta.
 - Visita e suporte somente leitura não pegam chave.
 
+**Objetos com função no andar de cima (lacunas, 01/11/2026).** A ferramenta Objetos também vale lá
+em cima: `objetos` opcional no andar (`AndarDeCimaSchema`, sem repetir), guardado por
+`andarDaObra` só quando há objeto. `conferirAndar` recusa objeto fora de cômodo, no vão da escada
+ou na célula de chegada. Um objeto fica num andar só: pôr no térreo o que já está em cima (ou o
+contrário) recusa com "Já tem geladeira lá em cima. Tire de lá com o Apagar antes de pôr aqui." Lá
+em cima o objeto funciona como no térreo (o ponto de uso confere a altura do avatar). "Meu
+quarto" continua só no térreo.
+
 Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/construcao.ts`,
-`interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
-`playground/verificar-chaves-browser.ts`.
+`interface/construir.tsx`, `sistemas/construcao/andar.ts`, `mundo/casa.tsx`,
+`mundo/objetos-da-casa.tsx`. Provas: `tests/chaves-da-casa.test.ts`, `tests/andar-de-cima.test.ts`,
+`arquipelago-contracts/tests/obra-estendida.test.ts` e `playground/verificar-chaves-browser.ts`.
 
 ### 6.16.2b O iglu do Pico (E04, adiado)
 

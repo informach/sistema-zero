@@ -226,6 +226,7 @@ export function obraDeCima(andar: AndarDeCima | null): Obra {
     aberturas: andar?.aberturas ?? [],
     pisos: andar?.pisos ?? [],
     moveis: andar?.moveis ?? [],
+    objetos: andar?.objetos ?? [],
   }
 }
 
@@ -236,8 +237,9 @@ export function andarDaObra(obra: Obra, escada: Escada | null): AndarDeCima {
     paredes: obra.paredes,
     aberturas: obra.aberturas,
     pisos: obra.pisos,
-    // Sem móvel, o campo não vai (o andar fica igual aos gravados antes).
+    // Sem móvel nem objeto, o campo não vai (o andar fica igual aos gravados antes).
     ...(obra.moveis.length > 0 ? { moveis: obra.moveis } : {}),
+    ...(obra.objetos.length > 0 ? { objetos: obra.objetos } : {}),
   }
 }
 
@@ -290,6 +292,14 @@ export function conferirAndar(
     for (const c of celulasDoMovel(m)) {
       const k = chaveDaCelula(c)
       if (vao.has(k) || k === chegada) return 'movel-fora'
+    }
+  }
+  // Os objetos com função de cima (lacunas, 01/11/2026): num cômodo de cima, fora do vão e da
+  // chegada da escada, como os móveis.
+  for (const o of deCima.objetos) {
+    for (const c of celulasDoObjeto(o)) {
+      const k = chaveDaCelula(c)
+      if (!pc.comodoDe.has(k) || vao.has(k) || k === chegada) return 'movel-fora'
     }
   }
   if (!AndarDeCimaSchema.safeParse(andar).success) return 'limite'
