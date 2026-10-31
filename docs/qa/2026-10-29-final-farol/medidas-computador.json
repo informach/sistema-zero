@@ -1,5 +1,7 @@
 {
   "antes": {
+    "fantasma": null,
+    "convidados": [],
     "finalDoFarol": {
       "etapa": "fora",
       "tempo": 0,
@@ -22,6 +24,7 @@
     "constelacoes": 0,
     "clima": {
       "escolhido": "sol",
+      "efetivo": "sol",
       "luz": 1,
       "cinza": 0,
       "gotas": false
@@ -62,19 +65,26 @@
     "barco": {
       "fase": "atracado",
       "distancia": 0,
-      "comprimento": 524.4392964251467,
-      "recifePronto": false,
+      "comprimento": 680.3725640445855,
+      "prontos": [
+        true,
+        false
+      ],
+      "itinerario": [
+        "sua-ilha",
+        "recife"
+      ],
       "devolvendo": false,
       "visual": {
-        "x": -2.3658013605832893,
-        "y": 0.4594880562419482,
-        "z": 34.595687125879905
+        "x": -2.4316497174703575,
+        "y": 0.5264990885960917,
+        "z": 34.61000198240267
       },
       "pose": {
         "x": -2.4000000953674316,
         "y": 0,
         "z": 33.59999990463257,
-        "giro": -1.5707964611537353
+        "giro": -1.570796461153735
       }
     },
     "festa": {
@@ -84,11 +94,15 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [0],
-      "buzio": [0]
+      "estrelinha": [
+        0
+      ],
+      "buzio": [
+        0
+      ]
     },
     "qualidade": "leve",
-    "metaDeQuadros": 30,
+    "metaDeQuadros": 60,
     "dpr": 0.75,
     "amplitudeDoVento": 0,
     "ondas": {
@@ -179,26 +193,26 @@
       "sobCarga": 0
     },
     "fisica": {
-      "corposAtivos": 1,
-      "passoMs": 0.08666666668529312
+      "corposAtivos": 0,
+      "passoMs": 0.13499999046325684
     },
-    "chamadas": 188,
-    "triangulos": 403946,
-    "geometrias": 157,
-    "texturas": 7,
-    "programas": 18,
-    "quadrosPorSegundo": 2,
+    "chamadas": 196,
+    "triangulos": 397765,
+    "geometrias": 144,
+    "texturas": 8,
+    "programas": 30,
+    "quadrosPorSegundo": 3,
     "ilhasCompletas": 0,
     "posicao": {
-      "x": -9.199506973266601,
-      "y": 1.9635149059295667,
-      "z": -10.899754154205322
+      "x": -9.19998836517334,
+      "y": 1.9600999355316162,
+      "z": -10.900004386901855
     },
     "giro": 0,
     "camera": {
-      "x": -9.199509101524441,
-      "y": 7.178345371584166,
-      "z": -3.0015121614809708
+      "x": -9.19998836517334,
+      "y": 7.174929782835694,
+      "z": -3.0017613301333275
     },
     "liberadas": {
       "geometrias": 0,
@@ -206,7 +220,7 @@
       "texturas": 0
     },
     "esmaecidas": [],
-    "geometriasNaCena": 378,
+    "geometriasNaCena": 452,
     "tronco": {
       "x": 0,
       "y": 0,
@@ -220,18 +234,27 @@
     "patins": [],
     "borroes": [],
     "lumisDaVila": [],
+    "lumisDasIlhas": [],
     "lanternaNaMao": null,
     "lumiDaRotina": null,
     "descanso": null,
     "energia": 99.87999999999998,
     "avatar": {
-      "x": -9.199506973266601,
-      "y": 1.0035149059295667,
-      "z": -10.899754154205322,
+      "x": -9.19998836517334,
+      "y": 1.0000999355316162,
+      "z": -10.900004386901855,
       "deitado": 0
+    },
+    "petQueAcompanha": {
+      "x": -9.199999809265137,
+      "y": 1.0600999593734741,
+      "z": -12.5,
+      "giro": 0
     }
   },
   "sala": {
+    "fantasma": null,
+    "convidados": [],
     "finalDoFarol": {
       "etapa": "sala",
       "tempo": 0,
@@ -254,6 +277,7 @@
     "constelacoes": 0,
     "clima": {
       "escolhido": "sol",
+      "efetivo": "sol",
       "luz": 1,
       "cinza": 0,
       "gotas": false
@@ -294,19 +318,26 @@
     "barco": {
       "fase": "atracado",
       "distancia": 0,
-      "comprimento": 524.4392964251467,
-      "recifePronto": false,
+      "comprimento": 680.3725640445855,
+      "prontos": [
+        true,
+        false
+      ],
+      "itinerario": [
+        "sua-ilha",
+        "recife"
+      ],
       "devolvendo": false,
       "visual": {
-        "x": -2.4129405961872505,
-        "y": 0.5092556636182275,
-        "z": 34.61455851632817
+        "x": -2.3991469114837765,
+        "y": 0.49977845510130364,
+        "z": 34.61539744386328
       },
       "pose": {
         "x": -2.4000000953674316,
         "y": 0,
         "z": 33.59999990463257,
-        "giro": -1.5707964611537353
+        "giro": -1.570796461153735
       }
     },
     "festa": {
@@ -316,11 +347,15 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [0],
-      "buzio": [0]
+      "estrelinha": [
+        0
+      ],
+      "buzio": [
+        0
+      ]
     },
     "qualidade": "leve",
-    "metaDeQuadros": 30,
+    "metaDeQuadros": 60,
     "dpr": 0.75,
     "amplitudeDoVento": 0,
     "ondas": {
@@ -411,22 +446,22 @@
       "sobCarga": 0
     },
     "fisica": {
-      "corposAtivos": 1,
-      "passoMs": 0.1499999999650754
+      "corposAtivos": 2,
+      "passoMs": 0.15416666120290756
     },
-    "chamadas": 157,
-    "triangulos": 397262,
-    "geometrias": 209,
-    "texturas": 7,
-    "programas": 34,
-    "quadrosPorSegundo": 1,
+    "chamadas": 149,
+    "triangulos": 386330,
+    "geometrias": 188,
+    "texturas": 8,
+    "programas": 44,
+    "quadrosPorSegundo": 2,
     "ilhasCompletas": 0,
     "posicao": {
       "x": -12.90000057220459,
       "y": 40.96010208129883,
       "z": -12.199999809265137
     },
-    "giro": 0.6055446636049702,
+    "giro": 0.6055446636049701,
     "camera": {
       "x": -10,
       "y": 42.8,
@@ -438,7 +473,7 @@
       "texturas": 0
     },
     "esmaecidas": [],
-    "geometriasNaCena": 421,
+    "geometriasNaCena": 495,
     "tronco": {
       "x": 0,
       "y": 0,
@@ -452,6 +487,7 @@
     "patins": [],
     "borroes": [],
     "lumisDaVila": [],
+    "lumisDasIlhas": [],
     "lanternaNaMao": null,
     "lumiDaRotina": null,
     "descanso": null,
@@ -461,12 +497,20 @@
       "y": 40.00010208129883,
       "z": -12.199999809265137,
       "deitado": 0
+    },
+    "petQueAcompanha": {
+      "x": -11.535288238529432,
+      "y": 40.05904629516612,
+      "z": -12.310652503966958,
+      "giro": -1.4306012013548794
     }
   },
   "final": {
+    "fantasma": null,
+    "convidados": [],
     "finalDoFarol": {
       "etapa": "fim",
-      "tempo": 15.000799999999778,
+      "tempo": 15.085800000011885,
       "fachos": 6,
       "leu": true,
       "voltou": true
@@ -486,6 +530,7 @@
     "constelacoes": 0,
     "clima": {
       "escolhido": "sol",
+      "efetivo": "sol",
       "luz": 1,
       "cinza": 0,
       "gotas": false
@@ -526,19 +571,26 @@
     "barco": {
       "fase": "atracado",
       "distancia": 0,
-      "comprimento": 524.4392964251467,
-      "recifePronto": false,
+      "comprimento": 680.3725640445855,
+      "prontos": [
+        true,
+        false
+      ],
+      "itinerario": [
+        "sua-ilha",
+        "recife"
+      ],
       "devolvendo": false,
       "visual": {
-        "x": -2.4002910136496887,
-        "y": 0.5012488108034195,
-        "z": 34.61571962642114
+        "x": -2.386536360562003,
+        "y": 0.48128916202624,
+        "z": 34.609858816012625
       },
       "pose": {
         "x": -2.4000000953674316,
         "y": 0,
         "z": 33.59999990463257,
-        "giro": -1.5707964611537353
+        "giro": -1.570796461153735
       }
     },
     "festa": {
@@ -548,11 +600,15 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [0],
-      "buzio": [0]
+      "estrelinha": [
+        0
+      ],
+      "buzio": [
+        0
+      ]
     },
     "qualidade": "leve",
-    "metaDeQuadros": 30,
+    "metaDeQuadros": 60,
     "dpr": 0.75,
     "amplitudeDoVento": 0,
     "ondas": {
@@ -643,22 +699,22 @@
       "sobCarga": 0
     },
     "fisica": {
-      "corposAtivos": 1,
+      "corposAtivos": 2,
       "passoMs": 0
     },
-    "chamadas": 479,
-    "triangulos": 398436,
-    "geometrias": 427,
-    "texturas": 26,
-    "programas": 48,
-    "quadrosPorSegundo": 2,
+    "chamadas": 563,
+    "triangulos": 414862,
+    "geometrias": 484,
+    "texturas": 28,
+    "programas": 62,
+    "quadrosPorSegundo": 3,
     "ilhasCompletas": 0,
     "posicao": {
-      "x": -14.195357322692871,
-      "y": 40.96010208129883,
-      "z": -14.180453300476074
+      "x": -13.828055381774902,
+      "y": 40.96009871673584,
+      "z": -13.650461196899414
     },
-    "giro": 0.6055446636049702,
+    "giro": 0.6055446636049701,
     "camera": {
       "x": 45,
       "y": 180,
@@ -670,7 +726,7 @@
       "texturas": 0
     },
     "esmaecidas": [],
-    "geometriasNaCena": 427,
+    "geometriasNaCena": 501,
     "tronco": {
       "x": 0,
       "y": 0,
@@ -684,18 +740,27 @@
     "patins": [],
     "borroes": [],
     "lumisDaVila": [],
+    "lumisDasIlhas": [],
     "lanternaNaMao": null,
     "lumiDaRotina": null,
     "descanso": null,
-    "energia": 97.51999999999961,
+    "energia": 98.47999999999976,
     "avatar": {
-      "x": -14.195357322692871,
-      "y": 40.00010208129883,
-      "z": -14.180453300476074,
+      "x": -13.828055381774902,
+      "y": 40.00009871673584,
+      "z": -13.650461196899414,
       "deitado": 0
+    },
+    "petQueAcompanha": {
+      "x": -11.57553768157959,
+      "y": 40.06001663208008,
+      "z": -12.307388305664062,
+      "giro": -1.4897453275340675
     }
   },
   "volta": {
+    "fantasma": null,
+    "convidados": [],
     "finalDoFarol": {
       "etapa": "fora",
       "tempo": 0,
@@ -718,6 +783,7 @@
     "constelacoes": 0,
     "clima": {
       "escolhido": "sol",
+      "efetivo": "sol",
       "luz": 1,
       "cinza": 0,
       "gotas": false
@@ -758,19 +824,26 @@
     "barco": {
       "fase": "atracado",
       "distancia": 0,
-      "comprimento": 524.4392964251467,
-      "recifePronto": false,
+      "comprimento": 680.3725640445855,
+      "prontos": [
+        true,
+        false
+      ],
+      "itinerario": [
+        "sua-ilha",
+        "recife"
+      ],
       "devolvendo": false,
       "visual": {
-        "x": -2.434407776683693,
-        "y": 0.5387467705971317,
-        "z": 34.60385585784107
+        "x": -2.4346907630294305,
+        "y": 0.5379392852473437,
+        "z": 34.604759264563896
       },
       "pose": {
         "x": -2.4000000953674316,
         "y": 0,
         "z": 33.59999990463257,
-        "giro": -1.5707964611537353
+        "giro": -1.570796461153735
       }
     },
     "festa": {
@@ -780,11 +853,15 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [0],
-      "buzio": [0]
+      "estrelinha": [
+        0
+      ],
+      "buzio": [
+        0
+      ]
     },
     "qualidade": "leve",
-    "metaDeQuadros": 30,
+    "metaDeQuadros": 60,
     "dpr": 0.75,
     "amplitudeDoVento": 0,
     "ondas": {
@@ -875,26 +952,26 @@
       "sobCarga": 0
     },
     "fisica": {
-      "corposAtivos": 1,
-      "passoMs": 0.9433333333426466
+      "corposAtivos": 2,
+      "passoMs": 0.10666666626930237
     },
-    "chamadas": 167,
-    "triangulos": 327354,
-    "geometrias": 378,
-    "texturas": 26,
-    "programas": 46,
-    "quadrosPorSegundo": 1,
+    "chamadas": 355,
+    "triangulos": 443767,
+    "geometrias": 457,
+    "texturas": 54,
+    "programas": 64,
+    "quadrosPorSegundo": 2,
     "ilhasCompletas": 0,
     "posicao": {
-      "x": -9.19995811843872,
-      "y": 1.9635427360534665,
-      "z": -10.899978773117066
+      "x": -9.19998836517334,
+      "y": 1.9600999355316162,
+      "z": -10.900004386901855
     },
     "giro": 4.71238898038469,
     "camera": {
-      "x": -17.025299164099724,
-      "y": 7.178371930094066,
-      "z": -10.82708117549987
+      "x": -17.09823142203494,
+      "y": 7.174929782951836,
+      "z": -10.900004386749217
     },
     "liberadas": {
       "geometrias": 43,
@@ -902,7 +979,7 @@
       "texturas": 0
     },
     "esmaecidas": [],
-    "geometriasNaCena": 399,
+    "geometriasNaCena": 473,
     "tronco": {
       "x": 0,
       "y": 0,
@@ -916,18 +993,27 @@
     "patins": [],
     "borroes": [],
     "lumisDaVila": [],
+    "lumisDasIlhas": [],
     "lanternaNaMao": null,
     "lumiDaRotina": null,
     "descanso": null,
-    "energia": 97.3999999999996,
+    "energia": 98.35999999999974,
     "avatar": {
-      "x": -9.19995811843872,
-      "y": 1.0035427360534666,
-      "z": -10.899978773117066,
+      "x": -9.19998836517334,
+      "y": 1.0000999355316162,
+      "z": -10.900004386901855,
       "deitado": 0
+    },
+    "petQueAcompanha": {
+      "x": -10.344783935546875,
+      "y": 1.0601005554199219,
+      "z": -11.579308109283447,
+      "giro": 1.0207443795254878
     }
   },
   "memoriaAntes": {
+    "fantasma": null,
+    "convidados": [],
     "finalDoFarol": {
       "etapa": "fora",
       "tempo": 0,
@@ -950,6 +1036,7 @@
     "constelacoes": 0,
     "clima": {
       "escolhido": "sol",
+      "efetivo": "sol",
       "luz": 1,
       "cinza": 0,
       "gotas": false
@@ -990,19 +1077,26 @@
     "barco": {
       "fase": "atracado",
       "distancia": 0,
-      "comprimento": 524.4392964251467,
-      "recifePronto": false,
+      "comprimento": 680.3725640445855,
+      "prontos": [
+        true,
+        false
+      ],
+      "itinerario": [
+        "sua-ilha",
+        "recife"
+      ],
       "devolvendo": false,
       "visual": {
-        "x": -2.3872209027191365,
-        "y": 0.482254889649359,
-        "z": 34.61018581196551
+        "x": -2.365676633592183,
+        "y": 0.4665195796684117,
+        "z": 34.591233533387765
       },
       "pose": {
         "x": -2.4000000953674316,
         "y": 0,
         "z": 33.59999990463257,
-        "giro": -1.5707964611537353
+        "giro": -1.570796461153735
       }
     },
     "festa": {
@@ -1012,11 +1106,15 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [0],
-      "buzio": [0]
+      "estrelinha": [
+        0
+      ],
+      "buzio": [
+        0
+      ]
     },
     "qualidade": "leve",
-    "metaDeQuadros": 30,
+    "metaDeQuadros": 60,
     "dpr": 0.75,
     "amplitudeDoVento": 0,
     "ondas": {
@@ -1108,25 +1206,25 @@
     },
     "fisica": {
       "corposAtivos": 1,
-      "passoMs": 0
+      "passoMs": 0.12000000278155008
     },
-    "chamadas": 268,
-    "triangulos": 434759,
-    "geometrias": 399,
-    "texturas": 52,
-    "programas": 49,
-    "quadrosPorSegundo": 1,
+    "chamadas": 265,
+    "triangulos": 422954,
+    "geometrias": 457,
+    "texturas": 54,
+    "programas": 64,
+    "quadrosPorSegundo": 2,
     "ilhasCompletas": 0,
     "posicao": {
       "x": -7.099999904632568,
       "y": 1.9600999355316162,
       "z": -8
     },
-    "giro": -0.36717607084110404,
+    "giro": -0.3667589812602648,
     "camera": {
-      "x": -9.93528474205184,
-      "y": 7.17487548343298,
-      "z": -0.6283086457244204
+      "x": -9.932242286744483,
+      "y": 7.174924925104559,
+      "z": -0.6270422480349688
     },
     "liberadas": {
       "geometrias": 43,
@@ -1134,7 +1232,7 @@
       "texturas": 0
     },
     "esmaecidas": [],
-    "geometriasNaCena": 399,
+    "geometriasNaCena": 473,
     "tronco": {
       "x": 0,
       "y": 0,
@@ -1148,18 +1246,27 @@
     "patins": [],
     "borroes": [],
     "lumisDaVila": [],
+    "lumisDasIlhas": [],
     "lanternaNaMao": null,
     "lumiDaRotina": null,
     "descanso": null,
-    "energia": 97.27999999999957,
+    "energia": 98.19999999999972,
     "avatar": {
       "x": -7.099999904632568,
       "y": 1.0000999355316162,
       "z": -8,
       "deitado": 0
+    },
+    "petQueAcompanha": {
+      "x": -7.980611057281494,
+      "y": 1.0600999593734741,
+      "z": -8.971400680541992,
+      "giro": 0.7371427163365921
     }
   },
   "memoriaDepois": {
+    "fantasma": null,
+    "convidados": [],
     "finalDoFarol": {
       "etapa": "fora",
       "tempo": 0,
@@ -1182,6 +1289,7 @@
     "constelacoes": 0,
     "clima": {
       "escolhido": "sol",
+      "efetivo": "sol",
       "luz": 1,
       "cinza": 0,
       "gotas": false
@@ -1222,19 +1330,26 @@
     "barco": {
       "fase": "atracado",
       "distancia": 0,
-      "comprimento": 524.4392964251467,
-      "recifePronto": false,
+      "comprimento": 680.3725640445855,
+      "prontos": [
+        true,
+        false
+      ],
+      "itinerario": [
+        "sua-ilha",
+        "recife"
+      ],
       "devolvendo": false,
       "visual": {
-        "x": -2.368283953056847,
-        "y": 0.4596476772559043,
-        "z": 34.598694948940334
+        "x": -2.4348469060419102,
+        "y": 0.5360621141729017,
+        "z": 34.60595437061079
       },
       "pose": {
         "x": -2.4000000953674316,
         "y": 0,
         "z": 33.59999990463257,
-        "giro": -1.5707964611537353
+        "giro": -1.570796461153735
       }
     },
     "festa": {
@@ -1244,11 +1359,15 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [0],
-      "buzio": [0]
+      "estrelinha": [
+        0
+      ],
+      "buzio": [
+        0
+      ]
     },
     "qualidade": "leve",
-    "metaDeQuadros": 30,
+    "metaDeQuadros": 60,
     "dpr": 0.75,
     "amplitudeDoVento": 0,
     "ondas": {
@@ -1339,26 +1458,26 @@
       "sobCarga": 0
     },
     "fisica": {
-      "corposAtivos": 1,
-      "passoMs": 0.16999999995653828
+      "corposAtivos": 2,
+      "passoMs": 0.1499999980131785
     },
-    "chamadas": 157,
-    "triangulos": 327370,
-    "geometrias": 399,
-    "texturas": 52,
-    "programas": 49,
-    "quadrosPorSegundo": 1,
+    "chamadas": 339,
+    "triangulos": 440353,
+    "geometrias": 457,
+    "texturas": 54,
+    "programas": 83,
+    "quadrosPorSegundo": 2,
     "ilhasCompletas": 0,
     "posicao": {
-      "x": -9.199959350585937,
-      "y": 1.9635282583236697,
-      "z": -10.899979389190674
+      "x": -9.19998836517334,
+      "y": 1.9600999355316162,
+      "z": -10.900004386901855
     },
     "giro": 4.71238898038469,
     "camera": {
-      "x": -17.03938236944012,
-      "y": 7.1783571636559325,
-      "z": -10.841112250778805
+      "x": -17.098231403187157,
+      "y": 7.1749297829588174,
+      "z": -10.900004367427245
     },
     "liberadas": {
       "geometrias": 43,
@@ -1366,7 +1485,7 @@
       "texturas": 0
     },
     "esmaecidas": [],
-    "geometriasNaCena": 399,
+    "geometriasNaCena": 473,
     "tronco": {
       "x": 0,
       "y": 0,
@@ -1380,15 +1499,22 @@
     "patins": [],
     "borroes": [],
     "lumisDaVila": [],
+    "lumisDasIlhas": [],
     "lanternaNaMao": null,
     "lumiDaRotina": null,
     "descanso": null,
-    "energia": 97.03999999999954,
+    "energia": 98.0399999999997,
     "avatar": {
-      "x": -9.199959350585937,
-      "y": 1.0035282583236698,
-      "z": -10.899979389190674,
+      "x": -9.19998836517334,
+      "y": 1.0000999355316162,
+      "z": -10.900004386901855,
       "deitado": 0
+    },
+    "petQueAcompanha": {
+      "x": -10.510329328536985,
+      "y": 1.0601038253307329,
+      "z": -11.143326759338379,
+      "giro": -4.838548685261806
     }
   }
 }
