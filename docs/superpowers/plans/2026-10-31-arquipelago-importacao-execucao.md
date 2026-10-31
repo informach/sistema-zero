@@ -66,3 +66,32 @@ Arquivos: `docs/desafios-do-jogo/nuvens/projetos.ts`, manifestos gerados, teste 
 - Os 20 desafios já aplicados em cada ambiente foram exportados e comparados: nenhum conteúdo diferente ou publicação não solicitada. A continuação da importação ainda está pendente.
 
 As provas acima não substituem o CI deste commit, a implantação da imagem nova nem a prévia Python integrada no Admin. A conferência visual autenticada está indisponível porque a revisão automática bloqueou o Chrome por não conseguir confirmar a URL.
+
+## 5. Capacidade compatível com a qualificação
+
+Depois da implantação de `18c93aec8`, staging importou e exportou os 130 desafios.
+Em produção, duas conferências do Pico encerraram perto de 145 s: cinco objetivos
+passaram no gabarito, mas o inicial ficou sem resposta do executor. A segunda
+captura registrou preparação de aproximadamente 42 s, inspeção de 25,7 s e missão
+interrompida após 66,6 s pelo prazo do proprietário. Os recibos negativos foram
+preservados, sem aplicar o item nem alterar os limites.
+
+A qualificação Docker real usa `--cpus 1`; o contêiner publicado usava 0,5 vCPU.
+O ajuste propõe `standard-2` no executor geral para igualar essa capacidade. Os
+bytes da imagem e o perfil `814ce7b6…` permanecem iguais, pois as regras e o runner
+não mudam. Mais CPU não muda ordem das instruções, sementes, comparações nem os
+valores esperados. A prova será a mesma análise inicial/gabarito, com os mesmos
+limites e nenhum banco usado como teste.
+
+- [x] Reproduzir em teste a capacidade abaixo da qualificação.
+- [x] Alinhar a configuração dos dois ambientes e da prova SDK a 1 vCPU.
+- [x] Rodar tipos, testes, Biome e revisão do diff deste ajuste.
+- [ ] Implantar em staging e medir a mesma conferência real, mantendo o negativo anterior.
+- [ ] Aprovar o CI e promover a capacidade em produção.
+- [ ] Conferir e importar os quatro Python em produção; comparar os 130 itens exportados.
+
+Verificação local: tipos completos do runtime, perfil da imagem e Biome aprovados.
+A suíte em execução serial passou com 389 testes, 42 ignorados por dependerem de
+executores externos e 4.164 asserções. A primeira execução concorrente com a
+tipagem excedeu os 5 s em um controle de limpeza; o resultado foi preservado e
+nenhum prazo de teste foi alterado. A repetição serial concluiu sem falhas.
