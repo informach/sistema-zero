@@ -14,9 +14,12 @@ import { spawn } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { createServer } from 'node:net'
 import path from 'node:path'
-import { criarSalvamentoInicial, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
+import {
+  criarSalvamentoInicial,
+  ilhasDoAnel,
+  VESTUARIO_DAS_FESTAS,
+} from '@sistemazero/arquipelago-contracts'
 import { chromium } from 'playwright-core'
-import { VESTUARIO_DAS_FESTAS } from '@sistemazero/arquipelago-contracts'
 import { falaDasRoupasNovas, ROUPAS_DA_AMIZADE } from '../src/sistemas/roupas'
 
 const port = await new Promise<number>((resolve, reject) => {

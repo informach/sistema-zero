@@ -7,6 +7,7 @@ import {
   useEstado,
   useJogo,
 } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
 import type { Ponto } from '../sistemas/cipo'
 import { podeSubirOFarol } from '../sistemas/final-do-farol'
 import {
@@ -17,9 +18,8 @@ import {
 import { CORRENTE_DO_PICO, type CorrenteDeAr } from '../sistemas/planador'
 import { VentoQueSobe } from './corrente-de-ar'
 import { CORES_DO_VAGALUME, CorridaNaIlha } from './corrida-na-ilha'
-import { ALTURA_DA_TERRA, alturaDaIlha, FAROL } from './medidas'
-import { lojaDoFarol } from '../estado/farol'
 import { useInterativo } from './interativos'
+import { ALTURA_DA_TERRA, alturaDaIlha, FAROL } from './medidas'
 import { ComReserva, MODELOS, useModelo } from './modelos'
 
 /** As paradas da subida (`subida-farol-1` a `-6`, a última é a varanda) e os vagalumes. */
