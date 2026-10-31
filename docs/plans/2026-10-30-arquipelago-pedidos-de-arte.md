@@ -173,3 +173,40 @@ fora da torre, um caminho do pé até a varanda (`camera-varanda`), com:
 Aceite: um teste no molde de `tests/subida-ao-cume.test.ts` (pontos em cima de colisor, vãos
 dentro do pulo, cada trecho com o modo certo).
 
+## Pedidos da revisão da proposta v3 (30/10/2026, aprovados pela dona)
+
+Origem: `docs/arquipelago-levantamento-proposta-v3-2026-10-30.md`, seção 10. A especificação
+completa de cada item (arquivo, nós e âncoras, medidas, tetos de triângulos, o que preservar e o
+aceite) está lá, com os mesmos números; decisões em `docs/arquipelago-regras.md` §6.28. As regras
+gerais deste documento valem para todos (gerar pelos scripts de `arte/`, não renomear nada que
+existe, cores pelo nome do material, relatório e README do kit atualizados).
+
+Ordem de produção:
+
+1. **B3. Bichinho do quarto andando:** clipes `andar` e `correr` em `pet-cachorro.glb` e
+   `pet-gato.glb`, nas duas comunidades, sem mexer nos clipes de parado.
+2. **B1 e B2. Silhuetas das ilhas** (`mundo/ilhas-do-anel.glb`): uma malha por ilha, até 3 mil
+   triângulos, cor por vértice. Decisão B2: o Vale e as Nuvens ficam maiores e mais altos só na
+   silhueta (régua sugerida: +20%; Recife e Pico +10%); a ilha completa não muda.
+3. **B10. Barraca do minijogo** (`ilhas/vila-doce-props.glb`, `barraca-do-jogo`) e **brinquedo do
+   festival** (`ilhas/pico-props.glb`, `brinquedo-do-festival`), cada um com o nó `tela` e a âncora
+   `jogar`.
+4. **B7. Café e banca de feira para casa** (`arte/casa`, arquivo novo `casa-cafe.glb`, sete peças).
+5. **B4 e B5. Fósseis do Vale** (seis, nos props do Vale e em `arte/itens`) e **ícones do álbum**
+   (os seis fósseis e quatro pegadas).
+6. **B6. Jardim do céu** (terraço e seis canteiros em `ilhas/nuvens.glb`, três plantas em três
+   estágios em `arte/itens`) e **a ilha que floresce** (três níveis de florada e 24 âncoras em
+   `mundo/terreno.glb`).
+7. **B8. Variações da galeria:** `-retro` e `-moderno` para os nove objetos, com a mesma caixa e os
+   mesmos nós funcionais do clássico; uma das duas só com cores da paleta do Pinta.
+8. **B9. Decoração de festa para a casa** (`arte/casa`, arquivo novo `casa-festas.glb`).
+9. **B11. Segredos para os outros movimentos:** cinco lugares com a âncora `segredo-<movimento>`
+   (cipó, patins, mergulho, montaria, balão). Antes de produzir, esta sessão entrega as alturas e
+   distâncias de cada modo, tiradas de `sistemas/modos/`.
+
+Condicional: **B13. Atalhos pelos telhados da Vila**, só se a sessão de código mostrar que os
+telhados atuais não ligam a corrida por um caminho mais curto (o achado A41 vem antes).
+
+Não pedidos por decisão da dona: Lumis raros com modelo próprio (B12, primeiro como variação de cor
+no código), bolsa de carteiro do Nico (B15) e roupas de festa novas (B16).
+
