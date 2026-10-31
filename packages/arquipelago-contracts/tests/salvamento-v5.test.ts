@@ -94,5 +94,5 @@ test('V5 exige marca booleana e preserva entrega após serializar', () => {
     expect(migrarSalvamento({ ...s, presenteDosBichosEntregue: valor })).toBeNull()
   // Versão futura (ainda não existe) volta nula.
   expect(migrarSalvamento({ ...s, versao: 17 })).toBeNull()
-  expect(SALVAMENTO_MAX_BYTES).toBe(64 * 1024)
+  expect(SALVAMENTO_MAX_BYTES).toBe(80 * 1024)
 })

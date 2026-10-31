@@ -36,8 +36,10 @@ test('catálogo inteiro a 999 cabe junto da obra, amizades e rotinas no teto', (
   // móveis da casa, as seis vagas da galeria do Farol (30/10/2026) e o peixe com coco no lugar da
   // moqueca, com peixe, coco e limão (31/10/2026, A6): 64.975 bytes. V21 com o Nico morador
   // (A19): uns 311 bytes de folga. V22 (31/10/2026, lista B: fósseis, florada e jardim do céu): uns
-  // 192 bytes. Um campo novo pede compactar antes (os Lumis de luz, B12, não cabem sem isso).
-  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(150)
+  // 192 bytes. 01/11/2026: com a horta cheia, os bichos, a posição e as pontes, que o cenário
+  // deixava de fora, o pior caso foi a 67.588 bytes, acima dos 64 KB de antes. Com o teto em 80 KB,
+  // sobram uns 14,3 KB.
+  expect(SALVAMENTO_MAX_BYTES - Math.max(...tamanhos)).toBeGreaterThan(14_000)
 })
 
 for (const [quem, receitaId, cesta] of pares) {

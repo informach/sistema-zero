@@ -101,7 +101,7 @@ export function arquipelagoGateway(opts: {
         id: 'arquipelago-salvamento-put',
         methods: ['PUT'],
         pathPattern: '/arquipelago/salvamento',
-        // Salvamento de até 64 KB mais a revisão.
+        // Salvamento de até 80 KB mais a revisão.
         maxBodyBytes: 96 * 1024,
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },

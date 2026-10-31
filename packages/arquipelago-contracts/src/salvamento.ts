@@ -1136,8 +1136,13 @@ export const SalvamentoSchema = z.union([
 ])
 export type Salvamento = SalvamentoV22
 
-/** Teto do documento serializado (o serviço recusa acima disto). */
-export const SALVAMENTO_MAX_BYTES = 64 * 1024
+/**
+ * Teto do documento serializado (o serviço recusa acima disto). 80 KB desde 01/11/2026: o pior caso
+ * de verdade (horta com os 24 canteiros, bicho adotado, posição e pontes junto da obra e das
+ * rotinas no teto) já passava dos 64 KB de antes. O corpo da chamada vai até 96 KB (gateway, BFF e
+ * `MAX_REQUEST_BODY_BYTES` do serviço), então cabe com a revisão.
+ */
+export const SALVAMENTO_MAX_BYTES = 80 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {

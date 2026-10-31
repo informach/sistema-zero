@@ -2,7 +2,7 @@
 
 Situação por funcionalidade, com código, conteúdo, provas e implantação separados:
 [estado atual](arquipelago-estado-atual.md). Nesta base de 30/10/2026, o formato vigente é V19,
-o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
+o teto é 81.920 bytes UTF-8 (80 KB desde 01/11/2026; antes 65.536) e o limite semanal de moedas do jogo é 100. Seções datadas sobre
 versões anteriores registram a evolução; não substituem o contrato atual.
 
 ## Repertório antes de publicar desafios (C01a, 30/10/2026)
@@ -568,7 +568,8 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
     guardado (alimento → quantidade, no máximo 12 no total, `GELADEIRA_GUARDA`);
   - as rotinas dos Lumis (`rotinas`, desde a V10): uma por espécie, só das que ela já prendeu, com
     os cartões no formato de `arquipelago-contracts/src/rotinas.ts` e os tetos de §8.2.
-- **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
+- **Teto:** `SALVAMENTO_MAX_BYTES = 80 * 1024` (80 KB do documento em JSON, desde 01/11/2026: o pior
+  caso com a horta cheia, os bichos, a posição e as pontes já passava dos 64 KB de antes). O serviço recusa acima
   disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
   (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
 - **Mudar o formato:** crie a próxima versão e escreva a migração da anterior em
@@ -3424,7 +3425,7 @@ objeto já vale no projeto azul; a galeria só compra o visual. Catálogo em `ar
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |
-| Teto do salvamento | 64 KB | `arquipelago-contracts/src/salvamento.ts`, `SALVAMENTO_MAX_BYTES` |
+| Teto do salvamento | 80 KB (64 KB até 31/10/2026) | `arquipelago-contracts/src/salvamento.ts`, `SALVAMENTO_MAX_BYTES` |
 | Corpo das chamadas do jogo | 96 KB | `env.ts`, `MAX_REQUEST_BODY_BYTES` |
 | Intervalo do salvamento | 20 s | `arquipelago/src/sistemas/salvar.ts`, `intervaloMs` |
 | Salvamento inicial | tabela da seção 5 | `salvamento.ts`, `criarSalvamentoInicial` |

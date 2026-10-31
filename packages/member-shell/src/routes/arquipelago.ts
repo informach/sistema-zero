@@ -35,7 +35,7 @@ import {
 
 export type ArquipelagoRoutes = ReturnType<typeof createArquipelagoRoutes>
 
-/** Salvamento de até 64 KB mais a revisão; tempo e limite são minúsculos (os mesmos do gateway). */
+/** Salvamento de até 80 KB mais a revisão; tempo e limite são minúsculos (os mesmos do gateway). */
 const CORPO_DO_SALVAMENTO = 96 * 1024
 const CORPO_PEQUENO = 1024
 /** Conferir um desafio leva o projeto do Estúdio (o mesmo teto do serviço e do gateway). */
