@@ -70,6 +70,23 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'ilhas/pico.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vale-dos-dinos.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/nuvens.glb', juntos: TODOS_JUNTOS },
+  // As versões retro e moderna da galeria (31/10/2026; na banda e no museu cada nó é uma peça solta).
+  ...[
+    'geladeira',
+    'forno',
+    'aquario',
+    'lareira',
+    'banda',
+    'fliperama',
+    'museu',
+    'casinha',
+    'planta-interior',
+  ]
+    .flatMap((objeto) => [`${objeto}-retro`, `${objeto}-moderna`])
+    .map((id) => ({
+      caminho: `objetos/${id}.glb`,
+      juntos: /^(banda|museu)-/.test(id) ? CADA_NO_SOZINHO : TODOS_JUNTOS,
+    })),
 ]
 
 /**

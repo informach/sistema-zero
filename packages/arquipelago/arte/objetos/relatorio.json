@@ -55,6 +55,105 @@
     ],
     "tamanho": [1.53, 1.388, 0.68]
   },
+  "aquario-moderna": {
+    "grupo": "aquario",
+    "triangulos": 6338,
+    "kb": 294.7,
+    "nos": {
+      "aquario": 3514,
+      "peixe-1": 772,
+      "peixe-2": 572,
+      "peixe-3": 572,
+      "peixe-4": 572,
+      "bolha-1": 56,
+      "bolha-2": 56,
+      "bolha-3": 56,
+      "bolha-4": 56,
+      "bolha-5": 56,
+      "bolha-6": 56
+    },
+    "vazios": [],
+    "clipes": ["nadar"],
+    "materiais": [
+      "agua",
+      "areiaAquario",
+      "bauFaixa",
+      "bauMadeira",
+      "bauMadeiraClara",
+      "bauMiolo",
+      "bolha",
+      "luz",
+      "modernaGrafite",
+      "modernaMadeira",
+      "modernaVerde",
+      "olhoPeixe",
+      "pedra",
+      "pedraClara",
+      "pedrinha1",
+      "pedrinha2",
+      "pedrinha3",
+      "pedrinha4",
+      "peixeAmarelo",
+      "peixeAzul",
+      "peixeBranco",
+      "peixeLaranja",
+      "peixeRosa",
+      "peixeRoxo",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "planta",
+      "plantaClara",
+      "plantaEscura",
+      "tesouro",
+      "vidro"
+    ],
+    "tamanho": [1.53, 1.388, 0.671]
+  },
+  "aquario-retro": {
+    "grupo": "aquario",
+    "triangulos": 8862,
+    "kb": 411.9,
+    "nos": {
+      "aquario": 6038,
+      "peixe-1": 772,
+      "peixe-2": 572,
+      "peixe-3": 572,
+      "peixe-4": 572,
+      "bolha-1": 56,
+      "bolha-2": 56,
+      "bolha-3": 56,
+      "bolha-4": 56,
+      "bolha-5": 56,
+      "bolha-6": 56
+    },
+    "vazios": [],
+    "clipes": ["nadar"],
+    "materiais": [
+      "agua",
+      "bolha",
+      "docesAmarelo",
+      "docesAzul",
+      "docesBranco",
+      "docesCastanho",
+      "docesCeu",
+      "docesCreme",
+      "docesLavanda",
+      "docesLilas",
+      "docesMenta",
+      "docesNoite",
+      "docesPessego",
+      "docesRosa",
+      "docesRoxo",
+      "docesVerde",
+      "luz",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "vidro"
+    ],
+    "tamanho": [1.53, 1.388, 0.683]
+  },
   "banda": {
     "grupo": "banda",
     "triangulos": 9680,
@@ -108,6 +207,65 @@
     ],
     "tamanho": [2.854, 1.282, 1.56]
   },
+  "banda-moderna": {
+    "grupo": "banda",
+    "triangulos": 9432,
+    "kb": 355.8,
+    "nos": {
+      "bateria": 3200,
+      "teclado": 1836,
+      "violao": 1892,
+      "xilofone": 1796,
+      "microfone": 708
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "borracha",
+      "branco",
+      "corda",
+      "modernaAco",
+      "modernaAmarelo",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaMadeira",
+      "modernaMadeiraVeio",
+      "pratoBateria",
+      "tecido",
+      "teclaBranca",
+      "teclaPreta"
+    ],
+    "tamanho": [2.86, 1.27, 1.56]
+  },
+  "banda-retro": {
+    "grupo": "banda",
+    "triangulos": 9992,
+    "kb": 368.6,
+    "nos": {
+      "bateria": 3200,
+      "teclado": 2124,
+      "violao": 1892,
+      "xilofone": 1796,
+      "microfone": 980
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "docesAmarelo",
+      "docesBranco",
+      "docesCastanho",
+      "docesCeu",
+      "docesCreme",
+      "docesLilas",
+      "docesMenta",
+      "docesNoite",
+      "docesPessego",
+      "docesRosa",
+      "docesRoxo",
+      "docesVerde"
+    ],
+    "tamanho": [2.855, 1.283, 1.56]
+  },
   "casinha": {
     "grupo": "casinha",
     "triangulos": 4840,
@@ -142,6 +300,63 @@
     ],
     "tamanho": [1.786, 1.195, 1.7]
   },
+  "casinha-moderna": {
+    "grupo": "casinha",
+    "triangulos": 3336,
+    "kb": 122.3,
+    "nos": {
+      "casinha": 3128,
+      "placa": 164,
+      "texto": 44
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "agua",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaMadeira",
+      "modernaVermelho",
+      "osso2",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "placaFace",
+      "potinho",
+      "potinhoAzul",
+      "racao"
+    ],
+    "tamanho": [1.785, 1.194, 1.699]
+  },
+  "casinha-retro": {
+    "grupo": "casinha",
+    "triangulos": 5232,
+    "kb": 182.9,
+    "nos": {
+      "casinha": 5024,
+      "placa": 164,
+      "texto": 44
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "agua",
+      "docesAmarelo",
+      "docesAzul",
+      "docesBranco",
+      "docesCastanho",
+      "docesCeu",
+      "docesCreme",
+      "docesNoite",
+      "docesPessego",
+      "docesRosa",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "placaFace"
+    ],
+    "tamanho": [1.799, 1.197, 1.7]
+  },
   "fliperama": {
     "grupo": "fliperama",
     "triangulos": 3274,
@@ -167,6 +382,51 @@
       "metal",
       "metalEscuro",
       "plastico",
+      "tela"
+    ],
+    "tamanho": [0.84, 1.8, 0.805]
+  },
+  "fliperama-moderna": {
+    "grupo": "fliperama",
+    "triangulos": 1298,
+    "kb": 55.0,
+    "nos": {
+      "fliperama": 1296,
+      "tela": 2
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "luz",
+      "modernaAco",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaMadeira",
+      "modernaRoxo",
+      "tela"
+    ],
+    "tamanho": [0.84, 1.8, 0.805]
+  },
+  "fliperama-retro": {
+    "grupo": "fliperama",
+    "triangulos": 5306,
+    "kb": 229.2,
+    "nos": {
+      "fliperama": 5304,
+      "tela": 2
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "docesAmarelo",
+      "docesAzul",
+      "docesBranco",
+      "docesCeu",
+      "docesLilas",
+      "docesMenta",
+      "docesNoite",
+      "docesRosa",
+      "luz",
       "tela"
     ],
     "tamanho": [0.84, 1.8, 0.805]
@@ -203,6 +463,57 @@
       "vidroForno"
     ],
     "tamanho": [0.76, 1.06, 0.737]
+  },
+  "forno-moderna": {
+    "grupo": "forno",
+    "triangulos": 3444,
+    "kb": 125.2,
+    "nos": {
+      "forno": 3332,
+      "porta": 112
+    },
+    "vazios": [],
+    "clipes": ["abrir"],
+    "materiais": [
+      "bolo",
+      "boloTopo",
+      "luz",
+      "modernaAco",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaMadeira",
+      "modernaVermelho",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "vidroForno"
+    ],
+    "tamanho": [0.772, 1.06, 0.735]
+  },
+  "forno-retro": {
+    "grupo": "forno",
+    "triangulos": 9544,
+    "kb": 376.0,
+    "nos": {
+      "forno": 8192,
+      "porta": 1352
+    },
+    "vazios": [],
+    "clipes": ["abrir"],
+    "materiais": [
+      "docesAmarelo",
+      "docesBranco",
+      "docesCastanho",
+      "docesNoite",
+      "docesPessego",
+      "docesRosa",
+      "luz",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "vidroForno"
+    ],
+    "tamanho": [0.76, 1.06, 0.744]
   },
   "geladeira": {
     "grupo": "geladeira",
@@ -268,6 +579,90 @@
     "materiais": ["projetoAzul", "projetoAzulLinha", "projetor", "projetorLuz"],
     "tamanho": [0.96, 1.792, 0.87]
   },
+  "geladeira-moderna": {
+    "grupo": "geladeira",
+    "triangulos": 4682,
+    "kb": 229.5,
+    "nos": {
+      "geladeira": 3490,
+      "porta": 1192
+    },
+    "vazios": [],
+    "clipes": ["abrir"],
+    "materiais": [
+      "bolo",
+      "boloTopo",
+      "cabinho",
+      "cenoura",
+      "erva",
+      "folhaAlface",
+      "folhaAlfaceEscura",
+      "forminha",
+      "garrafa",
+      "gaveta",
+      "gelatina",
+      "leite",
+      "leiteAzul",
+      "loucaAzul",
+      "loucaBranca",
+      "loucaVerde",
+      "luz",
+      "maca",
+      "modernaAco",
+      "modernaAzul",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaMadeira",
+      "morango",
+      "ovo",
+      "papelSombra",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "pintaTopo",
+      "pipocaMiolo",
+      "prateleira",
+      "queijo",
+      "queijoFuro",
+      "suco",
+      "tampinha"
+    ],
+    "tamanho": [0.832, 1.751, 0.826]
+  },
+  "geladeira-retro": {
+    "grupo": "geladeira",
+    "triangulos": 8090,
+    "kb": 379.1,
+    "nos": {
+      "geladeira": 5522,
+      "porta": 2568
+    },
+    "vazios": [],
+    "clipes": ["abrir"],
+    "materiais": [
+      "docesAmarelo",
+      "docesAzul",
+      "docesBranco",
+      "docesCeu",
+      "docesCreme",
+      "docesMenta",
+      "docesNoite",
+      "docesPessego",
+      "docesRosa",
+      "docesRosaClaro",
+      "docesVerde",
+      "garrafa",
+      "gaveta",
+      "gelatina",
+      "luz",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "pintaTopo",
+      "prateleira"
+    ],
+    "tamanho": [0.82, 1.745, 0.834]
+  },
   "lareira": {
     "grupo": "lareira",
     "triangulos": 3882,
@@ -305,6 +700,69 @@
       "tinta",
       "vaso",
       "vela"
+    ],
+    "tamanho": [1.846, 1.474, 0.88]
+  },
+  "lareira-moderna": {
+    "grupo": "lareira",
+    "triangulos": 2268,
+    "kb": 100.7,
+    "nos": {
+      "lareira": 1644,
+      "fogo": 180,
+      "chama-1": 148,
+      "chama-2": 148,
+      "chama-3": 148
+    },
+    "vazios": [],
+    "clipes": ["crepitar"],
+    "materiais": [
+      "branco",
+      "brasa",
+      "chama",
+      "fogo",
+      "folha",
+      "folhaEscura",
+      "foto",
+      "lenha",
+      "loucaBranca",
+      "madeiraClara",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaLaranja",
+      "modernaMadeira",
+      "tinta",
+      "vela"
+    ],
+    "tamanho": [1.846, 1.474, 0.88]
+  },
+  "lareira-retro": {
+    "grupo": "lareira",
+    "triangulos": 5052,
+    "kb": 213.6,
+    "nos": {
+      "lareira": 4428,
+      "fogo": 180,
+      "chama-1": 148,
+      "chama-2": 148,
+      "chama-3": 148
+    },
+    "vazios": [],
+    "clipes": ["crepitar"],
+    "materiais": [
+      "brasa",
+      "chama",
+      "docesAmarelo",
+      "docesBranco",
+      "docesCastanho",
+      "docesCeu",
+      "docesCreme",
+      "docesLilas",
+      "docesMenta",
+      "docesNoite",
+      "docesRosaClaro",
+      "docesVerde",
+      "fogo"
     ],
     "tamanho": [1.846, 1.474, 0.88]
   },
@@ -348,6 +806,74 @@
     ],
     "tamanho": [2.63, 1.274, 1.485]
   },
+  "museu-moderna": {
+    "grupo": "museu",
+    "triangulos": 5294,
+    "kb": 163.5,
+    "nos": {
+      "redoma": 348,
+      "vitrine": 1788,
+      "cranio": 2336,
+      "pegada": 742,
+      "placa": 36,
+      "texto": 44
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "amonite",
+      "amoniteClaro",
+      "dente",
+      "fuligem",
+      "modernaBranco",
+      "modernaGrafite",
+      "modernaMadeira",
+      "modernaPetroleo",
+      "osso",
+      "ossoSombra",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "placaFace",
+      "rocha",
+      "rochaEscura",
+      "vidro"
+    ],
+    "tamanho": [2.62, 1.27, 1.487]
+  },
+  "museu-retro": {
+    "grupo": "museu",
+    "triangulos": 9054,
+    "kb": 303.8,
+    "nos": {
+      "redoma": 1824,
+      "vitrine": 3212,
+      "cranio": 2608,
+      "pegada": 934,
+      "placa": 432,
+      "texto": 44
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "docesAmarelo",
+      "docesAzul",
+      "docesBranco",
+      "docesCastanho",
+      "docesCreme",
+      "docesLavanda",
+      "docesNoite",
+      "docesPessego",
+      "docesRosa",
+      "docesRoxo",
+      "pintaFrente",
+      "pintaLadoDir",
+      "pintaLadoEsq",
+      "placaFace",
+      "vidro"
+    ],
+    "tamanho": [2.63, 1.274, 1.485]
+  },
   "planta-interior": {
     "grupo": "planta",
     "triangulos": 4536,
@@ -371,6 +897,54 @@
       "vasoCeramica",
       "vasoFaixa",
       "vasoPrato"
+    ],
+    "tamanho": [0.784, 1.279, 0.876]
+  },
+  "planta-interior-moderna": {
+    "grupo": "planta",
+    "triangulos": 4092,
+    "kb": 108.3,
+    "nos": {
+      "vaso": 396,
+      "terra": 336,
+      "folhas": 3360
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "folha",
+      "folhaEscura",
+      "folhaNova",
+      "modernaMadeira",
+      "modernaRosa",
+      "nervuraFolha",
+      "pedrinhaVaso",
+      "pintaFrente",
+      "talo",
+      "terraVaso"
+    ],
+    "tamanho": [0.784, 1.279, 0.876]
+  },
+  "planta-interior-retro": {
+    "grupo": "planta",
+    "triangulos": 5168,
+    "kb": 147.7,
+    "nos": {
+      "vaso": 1472,
+      "terra": 336,
+      "folhas": 3360
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "docesAmarelo",
+      "docesBranco",
+      "docesCastanho",
+      "docesCreme",
+      "docesMenta",
+      "docesRosa",
+      "docesVerde",
+      "pintaFrente"
     ],
     "tamanho": [0.784, 1.279, 0.876]
   }
