@@ -113,10 +113,46 @@ export const ORDEM_DAS_PEDRAS_DO_VULCAO = [1, 2, 3, 4, 5, 6, 7] as const
 export const RAIO_DA_PEDRA_DO_VULCAO = 1.6
 /** A largada fica isto antes da primeira pedra, na direção contrária à da segunda. */
 export const LARGADA_ANTES_DA_PEDRA = 2.2
+/**
+ * A primeira pedra fica ao lado da Jade: a largada gira em volta dela até ficar a pelo menos isto
+ * da moradora. Quem para a 1,6 m da Jade para conversar fica mais perto dela que do "Começar".
+ */
+export const LARGADA_LONGE_DA_MORADORA = 3.2
+
+/**
+ * A largada atrás da primeira pedra: o menor giro (de 15 em 15 graus, até 90) a partir da direção
+ * contrária à segunda pedra que fica livre e longe da moradora; sem nenhum, o livre mais longe.
+ */
+function largadaDasPedras(
+  primeira: Ponto,
+  segunda: Ponto,
+  colisores: readonly ColisorDaIlha[],
+  moradora?: { x: number; z: number },
+): Ponto {
+  const base = Math.atan2(primeira.x - segunda.x, primeira.z - segunda.z)
+  const em = (giro: number): Ponto => ({
+    x: primeira.x + Math.sin(base + giro) * LARGADA_ANTES_DA_PEDRA,
+    y: primeira.y,
+    z: primeira.z + Math.cos(base + giro) * LARGADA_ANTES_DA_PEDRA,
+  })
+  if (!moradora) return em(0)
+  const longe = (p: Ponto) => Math.hypot(p.x - moradora.x, p.z - moradora.z)
+  let melhor: Ponto | null = null
+  for (let passo = 0; passo <= 6; passo++)
+    for (const lado of passo === 0 ? [0] : [-1, 1]) {
+      const p = em((lado * passo * Math.PI) / 12)
+      if (!livre(colisores, p.x, p.z)) continue
+      if (longe(p) >= LARGADA_LONGE_DA_MORADORA) return p
+      if (!melhor || longe(p) > longe(melhor)) melhor = p
+    }
+  return melhor ?? em(0)
+}
 
 export function percursoDasPedrasDoVulcao(
   colisores: readonly ColisorDaIlha[],
   raioDaIlha: number,
+  /** Onde a Jade fica, no mesmo referencial dos colisores. */
+  moradora?: { x: number; z: number },
 ): PontosDoPercurso | null {
   const pedras = ORDEM_DAS_PEDRAS_DO_VULCAO.map((n) =>
     cilindro(colisores, `col-cil-pedra-vulcao-${n}`),
@@ -129,13 +165,7 @@ export function percursoDasPedrasDoVulcao(
     return { x, y: y - c.meiaAltura, z }
   })
   const primeira = chao[0] as Ponto
-  const segunda = chao[1] as Ponto
-  const d = Math.hypot(primeira.x - segunda.x, primeira.z - segunda.z) || 1
-  const largada = {
-    x: primeira.x + ((primeira.x - segunda.x) / d) * LARGADA_ANTES_DA_PEDRA,
-    y: primeira.y,
-    z: primeira.z + ((primeira.z - segunda.z) / d) * LARGADA_ANTES_DA_PEDRA,
-  }
+  const largada = largadaDasPedras(primeira, chao[1] as Ponto, colisores, moradora)
   const deques: DequeDoPercurso[] = chao.slice(0, -1).map((p, i) => ({
     ...p,
     raio: RAIO_DA_PEDRA_DO_VULCAO,

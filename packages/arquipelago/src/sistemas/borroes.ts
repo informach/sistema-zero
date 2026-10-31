@@ -243,6 +243,22 @@ export function criarBorrao(casa: { x: number; z: number }): EstadoDoBorrao {
   }
 }
 
+/**
+ * O borrão desbota o chão em volta dele (a proposta: "borrões de névoa saem para desbotar o que
+ * está do lado de fora", §6.28 A38): uma mancha cinza que cresce enquanto ele fica solto e some
+ * quando ele é preso e vira Lumi. Nada fica desbotado: a mancha não é guardada.
+ */
+export const MANCHA_DO_BORRAO = { raio: 2.4, opacidade: 0.42, cresceEm: 4 } as const
+
+/** A opacidade da mancha agora (0 a `MANCHA_DO_BORRAO.opacidade`). */
+export function opacidadeDaMancha(b: Pick<EstadoDoBorrao, 'fase' | 'tempo'>): number {
+  const { opacidade, cresceEm } = MANCHA_DO_BORRAO
+  if (b.fase === 'solto') return opacidade * Math.min(1, b.tempo / cresceEm)
+  if (b.fase === 'preso') return opacidade * (1 - 0.5 * Math.min(1, b.tempo / PRESO_POR))
+  if (b.fase === 'virando') return opacidade * 0.5 * (1 - Math.min(1, b.tempo / VIRANDO_POR))
+  return 0
+}
+
 /** Dá para prender agora: solto, com a lanterna acesa e perto. */
 export function podePrender(b: EstadoDoBorrao, px: number, pz: number, lanterna: boolean): boolean {
   return b.fase === 'solto' && lanterna && (b.x - px) ** 2 + (b.z - pz) ** 2 <= PRENDE_A ** 2

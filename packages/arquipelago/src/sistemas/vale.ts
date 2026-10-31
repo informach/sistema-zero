@@ -8,8 +8,6 @@ import type { PontoNoChao } from './caminho'
 export const EXPLORACAO_DO_VALE = {
   /** Mesmo alcance de conversa da Jade. */
   alcance: 2.2,
-  /** Dar espaço depois de observar, sem contar tempo. */
-  afastamento: 3,
   /** Folga para seguir os três pontos do rastro sem andar sobre cada marca. */
   pertoDaPegada: 1.3,
   /** Grade de 12,5 cm para a passagem estreita entre cerca e costelas. */
@@ -67,7 +65,4 @@ export function seguirPegadasDoVale(
     Math.hypot(p.x - alvo.x, p.z - alvo.z) <= EXPLORACAO_DO_VALE.pertoDaPegada
     ? indice + 1
     : indice
-}
-export function deuEspacoAoNinho(ninho: PontoNoChao, p: PontoNoChao, podeAgir: boolean): boolean {
-  return podeAgir && Math.hypot(p.x - ninho.x, p.z - ninho.z) >= EXPLORACAO_DO_VALE.afastamento
 }

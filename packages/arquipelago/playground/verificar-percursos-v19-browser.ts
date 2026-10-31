@@ -21,6 +21,7 @@ import {
   percursoDasPedrasDoVulcao,
   percursoDosCorais,
 } from '../src/mundo/percursos-das-ilhas'
+import { lugarDaJade } from '../src/mundo/vale'
 import type { PontosDoPercurso } from '../src/sistemas/percurso'
 
 const port = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4531)
@@ -44,14 +45,16 @@ async function cena(...partes: string[]) {
 async function pontosDaIlha(
   id: string,
   arquivo: string,
-  montar: typeof percursoDosCorais,
+  montar: typeof percursoDasPedrasDoVulcao,
 ): Promise<PontosDoPercurso> {
   const anel = ilhasEmVolta().find((i) => i.ilha.id === id)
   if (!anel) throw new Error(`Sem ${id} no anel.`)
   const raiz = await cena('ilhas', arquivo)
   raiz.rotation.y = giroDaIlha(anel.ilha)
   raiz.updateMatrixWorld(true)
-  const p = montar(lerColisores(raiz), raioMaximoDaIlha(anel.ilha))
+  // A largada das pedras do Vale desvia da Jade, como no jogo (o mesmo referencial girado).
+  const jade = lugarDaJade(raiz, { x: 0, y: 0, z: 0 }, giroDaIlha(anel.ilha))
+  const p = montar(lerColisores(raiz), raioMaximoDaIlha(anel.ilha), jade ?? undefined)
   if (!p) throw new Error(`Sem os pontos do percurso de ${id}.`)
   return deslocar(p, { x: anel.centro.x, y: 0, z: anel.centro.z })
 }

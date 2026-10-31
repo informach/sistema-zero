@@ -61,8 +61,8 @@ export function colecaoDoVale(s: Salvamento) {
       nome: `Ninho ${i + 1}`,
       feito: s.vale.ninhos.includes(id),
       texto: s.vale.ninhos.includes(id)
-        ? 'Você observou os ovos e deu espaço ao ninho.'
-        : 'Observe os ovos sem tocar. Depois, dê alguns passos para longe.',
+        ? 'Você protegeu os ovos da cinza do vulcão.'
+        : 'Proteja os ovos da cinza do vulcão: fique perto com a lanterna acesa.',
     })),
     filhoteNaColecao(s),
   ]
