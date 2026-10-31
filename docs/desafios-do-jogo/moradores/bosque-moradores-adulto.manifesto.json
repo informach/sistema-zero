@@ -1,0 +1,1399 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "capi-a-lanterna-da-cabana-adulto",
+      "publico": "adulto",
+      "ilha": "bosque",
+      "tipo": "pedido-de-morador",
+      "quadro": null,
+      "ordem": 80,
+      "publicar": true,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "A lanterna da cabana",
+        "enunciado": "A lanterna da Capi alterna no mesmo comando. No evento da barra de espaço, use uma decisão sobre acesa: verdadeira passa a falsa, falsa passa a verdadeira.",
+        "dicas": [
+          "O evento da barra de espaço já existe; falta a decisão dentro dele.",
+          "Cada ramo da decisão atribui um valor à variável acesa."
+        ],
+        "projetoInicial": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "pedido-capi-a-lanterna-da-cabana",
+          "name": "A lanterna da cabana",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A lanterna da cabana</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#1d2b4f\");\n  SZGame2D.enableClassicControls(\"always\");\n  let acesa = false;\n  const placa = SZGame2D.createSprite({ x: 296, y: 200, w: 48, h: 48, image: \"apagada\" });\n  const luz = SZGame2D.createSprite({ x: 296, y: 200, w: 48, h: 48, image: \"acesa\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n\n  }, \"pedido-capi_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"pedido-capi_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawLabel(ctx, \"A lanterna da cabana\", 20, 35, \"#fff3ce\", 18, \"left\");\n    SZGame2D.drawLabel(ctx, \"A barra de espaço liga e desliga.\", 20, 68, \"#fff3ce\", 18, \"left\");\n    if (acesa) {\n      SZGame2D.drawSprite(ctx, luz);\n      SZGame2D.drawLabel(ctx, \"A lanterna da Capi acendeu.\", 20, 120, \"#fff3ce\", 18, \"left\");\n    } else {\n      SZGame2D.drawSprite(ctx, placa);\n    }\n  }, \"pedido-capi_loops_0\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "pedido-capi-apagada",
+              "name": "apagada",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cmVjdCB4PSI2IiB5PSI4IiB3aWR0aD0iMzYiIGhlaWdodD0iMjIiIHJ4PSIzIiBmaWxsPSIjNmI1YTQ1IiBzdHJva2U9IiMzZDMyMjYiIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjIxIiB5PSIzMCIgd2lkdGg9IjYiIGhlaWdodD0iMTQiIGZpbGw9IiMzZDMyMjYiLz48cGF0aCBkPSJNMTIgMTloMjQiIHN0cm9rZT0iIzRhM2YzMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
+            },
+            {
+              "id": "pedido-capi-acesa",
+              "name": "acesa",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjE5IiByPSIyMCIgZmlsbD0iI2ZmZTI3YSIgb3BhY2l0eT0iMC4zNSIvPjxyZWN0IHg9IjYiIHk9IjgiIHdpZHRoPSIzNiIgaGVpZ2h0PSIyMiIgcng9IjMiIGZpbGw9IiNmZmQzNGQiIHN0cm9rZT0iI2I4ODYyYiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHJlY3QgeD0iMjEiIHk9IjMwIiB3aWR0aD0iNiIgaGVpZ2h0PSIxNCIgZmlsbD0iIzNkMzIyNiIvPjxwYXRoIGQ9Ik0xMiAxOWgyNCIgc3Ryb2tlPSIjZmZmN2QxIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 480,
+                  "bg": "#1d2b4f",
+                  "__id": "pedido-capi_start_0"
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "always",
+                  "__id": "pedido-capi_start_1"
+                },
+                {
+                  "type": "var",
+                  "name": "acesa",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "pedido-capi_start_2_value"
+                  },
+                  "__id": "pedido-capi_start_2"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "placa",
+                  "image": "apagada",
+                  "x": 296,
+                  "y": 200,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "pedido-capi_start_3"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "luz",
+                  "image": "acesa",
+                  "x": 296,
+                  "y": 200,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "pedido-capi_start_4"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onKey",
+                  "key": "Space",
+                  "body": [],
+                  "__id": "pedido-capi_events_0"
+                },
+                {
+                  "type": "g2d:onKey",
+                  "key": "Enter",
+                  "body": [],
+                  "__id": "pedido-capi_events_1"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "pedido-capi_loops_0_body_0"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": "A lanterna da cabana",
+                      "x": 20,
+                      "y": 35,
+                      "size": 18,
+                      "color": "#fff3ce",
+                      "align": "left",
+                      "__id": "pedido-capi_loops_0_body_1"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": "A barra de espaço liga e desliga.",
+                      "x": 20,
+                      "y": 68,
+                      "size": 18,
+                      "color": "#fff3ce",
+                      "align": "left",
+                      "__id": "pedido-capi_loops_0_body_2"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "acesa",
+                        "__id": "pedido-capi_loops_0_body_3_cond"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:drawSprite",
+                          "ctxVar": "ctx",
+                          "spriteVar": "luz",
+                          "__id": "pedido-capi_loops_0_body_3_then_0"
+                        },
+                        {
+                          "type": "g2d:drawLabel",
+                          "ctxVar": "ctx",
+                          "text": "A lanterna da Capi acendeu.",
+                          "x": 20,
+                          "y": 120,
+                          "size": 18,
+                          "color": "#fff3ce",
+                          "align": "left",
+                          "__id": "pedido-capi_loops_0_body_3_then_1"
+                        }
+                      ],
+                      "else": [
+                        {
+                          "type": "g2d:drawSprite",
+                          "ctxVar": "ctx",
+                          "spriteVar": "placa",
+                          "__id": "pedido-capi_loops_0_body_3_else_0"
+                        }
+                      ],
+                      "__id": "pedido-capi_loops_0_body_3"
+                    }
+                  ],
+                  "__id": "pedido-capi_loops_0"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "id": "pedido-capi_start_0",
+                        "fields": {
+                          "BG": "#1d2b4f"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_enable_classic_controls",
+                            "id": "pedido-capi_start_1",
+                            "fields": {
+                              "MODE": "always"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_js_var_create",
+                                "id": "pedido-capi_start_2",
+                                "fields": {
+                                  "NAME": "acesa"
+                                },
+                                "inputs": {
+                                  "VALUE": {
+                                    "block": {
+                                      "type": "sz_val_bool",
+                                      "fields": {
+                                        "VALUE": "false"
+                                      },
+                                      "id": "pedido-capi_start_2_value"
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "id": "pedido-capi_start_3",
+                                    "fields": {
+                                      "NAME": "placa",
+                                      "IMAGE": "apagada"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 296
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 200
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 48
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 48
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "id": "pedido-capi_start_4",
+                                        "fields": {
+                                          "NAME": "luz",
+                                          "IMAGE": "acesa"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 296
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 200
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 48
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 48
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "id": "pedido-capi_events_0",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_on_key",
+                            "id": "pedido-capi_events_1",
+                            "fields": {
+                              "KEY": "Enter"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "id": "pedido-capi_loops_0",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "id": "pedido-capi_loops_0_body_0",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_label",
+                                  "id": "pedido-capi_loops_0_body_1",
+                                  "fields": {
+                                    "COLOR": "#fff3ce",
+                                    "ALIGN": "left"
+                                  },
+                                  "inputs": {
+                                    "TEXT": {
+                                      "shadow": {
+                                        "type": "sz_val_text",
+                                        "fields": {
+                                          "TEXT": "A lanterna da cabana"
+                                        }
+                                      }
+                                    },
+                                    "X": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 20
+                                        }
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 35
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 18
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_draw_label",
+                                      "id": "pedido-capi_loops_0_body_2",
+                                      "fields": {
+                                        "COLOR": "#fff3ce",
+                                        "ALIGN": "left"
+                                      },
+                                      "inputs": {
+                                        "TEXT": {
+                                          "shadow": {
+                                            "type": "sz_val_text",
+                                            "fields": {
+                                              "TEXT": "A barra de espaço liga e desliga."
+                                            }
+                                          }
+                                        },
+                                        "X": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 20
+                                            }
+                                          }
+                                        },
+                                        "Y": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 68
+                                            }
+                                          }
+                                        },
+                                        "SIZE": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 18
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_js_if_else",
+                                          "id": "pedido-capi_loops_0_body_3",
+                                          "inputs": {
+                                            "THEN": {
+                                              "block": {
+                                                "type": "sz_g2d_draw_sprite",
+                                                "id": "pedido-capi_loops_0_body_3_then_0",
+                                                "fields": {
+                                                  "SPRITE": "luz"
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_draw_label",
+                                                    "id": "pedido-capi_loops_0_body_3_then_1",
+                                                    "fields": {
+                                                      "COLOR": "#fff3ce",
+                                                      "ALIGN": "left"
+                                                    },
+                                                    "inputs": {
+                                                      "TEXT": {
+                                                        "shadow": {
+                                                          "type": "sz_val_text",
+                                                          "fields": {
+                                                            "TEXT": "A lanterna da Capi acendeu."
+                                                          }
+                                                        }
+                                                      },
+                                                      "X": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 20
+                                                          }
+                                                        }
+                                                      },
+                                                      "Y": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 120
+                                                          }
+                                                        }
+                                                      },
+                                                      "SIZE": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 18
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "ELSE": {
+                                              "block": {
+                                                "type": "sz_g2d_draw_sprite",
+                                                "id": "pedido-capi_loops_0_body_3_else_0",
+                                                "fields": {
+                                                  "SPRITE": "placa"
+                                                }
+                                              }
+                                            },
+                                            "COND": {
+                                              "block": {
+                                                "type": "sz_val_variable",
+                                                "fields": {
+                                                  "NAME": "acesa"
+                                                },
+                                                "id": "pedido-capi_loops_0_body_3_cond"
+                                              }
+                                            }
+                                          },
+                                          "extraState": {
+                                            "hasElse": true
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ],
+          "programmingLanguage": "javascript"
+        },
+        "gabarito": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "pedido-capi-a-lanterna-da-cabana",
+          "name": "A lanterna da cabana",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A lanterna da cabana</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#1d2b4f\");\n  SZGame2D.enableClassicControls(\"always\");\n  let acesa = false;\n  const placa = SZGame2D.createSprite({ x: 296, y: 200, w: 48, h: 48, image: \"apagada\" });\n  const luz = SZGame2D.createSprite({ x: 296, y: 200, w: 48, h: 48, image: \"acesa\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (acesa) {\n      acesa = false;\n    } else {\n      acesa = true;\n    }\n  }, \"pedido-capi_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    acesa = false;\n  }, \"pedido-capi_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawLabel(ctx, \"A lanterna da cabana\", 20, 35, \"#fff3ce\", 18, \"left\");\n    SZGame2D.drawLabel(ctx, \"A barra de espaço liga e desliga.\", 20, 68, \"#fff3ce\", 18, \"left\");\n    if (acesa) {\n      SZGame2D.drawSprite(ctx, luz);\n      SZGame2D.drawLabel(ctx, \"A lanterna da Capi acendeu.\", 20, 120, \"#fff3ce\", 18, \"left\");\n    } else {\n      SZGame2D.drawSprite(ctx, placa);\n    }\n  }, \"pedido-capi_loops_0\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "pedido-capi-apagada",
+              "name": "apagada",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cmVjdCB4PSI2IiB5PSI4IiB3aWR0aD0iMzYiIGhlaWdodD0iMjIiIHJ4PSIzIiBmaWxsPSIjNmI1YTQ1IiBzdHJva2U9IiMzZDMyMjYiIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjIxIiB5PSIzMCIgd2lkdGg9IjYiIGhlaWdodD0iMTQiIGZpbGw9IiMzZDMyMjYiLz48cGF0aCBkPSJNMTIgMTloMjQiIHN0cm9rZT0iIzRhM2YzMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
+            },
+            {
+              "id": "pedido-capi-acesa",
+              "name": "acesa",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjE5IiByPSIyMCIgZmlsbD0iI2ZmZTI3YSIgb3BhY2l0eT0iMC4zNSIvPjxyZWN0IHg9IjYiIHk9IjgiIHdpZHRoPSIzNiIgaGVpZ2h0PSIyMiIgcng9IjMiIGZpbGw9IiNmZmQzNGQiIHN0cm9rZT0iI2I4ODYyYiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHJlY3QgeD0iMjEiIHk9IjMwIiB3aWR0aD0iNiIgaGVpZ2h0PSIxNCIgZmlsbD0iIzNkMzIyNiIvPjxwYXRoIGQ9Ik0xMiAxOWgyNCIgc3Ryb2tlPSIjZmZmN2QxIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 480,
+                  "bg": "#1d2b4f",
+                  "__id": "pedido-capi_start_0"
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "always",
+                  "__id": "pedido-capi_start_1"
+                },
+                {
+                  "type": "var",
+                  "name": "acesa",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "pedido-capi_start_2_value"
+                  },
+                  "__id": "pedido-capi_start_2"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "placa",
+                  "image": "apagada",
+                  "x": 296,
+                  "y": 200,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "pedido-capi_start_3"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "luz",
+                  "image": "acesa",
+                  "x": 296,
+                  "y": 200,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "pedido-capi_start_4"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onKey",
+                  "key": "Space",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "acesa",
+                        "__id": "pedido-capi_events_0_body_0_cond"
+                      },
+                      "then": [
+                        {
+                          "type": "assign",
+                          "name": "acesa",
+                          "value": {
+                            "type": "bool",
+                            "value": false,
+                            "__id": "pedido-capi_events_0_body_0_then_0_value"
+                          },
+                          "__id": "pedido-capi_events_0_body_0_then_0"
+                        }
+                      ],
+                      "else": [
+                        {
+                          "type": "assign",
+                          "name": "acesa",
+                          "value": {
+                            "type": "bool",
+                            "value": true,
+                            "__id": "pedido-capi_events_0_body_0_else_0_value"
+                          },
+                          "__id": "pedido-capi_events_0_body_0_else_0"
+                        }
+                      ],
+                      "__id": "pedido-capi_events_0_body_0"
+                    }
+                  ],
+                  "__id": "pedido-capi_events_0"
+                },
+                {
+                  "type": "g2d:onKey",
+                  "key": "Enter",
+                  "body": [
+                    {
+                      "type": "assign",
+                      "name": "acesa",
+                      "value": {
+                        "type": "bool",
+                        "value": false,
+                        "__id": "pedido-capi_events_1_body_0_value"
+                      },
+                      "__id": "pedido-capi_events_1_body_0"
+                    }
+                  ],
+                  "__id": "pedido-capi_events_1"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "pedido-capi_loops_0_body_0"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": "A lanterna da cabana",
+                      "x": 20,
+                      "y": 35,
+                      "size": 18,
+                      "color": "#fff3ce",
+                      "align": "left",
+                      "__id": "pedido-capi_loops_0_body_1"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": "A barra de espaço liga e desliga.",
+                      "x": 20,
+                      "y": 68,
+                      "size": 18,
+                      "color": "#fff3ce",
+                      "align": "left",
+                      "__id": "pedido-capi_loops_0_body_2"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "acesa",
+                        "__id": "pedido-capi_loops_0_body_3_cond"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:drawSprite",
+                          "ctxVar": "ctx",
+                          "spriteVar": "luz",
+                          "__id": "pedido-capi_loops_0_body_3_then_0"
+                        },
+                        {
+                          "type": "g2d:drawLabel",
+                          "ctxVar": "ctx",
+                          "text": "A lanterna da Capi acendeu.",
+                          "x": 20,
+                          "y": 120,
+                          "size": 18,
+                          "color": "#fff3ce",
+                          "align": "left",
+                          "__id": "pedido-capi_loops_0_body_3_then_1"
+                        }
+                      ],
+                      "else": [
+                        {
+                          "type": "g2d:drawSprite",
+                          "ctxVar": "ctx",
+                          "spriteVar": "placa",
+                          "__id": "pedido-capi_loops_0_body_3_else_0"
+                        }
+                      ],
+                      "__id": "pedido-capi_loops_0_body_3"
+                    }
+                  ],
+                  "__id": "pedido-capi_loops_0"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "id": "pedido-capi_start_0",
+                        "fields": {
+                          "BG": "#1d2b4f"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_enable_classic_controls",
+                            "id": "pedido-capi_start_1",
+                            "fields": {
+                              "MODE": "always"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_js_var_create",
+                                "id": "pedido-capi_start_2",
+                                "fields": {
+                                  "NAME": "acesa"
+                                },
+                                "inputs": {
+                                  "VALUE": {
+                                    "block": {
+                                      "type": "sz_val_bool",
+                                      "fields": {
+                                        "VALUE": "false"
+                                      },
+                                      "id": "pedido-capi_start_2_value"
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "id": "pedido-capi_start_3",
+                                    "fields": {
+                                      "NAME": "placa",
+                                      "IMAGE": "apagada"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 296
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 200
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 48
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 48
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "id": "pedido-capi_start_4",
+                                        "fields": {
+                                          "NAME": "luz",
+                                          "IMAGE": "acesa"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 296
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 200
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 48
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 48
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "id": "pedido-capi_events_0",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_js_if_else",
+                              "id": "pedido-capi_events_0_body_0",
+                              "inputs": {
+                                "THEN": {
+                                  "block": {
+                                    "type": "sz_js_var_assign",
+                                    "id": "pedido-capi_events_0_body_0_then_0",
+                                    "fields": {
+                                      "NAME": "acesa"
+                                    },
+                                    "inputs": {
+                                      "VALUE": {
+                                        "block": {
+                                          "type": "sz_val_bool",
+                                          "fields": {
+                                            "VALUE": "false"
+                                          },
+                                          "id": "pedido-capi_events_0_body_0_then_0_value"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "ELSE": {
+                                  "block": {
+                                    "type": "sz_js_var_assign",
+                                    "id": "pedido-capi_events_0_body_0_else_0",
+                                    "fields": {
+                                      "NAME": "acesa"
+                                    },
+                                    "inputs": {
+                                      "VALUE": {
+                                        "block": {
+                                          "type": "sz_val_bool",
+                                          "fields": {
+                                            "VALUE": "true"
+                                          },
+                                          "id": "pedido-capi_events_0_body_0_else_0_value"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "COND": {
+                                  "block": {
+                                    "type": "sz_val_variable",
+                                    "fields": {
+                                      "NAME": "acesa"
+                                    },
+                                    "id": "pedido-capi_events_0_body_0_cond"
+                                  }
+                                }
+                              },
+                              "extraState": {
+                                "hasElse": true
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_on_key",
+                            "id": "pedido-capi_events_1",
+                            "fields": {
+                              "KEY": "Enter"
+                            },
+                            "inputs": {
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_js_var_assign",
+                                  "id": "pedido-capi_events_1_body_0",
+                                  "fields": {
+                                    "NAME": "acesa"
+                                  },
+                                  "inputs": {
+                                    "VALUE": {
+                                      "block": {
+                                        "type": "sz_val_bool",
+                                        "fields": {
+                                          "VALUE": "false"
+                                        },
+                                        "id": "pedido-capi_events_1_body_0_value"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "id": "pedido-capi_loops_0",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "id": "pedido-capi_loops_0_body_0",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_label",
+                                  "id": "pedido-capi_loops_0_body_1",
+                                  "fields": {
+                                    "COLOR": "#fff3ce",
+                                    "ALIGN": "left"
+                                  },
+                                  "inputs": {
+                                    "TEXT": {
+                                      "shadow": {
+                                        "type": "sz_val_text",
+                                        "fields": {
+                                          "TEXT": "A lanterna da cabana"
+                                        }
+                                      }
+                                    },
+                                    "X": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 20
+                                        }
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 35
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 18
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_draw_label",
+                                      "id": "pedido-capi_loops_0_body_2",
+                                      "fields": {
+                                        "COLOR": "#fff3ce",
+                                        "ALIGN": "left"
+                                      },
+                                      "inputs": {
+                                        "TEXT": {
+                                          "shadow": {
+                                            "type": "sz_val_text",
+                                            "fields": {
+                                              "TEXT": "A barra de espaço liga e desliga."
+                                            }
+                                          }
+                                        },
+                                        "X": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 20
+                                            }
+                                          }
+                                        },
+                                        "Y": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 68
+                                            }
+                                          }
+                                        },
+                                        "SIZE": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 18
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_js_if_else",
+                                          "id": "pedido-capi_loops_0_body_3",
+                                          "inputs": {
+                                            "THEN": {
+                                              "block": {
+                                                "type": "sz_g2d_draw_sprite",
+                                                "id": "pedido-capi_loops_0_body_3_then_0",
+                                                "fields": {
+                                                  "SPRITE": "luz"
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_draw_label",
+                                                    "id": "pedido-capi_loops_0_body_3_then_1",
+                                                    "fields": {
+                                                      "COLOR": "#fff3ce",
+                                                      "ALIGN": "left"
+                                                    },
+                                                    "inputs": {
+                                                      "TEXT": {
+                                                        "shadow": {
+                                                          "type": "sz_val_text",
+                                                          "fields": {
+                                                            "TEXT": "A lanterna da Capi acendeu."
+                                                          }
+                                                        }
+                                                      },
+                                                      "X": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 20
+                                                          }
+                                                        }
+                                                      },
+                                                      "Y": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 120
+                                                          }
+                                                        }
+                                                      },
+                                                      "SIZE": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 18
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "ELSE": {
+                                              "block": {
+                                                "type": "sz_g2d_draw_sprite",
+                                                "id": "pedido-capi_loops_0_body_3_else_0",
+                                                "fields": {
+                                                  "SPRITE": "placa"
+                                                }
+                                              }
+                                            },
+                                            "COND": {
+                                              "block": {
+                                                "type": "sz_val_variable",
+                                                "fields": {
+                                                  "NAME": "acesa"
+                                                },
+                                                "id": "pedido-capi_loops_0_body_3_cond"
+                                              }
+                                            }
+                                          },
+                                          "extraState": {
+                                            "hasElse": true
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ],
+          "programmingLanguage": "javascript"
+        },
+        "objetivos": [
+          {
+            "id": "liga",
+            "label": "A barra de espaço acende a lanterna.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 30
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "acesa"
+                },
+                "compare": "equals",
+                "value": true
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 0,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "acesa"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "desliga",
+            "label": "Apertando de novo, a lanterna apaga.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 30
+                },
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 30
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "acesa"
+                },
+                "compare": "equals",
+                "value": false
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "acesa"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "apagar",
+            "label": "Extra: o Enter apaga sempre.",
+            "optional": true,
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 30
+                },
+                {
+                  "action": "press",
+                  "key": "Enter",
+                  "holdMs": 30
+                },
+                {
+                  "action": "press",
+                  "key": "Enter",
+                  "holdMs": 30
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "acesa"
+                },
+                "compare": "equals",
+                "value": false
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "acesa"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Extra",
+          "texto": "O Enter apaga sempre: atribua falso a acesa, sem alternar."
+        },
+        "recompensa": {
+          "cor": false,
+          "moedas": 5,
+          "moedasExtra": 2
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

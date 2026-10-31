@@ -2745,7 +2745,15 @@ abaixo são as do serviço.
   Quadro das Cores tem um número de quadro. O desafio do dia tem a escolha de cada dia e nunca
   pinta a ilha (7.12). O pedido de morador (§6.28, A23) também não pinta nem entra no desafio do
   dia: o morador da ilha oferece na conversa ("Pedido no Estúdio") e, feito, a placa ao lado dele
-  acende à noite. Conteúdo em `docs/desafios-do-jogo/moradores/`.
+  acende à noite. Conteúdo em `docs/desafios-do-jogo/moradores/`. Desde as lacunas de 01/11/2026
+  há um pedido em cada ilha (a proposta: "pedidos curtos, como uma placa que acende à noite"): o
+  Nico na sua ilha, e a Capi, o Bento, a Maré, o Floco, a Jade e a Iriê nas ilhas do anel, cada
+  um com uma luz que acende por uma regra do jeito da ilha (liga e desliga, terceiro bolo, maré
+  baixa, lenha, as duas lenhas, energia com custo), só com teclas e só com os blocos de antes da
+  ilha (o Bosque, só o Faísca; as outras, o Faísca e o Construtor). Um manifesto por ilha e
+  público (`<ilha>-moradores.manifesto.json`). O cartão "Pedido no Estúdio" aparece também nas
+  conversas da Capi e do Bento; a placa (`PlacaDoPedido`) fica à frente e ao lado de cada morador
+  do anel (`placaAoLadoDoMorador`). Valem 5 e 2 moedas.
 - **Seis quadros por ilha** (`QUADROS_POR_ILHA = 6`).
   - Só o Quadro das Cores tem número de quadro, de 1 a 6, e ele sempre tem
     (`MetadadosDoDesafioSchema`).

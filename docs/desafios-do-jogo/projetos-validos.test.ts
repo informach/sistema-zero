@@ -31,3 +31,31 @@ for (const pasta of [
         }
       })
   }
+
+// Os pedidos dos moradores no Estúdio: o do Nico e os das ilhas do anel (lacunas, 01/11/2026).
+for (const ilha of [
+  'sua-ilha',
+  'bosque',
+  'vila-doce',
+  'recife',
+  'pico',
+  'vale-dos-dinos',
+  'nuvens',
+])
+  for (const publico of ['kids', 'adulto']) {
+    const manifesto = ManifestoDeDesafiosSchema.parse(
+      await Bun.file(
+        new URL(
+          `./moradores/${ilha}-moradores${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
+          import.meta.url,
+        ),
+      ).json(),
+    )
+    for (const desafio of manifesto.desafios)
+      test(`${desafio.slug}: inicial e gabarito são documentos aceitos pelo leitor do Members`, () => {
+        for (const nome of ['projetoInicial', 'gabarito'] as const) {
+          const projeto = desafio.conteudo[nome] as { blocksState: unknown }
+          expect(projectBlockTypes(projeto.blocksState).length, nome).toBeGreaterThan(0)
+        }
+      })
+  }

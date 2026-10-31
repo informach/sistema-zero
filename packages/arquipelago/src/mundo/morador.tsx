@@ -13,6 +13,7 @@ import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada }
 import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import { useInterativo } from './interativos'
+import { PlacaDoPedido, placaAoLadoDoMorador } from './placa-do-pedido'
 
 type Clipe = 'parado' | 'falar' | 'acenar' | 'feliz'
 
@@ -57,7 +58,19 @@ export function MoradorDaIlha(props: PropsDoMorador) {
   const estaEmCasa = useConvidados(lojaDosConvidados(loja), (s) =>
     s.convidados.some((c) => c.quem === props.morador.quem),
   )
-  return estaEmCasa && !props.emCasa ? null : <MoradorPresente {...props} />
+  const quem = props.morador.quem
+  // A placa do pedido no Estúdio ao lado do morador do anel (lacunas, 01/11/2026); a do Nico tem
+  // lugar próprio na praia.
+  const placa =
+    !props.emCasa && quem !== 'nico' && quem !== 'iris' ? (
+      <PlacaDoPedido quem={quem} lugar={placaAoLadoDoMorador(props.lugar)} />
+    ) : null
+  return (
+    <>
+      {estaEmCasa && !props.emCasa ? null : <MoradorPresente {...props} />}
+      {placa}
+    </>
+  )
 }
 
 function MoradorPresente({

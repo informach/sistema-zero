@@ -10,13 +10,13 @@ import {
 } from '../sistemas/conversa-do-bento'
 import { diaDe } from '../sistemas/moradores'
 import { Coracoes, Presentes } from './capi'
-
 /**
  * A conversa com o Bento, como a da Capi: o nome e os corações, uma fala por vez e depois as
  * escolhas (entregar o pedido do dia, dar um presente, ajudar no balcão da padaria, tchau). O
  * jogo fica parado enquanto ela está aberta.
  */
 import { entregarPedidoPeloPainel } from './entrega-do-pedido'
+import { PedidoDoEstudio } from './pedido-do-estudio'
 
 export function PainelDoBento() {
   const contexto = useJogo()
@@ -100,6 +100,8 @@ export function PainelDoBento() {
               <span>Amanhã ele pede outra coisa.</span>
             </div>
           ) : null}
+          {/* O pedido no Estúdio (§6.28, A23; lacunas de 01/11/2026 em toda ilha). */}
+          <PedidoDoEstudio quem="bento" />
           <div className="arq-menu-acoes">
             {pedido && !falta ? (
               <button ref={principal} type="button" className="arq-botao" onClick={aoEntregar}>
