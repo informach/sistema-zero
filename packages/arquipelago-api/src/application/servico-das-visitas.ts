@@ -6,6 +6,7 @@ import {
   OBJETOS_DA_CASA,
   PERFIS_DA_FAMILIA_MAXIMO,
   PERMISSOES_PADRAO,
+  percursosPorExtenso,
   type QuartoDoJogo,
   VERSAO_DAS_VISITAS,
 } from '@sistemazero/arquipelago-contracts'
@@ -57,7 +58,13 @@ export class ServicoDasVisitas {
     const irmaos = ids.flatMap((id): IrmaoDoJogador[] => {
       const s = migrarSalvamento(salvos.get(id))
       return s
-        ? [{ perfilId: id, percursos: s.percursos, temCasa: s.construcao.casa !== null }]
+        ? [
+            {
+              perfilId: id,
+              percursos: percursosPorExtenso(s.percursos),
+              temCasa: s.construcao.casa !== null,
+            },
+          ]
         : []
     })
     return { versao: VERSAO_DAS_VISITAS, situacao: 'ok', irmaos }

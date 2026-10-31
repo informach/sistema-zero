@@ -5,6 +5,7 @@ import {
   LIMITES_DO_DESAFIO,
   type MetadadosDoDesafio,
   type MoradorDoPedido,
+  OBRA_ESTENDIDA_MAX_BYTES,
   type PagamentoDaProfissao,
   type PagamentoDaVenda,
   type PagamentoDoPedido,
@@ -134,6 +135,35 @@ export const fantasmas = arquipelagoSchema.table(
       'fantasmas_versao_check',
       sql`${t.dados}->>'versao' = '1' and ${t.dados}->>'percurso' = ${t.percurso}`,
     ),
+  ],
+)
+
+/**
+ * A obra estendida (E04 e B14, 31/10/2026): o iglu, o andar de cima e o terreno moldado, num
+ * documento por jogador e público, fora do salvamento, com revisão própria (a trava). Apagar o
+ * salvamento apaga a obra. O teto é o dobro do contrato porque o texto do JSONB põe um espaço
+ * depois de cada `:` e `,`.
+ */
+export const obrasEstendidas = arquipelagoSchema.table(
+  'obras_estendidas',
+  {
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId, { onDelete: 'cascade' }),
+    publico: varchar({ length: 8 }).notNull(),
+    revisao: integer().notNull(),
+    documento: jsonb().notNull(),
+    atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.publico] }),
+    check('obras_estendidas_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check('obras_estendidas_revisao_check', sql`${t.revisao} >= 1`),
+    check(
+      'obras_estendidas_tamanho_check',
+      sql`octet_length(${t.documento}::text) <= ${sql.raw(String(2 * OBRA_ESTENDIDA_MAX_BYTES))}`,
+    ),
+    check('obras_estendidas_versao_check', sql`${t.documento}->>'versao' = '1'`),
   ],
 )
 
@@ -626,6 +656,7 @@ export const schema = {
   convitesDeAmigos,
   casasDeAmigos,
   fantasmas,
+  obrasEstendidas,
   pedidosRemunerados,
   vendasNaFeira,
   comprasDeInsumos,

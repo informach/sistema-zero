@@ -8,6 +8,7 @@ import type {
   Salvamento,
   TipoDeAbertura,
 } from '@sistemazero/arquipelago-contracts'
+import { celulasDaEscada, escadaNoTerreo } from './andar'
 import { planta } from './comodos'
 import { celulasDoRetangulo, entradaDaObra, ladoDeFora, retanguloDaVaranda } from './entrada'
 import {
@@ -52,6 +53,7 @@ import {
   pintarCaminho,
   porCanteiro,
 } from './quintal'
+import { celulasPlanas, podeMoldar } from './terreno'
 
 /**
  * O que cada ferramenta do Construir faz com o dedo (ou o mouse): arrastar (parede, cerca,
@@ -70,6 +72,10 @@ export type Ferramenta =
   | 'objeto'
   | 'movel'
   | 'apagar'
+  /** Moldar o chão do lote da casa (Nuvens em diante): não mexe na obra, e sim no terreno. */
+  | 'terreno'
+  /** A escada do andar de cima (Pico em diante): um toque põe o pé dela; o Girar escolhe o rumo. */
+  | 'escada'
 
 export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
 
@@ -87,6 +93,8 @@ export interface Escolhas {
    * a entrada e a varanda para lá.
    */
   entradaSelecionada?: boolean
+  /** O Terreno sobe (`1`) ou desce (`-1`) o chão. */
+  moldar?: 1 | -1
 }
 
 export interface NoChao {
@@ -96,7 +104,20 @@ export interface NoChao {
 
 /** A ferramenta trabalha arrastando (as outras, com um toque). */
 export function arrasta(f: Ferramenta): boolean {
-  return f === 'parede' || f === 'cerca' || f === 'caminho' || f === 'apagar'
+  return f === 'parede' || f === 'cerca' || f === 'caminho' || f === 'apagar' || f === 'terreno'
+}
+
+/** As células que o Terreno molda num arrasto (ou num toque) e a prévia delas. */
+export function celulasDoTerreno(
+  obra: Obra,
+  lote: Lote,
+  a: NoChao,
+  b: NoChao,
+): { celulas: Celula[]; previa: Previa } {
+  const celulas = celulasDoArrasto(celulaEm(a.x, a.z), celulaEm(b.x, b.z))
+  const planas = celulasPlanas(obra, lote)
+  const ok = celulas.some((c) => podeMoldar(c, lote, planas))
+  return { celulas, previa: { tipo: 'celulas', celulas, ok } }
 }
 
 /** Até onde do meio de uma aresta um toque do apagar ainda é nela (senão é na célula). */
@@ -124,6 +145,8 @@ export function arrasto(
   b: NoChao,
   escolhas: Escolhas,
 ): { resultado: Resultado | null; previa: Previa } {
+  // O terreno não é obra: a cena manda as células para a loja do Construir (`moldarTerreno`).
+  if (f === 'terreno') return { resultado: null, previa: celulasDoTerreno(obra, lote, a, b).previa }
   if (f === 'caminho') {
     const celulas = celulasDoArrasto(celulaEm(a.x, a.z), celulaEm(b.x, b.z))
     const r = pintarCaminho(obra, lote, celulas, escolhas.caminho)
@@ -165,6 +188,18 @@ export function toque(
   projetos: Salvamento['projetos'] = {},
 ): { resultado: Resultado | null; previa: Previa; entrada?: MudancaNaEntrada } {
   const celula = celulaEm(onde.x, onde.z)
+  // A escada não é obra do térreo: a cena manda o pé para a loja do Construir (`porAEscada`).
+  if (f === 'escada') {
+    const escada = { x: celula.x, z: celula.z, giro: escolhas.giro }
+    return {
+      resultado: null,
+      previa: {
+        tipo: 'celulas',
+        celulas: celulasDaEscada(escada),
+        ok: escadaNoTerreo(escada, obra, lote) === null,
+      },
+    }
+  }
   if (f === 'piso') {
     const p = planta(obra, lote)
     const i = p.comodoDe.get(chaveDaCelula(celula))

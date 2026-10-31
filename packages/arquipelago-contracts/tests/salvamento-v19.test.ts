@@ -9,6 +9,7 @@ import {
   MAPAS_DAS_ILHAS,
 } from '../src/exploracao'
 import {
+  compactarResultado,
   criarSalvamentoInicial,
   migrarDaV18,
   migrarDaV19,
@@ -52,7 +53,8 @@ test('os campos novos da V19 atravessam JSON', () => {
   const s = criarSalvamentoInicial(AGORA)
   const cheio = {
     ...s,
-    percursos: Object.fromEntries(PERCURSOS.map((p) => [p, percurso])),
+    // Na V22 os percursos vão em tupla (`compactarResultado`).
+    percursos: Object.fromEntries(PERCURSOS.map((p) => [p, compactarResultado(percurso)])),
     chaves: 15,
     segredos: BIT_DA_SEGREDO_MAXIMO * 2 - 1,
     mapa: Object.fromEntries(MAPAS_DAS_ILHAS.map((id) => [id, '0123456789abcdef'])),

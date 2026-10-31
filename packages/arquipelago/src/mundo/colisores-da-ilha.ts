@@ -62,6 +62,9 @@ const SO_PARA_O_CORPO = [
   'col-escada-reta-',
   // A parede da obra cortada (modo construção): baixa na tela, a câmera vê dentro de casa.
   'col-obra-cortada-',
+  // O piso e o guarda-corpo do andar de cima da casa (E04): com a criança no térreo o andar some
+  // da tela e a câmera passa por ele.
+  'col-andar-',
   // A cerca do quintal: fina e baixa.
   'col-cerca-',
   // Os objetos da casa (geladeira, casinha): a câmera vê por cima deles.

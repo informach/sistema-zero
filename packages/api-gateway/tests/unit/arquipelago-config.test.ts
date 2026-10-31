@@ -97,6 +97,15 @@ describe('Arquipélago Vagalume no gateway', () => {
       )?.route.id,
     ).toBe('arquipelago-fantasma-ler-1')
     expect(registry.resolve('POST', '/arquipelago/fantasmas', 'v1')).toBeUndefined()
+    for (const metodo of ['GET', 'PUT'] as const)
+      expect(registry.resolve(metodo, '/arquipelago/obra-estendida', 'v1')?.route).toMatchObject({
+        id: 'arquipelago-obra-estendida',
+        maxBodyBytes: 33 * 1024,
+        auth: { strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      })
+    expect(registry.resolve('POST', '/arquipelago/obra-estendida', 'v1')).toBeUndefined()
     expect(registry.resolve('POST', '/arquipelago/insumos/comprar', 'v1')?.route).toMatchObject({
       auth: { strategies: ['jwt'] },
       authorize: { statuses: ['active'] },

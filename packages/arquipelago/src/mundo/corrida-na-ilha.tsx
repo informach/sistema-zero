@@ -1,4 +1,5 @@
 import { useFrame } from '@react-three/fiber'
+import { compactarResultado, resultadoDoPercurso } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import {
@@ -254,13 +255,16 @@ export function CorridaNaIlha({
 export function terminarCorrida(loja: LojaDoJogo, config: ConfigDoPercurso, c: Corrida): void {
   const s = loja.getState()
   const id = config.id
-  const antes = s.salvamento.percursos[id]
+  const antes = resultadoDoPercurso(s.salvamento.percursos, id)
   const melhor = juntarResultado(antes, c, config)
   if (!melhor) return
   /** A fala do prêmio, se a chegada trouxe um (escrita dentro do `mudar`). */
   const premio = { fala: '' }
   s.mudar((sv) => {
-    const comResultado = { ...sv, percursos: { ...sv.percursos, [id]: melhor } }
+    const comResultado = {
+      ...sv,
+      percursos: { ...sv.percursos, [id]: compactarResultado(melhor) },
+    }
     const p = config.premio?.(comResultado)
     if (!p) return comResultado
     premio.fala = p.fala

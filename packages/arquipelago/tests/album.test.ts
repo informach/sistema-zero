@@ -123,10 +123,7 @@ describe('as contas de cada seção', () => {
     const s: Salvamento = {
       ...inicial(),
       percursos: {
-        'bosque-copas': {
-          estrelas: { chegada: true, tempo: false, vagalumes: true },
-          melhorTempoMs: 62_300,
-        },
+        'bosque-copas': [5, 62_300] as [number, number],
       },
     }
     const p = percursosDoAlbum(s)

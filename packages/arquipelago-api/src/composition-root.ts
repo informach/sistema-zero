@@ -5,6 +5,7 @@ import { ServicoDaEquipe } from './application/servico-da-equipe'
 import { ServicoDaFamilia } from './application/servico-da-familia'
 import { ServicoDaGaleria } from './application/servico-da-galeria'
 import { ServicoDaMedicao } from './application/servico-da-medicao'
+import { ServicoDaObraEstendida } from './application/servico-da-obra-estendida'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDasProfissoes } from './application/servico-das-profissoes'
 import { ServicoDasRoupas } from './application/servico-das-roupas'
@@ -35,6 +36,7 @@ import { DrizzleRepositorioDosFantasmas } from './infrastructure/persistence/dri
 import { DrizzleRepositorioDosInsumos } from './infrastructure/persistence/drizzle/repositorio-insumos'
 import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
 import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/drizzle/repositorio-minijogos'
+import { DrizzleRepositorioDaObraEstendida } from './infrastructure/persistence/drizzle/repositorio-obra-estendida'
 import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
 import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
@@ -132,6 +134,10 @@ export function createApplication(env: Env): Application {
       repo: new DrizzleRepositorioDosFantasmas(connection.db),
       politica,
       visitas,
+    }),
+    obraEstendida: new ServicoDaObraEstendida({
+      repo: new DrizzleRepositorioDaObraEstendida(connection.db),
+      politica,
     }),
     pedidos: new ServicoDosPedidos({
       repo: new DrizzleRepositorioDosPedidos(connection.db),

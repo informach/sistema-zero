@@ -177,10 +177,7 @@ test('fechar sem PUT e reabrir recupera o diário, isolado por perfil', async ()
     farol: { pagina: true, concluido: true, galeria: [] },
     clima: 'chuva' as const,
     percursos: {
-      'nuvens-balao': {
-        estrelas: { chegada: true, tempo: false, vagalumes: true },
-        melhorTempoMs: 41000,
-      },
+      'nuvens-balao': [5, 41000] as [number, number],
     },
   }
   primeira.f.guardar(local)

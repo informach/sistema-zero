@@ -162,6 +162,13 @@
       "when": 1793427712162,
       "tag": "0022_medicao_da_aprendizagem",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793442889186,
+      "tag": "0023_obra_estendida",
+      "breakpoints": true
     }
   ]
 }

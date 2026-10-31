@@ -1,5 +1,30 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Obra estendida (E04 e B14, 31/10/2026)
+
+O iglu do Pico, o andar de cima da casa e o terreno moldado não cabem no salvamento: moram num
+documento à parte (`ObraEstendidaSchema` do contrato, até 32 KB), um por jogador e público, com
+revisão própria. Migração gerada 0023 `obra_estendida`, tabela `obras_estendidas` (chave
+jogador + público, FK do save com cascade, revisão >= 1, `documento` JSONB com versão 1 e teto de
+64 KB no texto do JSONB, que põe espaço depois de `:` e `,`). A mesma 0023 traz a restrição dos
+percursos dos `fantasmas` com o `farol-subida` da V22.
+
+`GET /arquipelago/obra-estendida` devolve `{revisao, obra}` (0 e `null` antes da primeira).
+`PUT` recebe `{revisaoBase, obra}` (`GravarObraEstendidaSchema`, corpo real até 33 KB) e grava
+numa instrução só, como o salvamento: base velha → 409 `OBRA_ESTENDIDA_DESATUALIZADA` com
+`atual: {revisao, obra}`; sem salvamento do mesmo público → 409 `SALVAMENTO_NECESSARIO`; guardado
+ilegível → 409 `OBRA_ESTENDIDA_ILEGIVEL`; suporte → 403 `SOMENTE_LEITURA`. Tudo `private,
+no-store`. `ServicoDaObraEstendida`, `DrizzleRepositorioDaObraEstendida`, rotas em
+`interfaces/http/rotas-da-obra-estendida.ts` (só com a dependência `obraEstendida`). Gateway: rota
+`arquipelago-obra-estendida` (GET e PUT, 33 KB, 120 por minuto). Testes
+`tests/unit/obra-estendida.test.ts` e `tests/db/obra-estendida.test.ts`, variável local exclusiva
+`ARQUIPELAGO_OBRA_ESTENDIDA_TEST_DATABASE_URL` ou `TEST_DATABASE_URL` do CI, Postgres descartável
+`arquipelago_test*`.
+
+**Ordem de implantação:** a migração e a API primeiro, depois o gateway (a rota nova), depois o
+member-shell e os dois apps (o repasse `/api/arquipelago/obra-estendida`), e só então o jogo que
+chama. Antes disso o jogo recebe 404 na leitura e não constrói nada da obra estendida.
+
 ## A ilha do minijogo (B10, 31/10/2026)
 
 - `GET /minijogos` (e a lista da família) traz `ilha` em cada minijogo quando o desafio existe no

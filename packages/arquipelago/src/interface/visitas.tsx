@@ -1,4 +1,5 @@
 import type { PercursoId } from '@sistemazero/arquipelago-contracts'
+import { expandirResultado } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { irParaAFrenteDaCasa } from '../estado/chegada-da-visita'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -30,6 +31,7 @@ export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
   const leitura = useFamilia(familia, (s) => s.leitura)
   const carregando = useFamilia(familia, (s) => s.carregando)
   const meu = useEstado((s) => s.salvamento.percursos[percurso])
+  const meuResultado = meu ? expandirResultado(meu) : undefined
   // Cada resultado relê: os responsáveis podem ter desligado as visitas.
   useEffect(() => {
     void familia.getState().carregar()
@@ -47,7 +49,7 @@ export function RecordesDaFamilia({ percurso }: { percurso: PercursoId }) {
       </p>
     )
   if (leitura.tipo === 'desligado' || leitura.irmaos.length === 0) return null
-  const linhas = recordesDaFamilia(percurso, meu, leitura.irmaos)
+  const linhas = recordesDaFamilia(percurso, meuResultado, leitura.irmaos)
   return (
     <section className="arq-recordes" aria-labelledby="arq-recordes-titulo">
       <h3 id="arq-recordes-titulo" className="arq-menu-titulo">

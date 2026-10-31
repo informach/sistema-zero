@@ -91,6 +91,29 @@ test('trajetos usam somente os percursos conhecidos e a leitura do irmão fica n
   expect(pedidos).toHaveLength(1)
 })
 
+test('a obra estendida é do jogo nos dois públicos, só no caminho exato', async () => {
+  expect(caminhoDoJogo('/obra-estendida')).toBe(true)
+  expect(soDoKids('/obra-estendida')).toBe(false)
+  for (const p of ['/obra-estendida/1', '/obra-estendida?perfil=outro', '/obra-estendidas'])
+    expect(caminhoDoJogo(p)).toBe(false)
+  const corpo = { revisaoBase: 0, obra: { versao: 1, iglu: null, andar: null, terreno: null } }
+  const pedidos = servir({
+    'PUT /api/arquipelago/obra-estendida': { status: 200, body: { revisao: 1, obra: corpo.obra } },
+  })
+  for (const publico of ['kids', 'adulto'] as const) {
+    const p = criarPlataformaDoArquipelago({
+      publico,
+      perfil: { id: 'p1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    expect((await p.servico.buscar('/obra-estendida', { metodo: 'PUT', corpo })).status).toBe(200)
+  }
+  expect(pedidos.map((p) => [p.method, p.body])).toEqual([
+    ['PUT', JSON.stringify(corpo)],
+    ['PUT', JSON.stringify(corpo)],
+  ])
+})
+
 describe('a porta da plataforma para o jogo', () => {
   test('host repassa operações econômicas exatas nos dois públicos e preserva corpo/sinal', async () => {
     for (const publico of ['kids', 'adulto'] as const) {

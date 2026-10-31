@@ -43,10 +43,13 @@ import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
 import {
   obraDeExemplo,
+  obraDeExemploComAndar,
   obraDeExemploComEntrada,
   obraDeExemploComFundo,
+  obraEstendidaDeExemplo,
   PROJETOS_DE_EXEMPLO,
 } from './obra-de-exemplo'
+import { CHAVE_DA_OBRA_ESTENDIDA_FALSA, criarObraEstendidaFalsa } from './obra-estendida-falsa'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
 import { criarVendasFalsas, type RegistroDeVendaFalsa } from './vendas-falsas'
@@ -94,7 +97,7 @@ export interface OpcoesDaPlataformaFalsa {
    * `fundo`: a mesma, com um cômodo atrás do quarto e a porta no fundo dele; `entrada`: a mesma, com a
    * porta de entrada (e a varanda) na frente do cômodo da frente do quarto.
    */
-  obra?: 'exemplo' | 'fundo' | 'entrada'
+  obra?: 'exemplo' | 'fundo' | 'entrada' | 'andar'
   /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
   jogos?: 'exemplo'
   /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
@@ -250,6 +253,17 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
           }
         : undefined,
   })
+  const obraEstendida = criarObraEstendidaFalsa({
+    somenteLeitura: () => o.somenteLeitura === true,
+    inicial: o.obra === 'andar' ? obraEstendidaDeExemplo() : undefined,
+    persistencia:
+      o.persistir && typeof localStorage !== 'undefined'
+        ? {
+            ler: () => localStorage.getItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA),
+            gravar: (dado) => localStorage.setItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA, dado),
+          }
+        : undefined,
+  })
   const profissoes = criarProfissoesFalsas({
     agora,
     posicao: o.posicao ?? 2,
@@ -361,7 +375,9 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ? obraDeExemploComFundo()
         : o.obra === 'entrada'
           ? obraDeExemploComEntrada()
-          : obraDeExemplo()
+          : o.obra === 'andar'
+            ? obraDeExemploComAndar()
+            : obraDeExemplo()
     const atual =
       migrarSalvamento(guardado.salvamento) ??
       criarSalvamentoInicial(new Date(agora().getTime() - (o.adiantarMinutos ?? 0) * 60_000))
@@ -630,6 +646,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (daVisitaAdulta) return daVisitaAdulta
         const doFantasma = fantasmas.buscar(caminho, metodo, opcoes?.corpo)
         if (doFantasma) return doFantasma
+        const daObraEstendida = obraEstendida.buscar(caminho, metodo, opcoes?.corpo)
+        if (daObraEstendida) return daObraEstendida
         const dosInsumos = insumos.buscar(caminho, metodo, opcoes?.corpo)
         if (dosInsumos) return dosInsumos
         const dosPedidos = pedidos.buscar(caminho, metodo, opcoes?.corpo)

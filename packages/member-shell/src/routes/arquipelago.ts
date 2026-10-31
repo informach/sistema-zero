@@ -2,6 +2,7 @@ import 'server-only'
 import {
   type AmigosDaFamiliaParaOsPais,
   AmigosDaFamiliaSchema,
+  CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES,
   CORPO_DO_FANTASMA_MAX_BYTES,
   DesafioAbertoSchema,
   IrmaosDoJogadorSchema,
@@ -137,6 +138,7 @@ export function createArquipelagoRoutes(deps: {
           caminho.startsWith('/familia/amigos') ||
           caminho === '/desafios/cores' ||
           caminho.startsWith('/fantasmas') ||
+          caminho === '/obra-estendida' ||
           caminho.startsWith('/visitas-adultas/')
         )
           resposta.headers.set('cache-control', 'private, no-store')
@@ -304,6 +306,11 @@ export function createArquipelagoRoutes(deps: {
           )
         return chamar(`/irmaos/${id}/fantasmas/${nome}`, 'GET')
       },
+    },
+    /** A obra estendida (E04 e B14): o iglu, o andar de cima e o terreno, com revisão própria. */
+    arquipelagoObraEstendida: {
+      GET: () => chamar('/obra-estendida', 'GET'),
+      PUT: comCorpo('/obra-estendida', 'PUT', CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES),
     },
     arquipelagoSalvamento: {
       GET: () => chamar('/salvamento', 'GET'),

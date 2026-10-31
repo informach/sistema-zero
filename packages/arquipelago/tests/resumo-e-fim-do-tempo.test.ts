@@ -43,10 +43,7 @@ describe('o resumo do dia (N06)', () => {
     const depois = structuredClone(antes)
     depois.lumis = { pitanga: 1, quindim: 1 }
     depois.percursos = {
-      'bosque-copas': {
-        estrelas: { chegada: true, tempo: true, vagalumes: false },
-        melhorTempoMs: 20000,
-      },
+      'bosque-copas': [3, 20000] as [number, number],
     }
     depois.moradores.capi = {
       ...depois.moradores.capi,
