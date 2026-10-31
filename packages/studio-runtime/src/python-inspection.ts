@@ -4,6 +4,8 @@ import {
   verifyStudioPythonInspectionReport,
   verifyStudioPythonStructureEvidence,
 } from '@sistemazero/core/studio/python-inspection'
+import { STUDIO_PYTHON_JOB_DEADLINE_MS } from '@sistemazero/core/studio/python-inspection-job'
+import { PYTHON_MISSION_LIMITS } from '@sistemazero/core/studio/python-mission-execution'
 import {
   studioPythonLogicalFiles,
   studioPythonRuntimeRoute,
@@ -83,8 +85,13 @@ export interface PreparedPythonProject {
 export async function withIsolatedPythonProject<Result>(
   options: PythonProjectPreparationOptions,
   task: (project: PreparedPythonProject) => Promise<Result>,
+  operation: 'inspection' | 'mission' = 'inspection',
 ): Promise<Result> {
-  const signal = AbortSignal.any([options.signal, AbortSignal.timeout(120_000)])
+  // Materialization and trusted work belong to the same operation budget. A mission's
+  // 125 s runner must not be retired by the shorter inspection-only clock.
+  const budget =
+    operation === 'mission' ? PYTHON_MISSION_LIMITS.jobMs : STUDIO_PYTHON_JOB_DEADLINE_MS
+  const signal = AbortSignal.any([options.signal, AbortSignal.timeout(budget)])
   const assertCurrent = options.assertCurrent
   const check = () => {
     signal.throwIfAborted()
