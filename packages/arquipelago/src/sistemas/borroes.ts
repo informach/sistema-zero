@@ -9,7 +9,9 @@
  * noite não vai para o salvamento: fica no aparelho, por perfil (`lerPresos`, `gravarPresos`), para
  * recarregar a página na mesma noite não trazer de volta os já presos.
  */
+
 import type { IlhaId, LumiId, Salvamento } from '@sistemazero/arquipelago-contracts'
+import { type LumiDeLuz, temOLumi } from '@sistemazero/arquipelago-contracts'
 import { adicionar, type Inventario, quantidade } from './itens'
 import { ESPECIES_DE_LUMI } from './lumis'
 
@@ -50,6 +52,17 @@ const FEMININOS: ReadonlySet<LumiId> = new Set([
 
 /** Quantos borrões saem em cada noite em cada ilha. */
 export const BORROES_POR_NOITE = 2
+/** O Lumi de luz de cada família (B12): nunca sai de um borrão, só do baú. */
+export const LUZ_DA_FAMILIA: Readonly<Record<IlhaDosLumis, LumiDeLuz>> = {
+  'sua-ilha': 'buzio-de-luz',
+  bosque: 'ipe-de-luz',
+  'vila-doce': 'brigadeiro-de-luz',
+  recife: 'perola-de-luz',
+  pico: 'cristal-de-luz',
+  'vale-dos-dinos': 'brotinho-de-luz',
+  nuvens: 'pluma-de-luz',
+}
+
 /** Um borrão em cada `RARO_A_CADA` vira o Lumi raro (o primeiro Lumi de todos é sempre o comum). */
 export const RARO_A_CADA = 5
 /** As âncoras `lumi-1` a `lumi-4` do `vila-doce.glb`: os borrões saem perto delas. */
@@ -160,11 +173,15 @@ export function lumisNaVila(lumis: Salvamento['lumis']): { ancora: number; lumi:
 export function lumisNaIlha(
   lumis: Salvamento['lumis'],
   ilha: IlhaDosLumis,
+  segredos = 0,
 ): { ancora: number; lumi: LumiId }[] {
   const familia = FAMILIAS_DOS_LUMIS[ilha]
   const comuns = lumis[familia.comum] ?? 0
   const raros = lumis[familia.raro] ?? 0
   const fila: LumiId[] = []
+  // O Lumi de luz (B12), achado no baú, mora com a família, no primeiro lugar.
+  const luz = LUZ_DA_FAMILIA[ilha]
+  if (temOLumi({ lumis, segredos }, luz)) fila.push(luz)
   if (comuns > 0) fila.push(familia.comum)
   if (raros > 0) fila.push(familia.raro)
   for (let i = 1; i < comuns && fila.length < ANCORAS_DOS_LUMIS; i++) fila.push(familia.comum)

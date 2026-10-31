@@ -24,16 +24,20 @@ test('a amizade de três corações dá a roupa daquele morador; a festa em vigo
     [ROUPAS_DA_AMIZADE.jade, ROUPAS_DA_AMIZADE.nico].sort(),
   )
   expect(roupasConquistadas(s, 'junina')).toEqual(
-    [ROUPAS_DA_AMIZADE.jade, ROUPAS_DA_AMIZADE.nico, ...VESTUARIO_DAS_FESTAS.junina.pecas].sort(),
+    [
+      ROUPAS_DA_AMIZADE.jade,
+      ROUPAS_DA_AMIZADE.nico,
+      ...VESTUARIO_DAS_FESTAS.junina.conquista,
+    ].sort(),
   )
   expect(origemDaRoupa(ROUPAS_DA_AMIZADE.jade)).toEqual({ tipo: 'amizade', quem: 'jade' })
-  expect(origemDaRoupa(VESTUARIO_DAS_FESTAS.junina.pecas[0])).toEqual({ tipo: 'festa' })
+  expect(origemDaRoupa(VESTUARIO_DAS_FESTAS.junina.conquista[0])).toEqual({ tipo: 'festa' })
 })
 
 test('as peças da amizade são distintas entre si e das de festa', () => {
   const daAmizade = Object.values(ROUPAS_DA_AMIZADE)
   expect(new Set(daAmizade).size).toBe(daAmizade.length)
-  const deFesta = Object.values(VESTUARIO_DAS_FESTAS).flatMap((f) => f.pecas)
+  const deFesta = Object.values(VESTUARIO_DAS_FESTAS).flatMap((f) => [...f.conquista, ...f.pecas])
   for (const p of daAmizade) expect(deFesta).not.toContain(p)
 })
 

@@ -19,6 +19,7 @@ import {
   type Salvamento,
   TEXTOS_DA_ROTINA,
   type TipoDoPasso,
+  temOLumi,
   terminarExecucao as terminarNoMundo,
   validarRotina,
 } from '@sistemazero/arquipelago-contracts'
@@ -46,7 +47,7 @@ export function guardarRotina(
   lista: readonly CartaoDaRotina[],
   naMao: ReadonlySet<string> | null,
 ): { salvamento: Salvamento } | Recusa {
-  if (!s.lumis[lumi]) return { motivo: TEXTOS_DA_ROTINA.semLumi }
+  if (!temOLumi(s, lumi)) return { motivo: TEXTOS_DA_ROTINA.semLumi }
   const recusa = validarRotina(lista, naMao)
   if (recusa) return recusa
   const limpa = limparRotina(lista)
@@ -227,7 +228,7 @@ export function quandoDaVirada(noiteAntes: boolean, noiteAgora: boolean): Quando
 /** Os Lumis com rotina que começa neste QUANDO, na ordem de `LUMIS`. */
 export function rotinasDoQuando(s: Salvamento, quando: QuandoDaRotina): LumiId[] {
   return (Object.keys(ESPECIES_DE_LUMI) as LumiId[]).filter(
-    (id) => s.lumis[id] && s.rotinas[id]?.[0]?.c === quando,
+    (id) => temOLumi(s, id) && s.rotinas[id]?.[0]?.c === quando,
   )
 }
 

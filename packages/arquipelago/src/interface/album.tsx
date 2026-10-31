@@ -116,7 +116,7 @@ function Objeto({ o }: { o: ObjetoDoAlbum }) {
 }
 
 function Lumi({ l }: { l: LumiDoAlbum }) {
-  const especie = l.raro ? 'Espécie rara' : 'Espécie comum'
+  const especie = l.luz ? 'Lumi de luz' : l.raro ? 'Espécie rara' : 'Espécie comum'
   if (l.estado === 'nao-encontrado')
     return (
       <li className="arq-diario-bicho arq-album-item escondido">
@@ -139,7 +139,9 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
       <div className="arq-quadro-corpo">
         <b>{l.nome}</b>
         <span className="arq-quadro-estado">{l.ilha}</span>
-        <span className="arq-caderno-efeito">{`${especie}. Presos: ${l.quantos}.`}</span>
+        <span className="arq-caderno-efeito">
+          {l.luz ? `${especie}. Saiu de um baú da Íris.` : `${especie}. Presos: ${l.quantos}.`}
+        </span>
         <span className="arq-caderno-efeito">{descricaoDoTrabalhoLumi(l.id)}</span>
       </div>
     </li>
@@ -374,6 +376,17 @@ export function Album() {
         explica="À noite, a lanterna prende um borrão de névoa e ele vira um Lumi. Cada ilha tem uma espécie comum e uma rara."
       >
         {a.lumis.itens.map((l) => (
+          <Lumi key={l.id} l={l} />
+        ))}
+      </Secao>
+      <Secao
+        id="lumis-de-luz"
+        nome="Lumis de luz"
+        conta={a.lumisDeLuz.conta}
+        grade
+        explica="Cada família tem um Lumi de luz, com uma coroa acesa. Ele não sai de borrão nenhum: mora num baú da Íris, nos segredos das ilhas."
+      >
+        {a.lumisDeLuz.itens.map((l) => (
           <Lumi key={l.id} l={l} />
         ))}
       </Secao>

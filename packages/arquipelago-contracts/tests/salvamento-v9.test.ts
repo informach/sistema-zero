@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { ehLumiDeLuz } from '../src/lumis-de-luz'
 import {
   LUMIS,
   migrarDaV7,
@@ -66,11 +67,20 @@ test('a V9 guarda quantos Lumis de cada espécie ela prendeu, e recusa o que sai
   const s = inicialV14(AGORA)
   expect(s.versao).toBe(14)
   expect(s.lumis).toEqual({})
-  expect(LUMIS).toHaveLength(14)
-  expect(new Set(LUMIS).size).toBe(14)
+  // As 14 que a lanterna prende e os sete Lumis de luz dos baús (B12, sem contador).
+  expect(LUMIS).toHaveLength(21)
+  expect(LUMIS.filter((id) => !ehLumiDeLuz(id))).toHaveLength(14)
+  expect(new Set(LUMIS).size).toBe(21)
   const comLumis = { ...s, lumis: { quindim: 3, brigadeiro: 1 } }
   expect(migrarSalvamento(comLumis)).toEqual(migrarDaV14ParaAtual(comLumis))
-  for (const errado of [{ quindim: 0 }, { quindim: 1000 }, { quindim: 1.5 }, { robo: 1 }])
+  // O Lumi de luz não tem contador: vem do baú aberto.
+  for (const errado of [
+    { quindim: 0 },
+    { quindim: 1000 },
+    { quindim: 1.5 },
+    { robo: 1 },
+    { 'cristal-de-luz': 1 },
+  ])
     expect(migrarSalvamento({ ...s, lumis: errado })).toBeNull()
 })
 
@@ -88,7 +98,7 @@ test('as versões antigas chegam até a V9', () => {
 })
 
 test('os 14 Lumis no máximo cabem no teto do salvamento', () => {
-  const lumis = Object.fromEntries(LUMIS.map((id) => [id, 999]))
+  const lumis = Object.fromEntries(LUMIS.filter((id) => !ehLumiDeLuz(id)).map((id) => [id, 999]))
   const s = { ...inicialV14(AGORA), lumis }
   expect(migrarSalvamento(s)).toEqual(migrarDaV14ParaAtual(s))
   expect(JSON.stringify(s).length).toBeLessThan(SALVAMENTO_MAX_BYTES)

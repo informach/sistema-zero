@@ -23,9 +23,9 @@ export const ROUPAS_DA_AMIZADE: Readonly<Record<MoradorDoPedido, string>> = {
   nico: 'hat-02',
 }
 
-/** As roupas da festa em vigor: as peças de época do vestuário (antes só sugestões). */
+/** As roupas da festa em vigor: as duas feitas para ela (B16); as outras são só sugestões. */
 export function roupasDaFesta(festa: Festa | null): readonly string[] {
-  return festa ? VESTUARIO_DAS_FESTAS[festa].pecas : []
+  return festa ? VESTUARIO_DAS_FESTAS[festa].conquista : []
 }
 
 /** Tudo o que a criança já conquistou: as roupas da amizade e as da festa em vigor. */

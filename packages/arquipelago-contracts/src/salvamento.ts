@@ -8,6 +8,7 @@ import {
   MapaDaIlhaSchema,
 } from './exploracao'
 import { ILHA_IDS } from './ilhas'
+import { ehLumiDeLuz, temOLumi } from './lumis-de-luz'
 import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
@@ -530,6 +531,16 @@ export const LUMIS = [
   'brotinho',
   'algodao',
   'pluma',
+  // Os Lumis de luz (B12, 31/10/2026): a terceira versão de cada família, que só sai dos baús
+  // dos segredos (nunca sorteada nem vendida). Entram no fim, sem versão nova: só alargam o que
+  // a V9 em diante aceitam, como os percursos novos.
+  'buzio-de-luz',
+  'ipe-de-luz',
+  'brigadeiro-de-luz',
+  'perola-de-luz',
+  'cristal-de-luz',
+  'brotinho-de-luz',
+  'pluma-de-luz',
 ] as const
 export type LumiId = (typeof LUMIS)[number]
 
@@ -558,11 +569,16 @@ function conferirRotinas(
   s: {
     lumis: Partial<Record<LumiId, number>>
     rotinas: Partial<Record<LumiId, z.infer<typeof RotinaSchema>>>
+    segredos?: number
   },
   ctx: z.RefinementCtx,
 ) {
+  // Os Lumis de luz (B12) não têm contador: vêm do baú aberto (`lumis-de-luz.ts`).
+  for (const lumi of Object.keys(s.lumis) as LumiId[])
+    if (ehLumiDeLuz(lumi))
+      ctx.addIssue({ code: 'custom', message: `Lumi de luz não se prende: ${lumi}` })
   for (const lumi of Object.keys(s.rotinas) as LumiId[])
-    if (!s.lumis[lumi])
+    if (!temOLumi(s, lumi))
       ctx.addIssue({ code: 'custom', message: `rotina de um Lumi que ela não tem: ${lumi}` })
   const total = Object.values(s.rotinas).reduce((n, r) => n + (r ? contarCartoes(r) : 0), 0)
   if (total > LIMITES_DA_ROTINA.cartoesNasRotinas)

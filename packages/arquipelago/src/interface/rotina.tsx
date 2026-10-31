@@ -11,6 +11,7 @@ import {
   type LugarDaRotina,
   type LumiId,
   type TipoDeCarta,
+  temOLumi,
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { lojaDasCartas, useCartas } from '../estado/cartas'
@@ -252,13 +253,16 @@ export function PainelDaRotina() {
   const cartas = lojaDasCartas(loja, plataforma)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DA_ROTINA)
   const lumis = useEstado((s) => s.salvamento.lumis)
+  // Os Lumis de luz (B12) vêm dos baús abertos (`segredos`).
+  const segredos = useEstado((s) => s.salvamento.segredos)
   const guardadas = useEstado((s) => s.salvamento.rotinas)
   const escolhido = useRotina(rotina, (s) => s.lumi)
   const ultimas = useRotina(rotina, (s) => s.ultimas)
   const dados = useCartas(cartas, (s) => s.dados)
   const fechado = useCartas(cartas, (s) => s.fechado)
-  const presos = LUMIS.filter((id) => lumis[id])
-  const lumi: LumiId | null = escolhido && lumis[escolhido] ? escolhido : (presos[0] ?? null)
+  const presos = LUMIS.filter((id) => temOLumi({ lumis, segredos }, id))
+  const lumi: LumiId | null =
+    escolhido && presos.includes(escolhido) ? escolhido : (presos[0] ?? null)
   const [rascunho, setRascunho] = useState<CartaoDaRotina[]>([...ROTINA_VAZIA])
   const [alvo, setAlvo] = useState<Alvo>([])
   const [editando, setEditando] = useState(false)

@@ -2611,6 +2611,23 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   confeito escondido). "Olhar o atalho" explica cada um.
 - **A subida por fora do Farol** chegou na arte de 31/10 e fica escondida, sem colisão, até virar
   o percurso da Lenda (B7).
+- **Os Lumis de luz (B12):** sete espécies novas, uma por família (Búzio, Ipê, Brigadeiro, Pérola,
+  Cristal, Brotinho e Pluma de Luz), com a forma da rara, a coroa acesa e o rastro de faíscas.
+  Nunca saem de um borrão e nunca se compram: cada um mora num baú da Íris. Os quatro do vento
+  (sua ilha, Bosque, Vila Doce, Recife) dão o da ilha; a montaria dá o Brotinho e o balão a Pluma;
+  o Pico não tem baú, e o Cristal de Luz fica na gruta debaixo do píer (a caverna da sua ilha). Os
+  baús do cipó e dos patins dão só a página. Ter o Lumi de luz é ter aberto o baú: o salvamento
+  não guarda contador (`lumis` recusa estas espécies; `temOLumi` e `BIT_DO_LUMI_DE_LUZ` em
+  `arquipelago-contracts/src/lumis-de-luz.ts`). Ele mora com a família na ilha dela, no primeiro
+  lugar, ganha rotina como os outros (trabalha como a rara) e tem seção própria no álbum ("Lumis
+  de luz", com a ilha do baú para os que faltam). Entraram no fim de `LUMIS`, sem versão nova.
+- **As roupas das festas (B16):** uma peça de cabeça e uma de corpo novas por festa, conquistadas
+  na festa em vigor (o serviço concede no avatar, como as da amizade): Carnaval, cartolinha
+  (`hat-08`) e colete de franjas (`top-07`); Festa Junina, chapéu de palha (`hat-09`) e vestido de
+  chita (`outfit-07`); Noite das Lanternas, tiara de lanterninhas (`enfeite-06`) e capa de estrelas
+  (`top-08`); fim de ano, gorro (`hat-10`) e suéter de estrela (`top-09`). As peças de antes
+  continuam como sugestões no vestuário da festa (`VESTUARIO_DAS_FESTAS`: `conquista` e `pecas`).
+  No catálogo do Members elas são pagas (como as da amizade): fora da festa, quem quiser compra.
 
 ## 7. Desafios
 
