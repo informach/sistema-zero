@@ -1,0 +1,1275 @@
+{
+ "criterio": "com as cabeças, zero. Com cada cabelo, zero, a não ser que TODAS as peças da mesma categoria que já existem e ficam na cabeça também o atravessem (hat-01 a hat-07, menos a auréola hat-05, que flutua acima da cabeça; enfeite-01 a enfeite-05). Esses cabelos (o crespo, o rabo alto...) ficam registrados com os números das peças antigas ao lado. O app esconde o cabelo e o enfeite debaixo de um chapéu (AVATAR_HIDE_GROUPS do catálogo).",
+ "pecas": {
+  "hat-08": {
+   "triangulos": 3600,
+   "kb": 172.3,
+   "materiais": [
+    "Color_",
+    "Fita",
+    "Pluma",
+    "Serpentina",
+    "Serpentina.001"
+   ],
+   "ossos": [
+    "Head"
+   ],
+   "cabelos": {
+    "hair-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-06": {
+     "dentro": 11,
+     "acima": 61,
+     "enterra": 111
+    },
+    "hair-07": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-08": {
+     "dentro": 22,
+     "acima": 137,
+     "enterra": 434
+    },
+    "hair-09": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-10": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-11": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-12": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-13": {
+     "dentro": 26,
+     "acima": 131,
+     "enterra": 115
+    },
+    "hair-14": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-15": {
+     "dentro": 112,
+     "acima": 381,
+     "enterra": 666
+    },
+    "hair-16": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-17": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-18": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-06": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    }
+   },
+   "excecoes": {
+    "hair-06": {
+     "nova": {
+      "dentro": 11,
+      "acima": 61,
+      "enterra": 111
+     },
+     "antigas": {
+      "hat-01": 279,
+      "hat-02": 736,
+      "hat-03": 851,
+      "hat-04": 606,
+      "hat-06": 1486,
+      "hat-07": 667
+     }
+    },
+    "hair-08": {
+     "nova": {
+      "dentro": 22,
+      "acima": 137,
+      "enterra": 434
+     },
+     "antigas": {
+      "hat-01": 171,
+      "hat-02": 782,
+      "hat-03": 1124,
+      "hat-04": 673,
+      "hat-06": 1871,
+      "hat-07": 1509
+     }
+    },
+    "hair-13": {
+     "nova": {
+      "dentro": 26,
+      "acima": 131,
+      "enterra": 115
+     },
+     "antigas": {
+      "hat-01": 152,
+      "hat-02": 912,
+      "hat-03": 523,
+      "hat-04": 426,
+      "hat-06": 1600,
+      "hat-07": 846
+     }
+    },
+    "hair-15": {
+     "nova": {
+      "dentro": 112,
+      "acima": 381,
+      "enterra": 666
+     },
+     "antigas": {
+      "hat-01": 457,
+      "hat-02": 3431,
+      "hat-03": 2226,
+      "hat-04": 843,
+      "hat-06": 4022,
+      "hat-07": 4577
+     }
+    }
+   },
+   "reprovados": []
+  },
+  "hat-09": {
+   "triangulos": 2344,
+   "kb": 216.3,
+   "materiais": [
+    "Chita",
+    "Chita.001",
+    "Chita.002",
+    "Chita.003",
+    "Color_",
+    "Palha",
+    "Palha_trama"
+   ],
+   "ossos": [
+    "Head"
+   ],
+   "cabelos": {
+    "hair-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-06": {
+     "dentro": 37,
+     "acima": 2,
+     "enterra": 51
+    },
+    "hair-07": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-08": {
+     "dentro": 82,
+     "acima": 139,
+     "enterra": 274
+    },
+    "hair-09": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-10": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-11": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-12": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-13": {
+     "dentro": 55,
+     "acima": 224,
+     "enterra": 84
+    },
+    "hair-14": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-15": {
+     "dentro": 281,
+     "acima": 346,
+     "enterra": 596
+    },
+    "hair-16": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-17": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-18": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-06": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    }
+   },
+   "excecoes": {
+    "hair-06": {
+     "nova": {
+      "dentro": 37,
+      "acima": 2,
+      "enterra": 51
+     },
+     "antigas": {
+      "hat-01": 279,
+      "hat-02": 736,
+      "hat-03": 851,
+      "hat-04": 606,
+      "hat-06": 1486,
+      "hat-07": 667
+     }
+    },
+    "hair-08": {
+     "nova": {
+      "dentro": 82,
+      "acima": 139,
+      "enterra": 274
+     },
+     "antigas": {
+      "hat-01": 171,
+      "hat-02": 782,
+      "hat-03": 1124,
+      "hat-04": 673,
+      "hat-06": 1871,
+      "hat-07": 1509
+     }
+    },
+    "hair-13": {
+     "nova": {
+      "dentro": 55,
+      "acima": 224,
+      "enterra": 84
+     },
+     "antigas": {
+      "hat-01": 152,
+      "hat-02": 912,
+      "hat-03": 523,
+      "hat-04": 426,
+      "hat-06": 1600,
+      "hat-07": 846
+     }
+    },
+    "hair-15": {
+     "nova": {
+      "dentro": 281,
+      "acima": 346,
+      "enterra": 596
+     },
+     "antigas": {
+      "hat-01": 457,
+      "hat-02": 3431,
+      "hat-03": 2226,
+      "hat-04": 843,
+      "hat-06": 4022,
+      "hat-07": 4577
+     }
+    }
+   },
+   "reprovados": []
+  },
+  "hat-10": {
+   "triangulos": 2480,
+   "kb": 93.4,
+   "materiais": [
+    "Barra",
+    "Color_",
+    "Pompom"
+   ],
+   "ossos": [
+    "Head"
+   ],
+   "cabelos": {
+    "hair-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-06": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-07": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-08": {
+     "dentro": 114,
+     "acima": 168,
+     "enterra": 100
+    },
+    "hair-09": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-10": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-11": {
+     "dentro": 123,
+     "acima": 2,
+     "enterra": 0
+    },
+    "hair-12": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-13": {
+     "dentro": 90,
+     "acima": 231,
+     "enterra": 60
+    },
+    "hair-14": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-15": {
+     "dentro": 700,
+     "acima": 338,
+     "enterra": 447
+    },
+    "hair-16": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-17": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-18": {
+     "dentro": 28,
+     "acima": 0,
+     "enterra": 10
+    },
+    "head-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-06": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    }
+   },
+   "excecoes": {
+    "hair-08": {
+     "nova": {
+      "dentro": 114,
+      "acima": 168,
+      "enterra": 100
+     },
+     "antigas": {
+      "hat-01": 171,
+      "hat-02": 782,
+      "hat-03": 1124,
+      "hat-04": 673,
+      "hat-06": 1871,
+      "hat-07": 1509
+     }
+    },
+    "hair-11": {
+     "nova": {
+      "dentro": 123,
+      "acima": 2,
+      "enterra": 0
+     },
+     "antigas": {
+      "hat-01": 6,
+      "hat-02": 1426,
+      "hat-03": 69,
+      "hat-04": 567,
+      "hat-06": 273,
+      "hat-07": 2365
+     }
+    },
+    "hair-13": {
+     "nova": {
+      "dentro": 90,
+      "acima": 231,
+      "enterra": 60
+     },
+     "antigas": {
+      "hat-01": 152,
+      "hat-02": 912,
+      "hat-03": 523,
+      "hat-04": 426,
+      "hat-06": 1600,
+      "hat-07": 846
+     }
+    },
+    "hair-15": {
+     "nova": {
+      "dentro": 700,
+      "acima": 338,
+      "enterra": 447
+     },
+     "antigas": {
+      "hat-01": 457,
+      "hat-02": 3431,
+      "hat-03": 2226,
+      "hat-04": 843,
+      "hat-06": 4022,
+      "hat-07": 4577
+     }
+    },
+    "hair-18": {
+     "nova": {
+      "dentro": 28,
+      "acima": 0,
+      "enterra": 10
+     },
+     "antigas": {
+      "hat-01": 81,
+      "hat-02": 610,
+      "hat-03": 362,
+      "hat-04": 258,
+      "hat-06": 2414,
+      "hat-07": 123
+     }
+    }
+   },
+   "reprovados": []
+  },
+  "enfeite-06": {
+   "triangulos": 916,
+   "kb": 55.5,
+   "materiais": [
+    "Arame",
+    "Borla",
+    "Color_",
+    "Lanterna",
+    "Lanterna.001",
+    "Lanterna.002",
+    "Ouro"
+   ],
+   "ossos": [
+    "Head"
+   ],
+   "cabelos": {
+    "hair-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-06": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-07": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-08": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-09": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-10": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-11": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-12": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-13": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-14": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-15": {
+     "dentro": 0,
+     "acima": 218,
+     "enterra": 129
+    },
+    "hair-16": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-17": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "hair-18": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-01": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-02": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-03": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-04": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-05": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    },
+    "head-06": {
+     "dentro": 0,
+     "acima": 0,
+     "enterra": 0
+    }
+   },
+   "excecoes": {
+    "hair-15": {
+     "nova": {
+      "dentro": 0,
+      "acima": 218,
+      "enterra": 129
+     },
+     "antigas": {
+      "enfeite-01": 172,
+      "enfeite-02": 389,
+      "enfeite-03": 824,
+      "enfeite-04": 84,
+      "enfeite-05": 846
+     }
+    }
+   },
+   "reprovados": []
+  },
+  "top-07": {
+   "triangulos": 25296,
+   "kb": 1025.6,
+   "materiais": [
+    "Camiseta",
+    "Color_",
+    "Confete",
+    "Confete.001",
+    "Confete.002",
+    "Confete.003",
+    "Confete.004",
+    "Franja",
+    "Franja.001",
+    "Franja.002",
+    "Franja.003",
+    "Franja.004",
+    "Skin_"
+   ],
+   "ossos": [
+    "Head",
+    "Hips",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandIndex4",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandMiddle4",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandPinky4",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandRing4",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftHandThumb4",
+    "LeftShoulder",
+    "Neck",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandIndex4",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandMiddle4",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandPinky4",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandRing4",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightHandThumb4",
+    "RightShoulder",
+    "Spine",
+    "Spine1",
+    "Spine2"
+   ]
+  },
+  "outfit-07": {
+   "triangulos": 7195,
+   "kb": 344.2,
+   "materiais": [
+    "Chita",
+    "Chita_flor",
+    "Chita_flor.001",
+    "Chita_flor.002",
+    "Color_dress",
+    "Skin_"
+   ],
+   "ossos": [
+    "Head",
+    "Hips",
+    "LeftArm",
+    "LeftFoot",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandIndex4",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandMiddle4",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandPinky4",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandRing4",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftHandThumb4",
+    "LeftLeg",
+    "LeftShoulder",
+    "LeftUpLeg",
+    "Neck",
+    "RightArm",
+    "RightFoot",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandIndex4",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandMiddle4",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandPinky4",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandRing4",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightHandThumb4",
+    "RightLeg",
+    "RightShoulder",
+    "RightUpLeg",
+    "Spine",
+    "Spine1",
+    "Spine2"
+   ]
+  },
+  "top-08": {
+   "triangulos": 15446,
+   "kb": 717.0,
+   "materiais": [
+    "Camiseta",
+    "Color_",
+    "Estrela",
+    "Skin_"
+   ],
+   "ossos": [
+    "Head",
+    "Hips",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandIndex4",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandMiddle4",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandPinky4",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandRing4",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftHandThumb4",
+    "LeftShoulder",
+    "Neck",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandIndex4",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandMiddle4",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandPinky4",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandRing4",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightHandThumb4",
+    "RightShoulder",
+    "Spine",
+    "Spine1",
+    "Spine2"
+   ]
+  },
+  "top-09": {
+   "triangulos": 15488,
+   "kb": 769.4,
+   "materiais": [
+    "Color_",
+    "Estrela",
+    "Floco",
+    "Skin_"
+   ],
+   "ossos": [
+    "Head",
+    "Hips",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandIndex4",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandMiddle4",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandPinky4",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandRing4",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftHandThumb4",
+    "LeftShoulder",
+    "Neck",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandIndex4",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandMiddle4",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandPinky4",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandRing4",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightHandThumb4",
+    "RightShoulder",
+    "Spine",
+    "Spine1",
+    "Spine2"
+   ]
+  }
+ },
+ "referencias": {
+  "hat-01": {
+   "hair-01": 212,
+   "hair-02": 111,
+   "hair-03": 53,
+   "hair-04": 55,
+   "hair-05": 64,
+   "hair-06": 279,
+   "hair-07": 171,
+   "hair-08": 171,
+   "hair-09": 21,
+   "hair-10": 86,
+   "hair-11": 6,
+   "hair-12": 45,
+   "hair-13": 152,
+   "hair-14": 81,
+   "hair-15": 457,
+   "hair-16": 204,
+   "hair-17": 138,
+   "hair-18": 81
+  },
+  "hat-02": {
+   "hair-01": 236,
+   "hair-02": 380,
+   "hair-03": 19,
+   "hair-04": 335,
+   "hair-05": 259,
+   "hair-06": 736,
+   "hair-07": 262,
+   "hair-08": 782,
+   "hair-09": 278,
+   "hair-10": 443,
+   "hair-11": 1426,
+   "hair-12": 972,
+   "hair-13": 912,
+   "hair-14": 543,
+   "hair-15": 3431,
+   "hair-16": 2295,
+   "hair-17": 825,
+   "hair-18": 610
+  },
+  "hat-03": {
+   "hair-01": 389,
+   "hair-02": 360,
+   "hair-03": 50,
+   "hair-04": 527,
+   "hair-05": 762,
+   "hair-06": 851,
+   "hair-07": 582,
+   "hair-08": 1124,
+   "hair-09": 383,
+   "hair-10": 521,
+   "hair-11": 69,
+   "hair-12": 432,
+   "hair-13": 523,
+   "hair-14": 309,
+   "hair-15": 2226,
+   "hair-16": 1003,
+   "hair-17": 819,
+   "hair-18": 362
+  },
+  "hat-04": {
+   "hair-01": 64,
+   "hair-02": 155,
+   "hair-03": 47,
+   "hair-04": 460,
+   "hair-05": 635,
+   "hair-06": 606,
+   "hair-07": 435,
+   "hair-08": 673,
+   "hair-09": 535,
+   "hair-10": 681,
+   "hair-11": 567,
+   "hair-12": 330,
+   "hair-13": 426,
+   "hair-14": 246,
+   "hair-15": 843,
+   "hair-16": 900,
+   "hair-17": 269,
+   "hair-18": 258
+  },
+  "hat-06": {
+   "hair-01": 842,
+   "hair-02": 838,
+   "hair-03": 599,
+   "hair-04": 1066,
+   "hair-05": 932,
+   "hair-06": 1486,
+   "hair-07": 1227,
+   "hair-08": 1871,
+   "hair-09": 706,
+   "hair-10": 1035,
+   "hair-11": 273,
+   "hair-12": 3109,
+   "hair-13": 1600,
+   "hair-14": 1864,
+   "hair-15": 4022,
+   "hair-16": 3106,
+   "hair-17": 1729,
+   "hair-18": 2414
+  },
+  "hat-07": {
+   "hair-01": 50,
+   "hair-02": 55,
+   "hair-03": 0,
+   "hair-04": 50,
+   "hair-05": 47,
+   "hair-06": 667,
+   "hair-07": 0,
+   "hair-08": 1509,
+   "hair-09": 125,
+   "hair-10": 74,
+   "hair-11": 2365,
+   "hair-12": 127,
+   "hair-13": 846,
+   "hair-14": 84,
+   "hair-15": 4577,
+   "hair-16": 1362,
+   "hair-17": 0,
+   "hair-18": 123
+  },
+  "enfeite-01": {
+   "hair-01": 54,
+   "hair-02": 33,
+   "hair-03": 2,
+   "hair-04": 35,
+   "hair-05": 37,
+   "hair-06": 69,
+   "hair-07": 69,
+   "hair-08": 69,
+   "hair-09": 65,
+   "hair-10": 37,
+   "hair-11": 3,
+   "hair-12": 38,
+   "hair-13": 18,
+   "hair-14": 17,
+   "hair-15": 172,
+   "hair-16": 161,
+   "hair-17": 74,
+   "hair-18": 18
+  },
+  "enfeite-02": {
+   "hair-01": 74,
+   "hair-02": 83,
+   "hair-03": 0,
+   "hair-04": 214,
+   "hair-05": 151,
+   "hair-06": 152,
+   "hair-07": 153,
+   "hair-08": 152,
+   "hair-09": 164,
+   "hair-10": 161,
+   "hair-11": 4,
+   "hair-12": 175,
+   "hair-13": 63,
+   "hair-14": 56,
+   "hair-15": 389,
+   "hair-16": 542,
+   "hair-17": 221,
+   "hair-18": 59
+  },
+  "enfeite-03": {
+   "hair-01": 84,
+   "hair-02": 82,
+   "hair-03": 0,
+   "hair-04": 46,
+   "hair-05": 11,
+   "hair-06": 76,
+   "hair-07": 76,
+   "hair-08": 76,
+   "hair-09": 38,
+   "hair-10": 31,
+   "hair-11": 0,
+   "hair-12": 80,
+   "hair-13": 0,
+   "hair-14": 0,
+   "hair-15": 824,
+   "hair-16": 422,
+   "hair-17": 102,
+   "hair-18": 0
+  },
+  "enfeite-04": {
+   "hair-01": 5,
+   "hair-02": 5,
+   "hair-03": 0,
+   "hair-04": 1,
+   "hair-05": 0,
+   "hair-06": 0,
+   "hair-07": 0,
+   "hair-08": 0,
+   "hair-09": 0,
+   "hair-10": 0,
+   "hair-11": 0,
+   "hair-12": 56,
+   "hair-13": 0,
+   "hair-14": 0,
+   "hair-15": 84,
+   "hair-16": 46,
+   "hair-17": 0,
+   "hair-18": 0
+  },
+  "enfeite-05": {
+   "hair-01": 323,
+   "hair-02": 207,
+   "hair-03": 0,
+   "hair-04": 164,
+   "hair-05": 48,
+   "hair-06": 244,
+   "hair-07": 241,
+   "hair-08": 244,
+   "hair-09": 53,
+   "hair-10": 93,
+   "hair-11": 3,
+   "hair-12": 340,
+   "hair-13": 81,
+   "hair-14": 81,
+   "hair-15": 846,
+   "hair-16": 830,
+   "hair-17": 269,
+   "hair-18": 81
+  }
+ }
+}

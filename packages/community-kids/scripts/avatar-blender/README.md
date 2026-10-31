@@ -1,8 +1,9 @@
 # Peças do avatar feitas no Blender
 
-Scripts que geram as 32 peças próprias do avatar 3D (26/10/2026): cabelos `hair-12` a `hair-18`,
-o rosto delicado, roupas, calçados, óculos, acessórios e a aba Enfeite. Elas usam o mesmo
-esqueleto (`public/avatar3d/base/Armature.glb`) e as mesmas regras de material das peças do pacote
+Scripts que geram as peças próprias do avatar 3D. As 32 de 26/10/2026 são os cabelos `hair-12` a
+`hair-18`, o rosto delicado, roupas, calçados, óculos, acessórios e a aba Enfeite; as oito roupas
+de festa de 31/10/2026 estão na seção própria, abaixo. Todas usam o mesmo esqueleto
+(`public/avatar3d/base/Armature.glb`) e as mesmas regras de material das peças do pacote
 Quaternius: `Color_*` pega a cor escolhida e `Skin_*` usa a pele.
 
 ## Preparar
@@ -26,11 +27,45 @@ Cada arquivo agrupa uma família, e o nome da função vai depois de `--`:
 /tmp/blender-venv/bin/python roupas.py -- mangalonga moletom listrada calca saialonga vestidolongo bota sapatilha
 /tmp/blender-venv/bin/python rosto.py -- redondo gatinho sardas bochecha colar cachecol
 /tmp/blender-venv/bin/python rostos.py -- sorrisos cilios brilho sobrancelha nariz
+/tmp/blender-venv/bin/python festas.py -- cartolinha colete palha chita lanternas capa gorro sueter
+/tmp/blender-venv/bin/python conferir_festas.py
 ```
 
 O arquivo sai em `out/<id oficial>.glb` (ou na pasta de `AVATAR_OUT`). Peça gerada entra nas DUAS
 pastas, `community-kids/public/avatar3d/parts/` e `community/public/avatar3d/parts/`, e ganha a
-miniatura com `bun run gen:avatar-thumbs <id>` (copie o PNG para as duas pastas `thumbs/`).
+miniatura com `bun run gen:avatar-thumbs <id>` (copie o PNG para as duas pastas `thumbs/`). Peça
+que ainda não está no catálogo também ganha miniatura: o gerador aceita o id quando o GLB já está
+em `public/avatar3d/parts/` e tira a categoria do prefixo (`hat`, `enfeite`, `top`, `outfit`...).
+
+## Roupas de festa (31/10/2026)
+
+Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
+
+| Festa | Id | Função | Peça | Cor própria (sem `Color_`) |
+| --- | --- | --- | --- | --- |
+| Carnaval | `hat-08` | `cartolinha` | cartolinha de lantejoula com pluma curta e serpentina na aba | fita, pluma, serpentina |
+| Carnaval | `top-07` | `colete` | colete de franjas coloridas sobre camiseta com confetes | camiseta, franjas, confetes |
+| Junina | `hat-09` | `palha` | chapéu de palha com dois remendos de chita e aba desfiada | palha, chita (a fita é `Color_`) |
+| Junina | `outfit-07` | `chita` | vestido de chita com babado, barra repesada nas coxas | chita e florzinhas (o babado é `Color_`) |
+| Lanternas | `enfeite-06` | `lanternas` | tiara com três lanterninhas de papel penduradas | lanternas (com emissão), arame, ouro |
+| Lanternas | `top-08` | `capa` | capa curta de estrelas, dos ombros à cintura | camiseta, estrelas (capa e gola são `Color_`) |
+| Fim de ano | `hat-10` | `gorro` | gorro de tricô com pompom e barra branca | barra, pompom |
+| Fim de ano | `top-09` | `sueter` | suéter com estrela grande no peito e flocos na barra | estrela, faixa e flocos |
+
+- **Chapéus e tiara cabem sobre os cabelos.** O oco de cada chapéu e o arco da tiara são medidos
+  contra os próprios cabelos (`assentar`, `menor_escala`): nenhum vértice de `hair-01` a `hair-18`
+  nem das cabeças fica fora do oco. Os cabelos de `FORA_*` (topete alto, pontas para os lados, rabo
+  alto, crespo volumoso...) não cabem num chapéu desse tamanho; `conferir_festas.py` aceita esses
+  só quando TODOS os chapéus que já existem e ficam na cabeça também os atravessam (a auréola
+  `hat-05` flutua e fica de fora), e grava a conta em `festas-relatorio.json`. Hoje o app esconde o
+  cabelo e o enfeite debaixo de qualquer chapéu (`AVATAR_HIDE_GROUPS`).
+- **Roupas herdam os pesos do pacote** (`herdar_pesos`: cada vértice novo copia os pesos do vértice
+  mais próximo de `top-01`/`outfit-01`; a capa só do tronco, para não seguir o braço).
+- **Ainda fora do catálogo.** As oito peças não estão em `AVATAR_PART_INFO` (o catálogo é da dona);
+  `tests/avatar3d-catalog.test.ts` lê os oito GLBs direto: arquivos iguais nos dois apps, juntas na
+  ordem do `Armature.glb`, só o osso da cabeça nos chapéus e na tiara, `Color_` presente e abaixo
+  do maior triângulos/KB da família. A categoria `hat` não tem paleta no catálogo: a cor do
+  `Color_` dos chapéus só troca quando ela ganhar uma.
 
 ## Cuidados
 

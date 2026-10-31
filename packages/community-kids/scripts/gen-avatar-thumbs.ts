@@ -10,11 +10,13 @@
  * termina, fecha sozinho. Depois é só `git add public/avatar3d/thumbs`.
  */
 import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { dirname, join, normalize } from 'node:path'
 import {
   AVATAR_PART_INFO,
   AVATAR_REMOVABLE_NONE,
+  type AvatarCategory,
   DEFAULT_AVATAR_SLOTS,
 } from '../src/lib/avatar3d-catalog'
 
@@ -58,8 +60,30 @@ const onlyIds = new Set(
     .map((s) => s.trim())
     .filter(Boolean),
 )
+// Peça nova que já tem GLB mas ainda não entrou no catálogo (a dona inclui depois): a categoria
+// sai do prefixo do id. Assim a miniatura sai do mesmo gerador antes de a peça aparecer no app.
+const CATEGORY_BY_PREFIX: Record<string, AvatarCategory> = {
+  hat: 'hat',
+  enfeite: 'hairAccessory',
+  top: 'top',
+  bottom: 'bottom',
+  outfit: 'outfit',
+  shoes: 'shoes',
+  acc: 'accessory',
+  glasses: 'glasses',
+  hair: 'hair',
+}
 for (const id of onlyIds) {
-  if (!allParts.some((p) => p.id === id)) console.warn(`⚠️  id desconhecido (ignorado): ${id}`)
+  if (allParts.some((p) => p.id === id)) continue
+  const category = CATEGORY_BY_PREFIX[id.split('-')[0] ?? '']
+  if (category && existsSync(join(PUBLIC, 'avatar3d', 'parts', `${id}.glb`))) {
+    allParts.push({
+      id,
+      onHead: HEAD_SITTING.has(category),
+      color: DEFAULT_AVATAR_SLOTS[category]?.color ?? null,
+    })
+    console.log(`ℹ️  ${id} fora do catálogo: miniatura como ${category}`)
+  } else console.warn(`⚠️  id desconhecido (ignorado): ${id}`)
 }
 const parts = onlyIds.size ? allParts.filter((p) => onlyIds.has(p.id)) : allParts
 const validIds = new Set(parts.map((p) => p.id))
