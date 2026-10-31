@@ -1009,9 +1009,11 @@
     "titulo": "A corrida do entregador",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_draw_score",
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
       "sz_g2d_every_seconds",
-      "sz_g2d_update_each_frame",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_increment",
       "sz_val_compare",
@@ -1019,11 +1021,14 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_draw_score",
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
       "sz_g2d_every_seconds",
-      "sz_g2d_update_each_frame",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_increment",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],
@@ -1240,9 +1245,11 @@
     "titulo": "A corrida do entregador",
     "problema": null,
     "blocosDerivados": [
-      "sz_g2d_draw_score",
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
       "sz_g2d_every_seconds",
-      "sz_g2d_update_each_frame",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_increment",
       "sz_val_compare",
@@ -1250,11 +1257,14 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_draw_score",
+      "sz_g2d_apply_velocity",
+      "sz_g2d_clamp_to_screen",
       "sz_g2d_every_seconds",
-      "sz_g2d_update_each_frame",
+      "sz_g2d_on_overlap",
+      "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_increment",
+      "sz_val_compare",
       "sz_val_number",
       "sz_val_variable"
     ],

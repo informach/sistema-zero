@@ -25,7 +25,11 @@ conteúdo para o adulto. Os dois são gerados por `bun gerar-manifesto.ts` a par
 Os enunciados são pedidos do Bento: dizem o que ele precisa, não o bloco a usar (A44). Os seis
 quadros pintam a Vila; o quadro 6 é o minijogo da ficha (atração `corrida-do-entregador`) e o
 extra dele dá a receita de brigadeiro (A25). Cada desafio tem um extra opcional: som no pulo,
-efeitos da batida ou os metros na tela de fim.
+efeitos da batida ou os metros na tela de fim. O extra do quadro 6 segue a proposta ("★ Desafio
+extra: um bolo dourado que vale o dobro", lacunas de 01/11/2026): um bolo dourado passa pela rua
+(pronto no cenário) e a criança completa o encontro do entregador com ele, que soma 2 metros de
+uma vez (o dobro de um segundo de corrida) e leva o bolo de volta ao começo. Os telhados e as
+chaminés da ficha são arte 2D, pedida no lote de arte.
 
 Todos pedem publicação (`publicar: true`, §6.28 item 1): todo bloco tem fonte nos cursos até o
 Inventor e resolve no nível `iniciante-2d` (por isso a corrida não usa o bloco de conta nem o de
