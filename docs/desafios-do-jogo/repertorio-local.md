@@ -35,11 +35,11 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | vila-doce | Pedras maiores | retomada-em-blocos | Com o pulo novo, o entregador sobe mais alto que as pedras grandes.; A força do pulo fica entre 12 e 16. | Nenhum neste recorte | pedida |
 | vila-doce | Pombos na praça | retomada-em-blocos | A rua sorteia o que aparece: pedras, vasos e pombos voando baixo. | Nenhum neste recorte | pedida |
 | vila-doce | Quem não vê a tela | retomada-em-blocos | A descrição da corrida diz o objetivo e os três jeitos de pular. | Nenhum neste recorte | pedida |
-| recife | A corrente muda | retomada-em-blocos | Cada toque no espaço vira o sentido da corrente.; Cada toque muda o sentido uma vez. | Nenhum neste recorte | pedida |
-| recife | Conchas por viagem | retomada-em-blocos | A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar.; A cesta leva até três e descarrega sem duplicar. | Nenhum neste recorte | pedida |
-| recife | Dois corais cuidados | retomada-em-blocos | Cada coral escolhido é cuidado e contado uma vez só.; Cada coral conta uma vez, também na ordem inversa. | Nenhum neste recorte | pedida |
-| recife | Uma bolha por vez | retomada-em-blocos | Só sai uma bolha nova quando a anterior já voltou.; Toques durante o voo esperam pela próxima bolha. | Nenhum neste recorte | pedida |
-| recife | A chave do navio | retomada-em-blocos | O baú abre só com a chave, uma vez, e a chave fica usada.; Sem chave não abre, e abrir usa a chave uma vez. | Nenhum neste recorte | pedida |
+| recife | Uma bolha por vez | retomada-em-blocos | Espaço solta uma bolha.; Com uma bolha subindo, outro toque espera; depois que ela sai, sai outra. | Nenhum neste recorte | pedida |
+| recife | Alvo preso conta ponto | retomada-em-blocos | A bolha que encosta no alvo conta um ponto.; Uma bolha conta uma vez; a próxima bolha conta de novo. | Nenhum neste recorte | pedida |
+| recife | O alvo muda de lugar | retomada-em-blocos | Preso o alvo, ele volta num lugar sorteado no alto. | Nenhum neste recorte | pedida |
+| recife | Tempo de partida | retomada-em-blocos | O relógio tira um segundo de cada vez e a partida acaba no zero.; Depois do fim, Espaço não solta bolha. | Nenhum neste recorte | pedida |
+| recife | Nova partida | retomada-em-blocos | Depois do fim, Enter começa outra partida com o tempo cheio.; A nova partida começa sem pontos e já solta bolha. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas | retomada-em-blocos | As setas movem a mira para os dois lados, sem sair da tela nem subir.; Espaço lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe.; Ao tocar o alvo, a bolha para e o alvo fica preso.; Uma bolha que erra não conta pontos; prender o alvo conta uma vez só, mesmo tentando de novo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: bolha rápida | retomada-em-blocos | A bolha sobe mais rápido e continua prendendo o alvo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: dois pontos | retomada-em-blocos | Cada alvo preso vale dois pontos, sem repetir a contagem ao ficar encostado ou acertar o mesmo alvo de novo. | Nenhum neste recorte | pedida |

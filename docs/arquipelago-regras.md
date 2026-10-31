@@ -2583,7 +2583,9 @@ faz o que as seções acima descrevem.
    em `docs/desafios-do-jogo/publicacao.test.ts`.
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
-   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos. Feito
+   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 ficam em blocos, e desde as lacunas de
+   01/11/2026 montam o jogo do gênero do posto, um passo por quadro (Recife: a Mira do Recife,
+   com bolha, alvo sorteado, tempo de partida e nova partida). Feito
    (lote 8): os desafios C02 viraram o quadro 6 (pintam) e o minijogo em blocos que estava no
    quadro 6 virou desafio do dia. Importar o arquivo em blocos antes do da linguagem.
 3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a

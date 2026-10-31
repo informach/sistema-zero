@@ -1,5 +1,5 @@
 /**
- * Os pedidos dos moradores (A44, revisão de 31/10/2026): o enunciado de cada quadro de retomada do
+ * Os pedidos dos moradores (A44, revisão de 31/10/2026): o enunciado de cada quadro em blocos do
  * Recife, do Pico, do Vale e das Nuvens é o pedido do morador da ilha, que diz o que ele precisa e
  * não o bloco ou a variável a usar. O objetivo principal ganha um rótulo específico no lugar do
  * genérico "Complete a ação indicada". O texto técnico de antes vira a última dica (lacunas,
@@ -13,31 +13,31 @@ export interface PedidoDoMorador {
 }
 
 export const PEDIDOS_DOS_MORADORES: Record<string, PedidoDoMorador> = {
-  // Recife: a Maré.
-  'a-corrente-muda': {
-    pedido:
-      'A Maré quer ver a concha passear pela lagoa nos dois sentidos. Cada toque no espaço deve virar a corrente: se a concha ia para a direita, passa a ir para a esquerda, e o contrário.',
-    objetivo: 'Cada toque no espaço vira o sentido da corrente.',
-  },
-  'conchas-por-viagem': {
-    pedido:
-      'A Maré recolhe conchas numa cesta que leva no máximo três. Ela quer pegar conchas uma de cada vez e, depois, guardar a cesta inteira na caixa, começando a próxima viagem com a cesta vazia.',
-    objetivo: 'A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar.',
-  },
-  'dois-corais-cuidados': {
-    pedido:
-      'Dois corais da lagoa estão desbotados. A Maré quer escolher um coral e cuidar dele, e cada coral cuidado conta uma vez só, na ordem que ela quiser.',
-    objetivo: 'Cada coral escolhido é cuidado e contado uma vez só.',
-  },
+  // Recife: a Maré (lacunas, 01/11/2026: a Mira do Recife, mira e alvos do Explorador).
   'uma-bolha-por-vez': {
     pedido:
-      'A Maré solta bolhas para ver onde a corrente leva. Ela quer soltar uma bolha de cada vez: enquanto uma está subindo e voltando, apertar de novo não solta outra.',
-    objetivo: 'Só sai uma bolha nova quando a anterior já voltou.',
+      'A Maré quer brincar de mirar na lagoa. Ela quer que o espaço solte uma bolha da mira para cima, uma de cada vez: enquanto uma bolha sobe, outro toque espera.',
+    objetivo: 'O espaço solta uma bolha por vez, e cada bolha solta conta uma vez.',
   },
-  'a-chave-do-navio': {
+  'alvo-preso': {
     pedido:
-      'O baú do navio afundado tem um cadeado. A Maré quer que o baú abra só com a chave na mão, uma vez, e que a chave fique usada depois de abrir.',
-    objetivo: 'O baú abre só com a chave, uma vez, e a chave fica usada.',
+      'A estrela do mar boia no alto da lagoa. A Maré quer que a bolha que encosta nela prenda a estrela e ganhe um ponto, um ponto só por bolha.',
+    objetivo: 'Cada bolha que prende o alvo vale um ponto, uma vez.',
+  },
+  'alvo-em-outro-lugar': {
+    pedido:
+      'Mirar sempre no mesmo lugar ficou fácil demais. A Maré quer que, depois de presa, a estrela apareça em outro lugar do alto, sorteado a cada vez.',
+    objetivo: 'Preso o alvo, ele volta num lugar sorteado no alto.',
+  },
+  'tempo-de-partida': {
+    pedido:
+      'A Maré quer uma partida com tempo, para ver quantas estrelas cabem nela. O relógio desconta um segundo de cada vez e, no zero, a partida acaba e não sai mais bolha.',
+    objetivo: 'O relógio acaba a partida no zero, e depois dele não sai bolha.',
+  },
+  'nova-partida': {
+    pedido:
+      'Acabou a partida e a Maré quer jogar outra sem fechar o jogo. Ela quer que o Enter comece uma partida nova, com o tempo cheio e os pontos zerados.',
+    objetivo: 'O Enter começa outra partida com o tempo cheio e sem pontos.',
   },
   // Pico: o Floco.
   'pulo-com-apoio': {

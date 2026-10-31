@@ -11,11 +11,11 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
-| A corrente muda | Quadro das Cores | 1 | 20 | 10 |
-| Conchas por viagem | Quadro das Cores | 2 | 20 | 10 |
-| Dois corais cuidados | Quadro das Cores | 3 | 20 | 10 |
-| Uma bolha por vez | Quadro das Cores | 4 | 20 | 10 |
-| A chave do navio | Quadro das Cores | 5 | 20 | 10 |
+| Uma bolha por vez | Quadro das Cores | 1 | 20 | 10 |
+| Alvo preso conta ponto | Quadro das Cores | 2 | 20 | 10 |
+| O alvo muda de lugar | Quadro das Cores | 3 | 20 | 10 |
+| Tempo de partida | Quadro das Cores | 4 | 20 | 10 |
+| Nova partida | Quadro das Cores | 5 | 20 | 10 |
 | Mira de bolhas | Quadro das Cores | 6 | 20 | 10 |
 | Bolha rápida | Desafio do dia | Nenhum | 10 | 5 |
 | Dois pontos | Desafio do dia | Nenhum | 10 | 5 |
@@ -30,28 +30,26 @@ seis quadros, Kids e adulto, têm todas as fontes na trilha e voltam a pedir pub
 (`publicar: true`); as três variações continuam com `publicar: false`. A importação e a
 barreira C01a ficam com a equipe. Nenhum deles foi importado nesta entrega.
 
-## Os cinco complementares
+## Os quadros 1 a 5: a Mira do Recife (lacunas, 01/11/2026)
 
-Cenário, SVGs, controles de toque e laço de desenho estão prontos nos dois projetos. Só os
-quatro tipos de evento indicados mudam: Espaço, esquerda, direita e o extra Enter. O inicial
-não aprova nenhum dos seus objetivos. Os objetivos verificam ações e estados, sem exigir
-cor, desenho ou os parâmetros do movimento fornecido.
+A proposta põe no Recife o jogo de mira e alvos do Explorador, com sorteio de lugar, tempo de
+partida e pontos. Os cinco quadros montam esse jogo um passo de cada vez
+(`quadros-iniciais.ts`); cada quadro traz pronto o que os anteriores fizeram e deixa vazio só o
+passo dele. Antes eram cinco retomadas soltas (corrente, cesta, corais, bolha e chave), sem o
+gênero do posto. Só blocos da trilha (Faísca, Construtor e Inventor).
 
-| Quadro | Ação | Conhecimento aplicado | Recusa causal |
+| Quadro | O passo | Conhecimento aplicado | Recusa causal (executor real) |
 | --- | --- | --- | --- |
-| 1 | Alternar o sentido da corrente | Se/senão e informação | Ficar sempre para a esquerda |
-| 2 | Recolher até três e descarregar | Condição e soma | Cesta acima do limite ou entrega duplicada |
-| 3 | Cuidar de dois corais uma vez | Escolha e marca individual | Contar o mesmo cuidado ou os dois juntos |
-| 4 | Soltar uma bolha e esperar a volta | Estado de voo | Relançar enquanto ela se move |
-| 5 | Pegar e consumir a chave | Duas condições e uso único | Abrir sem chave, guardar a chave usada ou repetir |
+| 1 | Espaço solta uma bolha por vez | Estado de voo e condição | Soltar com outra subindo |
+| 2 | A bolha presa no alvo conta um ponto | Encontro, estado e soma | Não liberar a próxima bolha |
+| 3 | O alvo volta num lugar sorteado | Sorteio e reposição | O alvo fica no mesmo lugar |
+| 4 | O relógio acaba a partida | Relógio, contagem regressiva e fim | Soltar bolha depois do fim |
+| 5 | Enter começa outra partida | Restaurar o estado do começo | Esquecer de encher o tempo |
 
-Cada quadro tem ação principal, condição adicional e extra de reinício. A corrente anda
-entre x 40 e 500 com velocidade horizontal de módulo 1. A bolha sobe de y 320 até passar
-y 120 e volta com velocidade de módulo 2, usando posição observada, velocidade e movimento
-já ensinados. Esses valores pertencem ao cenário pronto; não são exigências do objetivo.
-A espera de 4,5 s no ensaio deixa margem para a viagem de cerca de 3,4 s a 60 atualizações.
-Não se concede nenhum bloco novo. A aritmética vem do Dino. Desde C01b, o coral cuidado troca
-a imagem cinza pela colorida e a chave só é desenhada enquanto está na mão (sem opacidade).
+A partida dura 8 s (`TEMPO_DA_PARTIDA`), para caber nas esperas do executor (até 10 s por
+passo). O extra dos quadros 1 a 4 é o Enter recomeçar o jogo; o do quinto, o recorde guardar a
+melhor partida antes de zerar. Prova: `packages/studio-runtime/tests/quadros-recife-browser.test.ts`
+(com `SZ_CHECK_CHROMIUM` apontando para o Chrome), os cinco quadros com gabarito, inicial e erros.
 
 ## O que se completa no principal
 
