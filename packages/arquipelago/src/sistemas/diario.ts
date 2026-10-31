@@ -8,6 +8,7 @@ import {
   NINHOS_DO_VALE,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
+import { LINHAS_DA_CARTA } from './abertura'
 import { NOME_DO_BICHO } from './bichos'
 import { cresceu, DIAS_PARA_CRESCER, nasceu } from './filhote-do-vale'
 import { ULTIMA_PAGINA } from './final-do-farol'
@@ -73,8 +74,12 @@ export function colecaoDoVale(s: Salvamento) {
  * guarda (a amizade com o morador, os bichos achados e o adotado): não há campo novo.
  */
 
-/** As ilhas que guardam uma página da Íris, na ordem do diário. */
+/**
+ * As ilhas que guardam uma página da Íris, na ordem do diário. A da sua ilha é a carta de
+ * boas-vindas que chegou com a chave (ficha da sua ilha, §6.28 A39): aberta desde a chegada.
+ */
 export const ILHAS_DO_DIARIO = [
+  'sua-ilha',
   'bosque',
   'vila-doce',
   'recife',
@@ -86,14 +91,14 @@ export const ILHAS_DO_DIARIO = [
 export type IlhaDoDiario = (typeof ILHAS_DO_DIARIO)[number]
 
 /** O texto de cada página que já chegou ao jogo (o da proposta do jogo, assinado pela Íris). */
-// A página do Recife é narrativa nova da fase3-02.
+// Todas da proposta do jogo; a do Recife voltou à ficha da ilha em 30/10/2026 (§6.28, A4).
 export const TEXTO_DA_PAGINA: Readonly<Record<IlhaDoDiario, string>> = {
+  'sua-ilha': LINHAS_DA_CARTA.join(' '),
   pico: VIDA_NO_ANEL.floco.pagina.texto,
   'vale-dos-dinos': VIDA_NO_ANEL.jade.pagina.texto,
   nuvens: VIDA_NO_ANEL.irie.pagina.texto,
   farol: ULTIMA_PAGINA.join(' '),
-  recife:
-    'Desenhei um caminho entre os corais. Na primeira curva me perdi. Voltei, olhei com calma e encontrei outro jeito de passar.',
+  recife: 'Mapas sem fim não levam ninguém a lugar nenhum.',
   bosque:
     'Hoje desenhei uma ponte e apaguei três vezes. Ninguém viu o desenho. Talvez seja melhor assim.',
   'vila-doce':
@@ -159,6 +164,7 @@ export function paginasDoDiario(s: Salvamento): EstadoDaPagina[] {
   return ILHAS_DO_DIARIO.map((ilha): EstadoDaPagina => {
     const nome = NOME_DA_ILHA[ilha]
     const texto = TEXTO_DA_PAGINA[ilha]
+    if (ilha === 'sua-ilha') return { ilha, nome: 'A carta de boas-vindas', aberta: true, texto }
     if (ilha === 'bosque' && texto && temAPaginaDoBosque(s.moradores.capi))
       return { ilha, nome, aberta: true, texto }
     if (ilha === 'bosque') {

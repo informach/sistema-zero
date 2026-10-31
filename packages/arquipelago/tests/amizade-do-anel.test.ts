@@ -123,7 +123,7 @@ test('as três páginas abrem no segundo coração e a entrega não se repete', 
     porPedido.inventario = { ...pedidoDoAnel(porPedido, quem, dia)?.itens }
     expect(entregarNoAnel(porPedido, quem, dia).falas).toContain(pagina.entrega)
   }
-  expect(Object.values(TEXTO_DA_PAGINA)).toHaveLength(7)
+  expect(Object.values(TEXTO_DA_PAGINA)).toHaveLength(8)
   expect(Object.values(TEXTO_DA_PAGINA).every((texto) => texto.length > 20)).toBe(true)
 })
 

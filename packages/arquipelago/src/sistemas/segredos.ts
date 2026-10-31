@@ -8,8 +8,8 @@ const NOME_DA_ILHA = Object.fromEntries(ILHAS.map((i) => [i.id, i.nome])) as Rec
  * kit de movimento completo alcança". Escolha mínima: nas quatro ilhas que vêm antes do Pico, um
  * baú da Íris flutua no alto de uma corrente de vento (a mesma do Pico, `sistemas/planador.ts`).
  * Sem o planador o vento não leva ninguém; com ele, a criança pula, abre o planador dentro do
- * vento e sobe até o baú, que fica registrado no álbum. Lumis raros e páginas extras do diário
- * dentro dos baús pedem conteúdo novo (pendente). Cada segredo tem um bit fixo em
+ * vento e sobe até o baú, que fica registrado no álbum. Dentro de cada baú há uma página extra do
+ * diário da Íris (§6.28 A39, `PAGINA_EXTRA`); os Lumis raros vêm depois. Cada segredo tem um bit fixo em
  * `salvamento.segredos` (nunca reordenar nem reutilizar).
  */
 export interface Segredo {
@@ -81,8 +81,43 @@ export function abrirSegredo(s: Salvamento, segredo: Segredo): Salvamento {
   }
 }
 
+/**
+ * A página extra de cada baú (a proposta: "páginas extras do diário" nos segredos). A Íris fala do
+ * lugar e do medo de mostrar o que fazia, sem contar o final (que fica na última página do Farol).
+ */
+export const PAGINA_EXTRA: Readonly<Record<Segredo['id'], string>> = {
+  'sua-ilha':
+    'Daqui de cima dá para ver todas as ilhas. Escrevo no alto porque aqui só o vento lê.',
+  bosque:
+    'Desenhei a Capi três vezes. A terceira ficou parecida com ela. As duas primeiras guardei aqui, onde ninguém procura.',
+  'vila-doce':
+    'Hoje um bolo meu solou. Comi assim mesmo, e estava gostoso. Não contei para ninguém.',
+  recife:
+    'Joguei um mapa no mar para ver aonde ele ia. A maré trouxe de volta, molhado e ainda bonito.',
+}
+
+export interface PaginaExtra {
+  id: Segredo['id']
+  nome: string
+  achada: boolean
+  texto: string | null
+}
+
+/** As páginas extras, na ordem dos segredos: o texto só depois de abrir o baú. */
+export function paginasExtras(segredos: number): PaginaExtra[] {
+  return SEGREDOS.map((s) => {
+    const achada = segredoAchado(segredos, s)
+    return {
+      id: s.id,
+      nome: NOME_DA_ILHA[s.ilha],
+      achada,
+      texto: achada ? PAGINA_EXTRA[s.id] : null,
+    }
+  })
+}
+
 export function falaDoSegredo(segredo: Segredo): string {
-  return `No alto do vento tinha um baú da Íris. Ele já está no álbum, em Segredos das ilhas, junto com ${NOME_DA_ILHA[segredo.ilha]}.`
+  return `No alto do vento tinha um baú da Íris, com uma página extra do diário dela. A página está no diário, e o baú no álbum, em Segredos das ilhas, junto com ${NOME_DA_ILHA[segredo.ilha]}.`
 }
 
 /** O recado ao pé do vento: sem planador, a curiosidade; com ele, como subir. */

@@ -7,9 +7,12 @@ import { soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import { COLISOR_DA_LUNETA, LUNETA, vistaDaLuneta } from '../src/mundo/luneta-medidas'
 import { PIER } from '../src/mundo/medidas'
 import {
+  ACENO_DA_LUNETA,
   artigoDaIlha,
+  deveAcenar,
   falaDaLuneta,
   ilhaDaLuneta,
+  moradorDaLuneta,
   passoDaPrevia,
   recadoDaIris,
 } from '../src/sistemas/luneta'
@@ -115,5 +118,25 @@ describe('luneta', () => {
     expect(LUNETA.x).toBe(PIER.x)
     expect(LUNETA.z).toBeGreaterThan(PIER.z + PIER.comprimento - 2)
     expect(LUNETA.z).toBeLessThan(PIER.z + PIER.comprimento)
+  })
+})
+
+describe('o morador acenando pela luneta (§6.28, A18)', () => {
+  test('cada ilha do anel mostra o morador dela; o Farol, nenhum', () => {
+    expect(moradorDaLuneta({ id: 'bosque' })).toBe('capi')
+    expect(moradorDaLuneta({ id: 'vila-doce' })).toBe('bento')
+    expect(moradorDaLuneta({ id: 'recife' })).toBe('mare')
+    expect(moradorDaLuneta({ id: 'pico' })).toBe('floco')
+    expect(moradorDaLuneta({ id: 'vale-dos-dinos' })).toBe('jade')
+    expect(moradorDaLuneta({ id: 'nuvens' })).toBe('irie')
+    expect(moradorDaLuneta({ id: 'farol' })).toBeNull()
+  })
+
+  test('acena de tempos em tempos, nunca antes de o aceno terminar, e não com menos movimento', () => {
+    expect(deveAcenar(0, -Infinity, 2, false)).toBe(true)
+    expect(deveAcenar(3, 0, 2, false)).toBe(false)
+    expect(deveAcenar(ACENO_DA_LUNETA.aCada, 0, 2, false)).toBe(true)
+    expect(deveAcenar(ACENO_DA_LUNETA.aCada, 0, 9, false)).toBe(false)
+    expect(deveAcenar(100, 0, 2, true)).toBe(false)
   })
 })
