@@ -2493,9 +2493,11 @@ Escolhas aprovadas no plano do levantamento integrado (`docs/arquipelago-levanta
 anotadas para não serem refeitas por engano:
 
 - **Duas versões de ilha (N15):** leve e completa, em vez de silhueta, média e completa (§6.9).
-- **A Íris na abertura:** a proposta diz que ela aparece "só pelas páginas"; a abertura "O Cinza"
-  mostra a Íris na sala do Farol numa ilustração do passado. Fica: é memória, não encontro, e o
-  segredo do final continua guardado. Ela só aparece no jogo depois dos seis fachos.
+- **A Íris só pelas páginas (desfeita em 01/11/2026, pela proposta):** a cena `iris` da abertura
+  "O Cinza" não mostra mais a Íris: a imagem é o Farol de pé ao lado da casa, com a ilha colorida
+  (`playground/capturar-abertura.ts`, `src/assets/abertura/iris.webp`). A placa da ponte quebrada
+  também perdeu a assinatura dela (`recadoDaPlaca`, "Ler a placa da ponte"). Ela só aparece no jogo
+  depois dos seis fachos.
 - **Rótulos dos minijogos (N09):** os minijogos seguem a régua de conteúdo da Jornada
   (`docs/desafios-do-jogo/conteudo-por-posto.md`), e os nomes da proposta do Arquipélago ficam
   como estão (Pega-conchas, Corrida dos bichos, Corrida do entregador, Mira de bolhas, Fase de

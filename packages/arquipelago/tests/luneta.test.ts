@@ -14,7 +14,7 @@ import {
   ilhaDaLuneta,
   moradorDaLuneta,
   passoDaPrevia,
-  recadoDaIris,
+  recadoDaPlaca,
 } from '../src/sistemas/luneta'
 import { criarPesos, passoDosPesos, perfilDaVez } from '../src/sistemas/perfis-de-camera'
 
@@ -60,7 +60,7 @@ describe('luneta', () => {
     expect(falaDaLuneta(ilhaDaLuneta(1))).toContain('o Bosque dos Bichos')
     expect(falaDaLuneta(ilhaDaLuneta(7))).not.toContain('ponte')
     for (const ilha of ILHAS.filter((i) => i.angulo !== null)) {
-      for (const texto of [falaDaLuneta(ilha), recadoDaIris(ilha)]) {
+      for (const texto of [falaDaLuneta(ilha), recadoDaPlaca(ilha)]) {
         expect(texto).not.toMatch(/[\d!?—]/)
         expect(texto).not.toMatch(/falta|bloquead|precisa|obrigat/i)
       }
@@ -139,4 +139,9 @@ describe('o morador acenando pela luneta (§6.28, A18)', () => {
     expect(deveAcenar(ACENO_DA_LUNETA.aCada, 0, 9, false)).toBe(false)
     expect(deveAcenar(100, 0, 2, true)).toBe(false)
   })
+})
+
+test('a placa da ponte não leva a assinatura da Íris (lacunas, 01/11/2026)', () => {
+  for (const ilha of ILHAS.filter((i) => i.angulo !== null))
+    expect(recadoDaPlaca(ilha)).not.toContain('Íris')
 })
